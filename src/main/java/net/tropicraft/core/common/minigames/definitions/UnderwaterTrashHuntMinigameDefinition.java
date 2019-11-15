@@ -111,7 +111,7 @@ public class UnderwaterTrashHuntMinigameDefinition implements IMinigameDefinitio
         if (world.getDimension().getType() == getDimension()) {
             minigameTime++;
 
-            if (minigameTime >= 9600) {
+            if (minigameTime >= 4800) {
                 MinigameManager.getInstance().finishCurrentMinigame();
             }
         }
@@ -129,6 +129,8 @@ public class UnderwaterTrashHuntMinigameDefinition implements IMinigameDefinitio
         if (instance.getParticipants().size() <= 0) {
             MinigameManager.getInstance().finishCurrentMinigame();
         }
+
+        player.inventory.dropAllItems();
     }
 
     @Override
