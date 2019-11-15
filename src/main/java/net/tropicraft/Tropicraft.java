@@ -187,6 +187,9 @@ public class Tropicraft {
         ClientRegistry.bindTileEntitySpecialRenderer(BambooChestTileEntity.class, new BambooChestRenderer());
         ClientRegistry.bindTileEntitySpecialRenderer(SifterTileEntity.class, new SifterRenderer());
         ClientRegistry.bindTileEntitySpecialRenderer(DrinkMixerTileEntity.class, new DrinkMixerRenderer());
+        
+        ForgeConfig.CLIENT.alwaysSetupTerrainOffThread.set(true);
+        ((ForgeConfigSpec)ObfuscationReflectionHelper.getPrivateValue(ForgeConfig.class, null, "clientSpec")).save();
     }
     
     @OnlyIn(Dist.CLIENT)
@@ -204,9 +207,6 @@ public class Tropicraft {
     private void setup(final FMLCommonSetupEvent event) {
         TropicraftPackets.init();
         TropicraftBiomes.addFeatures();
-        
-        ForgeConfig.CLIENT.alwaysSetupTerrainOffThread.set(true);
-        ((ForgeConfigSpec)ObfuscationReflectionHelper.getPrivateValue(ForgeConfig.class, null, "clientSpec")).save();
     }
     
     private void onServerStarting(final FMLServerStartingEvent event) {
