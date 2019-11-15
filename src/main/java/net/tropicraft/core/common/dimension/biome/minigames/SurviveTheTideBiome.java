@@ -74,16 +74,16 @@ public class SurviveTheTideBiome extends TropicraftBiome {
 
     @OnlyIn(Dist.CLIENT)
     public int getSkyColorByTemp(float currentTemperature) {
-        return ConfigLT.BIOMES.surviveTheTideSkyColor.get();
+        return 0x0f331b;//ConfigLT.BIOMES.surviveTheTideSkyColor.get();
     }
 
     @OnlyIn(Dist.CLIENT)
     public int getFoliageColor(BlockPos p_180625_1_) {
-        return ConfigLT.BIOMES.surviveTheTideFoliageColor.get();
+        return 0x208d2a;//ConfigLT.BIOMES.surviveTheTideFoliageColor.get();
     }
 
     @OnlyIn(Dist.CLIENT)
     public int getGrassColor(BlockPos p_180627_1_) {
-        return ConfigLT.BIOMES.surviveTheTideGrassColor.get();
+        return 0x498551;//ConfigLT.BIOMES.surviveTheTideGrassColor.get();
     }
 }

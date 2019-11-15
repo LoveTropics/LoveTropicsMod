@@ -28,7 +28,7 @@ public class ConfigLT {
     
     public static final CategoryTiltify TILTIFY = new CategoryTiltify();
     
-    public static final CategoryBiomes BIOMES = new CategoryBiomes();
+//    public static final CategoryBiomes BIOMES = new CategoryBiomes();
 
     public static final class CategorySurviveTheTide {
 
