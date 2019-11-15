@@ -54,6 +54,7 @@ public class ThreadWorkerDonations implements Runnable {
             ex.printStackTrace();
         }
 
+        running = false;
     }
 
     public void checkDonations() {
