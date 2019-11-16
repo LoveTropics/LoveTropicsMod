@@ -47,7 +47,9 @@ public class MinigameWeatherInstanceServer extends MinigameWeatherInstance {
                         if (random.nextFloat() <= ConfigLT.MINIGAME_SURVIVE_THE_TIDE.rainHeavyChance.get() * rateAmp) {
                             heavyRainfallStart(phase);
                         } else if (random.nextFloat() <= ConfigLT.MINIGAME_SURVIVE_THE_TIDE.rainAcidChance.get() * rateAmp) {
-                            acidRainStart(phase);
+                            if (phase != SurviveTheTideMinigameDefinition.MinigamePhase.PHASE4 || ConfigLT.MINIGAME_SURVIVE_THE_TIDE.minigame_SurviveTheTide_worlderBorder_acidRainOnPhase4.get()) {
+                                acidRainStart(phase);
+                            }
                         } else if (random.nextFloat() <= ConfigLT.MINIGAME_SURVIVE_THE_TIDE.heatwaveChance.get() * rateAmp) {
                             heatwaveStart(phase);
                         }
