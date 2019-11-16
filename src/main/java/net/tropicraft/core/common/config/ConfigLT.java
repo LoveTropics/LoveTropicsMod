@@ -129,8 +129,8 @@ public class ConfigLT {
 
             minigame_SurviveTheTide_worlderBorderEnabled = COMMON_BUILDER.define("minigame_SurviveTheTide_worlderBorderEnabled", true);
 
-            minigame_SurviveTheTide_worldBorder_ticksAfterPhase4 = COMMON_BUILDER.defineInRange("minigame_SurviveTheTide_ticksAfterPhase4WorldBorder", 20*60*5, 1, Integer.MAX_VALUE);
-            minigame_SurviveTheTide_worldBorder_ticksUtilFullyShrinked = COMMON_BUILDER.defineInRange("minigame_SurviveTheTide_ticksUtilWorlderBorderFullyShrinked", 20*60*5, 1, Integer.MAX_VALUE);
+            minigame_SurviveTheTide_worldBorder_ticksAfterPhase4 = COMMON_BUILDER.defineInRange("minigame_SurviveTheTide_worldBorder_ticksAfterPhase4", 20*60*5, 1, Integer.MAX_VALUE);
+            minigame_SurviveTheTide_worldBorder_ticksUtilFullyShrinked = COMMON_BUILDER.defineInRange("minigame_SurviveTheTide_worldBorder_ticksUtilFullyShrinked", 20*60*5, 1, Integer.MAX_VALUE);
 
             minigame_SurviveTheTide_worldBorder_particleRateDelay = COMMON_BUILDER.defineInRange("minigame_SurviveTheTide_worldBorder_particleRateDelay", 1, 1, Integer.MAX_VALUE);
             minigame_SurviveTheTide_worldBorder_particleHeight = COMMON_BUILDER.defineInRange("minigame_SurviveTheTide_worldBorder_particleHeight", 110, 1, Integer.MAX_VALUE);
