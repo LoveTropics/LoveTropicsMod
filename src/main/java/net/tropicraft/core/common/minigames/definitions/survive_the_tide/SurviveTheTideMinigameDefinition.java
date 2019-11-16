@@ -7,12 +7,14 @@ import net.minecraft.entity.effect.LightningBoltEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
+import net.minecraft.particles.ParticleTypes;
 import net.minecraft.potion.EffectInstance;
 import net.minecraft.potion.Effects;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.ActionResultType;
+import net.minecraft.util.*;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.text.*;
+import net.minecraft.world.BossInfo;
+import net.minecraft.world.ServerBossInfo;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.util.Constants.BlockFlags;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
@@ -26,8 +28,6 @@ import net.minecraft.command.CommandSource;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.state.properties.BlockStateProperties;
-import net.minecraft.util.DamageSource;
-import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockPos.MutableBlockPos;
 import net.minecraft.util.math.ChunkPos;
@@ -77,11 +77,15 @@ public class SurviveTheTideMinigameDefinition implements IMinigameDefinition {
 
     private long minigameTime = 0;
     private long phaseTime = 0;
+    private long ticksSincePhase4Start = 0;
+    private boolean borderCollapseMessageSent = false;
 
     private int waterLevel;
 
     private BlockPos waterLevelMin = new BlockPos(5722, 0, 6782);
     private BlockPos waterLevelMax = new BlockPos(6102, 0, 7162);
+
+    private BlockPos worldBorderCenter = new BlockPos(5912, 145, 6972);
 
     private MinecraftServer server;
 
@@ -91,6 +95,8 @@ public class SurviveTheTideMinigameDefinition implements IMinigameDefinition {
     private ITextComponent winningPlayerName;
 
     private Random rand = new Random();
+
+    private final ServerBossInfo bossInfo = (ServerBossInfo)(new ServerBossInfo(new StringTextComponent("Explosive Storm"), BossInfo.Color.WHITE, BossInfo.Overlay.PROGRESS)).setDarkenSky(false);
 
     public enum MinigamePhase {
         PHASE0,
@@ -181,6 +187,10 @@ public class SurviveTheTideMinigameDefinition implements IMinigameDefinition {
 
             this.processWaterLevel(world);
 
+            if (ConfigLT.MINIGAME_SURVIVE_THE_TIDE.minigame_SurviveTheTide_worlderBorderEnabled.get()) {
+                this.tickWorldBorder(world, instance);
+            }
+
             if (phase == MinigamePhase.PHASE0) {
                 if (phaseTime == 20 * 7) {
                     this.messageAllPlayers(instance, new TranslationTextComponent(TropicraftLangKeys.SURVIVE_THE_TIDE_INTRO2).applyTextStyle(TextFormatting.GRAY));
@@ -229,6 +239,8 @@ public class SurviveTheTideMinigameDefinition implements IMinigameDefinition {
                 if (this.minigameTime % 100 == 0) {
                     this.growIcebergs(world);
                 }
+
+                ticksSincePhase4Start++;
             }
 
             minigameWeatherInstance.tick(this);
@@ -309,6 +321,10 @@ public class SurviveTheTideMinigameDefinition implements IMinigameDefinition {
         minigameWeatherInstance.reset();
         phase = MinigamePhase.PHASE0;
         phaseTime = 0;
+        ticksSincePhase4Start = 0;
+        borderCollapseMessageSent = false;
+
+        bossInfo.removeAllPlayers();
     }
 
     @Override
@@ -604,6 +620,116 @@ public class SurviveTheTideMinigameDefinition implements IMinigameDefinition {
             if (!itemstack.isEmpty() && EnchantmentHelper.hasVanishingCurse(itemstack)) {
                 inventory.removeStackFromSlot(i);
             }
+        }
+    }
+
+    private void tickWorldBorder(World world, IMinigameInstance instance) {
+
+        //DEBUG
+        /*if (phase != MinigamePhase.PHASE4) {
+            setPhase(MinigamePhase.PHASE4);
+        }*/
+
+        long ticksToStartAt = ConfigLT.MINIGAME_SURVIVE_THE_TIDE.minigame_SurviveTheTide_worldBorder_ticksAfterPhase4.get();
+        //DEBUG
+        //ticksToStartAt = 20*5;
+
+        if (phase == MinigamePhase.PHASE4 && ticksSincePhase4Start >= ticksToStartAt) {
+
+            if (!borderCollapseMessageSent) {
+                borderCollapseMessageSent = true;
+                //cant update clients right now, so hardcode message on server
+                //this.messageAllPlayers(instance, new TranslationTextComponent(TropicraftLangKeys.SURVIVE_THE_TIDE_BORDER_COLLAPSE).applyTextStyle(TextFormatting.RED));
+                this.messageAllPlayers(instance, new TranslationTextComponent("THE EXPLOSIVE STORM HAS STARTED CLOSING IN!").applyTextStyle(TextFormatting.RED));
+            }
+
+            long ticksToCollapseBorder = ConfigLT.MINIGAME_SURVIVE_THE_TIDE.minigame_SurviveTheTide_worldBorder_ticksUtilFullyShrinked.get();
+            //DEBUG
+            //ticksToCollapseBorder = 20*15;
+
+            long ticksSincePhase4StartAdj = ticksSincePhase4Start - ticksToStartAt;
+
+            boolean fullCollapse = ticksSincePhase4StartAdj > ticksToCollapseBorder;
+            float borderPercent = 0.01F;
+            if (!fullCollapse) {
+                borderPercent = 1F - ((float) (ticksSincePhase4StartAdj + 1) / (float) ticksToCollapseBorder);
+            }
+
+            //math safety
+            if (borderPercent < 0.01F) {
+                borderPercent = 0.01F;
+            }
+
+            bossInfo.setPercent(borderPercent);
+
+            float maxRadius = 210;
+            float currentRadius = maxRadius * borderPercent;
+            float amountPerCircle = 4 * currentRadius;
+            float stepAmount = 360F / amountPerCircle;
+
+            int yMin = -10;
+            int yMax = ConfigLT.MINIGAME_SURVIVE_THE_TIDE.minigame_SurviveTheTide_worldBorder_particleHeight.get();
+            int yStepAmount = 5;
+
+            int randSpawn = 30;
+            int iterateRate = ConfigLT.MINIGAME_SURVIVE_THE_TIDE.minigame_SurviveTheTide_worldBorder_particleRateDelay.get();
+
+            //particle spawning
+            if (world.getGameTime() % iterateRate == 0) {
+
+                for (float step = 0; step <= 360; step += stepAmount) {
+                    for (int yStep = yMin; yStep < yMax; yStep += yStepAmount) {
+                        if (rand.nextInt(randSpawn/*yMax - yMin*/) == 0) {
+                            float xVec = (float) -Math.sin(Math.toRadians(step)) * currentRadius;
+                            float zVec = (float) Math.cos(Math.toRadians(step)) * currentRadius;
+                            //world.addParticle(ParticleTypes.EXPLOSION, worldBorderCenter.getX() + xVec, worldBorderCenter.getY() + yStep, worldBorderCenter.getZ() + zVec, 0, 0, 0);
+                            if (world instanceof ServerWorld) {
+                                ServerWorld serverWorld = (ServerWorld) world;
+                                //IParticleData data = ForgeRegistries.PARTICLE_TYPES.getValue(new ResourceLocation("heart"));
+                                serverWorld.spawnParticle(ParticleTypes.EXPLOSION, worldBorderCenter.getX() + xVec, worldBorderCenter.getY() + yStep, worldBorderCenter.getZ() + zVec, 1, 0, 0, 0, 1D);
+                            }
+                        }
+
+                    }
+                }
+
+                if (world instanceof ServerWorld) {
+                    ServerWorld serverWorld = (ServerWorld) world;
+                    //serverWorld.spawnParticle(ParticleTypes.EXPLOSION, worldBorderCenter.getX(), worldBorderCenter.getY(), worldBorderCenter.getZ(), 1, 0, 0, 0, 1D);
+                }
+            }
+
+            //player damage
+            if (world.getGameTime() % ConfigLT.MINIGAME_SURVIVE_THE_TIDE.minigame_SurviveTheTide_worldBorder_damageRateDelay.get() == 0) {
+                for (PlayerEntity playerentity : world.getPlayers()) {
+                    if (EntityPredicates.NOT_SPECTATING.test(playerentity) && EntityPredicates.IS_LIVING_ALIVE.test(playerentity)) {
+                        //needs moar predicates
+                        if (!playerentity.isCreative()) {
+                            //ignore Y val, only do X Z dist compare
+                            double d0 = playerentity.getDistanceSq(worldBorderCenter.getX(), playerentity.posY/*worldBorderCenter.getY()*/, worldBorderCenter.getZ());
+                            if (fullCollapse || !(currentRadius < 0.0D || d0 < currentRadius * currentRadius)) {
+                                //System.out.println("hurt: " + playerentity);
+                                playerentity.attackEntityFrom(DamageSource.causeExplosionDamage((LivingEntity) null), ConfigLT.MINIGAME_SURVIVE_THE_TIDE.minigame_SurviveTheTide_worldBorder_damageAmount.get());
+                                playerentity.addPotionEffect(new EffectInstance(Effects.NAUSEA, 40, 0));
+                            } else {
+
+                            }
+                        }
+                    }
+
+                    //add boss bar info to everyone in dim if not already registered for it
+                    if (playerentity instanceof ServerPlayerEntity) {
+                        if (!bossInfo.getPlayers().contains(playerentity)) {
+                            bossInfo.addPlayer((ServerPlayerEntity) playerentity);
+                        }
+                    }
+                }
+            }
+
+            //instance.getParticipants()
+            //this.actionAllParticipants(instance, (p) -> p.addPotionEffect(new EffectInstance(Effects.SLOW_FALLING, 10 * 20)));
+
+            //world.addParticle(ParticleTypes.EXPLOSION, );
         }
     }
 }

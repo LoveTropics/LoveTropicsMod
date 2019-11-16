@@ -66,6 +66,21 @@ public class ConfigLT {
         public final IntValue acidRainDamage;
         public final IntValue acidRainDamageRate;
 
+        public final BooleanValue minigame_SurviveTheTide_worlderBorderEnabled;
+        public final IntValue minigame_SurviveTheTide_worldBorder_ticksAfterPhase4;
+        public final IntValue minigame_SurviveTheTide_worldBorder_ticksUtilFullyShrinked;
+
+        public final IntValue minigame_SurviveTheTide_worldBorder_particleRateDelay;
+        public final IntValue minigame_SurviveTheTide_worldBorder_particleHeight;
+
+        public final IntValue minigame_SurviveTheTide_worldBorder_damageRateDelay;
+        public final IntValue minigame_SurviveTheTide_worldBorder_damageAmount;
+
+        //TODO: PARTICLE RATE, PARTICLE HEIGHT? DAMAGE RATE
+        //public final IntValue minigame_SurviveTheTide_ticksUtilWorlderBorderFullyShrinked;
+
+
+
         private CategorySurviveTheTide() {
             COMMON_BUILDER.comment("Survive The Tide settings").push("survive_the_tide");
 
@@ -111,6 +126,16 @@ public class ConfigLT {
 
             acidRainDamage = COMMON_BUILDER.defineInRange("acidRainDamage", 1, 1, Integer.MAX_VALUE);
             acidRainDamageRate = COMMON_BUILDER.comment("Rate in ticks, 20 = 1 second").defineInRange("acidRainDamageRate", 60, 1, Integer.MAX_VALUE);
+
+            minigame_SurviveTheTide_worlderBorderEnabled = COMMON_BUILDER.define("minigame_SurviveTheTide_worlderBorderEnabled", true);
+
+            minigame_SurviveTheTide_worldBorder_ticksAfterPhase4 = COMMON_BUILDER.defineInRange("minigame_SurviveTheTide_ticksAfterPhase4WorldBorder", 20*60*5, 1, Integer.MAX_VALUE);
+            minigame_SurviveTheTide_worldBorder_ticksUtilFullyShrinked = COMMON_BUILDER.defineInRange("minigame_SurviveTheTide_ticksUtilWorlderBorderFullyShrinked", 20*60*5, 1, Integer.MAX_VALUE);
+
+            minigame_SurviveTheTide_worldBorder_particleRateDelay = COMMON_BUILDER.defineInRange("minigame_SurviveTheTide_worldBorder_particleRateDelay", 1, 1, Integer.MAX_VALUE);
+            minigame_SurviveTheTide_worldBorder_particleHeight = COMMON_BUILDER.defineInRange("minigame_SurviveTheTide_worldBorder_particleHeight", 110, 1, Integer.MAX_VALUE);
+            minigame_SurviveTheTide_worldBorder_damageRateDelay = COMMON_BUILDER.defineInRange("minigame_SurviveTheTide_worldBorder_damageRateDelay", 20, 1, Integer.MAX_VALUE);
+            minigame_SurviveTheTide_worldBorder_damageAmount = COMMON_BUILDER.defineInRange("minigame_SurviveTheTide_worldBorder_damageAmount", 4, 1, Integer.MAX_VALUE);
 
             COMMON_BUILDER.pop();
         }

@@ -56,4 +56,5 @@ public class TropicraftLangKeys
     public static String SURVIVE_THE_TIDE_PVP_ENABLED = Constants.MODID + ".minigame.survive_the_tide_pvp_enabled";
     public static String SURVIVE_THE_TIDE_PVP_DISABLED = Constants.MODID + ".minigame.survive_the_tide_pvp_disabled";
     public static String MINIGAME_FINISH = Constants.MODID + ".minigame.finish";
+    public static String SURVIVE_THE_TIDE_BORDER_COLLAPSE = Constants.MODID + ".minigame.border_collapse";
 }
