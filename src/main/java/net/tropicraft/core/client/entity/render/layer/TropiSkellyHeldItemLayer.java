@@ -21,4 +21,5 @@ public class TropiSkellyHeldItemLayer<T extends LivingEntity, M extends EntityMo
         super.translateToHand(handSide);
         GlStateManager.translatef(0.07F, 0, 0.0F);
     }
+
 }

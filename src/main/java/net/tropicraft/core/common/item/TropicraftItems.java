@@ -134,6 +134,7 @@ public class TropicraftItems {
     public static final RegistryObject<Item> FAILGULL_SPAWN_EGG = register("failgull_spawn_egg", Builder.spawnEgg(TropicraftEntities.FAILGULL));
     public static final RegistryObject<Item> DOLPHIN_SPAWN_EGG = register("dolphin_spawn_egg", Builder.spawnEgg(TropicraftEntities.DOLPHIN));
     public static final RegistryObject<Item> SEAHORSE_SPAWN_EGG = register("seahorse_spawn_egg", Builder.spawnEgg(TropicraftEntities.SEAHORSE));
+    public static final RegistryObject<Item> TREE_FROG_SPAWN_EGG = register("tree_frog_spawn_egg", Builder.spawnEgg(TropicraftEntities.TREE_FROG));
 
     public static final RegistryObject<Item> SUPER_SUNSCREEN = register("super_sunscreen", () -> new SuperSunscreenItem(new Item.Properties().group(Tropicraft.TROPICRAFT_ITEM_GROUP)));
     public static final RegistryObject<Item> ACID_REPELLENT_UMBRELLA = register("acid_repellent_umbrella", () -> new AcidRepellentUmbrellaItem(new Item.Properties().group(Tropicraft.TROPICRAFT_ITEM_GROUP)));

@@ -12,6 +12,7 @@ import net.minecraft.entity.EntityType;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.util.IItemProvider;
+import net.minecraft.world.biome.Biome;
 import net.minecraftforge.common.data.LanguageProvider;
 import net.minecraftforge.registries.IForgeRegistryEntry;
 import net.tropicraft.Constants;
@@ -19,6 +20,7 @@ import net.tropicraft.Tropicraft;
 import net.tropicraft.core.common.Util;
 import net.tropicraft.core.common.block.TrashType;
 import net.tropicraft.core.common.block.TropicraftBlocks;
+import net.tropicraft.core.common.dimension.biome.TropicraftBiomes;
 import net.tropicraft.core.common.drinks.Drink;
 import net.tropicraft.core.common.entity.TropicraftEntities;
 import net.tropicraft.core.common.item.TropicraftItems;
@@ -271,6 +273,7 @@ public class TropicraftLangProvider extends LanguageProvider {
         addItem(TropicraftItems.FAILGULL_SPAWN_EGG);
         addItem(TropicraftItems.DOLPHIN_SPAWN_EGG);
         addItem(TropicraftItems.SEAHORSE_SPAWN_EGG);
+        addItem(TropicraftItems.TREE_FROG_SPAWN_EGG);
         
         // ENTITIES
         
@@ -291,6 +294,19 @@ public class TropicraftLangProvider extends LanguageProvider {
         addEntityType(TropicraftEntities.FAILGULL);
         addEntityType(TropicraftEntities.DOLPHIN);
         addEntityType(TropicraftEntities.SEAHORSE);
+        addEntityType(TropicraftEntities.TREE_FROG);
+        
+        // BIOMES
+        
+        addBiome(TropicraftBiomes.TROPICS_OCEAN);
+        addBiome(TropicraftBiomes.TROPICS);
+        addBiome(TropicraftBiomes.KELP_FOREST);
+        addBiome(TropicraftBiomes.RAINFOREST_PLAINS);
+        addBiome(TropicraftBiomes.RAINFOREST_HILLS);
+        addBiome(TropicraftBiomes.RAINFOREST_MOUNTAINS);
+        addBiome(TropicraftBiomes.RAINFOREST_ISLAND_MOUNTAINS);
+        addBiome(TropicraftBiomes.TROPICS_RIVER);
+        addBiome(TropicraftBiomes.TROPICS_BEACH);
         
         // MISC
         
@@ -389,6 +405,10 @@ public class TropicraftLangProvider extends LanguageProvider {
     
     private void addEntityType(Supplier<? extends EntityType<?>> entity) {
         addEntityType(entity, getAutomaticName(entity));
+    }
+    
+    private void addBiome(Supplier<? extends Biome> biome) {
+        addBiome(biome, getAutomaticName(biome));
     }
     
     // Automatic en_ud generation
