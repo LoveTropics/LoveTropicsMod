@@ -14,6 +14,7 @@ import net.minecraft.item.ItemGroup;
 import net.minecraft.util.IItemProvider;
 import net.minecraft.world.biome.Biome;
 import net.minecraftforge.common.data.LanguageProvider;
+import net.minecraftforge.fml.RegistryObject;
 import net.minecraftforge.registries.IForgeRegistryEntry;
 import net.tropicraft.Constants;
 import net.tropicraft.Tropicraft;
@@ -21,6 +22,7 @@ import net.tropicraft.core.common.Util;
 import net.tropicraft.core.common.block.TrashType;
 import net.tropicraft.core.common.block.TropicraftBlocks;
 import net.tropicraft.core.common.dimension.biome.TropicraftBiomes;
+import net.tropicraft.core.common.dimension.biome.minigames.SurviveTheTideBiome;
 import net.tropicraft.core.common.drinks.Drink;
 import net.tropicraft.core.common.entity.TropicraftEntities;
 import net.tropicraft.core.common.item.TropicraftItems;
@@ -307,6 +309,9 @@ public class TropicraftLangProvider extends LanguageProvider {
         addBiome(TropicraftBiomes.RAINFOREST_ISLAND_MOUNTAINS);
         addBiome(TropicraftBiomes.TROPICS_RIVER);
         addBiome(TropicraftBiomes.TROPICS_BEACH);
+        
+        addBiome(TropicraftBiomes.SURVIVE_THE_TIDE);
+
         
         // MISC
         
