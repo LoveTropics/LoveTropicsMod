@@ -11,8 +11,8 @@ buildscript {
 apply plugin: 'net.minecraftforge.gradle'
 apply plugin: 'eclipse'
 
-group = 'net.tropicraft'
-archivesBaseName = 'TropicraftLT'
+group = 'net.lovetropics'
+archivesBaseName = 'LoveTropics'
 
 ext.buildnumber = 0
 project.buildnumber = System.getenv('BUILD_NUMBER') ?: 'custom'
@@ -94,7 +94,7 @@ dependencies {
 jar {
     manifest {
         attributes([
-            "Specification-Title": "tropicraftmod",
+            "Specification-Title": "lovetropicsmod",
             "Specification-Vendor": "examplemodsareus",
             "Specification-Version": "1", // We are version 1 of ourselves
             "Implementation-Title": project.name,
