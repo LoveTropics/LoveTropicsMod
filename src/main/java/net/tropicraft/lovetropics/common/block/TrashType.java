@@ -63,7 +63,7 @@ public enum TrashType implements Supplier<Block> {
 
     @Override
     public Block get() {
-        return TropicraftBlocks.TRASH.get(this).get();
+        return LoveTropicsBlocks.TRASH.get(this).get();
     }
 
     public String getEnglishName() {

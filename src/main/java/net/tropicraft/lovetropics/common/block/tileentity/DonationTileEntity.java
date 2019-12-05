@@ -5,6 +5,7 @@ import net.minecraft.tileentity.ITickableTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.tropicraft.lovetropics.common.block.LoveTropicsBlocks;
 import net.tropicraft.lovetropics.common.donations.FireworkUtil;
 import net.tropicraft.lovetropics.common.donations.TickerDonation;
 
@@ -16,7 +17,7 @@ public class DonationTileEntity extends TileEntity implements ITickableTileEntit
     private int randomOffset = 0;
     
     public DonationTileEntity() {
-        super(TropicraftTileEntityTypes.DONATION.get());
+        super(LoveTropicsBlocks.DONATION_TILE.get());
     }
     
     @Override

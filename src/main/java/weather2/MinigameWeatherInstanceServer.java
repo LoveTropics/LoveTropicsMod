@@ -13,7 +13,7 @@ import net.minecraft.world.World;
 import net.minecraft.world.gen.Heightmap;
 import net.minecraftforge.fml.network.PacketDistributor;
 import net.tropicraft.lovetropics.common.config.ConfigLT;
-import net.tropicraft.lovetropics.common.item.TropicraftItems;
+import net.tropicraft.lovetropics.common.item.MinigameItems;
 import net.tropicraft.lovetropics.common.minigames.definitions.survive_the_tide.SurviveTheTideMinigameDefinition;
 import weather2.util.WeatherUtil;
 
@@ -121,7 +121,7 @@ public class MinigameWeatherInstanceServer extends MinigameWeatherInstance {
         if (acidRainActive()) {
             if (player.world.getHeight(Heightmap.Type.MOTION_BLOCKING, player.getPosition()).getY() <= player.getPosition().getY()) {
                 if (player.world.getGameTime() % ConfigLT.MINIGAME_SURVIVE_THE_TIDE.acidRainDamageRate.get() == 0) {
-                    Item umbrella = TropicraftItems.ACID_REPELLENT_UMBRELLA.get();
+                    Item umbrella = MinigameItems.ACID_REPELLENT_UMBRELLA.get();
 
                     if (offhand.getItem() != umbrella) {
                         player.attackEntityFrom(DamageSource.GENERIC, ConfigLT.MINIGAME_SURVIVE_THE_TIDE.acidRainDamage.get());
@@ -130,7 +130,7 @@ public class MinigameWeatherInstanceServer extends MinigameWeatherInstance {
             }
         } else if (heatwaveActive()) {
             if (player.world.getHeight(Heightmap.Type.MOTION_BLOCKING, player.getPosition()).getY() <= player.getPosition().getY()) {
-                Item sunscreen = TropicraftItems.SUPER_SUNSCREEN.get();
+                Item sunscreen = MinigameItems.SUPER_SUNSCREEN.get();
 
                 if (offhand.getItem() != sunscreen) {
                     player.addPotionEffect(new EffectInstance(Effects.SLOWNESS, 5, 1, true, false, true));
