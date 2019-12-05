@@ -38,11 +38,11 @@ import net.tropicraft.Constants;
 import net.tropicraft.core.common.block.BlockTropicraftSand;
 import net.tropicraft.core.common.block.BongoDrumBlock;
 import net.tropicraft.core.common.block.TikiTorchBlock;
-import net.tropicraft.core.common.block.TikiTorchBlock.TorchSection;
 import net.tropicraft.core.common.block.TrashType;
 import net.tropicraft.core.common.block.TropicraftBlocks;
 import net.tropicraft.core.common.block.TropicraftFlower;
 import net.tropicraft.core.common.block.TropicsFlowerBlock;
+import net.tropicraft.core.common.block.TikiTorchBlock.TorchSection;
 
 public class TropicraftBlockstateProvider extends BlockStateProvider {
 

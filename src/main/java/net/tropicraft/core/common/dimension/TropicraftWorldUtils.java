@@ -32,25 +32,12 @@ public class TropicraftWorldUtils {
     
     public static final DeferredRegister<ModDimension> DIMENSIONS = new DeferredRegister<>(ForgeRegistries.MOD_DIMENSIONS, Constants.MODID);
 
-	public static DimensionType TROPICS_DIMENSION;
 	public static DimensionType SURVIVE_THE_TIDE_DIMENSION;
 
-	public static ResourceLocation TROPICS_ID = Util.resource("tropics");
 	public static ResourceLocation SURVIVE_THE_TIDE_ID = Util.resource("hunger_games");
 
-	public static final RegistryObject<ModDimension> TROPICRAFT_MOD_DIMENSION = register(
-			TROPICS_ID.getPath(), TropicraftWorldUtils::tropicsDimFactory);
 	public static final RegistryObject<ModDimension> SURVIVE_THE_TIDE_MOD_DIMENSION = register(
 			SURVIVE_THE_TIDE_ID.getPath(), TropicraftWorldUtils::surviveTheTideDimFactory);
-
-	private static ModDimension tropicsDimFactory() {
-		return new ModDimension() {
-			@Override
-			public BiFunction<World, DimensionType, ? extends Dimension> getFactory() {
-				return TropicraftDimension::new;
-			}
-		};
-	}
 
 	private static ModDimension surviveTheTideDimFactory() {
 		return new ModDimension() {
@@ -69,7 +56,6 @@ public class TropicraftWorldUtils {
 	public static class EventDimensionType {
 		@SubscribeEvent
 		public static void onModDimensionRegister(final RegisterDimensionsEvent event) {
-			postRegister(TROPICS_ID, dimensionType -> TROPICS_DIMENSION = dimensionType, () -> TROPICS_DIMENSION, TROPICRAFT_MOD_DIMENSION);
 			postRegister(SURVIVE_THE_TIDE_ID, dimensionType -> SURVIVE_THE_TIDE_DIMENSION = dimensionType, () -> SURVIVE_THE_TIDE_DIMENSION, SURVIVE_THE_TIDE_MOD_DIMENSION);
 		}
 

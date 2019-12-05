@@ -17,7 +17,7 @@ import net.minecraftforge.common.data.LanguageProvider;
 import net.minecraftforge.fml.RegistryObject;
 import net.minecraftforge.registries.IForgeRegistryEntry;
 import net.tropicraft.Constants;
-import net.tropicraft.Tropicraft;
+import net.tropicraft.LoveTropics;
 import net.tropicraft.core.common.Util;
 import net.tropicraft.core.common.block.TrashType;
 import net.tropicraft.core.common.block.TropicraftBlocks;
@@ -315,8 +315,8 @@ public class TropicraftLangProvider extends LanguageProvider {
         
         // MISC
         
-        add(Tropicraft.TROPICRAFT_ITEM_GROUP, "Tropicraft");
-        add(Tropicraft.LOVE_TROPICS_ITEM_GROUP, "Love Tropics");
+        add(LoveTropics.TROPICRAFT_ITEM_GROUP, "Tropicraft");
+        add(LoveTropics.LOVE_TROPICS_ITEM_GROUP, "Love Tropics");
 
         add(TropicraftLangKeys.COMMAND_MINIGAME_ALREADY_REGISTERED, "You've already registered for the current minigame!");
         add(TropicraftLangKeys.COMMAND_MINIGAME_NOT_REGISTERED, "Minigame with that ID has not been registered: %s");

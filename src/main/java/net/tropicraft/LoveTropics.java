@@ -94,7 +94,7 @@ import net.tropicraft.core.common.minigames.MinigameManager;
 import net.tropicraft.core.common.network.TropicraftPackets;
 
 @Mod(Constants.MODID)
-public class Tropicraft {
+public class LoveTropics {
     public static final ItemGroup TROPICRAFT_ITEM_GROUP = (new ItemGroup("tropicraft") {
         @OnlyIn(Dist.CLIENT)
         public ItemStack createIcon() {
@@ -109,7 +109,7 @@ public class Tropicraft {
         }
     });
 
-    public Tropicraft() {
+    public LoveTropics() {
         IEventBus modBus = FMLJavaModLoadingContext.get().getModEventBus();
         
         // General mod setup
