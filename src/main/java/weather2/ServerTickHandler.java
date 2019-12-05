@@ -7,7 +7,7 @@ import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.fml.network.PacketDistributor;
 import net.minecraftforge.fml.server.ServerLifecycleHooks;
-import net.tropicraft.core.common.dimension.TropicraftWorldUtils;
+import net.tropicraft.lovetropics.common.dimension.TropicraftWorldUtils;
 import weather2.config.ConfigMisc;
 import weather2.util.WeatherUtil;
 import weather2.util.WeatherUtilConfig;

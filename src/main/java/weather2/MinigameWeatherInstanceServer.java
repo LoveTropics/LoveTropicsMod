@@ -12,9 +12,9 @@ import net.minecraft.util.DamageSource;
 import net.minecraft.world.World;
 import net.minecraft.world.gen.Heightmap;
 import net.minecraftforge.fml.network.PacketDistributor;
-import net.tropicraft.core.common.config.ConfigLT;
-import net.tropicraft.core.common.item.TropicraftItems;
-import net.tropicraft.core.common.minigames.definitions.survive_the_tide.SurviveTheTideMinigameDefinition;
+import net.tropicraft.lovetropics.common.config.ConfigLT;
+import net.tropicraft.lovetropics.common.item.TropicraftItems;
+import net.tropicraft.lovetropics.common.minigames.definitions.survive_the_tide.SurviveTheTideMinigameDefinition;
 import weather2.util.WeatherUtil;
 
 public class MinigameWeatherInstanceServer extends MinigameWeatherInstance {

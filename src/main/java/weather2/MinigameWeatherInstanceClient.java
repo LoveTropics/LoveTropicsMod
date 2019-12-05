@@ -5,7 +5,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraft.world.gen.Heightmap;
-import net.tropicraft.core.common.minigames.definitions.survive_the_tide.SurviveTheTideMinigameDefinition;
+import net.tropicraft.lovetropics.common.minigames.definitions.survive_the_tide.SurviveTheTideMinigameDefinition;
 
 public class MinigameWeatherInstanceClient extends MinigameWeatherInstance {
 

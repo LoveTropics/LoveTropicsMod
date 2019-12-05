@@ -44,7 +44,7 @@ import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
-import net.tropicraft.core.common.dimension.TropicraftWorldUtils;
+import net.tropicraft.lovetropics.common.dimension.TropicraftWorldUtils;
 import weather2.ClientTickHandler;
 import weather2.SoundRegistry;
 import weather2.client.entity.particle.ParticleSandstorm;

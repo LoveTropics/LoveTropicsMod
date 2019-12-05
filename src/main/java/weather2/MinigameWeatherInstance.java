@@ -2,8 +2,9 @@ package weather2;
 
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.CompoundNBT;
-import net.tropicraft.core.common.config.ConfigLT;
-import net.tropicraft.core.common.minigames.definitions.survive_the_tide.SurviveTheTideMinigameDefinition;
+import net.tropicraft.lovetropics.common.config.ConfigLT;
+import net.tropicraft.lovetropics.common.minigames.definitions.survive_the_tide.SurviveTheTideMinigameDefinition;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
