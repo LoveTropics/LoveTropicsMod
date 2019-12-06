@@ -1,4 +1,4 @@
-package net.tropicraft.lovetropics.common.dimension.biome.minigames;
+/*package net.tropicraft.lovetropics.common.dimension.biome.minigames;
 
 import net.minecraft.entity.EntityClassification;
 import net.minecraft.util.math.BlockPos;
@@ -87,3 +87,4 @@ public class SurviveTheTideBiome extends TropicraftBiome {
         return 0x498551;//ConfigLT.BIOMES.surviveTheTideGrassColor.get();
     }
 }
+*/
