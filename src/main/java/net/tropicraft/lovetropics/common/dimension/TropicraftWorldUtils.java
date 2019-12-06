@@ -49,10 +49,10 @@ public class TropicraftWorldUtils {
 	}
 	
 	private static RegistryObject<ModDimension> register(final String name, final Supplier<ModDimension> sup) {
-	    return DIMENSIONS.register(name, sup);
+	    return null;//DIMENSIONS.register(name, sup);
 	}
 
-	@Mod.EventBusSubscriber(modid = Constants.MODID)
+//	@Mod.EventBusSubscriber(modid = Constants.MODID)
 	public static class EventDimensionType {
 		@SubscribeEvent
 		public static void onModDimensionRegister(final RegisterDimensionsEvent event) {

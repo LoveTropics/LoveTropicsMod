@@ -1,6 +1,7 @@
 package net.tropicraft.lovetropics.common.minigames.definitions;
 
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.Commands;
 import net.minecraft.entity.player.ServerPlayerEntity;
@@ -10,9 +11,9 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.GameType;
 import net.minecraft.world.World;
 import net.minecraft.world.dimension.DimensionType;
+import net.minecraftforge.registries.ObjectHolder;
 import net.tropicraft.lovetropics.client.data.TropicraftLangKeys;
 import net.tropicraft.lovetropics.common.Util;
-import net.tropicraft.lovetropics.common.dimension.TropicraftWorldUtils;
 import net.tropicraft.lovetropics.common.minigames.IMinigameDefinition;
 import net.tropicraft.lovetropics.common.minigames.IMinigameInstance;
 import net.tropicraft.lovetropics.common.minigames.MinigameManager;
@@ -21,6 +22,9 @@ import net.tropicraft.lovetropics.common.minigames.MinigameManager;
  * Definition implementation for Signature Run minigame.
  */
 public class UnderwaterTrashHuntMinigameDefinition implements IMinigameDefinition {
+    
+    private DimensionType tropicsDim;
+    
     private ResourceLocation id = Util.resource("underwater_trash_hunt");
     private String displayName = TropicraftLangKeys.MINIGAME_UNDERWATER_TRASH_HUNT;
 
@@ -68,7 +72,14 @@ public class UnderwaterTrashHuntMinigameDefinition implements IMinigameDefinitio
 
     @Override
     public DimensionType getDimension() {
-        return TropicraftWorldUtils.TROPICS_DIMENSION;
+        DimensionType ret = tropicsDim;
+        if (ret == null) {
+            tropicsDim = ret = DimensionType.byName(new ResourceLocation("tropicraft", "tropics"));
+            if (ret == null) {
+                throw new IllegalStateException("Could not find tropics dimension");
+            }
+        }
+        return ret;
     }
 
     @Override

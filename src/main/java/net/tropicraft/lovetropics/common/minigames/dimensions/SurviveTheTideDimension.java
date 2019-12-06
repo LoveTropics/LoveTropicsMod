@@ -1,5 +1,8 @@
 package net.tropicraft.lovetropics.common.minigames.dimensions;
 
+import javax.annotation.Nullable;
+
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.MathHelper;
@@ -12,16 +15,18 @@ import net.minecraft.world.dimension.Dimension;
 import net.minecraft.world.dimension.DimensionType;
 import net.minecraft.world.gen.ChunkGenerator;
 import net.minecraft.world.gen.ChunkGeneratorType;
+import net.minecraft.world.gen.GenerationSettings;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.fml.RegistryObject;
+import net.minecraftforge.registries.ForgeRegistries;
 import net.tropicraft.lovetropics.common.config.ConfigLT;
-import net.tropicraft.lovetropics.common.dimension.biome.*;
-import net.tropicraft.lovetropics.common.dimension.chunk.TropicraftChunkGeneratorTypes;
-import net.tropicraft.lovetropics.common.dimension.config.TropicraftGeneratorSettings;
-
-import javax.annotation.Nullable;
+import net.tropicraft.lovetropics.common.dimension.biome.TropicraftBiomes;
 
 public class SurviveTheTideDimension extends Dimension {
+    
+    private static final RegistryObject<ChunkGeneratorType<?, ?>> TROPICS = RegistryObject.of(new ResourceLocation("tropicraft", "tropicraft_chunk_generator_type"), ForgeRegistries.CHUNK_GENERATOR_TYPES);
+    
     public SurviveTheTideDimension(final World worldIn, final DimensionType typeIn) {
         super(worldIn, typeIn);
     }
@@ -29,10 +34,14 @@ public class SurviveTheTideDimension extends Dimension {
     @Override
     public ChunkGenerator<?> createChunkGenerator() {
         BiomeProviderType<SingleBiomeProviderSettings, SingleBiomeProvider> biomeType = BiomeProviderType.FIXED;
-        ChunkGeneratorType chunkType = TropicraftChunkGeneratorTypes.TROPICS.get();
-        TropicraftGeneratorSettings genSettings = (TropicraftGeneratorSettings) chunkType.createSettings();
-        SingleBiomeProviderSettings settings2 = biomeType.createSettings().setBiome(TropicraftBiomes.SURVIVE_THE_TIDE.get());
-        return chunkType.create(this.world, biomeType.create(settings2), genSettings);
+        return create(TROPICS.orElse(ChunkGeneratorType.FLAT), biomeType);
+    }
+    
+    private <GS extends GenerationSettings, BS extends SingleBiomeProviderSettings> ChunkGenerator<?> create(ChunkGeneratorType<GS, ?> type, BiomeProviderType<BS, ?> biomeType) {
+        GS genSettings = type.createSettings();
+        @SuppressWarnings("unchecked")
+        BS settings2 = (BS) biomeType.createSettings().setBiome(TropicraftBiomes.SURVIVE_THE_TIDE.get());
+        return type.create(this.world, biomeType.create(settings2), genSettings);
     }
 
     /** Copied from OverworldDimension */

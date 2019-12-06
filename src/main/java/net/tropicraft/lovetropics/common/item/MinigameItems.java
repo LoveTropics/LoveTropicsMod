@@ -4,13 +4,12 @@ import com.tterrag.registrate.Registrate;
 
 import net.minecraftforge.fml.RegistryObject;
 import net.tropicraft.lovetropics.LoveTropics;
-import net.tropicraft.lovetropics.common.block.LoveTropicsBlocks;
 import net.tropicraft.lovetropics.common.item.minigame.AcidRepellentUmbrellaItem;
 import net.tropicraft.lovetropics.common.item.minigame.SuperSunscreenItem;
 
 public class MinigameItems {
     
-    private static final Registrate REGISTRATE = LoveTropicsBlocks.REGISTRATE;
+    private static final Registrate REGISTRATE = LoveTropics.registrate();
  
     public static final RegistryObject<SuperSunscreenItem> SUPER_SUNSCREEN = REGISTRATE.item("super_sunscreen", SuperSunscreenItem::new)
             .properties(p -> p.group(LoveTropics.LOVE_TROPICS_ITEM_GROUP))

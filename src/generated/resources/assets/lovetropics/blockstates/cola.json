@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "lovetropics:block/cola"
+    },
+    "facing=south": {
+      "model": "lovetropics:block/cola",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "lovetropics:block/cola",
+      "y": 270
+    },
+    "facing=east": {
+      "model": "lovetropics:block/cola",
+      "y": 90
+    }
+  }
+}
