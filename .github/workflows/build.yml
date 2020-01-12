@@ -22,7 +22,6 @@ jobs:
       run: ./gradlew build
     - name: Prepare jarfile
       run: |
-        rm ./build/libs/*/*sources*.jar
         mv ./build/libs/*/*.jar ./LoveTropics-${GITHUB_SHA:0:8}.jar
     - name: Upload jarfile
       uses: actions/upload-artifact@v1
@@ -48,7 +47,6 @@ jobs:
       run: ./gradlew build
     - name: Prepare jarfile
       run: |
-        rm ./build/libs/*/*sources*.jar
         mv ./build/libs/*/*.jar ./LoveTropics-${GITHUB_SHA:0:8}.jar
     - name: Upload jarfile
       uses: actions/upload-artifact@v1
