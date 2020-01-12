@@ -43,7 +43,7 @@ jobs:
         sed -i "/mod_version/s/\$/+${GITHUB_SHA:0:8}/" gradle.properties
         cat gradle.properties
     - name: Set up OpenJDK 1.8
-      run: sudo apt-get -y update && apt-get -y install openjdk-8-jdk openjdk-8-jre-headless
+      run: sudo apt-get -y update && sudo apt-get -y install openjdk-8-jdk openjdk-8-jre-headless
     - name: Build with Gradle
       run: ./gradlew build
     - name: Prepare jarfile
