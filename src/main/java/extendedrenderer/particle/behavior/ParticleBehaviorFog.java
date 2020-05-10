@@ -1,8 +1,8 @@
 package extendedrenderer.particle.behavior;
 
 import CoroUtil.config.ConfigCoroUtil;
-import CoroUtil.util.Vec3;
 import extendedrenderer.particle.entity.EntityRotFX;
+import net.minecraft.util.math.Vec3d;
 
 public class ParticleBehaviorFog extends ParticleBehaviors {
 
@@ -15,7 +15,7 @@ public class ParticleBehaviorFog extends ParticleBehaviors {
 	//TODO: temp, for comparing until done
 	//public static boolean newCloudWay = false;
 	
-	public ParticleBehaviorFog(Vec3 source) {
+	public ParticleBehaviorFog(Vec3d source) {
 		super(source);
 	}
 	

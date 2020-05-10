@@ -1,8 +1,9 @@
 package extendedrenderer.shader;
 
-import javax.vecmath.Matrix4f;
 import java.io.InputStream;
 import java.util.Scanner;
+
+import net.minecraft.client.renderer.Matrix4f;
 
 public class Utils {
 

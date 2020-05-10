@@ -1,10 +1,9 @@
 package extendedrenderer.particle.behavior;
 
-import net.minecraft.block.BlockState;
+import extendedrenderer.particle.entity.EntityRotFX;
 import net.minecraft.block.BlockState;
 import net.minecraft.util.math.BlockPos;
-import CoroUtil.util.Vec3;
-import extendedrenderer.particle.entity.EntityRotFX;
+import net.minecraft.util.math.Vec3d;
 
 public class ParticleBehaviorFogGround extends ParticleBehaviors {
 
@@ -12,7 +11,7 @@ public class ParticleBehaviorFogGround extends ParticleBehaviors {
 	public int curTick = 0;
 	public int ticksMax = 1;
 	
-	public ParticleBehaviorFogGround(Vec3 source) {
+	public ParticleBehaviorFogGround(Vec3d source) {
 		super(source);
 	}
 	

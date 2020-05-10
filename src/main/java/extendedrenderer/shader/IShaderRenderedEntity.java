@@ -1,9 +1,7 @@
 package extendedrenderer.shader;
 
 
-import extendedrenderer.placeholders.Quaternion;
-
-import javax.vecmath.Vector3f;
+import net.minecraft.client.renderer.Vector3f;
 
 public interface IShaderRenderedEntity {
 

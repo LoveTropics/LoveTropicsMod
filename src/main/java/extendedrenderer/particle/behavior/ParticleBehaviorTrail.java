@@ -2,12 +2,12 @@ package extendedrenderer.particle.behavior;
 
 import java.util.Random;
 
-import CoroUtil.util.Vec3;
 import extendedrenderer.particle.entity.EntityRotFX;
+import net.minecraft.util.math.Vec3d;
 
 public class ParticleBehaviorTrail extends ParticleBehaviors {
 
-	public ParticleBehaviorTrail(Vec3 source) {
+	public ParticleBehaviorTrail(Vec3d source) {
 		super(source);
 	}
 
@@ -46,14 +46,14 @@ public class ParticleBehaviorTrail extends ParticleBehaviors {
 		if (!particle.isAlive()) {
 			particles.remove(particle);
 		} else {
-			double centerX = coordSource.xCoord + 0.0D;
-			double centerY = coordSource.yCoord + 0.0D;
-			double centerZ = coordSource.zCoord + 0.0D;
+			double centerX = coordSource.x + 0.0D;
+			double centerY = coordSource.y + 0.0D;
+			double centerZ = coordSource.z + 0.0D;
 			
 			double vecX = centerX - particle.getPosX();
 			double vecY = centerY - particle.getPosY();
 			double vecZ = centerZ - particle.getPosZ();
-			Vec3 vec = new Vec3(vecX, vecY, vecZ);
+			Vec3d vec = new Vec3d(vecX, vecY, vecZ);
 			
 			double radius = 1.6D;
 			double amp = 0.005D * Math.max(1, (vec.length() * 0.01D))/* / (particle.getAge())*/;
@@ -61,7 +61,7 @@ public class ParticleBehaviorTrail extends ParticleBehaviors {
 			double rotSpeed = (particle.getAge()) * amp;
 			
 			
-			Vec3 vec2 = new Vec3(vecX, vecY, vecZ);
+			Vec3d vec2 = new Vec3d(vecX, vecY, vecZ);
 			vec = vec.normalize();
 			vec2 = vec2.normalize();
 			
@@ -69,7 +69,7 @@ public class ParticleBehaviorTrail extends ParticleBehaviors {
 			vec.yCoord *= amp;
 			vec.zCoord *= amp;*/
 			
-			vec = new Vec3(vec.xCoord * amp, vec.yCoord * amp, vec.zCoord * amp);
+			vec = new Vec3d(vec.x * amp, vec.y * amp, vec.z * amp);
 			
 			//vec.rotateAroundY((float) (Math.toRadians(10/*rotSpeed * amp*/)));
 			//vec.rotateAroundZ((float) (Math.toRadians(10/*rotSpeed * amp*/)));

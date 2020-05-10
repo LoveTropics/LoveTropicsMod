@@ -2,6 +2,8 @@ package CoroUtil.util;
 
 import java.util.List;
 
+import net.minecraft.util.math.Vec3d;
+
 /**
  * Full of repurposed stack overflow examples
  * 
@@ -17,15 +19,15 @@ public class CoroUtilPhysics {
      * @return true if the point is inside the boundary, false otherwise
      *
      */
-    public static boolean isInConvexShape(Vec3 test, List<Vec3> field_75884_a) {
+    public static boolean isInConvexShape(Vec3d test, List<Vec3d> field_75884_a) {
     	int i;
     	int j;
     	boolean result = false;
     	for (i = 0, j = field_75884_a.size() - 1; i < field_75884_a.size(); j = i++) {
-    		Vec3 vecI = field_75884_a.get(i);
-    		Vec3 vecJ = field_75884_a.get(j);
-    		if ((vecI.zCoord > test.zCoord) != (vecJ.zCoord > test.zCoord) &&
-    				(test.xCoord < (vecJ.xCoord - vecI.xCoord) * (test.zCoord - vecI.zCoord) / (vecJ.zCoord-vecI.zCoord) + vecI.xCoord)) {
+    		Vec3d vecI = field_75884_a.get(i);
+    		Vec3d vecJ = field_75884_a.get(j);
+    		if ((vecI.z > test.z) != (vecJ.z > test.z) &&
+    				(test.x < (vecJ.x - vecI.x) * (test.z - vecI.z) / (vecJ.z-vecI.z) + vecI.x)) {
     			result = !result;
     		}
     	}
@@ -40,16 +42,16 @@ public class CoroUtilPhysics {
      * @param field_75884_a
      * @return
      */
-    public static double getDistanceToShape(Vec3 point, List<Vec3> field_75884_a) {
+    public static double getDistanceToShape(Vec3d point, List<Vec3d> field_75884_a) {
     	float closestDist1 = 9999;
     	float closestDist2 = 9999;
     	
-    	Vec3 closestPoint1 = null;
-    	Vec3 closestPoint2 = null;
+    	Vec3d closestPoint1 = null;
+    	Vec3d closestPoint2 = null;
     	
     	//loop twice to account for edge case where field_75884_a are ordered in increasing order of closeness, causing second closest clause to never trigger
     	for (int i = 0; i < 2; i++) {
-	    	for (Vec3 pointTest : field_75884_a) {
+	    	for (Vec3d pointTest : field_75884_a) {
 	    		double dist = pointTest.distanceTo(point);
 	    		
 	    		if (dist < closestDist1) {
@@ -67,7 +69,7 @@ public class CoroUtilPhysics {
     		return -1;
     	}
     	
-    	return distBetweenPointAndLine(point.xCoord, point.zCoord, closestPoint1.xCoord, closestPoint1.zCoord, closestPoint2.xCoord, closestPoint2.zCoord);
+    	return distBetweenPointAndLine(point.x, point.z, closestPoint1.x, closestPoint1.z, closestPoint2.x, closestPoint2.z);
     }
     
     /**

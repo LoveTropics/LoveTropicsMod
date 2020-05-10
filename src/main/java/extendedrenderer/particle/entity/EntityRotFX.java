@@ -1,16 +1,17 @@
 package extendedrenderer.particle.entity;
 
+import java.util.stream.Stream;
+
+import com.mojang.blaze3d.vertex.IVertexBuilder;
+
 import CoroUtil.api.weather.IWindHandler;
-import CoroUtil.util.Vec3;
 import extendedrenderer.particle.behavior.ParticleBehaviors;
-import extendedrenderer.placeholders.Quaternion;
-import extendedrenderer.placeholders.Vector4f;
 import extendedrenderer.shader.IShaderRenderedEntity;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.IParticleRenderType;
 import net.minecraft.client.particle.SpriteTexturedParticle;
 import net.minecraft.client.renderer.ActiveRenderInfo;
-import net.minecraft.client.renderer.BufferBuilder;
+import net.minecraft.client.renderer.Vector3f;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.ReuseableStream;
@@ -22,9 +23,6 @@ import net.minecraft.world.World;
 import net.minecraft.world.gen.Heightmap;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-
-import javax.vecmath.Vector3f;
-import java.util.stream.Stream;
 
 @OnlyIn(Dist.CLIENT)
 public class EntityRotFX extends SpriteTexturedParticle implements IWindHandler, IShaderRenderedEntity
@@ -250,7 +248,7 @@ public class EntityRotFX extends SpriteTexturedParticle implements IWindHandler,
 
             //case: when on high pillar and rain is falling far below you, start killing it / fading it out
             if (killWhenUnderCameraAtLeast != 0) {
-                if (this.posY < ent.posY - killWhenUnderCameraAtLeast) {
+                if (this.posY < ent.getPosY() - killWhenUnderCameraAtLeast) {
                     startDeath();
                 }
             }
@@ -418,8 +416,8 @@ public class EntityRotFX extends SpriteTexturedParticle implements IWindHandler,
     	return particleScale;
     }
 
-    public Vec3 getPos() {
-        return new Vec3(posX, posY, posZ);
+    public Vec3d getPos() {
+        return new Vec3d(posX, posY, posZ);
     }
 
 	public double getPosX() {
@@ -521,11 +519,9 @@ public class EntityRotFX extends SpriteTexturedParticle implements IWindHandler,
         double d2 = this.posZ - z;
         return (double)MathHelper.sqrt(d0 * d0 + d1 * d1 + d2 * d2);
     }
-
+	
 	@Override
-	public void renderParticle(BufferBuilder worldRendererIn, ActiveRenderInfo entityIn,
-			float partialTicks, float rotationX, float rotationZ,
-			float rotationYZ, float rotationXY, float rotationXZ) {
+	public void renderParticle(IVertexBuilder buffer, ActiveRenderInfo renderInfo, float partialTicks) {
 		
 		//override rotations
 		if (!facePlayer) {
@@ -642,7 +638,7 @@ public class EntityRotFX extends SpriteTexturedParticle implements IWindHandler,
         double yy = y;
         double zz = z;
         if (this.canCollide && (x != 0.0D || y != 0.0D || z != 0.0D)) {
-            Vec3d vec3d = Entity.func_223307_a((Entity)null, new Vec3d(x, y, z), this.getBoundingBox(), this.world, ISelectionContext.dummy(), new ReuseableStream<>(Stream.empty()));
+            Vec3d vec3d = Entity.collideBoundingBoxHeuristically((Entity)null, new Vec3d(x, y, z), this.getBoundingBox(), this.world, ISelectionContext.dummy(), new ReuseableStream<>(Stream.empty()));
             x = vec3d.x;
             y = vec3d.y;
             z = vec3d.z;

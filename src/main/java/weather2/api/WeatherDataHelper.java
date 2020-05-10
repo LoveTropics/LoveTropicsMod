@@ -1,6 +1,5 @@
 package weather2.api;
 
-import CoroUtil.util.Vec3;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.api.distmarker.Dist;

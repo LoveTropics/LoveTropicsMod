@@ -1,9 +1,9 @@
 package extendedrenderer.particle.behavior;
 
+import extendedrenderer.particle.entity.EntityRotFX;
 import net.minecraft.block.BlockState;
 import net.minecraft.util.math.BlockPos;
-import CoroUtil.util.Vec3;
-import extendedrenderer.particle.entity.EntityRotFX;
+import net.minecraft.util.math.Vec3d;
 
 public class ParticleBehaviorSandstorm extends ParticleBehaviors {
 
@@ -11,7 +11,7 @@ public class ParticleBehaviorSandstorm extends ParticleBehaviors {
 	public int curTick = 0;
 	public int ticksMax = 1;
 	
-	public ParticleBehaviorSandstorm(Vec3 source) {
+	public ParticleBehaviorSandstorm(Vec3d source) {
 		super(source);
 	}
 	

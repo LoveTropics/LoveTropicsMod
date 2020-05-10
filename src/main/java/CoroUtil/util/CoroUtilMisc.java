@@ -1,30 +1,31 @@
 package CoroUtil.util;
 
+import java.util.Collection;
+
 import com.google.common.collect.Lists;
+
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.attributes.AttributeModifier;
 import net.minecraft.entity.ai.attributes.IAttributeInstance;
 import net.minecraft.util.math.MathHelper;
 
-import java.util.Collection;
-
 public class CoroUtilMisc {
 
 	public static void faceEntity(Entity entToRotate, Entity par1Entity, float par2, float par3)
     {
-        double d0 = par1Entity.posX - entToRotate.posX;
-        double d1 = par1Entity.posZ - entToRotate.posZ;
+        double d0 = par1Entity.getPosX() - entToRotate.getPosX();
+        double d1 = par1Entity.getPosZ() - entToRotate.getPosZ();
         double d2;
 
         if (par1Entity instanceof LivingEntity)
         {
         	LivingEntity entityliving = (LivingEntity)par1Entity;
-            d2 = entityliving.posY + (double)entityliving.getEyeHeight() - (entToRotate.posY + (double)entToRotate.getEyeHeight());
+            d2 = entityliving.getPosY() + (double)entityliving.getEyeHeight() - (entToRotate.getPosY() + (double)entToRotate.getEyeHeight());
         }
         else
         {
-            d2 = (par1Entity.getBoundingBox().minY + par1Entity.getBoundingBox().maxY) / 2.0D - (entToRotate.posY + (double)entToRotate.getEyeHeight());
+            d2 = (par1Entity.getBoundingBox().minY + par1Entity.getBoundingBox().maxY) / 2.0D - (entToRotate.getPosY() + (double)entToRotate.getEyeHeight());
         }
 
         double d3 = (double)MathHelper.sqrt(d0 * d0 + d1 * d1);
@@ -73,14 +74,6 @@ public class CoroUtilMisc {
 		
 		return bb;
 	}*/
-	
-	public static BlockCoord vecToChunkCoords(Vec3 parVec) {
-		return new BlockCoord(MathHelper.floor(parVec.xCoord), MathHelper.floor(parVec.yCoord), MathHelper.floor(parVec.zCoord));
-	}
-	
-	public static BlockCoord addCoords(BlockCoord coords1, BlockCoord coords2) {
-		return new BlockCoord(coords1.posX+coords2.posX, coords1.posY+coords2.posY, coords1.posZ+coords2.posZ);
-	}
 
     public static float adjVal(float source, float target, float adj) {
         if (source < target) {
@@ -147,7 +140,7 @@ public class CoroUtilMisc {
 
     //because the vanilla method is flagged client only
     public static void removeAllModifiers(IAttributeInstance attributeInstance) {
-        Collection<AttributeModifier> collection = attributeInstance.getModifiers();
+        Collection<AttributeModifier> collection = attributeInstance.func_225505_c_();
 
         if (collection != null)
         {

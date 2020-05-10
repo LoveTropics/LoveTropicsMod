@@ -2,15 +2,15 @@ package weather2.weathersystem.wind;
 
 import java.util.Random;
 
+import CoroUtil.util.CoroUtilEntOrParticle;
+import CoroUtil.util.Vec3;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import net.tropicraft.lovetropics.common.config.ConfigLT;
-import net.tropicraft.lovetropics.common.minigames.MinigameManager;
-import net.tropicraft.lovetropics.common.minigames.definitions.survive_the_tide.SurviveTheTideMinigameDefinition;
 import weather2.Weather;
 import weather2.config.ConfigLTOverrides;
 import weather2.config.ConfigMisc;
@@ -20,8 +20,6 @@ import weather2.util.WeatherUtilEntity;
 import weather2.weathersystem.WeatherManagerBase;
 import weather2.weathersystem.WeatherManagerServer;
 import weather2.weathersystem.storm.StormObject;
-import CoroUtil.util.CoroUtilEntOrParticle;
-import CoroUtil.util.Vec3;
 
 public class WindManager {
 
@@ -122,7 +120,7 @@ public class WindManager {
 	 * 
 	 * @return
 	 */
-	public float getWindAngleForPriority(Vec3 pos) {
+	public float getWindAngleForPriority(Vec3d pos) {
 		//gets event wind, or if none, global, etc
 		if (windTimeEvent > 0) {
 			return getWindAngleForEvents(pos);
@@ -142,10 +140,10 @@ public class WindManager {
 		return windAngleEvent;
 	}
 
-	public float getWindAngleForEvents(Vec3 pos) {
+	public float getWindAngleForEvents(Vec3d pos) {
 		if (pos != null && !windOriginEvent.equals(BlockPos.ZERO)) {
-			double var11 = windOriginEvent.getX() + 0.5D - pos.xCoord;
-			double var15 = windOriginEvent.getZ() + 0.5D - pos.zCoord;
+			double var11 = windOriginEvent.getX() + 0.5D - pos.x;
+			double var15 = windOriginEvent.getZ() + 0.5D - pos.z;
 			return (-((float)Math.atan2(var11, var15)) * 180.0F / (float)Math.PI) - 45;
 		} else {
 			return windAngleEvent;
@@ -396,7 +394,7 @@ public class WindManager {
 		//event data
 		if (entP != null) {
 	        if (manager.getWorld().getGameTime() % 10 == 0) {
-	        	StormObject so = manager.getClosestStorm(new Vec3(entP.posX, StormObject.layers.get(0), entP.posZ), 256, StormObject.STATE_HIGHWIND);
+	        	StormObject so = manager.getClosestStorm(new Vec3d(entP.posX, StormObject.layers.get(0), entP.posZ), 256, StormObject.STATE_HIGHWIND);
 
 	        	if (so != null) {
 

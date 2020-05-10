@@ -1,5 +1,7 @@
 package extendedrenderer.particle.entity;
 
+import com.mojang.blaze3d.vertex.IVertexBuilder;
+
 import CoroUtil.util.CoroUtilParticle;
 import extendedrenderer.placeholders.Quaternion;
 import extendedrenderer.placeholders.Vector4f;
@@ -75,10 +77,7 @@ public class ParticleTexExtraRender extends ParticleTexFX {
 	}
 
 	@Override
-	public void renderParticle(BufferBuilder worldRendererIn, ActiveRenderInfo entityIn,
-			float partialTicks, float rotationX, float rotationZ,
-			float rotationYZ, float rotationXY, float rotationXZ) {
-
+	public void renderParticle(IVertexBuilder buffer, ActiveRenderInfo renderInfo, float partialTicks) {
 		//override rotations
 		if (!facePlayer) {
 			rotationX = MathHelper.cos(this.rotationYaw * (float)Math.PI / 180.0F);

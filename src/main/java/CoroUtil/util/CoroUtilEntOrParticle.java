@@ -9,7 +9,7 @@ public class CoroUtilEntOrParticle {
 	
 	public static double getPosX(Object obj) {
 		if (obj instanceof Entity) {
-			return ((Entity)obj).posX;
+			return ((Entity)obj).getPosX();
 		} else {
 			return getPosXParticle(obj);
 		}
@@ -21,7 +21,7 @@ public class CoroUtilEntOrParticle {
 	
 	public static double getPosY(Object obj) {
 		if (obj instanceof Entity) {
-			return ((Entity)obj).posY;
+			return ((Entity)obj).getPosY();
 		} else {
 			return getPosYParticle(obj);
 		}
@@ -33,7 +33,7 @@ public class CoroUtilEntOrParticle {
 	
 	public static double getPosZ(Object obj) {
 		if (obj instanceof Entity) {
-			return ((Entity)obj).posZ;
+			return ((Entity)obj).getPosZ();
 		} else {
 			return getPosZParticle(obj);
 		}
@@ -137,7 +137,8 @@ public class CoroUtilEntOrParticle {
 
 	public static void setPosX(Object obj, double val) {
 		if (obj instanceof Entity) {
-			((Entity)obj).posX = val;
+			Entity e = (Entity) obj;
+			e.setPosition(val, e.getPosY(), e.getPosZ());
 		} else {
 			setPosXParticle(obj, val);
 		}
@@ -149,7 +150,8 @@ public class CoroUtilEntOrParticle {
 
 	public static void setPosY(Object obj, double val) {
 		if (obj instanceof Entity) {
-			((Entity)obj).posY = val;
+			Entity e = (Entity) obj;
+			e.setPosition(e.getPosX(), val, e.getPosZ());
 		} else {
 			setPosYParticle(obj, val);
 		}
@@ -161,7 +163,8 @@ public class CoroUtilEntOrParticle {
 
 	public static void setPosZ(Object obj, double val) {
 		if (obj instanceof Entity) {
-			((Entity)obj).posZ = val;
+			Entity e = (Entity) obj;
+			e.setPosition(e.getPosX(), e.getPosY(), val);
 		} else {
 			setPosZParticle(obj, val);
 		}

@@ -34,24 +34,24 @@ public class SurviveTheTideBiome extends Biome {
                 .parent(null).waterColor(WATER_COLOR).waterFogColor(WATER_FOG_COLOR)
         );
 
-        this.addStructure(Feature.MINESHAFT, new MineshaftConfig(0.004D, MineshaftStructure.Type.NORMAL));
-        this.addStructure(Feature.SHIPWRECK, new ShipwreckConfig(false));
-        this.addStructure(Feature.OCEAN_RUIN, new OceanRuinConfig(net.minecraft.world.gen.feature.structure.OceanRuinStructure.Type.COLD, 0.3F, 0.9F));
+        this.addStructure(Feature.MINESHAFT.withConfiguration(new MineshaftConfig(0.004D, MineshaftStructure.Type.NORMAL)));
+        this.addStructure(Feature.SHIPWRECK.withConfiguration(new ShipwreckConfig(false)));
+        this.addStructure(Feature.OCEAN_RUIN.withConfiguration(new OceanRuinConfig(net.minecraft.world.gen.feature.structure.OceanRuinStructure.Type.COLD, 0.3F, 0.9F)));
         DefaultBiomeFeatures.addOceanCarvers(this);
         DefaultBiomeFeatures.addStructures(this);
         DefaultBiomeFeatures.addLakes(this);
         DefaultBiomeFeatures.addStoneVariants(this);
         DefaultBiomeFeatures.addOres(this);
         DefaultBiomeFeatures.addSedimentDisks(this);
-        DefaultBiomeFeatures.func_222296_u(this);
+        DefaultBiomeFeatures.addScatteredOakTrees(this);
         DefaultBiomeFeatures.addDefaultFlowers(this);
-        DefaultBiomeFeatures.func_222348_W(this);
+        DefaultBiomeFeatures.addSparseGrass(this);
         DefaultBiomeFeatures.addMushrooms(this);
         DefaultBiomeFeatures.addReedsAndPumpkins(this);
         DefaultBiomeFeatures.addSprings(this);
-        this.addFeature(GenerationStage.Decoration.VEGETAL_DECORATION, createDecoratedFeature(Feature.SEAGRASS, new SeaGrassConfig(48, 0.3D), Placement.TOP_SOLID_HEIGHTMAP, IPlacementConfig.NO_PLACEMENT_CONFIG));
-        DefaultBiomeFeatures.func_222320_ai(this);
-        DefaultBiomeFeatures.func_222287_ah(this);
+        this.addFeature(GenerationStage.Decoration.VEGETAL_DECORATION, Feature.SEAGRASS.withConfiguration(new SeaGrassConfig(48, 0.3D)).withPlacement(Placement.TOP_SOLID_HEIGHTMAP.configure(IPlacementConfig.NO_PLACEMENT_CONFIG)));
+        DefaultBiomeFeatures.addSeagrass(this);
+        DefaultBiomeFeatures.addExtraKelp(this);
         DefaultBiomeFeatures.addFreezeTopLayer(this);
         this.addSpawn(EntityClassification.WATER_CREATURE, new SpawnListEntry(EntityType.SQUID, 1, 1, 4));
         this.addSpawn(EntityClassification.WATER_CREATURE, new SpawnListEntry(EntityType.COD, 10, 3, 6));

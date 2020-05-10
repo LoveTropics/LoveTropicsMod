@@ -4,20 +4,20 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import extendedrenderer.particle.entity.EntityRotFX;
+import extendedrenderer.particle.entity.ParticleTexFX;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.entity.Entity;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import CoroUtil.util.Vec3;
-import extendedrenderer.particle.entity.EntityRotFX;
-import extendedrenderer.particle.entity.ParticleTexFX;
 
 @OnlyIn(Dist.CLIENT)
 public class ParticleBehaviors {
 
 	public List<EntityRotFX> particles = new ArrayList<EntityRotFX>();
-	public Vec3 coordSource;
+	public Vec3d coordSource;
 	public Entity sourceEntity = null;
 	public Random rand = new Random();
 	
@@ -29,7 +29,7 @@ public class ParticleBehaviors {
 	public float rateScale = 0.1F;
 	public int tickSmokifyTrigger = 40;
 	
-	public ParticleBehaviors(Vec3 source) {
+	public ParticleBehaviors(Vec3d source) {
 		coordSource = source;
 	}
 	
@@ -48,7 +48,7 @@ public class ParticleBehaviors {
 	public void tickUpdate(EntityRotFX particle) {
 		
 		if (sourceEntity != null) {
-			coordSource = new Vec3(sourceEntity.posX, sourceEntity.posY, sourceEntity.posZ);
+			coordSource = sourceEntity.getPositionVec();
 		}
 		
 		tickUpdateAct(particle);
@@ -63,9 +63,9 @@ public class ParticleBehaviors {
 		double centerZ = particle.getPosZ();
 		
 		if (coordSource != null) {
-			centerX = coordSource.xCoord/* + 0.5D*/;
+			centerX = coordSource.x/* + 0.5D*/;
 			//centerY = coordSource.yCoord/* + 0.5D*/;
-			centerZ = coordSource.zCoord/* + 0.5D*/;
+			centerZ = coordSource.z/* + 0.5D*/;
 		}
 		
 		double vecX = centerX - particle.getPosX();

@@ -1,7 +1,7 @@
 package extendedrenderer.particle.behavior;
 
-import CoroUtil.util.Vec3;
 import extendedrenderer.particle.entity.EntityRotFX;
+import net.minecraft.util.math.Vec3d;
 
 public class ParticleBehaviorCharge extends ParticleBehaviors {
 
@@ -9,7 +9,7 @@ public class ParticleBehaviorCharge extends ParticleBehaviors {
 	public int curTick = 0;
 	public int ticksMax = 1;
 	
-	public ParticleBehaviorCharge(Vec3 source) {
+	public ParticleBehaviorCharge(Vec3d source) {
 		super(source);
 	}
 	
@@ -49,9 +49,9 @@ public class ParticleBehaviorCharge extends ParticleBehaviors {
 			if (curTick == 0 || !particle.isAlive()) {
 				particles.remove(particle);
 			} else {
-				double centerX = coordSource.xCoord + 0.0D;
-				double centerY = coordSource.yCoord + 0.5D;
-				double centerZ = coordSource.zCoord + 0.0D;
+				double centerX = coordSource.x + 0.0D;
+				double centerY = coordSource.y + 0.5D;
+				double centerZ = coordSource.z + 0.0D;
 				
 				double vecX = centerX - particle.getPosX();
 				double vecZ = centerZ - particle.getPosZ();
@@ -69,7 +69,7 @@ public class ParticleBehaviorCharge extends ParticleBehaviors {
 						particle.setGravity(0.09F);
 					}
 				} else {
-					if (particle.getPosY() > (double)coordSource.yCoord + 1D) {
+					if (particle.getPosY() > (double)coordSource.y + 1D) {
 						particle.setGravity(0.15F);
 					} else {
 						particle.setGravity(-0.15F);

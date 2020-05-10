@@ -4,6 +4,7 @@ import java.util.Iterator;
 
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.INBT;
+import net.minecraft.util.math.BlockPos;
 
 public class CoroUtilNBT {
 
@@ -13,9 +14,9 @@ public class CoroUtilNBT {
 		String tagName = "";
 		//do magic
 		try {
-			Iterator it = nbtSource.keySet().iterator();
+			Iterator<String> it = nbtSource.keySet().iterator();
 			while (it.hasNext()) {
-				tagName = (String) it.next();
+				tagName = it.next();
 				INBT data = nbtSource.get(tagName);
 				newNBT.put(tagName, data);
 			}
@@ -70,15 +71,15 @@ public class CoroUtilNBT {
         return nbttagcompound;
     }*/
 	
-	public static void writeCoords(String name, BlockCoord coords, CompoundNBT nbt) {
-    	nbt.putInt(name + "X", coords.posX);
-    	nbt.putInt(name + "Y", coords.posY);
-    	nbt.putInt(name + "Z", coords.posZ);
+	public static void writeCoords(String name, BlockPos coords, CompoundNBT nbt) {
+    	nbt.putInt(name + "X", coords.getX());
+    	nbt.putInt(name + "Y", coords.getY());
+    	nbt.putInt(name + "Z", coords.getZ());
     }
     
-    public static BlockCoord readCoords(String name, CompoundNBT nbt) {
+    public static BlockPos readCoords(String name, CompoundNBT nbt) {
     	if (nbt.contains(name + "X")) {
-    		return new BlockCoord(nbt.getInt(name + "X"), nbt.getInt(name + "Y"), nbt.getInt(name + "Z"));
+    		return new BlockPos(nbt.getInt(name + "X"), nbt.getInt(name + "Y"), nbt.getInt(name + "Z"));
     	} else {
     		return null;
     	}

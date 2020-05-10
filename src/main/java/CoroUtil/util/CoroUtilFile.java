@@ -1,8 +1,13 @@
 package CoroUtil.util;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.CompressedStreamTools;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.dimension.DimensionType;
 import net.minecraft.world.server.ServerWorld;
@@ -10,10 +15,6 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.fml.server.ServerLifecycleHooks;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 
 public class CoroUtilFile {
 	public static String lastWorldFolder = "";
@@ -98,15 +99,15 @@ public class CoroUtilFile {
 		return Minecraft.getInstance().gameDir/*getAppDir("minecraft")*/.getPath();
 	}
     
-    public static void writeCoords(String name, BlockCoord coords, CompoundNBT nbt) {
-    	nbt.putInt(name + "X", coords.posX);
-    	nbt.putInt(name + "Y", coords.posY);
-    	nbt.putInt(name + "Z", coords.posZ);
+    public static void writeCoords(String name, BlockPos coords, CompoundNBT nbt) {
+    	nbt.putInt(name + "X", coords.getX());
+    	nbt.putInt(name + "Y", coords.getY());
+    	nbt.putInt(name + "Z", coords.getZ());
     }
     
-    public static BlockCoord readCoords(String name, CompoundNBT nbt) {
+    public static BlockPos readCoords(String name, CompoundNBT nbt) {
     	if (nbt.contains(name + "X")) {
-    		return new BlockCoord(nbt.getInt(name + "X"), nbt.getInt(name + "Y"), nbt.getInt(name + "Z"));
+    		return new BlockPos(nbt.getInt(name + "X"), nbt.getInt(name + "Y"), nbt.getInt(name + "Z"));
     	} else {
     		return null;
     	}

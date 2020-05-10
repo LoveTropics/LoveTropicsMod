@@ -1,7 +1,7 @@
 package extendedrenderer.particle.behavior;
 
-import CoroUtil.util.Vec3;
 import extendedrenderer.particle.entity.EntityRotFX;
+import net.minecraft.util.math.Vec3d;
 
 public class ParticleBehaviorMiniTornado extends ParticleBehaviors {
 
@@ -9,7 +9,7 @@ public class ParticleBehaviorMiniTornado extends ParticleBehaviors {
 	public int curTick = 0;
 	public int ticksMax = 1;
 	
-	public ParticleBehaviorMiniTornado(Vec3 source) {
+	public ParticleBehaviorMiniTornado(Vec3d source) {
 		super(source);
 	}
 	
@@ -96,13 +96,13 @@ public class ParticleBehaviorMiniTornado extends ParticleBehaviors {
 				
 				double twistScale = 0.035D * Math.sin(timeAdj);
 				
-				double centerX = coordSource.xCoord;// + Math.sin(age * twistScale);
-				double centerZ = coordSource.zCoord;// + Math.cos(age * twistScale);
+				double centerX = coordSource.x;// + Math.sin(age * twistScale);
+				double centerZ = coordSource.z;// + Math.cos(age * twistScale);
 				
 				x = centerX + (Math.sin(ageScale) * distFromCenter);
 				z = centerZ + (Math.cos(ageScale) * distFromCenter);
 				
-				particle.setPosition(x, coordSource.yCoord + yAdj, z);
+				particle.setPosition(x, coordSource.y + yAdj, z);
 				
 				double var16 = centerX - x;
                 double var18 = centerZ - z;

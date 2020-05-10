@@ -2,6 +2,7 @@ package extendedrenderer.particle;
 
 import CoroUtil.forge.CoroUtil;
 import extendedrenderer.ExtendedRenderer;
+import net.minecraft.client.renderer.texture.AtlasTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
@@ -67,7 +68,7 @@ public class ParticleRegistry {
 		 * textures/mob_effect
 		 *
 		 */
-		if (!event.getMap().getBasePath().equals("textures/particle")) {
+		if (!event.getMap().getTextureLocation().equals(AtlasTexture.LOCATION_PARTICLES_TEXTURE)) {
 			return;
 		}
 
@@ -122,7 +123,7 @@ public class ParticleRegistry {
 	@OnlyIn(Dist.CLIENT)
 	public static void getRegisteredParticles(TextureStitchEvent.Post event) {
 
-		if (!event.getMap().getBasePath().equals("textures/particle")) {
+		if (!event.getMap().getTextureLocation().equals(AtlasTexture.LOCATION_PARTICLES_TEXTURE)) {
 			return;
 		}
 
