@@ -11,6 +11,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.IParticleRenderType;
 import net.minecraft.client.particle.SpriteTexturedParticle;
 import net.minecraft.client.renderer.ActiveRenderInfo;
+import net.minecraft.client.renderer.Quaternion;
 import net.minecraft.client.renderer.Vector3f;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.entity.Entity;
@@ -521,16 +522,12 @@ public class EntityRotFX extends SpriteTexturedParticle implements IWindHandler,
     }
 	
 	@Override
+	public float getScale(float scaleFactor) {
+		return 0.1F;
+	}
+	
+	@Override
 	public void renderParticle(IVertexBuilder buffer, ActiveRenderInfo renderInfo, float partialTicks) {
-		
-		//override rotations
-		if (!facePlayer) {
-			rotationX = MathHelper.cos(this.rotationYaw * (float)Math.PI / 180.0F);
-			rotationYZ = MathHelper.sin(this.rotationYaw * (float)Math.PI / 180.0F);
-	        rotationXY = -rotationYZ * MathHelper.sin(this.rotationPitch * (float)Math.PI / 180.0F);
-	        rotationXZ = rotationX * MathHelper.sin(this.rotationPitch * (float)Math.PI / 180.0F);
-	        rotationZ = MathHelper.cos(this.rotationPitch * (float)Math.PI / 180.0F);
-		}
 		
 		/*IBlockState state = this.getWorld().getBlockState(new BlockPos(posX, posY, posZ));
 		if (state.getBlock() != Blocks.AIR) {
@@ -541,12 +538,68 @@ public class EntityRotFX extends SpriteTexturedParticle implements IWindHandler,
 
         //1.12 did 0.1F * scale in render, but removed it, this makes my scales backwards compatible
         //changing just for render, yes, very hacky
-        particleScale *= 0.1F;
+//        particleScale *= 0.1F;
+//
+//        super.renderParticle(worldRendererIn, entityIn, partialTicks, rotationX,
+//                rotationZ, rotationYZ, rotationXY, rotationXZ);
+//
+//        particleScale *= 10F;
 
-        super.renderParticle(worldRendererIn, entityIn, partialTicks, rotationX,
-                rotationZ, rotationYZ, rotationXY, rotationXZ);
+        Vec3d vec3d = renderInfo.getProjectedView();
+        float f = (float)(MathHelper.lerp((double)partialTicks, this.prevPosX, this.posX) - vec3d.getX());
+        float f1 = (float)(MathHelper.lerp((double)partialTicks, this.prevPosY, this.posY) - vec3d.getY());
+        float f2 = (float)(MathHelper.lerp((double)partialTicks, this.prevPosZ, this.posZ) - vec3d.getZ());
+        Quaternion quaternion;
+        if (this.rotationPitch == 0 && this.rotationYaw == 0) {
+           quaternion = renderInfo.getRotation();
+        } else {
+           quaternion = new Quaternion(renderInfo.getRotation());
+           // override rotations
+           quaternion.multiply(toQuaternionDegrees(this.rotationYaw, this.rotationPitch, 0));
+        }
 
-        particleScale *= 10F;
+        Vector3f vector3f1 = new Vector3f(-1.0F, -1.0F, 0.0F);
+        vector3f1.transform(quaternion);
+        Vector3f[] avector3f = new Vector3f[]{new Vector3f(-1.0F, -1.0F, 0.0F), new Vector3f(-1.0F, 1.0F, 0.0F), new Vector3f(1.0F, 1.0F, 0.0F), new Vector3f(1.0F, -1.0F, 0.0F)};
+        float f4 = this.getScale(partialTicks);
+
+        for(int i = 0; i < 4; ++i) {
+           Vector3f vector3f = avector3f[i];
+           vector3f.transform(quaternion);
+           vector3f.mul(f4);
+           vector3f.add(f, f1, f2);
+        }
+
+        float f7 = this.getMinU();
+        float f8 = this.getMaxU();
+        float f5 = this.getMinV();
+        float f6 = this.getMaxV();
+        int j = this.getBrightnessForRender(partialTicks);
+        buffer.pos((double)avector3f[0].getX(), (double)avector3f[0].getY(), (double)avector3f[0].getZ()).tex(f8, f6).color(this.particleRed, this.particleGreen, this.particleBlue, this.particleAlpha).lightmap(j).endVertex();
+        buffer.pos((double)avector3f[1].getX(), (double)avector3f[1].getY(), (double)avector3f[1].getZ()).tex(f8, f5).color(this.particleRed, this.particleGreen, this.particleBlue, this.particleAlpha).lightmap(j).endVertex();
+        buffer.pos((double)avector3f[2].getX(), (double)avector3f[2].getY(), (double)avector3f[2].getZ()).tex(f7, f5).color(this.particleRed, this.particleGreen, this.particleBlue, this.particleAlpha).lightmap(j).endVertex();
+        buffer.pos((double)avector3f[3].getX(), (double)avector3f[3].getY(), (double)avector3f[3].getZ()).tex(f7, f6).color(this.particleRed, this.particleGreen, this.particleBlue, this.particleAlpha).lightmap(j).endVertex();
+     
+	}
+	
+	private Quaternion toQuaternionDegrees(float yaw, float pitch, float roll) {
+		return toQuaternionRads((float) Math.toRadians(yaw), (float) Math.toRadians(pitch), (float) Math.toRadians(roll));
+	}
+	
+	private Quaternion toQuaternionRads(float yaw, float pitch, float roll) {
+		// TODO this might be able to be replaced by Quaternion(float, float, float, boolean)
+		float cy = MathHelper.cos(yaw * 0.5f);
+		float sy = MathHelper.sin(yaw * 0.5f);
+		float cp = MathHelper.cos(pitch * 0.5f);
+		float sp = MathHelper.sin(pitch * 0.5f);
+		float cr = MathHelper.cos(roll * 0.5f);
+		float sr = MathHelper.sin(roll * 0.5f);
+
+	    return new Quaternion(
+	    		sr * cp * cy - cr * sp * sy,
+	    		cr * sp * cy + sr * cp * sy,
+	    		cr * cp * sy - sr * sp * cy,
+	    	    cr * cp * cy + sr * sp * sy);
 	}
 
     //TODO: 1.14 uncomment
