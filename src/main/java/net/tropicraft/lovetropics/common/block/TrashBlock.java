@@ -11,7 +11,6 @@ import net.minecraft.state.EnumProperty;
 import net.minecraft.state.StateContainer.Builder;
 import net.minecraft.state.properties.BlockStateProperties;
 import net.minecraft.tags.FluidTags;
-import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.shapes.VoxelShape;
@@ -60,10 +59,5 @@ public class TrashBlock extends CustomShapeBlock implements IWaterLoggable {
     @Override
     public Block.OffsetType getOffsetType() {
         return Block.OffsetType.XZ;
-    }
-
-    @Override
-    public BlockRenderLayer getRenderLayer() {
-        return BlockRenderLayer.CUTOUT;
     }
 }

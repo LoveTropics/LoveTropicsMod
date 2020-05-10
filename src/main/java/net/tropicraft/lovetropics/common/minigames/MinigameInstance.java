@@ -1,7 +1,10 @@
 package net.tropicraft.lovetropics.common.minigames;
 
-import CoroUtil.util.Vec3;
+import java.util.Set;
+import java.util.UUID;
+
 import com.google.common.collect.Sets;
+
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.ICommandSource;
 import net.minecraft.entity.player.ServerPlayerEntity;
@@ -10,9 +13,6 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.world.server.ServerWorld;
-
-import java.util.Set;
-import java.util.UUID;
 
 /**
  * Default implementation of a minigame instance. Simple and naive
@@ -118,7 +118,7 @@ public class MinigameInstance implements IMinigameInstance
         if (this.commandSource == null) {
             String s = this.getDefinition().getUnlocalizedName();
             ITextComponent text = new StringTextComponent(s);
-            this.commandSource = new CommandSource(ICommandSource.field_213139_a_, Vec3d.ZERO, Vec2f.ZERO, this.world, 2, s, text, this.world.getServer(), null);
+            this.commandSource = new CommandSource(ICommandSource.DUMMY, Vec3d.ZERO, Vec2f.ZERO, this.world, 2, s, text, this.world.getServer(), null);
         }
 
         return this.commandSource;

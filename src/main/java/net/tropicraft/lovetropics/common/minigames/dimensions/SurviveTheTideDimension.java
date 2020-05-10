@@ -28,7 +28,7 @@ public class SurviveTheTideDimension extends Dimension {
     private static final RegistryObject<ChunkGeneratorType<?, ?>> TROPICS = RegistryObject.of(new ResourceLocation("tropicraft", "tropicraft_chunk_generator_type"), ForgeRegistries.CHUNK_GENERATOR_TYPES);
     
     public SurviveTheTideDimension(final World worldIn, final DimensionType typeIn) {
-        super(worldIn, typeIn);
+        super(worldIn, typeIn, 0);
     }
 
     @Override
@@ -40,7 +40,7 @@ public class SurviveTheTideDimension extends Dimension {
     private <GS extends GenerationSettings, BS extends SingleBiomeProviderSettings> ChunkGenerator<?> create(ChunkGeneratorType<GS, ?> type, BiomeProviderType<BS, ?> biomeType) {
         GS genSettings = type.createSettings();
         @SuppressWarnings("unchecked")
-        BS settings2 = (BS) biomeType.createSettings().setBiome(TropicraftBiomes.SURVIVE_THE_TIDE.get());
+        BS settings2 = (BS) biomeType.createSettings(this.getWorld().getWorldInfo()).setBiome(TropicraftBiomes.SURVIVE_THE_TIDE.get());
         return type.create(this.world, biomeType.create(settings2), genSettings);
     }
 

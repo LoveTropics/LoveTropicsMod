@@ -2,11 +2,11 @@ package net.tropicraft.lovetropics;
 
 import com.tterrag.registrate.Registrate;
 import com.tterrag.registrate.providers.ProviderType;
+import com.tterrag.registrate.util.NonNullLazyValue;
 
 import net.minecraft.fluid.Fluids;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.LazyLoadBase;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.ColorHandlerEvent;
@@ -47,15 +47,17 @@ import net.tropicraft.lovetropics.common.minigames.MinigameManager;
 
 @Mod(Constants.MODID)
 public class LoveTropics {
-    
-    private static LazyLoadBase<Registrate> registrate = new LazyLoadBase<>(() -> Registrate.create(Constants.MODID));
 
     public static final ItemGroup LOVE_TROPICS_ITEM_GROUP = (new ItemGroup("love_tropics") {
         @OnlyIn(Dist.CLIENT)
         public ItemStack createIcon() {
             return new ItemStack(LoveTropicsBlocks.DONATION.get());
         }
-    });
+    });    
+    
+    private static NonNullLazyValue<Registrate> registrate = new NonNullLazyValue<>(() -> 
+    	Registrate.create(Constants.MODID)
+    			  .itemGroup(() -> LOVE_TROPICS_ITEM_GROUP));
 
     public LoveTropics() {
         IEventBus modBus = FMLJavaModLoadingContext.get().getModEventBus();
@@ -130,7 +132,7 @@ public class LoveTropics {
     }
 
     private void gatherData(GatherDataEvent event) {
-        registrate().addDataGenerator("misc_lang", ProviderType.LANG, prov -> {
+        registrate().addDataGenerator(ProviderType.LANG, prov -> {
             prov.add(LoveTropics.LOVE_TROPICS_ITEM_GROUP, "Love Tropics");
 
             // TODO move this into an enum

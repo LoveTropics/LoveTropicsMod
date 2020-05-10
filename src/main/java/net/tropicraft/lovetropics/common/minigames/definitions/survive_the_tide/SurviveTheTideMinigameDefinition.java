@@ -1,20 +1,57 @@
 package net.tropicraft.lovetropics.common.minigames.definitions.survive_the_tide;
 
-import net.minecraft.block.*;
+import java.io.File;
+import java.io.IOException;
+import java.util.Iterator;
+import java.util.Random;
+import java.util.UUID;
+import java.util.function.Consumer;
+
+import org.apache.commons.io.FileUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
+import net.minecraft.block.CampfireBlock;
+import net.minecraft.block.FenceBlock;
+import net.minecraft.block.IWaterLoggable;
+import net.minecraft.command.CommandSource;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.effect.LightningBoltEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.particles.ParticleTypes;
 import net.minecraft.potion.EffectInstance;
 import net.minecraft.potion.Effects;
-import net.minecraft.util.*;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.state.properties.BlockStateProperties;
+import net.minecraft.util.ActionResult;
+import net.minecraft.util.ActionResultType;
+import net.minecraft.util.DamageSource;
+import net.minecraft.util.EntityPredicates;
+import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.text.*;
+import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.util.text.TextFormatting;
+import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.BossInfo;
-import net.minecraft.world.ServerBossInfo;
+import net.minecraft.world.GameType;
+import net.minecraft.world.World;
+import net.minecraft.world.chunk.Chunk;
+import net.minecraft.world.chunk.ChunkSection;
+import net.minecraft.world.dimension.DimensionType;
+import net.minecraft.world.gen.Heightmap;
+import net.minecraft.world.gen.Heightmap.Type;
+import net.minecraft.world.server.ServerBossInfo;
+import net.minecraft.world.server.ServerChunkProvider;
+import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.util.Constants.BlockFlags;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
@@ -27,36 +64,8 @@ import net.tropicraft.lovetropics.common.donations.FireworkUtil;
 import net.tropicraft.lovetropics.common.minigames.IMinigameDefinition;
 import net.tropicraft.lovetropics.common.minigames.IMinigameInstance;
 import net.tropicraft.lovetropics.common.minigames.MinigameManager;
-
-import org.apache.commons.io.FileUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
-import net.minecraft.command.CommandSource;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.state.properties.BlockStateProperties;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.BlockPos.MutableBlockPos;
-import net.minecraft.util.math.ChunkPos;
-import net.minecraft.world.GameType;
-import net.minecraft.world.World;
-import net.minecraft.world.chunk.Chunk;
-import net.minecraft.world.chunk.ChunkSection;
-import net.minecraft.world.dimension.DimensionType;
-import net.minecraft.world.gen.Heightmap;
-import net.minecraft.world.gen.Heightmap.Type;
-import net.minecraft.world.server.ServerChunkProvider;
-import net.minecraft.world.server.ServerWorld;
 import weather2.MinigameWeatherInstance;
 import weather2.MinigameWeatherInstanceServer;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.Iterator;
-import java.util.Random;
-import java.util.UUID;
-import java.util.function.Consumer;
 
 /**
  * Definition implementation for the Island Royale minigame.
@@ -304,7 +313,7 @@ public class SurviveTheTideMinigameDefinition implements IMinigameDefinition {
 
     @Override
     public void onLivingEntityUpdate(LivingEntity entity, IMinigameInstance instance) {
-        if (entity.posY <= this.waterLevel + 1 && entity.isInWater() && entity.ticksExisted % 20 == 0) {
+        if (entity.getPosY() <= this.waterLevel + 1 && entity.isInWater() && entity.ticksExisted % 20 == 0) {
             entity.attackEntityFrom(DamageSource.DROWN, 2.0F);
         }
     }
@@ -440,8 +449,8 @@ public class SurviveTheTideMinigameDefinition implements IMinigameDefinition {
                     int xOffset = (7 + this.rand.nextInt(5)) * (this.rand.nextBoolean() ? 1 : -1);
                     int zOffset =  (7 + this.rand.nextInt(5)) * (this.rand.nextBoolean() ? 1 : -1);
 
-                    int posX = MathHelper.floor(winning.posX) + xOffset;
-                    int posZ = MathHelper.floor(winning.posZ) + zOffset;
+                    int posX = MathHelper.floor(winning.getPosX()) + xOffset;
+                    int posZ = MathHelper.floor(winning.getPosZ()) + zOffset;
 
                     int posY = world.getHeight(Type.MOTION_BLOCKING, posX, posZ);
 
@@ -532,9 +541,9 @@ public class SurviveTheTideMinigameDefinition implements IMinigameDefinition {
                 long startTime = System.currentTimeMillis();
                 long updatedBlocks = 0;
 
-                MutableBlockPos localStart = new MutableBlockPos();
-                MutableBlockPos localEnd = new MutableBlockPos();
-                MutableBlockPos realPos = new MutableBlockPos();
+                BlockPos.Mutable localStart = new BlockPos.Mutable();
+                BlockPos.Mutable localEnd = new BlockPos.Mutable();
+                BlockPos.Mutable realPos = new BlockPos.Mutable();
 
                 for (int x = minChunk.x; x <= maxChunk.x; x++) {
                     for (int z = minChunk.z; z <= maxChunk.z; z++) {
@@ -557,8 +566,8 @@ public class SurviveTheTideMinigameDefinition implements IMinigameDefinition {
                             section = new ChunkSection(this.waterLevel & ~0xF);
                             sectionArray[this.waterLevel >> 4] = section;
                         }
-                        Heightmap heightmapSurface = chunk.func_217303_b(Type.WORLD_SURFACE);
-                        Heightmap heightmapMotionBlocking = chunk.func_217303_b(Type.MOTION_BLOCKING);
+                        Heightmap heightmapSurface = chunk.getHeightmap(Type.WORLD_SURFACE);
+                        Heightmap heightmapMotionBlocking = chunk.getHeightmap(Type.MOTION_BLOCKING);
                         boolean anyChanged = false;
                         for (BlockPos pos : BlockPos.getAllInBoxMutable(localStart, localEnd)) {
                             BlockState existing = section.getBlockState(pos.getX(), pos.getY(), pos.getZ());
@@ -707,7 +716,7 @@ public class SurviveTheTideMinigameDefinition implements IMinigameDefinition {
                         //needs moar predicates
                         if (!playerentity.isCreative()) {
                             //ignore Y val, only do X Z dist compare
-                            double d0 = playerentity.getDistanceSq(worldBorderCenter.getX(), playerentity.posY/*worldBorderCenter.getY()*/, worldBorderCenter.getZ());
+                            double d0 = playerentity.getDistanceSq(worldBorderCenter.getX(), playerentity.getPosY(), worldBorderCenter.getZ());
                             if (fullCollapse || !(currentRadius < 0.0D || d0 < currentRadius * currentRadius)) {
                                 //System.out.println("hurt: " + playerentity);
                                 playerentity.attackEntityFrom(DamageSource.causeExplosionDamage((LivingEntity) null), ConfigLT.MINIGAME_SURVIVE_THE_TIDE.minigame_SurviveTheTide_worldBorder_damageAmount.get());

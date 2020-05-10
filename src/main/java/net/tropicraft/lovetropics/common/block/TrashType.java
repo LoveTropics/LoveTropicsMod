@@ -1,15 +1,16 @@
 package net.tropicraft.lovetropics.common.block;
 
 import java.util.Locale;
-import java.util.function.Supplier;
 
 import javax.annotation.Nullable;
+
+import com.tterrag.registrate.util.nullness.NonNullSupplier;
 
 import net.minecraft.block.Block;
 import net.minecraft.util.math.shapes.VoxelShape;
 import net.tropicraft.lovetropics.common.Util;
 
-public enum TrashType implements Supplier<Block> {
+public enum TrashType implements NonNullSupplier<Block> {
 
     CAN(9, 7),
     CHIP_BAG(16, 1),

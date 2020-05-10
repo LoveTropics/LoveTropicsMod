@@ -21,8 +21,8 @@ public class DonationTileEntity extends TileEntity implements ITickableTileEntit
     }
     
     @Override
-    public void setWorld(World worldIn) {
-        super.setWorld(worldIn);
+    public void setWorldAndPos(World worldIn, BlockPos pos) {
+        super.setWorldAndPos(worldIn, pos);
         this.randomOffset = worldIn.getRandom().nextInt(20);
     }
     

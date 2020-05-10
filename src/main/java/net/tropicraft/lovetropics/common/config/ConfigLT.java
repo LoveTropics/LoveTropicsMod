@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.google.common.collect.Lists;
+
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.common.ForgeConfigSpec.BooleanValue;
@@ -248,7 +249,7 @@ public class ConfigLT {
         //for (BlockPos pos : minigame_SurviveTheTide_playerPositions) System.out.println("RESULT: " + pos);
     }
 
-    public static void onFileChange(final ModConfig.ConfigReloading configEvent) {
+    public static void onFileChange(final ModConfig.Reloading configEvent) {
         //System.out.println("file changed!" + configEvent.toString());
     }
 
