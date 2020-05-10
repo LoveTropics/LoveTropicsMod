@@ -1,9 +1,9 @@
 package weather2.weathersystem.storm;
 
-import CoroUtil.util.Vec3;
+import net.minecraft.util.math.Vec3d;
 import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.fml.LogicalSide;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.fml.LogicalSide;
 import net.minecraftforge.fml.common.thread.EffectiveSide;
 import weather2.util.CachedNBTTagCompound;
 import weather2.weathersystem.WeatherManagerBase;
@@ -23,9 +23,9 @@ public class WeatherObject {
 	
 	public WeatherManagerBase manager;
 	
-	public Vec3 pos = new Vec3(0, 0, 0);
-	public Vec3 posGround = new Vec3(0, 0, 0);
-	public Vec3 motion = new Vec3(0, 0, 0);
+	public Vec3d pos = Vec3d.ZERO;
+	public Vec3d posGround = Vec3d.ZERO;
+	public Vec3d motion = Vec3d.ZERO;
 
 	//used as radius
 	public int size = 50;
@@ -99,9 +99,9 @@ public class WeatherObject {
 		ID = parNBT.getLong("ID");
 		//Weather.dbg("StormObject " + ID + " receiving sync");
 		
-		pos = new Vec3(parNBT.getDouble("posX"), parNBT.getDouble("posY"), parNBT.getDouble("posZ"));
+		pos = new Vec3d(parNBT.getDouble("posX"), parNBT.getDouble("posY"), parNBT.getDouble("posZ"));
 		//motion = new Vec3(parNBT.getDouble("motionX"), parNBT.getDouble("motionY"), parNBT.getDouble("motionZ"));
-		motion = new Vec3(parNBT.getDouble("vecX"), parNBT.getDouble("vecY"), parNBT.getDouble("vecZ"));
+		motion = new Vec3d(parNBT.getDouble("vecX"), parNBT.getDouble("vecY"), parNBT.getDouble("vecZ"));
 		size = parNBT.getInt("size");
 		maxSize = parNBT.getInt("maxSize");
 		this.weatherObjectType = EnumWeatherObjectType.get(parNBT.getInt("weatherObjectType"));
@@ -109,16 +109,16 @@ public class WeatherObject {
 	
 	public void nbtSyncForClient() {
 		CachedNBTTagCompound nbt = this.getNbtCache();
-		nbt.putDouble("posX", pos.xCoord);
-		nbt.putDouble("posY", pos.yCoord);
-		nbt.putDouble("posZ", pos.zCoord);
+		nbt.putDouble("posX", pos.x);
+		nbt.putDouble("posY", pos.y);
+		nbt.putDouble("posZ", pos.z);
 
 		/*nbt.putDouble("motionX", motion.xCoord);
 		nbt.putDouble("motionY", motion.yCoord);
 		nbt.putDouble("motionZ", motion.zCoord);*/
-		nbt.putDouble("vecX", motion.xCoord);
-		nbt.putDouble("vecY", motion.yCoord);
-		nbt.putDouble("vecZ", motion.zCoord);
+		nbt.putDouble("vecX", motion.x);
+		nbt.putDouble("vecY", motion.y);
+		nbt.putDouble("vecZ", motion.z);
 
 		nbt.putLong("ID", ID);
 		//just blind set ID into non cached data so client always has it, no need to check for forced state and restore orig state

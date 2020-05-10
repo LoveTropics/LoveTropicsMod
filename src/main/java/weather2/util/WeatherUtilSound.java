@@ -6,12 +6,12 @@ import java.util.Random;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvent;
+import net.minecraft.util.math.Vec3d;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import weather2.SoundRegistry;
 import weather2.client.sound.MovingSoundStreamingSource;
 import weather2.weathersystem.storm.StormObject;
-import CoroUtil.util.Vec3;
 
 /**
  * TODO: rewrite this to use a class that contains array of sounds, amount of them, length of them, and the last played time and next random index
@@ -81,7 +81,7 @@ public class WeatherUtilSound {
     }
     
     @OnlyIn(Dist.CLIENT)
-    public static void playNonMovingSound(Vec3 parPos, String var1, float var5, float var6, float parCutOffRange)
+    public static void playNonMovingSound(Vec3d parPos, String var1, float var5, float var6, float parCutOffRange)
     {
     	//String prefix = "streaming.";
     	String affix = ".ogg";
@@ -107,7 +107,7 @@ public class WeatherUtilSound {
     }
 
     @OnlyIn(Dist.CLIENT)
-    public static void playPlayerLockedSound(Vec3 parPos, String var1, float var5, float var6)
+    public static void playPlayerLockedSound(Vec3d parPos, String var1, float var5, float var6)
     {
         SoundEvent event = SoundRegistry.get(var1);
         MovingSoundStreamingSource sound = new MovingSoundStreamingSource(parPos, event, SoundCategory.WEATHER, var5, var6, true);

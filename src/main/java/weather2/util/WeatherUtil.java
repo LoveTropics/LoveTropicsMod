@@ -1,5 +1,10 @@
 package weather2.util;
 
+import java.util.Calendar;
+import java.util.HashMap;
+import java.util.function.BiFunction;
+import java.util.function.Function;
+
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -7,7 +12,10 @@ import net.minecraft.block.material.Material;
 import net.minecraft.client.Minecraft;
 import net.minecraft.fluid.IFluidState;
 import net.minecraft.util.Direction;
-import net.minecraft.util.math.*;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.BlockRayTraceResult;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.shapes.VoxelShape;
 import net.minecraft.world.World;
 import net.minecraft.world.dimension.DimensionType;
@@ -17,13 +25,6 @@ import net.minecraftforge.fml.server.ServerLifecycleHooks;
 import net.tropicraft.lovetropics.common.minigames.MinigameManager;
 import net.tropicraft.lovetropics.common.minigames.definitions.survive_the_tide.SurviveTheTideMinigameDefinition;
 import weather2.MinigameWeatherInstance;
-import weather2.MinigameWeatherInstanceServer;
-
-import javax.annotation.Nullable;
-import java.util.Calendar;
-import java.util.HashMap;
-import java.util.function.BiFunction;
-import java.util.function.Function;
 
 public class WeatherUtil {
 
@@ -299,7 +300,7 @@ public class WeatherUtil {
             Vec3d vec3d = p_217297_1_.func_222253_b();
             Vec3d vec3d1 = p_217297_1_.func_222250_a();
             VoxelShape voxelshape = p_217297_1_.getBlockShape(blockstate, world, p_217297_2_);
-            BlockRayTraceResult blockraytraceresult = world.func_217296_a(vec3d, vec3d1, p_217297_2_, voxelshape, blockstate);
+            BlockRayTraceResult blockraytraceresult = world.rayTraceBlocks(vec3d, vec3d1, p_217297_2_, voxelshape, blockstate);
             VoxelShape voxelshape1 = p_217297_1_.getFluidShape(ifluidstate, world, p_217297_2_);
             BlockRayTraceResult blockraytraceresult1 = voxelshape1.rayTrace(vec3d, vec3d1, p_217297_2_);
             double d0 = blockraytraceresult == null ? Double.MAX_VALUE : p_217297_1_.func_222253_b().squareDistanceTo(blockraytraceresult.getHitVec());
@@ -326,7 +327,7 @@ public class WeatherUtil {
             int i = MathHelper.floor(d3);
             int j = MathHelper.floor(d4);
             int k = MathHelper.floor(d5);
-            BlockPos.MutableBlockPos blockpos$mutableblockpos = new BlockPos.MutableBlockPos(i, j, k);
+            BlockPos.Mutable blockpos$mutableblockpos = new BlockPos.Mutable(i, j, k);
             T t = p_217300_1_.apply(p_217300_0_, blockpos$mutableblockpos);
             if (t != null) {
                 return t;

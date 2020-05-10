@@ -3,16 +3,15 @@ package weather2.util;
 import net.minecraft.block.BlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import net.minecraft.world.dimension.DimensionType;
 
 public class WeatherUtilDim {
 
     public static boolean canBlockSeeSky(World world, BlockPos pos) {
         if (pos.getY() >= getSeaLevel(world)) {
-            return world.isSkyLightMax(pos);
+            return world.canBlockSeeSky(pos);
         } else {
             BlockPos blockpos = new BlockPos(pos.getX(), getSeaLevel(world), pos.getZ());
-            if (!world.isSkyLightMax(blockpos)) {
+            if (!world.canBlockSeeSky(blockpos)) {
                 return false;
             } else {
                 for(BlockPos blockpos1 = blockpos.down(); blockpos1.getY() > pos.getY(); blockpos1 = blockpos1.down()) {

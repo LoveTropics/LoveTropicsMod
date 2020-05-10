@@ -1,7 +1,10 @@
 package weather2;
 
 import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.systems.RenderSystem;
+
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.FogRenderer.FogType;
 import net.minecraft.client.renderer.GLAllocation;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.Pose;
@@ -121,9 +124,9 @@ public class EventHandlerForge {
         if (test) {
             event.setCanceled(true);
             
-            GlStateManager.fogMode(GlStateManager.FogMode.LINEAR);
-            GlStateManager.fogStart(0F);
-            GlStateManager.fogEnd(400F);
+            RenderSystem.fogMode(GlStateManager.FogMode.LINEAR);
+            RenderSystem.fogStart(0F);
+            RenderSystem.fogEnd(400F);
             
             //GlStateManager.glFog(2918, this.setFogColorBuffer(0.7F, 0.6F, 0.3F, 1.0F));
             
@@ -138,9 +141,9 @@ public class EventHandlerForge {
         boolean test2 = false;
         //test for underwater shaders that need LINEAR
         if (test2) {
-			GlStateManager.fogStart(0F);
-			GlStateManager.fogEnd(7F);
-			GlStateManager.fogMode(GlStateManager.FogMode.LINEAR);
+        	RenderSystem.fogStart(0F);
+        	RenderSystem.fogEnd(7F);
+        	RenderSystem.fogMode(GlStateManager.FogMode.LINEAR);
 			event.setDensity(1F);
 			event.setCanceled(true);
 		}
@@ -179,7 +182,7 @@ public class EventHandlerForge {
         	event.setRed(SceneEnhancer.stormFogRed);
         	event.setGreen(SceneEnhancer.stormFogGreen);
         	event.setBlue(SceneEnhancer.stormFogBlue);
-			GlStateManager.fogMode(GlStateManager.FogMode.LINEAR);
+        	RenderSystem.fogMode(GlStateManager.FogMode.LINEAR);
         }
 		
 	}
@@ -199,11 +202,11 @@ public class EventHandlerForge {
         	//event.setDensity(SceneEnhancer.stormFogDensity);
 
 			//TODO: make use of this, density only works with EXP or EXP 2 mode
-			GlStateManager.fogMode(GlStateManager.FogMode.LINEAR);
+			RenderSystem.fogMode(GlStateManager.FogMode.LINEAR);
         	/*GlStateManager.setFog(GlStateManager.FogMode.EXP2);
 			GlStateManager.setFogDensity(SceneEnhancer.stormFogDensity);*/
 			
-			if (event.getFogMode() == -1) {
+			if (event.getType() == FogType.FOG_SKY) {
 				GlStateManager.fogStart(SceneEnhancer.stormFogStartClouds);
 	            GlStateManager.fogEnd(SceneEnhancer.stormFogEndClouds);
 			} else {

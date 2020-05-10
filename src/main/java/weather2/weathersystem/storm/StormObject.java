@@ -644,8 +644,6 @@ public class StormObject extends WeatherObject {
 		        	posBaseFormationPos.yCoord = pos.yCoord;
 	        	}
 	        }
-	        
-			
 		}
 		
 	}

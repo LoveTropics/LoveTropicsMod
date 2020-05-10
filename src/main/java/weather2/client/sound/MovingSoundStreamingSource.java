@@ -6,17 +6,17 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.Vec3d;
 import weather2.weathersystem.storm.StormObject;
-import CoroUtil.util.Vec3;
 
 public class MovingSoundStreamingSource extends TickableSound {
 
 	private StormObject storm = null;
 	public float cutOffRange = 128;
-	public Vec3 realSource = null;
+	public Vec3d realSource = null;
     public boolean lockToPlayer = false;
 
-    public MovingSoundStreamingSource(Vec3 parPos, SoundEvent event, SoundCategory category, float parVolume, float parPitch, boolean lockToPlayer) {
+    public MovingSoundStreamingSource(Vec3d parPos, SoundEvent event, SoundCategory category, float parVolume, float parPitch, boolean lockToPlayer) {
         super(event, category);
         this.repeat = false;
         this.volume = parVolume;
@@ -29,7 +29,7 @@ public class MovingSoundStreamingSource extends TickableSound {
     }
 
 	//constructor for non moving sounds
-    public MovingSoundStreamingSource(Vec3 parPos, SoundEvent event, SoundCategory category, float parVolume, float parPitch, float parCutOffRange)
+    public MovingSoundStreamingSource(Vec3d parPos, SoundEvent event, SoundCategory category, float parVolume, float parPitch, float parCutOffRange)
     {
         super(event, category);
         this.repeat = false;
@@ -61,18 +61,18 @@ public class MovingSoundStreamingSource extends TickableSound {
     	PlayerEntity entP = Minecraft.getInstance().player;
     	
     	if (entP != null) {
-    		this.x = (float) entP.posX;
-    		this.y = (float) entP.posY;
-    		this.z = (float) entP.posZ;
+    		this.x = (float) entP.getPosX();
+    		this.y = (float) entP.getPosY();
+    		this.z = (float) entP.getPosZ();
     	}
     	
     	if (storm != null) {
-    		realSource = new Vec3(this.storm.posGround.xCoord, this.storm.posGround.yCoord, this.storm.posGround.zCoord);
+    		realSource = this.storm.posGround;
     	}
 
     	//if locked to player, don't dynamically adjust volume
     	if (!lockToPlayer) {
-            float var3 = (float)((cutOffRange - (double)MathHelper.sqrt(getDistanceFrom(realSource, new Vec3(entP.posX, entP.posY, entP.posZ)))) / cutOffRange);
+            float var3 = (float)((cutOffRange - (double)MathHelper.sqrt(getDistanceFrom(realSource, entP.getPositionVec()))) / cutOffRange);
 
             if (var3 < 0.0F)
             {
@@ -84,12 +84,8 @@ public class MovingSoundStreamingSource extends TickableSound {
 
     }
     
-    public double getDistanceFrom(Vec3 source, Vec3 targ)
+    public double getDistanceFrom(Vec3d source, Vec3d targ)
     {
-        double d3 = source.xCoord - targ.xCoord;
-        double d4 = source.yCoord - targ.yCoord;
-        double d5 = source.zCoord - targ.zCoord;
-        return d3 * d3 + d4 * d4 + d5 * d5;
+    	return source.subtract(targ).length();
     }
-
 }

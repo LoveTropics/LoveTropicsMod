@@ -2,7 +2,6 @@ package weather2.util;
 
 import CoroUtil.api.weather.IWindHandler;
 import CoroUtil.util.CoroUtilEntOrParticle;
-import CoroUtil.util.Vec3;
 import extendedrenderer.particle.entity.EntityRotFX;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
@@ -14,7 +13,11 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.FishingBobberEntity;
 import net.minecraft.item.Items;
 import net.minecraft.util.Direction;
-import net.minecraft.util.math.*;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.BlockRayTraceResult;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.RayTraceResult;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.LogicalSide;
 import net.minecraftforge.fml.common.thread.EffectiveSide;
@@ -203,50 +206,47 @@ public class WeatherUtilEntity {
 	}
 	
 	public static boolean isEntityOutside(Entity parEnt, boolean cheapCheck) {
-		return isPosOutside(parEnt.world, new Vec3(parEnt.posX, parEnt.posY, parEnt.posZ), cheapCheck);
+		return isPosOutside(parEnt.world, parEnt.getPositionVec(), cheapCheck);
 	}
 	
-	public static boolean isPosOutside(World parWorld, Vec3 parPos) {
+	public static boolean isPosOutside(World parWorld, Vec3d parPos) {
 		return isPosOutside(parWorld, parPos, false);
 	}
 	
-	public static boolean isPosOutside(World parWorld, Vec3 parPos, boolean cheapCheck) {
+	public static boolean isPosOutside(World parWorld, Vec3d parPos, boolean cheapCheck) {
 		int rangeCheck = 5;
 		int yOffset = 1;
 		
-		if (WeatherUtilBlock.getPrecipitationHeightSafe(parWorld, new BlockPos(MathHelper.floor(parPos.xCoord), 0, MathHelper.floor(parPos.zCoord))).getY() < parPos.yCoord+1) return true;
+		if (WeatherUtilBlock.getPrecipitationHeightSafe(parWorld, new BlockPos(parPos)).getY() < parPos.y + 1) return true;
 		
 		if (cheapCheck) return false;
 		
-		Vec3 vecTry = new Vec3(parPos.xCoord + Direction.NORTH.getXOffset()*rangeCheck, parPos.yCoord+yOffset, parPos.zCoord + Direction.NORTH.getZOffset()*rangeCheck);
+		Vec3d vecTry = new Vec3d(parPos.x + Direction.NORTH.getXOffset()*rangeCheck, parPos.y+yOffset, parPos.z + Direction.NORTH.getZOffset()*rangeCheck);
 		if (checkVecOutside(parWorld, parPos, vecTry)) return true;
 		
-		vecTry = new Vec3(parPos.xCoord + Direction.SOUTH.getXOffset()*rangeCheck, parPos.yCoord+yOffset, parPos.zCoord + Direction.SOUTH.getZOffset()*rangeCheck);
+		vecTry = new Vec3d(parPos.x + Direction.SOUTH.getXOffset()*rangeCheck, parPos.y+yOffset, parPos.z + Direction.SOUTH.getZOffset()*rangeCheck);
 		if (checkVecOutside(parWorld, parPos, vecTry)) return true;
 		
-		vecTry = new Vec3(parPos.xCoord + Direction.EAST.getXOffset()*rangeCheck, parPos.yCoord+yOffset, parPos.zCoord + Direction.EAST.getZOffset()*rangeCheck);
+		vecTry = new Vec3d(parPos.x + Direction.EAST.getXOffset()*rangeCheck, parPos.y+yOffset, parPos.z + Direction.EAST.getZOffset()*rangeCheck);
 		if (checkVecOutside(parWorld, parPos, vecTry)) return true;
 		
-		vecTry = new Vec3(parPos.xCoord + Direction.WEST.getXOffset()*rangeCheck, parPos.yCoord+yOffset, parPos.zCoord + Direction.WEST.getZOffset()*rangeCheck);
+		vecTry = new Vec3d(parPos.x + Direction.WEST.getXOffset()*rangeCheck, parPos.y+yOffset, parPos.z + Direction.WEST.getZOffset()*rangeCheck);
 		if (checkVecOutside(parWorld, parPos, vecTry)) return true;
 		
 		return false;
 	}
 	
-	public static boolean checkVecOutside(World parWorld, Vec3 parPos, Vec3 parCheckPos) {
+	public static boolean checkVecOutside(World parWorld, Vec3d parPos, Vec3d parCheckPos) {
 		//boolean dirNorth = parWorld.rayTraceBlocks(parPos.toMCVec(), parCheckPos.toMCVec()) == null;
-        BlockRayTraceResult blockraytraceresult = WeatherUtil.rayTraceBlocks(parWorld, new RayTraceContextNoEntity(parPos.toMCVec(), parCheckPos.toMCVec(),
+        BlockRayTraceResult blockraytraceresult = WeatherUtil.rayTraceBlocks(parWorld, new RayTraceContextNoEntity(parPos, parCheckPos,
                 RayTraceContextNoEntity.BlockMode.COLLIDER, RayTraceContextNoEntity.FluidMode.NONE));
 		if (blockraytraceresult.getType() == RayTraceResult.Type.MISS) {
-			if (WeatherUtilBlock.getPrecipitationHeightSafe(parWorld, new BlockPos(MathHelper.floor(parCheckPos.xCoord), 0, MathHelper.floor(parCheckPos.zCoord))).getY() < parCheckPos.yCoord) return true;
+			if (WeatherUtilBlock.getPrecipitationHeightSafe(parWorld, new BlockPos(MathHelper.floor(parCheckPos.x), 0, MathHelper.floor(parCheckPos.z))).getY() < parCheckPos.y) return true;
 		}
 		return false;
 	}
 
     public static double getDistanceSqEntToPos(Entity ent, BlockPos pos) {
-        double d0 = ent.posX - pos.getX();
-        double d1 = ent.posY - pos.getY();
-        double d2 = ent.posZ - pos.getZ();
-        return d0 * d0 + d1 * d1 + d2 * d2;
+    	return ent.getPositionVec().squareDistanceTo(new Vec3d(pos));
     }
 }

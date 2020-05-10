@@ -1,12 +1,12 @@
 package weather2.util;
 
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import weather2.ClientTickHandler;
 import weather2.ServerTickHandler;
 import weather2.weathersystem.WeatherManagerBase;
-import CoroUtil.util.Vec3;
 
 public class WindReader {
 	
@@ -37,11 +37,11 @@ public class WindReader {
 		CLOUD
 	}
 
-	public static float getWindAngle(World parWorld, Vec3 parLocation) {
+	public static float getWindAngle(World parWorld, Vec3d parLocation) {
 		return getWindAngle(parWorld, parLocation, WindType.PRIORITY);
 	}
 	
-	public static float getWindAngle(World parWorld, Vec3 parLocation, WindType parWindType) {
+	public static float getWindAngle(World parWorld, Vec3d parLocation, WindType parWindType) {
 		WeatherManagerBase wMan = null;
 		if (parWorld.isRemote) {
 			wMan = getWeatherManagerClient();
@@ -66,11 +66,11 @@ public class WindReader {
 		}
 	}
 	
-	public static float getWindSpeed(World parWorld, Vec3 parLocation) {
+	public static float getWindSpeed(World parWorld, Vec3d parLocation) {
 		return getWindSpeed(parWorld, parLocation, WindType.PRIORITY);
 	}
 	
-	public static float getWindSpeed(World parWorld, Vec3 parLocation, WindType parWindType) {
+	public static float getWindSpeed(World parWorld, Vec3d parLocation, WindType parWindType) {
 		WeatherManagerBase wMan = null;
 		if (parWorld.isRemote) {
 			wMan = getWeatherManagerClient();

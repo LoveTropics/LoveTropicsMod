@@ -119,7 +119,7 @@ public class ClientTickHandler
     			if (oldRenderer != null) {
     				mc.gameRenderer = oldRenderer;
 				} else {
-					mc.gameRenderer = new GameRenderer(mc, mc.getResourceManager());
+					mc.gameRenderer = new GameRenderer(mc, mc.getResourceManager(), mc.getRenderTypeBuffers());
 				}
 
     		}

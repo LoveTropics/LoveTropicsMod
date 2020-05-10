@@ -1,8 +1,8 @@
 package weather2.entity;
 
 import java.util.List;
-import java.util.Random;
 
+import CoroUtil.util.CoroUtilBlock;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.FireBlock;
@@ -13,8 +13,8 @@ import net.minecraft.entity.effect.LightningBoltEntity;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.IPacket;
 import net.minecraft.network.play.server.SSpawnGlobalEntityPacket;
-import net.minecraft.util.SoundEvents;
 import net.minecraft.util.SoundCategory;
+import net.minecraft.util.SoundEvents;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
@@ -25,8 +25,6 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import weather2.config.ConfigMisc;
 import weather2.config.ConfigStorm;
-import CoroUtil.util.CoroUtilBlock;
-import CoroUtil.util.Vec3;
 
 public class EntityLightningBolt extends Entity
 {
@@ -59,9 +57,6 @@ public class EntityLightningBolt extends Entity
         this.lightningState = 2;
         this.boltVertex = this.rand.nextLong();
         this.boltLivingTime = this.rand.nextInt(3) + 1;
-
-        Random rand = new Random();
-        
         
         if (ConfigStorm.Lightning_StartsFires) {
             if (!par1World.isRemote && par1World.getGameRules().getBoolean(GameRules.DO_FIRE_TICK) && (par1World.getDifficulty() == Difficulty.NORMAL || par1World.getDifficulty() == Difficulty.HARD) && par1World.isAreaLoaded(new BlockPos(MathHelper.floor(par2), MathHelper.floor(par4), MathHelper.floor(par6)), 10)) {
@@ -121,18 +116,14 @@ public class EntityLightningBolt extends Entity
                 --this.boltLivingTime;
                 this.lightningState = 1;
                 this.boltVertex = this.rand.nextLong();
-
-                if (ConfigStorm.Lightning_StartsFires && !this.world.isRemote && rand.nextInt(fireChance) == 0 && this.world.getGameRules().getBoolean(GameRules.DO_FIRE_TICK) && this.world.isAreaLoaded(new BlockPos(MathHelper.floor(this.posX), MathHelper.floor(this.posY), MathHelper.floor(this.posZ)), 10))
+                
+                BlockPos blockpos = new BlockPos(this);
+                if (ConfigStorm.Lightning_StartsFires && !this.world.isRemote && rand.nextInt(fireChance) == 0 && this.world.getGameRules().getBoolean(GameRules.DO_FIRE_TICK) && this.world.isAreaLoaded(blockpos, 10))
                 {
-                    int i = MathHelper.floor(this.posX);
-                    int j = MathHelper.floor(this.posY);
-                    int k = MathHelper.floor(this.posZ);
-
                     BlockState blockstate = Blocks.FIRE.getDefaultState();
-                    BlockPos blockpos = new BlockPos(this);
 
-                    if (CoroUtilBlock.isAir(world.getBlockState(new BlockPos(i, j, k)).getBlock()) && blockstate.isValidPosition(this.world, blockpos)) {
-                        world.setBlockState(new BlockPos(i, j, k), Blocks.FIRE.getDefaultState().with(FireBlock.AGE, fireLifeTime), 3);
+                    if (CoroUtilBlock.isAir(world.getBlockState(blockpos).getBlock()) && blockstate.isValidPosition(this.world, blockpos)) {
+                        world.setBlockState(blockpos, Blocks.FIRE.getDefaultState().with(FireBlock.AGE, fireLifeTime), 3);
                     }
                 }
             }
@@ -148,13 +139,13 @@ public class EntityLightningBolt extends Entity
             {
                 //vanilla compat to call onStruckByLightning on entities, with effectOnly set to true to prevent fires
                 LightningBoltEntity vanillaBolt =
-                        new LightningBoltEntity(world, this.posX, this.posY, this.posZ, true);
+                        new LightningBoltEntity(world, this.getPosX(), this.getPosY(), this.getPosZ(), true);
                 double d0 = 3.0D;
-                List list = this.world.getEntitiesWithinAABBExcludingEntity(this, new AxisAlignedBB(this.posX - d0, this.posY - d0, this.posZ - d0, this.posX + d0, this.posY + 6.0D + d0, this.posZ + d0));
+                List<Entity> list = this.world.getEntitiesWithinAABBExcludingEntity(this, new AxisAlignedBB(this.getPosX() - d0, this.getPosY() - d0, this.getPosZ() - d0, this.getPosX() + d0, this.getPosY() + 6.0D + d0, this.getPosZ() + d0));
 
                 for (int l = 0; l < list.size(); ++l)
                 {
-                    Entity entity = (Entity)list.get(l);
+                    Entity entity = list.get(l);
                     entity.onStruckByLightning(vanillaBolt);
                 }
             }
@@ -166,7 +157,7 @@ public class EntityLightningBolt extends Entity
     	Minecraft mc = Minecraft.getInstance();
     	//only flash sky if player is within 256 blocks of lightning
     	if (mc.player != null && mc.player.getDistance(this) < ConfigStorm.Lightning_DistanceToPlayerForEffects) {
-    		this.world.setLastLightningBolt(2);
+    		this.world.setTimeLightningFlash(2);
     	}
     }
     
@@ -174,8 +165,8 @@ public class EntityLightningBolt extends Entity
     public void updateSoundEffect() {
     	Minecraft mc = Minecraft.getInstance();
     	if (mc.player != null && mc.player.getDistance(this) < ConfigStorm.Lightning_DistanceToPlayerForEffects) {
-    		this.world.playSound(this.posX, this.posY, this.posZ, SoundEvents.ENTITY_LIGHTNING_BOLT_THUNDER, SoundCategory.WEATHER, 64.0F * (float)ConfigMisc.volWindLightningScale, 0.8F + this.rand.nextFloat() * 0.2F, false);
-            this.world.playSound(this.posX, this.posY, this.posZ, SoundEvents.ENTITY_LIGHTNING_BOLT_IMPACT, SoundCategory.WEATHER, 2.0F, 0.5F + this.rand.nextFloat() * 0.2F, false);
+    		this.world.playSound(this.getPosX(), this.getPosY(), this.getPosZ(), SoundEvents.ENTITY_LIGHTNING_BOLT_THUNDER, SoundCategory.WEATHER, 64.0F * (float)ConfigMisc.volWindLightningScale, 0.8F + this.rand.nextFloat() * 0.2F, false);
+            this.world.playSound(this.getPosX(), this.getPosY(), this.getPosZ(), SoundEvents.ENTITY_LIGHTNING_BOLT_IMPACT, SoundCategory.WEATHER, 2.0F, 0.5F + this.rand.nextFloat() * 0.2F, false);
     	}
     }
 

@@ -1,10 +1,14 @@
 package weather2;
 
-import CoroUtil.util.Vec3;
-import com.mojang.brigadier.Command;
+import static net.minecraft.command.Commands.literal;
+
+import java.util.List;
+
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
+
+import CoroUtil.util.Vec3;
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.Commands;
 import net.minecraft.entity.EntityType;
@@ -18,11 +22,6 @@ import weather2.weathersystem.WeatherManagerServer;
 import weather2.weathersystem.storm.StormObject;
 import weather2.weathersystem.storm.WeatherObject;
 import weather2.weathersystem.storm.WeatherObjectSandstorm;
-
-import java.util.List;
-import java.util.Random;
-
-import static net.minecraft.command.Commands.literal;
 
 public class CommandWeather2 {
 
@@ -140,7 +139,7 @@ public class CommandWeather2 {
 						so.spawnerUUID = player.getCachedUniqueIdString();
 						so.naturallySpawned = false;
 						so.levelTemperature = 0.1F;
-						so.pos = new Vec3(posVec.x, StormObject.layers.get(so.layer), posVec.z);
+						so.pos = new Vec3d(posVec.x, StormObject.layers.get(so.layer), posVec.z);
 
 						so.levelWater = so.levelWaterStartRaining * 2;
 						so.attrib_precipitation = true;
