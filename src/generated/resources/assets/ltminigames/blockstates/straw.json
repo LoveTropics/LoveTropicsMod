@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "ltminigames:block/straw"
+    },
+    "facing=south": {
+      "model": "ltminigames:block/straw",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "ltminigames:block/straw",
+      "y": 270
+    },
+    "facing=east": {
+      "model": "ltminigames:block/straw",
+      "y": 90
+    }
+  }
+}

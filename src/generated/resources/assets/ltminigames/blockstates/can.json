@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "ltminigames:block/can"
+    },
+    "facing=south": {
+      "model": "ltminigames:block/can",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "ltminigames:block/can",
+      "y": 270
+    },
+    "facing=east": {
+      "model": "ltminigames:block/can",
+      "y": 90
+    }
+  }
+}
