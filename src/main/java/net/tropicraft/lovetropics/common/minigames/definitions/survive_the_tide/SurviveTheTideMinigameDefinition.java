@@ -63,6 +63,7 @@ import net.tropicraft.lovetropics.common.dimension.TropicraftWorldUtils;
 import net.tropicraft.lovetropics.common.donations.FireworkUtil;
 import net.tropicraft.lovetropics.common.minigames.IMinigameDefinition;
 import net.tropicraft.lovetropics.common.minigames.IMinigameInstance;
+import net.tropicraft.lovetropics.common.minigames.IMinigameWeatherInstance;
 import net.tropicraft.lovetropics.common.minigames.MinigameManager;
 
 /**
@@ -79,7 +80,7 @@ public class SurviveTheTideMinigameDefinition implements IMinigameDefinition {
 
     public static boolean debug = true;
 
-    //private MinigameWeatherInstanceServer minigameWeatherInstance;
+    private IMinigameWeatherInstance<SurviveTheTideMinigameDefinition> minigameWeatherInstance;
 
     private MinigamePhase phase = MinigamePhase.PHASE0;
 
@@ -115,7 +116,7 @@ public class SurviveTheTideMinigameDefinition implements IMinigameDefinition {
     }
 
     public SurviveTheTideMinigameDefinition(MinecraftServer server) {
-        //this.minigameWeatherInstance = new MinigameWeatherInstanceServer();
+        this.minigameWeatherInstance = new IMinigameWeatherInstance.Noop<>(); // TODO new MinigameWeatherInstanceServer();
         this.server = server;
     }
 
@@ -326,7 +327,7 @@ public class SurviveTheTideMinigameDefinition implements IMinigameDefinition {
         this.minigameEnded = false;
         this.minigameEndedTimer = 0;
         this.winningPlayer = null;
-        //minigameWeatherInstance.reset();
+        minigameWeatherInstance.reset();
         phase = MinigamePhase.PHASE0;
         phaseTime = 0;
         ticksSincePhase4Start = 0;
@@ -355,17 +356,17 @@ public class SurviveTheTideMinigameDefinition implements IMinigameDefinition {
         phase = MinigamePhase.PHASE0;
 
         this.messageAllPlayers(instance, new TranslationTextComponent(TropicraftLangKeys.SURVIVE_THE_TIDE_INTRO1).applyTextStyle(TextFormatting.GRAY));
-        //minigameWeatherInstance.setMinigameActive(true);
+        minigameWeatherInstance.setMinigameActive(true);
     }
 
-    /*public MinigameWeatherInstance getMinigameWeatherInstance() {
+    public IMinigameWeatherInstance<SurviveTheTideMinigameDefinition> getMinigameWeatherInstance() {
         return minigameWeatherInstance;
     }
 
-    public void setMinigameWeatherInstance(MinigameWeatherInstanceServer minigameWeatherInstance) {
+    public void setMinigameWeatherInstance(IMinigameWeatherInstance<SurviveTheTideMinigameDefinition> minigameWeatherInstance) {
         this.minigameWeatherInstance = minigameWeatherInstance;
     }
-*/
+
     public MinigamePhase getPhase() {
         return phase;
     }
