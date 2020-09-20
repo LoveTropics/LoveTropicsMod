@@ -25,12 +25,10 @@ import com.tterrag.registrate.Registrate;
 import com.tterrag.registrate.providers.ProviderType;
 import com.tterrag.registrate.util.NonNullLazyValue;
 import net.minecraft.command.CommandSource;
-import net.minecraft.fluid.Fluids;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.client.event.ColorHandlerEvent;
 import net.minecraftforge.common.ForgeConfig;
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.common.MinecraftForge;
@@ -72,7 +70,6 @@ public class LoveTropics {
         DistExecutor.runWhenOn(Dist.CLIENT, () -> () -> {
             // Client setup
             modBus.addListener(this::setupClient);
-            modBus.addListener(this::registerItemColors);
         });
 
         MinecraftForge.EVENT_BUS.addListener(this::onServerAboutToStart);
@@ -100,11 +97,6 @@ public class LoveTropics {
     private void setupClient(final FMLClientSetupEvent event) {
         ForgeConfig.CLIENT.alwaysSetupTerrainOffThread.set(true);
         ((ForgeConfigSpec)ObfuscationReflectionHelper.getPrivateValue(ForgeConfig.class, null, "clientSpec")).save();
-    }
-
-    @OnlyIn(Dist.CLIENT)
-    private void registerItemColors(ColorHandlerEvent.Item evt) {
-        evt.getItemColors().register((stack, index) -> index == 0 ? Fluids.WATER.getAttributes().getColor() : -1, LoveTropicsBlocks.WATER_BARRIER.get());
     }
 
     private void setup(final FMLCommonSetupEvent event) {

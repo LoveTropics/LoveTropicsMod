@@ -42,7 +42,9 @@ public class CommandResetIsland {
 					if (data.contains("hasConfirmedResetIsland")) {
 						data.remove("hasConfirmedResetIsland");
 
-						SurviveTheTideMinigameDefinition.fetchBaseMap(entity.getServer());
+						// TODO: Allow us to fetch behaviours from types for minigame definitions
+						// then do actions such as resetBaseMap()
+						// TODO: SurviveTheTideMinigameDefinition.fetchBaseMap(entity.getServer());
 
 						c.getSource().sendFeedback(new StringTextComponent("Reset island back to saved state!")
 								.applyTextStyle(TextFormatting.GREEN), true);

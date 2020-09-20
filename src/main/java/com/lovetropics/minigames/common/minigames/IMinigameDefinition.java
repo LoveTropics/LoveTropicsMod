@@ -1,8 +1,8 @@
 package com.lovetropics.minigames.common.minigames;
 
-import net.minecraft.command.CommandSource;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.ServerPlayerEntity;
+import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
+import net.minecraft.client.Minecraft;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.ActionResultType;
 import net.minecraft.util.ResourceLocation;
@@ -10,10 +10,10 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.world.GameType;
-import net.minecraft.world.World;
 import net.minecraft.world.dimension.DimensionType;
-import net.minecraftforge.event.entity.living.LivingHurtEvent;
-import net.minecraftforge.event.entity.player.AttackEntityEvent;
+import net.minecraftforge.registries.IForgeRegistryEntry;
+
+import java.util.List;
 
 /**
  * Used as a discriminant for a registered minigame. Defines the logic of the
@@ -21,10 +21,12 @@ import net.minecraftforge.event.entity.player.AttackEntityEvent;
  * ruleset for the minigame such as maximum and minimum participants, game types
  * for each player type, dimension the minigame takes place in, etc.
  */
-public interface IMinigameDefinition
+public interface IMinigameDefinition extends IForgeRegistryEntry<IMinigameDefinition>
 {
-    default ActionResult<ITextComponent> canStartMinigame() {
-        return new ActionResult<ITextComponent>(ActionResultType.SUCCESS, new StringTextComponent(""));
+    List<IMinigameBehavior> getBehaviours();
+
+    default ActionResult<ITextComponent> canStartMinigame(final MinecraftServer server) {
+        return new ActionResult<>(ActionResultType.SUCCESS, new StringTextComponent(""));
     }
 
     /**
@@ -73,20 +75,6 @@ public interface IMinigameDefinition
     BlockPos getPlayerRespawnPosition(IMinigameInstance instance);
 
     /**
-     * Relative to the dimension world specified by the dimension type.
-     * @return Block positions for each participant to spawn at when the
-     * minigame starts. Each index specifies the participant number.
-     *
-     * Index 0 == Player 1's position.
-     * Index 1 == Player 2's position.
-     * etc...
-     *
-     * Make sure the length of this returned array is the same as the maximum
-     * participant count defined in this minigame definition.
-     */
-    BlockPos[] getParticipantPositions();
-
-    /**
      * Will not let you start the minigame without at least this amount of
      * players registered for the polling minigame.
      *
@@ -104,97 +92,4 @@ public interface IMinigameDefinition
      * minigame.
      */
     int getMaximumParticipantCount();
-
-    /**
-     * Helper method to define unique logic for the minigame as it is
-     * running. Only called when a minigame using this definition is
-     * actively running.
-     *
-     * @param world The world to run this for, currently a worldUpdate call happens per each loaded world
-     * @param instance The instance of the currently running minigame.
-     */
-    default void worldUpdate(World world, IMinigameInstance instance) {}
-
-    /**
-     * Helper method to catch when a player dies while inside an active
-     * minigame using this definition. Useful for unique logic defined
-     * by this minigame definition.
-     *
-     * @param player The player which died.
-     * @param instance The instance of the currently running minigame.
-     */
-    default void onPlayerDeath(ServerPlayerEntity player, IMinigameInstance instance) {}
-
-    /**
-     * Helper method to create unique logic for when entities in the dimension update.
-     * @param entity The entity which is updating.
-     * @param instance The instance of the currently running minigame.
-     */
-    default void onLivingEntityUpdate(LivingEntity entity, IMinigameInstance instance) {}
-
-    /**
-     * Helper method to create unique logic for when the player updates.
-     * @param player The player which is updating.
-     * @param instance The instance of the currently running minigame.
-     */
-    default void onPlayerUpdate(ServerPlayerEntity player, IMinigameInstance instance) {}
-
-    /**
-     * Helper method to catch when a player respawns while inside an active
-     * minigame using this definition. Useful for unique logic defined
-     * by this minigame definition.
-     *
-     * @param player The player which died.
-     * @param instance The instance of the currently running minigame.
-     */
-    default void onPlayerRespawn(ServerPlayerEntity player, IMinigameInstance instance) {}
-
-    /**
-     * For when a minigame finishes. Useful for cleanup related to this
-     * minigame definition.
-     *
-     * @param commandSource Command source for the minigame instance.
-     *                      Can be used to execute some commands for
-     *                      the minigame from a datapack.
-     * @param instance The current minigame instance.
-     */
-    default void onFinish(CommandSource commandSource, IMinigameInstance instance) {}
-
-    /**
-     * For when the minigame has finished and all players are teleported
-     * out of the dimension.
-     * @param commandSource Command source for the minigame instance.
-     *                      Can be used to execute some commands for
-     *                      the minigame from a datapack.
-     */
-     default void onPostFinish(CommandSource commandSource) {}
-
-    /**
-     * For when a minigame starts. Useful for preparing the minigame.
-     *
-     * @param commandSource Command source for the minigame instance.
-     *                      Can be used to execute some commands for
-     *                      the minigame from a datapack.
-     * @param instance The current minigame instance.
-     */
-    default void onStart(CommandSource commandSource, IMinigameInstance instance) {}
-
-    /**
-     * For before a minigame starts. Useful for preparing the minigame.
-     */
-    default void onPreStart() {}
-
-    /**
-     * Event method for players that are hurt in the minigame instance.
-     * @param event The living hurt event.
-     * @param instance The minigame instance.
-     */
-    default void onPlayerHurt(LivingHurtEvent event, IMinigameInstance instance) {}
-
-    /**
-     * Event method for when a player attacks an entity in the minigame instance.
-     * @param event The attack entity event.
-     * @param instance The minigame instance.
-     */
-    default void onPlayerAttackEntity(AttackEntityEvent event, IMinigameInstance instance) {}
 }

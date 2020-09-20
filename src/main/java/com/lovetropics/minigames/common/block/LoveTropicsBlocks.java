@@ -28,15 +28,6 @@ import net.minecraftforge.client.model.generators.ModelBuilder.Perspective;
 public class LoveTropicsBlocks {
     
     public static final Registrate REGISTRATE = LoveTropics.registrate();
-    
-    public static final BlockEntry<WaterBarrierBlock> WATER_BARRIER = REGISTRATE.block("water_barrier", WaterBarrierBlock::new)
-            .properties(p -> Block.Properties.from(Blocks.BARRIER).noDrops())
-            .blockstate((ctx, prov) -> prov.simpleBlock(ctx.getEntry(), 
-                    prov.models().getBuilder(ctx.getName()).texture("particle", new ResourceLocation("item/barrier"))))
-            .item()
-                .model((ctx, prov) -> prov.generated(ctx::getEntry, new ResourceLocation("block/water_still"), new ResourceLocation("item/barrier")))
-                .build()
-            .register();
 
     public static final Map<TrashType, BlockEntry<TrashBlock>> TRASH = Arrays.<TrashType>stream(TrashType.values())
             .collect(Collectors.toMap(Function.identity(), t -> REGISTRATE.block(t.getId(), p -> new TrashBlock(t.getShape(), p))
@@ -84,32 +75,7 @@ public class LoveTropicsBlocks {
             .register();
     
     public static final TileEntityEntry<DonationTileEntity> DONATION_TILE = TileEntityEntry.cast(REGISTRATE.get("donation", TileEntityType.class));
-    
-    public static final BlockEntry<CustomShapeBlock> BUOY = REGISTRATE.block("buoy", p -> new CustomShapeBlock(
-                    VoxelShapes.or(
-                            Block.makeCuboidShape(2, 0, 2, 14, 3, 14),
-                            Block.makeCuboidShape(3, 3, 3, 13, 14, 13)),
-                    p))
-            .properties(p -> Block.Properties.from(Blocks.BARRIER).noDrops())
-            .blockstate((ctx, prov) -> prov.simpleBlock(ctx.getEntry(), prov.models()
-                    .withExistingParent(ctx.getName(), new ResourceLocation("block/block"))
-                        .ao(false)
-                        .texture("beacon", new ResourceLocation("block/beacon"))
-                        .texture("base", new ResourceLocation("block/dark_prismarine"))
-                        .texture("particle", new ResourceLocation("block/dark_prismarine"))
-                        .element()
-                            .from(2, 0, 2)
-                            .to(14, 3, 14)
-                            .textureAll("#base")
-                            .face(Direction.DOWN).cullface(Direction.DOWN).end()
-                            .end()
-                        .element()
-                            .from(3, 3, 3)
-                            .to(13, 14, 13)
-                            .textureAll("beacon")
-                            .end()))
-            .simpleItem()
-            .register();
+
     
     public static void init() {}
 }

@@ -10,7 +10,7 @@
   "maximum_participants": 16,
   "behavior": [
     {
-      "type": "ltminigames:spawn_participants",
+      "type": "ltminigames:position_participants",
       "positions": [
         [5982, 126, 6970]
       ]

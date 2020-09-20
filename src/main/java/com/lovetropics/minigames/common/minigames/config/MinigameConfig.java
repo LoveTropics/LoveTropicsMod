@@ -1,10 +1,16 @@
 package com.lovetropics.minigames.common.minigames.config;
 
+import com.google.gson.JsonElement;
+import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehaviorType;
+import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
+import com.lovetropics.minigames.common.minigames.behaviours.MinigameBehaviorTypes;
 import com.mojang.datafixers.Dynamic;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.GameType;
 import net.minecraft.world.dimension.DimensionType;
+
+import java.util.List;
 
 public final class MinigameConfig {
     public final ResourceLocation id;
@@ -16,7 +22,7 @@ public final class MinigameConfig {
     public final BlockPos respawnPosition;
     public final int minimumParticipants;
     public final int maximumParticipants;
-//    public final GameBehavior[] behavior;
+    public final List<IMinigameBehavior> behaviors;
 
     public MinigameConfig(
             ResourceLocation id,
@@ -27,8 +33,8 @@ public final class MinigameConfig {
             BlockPos spectatorPosition,
             BlockPos respawnPosition,
             int minimumParticipants,
-            int maximumParticipants
-//            GameBehavior[] behavior
+            int maximumParticipants,
+            List<IMinigameBehavior> behaviors
     ) {
         this.id = id;
         this.translationKey = translationKey;
@@ -39,10 +45,10 @@ public final class MinigameConfig {
         this.respawnPosition = respawnPosition;
         this.minimumParticipants = minimumParticipants;
         this.maximumParticipants = maximumParticipants;
-//        this.behavior = behavior;
+        this.behaviors = behaviors;
     }
 
-    public static <T> MinigameConfig deserialize(ResourceLocation id, Dynamic<T> root) {
+    public static MinigameConfig deserialize(ResourceLocation id, Dynamic<JsonElement> root) {
         String translationKey = root.get("translation_key").asString("");
         DimensionType dimension = DimensionType.byName(new ResourceLocation(root.get("dimension").asString("")));
         GameType participantGameType = GameType.getByName(root.get("participant_game_type").asString(""));
@@ -54,7 +60,7 @@ public final class MinigameConfig {
         int minimumParticipants = root.get("minimum_participants").asInt(1);
         int maximumParticipants = root.get("maximum_participants").asInt(100);
 
-//        GameBehavior[] behavior = root.get("behavior").asList(GameConfig::deserializeBehavior).toArray(new GameBehavior[0]);
+        List<IMinigameBehavior> behaviors = root.get("behaviors").asList(MinigameConfig::deserializeBehavior);
 
         return new MinigameConfig(
                 id,
@@ -65,13 +71,22 @@ public final class MinigameConfig {
                 spectatorPosition,
                 respawnPosition,
                 minimumParticipants,
-                maximumParticipants
-//                behavior
+                maximumParticipants,
+                behaviors
         );
     }
 
     // TODO: implement retrieval and parsing from registry
-    // private static <T> GameBehavior deserializeBehavior(Dynamic<T> root) {
-    //     ResourceLocation type = new ResourceLocation(root.get("type").asString(""));
-    // }
+    private static IMinigameBehavior deserializeBehavior(Dynamic<JsonElement> root) {
+        ResourceLocation type = new ResourceLocation(root.get("type").asString(""));
+        IMinigameBehaviorType behaviour = MinigameBehaviorTypes.MINIGAME_BEHAVIOURS_REGISTRY.get().getValue(type);
+
+        if (behaviour != null) {
+            return behaviour.getInstanceFactory().apply(root);
+        }
+
+        System.out.println("Type is not valid!");
+
+        return null;
+    }
 }

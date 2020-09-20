@@ -17,7 +17,7 @@ import net.minecraft.world.World;
 public class FireworkUtil {
     
     static final int CE_YELLOW = 0xF4C434;
-    static final int CE_BLUE= 0x65B9DB;
+    static final int CE_BLUE = 0x65B9DB;
     static final int CE_GREEN = 0xB1D299;
     static final int CE_RED = 0xEA5153;
     static final int CE_ORANGE = 0xF08747;

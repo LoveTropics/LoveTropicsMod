@@ -30,25 +30,6 @@ public class UnderwaterTrashHuntMinigameDefinition implements IMinigameDefinitio
 
     private BlockPos spectatorPos = new BlockPos(5916, 108, 7000);
 
-    private BlockPos[] playerPositions = new BlockPos[] {
-            new BlockPos(5982, 126, 6970), // player 1
-            new BlockPos(5982, 126, 6970), // player 2
-            new BlockPos(5982, 126, 6970), // player 3
-            new BlockPos(5982, 126, 6970), // player 4
-            new BlockPos(5982, 126, 6970), // player 5
-            new BlockPos(5982, 126, 6970), // player 6
-            new BlockPos(5982, 126, 6970), // player 7
-            new BlockPos(5982, 126, 6970), // player 8
-            new BlockPos(5982, 126, 6970), // player 9
-            new BlockPos(5982, 126, 6970), // player 10
-            new BlockPos(5982, 126, 6970), // player 11
-            new BlockPos(5982, 126, 6970), // player 12
-            new BlockPos(5982, 126, 6970), // player 13
-            new BlockPos(5982, 126, 6970), // player 14
-            new BlockPos(5982, 126, 6970), // player 15
-            new BlockPos(5982, 126, 6970), // player 16
-    };
-
     private int maximumPlayerCount = 16;
     private int minimumPlayerCount = 8;
 
@@ -100,11 +81,6 @@ public class UnderwaterTrashHuntMinigameDefinition implements IMinigameDefinitio
     @Override
     public BlockPos getPlayerRespawnPosition(IMinigameInstance instance) {
         return this.spectatorPos;
-    }
-
-    @Override
-    public BlockPos[] getParticipantPositions() {
-        return this.playerPositions;
     }
 
     @Override
