@@ -6,6 +6,7 @@ import com.lovetropics.minigames.common.command.CommandDonation;
 import com.lovetropics.minigames.common.command.CommandReloadConfig;
 import com.lovetropics.minigames.common.command.minigames.CommandAddConfigIceberg;
 import com.lovetropics.minigames.common.command.minigames.CommandIslandSetStartPos;
+import com.lovetropics.minigames.common.command.minigames.CommandMinigameControl;
 import com.lovetropics.minigames.common.command.minigames.CommandPollMinigame;
 import com.lovetropics.minigames.common.command.minigames.CommandRegisterMinigame;
 import com.lovetropics.minigames.common.command.minigames.CommandResetIsland;
@@ -19,9 +20,11 @@ import com.lovetropics.minigames.common.config.ConfigLT;
 import com.lovetropics.minigames.common.item.MinigameItems;
 import com.lovetropics.minigames.common.minigames.MinigameManager;
 import com.lovetropics.minigames.common.minigames.config.MinigameConfigs;
+import com.mojang.brigadier.CommandDispatcher;
 import com.tterrag.registrate.Registrate;
 import com.tterrag.registrate.providers.ProviderType;
 import com.tterrag.registrate.util.NonNullLazyValue;
+import net.minecraft.command.CommandSource;
 import net.minecraft.fluid.Fluids;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
@@ -115,19 +118,21 @@ public class LoveTropics {
     private void onServerStarting(final FMLServerStartingEvent event) {
         MinigameManager.init(event.getServer());
 
-        CommandPollMinigame.register(event.getServer().getCommandManager().getDispatcher());
-        CommandRegisterMinigame.register(event.getServer().getCommandManager().getDispatcher());
-        CommandStartMinigame.register(event.getServer().getCommandManager().getDispatcher());
-        CommandStopMinigame.register(event.getServer().getCommandManager().getDispatcher());
-        CommandUnregisterMinigame.register(event.getServer().getCommandManager().getDispatcher());
-        CommandStopPollingMinigame.register(event.getServer().getCommandManager().getDispatcher());
-        CommandReloadConfig.register(event.getServer().getCommandManager().getDispatcher());
-        CommandDonation.register(event.getServer().getCommandManager().getDispatcher());
-        CommandAddConfigIceberg.register(event.getServer().getCommandManager().getDispatcher());
-        CommandResetIsland.register(event.getServer().getCommandManager().getDispatcher());
-        CommandSaveIsland.register(event.getServer().getCommandManager().getDispatcher());
-        CommandIslandSetStartPos.register(event.getServer().getCommandManager().getDispatcher());
-        CommandResetIslandChests.register(event.getServer().getCommandManager().getDispatcher());
+        CommandDispatcher<CommandSource> dispatcher = event.getServer().getCommandManager().getDispatcher();
+        CommandPollMinigame.register(dispatcher);
+        CommandRegisterMinigame.register(dispatcher);
+        CommandStartMinigame.register(dispatcher);
+        CommandStopMinigame.register(dispatcher);
+        CommandUnregisterMinigame.register(dispatcher);
+        CommandStopPollingMinigame.register(dispatcher);
+        CommandReloadConfig.register(dispatcher);
+        CommandDonation.register(dispatcher);
+        CommandAddConfigIceberg.register(dispatcher);
+        CommandResetIsland.register(dispatcher);
+        CommandSaveIsland.register(dispatcher);
+        CommandIslandSetStartPos.register(dispatcher);
+        CommandResetIslandChests.register(dispatcher);
+        CommandMinigameControl.register(dispatcher);
     }
 
     private void onServerStopping(final FMLServerStoppingEvent event) {
