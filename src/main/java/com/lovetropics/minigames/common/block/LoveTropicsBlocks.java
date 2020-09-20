@@ -9,7 +9,8 @@ import java.util.stream.Collectors;
 import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.common.block.tileentity.DonationTileEntity;
 import com.tterrag.registrate.Registrate;
-import com.tterrag.registrate.util.RegistryEntry;
+import com.tterrag.registrate.util.entry.BlockEntry;
+import com.tterrag.registrate.util.entry.TileEntityEntry;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
@@ -28,7 +29,7 @@ public class LoveTropicsBlocks {
     
     public static final Registrate REGISTRATE = LoveTropics.registrate();
     
-    public static final RegistryEntry<WaterBarrierBlock> WATER_BARRIER = REGISTRATE.block("water_barrier", WaterBarrierBlock::new)
+    public static final BlockEntry<WaterBarrierBlock> WATER_BARRIER = REGISTRATE.block("water_barrier", WaterBarrierBlock::new)
             .properties(p -> Block.Properties.from(Blocks.BARRIER).noDrops())
             .blockstate((ctx, prov) -> prov.simpleBlock(ctx.getEntry(), 
                     prov.models().getBuilder(ctx.getName()).texture("particle", new ResourceLocation("item/barrier"))))
@@ -37,7 +38,7 @@ public class LoveTropicsBlocks {
                 .build()
             .register();
 
-    public static final Map<TrashType, RegistryEntry<TrashBlock>> TRASH = Arrays.<TrashType>stream(TrashType.values())
+    public static final Map<TrashType, BlockEntry<TrashBlock>> TRASH = Arrays.<TrashType>stream(TrashType.values())
             .collect(Collectors.toMap(Function.identity(), t -> REGISTRATE.block(t.getId(), p -> new TrashBlock(t.getShape(), p))
                     .properties(p -> Block.Properties.create(Material.PLANTS).doesNotBlockMovement())
                     .addLayer(() -> RenderType::getCutout)
@@ -76,15 +77,15 @@ public class LoveTropicsBlocks {
                     .register(),
                     (f1, f2) -> { throw new IllegalStateException(); }, () -> new EnumMap<>(TrashType.class)));
     
-    public static final RegistryEntry<DonationBlock> DONATION = REGISTRATE.block("donation", DonationBlock::new)
+    public static final BlockEntry<DonationBlock> DONATION = REGISTRATE.block("donation", DonationBlock::new)
             .properties(p -> Block.Properties.from(Blocks.BEDROCK).noDrops())
-            .tileEntity(DonationTileEntity::new)
+            .simpleTileEntity(DonationTileEntity::new)
             .simpleItem()
             .register();
     
-    public static final RegistryEntry<TileEntityType<DonationTileEntity>> DONATION_TILE = REGISTRATE.get("donation", TileEntityType.class);
+    public static final TileEntityEntry<DonationTileEntity> DONATION_TILE = TileEntityEntry.cast(REGISTRATE.get("donation", TileEntityType.class));
     
-    public static final RegistryEntry<CustomShapeBlock> BUOY = REGISTRATE.block("buoy", p -> new CustomShapeBlock(
+    public static final BlockEntry<CustomShapeBlock> BUOY = REGISTRATE.block("buoy", p -> new CustomShapeBlock(
                     VoxelShapes.or(
                             Block.makeCuboidShape(2, 0, 2, 14, 3, 14),
                             Block.makeCuboidShape(3, 3, 3, 13, 14, 13)),

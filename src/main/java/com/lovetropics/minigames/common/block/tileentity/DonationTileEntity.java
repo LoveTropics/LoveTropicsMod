@@ -1,12 +1,12 @@
 package com.lovetropics.minigames.common.block.tileentity;
 
-import com.lovetropics.minigames.common.block.LoveTropicsBlocks;
 import com.lovetropics.minigames.common.donations.FireworkUtil;
 import com.lovetropics.minigames.common.donations.TickerDonation;
 
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.tileentity.ITickableTileEntity;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.tileentity.TileEntityType;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
@@ -17,8 +17,8 @@ public class DonationTileEntity extends TileEntity implements ITickableTileEntit
     private int queued = 0;
     private int randomOffset = 0;
     
-    public DonationTileEntity() {
-        super(LoveTropicsBlocks.DONATION_TILE.get());
+    public DonationTileEntity(TileEntityType<? extends DonationTileEntity> type) {
+        super(type);
     }
     
     @Override
