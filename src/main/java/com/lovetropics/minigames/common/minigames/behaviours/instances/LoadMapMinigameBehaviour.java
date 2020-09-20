@@ -1,6 +1,7 @@
 package com.lovetropics.minigames.common.minigames.behaviours.instances;
 
 import com.lovetropics.minigames.common.minigames.IMinigameDefinition;
+import com.lovetropics.minigames.common.minigames.IMinigameInstance;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
 import net.minecraft.command.CommandSource;
 import net.minecraft.server.MinecraftServer;
@@ -31,8 +32,8 @@ public class LoadMapMinigameBehaviour implements IMinigameBehavior
 	}
 
 	@Override
-	public void onPostFinish(final IMinigameDefinition definition, CommandSource commandSource) {
-		ServerWorld world = commandSource.getServer().getWorld(definition.getDimension());
+	public void onPostFinish(final IMinigameInstance minigame) {
+		ServerWorld world = minigame.getWorld();
 		DimensionManager.unloadWorld(world);
 	}
 

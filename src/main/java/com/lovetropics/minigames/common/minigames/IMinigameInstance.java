@@ -1,10 +1,12 @@
 package com.lovetropics.minigames.common.minigames;
 
-import net.minecraft.command.CommandSource;
-import net.minecraft.entity.player.ServerPlayerEntity;
-
 import java.util.Set;
 import java.util.function.Consumer;
+
+import net.minecraft.command.CommandSource;
+import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.world.dimension.DimensionType;
+import net.minecraft.world.server.ServerWorld;
 
 /**
  * An instance used to track which participants and spectators are inside
@@ -89,4 +91,12 @@ public interface IMinigameInstance
      * @return The command source for this minigame instance.
      */
     CommandSource getCommandSource();
+    
+    default ServerWorld getWorld() {
+    	return getCommandSource().getWorld();
+    }
+    
+    default DimensionType getDimension() {
+    	return getDefinition().getDimension();
+    }
 }

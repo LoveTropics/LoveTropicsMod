@@ -1,16 +1,15 @@
 package com.lovetropics.minigames.common.minigames.behaviours.instances.survive_the_tide;
 
-import com.lovetropics.minigames.common.minigames.IMinigameDefinition;
 import com.lovetropics.minigames.common.minigames.IMinigameInstance;
-import com.lovetropics.minigames.common.minigames.weather.IMinigameWeatherInstance;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
+import com.lovetropics.minigames.common.minigames.weather.IMinigameWeatherInstance;
 import com.lovetropics.minigames.common.minigames.weather.MinigameWeatherConfig;
-import net.minecraft.command.CommandSource;
+
 import net.minecraft.world.World;
 
 public class WeatherEventsMinigameBehavior implements IMinigameBehavior
 {
-	private IMinigameWeatherInstance minigameWeatherInstance;
+	private IMinigameWeatherInstance<?> minigameWeatherInstance;
 	private MinigameWeatherConfig config;
 
 	public WeatherEventsMinigameBehavior(final MinigameWeatherConfig config) {
@@ -19,19 +18,19 @@ public class WeatherEventsMinigameBehavior implements IMinigameBehavior
 	}
 
 	@Override
-	public void worldUpdate(final IMinigameDefinition definition, World world, IMinigameInstance instance) {
-		if (world.getDimension().getType() == definition.getDimension()) {
+	public void worldUpdate(final IMinigameInstance minigame, World world) {
+		if (world.getDimension().getType() == minigame.getDefinition().getDimension()) {
 			// TODO: minigameWeatherInstance.tick(definition);
 		}
 	}
 
 	@Override
-	public void onFinish(final IMinigameDefinition definition, CommandSource commandSource, IMinigameInstance instance) {
+	public void onFinish(final IMinigameInstance minigame) {
 		minigameWeatherInstance.reset();
 	}
 
 	@Override
-	public void onStart(final IMinigameDefinition definition, CommandSource commandSource, IMinigameInstance instance) {
+	public void onStart(final IMinigameInstance minigame) {
 		minigameWeatherInstance.setMinigameActive(true);
 	}
 }

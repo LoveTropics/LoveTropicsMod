@@ -102,9 +102,9 @@ public class SurviveTheTideMinigameBehaviorInstance implements IMinigameBehavior
 	}
 	
 	@Override
-	public void worldUpdate(final IMinigameDefinition definition, World world, IMinigameInstance instance) {
+	public void worldUpdate(final IMinigameInstance minigame, World world) {
 		if (world.getDimension().getType() == getDimension()) {
-			this.checkForGameEndCondition(instance, world);
+			this.checkForGameEndCondition(minigame, world);
 
 			minigameTime++;
 			phaseTime++;
@@ -112,18 +112,18 @@ public class SurviveTheTideMinigameBehaviorInstance implements IMinigameBehavior
 			this.processWaterLevel(world);
 
 			if (ConfigLT.MINIGAME_SURVIVE_THE_TIDE.minigame_SurviveTheTide_worlderBorderEnabled.get()) {
-				this.tickWorldBorder(world, instance);
+				this.tickWorldBorder(world, minigame);
 			}
 
 			if (phase == MinigamePhase.PHASE0) {
 				if (phaseTime == 20 * 7) {
-					instance.getAllPlayers().sendMessage(new TranslationTextComponent(TropicraftLangKeys.SURVIVE_THE_TIDE_INTRO2).applyTextStyle(TextFormatting.GRAY));
+					minigame.getAllPlayers().sendMessage(new TranslationTextComponent(TropicraftLangKeys.SURVIVE_THE_TIDE_INTRO2).applyTextStyle(TextFormatting.GRAY));
 				} else if (phaseTime == 20 * 14) {
-					instance.getAllPlayers().sendMessage(new TranslationTextComponent(TropicraftLangKeys.SURVIVE_THE_TIDE_INTRO3).applyTextStyle(TextFormatting.GRAY));
+					minigame.getAllPlayers().sendMessage(new TranslationTextComponent(TropicraftLangKeys.SURVIVE_THE_TIDE_INTRO3).applyTextStyle(TextFormatting.GRAY));
 				} else if (phaseTime == 20 * 21) {
-					instance.getAllPlayers().sendMessage(new TranslationTextComponent(TropicraftLangKeys.SURVIVE_THE_TIDE_INTRO4).applyTextStyle(TextFormatting.GRAY));
+					minigame.getAllPlayers().sendMessage(new TranslationTextComponent(TropicraftLangKeys.SURVIVE_THE_TIDE_INTRO4).applyTextStyle(TextFormatting.GRAY));
 				} else if (phaseTime == 20 * 28) {
-					instance.getAllPlayers().sendMessage(new TranslationTextComponent(TropicraftLangKeys.SURVIVE_THE_TIDE_INTRO5).applyTextStyle(TextFormatting.GRAY));
+					minigame.getAllPlayers().sendMessage(new TranslationTextComponent(TropicraftLangKeys.SURVIVE_THE_TIDE_INTRO5).applyTextStyle(TextFormatting.GRAY));
 				}
 
 				if (phaseTime >= ConfigLT.MINIGAME_SURVIVE_THE_TIDE.phase0Length.get()) {
@@ -140,16 +140,16 @@ public class SurviveTheTideMinigameBehaviorInstance implements IMinigameBehavior
 					}
 
 					int minutes = ConfigLT.MINIGAME_SURVIVE_THE_TIDE.phase1Length.get() / 20 / 60;
-					instance.getAllPlayers().sendMessage(new TranslationTextComponent(TropicraftLangKeys.SURVIVE_THE_TIDE_PVP_DISABLED, new StringTextComponent(String.valueOf(minutes))).applyTextStyle(TextFormatting.YELLOW));
+					minigame.getAllPlayers().sendMessage(new TranslationTextComponent(TropicraftLangKeys.SURVIVE_THE_TIDE_PVP_DISABLED, new StringTextComponent(String.valueOf(minutes))).applyTextStyle(TextFormatting.YELLOW));
 
 					// So players can drop down without fall damage
-					instance.getAllPlayers().addPotionEffect(new EffectInstance(Effects.SLOW_FALLING, 10 * 20));
+					minigame.getAllPlayers().addPotionEffect(new EffectInstance(Effects.SLOW_FALLING, 10 * 20));
 				}
 			} else if (phase == MinigamePhase.PHASE1) {
 				if (phaseTime >= ConfigLT.MINIGAME_SURVIVE_THE_TIDE.phase1Length.get()) {
 					nextPhase();
 
-					instance.getAllPlayers().sendMessage(new TranslationTextComponent(TropicraftLangKeys.SURVIVE_THE_TIDE_PVP_ENABLED).applyTextStyle(TextFormatting.RED));
+					minigame.getAllPlayers().sendMessage(new TranslationTextComponent(TropicraftLangKeys.SURVIVE_THE_TIDE_PVP_ENABLED).applyTextStyle(TextFormatting.RED));
 				}
 			} else if (phase == MinigamePhase.PHASE2) {
 				if (phaseTime >= ConfigLT.MINIGAME_SURVIVE_THE_TIDE.phase2Length.get()) {
@@ -170,7 +170,7 @@ public class SurviveTheTideMinigameBehaviorInstance implements IMinigameBehavior
 	}
 
 	@Override
-	public void onPlayerDeath(final IMinigameDefinition definition, ServerPlayerEntity player, IMinigameInstance instance) {
+	public void onPlayerDeath(final IMinigameInstance minigame, ServerPlayerEntity player) {
 		final MinecraftServer server = player.getServer();
 		BlockPos fireworkPos = player.world.getHeight(Heightmap.Type.MOTION_BLOCKING, player.getPosition());
 		FireworkUtil.spawnFirework(fireworkPos, player.world, FireworkUtil.Palette.ISLAND_ROYALE.getPalette());
@@ -178,15 +178,15 @@ public class SurviveTheTideMinigameBehaviorInstance implements IMinigameBehavior
 		destroyVanishingCursedItems(player.inventory);
 		player.inventory.dropAllItems();
 
-		if (!instance.getSpectators().contains(player.getUniqueID())) {
-			instance.removeParticipant(player);
-			instance.addSpectator(player);
+		if (!minigame.getSpectators().contains(player.getUniqueID())) {
+			minigame.removeParticipant(player);
+			minigame.addSpectator(player);
 
 			player.setGameType(GameType.SPECTATOR);
 		}
 
-		if (instance.getParticipants().size() == 2) {
-			Iterator<ServerPlayerEntity> it = instance.getParticipants().iterator();
+		if (minigame.getParticipants().size() == 2) {
+			Iterator<ServerPlayerEntity> it = minigame.getParticipants().iterator();
 
 			ServerPlayerEntity p1 = it.next();
 			ServerPlayerEntity p2 = it.next();
@@ -195,46 +195,46 @@ public class SurviveTheTideMinigameBehaviorInstance implements IMinigameBehavior
 				ITextComponent p1text = p1.getDisplayName().deepCopy().applyTextStyle(TextFormatting.AQUA);
 				ITextComponent p2text = p2.getDisplayName().deepCopy().applyTextStyle(TextFormatting.AQUA);
 
-				instance.getAllPlayers().sendMessage(new TranslationTextComponent(TropicraftLangKeys.SURVIVE_THE_TIDE_DOWN_TO_TWO, p1text, p2text).applyTextStyle(TextFormatting.GOLD));
+				minigame.getAllPlayers().sendMessage(new TranslationTextComponent(TropicraftLangKeys.SURVIVE_THE_TIDE_DOWN_TO_TWO, p1text, p2text).applyTextStyle(TextFormatting.GOLD));
 			}
 		}
 
-		if (instance.getParticipants().size() == 1) {
+		if (minigame.getParticipants().size() == 1) {
 			this.minigameEnded = true;
 
-			this.winningPlayer = instance.getParticipants().iterator().next().getUniqueID();
+			this.winningPlayer = minigame.getParticipants().iterator().next().getUniqueID();
 			this.winningPlayerName = server.getPlayerList().getPlayerByUUID(this.winningPlayer).getDisplayName().deepCopy();
 		}
 	}
 
 	@Override
-	public void onPlayerHurt(final IMinigameDefinition definition, LivingHurtEvent event, IMinigameInstance instance) {
+	public void onPlayerHurt(final IMinigameInstance minigame, LivingHurtEvent event) {
 		if (event.getSource().getTrueSource() instanceof PlayerEntity && isSafePhase(this.phase)) {
 			event.setCanceled(true);
 		}
 	}
 
 	@Override
-	public void onPlayerAttackEntity(final IMinigameDefinition definition, AttackEntityEvent event, IMinigameInstance instance) {
+	public void onPlayerAttackEntity(final IMinigameInstance minigame, AttackEntityEvent event) {
 		if (event.getTarget() instanceof PlayerEntity && isSafePhase(this.phase)) {
 			event.setCanceled(true);
 		}
 	}
 
 	@Override
-	public void onLivingEntityUpdate(final IMinigameDefinition definition, LivingEntity entity, IMinigameInstance instance) {
+	public void onLivingEntityUpdate(final IMinigameInstance minigame, LivingEntity entity) {
 		if (entity.getPosY() <= this.waterLevel + 1 && entity.isInWater() && entity.ticksExisted % 20 == 0) {
 			entity.attackEntityFrom(DamageSource.DROWN, 2.0F);
 		}
 	}
 
 	@Override
-	public void onPlayerRespawn(final IMinigameDefinition definition, ServerPlayerEntity player, IMinigameInstance instance) {
+	public void onPlayerRespawn(final IMinigameInstance minigame, ServerPlayerEntity player) {
 
 	}
 
 	@Override
-	public void onFinish(final IMinigameDefinition definition, CommandSource commandSource, IMinigameInstance instance) {
+	public void onFinish(final IMinigameInstance minigame) {
 		this.minigameEnded = false;
 		this.minigameEndedTimer = 0;
 		this.winningPlayer = null;
@@ -247,14 +247,13 @@ public class SurviveTheTideMinigameBehaviorInstance implements IMinigameBehavior
 	}
 
 	@Override
-	public void onStart(final IMinigameDefinition definition, CommandSource commandSource, IMinigameInstance instance) {
+	public void onStart(final IMinigameInstance minigame) {
 		minigameTime = 0;
 		minigameEndedTimer = 0;
-		ServerWorld world = commandSource.getServer().getWorld(this.getDimension());
 		waterLevel = 120;
 		phase = MinigamePhase.PHASE0;
 
-		instance.getAllPlayers().sendMessage(new TranslationTextComponent(TropicraftLangKeys.SURVIVE_THE_TIDE_INTRO1).applyTextStyle(TextFormatting.GRAY));
+		minigame.getAllPlayers().sendMessage(new TranslationTextComponent(TropicraftLangKeys.SURVIVE_THE_TIDE_INTRO1).applyTextStyle(TextFormatting.GRAY));
 	}
 
 	public MinigamePhase getPhase() {
