@@ -29,7 +29,7 @@ public class DonationBlock extends Block {
 
 	@Override
 	public TileEntity createTileEntity(BlockState state, IBlockReader world) {
-		return new DonationTileEntity();
+		return LoveTropicsBlocks.DONATION_TILE.create();
 	}
 
 	@Override
