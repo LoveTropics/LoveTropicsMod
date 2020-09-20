@@ -1,13 +1,9 @@
 package com.lovetropics.minigames.common.minigames;
 
-import java.util.Set;
-import java.util.UUID;
-
-import com.google.common.collect.Sets;
-
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.ICommandSource;
 import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.Vec2f;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.text.ITextComponent;
@@ -24,11 +20,9 @@ public class MinigameInstance implements IMinigameInstance
 {
     private IMinigameDefinition definition;
 
-    private Set<UUID> players = Sets.newHashSet();
-
-    private Set<UUID> spectators = Sets.newHashSet();
-
-    private Set<UUID> allPlayers = Sets.newHashSet();
+    private final PlayerSet participants;
+    private final PlayerSet spectators;
+    private final PlayerSet allPlayers;
 
     private CommandSource commandSource;
 
@@ -37,6 +31,11 @@ public class MinigameInstance implements IMinigameInstance
     public MinigameInstance(IMinigameDefinition definition, ServerWorld world) {
         this.definition = definition;
         this.world = world;
+
+        MinecraftServer server = world.getServer();
+        this.participants = new PlayerSet(server);
+        this.spectators = new PlayerSet(server);
+        this.allPlayers = new PlayerSet(server);
     }
 
     @Override
@@ -46,34 +45,34 @@ public class MinigameInstance implements IMinigameInstance
 
     @Override
     public void addParticipant(ServerPlayerEntity player) {
-        if (this.spectators.contains(player.getUniqueID())) {
+        if (this.spectators.contains(player)) {
             throw new IllegalArgumentException("Player already exists in this minigame instance as a spectator! "
                     + player.getDisplayName().getFormattedText());
         }
 
-        if (this.players.contains(player.getUniqueID())) {
+        if (this.participants.contains(player)) {
             throw new IllegalArgumentException("Player already exists in this minigame instance! "
                     + player.getDisplayName().getFormattedText());
         }
 
-        this.players.add(player.getUniqueID());
-        this.allPlayers.add(player.getUniqueID());
+        this.participants.add(player);
+        this.allPlayers.add(player);
     }
 
     @Override
     public void removeParticipant(ServerPlayerEntity player) {
-        if (!this.players.contains(player.getUniqueID())) {
+        if (!this.participants.contains(player)) {
             throw new IllegalArgumentException("Player doesn't exist in this minigame instance! "
                     + player.getDisplayName().getFormattedText());
         }
 
-        this.players.remove(player.getUniqueID());
-        this.allPlayers.remove(player.getUniqueID());
+        this.participants.remove(player);
+        this.allPlayers.remove(player);
     }
 
     @Override
     public void addSpectator(ServerPlayerEntity player) {
-        if (this.players.contains(player.getUniqueID())) {
+        if (this.participants.contains(player.getUniqueID())) {
             throw new IllegalArgumentException("Player already exists in this minigame instance as a non-spectator! "
                     + player.getDisplayName().getFormattedText());
         }
@@ -83,8 +82,8 @@ public class MinigameInstance implements IMinigameInstance
                     + player.getDisplayName().getFormattedText());
         }
 
-        this.spectators.add(player.getUniqueID());
-        this.allPlayers.add(player.getUniqueID());
+        this.spectators.add(player);
+        this.allPlayers.add(player);
     }
 
     @Override
@@ -99,18 +98,18 @@ public class MinigameInstance implements IMinigameInstance
     }
 
     @Override
-    public Set<UUID> getParticipants() {
-        return this.players;
+    public PlayerSet getParticipants() {
+        return this.participants;
     }
 
     @Override
-    public Set<UUID> getSpectators() {
-        return this.spectators;
-    }
-
-    @Override
-    public Set<UUID> getAllPlayerUUIDs() {
+    public PlayerSet getAllPlayers() {
         return this.allPlayers;
+    }
+
+    @Override
+    public PlayerSet getSpectators() {
+        return this.spectators;
     }
 
     @Override

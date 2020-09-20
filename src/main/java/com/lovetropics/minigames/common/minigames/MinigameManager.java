@@ -1,12 +1,5 @@
 package com.lovetropics.minigames.common.minigames;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.UUID;
-
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.lovetropics.minigames.Constants;
@@ -15,7 +8,6 @@ import com.lovetropics.minigames.common.Util;
 import com.lovetropics.minigames.common.dimension.DimensionUtils;
 import com.lovetropics.minigames.common.minigames.definitions.UnderwaterTrashHuntMinigameDefinition;
 import com.lovetropics.minigames.common.minigames.definitions.survive_the_tide.SurviveTheTideMinigameDefinition;
-
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.server.MinecraftServer;
@@ -37,6 +29,13 @@ import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.player.AttackEntityEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.UUID;
 
 /**
  * Standard implementation of a minigame manager. Would prefer to do something other
@@ -149,13 +148,7 @@ public class MinigameManager implements IMinigameManager
         IMinigameDefinition def = this.currentInstance.getDefinition();
         def.onFinish(this.currentInstance.getCommandSource(), this.currentInstance);
 
-        for (UUID uuid : this.currentInstance.getAllPlayerUUIDs()) {
-            ServerPlayerEntity player = this.server.getPlayerList().getPlayerByUUID(uuid);
-
-            if (player != null) {
-                this.teleportBack(player);
-            }
-        }
+        this.currentInstance.getAllPlayers().forEach(this::teleportBack);
 
         // Send all players a message letting them know the minigame has finished
         for (ServerPlayerEntity player : this.server.getPlayerList().getPlayers()) {
@@ -505,7 +498,7 @@ public class MinigameManager implements IMinigameManager
     }
 
     private boolean ifPlayerInInstance(Entity entity) {
-        return entity instanceof ServerPlayerEntity && this.currentInstance != null && this.currentInstance.getAllPlayerUUIDs().contains(entity.getUniqueID());
+        return entity instanceof ServerPlayerEntity && this.currentInstance != null && this.currentInstance.getAllPlayers().contains(entity.getUniqueID());
     }
 
     private boolean ifEntityInDimension(Entity entity) {
