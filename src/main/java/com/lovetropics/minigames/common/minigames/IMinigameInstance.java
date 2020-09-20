@@ -3,9 +3,6 @@ package com.lovetropics.minigames.common.minigames;
 import net.minecraft.command.CommandSource;
 import net.minecraft.entity.player.ServerPlayerEntity;
 
-import java.util.Set;
-import java.util.UUID;
-
 /**
  * An instance used to track which participants and spectators are inside
  * the running minigame. Also holds the definition to process the content
@@ -61,17 +58,17 @@ public interface IMinigameInstance
     /**
      * @return The list of participants that are playing within the minigame instance.
      */
-    Set<UUID> getParticipants();
+    PlayerSet getParticipants();
 
     /**
      * @return The list of spectators that are observing the minigame instance.
      */
-    Set<UUID> getSpectators();
+    PlayerSet getSpectators();
 
     /**
      * @return The list of all players that are a part of this minigame instance.
      */
-    Set<UUID> getAllPlayerUUIDs();
+    PlayerSet getAllPlayers();
 
     /**
      * Used for executing commands of datapacks within the minigames.

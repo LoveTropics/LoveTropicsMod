@@ -1,16 +1,5 @@
 package com.lovetropics.minigames.common.minigames.definitions.survive_the_tide;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Iterator;
-import java.util.Random;
-import java.util.UUID;
-import java.util.function.Consumer;
-
-import org.apache.commons.io.FileUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import com.lovetropics.minigames.client.data.TropicraftLangKeys;
 import com.lovetropics.minigames.common.Util;
 import com.lovetropics.minigames.common.config.ConfigLT;
@@ -20,7 +9,6 @@ import com.lovetropics.minigames.common.minigames.IMinigameDefinition;
 import com.lovetropics.minigames.common.minigames.IMinigameInstance;
 import com.lovetropics.minigames.common.minigames.IMinigameWeatherInstance;
 import com.lovetropics.minigames.common.minigames.MinigameManager;
-
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.CampfireBlock;
@@ -66,6 +54,15 @@ import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.util.Constants.BlockFlags;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.player.AttackEntityEvent;
+import org.apache.commons.io.FileUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Iterator;
+import java.util.Random;
+import java.util.UUID;
 
 /**
  * Definition implementation for the Island Royale minigame.
@@ -203,13 +200,13 @@ public class SurviveTheTideMinigameDefinition implements IMinigameDefinition {
 
             if (phase == MinigamePhase.PHASE0) {
                 if (phaseTime == 20 * 7) {
-                    this.messageAllPlayers(instance, new TranslationTextComponent(TropicraftLangKeys.SURVIVE_THE_TIDE_INTRO2).applyTextStyle(TextFormatting.GRAY));
+                    instance.getAllPlayers().sendMessage(new TranslationTextComponent(TropicraftLangKeys.SURVIVE_THE_TIDE_INTRO2).applyTextStyle(TextFormatting.GRAY));
                 } else if (phaseTime == 20 * 14) {
-                    this.messageAllPlayers(instance, new TranslationTextComponent(TropicraftLangKeys.SURVIVE_THE_TIDE_INTRO3).applyTextStyle(TextFormatting.GRAY));
+                    instance.getAllPlayers().sendMessage(new TranslationTextComponent(TropicraftLangKeys.SURVIVE_THE_TIDE_INTRO3).applyTextStyle(TextFormatting.GRAY));
                 } else if (phaseTime == 20 * 21) {
-                    this.messageAllPlayers(instance, new TranslationTextComponent(TropicraftLangKeys.SURVIVE_THE_TIDE_INTRO4).applyTextStyle(TextFormatting.GRAY));
+                    instance.getAllPlayers().sendMessage(new TranslationTextComponent(TropicraftLangKeys.SURVIVE_THE_TIDE_INTRO4).applyTextStyle(TextFormatting.GRAY));
                 } else if (phaseTime == 20 * 28) {
-                    this.messageAllPlayers(instance, new TranslationTextComponent(TropicraftLangKeys.SURVIVE_THE_TIDE_INTRO5).applyTextStyle(TextFormatting.GRAY));
+                    instance.getAllPlayers().sendMessage(new TranslationTextComponent(TropicraftLangKeys.SURVIVE_THE_TIDE_INTRO5).applyTextStyle(TextFormatting.GRAY));
                 }
 
                 if (phaseTime >= ConfigLT.MINIGAME_SURVIVE_THE_TIDE.phase0Length.get()) {
@@ -226,16 +223,16 @@ public class SurviveTheTideMinigameDefinition implements IMinigameDefinition {
                     }
 
                     int minutes = ConfigLT.MINIGAME_SURVIVE_THE_TIDE.phase1Length.get() / 20 / 60;
-                    this.messageAllPlayers(instance, new TranslationTextComponent(TropicraftLangKeys.SURVIVE_THE_TIDE_PVP_DISABLED, new StringTextComponent(String.valueOf(minutes))).applyTextStyle(TextFormatting.YELLOW));
+                    instance.getAllPlayers().sendMessage(new TranslationTextComponent(TropicraftLangKeys.SURVIVE_THE_TIDE_PVP_DISABLED, new StringTextComponent(String.valueOf(minutes))).applyTextStyle(TextFormatting.YELLOW));
 
                     // So players can drop down without fall damage
-                    this.actionAllParticipants(instance, (p) -> p.addPotionEffect(new EffectInstance(Effects.SLOW_FALLING, 10 * 20)));
+                    instance.getAllPlayers().addPotionEffect(new EffectInstance(Effects.SLOW_FALLING, 10 * 20));
                 }
             } else if (phase == MinigamePhase.PHASE1) {
                 if (phaseTime >= ConfigLT.MINIGAME_SURVIVE_THE_TIDE.phase1Length.get()) {
                     nextPhase();
 
-                    this.messageAllPlayers(instance, new TranslationTextComponent(TropicraftLangKeys.SURVIVE_THE_TIDE_PVP_ENABLED).applyTextStyle(TextFormatting.RED));
+                    instance.getAllPlayers().sendMessage(new TranslationTextComponent(TropicraftLangKeys.SURVIVE_THE_TIDE_PVP_ENABLED).applyTextStyle(TextFormatting.RED));
                 }
             } else if (phase == MinigamePhase.PHASE2) {
                 if (phaseTime >= ConfigLT.MINIGAME_SURVIVE_THE_TIDE.phase2Length.get()) {
@@ -273,26 +270,23 @@ public class SurviveTheTideMinigameDefinition implements IMinigameDefinition {
         }
 
         if (instance.getParticipants().size() == 2) {
-            Iterator<UUID> it = instance.getParticipants().iterator();
+            Iterator<ServerPlayerEntity> it = instance.getParticipants().iterator();
 
-            UUID p1id = it.next();
-            UUID p2id = it.next();
-
-            ServerPlayerEntity p1 = this.server.getPlayerList().getPlayerByUUID(p1id);
-            ServerPlayerEntity p2 = this.server.getPlayerList().getPlayerByUUID(p2id);
+            ServerPlayerEntity p1 = it.next();
+            ServerPlayerEntity p2 = it.next();
 
             if (p1 != null && p2 != null) {
                 ITextComponent p1text = p1.getDisplayName().deepCopy().applyTextStyle(TextFormatting.AQUA);
                 ITextComponent p2text = p2.getDisplayName().deepCopy().applyTextStyle(TextFormatting.AQUA);
 
-                this.messageAllPlayers(instance, new TranslationTextComponent(TropicraftLangKeys.SURVIVE_THE_TIDE_DOWN_TO_TWO, p1text, p2text).applyTextStyle(TextFormatting.GOLD));
+                instance.getAllPlayers().sendMessage(new TranslationTextComponent(TropicraftLangKeys.SURVIVE_THE_TIDE_DOWN_TO_TWO, p1text, p2text).applyTextStyle(TextFormatting.GOLD));
             }
         }
 
         if (instance.getParticipants().size() == 1) {
             this.minigameEnded = true;
 
-            this.winningPlayer = instance.getParticipants().iterator().next();
+            this.winningPlayer = instance.getParticipants().iterator().next().getUniqueID();
             this.winningPlayerName = this.server.getPlayerList().getPlayerByUUID(this.winningPlayer).getDisplayName().deepCopy();
         }
     }
@@ -356,7 +350,7 @@ public class SurviveTheTideMinigameDefinition implements IMinigameDefinition {
         waterLevel = 120;
         phase = MinigamePhase.PHASE0;
 
-        this.messageAllPlayers(instance, new TranslationTextComponent(TropicraftLangKeys.SURVIVE_THE_TIDE_INTRO1).applyTextStyle(TextFormatting.GRAY));
+        instance.getAllPlayers().sendMessage(new TranslationTextComponent(TropicraftLangKeys.SURVIVE_THE_TIDE_INTRO1).applyTextStyle(TextFormatting.GRAY));
         minigameWeatherInstance.setMinigameActive(true);
     }
 
@@ -412,30 +406,6 @@ public class SurviveTheTideMinigameDefinition implements IMinigameDefinition {
         }
     }
 
-    private void messageAllPlayers(IMinigameInstance instance, ITextComponent text) {
-        this.actionAllPlayers(instance, (p) -> p.sendMessage(text));
-    }
-
-    private void actionAllPlayers(IMinigameInstance instance, Consumer<ServerPlayerEntity> action) {
-        for (UUID uuid : instance.getAllPlayerUUIDs()) {
-            ServerPlayerEntity player = this.server.getPlayerList().getPlayerByUUID(uuid);
-
-            if (player != null) {
-                action.accept(player);
-            }
-        }
-    }
-
-    private void actionAllParticipants(IMinigameInstance instance, Consumer<ServerPlayerEntity> action) {
-        for (UUID uuid : instance.getParticipants()) {
-            ServerPlayerEntity player = this.server.getPlayerList().getPlayerByUUID(uuid);
-
-            if (player != null) {
-                action.accept(player);
-            }
-        }
-    }
-
     public static boolean isSafePhase(MinigamePhase phase) {
         return phase == MinigamePhase.PHASE0 || phase == MinigamePhase.PHASE1;
     }
@@ -459,15 +429,15 @@ public class SurviveTheTideMinigameDefinition implements IMinigameDefinition {
             }
 
             if (this.minigameEndedTimer == 0) {
-                this.messageAllPlayers(instance, new TranslationTextComponent(TropicraftLangKeys.SURVIVE_THE_TIDE_FINISH1, this.winningPlayerName).applyTextStyle(TextFormatting.GRAY));
+                instance.getAllPlayers().sendMessage(new TranslationTextComponent(TropicraftLangKeys.SURVIVE_THE_TIDE_FINISH1, this.winningPlayerName).applyTextStyle(TextFormatting.GRAY));
             } else if (this.minigameEndedTimer == 20 * 7){
-                this.messageAllPlayers(instance, new TranslationTextComponent(TropicraftLangKeys.SURVIVE_THE_TIDE_FINISH2, this.winningPlayerName).applyTextStyle(TextFormatting.GRAY));
+                instance.getAllPlayers().sendMessage(new TranslationTextComponent(TropicraftLangKeys.SURVIVE_THE_TIDE_FINISH2, this.winningPlayerName).applyTextStyle(TextFormatting.GRAY));
             } else if (this.minigameEndedTimer == 20 * 14){
-                this.messageAllPlayers(instance, new TranslationTextComponent(TropicraftLangKeys.SURVIVE_THE_TIDE_FINISH3, this.winningPlayerName).applyTextStyle(TextFormatting.GRAY));
+                instance.getAllPlayers().sendMessage(new TranslationTextComponent(TropicraftLangKeys.SURVIVE_THE_TIDE_FINISH3, this.winningPlayerName).applyTextStyle(TextFormatting.GRAY));
             } else if (this.minigameEndedTimer == 20 * 21){
-                this.messageAllPlayers(instance, new TranslationTextComponent(TropicraftLangKeys.SURVIVE_THE_TIDE_FINISH4, this.winningPlayerName).applyTextStyle(TextFormatting.GRAY));
+                instance.getAllPlayers().sendMessage(new TranslationTextComponent(TropicraftLangKeys.SURVIVE_THE_TIDE_FINISH4, this.winningPlayerName).applyTextStyle(TextFormatting.GRAY));
             } else if (this.minigameEndedTimer == 20 * 28) {
-                this.messageAllPlayers(instance, new TranslationTextComponent(TropicraftLangKeys.MINIGAME_FINISH).applyTextStyle(TextFormatting.GOLD));
+                instance.getAllPlayers().sendMessage(new TranslationTextComponent(TropicraftLangKeys.MINIGAME_FINISH).applyTextStyle(TextFormatting.GOLD));
             } else if (this.minigameEndedTimer == 20 * 38) {
                 MinigameManager.getInstance().finishCurrentMinigame();
             }
@@ -649,8 +619,8 @@ public class SurviveTheTideMinigameDefinition implements IMinigameDefinition {
             if (!borderCollapseMessageSent) {
                 borderCollapseMessageSent = true;
                 //cant update clients right now, so hardcode message on server
-                //this.messageAllPlayers(instance, new TranslationTextComponent(TropicraftLangKeys.SURVIVE_THE_TIDE_BORDER_COLLAPSE).applyTextStyle(TextFormatting.RED));
-                this.messageAllPlayers(instance, new TranslationTextComponent("THE EXPLOSIVE STORM HAS STARTED CLOSING IN!").applyTextStyle(TextFormatting.RED));
+                //instance.getAllPlayers().sendMessage(new TranslationTextComponent(TropicraftLangKeys.SURVIVE_THE_TIDE_BORDER_COLLAPSE).applyTextStyle(TextFormatting.RED));
+                instance.getAllPlayers().sendMessage(new TranslationTextComponent("THE EXPLOSIVE STORM HAS STARTED CLOSING IN!").applyTextStyle(TextFormatting.RED));
             }
 
             long ticksToCollapseBorder = ConfigLT.MINIGAME_SURVIVE_THE_TIDE.minigame_SurviveTheTide_worldBorder_ticksUtilFullyShrinked.get();
