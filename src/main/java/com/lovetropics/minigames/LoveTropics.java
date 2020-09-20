@@ -18,10 +18,10 @@ import com.lovetropics.minigames.common.command.minigames.CommandUnregisterMinig
 import com.lovetropics.minigames.common.config.ConfigLT;
 import com.lovetropics.minigames.common.item.MinigameItems;
 import com.lovetropics.minigames.common.minigames.MinigameManager;
+import com.lovetropics.minigames.common.minigames.config.MinigameConfigs;
 import com.tterrag.registrate.Registrate;
 import com.tterrag.registrate.providers.ProviderType;
 import com.tterrag.registrate.util.NonNullLazyValue;
-
 import net.minecraft.fluid.Fluids;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
@@ -40,6 +40,7 @@ import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.GatherDataEvent;
+import net.minecraftforge.fml.event.server.FMLServerAboutToStartEvent;
 import net.minecraftforge.fml.event.server.FMLServerStartingEvent;
 import net.minecraftforge.fml.event.server.FMLServerStoppingEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
@@ -52,15 +53,15 @@ public class LoveTropics {
         public ItemStack createIcon() {
             return new ItemStack(LoveTropicsBlocks.DONATION.get());
         }
-    });    
-    
-    private static NonNullLazyValue<Registrate> registrate = new NonNullLazyValue<>(() -> 
+    });
+
+    private static NonNullLazyValue<Registrate> registrate = new NonNullLazyValue<>(() ->
     	Registrate.create(Constants.MODID)
     			  .itemGroup(() -> LOVE_TROPICS_ITEM_GROUP));
 
     public LoveTropics() {
         IEventBus modBus = FMLJavaModLoadingContext.get().getModEventBus();
-        
+
         // General mod setup
         modBus.addListener(this::setup);
         modBus.addListener(this::gatherData);
@@ -70,7 +71,8 @@ public class LoveTropics {
             modBus.addListener(this::setupClient);
             modBus.addListener(this::registerItemColors);
         });
-        
+
+        MinecraftForge.EVENT_BUS.addListener(this::onServerAboutToStart);
         MinecraftForge.EVENT_BUS.addListener(this::onServerStarting);
         MinecraftForge.EVENT_BUS.addListener(this::onServerStopping);
 
@@ -86,26 +88,30 @@ public class LoveTropics {
 
 
     }
-    
+
     public static Registrate registrate() {
         return registrate.getValue();
     }
-    
+
     @OnlyIn(Dist.CLIENT)
     private void setupClient(final FMLClientSetupEvent event) {
         ForgeConfig.CLIENT.alwaysSetupTerrainOffThread.set(true);
         ((ForgeConfigSpec)ObfuscationReflectionHelper.getPrivateValue(ForgeConfig.class, null, "clientSpec")).save();
     }
-    
+
     @OnlyIn(Dist.CLIENT)
     private void registerItemColors(ColorHandlerEvent.Item evt) {
         evt.getItemColors().register((stack, index) -> index == 0 ? Fluids.WATER.getAttributes().getColor() : -1, LoveTropicsBlocks.WATER_BARRIER.get());
     }
-    
+
     private void setup(final FMLCommonSetupEvent event) {
 //        TODO TropicraftBiomes.addFeatures();
     }
-    
+
+    private void onServerAboutToStart(final FMLServerAboutToStartEvent event) {
+        MinigameConfigs.init(event.getServer());
+    }
+
     private void onServerStarting(final FMLServerStartingEvent event) {
         MinigameManager.init(event.getServer());
 
@@ -160,11 +166,11 @@ public class LoveTropics {
             prov.add(TropicraftLangKeys.COMMAND_FINISHED_MINIGAME, "The minigame %s has finished. If you were inside the minigame, you have been teleported back to your original position.");
             prov.add(TropicraftLangKeys.COMMAND_MINIGAME_STOPPED_POLLING, "An operator has stopped polling the minigame %s.");
             prov.add(TropicraftLangKeys.COMMAND_STOP_POLL, "You have successfully stopped the poll.");
-            
+
             prov.add(TropicraftLangKeys.COMMAND_RESET_DONATION, "Resetting donation data.");
             prov.add(TropicraftLangKeys.COMMAND_RESET_LAST_DONATION, "Reset last seen donation ID to %d.");
             prov.add(TropicraftLangKeys.COMMAND_SIMULATE_DONATION, "Simulating donation for name %s and amount %s");
-            
+
             prov.add(TropicraftLangKeys.DONATION, "%s donated %s!");
 
             prov.add(TropicraftLangKeys.SURVIVE_THE_TIDE_FINISH1, "Through the rising sea levels, the volatile and chaotic weather, and the struggle to survive, one player remains: %s.");
