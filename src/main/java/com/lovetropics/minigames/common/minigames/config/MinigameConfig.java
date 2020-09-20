@@ -6,7 +6,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.GameType;
 import net.minecraft.world.dimension.DimensionType;
 
-public final class GameConfig {
+public final class MinigameConfig {
     public final ResourceLocation id;
     public final String translationKey;
     public final DimensionType dimension;
@@ -18,7 +18,7 @@ public final class GameConfig {
     public final int maximumParticipants;
 //    public final GameBehavior[] behavior;
 
-    public GameConfig(
+    public MinigameConfig(
             ResourceLocation id,
             String translationKey,
             DimensionType dimension,
@@ -42,7 +42,7 @@ public final class GameConfig {
 //        this.behavior = behavior;
     }
 
-    public static <T> GameConfig deserialize(ResourceLocation id, Dynamic<T> root) {
+    public static <T> MinigameConfig deserialize(ResourceLocation id, Dynamic<T> root) {
         String translationKey = root.get("translation_key").asString("");
         DimensionType dimension = DimensionType.byName(new ResourceLocation(root.get("dimension").asString("")));
         GameType participantGameType = GameType.getByName(root.get("participant_game_type").asString(""));
@@ -56,7 +56,7 @@ public final class GameConfig {
 
 //        GameBehavior[] behavior = root.get("behavior").asList(GameConfig::deserializeBehavior).toArray(new GameBehavior[0]);
 
-        return new GameConfig(
+        return new MinigameConfig(
                 id,
                 translationKey,
                 dimension,

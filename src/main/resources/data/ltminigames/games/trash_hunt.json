@@ -1,0 +1,31 @@
+{
+  "id": "ltminigames:trash_hunt",
+  "translation_key": "trash_hunt",
+  "dimension": "ltminigames:trash_hunt",
+  "participant_game_type": "survival",
+  "spectator_game_type": "spectator",
+  "spectator_position": [5916, 108, 7000],
+  "respawn_position": [5916, 108, 7000],
+  "minimum_participants": 8,
+  "maximum_participants": 16,
+  "behavior": [
+    {
+      "type": "ltminigames:spawn_participants",
+      "positions": [
+        [5982, 126, 6970]
+      ]
+    },
+    {
+      "type": "ltminigames:commands",
+      "start": [
+        "function trash_cleanup:reset_game",
+        "function trash_cleanup:start_game"
+      ],
+      "finish": "function ocean_reset:reset"
+    },
+    {
+      "type": "ltminigames:timed",
+      "length": 4800
+    }
+  ]
+}

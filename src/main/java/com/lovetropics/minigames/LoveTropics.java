@@ -18,7 +18,7 @@ import com.lovetropics.minigames.common.command.minigames.CommandUnregisterMinig
 import com.lovetropics.minigames.common.config.ConfigLT;
 import com.lovetropics.minigames.common.item.MinigameItems;
 import com.lovetropics.minigames.common.minigames.MinigameManager;
-import com.lovetropics.minigames.common.minigames.config.GameConfigs;
+import com.lovetropics.minigames.common.minigames.config.MinigameConfigs;
 import com.tterrag.registrate.Registrate;
 import com.tterrag.registrate.providers.ProviderType;
 import com.tterrag.registrate.util.NonNullLazyValue;
@@ -109,7 +109,7 @@ public class LoveTropics {
     }
 
     private void onServerAboutToStart(final FMLServerAboutToStartEvent event) {
-        GameConfigs.init(event.getServer());
+        MinigameConfigs.init(event.getServer());
     }
 
     private void onServerStarting(final FMLServerStartingEvent event) {

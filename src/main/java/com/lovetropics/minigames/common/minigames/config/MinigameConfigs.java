@@ -20,15 +20,15 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
-public final class GameConfigs {
-    private static final Logger LOGGER = LogManager.getLogger(GameConfigs.class);
+public final class MinigameConfigs {
+    private static final Logger LOGGER = LogManager.getLogger(MinigameConfigs.class);
 
-    private static final Map<ResourceLocation, GameConfig> GAME_CONFIGS = new HashMap<>();
+    private static final Map<ResourceLocation, MinigameConfig> GAME_CONFIGS = new HashMap<>();
 
     private static final JsonParser PARSER = new JsonParser();
 
     @Nullable
-    public static GameConfig byId(ResourceLocation id) {
+    public static MinigameConfig byId(ResourceLocation id) {
         return GAME_CONFIGS.get(id);
     }
 
@@ -40,7 +40,7 @@ public final class GameConfigs {
                 Collection<ResourceLocation> paths = resourceManager.getAllResourceLocations("games", file -> file.endsWith(".json"));
                 for (ResourceLocation path : paths) {
                     try (IResource resource = resourceManager.getResource(path)) {
-                        GameConfig config = loadConfig(path, resource);
+                        MinigameConfig config = loadConfig(path, resource);
                         GAME_CONFIGS.put(config.id, config);
                     } catch (IOException e) {
                         LOGGER.error("Failed to load game config at {}", path, e);
@@ -52,11 +52,11 @@ public final class GameConfigs {
         });
     }
 
-    private static GameConfig loadConfig(ResourceLocation path, IResource resource) throws IOException {
+    private static MinigameConfig loadConfig(ResourceLocation path, IResource resource) throws IOException {
         try (InputStream input = resource.getInputStream()) {
             JsonElement json = PARSER.parse(new BufferedReader(new InputStreamReader(input)));
             Dynamic<JsonElement> dynamic = new Dynamic<>(JsonOps.INSTANCE, json);
-            return GameConfig.deserialize(getIdFromPath(path), dynamic);
+            return MinigameConfig.deserialize(getIdFromPath(path), dynamic);
         }
     }
 

@@ -3,12 +3,16 @@
   "translation_key": "survive_the_tide",
   "dimension": "ltminigames:survive_the_tide",
   "participant_game_type": "adventure",
-  "spectator_game_type": "survival",
+  "spectator_game_type": "spectator",
   "spectator_position": [5780, 141, 6955],
   "respawn_position": [5780, 141, 6955],
   "minimum_participants": 3,
   "maximum_participants": 16,
   "behavior": [
+    {
+      "type": "ltminigames:open_map",
+      "map": "ltminigames:survive_the_tide"
+    },
     {
       "type": "ltminigames:spawn_participants",
       "positions": [
