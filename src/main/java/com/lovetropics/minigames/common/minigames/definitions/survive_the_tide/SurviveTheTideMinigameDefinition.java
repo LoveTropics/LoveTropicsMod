@@ -14,7 +14,7 @@ import org.apache.logging.log4j.Logger;
 import com.lovetropics.minigames.client.data.TropicraftLangKeys;
 import com.lovetropics.minigames.common.Util;
 import com.lovetropics.minigames.common.config.ConfigLT;
-import com.lovetropics.minigames.common.dimension.TropicraftWorldUtils;
+import com.lovetropics.minigames.common.dimension.DimensionUtils;
 import com.lovetropics.minigames.common.donations.FireworkUtil;
 import com.lovetropics.minigames.common.minigames.IMinigameDefinition;
 import com.lovetropics.minigames.common.minigames.IMinigameInstance;
@@ -149,7 +149,7 @@ public class SurviveTheTideMinigameDefinition implements IMinigameDefinition {
 
     @Override
     public DimensionType getDimension() {
-        return TropicraftWorldUtils.SURVIVE_THE_TIDE_DIMENSION;
+        return DimensionUtils.SURVIVE_THE_TIDE_DIMENSION;
     }
 
     @Override

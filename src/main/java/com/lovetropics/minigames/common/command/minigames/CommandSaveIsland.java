@@ -1,8 +1,11 @@
 package com.lovetropics.minigames.common.command.minigames;
 
-import com.lovetropics.minigames.common.dimension.TropicraftWorldUtils;
+import static net.minecraft.command.Commands.literal;
+
+import com.lovetropics.minigames.common.dimension.DimensionUtils;
 import com.lovetropics.minigames.common.minigames.definitions.survive_the_tide.SurviveTheTideMinigameDefinition;
 import com.mojang.brigadier.CommandDispatcher;
+
 import net.minecraft.command.CommandSource;
 import net.minecraft.entity.Entity;
 import net.minecraft.nbt.CompoundNBT;
@@ -10,8 +13,6 @@ import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.common.DimensionManager;
-
-import static net.minecraft.command.Commands.literal;
 
 public class CommandSaveIsland {
 	public static void register(final CommandDispatcher<CommandSource> dispatcher) {
@@ -22,7 +23,7 @@ public class CommandSaveIsland {
 				Entity entity = c.getSource().getEntity();
 
 				if (entity != null && entity.getServer() != null) {
-					ServerWorld world = DimensionManager.getWorld(entity.getServer(), TropicraftWorldUtils.SURVIVE_THE_TIDE_DIMENSION, false, false);
+					ServerWorld world = DimensionManager.getWorld(entity.getServer(), DimensionUtils.SURVIVE_THE_TIDE_DIMENSION, false, false);
 
 					if (world != null) {
 						if (world.getPlayers().size() > 0) {

@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.common.minigames;
 
-import com.lovetropics.minigames.common.dimension.TropicraftWorldUtils;
+import com.lovetropics.minigames.common.dimension.DimensionUtils;
 
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.nbt.CompoundNBT;
@@ -49,6 +49,6 @@ public class MinigamePlayerCache {
     public void teleportBack(ServerPlayerEntity player) {
         player.readAdditional(this.cachedPlayerData);
         player.setGameType(this.gameType);
-        TropicraftWorldUtils.teleportPlayerNoPortal(player, this.dimensionType, this.blockPos);
+        DimensionUtils.teleportPlayerNoPortal(player, this.dimensionType, this.blockPos);
     }
 }

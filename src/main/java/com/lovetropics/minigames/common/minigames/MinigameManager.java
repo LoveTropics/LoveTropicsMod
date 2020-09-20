@@ -1,11 +1,18 @@
 package com.lovetropics.minigames.common.minigames;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.UUID;
+
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.client.data.TropicraftLangKeys;
 import com.lovetropics.minigames.common.Util;
-import com.lovetropics.minigames.common.dimension.TropicraftWorldUtils;
+import com.lovetropics.minigames.common.dimension.DimensionUtils;
 import com.lovetropics.minigames.common.minigames.definitions.UnderwaterTrashHuntMinigameDefinition;
 import com.lovetropics.minigames.common.minigames.definitions.survive_the_tide.SurviveTheTideMinigameDefinition;
 
@@ -16,7 +23,11 @@ import net.minecraft.util.ActionResult;
 import net.minecraft.util.ActionResultType;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.*;
+import net.minecraft.util.text.ChatType;
+import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.util.text.TextFormatting;
+import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.TickEvent;
@@ -26,13 +37,6 @@ import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.player.AttackEntityEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.UUID;
 
 /**
  * Standard implementation of a minigame manager. Would prefer to do something other
@@ -370,7 +374,7 @@ public class MinigameManager implements IMinigameManager
 
         BlockPos teleportTo = positions[playerCount];
 
-        TropicraftWorldUtils.teleportPlayerNoPortal(player, instance.getDefinition().getDimension(), teleportTo);
+        DimensionUtils.teleportPlayerNoPortal(player, instance.getDefinition().getDimension(), teleportTo);
         player.setGameType(instance.getDefinition().getParticipantGameType());
     }
 
@@ -384,7 +388,7 @@ public class MinigameManager implements IMinigameManager
     private void teleportSpectatorIntoInstance(IMinigameInstance instance, ServerPlayerEntity player) {
         BlockPos teleportTo = instance.getDefinition().getSpectatorPosition();
 
-        TropicraftWorldUtils.teleportPlayerNoPortal(player, instance.getDefinition().getDimension(), teleportTo);
+        DimensionUtils.teleportPlayerNoPortal(player, instance.getDefinition().getDimension(), teleportTo);
         player.setGameType(instance.getDefinition().getSpectatorGameType());
     }
 

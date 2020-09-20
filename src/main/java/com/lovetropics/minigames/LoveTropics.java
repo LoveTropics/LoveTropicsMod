@@ -16,11 +16,8 @@ import com.lovetropics.minigames.common.command.minigames.CommandStopMinigame;
 import com.lovetropics.minigames.common.command.minigames.CommandStopPollingMinigame;
 import com.lovetropics.minigames.common.command.minigames.CommandUnregisterMinigame;
 import com.lovetropics.minigames.common.config.ConfigLT;
-import com.lovetropics.minigames.common.dimension.TropicraftWorldUtils;
-import com.lovetropics.minigames.common.dimension.biome.TropicraftBiomes;
 import com.lovetropics.minigames.common.item.MinigameItems;
 import com.lovetropics.minigames.common.minigames.MinigameManager;
-import com.lovetropics.minigames.common.minigames.dimensions.TropicraftChunkGeneratorTypes;
 import com.tterrag.registrate.Registrate;
 import com.tterrag.registrate.providers.ProviderType;
 import com.tterrag.registrate.util.NonNullLazyValue;
@@ -83,9 +80,6 @@ public class LoveTropics {
         // Registry objects
         LoveTropicsBlocks.init();
         MinigameItems.init();
-        TropicraftChunkGeneratorTypes.CHUNK_GENERATOR_TYPES.register(modBus);
-        TropicraftBiomes.BIOMES.register(modBus);
-        TropicraftWorldUtils.DIMENSIONS.register(modBus);
 
         ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, ConfigLT.CLIENT_CONFIG);
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, ConfigLT.SERVER_CONFIG);

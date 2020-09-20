@@ -111,8 +111,8 @@ dependencies {
 	def registrate = "com.tterrag.registrate:Registrate:MC${minecraft_version}-${registrate_version}"
     implementation fg.deobf(registrate)
     shade registrate
-    def tropi = 'net.tropicraft:Tropicraft:8.1.0-alpha+12'
-    runtimeOnly fg.deobf(tropi)
+    def tropi = 'net.tropicraft:Tropicraft:8.1.0-alpha+22'
+    implementation fg.deobf(tropi)
 }
 
 shadowJar {
