@@ -1,0 +1,80 @@
+{
+  "id": "ltminigames:survive_the_tide",
+  "translation_key": "survive_the_tide",
+  "dimension": "ltminigames:survive_the_tide",
+  "participant_game_type": "adventure",
+  "spectator_game_type": "survival",
+  "spectator_position": [5780, 141, 6955],
+  "respawn_position": [5780, 141, 6955],
+  "minimum_participants": 3,
+  "maximum_participants": 16,
+  "behavior": [
+    {
+      "type": "ltminigames:spawn_participants",
+      "positions": [
+        [5906, 133, 6962],
+        [5910, 133, 6961],
+        [5914, 133, 6961],
+        [5918, 133, 6962],
+        [5922, 133, 6966],
+        [5923, 133, 6970],
+        [5923, 133, 6974],
+        [5922, 133, 6978],
+        [5918, 133, 6982],
+        [5914, 133, 6983],
+        [5910, 133, 6983],
+        [5906, 133, 6982],
+        [5902, 133, 6978],
+        [5901, 133, 6974],
+        [5901, 133, 6970],
+        [5902, 133, 6966]
+      ]
+    },
+    {
+      "type": "ltminigames:weather_events",
+      "rain_heavy_chance": 0.01,
+      "rain_acid_chance": 0.01,
+      "heatwave_chance": 0.01,
+      "rain_heavy_min_time": 1200,
+      "rain_heavy_extra_rand_time": 1200,
+      "rain_acid_min_time": 1200,
+      "rain_acid_extra_rand_time": 1200,
+      "heatwave_movement_mulitplier": 0.5,
+      "acid_rain_damage": 1,
+      "acid_rain_damage_rate": 60
+    },
+    {
+      "type": "ltminigames:survive_the_tide",
+      "phases": [
+        {
+          "length": 600,
+          "target_water_level": 0
+        },
+        {
+          "length": 2400,
+          "target_water_level": 0
+        },
+        {
+          "length": 7200,
+          "target_water_level": 133
+        },
+        {
+          "length": 4800,
+          "target_water_level": 150
+        },
+        {
+          "acid_rain": true
+        }
+      ],
+      "worldborder": {
+        "phase": 4,
+        "delay": 6000,
+        "ticks": 6000,
+        "particle_rate_delay": 1,
+        "particle_height": 110,
+        "damage_rate_delay": 20,
+        "damage_amount": 4
+      }
+    }
+  ]
+}
