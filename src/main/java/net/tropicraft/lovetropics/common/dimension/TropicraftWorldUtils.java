@@ -49,10 +49,10 @@ public class TropicraftWorldUtils {
 	}
 	
 	private static RegistryObject<ModDimension> register(final String name, final Supplier<ModDimension> sup) {
-	    return null;//DIMENSIONS.register(name, sup);
+	    return DIMENSIONS.register(name, sup);
 	}
 
-//	@Mod.EventBusSubscriber(modid = Constants.MODID)
+	@Mod.EventBusSubscriber(modid = Constants.MODID)
 	public static class EventDimensionType {
 		@SubscribeEvent
 		public static void onModDimensionRegister(final RegisterDimensionsEvent event) {
@@ -68,20 +68,6 @@ public class TropicraftWorldUtils {
 			}
 		}
 	}
-
-//
-//	public static void initializeDimension() {
-//		PacketBuffer pbj = new PacketBuffer(Unpooled.buffer());
-//		pbj.writeInt(TROPICS_DIMENSION_ID);
-//		pbj.writeString("tropics");
-//
-//	//	DimensionManager.registerDimension(new ResourceLocation("tropics"), new TropicraftModDimension(), pbj, true);
-////
-////		CompoundNBT n = new CompoundNBT();
-////		n.setInteger("dim_id", tropicsDimension.getId());
-////		n.setString("dim_name", tropicsDimension.getName());
-//		//TODO FMLInterModComms.sendMessage(ForgeModContainer.getInstance().getModId(), "loaderFarewellSkip", n);
-//	}
 
 	public static void teleportPlayer(ServerPlayerEntity player, DimensionType dimensionType) {
 		long time = System.currentTimeMillis();

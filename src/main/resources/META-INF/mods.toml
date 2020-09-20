@@ -31,21 +31,3 @@ authors="Cojomax99, Corosus, tterrag, kingbdogz" #optional
 description='''
 Content used for the LoveTropics livestream event.
 '''
-
-[[mods]]
-modId="coroutil"
-version="1.0"
-displayName="coroutil"
-authors="Corosus"
-description='''
-
-'''
-
-[[mods]]
-modId="weather2"
-version="1.0"
-displayName="Weather2"
-authors="Corosus"
-description='''
-
-'''

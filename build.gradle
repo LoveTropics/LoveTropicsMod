@@ -25,7 +25,7 @@ version = "${mod_version}-${release_type}+${buildnumber}"
 sourceCompatibility = targetCompatibility = compileJava.sourceCompatibility = compileJava.targetCompatibility = '1.8' // Need this here so eclipse task generates correctly.
 
 minecraft {
-    mappings channel: 'snapshot', version: '20200510-1.15.1'
+    mappings channel: 'snapshot', version: '20200515-1.15.1'
     
     accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg')
 
@@ -100,6 +100,9 @@ repositories {
 		url "http://maven.tterrag.com/"
 	}
 	mavenLocal()
+    flatDir {
+       dirs 'libs/'
+   }
 }
 
 dependencies {
@@ -108,6 +111,8 @@ dependencies {
 	def registrate = "com.tterrag.registrate:Registrate:MC${minecraft_version}-${registrate_version}"
     implementation fg.deobf(registrate)
     shade registrate
+    def tropi = 'net.tropicraft:Tropicraft:8.1.0-alpha+12'
+    runtimeOnly fg.deobf(tropi)
 }
 
 shadowJar {

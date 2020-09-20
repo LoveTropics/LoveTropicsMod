@@ -33,8 +33,9 @@ public class SurviveTheTideDimension extends Dimension {
 
     @Override
     public ChunkGenerator<?> createChunkGenerator() {
+        ChunkGeneratorType chunkType = TropicraftChunkGeneratorTypes.TROPICS.get();
         BiomeProviderType<SingleBiomeProviderSettings, SingleBiomeProvider> biomeType = BiomeProviderType.FIXED;
-        return create(TROPICS.orElse(ChunkGeneratorType.FLAT), biomeType);
+        return create(chunkType, biomeType);
     }
     
     private <GS extends GenerationSettings, BS extends SingleBiomeProviderSettings> ChunkGenerator<?> create(ChunkGeneratorType<GS, ?> type, BiomeProviderType<BS, ?> biomeType) {

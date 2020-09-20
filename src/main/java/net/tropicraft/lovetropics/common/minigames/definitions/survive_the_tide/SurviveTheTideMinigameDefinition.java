@@ -64,8 +64,6 @@ import net.tropicraft.lovetropics.common.donations.FireworkUtil;
 import net.tropicraft.lovetropics.common.minigames.IMinigameDefinition;
 import net.tropicraft.lovetropics.common.minigames.IMinigameInstance;
 import net.tropicraft.lovetropics.common.minigames.MinigameManager;
-import weather2.MinigameWeatherInstance;
-import weather2.MinigameWeatherInstanceServer;
 
 /**
  * Definition implementation for the Island Royale minigame.
@@ -81,7 +79,7 @@ public class SurviveTheTideMinigameDefinition implements IMinigameDefinition {
 
     public static boolean debug = true;
 
-    private MinigameWeatherInstanceServer minigameWeatherInstance;
+    //private MinigameWeatherInstanceServer minigameWeatherInstance;
 
     private MinigamePhase phase = MinigamePhase.PHASE0;
 
@@ -117,7 +115,7 @@ public class SurviveTheTideMinigameDefinition implements IMinigameDefinition {
     }
 
     public SurviveTheTideMinigameDefinition(MinecraftServer server) {
-        this.minigameWeatherInstance = new MinigameWeatherInstanceServer();
+        //this.minigameWeatherInstance = new MinigameWeatherInstanceServer();
         this.server = server;
     }
 
@@ -253,7 +251,7 @@ public class SurviveTheTideMinigameDefinition implements IMinigameDefinition {
                 ticksSincePhase4Start++;
             }
 
-            minigameWeatherInstance.tick(this);
+            //minigameWeatherInstance.tick(this);
         }
     }
 
@@ -328,7 +326,7 @@ public class SurviveTheTideMinigameDefinition implements IMinigameDefinition {
         this.minigameEnded = false;
         this.minigameEndedTimer = 0;
         this.winningPlayer = null;
-        minigameWeatherInstance.reset();
+        //minigameWeatherInstance.reset();
         phase = MinigamePhase.PHASE0;
         phaseTime = 0;
         ticksSincePhase4Start = 0;
@@ -357,17 +355,17 @@ public class SurviveTheTideMinigameDefinition implements IMinigameDefinition {
         phase = MinigamePhase.PHASE0;
 
         this.messageAllPlayers(instance, new TranslationTextComponent(TropicraftLangKeys.SURVIVE_THE_TIDE_INTRO1).applyTextStyle(TextFormatting.GRAY));
-        minigameWeatherInstance.setMinigameActive(true);
+        //minigameWeatherInstance.setMinigameActive(true);
     }
 
-    public MinigameWeatherInstance getMinigameWeatherInstance() {
+    /*public MinigameWeatherInstance getMinigameWeatherInstance() {
         return minigameWeatherInstance;
     }
 
     public void setMinigameWeatherInstance(MinigameWeatherInstanceServer minigameWeatherInstance) {
         this.minigameWeatherInstance = minigameWeatherInstance;
     }
-
+*/
     public MinigamePhase getPhase() {
         return phase;
     }
@@ -485,7 +483,7 @@ public class SurviveTheTideMinigameDefinition implements IMinigameDefinition {
                     FileUtils.copyDirectory(from, to);
                 }
             } else {
-                LOGGER.info("Island royale base map doesn't exist in " + to.getPath() + ", add first before it can copy and replace each game start.");
+                LOGGER.info("Survive the tide base map doesn't exist in " + to.getPath() + ", add first before it can copy and replace each game start.");
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -497,7 +495,7 @@ public class SurviveTheTideMinigameDefinition implements IMinigameDefinition {
         File baseMapsFile = new File(worldFile, "minigame_base_maps");
 
         File islandRoyaleBase = new File(baseMapsFile, "hunger_games");
-        File islandRoyaleCurrent = new File(worldFile, "tropicraft/hunger_games");
+        File islandRoyaleCurrent = new File(worldFile, "lovetropics/hunger_games");
 
         saveMapTo(islandRoyaleCurrent, islandRoyaleBase);
     }
@@ -508,7 +506,7 @@ public class SurviveTheTideMinigameDefinition implements IMinigameDefinition {
         File baseMapsFile = new File(worldFile, "minigame_base_maps");
 
         File islandRoyaleBase = new File(baseMapsFile, "hunger_games");
-        File islandRoyaleCurrent = new File(worldFile, "tropicraft/hunger_games");
+        File islandRoyaleCurrent = new File(worldFile, "lovetropics/hunger_games");
 
         saveMapTo(islandRoyaleBase, islandRoyaleCurrent);
     }

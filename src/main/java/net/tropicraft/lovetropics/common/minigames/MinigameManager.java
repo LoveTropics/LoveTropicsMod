@@ -225,9 +225,9 @@ public class MinigameManager implements IMinigameManager
         }
 
         // Check that have enough players to start minigame.
-        if (this.registeredForMinigame.size() < this.polling.getMinimumParticipantCount()) {
+        /*if (this.registeredForMinigame.size() < this.polling.getMinimumParticipantCount()) {
             return new ActionResult<>(ActionResultType.FAIL, new TranslationTextComponent(TropicraftLangKeys.COMMAND_NOT_ENOUGH_PLAYERS, this.polling.getMinimumParticipantCount()));
-        }
+        }*/
 
         ActionResult<ITextComponent> canStart = this.polling.canStartMinigame();
 

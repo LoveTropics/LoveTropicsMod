@@ -42,8 +42,12 @@ import net.tropicraft.lovetropics.common.command.minigames.CommandStopPollingMin
 import net.tropicraft.lovetropics.common.command.minigames.CommandUnregisterMinigame;
 import net.tropicraft.lovetropics.common.config.ConfigLT;
 import net.tropicraft.lovetropics.common.dimension.TropicraftWorldUtils;
+import net.tropicraft.lovetropics.common.dimension.biome.TropicraftBiomes;
 import net.tropicraft.lovetropics.common.item.MinigameItems;
 import net.tropicraft.lovetropics.common.minigames.MinigameManager;
+import net.tropicraft.lovetropics.common.minigames.dimensions.TropicraftChunkGeneratorTypes;
+
+import java.rmi.registry.Registry;
 
 @Mod(Constants.MODID)
 public class LoveTropics {
@@ -81,11 +85,14 @@ public class LoveTropics {
         // Registry objects
         LoveTropicsBlocks.init();
         MinigameItems.init();
-//      TODO TropicraftBiomes.BIOMES.register(modBus);
+        TropicraftChunkGeneratorTypes.CHUNK_GENERATOR_TYPES.register(modBus);
+        TropicraftBiomes.BIOMES.register(modBus);
         TropicraftWorldUtils.DIMENSIONS.register(modBus);
 
         ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, ConfigLT.CLIENT_CONFIG);
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, ConfigLT.SERVER_CONFIG);
+
+
     }
     
     public static Registrate registrate() {
