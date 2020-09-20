@@ -1,5 +1,6 @@
 package com.lovetropics.minigames.common.minigames;
 
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.ICommandSource;
 import net.minecraft.entity.player.ServerPlayerEntity;
@@ -9,6 +10,10 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.world.server.ServerWorld;
+
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Consumer;
 
 /**
  * Default implementation of a minigame instance. Simple and naive
@@ -27,6 +32,8 @@ public class MinigameInstance implements IMinigameInstance
     private CommandSource commandSource;
 
     private ServerWorld world;
+
+    private final Map<String, Consumer<CommandSource>> controlCommands = new Object2ObjectOpenHashMap<>();
 
     public MinigameInstance(IMinigameDefinition definition, ServerWorld world) {
         this.definition = definition;
@@ -95,6 +102,24 @@ public class MinigameInstance implements IMinigameInstance
 
         this.spectators.remove(player.getUniqueID());
         this.allPlayers.remove(player.getUniqueID());
+    }
+
+    @Override
+    public void addControlCommand(String name, Consumer<CommandSource> task) {
+        this.controlCommands.put(name, task);
+    }
+
+    @Override
+    public void invokeControlCommand(String name, CommandSource source) {
+        Consumer<CommandSource> task = this.controlCommands.get(name);
+        if (task != null) {
+            task.accept(source);
+        }
+    }
+
+    @Override
+    public Set<String> getControlCommands() {
+        return this.controlCommands.keySet();
     }
 
     @Override

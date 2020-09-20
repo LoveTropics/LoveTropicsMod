@@ -21,6 +21,10 @@ public final class PlayerSet implements Iterable<ServerPlayerEntity> {
         this.server = server;
     }
 
+    public void clear() {
+        this.players.clear();
+    }
+
     public boolean add(ServerPlayerEntity player) {
         return this.players.add(player.getUniqueID());
     }

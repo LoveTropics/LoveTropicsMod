@@ -3,6 +3,9 @@ package com.lovetropics.minigames.common.minigames;
 import net.minecraft.command.CommandSource;
 import net.minecraft.entity.player.ServerPlayerEntity;
 
+import java.util.Set;
+import java.util.function.Consumer;
+
 /**
  * An instance used to track which participants and spectators are inside
  * the running minigame. Also holds the definition to process the content
@@ -54,6 +57,17 @@ public interface IMinigameInstance
      * a spectator that isn't a spectator in the instance.
      */
     void removeSpectator(ServerPlayerEntity player) throws IllegalArgumentException;
+
+    /**
+     * Adds a command with a custom task that can be used through the /minigame command while this game is active
+     * @param name the command name to use
+     * @param task the task to run when the command is invoked
+     */
+    void addControlCommand(String name, Consumer<CommandSource> task);
+
+    void invokeControlCommand(String name, CommandSource source);
+
+    Set<String> getControlCommands();
 
     /**
      * @return The list of participants that are playing within the minigame instance.
