@@ -42,7 +42,9 @@ public class CommandSaveIsland {
 					if (data.contains("hasConfirmedSaveIsland")) {
 						data.remove("hasConfirmedSaveIsland");
 
-						SurviveTheTideMinigameDefinition.saveBaseMap(entity.getServer());
+						// TODO: Allow us to fetch behaviours from types for minigame definitions
+						// then do actions such as resetBaseMap()
+						// SurviveTheTideMinigameDefinition.saveBaseMap(entity.getServer());
 
 						c.getSource().sendFeedback(new StringTextComponent("Saved island as a base so it will be used next time the minigame runs!")
 								.applyTextStyle(TextFormatting.GREEN), true);

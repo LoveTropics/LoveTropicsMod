@@ -13,6 +13,7 @@ import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.client.data.TropicraftLangKeys;
 import com.lovetropics.minigames.common.Util;
 import com.lovetropics.minigames.common.dimension.DimensionUtils;
+import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
 import com.lovetropics.minigames.common.minigames.definitions.UnderwaterTrashHuntMinigameDefinition;
 import com.lovetropics.minigames.common.minigames.definitions.survive_the_tide.SurviveTheTideMinigameDefinition;
 
@@ -147,7 +148,7 @@ public class MinigameManager implements IMinigameManager
         }
 
         IMinigameDefinition def = this.currentInstance.getDefinition();
-        def.onFinish(this.currentInstance.getCommandSource(), this.currentInstance);
+        getBehaviours().forEach((b) -> b.onFinish(this.currentInstance.getCommandSource(), this.currentInstance));
 
         for (UUID uuid : this.currentInstance.getAllPlayerUUIDs()) {
             ServerPlayerEntity player = this.server.getPlayerList().getPlayerByUUID(uuid);
@@ -164,7 +165,7 @@ public class MinigameManager implements IMinigameManager
                     .applyTextStyle(TextFormatting.GOLD), ChatType.CHAT);
         }
 
-        def.onPostFinish(this.currentInstance.getCommandSource());
+        getBehaviours().forEach((b) -> b.onPostFinish(this.currentInstance.getCommandSource()));
 
         this.currentInstance = null;
     }
@@ -240,7 +241,7 @@ public class MinigameManager implements IMinigameManager
             return canStart;
         }
 
-        this.polling.onPreStart();
+        this.polling.getBehaviours().forEach(IMinigameBehavior::onPreStart);
 
         ServerWorld world = this.server.getWorld(this.polling.getDimension());
         this.currentInstance = new MinigameInstance(this.polling, world);
@@ -281,7 +282,7 @@ public class MinigameManager implements IMinigameManager
         this.polling = null;
         this.registeredForMinigame.clear();
 
-        this.currentInstance.getDefinition().onStart(this.currentInstance.getCommandSource(), this.currentInstance);
+        this.currentInstance.getDefinition().getBehaviours().forEach((b) -> b.onStart(this.currentInstance.getCommandSource(), this.currentInstance));
 
         return new ActionResult<>(ActionResultType.SUCCESS, new TranslationTextComponent(TropicraftLangKeys.COMMAND_MINIGAME_STARTED).applyTextStyle(TextFormatting.GREEN));
     }
@@ -409,28 +410,32 @@ public class MinigameManager implements IMinigameManager
         this.playerCache.remove(player.getUniqueID());
     }
 
+    private List<IMinigameBehavior> getBehaviours() {
+        return this.currentInstance.getDefinition().getBehaviours();
+    }
+
     @SubscribeEvent
     public void onPlayerHurt(LivingHurtEvent event) {
         if (this.ifPlayerInInstance(event.getEntity())) {
-            this.currentInstance.getDefinition().onPlayerHurt(event, this.currentInstance);
+            getBehaviours().forEach((b) -> b.onPlayerHurt(event, this.currentInstance));
         }
     }
 
     @SubscribeEvent
     public void onAttackEntity(AttackEntityEvent event) {
         if (this.ifPlayerInInstance(event.getPlayer())) {
-            this.currentInstance.getDefinition().onPlayerAttackEntity(event, this.currentInstance);
+            getBehaviours().forEach((b) -> b.onPlayerAttackEntity(event, this.currentInstance));
         }
     }
 
     @SubscribeEvent
     public void onLivingUpdate(LivingEvent.LivingUpdateEvent event) {
         if (this.ifPlayerInInstance(event.getEntity())) {
-            this.currentInstance.getDefinition().onPlayerUpdate((ServerPlayerEntity) event.getEntity(), this.currentInstance);
+            getBehaviours().forEach((b) -> b.onPlayerUpdate((ServerPlayerEntity) event.getEntity(), this.currentInstance));
         }
 
         if (this.ifEntityInDimension(event.getEntity())) {
-            this.currentInstance.getDefinition().onLivingEntityUpdate(event.getEntityLiving(), this.currentInstance);
+            getBehaviours().forEach((b) -> b.onLivingEntityUpdate(event.getEntityLiving(), this.currentInstance));
         }
     }
 
@@ -440,7 +445,7 @@ public class MinigameManager implements IMinigameManager
     @SubscribeEvent
     public void onPlayerDeath(LivingDeathEvent event) {
         if (this.ifPlayerInInstance(event.getEntity())) {
-            this.currentInstance.getDefinition().onPlayerDeath((ServerPlayerEntity) event.getEntity(), this.currentInstance);
+            getBehaviours().forEach((b) -> b.onPlayerDeath((ServerPlayerEntity) event.getEntity(), this.currentInstance));
         }
     }
 
@@ -453,7 +458,7 @@ public class MinigameManager implements IMinigameManager
     public void onPlayerRespawn(PlayerEvent.PlayerRespawnEvent event) {
         if (this.ifPlayerInInstance(event.getPlayer())) {
             IMinigameDefinition def = this.currentInstance.getDefinition();
-            def.onPlayerRespawn((ServerPlayerEntity) event.getPlayer(), this.currentInstance);
+            getBehaviours().forEach((b) -> b.onPlayerRespawn((ServerPlayerEntity) event.getPlayer(), this.currentInstance));
 
             BlockPos respawn = def.getPlayerRespawnPosition(this.currentInstance);
 
@@ -469,7 +474,7 @@ public class MinigameManager implements IMinigameManager
     public void onWorldTick(TickEvent.WorldTickEvent event) {
         if (event.phase == TickEvent.Phase.END) {
             if (this.currentInstance != null && event.world.getDimension().getType() == this.currentInstance.getDefinition().getDimension()) {
-                this.currentInstance.getDefinition().worldUpdate(event.world, this.currentInstance);
+                getBehaviours().forEach((b) -> b.worldUpdate(event.world, this.currentInstance));
             }
         }
     }

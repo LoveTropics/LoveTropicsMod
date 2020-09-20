@@ -1,5 +1,6 @@
-package com.lovetropics.minigames.common.minigames;
+package com.lovetropics.minigames.common.minigames.weather;
 
+import com.lovetropics.minigames.common.minigames.IMinigameDefinition;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraftforge.common.util.INBTSerializable;
