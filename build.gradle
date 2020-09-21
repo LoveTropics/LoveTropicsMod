@@ -15,7 +15,7 @@ plugins {
 apply plugin: 'net.minecraftforge.gradle'
 apply plugin: 'eclipse'
 
-group = 'com.lovetropics'
+group = 'com.lovetropics.minigames'
 archivesBaseName = 'LTMinigames'
 
 ext.buildnumber = 0
@@ -31,22 +31,22 @@ minecraft {
 
     runs {
         client {
-        	taskName 'ltminigames_client'
-        	
+            taskName 'ltminigames_client'
+            
             workingDirectory project.file('run')
 
             property 'forge.logging.markers', 'REGISTRIES'
             property 'forge.logging.console.level', 'debug'
 
             mods {
-                lovetropics {
+                ltminigames {
                     source sourceSets.main
                 }
             }
         }
 
         server {
-        	taskName 'ltminigames_server'
+            taskName 'ltminigames_server'
         
             workingDirectory project.file('run')
 
@@ -54,14 +54,14 @@ minecraft {
             property 'forge.logging.console.level', 'debug'
 
             mods {
-                lovetropics {
+                ltminigames {
                     source sourceSets.main
                 }
             }
         }
         
         data {
-        	taskName 'ltminigames_data'
+            taskName 'ltminigames_data'
         
             workingDirectory project.file('run')
             
@@ -71,35 +71,35 @@ minecraft {
             property 'forge.logging.console.level', 'debug'
 
             mods {
-                lovetropics {
+                ltminigames {
                     source sourceSets.main
                 }
             }
             
-			args '--mod', 'ltminigames', '--all', '--output', '"' + rootProject.file('src/generated/resources/') + '"',
-				 '--existing', '"' + sourceSets.main.resources.srcDirs[0] + '"' 
-			
+            args '--mod', 'ltminigames', '--all', '--output', '"' + rootProject.file('src/generated/resources/') + '"',
+                 '--existing', '"' + sourceSets.main.resources.srcDirs[0] + '"' 
+            
         }
     }
 }
 
 sourceSets.main.resources {
-	srcDir 'src/generated/resources'
+    srcDir 'src/generated/resources'
 }
 
 repositories {
-	mavenLocal()
+    mavenLocal()
 }
 
 configurations {
-	shade
+    shade
 }
 
 repositories {
-	maven { // Registrate
-		url "http://maven.tterrag.com/"
-	}
-	mavenLocal()
+    maven { // Registrate
+        url "http://maven.tterrag.com/"
+    }
+    mavenLocal()
     flatDir {
        dirs 'libs/'
    }
@@ -108,16 +108,23 @@ repositories {
 dependencies {
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
     
-	def registrate = "com.tterrag.registrate:Registrate:MC${minecraft_version}-${registrate_version}"
+    // Utilize tropicraft worldgen code
+    implementation fg.deobf('net.tropicraft:Tropicraft:8.1.0-alpha+22')
+    
+    // Shaded deps
+    def registrate = "com.tterrag.registrate:Registrate:MC${minecraft_version}-${registrate_version}"
     implementation fg.deobf(registrate)
     shade registrate
-    def tropi = 'net.tropicraft:Tropicraft:8.1.0-alpha+22'
-    implementation fg.deobf(tropi)
+    
+    def ltlib = "com.lovetropics.lib:LTLib:${ltlib_version}"
+    implementation fg.deobf(ltlib)
+    shade ltlib
 }
 
 shadowJar {
     configurations = [project.configurations.shade]
-    relocate 'com.tterrag.registrate', 'com.tropicraft.minigames.repack.registrate'
+    relocate 'com.tterrag.registrate', 'com.lovetropics.minigames.repack.registrate'
+    relocate 'com.lovetropics.lib', 'com.lovetropics.minigames.repack.ltlib'
 }
 
 jar {

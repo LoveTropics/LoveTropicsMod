@@ -2,7 +2,7 @@ package com.lovetropics.minigames;
 
 import com.lovetropics.minigames.client.data.TropicraftLangKeys;
 import com.lovetropics.minigames.common.block.LoveTropicsBlocks;
-import com.lovetropics.minigames.common.command.CommandDonation;
+import com.lovetropics.minigames.common.block.TrashType;
 import com.lovetropics.minigames.common.command.CommandReloadConfig;
 import com.lovetropics.minigames.common.command.minigames.CommandAddConfigIceberg;
 import com.lovetropics.minigames.common.command.minigames.CommandIslandSetStartPos;
@@ -22,6 +22,7 @@ import com.lovetropics.minigames.common.minigames.config.MinigameConfigs;
 import com.tterrag.registrate.Registrate;
 import com.tterrag.registrate.providers.ProviderType;
 import com.tterrag.registrate.util.NonNullLazyValue;
+
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.api.distmarker.Dist;
@@ -49,7 +50,7 @@ public class LoveTropics {
     public static final ItemGroup LOVE_TROPICS_ITEM_GROUP = (new ItemGroup("love_tropics") {
         @OnlyIn(Dist.CLIENT)
         public ItemStack createIcon() {
-            return new ItemStack(LoveTropicsBlocks.DONATION.get());
+            return new ItemStack(LoveTropicsBlocks.TRASH.get(TrashType.COLA).get());
         }
     });
 
@@ -114,7 +115,6 @@ public class LoveTropics {
         CommandUnregisterMinigame.register(event.getServer().getCommandManager().getDispatcher());
         CommandStopPollingMinigame.register(event.getServer().getCommandManager().getDispatcher());
         CommandReloadConfig.register(event.getServer().getCommandManager().getDispatcher());
-        CommandDonation.register(event.getServer().getCommandManager().getDispatcher());
         CommandAddConfigIceberg.register(event.getServer().getCommandManager().getDispatcher());
         CommandResetIsland.register(event.getServer().getCommandManager().getDispatcher());
         CommandSaveIsland.register(event.getServer().getCommandManager().getDispatcher());
@@ -158,12 +158,6 @@ public class LoveTropics {
             prov.add(TropicraftLangKeys.COMMAND_FINISHED_MINIGAME, "The minigame %s has finished. If you were inside the minigame, you have been teleported back to your original position.");
             prov.add(TropicraftLangKeys.COMMAND_MINIGAME_STOPPED_POLLING, "An operator has stopped polling the minigame %s.");
             prov.add(TropicraftLangKeys.COMMAND_STOP_POLL, "You have successfully stopped the poll.");
-
-            prov.add(TropicraftLangKeys.COMMAND_RESET_DONATION, "Resetting donation data.");
-            prov.add(TropicraftLangKeys.COMMAND_RESET_LAST_DONATION, "Reset last seen donation ID to %d.");
-            prov.add(TropicraftLangKeys.COMMAND_SIMULATE_DONATION, "Simulating donation for name %s and amount %s");
-
-            prov.add(TropicraftLangKeys.DONATION, "%s donated %s!");
 
             prov.add(TropicraftLangKeys.SURVIVE_THE_TIDE_FINISH1, "Through the rising sea levels, the volatile and chaotic weather, and the struggle to survive, one player remains: %s.");
             prov.add(TropicraftLangKeys.SURVIVE_THE_TIDE_FINISH2, "\nThose who have fallen have been swept away by the encroaching tides that engulf countless landmasses in this dire future.");
