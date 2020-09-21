@@ -7,26 +7,18 @@ import net.minecraftforge.registries.ForgeRegistryEntry;
 
 import java.util.function.Function;
 
-public class MinigameBehaviorType extends ForgeRegistryEntry<IMinigameBehaviorType> implements IMinigameBehaviorType
+public class MinigameBehaviorType<T extends IMinigameBehavior> extends ForgeRegistryEntry<IMinigameBehaviorType<?>> implements IMinigameBehaviorType<T>
 {
-	private final ResourceLocation id;
-	private final Function<Dynamic<JsonElement>, IMinigameBehavior> instanceFactory;
+	private final Function<Dynamic<JsonElement>, T> instanceFactory;
 
-	public MinigameBehaviorType(final ResourceLocation id, final Function<Dynamic<JsonElement>, IMinigameBehavior> instanceFactory)
+	public MinigameBehaviorType(final ResourceLocation id, final Function<Dynamic<JsonElement>, T> instanceFactory)
 	{
-		this.id = id;
 		this.instanceFactory = instanceFactory;
 	}
 
 	@Override
-	public ResourceLocation getID()
+	public T create(Dynamic<JsonElement> data)
 	{
-		return id;
-	}
-
-	@Override
-	public Function<Dynamic<JsonElement>, IMinigameBehavior> getInstanceFactory()
-	{
-		return instanceFactory;
+		return instanceFactory.apply(data);
 	}
 }

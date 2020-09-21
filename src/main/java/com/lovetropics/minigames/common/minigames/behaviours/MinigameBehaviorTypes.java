@@ -19,28 +19,29 @@ import java.util.function.Supplier;
 
 public class MinigameBehaviorTypes
 {
-	public static final DeferredRegister<IMinigameBehaviorType> MINIGAME_BEHAVIOURS_REGISTER;
-	public static final Supplier<IForgeRegistry<IMinigameBehaviorType>> MINIGAME_BEHAVIOURS_REGISTRY;
+	@SuppressWarnings("unchecked")
+	public static final DeferredRegister<IMinigameBehaviorType<?>> MINIGAME_BEHAVIOURS_REGISTER = DeferredRegister.create(IMinigameBehaviorType.class, "ltminigames");
+	public static final Supplier<IForgeRegistry<IMinigameBehaviorType<?>>> MINIGAME_BEHAVIOURS_REGISTRY;
 
-	public static final RegistryObject<IMinigameBehaviorType> POSITION_PARTICIPANTS;
-	public static final RegistryObject<IMinigameBehaviorType> LOAD_MAP;
-	public static final RegistryObject<IMinigameBehaviorType> WEATHER_EVENTS;
+	public static final RegistryObject<IMinigameBehaviorType<PositionParticipantsMinigameBehavior>> POSITION_PARTICIPANTS;
+	public static final RegistryObject<IMinigameBehaviorType<LoadMapMinigameBehaviour>> LOAD_MAP;
+	public static final RegistryObject<IMinigameBehaviorType<WeatherEventsMinigameBehavior>> WEATHER_EVENTS;
 
-	public static RegistryObject<IMinigameBehaviorType> register(final String name, final Function<Dynamic<JsonElement>, IMinigameBehavior> instanceFactory) {
+	public static <T extends IMinigameBehavior> RegistryObject<IMinigameBehaviorType<T>> register(final String name, final Function<Dynamic<JsonElement>, T> instanceFactory) {
 		final ResourceLocation id = new ResourceLocation("ltminigames", name);
-		return MINIGAME_BEHAVIOURS_REGISTER.register(name, () -> new MinigameBehaviorType(id, instanceFactory));
+		return MINIGAME_BEHAVIOURS_REGISTER.register(name, () -> new MinigameBehaviorType<>(id, instanceFactory));
 	}
 
-	private static IMinigameBehavior weatherEvents(Dynamic<JsonElement> root) {
+	private static WeatherEventsMinigameBehavior weatherEvents(Dynamic<JsonElement> root) {
 		return new WeatherEventsMinigameBehavior(MinigameWeatherConfig.deserialize(root));
 	}
 
-	private static IMinigameBehavior positionParticipants(Dynamic<JsonElement> root) {
+	private static PositionParticipantsMinigameBehavior positionParticipants(Dynamic<JsonElement> root) {
 		BlockPos[] spawnPositions = root.get("positions").asList(BlockPos::deserialize).toArray(new BlockPos[0]);
 		return new PositionParticipantsMinigameBehavior(spawnPositions);
 	}
 
-	private static IMinigameBehavior loadMap(Dynamic<JsonElement> root) {
+	private static LoadMapMinigameBehaviour loadMap(Dynamic<JsonElement> root) {
 		DimensionType dimension = DimensionType.byName(new ResourceLocation(root.get("dimension").asString("")));
 		String loadFrom = root.get("load_from").asString("");
 		String saveTo = root.get("save_to").asString("");
@@ -49,7 +50,6 @@ public class MinigameBehaviorTypes
 	}
 
 	static {
-		MINIGAME_BEHAVIOURS_REGISTER = DeferredRegister.create(IMinigameBehaviorType.class, "ltminigames");
 		MINIGAME_BEHAVIOURS_REGISTRY = MINIGAME_BEHAVIOURS_REGISTER.makeRegistry("minigame_behaviours", RegistryBuilder::new);
 
 		POSITION_PARTICIPANTS = register("position_participants", MinigameBehaviorTypes::positionParticipants);

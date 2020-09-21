@@ -19,4 +19,9 @@ public class PositionParticipantsMinigameBehavior implements IMinigameBehavior
 	{
 
 	}
+	
+	public BlockPos[] getStartPositions()
+	{
+		return startPositions; // TODO temporary
+	}
 }

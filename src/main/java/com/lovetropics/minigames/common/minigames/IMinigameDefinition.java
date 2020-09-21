@@ -1,7 +1,11 @@
 package com.lovetropics.minigames.common.minigames;
 
+import java.util.Collection;
+import java.util.Optional;
+
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
-import net.minecraft.client.Minecraft;
+import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehaviorType;
+
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.ActionResultType;
@@ -13,8 +17,6 @@ import net.minecraft.world.GameType;
 import net.minecraft.world.dimension.DimensionType;
 import net.minecraftforge.registries.IForgeRegistryEntry;
 
-import java.util.List;
-
 /**
  * Used as a discriminant for a registered minigame. Defines the logic of the
  * minigame as it is actively running, and provides methods to customize the
@@ -23,7 +25,9 @@ import java.util.List;
  */
 public interface IMinigameDefinition extends IForgeRegistryEntry<IMinigameDefinition>
 {
-    List<IMinigameBehavior> getBehaviours();
+    Collection<IMinigameBehavior> getAllBehaviours();
+    
+    <T extends IMinigameBehavior> Optional<T> getBehavior(IMinigameBehaviorType<T> type);
 
     default ActionResult<ITextComponent> canStartMinigame(final MinecraftServer server) {
         return new ActionResult<>(ActionResultType.SUCCESS, new StringTextComponent(""));

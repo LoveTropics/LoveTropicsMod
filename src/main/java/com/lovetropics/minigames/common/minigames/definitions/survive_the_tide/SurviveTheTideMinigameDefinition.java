@@ -1,6 +1,7 @@
 package com.lovetropics.minigames.common.minigames.definitions.survive_the_tide;
 
 import java.util.List;
+import java.util.Optional;
 
 import com.lovetropics.minigames.client.data.TropicraftLangKeys;
 import com.lovetropics.minigames.common.Util;
@@ -9,6 +10,7 @@ import com.lovetropics.minigames.common.dimension.DimensionUtils;
 import com.lovetropics.minigames.common.minigames.IMinigameDefinition;
 import com.lovetropics.minigames.common.minigames.IMinigameInstance;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
+import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehaviorType;
 
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ActionResult;
@@ -38,9 +40,14 @@ public class SurviveTheTideMinigameDefinition extends ForgeRegistryEntry<IMiniga
     }
 
     @Override
-    public List<IMinigameBehavior> getBehaviours()
+    public List<IMinigameBehavior> getAllBehaviours()
     {
         return null;
+    }
+    
+    @Override
+    public <T extends IMinigameBehavior> Optional<T> getBehavior(IMinigameBehaviorType<T> type) {
+    	return null;
     }
 
     @Override

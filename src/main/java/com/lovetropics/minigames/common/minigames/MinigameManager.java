@@ -7,6 +7,7 @@ import com.lovetropics.minigames.client.data.TropicraftLangKeys;
 import com.lovetropics.minigames.common.Util;
 import com.lovetropics.minigames.common.dimension.DimensionUtils;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
+import com.lovetropics.minigames.common.minigames.behaviours.MinigameBehaviorTypes;
 import com.lovetropics.minigames.common.minigames.definitions.UnderwaterTrashHuntMinigameDefinition;
 import com.lovetropics.minigames.common.minigames.definitions.survive_the_tide.SurviveTheTideMinigameDefinition;
 import net.minecraft.entity.Entity;
@@ -234,7 +235,7 @@ public class MinigameManager implements IMinigameManager
             return canStart;
         }
 
-        this.polling.getBehaviours().forEach(b -> b.onPreStart(this.polling, server));
+        this.polling.getAllBehaviours().forEach(b -> b.onPreStart(this.polling, server));
 
         ServerWorld world = this.server.getWorld(this.polling.getDimension());
         this.currentInstance = new MinigameInstance(this.polling, world);
@@ -275,7 +276,7 @@ public class MinigameManager implements IMinigameManager
         this.polling = null;
         this.registeredForMinigame.clear();
 
-        this.currentInstance.getDefinition().getBehaviours().forEach((b) -> b.onStart(this.currentInstance));
+        this.currentInstance.getDefinition().getAllBehaviours().forEach((b) -> b.onStart(this.currentInstance));
 
         return new ActionResult<>(ActionResultType.SUCCESS, new TranslationTextComponent(TropicraftLangKeys.COMMAND_MINIGAME_STARTED).applyTextStyle(TextFormatting.GREEN));
     }
@@ -358,7 +359,10 @@ public class MinigameManager implements IMinigameManager
     }
 
     private void teleportPlayerIntoInstance(IMinigameInstance instance, ServerPlayerEntity player, int playerCount) {
-        BlockPos[] positions = instance.getDefinition().getParticipantPositions();
+    	// TODO temporary
+        BlockPos[] positions = instance.getDefinition().getBehavior(MinigameBehaviorTypes.POSITION_PARTICIPANTS.get())
+        		.map(b -> b.getStartPositions())
+        		.orElseThrow(IllegalStateException::new);
 
         // Ensure length of participant positions matches the maximum participant count.
         if (positions.length != instance.getDefinition().getMaximumParticipantCount()) {
@@ -403,8 +407,8 @@ public class MinigameManager implements IMinigameManager
         this.playerCache.remove(player.getUniqueID());
     }
 
-    private List<IMinigameBehavior> getBehaviours() {
-        return this.currentInstance.getDefinition().getBehaviours();
+    private Collection<IMinigameBehavior> getBehaviours() {
+        return this.currentInstance.getDefinition().getAllBehaviours();
     }
 
     @SubscribeEvent

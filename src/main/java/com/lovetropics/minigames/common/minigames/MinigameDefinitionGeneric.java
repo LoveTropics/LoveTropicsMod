@@ -1,14 +1,17 @@
 package com.lovetropics.minigames.common.minigames;
 
+import java.util.Collection;
+import java.util.Optional;
+
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
+import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehaviorType;
 import com.lovetropics.minigames.common.minigames.config.MinigameConfig;
+
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.GameType;
 import net.minecraft.world.dimension.DimensionType;
 import net.minecraftforge.registries.ForgeRegistryEntry;
-
-import java.util.List;
 
 public class MinigameDefinitionGeneric extends ForgeRegistryEntry<IMinigameDefinition> implements IMinigameDefinition
 {
@@ -19,9 +22,16 @@ public class MinigameDefinitionGeneric extends ForgeRegistryEntry<IMinigameDefin
 	}
 
 	@Override
-	public List<IMinigameBehavior> getBehaviours()
+	public Collection<IMinigameBehavior> getAllBehaviours()
 	{
-		return config.behaviors;
+		return config.behaviors.values();
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public <T extends IMinigameBehavior> Optional<T> getBehavior(IMinigameBehaviorType<T> type)
+	{
+		return Optional.ofNullable((T) config.behaviors.get(type));
 	}
 
 	@Override
