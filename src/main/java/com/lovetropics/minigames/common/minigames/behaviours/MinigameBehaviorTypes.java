@@ -1,6 +1,7 @@
 package com.lovetropics.minigames.common.minigames.behaviours;
 
 import com.google.gson.JsonElement;
+import com.lovetropics.minigames.common.minigames.behaviours.instances.CommandInvokeBehavior;
 import com.lovetropics.minigames.common.minigames.behaviours.instances.LoadMapMinigameBehaviour;
 import com.lovetropics.minigames.common.minigames.behaviours.instances.PositionParticipantsMinigameBehavior;
 import com.lovetropics.minigames.common.minigames.behaviours.instances.survive_the_tide.WeatherEventsMinigameBehavior;
@@ -26,6 +27,7 @@ public class MinigameBehaviorTypes
 	public static final RegistryObject<IMinigameBehaviorType<PositionParticipantsMinigameBehavior>> POSITION_PARTICIPANTS;
 	public static final RegistryObject<IMinigameBehaviorType<LoadMapMinigameBehaviour>> LOAD_MAP;
 	public static final RegistryObject<IMinigameBehaviorType<WeatherEventsMinigameBehavior>> WEATHER_EVENTS;
+	public static final RegistryObject<IMinigameBehaviorType<CommandInvokeBehavior>> COMMANDS;
 
 	public static <T extends IMinigameBehavior> RegistryObject<IMinigameBehaviorType<T>> register(final String name, final Function<Dynamic<JsonElement>, T> instanceFactory) {
 		final ResourceLocation id = new ResourceLocation("ltminigames", name);
@@ -55,5 +57,6 @@ public class MinigameBehaviorTypes
 		POSITION_PARTICIPANTS = register("position_participants", MinigameBehaviorTypes::positionParticipants);
 		LOAD_MAP = register("load_map", MinigameBehaviorTypes::loadMap);
 		WEATHER_EVENTS = register("weather_events", MinigameBehaviorTypes::weatherEvents);
+		COMMANDS = register("commands", CommandInvokeBehavior::parse);
 	}
 }
