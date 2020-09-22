@@ -1,10 +1,14 @@
 package com.lovetropics.minigames.common.minigames;
 
+import com.google.common.collect.Maps;
+import com.lovetropics.minigames.common.dimension.DimensionUtils;
+import com.lovetropics.minigames.common.minigames.behaviours.MinigameBehaviorTypes;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.ICommandSource;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec2f;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.text.ITextComponent;
@@ -13,6 +17,7 @@ import net.minecraft.world.server.ServerWorld;
 
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.function.Consumer;
 
 /**
@@ -23,15 +28,21 @@ import java.util.function.Consumer;
  */
 public class MinigameInstance implements IMinigameInstance
 {
-    private IMinigameDefinition definition;
+    private final ServerWorld world;
+    private final IMinigameDefinition definition;
 
-    private final PlayerSet participants;
-    private final PlayerSet spectators;
-    private final PlayerSet allPlayers;
+    private final MutablePlayerSet allPlayers;
+    private final MutablePlayerSet participants;
+    private final MutablePlayerSet spectators;
+
+    private int teleportedParticipantIndex;
+
+    /**
+     * Cache used to know what state the player was in before teleporting into a minigame.
+     */
+    private final Map<UUID, MinigamePlayerCache> playerCache = Maps.newHashMap();
 
     private CommandSource commandSource;
-
-    private ServerWorld world;
 
     private final Map<String, Consumer<CommandSource>> controlCommands = new Object2ObjectOpenHashMap<>();
 
@@ -40,9 +51,90 @@ public class MinigameInstance implements IMinigameInstance
         this.world = world;
 
         MinecraftServer server = world.getServer();
-        this.participants = new PlayerSet(server);
-        this.spectators = new PlayerSet(server);
-        this.allPlayers = new PlayerSet(server);
+        this.participants = new MutablePlayerSet(server);
+        this.spectators = new MutablePlayerSet(server);
+        this.allPlayers = new MutablePlayerSet(server);
+        
+        this.participants.addListener(new PlayerSet.Listeners() {
+            @Override
+            public void onAddPlayer(ServerPlayerEntity player) {
+                spectators.remove(player);
+                teleportPlayerIntoInstance(player);
+            }
+        });
+        
+        this.spectators.addListener(new PlayerSet.Listeners() {
+            @Override
+            public void onAddPlayer(ServerPlayerEntity player) {
+                participants.remove(player);
+                teleportSpectatorIntoInstance(player);
+            }
+        });
+
+        this.allPlayers.addListener(new PlayerSet.Listeners() {
+            @Override
+            public void onAddPlayer(ServerPlayerEntity player) {
+                MinigameInstance.this.onAddPlayer(player);
+            }
+
+            @Override
+            public void onRemovePlayer(UUID id) {
+                MinigameInstance.this.onRemovePlayer(id);
+                spectators.remove(id);
+                allPlayers.remove(id);
+            }
+        });
+    }
+
+    private void onAddPlayer(ServerPlayerEntity player) {
+        MinigamePlayerCache playerCache = new MinigamePlayerCache(player);
+        playerCache.resetPlayerStats(player);
+
+        this.playerCache.put(player.getUniqueID(), playerCache);
+    }
+
+    private void onRemovePlayer(UUID id) {
+        ServerPlayerEntity player = this.world.getServer().getPlayerList().getPlayerByUUID(id);
+        if (player == null) {
+            return;
+        }
+
+        // try to restore the player to their old state
+        MinigamePlayerCache playerCache = this.playerCache.remove(id);
+        if (playerCache != null) {
+            playerCache.teleportBack(player);
+        }
+    }
+
+    private void teleportPlayerIntoInstance(ServerPlayerEntity player) {
+        // TODO temporary
+        BlockPos[] positions = definition.getBehavior(MinigameBehaviorTypes.POSITION_PARTICIPANTS.get())
+                .map(b -> b.getStartPositions())
+                .orElseThrow(IllegalStateException::new);
+
+        // Ensure length of participant positions matches the maximum participant count.
+        if (positions.length != definition.getMaximumParticipantCount()) {
+            throw new IllegalStateException("The participant positions length doesn't match the" +
+                    "maximum participant count defined by the following minigame definition! " + definition.getID());
+        }
+
+        BlockPos teleportTo = positions[teleportedParticipantIndex++ % positions.length];
+
+        DimensionUtils.teleportPlayerNoPortal(player, definition.getDimension(), teleportTo);
+        player.setGameType(definition.getParticipantGameType());
+    }
+
+    /**
+     * Teleports the spectator into the dimension specified by the minigame definition.
+     * Will set the position of the player to the location specified by the definition
+     * for spectators. Sets player GameType to SPECTATOR.
+     * @param player The spectator to teleport into the instance.
+     */
+    private void teleportSpectatorIntoInstance(ServerPlayerEntity player) {
+        BlockPos teleportTo = definition.getSpectatorPosition();
+
+        DimensionUtils.teleportPlayerNoPortal(player, definition.getDimension(), teleportTo);
+        player.setGameType(definition.getSpectatorGameType());
     }
 
     @Override
@@ -51,57 +143,25 @@ public class MinigameInstance implements IMinigameInstance
     }
 
     @Override
-    public void addParticipant(ServerPlayerEntity player) {
-        if (this.spectators.contains(player)) {
-            throw new IllegalArgumentException("Player already exists in this minigame instance as a spectator! "
+    public void makeParticipant(ServerPlayerEntity player) throws IllegalArgumentException {
+        if (!allPlayers.contains(player)) {
+            throw new IllegalArgumentException("Player does not exist in this minigame instance! "
                     + player.getDisplayName().getFormattedText());
         }
 
-        if (this.participants.contains(player)) {
-            throw new IllegalArgumentException("Player already exists in this minigame instance! "
-                    + player.getDisplayName().getFormattedText());
-        }
-
-        this.participants.add(player);
-        this.allPlayers.add(player);
+        participants.add(player);
+        spectators.remove(player);
     }
 
     @Override
-    public void removeParticipant(ServerPlayerEntity player) {
-        if (!this.participants.contains(player)) {
-            throw new IllegalArgumentException("Player doesn't exist in this minigame instance! "
+    public void makeSpectator(ServerPlayerEntity player) throws IllegalArgumentException {
+        if (!allPlayers.contains(player)) {
+            throw new IllegalArgumentException("Player does not exist in this minigame instance! "
                     + player.getDisplayName().getFormattedText());
         }
 
-        this.participants.remove(player);
-        this.allPlayers.remove(player);
-    }
-
-    @Override
-    public void addSpectator(ServerPlayerEntity player) {
-        if (this.participants.contains(player.getUniqueID())) {
-            throw new IllegalArgumentException("Player already exists in this minigame instance as a non-spectator! "
-                    + player.getDisplayName().getFormattedText());
-        }
-
-        if (this.spectators.contains(player.getUniqueID())) {
-            throw new IllegalArgumentException("Player already exists in this minigame instance as a spectator! "
-                    + player.getDisplayName().getFormattedText());
-        }
-
-        this.spectators.add(player);
-        this.allPlayers.add(player);
-    }
-
-    @Override
-    public void removeSpectator(ServerPlayerEntity player) {
-        if (!this.spectators.contains(player.getUniqueID())) {
-            throw new IllegalArgumentException("Player doesn't exist in this minigame instance as a spectator! "
-                    + player.getDisplayName().getFormattedText());
-        }
-
-        this.spectators.remove(player.getUniqueID());
-        this.allPlayers.remove(player.getUniqueID());
+        spectators.add(player);
+        participants.remove(player);
     }
 
     @Override
@@ -123,13 +183,13 @@ public class MinigameInstance implements IMinigameInstance
     }
 
     @Override
-    public PlayerSet getParticipants() {
-        return this.participants;
+    public MutablePlayerSet getAllPlayers() {
+        return this.allPlayers;
     }
 
     @Override
-    public PlayerSet getAllPlayers() {
-        return this.allPlayers;
+    public PlayerSet getParticipants() {
+        return this.participants;
     }
 
     @Override

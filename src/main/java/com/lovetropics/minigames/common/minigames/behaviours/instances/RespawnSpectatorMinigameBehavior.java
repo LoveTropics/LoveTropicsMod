@@ -14,10 +14,7 @@ public final class RespawnSpectatorMinigameBehavior implements IMinigameBehavior
 	@Override
 	public void onPlayerDeath(IMinigameInstance minigame, ServerPlayerEntity player) {
 		if (!minigame.getSpectators().contains(player.getUniqueID())) {
-			minigame.removeParticipant(player);
-			minigame.addSpectator(player);
-
-			player.setGameType(minigame.getDefinition().getSpectatorGameType());
+			minigame.makeSpectator(player);
 		}
 
 		if (minigame.getParticipants().isEmpty()) {

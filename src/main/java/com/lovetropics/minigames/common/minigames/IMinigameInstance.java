@@ -1,12 +1,12 @@
 package com.lovetropics.minigames.common.minigames;
 
-import java.util.Set;
-import java.util.function.Consumer;
-
 import net.minecraft.command.CommandSource;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.world.dimension.DimensionType;
 import net.minecraft.world.server.ServerWorld;
+
+import java.util.Set;
+import java.util.function.Consumer;
 
 /**
  * An instance used to track which participants and spectators are inside
@@ -22,43 +22,22 @@ public interface IMinigameInstance
     IMinigameDefinition getDefinition();
 
     /**
-     * Adds a player to a list of participants for tracking throughout the minigame.
+     * Adds the given player into the collection of active participants within this minigame.
+     * This method will also remove the given player from the spectators collection
      *
-     * @param player The participant being added to the minigame instance.
-     * @throws IllegalArgumentException Will throw an exception if you try to
-     * add a player that is either:
-     *
-     * - Already a participant in the instance.
-     * - Or a spectator in the instance.
-     *
-     * If you'd like to add a participant and they're already a spectator, make sure
-     * to remove them as a spectator first.
+     * @param player the player to add
+     * @throws IllegalArgumentException if the player is not already apart of this game
      */
-    void addParticipant(ServerPlayerEntity player) throws IllegalArgumentException;
+    void makeParticipant(ServerPlayerEntity player) throws IllegalArgumentException;
 
     /**
-     * Removes a player from a list of participants for tracking throughout the minigame.
-     * @param player The particiapnt being removed from the minigame instance.
-     * @throws IllegalArgumentException Will throw an exception if you try to
-     * remove a participant that isn't in the minigame instance.
+     * Adds the given player into the collection of spectators within this minigame.
+     * This method will also remove the given player from the active participants collection
+     *
+     * @param player the player to add
+     * @throws IllegalArgumentException if the player is not already apart of this game
      */
-    void removeParticipant(ServerPlayerEntity player) throws IllegalArgumentException;
-
-    /**
-     * Adds the player to a list of spectators for tracking.
-     * @param player The player you're add as a spectator to the instance.
-     * @throws IllegalArgumentException Will throw an exception if you try to add
-     * a spectator that is already a participant in the instance or is already a spectator.
-     */
-    void addSpectator(ServerPlayerEntity player) throws IllegalArgumentException;
-
-    /**
-     * Removes the player from a list of spectators for tracking.
-     * @param player The player you're removing as a spectator from the instance.
-     * @throws IllegalArgumentException Will throw an exception if you try to remove
-     * a spectator that isn't a spectator in the instance.
-     */
-    void removeSpectator(ServerPlayerEntity player) throws IllegalArgumentException;
+    void makeSpectator(ServerPlayerEntity player) throws IllegalArgumentException;
 
     /**
      * Adds a command with a custom task that can be used through the /minigame command while this game is active
@@ -72,7 +51,12 @@ public interface IMinigameInstance
     Set<String> getControlCommands();
 
     /**
-     * @return The list of participants that are playing within the minigame instance.
+     * @return The list of all players that are a part of this minigame instance.
+     */
+    MutablePlayerSet getAllPlayers();
+
+    /**
+     * @return The list of active participants that are playing within the minigame instance.
      */
     PlayerSet getParticipants();
 
@@ -80,11 +64,6 @@ public interface IMinigameInstance
      * @return The list of spectators that are observing the minigame instance.
      */
     PlayerSet getSpectators();
-
-    /**
-     * @return The list of all players that are a part of this minigame instance.
-     */
-    PlayerSet getAllPlayers();
 
     /**
      * Used for executing commands of datapacks within the minigames.
