@@ -118,22 +118,59 @@ public interface IMinigameBehavior
 	 */
 	default void onPlayerAttackEntity(final IMinigameInstance minigame, AttackEntityEvent event) {}
 
-	// TODO: document
+	/**
+	 * Called when a player is added to this minigame instance. This may be as a spectator or participant
+	 *
+	 * @param minigame The current minigame instance.
+	 * @param player   The player that has been added.
+	 */
 	default void onAddPlayer(final IMinigameInstance minigame, ServerPlayerEntity player) {
 	}
 
+	/**
+	 * Called when a player is removed from this minigame instance. This may be as a spectator or participant
+	 *
+	 * @param minigame The current minigame instance.
+	 * @param player   The player that has been removed.
+	 */
 	default void onRemovePlayer(final IMinigameInstance minigame, ServerPlayerEntity player) {
 	}
 
+	/**
+	 * Called when an active participant is added to this minigame instance.
+	 *
+	 * @param minigame The current minigame instance.
+	 * @param player   The player that has been added.
+	 */
 	default void onAddParticipant(final IMinigameInstance minigame, ServerPlayerEntity player) {
 	}
 
+	/**
+	 * Called when an active participant is removed from this minigame instance.
+	 * This may be invoked as a result of a player becoming a spectator, or from the player leaving althogether
+	 *
+	 * @param minigame The current minigame instance.
+	 * @param player   The player that has been removed.
+	 */
 	default void onRemoveParticipant(final IMinigameInstance minigame, ServerPlayerEntity player) {
 	}
 
+	/**
+	 * Called when a spectator is added to this minigame instance.
+	 *
+	 * @param minigame The current minigame instance.
+	 * @param player   The player that has been added.
+	 */
 	default void onAddSpectator(final IMinigameInstance minigame, ServerPlayerEntity player) {
 	}
 
+	/**
+	 * Called when a spectator is removed from this minigame instance.
+	 * This may be invoked as a result of a player becoming a participant, or from the player leaving althogether
+	 *
+	 * @param minigame The current minigame instance.
+	 * @param player   The player that has been removed.
+	 */
 	default void onRemoveSpectator(final IMinigameInstance minigame, ServerPlayerEntity player) {
 	}
 }
