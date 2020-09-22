@@ -1,6 +1,7 @@
 package com.lovetropics.minigames.common.minigames.behaviours.instances;
 
 import com.lovetropics.minigames.common.minigames.IMinigameInstance;
+import com.lovetropics.minigames.common.minigames.PlayerRole;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.world.GameType;
@@ -15,12 +16,7 @@ public class SetGameTypesBehavior implements IMinigameBehavior {
 	}
 
 	@Override
-	public void onAddParticipant(IMinigameInstance minigame, ServerPlayerEntity player) {
-		player.setGameType(participantGameType);
-	}
-
-	@Override
-	public void onAddSpectator(IMinigameInstance minigame, ServerPlayerEntity player) {
-		player.setGameType(spectatorGameType);
+	public void onPlayerJoin(IMinigameInstance minigame, ServerPlayerEntity player, PlayerRole role) {
+		player.setGameType(role == PlayerRole.PARTICIPANT ? participantGameType : spectatorGameType);
 	}
 }

@@ -12,6 +12,7 @@ import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.world.server.ServerWorld;
 
+import java.util.EnumMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -29,8 +30,7 @@ public class MinigameInstance implements IMinigameInstance
     private final IMinigameDefinition definition;
 
     private final MutablePlayerSet allPlayers;
-    private final MutablePlayerSet participants;
-    private final MutablePlayerSet spectators;
+    private final EnumMap<PlayerRole, MutablePlayerSet> roles = new EnumMap<>(PlayerRole.class);
 
     private CommandSource commandSource;
 
@@ -41,69 +41,26 @@ public class MinigameInstance implements IMinigameInstance
         this.world = world;
 
         MinecraftServer server = world.getServer();
-        this.participants = new MutablePlayerSet(server);
-        this.spectators = new MutablePlayerSet(server);
         this.allPlayers = new MutablePlayerSet(server);
-        
-        this.participants.addListener(new PlayerSet.Listeners() {
-            @Override
-            public void onAddPlayer(ServerPlayerEntity player) {
-                spectators.remove(player);
-                for (IMinigameBehavior behavior : definition.getAllBehaviours()) {
-                    behavior.onAddParticipant(MinigameInstance.this, player);
-                }
-            }
 
-            @Override
-            public void onRemovePlayer(UUID id) {
-                ServerPlayerEntity player = server.getPlayerList().getPlayerByUUID(id);
-                if (player != null) {
-                    for (IMinigameBehavior behavior : definition.getAllBehaviours()) {
-                        behavior.onRemoveParticipant(MinigameInstance.this, player);
-                    }
-                }
-            }
-        });
-        
-        this.spectators.addListener(new PlayerSet.Listeners() {
-            @Override
-            public void onAddPlayer(ServerPlayerEntity player) {
-                participants.remove(player);
-                for (IMinigameBehavior behavior : definition.getAllBehaviours()) {
-                    behavior.onAddSpectator(MinigameInstance.this, player);
-                }
-            }
+        for (PlayerRole role : PlayerRole.ROLES) {
+            MutablePlayerSet rolePlayers = new MutablePlayerSet(server);
+            roles.put(role, rolePlayers);
 
-            @Override
-            public void onRemovePlayer(UUID id) {
-                ServerPlayerEntity player = server.getPlayerList().getPlayerByUUID(id);
-                if (player != null) {
-                    for (IMinigameBehavior behavior : definition.getAllBehaviours()) {
-                        behavior.onRemoveSpectator(MinigameInstance.this, player);
-                    }
+            rolePlayers.addListener(new PlayerSet.Listeners() {
+                @Override
+                public void onAddPlayer(ServerPlayerEntity player) {
+                    MinigameInstance.this.onAddPlayerToRole(player, role);
                 }
-            }
-        });
+            });
+        }
 
-        this.allPlayers.addListener(new PlayerSet.Listeners() {
-            @Override
-            public void onAddPlayer(ServerPlayerEntity player) {
-                MinigameInstance.this.onAddPlayer(player);
-            }
-
+        allPlayers.addListener(new PlayerSet.Listeners() {
             @Override
             public void onRemovePlayer(UUID id) {
                 MinigameInstance.this.onRemovePlayer(id);
-                participants.remove(id);
-                spectators.remove(id);
             }
         });
-    }
-
-    private void onAddPlayer(ServerPlayerEntity player) {
-        for (IMinigameBehavior behavior : definition.getAllBehaviours()) {
-            behavior.onAddPlayer(MinigameInstance.this, player);
-        }
     }
 
     private void onRemovePlayer(UUID id) {
@@ -112,8 +69,25 @@ public class MinigameInstance implements IMinigameInstance
             return;
         }
 
+        for (MutablePlayerSet rolePlayers : roles.values()) {
+            rolePlayers.remove(id);
+        }
+
         for (IMinigameBehavior behavior : definition.getAllBehaviours()) {
-            behavior.onRemovePlayer(MinigameInstance.this, player);
+            behavior.onPlayerLeave(MinigameInstance.this, player);
+        }
+    }
+
+    private void onAddPlayerToRole(ServerPlayerEntity player, PlayerRole role) {
+        // remove the player from any other roles
+        for (PlayerRole otherRole : PlayerRole.ROLES) {
+            if (otherRole != role) {
+                roles.get(role).remove(player);
+            }
+        }
+
+        for (IMinigameBehavior behavior : definition.getAllBehaviours()) {
+            behavior.onPlayerJoin(this, player, role);
         }
     }
 
@@ -123,25 +97,17 @@ public class MinigameInstance implements IMinigameInstance
     }
 
     @Override
-    public void makeParticipant(ServerPlayerEntity player) throws IllegalArgumentException {
+    public void addPlayer(ServerPlayerEntity player, PlayerRole role) {
         if (!allPlayers.contains(player)) {
-            throw new IllegalArgumentException("Player does not exist in this minigame instance! "
-                    + player.getDisplayName().getFormattedText());
+            allPlayers.add(player);
         }
 
-        participants.add(player);
-        spectators.remove(player);
+        roles.get(role).add(player);
     }
 
     @Override
-    public void makeSpectator(ServerPlayerEntity player) throws IllegalArgumentException {
-        if (!allPlayers.contains(player)) {
-            throw new IllegalArgumentException("Player does not exist in this minigame instance! "
-                    + player.getDisplayName().getFormattedText());
-        }
-
-        spectators.add(player);
-        participants.remove(player);
+    public void removePlayer(ServerPlayerEntity player) {
+        allPlayers.remove(player);
     }
 
     @Override
@@ -163,18 +129,13 @@ public class MinigameInstance implements IMinigameInstance
     }
 
     @Override
-    public MutablePlayerSet getAllPlayers() {
+    public PlayerSet getPlayers() {
         return this.allPlayers;
     }
 
     @Override
-    public PlayerSet getParticipants() {
-        return this.participants;
-    }
-
-    @Override
-    public PlayerSet getSpectators() {
-        return this.spectators;
+    public PlayerSet getPlayersForRule(PlayerRole role) {
+        return roles.get(role);
     }
 
     @Override

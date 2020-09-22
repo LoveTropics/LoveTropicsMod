@@ -2,6 +2,7 @@ package com.lovetropics.minigames.common.minigames.behaviours.instances;
 
 import com.lovetropics.minigames.common.dimension.DimensionUtils;
 import com.lovetropics.minigames.common.minigames.IMinigameInstance;
+import com.lovetropics.minigames.common.minigames.PlayerRole;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.math.BlockPos;
@@ -19,19 +20,18 @@ public class PositionPlayersMinigameBehavior implements IMinigameBehavior {
 	}
 
 	@Override
-	public void onAddParticipant(IMinigameInstance minigame, ServerPlayerEntity player) {
-		if (participantSpawns.length != minigame.getDefinition().getMaximumParticipantCount()) {
-			throw new IllegalStateException("The participant positions length doesn't match the" +
-					"maximum participant count defined by the following minigame definition! " + minigame.getDefinition().getID());
+	public void onPlayerJoin(IMinigameInstance minigame, ServerPlayerEntity player, PlayerRole role) {
+		if (role == PlayerRole.PARTICIPANT) {
+			if (participantSpawns.length != minigame.getDefinition().getMaximumParticipantCount()) {
+				throw new IllegalStateException("The participant positions length doesn't match the" +
+						"maximum participant count defined by the following minigame definition! " + minigame.getDefinition().getID());
+			}
+
+			BlockPos teleportTo = participantSpawns[participantSpawnIndex++ % participantSpawns.length];
+			DimensionUtils.teleportPlayerNoPortal(player, minigame.getDimension(), teleportTo);
+		} else {
+			BlockPos teleportTo = spectatorSpawns[spectatorSpawnIndex++ % spectatorSpawns.length];
+			DimensionUtils.teleportPlayerNoPortal(player, minigame.getDimension(), teleportTo);
 		}
-
-		BlockPos teleportTo = participantSpawns[participantSpawnIndex++ % participantSpawns.length];
-		DimensionUtils.teleportPlayerNoPortal(player, minigame.getDimension(), teleportTo);
-	}
-
-	@Override
-	public void onAddSpectator(IMinigameInstance minigame, ServerPlayerEntity player) {
-		BlockPos teleportTo = spectatorSpawns[spectatorSpawnIndex++ % spectatorSpawns.length];
-		DimensionUtils.teleportPlayerNoPortal(player, minigame.getDimension(), teleportTo);
 	}
 }

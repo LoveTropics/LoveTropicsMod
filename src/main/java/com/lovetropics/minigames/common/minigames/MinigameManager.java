@@ -146,7 +146,9 @@ public class MinigameManager implements IMinigameManager
         IMinigameDefinition def = this.currentInstance.getDefinition();
         getBehaviours().forEach((b) -> b.onFinish(this.currentInstance));
 
-        this.currentInstance.getAllPlayers().clear();
+        for (ServerPlayerEntity player : currentInstance.getPlayers()) {
+            currentInstance.removePlayer(player);
+        }
 
         // Send all players a message letting them know the minigame has finished
         for (ServerPlayerEntity player : this.server.getPlayerList().getPlayers()) {
@@ -242,16 +244,14 @@ public class MinigameManager implements IMinigameManager
         for (UUID playerUUID : chosenPlayers) {
             ServerPlayerEntity player = this.server.getPlayerList().getPlayerByUUID(playerUUID);
             if (player != null) {
-                this.currentInstance.getAllPlayers().add(player);
-                this.currentInstance.makeParticipant(player);
+                this.currentInstance.addPlayer(player, PlayerRole.PARTICIPANT);
             }
         }
 
         for (UUID spectatorUUID : this.registeredForMinigame) {
             ServerPlayerEntity spectator = this.server.getPlayerList().getPlayerByUUID(spectatorUUID);
             if (spectator != null) {
-                this.currentInstance.getAllPlayers().add(spectator);
-                this.currentInstance.makeSpectator(spectator);
+                this.currentInstance.addPlayer(spectator, PlayerRole.SPECTATOR);
             }
         }
 
@@ -415,7 +415,7 @@ public class MinigameManager implements IMinigameManager
         ServerPlayerEntity player = (ServerPlayerEntity) event.getPlayer();
 
         if (this.currentInstance != null) {
-            this.currentInstance.getAllPlayers().remove(player);
+            this.currentInstance.removePlayer(player);
         }
 
         if (this.polling != null) {
@@ -426,7 +426,7 @@ public class MinigameManager implements IMinigameManager
     }
 
     private boolean ifPlayerInInstance(Entity entity) {
-        return entity instanceof ServerPlayerEntity && this.currentInstance != null && this.currentInstance.getAllPlayers().contains(entity.getUniqueID());
+        return entity instanceof ServerPlayerEntity && this.currentInstance != null && this.currentInstance.getPlayers().contains(entity.getUniqueID());
     }
 
     private boolean ifEntityInDimension(Entity entity) {

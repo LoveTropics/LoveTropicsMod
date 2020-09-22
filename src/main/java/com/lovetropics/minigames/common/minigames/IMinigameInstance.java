@@ -22,22 +22,18 @@ public interface IMinigameInstance
     IMinigameDefinition getDefinition();
 
     /**
-     * Adds the given player into the collection of active participants within this minigame.
-     * This method will also remove the given player from the spectators collection
+     * Adds the player to this minigame with the given role, or sets the players role if they are already added.
+     * This method will also remove the player from any other role they are contained within.
      *
      * @param player the player to add
-     * @throws IllegalArgumentException if the player is not already apart of this game
      */
-    void makeParticipant(ServerPlayerEntity player) throws IllegalArgumentException;
+    void addPlayer(ServerPlayerEntity player, PlayerRole role);
 
     /**
-     * Adds the given player into the collection of spectators within this minigame.
-     * This method will also remove the given player from the active participants collection
-     *
-     * @param player the player to add
-     * @throws IllegalArgumentException if the player is not already apart of this game
+     * Removes the player from this minigame.
+     * @param player the player to remove
      */
-    void makeSpectator(ServerPlayerEntity player) throws IllegalArgumentException;
+    void removePlayer(ServerPlayerEntity player);
 
     /**
      * Adds a command with a custom task that can be used through the /minigame command while this game is active
@@ -53,17 +49,26 @@ public interface IMinigameInstance
     /**
      * @return The list of all players that are a part of this minigame instance.
      */
-    MutablePlayerSet getAllPlayers();
+    PlayerSet getPlayers();
+
+    /**
+     * @return The list of players within this minigame instance that belong to the given role
+     */
+    PlayerSet getPlayersForRule(PlayerRole role);
 
     /**
      * @return The list of active participants that are playing within the minigame instance.
      */
-    PlayerSet getParticipants();
+    default PlayerSet getParticipants() {
+        return getPlayersForRule(PlayerRole.PARTICIPANT);
+    }
 
     /**
      * @return The list of spectators that are observing the minigame instance.
      */
-    PlayerSet getSpectators();
+    default PlayerSet getSpectators() {
+        return getPlayersForRule(PlayerRole.SPECTATOR);
+    }
 
     /**
      * Used for executing commands of datapacks within the minigames.

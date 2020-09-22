@@ -3,6 +3,7 @@ package com.lovetropics.minigames.common.minigames.behaviours.instances;
 import com.google.common.collect.Maps;
 import com.lovetropics.minigames.common.minigames.IMinigameInstance;
 import com.lovetropics.minigames.common.minigames.MinigamePlayerCache;
+import com.lovetropics.minigames.common.minigames.PlayerRole;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
 import net.minecraft.entity.player.ServerPlayerEntity;
 
@@ -16,15 +17,17 @@ public final class IsolatePlayerStateBehavior implements IMinigameBehavior {
 	private final Map<UUID, MinigamePlayerCache> playerCache = Maps.newHashMap();
 
 	@Override
-	public void onAddPlayer(IMinigameInstance minigame, ServerPlayerEntity player) {
-		MinigamePlayerCache playerCache = new MinigamePlayerCache(player);
-		playerCache.resetPlayerStats(player);
+	public void onPlayerJoin(IMinigameInstance minigame, ServerPlayerEntity player, PlayerRole role) {
+		if (!this.playerCache.containsKey(player.getUniqueID())) {
+			MinigamePlayerCache playerCache = new MinigamePlayerCache(player);
+			playerCache.resetPlayerStats(player);
 
-		this.playerCache.put(player.getUniqueID(), playerCache);
+			this.playerCache.put(player.getUniqueID(), playerCache);
+		}
 	}
 
 	@Override
-	public void onRemovePlayer(IMinigameInstance minigame, ServerPlayerEntity player) {
+	public void onPlayerLeave(IMinigameInstance minigame, ServerPlayerEntity player) {
 		// try to restore the player to their old state
 		MinigamePlayerCache playerCache = this.playerCache.remove(player.getUniqueID());
 		if (playerCache != null) {

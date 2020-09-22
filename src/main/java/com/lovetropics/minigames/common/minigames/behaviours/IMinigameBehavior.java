@@ -3,6 +3,7 @@ package com.lovetropics.minigames.common.minigames.behaviours;
 import com.lovetropics.minigames.common.minigames.IMinigameDefinition;
 import com.lovetropics.minigames.common.minigames.IMinigameInstance;
 
+import com.lovetropics.minigames.common.minigames.PlayerRole;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.server.MinecraftServer;
@@ -119,12 +120,13 @@ public interface IMinigameBehavior
 	default void onPlayerAttackEntity(final IMinigameInstance minigame, AttackEntityEvent event) {}
 
 	/**
-	 * Called when a player is added to this minigame instance. This may be as a spectator or participant
+	 * Called when a player is added to this minigame instance. This will be called when the player changes role
 	 *
 	 * @param minigame The current minigame instance.
 	 * @param player   The player that has been added.
+	 * @param role     The role that the player has been added to
 	 */
-	default void onAddPlayer(final IMinigameInstance minigame, ServerPlayerEntity player) {
+	default void onPlayerJoin(final IMinigameInstance minigame, ServerPlayerEntity player, PlayerRole role) {
 	}
 
 	/**
@@ -133,44 +135,6 @@ public interface IMinigameBehavior
 	 * @param minigame The current minigame instance.
 	 * @param player   The player that has been removed.
 	 */
-	default void onRemovePlayer(final IMinigameInstance minigame, ServerPlayerEntity player) {
-	}
-
-	/**
-	 * Called when an active participant is added to this minigame instance.
-	 *
-	 * @param minigame The current minigame instance.
-	 * @param player   The player that has been added.
-	 */
-	default void onAddParticipant(final IMinigameInstance minigame, ServerPlayerEntity player) {
-	}
-
-	/**
-	 * Called when an active participant is removed from this minigame instance.
-	 * This may be invoked as a result of a player becoming a spectator, or from the player leaving althogether
-	 *
-	 * @param minigame The current minigame instance.
-	 * @param player   The player that has been removed.
-	 */
-	default void onRemoveParticipant(final IMinigameInstance minigame, ServerPlayerEntity player) {
-	}
-
-	/**
-	 * Called when a spectator is added to this minigame instance.
-	 *
-	 * @param minigame The current minigame instance.
-	 * @param player   The player that has been added.
-	 */
-	default void onAddSpectator(final IMinigameInstance minigame, ServerPlayerEntity player) {
-	}
-
-	/**
-	 * Called when a spectator is removed from this minigame instance.
-	 * This may be invoked as a result of a player becoming a participant, or from the player leaving althogether
-	 *
-	 * @param minigame The current minigame instance.
-	 * @param player   The player that has been removed.
-	 */
-	default void onRemoveSpectator(final IMinigameInstance minigame, ServerPlayerEntity player) {
+	default void onPlayerLeave(final IMinigameInstance minigame, ServerPlayerEntity player) {
 	}
 }
