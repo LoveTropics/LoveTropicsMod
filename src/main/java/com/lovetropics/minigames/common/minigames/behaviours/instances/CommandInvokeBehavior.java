@@ -57,7 +57,7 @@ public final class CommandInvokeBehavior implements IMinigameBehavior {
 
 	private void invoke(String key, CommandSource source) {
 		List<String> commands = this.commands.get(key);
-		if (commands.isEmpty()) {
+		if (commands == null || commands.isEmpty()) {
 			return;
 		}
 
