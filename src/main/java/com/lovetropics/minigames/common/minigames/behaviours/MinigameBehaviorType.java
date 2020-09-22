@@ -1,24 +1,24 @@
 package com.lovetropics.minigames.common.minigames.behaviours;
 
-import com.google.gson.JsonElement;
 import com.mojang.datafixers.Dynamic;
-import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.registries.ForgeRegistryEntry;
-
-import java.util.function.Function;
 
 public class MinigameBehaviorType<T extends IMinigameBehavior> extends ForgeRegistryEntry<IMinigameBehaviorType<?>> implements IMinigameBehaviorType<T>
 {
-	private final Function<Dynamic<JsonElement>, T> instanceFactory;
+	private final Factory<T> instanceFactory;
 
-	public MinigameBehaviorType(final ResourceLocation id, final Function<Dynamic<JsonElement>, T> instanceFactory)
+	public MinigameBehaviorType(final Factory<T> instanceFactory)
 	{
 		this.instanceFactory = instanceFactory;
 	}
 
 	@Override
-	public T create(Dynamic<JsonElement> data)
+	public <D> T create(Dynamic<D> data)
 	{
-		return instanceFactory.apply(data);
+		return instanceFactory.create(data);
+	}
+
+	public interface Factory<T extends IMinigameBehavior> {
+		<D> T create(Dynamic<D> data);
 	}
 }

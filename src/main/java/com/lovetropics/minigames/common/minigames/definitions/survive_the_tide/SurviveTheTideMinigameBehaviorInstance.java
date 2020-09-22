@@ -1,27 +1,17 @@
 package com.lovetropics.minigames.common.minigames.definitions.survive_the_tide;
 
-import java.util.Iterator;
-import java.util.Random;
-import java.util.UUID;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import com.lovetropics.minigames.client.data.TropicraftLangKeys;
 import com.lovetropics.minigames.common.config.ConfigLT;
 import com.lovetropics.minigames.common.dimension.DimensionUtils;
 import com.lovetropics.minigames.common.donations.FireworkUtil;
-import com.lovetropics.minigames.common.minigames.IMinigameDefinition;
 import com.lovetropics.minigames.common.minigames.IMinigameInstance;
 import com.lovetropics.minigames.common.minigames.MinigameManager;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
-
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.CampfireBlock;
 import net.minecraft.block.FenceBlock;
 import net.minecraft.block.IWaterLoggable;
-import net.minecraft.command.CommandSource;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.effect.LightningBoltEntity;
@@ -44,7 +34,6 @@ import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.BossInfo;
-import net.minecraft.world.GameType;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.ChunkSection;
@@ -56,6 +45,12 @@ import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.player.AttackEntityEvent;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import java.util.Iterator;
+import java.util.Random;
+import java.util.UUID;
 
 public class SurviveTheTideMinigameBehaviorInstance implements IMinigameBehavior
 {
@@ -177,13 +172,6 @@ public class SurviveTheTideMinigameBehaviorInstance implements IMinigameBehavior
 
 		destroyVanishingCursedItems(player.inventory);
 		player.inventory.dropAllItems();
-
-		if (!minigame.getSpectators().contains(player.getUniqueID())) {
-			minigame.removeParticipant(player);
-			minigame.addSpectator(player);
-
-			player.setGameType(GameType.SPECTATOR);
-		}
 
 		if (minigame.getParticipants().size() == 2) {
 			Iterator<ServerPlayerEntity> it = minigame.getParticipants().iterator();

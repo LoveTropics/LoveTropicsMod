@@ -1,6 +1,5 @@
 package com.lovetropics.minigames.common.minigames.weather;
 
-import com.google.gson.JsonElement;
 import com.mojang.datafixers.Dynamic;
 
 public class MinigameWeatherConfig
@@ -39,7 +38,7 @@ public class MinigameWeatherConfig
 		this.acidRainDamageRate = acidRainDamageRate;
 	}
 
-	public static MinigameWeatherConfig deserialize(final Dynamic<JsonElement> root) {
+	public static <T> MinigameWeatherConfig deserialize(final Dynamic<T> root) {
 		final double rainHeavyChance = root.get("rain_heavy_chance").asDouble(0.01);
 		final double rainAcidChance = root.get("rain_acid_chance").asDouble(0.01);
 		final double heatwaveChance = root.get("heatwave_chance").asDouble(0.01);

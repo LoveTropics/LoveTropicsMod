@@ -1,20 +1,17 @@
 package com.lovetropics.minigames.common.minigames.config;
 
-import java.util.Map;
-import java.util.stream.Collectors;
-
-import org.apache.commons.lang3.tuple.Pair;
-
-import com.google.gson.JsonElement;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehaviorType;
 import com.lovetropics.minigames.common.minigames.behaviours.MinigameBehaviorTypes;
 import com.mojang.datafixers.Dynamic;
-
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.GameType;
 import net.minecraft.world.dimension.DimensionType;
+import org.apache.commons.lang3.tuple.Pair;
+
+import java.util.Map;
+import java.util.stream.Collectors;
 
 public final class MinigameConfig {
     public final ResourceLocation id;
@@ -52,7 +49,7 @@ public final class MinigameConfig {
         this.behaviors = behaviors;
     }
 
-    public static MinigameConfig deserialize(ResourceLocation id, Dynamic<JsonElement> root) {
+    public static <T> MinigameConfig deserialize(ResourceLocation id, Dynamic<T> root) {
         String translationKey = root.get("translation_key").asString("");
         DimensionType dimension = DimensionType.byName(new ResourceLocation(root.get("dimension").asString("")));
         GameType participantGameType = GameType.getByName(root.get("participant_game_type").asString(""));
@@ -83,11 +80,10 @@ public final class MinigameConfig {
         );
     }
 
-    // TODO: implement retrieval and parsing from registry
-    private static <T extends IMinigameBehavior> Pair<IMinigameBehaviorType<T>, T> deserializeBehavior(Dynamic<JsonElement> root) {
+    private static <T extends IMinigameBehavior, D> Pair<IMinigameBehaviorType<T>, T> deserializeBehavior(Dynamic<D> root) {
         ResourceLocation type = new ResourceLocation(root.get("type").asString(""));
         @SuppressWarnings("unchecked")
-		IMinigameBehaviorType<T> behavior = MinigameBehaviorTypes.MINIGAME_BEHAVIOURS_REGISTRY.get().getValue(type);
+		IMinigameBehaviorType<T> behavior = (IMinigameBehaviorType<T>) MinigameBehaviorTypes.MINIGAME_BEHAVIOURS_REGISTRY.get().getValue(type);
 
         if (behavior != null) {
             return Pair.of(behavior, behavior.create(root));
