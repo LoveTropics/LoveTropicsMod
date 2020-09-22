@@ -1,5 +1,6 @@
 package com.lovetropics.minigames.common.minigames.behaviours;
 
+import com.lovetropics.minigames.common.minigames.behaviours.instances.CommandInvokeBehavior;
 import com.lovetropics.minigames.common.minigames.behaviours.instances.IsolatePlayerStateBehavior;
 import com.lovetropics.minigames.common.minigames.behaviours.instances.LoadMapMinigameBehaviour;
 import com.lovetropics.minigames.common.minigames.behaviours.instances.PositionPlayersMinigameBehavior;
@@ -20,8 +21,7 @@ import net.minecraftforge.registries.RegistryBuilder;
 
 import java.util.function.Supplier;
 
-public class MinigameBehaviorTypes
-{
+public class MinigameBehaviorTypes {
 	public static final DeferredRegister<IMinigameBehaviorType<?>> MINIGAME_BEHAVIOURS_REGISTER = DeferredRegister.create(IMinigameBehaviorType.wildcardType(), "ltminigames");
 	public static final Supplier<IForgeRegistry<IMinigameBehaviorType<?>>> MINIGAME_BEHAVIOURS_REGISTRY;
 
@@ -30,6 +30,7 @@ public class MinigameBehaviorTypes
 	public static final RegistryObject<IMinigameBehaviorType<WeatherEventsMinigameBehavior>> WEATHER_EVENTS;
 	public static final RegistryObject<IMinigameBehaviorType<TimedMinigameBehavior>> TIMED;
 	public static final RegistryObject<IMinigameBehaviorType<RespawnSpectatorMinigameBehavior>> RESPAWN_SPECTATOR;
+	public static final RegistryObject<IMinigameBehaviorType<CommandInvokeBehavior>> COMMANDS;
 	public static final RegistryObject<IMinigameBehaviorType<IsolatePlayerStateBehavior>> ISOLATE_PLAYER_STATE;
 	public static final RegistryObject<IMinigameBehaviorType<SetGameTypesBehavior>> SET_GAME_TYPES;
 
@@ -87,6 +88,7 @@ public class MinigameBehaviorTypes
 		WEATHER_EVENTS = register("weather_events", MinigameBehaviorTypes::weatherEvents);
 		TIMED = register("timed", MinigameBehaviorTypes::timed);
 		RESPAWN_SPECTATOR = registerInstance("respawn_spectator", RespawnSpectatorMinigameBehavior.INSTANCE);
+		COMMANDS = register("commands", CommandInvokeBehavior::parse);
 		ISOLATE_PLAYER_STATE = register("isolate_player_state", MinigameBehaviorTypes::isolatePlayerState);
 		SET_GAME_TYPES = register("set_game_types", MinigameBehaviorTypes::setGameTypes);
 	}
