@@ -5,8 +5,6 @@ import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehaviorTy
 import com.lovetropics.minigames.common.minigames.behaviours.MinigameBehaviorTypes;
 import com.mojang.datafixers.Dynamic;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.GameType;
 import net.minecraft.world.dimension.DimensionType;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -17,10 +15,6 @@ public final class MinigameConfig {
     public final ResourceLocation id;
     public final String translationKey;
     public final DimensionType dimension;
-    public final GameType participantGameType;
-    public final GameType spectatorGameType;
-    public final BlockPos spectatorPosition;
-    public final BlockPos respawnPosition;
     public final int minimumParticipants;
     public final int maximumParticipants;
     public final Map<IMinigameBehaviorType<?>, IMinigameBehavior> behaviors;
@@ -29,10 +23,6 @@ public final class MinigameConfig {
             ResourceLocation id,
             String translationKey,
             DimensionType dimension,
-            GameType participantGameType,
-            GameType spectatorGameType,
-            BlockPos spectatorPosition,
-            BlockPos respawnPosition,
             int minimumParticipants,
             int maximumParticipants,
             Map<IMinigameBehaviorType<?>, IMinigameBehavior> behaviors
@@ -40,10 +30,6 @@ public final class MinigameConfig {
         this.id = id;
         this.translationKey = translationKey;
         this.dimension = dimension;
-        this.participantGameType = participantGameType;
-        this.spectatorGameType = spectatorGameType;
-        this.spectatorPosition = spectatorPosition;
-        this.respawnPosition = respawnPosition;
         this.minimumParticipants = minimumParticipants;
         this.maximumParticipants = maximumParticipants;
         this.behaviors = behaviors;
@@ -52,11 +38,6 @@ public final class MinigameConfig {
     public static <T> MinigameConfig deserialize(ResourceLocation id, Dynamic<T> root) {
         String translationKey = root.get("translation_key").asString("");
         DimensionType dimension = DimensionType.byName(new ResourceLocation(root.get("dimension").asString("")));
-        GameType participantGameType = GameType.getByName(root.get("participant_game_type").asString(""));
-        GameType spectatorGameType = GameType.getByName(root.get("spectator_game_type").asString(""));
-
-        BlockPos spectatorPosition = BlockPos.deserialize(root.get("spectator_position").orElseEmptyMap());
-        BlockPos respawnPosition = BlockPos.deserialize(root.get("respawn_position").orElseEmptyMap());
 
         int minimumParticipants = root.get("minimum_participants").asInt(1);
         int maximumParticipants = root.get("maximum_participants").asInt(100);
@@ -70,10 +51,6 @@ public final class MinigameConfig {
                 id,
                 translationKey,
                 dimension,
-                participantGameType,
-                spectatorGameType,
-                spectatorPosition,
-                respawnPosition,
                 minimumParticipants,
                 maximumParticipants,
                 behaviors

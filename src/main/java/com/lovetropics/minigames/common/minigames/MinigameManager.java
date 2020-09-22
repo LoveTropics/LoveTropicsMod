@@ -15,7 +15,6 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.ActionResultType;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.ChatType;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
@@ -388,13 +387,7 @@ public class MinigameManager implements IMinigameManager
     @SubscribeEvent
     public void onPlayerRespawn(PlayerEvent.PlayerRespawnEvent event) {
         if (this.ifPlayerInInstance(event.getPlayer())) {
-            IMinigameDefinition def = this.currentInstance.getDefinition();
             getBehaviours().forEach((b) -> b.onPlayerRespawn(this.currentInstance, (ServerPlayerEntity) event.getPlayer()));
-
-            BlockPos respawn = def.getPlayerRespawnPosition(this.currentInstance);
-
-            ServerPlayerEntity player = (ServerPlayerEntity) event.getPlayer();
-            player.connection.setPlayerLocation(respawn.getX(), respawn.getY(), respawn.getZ(), 0, 0);
         }
     }
 

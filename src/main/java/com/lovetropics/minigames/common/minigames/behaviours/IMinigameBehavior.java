@@ -117,4 +117,23 @@ public interface IMinigameBehavior
 	 * @param event    The attack entity event.
 	 */
 	default void onPlayerAttackEntity(final IMinigameInstance minigame, AttackEntityEvent event) {}
+
+	// TODO: document
+	default void onAddPlayer(final IMinigameInstance minigame, ServerPlayerEntity player) {
+	}
+
+	default void onRemovePlayer(final IMinigameInstance minigame, ServerPlayerEntity player) {
+	}
+
+	default void onAddParticipant(final IMinigameInstance minigame, ServerPlayerEntity player) {
+	}
+
+	default void onRemoveParticipant(final IMinigameInstance minigame, ServerPlayerEntity player) {
+	}
+
+	default void onAddSpectator(final IMinigameInstance minigame, ServerPlayerEntity player) {
+	}
+
+	default void onRemoveSpectator(final IMinigameInstance minigame, ServerPlayerEntity player) {
+	}
 }

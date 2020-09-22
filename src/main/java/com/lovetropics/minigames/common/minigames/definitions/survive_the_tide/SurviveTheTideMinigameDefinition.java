@@ -1,30 +1,26 @@
 package com.lovetropics.minigames.common.minigames.definitions.survive_the_tide;
 
-import java.util.List;
-import java.util.Optional;
-
 import com.lovetropics.minigames.client.data.TropicraftLangKeys;
 import com.lovetropics.minigames.common.Util;
 import com.lovetropics.minigames.common.config.ConfigLT;
 import com.lovetropics.minigames.common.dimension.DimensionUtils;
 import com.lovetropics.minigames.common.minigames.IMinigameDefinition;
-import com.lovetropics.minigames.common.minigames.IMinigameInstance;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehaviorType;
-
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.ActionResultType;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
-import net.minecraft.world.GameType;
 import net.minecraft.world.dimension.DimensionType;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.registries.ForgeRegistryEntry;
+
+import java.util.List;
+import java.util.Optional;
 
 /**
  * Definition implementation for the Island Royale minigame.
@@ -79,26 +75,6 @@ public class SurviveTheTideMinigameDefinition extends ForgeRegistryEntry<IMiniga
     @Override
     public DimensionType getDimension() {
         return DimensionUtils.SURVIVE_THE_TIDE_DIMENSION;
-    }
-
-    @Override
-    public GameType getParticipantGameType() {
-        return GameType.ADVENTURE;
-    }
-
-    @Override
-    public GameType getSpectatorGameType() {
-        return GameType.SPECTATOR;
-    }
-
-    @Override
-    public BlockPos getSpectatorPosition() {
-        return ConfigLT.minigame_SurviveTheTide_spectatorPosition;
-    }
-
-    @Override
-    public BlockPos getPlayerRespawnPosition(IMinigameInstance instance) {
-        return ConfigLT.minigame_SurviveTheTide_respawnPosition;
     }
 
     @Override

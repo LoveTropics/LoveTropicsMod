@@ -1,14 +1,11 @@
 package com.lovetropics.minigames.common.minigames;
 
-import com.google.common.collect.Maps;
-import com.lovetropics.minigames.common.dimension.DimensionUtils;
-import com.lovetropics.minigames.common.minigames.behaviours.MinigameBehaviorTypes;
+import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.ICommandSource;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec2f;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.text.ITextComponent;
@@ -35,13 +32,6 @@ public class MinigameInstance implements IMinigameInstance
     private final MutablePlayerSet participants;
     private final MutablePlayerSet spectators;
 
-    private int teleportedParticipantIndex;
-
-    /**
-     * Cache used to know what state the player was in before teleporting into a minigame.
-     */
-    private final Map<UUID, MinigamePlayerCache> playerCache = Maps.newHashMap();
-
     private CommandSource commandSource;
 
     private final Map<String, Consumer<CommandSource>> controlCommands = new Object2ObjectOpenHashMap<>();
@@ -59,7 +49,19 @@ public class MinigameInstance implements IMinigameInstance
             @Override
             public void onAddPlayer(ServerPlayerEntity player) {
                 spectators.remove(player);
-                teleportPlayerIntoInstance(player);
+                for (IMinigameBehavior behavior : definition.getAllBehaviours()) {
+                    behavior.onAddParticipant(MinigameInstance.this, player);
+                }
+            }
+
+            @Override
+            public void onRemovePlayer(UUID id) {
+                ServerPlayerEntity player = server.getPlayerList().getPlayerByUUID(id);
+                if (player != null) {
+                    for (IMinigameBehavior behavior : definition.getAllBehaviours()) {
+                        behavior.onRemoveParticipant(MinigameInstance.this, player);
+                    }
+                }
             }
         });
         
@@ -67,7 +69,19 @@ public class MinigameInstance implements IMinigameInstance
             @Override
             public void onAddPlayer(ServerPlayerEntity player) {
                 participants.remove(player);
-                teleportSpectatorIntoInstance(player);
+                for (IMinigameBehavior behavior : definition.getAllBehaviours()) {
+                    behavior.onAddSpectator(MinigameInstance.this, player);
+                }
+            }
+
+            @Override
+            public void onRemovePlayer(UUID id) {
+                ServerPlayerEntity player = server.getPlayerList().getPlayerByUUID(id);
+                if (player != null) {
+                    for (IMinigameBehavior behavior : definition.getAllBehaviours()) {
+                        behavior.onRemoveSpectator(MinigameInstance.this, player);
+                    }
+                }
             }
         });
 
@@ -80,17 +94,16 @@ public class MinigameInstance implements IMinigameInstance
             @Override
             public void onRemovePlayer(UUID id) {
                 MinigameInstance.this.onRemovePlayer(id);
+                participants.remove(id);
                 spectators.remove(id);
-                allPlayers.remove(id);
             }
         });
     }
 
     private void onAddPlayer(ServerPlayerEntity player) {
-        MinigamePlayerCache playerCache = new MinigamePlayerCache(player);
-        playerCache.resetPlayerStats(player);
-
-        this.playerCache.put(player.getUniqueID(), playerCache);
+        for (IMinigameBehavior behavior : definition.getAllBehaviours()) {
+            behavior.onAddPlayer(MinigameInstance.this, player);
+        }
     }
 
     private void onRemovePlayer(UUID id) {
@@ -99,42 +112,9 @@ public class MinigameInstance implements IMinigameInstance
             return;
         }
 
-        // try to restore the player to their old state
-        MinigamePlayerCache playerCache = this.playerCache.remove(id);
-        if (playerCache != null) {
-            playerCache.teleportBack(player);
+        for (IMinigameBehavior behavior : definition.getAllBehaviours()) {
+            behavior.onRemovePlayer(MinigameInstance.this, player);
         }
-    }
-
-    private void teleportPlayerIntoInstance(ServerPlayerEntity player) {
-        // TODO temporary
-        BlockPos[] positions = definition.getBehavior(MinigameBehaviorTypes.POSITION_PARTICIPANTS.get())
-                .map(b -> b.getStartPositions())
-                .orElseThrow(IllegalStateException::new);
-
-        // Ensure length of participant positions matches the maximum participant count.
-        if (positions.length != definition.getMaximumParticipantCount()) {
-            throw new IllegalStateException("The participant positions length doesn't match the" +
-                    "maximum participant count defined by the following minigame definition! " + definition.getID());
-        }
-
-        BlockPos teleportTo = positions[teleportedParticipantIndex++ % positions.length];
-
-        DimensionUtils.teleportPlayerNoPortal(player, definition.getDimension(), teleportTo);
-        player.setGameType(definition.getParticipantGameType());
-    }
-
-    /**
-     * Teleports the spectator into the dimension specified by the minigame definition.
-     * Will set the position of the player to the location specified by the definition
-     * for spectators. Sets player GameType to SPECTATOR.
-     * @param player The spectator to teleport into the instance.
-     */
-    private void teleportSpectatorIntoInstance(ServerPlayerEntity player) {
-        BlockPos teleportTo = definition.getSpectatorPosition();
-
-        DimensionUtils.teleportPlayerNoPortal(player, definition.getDimension(), teleportTo);
-        player.setGameType(definition.getSpectatorGameType());
     }
 
     @Override
