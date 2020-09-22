@@ -1,5 +1,7 @@
 package com.lovetropics.minigames.common.minigames.behaviours;
 
+import com.google.gson.JsonElement;
+import com.lovetropics.minigames.common.minigames.behaviours.instances.CommandInvokeBehavior;
 import com.lovetropics.minigames.common.minigames.behaviours.instances.LoadMapMinigameBehaviour;
 import com.lovetropics.minigames.common.minigames.behaviours.instances.PositionParticipantsMinigameBehavior;
 import com.lovetropics.minigames.common.minigames.behaviours.instances.RespawnSpectatorMinigameBehavior;
@@ -27,6 +29,7 @@ public class MinigameBehaviorTypes
 	public static final RegistryObject<IMinigameBehaviorType<WeatherEventsMinigameBehavior>> WEATHER_EVENTS;
 	public static final RegistryObject<IMinigameBehaviorType<TimedMinigameBehavior>> TIMED;
 	public static final RegistryObject<IMinigameBehaviorType<RespawnSpectatorMinigameBehavior>> RESPAWN_SPECTATOR;
+	public static final RegistryObject<IMinigameBehaviorType<CommandInvokeBehavior>> COMMANDS;
 
 	public static <T extends IMinigameBehavior> RegistryObject<IMinigameBehaviorType<T>> register(final String name, final MinigameBehaviorType.Factory<T> instanceFactory) {
 		return MINIGAME_BEHAVIOURS_REGISTER.register(name, () -> new MinigameBehaviorType<>(instanceFactory));
@@ -71,5 +74,6 @@ public class MinigameBehaviorTypes
 		WEATHER_EVENTS = register("weather_events", MinigameBehaviorTypes::weatherEvents);
 		TIMED = register("timed", MinigameBehaviorTypes::timed);
 		RESPAWN_SPECTATOR = registerInstance("respawn_spectator", RespawnSpectatorMinigameBehavior.INSTANCE);
+		COMMANDS = register("commands", CommandInvokeBehavior::parse);
 	}
 }
