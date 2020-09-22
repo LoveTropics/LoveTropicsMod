@@ -79,6 +79,9 @@
         "damage_rate_delay": 20,
         "damage_amount": 4
       }
+    },
+    {
+      "type": "ltminigames:respawn_spectator"
     }
   ]
 }

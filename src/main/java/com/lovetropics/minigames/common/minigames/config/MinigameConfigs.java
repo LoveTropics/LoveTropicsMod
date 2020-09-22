@@ -32,6 +32,10 @@ public final class MinigameConfigs {
         return GAME_CONFIGS.get(id);
     }
 
+    public static Collection<MinigameConfig> getConfigs() {
+        return GAME_CONFIGS.values();
+    }
+
     public static void init(MinecraftServer server) {
         server.getResourceManager().addReloadListener((stage, resourceManager, preparationsProfiler, reloadProfiler, backgroundExecutor, gameExecutor) -> {
             return CompletableFuture.supplyAsync(() -> {

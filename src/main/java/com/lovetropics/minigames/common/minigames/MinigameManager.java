@@ -8,7 +8,8 @@ import com.lovetropics.minigames.common.Util;
 import com.lovetropics.minigames.common.dimension.DimensionUtils;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
 import com.lovetropics.minigames.common.minigames.behaviours.MinigameBehaviorTypes;
-import com.lovetropics.minigames.common.minigames.definitions.UnderwaterTrashHuntMinigameDefinition;
+import com.lovetropics.minigames.common.minigames.config.MinigameConfig;
+import com.lovetropics.minigames.common.minigames.config.MinigameConfigs;
 import com.lovetropics.minigames.common.minigames.definitions.survive_the_tide.SurviveTheTideMinigameDefinition;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.ServerPlayerEntity;
@@ -100,7 +101,10 @@ public class MinigameManager implements IMinigameManager
         MinecraftForge.EVENT_BUS.register(INSTANCE);
 
         INSTANCE.register(new SurviveTheTideMinigameDefinition());
-        INSTANCE.register(new UnderwaterTrashHuntMinigameDefinition(server));
+
+        for (MinigameConfig config : MinigameConfigs.getConfigs()) {
+            INSTANCE.register(new MinigameDefinitionGeneric(config));
+        }
     }
 
     /**

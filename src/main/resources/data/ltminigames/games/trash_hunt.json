@@ -24,6 +24,9 @@
       "finish": "function ocean_reset:reset"
     },
     {
+      "type": "ltminigames:respawn_spectator"
+    },
+    {
       "type": "ltminigames:timed",
       "length": 4800
     }
