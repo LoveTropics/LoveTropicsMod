@@ -19,6 +19,7 @@ import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.arguments.BlockPosArgument;
 import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Util;
 import net.minecraft.util.math.BlockPos;
@@ -29,6 +30,7 @@ import net.minecraft.util.text.event.ClickEvent;
 import net.minecraft.util.text.event.HoverEvent;
 import net.minecraft.world.dimension.DimensionType;
 import net.minecraft.world.server.ServerWorld;
+import net.minecraft.world.storage.SessionLockException;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -153,8 +155,12 @@ public final class CommandMap {
 		CommandSource source = context.getSource();
 		MapWorkspace workspace = getGivenWorkspace(context);
 
-		CompletableFuture.runAsync(() -> {
-			ServerWorld overworld = source.getServer().getWorld(DimensionType.OVERWORLD);
+		MinecraftServer server = source.getServer();
+		ServerWorld overworld = server.getWorld(DimensionType.OVERWORLD);
+
+		CompletableFuture<Void> saveAll = saveWorkspace(server, workspace);
+
+		saveAll.thenRunAsync(() -> {
 			File worldDirectory = overworld.getSaveHandler().getWorldDirectory();
 			File dimensionDirectory = workspace.getDimension().getDirectory(worldDirectory);
 
@@ -178,6 +184,26 @@ public final class CommandMap {
 		}, Util.getServerExecutor());
 
 		return Command.SINGLE_SUCCESS;
+	}
+
+	private static CompletableFuture<Void> saveWorkspace(MinecraftServer server, MapWorkspace workspace) {
+		CompletableFuture<Void> saveAll;
+
+		// TODO: accessing internal forge api: how can we check if the dimension is currently loaded?
+		if (server.forgeGetWorldMap().containsKey(workspace.getDimension())) {
+			saveAll = server.runAsync(() -> {
+				ServerWorld workspaceWorld = server.getWorld(workspace.getDimension());
+				try {
+					workspaceWorld.save(null, true, false);
+				} catch (SessionLockException e) {
+					LoveTropics.LOGGER.warn("Could not save workspace world", e);
+				}
+			});
+		} else {
+			saveAll = CompletableFuture.completedFuture(null);
+		}
+
+		return saveAll;
 	}
 
 	private static MapWorkspace getGivenWorkspace(CommandContext<CommandSource> context) throws CommandSyntaxException {
