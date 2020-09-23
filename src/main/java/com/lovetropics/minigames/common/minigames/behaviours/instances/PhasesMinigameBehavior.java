@@ -1,5 +1,6 @@
 package com.lovetropics.minigames.common.minigames.behaviours.instances;
 
+import com.google.common.collect.Lists;
 import com.lovetropics.minigames.common.minigames.IMinigameInstance;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
 import com.lovetropics.minigames.common.minigames.behaviours.MinigameBehaviorTypes;
@@ -7,25 +8,33 @@ import com.mojang.datafixers.Dynamic;
 import net.minecraft.world.World;
 
 import java.util.Iterator;
-import java.util.List;
+import java.util.LinkedList;
 import java.util.Optional;
 
 public class PhasesMinigameBehavior implements IMinigameBehavior
 {
-	private final List<MinigamePhase> phases;
+	private final LinkedList<MinigamePhase> phases;
 	private MinigamePhase currentPhase;
 	private MinigamePhase previousPhase;
 	private Iterator<MinigamePhase> phaseIterator;
 	private int currentPhaseTicks;
 	private boolean hasFinishedPhases = false;
 
-	public PhasesMinigameBehavior(final List<MinigamePhase> phases) {
+	public PhasesMinigameBehavior(final LinkedList<MinigamePhase> phases) {
 		this.phases = phases;
 	}
 
 	public static <T> PhasesMinigameBehavior parse(final Dynamic<T> root) {
-		final List<MinigamePhase> phases = root.get("phases").asList(MinigamePhase::parse);
+		final LinkedList<MinigamePhase> phases = Lists.newLinkedList(root.get("phases").asList(MinigamePhase::parse));
 		return new PhasesMinigameBehavior(phases);
+	}
+
+	public MinigamePhase getFirstPhase() {
+		if (phases.isEmpty()) {
+			return null;
+		}
+
+		return phases.get(0);
 	}
 
 	public MinigamePhase getCurrentPhase() {
@@ -33,7 +42,7 @@ public class PhasesMinigameBehavior implements IMinigameBehavior
 	}
 
 	public Optional<MinigamePhase> getPreviousPhase() {
-		return Optional.of(previousPhase);
+		return Optional.ofNullable(previousPhase);
 	}
 
 	public int getCurrentPhaseTicks() {

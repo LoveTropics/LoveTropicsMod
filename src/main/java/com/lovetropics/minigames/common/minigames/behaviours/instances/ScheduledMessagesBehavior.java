@@ -21,7 +21,7 @@ public class ScheduledMessagesBehavior implements IMinigameBehavior
 
 	public static <T> ScheduledMessagesBehavior parse(Dynamic<T> root) {
 		final Map<Long, String> messages = root.get("messages").asMap(
-				key -> key.asLong(0),
+				key -> Long.parseLong(key.asString("0")),
 				value -> value.asString("")
 		);
 

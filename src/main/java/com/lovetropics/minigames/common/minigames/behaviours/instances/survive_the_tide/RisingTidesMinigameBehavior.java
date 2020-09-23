@@ -78,13 +78,20 @@ public class RisingTidesMinigameBehavior implements IMinigameBehavior
 	public void worldUpdate(final IMinigameInstance minigame, World world) {
 		minigame.getDefinition().getBehavior(MinigameBehaviorTypes.PHASES.get()).ifPresent(phases -> {
 			final PhasesMinigameBehavior.MinigamePhase phase = phases.getCurrentPhase();
-			final int prevWaterLevel = phases.getPreviousPhase().map(p -> phaseToTideHeight.get(p.getKey())).orElse(0);
+			final int prevWaterLevel = phaseToTideHeight.get(phases.getPreviousPhase().orElse(phase).getKey());
 
 			processWaterLevel(minigame, phase, prevWaterLevel);
 
 			if (phasesIcebergsGrow.contains(phase.getKey()) && minigame.ticks() % icebergGrowthTickRate == 0) {
 				growIcebergs(world);
 			}
+		});
+	}
+
+	@Override
+	public void onStart(final IMinigameInstance minigame) {
+		minigame.getDefinition().getBehavior(MinigameBehaviorTypes.PHASES.get()).ifPresent(phases -> {
+			waterLevel = phaseToTideHeight.get(phases.getFirstPhase().getKey());
 		});
 	}
 
@@ -96,7 +103,7 @@ public class RisingTidesMinigameBehavior implements IMinigameBehavior
 
 	private int calculateWaterChangeInterval(int targetLevel, int prevLevel, int phaseLength) {
 		int waterLevelDiff = prevLevel - targetLevel;
-		return phaseLength / waterLevelDiff;
+		return phaseLength / Math.max(1, waterLevelDiff);
 	}
 
 	private void processWaterLevel(final IMinigameInstance minigame, final PhasesMinigameBehavior.MinigamePhase phase, final int prevWaterLevel) {
