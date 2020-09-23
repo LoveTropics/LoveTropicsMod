@@ -9,6 +9,7 @@ import net.minecraft.world.dimension.DimensionType;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 public final class MinigameConfig {
@@ -45,6 +46,7 @@ public final class MinigameConfig {
         Map<IMinigameBehaviorType<?>, IMinigameBehavior> behaviors = root.get("behaviors")
         		.asList(MinigameConfig::deserializeBehavior)
         		.stream()
+                .filter(Objects::nonNull)
         		.collect(Collectors.toMap(Pair::getLeft, Pair::getRight));
 
         return new MinigameConfig(
@@ -66,8 +68,7 @@ public final class MinigameConfig {
             return Pair.of(behavior, behavior.create(root));
         }
 
-        System.out.println("Type is not valid!");
-
+        System.out.println("Type '" + type + "' is not valid!");
         return null;
     }
 }

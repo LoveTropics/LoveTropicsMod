@@ -3,6 +3,7 @@ package com.lovetropics.minigames;
 import com.lovetropics.minigames.client.data.TropicraftLangKeys;
 import com.lovetropics.minigames.common.block.LoveTropicsBlocks;
 import com.lovetropics.minigames.common.command.CommandDonation;
+import com.lovetropics.minigames.common.command.CommandMap;
 import com.lovetropics.minigames.common.command.CommandReloadConfig;
 import com.lovetropics.minigames.common.command.minigames.CommandAddConfigIceberg;
 import com.lovetropics.minigames.common.command.minigames.CommandIslandSetStartPos;
@@ -18,7 +19,10 @@ import com.lovetropics.minigames.common.command.minigames.CommandStopPollingMini
 import com.lovetropics.minigames.common.command.minigames.CommandUnregisterMinigame;
 import com.lovetropics.minigames.common.config.ConfigLT;
 import com.lovetropics.minigames.common.item.MinigameItems;
+import com.lovetropics.minigames.common.map.MapWorkspaceDimension;
+import com.lovetropics.minigames.common.map.VoidChunkGenerator;
 import com.lovetropics.minigames.common.minigames.MinigameManager;
+import com.lovetropics.minigames.common.minigames.behaviours.MinigameBehaviorTypes;
 import com.lovetropics.minigames.common.minigames.config.MinigameConfigs;
 import com.mojang.brigadier.CommandDispatcher;
 import com.tterrag.registrate.Registrate;
@@ -76,8 +80,8 @@ public class LoveTropics {
         MinecraftForge.EVENT_BUS.addListener(this::onServerStarting);
         MinecraftForge.EVENT_BUS.addListener(this::onServerStopping);
 
-        FMLJavaModLoadingContext.get().getModEventBus().addListener(ConfigLT::onLoad);
-        FMLJavaModLoadingContext.get().getModEventBus().addListener(ConfigLT::onFileChange);
+        modBus.addListener(ConfigLT::onLoad);
+        modBus.addListener(ConfigLT::onFileChange);
 
         // Registry objects
         LoveTropicsBlocks.init();
@@ -86,7 +90,9 @@ public class LoveTropics {
         ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, ConfigLT.CLIENT_CONFIG);
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, ConfigLT.SERVER_CONFIG);
 
-
+        VoidChunkGenerator.REGISTER.register(modBus);
+        MapWorkspaceDimension.REGISTER.register(modBus);
+        MinigameBehaviorTypes.MINIGAME_BEHAVIOURS_REGISTER.register(modBus);
     }
 
     public static Registrate registrate() {
@@ -125,6 +131,7 @@ public class LoveTropics {
         CommandIslandSetStartPos.register(dispatcher);
         CommandResetIslandChests.register(dispatcher);
         CommandMinigameControl.register(dispatcher);
+        CommandMap.register(dispatcher);
     }
 
     private void onServerStopping(final FMLServerStoppingEvent event) {

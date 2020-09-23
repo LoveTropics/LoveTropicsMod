@@ -4,7 +4,7 @@
   "dimension": "ltminigames:survive_the_tide",
   "minimum_participants": 3,
   "maximum_participants": 16,
-  "behavior": [
+  "behaviors": [
     {
       "type": "ltminigames:load_map",
       "map": "survive_the_tide"

@@ -8,7 +8,6 @@ import com.lovetropics.minigames.common.Util;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
 import com.lovetropics.minigames.common.minigames.config.MinigameConfig;
 import com.lovetropics.minigames.common.minigames.config.MinigameConfigs;
-import com.lovetropics.minigames.common.minigames.definitions.survive_the_tide.SurviveTheTideMinigameDefinition;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.server.MinecraftServer;
@@ -92,7 +91,8 @@ public class MinigameManager implements IMinigameManager
         INSTANCE = new MinigameManager(server);
         MinecraftForge.EVENT_BUS.register(INSTANCE);
 
-        INSTANCE.register(new SurviveTheTideMinigameDefinition());
+        // TODO: duplicate registry from config
+        // INSTANCE.register(new SurviveTheTideMinigameDefinition());
 
         for (MinigameConfig config : MinigameConfigs.getConfigs()) {
             INSTANCE.register(new MinigameDefinitionGeneric(config));
