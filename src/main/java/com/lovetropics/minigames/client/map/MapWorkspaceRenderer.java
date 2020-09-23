@@ -52,18 +52,22 @@ public final class MapWorkspaceRenderer {
 			float red = (color >> 16 & 0xFF) / 255.0F;
 			float green = (color >> 8 & 0xFF) / 255.0F;
 			float blue = (color & 0xFF) / 255.0F;
-			float alpha = 0.4F;
+			float outlineRed = red;
+			float outlineGreen = green;
+			float outlineBlue = blue;
+
+			float alpha = 0.3F;
 
 			if (selectedRegions.contains(entry)) {
 				double time = client.world.getGameTime() + event.getPartialTicks();
 				float animation = (float) ((Math.sin(time * 0.1) + 1.0) / 2.0);
 
-				alpha = alpha + animation * 0.15F;
+				alpha = 0.4F + animation * 0.15F;
 
-				float highlight = 1.0F + animation * 0.2F;
-				red = Math.min(red * highlight, 1.0F);
-				green = Math.min(green * highlight, 1.0F);
-				blue = Math.min(blue * highlight, 1.0F);
+				red = Math.min(red * 1.3F, 1.0F);
+				green = Math.min(green * 1.3F, 1.0F);
+				blue = Math.min(blue * 1.3F, 1.0F);
+				outlineRed = outlineGreen = outlineBlue = 1.0F;
 			}
 
 			MapRegion region = entry.region;
@@ -75,7 +79,7 @@ public final class MapWorkspaceRenderer {
 			double maxZ = region.max.getZ() + 1.0 - view.z;
 
 			DebugRenderer.renderBox(minX, minY, minZ, maxX, maxY, maxZ, red, green, blue, alpha);
-			renderOutline(minX, minY, minZ, maxX, maxY, maxZ, red, green, blue, 1.0F);
+			renderOutline(minX, minY, minZ, maxX, maxY, maxZ, outlineRed, outlineGreen, outlineBlue, 1.0F);
 		}
 
 		for (ClientWorkspaceRegions.Entry entry : regions) {
