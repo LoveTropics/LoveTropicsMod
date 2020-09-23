@@ -2,6 +2,7 @@ package com.lovetropics.minigames.common.map;
 
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.PacketBuffer;
+import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
@@ -40,6 +41,14 @@ public final class MapRegion implements Iterable<BlockPos> {
 		);
 	}
 
+	public MapRegion withMin(BlockPos min) {
+		return MapRegion.of(min, max);
+	}
+
+	public MapRegion withMax(BlockPos max) {
+		return MapRegion.of(min, max);
+	}
+
 	public Vec3d getCenter() {
 		return new Vec3d(
 				(min.getX() + max.getX() + 1.0) / 2.0,
@@ -64,6 +73,14 @@ public final class MapRegion implements Iterable<BlockPos> {
 		return x >= min.getX() && y >= min.getY() && z >= min.getZ() && x <= max.getX() && y <= max.getY() && z <= max.getZ();
 	}
 
+	public boolean intersects(AxisAlignedBB bounds) {
+		return bounds.intersects(min.getX(), min.getY(), min.getZ(), max.getX() + 1.0, max.getY() + 1.0, max.getZ() + 1.0);
+	}
+
+	public AxisAlignedBB toAabb() {
+		return new AxisAlignedBB(min.getX(), min.getY(), min.getZ(), max.getX() + 1.0, max.getY() + 1.0, max.getZ() + 1.0);
+	}
+
 	@Override
 	public Iterator<BlockPos> iterator() {
 		return BlockPos.getAllInBoxMutable(min, max).iterator();
@@ -71,7 +88,7 @@ public final class MapRegion implements Iterable<BlockPos> {
 
 	public CompoundNBT write(CompoundNBT root) {
 		root.put("min", writeBlockPos(min, new CompoundNBT()));
-		root.put("max", writeBlockPos(min, new CompoundNBT()));
+		root.put("max", writeBlockPos(max, new CompoundNBT()));
 		return root;
 	}
 

@@ -26,7 +26,8 @@ public final class MapWorkspaceRenderer {
 			return;
 		}
 
-		ActiveRenderInfo renderInfo = Minecraft.getInstance().gameRenderer.getActiveRenderInfo();
+		Minecraft client = Minecraft.getInstance();
+		ActiveRenderInfo renderInfo = client.gameRenderer.getActiveRenderInfo();
 		if (!renderInfo.isValid()) {
 			return;
 		}
@@ -42,11 +43,26 @@ public final class MapWorkspaceRenderer {
 		RenderSystem.disableLighting();
 		RenderSystem.disableDepthTest();
 
+		RegionTraceTarget traceTarget = MapWorkspaceTracer.traceTarget;
+
 		for (ClientWorkspaceRegions.Entry entry : regions) {
 			int color = colorForKey(entry.key);
 			float red = (color >> 16 & 0xFF) / 255.0F;
 			float green = (color >> 8 & 0xFF) / 255.0F;
 			float blue = (color & 0xFF) / 255.0F;
+			float alpha = 0.4F;
+
+			if (traceTarget != null && traceTarget.entry.id == entry.id) {
+				double time = client.world.getGameTime() + event.getPartialTicks();
+				float animation = (float) ((Math.sin(time * 0.1) + 1.0) / 2.0);
+
+				alpha = alpha + animation * 0.15F;
+
+				float highlight = 1.0F + animation * 0.2F;
+				red = Math.min(red * highlight, 1.0F);
+				green = Math.min(green * highlight, 1.0F);
+				blue = Math.min(blue * highlight, 1.0F);
+			}
 
 			MapRegion region = entry.region;
 			double minX = region.min.getX() - view.x;
@@ -56,7 +72,7 @@ public final class MapWorkspaceRenderer {
 			double maxY = region.max.getY() + 1.0 - view.y;
 			double maxZ = region.max.getZ() + 1.0 - view.z;
 
-			DebugRenderer.renderBox(minX, minY, minZ, maxX, maxY, maxZ, red, green, blue, 0.4F);
+			DebugRenderer.renderBox(minX, minY, minZ, maxX, maxY, maxZ, red, green, blue, alpha);
 			renderOutline(minX, minY, minZ, maxX, maxY, maxZ, red, green, blue, 1.0F);
 		}
 

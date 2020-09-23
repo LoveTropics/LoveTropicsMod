@@ -2,7 +2,12 @@ package com.lovetropics.minigames.common.network.map;
 
 import com.lovetropics.minigames.client.map.ClientMapWorkspace;
 import com.lovetropics.minigames.common.map.MapRegion;
+import com.lovetropics.minigames.common.map.workspace.MapWorkspace;
+import com.lovetropics.minigames.common.map.workspace.MapWorkspaceManager;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.network.PacketBuffer;
+import net.minecraftforge.fml.LogicalSide;
+import net.minecraftforge.fml.network.NetworkDirection;
 import net.minecraftforge.fml.network.NetworkEvent;
 import net.tropicraft.core.common.network.TropicraftMessage;
 
@@ -35,7 +40,29 @@ public class UpdateWorkspaceRegionMessage implements TropicraftMessage {
 
 	public void handle(Supplier<NetworkEvent.Context> ctx) {
 		ctx.get().enqueueWork(() -> {
-			ClientMapWorkspace.INSTANCE.updateRegion(id, region);
+			NetworkDirection direction = ctx.get().getDirection();
+			if (direction.getReceptionSide() == LogicalSide.SERVER) {
+				handleServer(ctx.get());
+			} else {
+				handleClient();
+			}
 		});
+	}
+
+	private void handleServer(NetworkEvent.Context ctx) {
+		ServerPlayerEntity sender = ctx.getSender();
+		if (sender == null) {
+			return;
+		}
+
+		MapWorkspaceManager workspaceManager = MapWorkspaceManager.get(sender.server);
+		MapWorkspace workspace = workspaceManager.getWorkspace(sender.dimension);
+		if (workspace != null) {
+			workspace.getRegions().set(id, region);
+		}
+	}
+
+	private void handleClient() {
+		ClientMapWorkspace.INSTANCE.updateRegion(id, region);
 	}
 }
