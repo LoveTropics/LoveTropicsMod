@@ -19,7 +19,6 @@ import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.TranslationTextComponent;
-import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
@@ -233,10 +232,8 @@ public class MinigameManager implements IMinigameManager
             return canStart;
         }
 
-        this.polling.getAllBehaviours().forEach(b -> b.onPreStart(this.polling, server));
-
-        ServerWorld world = this.server.getWorld(this.polling.getDimension());
-        this.currentInstance = new MinigameInstance(this.polling, world);
+        this.currentInstance = new MinigameInstance(this.polling, server);
+        this.polling.getAllBehaviours().forEach(b -> b.onConstruct(currentInstance, server));
 
         int playersAvailable = Math.min(this.registeredForMinigame.size(), this.polling.getMaximumParticipantCount());
         List<UUID> chosenPlayers = Util.extractRandomElements(new Random(), this.registeredForMinigame, playersAvailable);

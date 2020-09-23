@@ -1,8 +1,6 @@
 package com.lovetropics.minigames.common.minigames.behaviours;
 
-import com.lovetropics.minigames.common.minigames.IMinigameDefinition;
 import com.lovetropics.minigames.common.minigames.IMinigameInstance;
-
 import com.lovetropics.minigames.common.minigames.PlayerRole;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
@@ -87,6 +85,14 @@ public interface IMinigameBehavior
 	default void onPostFinish(final IMinigameInstance minigame) {}
 
 	/**
+	 * For before a minigame starts. Useful for preparing the minigame.
+	 *
+	 * @param minigame The minigame that is being constructed
+	 * @param server     The current minecraft server object.
+	 */
+	default void onConstruct(final IMinigameInstance minigame, MinecraftServer server) {}
+
+	/**
 	 * For when a minigame starts. Useful for preparing the minigame.
 	 *
 	 * @param minigame      The current minigame instance.
@@ -94,14 +100,6 @@ public interface IMinigameBehavior
 	 *                      execute some commands for the minigame from a datapack.
 	 */
 	default void onStart(final IMinigameInstance minigame) {}
-
-	/**
-	 * For before a minigame starts. Useful for preparing the minigame.
-	 * 
-	 * @param definition The definition of the minigame that is about to be started.
-	 * @param server     The current minecraft server object.
-	 */
-	default void onPreStart(final IMinigameDefinition definition, MinecraftServer server) {}
 
 	/**
 	 * Event method for players that are hurt in the minigame instance.

@@ -8,6 +8,7 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.dimension.DimensionType;
 import org.apache.commons.lang3.tuple.Pair;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -47,7 +48,12 @@ public final class MinigameConfig {
         		.asList(MinigameConfig::deserializeBehavior)
         		.stream()
                 .filter(Objects::nonNull)
-        		.collect(Collectors.toMap(Pair::getLeft, Pair::getRight));
+        		.collect(Collectors.toMap(
+        		        Pair::getLeft,
+                        Pair::getRight,
+                        (a, b) -> { throw new IllegalArgumentException("duplicate key"); },
+                        LinkedHashMap::new
+                ));
 
         return new MinigameConfig(
                 id,

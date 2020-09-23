@@ -7,6 +7,7 @@ import com.lovetropics.minigames.common.minigames.IMinigameInstance;
 import com.lovetropics.minigames.common.minigames.PlayerRole;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
 import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.ArrayList;
@@ -28,7 +29,7 @@ public class PositionPlayersMinigameBehavior implements IMinigameBehavior {
 	}
 
 	@Override
-	public void onStart(IMinigameInstance minigame) {
+	public void onConstruct(IMinigameInstance minigame, MinecraftServer server) {
 		MapRegions regions = minigame.getMapRegions();
 
 		participantSpawnRegions.clear();

@@ -27,7 +27,7 @@ import java.util.function.Consumer;
  */
 public class MinigameInstance implements IMinigameInstance
 {
-    private final ServerWorld world;
+    private final MinecraftServer server;
     private final IMinigameDefinition definition;
 
     private final MutablePlayerSet allPlayers;
@@ -39,11 +39,10 @@ public class MinigameInstance implements IMinigameInstance
 
     private final Map<String, Consumer<CommandSource>> controlCommands = new Object2ObjectOpenHashMap<>();
 
-    public MinigameInstance(IMinigameDefinition definition, ServerWorld world) {
+    public MinigameInstance(IMinigameDefinition definition, MinecraftServer server) {
         this.definition = definition;
-        this.world = world;
+        this.server = server;
 
-        MinecraftServer server = world.getServer();
         this.allPlayers = new MutablePlayerSet(server);
 
         for (PlayerRole role : PlayerRole.ROLES) {
@@ -67,7 +66,7 @@ public class MinigameInstance implements IMinigameInstance
     }
 
     private void onRemovePlayer(UUID id) {
-        ServerPlayerEntity player = this.world.getServer().getPlayerList().getPlayerByUUID(id);
+        ServerPlayerEntity player = this.server.getPlayerList().getPlayerByUUID(id);
         if (player == null) {
             return;
         }
@@ -149,11 +148,17 @@ public class MinigameInstance implements IMinigameInstance
     @Override
     public CommandSource getCommandSource() {
         if (this.commandSource == null) {
-            String s = this.getDefinition().getUnlocalizedName();
-            ITextComponent text = new StringTextComponent(s);
-            this.commandSource = new CommandSource(ICommandSource.DUMMY, Vec3d.ZERO, Vec2f.ZERO, this.world, 2, s, text, this.world.getServer(), null);
+            String unlocalizedName = definition.getUnlocalizedName();
+            ITextComponent text = new StringTextComponent(unlocalizedName);
+            ServerWorld world = server.getWorld(definition.getDimension());
+            this.commandSource = new CommandSource(ICommandSource.DUMMY, Vec3d.ZERO, Vec2f.ZERO, world, 2, unlocalizedName, text, this.server, null);
         }
 
         return this.commandSource;
+    }
+
+    @Override
+    public ServerWorld getWorld() {
+        return server.getWorld(definition.getDimension());
     }
 }

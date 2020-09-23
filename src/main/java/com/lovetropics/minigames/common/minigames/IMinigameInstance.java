@@ -79,9 +79,7 @@ public interface IMinigameInstance
 
     MapRegions getMapRegions();
     
-    default ServerWorld getWorld() {
-    	return getCommandSource().getWorld();
-    }
+    ServerWorld getWorld();
     
     default DimensionType getDimension() {
     	return getDefinition().getDimension();

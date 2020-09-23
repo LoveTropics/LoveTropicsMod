@@ -3,7 +3,6 @@ package com.lovetropics.minigames.common.minigames.behaviours.instances;
 import com.lovetropics.minigames.common.map.MapExportReader;
 import com.lovetropics.minigames.common.map.MapMetadata;
 import com.lovetropics.minigames.common.map.MapWorldInfo;
-import com.lovetropics.minigames.common.minigames.IMinigameDefinition;
 import com.lovetropics.minigames.common.minigames.IMinigameInstance;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
 import net.minecraft.resources.IResource;
@@ -22,32 +21,27 @@ public class LoadMapMinigameBehaviour implements IMinigameBehavior {
 
 	private final ResourceLocation loadFrom;
 
-	private MapMetadata metadata;
-
 	public LoadMapMinigameBehaviour(final ResourceLocation loadFrom) {
 		this.loadFrom = loadFrom;
 	}
 
 	@Override
-	public void onPreStart(final IMinigameDefinition definition, MinecraftServer server) {
+	public void onConstruct(IMinigameInstance minigame, MinecraftServer server) {
 		ResourceLocation path = new ResourceLocation(loadFrom.getNamespace(), "maps/" + loadFrom.getPath());
 		try (IResource resource = server.getResourceManager().getResource(path)) {
 			try (MapExportReader reader = MapExportReader.open(resource.getInputStream())) {
-				metadata = reader.loadInto(server, definition.getDimension());
+				MapMetadata metadata = reader.loadInto(server, minigame.getDimension());
+
+				minigame.getMapRegions().addAll(metadata.regions);
+
+				ServerWorld world = minigame.getWorld();
+				ServerWorld overworld = world.getServer().getWorld(DimensionType.OVERWORLD);
+
+				world.worldInfo = new MapWorldInfo(overworld.getWorldInfo(), metadata.settings);
 			}
 		} catch (IOException e) {
 			LOGGER.error("Failed to load map from {}", path, e);
 		}
-	}
-
-	@Override
-	public void onStart(IMinigameInstance minigame) {
-		minigame.getMapRegions().addAll(metadata.regions);
-
-		ServerWorld world = minigame.getWorld();
-		ServerWorld overworld = world.getServer().getWorld(DimensionType.OVERWORLD);
-
-		world.worldInfo = new MapWorldInfo(overworld.getWorldInfo(), metadata.settings);
 	}
 
 	@Override
