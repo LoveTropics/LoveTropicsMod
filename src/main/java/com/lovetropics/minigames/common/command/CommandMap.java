@@ -1,7 +1,12 @@
 package com.lovetropics.minigames.common.command;
 
+import com.lovetropics.minigames.Constants;
+import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.common.dimension.DimensionUtils;
+import com.lovetropics.minigames.common.map.MapExportWriter;
+import com.lovetropics.minigames.common.map.MapMetadata;
 import com.lovetropics.minigames.common.map.MapRegion;
+import com.lovetropics.minigames.common.map.MapRegions;
 import com.lovetropics.minigames.common.map.workspace.MapWorkspace;
 import com.lovetropics.minigames.common.map.workspace.MapWorkspaceManager;
 import com.mojang.brigadier.Command;
@@ -14,6 +19,8 @@ import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.arguments.BlockPosArgument;
 import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.Util;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
@@ -21,6 +28,12 @@ import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.event.ClickEvent;
 import net.minecraft.util.text.event.HoverEvent;
 import net.minecraft.world.dimension.DimensionType;
+import net.minecraft.world.server.ServerWorld;
+
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.concurrent.CompletableFuture;
 
 import static net.minecraft.command.Commands.argument;
 import static net.minecraft.command.Commands.literal;
@@ -51,6 +64,10 @@ public final class CommandMap {
 				.then(literal("join")
 					.then(argument("id", StringArgumentType.word()) // TODO: suggestions
 					.executes(CommandMap::joinMap)
+				))
+				.then(literal("export")
+					.then(argument("id", StringArgumentType.word())
+					.executes(CommandMap::exportMap)
 				))
 				.then(literal("region")
 					.then(literal("add")
@@ -105,16 +122,9 @@ public final class CommandMap {
 	}
 
 	private static int joinMap(CommandContext<CommandSource> context) throws CommandSyntaxException {
-		CommandSource source = context.getSource();
-		ServerPlayerEntity player = source.asPlayer();
+		ServerPlayerEntity player = context.getSource().asPlayer();
 
-		MapWorkspaceManager workspaceManager = MapWorkspaceManager.get(source.getServer());
-
-		String id = StringArgumentType.getString(context, "id");
-		MapWorkspace workspace = workspaceManager.getWorkspace(id);
-		if (workspace == null) {
-			throw WORKSPACE_DOES_NOT_EXIST.create(id);
-		}
+		MapWorkspace workspace = getGivenWorkspace(context);
 
 		DimensionType dimension = workspace.getDimension();
 		DimensionUtils.teleportPlayerNoPortal(player, dimension, new BlockPos(0, 64, 0));
@@ -128,8 +138,7 @@ public final class CommandMap {
 	}
 
 	private static int addRegion(CommandContext<CommandSource> context) throws CommandSyntaxException {
-		CommandSource source = context.getSource();
-		MapWorkspace workspace = getCurrentWorkspace(source);
+		MapWorkspace workspace = getCurrentWorkspace(context);
 
 		String key = StringArgumentType.getString(context, "key");
 		BlockPos min = BlockPosArgument.getBlockPos(context, "min");
@@ -140,7 +149,52 @@ public final class CommandMap {
 		return Command.SINGLE_SUCCESS;
 	}
 
-	private static MapWorkspace getCurrentWorkspace(CommandSource source) throws CommandSyntaxException {
+	private static int exportMap(CommandContext<CommandSource> context) throws CommandSyntaxException {
+		CommandSource source = context.getSource();
+		MapWorkspace workspace = getGivenWorkspace(context);
+
+		CompletableFuture.runAsync(() -> {
+			ServerWorld overworld = source.getServer().getWorld(DimensionType.OVERWORLD);
+			File worldDirectory = overworld.getSaveHandler().getWorldDirectory();
+			File dimensionDirectory = workspace.getDimension().getDirectory(worldDirectory);
+
+			ResourceLocation id = new ResourceLocation(Constants.MODID, workspace.getId());
+			Path exportPath = MapExportWriter.pathFor(id);
+
+			try {
+				Files.createDirectories(exportPath.getParent());
+
+				try (MapExportWriter writer = MapExportWriter.open(exportPath)) {
+					MapRegions regions = workspace.getRegions().compile();
+					writer.writeMetadata(new MapMetadata(id, workspace.getWorldSettings(), regions));
+					writer.writeWorldData(dimensionDirectory.toPath());
+
+					source.sendFeedback(new StringTextComponent("Successfully exported map!"), false);
+				}
+			} catch (Exception e) {
+				source.sendErrorMessage(new StringTextComponent("Failed to export map!"));
+				LoveTropics.LOGGER.error("Failed to export map", e);
+			}
+		}, Util.getServerExecutor());
+
+		return Command.SINGLE_SUCCESS;
+	}
+
+	private static MapWorkspace getGivenWorkspace(CommandContext<CommandSource> context) throws CommandSyntaxException {
+		CommandSource source = context.getSource();
+		MapWorkspaceManager workspaceManager = MapWorkspaceManager.get(source.getServer());
+
+		String id = StringArgumentType.getString(context, "id");
+		MapWorkspace workspace = workspaceManager.getWorkspace(id);
+		if (workspace == null) {
+			throw WORKSPACE_DOES_NOT_EXIST.create(id);
+		}
+
+		return workspace;
+	}
+
+	private static MapWorkspace getCurrentWorkspace(CommandContext<CommandSource> context) throws CommandSyntaxException {
+		CommandSource source = context.getSource();
 		MapWorkspaceManager workspaceManager = MapWorkspaceManager.get(source.getServer());
 
 		ServerPlayerEntity player = source.asPlayer();

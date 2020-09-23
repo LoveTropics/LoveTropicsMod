@@ -3,6 +3,7 @@ package com.lovetropics.minigames.common.map.workspace;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.lovetropics.minigames.common.map.MapRegion;
+import com.lovetropics.minigames.common.map.MapRegions;
 import com.lovetropics.minigames.common.network.LTNetwork;
 import com.lovetropics.minigames.common.network.map.AddWorkspaceRegionMessage;
 import com.lovetropics.minigames.common.network.map.UpdateWorkspaceRegionMessage;
@@ -127,6 +128,14 @@ public final class WorkspaceRegions implements Iterable<WorkspaceRegions.Entry> 
 	@Override
 	public Iterator<Entry> iterator() {
 		return entries.values().iterator();
+	}
+
+	public MapRegions compile() {
+		MapRegions regions = new MapRegions();
+		for (Entry entry : entries.values()) {
+			regions.add(entry.key, entry.region);
+		}
+		return regions;
 	}
 
 	public static class Entry {
