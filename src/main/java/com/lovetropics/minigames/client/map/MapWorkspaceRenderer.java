@@ -2,7 +2,7 @@ package com.lovetropics.minigames.client.map;
 
 import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.common.map.MapRegion;
-import com.lovetropics.minigames.common.map.MapRegionSet;
+import com.lovetropics.minigames.common.map.workspace.ClientWorkspaceRegions;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ActiveRenderInfo;
@@ -21,7 +21,7 @@ import org.lwjgl.opengl.GL11;
 public final class MapWorkspaceRenderer {
 	@SubscribeEvent
 	public static void onRenderWorld(RenderWorldLastEvent event) {
-		MapRegionSet regions = ClientMapWorkspace.INSTANCE.getRegions();
+		ClientWorkspaceRegions regions = ClientMapWorkspace.INSTANCE.getRegions();
 		if (regions.isEmpty()) {
 			return;
 		}
@@ -42,30 +42,27 @@ public final class MapWorkspaceRenderer {
 		RenderSystem.disableLighting();
 		RenderSystem.disableDepthTest();
 
-		for (String key : regions.keySet()) {
-			int color = colorForKey(key);
+		for (ClientWorkspaceRegions.Entry entry : regions) {
+			int color = colorForKey(entry.key);
 			float red = (color >> 16 & 0xFF) / 255.0F;
 			float green = (color >> 8 & 0xFF) / 255.0F;
 			float blue = (color & 0xFF) / 255.0F;
 
-			for (MapRegion region : regions.get(key)) {
-				double minX = region.min.getX() - view.x;
-				double minY = region.min.getY() - view.y;
-				double minZ = region.min.getZ() - view.z;
-				double maxX = region.max.getX() + 1.0 - view.x;
-				double maxY = region.max.getY() + 1.0 - view.y;
-				double maxZ = region.max.getZ() + 1.0 - view.z;
+			MapRegion region = entry.region;
+			double minX = region.min.getX() - view.x;
+			double minY = region.min.getY() - view.y;
+			double minZ = region.min.getZ() - view.z;
+			double maxX = region.max.getX() + 1.0 - view.x;
+			double maxY = region.max.getY() + 1.0 - view.y;
+			double maxZ = region.max.getZ() + 1.0 - view.z;
 
-				DebugRenderer.renderBox(minX, minY, minZ, maxX, maxY, maxZ, red, green, blue, 0.4F);
-				renderOutline(minX, minY, minZ, maxX, maxY, maxZ, red, green, blue, 1.0F);
-			}
+			DebugRenderer.renderBox(minX, minY, minZ, maxX, maxY, maxZ, red, green, blue, 0.4F);
+			renderOutline(minX, minY, minZ, maxX, maxY, maxZ, red, green, blue, 1.0F);
 		}
 
-		for (String key : regions.keySet()) {
-			for (MapRegion region : regions.get(key)) {
-				Vec3d center = region.getCenter();
-				DebugRenderer.renderText(key, center.x, center.y, center.z, 0xFFFFFFFF, 0.125F);
-			}
+		for (ClientWorkspaceRegions.Entry entry : regions) {
+			Vec3d center = entry.region.getCenter();
+			DebugRenderer.renderText(entry.key, center.x, center.y, center.z, 0xFFFFFFFF, 0.125F);
 		}
 
 		RenderSystem.popMatrix();

@@ -1,5 +1,6 @@
-package com.lovetropics.minigames.common.map;
+package com.lovetropics.minigames.common.map.workspace;
 
+import com.lovetropics.minigames.common.map.MapWorldSettings;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.world.dimension.DimensionType;
 
@@ -9,9 +10,10 @@ public final class MapWorkspace {
 
 	private final MapWorldSettings worldSettings;
 
-	private final MapRegionSet regions = new MapRegionSet();
+	private final WorkspaceRegions regions;
 
 	MapWorkspace(String id, DimensionType dimension, MapWorldSettings worldSettings) {
+		this.regions = new WorkspaceRegions(dimension);
 		this.id = id;
 		this.dimension = dimension;
 		this.worldSettings = worldSettings;
@@ -25,7 +27,7 @@ public final class MapWorkspace {
 		return dimension;
 	}
 
-	public MapRegionSet getRegions() {
+	public WorkspaceRegions getRegions() {
 		return regions;
 	}
 

@@ -19,7 +19,7 @@ import com.lovetropics.minigames.common.command.minigames.CommandStopPollingMini
 import com.lovetropics.minigames.common.command.minigames.CommandUnregisterMinigame;
 import com.lovetropics.minigames.common.config.ConfigLT;
 import com.lovetropics.minigames.common.item.MinigameItems;
-import com.lovetropics.minigames.common.map.MapWorkspaceDimension;
+import com.lovetropics.minigames.common.map.workspace.MapWorkspaceDimension;
 import com.lovetropics.minigames.common.map.VoidChunkGenerator;
 import com.lovetropics.minigames.common.minigames.MinigameManager;
 import com.lovetropics.minigames.common.minigames.behaviours.MinigameBehaviorTypes;

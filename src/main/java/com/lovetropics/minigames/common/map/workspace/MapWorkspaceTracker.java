@@ -1,8 +1,8 @@
-package com.lovetropics.minigames.common.map;
+package com.lovetropics.minigames.common.map.workspace;
 
 import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.common.network.LTNetwork;
-import com.lovetropics.minigames.common.network.map.UpdateMapWorkspaceMessage;
+import com.lovetropics.minigames.common.network.map.SetWorkspaceMessage;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.server.MinecraftServer;
@@ -36,7 +36,7 @@ public final class MapWorkspaceTracker {
 		MapWorkspace workspace = workspaceManager.getWorkspace(dimension);
 
 		if (workspace != null) {
-			UpdateMapWorkspaceMessage message = new UpdateMapWorkspaceMessage(workspace.getRegions());
+			SetWorkspaceMessage message = new SetWorkspaceMessage(workspace.getRegions());
 			LTNetwork.CHANNEL.send(PacketDistributor.DIMENSION.with(() -> dimension), message);
 		}
 	}

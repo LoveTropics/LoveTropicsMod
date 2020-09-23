@@ -1,7 +1,9 @@
-package com.lovetropics.minigames.common.map;
+package com.lovetropics.minigames.common.map.workspace;
 
 import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.common.Util;
+import com.lovetropics.minigames.common.map.MapWorldInfo;
+import com.lovetropics.minigames.common.map.MapWorldSettings;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.ListNBT;

@@ -2,8 +2,8 @@ package com.lovetropics.minigames.common.command;
 
 import com.lovetropics.minigames.common.dimension.DimensionUtils;
 import com.lovetropics.minigames.common.map.MapRegion;
-import com.lovetropics.minigames.common.map.MapWorkspace;
-import com.lovetropics.minigames.common.map.MapWorkspaceManager;
+import com.lovetropics.minigames.common.map.workspace.MapWorkspace;
+import com.lovetropics.minigames.common.map.workspace.MapWorkspaceManager;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;

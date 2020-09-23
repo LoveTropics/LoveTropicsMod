@@ -1,32 +1,43 @@
 package com.lovetropics.minigames.client.map;
 
 import com.lovetropics.minigames.Constants;
-import com.lovetropics.minigames.common.map.MapRegionSet;
+import com.lovetropics.minigames.common.map.MapRegion;
+import com.lovetropics.minigames.common.map.workspace.ClientWorkspaceRegions;
 import net.minecraft.world.IWorld;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
+import javax.annotation.Nullable;
+
 @Mod.EventBusSubscriber(modid = Constants.MODID, value = Dist.CLIENT)
 public final class ClientMapWorkspace {
 	public static final ClientMapWorkspace INSTANCE = new ClientMapWorkspace();
 
-	private MapRegionSet regions = new MapRegionSet();
+	private ClientWorkspaceRegions regions = new ClientWorkspaceRegions();
 
 	private ClientMapWorkspace() {
 	}
 
-	public void setRegions(MapRegionSet regions) {
+	public void setRegions(ClientWorkspaceRegions regions) {
 		this.regions = regions;
 	}
 
-	public MapRegionSet getRegions() {
+	public void addRegion(int id, String key, MapRegion region) {
+		regions.add(id, key, region);
+	}
+
+	public void updateRegion(int id, @Nullable MapRegion region) {
+		regions.set(id, region);
+	}
+
+	public ClientWorkspaceRegions getRegions() {
 		return regions;
 	}
 
 	private void reset() {
-		regions = new MapRegionSet();
+		regions = new ClientWorkspaceRegions();
 	}
 
 	@SubscribeEvent

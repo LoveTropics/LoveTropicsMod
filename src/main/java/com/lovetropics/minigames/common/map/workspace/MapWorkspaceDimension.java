@@ -1,6 +1,7 @@
-package com.lovetropics.minigames.common.map;
+package com.lovetropics.minigames.common.map.workspace;
 
 import com.lovetropics.minigames.Constants;
+import com.lovetropics.minigames.common.map.VoidChunkGenerator;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.MathHelper;
