@@ -51,8 +51,8 @@ public class MinigameBehaviorTypes {
 	}
 
 	private static <T> PositionPlayersMinigameBehavior positionPlayers(Dynamic<T> root) {
-		BlockPos[] participantSpawns = root.get("participants").asList(BlockPos::deserialize).toArray(new BlockPos[0]);
-		BlockPos[] spectatorSpawns = root.get("spectators").asList(BlockPos::deserialize).toArray(new BlockPos[0]);
+		String[] participantSpawns = root.get("participants").asList(d -> d.asString("")).toArray(new String[0]);
+		String[] spectatorSpawns = root.get("spectators").asList(d -> d.asString("")).toArray(new String[0]);
 		return new PositionPlayersMinigameBehavior(participantSpawns, spectatorSpawns);
 	}
 

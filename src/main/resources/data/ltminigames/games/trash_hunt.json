@@ -15,12 +15,8 @@
     },
     {
       "type": "ltminigames:position_players",
-      "participants": [
-        [5916, 108, 7000]
-      ],
-      "spectators": [
-        [5916, 108, 7000]
-      ]
+      "participants": ["spawn"],
+      "spectators": ["spawn"]
     },
     {
       "type": "ltminigames:commands",
