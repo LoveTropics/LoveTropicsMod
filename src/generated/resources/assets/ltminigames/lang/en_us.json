@@ -1,5 +1,4 @@
 {
-  "block.ltminigames.buoy": "Buoy",
   "block.ltminigames.can": "Can",
   "block.ltminigames.chip_bag": "Chip Bag",
   "block.ltminigames.cola": "Cola",
@@ -9,8 +8,8 @@
   "block.ltminigames.plastic_bottle": "Plastic Bottle",
   "block.ltminigames.plastic_rings": "Plastic Rings",
   "block.ltminigames.straw": "Straw",
-  "block.ltminigames.water_barrier": "Water Barrier",
   "item.ltminigames.acid_repellent_umbrella": "Acid Repellent Umbrella",
+  "item.ltminigames.make_region": "Make Region",
   "item.ltminigames.super_sunscreen": "Super Sunscreen",
   "itemGroup.love_tropics": "Love Tropics",
   "ltminigames.command.another_minigame_polling": "Another minigame is already polling! Stop that one first before polling another.",

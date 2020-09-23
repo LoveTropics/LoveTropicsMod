@@ -93,8 +93,8 @@ public final class MapWorkspaceRenderer {
 			Vec3d center = entry.region.getCenter();
 			BlockPos size = entry.region.getSize();
 
-			int averageSize = (size.getX() + size.getY() + size.getZ()) / 3 - 1;
-			float scale = MathHelper.clamp(averageSize * 0.0625F, 0.0625F, 0.125F);
+			int minSize = Math.min(size.getX(), Math.min(size.getY(), size.getZ())) - 1;
+			float scale = MathHelper.clamp(minSize * 0.0625F, 0.0625F, 0.125F);
 
 			DebugRenderer.renderText(entry.key, center.x, center.y, center.z, 0xFFFFFFFF, scale);
 		}

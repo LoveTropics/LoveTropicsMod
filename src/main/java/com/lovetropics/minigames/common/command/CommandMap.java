@@ -23,6 +23,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Util;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
@@ -45,39 +46,39 @@ public final class CommandMap {
 		return new StringTextComponent("Workspace already exists with id '" + o + "'");
 	});
 
-	private static final DynamicCommandExceptionType WORKSPACE_DOES_NOT_EXIST = new DynamicCommandExceptionType(o -> {
-		return new StringTextComponent("Workspace does not exist with id '" + o + "'");
-	});
-
 	private static final SimpleCommandExceptionType NOT_IN_WORKSPACE = new SimpleCommandExceptionType(new StringTextComponent("You are not in a workspace!"));
 
 	public static void register(CommandDispatcher<CommandSource> dispatcher) {
 		// @formatter:off
         dispatcher.register(
             literal("minigame").then(literal("map")
+				.requires(source -> source.hasPermissionLevel(2))
                 .then(literal("open")
                     .then(argument("id", StringArgumentType.word())
                     .executes(CommandMap::openMap)
                 ))
 				.then(literal("delete")
-					.then(argument("id", StringArgumentType.word())
+					.then(MapWorkspaceArgument.argument("id")
 					.executes(CommandMap::deleteMap)
 				))
 				.then(literal("join")
-					.then(argument("id", StringArgumentType.word()) // TODO: suggestions
+					.then(MapWorkspaceArgument.argument("id")
 					.executes(CommandMap::joinMap)
 				))
 				.then(literal("export")
-					.then(argument("id", StringArgumentType.word())
+					.then(MapWorkspaceArgument.argument("id")
 					.executes(CommandMap::exportMap)
 				))
 				.then(literal("region")
 					.then(literal("add")
 						.then(argument("key", StringArgumentType.word())
-						.then(argument("min", BlockPosArgument.blockPos())
-						.then(argument("max", BlockPosArgument.blockPos())
-						.executes(CommandMap::addRegion)
-					))))
+								.then(argument("min", BlockPosArgument.blockPos())
+								.then(argument("max", BlockPosArgument.blockPos())
+								.executes(CommandMap::addRegion)
+							))
+								.executes(CommandMap::addRegionHere)
+						)
+					)
 				)
             )
         );
@@ -113,12 +114,10 @@ public final class CommandMap {
 		CommandSource source = context.getSource();
 		MapWorkspaceManager workspaceManager = MapWorkspaceManager.get(source.getServer());
 
-		String id = StringArgumentType.getString(context, "id");
-		if (!workspaceManager.deleteWorkspace(id)) {
-			throw WORKSPACE_DOES_NOT_EXIST.create(id);
-		}
+		MapWorkspace workspace = MapWorkspaceArgument.get(context, "id");
+		workspaceManager.deleteWorkspace(workspace.getId());
 
-		source.sendFeedback(new StringTextComponent("Deleted workspace with id '" + id + "'. ").applyTextStyles(TextFormatting.GOLD), false);
+		source.sendFeedback(new StringTextComponent("Deleted workspace with id '" + workspace.getId() + "'. ").applyTextStyles(TextFormatting.GOLD), false);
 
 		return Command.SINGLE_SUCCESS;
 	}
@@ -126,7 +125,7 @@ public final class CommandMap {
 	private static int joinMap(CommandContext<CommandSource> context) throws CommandSyntaxException {
 		ServerPlayerEntity player = context.getSource().asPlayer();
 
-		MapWorkspace workspace = getGivenWorkspace(context);
+		MapWorkspace workspace = MapWorkspaceArgument.get(context, "id");
 
 		DimensionType dimension = workspace.getDimension();
 		DimensionUtils.teleportPlayerNoPortal(player, dimension, new BlockPos(0, 64, 0));
@@ -151,9 +150,20 @@ public final class CommandMap {
 		return Command.SINGLE_SUCCESS;
 	}
 
+	private static int addRegionHere(CommandContext<CommandSource> context) throws CommandSyntaxException {
+		MapWorkspace workspace = getCurrentWorkspace(context);
+		Vec3d pos = context.getSource().getPos();
+
+		String key = StringArgumentType.getString(context, "key");
+
+		workspace.getRegions().add(key, MapRegion.of(new BlockPos(pos)));
+
+		return Command.SINGLE_SUCCESS;
+	}
+
 	private static int exportMap(CommandContext<CommandSource> context) throws CommandSyntaxException {
 		CommandSource source = context.getSource();
-		MapWorkspace workspace = getGivenWorkspace(context);
+		MapWorkspace workspace = MapWorkspaceArgument.get(context, "id");
 
 		MinecraftServer server = source.getServer();
 		ServerWorld overworld = server.getWorld(DimensionType.OVERWORLD);
@@ -200,19 +210,6 @@ public final class CommandMap {
 		}
 
 		return CompletableFuture.completedFuture(null);
-	}
-
-	private static MapWorkspace getGivenWorkspace(CommandContext<CommandSource> context) throws CommandSyntaxException {
-		CommandSource source = context.getSource();
-		MapWorkspaceManager workspaceManager = MapWorkspaceManager.get(source.getServer());
-
-		String id = StringArgumentType.getString(context, "id");
-		MapWorkspace workspace = workspaceManager.getWorkspace(id);
-		if (workspace == null) {
-			throw WORKSPACE_DOES_NOT_EXIST.create(id);
-		}
-
-		return workspace;
 	}
 
 	private static MapWorkspace getCurrentWorkspace(CommandContext<CommandSource> context) throws CommandSyntaxException {

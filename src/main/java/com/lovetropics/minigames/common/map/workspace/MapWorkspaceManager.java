@@ -21,6 +21,7 @@ import net.minecraftforge.fml.common.Mod;
 
 import javax.annotation.Nullable;
 import java.util.Map;
+import java.util.Set;
 
 @Mod.EventBusSubscriber(modid = Constants.MODID)
 public final class MapWorkspaceManager extends WorldSavedData {
@@ -73,6 +74,10 @@ public final class MapWorkspaceManager extends WorldSavedData {
 		}
 
 		return this.workspaces.get(name.getPath());
+	}
+
+	public Set<String> getWorkspaceIds() {
+		return workspaces.keySet();
 	}
 
 	public boolean hasWorkspace(String id) {
