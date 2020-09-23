@@ -64,6 +64,14 @@ public final class MapRegion implements Iterable<BlockPos> {
 		);
 	}
 
+	public BlockPos getSize() {
+		return new BlockPos(
+				max.getX() - min.getX() + 1,
+				max.getY() - min.getY() + 1,
+				max.getZ() - min.getZ() + 1
+		);
+	}
+
 	public boolean contains(BlockPos pos) {
 		return contains(pos.getX(), pos.getY(), pos.getZ());
 	}

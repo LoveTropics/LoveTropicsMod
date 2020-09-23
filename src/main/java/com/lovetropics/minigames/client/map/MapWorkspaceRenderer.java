@@ -10,6 +10,8 @@ import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.debug.DebugRenderer;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
@@ -43,7 +45,12 @@ public final class MapWorkspaceRenderer {
 		RenderSystem.enableBlend();
 		RenderSystem.defaultBlendFunc();
 		RenderSystem.disableLighting();
-		RenderSystem.disableDepthTest();
+		RenderSystem.enableDepthTest();
+
+		RenderSystem.polygonOffset(-1.0F, -10.0F);
+		RenderSystem.enablePolygonOffset();
+
+		RenderSystem.depthMask(false);
 
 		Set<ClientWorkspaceRegions.Entry> selectedRegions = MapWorkspaceTracer.getSelectedRegions();
 
@@ -84,8 +91,18 @@ public final class MapWorkspaceRenderer {
 
 		for (ClientWorkspaceRegions.Entry entry : regions) {
 			Vec3d center = entry.region.getCenter();
-			DebugRenderer.renderText(entry.key, center.x, center.y, center.z, 0xFFFFFFFF, 0.125F);
+			BlockPos size = entry.region.getSize();
+
+			int averageSize = (size.getX() + size.getY() + size.getZ()) / 3 - 1;
+			float scale = MathHelper.clamp(averageSize * 0.0625F, 0.0625F, 0.125F);
+
+			DebugRenderer.renderText(entry.key, center.x, center.y, center.z, 0xFFFFFFFF, scale);
 		}
+
+		RenderSystem.depthMask(true);
+
+		RenderSystem.polygonOffset(0.0F, 0.0F);
+		RenderSystem.disablePolygonOffset();
 
 		RenderSystem.popMatrix();
 	}
