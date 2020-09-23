@@ -13,7 +13,6 @@ import com.mojang.datafixers.Dynamic;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.GameType;
-import net.minecraft.world.dimension.DimensionType;
 import net.minecraftforge.fml.RegistryObject;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.IForgeRegistry;
@@ -58,10 +57,7 @@ public class MinigameBehaviorTypes {
 	}
 
 	private static <T> LoadMapMinigameBehaviour loadMap(Dynamic<T> root) {
-		DimensionType dimension = DimensionType.byName(new ResourceLocation(root.get("dimension").asString("")));
-		String loadFrom = root.get("load_from").asString("");
-		String saveTo = root.get("save_to").asString("");
-
+		ResourceLocation loadFrom = new ResourceLocation(root.get("load_from").asString(""));
 		return new LoadMapMinigameBehaviour(loadFrom);
 	}
 

@@ -20,4 +20,15 @@ public final class MapMetadata {
 		root.put("regions", this.regions.write(new CompoundNBT()));
 		return root;
 	}
+
+	public static MapMetadata read(CompoundNBT root) {
+		ResourceLocation id = new ResourceLocation(root.getString("id"));
+		MapWorldSettings settings = new MapWorldSettings();
+		MapRegions regions = new MapRegions();
+
+		settings.read(root.getCompound("settings"));
+		regions.read(root.getCompound("regions"));
+
+		return new MapMetadata(id, settings, regions);
+	}
 }

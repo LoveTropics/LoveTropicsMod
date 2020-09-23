@@ -187,11 +187,9 @@ public final class CommandMap {
 	}
 
 	private static CompletableFuture<Void> saveWorkspace(MinecraftServer server, MapWorkspace workspace) {
-		CompletableFuture<Void> saveAll;
-
 		// TODO: accessing internal forge api: how can we check if the dimension is currently loaded?
 		if (server.forgeGetWorldMap().containsKey(workspace.getDimension())) {
-			saveAll = server.runAsync(() -> {
+			return server.runAsync(() -> {
 				ServerWorld workspaceWorld = server.getWorld(workspace.getDimension());
 				try {
 					workspaceWorld.save(null, true, false);
@@ -199,11 +197,9 @@ public final class CommandMap {
 					LoveTropics.LOGGER.warn("Could not save workspace world", e);
 				}
 			});
-		} else {
-			saveAll = CompletableFuture.completedFuture(null);
 		}
 
-		return saveAll;
+		return CompletableFuture.completedFuture(null);
 	}
 
 	private static MapWorkspace getGivenWorkspace(CommandContext<CommandSource> context) throws CommandSyntaxException {
