@@ -16,6 +16,10 @@ public final class MapRegions {
 		regions.put(key, region);
 	}
 
+	public void addAll(MapRegions regions) {
+		this.regions.putAll(regions.regions);
+	}
+
 	public Set<String> keySet() {
 		return regions.keySet();
 	}

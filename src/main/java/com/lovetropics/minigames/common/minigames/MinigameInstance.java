@@ -1,5 +1,6 @@
 package com.lovetropics.minigames.common.minigames;
 
+import com.lovetropics.minigames.common.map.MapRegions;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.command.CommandSource;
@@ -31,6 +32,8 @@ public class MinigameInstance implements IMinigameInstance
 
     private final MutablePlayerSet allPlayers;
     private final EnumMap<PlayerRole, MutablePlayerSet> roles = new EnumMap<>(PlayerRole.class);
+
+    private final MapRegions mapRegions = new MapRegions();
 
     private CommandSource commandSource;
 
@@ -136,6 +139,11 @@ public class MinigameInstance implements IMinigameInstance
     @Override
     public PlayerSet getPlayersForRule(PlayerRole role) {
         return roles.get(role);
+    }
+
+    @Override
+    public MapRegions getMapRegions() {
+        return mapRegions;
     }
 
     @Override
