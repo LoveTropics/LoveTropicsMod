@@ -60,7 +60,7 @@ public final class EditRegionItem extends Item {
 			if (entity instanceof PlayerEntity) {
 				PlayerEntity player = (PlayerEntity) entity;
 				ITextComponent message = new StringTextComponent("Changed mode to: ")
-						.appendSibling(new StringTextComponent(mode.key).applyTextStyle(TextFormatting.BLUE));
+						.appendSibling(new StringTextComponent(mode.key).applyTextStyle(mode.color));
 				player.sendStatusMessage(message, true);
 			}
 		}

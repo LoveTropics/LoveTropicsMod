@@ -18,6 +18,8 @@ import com.lovetropics.minigames.common.command.minigames.CommandStopMinigame;
 import com.lovetropics.minigames.common.command.minigames.CommandStopPollingMinigame;
 import com.lovetropics.minigames.common.command.minigames.CommandUnregisterMinigame;
 import com.lovetropics.minigames.common.config.ConfigLT;
+import com.lovetropics.minigames.common.dimension.DimensionUtils;
+import com.lovetropics.minigames.common.dimension.biome.TropicraftBiomes;
 import com.lovetropics.minigames.common.item.MinigameItems;
 import com.lovetropics.minigames.common.map.workspace.MapWorkspaceDimension;
 import com.lovetropics.minigames.common.map.VoidChunkGenerator;
@@ -91,6 +93,7 @@ public class LoveTropics {
         // Registry objects
         LoveTropicsBlocks.init();
         MinigameItems.init();
+        DimensionUtils.init();
 
         ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, ConfigLT.CLIENT_CONFIG);
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, ConfigLT.SERVER_CONFIG);
@@ -98,6 +101,7 @@ public class LoveTropics {
         VoidChunkGenerator.REGISTER.register(modBus);
         MapWorkspaceDimension.REGISTER.register(modBus);
         MinigameBehaviorTypes.MINIGAME_BEHAVIOURS_REGISTER.register(modBus);
+        TropicraftBiomes.BIOMES.register(modBus);
     }
 
     public static Registrate registrate() {

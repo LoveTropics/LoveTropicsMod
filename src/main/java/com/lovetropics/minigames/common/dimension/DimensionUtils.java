@@ -23,6 +23,9 @@ public class DimensionUtils {
 			.dimensionTypeCallback(t -> SURVIVE_THE_TIDE_DIMENSION = t)
 			.register();
 
+	public static void init() {
+	}
+
     public static void teleportPlayerNoPortal(ServerPlayerEntity player, DimensionType destination, BlockPos pos) {
 		if (!net.minecraftforge.common.ForgeHooks.onTravelToDimension(player, destination)) return;
 

@@ -4,6 +4,7 @@ import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.common.map.MapRegion;
 import com.lovetropics.minigames.common.map.workspace.ClientWorkspaceRegions;
 import com.mojang.blaze3d.systems.RenderSystem;
+import it.unimi.dsi.fastutil.HashCommon;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ActiveRenderInfo;
 import net.minecraft.client.renderer.BufferBuilder;
@@ -94,7 +95,7 @@ public final class MapWorkspaceRenderer {
 			BlockPos size = entry.region.getSize();
 
 			int minSize = Math.min(size.getX(), Math.min(size.getY(), size.getZ())) - 1;
-			float scale = MathHelper.clamp(minSize * 0.0625F, 0.0625F, 0.125F);
+			float scale = MathHelper.clamp(minSize * 0.03125F, 0.03125F, 0.125F);
 
 			DebugRenderer.renderText(entry.key, center.x, center.y, center.z, 0xFFFFFFFF, scale);
 		}
@@ -108,7 +109,7 @@ public final class MapWorkspaceRenderer {
 	}
 
 	private static int colorForKey(String key) {
-		return key.hashCode() & 0xFFFFFF;
+		return HashCommon.mix(key.hashCode()) & 0xFFFFFF;
 	}
 
 	private static void renderOutline(double minX, double minY, double minZ, double maxX, double maxY, double maxZ, float red, float green, float blue, float alpha) {
