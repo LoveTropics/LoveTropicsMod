@@ -7,6 +7,8 @@ public final class MapWorkspace {
 	private final String id;
 	private final DimensionType dimension;
 
+	private final MapRegionSet regions = new MapRegionSet();
+
 	public MapWorkspace(String id, DimensionType dimension) {
 		this.id = id;
 		this.dimension = dimension;
@@ -20,11 +22,15 @@ public final class MapWorkspace {
 		return dimension;
 	}
 
-	public void write(CompoundNBT root) {
+	public MapRegionSet getRegions() {
+		return regions;
+	}
 
+	public void write(CompoundNBT root) {
+		root.put("regions", regions.write(new CompoundNBT()));
 	}
 
 	public void read(CompoundNBT root) {
-
+		regions.read(root.getCompound("regions"));
 	}
 }

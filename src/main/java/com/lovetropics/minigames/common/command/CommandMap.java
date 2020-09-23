@@ -1,6 +1,7 @@
 package com.lovetropics.minigames.common.command;
 
 import com.lovetropics.minigames.common.dimension.DimensionUtils;
+import com.lovetropics.minigames.common.map.MapRegion;
 import com.lovetropics.minigames.common.map.MapWorkspace;
 import com.lovetropics.minigames.common.map.MapWorkspaceManager;
 import com.mojang.brigadier.Command;
@@ -9,7 +10,9 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
+import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import net.minecraft.command.CommandSource;
+import net.minecraft.command.arguments.BlockPosArgument;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.ITextComponent;
@@ -31,6 +34,8 @@ public final class CommandMap {
 		return new StringTextComponent("Workspace does not exist with id '" + o + "'");
 	});
 
+	private static final SimpleCommandExceptionType NOT_IN_WORKSPACE = new SimpleCommandExceptionType(new StringTextComponent("You are not in a workspace!"));
+
 	public static void register(CommandDispatcher<CommandSource> dispatcher) {
 		// @formatter:off
         dispatcher.register(
@@ -47,6 +52,14 @@ public final class CommandMap {
 					.then(argument("id", StringArgumentType.word()) // TODO: suggestions
 					.executes(CommandMap::joinMap)
 				))
+				.then(literal("region")
+					.then(literal("add")
+						.then(argument("key", StringArgumentType.word())
+						.then(argument("min", BlockPosArgument.blockPos())
+						.then(argument("max", BlockPosArgument.blockPos())
+						.executes(CommandMap::addRegion)
+					))))
+				)
             )
         );
         // @formatter:on
@@ -112,5 +125,30 @@ public final class CommandMap {
 		}
 
 		return Command.SINGLE_SUCCESS;
+	}
+
+	private static int addRegion(CommandContext<CommandSource> context) throws CommandSyntaxException {
+		CommandSource source = context.getSource();
+		MapWorkspace workspace = getCurrentWorkspace(source);
+
+		String key = StringArgumentType.getString(context, "key");
+		BlockPos min = BlockPosArgument.getBlockPos(context, "min");
+		BlockPos max = BlockPosArgument.getBlockPos(context, "max");
+
+		workspace.getRegions().add(key, MapRegion.of(min, max));
+
+		return Command.SINGLE_SUCCESS;
+	}
+
+	private static MapWorkspace getCurrentWorkspace(CommandSource source) throws CommandSyntaxException {
+		MapWorkspaceManager workspaceManager = MapWorkspaceManager.get(source.getServer());
+
+		ServerPlayerEntity player = source.asPlayer();
+		MapWorkspace workspace = workspaceManager.getWorkspace(player.dimension);
+		if (workspace == null) {
+			throw NOT_IN_WORKSPACE.create();
+		}
+
+		return workspace;
 	}
 }

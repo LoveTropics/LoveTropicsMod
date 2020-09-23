@@ -24,6 +24,7 @@ import com.lovetropics.minigames.common.map.VoidChunkGenerator;
 import com.lovetropics.minigames.common.minigames.MinigameManager;
 import com.lovetropics.minigames.common.minigames.behaviours.MinigameBehaviorTypes;
 import com.lovetropics.minigames.common.minigames.config.MinigameConfigs;
+import com.lovetropics.minigames.common.network.LTNetwork;
 import com.mojang.brigadier.CommandDispatcher;
 import com.tterrag.registrate.Registrate;
 import com.tterrag.registrate.providers.ProviderType;
@@ -107,6 +108,8 @@ public class LoveTropics {
 
     private void setup(final FMLCommonSetupEvent event) {
 //        TODO TropicraftBiomes.addFeatures();
+
+        LTNetwork.register();
     }
 
     private void onServerAboutToStart(final FMLServerAboutToStartEvent event) {

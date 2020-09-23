@@ -1,6 +1,7 @@
 package com.lovetropics.minigames.common.item;
 
 import com.lovetropics.minigames.LoveTropics;
+import com.lovetropics.minigames.common.item.map.EditRegionItem;
 import com.lovetropics.minigames.common.item.minigame.AcidRepellentUmbrellaItem;
 import com.lovetropics.minigames.common.item.minigame.SuperSunscreenItem;
 import com.tterrag.registrate.Registrate;
@@ -14,6 +15,9 @@ public class MinigameItems {
             .register();
     
     public static final ItemEntry<AcidRepellentUmbrellaItem> ACID_REPELLENT_UMBRELLA = REGISTRATE.item("acid_repellent_umbrella", AcidRepellentUmbrellaItem::new)
+            .register();
+
+    public static final ItemEntry<EditRegionItem> MAKE_REGION = REGISTRATE.item("make_region", EditRegionItem::new)
             .register();
     
     public static void init() {}

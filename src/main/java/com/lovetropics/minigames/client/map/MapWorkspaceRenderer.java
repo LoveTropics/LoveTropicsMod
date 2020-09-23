@@ -1,0 +1,110 @@
+package com.lovetropics.minigames.client.map;
+
+import com.lovetropics.minigames.Constants;
+import com.lovetropics.minigames.common.map.MapRegion;
+import com.lovetropics.minigames.common.map.MapRegionSet;
+import com.mojang.blaze3d.systems.RenderSystem;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.ActiveRenderInfo;
+import net.minecraft.client.renderer.BufferBuilder;
+import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.debug.DebugRenderer;
+import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
+import net.minecraft.util.math.Vec3d;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.client.event.RenderWorldLastEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
+import org.lwjgl.opengl.GL11;
+
+@Mod.EventBusSubscriber(modid = Constants.MODID, value = Dist.CLIENT)
+public final class MapWorkspaceRenderer {
+	@SubscribeEvent
+	public static void onRenderWorld(RenderWorldLastEvent event) {
+		MapRegionSet regions = ClientMapWorkspace.INSTANCE.getRegions();
+		if (regions.isEmpty()) {
+			return;
+		}
+
+		ActiveRenderInfo renderInfo = Minecraft.getInstance().gameRenderer.getActiveRenderInfo();
+		if (!renderInfo.isValid()) {
+			return;
+		}
+
+		Vec3d view = renderInfo.getProjectedView();
+
+		RenderSystem.pushMatrix();
+		RenderSystem.multMatrix(event.getMatrixStack().getLast().getMatrix());
+
+		RenderSystem.disableTexture();
+		RenderSystem.enableBlend();
+		RenderSystem.defaultBlendFunc();
+		RenderSystem.disableLighting();
+		RenderSystem.disableDepthTest();
+
+		for (String key : regions.keySet()) {
+			int color = colorForKey(key);
+			float red = (color >> 16 & 0xFF) / 255.0F;
+			float green = (color >> 8 & 0xFF) / 255.0F;
+			float blue = (color & 0xFF) / 255.0F;
+
+			for (MapRegion region : regions.get(key)) {
+				double minX = region.min.getX() - view.x;
+				double minY = region.min.getY() - view.y;
+				double minZ = region.min.getZ() - view.z;
+				double maxX = region.max.getX() + 1.0 - view.x;
+				double maxY = region.max.getY() + 1.0 - view.y;
+				double maxZ = region.max.getZ() + 1.0 - view.z;
+
+				DebugRenderer.renderBox(minX, minY, minZ, maxX, maxY, maxZ, red, green, blue, 0.4F);
+				renderOutline(minX, minY, minZ, maxX, maxY, maxZ, red, green, blue, 1.0F);
+			}
+		}
+
+		for (String key : regions.keySet()) {
+			for (MapRegion region : regions.get(key)) {
+				Vec3d center = region.getCenter();
+				DebugRenderer.renderText(key, center.x, center.y, center.z, 0xFFFFFFFF, 0.125F);
+			}
+		}
+
+		RenderSystem.popMatrix();
+	}
+
+	private static int colorForKey(String key) {
+		return key.hashCode() & 0xFFFFFF;
+	}
+
+	private static void renderOutline(double minX, double minY, double minZ, double maxX, double maxY, double maxZ, float red, float green, float blue, float alpha) {
+		Tessellator tessellator = Tessellator.getInstance();
+		BufferBuilder builder = tessellator.getBuffer();
+		builder.begin(GL11.GL_LINES, DefaultVertexFormats.POSITION_COLOR);
+
+		builder.pos(minX, minY, minZ).color(red, green, blue, alpha).endVertex();
+		builder.pos(maxX, minY, minZ).color(red, green, blue, alpha).endVertex();
+		builder.pos(minX, minY, minZ).color(red, green, blue, alpha).endVertex();
+		builder.pos(minX, maxY, minZ).color(red, green, blue, alpha).endVertex();
+		builder.pos(minX, minY, minZ).color(red, green, blue, alpha).endVertex();
+		builder.pos(minX, minY, maxZ).color(red, green, blue, alpha).endVertex();
+		builder.pos(maxX, minY, minZ).color(red, green, blue, alpha).endVertex();
+		builder.pos(maxX, maxY, minZ).color(red, green, blue, alpha).endVertex();
+		builder.pos(maxX, maxY, minZ).color(red, green, blue, alpha).endVertex();
+		builder.pos(minX, maxY, minZ).color(red, green, blue, alpha).endVertex();
+		builder.pos(minX, maxY, minZ).color(red, green, blue, alpha).endVertex();
+		builder.pos(minX, maxY, maxZ).color(red, green, blue, alpha).endVertex();
+		builder.pos(minX, maxY, maxZ).color(red, green, blue, alpha).endVertex();
+		builder.pos(minX, minY, maxZ).color(red, green, blue, alpha).endVertex();
+		builder.pos(minX, minY, maxZ).color(red, green, blue, alpha).endVertex();
+		builder.pos(maxX, minY, maxZ).color(red, green, blue, alpha).endVertex();
+		builder.pos(maxX, minY, maxZ).color(red, green, blue, alpha).endVertex();
+		builder.pos(maxX, minY, minZ).color(red, green, blue, alpha).endVertex();
+		builder.pos(minX, maxY, maxZ).color(red, green, blue, alpha).endVertex();
+		builder.pos(maxX, maxY, maxZ).color(red, green, blue, alpha).endVertex();
+		builder.pos(maxX, minY, maxZ).color(red, green, blue, alpha).endVertex();
+		builder.pos(maxX, maxY, maxZ).color(red, green, blue, alpha).endVertex();
+		builder.pos(maxX, maxY, minZ).color(red, green, blue, alpha).endVertex();
+		builder.pos(maxX, maxY, maxZ).color(red, green, blue, alpha).endVertex();
+
+		tessellator.draw();
+	}
+}

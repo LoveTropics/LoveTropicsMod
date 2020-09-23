@@ -6,6 +6,7 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.ListNBT;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.dimension.DimensionType;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraft.world.storage.WorldSavedData;
@@ -50,6 +51,16 @@ public final class MapWorkspaceManager extends WorldSavedData {
 	@Nullable
 	public MapWorkspace getWorkspace(String id) {
 		return this.workspaces.get(id);
+	}
+
+	@Nullable
+	public MapWorkspace getWorkspace(DimensionType dimension) {
+		ResourceLocation name = dimension.getRegistryName();
+		if (!name.getNamespace().equals(Constants.MODID)) {
+			return null;
+		}
+
+		return this.workspaces.get(name.getPath());
 	}
 
 	public boolean hasWorkspace(String id) {
