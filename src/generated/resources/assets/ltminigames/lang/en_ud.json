@@ -1,5 +1,4 @@
 {
-  "block.ltminigames.buoy": "\u028Eon\u15FA",
   "block.ltminigames.can": "u\u0250\u0186",
   "block.ltminigames.chip_bag": "b\u0250\u15FA d\u0131\u0265\u0186",
   "block.ltminigames.cola": "\u0250\u05DFo\u0186",
@@ -9,8 +8,8 @@
   "block.ltminigames.plastic_bottle": "\u01DD\u05DF\u0287\u0287o\u15FA \u0254\u0131\u0287s\u0250\u05DF\u0500",
   "block.ltminigames.plastic_rings": "sbu\u0131\u1D1A \u0254\u0131\u0287s\u0250\u05DF\u0500",
   "block.ltminigames.straw": "\u028D\u0250\u0279\u0287S",
-  "block.ltminigames.water_barrier": "\u0279\u01DD\u0131\u0279\u0279\u0250\u15FA \u0279\u01DD\u0287\u0250M",
   "item.ltminigames.acid_repellent_umbrella": "\u0250\u05DF\u05DF\u01DD\u0279q\u026F\u2229 \u0287u\u01DD\u05DF\u05DF\u01DDd\u01DD\u1D1A p\u0131\u0254\u2C6F",
+  "item.ltminigames.make_region": "uo\u0131b\u01DD\u1D1A \u01DD\u029E\u0250W",
   "item.ltminigames.super_sunscreen": "u\u01DD\u01DD\u0279\u0254sunS \u0279\u01DDdnS",
   "itemGroup.love_tropics": "s\u0254\u0131do\u0279\u27D8 \u01DD\u028Co\uA780",
   "ltminigames.command.another_minigame_polling": "\u02D9\u0279\u01DD\u0265\u0287ou\u0250 bu\u0131\u05DF\u05DFod \u01DD\u0279o\u025F\u01DDq \u0287s\u0279\u0131\u025F \u01DDuo \u0287\u0250\u0265\u0287 do\u0287S \u00A1bu\u0131\u05DF\u05DFod \u028Ep\u0250\u01DD\u0279\u05DF\u0250 s\u0131 \u01DD\u026F\u0250b\u0131u\u0131\u026F \u0279\u01DD\u0265\u0287ou\u2C6F",

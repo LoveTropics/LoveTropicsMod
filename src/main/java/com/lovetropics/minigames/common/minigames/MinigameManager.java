@@ -8,7 +8,6 @@ import com.lovetropics.minigames.common.Util;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
 import com.lovetropics.minigames.common.minigames.config.MinigameConfig;
 import com.lovetropics.minigames.common.minigames.config.MinigameConfigs;
-import com.lovetropics.minigames.common.minigames.definitions.survive_the_tide.SurviveTheTideMinigameDefinition;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.server.MinecraftServer;
@@ -20,7 +19,6 @@ import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.TranslationTextComponent;
-import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
@@ -92,7 +90,8 @@ public class MinigameManager implements IMinigameManager
         INSTANCE = new MinigameManager(server);
         MinecraftForge.EVENT_BUS.register(INSTANCE);
 
-        INSTANCE.register(new SurviveTheTideMinigameDefinition());
+        // TODO: duplicate registry from config
+        // INSTANCE.register(new SurviveTheTideMinigameDefinition());
 
         for (MinigameConfig config : MinigameConfigs.getConfigs()) {
             INSTANCE.register(new MinigameDefinitionGeneric(config));
@@ -233,10 +232,8 @@ public class MinigameManager implements IMinigameManager
             return canStart;
         }
 
-        this.polling.getAllBehaviours().forEach(b -> b.onPreStart(this.polling, server));
-
-        ServerWorld world = this.server.getWorld(this.polling.getDimension());
-        this.currentInstance = new MinigameInstance(this.polling, world);
+        this.currentInstance = new MinigameInstance(this.polling, server);
+        this.polling.getAllBehaviours().forEach(b -> b.onConstruct(currentInstance, server));
 
         int playersAvailable = Math.min(this.registeredForMinigame.size(), this.polling.getMaximumParticipantCount());
         List<UUID> chosenParticipants = Util.extractRandomElements(new Random(), this.registeredForMinigame, playersAvailable);

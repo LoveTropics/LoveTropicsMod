@@ -1,5 +1,6 @@
 package com.lovetropics.minigames.common.minigames;
 
+import com.lovetropics.minigames.common.map.MapRegions;
 import net.minecraft.command.CommandSource;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.world.dimension.DimensionType;
@@ -75,10 +76,10 @@ public interface IMinigameInstance
      * @return The command source for this minigame instance.
      */
     CommandSource getCommandSource();
+
+    MapRegions getMapRegions();
     
-    default ServerWorld getWorld() {
-    	return getCommandSource().getWorld();
-    }
+    ServerWorld getWorld();
     
     default DimensionType getDimension() {
     	return getDefinition().getDimension();

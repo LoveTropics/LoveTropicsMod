@@ -1,11 +1,7 @@
 package com.lovetropics.minigames.common.command.minigames;
 
-import static net.minecraft.command.Commands.literal;
-
 import com.lovetropics.minigames.common.dimension.DimensionUtils;
-import com.lovetropics.minigames.common.minigames.definitions.survive_the_tide.SurviveTheTideMinigameDefinition;
 import com.mojang.brigadier.CommandDispatcher;
-
 import net.minecraft.command.CommandSource;
 import net.minecraft.entity.Entity;
 import net.minecraft.nbt.CompoundNBT;
@@ -13,6 +9,8 @@ import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.common.DimensionManager;
+
+import static net.minecraft.command.Commands.literal;
 
 public class CommandResetIsland {
 	public static void register(final CommandDispatcher<CommandSource> dispatcher) {

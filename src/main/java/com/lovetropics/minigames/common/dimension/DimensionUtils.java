@@ -20,8 +20,12 @@ public class DimensionUtils {
 	public static final RegistryEntry<ModDimension> SURVIVE_THE_TIDE_MOD_DIMENSION = REGISTRATE
 			.dimension("hunger_games", SurviveTheTideDimension::new)
 			.keepLoaded(false)
+			.hasSkyLight(true)
 			.dimensionTypeCallback(t -> SURVIVE_THE_TIDE_DIMENSION = t)
 			.register();
+
+	public static void init() {
+	}
 
     public static void teleportPlayerNoPortal(ServerPlayerEntity player, DimensionType destination, BlockPos pos) {
 		if (!net.minecraftforge.common.ForgeHooks.onTravelToDimension(player, destination)) return;

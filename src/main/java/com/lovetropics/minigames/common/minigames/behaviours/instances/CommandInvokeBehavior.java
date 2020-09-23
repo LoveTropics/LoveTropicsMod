@@ -1,7 +1,6 @@
 package com.lovetropics.minigames.common.minigames.behaviours.instances;
 
 import com.google.common.collect.ImmutableList;
-import com.lovetropics.minigames.common.minigames.IMinigameDefinition;
 import com.lovetropics.minigames.common.minigames.IMinigameInstance;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
 import com.mojang.brigadier.CommandDispatcher;
@@ -71,7 +70,7 @@ public final class CommandInvokeBehavior implements IMinigameBehavior {
 	}
 
 	@Override
-	public void onPreStart(IMinigameDefinition definition, MinecraftServer server) {
+	public void onConstruct(IMinigameInstance minigame, MinecraftServer server) {
 		this.dispatcher = server.getCommandManager().getDispatcher();
 	}
 

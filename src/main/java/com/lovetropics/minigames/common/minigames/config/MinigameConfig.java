@@ -8,7 +8,9 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.dimension.DimensionType;
 import org.apache.commons.lang3.tuple.Pair;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 public final class MinigameConfig {
@@ -45,7 +47,13 @@ public final class MinigameConfig {
         Map<IMinigameBehaviorType<?>, IMinigameBehavior> behaviors = root.get("behaviors")
         		.asList(MinigameConfig::deserializeBehavior)
         		.stream()
-        		.collect(Collectors.toMap(Pair::getLeft, Pair::getRight));
+                .filter(Objects::nonNull)
+        		.collect(Collectors.toMap(
+        		        Pair::getLeft,
+                        Pair::getRight,
+                        (a, b) -> { throw new IllegalArgumentException("duplicate key"); },
+                        LinkedHashMap::new
+                ));
 
         return new MinigameConfig(
                 id,
@@ -66,8 +74,7 @@ public final class MinigameConfig {
             return Pair.of(behavior, behavior.create(root));
         }
 
-        System.out.println("Type is not valid!");
-
+        System.out.println("Type '" + type + "' is not valid!");
         return null;
     }
 }

@@ -1,13 +1,13 @@
 {
   "id": "ltminigames:survive_the_tide",
   "translation_key": "survive_the_tide",
-  "dimension": "ltminigames:survive_the_tide",
+  "dimension": "ltminigames:hunger_games",
   "minimum_participants": 3,
   "maximum_participants": 16,
-  "behavior": [
+  "behaviors": [
     {
       "type": "ltminigames:load_map",
-      "map": "survive_the_tide"
+      "load_from": "ltminigames:survive_the_tide"
     },
     {
       "type": "ltminigames:isolate_player_state"
@@ -20,25 +20,25 @@
     {
       "type": "ltminigames:position_players",
       "participants": [
-        [5906, 133, 6962],
-        [5910, 133, 6961],
-        [5914, 133, 6961],
-        [5918, 133, 6962],
-        [5922, 133, 6966],
-        [5923, 133, 6970],
-        [5923, 133, 6974],
-        [5922, 133, 6978],
-        [5918, 133, 6982],
-        [5914, 133, 6983],
-        [5910, 133, 6983],
-        [5906, 133, 6982],
-        [5902, 133, 6978],
-        [5901, 133, 6974],
-        [5901, 133, 6970],
-        [5902, 133, 6966]
+        "participant_spawn_1",
+        "participant_spawn_2",
+        "participant_spawn_3",
+        "participant_spawn_4",
+        "participant_spawn_5",
+        "participant_spawn_6",
+        "participant_spawn_7",
+        "participant_spawn_8",
+        "participant_spawn_9",
+        "participant_spawn_10",
+        "participant_spawn_11",
+        "participant_spawn_12",
+        "participant_spawn_13",
+        "participant_spawn_14",
+        "participant_spawn_15",
+        "participant_spawn_16"
       ],
       "spectators": [
-        [5780, 141, 6955]
+        "spectator_spawn"
       ]
     },
     {

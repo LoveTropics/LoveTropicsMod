@@ -4,7 +4,7 @@
   "dimension": "ltminigames:trash_hunt",
   "minimum_participants": 8,
   "maximum_participants": 16,
-  "behavior": [
+  "behaviors": [
     {
       "type": "ltminigames:isolate_player_state"
     },
@@ -15,12 +15,8 @@
     },
     {
       "type": "ltminigames:position_players",
-      "participants": [
-        [5916, 108, 7000]
-      ],
-      "spectators": [
-        [5916, 108, 7000]
-      ]
+      "participants": ["spawn"],
+      "spectators": ["spawn"]
     },
     {
       "type": "ltminigames:commands",
