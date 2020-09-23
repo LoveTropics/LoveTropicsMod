@@ -1,21 +1,18 @@
 package com.lovetropics.minigames.common.minigames;
 
-import java.util.Collection;
-import java.util.Optional;
-
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehaviorType;
-
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.ActionResultType;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.world.GameType;
 import net.minecraft.world.dimension.DimensionType;
 import net.minecraftforge.registries.IForgeRegistryEntry;
+
+import java.util.Collection;
+import java.util.Optional;
 
 /**
  * Used as a discriminant for a registered minigame. Defines the logic of the
@@ -52,31 +49,6 @@ public interface IMinigameDefinition extends IForgeRegistryEntry<IMinigameDefini
      * @return The dimension type players are teleported to when joining.
      */
     DimensionType getDimension();
-
-    /**
-     * Set when the minigame starts and you are a participant.
-     * @return The game type players are set to when active participants of the minigame.
-     */
-    GameType getParticipantGameType();
-
-    /**
-     * Set when the minigame starts and you are a spectator.
-     * @return The game type players are set to when they are considered spectators.
-     */
-    GameType getSpectatorGameType();
-
-    /**
-     * Relative to the dimension world specified by the dimension type.
-     * @return The position spectators start at when the minigame starts.
-     */
-    BlockPos getSpectatorPosition();
-
-    /**
-     * Relative to the dimension world specified by the dimension type.
-     * @param instance The instance of the running minigame.
-     * @return The block position for players to respawn at on death.
-     */
-    BlockPos getPlayerRespawnPosition(IMinigameInstance instance);
 
     /**
      * Will not let you start the minigame without at least this amount of

@@ -1,18 +1,7 @@
 package com.lovetropics.minigames.common;
 
-import java.lang.reflect.Field;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Locale;
-import java.util.Random;
-import java.util.function.BiPredicate;
-import java.util.stream.Collectors;
-
-import org.apache.commons.lang3.StringUtils;
-
 import com.google.common.collect.Lists;
 import com.lovetropics.minigames.Constants;
-
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.material.Material;
@@ -20,14 +9,20 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.MobEntity;
 import net.minecraft.entity.SharedMonsterAttributes;
-import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
-import net.minecraft.world.dimension.DimensionType;
 import net.minecraft.world.gen.Heightmap;
-import net.minecraft.world.server.ServerWorld;
+import org.apache.commons.lang3.StringUtils;
+
+import java.lang.reflect.Field;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Locale;
+import java.util.Random;
+import java.util.function.BiPredicate;
+import java.util.stream.Collectors;
 
 public class Util {
 
@@ -305,10 +300,8 @@ public class Util {
         List<T> randValues = Lists.newArrayList();
 
         for (int i = 0; i < amount; i++) {
-            T obj = list.get(rand.nextInt(list.size()));
-
+            T obj = list.remove(rand.nextInt(list.size()));
             randValues.add(obj);
-            list.remove(obj);
         }
 
         return randValues;

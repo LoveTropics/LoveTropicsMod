@@ -3,6 +3,7 @@ package com.lovetropics.minigames.common.minigames.behaviours;
 import com.lovetropics.minigames.common.minigames.IMinigameDefinition;
 import com.lovetropics.minigames.common.minigames.IMinigameInstance;
 
+import com.lovetropics.minigames.common.minigames.PlayerRole;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.server.MinecraftServer;
@@ -117,4 +118,33 @@ public interface IMinigameBehavior
 	 * @param event    The attack entity event.
 	 */
 	default void onPlayerAttackEntity(final IMinigameInstance minigame, AttackEntityEvent event) {}
+
+	/**
+	 * Called when a player is added to this minigame instance.
+	 *
+	 * @param minigame The current minigame instance.
+	 * @param player   The player that has been added.
+	 * @param role     The role that the player has been added to
+	 */
+	default void onPlayerJoin(final IMinigameInstance minigame, ServerPlayerEntity player, PlayerRole role) {
+	}
+
+	/**
+	 * Called when a player when the player changes role
+	 *
+	 * @param minigame The current minigame instance.
+	 * @param player   The player that has been added.
+	 * @param role     The role that the player has been added to
+	 */
+	default void onPlayerChangeRole(final IMinigameInstance minigame, ServerPlayerEntity player, PlayerRole role) {
+	}
+
+	/**
+	 * Called when a player is removed from this minigame instance. This may be as a spectator or participant
+	 *
+	 * @param minigame The current minigame instance.
+	 * @param player   The player that has been removed.
+	 */
+	default void onPlayerLeave(final IMinigameInstance minigame, ServerPlayerEntity player) {
+	}
 }

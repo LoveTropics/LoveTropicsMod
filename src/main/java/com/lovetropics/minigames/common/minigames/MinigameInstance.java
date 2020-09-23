@@ -1,5 +1,6 @@
 package com.lovetropics.minigames.common.minigames;
 
+import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.ICommandSource;
@@ -11,8 +12,10 @@ import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.world.server.ServerWorld;
 
+import java.util.EnumMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.function.Consumer;
 
 /**
@@ -23,15 +26,13 @@ import java.util.function.Consumer;
  */
 public class MinigameInstance implements IMinigameInstance
 {
-    private IMinigameDefinition definition;
+    private final ServerWorld world;
+    private final IMinigameDefinition definition;
 
-    private final PlayerSet participants;
-    private final PlayerSet spectators;
-    private final PlayerSet allPlayers;
+    private final MutablePlayerSet allPlayers;
+    private final EnumMap<PlayerRole, MutablePlayerSet> roles = new EnumMap<>(PlayerRole.class);
 
     private CommandSource commandSource;
-
-    private ServerWorld world;
 
     private final Map<String, Consumer<CommandSource>> controlCommands = new Object2ObjectOpenHashMap<>();
 
@@ -40,9 +41,59 @@ public class MinigameInstance implements IMinigameInstance
         this.world = world;
 
         MinecraftServer server = world.getServer();
-        this.participants = new PlayerSet(server);
-        this.spectators = new PlayerSet(server);
-        this.allPlayers = new PlayerSet(server);
+        this.allPlayers = new MutablePlayerSet(server);
+
+        for (PlayerRole role : PlayerRole.ROLES) {
+            MutablePlayerSet rolePlayers = new MutablePlayerSet(server);
+            roles.put(role, rolePlayers);
+
+            rolePlayers.addListener(new PlayerSet.Listeners() {
+                @Override
+                public void onAddPlayer(ServerPlayerEntity player) {
+                    MinigameInstance.this.onAddPlayerToRole(player, role);
+                }
+            });
+        }
+
+        allPlayers.addListener(new PlayerSet.Listeners() {
+            @Override
+            public void onRemovePlayer(UUID id) {
+                MinigameInstance.this.onRemovePlayer(id);
+            }
+        });
+    }
+
+    private void onRemovePlayer(UUID id) {
+        ServerPlayerEntity player = this.world.getServer().getPlayerList().getPlayerByUUID(id);
+        if (player == null) {
+            return;
+        }
+
+        for (MutablePlayerSet rolePlayers : roles.values()) {
+            rolePlayers.remove(id);
+        }
+
+        for (IMinigameBehavior behavior : definition.getAllBehaviours()) {
+            behavior.onPlayerLeave(MinigameInstance.this, player);
+        }
+    }
+
+    private void onAddPlayerToRole(ServerPlayerEntity player, PlayerRole role) {
+        boolean hadRole = false;
+
+        // remove the player from any other roles
+        for (PlayerRole otherRole : PlayerRole.ROLES) {
+            if (otherRole != role) {
+                roles.get(role).remove(player);
+                hadRole = true;
+            }
+        }
+
+        if (hadRole) {
+            for (IMinigameBehavior behavior : definition.getAllBehaviours()) {
+                behavior.onPlayerChangeRole(this, player, role);
+            }
+        }
     }
 
     @Override
@@ -51,57 +102,21 @@ public class MinigameInstance implements IMinigameInstance
     }
 
     @Override
-    public void addParticipant(ServerPlayerEntity player) {
-        if (this.spectators.contains(player)) {
-            throw new IllegalArgumentException("Player already exists in this minigame instance as a spectator! "
-                    + player.getDisplayName().getFormattedText());
+    public void addPlayer(ServerPlayerEntity player, PlayerRole role) {
+        if (!allPlayers.contains(player)) {
+            allPlayers.add(player);
+
+            for (IMinigameBehavior behavior : definition.getAllBehaviours()) {
+                behavior.onPlayerJoin(this, player, role);
+            }
         }
 
-        if (this.participants.contains(player)) {
-            throw new IllegalArgumentException("Player already exists in this minigame instance! "
-                    + player.getDisplayName().getFormattedText());
-        }
-
-        this.participants.add(player);
-        this.allPlayers.add(player);
+        roles.get(role).add(player);
     }
 
     @Override
-    public void removeParticipant(ServerPlayerEntity player) {
-        if (!this.participants.contains(player)) {
-            throw new IllegalArgumentException("Player doesn't exist in this minigame instance! "
-                    + player.getDisplayName().getFormattedText());
-        }
-
-        this.participants.remove(player);
-        this.allPlayers.remove(player);
-    }
-
-    @Override
-    public void addSpectator(ServerPlayerEntity player) {
-        if (this.participants.contains(player.getUniqueID())) {
-            throw new IllegalArgumentException("Player already exists in this minigame instance as a non-spectator! "
-                    + player.getDisplayName().getFormattedText());
-        }
-
-        if (this.spectators.contains(player.getUniqueID())) {
-            throw new IllegalArgumentException("Player already exists in this minigame instance as a spectator! "
-                    + player.getDisplayName().getFormattedText());
-        }
-
-        this.spectators.add(player);
-        this.allPlayers.add(player);
-    }
-
-    @Override
-    public void removeSpectator(ServerPlayerEntity player) {
-        if (!this.spectators.contains(player.getUniqueID())) {
-            throw new IllegalArgumentException("Player doesn't exist in this minigame instance as a spectator! "
-                    + player.getDisplayName().getFormattedText());
-        }
-
-        this.spectators.remove(player.getUniqueID());
-        this.allPlayers.remove(player.getUniqueID());
+    public void removePlayer(ServerPlayerEntity player) {
+        allPlayers.remove(player);
     }
 
     @Override
@@ -123,18 +138,13 @@ public class MinigameInstance implements IMinigameInstance
     }
 
     @Override
-    public PlayerSet getParticipants() {
-        return this.participants;
-    }
-
-    @Override
-    public PlayerSet getAllPlayers() {
+    public PlayerSet getPlayers() {
         return this.allPlayers;
     }
 
     @Override
-    public PlayerSet getSpectators() {
-        return this.spectators;
+    public PlayerSet getPlayersWithRole(PlayerRole role) {
+        return roles.get(role);
     }
 
     @Override

@@ -2,10 +2,6 @@
   "id": "ltminigames:survive_the_tide",
   "translation_key": "survive_the_tide",
   "dimension": "ltminigames:survive_the_tide",
-  "participant_game_type": "adventure",
-  "spectator_game_type": "spectator",
-  "spectator_position": [5780, 141, 6955],
-  "respawn_position": [5780, 141, 6955],
   "minimum_participants": 3,
   "maximum_participants": 16,
   "behavior": [
@@ -14,8 +10,16 @@
       "map": "survive_the_tide"
     },
     {
-      "type": "ltminigames:position_participants",
-      "positions": [
+      "type": "ltminigames:isolate_player_state"
+    },
+    {
+      "type": "ltminigames:set_game_types",
+      "participant": "adventure",
+      "spectator": "spectator"
+    },
+    {
+      "type": "ltminigames:position_players",
+      "participants": [
         [5906, 133, 6962],
         [5910, 133, 6961],
         [5914, 133, 6961],
@@ -32,6 +36,9 @@
         [5901, 133, 6974],
         [5901, 133, 6970],
         [5902, 133, 6966]
+      ],
+      "spectators": [
+        [5780, 141, 6955]
       ]
     },
     {

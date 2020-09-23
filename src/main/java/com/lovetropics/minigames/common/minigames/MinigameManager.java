@@ -5,9 +5,7 @@ import com.google.common.collect.Maps;
 import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.client.data.TropicraftLangKeys;
 import com.lovetropics.minigames.common.Util;
-import com.lovetropics.minigames.common.dimension.DimensionUtils;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
-import com.lovetropics.minigames.common.minigames.behaviours.MinigameBehaviorTypes;
 import com.lovetropics.minigames.common.minigames.config.MinigameConfig;
 import com.lovetropics.minigames.common.minigames.config.MinigameConfigs;
 import com.lovetropics.minigames.common.minigames.definitions.survive_the_tide.SurviveTheTideMinigameDefinition;
@@ -17,7 +15,6 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.ActionResultType;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.ChatType;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
@@ -76,11 +73,6 @@ public class MinigameManager implements IMinigameManager
      * Is empty when a minigame has started or stopped polling.
      */
     private List<UUID> registeredForMinigame = Lists.newArrayList();
-
-    /**
-     * Cache used to know what state the player was in before teleporting into a minigame.
-     */
-    private Map<UUID, MinigamePlayerCache> playerCache = Maps.newHashMap();
 
     /**
      * Server reference to fetch players from player list.
@@ -154,7 +146,9 @@ public class MinigameManager implements IMinigameManager
         IMinigameDefinition def = this.currentInstance.getDefinition();
         getBehaviours().forEach((b) -> b.onFinish(this.currentInstance));
 
-        this.currentInstance.getAllPlayers().forEach(this::teleportBack);
+        for (ServerPlayerEntity player : currentInstance.getPlayers()) {
+            currentInstance.removePlayer(player);
+        }
 
         // Send all players a message letting them know the minigame has finished
         for (ServerPlayerEntity player : this.server.getPlayerList().getPlayers()) {
@@ -245,35 +239,19 @@ public class MinigameManager implements IMinigameManager
         this.currentInstance = new MinigameInstance(this.polling, world);
 
         int playersAvailable = Math.min(this.registeredForMinigame.size(), this.polling.getMaximumParticipantCount());
-        List<UUID> chosenPlayers = Util.extractRandomElements(new Random(), this.registeredForMinigame, playersAvailable);
+        List<UUID> chosenParticipants = Util.extractRandomElements(new Random(), this.registeredForMinigame, playersAvailable);
 
-        for (int i = 0; i < chosenPlayers.size(); i++) {
-            UUID playerUUID = chosenPlayers.get(i);
+        for (UUID playerUUID : chosenParticipants) {
             ServerPlayerEntity player = this.server.getPlayerList().getPlayerByUUID(playerUUID);
-
             if (player != null) {
-                this.currentInstance.addParticipant(player);
-                MinigamePlayerCache cache = new MinigamePlayerCache(player);
-                this.playerCache.put(player.getUniqueID(), cache);
-
-                cache.resetPlayerStats(player);
-
-                this.teleportPlayerIntoInstance(this.currentInstance, player, i);
+                this.currentInstance.addPlayer(player, PlayerRole.PARTICIPANT);
             }
         }
 
         for (UUID spectatorUUID : this.registeredForMinigame) {
             ServerPlayerEntity spectator = this.server.getPlayerList().getPlayerByUUID(spectatorUUID);
-
             if (spectator != null) {
-                this.currentInstance.addSpectator(spectator);
-                MinigamePlayerCache cache = new MinigamePlayerCache(spectator);
-                this.playerCache.put(spectator.getUniqueID(), cache);
-
-                cache.resetPlayerStats(spectator);
-
-                spectator.inventory.clear();
-                this.teleportSpectatorIntoInstance(this.currentInstance, spectator);
+                this.currentInstance.addPlayer(spectator, PlayerRole.SPECTATOR);
             }
         }
 
@@ -362,55 +340,6 @@ public class MinigameManager implements IMinigameManager
         return new ActionResult<>(ActionResultType.SUCCESS, msg);
     }
 
-    private void teleportPlayerIntoInstance(IMinigameInstance instance, ServerPlayerEntity player, int playerCount) {
-    	// TODO temporary
-        BlockPos[] positions = instance.getDefinition().getBehavior(MinigameBehaviorTypes.POSITION_PARTICIPANTS.get())
-        		.map(b -> b.getStartPositions())
-        		.orElseThrow(IllegalStateException::new);
-
-        // Ensure length of participant positions matches the maximum participant count.
-        if (positions.length != instance.getDefinition().getMaximumParticipantCount()) {
-            throw new IllegalStateException("The participant positions length doesn't match the" +
-                    "maximum participant count defined by the following minigame definition! " + instance.getDefinition().getID());
-        }
-
-        BlockPos teleportTo = positions[playerCount];
-
-        DimensionUtils.teleportPlayerNoPortal(player, instance.getDefinition().getDimension(), teleportTo);
-        player.setGameType(instance.getDefinition().getParticipantGameType());
-    }
-
-    /**
-     * Teleports the spectator into the dimension specified by the minigame definition.
-     * Will set the position of the player to the location specified by the definition
-     * for spectators. Sets player GameType to SPECTATOR.
-     * @param instance The instance of the currently running minigame.
-     * @param player The spectator to teleport into the instance.
-     */
-    private void teleportSpectatorIntoInstance(IMinigameInstance instance, ServerPlayerEntity player) {
-        BlockPos teleportTo = instance.getDefinition().getSpectatorPosition();
-
-        DimensionUtils.teleportPlayerNoPortal(player, instance.getDefinition().getDimension(), teleportTo);
-        player.setGameType(instance.getDefinition().getSpectatorGameType());
-    }
-
-    /**
-     * Teleports a player or spectator out from a currently running minigame instance.
-     * Will use the MinigamePlayerCache to reset them to their previous state before
-     * entering the instance.
-     * @param player The player being teleported back out of the minigame instance.
-     */
-    private void teleportBack(ServerPlayerEntity player) {
-        if (!this.playerCache.containsKey(player.getUniqueID())) {
-            throw new IllegalStateException("Player attempting to teleport back was not cached!");
-        }
-
-        MinigamePlayerCache cache = this.playerCache.get(player.getUniqueID());
-        cache.teleportBack(player);
-
-        this.playerCache.remove(player.getUniqueID());
-    }
-
     private Collection<IMinigameBehavior> getBehaviours() {
         return this.currentInstance.getDefinition().getAllBehaviours();
     }
@@ -458,13 +387,7 @@ public class MinigameManager implements IMinigameManager
     @SubscribeEvent
     public void onPlayerRespawn(PlayerEvent.PlayerRespawnEvent event) {
         if (this.ifPlayerInInstance(event.getPlayer())) {
-            IMinigameDefinition def = this.currentInstance.getDefinition();
             getBehaviours().forEach((b) -> b.onPlayerRespawn(this.currentInstance, (ServerPlayerEntity) event.getPlayer()));
-
-            BlockPos respawn = def.getPlayerRespawnPosition(this.currentInstance);
-
-            ServerPlayerEntity player = (ServerPlayerEntity) event.getPlayer();
-            player.connection.setPlayerLocation(respawn.getX(), respawn.getY(), respawn.getZ(), 0, 0);
         }
     }
 
@@ -492,15 +415,7 @@ public class MinigameManager implements IMinigameManager
         ServerPlayerEntity player = (ServerPlayerEntity) event.getPlayer();
 
         if (this.currentInstance != null) {
-            if (this.currentInstance.getParticipants().contains(player.getUniqueID())) {
-                this.currentInstance.removeParticipant(player);
-                this.teleportBack(player);
-            }
-
-            if (this.currentInstance.getSpectators().contains(player.getUniqueID())) {
-                this.currentInstance.removeSpectator(player);
-                this.teleportBack(player);
-            }
+            this.currentInstance.removePlayer(player);
         }
 
         if (this.polling != null) {
@@ -511,7 +426,7 @@ public class MinigameManager implements IMinigameManager
     }
 
     private boolean ifPlayerInInstance(Entity entity) {
-        return entity instanceof ServerPlayerEntity && this.currentInstance != null && this.currentInstance.getAllPlayers().contains(entity.getUniqueID());
+        return entity instanceof ServerPlayerEntity && this.currentInstance != null && this.currentInstance.getPlayers().contains(entity.getUniqueID());
     }
 
     private boolean ifEntityInDimension(Entity entity) {

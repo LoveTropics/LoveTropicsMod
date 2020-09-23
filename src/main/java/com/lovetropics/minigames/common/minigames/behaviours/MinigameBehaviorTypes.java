@@ -1,16 +1,18 @@
 package com.lovetropics.minigames.common.minigames.behaviours;
 
-import com.google.gson.JsonElement;
 import com.lovetropics.minigames.common.minigames.behaviours.instances.CommandInvokeBehavior;
+import com.lovetropics.minigames.common.minigames.behaviours.instances.IsolatePlayerStateBehavior;
 import com.lovetropics.minigames.common.minigames.behaviours.instances.LoadMapMinigameBehaviour;
-import com.lovetropics.minigames.common.minigames.behaviours.instances.PositionParticipantsMinigameBehavior;
+import com.lovetropics.minigames.common.minigames.behaviours.instances.PositionPlayersMinigameBehavior;
 import com.lovetropics.minigames.common.minigames.behaviours.instances.RespawnSpectatorMinigameBehavior;
+import com.lovetropics.minigames.common.minigames.behaviours.instances.SetGameTypesBehavior;
 import com.lovetropics.minigames.common.minigames.behaviours.instances.TimedMinigameBehavior;
 import com.lovetropics.minigames.common.minigames.behaviours.instances.survive_the_tide.WeatherEventsMinigameBehavior;
 import com.lovetropics.minigames.common.minigames.weather.MinigameWeatherConfig;
 import com.mojang.datafixers.Dynamic;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.GameType;
 import net.minecraft.world.dimension.DimensionType;
 import net.minecraftforge.fml.RegistryObject;
 import net.minecraftforge.registries.DeferredRegister;
@@ -19,17 +21,18 @@ import net.minecraftforge.registries.RegistryBuilder;
 
 import java.util.function.Supplier;
 
-public class MinigameBehaviorTypes
-{
+public class MinigameBehaviorTypes {
 	public static final DeferredRegister<IMinigameBehaviorType<?>> MINIGAME_BEHAVIOURS_REGISTER = DeferredRegister.create(IMinigameBehaviorType.wildcardType(), "ltminigames");
 	public static final Supplier<IForgeRegistry<IMinigameBehaviorType<?>>> MINIGAME_BEHAVIOURS_REGISTRY;
 
-	public static final RegistryObject<IMinigameBehaviorType<PositionParticipantsMinigameBehavior>> POSITION_PARTICIPANTS;
+	public static final RegistryObject<IMinigameBehaviorType<PositionPlayersMinigameBehavior>> POSITION_PLAYERS;
 	public static final RegistryObject<IMinigameBehaviorType<LoadMapMinigameBehaviour>> LOAD_MAP;
 	public static final RegistryObject<IMinigameBehaviorType<WeatherEventsMinigameBehavior>> WEATHER_EVENTS;
 	public static final RegistryObject<IMinigameBehaviorType<TimedMinigameBehavior>> TIMED;
 	public static final RegistryObject<IMinigameBehaviorType<RespawnSpectatorMinigameBehavior>> RESPAWN_SPECTATOR;
 	public static final RegistryObject<IMinigameBehaviorType<CommandInvokeBehavior>> COMMANDS;
+	public static final RegistryObject<IMinigameBehaviorType<IsolatePlayerStateBehavior>> ISOLATE_PLAYER_STATE;
+	public static final RegistryObject<IMinigameBehaviorType<SetGameTypesBehavior>> SET_GAME_TYPES;
 
 	public static <T extends IMinigameBehavior> RegistryObject<IMinigameBehaviorType<T>> register(final String name, final MinigameBehaviorType.Factory<T> instanceFactory) {
 		return MINIGAME_BEHAVIOURS_REGISTER.register(name, () -> new MinigameBehaviorType<>(instanceFactory));
@@ -48,9 +51,10 @@ public class MinigameBehaviorTypes
 		return new WeatherEventsMinigameBehavior(MinigameWeatherConfig.deserialize(root));
 	}
 
-	private static <T> PositionParticipantsMinigameBehavior positionParticipants(Dynamic<T> root) {
-		BlockPos[] spawnPositions = root.get("positions").asList(BlockPos::deserialize).toArray(new BlockPos[0]);
-		return new PositionParticipantsMinigameBehavior(spawnPositions);
+	private static <T> PositionPlayersMinigameBehavior positionPlayers(Dynamic<T> root) {
+		BlockPos[] participantSpawns = root.get("participants").asList(BlockPos::deserialize).toArray(new BlockPos[0]);
+		BlockPos[] spectatorSpawns = root.get("spectators").asList(BlockPos::deserialize).toArray(new BlockPos[0]);
+		return new PositionPlayersMinigameBehavior(participantSpawns, spectatorSpawns);
 	}
 
 	private static <T> LoadMapMinigameBehaviour loadMap(Dynamic<T> root) {
@@ -66,14 +70,26 @@ public class MinigameBehaviorTypes
 		return new TimedMinigameBehavior(length);
 	}
 
+	private static <T> IsolatePlayerStateBehavior isolatePlayerState(Dynamic<T> root) {
+		return new IsolatePlayerStateBehavior();
+	}
+
+	private static <T> SetGameTypesBehavior setGameTypes(Dynamic<T> root) {
+		GameType participant = GameType.getByName(root.get("participant").asString(""));
+		GameType spectator = GameType.getByName(root.get("spectator").asString(""));
+		return new SetGameTypesBehavior(participant, spectator);
+	}
+
 	static {
 		MINIGAME_BEHAVIOURS_REGISTRY = MINIGAME_BEHAVIOURS_REGISTER.makeRegistry("minigame_behaviours", RegistryBuilder::new);
 
-		POSITION_PARTICIPANTS = register("position_participants", MinigameBehaviorTypes::positionParticipants);
+		POSITION_PLAYERS = register("position_players", MinigameBehaviorTypes::positionPlayers);
 		LOAD_MAP = register("load_map", MinigameBehaviorTypes::loadMap);
 		WEATHER_EVENTS = register("weather_events", MinigameBehaviorTypes::weatherEvents);
 		TIMED = register("timed", MinigameBehaviorTypes::timed);
 		RESPAWN_SPECTATOR = registerInstance("respawn_spectator", RespawnSpectatorMinigameBehavior.INSTANCE);
 		COMMANDS = register("commands", CommandInvokeBehavior::parse);
+		ISOLATE_PLAYER_STATE = register("isolate_player_state", MinigameBehaviorTypes::isolatePlayerState);
+		SET_GAME_TYPES = register("set_game_types", MinigameBehaviorTypes::setGameTypes);
 	}
 }
