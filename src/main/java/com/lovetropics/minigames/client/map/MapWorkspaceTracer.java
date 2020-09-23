@@ -1,13 +1,12 @@
 package com.lovetropics.minigames.client.map;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.lovetropics.minigames.Constants;
-import com.lovetropics.minigames.common.map.MapRegion;
 import com.lovetropics.minigames.common.map.workspace.ClientWorkspaceRegions;
-import com.lovetropics.minigames.common.network.LTNetwork;
-import com.lovetropics.minigames.common.network.map.UpdateWorkspaceRegionMessage;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.player.ClientPlayerEntity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
@@ -18,14 +17,16 @@ import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
+import javax.annotation.Nullable;
+import java.util.Set;
+import java.util.function.Function;
+
 @Mod.EventBusSubscriber(modid = Constants.MODID, value = Dist.CLIENT)
 public final class MapWorkspaceTracer {
 	private static final Minecraft CLIENT = Minecraft.getInstance();
 	private static final double TRACE_RANGE = 64.0;
 
-	public static RegionTraceTarget traceTarget;
-	private static boolean editing;
-	private static double editingDistance;
+	private static RegionEditOperator edit;
 
 	@SubscribeEvent
 	public static void onClientTick(TickEvent.ClientTickEvent event) {
@@ -34,35 +35,13 @@ public final class MapWorkspaceTracer {
 			return;
 		}
 
-		if (editing && traceTarget != null) {
-			MapRegion editedRegion = updateEditing(player, traceTarget);
-			ClientMapWorkspace.INSTANCE.updateRegion(traceTarget.entry.id, editedRegion);
-		} else {
-			traceTarget = getTraceTarget(player);
+		if (edit != null) {
+			edit.update(player);
 		}
 	}
 
-	private static MapRegion updateEditing(ClientPlayerEntity player, RegionTraceTarget editTarget) {
-		Vec3d origin = player.getEyePosition(1.0F);
-
-		// TODO: not totally sure how to make this feel natural
-		Vec3d grabPoint = origin.add(player.getLookVec().scale(editingDistance));
-		BlockPos grabPos = new BlockPos(grabPoint);
-
-		MapRegion region = editTarget.entry.region;
-
-		switch (editTarget.side) {
-			case DOWN: return region.withMin(new BlockPos(region.min.getX(), grabPos.getY(), region.min.getZ()));
-			case UP: return region.withMax(new BlockPos(region.max.getX(), grabPos.getY(), region.max.getZ()));
-			case NORTH: return region.withMin(new BlockPos(region.min.getX(), region.min.getY(), grabPos.getZ()));
-			case SOUTH: return region.withMax(new BlockPos(region.max.getX(), region.max.getY(), grabPos.getZ()));
-			case WEST: return region.withMin(new BlockPos(grabPos.getX(), region.min.getY(), region.min.getZ()));
-			case EAST: return region.withMax(new BlockPos(grabPos.getX(), region.max.getY(), region.max.getZ()));
-			default: throw new UnsupportedOperationException();
-		}
-	}
-
-	private static RegionTraceTarget getTraceTarget(ClientPlayerEntity player) {
+	@Nullable
+	public static RegionTraceTarget trace(PlayerEntity player) {
 		ClientWorkspaceRegions regions = ClientMapWorkspace.INSTANCE.getRegions();
 		if (regions.isEmpty()) {
 			return null;
@@ -75,6 +54,7 @@ public final class MapWorkspaceTracer {
 
 		ClientWorkspaceRegions.Entry closestEntry = null;
 		double closestDistance = Double.POSITIVE_INFINITY;
+		Vec3d closestPoint = null;
 		Direction closestSide = null;
 
 		for (ClientWorkspaceRegions.Entry entry : regions) {
@@ -89,6 +69,7 @@ public final class MapWorkspaceTracer {
 				double distance = intersectPoint.distanceTo(origin);
 				if (distance < closestDistance) {
 					closestEntry = entry;
+					closestPoint = intersectPoint;
 					closestDistance = distance;
 					closestSide = traceResult.getFace();
 				}
@@ -96,31 +77,31 @@ public final class MapWorkspaceTracer {
 		}
 
 		if (closestEntry != null) {
-			return new RegionTraceTarget(closestEntry, closestSide, closestDistance);
+			return new RegionTraceTarget(closestEntry, closestSide, closestPoint, closestDistance);
 		} else {
 			return null;
 		}
 	}
 
-	public static boolean tryStartEditing() {
-		if (!editing && traceTarget != null) {
-			editing = true;
-			editingDistance = traceTarget.distance;
-			return true;
+	public static void select(PlayerEntity player, RegionTraceTarget target, Function<RegionTraceTarget, RegionEditOperator> operatorFactory) {
+		if (edit != null) {
+			if (edit.select(player, target)) {
+				edit = null;
+			}
+		} else {
+			edit = operatorFactory.apply(target);
 		}
-		return false;
 	}
 
 	public static void stopEditing() {
-		if (editing) {
-			editing = false;
-			if (traceTarget != null) {
-				LTNetwork.CHANNEL.sendToServer(new UpdateWorkspaceRegionMessage(traceTarget.entry.id, traceTarget.entry.region));
-			}
-		}
+		edit = null;
 	}
 
-	public static boolean isEditing() {
-		return editing;
+	public static Set<ClientWorkspaceRegions.Entry> getSelectedRegions() {
+		if (edit != null) {
+			return edit.getSelectedRegions();
+		} else {
+			return ImmutableSet.of();
+		}
 	}
 }

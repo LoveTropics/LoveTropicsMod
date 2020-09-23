@@ -1,14 +1,21 @@
 package com.lovetropics.minigames.common.item.map;
 
 import com.lovetropics.minigames.client.map.MapWorkspaceTracer;
+import com.lovetropics.minigames.client.map.RegionEditOperator;
+import com.lovetropics.minigames.client.map.RegionTraceTarget;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
+import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.world.World;
 
 public final class EditRegionItem extends Item {
+	private static Mode mode = Mode.RESIZE;
+	private static int useTick;
+
 	public EditRegionItem(Properties properties) {
 		super(properties);
 	}
@@ -16,15 +23,66 @@ public final class EditRegionItem extends Item {
 	@Override
 	public ActionResult<ItemStack> onItemRightClick(World world, PlayerEntity player, Hand hand) {
 		ItemStack stack = player.getHeldItem(hand);
+
 		if (world.isRemote) {
-			if (MapWorkspaceTracer.isEditing()) {
-				MapWorkspaceTracer.stopEditing();
-				return ActionResult.resultSuccess(stack);
-			} else if (MapWorkspaceTracer.tryStartEditing()) {
-				return ActionResult.resultSuccess(stack);
+			RegionTraceTarget traceResult = MapWorkspaceTracer.trace(player);
+			if (traceResult == null) {
+				return ActionResult.resultPass(stack);
 			}
+
+			useTick = player.ticksExisted;
+
+			MapWorkspaceTracer.select(player, traceResult, target -> mode.createEdit(target));
+			return ActionResult.resultSuccess(stack);
 		}
 
 		return ActionResult.resultPass(stack);
+	}
+
+	@Override
+	public boolean onEntitySwing(ItemStack stack, LivingEntity entity) {
+		if (entity.world.isRemote && entity.ticksExisted != useTick) {
+			mode = mode.getNext();
+
+			MapWorkspaceTracer.stopEditing();
+
+			if (entity instanceof PlayerEntity) {
+				PlayerEntity player = (PlayerEntity) entity;
+				player.sendStatusMessage(new StringTextComponent("Changed mode to: " + mode.key), true);
+			}
+		}
+
+		return false;
+	}
+
+	enum Mode {
+		RESIZE("resize"),
+		MOVE("move"),
+		SELECT("select");
+
+		static final Mode[] MODES = values();
+
+		final String key;
+
+		Mode(String key) {
+			this.key = key;
+		}
+
+		RegionEditOperator createEdit(RegionTraceTarget target) {
+			switch (this) {
+				case RESIZE: return new RegionEditOperator.Resize(target);
+				case MOVE: return new RegionEditOperator.Move(target);
+				default:
+				case SELECT: return new RegionEditOperator.Select(target);
+			}
+		}
+
+		static Mode byIndex(int index) {
+			return MODES[index % MODES.length];
+		}
+
+		Mode getNext() {
+			return byIndex(ordinal() + 1);
+		}
 	}
 }

@@ -68,5 +68,22 @@ public final class ClientWorkspaceRegions implements Iterable<ClientWorkspaceReg
 			this.key = key;
 			this.region = region;
 		}
+
+		@Override
+		public boolean equals(Object o) {
+			if (this == o) return true;
+
+			if (o instanceof Entry) {
+				Entry entry = (Entry) o;
+				return id == entry.id;
+			}
+
+			return false;
+		}
+
+		@Override
+		public int hashCode() {
+			return id;
+		}
 	}
 }

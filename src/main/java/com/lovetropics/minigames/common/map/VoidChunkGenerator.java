@@ -85,12 +85,10 @@ public final class VoidChunkGenerator extends ChunkGenerator<VoidChunkGenerator.
 
 	@Override
 	public void generateStructureStarts(IWorld world, IChunk chunk) {
-		super.generateStructureStarts(world, chunk);
 	}
 
 	@Override
 	public void generateStructures(BiomeManager biomeManager, IChunk chunk, ChunkGenerator<?> generator, TemplateManager templateManager) {
-		super.generateStructures(biomeManager, chunk, generator, templateManager);
 	}
 
 	@Nullable

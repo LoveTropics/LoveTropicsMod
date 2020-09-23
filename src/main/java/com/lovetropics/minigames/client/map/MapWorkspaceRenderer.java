@@ -17,6 +17,8 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.lwjgl.opengl.GL11;
 
+import java.util.Set;
+
 @Mod.EventBusSubscriber(modid = Constants.MODID, value = Dist.CLIENT)
 public final class MapWorkspaceRenderer {
 	@SubscribeEvent
@@ -43,7 +45,7 @@ public final class MapWorkspaceRenderer {
 		RenderSystem.disableLighting();
 		RenderSystem.disableDepthTest();
 
-		RegionTraceTarget traceTarget = MapWorkspaceTracer.traceTarget;
+		Set<ClientWorkspaceRegions.Entry> selectedRegions = MapWorkspaceTracer.getSelectedRegions();
 
 		for (ClientWorkspaceRegions.Entry entry : regions) {
 			int color = colorForKey(entry.key);
@@ -52,7 +54,7 @@ public final class MapWorkspaceRenderer {
 			float blue = (color & 0xFF) / 255.0F;
 			float alpha = 0.4F;
 
-			if (traceTarget != null && traceTarget.entry.id == entry.id) {
+			if (selectedRegions.contains(entry)) {
 				double time = client.world.getGameTime() + event.getPartialTicks();
 				float animation = (float) ((Math.sin(time * 0.1) + 1.0) / 2.0);
 

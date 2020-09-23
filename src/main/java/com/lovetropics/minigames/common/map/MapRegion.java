@@ -49,6 +49,13 @@ public final class MapRegion implements Iterable<BlockPos> {
 		return MapRegion.of(min, max);
 	}
 
+	public MapRegion offset(double x, double y, double z) {
+		return new MapRegion(
+				min.add(x, y, z),
+				max.add(x, y, z)
+		);
+	}
+
 	public Vec3d getCenter() {
 		return new Vec3d(
 				(min.getX() + max.getX() + 1.0) / 2.0,
