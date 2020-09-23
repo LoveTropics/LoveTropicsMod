@@ -6,6 +6,7 @@ import com.lovetropics.minigames.common.map.MapRegions;
 import com.lovetropics.minigames.common.minigames.IMinigameInstance;
 import com.lovetropics.minigames.common.minigames.PlayerRole;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
+import com.mojang.datafixers.Dynamic;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
@@ -42,6 +43,12 @@ public class PositionPlayersMinigameBehavior implements IMinigameBehavior {
 		for (String key : spectatorSpawnKeys) {
 			spectatorSpawnRegions.addAll(regions.get(key));
 		}
+	}
+
+	public static <T> PositionPlayersMinigameBehavior parse(Dynamic<T> root) {
+		String[] participantSpawns = root.get("participants").asList(d -> d.asString("")).toArray(new String[0]);
+		String[] spectatorSpawns = root.get("spectators").asList(d -> d.asString("")).toArray(new String[0]);
+		return new PositionPlayersMinigameBehavior(participantSpawns, spectatorSpawns);
 	}
 
 	@Override

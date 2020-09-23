@@ -1,14 +1,7 @@
 package com.lovetropics.minigames.common.minigames.behaviours;
 
-import com.lovetropics.minigames.common.minigames.behaviours.instances.CommandInvokeBehavior;
-import com.lovetropics.minigames.common.minigames.behaviours.instances.IsolatePlayerStateBehavior;
-import com.lovetropics.minigames.common.minigames.behaviours.instances.LoadMapMinigameBehaviour;
-import com.lovetropics.minigames.common.minigames.behaviours.instances.PositionPlayersMinigameBehavior;
-import com.lovetropics.minigames.common.minigames.behaviours.instances.RespawnSpectatorMinigameBehavior;
-import com.lovetropics.minigames.common.minigames.behaviours.instances.SetGameTypesBehavior;
-import com.lovetropics.minigames.common.minigames.behaviours.instances.TimedMinigameBehavior;
-import com.lovetropics.minigames.common.minigames.behaviours.instances.survive_the_tide.WeatherEventsMinigameBehavior;
-import com.lovetropics.minigames.common.minigames.weather.MinigameWeatherConfig;
+import com.lovetropics.minigames.common.minigames.behaviours.instances.*;
+import com.lovetropics.minigames.common.minigames.behaviours.instances.survive_the_tide.*;
 import com.mojang.datafixers.Dynamic;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
@@ -32,6 +25,13 @@ public class MinigameBehaviorTypes {
 	public static final RegistryObject<IMinigameBehaviorType<CommandInvokeBehavior>> COMMANDS;
 	public static final RegistryObject<IMinigameBehaviorType<IsolatePlayerStateBehavior>> ISOLATE_PLAYER_STATE;
 	public static final RegistryObject<IMinigameBehaviorType<SetGameTypesBehavior>> SET_GAME_TYPES;
+	public static final RegistryObject<IMinigameBehaviorType<PhasesMinigameBehavior>> PHASES;
+	public static final RegistryObject<IMinigameBehaviorType<RisingTidesMinigameBehavior>> RISING_TIDES;
+	public static final RegistryObject<IMinigameBehaviorType<ScheduledMessagesBehavior>> SCHEDULED_MESSAGES;
+	public static final RegistryObject<IMinigameBehaviorType<WorldBorderMinigameBehavior>> WORLD_BORDER;
+	public static final RegistryObject<IMinigameBehaviorType<SurviveTheTideWinConditionBehavior>> SURVIVE_THE_TIDE_WIN_CONDITION;
+	public static final RegistryObject<IMinigameBehaviorType<FireworksOnDeathBehavior>> FIREWORKS_ON_DEATH;
+	public static final RegistryObject<IMinigameBehaviorType<SurviveTheTideRulesetBehavior>> SURVIVE_THE_TIDE_RULESET;
 
 	public static <T extends IMinigameBehavior> RegistryObject<IMinigameBehaviorType<T>> register(final String name, final MinigameBehaviorType.Factory<T> instanceFactory) {
 		return MINIGAME_BEHAVIOURS_REGISTER.register(name, () -> new MinigameBehaviorType<>(instanceFactory));
@@ -46,46 +46,23 @@ public class MinigameBehaviorTypes {
 		});
 	}
 
-	private static <T> WeatherEventsMinigameBehavior weatherEvents(Dynamic<T> root) {
-		return new WeatherEventsMinigameBehavior(MinigameWeatherConfig.deserialize(root));
-	}
-
-	private static <T> PositionPlayersMinigameBehavior positionPlayers(Dynamic<T> root) {
-		String[] participantSpawns = root.get("participants").asList(d -> d.asString("")).toArray(new String[0]);
-		String[] spectatorSpawns = root.get("spectators").asList(d -> d.asString("")).toArray(new String[0]);
-		return new PositionPlayersMinigameBehavior(participantSpawns, spectatorSpawns);
-	}
-
-	private static <T> LoadMapMinigameBehaviour loadMap(Dynamic<T> root) {
-		ResourceLocation loadFrom = new ResourceLocation(root.get("load_from").asString(""));
-		return new LoadMapMinigameBehaviour(loadFrom);
-	}
-
-	private static <T> TimedMinigameBehavior timed(Dynamic<T> root) {
-		long length = root.get("length").asLong(20 * 60);
-		return new TimedMinigameBehavior(length);
-	}
-
-	private static <T> IsolatePlayerStateBehavior isolatePlayerState(Dynamic<T> root) {
-		return new IsolatePlayerStateBehavior();
-	}
-
-	private static <T> SetGameTypesBehavior setGameTypes(Dynamic<T> root) {
-		GameType participant = GameType.getByName(root.get("participant").asString(""));
-		GameType spectator = GameType.getByName(root.get("spectator").asString(""));
-		return new SetGameTypesBehavior(participant, spectator);
-	}
-
 	static {
 		MINIGAME_BEHAVIOURS_REGISTRY = MINIGAME_BEHAVIOURS_REGISTER.makeRegistry("minigame_behaviours", RegistryBuilder::new);
 
-		POSITION_PLAYERS = register("position_players", MinigameBehaviorTypes::positionPlayers);
-		LOAD_MAP = register("load_map", MinigameBehaviorTypes::loadMap);
-		WEATHER_EVENTS = register("weather_events", MinigameBehaviorTypes::weatherEvents);
-		TIMED = register("timed", MinigameBehaviorTypes::timed);
+		POSITION_PLAYERS = register("position_players", PositionPlayersMinigameBehavior::parse);
+		LOAD_MAP = register("load_map", LoadMapMinigameBehaviour::parse);
+		WEATHER_EVENTS = register("weather_events", WeatherEventsMinigameBehavior::parse);
+		TIMED = register("timed", TimedMinigameBehavior::parse);
 		RESPAWN_SPECTATOR = registerInstance("respawn_spectator", RespawnSpectatorMinigameBehavior.INSTANCE);
 		COMMANDS = register("commands", CommandInvokeBehavior::parse);
-		ISOLATE_PLAYER_STATE = register("isolate_player_state", MinigameBehaviorTypes::isolatePlayerState);
-		SET_GAME_TYPES = register("set_game_types", MinigameBehaviorTypes::setGameTypes);
+		ISOLATE_PLAYER_STATE = register("isolate_player_state", IsolatePlayerStateBehavior::parse);
+		SET_GAME_TYPES = register("set_game_types", SetGameTypesBehavior::parse);
+		PHASES = register("phases", PhasesMinigameBehavior::parse);
+		RISING_TIDES = register("rising_tides", RisingTidesMinigameBehavior::parse);
+		SCHEDULED_MESSAGES = register("scheduled_messages", ScheduledMessagesBehavior::parse);
+		WORLD_BORDER = register("world_border", WorldBorderMinigameBehavior::parse);
+		SURVIVE_THE_TIDE_WIN_CONDITION = register("survive_the_tide_win_condition", SurviveTheTideWinConditionBehavior::parse);
+		FIREWORKS_ON_DEATH = register("fireworks_on_death", FireworksOnDeathBehavior::parse);
+		SURVIVE_THE_TIDE_RULESET = register("survive_the_tide_ruleset", SurviveTheTideRulesetBehavior::parse);
 	}
 }

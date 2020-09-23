@@ -5,6 +5,7 @@ import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
 import com.lovetropics.minigames.common.minigames.weather.IMinigameWeatherInstance;
 import com.lovetropics.minigames.common.minigames.weather.MinigameWeatherConfig;
 
+import com.mojang.datafixers.Dynamic;
 import net.minecraft.world.World;
 
 public class WeatherEventsMinigameBehavior implements IMinigameBehavior
@@ -15,6 +16,10 @@ public class WeatherEventsMinigameBehavior implements IMinigameBehavior
 	public WeatherEventsMinigameBehavior(final MinigameWeatherConfig config) {
 		this.minigameWeatherInstance = new IMinigameWeatherInstance.Noop<>(); // TODO new MinigameWeatherInstanceServer();
 		this.config = config;
+	}
+
+	public static <T> WeatherEventsMinigameBehavior parse(Dynamic<T> root) {
+		return new WeatherEventsMinigameBehavior(MinigameWeatherConfig.parse(root));
 	}
 
 	@Override

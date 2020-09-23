@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.google.common.collect.Lists;
-import com.lovetropics.minigames.common.minigames.definitions.survive_the_tide.IcebergLine;
+import com.lovetropics.minigames.common.minigames.behaviours.instances.survive_the_tide.IcebergLine;
 
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.common.ForgeConfigSpec;
@@ -25,6 +25,7 @@ public class ConfigLT {
 
     public static final CategoryGeneral GENERAL = new CategoryGeneral();
 
+    // TODO: Remove as we're using new minigame data driven configs instead
     public static final CategorySurviveTheTide MINIGAME_SURVIVE_THE_TIDE = new CategorySurviveTheTide();
     
     public static final CategoryTiltify TILTIFY = new CategoryTiltify();

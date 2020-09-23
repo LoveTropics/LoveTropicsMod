@@ -26,10 +26,6 @@ public interface IMinigameDefinition extends IForgeRegistryEntry<IMinigameDefini
     
     <T extends IMinigameBehavior> Optional<T> getBehavior(IMinigameBehaviorType<T> type);
 
-    default ActionResult<ITextComponent> canStartMinigame(final MinecraftServer server) {
-        return new ActionResult<>(ActionResultType.SUCCESS, new StringTextComponent(""));
-    }
-
     /**
      * The identifier for this minigame definition. Must be unique
      * compared to other registered minigames.

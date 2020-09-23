@@ -55,7 +55,7 @@ public final class MinigameConfig {
                         LinkedHashMap::new
                 ));
 
-        return new MinigameConfig(
+        final MinigameConfig config = new MinigameConfig(
                 id,
                 translationKey,
                 dimension,
@@ -63,6 +63,34 @@ public final class MinigameConfig {
                 maximumParticipants,
                 behaviors
         );
+
+        validateConfig(config);
+
+        return config;
+    }
+
+    private static void validateConfig(final MinigameConfig config) {
+        boolean isInvalid = false;
+        final StringBuilder exceptionMsg = new StringBuilder();
+        exceptionMsg.append("The following issues were found while loading the following minigame config: ")
+                .append(config.id).append(System.lineSeparator());
+
+        for (final Map.Entry<IMinigameBehaviorType<?>, IMinigameBehavior> behaviorEntry : config.behaviors.entrySet()) {
+            final IMinigameBehaviorType<?> behaviorType = behaviorEntry.getKey();
+            final IMinigameBehavior behavior = behaviorEntry.getValue();
+
+            for (IMinigameBehaviorType<?> dependency : behavior.dependencies()) {
+                if (!config.behaviors.containsKey(dependency)) {
+                    isInvalid = true;
+                    exceptionMsg.append("Behavior ").append(behaviorType.getRegistryName()).append(" has a missing dependency: ")
+                            .append(dependency.getRegistryName()).append(System.lineSeparator());
+                }
+            }
+        }
+
+        if (isInvalid) {
+            throw new RuntimeException(exceptionMsg.toString());
+        }
     }
 
     private static <T extends IMinigameBehavior, D> Pair<IMinigameBehaviorType<T>, T> deserializeBehavior(Dynamic<D> root) {

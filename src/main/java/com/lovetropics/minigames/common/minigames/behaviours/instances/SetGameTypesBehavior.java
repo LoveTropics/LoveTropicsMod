@@ -3,6 +3,7 @@ package com.lovetropics.minigames.common.minigames.behaviours.instances;
 import com.lovetropics.minigames.common.minigames.IMinigameInstance;
 import com.lovetropics.minigames.common.minigames.PlayerRole;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
+import com.mojang.datafixers.Dynamic;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.world.GameType;
 
@@ -13,6 +14,12 @@ public class SetGameTypesBehavior implements IMinigameBehavior {
 	public SetGameTypesBehavior(GameType participantGameType, GameType spectatorGameType) {
 		this.participantGameType = participantGameType;
 		this.spectatorGameType = spectatorGameType;
+	}
+
+	public static <T> SetGameTypesBehavior parse(Dynamic<T> root) {
+		GameType participant = GameType.getByName(root.get("participant").asString(""));
+		GameType spectator = GameType.getByName(root.get("spectator").asString(""));
+		return new SetGameTypesBehavior(participant, spectator);
 	}
 
 	@Override

@@ -1,5 +1,6 @@
-package com.lovetropics.minigames.common.minigames.definitions.survive_the_tide;
+package com.lovetropics.minigames.common.minigames.behaviours.instances.survive_the_tide;
 
+import com.mojang.datafixers.Dynamic;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.material.Material;
 import net.minecraft.util.math.BlockPos;
@@ -32,6 +33,16 @@ public class IcebergLine
 
         this.intervalX = Math.round((float)diffX / (float)count);
         this.intervalZ = Math.round((float)diffZ / (float)count);
+    }
+
+    public static <T> IcebergLine parse(Dynamic<T> root)
+    {
+        final BlockPos posA = root.get("posA").map(BlockPos::deserialize).orElse(BlockPos.ZERO);
+        final BlockPos posB = root.get("posB").map(BlockPos::deserialize).orElse(BlockPos.ZERO);
+
+        final int distanceBetweenEach = root.get("distanceBetweenEach").asInt(10);
+
+        return new IcebergLine(posA, posB, distanceBetweenEach);
     }
 
     public void generate(World world, int waterLevel) {

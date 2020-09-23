@@ -90,9 +90,6 @@ public class MinigameManager implements IMinigameManager
         INSTANCE = new MinigameManager(server);
         MinecraftForge.EVENT_BUS.register(INSTANCE);
 
-        // TODO: duplicate registry from config
-        // INSTANCE.register(new SurviveTheTideMinigameDefinition());
-
         for (MinigameConfig config : MinigameConfigs.getConfigs()) {
             INSTANCE.register(new MinigameDefinitionGeneric(config));
         }
@@ -226,10 +223,12 @@ public class MinigameManager implements IMinigameManager
             return new ActionResult<>(ActionResultType.FAIL, new TranslationTextComponent(TropicraftLangKeys.COMMAND_NOT_ENOUGH_PLAYERS, this.polling.getMinimumParticipantCount()));
         }*/
 
-        ActionResult<ITextComponent> canStart = this.polling.canStartMinigame(server);
+        for (final IMinigameBehavior behavior : this.polling.getAllBehaviours()) {
+            ActionResult<ITextComponent> canStart = behavior.canStartMinigame(this.polling, server);
 
-        if (canStart.getType() == ActionResultType.FAIL) {
-            return canStart;
+            if (canStart.getType() == ActionResultType.FAIL) {
+                return canStart;
+            }
         }
 
         this.currentInstance = new MinigameInstance(this.polling, server);
@@ -396,6 +395,7 @@ public class MinigameManager implements IMinigameManager
         if (event.phase == TickEvent.Phase.END) {
             if (this.currentInstance != null && event.world.getDimension().getType() == this.currentInstance.getDefinition().getDimension()) {
                 getBehaviours().forEach((b) -> b.worldUpdate(this.currentInstance, event.world));
+                this.currentInstance.update();
             }
         }
     }
