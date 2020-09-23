@@ -27,7 +27,7 @@ public class LoadMapMinigameBehaviour implements IMinigameBehavior {
 
 	@Override
 	public void onConstruct(IMinigameInstance minigame, MinecraftServer server) {
-		ResourceLocation path = new ResourceLocation(loadFrom.getNamespace(), "maps/" + loadFrom.getPath());
+		ResourceLocation path = new ResourceLocation(loadFrom.getNamespace(), "maps/" + loadFrom.getPath() + ".zip");
 		try (IResource resource = server.getResourceManager().getResource(path)) {
 			try (MapExportReader reader = MapExportReader.open(resource.getInputStream())) {
 				MapMetadata metadata = reader.loadInto(server, minigame.getDimension());

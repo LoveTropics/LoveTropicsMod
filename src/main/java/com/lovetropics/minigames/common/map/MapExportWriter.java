@@ -43,7 +43,7 @@ public final class MapExportWriter implements Closeable {
 	}
 
 	public static Path pathFor(ResourceLocation id) {
-		return Paths.get("export", id.getNamespace(), "maps", id.getPath());
+		return Paths.get("export", id.getNamespace(), "maps", id.getPath() + ".zip");
 	}
 
 	public void writeMetadata(MapMetadata metadata) throws IOException {
