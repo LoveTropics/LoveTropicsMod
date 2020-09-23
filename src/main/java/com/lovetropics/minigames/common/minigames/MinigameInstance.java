@@ -79,15 +79,20 @@ public class MinigameInstance implements IMinigameInstance
     }
 
     private void onAddPlayerToRole(ServerPlayerEntity player, PlayerRole role) {
+        boolean hadRole = false;
+
         // remove the player from any other roles
         for (PlayerRole otherRole : PlayerRole.ROLES) {
             if (otherRole != role) {
                 roles.get(role).remove(player);
+                hadRole = true;
             }
         }
 
-        for (IMinigameBehavior behavior : definition.getAllBehaviours()) {
-            behavior.onPlayerJoin(this, player, role);
+        if (hadRole) {
+            for (IMinigameBehavior behavior : definition.getAllBehaviours()) {
+                behavior.onPlayerChangeRole(this, player, role);
+            }
         }
     }
 
@@ -100,6 +105,10 @@ public class MinigameInstance implements IMinigameInstance
     public void addPlayer(ServerPlayerEntity player, PlayerRole role) {
         if (!allPlayers.contains(player)) {
             allPlayers.add(player);
+
+            for (IMinigameBehavior behavior : definition.getAllBehaviours()) {
+                behavior.onPlayerJoin(this, player, role);
+            }
         }
 
         roles.get(role).add(player);
@@ -134,7 +143,7 @@ public class MinigameInstance implements IMinigameInstance
     }
 
     @Override
-    public PlayerSet getPlayersForRule(PlayerRole role) {
+    public PlayerSet getPlayersWithRole(PlayerRole role) {
         return roles.get(role);
     }
 

@@ -21,6 +21,15 @@ public class PositionPlayersMinigameBehavior implements IMinigameBehavior {
 
 	@Override
 	public void onPlayerJoin(IMinigameInstance minigame, ServerPlayerEntity player, PlayerRole role) {
+		setupPlayerAsRole(minigame, player, role);
+	}
+
+	@Override
+	public void onPlayerChangeRole(IMinigameInstance minigame, ServerPlayerEntity player, PlayerRole role) {
+		setupPlayerAsRole(minigame, player, role);
+	}
+
+	private void setupPlayerAsRole(IMinigameInstance minigame, ServerPlayerEntity player, PlayerRole role) {
 		if (role == PlayerRole.PARTICIPANT) {
 			if (participantSpawns.length != minigame.getDefinition().getMaximumParticipantCount()) {
 				throw new IllegalStateException("The participant positions length doesn't match the" +

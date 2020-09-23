@@ -54,20 +54,20 @@ public interface IMinigameInstance
     /**
      * @return The list of players within this minigame instance that belong to the given role
      */
-    PlayerSet getPlayersForRule(PlayerRole role);
+    PlayerSet getPlayersWithRole(PlayerRole role);
 
     /**
      * @return The list of active participants that are playing within the minigame instance.
      */
     default PlayerSet getParticipants() {
-        return getPlayersForRule(PlayerRole.PARTICIPANT);
+        return getPlayersWithRole(PlayerRole.PARTICIPANT);
     }
 
     /**
      * @return The list of spectators that are observing the minigame instance.
      */
     default PlayerSet getSpectators() {
-        return getPlayersForRule(PlayerRole.SPECTATOR);
+        return getPlayersWithRole(PlayerRole.SPECTATOR);
     }
 
     /**

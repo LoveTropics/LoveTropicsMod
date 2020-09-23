@@ -120,13 +120,23 @@ public interface IMinigameBehavior
 	default void onPlayerAttackEntity(final IMinigameInstance minigame, AttackEntityEvent event) {}
 
 	/**
-	 * Called when a player is added to this minigame instance. This will be called when the player changes role
+	 * Called when a player is added to this minigame instance.
 	 *
 	 * @param minigame The current minigame instance.
 	 * @param player   The player that has been added.
 	 * @param role     The role that the player has been added to
 	 */
 	default void onPlayerJoin(final IMinigameInstance minigame, ServerPlayerEntity player, PlayerRole role) {
+	}
+
+	/**
+	 * Called when a player when the player changes role
+	 *
+	 * @param minigame The current minigame instance.
+	 * @param player   The player that has been added.
+	 * @param role     The role that the player has been added to
+	 */
+	default void onPlayerChangeRole(final IMinigameInstance minigame, ServerPlayerEntity player, PlayerRole role) {
 	}
 
 	/**

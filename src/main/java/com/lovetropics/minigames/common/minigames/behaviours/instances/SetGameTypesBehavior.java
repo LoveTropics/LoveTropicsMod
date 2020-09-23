@@ -17,6 +17,15 @@ public class SetGameTypesBehavior implements IMinigameBehavior {
 
 	@Override
 	public void onPlayerJoin(IMinigameInstance minigame, ServerPlayerEntity player, PlayerRole role) {
+		applyToPlayer(player, role);
+	}
+
+	@Override
+	public void onPlayerChangeRole(IMinigameInstance minigame, ServerPlayerEntity player, PlayerRole role) {
+		applyToPlayer(player, role);
+	}
+
+	private void applyToPlayer(ServerPlayerEntity player, PlayerRole role) {
 		player.setGameType(role == PlayerRole.PARTICIPANT ? participantGameType : spectatorGameType);
 	}
 }

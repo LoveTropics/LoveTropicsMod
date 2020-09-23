@@ -239,9 +239,9 @@ public class MinigameManager implements IMinigameManager
         this.currentInstance = new MinigameInstance(this.polling, world);
 
         int playersAvailable = Math.min(this.registeredForMinigame.size(), this.polling.getMaximumParticipantCount());
-        List<UUID> chosenPlayers = Util.extractRandomElements(new Random(), this.registeredForMinigame, playersAvailable);
+        List<UUID> chosenParticipants = Util.extractRandomElements(new Random(), this.registeredForMinigame, playersAvailable);
 
-        for (UUID playerUUID : chosenPlayers) {
+        for (UUID playerUUID : chosenParticipants) {
             ServerPlayerEntity player = this.server.getPlayerList().getPlayerByUUID(playerUUID);
             if (player != null) {
                 this.currentInstance.addPlayer(player, PlayerRole.PARTICIPANT);
