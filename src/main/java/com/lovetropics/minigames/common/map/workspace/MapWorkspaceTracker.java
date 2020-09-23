@@ -37,7 +37,7 @@ public final class MapWorkspaceTracker {
 
 		if (workspace != null) {
 			SetWorkspaceMessage message = new SetWorkspaceMessage(workspace.getRegions());
-			LTNetwork.CHANNEL.send(PacketDistributor.DIMENSION.with(() -> dimension), message);
+			LTNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), message);
 		}
 	}
 }
