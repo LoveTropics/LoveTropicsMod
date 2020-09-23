@@ -7,33 +7,43 @@ import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.ListNBT;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.world.World;
 import net.minecraft.world.dimension.DimensionType;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraft.world.storage.WorldSavedData;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.util.Constants.NBT;
+import net.minecraftforge.event.world.WorldEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
 
 import javax.annotation.Nullable;
 import java.util.Map;
 
+@Mod.EventBusSubscriber(modid = Constants.MODID)
 public final class MapWorkspaceManager extends WorldSavedData {
 	private static final String ID = Constants.MODID + ":map_workspace_manager";
 
+	private final MinecraftServer server;
 	private final Map<String, MapWorkspace> workspaces = new Object2ObjectOpenHashMap<>();
 
-	private MapWorkspaceManager() {
+	private MapWorkspaceManager(MinecraftServer server) {
 		super(ID);
+		this.server = server;
 	}
 
 	public static MapWorkspaceManager get(MinecraftServer server) {
 		ServerWorld overworld = server.getWorld(DimensionType.OVERWORLD);
-		return overworld.getSavedData().getOrCreate(MapWorkspaceManager::new, ID);
+		return overworld.getSavedData().getOrCreate(() -> new MapWorkspaceManager(server), ID);
 	}
 
 	public MapWorkspace openWorkspace(String id) {
 		DimensionType dimension = DimensionManager.registerOrGetDimension(Util.resource(id), MapWorkspaceDimension.MOD_DIMENSION.get(), null, true);
 
-		MapWorkspace workspace = new MapWorkspace(id, dimension);
+		ServerWorld overworld = server.getWorld(DimensionType.OVERWORLD);
+		MapWorldSettings settings = MapWorldSettings.createFrom(overworld.getWorldInfo());
+
+		MapWorkspace workspace = new MapWorkspace(id, dimension, settings);
 		this.workspaces.putIfAbsent(id, workspace);
 
 		return workspace;
@@ -104,5 +114,24 @@ public final class MapWorkspaceManager extends WorldSavedData {
 	@Override
 	public boolean isDirty() {
 		return true;
+	}
+
+	@SubscribeEvent
+	public static void onWorldLoad(WorldEvent.Load event) {
+		World world = event.getWorld().getWorld();
+		if (world.isRemote) {
+			return;
+		}
+
+		MinecraftServer server = world.getServer();
+		MapWorkspaceManager workspaceManager = get(server);
+
+		MapWorkspace workspace = workspaceManager.getWorkspace(world.getDimension().getType());
+		if (workspace == null) {
+			return;
+		}
+
+		World overworld = server.getWorld(DimensionType.OVERWORLD);
+		world.worldInfo = new MapWorldInfo(overworld.getWorldInfo(), workspace.getWorldSettings());
 	}
 }

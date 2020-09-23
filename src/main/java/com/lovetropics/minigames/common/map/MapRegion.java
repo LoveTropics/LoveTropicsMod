@@ -76,8 +76,8 @@ public final class MapRegion implements Iterable<BlockPos> {
 	}
 
 	public static MapRegion read(CompoundNBT root) {
-		BlockPos min = readBlockPos(root);
-		BlockPos max = readBlockPos(root);
+		BlockPos min = readBlockPos(root.getCompound("min"));
+		BlockPos max = readBlockPos(root.getCompound("max"));
 		return new MapRegion(min, max);
 	}
 
