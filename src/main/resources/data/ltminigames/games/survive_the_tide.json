@@ -76,7 +76,6 @@
         "280": "ltminigames.minigame.survive_the_tide_intro3",
         "420": "ltminigames.minigame.survive_the_tide_intro4",
         "560": "ltminigames.minigame.survive_the_tide_intro5",
-        "600": "ltminigames.minigame.survive_the_tide_pvp_disabled",
         "2400": "ltminigames.minigame.survive_the_tide_pvp_enabled"
       }
     },

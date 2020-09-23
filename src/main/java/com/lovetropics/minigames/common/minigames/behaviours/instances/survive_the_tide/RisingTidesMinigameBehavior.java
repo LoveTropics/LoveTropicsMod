@@ -103,7 +103,7 @@ public class RisingTidesMinigameBehavior implements IMinigameBehavior
 
 	private int calculateWaterChangeInterval(int targetLevel, int prevLevel, int phaseLength) {
 		int waterLevelDiff = prevLevel - targetLevel;
-		return phaseLength / Math.max(1, waterLevelDiff);
+		return phaseLength / Math.max(1, Math.abs(waterLevelDiff));
 	}
 
 	private void processWaterLevel(final IMinigameInstance minigame, final PhasesMinigameBehavior.MinigamePhase phase, final int prevWaterLevel) {
