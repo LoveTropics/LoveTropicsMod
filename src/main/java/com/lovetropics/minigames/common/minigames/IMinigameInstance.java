@@ -84,4 +84,11 @@ public interface IMinigameInstance
     default DimensionType getDimension() {
     	return getDefinition().getDimension();
     }
+
+    default void update() {}
+
+    /**
+     * @return The ticks since minigame start
+     */
+    long ticks();
 }

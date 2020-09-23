@@ -3,7 +3,6 @@ package com.lovetropics.minigames.common.command.minigames;
 import static net.minecraft.command.Commands.literal;
 
 import com.lovetropics.minigames.common.dimension.DimensionUtils;
-import com.lovetropics.minigames.common.minigames.definitions.survive_the_tide.SurviveTheTideMinigameDefinition;
 import com.mojang.brigadier.CommandDispatcher;
 
 import net.minecraft.command.CommandSource;

@@ -38,6 +38,7 @@ public class MinigameInstance implements IMinigameInstance
     private CommandSource commandSource;
 
     private final Map<String, Consumer<CommandSource>> controlCommands = new Object2ObjectOpenHashMap<>();
+    private long ticks;
 
     public MinigameInstance(IMinigameDefinition definition, MinecraftServer server) {
         this.definition = definition;
@@ -169,5 +170,16 @@ public class MinigameInstance implements IMinigameInstance
     @Override
     public ServerWorld getWorld() {
         return server.getWorld(definition.getDimension());
+    }
+
+    @Override
+    public void update() {
+        ticks++;
+    }
+
+    @Override
+    public long ticks()
+    {
+        return ticks;
     }
 }

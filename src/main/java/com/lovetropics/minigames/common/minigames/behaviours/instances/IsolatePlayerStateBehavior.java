@@ -5,6 +5,7 @@ import com.lovetropics.minigames.common.minigames.IMinigameInstance;
 import com.lovetropics.minigames.common.minigames.MinigamePlayerCache;
 import com.lovetropics.minigames.common.minigames.PlayerRole;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
+import com.mojang.datafixers.Dynamic;
 import net.minecraft.entity.player.ServerPlayerEntity;
 
 import java.util.Map;
@@ -15,6 +16,10 @@ public final class IsolatePlayerStateBehavior implements IMinigameBehavior {
 	 * Cache used to know what state the player was in before teleporting into a minigame.
 	 */
 	private final Map<UUID, MinigamePlayerCache> playerCache = Maps.newHashMap();
+
+	public static <T> IsolatePlayerStateBehavior parse(Dynamic<T> root) {
+		return new IsolatePlayerStateBehavior();
+	}
 
 	@Override
 	public void onPlayerJoin(IMinigameInstance minigame, ServerPlayerEntity player, PlayerRole role) {
