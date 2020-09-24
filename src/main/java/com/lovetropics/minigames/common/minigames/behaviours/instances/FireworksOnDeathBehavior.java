@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.common.minigames.behaviours.instances;
 
-import com.lovetropics.minigames.common.donations.FireworkUtil;
+import com.lovetropics.lib.entity.FireworkUtil;
 import com.lovetropics.minigames.common.minigames.IMinigameInstance;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
 import com.mojang.datafixers.Dynamic;
