@@ -7,21 +7,14 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import com.lovetropics.minigames.LoveTropics;
-import com.lovetropics.minigames.common.block.tileentity.DonationTileEntity;
 import com.tterrag.registrate.Registrate;
 import com.tterrag.registrate.util.entry.BlockEntry;
-import com.tterrag.registrate.util.entry.TileEntityEntry;
 
 import net.minecraft.block.Block;
-import net.minecraft.block.Blocks;
 import net.minecraft.block.LadderBlock;
 import net.minecraft.block.material.Material;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.state.properties.BlockStateProperties;
-import net.minecraft.tileentity.TileEntityType;
-import net.minecraft.util.Direction;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.shapes.VoxelShapes;
 import net.minecraftforge.client.model.generators.ConfiguredModel;
 import net.minecraftforge.client.model.generators.ModelBuilder.Perspective;
 
@@ -67,15 +60,6 @@ public class LoveTropicsBlocks {
                             .build()
                     .register(),
                     (f1, f2) -> { throw new IllegalStateException(); }, () -> new EnumMap<>(TrashType.class)));
-    
-    public static final BlockEntry<DonationBlock> DONATION = REGISTRATE.block("donation", DonationBlock::new)
-            .properties(p -> Block.Properties.from(Blocks.BEDROCK).noDrops())
-            .simpleTileEntity(DonationTileEntity::new)
-            .simpleItem()
-            .register();
-    
-    public static final TileEntityEntry<DonationTileEntity> DONATION_TILE = TileEntityEntry.cast(REGISTRATE.get("donation", TileEntityType.class));
-
     
     public static void init() {}
 }

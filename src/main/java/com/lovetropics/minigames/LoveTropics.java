@@ -1,8 +1,11 @@
 package com.lovetropics.minigames;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import com.lovetropics.minigames.client.data.TropicraftLangKeys;
 import com.lovetropics.minigames.common.block.LoveTropicsBlocks;
-import com.lovetropics.minigames.common.command.CommandDonation;
+import com.lovetropics.minigames.common.block.TrashType;
 import com.lovetropics.minigames.common.command.CommandMap;
 import com.lovetropics.minigames.common.command.CommandReloadConfig;
 import com.lovetropics.minigames.common.command.minigames.CommandAddConfigIceberg;
@@ -21,8 +24,8 @@ import com.lovetropics.minigames.common.config.ConfigLT;
 import com.lovetropics.minigames.common.dimension.DimensionUtils;
 import com.lovetropics.minigames.common.dimension.biome.TropicraftBiomes;
 import com.lovetropics.minigames.common.item.MinigameItems;
-import com.lovetropics.minigames.common.map.workspace.MapWorkspaceDimension;
 import com.lovetropics.minigames.common.map.VoidChunkGenerator;
+import com.lovetropics.minigames.common.map.workspace.MapWorkspaceDimension;
 import com.lovetropics.minigames.common.minigames.MinigameManager;
 import com.lovetropics.minigames.common.minigames.behaviours.MinigameBehaviorTypes;
 import com.lovetropics.minigames.common.minigames.config.MinigameConfigs;
@@ -31,6 +34,7 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.tterrag.registrate.Registrate;
 import com.tterrag.registrate.providers.ProviderType;
 import com.tterrag.registrate.util.NonNullLazyValue;
+
 import net.minecraft.command.CommandSource;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
@@ -52,8 +56,6 @@ import net.minecraftforge.fml.event.server.FMLServerAboutToStartEvent;
 import net.minecraftforge.fml.event.server.FMLServerStartingEvent;
 import net.minecraftforge.fml.event.server.FMLServerStoppingEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 @Mod(Constants.MODID)
 public class LoveTropics {
@@ -63,7 +65,7 @@ public class LoveTropics {
     public static final ItemGroup LOVE_TROPICS_ITEM_GROUP = (new ItemGroup("love_tropics") {
         @OnlyIn(Dist.CLIENT)
         public ItemStack createIcon() {
-            return new ItemStack(LoveTropicsBlocks.DONATION.get());
+            return new ItemStack(LoveTropicsBlocks.TRASH.get(TrashType.COLA).get());
         }
     });
 
@@ -135,7 +137,6 @@ public class LoveTropics {
         CommandUnregisterMinigame.register(dispatcher);
         CommandStopPollingMinigame.register(dispatcher);
         CommandReloadConfig.register(dispatcher);
-        CommandDonation.register(dispatcher);
         CommandAddConfigIceberg.register(dispatcher);
         CommandResetIsland.register(dispatcher);
         CommandSaveIsland.register(dispatcher);
@@ -181,12 +182,6 @@ public class LoveTropics {
             prov.add(TropicraftLangKeys.COMMAND_FINISHED_MINIGAME, "The minigame %s has finished. If you were inside the minigame, you have been teleported back to your original position.");
             prov.add(TropicraftLangKeys.COMMAND_MINIGAME_STOPPED_POLLING, "An operator has stopped polling the minigame %s.");
             prov.add(TropicraftLangKeys.COMMAND_STOP_POLL, "You have successfully stopped the poll.");
-
-            prov.add(TropicraftLangKeys.COMMAND_RESET_DONATION, "Resetting donation data.");
-            prov.add(TropicraftLangKeys.COMMAND_RESET_LAST_DONATION, "Reset last seen donation ID to %d.");
-            prov.add(TropicraftLangKeys.COMMAND_SIMULATE_DONATION, "Simulating donation for name %s and amount %s");
-
-            prov.add(TropicraftLangKeys.DONATION, "%s donated %s!");
 
             prov.add(TropicraftLangKeys.SURVIVE_THE_TIDE_FINISH1, "Through the rising sea levels, the volatile and chaotic weather, and the struggle to survive, one player remains: %s.");
             prov.add(TropicraftLangKeys.SURVIVE_THE_TIDE_FINISH2, "\nThose who have fallen have been swept away by the encroaching tides that engulf countless landmasses in this dire future.");
