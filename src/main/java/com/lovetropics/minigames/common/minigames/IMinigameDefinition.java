@@ -1,18 +1,13 @@
 package com.lovetropics.minigames.common.minigames;
 
-import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
-import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehaviorType;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.ActionResultType;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.world.dimension.DimensionType;
-import net.minecraftforge.registries.IForgeRegistryEntry;
-
 import java.util.Collection;
 import java.util.Optional;
+
+import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
+import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehaviorType;
+
+import net.minecraft.util.ResourceLocation;
+import net.minecraft.world.dimension.DimensionType;
 
 /**
  * Used as a discriminant for a registered minigame. Defines the logic of the
@@ -20,7 +15,7 @@ import java.util.Optional;
  * ruleset for the minigame such as maximum and minimum participants, game types
  * for each player type, dimension the minigame takes place in, etc.
  */
-public interface IMinigameDefinition extends IForgeRegistryEntry<IMinigameDefinition>
+public interface IMinigameDefinition
 {
     Collection<IMinigameBehavior> getAllBehaviours();
     

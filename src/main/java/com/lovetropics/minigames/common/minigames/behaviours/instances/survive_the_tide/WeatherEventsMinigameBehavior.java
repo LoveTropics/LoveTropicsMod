@@ -4,28 +4,36 @@ import com.lovetropics.minigames.common.minigames.IMinigameInstance;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
 import com.lovetropics.minigames.common.minigames.weather.IMinigameWeatherInstance;
 import com.lovetropics.minigames.common.minigames.weather.MinigameWeatherConfig;
-
 import com.mojang.datafixers.Dynamic;
+
 import net.minecraft.world.World;
 
 public class WeatherEventsMinigameBehavior implements IMinigameBehavior
 {
-	private IMinigameWeatherInstance<?> minigameWeatherInstance;
+	private IMinigameWeatherInstance minigameWeatherInstance;
 	private MinigameWeatherConfig config;
 
 	public WeatherEventsMinigameBehavior(final MinigameWeatherConfig config) {
-		this.minigameWeatherInstance = new IMinigameWeatherInstance.Noop<>(); // TODO new MinigameWeatherInstanceServer();
+		this.minigameWeatherInstance = new IMinigameWeatherInstance.Noop(); // TODO new MinigameWeatherInstanceServer();
 		this.config = config;
 	}
 
 	public static <T> WeatherEventsMinigameBehavior parse(Dynamic<T> root) {
 		return new WeatherEventsMinigameBehavior(MinigameWeatherConfig.parse(root));
 	}
+	
+	public IMinigameWeatherInstance getMinigameWeatherInstance() {
+		return minigameWeatherInstance;
+	}
+	
+	public MinigameWeatherConfig getConfig() {
+		return config;
+	}
 
 	@Override
 	public void worldUpdate(final IMinigameInstance minigame, World world) {
 		if (world.getDimension().getType() == minigame.getDefinition().getDimension()) {
-			// TODO: minigameWeatherInstance.tick(definition);
+			minigameWeatherInstance.tick(minigame);
 		}
 	}
 

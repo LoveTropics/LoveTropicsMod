@@ -1,13 +1,14 @@
 package com.lovetropics.minigames.common.minigames.weather;
 
-import com.lovetropics.minigames.common.minigames.IMinigameDefinition;
+import com.lovetropics.minigames.common.minigames.IMinigameInstance;
+
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraftforge.common.util.INBTSerializable;
 
-public interface IMinigameWeatherInstance<T extends IMinigameDefinition> extends INBTSerializable<CompoundNBT> {
+public interface IMinigameWeatherInstance extends INBTSerializable<CompoundNBT> {
 
-	void tick(T minigameDefinition);
+	void tick(IMinigameInstance minigameDefinition);
 
 	void tickPlayer(PlayerEntity player);
 
@@ -31,7 +32,7 @@ public interface IMinigameWeatherInstance<T extends IMinigameDefinition> extends
 
 	float getWindSpeed();
 	
-	class Noop<T extends IMinigameDefinition> implements IMinigameWeatherInstance<T> {
+	class Noop implements IMinigameWeatherInstance {
 
 		@Override
 		public CompoundNBT serializeNBT() {
@@ -42,7 +43,7 @@ public interface IMinigameWeatherInstance<T extends IMinigameDefinition> extends
 		public void deserializeNBT(CompoundNBT nbt) {}
 
 		@Override
-		public void tick(T minigameDefinition) {}
+		public void tick(IMinigameInstance minigameDefinition) {}
 
 		@Override
 		public void tickPlayer(PlayerEntity player) {}

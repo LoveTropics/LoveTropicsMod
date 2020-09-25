@@ -1,16 +1,16 @@
 package com.lovetropics.minigames.common.minigames;
 
-import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
-import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehaviorType;
-import com.lovetropics.minigames.common.minigames.config.MinigameConfig;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.world.dimension.DimensionType;
-import net.minecraftforge.registries.ForgeRegistryEntry;
-
 import java.util.Collection;
 import java.util.Optional;
 
-public class MinigameDefinitionGeneric extends ForgeRegistryEntry<IMinigameDefinition> implements IMinigameDefinition
+import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
+import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehaviorType;
+import com.lovetropics.minigames.common.minigames.config.MinigameConfig;
+
+import net.minecraft.util.ResourceLocation;
+import net.minecraft.world.dimension.DimensionType;
+
+public class MinigameDefinitionGeneric implements IMinigameDefinition
 {
 	private final MinigameConfig config;
 

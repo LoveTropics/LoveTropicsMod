@@ -7,7 +7,7 @@ public interface IMinigameBehaviorType<T extends IMinigameBehavior> extends IFor
 	
 	<D> T create(Dynamic<D> data);
 
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	static Class<IMinigameBehaviorType<?>> wildcardType() {
 		return (Class<IMinigameBehaviorType<?>>) (Class) IMinigameBehaviorType.class;
 	}
