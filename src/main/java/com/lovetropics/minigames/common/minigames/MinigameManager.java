@@ -10,15 +10,16 @@ import com.lovetropics.minigames.common.minigames.config.MinigameConfig;
 import com.lovetropics.minigames.common.minigames.config.MinigameConfigs;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.ListNBT;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.ActionResultType;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.text.ChatType;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.TextFormatting;
-import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.util.text.*;
+import net.minecraft.world.IWorld;
+import net.minecraft.world.chunk.ChunkStatus;
+import net.minecraft.world.dimension.DimensionType;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
@@ -26,14 +27,10 @@ import net.minecraftforge.event.entity.living.LivingEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.player.AttackEntityEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.minecraftforge.event.world.ChunkDataEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * Standard implementation of a minigame manager. Would prefer to do something other
@@ -338,6 +335,27 @@ public class MinigameManager implements IMinigameManager
 
     private Collection<IMinigameBehavior> getBehaviours() {
         return this.currentInstance.getDefinition().getAllBehaviours();
+    }
+
+    @SubscribeEvent
+    public void onChunkLoad(ChunkDataEvent.Load event) {
+        // TODO: WE DON'T NEED THIS PAST 1.15, HACKY DATA FIXING
+        if (event.getStatus() == ChunkStatus.Type.LEVELCHUNK && this.currentInstance != null) {
+            final IWorld world = event.getWorld();
+
+            if (world != null) {
+                final DimensionType dimensionType = world.getDimension().getType();
+
+                if (dimensionType == this.currentInstance.getDimension()) {
+                    final ListNBT entities = event.getData().getList("Entities", 10);
+
+                    for(int i1 = 0; i1 < entities.size(); ++i1) {
+                        CompoundNBT entityNBT = entities.getCompound(i1);
+                        entityNBT.putInt("Dimension", dimensionType.getId());
+                    }
+                }
+            }
+        }
     }
 
     @SubscribeEvent
