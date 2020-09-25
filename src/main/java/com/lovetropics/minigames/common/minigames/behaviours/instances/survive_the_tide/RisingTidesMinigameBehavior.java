@@ -69,8 +69,12 @@ public class RisingTidesMinigameBehavior implements IMinigameBehavior
 
 	@Override
 	public void onLivingEntityUpdate(final IMinigameInstance minigame, LivingEntity entity) {
-		if (entity.getPosY() <= this.waterLevel + 1 && entity.isInWater() && entity.ticksExisted % 20 == 0) {
-			entity.attackEntityFrom(DamageSource.DROWN, 2.0F);
+		// NOTE: DO NOT REMOVE THIS CHECK, CAUSES FISH TO DIE AND SPAWN ITEMS ON DEATH
+		// FISH WILL KEEP SPAWNING, DYING AND COMPLETELY SLOW THE SERVER TO A CRAWL
+		if (!entity.canBreatheUnderwater()) {
+			if (entity.getPosY() <= this.waterLevel + 1 && entity.isInWater() && entity.ticksExisted % 20 == 0) {
+				entity.attackEntityFrom(DamageSource.DROWN, 2.0F);
+			}
 		}
 	}
 
