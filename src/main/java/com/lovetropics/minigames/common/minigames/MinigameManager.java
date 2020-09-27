@@ -155,6 +155,8 @@ public class MinigameManager implements IMinigameManager
 
         getBehaviours().forEach((b) -> b.onPostFinish(this.currentInstance));
 
+        currentInstance.getDefinition().getMapProvider().close(currentInstance);
+
         this.currentInstance = null;
     }
 
