@@ -1,8 +1,10 @@
 package com.lovetropics.minigames.common.minigames.behaviours.instances.survive_the_tide;
 
-import com.lovetropics.minigames.client.data.TropicraftLangKeys;
+import com.google.common.collect.Maps;
+import com.lovetropics.minigames.common.Util;
 import com.lovetropics.minigames.common.minigames.IMinigameInstance;
 import com.lovetropics.minigames.common.minigames.MinigameManager;
+import com.lovetropics.minigames.common.minigames.VariableTextComponent;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
 import com.mojang.datafixers.Dynamic;
 import net.minecraft.entity.effect.LightningBoltEntity;
@@ -17,20 +19,41 @@ import net.minecraft.world.gen.Heightmap;
 import net.minecraft.world.server.ServerWorld;
 
 import java.util.Iterator;
+import java.util.Map;
 import java.util.UUID;
 
 public class SurviveTheTideWinConditionBehavior implements IMinigameBehavior
 {
 	private boolean minigameEnded;
-	private int minigameEndedTimer = 0;
+	private long minigameEndedTimer = 0;
 	private UUID winningPlayer;
 	private ITextComponent winningPlayerName;
+	private final long gameFinishTickDelay;
+	private final Map<Long, ITextComponent> scheduledGameFinishMessages;
+	private final String downToTwoTranslationKey;
+	private final boolean spawnLightningBoltsOnFinish;
+	private final int lightningBoltSpawnTickRate;
 
-	public SurviveTheTideWinConditionBehavior() {
+	public SurviveTheTideWinConditionBehavior(final long gameFinishTickDelay, final Map<Long, ITextComponent> scheduledGameFinishMessages,
+			final String downToTwoTranslationKey, final boolean spawnLightningBoltsOnFinish, final int lightningBoltSpawnTickRate) {
+		this.gameFinishTickDelay = gameFinishTickDelay;
+		this.scheduledGameFinishMessages = scheduledGameFinishMessages;
+		this.downToTwoTranslationKey = downToTwoTranslationKey;
+		this.spawnLightningBoltsOnFinish = spawnLightningBoltsOnFinish;
+		this.lightningBoltSpawnTickRate = lightningBoltSpawnTickRate;
 	}
 
 	public static <T> SurviveTheTideWinConditionBehavior parse(Dynamic<T> root) {
-		return new SurviveTheTideWinConditionBehavior();
+		final long gameFinishTickDelay = root.get("game_finish_tick_delay").asLong(0);
+		final Map<Long, ITextComponent> scheduledShutdownMessages = root.get("scheduled_game_finish_messages").asMap(
+				key -> Long.parseLong(key.asString("0")),
+				Util::getText
+		);
+		final String downToTwoTranslationKey = root.get("down_to_two_translation_key").asString("");
+		final boolean spawnLightningBoltsOnFinish = root.get("spawn_lightning_bolts_on_finish").asBoolean(false);
+		final int lightningBoltSpawnTickRate = root.get("lightning_bolt_spawn_tick_rate").asInt(60);
+
+		return new SurviveTheTideWinConditionBehavior(gameFinishTickDelay, scheduledShutdownMessages, downToTwoTranslationKey, spawnLightningBoltsOnFinish, lightningBoltSpawnTickRate);
 	}
 
 	@Override
@@ -52,7 +75,7 @@ public class SurviveTheTideWinConditionBehavior implements IMinigameBehavior
 				ITextComponent p1text = p1.getDisplayName().deepCopy().applyTextStyle(TextFormatting.AQUA);
 				ITextComponent p2text = p2.getDisplayName().deepCopy().applyTextStyle(TextFormatting.AQUA);
 
-				minigame.getPlayers().sendMessage(new TranslationTextComponent(TropicraftLangKeys.SURVIVE_THE_TIDE_DOWN_TO_TWO, p1text, p2text).applyTextStyle(TextFormatting.GOLD));
+				minigame.getPlayers().sendMessage(new TranslationTextComponent(downToTwoTranslationKey, p1text, p2text).applyTextStyle(TextFormatting.GOLD));
 			}
 		}
 
@@ -73,10 +96,13 @@ public class SurviveTheTideWinConditionBehavior implements IMinigameBehavior
 
 	private void checkForGameEndCondition(final IMinigameInstance minigame, final World world) {
 		if (this.minigameEnded) {
-			spawnLightningBoltsEverywhere(world);
-			sendFinishMessages(minigame);
+			if (spawnLightningBoltsOnFinish) {
+				spawnLightningBoltsEverywhere(world);
+			}
 
-			if (this.minigameEndedTimer == 20 * 38) {
+			sendGameFinishMessages(minigame);
+
+			if (this.minigameEndedTimer >= gameFinishTickDelay) {
 				MinigameManager.getInstance().finishCurrentMinigame();
 			}
 
@@ -85,7 +111,7 @@ public class SurviveTheTideWinConditionBehavior implements IMinigameBehavior
 	}
 
 	private void spawnLightningBoltsEverywhere(final World world) {
-		if (this.minigameEndedTimer % 60 == 0) {
+		if (this.minigameEndedTimer % lightningBoltSpawnTickRate == 0) {
 			ServerPlayerEntity winning = world.getServer().getPlayerList().getPlayerByUUID(this.winningPlayer);
 
 			if (winning != null) {
@@ -102,17 +128,13 @@ public class SurviveTheTideWinConditionBehavior implements IMinigameBehavior
 		}
 	}
 
-	private void sendFinishMessages(final IMinigameInstance minigame) {
-		if (this.minigameEndedTimer == 0) {
-			minigame.getPlayers().sendMessage(new TranslationTextComponent(TropicraftLangKeys.SURVIVE_THE_TIDE_FINISH1, this.winningPlayerName).applyTextStyle(TextFormatting.GRAY));
-		} else if (this.minigameEndedTimer == 20 * 7){
-			minigame.getPlayers().sendMessage(new TranslationTextComponent(TropicraftLangKeys.SURVIVE_THE_TIDE_FINISH2, this.winningPlayerName).applyTextStyle(TextFormatting.GRAY));
-		} else if (this.minigameEndedTimer == 20 * 14){
-			minigame.getPlayers().sendMessage(new TranslationTextComponent(TropicraftLangKeys.SURVIVE_THE_TIDE_FINISH3, this.winningPlayerName).applyTextStyle(TextFormatting.GRAY));
-		} else if (this.minigameEndedTimer == 20 * 21){
-			minigame.getPlayers().sendMessage(new TranslationTextComponent(TropicraftLangKeys.SURVIVE_THE_TIDE_FINISH4, this.winningPlayerName).applyTextStyle(TextFormatting.GRAY));
-		} else if (this.minigameEndedTimer == 20 * 28) {
-			minigame.getPlayers().sendMessage(new TranslationTextComponent(TropicraftLangKeys.MINIGAME_FINISH).applyTextStyle(TextFormatting.GOLD));
+	private void sendGameFinishMessages(final IMinigameInstance minigame) {
+		if (scheduledGameFinishMessages.containsKey(minigameEndedTimer)) {
+			final ITextComponent message = scheduledGameFinishMessages.get(minigameEndedTimer);
+			final Map<String, String> variables = Maps.newHashMap();
+
+			variables.put("#winning_player", winningPlayerName.getFormattedText());
+			minigame.getPlayers().sendMessage(new VariableTextComponent(message, variables));
 		}
 	}
 }

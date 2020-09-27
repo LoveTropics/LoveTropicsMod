@@ -1,7 +1,9 @@
 package com.lovetropics.minigames.common;
 
 import com.google.common.collect.Lists;
+import com.google.gson.JsonElement;
 import com.lovetropics.minigames.Constants;
+import com.mojang.datafixers.Dynamic;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.material.Material;
@@ -12,15 +14,14 @@ import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.world.World;
 import net.minecraft.world.gen.Heightmap;
 import org.apache.commons.lang3.StringUtils;
 
 import java.lang.reflect.Field;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Locale;
-import java.util.Random;
+import java.util.*;
 import java.util.function.BiPredicate;
 import java.util.stream.Collectors;
 
@@ -36,6 +37,20 @@ public class Util {
 
         return false;
     }*/
+
+    public static <T> ITextComponent getText(Dynamic<T> root, String textKey) {
+        final Optional<T> text = root.getElement(textKey);
+
+        if (text.isPresent()) {
+            return ITextComponent.Serializer.fromJson((JsonElement) text.get());
+        }
+
+        return new StringTextComponent("");
+    }
+
+    public static <T> ITextComponent getText(Dynamic<T> root) {
+        return ITextComponent.Serializer.fromJson((JsonElement) root.getValue());
+    }
 
     public static boolean tryMoveToEntityLivingLongDist(MobEntity entSource, Entity entityTo, double moveSpeedAmp) {
         return tryMoveToXYZLongDist(entSource, entityTo.getPosition(), moveSpeedAmp);

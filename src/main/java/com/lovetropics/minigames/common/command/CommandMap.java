@@ -3,10 +3,7 @@ package com.lovetropics.minigames.common.command;
 import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.common.dimension.DimensionUtils;
-import com.lovetropics.minigames.common.map.MapExportWriter;
-import com.lovetropics.minigames.common.map.MapMetadata;
-import com.lovetropics.minigames.common.map.MapRegion;
-import com.lovetropics.minigames.common.map.MapRegions;
+import com.lovetropics.minigames.common.map.*;
 import com.lovetropics.minigames.common.map.workspace.MapWorkspace;
 import com.lovetropics.minigames.common.map.workspace.MapWorkspaceManager;
 import com.mojang.brigadier.Command;
@@ -18,6 +15,7 @@ import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.arguments.BlockPosArgument;
+import net.minecraft.command.arguments.ResourceLocationArgument;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ResourceLocation;
@@ -34,6 +32,7 @@ import net.minecraft.world.server.ServerWorld;
 import net.minecraft.world.storage.SessionLockException;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.concurrent.CompletableFuture;
@@ -65,10 +64,17 @@ public final class CommandMap {
 					.then(MapWorkspaceArgument.argument("id")
 					.executes(CommandMap::joinMap)
 				))
+				.then(literal("leave").executes(CommandMap::leaveMap)
+				)
 				.then(literal("export")
 					.then(MapWorkspaceArgument.argument("id")
 					.executes(CommandMap::exportMap)
 				))
+				.then(literal("import")
+					.then(argument("location", ResourceLocationArgument.resourceLocation())
+						.executes(CommandMap::importMap)
+					)
+				)
 				.then(literal("region")
 					.then(literal("add")
 						.then(argument("key", StringArgumentType.word())
@@ -122,8 +128,25 @@ public final class CommandMap {
 		return Command.SINGLE_SUCCESS;
 	}
 
+	private static int leaveMap(CommandContext<CommandSource> context) throws CommandSyntaxException {
+		ServerPlayerEntity player = context.getSource().asPlayer();
+
+		final BlockPos prevPos = BlockPos.fromLong(player.getPersistentData().getLong("mapPrevPos"));
+		final DimensionType dimension = DimensionType.getById(player.getPersistentData().getInt("mapPrevDimension"));
+
+		player.getPersistentData().remove("mapPrevPos");
+		player.getPersistentData().remove("mapPrevDimension");
+
+		DimensionUtils.teleportPlayerNoPortal(player, dimension, prevPos);
+
+		return Command.SINGLE_SUCCESS;
+	}
+
 	private static int joinMap(CommandContext<CommandSource> context) throws CommandSyntaxException {
 		ServerPlayerEntity player = context.getSource().asPlayer();
+
+		player.getPersistentData().putLong("mapPrevPos", player.getPosition().toLong());
+		player.getPersistentData().putInt("mapPrevDimension", player.getEntityWorld().getDimension().getType().getId());
 
 		MapWorkspace workspace = MapWorkspaceArgument.get(context, "id");
 
@@ -223,5 +246,37 @@ public final class CommandMap {
 		}
 
 		return workspace;
+	}
+
+	private static int importMap(CommandContext<CommandSource> context) throws CommandSyntaxException {
+		ResourceLocation location = ResourceLocationArgument.getResourceLocation(context, "location");
+		String id = location.getPath();
+
+		CommandSource source = context.getSource();
+		MapWorkspaceManager workspaceManager = MapWorkspaceManager.get(source.getServer());
+
+		if (workspaceManager.hasWorkspace(id)) {
+			throw WORKSPACE_ALREADY_EXISTS.create(id);
+		}
+
+		MapWorkspace workspace = workspaceManager.openWorkspace(id);
+
+		CompletableFuture.runAsync(() -> {
+			try {
+				MinecraftServer server = source.getServer();
+
+				try (MapExportReader reader = MapExportReader.open(server, location)) {
+					MapMetadata metadata = reader.loadInto(server, workspace.getDimension());
+					workspace.importFrom(metadata);
+
+					source.sendFeedback(new StringTextComponent("Successfully imported workspace into '" + id + "'"), false);
+				}
+			} catch (IOException e) {
+				source.sendErrorMessage(new StringTextComponent("Failed to import workspace!"));
+				e.printStackTrace();
+			}
+		}, Util.getServerExecutor());
+
+		return Command.SINGLE_SUCCESS;
 	}
 }

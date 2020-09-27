@@ -1,6 +1,7 @@
 package com.lovetropics.minigames.common.minigames.behaviours.instances.survive_the_tide;
 
 import com.google.common.collect.ImmutableList;
+import com.lovetropics.minigames.common.map.MapRegion;
 import com.lovetropics.minigames.common.minigames.IMinigameInstance;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehaviorType;
@@ -12,6 +13,7 @@ import net.minecraft.block.Blocks;
 import net.minecraft.block.CampfireBlock;
 import net.minecraft.block.IWaterLoggable;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.state.properties.BlockStateProperties;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.math.BlockPos;
@@ -24,47 +26,56 @@ import net.minecraft.world.server.ServerChunkProvider;
 import net.minecraftforge.common.util.Constants;
 import org.apache.logging.log4j.LogManager;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 public class RisingTidesMinigameBehavior implements IMinigameBehavior
 {
-	private final BlockPos tideAreaMin;
-	private final BlockPos tideAreaMax;
+	private final String tideAreaKey;
+	private final String icebergLinesKey;
 	private final Map<String, Integer> phaseToTideHeight;
 	private final List<String> phasesIcebergsGrow;
-	private final List<IcebergLine> icebergLines;
 	private final int icebergGrowthTickRate;
 	private int waterLevel;
 
-	public RisingTidesMinigameBehavior(final BlockPos tideAreaMin, final BlockPos tideAreaMax, final Map<String, Integer> phaseToTideHeight,
-			final List<IcebergLine> icebergLines, final List<String> phasesIcebergsGrow, final int icebergGrowthTickRate) {
-		this.tideAreaMin = tideAreaMin;
-		this.tideAreaMax = tideAreaMax;
+	private MapRegion tideArea;
+	private final List<IcebergLine> icebergLines = new ArrayList<>();
+
+	public RisingTidesMinigameBehavior(String tideAreaKey, String icebergLinesKey, final Map<String, Integer> phaseToTideHeight, final List<String> phasesIcebergsGrow, final int icebergGrowthTickRate) {
+		this.tideAreaKey = tideAreaKey;
+		this.icebergLinesKey = icebergLinesKey;
 		this.phaseToTideHeight = phaseToTideHeight;
-		this.icebergLines = icebergLines;
 		this.phasesIcebergsGrow = phasesIcebergsGrow;
 		this.icebergGrowthTickRate = icebergGrowthTickRate;
 	}
 
 	public static <T> RisingTidesMinigameBehavior parse(Dynamic<T> root) {
-		final BlockPos tideAreaMin = root.get("tide_area_min").map(BlockPos::deserialize).orElse(BlockPos.ZERO);
-		final BlockPos tideAreaMax = root.get("tide_area_max").map(BlockPos::deserialize).orElse(BlockPos.ZERO);
+		final String tideAreaKey = root.get("tide_area_region").asString("tide_area");
+		final String icebergLinesKey = root.get("iceberg_lines_region").asString("iceberg_lines");
 		final Map<String, Integer> phaseToTideHeight = root.get("water_levels").asMap(
 				key -> key.asString(""),
 				value -> value.asInt(0)
 		);
-		final List<IcebergLine> icebergLines = root.get("iceberg_lines").asList(IcebergLine::parse);
 		final List<String> phasesIcebergsGrow = root.get("phases_icebergs_grow").asList(d -> d.asString(""));
 		final int icebergGrowthTickRate = root.get("iceberg_growth_tick_rate").asInt(0);
 
-		return new RisingTidesMinigameBehavior(tideAreaMin, tideAreaMax, phaseToTideHeight, icebergLines,
-				phasesIcebergsGrow, icebergGrowthTickRate);
+		return new RisingTidesMinigameBehavior(tideAreaKey, icebergLinesKey, phaseToTideHeight, phasesIcebergsGrow, icebergGrowthTickRate);
 	}
 
 	@Override
 	public ImmutableList<IMinigameBehaviorType<?>> dependencies() {
 		return ImmutableList.of(MinigameBehaviorTypes.PHASES.get());
+	}
+
+	@Override
+	public void onConstruct(IMinigameInstance minigame) {
+		tideArea = minigame.getMapRegions().getOne(tideAreaKey);
+
+		icebergLines.clear();
+		for (MapRegion icebergLine : minigame.getMapRegions().get(icebergLinesKey)) {
+			icebergLines.add(new IcebergLine(icebergLine.min, icebergLine.max, 10));
+		}
 	}
 
 	@Override
@@ -126,8 +137,8 @@ public class RisingTidesMinigameBehavior implements IMinigameBehavior
 
 	private void increaseTide(final World world) {
 		this.waterLevel++;
-		BlockPos min = this.tideAreaMin.add(0, this.waterLevel, 0);
-		BlockPos max = this.tideAreaMax.add(0, this.waterLevel, 0);
+		BlockPos min = new BlockPos(tideArea.min.getX(), waterLevel, tideArea.min.getZ());
+		BlockPos max = new BlockPos(tideArea.max.getX(), waterLevel, tideArea.max.getZ());
 		ChunkPos minChunk = new ChunkPos(min);
 		ChunkPos maxChunk = new ChunkPos(max);
 
