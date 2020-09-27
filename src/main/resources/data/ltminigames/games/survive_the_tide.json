@@ -42,6 +42,7 @@
     {
       "type": "ltminigames:survive_the_tide_ruleset",
       "spawn_area_region": "spawn_area",
+      "iceberg_lines_region": "iceberg_lines",
       "phase_to_free_participants": "phase1",
       "phases_with_no_pvp": [ "phase0", "phase1" ],
       "force_drop_items_on_death": true,
