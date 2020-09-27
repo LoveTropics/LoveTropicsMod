@@ -1,14 +1,14 @@
 package com.lovetropics.minigames.common.network.map;
 
-import com.lovetropics.minigames.client.map.ClientMapWorkspace;
-import com.lovetropics.minigames.common.map.MapRegion;
-import net.minecraft.network.PacketBuffer;
-import net.minecraftforge.fml.network.NetworkEvent;
-import net.tropicraft.core.common.network.TropicraftMessage;
-
 import java.util.function.Supplier;
 
-public class AddWorkspaceRegionMessage implements TropicraftMessage {
+import com.lovetropics.minigames.client.map.ClientMapWorkspace;
+import com.lovetropics.minigames.common.map.MapRegion;
+
+import net.minecraft.network.PacketBuffer;
+import net.minecraftforge.fml.network.NetworkEvent;
+
+public class AddWorkspaceRegionMessage {
 	private final int id;
 	private final String key;
 	private final MapRegion region;

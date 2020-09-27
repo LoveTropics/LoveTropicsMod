@@ -1,6 +1,12 @@
 package com.lovetropics.minigames.common.map;
 
+import java.util.List;
+
+import javax.annotation.Nullable;
+
 import com.google.common.collect.ImmutableList;
+import com.lovetropics.minigames.Constants;
+
 import net.minecraft.entity.EntityClassification;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IWorld;
@@ -23,10 +29,6 @@ import net.minecraftforge.fml.RegistryObject;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
-import net.tropicraft.Constants;
-
-import javax.annotation.Nullable;
-import java.util.List;
 
 @Mod.EventBusSubscriber(modid = Constants.MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
 public final class VoidChunkGenerator extends ChunkGenerator<VoidChunkGenerator.Settings> {

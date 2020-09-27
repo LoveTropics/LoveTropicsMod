@@ -4,6 +4,7 @@ import javax.annotation.Nullable;
 
 import com.lovetropics.minigames.common.config.ConfigLT;
 import com.lovetropics.minigames.common.dimension.biome.TropicraftBiomes;
+import com.lovetropics.minigames.common.map.VoidChunkGenerator;
 
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
@@ -24,8 +25,6 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.fml.RegistryObject;
 import net.minecraftforge.registries.ForgeRegistries;
 
-import net.tropicraft.core.common.dimension.chunk.TropicraftChunkGeneratorTypes;
-
 public class SurviveTheTideDimension extends Dimension {
     
     private static final RegistryObject<ChunkGeneratorType<?, ?>> TROPICS = RegistryObject.of(new ResourceLocation("tropicraft", "tropicraft_chunk_generator_type"), ForgeRegistries.CHUNK_GENERATOR_TYPES);
@@ -36,7 +35,7 @@ public class SurviveTheTideDimension extends Dimension {
 
     @Override
     public ChunkGenerator<?> createChunkGenerator() {
-        ChunkGeneratorType chunkType = TropicraftChunkGeneratorTypes.TROPICS.get();
+        ChunkGeneratorType<?, ?> chunkType = TROPICS.orElseGet(VoidChunkGenerator.TYPE);
         BiomeProviderType<SingleBiomeProviderSettings, SingleBiomeProvider> biomeType = BiomeProviderType.FIXED;
         return create(chunkType, biomeType);
     }

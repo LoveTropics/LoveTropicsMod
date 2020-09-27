@@ -5,11 +5,10 @@ import com.lovetropics.minigames.common.map.workspace.ClientWorkspaceRegions;
 import com.lovetropics.minigames.common.map.workspace.WorkspaceRegions;
 import net.minecraft.network.PacketBuffer;
 import net.minecraftforge.fml.network.NetworkEvent;
-import net.tropicraft.core.common.network.TropicraftMessage;
 
 import java.util.function.Supplier;
 
-public class SetWorkspaceMessage implements TropicraftMessage {
+public class SetWorkspaceMessage {
 	private WorkspaceRegions server;
 	private ClientWorkspaceRegions client;
 
