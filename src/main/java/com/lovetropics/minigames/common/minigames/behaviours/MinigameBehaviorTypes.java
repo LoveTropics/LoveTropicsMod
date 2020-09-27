@@ -1,11 +1,20 @@
 package com.lovetropics.minigames.common.minigames.behaviours;
 
-import com.lovetropics.minigames.common.minigames.behaviours.instances.*;
-import com.lovetropics.minigames.common.minigames.behaviours.instances.survive_the_tide.*;
+import com.lovetropics.minigames.common.minigames.behaviours.instances.CommandInvokeBehavior;
+import com.lovetropics.minigames.common.minigames.behaviours.instances.FireworksOnDeathBehavior;
+import com.lovetropics.minigames.common.minigames.behaviours.instances.IsolatePlayerStateBehavior;
+import com.lovetropics.minigames.common.minigames.behaviours.instances.PhasesMinigameBehavior;
+import com.lovetropics.minigames.common.minigames.behaviours.instances.PositionPlayersMinigameBehavior;
+import com.lovetropics.minigames.common.minigames.behaviours.instances.RespawnSpectatorMinigameBehavior;
+import com.lovetropics.minigames.common.minigames.behaviours.instances.ScheduledMessagesBehavior;
+import com.lovetropics.minigames.common.minigames.behaviours.instances.SetGameTypesBehavior;
+import com.lovetropics.minigames.common.minigames.behaviours.instances.TimedMinigameBehavior;
+import com.lovetropics.minigames.common.minigames.behaviours.instances.survive_the_tide.RisingTidesMinigameBehavior;
+import com.lovetropics.minigames.common.minigames.behaviours.instances.survive_the_tide.SurviveTheTideRulesetBehavior;
+import com.lovetropics.minigames.common.minigames.behaviours.instances.survive_the_tide.SurviveTheTideWinConditionBehavior;
+import com.lovetropics.minigames.common.minigames.behaviours.instances.survive_the_tide.WeatherEventsMinigameBehavior;
+import com.lovetropics.minigames.common.minigames.behaviours.instances.survive_the_tide.WorldBorderMinigameBehavior;
 import com.mojang.datafixers.Dynamic;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.GameType;
 import net.minecraftforge.fml.RegistryObject;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.IForgeRegistry;
@@ -18,7 +27,6 @@ public class MinigameBehaviorTypes {
 	public static final Supplier<IForgeRegistry<IMinigameBehaviorType<?>>> MINIGAME_BEHAVIOURS_REGISTRY;
 
 	public static final RegistryObject<IMinigameBehaviorType<PositionPlayersMinigameBehavior>> POSITION_PLAYERS;
-	public static final RegistryObject<IMinigameBehaviorType<LoadMapMinigameBehaviour>> LOAD_MAP;
 	public static final RegistryObject<IMinigameBehaviorType<WeatherEventsMinigameBehavior>> WEATHER_EVENTS;
 	public static final RegistryObject<IMinigameBehaviorType<TimedMinigameBehavior>> TIMED;
 	public static final RegistryObject<IMinigameBehaviorType<RespawnSpectatorMinigameBehavior>> RESPAWN_SPECTATOR;
@@ -50,7 +58,6 @@ public class MinigameBehaviorTypes {
 		MINIGAME_BEHAVIOURS_REGISTRY = MINIGAME_BEHAVIOURS_REGISTER.makeRegistry("minigame_behaviours", RegistryBuilder::new);
 
 		POSITION_PLAYERS = register("position_players", PositionPlayersMinigameBehavior::parse);
-		LOAD_MAP = register("load_map", LoadMapMinigameBehaviour::parse);
 		WEATHER_EVENTS = register("weather_events", WeatherEventsMinigameBehavior::parse);
 		TIMED = register("timed", TimedMinigameBehavior::parse);
 		RESPAWN_SPECTATOR = registerInstance("respawn_spectator", RespawnSpectatorMinigameBehavior.INSTANCE);

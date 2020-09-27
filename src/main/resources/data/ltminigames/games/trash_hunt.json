@@ -1,7 +1,11 @@
 {
   "id": "ltminigames:trash_hunt",
   "translation_key": "trash_hunt",
-  "dimension": "ltminigames:trash_hunt",
+  "map": {
+    "type": "ltminigames:load_map",
+    "load_from": "ltminigames:trash_hunt",
+    "dimension": "ltminigames:trash_hunt"
+  },
   "minimum_participants": 8,
   "maximum_participants": 16,
   "behaviors": [

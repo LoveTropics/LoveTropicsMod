@@ -1,26 +1,17 @@
 package com.lovetropics.minigames.common.minigames.behaviours;
 
 import com.google.common.collect.ImmutableList;
-import com.lovetropics.minigames.common.minigames.IMinigameDefinition;
 import com.lovetropics.minigames.common.minigames.IMinigameInstance;
 import com.lovetropics.minigames.common.minigames.PlayerRole;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.ActionResultType;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.world.World;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.player.AttackEntityEvent;
 
 public interface IMinigameBehavior
 {
-	default ActionResult<ITextComponent> canStartMinigame(final IMinigameDefinition definition, final MinecraftServer server) {
-		return new ActionResult<>(ActionResultType.SUCCESS, new StringTextComponent(""));
-	}
-
 	default ImmutableList<IMinigameBehaviorType<?>> dependencies()
 	{
 		return ImmutableList.of();

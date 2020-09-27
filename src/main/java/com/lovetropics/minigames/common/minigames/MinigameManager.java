@@ -5,9 +5,11 @@ import com.google.common.collect.Maps;
 import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.client.data.TropicraftLangKeys;
 import com.lovetropics.minigames.common.Util;
+import com.lovetropics.minigames.common.map.MapRegions;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
 import com.lovetropics.minigames.common.minigames.config.MinigameConfig;
 import com.lovetropics.minigames.common.minigames.config.MinigameConfigs;
+import com.lovetropics.minigames.common.minigames.map.IMinigameMapProvider;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.nbt.CompoundNBT;
@@ -31,6 +33,7 @@ import net.minecraftforge.event.world.ChunkDataEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * Standard implementation of a minigame manager. Would prefer to do something other
@@ -209,10 +212,10 @@ public class MinigameManager implements IMinigameManager
     }
 
     @Override
-    public ActionResult<ITextComponent> start() {
+    public CompletableFuture<ActionResult<ITextComponent>> start() {
         // Check if any minigame is polling, can only start if so
         if (this.polling == null) {
-            return new ActionResult<>(ActionResultType.FAIL, new TranslationTextComponent(TropicraftLangKeys.COMMAND_NO_MINIGAME_POLLING));
+            return CompletableFuture.completedFuture(new ActionResult<>(ActionResultType.FAIL, new TranslationTextComponent(TropicraftLangKeys.COMMAND_NO_MINIGAME_POLLING)));
         }
 
         // Check that have enough players to start minigame.
@@ -220,40 +223,47 @@ public class MinigameManager implements IMinigameManager
             return new ActionResult<>(ActionResultType.FAIL, new TranslationTextComponent(TropicraftLangKeys.COMMAND_NOT_ENOUGH_PLAYERS, this.polling.getMinimumParticipantCount()));
         }*/
 
-        for (final IMinigameBehavior behavior : this.polling.getAllBehaviours()) {
-            ActionResult<ITextComponent> canStart = behavior.canStartMinigame(this.polling, server);
-
-            if (canStart.getType() == ActionResultType.FAIL) {
-                return canStart;
-            }
-        }
-
-        this.currentInstance = new MinigameInstance(this.polling, server);
-        this.polling.getAllBehaviours().forEach(b -> b.onConstruct(currentInstance, server));
-
-        int playersAvailable = Math.min(this.registeredForMinigame.size(), this.polling.getMaximumParticipantCount());
-        List<UUID> chosenParticipants = Util.extractRandomElements(new Random(), this.registeredForMinigame, playersAvailable);
-
-        for (UUID playerUUID : chosenParticipants) {
-            ServerPlayerEntity player = this.server.getPlayerList().getPlayerByUUID(playerUUID);
-            if (player != null) {
-                this.currentInstance.addPlayer(player, PlayerRole.PARTICIPANT);
-            }
-        }
-
-        for (UUID spectatorUUID : this.registeredForMinigame) {
-            ServerPlayerEntity spectator = this.server.getPlayerList().getPlayerByUUID(spectatorUUID);
-            if (spectator != null) {
-                this.currentInstance.addPlayer(spectator, PlayerRole.SPECTATOR);
-            }
-        }
-
+        IMinigameDefinition polling = this.polling;
         this.polling = null;
-        this.registeredForMinigame.clear();
 
-        this.currentInstance.getDefinition().getAllBehaviours().forEach((b) -> b.onStart(this.currentInstance));
+        IMinigameMapProvider mapProvider = polling.getMapProvider();
 
-        return new ActionResult<>(ActionResultType.SUCCESS, new TranslationTextComponent(TropicraftLangKeys.COMMAND_MINIGAME_STARTED).applyTextStyle(TextFormatting.GREEN));
+        ActionResult<ITextComponent> canOpenMap = mapProvider.canOpen(polling, server);
+        if (canOpenMap.getType() == ActionResultType.FAIL) {
+            return CompletableFuture.completedFuture(canOpenMap);
+        }
+
+        MapRegions mapRegions = new MapRegions();
+        CompletableFuture<DimensionType> openMap = mapProvider.open(polling, server, mapRegions);
+
+        return openMap.thenApplyAsync(dimension -> {
+                MinigameInstance instance = new MinigameInstance(polling, server, dimension, mapRegions);
+                polling.getAllBehaviours().forEach(b -> b.onConstruct(instance, server));
+
+                int playersAvailable = Math.min(this.registeredForMinigame.size(), polling.getMaximumParticipantCount());
+                List<UUID> chosenParticipants = Util.extractRandomElements(new Random(), this.registeredForMinigame, playersAvailable);
+
+                for (UUID playerUUID : chosenParticipants) {
+                    ServerPlayerEntity player = this.server.getPlayerList().getPlayerByUUID(playerUUID);
+                    if (player != null) {
+                        instance.addPlayer(player, PlayerRole.PARTICIPANT);
+                    }
+                }
+
+                for (UUID spectatorUUID : this.registeredForMinigame) {
+                    ServerPlayerEntity spectator = this.server.getPlayerList().getPlayerByUUID(spectatorUUID);
+                    if (spectator != null) {
+                        instance.addPlayer(spectator, PlayerRole.SPECTATOR);
+                    }
+                }
+
+                this.currentInstance = instance;
+                this.registeredForMinigame.clear();
+
+                instance.getDefinition().getAllBehaviours().forEach((b) -> b.onStart(instance));
+
+                return new ActionResult<>(ActionResultType.SUCCESS, new TranslationTextComponent(TropicraftLangKeys.COMMAND_MINIGAME_STARTED).applyTextStyle(TextFormatting.GREEN));
+            }, server);
     }
 
     @Override
@@ -411,7 +421,7 @@ public class MinigameManager implements IMinigameManager
     @SubscribeEvent
     public void onWorldTick(TickEvent.WorldTickEvent event) {
         if (event.phase == TickEvent.Phase.END) {
-            if (this.currentInstance != null && event.world.getDimension().getType() == this.currentInstance.getDefinition().getDimension()) {
+            if (this.currentInstance != null && event.world.getDimension().getType() == this.currentInstance.getDimension()) {
                 getBehaviours().forEach((b) -> b.worldUpdate(this.currentInstance, event.world));
                 this.currentInstance.update();
             }
@@ -445,6 +455,6 @@ public class MinigameManager implements IMinigameManager
     }
 
     private boolean ifEntityInDimension(Entity entity) {
-        return this.currentInstance != null && entity.dimension == this.currentInstance.getDefinition().getDimension();
+        return this.currentInstance != null && entity.dimension == this.currentInstance.getDimension();
     }
 }

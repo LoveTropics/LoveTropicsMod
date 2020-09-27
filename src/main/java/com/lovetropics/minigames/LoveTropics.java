@@ -1,8 +1,5 @@
 package com.lovetropics.minigames;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import com.lovetropics.minigames.client.data.TropicraftLangKeys;
 import com.lovetropics.minigames.common.block.LoveTropicsBlocks;
 import com.lovetropics.minigames.common.block.TrashType;
@@ -29,12 +26,12 @@ import com.lovetropics.minigames.common.map.workspace.MapWorkspaceDimension;
 import com.lovetropics.minigames.common.minigames.MinigameManager;
 import com.lovetropics.minigames.common.minigames.behaviours.MinigameBehaviorTypes;
 import com.lovetropics.minigames.common.minigames.config.MinigameConfigs;
+import com.lovetropics.minigames.common.minigames.map.MinigameMapProviderTypes;
 import com.lovetropics.minigames.common.network.LTNetwork;
 import com.mojang.brigadier.CommandDispatcher;
 import com.tterrag.registrate.Registrate;
 import com.tterrag.registrate.providers.ProviderType;
 import com.tterrag.registrate.util.NonNullLazyValue;
-
 import net.minecraft.command.CommandSource;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
@@ -56,6 +53,8 @@ import net.minecraftforge.fml.event.server.FMLServerAboutToStartEvent;
 import net.minecraftforge.fml.event.server.FMLServerStartingEvent;
 import net.minecraftforge.fml.event.server.FMLServerStoppingEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 @Mod(Constants.MODID)
 public class LoveTropics {
@@ -103,6 +102,7 @@ public class LoveTropics {
         VoidChunkGenerator.REGISTER.register(modBus);
         MapWorkspaceDimension.REGISTER.register(modBus);
         MinigameBehaviorTypes.MINIGAME_BEHAVIOURS_REGISTER.register(modBus);
+        MinigameMapProviderTypes.REGISTER.register(modBus);
         TropicraftBiomes.BIOMES.register(modBus);
     }
 

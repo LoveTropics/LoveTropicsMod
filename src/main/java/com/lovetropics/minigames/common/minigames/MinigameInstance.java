@@ -11,6 +11,7 @@ import net.minecraft.util.math.Vec2f;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.world.dimension.DimensionType;
 import net.minecraft.world.server.ServerWorld;
 
 import java.util.EnumMap;
@@ -29,20 +30,23 @@ public class MinigameInstance implements IMinigameInstance
 {
     private final MinecraftServer server;
     private final IMinigameDefinition definition;
+    private final DimensionType dimension;
 
     private final MutablePlayerSet allPlayers;
     private final EnumMap<PlayerRole, MutablePlayerSet> roles = new EnumMap<>(PlayerRole.class);
 
-    private final MapRegions mapRegions = new MapRegions();
+    private final MapRegions mapRegions;
 
     private CommandSource commandSource;
 
     private final Map<String, Consumer<CommandSource>> controlCommands = new Object2ObjectOpenHashMap<>();
     private long ticks;
 
-    public MinigameInstance(IMinigameDefinition definition, MinecraftServer server) {
+    public MinigameInstance(IMinigameDefinition definition, MinecraftServer server, DimensionType dimension, MapRegions mapRegions) {
         this.definition = definition;
         this.server = server;
+        this.dimension = dimension;
+        this.mapRegions = mapRegions;
 
         this.allPlayers = new MutablePlayerSet(server);
 
@@ -160,7 +164,7 @@ public class MinigameInstance implements IMinigameInstance
         if (this.commandSource == null) {
             String unlocalizedName = definition.getUnlocalizedName();
             ITextComponent text = new StringTextComponent(unlocalizedName);
-            ServerWorld world = server.getWorld(definition.getDimension());
+            ServerWorld world = getWorld();
             this.commandSource = new CommandSource(ICommandSource.DUMMY, Vec3d.ZERO, Vec2f.ZERO, world, 2, unlocalizedName, text, this.server, null);
         }
 
@@ -168,8 +172,13 @@ public class MinigameInstance implements IMinigameInstance
     }
 
     @Override
+    public DimensionType getDimension() {
+        return dimension;
+    }
+
+    @Override
     public ServerWorld getWorld() {
-        return server.getWorld(definition.getDimension());
+        return server.getWorld(dimension);
     }
 
     @Override
