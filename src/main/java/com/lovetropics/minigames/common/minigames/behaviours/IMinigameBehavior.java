@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.lovetropics.minigames.common.minigames.IMinigameDefinition;
 import com.lovetropics.minigames.common.minigames.IMinigameInstance;
 import com.lovetropics.minigames.common.minigames.PlayerRole;
+
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.server.MinecraftServer;
@@ -17,14 +18,62 @@ import net.minecraftforge.event.entity.player.AttackEntityEvent;
 
 public interface IMinigameBehavior
 {
-	default ActionResult<ITextComponent> canStartMinigame(final IMinigameDefinition definition, final MinecraftServer server) {
+	default ImmutableList<IMinigameBehaviorType<?>> dependencies() {
+		return ImmutableList.of();
+	}
+	
+	default ActionResult<ITextComponent> canStart(final IMinigameDefinition definition, final MinecraftServer server) {
 		return new ActionResult<>(ActionResultType.SUCCESS, new StringTextComponent(""));
 	}
 
-	default ImmutableList<IMinigameBehaviorType<?>> dependencies()
-	{
-		return ImmutableList.of();
+	/**
+	 * For before a minigame starts. Useful for preparing the minigame.
+	 *
+	 * @param minigame The minigame that is being constructed
+	 * @param server   The current minecraft server object.
+	 */
+	default void onConstruct(final IMinigameInstance minigame) {}
+
+	/**
+	 * Ensure that this behavior is in a valid state before starting the minigame.
+	 * 
+	 * @param minigame The current minigame instance, which has not yet been started
+	 * @return The result of the check, of type either SUCCESS or FAIL. If FAIL, the
+	 *         value will be used as the error message.
+	 */
+	default ActionResult<ITextComponent> ensureValidity(final IMinigameInstance minigame) {
+		return new ActionResult<>(ActionResultType.SUCCESS, new StringTextComponent(""));
 	}
+
+	/**
+	 * For when a minigame starts. Useful for preparing the minigame.
+	 *
+	 * @param minigame      The current minigame instance.
+	 * @param commandSource Command source for the minigame instance. Can be used to
+	 *                      execute some commands for the minigame from a datapack.
+	 */
+	default void onStart(final IMinigameInstance minigame) {}
+
+	/**
+	 * For when a minigame finishes. Useful for cleanup related to this minigame
+	 * definition.
+	 * 
+	 * @param minigame      The current minigame instance.
+	 * 
+	 * @param commandSource Command source for the minigame instance. Can be used to
+	 *                      execute some commands for the minigame from a datapack.
+	 */
+	default void onFinish(final IMinigameInstance minigame) {}
+
+	/**
+	 * For when the minigame has finished and all players are teleported out of the
+	 * dimension.
+	 * 
+	 * @param minigame      The current minigame instance.
+	 * @param commandSource Command source for the minigame instance. Can be used to
+	 *                      execute some commands for the minigame from a datapack.
+	 */
+	default void onPostFinish(final IMinigameInstance minigame) {}
 
 	/**
 	 * Helper method to define unique logic for the minigame as it is running. Only
@@ -77,44 +126,6 @@ public interface IMinigameBehavior
 	 * @param player   The player which died.
 	 */
 	default void onPlayerRespawn(final IMinigameInstance minigame, ServerPlayerEntity player) {}
-
-	/**
-	 * For when a minigame finishes. Useful for cleanup related to this minigame
-	 * definition.
-	 * 
-	 * @param minigame      The current minigame instance.
-	 * 
-	 * @param commandSource Command source for the minigame instance. Can be used to
-	 *                      execute some commands for the minigame from a datapack.
-	 */
-	default void onFinish(final IMinigameInstance minigame) {}
-
-	/**
-	 * For when the minigame has finished and all players are teleported out of the
-	 * dimension.
-	 * 
-	 * @param minigame      The current minigame instance.
-	 * @param commandSource Command source for the minigame instance. Can be used to
-	 *                      execute some commands for the minigame from a datapack.
-	 */
-	default void onPostFinish(final IMinigameInstance minigame) {}
-
-	/**
-	 * For before a minigame starts. Useful for preparing the minigame.
-	 *
-	 * @param minigame The minigame that is being constructed
-	 * @param server     The current minecraft server object.
-	 */
-	default void onConstruct(final IMinigameInstance minigame, MinecraftServer server) {}
-
-	/**
-	 * For when a minigame starts. Useful for preparing the minigame.
-	 *
-	 * @param minigame      The current minigame instance.
-	 * @param commandSource Command source for the minigame instance. Can be used to
-	 *                      execute some commands for the minigame from a datapack.
-	 */
-	default void onStart(final IMinigameInstance minigame) {}
 
 	/**
 	 * Event method for players that are hurt in the minigame instance.

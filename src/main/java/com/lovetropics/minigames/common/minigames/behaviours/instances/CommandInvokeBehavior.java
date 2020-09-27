@@ -1,24 +1,25 @@
 package com.lovetropics.minigames.common.minigames.behaviours.instances;
 
+import java.util.List;
+import java.util.Map;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import com.google.common.collect.ImmutableList;
 import com.lovetropics.minigames.common.minigames.IMinigameInstance;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.datafixers.Dynamic;
+
 import net.minecraft.command.CommandSource;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.World;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.player.AttackEntityEvent;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
-import java.util.List;
-import java.util.Map;
 
 public final class CommandInvokeBehavior implements IMinigameBehavior {
 	private static final Logger LOGGER = LogManager.getLogger(CommandInvokeBehavior.class);
@@ -70,8 +71,8 @@ public final class CommandInvokeBehavior implements IMinigameBehavior {
 	}
 
 	@Override
-	public void onConstruct(IMinigameInstance minigame, MinecraftServer server) {
-		this.dispatcher = server.getCommandManager().getDispatcher();
+	public void onConstruct(IMinigameInstance minigame) {
+		this.dispatcher = minigame.getWorld().getServer().getCommandManager().getDispatcher();
 	}
 
 	@Override
