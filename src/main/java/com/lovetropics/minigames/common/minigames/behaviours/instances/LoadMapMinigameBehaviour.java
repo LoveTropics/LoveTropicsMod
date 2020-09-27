@@ -39,7 +39,7 @@ public class LoadMapMinigameBehaviour implements IMinigameBehavior {
 	}
 
 	@Override
-	public ActionResult<ITextComponent> canStartMinigame(final IMinigameDefinition definition, final MinecraftServer server) {
+	public ActionResult<ITextComponent> canStart(final IMinigameDefinition definition, final MinecraftServer server) {
 		ServerWorld world = DimensionManager.getWorld(server, definition.getDimension(), false, false);
 
 		if (world != null) {
@@ -57,8 +57,9 @@ public class LoadMapMinigameBehaviour implements IMinigameBehavior {
 	}
 
 	@Override
-	public void onConstruct(IMinigameInstance minigame, MinecraftServer server) {
+	public void onConstruct(IMinigameInstance minigame) {
 		ResourceLocation path = new ResourceLocation(loadFrom.getNamespace(), "maps/" + loadFrom.getPath() + ".zip");
+		MinecraftServer server = minigame.getWorld().getServer();
 		try (IResource resource = server.getResourceManager().getResource(path)) {
 			try (MapExportReader reader = MapExportReader.open(resource.getInputStream())) {
 				MapMetadata metadata = reader.loadInto(server, minigame.getDimension());

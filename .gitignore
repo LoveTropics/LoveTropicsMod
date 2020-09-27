@@ -22,6 +22,9 @@ eclipse
 run
 logs
 
+# minigame worlds
+src/main/resources/**/maps/*.zip
+
 # datagen caches
 **/.cache
 

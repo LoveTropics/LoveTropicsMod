@@ -1,7 +1,7 @@
 package com.lovetropics.minigames.common.minigames.behaviours.instances.survive_the_tide;
 
 import com.google.common.collect.ImmutableList;
-import com.lovetropics.minigames.client.data.TropicraftLangKeys;
+import com.lovetropics.minigames.common.Util;
 import com.lovetropics.minigames.common.minigames.IMinigameInstance;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehaviorType;
@@ -18,9 +18,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.potion.EffectInstance;
 import net.minecraft.potion.Effects;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.TextFormatting;
-import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.util.text.ITextComponent;
 import net.minecraft.world.GameRules;
 import net.minecraft.world.World;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
@@ -35,15 +33,17 @@ public class SurviveTheTideRulesetBehavior implements IMinigameBehavior
 	private final String phaseToFreeParticipants;
 	private final List<String> phasesWithNoPVP;
 	private final boolean forceDropItemsOnDeath;
+	private final ITextComponent messageOnSetPlayersFree;
 
 	private boolean hasFreedParticipants = false;
 
-	public SurviveTheTideRulesetBehavior(final BlockPos spawnAreaMin, final BlockPos spawnAreaMax, final String phaseToFreeParticipants, final List<String> phasesWithNoPVP, final boolean forceDropItemsOnDeath) {
+	public SurviveTheTideRulesetBehavior(final BlockPos spawnAreaMin, final BlockPos spawnAreaMax, final String phaseToFreeParticipants, final List<String> phasesWithNoPVP, final boolean forceDropItemsOnDeath, final ITextComponent messageOnSetPlayersFree) {
 		this.spawnAreaMin = spawnAreaMin;
 		this.spawnAreaMax = spawnAreaMax;
 		this.phaseToFreeParticipants = phaseToFreeParticipants;
 		this.phasesWithNoPVP = phasesWithNoPVP;
 		this.forceDropItemsOnDeath = forceDropItemsOnDeath;
+		this.messageOnSetPlayersFree = messageOnSetPlayersFree;
 	}
 
 	public static <T> SurviveTheTideRulesetBehavior parse(Dynamic<T> root) {
@@ -52,8 +52,9 @@ public class SurviveTheTideRulesetBehavior implements IMinigameBehavior
 		final String phaseToFreeParticipants = root.get("phase_to_free_participants").asString("");
 		final List<String> phasesWithNoPVP = root.get("phases_with_no_pvp").asList(d -> d.asString(""));
 		final boolean forceDropItemsOnDeath = root.get("force_drop_items_on_death").asBoolean(true);
+		final ITextComponent messageOnSetPlayersFree = Util.getText(root, "message_on_set_players_free");
 
-		return new SurviveTheTideRulesetBehavior(spawnAreaMin, spawnAreaMax, phaseToFreeParticipants, phasesWithNoPVP, forceDropItemsOnDeath);
+		return new SurviveTheTideRulesetBehavior(spawnAreaMin, spawnAreaMax, phaseToFreeParticipants, phasesWithNoPVP, forceDropItemsOnDeath, messageOnSetPlayersFree);
 	}
 
 	@Override
@@ -125,9 +126,7 @@ public class SurviveTheTideRulesetBehavior implements IMinigameBehavior
 			}
 		}
 
-		int minutes = newPhase.getLengthInTicks() / 20 / 60;
-		minigame.getPlayers().sendMessage(new TranslationTextComponent(TropicraftLangKeys.SURVIVE_THE_TIDE_PVP_DISABLED, new StringTextComponent(String.valueOf(minutes))).applyTextStyle(
-				TextFormatting.YELLOW));
+		minigame.getPlayers().sendMessage(messageOnSetPlayersFree);
 
 		// So players can drop down without fall damage
 		minigame.getPlayers().addPotionEffect(new EffectInstance(Effects.SLOW_FALLING, 10 * 20));
