@@ -69,7 +69,7 @@ public class RisingTidesMinigameBehavior implements IMinigameBehavior
 	}
 
 	@Override
-	public void onConstruct(IMinigameInstance minigame, MinecraftServer server) {
+	public void onConstruct(IMinigameInstance minigame) {
 		tideArea = minigame.getMapRegions().getOne(tideAreaKey);
 
 		icebergLines.clear();
