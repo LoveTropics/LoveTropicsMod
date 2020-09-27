@@ -40,7 +40,7 @@ public final class MinigameConfig {
     public static <T> MinigameConfig deserialize(ResourceLocation id, Dynamic<T> root) {
         String translationKey = root.get("translation_key").asString("");
 
-        IMinigameMapProvider mapProvider = IMinigameMapProvider.parse(root.get("map").orElseEmptyMap());
+        IMinigameMapProvider mapProvider = IMinigameMapProvider.parse(root.get("map_provider").orElseEmptyMap());
 
         int minimumParticipants = root.get("minimum_participants").asInt(1);
         int maximumParticipants = root.get("maximum_participants").asInt(100);

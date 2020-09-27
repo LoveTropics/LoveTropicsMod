@@ -1,7 +1,7 @@
 {
   "id": "ltminigames:trash_hunt",
   "translation_key": "trash_hunt",
-  "map": {
+  "map_provider": {
     "type": "ltminigames:load_map",
     "load_from": "ltminigames:trash_hunt",
     "dimension": "ltminigames:trash_hunt"

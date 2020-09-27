@@ -3,7 +3,7 @@
   "translation_key": "survive_the_tide",
   "minimum_participants": 3,
   "maximum_participants": 16,
-  "map": {
+  "map_provider": {
     "type": "ltminigames:load_map",
     "load_from": "ltminigames:survive_the_tide",
     "dimension": "ltminigames:hunger_games"
