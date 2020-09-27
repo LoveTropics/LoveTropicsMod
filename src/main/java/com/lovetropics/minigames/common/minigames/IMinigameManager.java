@@ -1,11 +1,12 @@
 package com.lovetropics.minigames.common.minigames;
 
-import java.util.Collection;
-
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.ITextComponent;
+
+import java.util.Collection;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * Specification for a minigame manager. Used to register minigame definitions
@@ -80,7 +81,7 @@ public interface IMinigameManager
      * participants registered to the minigame, specified by the minigame definition.
      * @return The ActionResult of the start attempt.
      */
-    ActionResult<ITextComponent> start();
+    CompletableFuture<ActionResult<ITextComponent>> start();
 
     /**
      * Stops an actively running minigame.

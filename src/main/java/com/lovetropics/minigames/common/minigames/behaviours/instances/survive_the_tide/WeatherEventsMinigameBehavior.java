@@ -1,16 +1,14 @@
 package com.lovetropics.minigames.common.minigames.behaviours.instances.survive_the_tide;
 
-import java.util.function.Supplier;
-
-import javax.annotation.Nonnull;
-
 import com.lovetropics.minigames.common.minigames.IMinigameInstance;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
 import com.lovetropics.minigames.common.minigames.weather.IMinigameWeatherInstance;
 import com.lovetropics.minigames.common.minigames.weather.MinigameWeatherConfig;
 import com.mojang.datafixers.Dynamic;
-
 import net.minecraft.world.World;
+
+import javax.annotation.Nonnull;
+import java.util.function.Supplier;
 
 public class WeatherEventsMinigameBehavior implements IMinigameBehavior
 {
@@ -39,9 +37,7 @@ public class WeatherEventsMinigameBehavior implements IMinigameBehavior
 
 	@Override
 	public void worldUpdate(final IMinigameInstance minigame, World world) {
-		if (world.getDimension().getType() == minigame.getDefinition().getDimension()) {
-			minigameWeatherInstance.tick(minigame);
-		}
+		minigameWeatherInstance.tick(minigame);
 	}
 
 	@Override

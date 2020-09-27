@@ -1,14 +1,13 @@
 package com.lovetropics.minigames.common.minigames;
 
-import java.util.Collection;
-import java.util.Optional;
-
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehaviorType;
 import com.lovetropics.minigames.common.minigames.config.MinigameConfig;
-
+import com.lovetropics.minigames.common.minigames.map.IMinigameMapProvider;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.world.dimension.DimensionType;
+
+import java.util.Collection;
+import java.util.Optional;
 
 public class MinigameDefinitionGeneric implements IMinigameDefinition
 {
@@ -16,6 +15,11 @@ public class MinigameDefinitionGeneric implements IMinigameDefinition
 
 	public MinigameDefinitionGeneric(final MinigameConfig config) {
 		this.config = config;
+	}
+
+	@Override
+	public IMinigameMapProvider getMapProvider() {
+		return config.mapProvider;
 	}
 
 	@Override
@@ -41,12 +45,6 @@ public class MinigameDefinitionGeneric implements IMinigameDefinition
 	public String getUnlocalizedName()
 	{
 		return config.translationKey;
-	}
-
-	@Override
-	public DimensionType getDimension()
-	{
-		return config.dimension;
 	}
 
 	@Override

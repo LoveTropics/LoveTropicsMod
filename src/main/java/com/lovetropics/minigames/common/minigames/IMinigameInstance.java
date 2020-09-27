@@ -80,10 +80,13 @@ public interface IMinigameInstance
     MapRegions getMapRegions();
     
     ServerWorld getWorld();
-    
-    default DimensionType getDimension() {
-    	return getDefinition().getDimension();
-    }
+
+    /**
+     * The targeted dimension you'd like this minigame to teleport players to
+     * when they join as players or spectators.
+     * @return The dimension type players are teleported to when joining.
+     */
+    DimensionType getDimension();
 
     default void update() {}
 
