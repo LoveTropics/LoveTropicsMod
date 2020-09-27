@@ -1,8 +1,7 @@
 package com.lovetropics.minigames.common.command.minigames;
 
-import java.util.function.Supplier;
-
 import com.mojang.brigadier.Command;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
 
 import net.minecraft.command.CommandSource;
 import net.minecraft.util.ActionResult;
@@ -21,15 +20,17 @@ public class CommandMinigame {
      * @param source The source of the executing command.
      * @return The result of the execution (0 == fail, 1 == success)
      */
-    public static int executeMinigameAction(Supplier<ActionResult<ITextComponent>> action, CommandSource source) {
-    	ActionResult<ITextComponent> result;
-    	try {
-    		result = action.get();
-    	} catch (Exception e) {
-    		e.printStackTrace();
-    		source.sendErrorMessage(new StringTextComponent(e.toString()));
-    		return 0;
-    	}
+    public static int executeMinigameAction(CommandAction action, CommandSource source) throws CommandSyntaxException {
+        ActionResult<ITextComponent> result;
+        try {
+            result = action.run();
+        } catch (CommandSyntaxException e) {
+            throw e;
+        } catch (Exception e) {
+            e.printStackTrace();
+            source.sendErrorMessage(new StringTextComponent(e.toString()));
+            return 0;
+        }
 
         if (result.getType() == ActionResultType.FAIL) {
             source.sendErrorMessage(result.getResult());
@@ -40,5 +41,9 @@ public class CommandMinigame {
         }
 
         return Command.SINGLE_SUCCESS;
+    }
+
+    public interface CommandAction {
+        ActionResult<ITextComponent> run() throws CommandSyntaxException;
     }
 }

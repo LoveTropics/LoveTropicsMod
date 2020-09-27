@@ -1,24 +1,9 @@
 package com.lovetropics.minigames.common.minigames;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.UUID;
-import java.util.function.BiConsumer;
-import java.util.function.Function;
-
-import org.apache.logging.log4j.util.TriConsumer;
-
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.client.data.TropicraftLangKeys;
-import com.lovetropics.minigames.common.Util;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
-import com.lovetropics.minigames.common.minigames.config.MinigameConfig;
-import com.lovetropics.minigames.common.minigames.config.MinigameConfigs;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.nbt.CompoundNBT;
@@ -27,11 +12,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.ActionResultType;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.text.ChatType;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.TextFormatting;
-import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.util.text.*;
 import net.minecraft.world.IWorld;
 import net.minecraft.world.chunk.ChunkStatus;
 import net.minecraft.world.dimension.DimensionType;
@@ -44,13 +25,12 @@ import net.minecraftforge.event.entity.player.AttackEntityEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.world.ChunkDataEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import org.apache.logging.log4j.util.TriConsumer;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.UUID;
+import javax.annotation.Nullable;
+import java.util.*;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 /**
  * Standard implementation of a minigame manager. Would prefer to do something other
@@ -87,7 +67,7 @@ public class MinigameManager implements IMinigameManager
      * A list of players that are currently registered for the currently polling minigame.
      * Is empty when a minigame has started or stopped polling.
      */
-    private List<UUID> registeredForMinigame = Lists.newArrayList();
+    private final MinigameRegistrations registrations = new MinigameRegistrations();
 
     /**
      * Server reference to fetch players from player list.
@@ -135,7 +115,7 @@ public class MinigameManager implements IMinigameManager
 
         this.registeredMinigames.remove(minigameID);
     }
-    
+
     @Override
     public Collection<IMinigameDefinition> getAllMinigames() {
         return Collections.unmodifiableCollection(this.registeredMinigames.values());
@@ -223,7 +203,7 @@ public class MinigameManager implements IMinigameManager
         String minigameName = this.polling.getUnlocalizedName();
 
         this.polling = null;
-        this.registeredForMinigame.clear();
+        this.registrations.clear();
 
         for (ServerPlayerEntity player : this.server.getPlayerList().getPlayers()) {
             player.sendMessage(new TranslationTextComponent(Constants.MODID + ".minigame.minigame_stopped_polling",
@@ -251,55 +231,51 @@ public class MinigameManager implements IMinigameManager
         if (res.getType() == ActionResultType.FAIL) {
         	return res;
         }
-        
+
         this.currentInstance = new MinigameInstance(this.polling, server);
         try {
-        	Exception err = dispatchToBehaviors(false, IMinigameBehavior::onConstruct);
-        	if (err != null) {
-        		this.currentInstance = null;
-        		return failException("Failed to construct behaviors", err);
-        	}
-	        
-	        res = dispatchToBehaviors(b -> b.ensureValidity(this.currentInstance));
-	        if (res.getType() == ActionResultType.FAIL) {
-	        	return res;
-	        }
-	        
-	        int playersAvailable = Math.min(this.registeredForMinigame.size(), this.polling.getMaximumParticipantCount());
-	        List<UUID> chosenParticipants = Util.extractRandomElements(new Random(), this.registeredForMinigame, playersAvailable);
-	
-	        for (UUID playerUUID : chosenParticipants) {
-	            ServerPlayerEntity player = this.server.getPlayerList().getPlayerByUUID(playerUUID);
-	            if (player != null) {
-	                this.currentInstance.addPlayer(player, PlayerRole.PARTICIPANT);
-	            }
-	        }
-	
-	        for (UUID spectatorUUID : this.registeredForMinigame) {
-	            ServerPlayerEntity spectator = this.server.getPlayerList().getPlayerByUUID(spectatorUUID);
-	            if (spectator != null) {
-	                this.currentInstance.addPlayer(spectator, PlayerRole.SPECTATOR);
-	            }
-	        }
+            Exception err = dispatchToBehaviors(false, IMinigameBehavior::onConstruct);
+            if (err != null) {
+                this.currentInstance = null;
+                return failException("Failed to construct behaviors", err);
+            }
 
-	        err = dispatchToBehaviors(true, IMinigameBehavior::onStart);
-	        if (err != null) {
-	        	return failException("Failed to start behaviors", err);
-	        }
+            res = dispatchToBehaviors(b -> b.ensureValidity(this.currentInstance));
+            if (res.getType() == ActionResultType.FAIL) {
+                return res;
+            }
 
-	        return new ActionResult<>(ActionResultType.SUCCESS, new TranslationTextComponent(TropicraftLangKeys.COMMAND_MINIGAME_STARTED).applyTextStyle(TextFormatting.GREEN));
+            Set<ServerPlayerEntity> participants = new HashSet<>();
+            Set<ServerPlayerEntity> spectators = new HashSet<>();
+
+            registrations.collectInto(server, participants, spectators, polling.getMaximumParticipantCount());
+
+            for (ServerPlayerEntity player : participants) {
+                this.currentInstance.addPlayer(player, PlayerRole.PARTICIPANT);
+            }
+
+            for (ServerPlayerEntity player : spectators) {
+                this.currentInstance.addPlayer(player, PlayerRole.SPECTATOR);
+            }
+
+            err = dispatchToBehaviors(true, IMinigameBehavior::onStart);
+            if (err != null) {
+                return failException("Failed to start behaviors", err);
+            }
+
+            return new ActionResult<>(ActionResultType.SUCCESS, new TranslationTextComponent(TropicraftLangKeys.COMMAND_MINIGAME_STARTED).applyTextStyle(TextFormatting.GREEN));
         } catch (Exception e) {
-        	res = failException("Unknown error starting minigame", e);
-        	if (this.currentInstance != null) {
-        		ActionResult<ITextComponent> stopRes = stop();
-        		if (stopRes.getType() == ActionResultType.FAIL) {
-        			return ActionResult.resultFail(res.getResult().appendSibling(stopRes.getResult()));
-        		}
-        	}
-    		return res;
+            res = failException("Unknown error starting minigame", e);
+            if (this.currentInstance != null) {
+                ActionResult<ITextComponent> stopRes = stop();
+                if (stopRes.getType() == ActionResultType.FAIL) {
+                    return ActionResult.resultFail(res.getResult().appendSibling(stopRes.getResult()));
+                }
+            }
+            return res;
         } finally {
-	        this.polling = null;
-	        this.registeredForMinigame.clear();
+            this.polling = null;
+            this.registrations.clear();
         }
     }
 
@@ -321,7 +297,7 @@ public class MinigameManager implements IMinigameManager
     }
 
     @Override
-    public ActionResult<ITextComponent> registerFor(ServerPlayerEntity player) {
+    public ActionResult<ITextComponent> registerFor(ServerPlayerEntity player, @Nullable PlayerRole requestedRole) {
         // Check if minigame has already started
         if (this.currentInstance != null) {
             return new ActionResult<>(ActionResultType.FAIL, new TranslationTextComponent(TropicraftLangKeys.COMMAND_MINIGAME_ALREADY_STARTED));
@@ -332,13 +308,13 @@ public class MinigameManager implements IMinigameManager
             return new ActionResult<>(ActionResultType.FAIL, new TranslationTextComponent(TropicraftLangKeys.COMMAND_NO_MINIGAME_POLLING));
         }
 
-        if (this.registeredForMinigame.contains(player.getUniqueID())) {
+        if (this.registrations.contains(player.getUniqueID())) {
             return new ActionResult<>(ActionResultType.FAIL, new TranslationTextComponent(TropicraftLangKeys.COMMAND_MINIGAME_ALREADY_REGISTERED));
         }
 
-        this.registeredForMinigame.add(player.getUniqueID());
+        this.registrations.add(player.getUniqueID(), requestedRole);
 
-        if (this.registeredForMinigame.size() == this.polling.getMinimumParticipantCount()) {
+        if (this.registrations.participantCount() == this.polling.getMinimumParticipantCount()) {
             for (ServerPlayerEntity p : this.server.getPlayerList().getPlayers()) {
                 p.sendMessage(new TranslationTextComponent(TropicraftLangKeys.COMMAND_ENOUGH_PLAYERS).applyTextStyle(TextFormatting.AQUA));
             }
@@ -365,13 +341,13 @@ public class MinigameManager implements IMinigameManager
         }
 
         // Check if minigame has already started
-        if (!this.registeredForMinigame.contains(player.getUniqueID())) {
+        if (!this.registrations.contains(player.getUniqueID())) {
             return new ActionResult<>(ActionResultType.FAIL, new TranslationTextComponent(TropicraftLangKeys.COMMAND_NOT_REGISTERED_FOR_MINIGAME));
         }
 
-        this.registeredForMinigame.remove(player.getUniqueID());
+        this.registrations.remove(player.getUniqueID());
 
-        if (this.registeredForMinigame.size() == this.polling.getMinimumParticipantCount() - 1) {
+        if (this.registrations.participantCount() == this.polling.getMinimumParticipantCount() - 1) {
             for (ServerPlayerEntity p : this.server.getPlayerList().getPlayers()) {
                 p.sendMessage(new TranslationTextComponent(TropicraftLangKeys.COMMAND_NO_LONGER_ENOUGH_PLAYERS).applyTextStyle(TextFormatting.RED));
             }
@@ -484,16 +460,16 @@ public class MinigameManager implements IMinigameManager
         }
 
         if (this.polling != null) {
-            if (this.registeredForMinigame.contains(player.getUniqueID())) {
+            if (this.registrations.contains(player.getUniqueID())) {
                 this.unregisterFor((ServerPlayerEntity) event.getPlayer());
             }
         }
     }
-    
+
     private <T> Exception dispatchToBehaviors(boolean stopOnError, TriConsumer<IMinigameBehavior, IMinigameInstance, T> action, T argument) {
     	return dispatchToBehaviors(stopOnError, (b, m) -> action.accept(b, m, argument));
     }
-    
+
     private Exception dispatchToBehaviors(boolean stopOnError, BiConsumer<IMinigameBehavior, IMinigameInstance> action) {
     	Exception res = null;
     	for (IMinigameBehavior behavior : getBehaviors()) {
@@ -523,7 +499,7 @@ public class MinigameManager implements IMinigameManager
         }
         return ActionResult.resultSuccess(new StringTextComponent(""));
     }
-    
+
     private ActionResult<ITextComponent> failException(String prefix, Exception e) {
     	e.printStackTrace();
     	return ActionResult.resultFail(new StringTextComponent(prefix + ": " + e.toString()));
