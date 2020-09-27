@@ -65,6 +65,8 @@ public final class CommandMap {
 					.then(MapWorkspaceArgument.argument("id")
 					.executes(CommandMap::joinMap)
 				))
+				.then(literal("leave").executes(CommandMap::leaveMap)
+				)
 				.then(literal("export")
 					.then(MapWorkspaceArgument.argument("id")
 					.executes(CommandMap::exportMap)
@@ -122,8 +124,25 @@ public final class CommandMap {
 		return Command.SINGLE_SUCCESS;
 	}
 
+	private static int leaveMap(CommandContext<CommandSource> context) throws CommandSyntaxException {
+		ServerPlayerEntity player = context.getSource().asPlayer();
+
+		final BlockPos prevPos = BlockPos.fromLong(player.getPersistentData().getLong("mapPrevPos"));
+		final DimensionType dimension = DimensionType.getById(player.getPersistentData().getInt("mapPrevDimension"));
+
+		player.getPersistentData().remove("mapPrevPos");
+		player.getPersistentData().remove("mapPrevDimension");
+
+		DimensionUtils.teleportPlayerNoPortal(player, dimension, prevPos);
+
+		return Command.SINGLE_SUCCESS;
+	}
+
 	private static int joinMap(CommandContext<CommandSource> context) throws CommandSyntaxException {
 		ServerPlayerEntity player = context.getSource().asPlayer();
+
+		player.getPersistentData().putLong("mapPrevPos", player.getPosition().toLong());
+		player.getPersistentData().putInt("mapPrevDimension", player.getEntityWorld().getDimension().getType().getId());
 
 		MapWorkspace workspace = MapWorkspaceArgument.get(context, "id");
 
