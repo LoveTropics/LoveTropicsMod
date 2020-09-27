@@ -43,6 +43,11 @@ public class PositionPlayersMinigameBehavior implements IMinigameBehavior {
 		for (String key : spectatorSpawnKeys) {
 			spectatorSpawnRegions.addAll(regions.get(key));
 		}
+		
+		if (participantSpawnKeys.length != minigame.getDefinition().getMaximumParticipantCount()) {
+			throw new IllegalStateException("The participant positions length doesn't match the " +
+					"maximum participant count defined by the following minigame definition! " + minigame.getDefinition().getID());
+		}
 	}
 
 	public static <T> PositionPlayersMinigameBehavior parse(Dynamic<T> root) {
@@ -63,11 +68,6 @@ public class PositionPlayersMinigameBehavior implements IMinigameBehavior {
 
 	private void setupPlayerAsRole(IMinigameInstance minigame, ServerPlayerEntity player, PlayerRole role) {
 		if (role == PlayerRole.PARTICIPANT) {
-			if (participantSpawnKeys.length != minigame.getDefinition().getMaximumParticipantCount()) {
-				throw new IllegalStateException("The participant positions length doesn't match the" +
-						"maximum participant count defined by the following minigame definition! " + minigame.getDefinition().getID());
-			}
-
 			MapRegion region = participantSpawnRegions.get(participantSpawnIndex++ % participantSpawnRegions.size());
 			teleportToRegion(minigame, player, region);
 		} else {
