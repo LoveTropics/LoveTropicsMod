@@ -7,6 +7,7 @@ import com.lovetropics.minigames.common.minigames.IMinigameDefinition;
 import com.lovetropics.minigames.common.minigames.IMinigameInstance;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
 import com.mojang.datafixers.Dynamic;
+import net.minecraft.resources.IResource;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.ActionResultType;
@@ -38,7 +39,7 @@ public class LoadMapMinigameBehaviour implements IMinigameBehavior {
 	}
 
 	@Override
-	public ActionResult<ITextComponent> canStartMinigame(final IMinigameDefinition definition, final MinecraftServer server) {
+	public ActionResult<ITextComponent> canStart(final IMinigameDefinition definition, final MinecraftServer server) {
 		ServerWorld world = DimensionManager.getWorld(server, definition.getDimension(), false, false);
 
 		if (world != null) {
@@ -56,7 +57,8 @@ public class LoadMapMinigameBehaviour implements IMinigameBehavior {
 	}
 
 	@Override
-	public void onConstruct(IMinigameInstance minigame, MinecraftServer server) {
+	public void onConstruct(IMinigameInstance minigame) {
+		MinecraftServer server = minigame.getWorld().getServer();
 		try (MapExportReader reader = MapExportReader.open(server, loadFrom)) {
 			MapMetadata metadata = reader.loadInto(server, minigame.getDimension());
 

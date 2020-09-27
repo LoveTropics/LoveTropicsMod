@@ -54,12 +54,13 @@ public interface IMinigameManager
     /**
      * Finishes the actively running minigame, teleporting players back to
      * their original state before joining the minigame.
+     * @return 
      *
      * @throws IllegalStateException When there is no actively running
      * minigame instance. This method should never be called unless
      * it's certain a minigame is actively running.
      */
-    void finishCurrentMinigame() throws IllegalStateException;
+    ActionResult<ITextComponent> finishCurrentMinigame() throws IllegalStateException;
 
     /**
      * Starts polling the minigame.
