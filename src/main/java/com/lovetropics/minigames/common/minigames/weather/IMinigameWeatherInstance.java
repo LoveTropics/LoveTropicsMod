@@ -7,8 +7,10 @@ import net.minecraft.nbt.CompoundNBT;
 import net.minecraftforge.common.util.INBTSerializable;
 
 public interface IMinigameWeatherInstance extends INBTSerializable<CompoundNBT> {
+	
+	void onStart(IMinigameInstance minigame);
 
-	void tick(IMinigameInstance minigameDefinition);
+	void tick(IMinigameInstance minigame);
 
 	void tickPlayer(PlayerEntity player);
 
@@ -41,9 +43,12 @@ public interface IMinigameWeatherInstance extends INBTSerializable<CompoundNBT> 
 
 		@Override
 		public void deserializeNBT(CompoundNBT nbt) {}
+		
+		@Override
+		public void onStart(IMinigameInstance minigame) {}
 
 		@Override
-		public void tick(IMinigameInstance minigameDefinition) {}
+		public void tick(IMinigameInstance minigame) {}
 
 		@Override
 		public void tickPlayer(PlayerEntity player) {}
