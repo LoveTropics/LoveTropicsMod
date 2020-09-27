@@ -6,6 +6,7 @@ import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.ListNBT;
 import net.minecraftforge.common.util.Constants;
 
+import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.Set;
 
@@ -26,6 +27,16 @@ public final class MapRegions {
 
 	public Collection<MapRegion> get(String key) {
 		return regions.get(key);
+	}
+
+	@Nullable
+	public MapRegion getOne(String key) {
+		Collection<MapRegion> regions = this.regions.get(key);
+		if (!regions.isEmpty()) {
+			return regions.iterator().next();
+		} else {
+			return null;
+		}
 	}
 
 	public CompoundNBT write(CompoundNBT root) {

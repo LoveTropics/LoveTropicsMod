@@ -1,5 +1,6 @@
 package com.lovetropics.minigames.common.minigames.behaviours.instances.survive_the_tide;
 
+import com.lovetropics.minigames.common.map.MapRegion;
 import com.lovetropics.minigames.common.Util;
 import com.lovetropics.minigames.common.minigames.IMinigameInstance;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
@@ -14,6 +15,7 @@ import net.minecraft.particles.IParticleData;
 import net.minecraft.particles.ParticleTypes;
 import net.minecraft.potion.EffectInstance;
 import net.minecraft.potion.Effects;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.EntityPredicates;
 import net.minecraft.util.math.BlockPos;
@@ -25,7 +27,7 @@ import net.minecraft.world.server.ServerWorld;
 
 public class WorldBorderMinigameBehavior implements IMinigameBehavior
 {
-	private final BlockPos worldBorderCenter;
+	private final String worldBorderCenterKey;
 	private final ITextComponent collapseMessage;
 	private final long ticksUntilStart;
 	private final long delayUntilCollapse;
@@ -35,12 +37,14 @@ public class WorldBorderMinigameBehavior implements IMinigameBehavior
 	private final int damageAmount;
 	private final IParticleData borderParticle;
 
+	private BlockPos worldBorderCenter = BlockPos.ZERO;
+
 	private boolean borderCollapseMessageSent = false;
 	private final ServerBossInfo bossInfo;
 
-	public WorldBorderMinigameBehavior(final ITextComponent name, final BlockPos worldBorderCenter, final ITextComponent collapseMessage, final long ticksUntilStart,
+	public WorldBorderMinigameBehavior(final ITextComponent name, final String worldBorderCenterKey, final ITextComponent collapseMessage, final long ticksUntilStart,
 			final long delayUntilCollapse, final int particleRateDelay, final int particleHeight, final int damageRateDelay, final int damageAmount, final IParticleData borderParticle) {
-		this.worldBorderCenter = worldBorderCenter;
+		this.worldBorderCenterKey = worldBorderCenterKey;
 		this.collapseMessage = collapseMessage;
 		this.ticksUntilStart = ticksUntilStart;
 		this.delayUntilCollapse = delayUntilCollapse;
@@ -59,7 +63,7 @@ public class WorldBorderMinigameBehavior implements IMinigameBehavior
 
 	public static <T> WorldBorderMinigameBehavior parse(Dynamic<T> root) {
 		final ITextComponent name = Util.getText(root, "name");
-		final BlockPos worldBorderCenter = root.get("world_border_center").map(BlockPos::deserialize).orElse(BlockPos.ZERO);
+		final String worldBorderCenterKey = root.get("world_border_center").asString("");
 		final ITextComponent collapseMessage = Util.getText(root, "collapse_message");
 		final long ticksUntilStart = root.get("ticks_until_start").asLong(0);
 		final long delayUntilCollapse = root.get("delay_until_collapse").asLong(0);
@@ -79,8 +83,14 @@ public class WorldBorderMinigameBehavior implements IMinigameBehavior
 			e.printStackTrace();
 		}
 
-		return new WorldBorderMinigameBehavior(name, worldBorderCenter, collapseMessage, ticksUntilStart,
+		return new WorldBorderMinigameBehavior(name, worldBorderCenterKey, collapseMessage, ticksUntilStart,
 				delayUntilCollapse, particleRateDelay, particleHeight, damageRateDelay, damageAmount, borderParticle);
+	}
+
+	@Override
+	public void onConstruct(IMinigameInstance minigame, MinecraftServer server) {
+		MapRegion centerRegion = minigame.getMapRegions().getOne(worldBorderCenterKey);
+		worldBorderCenter = centerRegion != null ? new BlockPos(centerRegion.getCenter()) : BlockPos.ZERO;
 	}
 
 	@Override
