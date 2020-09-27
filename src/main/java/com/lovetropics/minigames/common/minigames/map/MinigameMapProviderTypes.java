@@ -12,6 +12,7 @@ public final class MinigameMapProviderTypes {
 	public static final Supplier<IForgeRegistry<MinigameMapProviderType<?>>> REGISTRY;
 
 	public static final RegistryObject<MinigameMapProviderType<LoadMapProvider>> LOAD_MAP;
+	public static final RegistryObject<MinigameMapProviderType<RandomMapProvider>> RANDOM;
 
 	public static <T extends IMinigameMapProvider> RegistryObject<MinigameMapProviderType<T>> register(final String name, final MinigameMapProviderType.Factory<T> instanceFactory) {
 		return REGISTER.register(name, () -> new MinigameMapProviderType<T>(instanceFactory));
@@ -20,5 +21,6 @@ public final class MinigameMapProviderTypes {
 	static {
 		REGISTRY = REGISTER.makeRegistry("minigame_map_providers", RegistryBuilder::new);
 		LOAD_MAP = register("load_map", LoadMapProvider::parse);
+		RANDOM = register("random", RandomMapProvider::parse);
 	}
 }

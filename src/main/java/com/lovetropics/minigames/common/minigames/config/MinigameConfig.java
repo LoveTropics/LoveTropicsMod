@@ -4,8 +4,6 @@ import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehaviorType;
 import com.lovetropics.minigames.common.minigames.behaviours.MinigameBehaviorTypes;
 import com.lovetropics.minigames.common.minigames.map.IMinigameMapProvider;
-import com.lovetropics.minigames.common.minigames.map.MinigameMapProviderType;
-import com.lovetropics.minigames.common.minigames.map.MinigameMapProviderTypes;
 import com.mojang.datafixers.Dynamic;
 import net.minecraft.util.ResourceLocation;
 import org.apache.commons.lang3.tuple.Pair;
@@ -42,15 +40,7 @@ public final class MinigameConfig {
     public static <T> MinigameConfig deserialize(ResourceLocation id, Dynamic<T> root) {
         String translationKey = root.get("translation_key").asString("");
 
-        Dynamic<T> mapRoot = root.get("map").orElseEmptyMap();
-
-        ResourceLocation mapProviderId = new ResourceLocation(mapRoot.get("type").asString(""));
-        MinigameMapProviderType<?> mapProviderType = MinigameMapProviderTypes.REGISTRY.get().getValue(mapProviderId);
-        if (mapProviderType == null) {
-            throw new RuntimeException("invalid map provider with id '" + mapProviderId + "'");
-        }
-
-        IMinigameMapProvider mapProvider = mapProviderType.create(mapRoot);
+        IMinigameMapProvider mapProvider = IMinigameMapProvider.parse(root.get("map").orElseEmptyMap());
 
         int minimumParticipants = root.get("minimum_participants").asInt(1);
         int maximumParticipants = root.get("maximum_participants").asInt(100);
