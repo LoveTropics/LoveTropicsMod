@@ -1,5 +1,9 @@
 package com.lovetropics.minigames.common.minigames.behaviours.instances.survive_the_tide;
 
+import java.util.function.Supplier;
+
+import javax.annotation.Nonnull;
+
 import com.lovetropics.minigames.common.minigames.IMinigameInstance;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
 import com.lovetropics.minigames.common.minigames.weather.IMinigameWeatherInstance;
@@ -10,11 +14,14 @@ import net.minecraft.world.World;
 
 public class WeatherEventsMinigameBehavior implements IMinigameBehavior
 {
+	@Nonnull
+	public static Supplier<? extends IMinigameWeatherInstance> WEATHER_IMPL = IMinigameWeatherInstance.Noop::new;
+
 	private IMinigameWeatherInstance minigameWeatherInstance;
 	private MinigameWeatherConfig config;
 
 	public WeatherEventsMinigameBehavior(final MinigameWeatherConfig config) {
-		this.minigameWeatherInstance = new IMinigameWeatherInstance.Noop(); // TODO new MinigameWeatherInstanceServer();
+		this.minigameWeatherInstance = WEATHER_IMPL.get();
 		this.config = config;
 	}
 
