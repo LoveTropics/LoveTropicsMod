@@ -37,14 +37,11 @@
         "participant_spawn_15",
         "participant_spawn_16"
       ],
-      "spectators": [
-        "spectator_spawn"
-      ]
+      "spectators": ["center"]
     },
     {
       "type": "ltminigames:survive_the_tide_ruleset",
-      "spawn_area_min": [5895, 133, 6954],
-      "spawn_area_max": [5928, 133, 6989],
+      "spawn_area_region": "spawn_area",
       "phase_to_free_participants": "phase1",
       "phases_with_no_pvp": [ "phase0", "phase1" ],
       "force_drop_items_on_death": true
@@ -106,8 +103,8 @@
     },
     {
       "type": "ltminigames:rising_tides",
-      "tide_area_min": [5722, 0, 6782],
-      "tide_area_max": [6102, 0, 7162],
+      "tide_area_region": "tide_area",
+      "iceberg_lines_region": "iceberg_lines",
       "water_levels": {
         "phase0": 126,
         "phase1": 126,
@@ -115,55 +112,13 @@
         "phase3": 150,
         "phase4": 150
       },
-      "iceberg_lines": [
-        {
-          "posA": [5964, 164, 6879],
-          "posB": [5826, 167, 6906]
-        },
-        {
-          "posA": [5807, 167, 6924],
-          "posB": [5840, 167, 7050]
-        },
-        {
-          "posA": [5865, 167, 7068],
-          "posB": [5983, 169, 7054]
-        },
-        {
-          "posA": [5968, 173, 6907],
-          "posB": [5859, 170, 7047]
-        },
-        {
-          "posA": [5894, 173, 6995],
-          "posB": [5894, 173, 6965]
-        },
-        {
-          "posA": [5894, 173, 6965],
-          "posB": [5923, 173, 6960]
-        },
-        {
-          "posA": [5925, 173, 6962],
-          "posB": [5928, 173, 6991]
-        },
-        {
-          "posA": [5897, 174, 7000],
-          "posB": [5932, 174, 6997]
-        },
-        {
-          "posA": [5892, 185, 6963],
-          "posB": [5930, 166, 6999]
-        },
-        {
-          "posA": [6011, 168, 7036],
-          "posB": [5987, 168, 6917]
-        }
-      ],
       "phases_icebergs_grow": [ "phase4" ],
       "iceberg_growth_tick_rate": 100
     },
     {
       "type": "ltminigames:world_border",
       "name": "Explosive Storm",
-      "world_border_center": [5912, 145, 6972],
+      "world_border_center": "center",
       "collapse_message": "THE EXPLOSIVE STORM HAS STARTED CLOSING IN!",
       "delay_until_collapse": 6000,
       "ticks_until_start": 21000,
