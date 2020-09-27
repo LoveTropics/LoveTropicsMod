@@ -2,6 +2,9 @@ package com.lovetropics.minigames.common.minigames.config;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
+import com.lovetropics.minigames.common.minigames.IMinigameManager;
+import com.lovetropics.minigames.common.minigames.MinigameDefinitionGeneric;
+import com.lovetropics.minigames.common.minigames.MinigameManager;
 import com.mojang.datafixers.Dynamic;
 import com.mojang.datafixers.types.JsonOps;
 import net.minecraft.resources.IResource;
@@ -39,6 +42,11 @@ public final class MinigameConfigs {
 	public static void init(MinecraftServer server) {
 		server.getResourceManager().addReloadListener((stage, resourceManager, preparationsProfiler, reloadProfiler, backgroundExecutor, gameExecutor) -> {
 			CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
+				IMinigameManager manager = MinigameManager.getInstance();
+				for (MinigameConfig config : GAME_CONFIGS.values()) {
+					manager.unregister(config.id);
+				}
+
 				GAME_CONFIGS.clear();
 
 				Collection<ResourceLocation> paths = resourceManager.getAllResourceLocations("games", file -> file.endsWith(".json"));
@@ -46,6 +54,7 @@ public final class MinigameConfigs {
 					try (IResource resource = resourceManager.getResource(path)) {
 						MinigameConfig config = loadConfig(path, resource);
 						GAME_CONFIGS.put(config.id, config);
+						manager.register(new MinigameDefinitionGeneric(config));
 					} catch (IOException e) {
 						LOGGER.error("Failed to load game config at {}", path, e);
 					}

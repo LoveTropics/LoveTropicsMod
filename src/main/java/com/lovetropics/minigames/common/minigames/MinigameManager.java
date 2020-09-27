@@ -6,8 +6,6 @@ import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.client.data.TropicraftLangKeys;
 import com.lovetropics.minigames.common.Util;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
-import com.lovetropics.minigames.common.minigames.config.MinigameConfig;
-import com.lovetropics.minigames.common.minigames.config.MinigameConfigs;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.nbt.CompoundNBT;
@@ -16,7 +14,11 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.ActionResultType;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.text.*;
+import net.minecraft.util.text.ChatType;
+import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.util.text.TextFormatting;
+import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.IWorld;
 import net.minecraft.world.chunk.ChunkStatus;
 import net.minecraft.world.dimension.DimensionType;
@@ -30,7 +32,12 @@ import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.world.ChunkDataEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.UUID;
 
 /**
  * Standard implementation of a minigame manager. Would prefer to do something other
@@ -86,10 +93,6 @@ public class MinigameManager implements IMinigameManager
     public static void init(MinecraftServer server) {
         INSTANCE = new MinigameManager(server);
         MinecraftForge.EVENT_BUS.register(INSTANCE);
-
-        for (MinigameConfig config : MinigameConfigs.getConfigs()) {
-            INSTANCE.register(new MinigameDefinitionGeneric(config));
-        }
     }
 
     /**
