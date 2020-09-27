@@ -1,5 +1,6 @@
 package com.lovetropics.minigames.common.map.workspace;
 
+import com.lovetropics.minigames.common.map.MapMetadata;
 import com.lovetropics.minigames.common.map.MapWorldSettings;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.world.dimension.DimensionType;
@@ -43,5 +44,10 @@ public final class MapWorkspace {
 	public void read(CompoundNBT root) {
 		regions.read(root.getCompound("regions"));
 		worldSettings.read(root.getCompound("settings"));
+	}
+
+	public void importFrom(MapMetadata metadata) {
+		regions.importFrom(metadata.regions);
+		worldSettings.importFrom(metadata.settings);
 	}
 }

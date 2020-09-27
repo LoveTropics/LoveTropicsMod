@@ -27,4 +27,9 @@ public final class MapWorldSettings {
 		this.timeOfDay = root.getLong("time_of_day");
 		this.gameRules.read(root.getCompound("game_rules"));
 	}
+
+	public void importFrom(MapWorldSettings settings) {
+		timeOfDay = settings.timeOfDay;
+		gameRules.read(settings.gameRules.write());
+	}
 }

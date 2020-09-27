@@ -1,7 +1,9 @@
 package com.lovetropics.minigames.common.map;
 
 import net.minecraft.nbt.CompressedStreamTools;
+import net.minecraft.resources.IResource;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.dimension.DimensionType;
 import net.minecraft.world.server.ServerWorld;
 import org.apache.commons.io.FileUtils;
@@ -21,6 +23,12 @@ public final class MapExportReader implements Closeable {
 
 	private MapExportReader(ZipInputStream input) {
 		this.input = input;
+	}
+
+	public static MapExportReader open(MinecraftServer server, ResourceLocation location) throws IOException {
+		ResourceLocation path = new ResourceLocation(location.getNamespace(), "maps/" + location.getPath() + ".zip");
+		IResource resource = server.getResourceManager().getResource(path);
+		return MapExportReader.open(resource.getInputStream());
 	}
 
 	public static MapExportReader open(InputStream input) {
