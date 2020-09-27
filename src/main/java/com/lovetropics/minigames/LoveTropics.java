@@ -123,12 +123,11 @@ public class LoveTropics {
     }
 
     private void onServerAboutToStart(final FMLServerAboutToStartEvent event) {
+        MinigameManager.init(event.getServer());
         MinigameConfigs.init(event.getServer());
     }
 
     private void onServerStarting(final FMLServerStartingEvent event) {
-        MinigameManager.init(event.getServer());
-
         CommandDispatcher<CommandSource> dispatcher = event.getCommandDispatcher();
         CommandPollMinigame.register(dispatcher);
         CommandRegisterMinigame.register(dispatcher);

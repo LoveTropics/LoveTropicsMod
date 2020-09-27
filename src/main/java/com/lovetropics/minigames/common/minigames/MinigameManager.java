@@ -19,7 +19,6 @@ import com.lovetropics.minigames.common.Util;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
 import com.lovetropics.minigames.common.minigames.config.MinigameConfig;
 import com.lovetropics.minigames.common.minigames.config.MinigameConfigs;
-
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.nbt.CompoundNBT;
@@ -45,6 +44,13 @@ import net.minecraftforge.event.entity.player.AttackEntityEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.world.ChunkDataEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.UUID;
 
 /**
  * Standard implementation of a minigame manager. Would prefer to do something other
@@ -100,10 +106,6 @@ public class MinigameManager implements IMinigameManager
     public static void init(MinecraftServer server) {
         INSTANCE = new MinigameManager(server);
         MinecraftForge.EVENT_BUS.register(INSTANCE);
-
-        for (MinigameConfig config : MinigameConfigs.getConfigs()) {
-            INSTANCE.register(new MinigameDefinitionGeneric(config));
-        }
     }
 
     /**
