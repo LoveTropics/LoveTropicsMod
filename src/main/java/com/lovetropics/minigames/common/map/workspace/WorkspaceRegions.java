@@ -138,6 +138,15 @@ public final class WorkspaceRegions implements Iterable<WorkspaceRegions.Entry> 
 		return regions;
 	}
 
+	public void importFrom(MapRegions regions) {
+		entries.clear();
+		for (String key : regions.keySet()) {
+			for (MapRegion region : regions.get(key)) {
+				add(key, region);
+			}
+		}
+	}
+
 	public static class Entry {
 		public final int id;
 		public final String key;
