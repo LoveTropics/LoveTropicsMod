@@ -1,16 +1,15 @@
 package com.lovetropics.minigames.common.command.minigames;
 
-import static net.minecraft.command.Commands.literal;
-
-import com.lovetropics.minigames.common.dimension.DimensionUtils;
+import com.lovetropics.minigames.common.map.workspace.MapWorkspaceDimension;
 import com.mojang.brigadier.CommandDispatcher;
-
 import net.minecraft.command.CommandSource;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.tileentity.ChestTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.world.World;
+
+import static net.minecraft.command.Commands.literal;
 
 public class CommandResetIslandChests {
 	public static void register(final CommandDispatcher<CommandSource> dispatcher) {
@@ -20,8 +19,8 @@ public class CommandResetIslandChests {
 			.executes(c -> {
 				World world = c.getSource().getWorld();
 
-				if (world.getDimension().getType() != DimensionUtils.SURVIVE_THE_TIDE_DIMENSION) {
-					c.getSource().sendFeedback(new StringTextComponent("Must use this command in survive the tide dimension"), true);
+				if (world.getDimension().getType().getModType() != MapWorkspaceDimension.MOD_DIMENSION.get()) {
+					c.getSource().sendFeedback(new StringTextComponent("Must use this command in workspace dimension"), true);
 					return 0;
 				}
 
@@ -33,7 +32,7 @@ public class CommandResetIslandChests {
 						CompoundNBT tag = new CompoundNBT();
 						cte.write(tag);
 
-						tag.putString("LootTable", "tropicraft:survivethetide");
+						tag.putString("LootTable", "ltminigames:survivethetide");
 
 						cte.read(tag);
 						cte.markDirty();
