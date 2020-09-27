@@ -44,13 +44,47 @@
       "spawn_area_region": "spawn_area",
       "phase_to_free_participants": "phase1",
       "phases_with_no_pvp": [ "phase0", "phase1" ],
-      "force_drop_items_on_death": true
+      "force_drop_items_on_death": true,
+      "message_on_set_players_free": {
+        "translate": "ltminigames.minigame.survive_the_tide_pvp_disabled",
+        "with": [
+          "2"
+        ],
+        "color": "yellow",
+        "bold": true
+      }
     },
     {
       "type": "ltminigames:fireworks_on_death"
     },
     {
-      "type": "ltminigames:survive_the_tide_win_condition"
+      "type": "ltminigames:survive_the_tide_win_condition",
+      "game_finish_tick_delay": 760,
+      "scheduled_game_finish_messages": {
+        "0": {
+          "text": "Through the rising sea levels, the volatile and chaotic weather, and the struggle to survive, one player remains: #winning_player.",
+          "color": "gray"
+        },
+        "140": {
+          "text": "\nThose who have fallen have been swept away by the encroaching tides that engulf countless landmasses in this dire future.",
+          "color": "gray"
+        },
+        "280": {
+          "text": "\nThe lone survivor of this island, #winning_player, has won - but at what cost? The world is not what it once was, and they must survive in this new apocalyptic land.",
+          "color": "gray"
+        },
+        "420": {
+          "text": "\nWhat would you do different next time? Together, we could stop this from becoming our future.",
+          "color": "gray"
+        },
+        "560": {
+          "translate": "ltminigames.minigame.finish",
+          "color": "gold"
+        }
+      },
+      "down_to_two_translation_key": "ltminigames.minigame.survive_the_tide_down_to_two",
+      "spawn_lightning_bolts_on_finish": true,
+      "lightning_bolt_spawn_tick_rate": 60
     },
     {
       "type": "ltminigames:weather_events",
@@ -68,12 +102,36 @@
     {
       "type": "ltminigames:scheduled_messages",
       "messages": {
-        "0": "ltminigames.minigame.survive_the_tide_intro1",
-        "140": "ltminigames.minigame.survive_the_tide_intro2",
-        "280": "ltminigames.minigame.survive_the_tide_intro3",
-        "420": "ltminigames.minigame.survive_the_tide_intro4",
-        "560": "ltminigames.minigame.survive_the_tide_intro5",
-        "2400": "ltminigames.minigame.survive_the_tide_pvp_enabled"
+        "0": {
+          "translate": "ltminigames.minigame.survive_the_tide_intro1",
+          "color": "gray",
+          "italic": true
+        },
+        "140": {
+          "translate": "ltminigames.minigame.survive_the_tide_intro2",
+          "color": "gray",
+          "italic": true
+        },
+        "280": {
+          "translate": "ltminigames.minigame.survive_the_tide_intro3",
+          "color": "gray",
+          "italic": true
+        },
+        "420": {
+          "translate": "ltminigames.minigame.survive_the_tide_intro4",
+          "color": "gray",
+          "italic": true
+        },
+        "560": {
+          "translate": "ltminigames.minigame.survive_the_tide_intro5",
+          "color": "gray",
+          "italic": true
+        },
+        "2400": {
+          "translate": "ltminigames.minigame.survive_the_tide_pvp_enabled",
+          "color": "red",
+          "bold": true
+        }
       }
     },
     {
@@ -103,8 +161,8 @@
     },
     {
       "type": "ltminigames:rising_tides",
-      "tide_area_region": "tide_area",
-      "iceberg_lines_region": "iceberg_lines",
+      "tide_area_min": [5722, 0, 6782],
+      "tide_area_max": [6102, 0, 7162],
       "water_levels": {
         "phase0": 126,
         "phase1": 126,
@@ -119,13 +177,18 @@
       "type": "ltminigames:world_border",
       "name": "Explosive Storm",
       "world_border_center": "center",
-      "collapse_message": "THE EXPLOSIVE STORM HAS STARTED CLOSING IN!",
+      "collapse_message": {
+        "translate": "THE EXPLOSIVE STORM HAS STARTED CLOSING IN!",
+        "color": "red",
+        "bold": true
+      },
       "delay_until_collapse": 6000,
       "ticks_until_start": 21000,
       "particle_rate_delay": 1,
       "particle_height": 110,
       "damage_rate_delay": 20,
-      "damage_amount": 4
+      "damage_amount": 4,
+      "border_particle": "minecraft:explosion"
     },
     {
       "type": "ltminigames:respawn_spectator"
