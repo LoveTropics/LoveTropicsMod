@@ -1,13 +1,12 @@
 package com.lovetropics.minigames.common.minigames;
 
-import java.util.Collection;
-import java.util.Optional;
-
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehaviorType;
-
+import com.lovetropics.minigames.common.minigames.map.IMinigameMapProvider;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.world.dimension.DimensionType;
+
+import java.util.Collection;
+import java.util.Optional;
 
 /**
  * Used as a discriminant for a registered minigame. Defines the logic of the
@@ -17,6 +16,8 @@ import net.minecraft.world.dimension.DimensionType;
  */
 public interface IMinigameDefinition
 {
+    IMinigameMapProvider getMapProvider();
+
     Collection<IMinigameBehavior> getAllBehaviours();
     
     <T extends IMinigameBehavior> Optional<T> getBehavior(IMinigameBehaviorType<T> type);
@@ -33,13 +34,6 @@ public interface IMinigameDefinition
      * @return The unlocalized key string for the name of this minigame.
      */
     String getUnlocalizedName();
-
-    /**
-     * The targeted dimension you'd like this minigame to teleport players to
-     * when they join as players or spectators.
-     * @return The dimension type players are teleported to when joining.
-     */
-    DimensionType getDimension();
 
     /**
      * Will not let you start the minigame without at least this amount of

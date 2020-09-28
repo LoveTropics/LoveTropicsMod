@@ -1,14 +1,14 @@
 {
   "id": "ltminigames:survive_the_tide",
   "translation_key": "survive_the_tide",
-  "dimension": "ltminigames:hunger_games",
   "minimum_participants": 3,
   "maximum_participants": 16,
+  "map_provider": {
+    "type": "ltminigames:load_map",
+    "load_from": "ltminigames:survive_the_tide",
+    "dimension": "ltminigames:hunger_games"
+  },
   "behaviors": [
-    {
-      "type": "ltminigames:load_map",
-      "load_from": "ltminigames:survive_the_tide"
-    },
     {
       "type": "ltminigames:isolate_player_state"
     },

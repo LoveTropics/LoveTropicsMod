@@ -3,9 +3,9 @@ package com.lovetropics.minigames.common.minigames.config;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehaviorType;
 import com.lovetropics.minigames.common.minigames.behaviours.MinigameBehaviorTypes;
+import com.lovetropics.minigames.common.minigames.map.IMinigameMapProvider;
 import com.mojang.datafixers.Dynamic;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.world.dimension.DimensionType;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.LinkedHashMap;
@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 public final class MinigameConfig {
     public final ResourceLocation id;
     public final String translationKey;
-    public final DimensionType dimension;
+    public final IMinigameMapProvider mapProvider;
     public final int minimumParticipants;
     public final int maximumParticipants;
     public final Map<IMinigameBehaviorType<?>, IMinigameBehavior> behaviors;
@@ -24,14 +24,14 @@ public final class MinigameConfig {
     public MinigameConfig(
             ResourceLocation id,
             String translationKey,
-            DimensionType dimension,
+            IMinigameMapProvider mapProvider,
             int minimumParticipants,
             int maximumParticipants,
             Map<IMinigameBehaviorType<?>, IMinigameBehavior> behaviors
     ) {
         this.id = id;
         this.translationKey = translationKey;
-        this.dimension = dimension;
+        this.mapProvider = mapProvider;
         this.minimumParticipants = minimumParticipants;
         this.maximumParticipants = maximumParticipants;
         this.behaviors = behaviors;
@@ -39,7 +39,8 @@ public final class MinigameConfig {
 
     public static <T> MinigameConfig deserialize(ResourceLocation id, Dynamic<T> root) {
         String translationKey = root.get("translation_key").asString("");
-        DimensionType dimension = DimensionType.byName(new ResourceLocation(root.get("dimension").asString("")));
+
+        IMinigameMapProvider mapProvider = IMinigameMapProvider.parse(root.get("map_provider").orElseEmptyMap());
 
         int minimumParticipants = root.get("minimum_participants").asInt(1);
         int maximumParticipants = root.get("maximum_participants").asInt(100);
@@ -58,7 +59,7 @@ public final class MinigameConfig {
         final MinigameConfig config = new MinigameConfig(
                 id,
                 translationKey,
-                dimension,
+                mapProvider,
                 minimumParticipants,
                 maximumParticipants,
                 behaviors

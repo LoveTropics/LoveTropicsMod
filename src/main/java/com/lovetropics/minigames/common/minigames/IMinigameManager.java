@@ -7,6 +7,7 @@ import net.minecraft.util.text.ITextComponent;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * Specification for a minigame manager. Used to register minigame definitions
@@ -81,7 +82,7 @@ public interface IMinigameManager
      * participants registered to the minigame, specified by the minigame definition.
      * @return The ActionResult of the start attempt.
      */
-    ActionResult<ITextComponent> start();
+    CompletableFuture<ActionResult<ITextComponent>> start();
 
     /**
      * Stops an actively running minigame.
