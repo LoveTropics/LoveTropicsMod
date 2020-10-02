@@ -3,6 +3,7 @@ package com.lovetropics.minigames.common.minigames;
 import com.lovetropics.minigames.common.map.MapRegions;
 import net.minecraft.command.CommandSource;
 import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.dimension.DimensionType;
 import net.minecraft.world.server.ServerWorld;
 
@@ -78,7 +79,9 @@ public interface IMinigameInstance
     CommandSource getCommandSource();
 
     MapRegions getMapRegions();
-    
+
+    MinecraftServer getServer();
+
     ServerWorld getWorld();
 
     /**

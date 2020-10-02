@@ -64,7 +64,7 @@ public class SurviveTheTideRulesetBehavior implements IMinigameBehavior
 	}
 
 	@Override
-	public void onConstruct(IMinigameInstance minigame) {
+	public void onStart(IMinigameInstance minigame) {
 		spawnArea = minigame.getMapRegions().getOne(spawnAreaKey);
 	}
 

@@ -5,8 +5,8 @@ import com.google.common.collect.Maps;
 import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.client.data.TropicraftLangKeys;
 import com.lovetropics.minigames.common.Util;
-import com.lovetropics.minigames.common.map.MapRegions;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
+import com.lovetropics.minigames.common.minigames.map.IMinigameMapProvider;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.nbt.CompoundNBT;
@@ -59,12 +59,12 @@ public class MinigameManager implements IMinigameManager
      * Is null when there is no minigame running. Isn't set until a game has finished polling
      * and has started.
      */
-    private IMinigameInstance currentInstance;
+    private MinigameInstance currentInstance;
 
     /**
      * Currently polling game. Is null when there is no minigame polling or a minigame is running.
      */
-    private IMinigameDefinition polling;
+    private MinigameInstance polling;
 
     /**
      * A list of players that are currently registered for the currently polling minigame.
@@ -122,6 +122,14 @@ public class MinigameManager implements IMinigameManager
     @Override
     public Collection<IMinigameDefinition> getAllMinigames() {
         return Collections.unmodifiableCollection(this.registeredMinigames.values());
+    }
+
+    @Override
+    public IMinigameInstance getActiveOrPollingMinigame() {
+        if (currentInstance != null) {
+            return currentInstance;
+        }
+        return polling;
     }
 
     @Override
@@ -186,7 +194,13 @@ public class MinigameManager implements IMinigameManager
         }
 
         IMinigameDefinition definition = this.registeredMinigames.get(minigameId);
-        this.polling = definition;
+        this.polling = new MinigameInstance(definition, server);
+
+        Exception err = dispatchToBehaviors(false, IMinigameBehavior::onConstruct);
+        if (err != null) {
+            this.polling = null;
+            return failException("Failed to construct behaviors", err);
+        }
 
         for (ServerPlayerEntity player : this.server.getPlayerList().getPlayers()) {
             player.sendMessage(new TranslationTextComponent(TropicraftLangKeys.COMMAND_MINIGAME_POLLING,
@@ -206,7 +220,7 @@ public class MinigameManager implements IMinigameManager
         }
 
         // Cache before killing the currently polled game
-        String minigameName = this.polling.getUnlocalizedName();
+        String minigameName = this.polling.getDefinition().getUnlocalizedName();
 
         this.polling = null;
         this.registeredForMinigame.clear();
@@ -233,30 +247,26 @@ public class MinigameManager implements IMinigameManager
             return new ActionResult<>(ActionResultType.FAIL, new TranslationTextComponent(TropicraftLangKeys.COMMAND_NOT_ENOUGH_PLAYERS, this.polling.getMinimumParticipantCount()));
         }*/
 
-        ActionResult<ITextComponent> openResult = polling.getMapProvider().canOpen(polling, server);
+        IMinigameDefinition pollingDefinition = polling.getDefinition();
+        IMinigameMapProvider mapProvider = pollingDefinition.getMapProvider();
+        ActionResult<ITextComponent> openResult = mapProvider.canOpen(pollingDefinition, server);
         if (openResult.getType() == ActionResultType.FAIL) {
         	return CompletableFuture.completedFuture(openResult);
         }
 
-        MapRegions regions = new MapRegions();
-        CompletableFuture<DimensionType> openMap = polling.getMapProvider().open(polling, server, regions);
+        CompletableFuture<DimensionType> openMap = mapProvider.open(polling, server);
 
         return openMap.thenApplyAsync(dimension -> {
-            this.currentInstance = new MinigameInstance(polling, server, dimension, regions);
+            this.currentInstance = this.polling;
+            this.polling = null;
 
             try {
-                Exception err = dispatchToBehaviors(false, IMinigameBehavior::onConstruct);
-                if (err != null) {
-                    this.currentInstance = null;
-                    return failException("Failed to construct behaviors", err);
-                }
-
                 ActionResult<ITextComponent> res = dispatchToBehaviors(b -> b.ensureValidity(this.currentInstance));
                 if (res.getType() == ActionResultType.FAIL) {
                     return res;
                 }
 
-                int playersAvailable = Math.min(this.registeredForMinigame.size(), this.polling.getMaximumParticipantCount());
+                int playersAvailable = Math.min(this.registeredForMinigame.size(), pollingDefinition.getMaximumParticipantCount());
                 List<UUID> chosenParticipants = Util.extractRandomElements(new Random(), this.registeredForMinigame, playersAvailable);
 
                 for (UUID playerUUID : chosenParticipants) {
@@ -273,7 +283,7 @@ public class MinigameManager implements IMinigameManager
                     }
                 }
 
-                err = dispatchToBehaviors(true, IMinigameBehavior::onStart);
+                Exception err = dispatchToBehaviors(true, IMinigameBehavior::onStart);
                 if (err != null) {
                     return failException("Failed to start behaviors", err);
                 }
@@ -289,7 +299,6 @@ public class MinigameManager implements IMinigameManager
                 }
                 return res;
             } finally {
-                this.polling = null;
                 this.registeredForMinigame.clear();
             }
         }, server);
@@ -330,14 +339,14 @@ public class MinigameManager implements IMinigameManager
 
         this.registeredForMinigame.add(player.getUniqueID());
 
-        if (this.registeredForMinigame.size() == this.polling.getMinimumParticipantCount()) {
+        if (this.registeredForMinigame.size() == this.polling.getDefinition().getMinimumParticipantCount()) {
             for (ServerPlayerEntity p : this.server.getPlayerList().getPlayers()) {
                 p.sendMessage(new TranslationTextComponent(TropicraftLangKeys.COMMAND_ENOUGH_PLAYERS).applyTextStyle(TextFormatting.AQUA));
             }
         }
 
         ITextComponent playerName = player.getDisplayName().deepCopy().applyTextStyle(TextFormatting.GOLD);
-        ITextComponent minigameName = new TranslationTextComponent(this.polling.getUnlocalizedName()).applyTextStyle(TextFormatting.GREEN);
+        ITextComponent minigameName = new TranslationTextComponent(this.polling.getDefinition().getUnlocalizedName()).applyTextStyle(TextFormatting.GREEN);
 
         for (ServerPlayerEntity p : this.server.getPlayerList().getPlayers()) {
             p.sendMessage(new TranslationTextComponent("%s has joined the %s minigame!", playerName, minigameName).applyTextStyle(TextFormatting.AQUA));
@@ -363,20 +372,20 @@ public class MinigameManager implements IMinigameManager
 
         this.registeredForMinigame.remove(player.getUniqueID());
 
-        if (this.registeredForMinigame.size() == this.polling.getMinimumParticipantCount() - 1) {
+        if (this.registeredForMinigame.size() == this.polling.getDefinition().getMinimumParticipantCount() - 1) {
             for (ServerPlayerEntity p : this.server.getPlayerList().getPlayers()) {
                 p.sendMessage(new TranslationTextComponent(TropicraftLangKeys.COMMAND_NO_LONGER_ENOUGH_PLAYERS).applyTextStyle(TextFormatting.RED));
             }
         }
 
-        ITextComponent minigameName = new TranslationTextComponent(this.polling.getUnlocalizedName()).applyTextStyle(TextFormatting.AQUA);
+        ITextComponent minigameName = new TranslationTextComponent(this.polling.getDefinition().getUnlocalizedName()).applyTextStyle(TextFormatting.AQUA);
         ITextComponent msg = new TranslationTextComponent(TropicraftLangKeys.COMMAND_UNREGISTERED_MINIGAME, minigameName).applyTextStyle(TextFormatting.RED);
 
         return new ActionResult<>(ActionResultType.SUCCESS, msg);
     }
 
     private Collection<IMinigameBehavior> getBehaviors() {
-        return this.currentInstance != null ? this.currentInstance.getDefinition().getAllBehaviours() : this.polling.getAllBehaviours();
+        return this.currentInstance != null ? this.currentInstance.getDefinition().getAllBehaviours() : this.polling.getDefinition().getAllBehaviours();
     }
 
     @SubscribeEvent
@@ -490,7 +499,7 @@ public class MinigameManager implements IMinigameManager
     	Exception res = null;
     	for (IMinigameBehavior behavior : getBehaviors()) {
     		try {
-    			action.accept(behavior, this.currentInstance);
+    			action.accept(behavior, getActiveOrPollingMinigame());
     		} catch (Exception e) {
     			if (stopOnError) {
     				stop();

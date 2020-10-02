@@ -2,7 +2,6 @@ package com.lovetropics.minigames.common.minigames.map;
 
 import com.lovetropics.minigames.common.map.MapExportReader;
 import com.lovetropics.minigames.common.map.MapMetadata;
-import com.lovetropics.minigames.common.map.MapRegions;
 import com.lovetropics.minigames.common.map.MapWorldInfo;
 import com.lovetropics.minigames.common.minigames.IMinigameDefinition;
 import com.lovetropics.minigames.common.minigames.IMinigameInstance;
@@ -63,10 +62,10 @@ public class LoadMapProvider implements IMinigameMapProvider {
 	}
 
 	@Override
-	public CompletableFuture<DimensionType> open(IMinigameDefinition definition, MinecraftServer server, MapRegions regions) {
+	public CompletableFuture<DimensionType> open(IMinigameInstance minigame, MinecraftServer server) {
 		return loadMap(server)
 				.thenApplyAsync(metadata -> {
-					regions.addAll(metadata.regions);
+					minigame.getMapRegions().addAll(metadata.regions);
 
 					ServerWorld world = server.getWorld(dimension);
 					ServerWorld overworld = server.getWorld(DimensionType.OVERWORLD);

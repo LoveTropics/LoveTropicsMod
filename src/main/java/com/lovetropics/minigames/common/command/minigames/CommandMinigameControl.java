@@ -20,7 +20,7 @@ public class CommandMinigameControl {
             literal("minigame")
                 .then(argument("control", StringArgumentType.string())
                     .suggests((context, builder) -> {
-                        IMinigameInstance minigame = MinigameManager.getInstance().getCurrentMinigame();
+                        IMinigameInstance minigame = MinigameManager.getInstance().getActiveOrPollingMinigame();
                         if (minigame != null) {
                             return ISuggestionProvider.suggest(minigame.getControlCommands().stream(), builder);
                         } else {
@@ -29,7 +29,7 @@ public class CommandMinigameControl {
                     })
                     .requires(src -> src.hasPermissionLevel(2))
                     .executes(ctx -> {
-                        IMinigameInstance minigame = MinigameManager.getInstance().getCurrentMinigame();
+                        IMinigameInstance minigame = MinigameManager.getInstance().getActiveOrPollingMinigame();
                         if (minigame != null) {
                             String control = StringArgumentType.getString(ctx, "control");
                             minigame.invokeControlCommand(control, ctx.getSource());

@@ -1,0 +1,32 @@
+{
+  "id": "ltminigames:volcano_spleef",
+  "translation_key": "volcano_spleef",
+  "map_provider": {
+    "type": "ltminigames:inline",
+    "dimension": "tropicraft:tropics"
+  },
+  "minimum_participants": 2,
+  "maximum_participants": 32,
+  "behaviors": [
+    {
+      "type": "ltminigames:bind_controls",
+      "controls": {
+        "menu": "function lt20:minigames/volcano_spleef/effects_menu/display_menu"
+      }
+    },
+    {
+      "type": "ltminigames:isolate_player_state"
+    },
+    {
+      "type": "ltminigames:set_game_types",
+      "participant": "adventure",
+      "spectator": "spectator"
+    },
+    {
+      "type": "ltminigames:commands",
+      "start": "function lt20:minigames/volcano_spleef/begin",
+      "player_join": "function lt20:minigames/volcano_spleef/player/join",
+      "finish": "function lt20:minigames/volcano_spleef/cancel"
+    }
+  ]
+}

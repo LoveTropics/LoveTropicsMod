@@ -45,6 +45,8 @@ public interface IMinigameManager
      */
     Collection<IMinigameDefinition> getAllMinigames();
 
+    IMinigameInstance getActiveOrPollingMinigame();
+
     /**
      * Holds metadata for which players
      * are participants and which are spectators.
