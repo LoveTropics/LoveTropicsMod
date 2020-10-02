@@ -260,6 +260,8 @@ public class MinigameManager implements IMinigameManager
             this.currentInstance = this.polling;
             this.polling = null;
 
+            currentInstance.setDimension(dimension);
+
             try {
                 ActionResult<ITextComponent> res = dispatchToBehaviors(b -> b.ensureValidity(this.currentInstance));
                 if (res.getType() == ActionResultType.FAIL) {
