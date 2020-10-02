@@ -26,7 +26,7 @@
       "type": "ltminigames:commands",
       "start": "function lt20:minigames/volcano_spleef/begin",
       "player_join": "function lt20:minigames/volcano_spleef/player/join",
-      "finish": "function lt20:minigames/volcano_spleef/cancel"
+      "cancel": "function lt20:minigames/volcano_spleef/cancel"
     }
   ]
 }

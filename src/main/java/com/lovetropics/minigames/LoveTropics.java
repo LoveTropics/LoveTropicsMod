@@ -5,18 +5,7 @@ import com.lovetropics.minigames.common.block.LoveTropicsBlocks;
 import com.lovetropics.minigames.common.block.TrashType;
 import com.lovetropics.minigames.common.command.CommandMap;
 import com.lovetropics.minigames.common.command.CommandReloadConfig;
-import com.lovetropics.minigames.common.command.minigames.CommandAddConfigIceberg;
-import com.lovetropics.minigames.common.command.minigames.CommandIslandSetStartPos;
-import com.lovetropics.minigames.common.command.minigames.CommandMinigameControl;
-import com.lovetropics.minigames.common.command.minigames.CommandPollMinigame;
-import com.lovetropics.minigames.common.command.minigames.CommandRegisterMinigame;
-import com.lovetropics.minigames.common.command.minigames.CommandResetIsland;
-import com.lovetropics.minigames.common.command.minigames.CommandResetIslandChests;
-import com.lovetropics.minigames.common.command.minigames.CommandSaveIsland;
-import com.lovetropics.minigames.common.command.minigames.CommandStartMinigame;
-import com.lovetropics.minigames.common.command.minigames.CommandStopMinigame;
-import com.lovetropics.minigames.common.command.minigames.CommandStopPollingMinigame;
-import com.lovetropics.minigames.common.command.minigames.CommandUnregisterMinigame;
+import com.lovetropics.minigames.common.command.minigames.*;
 import com.lovetropics.minigames.common.config.ConfigLT;
 import com.lovetropics.minigames.common.dimension.DimensionUtils;
 import com.lovetropics.minigames.common.dimension.biome.TropicraftBiomes;
@@ -132,7 +121,8 @@ public class LoveTropics {
         CommandPollMinigame.register(dispatcher);
         CommandRegisterMinigame.register(dispatcher);
         CommandStartMinigame.register(dispatcher);
-        CommandStopMinigame.register(dispatcher);
+        CommandFinishMinigame.register(dispatcher);
+        CommandCancelMinigame.register(dispatcher);
         CommandUnregisterMinigame.register(dispatcher);
         CommandStopPollingMinigame.register(dispatcher);
         CommandReloadConfig.register(dispatcher);
@@ -147,7 +137,7 @@ public class LoveTropics {
 
     private void onServerStopping(final FMLServerStoppingEvent event) {
         if (MinigameManager.getInstance().getCurrentMinigame() != null) {
-            MinigameManager.getInstance().finishCurrentMinigame();
+            MinigameManager.getInstance().finish();
         }
     }
 

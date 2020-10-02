@@ -69,6 +69,13 @@ public interface IMinigameBehavior
 	default void onPostFinish(final IMinigameInstance minigame) {}
 
 	/**
+	 * For when the minigame is canceled by a server operator.
+	 *
+	 * @param minigame The current minigame instance.
+	 */
+	default void onCancel(final IMinigameInstance minigame) {}
+
+	/**
 	 * Helper method to define unique logic for the minigame as it is running. Only
 	 * called when a minigame using this definition is actively running.
 	 * 

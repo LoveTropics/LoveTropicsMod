@@ -3,17 +3,16 @@ package com.lovetropics.minigames.common.command.minigames;
 import com.lovetropics.minigames.common.minigames.MinigameManager;
 import com.mojang.brigadier.CommandDispatcher;
 import net.minecraft.command.CommandSource;
-import net.minecraft.entity.player.ServerPlayerEntity;
 
 import static net.minecraft.command.Commands.literal;
 
-public class CommandStopMinigame {
+public class CommandCancelMinigame {
 	public static void register(final CommandDispatcher<CommandSource> dispatcher) {
 		dispatcher.register(
 			literal("minigame")
-			.then(literal("stop").requires(s -> s.hasPermissionLevel(2))
+			.then(literal("cancel").requires(s -> s.hasPermissionLevel(2))
 			.executes(c -> CommandMinigame.executeMinigameAction(() ->
-				MinigameManager.getInstance().stop(), c.getSource())))
+				MinigameManager.getInstance().cancel(), c.getSource())))
 		);
 	}
 }

@@ -138,9 +138,9 @@ public class MinigameManager implements IMinigameManager
     }
 
     @Override
-    public ActionResult<ITextComponent> finishCurrentMinigame() {
+    public ActionResult<ITextComponent> finish() {
         if (this.currentInstance == null) {
-            throw new IllegalStateException("Attempted to finish a current minigame when none are running.");
+            return new ActionResult<>(ActionResultType.FAIL, new TranslationTextComponent(TropicraftLangKeys.COMMAND_NO_MINIGAME));
         }
 
         try {
@@ -168,12 +168,28 @@ public class MinigameManager implements IMinigameManager
 
             currentInstance.getDefinition().getMapProvider().close(currentInstance);
 
-            return ActionResult.resultSuccess(new StringTextComponent(""));
+            ITextComponent minigameName = new TranslationTextComponent(this.currentInstance.getDefinition().getUnlocalizedName()).applyTextStyle(TextFormatting.AQUA);
+
+            return new ActionResult<>(ActionResultType.SUCCESS, new TranslationTextComponent(TropicraftLangKeys.COMMAND_STOPPED_MINIGAME, minigameName).applyTextStyle(TextFormatting.GREEN));
         } catch (Exception e) {
         	return failException("Unknown error finishing minigame", e);
         } finally {
         	this.currentInstance = null;
         }
+    }
+
+    @Override
+    public ActionResult<ITextComponent> cancel() {
+        if (currentInstance == null) {
+            return new ActionResult<>(ActionResultType.FAIL, new TranslationTextComponent(TropicraftLangKeys.COMMAND_NO_MINIGAME));
+        }
+
+        Exception err = dispatchToBehaviors(false, IMinigameBehavior::onCancel);
+        if (err != null) {
+            return failException("Failed to cancel behaviors", err);
+        }
+
+        return finish();
     }
 
     @Override
@@ -294,7 +310,7 @@ public class MinigameManager implements IMinigameManager
             } catch (Exception e) {
                 ActionResult<ITextComponent> res = failException("Unknown error starting minigame", e);
                 if (this.currentInstance != null) {
-                    ActionResult<ITextComponent> stopRes = stop();
+                    ActionResult<ITextComponent> stopRes = finish();
                     if (stopRes.getType() == ActionResultType.FAIL) {
                         return ActionResult.resultFail(res.getResult().appendSibling(stopRes.getResult()));
                     }
@@ -304,23 +320,6 @@ public class MinigameManager implements IMinigameManager
                 this.registeredForMinigame.clear();
             }
         }, server);
-    }
-
-    @Override
-    public ActionResult<ITextComponent> stop() {
-        // Can't stop a current minigame if doesn't exist
-        if (this.currentInstance == null) {
-            return new ActionResult<>(ActionResultType.FAIL, new TranslationTextComponent(TropicraftLangKeys.COMMAND_NO_MINIGAME));
-        }
-
-        ITextComponent minigameName = new TranslationTextComponent(this.currentInstance.getDefinition().getUnlocalizedName()).applyTextStyle(TextFormatting.AQUA);
-
-        ActionResult<ITextComponent> res = this.finishCurrentMinigame();
-        if (res.getType() == ActionResultType.FAIL) {
-        	return res;
-        }
-
-        return new ActionResult<>(ActionResultType.SUCCESS, new TranslationTextComponent(TropicraftLangKeys.COMMAND_STOPPED_MINIGAME, minigameName).applyTextStyle(TextFormatting.GREEN));
     }
 
     @Override
@@ -504,7 +503,7 @@ public class MinigameManager implements IMinigameManager
     			action.accept(behavior, getActiveOrPollingMinigame());
     		} catch (Exception e) {
     			if (stopOnError) {
-    				stop();
+    				cancel();
     			}
     			return e;
     		}

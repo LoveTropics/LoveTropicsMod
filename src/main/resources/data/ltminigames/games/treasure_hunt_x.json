@@ -20,7 +20,7 @@
       "type": "ltminigames:commands",
       "start": "function lt20:minigames/desert_dig/start",
       "player_join": "function lt20:minigames/desert_dig/join_digsite",
-      "finish": "function lt20:minigames/desert_dig/cancel"
+      "cancel": "function lt20:minigames/desert_dig/cancel"
     }
   ]
 }

@@ -21,7 +21,7 @@ public final class TimedMinigameBehavior implements IMinigameBehavior {
 	@Override
 	public void worldUpdate(IMinigameInstance minigame, World world) {
 		if (minigame.ticks() >= length) {
-			MinigameManager.getInstance().finishCurrentMinigame();
+			MinigameManager.getInstance().finish();
 		}
 	}
 }

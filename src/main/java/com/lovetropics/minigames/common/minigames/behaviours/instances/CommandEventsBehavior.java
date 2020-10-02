@@ -73,6 +73,11 @@ public final class CommandEventsBehavior extends CommandInvokeBehavior {
 	}
 
 	@Override
+	public void onCancel(IMinigameInstance minigame) {
+		this.invoke("cancel");
+	}
+
+	@Override
 	public void onPlayerHurt(IMinigameInstance minigame, LivingHurtEvent event) {
 		this.invoke("player_hurt", sourceForEntity(event.getEntity()));
 	}
