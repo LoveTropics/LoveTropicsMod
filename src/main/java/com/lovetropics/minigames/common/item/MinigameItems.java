@@ -17,7 +17,7 @@ public class MinigameItems {
     public static final ItemEntry<AcidRepellentUmbrellaItem> ACID_REPELLENT_UMBRELLA = REGISTRATE.item("acid_repellent_umbrella", AcidRepellentUmbrellaItem::new)
             .register();
 
-    public static final ItemEntry<EditRegionItem> MAKE_REGION = REGISTRATE.item("make_region", EditRegionItem::new)
+    public static final ItemEntry<EditRegionItem> EDIT_REGION = REGISTRATE.item("edit_region", EditRegionItem::new)
             .register();
     
     public static void init() {}
