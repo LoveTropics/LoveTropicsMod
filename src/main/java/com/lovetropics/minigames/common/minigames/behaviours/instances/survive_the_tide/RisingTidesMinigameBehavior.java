@@ -68,13 +68,17 @@ public class RisingTidesMinigameBehavior implements IMinigameBehavior
 	}
 
 	@Override
-	public void onConstruct(IMinigameInstance minigame) {
+	public void onMapReady(IMinigameInstance minigame) {
 		tideArea = minigame.getMapRegions().getOne(tideAreaKey);
 
 		icebergLines.clear();
 		for (MapRegion icebergLine : minigame.getMapRegions().get(icebergLinesKey)) {
 			icebergLines.add(new IcebergLine(icebergLine.min, icebergLine.max, 10));
 		}
+
+		minigame.getDefinition().getBehavior(MinigameBehaviorTypes.PHASES.get()).ifPresent(phases -> {
+			waterLevel = phaseToTideHeight.get(phases.getFirstPhase().getKey());
+		});
 	}
 
 	@Override
@@ -99,13 +103,6 @@ public class RisingTidesMinigameBehavior implements IMinigameBehavior
 			if (phasesIcebergsGrow.contains(phase.getKey()) && minigame.ticks() % icebergGrowthTickRate == 0) {
 				growIcebergs(world);
 			}
-		});
-	}
-
-	@Override
-	public void onStart(final IMinigameInstance minigame) {
-		minigame.getDefinition().getBehavior(MinigameBehaviorTypes.PHASES.get()).ifPresent(phases -> {
-			waterLevel = phaseToTideHeight.get(phases.getFirstPhase().getKey());
 		});
 	}
 

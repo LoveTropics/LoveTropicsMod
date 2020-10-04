@@ -1,7 +1,7 @@
 package com.lovetropics.minigames.common.minigames.behaviours.instances.survive_the_tide;
 
-import com.lovetropics.minigames.common.map.MapRegion;
 import com.lovetropics.minigames.common.Util;
+import com.lovetropics.minigames.common.map.MapRegion;
 import com.lovetropics.minigames.common.minigames.IMinigameInstance;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
 import com.mojang.brigadier.StringReader;
@@ -15,7 +15,6 @@ import net.minecraft.particles.IParticleData;
 import net.minecraft.particles.ParticleTypes;
 import net.minecraft.potion.EffectInstance;
 import net.minecraft.potion.Effects;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.EntityPredicates;
 import net.minecraft.util.math.BlockPos;
@@ -88,7 +87,7 @@ public class WorldBorderMinigameBehavior implements IMinigameBehavior
 	}
 
 	@Override
-	public void onConstruct(IMinigameInstance minigame) {
+	public void onMapReady(IMinigameInstance minigame) {
 		MapRegion centerRegion = minigame.getMapRegions().getOne(worldBorderCenterKey);
 		worldBorderCenter = centerRegion != null ? new BlockPos(centerRegion.getCenter()) : BlockPos.ZERO;
 	}

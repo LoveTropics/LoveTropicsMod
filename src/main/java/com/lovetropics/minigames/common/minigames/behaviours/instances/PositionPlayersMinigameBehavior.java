@@ -1,8 +1,5 @@
 package com.lovetropics.minigames.common.minigames.behaviours.instances;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.lovetropics.minigames.common.dimension.DimensionUtils;
 import com.lovetropics.minigames.common.map.MapRegion;
 import com.lovetropics.minigames.common.map.MapRegions;
@@ -10,13 +7,15 @@ import com.lovetropics.minigames.common.minigames.IMinigameInstance;
 import com.lovetropics.minigames.common.minigames.PlayerRole;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
 import com.mojang.datafixers.Dynamic;
-
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.ActionResultType;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class PositionPlayersMinigameBehavior implements IMinigameBehavior {
 	private final String[] participantSpawnKeys;
@@ -34,7 +33,7 @@ public class PositionPlayersMinigameBehavior implements IMinigameBehavior {
 	}
 
 	@Override
-	public void onConstruct(IMinigameInstance minigame) {
+	public void onMapReady(IMinigameInstance minigame) {
 		MapRegions regions = minigame.getMapRegions();
 
 		participantSpawnRegions.clear();

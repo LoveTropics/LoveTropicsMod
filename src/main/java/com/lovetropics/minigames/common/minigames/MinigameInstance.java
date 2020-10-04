@@ -30,23 +30,21 @@ public class MinigameInstance implements IMinigameInstance
 {
     private final MinecraftServer server;
     private final IMinigameDefinition definition;
-    private final DimensionType dimension;
+    private DimensionType dimension;
 
     private final MutablePlayerSet allPlayers;
     private final EnumMap<PlayerRole, MutablePlayerSet> roles = new EnumMap<>(PlayerRole.class);
 
-    private final MapRegions mapRegions;
+    private final MapRegions mapRegions = new MapRegions();
 
     private CommandSource commandSource;
 
     private final Map<String, Consumer<CommandSource>> controlCommands = new Object2ObjectOpenHashMap<>();
     private long ticks;
 
-    public MinigameInstance(IMinigameDefinition definition, MinecraftServer server, DimensionType dimension, MapRegions mapRegions) {
+    public MinigameInstance(IMinigameDefinition definition, MinecraftServer server) {
         this.definition = definition;
         this.server = server;
-        this.dimension = dimension;
-        this.mapRegions = mapRegions;
 
         this.allPlayers = new MutablePlayerSet(server);
 
@@ -177,6 +175,11 @@ public class MinigameInstance implements IMinigameInstance
     }
 
     @Override
+    public MinecraftServer getServer() {
+        return server;
+    }
+
+    @Override
     public ServerWorld getWorld() {
         return server.getWorld(dimension);
     }
@@ -190,5 +193,9 @@ public class MinigameInstance implements IMinigameInstance
     public long ticks()
     {
         return ticks;
+    }
+
+    public void setDimension(DimensionType dimension) {
+        this.dimension = dimension;
     }
 }

@@ -1,14 +1,6 @@
 package com.lovetropics.minigames.common.minigames.behaviours;
 
-import com.lovetropics.minigames.common.minigames.behaviours.instances.CommandInvokeBehavior;
-import com.lovetropics.minigames.common.minigames.behaviours.instances.FireworksOnDeathBehavior;
-import com.lovetropics.minigames.common.minigames.behaviours.instances.IsolatePlayerStateBehavior;
-import com.lovetropics.minigames.common.minigames.behaviours.instances.PhasesMinigameBehavior;
-import com.lovetropics.minigames.common.minigames.behaviours.instances.PositionPlayersMinigameBehavior;
-import com.lovetropics.minigames.common.minigames.behaviours.instances.RespawnSpectatorMinigameBehavior;
-import com.lovetropics.minigames.common.minigames.behaviours.instances.ScheduledMessagesBehavior;
-import com.lovetropics.minigames.common.minigames.behaviours.instances.SetGameTypesBehavior;
-import com.lovetropics.minigames.common.minigames.behaviours.instances.TimedMinigameBehavior;
+import com.lovetropics.minigames.common.minigames.behaviours.instances.*;
 import com.lovetropics.minigames.common.minigames.behaviours.instances.survive_the_tide.RisingTidesMinigameBehavior;
 import com.lovetropics.minigames.common.minigames.behaviours.instances.survive_the_tide.SurviveTheTideRulesetBehavior;
 import com.lovetropics.minigames.common.minigames.behaviours.instances.survive_the_tide.SurviveTheTideWinConditionBehavior;
@@ -30,7 +22,7 @@ public class MinigameBehaviorTypes {
 	public static final RegistryObject<IMinigameBehaviorType<WeatherEventsMinigameBehavior>> WEATHER_EVENTS;
 	public static final RegistryObject<IMinigameBehaviorType<TimedMinigameBehavior>> TIMED;
 	public static final RegistryObject<IMinigameBehaviorType<RespawnSpectatorMinigameBehavior>> RESPAWN_SPECTATOR;
-	public static final RegistryObject<IMinigameBehaviorType<CommandInvokeBehavior>> COMMANDS;
+	public static final RegistryObject<IMinigameBehaviorType<CommandEventsBehavior>> COMMANDS;
 	public static final RegistryObject<IMinigameBehaviorType<IsolatePlayerStateBehavior>> ISOLATE_PLAYER_STATE;
 	public static final RegistryObject<IMinigameBehaviorType<SetGameTypesBehavior>> SET_GAME_TYPES;
 	public static final RegistryObject<IMinigameBehaviorType<PhasesMinigameBehavior>> PHASES;
@@ -40,6 +32,7 @@ public class MinigameBehaviorTypes {
 	public static final RegistryObject<IMinigameBehaviorType<SurviveTheTideWinConditionBehavior>> SURVIVE_THE_TIDE_WIN_CONDITION;
 	public static final RegistryObject<IMinigameBehaviorType<FireworksOnDeathBehavior>> FIREWORKS_ON_DEATH;
 	public static final RegistryObject<IMinigameBehaviorType<SurviveTheTideRulesetBehavior>> SURVIVE_THE_TIDE_RULESET;
+	public static final RegistryObject<IMinigameBehaviorType<BindControlsBehavior>> BIND_CONTROLS;
 
 	public static <T extends IMinigameBehavior> RegistryObject<IMinigameBehaviorType<T>> register(final String name, final MinigameBehaviorType.Factory<T> instanceFactory) {
 		return MINIGAME_BEHAVIOURS_REGISTER.register(name, () -> new MinigameBehaviorType<>(instanceFactory));
@@ -61,7 +54,7 @@ public class MinigameBehaviorTypes {
 		WEATHER_EVENTS = register("weather_events", WeatherEventsMinigameBehavior::parse);
 		TIMED = register("timed", TimedMinigameBehavior::parse);
 		RESPAWN_SPECTATOR = registerInstance("respawn_spectator", RespawnSpectatorMinigameBehavior.INSTANCE);
-		COMMANDS = register("commands", CommandInvokeBehavior::parse);
+		COMMANDS = register("commands", CommandEventsBehavior::parse);
 		ISOLATE_PLAYER_STATE = register("isolate_player_state", IsolatePlayerStateBehavior::parse);
 		SET_GAME_TYPES = register("set_game_types", SetGameTypesBehavior::parse);
 		PHASES = register("phases", PhasesMinigameBehavior::parse);
@@ -71,5 +64,6 @@ public class MinigameBehaviorTypes {
 		SURVIVE_THE_TIDE_WIN_CONDITION = register("survive_the_tide_win_condition", SurviveTheTideWinConditionBehavior::parse);
 		FIREWORKS_ON_DEATH = register("fireworks_on_death", FireworksOnDeathBehavior::parse);
 		SURVIVE_THE_TIDE_RULESET = register("survive_the_tide_ruleset", SurviveTheTideRulesetBehavior::parse);
+		BIND_CONTROLS = register("bind_controls", BindControlsBehavior::parse);
 	}
 }

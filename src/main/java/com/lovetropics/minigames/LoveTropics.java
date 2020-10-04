@@ -123,7 +123,8 @@ public class LoveTropics {
         CommandPollMinigame.register(dispatcher);
         CommandRegisterMinigame.register(dispatcher);
         CommandStartMinigame.register(dispatcher);
-        CommandStopMinigame.register(dispatcher);
+        CommandFinishMinigame.register(dispatcher);
+        CommandCancelMinigame.register(dispatcher);
         CommandUnregisterMinigame.register(dispatcher);
         CommandStopPollingMinigame.register(dispatcher);
         CommandReloadConfig.register(dispatcher);
@@ -138,7 +139,7 @@ public class LoveTropics {
 
     private void onServerStopping(final FMLServerStoppingEvent event) {
         if (MinigameManager.getInstance().getCurrentMinigame() != null) {
-            MinigameManager.getInstance().finishCurrentMinigame();
+            MinigameManager.getInstance().finish();
         }
 
         MapWorkspaceDimension.closeServer();

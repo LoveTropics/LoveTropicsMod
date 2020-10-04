@@ -103,7 +103,7 @@ public class SurviveTheTideWinConditionBehavior implements IMinigameBehavior
 			sendGameFinishMessages(minigame);
 
 			if (this.minigameEndedTimer >= gameFinishTickDelay) {
-				MinigameManager.getInstance().finishCurrentMinigame();
+				MinigameManager.getInstance().finish();
 			}
 
 			this.minigameEndedTimer++;

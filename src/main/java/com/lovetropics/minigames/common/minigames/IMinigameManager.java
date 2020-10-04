@@ -46,6 +46,8 @@ public interface IMinigameManager
      */
     Collection<IMinigameDefinition> getAllMinigames();
 
+    IMinigameInstance getActiveOrPollingMinigame();
+
     /**
      * Holds metadata for which players
      * are participants and which are spectators.
@@ -56,13 +58,13 @@ public interface IMinigameManager
     /**
      * Finishes the actively running minigame, teleporting players back to
      * their original state before joining the minigame.
-     * @return 
-     *
-     * @throws IllegalStateException When there is no actively running
-     * minigame instance. This method should never be called unless
-     * it's certain a minigame is actively running.
      */
-    ActionResult<ITextComponent> finishCurrentMinigame() throws IllegalStateException;
+    ActionResult<ITextComponent> finish();
+
+    /**
+     * Cancels the actively running minigame. Inherents all logic of {@link IMinigameManager#finish()}
+     */
+    ActionResult<ITextComponent> cancel();
 
     /**
      * Starts polling the minigame.
@@ -83,12 +85,6 @@ public interface IMinigameManager
      * @return The ActionResult of the start attempt.
      */
     CompletableFuture<ActionResult<ITextComponent>> start();
-
-    /**
-     * Stops an actively running minigame.
-     * @return The ActionResult of the stop attempt.
-     */
-    ActionResult<ITextComponent> stop();
 
     /**
      * Registers a player for the currently polling minigame. Puts them in a queue

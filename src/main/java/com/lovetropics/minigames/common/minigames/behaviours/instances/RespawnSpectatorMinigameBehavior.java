@@ -19,7 +19,7 @@ public final class RespawnSpectatorMinigameBehavior implements IMinigameBehavior
 		}
 
 		if (minigame.getParticipants().isEmpty()) {
-			MinigameManager.getInstance().finishCurrentMinigame();
+			MinigameManager.getInstance().finish();
 		}
 
 		player.inventory.dropAllItems();

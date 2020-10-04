@@ -1,11 +1,8 @@
 package com.lovetropics.minigames.common.minigames.dimensions;
 
-import javax.annotation.Nullable;
-
 import com.lovetropics.minigames.common.config.ConfigLT;
 import com.lovetropics.minigames.common.dimension.biome.TropicraftBiomes;
 import com.lovetropics.minigames.common.map.VoidChunkGenerator;
-
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
@@ -24,6 +21,8 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.fml.RegistryObject;
 import net.minecraftforge.registries.ForgeRegistries;
+
+import javax.annotation.Nullable;
 
 public class SurviveTheTideDimension extends Dimension {
     
@@ -87,6 +86,11 @@ public class SurviveTheTideDimension extends Dimension {
      */
     @Override
     public boolean isSurfaceWorld() {
+        return true;
+    }
+
+    @Override
+    public boolean hasSkyLight() {
         return true;
     }
 

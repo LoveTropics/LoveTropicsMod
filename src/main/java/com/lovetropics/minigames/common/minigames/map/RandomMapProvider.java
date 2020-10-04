@@ -1,6 +1,5 @@
 package com.lovetropics.minigames.common.minigames.map;
 
-import com.lovetropics.minigames.common.map.MapRegions;
 import com.lovetropics.minigames.common.minigames.IMinigameDefinition;
 import com.lovetropics.minigames.common.minigames.IMinigameInstance;
 import com.mojang.datafixers.Dynamic;
@@ -38,8 +37,8 @@ public final class RandomMapProvider implements IMinigameMapProvider {
 	}
 
 	@Override
-	public CompletableFuture<DimensionType> open(IMinigameDefinition definition, MinecraftServer server, MapRegions regions) {
-		return nextMapProvider.open(definition, server, regions);
+	public CompletableFuture<DimensionType> open(IMinigameInstance minigame, MinecraftServer server) {
+		return nextMapProvider.open(minigame, server);
 	}
 
 	@Override
