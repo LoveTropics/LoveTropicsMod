@@ -4,6 +4,7 @@ import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.common.Util;
 import com.lovetropics.minigames.common.map.MapWorldInfo;
 import com.lovetropics.minigames.common.map.MapWorldSettings;
+import com.lovetropics.minigames.common.map.generator.ConfiguredGenerator;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.ListNBT;
@@ -40,16 +41,20 @@ public final class MapWorkspaceManager extends WorldSavedData {
 		return overworld.getSavedData().getOrCreate(() -> new MapWorkspaceManager(server), ID);
 	}
 
-	public MapWorkspace openWorkspace(String id) {
-		DimensionType dimension = DimensionManager.registerOrGetDimension(Util.resource(id), MapWorkspaceDimension.MOD_DIMENSION.get(), null, true);
+	public MapWorkspace openWorkspace(String id, ConfiguredGenerator generator) {
+		DimensionType dimension = getOrCreateDimension(id);
 
 		ServerWorld overworld = server.getWorld(DimensionType.OVERWORLD);
 		MapWorldSettings settings = MapWorldSettings.createFrom(overworld.getWorldInfo());
 
-		MapWorkspace workspace = new MapWorkspace(id, dimension, settings);
+		MapWorkspace workspace = new MapWorkspace(id, dimension, generator, settings);
 		this.workspaces.putIfAbsent(id, workspace);
 
 		return workspace;
+	}
+
+	private DimensionType getOrCreateDimension(String id) {
+		return DimensionManager.registerOrGetDimension(Util.resource(id), MapWorkspaceDimension.MOD_DIMENSION.get(), null, true);
 	}
 
 	public boolean deleteWorkspace(String id) {
@@ -112,9 +117,10 @@ public final class MapWorkspaceManager extends WorldSavedData {
 			CompoundNBT workspaceRoot = workspaceList.getCompound(i);
 
 			String id = workspaceRoot.getString("id");
-			MapWorkspace workspace = openWorkspace(id);
+			DimensionType dimension = getOrCreateDimension(id);
 
-			workspace.read(workspaceRoot);
+			MapWorkspace workspace = MapWorkspace.read(id, dimension, workspaceRoot);
+			this.workspaces.put(id, workspace);
 		}
 	}
 

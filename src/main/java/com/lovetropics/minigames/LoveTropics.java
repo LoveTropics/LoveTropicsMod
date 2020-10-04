@@ -114,6 +114,8 @@ public class LoveTropics {
     private void onServerAboutToStart(final FMLServerAboutToStartEvent event) {
         MinigameManager.init(event.getServer());
         MinigameConfigs.init(event.getServer());
+
+        MapWorkspaceDimension.openServer(event.getServer());
     }
 
     private void onServerStarting(final FMLServerStartingEvent event) {
@@ -139,6 +141,8 @@ public class LoveTropics {
         if (MinigameManager.getInstance().getCurrentMinigame() != null) {
             MinigameManager.getInstance().finish();
         }
+
+        MapWorkspaceDimension.closeServer();
     }
 
     private void gatherData(GatherDataEvent event) {

@@ -2,6 +2,7 @@ package com.lovetropics.minigames.common.map.workspace;
 
 import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.common.map.VoidChunkGenerator;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.MathHelper;
@@ -11,6 +12,7 @@ import net.minecraft.world.dimension.Dimension;
 import net.minecraft.world.dimension.DimensionType;
 import net.minecraft.world.gen.ChunkGenerator;
 import net.minecraft.world.gen.ChunkGeneratorType;
+import net.minecraft.world.gen.Heightmap;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.ModDimension;
@@ -25,13 +27,35 @@ public final class MapWorkspaceDimension extends Dimension {
 		return ModDimension.withFactory(MapWorkspaceDimension::new);
 	});
 
+	private static MinecraftServer openServer;
+
 	public MapWorkspaceDimension(World world, DimensionType dimensionType) {
 		super(world, dimensionType, 0.0F);
 	}
 
+	public static void openServer(MinecraftServer server) {
+		openServer = server;
+	}
+
+	public static void closeServer() {
+		openServer = null;
+	}
+
 	@Override
 	public ChunkGenerator<?> createChunkGenerator() {
-		// TODO: allow specifying chunk generator
+		if (openServer != null) {
+			MapWorkspaceManager workspaceManager = MapWorkspaceManager.get(openServer);
+			MapWorkspace workspace = workspaceManager.getWorkspace(getType());
+
+			if (workspace != null) {
+				return workspace.getGenerator().createGenerator(world);
+			}
+		}
+
+		return createVoidGenerator();
+	}
+
+	private ChunkGenerator<?> createVoidGenerator() {
 		ChunkGeneratorType<VoidChunkGenerator.Settings, VoidChunkGenerator> type = VoidChunkGenerator.TYPE.get();
 
 		VoidChunkGenerator.Settings settings = type.createSettings();
@@ -40,12 +64,16 @@ public final class MapWorkspaceDimension extends Dimension {
 
 	@Override
 	public BlockPos findSpawn(ChunkPos chunkPos, boolean checkValid) {
-		return new BlockPos(chunkPos.getXStart() + 8, 64, chunkPos.getZStart() + 8);
+		return findSpawn(chunkPos.getXStart() + 8, chunkPos.getZStart() + 8, checkValid);
 	}
 
 	@Override
-	public BlockPos findSpawn(int posX, int posZ, boolean checkValid) {
-		return new BlockPos(posX, 64, posZ);
+	public BlockPos findSpawn(int x, int z, boolean checkValid) {
+		int height = world.getHeight(Heightmap.Type.MOTION_BLOCKING, x, z);
+		if (height <= 0) {
+			height = 64;
+		}
+		return new BlockPos(x, height, z);
 	}
 
 	@Override
