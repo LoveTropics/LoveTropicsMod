@@ -5,6 +5,7 @@ import com.lovetropics.minigames.client.map.RegionEditOperator;
 import com.lovetropics.minigames.client.map.RegionTraceTarget;
 import com.lovetropics.minigames.common.network.LTNetwork;
 import com.lovetropics.minigames.common.network.map.UpdateWorkspaceRegionMessage;
+import net.minecraft.client.Minecraft;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
@@ -30,7 +31,7 @@ public final class EditRegionItem extends Item {
 	public ActionResult<ItemStack> onItemRightClick(World world, PlayerEntity player, Hand hand) {
 		ItemStack stack = player.getHeldItem(hand);
 
-		if (world.isRemote) {
+		if (world.isRemote && isClientPlayer(player)) {
 			RegionTraceTarget traceResult = MapWorkspaceTracer.trace(player);
 			if (traceResult == null) {
 				return ActionResult.resultPass(stack);
@@ -52,7 +53,7 @@ public final class EditRegionItem extends Item {
 
 	@Override
 	public boolean onEntitySwing(ItemStack stack, LivingEntity entity) {
-		if (entity.world.isRemote && entity.ticksExisted != useTick) {
+		if (entity.world.isRemote && entity.ticksExisted != useTick && isClientPlayer(entity)) {
 			mode = mode.getNext();
 
 			MapWorkspaceTracer.stopEditing();
@@ -66,6 +67,10 @@ public final class EditRegionItem extends Item {
 		}
 
 		return false;
+	}
+
+	private static boolean isClientPlayer(LivingEntity entity) {
+		return Minecraft.getInstance().player == entity;
 	}
 
 	enum Mode {
