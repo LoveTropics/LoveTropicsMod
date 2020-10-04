@@ -4,6 +4,8 @@ import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.common.dimension.DimensionUtils;
 import com.lovetropics.minigames.common.map.*;
+import com.lovetropics.minigames.common.map.generator.ConfiguredGenerator;
+import com.lovetropics.minigames.common.map.generator.ConfiguredGenerators;
 import com.lovetropics.minigames.common.map.workspace.MapWorkspace;
 import com.lovetropics.minigames.common.map.workspace.MapWorkspaceManager;
 import com.mojang.brigadier.Command;
@@ -54,7 +56,13 @@ public final class CommandMap {
 				.requires(source -> source.hasPermissionLevel(2))
                 .then(literal("open")
                     .then(argument("id", StringArgumentType.word())
-                    .executes(CommandMap::openMap)
+						.then(ConfiguredGeneratorArgument.argument("generator")
+						.executes(context ->{
+							ConfiguredGenerator generator = ConfiguredGeneratorArgument.get(context, "generator");
+							return openMap(context, generator);
+						})
+					)
+						.executes(context -> openMap(context, ConfiguredGenerators.VOID))
                 ))
 				.then(literal("delete")
 					.then(MapWorkspaceArgument.argument("id")
@@ -72,7 +80,13 @@ public final class CommandMap {
 				))
 				.then(literal("import")
 					.then(argument("location", ResourceLocationArgument.resourceLocation())
-						.executes(CommandMap::importMap)
+							.then(ConfiguredGeneratorArgument.argument("generator")
+							.executes(context ->{
+								ConfiguredGenerator generator = ConfiguredGeneratorArgument.get(context, "generator");
+								return importMap(context, generator);
+							})
+						)
+							.executes(context -> importMap(context, ConfiguredGenerators.VOID))
 					)
 				)
 				.then(literal("region")
@@ -91,7 +105,7 @@ public final class CommandMap {
         // @formatter:on
 	}
 
-	private static int openMap(CommandContext<CommandSource> context) throws CommandSyntaxException {
+	private static int openMap(CommandContext<CommandSource> context, ConfiguredGenerator generator) throws CommandSyntaxException {
 		CommandSource source = context.getSource();
 		MapWorkspaceManager workspaceManager = MapWorkspaceManager.get(source.getServer());
 
@@ -100,15 +114,16 @@ public final class CommandMap {
 			throw WORKSPACE_ALREADY_EXISTS.create(id);
 		}
 
-		workspaceManager.openWorkspace(id);
+		workspaceManager.openWorkspace(id, generator);
 
 		ITextComponent message = new StringTextComponent("Opened workspace with id '" + id + "'. ").applyTextStyles(TextFormatting.AQUA);
 		ITextComponent join = new StringTextComponent("Click here to join")
 				.applyTextStyle(style -> {
+					String command = "/minigame map join " + id;
 					style.setColor(TextFormatting.BLUE)
 							.setUnderlined(true)
-							.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/minigame map join " + id))
-							.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new StringTextComponent("Join this map workspace")));
+							.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, command))
+							.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new StringTextComponent(command)));
 				});
 
 		source.sendFeedback(message.appendSibling(join), false);
@@ -248,7 +263,7 @@ public final class CommandMap {
 		return workspace;
 	}
 
-	private static int importMap(CommandContext<CommandSource> context) throws CommandSyntaxException {
+	private static int importMap(CommandContext<CommandSource> context, ConfiguredGenerator generator) throws CommandSyntaxException {
 		ResourceLocation location = ResourceLocationArgument.getResourceLocation(context, "location");
 		String id = location.getPath();
 
@@ -259,7 +274,7 @@ public final class CommandMap {
 			throw WORKSPACE_ALREADY_EXISTS.create(id);
 		}
 
-		MapWorkspace workspace = workspaceManager.openWorkspace(id);
+		MapWorkspace workspace = workspaceManager.openWorkspace(id, generator);
 
 		CompletableFuture.runAsync(() -> {
 			try {
