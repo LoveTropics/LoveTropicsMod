@@ -1,9 +1,8 @@
 package com.lovetropics.minigames.common.minigames.behaviours.instances.survive_the_tide;
 
 import com.google.common.collect.ImmutableList;
-import com.lovetropics.minigames.client.data.TropicraftLangKeys;
-import com.lovetropics.minigames.common.map.MapRegion;
 import com.lovetropics.minigames.common.Util;
+import com.lovetropics.minigames.common.map.MapRegion;
 import com.lovetropics.minigames.common.minigames.IMinigameInstance;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehaviorType;
@@ -19,7 +18,6 @@ import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.potion.EffectInstance;
 import net.minecraft.potion.Effects;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.world.GameRules;
@@ -64,7 +62,7 @@ public class SurviveTheTideRulesetBehavior implements IMinigameBehavior
 	}
 
 	@Override
-	public void onStart(IMinigameInstance minigame) {
+	public void onMapReady(IMinigameInstance minigame) {
 		spawnArea = minigame.getMapRegions().getOne(spawnAreaKey);
 	}
 

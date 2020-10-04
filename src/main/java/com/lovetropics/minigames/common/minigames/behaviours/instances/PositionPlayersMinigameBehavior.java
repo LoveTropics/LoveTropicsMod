@@ -33,7 +33,7 @@ public class PositionPlayersMinigameBehavior implements IMinigameBehavior {
 	}
 
 	@Override
-	public void onStart(IMinigameInstance minigame) {
+	public void onMapReady(IMinigameInstance minigame) {
 		MapRegions regions = minigame.getMapRegions();
 
 		participantSpawnRegions.clear();

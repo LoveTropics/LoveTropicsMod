@@ -277,6 +277,11 @@ public class MinigameManager implements IMinigameManager
 
             currentInstance.setDimension(dimension);
 
+            Exception err = dispatchToBehaviors(true, IMinigameBehavior::onMapReady);
+            if (err != null) {
+                return failException("Failed to send map ready to behaviors", err);
+            }
+
             try {
                 ActionResult<ITextComponent> res = dispatchToBehaviors(b -> b.ensureValidity(this.currentInstance));
                 if (res.getType() == ActionResultType.FAIL) {
@@ -296,7 +301,7 @@ public class MinigameManager implements IMinigameManager
 					this.currentInstance.addPlayer(player, PlayerRole.SPECTATOR);
 				}
 
-                Exception err = dispatchToBehaviors(true, IMinigameBehavior::onStart);
+                err = dispatchToBehaviors(true, IMinigameBehavior::onStart);
                 if (err != null) {
                     return failException("Failed to start behaviors", err);
                 }

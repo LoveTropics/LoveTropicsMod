@@ -28,6 +28,14 @@ public interface IMinigameBehavior
 	default void onConstruct(final IMinigameInstance minigame) {}
 
 	/**
+	 * When the map finishes loading. Useful for collecting metadata from the map
+	 *
+	 * @param minigame The minigame that is being constructed
+	 * @param server   The current minecraft server object.
+	 */
+	default void onMapReady(final IMinigameInstance minigame) {}
+
+	/**
 	 * Ensure that this behavior is in a valid state before starting the minigame.
 	 * 
 	 * @param minigame The current minigame instance, which has not yet been started

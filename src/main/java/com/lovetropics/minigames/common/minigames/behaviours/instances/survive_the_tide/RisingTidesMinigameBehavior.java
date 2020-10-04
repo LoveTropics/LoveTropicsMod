@@ -68,7 +68,7 @@ public class RisingTidesMinigameBehavior implements IMinigameBehavior
 	}
 
 	@Override
-	public void onStart(IMinigameInstance minigame) {
+	public void onMapReady(IMinigameInstance minigame) {
 		tideArea = minigame.getMapRegions().getOne(tideAreaKey);
 
 		icebergLines.clear();
