@@ -5,6 +5,7 @@ import net.minecraft.util.ActionResult;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.ITextComponent;
 
+import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.concurrent.CompletableFuture;
 
@@ -93,9 +94,10 @@ public interface IMinigameManager
      * Registers a player for the currently polling minigame. Puts them in a queue
      * to be selected as either a participant or a spectator when the minigame starts.
      * @param player The player being registered for the currently polling minigame.
+     * @param requestedRole The role that this player has requested to join as, or null if they have no preference
      * @return The ActionResult of the register attempt.
      */
-    ActionResult<ITextComponent> registerFor(ServerPlayerEntity player);
+    ActionResult<ITextComponent> registerFor(ServerPlayerEntity player, @Nullable PlayerRole requestedRole);
 
     /**
      * Unregisters a player for a currently polling minigame if they've registered
