@@ -3,8 +3,6 @@ package com.lovetropics.minigames.common.minigames;
 import com.google.common.collect.Maps;
 import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.client.data.TropicraftLangKeys;
-import com.lovetropics.minigames.common.Util;
-import com.lovetropics.minigames.common.map.MapRegions;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
 import com.lovetropics.minigames.common.minigames.map.IMinigameMapProvider;
 import net.minecraft.entity.Entity;
@@ -370,7 +368,7 @@ public class MinigameManager implements IMinigameManager
 
         this.registrations.remove(player.getUniqueID());
 
-        if (this.registrations.participantCount() == this.polling.getDefintion().getMinimumParticipantCount() - 1) {
+        if (this.registrations.participantCount() == this.polling.getDefinition().getMinimumParticipantCount() - 1) {
             for (ServerPlayerEntity p : this.server.getPlayerList().getPlayers()) {
                 p.sendMessage(new TranslationTextComponent(TropicraftLangKeys.COMMAND_NO_LONGER_ENOUGH_PLAYERS).applyTextStyle(TextFormatting.RED));
             }

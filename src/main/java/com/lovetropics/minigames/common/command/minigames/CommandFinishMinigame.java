@@ -12,7 +12,7 @@ public class CommandFinishMinigame {
 			literal("minigame")
 			.then(literal("finish").requires(s -> s.getEntity() == null)
 			.executes(c -> CommandMinigame.executeMinigameAction(() ->
-				MinigameManager.getInstance().stop(), c.getSource())))
+				MinigameManager.getInstance().finish(), c.getSource())))
 		);
 	}
 }
