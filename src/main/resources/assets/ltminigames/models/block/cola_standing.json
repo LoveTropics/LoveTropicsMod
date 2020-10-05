@@ -2,7 +2,7 @@
 	"credit": "Made with Blockbench",
     "parent": "block/block",
 	"textures": {
-		"0": "lovetropics:block/trash",
+		"0": "ltminigames:block/trash",
         "particle": "block/glass"
 	},
 	"elements": [
