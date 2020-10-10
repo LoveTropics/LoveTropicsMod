@@ -30,6 +30,8 @@ public final class MinigameConfigs {
 	private static final JsonParser PARSER = new JsonParser();
 
 	public static void init(MinecraftServer server) {
+		GAME_CONFIGS.clear();
+
 		server.getResourceManager().addReloadListener((stage, resourceManager, preparationsProfiler, reloadProfiler, backgroundExecutor, gameExecutor) -> {
 			CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
 				IMinigameManager manager = MinigameManager.getInstance();
