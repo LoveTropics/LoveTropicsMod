@@ -18,11 +18,15 @@ public final class MapWorkspace {
 	private final WorkspaceRegions regions;
 
 	MapWorkspace(String id, DimensionType dimension, ConfiguredGenerator generator, MapWorldSettings worldSettings) {
+		this(id, dimension, generator, worldSettings, new WorkspaceRegions(dimension));
+	}
+
+	MapWorkspace(String id, DimensionType dimension, ConfiguredGenerator generator, MapWorldSettings worldSettings, WorkspaceRegions regions) {
 		this.id = id;
 		this.dimension = dimension;
 		this.generator = generator;
 		this.worldSettings = worldSettings;
-		this.regions = new WorkspaceRegions(dimension);
+		this.regions = regions;
 	}
 
 	public String getId() {
@@ -64,7 +68,7 @@ public final class MapWorkspace {
 			generator = ConfiguredGenerators.VOID;
 		}
 
-		return new MapWorkspace(id, dimension, generator, worldSettings);
+		return new MapWorkspace(id, dimension, generator, worldSettings, regions);
 	}
 
 	public void importFrom(MapMetadata metadata) {
