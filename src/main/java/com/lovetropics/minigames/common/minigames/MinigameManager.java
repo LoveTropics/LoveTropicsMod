@@ -469,8 +469,8 @@ public class MinigameManager implements IMinigameManager
     public void onWorldTick(TickEvent.WorldTickEvent event) {
         if (event.phase == TickEvent.Phase.END) {
             if (this.currentInstance != null && event.world.getDimension().getType() == this.currentInstance.getDimension()) {
-                dispatchToBehaviors(true, IMinigameBehavior::worldUpdate, event.world);
                 this.currentInstance.update();
+                dispatchToBehaviors(true, IMinigameBehavior::worldUpdate, event.world);
             }
         }
     }
