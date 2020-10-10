@@ -13,7 +13,10 @@ import net.minecraft.state.properties.BlockStateProperties;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.shapes.ISelectionContext;
 import net.minecraft.util.math.shapes.VoxelShape;
+import net.minecraft.world.IBlockReader;
 import net.minecraft.world.IWorld;
 
 public class TrashBlock extends CustomShapeBlock implements IWaterLoggable {
@@ -54,6 +57,12 @@ public class TrashBlock extends CustomShapeBlock implements IWaterLoggable {
         }
 
         return super.updatePostPlacement(stateIn, facing, facingState, worldIn, currentPos, facingPos);
+    }
+
+    @Override
+    public VoxelShape getShape(BlockState state, IBlockReader worldIn, BlockPos pos, ISelectionContext context) {
+    	Vec3d offset = state.getOffset(worldIn, pos);
+    	return super.getShape(state, worldIn, pos, context).withOffset(offset.x, offset.y, offset.z);
     }
 
     @Override

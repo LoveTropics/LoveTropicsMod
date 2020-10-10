@@ -12,12 +12,12 @@ import net.minecraft.util.math.shapes.VoxelShape;
 
 public enum TrashType implements NonNullSupplier<Block> {
 
-    CAN(9, 7),
-    CHIP_BAG(16, 1),
+    CAN(6, 7),
+    CHIP_BAG(14, 1),
     COLA_STANDING(5, 9),
     COLA(9, 5),
     PLASTIC_BAG(16, 1),
-    PLASTIC_BOTTLE(12, 5),
+    PLASTIC_BOTTLE(12, 6),
     PLASTIC_RINGS(16, 1),
     STRAW(8, 1),
     ;
