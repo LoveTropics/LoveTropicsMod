@@ -8,11 +8,7 @@ import com.lovetropics.minigames.common.minigames.PlayerRole;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
 import com.mojang.datafixers.Dynamic;
 import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.ActionResultType;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.StringTextComponent;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -46,15 +42,6 @@ public class PositionPlayersMinigameBehavior implements IMinigameBehavior {
 		for (String key : spectatorSpawnKeys) {
 			spectatorSpawnRegions.addAll(regions.get(key));
 		}
-	}
-	
-	@Override
-	public ActionResult<ITextComponent> ensureValidity(IMinigameInstance minigame) {	
-		if (participantSpawnKeys.length != minigame.getDefinition().getMaximumParticipantCount()) {
-			return new ActionResult<>(ActionResultType.FAIL, new StringTextComponent("The participant positions length doesn't match the " +
-					"maximum participant count defined by the following minigame definition! " + minigame.getDefinition().getID()));
-		}
-		return IMinigameBehavior.super.ensureValidity(minigame);
 	}
 
 	public static <T> PositionPlayersMinigameBehavior parse(Dynamic<T> root) {

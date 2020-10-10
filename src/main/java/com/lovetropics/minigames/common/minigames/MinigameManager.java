@@ -26,6 +26,7 @@ import net.minecraftforge.event.entity.living.LivingEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.player.AttackEntityEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.world.ChunkDataEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import org.apache.logging.log4j.util.TriConsumer;
@@ -508,6 +509,18 @@ public class MinigameManager implements IMinigameManager
         if (this.polling != null) {
             if (this.registrations.contains(player.getUniqueID())) {
                 this.unregisterFor((ServerPlayerEntity) event.getPlayer());
+            }
+        }
+    }
+
+    @SubscribeEvent
+    public void onPlayerInteractEntity(PlayerInteractEvent.EntityInteract event) {
+        if (event.getPlayer() instanceof ServerPlayerEntity) {
+            ServerPlayerEntity player = (ServerPlayerEntity) event.getPlayer();
+
+            if (this.currentInstance != null && this.currentInstance.getPlayers().contains(player)) {
+                dispatchToBehaviors(true, (b, m) -> b.onPlayerInteractEntity(m, player, event.getTarget(), event.getHand()));
+                this.currentInstance.update();
             }
         }
     }

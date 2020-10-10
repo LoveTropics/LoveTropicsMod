@@ -1,6 +1,8 @@
 package com.lovetropics.minigames.common.minigames.behaviours;
 
 import com.lovetropics.minigames.common.minigames.behaviours.instances.*;
+import com.lovetropics.minigames.common.minigames.behaviours.instances.collaborative_conservation.RecordCreaturesBehavior;
+import com.lovetropics.minigames.common.minigames.behaviours.instances.collaborative_conservation.SpawnCreaturesBehavior;
 import com.lovetropics.minigames.common.minigames.behaviours.instances.survive_the_tide.RisingTidesMinigameBehavior;
 import com.lovetropics.minigames.common.minigames.behaviours.instances.survive_the_tide.SurviveTheTideRulesetBehavior;
 import com.lovetropics.minigames.common.minigames.behaviours.instances.survive_the_tide.SurviveTheTideWinConditionBehavior;
@@ -33,6 +35,9 @@ public class MinigameBehaviorTypes {
 	public static final RegistryObject<IMinigameBehaviorType<FireworksOnDeathBehavior>> FIREWORKS_ON_DEATH;
 	public static final RegistryObject<IMinigameBehaviorType<SurviveTheTideRulesetBehavior>> SURVIVE_THE_TIDE_RULESET;
 	public static final RegistryObject<IMinigameBehaviorType<BindControlsBehavior>> BIND_CONTROLS;
+	public static final RegistryObject<IMinigameBehaviorType<CancelPlayerDamageBehavior>> CANCEL_PLAYER_DAMAGE;
+	public static final RegistryObject<IMinigameBehaviorType<SpawnCreaturesBehavior>> SPAWN_CREATURES;
+	public static final RegistryObject<IMinigameBehaviorType<RecordCreaturesBehavior>> RECORD_CREATURES;
 	public static final RegistryObject<IMinigameBehaviorType<SetGameRulesBehavior>> SET_GAME_RULES;
 
 	public static <T extends IMinigameBehavior> RegistryObject<IMinigameBehaviorType<T>> register(final String name, final MinigameBehaviorType.Factory<T> instanceFactory) {
@@ -66,6 +71,9 @@ public class MinigameBehaviorTypes {
 		FIREWORKS_ON_DEATH = register("fireworks_on_death", FireworksOnDeathBehavior::parse);
 		SURVIVE_THE_TIDE_RULESET = register("survive_the_tide_ruleset", SurviveTheTideRulesetBehavior::parse);
 		BIND_CONTROLS = register("bind_controls", BindControlsBehavior::parse);
+		CANCEL_PLAYER_DAMAGE = register("cancel_player_damage", CancelPlayerDamageBehavior::parse);
+		SPAWN_CREATURES = register("spawn_creatures", SpawnCreaturesBehavior::parse);
+		RECORD_CREATURES = register("record_creatures", RecordCreaturesBehavior::parse);
 		SET_GAME_RULES = register("set_game_rules", SetGameRulesBehavior::parse);
 	}
 }
