@@ -2,6 +2,7 @@ package com.lovetropics.minigames.common.minigames;
 
 import com.lovetropics.minigames.common.map.MapRegions;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.ICommandSource;
@@ -18,7 +19,6 @@ import java.util.EnumMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.function.Consumer;
 
 /**
  * Default implementation of a minigame instance. Simple and naive
@@ -39,7 +39,7 @@ public class MinigameInstance implements IMinigameInstance
 
     private CommandSource commandSource;
 
-    private final Map<String, Consumer<CommandSource>> controlCommands = new Object2ObjectOpenHashMap<>();
+    private final Map<String, ControlCommandHandler> controlCommands = new Object2ObjectOpenHashMap<>();
     private long ticks;
 
     public MinigameInstance(IMinigameDefinition definition, MinecraftServer server) {
@@ -125,15 +125,15 @@ public class MinigameInstance implements IMinigameInstance
     }
 
     @Override
-    public void addControlCommand(String name, Consumer<CommandSource> task) {
+    public void addControlCommand(String name, ControlCommandHandler task) {
         this.controlCommands.put(name, task);
     }
 
     @Override
-    public void invokeControlCommand(String name, CommandSource source) {
-        Consumer<CommandSource> task = this.controlCommands.get(name);
+    public void invokeControlCommand(String name, CommandSource source) throws CommandSyntaxException {
+        ControlCommandHandler task = this.controlCommands.get(name);
         if (task != null) {
-            task.accept(source);
+            task.run(source);
         }
     }
 

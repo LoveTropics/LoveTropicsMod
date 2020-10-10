@@ -1,6 +1,7 @@
 package com.lovetropics.minigames.common.minigames;
 
 import com.lovetropics.minigames.common.map.MapRegions;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.command.CommandSource;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.server.MinecraftServer;
@@ -8,7 +9,6 @@ import net.minecraft.world.dimension.DimensionType;
 import net.minecraft.world.server.ServerWorld;
 
 import java.util.Set;
-import java.util.function.Consumer;
 
 /**
  * An instance used to track which participants and spectators are inside
@@ -42,9 +42,9 @@ public interface IMinigameInstance
      * @param name the command name to use
      * @param task the task to run when the command is invoked
      */
-    void addControlCommand(String name, Consumer<CommandSource> task);
+    void addControlCommand(String name, ControlCommandHandler task);
 
-    void invokeControlCommand(String name, CommandSource source);
+    void invokeControlCommand(String name, CommandSource source) throws CommandSyntaxException;
 
     Set<String> getControlCommands();
 

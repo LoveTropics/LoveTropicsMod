@@ -1,6 +1,7 @@
 package com.lovetropics.minigames.common.dimension;
 
 import com.lovetropics.minigames.LoveTropics;
+import com.lovetropics.minigames.common.minigames.dimensions.CollaborativeConservationDimension;
 import com.lovetropics.minigames.common.minigames.dimensions.SurviveTheTideDimension;
 import com.tterrag.registrate.Registrate;
 import com.tterrag.registrate.util.entry.RegistryEntry;
@@ -22,6 +23,12 @@ public class DimensionUtils {
 			.keepLoaded(false)
 			.hasSkyLight(true)
 			.dimensionTypeCallback(t -> SURVIVE_THE_TIDE_DIMENSION = t)
+			.register();
+
+	public static final RegistryEntry<ModDimension> COLLABORATIVE_CONSERVATION_MOD_DIMENSION = REGISTRATE
+			.dimension("collaborative_conservation_game", CollaborativeConservationDimension::new)
+			.keepLoaded(false)
+			.hasSkyLight(true)
 			.register();
 
 	public static void init() {
