@@ -3,6 +3,7 @@ package com.lovetropics.minigames.common.minigames;
 import com.google.common.collect.Maps;
 import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.client.data.TropicraftLangKeys;
+import com.lovetropics.minigames.common.Scheduler;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
 import com.lovetropics.minigames.common.minigames.map.IMinigameMapProvider;
 import net.minecraft.entity.Entity;
@@ -271,55 +272,58 @@ public class MinigameManager implements IMinigameManager
 
         CompletableFuture<DimensionType> openMap = mapProvider.open(polling, server);
 
-        return openMap.thenApplyAsync(dimension -> {
-            this.currentInstance = this.polling;
-            this.polling = null;
+        return openMap
+                .thenComposeAsync(dimension -> {
+                    this.currentInstance = this.polling;
+                    this.polling = null;
 
-            currentInstance.setDimension(dimension);
+                    currentInstance.setDimension(dimension);
 
-            Exception err = dispatchToBehaviors(true, IMinigameBehavior::onMapReady);
-            if (err != null) {
-                return failException("Failed to send map ready to behaviors", err);
-            }
-
-            try {
-                ActionResult<ITextComponent> res = dispatchToBehaviors(b -> b.ensureValidity(this.currentInstance));
-                if (res.getType() == ActionResultType.FAIL) {
-                    return res;
-                }
-
-				Set<ServerPlayerEntity> participants = new HashSet<>();
-				Set<ServerPlayerEntity> spectators = new HashSet<>();
-
-				registrations.collectInto(server, participants, spectators, pollingDefinition.getMaximumParticipantCount());
-
-				for (ServerPlayerEntity player : participants) {
-					this.currentInstance.addPlayer(player, PlayerRole.PARTICIPANT);
-				}
-
-				for (ServerPlayerEntity player : spectators) {
-					this.currentInstance.addPlayer(player, PlayerRole.SPECTATOR);
-				}
-
-                err = dispatchToBehaviors(true, IMinigameBehavior::onStart);
-                if (err != null) {
-                    return failException("Failed to start behaviors", err);
-                }
-
-                return new ActionResult<>(ActionResultType.SUCCESS, new TranslationTextComponent(TropicraftLangKeys.COMMAND_MINIGAME_STARTED).applyTextStyle(TextFormatting.GREEN));
-            } catch (Exception e) {
-                ActionResult<ITextComponent> res = failException("Unknown error starting minigame", e);
-                if (this.currentInstance != null) {
-                    ActionResult<ITextComponent> stopRes = finish();
-                    if (stopRes.getType() == ActionResultType.FAIL) {
-                        return ActionResult.resultFail(res.getResult().appendSibling(stopRes.getResult()));
+                    Exception err = dispatchToBehaviors(true, IMinigameBehavior::onMapReady);
+                    if (err != null) {
+                        return CompletableFuture.completedFuture(failException("Failed to send map ready to behaviors", err));
                     }
-                }
-                return res;
-            } finally {
-                this.registrations.clear();
-            }
-        }, server);
+
+                    ActionResult<ITextComponent> res = dispatchToBehaviors(b -> b.ensureValidity(this.currentInstance));
+                    if (res.getType() == ActionResultType.FAIL) {
+                        return CompletableFuture.completedFuture(res);
+                    }
+
+                    Set<ServerPlayerEntity> participants = new HashSet<>();
+                    Set<ServerPlayerEntity> spectators = new HashSet<>();
+
+                    registrations.collectInto(server, participants, spectators, pollingDefinition.getMaximumParticipantCount());
+
+                    for (ServerPlayerEntity player : participants) {
+                        this.currentInstance.addPlayer(player, PlayerRole.PARTICIPANT);
+                    }
+
+                    for (ServerPlayerEntity player : spectators) {
+                        this.currentInstance.addPlayer(player, PlayerRole.SPECTATOR);
+                    }
+
+                    return Scheduler.INSTANCE.submit(server -> {
+                        Exception startErr = dispatchToBehaviors(true, IMinigameBehavior::onStart);
+                        if (startErr != null) {
+                            return failException("Failed to start behaviors", startErr);
+                        }
+                        return new ActionResult<>(ActionResultType.SUCCESS, new TranslationTextComponent(TropicraftLangKeys.COMMAND_MINIGAME_STARTED).applyTextStyle(TextFormatting.GREEN));
+                    }, 1);
+                }, server)
+                .handleAsync((result, throwable) -> {
+                    this.registrations.clear();
+                    if (throwable instanceof Exception) {
+                        ActionResult<ITextComponent> res = failException("Unknown error starting minigame", (Exception) throwable);
+                        if (this.currentInstance != null) {
+                            ActionResult<ITextComponent> stopRes = finish();
+                            if (stopRes.getType() == ActionResultType.FAIL) {
+                                return ActionResult.resultFail(res.getResult().appendSibling(stopRes.getResult()));
+                            }
+                        }
+                        return res;
+                    }
+                    return result;
+                }, server);
     }
     
     @Override
