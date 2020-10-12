@@ -16,11 +16,6 @@ public interface PlayerSet extends Iterable<ServerPlayerEntity> {
 		}
 
 		@Override
-		public boolean contains(Entity entity) {
-			return false;
-		}
-
-		@Override
 		public boolean contains(UUID id) {
 			return false;
 		}
@@ -43,7 +38,9 @@ public interface PlayerSet extends Iterable<ServerPlayerEntity> {
 
 	void addListener(Listeners listeners);
 
-	boolean contains(Entity entity);
+	default boolean contains(Entity entity) {
+		return this.contains(entity.getUniqueID());
+	}
 
 	boolean contains(UUID id);
 
