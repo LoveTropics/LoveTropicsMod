@@ -3,6 +3,7 @@ package com.lovetropics.minigames.common.minigames.behaviours.instances.conserva
 import com.lovetropics.minigames.common.map.MapRegion;
 import com.lovetropics.minigames.common.minigames.IMinigameInstance;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
+import com.lovetropics.minigames.common.minigames.behaviours.MinigameBehaviorTypes;
 import com.mojang.datafixers.Dynamic;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
@@ -28,8 +29,17 @@ public final class SpawnCreaturesBehavior implements IMinigameBehavior {
 
 	@Override
 	public void onStart(IMinigameInstance minigame) {
+		int spawnedCount = spawnEntities(minigame);
+		minigame.getBehavior(MinigameBehaviorTypes.RECORD_CREATURES.get()).ifPresent(record -> {
+			record.setTotalEntityCount(spawnedCount);
+		});
+	}
+
+	private int spawnEntities(IMinigameInstance minigame) {
 		ServerWorld world = minigame.getWorld();
 		Random random = world.getRandom();
+
+		int count = 0;
 
 		for (EntitySpawner spawner : this.entitySpawners) {
 			String regionKey = spawner.region;
@@ -52,9 +62,14 @@ public final class SpawnCreaturesBehavior implements IMinigameBehavior {
 				Entity entity = entityType.spawn(world, null, null, null, pos, SpawnReason.SPAWN_EGG, true, false);
 				if (entity instanceof MobEntity) {
 					((MobEntity) entity).enablePersistence();
+					entity.setInvulnerable(true);
 				}
+
+				count++;
 			}
 		}
+
+		return count;
 	}
 
 	private BlockPos findSurface(ServerWorld world, BlockPos pos) {

@@ -17,6 +17,8 @@ import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.potion.EffectInstance;
 import net.minecraft.potion.Effects;
+import net.minecraft.scoreboard.ScorePlayerTeam;
+import net.minecraft.scoreboard.ServerScoreboard;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
@@ -42,29 +44,36 @@ public final class RecordCreaturesBehavior implements IMinigameBehavior {
 
 	private final RecordList globalRecords = new RecordList();
 
-	private final long time;
-	private final long closeTime;
+	// TODO: keep track of the actual entities so that we can maybe give hints / handle if the entities die?
+	private int totalEntityCount;
 
-	private final ServerBossInfo timerBar = new ServerBossInfo(
-			new StringTextComponent("Time Remaining"),
+	private long closeTime;
+
+	private ScorePlayerTeam firstDiscoveryTeam;
+
+	private final ServerBossInfo progressBar = new ServerBossInfo(
+			new StringTextComponent("Creatures Recorded"),
 			BossInfo.Color.GREEN,
 			BossInfo.Overlay.PROGRESS
 	);
 
 	private boolean closing;
 
-	RecordCreaturesBehavior(long time) {
-		this.time = time;
-		this.closeTime = time + CLOSE_TIME;
+	public static <T> RecordCreaturesBehavior parse(Dynamic<T> root) {
+		return new RecordCreaturesBehavior();
 	}
 
-	public static <T> RecordCreaturesBehavior parse(Dynamic<T> root) {
-		long time = root.get("time").asLong(20 * 60 * 10);
-		return new RecordCreaturesBehavior(time);
+	public void setTotalEntityCount(int totalEntityCount) {
+		this.totalEntityCount = totalEntityCount;
+		this.updateRecordedProgressBar();
 	}
 
 	@Override
 	public void onStart(IMinigameInstance minigame) {
+		ServerScoreboard scoreboard = minigame.getServer().getScoreboard();
+		firstDiscoveryTeam = scoreboard.createTeam("first_discovery");
+		firstDiscoveryTeam.setColor(TextFormatting.GREEN);
+
 		minigame.addControlCommand("teleport_back", source -> {
 			ServerPlayerEntity player = source.asPlayer();
 			PlayerData data = getDataFor(player);
@@ -82,49 +91,29 @@ public final class RecordCreaturesBehavior implements IMinigameBehavior {
 	public void onPlayerJoin(IMinigameInstance minigame, ServerPlayerEntity player, PlayerRole role) {
 		player.addItemStackToInventory(new ItemStack(MinigameItems.RECORD_CREATURE.get()));
 
-		this.timerBar.addPlayer(player);
+		this.progressBar.addPlayer(player);
 	}
 
 	@Override
 	public void onPlayerLeave(IMinigameInstance minigame, ServerPlayerEntity player) {
-		this.timerBar.removePlayer(player);
+		this.progressBar.removePlayer(player);
 	}
 
 	@Override
 	public void worldUpdate(IMinigameInstance minigame, World world) {
 		long ticks = minigame.ticks();
 
-		if (ticks < this.time) {
-			if (ticks % 20 == 0) {
-				long ticksRemaining = this.time - ticks;
-				this.timerBar.setName(this.getTimeRemainingText(ticksRemaining));
-				this.timerBar.setPercent((float) ticksRemaining / this.time);
-			}
-		} else if (!this.closing) {
-			this.closing = true;
-			this.displayReport(minigame);
-		}
-
 		if (this.closing && ticks >= this.closeTime) {
 			MinigameManager.getInstance().finish();
 		}
 	}
 
-	private ITextComponent getTimeRemainingText(long ticksRemaining) {
-		long secondsRemaining = ticksRemaining / 20;
-
-		long minutes = secondsRemaining / 60;
-		long seconds = secondsRemaining % 60;
-		String time = String.format("%02d:%02d", minutes, seconds);
-
-		return new StringTextComponent("Time Remaining: " + time + "...");
-	}
-
 	private void displayReport(IMinigameInstance minigame) {
 		PlayerSet players = minigame.getPlayers();
 
-		players.sendMessage(new StringTextComponent("Time is up! Here's the statistics for this round:").applyTextStyle(TextFormatting.GREEN));
+		players.sendMessage(new StringTextComponent("All creatures have been found! Here are the statistics for this round:").applyTextStyle(TextFormatting.GREEN));
 
+		// TODO: these statistics are pointless: we need to report the players that found the most creatures
 		for (Object2IntMap.Entry<EntityType<?>> entry : this.globalRecords.recordedCount.object2IntEntrySet()) {
 			EntityType<?> entityType = entry.getKey();
 			int count = entry.getIntValue();
@@ -140,10 +129,6 @@ public final class RecordCreaturesBehavior implements IMinigameBehavior {
 
 	@Override
 	public void onPlayerInteractEntity(IMinigameInstance minigame, ServerPlayerEntity player, Entity entity, Hand hand) {
-		if (this.closing) {
-			return;
-		}
-
 		ItemStack heldItem = player.getHeldItem(hand);
 		if (heldItem.isEmpty()) {
 			return;
@@ -157,11 +142,13 @@ public final class RecordCreaturesBehavior implements IMinigameBehavior {
 	}
 
 	private void recordEntity(IMinigameInstance minigame, ServerPlayerEntity player, LivingEntity entity) {
+		if (!this.tryRecordEntity(minigame, player, entity)) {
+			player.sendMessage(new StringTextComponent("This creature has already been recorded!").applyTextStyle(TextFormatting.RED));
+			return;
+		}
+
 		PlayerData data = this.getDataFor(player);
-
 		if (data.records.tryRecord(entity)) {
-			this.onRecordEntity(minigame, player, entity);
-
 			int recordedCount = data.records.getRecordedCount(entity.getType());
 			ITextComponent entityName = new TranslationTextComponent(entity.getType().getTranslationKey());
 
@@ -171,8 +158,6 @@ public final class RecordCreaturesBehavior implements IMinigameBehavior {
 							.appendText("!")
 							.applyTextStyle(TextFormatting.GREEN)
 			);
-		} else {
-			player.sendMessage(new StringTextComponent("You've already recorded this entity!").applyTextStyle(TextFormatting.RED));
 		}
 	}
 
@@ -180,11 +165,30 @@ public final class RecordCreaturesBehavior implements IMinigameBehavior {
 		return this.playerData.computeIfAbsent(player.getUniqueID(), uuid -> new PlayerData());
 	}
 
-	private void onRecordEntity(IMinigameInstance minigame, ServerPlayerEntity reporter, LivingEntity entity) {
-		this.globalRecords.tryRecord(entity);
+	private boolean tryRecordEntity(IMinigameInstance minigame, ServerPlayerEntity reporter, LivingEntity entity) {
+		if (!this.globalRecords.tryRecord(entity)) {
+			return false;
+		}
+
+		entity.addPotionEffect(new EffectInstance(Effects.GLOWING, Integer.MAX_VALUE, 10, false, false));
+		this.updateRecordedProgressBar();
+
+		if (globalRecords.totalCount >= totalEntityCount) {
+			this.closing = true;
+			this.closeTime = minigame.ticks() + CLOSE_TIME;
+			this.displayReport(minigame);
+		}
+
 		if (this.discoveredEntities.add(entity.getType())) {
 			this.onDiscoverNewEntity(minigame, reporter, entity);
 		}
+
+		return true;
+	}
+
+	private void updateRecordedProgressBar() {
+		this.progressBar.setPercent((float) globalRecords.totalCount / totalEntityCount);
+		this.progressBar.setName(new StringTextComponent("Creatures recorded: " + globalRecords.totalCount + "/" + totalEntityCount));
 	}
 
 	private void onDiscoverNewEntity(IMinigameInstance minigame, ServerPlayerEntity reporter, LivingEntity entity) {
@@ -196,7 +200,8 @@ public final class RecordCreaturesBehavior implements IMinigameBehavior {
 
 		// highlight and stop the reported entity from moving for a bit
 		entity.addPotionEffect(new EffectInstance(Effects.SLOWNESS, 20 * 20, 10, false, false));
-		entity.addPotionEffect(new EffectInstance(Effects.GLOWING, 20 * 20, 10, false, false));
+
+		minigame.getServer().getScoreboard().addPlayerToTeam(entity.getScoreboardName(), firstDiscoveryTeam);
 
 		FireworkUtil.spawnFirework(new BlockPos(entity), entity.world, FireworkUtil.Palette.ISLAND_ROYALE.getPalette());
 
@@ -237,8 +242,11 @@ public final class RecordCreaturesBehavior implements IMinigameBehavior {
 
 	@Override
 	public void onFinish(IMinigameInstance minigame) {
-		this.timerBar.setVisible(false);
-		this.timerBar.removeAllPlayers();
+		this.progressBar.setVisible(false);
+		this.progressBar.removeAllPlayers();
+
+		ServerScoreboard scoreboard = minigame.getServer().getScoreboard();
+		scoreboard.removeTeam(firstDiscoveryTeam);
 	}
 
 	static class PlayerData {
@@ -249,10 +257,12 @@ public final class RecordCreaturesBehavior implements IMinigameBehavior {
 	static class RecordList {
 		final Object2IntOpenHashMap<EntityType<?>> recordedCount = new Object2IntOpenHashMap<>();
 		final Set<UUID> recordedEntities = new ObjectOpenHashSet<>();
+		int totalCount;
 
 		boolean tryRecord(LivingEntity entity) {
 			if (this.recordedEntities.add(entity.getUniqueID())) {
 				this.recordedCount.addTo(entity.getType(), 1);
+				this.totalCount += 1;
 				return true;
 			}
 			return false;
