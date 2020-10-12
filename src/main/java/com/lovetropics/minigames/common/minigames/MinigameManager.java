@@ -288,8 +288,8 @@ public class MinigameManager implements IMinigameManager
                     return res;
                 }
 
-				Set<ServerPlayerEntity> participants = new HashSet<>();
-				Set<ServerPlayerEntity> spectators = new HashSet<>();
+				List<ServerPlayerEntity> participants = new ArrayList<>();
+                List<ServerPlayerEntity> spectators = new ArrayList<>();
 
 				registrations.collectInto(server, participants, spectators, pollingDefinition.getMaximumParticipantCount());
 
