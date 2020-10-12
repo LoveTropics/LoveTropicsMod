@@ -1,13 +1,14 @@
 package com.lovetropics.minigames.common.minigames;
 
+import com.lovetropics.minigames.common.minigames.behaviours.ConfiguredBehavior;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehaviorType;
 import com.lovetropics.minigames.common.minigames.config.MinigameConfig;
 import com.lovetropics.minigames.common.minigames.map.IMinigameMapProvider;
+import it.unimi.dsi.fastutil.objects.Reference2ObjectLinkedOpenHashMap;
 import net.minecraft.util.ResourceLocation;
 
-import java.util.Collection;
-import java.util.Optional;
+import java.util.Map;
 
 public class MinigameDefinitionGeneric implements IMinigameDefinition
 {
@@ -23,16 +24,12 @@ public class MinigameDefinitionGeneric implements IMinigameDefinition
 	}
 
 	@Override
-	public Collection<IMinigameBehavior> getAllBehaviours()
-	{
-		return config.behaviors.values();
-	}
-	
-	@SuppressWarnings("unchecked")
-	@Override
-	public <T extends IMinigameBehavior> Optional<T> getBehavior(IMinigameBehaviorType<T> type)
-	{
-		return Optional.ofNullable((T) config.behaviors.get(type));
+	public Map<IMinigameBehaviorType<?>, IMinigameBehavior> createBehaviors() {
+		Map<IMinigameBehaviorType<?>, IMinigameBehavior> behaviors = new Reference2ObjectLinkedOpenHashMap<>();
+		for (ConfiguredBehavior<?> behavior : config.behaviors) {
+			behaviors.put(behavior.type, behavior.create());
+		}
+		return behaviors;
 	}
 
 	@Override

@@ -76,7 +76,7 @@ public class SurviveTheTideRulesetBehavior implements IMinigameBehavior
 
 	@Override
 	public void onPlayerHurt(final IMinigameInstance minigame, LivingHurtEvent event) {
-		minigame.getDefinition().getBehavior(MinigameBehaviorTypes.PHASES.get()).ifPresent(phases -> {
+		minigame.getBehavior(MinigameBehaviorTypes.PHASES.get()).ifPresent(phases -> {
 			if (event.getSource().getTrueSource() instanceof PlayerEntity && isSafePhase(phases.getCurrentPhase())) {
 				event.setCanceled(true);
 			}
@@ -85,7 +85,7 @@ public class SurviveTheTideRulesetBehavior implements IMinigameBehavior
 
 	@Override
 	public void onPlayerAttackEntity(final IMinigameInstance minigame, AttackEntityEvent event) {
-		minigame.getDefinition().getBehavior(MinigameBehaviorTypes.PHASES.get()).ifPresent(phases -> {
+		minigame.getBehavior(MinigameBehaviorTypes.PHASES.get()).ifPresent(phases -> {
 			if (event.getTarget() instanceof PlayerEntity && isSafePhase(phases.getCurrentPhase())) {
 				event.setCanceled(true);
 			}
@@ -95,7 +95,7 @@ public class SurviveTheTideRulesetBehavior implements IMinigameBehavior
 	@Override
 	public void worldUpdate(final IMinigameInstance minigame, World world) {
 		if (!hasFreedParticipants) {
-			minigame.getDefinition().getBehavior(MinigameBehaviorTypes.PHASES.get()).ifPresent(phases -> {
+			minigame.getBehavior(MinigameBehaviorTypes.PHASES.get()).ifPresent(phases -> {
 				if (phases.getCurrentPhase().getKey().equals(phaseToFreeParticipants)) {
 					hasFreedParticipants = true;
 					setParticipantsFree(minigame, world, phases.getCurrentPhase());

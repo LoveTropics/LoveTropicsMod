@@ -55,7 +55,7 @@ public class PhasesMinigameBehavior implements IMinigameBehavior
 			currentPhase = phaseIterator.next();
 			currentPhaseTicks = 0;
 
-			instance.getDefinition().getBehavior(MinigameBehaviorTypes.COMMANDS.get()).ifPresent(commands -> {
+			instance.getBehavior(MinigameBehaviorTypes.COMMANDS.get()).ifPresent(commands -> {
 				commands.invoke(currentPhase.getKey(), instance.getCommandSource());
 			});
 			return true;

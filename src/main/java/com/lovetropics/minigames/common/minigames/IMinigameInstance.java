@@ -1,12 +1,16 @@
 package com.lovetropics.minigames.common.minigames;
 
 import com.lovetropics.minigames.common.map.MapRegions;
+import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
+import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehaviorType;
 import net.minecraft.command.CommandSource;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.dimension.DimensionType;
 import net.minecraft.world.server.ServerWorld;
 
+import java.util.Collection;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 
@@ -22,6 +26,10 @@ public interface IMinigameInstance
      * @return The minigame definition.
      */
     IMinigameDefinition getDefinition();
+
+    Collection<IMinigameBehavior> getAllBehaviours();
+
+    <T extends IMinigameBehavior> Optional<T> getBehavior(IMinigameBehaviorType<T> type);
 
     /**
      * Adds the player to this minigame with the given role, or sets the players role if they are already added.

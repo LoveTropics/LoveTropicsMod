@@ -76,7 +76,7 @@ public class RisingTidesMinigameBehavior implements IMinigameBehavior
 			icebergLines.add(new IcebergLine(icebergLine.min, icebergLine.max, 10));
 		}
 
-		minigame.getDefinition().getBehavior(MinigameBehaviorTypes.PHASES.get()).ifPresent(phases -> {
+		minigame.getBehavior(MinigameBehaviorTypes.PHASES.get()).ifPresent(phases -> {
 			waterLevel = phaseToTideHeight.get(phases.getFirstPhase().getKey());
 		});
 	}
@@ -94,7 +94,7 @@ public class RisingTidesMinigameBehavior implements IMinigameBehavior
 
 	@Override
 	public void worldUpdate(final IMinigameInstance minigame, World world) {
-		minigame.getDefinition().getBehavior(MinigameBehaviorTypes.PHASES.get()).ifPresent(phases -> {
+		minigame.getBehavior(MinigameBehaviorTypes.PHASES.get()).ifPresent(phases -> {
 			final PhasesMinigameBehavior.MinigamePhase phase = phases.getCurrentPhase();
 			final int prevWaterLevel = phaseToTideHeight.get(phases.getPreviousPhase().orElse(phase).getKey());
 

@@ -6,7 +6,7 @@ import com.lovetropics.minigames.common.minigames.map.IMinigameMapProvider;
 import net.minecraft.util.ResourceLocation;
 
 import java.util.Collection;
-import java.util.Optional;
+import java.util.Map;
 
 /**
  * Used as a discriminant for a registered minigame. Defines the logic of the
@@ -18,9 +18,7 @@ public interface IMinigameDefinition
 {
     IMinigameMapProvider getMapProvider();
 
-    Collection<IMinigameBehavior> getAllBehaviours();
-    
-    <T extends IMinigameBehavior> Optional<T> getBehavior(IMinigameBehaviorType<T> type);
+    Map<IMinigameBehaviorType<?>, IMinigameBehavior> createBehaviors();
 
     /**
      * The identifier for this minigame definition. Must be unique

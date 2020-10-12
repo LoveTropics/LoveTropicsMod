@@ -5,6 +5,7 @@ import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.client.data.TropicraftLangKeys;
 import com.lovetropics.minigames.common.Scheduler;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
+import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehaviorType;
 import com.lovetropics.minigames.common.minigames.map.IMinigameMapProvider;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.ServerPlayerEntity;
@@ -284,7 +285,7 @@ public class MinigameManager implements IMinigameManager
                         return CompletableFuture.completedFuture(failException("Failed to send map ready to behaviors", err));
                     }
 
-                    ActionResult<ITextComponent> res = dispatchToBehaviors(b -> b.ensureValidity(this.currentInstance));
+                    ActionResult<ITextComponent> res = validateBehaviors(currentInstance);
                     if (res.getType() == ActionResultType.FAIL) {
                         return CompletableFuture.completedFuture(res);
                     }
@@ -324,6 +325,18 @@ public class MinigameManager implements IMinigameManager
                     }
                     return result;
                 }, server);
+    }
+
+    private ActionResult<ITextComponent> validateBehaviors(IMinigameInstance minigame) {
+        for (IMinigameBehavior behavior : minigame.getAllBehaviours()) {
+            for (IMinigameBehaviorType<?> dependency : behavior.dependencies()) {
+                if (!minigame.getBehavior(dependency).isPresent()) {
+                    return ActionResult.resultFail(new StringTextComponent(behavior + " is missing dependency on " + dependency + "!"));
+                }
+            }
+        }
+
+        return dispatchToBehaviors(b -> b.ensureValidity(minigame));
     }
     
     @Override
@@ -390,7 +403,9 @@ public class MinigameManager implements IMinigameManager
     }
 
     private Collection<IMinigameBehavior> getBehaviors() {
-        return this.currentInstance != null ? this.currentInstance.getDefinition().getAllBehaviours() : this.polling.getDefinition().getAllBehaviours();
+        if (this.currentInstance != null) return this.currentInstance.getAllBehaviours();
+        if (this.polling != null) return this.polling.getAllBehaviours();
+        return Collections.emptyList();
     }
 
     @SubscribeEvent
@@ -467,9 +482,10 @@ public class MinigameManager implements IMinigameManager
     @SubscribeEvent
     public void onWorldTick(TickEvent.WorldTickEvent event) {
         if (event.phase == TickEvent.Phase.END) {
-            if (this.currentInstance != null && event.world.getDimension().getType() == this.currentInstance.getDimension()) {
+            MinigameInstance minigame = this.currentInstance;
+            if (minigame != null && event.world.getDimension().getType() == minigame.getDimension()) {
                 dispatchToBehaviors(true, IMinigameBehavior::worldUpdate, event.world);
-                this.currentInstance.update();
+                minigame.update();
             }
         }
     }
