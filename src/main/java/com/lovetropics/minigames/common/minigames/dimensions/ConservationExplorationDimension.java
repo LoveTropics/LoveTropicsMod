@@ -5,8 +5,8 @@ import net.minecraft.world.World;
 import net.minecraft.world.dimension.DimensionType;
 import net.minecraft.world.gen.ChunkGenerator;
 
-public class CollaborativeConservationDimension extends MinigameDimension {
-	public CollaborativeConservationDimension(World world, DimensionType dimensionType) {
+public class ConservationExplorationDimension extends MinigameDimension {
+	public ConservationExplorationDimension(World world, DimensionType dimensionType) {
 		super(world, dimensionType);
 	}
 

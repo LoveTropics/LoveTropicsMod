@@ -1,8 +1,8 @@
 package com.lovetropics.minigames.common.minigames.behaviours;
 
 import com.lovetropics.minigames.common.minigames.behaviours.instances.*;
-import com.lovetropics.minigames.common.minigames.behaviours.instances.collaborative_conservation.RecordCreaturesBehavior;
-import com.lovetropics.minigames.common.minigames.behaviours.instances.collaborative_conservation.SpawnCreaturesBehavior;
+import com.lovetropics.minigames.common.minigames.behaviours.instances.conservation_exploration.RecordCreaturesBehavior;
+import com.lovetropics.minigames.common.minigames.behaviours.instances.conservation_exploration.SpawnCreaturesBehavior;
 import com.lovetropics.minigames.common.minigames.behaviours.instances.survive_the_tide.RisingTidesMinigameBehavior;
 import com.lovetropics.minigames.common.minigames.behaviours.instances.survive_the_tide.SurviveTheTideRulesetBehavior;
 import com.lovetropics.minigames.common.minigames.behaviours.instances.survive_the_tide.SurviveTheTideWinConditionBehavior;

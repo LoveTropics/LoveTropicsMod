@@ -1,4 +1,4 @@
-package com.lovetropics.minigames.common.minigames.behaviours.instances.collaborative_conservation;
+package com.lovetropics.minigames.common.minigames.behaviours.instances.conservation_exploration;
 
 import com.lovetropics.minigames.common.map.MapRegion;
 import com.lovetropics.minigames.common.minigames.IMinigameInstance;
