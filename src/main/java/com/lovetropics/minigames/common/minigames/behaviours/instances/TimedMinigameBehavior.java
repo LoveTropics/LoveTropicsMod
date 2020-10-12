@@ -70,10 +70,10 @@ public final class TimedMinigameBehavior implements IMinigameBehavior {
 			}
 		}
 
-		long ticksRemaining = length - ticks;
-		if (ticksRemaining % 20 == 0) {
+		if (ticks % 20 == 0) {
+			long ticksRemaining = Math.max(length - ticks, 0);
 			timerBar.setName(this.getTimeRemainingText(ticks));
-			timerBar.setPercent((float) ticks / length);
+			timerBar.setPercent((float) ticksRemaining / length);
 		}
 	}
 
