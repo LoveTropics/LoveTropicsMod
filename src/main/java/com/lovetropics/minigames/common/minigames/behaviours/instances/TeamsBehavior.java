@@ -49,13 +49,21 @@ public final class TeamsBehavior implements IMinigameBehavior {
 		ServerScoreboard scoreboard = server.getScoreboard();
 
 		for (TeamKey teamKey : teams) {
-			ScorePlayerTeam scoreboardTeam = new ScorePlayerTeam(scoreboard, teamKey.key);
+			ScorePlayerTeam scoreboardTeam = scoreboard.createTeam(teamKey.key);
 			scoreboardTeam.setDisplayName(new StringTextComponent(teamKey.name));
 			scoreboardTeam.setColor(teamKey.text);
 			scoreboardTeam.setAllowFriendlyFire(friendlyFire);
 
 			teamPlayers.put(teamKey, new MutablePlayerSet(server));
 			scoreboardTeams.put(teamKey, scoreboardTeam);
+		}
+	}
+
+	@Override
+	public void onFinish(IMinigameInstance minigame) {
+		ServerScoreboard scoreboard = minigame.getServer().getScoreboard();
+		for (ScorePlayerTeam team : scoreboardTeams.values()) {
+			scoreboard.removeTeam(team);
 		}
 	}
 
