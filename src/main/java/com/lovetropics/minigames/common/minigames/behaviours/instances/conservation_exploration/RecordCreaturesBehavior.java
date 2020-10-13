@@ -7,8 +7,13 @@ import com.lovetropics.minigames.common.minigames.MinigameManager;
 import com.lovetropics.minigames.common.minigames.PlayerRole;
 import com.lovetropics.minigames.common.minigames.PlayerSet;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
+import com.mojang.authlib.GameProfile;
 import com.mojang.datafixers.Dynamic;
-import it.unimi.dsi.fastutil.objects.*;
+import com.mojang.datafixers.util.Pair;
+import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
+import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
@@ -19,6 +24,8 @@ import net.minecraft.potion.EffectInstance;
 import net.minecraft.potion.Effects;
 import net.minecraft.scoreboard.ScorePlayerTeam;
 import net.minecraft.scoreboard.ServerScoreboard;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.management.PlayerProfileCache;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
@@ -32,9 +39,8 @@ import net.minecraft.world.BossInfo;
 import net.minecraft.world.World;
 import net.minecraft.world.server.ServerBossInfo;
 
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public final class RecordCreaturesBehavior implements IMinigameBehavior {
 	private static final long CLOSE_TIME = 20 * 10;
@@ -111,20 +117,37 @@ public final class RecordCreaturesBehavior implements IMinigameBehavior {
 	private void displayReport(IMinigameInstance minigame) {
 		PlayerSet players = minigame.getPlayers();
 
-		players.sendMessage(new StringTextComponent("All creatures have been found! Here are the statistics for this round:").applyTextStyle(TextFormatting.GREEN));
+		players.sendMessage(new StringTextComponent("All creatures have been found! Here are the top recorders for this round:").applyTextStyle(TextFormatting.GREEN));
 
-		// TODO: these statistics are pointless: we need to report the players that found the most creatures
-		for (Object2IntMap.Entry<EntityType<?>> entry : this.globalRecords.recordedCount.object2IntEntrySet()) {
-			EntityType<?> entityType = entry.getKey();
-			int count = entry.getIntValue();
+		List<Pair<GameProfile, Integer>> leaderboard = buildLeaderboard(minigame);
+
+		for (int i = 0; i < leaderboard.size(); i++) {
+			Pair<GameProfile, Integer> entry = leaderboard.get(i);
+			GameProfile profile = entry.getFirst();
+			int count = entry.getSecond();
 
 			players.sendMessage(
-					new StringTextComponent(" - ")
-							.appendSibling(new TranslationTextComponent(entityType.getTranslationKey()).applyTextStyle(TextFormatting.BLUE))
+					new StringTextComponent("- " + (i + 1) + ". ")
+							.appendSibling(new StringTextComponent(profile.getName()).applyTextStyle(TextFormatting.BLUE))
 							.appendText(": " + count)
 							.applyTextStyle(TextFormatting.GRAY)
 			);
 		}
+	}
+
+	private List<Pair<GameProfile, Integer>> buildLeaderboard(IMinigameInstance minigame) {
+		MinecraftServer server = minigame.getServer();
+		PlayerProfileCache profileCache = server.getPlayerProfileCache();
+
+		return playerData.entrySet().stream()
+				.map(entry -> {
+					GameProfile profile = profileCache.getProfileByUUID(entry.getKey());
+					return profile != null ? Pair.of(profile, entry.getValue().records.totalCount) : null;
+				})
+				.filter(Objects::nonNull)
+				.sorted(Comparator.comparingInt(Pair::getSecond))
+				.limit(5)
+				.collect(Collectors.toList());
 	}
 
 	@Override
@@ -141,23 +164,19 @@ public final class RecordCreaturesBehavior implements IMinigameBehavior {
 		}
 	}
 
-	private void recordEntity(IMinigameInstance minigame, ServerPlayerEntity player, LivingEntity entity) {
-		if (!this.tryRecordEntity(minigame, player, entity)) {
-			player.sendMessage(new StringTextComponent("This creature has already been recorded!").applyTextStyle(TextFormatting.RED));
-			return;
-		}
-
-		PlayerData data = this.getDataFor(player);
-		if (data.records.tryRecord(entity)) {
-			int recordedCount = data.records.getRecordedCount(entity.getType());
+	private void recordEntity(IMinigameInstance minigame, ServerPlayerEntity reporter, LivingEntity entity) {
+		if (this.tryRecordEntity(minigame, reporter, entity)) {
+			int recordedCount = this.getDataFor(reporter).records.getRecordedCount(entity.getType());
 			ITextComponent entityName = new TranslationTextComponent(entity.getType().getTranslationKey());
 
-			player.sendMessage(
+			reporter.sendMessage(
 					new StringTextComponent("You have recorded " + recordedCount + " of ")
 							.appendSibling(entityName.applyTextStyle(TextFormatting.BOLD))
 							.appendText("!")
 							.applyTextStyle(TextFormatting.GREEN)
 			);
+		} else {
+			reporter.sendMessage(new StringTextComponent("This creature has already been recorded!").applyTextStyle(TextFormatting.RED));
 		}
 	}
 
@@ -169,6 +188,9 @@ public final class RecordCreaturesBehavior implements IMinigameBehavior {
 		if (!this.globalRecords.tryRecord(entity)) {
 			return false;
 		}
+
+		PlayerData data = this.getDataFor(reporter);
+		data.records.tryRecord(entity);
 
 		entity.addPotionEffect(new EffectInstance(Effects.GLOWING, Integer.MAX_VALUE, 10, false, false));
 		this.updateRecordedProgressBar();
