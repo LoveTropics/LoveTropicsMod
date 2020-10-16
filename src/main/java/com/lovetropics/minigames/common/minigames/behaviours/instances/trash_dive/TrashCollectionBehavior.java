@@ -7,7 +7,9 @@ import com.lovetropics.minigames.common.minigames.PlayerSet;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehaviorType;
 import com.lovetropics.minigames.common.minigames.behaviours.MinigameBehaviorTypes;
+import com.mojang.authlib.GameProfile;
 import com.mojang.datafixers.Dynamic;
+import com.mojang.datafixers.util.Pair;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
@@ -17,6 +19,8 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.potion.EffectInstance;
 import net.minecraft.potion.Effects;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.management.PlayerProfileCache;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvents;
 import net.minecraft.util.math.BlockPos;
@@ -25,9 +29,8 @@ import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public final class TrashCollectionBehavior implements IMinigameBehavior {
 	private int totalTrash;
@@ -59,7 +62,7 @@ public final class TrashCollectionBehavior implements IMinigameBehavior {
 				.applyTextStyles(TextFormatting.BLUE, TextFormatting.BOLD);
 
 		sidebar = MinigameSidebar.open(sidebarTitle, minigame.getPlayers());
-		sidebar.set(renderSidebar());
+		sidebar.set(renderSidebar(minigame));
 
 		minigame.getBehavior(MinigameBehaviorTypes.TIMED.get()).ifPresent(timed -> {
 			timed.onFinish(this::triggerGameOver);
@@ -93,7 +96,7 @@ public final class TrashCollectionBehavior implements IMinigameBehavior {
 		totalPoints += 1;
 		pointsByPlayer.addTo(player.getUniqueID(), 1);
 
-		sidebar.set(renderSidebar());
+		sidebar.set(renderSidebar(minigame));
 
 		if (remainingTrash.isEmpty()) {
 			triggerGameOver(minigame);
@@ -107,15 +110,24 @@ public final class TrashCollectionBehavior implements IMinigameBehavior {
 
 		ITextComponent finishMessage;
 		if (remainingTrash.isEmpty()) {
-			finishMessage = new StringTextComponent("We collected all the trash!");
+			finishMessage = new StringTextComponent("We collected all the trash! These are the scores for this round:");
 		} else {
-			finishMessage = new StringTextComponent("We ran out of time!");
+			finishMessage = new StringTextComponent("We ran out of time! These are the scores for this round:");
 		}
 
-		minigame.getPlayers().sendMessage(finishMessage.applyTextStyles(TextFormatting.GREEN));
+		PlayerSet players = minigame.getPlayers();
+		players.sendMessage(finishMessage.applyTextStyles(TextFormatting.GREEN));
+
+		List<Pair<GameProfile, Integer>> leaderboard = buildLeaderboard(minigame);
+		for (Pair<GameProfile, Integer> entry : leaderboard) {
+			players.sendMessage(new StringTextComponent(" - " + entry.getFirst().getName() + ": ")
+					.applyTextStyle(TextFormatting.AQUA)
+					.appendSibling(new StringTextComponent(entry.getSecond().toString()).applyTextStyle(TextFormatting.GOLD))
+			);
+		}
 	}
 
-	private String[] renderSidebar() {
+	private String[] renderSidebar(IMinigameInstance minigame) {
 		int collectedTrash = totalTrash - remainingTrash.size();
 
 		List<String> sidebar = new ArrayList<>(10);
@@ -124,6 +136,31 @@ public final class TrashCollectionBehavior implements IMinigameBehavior {
 
 		sidebar.add(TextFormatting.GREEN + "Collected Trash: " + TextFormatting.GRAY + collectedTrash + "/" + totalTrash);
 
+		List<Pair<GameProfile, Integer>> leaderboard = buildLeaderboard(minigame);
+		if (!leaderboard.isEmpty()) {
+			sidebar.add("");
+			sidebar.add(TextFormatting.GREEN + "Top players:");
+
+			for (Pair<GameProfile, Integer> entry : leaderboard) {
+				sidebar.add(" - " + TextFormatting.AQUA + entry.getFirst().getName() + ": " + TextFormatting.GOLD + entry.getSecond());
+			}
+		}
+
 		return sidebar.toArray(new String[0]);
+	}
+
+	private List<Pair<GameProfile, Integer>> buildLeaderboard(IMinigameInstance minigame) {
+		MinecraftServer server = minigame.getServer();
+		PlayerProfileCache profileCache = server.getPlayerProfileCache();
+
+		return pointsByPlayer.object2IntEntrySet().stream()
+				.map(entry -> {
+					GameProfile profile = profileCache.getProfileByUUID(entry.getKey());
+					return profile != null ? Pair.of(profile, entry.getIntValue()) : null;
+				})
+				.filter(Objects::nonNull)
+				.sorted(Comparator.comparingInt(Pair::getSecond))
+				.limit(5)
+				.collect(Collectors.toList());
 	}
 }
