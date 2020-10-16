@@ -520,7 +520,6 @@ public class MinigameManager implements IMinigameManager
 
             if (this.currentInstance != null && this.currentInstance.getPlayers().contains(player)) {
                 dispatchToBehaviors(true, (b, m) -> b.onPlayerInteractEntity(m, player, event.getTarget(), event.getHand()));
-                this.currentInstance.update();
             }
         }
     }
@@ -532,7 +531,6 @@ public class MinigameManager implements IMinigameManager
 
             if (this.currentInstance != null && this.currentInstance.getPlayers().contains(player)) {
                 dispatchToBehaviors(true, (b, m) -> b.onPlayerLeftClickBlock(m, player, event.getPos(), event));
-                this.currentInstance.update();
             }
         }
     }
