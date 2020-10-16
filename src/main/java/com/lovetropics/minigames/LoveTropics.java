@@ -128,10 +128,6 @@ public class LoveTropics {
         CommandUnregisterMinigame.register(dispatcher);
         CommandStopPollingMinigame.register(dispatcher);
         CommandReloadConfig.register(dispatcher);
-        CommandAddConfigIceberg.register(dispatcher);
-        CommandResetIsland.register(dispatcher);
-        CommandSaveIsland.register(dispatcher);
-        CommandIslandSetStartPos.register(dispatcher);
         CommandResetIslandChests.register(dispatcher);
         CommandMinigameControl.register(dispatcher);
         CommandMap.register(dispatcher);

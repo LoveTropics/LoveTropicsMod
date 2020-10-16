@@ -1,18 +1,14 @@
 package com.lovetropics.minigames.common.minigames.dimensions;
 
-import com.lovetropics.minigames.common.config.ConfigLT;
 import com.lovetropics.minigames.common.dimension.biome.TropicraftBiomes;
 import com.lovetropics.minigames.common.map.VoidChunkGenerator;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.provider.BiomeProviderType;
 import net.minecraft.world.biome.provider.SingleBiomeProvider;
 import net.minecraft.world.biome.provider.SingleBiomeProviderSettings;
-import net.minecraft.world.dimension.Dimension;
 import net.minecraft.world.dimension.DimensionType;
 import net.minecraft.world.gen.ChunkGenerator;
 import net.minecraft.world.gen.ChunkGeneratorType;
@@ -22,14 +18,12 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.fml.RegistryObject;
 import net.minecraftforge.registries.ForgeRegistries;
 
-import javax.annotation.Nullable;
-
-public class SurviveTheTideDimension extends Dimension {
+public class SurviveTheTideDimension extends MinigameDimension {
     
     private static final RegistryObject<ChunkGeneratorType<?, ?>> TROPICS = RegistryObject.of(new ResourceLocation("tropicraft", "tropicraft_chunk_generator_type"), ForgeRegistries.CHUNK_GENERATOR_TYPES);
     
     public SurviveTheTideDimension(final World worldIn, final DimensionType typeIn) {
-        super(worldIn, typeIn, 0);
+        super(worldIn, typeIn);
     }
 
     @Override
@@ -44,20 +38,6 @@ public class SurviveTheTideDimension extends Dimension {
         @SuppressWarnings("unchecked")
         BS settings2 = (BS) biomeType.createSettings(this.getWorld().getWorldInfo()).setBiome(TropicraftBiomes.SURVIVE_THE_TIDE.get());
         return type.create(this.world, biomeType.create(settings2), genSettings);
-    }
-
-    /** Copied from OverworldDimension */
-    @Override
-    @Nullable
-    public BlockPos findSpawn(ChunkPos chunkPosIn, boolean checkValid) {
-        return ConfigLT.minigame_SurviveTheTide_respawnPosition;
-    }
-
-    /** Copied from OverworldDimension */
-    @Override
-    @Nullable
-    public BlockPos findSpawn(int posX, int posZ, boolean checkValid) {
-        return ConfigLT.minigame_SurviveTheTide_respawnPosition;
     }
 
     /**

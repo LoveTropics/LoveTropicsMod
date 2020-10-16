@@ -131,10 +131,7 @@ public final class TrashCollectionBehavior implements IMinigameBehavior {
 		int collectedTrash = totalTrash - remainingTrash.size();
 
 		List<String> sidebar = new ArrayList<>(10);
-		sidebar.add(TextFormatting.GRAY + "Pick up trash to earn points!");
-		sidebar.add("");
-
-		sidebar.add(TextFormatting.GREEN + "Collected Trash: " + TextFormatting.GRAY + collectedTrash + "/" + totalTrash);
+		sidebar.add(TextFormatting.GREEN + "Pick up trash! " + TextFormatting.GRAY + collectedTrash + "/" + totalTrash);
 
 		List<Pair<GameProfile, Integer>> leaderboard = buildLeaderboard(minigame);
 		if (!leaderboard.isEmpty()) {
