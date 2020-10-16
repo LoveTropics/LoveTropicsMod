@@ -3,15 +3,19 @@ package com.lovetropics.minigames.common.minigames.behaviours;
 import com.google.common.collect.ImmutableList;
 import com.lovetropics.minigames.common.minigames.IMinigameInstance;
 import com.lovetropics.minigames.common.minigames.PlayerRole;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.ActionResultType;
+import net.minecraft.util.Hand;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.world.World;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.player.AttackEntityEvent;
+import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 
 public interface IMinigameBehavior
 {
@@ -178,5 +182,25 @@ public interface IMinigameBehavior
 	 * @param player   The player that has been removed.
 	 */
 	default void onPlayerLeave(final IMinigameInstance minigame, ServerPlayerEntity player) {
+	}
+
+	/**
+	 * Called when a player interacts with an entity
+	 * @param minigame  The current minigame instance.
+	 * @param player    The player that interacted with an entity
+	 * @param entity    The entity that was interacted with
+	 * @param hand      The hand the player used to interact
+	 */
+	default void onPlayerInteractEntity(final IMinigameInstance minigame, ServerPlayerEntity player, Entity entity, Hand hand) {
+	}
+
+	/**
+	 * Called when a player left clicks on a block
+	 *  @param minigame The current minigame instance.
+	 * @param player   The player that left-clicked the block.
+	 * @param pos      The block position that was clicked.
+	 * @param event     The face that was clicked.
+	 */
+	default void onPlayerLeftClickBlock(final IMinigameInstance minigame, ServerPlayerEntity player, BlockPos pos, PlayerInteractEvent.LeftClickBlock event) {
 	}
 }

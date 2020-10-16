@@ -7,6 +7,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
 import java.util.Iterator;
+import java.util.Random;
 
 public final class MapRegion implements Iterable<BlockPos> {
 	public final BlockPos min;
@@ -69,6 +70,14 @@ public final class MapRegion implements Iterable<BlockPos> {
 				max.getX() - min.getX() + 1,
 				max.getY() - min.getY() + 1,
 				max.getZ() - min.getZ() + 1
+		);
+	}
+
+	public BlockPos sample(Random random) {
+		return new BlockPos(
+				min.getX() + random.nextInt(max.getX() - min.getX() + 1),
+				min.getY() + random.nextInt(max.getY() - min.getY() + 1),
+				min.getZ() + random.nextInt(max.getZ() - min.getZ() + 1)
 		);
 	}
 

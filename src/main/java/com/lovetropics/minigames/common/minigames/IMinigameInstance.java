@@ -1,6 +1,7 @@
 package com.lovetropics.minigames.common.minigames;
 
 import com.lovetropics.minigames.common.map.MapRegions;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehaviorType;
 import net.minecraft.command.CommandSource;
@@ -12,7 +13,6 @@ import net.minecraft.world.server.ServerWorld;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Consumer;
 
 /**
  * An instance used to track which participants and spectators are inside
@@ -30,6 +30,10 @@ public interface IMinigameInstance
     Collection<IMinigameBehavior> getAllBehaviours();
 
     <T extends IMinigameBehavior> Optional<T> getBehavior(IMinigameBehaviorType<T> type);
+
+    default <T extends IMinigameBehavior> T getBehaviorOrThrow(IMinigameBehaviorType<T> type) {
+        return getBehavior(type).orElseThrow(RuntimeException::new);
+    }
 
     /**
      * Adds the player to this minigame with the given role, or sets the players role if they are already added.
@@ -50,9 +54,9 @@ public interface IMinigameInstance
      * @param name the command name to use
      * @param task the task to run when the command is invoked
      */
-    void addControlCommand(String name, Consumer<CommandSource> task);
+    void addControlCommand(String name, ControlCommandHandler task);
 
-    void invokeControlCommand(String name, CommandSource source);
+    void invokeControlCommand(String name, CommandSource source) throws CommandSyntaxException;
 
     Set<String> getControlCommands();
 

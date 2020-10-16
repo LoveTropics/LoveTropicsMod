@@ -3,6 +3,7 @@ package com.lovetropics.minigames.common.minigames;
 import com.lovetropics.minigames.common.map.MapRegions;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehaviorType;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.ICommandSource;
@@ -15,8 +16,8 @@ import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.world.dimension.DimensionType;
 import net.minecraft.world.server.ServerWorld;
 
+import javax.annotation.Nullable;
 import java.util.*;
-import java.util.function.Consumer;
 
 /**
  * Default implementation of a minigame instance. Simple and naive
@@ -37,7 +38,7 @@ public class MinigameInstance implements IMinigameInstance
 
     private CommandSource commandSource;
 
-    private final Map<String, Consumer<CommandSource>> controlCommands = new Object2ObjectOpenHashMap<>();
+    private final Map<String, ControlCommandHandler> controlCommands = new Object2ObjectOpenHashMap<>();
     private long ticks;
 
     private final Map<IMinigameBehaviorType<?>, IMinigameBehavior> behaviors;
@@ -64,24 +65,21 @@ public class MinigameInstance implements IMinigameInstance
 
         allPlayers.addListener(new PlayerSet.Listeners() {
             @Override
-            public void onRemovePlayer(UUID id) {
-                MinigameInstance.this.onRemovePlayer(id);
+            public void onRemovePlayer(UUID id, @Nullable ServerPlayerEntity player) {
+                MinigameInstance.this.onRemovePlayer(id, player);
             }
         });
     }
 
-    private void onRemovePlayer(UUID id) {
-        ServerPlayerEntity player = this.server.getPlayerList().getPlayerByUUID(id);
-        if (player == null) {
-            return;
-        }
-
+    private void onRemovePlayer(UUID id, @Nullable ServerPlayerEntity player) {
         for (MutablePlayerSet rolePlayers : roles.values()) {
             rolePlayers.remove(id);
         }
 
-        for (IMinigameBehavior behavior : behaviors.values()) {
-            behavior.onPlayerLeave(MinigameInstance.this, player);
+        if (player != null) {
+            for (IMinigameBehavior behavior : behaviors.values()) {
+                behavior.onPlayerLeave(MinigameInstance.this, player);
+            }
         }
     }
 
@@ -138,15 +136,15 @@ public class MinigameInstance implements IMinigameInstance
     }
 
     @Override
-    public void addControlCommand(String name, Consumer<CommandSource> task) {
+    public void addControlCommand(String name, ControlCommandHandler task) {
         this.controlCommands.put(name, task);
     }
 
     @Override
-    public void invokeControlCommand(String name, CommandSource source) {
-        Consumer<CommandSource> task = this.controlCommands.get(name);
+    public void invokeControlCommand(String name, CommandSource source) throws CommandSyntaxException {
+        ControlCommandHandler task = this.controlCommands.get(name);
         if (task != null) {
-            task.accept(source);
+            task.run(source);
         }
     }
 

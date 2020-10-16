@@ -83,14 +83,17 @@ public final class MapWorkspaceTracer {
 		}
 	}
 
-	public static void select(PlayerEntity player, RegionTraceTarget target, Function<RegionTraceTarget, RegionEditOperator> operatorFactory) {
+	public static boolean select(PlayerEntity player, @Nullable RegionTraceTarget target, Function<RegionTraceTarget, RegionEditOperator> operatorFactory) {
 		if (edit != null) {
 			if (edit.select(player, target)) {
 				edit = null;
 			}
-		} else {
+			return true;
+		} else if (target != null) {
 			edit = operatorFactory.apply(target);
+			return true;
 		}
+		return false;
 	}
 
 	public static void stopEditing() {

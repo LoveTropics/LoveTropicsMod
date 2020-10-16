@@ -1,7 +1,11 @@
 package com.lovetropics.minigames.common.minigames.behaviours;
 
 import com.lovetropics.minigames.common.minigames.behaviours.instances.*;
+import com.lovetropics.minigames.common.minigames.behaviours.instances.conservation_exploration.RecordCreaturesBehavior;
+import com.lovetropics.minigames.common.minigames.behaviours.instances.conservation_exploration.SpawnCreaturesBehavior;
 import com.lovetropics.minigames.common.minigames.behaviours.instances.survive_the_tide.*;
+import com.lovetropics.minigames.common.minigames.behaviours.instances.trash_dive.PlaceTrashBehavior;
+import com.lovetropics.minigames.common.minigames.behaviours.instances.trash_dive.TrashCollectionBehavior;
 import com.mojang.datafixers.Dynamic;
 import net.minecraftforge.fml.RegistryObject;
 import net.minecraftforge.registries.DeferredRegister;
@@ -30,7 +34,12 @@ public class MinigameBehaviorTypes {
 	public static final RegistryObject<IMinigameBehaviorType<FireworksOnDeathBehavior>> FIREWORKS_ON_DEATH;
 	public static final RegistryObject<IMinigameBehaviorType<SurviveTheTideRulesetBehavior>> SURVIVE_THE_TIDE_RULESET;
 	public static final RegistryObject<IMinigameBehaviorType<BindControlsBehavior>> BIND_CONTROLS;
+	public static final RegistryObject<IMinigameBehaviorType<CancelPlayerDamageBehavior>> CANCEL_PLAYER_DAMAGE;
+	public static final RegistryObject<IMinigameBehaviorType<SpawnCreaturesBehavior>> SPAWN_CREATURES;
+	public static final RegistryObject<IMinigameBehaviorType<RecordCreaturesBehavior>> RECORD_CREATURES;
 	public static final RegistryObject<IMinigameBehaviorType<SetGameRulesBehavior>> SET_GAME_RULES;
+	public static final RegistryObject<IMinigameBehaviorType<PlaceTrashBehavior>> PLACE_TRASH;
+	public static final RegistryObject<IMinigameBehaviorType<TrashCollectionBehavior>> TRASH_COLLECTION;
 	public static final RegistryObject<IMinigameBehaviorType<TeamsBehavior>> TEAMS;
 
 	public static <T extends IMinigameBehavior> RegistryObject<IMinigameBehaviorType<T>> register(final String name, final MinigameBehaviorType.Factory<T> instanceFactory) {
@@ -65,7 +74,12 @@ public class MinigameBehaviorTypes {
 		FIREWORKS_ON_DEATH = register("fireworks_on_death", FireworksOnDeathBehavior::parse);
 		SURVIVE_THE_TIDE_RULESET = register("survive_the_tide_ruleset", SurviveTheTideRulesetBehavior::parse);
 		BIND_CONTROLS = register("bind_controls", BindControlsBehavior::parse);
+		CANCEL_PLAYER_DAMAGE = register("cancel_player_damage", CancelPlayerDamageBehavior::parse);
 		SET_GAME_RULES = register("set_game_rules", SetGameRulesBehavior::parse);
 		TEAMS = register("teams", TeamsBehavior::parse);
+		SPAWN_CREATURES = register("spawn_creatures", SpawnCreaturesBehavior::parse);
+		RECORD_CREATURES = register("record_creatures", RecordCreaturesBehavior::parse);
+		PLACE_TRASH = register("place_trash", PlaceTrashBehavior::parse);
+		TRASH_COLLECTION = register("trash_collection", TrashCollectionBehavior::parse);
 	}
 }

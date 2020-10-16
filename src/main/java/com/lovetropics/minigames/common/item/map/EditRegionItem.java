@@ -33,19 +33,19 @@ public final class EditRegionItem extends Item {
 
 		if (world.isRemote && isClientPlayer(player)) {
 			RegionTraceTarget traceResult = MapWorkspaceTracer.trace(player);
-			if (traceResult == null) {
-				return ActionResult.resultPass(stack);
-			}
 
 			useTick = player.ticksExisted;
 
-			if (mode == Mode.REMOVE) {
+			if (traceResult != null && mode == Mode.REMOVE) {
 				LTNetwork.CHANNEL.sendToServer(new UpdateWorkspaceRegionMessage(traceResult.entry.id, null));
 				return ActionResult.resultSuccess(stack);
 			}
 
-			MapWorkspaceTracer.select(player, traceResult, target -> mode.createEdit(target));
-			return ActionResult.resultSuccess(stack);
+			if (MapWorkspaceTracer.select(player, traceResult, target -> mode.createEdit(target))) {
+				return ActionResult.resultSuccess(stack);
+			} else {
+				return ActionResult.resultPass(stack);
+			}
 		}
 
 		return ActionResult.resultPass(stack);
