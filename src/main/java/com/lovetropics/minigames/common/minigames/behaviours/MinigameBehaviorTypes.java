@@ -3,11 +3,7 @@ package com.lovetropics.minigames.common.minigames.behaviours;
 import com.lovetropics.minigames.common.minigames.behaviours.instances.*;
 import com.lovetropics.minigames.common.minigames.behaviours.instances.conservation_exploration.RecordCreaturesBehavior;
 import com.lovetropics.minigames.common.minigames.behaviours.instances.conservation_exploration.SpawnCreaturesBehavior;
-import com.lovetropics.minigames.common.minigames.behaviours.instances.survive_the_tide.RisingTidesMinigameBehavior;
-import com.lovetropics.minigames.common.minigames.behaviours.instances.survive_the_tide.SurviveTheTideRulesetBehavior;
-import com.lovetropics.minigames.common.minigames.behaviours.instances.survive_the_tide.SurviveTheTideWinConditionBehavior;
-import com.lovetropics.minigames.common.minigames.behaviours.instances.survive_the_tide.WeatherEventsMinigameBehavior;
-import com.lovetropics.minigames.common.minigames.behaviours.instances.survive_the_tide.WorldBorderMinigameBehavior;
+import com.lovetropics.minigames.common.minigames.behaviours.instances.survive_the_tide.*;
 import com.lovetropics.minigames.common.minigames.behaviours.instances.trash_dive.PlaceTrashBehavior;
 import com.lovetropics.minigames.common.minigames.behaviours.instances.trash_dive.TrashCollectionBehavior;
 import com.mojang.datafixers.Dynamic;
@@ -33,7 +29,8 @@ public class MinigameBehaviorTypes {
 	public static final RegistryObject<IMinigameBehaviorType<RisingTidesMinigameBehavior>> RISING_TIDES;
 	public static final RegistryObject<IMinigameBehaviorType<ScheduledMessagesBehavior>> SCHEDULED_MESSAGES;
 	public static final RegistryObject<IMinigameBehaviorType<WorldBorderMinigameBehavior>> WORLD_BORDER;
-	public static final RegistryObject<IMinigameBehaviorType<SurviveTheTideWinConditionBehavior>> SURVIVE_THE_TIDE_WIN_CONDITION;
+	public static final RegistryObject<IMinigameBehaviorType<SttWinConditionBehavior>> SURVIVE_THE_TIDE_INDIVIDUALS_WIN_CONDITION;
+	public static final RegistryObject<IMinigameBehaviorType<SttWinConditionBehavior>> SURVIVE_THE_TIDE_TEAMS_WIN_CONDITION;
 	public static final RegistryObject<IMinigameBehaviorType<FireworksOnDeathBehavior>> FIREWORKS_ON_DEATH;
 	public static final RegistryObject<IMinigameBehaviorType<SurviveTheTideRulesetBehavior>> SURVIVE_THE_TIDE_RULESET;
 	public static final RegistryObject<IMinigameBehaviorType<BindControlsBehavior>> BIND_CONTROLS;
@@ -43,6 +40,7 @@ public class MinigameBehaviorTypes {
 	public static final RegistryObject<IMinigameBehaviorType<SetGameRulesBehavior>> SET_GAME_RULES;
 	public static final RegistryObject<IMinigameBehaviorType<PlaceTrashBehavior>> PLACE_TRASH;
 	public static final RegistryObject<IMinigameBehaviorType<TrashCollectionBehavior>> TRASH_COLLECTION;
+	public static final RegistryObject<IMinigameBehaviorType<TeamsBehavior>> TEAMS;
 
 	public static <T extends IMinigameBehavior> RegistryObject<IMinigameBehaviorType<T>> register(final String name, final MinigameBehaviorType.Factory<T> instanceFactory) {
 		return MINIGAME_BEHAVIOURS_REGISTER.register(name, () -> new MinigameBehaviorType<>(instanceFactory));
@@ -71,14 +69,16 @@ public class MinigameBehaviorTypes {
 		RISING_TIDES = register("rising_tides", RisingTidesMinigameBehavior::parse);
 		SCHEDULED_MESSAGES = register("scheduled_messages", ScheduledMessagesBehavior::parse);
 		WORLD_BORDER = register("world_border", WorldBorderMinigameBehavior::parse);
-		SURVIVE_THE_TIDE_WIN_CONDITION = register("survive_the_tide_win_condition", SurviveTheTideWinConditionBehavior::parse);
+		SURVIVE_THE_TIDE_INDIVIDUALS_WIN_CONDITION = register("survive_the_tide_individuals_win_condition", SttIndividualsWinConditionBehavior::parse);
+		SURVIVE_THE_TIDE_TEAMS_WIN_CONDITION = register("survive_the_tide_teams_win_condition", SttTeamsWinConditionBehavior::parse);
 		FIREWORKS_ON_DEATH = register("fireworks_on_death", FireworksOnDeathBehavior::parse);
 		SURVIVE_THE_TIDE_RULESET = register("survive_the_tide_ruleset", SurviveTheTideRulesetBehavior::parse);
 		BIND_CONTROLS = register("bind_controls", BindControlsBehavior::parse);
 		CANCEL_PLAYER_DAMAGE = register("cancel_player_damage", CancelPlayerDamageBehavior::parse);
+		SET_GAME_RULES = register("set_game_rules", SetGameRulesBehavior::parse);
+		TEAMS = register("teams", TeamsBehavior::parse);
 		SPAWN_CREATURES = register("spawn_creatures", SpawnCreaturesBehavior::parse);
 		RECORD_CREATURES = register("record_creatures", RecordCreaturesBehavior::parse);
-		SET_GAME_RULES = register("set_game_rules", SetGameRulesBehavior::parse);
 		PLACE_TRASH = register("place_trash", PlaceTrashBehavior::parse);
 		TRASH_COLLECTION = register("trash_collection", TrashCollectionBehavior::parse);
 	}

@@ -71,11 +71,6 @@ public final class MutablePlayerSet implements PlayerSet {
 	}
 
 	@Override
-	public boolean contains(Entity entity) {
-		return this.players.contains(entity.getUniqueID());
-	}
-
-	@Override
 	public boolean contains(UUID id) {
 		return this.players.contains(id);
 	}

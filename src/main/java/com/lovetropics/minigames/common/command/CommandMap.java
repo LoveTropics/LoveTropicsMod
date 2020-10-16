@@ -8,6 +8,7 @@ import com.lovetropics.minigames.common.map.generator.ConfiguredGenerator;
 import com.lovetropics.minigames.common.map.generator.ConfiguredGenerators;
 import com.lovetropics.minigames.common.map.workspace.MapWorkspace;
 import com.lovetropics.minigames.common.map.workspace.MapWorkspaceManager;
+import com.lovetropics.minigames.common.map.workspace.WorkspacePositionTracker;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
@@ -146,13 +147,17 @@ public final class CommandMap {
 	private static int leaveMap(CommandContext<CommandSource> context) throws CommandSyntaxException {
 		ServerPlayerEntity player = context.getSource().asPlayer();
 
-		final BlockPos prevPos = BlockPos.fromLong(player.getPersistentData().getLong("mapPrevPos"));
-		final DimensionType dimension = DimensionType.getById(player.getPersistentData().getInt("mapPrevDimension"));
+		MapWorkspace workspace = getCurrentWorkspace(context);
 
-		player.getPersistentData().remove("mapPrevPos");
-		player.getPersistentData().remove("mapPrevDimension");
+		WorkspacePositionTracker.Position position = WorkspacePositionTracker.Position.copyFrom(player);
+		WorkspacePositionTracker.setPositionFor(player, workspace, position);
 
-		DimensionUtils.teleportPlayerNoPortal(player, dimension, prevPos);
+		WorkspacePositionTracker.Position returnPosition = WorkspacePositionTracker.getReturnPositionFor(player);
+		if (returnPosition != null) {
+			returnPosition.applyTo(player);
+		} else {
+			DimensionUtils.teleportPlayerNoPortal(player, DimensionType.OVERWORLD, new BlockPos(0, 64, 0));
+		}
 
 		return Command.SINGLE_SUCCESS;
 	}
@@ -160,13 +165,20 @@ public final class CommandMap {
 	private static int joinMap(CommandContext<CommandSource> context) throws CommandSyntaxException {
 		ServerPlayerEntity player = context.getSource().asPlayer();
 
-		player.getPersistentData().putLong("mapPrevPos", player.getPosition().toLong());
-		player.getPersistentData().putInt("mapPrevDimension", player.getEntityWorld().getDimension().getType().getId());
+		WorkspacePositionTracker.Position returnPosition = WorkspacePositionTracker.Position.copyFrom(player);
+		WorkspacePositionTracker.setReturnPositionFor(player, returnPosition);
 
 		MapWorkspace workspace = MapWorkspaceArgument.get(context, "id");
 
-		DimensionType dimension = workspace.getDimension();
-		DimensionUtils.teleportPlayerNoPortal(player, dimension, new BlockPos(0, 64, 0));
+		WorkspacePositionTracker.Position position = WorkspacePositionTracker.getPositionFor(player, workspace);
+		if (position != null) {
+			position.applyTo(player);
+		} else {
+			DimensionType dimension = workspace.getDimension();
+			ServerWorld world = context.getSource().getServer().getWorld(dimension);
+			BlockPos spawn = world.getDimension().findSpawn(0, 0, false);
+			DimensionUtils.teleportPlayerNoPortal(player, dimension, spawn);
+		}
 
 		if (player.abilities.allowFlying) {
 			player.abilities.isFlying = true;
