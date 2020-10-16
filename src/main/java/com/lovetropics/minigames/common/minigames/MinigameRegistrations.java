@@ -21,8 +21,8 @@ public final class MinigameRegistrations {
 
 	public void collectInto(
 			MinecraftServer server,
-			Set<ServerPlayerEntity> participants,
-			Set<ServerPlayerEntity> spectators,
+			Collection<ServerPlayerEntity> participants,
+			Collection<ServerPlayerEntity> spectators,
 			int maximumParticipants
 	) {
 		PlayerList players = server.getPlayerList();
@@ -43,8 +43,8 @@ public final class MinigameRegistrations {
 
 	private void tryCollectPlayers(
 			PlayerList players, Set<UUID> from,
-			Set<ServerPlayerEntity> participants,
-			Set<ServerPlayerEntity> spectators,
+			Collection<ServerPlayerEntity> participants,
+			Collection<ServerPlayerEntity> spectators,
 			int maximumParticipants
 	) {
 		List<ServerPlayerEntity> selectedPlayers = new ArrayList<>(from.size());
@@ -68,6 +68,7 @@ public final class MinigameRegistrations {
 	}
 
 	public void add(UUID id, @Nullable PlayerRole requestedRole) {
+		remove(id);
 		getSetForRole(requestedRole).add(id);
 	}
 
