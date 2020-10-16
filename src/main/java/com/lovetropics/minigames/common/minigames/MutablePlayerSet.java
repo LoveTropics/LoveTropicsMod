@@ -30,10 +30,16 @@ public final class MutablePlayerSet implements PlayerSet {
 		this.listeners.add(listeners);
 	}
 
+	@Override
+	public void removeListener(Listeners listeners) {
+		this.listeners.remove(listeners);
+	}
+
 	public void clear() {
 		for (UUID id : this.players) {
+			ServerPlayerEntity player = this.server.getPlayerList().getPlayerByUUID(id);
 			for (Listeners listener : this.listeners) {
-				listener.onRemovePlayer(id);
+				listener.onRemovePlayer(id, player);
 			}
 		}
 		this.players.clear();
@@ -51,8 +57,9 @@ public final class MutablePlayerSet implements PlayerSet {
 
 	public boolean remove(UUID id) {
 		if (this.players.remove(id)) {
+			ServerPlayerEntity player = this.server.getPlayerList().getPlayerByUUID(id);
 			for (Listeners listener : this.listeners) {
-				listener.onRemovePlayer(id);
+				listener.onRemovePlayer(id, player);
 			}
 			return true;
 		}

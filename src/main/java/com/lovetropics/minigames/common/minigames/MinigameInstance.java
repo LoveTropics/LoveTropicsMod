@@ -2,8 +2,8 @@ package com.lovetropics.minigames.common.minigames;
 
 import com.lovetropics.minigames.common.map.MapRegions;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehaviorType;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.ICommandSource;
@@ -16,8 +16,8 @@ import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.world.dimension.DimensionType;
 import net.minecraft.world.server.ServerWorld;
 
+import javax.annotation.Nullable;
 import java.util.*;
-import java.util.function.Consumer;
 
 /**
  * Default implementation of a minigame instance. Simple and naive
@@ -65,24 +65,21 @@ public class MinigameInstance implements IMinigameInstance
 
         allPlayers.addListener(new PlayerSet.Listeners() {
             @Override
-            public void onRemovePlayer(UUID id) {
-                MinigameInstance.this.onRemovePlayer(id);
+            public void onRemovePlayer(UUID id, @Nullable ServerPlayerEntity player) {
+                MinigameInstance.this.onRemovePlayer(id, player);
             }
         });
     }
 
-    private void onRemovePlayer(UUID id) {
-        ServerPlayerEntity player = this.server.getPlayerList().getPlayerByUUID(id);
-        if (player == null) {
-            return;
-        }
-
+    private void onRemovePlayer(UUID id, @Nullable ServerPlayerEntity player) {
         for (MutablePlayerSet rolePlayers : roles.values()) {
             rolePlayers.remove(id);
         }
 
-        for (IMinigameBehavior behavior : behaviors.values()) {
-            behavior.onPlayerLeave(MinigameInstance.this, player);
+        if (player != null) {
+            for (IMinigameBehavior behavior : behaviors.values()) {
+                behavior.onPlayerLeave(MinigameInstance.this, player);
+            }
         }
     }
 

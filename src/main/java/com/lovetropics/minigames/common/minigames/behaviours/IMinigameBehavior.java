@@ -8,7 +8,6 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.ActionResultType;
-import net.minecraft.util.Direction;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.ITextComponent;
@@ -16,6 +15,7 @@ import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.world.World;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.player.AttackEntityEvent;
+import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 
 public interface IMinigameBehavior
 {
@@ -196,12 +196,11 @@ public interface IMinigameBehavior
 
 	/**
 	 * Called when a player left clicks on a block
-	 *
-	 * @param minigame The current minigame instance.
+	 *  @param minigame The current minigame instance.
 	 * @param player   The player that left-clicked the block.
 	 * @param pos      The block position that was clicked.
-	 * @param face     The face that was clicked.
+	 * @param event     The face that was clicked.
 	 */
-	default void onPlayerLeftClickBlock(final IMinigameInstance minigame, ServerPlayerEntity player, BlockPos pos, Direction face) {
+	default void onPlayerLeftClickBlock(final IMinigameInstance minigame, ServerPlayerEntity player, BlockPos pos, PlayerInteractEvent.LeftClickBlock event) {
 	}
 }

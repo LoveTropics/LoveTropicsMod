@@ -2,13 +2,17 @@ package com.lovetropics.minigames.common.minigames;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.network.IPacket;
 import net.minecraft.potion.EffectInstance;
 import net.minecraft.util.text.ITextComponent;
 
+import javax.annotation.Nullable;
 import java.util.UUID;
 
 public interface PlayerSet extends Iterable<ServerPlayerEntity> {
 	void addListener(Listeners listeners);
+
+	void removeListener(Listeners listeners);
 
 	boolean contains(Entity entity);
 
@@ -34,11 +38,17 @@ public interface PlayerSet extends Iterable<ServerPlayerEntity> {
 		}
 	}
 
+	default void sendPacket(IPacket<?> packet) {
+		for (ServerPlayerEntity player : this) {
+			player.connection.sendPacket(packet);
+		}
+	}
+
 	interface Listeners {
 		default void onAddPlayer(ServerPlayerEntity player) {
 		}
 
-		default void onRemovePlayer(UUID id) {
+		default void onRemovePlayer(UUID id, @Nullable ServerPlayerEntity player) {
 		}
 	}
 }

@@ -531,7 +531,7 @@ public class MinigameManager implements IMinigameManager
             ServerPlayerEntity player = (ServerPlayerEntity) event.getPlayer();
 
             if (this.currentInstance != null && this.currentInstance.getPlayers().contains(player)) {
-                dispatchToBehaviors(true, (b, m) -> b.onPlayerLeftClickBlock(m, player, event.getPos(), event.getFace()));
+                dispatchToBehaviors(true, (b, m) -> b.onPlayerLeftClickBlock(m, player, event.getPos(), event));
                 this.currentInstance.update();
             }
         }
