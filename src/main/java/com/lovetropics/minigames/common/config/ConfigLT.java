@@ -4,6 +4,8 @@ import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.common.ForgeConfigSpec.BooleanValue;
 import net.minecraftforge.common.ForgeConfigSpec.Builder;
 import net.minecraftforge.common.ForgeConfigSpec.DoubleValue;
+import net.minecraftforge.common.ForgeConfigSpec.IntValue;
+import net.minecraftforge.common.ForgeConfigSpec.ConfigValue;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.fml.config.ModConfig;
 
@@ -15,6 +17,7 @@ public class ConfigLT {
     private static final Builder COMMON_BUILDER = new Builder();
 
     public static final CategoryGeneral GENERAL = new CategoryGeneral();
+    public static final CategoryTechStack TECH_STACK = new CategoryTechStack();
 
     public static final class CategoryGeneral {
 
@@ -32,6 +35,33 @@ public class ConfigLT {
                     .define("UseCrawl", true);
 
             CLIENT_BUILDER.pop();
+        }
+    }
+
+    public static final class CategoryTechStack {
+
+        public final ConfigValue<String> baseUrl;
+        public final ConfigValue<String> resultsEndpoint;
+        public final IntValue port;
+        public final ConfigValue<String> authToken;
+
+        private CategoryTechStack() {
+            COMMON_BUILDER.comment("Used for the LoveTropics charity drive.").push("techStack");
+
+            baseUrl = COMMON_BUILDER
+                    .comment("Base URL to use ")
+                    .define("baseUrl", "http://localhost");
+            resultsEndpoint = COMMON_BUILDER
+                    .comment("Endpoint used to upload minigame results")
+                    .define("resultsEndpoint", "minigame/result");
+            port = COMMON_BUILDER
+                    .comment("Port number to use when POSTing data")
+                    .defineInRange("port", 0, 0, 99999);
+            authToken = COMMON_BUILDER
+                    .comment("Auth token used to authenticate with the tech stack")
+                    .define("authToken", "");
+
+            COMMON_BUILDER.pop();
         }
     }
 
