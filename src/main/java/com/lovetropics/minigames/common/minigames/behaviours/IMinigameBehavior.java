@@ -13,6 +13,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.world.World;
+import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.player.AttackEntityEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
@@ -102,12 +103,12 @@ public interface IMinigameBehavior
 	 * Helper method to catch when a player dies while inside an active minigame
 	 * using this definition. Useful for unique logic defined by this minigame
 	 * definition.
-	 * 
+	 *
 	 * @param minigame The current minigame instance.
-	 * 
 	 * @param player   The player which died.
+	 * @param event    The event fired.
 	 */
-	default void onPlayerDeath(final IMinigameInstance minigame, ServerPlayerEntity player) {}
+	default void onPlayerDeath(final IMinigameInstance minigame, ServerPlayerEntity player, LivingDeathEvent event) {}
 
 	/**
 	 * Helper method to create unique logic for when entities in the dimension

@@ -10,6 +10,7 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
+import net.minecraftforge.event.entity.living.LivingDeathEvent;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
@@ -33,7 +34,7 @@ public class SttTeamsWinConditionBehavior extends SttWinConditionBehavior {
 	}
 
 	@Override
-	public void onPlayerDeath(final IMinigameInstance minigame, ServerPlayerEntity player) {
+	public void onPlayerDeath(final IMinigameInstance minigame, ServerPlayerEntity player, LivingDeathEvent event) {
 		if (minigameEnded) {
 			return;
 		}

@@ -6,6 +6,7 @@ import com.mojang.datafixers.Dynamic;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.world.World;
+import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.player.AttackEntityEvent;
 
@@ -34,7 +35,16 @@ public final class CommandEventsBehavior extends CommandInvokeBehavior {
 
 	@Override
 	public void onPlayerJoin(IMinigameInstance minigame, ServerPlayerEntity player, PlayerRole role) {
-		this.invoke("player_join", sourceForEntity(player));
+		if (role == PlayerRole.PARTICIPANT) {
+			this.invoke("player_join", sourceForEntity(player));
+		} else {
+			this.invoke("player_spectate", sourceForEntity(player));
+		}
+	}
+
+	@Override
+	public void onPlayerChangeRole(IMinigameInstance minigame, ServerPlayerEntity player, PlayerRole role) {
+		this.onPlayerJoin(minigame, player, role);
 	}
 
 	@Override
@@ -43,7 +53,7 @@ public final class CommandEventsBehavior extends CommandInvokeBehavior {
 	}
 
 	@Override
-	public void onPlayerDeath(IMinigameInstance minigame, ServerPlayerEntity player) {
+	public void onPlayerDeath(IMinigameInstance minigame, ServerPlayerEntity player, LivingDeathEvent event) {
 		this.invoke("player_death", sourceForEntity(player));
 	}
 

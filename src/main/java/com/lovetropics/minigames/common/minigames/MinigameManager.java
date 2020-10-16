@@ -461,7 +461,7 @@ public class MinigameManager implements IMinigameManager
     @SubscribeEvent
     public void onPlayerDeath(LivingDeathEvent event) {
         if (this.ifPlayerInInstance(event.getEntity())) {
-            dispatchToBehaviors(false, IMinigameBehavior::onPlayerDeath, (ServerPlayerEntity) event.getEntity());
+            dispatchToBehaviors(false, (b, m) -> b.onPlayerDeath(m, (ServerPlayerEntity) event.getEntityLiving(), event));
         }
     }
 
@@ -515,23 +515,17 @@ public class MinigameManager implements IMinigameManager
 
     @SubscribeEvent
     public void onPlayerInteractEntity(PlayerInteractEvent.EntityInteract event) {
-        if (event.getPlayer() instanceof ServerPlayerEntity) {
+        if (ifPlayerInInstance(event.getPlayer())) {
             ServerPlayerEntity player = (ServerPlayerEntity) event.getPlayer();
-
-            if (this.currentInstance != null && this.currentInstance.getPlayers().contains(player)) {
-                dispatchToBehaviors(true, (b, m) -> b.onPlayerInteractEntity(m, player, event.getTarget(), event.getHand()));
-            }
+            dispatchToBehaviors(true, (b, m) -> b.onPlayerInteractEntity(m, player, event.getTarget(), event.getHand()));
         }
     }
 
     @SubscribeEvent
     public void onPlayerLeftClickBlock(PlayerInteractEvent.LeftClickBlock event) {
-        if (event.getPlayer() instanceof ServerPlayerEntity) {
+        if (ifPlayerInInstance(event.getPlayer())) {
             ServerPlayerEntity player = (ServerPlayerEntity) event.getPlayer();
-
-            if (this.currentInstance != null && this.currentInstance.getPlayers().contains(player)) {
-                dispatchToBehaviors(true, (b, m) -> b.onPlayerLeftClickBlock(m, player, event.getPos(), event));
-            }
+            dispatchToBehaviors(true, (b, m) -> b.onPlayerLeftClickBlock(m, player, event.getPos(), event));
         }
     }
 

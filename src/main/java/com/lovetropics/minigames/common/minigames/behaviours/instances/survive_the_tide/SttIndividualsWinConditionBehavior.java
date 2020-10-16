@@ -10,6 +10,7 @@ import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraftforge.event.entity.living.LivingDeathEvent;
 
 import java.util.Iterator;
 
@@ -36,7 +37,7 @@ public class SttIndividualsWinConditionBehavior extends SttWinConditionBehavior 
 	}
 
 	@Override
-	public void onPlayerDeath(final IMinigameInstance minigame, ServerPlayerEntity player) {
+	public void onPlayerDeath(final IMinigameInstance minigame, ServerPlayerEntity player, LivingDeathEvent event) {
 		PlayerSet participants = minigame.getParticipants();
 
 		if (participants.size() == 2) {

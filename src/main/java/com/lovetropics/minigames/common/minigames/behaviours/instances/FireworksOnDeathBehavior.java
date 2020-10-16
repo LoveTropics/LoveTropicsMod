@@ -7,6 +7,7 @@ import com.mojang.datafixers.Dynamic;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.gen.Heightmap;
+import net.minecraftforge.event.entity.living.LivingDeathEvent;
 
 public final class FireworksOnDeathBehavior implements IMinigameBehavior {
 	public FireworksOnDeathBehavior() {
@@ -17,7 +18,7 @@ public final class FireworksOnDeathBehavior implements IMinigameBehavior {
 	}
 
 	@Override
-	public void onPlayerDeath(final IMinigameInstance minigame, ServerPlayerEntity player) {
+	public void onPlayerDeath(final IMinigameInstance minigame, ServerPlayerEntity player, LivingDeathEvent event) {
 		BlockPos fireworkPos = player.world.getHeight(Heightmap.Type.MOTION_BLOCKING, player.getPosition());
 		FireworkUtil.spawnFirework(fireworkPos, player.world, FireworkUtil.Palette.ISLAND_ROYALE.getPalette());
 	}

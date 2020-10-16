@@ -22,6 +22,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.world.GameRules;
 import net.minecraft.world.World;
+import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.player.AttackEntityEvent;
 
@@ -67,7 +68,7 @@ public class SurviveTheTideRulesetBehavior implements IMinigameBehavior
 	}
 
 	@Override
-	public void onPlayerDeath(final IMinigameInstance minigame, ServerPlayerEntity player) {
+	public void onPlayerDeath(final IMinigameInstance minigame, ServerPlayerEntity player, LivingDeathEvent event) {
 		if (forceDropItemsOnDeath && player.world.getGameRules().getBoolean(GameRules.KEEP_INVENTORY)) {
 			destroyVanishingCursedItems(player.inventory);
 			player.inventory.dropAllItems();
