@@ -8,6 +8,8 @@ import com.lovetropics.minigames.common.minigames.behaviours.instances.survive_t
 import com.lovetropics.minigames.common.minigames.behaviours.instances.survive_the_tide.SurviveTheTideWinConditionBehavior;
 import com.lovetropics.minigames.common.minigames.behaviours.instances.survive_the_tide.WeatherEventsMinigameBehavior;
 import com.lovetropics.minigames.common.minigames.behaviours.instances.survive_the_tide.WorldBorderMinigameBehavior;
+import com.lovetropics.minigames.common.minigames.behaviours.instances.trash_dive.PlaceTrashBehavior;
+import com.lovetropics.minigames.common.minigames.behaviours.instances.trash_dive.TrashCollectionBehavior;
 import com.mojang.datafixers.Dynamic;
 import net.minecraftforge.fml.RegistryObject;
 import net.minecraftforge.registries.DeferredRegister;
@@ -39,6 +41,8 @@ public class MinigameBehaviorTypes {
 	public static final RegistryObject<IMinigameBehaviorType<SpawnCreaturesBehavior>> SPAWN_CREATURES;
 	public static final RegistryObject<IMinigameBehaviorType<RecordCreaturesBehavior>> RECORD_CREATURES;
 	public static final RegistryObject<IMinigameBehaviorType<SetGameRulesBehavior>> SET_GAME_RULES;
+	public static final RegistryObject<IMinigameBehaviorType<PlaceTrashBehavior>> PLACE_TRASH;
+	public static final RegistryObject<IMinigameBehaviorType<TrashCollectionBehavior>> TRASH_COLLECTION;
 
 	public static <T extends IMinigameBehavior> RegistryObject<IMinigameBehaviorType<T>> register(final String name, final MinigameBehaviorType.Factory<T> instanceFactory) {
 		return MINIGAME_BEHAVIOURS_REGISTER.register(name, () -> new MinigameBehaviorType<>(instanceFactory));
@@ -75,5 +79,7 @@ public class MinigameBehaviorTypes {
 		SPAWN_CREATURES = register("spawn_creatures", SpawnCreaturesBehavior::parse);
 		RECORD_CREATURES = register("record_creatures", RecordCreaturesBehavior::parse);
 		SET_GAME_RULES = register("set_game_rules", SetGameRulesBehavior::parse);
+		PLACE_TRASH = register("place_trash", PlaceTrashBehavior::parse);
+		TRASH_COLLECTION = register("trash_collection", TrashCollectionBehavior::parse);
 	}
 }

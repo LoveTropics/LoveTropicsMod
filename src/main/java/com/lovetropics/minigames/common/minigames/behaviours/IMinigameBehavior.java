@@ -8,7 +8,9 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.ActionResultType;
+import net.minecraft.util.Direction;
 import net.minecraft.util.Hand;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.world.World;
@@ -184,11 +186,22 @@ public interface IMinigameBehavior
 
 	/**
 	 * Called when a player interacts with an entity
-	 *  @param minigame The current minigame instance.
+	 * @param minigame  The current minigame instance.
 	 * @param player    The player that interacted with an entity
 	 * @param entity    The entity that was interacted with
 	 * @param hand      The hand the player used to interact
 	 */
 	default void onPlayerInteractEntity(final IMinigameInstance minigame, ServerPlayerEntity player, Entity entity, Hand hand) {
+	}
+
+	/**
+	 * Called when a player left clicks on a block
+	 *
+	 * @param minigame The current minigame instance.
+	 * @param player   The player that left-clicked the block.
+	 * @param pos      The block position that was clicked.
+	 * @param face     The face that was clicked.
+	 */
+	default void onPlayerLeftClickBlock(final IMinigameInstance minigame, ServerPlayerEntity player, BlockPos pos, Direction face) {
 	}
 }

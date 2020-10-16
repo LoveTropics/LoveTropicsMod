@@ -31,6 +31,10 @@ public interface IMinigameInstance
 
     <T extends IMinigameBehavior> Optional<T> getBehavior(IMinigameBehaviorType<T> type);
 
+    default <T extends IMinigameBehavior> T getBehaviorOrThrow(IMinigameBehaviorType<T> type) {
+        return getBehavior(type).orElseThrow(RuntimeException::new);
+    }
+
     /**
      * Adds the player to this minigame with the given role, or sets the players role if they are already added.
      * This method will also remove the player from any other role they are contained within.

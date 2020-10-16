@@ -525,6 +525,18 @@ public class MinigameManager implements IMinigameManager
         }
     }
 
+    @SubscribeEvent
+    public void onPlayerLeftClickBlock(PlayerInteractEvent.LeftClickBlock event) {
+        if (event.getPlayer() instanceof ServerPlayerEntity) {
+            ServerPlayerEntity player = (ServerPlayerEntity) event.getPlayer();
+
+            if (this.currentInstance != null && this.currentInstance.getPlayers().contains(player)) {
+                dispatchToBehaviors(true, (b, m) -> b.onPlayerLeftClickBlock(m, player, event.getPos(), event.getFace()));
+                this.currentInstance.update();
+            }
+        }
+    }
+
     private <T> Exception dispatchToBehaviors(boolean stopOnError, TriConsumer<IMinigameBehavior, IMinigameInstance, T> action, T argument) {
     	return dispatchToBehaviors(stopOnError, (b, m) -> action.accept(b, m, argument));
     }

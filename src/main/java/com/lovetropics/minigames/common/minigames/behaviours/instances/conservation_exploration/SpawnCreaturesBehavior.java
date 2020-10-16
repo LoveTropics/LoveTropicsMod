@@ -52,12 +52,8 @@ public final class SpawnCreaturesBehavior implements IMinigameBehavior {
 			for (int i = 0; i < spawner.count; i++) {
 				MapRegion region = regions.get(random.nextInt(regions.size()));
 
-				BlockPos pos = new BlockPos(
-						region.min.getX() + random.nextInt(region.max.getX() - region.min.getX() + 1),
-						region.min.getY(),
-						region.min.getZ() + random.nextInt(region.max.getZ() - region.min.getZ() + 1)
-				);
-				pos = findSurface(world, pos);
+				BlockPos pos = region.sample(random);
+				pos = findSurface(world, pos.getX(), region.min.getY(), pos.getZ());
 
 				Entity entity = entityType.spawn(world, null, null, null, pos, SpawnReason.SPAWN_EGG, true, false);
 				if (entity instanceof MobEntity) {
@@ -72,10 +68,10 @@ public final class SpawnCreaturesBehavior implements IMinigameBehavior {
 		return count;
 	}
 
-	private BlockPos findSurface(ServerWorld world, BlockPos pos) {
-		IChunk chunk = world.getChunk(pos);
+	private BlockPos findSurface(ServerWorld world, int x, int y, int z) {
+		IChunk chunk = world.getChunk(x >> 4, z >> 4);
 
-		BlockPos.Mutable mutablePos = new BlockPos.Mutable(pos);
+		BlockPos.Mutable mutablePos = new BlockPos.Mutable(x, y, z);
 		while (!chunk.getBlockState(mutablePos).isAir()) {
 			mutablePos.move(Direction.UP);
 		}

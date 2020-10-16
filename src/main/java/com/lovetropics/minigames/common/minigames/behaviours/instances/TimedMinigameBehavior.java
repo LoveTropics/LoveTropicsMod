@@ -32,7 +32,8 @@ public final class TimedMinigameBehavior implements IMinigameBehavior {
 	public static <T> TimedMinigameBehavior parse(Dynamic<T> root) {
 		long length = root.get("length").asLong(20 * 60);
 		long closeLength = root.get("close_length").asLong(0);
-		boolean timerBar = root.get("timer_bar").asBoolean(false);
+		// TODO: we store this in a string because DFU doesn't handle booleans at the moment
+		boolean timerBar = root.get("timer_bar").asString("false").equalsIgnoreCase("true");
 		return new TimedMinigameBehavior(length, closeLength, timerBar);
 	}
 
@@ -42,18 +43,24 @@ public final class TimedMinigameBehavior implements IMinigameBehavior {
 
 	@Override
 	public void onPlayerJoin(IMinigameInstance minigame, ServerPlayerEntity player, PlayerRole role) {
-		this.timerBar.addPlayer(player);
+		if (this.timerBar != null) {
+			this.timerBar.addPlayer(player);
+		}
 	}
 
 	@Override
 	public void onPlayerLeave(IMinigameInstance minigame, ServerPlayerEntity player) {
-		this.timerBar.removePlayer(player);
+		if (this.timerBar != null) {
+			this.timerBar.removePlayer(player);
+		}
 	}
 
 	@Override
 	public void onFinish(IMinigameInstance minigame) {
-		this.timerBar.removeAllPlayers();
-		this.timerBar.setVisible(false);
+		if (this.timerBar != null) {
+			this.timerBar.removeAllPlayers();
+			this.timerBar.setVisible(false);
+		}
 	}
 
 	@Override
@@ -70,9 +77,9 @@ public final class TimedMinigameBehavior implements IMinigameBehavior {
 			}
 		}
 
-		if (ticks % 20 == 0) {
+		if (ticks % 20 == 0 && timerBar != null) {
 			long ticksRemaining = Math.max(length - ticks, 0);
-			timerBar.setName(this.getTimeRemainingText(ticks));
+			timerBar.setName(this.getTimeRemainingText(ticksRemaining));
 			timerBar.setPercent((float) ticksRemaining / length);
 		}
 	}
