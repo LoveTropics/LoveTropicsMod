@@ -131,6 +131,7 @@ public class LoveTropics {
         CommandResetIslandChests.register(dispatcher);
         CommandMinigameControl.register(dispatcher);
         CommandMap.register(dispatcher);
+        CommandMinigameSendResults.register(dispatcher);
     }
 
     private void onServerStopping(final FMLServerStoppingEvent event) {
