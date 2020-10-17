@@ -8,6 +8,7 @@ import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehaviorTy
 import com.lovetropics.minigames.common.minigames.behaviours.MinigameBehaviorTypes;
 import com.lovetropics.minigames.common.minigames.behaviours.instances.PhasesMinigameBehavior;
 import com.mojang.datafixers.Dynamic;
+import it.unimi.dsi.fastutil.longs.*;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.CampfireBlock;
@@ -22,6 +23,7 @@ import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.ChunkSection;
 import net.minecraft.world.gen.Heightmap;
 import net.minecraft.world.server.ServerChunkProvider;
+import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.common.util.Constants;
 import org.apache.logging.log4j.LogManager;
 
@@ -29,8 +31,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class RisingTidesMinigameBehavior implements IMinigameBehavior
-{
+public class RisingTidesMinigameBehavior implements IMinigameBehavior {
+	// the maximum time in milliseconds that we should spend updating the tide per tick
+	private static final long RISING_TIDE_THRESHOLD_MS = 15;
+
 	private final String tideAreaKey;
 	private final String icebergLinesKey;
 	private final Map<String, Integer> phaseToTideHeight;
@@ -40,6 +44,12 @@ public class RisingTidesMinigameBehavior implements IMinigameBehavior
 
 	private MapRegion tideArea;
 	private final List<IcebergLine> icebergLines = new ArrayList<>();
+
+	private ChunkPos minTideChunk;
+	private ChunkPos maxTideChunk;
+
+	private final LongSet queuedChunksToUpdate = new LongOpenHashSet();
+	private final Long2IntMap chunkWaterLevels = new Long2IntOpenHashMap();
 
 	public RisingTidesMinigameBehavior(String tideAreaKey, String icebergLinesKey, final Map<String, Integer> phaseToTideHeight, final List<String> phasesIcebergsGrow, final int icebergGrowthTickRate) {
 		this.tideAreaKey = tideAreaKey;
@@ -71,6 +81,9 @@ public class RisingTidesMinigameBehavior implements IMinigameBehavior
 	public void onMapReady(IMinigameInstance minigame) {
 		tideArea = minigame.getMapRegions().getOne(tideAreaKey);
 
+		minTideChunk = new ChunkPos(tideArea.min.getX() >> 4, tideArea.min.getZ() >> 4);
+		maxTideChunk = new ChunkPos(tideArea.max.getX() >> 4, tideArea.max.getZ() >> 4);
+
 		icebergLines.clear();
 		for (MapRegion icebergLine : minigame.getMapRegions().get(icebergLinesKey)) {
 			icebergLines.add(new IcebergLine(icebergLine.min, icebergLine.max, 10));
@@ -78,6 +91,7 @@ public class RisingTidesMinigameBehavior implements IMinigameBehavior
 
 		minigame.getBehavior(MinigameBehaviorTypes.PHASES.get()).ifPresent(phases -> {
 			waterLevel = phaseToTideHeight.get(phases.getFirstPhase().getKey());
+			chunkWaterLevels.defaultReturnValue(waterLevel);
 		});
 	}
 
@@ -98,12 +112,14 @@ public class RisingTidesMinigameBehavior implements IMinigameBehavior
 			final PhasesMinigameBehavior.MinigamePhase phase = phases.getCurrentPhase();
 			final int prevWaterLevel = phaseToTideHeight.get(phases.getPreviousPhase().orElse(phase).getKey());
 
-			processWaterLevel(minigame, phase, prevWaterLevel);
+			tickWaterLevel(minigame, phase, prevWaterLevel);
 
 			if (phasesIcebergsGrow.contains(phase.getKey()) && minigame.ticks() % icebergGrowthTickRate == 0) {
 				growIcebergs(world);
 			}
 		});
+
+		processRisingTideQueue(minigame);
 	}
 
 	private void growIcebergs(final World world) {
@@ -117,7 +133,45 @@ public class RisingTidesMinigameBehavior implements IMinigameBehavior
 		return phaseLength / Math.max(1, Math.abs(waterLevelDiff));
 	}
 
-	private void processWaterLevel(final IMinigameInstance minigame, final PhasesMinigameBehavior.MinigamePhase phase, final int prevWaterLevel) {
+	private void processRisingTideQueue(IMinigameInstance minigame) {
+		if (queuedChunksToUpdate.isEmpty()) {
+			return;
+		}
+
+		ServerWorld world = minigame.getWorld();
+		ServerChunkProvider chunkProvider = world.getChunkProvider();
+
+		long startTime = System.currentTimeMillis();
+		long updatedBlocks = 0;
+
+		LongIterator iterator = queuedChunksToUpdate.iterator();
+		while (iterator.hasNext()) {
+			long chunkPos = iterator.nextLong();
+			int chunkX = ChunkPos.getX(chunkPos);
+			int chunkZ = ChunkPos.getZ(chunkPos);
+
+			// we only want to apply updates to loaded chunks
+			Chunk chunk = chunkProvider.getChunkWithoutLoading(chunkX, chunkZ);
+			if (chunk == null) {
+				continue;
+			}
+
+			iterator.remove();
+			updatedBlocks += increaseTideForChunk(world, chunk);
+
+			// limit the time we spend rising the tide each tick
+			if (System.currentTimeMillis() - startTime > RISING_TIDE_THRESHOLD_MS) {
+				break;
+			}
+		}
+
+		if (updatedBlocks > 0) {
+			long endTime = System.currentTimeMillis();
+			LogManager.getLogger().info("Updated {} blocks in {}ms", updatedBlocks, endTime - startTime);
+		}
+	}
+
+	private void tickWaterLevel(final IMinigameInstance minigame, final PhasesMinigameBehavior.MinigamePhase phase, final int prevWaterLevel) {
 		final int targetWaterLevel = phaseToTideHeight.get(phase.getKey());
 
 		int waterChangeInterval = this.calculateWaterChangeInterval(
@@ -127,87 +181,115 @@ public class RisingTidesMinigameBehavior implements IMinigameBehavior
 		);
 
 		if (waterLevel < targetWaterLevel && minigame.ticks() % waterChangeInterval == 0) {
-			increaseTide(minigame.getWorld());
+			this.waterLevel++;
+
+			// queue all the chunks to be updated!
+			for (int z = minTideChunk.z; z <= maxTideChunk.z; z++) {
+				for (int x = minTideChunk.x; x <= maxTideChunk.x; x++) {
+					queuedChunksToUpdate.add(ChunkPos.asLong(x, z));
+				}
+			}
 		}
 	}
 
-	private void increaseTide(final World world) {
-		this.waterLevel++;
-		BlockPos min = new BlockPos(tideArea.min.getX(), waterLevel, tideArea.min.getZ());
-		BlockPos max = new BlockPos(tideArea.max.getX(), waterLevel, tideArea.max.getZ());
-		ChunkPos minChunk = new ChunkPos(min);
-		ChunkPos maxChunk = new ChunkPos(max);
+	// thicc boi
+	private long increaseTideForChunk(World world, Chunk chunk) {
+		ChunkPos chunkPos = chunk.getPos();
 
-		long startTime = System.currentTimeMillis();
+		int targetLevel = this.waterLevel;
+		int lastLevel = this.chunkWaterLevels.put(chunkPos.asLong(), targetLevel);
+
+		// no work to be done
+		if (lastLevel >= targetLevel) {
+			return 0;
+		}
+
+		// this is the total area over which we need to increase the tide
+		BlockPos min = new BlockPos(tideArea.min.getX(), lastLevel, tideArea.min.getZ());
+		BlockPos max = new BlockPos(tideArea.max.getX(), targetLevel, tideArea.max.getZ());
+
 		long updatedBlocks = 0;
 
-		BlockPos.Mutable localStart = new BlockPos.Mutable();
-		BlockPos.Mutable localEnd = new BlockPos.Mutable();
-		BlockPos.Mutable realPos = new BlockPos.Mutable();
+		ChunkSection[] sectionArray = chunk.getSections();
 
-		for (int x = minChunk.x; x <= maxChunk.x; x++) {
-			for (int z = minChunk.z; z <= maxChunk.z; z++) {
-				ChunkPos chunkPos = new ChunkPos(x, z);
-				BlockPos chunkStart = chunkPos.asBlockPos();
-				// Extract current chunk section
-				Chunk chunk = world.getChunk(x, z);
-				ChunkSection[] sectionArray = chunk.getSections();
-				ChunkSection section = sectionArray[this.waterLevel >> 4];
-				int localY = this.waterLevel & 0xF;
-				// Calculate start/end within the current section
-				localStart.setPos(min.subtract(chunkStart));
-				localStart.setPos(Math.max(0, localStart.getX()), localY, Math.max(0, localStart.getZ()));
-				localEnd.setPos(max.subtract(chunkStart));
-				localEnd.setPos(Math.min(15, localEnd.getX()), localY, Math.min(15, localEnd.getZ()));
-				// If this section is empty, we must add a new one
-				if (section == Chunk.EMPTY_SECTION) {
-					// This constructor expects the "base y" which means the real Y-level floored to the nearest multiple of 16
-					// This is accomplished by removing the last 4 bits of the coordinate
-					section = new ChunkSection(this.waterLevel & ~0xF);
-					sectionArray[this.waterLevel >> 4] = section;
-				}
-				Heightmap heightmapSurface = chunk.getHeightmap(Heightmap.Type.WORLD_SURFACE);
-				Heightmap heightmapMotionBlocking = chunk.getHeightmap(Heightmap.Type.MOTION_BLOCKING);
-				boolean anyChanged = false;
-				for (BlockPos pos : BlockPos.getAllInBoxMutable(localStart, localEnd)) {
-					BlockState existing = section.getBlockState(pos.getX(), pos.getY(), pos.getZ());
-					realPos.setPos(chunkStart.getX() + pos.getX(), this.waterLevel, chunkStart.getZ() + pos.getZ());
-					BlockState toSet = null;
-					if (existing.isAir(world, pos) || !existing.getMaterial().blocksMovement() || existing.getBlock() == Blocks.BAMBOO) {
-						// If air or a replaceable block, just set to water
-						toSet = Blocks.WATER.getDefaultState();
-					} else if (existing.getBlock() instanceof IWaterLoggable) {
-						// If waterloggable, set the waterloggable property to true
-						toSet = existing.with(BlockStateProperties.WATERLOGGED, true);
-						if (existing.getBlock() == Blocks.CAMPFIRE) {
-							toSet = toSet.with(CampfireBlock.LIT, false);
-						}
-					}
-					if (toSet != null) {
-						anyChanged = true;
-						if (existing.getBlock() == Blocks.BAMBOO) {
-							world.setBlockState(realPos, toSet, Constants.BlockFlags.NO_RERENDER | Constants.BlockFlags.BLOCK_UPDATE);
-						} else {
-							section.setBlockState(pos.getX(), pos.getY(), pos.getZ(), toSet);
-						}
-						// Tell the client about the change
-						((ServerChunkProvider)world.getChunkProvider()).markBlockChanged(realPos);
-						// Update heightmap
-						heightmapSurface.update(pos.getX(), realPos.getY(), pos.getZ(), toSet);
-						heightmapMotionBlocking.update(pos.getX(), realPos.getY(), pos.getZ(), toSet);
-						updatedBlocks++;
-						// FIXES LIGHTING AT THE COST OF PERFORMANCE - TODO ask fry?
-						// world.getChunkProvider().getLightManager().checkBlock(realPos);
+		int minChunkX = chunkPos.getXStart();
+		int minChunkZ = chunkPos.getZStart();
+
+		int minSection = lastLevel >> 4;
+		int maxSection = targetLevel >> 4;
+
+		// iterate through all the sections that need to be changed
+		for (int sectionY = minSection; sectionY <= maxSection; sectionY++) {
+			ChunkSection section = sectionArray[sectionY];
+			int minSectionY = sectionY << 4;
+
+			// Calculate start/end within the current section
+			BlockPos localMin = new BlockPos(
+					Math.max(0, min.getX() - minChunkX),
+					Math.max(0, min.getY() - minSectionY),
+					Math.max(0, min.getZ() - minChunkZ)
+			);
+
+			BlockPos localMax = new BlockPos(
+					Math.min(15, max.getX() - minChunkX),
+					Math.min(15, max.getY() - minSectionY),
+					Math.min(15, max.getZ() - minChunkZ)
+			);
+
+			// If this section is empty, we must add a new one
+			if (section == Chunk.EMPTY_SECTION) {
+				// This constructor expects the "base y" which means the real Y-level floored to the nearest multiple of 16
+				// This is accomplished by removing the last 4 bits of the coordinate
+				section = new ChunkSection(targetLevel & ~0xF);
+				sectionArray[targetLevel >> 4] = section;
+			}
+
+			Heightmap heightmapSurface = chunk.getHeightmap(Heightmap.Type.WORLD_SURFACE);
+			Heightmap heightmapMotionBlocking = chunk.getHeightmap(Heightmap.Type.MOTION_BLOCKING);
+
+			BlockPos.Mutable worldPos = new BlockPos.Mutable();
+
+			for (BlockPos pos : BlockPos.getAllInBoxMutable(localMin, localMax)) {
+				BlockState existing = section.getBlockState(pos.getX(), pos.getY(), pos.getZ());
+				worldPos.setPos(minChunkX + pos.getX(), minSectionY + pos.getY(), minChunkZ + pos.getZ());
+
+				BlockState toSet = null;
+				if (existing.isAir(world, worldPos) || !existing.getMaterial().blocksMovement() || existing.getBlock() == Blocks.BAMBOO) {
+					// If air or a replaceable block, just set to water
+					toSet = Blocks.WATER.getDefaultState();
+				} else if (existing.getBlock() instanceof IWaterLoggable) {
+					// If waterloggable, set the waterloggable property to true
+					toSet = existing.with(BlockStateProperties.WATERLOGGED, true);
+					if (existing.getBlock() == Blocks.CAMPFIRE) {
+						toSet = toSet.with(CampfireBlock.LIT, false);
 					}
 				}
-				if (anyChanged) {
-					// Make sure this chunk gets saved
-					chunk.markDirty();
+
+				if (toSet != null) {
+					if (existing.getBlock() == Blocks.BAMBOO) {
+						world.setBlockState(worldPos, toSet, Constants.BlockFlags.NO_RERENDER | Constants.BlockFlags.BLOCK_UPDATE);
+					} else {
+						section.setBlockState(pos.getX(), pos.getY(), pos.getZ(), toSet);
+					}
+
+					// Tell the client about the change
+					((ServerChunkProvider) world.getChunkProvider()).markBlockChanged(worldPos);
+					// Update heightmap
+					heightmapSurface.update(pos.getX(), worldPos.getY(), pos.getZ(), toSet);
+					heightmapMotionBlocking.update(pos.getX(), worldPos.getY(), pos.getZ(), toSet);
+
+					updatedBlocks++;
+					// FIXES LIGHTING AT THE COST OF PERFORMANCE - TODO ask fry?
+					// world.getChunkProvider().getLightManager().checkBlock(realPos);
 				}
 			}
 		}
 
-		long endTime = System.currentTimeMillis();
-		LogManager.getLogger().info("Updated {} blocks in {}ms", updatedBlocks, endTime - startTime);
+		if (updatedBlocks > 0) {
+			// Make sure this chunk gets saved
+			chunk.markDirty();
+		}
+
+		return updatedBlocks;
 	}
 }
