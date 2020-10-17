@@ -41,7 +41,7 @@ public class MinigameDefinitionGeneric implements IMinigameDefinition
 	@Override
 	public String getUnlocalizedName()
 	{
-		return config.translationKey;
+		return "ltminigames.minigame." + config.translationKey;
 	}
 
 	@Override

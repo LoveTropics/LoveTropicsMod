@@ -7,6 +7,7 @@ import com.lovetropics.minigames.common.minigames.MinigameManager;
 import com.lovetropics.minigames.common.minigames.PlayerRole;
 import com.lovetropics.minigames.common.minigames.PlayerSet;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
+import com.lovetropics.minigames.common.techstack.ParticipantEntry;
 import com.mojang.authlib.GameProfile;
 import com.mojang.datafixers.Dynamic;
 import com.mojang.datafixers.util.Pair;
@@ -41,6 +42,7 @@ import net.minecraft.world.server.ServerBossInfo;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public final class RecordCreaturesBehavior implements IMinigameBehavior {
 	private static final long CLOSE_TIME = 20 * 10;
@@ -117,37 +119,8 @@ public final class RecordCreaturesBehavior implements IMinigameBehavior {
 	private void displayReport(IMinigameInstance minigame) {
 		PlayerSet players = minigame.getPlayers();
 
-		players.sendMessage(new StringTextComponent("All creatures have been found! Here are the top recorders for this round:").applyTextStyle(TextFormatting.GREEN));
-
-		List<Pair<GameProfile, Integer>> leaderboard = buildLeaderboard(minigame);
-
-		for (int i = 0; i < leaderboard.size(); i++) {
-			Pair<GameProfile, Integer> entry = leaderboard.get(i);
-			GameProfile profile = entry.getFirst();
-			int count = entry.getSecond();
-
-			players.sendMessage(
-					new StringTextComponent("- " + (i + 1) + ". ")
-							.appendSibling(new StringTextComponent(profile.getName()).applyTextStyle(TextFormatting.BLUE))
-							.appendText(": " + count)
-							.applyTextStyle(TextFormatting.GRAY)
-			);
-		}
-	}
-
-	private List<Pair<GameProfile, Integer>> buildLeaderboard(IMinigameInstance minigame) {
-		MinecraftServer server = minigame.getServer();
-		PlayerProfileCache profileCache = server.getPlayerProfileCache();
-
-		return playerData.entrySet().stream()
-				.map(entry -> {
-					GameProfile profile = profileCache.getProfileByUUID(entry.getKey());
-					return profile != null ? Pair.of(profile, entry.getValue().records.totalCount) : null;
-				})
-				.filter(Objects::nonNull)
-				.sorted(Comparator.comparingInt(Pair::getSecond))
-				.limit(5)
-				.collect(Collectors.toList());
+		players.sendMessage(new StringTextComponent("All creatures have been found!").applyTextStyle(TextFormatting.GREEN));
+		minigame.sendMinigameResults(buildResults(minigame));
 	}
 
 	@Override
@@ -269,6 +242,40 @@ public final class RecordCreaturesBehavior implements IMinigameBehavior {
 
 		ServerScoreboard scoreboard = minigame.getServer().getScoreboard();
 		scoreboard.removeTeam(firstDiscoveryTeam);
+	}
+
+	private List<ParticipantEntry> buildResults(IMinigameInstance minigame) {
+		List<Pair<GameProfile, Integer>> leaderboard = leaderboardFor(minigame).collect(Collectors.toList());
+
+		List<ParticipantEntry> participantResults = new ArrayList<>();
+
+		int place = 0;
+		int lastPoints = -1;
+
+		for (Pair<GameProfile, Integer> entry : leaderboard) {
+			GameProfile profile = entry.getFirst();
+			int points = entry.getSecond();
+
+			if (points != lastPoints) place++;
+			lastPoints = points;
+
+			participantResults.add(ParticipantEntry.withPoints(profile, place, points));
+		}
+
+		return participantResults;
+	}
+
+	private Stream<Pair<GameProfile, Integer>> leaderboardFor(IMinigameInstance minigame) {
+		MinecraftServer server = minigame.getServer();
+		PlayerProfileCache profileCache = server.getPlayerProfileCache();
+
+		return playerData.entrySet().stream()
+				.map(entry -> {
+					GameProfile profile = profileCache.getProfileByUUID(entry.getKey());
+					return profile != null ? Pair.of(profile, entry.getValue().records.totalCount) : null;
+				})
+				.filter(Objects::nonNull)
+				.sorted(Comparator.<Pair<GameProfile, Integer>>comparingInt(Pair::getSecond).reversed());
 	}
 
 	static class PlayerData {

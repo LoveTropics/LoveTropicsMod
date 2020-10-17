@@ -7,6 +7,7 @@ import com.lovetropics.minigames.common.minigames.PlayerSet;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehaviorType;
 import com.lovetropics.minigames.common.minigames.behaviours.MinigameBehaviorTypes;
+import com.lovetropics.minigames.common.techstack.ParticipantEntry;
 import com.mojang.authlib.GameProfile;
 import com.mojang.datafixers.Dynamic;
 import com.mojang.datafixers.util.Pair;
@@ -31,6 +32,7 @@ import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public final class TrashCollectionBehavior implements IMinigameBehavior {
 	private int totalTrash;
@@ -110,21 +112,15 @@ public final class TrashCollectionBehavior implements IMinigameBehavior {
 
 		ITextComponent finishMessage;
 		if (remainingTrash.isEmpty()) {
-			finishMessage = new StringTextComponent("We collected all the trash! These are the scores for this round:");
+			finishMessage = new StringTextComponent("We collected all the trash!");
 		} else {
-			finishMessage = new StringTextComponent("We ran out of time! These are the scores for this round:");
+			finishMessage = new StringTextComponent("We ran out of time!");
 		}
 
 		PlayerSet players = minigame.getPlayers();
 		players.sendMessage(finishMessage.applyTextStyles(TextFormatting.GREEN));
 
-		List<Pair<GameProfile, Integer>> leaderboard = buildLeaderboard(minigame);
-		for (Pair<GameProfile, Integer> entry : leaderboard) {
-			players.sendMessage(new StringTextComponent(" - " + entry.getFirst().getName() + ": ")
-					.applyTextStyle(TextFormatting.AQUA)
-					.appendSibling(new StringTextComponent(entry.getSecond().toString()).applyTextStyle(TextFormatting.GOLD))
-			);
-		}
+		minigame.sendMinigameResults(buildResults(minigame));
 	}
 
 	private String[] renderSidebar(IMinigameInstance minigame) {
@@ -133,7 +129,7 @@ public final class TrashCollectionBehavior implements IMinigameBehavior {
 		List<String> sidebar = new ArrayList<>(10);
 		sidebar.add(TextFormatting.GREEN + "Pick up trash! " + TextFormatting.GRAY + collectedTrash + "/" + totalTrash);
 
-		List<Pair<GameProfile, Integer>> leaderboard = buildLeaderboard(minigame);
+		List<Pair<GameProfile, Integer>> leaderboard = leaderboardFor(minigame).limit(5).collect(Collectors.toList());
 		if (!leaderboard.isEmpty()) {
 			sidebar.add("");
 			sidebar.add(TextFormatting.GREEN + "Top players:");
@@ -146,7 +142,29 @@ public final class TrashCollectionBehavior implements IMinigameBehavior {
 		return sidebar.toArray(new String[0]);
 	}
 
-	private List<Pair<GameProfile, Integer>> buildLeaderboard(IMinigameInstance minigame) {
+	private List<ParticipantEntry> buildResults(IMinigameInstance minigame) {
+		// TODO: this code is duplicated: can we extract utilities for building minigame results?
+		List<Pair<GameProfile, Integer>> leaderboard = leaderboardFor(minigame).collect(Collectors.toList());
+
+		List<ParticipantEntry> participantResults = new ArrayList<>();
+
+		int place = 0;
+		int lastPoints = -1;
+
+		for (Pair<GameProfile, Integer> entry : leaderboard) {
+			GameProfile profile = entry.getFirst();
+			int points = entry.getSecond();
+
+			if (points != lastPoints) place++;
+			lastPoints = points;
+
+			participantResults.add(ParticipantEntry.withPoints(profile, place, points));
+		}
+
+		return participantResults;
+	}
+
+	private Stream<Pair<GameProfile, Integer>> leaderboardFor(IMinigameInstance minigame) {
 		MinecraftServer server = minigame.getServer();
 		PlayerProfileCache profileCache = server.getPlayerProfileCache();
 
@@ -156,8 +174,6 @@ public final class TrashCollectionBehavior implements IMinigameBehavior {
 					return profile != null ? Pair.of(profile, entry.getIntValue()) : null;
 				})
 				.filter(Objects::nonNull)
-				.sorted(Comparator.comparingInt(Pair::getSecond))
-				.limit(5)
-				.collect(Collectors.toList());
+				.sorted(Comparator.<Pair<GameProfile, Integer>>comparingInt(Pair::getSecond).reversed());
 	}
 }

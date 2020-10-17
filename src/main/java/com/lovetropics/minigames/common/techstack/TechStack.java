@@ -1,18 +1,31 @@
 package com.lovetropics.minigames.common.techstack;
 
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.gson.Gson;
 import com.lovetropics.minigames.common.config.ConfigLT;
+import org.apache.commons.io.IOUtils;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
+import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class TechStack {
+    private static final Gson GSON = new Gson();
+    private static final ExecutorService EXECUTOR = Executors.newSingleThreadExecutor(
+            new ThreadFactoryBuilder()
+                    .setNameFormat("lt-tech-stack")
+                    .setDaemon(true)
+                    .build()
+    );
+
+    public static void uploadMinigameResults(final String eventName, final String host, final List<ParticipantEntry> participants) {
+        final MinigameResult result = new MinigameResult(eventName, host, participants);
+        uploadMinigameResults(result);
+    }
 
     /**
      *  Expects data in the following format
@@ -39,41 +52,36 @@ public class TechStack {
      *             }
      *         ]
      */
-    public static void uploadMinigameResults(final String eventName, final String host, final List<ParticipantEntry> participants) {
-        try {
-            final String uri = getUrl(ConfigLT.TECH_STACK.resultsEndpoint.get());
-            HttpURLConnection con = getAuthorizedConnection("POST", uri);
-            final Gson gson = new Gson();
-            final MinigameResult result = new MinigameResult(eventName, host, participants);
+    public static void uploadMinigameResults(MinigameResult result) {
+        EXECUTOR.submit(() -> {
             try {
-                final String json = gson.toJson(result);
-                OutputStreamWriter wr = new OutputStreamWriter(con.getOutputStream());
-                wr.write(json);
-                wr.flush();
-
-                // Print result
-                StringBuilder sb = new StringBuilder();
-                int HttpResult = con.getResponseCode();
-                if (HttpResult == HttpURLConnection.HTTP_OK) {
-                    BufferedReader br = new BufferedReader(new InputStreamReader(con.getInputStream(), StandardCharsets.UTF_8));
-                    String line;
-                    while ((line = br.readLine()) != null) {
-                        sb.append(line).append("\n");
+                final String uri = getUrl(ConfigLT.TECH_STACK.resultsEndpoint.get());
+                HttpURLConnection con = getAuthorizedConnection("POST", uri);
+                try {
+                    final String json = GSON.toJson(result);
+                    try (OutputStream output = con.getOutputStream()) {
+                        IOUtils.write(json, output, StandardCharsets.UTF_8);
                     }
-                    br.close();
-                    System.out.println("" + sb.toString());
-                } else {
-                    System.out.println(con.getResponseMessage());
+
+                    // Print result
+                    int HttpResult = con.getResponseCode();
+                    if (HttpResult == HttpURLConnection.HTTP_OK) {
+                        try (InputStream input = con.getInputStream()) {
+                            System.out.println(IOUtils.toString(input, StandardCharsets.UTF_8));
+                        }
+                    } else {
+                        System.out.println(con.getResponseMessage());
+                    }
+                } catch (IOException ex) {
+                    // TODO - do we need this still?
+                    // LogManager.getLogger().error(readInput(con.getErrorStream(), true));
+                } finally {
+                    con.disconnect();
                 }
-            } catch (IOException ex) {
-                // TODO - do we need this still?
-                // LogManager.getLogger().error(readInput(con.getErrorStream(), true));
-            } finally {
-                con.disconnect();
+            } catch (Exception ex) {
+                ex.printStackTrace();
             }
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
+        });
     }
 
     private static HttpURLConnection getAuthorizedConnection(String method, String address) throws IOException {

@@ -3,6 +3,8 @@ package com.lovetropics.minigames.common.minigames;
 import com.lovetropics.minigames.common.map.MapRegions;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehaviorType;
+import com.lovetropics.minigames.common.techstack.ParticipantEntry;
+import com.lovetropics.minigames.common.techstack.TechStack;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.command.CommandSource;
@@ -13,8 +15,11 @@ import net.minecraft.util.math.Vec2f;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.util.text.TextFormatting;
+import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.dimension.DimensionType;
 import net.minecraft.world.server.ServerWorld;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -42,6 +47,8 @@ public class MinigameInstance implements IMinigameInstance
     private long ticks;
 
     private final Map<IMinigameBehaviorType<?>, IMinigameBehavior> behaviors;
+
+    private List<ParticipantEntry> results;
 
     public MinigameInstance(IMinigameDefinition definition, MinecraftServer server) {
         this.definition = definition;
@@ -208,5 +215,34 @@ public class MinigameInstance implements IMinigameInstance
 
     public void setDimension(DimensionType dimension) {
         this.dimension = dimension;
+    }
+
+    @Override
+    public void sendMinigameResults(List<ParticipantEntry> results) {
+        allPlayers.sendMessage(new StringTextComponent("Here are the results from this game:").applyTextStyles(TextFormatting.GREEN, TextFormatting.BOLD));
+
+        results.sort(Comparator.comparingInt(ParticipantEntry::getPlace));
+
+        int i = 0;
+        ParticipantEntry entry;
+
+        for (int place = 1; place <= 5; place++) {
+            String headPrefix = " " + place + ". ";
+            String indentPrefix = StringUtils.repeat(' ', headPrefix.length());
+
+            boolean head = true;
+            while (i < results.size() && (entry = results.get(i++)).getPlace() == place) {
+                String prefix = head ? headPrefix : indentPrefix;
+                head = false;
+
+                allPlayers.sendMessage(new StringTextComponent(prefix + entry.getName() + ": ").applyTextStyle(TextFormatting.AQUA)
+                        .appendSibling(new StringTextComponent(entry.getScore() + " " + entry.getUnits()).applyTextStyle(TextFormatting.GOLD))
+                );
+            }
+        }
+
+        // TODO: host?
+        ITextComponent name = new TranslationTextComponent(definition.getUnlocalizedName());
+        TechStack.uploadMinigameResults(name.getString(), "", results);
     }
 }

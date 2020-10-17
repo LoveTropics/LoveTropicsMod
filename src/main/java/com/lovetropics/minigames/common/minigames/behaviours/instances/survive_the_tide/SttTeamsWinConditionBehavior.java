@@ -35,6 +35,8 @@ public class SttTeamsWinConditionBehavior extends SttWinConditionBehavior {
 
 	@Override
 	public void onPlayerDeath(final IMinigameInstance minigame, ServerPlayerEntity player, LivingDeathEvent event) {
+		super.onPlayerDeath(minigame, player, event);
+
 		if (minigameEnded) {
 			return;
 		}

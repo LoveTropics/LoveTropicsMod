@@ -1,6 +1,7 @@
 package com.lovetropics.minigames.common.techstack;
 
 import com.google.common.collect.Lists;
+import com.mojang.authlib.GameProfile;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -8,6 +9,10 @@ import java.util.List;
 import java.util.Random;
 
 public class ParticipantEntry {
+    public static final String UNIT_POINTS = "points";
+    public static final String UNIT_SECONDS = "seconds";
+    public static final String UNIT_KILLS = "kills";
+
     private static final String[] FAKE_NAMES = new String[]{"Cojo", "tterrag", "Lune", "Brick", "Terry"};
     private static final String[] FAKE_UNITS = new String[]{"points", "seconds", "kills"};
 
@@ -28,6 +33,39 @@ public class ParticipantEntry {
         this.place = place;
         this.score = score;
         this.units = units;
+    }
+
+    public static ParticipantEntry create(GameProfile profile, int place, String score, String units) {
+        String name = profile != null ? profile.getName() : "Herobrine";
+        return new ParticipantEntry(name, place, score, units);
+    }
+
+    public static ParticipantEntry withKills(GameProfile profile, int place, int kills) {
+        return ParticipantEntry.create(profile, place, String.valueOf(kills), UNIT_KILLS);
+    }
+
+    public static ParticipantEntry withPoints(GameProfile profile,  int place, int points) {
+        return ParticipantEntry.create(profile, place, String.valueOf(points), UNIT_POINTS);
+    }
+
+    public static ParticipantEntry withSeconds(GameProfile profile, int place, int seconds) {
+        return ParticipantEntry.create(profile, place, String.valueOf(seconds), UNIT_SECONDS);
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public Integer getPlace() {
+        return place;
+    }
+
+    public String getScore() {
+        return score;
+    }
+
+    public String getUnits() {
+        return units;
     }
 
     public static List<ParticipantEntry> fakeEntries() {

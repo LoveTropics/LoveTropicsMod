@@ -38,6 +38,8 @@ public class SttIndividualsWinConditionBehavior extends SttWinConditionBehavior 
 
 	@Override
 	public void onPlayerDeath(final IMinigameInstance minigame, ServerPlayerEntity player, LivingDeathEvent event) {
+		super.onPlayerDeath(minigame, player, event);
+
 		PlayerSet participants = minigame.getParticipants();
 
 		if (participants.size() == 2) {
