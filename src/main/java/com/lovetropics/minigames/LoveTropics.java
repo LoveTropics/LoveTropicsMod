@@ -162,9 +162,22 @@ public class LoveTropics {
             prov.add(TropicraftLangKeys.COMMAND_MINIGAME_POLLED, "Minigame successfully polled!");
             prov.add(TropicraftLangKeys.COMMAND_NOT_ENOUGH_PLAYERS, "There aren't enough players to start this minigame. It requires at least %s amount of players.");
             prov.add(TropicraftLangKeys.COMMAND_MINIGAME_STARTED, "You have started the minigame.");
-            prov.add(TropicraftLangKeys.MINIGAME_SURVIVE_THE_TIDE, "Survive The Tide");
+            prov.add(TropicraftLangKeys.MINIGAME_SURVIVE_THE_TIDE_1, "Survive The Tide I");
+            prov.add(TropicraftLangKeys.MINIGAME_SURVIVE_THE_TIDE_1_TEAMS, "Survive The Tide I (Teams)");
+            prov.add(TropicraftLangKeys.MINIGAME_SURVIVE_THE_TIDE_2, "Survive The Tide II");
+            prov.add(TropicraftLangKeys.MINIGAME_SURVIVE_THE_TIDE_2_TEAMS, "Survive The Tide II (Teams)");
             prov.add(TropicraftLangKeys.MINIGAME_SIGNATURE_RUN, "Signature Run");
-            prov.add(TropicraftLangKeys.MINIGAME_UNDERWATER_TRASH_HUNT, "Underwater Trash Hunt");
+            prov.add(TropicraftLangKeys.MINIGAME_TRASH_DIVE, "Trash Dive");
+            prov.add(TropicraftLangKeys.MINIGAME_CONSERVATION_EXPLORATION, "Conservation Exploration");
+            prov.add(TropicraftLangKeys.MINIGAME_VOLCANO_SPLEEF, "Volcano Spleef");
+            prov.add(TropicraftLangKeys.MINIGAME_TREASURE_HUNT_X, "Treasure Hunt X");
+            prov.add(TropicraftLangKeys.MINIGAME_BUILD_COMPETITION, "Build Competition");
+            prov.add(TropicraftLangKeys.MINIGAME_TURTLE_RACE, "Turtle Race");
+            prov.add(TropicraftLangKeys.MINIGAME_FLYING_TURTLE_RACE, "Flying Turtle Race");
+            prov.add(TropicraftLangKeys.MINIGAME_TURTLE_SPRINT, "Turtle Sprint");
+            prov.add(TropicraftLangKeys.MINIGAME_ELYTRA_RACE, "Elytra Race");
+            prov.add(TropicraftLangKeys.MINIGAME_ONE_MANS_TRASH, "One Man's Trash");
+
             prov.add(TropicraftLangKeys.COMMAND_NO_LONGER_ENOUGH_PLAYERS, "There are no longer enough players to start the minigame!");
             prov.add(TropicraftLangKeys.COMMAND_ENOUGH_PLAYERS, "There are now enough players to start the minigame!");
             prov.add(TropicraftLangKeys.COMMAND_NO_MINIGAME, "There is no currently running minigame to stop!");

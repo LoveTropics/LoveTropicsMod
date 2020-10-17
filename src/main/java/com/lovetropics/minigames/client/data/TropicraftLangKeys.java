@@ -27,9 +27,22 @@ public class TropicraftLangKeys
     public static String COMMAND_MINIGAME_STARTED = Constants.MODID + ".command.minigame_started";
     public static String COMMAND_ENOUGH_PLAYERS = Constants.MODID + ".command.enough_players";
     public static String COMMAND_NO_LONGER_ENOUGH_PLAYERS = Constants.MODID + ".command.no_longer_enough_players";
-    public static String MINIGAME_SURVIVE_THE_TIDE = Constants.MODID + ".minigame.survive_the_tide";
+    public static String MINIGAME_SURVIVE_THE_TIDE_1 = Constants.MODID + ".minigame.survive_the_tide_1";
+    public static String MINIGAME_SURVIVE_THE_TIDE_1_TEAMS = Constants.MODID + ".minigame.survive_the_tide_1_teams";
+    public static String MINIGAME_SURVIVE_THE_TIDE_2 = Constants.MODID + ".minigame.survive_the_tide_2";
+    public static String MINIGAME_SURVIVE_THE_TIDE_2_TEAMS = Constants.MODID + ".minigame.survive_the_tide_2_teams";
     public static String MINIGAME_SIGNATURE_RUN = Constants.MODID + ".minigame.signature_run";
-    public static String MINIGAME_UNDERWATER_TRASH_HUNT = Constants.MODID + ".minigame.underwater_trash_hunt";
+    public static String MINIGAME_TRASH_DIVE = Constants.MODID + ".minigame.trash_dive";
+    public static String MINIGAME_CONSERVATION_EXPLORATION = Constants.MODID + ".minigame.conservation_exploration";
+    public static String MINIGAME_VOLCANO_SPLEEF = Constants.MODID + ".minigame.volcano_spleef";
+    public static String MINIGAME_TREASURE_HUNT_X = Constants.MODID + ".minigame.treasure_hunt_x";
+    public static String MINIGAME_BUILD_COMPETITION = Constants.MODID + ".minigame.build_comptetition";
+    public static String MINIGAME_TURTLE_RACE = Constants.MODID + ".minigame.turtle_race";
+    public static String MINIGAME_FLYING_TURTLE_RACE = Constants.MODID + ".minigame.flying_turtle_race";
+    public static String MINIGAME_TURTLE_SPRINT = Constants.MODID + ".minigame.turtle_sprint";
+    public static String MINIGAME_ELYTRA_RACE = Constants.MODID + ".minigame.elytra_race";
+    public static String MINIGAME_ONE_MANS_TRASH = Constants.MODID + ".minigame.one_mans_trash";
+
     public static String COMMAND_NO_MINIGAME = Constants.MODID + ".minigame.no_minigame";
     public static String COMMAND_STOPPED_MINIGAME = Constants.MODID + ".minigame.stopped_minigame";
     public static String COMMAND_FINISHED_MINIGAME = Constants.MODID + ".minigame.finished_minigame";
