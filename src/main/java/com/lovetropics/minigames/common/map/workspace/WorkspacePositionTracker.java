@@ -3,14 +3,19 @@ package com.lovetropics.minigames.common.map.workspace;
 import com.lovetropics.minigames.Constants;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.dimension.DimensionType;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.common.util.Constants.NBT;
+import net.minecraftforge.event.entity.EntityTravelToDimensionEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
 
 import javax.annotation.Nullable;
 
+@Mod.EventBusSubscriber(modid = Constants.MODID)
 public final class WorkspacePositionTracker {
 	private static final String NBT_KEY = Constants.MODID + ":map_workspace";
 	private static final String NBT_RETURN_KEY = "return";
@@ -59,6 +64,28 @@ public final class WorkspacePositionTracker {
 			persistentData.put(NBT_KEY, new CompoundNBT());
 		}
 		return persistentData.getCompound(NBT_KEY);
+	}
+
+	@SubscribeEvent
+	public static void onPlayerChangeDimension(EntityTravelToDimensionEvent event) {
+		if (!(event.getEntity() instanceof ServerPlayerEntity)) {
+			return;
+		}
+
+		ServerPlayerEntity player = (ServerPlayerEntity) event.getEntity();
+		MinecraftServer server = player.server;
+
+		DimensionType from = player.dimension;
+
+		MapWorkspaceManager workspaceManager = MapWorkspaceManager.get(server);
+		MapWorkspace fromWorkspace = workspaceManager.getWorkspace(from);
+
+		WorkspacePositionTracker.Position position = WorkspacePositionTracker.Position.copyFrom(player);
+		if (fromWorkspace != null) {
+			WorkspacePositionTracker.setPositionFor(player, fromWorkspace, position);
+		} else {
+			WorkspacePositionTracker.setReturnPositionFor(player, position);
+		}
 	}
 
 	public static class Position {

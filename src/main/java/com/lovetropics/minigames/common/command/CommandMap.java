@@ -147,11 +147,6 @@ public final class CommandMap {
 	private static int leaveMap(CommandContext<CommandSource> context) throws CommandSyntaxException {
 		ServerPlayerEntity player = context.getSource().asPlayer();
 
-		MapWorkspace workspace = getCurrentWorkspace(context);
-
-		WorkspacePositionTracker.Position position = WorkspacePositionTracker.Position.copyFrom(player);
-		WorkspacePositionTracker.setPositionFor(player, workspace, position);
-
 		WorkspacePositionTracker.Position returnPosition = WorkspacePositionTracker.getReturnPositionFor(player);
 		if (returnPosition != null) {
 			returnPosition.applyTo(player);
@@ -164,9 +159,6 @@ public final class CommandMap {
 
 	private static int joinMap(CommandContext<CommandSource> context) throws CommandSyntaxException {
 		ServerPlayerEntity player = context.getSource().asPlayer();
-
-		WorkspacePositionTracker.Position returnPosition = WorkspacePositionTracker.Position.copyFrom(player);
-		WorkspacePositionTracker.setReturnPositionFor(player, returnPosition);
 
 		MapWorkspace workspace = MapWorkspaceArgument.get(context, "id");
 
