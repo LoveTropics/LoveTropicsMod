@@ -41,6 +41,7 @@ public class MinigameBehaviorTypes {
 	public static final RegistryObject<IMinigameBehaviorType<PlaceTrashBehavior>> PLACE_TRASH;
 	public static final RegistryObject<IMinigameBehaviorType<TrashCollectionBehavior>> TRASH_COLLECTION;
 	public static final RegistryObject<IMinigameBehaviorType<TeamsBehavior>> TEAMS;
+	public static final RegistryObject<IMinigameBehaviorType<SpectatorChaseBehavior>> SPECTATOR_CHASE;
 
 	public static <T extends IMinigameBehavior> RegistryObject<IMinigameBehaviorType<T>> register(final String name, final MinigameBehaviorType.Factory<T> instanceFactory) {
 		return MINIGAME_BEHAVIOURS_REGISTER.register(name, () -> new MinigameBehaviorType<>(instanceFactory));
@@ -81,5 +82,6 @@ public class MinigameBehaviorTypes {
 		RECORD_CREATURES = register("record_creatures", RecordCreaturesBehavior::parse);
 		PLACE_TRASH = register("place_trash", PlaceTrashBehavior::parse);
 		TRASH_COLLECTION = register("trash_collection", TrashCollectionBehavior::parse);
+		SPECTATOR_CHASE = register("spectator_chase", SpectatorChaseBehavior::parse);
 	}
 }

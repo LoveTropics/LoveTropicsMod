@@ -36,5 +36,23 @@ public final class LTNetwork {
 				.decoder(UpdateWorkspaceRegionMessage::decode)
 				.consumer(UpdateWorkspaceRegionMessage::handle)
 				.add();
+
+		CHANNEL.messageBuilder(StartChaseCameraMessage.class, 3)
+				.encoder(StartChaseCameraMessage::encode)
+				.decoder(StartChaseCameraMessage::decode)
+				.consumer(StartChaseCameraMessage::handle)
+				.add();
+
+		CHANNEL.messageBuilder(StopChaseCameraMessage.class, 4)
+				.encoder((p, b) -> {})
+				.decoder(buffer -> new StopChaseCameraMessage())
+				.consumer(StopChaseCameraMessage::handle)
+				.add();
+
+		CHANNEL.messageBuilder(ChaseSpectatePlayerMessage.class, 5)
+				.encoder(ChaseSpectatePlayerMessage::encode)
+				.decoder(ChaseSpectatePlayerMessage::decode)
+				.consumer(ChaseSpectatePlayerMessage::handle)
+				.add();
 	}
 }
