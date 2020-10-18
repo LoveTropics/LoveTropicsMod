@@ -120,6 +120,8 @@ dependencies {
     def ltlib = "com.lovetropics.lib:LTLib:${ltlib_version}"
     implementation fg.deobf(ltlib)
     shade ltlib
+
+    compile group: 'org.asynchttpclient', name: 'async-http-client', version: '2.12.1'
 }
 
 shadowJar {

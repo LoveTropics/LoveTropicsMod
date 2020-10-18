@@ -2,7 +2,13 @@ package com.lovetropics.minigames.common.techstack;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import com.lovetropics.minigames.common.config.ConfigLT;
+import com.lovetropics.minigames.common.packages.CarePackage;
+import com.lovetropics.minigames.common.packages.ChatEvent;
+import com.lovetropics.minigames.common.packages.GameAction;
+import com.lovetropics.minigames.common.packages.SabotagePackage;
+import com.lovetropics.minigames.common.techstack.websockets.WebSocketHelper;
 import org.apache.commons.io.IOUtils;
 
 import java.io.*;
@@ -53,12 +59,15 @@ public class TechStack {
      *         ]
      */
     public static void uploadMinigameResults(MinigameResult result) {
+        final String json = GSON.toJson(result);
+        post(getUrl(ConfigLT.TECH_STACK.resultsEndpoint.get()), json);
+    }
+
+    private static void post(final String url, final String json) {
         EXECUTOR.submit(() -> {
             try {
-                final String uri = getUrl(ConfigLT.TECH_STACK.resultsEndpoint.get());
-                HttpURLConnection con = getAuthorizedConnection("POST", uri);
+                HttpURLConnection con = getAuthorizedConnection("POST", url);
                 try {
-                    final String json = GSON.toJson(result);
                     try (OutputStream output = con.getOutputStream()) {
                         IOUtils.write(json, output, StandardCharsets.UTF_8);
                     }
@@ -105,5 +114,34 @@ public class TechStack {
         builder.append('/');
         builder.append(endpoint);
         return builder.toString();
+    }
+
+    public static void handleWebSocketPayload(final String payload) {
+        final JsonObject obj = WebSocketHelper.parse(payload);
+        final String type = obj.get("type").getAsString();
+        final String crud = obj.get("crud").getAsString();
+        System.out.println("Payload Received");
+
+        if (crud.equals("create")) {
+            switch (type) {
+                case "care_package":
+                    ActionHandler.queueAction(CarePackage.fromJson(obj));
+                    break;
+                case "sabotage_package":
+                    ActionHandler.queueAction(SabotagePackage.fromJson(obj));
+                    break;
+                case "chat_event":
+                    ActionHandler.queueAction(ChatEvent.fromJson(obj));
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        // TODO handle receiving of care or sabotage package or chat event here
+    }
+
+    public static void acknowledgeActionDelivery(final GameAction action) {
+
     }
 }
