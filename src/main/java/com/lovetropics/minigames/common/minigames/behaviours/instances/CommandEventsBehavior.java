@@ -24,12 +24,12 @@ public final class CommandEventsBehavior extends CommandInvokeBehavior {
 
 	@Override
 	public void onMapReady(IMinigameInstance minigame) {
+		super.onMapReady(minigame);
 		this.invoke("ready");
 	}
 
 	@Override
 	public void onStart(IMinigameInstance minigame) {
-		super.onStart(minigame);
 		this.invoke("start");
 	}
 

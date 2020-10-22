@@ -71,7 +71,7 @@ public abstract class CommandInvokeBehavior implements IMinigameBehavior {
 	}
 
 	@Override
-	public void onStart(IMinigameInstance minigame) {
+	public void onMapReady(IMinigameInstance minigame) {
 		this.source = minigame.getCommandSource();
 	}
 }
