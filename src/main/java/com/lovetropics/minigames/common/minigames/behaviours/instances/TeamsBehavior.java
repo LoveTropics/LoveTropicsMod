@@ -5,6 +5,7 @@ import com.lovetropics.minigames.common.minigames.MutablePlayerSet;
 import com.lovetropics.minigames.common.minigames.PlayerRole;
 import com.lovetropics.minigames.common.minigames.PlayerSet;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
+import com.lovetropics.minigames.common.minigames.statistics.StatisticKey;
 import com.mojang.datafixers.Dynamic;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.entity.Entity;
@@ -70,26 +71,28 @@ public final class TeamsBehavior implements IMinigameBehavior {
 	@Override
 	public void onPlayerJoin(IMinigameInstance minigame, ServerPlayerEntity player, PlayerRole role) {
 		if (role == PlayerRole.PARTICIPANT) {
-			addPlayerToSmallestTeam(player);
+			addPlayerToSmallestTeam(minigame, player);
 		}
 	}
 
 	@Override
 	public void onPlayerChangeRole(IMinigameInstance minigame, ServerPlayerEntity player, PlayerRole role) {
 		if (role == PlayerRole.PARTICIPANT) {
-			addPlayerToSmallestTeam(player);
+			addPlayerToSmallestTeam(minigame, player);
 		} else {
 			removePlayerFromTeams(player);
 		}
 	}
 
-	private void addPlayerToSmallestTeam(ServerPlayerEntity player) {
+	private void addPlayerToSmallestTeam(IMinigameInstance minigame, ServerPlayerEntity player) {
 		TeamKey team = this.getSmallestTeam();
-		addPlayerToTeam(player, team);
+		addPlayerToTeam(minigame, player, team);
 	}
 
-	private void addPlayerToTeam(ServerPlayerEntity player, TeamKey team) {
+	private void addPlayerToTeam(IMinigameInstance minigame, ServerPlayerEntity player, TeamKey team) {
 		teamPlayers.get(team).add(player);
+
+		minigame.getStatistics().forPlayer(player).set(StatisticKey.TEAM, team);
 
 		ServerScoreboard scoreboard = player.server.getScoreboard();
 		ScorePlayerTeam scoreboardTeam = scoreboardTeams.get(team);
@@ -187,6 +190,11 @@ public final class TeamsBehavior implements IMinigameBehavior {
 				text = TextFormatting.WHITE;
 			}
 			return new TeamKey(key, name, dye, text);
+		}
+
+		@Override
+		public String toString() {
+			return name;
 		}
 
 		@Override

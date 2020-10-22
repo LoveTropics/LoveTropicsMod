@@ -3,7 +3,7 @@ package com.lovetropics.minigames.common.minigames;
 import com.lovetropics.minigames.common.map.MapRegions;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehaviorType;
-import com.lovetropics.minigames.common.techstack.ParticipantEntry;
+import com.lovetropics.minigames.common.minigames.statistics.MinigameStatistics;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.command.CommandSource;
 import net.minecraft.entity.player.ServerPlayerEntity;
@@ -12,7 +12,6 @@ import net.minecraft.world.dimension.DimensionType;
 import net.minecraft.world.server.ServerWorld;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -112,5 +111,5 @@ public interface IMinigameInstance
      */
     long ticks();
 
-    void sendMinigameResults(List<ParticipantEntry> results);
+    MinigameStatistics getStatistics();
 }

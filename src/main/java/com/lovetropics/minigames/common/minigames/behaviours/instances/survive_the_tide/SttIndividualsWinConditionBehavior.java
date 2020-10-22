@@ -3,6 +3,8 @@ package com.lovetropics.minigames.common.minigames.behaviours.instances.survive_
 import com.lovetropics.minigames.common.Util;
 import com.lovetropics.minigames.common.minigames.IMinigameInstance;
 import com.lovetropics.minigames.common.minigames.PlayerSet;
+import com.lovetropics.minigames.common.minigames.statistics.PlayerKey;
+import com.lovetropics.minigames.common.minigames.statistics.StatisticKey;
 import com.mojang.datafixers.Dynamic;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
@@ -38,8 +40,6 @@ public class SttIndividualsWinConditionBehavior extends SttWinConditionBehavior 
 
 	@Override
 	public void onPlayerDeath(final IMinigameInstance minigame, ServerPlayerEntity player, LivingDeathEvent event) {
-		super.onPlayerDeath(minigame, player, event);
-
 		PlayerSet participants = minigame.getParticipants();
 
 		if (participants.size() == 2) {
@@ -59,6 +59,8 @@ public class SttIndividualsWinConditionBehavior extends SttWinConditionBehavior 
 		if (participants.size() == 1) {
 			ServerPlayerEntity winningPlayer = participants.iterator().next();
 			this.triggerWin(winningPlayer.getDisplayName().deepCopy());
+
+			minigame.getStatistics().getGlobal().set(StatisticKey.WINNING_PLAYER, PlayerKey.from(winningPlayer));
 		}
 	}
 }

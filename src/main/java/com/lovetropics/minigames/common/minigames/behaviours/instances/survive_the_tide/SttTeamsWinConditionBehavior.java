@@ -4,6 +4,7 @@ import com.lovetropics.minigames.common.Util;
 import com.lovetropics.minigames.common.minigames.IMinigameInstance;
 import com.lovetropics.minigames.common.minigames.behaviours.MinigameBehaviorTypes;
 import com.lovetropics.minigames.common.minigames.behaviours.instances.TeamsBehavior;
+import com.lovetropics.minigames.common.minigames.statistics.StatisticKey;
 import com.mojang.datafixers.Dynamic;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
@@ -35,8 +36,6 @@ public class SttTeamsWinConditionBehavior extends SttWinConditionBehavior {
 
 	@Override
 	public void onPlayerDeath(final IMinigameInstance minigame, ServerPlayerEntity player, LivingDeathEvent event) {
-		super.onPlayerDeath(minigame, player, event);
-
 		if (minigameEnded) {
 			return;
 		}
@@ -53,6 +52,7 @@ public class SttTeamsWinConditionBehavior extends SttWinConditionBehavior {
 			TeamsBehavior.TeamKey lastTeam = getLastTeam(teamsBehavior);
 			if (lastTeam != null) {
 				triggerWin(new StringTextComponent(lastTeam.name).applyTextStyle(lastTeam.text));
+				minigame.getStatistics().getGlobal().set(StatisticKey.WINNING_TEAM, lastTeam);
 			}
 		}
 	}

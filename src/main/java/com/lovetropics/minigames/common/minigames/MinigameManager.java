@@ -7,6 +7,7 @@ import com.lovetropics.minigames.common.Scheduler;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehaviorType;
 import com.lovetropics.minigames.common.minigames.map.IMinigameMapProvider;
+import com.lovetropics.minigames.common.techstack.TechStack;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.nbt.CompoundNBT;
@@ -139,35 +140,33 @@ public class MinigameManager implements IMinigameManager
         return this.currentInstance;
     }
 
-    @Override
-    public ActionResult<ITextComponent> finish() {
+    private ActionResult<ITextComponent> close() {
         MinigameInstance minigame = this.currentInstance;
-
         if (minigame == null) {
             return new ActionResult<>(ActionResultType.FAIL, new TranslationTextComponent(TropicraftLangKeys.COMMAND_NO_MINIGAME));
         }
 
         try {
-	        IMinigameDefinition def = minigame.getDefinition();
+            IMinigameDefinition def = minigame.getDefinition();
             Exception err = dispatchToBehaviors(false, IMinigameBehavior::onFinish);
             if (err != null) {
-            	return failException("Failed to finish behaviors", err);
+                return failException("Failed to finish behaviors", err);
             }
 
             for (ServerPlayerEntity player : minigame.getPlayers()) {
-	            minigame.removePlayer(player);
-	        }
+                minigame.removePlayer(player);
+            }
 
-	        // Send all players a message letting them know the minigame has finished
-	        for (ServerPlayerEntity player : this.server.getPlayerList().getPlayers()) {
-	            player.sendMessage(new TranslationTextComponent(TropicraftLangKeys.COMMAND_FINISHED_MINIGAME,
-	                    new TranslationTextComponent(def.getUnlocalizedName()).applyTextStyle(TextFormatting.ITALIC).applyTextStyle(TextFormatting.AQUA))
-	                    .applyTextStyle(TextFormatting.GOLD), ChatType.CHAT);
-	        }
+            // Send all players a message letting them know the minigame has finished
+            for (ServerPlayerEntity player : this.server.getPlayerList().getPlayers()) {
+                player.sendMessage(new TranslationTextComponent(TropicraftLangKeys.COMMAND_FINISHED_MINIGAME,
+                        new TranslationTextComponent(def.getUnlocalizedName()).applyTextStyle(TextFormatting.ITALIC).applyTextStyle(TextFormatting.AQUA))
+                        .applyTextStyle(TextFormatting.GOLD), ChatType.CHAT);
+            }
 
             err = dispatchToBehaviors(false, IMinigameBehavior::onPostFinish);
             if (err != null) {
-            	return failException("Failed to clean up behaviors", err);
+                return failException("Failed to clean up behaviors", err);
             }
 
             minigame.getDefinition().getMapProvider().close(minigame);
@@ -175,10 +174,26 @@ public class MinigameManager implements IMinigameManager
             ITextComponent minigameName = new TranslationTextComponent(minigame.getDefinition().getUnlocalizedName()).applyTextStyle(TextFormatting.AQUA);
             return new ActionResult<>(ActionResultType.SUCCESS, new TranslationTextComponent(TropicraftLangKeys.COMMAND_STOPPED_MINIGAME, minigameName).applyTextStyle(TextFormatting.GREEN));
         } catch (Exception e) {
-        	return failException("Unknown error finishing minigame", e);
+            return failException("Unknown error finishing minigame", e);
         } finally {
-        	this.currentInstance = null;
+            this.currentInstance = null;
         }
+    }
+
+    @Override
+    public ActionResult<ITextComponent> finish() {
+        MinigameInstance minigame = currentInstance;
+        if (minigame == null) {
+            return new ActionResult<>(ActionResultType.FAIL, new TranslationTextComponent(TropicraftLangKeys.COMMAND_NO_MINIGAME));
+        }
+
+        ActionResult<ITextComponent> result = close();
+        if (result.getType() == ActionResultType.SUCCESS) {
+            ITextComponent name = new TranslationTextComponent(minigame.getDefinition().getUnlocalizedName());
+            TechStack.uploadMinigameResults(name.getString(), minigame.getStatistics());
+        }
+
+        return result;
     }
 
     @Override
@@ -192,7 +207,7 @@ public class MinigameManager implements IMinigameManager
             return failException("Failed to cancel behaviors", err);
         }
 
-        return finish();
+        return close();
     }
 
     @Override
@@ -320,7 +335,7 @@ public class MinigameManager implements IMinigameManager
                     if (throwable instanceof Exception) {
                         ActionResult<ITextComponent> res = failException("Unknown error starting minigame", (Exception) throwable);
                         if (this.currentInstance != null) {
-                            ActionResult<ITextComponent> stopRes = finish();
+                            ActionResult<ITextComponent> stopRes = cancel();
                             if (stopRes.getType() == ActionResultType.FAIL) {
                                 return ActionResult.resultFail(res.getResult().appendSibling(stopRes.getResult()));
                             }

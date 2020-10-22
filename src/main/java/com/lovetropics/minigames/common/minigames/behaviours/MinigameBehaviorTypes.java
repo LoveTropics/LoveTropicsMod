@@ -3,6 +3,7 @@ package com.lovetropics.minigames.common.minigames.behaviours;
 import com.lovetropics.minigames.common.minigames.behaviours.instances.*;
 import com.lovetropics.minigames.common.minigames.behaviours.instances.conservation_exploration.RecordCreaturesBehavior;
 import com.lovetropics.minigames.common.minigames.behaviours.instances.conservation_exploration.SpawnCreaturesBehavior;
+import com.lovetropics.minigames.common.minigames.behaviours.instances.statistics.*;
 import com.lovetropics.minigames.common.minigames.behaviours.instances.survive_the_tide.*;
 import com.lovetropics.minigames.common.minigames.behaviours.instances.trash_dive.PlaceTrashBehavior;
 import com.lovetropics.minigames.common.minigames.behaviours.instances.trash_dive.TrashCollectionBehavior;
@@ -42,6 +43,16 @@ public class MinigameBehaviorTypes {
 	public static final RegistryObject<IMinigameBehaviorType<TrashCollectionBehavior>> TRASH_COLLECTION;
 	public static final RegistryObject<IMinigameBehaviorType<TeamsBehavior>> TEAMS;
 	public static final RegistryObject<IMinigameBehaviorType<SpectatorChaseBehavior>> SPECTATOR_CHASE;
+
+	public static final RegistryObject<IMinigameBehaviorType<BindObjectiveToStatisticBehavior>> BIND_OBJECTIVE_TO_STATISTIC;
+	public static final RegistryObject<IMinigameBehaviorType<PlaceByStatisticBehavior>> PLACE_BY_STATISTIC;
+	public static final RegistryObject<IMinigameBehaviorType<PlaceByDeathOrderBehavior>> PLACE_BY_DEATH_ORDER;
+	public static final RegistryObject<IMinigameBehaviorType<CampingTrackerBehavior>> CAMPING_TRACKER;
+	public static final RegistryObject<IMinigameBehaviorType<CauseOfDeathTrackerBehavior>> CAUSE_OF_DEATH_TRACKER;
+	public static final RegistryObject<IMinigameBehaviorType<KillsTrackerBehavior>> KILLS_TRACKER;
+	public static final RegistryObject<IMinigameBehaviorType<TimeSurvivedTrackerBehavior>> TIME_SURVIVED_TRACKER;
+
+	public static final RegistryObject<IMinigameBehaviorType<DisplayLeaderboardOnFinishBehavior<?>>> DISPLAY_LEADERBOARD_ON_FINISH;
 
 	public static <T extends IMinigameBehavior> RegistryObject<IMinigameBehaviorType<T>> register(final String name, final MinigameBehaviorType.Factory<T> instanceFactory) {
 		return MINIGAME_BEHAVIOURS_REGISTER.register(name, () -> new MinigameBehaviorType<>(instanceFactory));
@@ -83,5 +94,15 @@ public class MinigameBehaviorTypes {
 		PLACE_TRASH = register("place_trash", PlaceTrashBehavior::parse);
 		TRASH_COLLECTION = register("trash_collection", TrashCollectionBehavior::parse);
 		SPECTATOR_CHASE = register("spectator_chase", SpectatorChaseBehavior::parse);
+
+		BIND_OBJECTIVE_TO_STATISTIC = register("bind_objective_to_statistic", BindObjectiveToStatisticBehavior::parse);
+		PLACE_BY_STATISTIC = register("place_by_statistic", PlaceByStatisticBehavior::parse);
+		PLACE_BY_DEATH_ORDER = register("place_by_death_order", PlaceByDeathOrderBehavior::parse);
+		CAMPING_TRACKER = register("camping_tracker", CampingTrackerBehavior::parse);
+		CAUSE_OF_DEATH_TRACKER = register("cause_of_death_tracker", CauseOfDeathTrackerBehavior::parse);
+		KILLS_TRACKER = register("kills_tracker", KillsTrackerBehavior::parse);
+		TIME_SURVIVED_TRACKER = register("time_survived_tracker", TimeSurvivedTrackerBehavior::parse);
+
+		DISPLAY_LEADERBOARD_ON_FINISH = register("display_leaderboard_on_finish", DisplayLeaderboardOnFinishBehavior::parse);
 	}
 }

@@ -1,21 +1,18 @@
 package com.lovetropics.minigames.common.techstack;
 
-import java.util.List;
+import com.lovetropics.minigames.common.minigames.statistics.MinigameStatistics;
 
 public class MinigameResult {
     /** Event name */
     private String name;
-    /** Host of event */
-    private String host;
-    /** List of participants */
-    private List<ParticipantEntry> participants;
+    /** The statistics from this minigame */
+    private MinigameStatistics statistics;
 
     public MinigameResult() {
     }
 
-    public MinigameResult(String name, String host, List<ParticipantEntry> participants) {
+    public MinigameResult(String name, MinigameStatistics statistics) {
         this.name = name;
-        this.host = host;
-        this.participants = participants;
+        this.statistics = statistics;
     }
 }

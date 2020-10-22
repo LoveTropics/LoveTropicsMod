@@ -7,10 +7,10 @@ import com.lovetropics.minigames.common.minigames.MinigameManager;
 import com.lovetropics.minigames.common.minigames.PlayerRole;
 import com.lovetropics.minigames.common.minigames.PlayerSet;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
-import com.lovetropics.minigames.common.techstack.ParticipantEntry;
-import com.mojang.authlib.GameProfile;
+import com.lovetropics.minigames.common.minigames.statistics.PlayerPlacement;
+import com.lovetropics.minigames.common.minigames.statistics.StatisticKey;
+import com.lovetropics.minigames.common.minigames.statistics.StatisticsMap;
 import com.mojang.datafixers.Dynamic;
-import com.mojang.datafixers.util.Pair;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
@@ -25,8 +25,6 @@ import net.minecraft.potion.EffectInstance;
 import net.minecraft.potion.Effects;
 import net.minecraft.scoreboard.ScorePlayerTeam;
 import net.minecraft.scoreboard.ServerScoreboard;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.management.PlayerProfileCache;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
@@ -40,9 +38,9 @@ import net.minecraft.world.BossInfo;
 import net.minecraft.world.World;
 import net.minecraft.world.server.ServerBossInfo;
 
-import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 
 public final class RecordCreaturesBehavior implements IMinigameBehavior {
 	private static final long CLOSE_TIME = 20 * 10;
@@ -50,7 +48,7 @@ public final class RecordCreaturesBehavior implements IMinigameBehavior {
 	private final Map<UUID, PlayerData> playerData = new Object2ObjectOpenHashMap<>();
 	private final Set<EntityType<?>> discoveredEntities = new ReferenceOpenHashSet<>();
 
-	private final RecordList globalRecords = new RecordList();
+	private RecordList globalRecords;
 
 	// TODO: keep track of the actual entities so that we can maybe give hints / handle if the entities die?
 	private int totalEntityCount;
@@ -82,9 +80,11 @@ public final class RecordCreaturesBehavior implements IMinigameBehavior {
 		firstDiscoveryTeam = scoreboard.createTeam("first_discovery");
 		firstDiscoveryTeam.setColor(TextFormatting.GREEN);
 
+		globalRecords = new RecordList(minigame.getStatistics().getGlobal());
+
 		minigame.addControlCommand("teleport_back", source -> {
 			ServerPlayerEntity player = source.asPlayer();
-			PlayerData data = getDataFor(player);
+			PlayerData data = getDataFor(minigame, player);
 
 			Vec3d lastPosition = data.lastPosition;
 			data.lastPosition = null;
@@ -119,8 +119,10 @@ public final class RecordCreaturesBehavior implements IMinigameBehavior {
 	private void displayReport(IMinigameInstance minigame) {
 		PlayerSet players = minigame.getPlayers();
 
-		players.sendMessage(new StringTextComponent("All creatures have been found!").applyTextStyle(TextFormatting.GREEN));
-		minigame.sendMinigameResults(buildResults(minigame));
+		players.sendMessage(new StringTextComponent("All creatures have been found! Here are the top finders:").applyTextStyle(TextFormatting.GREEN));
+
+		PlayerPlacement.fromMaxScore(minigame, StatisticKey.CREATURES_RECORDED)
+				.sendTo(minigame.getPlayers(), 5);
 	}
 
 	@Override
@@ -139,7 +141,7 @@ public final class RecordCreaturesBehavior implements IMinigameBehavior {
 
 	private void recordEntity(IMinigameInstance minigame, ServerPlayerEntity reporter, LivingEntity entity) {
 		if (this.tryRecordEntity(minigame, reporter, entity)) {
-			int recordedCount = this.getDataFor(reporter).records.getRecordedCount(entity.getType());
+			int recordedCount = this.getDataFor(minigame, reporter).records.getRecordedCount(entity.getType());
 			ITextComponent entityName = new TranslationTextComponent(entity.getType().getTranslationKey());
 
 			reporter.sendMessage(
@@ -153,8 +155,8 @@ public final class RecordCreaturesBehavior implements IMinigameBehavior {
 		}
 	}
 
-	private PlayerData getDataFor(PlayerEntity player) {
-		return this.playerData.computeIfAbsent(player.getUniqueID(), uuid -> new PlayerData());
+	private PlayerData getDataFor(IMinigameInstance minigame, PlayerEntity player) {
+		return this.playerData.computeIfAbsent(player.getUniqueID(), uuid -> new PlayerData(minigame.getStatistics().forPlayer(player)));
 	}
 
 	private boolean tryRecordEntity(IMinigameInstance minigame, ServerPlayerEntity reporter, LivingEntity entity) {
@@ -162,13 +164,13 @@ public final class RecordCreaturesBehavior implements IMinigameBehavior {
 			return false;
 		}
 
-		PlayerData data = this.getDataFor(reporter);
+		PlayerData data = this.getDataFor(minigame, reporter);
 		data.records.tryRecord(entity);
 
 		entity.addPotionEffect(new EffectInstance(Effects.GLOWING, Integer.MAX_VALUE, 10, false, false));
 		this.updateRecordedProgressBar();
 
-		if (globalRecords.totalCount >= totalEntityCount) {
+		if (globalRecords.getTotalCount() >= totalEntityCount) {
 			this.closing = true;
 			this.closeTime = minigame.ticks() + CLOSE_TIME;
 			this.displayReport(minigame);
@@ -182,8 +184,9 @@ public final class RecordCreaturesBehavior implements IMinigameBehavior {
 	}
 
 	private void updateRecordedProgressBar() {
-		this.progressBar.setPercent((float) globalRecords.totalCount / totalEntityCount);
-		this.progressBar.setName(new StringTextComponent("Creatures recorded: " + globalRecords.totalCount + "/" + totalEntityCount));
+		int totalRecorded = globalRecords.getTotalCount();
+		this.progressBar.setPercent((float) totalRecorded / totalEntityCount);
+		this.progressBar.setName(new StringTextComponent("Creatures recorded: " + totalRecorded + "/" + totalEntityCount));
 	}
 
 	private void onDiscoverNewEntity(IMinigameInstance minigame, ServerPlayerEntity reporter, LivingEntity entity) {
@@ -203,7 +206,7 @@ public final class RecordCreaturesBehavior implements IMinigameBehavior {
 		minigame.addControlCommand(teleportCommand, source -> {
 			ServerPlayerEntity player = source.asPlayer();
 
-			PlayerData data = getDataFor(player);
+			PlayerData data = getDataFor(minigame, player);
 			if (data.lastPosition == null) {
 				data.lastPosition = player.getPositionVec();
 			}
@@ -244,54 +247,30 @@ public final class RecordCreaturesBehavior implements IMinigameBehavior {
 		scoreboard.removeTeam(firstDiscoveryTeam);
 	}
 
-	private List<ParticipantEntry> buildResults(IMinigameInstance minigame) {
-		List<Pair<GameProfile, Integer>> leaderboard = leaderboardFor(minigame).collect(Collectors.toList());
-
-		List<ParticipantEntry> participantResults = new ArrayList<>();
-
-		int place = 0;
-		int lastPoints = -1;
-
-		for (Pair<GameProfile, Integer> entry : leaderboard) {
-			GameProfile profile = entry.getFirst();
-			int points = entry.getSecond();
-
-			if (points != lastPoints) place++;
-			lastPoints = points;
-
-			participantResults.add(ParticipantEntry.withPoints(profile, place, points));
-		}
-
-		return participantResults;
-	}
-
-	private Stream<Pair<GameProfile, Integer>> leaderboardFor(IMinigameInstance minigame) {
-		MinecraftServer server = minigame.getServer();
-		PlayerProfileCache profileCache = server.getPlayerProfileCache();
-
-		return playerData.entrySet().stream()
-				.map(entry -> {
-					GameProfile profile = profileCache.getProfileByUUID(entry.getKey());
-					return profile != null ? Pair.of(profile, entry.getValue().records.totalCount) : null;
-				})
-				.filter(Objects::nonNull)
-				.sorted(Comparator.<Pair<GameProfile, Integer>>comparingInt(Pair::getSecond).reversed());
-	}
-
 	static class PlayerData {
-		final RecordList records = new RecordList();
+		final RecordList records;
 		Vec3d lastPosition;
+
+		PlayerData(StatisticsMap statistics) {
+			records = new RecordList(statistics);
+		}
 	}
 
 	static class RecordList {
+		final StatisticsMap statistics;
 		final Object2IntOpenHashMap<EntityType<?>> recordedCount = new Object2IntOpenHashMap<>();
 		final Set<UUID> recordedEntities = new ObjectOpenHashSet<>();
-		int totalCount;
+
+		RecordList(StatisticsMap statistics) {
+			this.statistics = statistics;
+		}
 
 		boolean tryRecord(LivingEntity entity) {
 			if (this.recordedEntities.add(entity.getUniqueID())) {
 				this.recordedCount.addTo(entity.getType(), 1);
-				this.totalCount += 1;
+				this.statistics.withDefault(StatisticKey.CREATURES_RECORDED, () -> 0)
+						.apply(count -> count + 1);
+
 				return true;
 			}
 			return false;
@@ -299,6 +278,10 @@ public final class RecordCreaturesBehavior implements IMinigameBehavior {
 
 		int getRecordedCount(EntityType<?> type) {
 			return this.recordedCount.getInt(type);
+		}
+
+		int getTotalCount() {
+			return statistics.getOr(StatisticKey.CREATURES_RECORDED, 0);
 		}
 	}
 }

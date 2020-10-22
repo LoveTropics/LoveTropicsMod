@@ -2,8 +2,10 @@ package com.lovetropics.minigames.common.techstack;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import com.lovetropics.minigames.common.config.ConfigLT;
+import com.lovetropics.minigames.common.minigames.statistics.MinigameStatistics;
 import com.lovetropics.minigames.common.packages.CarePackage;
 import com.lovetropics.minigames.common.packages.ChatEvent;
 import com.lovetropics.minigames.common.packages.GameAction;
@@ -11,16 +13,20 @@ import com.lovetropics.minigames.common.packages.SabotagePackage;
 import com.lovetropics.minigames.common.techstack.websockets.WebSocketHelper;
 import org.apache.commons.io.IOUtils;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class TechStack {
-    private static final Gson GSON = new Gson();
+    private static final Gson GSON = new GsonBuilder()
+            .registerTypeAdapter(MinigameStatistics.class, MinigameStatistics.SERIALIZER)
+            .create();
+
     private static final ExecutorService EXECUTOR = Executors.newSingleThreadExecutor(
             new ThreadFactoryBuilder()
                     .setNameFormat("lt-tech-stack")
@@ -28,8 +34,8 @@ public class TechStack {
                     .build()
     );
 
-    public static void uploadMinigameResults(final String eventName, final String host, final List<ParticipantEntry> participants) {
-        final MinigameResult result = new MinigameResult(eventName, host, participants);
+    public static void uploadMinigameResults(final String eventName, final MinigameStatistics statistics) {
+        final MinigameResult result = new MinigameResult(eventName, statistics);
         uploadMinigameResults(result);
     }
 

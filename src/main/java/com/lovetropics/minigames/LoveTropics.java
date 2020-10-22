@@ -136,7 +136,7 @@ public class LoveTropics {
 
     private void onServerStopping(final FMLServerStoppingEvent event) {
         if (MinigameManager.getInstance().getCurrentMinigame() != null) {
-            MinigameManager.getInstance().finish();
+            MinigameManager.getInstance().cancel();
         }
 
         MapWorkspaceDimension.closeServer();
@@ -173,6 +173,7 @@ public class LoveTropics {
             prov.add(TropicraftLangKeys.MINIGAME_TREASURE_HUNT_X, "Treasure Hunt X");
             prov.add(TropicraftLangKeys.MINIGAME_BUILD_COMPETITION, "Build Competition");
             prov.add(TropicraftLangKeys.MINIGAME_TURTLE_RACE, "Turtle Race");
+            prov.add(TropicraftLangKeys.MINIGAME_TURTLE_RACE_ARCADE, "Turtle Race (Arcade)");
             prov.add(TropicraftLangKeys.MINIGAME_FLYING_TURTLE_RACE, "Flying Turtle Race");
             prov.add(TropicraftLangKeys.MINIGAME_TURTLE_SPRINT, "Turtle Sprint");
             prov.add(TropicraftLangKeys.MINIGAME_ELYTRA_RACE, "Elytra Race");

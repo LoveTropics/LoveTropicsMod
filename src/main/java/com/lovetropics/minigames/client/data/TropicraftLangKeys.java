@@ -38,6 +38,7 @@ public class TropicraftLangKeys
     public static String MINIGAME_TREASURE_HUNT_X = Constants.MODID + ".minigame.treasure_hunt_x";
     public static String MINIGAME_BUILD_COMPETITION = Constants.MODID + ".minigame.build_comptetition";
     public static String MINIGAME_TURTLE_RACE = Constants.MODID + ".minigame.turtle_race";
+    public static String MINIGAME_TURTLE_RACE_ARCADE = Constants.MODID + ".minigame.turtle_race_arcade";
     public static String MINIGAME_FLYING_TURTLE_RACE = Constants.MODID + ".minigame.flying_turtle_race";
     public static String MINIGAME_TURTLE_SPRINT = Constants.MODID + ".minigame.turtle_sprint";
     public static String MINIGAME_ELYTRA_RACE = Constants.MODID + ".minigame.elytra_race";

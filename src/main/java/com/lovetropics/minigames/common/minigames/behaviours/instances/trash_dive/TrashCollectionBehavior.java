@@ -7,21 +7,16 @@ import com.lovetropics.minigames.common.minigames.PlayerSet;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehaviorType;
 import com.lovetropics.minigames.common.minigames.behaviours.MinigameBehaviorTypes;
-import com.lovetropics.minigames.common.techstack.ParticipantEntry;
-import com.mojang.authlib.GameProfile;
+import com.lovetropics.minigames.common.minigames.statistics.*;
 import com.mojang.datafixers.Dynamic;
-import com.mojang.datafixers.util.Pair;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
-import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.inventory.EquipmentSlotType;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.potion.EffectInstance;
 import net.minecraft.potion.Effects;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.management.PlayerProfileCache;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvents;
 import net.minecraft.util.math.BlockPos;
@@ -30,16 +25,12 @@ import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 
-import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import java.util.ArrayList;
+import java.util.List;
 
 public final class TrashCollectionBehavior implements IMinigameBehavior {
 	private int totalTrash;
 	private final LongSet remainingTrash = new LongOpenHashSet();
-
-	private final Object2IntOpenHashMap<UUID> pointsByPlayer = new Object2IntOpenHashMap<>();
-	private int totalPoints;
 
 	private boolean gameOver;
 
@@ -95,8 +86,10 @@ public final class TrashCollectionBehavior implements IMinigameBehavior {
 		minigame.getWorld().removeBlock(pos, false);
 		player.playSound(SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, SoundCategory.PLAYERS, 1.0F, 1.0F);
 
-		totalPoints += 1;
-		pointsByPlayer.addTo(player.getUniqueID(), 1);
+		MinigameStatistics statistics = minigame.getStatistics();
+		statistics.forPlayer(player)
+				.withDefault(StatisticKey.TRASH_COLLECTED, () -> 0)
+				.apply(collected -> collected + 1);
 
 		sidebar.set(renderSidebar(minigame));
 
@@ -112,15 +105,30 @@ public final class TrashCollectionBehavior implements IMinigameBehavior {
 
 		ITextComponent finishMessage;
 		if (remainingTrash.isEmpty()) {
-			finishMessage = new StringTextComponent("We collected all the trash!");
+			finishMessage = new StringTextComponent("We collected all the trash! Here are the results for this game:");
 		} else {
-			finishMessage = new StringTextComponent("We ran out of time!");
+			finishMessage = new StringTextComponent("We ran out of time! Here are the results for this game:");
 		}
 
 		PlayerSet players = minigame.getPlayers();
 		players.sendMessage(finishMessage.applyTextStyles(TextFormatting.GREEN));
 
-		minigame.sendMinigameResults(buildResults(minigame));
+		MinigameStatistics statistics = minigame.getStatistics();
+
+		int totalTimeSeconds = (int) (minigame.ticks() / 20);
+		int totalTrashCollected = 0;
+
+		for (PlayerKey player : statistics.getPlayers()) {
+			totalTimeSeconds += statistics.forPlayer(player).getOr(StatisticKey.TRASH_COLLECTED, 0);
+		}
+
+		StatisticsMap globalStatistics = statistics.getGlobal();
+		globalStatistics.set(StatisticKey.TOTAL_TIME, totalTimeSeconds);
+		globalStatistics.set(StatisticKey.TRASH_COLLECTED, totalTrashCollected);
+
+		PlayerPlacement.Score<Integer> placement = PlayerPlacement.fromMaxScore(minigame, StatisticKey.TRASH_COLLECTED);
+		placement.placeInto(StatisticKey.PLACEMENT);
+		placement.sendTo(players, 5);
 	}
 
 	private String[] renderSidebar(IMinigameInstance minigame) {
@@ -129,51 +137,13 @@ public final class TrashCollectionBehavior implements IMinigameBehavior {
 		List<String> sidebar = new ArrayList<>(10);
 		sidebar.add(TextFormatting.GREEN + "Pick up trash! " + TextFormatting.GRAY + collectedTrash + "/" + totalTrash);
 
-		List<Pair<GameProfile, Integer>> leaderboard = leaderboardFor(minigame).limit(5).collect(Collectors.toList());
-		if (!leaderboard.isEmpty()) {
-			sidebar.add("");
-			sidebar.add(TextFormatting.GREEN + "Top players:");
+		PlayerPlacement.Score<Integer> placement = PlayerPlacement.fromMaxScore(minigame, StatisticKey.TRASH_COLLECTED);
 
-			for (Pair<GameProfile, Integer> entry : leaderboard) {
-				sidebar.add(" - " + TextFormatting.AQUA + entry.getFirst().getName() + ": " + TextFormatting.GOLD + entry.getSecond());
-			}
-		}
+		sidebar.add("");
+		sidebar.add(TextFormatting.GREEN + "Top players:");
+
+		placement.addToSidebar(sidebar, 5);
 
 		return sidebar.toArray(new String[0]);
-	}
-
-	private List<ParticipantEntry> buildResults(IMinigameInstance minigame) {
-		// TODO: this code is duplicated: can we extract utilities for building minigame results?
-		List<Pair<GameProfile, Integer>> leaderboard = leaderboardFor(minigame).collect(Collectors.toList());
-
-		List<ParticipantEntry> participantResults = new ArrayList<>();
-
-		int place = 0;
-		int lastPoints = -1;
-
-		for (Pair<GameProfile, Integer> entry : leaderboard) {
-			GameProfile profile = entry.getFirst();
-			int points = entry.getSecond();
-
-			if (points != lastPoints) place++;
-			lastPoints = points;
-
-			participantResults.add(ParticipantEntry.withPoints(profile, place, points));
-		}
-
-		return participantResults;
-	}
-
-	private Stream<Pair<GameProfile, Integer>> leaderboardFor(IMinigameInstance minigame) {
-		MinecraftServer server = minigame.getServer();
-		PlayerProfileCache profileCache = server.getPlayerProfileCache();
-
-		return pointsByPlayer.object2IntEntrySet().stream()
-				.map(entry -> {
-					GameProfile profile = profileCache.getProfileByUUID(entry.getKey());
-					return profile != null ? Pair.of(profile, entry.getIntValue()) : null;
-				})
-				.filter(Objects::nonNull)
-				.sorted(Comparator.<Pair<GameProfile, Integer>>comparingInt(Pair::getSecond).reversed());
 	}
 }

@@ -10,6 +10,8 @@ import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.UUID;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 public interface PlayerSet extends Iterable<ServerPlayerEntity> {
 	PlayerSet EMPTY = new PlayerSet() {
@@ -76,6 +78,10 @@ public interface PlayerSet extends Iterable<ServerPlayerEntity> {
 		for (ServerPlayerEntity player : this) {
 			player.connection.sendPacket(packet);
 		}
+	}
+
+	default Stream<ServerPlayerEntity> stream() {
+		return StreamSupport.stream(spliterator(), false);
 	}
 
 	interface Listeners {
