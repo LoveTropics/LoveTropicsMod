@@ -3,10 +3,7 @@ package com.lovetropics.minigames.common.minigames.polling;
 import com.lovetropics.minigames.client.data.TropicraftLangKeys;
 import com.lovetropics.minigames.common.Scheduler;
 import com.lovetropics.minigames.common.minigames.*;
-import com.lovetropics.minigames.common.minigames.behaviours.BehaviorDispatcher;
-import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
-import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehaviorType;
-import com.lovetropics.minigames.common.minigames.behaviours.IPollingMinigameBehavior;
+import com.lovetropics.minigames.common.minigames.behaviours.*;
 import com.lovetropics.minigames.common.minigames.map.IMinigameMapProvider;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
@@ -31,15 +28,14 @@ public final class PollingMinigameInstance implements MinigameControllable, Beha
 	 */
 	private final MinigameRegistrations registrations = new MinigameRegistrations();
 
-	private final Map<IMinigameBehaviorType<?>, IPollingMinigameBehavior> behaviors;
+	private final BehaviorMap behaviors;
 
 	private final Map<String, ControlCommandHandler> controlCommands = new Object2ObjectOpenHashMap<>();
 
 	private PollingMinigameInstance(MinecraftServer server, IMinigameDefinition definition) {
 		this.server = server;
 		this.definition = definition;
-
-		this.behaviors = definition.createPollingBehaviors();
+		this.behaviors = definition.createBehaviors();
 	}
 
 	public static MinigameResult<PollingMinigameInstance> create(MinecraftServer server, IMinigameDefinition definition) {
@@ -101,7 +97,7 @@ public final class PollingMinigameInstance implements MinigameControllable, Beha
 		}
 
 		return mapProvider.open(server)
-				.thenApplyAsync(map -> MinigameInstance.create(definition, server, map), server)
+				.thenApplyAsync(map -> MinigameInstance.create(definition, server, map, behaviors), server)
 				.thenComposeAsync(minigameResult -> {
 					if (minigameResult.isError()) {
 						return CompletableFuture.completedFuture(minigameResult.<MinigameInstance>castError());
@@ -155,7 +151,7 @@ public final class PollingMinigameInstance implements MinigameControllable, Beha
 
 	@Override
 	public Collection<IPollingMinigameBehavior> getBehaviors() {
-		return behaviors.values();
+		return behaviors.getPollingBehaviors();
 	}
 
 	@Override

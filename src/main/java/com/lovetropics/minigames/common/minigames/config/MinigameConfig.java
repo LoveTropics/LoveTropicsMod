@@ -4,11 +4,9 @@ import com.lovetropics.minigames.common.minigames.IMinigameDefinition;
 import com.lovetropics.minigames.common.minigames.behaviours.*;
 import com.lovetropics.minigames.common.minigames.map.IMinigameMapProvider;
 import com.mojang.datafixers.Dynamic;
-import it.unimi.dsi.fastutil.objects.Reference2ObjectLinkedOpenHashMap;
 import net.minecraft.util.ResourceLocation;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -79,27 +77,8 @@ public final class MinigameConfig implements IMinigameDefinition {
 	}
 
 	@Override
-	public Map<IMinigameBehaviorType<?>, IMinigameBehavior> createBehaviors() {
-		Map<IMinigameBehaviorType<?>, IMinigameBehavior> behaviors = new Reference2ObjectLinkedOpenHashMap<>();
-		for (ConfiguredBehavior<?> configuredBehavior : this.behaviors) {
-			Object behavior = configuredBehavior.create();
-			if (behavior instanceof IMinigameBehavior) {
-				behaviors.put(configuredBehavior.type, (IMinigameBehavior) behavior);
-			}
-		}
-		return behaviors;
-	}
-
-	@Override
-	public Map<IMinigameBehaviorType<?>, IPollingMinigameBehavior> createPollingBehaviors() {
-		Map<IMinigameBehaviorType<?>, IPollingMinigameBehavior> behaviors = new Reference2ObjectLinkedOpenHashMap<>();
-		for (ConfiguredBehavior<?> configuredBehavior : this.behaviors) {
-			Object behavior = configuredBehavior.create();
-			if (behavior instanceof IPollingMinigameBehavior) {
-				behaviors.put(configuredBehavior.type, (IPollingMinigameBehavior) behavior);
-			}
-		}
-		return behaviors;
+	public BehaviorMap createBehaviors() {
+		return BehaviorMap.create(behaviors);
 	}
 
 	@Override
