@@ -64,12 +64,15 @@ public final class TeamAllocator {
 					}
 				}
 
-				// if we found someone to swap with, swap!
-				if (swapWith != null) {
+				// we can move if we found someone to swap with or if there is nobody in the other team
+				if (swapWith != null || swapCandidates.isEmpty()) {
 					teamToPlayers.remove(current, player);
 					teamToPlayers.put(preference, player);
 					playerToTeam.put(player, preference);
+				}
 
+				// move the other player to our team
+				if (swapWith != null) {
 					teamToPlayers.remove(preference, swapWith);
 					teamToPlayers.put(current, swapWith);
 					playerToTeam.put(swapWith, current);
