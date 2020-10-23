@@ -3,6 +3,8 @@ package com.lovetropics.minigames.common.minigames.behaviours;
 import com.google.common.collect.ImmutableList;
 import com.lovetropics.minigames.common.minigames.IMinigameInstance;
 import com.lovetropics.minigames.common.minigames.PlayerRole;
+import com.lovetropics.minigames.common.game_actions.CarePackageGameAction;
+import com.lovetropics.minigames.common.game_actions.SabotagePackageGameAction;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
@@ -28,7 +30,6 @@ public interface IMinigameBehavior
 	 * For before a minigame starts. Useful for preparing the minigame.
 	 *
 	 * @param minigame The minigame that is being constructed
-	 * @param server   The current minecraft server object.
 	 */
 	default void onConstruct(final IMinigameInstance minigame) {}
 
@@ -36,7 +37,6 @@ public interface IMinigameBehavior
 	 * When the map finishes loading. Useful for collecting metadata from the map
 	 *
 	 * @param minigame The minigame that is being constructed
-	 * @param server   The current minecraft server object.
 	 */
 	default void onMapReady(final IMinigameInstance minigame) {}
 
@@ -55,8 +55,6 @@ public interface IMinigameBehavior
 	 * For when a minigame starts. Useful for preparing the minigame.
 	 *
 	 * @param minigame      The current minigame instance.
-	 * @param commandSource Command source for the minigame instance. Can be used to
-	 *                      execute some commands for the minigame from a datapack.
 	 */
 	default void onStart(final IMinigameInstance minigame) {}
 
@@ -65,9 +63,6 @@ public interface IMinigameBehavior
 	 * definition.
 	 * 
 	 * @param minigame      The current minigame instance.
-	 * 
-	 * @param commandSource Command source for the minigame instance. Can be used to
-	 *                      execute some commands for the minigame from a datapack.
 	 */
 	default void onFinish(final IMinigameInstance minigame) {}
 
@@ -76,8 +71,6 @@ public interface IMinigameBehavior
 	 * dimension.
 	 * 
 	 * @param minigame      The current minigame instance.
-	 * @param commandSource Command source for the minigame instance. Can be used to
-	 *                      execute some commands for the minigame from a datapack.
 	 */
 	default void onPostFinish(final IMinigameInstance minigame) {}
 
@@ -203,5 +196,29 @@ public interface IMinigameBehavior
 	 * @param event     The face that was clicked.
 	 */
 	default void onPlayerLeftClickBlock(final IMinigameInstance minigame, ServerPlayerEntity player, BlockPos pos, PlayerInteractEvent.LeftClickBlock event) {
+	}
+
+	/**
+	 * When a care package has been requested by the backend.
+	 *
+	 * @param minigame The minigame that is being constructed
+	 *
+	 * @return Whether or not the action should considered "handled"
+	 * and sent as an acknowledgement to the backend.
+	 */
+	default boolean onCarePackageRequested(final IMinigameInstance minigame, final CarePackageGameAction action) {
+		return false;
+	}
+
+	/**
+	 * When a sabotage package has been requested by the backend.
+	 *
+	 * @param minigame The minigame that is being constructed
+	 *
+	 * @return Whether or not the action should considered "handled"
+	 * and sent as an acknowledgement to the backend.
+	 */
+	default boolean onSabotagePackageRequested(final IMinigameInstance minigame, final SabotagePackageGameAction action) {
+		return false;
 	}
 }

@@ -1,6 +1,6 @@
-package com.lovetropics.minigames.common.packages;
+package com.lovetropics.minigames.common.game_actions;
 
-import com.google.gson.JsonObject;
+import net.minecraft.server.MinecraftServer;
 
 import javax.annotation.Nullable;
 import java.time.LocalDateTime;
@@ -16,6 +16,15 @@ public abstract class GameAction implements Comparable<GameAction> {
         this.uuid = uuid;
         this.triggerTime = triggerTime;
     }
+
+    /**
+     * Resolves the requested action.
+     *
+     * @param server The game server the action is resolved on.
+     * @return Whether or not to send an acknowledgement back that
+     * the action has been resolved.
+     */
+    public abstract boolean resolve(final MinecraftServer server);
 
     @Override
     public int compareTo(final GameAction other) {

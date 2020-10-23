@@ -6,10 +6,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import com.lovetropics.minigames.common.config.ConfigLT;
 import com.lovetropics.minigames.common.minigames.statistics.MinigameStatistics;
-import com.lovetropics.minigames.common.packages.CarePackage;
-import com.lovetropics.minigames.common.packages.ChatEvent;
-import com.lovetropics.minigames.common.packages.GameAction;
-import com.lovetropics.minigames.common.packages.SabotagePackage;
+import com.lovetropics.minigames.common.game_actions.GameAction;
 import com.lovetropics.minigames.common.techstack.websockets.WebSocketHelper;
 import org.apache.commons.io.IOUtils;
 
@@ -129,25 +126,17 @@ public class TechStack {
         System.out.println("Payload Received");
 
         if (crud.equals("create")) {
-            switch (type) {
-                case "care_package":
-                    ActionHandler.queueAction(CarePackage.fromJson(obj));
-                    break;
-                case "sabotage_package":
-                    ActionHandler.queueAction(SabotagePackage.fromJson(obj));
-                    break;
-                case "chat_event":
-                    ActionHandler.queueAction(ChatEvent.fromJson(obj));
-                    break;
-                default:
-                    break;
-            }
+            BackendRequest.getFromId(type).ifPresent(request ->
+                    GameActionHandler.queueGameAction(request, request.getGameActionFactory().apply(obj.getAsJsonObject("payload"))));
         }
-
-        // TODO handle receiving of care or sabotage package or chat event here
     }
 
-    public static void acknowledgeActionDelivery(final GameAction action) {
+    public static void acknowledgeActionDelivery(final BackendRequest request, final GameAction action) {
+        final JsonObject jsonObj = new JsonObject();
 
+        jsonObj.addProperty("request", request.getId());
+        jsonObj.addProperty("uuid", action.uuid.toString());
+
+        post(getUrl(ConfigLT.TECH_STACK.actionResolvedEndpoint.get()), jsonObj.getAsString());
     }
 }
