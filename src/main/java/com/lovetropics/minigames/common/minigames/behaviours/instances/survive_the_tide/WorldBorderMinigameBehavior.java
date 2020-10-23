@@ -87,7 +87,7 @@ public class WorldBorderMinigameBehavior implements IMinigameBehavior
 	}
 
 	@Override
-	public void onMapReady(IMinigameInstance minigame) {
+	public void onConstruct(IMinigameInstance minigame) {
 		MapRegion centerRegion = minigame.getMapRegions().getOne(worldBorderCenterKey);
 		worldBorderCenter = centerRegion != null ? new BlockPos(centerRegion.getCenter()) : BlockPos.ZERO;
 	}

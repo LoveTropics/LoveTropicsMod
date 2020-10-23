@@ -2,12 +2,12 @@ package com.lovetropics.minigames.common.minigames.map;
 
 import com.lovetropics.minigames.common.minigames.IMinigameDefinition;
 import com.lovetropics.minigames.common.minigames.IMinigameInstance;
+import com.lovetropics.minigames.common.minigames.MinigameMap;
+import com.lovetropics.minigames.common.minigames.MinigameResult;
 import com.mojang.datafixers.Dynamic;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.ActionResult;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.world.dimension.DimensionType;
+import net.minecraft.util.Unit;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -22,9 +22,9 @@ public interface IMinigameMapProvider {
 		return mapProviderType.create(root);
 	}
 
-	ActionResult<ITextComponent> canOpen(IMinigameDefinition definition, MinecraftServer server);
+	MinigameResult<Unit> canOpen(IMinigameDefinition definition, MinecraftServer server);
 
-	CompletableFuture<DimensionType> open(IMinigameInstance minigame, MinecraftServer server);
+	CompletableFuture<MinigameMap> open(MinecraftServer server);
 
 	void close(IMinigameInstance minigame);
 }

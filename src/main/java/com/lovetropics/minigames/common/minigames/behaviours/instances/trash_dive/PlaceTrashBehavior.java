@@ -40,7 +40,7 @@ public final class PlaceTrashBehavior implements IMinigameBehavior {
 	}
 
 	@Override
-	public void onMapReady(IMinigameInstance minigame) {
+	public void onConstruct(IMinigameInstance minigame) {
 		List<MapRegion> regions = new ArrayList<>(minigame.getMapRegions().get(region));
 		if (regions.isEmpty()) {
 			LOGGER.warn("No matching regions for placing trash! Was given '{}'", region);

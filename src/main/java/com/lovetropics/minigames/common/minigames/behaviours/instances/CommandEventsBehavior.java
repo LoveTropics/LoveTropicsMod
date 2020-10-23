@@ -23,8 +23,8 @@ public final class CommandEventsBehavior extends CommandInvokeBehavior {
 	}
 
 	@Override
-	public void onMapReady(IMinigameInstance minigame) {
-		super.onMapReady(minigame);
+	public void onConstruct(IMinigameInstance minigame) {
+		super.onConstruct(minigame);
 		this.invoke("ready");
 	}
 

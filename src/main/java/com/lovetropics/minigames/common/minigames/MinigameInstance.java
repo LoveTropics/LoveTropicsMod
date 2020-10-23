@@ -10,6 +10,7 @@ import net.minecraft.command.CommandSource;
 import net.minecraft.command.ICommandSource;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.Unit;
 import net.minecraft.util.math.Vec2f;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.text.ITextComponent;
@@ -30,12 +31,12 @@ public class MinigameInstance implements IMinigameInstance
 {
     private final MinecraftServer server;
     private final IMinigameDefinition definition;
-    private DimensionType dimension;
+    private final DimensionType dimension;
 
     private final MutablePlayerSet allPlayers;
     private final EnumMap<PlayerRole, MutablePlayerSet> roles = new EnumMap<>(PlayerRole.class);
 
-    private final MapRegions mapRegions = new MapRegions();
+    private final MapRegions mapRegions;
     private final MinigameStatistics statistics = new MinigameStatistics();
 
     private CommandSource commandSource;
@@ -45,9 +46,11 @@ public class MinigameInstance implements IMinigameInstance
 
     private final Map<IMinigameBehaviorType<?>, IMinigameBehavior> behaviors;
 
-    public MinigameInstance(IMinigameDefinition definition, MinecraftServer server) {
+    private MinigameInstance(IMinigameDefinition definition, MinecraftServer server, MinigameMap map) {
         this.definition = definition;
         this.server = server;
+        this.dimension = map.getDimension();
+        this.mapRegions = map.getMapRegions();
 
         this.allPlayers = new MutablePlayerSet(server);
 
@@ -71,6 +74,33 @@ public class MinigameInstance implements IMinigameInstance
                 MinigameInstance.this.onRemovePlayer(id, player);
             }
         });
+    }
+
+    public static MinigameResult<MinigameInstance> create(IMinigameDefinition definition, MinecraftServer server, MinigameMap map) {
+        MinigameInstance minigame = new MinigameInstance(definition, server, map);
+
+        MinigameResult<Unit> result = minigame.validateBehaviors();
+        if (result.isError()) {
+            return result.castError();
+        }
+
+        result = minigame.dispatchToBehaviors(IMinigameBehavior::onConstruct);
+        if (result.isError()) {
+            return result.castError();
+        }
+
+        return MinigameResult.ok(minigame);
+    }
+
+    private MinigameResult<Unit> validateBehaviors() {
+        for (IMinigameBehavior behavior : getBehaviors()) {
+            for (IMinigameBehaviorType<? extends IMinigameBehavior> dependency : behavior.dependencies()) {
+                if (!getBehavior(dependency).isPresent()) {
+                    return MinigameResult.error(new StringTextComponent(behavior + " is missing dependency on " + dependency + "!"));
+                }
+            }
+        }
+        return dispatchToBehaviors(IMinigameBehavior::validateBehavior);
     }
 
     private void onRemovePlayer(UUID id, @Nullable ServerPlayerEntity player) {
@@ -109,7 +139,7 @@ public class MinigameInstance implements IMinigameInstance
     }
 
     @Override
-    public Collection<IMinigameBehavior> getAllBehaviours() {
+    public Collection<IMinigameBehavior> getBehaviors() {
         return behaviors.values();
     }
 
@@ -211,9 +241,5 @@ public class MinigameInstance implements IMinigameInstance
     @Override
     public MinigameStatistics getStatistics() {
         return statistics;
-    }
-
-    public void setDimension(DimensionType dimension) {
-        this.dimension = dimension;
     }
 }

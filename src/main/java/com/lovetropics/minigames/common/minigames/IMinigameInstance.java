@@ -1,10 +1,10 @@
 package com.lovetropics.minigames.common.minigames;
 
 import com.lovetropics.minigames.common.map.MapRegions;
+import com.lovetropics.minigames.common.minigames.behaviours.BehaviorDispatcher;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehaviorType;
 import com.lovetropics.minigames.common.minigames.statistics.MinigameStatistics;
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.command.CommandSource;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.server.MinecraftServer;
@@ -13,14 +13,13 @@ import net.minecraft.world.server.ServerWorld;
 
 import java.util.Collection;
 import java.util.Optional;
-import java.util.Set;
 
 /**
  * An instance used to track which participants and spectators are inside
  * the running minigame. Also holds the definition to process the content
  * within the minigame.
  */
-public interface IMinigameInstance
+public interface IMinigameInstance extends MinigameControllable, BehaviorDispatcher<IMinigameBehavior, IMinigameInstance>
 {
     /**
      * The definition used to define what content the minigame contains.
@@ -28,7 +27,8 @@ public interface IMinigameInstance
      */
     IMinigameDefinition getDefinition();
 
-    Collection<IMinigameBehavior> getAllBehaviours();
+    @Override
+    Collection<IMinigameBehavior> getBehaviors();
 
     <T extends IMinigameBehavior> Optional<T> getBehavior(IMinigameBehaviorType<T> type);
 
@@ -49,17 +49,6 @@ public interface IMinigameInstance
      * @param player the player to remove
      */
     void removePlayer(ServerPlayerEntity player);
-
-    /**
-     * Adds a command with a custom task that can be used through the /minigame command while this game is active
-     * @param name the command name to use
-     * @param task the task to run when the command is invoked
-     */
-    void addControlCommand(String name, ControlCommandHandler task);
-
-    void invokeControlCommand(String name, CommandSource source) throws CommandSyntaxException;
-
-    Set<String> getControlCommands();
 
     /**
      * @return The list of all players that are a part of this minigame instance.

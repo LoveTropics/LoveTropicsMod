@@ -1,5 +1,6 @@
-package com.lovetropics.minigames.common.minigames;
+package com.lovetropics.minigames.common.minigames.polling;
 
+import com.lovetropics.minigames.common.minigames.PlayerRole;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.server.MinecraftServer;

@@ -2,10 +2,12 @@ package com.lovetropics.minigames.common.minigames;
 
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehaviorType;
+import com.lovetropics.minigames.common.minigames.behaviours.IPollingMinigameBehavior;
 import com.lovetropics.minigames.common.minigames.map.IMinigameMapProvider;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.TranslationTextComponent;
 
-import java.util.Collection;
 import java.util.Map;
 
 /**
@@ -20,6 +22,8 @@ public interface IMinigameDefinition
 
     Map<IMinigameBehaviorType<?>, IMinigameBehavior> createBehaviors();
 
+    Map<IMinigameBehaviorType<?>, IPollingMinigameBehavior> createPollingBehaviors();
+
     /**
      * The identifier for this minigame definition. Must be unique
      * compared to other registered minigames.
@@ -32,6 +36,10 @@ public interface IMinigameDefinition
      * @return The unlocalized key string for the name of this minigame.
      */
     String getUnlocalizedName();
+
+    default ITextComponent getName() {
+        return new TranslationTextComponent(getUnlocalizedName());
+    }
 
     /**
      * Will not let you start the minigame without at least this amount of

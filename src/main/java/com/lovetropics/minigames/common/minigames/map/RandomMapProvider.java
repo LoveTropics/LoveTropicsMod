@@ -2,11 +2,11 @@ package com.lovetropics.minigames.common.minigames.map;
 
 import com.lovetropics.minigames.common.minigames.IMinigameDefinition;
 import com.lovetropics.minigames.common.minigames.IMinigameInstance;
+import com.lovetropics.minigames.common.minigames.MinigameMap;
+import com.lovetropics.minigames.common.minigames.MinigameResult;
 import com.mojang.datafixers.Dynamic;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.world.dimension.DimensionType;
+import net.minecraft.util.Unit;
 
 import java.util.Random;
 import java.util.concurrent.CompletableFuture;
@@ -31,14 +31,14 @@ public final class RandomMapProvider implements IMinigameMapProvider {
 	}
 
 	@Override
-	public ActionResult<ITextComponent> canOpen(IMinigameDefinition definition, MinecraftServer server) {
+	public MinigameResult<Unit> canOpen(IMinigameDefinition definition, MinecraftServer server) {
 		nextMapProvider = selectNextMap();
 		return nextMapProvider.canOpen(definition, server);
 	}
 
 	@Override
-	public CompletableFuture<DimensionType> open(IMinigameInstance minigame, MinecraftServer server) {
-		return nextMapProvider.open(minigame, server);
+	public CompletableFuture<MinigameMap> open(MinecraftServer server) {
+		return nextMapProvider.open(server);
 	}
 
 	@Override

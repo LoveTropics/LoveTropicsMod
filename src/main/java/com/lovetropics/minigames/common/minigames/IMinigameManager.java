@@ -1,7 +1,6 @@
 package com.lovetropics.minigames.common.minigames;
 
 import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.util.ActionResult;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.ITextComponent;
 
@@ -18,7 +17,7 @@ import java.util.concurrent.CompletableFuture;
  * which are fed into Minecraft Commands to send these messages back to players
  * which execute the commands.
  */
-public interface IMinigameManager
+public interface IMinigameManager extends MinigameControllable
 {
     /**
      * Register a minigame definition, allowing it to be polled by a poll command.
@@ -46,61 +45,59 @@ public interface IMinigameManager
      */
     Collection<IMinigameDefinition> getAllMinigames();
 
-    IMinigameInstance getActiveOrPollingMinigame();
-
     /**
      * Holds metadata for which players
      * are participants and which are spectators.
      * @return The actively running minigame instance.
      */
-    IMinigameInstance getCurrentMinigame();
+    IMinigameInstance getActiveMinigame();
 
     /**
      * Finishes the actively running minigame, teleporting players back to
      * their original state before joining the minigame.
      */
-    ActionResult<ITextComponent> finish();
+    MinigameResult<ITextComponent> finish();
 
     /**
      * Cancels the actively running minigame. Inherents all logic of {@link IMinigameManager#finish()}
      */
-    ActionResult<ITextComponent> cancel();
+    MinigameResult<ITextComponent> cancel();
 
     /**
      * Starts polling the minigame.
      * @param minigameId The unique ID of the minigame being polled.
-     * @return The ActionResult of the polling attempt.
+     * @return The result of the polling attempt.
      */
-    ActionResult<ITextComponent> startPolling(ResourceLocation minigameId);
+    MinigameResult<ITextComponent> startPolling(ResourceLocation minigameId);
 
     /**
      * Stops polling an actively polling minigame.
-     * @return The ActionResult of stopping the polling of an actively polling minigame.
+     * @return The result of stopping the polling of an actively polling minigame.
      */
-    ActionResult<ITextComponent> stopPolling();
+    MinigameResult<ITextComponent> stopPolling();
 
     /**
      * Starts an actively polling minigame if it has at least the minimum amount of
      * participants registered to the minigame, specified by the minigame definition.
-     * @return The ActionResult of the start attempt.
+     * @return The result of the start attempt.
      */
-    CompletableFuture<ActionResult<ITextComponent>> start();
+    CompletableFuture<MinigameResult<ITextComponent>> start();
 
     /**
      * Registers a player for the currently polling minigame. Puts them in a queue
      * to be selected as either a participant or a spectator when the minigame starts.
      * @param player The player being registered for the currently polling minigame.
      * @param requestedRole The role that this player has requested to join as, or null if they have no preference
-     * @return The ActionResult of the register attempt.
+     * @return The result of the register attempt.
      */
-    ActionResult<ITextComponent> registerFor(ServerPlayerEntity player, @Nullable PlayerRole requestedRole);
+    MinigameResult<ITextComponent> registerFor(ServerPlayerEntity player, @Nullable PlayerRole requestedRole);
 
     /**
      * Unregisters a player for a currently polling minigame if they've registered
      * previously. Removes them from the queue for the minigame if they don't want
      * to be a part of it when it starts.
      * @param player The player being unregistered for the currently polling minigame/
-     * @return The ActionResult of the unregister attempt.
+     * @return The result of the unregister attempt.
      */
-    ActionResult<ITextComponent> unregisterFor(ServerPlayerEntity player);
+    MinigameResult<ITextComponent> unregisterFor(ServerPlayerEntity player);
 }

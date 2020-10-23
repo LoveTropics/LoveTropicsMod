@@ -1,14 +1,12 @@
 package com.lovetropics.minigames.common.command.minigames;
 
-import com.lovetropics.minigames.common.minigames.IMinigameInstance;
+import com.lovetropics.minigames.common.minigames.IMinigameManager;
 import com.lovetropics.minigames.common.minigames.MinigameManager;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.ISuggestionProvider;
-
-import java.util.stream.Stream;
 
 import static net.minecraft.command.Commands.argument;
 import static net.minecraft.command.Commands.literal;
@@ -20,20 +18,14 @@ public class CommandMinigameControl {
             literal("minigame")
                 .then(argument("control", StringArgumentType.string())
                     .suggests((context, builder) -> {
-                        IMinigameInstance minigame = MinigameManager.getInstance().getActiveOrPollingMinigame();
-                        if (minigame != null) {
-                            return ISuggestionProvider.suggest(minigame.getControlCommands().stream(), builder);
-                        } else {
-                            return ISuggestionProvider.suggest(Stream.empty(), builder);
-                        }
+                        IMinigameManager manager = MinigameManager.getInstance();
+                        return ISuggestionProvider.suggest(manager.getControlCommands().stream(), builder);
                     })
                     .requires(src -> src.hasPermissionLevel(2))
                     .executes(ctx -> {
-                        IMinigameInstance minigame = MinigameManager.getInstance().getActiveOrPollingMinigame();
-                        if (minigame != null) {
-                            String control = StringArgumentType.getString(ctx, "control");
-                            minigame.invokeControlCommand(control, ctx.getSource());
-                        }
+                        String control = StringArgumentType.getString(ctx, "control");
+                        IMinigameManager manager = MinigameManager.getInstance();
+                        manager.invokeControlCommand(control, ctx.getSource());
                         return Command.SINGLE_SUCCESS;
                     })
                 )
