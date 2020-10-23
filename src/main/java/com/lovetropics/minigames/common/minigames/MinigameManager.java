@@ -358,9 +358,8 @@ public class MinigameManager implements IMinigameManager {
 		if (minigame != null) {
 			if (entity instanceof ServerPlayerEntity) {
 				minigame.dispatchToBehaviors(IMinigameBehavior::onPlayerUpdate, (ServerPlayerEntity) entity);
-			} else {
-				minigame.dispatchToBehaviors(IMinigameBehavior::onLivingEntityUpdate, entity);
 			}
+			minigame.dispatchToBehaviors(IMinigameBehavior::onLivingEntityUpdate, entity);
 		}
 	}
 

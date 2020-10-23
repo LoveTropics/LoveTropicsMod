@@ -16,7 +16,7 @@ public final class TeamAllocator {
 	private final Map<ServerPlayerEntity, TeamsBehavior.TeamKey> teamPreferences = new Object2ObjectOpenHashMap<>();
 
 	public TeamAllocator(List<TeamsBehavior.TeamKey> teams) {
-		this.teams = teams;
+		this.teams = new ArrayList<>(teams);
 	}
 
 	public void addPlayer(ServerPlayerEntity player, @Nullable TeamsBehavior.TeamKey teamPreference) {
@@ -28,6 +28,8 @@ public final class TeamAllocator {
 		Multimap<TeamsBehavior.TeamKey, ServerPlayerEntity> teamToPlayers = HashMultimap.create();
 		Map<ServerPlayerEntity, TeamsBehavior.TeamKey> playerToTeam = new Object2ObjectOpenHashMap<>();
 
+		// shuffle the player and teams list for random initial allocation
+		Collections.shuffle(teams);
 		Collections.shuffle(players);
 
 		// 1. place everyone in all the teams in an even distribution
@@ -38,6 +40,7 @@ public final class TeamAllocator {
 			playerToTeam.put(player, team);
 		}
 
+		// we want to do swapping in a different order to how we initially allocated
 		Collections.shuffle(players);
 
 		// 2. go through and try to swap players whose preferences mismatch with their assigned team
@@ -45,10 +48,21 @@ public final class TeamAllocator {
 			TeamsBehavior.TeamKey preference = teamPreferences.get(player);
 			TeamsBehavior.TeamKey current = playerToTeam.get(player);
 
-			if (preference != null && current != preference) {
-				// mismatch in preference and assigned team: try swap with another player
+			// we have no preference or we are already in our desired position, continue
+			if (preference == null || current == preference) {
+				continue;
+			}
 
-				Collection<ServerPlayerEntity> swapCandidates = teamToPlayers.get(preference);
+			Collection<ServerPlayerEntity> currentTeamMembers = teamToPlayers.get(current);
+			Collection<ServerPlayerEntity> swapCandidates = teamToPlayers.get(preference);
+
+			// we can move without swapping if the other team is smaller than ours
+			// we only care about keeping the teams balanced, so this is safe
+			if (swapCandidates.size() < currentTeamMembers.size()) {
+				teamToPlayers.remove(current, player);
+				teamToPlayers.put(preference, player);
+				playerToTeam.put(player, preference);
+			} else {
 				ServerPlayerEntity swapWith = null;
 
 				for (ServerPlayerEntity swapCandidate : swapCandidates) {
@@ -64,15 +78,12 @@ public final class TeamAllocator {
 					}
 				}
 
-				// we can move if we found someone to swap with or if there is nobody in the other team
-				if (swapWith != null || swapCandidates.isEmpty()) {
+				// we found somebody to swap with! swap 'em
+				if (swapWith != null) {
 					teamToPlayers.remove(current, player);
 					teamToPlayers.put(preference, player);
 					playerToTeam.put(player, preference);
-				}
 
-				// move the other player to our team
-				if (swapWith != null) {
 					teamToPlayers.remove(preference, swapWith);
 					teamToPlayers.put(current, swapWith);
 					playerToTeam.put(swapWith, current);

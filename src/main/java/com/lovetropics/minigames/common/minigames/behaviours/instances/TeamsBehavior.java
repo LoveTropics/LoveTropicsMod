@@ -188,7 +188,7 @@ public final class TeamsBehavior implements IMinigameBehavior, IPollingMinigameB
 		}
 		TeamKey sourceTeam = getTeamForPlayer((PlayerEntity) source);
 		TeamKey targetTeam = getTeamForPlayer((PlayerEntity) target);
-		return !Objects.equals(sourceTeam, targetTeam);
+		return Objects.equals(sourceTeam, targetTeam);
 	}
 
 	@Nullable
