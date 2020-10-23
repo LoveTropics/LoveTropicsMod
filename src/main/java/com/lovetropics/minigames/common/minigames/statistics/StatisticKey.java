@@ -26,7 +26,7 @@ public final class StatisticKey<T> {
 	public static final StatisticKey<Integer> POINTS = integer("points");
 
 	public static final StatisticKey<Integer> TIME_SURVIVED = integer("time_survived").displays(minutesSeconds());
-	public static final StatisticKey<String> CAUSE_OF_DEATH = string("cause_of_death");
+	public static final StatisticKey<CauseOfDeath> CAUSE_OF_DEATH = register("cause_of_death", CauseOfDeath::serialize);
 	public static final StatisticKey<PlayerKey> KILLED_BY = player("killed_by");
 	public static final StatisticKey<Integer> TIME_CAMPING = integer("time_camping").displays(minutesSeconds());
 	public static final StatisticKey<TeamsBehavior.TeamKey> TEAM = team("team");
