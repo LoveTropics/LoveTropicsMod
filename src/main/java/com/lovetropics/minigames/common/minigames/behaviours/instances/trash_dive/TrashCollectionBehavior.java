@@ -41,7 +41,7 @@ public final class TrashCollectionBehavior implements IMinigameBehavior {
 	}
 
 	@Override
-	public ImmutableList<IMinigameBehaviorType<?>> dependencies() {
+	public ImmutableList<IMinigameBehaviorType<? extends IMinigameBehavior>> dependencies() {
 		return ImmutableList.of(MinigameBehaviorTypes.PLACE_TRASH.get());
 	}
 

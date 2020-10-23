@@ -1,12 +1,10 @@
 package com.lovetropics.minigames.common.minigames;
 
-import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
-import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehaviorType;
+import com.lovetropics.minigames.common.minigames.behaviours.BehaviorMap;
 import com.lovetropics.minigames.common.minigames.map.IMinigameMapProvider;
 import net.minecraft.util.ResourceLocation;
-
-import java.util.Collection;
-import java.util.Map;
+import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.TranslationTextComponent;
 
 /**
  * Used as a discriminant for a registered minigame. Defines the logic of the
@@ -18,7 +16,7 @@ public interface IMinigameDefinition
 {
     IMinigameMapProvider getMapProvider();
 
-    Map<IMinigameBehaviorType<?>, IMinigameBehavior> createBehaviors();
+    BehaviorMap createBehaviors();
 
     /**
      * The identifier for this minigame definition. Must be unique
@@ -32,6 +30,10 @@ public interface IMinigameDefinition
      * @return The unlocalized key string for the name of this minigame.
      */
     String getUnlocalizedName();
+
+    default ITextComponent getName() {
+        return new TranslationTextComponent(getUnlocalizedName());
+    }
 
     /**
      * Will not let you start the minigame without at least this amount of

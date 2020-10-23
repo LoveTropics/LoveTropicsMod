@@ -58,12 +58,12 @@ public class SurviveTheTideRulesetBehavior implements IMinigameBehavior
 	}
 
 	@Override
-	public ImmutableList<IMinigameBehaviorType<?>> dependencies() {
+	public ImmutableList<IMinigameBehaviorType<? extends IMinigameBehavior>> dependencies() {
 		return ImmutableList.of(MinigameBehaviorTypes.PHASES.get());
 	}
 
 	@Override
-	public void onMapReady(IMinigameInstance minigame) {
+	public void onConstruct(IMinigameInstance minigame) {
 		spawnArea = minigame.getMapRegions().getOne(spawnAreaKey);
 	}
 

@@ -3,18 +3,21 @@ package com.lovetropics.minigames.common.minigames.behaviours.instances;
 import com.google.common.collect.ImmutableList;
 import com.lovetropics.minigames.common.minigames.IMinigameInstance;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
+import com.lovetropics.minigames.common.minigames.behaviours.IPollingMinigameBehavior;
+import com.lovetropics.minigames.common.minigames.polling.PollingMinigameInstance;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.datafixers.Dynamic;
 import net.minecraft.command.CommandSource;
 import net.minecraft.entity.Entity;
+import net.minecraft.server.MinecraftServer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.List;
 import java.util.Map;
 
-public abstract class CommandInvokeBehavior implements IMinigameBehavior {
+public abstract class CommandInvokeBehavior implements IMinigameBehavior, IPollingMinigameBehavior {
 	private static final Logger LOGGER = LogManager.getLogger(CommandInvokeBehavior.class);
 
 	protected final Map<String, List<String>> commands;
@@ -66,12 +69,14 @@ public abstract class CommandInvokeBehavior implements IMinigameBehavior {
 	}
 
 	@Override
-	public void onConstruct(IMinigameInstance minigame) {
-		this.dispatcher = minigame.getServer().getCommandManager().getDispatcher();
+	public void onStartPolling(PollingMinigameInstance minigame) {
+		MinecraftServer server = minigame.getServer();
+		this.dispatcher = server.getCommandManager().getDispatcher();
+		this.source = server.getCommandSource();
 	}
 
 	@Override
-	public void onMapReady(IMinigameInstance minigame) {
+	public void onConstruct(IMinigameInstance minigame) {
 		this.source = minigame.getCommandSource();
 	}
 }

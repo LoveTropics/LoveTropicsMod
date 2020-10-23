@@ -2,7 +2,7 @@ package com.lovetropics.minigames.common.minigames.behaviours;
 
 import com.mojang.datafixers.Dynamic;
 
-public final class ConfiguredBehavior<T extends IMinigameBehavior> {
+public final class ConfiguredBehavior<T> {
 	public final IMinigameBehaviorType<T> type;
 	public final Dynamic<?> config;
 
@@ -11,11 +11,11 @@ public final class ConfiguredBehavior<T extends IMinigameBehavior> {
 		this.config = config;
 	}
 
-	public static <T extends IMinigameBehavior> ConfiguredBehavior<T> of(IMinigameBehaviorType<T> type, Dynamic<?> config) {
+	public static <T> ConfiguredBehavior<T> of(IMinigameBehaviorType<T> type, Dynamic<?> config) {
 		return new ConfiguredBehavior<>(type, config);
 	}
 
-	public IMinigameBehavior create() {
+	public T create() {
 		return type.create(config);
 	}
 }

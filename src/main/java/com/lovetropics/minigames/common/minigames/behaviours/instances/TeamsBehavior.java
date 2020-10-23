@@ -1,10 +1,10 @@
 package com.lovetropics.minigames.common.minigames.behaviours.instances;
 
-import com.lovetropics.minigames.common.minigames.IMinigameInstance;
-import com.lovetropics.minigames.common.minigames.MutablePlayerSet;
-import com.lovetropics.minigames.common.minigames.PlayerRole;
-import com.lovetropics.minigames.common.minigames.PlayerSet;
+import com.lovetropics.minigames.common.Scheduler;
+import com.lovetropics.minigames.common.minigames.*;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
+import com.lovetropics.minigames.common.minigames.behaviours.IPollingMinigameBehavior;
+import com.lovetropics.minigames.common.minigames.polling.PollingMinigameInstance;
 import com.lovetropics.minigames.common.minigames.statistics.StatisticKey;
 import com.mojang.datafixers.Dynamic;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
@@ -16,22 +16,27 @@ import net.minecraft.scoreboard.ScorePlayerTeam;
 import net.minecraft.scoreboard.ServerScoreboard;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.util.text.Style;
 import net.minecraft.util.text.TextFormatting;
+import net.minecraft.util.text.event.ClickEvent;
+import net.minecraft.util.text.event.HoverEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.player.AttackEntityEvent;
 
 import javax.annotation.Nullable;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.UUID;
 
-public final class TeamsBehavior implements IMinigameBehavior {
+public final class TeamsBehavior implements IMinigameBehavior, IPollingMinigameBehavior {
 	private final List<TeamKey> teams;
 	private final Map<TeamKey, MutablePlayerSet> teamPlayers = new Object2ObjectOpenHashMap<>();
-	private final Map<TeamKey, ScorePlayerTeam> scoreboardTeams = new HashMap<>();
+	private final Map<TeamKey, ScorePlayerTeam> scoreboardTeams = new Object2ObjectOpenHashMap<>();
 
 	private final boolean friendlyFire;
+
+	private final Map<UUID, TeamKey> teamPreferences = new Object2ObjectOpenHashMap<>();
 
 	public TeamsBehavior(List<TeamKey> teams, boolean friendlyFire) {
 		this.teams = teams;
@@ -45,11 +50,62 @@ public final class TeamsBehavior implements IMinigameBehavior {
 	}
 
 	@Override
+	public void onStartPolling(PollingMinigameInstance minigame) {
+		for (TeamKey team : teams) {
+			minigame.addControlCommand("join_team_" + team.key, source -> {
+				ServerPlayerEntity player = source.asPlayer();
+				onRequestJoinTeam(player, team);
+			});
+		}
+	}
+
+	private void onRequestJoinTeam(ServerPlayerEntity player, TeamKey team) {
+		teamPreferences.put(player.getUniqueID(), team);
+
+		player.sendMessage(
+				new StringTextComponent("You have requested to join ").applyTextStyle(TextFormatting.GRAY)
+						.appendSibling(new StringTextComponent(team.name).applyTextStyles(team.text, TextFormatting.BOLD))
+		);
+	}
+
+	@Override
+	public void onPlayerRegister(PollingMinigameInstance minigame, ServerPlayerEntity player, @Nullable PlayerRole role) {
+		if (role != PlayerRole.SPECTATOR) {
+			Scheduler.INSTANCE.submit(server -> {
+				sendTeamSelectionTo(player);
+			}, 1);
+		}
+	}
+
+	public void sendTeamSelectionTo(ServerPlayerEntity player) {
+		player.sendMessage(new StringTextComponent("This is a team-based game!").applyTextStyles(TextFormatting.GOLD, TextFormatting.BOLD));
+		player.sendMessage(new StringTextComponent("You can select a team preference by clicking the links below:").applyTextStyle(TextFormatting.GRAY));
+
+		for (TeamKey team : teams) {
+			Style linkStyle = new Style();
+			linkStyle.setColor(team.text);
+			linkStyle.setUnderlined(true);
+			linkStyle.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/minigame join_team_" + team.key));
+			linkStyle.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new StringTextComponent("Join " + team.name)));
+
+			player.sendMessage(
+					new StringTextComponent(" - ").applyTextStyle(TextFormatting.GRAY)
+							.appendSibling(new StringTextComponent("Join " + team.name).setStyle(linkStyle))
+			);
+		}
+	}
+
+	@Override
 	public void onConstruct(IMinigameInstance minigame) {
 		MinecraftServer server = minigame.getServer();
 		ServerScoreboard scoreboard = server.getScoreboard();
 
 		for (TeamKey teamKey : teams) {
+			ScorePlayerTeam team = scoreboard.getTeam(teamKey.key);
+			if (team != null) {
+				scoreboard.removeTeam(team);
+			}
+
 			ScorePlayerTeam scoreboardTeam = scoreboard.createTeam(teamKey.key);
 			scoreboardTeam.setDisplayName(new StringTextComponent(teamKey.name));
 			scoreboardTeam.setColor(teamKey.text);
@@ -69,24 +125,23 @@ public final class TeamsBehavior implements IMinigameBehavior {
 	}
 
 	@Override
-	public void onPlayerJoin(IMinigameInstance minigame, ServerPlayerEntity player, PlayerRole role) {
-		if (role == PlayerRole.PARTICIPANT) {
-			addPlayerToSmallestTeam(minigame, player);
+	public void onStart(IMinigameInstance minigame) {
+		TeamAllocator teamAllocator = new TeamAllocator(teams);
+		for (ServerPlayerEntity player : minigame.getPlayers()) {
+			TeamKey teamPreference = teamPreferences.get(player.getUniqueID());
+			teamAllocator.addPlayer(player, teamPreference);
 		}
+
+		teamAllocator.allocate((player, team) -> {
+			addPlayerToTeam(minigame, player, team);
+		});
 	}
 
 	@Override
 	public void onPlayerChangeRole(IMinigameInstance minigame, ServerPlayerEntity player, PlayerRole role) {
-		if (role == PlayerRole.PARTICIPANT) {
-			addPlayerToSmallestTeam(minigame, player);
-		} else {
+		if (role == PlayerRole.SPECTATOR) {
 			removePlayerFromTeams(player);
 		}
-	}
-
-	private void addPlayerToSmallestTeam(IMinigameInstance minigame, ServerPlayerEntity player) {
-		TeamKey team = this.getSmallestTeam();
-		addPlayerToTeam(minigame, player, team);
 	}
 
 	private void addPlayerToTeam(IMinigameInstance minigame, ServerPlayerEntity player, TeamKey team) {
@@ -127,26 +182,13 @@ public final class TeamsBehavior implements IMinigameBehavior {
 		}
 	}
 
-	private TeamKey getSmallestTeam() {
-		int smallestSize = Integer.MAX_VALUE;
-		TeamKey smallestTeam = null;
-		for (TeamKey team : teams) {
-			int size = teamPlayers.get(team).size();
-			if (size < smallestSize) {
-				smallestSize = size;
-				smallestTeam = team;
-			}
-		}
-		return smallestTeam;
-	}
-
 	public boolean areSameTeam(Entity source, Entity target) {
 		if (!(source instanceof PlayerEntity) || !(target instanceof PlayerEntity)) {
 			return false;
 		}
 		TeamKey sourceTeam = getTeamForPlayer((PlayerEntity) source);
 		TeamKey targetTeam = getTeamForPlayer((PlayerEntity) target);
-		return !Objects.equals(sourceTeam, targetTeam);
+		return Objects.equals(sourceTeam, targetTeam);
 	}
 
 	@Nullable

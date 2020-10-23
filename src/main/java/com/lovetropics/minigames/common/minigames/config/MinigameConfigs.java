@@ -3,7 +3,6 @@ package com.lovetropics.minigames.common.minigames.config;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import com.lovetropics.minigames.common.minigames.IMinigameManager;
-import com.lovetropics.minigames.common.minigames.MinigameDefinitionGeneric;
 import com.lovetropics.minigames.common.minigames.MinigameManager;
 import com.mojang.datafixers.Dynamic;
 import com.mojang.datafixers.types.JsonOps;
@@ -46,7 +45,7 @@ public final class MinigameConfigs {
 					try (IResource resource = resourceManager.getResource(path)) {
 						MinigameConfig config = loadConfig(path, resource);
 						GAME_CONFIGS.add(config);
-						manager.register(new MinigameDefinitionGeneric(config));
+						manager.register(config);
 					} catch (IOException e) {
 						LOGGER.error("Failed to load game config at {}", path, e);
 					}

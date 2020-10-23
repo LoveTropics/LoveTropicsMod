@@ -2,18 +2,16 @@ package com.lovetropics.minigames.common.minigames.behaviours;
 
 import com.google.common.collect.ImmutableList;
 import com.lovetropics.minigames.common.minigames.IMinigameInstance;
+import com.lovetropics.minigames.common.minigames.MinigameResult;
 import com.lovetropics.minigames.common.minigames.PlayerRole;
 import com.lovetropics.minigames.common.game_actions.CarePackageGameAction;
 import com.lovetropics.minigames.common.game_actions.SabotagePackageGameAction;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.ActionResultType;
 import net.minecraft.util.Hand;
+import net.minecraft.util.Unit;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.world.World;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
@@ -22,7 +20,7 @@ import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 
 public interface IMinigameBehavior
 {
-	default ImmutableList<IMinigameBehaviorType<?>> dependencies() {
+	default ImmutableList<IMinigameBehaviorType<? extends IMinigameBehavior>> dependencies() {
 		return ImmutableList.of();
 	}
 	
@@ -34,21 +32,14 @@ public interface IMinigameBehavior
 	default void onConstruct(final IMinigameInstance minigame) {}
 
 	/**
-	 * When the map finishes loading. Useful for collecting metadata from the map
-	 *
-	 * @param minigame The minigame that is being constructed
-	 */
-	default void onMapReady(final IMinigameInstance minigame) {}
-
-	/**
 	 * Ensure that this behavior is in a valid state before starting the minigame.
 	 * 
 	 * @param minigame The current minigame instance, which has not yet been started
 	 * @return The result of the check, of type either SUCCESS or FAIL. If FAIL, the
 	 *         value will be used as the error message.
 	 */
-	default ActionResult<ITextComponent> ensureValidity(final IMinigameInstance minigame) {
-		return new ActionResult<>(ActionResultType.SUCCESS, new StringTextComponent(""));
+	default MinigameResult<Unit> validateBehavior(final IMinigameInstance minigame) {
+		return MinigameResult.ok();
 	}
 
 	/**

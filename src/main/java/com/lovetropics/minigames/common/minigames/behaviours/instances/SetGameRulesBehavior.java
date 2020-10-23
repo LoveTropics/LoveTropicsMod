@@ -25,7 +25,7 @@ public final class SetGameRulesBehavior implements IMinigameBehavior {
 	}
 
 	@Override
-	public void onMapReady(IMinigameInstance minigame) {
+	public void onConstruct(IMinigameInstance minigame) {
 		GameRules gameRules = minigame.getWorld().getGameRules();
 		this.rulesSnapshot = gameRules.write();
 

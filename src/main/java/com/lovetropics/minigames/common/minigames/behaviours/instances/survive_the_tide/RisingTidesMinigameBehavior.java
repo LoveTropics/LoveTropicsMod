@@ -73,12 +73,12 @@ public class RisingTidesMinigameBehavior implements IMinigameBehavior {
 	}
 
 	@Override
-	public ImmutableList<IMinigameBehaviorType<?>> dependencies() {
+	public ImmutableList<IMinigameBehaviorType<? extends IMinigameBehavior>> dependencies() {
 		return ImmutableList.of(MinigameBehaviorTypes.PHASES.get());
 	}
 
 	@Override
-	public void onMapReady(IMinigameInstance minigame) {
+	public void onConstruct(IMinigameInstance minigame) {
 		tideArea = minigame.getMapRegions().getOne(tideAreaKey);
 
 		minTideChunk = new ChunkPos(tideArea.min.getX() >> 4, tideArea.min.getZ() >> 4);

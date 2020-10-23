@@ -3,7 +3,7 @@ package com.lovetropics.minigames.common.minigames.behaviours;
 import com.mojang.datafixers.Dynamic;
 import net.minecraftforge.registries.ForgeRegistryEntry;
 
-public class MinigameBehaviorType<T extends IMinigameBehavior> extends ForgeRegistryEntry<IMinigameBehaviorType<?>> implements IMinigameBehaviorType<T>
+public class MinigameBehaviorType<T> extends ForgeRegistryEntry<IMinigameBehaviorType<?>> implements IMinigameBehaviorType<T>
 {
 	private final Factory<T> instanceFactory;
 
@@ -18,7 +18,7 @@ public class MinigameBehaviorType<T extends IMinigameBehavior> extends ForgeRegi
 		return instanceFactory.create(data);
 	}
 
-	public interface Factory<T extends IMinigameBehavior> {
+	public interface Factory<T> {
 		<D> T create(Dynamic<D> data);
 	}
 }
