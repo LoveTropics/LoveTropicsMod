@@ -126,7 +126,7 @@ public final class PollingMinigameInstance implements MinigameControllable, Beha
 
 						return MinigameResult.ok(minigame);
 					}, 1);
-				})
+				}, server)
 				.handleAsync((result, throwable) -> {
 					if (throwable instanceof Exception) {
 						return MinigameResult.fromException("Unknown error starting minigame", (Exception) throwable);

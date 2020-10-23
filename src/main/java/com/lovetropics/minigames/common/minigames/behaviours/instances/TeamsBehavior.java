@@ -101,6 +101,11 @@ public final class TeamsBehavior implements IMinigameBehavior, IPollingMinigameB
 		ServerScoreboard scoreboard = server.getScoreboard();
 
 		for (TeamKey teamKey : teams) {
+			ScorePlayerTeam team = scoreboard.getTeam(teamKey.key);
+			if (team != null) {
+				scoreboard.removeTeam(team);
+			}
+
 			ScorePlayerTeam scoreboardTeam = scoreboard.createTeam(teamKey.key);
 			scoreboardTeam.setDisplayName(new StringTextComponent(teamKey.name));
 			scoreboardTeam.setColor(teamKey.text);
