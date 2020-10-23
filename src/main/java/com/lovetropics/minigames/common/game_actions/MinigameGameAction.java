@@ -17,8 +17,8 @@ public abstract class MinigameGameAction extends GameAction
 	@Override
 	public final boolean resolve(MinecraftServer server)
 	{
-		final IMinigameInstance instance = MinigameManager.getInstance().getCurrentMinigame();
-		return instance != null && instance.getAllBehaviours().stream().anyMatch(behavior -> notifyBehavior(instance, behavior));
+		final IMinigameInstance instance = MinigameManager.getInstance().getActiveMinigame();
+		return instance != null && instance.getBehaviors().stream().anyMatch(behavior -> notifyBehavior(instance, behavior));
 	}
 
 	public abstract boolean notifyBehavior(final IMinigameInstance instance, final IMinigameBehavior behavior);

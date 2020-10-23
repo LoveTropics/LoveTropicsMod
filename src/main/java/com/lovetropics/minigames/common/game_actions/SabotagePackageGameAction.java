@@ -44,7 +44,7 @@ public class SabotagePackageGameAction extends MinigameGameAction
         final String triggerTime = obj.get("trigger_time").getAsString();
 
         final String sendingPlayerName = obj.get("sending_player_name").getAsString();
-        final UUID receivingPlayer = UUID.fromString(obj.get("receivig_player").getAsString());
+        final UUID receivingPlayer = UUID.fromString(obj.get("receiving_player").getAsString());
 
         return new SabotagePackageGameAction(uuid, triggerTime, sendingPlayerName, receivingPlayer);
     }
