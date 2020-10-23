@@ -42,15 +42,15 @@ public class ConfigLT {
 
             carePackageDelay = COMMON_BUILDER
                 .comment("Delay (in seconds) between care packages")
-                .defineInRange("carePackageDelay", 0, 0, 99999);
+                .defineInRange("carePackageDelay", 10, 0, 99999);
 
             sabotagePackageDelay = COMMON_BUILDER
                 .comment("Delay (in seconds) between sabotage packages")
-                .defineInRange("sabotagePackageDelay", 0, 0, 99999);
+                .defineInRange("sabotagePackageDelay", 10, 0, 99999);
 
             chatEventDelay = COMMON_BUILDER
                 .comment("Delay (in seconds) between chat events")
-                .defineInRange("chatEventDelay", 0, 0, 99999);
+                .defineInRange("chatEventDelay", 1, 0, 99999);
 
             CLIENT_BUILDER.pop();
         }
@@ -64,7 +64,7 @@ public class ConfigLT {
         public final ConfigValue<String> minigameEndEndpoint;
         public final ConfigValue<String> minigameTerminatedEndpoint;
         public final ConfigValue<String> minigamePlayerUpdateEndpoint;
-        public final ConfigValue<String> packageDeliveredEndpoint;
+        public final ConfigValue<String> actionResolvedEndpoint;
         public final ConfigValue<String> pendingActionsEndpoint;
         public final IntValue port;
         public final ConfigValue<String> authToken;
@@ -92,9 +92,9 @@ public class ConfigLT {
             minigamePlayerUpdateEndpoint = COMMON_BUILDER
                     .comment("Endpoint used to update a player's status during a minigame")
                     .define("minigamePlayerUpdateEndpoint", "minigame/playerupdate");
-            packageDeliveredEndpoint = COMMON_BUILDER
-                    .comment("Endpoint used to notify the backend a care or sabotage package was received")
-                    .define("packageDeliveredEndpoint", "minigame/packagedelivered");
+            actionResolvedEndpoint = COMMON_BUILDER
+                    .comment("Endpoint used to notify the backend an action was received and resolved")
+                    .define("actionResolvedEndpoint", "minigame/actionresolved");
             port = COMMON_BUILDER
                     .comment("Port number to use when POSTing data")
                     .defineInRange("port", 0, 0, 99999);
@@ -109,7 +109,7 @@ public class ConfigLT {
                     .define("webSocketUrl", "localhost");
             pendingActionsEndpoint = COMMON_BUILDER
                     .comment("URL to receive any care/sabotage packages or chat events that were triggered but never acknowledged by the mod (maybe due to a premature shutdown)")
-                    .define("pendingActionsEndpoint", "/minigame/pendingactions");
+                    .define("pendingActionsEndpoint", "minigame/pendingactions");
             COMMON_BUILDER.pop();
         }
     }
