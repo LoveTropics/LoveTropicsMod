@@ -133,6 +133,8 @@ public class MinigameManager implements IMinigameManager {
 
 	private MinigameResult<ITextComponent> close() {
 		MinigameInstance minigame = this.currentInstance;
+		this.currentInstance = null;
+
 		if (minigame == null) {
 			return MinigameResult.error(new TranslationTextComponent(TropicraftLangKeys.COMMAND_NO_MINIGAME));
 		}
@@ -161,14 +163,12 @@ public class MinigameManager implements IMinigameManager {
 				return result.castError();
 			}
 
-			minigame.getDefinition().getMapProvider().close(minigame);
-
 			ITextComponent minigameName = definition.getName().applyTextStyle(TextFormatting.AQUA);
 			return MinigameResult.ok(new TranslationTextComponent(TropicraftLangKeys.COMMAND_STOPPED_MINIGAME, minigameName).applyTextStyle(TextFormatting.GREEN));
 		} catch (Exception e) {
 			return MinigameResult.fromException("Unknown error finishing minigame", e);
 		} finally {
-			this.currentInstance = null;
+			minigame.getDefinition().getMapProvider().close(minigame);
 		}
 	}
 
