@@ -1,5 +1,6 @@
 package com.lovetropics.minigames.common.minigames.config;
 
+import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.common.minigames.IMinigameDefinition;
 import com.lovetropics.minigames.common.minigames.behaviours.*;
 import com.lovetropics.minigames.common.minigames.map.IMinigameMapProvider;
@@ -88,7 +89,7 @@ public final class MinigameConfig implements IMinigameDefinition {
 
 	@Override
 	public String getUnlocalizedName() {
-		return id.getNamespace() + ".minigame." + translationKey;
+		return Constants.MODID +  ".minigame." + translationKey;
 	}
 
 	@Override
