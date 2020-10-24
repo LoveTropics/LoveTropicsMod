@@ -9,10 +9,10 @@ import java.util.List;
 import java.util.UUID;
 import java.util.function.Supplier;
 
-public class StartChaseCameraMessage {
+public class ChaseCameraMessage {
 	private final List<UUID> players;
 
-	public StartChaseCameraMessage(List<UUID> players) {
+	public ChaseCameraMessage(List<UUID> players) {
 		this.players = players;
 	}
 
@@ -23,19 +23,19 @@ public class StartChaseCameraMessage {
 		}
 	}
 
-	public static StartChaseCameraMessage decode(PacketBuffer buffer) {
+	public static ChaseCameraMessage decode(PacketBuffer buffer) {
 		int count = buffer.readVarInt();
 		List<UUID> players = new ArrayList<>(count);
 		for (int i = 0; i < count; i++) {
 			players.add(buffer.readUniqueId());
 		}
 
-		return new StartChaseCameraMessage(players);
+		return new ChaseCameraMessage(players);
 	}
 
 	public void handle(Supplier<NetworkEvent.Context> ctx) {
 		ctx.get().enqueueWork(() -> {
-			ChaseCameraManager.start(players);
+			ChaseCameraManager.update(players);
 		});
 	}
 }

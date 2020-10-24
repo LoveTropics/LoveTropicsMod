@@ -4,8 +4,8 @@ import com.lovetropics.minigames.common.minigames.IMinigameInstance;
 import com.lovetropics.minigames.common.minigames.PlayerRole;
 import com.lovetropics.minigames.common.minigames.PlayerSet;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
+import com.lovetropics.minigames.common.network.ChaseCameraMessage;
 import com.lovetropics.minigames.common.network.LTNetwork;
-import com.lovetropics.minigames.common.network.StartChaseCameraMessage;
 import com.lovetropics.minigames.common.network.StopChaseCameraMessage;
 import com.mojang.datafixers.Dynamic;
 import net.minecraft.entity.player.ServerPlayerEntity;
@@ -27,9 +27,13 @@ public final class SpectatorChaseBehavior implements IMinigameBehavior {
 
 	@Override
 	public void onPlayerChangeRole(IMinigameInstance minigame, ServerPlayerEntity player, PlayerRole role) {
+		List<UUID> participants = collectParticipantIds(minigame);
+		ChaseCameraMessage message = new ChaseCameraMessage(participants);
+
 		if (role == PlayerRole.SPECTATOR) {
-			List<UUID> participants = collectParticipantIds(minigame);
-			LTNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new StartChaseCameraMessage(participants));
+			LTNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), message);
+		} else if (role == PlayerRole.PARTICIPANT) {
+			minigame.getSpectators().sendPacket(LTNetwork.CHANNEL, message);
 		}
 	}
 

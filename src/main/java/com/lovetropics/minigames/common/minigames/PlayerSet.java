@@ -5,6 +5,8 @@ import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.network.IPacket;
 import net.minecraft.potion.EffectInstance;
 import net.minecraft.util.text.ITextComponent;
+import net.minecraftforge.fml.network.PacketDistributor;
+import net.minecraftforge.fml.network.simple.SimpleChannel;
 
 import javax.annotation.Nullable;
 import java.util.Collections;
@@ -77,6 +79,12 @@ public interface PlayerSet extends Iterable<ServerPlayerEntity> {
 	default void sendPacket(IPacket<?> packet) {
 		for (ServerPlayerEntity player : this) {
 			player.connection.sendPacket(packet);
+		}
+	}
+
+	default void sendPacket(SimpleChannel channel, Object message) {
+		for (ServerPlayerEntity player : this) {
+			channel.send(PacketDistributor.PLAYER.with(() -> player), message);
 		}
 	}
 

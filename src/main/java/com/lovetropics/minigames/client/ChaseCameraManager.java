@@ -48,25 +48,24 @@ public final class ChaseCameraManager {
 	private static Session session;
 	private static double accumulatedScroll;
 
-	public static void start(List<UUID> players) {
-		session = new Session(players);
-		startSpectating(players.get(0));
+	public static void update(List<UUID> players) {
+		Session session = ChaseCameraManager.session;
+		if (session == null) {
+			ChaseCameraManager.session = new Session(players);
+		} else {
+			session.update(players);
+		}
 	}
 
 	public static void stop() {
-		session = null;
-		stopSpectating();
+		Session session = ChaseCameraManager.session;
+		ChaseCameraManager.session = null;
 
-		CLIENT.gameSettings.thirdPersonView = 0;
-		CLIENT.gameSettings.smoothCamera = false;
-	}
-
-	private static void startSpectating(UUID entity) {
-		LTNetwork.CHANNEL.sendToServer(new ChaseSpectatePlayerMessage(entity));
-	}
-
-	private static void stopSpectating() {
-		LTNetwork.CHANNEL.sendToServer(new ChaseSpectatePlayerMessage(CLIENT.player.getUniqueID()));
+		if (session != null) {
+			session.stopSpectating();
+			CLIENT.gameSettings.thirdPersonView = 0;
+			CLIENT.gameSettings.smoothCamera = false;
+		}
 	}
 
 	@SubscribeEvent
@@ -213,12 +212,10 @@ public final class ChaseCameraManager {
 			int newIndex = session.selectedPlayerIndex - scrollAmount;
 			newIndex = MathHelper.clamp(newIndex, -1, session.players.size() - 1);
 
-			session.selectedPlayerIndex = newIndex;
-
 			if (newIndex != -1) {
-				startSpectating(session.players.get(newIndex));
+				session.startSpectating(newIndex);
 			} else {
-				stopSpectating();
+				session.stopSpectating();
 			}
 		}
 	}
@@ -300,10 +297,10 @@ public final class ChaseCameraManager {
 	}
 
 	static class Session {
-		final List<UUID> players;
+		List<UUID> players;
 		private final Map<UUID, GameProfile> playerProfiles = new HashMap<>();
 		private final Map<UUID, ResourceLocation> playerSkins = new HashMap<>();
-		int selectedPlayerIndex;
+		int selectedPlayerIndex = -1;
 
 		double zoom = 1.0;
 		double prevZoom = 1.0;
@@ -355,6 +352,30 @@ public final class ChaseCameraManager {
 
 		boolean isSpectating() {
 			return selectedPlayerIndex != -1;
+		}
+
+		void startSpectating(int index) {
+			selectedPlayerIndex = index;
+			LTNetwork.CHANNEL.sendToServer(new ChaseSpectatePlayerMessage(players.get(index)));
+		}
+
+		void stopSpectating() {
+			selectedPlayerIndex = -1;
+			LTNetwork.CHANNEL.sendToServer(new ChaseSpectatePlayerMessage(CLIENT.player.getUniqueID()));
+		}
+
+		void update(List<UUID> players) {
+			List<UUID> previousPlayers = session.players;
+			UUID selectedPlayer = session.selectedPlayerIndex != -1 ? previousPlayers.get(session.selectedPlayerIndex) : null;
+
+			session.players = players;
+
+			int index = selectedPlayer != null ? players.indexOf(selectedPlayer) : -1;
+			if (index != -1) {
+				startSpectating(index);
+			} else {
+				stopSpectating();
+			}
 		}
 	}
 }

@@ -37,10 +37,10 @@ public final class LTNetwork {
 				.consumer(UpdateWorkspaceRegionMessage::handle)
 				.add();
 
-		CHANNEL.messageBuilder(StartChaseCameraMessage.class, 3)
-				.encoder(StartChaseCameraMessage::encode)
-				.decoder(StartChaseCameraMessage::decode)
-				.consumer(StartChaseCameraMessage::handle)
+		CHANNEL.messageBuilder(ChaseCameraMessage.class, 3)
+				.encoder(ChaseCameraMessage::encode)
+				.decoder(ChaseCameraMessage::decode)
+				.consumer(ChaseCameraMessage::handle)
 				.add();
 
 		CHANNEL.messageBuilder(StopChaseCameraMessage.class, 4)
