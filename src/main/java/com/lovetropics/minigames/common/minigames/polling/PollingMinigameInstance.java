@@ -64,7 +64,8 @@ public final class PollingMinigameInstance implements MinigameControllable, Beha
 		ITextComponent playerName = player.getDisplayName().deepCopy().applyTextStyle(TextFormatting.GOLD);
 		ITextComponent minigameName = definition.getName().applyTextStyle(TextFormatting.GREEN);
 
-		broadcastMessage(new TranslationTextComponent("%s has joined the %s minigame!", playerName, minigameName).applyTextStyle(TextFormatting.AQUA));
+		String message = requestedRole != PlayerRole.SPECTATOR ? "%s has joined the %s minigame!" : "%s has joined to spectate the %s minigame!";
+		broadcastMessage(new TranslationTextComponent(message, playerName, minigameName).applyTextStyle(TextFormatting.AQUA));
 
 		return MinigameResult.ok(
 				new TranslationTextComponent(

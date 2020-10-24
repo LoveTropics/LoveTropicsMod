@@ -288,9 +288,14 @@ public class MinigameManager implements IMinigameManager {
 
 	@Override
 	public MinigameResult<ITextComponent> registerFor(ServerPlayerEntity player, @Nullable PlayerRole requestedRole) {
-		// Check if minigame has already started
-		if (this.currentInstance != null) {
-			return MinigameResult.error(new TranslationTextComponent(TropicraftLangKeys.COMMAND_MINIGAME_ALREADY_STARTED));
+		MinigameInstance minigame = this.currentInstance;
+		if (minigame != null) {
+			if (requestedRole == PlayerRole.SPECTATOR) {
+				minigame.addPlayer(player, PlayerRole.SPECTATOR);
+				return MinigameResult.ok(new StringTextComponent("You have joined the game as a spectator!").applyTextStyle(TextFormatting.GREEN));
+			} else {
+				return MinigameResult.error(new TranslationTextComponent(TropicraftLangKeys.COMMAND_MINIGAME_ALREADY_STARTED));
+			}
 		}
 
 		PollingMinigameInstance polling = this.polling;
