@@ -121,7 +121,9 @@ dependencies {
     implementation fg.deobf(ltlib)
     shade ltlib
 
-    compile group: 'org.asynchttpclient', name: 'async-http-client', version: '2.12.1'
+	def asynchttpclient = 'org.asynchttpclient:async-http-client:2.12.1'
+	implementation asynchttpclient
+	shade asynchttpclient
 }
 
 shadowJar {
