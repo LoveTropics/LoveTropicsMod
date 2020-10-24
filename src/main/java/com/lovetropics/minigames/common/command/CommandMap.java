@@ -56,7 +56,7 @@ public final class CommandMap {
             literal("minigame").then(literal("map")
 				.requires(source -> source.hasPermissionLevel(2))
                 .then(literal("open")
-                    .then(argument("id", StringArgumentType.word())
+                    .then(argument("id", StringArgumentType.string())
 						.then(ConfiguredGeneratorArgument.argument("generator")
 						.executes(context ->{
 							ConfiguredGenerator generator = ConfiguredGeneratorArgument.get(context, "generator");
@@ -92,7 +92,7 @@ public final class CommandMap {
 				)
 				.then(literal("region")
 					.then(literal("add")
-						.then(argument("key", StringArgumentType.word())
+						.then(argument("key", StringArgumentType.string())
 								.then(argument("min", BlockPosArgument.blockPos())
 								.then(argument("max", BlockPosArgument.blockPos())
 								.executes(CommandMap::addRegion)

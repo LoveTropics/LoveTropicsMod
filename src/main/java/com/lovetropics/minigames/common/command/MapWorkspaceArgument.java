@@ -18,7 +18,7 @@ public final class MapWorkspaceArgument {
 	});
 
 	public static RequiredArgumentBuilder<CommandSource, String> argument(String name) {
-		return Commands.argument(name, StringArgumentType.word())
+		return Commands.argument(name, StringArgumentType.string())
 				.suggests((context, builder) -> {
 					CommandSource source = context.getSource();
 					MapWorkspaceManager workspaceManager = MapWorkspaceManager.get(source.getServer());
