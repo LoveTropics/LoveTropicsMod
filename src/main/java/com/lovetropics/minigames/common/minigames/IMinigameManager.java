@@ -1,5 +1,6 @@
 package com.lovetropics.minigames.common.minigames;
 
+import com.lovetropics.minigames.common.minigames.statistics.PlayerKey;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.ITextComponent;
@@ -66,9 +67,10 @@ public interface IMinigameManager extends MinigameControllable
     /**
      * Starts polling the minigame.
      * @param minigameId The unique ID of the minigame being polled.
+     * @param initiator the player starting this minigame
      * @return The result of the polling attempt.
      */
-    MinigameResult<ITextComponent> startPolling(ResourceLocation minigameId);
+    MinigameResult<ITextComponent> startPolling(ResourceLocation minigameId, PlayerKey initiator);
 
     /**
      * Stops polling an actively polling minigame.

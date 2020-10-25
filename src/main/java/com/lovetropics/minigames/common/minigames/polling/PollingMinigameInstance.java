@@ -5,6 +5,7 @@ import com.lovetropics.minigames.common.Scheduler;
 import com.lovetropics.minigames.common.minigames.*;
 import com.lovetropics.minigames.common.minigames.behaviours.*;
 import com.lovetropics.minigames.common.minigames.map.IMinigameMapProvider;
+import com.lovetropics.minigames.common.minigames.statistics.PlayerKey;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.command.CommandSource;
@@ -23,6 +24,8 @@ public final class PollingMinigameInstance implements MinigameControllable, Beha
 	private final MinecraftServer server;
 	private final IMinigameDefinition definition;
 
+	private final PlayerKey initiator;
+
 	/**
 	 * A list of players that are currently registered for the currently polling minigame.
 	 */
@@ -32,14 +35,15 @@ public final class PollingMinigameInstance implements MinigameControllable, Beha
 
 	private final Map<String, ControlCommandHandler> controlCommands = new Object2ObjectOpenHashMap<>();
 
-	private PollingMinigameInstance(MinecraftServer server, IMinigameDefinition definition) {
+	private PollingMinigameInstance(MinecraftServer server, IMinigameDefinition definition, PlayerKey initiator) {
 		this.server = server;
 		this.definition = definition;
 		this.behaviors = definition.createBehaviors();
+		this.initiator = initiator;
 	}
 
-	public static MinigameResult<PollingMinigameInstance> create(MinecraftServer server, IMinigameDefinition definition) {
-		PollingMinigameInstance instance = new PollingMinigameInstance(server, definition);
+	public static MinigameResult<PollingMinigameInstance> create(MinecraftServer server, IMinigameDefinition definition, PlayerKey initiator) {
+		PollingMinigameInstance instance = new PollingMinigameInstance(server, definition, initiator);
 
 		MinigameResult<Unit> result = instance.dispatchToBehaviors(IPollingMinigameBehavior::onStartPolling);
 		return result.mapValue(instance);
@@ -98,7 +102,7 @@ public final class PollingMinigameInstance implements MinigameControllable, Beha
 		}
 
 		return mapProvider.open(server)
-				.thenApplyAsync(map -> MinigameInstance.create(definition, server, map, behaviors), server)
+				.thenApplyAsync(map -> MinigameInstance.create(definition, server, map, behaviors, initiator), server)
 				.thenComposeAsync(minigameResult -> {
 					if (minigameResult.isError()) {
 						return CompletableFuture.completedFuture(minigameResult.<MinigameInstance>castError());

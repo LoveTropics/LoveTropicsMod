@@ -31,37 +31,7 @@ public class TechStack {
                     .build()
     );
 
-    public static void uploadMinigameResults(final String eventName, final MinigameStatistics statistics) {
-        final MinigameResult result = new MinigameResult(eventName, statistics);
-        uploadMinigameResults(result);
-    }
-
-    /**
-     *  Expects data in the following format
-     *        "name": "Survive the Tide",
-     *        "host": "OMGChad",
-     *        "participants": [
-     *             {
-     *                 "name": "cojo",
-     *                 "place": 5,
-     *                 "score": 4999,
-     *                 "score_units": "points"
-     *             },
-     *             {
-     *                 "name": "cojo",
-     *                 "place": 4,
-     *                 "score": 1,
-     *                 "score_units": "points"
-     *             },
-     *             {
-     *                 "name": "tterrag",
-     *                 "place": 1,
-     *                 "score": 2,
-     *                 "score_units": "points"
-     *             }
-     *         ]
-     */
-    public static void uploadMinigameResults(MinigameResult result) {
+    public static void uploadMinigameResults(MinigameResults result) {
         final String json = GSON.toJson(result);
         post(getUrl(ConfigLT.TECH_STACK.resultsEndpoint.get()), json);
     }

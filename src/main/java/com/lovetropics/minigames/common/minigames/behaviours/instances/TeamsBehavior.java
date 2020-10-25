@@ -114,6 +114,8 @@ public final class TeamsBehavior implements IMinigameBehavior, IPollingMinigameB
 			teamPlayers.put(teamKey, new MutablePlayerSet(server));
 			scoreboardTeams.put(teamKey, scoreboardTeam);
 		}
+
+		minigame.getStatistics().getGlobal().set(StatisticKey.TEAMS, true);
 	}
 
 	@Override

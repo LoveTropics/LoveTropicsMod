@@ -7,6 +7,8 @@ import com.lovetropics.minigames.client.data.TropicraftLangKeys;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
 import com.lovetropics.minigames.common.minigames.behaviours.IPollingMinigameBehavior;
 import com.lovetropics.minigames.common.minigames.polling.PollingMinigameInstance;
+import com.lovetropics.minigames.common.minigames.statistics.PlayerKey;
+import com.lovetropics.minigames.common.techstack.MinigameResults;
 import com.lovetropics.minigames.common.techstack.TechStack;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.command.CommandSource;
@@ -181,8 +183,15 @@ public class MinigameManager implements IMinigameManager {
 
 		MinigameResult<ITextComponent> result = close();
 		if (result.isOk()) {
+			ResourceLocation id = minigame.getDefinition().getID();
 			ITextComponent name = minigame.getDefinition().getName();
-			TechStack.uploadMinigameResults(name.getString(), minigame.getStatistics());
+			TechStack.uploadMinigameResults(new MinigameResults(
+					id.getPath(),
+					name.getString(),
+					minigame.getInitiator().getName(),
+					minigame.getStatistics(),
+					System.currentTimeMillis() / 1000
+			));
 		}
 
 		return result;
@@ -204,7 +213,7 @@ public class MinigameManager implements IMinigameManager {
 	}
 
 	@Override
-	public MinigameResult<ITextComponent> startPolling(ResourceLocation minigameId) {
+	public MinigameResult<ITextComponent> startPolling(ResourceLocation minigameId, PlayerKey initiator) {
 		// Make sure minigame is registered with provided id
 		if (!this.registeredMinigames.containsKey(minigameId)) {
 			return MinigameResult.error(new TranslationTextComponent(TropicraftLangKeys.COMMAND_MINIGAME_ID_INVALID));
@@ -222,7 +231,7 @@ public class MinigameManager implements IMinigameManager {
 
 		IMinigameDefinition definition = registeredMinigames.get(minigameId);
 
-		MinigameResult<PollingMinigameInstance> pollResult = PollingMinigameInstance.create(server, definition);
+		MinigameResult<PollingMinigameInstance> pollResult = PollingMinigameInstance.create(server, definition, initiator);
 		if (pollResult.isError()) {
 			return pollResult.castError();
 		}

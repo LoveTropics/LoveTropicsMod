@@ -36,8 +36,12 @@ public final class StatisticKey<T> {
 	public static final StatisticKey<Float> DAMAGE_TAKEN = ofFloat("damage_taken").displays(unit("damage"));
 	public static final StatisticKey<Float> DAMAGE_DEALT = ofFloat("damage_dealt").displays(unit("damage"));
 
+	public static final StatisticKey<Boolean> DEAD = ofBool("dead");
+
 	// Generic - Global
 	public static final StatisticKey<Integer> TOTAL_TIME = ofInt("total_time").displays(minutesSeconds());
+
+	public static final StatisticKey<Boolean> TEAMS = ofBool("teams");
 
 	public static final StatisticKey<PlayerKey> WINNING_PLAYER = ofPlayer("winning_player").displays(playerName());
 	public static final StatisticKey<TeamsBehavior.TeamKey> WINNING_TEAM = ofTeam("winning_team");

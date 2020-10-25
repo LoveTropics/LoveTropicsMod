@@ -3,6 +3,7 @@ package com.lovetropics.minigames.common.command.minigames;
 import com.lovetropics.minigames.common.minigames.statistics.MinigameStatistics;
 import com.lovetropics.minigames.common.minigames.statistics.StatisticKey;
 import com.lovetropics.minigames.common.minigames.statistics.StatisticsMap;
+import com.lovetropics.minigames.common.techstack.MinigameResults;
 import com.lovetropics.minigames.common.techstack.TechStack;
 import com.mojang.brigadier.CommandDispatcher;
 import net.minecraft.command.CommandSource;
@@ -16,8 +17,6 @@ public class CommandMinigameSendResults {
             literal("minigame")
                 .then(literal("fakeresults").requires(s -> s.hasPermissionLevel(2))
                     .executes(c -> {
-                        final String name = "Survive the tide";
-
                         final MinigameStatistics statistics = new MinigameStatistics();
 
                         StatisticsMap global = statistics.getGlobal();
@@ -28,7 +27,13 @@ public class CommandMinigameSendResults {
                         player.set(StatisticKey.PLACEMENT, 1);
                         player.set(StatisticKey.KILLS, 4);
 
-                        TechStack.uploadMinigameResults(name, statistics);
+                        TechStack.uploadMinigameResults(new MinigameResults(
+                                "survive_the_tide_1",
+                                "Survive The Tide I",
+                                "Herobrine",
+                                statistics,
+                                System.currentTimeMillis() / 1000
+                        ));
 
                         c.getSource().sendFeedback(new StringTextComponent("Nailed it"), true);
 

@@ -2,8 +2,10 @@ package com.lovetropics.minigames.common.command.minigames;
 
 import com.lovetropics.minigames.common.minigames.IMinigameDefinition;
 import com.lovetropics.minigames.common.minigames.MinigameManager;
+import com.lovetropics.minigames.common.minigames.statistics.PlayerKey;
 import com.mojang.brigadier.CommandDispatcher;
 import net.minecraft.command.CommandSource;
+import net.minecraft.command.ISuggestionProvider;
 import net.minecraft.command.arguments.ResourceLocationArgument;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.ResourceLocation;
@@ -17,17 +19,18 @@ public class CommandPollMinigame {
 			literal("minigame")
 			.then(literal("poll").requires(s -> s.hasPermissionLevel(2))
 			.then(argument("minigame_id", ResourceLocationArgument.resourceLocation())
-		              .suggests((ctx, sb) -> net.minecraft.command.ISuggestionProvider.suggest(
+		              .suggests((ctx, sb) -> ISuggestionProvider.suggest(
 		                      MinigameManager.getInstance().getAllMinigames().stream()
 		                          .map(IMinigameDefinition::getID)
-		                          .map(net.minecraft.util.ResourceLocation::toString), sb))
+		                          .map(ResourceLocation::toString), sb))
 		              .requires(s -> s.hasPermissionLevel(2))
 			.executes(c -> {
 				ResourceLocation id = ResourceLocationArgument.getResourceLocation(c, "minigame_id");
-				int result = CommandMinigame.executeMinigameAction(() -> MinigameManager.getInstance().startPolling(id), c.getSource());
+				ServerPlayerEntity player = c.getSource().asPlayer();
 
-				if (result == 1 && c.getSource().getEntity() instanceof ServerPlayerEntity) {
-					CommandMinigame.executeMinigameAction(() -> MinigameManager.getInstance().registerFor(c.getSource().asPlayer(), null), c.getSource());
+				int result = CommandMinigame.executeMinigameAction(() -> MinigameManager.getInstance().startPolling(id, PlayerKey.from(player)), c.getSource());
+				if (result == 1) {
+					CommandMinigame.executeMinigameAction(() -> MinigameManager.getInstance().registerFor(player, null), c.getSource());
 				}
 
 				return result;
