@@ -4,8 +4,8 @@ import com.lovetropics.minigames.common.minigames.statistics.MinigameStatistics;
 import com.lovetropics.minigames.common.minigames.statistics.PlayerKey;
 import com.lovetropics.minigames.common.minigames.statistics.StatisticKey;
 import com.lovetropics.minigames.common.minigames.statistics.StatisticsMap;
-import com.lovetropics.minigames.common.techstack.MinigameResults;
-import com.lovetropics.minigames.common.techstack.TechStack;
+import com.lovetropics.minigames.common.telemetry.MinigameResults;
+import com.lovetropics.minigames.common.telemetry.Telemetry;
 import com.mojang.brigadier.CommandDispatcher;
 import net.minecraft.command.CommandSource;
 import net.minecraft.util.text.StringTextComponent;
@@ -28,7 +28,7 @@ public class CommandMinigameSendResults {
                         player.set(StatisticKey.PLACEMENT, 1);
                         player.set(StatisticKey.KILLS, 4);
 
-                        TechStack.uploadMinigameResults(new MinigameResults(
+                        Telemetry.INSTANCE.sendMinigameResults(new MinigameResults(
                                 "survive_the_tide_1",
                                 "Survive The Tide I",
                                 PlayerKey.from(c.getSource().asPlayer()),

@@ -1,10 +1,9 @@
-package com.lovetropics.minigames.common.techstack;
+package com.lovetropics.minigames.common.telemetry;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Queues;
 import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.common.game_actions.GameAction;
-import com.lovetropics.minigames.common.techstack.websockets.WebSocketHelper;
 import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -29,9 +28,6 @@ public class GameActionHandler
         }
         final int tick = server.getTickCounter();
 
-        // This is good to have...but we shouldn't need it hopefully
-        WebSocketHelper.checkAndCycleConnection();
-
         pollGameActions(server, tick);
     }
 
@@ -53,7 +49,7 @@ public class GameActionHandler
                     // If we resolved the action, send acknowledgement to the backend
                     if (action.resolve(server))
                     {
-                        TechStack.acknowledgeActionDelivery(request, action);
+                        Telemetry.INSTANCE.acknowledgeActionDelivery(request, action);
                     }
                 }
 

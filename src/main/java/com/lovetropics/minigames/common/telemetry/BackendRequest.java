@@ -1,4 +1,4 @@
-package com.lovetropics.minigames.common.techstack;
+package com.lovetropics.minigames.common.telemetry;
 
 import com.google.gson.JsonObject;
 import com.lovetropics.minigames.common.config.ConfigLT;

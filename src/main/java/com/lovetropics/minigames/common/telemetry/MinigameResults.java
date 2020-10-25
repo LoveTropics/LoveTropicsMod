@@ -1,4 +1,4 @@
-package com.lovetropics.minigames.common.techstack;
+package com.lovetropics.minigames.common.telemetry;
 
 import com.google.gson.annotations.SerializedName;
 import com.lovetropics.minigames.common.minigames.statistics.MinigameStatistics;

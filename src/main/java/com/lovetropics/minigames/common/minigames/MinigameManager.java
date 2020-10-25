@@ -8,8 +8,8 @@ import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
 import com.lovetropics.minigames.common.minigames.behaviours.IPollingMinigameBehavior;
 import com.lovetropics.minigames.common.minigames.polling.PollingMinigameInstance;
 import com.lovetropics.minigames.common.minigames.statistics.PlayerKey;
-import com.lovetropics.minigames.common.techstack.MinigameResults;
-import com.lovetropics.minigames.common.techstack.TechStack;
+import com.lovetropics.minigames.common.telemetry.MinigameResults;
+import com.lovetropics.minigames.common.telemetry.Telemetry;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.command.CommandSource;
 import net.minecraft.entity.Entity;
@@ -18,6 +18,7 @@ import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.ListNBT;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.management.PlayerList;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Unit;
 import net.minecraft.util.text.*;
@@ -186,7 +187,7 @@ public class MinigameManager implements IMinigameManager {
 		if (result.isOk()) {
 			ResourceLocation id = minigame.getDefinition().getID();
 			ITextComponent name = minigame.getDefinition().getName();
-			TechStack.uploadMinigameResults(new MinigameResults(
+			Telemetry.INSTANCE.sendMinigameResults(new MinigameResults(
 					id.getPath(),
 					name.getString(),
 					minigame.getInitiator(),
@@ -244,7 +245,7 @@ public class MinigameManager implements IMinigameManager {
 			return result.castError();
 		}
 
-		for (ServerPlayerEntity player : this.server.getPlayerList().getPlayers()) {
+		for (ServerPlayerEntity player : server.getPlayerList().getPlayers()) {
 			player.sendMessage(new TranslationTextComponent(TropicraftLangKeys.COMMAND_MINIGAME_POLLING,
 					definition.getName().applyTextStyle(TextFormatting.ITALIC).applyTextStyle(TextFormatting.AQUA),
 					new StringTextComponent("/minigame register").applyTextStyle(TextFormatting.ITALIC).applyTextStyle(TextFormatting.GRAY))
@@ -253,7 +254,22 @@ public class MinigameManager implements IMinigameManager {
 
 		this.polling = polling;
 
+		if (!Telemetry.INSTANCE.isReaderConnected()) {
+			ITextComponent warning = new StringTextComponent("Warning: Minigame telemetry websocket is not connected!")
+					.applyTextStyles(TextFormatting.RED, TextFormatting.BOLD);
+			sendWarningToOperators(warning);
+		}
+
 		return MinigameResult.ok(new TranslationTextComponent(TropicraftLangKeys.COMMAND_MINIGAME_POLLED));
+	}
+
+	private void sendWarningToOperators(ITextComponent warning) {
+		PlayerList playerList = server.getPlayerList();
+		for (ServerPlayerEntity player : playerList.getPlayers()) {
+			if (playerList.canSendCommands(player.getGameProfile())) {
+				player.sendMessage(warning);
+			}
+		}
 	}
 
 	@Override
