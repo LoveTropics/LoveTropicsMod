@@ -1,8 +1,8 @@
 package com.lovetropics.minigames.common.minigames.behaviours.instances.survive_the_tide;
 
-import com.lovetropics.minigames.common.Util;
 import com.lovetropics.minigames.common.minigames.IMinigameInstance;
 import com.lovetropics.minigames.common.minigames.PlayerSet;
+import com.lovetropics.minigames.common.minigames.VariableText;
 import com.lovetropics.minigames.common.minigames.statistics.PlayerKey;
 import com.lovetropics.minigames.common.minigames.statistics.StatisticKey;
 import com.mojang.datafixers.Dynamic;
@@ -19,16 +19,16 @@ import java.util.Iterator;
 public class SttIndividualsWinConditionBehavior extends SttWinConditionBehavior {
 	private final String downToTwoTranslationKey;
 
-	public SttIndividualsWinConditionBehavior(final long gameFinishTickDelay, final Long2ObjectMap<ITextComponent> scheduledGameFinishMessages, final String downToTwoTranslationKey, final boolean spawnLightningBoltsOnFinish, final int lightningBoltSpawnTickRate) {
+	public SttIndividualsWinConditionBehavior(final long gameFinishTickDelay, final Long2ObjectMap<VariableText> scheduledGameFinishMessages, final String downToTwoTranslationKey, final boolean spawnLightningBoltsOnFinish, final int lightningBoltSpawnTickRate) {
 		super(gameFinishTickDelay, scheduledGameFinishMessages, spawnLightningBoltsOnFinish, lightningBoltSpawnTickRate);
 		this.downToTwoTranslationKey = downToTwoTranslationKey;
 	}
 
 	public static <T> SttIndividualsWinConditionBehavior parse(Dynamic<T> root) {
 		final long gameFinishTickDelay = root.get("game_finish_tick_delay").asLong(0);
-		final Long2ObjectMap<ITextComponent> scheduledShutdownMessages = new Long2ObjectOpenHashMap<>(root.get("scheduled_game_finish_messages").asMap(
+		final Long2ObjectMap<VariableText> scheduledShutdownMessages = new Long2ObjectOpenHashMap<>(root.get("scheduled_game_finish_messages").asMap(
 				key -> Long.parseLong(key.asString("0")),
-				Util::getText
+				VariableText::parse
 		));
 
 		final String downToTwoTranslationKey = root.get("down_to_two_translation_key").asString("");
