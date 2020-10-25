@@ -1,6 +1,7 @@
 package com.lovetropics.minigames.common.command.minigames;
 
 import com.lovetropics.minigames.common.minigames.statistics.MinigameStatistics;
+import com.lovetropics.minigames.common.minigames.statistics.PlayerKey;
 import com.lovetropics.minigames.common.minigames.statistics.StatisticKey;
 import com.lovetropics.minigames.common.minigames.statistics.StatisticsMap;
 import com.lovetropics.minigames.common.techstack.MinigameResults;
@@ -30,7 +31,7 @@ public class CommandMinigameSendResults {
                         TechStack.uploadMinigameResults(new MinigameResults(
                                 "survive_the_tide_1",
                                 "Survive The Tide I",
-                                "Herobrine",
+                                PlayerKey.from(c.getSource().asPlayer()),
                                 statistics,
                                 System.currentTimeMillis() / 1000
                         ));

@@ -188,7 +188,7 @@ public class MinigameManager implements IMinigameManager {
 			TechStack.uploadMinigameResults(new MinigameResults(
 					id.getPath(),
 					name.getString(),
-					minigame.getInitiator().getName(),
+					minigame.getInitiator(),
 					minigame.getStatistics(),
 					System.currentTimeMillis() / 1000
 			));
