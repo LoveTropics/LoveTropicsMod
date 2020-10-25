@@ -8,7 +8,6 @@ import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
 import com.lovetropics.minigames.common.minigames.behaviours.IPollingMinigameBehavior;
 import com.lovetropics.minigames.common.minigames.polling.PollingMinigameInstance;
 import com.lovetropics.minigames.common.minigames.statistics.PlayerKey;
-import com.lovetropics.minigames.common.telemetry.MinigameResults;
 import com.lovetropics.minigames.common.telemetry.Telemetry;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.command.CommandSource;
@@ -185,15 +184,9 @@ public class MinigameManager implements IMinigameManager {
 
 		MinigameResult<ITextComponent> result = close();
 		if (result.isOk()) {
-			ResourceLocation id = minigame.getDefinition().getID();
-			ITextComponent name = minigame.getDefinition().getName();
-			Telemetry.INSTANCE.sendMinigameResults(new MinigameResults(
-					id.getPath(),
-					name.getString(),
-					minigame.getInitiator(),
-					minigame.getStatistics(),
-					System.currentTimeMillis() / 1000
-			));
+			minigame.getTelemetry().finish(minigame.getStatistics());
+		} else {
+			minigame.getTelemetry().cancel();
 		}
 
 		return result;
@@ -205,6 +198,8 @@ public class MinigameManager implements IMinigameManager {
 		if (minigame == null) {
 			return MinigameResult.error(new TranslationTextComponent(TropicraftLangKeys.COMMAND_NO_MINIGAME));
 		}
+
+		minigame.getTelemetry().cancel();
 
 		MinigameResult<Unit> result = minigame.dispatchToBehaviors(IMinigameBehavior::onCancel);
 		if (result.isError()) {

@@ -3,10 +3,12 @@ package com.lovetropics.minigames.common.telemetry;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.common.config.ConfigLT;
 import com.lovetropics.minigames.common.game_actions.GameAction;
+import com.lovetropics.minigames.common.minigames.IMinigameDefinition;
 import com.lovetropics.minigames.common.minigames.statistics.MinigameStatistics;
 import com.lovetropics.minigames.common.minigames.statistics.PlayerKey;
 import net.minecraftforge.event.TickEvent;
@@ -82,25 +84,28 @@ public final class Telemetry {
 		}
 	}
 
+	public MinigameInstanceTelemetry openMinigame(IMinigameDefinition definition, PlayerKey initiator) {
+		return MinigameInstanceTelemetry.open(this, definition, initiator);
+	}
+
 	public void acknowledgeActionDelivery(final BackendRequest request, final GameAction action) {
 		final JsonObject object = new JsonObject();
 		object.addProperty("request", request.getId());
 		object.addProperty("uuid", action.uuid.toString());
 
-		post(ConfigLT.TECH_STACK.actionResolvedEndpoint.get(), GSON.toJson(object));
+		post(ConfigLT.TELEMETRY.actionResolvedEndpoint.get(), object);
 	}
 
-	public void sendMinigameResults(MinigameResults result) {
-		final String json = GSON.toJson(result);
-		post(ConfigLT.TECH_STACK.resultsEndpoint.get(), json);
+	void post(final String endpoint, final JsonElement body) {
+		post(endpoint, GSON.toJson(body));
 	}
 
-	public void post(final String url, final String body) {
+	void post(final String endpoint, final String body) {
 		EXECUTOR.submit(() -> {
 			try {
-				HttpURLConnection connection = openAuthorizedConnection("POST", url);
+				HttpURLConnection connection = openAuthorizedConnection("POST", endpoint);
 				try {
-					LOGGER.debug("Posting {} to {}", body, url);
+					LOGGER.debug("Posting {} to {}", body, endpoint);
 
 					try (OutputStream output = connection.getOutputStream()) {
 						IOUtils.write(body, output, StandardCharsets.UTF_8);
@@ -110,17 +115,17 @@ public final class Telemetry {
 					if (code == HttpURLConnection.HTTP_OK) {
 						try (InputStream input = connection.getInputStream()) {
 							String response = IOUtils.toString(input, StandardCharsets.UTF_8);
-							LOGGER.debug("Received response from post to {}: {}", url, response);
+							LOGGER.debug("Received response from post to {}: {}", endpoint, response);
 						}
 					} else {
 						String response = connection.getResponseMessage();
-						LOGGER.error("Received unexpected response code ({}) from {}: {}", code, url, response);
+						LOGGER.error("Received unexpected response code ({}) from {}: {}", code, endpoint, response);
 					}
 				} finally {
 					connection.disconnect();
 				}
 			} catch (Exception e) {
-				LOGGER.error("An exception occurred while trying to POST to {}", url, e);
+				LOGGER.error("An exception occurred while trying to POST to {}", endpoint, e);
 			}
 		});
 	}
@@ -132,16 +137,16 @@ public final class Telemetry {
 		connection.setDoOutput(true);
 		connection.setRequestProperty("User-Agent", "Tropicraft 1.0 (tropicraft.net)");
 		connection.setRequestProperty("Content-Type", "application/json");
-		connection.setRequestProperty("Authorization", "Bearer " + ConfigLT.TECH_STACK.authToken.get());
+		connection.setRequestProperty("Authorization", "Bearer " + ConfigLT.TELEMETRY.authToken.get());
 		return connection;
 	}
 
 	private String getUrlTo(final String endpoint) {
 		StringBuilder builder = new StringBuilder();
-		builder.append(ConfigLT.TECH_STACK.baseUrl.get());
-		if (ConfigLT.TECH_STACK.port.get() > 0) {
+		builder.append(ConfigLT.TELEMETRY.baseUrl.get());
+		if (ConfigLT.TELEMETRY.port.get() > 0) {
 			builder.append(':');
-			builder.append(ConfigLT.TECH_STACK.port.get());
+			builder.append(ConfigLT.TELEMETRY.port.get());
 		}
 		builder.append('/');
 		builder.append(endpoint);
@@ -149,9 +154,9 @@ public final class Telemetry {
 	}
 
 	private CompletableFuture<TelemetryReader> openReader() {
-		int configPort = ConfigLT.TECH_STACK.webSocketPort.get();
+		int configPort = ConfigLT.TELEMETRY.webSocketPort.get();
 		String port = configPort == 0 ? "" : ":" + configPort;
-		String url = "ws://" + ConfigLT.TECH_STACK.webSocketUrl.get() + port + "/ws";
+		String url = "ws://" + ConfigLT.TELEMETRY.webSocketUrl.get() + port + "/ws";
 
 		return TelemetryReader.open(url, new TelemetryReader.Listener() {
 			@Override

@@ -5,7 +5,7 @@ import com.lovetropics.minigames.common.minigames.behaviours.BehaviorDispatcher;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehaviorType;
 import com.lovetropics.minigames.common.minigames.statistics.MinigameStatistics;
-import com.lovetropics.minigames.common.minigames.statistics.PlayerKey;
+import com.lovetropics.minigames.common.telemetry.MinigameInstanceTelemetry;
 import net.minecraft.command.CommandSource;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.server.MinecraftServer;
@@ -103,5 +103,5 @@ public interface IMinigameInstance extends MinigameControllable, BehaviorDispatc
 
     MinigameStatistics getStatistics();
 
-	PlayerKey getInitiator();
+    MinigameInstanceTelemetry getTelemetry();
 }

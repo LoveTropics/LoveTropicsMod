@@ -17,7 +17,7 @@ public class ConfigLT {
     private static final Builder COMMON_BUILDER = new Builder();
 
     public static final CategoryGeneral GENERAL = new CategoryGeneral();
-    public static final CategoryTechStack TECH_STACK = new CategoryTechStack();
+    public static final CategoryTelemetry TELEMETRY = new CategoryTelemetry();
 
     public static final class CategoryGeneral {
 
@@ -56,13 +56,12 @@ public class ConfigLT {
         }
     }
 
-    public static final class CategoryTechStack {
+    public static final class CategoryTelemetry {
 
         public final ConfigValue<String> baseUrl;
-        public final ConfigValue<String> resultsEndpoint;
         public final ConfigValue<String> minigameStartEndpoint;
         public final ConfigValue<String> minigameEndEndpoint;
-        public final ConfigValue<String> minigameTerminatedEndpoint;
+        public final ConfigValue<String> minigameCancelEndpoint;
         public final ConfigValue<String> minigamePlayerUpdateEndpoint;
         public final ConfigValue<String> actionResolvedEndpoint;
         public final ConfigValue<String> pendingActionsEndpoint;
@@ -71,24 +70,21 @@ public class ConfigLT {
         public final ConfigValue<String> webSocketUrl;
         public final IntValue webSocketPort;
 
-        private CategoryTechStack() {
+        private CategoryTelemetry() {
             COMMON_BUILDER.comment("Used for the LoveTropics charity drive.").push("techStack");
 
             baseUrl = COMMON_BUILDER
                     .comment("Base URL to use ")
                     .define("baseUrl", "http://localhost");
-            resultsEndpoint = COMMON_BUILDER
-                    .comment("Endpoint used to upload minigame results")
-                    .define("resultsEndpoint", "minigame/result");
             minigameStartEndpoint = COMMON_BUILDER
                     .comment("Endpoint used when a minigame is started")
                     .define("minigameStartEndpoint", "minigame/start");
             minigameEndEndpoint = COMMON_BUILDER
                     .comment("Endpoint used when a minigame is successfully completed")
                     .define("minigameEndEndpoint", "minigame/end");
-            minigameTerminatedEndpoint = COMMON_BUILDER
-                    .comment("Endpoint used when a minigame is terminated early")
-                    .define("minigameTerminatedEndpoint", "minigame/terminated");
+            minigameCancelEndpoint = COMMON_BUILDER
+                    .comment("Endpoint used when a minigame is canceled before finishing")
+                    .define("minigameCancelEndpoint", "minigame/cancel");
             minigamePlayerUpdateEndpoint = COMMON_BUILDER
                     .comment("Endpoint used to update a player's status during a minigame")
                     .define("minigamePlayerUpdateEndpoint", "minigame/playerupdate");

@@ -1,9 +1,10 @@
 package com.lovetropics.minigames.common.minigames.polling;
 
 import com.lovetropics.minigames.client.data.TropicraftLangKeys;
-import com.lovetropics.minigames.common.Scheduler;
 import com.lovetropics.minigames.common.minigames.*;
-import com.lovetropics.minigames.common.minigames.behaviours.*;
+import com.lovetropics.minigames.common.minigames.behaviours.BehaviorDispatcher;
+import com.lovetropics.minigames.common.minigames.behaviours.BehaviorMap;
+import com.lovetropics.minigames.common.minigames.behaviours.IPollingMinigameBehavior;
 import com.lovetropics.minigames.common.minigames.map.IMinigameMapProvider;
 import com.lovetropics.minigames.common.minigames.statistics.PlayerKey;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
@@ -17,7 +18,9 @@ import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.TranslationTextComponent;
 
 import javax.annotation.Nullable;
-import java.util.*;
+import java.util.Collection;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
 public final class PollingMinigameInstance implements MinigameControllable, BehaviorDispatcher<IPollingMinigameBehavior, PollingMinigameInstance> {
@@ -102,36 +105,7 @@ public final class PollingMinigameInstance implements MinigameControllable, Beha
 		}
 
 		return mapProvider.open(server)
-				.thenApplyAsync(map -> MinigameInstance.create(definition, server, map, behaviors, initiator), server)
-				.thenComposeAsync(minigameResult -> {
-					if (minigameResult.isError()) {
-						return CompletableFuture.completedFuture(minigameResult.<MinigameInstance>castError());
-					}
-
-					MinigameInstance minigame = minigameResult.getOk();
-
-					List<ServerPlayerEntity> participants = new ArrayList<>();
-					List<ServerPlayerEntity> spectators = new ArrayList<>();
-
-					registrations.collectInto(server, participants, spectators, definition.getMaximumParticipantCount());
-
-					for (ServerPlayerEntity player : participants) {
-						minigame.addPlayer(player, PlayerRole.PARTICIPANT);
-					}
-
-					for (ServerPlayerEntity player : spectators) {
-						minigame.addPlayer(player, PlayerRole.SPECTATOR);
-					}
-
-					return Scheduler.INSTANCE.submit(server -> {
-						MinigameResult<Unit> startResult = minigame.dispatchToBehaviors(IMinigameBehavior::onStart);
-						if (startResult.isError()) {
-							return startResult.<MinigameInstance>castError();
-						}
-
-						return MinigameResult.ok(minigame);
-					}, 1);
-				}, server)
+				.thenComposeAsync(map -> MinigameInstance.start(definition, server, map, behaviors, initiator, registrations), server)
 				.handleAsync((result, throwable) -> {
 					if (throwable instanceof Exception) {
 						return MinigameResult.fromException("Unknown error starting minigame", (Exception) throwable);

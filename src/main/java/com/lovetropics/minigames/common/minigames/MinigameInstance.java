@@ -1,12 +1,16 @@
 package com.lovetropics.minigames.common.minigames;
 
+import com.lovetropics.minigames.common.Scheduler;
 import com.lovetropics.minigames.common.map.MapRegions;
 import com.lovetropics.minigames.common.minigames.behaviours.BehaviorMap;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehaviorType;
+import com.lovetropics.minigames.common.minigames.polling.MinigameRegistrations;
 import com.lovetropics.minigames.common.minigames.statistics.MinigameStatistics;
 import com.lovetropics.minigames.common.minigames.statistics.PlayerKey;
 import com.lovetropics.minigames.common.minigames.statistics.StatisticKey;
+import com.lovetropics.minigames.common.telemetry.MinigameInstanceTelemetry;
+import com.lovetropics.minigames.common.telemetry.Telemetry;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.command.CommandSource;
@@ -23,6 +27,7 @@ import net.minecraft.world.server.ServerWorld;
 
 import javax.annotation.Nullable;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * Default implementation of a minigame instance. Simple and naive
@@ -49,7 +54,7 @@ public class MinigameInstance implements IMinigameInstance
 
     private final BehaviorMap behaviors;
 
-    private final PlayerKey initiator;
+    private final MinigameInstanceTelemetry telemetry;
 
     private MinigameInstance(IMinigameDefinition definition, MinecraftServer server, MinigameMap map, BehaviorMap behaviors, PlayerKey initiator) {
         this.definition = definition;
@@ -60,7 +65,8 @@ public class MinigameInstance implements IMinigameInstance
         this.allPlayers = new MutablePlayerSet(server);
 
         this.behaviors = behaviors;
-        this.initiator = initiator;
+
+        this.telemetry = Telemetry.INSTANCE.openMinigame(definition, initiator);
 
         for (PlayerRole role : PlayerRole.ROLES) {
             MutablePlayerSet rolePlayers = new MutablePlayerSet(server);
@@ -82,20 +88,45 @@ public class MinigameInstance implements IMinigameInstance
         });
     }
 
-    public static MinigameResult<MinigameInstance> create(IMinigameDefinition definition, MinecraftServer server, MinigameMap map, BehaviorMap behaviors, PlayerKey initiator) {
+    public static CompletableFuture<MinigameResult<MinigameInstance>> start(
+            IMinigameDefinition definition, MinecraftServer server, MinigameMap map, BehaviorMap behaviors,
+            PlayerKey initiator, MinigameRegistrations registrations
+    ) {
         MinigameInstance minigame = new MinigameInstance(definition, server, map, behaviors, initiator);
 
         MinigameResult<Unit> result = minigame.validateBehaviors();
         if (result.isError()) {
-            return result.castError();
+            return CompletableFuture.completedFuture(result.castError());
         }
 
         result = minigame.dispatchToBehaviors(IMinigameBehavior::onConstruct);
         if (result.isError()) {
-            return result.castError();
+            return CompletableFuture.completedFuture(result.castError());
         }
 
-        return MinigameResult.ok(minigame);
+        List<ServerPlayerEntity> participants = new ArrayList<>();
+        List<ServerPlayerEntity> spectators = new ArrayList<>();
+
+        registrations.collectInto(server, participants, spectators, definition.getMaximumParticipantCount());
+
+        for (ServerPlayerEntity player : participants) {
+            minigame.addPlayer(player, PlayerRole.PARTICIPANT);
+        }
+
+        for (ServerPlayerEntity player : spectators) {
+            minigame.addPlayer(player, PlayerRole.SPECTATOR);
+        }
+
+        minigame.telemetry.start(minigame.getParticipants());
+
+        return Scheduler.INSTANCE.submit(s -> {
+            MinigameResult<Unit> startResult = minigame.dispatchToBehaviors(IMinigameBehavior::onStart);
+            if (startResult.isError()) {
+                return startResult.castError();
+            }
+
+            return MinigameResult.ok(minigame);
+        }, 1);
     }
 
     private MinigameResult<Unit> validateBehaviors() {
@@ -259,7 +290,7 @@ public class MinigameInstance implements IMinigameInstance
     }
 
     @Override
-    public PlayerKey getInitiator() {
-        return initiator;
+    public MinigameInstanceTelemetry getTelemetry() {
+        return telemetry;
     }
 }
