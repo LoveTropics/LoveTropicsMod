@@ -20,40 +20,43 @@ public final class StatisticKey<T> {
 	private static final Map<String, StatisticKey<?>> REGISTRY = new Object2ObjectOpenHashMap<>();
 
 	// Generic - Per Player
-	public static final StatisticKey<Integer> PLACEMENT = integer("placement").displays(placement());
+	public static final StatisticKey<Integer> PLACEMENT = ofInt("placement").displays(placement());
 
-	public static final StatisticKey<Integer> KILLS = integer("kills").displays(unit("kills"));
-	public static final StatisticKey<Integer> POINTS = integer("points");
+	public static final StatisticKey<Integer> KILLS = ofInt("kills").displays(unit("kills"));
+	public static final StatisticKey<Integer> POINTS = ofInt("points");
 
-	public static final StatisticKey<Integer> TIME_SURVIVED = integer("time_survived").displays(minutesSeconds());
+	public static final StatisticKey<Integer> TIME_SURVIVED = ofInt("time_survived").displays(minutesSeconds());
 	public static final StatisticKey<CauseOfDeath> CAUSE_OF_DEATH = register("cause_of_death", CauseOfDeath::serialize);
-	public static final StatisticKey<PlayerKey> KILLED_BY = player("killed_by");
-	public static final StatisticKey<Integer> TIME_CAMPING = integer("time_camping").displays(minutesSeconds());
-	public static final StatisticKey<TeamsBehavior.TeamKey> TEAM = team("team");
+	public static final StatisticKey<PlayerKey> KILLED_BY = ofPlayer("killed_by");
+	public static final StatisticKey<Integer> TIME_CAMPING = ofInt("time_camping").displays(minutesSeconds());
+	public static final StatisticKey<TeamsBehavior.TeamKey> TEAM = ofTeam("team");
 
-	public static final StatisticKey<Integer> BLOCKS_BROKEN = integer("blocks_broken").displays(unit("blocks"));
+	public static final StatisticKey<Integer> BLOCKS_BROKEN = ofInt("blocks_broken").displays(unit("blocks"));
+
+	public static final StatisticKey<Float> DAMAGE_TAKEN = ofFloat("damage_taken").displays(unit("damage"));
+	public static final StatisticKey<Float> DAMAGE_DEALT = ofFloat("damage_dealt").displays(unit("damage"));
 
 	// Generic - Global
-	public static final StatisticKey<Integer> TOTAL_TIME = integer("total_time").displays(minutesSeconds());
+	public static final StatisticKey<Integer> TOTAL_TIME = ofInt("total_time").displays(minutesSeconds());
 
-	public static final StatisticKey<PlayerKey> WINNING_PLAYER = player("winning_player").displays(playerName());
-	public static final StatisticKey<TeamsBehavior.TeamKey> WINNING_TEAM = team("winning_team");
+	public static final StatisticKey<PlayerKey> WINNING_PLAYER = ofPlayer("winning_player").displays(playerName());
+	public static final StatisticKey<TeamsBehavior.TeamKey> WINNING_TEAM = ofTeam("winning_team");
 
 	// Turtle Race
-	public static final StatisticKey<Integer> PLAYER_COLLISIONS = integer("player_collisions").displays(unit("collisions"));
+	public static final StatisticKey<Integer> PLAYER_COLLISIONS = ofInt("player_collisions").displays(unit("collisions"));
 
 	// Trash Dive
-	public static final StatisticKey<Integer> TRASH_COLLECTED = integer("trash_collected").displays(unit("trash"));
+	public static final StatisticKey<Integer> TRASH_COLLECTED = ofInt("trash_collected").displays(unit("trash"));
 
 	// Signature Run
-	public static final StatisticKey<Integer> SIGNATURES_COLLECTED = integer("signatures_collected").displays(unit("signatures"));
+	public static final StatisticKey<Integer> SIGNATURES_COLLECTED = ofInt("signatures_collected").displays(unit("signatures"));
 
 	// Conservation Exploration
-	public static final StatisticKey<Integer> CREATURES_RECORDED = integer("creatures_recorded").displays(unit("creatures"));
+	public static final StatisticKey<Integer> CREATURES_RECORDED = ofInt("creatures_recorded").displays(unit("creatures"));
 
 	// Treasure Dig X
-	public static final StatisticKey<Integer> CHESTS_OPENED = integer("chests_opened");
-	public static final StatisticKey<Integer> EXPLOSIONS_CAUSED = integer("explosions_caused");
+	public static final StatisticKey<Integer> CHESTS_OPENED = ofInt("chests_opened");
+	public static final StatisticKey<Integer> EXPLOSIONS_CAUSED = ofInt("explosions_caused");
 
 	private final String key;
 	private final Function<T, JsonElement> serializer;
@@ -70,27 +73,31 @@ public final class StatisticKey<T> {
 		return statistic;
 	}
 
-	public static StatisticKey<Integer> integer(String key) {
+	public static StatisticKey<Integer> ofInt(String key) {
 		return StatisticKey.register(key, JsonPrimitive::new);
 	}
 
-	public static StatisticKey<Boolean> bool(String key) {
+	public static StatisticKey<Float> ofFloat(String key) {
 		return StatisticKey.register(key, JsonPrimitive::new);
 	}
 
-	public static StatisticKey<String> string(String key) {
+	public static StatisticKey<Boolean> ofBool(String key) {
 		return StatisticKey.register(key, JsonPrimitive::new);
 	}
 
-	public static StatisticKey<PlayerKey> player(String key) {
+	public static StatisticKey<String> ofString(String key) {
+		return StatisticKey.register(key, JsonPrimitive::new);
+	}
+
+	public static StatisticKey<PlayerKey> ofPlayer(String key) {
 		return StatisticKey.register(key, PlayerKey::serializeId);
 	}
 
-	public static StatisticKey<TeamsBehavior.TeamKey> team(String key) {
+	public static StatisticKey<TeamsBehavior.TeamKey> ofTeam(String key) {
 		return StatisticKey.register(key, team -> new JsonPrimitive(team.key));
 	}
 
-	public static StatisticKey<IntList> intList(String key) {
+	public static StatisticKey<IntList> ofIntList(String key) {
 		return StatisticKey.intoArray(key, (values, array) -> {
 			IntListIterator iterator = values.iterator();
 			while (iterator.hasNext()) {
@@ -99,11 +106,11 @@ public final class StatisticKey<T> {
 		});
 	}
 
-	public static StatisticKey<List<String>> stringList(String key) {
-		return StatisticKey.list(key, JsonPrimitive::new);
+	public static StatisticKey<List<String>> ofStringList(String key) {
+		return StatisticKey.ofList(key, JsonPrimitive::new);
 	}
 
-	public static <T> StatisticKey<List<T>> list(String key, Function<T, JsonElement> serializeElement) {
+	public static <T> StatisticKey<List<T>> ofList(String key, Function<T, JsonElement> serializeElement) {
 		return StatisticKey.intoArray(key, (values, array) -> {
 			for (T value : values) {
 				array.add(serializeElement.apply(value));

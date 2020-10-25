@@ -51,6 +51,7 @@ public class MinigameBehaviorTypes {
 	public static final RegistryObject<IMinigameBehaviorType<CauseOfDeathTrackerBehavior>> CAUSE_OF_DEATH_TRACKER;
 	public static final RegistryObject<IMinigameBehaviorType<KillsTrackerBehavior>> KILLS_TRACKER;
 	public static final RegistryObject<IMinigameBehaviorType<TimeSurvivedTrackerBehavior>> TIME_SURVIVED_TRACKER;
+	public static final RegistryObject<IMinigameBehaviorType<DamageTrackerBehavior>> DAMAGE_TRACKER;
 
 	public static final RegistryObject<IMinigameBehaviorType<DisplayLeaderboardOnFinishBehavior<?>>> DISPLAY_LEADERBOARD_ON_FINISH;
 
@@ -102,6 +103,7 @@ public class MinigameBehaviorTypes {
 		CAUSE_OF_DEATH_TRACKER = register("cause_of_death_tracker", CauseOfDeathTrackerBehavior::parse);
 		KILLS_TRACKER = register("kills_tracker", KillsTrackerBehavior::parse);
 		TIME_SURVIVED_TRACKER = register("time_survived_tracker", TimeSurvivedTrackerBehavior::parse);
+		DAMAGE_TRACKER = register("damage_tracker", DamageTrackerBehavior::parse);
 
 		DISPLAY_LEADERBOARD_ON_FINISH = register("display_leaderboard_on_finish", DisplayLeaderboardOnFinishBehavior::parse);
 	}
