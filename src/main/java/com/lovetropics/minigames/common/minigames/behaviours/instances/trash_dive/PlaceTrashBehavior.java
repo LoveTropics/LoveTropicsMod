@@ -23,6 +23,8 @@ import java.util.Random;
 public final class PlaceTrashBehavior implements IMinigameBehavior {
 	private static final Logger LOGGER = LogManager.getLogger(PlaceTrashBehavior.class);
 
+	private final TrashType[] trashTypes = TrashType.values();
+
 	private final int count;
 	private final String region;
 
@@ -47,28 +49,55 @@ public final class PlaceTrashBehavior implements IMinigameBehavior {
 			return;
 		}
 
-		TrashType[] trashTypes = TrashType.values();
-
 		ServerWorld world = minigame.getWorld();
 		Random random = world.rand;
 
-		int i = 0;
-		while (i < count) {
+		long totalVolume = 0;
+		for (MapRegion region : regions) {
+			totalVolume += region.getVolume();
+		}
+
+		// place trash weighted by the volumes of each region
+		int remaining = count;
+		for (MapRegion region : regions) {
+			long volume = region.getVolume();
+			int amount = (int) (count * totalVolume / volume);
+
+			int i = 0;
+			while (i < amount) {
+				if (tryPlaceTrash(world, region)) {
+					i++;
+				}
+			}
+
+			remaining -= amount;
+		}
+
+		// we're doing integer division: place the remainder randomly
+		while (remaining > 0) {
 			MapRegion region = regions.get(random.nextInt(regions.size()));
-			BlockPos pos = region.sample(random);
-
-			if (world.getBlockState(pos).getBlock() == Blocks.WATER) {
-				TrashType trashType = trashTypes[random.nextInt(trashTypes.length)];
-				world.setBlockState(pos, LoveTropicsBlocks.TRASH.get(trashType).getDefaultState()
-						.with(TrashBlock.WATERLOGGED, true)
-						.with(TrashBlock.FACING, Direction.byHorizontalIndex(random.nextInt(4)))
-				);
-
-				trashBlocks.add(pos.toLong());
-
-				i++;
+			if (tryPlaceTrash(world, region)) {
+				remaining--;
 			}
 		}
+	}
+
+	private boolean tryPlaceTrash(ServerWorld world, MapRegion region) {
+		Random random = world.rand;
+		BlockPos pos = region.sample(random);
+
+		if (world.getBlockState(pos).getBlock() == Blocks.WATER) {
+			TrashType trashType = trashTypes[random.nextInt(trashTypes.length)];
+			world.setBlockState(pos, LoveTropicsBlocks.TRASH.get(trashType).getDefaultState()
+					.with(TrashBlock.WATERLOGGED, true)
+					.with(TrashBlock.FACING, Direction.byHorizontalIndex(random.nextInt(4)))
+			);
+
+			trashBlocks.add(pos.toLong());
+			return true;
+		}
+
+		return false;
 	}
 
 	public LongSet getTrashBlocks() {

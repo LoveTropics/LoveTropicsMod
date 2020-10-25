@@ -73,6 +73,13 @@ public final class MapRegion implements Iterable<BlockPos> {
 		);
 	}
 
+	public long getVolume() {
+		long sizeX = max.getX() - min.getX() + 1;
+		long sizeY = max.getY() - min.getY() + 1;
+		long sizeZ = max.getZ() - min.getZ() + 1;
+		return sizeX * sizeY * sizeZ;
+	}
+
 	public BlockPos sample(Random random) {
 		return new BlockPos(
 				min.getX() + random.nextInt(max.getX() - min.getX() + 1),

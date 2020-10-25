@@ -71,7 +71,7 @@ public class PositionPlayersMinigameBehavior implements IMinigameBehavior {
 	}
 
 	private void teleportToRegion(IMinigameInstance minigame, ServerPlayerEntity player, MapRegion region) {
-		BlockPos pos = new BlockPos(region.getCenter());
+		BlockPos pos = region.sample(player.getRNG());
 		DimensionUtils.teleportPlayerNoPortal(player, minigame.getDimension(), pos);
 	}
 }
