@@ -6,6 +6,7 @@ import com.lovetropics.minigames.common.minigames.MinigameResult;
 import com.lovetropics.minigames.common.minigames.PlayerRole;
 import com.lovetropics.minigames.common.game_actions.CarePackageGameAction;
 import com.lovetropics.minigames.common.game_actions.SabotagePackageGameAction;
+import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
@@ -211,5 +212,16 @@ public interface IMinigameBehavior
 	 */
 	default boolean onSabotagePackageRequested(final IMinigameInstance minigame, final SabotagePackageGameAction action) {
 		return false;
+	}
+
+	/**
+	 * When a block is broken by a player within this minigame.
+	 *
+	 * @param minigame The current minigame instance
+	 * @param player The player that destroyed this block
+	 * @param pos The block position that was broken
+	 * @param state The block state that was broken
+	 */
+	default void onPlayerBreakBlock(IMinigameInstance minigame, ServerPlayerEntity player, BlockPos pos, BlockState state) {
 	}
 }
