@@ -3,6 +3,7 @@ package com.lovetropics.minigames.common.minigames.statistics;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
+import com.google.gson.JsonSerializer;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.minecraft.MinecraftProfileTexture;
 import com.mojang.authlib.minecraft.MinecraftSessionService;
@@ -13,6 +14,8 @@ import java.net.Proxy;
 import java.util.UUID;
 
 public final class PlayerKey {
+	public static final JsonSerializer<PlayerKey> PROFILE_SERIALIZER = (statistics, type, ctx) -> statistics.serializeProfile();
+
 	private static final YggdrasilAuthenticationService AUTH_SERVICE = new YggdrasilAuthenticationService(Proxy.NO_PROXY, UUID.randomUUID().toString());
 	private static final MinecraftSessionService SESSION_SERVICE = AUTH_SERVICE.createMinecraftSessionService();
 

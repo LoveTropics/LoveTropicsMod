@@ -7,6 +7,7 @@ import com.google.gson.JsonObject;
 import com.lovetropics.minigames.common.config.ConfigLT;
 import com.lovetropics.minigames.common.minigames.statistics.MinigameStatistics;
 import com.lovetropics.minigames.common.game_actions.GameAction;
+import com.lovetropics.minigames.common.minigames.statistics.PlayerKey;
 import com.lovetropics.minigames.common.techstack.websockets.WebSocketHelper;
 import org.apache.commons.io.IOUtils;
 
@@ -22,6 +23,7 @@ import java.util.concurrent.Executors;
 public class TechStack {
     private static final Gson GSON = new GsonBuilder()
             .registerTypeAdapter(MinigameStatistics.class, MinigameStatistics.SERIALIZER)
+            .registerTypeAdapter(PlayerKey.class, PlayerKey.PROFILE_SERIALIZER)
             .create();
 
     private static final ExecutorService EXECUTOR = Executors.newSingleThreadExecutor(
