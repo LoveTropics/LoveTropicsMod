@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.common.network;
 
-import com.lovetropics.minigames.client.ChaseCameraManager;
+import com.lovetropics.minigames.client.chase.ChaseCameraManager;
 import net.minecraft.network.PacketBuffer;
 import net.minecraftforge.fml.network.NetworkEvent;
 
