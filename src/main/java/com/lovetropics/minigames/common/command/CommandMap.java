@@ -33,6 +33,7 @@ import net.minecraft.util.text.event.HoverEvent;
 import net.minecraft.world.dimension.DimensionType;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraft.world.storage.SessionLockException;
+import net.minecraftforge.common.DimensionManager;
 
 import java.io.File;
 import java.io.IOException;
@@ -239,8 +240,7 @@ public final class CommandMap {
 	}
 
 	private static CompletableFuture<Void> saveWorkspace(MinecraftServer server, MapWorkspace workspace) {
-		// TODO: accessing internal forge api: how can we check if the dimension is currently loaded?
-		if (server.forgeGetWorldMap().containsKey(workspace.getDimension())) {
+		if (DimensionManager.getWorld(server, workspace.getDimension(), false, false) != null) {
 			return server.runAsync(() -> {
 				ServerWorld workspaceWorld = server.getWorld(workspace.getDimension());
 				try {

@@ -8,6 +8,7 @@ import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
+import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.dimension.Dimension;
 import net.minecraft.world.dimension.DimensionType;
 import net.minecraft.world.gen.ChunkGenerator;
@@ -69,7 +70,8 @@ public final class MapWorkspaceDimension extends Dimension {
 
 	@Override
 	public BlockPos findSpawn(int x, int z, boolean checkValid) {
-		int height = world.getHeight(Heightmap.Type.MOTION_BLOCKING, x, z);
+		Chunk chunk = world.getChunk(x >> 4, z >> 4);
+		int height = chunk.getHeightmap(Heightmap.Type.MOTION_BLOCKING).getHeight(x & 15, z & 15) + 1;
 		if (height <= 0) {
 			height = 64;
 		}
