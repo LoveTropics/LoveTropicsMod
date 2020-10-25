@@ -168,7 +168,7 @@ public class MinigameInstance implements IMinigameInstance
         }
     }
 
-    private void onPlayerChangeRole(ServerPlayerEntity player, PlayerRole lastRole, PlayerRole role) {
+    private void onPlayerChangeRole(ServerPlayerEntity player, PlayerRole role, PlayerRole lastRole) {
         if (lastRole == PlayerRole.PARTICIPANT && role == PlayerRole.SPECTATOR) {
             statistics.forPlayer(player).set(StatisticKey.DEAD, true);
         } else if (lastRole == PlayerRole.SPECTATOR && role == PlayerRole.PARTICIPANT) {

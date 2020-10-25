@@ -54,9 +54,6 @@ public final class MinigameInstanceTelemetry implements PlayerSet.Listeners {
 	}
 
 	public void finish(MinigameStatistics statistics) {
-		closed = true;
-		participants.removeListener(this);
-
 		long finishTime = System.currentTimeMillis() / 1000;
 
 		JsonObject payload = new JsonObject();
@@ -64,13 +61,16 @@ public final class MinigameInstanceTelemetry implements PlayerSet.Listeners {
 		payload.add("statistics", statistics.serialize());
 
 		post(ConfigLT.TELEMETRY.minigameEndEndpoint.get(), payload);
+
+		closed = true;
+		participants.removeListener(this);
 	}
 
 	public void cancel() {
-		closed = true;
-		participants.removeListener(this);
-
 		post(ConfigLT.TELEMETRY.minigameCancelEndpoint.get(), new JsonObject());
+
+		participants.removeListener(this);
+		closed = true;
 	}
 
 	@Override

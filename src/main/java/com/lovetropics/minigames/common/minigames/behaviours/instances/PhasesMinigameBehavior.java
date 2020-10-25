@@ -83,13 +83,6 @@ public class PhasesMinigameBehavior implements IMinigameBehavior
 		nextPhase(minigame);
 	}
 
-	@Override
-	public void onPostFinish(final IMinigameInstance minigame) {
-		phaseIterator = null;
-		currentPhase = null;
-		previousPhase = null;
-	}
-
 	public static class MinigamePhase {
 		private final String key;
 		private final int lengthInTicks;

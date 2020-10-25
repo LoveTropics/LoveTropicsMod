@@ -1,10 +1,7 @@
 package com.lovetropics.minigames.common.telemetry;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
+import com.google.gson.*;
 import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.common.config.ConfigLT;
 import com.lovetropics.minigames.common.game_actions.GameAction;
@@ -32,7 +29,7 @@ import java.util.concurrent.Executors;
 public final class Telemetry {
 	public static final Telemetry INSTANCE = new Telemetry();
 
-	private static final long RECONNECT_INTERVAL = 30 * 1000;
+	private static final long RECONNECT_INTERVAL = 60 * 1000;
 
 	private static final Logger LOGGER = LogManager.getLogger(Telemetry.class);
 
