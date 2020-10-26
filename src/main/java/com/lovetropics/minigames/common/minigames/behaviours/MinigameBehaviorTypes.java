@@ -43,6 +43,7 @@ public class MinigameBehaviorTypes {
 	public static final RegistryObject<IMinigameBehaviorType<TrashCollectionBehavior>> TRASH_COLLECTION;
 	public static final RegistryObject<IMinigameBehaviorType<TeamsBehavior>> TEAMS;
 	public static final RegistryObject<IMinigameBehaviorType<SpectatorChaseBehavior>> SPECTATOR_CHASE;
+	public static final RegistryObject<IMinigameBehaviorType<ForceLoadRegionBehavior>> FORCE_LOAD_REGION;
 
 	public static final RegistryObject<IMinigameBehaviorType<BindObjectiveToStatisticBehavior>> BIND_OBJECTIVE_TO_STATISTIC;
 	public static final RegistryObject<IMinigameBehaviorType<PlaceByStatisticBehavior>> PLACE_BY_STATISTIC;
@@ -96,6 +97,7 @@ public class MinigameBehaviorTypes {
 		PLACE_TRASH = register("place_trash", PlaceTrashBehavior::parse);
 		TRASH_COLLECTION = register("trash_collection", TrashCollectionBehavior::parse);
 		SPECTATOR_CHASE = register("spectator_chase", SpectatorChaseBehavior::parse);
+		FORCE_LOAD_REGION = register("force_load_region", ForceLoadRegionBehavior::parse);
 
 		BIND_OBJECTIVE_TO_STATISTIC = register("bind_objective_to_statistic", BindObjectiveToStatisticBehavior::parse);
 		PLACE_BY_STATISTIC = register("place_by_statistic", PlaceByStatisticBehavior::parse);
