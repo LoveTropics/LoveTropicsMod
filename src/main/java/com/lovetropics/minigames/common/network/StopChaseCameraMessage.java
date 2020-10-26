@@ -10,5 +10,6 @@ public class StopChaseCameraMessage {
 		ctx.get().enqueueWork(() -> {
 			ChaseCameraManager.stop();
 		});
+		ctx.get().setPacketHandled(true);
 	}
 }

@@ -36,5 +36,6 @@ public class AddWorkspaceRegionMessage {
 		ctx.get().enqueueWork(() -> {
 			ClientMapWorkspace.INSTANCE.addRegion(id, key, region);
 		});
+		ctx.get().setPacketHandled(true);
 	}
 }

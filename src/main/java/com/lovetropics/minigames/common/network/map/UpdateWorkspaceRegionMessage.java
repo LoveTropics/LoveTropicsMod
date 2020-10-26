@@ -47,6 +47,7 @@ public class UpdateWorkspaceRegionMessage {
 				handleClient();
 			}
 		});
+		ctx.get().setPacketHandled(true);
 	}
 
 	private void handleServer(NetworkEvent.Context ctx) {

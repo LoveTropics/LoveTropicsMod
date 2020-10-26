@@ -8,14 +8,28 @@ import net.minecraft.network.PacketBuffer;
 import javax.annotation.Nullable;
 import java.util.Iterator;
 
-public final class ClientWorkspaceRegions implements Iterable<ClientWorkspaceRegions.Entry> {
+public class ClientWorkspaceRegions implements Iterable<ClientWorkspaceRegions.Entry> {
+
+	// Used when regions are hidden on the client
+	public static ClientWorkspaceRegions noop() {
+		
+		return new ClientWorkspaceRegions() {
+			
+			@Override
+			protected void add(Entry entry) {}
+			
+			@Override
+			public void set(int id, MapRegion region) {}
+		};
+	}
+
 	private final Int2ObjectMap<Entry> entries = new Int2ObjectOpenHashMap<>();
 
-	public void add(int id, String key, MapRegion region) {
+	public final void add(int id, String key, MapRegion region) {
 		add(new Entry(id, key, region));
 	}
 
-	private void add(Entry entry) {
+	protected void add(Entry entry) {
 		entries.put(entry.id, entry);
 	}
 

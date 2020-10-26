@@ -8,11 +8,20 @@ import net.minecraftforge.fml.network.NetworkEvent;
 
 import java.util.function.Supplier;
 
+import javax.annotation.Nullable;
+
 public class SetWorkspaceMessage {
-	private WorkspaceRegions server;
+
+	private static final SetWorkspaceMessage HIDDEN = new SetWorkspaceMessage((WorkspaceRegions) null);
+
+	public static SetWorkspaceMessage hidden() {
+		return HIDDEN;
+	}
+
+	private @Nullable WorkspaceRegions server;
 	private ClientWorkspaceRegions client;
 
-	public SetWorkspaceMessage(WorkspaceRegions server) {
+	public SetWorkspaceMessage(@Nullable WorkspaceRegions server) {
 		this.server = server;
 	}
 
@@ -21,11 +30,19 @@ public class SetWorkspaceMessage {
 	}
 
 	public void encode(PacketBuffer buffer) {
-		this.server.write(buffer);
+		buffer.writeBoolean(server != null);
+		if (this.server != null) {
+			this.server.write(buffer);
+		}
 	}
 
 	public static SetWorkspaceMessage decode(PacketBuffer buffer) {
-		ClientWorkspaceRegions regions = ClientWorkspaceRegions.read(buffer);
+		ClientWorkspaceRegions regions = null;
+		if (buffer.readBoolean()) {
+			regions = ClientWorkspaceRegions.read(buffer);
+		} else {
+			regions = ClientWorkspaceRegions.noop();
+		}
 		return new SetWorkspaceMessage(regions);
 	}
 
@@ -33,5 +50,6 @@ public class SetWorkspaceMessage {
 		ctx.get().enqueueWork(() -> {
 			ClientMapWorkspace.INSTANCE.setRegions(client);
 		});
+		ctx.get().setPacketHandled(true);
 	}
 }

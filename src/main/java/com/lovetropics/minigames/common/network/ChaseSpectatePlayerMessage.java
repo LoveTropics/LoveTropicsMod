@@ -38,5 +38,6 @@ public class ChaseSpectatePlayerMessage {
 
 			sender.setSpectatingEntity(target);
 		});
+		ctx.get().setPacketHandled(true);
 	}
 }

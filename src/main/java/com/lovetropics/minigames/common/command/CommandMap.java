@@ -101,6 +101,8 @@ public final class CommandMap {
 								.executes(CommandMap::addRegionHere)
 						)
 					)
+					.then(literal("hide")
+							.executes(CommandMap::showHideRegions))
 				)
             )
         );
@@ -200,6 +202,14 @@ public final class CommandMap {
 		String key = StringArgumentType.getString(context, "key");
 
 		workspace.getRegions().add(key, MapRegion.of(new BlockPos(pos)));
+
+		return Command.SINGLE_SUCCESS;
+	}
+
+	private static int showHideRegions(CommandContext<CommandSource> context) throws CommandSyntaxException {
+		MapWorkspace workspace = getCurrentWorkspace(context);
+
+		workspace.getRegions().showHide(context.getSource().asPlayer());
 
 		return Command.SINGLE_SUCCESS;
 	}

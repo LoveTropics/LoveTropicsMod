@@ -1,14 +1,23 @@
 package com.lovetropics.minigames.common.map.workspace;
 
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.Set;
+
+import javax.annotation.Nullable;
+
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.lovetropics.minigames.common.map.MapRegion;
 import com.lovetropics.minigames.common.map.MapRegions;
 import com.lovetropics.minigames.common.network.LTNetwork;
 import com.lovetropics.minigames.common.network.map.AddWorkspaceRegionMessage;
+import com.lovetropics.minigames.common.network.map.SetWorkspaceMessage;
 import com.lovetropics.minigames.common.network.map.UpdateWorkspaceRegionMessage;
+
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.ListNBT;
 import net.minecraft.network.PacketBuffer;
@@ -16,15 +25,11 @@ import net.minecraft.world.dimension.DimensionType;
 import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.fml.network.PacketDistributor;
 
-import javax.annotation.Nullable;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Set;
-
 public final class WorkspaceRegions implements Iterable<WorkspaceRegions.Entry> {
 	private final DimensionType dimension;
 	private final Int2ObjectMap<Entry> entries = new Int2ObjectOpenHashMap<>();
 	private int nextId;
+	private boolean hidden;
 
 	public WorkspaceRegions(DimensionType dimension) {
 		this.dimension = dimension;
@@ -32,6 +37,19 @@ public final class WorkspaceRegions implements Iterable<WorkspaceRegions.Entry> 
 
 	private int nextId() {
 		return nextId++;
+	}
+
+	public void showHide(ServerPlayerEntity player) {
+		if (hidden) {
+			sendPlayerMessage(new SetWorkspaceMessage(this), player);
+		} else {
+			sendPlayerMessage(SetWorkspaceMessage.hidden(), player);
+		}
+		hidden = !hidden;
+	}
+
+	private <T> void sendPlayerMessage(T message, ServerPlayerEntity player) {
+		LTNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), message);
 	}
 
 	private <T> void sendMessage(T message) {

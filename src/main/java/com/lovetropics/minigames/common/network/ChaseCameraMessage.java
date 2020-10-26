@@ -37,5 +37,6 @@ public class ChaseCameraMessage {
 		ctx.get().enqueueWork(() -> {
 			ChaseCameraManager.update(players);
 		});
+		ctx.get().setPacketHandled(true);
 	}
 }
