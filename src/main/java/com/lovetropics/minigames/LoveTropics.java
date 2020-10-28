@@ -1,5 +1,6 @@
 package com.lovetropics.minigames;
 
+import com.google.common.base.Preconditions;
 import com.lovetropics.minigames.client.data.TropicraftLangKeys;
 import com.lovetropics.minigames.common.block.LoveTropicsBlocks;
 import com.lovetropics.minigames.common.block.TrashType;
@@ -9,6 +10,8 @@ import com.lovetropics.minigames.common.command.minigames.*;
 import com.lovetropics.minigames.common.config.ConfigLT;
 import com.lovetropics.minigames.common.dimension.DimensionUtils;
 import com.lovetropics.minigames.common.dimension.biome.TropicraftBiomes;
+import com.lovetropics.minigames.common.entity.DriftwoodRider;
+import com.lovetropics.minigames.common.entity.MinigameEntities;
 import com.lovetropics.minigames.common.item.MinigameItems;
 import com.lovetropics.minigames.common.map.VoidChunkGenerator;
 import com.lovetropics.minigames.common.map.workspace.MapWorkspaceDimension;
@@ -29,6 +32,9 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.ForgeConfig;
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.capabilities.CapabilityInject;
+import net.minecraftforge.common.capabilities.CapabilityManager;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.ModLoadingContext;
@@ -61,6 +67,9 @@ public class LoveTropics {
     	Registrate.create(Constants.MODID)
     			  .itemGroup(() -> LOVE_TROPICS_ITEM_GROUP));
 
+    @CapabilityInject(DriftwoodRider.class)
+    private static Capability<DriftwoodRider> driftwoodRiderCap;
+
     public LoveTropics() {
         IEventBus modBus = FMLJavaModLoadingContext.get().getModEventBus();
 
@@ -84,6 +93,7 @@ public class LoveTropics {
         LoveTropicsBlocks.init();
         MinigameItems.init();
         DimensionUtils.init();
+        MinigameEntities.init();
 
         ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, ConfigLT.CLIENT_CONFIG);
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, ConfigLT.SERVER_CONFIG);
@@ -109,6 +119,10 @@ public class LoveTropics {
 //        TODO TropicraftBiomes.addFeatures();
 
         LTNetwork.register();
+
+        CapabilityManager.INSTANCE.register(DriftwoodRider.class, DriftwoodRider.STORAGE, () -> {
+            throw new UnsupportedOperationException();
+        });
     }
 
     private void onServerAboutToStart(final FMLServerAboutToStartEvent event) {
@@ -203,5 +217,10 @@ public class LoveTropics {
 
             prov.add(TropicraftLangKeys.SURVIVE_THE_TIDE_DOWN_TO_TWO, "IT'S DOWN TO TWO PLAYERS! %s and %s are now head to head - who will triumph above these rising tides?");
         });
+    }
+
+    public static Capability<DriftwoodRider> driftwoodRiderCap() {
+        Preconditions.checkNotNull(driftwoodRiderCap, "driftwood rider capability not initialized");
+        return driftwoodRiderCap;
     }
 }
