@@ -70,7 +70,7 @@ public abstract class MinigameDimension extends Dimension {
 
 	@Override
 	public boolean canRespawnHere() {
-		return false;
+		return true;
 	}
 
 	@Override
