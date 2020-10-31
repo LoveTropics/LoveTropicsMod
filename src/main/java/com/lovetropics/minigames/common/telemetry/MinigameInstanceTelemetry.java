@@ -40,7 +40,8 @@ public final class MinigameInstanceTelemetry implements PlayerSet.Listeners {
 		JsonObject payload = new JsonObject();
 
 		JsonObject minigame = new JsonObject();
-		minigame.addProperty("id", definition.getTelemetryKey());
+		minigame.addProperty("id", definition.getID().toString());
+		minigame.addProperty("telemetry_key", definition.getTelemetryKey());
 		minigame.addProperty("name", definition.getName().getString());
 		payload.add("minigame", minigame);
 
