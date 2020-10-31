@@ -16,8 +16,8 @@ public class EffectPackageBehavior extends DonationPackageBehavior
 {
 	private final List<StatusEffect> effects;
 
-	public EffectPackageBehavior(final String packageType, final List<StatusEffect> effects, final ITextComponent messageForPlayer, final boolean forSpecificPlayer) {
-		super(packageType, messageForPlayer, forSpecificPlayer);
+	public EffectPackageBehavior(final String packageType, final List<StatusEffect> effects, final ITextComponent messageForPlayer, final PlayerSelect playerSelect) {
+		super(packageType, messageForPlayer, playerSelect);
 
 		this.effects = effects;
 	}
@@ -26,9 +26,9 @@ public class EffectPackageBehavior extends DonationPackageBehavior
 		final String packageType = root.get("package_type").asString("");
 		final List<StatusEffect> effects = root.get("effects").asList(StatusEffect::parse);
 		final ITextComponent messageForPlayer = Util.getText(root, "message_for_player");
-		final boolean forSpecificPlayer = root.get("for_specific_player").asBoolean(true);
+		final PlayerSelect playerSelect = PlayerSelect.getFromType(root.get("player_select").asString(PlayerSelect.RANDOM.getType())).get();
 
-		return new EffectPackageBehavior(packageType, effects, messageForPlayer, forSpecificPlayer);
+		return new EffectPackageBehavior(packageType, effects, messageForPlayer, playerSelect);
 	}
 
 	@Override

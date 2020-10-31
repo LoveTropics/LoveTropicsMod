@@ -15,8 +15,8 @@ public class SpawnEntityAtPlayerPackageBehavior extends DonationPackageBehavior
 {
 	private final ResourceLocation entityId;
 
-	public SpawnEntityAtPlayerPackageBehavior(final String packageType, final ResourceLocation entityId, final ITextComponent messageForPlayer, final boolean forSpecificPlayer) {
-		super(packageType, messageForPlayer, forSpecificPlayer);
+	public SpawnEntityAtPlayerPackageBehavior(final String packageType, final ResourceLocation entityId, final ITextComponent messageForPlayer, final PlayerSelect playerSelect) {
+		super(packageType, messageForPlayer, playerSelect);
 
 		this.entityId = entityId;
 	}
@@ -25,9 +25,9 @@ public class SpawnEntityAtPlayerPackageBehavior extends DonationPackageBehavior
 		final String packageType = root.get("package_type").asString("");
 		final ResourceLocation entity_id = new ResourceLocation(root.get("entity_id").asString(""));
 		final ITextComponent messageForPlayer = Util.getText(root, "message_for_player");
-		final boolean forSpecificPlayer = root.get("for_specific_player").asBoolean(true);
+		final PlayerSelect playerSelect = PlayerSelect.getFromType(root.get("player_select").asString(PlayerSelect.RANDOM.getType())).get();
 
-		return new SpawnEntityAtPlayerPackageBehavior(packageType, entity_id, messageForPlayer, forSpecificPlayer);
+		return new SpawnEntityAtPlayerPackageBehavior(packageType, entity_id, messageForPlayer, playerSelect);
 	}
 
 	@Override

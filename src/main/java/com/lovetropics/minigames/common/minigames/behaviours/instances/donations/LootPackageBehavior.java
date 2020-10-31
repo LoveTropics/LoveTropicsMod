@@ -15,8 +15,8 @@ public class LootPackageBehavior extends DonationPackageBehavior
 {
 	private final ResourceLocation lootTable;
 
-	public LootPackageBehavior(final String packageType, final ResourceLocation lootTable, final ITextComponent messageForPlayer, final boolean forSpecificPlayer) {
-		super(packageType, messageForPlayer, forSpecificPlayer);
+	public LootPackageBehavior(final String packageType, final ResourceLocation lootTable, final ITextComponent messageForPlayer, final PlayerSelect playerSelect) {
+		super(packageType, messageForPlayer, playerSelect);
 
 		this.lootTable = lootTable;
 	}
@@ -25,9 +25,9 @@ public class LootPackageBehavior extends DonationPackageBehavior
 		final String packageType = root.get("package_type").asString("");
 		final ResourceLocation lootTable = new ResourceLocation(root.get("loot_table").asString(""));
 		final ITextComponent messageForPlayer = Util.getText(root, "message_for_player");
-		final boolean forSpecificPlayer = root.get("for_specific_player").asBoolean(true);
+		final PlayerSelect playerSelect = PlayerSelect.getFromType(root.get("player_select").asString(PlayerSelect.RANDOM.getType())).get();
 
-		return new LootPackageBehavior(packageType, lootTable, messageForPlayer, forSpecificPlayer);
+		return new LootPackageBehavior(packageType, lootTable, messageForPlayer, playerSelect);
 	}
 
 	@Override
