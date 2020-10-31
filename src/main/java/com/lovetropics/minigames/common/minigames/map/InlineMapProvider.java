@@ -31,7 +31,7 @@ public final class InlineMapProvider implements IMinigameMapProvider{
 
 	@Override
 	public CompletableFuture<MinigameMap> open(MinecraftServer server) {
-		return CompletableFuture.completedFuture(new MinigameMap(dimension));
+		return CompletableFuture.completedFuture(new MinigameMap(null, dimension));
 	}
 
 	@Override

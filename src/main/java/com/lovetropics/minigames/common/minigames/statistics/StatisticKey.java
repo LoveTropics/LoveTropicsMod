@@ -46,6 +46,8 @@ public final class StatisticKey<T> {
 	public static final StatisticKey<PlayerKey> WINNING_PLAYER = ofPlayer("winning_player").displays(playerName());
 	public static final StatisticKey<TeamsBehavior.TeamKey> WINNING_TEAM = ofTeam("winning_team");
 
+	public static final StatisticKey<String> MAP = ofString("map");
+
 	// Turtle Race
 	public static final StatisticKey<Integer> PLAYER_COLLISIONS = ofInt("player_collisions").displays(unit("collisions"));
 

@@ -26,21 +26,26 @@ import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 
+import javax.annotation.Nullable;
+
 public class LoadMapProvider implements IMinigameMapProvider {
 	private static final Logger LOGGER = LogManager.getLogger(LoadMapProvider.class);
 
+	private final String name;
 	private final ResourceLocation loadFrom;
 	private final DimensionType dimension;
 
-	public LoadMapProvider(final ResourceLocation loadFrom, final DimensionType dimension) {
+	public LoadMapProvider(final @Nullable String name, final ResourceLocation loadFrom, final DimensionType dimension) {
+		this.name = name;
 		this.loadFrom = loadFrom;
 		this.dimension = dimension;
 	}
 
 	public static <T> LoadMapProvider parse(Dynamic<T> root) {
+		String name = root.get("name").asString(null);
 		ResourceLocation loadFrom = new ResourceLocation(root.get("load_from").asString(""));
 		DimensionType dimension = DimensionType.byName(new ResourceLocation(root.get("dimension").asString("")));
-		return new LoadMapProvider(loadFrom, dimension);
+		return new LoadMapProvider(name, loadFrom, dimension);
 	}
 
 	@Override
@@ -64,7 +69,7 @@ public class LoadMapProvider implements IMinigameMapProvider {
 	public CompletableFuture<MinigameMap> open(MinecraftServer server) {
 		return loadMap(server)
 				.thenApplyAsync(metadata -> {
-					MinigameMap map = new MinigameMap(dimension, metadata.regions);
+					MinigameMap map = new MinigameMap(name, dimension, metadata.regions);
 
 					ServerWorld world = server.getWorld(dimension);
 					ServerWorld overworld = server.getWorld(DimensionType.OVERWORLD);
