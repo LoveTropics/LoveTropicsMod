@@ -1,5 +1,8 @@
 package com.lovetropics.minigames.common.block;
 
+import java.util.Locale;
+import java.util.Random;
+
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.IWaterLoggable;
@@ -12,6 +15,7 @@ import net.minecraft.state.StateContainer.Builder;
 import net.minecraft.state.properties.BlockStateProperties;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Direction;
+import net.minecraft.util.IStringSerializable;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.shapes.ISelectionContext;
@@ -19,20 +23,42 @@ import net.minecraft.util.math.shapes.VoxelShape;
 import net.minecraft.world.IBlockReader;
 import net.minecraft.world.IWorld;
 
-public class TrashBlock extends CustomShapeBlock implements IWaterLoggable {
+public class TrashBlock extends Block implements IWaterLoggable {
+
+	public enum Attachment implements IStringSerializable {
+		FLOOR,
+		WALL,
+		CEILING,
+		;
+
+		private static Attachment[] VALUES = values();
+
+		@Override
+		public String getName() {
+			return name().toLowerCase(Locale.ROOT);
+		}
+
+		public static Attachment random(Random rand) {
+			return VALUES[rand.nextInt(VALUES.length)];
+		}
+	}
 
     public static final EnumProperty<Direction> FACING = BlockStateProperties.HORIZONTAL_FACING;
+    public static final EnumProperty<Attachment> ATTACHMENT = EnumProperty.create("attachment", Attachment.class);
     public static final BooleanProperty WATERLOGGED = BlockStateProperties.WATERLOGGED;
 
-    public TrashBlock(VoxelShape shape, Properties properties) {
-        super(shape, properties);
-        setDefaultState(this.stateContainer.getBaseState().with(WATERLOGGED, false));
+    private final TrashType type;
+
+    public TrashBlock(TrashType type, Properties properties) {
+        super(properties);
+        this.type = type;
+        setDefaultState(this.stateContainer.getBaseState().with(ATTACHMENT, Attachment.FLOOR).with(WATERLOGGED, false));
     }
 
     @Override
     protected void fillStateContainer(Builder<Block, BlockState> builder) {
         super.fillStateContainer(builder);
-        builder.add(FACING, WATERLOGGED);
+        builder.add(FACING, ATTACHMENT, WATERLOGGED);
     }
 
     @Override
@@ -62,7 +88,7 @@ public class TrashBlock extends CustomShapeBlock implements IWaterLoggable {
     @Override
     public VoxelShape getShape(BlockState state, IBlockReader worldIn, BlockPos pos, ISelectionContext context) {
     	Vec3d offset = state.getOffset(worldIn, pos);
-    	return super.getShape(state, worldIn, pos, context).withOffset(offset.x, offset.y, offset.z);
+    	return type.getShape(state.get(FACING), state.get(ATTACHMENT)).withOffset(offset.x, offset.y, offset.z);
     }
 
     @Override

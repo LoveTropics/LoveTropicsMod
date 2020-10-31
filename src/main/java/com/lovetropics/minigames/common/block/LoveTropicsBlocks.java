@@ -7,6 +7,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import com.lovetropics.minigames.LoveTropics;
+import com.lovetropics.minigames.common.block.TrashBlock.Attachment;
 import com.tterrag.registrate.Registrate;
 import com.tterrag.registrate.util.entry.BlockEntry;
 
@@ -23,13 +24,14 @@ public class LoveTropicsBlocks {
     public static final Registrate REGISTRATE = LoveTropics.registrate();
 
     public static final Map<TrashType, BlockEntry<TrashBlock>> TRASH = Arrays.<TrashType>stream(TrashType.values())
-            .collect(Collectors.toMap(Function.identity(), t -> REGISTRATE.block(t.getId(), p -> new TrashBlock(t.getShape(), p))
+            .collect(Collectors.toMap(Function.identity(), t -> REGISTRATE.block(t.getId(), p -> new TrashBlock(t, p))
                     .properties(p -> Block.Properties.create(Material.PLANTS).doesNotBlockMovement())
                     .addLayer(() -> RenderType::getCutout)
                     .blockstate((ctx, prov) -> prov.getVariantBuilder(t.get()) // TODO make horizontalBlock etc support this case
                             .forAllStatesExcept(state -> ConfiguredModel.builder()
                                     .modelFile(prov.models().getExistingFile(prov.modLoc(t.getId())))
-                                    .rotationY(((int) state.get(BlockStateProperties.HORIZONTAL_FACING).getHorizontalAngle() + 180) % 360)
+                                    .rotationX(state.get(TrashBlock.ATTACHMENT) == Attachment.WALL ? 90 : state.get(TrashBlock.ATTACHMENT) == Attachment.FLOOR ? 0 : 180)
+                                    .rotationY(((int) state.get(BlockStateProperties.HORIZONTAL_FACING).getHorizontalAngle()) % 360)
                                     .build(), LadderBlock.WATERLOGGED))
                     .item()
                         .model((ctx, prov) -> prov.blockItem(t).transforms()

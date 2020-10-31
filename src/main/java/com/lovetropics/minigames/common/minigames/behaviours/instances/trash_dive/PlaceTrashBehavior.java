@@ -1,6 +1,5 @@
 package com.lovetropics.minigames.common.minigames.behaviours.instances.trash_dive;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.LongBuffer;
@@ -11,6 +10,7 @@ import org.apache.logging.log4j.Logger;
 
 import com.lovetropics.minigames.common.block.LoveTropicsBlocks;
 import com.lovetropics.minigames.common.block.TrashBlock;
+import com.lovetropics.minigames.common.block.TrashBlock.Attachment;
 import com.lovetropics.minigames.common.block.TrashType;
 import com.lovetropics.minigames.common.minigames.IMinigameInstance;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
@@ -18,6 +18,7 @@ import com.mojang.datafixers.Dynamic;
 
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
+import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.resources.IResource;
 import net.minecraft.util.Direction;
@@ -78,6 +79,7 @@ public final class PlaceTrashBehavior implements IMinigameBehavior {
 			pos.setY(centerY);
 			int count = random.nextInt(density);
 			for (int i = 0; i < count; i++) {
+				// range defines 3 standard deviations from the mean (centerY)
 				pos.move(Direction.UP, (int) ((random.nextGaussian() / 3) * range));
 				tryPlaceTrash(world, pos);
 				pos.setY(centerY);
@@ -91,6 +93,7 @@ public final class PlaceTrashBehavior implements IMinigameBehavior {
 			TrashType trashType = trashTypes[random.nextInt(trashTypes.length)];
 			world.setBlockState(pos, LoveTropicsBlocks.TRASH.get(trashType).getDefaultState()
 					.with(TrashBlock.WATERLOGGED, true)
+					.with(TrashBlock.ATTACHMENT, Block.hasSolidSideOnTop(world, pos.down()) ? Attachment.FLOOR : Attachment.random(random))
 					.with(TrashBlock.FACING, Direction.byHorizontalIndex(random.nextInt(4)))
 			);
 

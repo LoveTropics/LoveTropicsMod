@@ -5,9 +5,13 @@ import java.util.Locale;
 import javax.annotation.Nullable;
 
 import com.lovetropics.minigames.common.Util;
+import com.lovetropics.minigames.common.block.TrashBlock.Attachment;
 import com.tterrag.registrate.util.nullness.NonNullSupplier;
 
 import net.minecraft.block.Block;
+import net.minecraft.util.Direction;
+import net.minecraft.util.Direction.Axis;
+import net.minecraft.util.Direction.AxisDirection;
 import net.minecraft.util.math.shapes.VoxelShape;
 
 public enum TrashType implements NonNullSupplier<Block> {
@@ -24,7 +28,7 @@ public enum TrashType implements NonNullSupplier<Block> {
     
     private final String name;
     private final int w, h;
-    private final VoxelShape shape;
+    private final VoxelShape[] shape = new VoxelShape[6];
 
     private TrashType() {
         this(7);
@@ -43,7 +47,48 @@ public enum TrashType implements NonNullSupplier<Block> {
         this.w = w;
         this.h = h;
         float halfW = w / 2f;
-        this.shape = Block.makeCuboidShape(8 - halfW, 0, 8 - halfW, 8 + halfW, h, 8 + halfW);
+        for (int i = 0; i < 6; i++) {
+        	Direction dir = Direction.byIndex(i);
+        	float min = 8 - halfW;
+        	float max = 8 + halfW;
+        	final float minX, maxX, minY, maxY, minZ, maxZ;
+        	if (dir.getAxis().isVertical()) {
+        		minX = minZ = min;
+        		maxX = maxZ = max;
+        		if (dir == Direction.DOWN) {
+        			minY = 0;
+        			maxY = h;
+        		} else {
+        			minY = 16 - h;
+        			maxY = 16;
+        		}
+        	} else {
+        		minY = min;
+        		maxY = max;
+        		if (dir.getAxis() == Axis.X) {
+        			minZ = minY;
+        			maxZ = maxY;
+        			if (dir.getAxisDirection() == AxisDirection.POSITIVE) {
+        				maxX = 16;
+        				minX = 16 - h;
+        			} else {
+        				minX = 0;
+        				maxX = h;
+        			}
+        		} else {
+        			minX = minY;
+        			maxX = maxY;
+        			if (dir.getAxisDirection() == AxisDirection.POSITIVE) {
+        				maxZ = 16;
+        				minZ = 16 - h;
+        			} else {
+        				minZ = 0;
+        				maxZ = h;
+        			}
+        		}
+        	}
+            this.shape[i] = Block.makeCuboidShape(minX, minY, minZ, maxX, maxY, maxZ);
+        }
     }
     
     public int getModelYOffset() {
@@ -54,8 +99,12 @@ public enum TrashType implements NonNullSupplier<Block> {
         return ((16 - Math.max(w, h)) / 16f) * base + base;
     }
 
-    public VoxelShape getShape() {
-        return shape;
+    public VoxelShape getShape(Direction facing, Attachment attachment) {
+        return getShape(attachment == Attachment.WALL ? facing : attachment == Attachment.FLOOR ? Direction.DOWN : Direction.UP);
+    }
+
+    private VoxelShape getShape(Direction dir) {
+    	return shape[dir.getIndex()];
     }
     
     public String getId() {

@@ -1,19 +1,57 @@
 {
   "variants": {
-    "facing=north": {
-      "model": "ltminigames:block/plastic_bottle"
-    },
-    "facing=south": {
+    "attachment=floor,facing=north": {
       "model": "ltminigames:block/plastic_bottle",
       "y": 180
     },
-    "facing=west": {
+    "attachment=wall,facing=north": {
+      "model": "ltminigames:block/plastic_bottle",
+      "x": 90,
+      "y": 180
+    },
+    "attachment=ceiling,facing=north": {
+      "model": "ltminigames:block/plastic_bottle",
+      "x": 180,
+      "y": 180
+    },
+    "attachment=floor,facing=south": {
+      "model": "ltminigames:block/plastic_bottle"
+    },
+    "attachment=wall,facing=south": {
+      "model": "ltminigames:block/plastic_bottle",
+      "x": 90
+    },
+    "attachment=ceiling,facing=south": {
+      "model": "ltminigames:block/plastic_bottle",
+      "x": 180
+    },
+    "attachment=floor,facing=west": {
+      "model": "ltminigames:block/plastic_bottle",
+      "y": 90
+    },
+    "attachment=wall,facing=west": {
+      "model": "ltminigames:block/plastic_bottle",
+      "x": 90,
+      "y": 90
+    },
+    "attachment=ceiling,facing=west": {
+      "model": "ltminigames:block/plastic_bottle",
+      "x": 180,
+      "y": 90
+    },
+    "attachment=floor,facing=east": {
       "model": "ltminigames:block/plastic_bottle",
       "y": 270
     },
-    "facing=east": {
+    "attachment=wall,facing=east": {
       "model": "ltminigames:block/plastic_bottle",
-      "y": 90
+      "x": 90,
+      "y": 270
+    },
+    "attachment=ceiling,facing=east": {
+      "model": "ltminigames:block/plastic_bottle",
+      "x": 180,
+      "y": 270
     }
   }
 }
