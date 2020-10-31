@@ -2,6 +2,7 @@ package com.lovetropics.minigames.common.minigames;
 
 import it.unimi.dsi.fastutil.chars.CharArrayList;
 import it.unimi.dsi.fastutil.chars.CharList;
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.network.play.server.SDisplayObjectivePacket;
 import net.minecraft.network.play.server.SScoreboardObjectivePacket;
@@ -14,6 +15,7 @@ import net.minecraft.util.text.TextFormatting;
 
 import javax.annotation.Nullable;
 import java.util.Arrays;
+import java.util.Set;
 import java.util.UUID;
 
 public final class MinigameSidebar implements PlayerSet.Listeners, AutoCloseable {
@@ -26,12 +28,19 @@ public final class MinigameSidebar implements PlayerSet.Listeners, AutoCloseable
 	private static final char[] AVAILABLE_FORMATTING_CODES;
 
 	static {
+		Set<String> vanillaFormattingCodes = new ObjectOpenHashSet<>();
+		for (TextFormatting formatting : TextFormatting.values()) {
+			vanillaFormattingCodes.add(formatting.toString());
+		}
+
 		CharList availableFormattingCodes = new CharArrayList();
-		for (char c = 'a'; c <= 'z'; c++) {
-			if (TextFormatting.fromFormattingCode(c) == null) {
-				availableFormattingCodes.add(c);
+		for (char code = 'a'; code <= 'z'; code++) {
+			String control = "\u00a7" + code;
+			if (!vanillaFormattingCodes.contains(control)) {
+				availableFormattingCodes.add(code);
 			}
 		}
+
 		AVAILABLE_FORMATTING_CODES = availableFormattingCodes.toCharArray();
 	}
 
