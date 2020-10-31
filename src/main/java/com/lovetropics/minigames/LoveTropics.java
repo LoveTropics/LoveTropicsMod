@@ -143,6 +143,7 @@ public class LoveTropics {
         CommandStopPollingMinigame.register(dispatcher);
         CommandReloadConfig.register(dispatcher);
         CommandResetIslandChests.register(dispatcher);
+        CommandScanArea.register(dispatcher);
         CommandMinigameControl.register(dispatcher);
         CommandMap.register(dispatcher);
         CommandMinigameSendResults.register(dispatcher);
