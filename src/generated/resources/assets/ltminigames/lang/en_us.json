@@ -32,7 +32,7 @@
   "ltminigames.command.sorry_already_started": "Sorry, the current minigame has already started!",
   "ltminigames.command.stopped_polling": "You have successfully stopped the poll.",
   "ltminigames.command.unregistered_minigame": "You have unregistered for Minigame %s.",
-  "ltminigames.minigame.build_comptetition": "Build Competition",
+  "ltminigames.minigame.build_competition": "Build Competition",
   "ltminigames.minigame.conservation_exploration": "Conservation Exploration",
   "ltminigames.minigame.elytra_race": "Elytra Race",
   "ltminigames.minigame.finish": "The minigame will end in 10 seconds...",

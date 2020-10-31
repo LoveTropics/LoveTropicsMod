@@ -253,9 +253,6 @@ public final class DriftwoodEntity extends Entity {
 
 	@Override
 	public void applyEntityCollision(Entity entity) {
-		if (entity.getBoundingBox().minY <= this.getBoundingBox().minY) {
-			super.applyEntityCollision(entity);
-		}
 	}
 
 	@Override

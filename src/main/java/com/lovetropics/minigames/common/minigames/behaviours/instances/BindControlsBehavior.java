@@ -21,11 +21,13 @@ public final class BindControlsBehavior extends CommandInvokeBehavior implements
 
 	@Override
 	public void onStartPolling(PollingMinigameInstance minigame) {
+		super.onStartPolling(minigame);
 		addControlsTo(minigame);
 	}
 
 	@Override
 	public void onConstruct(IMinigameInstance minigame) {
+		super.onConstruct(minigame);
 		addControlsTo(minigame);
 	}
 
