@@ -4,6 +4,7 @@ import com.lovetropics.minigames.common.minigames.MinigameManager;
 import com.lovetropics.minigames.common.minigames.PlayerRole;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
@@ -26,19 +27,26 @@ public class CommandRegisterMinigame {
 		// @formatter:off
 		dispatcher.register(
 			literal("minigame")
-				.then(literal("register")
-					.executes(ctx -> registerAsRole(ctx, null))
-					.then(argument("role", StringArgumentType.word())
-						.requires(source -> source.hasPermissionLevel(2))
-						.suggests((context, builder) -> ISuggestionProvider.suggest(
-							PlayerRole.stream().map(PlayerRole::getKey),
-							builder
-						))
-						.executes(CommandRegisterMinigame::registerAsRole)
-					)
-				)
+				.then(registerBuilder("register"))
+				.then(registerBuilder("join"))
+				.then(registerBuilder("play"))
 				.then(literal("spectate").executes(ctx -> registerAsRole(ctx, PlayerRole.SPECTATOR)))
 		);
+		// @formatter:on
+	}
+
+	private static LiteralArgumentBuilder<CommandSource> registerBuilder(String name) {
+		// @formatter:off
+		return literal(name)
+				.executes(ctx -> registerAsRole(ctx, null))
+				.then(argument("role", StringArgumentType.word())
+						.requires(source -> source.hasPermissionLevel(2))
+						.suggests((context, builder) -> ISuggestionProvider.suggest(
+								PlayerRole.stream().map(PlayerRole::getKey),
+								builder
+						))
+						.executes(CommandRegisterMinigame::registerAsRole)
+				);
 		// @formatter:on
 	}
 
