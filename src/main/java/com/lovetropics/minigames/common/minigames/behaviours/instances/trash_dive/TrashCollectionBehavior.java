@@ -28,6 +28,7 @@ import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
+import net.minecraftforge.event.world.BlockEvent;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -92,7 +93,6 @@ public final class TrashCollectionBehavior implements IMinigameBehavior {
 
 		BlockState state = world.getBlockState(pos);
 		if (!isTrash(state)) {
-			event.setCanceled(true);
 			return;
 		}
 
@@ -107,6 +107,13 @@ public final class TrashCollectionBehavior implements IMinigameBehavior {
 		collectedTrash++;
 
 		sidebar.set(renderSidebar(minigame));
+	}
+
+	@Override
+	public void onPlayerBreakBlock(IMinigameInstance minigame, ServerPlayerEntity player, BlockPos pos, BlockState state, BlockEvent.BreakEvent event) {
+		if (!isTrash(state)) {
+			event.setCanceled(true);
+		}
 	}
 
 	private boolean isTrash(BlockState state) {

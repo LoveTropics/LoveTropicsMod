@@ -17,6 +17,7 @@ import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.player.AttackEntityEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
+import net.minecraftforge.event.world.BlockEvent;
 
 public interface IMinigameBehavior
 {
@@ -203,12 +204,12 @@ public interface IMinigameBehavior
 
 	/**
 	 * When a block is broken by a player within this minigame.
-	 *
-	 * @param minigame The current minigame instance
+	 *  @param minigame The current minigame instance
 	 * @param player The player that destroyed this block
 	 * @param pos The block position that was broken
 	 * @param state The block state that was broken
+	 * @param event
 	 */
-	default void onPlayerBreakBlock(IMinigameInstance minigame, ServerPlayerEntity player, BlockPos pos, BlockState state) {
+	default void onPlayerBreakBlock(IMinigameInstance minigame, ServerPlayerEntity player, BlockPos pos, BlockState state, BlockEvent.BreakEvent event) {
 	}
 }

@@ -475,7 +475,7 @@ public class MinigameManager implements IMinigameManager {
 		MinigameInstance minigame = getMinigameFor(event.getPlayer());
 		if (minigame != null) {
 			ServerPlayerEntity player = (ServerPlayerEntity) event.getPlayer();
-			dispatchOrCancel(minigame, (b, m) -> b.onPlayerBreakBlock(m, player, event.getPos(), event.getState()));
+			dispatchOrCancel(minigame, (b, m) -> b.onPlayerBreakBlock(m, player, event.getPos(), event.getState(), event));
 		}
 	}
 
