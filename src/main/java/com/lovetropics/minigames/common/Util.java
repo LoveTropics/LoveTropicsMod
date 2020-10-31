@@ -7,13 +7,17 @@ import com.mojang.datafixers.Dynamic;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.material.Material;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.MobEntity;
-import net.minecraft.entity.SharedMonsterAttributes;
+import net.minecraft.entity.*;
+import net.minecraft.entity.item.ItemEntity;
+import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.SoundCategory;
+import net.minecraft.util.SoundEvents;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.registry.Registry;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.world.World;
@@ -37,6 +41,36 @@ public class Util {
 
         return false;
     }*/
+
+    public static boolean spawnEntity(final ResourceLocation entityId, final World world, final double x, final double y, final double z) {
+        final Optional<EntityType<?>> entityType = Registry.ENTITY_TYPE.getValue(entityId);
+
+        if (entityType.isPresent()) {
+            final Entity entity = entityType.get().create(world);
+
+            if (entity != null) {
+                entity.setPosition(x, y, z);
+                return world.addEntity(entity);
+            }
+        }
+
+        return false;
+    }
+
+    public static boolean addItemStackToInventory(final ServerPlayerEntity player, final ItemStack itemstack) {
+        if (player.addItemStackToInventory(itemstack)) {
+            player.world.playSound(null, player.getPosX(), player.getPosY(), player.getPosZ(), SoundEvents.ENTITY_ITEM_PICKUP, SoundCategory.PLAYERS, 0.2F, ((player.getRNG().nextFloat() - player.getRNG().nextFloat()) * 0.7F + 1.0F) * 2.0F);
+            return true;
+        } else {
+            ItemEntity itementity = player.dropItem(itemstack, false);
+            if (itementity != null) {
+                itementity.setNoPickupDelay();
+                itementity.setOwnerId(player.getUniqueID());
+            }
+        }
+
+        return false;
+    }
 
     public static <T> ITextComponent getText(Dynamic<T> root, String textKey) {
         final Optional<T> text = root.getElement(textKey);

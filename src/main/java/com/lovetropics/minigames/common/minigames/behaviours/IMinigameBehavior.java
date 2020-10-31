@@ -1,11 +1,10 @@
 package com.lovetropics.minigames.common.minigames.behaviours;
 
 import com.google.common.collect.ImmutableList;
+import com.lovetropics.minigames.common.game_actions.DonationPackageGameAction;
 import com.lovetropics.minigames.common.minigames.IMinigameInstance;
 import com.lovetropics.minigames.common.minigames.MinigameResult;
 import com.lovetropics.minigames.common.minigames.PlayerRole;
-import com.lovetropics.minigames.common.game_actions.CarePackageGameAction;
-import com.lovetropics.minigames.common.game_actions.SabotagePackageGameAction;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
@@ -198,19 +197,7 @@ public interface IMinigameBehavior
 	 * @return Whether or not the action should considered "handled"
 	 * and sent as an acknowledgement to the backend.
 	 */
-	default boolean onCarePackageRequested(final IMinigameInstance minigame, final CarePackageGameAction action) {
-		return false;
-	}
-
-	/**
-	 * When a sabotage package has been requested by the backend.
-	 *
-	 * @param minigame The minigame that is being constructed
-	 *
-	 * @return Whether or not the action should considered "handled"
-	 * and sent as an acknowledgement to the backend.
-	 */
-	default boolean onSabotagePackageRequested(final IMinigameInstance minigame, final SabotagePackageGameAction action) {
+	default boolean onDonationPackageRequested(final IMinigameInstance minigame, final DonationPackageGameAction action) {
 		return false;
 	}
 

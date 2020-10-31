@@ -2,10 +2,9 @@ package com.lovetropics.minigames.common.telemetry;
 
 import com.google.gson.JsonObject;
 import com.lovetropics.minigames.common.config.ConfigLT;
-import com.lovetropics.minigames.common.game_actions.CarePackageGameAction;
+import com.lovetropics.minigames.common.game_actions.DonationPackageGameAction;
 import com.lovetropics.minigames.common.game_actions.PollResultGameAction;
 import com.lovetropics.minigames.common.game_actions.GameAction;
-import com.lovetropics.minigames.common.game_actions.SabotagePackageGameAction;
 
 import java.util.Optional;
 import java.util.function.Function;
@@ -13,8 +12,7 @@ import java.util.function.Supplier;
 
 public enum BackendRequest
 {
-	CARE_PACKAGE("care_package", CarePackageGameAction::fromJson, ConfigLT.GENERAL.carePackageDelay::get),
-	SABOTAGE_PACKAGE("sabotage_package", SabotagePackageGameAction::fromJson, ConfigLT.GENERAL.sabotagePackageDelay::get),
+	DONATION_PACKAGE("donation_package", DonationPackageGameAction::fromJson, ConfigLT.GENERAL.donationPackageDelay::get),
 	CHAT_EVENT("chat_event", PollResultGameAction::fromJson, ConfigLT.GENERAL.chatEventDelay::get);
 
 	public static final BackendRequest[] VALUES = values();
