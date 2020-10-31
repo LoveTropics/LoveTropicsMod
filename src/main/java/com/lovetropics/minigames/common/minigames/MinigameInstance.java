@@ -119,7 +119,6 @@ public class MinigameInstance implements IMinigameInstance
 
         map.getName().ifPresent(name -> minigame.getStatistics().getGlobal().set(StatisticKey.MAP, name));
         minigame.telemetry.start(minigame.getParticipants());
-        minigame.telemetry.finish(minigame.getStatistics());
 
         return Scheduler.INSTANCE.submit(s -> {
             MinigameResult<Unit> startResult = minigame.dispatchToBehaviors(IMinigameBehavior::onStart);
