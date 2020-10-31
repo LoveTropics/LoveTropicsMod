@@ -7,6 +7,8 @@ import com.lovetropics.minigames.common.map.MapRegion;
 import com.lovetropics.minigames.common.minigames.IMinigameInstance;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
 import com.mojang.datafixers.Dynamic;
+import it.unimi.dsi.fastutil.longs.LongArrayList;
+import it.unimi.dsi.fastutil.longs.LongList;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import net.minecraft.block.Blocks;
@@ -52,6 +54,11 @@ public final class PlaceTrashBehavior implements IMinigameBehavior {
 		ServerWorld world = minigame.getWorld();
 		Random random = world.rand;
 
+		LongList volumes = new LongArrayList(regions.size());
+		for (MapRegion region : regions) {
+			volumes.add(getVolumeFor(world, region));
+		}
+
 		long totalVolume = 0;
 		for (MapRegion region : regions) {
 			totalVolume += region.getVolume();
@@ -59,14 +66,15 @@ public final class PlaceTrashBehavior implements IMinigameBehavior {
 
 		// place trash weighted by the volumes of each region
 		int remaining = count;
-		for (MapRegion region : regions) {
-			long volume = region.getVolume();
+		for (int i = 0; i < regions.size(); i++) {
+			MapRegion region = regions.get(i);
+			long volume = volumes.getLong(i);
 			int amount = (int) (count * totalVolume / volume);
 
-			int i = 0;
-			while (i < amount) {
+			int j = 0;
+			while (j < amount) {
 				if (tryPlaceTrash(world, region)) {
-					i++;
+					j++;
 				}
 			}
 
@@ -98,6 +106,16 @@ public final class PlaceTrashBehavior implements IMinigameBehavior {
 		}
 
 		return false;
+	}
+
+	private long getVolumeFor(ServerWorld world, MapRegion region) {
+		long volume = 0;
+		for (BlockPos pos : region) {
+			if (world.getBlockState(pos).getBlock() == Blocks.WATER) {
+				volume++;
+			}
+		}
+		return volume;
 	}
 
 	public LongSet getTrashBlocks() {
