@@ -23,7 +23,7 @@ public class SpawnEntityAtRegionsPackageBehavior implements IMinigameBehavior
 	private final ResourceLocation entityId;
 	private final int entityCountPerRegion;
 
-	private List<MapRegion> regionsToSpawnAt = Lists.newArrayList();
+	private final List<MapRegion> regionsToSpawnAt = Lists.newArrayList();
 
 	public SpawnEntityAtRegionsPackageBehavior(final String packageType, final ITextComponent messageForPlayer, final String[] regionsToSpawnAtKeys, final ResourceLocation entityId, final int entityCountPerRegion) {
 		this.packageType = packageType;

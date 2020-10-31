@@ -51,7 +51,8 @@ public class DonationPackageGameAction extends MinigameGameAction
         final String packageType = obj.get("package_type").getAsString();
         final String triggerTime = obj.get("trigger_time").getAsString();
 
-        final String sendingPlayerName = obj.get("sending_player_name").getAsString();
+        final String sendingPlayerName =
+                obj.has("sending_player_name") ? obj.get("sending_player_name").getAsString() : "Anonymous";
         final UUID receivingPlayer;
 
         if (obj.has("receiving_player")) {
