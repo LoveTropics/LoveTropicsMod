@@ -1,5 +1,6 @@
 package com.lovetropics.minigames.common.telemetry;
 
+import com.google.common.base.Strings;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.gson.*;
 import com.lovetropics.minigames.Constants;
@@ -64,7 +65,7 @@ public final class Telemetry {
 		if (!isReaderConnected() && !readerConnecting) {
 			long time = System.currentTimeMillis();
 
-			if (time - lastReconnectTime >= RECONNECT_INTERVAL) {
+			if (time - lastReconnectTime >= RECONNECT_INTERVAL && !Strings.isNullOrEmpty(ConfigLT.TELEMETRY.authToken.get())) {
 				openReader().handle((reader, throwable) -> {
 					if (throwable == null) {
 						this.reader = reader;
