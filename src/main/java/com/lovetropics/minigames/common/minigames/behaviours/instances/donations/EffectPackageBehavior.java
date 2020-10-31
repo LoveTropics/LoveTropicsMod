@@ -82,7 +82,7 @@ public class EffectPackageBehavior extends DonationPackageBehavior
 			final ResourceLocation type = new ResourceLocation(root.get("type").asString(""));
 			final int seconds = root.get("seconds").asInt(0);
 			final int amplifier = root.get("amplifier").asInt(0);
-			final boolean hideParticles = root.get("hide_particles").asBoolean(true);
+			final boolean hideParticles = root.get("hide_particles").asBoolean(false);
 
 			return new StatusEffect(type, seconds, amplifier, hideParticles);
 		}
