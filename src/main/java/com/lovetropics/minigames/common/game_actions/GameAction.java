@@ -27,6 +27,22 @@ public abstract class GameAction implements Comparable<GameAction> {
     public abstract boolean resolve(final MinecraftServer server);
 
     @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+
+        if (obj instanceof GameAction) {
+            return ((GameAction) obj).uuid.equals(uuid);
+        }
+
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return uuid.hashCode();
+    }
+
+    @Override
     public int compareTo(final GameAction other) {
         final LocalDateTime thisDate = getDate(triggerTime);
         final LocalDateTime thatDate = getDate(other.triggerTime);

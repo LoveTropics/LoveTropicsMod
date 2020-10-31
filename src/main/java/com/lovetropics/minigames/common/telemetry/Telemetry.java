@@ -2,26 +2,20 @@ package com.lovetropics.minigames.common.telemetry;
 
 import com.google.common.base.Strings;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import com.google.gson.*;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.common.config.ConfigLT;
-import com.lovetropics.minigames.common.game_actions.GameAction;
 import com.lovetropics.minigames.common.minigames.IMinigameDefinition;
-import com.lovetropics.minigames.common.minigames.statistics.MinigameStatistics;
 import com.lovetropics.minigames.common.minigames.statistics.PlayerKey;
+import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import org.apache.commons.io.IOUtils;
+import net.minecraftforge.fml.server.ServerLifecycleHooks;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -34,11 +28,6 @@ public final class Telemetry {
 
 	private static final Logger LOGGER = LogManager.getLogger(Telemetry.class);
 
-	private static final Gson GSON = new GsonBuilder()
-			.registerTypeAdapter(MinigameStatistics.class, MinigameStatistics.SERIALIZER)
-			.registerTypeAdapter(PlayerKey.class, PlayerKey.PROFILE_SERIALIZER)
-			.create();
-
 	private static final ExecutorService EXECUTOR = Executors.newSingleThreadExecutor(
 			new ThreadFactoryBuilder()
 					.setNameFormat("lt-telemetry")
@@ -46,22 +35,30 @@ public final class Telemetry {
 					.build()
 	);
 
+	private final TelemetrySender sender = TelemetrySender.Http.openFromConfig();
 	private TelemetryReader reader;
 	private boolean readerConnecting;
 
 	private long lastReconnectTime;
+
+	private MinigameInstanceTelemetry instance;
 
 	private Telemetry() {
 	}
 
 	@SubscribeEvent
 	public static void tick(TickEvent.ServerTickEvent event) {
+		final MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
+		if (server == null) {
+			return;
+		}
+
 		if (event.phase == TickEvent.Phase.END) {
-			Telemetry.INSTANCE.tick();
+			Telemetry.INSTANCE.tick(server);
 		}
 	}
 
-	private void tick() {
+	private void tick(MinecraftServer server) {
 		if (!isReaderConnected() && !readerConnecting) {
 			long time = System.currentTimeMillis();
 
@@ -80,75 +77,26 @@ public final class Telemetry {
 				lastReconnectTime = time;
 			}
 		}
+
+		if (instance != null) {
+			instance.tick(server);
+		}
 	}
 
 	public MinigameInstanceTelemetry openMinigame(IMinigameDefinition definition, PlayerKey initiator) {
 		return MinigameInstanceTelemetry.open(this, definition, initiator);
 	}
 
-	public void acknowledgeActionDelivery(final BackendRequest request, final GameAction action) {
-		final JsonObject object = new JsonObject();
-		object.addProperty("request", request.getId());
-		object.addProperty("uuid", action.uuid.toString());
-
-		post(ConfigLT.TELEMETRY.actionResolvedEndpoint.get(), object);
-	}
-
 	void post(final String endpoint, final JsonElement body) {
-		post(endpoint, GSON.toJson(body));
+		EXECUTOR.submit(() -> sender.post(endpoint, body));
 	}
 
 	void post(final String endpoint, final String body) {
-		EXECUTOR.submit(() -> {
-			try {
-				HttpURLConnection connection = openAuthorizedConnection("POST", endpoint);
-				try {
-					LOGGER.debug("Posting {} to {}", body, endpoint);
-
-					try (OutputStream output = connection.getOutputStream()) {
-						IOUtils.write(body, output, StandardCharsets.UTF_8);
-					}
-
-					int code = connection.getResponseCode();
-					if (code == HttpURLConnection.HTTP_OK) {
-						try (InputStream input = connection.getInputStream()) {
-							String response = IOUtils.toString(input, StandardCharsets.UTF_8);
-							LOGGER.debug("Received response from post to {}: {}", endpoint, response);
-						}
-					} else {
-						String response = connection.getResponseMessage();
-						LOGGER.error("Received unexpected response code ({}) from {}: {}", code, endpoint, response);
-					}
-				} finally {
-					connection.disconnect();
-				}
-			} catch (Exception e) {
-				LOGGER.error("An exception occurred while trying to POST to {}", endpoint, e);
-			}
-		});
+		EXECUTOR.submit(() -> sender.post(endpoint, body));
 	}
 
-	private HttpURLConnection openAuthorizedConnection(String method, String endpoint) throws IOException {
-		final URL url = new URL(getUrlTo(endpoint));
-		HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-		connection.setRequestMethod(method);
-		connection.setDoOutput(true);
-		connection.setRequestProperty("User-Agent", "Tropicraft 1.0 (tropicraft.net)");
-		connection.setRequestProperty("Content-Type", "application/json");
-		connection.setRequestProperty("Authorization", "Bearer " + ConfigLT.TELEMETRY.authToken.get());
-		return connection;
-	}
-
-	private String getUrlTo(final String endpoint) {
-		StringBuilder builder = new StringBuilder();
-		builder.append(ConfigLT.TELEMETRY.baseUrl.get());
-		if (ConfigLT.TELEMETRY.port.get() > 0) {
-			builder.append(':');
-			builder.append(ConfigLT.TELEMETRY.port.get());
-		}
-		builder.append('/');
-		builder.append(endpoint);
-		return builder.toString();
+	CompletableFuture<JsonElement> get(final String endpoint) {
+		return CompletableFuture.supplyAsync(() -> sender.get(endpoint), EXECUTOR);
 	}
 
 	private CompletableFuture<TelemetryReader> openReader() {
@@ -186,13 +134,25 @@ public final class Telemetry {
 	}
 
 	private void handleCreatePayload(JsonObject object, String type) {
-		BackendRequest.getFromId(type).ifPresent(request -> {
-			GameAction action = request.getGameActionFactory().apply(object.getAsJsonObject("payload"));
-			GameActionHandler.queueGameAction(request, action);
-		});
+		MinigameInstanceTelemetry instance = this.instance;
+
+		// we can ignore the payload because we will request it again when a minigame starts
+		if (instance == null) return;
+
+		instance.handleCreatePayload(object, type);
 	}
 
 	public boolean isReaderConnected() {
 		return reader != null && !reader.isClosed();
+	}
+
+	void openInstance(MinigameInstanceTelemetry instance) {
+		this.instance = instance;
+	}
+
+	void closeInstance(MinigameInstanceTelemetry instance) {
+		if (this.instance == instance) {
+			this.instance = null;
+		}
 	}
 }

@@ -3,6 +3,7 @@ package com.lovetropics.minigames.common.minigames.behaviours;
 import com.lovetropics.minigames.common.minigames.behaviours.instances.*;
 import com.lovetropics.minigames.common.minigames.behaviours.instances.conservation_exploration.RecordCreaturesBehavior;
 import com.lovetropics.minigames.common.minigames.behaviours.instances.conservation_exploration.SpawnCreaturesBehavior;
+import com.lovetropics.minigames.common.minigames.behaviours.instances.donations.*;
 import com.lovetropics.minigames.common.minigames.behaviours.instances.statistics.*;
 import com.lovetropics.minigames.common.minigames.behaviours.instances.survive_the_tide.*;
 import com.lovetropics.minigames.common.minigames.behaviours.instances.trash_dive.PlaceTrashBehavior;
@@ -58,6 +59,11 @@ public class MinigameBehaviorTypes {
 	public static final RegistryObject<IMinigameBehaviorType<BlocksBrokenTrackerBehavior>> BLOCKS_BROKEN_TRACKER;
 
 	public static final RegistryObject<IMinigameBehaviorType<DisplayLeaderboardOnFinishBehavior<?>>> DISPLAY_LEADERBOARD_ON_FINISH;
+	public static final RegistryObject<IMinigameBehaviorType<LootPackageBehavior>> LOOT_PACKAGE;
+	public static final RegistryObject<IMinigameBehaviorType<EffectPackageBehavior>> EFFECT_PACKAGE;
+	public static final RegistryObject<IMinigameBehaviorType<SwapPlayersPackageBehavior>> SWAP_PLAYERS_PACKAGE;
+	public static final RegistryObject<IMinigameBehaviorType<SpawnEntityAtPlayerPackageBehavior>> SPAWN_ENTITY_AT_PLAYER_PACKAGE;
+	public static final RegistryObject<IMinigameBehaviorType<SpawnEntityAtRegionsPackageBehavior>> SPAWN_ENTITY_AT_REGIONS_PACKAGE;
 
 	public static <T extends IMinigameBehavior> RegistryObject<IMinigameBehaviorType<T>> register(final String name, final MinigameBehaviorType.Factory<T> instanceFactory) {
 		return MINIGAME_BEHAVIOURS_REGISTER.register(name, () -> new MinigameBehaviorType<>(instanceFactory));
@@ -114,5 +120,10 @@ public class MinigameBehaviorTypes {
 		BLOCKS_BROKEN_TRACKER = register("blocks_broken_tracker", BlocksBrokenTrackerBehavior::parse);
 
 		DISPLAY_LEADERBOARD_ON_FINISH = register("display_leaderboard_on_finish", DisplayLeaderboardOnFinishBehavior::parse);
+		LOOT_PACKAGE = register("loot_package", LootPackageBehavior::parse);
+		EFFECT_PACKAGE = register("effect_package", EffectPackageBehavior::parse);
+		SWAP_PLAYERS_PACKAGE = register("swap_players_package", SwapPlayersPackageBehavior::parse);
+		SPAWN_ENTITY_AT_PLAYER_PACKAGE = register("spawn_entity_at_player_package", SpawnEntityAtPlayerPackageBehavior::parse);
+		SPAWN_ENTITY_AT_REGIONS_PACKAGE = register("spawn_entity_at_regions_package", SpawnEntityAtRegionsPackageBehavior::parse);
 	}
 }

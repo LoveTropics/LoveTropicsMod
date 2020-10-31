@@ -1,94 +1,82 @@
 package com.lovetropics.minigames.common.telemetry;
 
-import com.google.common.collect.Maps;
-import com.google.common.collect.Queues;
-import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.common.game_actions.GameAction;
 import net.minecraft.server.MinecraftServer;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.server.ServerLifecycleHooks;
 
+import java.util.EnumMap;
 import java.util.Map;
 import java.util.Queue;
+import java.util.concurrent.PriorityBlockingQueue;
 
-@Mod.EventBusSubscriber(modid = Constants.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
-public class GameActionHandler
-{
-    public static final Map<BackendRequest, PollingGameActions> GAME_ACTION_QUEUES = Maps.newHashMap();
+public final class GameActionHandler {
+	private final MinigameInstanceTelemetry telemetry;
+	private final Map<BackendRequest, ActionsQueue> queues = new EnumMap<>(BackendRequest.class);
 
-    @SubscribeEvent
-    public static void tick(TickEvent.ServerTickEvent event) {
-        if (event.phase != TickEvent.Phase.END) return;
+	public GameActionHandler(MinigameInstanceTelemetry telemetry) {
+		this.telemetry = telemetry;
+	}
 
-        final MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
-        if (server == null) {
-            return;
-        }
-        final int tick = server.getTickCounter();
+	void pollGameActions(final MinecraftServer server, final int tick) {
+		for (final Map.Entry<BackendRequest, ActionsQueue> entry : queues.entrySet()) {
+			final BackendRequest request = entry.getKey();
+			final ActionsQueue polling = entry.getValue();
 
-        pollGameActions(server, tick);
-    }
+			if (!polling.isEmpty() && polling.tryPoll(tick)) {
+				final GameAction action = polling.poll();
+				if (action == null) {
+					continue;
+				}
 
-    private static void pollGameActions(final MinecraftServer server, final int tick) {
-        for (final Map.Entry<BackendRequest, PollingGameActions> entry : GAME_ACTION_QUEUES.entrySet()) {
-            final BackendRequest request = entry.getKey();
-            final PollingGameActions polling = entry.getValue();
+				// If we resolved the action, send acknowledgement to the backend
+				if (action.resolve(server)) {
+					telemetry.acknowledgeActionDelivery(request, action);
+				}
+			}
+		}
+	}
 
-            if (tick >= polling.getLastPolledTick() + (request.getPollingIntervalSeconds() * 20))
-            {
-                if (!polling.getQueue().isEmpty())
-                {
-                    final GameAction action = polling.getQueue().poll();
-                    if (action == null)
-                    {
-                        continue;
-                    }
+	public void enqueue(final BackendRequest requestType, final GameAction action) {
+		ActionsQueue queue = getQueueFor(requestType);
+		queue.offer(action);
+	}
 
-                    // If we resolved the action, send acknowledgement to the backend
-                    if (action.resolve(server))
-                    {
-                        Telemetry.INSTANCE.acknowledgeActionDelivery(request, action);
-                    }
-                }
+	private ActionsQueue getQueueFor(BackendRequest requestType) {
+		ActionsQueue queue = queues.get(requestType);
+		if (queue == null) {
+			queues.put(requestType, queue = new ActionsQueue(requestType));
+		}
+		return queue;
+	}
 
-                polling.setLastPolledTick(tick);
-            }
-        }
-    }
+	static class ActionsQueue {
+		private final BackendRequest requestType;
+		private int lastPolledTick = 0;
+		private final Queue<GameAction> queue = new PriorityBlockingQueue<>();
 
-    public static void queueGameAction(final BackendRequest requestType, final GameAction action) {
-        if (GAME_ACTION_QUEUES.containsKey(requestType)) {
-            GAME_ACTION_QUEUES.get(requestType).getQueue().offer(action);
-        } else {
-            GAME_ACTION_QUEUES.put(requestType, new PollingGameActions());
-        }
-    }
+		ActionsQueue(BackendRequest requestType) {
+			this.requestType = requestType;
+		}
 
-    public static class PollingGameActions
-    {
-        private int lastPolledTick = 0;
-        private final Queue<GameAction> queue;
+		public boolean tryPoll(int tick) {
+			if (tick >= lastPolledTick + (requestType.getPollingIntervalSeconds() * 20)) {
+				lastPolledTick = tick;
+				return true;
+			}
+			return false;
+		}
 
-        public PollingGameActions()
-        {
-            queue = Queues.newPriorityBlockingQueue();
-        }
+		public void offer(GameAction action) {
+			if (!queue.contains(action)) {
+				queue.offer(action);
+			}
+		}
 
-        public void setLastPolledTick(int tick) {
-            lastPolledTick = tick;
-        }
+		public GameAction poll() {
+			return queue.poll();
+		}
 
-        public int getLastPolledTick()
-        {
-            return lastPolledTick;
-        }
-
-        public Queue<GameAction> getQueue()
-        {
-            return queue;
-        }
-    }
-
+		public boolean isEmpty() {
+			return queue.isEmpty();
+		}
+	}
 }

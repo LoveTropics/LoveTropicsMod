@@ -2,6 +2,7 @@ package com.lovetropics.minigames.common.dimension;
 
 import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.common.minigames.dimensions.ConservationExplorationDimension;
+import com.lovetropics.minigames.common.minigames.dimensions.SignatureRunDimension;
 import com.lovetropics.minigames.common.minigames.dimensions.SurviveTheTideDimension;
 import com.lovetropics.minigames.common.minigames.dimensions.TrashDiveDimension;
 import com.tterrag.registrate.Registrate;
@@ -34,6 +35,12 @@ public class DimensionUtils {
 
 	public static final RegistryEntry<ModDimension> TRASH_DIVE_MOD_DIMENSION = REGISTRATE
 			.dimension("trash_dive_game", TrashDiveDimension::new)
+			.keepLoaded(false)
+			.hasSkyLight(true)
+			.register();
+
+	public static final RegistryEntry<ModDimension> SIGNATURE_RUN_MOD_DIMENSION = REGISTRATE
+			.dimension("signature_run_game", SignatureRunDimension::new)
 			.keepLoaded(false)
 			.hasSkyLight(true)
 			.register();

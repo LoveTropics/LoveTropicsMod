@@ -31,10 +31,14 @@ public interface IMinigameInstance extends MinigameControllable, BehaviorDispatc
     @Override
     Collection<IMinigameBehavior> getBehaviors();
 
-    <T extends IMinigameBehavior> Optional<T> getBehavior(IMinigameBehaviorType<T> type);
+    <T extends IMinigameBehavior> Collection<T> getBehaviors(IMinigameBehaviorType<T> type);
 
-    default <T extends IMinigameBehavior> T getBehaviorOrThrow(IMinigameBehaviorType<T> type) {
-        return getBehavior(type).orElseThrow(RuntimeException::new);
+    default <T extends IMinigameBehavior> Optional<T> getOneBehavior(IMinigameBehaviorType<T> type) {
+        return getBehaviors(type).stream().findFirst();
+    }
+
+    default <T extends IMinigameBehavior> T getOneBehaviorOrThrow(IMinigameBehaviorType<T> type) {
+        return getOneBehavior(type).orElseThrow(RuntimeException::new);
     }
 
     /**

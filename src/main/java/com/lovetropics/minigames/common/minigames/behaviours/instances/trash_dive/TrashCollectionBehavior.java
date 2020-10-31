@@ -8,6 +8,7 @@ import com.lovetropics.minigames.common.minigames.PlayerSet;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehaviorType;
 import com.lovetropics.minigames.common.minigames.behaviours.MinigameBehaviorTypes;
+import com.lovetropics.minigames.common.minigames.behaviours.instances.TimedMinigameBehavior;
 import com.lovetropics.minigames.common.minigames.statistics.*;
 import com.mojang.datafixers.Dynamic;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
@@ -66,9 +67,9 @@ public final class TrashCollectionBehavior implements IMinigameBehavior {
 		sidebar = MinigameSidebar.open(sidebarTitle, minigame.getPlayers());
 		sidebar.set(renderSidebar(minigame));
 
-		minigame.getBehavior(MinigameBehaviorTypes.TIMED.get()).ifPresent(timed -> {
+		for (TimedMinigameBehavior timed : minigame.getBehaviors(MinigameBehaviorTypes.TIMED.get())) {
 			timed.onFinish(this::triggerGameOver);
-		});
+		}
 
 		PlayerSet players = minigame.getPlayers();
 		players.addPotionEffect(new EffectInstance(Effects.NIGHT_VISION, Integer.MAX_VALUE, 1, false, false));

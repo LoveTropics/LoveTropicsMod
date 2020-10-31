@@ -25,9 +25,7 @@ public class ConfigLT {
 
         public final BooleanValue UseCrouch;
 
-        public final IntValue carePackageDelay;
-
-        public final IntValue sabotagePackageDelay;
+        public final IntValue donationPackageDelay;
 
         public final IntValue chatEventDelay;
 
@@ -40,13 +38,9 @@ public class ConfigLT {
             UseCrouch = CLIENT_BUILDER.comment("Enable crawling anywhere by pressing the sprint key while holding down the sneak key")
                     .define("UseCrawl", true);
 
-            carePackageDelay = COMMON_BUILDER
+            donationPackageDelay = COMMON_BUILDER
                 .comment("Delay (in seconds) between care packages")
-                .defineInRange("carePackageDelay", 10, 0, 99999);
-
-            sabotagePackageDelay = COMMON_BUILDER
-                .comment("Delay (in seconds) between sabotage packages")
-                .defineInRange("sabotagePackageDelay", 10, 0, 99999);
+                .defineInRange("donationPackageDelay", 10, 0, 99999);
 
             chatEventDelay = COMMON_BUILDER
                 .comment("Delay (in seconds) between chat events")

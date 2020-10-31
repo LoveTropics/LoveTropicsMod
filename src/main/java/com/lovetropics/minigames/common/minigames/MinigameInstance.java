@@ -133,7 +133,7 @@ public class MinigameInstance implements IMinigameInstance
     private MinigameResult<Unit> validateBehaviors() {
         for (IMinigameBehavior behavior : getBehaviors()) {
             for (IMinigameBehaviorType<? extends IMinigameBehavior> dependency : behavior.dependencies()) {
-                if (!getBehavior(dependency).isPresent()) {
+                if (getBehaviors(dependency).isEmpty()) {
                     return MinigameResult.error(new StringTextComponent(behavior + " is missing dependency on " + dependency + "!"));
                 }
             }
@@ -191,8 +191,8 @@ public class MinigameInstance implements IMinigameInstance
     }
 
     @Override
-    public <T extends IMinigameBehavior> Optional<T> getBehavior(IMinigameBehaviorType<T> type) {
-        return behaviors.getBehavior(type);
+    public <T extends IMinigameBehavior> Collection<T> getBehaviors(IMinigameBehaviorType<T> type) {
+        return behaviors.getBehaviors(type);
     }
 
     @Override

@@ -3,11 +3,13 @@ package com.lovetropics.minigames.common.telemetry;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.lovetropics.minigames.common.config.ConfigLT;
+import com.lovetropics.minigames.common.game_actions.GameAction;
 import com.lovetropics.minigames.common.minigames.IMinigameDefinition;
 import com.lovetropics.minigames.common.minigames.PlayerSet;
 import com.lovetropics.minigames.common.minigames.statistics.MinigameStatistics;
 import com.lovetropics.minigames.common.minigames.statistics.PlayerKey;
 import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.server.MinecraftServer;
 
 import javax.annotation.Nullable;
 import java.util.UUID;
@@ -19,6 +21,8 @@ public final class MinigameInstanceTelemetry implements PlayerSet.Listeners {
 	private final IMinigameDefinition definition;
 	private final PlayerKey initiator;
 
+	private final GameActionHandler actions = new GameActionHandler(this);
+
 	private PlayerSet participants;
 	private boolean closed;
 
@@ -27,6 +31,8 @@ public final class MinigameInstanceTelemetry implements PlayerSet.Listeners {
 		this.instanceId = instanceId;
 		this.definition = definition;
 		this.initiator = initiator;
+
+		this.telemetry.openInstance(this);
 	}
 
 	static MinigameInstanceTelemetry open(Telemetry telemetry, IMinigameDefinition definition, PlayerKey initiator) {
@@ -63,15 +69,20 @@ public final class MinigameInstanceTelemetry implements PlayerSet.Listeners {
 
 		post(ConfigLT.TELEMETRY.minigameEndEndpoint.get(), payload);
 
-		closed = true;
-		participants.removeListener(this);
+		close();
 	}
 
 	public void cancel() {
 		post(ConfigLT.TELEMETRY.minigameCancelEndpoint.get(), new JsonObject());
+		close();
+	}
 
-		participants.removeListener(this);
-		closed = true;
+	public void acknowledgeActionDelivery(final BackendRequest request, final GameAction action) {
+		final JsonObject object = new JsonObject();
+		object.addProperty("request", request.getId());
+		object.addProperty("uuid", action.uuid.toString());
+
+		telemetry.post(ConfigLT.TELEMETRY.actionResolvedEndpoint.get(), object);
 	}
 
 	@Override
@@ -106,5 +117,23 @@ public final class MinigameInstanceTelemetry implements PlayerSet.Listeners {
 
 		payload.addProperty("id", instanceId.toString());
 		telemetry.post(endpoint, payload);
+	}
+
+	private void close() {
+		closed = true;
+		participants.removeListener(this);
+
+		telemetry.closeInstance(this);
+	}
+
+	void tick(MinecraftServer server) {
+		actions.pollGameActions(server, server.getTickCounter());
+	}
+
+	void handleCreatePayload(JsonObject object, String type) {
+		BackendRequest.getFromId(type).ifPresent(request -> {
+			GameAction action = request.createAction(object.getAsJsonObject("payload"));
+			actions.enqueue(request, action);
+		});
 	}
 }

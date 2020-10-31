@@ -30,9 +30,9 @@ public final class SpawnCreaturesBehavior implements IMinigameBehavior {
 	@Override
 	public void onStart(IMinigameInstance minigame) {
 		int spawnedCount = spawnEntities(minigame);
-		minigame.getBehavior(MinigameBehaviorTypes.RECORD_CREATURES.get()).ifPresent(record -> {
-			record.setTotalEntityCount(spawnedCount);
-		});
+		for (RecordCreaturesBehavior behavior : minigame.getBehaviors(MinigameBehaviorTypes.RECORD_CREATURES.get())) {
+			behavior.setTotalEntityCount(spawnedCount);
+		}
 	}
 
 	private int spawnEntities(IMinigameInstance minigame) {

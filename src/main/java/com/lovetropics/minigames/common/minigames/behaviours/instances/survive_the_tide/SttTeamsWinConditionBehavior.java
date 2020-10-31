@@ -39,7 +39,7 @@ public class SttTeamsWinConditionBehavior extends SttWinConditionBehavior {
 			return;
 		}
 
-		Optional<TeamsBehavior> teamsBehaviorOpt = minigame.getBehavior(MinigameBehaviorTypes.TEAMS.get());
+		Optional<TeamsBehavior> teamsBehaviorOpt = minigame.getOneBehavior(MinigameBehaviorTypes.TEAMS.get());
 		if (!teamsBehaviorOpt.isPresent()) {
 			return;
 		}
