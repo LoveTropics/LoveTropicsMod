@@ -27,7 +27,7 @@ public final class TimeSurvivedTrackerBehavior implements IMinigameBehavior {
 	@Override
 	public void worldUpdate(IMinigameInstance minigame, World world) {
 		if (startTime == 0 && afterPhase != null) {
-			minigame.getBehavior(MinigameBehaviorTypes.PHASES.get()).ifPresent(phases -> {
+			minigame.getOneBehavior(MinigameBehaviorTypes.PHASES.get()).ifPresent(phases -> {
 				if (!phases.getCurrentPhase().is(afterPhase)) {
 					startTime = minigame.ticks();
 				}
