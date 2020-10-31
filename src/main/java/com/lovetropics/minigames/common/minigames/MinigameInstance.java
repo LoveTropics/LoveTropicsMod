@@ -157,8 +157,7 @@ public class MinigameInstance implements IMinigameInstance
 
         // remove the player from any other roles
         for (PlayerRole otherRole : PlayerRole.ROLES) {
-            if (otherRole != role) {
-                roles.get(otherRole).remove(player);
+            if (otherRole != role && roles.get(otherRole).remove(player)) {
                 lastRole = otherRole;
             }
         }
