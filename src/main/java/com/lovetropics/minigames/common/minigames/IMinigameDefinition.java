@@ -25,6 +25,14 @@ public interface IMinigameDefinition
      */
     ResourceLocation getID();
 
+	/**
+	 * An identifier for telemetry usage, so that variants of games can share
+	 * statistics. Defaults to the ID if not set in the JSON.
+	 * 
+	 * @return The telemetry key for this minigame.
+	 */
+    String getTelemetryKey();
+
     /**
      * Used within messages sent to players as the minigame starts, stops, etc.
      * @return The unlocalized key string for the name of this minigame.

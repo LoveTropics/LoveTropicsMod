@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 
 public final class MinigameConfig implements IMinigameDefinition {
 	public final ResourceLocation id;
+	public final String telemetryKey;
 	public final String translationKey;
 	public final IMinigameMapProvider mapProvider;
 	public final int minimumParticipants;
@@ -21,6 +22,7 @@ public final class MinigameConfig implements IMinigameDefinition {
 
 	public MinigameConfig(
 			ResourceLocation id,
+			String telemetryKey,
 			String translationKey,
 			IMinigameMapProvider mapProvider,
 			int minimumParticipants,
@@ -28,6 +30,7 @@ public final class MinigameConfig implements IMinigameDefinition {
 			List<ConfiguredBehavior<?>> behaviors
 	) {
 		this.id = id;
+		this.telemetryKey = telemetryKey;
 		this.translationKey = translationKey;
 		this.mapProvider = mapProvider;
 		this.minimumParticipants = minimumParticipants;
@@ -36,6 +39,7 @@ public final class MinigameConfig implements IMinigameDefinition {
 	}
 
 	public static <T> MinigameConfig deserialize(ResourceLocation id, Dynamic<T> root) {
+		String telemetryKey = root.get("telemetry_key").asString(id.toString());
 		String translationKey = root.get("translation_key").asString("");
 
 		IMinigameMapProvider mapProvider = IMinigameMapProvider.parse(root.get("map_provider").orElseEmptyMap());
@@ -51,6 +55,7 @@ public final class MinigameConfig implements IMinigameDefinition {
 
 		return new MinigameConfig(
 				id,
+				telemetryKey,
 				translationKey,
 				mapProvider,
 				minimumParticipants,
@@ -85,6 +90,11 @@ public final class MinigameConfig implements IMinigameDefinition {
 	@Override
 	public ResourceLocation getID() {
 		return id;
+	}
+
+	@Override
+	public String getTelemetryKey() {
+		return telemetryKey;
 	}
 
 	@Override
