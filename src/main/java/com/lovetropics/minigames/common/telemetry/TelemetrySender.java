@@ -1,8 +1,6 @@
 package com.lovetropics.minigames.common.telemetry;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonElement;
+import com.google.gson.*;
 import com.lovetropics.minigames.common.config.ConfigLT;
 import com.lovetropics.minigames.common.minigames.statistics.MinigameStatistics;
 import com.lovetropics.minigames.common.minigames.statistics.PlayerKey;
@@ -10,9 +8,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -30,7 +26,11 @@ public interface TelemetrySender {
 
 	void post(final String endpoint, final String body);
 
+	JsonElement get(final String endpoint);
+
 	final class Http implements TelemetrySender {
+		private static final JsonParser PARSER = new JsonParser();
+
 		private final String url;
 		private final String authToken;
 
@@ -53,30 +53,41 @@ public interface TelemetrySender {
 		@Override
 		public void post(String endpoint, String body) {
 			try {
+				LOGGER.debug("Posting {} to {}", body, endpoint);
+
 				HttpURLConnection connection = openAuthorizedConnection("POST", endpoint);
-				try {
-					LOGGER.debug("Posting {} to {}", body, endpoint);
 
-					try (OutputStream output = connection.getOutputStream()) {
-						IOUtils.write(body, output, StandardCharsets.UTF_8);
-					}
+				try (OutputStream output = connection.getOutputStream()) {
+					IOUtils.write(body, output, StandardCharsets.UTF_8);
+				}
 
-					int code = connection.getResponseCode();
-					if (code == HttpURLConnection.HTTP_OK) {
-						try (InputStream input = connection.getInputStream()) {
-							String response = IOUtils.toString(input, StandardCharsets.UTF_8);
-							LOGGER.debug("Received response from post to {}: {}", endpoint, response);
-						}
-					} else {
-						String response = connection.getResponseMessage();
-						LOGGER.error("Received unexpected response code ({}) from {}: {}", code, endpoint, response);
+				int code = connection.getResponseCode();
+				if (code == HttpURLConnection.HTTP_OK) {
+					try (InputStream input = connection.getInputStream()) {
+						String response = IOUtils.toString(input, StandardCharsets.UTF_8);
+						LOGGER.debug("Received response from post to {}: {}", endpoint, response);
 					}
-				} finally {
-					connection.disconnect();
+				} else {
+					String response = connection.getResponseMessage();
+					LOGGER.error("Received unexpected response code ({}) from {}: {}", code, endpoint, response);
 				}
 			} catch (Exception e) {
 				LOGGER.error("An exception occurred while trying to POST to {}", endpoint, e);
 			}
+		}
+
+		@Override
+		public JsonElement get(String endpoint) {
+			try {
+				HttpURLConnection connection = openAuthorizedConnection("GET", endpoint);
+				try (InputStream input = connection.getInputStream()) {
+					return PARSER.parse(new BufferedReader(new InputStreamReader(input)));
+				}
+			} catch (Exception e) {
+				LOGGER.error("An exception occurred while trying to GET from {}", endpoint, e);
+			}
+
+			return new JsonObject();
 		}
 
 		private HttpURLConnection openAuthorizedConnection(String method, String endpoint) throws IOException {
@@ -112,6 +123,11 @@ public interface TelemetrySender {
 		public void post(String endpoint, String body) {
 			LOGGER.info("POST to {}", endpoint);
 			LOGGER.info(body);
+		}
+
+		@Override
+		public JsonElement get(String endpoint) {
+			return new JsonObject();
 		}
 	}
 }

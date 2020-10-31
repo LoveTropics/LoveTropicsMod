@@ -6,12 +6,13 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.common.config.ConfigLT;
-import com.lovetropics.minigames.common.game_actions.GameAction;
 import com.lovetropics.minigames.common.minigames.IMinigameDefinition;
 import com.lovetropics.minigames.common.minigames.statistics.PlayerKey;
+import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.server.ServerLifecycleHooks;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -40,17 +41,24 @@ public final class Telemetry {
 
 	private long lastReconnectTime;
 
+	private MinigameInstanceTelemetry instance;
+
 	private Telemetry() {
 	}
 
 	@SubscribeEvent
 	public static void tick(TickEvent.ServerTickEvent event) {
+		final MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
+		if (server == null) {
+			return;
+		}
+
 		if (event.phase == TickEvent.Phase.END) {
-			Telemetry.INSTANCE.tick();
+			Telemetry.INSTANCE.tick(server);
 		}
 	}
 
-	private void tick() {
+	private void tick(MinecraftServer server) {
 		if (!isReaderConnected() && !readerConnecting) {
 			long time = System.currentTimeMillis();
 
@@ -69,18 +77,14 @@ public final class Telemetry {
 				lastReconnectTime = time;
 			}
 		}
+
+		if (instance != null) {
+			instance.tick(server);
+		}
 	}
 
 	public MinigameInstanceTelemetry openMinigame(IMinigameDefinition definition, PlayerKey initiator) {
 		return MinigameInstanceTelemetry.open(this, definition, initiator);
-	}
-
-	public void acknowledgeActionDelivery(final BackendRequest request, final GameAction action) {
-		final JsonObject object = new JsonObject();
-		object.addProperty("request", request.getId());
-		object.addProperty("uuid", action.uuid.toString());
-
-		post(ConfigLT.TELEMETRY.actionResolvedEndpoint.get(), object);
 	}
 
 	void post(final String endpoint, final JsonElement body) {
@@ -89,6 +93,10 @@ public final class Telemetry {
 
 	void post(final String endpoint, final String body) {
 		EXECUTOR.submit(() -> sender.post(endpoint, body));
+	}
+
+	CompletableFuture<JsonElement> get(final String endpoint) {
+		return CompletableFuture.supplyAsync(() -> sender.get(endpoint), EXECUTOR);
 	}
 
 	private CompletableFuture<TelemetryReader> openReader() {
@@ -126,13 +134,25 @@ public final class Telemetry {
 	}
 
 	private void handleCreatePayload(JsonObject object, String type) {
-		BackendRequest.getFromId(type).ifPresent(request -> {
-			GameAction action = request.getGameActionFactory().apply(object.getAsJsonObject("payload"));
-			GameActionHandler.queueGameAction(request, action);
-		});
+		MinigameInstanceTelemetry instance = this.instance;
+
+		// we can ignore the payload because we will request it again when a minigame starts
+		if (instance == null) return;
+
+		instance.handleCreatePayload(object, type);
 	}
 
 	public boolean isReaderConnected() {
 		return reader != null && !reader.isClosed();
+	}
+
+	void openInstance(MinigameInstanceTelemetry instance) {
+		this.instance = instance;
+	}
+
+	void closeInstance(MinigameInstanceTelemetry instance) {
+		if (this.instance == instance) {
+			this.instance = null;
+		}
 	}
 }

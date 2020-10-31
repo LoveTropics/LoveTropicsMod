@@ -34,9 +34,8 @@ public enum BackendRequest
 		return id;
 	}
 
-	public Function<JsonObject, ? extends GameAction> getGameActionFactory()
-	{
-		return gameActionFactory;
+	public GameAction createAction(JsonObject object) {
+		return gameActionFactory.apply(object);
 	}
 
 	public int getPollingIntervalSeconds()
