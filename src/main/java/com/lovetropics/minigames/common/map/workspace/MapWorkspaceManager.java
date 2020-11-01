@@ -89,6 +89,10 @@ public final class MapWorkspaceManager extends WorldSavedData {
 		return this.workspaces.containsKey(id);
 	}
 
+	public boolean isWorkspace(DimensionType dimension) {
+		return getWorkspace(dimension) != null;
+	}
+
 	@Override
 	public CompoundNBT write(CompoundNBT root) {
 		ListNBT workspaceList = new ListNBT();

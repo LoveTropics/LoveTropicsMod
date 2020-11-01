@@ -3,6 +3,7 @@ package com.lovetropics.minigames.common.minigames.map;
 import com.lovetropics.minigames.common.map.MapExportReader;
 import com.lovetropics.minigames.common.map.MapMetadata;
 import com.lovetropics.minigames.common.map.MapWorldInfo;
+import com.lovetropics.minigames.common.map.workspace.MapWorkspaceManager;
 import com.lovetropics.minigames.common.minigames.IMinigameDefinition;
 import com.lovetropics.minigames.common.minigames.IMinigameInstance;
 import com.lovetropics.minigames.common.minigames.MinigameMap;
@@ -22,11 +23,10 @@ import net.minecraftforge.common.DimensionManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
-
-import javax.annotation.Nullable;
 
 public class LoadMapProvider implements IMinigameMapProvider {
 	private static final Logger LOGGER = LogManager.getLogger(LoadMapProvider.class);
@@ -50,6 +50,10 @@ public class LoadMapProvider implements IMinigameMapProvider {
 
 	@Override
 	public MinigameResult<Unit> canOpen(IMinigameDefinition definition, MinecraftServer server) {
+		if (MapWorkspaceManager.get(server).isWorkspace(dimension)) {
+			return MinigameResult.error(new StringTextComponent("Cannot create minigame in workspace dimension!"));
+		}
+
 		ServerWorld world = DimensionManager.getWorld(server, dimension, false, false);
 
 		if (world != null) {
