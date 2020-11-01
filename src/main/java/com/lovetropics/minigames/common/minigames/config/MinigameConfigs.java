@@ -46,7 +46,7 @@ public final class MinigameConfigs {
 						MinigameConfig config = loadConfig(path, resource);
 						GAME_CONFIGS.add(config);
 						manager.register(config);
-					} catch (IOException e) {
+					} catch (Exception e) {
 						LOGGER.error("Failed to load game config at {}", path, e);
 					}
 				}

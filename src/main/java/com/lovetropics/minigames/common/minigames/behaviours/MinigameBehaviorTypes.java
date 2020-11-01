@@ -21,7 +21,7 @@ public class MinigameBehaviorTypes {
 	public static final Supplier<IForgeRegistry<IMinigameBehaviorType<?>>> MINIGAME_BEHAVIOURS_REGISTRY;
 
 	public static final RegistryObject<IMinigameBehaviorType<PositionPlayersMinigameBehavior>> POSITION_PLAYERS;
-	public static final RegistryObject<IMinigameBehaviorType<WeatherEventsMinigameBehavior>> WEATHER_EVENTS;
+	public static final RegistryObject<IMinigameBehaviorType<SurviveTheTideWeatherBehavior>> WEATHER_EVENTS;
 	public static final RegistryObject<IMinigameBehaviorType<TimedMinigameBehavior>> TIMED;
 	public static final RegistryObject<IMinigameBehaviorType<RespawnSpectatorMinigameBehavior>> RESPAWN_SPECTATOR;
 	public static final RegistryObject<IMinigameBehaviorType<CommandEventsBehavior>> COMMANDS;
@@ -82,7 +82,7 @@ public class MinigameBehaviorTypes {
 		MINIGAME_BEHAVIOURS_REGISTRY = MINIGAME_BEHAVIOURS_REGISTER.makeRegistry("minigame_behaviours", RegistryBuilder::new);
 
 		POSITION_PLAYERS = register("position_players", PositionPlayersMinigameBehavior::parse);
-		WEATHER_EVENTS = register("weather_events", WeatherEventsMinigameBehavior::parse);
+		WEATHER_EVENTS = register("weather_events", SurviveTheTideWeatherBehavior::parse);
 		TIMED = register("timed", TimedMinigameBehavior::parse);
 		RESPAWN_SPECTATOR = registerInstance("respawn_spectator", RespawnSpectatorMinigameBehavior.INSTANCE);
 		COMMANDS = register("commands", CommandEventsBehavior::parse);
