@@ -97,44 +97,19 @@ public class SurviveTheTideWeatherBehavior implements IMinigameBehavior {
 		}
 
 		PhasesMinigameBehavior.MinigamePhase phase = phases.getCurrentPhase();
-		int tickRate = 20;
-		if (world.getGameTime() % tickRate == 0) {
 
-			if (!rules.isSafePhase(phase)) {
-				if (!specialWeatherActive()) {
-					//testing vals to maybe make configs
-					float rateAmp = 1F;
-					// TODO phase names
-					if (phase.is("phase2")) {
-						rateAmp = 1.5F;
-					} else if (phase.is("phase3")) {
-						rateAmp = 2.0F;
-					} else if (phase.is("phase4")) {
-						rateAmp = 2.5F;
-					}
-
-					if (random.nextFloat() <= config.getRainHeavyChance() * rateAmp) {
-						heavyRainfallStart(phase);
-					} else if (random.nextFloat() <= config.getRainAcidChance() * rateAmp) {
-						if (!phase.is("phase4")) {
-							acidRainStart(phase);
-						}
-					} else if (random.nextFloat() <= config.getHeatwaveChance() * rateAmp) {
-						heatwaveStart(phase);
-					}
+		if (world.getGameTime() % 20 == 0) {
+			if (!specialWeatherActive()) {
+				if (random.nextFloat() <= config.getRainHeavyChance(phase.getKey())) {
+					heavyRainfallStart(phase);
+				} else if (random.nextFloat() <= config.getRainAcidChance(phase.getKey())) {
+					acidRainStart(phase);
+				} else if (random.nextFloat() <= config.getHeatwaveChance(phase.getKey())) {
+					heatwaveStart(phase);
 				}
 			}
 
-			// TODO phase names
-			if (rules.isSafePhase(phase)) {
-				controller.setWind(0.1F);
-			} else if (phase.is("phase2")) {
-				controller.setWind(0.5F);
-			} else if (phase.is("phase3")) {
-				controller.setWind(1.0F);
-			} else if (phase.is("phase4")) {
-				controller.setWind(1.5F);
-			}
+			controller.setWind(config.getWindSpeed(phase.getKey()));
 		}
 
 		if (heavyRainfallTime > 0) {

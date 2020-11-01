@@ -1,11 +1,15 @@
 package com.lovetropics.minigames.common.minigames.weather;
 
 import com.mojang.datafixers.Dynamic;
+import com.mojang.datafixers.DynamicLike;
+import it.unimi.dsi.fastutil.objects.Object2FloatMap;
+import it.unimi.dsi.fastutil.objects.Object2FloatOpenHashMap;
 
 public class SurviveTheTideWeatherConfig {
-	private final double rainHeavyChance;
-	private final double rainAcidChance;
-	private final double heatwaveChance;
+	private final Object2FloatMap<String> phaseToHeavyRainChance;
+	private final Object2FloatMap<String> phaseToAcidRainChance;
+	private final Object2FloatMap<String> phaseToHeatwaveChance;
+	private final Object2FloatMap<String> phaseToWindSpeed;
 
 	private final int rainHeavyMinTime;
 	private final int rainHeavyExtraRandTime;
@@ -21,15 +25,17 @@ public class SurviveTheTideWeatherConfig {
 	private final double acidRainDamageRate;
 
 	public SurviveTheTideWeatherConfig(
-			final double rainHeavyChance, final double rainAcidChance, final double heatwaveChance,
+			Object2FloatMap<String> phaseToHeavyRainChance, Object2FloatMap<String> phaseToAcidRainChance, Object2FloatMap<String> phaseToHeatwaveChance,
+			Object2FloatMap<String> phaseToWindSpeed,
 			final int rainHeavyMinTime, final int rainHeavyExtraRandTime,
 			final int rainAcidMinTime, final int rainAcidExtraRandTime,
 			int heatwaveMinTime, int heatwaveExtraRandTime, final double heatwaveMovementMultiplier,
 			final float acidRainDamage, final double acidRainDamageRate
 	) {
-		this.rainHeavyChance = rainHeavyChance;
-		this.rainAcidChance = rainAcidChance;
-		this.heatwaveChance = heatwaveChance;
+		this.phaseToHeavyRainChance = phaseToHeavyRainChance;
+		this.phaseToAcidRainChance = phaseToAcidRainChance;
+		this.phaseToHeatwaveChance = phaseToHeatwaveChance;
+		this.phaseToWindSpeed = phaseToWindSpeed;
 
 		this.rainHeavyMinTime = rainHeavyMinTime;
 		this.rainHeavyExtraRandTime = rainHeavyExtraRandTime;
@@ -46,9 +52,10 @@ public class SurviveTheTideWeatherConfig {
 	}
 
 	public static <T> SurviveTheTideWeatherConfig parse(final Dynamic<T> root) {
-		final double rainHeavyChance = root.get("rain_heavy_chance").asDouble(0.01);
-		final double rainAcidChance = root.get("rain_acid_chance").asDouble(0.01);
-		final double heatwaveChance = root.get("heatwave_chance").asDouble(0.01);
+		final Object2FloatMap<String> rainHeavyChance = parsePhaseToFloatMap(root.get("rain_heavy_chance"));
+		final Object2FloatMap<String> rainAcidChance = parsePhaseToFloatMap(root.get("rain_acid_chance"));
+		final Object2FloatMap<String> heatwaveChance = parsePhaseToFloatMap(root.get("heatwave_chance"));
+		final Object2FloatMap<String> windSpeed = parsePhaseToFloatMap(root.get("wind_speed"));
 
 		final int rainHeavyMinTime = root.get("rain_heavy_min_time").asInt(1200);
 		final int rainHeavyExtraRandTime = root.get("rain_heavy_extra_rand_time").asInt(1200);
@@ -64,20 +71,31 @@ public class SurviveTheTideWeatherConfig {
 		final float acidRainDamage = root.get("acid_rain_damage").asFloat(1);
 		final double acidRainDamageRate = root.get("acid_rain_damage_rate").asDouble(60);
 
-		return new SurviveTheTideWeatherConfig(rainHeavyChance, rainAcidChance, heatwaveChance, rainHeavyMinTime,
+		return new SurviveTheTideWeatherConfig(rainHeavyChance, rainAcidChance, heatwaveChance, windSpeed, rainHeavyMinTime,
 				rainHeavyExtraRandTime, rainAcidMinTime, rainAcidExtraRandTime, heatwaveMinTime, heatwaveExtraRandTime, heatwaveMovementMultiplier, acidRainDamage, acidRainDamageRate);
 	}
 
-	public double getRainHeavyChance() {
-		return rainHeavyChance;
+	private static <T> Object2FloatMap<String> parsePhaseToFloatMap(DynamicLike<T> root) {
+		return new Object2FloatOpenHashMap<>(root.asMap(
+				key -> key.asString(""),
+				value -> value.asFloat(0.0F)
+		));
 	}
 
-	public double getRainAcidChance() {
-		return rainAcidChance;
+	public double getRainHeavyChance(String phase) {
+		return phaseToHeavyRainChance.getOrDefault(phase, 0.0F);
 	}
 
-	public double getHeatwaveChance() {
-		return heatwaveChance;
+	public double getRainAcidChance(String phase) {
+		return phaseToAcidRainChance.getOrDefault(phase, 0.0F);
+	}
+
+	public double getHeatwaveChance(String phase) {
+		return phaseToHeatwaveChance.getOrDefault(phase, 0.0F);
+	}
+
+	public float getWindSpeed(String phase) {
+		return phaseToWindSpeed.getOrDefault(phase, 0.0F);
 	}
 
 	public int getRainHeavyMinTime() {
