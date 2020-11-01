@@ -30,6 +30,7 @@ import org.apache.logging.log4j.LogManager;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 public class RisingTidesMinigameBehavior implements IMinigameBehavior {
 	// the maximum time in milliseconds that we should spend updating the tide per tick
@@ -84,9 +85,31 @@ public class RisingTidesMinigameBehavior implements IMinigameBehavior {
 		minTideChunk = new ChunkPos(tideArea.min.getX() >> 4, tideArea.min.getZ() >> 4);
 		maxTideChunk = new ChunkPos(tideArea.max.getX() >> 4, tideArea.max.getZ() >> 4);
 
+		Random random = new Random();
+
 		icebergLines.clear();
 		for (MapRegion icebergLine : minigame.getMapRegions().get(icebergLinesKey)) {
-			icebergLines.add(new IcebergLine(icebergLine.min, icebergLine.max, 10));
+			int startX = icebergLine.min.getX();
+			int startZ = icebergLine.min.getZ();
+
+			int endX = icebergLine.max.getX();
+			int endZ = icebergLine.max.getZ();
+
+			if (random.nextBoolean()) {
+				int swap = startX;
+				startX = endX;
+				endX = swap;
+			}
+
+			if (random.nextBoolean()) {
+				int swap = startZ;
+				startZ = endZ;
+				endZ = swap;
+			}
+
+			BlockPos start = new BlockPos(startX, 0, startZ);
+			BlockPos end = new BlockPos(endX, 0, endZ);
+			icebergLines.add(new IcebergLine(start, end, 10));
 		}
 
 		minigame.getOneBehavior(MinigameBehaviorTypes.PHASES.get()).ifPresent(phases -> {

@@ -17,7 +17,7 @@ public class IcebergLine
     private final int intervalZ;
     private final int distBetweenEach;
 
-    private Random rand;
+    private final Random rand;
 
     public IcebergLine(BlockPos start, BlockPos end, int distBetweenEach) {
         this.rand = new Random();
