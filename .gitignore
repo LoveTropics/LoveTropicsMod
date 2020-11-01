@@ -25,6 +25,7 @@ logs
 # minigame definitions/worlds
 src/main/resources/**/maps/*.zip
 src/main/resources/**/games/*.json
+src/main/resources/**/*.bin
 
 # datagen caches
 **/.cache

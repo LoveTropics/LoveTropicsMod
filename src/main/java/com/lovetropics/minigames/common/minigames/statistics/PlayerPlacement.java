@@ -102,13 +102,15 @@ public interface PlayerPlacement {
 				String indentPrefix = StringUtils.repeat(' ', headPrefix.length());
 
 				boolean head = true;
-				while (i < order.size() && (entry = order.get(i++)).placement == place) {
+				while (i < order.size() && (entry = order.get(i)).placement == place) {
 					String prefix = head ? headPrefix : indentPrefix;
 					head = false;
 
 					players.sendMessage(new StringTextComponent(prefix).applyTextStyle(TextFormatting.AQUA)
 							.appendSibling(new StringTextComponent(entry.value.getName()).applyTextStyle(TextFormatting.GOLD))
 					);
+
+					i++;
 				}
 			}
 		}
@@ -154,7 +156,7 @@ public interface PlayerPlacement {
 				String indentPrefix = StringUtils.repeat(' ', headPrefix.length());
 
 				boolean head = true;
-				while (i < entries.size() && (entry = entries.get(i++)).placement == place) {
+				while (i < entries.size() && (entry = entries.get(i)).placement == place) {
 					String prefix = head ? headPrefix : indentPrefix;
 					head = false;
 
@@ -162,6 +164,8 @@ public interface PlayerPlacement {
 					ITextComponent score = new StringTextComponent(scoreKey.display(entry.score));
 
 					players.sendMessage(name.applyTextStyle(TextFormatting.AQUA).appendSibling(score.applyTextStyle(TextFormatting.GOLD)));
+
+					i++;
 				}
 			}
 		}
