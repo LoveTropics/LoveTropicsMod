@@ -41,6 +41,10 @@ public enum BackendRequest
 		return pollingIntervalSeconds.get();
 	}
 
+	public int getPollingIntervalTicks() {
+		return getPollingIntervalSeconds() * 20;
+	}
+
 	public static Optional<BackendRequest> getFromId(final String id) {
 		for (final BackendRequest request : VALUES) {
 			if (request.getId().equals(id)) {

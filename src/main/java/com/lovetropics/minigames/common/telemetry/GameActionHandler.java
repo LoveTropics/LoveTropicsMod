@@ -3,6 +3,7 @@ package com.lovetropics.minigames.common.telemetry;
 import com.lovetropics.minigames.common.game_actions.GameAction;
 import net.minecraft.server.MinecraftServer;
 
+import javax.annotation.Nullable;
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.Queue;
@@ -21,16 +22,11 @@ public final class GameActionHandler {
 			final BackendRequest request = entry.getKey();
 			final ActionsQueue polling = entry.getValue();
 
-			if (!polling.isEmpty() && polling.tryPoll(tick)) {
-				final GameAction action = polling.poll();
-				if (action == null) {
-					continue;
-				}
+			GameAction action = polling.tryPoll(tick);
 
-				// If we resolved the action, send acknowledgement to the backend
-				if (action.resolve(server)) {
-					telemetry.acknowledgeActionDelivery(request, action);
-				}
+			// If we resolved the action, send acknowledgement to the backend
+			if (action != null && action.resolve(server)) {
+				telemetry.acknowledgeActionDelivery(request, action);
 			}
 		}
 	}
@@ -50,33 +46,27 @@ public final class GameActionHandler {
 
 	static class ActionsQueue {
 		private final BackendRequest requestType;
-		private int lastPolledTick = 0;
 		private final Queue<GameAction> queue = new PriorityBlockingQueue<>();
+		private int nextPollTick;
 
 		ActionsQueue(BackendRequest requestType) {
 			this.requestType = requestType;
 		}
 
-		public boolean tryPoll(int tick) {
-			if (tick >= lastPolledTick + (requestType.getPollingIntervalSeconds() * 20)) {
-				lastPolledTick = tick;
-				return true;
+		@Nullable
+		public GameAction tryPoll(int tick) {
+			if (!queue.isEmpty() && tick >= nextPollTick) {
+				nextPollTick = tick + requestType.getPollingIntervalTicks();
+				return queue.poll();
 			}
-			return false;
+
+			return null;
 		}
 
 		public void offer(GameAction action) {
 			if (!queue.contains(action)) {
 				queue.offer(action);
 			}
-		}
-
-		public GameAction poll() {
-			return queue.poll();
-		}
-
-		public boolean isEmpty() {
-			return queue.isEmpty();
 		}
 	}
 }
