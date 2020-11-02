@@ -1,6 +1,10 @@
 package com.lovetropics.minigames.common.minigames.weather;
 
+import net.minecraft.entity.player.ServerPlayerEntity;
+
 public interface WeatherController {
+	void onPlayerJoin(ServerPlayerEntity player);
+
 	void tick();
 
 	void setRain(float amount, RainType type);

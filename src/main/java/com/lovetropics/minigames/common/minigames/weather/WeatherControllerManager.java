@@ -2,10 +2,14 @@ package com.lovetropics.minigames.common.minigames.weather;
 
 import com.lovetropics.minigames.Constants;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.World;
 import net.minecraft.world.dimension.DimensionType;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -30,6 +34,28 @@ public final class WeatherControllerManager {
 			WEATHER_CONTROLLERS.put(dimension, controller = factory.apply(world));
 		}
 		return controller;
+	}
+
+	@SubscribeEvent
+	public static void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
+		joinPlayerToDimension(event.getPlayer(), event.getPlayer().dimension);
+	}
+
+	@SubscribeEvent
+	public static void onPlayerChangeDimension(PlayerEvent.PlayerChangedDimensionEvent event) {
+		joinPlayerToDimension(event.getPlayer(), event.getTo());
+	}
+
+	private static void joinPlayerToDimension(PlayerEntity player, DimensionType dimension) {
+		MinecraftServer server = player.getServer();
+		if (server == null || !(player instanceof ServerPlayerEntity)) {
+			return;
+		}
+
+		ServerWorld world = server.getWorld(dimension);
+
+		WeatherController controller = WeatherControllerManager.forWorld(world);
+		controller.onPlayerJoin((ServerPlayerEntity) player);
 	}
 
 	@SubscribeEvent

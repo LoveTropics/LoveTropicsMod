@@ -1,5 +1,6 @@
 package com.lovetropics.minigames.common.minigames.weather;
 
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.world.server.ServerWorld;
 
 public final class VanillaWeatherController implements WeatherController {
@@ -8,6 +9,10 @@ public final class VanillaWeatherController implements WeatherController {
 
 	public VanillaWeatherController(ServerWorld world) {
 		this.world = world;
+	}
+
+	@Override
+	public void onPlayerJoin(ServerPlayerEntity player) {
 	}
 
 	@Override
