@@ -55,18 +55,25 @@ public class LoadMapProvider implements IMinigameMapProvider {
 		}
 
 		ServerWorld world = DimensionManager.getWorld(server, dimension, false, false);
-
 		if (world != null) {
-			final ITextComponent minigameName = definition.getName();
-			if (world.getPlayers().isEmpty()) {
-				DimensionManager.unloadWorld(world);
-				return MinigameResult.error(new StringTextComponent("The ").appendSibling(minigameName).appendText(" dimension was not unloaded. Begun unloading, please try again in a few seconds.").applyTextStyle(TextFormatting.RED));
-			}
-
-			return MinigameResult.error(new StringTextComponent("Cannot start minigame as players are in ").appendSibling(minigameName).appendText(" dimension. Make them teleport out first.").applyTextStyle(TextFormatting.RED));
+			return tryUnload(definition, world);
 		}
 
 		return MinigameResult.ok();
+	}
+
+	private MinigameResult<Unit> tryUnload(IMinigameDefinition definition, ServerWorld world) {
+		ITextComponent minigame = definition.getName();
+		if (world.getPlayers().isEmpty()) {
+			if (!world.getForcedChunks().isEmpty()) {
+				return MinigameResult.error(new StringTextComponent("Cannot unload the minigame dimension because it has force-loaded chunks!").applyTextStyle(TextFormatting.RED));
+			}
+
+			DimensionManager.unloadWorld(world);
+			return MinigameResult.error(new StringTextComponent("The ").appendSibling(minigame).appendText(" dimension was not unloaded. Begun unloading, please try again in a few seconds.").applyTextStyle(TextFormatting.RED));
+		}
+
+		return MinigameResult.error(new StringTextComponent("Cannot start minigame as players are in ").appendSibling(minigame).appendText(" dimension. Make them teleport out first.").applyTextStyle(TextFormatting.RED));
 	}
 
 	@Override
