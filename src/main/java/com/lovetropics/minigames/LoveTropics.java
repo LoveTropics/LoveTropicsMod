@@ -45,7 +45,6 @@ import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.GatherDataEvent;
 import net.minecraftforge.fml.event.server.FMLServerAboutToStartEvent;
-import net.minecraftforge.fml.event.server.FMLServerStartingEvent;
 import net.minecraftforge.fml.event.server.FMLServerStoppingEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import org.apache.logging.log4j.LogManager;
@@ -83,7 +82,6 @@ public class LoveTropics {
         });
 
         MinecraftForge.EVENT_BUS.addListener(this::onServerAboutToStart);
-        MinecraftForge.EVENT_BUS.addListener(this::onServerStarting);
         MinecraftForge.EVENT_BUS.addListener(this::onServerStopping);
 
         modBus.addListener(ConfigLT::onLoad);
@@ -130,10 +128,10 @@ public class LoveTropics {
         MinigameConfigs.init(event.getServer());
 
         MapWorkspaceDimension.openServer(event.getServer());
-    }
 
-    private void onServerStarting(final FMLServerStartingEvent event) {
-        CommandDispatcher<CommandSource> dispatcher = event.getCommandDispatcher();
+        // we register commands in the about-to-start event because the 'proper' starting event loads after datapacks,
+        // causing functions to load incorrectly
+        CommandDispatcher<CommandSource> dispatcher = event.getServer().getCommandManager().getDispatcher();
         CommandPollMinigame.register(dispatcher);
         CommandRegisterMinigame.register(dispatcher);
         CommandStartMinigame.register(dispatcher);
