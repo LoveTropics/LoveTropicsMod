@@ -15,6 +15,9 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.server.ServerWorld;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class PlaceSttChestsMinigameBehavior implements IMinigameBehavior {
 	private static final ResourceLocation MISC_LOOT = new ResourceLocation("lt20", "misc_type");
 	private static final ResourceLocation FOOD_LOOT = new ResourceLocation("lt20", "food_type");
@@ -29,19 +32,23 @@ public class PlaceSttChestsMinigameBehavior implements IMinigameBehavior {
 	public void onStart(IMinigameInstance minigame) {
 		ServerWorld world = minigame.getWorld();
 
+		List<BlockPos> chestPositions = new ArrayList<>();
 		for (TileEntity entity : world.loadedTileEntityList) {
 			if (entity instanceof ChestTileEntity) {
-				BlockPos pos = entity.getPos();
-				BlockPos belowPos = pos.down();
+				chestPositions.add(entity.getPos());
+			}
+		}
 
-				BlockState belowState = world.getBlockState(belowPos);
-				ResourceLocation lootTable = getLootTableFor(belowState.getBlock());
-				if (lootTable != null) {
-					Direction facing = belowState.get(BlockStateProperties.HORIZONTAL_FACING);
-					setChest(world, belowPos, lootTable, facing);
+		for (BlockPos pos : chestPositions) {
+			BlockPos belowPos = pos.down();
 
-					world.setBlockState(pos, Blocks.AIR.getDefaultState());
-				}
+			BlockState belowState = world.getBlockState(belowPos);
+			ResourceLocation lootTable = getLootTableFor(belowState.getBlock());
+			if (lootTable != null) {
+				Direction facing = belowState.get(BlockStateProperties.HORIZONTAL_FACING);
+				setChest(world, belowPos, lootTable, facing);
+
+				world.setBlockState(pos, Blocks.AIR.getDefaultState());
 			}
 		}
 	}
