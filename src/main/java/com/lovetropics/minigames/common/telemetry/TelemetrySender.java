@@ -53,7 +53,7 @@ public interface TelemetrySender {
 		@Override
 		public void post(String endpoint, String body) {
 			try {
-				LOGGER.debug("Posting {} to {}", body, endpoint);
+				LOGGER.debug("Posting {} to {}/{}", body, this.url, endpoint);
 
 				HttpURLConnection connection = openAuthorizedConnection("POST", endpoint);
 
