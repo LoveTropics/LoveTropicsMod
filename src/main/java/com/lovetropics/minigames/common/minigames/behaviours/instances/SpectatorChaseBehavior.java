@@ -29,16 +29,19 @@ public final class SpectatorChaseBehavior implements IMinigameBehavior {
 	public void onPlayerChangeRole(IMinigameInstance minigame, ServerPlayerEntity player, PlayerRole role) {
 		List<UUID> participants = collectParticipantIds(minigame);
 		ChaseCameraMessage message = new ChaseCameraMessage(participants);
-
 		if (role == PlayerRole.SPECTATOR) {
 			LTNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), message);
-		} else if (role == PlayerRole.PARTICIPANT) {
-			minigame.getSpectators().sendPacket(LTNetwork.CHANNEL, message);
 		}
+
+		minigame.getSpectators().sendPacket(LTNetwork.CHANNEL, message);
 	}
 
 	@Override
 	public void onPlayerLeave(IMinigameInstance minigame, ServerPlayerEntity player) {
+		List<UUID> participants = collectParticipantIds(minigame);
+		ChaseCameraMessage message = new ChaseCameraMessage(participants);
+		minigame.getSpectators().sendPacket(LTNetwork.CHANNEL, message);
+
 		LTNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new StopChaseCameraMessage());
 	}
 

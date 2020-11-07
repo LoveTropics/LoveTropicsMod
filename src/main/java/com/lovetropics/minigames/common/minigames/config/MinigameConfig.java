@@ -39,7 +39,7 @@ public final class MinigameConfig implements IMinigameDefinition {
 	}
 
 	public static <T> MinigameConfig deserialize(ResourceLocation id, Dynamic<T> root) {
-		String telemetryKey = root.get("telemetry_key").asString(id.toString());
+		String telemetryKey = root.get("telemetry_key").asString(id.getPath());
 		String translationKey = root.get("translation_key").asString("");
 
 		IMinigameMapProvider mapProvider = IMinigameMapProvider.parse(root.get("map_provider").orElseEmptyMap());
