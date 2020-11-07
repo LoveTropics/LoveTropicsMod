@@ -65,14 +65,14 @@ public interface TelemetrySender {
 				if (code == HttpURLConnection.HTTP_OK) {
 					try (InputStream input = connection.getInputStream()) {
 						String response = IOUtils.toString(input, StandardCharsets.UTF_8);
-						LOGGER.debug("Received response from post to {}: {}", endpoint, response);
+						LOGGER.debug("Received response from post to {}/{}: {}", this.url, endpoint, response);
 					}
 				} else {
 					String response = connection.getResponseMessage();
-					LOGGER.error("Received unexpected response code ({}) from {}: {}", code, endpoint, response);
+					LOGGER.error("Received unexpected response code ({}) from {}/{}: {}", code, this.url, endpoint, response);
 				}
 			} catch (Exception e) {
-				LOGGER.error("An exception occurred while trying to POST to {}", endpoint, e);
+				LOGGER.error("An exception occurred while trying to POST to {}/{}", this.url, endpoint, e);
 			}
 		}
 
