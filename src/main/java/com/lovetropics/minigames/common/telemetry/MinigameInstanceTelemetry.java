@@ -45,12 +45,6 @@ public final class MinigameInstanceTelemetry implements PlayerSet.Listeners {
 
 		JsonObject payload = new JsonObject();
 
-		JsonObject minigame = new JsonObject();
-		minigame.addProperty("id", definition.getID().toString());
-		minigame.addProperty("telemetry_key", definition.getTelemetryKey());
-		minigame.addProperty("name", definition.getName().getString());
-		payload.add("minigame", minigame);
-
 		payload.add("initiator", initiator.serializeProfile());
 
 		payload.add("participants", serializeParticipantsArray());
@@ -116,6 +110,13 @@ public final class MinigameInstanceTelemetry implements PlayerSet.Listeners {
 		}
 
 		payload.addProperty("id", instanceId.toString());
+
+		JsonObject minigame = new JsonObject();
+		minigame.addProperty("id", definition.getID().toString());
+		minigame.addProperty("telemetry_key", definition.getTelemetryKey());
+		minigame.addProperty("name", definition.getName().getString());
+		payload.add("minigame", minigame);
+
 		telemetry.post(endpoint, payload);
 	}
 
