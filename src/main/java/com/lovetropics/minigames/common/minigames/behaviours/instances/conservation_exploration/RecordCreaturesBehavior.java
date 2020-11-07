@@ -184,6 +184,10 @@ public final class RecordCreaturesBehavior implements IMinigameBehavior {
 	}
 
 	private void updateRecordedProgressBar() {
+		if (globalRecords == null) {
+			return;
+		}
+
 		int totalRecorded = globalRecords.getTotalCount();
 		this.progressBar.setPercent((float) totalRecorded / totalEntityCount);
 		this.progressBar.setName(new StringTextComponent("Creatures recorded: " + totalRecorded + "/" + totalEntityCount));
