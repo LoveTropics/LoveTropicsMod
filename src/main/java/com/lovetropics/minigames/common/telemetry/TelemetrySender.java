@@ -99,7 +99,7 @@ public interface TelemetrySender {
 			connection.setDoOutput(true);
 			connection.setRequestProperty("User-Agent", "Tropicraft 1.0 (tropicraft.net)");
 			connection.setRequestProperty("Content-Type", "application/json");
-			connection.setRequestProperty("Authorization", "Bearer " + authToken);
+			connection.setRequestProperty("Authorization", "Bearer " + authToken.get());
 			return connection;
 		}
 	}
