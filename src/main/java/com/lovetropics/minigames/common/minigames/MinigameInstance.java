@@ -163,18 +163,18 @@ public class MinigameInstance implements IMinigameInstance
             }
         }
 
+        if (role == PlayerRole.PARTICIPANT) {
+            statistics.forPlayer(player).set(StatisticKey.DEAD, false);
+        } else if (lastRole == PlayerRole.PARTICIPANT && role == PlayerRole.SPECTATOR) {
+            statistics.forPlayer(player).set(StatisticKey.DEAD, true);
+        }
+
         if (lastRole != null) {
             onPlayerChangeRole(player, role, lastRole);
         }
     }
 
     private void onPlayerChangeRole(ServerPlayerEntity player, PlayerRole role, PlayerRole lastRole) {
-        if (lastRole == PlayerRole.PARTICIPANT && role == PlayerRole.SPECTATOR) {
-            statistics.forPlayer(player).set(StatisticKey.DEAD, true);
-        } else if (lastRole == PlayerRole.SPECTATOR && role == PlayerRole.PARTICIPANT) {
-            statistics.forPlayer(player).set(StatisticKey.DEAD, false);
-        }
-
         for (IMinigameBehavior behavior : behaviors.getBehaviors()) {
             behavior.onPlayerChangeRole(this, player, role);
         }
