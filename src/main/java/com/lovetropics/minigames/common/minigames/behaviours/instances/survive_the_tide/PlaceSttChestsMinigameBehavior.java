@@ -19,10 +19,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class PlaceSttChestsMinigameBehavior implements IMinigameBehavior {
-	private static final ResourceLocation MISC_LOOT = new ResourceLocation("lt20", "misc_type");
-	private static final ResourceLocation FOOD_LOOT = new ResourceLocation("lt20", "food_type");
-	private static final ResourceLocation MILITARY_LOOT = new ResourceLocation("lt20", "military_type");
-	private static final ResourceLocation EQUIPMENT_LOOT = new ResourceLocation("lt20", "equipment_type");
+	private static final ResourceLocation MISC_LOOT = new ResourceLocation("lt20", "stt2/misc_type");
+	private static final ResourceLocation FOOD_LOOT = new ResourceLocation("lt20", "stt2/food_type");
+	private static final ResourceLocation MILITARY_LOOT = new ResourceLocation("lt20", "stt2/military_type");
+	private static final ResourceLocation EQUIPMENT_LOOT = new ResourceLocation("lt20", "stt2/equipment_type");
 
 	public static <T> PlaceSttChestsMinigameBehavior parse(Dynamic<T> root) {
 		return new PlaceSttChestsMinigameBehavior();
