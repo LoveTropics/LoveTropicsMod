@@ -12,6 +12,7 @@ import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.function.Supplier;
 
 public interface TelemetrySender {
 	Logger LOGGER = LogManager.getLogger("Telemetry");
@@ -31,29 +32,30 @@ public interface TelemetrySender {
 	final class Http implements TelemetrySender {
 		private static final JsonParser PARSER = new JsonParser();
 
-		private final String url;
-		private final String authToken;
+		private final Supplier<String> url;
+		private final Supplier<String> authToken;
 
-		public Http(String url, String authToken) {
+		public Http(Supplier<String> url, Supplier<String> authToken) {
 			this.url = url;
 			this.authToken = authToken;
 		}
 
 		public static Http openFromConfig() {
-			StringBuilder url = new StringBuilder();
-			url.append(ConfigLT.TELEMETRY.baseUrl.get());
-			if (ConfigLT.TELEMETRY.port.get() > 0) {
-				url.append(':');
-				url.append(ConfigLT.TELEMETRY.port.get());
-			}
-
-			return new Http(url.toString(), ConfigLT.TELEMETRY.authToken.get());
+			return new Http(() -> {
+				StringBuilder url = new StringBuilder();
+				url.append(ConfigLT.TELEMETRY.baseUrl.get());
+				if (ConfigLT.TELEMETRY.port.get() > 0) {
+					url.append(':');
+					url.append(ConfigLT.TELEMETRY.port.get());
+				}
+				return url.toString();
+			}, ConfigLT.TELEMETRY.authToken::get);
 		}
 
 		@Override
 		public void post(String endpoint, String body) {
 			try {
-				LOGGER.debug("Posting {} to {}/{}", body, this.url, endpoint);
+				LOGGER.debug("Posting {} to {}/{}", body, this.url.get(), endpoint);
 
 				HttpURLConnection connection = openAuthorizedConnection("POST", endpoint);
 
@@ -65,14 +67,14 @@ public interface TelemetrySender {
 				if (code == HttpURLConnection.HTTP_OK) {
 					try (InputStream input = connection.getInputStream()) {
 						String response = IOUtils.toString(input, StandardCharsets.UTF_8);
-						LOGGER.debug("Received response from post to {}/{}: {}", this.url, endpoint, response);
+						LOGGER.debug("Received response from post to {}/{}: {}", this.url.get(), endpoint, response);
 					}
 				} else {
 					String response = connection.getResponseMessage();
-					LOGGER.error("Received unexpected response code ({}) from {}/{}: {}", code, this.url, endpoint, response);
+					LOGGER.error("Received unexpected response code ({}) from {}/{}: {}", code, this.url.get(), endpoint, response);
 				}
 			} catch (Exception e) {
-				LOGGER.error("An exception occurred while trying to POST to {}/{}", this.url, endpoint, e);
+				LOGGER.error("An exception occurred while trying to POST to {}/{}", this.url.get(), endpoint, e);
 			}
 		}
 
@@ -91,7 +93,7 @@ public interface TelemetrySender {
 		}
 
 		private HttpURLConnection openAuthorizedConnection(String method, String endpoint) throws IOException {
-			final URL url = new URL(this.url + "/" + endpoint);
+			final URL url = new URL(this.url.get() + "/" + endpoint);
 			HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 			connection.setRequestMethod(method);
 			connection.setDoOutput(true);
