@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.lovetropics.minigames.common.block.TrashType;
 import com.lovetropics.minigames.common.minigames.IMinigameInstance;
 import com.lovetropics.minigames.common.minigames.MinigameSidebar;
+import com.lovetropics.minigames.common.minigames.PlayerRole;
 import com.lovetropics.minigames.common.minigames.PlayerSet;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehaviorType;
@@ -88,6 +89,12 @@ public final class TrashCollectionBehavior implements IMinigameBehavior {
 	}
 
 	@Override
+	public void onPlayerJoin(IMinigameInstance minigame, ServerPlayerEntity player, PlayerRole role) {
+		MinigameStatistics statistics = minigame.getStatistics();
+		statistics.forPlayer(player).set(StatisticKey.TRASH_COLLECTED, 0);
+	}
+
+	@Override
 	public void onPlayerLeftClickBlock(IMinigameInstance minigame, ServerPlayerEntity player, BlockPos pos, PlayerInteractEvent.LeftClickBlock event) {
 		ServerWorld world = minigame.getWorld();
 
@@ -155,7 +162,7 @@ public final class TrashCollectionBehavior implements IMinigameBehavior {
 		PlayerPlacement.Score<Integer> placement = PlayerPlacement.fromMaxScore(minigame, StatisticKey.TRASH_COLLECTED);
 
 		sidebar.add("");
-		sidebar.add(TextFormatting.GREEN + "Top players:");
+		sidebar.add(TextFormatting.GREEN + "MVPs:");
 
 		placement.addToSidebar(sidebar, 5);
 

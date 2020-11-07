@@ -9,13 +9,11 @@ import com.lovetropics.minigames.common.minigames.behaviours.MinigameBehaviorTyp
 import com.lovetropics.minigames.common.minigames.behaviours.instances.PhasesMinigameBehavior;
 import com.mojang.datafixers.Dynamic;
 import it.unimi.dsi.fastutil.longs.*;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.CampfireBlock;
-import net.minecraft.block.IWaterLoggable;
+import net.minecraft.block.*;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.state.properties.BlockStateProperties;
 import net.minecraft.util.DamageSource;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
@@ -25,6 +23,8 @@ import net.minecraft.world.gen.Heightmap;
 import net.minecraft.world.server.ServerChunkProvider;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.common.util.Constants;
+import net.minecraftforge.fml.RegistryObject;
+import net.minecraftforge.registries.ForgeRegistries;
 import org.apache.logging.log4j.LogManager;
 
 import java.util.ArrayList;
@@ -33,6 +33,8 @@ import java.util.Map;
 import java.util.Random;
 
 public class RisingTidesMinigameBehavior implements IMinigameBehavior {
+	private static final RegistryObject<Block> WATER_BARRIER = RegistryObject.of(new ResourceLocation("ltextras", "water_barrier"), ForgeRegistries.BLOCKS);
+
 	// the maximum time in milliseconds that we should spend updating the tide per tick
 	private static final long RISING_TIDE_THRESHOLD_MS = 15;
 
@@ -241,6 +243,8 @@ public class RisingTidesMinigameBehavior implements IMinigameBehavior {
 		int minSection = lastLevel >> 4;
 		int maxSection = targetLevel >> 4;
 
+		BlockState waterBarrier = WATER_BARRIER.orElse(Blocks.BARRIER).getDefaultState();
+
 		// iterate through all the sections that need to be changed
 		for (int sectionY = minSection; sectionY <= maxSection; sectionY++) {
 			ChunkSection section = sectionArray[sectionY];
@@ -286,6 +290,8 @@ public class RisingTidesMinigameBehavior implements IMinigameBehavior {
 					if (existing.getBlock() == Blocks.CAMPFIRE) {
 						toSet = toSet.with(CampfireBlock.LIT, false);
 					}
+				} else if (existing.getBlock() == Blocks.BARRIER) {
+					toSet = waterBarrier;
 				}
 
 				if (toSet != null) {
