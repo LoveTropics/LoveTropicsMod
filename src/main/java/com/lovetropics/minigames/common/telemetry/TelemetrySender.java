@@ -58,19 +58,16 @@ public interface TelemetrySender {
 				LOGGER.debug("Posting {} to {}/{}", body, this.url.get(), endpoint);
 
 				HttpURLConnection connection = openAuthorizedConnection("POST", endpoint);
-
 				try (OutputStream output = connection.getOutputStream()) {
 					IOUtils.write(body, output, StandardCharsets.UTF_8);
 				}
 
 				int code = connection.getResponseCode();
-				if (code == HttpURLConnection.HTTP_OK) {
-					try (InputStream input = connection.getInputStream()) {
-						String response = IOUtils.toString(input, StandardCharsets.UTF_8);
-						LOGGER.debug("Received response from post to {}/{}: {}", this.url.get(), endpoint, response);
-					}
-				} else {
-					String response = connection.getResponseMessage();
+				try {
+					String payload = IOUtils.toString(connection.getInputStream(), StandardCharsets.UTF_8);
+					LOGGER.debug("Received response from post to {}/{}: {}", this.url.get(), endpoint, payload);
+				} catch (IOException e) {
+					String response = IOUtils.toString(connection.getErrorStream(), StandardCharsets.UTF_8);
 					LOGGER.error("Received unexpected response code ({}) from {}/{}: {}", code, this.url.get(), endpoint, response);
 				}
 			} catch (Exception e) {
