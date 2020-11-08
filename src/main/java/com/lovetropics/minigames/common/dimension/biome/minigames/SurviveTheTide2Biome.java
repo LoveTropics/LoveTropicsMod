@@ -7,7 +7,7 @@ public class SurviveTheTide2Biome extends Biome {
 	public SurviveTheTide2Biome() {
 		super(new Builder()
 				.surfaceBuilder(SurfaceBuilder.DEFAULT, SurfaceBuilder.GRASS_DIRT_GRAVEL_CONFIG)
-				.precipitation(RainType.NONE)
+				.precipitation(RainType.RAIN)
 				.category(Category.OCEAN)
 				.depth(-1.6F)
 				.scale(0.4F)

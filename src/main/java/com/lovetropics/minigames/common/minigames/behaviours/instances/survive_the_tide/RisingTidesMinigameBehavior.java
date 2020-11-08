@@ -9,6 +9,7 @@ import com.lovetropics.minigames.common.minigames.behaviours.MinigameBehaviorTyp
 import com.lovetropics.minigames.common.minigames.behaviours.instances.PhasesMinigameBehavior;
 import com.mojang.datafixers.Dynamic;
 import it.unimi.dsi.fastutil.longs.*;
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.minecraft.block.*;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.state.properties.BlockStateProperties;
@@ -27,10 +28,7 @@ import net.minecraftforge.fml.RegistryObject;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.apache.logging.log4j.LogManager;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 
 public class RisingTidesMinigameBehavior implements IMinigameBehavior {
 	private static final RegistryObject<Block> WATER_BARRIER = RegistryObject.of(new ResourceLocation("ltextras", "water_barrier"), ForgeRegistries.BLOCKS);
@@ -41,7 +39,7 @@ public class RisingTidesMinigameBehavior implements IMinigameBehavior {
 	private final String tideAreaKey;
 	private final String icebergLinesKey;
 	private final Map<String, Integer> phaseToTideHeight;
-	private final List<String> phasesIcebergsGrow;
+	private final Set<String> phasesIcebergsGrow;
 	private final int icebergGrowthTickRate;
 	private int waterLevel;
 
@@ -54,7 +52,7 @@ public class RisingTidesMinigameBehavior implements IMinigameBehavior {
 	private final LongSet queuedChunksToUpdate = new LongOpenHashSet();
 	private final Long2IntMap chunkWaterLevels = new Long2IntOpenHashMap();
 
-	public RisingTidesMinigameBehavior(String tideAreaKey, String icebergLinesKey, final Map<String, Integer> phaseToTideHeight, final List<String> phasesIcebergsGrow, final int icebergGrowthTickRate) {
+	public RisingTidesMinigameBehavior(String tideAreaKey, String icebergLinesKey, final Map<String, Integer> phaseToTideHeight, final Set<String> phasesIcebergsGrow, final int icebergGrowthTickRate) {
 		this.tideAreaKey = tideAreaKey;
 		this.icebergLinesKey = icebergLinesKey;
 		this.phaseToTideHeight = phaseToTideHeight;
@@ -69,7 +67,7 @@ public class RisingTidesMinigameBehavior implements IMinigameBehavior {
 				key -> key.asString(""),
 				value -> value.asInt(0)
 		);
-		final List<String> phasesIcebergsGrow = root.get("phases_icebergs_grow").asList(d -> d.asString(""));
+		final Set<String> phasesIcebergsGrow = new ObjectOpenHashSet<>(root.get("phases_icebergs_grow").asList(d -> d.asString("")));
 		final int icebergGrowthTickRate = root.get("iceberg_growth_tick_rate").asInt(0);
 
 		return new RisingTidesMinigameBehavior(tideAreaKey, icebergLinesKey, phaseToTideHeight, phasesIcebergsGrow, icebergGrowthTickRate);

@@ -136,7 +136,7 @@ public final class DriftwoodEntity extends Entity {
 				setPosition(getPosX(), floatHeight, getPosZ());
 
 				if (!riders.isEmpty()) {
-					floatDepth = Math.min(floatDepth + (1.0F / (20.0F * 40.0F)), 1.0F);
+					floatDepth = Math.min(floatDepth + (1.0F / (20.0F * 60.0F)), 1.0F);
 					setFloatDepth(floatDepth);
 				}
 
