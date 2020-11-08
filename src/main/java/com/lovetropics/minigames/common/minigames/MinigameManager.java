@@ -2,7 +2,6 @@ package com.lovetropics.minigames.common.minigames;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
-import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.client.data.TropicraftLangKeys;
 import com.lovetropics.minigames.client.minigame.ClientJoinLeaveMessage;
 import com.lovetropics.minigames.client.minigame.ClientMinigameMessage;
@@ -24,6 +23,8 @@ import net.minecraft.server.management.PlayerList;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Unit;
 import net.minecraft.util.text.*;
+import net.minecraft.util.text.event.ClickEvent;
+import net.minecraft.util.text.event.HoverEvent;
 import net.minecraft.world.IWorld;
 import net.minecraft.world.chunk.ChunkStatus;
 import net.minecraft.world.dimension.DimensionType;
@@ -39,7 +40,6 @@ import net.minecraftforge.event.world.BlockEvent;
 import net.minecraftforge.event.world.ChunkDataEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.network.PacketDistributor;
-
 import org.apache.logging.log4j.util.TriConsumer;
 
 import javax.annotation.Nullable;
@@ -246,12 +246,18 @@ public class MinigameManager implements IMinigameManager {
 			return result.castError();
 		}
 
-		for (ServerPlayerEntity player : server.getPlayerList().getPlayers()) {
-			player.sendMessage(new TranslationTextComponent(TropicraftLangKeys.COMMAND_MINIGAME_POLLING,
-					definition.getName().applyTextStyle(TextFormatting.ITALIC).applyTextStyle(TextFormatting.AQUA),
-					new StringTextComponent("/minigame register").applyTextStyle(TextFormatting.ITALIC).applyTextStyle(TextFormatting.GRAY))
-					.applyTextStyle(TextFormatting.GOLD), ChatType.CHAT);
-		}
+		ITextComponent name = definition.getName().applyTextStyles(TextFormatting.ITALIC, TextFormatting.AQUA);
+		Style linkStyle = new Style()
+				.setUnderlined(true)
+				.setColor(TextFormatting.BLUE)
+				.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/minigame join"))
+				.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new StringTextComponent("Join this minigame")));
+
+		ITextComponent link = new StringTextComponent("/minigame join").setStyle(linkStyle);
+		ITextComponent message = new TranslationTextComponent(TropicraftLangKeys.COMMAND_MINIGAME_POLLING, name, link)
+				.applyTextStyle(TextFormatting.GOLD);
+
+		server.getPlayerList().sendMessage(message, false);
 
 		this.polling = polling;
 		LTNetwork.CHANNEL.send(PacketDistributor.ALL.noArg(), new ClientMinigameMessage(this.polling));
@@ -285,11 +291,9 @@ public class MinigameManager implements IMinigameManager {
 
 		this.polling = null;
 
-		for (ServerPlayerEntity player : this.server.getPlayerList().getPlayers()) {
-			player.sendMessage(new TranslationTextComponent(Constants.MODID + ".minigame.minigame_stopped_polling",
-					polling.getDefinition().getName().applyTextStyle(TextFormatting.ITALIC).applyTextStyle(TextFormatting.AQUA))
-					.applyTextStyle(TextFormatting.RED), ChatType.CHAT);
-		}
+		ITextComponent name = polling.getDefinition().getName().applyTextStyles(TextFormatting.ITALIC, TextFormatting.AQUA);
+		ITextComponent message = new TranslationTextComponent(TropicraftLangKeys.COMMAND_MINIGAME_STOPPED_POLLING, name).applyTextStyle(TextFormatting.RED);
+		server.getPlayerList().sendMessage(message, false);
 
 		LTNetwork.CHANNEL.send(PacketDistributor.ALL.noArg(), new ClientMinigameMessage());
 		return MinigameResult.ok(new TranslationTextComponent(TropicraftLangKeys.COMMAND_STOP_POLL).applyTextStyle(TextFormatting.GREEN));

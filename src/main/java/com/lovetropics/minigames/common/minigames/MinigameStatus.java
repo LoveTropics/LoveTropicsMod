@@ -1,8 +1,16 @@
 package com.lovetropics.minigames.common.minigames;
 
-public enum MinigameStatus {
+import net.minecraft.util.text.TextFormatting;
 
-	POLLING,
-	ACTIVE,
-	;
+public enum MinigameStatus {
+	POLLING("waiting for players", TextFormatting.GOLD),
+	ACTIVE("in progress", TextFormatting.AQUA);
+
+	public final String description;
+	public final TextFormatting color;
+
+	MinigameStatus(String description, TextFormatting color) {
+		this.description = description;
+		this.color = color;
+	}
 }
