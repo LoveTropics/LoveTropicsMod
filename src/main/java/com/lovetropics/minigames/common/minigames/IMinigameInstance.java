@@ -1,33 +1,27 @@
 package com.lovetropics.minigames.common.minigames;
 
+import java.util.Collection;
+import java.util.Optional;
+
 import com.lovetropics.minigames.common.map.MapRegions;
 import com.lovetropics.minigames.common.minigames.behaviours.BehaviorDispatcher;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehaviorType;
 import com.lovetropics.minigames.common.minigames.statistics.MinigameStatistics;
 import com.lovetropics.minigames.common.telemetry.MinigameInstanceTelemetry;
+
 import net.minecraft.command.CommandSource;
 import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.dimension.DimensionType;
 import net.minecraft.world.server.ServerWorld;
-
-import java.util.Collection;
-import java.util.Optional;
 
 /**
  * An instance used to track which participants and spectators are inside
  * the running minigame. Also holds the definition to process the content
  * within the minigame.
  */
-public interface IMinigameInstance extends MinigameControllable, BehaviorDispatcher<IMinigameBehavior, IMinigameInstance>
+public interface IMinigameInstance extends ProtoMinigame, MinigameControllable, BehaviorDispatcher<IMinigameBehavior, IMinigameInstance>
 {
-    /**
-     * The definition used to define what content the minigame contains.
-     * @return The minigame definition.
-     */
-    IMinigameDefinition getDefinition();
-
     @Override
     Collection<IMinigameBehavior> getBehaviors();
 
@@ -86,8 +80,6 @@ public interface IMinigameInstance extends MinigameControllable, BehaviorDispatc
     CommandSource getCommandSource();
 
     MapRegions getMapRegions();
-
-    MinecraftServer getServer();
 
     ServerWorld getWorld();
 

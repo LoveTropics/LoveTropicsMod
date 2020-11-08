@@ -1,6 +1,8 @@
 package com.lovetropics.minigames.common.network;
 
 import com.lovetropics.minigames.Constants;
+import com.lovetropics.minigames.client.minigame.ClientJoinLeaveMessage;
+import com.lovetropics.minigames.client.minigame.ClientMinigameMessage;
 import com.lovetropics.minigames.common.network.map.AddWorkspaceRegionMessage;
 import com.lovetropics.minigames.common.network.map.SetWorkspaceMessage;
 import com.lovetropics.minigames.common.network.map.UpdateWorkspaceRegionMessage;
@@ -53,6 +55,18 @@ public final class LTNetwork {
 				.encoder(ChaseSpectatePlayerMessage::encode)
 				.decoder(ChaseSpectatePlayerMessage::decode)
 				.consumer(ChaseSpectatePlayerMessage::handle)
+				.add();
+
+		CHANNEL.messageBuilder(ClientMinigameMessage.class, 6)
+				.encoder(ClientMinigameMessage::encode)
+				.decoder(ClientMinigameMessage::decode)
+				.consumer(ClientMinigameMessage::handle)
+				.add();
+
+		CHANNEL.messageBuilder(ClientJoinLeaveMessage.class, 7)
+				.encoder(ClientJoinLeaveMessage::encode)
+				.decoder(ClientJoinLeaveMessage::decode)
+				.consumer(ClientJoinLeaveMessage::handle)
 				.add();
 	}
 }

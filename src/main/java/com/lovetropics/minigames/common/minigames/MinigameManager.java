@@ -4,10 +4,13 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.client.data.TropicraftLangKeys;
+import com.lovetropics.minigames.client.minigame.ClientJoinLeaveMessage;
+import com.lovetropics.minigames.client.minigame.ClientMinigameMessage;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
 import com.lovetropics.minigames.common.minigames.behaviours.IPollingMinigameBehavior;
 import com.lovetropics.minigames.common.minigames.polling.PollingMinigameInstance;
 import com.lovetropics.minigames.common.minigames.statistics.PlayerKey;
+import com.lovetropics.minigames.common.network.LTNetwork;
 import com.lovetropics.minigames.common.telemetry.Telemetry;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.command.CommandSource;
@@ -35,6 +38,8 @@ import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.world.BlockEvent;
 import net.minecraftforge.event.world.ChunkDataEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.network.PacketDistributor;
+
 import org.apache.logging.log4j.util.TriConsumer;
 
 import javax.annotation.Nullable;
@@ -172,6 +177,7 @@ public class MinigameManager implements IMinigameManager {
 			return MinigameResult.fromException("Unknown error finishing minigame", e);
 		} finally {
 			minigame.getDefinition().getMapProvider().close(minigame);
+			LTNetwork.CHANNEL.send(PacketDistributor.ALL.noArg(), new ClientMinigameMessage());
 		}
 	}
 
@@ -248,6 +254,7 @@ public class MinigameManager implements IMinigameManager {
 		}
 
 		this.polling = polling;
+		LTNetwork.CHANNEL.send(PacketDistributor.ALL.noArg(), new ClientMinigameMessage(this.polling));
 
 		if (!Telemetry.INSTANCE.isReaderConnected()) {
 			ITextComponent warning = new StringTextComponent("Warning: Minigame telemetry websocket is not connected!")
@@ -284,6 +291,7 @@ public class MinigameManager implements IMinigameManager {
 					.applyTextStyle(TextFormatting.RED), ChatType.CHAT);
 		}
 
+		LTNetwork.CHANNEL.send(PacketDistributor.ALL.noArg(), new ClientMinigameMessage());
 		return MinigameResult.ok(new TranslationTextComponent(TropicraftLangKeys.COMMAND_STOP_POLL).applyTextStyle(TextFormatting.GREEN));
 	}
 
@@ -300,6 +308,7 @@ public class MinigameManager implements IMinigameManager {
 			if (result.isOk()) {
 				this.polling = null;
 				this.currentInstance = result.getOk();
+				LTNetwork.CHANNEL.send(PacketDistributor.ALL.noArg(), new ClientMinigameMessage(this.currentInstance));
 				return MinigameResult.ok(new TranslationTextComponent(TropicraftLangKeys.COMMAND_MINIGAME_STARTED).applyTextStyle(TextFormatting.GREEN));
 			} else {
 				return result.castError();
@@ -313,6 +322,7 @@ public class MinigameManager implements IMinigameManager {
 		if (minigame != null) {
 			if (requestedRole == PlayerRole.SPECTATOR) {
 				minigame.addPlayer(player, PlayerRole.SPECTATOR);
+				LTNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new ClientJoinLeaveMessage(true));
 				return MinigameResult.ok(new StringTextComponent("You have joined the game as a spectator!").applyTextStyle(TextFormatting.GREEN));
 			} else {
 				return MinigameResult.error(new TranslationTextComponent(TropicraftLangKeys.COMMAND_MINIGAME_ALREADY_STARTED));
@@ -324,6 +334,7 @@ public class MinigameManager implements IMinigameManager {
 			return MinigameResult.error(new TranslationTextComponent(TropicraftLangKeys.COMMAND_NO_MINIGAME_POLLING));
 		}
 
+		// Client state is updated within this method to allow preconditions to be checked there
 		return polling.registerPlayerAs(player, requestedRole);
 	}
 
@@ -334,6 +345,7 @@ public class MinigameManager implements IMinigameManager {
 			return MinigameResult.error(new TranslationTextComponent(TropicraftLangKeys.COMMAND_NO_MINIGAME_POLLING));
 		}
 
+		// Client state is updated within this method to allow preconditions to be checked there
 		return polling.unregisterPlayer(player);
 	}
 

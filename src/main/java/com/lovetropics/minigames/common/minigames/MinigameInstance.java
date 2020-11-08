@@ -127,8 +127,13 @@ public class MinigameInstance implements IMinigameInstance
             }
 
             return MinigameResult.ok(minigame);
-        }, 1);
-    }
+		}, 1);
+	}
+
+	@Override
+	public MinigameStatus getStatus() {
+		return MinigameStatus.ACTIVE;
+	}
 
     private MinigameResult<Unit> validateBehaviors() {
         for (IMinigameBehavior behavior : getBehaviors()) {

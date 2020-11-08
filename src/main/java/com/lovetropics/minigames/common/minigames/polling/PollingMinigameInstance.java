@@ -1,13 +1,30 @@
 package com.lovetropics.minigames.common.minigames.polling;
 
+import java.util.Collection;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+
+import javax.annotation.Nullable;
+
 import com.lovetropics.minigames.client.data.TropicraftLangKeys;
-import com.lovetropics.minigames.common.minigames.*;
+import com.lovetropics.minigames.client.minigame.ClientJoinLeaveMessage;
+import com.lovetropics.minigames.common.minigames.ControlCommandHandler;
+import com.lovetropics.minigames.common.minigames.IMinigameDefinition;
+import com.lovetropics.minigames.common.minigames.MinigameControllable;
+import com.lovetropics.minigames.common.minigames.MinigameInstance;
+import com.lovetropics.minigames.common.minigames.MinigameResult;
+import com.lovetropics.minigames.common.minigames.MinigameStatus;
+import com.lovetropics.minigames.common.minigames.PlayerRole;
+import com.lovetropics.minigames.common.minigames.ProtoMinigame;
 import com.lovetropics.minigames.common.minigames.behaviours.BehaviorDispatcher;
 import com.lovetropics.minigames.common.minigames.behaviours.BehaviorMap;
 import com.lovetropics.minigames.common.minigames.behaviours.IPollingMinigameBehavior;
 import com.lovetropics.minigames.common.minigames.map.IMinigameMapProvider;
 import com.lovetropics.minigames.common.minigames.statistics.PlayerKey;
+import com.lovetropics.minigames.common.network.LTNetwork;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.command.CommandSource;
 import net.minecraft.entity.player.ServerPlayerEntity;
@@ -16,14 +33,9 @@ import net.minecraft.util.Unit;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraftforge.fml.network.PacketDistributor;
 
-import javax.annotation.Nullable;
-import java.util.Collection;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.CompletableFuture;
-
-public final class PollingMinigameInstance implements MinigameControllable, BehaviorDispatcher<IPollingMinigameBehavior, PollingMinigameInstance> {
+public final class PollingMinigameInstance implements ProtoMinigame, MinigameControllable, BehaviorDispatcher<IPollingMinigameBehavior, PollingMinigameInstance> {
 	private final MinecraftServer server;
 	private final IMinigameDefinition definition;
 
@@ -52,6 +64,11 @@ public final class PollingMinigameInstance implements MinigameControllable, Beha
 		return result.mapValue(instance);
 	}
 
+	@Override
+	public MinigameStatus getStatus() {
+		return MinigameStatus.POLLING;
+	}
+
 	public MinigameResult<ITextComponent> registerPlayerAs(ServerPlayerEntity player, @Nullable PlayerRole requestedRole) {
 		if (registrations.contains(player.getUniqueID())) {
 			return MinigameResult.error(new TranslationTextComponent(TropicraftLangKeys.COMMAND_MINIGAME_ALREADY_REGISTERED));
@@ -73,6 +90,7 @@ public final class PollingMinigameInstance implements MinigameControllable, Beha
 
 		String message = requestedRole != PlayerRole.SPECTATOR ? "%s has joined the %s minigame!" : "%s has joined to spectate the %s minigame!";
 		broadcastMessage(new TranslationTextComponent(message, playerName, minigameName).applyTextStyle(TextFormatting.AQUA));
+		LTNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new ClientJoinLeaveMessage(true));
 
 		return MinigameResult.ok(
 				new TranslationTextComponent(
@@ -92,6 +110,7 @@ public final class PollingMinigameInstance implements MinigameControllable, Beha
 		if (registrations.participantCount() == definition.getMinimumParticipantCount() - 1) {
 			broadcastMessage(new TranslationTextComponent(TropicraftLangKeys.COMMAND_NO_LONGER_ENOUGH_PLAYERS).applyTextStyle(TextFormatting.RED));
 		}
+		LTNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new ClientJoinLeaveMessage(false));
 
 		ITextComponent minigameName = definition.getName().applyTextStyle(TextFormatting.AQUA);
 		return MinigameResult.ok(new TranslationTextComponent(TropicraftLangKeys.COMMAND_UNREGISTERED_MINIGAME, minigameName).applyTextStyle(TextFormatting.RED));
