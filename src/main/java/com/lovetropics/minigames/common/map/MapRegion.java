@@ -1,9 +1,12 @@
 package com.lovetropics.minigames.common.map;
 
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+import it.unimi.dsi.fastutil.longs.LongSet;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Vec3d;
 
 import java.util.Iterator;
@@ -65,6 +68,14 @@ public final class MapRegion implements Iterable<BlockPos> {
 		);
 	}
 
+	public BlockPos getCenterBlock() {
+		return new BlockPos(
+				(min.getX() + max.getX() + 1) / 2,
+				(min.getY() + max.getY() + 1) / 2,
+				(min.getZ() + max.getZ() + 1) / 2
+		);
+	}
+
 	public BlockPos getSize() {
 		return new BlockPos(
 				max.getX() - min.getX() + 1,
@@ -115,6 +126,23 @@ public final class MapRegion implements Iterable<BlockPos> {
 	@Override
 	public Iterator<BlockPos> iterator() {
 		return BlockPos.getAllInBoxMutable(min, max).iterator();
+	}
+
+	public LongSet asChunks() {
+		LongSet chunks = new LongOpenHashSet();
+
+		int minChunkX = min.getX() >> 4;
+		int minChunkZ = min.getZ() >> 4;
+		int maxChunkX = max.getX() >> 4;
+		int maxChunkZ = max.getZ() >> 4;
+
+		for (int chunkZ = minChunkZ; chunkZ <= maxChunkZ; chunkZ++) {
+			for (int chunkX = minChunkX; chunkX <= maxChunkX; chunkX++) {
+				chunks.add(ChunkPos.asLong(chunkX, chunkZ));
+			}
+		}
+
+		return chunks;
 	}
 
 	public CompoundNBT write(CompoundNBT root) {

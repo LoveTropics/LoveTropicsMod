@@ -24,6 +24,9 @@ import net.minecraft.world.World;
 import net.minecraft.world.server.ServerBossInfo;
 import net.minecraft.world.server.ServerWorld;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class WorldBorderMinigameBehavior implements IMinigameBehavior
 {
 	private final String worldBorderCenterKey;
@@ -88,8 +91,14 @@ public class WorldBorderMinigameBehavior implements IMinigameBehavior
 
 	@Override
 	public void onConstruct(IMinigameInstance minigame) {
-		MapRegion centerRegion = minigame.getMapRegions().getOne(worldBorderCenterKey);
-		worldBorderCenter = centerRegion != null ? new BlockPos(centerRegion.getCenter()) : BlockPos.ZERO;
+		List<MapRegion> regions = new ArrayList<>(minigame.getMapRegions().get(worldBorderCenterKey));
+
+		if (!regions.isEmpty()) {
+			MapRegion centerRegion = regions.get(minigame.getWorld().getRandom().nextInt(regions.size()));
+			worldBorderCenter = centerRegion.getCenterBlock();
+		} else {
+			worldBorderCenter = BlockPos.ZERO;
+		}
 	}
 
 	@Override

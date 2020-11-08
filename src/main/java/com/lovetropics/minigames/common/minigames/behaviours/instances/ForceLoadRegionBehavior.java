@@ -56,16 +56,7 @@ public final class ForceLoadRegionBehavior implements IMinigameBehavior {
 
 		Collection<MapRegion> regions = minigame.getMapRegions().get(regionKey);
 		for (MapRegion region : regions) {
-			int minChunkX = region.min.getX() >> 4;
-			int minChunkZ = region.min.getZ() >> 4;
-			int maxChunkX = region.max.getX() >> 4;
-			int maxChunkZ = region.max.getZ() >> 4;
-
-			for (int chunkZ = minChunkZ; chunkZ <= maxChunkZ; chunkZ++) {
-				for (int chunkX = minChunkX; chunkX <= maxChunkX; chunkX++) {
-					chunks.add(ChunkPos.asLong(chunkX, chunkZ));
-				}
-			}
+			chunks.addAll(region.asChunks());
 		}
 
 		return chunks;

@@ -1,8 +1,12 @@
 package com.lovetropics.minigames.common.minigames.behaviours.instances.survive_the_tide;
 
+import com.lovetropics.minigames.common.map.MapRegion;
 import com.lovetropics.minigames.common.minigames.IMinigameInstance;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
 import com.mojang.datafixers.Dynamic;
+import it.unimi.dsi.fastutil.longs.LongIterator;
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+import it.unimi.dsi.fastutil.longs.LongSet;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -13,9 +17,14 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkPos;
+import net.minecraft.world.World;
+import net.minecraft.world.chunk.Chunk;
+import net.minecraft.world.server.ServerChunkProvider;
 import net.minecraft.world.server.ServerWorld;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 public class PlaceSttChestsMinigameBehavior implements IMinigameBehavior {
@@ -24,16 +33,49 @@ public class PlaceSttChestsMinigameBehavior implements IMinigameBehavior {
 	private static final ResourceLocation MILITARY_LOOT = new ResourceLocation("lt20", "stt2/military_type");
 	private static final ResourceLocation EQUIPMENT_LOOT = new ResourceLocation("lt20", "stt2/equipment_type");
 
+	private final String regionKey;
+	private final LongSet remainingChunks = new LongOpenHashSet();
+
+	public PlaceSttChestsMinigameBehavior(String regionKey) {
+		this.regionKey = regionKey;
+	}
+
 	public static <T> PlaceSttChestsMinigameBehavior parse(Dynamic<T> root) {
-		return new PlaceSttChestsMinigameBehavior();
+		String region = root.get("region").asString("");
+		return new PlaceSttChestsMinigameBehavior(region);
 	}
 
 	@Override
-	public void onStart(IMinigameInstance minigame) {
-		ServerWorld world = minigame.getWorld();
+	public void onConstruct(IMinigameInstance minigame) {
+		Collection<MapRegion> regions = minigame.getMapRegions().get(regionKey);
+		for (MapRegion region : regions) {
+			remainingChunks.addAll(region.asChunks());
+		}
+	}
 
+	@Override
+	public void worldUpdate(IMinigameInstance minigame, World world) {
+		ServerChunkProvider chunkProvider = minigame.getWorld().getChunkProvider();
+
+		if (!remainingChunks.isEmpty() && world.getGameTime() % 20 == 0) {
+			LongIterator iterator = remainingChunks.iterator();
+
+			while (iterator.hasNext()) {
+				long chunkPos = iterator.nextLong();
+				Chunk chunk = chunkProvider.getChunkWithoutLoading(ChunkPos.getX(chunkPos), ChunkPos.getZ(chunkPos));
+				if (chunk == null) {
+					continue;
+				}
+
+				replaceChestsIn(minigame.getWorld(), chunk);
+				iterator.remove();
+			}
+		}
+	}
+
+	private void replaceChestsIn(ServerWorld world, Chunk chunk) {
 		List<BlockPos> chestPositions = new ArrayList<>();
-		for (TileEntity entity : world.loadedTileEntityList) {
+		for (TileEntity entity : chunk.getTileEntityMap().values()) {
 			if (entity instanceof ChestTileEntity) {
 				chestPositions.add(entity.getPos());
 			}
