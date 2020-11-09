@@ -5,6 +5,7 @@ import com.google.common.collect.Maps;
 import com.lovetropics.minigames.client.data.TropicraftLangKeys;
 import com.lovetropics.minigames.client.minigame.ClientJoinLeaveMessage;
 import com.lovetropics.minigames.client.minigame.ClientMinigameMessage;
+import com.lovetropics.minigames.common.Scheduler;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
 import com.lovetropics.minigames.common.minigames.behaviours.IPollingMinigameBehavior;
 import com.lovetropics.minigames.common.minigames.polling.PollingMinigameInstance;
@@ -27,6 +28,7 @@ import net.minecraft.util.text.event.ClickEvent;
 import net.minecraft.util.text.event.HoverEvent;
 import net.minecraft.world.IWorld;
 import net.minecraft.world.chunk.ChunkStatus;
+import net.minecraft.world.chunk.IChunk;
 import net.minecraft.world.dimension.DimensionType;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.TickEvent;
@@ -38,6 +40,7 @@ import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.world.BlockEvent;
 import net.minecraftforge.event.world.ChunkDataEvent;
+import net.minecraftforge.event.world.ChunkEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.network.PacketDistributor;
 import org.apache.logging.log4j.util.TriConsumer;
@@ -354,22 +357,37 @@ public class MinigameManager implements IMinigameManager {
 	}
 
 	@SubscribeEvent
-	public void onChunkLoad(ChunkDataEvent.Load event) {
+	public void onChunkDataLoad(ChunkDataEvent.Load event) {
 		// TODO: WE DON'T NEED THIS PAST 1.15, HACKY DATA FIXING
-		if (event.getStatus() == ChunkStatus.Type.LEVELCHUNK && this.currentInstance != null) {
+
+		MinigameInstance minigame = this.currentInstance;
+		if (event.getStatus() == ChunkStatus.Type.LEVELCHUNK && minigame != null) {
 			final IWorld world = event.getWorld();
+			final DimensionType dimensionType = world.getDimension().getType();
+			if (dimensionType == minigame.getDimension()) {
+				final ListNBT entities = event.getData().getList("Entities", 10);
 
-			if (world != null) {
-				final DimensionType dimensionType = world.getDimension().getType();
-
-				if (dimensionType == this.currentInstance.getDimension()) {
-					final ListNBT entities = event.getData().getList("Entities", 10);
-
-					for (int i1 = 0; i1 < entities.size(); ++i1) {
-						CompoundNBT entityNBT = entities.getCompound(i1);
-						entityNBT.putInt("Dimension", dimensionType.getId());
-					}
+				for (int i1 = 0; i1 < entities.size(); ++i1) {
+					CompoundNBT entityNBT = entities.getCompound(i1);
+					entityNBT.putInt("Dimension", dimensionType.getId());
 				}
+			}
+		}
+	}
+
+	@SubscribeEvent
+	public void onChunkLoad(ChunkEvent.Load event) {
+		MinigameInstance minigame = this.currentInstance;
+		if (minigame != null) {
+			IWorld world = event.getWorld();
+			DimensionType dimensionType = world.getDimension().getType();
+			if (dimensionType == minigame.getDimension()) {
+				IChunk chunk = event.getChunk();
+				Scheduler.INSTANCE.submit(s -> {
+					if (this.currentInstance == minigame) {
+						minigame.dispatchToBehaviors(IMinigameBehavior::onChunkLoad, chunk);
+					}
+				});
 			}
 		}
 	}

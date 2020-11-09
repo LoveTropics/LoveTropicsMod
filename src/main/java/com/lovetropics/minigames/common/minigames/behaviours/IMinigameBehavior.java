@@ -13,6 +13,7 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.Unit;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraft.world.chunk.IChunk;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.player.AttackEntityEvent;
@@ -211,5 +212,13 @@ public interface IMinigameBehavior
 	 * @param event
 	 */
 	default void onPlayerBreakBlock(IMinigameInstance minigame, ServerPlayerEntity player, BlockPos pos, BlockState state, BlockEvent.BreakEvent event) {
+	}
+
+	/**
+	 * Called when a chunk within this minigame is loaded
+	 * @param minigame the current minigame instance
+	 * @param chunk the chunk that was loaded
+	 */
+	default void onChunkLoad(IMinigameInstance minigame, IChunk chunk) {
 	}
 }
