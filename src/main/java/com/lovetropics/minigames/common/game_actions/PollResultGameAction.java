@@ -3,12 +3,10 @@ package com.lovetropics.minigames.common.game_actions;
 import com.google.common.collect.Lists;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import it.unimi.dsi.fastutil.ints.IntComparators;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
 
-import java.awt.*;
 import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
@@ -61,38 +59,38 @@ public class PollResultGameAction extends GameAction
         final String title = obj.get("title").getAsString();
         final List<PollEntry> entries = Lists.newArrayList();
 
-        for (final JsonElement element : obj.getAsJsonArray("entries")) {
+        for (final JsonElement element : obj.getAsJsonArray("options")) {
             final PollEntry entry = PollEntry.fromJson(element.getAsJsonObject());
             entries.add(entry);
         }
 
-        entries.sort(Comparator.comparingInt(PollEntry::getVotes).reversed());
+        entries.sort(Comparator.comparingInt(PollEntry::getResults).reversed());
 
         return new PollResultGameAction(uuid, triggerTime, title, entries);
     }
 
     public static class PollEntry {
-        private final String name;
-        private final int votes;
+        private final String title;
+        private final int results;
 
-        public PollEntry(final String name, final int votes) {
-            this.name = name;
-            this.votes = votes;
+        public PollEntry(final String title, final int results) {
+            this.title = title;
+            this.results = results;
         }
 
-        public String getName() {
-            return name;
+        public String getTitle() {
+            return title;
         }
 
-        public int getVotes() {
-            return votes;
+        public int getResults() {
+            return results;
         }
 
         public static PollEntry fromJson(final JsonObject obj) {
-            final String name = obj.get("name").getAsString();
-            final int votes = obj.get("votes").getAsInt();
+            final String title = obj.get("title").getAsString();
+            final int results = obj.get("results").getAsInt();
 
-            return new PollEntry(name, votes);
+            return new PollEntry(title, results);
         }
     }
 }
