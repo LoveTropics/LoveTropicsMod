@@ -113,7 +113,7 @@ public interface IMinigameBehavior
 	 * 
 	 * @param player   The player which is updating.
 	 */
-	default void onPlayerUpdate(final IMinigameInstance minigame, ServerPlayerEntity player) {}
+	default void onParticipantUpdate(final IMinigameInstance minigame, ServerPlayerEntity player) {}
 
 	/**
 	 * Helper method to catch when a player respawns while inside an active minigame

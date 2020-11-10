@@ -416,8 +416,8 @@ public class MinigameManager implements IMinigameManager {
 		LivingEntity entity = event.getEntityLiving();
 		MinigameInstance minigame = getMinigameFor(entity);
 		if (minigame != null) {
-			if (entity instanceof ServerPlayerEntity) {
-				minigame.dispatchToBehaviors(IMinigameBehavior::onPlayerUpdate, (ServerPlayerEntity) entity);
+			if (entity instanceof ServerPlayerEntity && minigame.getParticipants().contains(entity)) {
+				minigame.dispatchToBehaviors(IMinigameBehavior::onParticipantUpdate, (ServerPlayerEntity) entity);
 			}
 			minigame.dispatchToBehaviors(IMinigameBehavior::onLivingEntityUpdate, entity);
 		}

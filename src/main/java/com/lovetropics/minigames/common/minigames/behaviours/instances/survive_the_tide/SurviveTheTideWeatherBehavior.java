@@ -11,12 +11,11 @@ import com.lovetropics.minigames.common.minigames.weather.WeatherController;
 import com.lovetropics.minigames.common.minigames.weather.WeatherControllerManager;
 import com.mojang.datafixers.Dynamic;
 import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.inventory.EquipmentSlotType;
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
 import net.minecraft.potion.EffectInstance;
 import net.minecraft.potion.Effects;
 import net.minecraft.util.DamageSource;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import net.minecraft.world.gen.Heightmap;
 
@@ -144,30 +143,29 @@ public class SurviveTheTideWeatherBehavior implements IMinigameBehavior {
 	}
 
 	@Override
-	public void onPlayerUpdate(IMinigameInstance minigame, ServerPlayerEntity player) {
-		if (!minigame.getParticipants().contains(player)) return;
-
-		ItemStack offhand = player.getItemStackFromSlot(EquipmentSlotType.OFFHAND);
-
-		if (acidRainActive()) {
-			if (player.world.getHeight(Heightmap.Type.MOTION_BLOCKING, player.getPosition()).getY() <= player.getPosition().getY()) {
-				if (player.world.getGameTime() % config.getAcidRainDamageRate() == 0) {
-					Item umbrella = MinigameItems.ACID_REPELLENT_UMBRELLA.get();
-
-					if (offhand.getItem() != umbrella) {
-						player.attackEntityFrom(DamageSource.GENERIC, config.getAcidRainDamage());
-					}
+	public void onParticipantUpdate(IMinigameInstance minigame, ServerPlayerEntity player) {
+		if (acidRainActive() && !isPlayerSheltered(player)) {
+			if (player.world.getGameTime() % config.getAcidRainDamageRate() == 0) {
+				if (!isPlayerHolding(player, MinigameItems.ACID_REPELLENT_UMBRELLA.get())) {
+					player.attackEntityFrom(DamageSource.GENERIC, config.getAcidRainDamage());
 				}
 			}
-		} else if (heatwaveActive()) {
-			if (player.world.getHeight(Heightmap.Type.MOTION_BLOCKING, player.getPosition()).getY() <= player.getPosition().getY()) {
-				Item sunscreen = MinigameItems.SUPER_SUNSCREEN.get();
-
-				if (offhand.getItem() != sunscreen) {
-					player.addPotionEffect(new EffectInstance(Effects.SLOWNESS, 5, 1, true, false, true));
-				}
+		} else if (heatwaveActive() && !isPlayerSheltered(player)) {
+			if (!isPlayerHolding(player, MinigameItems.SUPER_SUNSCREEN.get())) {
+				player.addPotionEffect(new EffectInstance(Effects.SLOWNESS, 5, 1, true, false, true));
 			}
 		}
+	}
+
+	private static boolean isPlayerSheltered(ServerPlayerEntity player) {
+		int x = MathHelper.floor(player.getPosX());
+		int y = MathHelper.floor(player.getPosY());
+		int z = MathHelper.floor(player.getPosZ());
+		return player.world.getHeight(Heightmap.Type.MOTION_BLOCKING, x, z) > y;
+	}
+
+	private static boolean isPlayerHolding(ServerPlayerEntity player, Item item) {
+		return player.getHeldItemMainhand().getItem() == item || player.getHeldItemOffhand().getItem() == item;
 	}
 
 	@Override

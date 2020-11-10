@@ -68,7 +68,7 @@ public final class CommandEventsBehavior extends CommandInvokeBehavior {
 	}
 
 	@Override
-	public void onPlayerUpdate(IMinigameInstance minigame, ServerPlayerEntity player) {
+	public void onParticipantUpdate(IMinigameInstance minigame, ServerPlayerEntity player) {
 		this.invoke("player_update", sourceForEntity(player));
 	}
 
