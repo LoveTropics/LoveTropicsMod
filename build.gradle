@@ -123,14 +123,13 @@ dependencies {
     implementation fg.deobf(ltlib)
     shade ltlib
 
-    shadelib group: 'org.asynchttpclient', name: 'async-http-client', version: '2.12.1'
+    shadelib group: 'org.asynchttpclient', name: 'async-http-client', version: '2.5.0'
 }
 
 shadowJar {
     configurations = [project.configurations.shade, project.configurations.shadelib]
     relocate 'com.tterrag.registrate', 'com.lovetropics.minigames.repack.registrate'
     relocate 'com.lovetropics.lib', 'com.lovetropics.minigames.repack.ltlib'
-    relocate 'io.netty', 'com.lovetropics.minigames.repack.netty'
     classifier = ''
 }
 
