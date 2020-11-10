@@ -102,7 +102,7 @@ public final class Telemetry {
 	private CompletableFuture<TelemetryReader> openReader() {
 		int configPort = ConfigLT.TELEMETRY.webSocketPort.get();
 		String port = configPort == 0 ? "" : ":" + configPort;
-		String url = "ws://" + ConfigLT.TELEMETRY.webSocketUrl.get() + port + "/ws";
+		String url = "wss://" + ConfigLT.TELEMETRY.webSocketUrl.get() + port + "/ws";
 
 		return TelemetryReader.open(url, new TelemetryReader.Listener() {
 			@Override
