@@ -165,13 +165,8 @@ public class MinigameInstance implements IMinigameInstance
         for (PlayerRole otherRole : PlayerRole.ROLES) {
             if (otherRole != role && roles.get(otherRole).remove(player)) {
                 lastRole = otherRole;
+                break;
             }
-        }
-
-        if (role == PlayerRole.PARTICIPANT) {
-            statistics.forPlayer(player).set(StatisticKey.DEAD, false);
-        } else if (lastRole == PlayerRole.PARTICIPANT && role == PlayerRole.SPECTATOR) {
-            statistics.forPlayer(player).set(StatisticKey.DEAD, true);
         }
 
         if (lastRole != null) {
@@ -181,7 +176,7 @@ public class MinigameInstance implements IMinigameInstance
 
     private void onPlayerChangeRole(ServerPlayerEntity player, PlayerRole role, PlayerRole lastRole) {
         for (IMinigameBehavior behavior : behaviors.getBehaviors()) {
-            behavior.onPlayerChangeRole(this, player, role);
+            behavior.onPlayerChangeRole(this, player, role, lastRole);
         }
     }
 

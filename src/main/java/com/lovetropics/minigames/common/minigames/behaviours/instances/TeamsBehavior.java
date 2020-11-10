@@ -140,7 +140,7 @@ public final class TeamsBehavior implements IMinigameBehavior, IPollingMinigameB
 	}
 
 	@Override
-	public void onPlayerChangeRole(IMinigameInstance minigame, ServerPlayerEntity player, PlayerRole role) {
+	public void onPlayerChangeRole(IMinigameInstance minigame, ServerPlayerEntity player, PlayerRole role, PlayerRole lastRole) {
 		if (role == PlayerRole.SPECTATOR) {
 			removePlayerFromTeams(player);
 		}

@@ -154,12 +154,12 @@ public interface IMinigameBehavior
 
 	/**
 	 * Called when a player when the player changes role
-	 *
 	 * @param minigame The current minigame instance.
 	 * @param player   The player that has been added.
 	 * @param role     The role that the player has been added to
+	 * @param lastRole This player's last role
 	 */
-	default void onPlayerChangeRole(final IMinigameInstance minigame, ServerPlayerEntity player, PlayerRole role) {
+	default void onPlayerChangeRole(final IMinigameInstance minigame, ServerPlayerEntity player, PlayerRole role, PlayerRole lastRole) {
 	}
 
 	/**

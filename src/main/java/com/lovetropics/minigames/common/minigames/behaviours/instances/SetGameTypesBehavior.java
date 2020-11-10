@@ -28,7 +28,7 @@ public class SetGameTypesBehavior implements IMinigameBehavior {
 	}
 
 	@Override
-	public void onPlayerChangeRole(IMinigameInstance minigame, ServerPlayerEntity player, PlayerRole role) {
+	public void onPlayerChangeRole(IMinigameInstance minigame, ServerPlayerEntity player, PlayerRole role, PlayerRole lastRole) {
 		applyToPlayer(player, role);
 	}
 

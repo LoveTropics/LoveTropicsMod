@@ -48,7 +48,7 @@ public final class CommandEventsBehavior extends CommandInvokeBehavior {
 	}
 
 	@Override
-	public void onPlayerChangeRole(IMinigameInstance minigame, ServerPlayerEntity player, PlayerRole role) {
+	public void onPlayerChangeRole(IMinigameInstance minigame, ServerPlayerEntity player, PlayerRole role, PlayerRole lastRole) {
 		this.onPlayerJoin(minigame, player, role);
 	}
 

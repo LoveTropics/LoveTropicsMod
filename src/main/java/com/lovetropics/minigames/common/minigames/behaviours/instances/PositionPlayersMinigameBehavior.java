@@ -56,7 +56,7 @@ public class PositionPlayersMinigameBehavior implements IMinigameBehavior {
 	}
 
 	@Override
-	public void onPlayerChangeRole(IMinigameInstance minigame, ServerPlayerEntity player, PlayerRole role) {
+	public void onPlayerChangeRole(IMinigameInstance minigame, ServerPlayerEntity player, PlayerRole role, PlayerRole lastRole) {
 		setupPlayerAsRole(minigame, player, role);
 	}
 
