@@ -61,7 +61,7 @@ public final class WeatherControllerManager {
 	@SubscribeEvent
 	public static void onWorldTick(TickEvent.WorldTickEvent event) {
 		World world = event.world;
-		if (world.isRemote) {
+		if (world.isRemote || event.phase == TickEvent.Phase.END) {
 			return;
 		}
 

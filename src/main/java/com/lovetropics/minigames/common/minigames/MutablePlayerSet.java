@@ -9,6 +9,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.management.PlayerList;
 import net.minecraft.util.text.ITextComponent;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -73,6 +74,12 @@ public final class MutablePlayerSet implements PlayerSet {
 	@Override
 	public boolean contains(UUID id) {
 		return this.players.contains(id);
+	}
+
+	@Nullable
+	@Override
+	public ServerPlayerEntity getPlayerById(UUID id) {
+		return this.players.contains(id) ? this.server.getPlayerList().getPlayerByUUID(id) : null;
 	}
 
 	@Override

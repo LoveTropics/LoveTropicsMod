@@ -22,11 +22,6 @@ public final class SpectatorChaseBehavior implements IMinigameBehavior {
 
 	@Override
 	public void onPlayerJoin(IMinigameInstance minigame, ServerPlayerEntity player, PlayerRole role) {
-		onPlayerChangeRole(minigame, player, role, lastRole);
-	}
-
-	@Override
-	public void onPlayerChangeRole(IMinigameInstance minigame, ServerPlayerEntity player, PlayerRole role, PlayerRole lastRole) {
 		List<UUID> participants = collectParticipantIds(minigame);
 		ChaseCameraMessage message = new ChaseCameraMessage(participants);
 		if (role == PlayerRole.SPECTATOR) {
@@ -34,6 +29,11 @@ public final class SpectatorChaseBehavior implements IMinigameBehavior {
 		}
 
 		minigame.getSpectators().sendPacket(LTNetwork.CHANNEL, message);
+	}
+
+	@Override
+	public void onPlayerChangeRole(IMinigameInstance minigame, ServerPlayerEntity player, PlayerRole role, PlayerRole lastRole) {
+		onPlayerJoin(minigame, player, role);
 	}
 
 	@Override

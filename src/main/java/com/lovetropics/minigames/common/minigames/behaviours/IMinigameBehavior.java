@@ -20,12 +20,14 @@ import net.minecraftforge.event.entity.player.AttackEntityEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.world.BlockEvent;
 
+import java.util.List;
+
 public interface IMinigameBehavior
 {
 	default ImmutableList<IMinigameBehaviorType<? extends IMinigameBehavior>> dependencies() {
 		return ImmutableList.of();
 	}
-	
+
 	/**
 	 * For before a minigame starts. Useful for preparing the minigame.
 	 *
@@ -220,5 +222,8 @@ public interface IMinigameBehavior
 	 * @param chunk the chunk that was loaded
 	 */
 	default void onChunkLoad(IMinigameInstance minigame, IChunk chunk) {
+	}
+
+	default void assignPlayerRoles(IMinigameInstance minigame, List<ServerPlayerEntity> participants, List<ServerPlayerEntity> spectators) {
 	}
 }

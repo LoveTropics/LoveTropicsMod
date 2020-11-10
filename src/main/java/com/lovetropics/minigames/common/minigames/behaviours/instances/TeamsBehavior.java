@@ -8,6 +8,7 @@ import com.lovetropics.minigames.common.minigames.polling.PollingMinigameInstanc
 import com.lovetropics.minigames.common.minigames.statistics.StatisticKey;
 import com.mojang.datafixers.Dynamic;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
@@ -24,34 +25,47 @@ import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.player.AttackEntityEvent;
 
 import javax.annotation.Nullable;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 
 public final class TeamsBehavior implements IMinigameBehavior, IPollingMinigameBehavior {
 	private final List<TeamKey> teams;
 	private final Map<TeamKey, MutablePlayerSet> teamPlayers = new Object2ObjectOpenHashMap<>();
 	private final Map<TeamKey, ScorePlayerTeam> scoreboardTeams = new Object2ObjectOpenHashMap<>();
+	private final Map<String, List<UUID>> assignedTeams;
+
+	private final List<TeamKey> pollingTeams;
 
 	private final boolean friendlyFire;
 
 	private final Map<UUID, TeamKey> teamPreferences = new Object2ObjectOpenHashMap<>();
 
-	public TeamsBehavior(List<TeamKey> teams, boolean friendlyFire) {
+	public TeamsBehavior(List<TeamKey> teams, boolean friendlyFire, Map<String, List<UUID>> assignedTeams) {
 		this.teams = teams;
 		this.friendlyFire = friendlyFire;
+		this.assignedTeams = assignedTeams;
+
+		this.pollingTeams = new ArrayList<>(teams.size());
+		for (TeamKey team : teams) {
+			if (!assignedTeams.containsKey(team.key)) {
+				this.pollingTeams.add(team);
+			}
+		}
 	}
 
 	public static <T> TeamsBehavior parse(Dynamic<T> root) {
 		List<TeamKey> teams = root.get("teams").asList(TeamKey::parse);
 		boolean friendlyFire = root.get("friendly_fire").asBoolean(false);
-		return new TeamsBehavior(teams, friendlyFire);
+		Map<String, List<UUID>> assignedTeams = root.get("assign").asMap(
+				key -> key.asString(""),
+				value -> value.asList(id -> UUID.fromString(id.asString("")))
+		);
+
+		return new TeamsBehavior(teams, friendlyFire, assignedTeams);
 	}
 
 	@Override
 	public void onStartPolling(PollingMinigameInstance minigame) {
-		for (TeamKey team : teams) {
+		for (TeamKey team : pollingTeams) {
 			minigame.addControlCommand("join_team_" + team.key, source -> {
 				ServerPlayerEntity player = source.asPlayer();
 				onRequestJoinTeam(player, team);
@@ -70,18 +84,18 @@ public final class TeamsBehavior implements IMinigameBehavior, IPollingMinigameB
 
 	@Override
 	public void onPlayerRegister(PollingMinigameInstance minigame, ServerPlayerEntity player, @Nullable PlayerRole role) {
-		if (role != PlayerRole.SPECTATOR) {
+		if (role != PlayerRole.SPECTATOR && pollingTeams.size() > 1) {
 			Scheduler.INSTANCE.submit(server -> {
 				sendTeamSelectionTo(player);
 			}, 1);
 		}
 	}
 
-	public void sendTeamSelectionTo(ServerPlayerEntity player) {
+	private void sendTeamSelectionTo(ServerPlayerEntity player) {
 		player.sendMessage(new StringTextComponent("This is a team-based game!").applyTextStyles(TextFormatting.GOLD, TextFormatting.BOLD));
 		player.sendMessage(new StringTextComponent("You can select a team preference by clicking the links below:").applyTextStyle(TextFormatting.GRAY));
 
-		for (TeamKey team : teams) {
+		for (TeamKey team : pollingTeams) {
 			Style linkStyle = new Style();
 			linkStyle.setColor(team.text);
 			linkStyle.setUnderlined(true);
@@ -92,6 +106,51 @@ public final class TeamsBehavior implements IMinigameBehavior, IPollingMinigameB
 					new StringTextComponent(" - ").applyTextStyle(TextFormatting.GRAY)
 							.appendSibling(new StringTextComponent("Join " + team.name).setStyle(linkStyle))
 			);
+		}
+	}
+
+	@Override
+	public void assignPlayerRoles(IMinigameInstance minigame, List<ServerPlayerEntity> participants, List<ServerPlayerEntity> spectators) {
+		Set<UUID> requiredPlayers = new ObjectOpenHashSet<>();
+		for (List<UUID> assignedTeam : assignedTeams.values()) {
+			requiredPlayers.addAll(assignedTeam);
+		}
+
+		Random random = new Random();
+
+		for (UUID id : requiredPlayers) {
+			// try find this player within the spectators list
+			ServerPlayerEntity requiredPlayer = null;
+			for (ServerPlayerEntity player : spectators) {
+				if (player.getUniqueID().equals(id)) {
+					requiredPlayer = player;
+					break;
+				}
+			}
+
+			// if this required player is in the spectators list, try to swap them with another player
+			if (requiredPlayer != null) {
+				ServerPlayerEntity swapWithPlayer = null;
+
+				// find another player to swap with
+				List<ServerPlayerEntity> shuffledParticipants = new ArrayList<>(participants);
+				Collections.shuffle(shuffledParticipants, random);
+
+				for (ServerPlayerEntity swapCandidate : shuffledParticipants) {
+					if (!requiredPlayers.contains(swapCandidate.getUniqueID())) {
+						swapWithPlayer = swapCandidate;
+						break;
+					}
+				}
+
+				// if we found a player to swap with, do that
+				if (swapWithPlayer != null) {
+					participants.remove(swapWithPlayer);
+					spectators.add(swapWithPlayer);
+					spectators.remove(requiredPlayer);
+					participants.add(requiredPlayer);
+				}
+			}
 		}
 	}
 
@@ -128,15 +187,34 @@ public final class TeamsBehavior implements IMinigameBehavior, IPollingMinigameB
 
 	@Override
 	public void onStart(IMinigameInstance minigame) {
-		TeamAllocator teamAllocator = new TeamAllocator(teams);
-		for (ServerPlayerEntity player : minigame.getPlayers()) {
-			TeamKey teamPreference = teamPreferences.get(player.getUniqueID());
-			teamAllocator.addPlayer(player, teamPreference);
+		Set<UUID> assignedPlayers = new ObjectOpenHashSet<>();
+
+		for (Map.Entry<String, List<UUID>> entry : assignedTeams.entrySet()) {
+			TeamKey team = getTeamByKey(entry.getKey());
+			List<UUID> players = entry.getValue();
+
+			for (UUID id : players) {
+				ServerPlayerEntity player = minigame.getParticipants().getPlayerById(id);
+				if (player != null) {
+					addPlayerToTeam(minigame, player, team);
+					assignedPlayers.add(id);
+				}
+			}
 		}
 
-		teamAllocator.allocate((player, team) -> {
-			addPlayerToTeam(minigame, player, team);
-		});
+		if (!pollingTeams.isEmpty()) {
+			TeamAllocator teamAllocator = new TeamAllocator(pollingTeams);
+			for (ServerPlayerEntity player : minigame.getParticipants()) {
+				if (!assignedPlayers.contains(player.getUniqueID())) {
+					TeamKey teamPreference = teamPreferences.get(player.getUniqueID());
+					teamAllocator.addPlayer(player, teamPreference);
+				}
+			}
+
+			teamAllocator.allocate((player, team) -> {
+				addPlayerToTeam(minigame, player, team);
+			});
+		}
 	}
 
 	@Override
@@ -210,6 +288,16 @@ public final class TeamsBehavior implements IMinigameBehavior, IPollingMinigameB
 
 	public List<TeamKey> getTeams() {
 		return teams;
+	}
+
+	@Nullable
+	public TeamKey getTeamByKey(String key) {
+		for (TeamKey team : teams) {
+			if (team.key.equals(key)) {
+				return team;
+			}
+		}
+		return null;
 	}
 
 	public static class TeamKey {

@@ -109,6 +109,8 @@ public class MinigameInstance implements IMinigameInstance
 
         registrations.collectInto(server, participants, spectators, definition.getMaximumParticipantCount());
 
+        minigame.dispatchToBehaviors((b, m) -> b.assignPlayerRoles(m, participants, spectators));
+
         for (ServerPlayerEntity player : participants) {
             minigame.addPlayer(player, PlayerRole.PARTICIPANT);
         }

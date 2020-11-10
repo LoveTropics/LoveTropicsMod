@@ -30,6 +30,12 @@ public interface PlayerSet extends Iterable<ServerPlayerEntity> {
 			return false;
 		}
 
+		@Nullable
+		@Override
+		public ServerPlayerEntity getPlayerById(UUID id) {
+			return null;
+		}
+
 		@Override
 		public int size() {
 			return 0;
@@ -55,6 +61,9 @@ public interface PlayerSet extends Iterable<ServerPlayerEntity> {
 	}
 
 	boolean contains(UUID id);
+
+	@Nullable
+	ServerPlayerEntity getPlayerById(UUID id);
 
 	int size();
 
