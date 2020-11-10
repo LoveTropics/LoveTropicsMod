@@ -14,21 +14,23 @@ import java.util.UUID;
 /**
  * Chat-caused event
  */
-public class PollResultGameAction extends GameAction
-{
+public class PollResultGameAction extends GameAction {
+    private final String resultType;
     private final String title;
     private final List<PollEntry> entries;
     // TODO: Poll result action
 
-    public PollResultGameAction(UUID uuid, String triggerTime, final String title, final List<PollEntry> entries) {
+    // UUID is not human readable
+    // resultType is readable, ex: loot_package
+    public PollResultGameAction(UUID uuid, String resultType, String triggerTime, final String title, final List<PollEntry> entries) {
         super(uuid, triggerTime);
+        this.resultType = resultType;
         this.title = title;
         this.entries = entries;
     }
 
     @Override
-    public boolean resolve(MinecraftServer server)
-    {
+    public boolean resolve(MinecraftServer server) {
         final StringBuilder builder = new StringBuilder()
                 .append("Poll result: ")
                 .append(title)
@@ -54,6 +56,7 @@ public class PollResultGameAction extends GameAction
 
     public static PollResultGameAction fromJson(final JsonObject obj) {
         final UUID uuid = UUID.fromString(obj.get("uuid").getAsString());
+        final String resultType = obj.get("chat_event_type").getAsString();
         final String triggerTime = obj.get("trigger_time").getAsString();
 
         final String title = obj.get("title").getAsString();
@@ -66,7 +69,7 @@ public class PollResultGameAction extends GameAction
 
         entries.sort(Comparator.comparingInt(PollEntry::getResults).reversed());
 
-        return new PollResultGameAction(uuid, triggerTime, title, entries);
+        return new PollResultGameAction(uuid, resultType, triggerTime, title, entries);
     }
 
     public static class PollEntry {
