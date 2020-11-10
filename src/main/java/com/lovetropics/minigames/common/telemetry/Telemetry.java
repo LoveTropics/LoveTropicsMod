@@ -125,6 +125,8 @@ public final class Telemetry {
 	}
 
 	private void handlePayload(JsonObject object) {
+		LOGGER.debug("Receive payload over websocket: {}", object);
+
 		final String type = object.get("type").getAsString();
 		final String crud = object.get("crud").getAsString();
 
