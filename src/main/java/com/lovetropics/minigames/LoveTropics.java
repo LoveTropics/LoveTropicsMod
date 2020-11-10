@@ -145,6 +145,7 @@ public class LoveTropics {
         CommandMinigameControl.register(dispatcher);
         CommandMap.register(dispatcher);
         CommandMinigameSendResults.register(dispatcher);
+        CommandMinigameDonate.register(dispatcher);
     }
 
     private void onServerStopping(final FMLServerStoppingEvent event) {

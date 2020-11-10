@@ -8,6 +8,7 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.material.Material;
 import net.minecraft.entity.*;
+import net.minecraft.entity.effect.LightningBoltEntity;
 import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.ItemStack;
@@ -22,6 +23,7 @@ import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.world.World;
 import net.minecraft.world.gen.Heightmap;
+import net.minecraft.world.server.ServerWorld;
 import org.apache.commons.lang3.StringUtils;
 
 import java.lang.reflect.Field;
@@ -46,11 +48,17 @@ public class Util {
         final Optional<EntityType<?>> entityType = Registry.ENTITY_TYPE.getValue(entityId);
 
         if (entityType.isPresent()) {
-            final Entity entity = entityType.get().create(world);
+            if (EntityType.getKey(EntityType.LIGHTNING_BOLT).equals(entityId)) {
+                LightningBoltEntity entity = new LightningBoltEntity(world, x, y, z, false);
+                ((ServerWorld) world).addLightningBolt(entity);
+                return true;
+            } else {
+                final Entity entity = entityType.get().create(world);
 
-            if (entity != null) {
-                entity.setPosition(x, y, z);
-                return world.addEntity(entity);
+                if (entity != null) {
+                    entity.setPosition(x, y, z);
+                    return world.addEntity(entity);
+                }
             }
         }
 
