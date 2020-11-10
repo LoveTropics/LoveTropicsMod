@@ -11,12 +11,16 @@ import net.minecraft.item.Items;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.List;
 import java.util.Optional;
 
 public abstract class DonationPackageBehavior implements IMinigameBehavior
 {
+	private static final Logger LOGGER = LogManager.getLogger(DonationPackageBehavior.class);
+
 	public enum PlayerSelect
 	{
 		SPECIFIC("specific"), RANDOM("random"), ALL("all");
@@ -58,8 +62,8 @@ public abstract class DonationPackageBehavior implements IMinigameBehavior
 			switch (playerSelect) {
 				case SPECIFIC:
 					if (action.getReceivingPlayer() == null) {
-						throw new RuntimeException("Expected donation package to have a receiving player,"
-								+ " but did not receive from backend!");
+						LOGGER.warn("Expected donation package to have a receiving player, but did not receive from backend!");
+						return false;
 					}
 
 					final boolean receiverIsParticipant = minigame.getParticipants().contains(action.getReceivingPlayer());
