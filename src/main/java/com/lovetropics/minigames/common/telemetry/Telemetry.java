@@ -127,11 +127,15 @@ public final class Telemetry {
 	private void handlePayload(JsonObject object) {
 		LOGGER.debug("Receive payload over websocket: {}", object);
 
-		final String type = object.get("type").getAsString();
-		final String crud = object.get("crud").getAsString();
+		try {
+			final String type = object.get("type").getAsString();
+			final String crud = object.get("crud").getAsString();
 
-		if (crud.equals("create")) {
-			handleCreatePayload(object, type);
+			if (crud.equals("create")) {
+				handleCreatePayload(object.getAsJsonObject("payload"), type);
+			}
+		} catch (Exception e) {
+			LOGGER.error("An unexpected error occurred while trying to handle payload: {}", object, e);
 		}
 	}
 
