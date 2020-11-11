@@ -10,6 +10,7 @@ import net.minecraft.world.dimension.DimensionType;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.common.util.Constants.NBT;
 import net.minecraftforge.event.entity.EntityTravelToDimensionEvent;
+import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
@@ -85,6 +86,18 @@ public final class WorkspacePositionTracker {
 			WorkspacePositionTracker.setPositionFor(player, fromWorkspace, position);
 		} else {
 			WorkspacePositionTracker.setReturnPositionFor(player, position);
+		}
+	}
+
+	@SubscribeEvent
+	public static void onPlayerClone(PlayerEvent.Clone event) {
+		ServerPlayerEntity fromPlayer = (ServerPlayerEntity) event.getOriginal();
+		ServerPlayerEntity toPlayer = (ServerPlayerEntity) event.getPlayer();
+
+		CompoundNBT fromData = fromPlayer.getPersistentData();
+		if (fromData.contains(NBT_KEY, NBT.TAG_COMPOUND)) {
+			CompoundNBT fromTag = fromData.getCompound(NBT_KEY);
+			toPlayer.getPersistentData().put(NBT_KEY, fromTag.copy());
 		}
 	}
 
