@@ -36,8 +36,8 @@ public final class DriftwoodRider implements ICapabilityProvider {
 
 	private final PlayerEntity player;
 	private final LazyOptional<DriftwoodRider> instance = LazyOptional.of(() -> this);
-	private DriftwoodEntity tickRidingDriftwood;
 	private DriftwoodEntity ridingDriftwood;
+	private int ridingTime;
 
 	DriftwoodRider(PlayerEntity player) {
 		this.player = player;
@@ -62,34 +62,40 @@ public final class DriftwoodRider implements ICapabilityProvider {
 	}
 
 	private void tick() {
-		DriftwoodEntity ridingDriftwood = this.tickRidingDriftwood;
-		this.ridingDriftwood = ridingDriftwood;
-		this.tickRidingDriftwood = null;
+		DriftwoodEntity ridingDriftwood = this.ridingDriftwood;
+		if (ridingTime <= 0 || ridingDriftwood == null) {
+			return;
+		}
 
-		if (ridingDriftwood != null && player.isUser()) {
+		if (--ridingTime <= 0) {
+			this.ridingDriftwood = null;
+		}
+
+		if (player.isUser()) {
 			double deltaX = ridingDriftwood.getPosX() - ridingDriftwood.prevPosX;
 			double deltaZ = ridingDriftwood.getPosZ() - ridingDriftwood.prevPosZ;
-			move(deltaX, deltaZ);
+			double deltaY = Math.max(ridingDriftwood.getPosY() - ridingDriftwood.prevPosY, 0.0);
+			move(deltaX, deltaY, deltaZ);
 		}
 	}
 
-	private void move(double deltaX, double deltaZ) {
-		if (deltaX == 0.0 && deltaZ == 0.0) {
+	private void move(double deltaX, double deltaY, double deltaZ) {
+		if (deltaX == 0.0 && deltaY == 0.0 && deltaZ == 0.0) {
 			return;
 		}
 
 		Vec3d motion = player.getMotion();
 		boolean onGround = player.onGround;
 
-		player.move(MoverType.SELF, new Vec3d(deltaX, 0.0, deltaZ));
+		player.move(MoverType.SELF, new Vec3d(deltaX, deltaY, deltaZ));
 
 		player.setMotion(motion);
 		player.onGround = onGround;
 	}
 
 	public void setRiding(DriftwoodEntity driftwood) {
-		tickRidingDriftwood = driftwood;
 		ridingDriftwood = driftwood;
+		ridingTime = 10;
 	}
 
 	@Nullable

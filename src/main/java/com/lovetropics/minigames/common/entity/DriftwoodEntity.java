@@ -30,6 +30,10 @@ import java.util.List;
 public final class DriftwoodEntity extends Entity {
 	private static final DataParameter<Boolean> FLOATING = EntityDataManager.createKey(DriftwoodEntity.class, DataSerializers.BOOLEAN);
 
+	private static final float START_FLOAT_DEPTH = 0.5F;
+	private static final int FLOAT_TICKS = 20 * 60;
+	private static final float SINK_PER_TICK = (1.0F - START_FLOAT_DEPTH) / FLOAT_TICKS;
+
 	private double lerpX;
 	private double lerpY;
 	private double lerpZ;
@@ -37,7 +41,7 @@ public final class DriftwoodEntity extends Entity {
 	private float lerpPitch;
 	private int lerpTicks;
 
-	private float floatDepth = 0.25F;
+	private float floatDepth = START_FLOAT_DEPTH;
 
 	private Vec3d steerDirection;
 	private float steerYaw;
@@ -62,7 +66,7 @@ public final class DriftwoodEntity extends Entity {
 	@Override
 	@Nullable
 	public AxisAlignedBB getCollisionBox(Entity entity) {
-		return entity.canBePushed() ? entity.getBoundingBox() : null;
+		return null;
 	}
 
 	@Override
@@ -136,7 +140,7 @@ public final class DriftwoodEntity extends Entity {
 				setPosition(getPosX(), floatHeight, getPosZ());
 
 				if (!riders.isEmpty()) {
-					floatDepth = Math.min(floatDepth + (1.0F / (20.0F * 60.0F)), 1.0F);
+					floatDepth = Math.min(floatDepth + SINK_PER_TICK, 1.0F);
 					setFloatDepth(floatDepth);
 				}
 
