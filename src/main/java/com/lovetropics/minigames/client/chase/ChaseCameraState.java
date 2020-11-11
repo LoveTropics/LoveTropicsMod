@@ -34,6 +34,9 @@ public interface ChaseCameraState {
 
 		@Override
 		public StateApplicator apply(Minecraft client, ChaseCameraSession session) {
+			client.gameSettings.smoothCamera = false;
+			client.gameSettings.thirdPersonView = 0;
+
 			return new StateApplicator(
 					() -> LTNetwork.CHANNEL.sendToServer(new ChaseSpectatePlayerMessage(client.player.getUniqueID())),
 					() -> client.getRenderViewEntity() == client.player
@@ -50,12 +53,6 @@ public interface ChaseCameraState {
 			}
 
 			return this;
-		}
-
-		@Override
-		public void renderTick(Minecraft client, ChaseCameraSession session, ClientPlayerEntity player) {
-			client.gameSettings.smoothCamera = false;
-			client.gameSettings.thirdPersonView = 0;
 		}
 	}
 
