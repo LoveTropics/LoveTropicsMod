@@ -22,7 +22,7 @@ public class CommandMinigameDonate {
 
 	private static int execute(CommandSource source) throws CommandSyntaxException {
 		DonationPackageGameAction act = new DonationPackageGameAction(UUID.randomUUID(),
-				"lightning_strike", "0", "Corosus", UUID.fromString("380df991-f603-344c-a090-369bad2a924a"));
+				"lightning_storm", "0", "Corosus", UUID.fromString("380df991-f603-344c-a090-369bad2a924a"));
 		final IMinigameInstance instance = MinigameManager.getInstance().getActiveMinigame();
 		if (instance != null) {
 			instance.getBehaviors().stream().anyMatch(behavior -> act.notifyBehavior(instance, behavior));
