@@ -49,6 +49,7 @@ public class MinigameBehaviorTypes {
 	public static final RegistryObject<IMinigameBehaviorType<EliminatePlayerControlBehavior>> ELIMINATE_PLAYER_CONTROL;
 	public static final RegistryObject<IMinigameBehaviorType<PlaceSttChestsMinigameBehavior>> PLACE_STT_CHESTS;
 	public static final RegistryObject<IMinigameBehaviorType<GenerateEntitiesBehavior>> GENERATE_ENTITIES;
+	public static final RegistryObject<IMinigameBehaviorType<WeatherControlsBehavior>> WEATHER_CONTROLS;
 
 	public static final RegistryObject<IMinigameBehaviorType<BindObjectiveToStatisticBehavior>> BIND_OBJECTIVE_TO_STATISTIC;
 	public static final RegistryObject<IMinigameBehaviorType<PlaceByStatisticBehavior>> PLACE_BY_STATISTIC;
@@ -115,6 +116,7 @@ public class MinigameBehaviorTypes {
 		ELIMINATE_PLAYER_CONTROL = register("eliminate_player_control", EliminatePlayerControlBehavior::parse);
 		PLACE_STT_CHESTS = register("place_stt_chests", PlaceSttChestsMinigameBehavior::parse);
 		GENERATE_ENTITIES = register("generate_entities", GenerateEntitiesBehavior::parse);
+		WEATHER_CONTROLS = register("weather_controls", WeatherControlsBehavior::parse);
 
 		BIND_OBJECTIVE_TO_STATISTIC = register("bind_objective_to_statistic", BindObjectiveToStatisticBehavior::parse);
 		PLACE_BY_STATISTIC = register("place_by_statistic", PlaceByStatisticBehavior::parse);
