@@ -30,17 +30,20 @@ public class PollFinalistsBehavior implements IMinigameBehavior {
 		return new PollFinalistsBehavior(
 				root.get("finalists_tag").asString("finalist"),
 				root.get("winner_tag").asString("winner"),
-				root.get("votes_objective").asString("votes"));
+				root.get("votes_objective").asString("votes"),
+				root.get("poll_duration").asString("5m"));
 	}
 
 	private final String finalistsTag;
 	private final String winnerTag;
 	private final String votesObjective;
+	private final String pollDuration;
 
-	public PollFinalistsBehavior(String finalistsTag, String winnerTag, String votesObjective) {
+	public PollFinalistsBehavior(String finalistsTag, String winnerTag, String votesObjective, String pollDuration) {
 		this.finalistsTag = finalistsTag;
 		this.winnerTag = winnerTag;
 		this.votesObjective = votesObjective;
+		this.pollDuration = pollDuration;
 	}
 
 	@Override
@@ -53,7 +56,7 @@ public class PollFinalistsBehavior implements IMinigameBehavior {
 					.map(p -> p.getGameProfile().getName())
 					.toArray(String[]::new);
 			ArrayUtils.shuffle(finalists);
-			minigame.getTelemetry().createPoll("Choose the best buidl!", "5m", finalists);
+			minigame.getTelemetry().createPoll("Choose the best buidl!", pollDuration, finalists);
 		});
 	}
 
