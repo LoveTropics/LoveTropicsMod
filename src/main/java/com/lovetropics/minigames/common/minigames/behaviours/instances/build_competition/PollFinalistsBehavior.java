@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import org.apache.commons.lang3.ArrayUtils;
-
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.lovetropics.minigames.common.minigames.IMinigameInstance;
@@ -14,6 +12,7 @@ import com.mojang.datafixers.Dynamic;
 
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import it.unimi.dsi.fastutil.objects.ObjectArrays;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.scoreboard.Score;
 import net.minecraft.scoreboard.ScoreCriteria;
@@ -55,7 +54,7 @@ public class PollFinalistsBehavior implements IMinigameBehavior {
 					.filter(p -> p.getTags().contains(finalistsTag))
 					.map(p -> p.getGameProfile().getName())
 					.toArray(String[]::new);
-			ArrayUtils.shuffle(finalists);
+			ObjectArrays.shuffle(finalists, RANDOM);
 			minigame.getTelemetry().createPoll("Choose the best buidl!", pollDuration, finalists);
 		});
 	}
