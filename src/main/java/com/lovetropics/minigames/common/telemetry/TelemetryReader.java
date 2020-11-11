@@ -51,6 +51,7 @@ public final class TelemetryReader implements WebSocketListener {
 
 	@Override
 	public void onTextFrame(String payload, boolean finalFragment, int rsv) {
+		System.out.println("Received text frame: " + payload);
 		if (packet == null) {
 			packet = new StringBuilder(payload);
 		} else {

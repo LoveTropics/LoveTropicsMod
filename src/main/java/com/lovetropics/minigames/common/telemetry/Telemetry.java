@@ -36,6 +36,8 @@ public final class Telemetry {
 	);
 
 	private final TelemetrySender sender = TelemetrySender.Http.openFromConfig();
+	private final TelemetrySender pollSender = new TelemetrySender.Http(() -> "https://polling.lovetropics.com", ConfigLT.TELEMETRY.authToken::get);
+	
 	private TelemetryReader reader;
 	private boolean readerConnecting;
 
@@ -95,6 +97,10 @@ public final class Telemetry {
 		EXECUTOR.submit(() -> sender.post(endpoint, body));
 	}
 
+	void postPolling(final String endpoint, final JsonElement body) {
+		EXECUTOR.submit(() -> pollSender.post(endpoint, body));
+	}
+
 	CompletableFuture<JsonElement> get(final String endpoint) {
 		return CompletableFuture.supplyAsync(() -> sender.get(endpoint), EXECUTOR);
 	}
@@ -131,21 +137,19 @@ public final class Telemetry {
 			final String type = object.get("type").getAsString();
 			final String crud = object.get("crud").getAsString();
 
-			if (crud.equals("create")) {
-				handleCreatePayload(object.getAsJsonObject("payload"), type);
-			}
+			handlePayload(object.getAsJsonObject("payload"), type, crud);
 		} catch (Exception e) {
 			LOGGER.error("An unexpected error occurred while trying to handle payload: {}", object, e);
 		}
 	}
 
-	private void handleCreatePayload(JsonObject object, String type) {
+	private void handlePayload(JsonObject object, String type, String crud) {
 		MinigameInstanceTelemetry instance = this.instance;
 
 		// we can ignore the payload because we will request it again when a minigame starts
 		if (instance == null) return;
 
-		instance.handleCreatePayload(object, type);
+		instance.handlePayload(object, type, crud);
 	}
 
 	public boolean isReaderConnected() {

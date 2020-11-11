@@ -31,15 +31,19 @@ import net.minecraft.block.Blocks;
 import net.minecraft.command.CommandSource;
 import net.minecraft.particles.ParticleTypes;
 import net.minecraft.util.Direction;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.server.ServerWorld;
-import net.tropicraft.core.common.block.TropicraftBlocks;
+import net.minecraftforge.fml.RegistryObject;
+import net.minecraftforge.registries.ForgeRegistries;
 
 public class CommandScanArea {
+
+	private static final RegistryObject<Block> PURIFIED_SAND = RegistryObject.of(new ResourceLocation("tropicraft", "purified_sand"), ForgeRegistries.BLOCKS);
 
 	private static final SimpleCommandExceptionType NO_WATER = new SimpleCommandExceptionType(
 			new TranslationTextComponent("commands.ltminigames.scan.nowater.fail"));
@@ -74,7 +78,8 @@ public class CommandScanArea {
 		queue.add(pos.toImmutable());
 		seen.add(pos.toLong());
 
-		final Set<Block> edges = Sets.newHashSet(Blocks.DIRT, Blocks.GRASS_BLOCK, Blocks.STONE, Blocks.SAND, TropicraftBlocks.PURIFIED_SAND.get(), Blocks.BROWN_STAINED_GLASS);
+		final Set<Block> edges = Sets.newHashSet(Blocks.DIRT, Blocks.GRASS_BLOCK, Blocks.STONE, Blocks.SAND, Blocks.BROWN_STAINED_GLASS);
+		PURIFIED_SAND.ifPresent(edges::add);
 		final Direction[] dirs = new Direction[] { Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST };
 
 		Map<ChunkPos, Chunk> chunkCache = new HashMap<>();

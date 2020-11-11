@@ -1,6 +1,7 @@
 package com.lovetropics.minigames.common.minigames.behaviours;
 
 import com.lovetropics.minigames.common.minigames.behaviours.instances.*;
+import com.lovetropics.minigames.common.minigames.behaviours.instances.build_competition.PollFinalistsBehavior;
 import com.lovetropics.minigames.common.minigames.behaviours.instances.conservation_exploration.RecordCreaturesBehavior;
 import com.lovetropics.minigames.common.minigames.behaviours.instances.conservation_exploration.SpawnCreaturesBehavior;
 import com.lovetropics.minigames.common.minigames.behaviours.instances.donations.*;
@@ -71,6 +72,7 @@ public class MinigameBehaviorTypes {
 	public static final RegistryObject<IMinigameBehaviorType<SpawnEntitiesAroundPlayersPackageBehavior>> SPAWN_ENTITIES_AROUND_PLAYERS_PACKAGE;
 	public static final RegistryObject<IMinigameBehaviorType<SpawnEntitiesAtRegionsOverTimePackageBehavior>> SPAWN_ENTITIES_AT_REGIONS_OVER_TIME_PACKAGE;
 
+	public static final RegistryObject<IMinigameBehaviorType<PollFinalistsBehavior>> POLL_FINALISTS;
 
 	public static <T extends IMinigameBehavior> RegistryObject<IMinigameBehaviorType<T>> register(final String name, final MinigameBehaviorType.Factory<T> instanceFactory) {
 		return MINIGAME_BEHAVIOURS_REGISTER.register(name, () -> new MinigameBehaviorType<>(instanceFactory));
@@ -138,5 +140,7 @@ public class MinigameBehaviorTypes {
 		SPAWN_ENTITY_AT_REGIONS_PACKAGE = register("spawn_entity_at_regions_package", SpawnEntityAtRegionsPackageBehavior::parse);
 		SPAWN_ENTITIES_AROUND_PLAYERS_PACKAGE = register("spawn_entities_around_players_package", SpawnEntitiesAroundPlayersPackageBehavior::parse);
 		SPAWN_ENTITIES_AT_REGIONS_OVER_TIME_PACKAGE = register("spawn_entities_at_regions_over_time_package", SpawnEntitiesAtRegionsOverTimePackageBehavior::parse);
+
+		POLL_FINALISTS = register("poll_finalists", PollFinalistsBehavior::parse);
 	}
 }

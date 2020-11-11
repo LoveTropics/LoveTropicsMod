@@ -1,18 +1,24 @@
 package com.lovetropics.minigames.common.telemetry;
 
+import java.time.Instant;
+import java.util.UUID;
+
+import javax.annotation.Nullable;
+
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.lovetropics.minigames.common.config.ConfigLT;
 import com.lovetropics.minigames.common.game_actions.GameAction;
 import com.lovetropics.minigames.common.minigames.IMinigameDefinition;
+import com.lovetropics.minigames.common.minigames.IMinigameInstance;
+import com.lovetropics.minigames.common.minigames.MinigameManager;
 import com.lovetropics.minigames.common.minigames.PlayerSet;
+import com.lovetropics.minigames.common.minigames.behaviours.MinigameBehaviorTypes;
 import com.lovetropics.minigames.common.minigames.statistics.MinigameStatistics;
 import com.lovetropics.minigames.common.minigames.statistics.PlayerKey;
+
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.server.MinecraftServer;
-
-import javax.annotation.Nullable;
-import java.util.UUID;
 
 public final class MinigameInstanceTelemetry implements PlayerSet.Listeners {
 	private final Telemetry telemetry;
@@ -79,6 +85,22 @@ public final class MinigameInstanceTelemetry implements PlayerSet.Listeners {
 		telemetry.post(ConfigLT.TELEMETRY.actionResolvedEndpoint.get(), object);
 	}
 
+	public void createPoll(String title, String duration, String... options) {
+		if (options.length < 2) {
+			throw new IllegalArgumentException("Poll must have more than 1 choice");
+		}
+		JsonObject object = new JsonObject();
+		object.addProperty("title", title);
+		object.addProperty("start", Instant.now().getEpochSecond());
+		object.addProperty("duration", duration);
+		JsonArray array = new JsonArray();
+		for (String option : options) {
+			array.add(option);
+		}
+		object.add("options", array);
+		telemetry.postPolling("polls/add", object);
+	}
+
 	@Override
 	public void onAddPlayer(ServerPlayerEntity player) {
 		sendParticipantsList();
@@ -131,10 +153,17 @@ public final class MinigameInstanceTelemetry implements PlayerSet.Listeners {
 		actions.pollGameActions(server, server.getTickCounter());
 	}
 
-	void handleCreatePayload(JsonObject object, String type) {
-		BackendRequest.getFromId(type).ifPresent(request -> {
-			GameAction action = request.createAction(object.getAsJsonObject("payload"));
-			actions.enqueue(request, action);
-		});
+	void handlePayload(JsonObject object, String type, String crud) {
+		if ("poll".equals(type)) {
+			IMinigameInstance active = MinigameManager.getInstance().getActiveMinigame();
+			if (active.getDefinition() == definition) {
+				active.getBehaviors(MinigameBehaviorTypes.POLL_FINALISTS.get()).forEach(b -> b.handlePollEvent(active.getServer(), object, crud));
+			}
+		} else if ("create".equals(crud)) {
+			BackendRequest.getFromId(type).ifPresent(request -> {
+				GameAction action = request.createAction(object.getAsJsonObject("payload"));
+				actions.enqueue(request, action);
+			});
+		}
 	}
 }
