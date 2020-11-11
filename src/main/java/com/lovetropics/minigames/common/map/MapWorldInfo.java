@@ -28,13 +28,53 @@ public final class MapWorldInfo extends DerivedWorldInfo {
 	}
 
 	@Override
+	public void setClearWeatherTime(int time) {
+		this.settings.sunnyTime = time;
+	}
+
+	@Override
+	public void setRaining(boolean raining) {
+		this.settings.raining = raining;
+	}
+
+	@Override
+	public void setRainTime(int time) {
+		this.settings.rainTime = time;
+	}
+
+	@Override
+	public void setThundering(boolean thundering) {
+		this.settings.thundering = thundering;
+	}
+
+	@Override
+	public void setThunderTime(int time) {
+		this.settings.thunderTime = time;
+	}
+
+	@Override
 	public boolean isRaining() {
-		return false;
+		return this.settings.raining;
+	}
+
+	@Override
+	public int getRainTime() {
+		return this.settings.rainTime;
 	}
 
 	@Override
 	public boolean isThundering() {
-		return false;
+		return this.settings.thundering;
+	}
+
+	@Override
+	public int getThunderTime() {
+		return this.settings.thunderTime;
+	}
+
+	@Override
+	public int getClearWeatherTime() {
+		return this.settings.sunnyTime;
 	}
 
 	@Override
