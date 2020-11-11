@@ -8,7 +8,7 @@ import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import net.minecraft.util.math.ChunkPos;
-import net.minecraft.world.server.ServerWorld;
+import net.minecraft.world.server.ServerChunkProvider;
 
 import java.util.Collection;
 
@@ -27,14 +27,14 @@ public final class ForceLoadRegionBehavior implements IMinigameBehavior {
 
 	@Override
 	public void onConstruct(IMinigameInstance minigame) {
-		ServerWorld world = minigame.getWorld();
+		ServerChunkProvider chunkProvider = minigame.getWorld().getChunkProvider();
 
 		LongSet chunks = collectChunks(minigame);
 
 		LongIterator iterator = chunks.iterator();
 		while (iterator.hasNext()) {
 			long chunkKey = iterator.nextLong();
-			world.forceChunk(ChunkPos.getX(chunkKey), ChunkPos.getZ(chunkKey), true);
+			chunkProvider.forceChunk(new ChunkPos(chunkKey), true);
 		}
 
 		acquiredChunks = chunks;
@@ -42,12 +42,12 @@ public final class ForceLoadRegionBehavior implements IMinigameBehavior {
 
 	@Override
 	public void onFinish(IMinigameInstance minigame) {
-		ServerWorld world = minigame.getWorld();
+		ServerChunkProvider chunkProvider = minigame.getWorld().getChunkProvider();
 
 		LongIterator iterator = acquiredChunks.iterator();
 		while (iterator.hasNext()) {
 			long chunkKey = iterator.nextLong();
-			world.forceChunk(ChunkPos.getX(chunkKey), ChunkPos.getZ(chunkKey), false);
+			chunkProvider.forceChunk(new ChunkPos(chunkKey), false);
 		}
 	}
 
