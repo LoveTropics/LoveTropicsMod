@@ -2,14 +2,12 @@ package com.lovetropics.minigames.common.minigames.config;
 
 import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.common.minigames.IMinigameDefinition;
-import com.lovetropics.minigames.common.minigames.behaviours.*;
+import com.lovetropics.minigames.common.minigames.behaviours.BehaviorMap;
 import com.lovetropics.minigames.common.minigames.map.IMinigameMapProvider;
 import com.mojang.datafixers.Dynamic;
 import net.minecraft.util.ResourceLocation;
 
 import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
 
 public final class MinigameConfig implements IMinigameDefinition {
 	public final ResourceLocation id;
@@ -18,7 +16,7 @@ public final class MinigameConfig implements IMinigameDefinition {
 	public final IMinigameMapProvider mapProvider;
 	public final int minimumParticipants;
 	public final int maximumParticipants;
-	public final List<ConfiguredBehavior<?>> behaviors;
+	public final List<BehaviorReference> behaviors;
 
 	public MinigameConfig(
 			ResourceLocation id,
@@ -27,7 +25,7 @@ public final class MinigameConfig implements IMinigameDefinition {
 			IMinigameMapProvider mapProvider,
 			int minimumParticipants,
 			int maximumParticipants,
-			List<ConfiguredBehavior<?>> behaviors
+			List<BehaviorReference> behaviors
 	) {
 		this.id = id;
 		this.telemetryKey = telemetryKey;
@@ -38,7 +36,7 @@ public final class MinigameConfig implements IMinigameDefinition {
 		this.behaviors = behaviors;
 	}
 
-	public static <T> MinigameConfig deserialize(ResourceLocation id, Dynamic<T> root) {
+	public static <T> MinigameConfig read(BehaviorReferenceReader reader, ResourceLocation id, Dynamic<T> root) {
 		String telemetryKey = root.get("telemetry_key").asString(id.getPath());
 		String translationKey = root.get("translation_key").asString("");
 
@@ -47,11 +45,7 @@ public final class MinigameConfig implements IMinigameDefinition {
 		int minimumParticipants = root.get("minimum_participants").asInt(1);
 		int maximumParticipants = root.get("maximum_participants").asInt(100);
 
-		List<ConfiguredBehavior<?>> behaviors = root.get("behaviors")
-				.asList(MinigameConfig::deserializeBehavior)
-				.stream()
-				.filter(Objects::nonNull)
-				.collect(Collectors.toList());
+		List<BehaviorReference> behaviors = reader.readList(root.get("behaviors").orElseEmptyList());
 
 		return new MinigameConfig(
 				id,
@@ -62,19 +56,6 @@ public final class MinigameConfig implements IMinigameDefinition {
 				maximumParticipants,
 				behaviors
 		);
-	}
-
-	private static <T extends IMinigameBehavior, D> ConfiguredBehavior<T> deserializeBehavior(Dynamic<D> root) {
-		ResourceLocation id = new ResourceLocation(root.get("type").asString(""));
-
-		@SuppressWarnings("unchecked")
-		IMinigameBehaviorType<T> type = (IMinigameBehaviorType<T>) MinigameBehaviorTypes.MINIGAME_BEHAVIOURS_REGISTRY.get().getValue(id);
-		if (type != null) {
-			return ConfiguredBehavior.of(type, root);
-		}
-
-		System.out.println("Type '" + id + "' is not valid!");
-		return null;
 	}
 
 	@Override

@@ -2,6 +2,7 @@ package com.lovetropics.minigames.common.minigames.behaviours;
 
 import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Multimap;
+import com.lovetropics.minigames.common.minigames.config.BehaviorReference;
 
 import java.util.Collection;
 import java.util.List;
@@ -15,19 +16,12 @@ public final class BehaviorMap {
 		this.pollingBehaviors = pollingBehaviors;
 	}
 
-	public static BehaviorMap create(List<ConfiguredBehavior<?>> configs) {
+	public static BehaviorMap create(List<BehaviorReference> references) {
 		Multimap<IMinigameBehaviorType<?>, IMinigameBehavior> behaviors = LinkedHashMultimap.create();
 		Multimap<IMinigameBehaviorType<?>, IPollingMinigameBehavior> pollingBehaviors = LinkedHashMultimap.create();
 
-		for (ConfiguredBehavior<?> config : configs) {
-			Object behavior = config.create();
-			if (behavior instanceof IMinigameBehavior) {
-				behaviors.put(config.type, (IMinigameBehavior) behavior);
-			}
-
-			if (behavior instanceof IPollingMinigameBehavior) {
-				pollingBehaviors.put(config.type, (IPollingMinigameBehavior) behavior);
-			}
+		for (BehaviorReference reference : references) {
+			reference.addTo(behaviors::put, pollingBehaviors::put);
 		}
 
 		return new BehaviorMap(behaviors, pollingBehaviors);

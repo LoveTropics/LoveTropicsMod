@@ -40,10 +40,12 @@ public final class MinigameConfigs {
 
 				GAME_CONFIGS.clear();
 
+				BehaviorReferenceReader behaviorReader = new BehaviorReferenceReader(resourceManager);
+
 				Collection<ResourceLocation> paths = resourceManager.getAllResourceLocations("games", file -> file.endsWith(".json"));
 				for (ResourceLocation path : paths) {
 					try (IResource resource = resourceManager.getResource(path)) {
-						MinigameConfig config = loadConfig(path, resource);
+						MinigameConfig config = loadConfig(behaviorReader, path, resource);
 						GAME_CONFIGS.add(config);
 						manager.register(config);
 					} catch (Exception e) {
@@ -56,11 +58,11 @@ public final class MinigameConfigs {
 		});
 	}
 
-	private static MinigameConfig loadConfig(ResourceLocation path, IResource resource) throws IOException {
+	private static MinigameConfig loadConfig(BehaviorReferenceReader reader, ResourceLocation path, IResource resource) throws IOException {
 		try (InputStream input = resource.getInputStream()) {
 			JsonElement json = PARSER.parse(new BufferedReader(new InputStreamReader(input)));
 			Dynamic<JsonElement> dynamic = new Dynamic<>(JsonOps.INSTANCE, json);
-			return MinigameConfig.deserialize(getIdFromPath(path), dynamic);
+			return MinigameConfig.read(reader, getIdFromPath(path), dynamic);
 		}
 	}
 
