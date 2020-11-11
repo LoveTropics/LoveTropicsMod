@@ -32,7 +32,7 @@ public class CommandResetIslandChests {
 						CompoundNBT tag = new CompoundNBT();
 						cte.write(tag);
 
-						tag.putString("LootTable", "ltminigames:survivethetide");
+						tag.putString("LootTable", "lt20:stt1/chest");
 
 						cte.read(tag);
 						cte.markDirty();
