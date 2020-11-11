@@ -161,4 +161,12 @@ public final class Telemetry {
 			this.instance = null;
 		}
 	}
+
+	public void sendOpen() {
+		post(ConfigLT.TELEMETRY.worldLoadEndpoint.get(), "");
+	}
+
+	public void sendClose() {
+		post(ConfigLT.TELEMETRY.worldUnloadEndpoint.get(), "");
+	}
 }

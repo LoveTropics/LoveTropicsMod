@@ -20,6 +20,7 @@ import com.lovetropics.minigames.common.minigames.behaviours.MinigameBehaviorTyp
 import com.lovetropics.minigames.common.minigames.config.MinigameConfigs;
 import com.lovetropics.minigames.common.minigames.map.MinigameMapProviderTypes;
 import com.lovetropics.minigames.common.network.LTNetwork;
+import com.lovetropics.minigames.common.telemetry.Telemetry;
 import com.mojang.brigadier.CommandDispatcher;
 import com.tterrag.registrate.Registrate;
 import com.tterrag.registrate.providers.ProviderType;
@@ -124,6 +125,8 @@ public class LoveTropics {
     }
 
     private void onServerAboutToStart(final FMLServerAboutToStartEvent event) {
+        Telemetry.INSTANCE.sendOpen();
+
         MinigameManager.init(event.getServer());
         MinigameConfigs.init(event.getServer());
 
@@ -154,6 +157,8 @@ public class LoveTropics {
         }
 
         MapWorkspaceDimension.closeServer();
+
+        Telemetry.INSTANCE.sendClose();
     }
 
     private void gatherData(GatherDataEvent event) {

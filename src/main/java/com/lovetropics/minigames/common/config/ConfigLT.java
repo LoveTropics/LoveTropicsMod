@@ -53,6 +53,8 @@ public class ConfigLT {
     public static final class CategoryTelemetry {
 
         public final ConfigValue<String> baseUrl;
+        public final ConfigValue<String> worldLoadEndpoint;
+        public final ConfigValue<String> worldUnloadEndpoint;
         public final ConfigValue<String> minigameStartEndpoint;
         public final ConfigValue<String> minigameEndEndpoint;
         public final ConfigValue<String> minigameCancelEndpoint;
@@ -70,6 +72,12 @@ public class ConfigLT {
             baseUrl = COMMON_BUILDER
                     .comment("Base URL to use ")
                     .define("baseUrl", "http://localhost");
+            worldLoadEndpoint = COMMON_BUILDER
+                    .comment("Endpoint used when the server starts to reset minigame state")
+                    .define("worldLoadEndpoint", "minigame/worldloaded");
+            worldUnloadEndpoint = COMMON_BUILDER
+                    .comment("Endpoint used when the server stops to reset minigame state")
+                    .define("worldUnloadEndpoint", "minigame/worldunloaded");
             minigameStartEndpoint = COMMON_BUILDER
                     .comment("Endpoint used when a minigame is started")
                     .define("minigameStartEndpoint", "minigame/start");
