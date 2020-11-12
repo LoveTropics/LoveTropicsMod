@@ -44,7 +44,7 @@ public class SpawnEntitiesAroundPlayersPackageBehavior implements IMinigameBehav
 
 	public static <T> SpawnEntitiesAroundPlayersPackageBehavior parse(Dynamic<T> root) {
 		final String packageType = root.get("package_type").asString("");
-		final ITextComponent messageForPlayer = Util.getText(root, "message_for_player");
+		final ITextComponent messageForPlayer = Util.getTextOrNull(root, "message_for_player");
 		final ResourceLocation entityId = new ResourceLocation(root.get("entity_id").asString(""));
 		final int entityCountPerPlayer = root.get("entity_count_per_player").asInt(1);
 		final int spawnDistanceMin = root.get("spawn_distance_min").asInt(10);
@@ -64,7 +64,9 @@ public class SpawnEntitiesAroundPlayersPackageBehavior implements IMinigameBehav
 				playerToAmountToSpawn.put(player, entityCountPerPlayer);
 			}
 
-			minigame.getParticipants().sendMessage(messageForPlayer);
+			if (messageForPlayer != null) {
+				minigame.getParticipants().sendMessage(messageForPlayer);
+			}
 
 			return true;
 		}

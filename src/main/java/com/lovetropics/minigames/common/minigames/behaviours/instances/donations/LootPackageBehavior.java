@@ -24,7 +24,7 @@ public class LootPackageBehavior extends DonationPackageBehavior
 	public static <T> LootPackageBehavior parse(Dynamic<T> root) {
 		final String packageType = root.get("package_type").asString("");
 		final ResourceLocation lootTable = new ResourceLocation(root.get("loot_table").asString(""));
-		final ITextComponent messageForPlayer = Util.getText(root, "message_for_player");
+		final ITextComponent messageForPlayer = Util.getTextOrNull(root, "message_for_player");
 		final PlayerSelect playerSelect = PlayerSelect.getFromType(root.get("player_select").asString(PlayerSelect.RANDOM.getType())).get();
 
 		return new LootPackageBehavior(packageType, lootTable, messageForPlayer, playerSelect);

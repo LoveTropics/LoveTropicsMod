@@ -11,7 +11,6 @@ import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.text.ITextComponent;
 
-import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -27,7 +26,7 @@ public class SwapPlayersPackageBehavior implements IMinigameBehavior
 
 	public static <T> SwapPlayersPackageBehavior parse(Dynamic<T> root) {
 		final String packageType = root.get("package_type").asString("");
-		final ITextComponent messageForPlayer = Util.getText(root, "message_for_player");
+		final ITextComponent messageForPlayer = Util.getTextOrNull(root, "message_for_player");
 
 		return new SwapPlayersPackageBehavior(packageType, messageForPlayer);
 	}
@@ -45,7 +44,9 @@ public class SwapPlayersPackageBehavior implements IMinigameBehavior
 				player.setPositionAndUpdate(teleportTo.x, teleportTo.y, teleportTo.z);
 			}
 
-			minigame.getParticipants().sendMessage(messageForPlayer);
+			if (messageForPlayer != null) {
+				minigame.getParticipants().sendMessage(messageForPlayer);
+			}
 
 			return true;
 		}

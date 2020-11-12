@@ -112,11 +112,13 @@ public abstract class DonationPackageBehavior implements IMinigameBehavior
 			Util.addItemStackToInventory(player, createHeadForSender(sendingPlayer));
 		}
 
-		final ITextComponent sentByPlayerMessage = new StringTextComponent("Sent by ").applyTextStyle(TextFormatting.GOLD)
-				.appendSibling(new StringTextComponent(sendingPlayer).applyTextStyles(TextFormatting.GREEN, TextFormatting.BOLD));
+		if (messageForPlayer != null) {
+			final ITextComponent sentByPlayerMessage = new StringTextComponent("Sent by ").applyTextStyle(TextFormatting.GOLD)
+					.appendSibling(new StringTextComponent(sendingPlayer).applyTextStyles(TextFormatting.GREEN, TextFormatting.BOLD));
 
-		player.sendMessage(messageForPlayer);
-		player.sendMessage(sentByPlayerMessage);
+			player.sendMessage(messageForPlayer);
+			player.sendMessage(sentByPlayerMessage);
+		}
 	}
 
 	protected ItemStack createHeadForSender(String sendingPlayer) {

@@ -17,7 +17,6 @@ import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvents;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
@@ -26,6 +25,7 @@ import net.minecraft.world.gen.Heightmap;
 import net.minecraft.world.server.ServerWorld;
 import org.apache.commons.lang3.StringUtils;
 
+import javax.annotation.Nullable;
 import java.lang.reflect.Field;
 import java.util.*;
 import java.util.function.BiPredicate;
@@ -88,6 +88,12 @@ public class Util {
         }
 
         return new StringTextComponent("");
+    }
+
+    @Nullable
+    public static <T> ITextComponent getTextOrNull(Dynamic<T> root, String textKey) {
+        final Optional<T> text = root.getElement(textKey);
+        return text.map(t -> ITextComponent.Serializer.fromJson((JsonElement) t)).orElse(null);
     }
 
     public static <T> ITextComponent getText(Dynamic<T> root) {

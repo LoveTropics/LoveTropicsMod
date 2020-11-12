@@ -15,7 +15,7 @@ public final class ForcedPlayerHeadPackageBehavior extends DonationPackageBehavi
 
 	public static <T> ForcedPlayerHeadPackageBehavior parse(Dynamic<T> root) {
 		final String packageType = root.get("package_type").asString("");
-		final ITextComponent messageForPlayer = Util.getText(root, "message_for_player");
+		final ITextComponent messageForPlayer = Util.getTextOrNull(root, "message_for_player");
 		final PlayerSelect playerSelect = PlayerSelect.getFromType(root.get("player_select").asString(PlayerSelect.SPECIFIC.getType())).get();
 
 		return new ForcedPlayerHeadPackageBehavior(packageType, messageForPlayer, playerSelect);

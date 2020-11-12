@@ -57,7 +57,7 @@ public class SpawnEntitiesAtRegionsOverTimePackageBehavior implements IMinigameB
 
 	public static <T> SpawnEntitiesAtRegionsOverTimePackageBehavior parse(Dynamic<T> root) {
 		final String packageType = root.get("package_type").asString("");
-		final ITextComponent messageForPlayer = Util.getText(root, "message_for_player");
+		final ITextComponent messageForPlayer = Util.getTextOrNull(root, "message_for_player");
 		final String[] regionsToSpawnAt = root.get("regions_to_spawn_at").asList(d -> d.asString("")).toArray(new String[0]);
 		final ResourceLocation entityId = new ResourceLocation(root.get("entity_id").asString(""));
 		final int entityCount = root.get("entity_count").asInt(1);
@@ -73,7 +73,9 @@ public class SpawnEntitiesAtRegionsOverTimePackageBehavior implements IMinigameB
 			ticksRemaining += ticksToSpawnFor;
 			entityCountRemaining += entityCount;
 
-			minigame.getParticipants().sendMessage(messageForPlayer);
+			if (messageForPlayer != null) {
+				minigame.getParticipants().sendMessage(messageForPlayer);
+			}
 
 			return true;
 		}

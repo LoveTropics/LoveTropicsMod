@@ -25,7 +25,7 @@ public class EffectPackageBehavior extends DonationPackageBehavior
 	public static <T> EffectPackageBehavior parse(Dynamic<T> root) {
 		final String packageType = root.get("package_type").asString("");
 		final List<StatusEffect> effects = root.get("effects").asList(StatusEffect::parse);
-		final ITextComponent messageForPlayer = Util.getText(root, "message_for_player");
+		final ITextComponent messageForPlayer = Util.getTextOrNull(root, "message_for_player");
 		final PlayerSelect playerSelect = PlayerSelect.getFromType(root.get("player_select").asString(PlayerSelect.RANDOM.getType())).get();
 
 		return new EffectPackageBehavior(packageType, effects, messageForPlayer, playerSelect);
