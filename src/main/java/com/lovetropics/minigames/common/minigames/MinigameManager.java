@@ -526,15 +526,6 @@ public class MinigameManager implements IMinigameManager {
 	}
 
 	@SubscribeEvent
-	public void onPlayerPlaceBlock(BlockEvent.BreakEvent event) {
-		MinigameInstance minigame = getMinigameFor(event.getPlayer());
-		if (minigame != null) {
-			ServerPlayerEntity player = (ServerPlayerEntity) event.getPlayer();
-			dispatchOrCancel(minigame, (b, m) -> b.onPlayerBreakBlock(m, player, event.getPos(), event.getState(), event));
-		}
-	}
-
-	@SubscribeEvent
 	public void onPlayerLoggedIn(PlayerLoggedInEvent event) {
 		ProtoMinigame minigame = polling;
 		if (minigame == null) {
