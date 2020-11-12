@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import org.apache.commons.lang3.ArrayUtils;
+import org.apache.logging.log4j.LogManager;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
@@ -14,6 +14,7 @@ import com.mojang.datafixers.Dynamic;
 
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import it.unimi.dsi.fastutil.objects.ObjectArrays;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.scoreboard.Score;
 import net.minecraft.scoreboard.ScoreCriteria;
@@ -49,14 +50,18 @@ public class PollFinalistsBehavior implements IMinigameBehavior {
 	@Override
 	public void onConstruct(IMinigameInstance minigame) {
 		minigame.addControlCommand("start_runoff", source -> {
-			PlayerList players = source.getServer().getPlayerList();
-			players.getPlayers().forEach(p -> p.removeTag(winnerTag));
-			String[] finalists = players.getPlayers().stream()
-					.filter(p -> p.getTags().contains(finalistsTag))
-					.map(p -> p.getGameProfile().getName())
-					.toArray(String[]::new);
-			ArrayUtils.shuffle(finalists);
-			minigame.getTelemetry().createPoll("Choose the best buidl!", pollDuration, finalists);
+			try {
+				PlayerList players = source.getServer().getPlayerList();
+				players.getPlayers().forEach(p -> p.removeTag(winnerTag));
+				String[] finalists = players.getPlayers().stream()
+						.filter(p -> p.getTags().contains(finalistsTag))
+						.map(p -> p.getGameProfile().getName())
+						.toArray(String[]::new);
+				ObjectArrays.shuffle(finalists, RANDOM);
+				minigame.getTelemetry().createPoll("Choose the best build!", pollDuration, finalists);
+			} catch (Exception e) {
+				LogManager.getLogger().error("Failed to start runoff:", e);
+			}
 		});
 	}
 
