@@ -1,5 +1,6 @@
 package com.lovetropics.minigames.common.game_actions;
 
+import com.lovetropics.minigames.common.minigames.IMinigameInstance;
 import net.minecraft.server.MinecraftServer;
 
 import javax.annotation.Nullable;
@@ -12,7 +13,7 @@ public abstract class GameAction implements Comparable<GameAction> {
     public UUID uuid;
     public String triggerTime;
 
-    public GameAction(final UUID uuid, final String triggerTime) {
+    protected GameAction(final UUID uuid, final String triggerTime) {
         this.uuid = uuid;
         this.triggerTime = triggerTime;
     }
@@ -20,11 +21,12 @@ public abstract class GameAction implements Comparable<GameAction> {
     /**
      * Resolves the requested action.
      *
+     * @param minigame The minigame that this occurred within
      * @param server The game server the action is resolved on.
      * @return Whether or not to send an acknowledgement back that
      * the action has been resolved.
      */
-    public abstract boolean resolve(final MinecraftServer server);
+    public abstract boolean resolve(IMinigameInstance minigame, MinecraftServer server);
 
     @Override
     public boolean equals(Object obj) {

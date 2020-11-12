@@ -72,7 +72,7 @@ public class MinigameInstance implements IMinigameInstance
         this.behaviors = behaviors;
         this.initiator = initiator;
 
-        this.telemetry = Telemetry.INSTANCE.openMinigame(definition, initiator);
+        this.telemetry = Telemetry.INSTANCE.openMinigame(this);
 
         for (PlayerRole role : PlayerRole.ROLES) {
             MutablePlayerSet rolePlayers = new MutablePlayerSet(server);

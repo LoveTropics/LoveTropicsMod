@@ -1,34 +1,29 @@
-package com.lovetropics.minigames.common.telemetry;
+package com.lovetropics.minigames.common.game_actions;
 
 import com.google.gson.JsonObject;
 import com.lovetropics.minigames.common.config.ConfigLT;
-import com.lovetropics.minigames.common.game_actions.DonationPackageGameAction;
-import com.lovetropics.minigames.common.game_actions.PollResultGameAction;
-import com.lovetropics.minigames.common.game_actions.GameAction;
 
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-public enum BackendRequest
-{
+public enum GameActionType {
 	DONATION_PACKAGE("donation_package", DonationPackageGameAction::fromJson, ConfigLT.GENERAL.donationPackageDelay::get),
-	CHAT_EVENT("chat_event", PollResultGameAction::fromJson, ConfigLT.GENERAL.chatEventDelay::get);
+	CHAT_EVENT("chat_event", ChatEventGameAction::fromJson, ConfigLT.GENERAL.chatEventDelay::get);
 
-	public static final BackendRequest[] VALUES = values();
+	public static final GameActionType[] VALUES = values();
 
 	private final String id;
 	private final Function<JsonObject, ? extends GameAction> gameActionFactory;
 	private final Supplier<Integer> pollingIntervalSeconds;
 
-	BackendRequest(final String id, final Function<JsonObject, ? extends GameAction> gameActionFactory, final Supplier<Integer> pollingIntervalTicks) {
+	GameActionType(final String id, final Function<JsonObject, ? extends GameAction> gameActionFactory, final Supplier<Integer> pollingIntervalTicks) {
 		this.id = id;
 		this.gameActionFactory = gameActionFactory;
 		this.pollingIntervalSeconds = pollingIntervalTicks;
 	}
 
-	public String getId()
-	{
+	public String getId() {
 		return id;
 	}
 
@@ -36,8 +31,7 @@ public enum BackendRequest
 		return gameActionFactory.apply(object);
 	}
 
-	public int getPollingIntervalSeconds()
-	{
+	public int getPollingIntervalSeconds() {
 		return pollingIntervalSeconds.get();
 	}
 
@@ -45,8 +39,8 @@ public enum BackendRequest
 		return getPollingIntervalSeconds() * 20;
 	}
 
-	public static Optional<BackendRequest> getFromId(final String id) {
-		for (final BackendRequest request : VALUES) {
+	public static Optional<GameActionType> getFromId(final String id) {
+		for (final GameActionType request : VALUES) {
 			if (request.getId().equals(id)) {
 				return Optional.of(request);
 			}

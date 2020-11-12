@@ -6,8 +6,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.common.config.ConfigLT;
-import com.lovetropics.minigames.common.minigames.IMinigameDefinition;
-import com.lovetropics.minigames.common.minigames.statistics.PlayerKey;
+import com.lovetropics.minigames.common.minigames.IMinigameInstance;
 import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -85,8 +84,8 @@ public final class Telemetry {
 		}
 	}
 
-	public MinigameInstanceTelemetry openMinigame(IMinigameDefinition definition, PlayerKey initiator) {
-		return MinigameInstanceTelemetry.open(this, definition, initiator);
+	public MinigameInstanceTelemetry openMinigame(IMinigameInstance minigame) {
+		return MinigameInstanceTelemetry.open(minigame, this);
 	}
 
 	void post(final String endpoint, final JsonElement body) {

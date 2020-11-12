@@ -327,13 +327,9 @@ public class MinigameManager implements IMinigameManager {
 	public MinigameResult<ITextComponent> joinPlayerAs(ServerPlayerEntity player, @Nullable PlayerRole requestedRole) {
 		MinigameInstance minigame = this.currentInstance;
 		if (minigame != null && !minigame.getPlayers().contains(player)) {
-			if (requestedRole == PlayerRole.SPECTATOR) {
-				minigame.addPlayer(player, PlayerRole.SPECTATOR);
-				LTNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new ClientRoleMessage(PlayerRole.SPECTATOR));
-				return MinigameResult.ok(new StringTextComponent("You have joined the game as a spectator!").applyTextStyle(TextFormatting.GREEN));
-			} else {
-				return MinigameResult.error(new TranslationTextComponent(TropicraftLangKeys.COMMAND_SORRY_ALREADY_STARTED));
-			}
+			minigame.addPlayer(player, PlayerRole.SPECTATOR);
+			LTNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new ClientRoleMessage(PlayerRole.SPECTATOR));
+			return MinigameResult.ok(new StringTextComponent("You have joined the game as a spectator!").applyTextStyle(TextFormatting.GREEN));
 		}
 
 		PollingMinigameInstance polling = this.polling;

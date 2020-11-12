@@ -3,6 +3,7 @@ package com.lovetropics.minigames.common.game_actions;
 import com.google.gson.JsonObject;
 import com.lovetropics.minigames.common.minigames.IMinigameInstance;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
+import net.minecraft.server.MinecraftServer;
 
 import javax.annotation.Nullable;
 import java.util.UUID;
@@ -10,7 +11,7 @@ import java.util.UUID;
 /**
  * Care package
  */
-public class DonationPackageGameAction extends MinigameGameAction
+public class DonationPackageGameAction extends GameAction
 {
     private final String packageType;
     private final String sendingPlayerName;
@@ -41,9 +42,13 @@ public class DonationPackageGameAction extends MinigameGameAction
     }
 
     @Override
-    public boolean notifyBehavior(IMinigameInstance instance, IMinigameBehavior behavior)
-    {
-        return behavior.onDonationPackageRequested(instance, this);
+    public boolean resolve(IMinigameInstance minigame, MinecraftServer server) {
+        boolean resolved = false;
+        for (IMinigameBehavior behavior : minigame.getBehaviors()) {
+            resolved |= behavior.onDonationPackageRequested(minigame, this);
+        }
+
+        return resolved;
     }
 
     public static DonationPackageGameAction fromJson(final JsonObject obj) {

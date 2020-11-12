@@ -1,14 +1,11 @@
 package com.lovetropics.minigames.common.telemetry;
 
-import java.time.Instant;
-import java.util.UUID;
-
-import javax.annotation.Nullable;
-
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.lovetropics.minigames.common.config.ConfigLT;
 import com.lovetropics.minigames.common.game_actions.GameAction;
+import com.lovetropics.minigames.common.game_actions.GameActionHandler;
+import com.lovetropics.minigames.common.game_actions.GameActionType;
 import com.lovetropics.minigames.common.minigames.IMinigameDefinition;
 import com.lovetropics.minigames.common.minigames.IMinigameInstance;
 import com.lovetropics.minigames.common.minigames.MinigameManager;
@@ -16,34 +13,40 @@ import com.lovetropics.minigames.common.minigames.PlayerSet;
 import com.lovetropics.minigames.common.minigames.behaviours.MinigameBehaviorTypes;
 import com.lovetropics.minigames.common.minigames.statistics.MinigameStatistics;
 import com.lovetropics.minigames.common.minigames.statistics.PlayerKey;
-
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.server.MinecraftServer;
 
+import javax.annotation.Nullable;
+import java.time.Instant;
+import java.util.UUID;
+
 public final class MinigameInstanceTelemetry implements PlayerSet.Listeners {
+	private final IMinigameInstance minigame;
 	private final Telemetry telemetry;
 
 	private final UUID instanceId;
 	private final IMinigameDefinition definition;
 	private final PlayerKey initiator;
 
-	private final GameActionHandler actions = new GameActionHandler(this);
+	private final GameActionHandler actions;
 
 	private PlayerSet participants;
 	private boolean closed;
 
-	private MinigameInstanceTelemetry(Telemetry telemetry, UUID instanceId, IMinigameDefinition definition, PlayerKey initiator) {
+	private MinigameInstanceTelemetry(IMinigameInstance minigame, Telemetry telemetry, UUID instanceId) {
+		this.minigame = minigame;
 		this.telemetry = telemetry;
 		this.instanceId = instanceId;
-		this.definition = definition;
-		this.initiator = initiator;
+		this.definition = minigame.getDefinition();
+		this.initiator = minigame.getInitiator();
 
 		this.telemetry.openInstance(this);
+		this.actions = new GameActionHandler(this.minigame, this);
 	}
 
-	static MinigameInstanceTelemetry open(Telemetry telemetry, IMinigameDefinition definition, PlayerKey initiator) {
+	static MinigameInstanceTelemetry open(IMinigameInstance minigame, Telemetry telemetry) {
 		UUID instanceId = UUID.randomUUID();
-		return new MinigameInstanceTelemetry(telemetry, instanceId, definition, initiator);
+		return new MinigameInstanceTelemetry(minigame, telemetry, instanceId);
 	}
 
 	public void start(PlayerSet participants) {
@@ -77,7 +80,7 @@ public final class MinigameInstanceTelemetry implements PlayerSet.Listeners {
 		close();
 	}
 
-	public void acknowledgeActionDelivery(final BackendRequest request, final GameAction action) {
+	public void acknowledgeActionDelivery(final GameActionType request, final GameAction action) {
 		final JsonObject object = new JsonObject();
 		object.addProperty("request", request.getId());
 		object.addProperty("uuid", action.uuid.toString());
@@ -160,7 +163,7 @@ public final class MinigameInstanceTelemetry implements PlayerSet.Listeners {
 				active.getBehaviors(MinigameBehaviorTypes.POLL_FINALISTS.get()).forEach(b -> b.handlePollEvent(active.getServer(), object, crud));
 			}
 		} else if ("create".equals(crud)) {
-			BackendRequest.getFromId(type).ifPresent(request -> {
+			GameActionType.getFromId(type).ifPresent(request -> {
 				GameAction action = request.createAction(object.getAsJsonObject("payload"));
 				actions.enqueue(request, action);
 			});
