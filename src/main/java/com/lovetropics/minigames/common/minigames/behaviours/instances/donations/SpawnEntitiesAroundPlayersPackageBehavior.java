@@ -16,8 +16,7 @@ import java.util.*;
 
 public class SpawnEntitiesAroundPlayersPackageBehavior implements IMinigameBehavior
 {
-	private final String packageType;
-	private final ITextComponent messageForPlayer;
+	private final DonationPackageData data;
 	private final ResourceLocation entityId;
 	private final int entityCountPerPlayer;
 	private final int spawnDistanceMin;
@@ -26,9 +25,8 @@ public class SpawnEntitiesAroundPlayersPackageBehavior implements IMinigameBehav
 	private final int spawnsPerTick;
 	private HashMap<ServerPlayerEntity, Integer> playerToAmountToSpawn = new HashMap<>();
 
-	public SpawnEntitiesAroundPlayersPackageBehavior(final String packageType, final ITextComponent messageForPlayer, final ResourceLocation entityId, final int entityCount, final int spawnDistanceMin, final int spawnDistanceMax, final int spawnRangeY, final int spawnsPerTick) {
-		this.packageType = packageType;
-		this.messageForPlayer = messageForPlayer;
+	public SpawnEntitiesAroundPlayersPackageBehavior(final DonationPackageData data, final ResourceLocation entityId, final int entityCount, final int spawnDistanceMin, final int spawnDistanceMax, final int spawnRangeY, final int spawnsPerTick) {
+		this.data = data;
 		this.entityId = entityId;
 		this.entityCountPerPlayer = entityCount;
 		this.spawnDistanceMin = spawnDistanceMin;
@@ -43,8 +41,7 @@ public class SpawnEntitiesAroundPlayersPackageBehavior implements IMinigameBehav
 	}
 
 	public static <T> SpawnEntitiesAroundPlayersPackageBehavior parse(Dynamic<T> root) {
-		final String packageType = root.get("package_type").asString("");
-		final ITextComponent messageForPlayer = Util.getTextOrNull(root, "message_for_player");
+		final DonationPackageData data = DonationPackageData.parse(root);
 		final ResourceLocation entityId = new ResourceLocation(root.get("entity_id").asString(""));
 		final int entityCountPerPlayer = root.get("entity_count_per_player").asInt(1);
 		final int spawnDistanceMin = root.get("spawn_distance_min").asInt(10);
@@ -52,21 +49,18 @@ public class SpawnEntitiesAroundPlayersPackageBehavior implements IMinigameBehav
 		final int spawnRangeY = root.get("spawn_range_y").asInt(10);
 		final int spawnsPerTick = root.get("spawn_try_rate").asInt(10);
 
-		return new SpawnEntitiesAroundPlayersPackageBehavior(packageType, messageForPlayer, entityId, entityCountPerPlayer, spawnDistanceMin, spawnDistanceMax, spawnRangeY, spawnsPerTick);
+		return new SpawnEntitiesAroundPlayersPackageBehavior(data, entityId, entityCountPerPlayer, spawnDistanceMin, spawnDistanceMax, spawnRangeY, spawnsPerTick);
 	}
 
 	@Override
 	public boolean onDonationPackageRequested(final IMinigameInstance minigame, final DonationPackageGameAction action) {
-		if (action.getPackageType().equals(packageType)) {
-
+		if (action.getPackageType().equals(data.packageType)) {
 			final List<ServerPlayerEntity> players = Lists.newArrayList(minigame.getParticipants());
 			for (ServerPlayerEntity player : players) {
 				playerToAmountToSpawn.put(player, entityCountPerPlayer);
 			}
 
-			if (messageForPlayer != null) {
-				minigame.getParticipants().sendMessage(messageForPlayer);
-			}
+			minigame.getParticipants().forEach(player -> data.onReceive(player, action.getSendingPlayerName()));
 
 			return true;
 		}

@@ -8,9 +8,6 @@ import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.TextFormatting;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -47,20 +44,16 @@ public abstract class DonationPackageBehavior implements IMinigameBehavior
 		}
 	}
 
-	protected final String packageType;
-	protected final ITextComponent messageForPlayer;
-	protected final PlayerSelect playerSelect;
+	protected final DonationPackageData data;
 
-	public DonationPackageBehavior(final String packageType, final ITextComponent messageForPlayer, final PlayerSelect playerSelect) {
-		this.packageType = packageType;
-		this.messageForPlayer = messageForPlayer;
-		this.playerSelect = playerSelect;
+	public DonationPackageBehavior(final DonationPackageData data) {
+		this.data = data;
 	}
 
 	@Override
 	public boolean onDonationPackageRequested(final IMinigameInstance minigame, final DonationPackageGameAction action) {
-		if (action.getPackageType().equals(packageType)) {
-			switch (playerSelect) {
+		if (action.getPackageType().equals(data.packageType)) {
+			switch (data.playerSelect) {
 				case SPECIFIC:
 					if (action.getReceivingPlayer() == null) {
 						LOGGER.warn("Expected donation package to have a receiving player, but did not receive from backend!");
@@ -113,13 +106,7 @@ public abstract class DonationPackageBehavior implements IMinigameBehavior
 			Util.addItemStackToInventory(player, createHeadForSender(sendingPlayer));
 		}
 
-		if (messageForPlayer != null) {
-			final ITextComponent sentByPlayerMessage = new StringTextComponent("Sent by ").applyTextStyle(TextFormatting.GOLD)
-					.appendSibling(new StringTextComponent(sendingPlayer).applyTextStyles(TextFormatting.GREEN, TextFormatting.BOLD));
-
-			player.sendMessage(messageForPlayer);
-			player.sendMessage(sentByPlayerMessage);
-		}
+		data.onReceive(player, sendingPlayer);
 	}
 
 	protected ItemStack createHeadForSender(String sendingPlayer) {
@@ -127,4 +114,5 @@ public abstract class DonationPackageBehavior implements IMinigameBehavior
 		senderHead.getOrCreateTag().putString("SkullOwner", sendingPlayer);
 		return senderHead;
 	}
+
 }

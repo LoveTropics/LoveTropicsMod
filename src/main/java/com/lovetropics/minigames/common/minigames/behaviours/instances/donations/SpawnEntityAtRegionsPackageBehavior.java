@@ -17,17 +17,15 @@ import java.util.List;
 
 public class SpawnEntityAtRegionsPackageBehavior implements IMinigameBehavior
 {
-	private final String packageType;
-	private final ITextComponent messageForPlayer;
+	private final DonationPackageData data;
 	private final String[] regionsToSpawnAtKeys;
 	private final ResourceLocation entityId;
 	private final int entityCountPerRegion;
 
 	private final List<MapRegion> regionsToSpawnAt = Lists.newArrayList();
 
-	public SpawnEntityAtRegionsPackageBehavior(final String packageType, final ITextComponent messageForPlayer, final String[] regionsToSpawnAtKeys, final ResourceLocation entityId, final int entityCountPerRegion) {
-		this.packageType = packageType;
-		this.messageForPlayer = messageForPlayer;
+	public SpawnEntityAtRegionsPackageBehavior(final DonationPackageData data, final String[] regionsToSpawnAtKeys, final ResourceLocation entityId, final int entityCountPerRegion) {
+		this.data = data;
 		this.regionsToSpawnAtKeys = regionsToSpawnAtKeys;
 		this.entityId = entityId;
 		this.entityCountPerRegion = entityCountPerRegion;
@@ -45,18 +43,17 @@ public class SpawnEntityAtRegionsPackageBehavior implements IMinigameBehavior
 	}
 
 	public static <T> SpawnEntityAtRegionsPackageBehavior parse(Dynamic<T> root) {
-		final String packageType = root.get("package_type").asString("");
-		final ITextComponent messageForPlayer = Util.getTextOrNull(root, "message_for_player");
+		final DonationPackageData data = DonationPackageData.parse(root);
 		final String[] regionsToSpawnAt = root.get("regions_to_spawn_at").asList(d -> d.asString("")).toArray(new String[0]);
 		final ResourceLocation entityId = new ResourceLocation(root.get("entity_id").asString(""));
 		final int entityCountPerRegion = root.get("entity_count_per_region").asInt(1);
 
-		return new SpawnEntityAtRegionsPackageBehavior(packageType, messageForPlayer, regionsToSpawnAt, entityId, entityCountPerRegion);
+		return new SpawnEntityAtRegionsPackageBehavior(data, regionsToSpawnAt, entityId, entityCountPerRegion);
 	}
 
 	@Override
 	public boolean onDonationPackageRequested(final IMinigameInstance minigame, final DonationPackageGameAction action) {
-		if (action.getPackageType().equals(packageType)) {
+		if (action.getPackageType().equals(data.packageType)) {
 			for (final MapRegion region : regionsToSpawnAt) {
 				for (int i = 0; i < entityCountPerRegion; i++) {
 					final BlockPos pos = minigame.getWorld().getHeight(Heightmap.Type.WORLD_SURFACE, region.sample(minigame.getWorld().getRandom()));
@@ -65,9 +62,7 @@ public class SpawnEntityAtRegionsPackageBehavior implements IMinigameBehavior
 				}
 			}
 
-			if (messageForPlayer != null) {
-				minigame.getParticipants().sendMessage(messageForPlayer);
-			}
+			minigame.getParticipants().forEach(player -> data.onReceive(player, action.getSendingPlayerName()));
 
 			return true;
 		}

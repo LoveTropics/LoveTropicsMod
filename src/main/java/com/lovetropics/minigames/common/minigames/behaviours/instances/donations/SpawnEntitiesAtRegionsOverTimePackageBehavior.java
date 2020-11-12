@@ -22,8 +22,7 @@ import java.util.List;
 
 public class SpawnEntitiesAtRegionsOverTimePackageBehavior implements IMinigameBehavior
 {
-	private final String packageType;
-	private final ITextComponent messageForPlayer;
+	private final DonationPackageData data;
 	private final String[] regionsToSpawnAtKeys;
 	private final ResourceLocation entityId;
 	private final int entityCount;
@@ -35,9 +34,8 @@ public class SpawnEntitiesAtRegionsOverTimePackageBehavior implements IMinigameB
 
 	private final List<MapRegion> regionsToSpawnAt = Lists.newArrayList();
 
-	public SpawnEntitiesAtRegionsOverTimePackageBehavior(final String packageType, final ITextComponent messageForPlayer, final String[] regionsToSpawnAtKeys, final ResourceLocation entityId, final int entityCount, final int ticksToSpawnFor) {
-		this.packageType = packageType;
-		this.messageForPlayer = messageForPlayer;
+	public SpawnEntitiesAtRegionsOverTimePackageBehavior(final DonationPackageData data, final String[] regionsToSpawnAtKeys, final ResourceLocation entityId, final int entityCount, final int ticksToSpawnFor) {
+		this.data = data;
 		this.regionsToSpawnAtKeys = regionsToSpawnAtKeys;
 		this.entityId = entityId;
 		this.entityCount = entityCount;
@@ -56,26 +54,23 @@ public class SpawnEntitiesAtRegionsOverTimePackageBehavior implements IMinigameB
 	}
 
 	public static <T> SpawnEntitiesAtRegionsOverTimePackageBehavior parse(Dynamic<T> root) {
-		final String packageType = root.get("package_type").asString("");
-		final ITextComponent messageForPlayer = Util.getTextOrNull(root, "message_for_player");
+		final DonationPackageData data = DonationPackageData.parse(root);
 		final String[] regionsToSpawnAt = root.get("regions_to_spawn_at").asList(d -> d.asString("")).toArray(new String[0]);
 		final ResourceLocation entityId = new ResourceLocation(root.get("entity_id").asString(""));
 		final int entityCount = root.get("entity_count").asInt(1);
 		final int ticksToSpawnFor = root.get("ticks_to_spawn_for").asInt(1);
 
-		return new SpawnEntitiesAtRegionsOverTimePackageBehavior(packageType, messageForPlayer, regionsToSpawnAt, entityId, entityCount, ticksToSpawnFor);
+		return new SpawnEntitiesAtRegionsOverTimePackageBehavior(data, regionsToSpawnAt, entityId, entityCount, ticksToSpawnFor);
 	}
 
 	@Override
 	public boolean onDonationPackageRequested(final IMinigameInstance minigame, final DonationPackageGameAction action) {
-		if (action.getPackageType().equals(packageType)) {
+		if (action.getPackageType().equals(data.packageType)) {
 
 			ticksRemaining += ticksToSpawnFor;
 			entityCountRemaining += entityCount;
 
-			if (messageForPlayer != null) {
-				minigame.getParticipants().sendMessage(messageForPlayer);
-			}
+			minigame.getParticipants().forEach(player -> data.onReceive(player, action.getSendingPlayerName()));
 
 			return true;
 		}

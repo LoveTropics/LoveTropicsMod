@@ -1,0 +1,5 @@
+{
+	"swap_players": { "category": "master", "sounds": [ "ltminigames:swap_players" ] },
+	"package_receive": { "category": "master", "sounds": [ "ltminigames:package_receive" ] },
+	"sabotage_receive": { "category": "master", "sounds": [ "ltminigames:sabotage_receive" ] }
+}

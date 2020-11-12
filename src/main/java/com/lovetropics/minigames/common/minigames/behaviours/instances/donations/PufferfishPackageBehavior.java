@@ -5,20 +5,17 @@ import com.mojang.datafixers.Dynamic;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.util.text.ITextComponent;
 
 // TODO: remove when we can combine package behaviors
 public final class PufferfishPackageBehavior extends DonationPackageBehavior {
-	public PufferfishPackageBehavior(final String packageType, final ITextComponent messageForPlayer, final PlayerSelect playerSelect) {
-		super(packageType, messageForPlayer, playerSelect);
+	public PufferfishPackageBehavior(final DonationPackageData data) {
+		super(data);
 	}
 
 	public static <T> PufferfishPackageBehavior parse(Dynamic<T> root) {
-		final String packageType = root.get("package_type").asString("");
-		final ITextComponent messageForPlayer = Util.getTextOrNull(root, "message_for_player");
-		final PlayerSelect playerSelect = PlayerSelect.getFromType(root.get("player_select").asString(PlayerSelect.RANDOM.getType())).get();
+		final DonationPackageData data = DonationPackageData.parse(root);
 
-		return new PufferfishPackageBehavior(packageType, messageForPlayer, playerSelect);
+		return new PufferfishPackageBehavior(data);
 	}
 
 	@Override

@@ -1,13 +1,11 @@
 package com.lovetropics.minigames.common.minigames.behaviours.instances.donations;
 
-import com.lovetropics.minigames.common.Util;
 import com.mojang.datafixers.Dynamic;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.potion.Effect;
 import net.minecraft.potion.EffectInstance;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.registry.Registry;
-import net.minecraft.util.text.ITextComponent;
 
 import java.util.List;
 import java.util.Optional;
@@ -16,19 +14,17 @@ public class EffectPackageBehavior extends DonationPackageBehavior
 {
 	private final List<StatusEffect> effects;
 
-	public EffectPackageBehavior(final String packageType, final List<StatusEffect> effects, final ITextComponent messageForPlayer, final PlayerSelect playerSelect) {
-		super(packageType, messageForPlayer, playerSelect);
+	public EffectPackageBehavior(final DonationPackageData data, final List<StatusEffect> effects) {
+		super(data);
 
 		this.effects = effects;
 	}
 
 	public static <T> EffectPackageBehavior parse(Dynamic<T> root) {
-		final String packageType = root.get("package_type").asString("");
+		final DonationPackageData data = DonationPackageData.parse(root);
 		final List<StatusEffect> effects = root.get("effects").asList(StatusEffect::parse);
-		final ITextComponent messageForPlayer = Util.getTextOrNull(root, "message_for_player");
-		final PlayerSelect playerSelect = PlayerSelect.getFromType(root.get("player_select").asString(PlayerSelect.RANDOM.getType())).get();
 
-		return new EffectPackageBehavior(packageType, effects, messageForPlayer, playerSelect);
+		return new EffectPackageBehavior(data, effects);
 	}
 
 	@Override

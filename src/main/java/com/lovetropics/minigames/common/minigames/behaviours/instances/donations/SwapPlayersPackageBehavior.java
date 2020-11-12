@@ -16,24 +16,21 @@ import java.util.stream.Collectors;
 
 public class SwapPlayersPackageBehavior implements IMinigameBehavior
 {
-	protected final String packageType;
-	protected final ITextComponent messageForPlayer;
+	protected final DonationPackageData data;
 
-	public SwapPlayersPackageBehavior(final String packageType, final ITextComponent messageForPlayer) {
-		this.packageType = packageType;
-		this.messageForPlayer = messageForPlayer;
+	public SwapPlayersPackageBehavior(final DonationPackageData data) {
+		this.data = data;
 	}
 
 	public static <T> SwapPlayersPackageBehavior parse(Dynamic<T> root) {
-		final String packageType = root.get("package_type").asString("");
-		final ITextComponent messageForPlayer = Util.getTextOrNull(root, "message_for_player");
+		final DonationPackageData data = DonationPackageData.parse(root);
 
-		return new SwapPlayersPackageBehavior(packageType, messageForPlayer);
+		return new SwapPlayersPackageBehavior(data);
 	}
 
 	@Override
 	public boolean onDonationPackageRequested(final IMinigameInstance minigame, final DonationPackageGameAction action) {
-		if (action.getPackageType().equals(packageType)) {
+		if (action.getPackageType().equals(data.packageType)) {
 			List<ServerPlayerEntity> players = Lists.newLinkedList(minigame.getParticipants());
 			List<Vec3d> positions = players.stream().map(Entity::getPositionVec).collect(Collectors.toList());
 
@@ -44,9 +41,7 @@ public class SwapPlayersPackageBehavior implements IMinigameBehavior
 				player.setPositionAndUpdate(teleportTo.x, teleportTo.y, teleportTo.z);
 			}
 
-			if (messageForPlayer != null) {
-				minigame.getParticipants().sendMessage(messageForPlayer);
-			}
+			minigame.getParticipants().forEach(player -> data.onReceive(player, action.getSendingPlayerName()));
 
 			return true;
 		}

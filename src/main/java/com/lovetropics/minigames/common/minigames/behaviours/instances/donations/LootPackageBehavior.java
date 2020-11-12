@@ -6,7 +6,6 @@ import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.ITextComponent;
 import net.minecraft.world.storage.loot.LootContext;
 import net.minecraft.world.storage.loot.LootParameterSets;
 import net.minecraft.world.storage.loot.LootParameters;
@@ -15,19 +14,17 @@ public class LootPackageBehavior extends DonationPackageBehavior
 {
 	private final ResourceLocation lootTable;
 
-	public LootPackageBehavior(final String packageType, final ResourceLocation lootTable, final ITextComponent messageForPlayer, final PlayerSelect playerSelect) {
-		super(packageType, messageForPlayer, playerSelect);
+	public LootPackageBehavior(final DonationPackageData data, final ResourceLocation lootTable) {
+		super(data);
 
 		this.lootTable = lootTable;
 	}
 
 	public static <T> LootPackageBehavior parse(Dynamic<T> root) {
-		final String packageType = root.get("package_type").asString("");
+		final DonationPackageData data = DonationPackageData.parse(root);
 		final ResourceLocation lootTable = new ResourceLocation(root.get("loot_table").asString(""));
-		final ITextComponent messageForPlayer = Util.getTextOrNull(root, "message_for_player");
-		final PlayerSelect playerSelect = PlayerSelect.getFromType(root.get("player_select").asString(PlayerSelect.RANDOM.getType())).get();
 
-		return new LootPackageBehavior(packageType, lootTable, messageForPlayer, playerSelect);
+		return new LootPackageBehavior(data, lootTable);
 	}
 
 	@Override
