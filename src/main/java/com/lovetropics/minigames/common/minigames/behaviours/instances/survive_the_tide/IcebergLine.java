@@ -76,7 +76,7 @@ public class IcebergLine
 
     private void setIceWithCheck(World world, BlockPos pos) {
         if (world.getBlockState(pos).getMaterial() == Material.WATER) {
-            world.setBlockState(pos, Blocks.PACKED_ICE.getDefaultState(), 2);
+            world.setBlockState(pos, Blocks.SNOW_BLOCK.getDefaultState(), 2);
         }
     }
 }
