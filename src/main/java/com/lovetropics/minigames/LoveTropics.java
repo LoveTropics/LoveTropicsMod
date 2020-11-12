@@ -147,7 +147,6 @@ public class LoveTropics {
         CommandScanArea.register(dispatcher);
         CommandMinigameControl.register(dispatcher);
         CommandMap.register(dispatcher);
-        CommandMinigameSendResults.register(dispatcher);
         CommandMinigameDonate.register(dispatcher);
     }
 

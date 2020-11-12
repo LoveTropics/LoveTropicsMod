@@ -1,13 +1,5 @@
 package com.lovetropics.minigames.common.minigames.behaviours.instances.trash_dive;
 
-import java.io.InputStream;
-import java.nio.ByteBuffer;
-import java.nio.LongBuffer;
-import java.util.Random;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import com.lovetropics.minigames.common.block.LoveTropicsBlocks;
 import com.lovetropics.minigames.common.block.TrashBlock;
 import com.lovetropics.minigames.common.block.TrashBlock.Attachment;
@@ -15,7 +7,6 @@ import com.lovetropics.minigames.common.block.TrashType;
 import com.lovetropics.minigames.common.minigames.IMinigameInstance;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
 import com.mojang.datafixers.Dynamic;
-
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import net.minecraft.block.Block;
@@ -25,6 +16,13 @@ import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.server.ServerWorld;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import java.io.InputStream;
+import java.nio.ByteBuffer;
+import java.nio.LongBuffer;
+import java.util.Random;
 
 public final class PlaceTrashBehavior implements IMinigameBehavior {
 	private static final Logger LOGGER = LogManager.getLogger(PlaceTrashBehavior.class);
