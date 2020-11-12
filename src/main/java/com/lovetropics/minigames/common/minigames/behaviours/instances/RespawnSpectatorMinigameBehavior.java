@@ -17,6 +17,13 @@ public final class RespawnSpectatorMinigameBehavior implements IMinigameBehavior
 	}
 
 	@Override
+	public void onPlayerChangeRole(IMinigameInstance minigame, ServerPlayerEntity player, PlayerRole role, PlayerRole lastRole) {
+		if (minigame.getParticipants().isEmpty()) {
+			MinigameManager.getInstance().finish();
+		}
+	}
+
+	@Override
 	public void onPlayerDeath(IMinigameInstance minigame, ServerPlayerEntity player, LivingDeathEvent event) {
 		player.inventory.dropAllItems();
 
@@ -26,10 +33,6 @@ public final class RespawnSpectatorMinigameBehavior implements IMinigameBehavior
 			event.setCanceled(true);
 
 			sendDeathMessage(minigame, player);
-		}
-
-		if (minigame.getParticipants().isEmpty()) {
-			MinigameManager.getInstance().finish();
 		}
 	}
 
