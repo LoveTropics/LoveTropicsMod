@@ -1,22 +1,8 @@
 package com.lovetropics.minigames.common.minigames.polling;
 
-import java.util.Collection;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.CompletableFuture;
-
-import javax.annotation.Nullable;
-
 import com.lovetropics.minigames.client.data.TropicraftLangKeys;
 import com.lovetropics.minigames.client.minigame.ClientRoleMessage;
-import com.lovetropics.minigames.common.minigames.ControlCommandHandler;
-import com.lovetropics.minigames.common.minigames.IMinigameDefinition;
-import com.lovetropics.minigames.common.minigames.MinigameControllable;
-import com.lovetropics.minigames.common.minigames.MinigameInstance;
-import com.lovetropics.minigames.common.minigames.MinigameResult;
-import com.lovetropics.minigames.common.minigames.MinigameStatus;
-import com.lovetropics.minigames.common.minigames.PlayerRole;
-import com.lovetropics.minigames.common.minigames.ProtoMinigame;
+import com.lovetropics.minigames.common.minigames.*;
 import com.lovetropics.minigames.common.minigames.behaviours.BehaviorDispatcher;
 import com.lovetropics.minigames.common.minigames.behaviours.BehaviorMap;
 import com.lovetropics.minigames.common.minigames.behaviours.IPollingMinigameBehavior;
@@ -24,7 +10,6 @@ import com.lovetropics.minigames.common.minigames.map.IMinigameMapProvider;
 import com.lovetropics.minigames.common.minigames.statistics.PlayerKey;
 import com.lovetropics.minigames.common.network.LTNetwork;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.command.CommandSource;
 import net.minecraft.entity.player.ServerPlayerEntity;
@@ -34,6 +19,12 @@ import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraftforge.fml.network.PacketDistributor;
+
+import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.stream.Stream;
 
 public final class PollingMinigameInstance implements ProtoMinigame, MinigameControllable, BehaviorDispatcher<IPollingMinigameBehavior, PollingMinigameInstance> {
 	private final MinecraftServer server;
@@ -48,7 +39,7 @@ public final class PollingMinigameInstance implements ProtoMinigame, MinigameCon
 
 	private final BehaviorMap behaviors;
 
-	private final Map<String, ControlCommandHandler> controlCommands = new Object2ObjectOpenHashMap<>();
+	private final Map<String, ControlCommand> controlCommands = new Object2ObjectOpenHashMap<>();
 
 	private PollingMinigameInstance(MinecraftServer server, IMinigameDefinition definition, PlayerKey initiator) {
 		this.server = server;
@@ -139,10 +130,12 @@ public final class PollingMinigameInstance implements ProtoMinigame, MinigameCon
 		}
 	}
 
+	@Override
 	public MinecraftServer getServer() {
 		return server;
 	}
 
+	@Override
 	public IMinigameDefinition getDefinition() {
 		return definition;
 	}
@@ -153,20 +146,28 @@ public final class PollingMinigameInstance implements ProtoMinigame, MinigameCon
 	}
 
 	@Override
-	public void addControlCommand(String name, ControlCommandHandler task) {
-		this.controlCommands.put(name, task);
+	public void addControlCommand(String name, ControlCommand command) {
+		this.controlCommands.put(name, command);
 	}
 
 	@Override
 	public void invokeControlCommand(String name, CommandSource source) throws CommandSyntaxException {
-		ControlCommandHandler task = this.controlCommands.get(name);
-		if (task != null) {
-			task.run(source);
+		ControlCommand command = this.controlCommands.get(name);
+		if (command != null) {
+			command.invoke(this, source);
 		}
 	}
 
 	@Override
-	public Set<String> getControlCommands() {
-		return this.controlCommands.keySet();
+	public Stream<String> controlCommandsFor(CommandSource source) {
+		return this.controlCommands.entrySet().stream()
+				.filter(entry -> entry.getValue().canUse(this, source))
+				.map(Map.Entry::getKey);
+	}
+
+	@Nullable
+	@Override
+	public PlayerKey getInitiator() {
+		return initiator;
 	}
 }

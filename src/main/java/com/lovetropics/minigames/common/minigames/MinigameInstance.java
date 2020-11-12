@@ -31,6 +31,7 @@ import net.minecraftforge.fml.network.PacketDistributor;
 import javax.annotation.Nullable;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Stream;
 
 /**
  * Default implementation of a minigame instance. Simple and naive
@@ -52,10 +53,11 @@ public class MinigameInstance implements IMinigameInstance
 
     private CommandSource commandSource;
 
-    private final Map<String, ControlCommandHandler> controlCommands = new Object2ObjectOpenHashMap<>();
+    private final Map<String, ControlCommand> controlCommands = new Object2ObjectOpenHashMap<>();
     private long ticks;
 
     private final BehaviorMap behaviors;
+    private final PlayerKey initiator;
 
     private final MinigameInstanceTelemetry telemetry;
 
@@ -68,6 +70,7 @@ public class MinigameInstance implements IMinigameInstance
         this.allPlayers = new MutablePlayerSet(server);
 
         this.behaviors = behaviors;
+        this.initiator = initiator;
 
         this.telemetry = Telemetry.INSTANCE.openMinigame(definition, initiator);
 
@@ -221,21 +224,23 @@ public class MinigameInstance implements IMinigameInstance
     }
 
     @Override
-    public void addControlCommand(String name, ControlCommandHandler task) {
-        this.controlCommands.put(name, task);
+    public void addControlCommand(String name, ControlCommand command) {
+        this.controlCommands.put(name, command);
     }
 
     @Override
     public void invokeControlCommand(String name, CommandSource source) throws CommandSyntaxException {
-        ControlCommandHandler task = this.controlCommands.get(name);
-        if (task != null) {
-            task.run(source);
+        ControlCommand command = this.controlCommands.get(name);
+        if (command != null) {
+            command.invoke(this, source);
         }
     }
 
     @Override
-    public Set<String> getControlCommands() {
-        return this.controlCommands.keySet();
+    public Stream<String> controlCommandsFor(CommandSource source) {
+        return this.controlCommands.entrySet().stream()
+                .filter(entry -> entry.getValue().canUse(this, source))
+                .map(Map.Entry::getKey);
     }
 
     @Override
@@ -299,5 +304,10 @@ public class MinigameInstance implements IMinigameInstance
     @Override
     public MinigameInstanceTelemetry getTelemetry() {
         return telemetry;
+    }
+
+    @Override
+    public PlayerKey getInitiator() {
+        return initiator;
     }
 }

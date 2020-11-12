@@ -8,7 +8,9 @@ import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.minecraft.MinecraftProfileTexture;
 import com.mojang.authlib.minecraft.MinecraftSessionService;
 import com.mojang.authlib.yggdrasil.YggdrasilAuthenticationService;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.ServerPlayerEntity;
 
 import java.net.Proxy;
 import java.util.UUID;
@@ -84,5 +86,9 @@ public final class PlayerKey {
 	@Override
 	public int hashCode() {
 		return profile.getId().hashCode();
+	}
+
+	public boolean matches(Entity entity) {
+		return entity instanceof ServerPlayerEntity && entity.getUniqueID().equals(profile.getId());
 	}
 }

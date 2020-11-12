@@ -1,22 +1,39 @@
 package com.lovetropics.minigames.common.minigames.behaviours.instances;
 
+import com.lovetropics.minigames.common.minigames.ControlCommand;
 import com.lovetropics.minigames.common.minigames.IMinigameInstance;
 import com.lovetropics.minigames.common.minigames.MinigameControllable;
 import com.lovetropics.minigames.common.minigames.behaviours.IPollingMinigameBehavior;
 import com.lovetropics.minigames.common.minigames.polling.PollingMinigameInstance;
 import com.mojang.datafixers.Dynamic;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 
 import java.util.List;
 import java.util.Map;
 
 public final class BindControlsBehavior extends CommandInvokeBehavior implements IPollingMinigameBehavior {
-	public BindControlsBehavior(Map<String, List<String>> commands) {
+	private final Map<ControlCommand.Scope, Map<String, List<String>>> commands;
+
+	private BindControlsBehavior(Map<ControlCommand.Scope, Map<String, List<String>>> scopedCommands, Map<String, List<String>> commands) {
 		super(commands);
+		this.commands = scopedCommands;
 	}
 
 	public static <T> BindControlsBehavior parse(Dynamic<T> root) {
-		Map<String, List<String>> commands = parseCommands(root.get("controls").orElseEmptyMap());
-		return new BindControlsBehavior(commands);
+		Map<ControlCommand.Scope, Map<String, List<String>>> scopedCommands = root.get("controls").asMap(
+				key -> {
+					ControlCommand.Scope scope = ControlCommand.Scope.byKey(key.asString(""));
+					return scope != null ? scope : ControlCommand.Scope.ADMINS;
+				},
+				CommandInvokeBehavior::parseCommands
+		);
+
+		Map<String, List<String>> commands = new Object2ObjectOpenHashMap<>();
+		for (Map<String, List<String>> scope : scopedCommands.values()) {
+			commands.putAll(scope);
+		}
+
+		return new BindControlsBehavior(scopedCommands, commands);
 	}
 
 	@Override
@@ -32,8 +49,13 @@ public final class BindControlsBehavior extends CommandInvokeBehavior implements
 	}
 
 	public void addControlsTo(MinigameControllable minigame) {
-		for (String control : this.commands.keySet()) {
-			minigame.addControlCommand(control, source -> invoke(control, source));
+		for (Map.Entry<ControlCommand.Scope, Map<String, List<String>>> entry : commands.entrySet()) {
+			ControlCommand.Scope scope = entry.getKey();
+			Map<String, List<String>> commands = entry.getValue();
+
+			for (String control : commands.keySet()) {
+				minigame.addControlCommand(control, new ControlCommand(scope, source -> invoke(control, source)));
+			}
 		}
 	}
 }

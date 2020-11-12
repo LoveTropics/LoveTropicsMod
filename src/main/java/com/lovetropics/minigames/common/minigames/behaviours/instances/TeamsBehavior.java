@@ -66,10 +66,10 @@ public final class TeamsBehavior implements IMinigameBehavior, IPollingMinigameB
 	@Override
 	public void onStartPolling(PollingMinigameInstance minigame) {
 		for (TeamKey team : pollingTeams) {
-			minigame.addControlCommand("join_team_" + team.key, source -> {
+			minigame.addControlCommand("join_team_" + team.key, ControlCommand.forEveryone(source -> {
 				ServerPlayerEntity player = source.asPlayer();
 				onRequestJoinTeam(player, team);
-			});
+			}));
 		}
 	}
 

@@ -19,9 +19,8 @@ public class CommandMinigameControl {
                 .then(argument("control", StringArgumentType.string())
                     .suggests((context, builder) -> {
                         IMinigameManager manager = MinigameManager.getInstance();
-                        return ISuggestionProvider.suggest(manager.getControlCommands().stream(), builder);
+                        return ISuggestionProvider.suggest(manager.controlCommandsFor(context.getSource()), builder);
                     })
-                    .requires(src -> src.hasPermissionLevel(2))
                     .executes(ctx -> {
                         String control = StringArgumentType.getString(ctx, "control");
                         IMinigameManager manager = MinigameManager.getInstance();

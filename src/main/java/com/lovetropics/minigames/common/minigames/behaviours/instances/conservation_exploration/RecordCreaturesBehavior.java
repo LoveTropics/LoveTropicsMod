@@ -2,10 +2,7 @@ package com.lovetropics.minigames.common.minigames.behaviours.instances.conserva
 
 import com.lovetropics.lib.entity.FireworkUtil;
 import com.lovetropics.minigames.common.item.MinigameItems;
-import com.lovetropics.minigames.common.minigames.IMinigameInstance;
-import com.lovetropics.minigames.common.minigames.MinigameManager;
-import com.lovetropics.minigames.common.minigames.PlayerRole;
-import com.lovetropics.minigames.common.minigames.PlayerSet;
+import com.lovetropics.minigames.common.minigames.*;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
 import com.lovetropics.minigames.common.minigames.statistics.PlayerPlacement;
 import com.lovetropics.minigames.common.minigames.statistics.StatisticKey;
@@ -82,7 +79,7 @@ public final class RecordCreaturesBehavior implements IMinigameBehavior {
 
 		globalRecords = new RecordList(minigame.getStatistics().getGlobal());
 
-		minigame.addControlCommand("teleport_back", source -> {
+		minigame.addControlCommand("teleport_back", ControlCommand.forEveryone(source -> {
 			ServerPlayerEntity player = source.asPlayer();
 			PlayerData data = getDataFor(minigame, player);
 
@@ -92,7 +89,7 @@ public final class RecordCreaturesBehavior implements IMinigameBehavior {
 			if (lastPosition != null) {
 				player.teleport(minigame.getWorld(), lastPosition.x, lastPosition.y, lastPosition.z, player.rotationYaw, player.rotationPitch);
 			}
-		});
+		}));
 	}
 
 	@Override
@@ -207,7 +204,7 @@ public final class RecordCreaturesBehavior implements IMinigameBehavior {
 
 		FireworkUtil.spawnFirework(new BlockPos(entity), entity.world, FireworkUtil.Palette.ISLAND_ROYALE.getPalette());
 
-		minigame.addControlCommand(teleportCommand, source -> {
+		minigame.addControlCommand(teleportCommand, ControlCommand.forEveryone(source -> {
 			ServerPlayerEntity player = source.asPlayer();
 
 			PlayerData data = getDataFor(minigame, player);
@@ -224,7 +221,7 @@ public final class RecordCreaturesBehavior implements IMinigameBehavior {
 			);
 
 			player.teleport(minigame.getWorld(), position.x, position.y, position.z, yaw, pitch);
-		});
+		}));
 
 		ITextComponent message = reporter.getDisplayName()
 				.appendText(" discovered a ")

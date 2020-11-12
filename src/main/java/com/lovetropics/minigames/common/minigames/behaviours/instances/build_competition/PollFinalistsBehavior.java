@@ -1,20 +1,12 @@
 package com.lovetropics.minigames.common.minigames.behaviours.instances.build_competition;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Random;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import com.google.common.collect.Iterables;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import com.lovetropics.minigames.common.minigames.ControlCommand;
 import com.lovetropics.minigames.common.minigames.IMinigameInstance;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
 import com.mojang.datafixers.Dynamic;
-
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrays;
@@ -27,6 +19,13 @@ import net.minecraft.scoreboard.Scoreboard;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.management.PlayerList;
 import net.minecraft.util.text.StringTextComponent;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Random;
 
 public class PollFinalistsBehavior implements IMinigameBehavior {
 
@@ -54,7 +53,7 @@ public class PollFinalistsBehavior implements IMinigameBehavior {
 
 	@Override
 	public void onConstruct(IMinigameInstance minigame) {
-		minigame.addControlCommand("start_runoff", source -> {
+		minigame.addControlCommand("start_runoff", ControlCommand.forAdmins(source -> {
 			try {
 				PlayerList players = source.getServer().getPlayerList();
 				players.getPlayers().forEach(p -> p.removeTag(winnerTag));
@@ -67,7 +66,7 @@ public class PollFinalistsBehavior implements IMinigameBehavior {
 			} catch (Exception e) {
 				LOGGER.error("Failed to start runoff:", e);
 			}
-		});
+		}));
 	}
 
 	public void handlePollEvent(MinecraftServer server, JsonObject object, String crud) {

@@ -1,10 +1,9 @@
 package com.lovetropics.minigames.common.minigames;
 
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import com.lovetropics.minigames.client.data.TropicraftLangKeys;
-import com.lovetropics.minigames.client.minigame.ClientRoleMessage;
 import com.lovetropics.minigames.client.minigame.ClientMinigameMessage;
+import com.lovetropics.minigames.client.minigame.ClientRoleMessage;
 import com.lovetropics.minigames.common.Scheduler;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
 import com.lovetropics.minigames.common.minigames.behaviours.IPollingMinigameBehavior;
@@ -37,8 +36,8 @@ import net.minecraftforge.event.entity.living.LivingEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.player.AttackEntityEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
-import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent.PlayerLoggedInEvent;
+import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.world.BlockEvent;
 import net.minecraftforge.event.world.ChunkDataEvent;
 import net.minecraftforge.event.world.ChunkEvent;
@@ -50,9 +49,9 @@ import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiConsumer;
+import java.util.stream.Stream;
 
 /**
  * Standard implementation of a minigame manager. Would prefer to do something other
@@ -571,13 +570,13 @@ public class MinigameManager implements IMinigameManager {
 	}
 
 	@Override
-	public void addControlCommand(String name, ControlCommandHandler task) {
+	public void addControlCommand(String name, ControlCommand command) {
 		if (currentInstance != null) {
-			currentInstance.addControlCommand(name, task);
+			currentInstance.addControlCommand(name, command);
 		}
 
 		if (polling != null) {
-			polling.addControlCommand(name, task);
+			polling.addControlCommand(name, command);
 		}
 	}
 
@@ -593,15 +592,28 @@ public class MinigameManager implements IMinigameManager {
 	}
 
 	@Override
-	public Set<String> getControlCommands() {
+	public Stream<String> controlCommandsFor(CommandSource source) {
 		if (currentInstance != null) {
-			return currentInstance.getControlCommands();
+			return currentInstance.controlCommandsFor(source);
 		}
 
 		if (polling != null) {
-			return polling.getControlCommands();
+			return polling.controlCommandsFor(source);
 		}
 
-		return ImmutableSet.of();
+		return Stream.empty();
+	}
+
+	@Override
+	public PlayerKey getInitiator() {
+		if (currentInstance != null) {
+			return currentInstance.getInitiator();
+		}
+
+		if (polling != null) {
+			return polling.getInitiator();
+		}
+
+		return null;
 	}
 }
