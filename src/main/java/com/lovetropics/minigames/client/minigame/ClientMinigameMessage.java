@@ -3,7 +3,6 @@ package com.lovetropics.minigames.client.minigame;
 import java.util.function.Supplier;
 
 import com.lovetropics.minigames.common.minigames.MinigameStatus;
-import com.lovetropics.minigames.common.minigames.PlayerRole;
 import com.lovetropics.minigames.common.minigames.ProtoMinigame;
 
 import net.minecraft.network.PacketBuffer;
@@ -15,21 +14,24 @@ public class ClientMinigameMessage {
 	private final ResourceLocation minigame;
 	private final String unlocName;
 	private final MinigameStatus status;
+	private final int maxPlayers;
 
 	public ClientMinigameMessage() {
-		this(null, null, null);
+		this(null, null, null, 0);
 	}
 
 	public ClientMinigameMessage(ProtoMinigame minigame) {
 		this(minigame.getDefinition().getID(),
 			minigame.getDefinition().getUnlocalizedName(),
-			minigame.getStatus());
+			minigame.getStatus(),
+			minigame.getDefinition().getMaximumParticipantCount());
 	}
 
-	private ClientMinigameMessage(ResourceLocation minigame, String unlocName, MinigameStatus status) {
+	private ClientMinigameMessage(ResourceLocation minigame, String unlocName, MinigameStatus status, int maxPlayers) {
 		this.minigame = minigame;
 		this.unlocName = unlocName;
 		this.status = status;
+		this.maxPlayers = maxPlayers;
 	}
 
 	public void encode(PacketBuffer buffer) {
@@ -38,6 +40,7 @@ public class ClientMinigameMessage {
 			buffer.writeResourceLocation(minigame);
 			buffer.writeString(unlocName, 200);
 			buffer.writeEnumValue(status);
+			buffer.writeInt(maxPlayers);
 		}
 	}
 
@@ -46,15 +49,15 @@ public class ClientMinigameMessage {
 			ResourceLocation minigame = buffer.readResourceLocation();
 			String unlocName = buffer.readString(200);
 			MinigameStatus status = buffer.readEnumValue(MinigameStatus.class);
-			return new ClientMinigameMessage(minigame, unlocName, status);
+			int maxPlayers = buffer.readInt();
+			return new ClientMinigameMessage(minigame, unlocName, status, maxPlayers);
 		}
-		return new ClientMinigameMessage(null, null, null);
+		return new ClientMinigameMessage();
 	}
 
 	public void handle(Supplier<NetworkEvent.Context> ctx) {
 		ctx.get().enqueueWork(() -> {
-			PlayerRole prevRole = ClientMinigameState.get().map(ClientMinigameState::getRole).orElse(null);
-			ClientMinigameState.set(minigame == null ? null : new ClientMinigameState(minigame, unlocName, status, prevRole));
+			ClientMinigameState.update(minigame == null ? null : new ClientMinigameState(minigame, unlocName, status, maxPlayers));
 		});
 		ctx.get().setPacketHandled(true);
 	}

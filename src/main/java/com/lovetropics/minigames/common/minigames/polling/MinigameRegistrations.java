@@ -89,6 +89,10 @@ public final class MinigameRegistrations {
 		return any.size() + participants.size();
 	}
 
+	public int spectatorCount() {
+		return spectators.size();
+	}
+
 	private Set<UUID> getSetForRole(@Nullable PlayerRole role) {
 		if (role == PlayerRole.PARTICIPANT) {
 			return participants;

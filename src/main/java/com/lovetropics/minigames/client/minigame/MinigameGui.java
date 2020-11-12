@@ -2,8 +2,8 @@ package com.lovetropics.minigames.client.minigame;
 
 import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.common.minigames.MinigameStatus;
+import com.lovetropics.minigames.common.minigames.PlayerRole;
 
-import net.minecraft.client.MainWindow;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.util.ResourceLocation;
@@ -30,19 +30,31 @@ public class MinigameGui {
 				Minecraft.getInstance().getTextureManager().bindTexture(new ResourceLocation("minecraft:missingno"));
 			}
 			if (event.getType() == ElementType.TEXT) {
-
-				MainWindow window = event.getWindow();
 				FontRenderer fnt = Minecraft.getInstance().fontRenderer;
 
 				final int padding = 2;
 				final int lineHeight = fnt.FONT_HEIGHT + padding;
-				int y = window.getScaledHeight() - (lineHeight * 2);
+				int y = padding;
 
-				String line = TextFormatting.GRAY + "Minigame: " + TextFormatting.AQUA + state.getDisplayName();
+				String line = TextFormatting.GRAY + "Minigame: " + TextFormatting.YELLOW + TextFormatting.BOLD + state.getDisplayName();
+				if (state.getRole() != null) {
+					line += TextFormatting.GREEN + " [Joined]";
+				}
 				fnt.drawStringWithShadow(line, padding, y, -1);
 				y += lineHeight;
 
-				line = TextFormatting.GRAY + "..." + status.color + status.description;
+				line = (status == MinigameStatus.POLLING ? TextFormatting.GRAY + "..." : "")
+						+ status.color + status.description
+						+ " (" + state.getMemberCount(PlayerRole.PARTICIPANT) + "/" + state.getMaxPlayers() + ")";
+				fnt.drawStringWithShadow(line, padding, y, -1);
+				y += lineHeight;
+
+				line = TextFormatting.GRAY + "Commands: ";
+				if (state.getRole() == null) {
+					line += TextFormatting.AQUA + "/join" + TextFormatting.GRAY + " or " + TextFormatting.AQUA + "/spectate";
+				} else {
+					line += TextFormatting.AQUA + "/leave";
+				}
 				fnt.drawStringWithShadow(line, padding, y, -1);
 			}
 		});

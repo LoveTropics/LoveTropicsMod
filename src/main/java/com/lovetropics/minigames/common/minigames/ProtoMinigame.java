@@ -13,4 +13,6 @@ public interface ProtoMinigame {
 	IMinigameDefinition getDefinition();
 
 	MinecraftServer getServer();
+
+	int getMemberCount(PlayerRole role);
 }

@@ -4,6 +4,7 @@ import com.google.common.collect.Maps;
 import com.lovetropics.minigames.client.data.TropicraftLangKeys;
 import com.lovetropics.minigames.client.minigame.ClientMinigameMessage;
 import com.lovetropics.minigames.client.minigame.ClientRoleMessage;
+import com.lovetropics.minigames.client.minigame.PlayerCountsMessage;
 import com.lovetropics.minigames.common.Scheduler;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
 import com.lovetropics.minigames.common.minigames.behaviours.IPollingMinigameBehavior;
@@ -329,6 +330,7 @@ public class MinigameManager implements IMinigameManager {
 		if (minigame != null && !minigame.getPlayers().contains(player)) {
 			minigame.addPlayer(player, PlayerRole.SPECTATOR);
 			LTNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new ClientRoleMessage(PlayerRole.SPECTATOR));
+			LTNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new PlayerCountsMessage(PlayerRole.SPECTATOR, minigame.getMemberCount(PlayerRole.SPECTATOR)));
 			return MinigameResult.ok(new StringTextComponent("You have joined the game as a spectator!").applyTextStyle(TextFormatting.GREEN));
 		}
 
@@ -540,6 +542,9 @@ public class MinigameManager implements IMinigameManager {
 		}
 		if (minigame != null) {
 			LTNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> (ServerPlayerEntity) event.getPlayer()), new ClientMinigameMessage(minigame));
+			for (PlayerRole role : PlayerRole.values()) {
+				LTNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> (ServerPlayerEntity) event.getPlayer()), new PlayerCountsMessage(role, minigame.getMemberCount(role)));
+			}
 		}
 	}
 

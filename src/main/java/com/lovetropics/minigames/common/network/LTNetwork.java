@@ -2,6 +2,7 @@ package com.lovetropics.minigames.common.network;
 
 import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.client.minigame.ClientRoleMessage;
+import com.lovetropics.minigames.client.minigame.PlayerCountsMessage;
 import com.lovetropics.minigames.client.minigame.ClientMinigameMessage;
 import com.lovetropics.minigames.common.network.map.AddWorkspaceRegionMessage;
 import com.lovetropics.minigames.common.network.map.SetWorkspaceMessage;
@@ -67,6 +68,12 @@ public final class LTNetwork {
 				.encoder(ClientRoleMessage::encode)
 				.decoder(ClientRoleMessage::decode)
 				.consumer(ClientRoleMessage::handle)
+				.add();
+
+		CHANNEL.messageBuilder(PlayerCountsMessage.class, 8)
+				.encoder(PlayerCountsMessage::encode)
+				.decoder(PlayerCountsMessage::decode)
+				.consumer(PlayerCountsMessage::handle)
 				.add();
 	}
 }

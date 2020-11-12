@@ -73,6 +73,11 @@ public interface IMinigameInstance extends ProtoMinigame, MinigameControllable, 
         return getPlayersWithRole(PlayerRole.SPECTATOR);
     }
 
+    @Override
+    default int getMemberCount(PlayerRole role) {
+    	return getPlayersWithRole(role).size();
+    }
+
     /**
      * Used for executing commands of datapacks within the minigames.
      * @return The command source for this minigame instance.

@@ -4,7 +4,7 @@ import net.minecraft.util.text.TextFormatting;
 
 public enum MinigameStatus {
 	POLLING("waiting for players", TextFormatting.GOLD),
-	ACTIVE("in progress", TextFormatting.AQUA);
+	ACTIVE("in progress", TextFormatting.GREEN);
 
 	public final String description;
 	public final TextFormatting color;

@@ -1,5 +1,6 @@
 package com.lovetropics.minigames.client.minigame;
 
+import java.util.EnumMap;
 import java.util.Optional;
 
 import javax.annotation.Nullable;
@@ -22,20 +23,26 @@ public class ClientMinigameState {
 		currentState = state;
 	}
 
+	static void update(ClientMinigameState state) {
+		get().ifPresent(current -> {
+			state.role = current.role;
+			state.members = current.members;
+		});
+		set(state);
+	}
+
 	private final ResourceLocation minigame;
 	private final String unlocName;
 	private final MinigameStatus status;
+	private final int maxPlayers;
 	private @Nullable PlayerRole role;
+	private EnumMap<PlayerRole, Integer> members = new EnumMap<>(PlayerRole.class);
 
-	public ClientMinigameState(ResourceLocation minigame, String unlocName, MinigameStatus status) {
-		this(minigame, unlocName, status, null);
-	}
-
-	public ClientMinigameState(ResourceLocation minigame, String unlocName, MinigameStatus status, @Nullable PlayerRole role) {
+	public ClientMinigameState(ResourceLocation minigame, String unlocName, MinigameStatus status, int maxPlayers) {
 		this.minigame = minigame;
 		this.unlocName = unlocName;
 		this.status = status;
-		this.role = role;
+		this.maxPlayers = maxPlayers;
 	}
 
 	public ResourceLocation getMinigame() {
@@ -50,11 +57,23 @@ public class ClientMinigameState {
 		return status;
 	}
 
+	public int getMaxPlayers() {
+		return maxPlayers;
+	}
+
 	public @Nullable PlayerRole getRole() {
 		return role;
 	}
 
 	public void setRole(@Nullable PlayerRole role) {
 		this.role = role;
+	}
+
+	public void setMemberCount(PlayerRole role, int count) {
+		this.members.put(role, count);
+	}
+
+	public int getMemberCount(PlayerRole role) {
+		return this.members.getOrDefault(role, 0);
 	}
 }

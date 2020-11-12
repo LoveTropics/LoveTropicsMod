@@ -2,6 +2,7 @@ package com.lovetropics.minigames.common.minigames.polling;
 
 import com.lovetropics.minigames.client.data.TropicraftLangKeys;
 import com.lovetropics.minigames.client.minigame.ClientRoleMessage;
+import com.lovetropics.minigames.client.minigame.PlayerCountsMessage;
 import com.lovetropics.minigames.common.minigames.*;
 import com.lovetropics.minigames.common.minigames.behaviours.BehaviorDispatcher;
 import com.lovetropics.minigames.common.minigames.behaviours.BehaviorMap;
@@ -81,7 +82,9 @@ public final class PollingMinigameInstance implements ProtoMinigame, MinigameCon
 
 		String message = requestedRole != PlayerRole.SPECTATOR ? "%s has joined the %s minigame!" : "%s has joined to spectate the %s minigame!";
 		broadcastMessage(new TranslationTextComponent(message, playerName, minigameName).applyTextStyle(TextFormatting.AQUA));
-		LTNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new ClientRoleMessage(requestedRole == null ? PlayerRole.PARTICIPANT : requestedRole));
+		PlayerRole trueRole = requestedRole == null ? PlayerRole.PARTICIPANT : requestedRole;
+		LTNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new ClientRoleMessage(trueRole));
+		LTNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new PlayerCountsMessage(trueRole, getMemberCount(trueRole)));
 
 		return MinigameResult.ok(
 				new TranslationTextComponent(
@@ -102,6 +105,9 @@ public final class PollingMinigameInstance implements ProtoMinigame, MinigameCon
 			broadcastMessage(new TranslationTextComponent(TropicraftLangKeys.COMMAND_NO_LONGER_ENOUGH_PLAYERS).applyTextStyle(TextFormatting.RED));
 		}
 		LTNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new ClientRoleMessage(null));
+		for (PlayerRole role : PlayerRole.values()) {
+			LTNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new PlayerCountsMessage(role, getMemberCount(role)));
+		}
 
 		ITextComponent minigameName = definition.getName().applyTextStyle(TextFormatting.AQUA);
 		return MinigameResult.ok(new TranslationTextComponent(TropicraftLangKeys.COMMAND_UNREGISTERED_MINIGAME, minigameName).applyTextStyle(TextFormatting.RED));
@@ -169,5 +175,11 @@ public final class PollingMinigameInstance implements ProtoMinigame, MinigameCon
 	@Override
 	public PlayerKey getInitiator() {
 		return initiator;
+	}
+
+	@Override
+	public int getMemberCount(PlayerRole role) {
+		// TODO extensible
+		return role == PlayerRole.PARTICIPANT ? registrations.participantCount() : registrations.spectatorCount();
 	}
 }
