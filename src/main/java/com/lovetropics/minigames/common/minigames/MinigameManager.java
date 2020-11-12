@@ -324,9 +324,9 @@ public class MinigameManager implements IMinigameManager {
 	}
 
 	@Override
-	public MinigameResult<ITextComponent> registerFor(ServerPlayerEntity player, @Nullable PlayerRole requestedRole) {
+	public MinigameResult<ITextComponent> joinPlayerAs(ServerPlayerEntity player, @Nullable PlayerRole requestedRole) {
 		MinigameInstance minigame = this.currentInstance;
-		if (minigame != null) {
+		if (minigame != null && !minigame.getPlayers().contains(player)) {
 			if (requestedRole == PlayerRole.SPECTATOR) {
 				minigame.addPlayer(player, PlayerRole.SPECTATOR);
 				LTNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new ClientRoleMessage(PlayerRole.SPECTATOR));
@@ -342,18 +342,24 @@ public class MinigameManager implements IMinigameManager {
 		}
 
 		// Client state is updated within this method to allow preconditions to be checked there
-		return polling.registerPlayerAs(player, requestedRole);
+		return polling.joinPlayerAs(player, requestedRole);
 	}
 
 	@Override
-	public MinigameResult<ITextComponent> unregisterFor(ServerPlayerEntity player) {
-		PollingMinigameInstance polling = this.polling;
-		if (polling == null) {
-			return MinigameResult.error(new TranslationTextComponent(TropicraftLangKeys.COMMAND_NO_MINIGAME_POLLING));
+	public MinigameResult<ITextComponent> removePlayer(ServerPlayerEntity player) {
+		MinigameInstance minigame = this.currentInstance;
+		if (minigame != null && minigame.removePlayer(player)) {
+			ITextComponent minigameName = minigame.getDefinition().getName();
+			return MinigameResult.ok(new TranslationTextComponent(TropicraftLangKeys.COMMAND_UNREGISTERED_MINIGAME, minigameName).applyTextStyle(TextFormatting.RED));
 		}
 
-		// Client state is updated within this method to allow preconditions to be checked there
-		return polling.unregisterPlayer(player);
+		PollingMinigameInstance polling = this.polling;
+		if (polling != null) {
+			// Client state is updated within this method to allow preconditions to be checked there
+			return polling.removePlayer(player);
+		}
+
+		return MinigameResult.error(new TranslationTextComponent(TropicraftLangKeys.COMMAND_NO_MINIGAME));
 	}
 
 	@SubscribeEvent
@@ -482,7 +488,7 @@ public class MinigameManager implements IMinigameManager {
 
 		PollingMinigameInstance polling = this.polling;
 		if (polling != null) {
-			polling.unregisterPlayer(player);
+			polling.removePlayer(player);
 		}
 	}
 

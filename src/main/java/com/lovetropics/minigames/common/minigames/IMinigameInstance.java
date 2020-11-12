@@ -1,19 +1,18 @@
 package com.lovetropics.minigames.common.minigames;
 
-import java.util.Collection;
-import java.util.Optional;
-
 import com.lovetropics.minigames.common.map.MapRegions;
 import com.lovetropics.minigames.common.minigames.behaviours.BehaviorDispatcher;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehaviorType;
 import com.lovetropics.minigames.common.minigames.statistics.MinigameStatistics;
 import com.lovetropics.minigames.common.telemetry.MinigameInstanceTelemetry;
-
 import net.minecraft.command.CommandSource;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.world.dimension.DimensionType;
 import net.minecraft.world.server.ServerWorld;
+
+import java.util.Collection;
+import java.util.Optional;
 
 /**
  * An instance used to track which participants and spectators are inside
@@ -46,8 +45,9 @@ public interface IMinigameInstance extends ProtoMinigame, MinigameControllable, 
     /**
      * Removes the player from this minigame.
      * @param player the player to remove
+     * @return
      */
-    void removePlayer(ServerPlayerEntity player);
+    boolean removePlayer(ServerPlayerEntity player);
 
     /**
      * @return The list of all players that are a part of this minigame instance.

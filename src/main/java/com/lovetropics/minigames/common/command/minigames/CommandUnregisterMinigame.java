@@ -21,6 +21,6 @@ public class CommandUnregisterMinigame {
 		return literal(name)
 		.requires(s -> s.getEntity() instanceof ServerPlayerEntity)
 		.executes(c -> CommandMinigame.executeMinigameAction(() ->
-				MinigameManager.getInstance().unregisterFor((ServerPlayerEntity) c.getSource().getEntity()), c.getSource()));
+				MinigameManager.getInstance().removePlayer((ServerPlayerEntity) c.getSource().getEntity()), c.getSource()));
 	}
 }

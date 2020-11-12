@@ -92,7 +92,7 @@ public interface IMinigameManager extends MinigameControllable
      * @param requestedRole The role that this player has requested to join as, or null if they have no preference
      * @return The result of the register attempt.
      */
-    MinigameResult<ITextComponent> registerFor(ServerPlayerEntity player, @Nullable PlayerRole requestedRole);
+    MinigameResult<ITextComponent> joinPlayerAs(ServerPlayerEntity player, @Nullable PlayerRole requestedRole);
 
     /**
      * Unregisters a player for a currently polling minigame if they've registered
@@ -101,5 +101,5 @@ public interface IMinigameManager extends MinigameControllable
      * @param player The player being unregistered for the currently polling minigame/
      * @return The result of the unregister attempt.
      */
-    MinigameResult<ITextComponent> unregisterFor(ServerPlayerEntity player);
+    MinigameResult<ITextComponent> removePlayer(ServerPlayerEntity player);
 }

@@ -60,7 +60,7 @@ public final class PollingMinigameInstance implements ProtoMinigame, MinigameCon
 		return MinigameStatus.POLLING;
 	}
 
-	public MinigameResult<ITextComponent> registerPlayerAs(ServerPlayerEntity player, @Nullable PlayerRole requestedRole) {
+	public MinigameResult<ITextComponent> joinPlayerAs(ServerPlayerEntity player, @Nullable PlayerRole requestedRole) {
 		if (registrations.contains(player.getUniqueID())) {
 			return MinigameResult.error(new TranslationTextComponent(TropicraftLangKeys.COMMAND_MINIGAME_ALREADY_REGISTERED));
 		}
@@ -91,7 +91,7 @@ public final class PollingMinigameInstance implements ProtoMinigame, MinigameCon
 		);
 	}
 
-	public MinigameResult<ITextComponent> unregisterPlayer(ServerPlayerEntity player) {
+	public MinigameResult<ITextComponent> removePlayer(ServerPlayerEntity player) {
 		if (!registrations.contains(player.getUniqueID())) {
 			return MinigameResult.error(new TranslationTextComponent(TropicraftLangKeys.COMMAND_NOT_REGISTERED_FOR_MINIGAME));
 		}

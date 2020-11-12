@@ -63,7 +63,7 @@ public class CommandRegisterMinigame {
 	private static int registerAsRole(CommandContext<CommandSource> ctx, @Nullable PlayerRole requestedRole) throws CommandSyntaxException {
 		return CommandMinigame.executeMinigameAction(() -> {
 			ServerPlayerEntity player = ctx.getSource().asPlayer();
-			return MinigameManager.getInstance().registerFor(player, requestedRole);
+			return MinigameManager.getInstance().joinPlayerAs(player, requestedRole);
 		}, ctx.getSource());
 	}
 }

@@ -30,7 +30,7 @@ public class CommandPollMinigame {
 
 				int result = CommandMinigame.executeMinigameAction(() -> MinigameManager.getInstance().startPolling(id, PlayerKey.from(player)), c.getSource());
 				if (result == 1) {
-					CommandMinigame.executeMinigameAction(() -> MinigameManager.getInstance().registerFor(player, null), c.getSource());
+					CommandMinigame.executeMinigameAction(() -> MinigameManager.getInstance().joinPlayerAs(player, null), c.getSource());
 				}
 
 				return result;

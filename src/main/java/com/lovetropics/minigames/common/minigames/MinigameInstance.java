@@ -219,8 +219,8 @@ public class MinigameInstance implements IMinigameInstance
     }
 
     @Override
-    public void removePlayer(ServerPlayerEntity player) {
-        allPlayers.remove(player);
+    public boolean removePlayer(ServerPlayerEntity player) {
+        return allPlayers.remove(player);
     }
 
     @Override
