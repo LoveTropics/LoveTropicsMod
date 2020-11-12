@@ -134,6 +134,6 @@ public class SurviveTheTideRulesetBehavior implements IMinigameBehavior
 		minigame.getPlayers().sendMessage(messageOnSetPlayersFree);
 
 		// So players can drop down without fall damage
-		minigame.getPlayers().addPotionEffect(new EffectInstance(Effects.SLOW_FALLING, 10 * 20));
+		minigame.getPlayers().addPotionEffect(new EffectInstance(Effects.SLOW_FALLING, 20 * 20));
 	}
 }
