@@ -2,11 +2,14 @@ package com.lovetropics.minigames.client.minigame;
 
 import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.common.minigames.MinigameStatus;
+
 import net.minecraft.client.MainWindow;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.client.event.ClientPlayerNetworkEvent.LoggedOutEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent.ElementType;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -21,8 +24,11 @@ public class MinigameGui {
 		ClientMinigameState.get().ifPresent(state -> {
 			// Nothing to show if they are currently playing an active minigame
 			MinigameStatus status = state.getStatus();
-			if (status == MinigameStatus.ACTIVE && state.isJoined()) return;
+			if (status == MinigameStatus.ACTIVE && state.getRole() != null) return;
 
+			if (event.getType() == ElementType.HOTBAR) {
+				Minecraft.getInstance().getTextureManager().bindTexture(new ResourceLocation("minecraft:missingno"));
+			}
 			if (event.getType() == ElementType.TEXT) {
 
 				MainWindow window = event.getWindow();
@@ -40,5 +46,10 @@ public class MinigameGui {
 				fnt.drawStringWithShadow(line, padding, y, -1);
 			}
 		});
+	}
+
+	@SubscribeEvent
+	public static void onClientDisconnect(LoggedOutEvent event) {
+		ClientMinigameState.set(null);
 	}
 }

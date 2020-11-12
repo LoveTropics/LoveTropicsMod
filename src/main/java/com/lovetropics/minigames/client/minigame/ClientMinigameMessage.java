@@ -3,6 +3,7 @@ package com.lovetropics.minigames.client.minigame;
 import java.util.function.Supplier;
 
 import com.lovetropics.minigames.common.minigames.MinigameStatus;
+import com.lovetropics.minigames.common.minigames.PlayerRole;
 import com.lovetropics.minigames.common.minigames.ProtoMinigame;
 
 import net.minecraft.network.PacketBuffer;
@@ -52,8 +53,8 @@ public class ClientMinigameMessage {
 
 	public void handle(Supplier<NetworkEvent.Context> ctx) {
 		ctx.get().enqueueWork(() -> {
-			boolean wasJoined = ClientMinigameState.get().map(ClientMinigameState::isJoined).orElse(false);
-			ClientMinigameState.set(minigame == null ? null : new ClientMinigameState(minigame, unlocName, status, wasJoined));
+			PlayerRole prevRole = ClientMinigameState.get().map(ClientMinigameState::getRole).orElse(null);
+			ClientMinigameState.set(minigame == null ? null : new ClientMinigameState(minigame, unlocName, status, prevRole));
 		});
 		ctx.get().setPacketHandled(true);
 	}

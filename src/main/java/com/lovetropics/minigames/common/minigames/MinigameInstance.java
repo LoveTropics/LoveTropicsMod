@@ -1,5 +1,6 @@
 package com.lovetropics.minigames.common.minigames;
 
+import com.lovetropics.minigames.client.minigame.ClientRoleMessage;
 import com.lovetropics.minigames.common.Scheduler;
 import com.lovetropics.minigames.common.map.MapRegions;
 import com.lovetropics.minigames.common.minigames.behaviours.BehaviorMap;
@@ -9,6 +10,7 @@ import com.lovetropics.minigames.common.minigames.polling.MinigameRegistrations;
 import com.lovetropics.minigames.common.minigames.statistics.MinigameStatistics;
 import com.lovetropics.minigames.common.minigames.statistics.PlayerKey;
 import com.lovetropics.minigames.common.minigames.statistics.StatisticKey;
+import com.lovetropics.minigames.common.network.LTNetwork;
 import com.lovetropics.minigames.common.telemetry.MinigameInstanceTelemetry;
 import com.lovetropics.minigames.common.telemetry.Telemetry;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
@@ -24,6 +26,7 @@ import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.world.dimension.DimensionType;
 import net.minecraft.world.server.ServerWorld;
+import net.minecraftforge.fml.network.PacketDistributor;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -113,10 +116,12 @@ public class MinigameInstance implements IMinigameInstance
 
         for (ServerPlayerEntity player : participants) {
             minigame.addPlayer(player, PlayerRole.PARTICIPANT);
+    		LTNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new ClientRoleMessage(PlayerRole.PARTICIPANT));
         }
 
         for (ServerPlayerEntity player : spectators) {
             minigame.addPlayer(player, PlayerRole.SPECTATOR);
+            LTNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new ClientRoleMessage(PlayerRole.SPECTATOR));
         }
 
         map.getName().ifPresent(name -> minigame.getStatistics().getGlobal().set(StatisticKey.MAP, name));

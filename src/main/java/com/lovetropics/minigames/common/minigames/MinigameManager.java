@@ -3,7 +3,7 @@ package com.lovetropics.minigames.common.minigames;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import com.lovetropics.minigames.client.data.TropicraftLangKeys;
-import com.lovetropics.minigames.client.minigame.ClientJoinLeaveMessage;
+import com.lovetropics.minigames.client.minigame.ClientRoleMessage;
 import com.lovetropics.minigames.client.minigame.ClientMinigameMessage;
 import com.lovetropics.minigames.common.Scheduler;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
@@ -38,6 +38,7 @@ import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.player.AttackEntityEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
+import net.minecraftforge.event.entity.player.PlayerEvent.PlayerLoggedInEvent;
 import net.minecraftforge.event.world.BlockEvent;
 import net.minecraftforge.event.world.ChunkDataEvent;
 import net.minecraftforge.event.world.ChunkEvent;
@@ -329,7 +330,7 @@ public class MinigameManager implements IMinigameManager {
 		if (minigame != null) {
 			if (requestedRole == PlayerRole.SPECTATOR) {
 				minigame.addPlayer(player, PlayerRole.SPECTATOR);
-				LTNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new ClientJoinLeaveMessage(true));
+				LTNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new ClientRoleMessage(PlayerRole.SPECTATOR));
 				return MinigameResult.ok(new StringTextComponent("You have joined the game as a spectator!").applyTextStyle(TextFormatting.GREEN));
 			} else {
 				return MinigameResult.error(new TranslationTextComponent(TropicraftLangKeys.COMMAND_MINIGAME_ALREADY_STARTED));
@@ -527,6 +528,17 @@ public class MinigameManager implements IMinigameManager {
 		if (minigame != null) {
 			ServerPlayerEntity player = (ServerPlayerEntity) event.getPlayer();
 			dispatchOrCancel(minigame, (b, m) -> b.onPlayerBreakBlock(m, player, event.getPos(), event.getState(), event));
+		}
+	}
+
+	@SubscribeEvent
+	public void onPlayerLoggedIn(PlayerLoggedInEvent event) {
+		ProtoMinigame minigame = polling;
+		if (minigame == null) {
+			minigame = getActiveMinigame();
+		}
+		if (minigame != null) {
+			LTNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> (ServerPlayerEntity) event.getPlayer()), new ClientMinigameMessage(minigame));
 		}
 	}
 

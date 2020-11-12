@@ -1,7 +1,7 @@
 package com.lovetropics.minigames.common.network;
 
 import com.lovetropics.minigames.Constants;
-import com.lovetropics.minigames.client.minigame.ClientJoinLeaveMessage;
+import com.lovetropics.minigames.client.minigame.ClientRoleMessage;
 import com.lovetropics.minigames.client.minigame.ClientMinigameMessage;
 import com.lovetropics.minigames.common.network.map.AddWorkspaceRegionMessage;
 import com.lovetropics.minigames.common.network.map.SetWorkspaceMessage;
@@ -63,10 +63,10 @@ public final class LTNetwork {
 				.consumer(ClientMinigameMessage::handle)
 				.add();
 
-		CHANNEL.messageBuilder(ClientJoinLeaveMessage.class, 7)
-				.encoder(ClientJoinLeaveMessage::encode)
-				.decoder(ClientJoinLeaveMessage::decode)
-				.consumer(ClientJoinLeaveMessage::handle)
+		CHANNEL.messageBuilder(ClientRoleMessage.class, 7)
+				.encoder(ClientRoleMessage::encode)
+				.decoder(ClientRoleMessage::decode)
+				.consumer(ClientRoleMessage::handle)
 				.add();
 	}
 }

@@ -4,9 +4,11 @@ buildscript {
         jcenter()
         mavenCentral()
         mavenLocal()
+        maven {url='https://dist.creeper.host/Sponge/maven'}
     }
     dependencies {
         classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '3.+', changing: true
+        classpath 'org.spongepowered:mixingradle:0.7-SNAPSHOT'
     }
 }
 plugins {
@@ -15,6 +17,7 @@ plugins {
 apply plugin: 'net.minecraftforge.gradle'
 apply plugin: 'eclipse'
 apply plugin: 'maven-publish'
+apply plugin: 'org.spongepowered.mixin'
 
 group = 'com.lovetropics.minigames'
 archivesBaseName = 'LTMinigames'
@@ -35,6 +38,7 @@ minecraft {
             taskName 'ltminigames_client'
             
             workingDirectory project.file('run')
+            arg "-mixin.config=ltminigames.mixins.json"
 
             property 'forge.logging.markers', 'REGISTRIES'
             property 'forge.logging.console.level', 'debug'
@@ -50,6 +54,7 @@ minecraft {
             taskName 'ltminigames_server'
         
             workingDirectory project.file('run')
+            arg "-mixin.config=ltminigames.mixins.json"
 
             property 'forge.logging.markers', 'REGISTRIES'
             property 'forge.logging.console.level', 'debug'
@@ -65,7 +70,8 @@ minecraft {
             taskName 'ltminigames_data'
         
             workingDirectory project.file('run')
-            
+            arg "-mixin.config=ltminigames.mixins.json"
+
             environment 'target', 'fmluserdevdata'
 
             property 'forge.logging.markers', 'REGISTRIES'
@@ -124,6 +130,13 @@ dependencies {
     shade ltlib
 
     shadelib group: 'org.asynchttpclient', name: 'async-http-client', version: '2.5.0'
+
+    // Annotation Processors
+    annotationProcessor 'org.spongepowered:mixin:0.8:processor'
+}
+
+mixin {
+    add sourceSets.main, "ltminigames.refmap.json"
 }
 
 shadowJar {

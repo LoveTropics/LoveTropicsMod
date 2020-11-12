@@ -8,7 +8,7 @@ import java.util.concurrent.CompletableFuture;
 import javax.annotation.Nullable;
 
 import com.lovetropics.minigames.client.data.TropicraftLangKeys;
-import com.lovetropics.minigames.client.minigame.ClientJoinLeaveMessage;
+import com.lovetropics.minigames.client.minigame.ClientRoleMessage;
 import com.lovetropics.minigames.common.minigames.ControlCommandHandler;
 import com.lovetropics.minigames.common.minigames.IMinigameDefinition;
 import com.lovetropics.minigames.common.minigames.MinigameControllable;
@@ -90,7 +90,7 @@ public final class PollingMinigameInstance implements ProtoMinigame, MinigameCon
 
 		String message = requestedRole != PlayerRole.SPECTATOR ? "%s has joined the %s minigame!" : "%s has joined to spectate the %s minigame!";
 		broadcastMessage(new TranslationTextComponent(message, playerName, minigameName).applyTextStyle(TextFormatting.AQUA));
-		LTNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new ClientJoinLeaveMessage(true));
+		LTNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new ClientRoleMessage(requestedRole == null ? PlayerRole.PARTICIPANT : requestedRole));
 
 		return MinigameResult.ok(
 				new TranslationTextComponent(
@@ -110,7 +110,7 @@ public final class PollingMinigameInstance implements ProtoMinigame, MinigameCon
 		if (registrations.participantCount() == definition.getMinimumParticipantCount() - 1) {
 			broadcastMessage(new TranslationTextComponent(TropicraftLangKeys.COMMAND_NO_LONGER_ENOUGH_PLAYERS).applyTextStyle(TextFormatting.RED));
 		}
-		LTNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new ClientJoinLeaveMessage(false));
+		LTNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new ClientRoleMessage(null));
 
 		ITextComponent minigameName = definition.getName().applyTextStyle(TextFormatting.AQUA);
 		return MinigameResult.ok(new TranslationTextComponent(TropicraftLangKeys.COMMAND_UNREGISTERED_MINIGAME, minigameName).applyTextStyle(TextFormatting.RED));
