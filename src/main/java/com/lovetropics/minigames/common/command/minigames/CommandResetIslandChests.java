@@ -15,7 +15,7 @@ public class CommandResetIslandChests {
 	public static void register(final CommandDispatcher<CommandSource> dispatcher) {
 		dispatcher.register(
 			literal("minigame")
-			.then(literal("resetIslandChests").requires(s -> s.hasPermissionLevel(2))
+			.then(literal("resetIslandChests").requires(s -> s.hasPermissionLevel(4))
 			.executes(c -> {
 				World world = c.getSource().getWorld();
 

@@ -40,7 +40,7 @@ public class CommandRegisterMinigame {
 		return literal(name)
 				.executes(ctx -> registerAsRole(ctx, null))
 				.then(argument("role", StringArgumentType.word())
-						.requires(source -> source.hasPermissionLevel(2))
+						.requires(source -> source.hasPermissionLevel(4))
 						.suggests((context, builder) -> ISuggestionProvider.suggest(
 								PlayerRole.stream().map(PlayerRole::getKey),
 								builder

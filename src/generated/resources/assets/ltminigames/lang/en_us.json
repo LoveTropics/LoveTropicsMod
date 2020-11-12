@@ -29,7 +29,7 @@
   "ltminigames.command.not_enough_players": "There aren't enough players to start this minigame. It requires at least %s amount of players.",
   "ltminigames.command.not_registered_minigame": "You are not currently registered for any minigames.",
   "ltminigames.command.registered_for_minigame": "You have registered for Minigame %s. When the minigame starts, random registered players will be picked to play. Please wait for hosts to start the minigame. You can continue to do what you were doing until then.",
-  "ltminigames.command.sorry_already_started": "Sorry, the current minigame has already started!",
+  "ltminigames.command.sorry_already_started": "Sorry, the current minigame has already started! You can join as a spectator with /minigame spectate",
   "ltminigames.command.stopped_polling": "You have successfully stopped the poll.",
   "ltminigames.command.unregistered_minigame": "You have unregistered for Minigame %s.",
   "ltminigames.minigame.build_competition": "Build Competition",

@@ -17,7 +17,7 @@ public class CommandPollMinigame {
 	public static void register(final CommandDispatcher<CommandSource> dispatcher) {
 		dispatcher.register(
 			literal("minigame")
-			.then(literal("poll").requires(s -> s.hasPermissionLevel(2))
+			.then(literal("poll").requires(s -> s.hasPermissionLevel(4))
 			.then(argument("minigame_id", ResourceLocationArgument.resourceLocation())
 		              .suggests((ctx, sb) -> ISuggestionProvider.suggest(
 		                      MinigameManager.getInstance().getAllMinigames().stream()

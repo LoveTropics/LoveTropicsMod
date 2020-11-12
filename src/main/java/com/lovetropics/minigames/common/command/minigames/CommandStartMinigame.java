@@ -17,7 +17,7 @@ public class CommandStartMinigame {
 	public static void register(final CommandDispatcher<CommandSource> dispatcher) {
 		dispatcher.register(
 			literal("minigame")
-			.then(literal("start").requires(s -> s.hasPermissionLevel(2))
+			.then(literal("start").requires(s -> s.hasPermissionLevel(4))
 			.executes(c -> {
 				CompletableFuture<MinigameResult<ITextComponent>> future;
 				try {

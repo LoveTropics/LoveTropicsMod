@@ -1,21 +1,5 @@
 package com.lovetropics.minigames.common.command.minigames;
 
-import static net.minecraft.command.Commands.argument;
-import static net.minecraft.command.Commands.literal;
-
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.LongBuffer;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
-import java.util.ArrayDeque;
-import java.util.Deque;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-
 import com.google.common.collect.Sets;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
@@ -23,7 +7,6 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
-
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import net.minecraft.block.Block;
@@ -41,6 +24,18 @@ import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.fml.RegistryObject;
 import net.minecraftforge.registries.ForgeRegistries;
 
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.LongBuffer;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
+import java.util.*;
+
+import static net.minecraft.command.Commands.argument;
+import static net.minecraft.command.Commands.literal;
+
 public class CommandScanArea {
 
 	private static final RegistryObject<Block> PURIFIED_SAND = RegistryObject.of(new ResourceLocation("tropicraft", "purified_sand"), ForgeRegistries.BLOCKS);
@@ -54,7 +49,7 @@ public class CommandScanArea {
 
 	public static void register(final CommandDispatcher<CommandSource> dispatcher) {
 		dispatcher.register(literal("minigame")
-			.then(literal("scan").requires(s -> s.hasPermissionLevel(2))
+			.then(literal("scan").requires(s -> s.hasPermissionLevel(4))
 				.then(argument("name", StringArgumentType.word())
 					.executes(ctx -> scanArea(ctx.getSource(), StringArgumentType.getString(ctx, "name"))))
 				.executes(ctx -> scanArea(ctx.getSource(), "scan_result"))));

@@ -332,7 +332,7 @@ public class MinigameManager implements IMinigameManager {
 				LTNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new ClientRoleMessage(PlayerRole.SPECTATOR));
 				return MinigameResult.ok(new StringTextComponent("You have joined the game as a spectator!").applyTextStyle(TextFormatting.GREEN));
 			} else {
-				return MinigameResult.error(new TranslationTextComponent(TropicraftLangKeys.COMMAND_MINIGAME_ALREADY_STARTED));
+				return MinigameResult.error(new TranslationTextComponent(TropicraftLangKeys.COMMAND_SORRY_ALREADY_STARTED));
 			}
 		}
 

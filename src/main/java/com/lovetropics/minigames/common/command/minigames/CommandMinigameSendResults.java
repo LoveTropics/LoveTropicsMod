@@ -21,7 +21,7 @@ public class CommandMinigameSendResults {
     public static void register(final CommandDispatcher<CommandSource> dispatcher) {
         dispatcher.register(
             literal("minigame")
-                .then(literal("fakeresults").requires(s -> s.hasPermissionLevel(2))
+                .then(literal("fakeresults").requires(s -> s.hasPermissionLevel(4))
                     .executes(c -> {
                         ServerPlayerEntity player = c.getSource().asPlayer();
 

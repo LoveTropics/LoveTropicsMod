@@ -15,7 +15,7 @@ public class CommandMinigameDonate {
 	public static void register(final CommandDispatcher<CommandSource> dispatcher) {
 		dispatcher.register(
 			literal("minigame")
-			.then(literal("donate").requires(s -> s.hasPermissionLevel(2))
+			.then(literal("donate").requires(s -> s.hasPermissionLevel(4))
 			.executes(c -> execute(c.getSource())))
 		);
 	}
