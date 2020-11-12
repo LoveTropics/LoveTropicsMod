@@ -3,6 +3,7 @@ package com.lovetropics.minigames.common.command.minigames;
 import com.lovetropics.minigames.common.game_actions.DonationPackageGameAction;
 import com.lovetropics.minigames.common.minigames.IMinigameInstance;
 import com.lovetropics.minigames.common.minigames.MinigameManager;
+import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.command.CommandSource;
@@ -25,7 +26,9 @@ public class CommandMinigameDonate {
 				"lightning_storm", "0", "Corosus", UUID.fromString("380df991-f603-344c-a090-369bad2a924a"));
 		final IMinigameInstance instance = MinigameManager.getInstance().getActiveMinigame();
 		if (instance != null) {
-			instance.getBehaviors().stream().anyMatch(behavior -> act.notifyBehavior(instance, behavior));
+			for (IMinigameBehavior behavior : instance.getBehaviors()) {
+				act.notifyBehavior(instance, behavior);
+			}
 			return 1;
 		}
 		return 0;

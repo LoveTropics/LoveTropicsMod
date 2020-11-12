@@ -23,11 +23,17 @@ public abstract class MinigameGameAction extends GameAction
 	{
 		try {
 			final IMinigameInstance instance = MinigameManager.getInstance().getActiveMinigame();
-			return instance != null && instance.getBehaviors().stream().anyMatch(behavior -> notifyBehavior(instance, behavior));
+			if (instance != null) {
+				boolean resolved = false;
+				for (IMinigameBehavior behavior : instance.getBehaviors()) {
+					resolved |= notifyBehavior(instance, behavior);
+				}
+				return resolved;
+			}
 		} catch (Exception e) {
 			LOGGER.error("Failed to apply minigame action", e);
-			return false;
 		}
+		return false;
 	}
 
 	public abstract boolean notifyBehavior(final IMinigameInstance instance, final IMinigameBehavior behavior);
