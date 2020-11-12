@@ -513,6 +513,23 @@ public class MinigameManager implements IMinigameManager {
 		}
 	}
 
+	@SubscribeEvent
+	public void onEntityPlaceBlock(BlockEvent.EntityPlaceEvent event) {
+		MinigameInstance minigame = getMinigameFor(event.getEntity());
+		if (minigame != null) {
+			dispatchOrCancel(minigame, (b, m) -> b.onEntityPlaceBlock(m, event.getEntity(), event.getPos(), event.getState(), event));
+		}
+	}
+
+	@SubscribeEvent
+	public void onPlayerPlaceBlock(BlockEvent.BreakEvent event) {
+		MinigameInstance minigame = getMinigameFor(event.getPlayer());
+		if (minigame != null) {
+			ServerPlayerEntity player = (ServerPlayerEntity) event.getPlayer();
+			dispatchOrCancel(minigame, (b, m) -> b.onPlayerBreakBlock(m, player, event.getPos(), event.getState(), event));
+		}
+	}
+
 	private <A> void dispatchOrCancel(IMinigameInstance minigame, TriConsumer<IMinigameBehavior, IMinigameInstance, A> action, A argument) {
 		MinigameResult<Unit> result = minigame.dispatchToBehaviors(action, argument);
 		if (result.isError()) {

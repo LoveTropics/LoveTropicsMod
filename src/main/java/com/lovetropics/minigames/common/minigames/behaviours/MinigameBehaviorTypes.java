@@ -52,6 +52,7 @@ public class MinigameBehaviorTypes {
 	public static final RegistryObject<IMinigameBehaviorType<GenerateEntitiesBehavior>> GENERATE_ENTITIES;
 	public static final RegistryObject<IMinigameBehaviorType<WeatherControlsBehavior>> WEATHER_CONTROLS;
 	public static final RegistryObject<IMinigameBehaviorType<RunCommandInRegionBehavior>> RUN_COMMAND_IN_REGION;
+	public static final RegistryObject<IMinigameBehaviorType<TNTAutoFuseBehavior>> TNT_AUTO_FUSE;
 
 	public static final RegistryObject<IMinigameBehaviorType<BindObjectiveToStatisticBehavior>> BIND_OBJECTIVE_TO_STATISTIC;
 	public static final RegistryObject<IMinigameBehaviorType<PlaceByStatisticBehavior>> PLACE_BY_STATISTIC;
@@ -121,6 +122,7 @@ public class MinigameBehaviorTypes {
 		GENERATE_ENTITIES = register("generate_entities", GenerateEntitiesBehavior::parse);
 		WEATHER_CONTROLS = register("weather_controls", WeatherControlsBehavior::parse);
 		RUN_COMMAND_IN_REGION = register("run_command_in_region", RunCommandInRegionBehavior::parse);
+        TNT_AUTO_FUSE = register("tnt_auto_fuse", TNTAutoFuseBehavior::parse);
 
 		BIND_OBJECTIVE_TO_STATISTIC = register("bind_objective_to_statistic", BindObjectiveToStatisticBehavior::parse);
 		PLACE_BY_STATISTIC = register("place_by_statistic", PlaceByStatisticBehavior::parse);

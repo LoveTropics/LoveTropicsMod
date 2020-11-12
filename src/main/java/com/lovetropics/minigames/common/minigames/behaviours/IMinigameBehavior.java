@@ -217,6 +217,17 @@ public interface IMinigameBehavior
 	}
 
 	/**
+	 * When a block is placed by an entity within this minigame
+	 * @param minigame The current minigame instance
+	 * @param entity The entity that destroyed this block
+	 * @param pos The block position that was broken
+	 * @param state The block state that was broken
+	 * @param event
+	 */
+	default void onEntityPlaceBlock(IMinigameInstance minigame, Entity entity, BlockPos pos, BlockState state, BlockEvent.EntityPlaceEvent event) {
+	}
+
+	/**
 	 * Called when a chunk within this minigame is loaded
 	 * @param minigame the current minigame instance
 	 * @param chunk the chunk that was loaded
