@@ -17,6 +17,7 @@ import org.apache.logging.log4j.Logger;
 import java.util.List;
 import java.util.Optional;
 
+// TODO: support combining behaviors for package received.. somehow..?
 public abstract class DonationPackageBehavior implements IMinigameBehavior
 {
 	private static final Logger LOGGER = LogManager.getLogger(DonationPackageBehavior.class);

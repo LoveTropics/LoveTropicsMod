@@ -46,23 +46,27 @@ public class Util {
 
     public static boolean spawnEntity(final ResourceLocation entityId, final World world, final double x, final double y, final double z) {
         final Optional<EntityType<?>> entityType = Registry.ENTITY_TYPE.getValue(entityId);
-
         if (entityType.isPresent()) {
-            if (EntityType.getKey(EntityType.LIGHTNING_BOLT).equals(entityId)) {
-                LightningBoltEntity entity = new LightningBoltEntity(world, x, y, z, false);
-                ((ServerWorld) world).addLightningBolt(entity);
-                return true;
-            } else {
-                final Entity entity = entityType.get().create(world);
-
-                if (entity != null) {
-                    entity.setPosition(x, y, z);
-                    return world.addEntity(entity);
-                }
-            }
+            return spawnEntity(entityType.get(), world, x, y, z);
         }
 
         return false;
+    }
+
+    public static boolean spawnEntity(EntityType<?> entityType, World world, double x, double y, double z) {
+        if (entityType == EntityType.LIGHTNING_BOLT) {
+            LightningBoltEntity entity = new LightningBoltEntity(world, x, y, z, false);
+            ((ServerWorld) world).addLightningBolt(entity);
+            return true;
+        } else {
+            final Entity entity = entityType.create(world);
+            if (entity != null) {
+                entity.setPosition(x, y, z);
+                return world.addEntity(entity);
+            }
+
+            return false;
+        }
     }
 
     public static boolean addItemStackToInventory(final ServerPlayerEntity player, final ItemStack itemstack) {

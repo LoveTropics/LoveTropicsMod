@@ -132,7 +132,7 @@ public final class TrashCollectionBehavior implements IMinigameBehavior {
 
 		gameOver = true;
 
-		ITextComponent finishMessage = new StringTextComponent("We ran out of time! Here are the results for this game:");
+		ITextComponent finishMessage = new StringTextComponent("The game ended! Here are the results for this game:");
 
 		PlayerSet players = minigame.getPlayers();
 		players.sendMessage(finishMessage.applyTextStyles(TextFormatting.GREEN));
