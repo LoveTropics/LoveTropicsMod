@@ -37,6 +37,12 @@ public final class ForceLoadRegionBehavior implements IMinigameBehavior {
 			chunkProvider.forceChunk(new ChunkPos(chunkKey), true);
 		}
 
+		iterator = chunks.iterator();
+		while (iterator.hasNext()) {
+			long chunkKey = iterator.nextLong();
+			chunkProvider.getChunk(ChunkPos.getX(chunkKey), ChunkPos.getZ(chunkKey), false);
+		}
+
 		acquiredChunks = chunks;
 	}
 
