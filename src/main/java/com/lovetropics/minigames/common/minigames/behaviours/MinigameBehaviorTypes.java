@@ -91,7 +91,11 @@ public class MinigameBehaviorTypes {
 	}
 
 	static {
-		MINIGAME_BEHAVIOURS_REGISTRY = MINIGAME_BEHAVIOURS_REGISTER.makeRegistry("minigame_behaviours", RegistryBuilder::new);
+		MINIGAME_BEHAVIOURS_REGISTRY = MINIGAME_BEHAVIOURS_REGISTER.makeRegistry("minigame_behaviours", () -> {
+			return new RegistryBuilder<IMinigameBehaviorType<?>>()
+					.disableSync()
+					.disableSaving();
+		});
 
 		POSITION_PLAYERS = register("position_players", PositionPlayersMinigameBehavior::parse);
 		WEATHER_EVENTS = register("weather_events", SurviveTheTideWeatherBehavior::parse);

@@ -8,6 +8,7 @@ import com.mojang.datafixers.Dynamic;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.BossInfo;
 import net.minecraft.world.World;
 import net.minecraft.world.server.ServerBossInfo;
@@ -91,6 +92,8 @@ public final class TimedMinigameBehavior implements IMinigameBehavior {
 		long seconds = secondsRemaining % 60;
 		String time = String.format("%02d:%02d", minutes, seconds);
 
-		return new StringTextComponent("Time Remaining: " + time + "...");
+		return new StringTextComponent("Time Remaining: ")
+				.appendSibling(new StringTextComponent(time).applyTextStyle(TextFormatting.GRAY))
+				.appendText("...");
 	}
 }

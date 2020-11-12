@@ -20,7 +20,11 @@ public final class MinigameMapProviderTypes {
 	}
 
 	static {
-		REGISTRY = REGISTER.makeRegistry("minigame_map_providers", RegistryBuilder::new);
+		REGISTRY = REGISTER.makeRegistry("minigame_map_providers", () -> {
+			return new RegistryBuilder<MinigameMapProviderType>()
+					.disableSync()
+					.disableSaving();
+		});
 		LOAD_MAP = register("load_map", LoadMapProvider::parse);
 		RANDOM = register("random", RandomMapProvider::parse);
 		INLINE = register("inline", InlineMapProvider::parse);
