@@ -93,6 +93,19 @@ public final class ChaseCameraUi {
 		}
 	}
 
+	@SubscribeEvent
+	public static void onMouseInput(InputEvent.MouseInputEvent event) {
+		ChaseCameraSession session = ChaseCameraManager.session;
+		if (session == null || event.getAction() == GLFW.GLFW_RELEASE) {
+			return;
+		}
+
+		int key = event.getButton();
+		if (key == GLFW.GLFW_MOUSE_BUTTON_LEFT) {
+			session.ui.selectEntry(session.ui.highlightedEntryIndex);
+		}
+	}
+
 	private void scrollSelection(int shift) {
 		int newIndex = highlightedEntryIndex + shift;
 		newIndex = MathHelper.clamp(newIndex, 0, entries.size() - 1);
@@ -146,7 +159,7 @@ public final class ChaseCameraUi {
 		RenderSystem.enableTexture();
 
 		if (highlighting) {
-			CLIENT.fontRenderer.drawStringWithShadow("Press ENTER to select", x, minY - CLIENT.fontRenderer.FONT_HEIGHT - 2, 0xFFFFFFFF);
+			CLIENT.fontRenderer.drawStringWithShadow("Click or press ENTER to select", x, minY - CLIENT.fontRenderer.FONT_HEIGHT - 2, 0xFFFFFFFF);
 		}
 
 		for (Entry entry : entries) {
