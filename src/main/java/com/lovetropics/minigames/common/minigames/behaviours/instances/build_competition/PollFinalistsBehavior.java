@@ -1,11 +1,14 @@
 package com.lovetropics.minigames.common.minigames.behaviours.instances.build_competition;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Random;
 
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
+import com.google.common.collect.Iterables;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.lovetropics.minigames.common.minigames.IMinigameInstance;
@@ -35,6 +38,8 @@ public class PollFinalistsBehavior implements IMinigameBehavior {
 				root.get("poll_duration").asString("5m"));
 	}
 
+	private static final Logger LOGGER = LogManager.getLogger();
+
 	private final String finalistsTag;
 	private final String winnerTag;
 	private final String votesObjective;
@@ -60,27 +65,31 @@ public class PollFinalistsBehavior implements IMinigameBehavior {
 				ObjectArrays.shuffle(finalists, RANDOM);
 				minigame.getTelemetry().createPoll("Choose the best build!", pollDuration, finalists);
 			} catch (Exception e) {
-				LogManager.getLogger().error("Failed to start runoff:", e);
+				LOGGER.error("Failed to start runoff:", e);
 			}
 		});
 	}
 
 	public void handlePollEvent(MinecraftServer server, JsonObject object, String crud) {
 		if (crud.equals("create")) {
+			LOGGER.info("New poll, resetting objective");
 			Scoreboard scoreboard = server.getScoreboard();
+			ScoreObjective objective = scoreboard.getObjective(votesObjective);
+			if (objective != null) {
+				scoreboard.removeObjective(objective);
+			}
 			scoreboard.addObjective(votesObjective, ScoreCriteria.DUMMY, new StringTextComponent("Votes"), RenderType.INTEGER);
 			return;
 		}
 		PollEvent event = new Gson().fromJson(object, PollEvent.class);
 		if (crud.equals("delete")) {
+			LOGGER.info("Poll ended, finding winner");
 			updateScores(server, event, true);
 			Scoreboard scoreboard = server.getScoreboard();
 			ScoreObjective objective = scoreboard.getObjective(votesObjective);
-			String winner = scoreboard.getSortedScores(objective).stream()
-					.findFirst()
-					.map(Score::getPlayerName)
-					.orElse(null);
-			if (winner != null) {
+			Collection<Score> scores = scoreboard.getSortedScores(objective);
+			if (!scores.isEmpty()) {
+				String winner = Iterables.getLast(scores).getPlayerName();
 				for (ServerPlayerEntity player : server.getPlayerList().getPlayers()) {
 					player.removeTag(finalistsTag);
 					if (player.getGameProfile().getName().equals(winner)) {
@@ -88,7 +97,6 @@ public class PollFinalistsBehavior implements IMinigameBehavior {
 					}
 				}
 			}
-			scoreboard.removeObjective(objective);
 		} else {
 			updateScores(server, event, false);
 		}
