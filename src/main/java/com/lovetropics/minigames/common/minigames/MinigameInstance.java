@@ -264,7 +264,7 @@ public class MinigameInstance implements IMinigameInstance
             String unlocalizedName = definition.getUnlocalizedName();
             ITextComponent text = new StringTextComponent(unlocalizedName);
             ServerWorld world = getWorld();
-            this.commandSource = new CommandSource(ICommandSource.DUMMY, Vec3d.ZERO, Vec2f.ZERO, world, 2, unlocalizedName, text, this.server, null);
+            this.commandSource = new CommandSource(ICommandSource.DUMMY, Vec3d.ZERO, Vec2f.ZERO, world, 4, unlocalizedName, text, this.server, null);
         }
 
         return this.commandSource;
