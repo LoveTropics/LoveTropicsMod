@@ -1,5 +1,6 @@
 package com.lovetropics.minigames.common.minigames;
 
+import com.lovetropics.minigames.common.minigames.statistics.PlayerKey;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.network.IPacket;
@@ -32,7 +33,7 @@ public interface PlayerSet extends Iterable<ServerPlayerEntity> {
 
 		@Nullable
 		@Override
-		public ServerPlayerEntity getPlayerById(UUID id) {
+		public ServerPlayerEntity getPlayerBy(UUID id) {
 			return null;
 		}
 
@@ -63,7 +64,12 @@ public interface PlayerSet extends Iterable<ServerPlayerEntity> {
 	boolean contains(UUID id);
 
 	@Nullable
-	ServerPlayerEntity getPlayerById(UUID id);
+	ServerPlayerEntity getPlayerBy(UUID id);
+
+	@Nullable
+	default ServerPlayerEntity getPlayerBy(PlayerKey key) {
+		return getPlayerBy(key.getId());
+	}
 
 	int size();
 

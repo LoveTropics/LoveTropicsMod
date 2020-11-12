@@ -78,7 +78,7 @@ public final class MutablePlayerSet implements PlayerSet {
 
 	@Nullable
 	@Override
-	public ServerPlayerEntity getPlayerById(UUID id) {
+	public ServerPlayerEntity getPlayerBy(UUID id) {
 		return this.players.contains(id) ? this.server.getPlayerList().getPlayerByUUID(id) : null;
 	}
 

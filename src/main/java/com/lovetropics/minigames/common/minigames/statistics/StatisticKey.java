@@ -57,9 +57,6 @@ public final class StatisticKey<T> {
 	// Signature Run
 	public static final StatisticKey<Integer> SIGNATURES_COLLECTED = ofInt("signatures_collected").displays(unit("signatures"));
 
-	// Conservation Exploration
-	public static final StatisticKey<Integer> CREATURES_RECORDED = ofInt("creatures_recorded").displays(unit("creatures"));
-
 	// Treasure Dig X
 	public static final StatisticKey<Integer> CHESTS_OPENED = ofInt("chests_opened");
 	public static final StatisticKey<Integer> EXPLOSIONS_CAUSED = ofInt("explosions_caused");

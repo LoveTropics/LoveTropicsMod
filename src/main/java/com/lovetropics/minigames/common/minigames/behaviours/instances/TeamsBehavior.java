@@ -194,7 +194,7 @@ public final class TeamsBehavior implements IMinigameBehavior, IPollingMinigameB
 			List<UUID> players = entry.getValue();
 
 			for (UUID id : players) {
-				ServerPlayerEntity player = minigame.getParticipants().getPlayerById(id);
+				ServerPlayerEntity player = minigame.getParticipants().getPlayerBy(id);
 				if (player != null) {
 					addPlayerToTeam(minigame, player, team);
 					assignedPlayers.add(id);

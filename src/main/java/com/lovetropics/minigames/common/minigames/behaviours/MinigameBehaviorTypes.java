@@ -2,8 +2,7 @@ package com.lovetropics.minigames.common.minigames.behaviours;
 
 import com.lovetropics.minigames.common.minigames.behaviours.instances.*;
 import com.lovetropics.minigames.common.minigames.behaviours.instances.build_competition.PollFinalistsBehavior;
-import com.lovetropics.minigames.common.minigames.behaviours.instances.conservation_exploration.RecordCreaturesBehavior;
-import com.lovetropics.minigames.common.minigames.behaviours.instances.conservation_exploration.SpawnCreaturesBehavior;
+import com.lovetropics.minigames.common.minigames.behaviours.instances.conservation_exploration.ConservationExplorationBehavior;
 import com.lovetropics.minigames.common.minigames.behaviours.instances.donations.*;
 import com.lovetropics.minigames.common.minigames.behaviours.instances.statistics.*;
 import com.lovetropics.minigames.common.minigames.behaviours.instances.survive_the_tide.*;
@@ -38,8 +37,7 @@ public class MinigameBehaviorTypes {
 	public static final RegistryObject<IMinigameBehaviorType<SurviveTheTideRulesetBehavior>> SURVIVE_THE_TIDE_RULESET;
 	public static final RegistryObject<IMinigameBehaviorType<BindControlsBehavior>> BIND_CONTROLS;
 	public static final RegistryObject<IMinigameBehaviorType<CancelPlayerDamageBehavior>> CANCEL_PLAYER_DAMAGE;
-	public static final RegistryObject<IMinigameBehaviorType<SpawnCreaturesBehavior>> SPAWN_CREATURES;
-	public static final RegistryObject<IMinigameBehaviorType<RecordCreaturesBehavior>> RECORD_CREATURES;
+	public static final RegistryObject<IMinigameBehaviorType<ConservationExplorationBehavior>> CONSERVATION_EXPLORATION;
 	public static final RegistryObject<IMinigameBehaviorType<SetGameRulesBehavior>> SET_GAME_RULES;
 	public static final RegistryObject<IMinigameBehaviorType<PlaceTrashBehavior>> PLACE_TRASH;
 	public static final RegistryObject<IMinigameBehaviorType<TrashCollectionBehavior>> TRASH_COLLECTION;
@@ -113,8 +111,7 @@ public class MinigameBehaviorTypes {
 		CANCEL_PLAYER_DAMAGE = register("cancel_player_damage", CancelPlayerDamageBehavior::parse);
 		SET_GAME_RULES = register("set_game_rules", SetGameRulesBehavior::parse);
 		TEAMS = register("teams", TeamsBehavior::parse);
-		SPAWN_CREATURES = register("spawn_creatures", SpawnCreaturesBehavior::parse);
-		RECORD_CREATURES = register("record_creatures", RecordCreaturesBehavior::parse);
+		CONSERVATION_EXPLORATION = register("conservation_exploration", ConservationExplorationBehavior::parse);
 		PLACE_TRASH = register("place_trash", PlaceTrashBehavior::parse);
 		TRASH_COLLECTION = register("trash_collection", TrashCollectionBehavior::parse);
 		SPECTATOR_CHASE = register("spectator_chase", SpectatorChaseBehavior::parse);
