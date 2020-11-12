@@ -68,7 +68,11 @@ public final class TeamsBehavior implements IMinigameBehavior, IPollingMinigameB
 		for (TeamKey team : pollingTeams) {
 			minigame.addControlCommand("join_team_" + team.key, ControlCommand.forEveryone(source -> {
 				ServerPlayerEntity player = source.asPlayer();
-				onRequestJoinTeam(player, team);
+				if (minigame.isPlayerRegistered(player)) {
+					onRequestJoinTeam(player, team);
+				} else {
+					player.sendMessage(new StringTextComponent("You have not yet joined this minigame!").applyTextStyle(TextFormatting.RED));
+				}
 			}));
 		}
 	}
@@ -232,6 +236,11 @@ public final class TeamsBehavior implements IMinigameBehavior, IPollingMinigameB
 		ServerScoreboard scoreboard = player.server.getScoreboard();
 		ScorePlayerTeam scoreboardTeam = scoreboardTeams.get(team);
 		scoreboard.addPlayerToTeam(player.getScoreboardName(), scoreboardTeam);
+
+		player.sendMessage(
+				new StringTextComponent("You are on ").applyTextStyle(TextFormatting.GRAY)
+						.appendSibling(new StringTextComponent(team.name + " Team!").applyTextStyles(TextFormatting.BOLD, team.text))
+		);
 	}
 
 	private void removePlayerFromTeams(ServerPlayerEntity player) {

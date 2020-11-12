@@ -290,6 +290,9 @@ public class RisingTidesMinigameBehavior implements IMinigameBehavior {
 					}
 				} else if (existing.getBlock() == Blocks.BARRIER) {
 					toSet = waterBarrier;
+				} else if (existing.getBlock() == Blocks.BLACK_CONCRETE_POWDER) {
+					// adding to the amazing list of hardcoded replacements.. yes!
+					toSet = Blocks.BLACK_CONCRETE.getDefaultState();
 				}
 
 				if (toSet != null) {

@@ -182,4 +182,8 @@ public final class PollingMinigameInstance implements ProtoMinigame, MinigameCon
 		// TODO extensible
 		return role == PlayerRole.PARTICIPANT ? registrations.participantCount() : registrations.spectatorCount();
 	}
+
+	public boolean isPlayerRegistered(ServerPlayerEntity player) {
+		return registrations.contains(player.getUniqueID());
+	}
 }
