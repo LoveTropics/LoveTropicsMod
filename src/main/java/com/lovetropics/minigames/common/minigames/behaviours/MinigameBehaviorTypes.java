@@ -72,6 +72,8 @@ public class MinigameBehaviorTypes {
 	public static final RegistryObject<IMinigameBehaviorType<SpawnEntityAtRegionsPackageBehavior>> SPAWN_ENTITY_AT_REGIONS_PACKAGE;
 	public static final RegistryObject<IMinigameBehaviorType<SpawnEntitiesAroundPlayersPackageBehavior>> SPAWN_ENTITIES_AROUND_PLAYERS_PACKAGE;
 	public static final RegistryObject<IMinigameBehaviorType<SpawnEntitiesAtRegionsOverTimePackageBehavior>> SPAWN_ENTITIES_AT_REGIONS_OVER_TIME_PACKAGE;
+	public static final RegistryObject<IMinigameBehaviorType<SetBlockAtPlayerPackageBehavior>> SET_BLOCK_AT_PLAYER_PACKAGE;
+	public static final RegistryObject<IMinigameBehaviorType<ForcedPlayerHeadPackageBehavior>> FORCED_PLAYER_HEAD_PACKAGE;
 
 	public static final RegistryObject<IMinigameBehaviorType<PollFinalistsBehavior>> POLL_FINALISTS;
 
@@ -142,6 +144,8 @@ public class MinigameBehaviorTypes {
 		SPAWN_ENTITY_AT_REGIONS_PACKAGE = register("spawn_entity_at_regions_package", SpawnEntityAtRegionsPackageBehavior::parse);
 		SPAWN_ENTITIES_AROUND_PLAYERS_PACKAGE = register("spawn_entities_around_players_package", SpawnEntitiesAroundPlayersPackageBehavior::parse);
 		SPAWN_ENTITIES_AT_REGIONS_OVER_TIME_PACKAGE = register("spawn_entities_at_regions_over_time_package", SpawnEntitiesAtRegionsOverTimePackageBehavior::parse);
+		SET_BLOCK_AT_PLAYER_PACKAGE = register("set_block_at_player_package", SetBlockAtPlayerPackageBehavior::parse);
+		FORCED_PLAYER_HEAD_PACKAGE = register("forced_player_head_package", ForcedPlayerHeadPackageBehavior::parse);
 
 		POLL_FINALISTS = register("poll_finalists", PollFinalistsBehavior::parse);
 	}

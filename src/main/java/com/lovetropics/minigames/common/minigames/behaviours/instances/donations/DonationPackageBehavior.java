@@ -101,18 +101,27 @@ public abstract class DonationPackageBehavior implements IMinigameBehavior
 
 	protected abstract void receivePackage(final String sendingPlayer, final ServerPlayerEntity player);
 
+	protected boolean shouldGiveSenderHead() {
+		return true;
+	}
+
 	private void receivePackageInternal(final String sendingPlayer, final ServerPlayerEntity player) {
 		receivePackage(sendingPlayer, player);
 
-		final ItemStack senderHead = new ItemStack(Items.PLAYER_HEAD);
-		senderHead.getOrCreateTag().putString("SkullOwner", sendingPlayer);
-
-		Util.addItemStackToInventory(player, senderHead);
+		if (shouldGiveSenderHead()) {
+			Util.addItemStackToInventory(player, createHeadForSender(sendingPlayer));
+		}
 
 		final ITextComponent sentByPlayerMessage = new StringTextComponent("Sent by ").applyTextStyle(TextFormatting.GOLD)
 				.appendSibling(new StringTextComponent(sendingPlayer).applyTextStyles(TextFormatting.GREEN, TextFormatting.BOLD));
 
 		player.sendMessage(messageForPlayer);
 		player.sendMessage(sentByPlayerMessage);
+	}
+
+	protected ItemStack createHeadForSender(String sendingPlayer) {
+		final ItemStack senderHead = new ItemStack(Items.PLAYER_HEAD);
+		senderHead.getOrCreateTag().putString("SkullOwner", sendingPlayer);
+		return senderHead;
 	}
 }
