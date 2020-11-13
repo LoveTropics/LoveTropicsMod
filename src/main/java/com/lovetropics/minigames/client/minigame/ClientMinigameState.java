@@ -24,10 +24,12 @@ public class ClientMinigameState {
 	}
 
 	static void update(ClientMinigameState state) {
-		get().ifPresent(current -> {
-			state.role = current.role;
-			state.members = current.members;
-		});
+		if (state != null) {
+			get().ifPresent(current -> {
+				state.role = current.role;
+				state.members = current.members;
+			});
+		}
 		set(state);
 	}
 
