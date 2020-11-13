@@ -10,6 +10,7 @@ import com.lovetropics.minigames.common.network.map.SetWorkspaceMessage;
 import com.lovetropics.minigames.common.network.map.UpdateWorkspaceRegionMessage;
 
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.fml.network.NetworkDirection;
 import net.minecraftforge.fml.network.NetworkRegistry;
 import net.minecraftforge.fml.network.simple.SimpleChannel;
 
@@ -23,13 +24,13 @@ public final class LTNetwork {
 	);
 
 	public static void register() {
-		CHANNEL.messageBuilder(SetWorkspaceMessage.class, 0)
+		CHANNEL.messageBuilder(SetWorkspaceMessage.class, 0, NetworkDirection.PLAY_TO_CLIENT)
 				.encoder(SetWorkspaceMessage::encode)
 				.decoder(SetWorkspaceMessage::decode)
 				.consumer(SetWorkspaceMessage::handle)
 				.add();
 
-		CHANNEL.messageBuilder(AddWorkspaceRegionMessage.class, 1)
+		CHANNEL.messageBuilder(AddWorkspaceRegionMessage.class, 1, NetworkDirection.PLAY_TO_CLIENT)
 				.encoder(AddWorkspaceRegionMessage::encode)
 				.decoder(AddWorkspaceRegionMessage::decode)
 				.consumer(AddWorkspaceRegionMessage::handle)
@@ -41,37 +42,37 @@ public final class LTNetwork {
 				.consumer(UpdateWorkspaceRegionMessage::handle)
 				.add();
 
-		CHANNEL.messageBuilder(ChaseCameraMessage.class, 3)
+		CHANNEL.messageBuilder(ChaseCameraMessage.class, 3, NetworkDirection.PLAY_TO_CLIENT)
 				.encoder(ChaseCameraMessage::encode)
 				.decoder(ChaseCameraMessage::decode)
 				.consumer(ChaseCameraMessage::handle)
 				.add();
 
-		CHANNEL.messageBuilder(StopChaseCameraMessage.class, 4)
+		CHANNEL.messageBuilder(StopChaseCameraMessage.class, 4, NetworkDirection.PLAY_TO_CLIENT)
 				.encoder((p, b) -> {})
 				.decoder(buffer -> new StopChaseCameraMessage())
 				.consumer(StopChaseCameraMessage::handle)
 				.add();
 
-		CHANNEL.messageBuilder(ChaseSpectatePlayerMessage.class, 5)
+		CHANNEL.messageBuilder(ChaseSpectatePlayerMessage.class, 5, NetworkDirection.PLAY_TO_SERVER)
 				.encoder(ChaseSpectatePlayerMessage::encode)
 				.decoder(ChaseSpectatePlayerMessage::decode)
 				.consumer(ChaseSpectatePlayerMessage::handle)
 				.add();
 
-		CHANNEL.messageBuilder(ClientMinigameMessage.class, 6)
+		CHANNEL.messageBuilder(ClientMinigameMessage.class, 6, NetworkDirection.PLAY_TO_CLIENT)
 				.encoder(ClientMinigameMessage::encode)
 				.decoder(ClientMinigameMessage::decode)
 				.consumer(ClientMinigameMessage::handle)
 				.add();
 
-		CHANNEL.messageBuilder(ClientRoleMessage.class, 7)
+		CHANNEL.messageBuilder(ClientRoleMessage.class, 7, NetworkDirection.PLAY_TO_CLIENT)
 				.encoder(ClientRoleMessage::encode)
 				.decoder(ClientRoleMessage::decode)
 				.consumer(ClientRoleMessage::handle)
 				.add();
 
-		CHANNEL.messageBuilder(PlayerCountsMessage.class, 8)
+		CHANNEL.messageBuilder(PlayerCountsMessage.class, 8, NetworkDirection.PLAY_TO_CLIENT)
 				.encoder(PlayerCountsMessage::encode)
 				.decoder(PlayerCountsMessage::decode)
 				.consumer(PlayerCountsMessage::handle)
