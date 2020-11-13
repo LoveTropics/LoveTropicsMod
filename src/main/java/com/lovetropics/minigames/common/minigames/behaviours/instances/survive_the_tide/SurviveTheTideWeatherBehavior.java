@@ -1,5 +1,6 @@
 package com.lovetropics.minigames.common.minigames.behaviours.instances.survive_the_tide;
 
+import com.lovetropics.minigames.common.game_actions.GamePackage;
 import com.lovetropics.minigames.common.item.MinigameItems;
 import com.lovetropics.minigames.common.minigames.IMinigameInstance;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
@@ -150,14 +151,14 @@ public class SurviveTheTideWeatherBehavior implements IMinigameBehavior {
 				if (!isPlayerHolding(player, MinigameItems.ACID_REPELLENT_UMBRELLA.get())) {
 					player.attackEntityFrom(DamageSource.GENERIC, config.getAcidRainDamage());
 				} else {
-					damageHeldOrOffhandItem(player, MinigameItems.ACID_REPELLENT_UMBRELLA.get(), (int)(1 * (config.getAcidRainDamageRate() / 20)));
+					damageHeldOrOffhandItem(player, MinigameItems.ACID_REPELLENT_UMBRELLA.get(), (int) (1 * (config.getAcidRainDamageRate() / 20)));
 				}
 			}
 		} else if (heatwaveActive() && !isPlayerSheltered(player)) {
 			if (!isPlayerHolding(player, MinigameItems.SUPER_SUNSCREEN.get())) {
 				player.addPotionEffect(new EffectInstance(Effects.SLOWNESS, 5, 1, true, false, true));
 			} else {
-				if (player.world.getWorldInfo().getGameTime() % (20*3) == 0) {
+				if (player.world.getWorldInfo().getGameTime() % (20 * 3) == 0) {
 					damageHeldOrOffhandItem(player, MinigameItems.SUPER_SUNSCREEN.get(), 3);
 				}
 			}
@@ -228,5 +229,24 @@ public class SurviveTheTideWeatherBehavior implements IMinigameBehavior {
 		if (phase.is("phase4")) {
 			heatwaveTime /= 2;
 		}
+	}
+
+	@Override
+	public boolean onGamePackageReceived(IMinigameInstance minigame, GamePackage gamePackage) {
+		// TODO: hardcoded
+		String packageType = gamePackage.getPackageType();
+		if (packageType.equals("acid_rain_event")) {
+			heatwaveTime = 0;
+			heavyRainfallTime = 0;
+			acidRainTime = config.getRainAcidMinTime() + config.getRainAcidExtraRandTime() / 2;
+			return true;
+		} else if (packageType.equals("heatwave_event")) {
+			acidRainTime = 0;
+			heavyRainfallTime = 0;
+			heatwaveTime = config.getHeatwaveMinTime() + config.getHeatwaveExtraRandTime() / 2;
+			return true;
+		}
+
+		return false;
 	}
 }
