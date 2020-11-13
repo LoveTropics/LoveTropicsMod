@@ -12,11 +12,17 @@ import it.unimi.dsi.fastutil.longs.*;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.minecraft.block.*;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.network.IPacket;
+import net.minecraft.network.play.server.SSpawnParticlePacket;
+import net.minecraft.particles.ParticleTypes;
 import net.minecraft.state.properties.BlockStateProperties;
 import net.minecraft.util.DamageSource;
+import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.ChunkSection;
@@ -143,6 +149,33 @@ public class RisingTidesMinigameBehavior implements IMinigameBehavior {
 		});
 
 		processRisingTideQueue(minigame);
+
+		if (world.getGameTime() % 10 == 0) {
+			spawnRisingTideParticles(minigame);
+		}
+	}
+
+	private void spawnRisingTideParticles(IMinigameInstance minigame) {
+		ServerWorld world = minigame.getWorld();
+		Random random = world.rand;
+
+		BlockPos.Mutable mutablePos = new BlockPos.Mutable();
+
+		for (ServerPlayerEntity player : minigame.getParticipants()) {
+			// only attempt to spawn particles if the player is near the water surface
+			if (Math.abs(player.getPosY() - waterLevel) > 10) {
+				continue;
+			}
+
+			int particleX = MathHelper.floor(player.getPosX()) - random.nextInt(10) + random.nextInt(10);
+			int particleZ = MathHelper.floor(player.getPosZ()) - random.nextInt(10) + random.nextInt(10);
+			mutablePos.setPos(particleX, waterLevel, particleZ);
+
+			if (!world.isAirBlock(mutablePos) && world.isAirBlock(mutablePos.move(Direction.UP))) {
+				IPacket<?> packet = new SSpawnParticlePacket(ParticleTypes.SPLASH, true, particleX, waterLevel + 1, particleZ, 0.1F, 0.0F, 0.1F, 0.0F, 4);
+				player.connection.sendPacket(packet);
+			}
+		}
 	}
 
 	private void growIcebergs(final World world) {
