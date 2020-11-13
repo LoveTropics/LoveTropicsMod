@@ -10,7 +10,7 @@ public class CommandCancelMinigame {
 	public static void register(final CommandDispatcher<CommandSource> dispatcher) {
 		dispatcher.register(
 			literal("minigame")
-			.then(literal("cancel").requires(s -> s.hasPermissionLevel(4))
+			.then(literal("cancel").requires(s -> s.hasPermissionLevel(2))
 			.executes(c -> CommandMinigame.executeMinigameAction(() ->
 				MinigameManager.getInstance().cancel(), c.getSource())))
 		);

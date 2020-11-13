@@ -23,7 +23,7 @@ import java.util.concurrent.Executors;
 public final class Telemetry {
 	public static final Telemetry INSTANCE = new Telemetry();
 
-	private static final long RECONNECT_INTERVAL = 30 * 1000;
+	private static final long RECONNECT_INTERVAL = 10 * 1000;
 
 	private static final Logger LOGGER = LogManager.getLogger(Telemetry.class);
 

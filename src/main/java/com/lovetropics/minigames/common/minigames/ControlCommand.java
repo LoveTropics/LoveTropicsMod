@@ -55,13 +55,13 @@ public final class ControlCommand {
 		ADMINS {
 			@Override
 			public boolean testSource(MinigameControllable minigame, CommandSource source) {
-				return source.hasPermissionLevel(4);
+				return source.hasPermissionLevel(2);
 			}
 		},
 		INITIATOR {
 			@Override
 			public boolean testSource(MinigameControllable minigame, CommandSource source) {
-				if (source.hasPermissionLevel(4)) {
+				if (source.hasPermissionLevel(2)) {
 					return true;
 				}
 
