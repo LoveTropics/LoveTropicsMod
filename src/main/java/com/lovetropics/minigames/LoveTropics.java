@@ -1,12 +1,28 @@
 package com.lovetropics.minigames;
 
+import java.util.regex.Pattern;
+
+import org.apache.commons.lang3.tuple.Pair;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import com.google.common.base.Preconditions;
 import com.lovetropics.minigames.client.data.TropicraftLangKeys;
 import com.lovetropics.minigames.common.block.LoveTropicsBlocks;
 import com.lovetropics.minigames.common.block.TrashType;
 import com.lovetropics.minigames.common.command.CommandMap;
 import com.lovetropics.minigames.common.command.CommandReloadConfig;
-import com.lovetropics.minigames.common.command.minigames.*;
+import com.lovetropics.minigames.common.command.minigames.CommandCancelMinigame;
+import com.lovetropics.minigames.common.command.minigames.CommandFinishMinigame;
+import com.lovetropics.minigames.common.command.minigames.CommandMinigameControl;
+import com.lovetropics.minigames.common.command.minigames.CommandMinigameDonate;
+import com.lovetropics.minigames.common.command.minigames.CommandPollMinigame;
+import com.lovetropics.minigames.common.command.minigames.CommandRegisterMinigame;
+import com.lovetropics.minigames.common.command.minigames.CommandResetIslandChests;
+import com.lovetropics.minigames.common.command.minigames.CommandScanArea;
+import com.lovetropics.minigames.common.command.minigames.CommandStartMinigame;
+import com.lovetropics.minigames.common.command.minigames.CommandStopPollingMinigame;
+import com.lovetropics.minigames.common.command.minigames.CommandUnregisterMinigame;
 import com.lovetropics.minigames.common.config.ConfigLT;
 import com.lovetropics.minigames.common.dimension.DimensionUtils;
 import com.lovetropics.minigames.common.dimension.biome.TropicraftBiomes;
@@ -25,6 +41,7 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.tterrag.registrate.Registrate;
 import com.tterrag.registrate.providers.ProviderType;
 import com.tterrag.registrate.util.NonNullLazyValue;
+
 import net.minecraft.command.CommandSource;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
@@ -38,6 +55,8 @@ import net.minecraftforge.common.capabilities.CapabilityInject;
 import net.minecraftforge.common.capabilities.CapabilityManager;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.DistExecutor;
+import net.minecraftforge.fml.ExtensionPoint;
+import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
@@ -48,8 +67,6 @@ import net.minecraftforge.fml.event.lifecycle.GatherDataEvent;
 import net.minecraftforge.fml.event.server.FMLServerAboutToStartEvent;
 import net.minecraftforge.fml.event.server.FMLServerStoppingEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 @Mod(Constants.MODID)
 public class LoveTropics {
@@ -71,6 +88,9 @@ public class LoveTropics {
     private static Capability<DriftwoodRider> driftwoodRiderCap;
 
     public LoveTropics() {
+    	// Compatible with all versions that match the semver (excluding the qualifier e.g. "-beta+42")
+    	ModLoadingContext.get().registerExtensionPoint(ExtensionPoint.DISPLAYTEST, () -> Pair.of(LoveTropics::getCompatVersion, (s, v) -> LoveTropics.isCompatibleVersion(s)));
+
         IEventBus modBus = FMLJavaModLoadingContext.get().getModEventBus();
 
         // General mod setup
@@ -102,6 +122,17 @@ public class LoveTropics {
         MinigameBehaviorTypes.MINIGAME_BEHAVIOURS_REGISTER.register(modBus);
         MinigameMapProviderTypes.REGISTER.register(modBus);
         TropicraftBiomes.BIOMES.register(modBus);
+    }
+
+    private static final Pattern QUALIFIER = Pattern.compile("-\\w+\\+\\d+");
+    public static String getCompatVersion() {
+    	return getCompatVersion(ModList.get().getModContainerById(Constants.MODID).orElseThrow(IllegalStateException::new).getModInfo().getVersion().toString());
+    }
+    private static String getCompatVersion(String fullVersion) {
+    	return QUALIFIER.matcher(fullVersion).replaceAll("");
+    }
+    public static boolean isCompatibleVersion(String version) {
+    	return getCompatVersion().equals(getCompatVersion(version));
     }
 
     public static Registrate registrate() {
