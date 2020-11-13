@@ -11,6 +11,7 @@ import net.minecraft.util.SoundEvents;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
+import net.minecraftforge.registries.ForgeRegistries;
 
 public class DonationPackageData {
 	protected final String packageType;
@@ -52,8 +53,7 @@ public class DonationPackageData {
 
 			player.sendMessage(messageForPlayer);
 			player.sendMessage(sentByPlayerMessage);
-
-			player.connection.sendPacket(new SPlaySoundEffectPacket(new SoundEvent(soundOnReceive), SoundCategory.MASTER, player.getPosX(), player.getPosY(), player.getPosZ(), 0.2f, 1f));
+			player.connection.sendPacket(new SPlaySoundEffectPacket(ForgeRegistries.SOUND_EVENTS.getValue(soundOnReceive), SoundCategory.MASTER, player.getPosX(), player.getPosY(), player.getPosZ(), 0.2f, 1f));
 		}
 	}
 
