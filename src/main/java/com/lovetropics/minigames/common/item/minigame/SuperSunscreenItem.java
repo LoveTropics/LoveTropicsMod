@@ -15,7 +15,7 @@ import java.util.List;
 
 public class SuperSunscreenItem extends Item {
     public SuperSunscreenItem(Properties properties) {
-        super(properties);
+        super(properties.maxDamage(180));
     }
 
     @Override

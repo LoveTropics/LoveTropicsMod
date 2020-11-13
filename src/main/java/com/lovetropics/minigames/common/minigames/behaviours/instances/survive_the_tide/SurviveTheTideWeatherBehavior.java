@@ -15,6 +15,7 @@ import net.minecraft.item.Item;
 import net.minecraft.potion.EffectInstance;
 import net.minecraft.potion.Effects;
 import net.minecraft.util.DamageSource;
+import net.minecraft.util.Hand;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import net.minecraft.world.gen.Heightmap;
@@ -148,11 +149,17 @@ public class SurviveTheTideWeatherBehavior implements IMinigameBehavior {
 			if (player.world.getGameTime() % config.getAcidRainDamageRate() == 0) {
 				if (!isPlayerHolding(player, MinigameItems.ACID_REPELLENT_UMBRELLA.get())) {
 					player.attackEntityFrom(DamageSource.GENERIC, config.getAcidRainDamage());
+				} else {
+					damageHeldOrOffhandItem(player, MinigameItems.ACID_REPELLENT_UMBRELLA.get(), (int)(1 * (config.getAcidRainDamageRate() / 20)));
 				}
 			}
 		} else if (heatwaveActive() && !isPlayerSheltered(player)) {
 			if (!isPlayerHolding(player, MinigameItems.SUPER_SUNSCREEN.get())) {
 				player.addPotionEffect(new EffectInstance(Effects.SLOWNESS, 5, 1, true, false, true));
+			} else {
+				if (player.world.getWorldInfo().getGameTime() % (20*3) == 0) {
+					damageHeldOrOffhandItem(player, MinigameItems.SUPER_SUNSCREEN.get(), 3);
+				}
 			}
 		}
 	}
@@ -166,6 +173,18 @@ public class SurviveTheTideWeatherBehavior implements IMinigameBehavior {
 
 	private static boolean isPlayerHolding(ServerPlayerEntity player, Item item) {
 		return player.getHeldItemMainhand().getItem() == item || player.getHeldItemOffhand().getItem() == item;
+	}
+
+	private static void damageHeldOrOffhandItem(ServerPlayerEntity player, Item item, int amount) {
+		if (player.getHeldItemMainhand().getItem() == item) {
+			player.getHeldItemMainhand().damageItem(amount, player, (p_226874_1_) -> {
+				p_226874_1_.sendBreakAnimation(Hand.MAIN_HAND);
+			});
+		} else if (player.getHeldItemOffhand().getItem() == item) {
+			player.getHeldItemOffhand().damageItem(amount, player, (p_226874_1_) -> {
+				p_226874_1_.sendBreakAnimation(Hand.OFF_HAND);
+			});
+		}
 	}
 
 	@Override
