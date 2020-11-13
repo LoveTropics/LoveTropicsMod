@@ -49,7 +49,7 @@ public class RevealPlayersBehavior implements IMinigameBehavior
 	@Override
 	public void worldUpdate(IMinigameInstance minigame, World world) {
 		final List<ServerPlayerEntity> players = Lists.newArrayList(minigame.getParticipants());
-		if (players.size() >= playersLeftRequired) {
+		if (players.size() <= playersLeftRequired) {
 			if (curGlowOnTime > 0) {
 				curGlowOnTime--;
 				if (curGlowOnTime == 0) {
