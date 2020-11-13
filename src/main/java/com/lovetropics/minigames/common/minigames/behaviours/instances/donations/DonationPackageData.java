@@ -67,7 +67,7 @@ public class DonationPackageData {
 		final String packageType = root.get("package_type").asString("");
 		final ITextComponent messageForPlayer = Util.getTextOrNull(root, "message_for_player");
 		final DonationPackageBehavior.PlayerSelect playerSelect = DonationPackageBehavior.PlayerSelect.getFromType(root.get("player_select").asString(DonationPackageBehavior.PlayerSelect.RANDOM.getType())).get();
-		final ResourceLocation soundOnReceive = new ResourceLocation(root.get("sound_on_receive").asString(SoundEvents.ITEM_TOTEM_USE.getName().toString()));
+		final ResourceLocation soundOnReceive = new ResourceLocation(root.get("sound_on_receive").asString(SoundEvents.ITEM_TOTEM_USE.getRegistryName().toString()));
 
 		return new DonationPackageData(packageType, messageForPlayer, playerSelect, soundOnReceive);
 	}
