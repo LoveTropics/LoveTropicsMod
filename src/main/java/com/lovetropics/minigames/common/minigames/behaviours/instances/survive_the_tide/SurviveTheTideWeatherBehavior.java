@@ -167,7 +167,7 @@ public class SurviveTheTideWeatherBehavior implements IMinigameBehavior {
 
 	private static boolean isPlayerSheltered(ServerPlayerEntity player) {
 		int x = MathHelper.floor(player.getPosX());
-		int y = MathHelper.floor(player.getPosY());
+		int y = MathHelper.floor(player.getPosY() + player.getEyeHeight());
 		int z = MathHelper.floor(player.getPosZ());
 		return player.world.getHeight(Heightmap.Type.MOTION_BLOCKING, x, z) > y;
 	}
