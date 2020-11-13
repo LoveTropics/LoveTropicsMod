@@ -42,6 +42,7 @@ import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.world.BlockEvent;
 import net.minecraftforge.event.world.ChunkDataEvent;
 import net.minecraftforge.event.world.ChunkEvent;
+import net.minecraftforge.event.world.ExplosionEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.network.PacketDistributor;
 import org.apache.logging.log4j.util.TriConsumer;
@@ -522,6 +523,14 @@ public class MinigameManager implements IMinigameManager {
 		MinigameInstance minigame = getMinigameFor(event.getEntity());
 		if (minigame != null) {
 			dispatchOrCancel(minigame, (b, m) -> b.onEntityPlaceBlock(m, event.getEntity(), event.getPos(), event.getState(), event));
+		}
+	}
+
+	@SubscribeEvent
+	public void onExplosion(ExplosionEvent.Detonate event) {
+		MinigameInstance minigame = this.currentInstance;
+		if (minigame != null) {
+			dispatchOrCancel(minigame, (b, m) -> b.onExplosionDetonate(m, event));
 		}
 	}
 

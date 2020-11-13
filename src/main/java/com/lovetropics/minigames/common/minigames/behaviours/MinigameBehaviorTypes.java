@@ -52,6 +52,7 @@ public class MinigameBehaviorTypes {
 	public static final RegistryObject<IMinigameBehaviorType<RunCommandInRegionBehavior>> RUN_COMMAND_IN_REGION;
 	public static final RegistryObject<IMinigameBehaviorType<TNTAutoFuseBehavior>> TNT_AUTO_FUSE;
 	public static final RegistryObject<IMinigameBehaviorType<DisableHungerBehavior>> DISABLE_HUNGER;
+	public static final RegistryObject<IMinigameBehaviorType<DisableTNTBlockDestructionBehavior>> DISABLE_TNT_BLOCK_DESTRUCTION;
 
 	public static final RegistryObject<IMinigameBehaviorType<BindObjectiveToStatisticBehavior>> BIND_OBJECTIVE_TO_STATISTIC;
 	public static final RegistryObject<IMinigameBehaviorType<PlaceByStatisticBehavior>> PLACE_BY_STATISTIC;
@@ -129,6 +130,7 @@ public class MinigameBehaviorTypes {
 		RUN_COMMAND_IN_REGION = register("run_command_in_region", RunCommandInRegionBehavior::parse);
         TNT_AUTO_FUSE = register("tnt_auto_fuse", TNTAutoFuseBehavior::parse);
 		DISABLE_HUNGER = register("disable_hunger", DisableHungerBehavior::parse);
+		DISABLE_TNT_BLOCK_DESTRUCTION = register("disable_tnt_block_destruction", DisableTNTBlockDestructionBehavior::parse);
 
 		BIND_OBJECTIVE_TO_STATISTIC = register("bind_objective_to_statistic", BindObjectiveToStatisticBehavior::parse);
 		PLACE_BY_STATISTIC = register("place_by_statistic", PlaceByStatisticBehavior::parse);

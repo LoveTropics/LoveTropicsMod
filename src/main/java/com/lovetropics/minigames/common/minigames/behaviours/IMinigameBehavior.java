@@ -20,6 +20,7 @@ import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.player.AttackEntityEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.world.BlockEvent;
+import net.minecraftforge.event.world.ExplosionEvent;
 
 import java.util.List;
 
@@ -238,6 +239,10 @@ public interface IMinigameBehavior
 	 * @param event
 	 */
 	default void onEntityPlaceBlock(IMinigameInstance minigame, Entity entity, BlockPos pos, BlockState state, BlockEvent.EntityPlaceEvent event) {
+	}
+
+	default void onExplosionDetonate(IMinigameInstance minigame, ExplosionEvent.Detonate event) {
+
 	}
 
 	/**
