@@ -76,6 +76,8 @@ public class MinigameBehaviorTypes {
 	public static final RegistryObject<IMinigameBehaviorType<SetBlockAtPlayerPackageBehavior>> SET_BLOCK_AT_PLAYER_PACKAGE;
 	public static final RegistryObject<IMinigameBehaviorType<ForcedPlayerHeadPackageBehavior>> FORCED_PLAYER_HEAD_PACKAGE;
 	public static final RegistryObject<IMinigameBehaviorType<PufferfishPackageBehavior>> PUFFERFISH_PACKAGE;
+	public static final RegistryObject<IMinigameBehaviorType<ShootProjectilesAroundAllPlayersPackageBehavior>> SHOOT_PROJECTILES_AT_ALL_PLAYERS;
+	public static final RegistryObject<IMinigameBehaviorType<ShootProjectilesAroundPlayerPackageBehavior>> SHOOT_PROJECTILES_AT_PLAYER;
 
 	public static final RegistryObject<IMinigameBehaviorType<PollFinalistsBehavior>> POLL_FINALISTS;
 
@@ -155,6 +157,8 @@ public class MinigameBehaviorTypes {
 		SET_BLOCK_AT_PLAYER_PACKAGE = register("set_block_at_player_package", SetBlockAtPlayerPackageBehavior::parse);
 		FORCED_PLAYER_HEAD_PACKAGE = register("forced_player_head_package", ForcedPlayerHeadPackageBehavior::parse);
 		PUFFERFISH_PACKAGE = register("pufferfish_package", PufferfishPackageBehavior::parse);
+		SHOOT_PROJECTILES_AT_ALL_PLAYERS = register("shoot_projectiles_at_all_players", ShootProjectilesAroundAllPlayersPackageBehavior::parse);
+		SHOOT_PROJECTILES_AT_PLAYER = register("shoot_projectiles_at_player", ShootProjectilesAroundPlayerPackageBehavior::parse);
 
 		POLL_FINALISTS = register("poll_finalists", PollFinalistsBehavior::parse);
 	}
