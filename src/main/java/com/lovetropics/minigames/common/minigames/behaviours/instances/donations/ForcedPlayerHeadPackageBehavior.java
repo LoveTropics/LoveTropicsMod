@@ -19,6 +19,10 @@ public final class ForcedPlayerHeadPackageBehavior extends DonationPackageBehavi
 
 	@Override
 	protected void receivePackage(final String sendingPlayer, final ServerPlayerEntity player) {
+		if (sendingPlayer == null) {
+			return;
+		}
+
 		ItemStack head = createHeadForSender(sendingPlayer);
 		head.addEnchantment(Enchantments.BINDING_CURSE, 1);
 

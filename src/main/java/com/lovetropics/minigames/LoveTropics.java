@@ -1,28 +1,11 @@
 package com.lovetropics.minigames;
 
-import java.util.regex.Pattern;
-
-import org.apache.commons.lang3.tuple.Pair;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import com.google.common.base.Preconditions;
 import com.lovetropics.minigames.client.data.TropicraftLangKeys;
 import com.lovetropics.minigames.common.block.LoveTropicsBlocks;
 import com.lovetropics.minigames.common.block.TrashType;
 import com.lovetropics.minigames.common.command.CommandMap;
-import com.lovetropics.minigames.common.command.CommandReloadConfig;
-import com.lovetropics.minigames.common.command.minigames.CommandCancelMinigame;
-import com.lovetropics.minigames.common.command.minigames.CommandFinishMinigame;
-import com.lovetropics.minigames.common.command.minigames.CommandMinigameControl;
-import com.lovetropics.minigames.common.command.minigames.CommandMinigameDonate;
-import com.lovetropics.minigames.common.command.minigames.CommandPollMinigame;
-import com.lovetropics.minigames.common.command.minigames.CommandRegisterMinigame;
-import com.lovetropics.minigames.common.command.minigames.CommandResetIslandChests;
-import com.lovetropics.minigames.common.command.minigames.CommandScanArea;
-import com.lovetropics.minigames.common.command.minigames.CommandStartMinigame;
-import com.lovetropics.minigames.common.command.minigames.CommandStopPollingMinigame;
-import com.lovetropics.minigames.common.command.minigames.CommandUnregisterMinigame;
+import com.lovetropics.minigames.common.command.minigames.*;
 import com.lovetropics.minigames.common.config.ConfigLT;
 import com.lovetropics.minigames.common.dimension.DimensionUtils;
 import com.lovetropics.minigames.common.dimension.biome.TropicraftBiomes;
@@ -41,7 +24,6 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.tterrag.registrate.Registrate;
 import com.tterrag.registrate.providers.ProviderType;
 import com.tterrag.registrate.util.NonNullLazyValue;
-
 import net.minecraft.command.CommandSource;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
@@ -67,6 +49,11 @@ import net.minecraftforge.fml.event.lifecycle.GatherDataEvent;
 import net.minecraftforge.fml.event.server.FMLServerAboutToStartEvent;
 import net.minecraftforge.fml.event.server.FMLServerStoppingEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import org.apache.commons.lang3.tuple.Pair;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import java.util.regex.Pattern;
 
 @Mod(Constants.MODID)
 public class LoveTropics {
@@ -173,7 +160,6 @@ public class LoveTropics {
         CommandCancelMinigame.register(dispatcher);
         CommandUnregisterMinigame.register(dispatcher);
         CommandStopPollingMinigame.register(dispatcher);
-        CommandReloadConfig.register(dispatcher);
         CommandResetIslandChests.register(dispatcher);
         CommandScanArea.register(dispatcher);
         CommandMinigameControl.register(dispatcher);

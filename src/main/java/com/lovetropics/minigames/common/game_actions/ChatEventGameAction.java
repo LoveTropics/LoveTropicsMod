@@ -6,6 +6,8 @@ import com.google.gson.JsonObject;
 import com.lovetropics.minigames.common.minigames.IMinigameInstance;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.util.text.TextFormatting;
 
 import java.util.Comparator;
 import java.util.List;
@@ -34,9 +36,24 @@ public class ChatEventGameAction extends GameAction {
             return true;
         }
 
+        PollEntry winner = entries.get(0);
+        GamePackage winnerPackage = winner.asPackage();
+
+        int totalVotes = 0;
+        for (PollEntry entry : entries) {
+            totalVotes += entry.results;
+        }
+
+        minigame.getPlayers().sendMessage(
+                new StringTextComponent(this.title).applyTextStyles(TextFormatting.BOLD, TextFormatting.AQUA)
+                    .appendSibling(new StringTextComponent(
+                            " just completed! After " + totalVotes + " votes, chat decided on something to happen... Do you trust them to have been nice?"
+                    ).applyTextStyle(TextFormatting.GRAY))
+        );
+
         boolean resolved = false;
         for (IMinigameBehavior behavior : minigame.getBehaviors()) {
-            resolved |= behavior.onChatEventReceived(minigame, this);
+            resolved |= behavior.onGamePackageReceived(minigame, winnerPackage);
         }
 
         return resolved;
@@ -78,12 +95,12 @@ public class ChatEventGameAction extends GameAction {
 
     public static class PollEntry {
         private final String key;
-        private final String title;
+        private final String packageType;
         private final int results;
 
-        public PollEntry(final String key, final String title, final int results) {
+        public PollEntry(final String key, String packageType, final int results) {
             this.key = key;
-            this.title = title;
+            this.packageType = packageType;
             this.results = results;
         }
 
@@ -91,20 +108,24 @@ public class ChatEventGameAction extends GameAction {
             return key;
         }
 
-        public String getTitle() {
-            return title;
+        public String getPackageType() {
+            return packageType;
         }
 
         public int getResults() {
             return results;
         }
 
+        public GamePackage asPackage() {
+            return new GamePackage(packageType, null, null);
+        }
+
         public static PollEntry fromJson(final JsonObject obj) {
             final String key = obj.get("key").getAsString();
-            final String title = obj.get("title").getAsString();
+            final String packageType = obj.get("title").getAsString();
             final int results = obj.get("results").getAsInt();
 
-            return new PollEntry(key, title, results);
+            return new PollEntry(key, packageType, results);
         }
     }
 }

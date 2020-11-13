@@ -34,7 +34,7 @@ public class CommandMinigameDonate {
 		if (instance != null) {
 			DonationPackageGameAction action = new DonationPackageGameAction(UUID.randomUUID(), packageType, "0", source.getName(), source.asPlayer().getUniqueID());
 			for (IMinigameBehavior behavior : instance.getBehaviors()) {
-				behavior.onDonationPackageRequested(instance, action);
+				behavior.onGamePackageReceived(instance, action);
 			}
 			return Command.SINGLE_SUCCESS;
 		}

@@ -1,8 +1,7 @@
 package com.lovetropics.minigames.common.minigames.behaviours;
 
 import com.google.common.collect.ImmutableList;
-import com.lovetropics.minigames.common.game_actions.ChatEventGameAction;
-import com.lovetropics.minigames.common.game_actions.DonationPackageGameAction;
+import com.lovetropics.minigames.common.game_actions.GamePackage;
 import com.lovetropics.minigames.common.minigames.IMinigameInstance;
 import com.lovetropics.minigames.common.minigames.MinigameResult;
 import com.lovetropics.minigames.common.minigames.PlayerRole;
@@ -200,22 +199,11 @@ public interface IMinigameBehavior
 	 *
 	 * @param minigame The minigame that is being constructed
 	 *
+	 * @param gamePackage
 	 * @return Whether or not the action should considered "handled"
 	 * and sent as an acknowledgement to the backend.
 	 */
-	default boolean onDonationPackageRequested(final IMinigameInstance minigame, final DonationPackageGameAction action) {
-		return false;
-	}
-
-	/**
-	 * When a chat event is received from the backend.
-	 *
-	 * @param minigame The minigame that this event has been sent to
-	 * @param action The received action
-	 *
-	 * @return whether this action has been sucessfully processed
-	 */
-	default boolean onChatEventReceived(IMinigameInstance minigame, ChatEventGameAction action) {
+	default boolean onGamePackageReceived(final IMinigameInstance minigame, final GamePackage gamePackage) {
 		return false;
 	}
 

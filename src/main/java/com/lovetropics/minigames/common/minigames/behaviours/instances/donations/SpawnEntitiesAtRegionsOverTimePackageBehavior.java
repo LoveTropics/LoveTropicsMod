@@ -2,7 +2,7 @@ package com.lovetropics.minigames.common.minigames.behaviours.instances.donation
 
 import com.google.common.collect.Lists;
 import com.lovetropics.minigames.common.Util;
-import com.lovetropics.minigames.common.game_actions.DonationPackageGameAction;
+import com.lovetropics.minigames.common.game_actions.GamePackage;
 import com.lovetropics.minigames.common.map.MapRegion;
 import com.lovetropics.minigames.common.map.MapRegions;
 import com.lovetropics.minigames.common.minigames.IMinigameInstance;
@@ -10,7 +10,6 @@ import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
 import com.mojang.datafixers.Dynamic;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.ITextComponent;
 import net.minecraft.world.World;
 import net.minecraft.world.gen.Heightmap;
 
@@ -64,13 +63,13 @@ public class SpawnEntitiesAtRegionsOverTimePackageBehavior implements IMinigameB
 	}
 
 	@Override
-	public boolean onDonationPackageRequested(final IMinigameInstance minigame, final DonationPackageGameAction action) {
-		if (action.getPackageType().equals(data.packageType)) {
+	public boolean onGamePackageReceived(final IMinigameInstance minigame, final GamePackage gamePackage) {
+		if (gamePackage.getPackageType().equals(data.packageType)) {
 
 			ticksRemaining += ticksToSpawnFor;
 			entityCountRemaining += entityCount;
 
-			minigame.getParticipants().forEach(player -> data.onReceive(player, action.getSendingPlayerName()));
+			minigame.getParticipants().forEach(player -> data.onReceive(player, gamePackage.getSendingPlayerName()));
 
 			return true;
 		}

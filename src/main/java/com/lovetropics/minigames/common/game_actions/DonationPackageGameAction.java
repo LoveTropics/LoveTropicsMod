@@ -5,7 +5,6 @@ import com.lovetropics.minigames.common.minigames.IMinigameInstance;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
 import net.minecraft.server.MinecraftServer;
 
-import javax.annotation.Nullable;
 import java.util.UUID;
 
 /**
@@ -13,39 +12,23 @@ import java.util.UUID;
  */
 public class DonationPackageGameAction extends GameAction
 {
-    private final String packageType;
-    private final String sendingPlayerName;
-    @Nullable
-    private final UUID receivingPlayer;
+    private final GamePackage gamePackage;
 
-    public DonationPackageGameAction(UUID uuid, String packageType, String triggerTime, final String sendingPlayerName, @Nullable final UUID receivingPlayer) {
+    public DonationPackageGameAction(UUID uuid, String triggerTime, final GamePackage gamePackage) {
         super(uuid, triggerTime);
 
-        this.packageType = packageType;
-        this.sendingPlayerName = sendingPlayerName;
-        this.receivingPlayer = receivingPlayer;
+        this.gamePackage = gamePackage;
     }
 
-    public String getPackageType() {
-        return packageType;
-    }
-
-    public String getSendingPlayerName()
-    {
-        return sendingPlayerName;
-    }
-
-    @Nullable
-    public UUID getReceivingPlayer()
-    {
-        return receivingPlayer;
+    public GamePackage getGamePackage() {
+        return gamePackage;
     }
 
     @Override
     public boolean resolve(IMinigameInstance minigame, MinecraftServer server) {
         boolean resolved = false;
         for (IMinigameBehavior behavior : minigame.getBehaviors()) {
-            resolved |= behavior.onDonationPackageRequested(minigame, this);
+            resolved |= behavior.onGamePackageReceived(minigame, gamePackage);
         }
 
         return resolved;
@@ -66,6 +49,6 @@ public class DonationPackageGameAction extends GameAction
             receivingPlayer = null;
         }
 
-        return new DonationPackageGameAction(uuid, packageType, triggerTime, sendingPlayerName, receivingPlayer);
+        return new DonationPackageGameAction(uuid, triggerTime, new GamePackage(packageType, sendingPlayerName, receivingPlayer));
     }
 }

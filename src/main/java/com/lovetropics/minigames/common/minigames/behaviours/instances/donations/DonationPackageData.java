@@ -6,12 +6,13 @@ import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.network.play.server.SPlaySoundEffectPacket;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundCategory;
-import net.minecraft.util.SoundEvent;
 import net.minecraft.util.SoundEvents;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.registries.ForgeRegistries;
+
+import javax.annotation.Nullable;
 
 public class DonationPackageData {
 	protected final String packageType;
@@ -46,14 +47,19 @@ public class DonationPackageData {
 		return soundOnReceive;
 	}
 
-	public void onReceive(final ServerPlayerEntity player, final String sendingPlayer) {
+	public void onReceive(final ServerPlayerEntity player, @Nullable final String sendingPlayer) {
 		if (messageForPlayer != null) {
-			final ITextComponent sentByPlayerMessage = new StringTextComponent("Package sent by ").applyTextStyle(TextFormatting.GOLD)
-					.appendSibling(new StringTextComponent(sendingPlayer).applyTextStyles(TextFormatting.GREEN, TextFormatting.BOLD));
-
 			player.sendMessage(messageForPlayer);
-			player.sendMessage(sentByPlayerMessage);
-			player.connection.sendPacket(new SPlaySoundEffectPacket(ForgeRegistries.SOUND_EVENTS.getValue(soundOnReceive), SoundCategory.MASTER, player.getPosX(), player.getPosY(), player.getPosZ(), 0.2f, 1f));
+
+			if (sendingPlayer != null) {
+				final ITextComponent sentByPlayerMessage = new StringTextComponent("Package sent by ").applyTextStyle(TextFormatting.GOLD)
+						.appendSibling(new StringTextComponent(sendingPlayer).applyTextStyles(TextFormatting.GREEN, TextFormatting.BOLD));
+				player.sendMessage(sentByPlayerMessage);
+			}
+
+			if (soundOnReceive != null) {
+				player.connection.sendPacket(new SPlaySoundEffectPacket(ForgeRegistries.SOUND_EVENTS.getValue(soundOnReceive), SoundCategory.MASTER, player.getPosX(), player.getPosY(), player.getPosZ(), 0.2f, 1f));
+			}
 		}
 	}
 

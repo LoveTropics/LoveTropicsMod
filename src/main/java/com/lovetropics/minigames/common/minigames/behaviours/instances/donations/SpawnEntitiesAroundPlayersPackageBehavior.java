@@ -2,14 +2,13 @@ package com.lovetropics.minigames.common.minigames.behaviours.instances.donation
 
 import com.google.common.collect.Lists;
 import com.lovetropics.minigames.common.Util;
-import com.lovetropics.minigames.common.game_actions.DonationPackageGameAction;
+import com.lovetropics.minigames.common.game_actions.GamePackage;
 import com.lovetropics.minigames.common.minigames.IMinigameInstance;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
 import com.mojang.datafixers.Dynamic;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.ITextComponent;
 import net.minecraft.world.World;
 
 import java.util.*;
@@ -53,14 +52,14 @@ public class SpawnEntitiesAroundPlayersPackageBehavior implements IMinigameBehav
 	}
 
 	@Override
-	public boolean onDonationPackageRequested(final IMinigameInstance minigame, final DonationPackageGameAction action) {
-		if (action.getPackageType().equals(data.packageType)) {
+	public boolean onGamePackageReceived(final IMinigameInstance minigame, final GamePackage gamePackage) {
+		if (gamePackage.getPackageType().equals(data.packageType)) {
 			final List<ServerPlayerEntity> players = Lists.newArrayList(minigame.getParticipants());
 			for (ServerPlayerEntity player : players) {
 				playerToAmountToSpawn.put(player, entityCountPerPlayer);
 			}
 
-			minigame.getParticipants().forEach(player -> data.onReceive(player, action.getSendingPlayerName()));
+			minigame.getParticipants().forEach(player -> data.onReceive(player, gamePackage.getSendingPlayerName()));
 
 			return true;
 		}

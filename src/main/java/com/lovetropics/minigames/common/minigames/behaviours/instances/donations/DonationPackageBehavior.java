@@ -2,7 +2,7 @@ package com.lovetropics.minigames.common.minigames.behaviours.instances.donation
 
 import com.google.common.collect.Lists;
 import com.lovetropics.minigames.common.Util;
-import com.lovetropics.minigames.common.game_actions.DonationPackageGameAction;
+import com.lovetropics.minigames.common.game_actions.GamePackage;
 import com.lovetropics.minigames.common.minigames.IMinigameInstance;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
 import net.minecraft.entity.player.ServerPlayerEntity;
@@ -11,6 +11,7 @@ import net.minecraft.item.Items;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
 
@@ -51,39 +52,39 @@ public abstract class DonationPackageBehavior implements IMinigameBehavior
 	}
 
 	@Override
-	public boolean onDonationPackageRequested(final IMinigameInstance minigame, final DonationPackageGameAction action) {
-		if (action.getPackageType().equals(data.packageType)) {
+	public boolean onGamePackageReceived(final IMinigameInstance minigame, final GamePackage gamePackage) {
+		if (gamePackage.getPackageType().equals(data.packageType)) {
 			switch (data.playerSelect) {
 				case SPECIFIC:
-					if (action.getReceivingPlayer() == null) {
+					if (gamePackage.getReceivingPlayer() == null) {
 						LOGGER.warn("Expected donation package to have a receiving player, but did not receive from backend!");
 						return false;
 					}
 
-					final boolean receiverIsParticipant = minigame.getParticipants().contains(action.getReceivingPlayer());
+					final boolean receiverIsParticipant = minigame.getParticipants().contains(gamePackage.getReceivingPlayer());
 
 					if (!receiverIsParticipant) {
 						// Player either died, left the server or isn't part of the minigame for some reason.
 						return false;
 					}
 
-					final ServerPlayerEntity receivingPlayer = minigame.getServer().getPlayerList().getPlayerByUUID(action.getReceivingPlayer());
+					final ServerPlayerEntity receivingPlayer = minigame.getServer().getPlayerList().getPlayerByUUID(gamePackage.getReceivingPlayer());
 
 					if (receivingPlayer == null) {
 						// Player not on the server for some reason
 						return false;
 					}
 
-					receivePackageInternal(action.getSendingPlayerName(), receivingPlayer);
+					receivePackageInternal(gamePackage.getSendingPlayerName(), receivingPlayer);
 					break;
 				case RANDOM:
 					final List<ServerPlayerEntity> players = Lists.newArrayList(minigame.getParticipants());
 					final ServerPlayerEntity randomPlayer = players.get(minigame.getWorld().getRandom().nextInt(players.size()));
 
-					receivePackageInternal(action.getSendingPlayerName(), randomPlayer);
+					receivePackageInternal(gamePackage.getSendingPlayerName(), randomPlayer);
 					break;
 				case ALL:
-					minigame.getParticipants().stream().forEach(player -> receivePackageInternal(action.getSendingPlayerName(), player));
+					minigame.getParticipants().stream().forEach(player -> receivePackageInternal(gamePackage.getSendingPlayerName(), player));
 					break;
 			}
 
@@ -93,7 +94,7 @@ public abstract class DonationPackageBehavior implements IMinigameBehavior
 		return false;
 	}
 
-	protected abstract void receivePackage(final String sendingPlayer, final ServerPlayerEntity player);
+	protected abstract void receivePackage(@Nullable final String sendingPlayer, final ServerPlayerEntity player);
 
 	protected boolean shouldGiveSenderHead() {
 		return true;
@@ -102,7 +103,7 @@ public abstract class DonationPackageBehavior implements IMinigameBehavior
 	private void receivePackageInternal(final String sendingPlayer, final ServerPlayerEntity player) {
 		receivePackage(sendingPlayer, player);
 
-		if (shouldGiveSenderHead()) {
+		if (sendingPlayer != null && shouldGiveSenderHead()) {
 			Util.addItemStackToInventory(player, createHeadForSender(sendingPlayer));
 		}
 

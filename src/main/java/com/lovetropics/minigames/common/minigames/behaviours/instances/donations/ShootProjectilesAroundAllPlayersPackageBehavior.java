@@ -1,7 +1,7 @@
 package com.lovetropics.minigames.common.minigames.behaviours.instances.donations;
 
 import com.google.common.collect.Lists;
-import com.lovetropics.minigames.common.game_actions.DonationPackageGameAction;
+import com.lovetropics.minigames.common.game_actions.GamePackage;
 import com.lovetropics.minigames.common.minigames.IMinigameInstance;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
 import com.mojang.datafixers.Dynamic;
@@ -58,14 +58,14 @@ public class ShootProjectilesAroundAllPlayersPackageBehavior implements IMinigam
 	}
 
 	@Override
-	public boolean onDonationPackageRequested(final IMinigameInstance minigame, final DonationPackageGameAction action) {
-		if (action.getPackageType().equals(data.packageType)) {
+	public boolean onGamePackageReceived(final IMinigameInstance minigame, final GamePackage gamePackage) {
+		if (gamePackage.getPackageType().equals(data.packageType)) {
 			final List<ServerPlayerEntity> players = Lists.newArrayList(minigame.getParticipants());
 			for (ServerPlayerEntity player : players) {
 				playerToAmountToSpawn.put(player, entityCountPerPlayer);
 			}
 
-			minigame.getParticipants().forEach(player -> data.onReceive(player, action.getSendingPlayerName()));
+			minigame.getParticipants().forEach(player -> data.onReceive(player, gamePackage.getSendingPlayerName()));
 
 			return true;
 		}

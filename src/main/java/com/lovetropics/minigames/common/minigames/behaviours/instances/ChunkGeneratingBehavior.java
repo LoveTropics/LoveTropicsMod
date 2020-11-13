@@ -15,7 +15,7 @@ public abstract class ChunkGeneratingBehavior implements IMinigameBehavior {
 
 	@Override
 	public final void onChunkLoad(IMinigameInstance minigame, IChunk chunk) {
-		if (generatedChunks.add(chunk.getPos().asLong()) && chunk instanceof Chunk) {
+		if (chunk instanceof Chunk && generatedChunks.add(chunk.getPos().asLong())) {
 			generateChunk(minigame, minigame.getWorld(), (Chunk) chunk);
 		}
 	}
