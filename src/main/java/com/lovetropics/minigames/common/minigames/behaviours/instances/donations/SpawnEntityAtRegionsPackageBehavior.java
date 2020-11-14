@@ -61,7 +61,7 @@ public class SpawnEntityAtRegionsPackageBehavior implements IMinigameBehavior
 				}
 			}
 
-			minigame.getParticipants().forEach(player -> data.onReceive(player, gamePackage.getSendingPlayerName()));
+			minigame.getParticipants().forEach(player -> data.onReceive(minigame, player, gamePackage.getSendingPlayerName()));
 
 			return true;
 		}

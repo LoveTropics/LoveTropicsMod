@@ -59,7 +59,7 @@ public class SpawnEntitiesAroundPlayersPackageBehavior implements IMinigameBehav
 				playerToAmountToSpawn.put(player, entityCountPerPlayer);
 			}
 
-			minigame.getParticipants().forEach(player -> data.onReceive(player, gamePackage.getSendingPlayerName()));
+			minigame.getParticipants().forEach(player -> data.onReceive(minigame, player, gamePackage.getSendingPlayerName()));
 
 			return true;
 		}

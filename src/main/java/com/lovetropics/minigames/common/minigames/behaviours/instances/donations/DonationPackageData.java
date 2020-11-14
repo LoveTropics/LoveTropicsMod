@@ -1,6 +1,7 @@
 package com.lovetropics.minigames.common.minigames.behaviours.instances.donations;
 
 import com.lovetropics.minigames.common.Util;
+import com.lovetropics.minigames.common.minigames.IMinigameInstance;
 import com.mojang.datafixers.Dynamic;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.network.play.server.SPlaySoundEffectPacket;
@@ -46,18 +47,18 @@ public class DonationPackageData {
 		return soundOnReceive;
 	}
 
-	public void onReceive(final ServerPlayerEntity player, @Nullable final String sendingPlayer) {
+	public void onReceive(final IMinigameInstance instance, final ServerPlayerEntity player, @Nullable final String sendingPlayer) {
 		if (messageForPlayer != null) {
-			player.sendMessage(messageForPlayer);
+			instance.getPlayers().forEach(p -> p.sendMessage(messageForPlayer));
 
 			if (sendingPlayer != null) {
 				final ITextComponent sentByPlayerMessage = new StringTextComponent("Package sent by ").applyTextStyle(TextFormatting.GOLD)
 						.appendSibling(new StringTextComponent(sendingPlayer).applyTextStyles(TextFormatting.GREEN, TextFormatting.BOLD));
-				player.sendMessage(sentByPlayerMessage);
+				instance.getPlayers().forEach(p -> p.sendMessage(sentByPlayerMessage));
 			}
 
 			if (soundOnReceive != null) {
-				player.connection.sendPacket(new SPlaySoundEffectPacket(ForgeRegistries.SOUND_EVENTS.getValue(soundOnReceive), SoundCategory.MASTER, player.getPosX(), player.getPosY(), player.getPosZ(), 0.2f, 1f));
+				instance.getPlayers().forEach(p -> p.connection.sendPacket(new SPlaySoundEffectPacket(ForgeRegistries.SOUND_EVENTS.getValue(soundOnReceive), SoundCategory.MASTER, p.getPosX(), p.getPosY(), p.getPosZ(), 0.2f, 1f)));
 			}
 		}
 	}

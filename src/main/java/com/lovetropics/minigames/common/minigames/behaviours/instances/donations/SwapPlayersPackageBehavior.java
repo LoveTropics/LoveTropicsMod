@@ -48,7 +48,7 @@ public class SwapPlayersPackageBehavior implements IMinigameBehavior {
 	public boolean onGamePackageReceived(final IMinigameInstance minigame, final GamePackage gamePackage) {
 		if (gamePackage.getPackageType().equals(data.packageType)) {
 			swapCountdown = 20;
-			minigame.getParticipants().forEach(player -> data.onReceive(player, gamePackage.getSendingPlayerName()));
+			minigame.getParticipants().forEach(player -> data.onReceive(minigame, player, gamePackage.getSendingPlayerName()));
 
 			return true;
 		}
