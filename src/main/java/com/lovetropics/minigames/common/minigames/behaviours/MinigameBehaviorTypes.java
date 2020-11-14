@@ -54,6 +54,7 @@ public class MinigameBehaviorTypes {
 	public static final RegistryObject<IMinigameBehaviorType<DisableHungerBehavior>> DISABLE_HUNGER;
 	public static final RegistryObject<IMinigameBehaviorType<DisableTNTBlockDestructionBehavior>> DISABLE_TNT_BLOCK_DESTRUCTION;
 	public static final RegistryObject<IMinigameBehaviorType<RevealPlayersBehavior>> REVEAL_PLAYERS;
+	public static final RegistryObject<IMinigameBehaviorType<SetMaxHealthBehavior>> SET_MAX_HEALTH;
 
 	public static final RegistryObject<IMinigameBehaviorType<BindObjectiveToStatisticBehavior>> BIND_OBJECTIVE_TO_STATISTIC;
 	public static final RegistryObject<IMinigameBehaviorType<PlaceByStatisticBehavior>> PLACE_BY_STATISTIC;
@@ -135,6 +136,7 @@ public class MinigameBehaviorTypes {
 		DISABLE_HUNGER = register("disable_hunger", DisableHungerBehavior::parse);
 		DISABLE_TNT_BLOCK_DESTRUCTION = register("disable_tnt_block_destruction", DisableTNTBlockDestructionBehavior::parse);
 		REVEAL_PLAYERS = register("reveal_players", RevealPlayersBehavior::parse);
+		SET_MAX_HEALTH = register("set_max_health", SetMaxHealthBehavior::parse);
 
 		BIND_OBJECTIVE_TO_STATISTIC = register("bind_objective_to_statistic", BindObjectiveToStatisticBehavior::parse);
 		PLACE_BY_STATISTIC = register("place_by_statistic", PlaceByStatisticBehavior::parse);
