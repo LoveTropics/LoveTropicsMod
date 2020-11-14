@@ -25,6 +25,8 @@ public interface IMinigameDefinition
      */
     ResourceLocation getID();
 
+    ResourceLocation getDisplayID();
+
 	/**
 	 * An identifier for telemetry usage, so that variants of games can share
 	 * statistics. Defaults to the ID if not set in the JSON.

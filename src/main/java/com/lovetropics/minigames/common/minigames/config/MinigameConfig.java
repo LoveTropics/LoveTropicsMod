@@ -11,7 +11,7 @@ import java.util.List;
 
 public final class MinigameConfig implements IMinigameDefinition {
 	public final ResourceLocation id;
-	public final ResourceLocation networkId;
+	public final ResourceLocation displayId;
 	public final String telemetryKey;
 	public final String translationKey;
 	public final IMinigameMapProvider mapProvider;
@@ -21,7 +21,7 @@ public final class MinigameConfig implements IMinigameDefinition {
 
 	public MinigameConfig(
 			ResourceLocation id,
-			ResourceLocation networkId,
+			ResourceLocation displayId,
 			String telemetryKey,
 			String translationKey,
 			IMinigameMapProvider mapProvider,
@@ -30,7 +30,7 @@ public final class MinigameConfig implements IMinigameDefinition {
 			List<BehaviorReference> behaviors
 	) {
 		this.id = id;
-		this.networkId = networkId;
+		this.displayId = displayId;
 		this.telemetryKey = telemetryKey;
 		this.translationKey = translationKey;
 		this.mapProvider = mapProvider;
@@ -40,7 +40,7 @@ public final class MinigameConfig implements IMinigameDefinition {
 	}
 
 	public static <T> MinigameConfig read(BehaviorReferenceReader reader, ResourceLocation id, Dynamic<T> root) {
-		ResourceLocation networkId = root.get("network_id").asString().map(ResourceLocation::new).orElse(id);
+		ResourceLocation displayId = root.get("display_id").asString().map(ResourceLocation::new).orElse(id);
 		String telemetryKey = root.get("telemetry_key").asString(id.getPath());
 		String translationKey = root.get("translation_key").asString("");
 
@@ -53,7 +53,7 @@ public final class MinigameConfig implements IMinigameDefinition {
 
 		return new MinigameConfig(
 				id,
-				networkId,
+				displayId,
 				telemetryKey,
 				translationKey,
 				mapProvider,
@@ -76,6 +76,11 @@ public final class MinigameConfig implements IMinigameDefinition {
 	@Override
 	public ResourceLocation getID() {
 		return id;
+	}
+
+	@Override
+	public ResourceLocation getDisplayID() {
+		return displayId;
 	}
 
 	@Override

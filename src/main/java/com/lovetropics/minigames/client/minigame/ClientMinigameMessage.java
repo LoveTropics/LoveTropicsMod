@@ -1,13 +1,12 @@
 package com.lovetropics.minigames.client.minigame;
 
-import java.util.function.Supplier;
-
 import com.lovetropics.minigames.common.minigames.MinigameStatus;
 import com.lovetropics.minigames.common.minigames.ProtoMinigame;
-
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.network.NetworkEvent;
+
+import java.util.function.Supplier;
 
 public class ClientMinigameMessage {
 
@@ -21,7 +20,7 @@ public class ClientMinigameMessage {
 	}
 
 	public ClientMinigameMessage(ProtoMinigame minigame) {
-		this(minigame.getDefinition().getID(),
+		this(minigame.getDefinition().getDisplayID(),
 			minigame.getDefinition().getUnlocalizedName(),
 			minigame.getStatus(),
 			minigame.getDefinition().getMaximumParticipantCount());
