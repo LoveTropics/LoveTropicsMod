@@ -5,9 +5,12 @@ import com.lovetropics.minigames.common.game_actions.GamePackage;
 import com.lovetropics.minigames.common.minigames.IMinigameInstance;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
 import com.mojang.datafixers.Dynamic;
+
+import net.minecraft.entity.EntityType;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.entity.projectile.FireballEntity;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 
 import java.util.*;
@@ -109,7 +112,13 @@ public class ShootProjectilesAroundAllPlayersPackageBehavior implements IMinigam
 					double d2 = posTarget.getX() - (posSpawn.getX());
 					double d3 = posTarget.getY() - (posSpawn.getY());
 					double d4 = posTarget.getZ() - (posSpawn.getZ());
-					FireballEntity fireballentity = new FireballEntity(world, posSpawn.getX(), posSpawn.getY(), posSpawn.getZ(), d2, d3, d4);
+					FireballEntity fireballentity = new FireballEntity(EntityType.FIREBALL, world);
+					fireballentity.setLocationAndAngles(posSpawn.getX(), posSpawn.getY(), posSpawn.getZ(), fireballentity.rotationYaw, fireballentity.rotationPitch);
+					fireballentity.setPosition(posSpawn.getX(), posSpawn.getY(), posSpawn.getZ());
+					double d0 = (double)MathHelper.sqrt(d2 * d2 + d3 * d3 + d4 * d4);
+					fireballentity.accelerationX = d2 / d0 * 0.1D;
+					fireballentity.accelerationY = d3 / d0 * 0.1D;
+					fireballentity.accelerationZ = d4 / d0 * 0.1D;
 					fireballentity.explosionPower = explosionStrength;
 					world.addEntity(fireballentity);
 				}
