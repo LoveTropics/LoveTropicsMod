@@ -1,7 +1,7 @@
 package com.lovetropics.minigames.common.minigames.behaviours.instances.donations;
 
-import com.lovetropics.minigames.common.Util;
 import com.lovetropics.minigames.common.minigames.IMinigameInstance;
+import com.lovetropics.minigames.common.minigames.VariableText;
 import com.mojang.datafixers.Dynamic;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.network.play.server.SPlaySoundEffectPacket;
@@ -16,11 +16,11 @@ import javax.annotation.Nullable;
 
 public class DonationPackageData {
 	protected final String packageType;
-	protected final ITextComponent messageForPlayer;
+	protected final VariableText messageForPlayer;
 	protected final DonationPackageBehavior.PlayerSelect playerSelect;
 	protected final ResourceLocation soundOnReceive;
 
-	public DonationPackageData(final String packageType, final ITextComponent messageForPlayer, final DonationPackageBehavior.PlayerSelect playerSelect, final ResourceLocation soundOnReceive) {
+	public DonationPackageData(final String packageType, final VariableText messageForPlayer, final DonationPackageBehavior.PlayerSelect playerSelect, final ResourceLocation soundOnReceive) {
 		this.packageType = packageType;
 		this.messageForPlayer = messageForPlayer;
 		this.playerSelect = playerSelect;
@@ -32,7 +32,7 @@ public class DonationPackageData {
 		return packageType;
 	}
 
-	public ITextComponent getMessageForPlayer()
+	public VariableText getMessageForPlayer()
 	{
 		return messageForPlayer;
 	}
@@ -49,7 +49,7 @@ public class DonationPackageData {
 
 	public void onReceive(final IMinigameInstance instance, final ServerPlayerEntity player, @Nullable final String sendingPlayer) {
 		if (messageForPlayer != null) {
-			instance.getPlayers().forEach(p -> p.sendMessage(messageForPlayer));
+			instance.getPlayers().forEach(p -> p.sendMessage(messageForPlayer.apply(player.getDisplayName().deepCopy().applyTextStyles(TextFormatting.BOLD, TextFormatting.GREEN))));
 
 			if (sendingPlayer != null) {
 				final ITextComponent sentByPlayerMessage = new StringTextComponent("Package sent by ").applyTextStyle(TextFormatting.GOLD)
@@ -65,7 +65,7 @@ public class DonationPackageData {
 
 	public static <T> DonationPackageData parse(Dynamic<T> root) {
 		final String packageType = root.get("package_type").asString("");
-		final ITextComponent messageForPlayer = Util.getTextOrNull(root, "message_for_player");
+		final VariableText messageForPlayer = VariableText.parse(root.get("message_for_player").orElseEmptyMap());
 		final DonationPackageBehavior.PlayerSelect playerSelect = DonationPackageBehavior.PlayerSelect.getFromType(root.get("player_select").asString(DonationPackageBehavior.PlayerSelect.RANDOM.getType())).get();
 		final ResourceLocation soundOnReceive = new ResourceLocation(root.get("sound_on_receive").asString("item.totem.use"));
 
