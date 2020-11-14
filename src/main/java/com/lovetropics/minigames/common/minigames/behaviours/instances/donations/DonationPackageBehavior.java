@@ -84,15 +84,18 @@ public abstract class DonationPackageBehavior implements IMinigamePackageBehavio
 					}
 
 					receivePackageInternal(minigame, gamePackage.getSendingPlayerName(), receivingPlayer);
+					data.onReceive(minigame, receivingPlayer, gamePackage.getSendingPlayerName());
 					break;
 				case RANDOM:
 					final List<ServerPlayerEntity> players = Lists.newArrayList(minigame.getParticipants());
 					final ServerPlayerEntity randomPlayer = players.get(minigame.getWorld().getRandom().nextInt(players.size()));
 
 					receivePackageInternal(minigame, gamePackage.getSendingPlayerName(), randomPlayer);
+					data.onReceive(minigame, randomPlayer, gamePackage.getSendingPlayerName());
 					break;
 				case ALL:
 					minigame.getParticipants().stream().forEach(player -> receivePackageInternal(minigame, gamePackage.getSendingPlayerName(), player));
+					data.onReceive(minigame, null, gamePackage.getSendingPlayerName());
 					break;
 			}
 
@@ -114,8 +117,6 @@ public abstract class DonationPackageBehavior implements IMinigamePackageBehavio
 		if (sendingPlayer != null && shouldGiveSenderHead()) {
 			Util.addItemStackToInventory(player, createHeadForSender(sendingPlayer));
 		}
-
-		data.onReceive(instance, player, sendingPlayer);
 	}
 
 	protected ItemStack createHeadForSender(String sendingPlayer) {

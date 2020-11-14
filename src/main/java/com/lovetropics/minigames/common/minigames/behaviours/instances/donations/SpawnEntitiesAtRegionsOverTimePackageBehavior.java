@@ -75,7 +75,7 @@ public class SpawnEntitiesAtRegionsOverTimePackageBehavior implements IMinigameP
 			ticksRemaining += ticksToSpawnFor;
 			entityCountRemaining += entityCount;
 
-			minigame.getParticipants().forEach(player -> data.onReceive(minigame, player, gamePackage.getSendingPlayerName()));
+			data.onReceive(minigame, null, gamePackage.getSendingPlayerName());
 
 			return true;
 		}

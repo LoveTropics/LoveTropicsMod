@@ -47,9 +47,15 @@ public class DonationPackageData {
 		return soundOnReceive;
 	}
 
-	public void onReceive(final IMinigameInstance instance, final ServerPlayerEntity player, @Nullable final String sendingPlayer) {
+	public void onReceive(final IMinigameInstance instance, @Nullable final ServerPlayerEntity player, @Nullable final String sendingPlayer) {
 		if (messageForPlayer != null) {
-			instance.getPlayers().forEach(p -> p.sendMessage(messageForPlayer.apply(player.getDisplayName().deepCopy().applyTextStyles(TextFormatting.BOLD, TextFormatting.GREEN))));
+			instance.getPlayers().forEach(p -> {
+				if (player != null) {
+					p.sendMessage(messageForPlayer.apply(player.getDisplayName().deepCopy().applyTextStyles(TextFormatting.BOLD, TextFormatting.GREEN)));
+				} else {
+					p.sendMessage(messageForPlayer.apply(""));
+				}
+			});
 
 			if (sendingPlayer != null) {
 				final ITextComponent sentByPlayerMessage = new StringTextComponent("Package sent by ").applyTextStyle(TextFormatting.GOLD)

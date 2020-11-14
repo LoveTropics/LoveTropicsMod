@@ -74,7 +74,7 @@ public class ShootProjectilesAroundAllPlayersPackageBehavior implements IMinigam
 				playerToAmountToSpawn.put(player, entityCountPerPlayer);
 			}
 
-			minigame.getParticipants().forEach(player -> data.onReceive(minigame, player, gamePackage.getSendingPlayerName()));
+			data.onReceive(minigame, null, gamePackage.getSendingPlayerName());
 
 			return true;
 		}
