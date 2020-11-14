@@ -53,9 +53,10 @@ public final class WeatherControllerManager {
 		}
 
 		ServerWorld world = server.getWorld(dimension);
-
-		WeatherController controller = WeatherControllerManager.forWorld(world);
-		controller.onPlayerJoin((ServerPlayerEntity) player);
+		if (world != null) {
+			WeatherController controller = WeatherControllerManager.forWorld(world);
+			controller.onPlayerJoin((ServerPlayerEntity) player);
+		}
 	}
 
 	@SubscribeEvent

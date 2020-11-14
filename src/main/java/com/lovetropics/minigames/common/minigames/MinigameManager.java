@@ -544,9 +544,10 @@ public class MinigameManager implements IMinigameManager {
 			minigame = getActiveMinigame();
 		}
 		if (minigame != null) {
-			LTNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> (ServerPlayerEntity) event.getPlayer()), new ClientMinigameMessage(minigame));
+			PacketDistributor.PacketTarget target = PacketDistributor.PLAYER.with(() -> (ServerPlayerEntity) event.getPlayer());
+			LTNetwork.CHANNEL.send(target, new ClientMinigameMessage(minigame));
 			for (PlayerRole role : PlayerRole.values()) {
-				LTNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> (ServerPlayerEntity) event.getPlayer()), new PlayerCountsMessage(role, minigame.getMemberCount(role)));
+				LTNetwork.CHANNEL.send(target, new PlayerCountsMessage(role, minigame.getMemberCount(role)));
 			}
 		}
 	}
