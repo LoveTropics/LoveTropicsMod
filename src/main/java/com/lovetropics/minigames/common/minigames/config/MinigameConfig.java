@@ -40,7 +40,9 @@ public final class MinigameConfig implements IMinigameDefinition {
 	}
 
 	public static <T> MinigameConfig read(BehaviorReferenceReader reader, ResourceLocation id, Dynamic<T> root) {
-		ResourceLocation displayId = root.get("display_id").asString().map(ResourceLocation::new).orElse(id);
+		ResourceLocation displayId = root.get("display_id").asString()
+				.map(path -> new ResourceLocation(id.getNamespace(), path))
+				.orElse(id);
 		String telemetryKey = root.get("telemetry_key").asString(id.getPath());
 		String translationKey = root.get("translation_key").asString("");
 
