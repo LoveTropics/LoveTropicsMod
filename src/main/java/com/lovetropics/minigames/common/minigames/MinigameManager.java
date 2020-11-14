@@ -331,7 +331,7 @@ public class MinigameManager implements IMinigameManager {
 		if (minigame != null && !minigame.getPlayers().contains(player)) {
 			minigame.addPlayer(player, PlayerRole.SPECTATOR);
 			LTNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new ClientRoleMessage(PlayerRole.SPECTATOR));
-			LTNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new PlayerCountsMessage(PlayerRole.SPECTATOR, minigame.getMemberCount(PlayerRole.SPECTATOR)));
+			LTNetwork.CHANNEL.send(PacketDistributor.ALL.noArg(), new PlayerCountsMessage(PlayerRole.SPECTATOR, minigame.getMemberCount(PlayerRole.SPECTATOR)));
 			return MinigameResult.ok(new StringTextComponent("You have joined the game as a spectator!").applyTextStyle(TextFormatting.GREEN));
 		}
 

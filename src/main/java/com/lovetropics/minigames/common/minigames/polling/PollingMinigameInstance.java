@@ -84,7 +84,7 @@ public final class PollingMinigameInstance implements ProtoMinigame, MinigameCon
 		broadcastMessage(new TranslationTextComponent(message, playerName, minigameName).applyTextStyle(TextFormatting.AQUA));
 		PlayerRole trueRole = requestedRole == null ? PlayerRole.PARTICIPANT : requestedRole;
 		LTNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new ClientRoleMessage(trueRole));
-		LTNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new PlayerCountsMessage(trueRole, getMemberCount(trueRole)));
+		LTNetwork.CHANNEL.send(PacketDistributor.ALL.noArg(), new PlayerCountsMessage(trueRole, getMemberCount(trueRole)));
 
 		return MinigameResult.ok(
 				new TranslationTextComponent(
@@ -106,7 +106,7 @@ public final class PollingMinigameInstance implements ProtoMinigame, MinigameCon
 		}
 		LTNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new ClientRoleMessage(null));
 		for (PlayerRole role : PlayerRole.values()) {
-			LTNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new PlayerCountsMessage(role, getMemberCount(role)));
+			LTNetwork.CHANNEL.send(PacketDistributor.ALL.noArg(), new PlayerCountsMessage(role, getMemberCount(role)));
 		}
 
 		ITextComponent minigameName = definition.getName().applyTextStyle(TextFormatting.AQUA);
