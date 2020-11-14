@@ -1,5 +1,6 @@
 package com.lovetropics.minigames.common.minigames;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.lovetropics.minigames.client.data.TropicraftLangKeys;
 import com.lovetropics.minigames.client.minigame.ClientMinigameMessage;
@@ -50,6 +51,7 @@ import org.apache.logging.log4j.util.TriConsumer;
 import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiConsumer;
@@ -160,7 +162,8 @@ public class MinigameManager implements IMinigameManager {
 				return result.castError();
 			}
 
-			for (ServerPlayerEntity player : minigame.getPlayers()) {
+			List<ServerPlayerEntity> players = Lists.newArrayList(minigame.getPlayers());
+			for (ServerPlayerEntity player : players) {
 				minigame.removePlayer(player);
 			}
 
