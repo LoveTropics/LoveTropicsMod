@@ -1,19 +1,23 @@
 package com.lovetropics.minigames.common.minigames.behaviours.instances.donations;
 
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
 import com.google.common.collect.Lists;
 import com.lovetropics.minigames.common.Util;
 import com.lovetropics.minigames.common.game_actions.GamePackage;
 import com.lovetropics.minigames.common.minigames.IMinigameInstance;
-import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
+import com.lovetropics.minigames.common.minigames.behaviours.IMinigamePackageBehavior;
 import com.mojang.datafixers.Dynamic;
+
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
-import java.util.*;
-
-public class SpawnEntitiesAroundPlayersPackageBehavior implements IMinigameBehavior
+public class SpawnEntitiesAroundPlayersPackageBehavior implements IMinigamePackageBehavior
 {
 	private final DonationPackageData data;
 	private final ResourceLocation entityId;
@@ -32,6 +36,11 @@ public class SpawnEntitiesAroundPlayersPackageBehavior implements IMinigameBehav
 		this.spawnDistanceMax = spawnDistanceMax;
 		this.spawnRangeY = spawnRangeY;
 		this.spawnsPerTick = spawnsPerTick;
+	}
+
+	@Override
+	public String getPackageType() {
+		return data.getPackageType();
 	}
 
 	@Override

@@ -1,10 +1,10 @@
 package com.lovetropics.minigames.common.minigames.behaviours.instances.donations;
 
-import com.google.common.collect.Lists;
-import com.lovetropics.minigames.common.Util;
-import com.lovetropics.minigames.common.game_actions.DonationPackageGameAction;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+
 import com.lovetropics.minigames.common.minigames.IMinigameInstance;
-import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
 import com.mojang.datafixers.Dynamic;
 
 import net.minecraft.entity.EntityType;
@@ -13,11 +13,6 @@ import net.minecraft.entity.projectile.FireballEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
-
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
 
 public class ShootProjectilesAroundPlayerPackageBehavior extends DonationPackageBehavior
 {

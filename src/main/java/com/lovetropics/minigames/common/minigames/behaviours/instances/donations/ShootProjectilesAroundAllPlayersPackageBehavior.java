@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import com.lovetropics.minigames.common.game_actions.GamePackage;
 import com.lovetropics.minigames.common.minigames.IMinigameInstance;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
+import com.lovetropics.minigames.common.minigames.behaviours.IMinigamePackageBehavior;
 import com.mojang.datafixers.Dynamic;
 
 import net.minecraft.entity.EntityType;
@@ -15,7 +16,7 @@ import net.minecraft.world.World;
 
 import java.util.*;
 
-public class ShootProjectilesAroundAllPlayersPackageBehavior implements IMinigameBehavior
+public class ShootProjectilesAroundAllPlayersPackageBehavior implements IMinigamePackageBehavior
 {
 	private final DonationPackageData data;
 	//private final ResourceLocation entityId;
@@ -39,6 +40,11 @@ public class ShootProjectilesAroundAllPlayersPackageBehavior implements IMinigam
 		this.spawnRateBase = spawnsPerTickBase;
 		this.spawnRateRandom = spawnsPerTickRandom;
 		this.explosionStrength = explosionStrength;
+	}
+
+	@Override
+	public String getPackageType() {
+		return data.getPackageType();
 	}
 
 	@Override

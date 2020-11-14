@@ -1,20 +1,21 @@
 package com.lovetropics.minigames.common.minigames.behaviours.instances.donations;
 
+import java.util.List;
+
 import com.google.common.collect.Lists;
 import com.lovetropics.minigames.common.Util;
 import com.lovetropics.minigames.common.game_actions.GamePackage;
 import com.lovetropics.minigames.common.map.MapRegion;
 import com.lovetropics.minigames.common.map.MapRegions;
 import com.lovetropics.minigames.common.minigames.IMinigameInstance;
-import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
+import com.lovetropics.minigames.common.minigames.behaviours.IMinigamePackageBehavior;
 import com.mojang.datafixers.Dynamic;
+
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.gen.Heightmap;
 
-import java.util.List;
-
-public class SpawnEntityAtRegionsPackageBehavior implements IMinigameBehavior
+public class SpawnEntityAtRegionsPackageBehavior implements IMinigamePackageBehavior
 {
 	private final DonationPackageData data;
 	private final String[] regionsToSpawnAtKeys;
@@ -28,6 +29,11 @@ public class SpawnEntityAtRegionsPackageBehavior implements IMinigameBehavior
 		this.regionsToSpawnAtKeys = regionsToSpawnAtKeys;
 		this.entityId = entityId;
 		this.entityCountPerRegion = entityCountPerRegion;
+	}
+
+	@Override
+	public String getPackageType() {
+		return data.getPackageType();
 	}
 
 	@Override

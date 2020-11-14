@@ -1,22 +1,25 @@
 package com.lovetropics.minigames.common.minigames.behaviours.instances.donations;
 
+import java.util.List;
+import java.util.Optional;
+
+import javax.annotation.Nullable;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import com.google.common.collect.Lists;
 import com.lovetropics.minigames.common.Util;
 import com.lovetropics.minigames.common.game_actions.GamePackage;
 import com.lovetropics.minigames.common.minigames.IMinigameInstance;
-import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
+import com.lovetropics.minigames.common.minigames.behaviours.IMinigamePackageBehavior;
+
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
-import javax.annotation.Nullable;
-import java.util.List;
-import java.util.Optional;
 
 // TODO: support combining behaviors for package received.. somehow..?
-public abstract class DonationPackageBehavior implements IMinigameBehavior
+public abstract class DonationPackageBehavior implements IMinigamePackageBehavior
 {
 	private static final Logger LOGGER = LogManager.getLogger(DonationPackageBehavior.class);
 
@@ -49,6 +52,11 @@ public abstract class DonationPackageBehavior implements IMinigameBehavior
 
 	public DonationPackageBehavior(final DonationPackageData data) {
 		this.data = data;
+	}
+
+	@Override
+	public String getPackageType() {
+		return data.getPackageType();
 	}
 
 	@Override

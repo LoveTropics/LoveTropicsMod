@@ -1,18 +1,19 @@
 package com.lovetropics.minigames.common.minigames.behaviours.instances.donations;
 
+import java.util.Collections;
+import java.util.List;
+
 import com.google.common.collect.Lists;
 import com.lovetropics.minigames.common.game_actions.GamePackage;
 import com.lovetropics.minigames.common.minigames.IMinigameInstance;
-import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
+import com.lovetropics.minigames.common.minigames.behaviours.IMinigamePackageBehavior;
 import com.mojang.datafixers.Dynamic;
+
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
-import java.util.Collections;
-import java.util.List;
-
-public class SwapPlayersPackageBehavior implements IMinigameBehavior {
+public class SwapPlayersPackageBehavior implements IMinigamePackageBehavior {
 	protected final DonationPackageData data;
 	private int swapCountdown;
 
@@ -24,6 +25,11 @@ public class SwapPlayersPackageBehavior implements IMinigameBehavior {
 		final DonationPackageData data = DonationPackageData.parse(root);
 
 		return new SwapPlayersPackageBehavior(data);
+	}
+
+	@Override
+	public String getPackageType() {
+		return data.getPackageType();
 	}
 
 	@Override
