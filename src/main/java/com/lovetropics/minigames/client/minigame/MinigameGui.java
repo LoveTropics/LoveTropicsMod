@@ -51,7 +51,10 @@ public class MinigameGui {
 
 				line = TextFormatting.GRAY + "Commands: ";
 				if (state.getRole() == null) {
-					line += TextFormatting.AQUA + "/join" + TextFormatting.GRAY + " or " + TextFormatting.AQUA + "/spectate";
+					if (state.getStatus() == MinigameStatus.POLLING) {
+						line += TextFormatting.AQUA + "/join" + TextFormatting.GRAY + " or ";
+					}
+					line += TextFormatting.AQUA + "/spectate";
 				} else {
 					line += TextFormatting.AQUA + "/leave";
 				}
