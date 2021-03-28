@@ -270,7 +270,7 @@ public class MinigameManager implements IMinigameManager {
 		this.polling = polling;
 		LTNetwork.CHANNEL.send(PacketDistributor.ALL.noArg(), new ClientMinigameMessage(this.polling));
 
-		if (!Telemetry.INSTANCE.isReaderConnected()) {
+		if (!Telemetry.INSTANCE.isConnected()) {
 			ITextComponent warning = new StringTextComponent("Warning: Minigame telemetry websocket is not connected!")
 					.applyTextStyles(TextFormatting.RED, TextFormatting.BOLD);
 			sendWarningToOperators(warning);
