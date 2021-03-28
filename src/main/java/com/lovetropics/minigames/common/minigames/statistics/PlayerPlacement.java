@@ -3,7 +3,7 @@ package com.lovetropics.minigames.common.minigames.statistics;
 import com.lovetropics.minigames.common.minigames.IMinigameInstance;
 import com.lovetropics.minigames.common.minigames.PlayerSet;
 import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.IFormattableTextComponent;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
 import org.apache.commons.lang3.StringUtils;
@@ -106,8 +106,8 @@ public interface PlayerPlacement {
 					String prefix = head ? headPrefix : indentPrefix;
 					head = false;
 
-					players.sendMessage(new StringTextComponent(prefix).applyTextStyle(TextFormatting.AQUA)
-							.appendSibling(new StringTextComponent(entry.value.getName()).applyTextStyle(TextFormatting.GOLD))
+					players.sendMessage(new StringTextComponent(prefix).mergeStyle(TextFormatting.AQUA)
+							.appendSibling(new StringTextComponent(entry.value.getName()).mergeStyle(TextFormatting.GOLD))
 					);
 
 					i++;
@@ -160,10 +160,10 @@ public interface PlayerPlacement {
 					String prefix = head ? headPrefix : indentPrefix;
 					head = false;
 
-					ITextComponent name = new StringTextComponent(prefix + entry.player.getName() + ": ");
-					ITextComponent score = new StringTextComponent(scoreKey.display(entry.score));
+					IFormattableTextComponent name = new StringTextComponent(prefix + entry.player.getName() + ": ");
+					IFormattableTextComponent score = new StringTextComponent(scoreKey.display(entry.score));
 
-					players.sendMessage(name.applyTextStyle(TextFormatting.AQUA).appendSibling(score.applyTextStyle(TextFormatting.GOLD)));
+					players.sendMessage(name.mergeStyle(TextFormatting.AQUA).appendSibling(score.mergeStyle(TextFormatting.GOLD)));
 
 					i++;
 				}

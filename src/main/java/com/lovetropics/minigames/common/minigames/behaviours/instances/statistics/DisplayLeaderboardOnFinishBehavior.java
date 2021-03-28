@@ -5,32 +5,38 @@ import com.lovetropics.minigames.common.minigames.PlayerSet;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
 import com.lovetropics.minigames.common.minigames.statistics.PlayerPlacement;
 import com.lovetropics.minigames.common.minigames.statistics.StatisticKey;
-import com.mojang.datafixers.Dynamic;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.util.text.StringTextComponent;
 
 public final class DisplayLeaderboardOnFinishBehavior<T extends Comparable<T>> implements IMinigameBehavior {
+	public static final Codec<DisplayLeaderboardOnFinishBehavior<?>> CODEC = RecordCodecBuilder.create(instance -> {
+		return instance.group(
+				StatisticKey.CODEC.fieldOf("statistic").forGetter(c -> c.statistic),
+				PlacementOrder.CODEC.optionalFieldOf("order", PlacementOrder.MAX).forGetter(c -> c.order),
+				Codec.INT.optionalFieldOf("length", 5).forGetter(c -> c.length)
+		).apply(instance, DisplayLeaderboardOnFinishBehavior::createUnchecked);
+	});
+
 	private final StatisticKey<T> statistic;
-	private final boolean max;
+	private final PlacementOrder order;
 	private final int length;
 
-	public DisplayLeaderboardOnFinishBehavior(StatisticKey<T> statistic, boolean max, int length) {
+	public DisplayLeaderboardOnFinishBehavior(StatisticKey<T> statistic, PlacementOrder order, int length) {
 		this.statistic = statistic;
-		this.max = max;
+		this.order = order;
 		this.length = length;
 	}
 
 	@SuppressWarnings("unchecked")
-	public static <T extends Comparable<T>, D> DisplayLeaderboardOnFinishBehavior<T> parse(Dynamic<D> root) {
-		StatisticKey<T> statistic = (StatisticKey<T>) StatisticKey.get(root.get("statistic").asString(""));
-		boolean max = root.get("order").asString("max").equalsIgnoreCase("max");
-		int length = root.get("length").asInt(5);
-		return new DisplayLeaderboardOnFinishBehavior<>(statistic, max, length);
+	private static <T extends Comparable<T>> DisplayLeaderboardOnFinishBehavior<T> createUnchecked(StatisticKey<?> statistic, PlacementOrder order, int length) {
+		return new DisplayLeaderboardOnFinishBehavior<T>((StatisticKey<T>) statistic, order, length);
 	}
 
 	@Override
 	public void onFinish(IMinigameInstance minigame) {
 		PlayerPlacement.Score<T> placement;
-		if (max) {
+		if (order == PlacementOrder.MAX) {
 			placement = PlayerPlacement.fromMaxScore(minigame, statistic);
 		} else {
 			placement = PlayerPlacement.fromMinScore(minigame, statistic);

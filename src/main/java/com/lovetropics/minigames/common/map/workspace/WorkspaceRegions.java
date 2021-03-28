@@ -1,11 +1,5 @@
 package com.lovetropics.minigames.common.map.workspace;
 
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.lovetropics.minigames.common.map.MapRegion;
@@ -14,24 +8,29 @@ import com.lovetropics.minigames.common.network.LTNetwork;
 import com.lovetropics.minigames.common.network.map.AddWorkspaceRegionMessage;
 import com.lovetropics.minigames.common.network.map.SetWorkspaceMessage;
 import com.lovetropics.minigames.common.network.map.UpdateWorkspaceRegionMessage;
-
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.ListNBT;
 import net.minecraft.network.PacketBuffer;
-import net.minecraft.world.dimension.DimensionType;
+import net.minecraft.util.RegistryKey;
+import net.minecraft.world.World;
 import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.fml.network.PacketDistributor;
 
+import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.Set;
+
 public final class WorkspaceRegions implements Iterable<WorkspaceRegions.Entry> {
-	private final DimensionType dimension;
+	private final RegistryKey<World> dimension;
 	private final Int2ObjectMap<Entry> entries = new Int2ObjectOpenHashMap<>();
 	private int nextId;
 	private boolean hidden;
 
-	public WorkspaceRegions(DimensionType dimension) {
+	public WorkspaceRegions(RegistryKey<World> dimension) {
 		this.dimension = dimension;
 	}
 

@@ -19,12 +19,13 @@ import net.minecraft.command.CommandSource;
 import net.minecraft.command.ICommandSource;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.RegistryKey;
 import net.minecraft.util.Unit;
-import net.minecraft.util.math.Vec2f;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.vector.Vector2f;
+import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.world.dimension.DimensionType;
+import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.fml.network.PacketDistributor;
 
@@ -43,7 +44,7 @@ public class MinigameInstance implements IMinigameInstance
 {
     private final MinecraftServer server;
     private final IMinigameDefinition definition;
-    private final DimensionType dimension;
+    private final RegistryKey<World> dimension;
 
     private final MutablePlayerSet allPlayers;
     private final EnumMap<PlayerRole, MutablePlayerSet> roles = new EnumMap<>(PlayerRole.class);
@@ -264,14 +265,14 @@ public class MinigameInstance implements IMinigameInstance
             String unlocalizedName = definition.getUnlocalizedName();
             ITextComponent text = new StringTextComponent(unlocalizedName);
             ServerWorld world = getWorld();
-            this.commandSource = new CommandSource(ICommandSource.DUMMY, Vec3d.ZERO, Vec2f.ZERO, world, 4, unlocalizedName, text, this.server, null);
+            this.commandSource = new CommandSource(ICommandSource.DUMMY, Vector3d.ZERO, Vector2f.ZERO, world, 4, unlocalizedName, text, this.server, null);
         }
 
         return this.commandSource;
     }
 
     @Override
-    public DimensionType getDimension() {
+    public RegistryKey<World> getDimension() {
         return dimension;
     }
 

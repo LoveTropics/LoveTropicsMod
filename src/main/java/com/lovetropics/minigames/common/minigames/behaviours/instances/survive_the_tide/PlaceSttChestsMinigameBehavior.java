@@ -2,7 +2,7 @@ package com.lovetropics.minigames.common.minigames.behaviours.instances.survive_
 
 import com.lovetropics.minigames.common.minigames.IMinigameInstance;
 import com.lovetropics.minigames.common.minigames.behaviours.instances.ChunkGeneratingBehavior;
-import com.mojang.datafixers.Dynamic;
+import com.mojang.serialization.Codec;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -19,15 +19,14 @@ import net.minecraft.world.server.ServerWorld;
 import java.util.ArrayList;
 import java.util.List;
 
+// TODO: make data driven
 public class PlaceSttChestsMinigameBehavior extends ChunkGeneratingBehavior {
+	public static final Codec<PlaceSttChestsMinigameBehavior> CODEC = Codec.unit(PlaceSttChestsMinigameBehavior::new);
+
 	private static final ResourceLocation MISC_LOOT = new ResourceLocation("lt20", "stt2/misc_type");
 	private static final ResourceLocation FOOD_LOOT = new ResourceLocation("lt20", "stt2/food_type");
 	private static final ResourceLocation MILITARY_LOOT = new ResourceLocation("lt20", "stt2/military_type");
 	private static final ResourceLocation EQUIPMENT_LOOT = new ResourceLocation("lt20", "stt2/equipment_type");
-
-	public static <T> PlaceSttChestsMinigameBehavior parse(Dynamic<T> root) {
-		return new PlaceSttChestsMinigameBehavior();
-	}
 
 	@Override
 	protected void generateChunk(IMinigameInstance minigame, ServerWorld world, Chunk chunk) {

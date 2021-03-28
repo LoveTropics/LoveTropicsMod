@@ -1,32 +1,34 @@
 package com.lovetropics.minigames.common.minigames.behaviours.instances;
 
-import com.google.common.collect.Lists;
 import com.lovetropics.minigames.common.minigames.IMinigameInstance;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
 import com.lovetropics.minigames.common.minigames.behaviours.MinigameBehaviorTypes;
-import com.mojang.datafixers.Dynamic;
-import net.minecraft.world.World;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.world.server.ServerWorld;
 
 import java.util.Iterator;
-import java.util.LinkedList;
+import java.util.List;
 import java.util.Optional;
 
+// TODO: separate phase holder and phase controller behaviors- and maybe we have a system separate to behaviors that stores state like phases?
 public class PhasesMinigameBehavior implements IMinigameBehavior
 {
-	private final LinkedList<MinigamePhase> phases;
+	public static final Codec<PhasesMinigameBehavior> CODEC = RecordCodecBuilder.create(instance -> {
+		return instance.group(
+				MinigamePhase.CODEC.listOf().fieldOf("phases").forGetter(c -> c.phases)
+		).apply(instance, PhasesMinigameBehavior::new);
+	});
+
+	private final List<MinigamePhase> phases;
 	private MinigamePhase currentPhase;
 	private MinigamePhase previousPhase;
 	private Iterator<MinigamePhase> phaseIterator;
 	private int currentPhaseTicks;
 	private boolean hasFinishedPhases = false;
 
-	public PhasesMinigameBehavior(final LinkedList<MinigamePhase> phases) {
+	public PhasesMinigameBehavior(final List<MinigamePhase> phases) {
 		this.phases = phases;
-	}
-
-	public static <T> PhasesMinigameBehavior parse(final Dynamic<T> root) {
-		final LinkedList<MinigamePhase> phases = Lists.newLinkedList(root.get("phases").asList(MinigamePhase::parse));
-		return new PhasesMinigameBehavior(phases);
 	}
 
 	public MinigamePhase getFirstPhase() {
@@ -65,7 +67,7 @@ public class PhasesMinigameBehavior implements IMinigameBehavior
 	}
 
 	@Override
-	public void worldUpdate(IMinigameInstance minigame, World world) {
+	public void worldUpdate(IMinigameInstance minigame, ServerWorld world) {
 		currentPhaseTicks++;
 
 		if (!hasFinishedPhases && currentPhaseTicks >= currentPhase.lengthInTicks) {
@@ -84,6 +86,13 @@ public class PhasesMinigameBehavior implements IMinigameBehavior
 	}
 
 	public static class MinigamePhase {
+		public static final Codec<MinigamePhase> CODEC = RecordCodecBuilder.create(instance -> {
+			return instance.group(
+					Codec.STRING.fieldOf("key").forGetter(c -> c.key),
+					Codec.INT.fieldOf("length_in_ticks").forGetter(c -> c.lengthInTicks)
+			).apply(instance, MinigamePhase::new);
+		});
+
 		private final String key;
 		private final int lengthInTicks;
 
@@ -104,13 +113,6 @@ public class PhasesMinigameBehavior implements IMinigameBehavior
 		public String getKey()
 		{
 			return key;
-		}
-
-		public static <T> MinigamePhase parse(final Dynamic<T> root) {
-			final String key = root.get("key").asString("");
-			final int lengthInTicks = root.get("length_in_ticks").asInt(0);
-
-			return new MinigamePhase(key, lengthInTicks);
 		}
 	}
 

@@ -70,7 +70,6 @@ public final class CauseOfDeath {
 		else if (damage == DamageSource.ANVIL) return "squashed by a falling anvil";
 		else if (damage == DamageSource.FALLING_BLOCK) return "squashed by a falling block";
 		else if (damage == DamageSource.DRAGON_BREATH) return "roasted in dragon breath";
-		else if (damage == DamageSource.FIREWORKS) return "went off with a bang";
 		else if (damage == DamageSource.SWEET_BERRY_BUSH) return "poked to death by a sweet berry bush";
 		else if (damage instanceof EntityDamageSource) return "was slain";
 

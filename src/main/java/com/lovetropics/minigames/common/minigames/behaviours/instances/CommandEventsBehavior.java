@@ -2,10 +2,10 @@ package com.lovetropics.minigames.common.minigames.behaviours.instances;
 
 import com.lovetropics.minigames.common.minigames.IMinigameInstance;
 import com.lovetropics.minigames.common.minigames.PlayerRole;
-import com.mojang.datafixers.Dynamic;
+import com.mojang.serialization.Codec;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.world.World;
+import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.player.AttackEntityEvent;
@@ -14,12 +14,10 @@ import java.util.List;
 import java.util.Map;
 
 public final class CommandEventsBehavior extends CommandInvokeBehavior {
+	public static final Codec<CommandEventsBehavior> CODEC = COMMANDS_CODEC.xmap(CommandEventsBehavior::new, c -> c.commands);
+
 	public CommandEventsBehavior(Map<String, List<String>> commands) {
 		super(commands);
-	}
-
-	public static <T> CommandEventsBehavior parse(Dynamic<T> root) {
-		return new CommandEventsBehavior(parseCommands(root));
 	}
 
 	@Override
@@ -34,7 +32,7 @@ public final class CommandEventsBehavior extends CommandInvokeBehavior {
 	}
 
 	@Override
-	public void worldUpdate(IMinigameInstance minigame, World world) {
+	public void worldUpdate(IMinigameInstance minigame, ServerWorld world) {
 		this.invoke("update");
 	}
 

@@ -50,10 +50,6 @@ public final class Scheduler {
 		this.taskQueue.add(new Task(task, this.tick + delay));
 	}
 
-	private void enqueue(Task task) {
-		this.taskQueue.add(task);
-	}
-
 	private void runTasks(MinecraftServer server) {
 		int time = server.getTickCounter();
 		this.tick = time;

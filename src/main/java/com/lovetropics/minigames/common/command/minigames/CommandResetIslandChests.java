@@ -1,6 +1,5 @@
 package com.lovetropics.minigames.common.command.minigames;
 
-import com.lovetropics.minigames.common.map.workspace.MapWorkspaceDimension;
 import com.mojang.brigadier.CommandDispatcher;
 import net.minecraft.command.CommandSource;
 import net.minecraft.nbt.CompoundNBT;

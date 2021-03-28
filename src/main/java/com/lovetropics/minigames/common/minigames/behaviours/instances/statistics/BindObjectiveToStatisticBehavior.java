@@ -4,7 +4,9 @@ import com.lovetropics.minigames.common.minigames.IMinigameInstance;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
 import com.lovetropics.minigames.common.minigames.statistics.MinigameStatistics;
 import com.lovetropics.minigames.common.minigames.statistics.StatisticKey;
-import com.mojang.datafixers.Dynamic;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.Dynamic;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.scoreboard.Score;
 import net.minecraft.scoreboard.ScoreObjective;
@@ -13,6 +15,12 @@ import net.minecraft.scoreboard.ServerScoreboard;
 import java.util.Map;
 
 public final class BindObjectiveToStatisticBehavior implements IMinigameBehavior {
+	public static final Codec<BindObjectiveToStatisticBehavior> CODEC = RecordCodecBuilder.create(instance -> {
+		return instance.group(
+				Codec.unboundedMap(StatisticKey.codecFor(Integer.class), Codec.STRING).fieldOf("objectives").forGetter(c -> c.statisticToObjective)
+		).apply(instance, BindObjectiveToStatisticBehavior::new);
+	});
+
 	private final Map<StatisticKey<Integer>, String> statisticToObjective;
 
 	public BindObjectiveToStatisticBehavior(Map<StatisticKey<Integer>, String> statisticToObjective) {

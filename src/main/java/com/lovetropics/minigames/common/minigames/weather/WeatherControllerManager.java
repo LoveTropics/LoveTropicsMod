@@ -5,8 +5,10 @@ import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.RegistryKey;
+import net.minecraft.world.IServerWorld;
+import net.minecraft.world.IWorld;
 import net.minecraft.world.World;
-import net.minecraft.world.dimension.DimensionType;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
@@ -19,7 +21,7 @@ import java.util.function.Function;
 
 @Mod.EventBusSubscriber(modid = Constants.MODID)
 public final class WeatherControllerManager {
-	private static final Map<DimensionType, WeatherController> WEATHER_CONTROLLERS = new Reference2ObjectOpenHashMap<>();
+	private static final Map<RegistryKey<World>, WeatherController> WEATHER_CONTROLLERS = new Reference2ObjectOpenHashMap<>();
 
 	private static Function<ServerWorld, WeatherController> factory = VanillaWeatherController::new;
 
@@ -28,7 +30,7 @@ public final class WeatherControllerManager {
 	}
 
 	public static WeatherController forWorld(ServerWorld world) {
-		DimensionType dimension = world.getDimension().getType();
+		RegistryKey<World> dimension = world.getDimensionKey();
 		WeatherController controller = WEATHER_CONTROLLERS.get(dimension);
 		if (controller == null) {
 			WEATHER_CONTROLLERS.put(dimension, controller = factory.apply(world));
@@ -38,7 +40,7 @@ public final class WeatherControllerManager {
 
 	@SubscribeEvent
 	public static void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
-		joinPlayerToDimension(event.getPlayer(), event.getPlayer().dimension);
+		joinPlayerToDimension(event.getPlayer(), event.getPlayer().world.getDimensionKey());
 	}
 
 	@SubscribeEvent
@@ -46,7 +48,7 @@ public final class WeatherControllerManager {
 		joinPlayerToDimension(event.getPlayer(), event.getTo());
 	}
 
-	private static void joinPlayerToDimension(PlayerEntity player, DimensionType dimension) {
+	private static void joinPlayerToDimension(PlayerEntity player, RegistryKey<World> dimension) {
 		MinecraftServer server = player.getServer();
 		if (server == null || !(player instanceof ServerPlayerEntity)) {
 			return;
@@ -66,7 +68,7 @@ public final class WeatherControllerManager {
 			return;
 		}
 
-		WeatherController controller = WEATHER_CONTROLLERS.get(world.dimension.getType());
+		WeatherController controller = WEATHER_CONTROLLERS.get(world.getDimensionKey());
 		if (controller != null) {
 			controller.tick();
 		}
@@ -74,6 +76,9 @@ public final class WeatherControllerManager {
 
 	@SubscribeEvent
 	public static void onWorldUnload(WorldEvent.Unload event) {
-		WEATHER_CONTROLLERS.remove(event.getWorld().getDimension().getType());
+		IWorld world = event.getWorld();
+		if (world instanceof IServerWorld) {
+			WEATHER_CONTROLLERS.remove(((IServerWorld) world).getWorld().getDimensionKey());
+		}
 	}
 }

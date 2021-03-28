@@ -8,7 +8,7 @@ import com.lovetropics.minigames.common.network.map.UpdateWorkspaceRegionMessage
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.vector.Vector3d;
 
 import javax.annotation.Nullable;
 import java.util.Collections;
@@ -58,10 +58,10 @@ public interface RegionEditOperator {
 
 		@Override
 		protected MapRegion updateEditing(PlayerEntity player, RegionTraceTarget editTarget) {
-			Vec3d origin = player.getEyePosition(1.0F);
+			Vector3d origin = player.getEyePosition(1.0F);
 
 			// TODO: not totally sure how to make this feel natural
-			Vec3d grabPoint = origin.add(player.getLookVec().scale(target.distanceToSide));
+			Vector3d grabPoint = origin.add(player.getLookVec().scale(target.distanceToSide));
 			BlockPos grabPos = new BlockPos(grabPoint);
 
 			MapRegion region = editTarget.entry.region;
@@ -79,7 +79,7 @@ public interface RegionEditOperator {
 	}
 
 	final class Move extends EditOne {
-		private final Vec3d offset;
+		private final Vector3d offset;
 
 		public Move(RegionTraceTarget target) {
 			super(target);
@@ -88,13 +88,13 @@ public interface RegionEditOperator {
 
 		@Override
 		protected MapRegion updateEditing(PlayerEntity player, RegionTraceTarget editTarget) {
-			Vec3d origin = player.getEyePosition(1.0F);
+			Vector3d origin = player.getEyePosition(1.0F);
 
 			MapRegion region = editTarget.entry.region;
 
-			Vec3d grabPoint = region.getCenter().add(offset);
-			Vec3d targetPoint = origin.add(player.getLookVec().scale(target.distanceToSide));
-			Vec3d offset = targetPoint.subtract(grabPoint);
+			Vector3d grabPoint = region.getCenter().add(offset);
+			Vector3d targetPoint = origin.add(player.getLookVec().scale(target.distanceToSide));
+			Vector3d offset = targetPoint.subtract(grabPoint);
 
 			return region.offset(offset.x, offset.y, offset.z);
 		}

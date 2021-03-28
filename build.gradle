@@ -4,10 +4,10 @@ buildscript {
         jcenter()
         mavenCentral()
         mavenLocal()
-        maven {url='https://repo.spongepowered.org/maven'}
+        maven { url='https://repo.spongepowered.org/maven' }
     }
     dependencies {
-        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '3.+', changing: true
+        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '4.1.+', changing: true
         classpath 'org.spongepowered:mixingradle:0.7-SNAPSHOT'
     }
 }
@@ -29,7 +29,7 @@ version = "${mod_version}-${release_type}+${buildnumber}"
 sourceCompatibility = targetCompatibility = compileJava.sourceCompatibility = compileJava.targetCompatibility = '1.8' // Need this here so eclipse task generates correctly.
 
 minecraft {
-    mappings channel: 'snapshot', version: '20200515-1.15.1'
+    mappings channel: 'snapshot', version: '20210309-1.16.5'
     
     accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg')
 
@@ -118,10 +118,10 @@ dependencies {
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
     
     // Utilize tropicraft worldgen code
-    implementation fg.deobf('net.tropicraft:Tropicraft:8.1.0-alpha+22')
+    implementation fg.deobf('net.tropicraft:Tropicraft:9.0.0-beta+custom')
     
     // Shaded deps
-    def registrate = "com.tterrag.registrate:Registrate:MC${minecraft_version}-${registrate_version}"
+    def registrate = "com.tterrag.registrate:Registrate:MC1.16.2-${registrate_version}"
     implementation fg.deobf(registrate)
     shade registrate
     

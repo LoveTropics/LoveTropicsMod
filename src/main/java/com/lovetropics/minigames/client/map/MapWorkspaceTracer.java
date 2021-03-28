@@ -11,7 +11,7 @@ import net.minecraft.util.Direction;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockRayTraceResult;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.vector.Vector3d;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -47,14 +47,14 @@ public final class MapWorkspaceTracer {
 			return null;
 		}
 
-		Vec3d origin = player.getEyePosition(1.0F);
-		Vec3d target = origin.add(player.getLookVec().scale(TRACE_RANGE));
+		Vector3d origin = player.getEyePosition(1.0F);
+		Vector3d target = origin.add(player.getLookVec().scale(TRACE_RANGE));
 
 		AxisAlignedBB traceScope = new AxisAlignedBB(origin, target).grow(1.0);
 
 		ClientWorkspaceRegions.Entry closestEntry = null;
 		double closestDistance = Double.POSITIVE_INFINITY;
-		Vec3d closestPoint = null;
+		Vector3d closestPoint = null;
 		Direction closestSide = null;
 
 		for (ClientWorkspaceRegions.Entry entry : regions) {
@@ -65,7 +65,7 @@ public final class MapWorkspaceTracer {
 			AxisAlignedBB bounds = entry.region.toAabb();
 			BlockRayTraceResult traceResult = AxisAlignedBB.rayTrace(ImmutableList.of(bounds), origin, target, BlockPos.ZERO);
 			if (traceResult != null) {
-				Vec3d intersectPoint = traceResult.getHitVec();
+				Vector3d intersectPoint = traceResult.getHitVec();
 				double distance = intersectPoint.distanceTo(origin);
 				if (distance < closestDistance) {
 					closestEntry = entry;

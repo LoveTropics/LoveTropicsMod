@@ -8,15 +8,18 @@ import com.lovetropics.minigames.common.minigames.IMinigameDefinition;
 import com.lovetropics.minigames.common.minigames.IMinigameInstance;
 import com.lovetropics.minigames.common.minigames.MinigameMap;
 import com.lovetropics.minigames.common.minigames.MinigameResult;
-import com.mojang.datafixers.Dynamic;
+import com.mojang.serialization.Dynamic;
 import net.minecraft.resources.IResource;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.RegistryKey;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Unit;
 import net.minecraft.util.Util;
+import net.minecraft.util.registry.Registry;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
+import net.minecraft.world.World;
 import net.minecraft.world.dimension.DimensionType;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.common.DimensionManager;
@@ -33,9 +36,9 @@ public class LoadMapProvider implements IMinigameMapProvider {
 
 	private final String name;
 	private final ResourceLocation loadFrom;
-	private final DimensionType dimension;
+	private final RegistryKey<World> dimension;
 
-	public LoadMapProvider(final @Nullable String name, final ResourceLocation loadFrom, final DimensionType dimension) {
+	public LoadMapProvider(final @Nullable String name, final ResourceLocation loadFrom, final RegistryKey<World> dimension) {
 		this.name = name;
 		this.loadFrom = loadFrom;
 		this.dimension = dimension;
@@ -44,7 +47,7 @@ public class LoadMapProvider implements IMinigameMapProvider {
 	public static <T> LoadMapProvider parse(Dynamic<T> root) {
 		String name = root.get("name").asString(null);
 		ResourceLocation loadFrom = new ResourceLocation(root.get("load_from").asString(""));
-		DimensionType dimension = DimensionType.byName(new ResourceLocation(root.get("dimension").asString("")));
+		RegistryKey<World> dimension = RegistryKey.getOrCreateKey(Registry.WORLD_KEY, new ResourceLocation(root.get("dimension").asString("")));
 		return new LoadMapProvider(name, loadFrom, dimension);
 	}
 
@@ -66,14 +69,14 @@ public class LoadMapProvider implements IMinigameMapProvider {
 		ITextComponent minigame = definition.getName();
 		if (world.getPlayers().isEmpty()) {
 			if (!world.getForcedChunks().isEmpty()) {
-				return MinigameResult.error(new StringTextComponent("Cannot unload the minigame dimension because it has force-loaded chunks!").applyTextStyle(TextFormatting.RED));
+				return MinigameResult.error(new StringTextComponent("Cannot unload the minigame dimension because it has force-loaded chunks!").mergeStyle(TextFormatting.RED));
 			}
 
 			DimensionManager.unloadWorld(world);
-			return MinigameResult.error(new StringTextComponent("The ").appendSibling(minigame).appendText(" dimension was not unloaded. Begun unloading, please try again in a few seconds.").applyTextStyle(TextFormatting.RED));
+			return MinigameResult.error(new StringTextComponent("The ").appendSibling(minigame).appendString(" dimension was not unloaded. Begun unloading, please try again in a few seconds.").mergeStyle(TextFormatting.RED));
 		}
 
-		return MinigameResult.error(new StringTextComponent("Cannot start minigame as players are in ").appendSibling(minigame).appendText(" dimension. Make them teleport out first.").applyTextStyle(TextFormatting.RED));
+		return MinigameResult.error(new StringTextComponent("Cannot start minigame as players are in ").appendSibling(minigame).appendString(" dimension. Make them teleport out first.").mergeStyle(TextFormatting.RED));
 	}
 
 	@Override
@@ -83,7 +86,7 @@ public class LoadMapProvider implements IMinigameMapProvider {
 					MinigameMap map = new MinigameMap(name, dimension, metadata.regions);
 
 					ServerWorld world = server.getWorld(dimension);
-					ServerWorld overworld = server.getWorld(DimensionType.OVERWORLD);
+					ServerWorld overworld = server.getWorld(World.OVERWORLD);
 					world.worldInfo = new MapWorldInfo(overworld.getWorldInfo(), metadata.settings);
 
 					return map;
@@ -94,7 +97,7 @@ public class LoadMapProvider implements IMinigameMapProvider {
 		return CompletableFuture.supplyAsync(() -> {
 			ResourceLocation path = new ResourceLocation(loadFrom.getNamespace(), "maps/" + loadFrom.getPath() + ".zip");
 
-			try (IResource resource = server.getResourceManager().getResource(path)) {
+			try (IResource resource = server.getDataPackRegistries().getResourceManager().getResource(path)) {
 				try (MapExportReader reader = MapExportReader.open(resource.getInputStream())) {
 					return reader.loadInto(server, dimension);
 				}

@@ -1,30 +1,30 @@
 package com.lovetropics.minigames.common.minigames.behaviours.instances.donations;
 
-import java.util.Collections;
-import java.util.List;
-
 import com.google.common.collect.Lists;
 import com.lovetropics.minigames.common.game_actions.GamePackage;
 import com.lovetropics.minigames.common.minigames.IMinigameInstance;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigamePackageBehavior;
-import com.mojang.datafixers.Dynamic;
-
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
+import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.world.server.ServerWorld;
+
+import java.util.Collections;
+import java.util.List;
 
 public class SwapPlayersPackageBehavior implements IMinigamePackageBehavior {
+	public static final Codec<SwapPlayersPackageBehavior> CODEC = RecordCodecBuilder.create(instance -> {
+		return instance.group(
+				DonationPackageData.CODEC.forGetter(c -> c.data)
+		).apply(instance, SwapPlayersPackageBehavior::new);
+	});
+
 	protected final DonationPackageData data;
 	private int swapCountdown;
 
 	public SwapPlayersPackageBehavior(final DonationPackageData data) {
 		this.data = data;
-	}
-
-	public static <T> SwapPlayersPackageBehavior parse(Dynamic<T> root) {
-		final DonationPackageData data = DonationPackageData.parse(root);
-
-		return new SwapPlayersPackageBehavior(data);
 	}
 
 	@Override
@@ -33,7 +33,7 @@ public class SwapPlayersPackageBehavior implements IMinigamePackageBehavior {
 	}
 
 	@Override
-	public void worldUpdate(IMinigameInstance minigame, World world) {
+	public void worldUpdate(IMinigameInstance minigame, ServerWorld world) {
 		if (swapCountdown <= 0) return;
 
 		if (--swapCountdown <= 0) {
@@ -43,7 +43,7 @@ public class SwapPlayersPackageBehavior implements IMinigamePackageBehavior {
 			for (int i = 0; i < players.size(); i++) {
 				final ServerPlayerEntity player = players.get(i);
 				final ServerPlayerEntity nextPlayer = players.get((i + 1) % players.size());
-				final Vec3d teleportTo = nextPlayer.getPositionVec();
+				final Vector3d teleportTo = nextPlayer.getPositionVec();
 
 				player.setPositionAndUpdate(teleportTo.x, teleportTo.y, teleportTo.z);
 			}

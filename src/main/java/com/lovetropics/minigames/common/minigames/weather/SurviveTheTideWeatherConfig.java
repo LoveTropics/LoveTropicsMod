@@ -1,11 +1,29 @@
 package com.lovetropics.minigames.common.minigames.weather;
 
-import com.mojang.datafixers.Dynamic;
-import com.mojang.datafixers.DynamicLike;
+import com.lovetropics.minigames.common.MoreCodecs;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.Object2FloatMap;
-import it.unimi.dsi.fastutil.objects.Object2FloatOpenHashMap;
 
 public class SurviveTheTideWeatherConfig {
+	public static final Codec<SurviveTheTideWeatherConfig> CODEC = RecordCodecBuilder.create(instance -> {
+		return instance.group(
+				MoreCodecs.object2Float(Codec.STRING).fieldOf("rain_heavy_chance").forGetter(c -> c.phaseToHeavyRainChance),
+				MoreCodecs.object2Float(Codec.STRING).fieldOf("rain_acid_chance").forGetter(c -> c.phaseToAcidRainChance),
+				MoreCodecs.object2Float(Codec.STRING).fieldOf("heatwave_chance").forGetter(c -> c.phaseToHeatwaveChance),
+				MoreCodecs.object2Float(Codec.STRING).fieldOf("wind_speed").forGetter(c -> c.phaseToWindSpeed),
+				Codec.INT.optionalFieldOf("rain_heavy_min_time", 1200).forGetter(c -> c.rainHeavyMinTime),
+				Codec.INT.optionalFieldOf("rain_heavy_extra_rand_time", 1200).forGetter(c -> c.rainHeavyExtraRandTime),
+				Codec.INT.optionalFieldOf("rain_acid_min_time", 1200).forGetter(c -> c.rainAcidMinTime),
+				Codec.INT.optionalFieldOf("rain_acid_extra_rand_time", 1200).forGetter(c -> c.rainAcidExtraRandTime),
+				Codec.INT.optionalFieldOf("heatwave_min_time", 1200).forGetter(c -> c.heatwaveMinTime),
+				Codec.INT.optionalFieldOf("heatwave_extra_rand_time", 1200).forGetter(c -> c.heatwaveExtraRandTime),
+				Codec.DOUBLE.optionalFieldOf("heatwave_movement_multiplier", 0.5).forGetter(c -> c.heatwaveMovementMultiplier),
+				Codec.FLOAT.optionalFieldOf("acid_rain_damage", 1.0F).forGetter(c -> c.acidRainDamage),
+				Codec.DOUBLE.optionalFieldOf("acid_rain_damage_rate", 60.0).forGetter(c -> c.acidRainDamageRate)
+		).apply(instance, SurviveTheTideWeatherConfig::new);
+	});
+
 	private final Object2FloatMap<String> phaseToHeavyRainChance;
 	private final Object2FloatMap<String> phaseToAcidRainChance;
 	private final Object2FloatMap<String> phaseToHeatwaveChance;
@@ -49,37 +67,6 @@ public class SurviveTheTideWeatherConfig {
 
 		this.acidRainDamage = acidRainDamage;
 		this.acidRainDamageRate = acidRainDamageRate;
-	}
-
-	public static <T> SurviveTheTideWeatherConfig parse(final Dynamic<T> root) {
-		final Object2FloatMap<String> rainHeavyChance = parsePhaseToFloatMap(root.get("rain_heavy_chance"));
-		final Object2FloatMap<String> rainAcidChance = parsePhaseToFloatMap(root.get("rain_acid_chance"));
-		final Object2FloatMap<String> heatwaveChance = parsePhaseToFloatMap(root.get("heatwave_chance"));
-		final Object2FloatMap<String> windSpeed = parsePhaseToFloatMap(root.get("wind_speed"));
-
-		final int rainHeavyMinTime = root.get("rain_heavy_min_time").asInt(1200);
-		final int rainHeavyExtraRandTime = root.get("rain_heavy_extra_rand_time").asInt(1200);
-
-		final int rainAcidMinTime = root.get("rain_acid_min_time").asInt(1200);
-		final int rainAcidExtraRandTime = root.get("rain_acid_extra_rand_time").asInt(1200);
-
-		final int heatwaveMinTime = root.get("heatwave_min_time").asInt(1200);
-		final int heatwaveExtraRandTime = root.get("heatwave_extra_rand_time").asInt(1200);
-
-		final double heatwaveMovementMultiplier = root.get("heatwave_movement_multiplier").asDouble(0.5);
-
-		final float acidRainDamage = root.get("acid_rain_damage").asFloat(1);
-		final double acidRainDamageRate = root.get("acid_rain_damage_rate").asDouble(60);
-
-		return new SurviveTheTideWeatherConfig(rainHeavyChance, rainAcidChance, heatwaveChance, windSpeed, rainHeavyMinTime,
-				rainHeavyExtraRandTime, rainAcidMinTime, rainAcidExtraRandTime, heatwaveMinTime, heatwaveExtraRandTime, heatwaveMovementMultiplier, acidRainDamage, acidRainDamageRate);
-	}
-
-	private static <T> Object2FloatMap<String> parsePhaseToFloatMap(DynamicLike<T> root) {
-		return new Object2FloatOpenHashMap<>(root.asMap(
-				key -> key.asString(""),
-				value -> value.asFloat(0.0F)
-		));
 	}
 
 	public double getRainHeavyChance(String phase) {

@@ -3,7 +3,9 @@ package com.lovetropics.minigames.common.map;
 import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.resources.IResource;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.RegistryKey;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.world.World;
 import net.minecraft.world.dimension.DimensionType;
 import net.minecraft.world.server.ServerWorld;
 import org.apache.commons.io.FileUtils;
@@ -27,7 +29,7 @@ public final class MapExportReader implements Closeable {
 
 	public static MapExportReader open(MinecraftServer server, ResourceLocation location) throws IOException {
 		ResourceLocation path = new ResourceLocation(location.getNamespace(), "maps/" + location.getPath() + ".zip");
-		IResource resource = server.getResourceManager().getResource(path);
+		IResource resource = server.getDataPackRegistries().getResourceManager().getResource(path);
 		return MapExportReader.open(resource.getInputStream());
 	}
 
@@ -35,8 +37,8 @@ public final class MapExportReader implements Closeable {
 		return new MapExportReader(new ZipInputStream(input));
 	}
 
-	public MapMetadata loadInto(MinecraftServer server, DimensionType dimension) throws IOException {
-		ServerWorld overworld = server.getWorld(DimensionType.OVERWORLD);
+	public MapMetadata loadInto(MinecraftServer server, RegistryKey<World> dimension) throws IOException {
+		ServerWorld overworld = server.getWorld(World.OVERWORLD);
 		File worldDirectory = overworld.getSaveHandler().getWorldDirectory();
 		File dimensionDirectory = dimension.getDirectory(worldDirectory);
 

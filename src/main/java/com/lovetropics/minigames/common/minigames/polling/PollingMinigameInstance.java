@@ -74,14 +74,14 @@ public final class PollingMinigameInstance implements ProtoMinigame, MinigameCon
 		registrations.add(player.getUniqueID(), requestedRole);
 
 		if (registrations.participantCount() == definition.getMinimumParticipantCount()) {
-			broadcastMessage(new TranslationTextComponent(TropicraftLangKeys.COMMAND_ENOUGH_PLAYERS).applyTextStyle(TextFormatting.AQUA));
+			broadcastMessage(new TranslationTextComponent(TropicraftLangKeys.COMMAND_ENOUGH_PLAYERS).mergeStyle(TextFormatting.AQUA));
 		}
 
-		ITextComponent playerName = player.getDisplayName().deepCopy().applyTextStyle(TextFormatting.GOLD);
-		ITextComponent minigameName = definition.getName().applyTextStyle(TextFormatting.GREEN);
+		ITextComponent playerName = player.getDisplayName().deepCopy().mergeStyle(TextFormatting.GOLD);
+		ITextComponent minigameName = definition.getName().deepCopy().mergeStyle(TextFormatting.GREEN);
 
 		String message = requestedRole != PlayerRole.SPECTATOR ? "%s has joined the %s minigame!" : "%s has joined to spectate the %s minigame!";
-		broadcastMessage(new TranslationTextComponent(message, playerName, minigameName).applyTextStyle(TextFormatting.AQUA));
+		broadcastMessage(new TranslationTextComponent(message, playerName, minigameName).mergeStyle(TextFormatting.AQUA));
 		PlayerRole trueRole = requestedRole == null ? PlayerRole.PARTICIPANT : requestedRole;
 		LTNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new ClientRoleMessage(trueRole));
 		LTNetwork.CHANNEL.send(PacketDistributor.ALL.noArg(), new PlayerCountsMessage(trueRole, getMemberCount(trueRole)));
@@ -89,8 +89,8 @@ public final class PollingMinigameInstance implements ProtoMinigame, MinigameCon
 		return MinigameResult.ok(
 				new TranslationTextComponent(
 						TropicraftLangKeys.COMMAND_REGISTERED_FOR_MINIGAME,
-						minigameName.applyTextStyle(TextFormatting.AQUA)
-				).applyTextStyle(TextFormatting.GREEN)
+						minigameName.deepCopy().mergeStyle(TextFormatting.AQUA)
+				).mergeStyle(TextFormatting.GREEN)
 		);
 	}
 
@@ -102,15 +102,15 @@ public final class PollingMinigameInstance implements ProtoMinigame, MinigameCon
 		registrations.remove(player.getUniqueID());
 
 		if (registrations.participantCount() == definition.getMinimumParticipantCount() - 1) {
-			broadcastMessage(new TranslationTextComponent(TropicraftLangKeys.COMMAND_NO_LONGER_ENOUGH_PLAYERS).applyTextStyle(TextFormatting.RED));
+			broadcastMessage(new TranslationTextComponent(TropicraftLangKeys.COMMAND_NO_LONGER_ENOUGH_PLAYERS).mergeStyle(TextFormatting.RED));
 		}
 		LTNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new ClientRoleMessage(null));
 		for (PlayerRole role : PlayerRole.values()) {
 			LTNetwork.CHANNEL.send(PacketDistributor.ALL.noArg(), new PlayerCountsMessage(role, getMemberCount(role)));
 		}
 
-		ITextComponent minigameName = definition.getName().applyTextStyle(TextFormatting.AQUA);
-		return MinigameResult.ok(new TranslationTextComponent(TropicraftLangKeys.COMMAND_UNREGISTERED_MINIGAME, minigameName).applyTextStyle(TextFormatting.RED));
+		ITextComponent minigameName = definition.getName().deepCopy().mergeStyle(TextFormatting.AQUA);
+		return MinigameResult.ok(new TranslationTextComponent(TropicraftLangKeys.COMMAND_UNREGISTERED_MINIGAME, minigameName).mergeStyle(TextFormatting.RED));
 	}
 
 	public CompletableFuture<MinigameResult<MinigameInstance>> start() {
@@ -132,7 +132,7 @@ public final class PollingMinigameInstance implements ProtoMinigame, MinigameCon
 
 	private void broadcastMessage(ITextComponent message) {
 		for (ServerPlayerEntity player : server.getPlayerList().getPlayers()) {
-			player.sendMessage(message);
+			player.sendStatusMessage(message, false);
 		}
 	}
 

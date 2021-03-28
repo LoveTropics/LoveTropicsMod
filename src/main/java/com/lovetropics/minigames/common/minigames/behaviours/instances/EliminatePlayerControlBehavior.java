@@ -4,13 +4,11 @@ import com.lovetropics.minigames.common.minigames.ControlCommand;
 import com.lovetropics.minigames.common.minigames.IMinigameInstance;
 import com.lovetropics.minigames.common.minigames.PlayerRole;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
-import com.mojang.datafixers.Dynamic;
+import com.mojang.serialization.Codec;
 import net.minecraft.entity.player.ServerPlayerEntity;
 
 public final class EliminatePlayerControlBehavior implements IMinigameBehavior {
-	public static <T> EliminatePlayerControlBehavior parse(Dynamic<T> root) {
-		return new EliminatePlayerControlBehavior();
-	}
+	public static final Codec<EliminatePlayerControlBehavior> CODEC = Codec.unit(EliminatePlayerControlBehavior::new);
 
 	@Override
 	public void onConstruct(IMinigameInstance minigame) {

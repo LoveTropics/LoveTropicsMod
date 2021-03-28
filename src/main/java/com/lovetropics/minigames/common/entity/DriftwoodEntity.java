@@ -5,7 +5,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.MoverType;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.fluid.IFluidState;
+import net.minecraft.fluid.FluidState;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.IPacket;
 import net.minecraft.network.datasync.DataParameter;
@@ -16,14 +16,13 @@ import net.minecraft.util.EntityPredicates;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.World;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.fml.network.NetworkHooks;
 
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,7 +42,7 @@ public final class DriftwoodEntity extends Entity {
 
 	private float floatDepth = START_FLOAT_DEPTH;
 
-	private Vec3d steerDirection;
+	private Vector3d steerDirection;
 	private float steerYaw;
 	private int steerTimer;
 
@@ -64,17 +63,6 @@ public final class DriftwoodEntity extends Entity {
 	}
 
 	@Override
-	@Nullable
-	public AxisAlignedBB getCollisionBox(Entity entity) {
-		return null;
-	}
-
-	@Override
-	public AxisAlignedBB getCollisionBoundingBox() {
-		return this.getBoundingBox();
-	}
-
-	@Override
 	public boolean canBePushed() {
 		return true;
 	}
@@ -87,7 +75,7 @@ public final class DriftwoodEntity extends Entity {
 	public boolean paddle(float direction) {
 		if (steerDirection == null) {
 			double directionRadians = Math.toRadians(direction);
-			steerDirection = new Vec3d(
+			steerDirection = new Vector3d(
 					-Math.sin(directionRadians),
 					0.0,
 					Math.cos(directionRadians)
@@ -133,7 +121,7 @@ public final class DriftwoodEntity extends Entity {
 		float floatHeight = getFloatHeight();
 
 		if (floatHeight != -1.0F) {
-			Vec3d motion = getMotion();
+			Vector3d motion = getMotion();
 
 			boolean atSurface = getPosY() >= floatHeight - 0.05;
 			if (atSurface) {
@@ -149,14 +137,14 @@ public final class DriftwoodEntity extends Entity {
 					motion = motion.add(steerDirection.x * 0.008, 0.0, steerDirection.z * 0.008);
 				}
 			} else {
-				motion = new Vec3d(motion.x, 0.1, motion.z);
+				motion = new Vector3d(motion.x, 0.1, motion.z);
 			}
 
 			setMotion(motion.x * 0.95, motion.y, motion.z * 0.95);
 		} else {
 			double accelerationY = inWater ? -0.01 : -0.08;
 
-			Vec3d motion = getMotion();
+			Vector3d motion = getMotion();
 			motion = motion.mul(0.7, 0.7, 0.7);
 			motion = motion.add(0.0, accelerationY, 0.0);
 
@@ -215,7 +203,7 @@ public final class DriftwoodEntity extends Entity {
 		int maxY = MathHelper.ceil(getBoundingBox().maxY);
 
 		BlockPos.Mutable mutablePos = new BlockPos.Mutable();
-		mutablePos.setPos(this);
+		mutablePos.setPos(this.getPosition());
 
 		float waterHeight = -1.0F;
 
@@ -228,7 +216,7 @@ public final class DriftwoodEntity extends Entity {
 	}
 
 	private float getWaterSurfaceAt(BlockPos pos) {
-		IFluidState fluid = world.getFluidState(pos);
+		FluidState fluid = world.getFluidState(pos);
 		if (fluid.isTagged(FluidTags.WATER)) {
 			return pos.getY() + fluid.getActualHeight(world, pos);
 		}

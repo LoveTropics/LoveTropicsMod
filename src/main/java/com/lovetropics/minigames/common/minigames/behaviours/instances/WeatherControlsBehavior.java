@@ -6,14 +6,12 @@ import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
 import com.lovetropics.minigames.common.minigames.weather.RainType;
 import com.lovetropics.minigames.common.minigames.weather.WeatherController;
 import com.lovetropics.minigames.common.minigames.weather.WeatherControllerManager;
-import com.mojang.datafixers.Dynamic;
+import com.mojang.serialization.Codec;
 
 public class WeatherControlsBehavior implements IMinigameBehavior {
-	private WeatherController controller;
+	public static final Codec<WeatherControlsBehavior> CODEC = Codec.unit(WeatherControlsBehavior::new);
 
-	public static <T> WeatherControlsBehavior parse(Dynamic<T> root) {
-		return new WeatherControlsBehavior();
-	}
+	private WeatherController controller;
 
 	@Override
 	public void onConstruct(IMinigameInstance minigame) {

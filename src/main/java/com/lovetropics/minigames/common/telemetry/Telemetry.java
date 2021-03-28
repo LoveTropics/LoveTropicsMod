@@ -3,11 +3,11 @@ package com.lovetropics.minigames.common.telemetry;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.lovetropics.lib.backend.BackendConnection;
+import com.lovetropics.lib.backend.BackendProxy;
 import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.common.config.ConfigLT;
 import com.lovetropics.minigames.common.minigames.IMinigameInstance;
-import com.lovetropics.minigames.common.telemetry.connection.TelemetryConnection;
-import com.lovetropics.minigames.common.telemetry.connection.TelemetryProxy;
 import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -40,7 +40,7 @@ public final class Telemetry {
 	private final TelemetrySender sender = TelemetrySender.Http.openFromConfig();
 	private final TelemetrySender pollSender = new TelemetrySender.Http(() -> "https://polling.lovetropics.com", ConfigLT.TELEMETRY.authToken::get);
 
-	private final TelemetryProxy proxy;
+	private final BackendProxy proxy;
 
 	private MinigameInstanceTelemetry instance;
 
@@ -60,7 +60,7 @@ public final class Telemetry {
 			}
 		};
 
-		this.proxy = new TelemetryProxy(address, new TelemetryConnection.Handler() {
+		this.proxy = new BackendProxy(address, new BackendConnection.Handler() {
 			@Override
 			public void acceptOpened() {
 			}

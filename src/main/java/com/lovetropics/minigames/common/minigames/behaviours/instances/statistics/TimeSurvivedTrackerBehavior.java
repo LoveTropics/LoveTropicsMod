@@ -1,17 +1,25 @@
 package com.lovetropics.minigames.common.minigames.behaviours.instances.statistics;
 
+import com.lovetropics.minigames.common.MoreCodecs;
 import com.lovetropics.minigames.common.minigames.IMinigameInstance;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
 import com.lovetropics.minigames.common.minigames.behaviours.MinigameBehaviorTypes;
 import com.lovetropics.minigames.common.minigames.statistics.MinigameStatistics;
 import com.lovetropics.minigames.common.minigames.statistics.StatisticKey;
 import com.lovetropics.minigames.common.minigames.statistics.StatisticsMap;
-import com.mojang.datafixers.Dynamic;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.world.World;
+import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 
 public final class TimeSurvivedTrackerBehavior implements IMinigameBehavior {
+	public static final Codec<TimeSurvivedTrackerBehavior> CODEC = RecordCodecBuilder.create(instance -> {
+		return instance.group(
+				MoreCodecs.nullableFieldOf(Codec.STRING, "after_phase").forGetter(c -> c.afterPhase)
+		).apply(instance, TimeSurvivedTrackerBehavior::new);
+	});
+
 	private final String afterPhase;
 	private long startTime;
 
@@ -19,13 +27,8 @@ public final class TimeSurvivedTrackerBehavior implements IMinigameBehavior {
 		this.afterPhase = afterPhase;
 	}
 
-	public static <T> TimeSurvivedTrackerBehavior parse(Dynamic<T> root) {
-		String afterPhase = root.get("after_phase").asString(null);
-		return new TimeSurvivedTrackerBehavior(afterPhase);
-	}
-
 	@Override
-	public void worldUpdate(IMinigameInstance minigame, World world) {
+	public void worldUpdate(IMinigameInstance minigame, ServerWorld world) {
 		if (startTime == 0 && afterPhase != null) {
 			minigame.getOneBehavior(MinigameBehaviorTypes.PHASES.get()).ifPresent(phases -> {
 				if (!phases.getCurrentPhase().is(afterPhase)) {

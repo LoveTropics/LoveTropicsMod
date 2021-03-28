@@ -1,24 +1,24 @@
 package com.lovetropics.minigames.common.minigames;
 
-import java.util.Optional;
+import com.lovetropics.minigames.common.map.MapRegions;
+import net.minecraft.util.RegistryKey;
+import net.minecraft.world.World;
 
 import javax.annotation.Nullable;
-
-import com.lovetropics.minigames.common.map.MapRegions;
-import net.minecraft.world.dimension.DimensionType;
+import java.util.Optional;
 
 public final class MinigameMap {
 	private final @Nullable String name;
-	private final DimensionType dimension;
+	private final RegistryKey<World> dimension;
 	private final MapRegions mapRegions;
 
-	public MinigameMap(@Nullable String name, DimensionType dimension, MapRegions mapRegions) {
+	public MinigameMap(@Nullable String name, RegistryKey<World> dimension, MapRegions mapRegions) {
 		this.name = name;
 		this.dimension = dimension;
 		this.mapRegions = mapRegions;
 	}
 
-	public MinigameMap(@Nullable String name, DimensionType dimension) {
+	public MinigameMap(@Nullable String name, RegistryKey<World> dimension) {
 		this(name, dimension, new MapRegions());
 	}
 
@@ -26,7 +26,7 @@ public final class MinigameMap {
 		return Optional.ofNullable(name);
 	}
 
-	public DimensionType getDimension() {
+	public RegistryKey<World> getDimension() {
 		return dimension;
 	}
 

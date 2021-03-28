@@ -1,25 +1,28 @@
 package com.lovetropics.minigames.common.minigames.behaviours.instances;
 
+import com.lovetropics.minigames.common.MoreCodecs;
 import com.lovetropics.minigames.common.minigames.IMinigameInstance;
 import com.lovetropics.minigames.common.minigames.PlayerRole;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
-import com.mojang.datafixers.Dynamic;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.world.GameType;
 
 public class SetGameTypesBehavior implements IMinigameBehavior {
+	public static final Codec<SetGameTypesBehavior> CODEC = RecordCodecBuilder.create(instance -> {
+		return instance.group(
+				MoreCodecs.GAME_TYPE.fieldOf("participant").forGetter(c -> c.participantGameType),
+				MoreCodecs.GAME_TYPE.fieldOf("spectator").forGetter(c -> c.spectatorGameType)
+		).apply(instance, SetGameTypesBehavior::new);
+	});
+
 	private final GameType participantGameType;
 	private final GameType spectatorGameType;
 
 	public SetGameTypesBehavior(GameType participantGameType, GameType spectatorGameType) {
 		this.participantGameType = participantGameType;
 		this.spectatorGameType = spectatorGameType;
-	}
-
-	public static <T> SetGameTypesBehavior parse(Dynamic<T> root) {
-		GameType participant = GameType.getByName(root.get("participant").asString(""));
-		GameType spectator = GameType.getByName(root.get("spectator").asString(""));
-		return new SetGameTypesBehavior(participant, spectator);
 	}
 
 	@Override

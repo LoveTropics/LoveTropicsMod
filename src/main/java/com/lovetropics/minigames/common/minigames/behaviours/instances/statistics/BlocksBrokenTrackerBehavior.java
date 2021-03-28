@@ -3,16 +3,14 @@ package com.lovetropics.minigames.common.minigames.behaviours.instances.statisti
 import com.lovetropics.minigames.common.minigames.IMinigameInstance;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
 import com.lovetropics.minigames.common.minigames.statistics.StatisticKey;
-import com.mojang.datafixers.Dynamic;
+import com.mojang.serialization.Codec;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.event.world.BlockEvent;
 
 public final class BlocksBrokenTrackerBehavior implements IMinigameBehavior {
-	public static <T> BlocksBrokenTrackerBehavior parse(Dynamic<T> root) {
-		return new BlocksBrokenTrackerBehavior();
-	}
+	public static final Codec<BlocksBrokenTrackerBehavior> CODEC = Codec.unit(BlocksBrokenTrackerBehavior::new);
 
 	@Override
 	public void onPlayerBreakBlock(IMinigameInstance minigame, ServerPlayerEntity player, BlockPos pos, BlockState state, BlockEvent.BreakEvent event) {

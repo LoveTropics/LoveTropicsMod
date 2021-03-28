@@ -1,13 +1,11 @@
 package com.lovetropics.minigames.common.minigames.behaviours.instances.survive_the_tide;
 
-import com.lovetropics.minigames.common.Util;
+import com.lovetropics.minigames.common.MoreCodecs;
 import com.lovetropics.minigames.common.map.MapRegion;
 import com.lovetropics.minigames.common.minigames.IMinigameInstance;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
-import com.mojang.brigadier.StringReader;
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import com.mojang.datafixers.Dynamic;
-import net.minecraft.command.arguments.ParticleArgument;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
@@ -29,6 +27,22 @@ import java.util.List;
 
 public class WorldBorderMinigameBehavior implements IMinigameBehavior
 {
+	public static final Codec<WorldBorderMinigameBehavior> CODEC = RecordCodecBuilder.create(instance -> {
+		return instance.group(
+				MoreCodecs.TEXT.fieldOf("name").forGetter(c -> c.name),
+				Codec.STRING.fieldOf("world_border_center").forGetter(c -> c.worldBorderCenterKey),
+				MoreCodecs.TEXT.fieldOf("collapse_message").forGetter(c -> c.collapseMessage),
+				Codec.LONG.fieldOf("ticks_until_start").forGetter(c -> c.ticksUntilStart),
+				Codec.LONG.fieldOf("delay_until_collapse").forGetter(c -> c.delayUntilCollapse),
+				Codec.INT.fieldOf("particle_rate_delay").forGetter(c -> c.particleRateDelay),
+				Codec.INT.fieldOf("particle_height").forGetter(c -> c.particleHeight),
+				Codec.INT.fieldOf("damage_rate_delay").forGetter(c -> c.damageRateDelay),
+				Codec.INT.fieldOf("damage_amount").forGetter(c -> c.damageAmount),
+				ParticleTypes.CODEC.optionalFieldOf("border_particle", ParticleTypes.EXPLOSION).forGetter(c -> c.borderParticle)
+		).apply(instance, WorldBorderMinigameBehavior::new);
+	});
+
+	private final ITextComponent name;
 	private final String worldBorderCenterKey;
 	private final ITextComponent collapseMessage;
 	private final long ticksUntilStart;
@@ -46,6 +60,7 @@ public class WorldBorderMinigameBehavior implements IMinigameBehavior
 
 	public WorldBorderMinigameBehavior(final ITextComponent name, final String worldBorderCenterKey, final ITextComponent collapseMessage, final long ticksUntilStart,
 			final long delayUntilCollapse, final int particleRateDelay, final int particleHeight, final int damageRateDelay, final int damageAmount, final IParticleData borderParticle) {
+		this.name = name;
 		this.worldBorderCenterKey = worldBorderCenterKey;
 		this.collapseMessage = collapseMessage;
 		this.ticksUntilStart = ticksUntilStart;
@@ -61,32 +76,6 @@ public class WorldBorderMinigameBehavior implements IMinigameBehavior
 				BossInfo.Color.WHITE,
 				BossInfo.Overlay.PROGRESS))
 				.setDarkenSky(false);
-	}
-
-	public static <T> WorldBorderMinigameBehavior parse(Dynamic<T> root) {
-		final ITextComponent name = Util.getText(root, "name");
-		final String worldBorderCenterKey = root.get("world_border_center").asString("");
-		final ITextComponent collapseMessage = Util.getText(root, "collapse_message");
-		final long ticksUntilStart = root.get("ticks_until_start").asLong(0);
-		final long delayUntilCollapse = root.get("delay_until_collapse").asLong(0);
-		final int particleRateDelay = root.get("particle_rate_delay").asInt(0);
-		final int particleHeight = root.get("particle_height").asInt(0);
-		final int damageRateDelay = root.get("damage_rate_delay").asInt(0);
-		final int damageAmount = root.get("damage_amount").asInt(0);
-		IParticleData borderParticle;
-
-		try
-		{
-			borderParticle = ParticleArgument.parseParticle(new StringReader(root.get("border_particle").asString("minecraft:explosion")));
-		}
-		catch (CommandSyntaxException e)
-		{
-			borderParticle = ParticleTypes.EXPLOSION;
-			e.printStackTrace();
-		}
-
-		return new WorldBorderMinigameBehavior(name, worldBorderCenterKey, collapseMessage, ticksUntilStart,
-				delayUntilCollapse, particleRateDelay, particleHeight, damageRateDelay, damageAmount, borderParticle);
 	}
 
 	@Override
@@ -108,7 +97,7 @@ public class WorldBorderMinigameBehavior implements IMinigameBehavior
 	}
 
 	@Override
-	public void worldUpdate(final IMinigameInstance minigame, World world) {
+	public void worldUpdate(final IMinigameInstance minigame, ServerWorld world) {
 		tickWorldBorder(world, minigame);
 	}
 

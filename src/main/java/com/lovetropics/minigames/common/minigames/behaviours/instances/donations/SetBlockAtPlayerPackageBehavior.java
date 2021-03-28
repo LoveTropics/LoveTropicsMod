@@ -1,24 +1,25 @@
 package com.lovetropics.minigames.common.minigames.behaviours.instances.donations;
 
-import com.mojang.datafixers.Dynamic;
+import com.lovetropics.minigames.common.MoreCodecs;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.player.ServerPlayerEntity;
 
 public final class SetBlockAtPlayerPackageBehavior extends DonationPackageBehavior {
+	public static final Codec<SetBlockAtPlayerPackageBehavior> CODEC = RecordCodecBuilder.create(instance -> {
+		return instance.group(
+				DonationPackageData.CODEC.forGetter(c -> c.data),
+				MoreCodecs.BLOCK_STATE.fieldOf("block").forGetter(c -> c.block)
+		).apply(instance, SetBlockAtPlayerPackageBehavior::new);
+	});
+
 	private final BlockState block;
 
 	public SetBlockAtPlayerPackageBehavior(final DonationPackageData data, final BlockState block) {
 		super(data);
 		this.block = block;
 	}
-
-	public static <T> SetBlockAtPlayerPackageBehavior parse(Dynamic<T> root) {
-		final DonationPackageData data = DonationPackageData.parse(root);
-		final BlockState block = BlockState.deserialize(root.get("block").orElseEmptyMap());
-
-		return new SetBlockAtPlayerPackageBehavior(data, block);
-	}
-
 	@Override
 	protected void receivePackage(final String sendingPlayer, final ServerPlayerEntity player) {
 		player.world.setBlockState(player.getPosition(), block);

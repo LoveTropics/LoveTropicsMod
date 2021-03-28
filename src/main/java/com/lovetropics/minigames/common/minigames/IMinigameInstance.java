@@ -8,7 +8,8 @@ import com.lovetropics.minigames.common.minigames.statistics.MinigameStatistics;
 import com.lovetropics.minigames.common.telemetry.MinigameInstanceTelemetry;
 import net.minecraft.command.CommandSource;
 import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.world.dimension.DimensionType;
+import net.minecraft.util.RegistryKey;
+import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
 
 import java.util.Collection;
@@ -93,7 +94,7 @@ public interface IMinigameInstance extends ProtoMinigame, MinigameControllable, 
      * when they join as players or spectators.
      * @return The dimension type players are teleported to when joining.
      */
-    DimensionType getDimension();
+    RegistryKey<World> getDimension();
 
     default void update() {}
 

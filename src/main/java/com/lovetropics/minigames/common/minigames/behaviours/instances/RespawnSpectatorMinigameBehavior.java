@@ -4,6 +4,7 @@ import com.lovetropics.minigames.common.minigames.IMinigameInstance;
 import com.lovetropics.minigames.common.minigames.MinigameManager;
 import com.lovetropics.minigames.common.minigames.PlayerRole;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
+import com.mojang.serialization.Codec;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.world.GameRules;
@@ -11,10 +12,7 @@ import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 
 public final class RespawnSpectatorMinigameBehavior implements IMinigameBehavior {
-	public static final RespawnSpectatorMinigameBehavior INSTANCE = new RespawnSpectatorMinigameBehavior();
-
-	private RespawnSpectatorMinigameBehavior() {
-	}
+	public static final Codec<RespawnSpectatorMinigameBehavior> CODEC = Codec.unit(RespawnSpectatorMinigameBehavior::new);
 
 	@Override
 	public void onPlayerChangeRole(IMinigameInstance minigame, ServerPlayerEntity player, PlayerRole role, PlayerRole lastRole) {

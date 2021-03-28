@@ -7,7 +7,8 @@ import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehaviorType;
 import com.lovetropics.minigames.common.minigames.behaviours.MinigameBehaviorTypes;
 import com.lovetropics.minigames.common.minigames.behaviours.instances.PhasesMinigameBehavior;
-import com.mojang.datafixers.Dynamic;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.longs.*;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.minecraft.block.*;
@@ -37,6 +38,16 @@ import org.apache.logging.log4j.LogManager;
 import java.util.*;
 
 public class RisingTidesMinigameBehavior implements IMinigameBehavior {
+	public static final Codec<RisingTidesMinigameBehavior> CODEC = RecordCodecBuilder.create(instance -> {
+		return instance.group(
+				Codec.STRING.optionalFieldOf("tide_area_region", "tide_area").forGetter(c -> c.tideAreaKey),
+				Codec.STRING.optionalFieldOf("iceberg_lines_region", "iceberg_lines").forGetter(c -> c.icebergLinesKey),
+				Codec.unboundedMap(Codec.STRING,  Codec.INT).fieldOf("water_levels").forGetter(c -> c.phaseToTideHeight),
+				Codec.STRING.listOf().fieldOf("phases_icebergs_grow").forGetter(c -> new ArrayList<>(c.phasesIcebergsGrow)),
+				Codec.INT.fieldOf("iceberg_growth_tick_rate").forGetter(c -> c.icebergGrowthTickRate)
+		).apply(instance, RisingTidesMinigameBehavior::new);
+	});
+
 	private static final RegistryObject<Block> WATER_BARRIER = RegistryObject.of(new ResourceLocation("ltextras", "water_barrier"), ForgeRegistries.BLOCKS);
 
 	// the maximum time in milliseconds that we should spend updating the tide per tick
@@ -58,25 +69,12 @@ public class RisingTidesMinigameBehavior implements IMinigameBehavior {
 	private final LongSet queuedChunksToUpdate = new LongOpenHashSet();
 	private final Long2IntMap chunkWaterLevels = new Long2IntOpenHashMap();
 
-	public RisingTidesMinigameBehavior(String tideAreaKey, String icebergLinesKey, final Map<String, Integer> phaseToTideHeight, final Set<String> phasesIcebergsGrow, final int icebergGrowthTickRate) {
+	public RisingTidesMinigameBehavior(String tideAreaKey, String icebergLinesKey, final Map<String, Integer> phaseToTideHeight, final List<String> phasesIcebergsGrow, final int icebergGrowthTickRate) {
 		this.tideAreaKey = tideAreaKey;
 		this.icebergLinesKey = icebergLinesKey;
 		this.phaseToTideHeight = phaseToTideHeight;
-		this.phasesIcebergsGrow = phasesIcebergsGrow;
+		this.phasesIcebergsGrow = new ObjectOpenHashSet<>(phasesIcebergsGrow);
 		this.icebergGrowthTickRate = icebergGrowthTickRate;
-	}
-
-	public static <T> RisingTidesMinigameBehavior parse(Dynamic<T> root) {
-		final String tideAreaKey = root.get("tide_area_region").asString("tide_area");
-		final String icebergLinesKey = root.get("iceberg_lines_region").asString("iceberg_lines");
-		final Map<String, Integer> phaseToTideHeight = root.get("water_levels").asMap(
-				key -> key.asString(""),
-				value -> value.asInt(0)
-		);
-		final Set<String> phasesIcebergsGrow = new ObjectOpenHashSet<>(root.get("phases_icebergs_grow").asList(d -> d.asString("")));
-		final int icebergGrowthTickRate = root.get("iceberg_growth_tick_rate").asInt(0);
-
-		return new RisingTidesMinigameBehavior(tideAreaKey, icebergLinesKey, phaseToTideHeight, phasesIcebergsGrow, icebergGrowthTickRate);
 	}
 
 	@Override
@@ -136,7 +134,7 @@ public class RisingTidesMinigameBehavior implements IMinigameBehavior {
 	}
 
 	@Override
-	public void worldUpdate(final IMinigameInstance minigame, World world) {
+	public void worldUpdate(final IMinigameInstance minigame, ServerWorld world) {
 		minigame.getOneBehavior(MinigameBehaviorTypes.PHASES.get()).ifPresent(phases -> {
 			final PhasesMinigameBehavior.MinigamePhase phase = phases.getCurrentPhase();
 			final int prevWaterLevel = phaseToTideHeight.get(phases.getPreviousPhase().orElse(phase).getKey());
@@ -207,7 +205,7 @@ public class RisingTidesMinigameBehavior implements IMinigameBehavior {
 			int chunkZ = ChunkPos.getZ(chunkPos);
 
 			// we only want to apply updates to loaded chunks
-			Chunk chunk = chunkProvider.getChunkWithoutLoading(chunkX, chunkZ);
+			Chunk chunk = chunkProvider.getChunkNow(chunkX, chunkZ);
 			if (chunk == null) {
 				continue;
 			}

@@ -1,12 +1,14 @@
 package com.lovetropics.minigames.common.minigames.behaviours.instances;
 
+import com.lovetropics.minigames.common.MoreCodecs;
 import com.lovetropics.minigames.common.dimension.DimensionUtils;
 import com.lovetropics.minigames.common.map.MapRegion;
 import com.lovetropics.minigames.common.map.MapRegions;
 import com.lovetropics.minigames.common.minigames.IMinigameInstance;
 import com.lovetropics.minigames.common.minigames.PlayerRole;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
-import com.mojang.datafixers.Dynamic;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.math.BlockPos;
 
@@ -14,6 +16,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class PositionPlayersMinigameBehavior implements IMinigameBehavior {
+	public static final Codec<PositionPlayersMinigameBehavior> CODEC = RecordCodecBuilder.create(instance -> {
+		return instance.group(
+				MoreCodecs.arrayOrUnit(Codec.STRING, String[]::new).fieldOf("participants").forGetter(c -> c.participantSpawnKeys),
+				MoreCodecs.arrayOrUnit(Codec.STRING, String[]::new).fieldOf("spectators").forGetter(c -> c.spectatorSpawnKeys)
+		).apply(instance, PositionPlayersMinigameBehavior::new);
+	});
+
 	private final String[] participantSpawnKeys;
 	private final String[] spectatorSpawnKeys;
 
@@ -42,12 +51,6 @@ public class PositionPlayersMinigameBehavior implements IMinigameBehavior {
 		for (String key : spectatorSpawnKeys) {
 			spectatorSpawnRegions.addAll(regions.get(key));
 		}
-	}
-
-	public static <T> PositionPlayersMinigameBehavior parse(Dynamic<T> root) {
-		String[] participantSpawns = root.get("participants").asList(d -> d.asString("")).toArray(new String[0]);
-		String[] spectatorSpawns = root.get("spectators").asList(d -> d.asString("")).toArray(new String[0]);
-		return new PositionPlayersMinigameBehavior(participantSpawns, spectatorSpawns);
 	}
 
 	@Override

@@ -7,7 +7,7 @@ import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.vector.Vector3d;
 
 import java.util.Iterator;
 import java.util.Random;
@@ -60,8 +60,8 @@ public final class MapRegion implements Iterable<BlockPos> {
 		);
 	}
 
-	public Vec3d getCenter() {
-		return new Vec3d(
+	public Vector3d getCenter() {
+		return new Vector3d(
 				(min.getX() + max.getX() + 1.0) / 2.0,
 				(min.getY() + max.getY() + 1.0) / 2.0,
 				(min.getZ() + max.getZ() + 1.0) / 2.0
@@ -103,7 +103,7 @@ public final class MapRegion implements Iterable<BlockPos> {
 		return contains(pos.getX(), pos.getY(), pos.getZ());
 	}
 
-	public boolean contains(Vec3d pos) {
+	public boolean contains(Vector3d pos) {
 		return contains(pos.x, pos.y, pos.z);
 	}
 

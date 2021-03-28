@@ -6,7 +6,8 @@ import com.google.gson.JsonObject;
 import com.lovetropics.minigames.common.minigames.ControlCommand;
 import com.lovetropics.minigames.common.minigames.IMinigameInstance;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
-import com.mojang.datafixers.Dynamic;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrays;
@@ -29,13 +30,14 @@ import java.util.Random;
 
 public class PollFinalistsBehavior implements IMinigameBehavior {
 
-	public static <T> PollFinalistsBehavior parse(Dynamic<T> root) {
-		return new PollFinalistsBehavior(
-				root.get("finalists_tag").asString("finalist"),
-				root.get("winner_tag").asString("winner"),
-				root.get("votes_objective").asString("votes"),
-				root.get("poll_duration").asString("5m"));
-	}
+	public static final Codec<PollFinalistsBehavior> CODEC = RecordCodecBuilder.create(instance -> {
+		return instance.group(
+				Codec.STRING.optionalFieldOf("finalists_tag", "finalist").forGetter(c -> c.finalistsTag),
+				Codec.STRING.optionalFieldOf("winner_tag", "winner").forGetter(c -> c.winnerTag),
+				Codec.STRING.optionalFieldOf("votes_objective", "votes").forGetter(c -> c.votesObjective),
+				Codec.STRING.optionalFieldOf("poll_duration", "5m").forGetter(c -> c.pollDuration)
+		).apply(instance, PollFinalistsBehavior::new);
+	});
 
 	private static final Logger LOGGER = LogManager.getLogger();
 

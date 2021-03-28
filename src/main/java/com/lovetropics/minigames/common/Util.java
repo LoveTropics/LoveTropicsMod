@@ -1,13 +1,15 @@
 package com.lovetropics.minigames.common;
 
 import com.google.common.collect.Lists;
-import com.google.gson.JsonElement;
 import com.lovetropics.minigames.Constants;
-import com.mojang.datafixers.Dynamic;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.material.Material;
-import net.minecraft.entity.*;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityType;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.MobEntity;
+import net.minecraft.entity.ai.attributes.Attributes;
 import net.minecraft.entity.effect.LightningBoltEntity;
 import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
@@ -17,17 +19,16 @@ import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvents;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.registry.Registry;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.World;
 import net.minecraft.world.gen.Heightmap;
-import net.minecraft.world.server.ServerWorld;
 import org.apache.commons.lang3.StringUtils;
 
-import javax.annotation.Nullable;
 import java.lang.reflect.Field;
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Locale;
+import java.util.Random;
 import java.util.function.BiPredicate;
 import java.util.stream.Collectors;
 
@@ -44,19 +45,11 @@ public class Util {
         return false;
     }*/
 
-    public static boolean spawnEntity(final ResourceLocation entityId, final World world, final double x, final double y, final double z) {
-        final Optional<EntityType<?>> entityType = Registry.ENTITY_TYPE.getValue(entityId);
-        if (entityType.isPresent()) {
-            return spawnEntity(entityType.get(), world, x, y, z);
-        }
-
-        return false;
-    }
-
     public static boolean spawnEntity(EntityType<?> entityType, World world, double x, double y, double z) {
         if (entityType == EntityType.LIGHTNING_BOLT) {
-            LightningBoltEntity entity = new LightningBoltEntity(world, x, y, z, false);
-            ((ServerWorld) world).addLightningBolt(entity);
+            LightningBoltEntity entity = EntityType.LIGHTNING_BOLT.create(world);
+            entity.moveForced(new Vector3d(x, y, z));
+            world.addEntity(entity);
             return true;
         } else {
             final Entity entity = entityType.create(world);
@@ -82,26 +75,6 @@ public class Util {
         }
 
         return false;
-    }
-
-    public static <T> ITextComponent getText(Dynamic<T> root, String textKey) {
-        final Optional<T> text = root.getElement(textKey);
-
-        if (text.isPresent()) {
-            return ITextComponent.Serializer.fromJson((JsonElement) text.get());
-        }
-
-        return new StringTextComponent("");
-    }
-
-    @Nullable
-    public static <T> ITextComponent getTextOrNull(Dynamic<T> root, String textKey) {
-        final Optional<T> text = root.getElement(textKey);
-        return text.map(t -> ITextComponent.Serializer.fromJson((JsonElement) t)).orElse(null);
-    }
-
-    public static <T> ITextComponent getText(Dynamic<T> root) {
-        return ITextComponent.Serializer.fromJson((JsonElement) root.getValue());
     }
 
     public static boolean tryMoveToEntityLivingLongDist(MobEntity entSource, Entity entityTo, double moveSpeedAmp) {
@@ -133,7 +106,7 @@ public class Util {
 
             double distToPlayer = getDistance(ent, x, y, z);//ent.getDistanceToEntity(player);
 
-            double followDist = ent.getAttribute(SharedMonsterAttributes.FOLLOW_RANGE).getValue();
+            double followDist = ent.getAttribute(Attributes.FOLLOW_RANGE).getValue();
 
             if (distToPlayer <= followDist) {
                 //boolean success = ent.getNavigator().tryMoveToEntityLiving(player, moveSpeedAmp);

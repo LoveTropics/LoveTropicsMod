@@ -1,14 +1,15 @@
 package com.lovetropics.minigames.common.minigames.behaviours.instances.survive_the_tide;
 
 import com.google.common.collect.ImmutableList;
-import com.lovetropics.minigames.common.Util;
+import com.lovetropics.minigames.common.MoreCodecs;
 import com.lovetropics.minigames.common.map.MapRegion;
 import com.lovetropics.minigames.common.minigames.IMinigameInstance;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehaviorType;
 import com.lovetropics.minigames.common.minigames.behaviours.MinigameBehaviorTypes;
 import com.lovetropics.minigames.common.minigames.behaviours.instances.PhasesMinigameBehavior;
-import com.mojang.datafixers.Dynamic;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.FenceBlock;
 import net.minecraft.enchantment.EnchantmentHelper;
@@ -22,6 +23,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.world.GameRules;
 import net.minecraft.world.World;
+import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.player.AttackEntityEvent;
@@ -30,6 +32,16 @@ import java.util.List;
 
 public class SurviveTheTideRulesetBehavior implements IMinigameBehavior
 {
+	public static final Codec<SurviveTheTideRulesetBehavior> CODEC = RecordCodecBuilder.create(instance -> {
+		return instance.group(
+				Codec.STRING.optionalFieldOf("spawn_area_region", "spawn_area").forGetter(c -> c.spawnAreaKey),
+				Codec.STRING.fieldOf("phase_to_free_participants").forGetter(c -> c.phaseToFreeParticipants),
+				Codec.STRING.listOf().fieldOf("phases_with_no_pvp").forGetter(c -> c.phasesWithNoPVP),
+				Codec.BOOL.optionalFieldOf("force_drop_items_on_death", true).forGetter(c -> c.forceDropItemsOnDeath),
+				MoreCodecs.TEXT.fieldOf("message_on_set_players_free").forGetter(c -> c.messageOnSetPlayersFree)
+		).apply(instance, SurviveTheTideRulesetBehavior::new);
+	});
+
 	private final String spawnAreaKey;
 	private MapRegion spawnArea;
 	private final String phaseToFreeParticipants;
@@ -45,16 +57,6 @@ public class SurviveTheTideRulesetBehavior implements IMinigameBehavior
 		this.phasesWithNoPVP = phasesWithNoPVP;
 		this.forceDropItemsOnDeath = forceDropItemsOnDeath;
 		this.messageOnSetPlayersFree = messageOnSetPlayersFree;
-	}
-
-	public static <T> SurviveTheTideRulesetBehavior parse(Dynamic<T> root) {
-		final String spawnAreaKey = root.get("spawn_area_region").asString("spawn_area");
-		final String phaseToFreeParticipants = root.get("phase_to_free_participants").asString("");
-		final List<String> phasesWithNoPVP = root.get("phases_with_no_pvp").asList(d -> d.asString(""));
-		final boolean forceDropItemsOnDeath = root.get("force_drop_items_on_death").asBoolean(true);
-		final ITextComponent messageOnSetPlayersFree = Util.getText(root, "message_on_set_players_free");
-
-		return new SurviveTheTideRulesetBehavior(spawnAreaKey, phaseToFreeParticipants, phasesWithNoPVP, forceDropItemsOnDeath, messageOnSetPlayersFree);
 	}
 
 	@Override
@@ -94,7 +96,7 @@ public class SurviveTheTideRulesetBehavior implements IMinigameBehavior
 	}
 
 	@Override
-	public void worldUpdate(final IMinigameInstance minigame, World world) {
+	public void worldUpdate(final IMinigameInstance minigame, ServerWorld world) {
 		if (!hasFreedParticipants) {
 			minigame.getOneBehavior(MinigameBehaviorTypes.PHASES.get()).ifPresent(phases -> {
 				if (phases.getCurrentPhase().getKey().equals(phaseToFreeParticipants)) {

@@ -4,7 +4,7 @@ import com.lovetropics.minigames.common.minigames.IMinigameInstance;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
 import com.lovetropics.minigames.common.minigames.statistics.MinigameStatistics;
 import com.lovetropics.minigames.common.minigames.statistics.StatisticKey;
-import com.mojang.datafixers.Dynamic;
+import com.mojang.serialization.Codec;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -13,9 +13,7 @@ import net.minecraft.util.DamageSource;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 
 public final class DamageTrackerBehavior implements IMinigameBehavior {
-	public static <T> DamageTrackerBehavior parse(Dynamic<T> root) {
-		return new DamageTrackerBehavior();
-	}
+	public static final Codec<DamageTrackerBehavior> CODEC = Codec.unit(DamageTrackerBehavior::new);
 
 	@Override
 	public void onPlayerHurt(IMinigameInstance minigame, LivingHurtEvent event) {

@@ -1,21 +1,31 @@
 package com.lovetropics.minigames.common.minigames.behaviours.instances.statistics;
 
+import com.lovetropics.minigames.common.MoreCodecs;
 import com.lovetropics.minigames.common.minigames.IMinigameInstance;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
 import com.lovetropics.minigames.common.minigames.behaviours.MinigameBehaviorTypes;
 import com.lovetropics.minigames.common.minigames.statistics.MinigameStatistics;
 import com.lovetropics.minigames.common.minigames.statistics.StatisticKey;
-import com.mojang.datafixers.Dynamic;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
+import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 
 import java.util.Map;
 import java.util.UUID;
 
 public final class CampingTrackerBehavior implements IMinigameBehavior {
+	public static final Codec<CampingTrackerBehavior> CODEC = RecordCodecBuilder.create(instance -> {
+		return instance.group(
+				MoreCodecs.nullableFieldOf(Codec.STRING, "after_phase").forGetter(c -> c.afterPhase),
+				Codec.LONG.optionalFieldOf("camp_time_threshold", 20L * 8).forGetter(c -> c.campTimeThreshold),
+				Codec.DOUBLE.optionalFieldOf("camp_movement_threshold", 8.0).forGetter(c -> c.campMovementThreshold)
+		).apply(instance, CampingTrackerBehavior::new);
+	});
+
 	private static final long CAMP_TEST_INTERVAL = 20;
 
 	private final String afterPhase;
@@ -32,15 +42,8 @@ public final class CampingTrackerBehavior implements IMinigameBehavior {
 		this.campMovementThreshold = campMovementThreshold;
 	}
 
-	public static <T> CampingTrackerBehavior parse(Dynamic<T> root) {
-		String afterPhase = root.get("after_phase").asString(null);
-		long campTimeThreshold = root.get("camp_time_threshold").asLong(20 * 8);
-		double campMovementThreshold = root.get("camp_movement_threshold").asDouble(8.0);
-		return new CampingTrackerBehavior(afterPhase, campTimeThreshold, campMovementThreshold);
-	}
-
 	@Override
-	public void worldUpdate(IMinigameInstance minigame, World world) {
+	public void worldUpdate(IMinigameInstance minigame, ServerWorld world) {
 		if (startTime == 0 && afterPhase != null) {
 			minigame.getOneBehavior(MinigameBehaviorTypes.PHASES.get()).ifPresent(phases -> {
 				if (!phases.getCurrentPhase().is(afterPhase)) {
@@ -63,7 +66,7 @@ public final class CampingTrackerBehavior implements IMinigameBehavior {
 		for (ServerPlayerEntity player : minigame.getParticipants()) {
 			CampingTracker tracker = getCampingTracker(player);
 
-			Vec3d currentPosition = player.getPositionVec();
+			Vector3d currentPosition = player.getPositionVec();
 			if (tracker.camping) {
 				int campingTime = tracker.trackCamping(currentPosition, time);
 				if (campingTime > 0) {
@@ -93,10 +96,10 @@ public final class CampingTrackerBehavior implements IMinigameBehavior {
 	class CampingTracker {
 		boolean camping;
 
-		Vec3d lastPosition;
+		Vector3d lastPosition;
 		long lastTrackTime;
 
-		void trackNotCamping(Vec3d currentPosition, long time) {
+		void trackNotCamping(Vector3d currentPosition, long time) {
 			if (lastPosition == null) {
 				lastPosition = currentPosition;
 				lastTrackTime = time;
@@ -114,7 +117,7 @@ public final class CampingTrackerBehavior implements IMinigameBehavior {
 			}
 		}
 
-		int trackCamping(Vec3d currentPosition, long time) {
+		int trackCamping(Vector3d currentPosition, long time) {
 			double movement = currentPosition.distanceTo(lastPosition);
 			if (movement > campMovementThreshold) {
 				camping = false;

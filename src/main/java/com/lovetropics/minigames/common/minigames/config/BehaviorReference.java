@@ -3,7 +3,7 @@ package com.lovetropics.minigames.common.minigames.config;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehaviorType;
 import com.lovetropics.minigames.common.minigames.behaviours.IPollingMinigameBehavior;
-import com.mojang.datafixers.Dynamic;
+import com.mojang.serialization.Dynamic;
 
 import java.util.List;
 import java.util.function.BiConsumer;

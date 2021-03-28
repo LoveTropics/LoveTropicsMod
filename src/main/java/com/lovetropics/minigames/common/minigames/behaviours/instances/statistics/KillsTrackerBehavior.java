@@ -6,16 +6,14 @@ import com.lovetropics.minigames.common.minigames.statistics.MinigameStatistics;
 import com.lovetropics.minigames.common.minigames.statistics.PlayerKey;
 import com.lovetropics.minigames.common.minigames.statistics.StatisticKey;
 import com.lovetropics.minigames.common.minigames.statistics.StatisticsMap;
-import com.mojang.datafixers.Dynamic;
+import com.mojang.serialization.Codec;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 
 public final class KillsTrackerBehavior implements IMinigameBehavior {
-	public static <T> KillsTrackerBehavior parse(Dynamic<T> root) {
-		return new KillsTrackerBehavior();
-	}
+	public static final Codec<KillsTrackerBehavior> CODEC = Codec.unit(KillsTrackerBehavior::new);
 
 	@Override
 	public void onPlayerDeath(IMinigameInstance minigame, ServerPlayerEntity player, LivingDeathEvent event) {

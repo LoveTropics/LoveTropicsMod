@@ -1,13 +1,7 @@
 package com.lovetropics.minigames.client.data;
 
-import java.io.IOException;
-import java.util.List;
-import java.util.function.Supplier;
-
 import com.lovetropics.minigames.Constants;
-import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.common.Util;
-
 import net.minecraft.block.Block;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.data.DirectoryCache;
@@ -15,9 +9,12 @@ import net.minecraft.entity.EntityType;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.util.IItemProvider;
-import net.minecraft.world.biome.Biome;
 import net.minecraftforge.common.data.LanguageProvider;
 import net.minecraftforge.registries.IForgeRegistryEntry;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.function.Supplier;
 
 public class TropicraftLangProvider extends LanguageProvider {
 
@@ -79,20 +76,20 @@ public class TropicraftLangProvider extends LanguageProvider {
     
     private void addTooltip(Supplier<? extends IItemProvider> item, List<String> tooltip) {
         for (int i = 0; i < tooltip.size(); i++) {
-            add(item.get().asItem().getTranslationKey() + ".desc." + i, tooltip.get(i));
+            String key = item.get().asItem().getTranslationKey() + ".desc";
+            if (i != 0) {
+                key += "." + i;
+            }
+            add(key, tooltip.get(i));
         }
     }
     
     private void add(ItemGroup group, String name) {
-        add(group.getTranslationKey(), name);
+        add("itemGroup." + group.getPath(), name);
     }
     
     private void addEntityType(Supplier<? extends EntityType<?>> entity) {
         addEntityType(entity, getAutomaticName(entity));
-    }
-    
-    private void addBiome(Supplier<? extends Biome> biome) {
-        addBiome(biome, getAutomaticName(biome));
     }
     
     // Automatic en_ud generation

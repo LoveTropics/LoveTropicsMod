@@ -6,7 +6,8 @@ import com.lovetropics.minigames.common.block.TrashBlock.Attachment;
 import com.lovetropics.minigames.common.block.TrashType;
 import com.lovetropics.minigames.common.minigames.IMinigameInstance;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
-import com.mojang.datafixers.Dynamic;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import net.minecraft.block.Block;
@@ -25,6 +26,15 @@ import java.nio.LongBuffer;
 import java.util.Random;
 
 public final class PlaceTrashBehavior implements IMinigameBehavior {
+	public static final Codec<PlaceTrashBehavior> CODEC = RecordCodecBuilder.create(instance -> {
+		return instance.group(
+				ResourceLocation.CODEC.fieldOf("positionData").forGetter(c -> c.positionData),
+				Codec.INT.optionalFieldOf("centerY", 75).forGetter(c -> c.centerY),
+				Codec.INT.optionalFieldOf("range", 50).forGetter(c -> c.range),
+				Codec.INT.optionalFieldOf("density", 4).forGetter(c -> c.density)
+		).apply(instance, PlaceTrashBehavior::new);
+	});
+
 	private static final Logger LOGGER = LogManager.getLogger(PlaceTrashBehavior.class);
 
 	private final TrashType[] trashTypes = TrashType.values();
@@ -43,18 +53,10 @@ public final class PlaceTrashBehavior implements IMinigameBehavior {
 		this.density = density;
 	}
 
-	public static <T> PlaceTrashBehavior parse(Dynamic<T> root) {
-		ResourceLocation positionData = new ResourceLocation(root.get("positionData").asString(""));
-		int centerY = root.get("centerY").asInt(75);
-		int range = root.get("range").asInt(50);
-		int density = root.get("density").asInt(4);
-		return new PlaceTrashBehavior(positionData, centerY, range, density);
-	}
-
 	@Override
 	public void onConstruct(IMinigameInstance minigame) {
 		LongBuffer candidatePositions;
-		try (IResource res = minigame.getServer().getResourceManager().getResource(positionData)) {
+		try (IResource res = minigame.getServer().getDataPackRegistries().getResourceManager().getResource(positionData)) {
 			InputStream in = res.getInputStream();
 			final byte[] data = new byte[8];
 			final ByteBuffer buf = ByteBuffer.allocate(in.available());

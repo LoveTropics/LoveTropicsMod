@@ -2,26 +2,25 @@ package com.lovetropics.minigames.common.minigames.behaviours.instances;
 
 import com.lovetropics.minigames.common.minigames.IMinigameInstance;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
-import com.mojang.datafixers.Dynamic;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.world.GameRules;
 
 import java.util.Map;
 
 public final class SetGameRulesBehavior implements IMinigameBehavior {
+	public static final Codec<SetGameRulesBehavior> CODEC = RecordCodecBuilder.create(instance -> {
+		return instance.group(
+				Codec.unboundedMap(Codec.STRING, Codec.STRING).fieldOf("rules").forGetter(c -> c.rules)
+		).apply(instance, SetGameRulesBehavior::new);
+	});
+
 	private final Map<String, String> rules;
 	private CompoundNBT rulesSnapshot;
 
 	public SetGameRulesBehavior(Map<String, String> rules) {
 		this.rules = rules;
-	}
-
-	public static <T> SetGameRulesBehavior parse(Dynamic<T> root) {
-		Map<String, String> rules = root.get("rules").asMap(
-				key -> key.asString(""),
-				value -> value.asString("")
-		);
-		return new SetGameRulesBehavior(rules);
 	}
 
 	@Override
@@ -34,14 +33,14 @@ public final class SetGameRulesBehavior implements IMinigameBehavior {
 			nbt.putString(entry.getKey(), entry.getValue());
 		}
 
-		gameRules.read(nbt);
+		gameRules.decode(nbt);
 	}
 
 	@Override
 	public void onFinish(IMinigameInstance minigame) {
 		if (this.rulesSnapshot != null) {
 			GameRules gameRules = minigame.getWorld().getGameRules();
-			gameRules.read(this.rulesSnapshot);
+			gameRules.decode(this.rulesSnapshot);
 		}
 	}
 }

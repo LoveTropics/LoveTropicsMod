@@ -7,14 +7,12 @@ import com.lovetropics.minigames.common.minigames.statistics.CauseOfDeath;
 import com.lovetropics.minigames.common.minigames.statistics.MinigameStatistics;
 import com.lovetropics.minigames.common.minigames.statistics.StatisticKey;
 import com.lovetropics.minigames.common.minigames.statistics.StatisticsMap;
-import com.mojang.datafixers.Dynamic;
+import com.mojang.serialization.Codec;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 
 public final class CauseOfDeathTrackerBehavior implements IMinigameBehavior {
-	public static <T> CauseOfDeathTrackerBehavior parse(Dynamic<T> root) {
-		return new CauseOfDeathTrackerBehavior();
-	}
+	public static final Codec<CauseOfDeathTrackerBehavior> CODEC = Codec.unit(CauseOfDeathTrackerBehavior::new);
 
 	@Override
 	public void onPlayerJoin(IMinigameInstance minigame, ServerPlayerEntity player, PlayerRole role) {

@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.common.minigames.map;
 
-import com.mojang.datafixers.Dynamic;
+import com.mojang.serialization.Dynamic;
 import net.minecraftforge.registries.ForgeRegistryEntry;
 
 public final class MinigameMapProviderType extends ForgeRegistryEntry<MinigameMapProviderType> {
