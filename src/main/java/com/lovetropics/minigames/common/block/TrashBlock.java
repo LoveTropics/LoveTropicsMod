@@ -1,13 +1,10 @@
 package com.lovetropics.minigames.common.block;
 
-import java.util.Locale;
-import java.util.Random;
-
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.IWaterLoggable;
+import net.minecraft.fluid.FluidState;
 import net.minecraft.fluid.Fluids;
-import net.minecraft.fluid.IFluidState;
 import net.minecraft.item.BlockItemUseContext;
 import net.minecraft.state.BooleanProperty;
 import net.minecraft.state.EnumProperty;
@@ -17,11 +14,14 @@ import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Direction;
 import net.minecraft.util.IStringSerializable;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.shapes.ISelectionContext;
 import net.minecraft.util.math.shapes.VoxelShape;
+import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.IBlockReader;
 import net.minecraft.world.IWorld;
+
+import java.util.Locale;
+import java.util.Random;
 
 public class TrashBlock extends Block implements IWaterLoggable {
 
@@ -31,10 +31,10 @@ public class TrashBlock extends Block implements IWaterLoggable {
 		CEILING,
 		;
 
-		private static Attachment[] VALUES = values();
+		private static final Attachment[] VALUES = values();
 
 		@Override
-		public String getName() {
+		public String getString() {
 			return name().toLowerCase(Locale.ROOT);
 		}
 
@@ -63,15 +63,15 @@ public class TrashBlock extends Block implements IWaterLoggable {
 
     @Override
     public BlockState getStateForPlacement(BlockItemUseContext context) {
-        IFluidState ifluidstate = context.getWorld().getFluidState(context.getPos());
+        FluidState fluid = context.getWorld().getFluidState(context.getPos());
         return super.getStateForPlacement(context)
                 .with(FACING, context.getPlacementHorizontalFacing())
-                .with(WATERLOGGED, Boolean.valueOf(ifluidstate.isTagged(FluidTags.WATER) && ifluidstate.getLevel() == 8));
+                .with(WATERLOGGED, fluid.isTagged(FluidTags.WATER) && fluid.getLevel() == 8);
     }
 
     @Override
     @Deprecated
-    public IFluidState getFluidState(BlockState state) {
+    public FluidState getFluidState(BlockState state) {
         return state.get(WATERLOGGED) ? Fluids.WATER.getStillFluidState(false) : super.getFluidState(state);
     }
 
@@ -87,7 +87,7 @@ public class TrashBlock extends Block implements IWaterLoggable {
 
     @Override
     public VoxelShape getShape(BlockState state, IBlockReader worldIn, BlockPos pos, ISelectionContext context) {
-    	Vec3d offset = state.getOffset(worldIn, pos);
+    	Vector3d offset = state.getOffset(worldIn, pos);
     	return type.getShape(state.get(FACING), state.get(ATTACHMENT)).withOffset(offset.x, offset.y, offset.z);
     }
 

@@ -1,6 +1,7 @@
 package com.lovetropics.minigames.common.minigames.behaviours.instances.survive_the_tide;
 
-import com.mojang.datafixers.Dynamic;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.material.Material;
 import net.minecraft.util.math.BlockPos;
@@ -10,6 +11,14 @@ import java.util.Random;
 
 public class IcebergLine
 {
+    public static final Codec<IcebergLine> CODEC = RecordCodecBuilder.create(instance -> {
+        return instance.group(
+                BlockPos.CODEC.fieldOf("posA").forGetter(c -> c.start),
+                BlockPos.CODEC.fieldOf("posB").forGetter(c -> c.end),
+                Codec.INT.optionalFieldOf("distanceBetweenEach", 10).forGetter(c -> c.distBetweenEach)
+        ).apply(instance, IcebergLine::new);
+    });
+
     private final BlockPos start, end;
 
     private final int count;
@@ -33,16 +42,6 @@ public class IcebergLine
 
         this.intervalX = Math.round((float)diffX / (float)count);
         this.intervalZ = Math.round((float)diffZ / (float)count);
-    }
-
-    public static <T> IcebergLine parse(Dynamic<T> root)
-    {
-        final BlockPos posA = root.get("posA").map(BlockPos::deserialize).orElse(BlockPos.ZERO);
-        final BlockPos posB = root.get("posB").map(BlockPos::deserialize).orElse(BlockPos.ZERO);
-
-        final int distanceBetweenEach = root.get("distanceBetweenEach").asInt(10);
-
-        return new IcebergLine(posA, posB, distanceBetweenEach);
     }
 
     public void generate(World world, int waterLevel) {

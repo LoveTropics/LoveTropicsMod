@@ -21,19 +21,19 @@ import net.minecraft.command.arguments.BlockPosArgument;
 import net.minecraft.command.arguments.ResourceLocationArgument;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.RegistryKey;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Util;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.util.text.IFormattableTextComponent;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.event.ClickEvent;
 import net.minecraft.util.text.event.HoverEvent;
-import net.minecraft.world.dimension.DimensionType;
+import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
-import net.minecraft.world.storage.SessionLockException;
-import net.minecraftforge.common.DimensionManager;
 
 import java.io.File;
 import java.io.IOException;
@@ -74,8 +74,7 @@ public final class CommandMap {
 					.then(MapWorkspaceArgument.argument("id")
 					.executes(CommandMap::joinMap)
 				))
-				.then(literal("leave").executes(CommandMap::leaveMap)
-				)
+				.then(literal("leave").executes(CommandMap::leaveMap))
 				.then(literal("export")
 					.then(MapWorkspaceArgument.argument("id")
 					.executes(CommandMap::exportMap)
@@ -120,11 +119,11 @@ public final class CommandMap {
 
 		workspaceManager.openWorkspace(id, generator);
 
-		ITextComponent message = new StringTextComponent("Opened workspace with id '" + id + "'. ").applyTextStyles(TextFormatting.AQUA);
+		IFormattableTextComponent message = new StringTextComponent("Opened workspace with id '" + id + "'. ").mergeStyle(TextFormatting.AQUA);
 		ITextComponent join = new StringTextComponent("Click here to join")
-				.applyTextStyle(style -> {
+				.modifyStyle(style -> {
 					String command = "/minigame map join " + id;
-					style.setColor(TextFormatting.BLUE)
+					style.setFormatting(TextFormatting.BLUE)
 							.setUnderlined(true)
 							.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, command))
 							.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new StringTextComponent(command)));
@@ -142,7 +141,7 @@ public final class CommandMap {
 		MapWorkspace workspace = MapWorkspaceArgument.get(context, "id");
 		workspaceManager.deleteWorkspace(workspace.getId());
 
-		source.sendFeedback(new StringTextComponent("Deleted workspace with id '" + workspace.getId() + "'. ").applyTextStyles(TextFormatting.GOLD), false);
+		source.sendFeedback(new StringTextComponent("Deleted workspace with id '" + workspace.getId() + "'. ").mergeStyle(TextFormatting.GOLD), false);
 
 		return Command.SINGLE_SUCCESS;
 	}
@@ -154,7 +153,7 @@ public final class CommandMap {
 		if (returnPosition != null) {
 			returnPosition.applyTo(player);
 		} else {
-			DimensionUtils.teleportPlayerNoPortal(player, DimensionType.OVERWORLD, new BlockPos(0, 64, 0));
+			DimensionUtils.teleportPlayerNoPortal(player, World.OVERWORLD, new BlockPos(0, 64, 0));
 		}
 
 		return Command.SINGLE_SUCCESS;
@@ -169,10 +168,9 @@ public final class CommandMap {
 		if (position != null) {
 			position.applyTo(player);
 		} else {
-			DimensionType dimension = workspace.getDimension();
+			RegistryKey<World> dimension = workspace.getDimension();
 			ServerWorld world = context.getSource().getServer().getWorld(dimension);
-			BlockPos spawn = world.getDimension().findSpawn(0, 0, false);
-			DimensionUtils.teleportPlayerNoPortal(player, dimension, spawn);
+			DimensionUtils.teleportPlayerNoPortal(player, dimension, world.getSpawnPoint());
 		}
 
 		if (player.abilities.allowFlying) {
@@ -197,7 +195,7 @@ public final class CommandMap {
 
 	private static int addRegionHere(CommandContext<CommandSource> context) throws CommandSyntaxException {
 		MapWorkspace workspace = getCurrentWorkspace(context);
-		Vec3d pos = context.getSource().getPos();
+		Vector3d pos = context.getSource().getPos();
 
 		String key = StringArgumentType.getString(context, "key");
 
@@ -219,7 +217,7 @@ public final class CommandMap {
 		MapWorkspace workspace = MapWorkspaceArgument.get(context, "id");
 
 		MinecraftServer server = source.getServer();
-		ServerWorld overworld = server.getWorld(DimensionType.OVERWORLD);
+		ServerWorld overworld = server.getWorld(World.OVERWORLD);
 
 		CompletableFuture<Void> saveAll = saveWorkspace(server, workspace);
 
@@ -269,7 +267,7 @@ public final class CommandMap {
 		MapWorkspaceManager workspaceManager = MapWorkspaceManager.get(source.getServer());
 
 		ServerPlayerEntity player = source.asPlayer();
-		MapWorkspace workspace = workspaceManager.getWorkspace(player.dimension);
+		MapWorkspace workspace = workspaceManager.getWorkspace(player.world.getDimensionKey());
 		if (workspace == null) {
 			throw NOT_IN_WORKSPACE.create();
 		}

@@ -4,20 +4,29 @@ import com.lovetropics.minigames.common.minigames.IMinigameInstance;
 import com.lovetropics.minigames.common.minigames.MinigameManager;
 import com.lovetropics.minigames.common.minigames.PlayerRole;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
-import com.mojang.datafixers.Dynamic;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.BossInfo;
-import net.minecraft.world.World;
 import net.minecraft.world.server.ServerBossInfo;
+import net.minecraft.world.server.ServerWorld;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
 public final class TimedMinigameBehavior implements IMinigameBehavior {
+	public static final Codec<TimedMinigameBehavior> CODEC = RecordCodecBuilder.create(instance -> {
+		return instance.group(
+				Codec.LONG.optionalFieldOf("length", 20L * 60).forGetter(c -> c.length),
+				Codec.LONG.optionalFieldOf("close_length", 0L).forGetter(c -> c.closeTime - c.length),
+				Codec.BOOL.optionalFieldOf("timer_bar", false).forGetter(c -> c.timerBar != null)
+		).apply(instance, TimedMinigameBehavior::new);
+	});
+
 	private final long length;
 	private final long closeTime;
 	private final ServerBossInfo timerBar;
@@ -28,14 +37,6 @@ public final class TimedMinigameBehavior implements IMinigameBehavior {
 		this.length = length;
 		this.closeTime = length + closeTime;
 		this.timerBar = timerBar ? new ServerBossInfo(new StringTextComponent(""), BossInfo.Color.GREEN, BossInfo.Overlay.PROGRESS) : null;
-	}
-
-	public static <T> TimedMinigameBehavior parse(Dynamic<T> root) {
-		long length = root.get("length").asLong(20 * 60);
-		long closeLength = root.get("close_length").asLong(0);
-		// TODO: we store this in a string because DFU doesn't handle booleans at the moment
-		boolean timerBar = root.get("timer_bar").asString("false").equalsIgnoreCase("true");
-		return new TimedMinigameBehavior(length, closeLength, timerBar);
 	}
 
 	public void onFinish(Consumer<IMinigameInstance> listener) {
@@ -65,7 +66,7 @@ public final class TimedMinigameBehavior implements IMinigameBehavior {
 	}
 
 	@Override
-	public void worldUpdate(IMinigameInstance minigame, World world) {
+	public void worldUpdate(IMinigameInstance minigame, ServerWorld world) {
 		long ticks = minigame.ticks();
 		if (ticks >= closeTime) {
 			MinigameManager.getInstance().finish();
@@ -93,7 +94,7 @@ public final class TimedMinigameBehavior implements IMinigameBehavior {
 		String time = String.format("%02d:%02d", minutes, seconds);
 
 		return new StringTextComponent("Time Remaining: ")
-				.appendSibling(new StringTextComponent(time).applyTextStyle(TextFormatting.GRAY))
-				.appendText("...");
+				.appendSibling(new StringTextComponent(time).mergeStyle(TextFormatting.GRAY))
+				.appendString("...");
 	}
 }

@@ -4,23 +4,25 @@ import com.lovetropics.minigames.common.minigames.IMinigameDefinition;
 import com.lovetropics.minigames.common.minigames.IMinigameInstance;
 import com.lovetropics.minigames.common.minigames.MinigameMap;
 import com.lovetropics.minigames.common.minigames.MinigameResult;
-import com.mojang.datafixers.Dynamic;
+import com.mojang.serialization.Dynamic;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.RegistryKey;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Unit;
-import net.minecraft.world.dimension.DimensionType;
+import net.minecraft.util.registry.Registry;
+import net.minecraft.world.World;
 
 import java.util.concurrent.CompletableFuture;
 
 public final class InlineMapProvider implements IMinigameMapProvider{
-	private final DimensionType dimension;
+	private final RegistryKey<World> dimension;
 
-	public InlineMapProvider(DimensionType dimension) {
+	public InlineMapProvider(RegistryKey<World> dimension) {
 		this.dimension = dimension;
 	}
 
 	public static <T> InlineMapProvider parse(Dynamic<T> root) {
-		DimensionType dimension = DimensionType.byName(new ResourceLocation(root.get("dimension").asString("")));
+		RegistryKey<World> dimension = RegistryKey.getOrCreateKey(Registry.WORLD_KEY, new ResourceLocation(root.get("dimension").asString("")));
 		return new InlineMapProvider(dimension);
 	}
 

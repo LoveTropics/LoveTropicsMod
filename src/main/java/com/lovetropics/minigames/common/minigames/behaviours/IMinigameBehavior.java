@@ -14,6 +14,7 @@ import net.minecraft.util.Unit;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.IChunk;
+import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.player.AttackEntityEvent;
@@ -80,13 +81,11 @@ public interface IMinigameBehavior
 	/**
 	 * Helper method to define unique logic for the minigame as it is running. Only
 	 * called when a minigame using this definition is actively running.
-	 * 
-	 * @param minigame The current minigame instance.
-	 * 
+	 *  @param minigame The current minigame instance.
+	 *
 	 * @param world    The world to run this for, currently a worldUpdate call
-	 *                 happens per each loaded world
 	 */
-	default void worldUpdate(final IMinigameInstance minigame, World world) {}
+	default void worldUpdate(final IMinigameInstance minigame, ServerWorld world) {}
 
 	/**
 	 * Helper method to catch when a player dies while inside an active minigame

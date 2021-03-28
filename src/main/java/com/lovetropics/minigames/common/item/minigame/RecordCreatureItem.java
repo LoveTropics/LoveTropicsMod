@@ -21,6 +21,6 @@ public class RecordCreatureItem extends Item {
     @Override
     @OnlyIn(Dist.CLIENT)
     public void addInformation(ItemStack stack, @Nullable World world, List<ITextComponent> tooltip, ITooltipFlag flag) {
-        tooltip.add(new StringTextComponent("Right click on creatures to record that you found them!").applyTextStyle(TextFormatting.GOLD));
+        tooltip.add(new StringTextComponent("Right click on creatures to record that you found them!").mergeStyle(TextFormatting.GOLD));
     }
 }

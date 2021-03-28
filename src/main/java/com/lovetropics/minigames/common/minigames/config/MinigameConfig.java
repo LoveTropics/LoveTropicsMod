@@ -4,7 +4,7 @@ import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.common.minigames.IMinigameDefinition;
 import com.lovetropics.minigames.common.minigames.behaviours.BehaviorMap;
 import com.lovetropics.minigames.common.minigames.map.IMinigameMapProvider;
-import com.mojang.datafixers.Dynamic;
+import com.mojang.serialization.Dynamic;
 import net.minecraft.util.ResourceLocation;
 
 import java.util.List;

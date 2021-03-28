@@ -1,21 +1,22 @@
 package com.lovetropics.minigames.common.minigames.behaviours.instances.donations;
 
 import com.lovetropics.minigames.common.Util;
-import com.mojang.datafixers.Dynamic;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.player.ServerPlayerEntity;
 
 // TODO: remove when we can combine package behaviors
 public final class PufferfishPackageBehavior extends DonationPackageBehavior {
+	public static final Codec<PufferfishPackageBehavior> CODEC = RecordCodecBuilder.create(instance -> {
+		return instance.group(
+				DonationPackageData.CODEC.forGetter(c -> c.data)
+		).apply(instance, PufferfishPackageBehavior::new);
+	});
+
 	public PufferfishPackageBehavior(final DonationPackageData data) {
 		super(data);
-	}
-
-	public static <T> PufferfishPackageBehavior parse(Dynamic<T> root) {
-		final DonationPackageData data = DonationPackageData.parse(root);
-
-		return new PufferfishPackageBehavior(data);
 	}
 
 	@Override

@@ -8,7 +8,7 @@ import com.lovetropics.minigames.common.minigames.behaviours.instances.statistic
 import com.lovetropics.minigames.common.minigames.behaviours.instances.survive_the_tide.*;
 import com.lovetropics.minigames.common.minigames.behaviours.instances.trash_dive.PlaceTrashBehavior;
 import com.lovetropics.minigames.common.minigames.behaviours.instances.trash_dive.TrashCollectionBehavior;
-import com.mojang.datafixers.Dynamic;
+import com.mojang.serialization.Dynamic;
 import net.minecraftforge.fml.RegistryObject;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.IForgeRegistry;

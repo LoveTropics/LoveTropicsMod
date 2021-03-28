@@ -27,7 +27,7 @@ public class PaddleItem extends Item {
 	@Override
 	@OnlyIn(Dist.CLIENT)
 	public void addInformation(ItemStack stack, @Nullable World world, List<ITextComponent> tooltip, ITooltipFlag flag) {
-		tooltip.add(new StringTextComponent("This might come in handy").applyTextStyle(TextFormatting.AQUA));
+		tooltip.add(new StringTextComponent("This might come in handy").mergeStyle(TextFormatting.AQUA));
 	}
 
 	@Override

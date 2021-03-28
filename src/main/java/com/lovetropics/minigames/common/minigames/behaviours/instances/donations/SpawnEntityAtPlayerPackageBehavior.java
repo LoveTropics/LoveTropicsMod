@@ -1,29 +1,31 @@
 package com.lovetropics.minigames.common.minigames.behaviours.instances.donations;
 
 import com.lovetropics.minigames.common.Util;
-import com.mojang.datafixers.Dynamic;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.entity.EntityType;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.DamageSource;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.registry.Registry;
 
 public class SpawnEntityAtPlayerPackageBehavior extends DonationPackageBehavior
 {
-	private final ResourceLocation entityId;
+	public static final Codec<SpawnEntityAtPlayerPackageBehavior> CODEC = RecordCodecBuilder.create(instance -> {
+		return instance.group(
+				DonationPackageData.CODEC.forGetter(c -> c.data),
+				Registry.ENTITY_TYPE.fieldOf("entity_id").forGetter(c -> c.entityId),
+				Codec.INT.optionalFieldOf("damage_player_amount", 0).forGetter(c -> c.damagePlayerAmount)
+		).apply(instance, SpawnEntityAtPlayerPackageBehavior::new);
+	});
+
+	private final EntityType<?> entityId;
 	private final int damagePlayerAmount;
 
-	public SpawnEntityAtPlayerPackageBehavior(final DonationPackageData data, final ResourceLocation entityId, final int damagePlayerAmount) {
+	public SpawnEntityAtPlayerPackageBehavior(final DonationPackageData data, final EntityType<?> entityId, final int damagePlayerAmount) {
 		super(data);
 
 		this.entityId = entityId;
 		this.damagePlayerAmount = damagePlayerAmount;
-	}
-
-	public static <T> SpawnEntityAtPlayerPackageBehavior parse(Dynamic<T> root) {
-		final DonationPackageData data = DonationPackageData.parse(root);
-		final ResourceLocation entity_id = new ResourceLocation(root.get("entity_id").asString(""));
-		final int damagePlayerAmount = root.get("damage_player_amount").asInt(0);
-
-		return new SpawnEntityAtPlayerPackageBehavior(data, entity_id, damagePlayerAmount);
 	}
 
 	@Override

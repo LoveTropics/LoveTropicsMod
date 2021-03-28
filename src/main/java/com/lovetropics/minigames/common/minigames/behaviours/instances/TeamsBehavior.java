@@ -1,12 +1,14 @@
 package com.lovetropics.minigames.common.minigames.behaviours.instances;
 
+import com.lovetropics.minigames.common.MoreCodecs;
 import com.lovetropics.minigames.common.Scheduler;
 import com.lovetropics.minigames.common.minigames.*;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
 import com.lovetropics.minigames.common.minigames.behaviours.IPollingMinigameBehavior;
 import com.lovetropics.minigames.common.minigames.polling.PollingMinigameInstance;
 import com.lovetropics.minigames.common.minigames.statistics.StatisticKey;
-import com.mojang.datafixers.Dynamic;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.minecraft.entity.Entity;
@@ -28,6 +30,14 @@ import javax.annotation.Nullable;
 import java.util.*;
 
 public final class TeamsBehavior implements IMinigameBehavior, IPollingMinigameBehavior {
+	public static final Codec<TeamsBehavior> CODEC = RecordCodecBuilder.create(instance -> {
+		return instance.group(
+				TeamKey.CODEC.listOf().fieldOf("teams").forGetter(c -> c.teams),
+				Codec.BOOL.optionalFieldOf("friendly_fire", false).forGetter(c -> c.friendlyFire),
+				Codec.unboundedMap(Codec.STRING, MoreCodecs.UUID_STRING.listOf()).fieldOf("assign").orElseGet(Object2ObjectOpenHashMap::new).forGetter(c -> c.assignedTeams)
+		).apply(instance, TeamsBehavior::new);
+	});
+
 	private final List<TeamKey> teams;
 	private final Map<TeamKey, MutablePlayerSet> teamPlayers = new Object2ObjectOpenHashMap<>();
 	private final Map<TeamKey, ScorePlayerTeam> scoreboardTeams = new Object2ObjectOpenHashMap<>();
@@ -52,17 +62,6 @@ public final class TeamsBehavior implements IMinigameBehavior, IPollingMinigameB
 		}
 	}
 
-	public static <T> TeamsBehavior parse(Dynamic<T> root) {
-		List<TeamKey> teams = root.get("teams").asList(TeamKey::parse);
-		boolean friendlyFire = root.get("friendly_fire").asBoolean(false);
-		Map<String, List<UUID>> assignedTeams = root.get("assign").asMap(
-				key -> key.asString(""),
-				value -> value.asList(id -> UUID.fromString(id.asString("")))
-		);
-
-		return new TeamsBehavior(teams, friendlyFire, assignedTeams);
-	}
-
 	@Override
 	public void onStartPolling(PollingMinigameInstance minigame) {
 		for (TeamKey team : pollingTeams) {
@@ -71,7 +70,7 @@ public final class TeamsBehavior implements IMinigameBehavior, IPollingMinigameB
 				if (minigame.isPlayerRegistered(player)) {
 					onRequestJoinTeam(player, team);
 				} else {
-					player.sendMessage(new StringTextComponent("You have not yet joined this minigame!").applyTextStyle(TextFormatting.RED));
+					player.sendStatusMessage(new StringTextComponent("You have not yet joined this minigame!").mergeStyle(TextFormatting.RED), false);
 				}
 			}));
 		}
@@ -80,9 +79,10 @@ public final class TeamsBehavior implements IMinigameBehavior, IPollingMinigameB
 	private void onRequestJoinTeam(ServerPlayerEntity player, TeamKey team) {
 		teamPreferences.put(player.getUniqueID(), team);
 
-		player.sendMessage(
-				new StringTextComponent("You have requested to join ").applyTextStyle(TextFormatting.GRAY)
-						.appendSibling(new StringTextComponent(team.name).applyTextStyles(team.text, TextFormatting.BOLD))
+		player.sendStatusMessage(
+				new StringTextComponent("You have requested to join ").mergeStyle(TextFormatting.GRAY)
+						.appendSibling(new StringTextComponent(team.name).mergeStyle(team.text, TextFormatting.BOLD)),
+				false
 		);
 	}
 
@@ -96,19 +96,20 @@ public final class TeamsBehavior implements IMinigameBehavior, IPollingMinigameB
 	}
 
 	private void sendTeamSelectionTo(ServerPlayerEntity player) {
-		player.sendMessage(new StringTextComponent("This is a team-based game!").applyTextStyles(TextFormatting.GOLD, TextFormatting.BOLD));
-		player.sendMessage(new StringTextComponent("You can select a team preference by clicking the links below:").applyTextStyle(TextFormatting.GRAY));
+		player.sendStatusMessage(new StringTextComponent("This is a team-based game!").mergeStyle(TextFormatting.GOLD, TextFormatting.BOLD), false);
+		player.sendStatusMessage(new StringTextComponent("You can select a team preference by clicking the links below:").mergeStyle(TextFormatting.GRAY), false);
 
 		for (TeamKey team : pollingTeams) {
-			Style linkStyle = new Style();
-			linkStyle.setColor(team.text);
-			linkStyle.setUnderlined(true);
-			linkStyle.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/minigame join_team_" + team.key));
-			linkStyle.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new StringTextComponent("Join " + team.name)));
+			Style linkStyle = Style.EMPTY
+					.setFormatting(team.text)
+					.setUnderlined(true)
+					.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/minigame join_team_" + team.key))
+					.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new StringTextComponent("Join " + team.name)));
 
-			player.sendMessage(
-					new StringTextComponent(" - ").applyTextStyle(TextFormatting.GRAY)
-							.appendSibling(new StringTextComponent("Join " + team.name).setStyle(linkStyle))
+			player.sendStatusMessage(
+					new StringTextComponent(" - ").mergeStyle(TextFormatting.GRAY)
+							.appendSibling(new StringTextComponent("Join " + team.name).setStyle(linkStyle)),
+					false
 			);
 		}
 	}
@@ -237,9 +238,10 @@ public final class TeamsBehavior implements IMinigameBehavior, IPollingMinigameB
 		ScorePlayerTeam scoreboardTeam = scoreboardTeams.get(team);
 		scoreboard.addPlayerToTeam(player.getScoreboardName(), scoreboardTeam);
 
-		player.sendMessage(
-				new StringTextComponent("You are on ").applyTextStyle(TextFormatting.GRAY)
-						.appendSibling(new StringTextComponent(team.name + " Team!").applyTextStyles(TextFormatting.BOLD, team.text))
+		player.sendStatusMessage(
+				new StringTextComponent("You are on ").mergeStyle(TextFormatting.GRAY)
+						.appendSibling(new StringTextComponent(team.name + " Team!").mergeStyle(TextFormatting.BOLD, team.text)),
+				false
 		);
 	}
 
@@ -310,6 +312,15 @@ public final class TeamsBehavior implements IMinigameBehavior, IPollingMinigameB
 	}
 
 	public static class TeamKey {
+		public static final Codec<TeamKey> CODEC = RecordCodecBuilder.create(instance -> {
+			return instance.group(
+					Codec.STRING.fieldOf("key").forGetter(c -> c.key),
+					Codec.STRING.fieldOf("name").forGetter(c -> c.name),
+					MoreCodecs.DYE_COLOR.optionalFieldOf("dye", DyeColor.WHITE).forGetter(c -> c.dye),
+					MoreCodecs.FORMATTING.optionalFieldOf("text", TextFormatting.WHITE).forGetter(c -> c.text)
+			).apply(instance, TeamKey::new);
+		});
+
 		public final String key;
 		public final String name;
 		public final DyeColor dye;
@@ -320,17 +331,6 @@ public final class TeamsBehavior implements IMinigameBehavior, IPollingMinigameB
 			this.name = name;
 			this.dye = dye;
 			this.text = text;
-		}
-
-		public static <T> TeamKey parse(Dynamic<T> root) {
-			String key = root.get("key").asString("");
-			String name = root.get("name").asString(key);
-			DyeColor dye = DyeColor.byTranslationKey(root.get("dye").asString(""), DyeColor.WHITE);
-			TextFormatting text = TextFormatting.getValueByName(root.get("text").asString(""));
-			if (text == null) {
-				text = TextFormatting.WHITE;
-			}
-			return new TeamKey(key, name, dye, text);
 		}
 
 		@Override

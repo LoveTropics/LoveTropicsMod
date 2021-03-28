@@ -11,7 +11,7 @@ import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehaviorTy
 import com.lovetropics.minigames.common.minigames.behaviours.MinigameBehaviorTypes;
 import com.lovetropics.minigames.common.minigames.behaviours.instances.TimedMinigameBehavior;
 import com.lovetropics.minigames.common.minigames.statistics.*;
-import com.mojang.datafixers.Dynamic;
+import com.mojang.serialization.Codec;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -36,6 +36,8 @@ import java.util.List;
 import java.util.Set;
 
 public final class TrashCollectionBehavior implements IMinigameBehavior {
+	public static final Codec<TrashCollectionBehavior> CODEC = Codec.unit(TrashCollectionBehavior::new);
+
 	private final Set<Block> trashBlocks;
 
 	private boolean gameOver;
@@ -52,10 +54,6 @@ public final class TrashCollectionBehavior implements IMinigameBehavior {
 		}
 	}
 
-	public static <T> TrashCollectionBehavior parse(Dynamic<T> root) {
-		return new TrashCollectionBehavior();
-	}
-
 	@Override
 	public ImmutableList<IMinigameBehaviorType<? extends IMinigameBehavior>> dependencies() {
 		return ImmutableList.of(MinigameBehaviorTypes.PLACE_TRASH.get());
@@ -64,7 +62,7 @@ public final class TrashCollectionBehavior implements IMinigameBehavior {
 	@Override
 	public void onStart(IMinigameInstance minigame) {
 		ITextComponent sidebarTitle = new StringTextComponent("Trash Dive")
-				.applyTextStyles(TextFormatting.BLUE, TextFormatting.BOLD);
+				.mergeStyle(TextFormatting.BLUE, TextFormatting.BOLD);
 
 		sidebar = MinigameSidebar.open(sidebarTitle, minigame.getPlayers());
 		sidebar.set(renderSidebar(minigame));
@@ -135,7 +133,7 @@ public final class TrashCollectionBehavior implements IMinigameBehavior {
 		ITextComponent finishMessage = new StringTextComponent("The game ended! Here are the results for this game:");
 
 		PlayerSet players = minigame.getPlayers();
-		players.sendMessage(finishMessage.applyTextStyles(TextFormatting.GREEN));
+		players.sendMessage(finishMessage.deepCopy().mergeStyle(TextFormatting.GREEN));
 
 		MinigameStatistics statistics = minigame.getStatistics();
 

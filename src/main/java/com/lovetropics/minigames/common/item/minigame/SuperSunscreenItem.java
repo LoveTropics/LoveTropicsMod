@@ -21,8 +21,8 @@ public class SuperSunscreenItem extends Item {
     @Override
     @OnlyIn(Dist.CLIENT)
     public void addInformation(ItemStack stack, @Nullable World world, List<ITextComponent> tooltip, ITooltipFlag flag) {
-        tooltip.add(new StringTextComponent("Prevents heatwaves from slowing you down.").applyTextStyle(TextFormatting.GOLD));
+        tooltip.add(new StringTextComponent("Prevents heatwaves from slowing you down.").mergeStyle(TextFormatting.GOLD));
         tooltip.add(new StringTextComponent(""));
-        tooltip.add(new StringTextComponent("Active when held in main hand or off-hand.").applyTextStyle(TextFormatting.AQUA));
+        tooltip.add(new StringTextComponent("Active when held in main hand or off-hand.").mergeStyle(TextFormatting.AQUA));
     }
 }

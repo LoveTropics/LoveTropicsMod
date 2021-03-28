@@ -4,6 +4,7 @@ import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.common.minigames.MinigameStatus;
 import com.lovetropics.minigames.common.minigames.PlayerRole;
 
+import com.mojang.blaze3d.matrix.MatrixStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.util.ResourceLocation;
@@ -30,6 +31,7 @@ public class MinigameGui {
 				Minecraft.getInstance().getTextureManager().bindTexture(new ResourceLocation("minecraft:missingno"));
 			}
 			if (event.getType() == ElementType.TEXT) {
+				MatrixStack transform = event.getMatrixStack();
 				FontRenderer fnt = Minecraft.getInstance().fontRenderer;
 
 				final int padding = 2;
@@ -40,13 +42,13 @@ public class MinigameGui {
 				if (state.getRole() != null) {
 					line += TextFormatting.GREEN + " [Joined]";
 				}
-				fnt.drawStringWithShadow(line, padding, y, -1);
+				fnt.drawStringWithShadow(transform, line, padding, y, -1);
 				y += lineHeight;
 
 				line = (status == MinigameStatus.POLLING ? TextFormatting.GRAY + "..." : "")
 						+ status.color + status.description
 						+ " (" + state.getMemberCount(PlayerRole.PARTICIPANT) + "/" + state.getMaxPlayers() + ")";
-				fnt.drawStringWithShadow(line, padding, y, -1);
+				fnt.drawStringWithShadow(transform, line, padding, y, -1);
 				y += lineHeight;
 
 				line = TextFormatting.GRAY + "Commands: ";
@@ -58,7 +60,7 @@ public class MinigameGui {
 				} else {
 					line += TextFormatting.AQUA + "/leave";
 				}
-				fnt.drawStringWithShadow(line, padding, y, -1);
+				fnt.drawStringWithShadow(transform, line, padding, y, -1);
 			}
 		});
 	}

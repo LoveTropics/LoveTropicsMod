@@ -7,16 +7,12 @@ import com.lovetropics.minigames.common.block.TrashType;
 import com.lovetropics.minigames.common.command.CommandMap;
 import com.lovetropics.minigames.common.command.minigames.*;
 import com.lovetropics.minigames.common.config.ConfigLT;
-import com.lovetropics.minigames.common.dimension.DimensionUtils;
-import com.lovetropics.minigames.common.dimension.biome.TropicraftBiomes;
 import com.lovetropics.minigames.common.entity.DriftwoodRider;
 import com.lovetropics.minigames.common.entity.MinigameEntities;
 import com.lovetropics.minigames.common.item.MinigameItems;
 import com.lovetropics.minigames.common.map.VoidChunkGenerator;
-import com.lovetropics.minigames.common.map.workspace.MapWorkspaceDimension;
 import com.lovetropics.minigames.common.minigames.MinigameManager;
 import com.lovetropics.minigames.common.minigames.behaviours.MinigameBehaviorTypes;
-import com.lovetropics.minigames.common.minigames.config.MinigameConfigs;
 import com.lovetropics.minigames.common.minigames.map.MinigameMapProviderTypes;
 import com.lovetropics.minigames.common.network.LTNetwork;
 import com.lovetropics.minigames.common.telemetry.Telemetry;
@@ -98,17 +94,14 @@ public class LoveTropics {
         // Registry objects
         LoveTropicsBlocks.init();
         MinigameItems.init();
-        DimensionUtils.init();
         MinigameEntities.init();
 
         ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, ConfigLT.CLIENT_CONFIG);
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, ConfigLT.SERVER_CONFIG);
 
         VoidChunkGenerator.REGISTER.register(modBus);
-        MapWorkspaceDimension.REGISTER.register(modBus);
         MinigameBehaviorTypes.MINIGAME_BEHAVIOURS_REGISTER.register(modBus);
         MinigameMapProviderTypes.REGISTER.register(modBus);
-        TropicraftBiomes.BIOMES.register(modBus);
     }
 
     private static final Pattern QUALIFIER = Pattern.compile("-\\w+\\+\\d+");
@@ -133,8 +126,6 @@ public class LoveTropics {
     }
 
     private void setup(final FMLCommonSetupEvent event) {
-//        TODO TropicraftBiomes.addFeatures();
-
         LTNetwork.register();
 
         CapabilityManager.INSTANCE.register(DriftwoodRider.class, DriftwoodRider.STORAGE, () -> {
@@ -146,9 +137,6 @@ public class LoveTropics {
         Telemetry.INSTANCE.sendOpen();
 
         MinigameManager.init(event.getServer());
-        MinigameConfigs.init(event.getServer());
-
-        MapWorkspaceDimension.openServer(event.getServer());
 
         // we register commands in the about-to-start event because the 'proper' starting event loads after datapacks,
         // causing functions to load incorrectly
@@ -172,8 +160,6 @@ public class LoveTropics {
         if (MinigameManager.getInstance().getActiveMinigame() != null) {
             MinigameManager.getInstance().cancel();
         }
-
-        MapWorkspaceDimension.closeServer();
 
         Telemetry.INSTANCE.sendClose();
     }

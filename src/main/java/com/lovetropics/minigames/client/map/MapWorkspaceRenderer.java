@@ -13,7 +13,7 @@ import net.minecraft.client.renderer.debug.DebugRenderer;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.vector.Vector3d;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -37,7 +37,7 @@ public final class MapWorkspaceRenderer {
 			return;
 		}
 
-		Vec3d view = renderInfo.getProjectedView();
+		Vector3d view = renderInfo.getProjectedView();
 
 		RenderSystem.pushMatrix();
 		RenderSystem.multMatrix(event.getMatrixStack().getLast().getMatrix());
@@ -91,7 +91,7 @@ public final class MapWorkspaceRenderer {
 		}
 
 		for (ClientWorkspaceRegions.Entry entry : regions) {
-			Vec3d center = entry.region.getCenter();
+			Vector3d center = entry.region.getCenter();
 			BlockPos size = entry.region.getSize();
 
 			int minSize = Math.min(size.getX(), Math.min(size.getY(), size.getZ())) - 1;

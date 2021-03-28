@@ -7,7 +7,7 @@ import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
 import com.lovetropics.minigames.common.network.ChaseCameraMessage;
 import com.lovetropics.minigames.common.network.LTNetwork;
 import com.lovetropics.minigames.common.network.StopChaseCameraMessage;
-import com.mojang.datafixers.Dynamic;
+import com.mojang.serialization.Codec;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraftforge.fml.network.PacketDistributor;
 
@@ -16,9 +16,7 @@ import java.util.List;
 import java.util.UUID;
 
 public final class SpectatorChaseBehavior implements IMinigameBehavior {
-	public static <T> SpectatorChaseBehavior parse(Dynamic<T> root) {
-		return new SpectatorChaseBehavior();
-	}
+	public static final Codec<SpectatorChaseBehavior> CODEC = Codec.unit(SpectatorChaseBehavior::new);
 
 	@Override
 	public void onPlayerJoin(IMinigameInstance minigame, ServerPlayerEntity player, PlayerRole role) {

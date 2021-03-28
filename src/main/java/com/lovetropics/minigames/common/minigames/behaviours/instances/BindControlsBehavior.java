@@ -5,29 +5,28 @@ import com.lovetropics.minigames.common.minigames.IMinigameInstance;
 import com.lovetropics.minigames.common.minigames.MinigameControllable;
 import com.lovetropics.minigames.common.minigames.behaviours.IPollingMinigameBehavior;
 import com.lovetropics.minigames.common.minigames.polling.PollingMinigameInstance;
-import com.mojang.datafixers.Dynamic;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 
 import java.util.List;
 import java.util.Map;
 
 public final class BindControlsBehavior extends CommandInvokeBehavior implements IPollingMinigameBehavior {
-	private final Map<ControlCommand.Scope, Map<String, List<String>>> commands;
+	public static final Codec<BindControlsBehavior> CODEC = RecordCodecBuilder.create(instance -> {
+		return instance.group(
+			Codec.unboundedMap(ControlCommand.Scope.CODEC, COMMANDS_CODEC).fieldOf("controls").forGetter(c -> c.scopedCommands)
+		).apply(instance, BindControlsBehavior::create);
+	});
+
+	private final Map<ControlCommand.Scope, Map<String, List<String>>> scopedCommands;
 
 	private BindControlsBehavior(Map<ControlCommand.Scope, Map<String, List<String>>> scopedCommands, Map<String, List<String>> commands) {
 		super(commands);
-		this.commands = scopedCommands;
+		this.scopedCommands = scopedCommands;
 	}
 
-	public static <T> BindControlsBehavior parse(Dynamic<T> root) {
-		Map<ControlCommand.Scope, Map<String, List<String>>> scopedCommands = root.get("controls").asMap(
-				key -> {
-					ControlCommand.Scope scope = ControlCommand.Scope.byKey(key.asString(""));
-					return scope != null ? scope : ControlCommand.Scope.ADMINS;
-				},
-				CommandInvokeBehavior::parseCommands
-		);
-
+	public static BindControlsBehavior create(Map<ControlCommand.Scope, Map<String, List<String>>> scopedCommands) {
 		Map<String, List<String>> commands = new Object2ObjectOpenHashMap<>();
 		for (Map<String, List<String>> scope : scopedCommands.values()) {
 			commands.putAll(scope);
@@ -49,7 +48,7 @@ public final class BindControlsBehavior extends CommandInvokeBehavior implements
 	}
 
 	public void addControlsTo(MinigameControllable minigame) {
-		for (Map.Entry<ControlCommand.Scope, Map<String, List<String>>> entry : commands.entrySet()) {
+		for (Map.Entry<ControlCommand.Scope, Map<String, List<String>>> entry : scopedCommands.entrySet()) {
 			ControlCommand.Scope scope = entry.getKey();
 			Map<String, List<String>> commands = entry.getValue();
 

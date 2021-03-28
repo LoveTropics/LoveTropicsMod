@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.common.minigames.behaviours.instances.conservation_exploration;
 
-import com.lovetropics.lib.entity.FireworkUtil;
+import com.lovetropics.lib.entity.FireworkPalette;
 import com.lovetropics.minigames.common.Scheduler;
 import com.lovetropics.minigames.common.item.MinigameItems;
 import com.lovetropics.minigames.common.map.MapRegion;
@@ -9,7 +9,8 @@ import com.lovetropics.minigames.common.minigames.IMinigameInstance;
 import com.lovetropics.minigames.common.minigames.MinigameManager;
 import com.lovetropics.minigames.common.minigames.PlayerRole;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
-import com.mojang.datafixers.Dynamic;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.entity.*;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.ItemStack;
@@ -19,20 +20,16 @@ import net.minecraft.scoreboard.ScorePlayerTeam;
 import net.minecraft.scoreboard.ServerScoreboard;
 import net.minecraft.util.Direction;
 import net.minecraft.util.Hand;
-import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.TextFormatting;
-import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.util.registry.Registry;
+import net.minecraft.util.text.*;
 import net.minecraft.util.text.event.ClickEvent;
 import net.minecraft.util.text.event.HoverEvent;
 import net.minecraft.world.BossInfo;
 import net.minecraft.world.chunk.IChunk;
 import net.minecraft.world.server.ServerBossInfo;
 import net.minecraft.world.server.ServerWorld;
-import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -40,6 +37,12 @@ import java.util.List;
 import java.util.Random;
 
 public final class ConservationExplorationBehavior implements IMinigameBehavior {
+	public static final Codec<ConservationExplorationBehavior> CODEC = RecordCodecBuilder.create(instance -> {
+		return instance.group(
+				CreatureType.CODEC.listOf().fieldOf("creatures").forGetter(c -> c.creatures)
+		).apply(instance, ConservationExplorationBehavior::new);
+	});
+
 	private final List<CreatureType> creatures;
 	private CreatureType[] searchOrder;
 	private int searchIndex = -1;
@@ -56,11 +59,6 @@ public final class ConservationExplorationBehavior implements IMinigameBehavior 
 
 	public ConservationExplorationBehavior(List<CreatureType> creatures) {
 		this.creatures = creatures;
-	}
-
-	public static <T> ConservationExplorationBehavior parse(Dynamic<T> root) {
-		List<CreatureType> creatures = root.get("creatures").asList(CreatureType::parse);
-		return new ConservationExplorationBehavior(creatures);
 	}
 
 	@Override
@@ -113,7 +111,7 @@ public final class ConservationExplorationBehavior implements IMinigameBehavior 
 	}
 
 	private void onDiscoverNewEntity(IMinigameInstance minigame, ServerPlayerEntity reporter, LivingEntity entity) {
-		Vec3d position = reporter.getPositionVec();
+		Vector3d position = reporter.getPositionVec();
 		float yaw = reporter.rotationYaw;
 		float pitch = reporter.rotationPitch;
 
@@ -122,7 +120,7 @@ public final class ConservationExplorationBehavior implements IMinigameBehavior 
 
 		minigame.getServer().getScoreboard().addPlayerToTeam(entity.getScoreboardName(), discoveryTeam);
 
-		FireworkUtil.spawnFirework(new BlockPos(entity), entity.world, FireworkUtil.Palette.ISLAND_ROYALE.getPalette());
+		FireworkPalette.ISLAND_ROYALE.spawn(entity.getPosition(), entity.world);
 
 		String teleportCommand = "teleport_" + entity.getType().getTranslationKey();
 		minigame.addControlCommand(teleportCommand, ControlCommand.forEveryone(source -> {
@@ -130,37 +128,39 @@ public final class ConservationExplorationBehavior implements IMinigameBehavior 
 			player.teleport(minigame.getWorld(), position.x, position.y, position.z, yaw, pitch);
 		}));
 
-		ITextComponent message = reporter.getDisplayName()
-				.appendText(" discovered a ")
-				.appendSibling(entity.getType().getName().shallowCopy().applyTextStyle(TextFormatting.BOLD))
-				.appendText("! ")
-				.applyTextStyle(TextFormatting.GOLD);
+		IFormattableTextComponent message = reporter.getDisplayName().deepCopy()
+				.appendString(" discovered a ")
+				.appendSibling(entity.getType().getName().deepCopy().mergeStyle(TextFormatting.BOLD))
+				.appendString("! ")
+				.mergeStyle(TextFormatting.GOLD);
 
 		ITextComponent teleportLink = new StringTextComponent("Click here to teleport")
-				.applyTextStyles(TextFormatting.BLUE, TextFormatting.UNDERLINE)
-				.applyTextStyle(style -> {
-					style.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new StringTextComponent("Teleport to this entity")));
-					style.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/minigame " + teleportCommand));
+				.mergeStyle(TextFormatting.BLUE, TextFormatting.UNDERLINE)
+				.modifyStyle(style -> {
+					return style
+							.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new StringTextComponent("Teleport to this entity")))
+							.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/minigame " + teleportCommand));
 				});
 
 		minigame.getPlayers().sendMessage(message.appendSibling(teleportLink));
-		minigame.getPlayers().sendMessage(new StringTextComponent("How is this creature being impacted by human activities?").applyTextStyles(TextFormatting.GRAY, TextFormatting.ITALIC));
+		minigame.getPlayers().sendMessage(new StringTextComponent("How is this creature being impacted by human activities?").mergeStyle(TextFormatting.GRAY, TextFormatting.ITALIC));
 
 		ITextComponent nextLink = new StringTextComponent("click here")
-				.applyTextStyles(TextFormatting.BLUE, TextFormatting.UNDERLINE)
-				.applyTextStyle(style -> {
-					style.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new StringTextComponent("Move on to the next creature")));
-					style.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/minigame next_creature"));
+				.mergeStyle(TextFormatting.BLUE, TextFormatting.UNDERLINE)
+				.modifyStyle(style -> {
+					return style
+							.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new StringTextComponent("Move on to the next creature")))
+							.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/minigame next_creature"));
 				});
 
 		ITextComponent nextMessage = new StringTextComponent("Host: Once we are finished viewing and discussing this entity, ")
 				.appendSibling(nextLink)
-				.appendText(" to move onto the next creature")
-				.applyTextStyles(TextFormatting.AQUA, TextFormatting.ITALIC);
+				.appendString(" to move onto the next creature")
+				.mergeStyle(TextFormatting.AQUA, TextFormatting.ITALIC);
 
 		ServerPlayerEntity initiator = minigame.getPlayers().getPlayerBy(minigame.getInitiator());
 		if (initiator != null) {
-			initiator.sendMessage(nextMessage);
+			initiator.sendStatusMessage(nextMessage, false);
 		}
 	}
 
@@ -173,12 +173,12 @@ public final class ConservationExplorationBehavior implements IMinigameBehavior 
 		creatureDiscovered = false;
 
 		CreatureType creature = searchOrder[searchIndex];
-		ITextComponent creatureName = creature.getName().applyTextStyle(TextFormatting.AQUA);
+		ITextComponent creatureName = creature.getName().deepCopy().mergeStyle(TextFormatting.AQUA);
 
 		progressBar.setName(new StringTextComponent("Looking for: ").appendSibling(creatureName));
 		progressBar.setPercent((float) searchIndex / searchOrder.length);
 
-		minigame.getPlayers().sendMessage(new StringTextComponent("We are looking for a ").appendSibling(creatureName).appendText("!").applyTextStyle(TextFormatting.GOLD));
+		minigame.getPlayers().sendMessage(new StringTextComponent("We are looking for a ").appendSibling(creatureName).appendString("!").mergeStyle(TextFormatting.GOLD));
 
 		spawnCreaturesFor(minigame, creature);
 
@@ -235,6 +235,14 @@ public final class ConservationExplorationBehavior implements IMinigameBehavior 
 	}
 
 	static class CreatureType {
+		static final Codec<CreatureType> CODEC = RecordCodecBuilder.create(instance -> {
+			return instance.group(
+					Codec.STRING.fieldOf("region").forGetter(c -> c.region),
+					Registry.ENTITY_TYPE.fieldOf("entity").forGetter(c -> c.entity),
+					Codec.INT.fieldOf("count").forGetter(c -> c.count)
+			).apply(instance, CreatureType::new);
+		});
+
 		final String region;
 		final EntityType<?> entity;
 		final int count;
@@ -243,13 +251,6 @@ public final class ConservationExplorationBehavior implements IMinigameBehavior 
 			this.region = region;
 			this.entity = entity;
 			this.count = count;
-		}
-
-		static <T> CreatureType parse(Dynamic<T> root) {
-			String region = root.get("region").asString("");
-			EntityType<?> entityType = ForgeRegistries.ENTITIES.getValue(new ResourceLocation(root.get("entity").asString("")));
-			int count = root.get("count").asInt(0);
-			return new CreatureType(region, entityType, count);
 		}
 
 		ITextComponent getName() {

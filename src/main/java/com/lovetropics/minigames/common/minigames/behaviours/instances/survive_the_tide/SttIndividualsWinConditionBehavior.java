@@ -1,13 +1,14 @@
 package com.lovetropics.minigames.common.minigames.behaviours.instances.survive_the_tide;
 
+import com.lovetropics.minigames.common.MoreCodecs;
 import com.lovetropics.minigames.common.minigames.IMinigameInstance;
 import com.lovetropics.minigames.common.minigames.PlayerSet;
-import com.lovetropics.minigames.common.minigames.VariableText;
+import com.lovetropics.minigames.common.minigames.TemplatedText;
 import com.lovetropics.minigames.common.minigames.statistics.PlayerKey;
 import com.lovetropics.minigames.common.minigames.statistics.StatisticKey;
-import com.mojang.datafixers.Dynamic;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
-import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextFormatting;
@@ -17,25 +18,21 @@ import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import java.util.Iterator;
 
 public class SttIndividualsWinConditionBehavior extends SttWinConditionBehavior {
+	public static final Codec<SttIndividualsWinConditionBehavior> CODEC = RecordCodecBuilder.create(instance -> {
+		return instance.group(
+				Codec.LONG.optionalFieldOf("game_finish_tick_delay", 0L).forGetter(c -> c.gameFinishTickDelay),
+				MoreCodecs.long2Object(TemplatedText.CODEC).fieldOf("scheduled_game_finish_messages").forGetter(c -> c.scheduledGameFinishMessages),
+				Codec.STRING.fieldOf("down_to_two_translation_key").forGetter(c -> c.downToTwoTranslationKey),
+				Codec.BOOL.optionalFieldOf("spawn_lightning_bolts_on_finish", false).forGetter(c -> c.spawnLightningBoltsOnFinish),
+				Codec.INT.optionalFieldOf("lightning_bolt_spawn_tick_rate", 60).forGetter(c -> c.lightningBoltSpawnTickRate)
+		).apply(instance, SttIndividualsWinConditionBehavior::new);
+	});
+
 	private final String downToTwoTranslationKey;
 
-	public SttIndividualsWinConditionBehavior(final long gameFinishTickDelay, final Long2ObjectMap<VariableText> scheduledGameFinishMessages, final String downToTwoTranslationKey, final boolean spawnLightningBoltsOnFinish, final int lightningBoltSpawnTickRate) {
+	public SttIndividualsWinConditionBehavior(final long gameFinishTickDelay, final Long2ObjectMap<TemplatedText> scheduledGameFinishMessages, final String downToTwoTranslationKey, final boolean spawnLightningBoltsOnFinish, final int lightningBoltSpawnTickRate) {
 		super(gameFinishTickDelay, scheduledGameFinishMessages, spawnLightningBoltsOnFinish, lightningBoltSpawnTickRate);
 		this.downToTwoTranslationKey = downToTwoTranslationKey;
-	}
-
-	public static <T> SttIndividualsWinConditionBehavior parse(Dynamic<T> root) {
-		final long gameFinishTickDelay = root.get("game_finish_tick_delay").asLong(0);
-		final Long2ObjectMap<VariableText> scheduledShutdownMessages = new Long2ObjectOpenHashMap<>(root.get("scheduled_game_finish_messages").asMap(
-				key -> Long.parseLong(key.asString("0")),
-				VariableText::parse
-		));
-
-		final String downToTwoTranslationKey = root.get("down_to_two_translation_key").asString("");
-		final boolean spawnLightningBoltsOnFinish = root.get("spawn_lightning_bolts_on_finish").asBoolean(false);
-		final int lightningBoltSpawnTickRate = root.get("lightning_bolt_spawn_tick_rate").asInt(60);
-
-		return new SttIndividualsWinConditionBehavior(gameFinishTickDelay, scheduledShutdownMessages, downToTwoTranslationKey, spawnLightningBoltsOnFinish, lightningBoltSpawnTickRate);
 	}
 
 	@Override
@@ -49,10 +46,10 @@ public class SttIndividualsWinConditionBehavior extends SttWinConditionBehavior 
 			ServerPlayerEntity p2 = it.next();
 
 			if (p1 != null && p2 != null) {
-				ITextComponent p1text = p1.getDisplayName().deepCopy().applyTextStyle(TextFormatting.AQUA);
-				ITextComponent p2text = p2.getDisplayName().deepCopy().applyTextStyle(TextFormatting.AQUA);
+				ITextComponent p1text = p1.getDisplayName().deepCopy().mergeStyle(TextFormatting.AQUA);
+				ITextComponent p2text = p2.getDisplayName().deepCopy().mergeStyle(TextFormatting.AQUA);
 
-				minigame.getPlayers().sendMessage(new TranslationTextComponent(downToTwoTranslationKey, p1text, p2text).applyTextStyle(TextFormatting.GOLD));
+				minigame.getPlayers().sendMessage(new TranslationTextComponent(downToTwoTranslationKey, p1text, p2text).mergeStyle(TextFormatting.GOLD));
 			}
 		}
 

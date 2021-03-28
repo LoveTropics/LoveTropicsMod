@@ -56,7 +56,7 @@ public class CommandScanArea {
 	}
 
 	private static int scanArea(CommandSource source, String fileName) throws CommandSyntaxException {
-		BlockPos.Mutable pos = new BlockPos.Mutable(new BlockPos(source.getPos()));
+		BlockPos.Mutable pos = new BlockPos(source.getPos()).toMutable();
 
 		ServerWorld world = source.getWorld();
 		while (pos.getY() >= 0 && world.getBlockState(pos).getBlock() != Blocks.WATER) {

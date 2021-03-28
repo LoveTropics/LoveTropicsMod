@@ -1,14 +1,14 @@
 package com.lovetropics.minigames.common.minigames;
 
+import com.lovetropics.minigames.common.MoreCodecs;
 import com.lovetropics.minigames.common.minigames.statistics.PlayerKey;
 import com.mojang.brigadier.LiteralMessage;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
+import com.mojang.serialization.Codec;
 import net.minecraft.command.CommandSource;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.ServerPlayerEntity;
-
-import javax.annotation.Nullable;
 
 public final class ControlCommand {
 	private static final SimpleCommandExceptionType NO_PERMISSION = new SimpleCommandExceptionType(new LiteralMessage("You do not have permission to use this command!"));
@@ -46,19 +46,19 @@ public final class ControlCommand {
 	}
 
 	public enum Scope {
-		EVERYONE {
+		EVERYONE("everyone") {
 			@Override
 			public boolean testSource(MinigameControllable minigame, CommandSource source) {
 				return true;
 			}
 		},
-		ADMINS {
+		ADMINS("admins") {
 			@Override
 			public boolean testSource(MinigameControllable minigame, CommandSource source) {
 				return source.hasPermissionLevel(2);
 			}
 		},
-		INITIATOR {
+		INITIATOR("initiator") {
 			@Override
 			public boolean testSource(MinigameControllable minigame, CommandSource source) {
 				if (source.hasPermissionLevel(2)) {
@@ -75,17 +75,15 @@ public final class ControlCommand {
 			}
 		};
 
-		public abstract boolean testSource(MinigameControllable minigame, CommandSource source);
+		public static final Codec<Scope> CODEC = MoreCodecs.stringVariants(Scope.values(), s -> s.key);
 
-		@Nullable
-		public static Scope byKey(String key) {
-			switch (key) {
-				case "everyone": return EVERYONE;
-				case "admins": return ADMINS;
-				case "initiator": return INITIATOR;
-			}
-			return null;
+		public final String key;
+
+		Scope(String key) {
+			this.key = key;
 		}
+
+		public abstract boolean testSource(MinigameControllable minigame, CommandSource source);
 	}
 
 	public interface Handler {

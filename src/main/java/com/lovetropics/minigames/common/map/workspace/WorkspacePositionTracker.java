@@ -4,9 +4,11 @@ import com.lovetropics.minigames.Constants;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.RegistryKey;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.dimension.DimensionType;
+import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.util.registry.Registry;
+import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.common.util.Constants.NBT;
 import net.minecraftforge.event.entity.EntityTravelToDimensionEvent;
@@ -76,7 +78,7 @@ public final class WorkspacePositionTracker {
 		ServerPlayerEntity player = (ServerPlayerEntity) event.getEntity();
 		MinecraftServer server = player.server;
 
-		DimensionType from = player.dimension;
+		RegistryKey<World> from = player.world.getDimensionKey();
 
 		MapWorkspaceManager workspaceManager = MapWorkspaceManager.get(server);
 		MapWorkspace fromWorkspace = workspaceManager.getWorkspace(from);
@@ -102,12 +104,12 @@ public final class WorkspacePositionTracker {
 	}
 
 	public static class Position {
-		public final DimensionType dimension;
-		public final Vec3d pos;
+		public final RegistryKey<World> dimension;
+		public final Vector3d pos;
 		public final float yaw;
 		public final float pitch;
 
-		Position(DimensionType dimension, Vec3d pos, float yaw, float pitch) {
+		Position(RegistryKey<World> dimension, Vector3d pos, float yaw, float pitch) {
 			this.dimension = dimension;
 			this.pos = pos;
 			this.yaw = yaw;
@@ -115,7 +117,7 @@ public final class WorkspacePositionTracker {
 		}
 
 		public static Position copyFrom(ServerPlayerEntity entity) {
-			return new Position(entity.dimension, entity.getPositionVec(), entity.rotationYaw, entity.rotationPitch);
+			return new Position(entity.world.getDimensionKey(), entity.getPositionVec(), entity.rotationYaw, entity.rotationPitch);
 		}
 
 		public void applyTo(ServerPlayerEntity entity) {
@@ -124,7 +126,7 @@ public final class WorkspacePositionTracker {
 		}
 
 		public void write(CompoundNBT nbt) {
-			nbt.putString("dimension", dimension.getRegistryName().toString());
+			nbt.putString("dimension", dimension.getLocation().toString());
 			nbt.putDouble("x", pos.x);
 			nbt.putDouble("y", pos.y);
 			nbt.putDouble("z", pos.z);
@@ -138,8 +140,8 @@ public final class WorkspacePositionTracker {
 				return null;
 			}
 
-			DimensionType dimension = DimensionType.byName(new ResourceLocation(nbt.getString("dimension")));
-			Vec3d pos = new Vec3d(nbt.getDouble("x"), nbt.getDouble("y"), nbt.getDouble("z"));
+			RegistryKey<World> dimension = RegistryKey.getOrCreateKey(Registry.WORLD_KEY, new ResourceLocation(nbt.getString("dimension")));
+			Vector3d pos = new Vector3d(nbt.getDouble("x"), nbt.getDouble("y"), nbt.getDouble("z"));
 			float yaw = nbt.getFloat("yaw");
 			float pitch = nbt.getFloat("pitch");
 

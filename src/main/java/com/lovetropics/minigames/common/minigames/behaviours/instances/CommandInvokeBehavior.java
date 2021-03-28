@@ -1,13 +1,13 @@
 package com.lovetropics.minigames.common.minigames.behaviours.instances;
 
-import com.google.common.collect.ImmutableList;
+import com.lovetropics.minigames.common.MoreCodecs;
 import com.lovetropics.minigames.common.minigames.IMinigameInstance;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
 import com.lovetropics.minigames.common.minigames.behaviours.IPollingMinigameBehavior;
 import com.lovetropics.minigames.common.minigames.polling.PollingMinigameInstance;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import com.mojang.datafixers.Dynamic;
+import com.mojang.serialization.Codec;
 import net.minecraft.command.CommandSource;
 import net.minecraft.entity.Entity;
 import net.minecraft.server.MinecraftServer;
@@ -16,9 +16,22 @@ import org.apache.logging.log4j.Logger;
 
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 public abstract class CommandInvokeBehavior implements IMinigameBehavior, IPollingMinigameBehavior {
 	private static final Logger LOGGER = LogManager.getLogger(CommandInvokeBehavior.class);
+
+	public static final Codec<String> COMMAND_CODEC = Codec.STRING.xmap(
+			command -> {
+				if (command.startsWith("/")) {
+					command = command.substring(1);
+				}
+				return command;
+			},
+			Function.identity()
+	);
+
+	public static final Codec<Map<String, List<String>>> COMMANDS_CODEC = Codec.unboundedMap(Codec.STRING, MoreCodecs.listOrUnit(COMMAND_CODEC));
 
 	protected final Map<String, List<String>> commands;
 
@@ -27,22 +40,6 @@ public abstract class CommandInvokeBehavior implements IMinigameBehavior, IPolli
 
 	public CommandInvokeBehavior(Map<String, List<String>> commands) {
 		this.commands = commands;
-	}
-
-	public static <T> Map<String, List<String>> parseCommands(Dynamic<T> root) {
-		return root.asMap(
-				key -> key.asString(""),
-				value -> value.asListOpt(CommandInvokeBehavior::parseCommand)
-						.orElseGet(() -> ImmutableList.of(parseCommand(value)))
-		);
-	}
-
-	private static <T> String parseCommand(Dynamic<T> value) {
-		String command = value.asString("");
-		if (command.startsWith("/")) {
-			command = command.substring(1);
-		}
-		return command;
 	}
 
 	public void invoke(String key) {

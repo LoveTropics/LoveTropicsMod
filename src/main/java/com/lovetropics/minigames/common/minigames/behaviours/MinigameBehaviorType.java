@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.common.minigames.behaviours;
 
-import com.mojang.datafixers.Dynamic;
+import com.mojang.serialization.Dynamic;
 import net.minecraftforge.registries.ForgeRegistryEntry;
 
 public class MinigameBehaviorType<T> extends ForgeRegistryEntry<IMinigameBehaviorType<?>> implements IMinigameBehaviorType<T>

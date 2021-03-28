@@ -3,9 +3,10 @@ package com.lovetropics.minigames.common.minigames.behaviours.instances.survive_
 import com.lovetropics.minigames.common.minigames.IMinigameInstance;
 import com.lovetropics.minigames.common.minigames.MinigameManager;
 import com.lovetropics.minigames.common.minigames.PlayerSet;
-import com.lovetropics.minigames.common.minigames.VariableText;
+import com.lovetropics.minigames.common.minigames.TemplatedText;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
+import net.minecraft.entity.EntityType;
 import net.minecraft.entity.effect.LightningBoltEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.math.MathHelper;
@@ -19,11 +20,11 @@ public abstract class SttWinConditionBehavior implements IMinigameBehavior {
 	private long minigameEndedTimer = 0;
 	protected final long gameFinishTickDelay;
 	private ITextComponent winner;
-	protected final Long2ObjectMap<VariableText> scheduledGameFinishMessages;
+	protected final Long2ObjectMap<TemplatedText> scheduledGameFinishMessages;
 	protected final boolean spawnLightningBoltsOnFinish;
 	protected final int lightningBoltSpawnTickRate;
 
-	public SttWinConditionBehavior(final long gameFinishTickDelay, final Long2ObjectMap<VariableText> scheduledGameFinishMessages, final boolean spawnLightningBoltsOnFinish, final int lightningBoltSpawnTickRate) {
+	public SttWinConditionBehavior(final long gameFinishTickDelay, final Long2ObjectMap<TemplatedText> scheduledGameFinishMessages, final boolean spawnLightningBoltsOnFinish, final int lightningBoltSpawnTickRate) {
 		this.gameFinishTickDelay = gameFinishTickDelay;
 		this.scheduledGameFinishMessages = scheduledGameFinishMessages;
 		this.spawnLightningBoltsOnFinish = spawnLightningBoltsOnFinish;
@@ -37,7 +38,7 @@ public abstract class SttWinConditionBehavior implements IMinigameBehavior {
 	}
 
 	@Override
-	public void worldUpdate(final IMinigameInstance minigame, World world) {
+	public void worldUpdate(final IMinigameInstance minigame, ServerWorld world) {
 		this.checkForGameEndCondition(minigame, world);
 	}
 
@@ -79,14 +80,18 @@ public abstract class SttWinConditionBehavior implements IMinigameBehavior {
 
 				int posY = world.getHeight(Heightmap.Type.MOTION_BLOCKING, posX, posZ);
 
-				((ServerWorld) world).addLightningBolt(new LightningBoltEntity(world, posX, posY, posZ, true));
+				LightningBoltEntity lightning = new LightningBoltEntity(EntityType.LIGHTNING_BOLT, world);
+				lightning.forceSetPosition(posX, posY, posZ);
+				lightning.setEffectOnly(true);
+
+				world.addEntity(lightning);
 			}
 		}
 	}
 
 	private void sendGameFinishMessages(final IMinigameInstance minigame) {
 		if (scheduledGameFinishMessages.containsKey(minigameEndedTimer)) {
-			final VariableText message = scheduledGameFinishMessages.get(minigameEndedTimer);
+			final TemplatedText message = scheduledGameFinishMessages.get(minigameEndedTimer);
 			minigame.getPlayers().sendMessage(message.apply(winner));
 		}
 	}

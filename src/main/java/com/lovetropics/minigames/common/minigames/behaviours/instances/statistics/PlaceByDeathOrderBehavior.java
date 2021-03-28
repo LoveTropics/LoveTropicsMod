@@ -5,7 +5,7 @@ import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
 import com.lovetropics.minigames.common.minigames.statistics.PlayerKey;
 import com.lovetropics.minigames.common.minigames.statistics.PlayerPlacement;
 import com.lovetropics.minigames.common.minigames.statistics.StatisticKey;
-import com.mojang.datafixers.Dynamic;
+import com.mojang.serialization.Codec;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 
@@ -13,11 +13,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public final class PlaceByDeathOrderBehavior implements IMinigameBehavior {
-	private final List<PlayerKey> deathOrder = new ArrayList<>();
+	public static final Codec<PlaceByDeathOrderBehavior> CODEC = Codec.unit(PlaceByDeathOrderBehavior::new);
 
-	public static <T> PlaceByDeathOrderBehavior parse(Dynamic<T> root) {
-		return new PlaceByDeathOrderBehavior();
-	}
+	private final List<PlayerKey> deathOrder = new ArrayList<>();
 
 	@Override
 	public void onPlayerDeath(IMinigameInstance minigame, ServerPlayerEntity player, LivingDeathEvent event) {

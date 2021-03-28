@@ -2,13 +2,16 @@ package com.lovetropics.minigames.common.minigames.config;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
+import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.common.minigames.IMinigameManager;
 import com.lovetropics.minigames.common.minigames.MinigameManager;
-import com.mojang.datafixers.Dynamic;
-import com.mojang.datafixers.types.JsonOps;
+import com.mojang.serialization.Dynamic;
+import com.mojang.serialization.JsonOps;
 import net.minecraft.resources.IResource;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.event.AddReloadListenerEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -21,6 +24,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
+@Mod.EventBusSubscriber(modid = Constants.MODID)
 public final class MinigameConfigs {
 	private static final Logger LOGGER = LogManager.getLogger(MinigameConfigs.class);
 
@@ -28,10 +32,11 @@ public final class MinigameConfigs {
 
 	private static final JsonParser PARSER = new JsonParser();
 
-	public static void init(MinecraftServer server) {
+	@SubscribeEvent
+	public static void addReloadListener(AddReloadListenerEvent event) {
 		GAME_CONFIGS.clear();
 
-		server.getResourceManager().addReloadListener((stage, resourceManager, preparationsProfiler, reloadProfiler, backgroundExecutor, gameExecutor) -> {
+		event.addListener((stage, resourceManager, preparationsProfiler, reloadProfiler, backgroundExecutor, gameExecutor) -> {
 			CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
 				IMinigameManager manager = MinigameManager.getInstance();
 				for (MinigameConfig config : GAME_CONFIGS) {

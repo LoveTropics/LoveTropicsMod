@@ -2,24 +2,22 @@ package com.lovetropics.minigames.common.minigames.behaviours.instances;
 
 import com.google.common.collect.Maps;
 import com.lovetropics.minigames.common.minigames.IMinigameInstance;
-import com.lovetropics.minigames.common.minigames.PlayerSnapshot;
 import com.lovetropics.minigames.common.minigames.PlayerRole;
+import com.lovetropics.minigames.common.minigames.PlayerSnapshot;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
-import com.mojang.datafixers.Dynamic;
+import com.mojang.serialization.Codec;
 import net.minecraft.entity.player.ServerPlayerEntity;
 
 import java.util.Map;
 import java.util.UUID;
 
 public final class IsolatePlayerStateBehavior implements IMinigameBehavior {
+	public static final Codec<IsolatePlayerStateBehavior> CODEC = Codec.unit(IsolatePlayerStateBehavior::new);
+
 	/**
 	 * Cache used to know what state the player was in before teleporting into a minigame.
 	 */
 	private final Map<UUID, PlayerSnapshot> playerSnapshots = Maps.newHashMap();
-
-	public static <T> IsolatePlayerStateBehavior parse(Dynamic<T> root) {
-		return new IsolatePlayerStateBehavior();
-	}
 
 	@Override
 	public void onPlayerJoin(IMinigameInstance minigame, ServerPlayerEntity player, PlayerRole role) {

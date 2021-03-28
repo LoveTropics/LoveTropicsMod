@@ -18,19 +18,20 @@ import net.minecraft.command.CommandSource;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.nbt.ListNBT;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.management.PlayerList;
+import net.minecraft.util.RegistryKey;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Unit;
+import net.minecraft.util.Util;
 import net.minecraft.util.text.*;
 import net.minecraft.util.text.event.ClickEvent;
 import net.minecraft.util.text.event.HoverEvent;
+import net.minecraft.world.IServerWorld;
 import net.minecraft.world.IWorld;
-import net.minecraft.world.chunk.ChunkStatus;
+import net.minecraft.world.World;
 import net.minecraft.world.chunk.IChunk;
-import net.minecraft.world.dimension.DimensionType;
+import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
@@ -41,7 +42,6 @@ import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent.PlayerLoggedInEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.world.BlockEvent;
-import net.minecraftforge.event.world.ChunkDataEvent;
 import net.minecraftforge.event.world.ChunkEvent;
 import net.minecraftforge.event.world.ExplosionEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -130,7 +130,7 @@ public class MinigameManager implements IMinigameManager {
 	public void unregister(ResourceLocation minigameID) {
 		if (!this.registeredMinigames.containsKey(minigameID)) {
 			TranslationTextComponent msg = new TranslationTextComponent(TropicraftLangKeys.COMMAND_MINIGAME_NOT_REGISTERED, minigameID);
-			throw new IllegalArgumentException(msg.getFormattedText());
+			throw new IllegalArgumentException(msg.getString());
 		}
 
 		this.registeredMinigames.remove(minigameID);
@@ -169,9 +169,10 @@ public class MinigameManager implements IMinigameManager {
 
 			// Send all players a message letting them know the minigame has finished
 			for (ServerPlayerEntity player : this.server.getPlayerList().getPlayers()) {
-				player.sendMessage(new TranslationTextComponent(TropicraftLangKeys.COMMAND_FINISHED_MINIGAME,
-						definition.getName().applyTextStyle(TextFormatting.ITALIC).applyTextStyle(TextFormatting.AQUA))
-						.applyTextStyle(TextFormatting.GOLD), ChatType.CHAT);
+				IFormattableTextComponent message = new TranslationTextComponent(TropicraftLangKeys.COMMAND_FINISHED_MINIGAME,
+						definition.getName().deepCopy().mergeStyle(TextFormatting.ITALIC)).mergeStyle(TextFormatting.AQUA)
+						.mergeStyle(TextFormatting.GOLD);
+				player.sendStatusMessage(message, false);
 			}
 
 			result = minigame.dispatchToBehaviors(IMinigameBehavior::onPostFinish);
@@ -179,8 +180,8 @@ public class MinigameManager implements IMinigameManager {
 				return result.castError();
 			}
 
-			ITextComponent minigameName = definition.getName().applyTextStyle(TextFormatting.AQUA);
-			return MinigameResult.ok(new TranslationTextComponent(TropicraftLangKeys.COMMAND_STOPPED_MINIGAME, minigameName).applyTextStyle(TextFormatting.GREEN));
+			ITextComponent minigameName = definition.getName().deepCopy().mergeStyle(TextFormatting.AQUA);
+			return MinigameResult.ok(new TranslationTextComponent(TropicraftLangKeys.COMMAND_STOPPED_MINIGAME, minigameName).mergeStyle(TextFormatting.GREEN));
 		} catch (Exception e) {
 			return MinigameResult.fromException("Unknown error finishing minigame", e);
 		} finally {
@@ -254,25 +255,25 @@ public class MinigameManager implements IMinigameManager {
 			return result.castError();
 		}
 
-		ITextComponent name = definition.getName().applyTextStyles(TextFormatting.ITALIC, TextFormatting.AQUA);
-		Style linkStyle = new Style()
+		ITextComponent name = definition.getName().deepCopy().mergeStyle(TextFormatting.ITALIC, TextFormatting.AQUA);
+		Style linkStyle = Style.EMPTY
 				.setUnderlined(true)
-				.setColor(TextFormatting.BLUE)
+				.setFormatting(TextFormatting.BLUE)
 				.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/minigame join"))
 				.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new StringTextComponent("Join this minigame")));
 
 		ITextComponent link = new StringTextComponent("/minigame join").setStyle(linkStyle);
 		ITextComponent message = new TranslationTextComponent(TropicraftLangKeys.COMMAND_MINIGAME_POLLING, name, link)
-				.applyTextStyle(TextFormatting.GOLD);
+				.mergeStyle(TextFormatting.GOLD);
 
-		server.getPlayerList().sendMessage(message, false);
+		server.getPlayerList().func_232641_a_(message, ChatType.SYSTEM, Util.DUMMY_UUID);
 
 		this.polling = polling;
 		LTNetwork.CHANNEL.send(PacketDistributor.ALL.noArg(), new ClientMinigameMessage(this.polling));
 
 		if (!Telemetry.INSTANCE.isConnected()) {
 			ITextComponent warning = new StringTextComponent("Warning: Minigame telemetry websocket is not connected!")
-					.applyTextStyles(TextFormatting.RED, TextFormatting.BOLD);
+					.mergeStyle(TextFormatting.RED, TextFormatting.BOLD);
 			sendWarningToOperators(warning);
 		}
 
@@ -283,7 +284,7 @@ public class MinigameManager implements IMinigameManager {
 		PlayerList playerList = server.getPlayerList();
 		for (ServerPlayerEntity player : playerList.getPlayers()) {
 			if (playerList.canSendCommands(player.getGameProfile())) {
-				player.sendMessage(warning);
+				player.sendStatusMessage(warning, false);
 			}
 		}
 	}
@@ -299,12 +300,12 @@ public class MinigameManager implements IMinigameManager {
 
 		this.polling = null;
 
-		ITextComponent name = polling.getDefinition().getName().applyTextStyles(TextFormatting.ITALIC, TextFormatting.AQUA);
-		ITextComponent message = new TranslationTextComponent(TropicraftLangKeys.COMMAND_MINIGAME_STOPPED_POLLING, name).applyTextStyle(TextFormatting.RED);
-		server.getPlayerList().sendMessage(message, false);
+		ITextComponent name = polling.getDefinition().getName().deepCopy().mergeStyle(TextFormatting.ITALIC, TextFormatting.AQUA);
+		ITextComponent message = new TranslationTextComponent(TropicraftLangKeys.COMMAND_MINIGAME_STOPPED_POLLING, name).mergeStyle(TextFormatting.RED);
+		server.getPlayerList().func_232641_a_(message, ChatType.SYSTEM, Util.DUMMY_UUID);
 
 		LTNetwork.CHANNEL.send(PacketDistributor.ALL.noArg(), new ClientMinigameMessage());
-		return MinigameResult.ok(new TranslationTextComponent(TropicraftLangKeys.COMMAND_STOP_POLL).applyTextStyle(TextFormatting.GREEN));
+		return MinigameResult.ok(new TranslationTextComponent(TropicraftLangKeys.COMMAND_STOP_POLL).mergeStyle(TextFormatting.GREEN));
 	}
 
 	@Override
@@ -321,7 +322,7 @@ public class MinigameManager implements IMinigameManager {
 				this.polling = null;
 				this.currentInstance = result.getOk();
 				LTNetwork.CHANNEL.send(PacketDistributor.ALL.noArg(), new ClientMinigameMessage(this.currentInstance));
-				return MinigameResult.ok(new TranslationTextComponent(TropicraftLangKeys.COMMAND_MINIGAME_STARTED).applyTextStyle(TextFormatting.GREEN));
+				return MinigameResult.ok(new TranslationTextComponent(TropicraftLangKeys.COMMAND_MINIGAME_STARTED).mergeStyle(TextFormatting.GREEN));
 			} else {
 				return result.castError();
 			}
@@ -335,7 +336,7 @@ public class MinigameManager implements IMinigameManager {
 			minigame.addPlayer(player, PlayerRole.SPECTATOR);
 			LTNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new ClientRoleMessage(PlayerRole.SPECTATOR));
 			LTNetwork.CHANNEL.send(PacketDistributor.ALL.noArg(), new PlayerCountsMessage(PlayerRole.SPECTATOR, minigame.getMemberCount(PlayerRole.SPECTATOR)));
-			return MinigameResult.ok(new StringTextComponent("You have joined the game as a spectator!").applyTextStyle(TextFormatting.GREEN));
+			return MinigameResult.ok(new StringTextComponent("You have joined the game as a spectator!").mergeStyle(TextFormatting.GREEN));
 		}
 
 		PollingMinigameInstance polling = this.polling;
@@ -352,7 +353,7 @@ public class MinigameManager implements IMinigameManager {
 		MinigameInstance minigame = this.currentInstance;
 		if (minigame != null && minigame.removePlayer(player)) {
 			ITextComponent minigameName = minigame.getDefinition().getName();
-			return MinigameResult.ok(new TranslationTextComponent(TropicraftLangKeys.COMMAND_UNREGISTERED_MINIGAME, minigameName).applyTextStyle(TextFormatting.RED));
+			return MinigameResult.ok(new TranslationTextComponent(TropicraftLangKeys.COMMAND_UNREGISTERED_MINIGAME, minigameName).mergeStyle(TextFormatting.RED));
 		}
 
 		PollingMinigameInstance polling = this.polling;
@@ -365,37 +366,20 @@ public class MinigameManager implements IMinigameManager {
 	}
 
 	@SubscribeEvent
-	public void onChunkDataLoad(ChunkDataEvent.Load event) {
-		// TODO: WE DON'T NEED THIS PAST 1.15, HACKY DATA FIXING
-
-		MinigameInstance minigame = this.currentInstance;
-		if (event.getStatus() == ChunkStatus.Type.LEVELCHUNK && minigame != null) {
-			final IWorld world = event.getWorld();
-			final DimensionType dimensionType = world.getDimension().getType();
-			if (dimensionType == minigame.getDimension()) {
-				final ListNBT entities = event.getData().getList("Entities", 10);
-
-				for (int i1 = 0; i1 < entities.size(); ++i1) {
-					CompoundNBT entityNBT = entities.getCompound(i1);
-					entityNBT.putInt("Dimension", dimensionType.getId());
-				}
-			}
-		}
-	}
-
-	@SubscribeEvent
 	public void onChunkLoad(ChunkEvent.Load event) {
 		MinigameInstance minigame = this.currentInstance;
 		if (minigame != null) {
 			IWorld world = event.getWorld();
-			DimensionType dimensionType = world.getDimension().getType();
-			if (dimensionType == minigame.getDimension()) {
-				IChunk chunk = event.getChunk();
-				Scheduler.INSTANCE.submit(s -> {
-					if (this.currentInstance == minigame) {
-						minigame.dispatchToBehaviors(IMinigameBehavior::onChunkLoad, chunk);
-					}
-				});
+			if (world instanceof IServerWorld) {
+				RegistryKey<World> dimensionType = ((IServerWorld) world).getWorld().getDimensionKey();
+				if (dimensionType == minigame.getDimension()) {
+					IChunk chunk = event.getChunk();
+					Scheduler.INSTANCE.submit(s -> {
+						if (this.currentInstance == minigame) {
+							minigame.dispatchToBehaviors(IMinigameBehavior::onChunkLoad, chunk);
+						}
+					});
+				}
 			}
 		}
 	}
@@ -465,8 +449,8 @@ public class MinigameManager implements IMinigameManager {
 	public void onWorldTick(TickEvent.WorldTickEvent event) {
 		if (event.phase == TickEvent.Phase.END) {
 			MinigameInstance minigame = this.currentInstance;
-			if (minigame != null && event.world.getDimension().getType() == minigame.getDimension()) {
-				dispatchOrCancel(minigame, IMinigameBehavior::worldUpdate, event.world);
+			if (minigame != null && event.world.getDimensionKey() == minigame.getDimension() && !event.world.isRemote) {
+				dispatchOrCancel(minigame, IMinigameBehavior::worldUpdate, (ServerWorld) event.world);
 				minigame.update();
 			}
 		}
@@ -576,7 +560,7 @@ public class MinigameManager implements IMinigameManager {
 		if (entity instanceof ServerPlayerEntity) {
 			return minigame.getPlayers().contains(entity) ? minigame : null;
 		} else {
-			return entity.dimension == minigame.getDimension() ? minigame : null;
+			return entity.world.getDimensionKey() == minigame.getDimension() ? minigame : null;
 		}
 	}
 

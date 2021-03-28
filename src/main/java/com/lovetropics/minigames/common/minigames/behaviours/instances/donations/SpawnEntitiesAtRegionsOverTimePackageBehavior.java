@@ -1,7 +1,5 @@
 package com.lovetropics.minigames.common.minigames.behaviours.instances.donations;
 
-import java.util.List;
-
 import com.google.common.collect.Lists;
 import com.lovetropics.minigames.common.Util;
 import com.lovetropics.minigames.common.game_actions.GamePackage;
@@ -9,12 +7,15 @@ import com.lovetropics.minigames.common.map.MapRegion;
 import com.lovetropics.minigames.common.map.MapRegions;
 import com.lovetropics.minigames.common.minigames.IMinigameInstance;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigamePackageBehavior;
-import com.mojang.datafixers.Dynamic;
-
-import net.minecraft.util.ResourceLocation;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.entity.EntityType;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.util.registry.Registry;
 import net.minecraft.world.gen.Heightmap;
+import net.minecraft.world.server.ServerWorld;
+
+import java.util.List;
 
 /**
  * Spawns an amount of entities over a set amount of ticks, spread randomly across all the given regions
@@ -22,11 +23,21 @@ import net.minecraft.world.gen.Heightmap;
 
 public class SpawnEntitiesAtRegionsOverTimePackageBehavior implements IMinigamePackageBehavior
 {
+	public static final Codec<SpawnEntitiesAtRegionsOverTimePackageBehavior> CODEC = RecordCodecBuilder.create(instance -> {
+		return instance.group(
+				DonationPackageData.CODEC.forGetter(c -> c.data),
+				Codec.STRING.listOf().fieldOf("regions_to_spawn_at").forGetter(c -> c.regionsToSpawnAtKeys),
+				Registry.ENTITY_TYPE.fieldOf("entity_id").forGetter(c -> c.entityId),
+				Codec.INT.optionalFieldOf("entity_count", 1).forGetter(c -> c.entityCount),
+				Codec.INT.optionalFieldOf("ticks_to_spawn_for", 1).forGetter(c -> c.ticksToSpawnFor)
+		).apply(instance, SpawnEntitiesAtRegionsOverTimePackageBehavior::new);
+	});
+
 	private final DonationPackageData data;
-	private final String[] regionsToSpawnAtKeys;
-	private final ResourceLocation entityId;
+	private final List<String> regionsToSpawnAtKeys;
+	private final EntityType<?> entityId;
 	private final int entityCount;
-	private int ticksToSpawnFor;
+	private final int ticksToSpawnFor;
 
 	//runtime adjusted vars
 	private int ticksRemaining;
@@ -34,7 +45,7 @@ public class SpawnEntitiesAtRegionsOverTimePackageBehavior implements IMinigameP
 
 	private final List<MapRegion> regionsToSpawnAt = Lists.newArrayList();
 
-	public SpawnEntitiesAtRegionsOverTimePackageBehavior(final DonationPackageData data, final String[] regionsToSpawnAtKeys, final ResourceLocation entityId, final int entityCount, final int ticksToSpawnFor) {
+	public SpawnEntitiesAtRegionsOverTimePackageBehavior(final DonationPackageData data, final List<String> regionsToSpawnAtKeys, final EntityType<?> entityId, final int entityCount, final int ticksToSpawnFor) {
 		this.data = data;
 		this.regionsToSpawnAtKeys = regionsToSpawnAtKeys;
 		this.entityId = entityId;
@@ -58,16 +69,6 @@ public class SpawnEntitiesAtRegionsOverTimePackageBehavior implements IMinigameP
 		}
 	}
 
-	public static <T> SpawnEntitiesAtRegionsOverTimePackageBehavior parse(Dynamic<T> root) {
-		final DonationPackageData data = DonationPackageData.parse(root);
-		final String[] regionsToSpawnAt = root.get("regions_to_spawn_at").asList(d -> d.asString("")).toArray(new String[0]);
-		final ResourceLocation entityId = new ResourceLocation(root.get("entity_id").asString(""));
-		final int entityCount = root.get("entity_count").asInt(1);
-		final int ticksToSpawnFor = root.get("ticks_to_spawn_for").asInt(1);
-
-		return new SpawnEntitiesAtRegionsOverTimePackageBehavior(data, regionsToSpawnAt, entityId, entityCount, ticksToSpawnFor);
-	}
-
 	@Override
 	public boolean onGamePackageReceived(final IMinigameInstance minigame, final GamePackage gamePackage) {
 		if (gamePackage.getPackageType().equals(data.packageType)) {
@@ -84,7 +85,7 @@ public class SpawnEntitiesAtRegionsOverTimePackageBehavior implements IMinigameP
 	}
 
 	@Override
-	public void worldUpdate(IMinigameInstance minigame, World world) {
+	public void worldUpdate(IMinigameInstance minigame, ServerWorld world) {
 		if (ticksRemaining > 0) {
 
 			//TODO: support less than 1 spawned per tick rate

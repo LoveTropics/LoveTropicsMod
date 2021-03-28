@@ -5,23 +5,24 @@ import com.lovetropics.minigames.common.map.MapWorldSettings;
 import com.lovetropics.minigames.common.map.generator.ConfiguredGenerator;
 import com.lovetropics.minigames.common.map.generator.ConfiguredGenerators;
 import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.util.RegistryKey;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.world.dimension.DimensionType;
+import net.minecraft.world.World;
 
 public final class MapWorkspace {
 	private final String id;
-	private final DimensionType dimension;
+	private final RegistryKey<World> dimension;
 	private final ConfiguredGenerator generator;
 
 	private final MapWorldSettings worldSettings;
 
 	private final WorkspaceRegions regions;
 
-	MapWorkspace(String id, DimensionType dimension, ConfiguredGenerator generator, MapWorldSettings worldSettings) {
+	MapWorkspace(String id, RegistryKey<World> dimension, ConfiguredGenerator generator, MapWorldSettings worldSettings) {
 		this(id, dimension, generator, worldSettings, new WorkspaceRegions(dimension));
 	}
 
-	MapWorkspace(String id, DimensionType dimension, ConfiguredGenerator generator, MapWorldSettings worldSettings, WorkspaceRegions regions) {
+	MapWorkspace(String id, RegistryKey<World> dimension, ConfiguredGenerator generator, MapWorldSettings worldSettings, WorkspaceRegions regions) {
 		this.id = id;
 		this.dimension = dimension;
 		this.generator = generator;
@@ -33,7 +34,7 @@ public final class MapWorkspace {
 		return id;
 	}
 
-	public DimensionType getDimension() {
+	public RegistryKey<World> getDimension() {
 		return dimension;
 	}
 
@@ -55,7 +56,7 @@ public final class MapWorkspace {
 		root.putString("generator", generator.getId().toString());
 	}
 
-	public static MapWorkspace read(String id, DimensionType dimension, CompoundNBT root) {
+	public static MapWorkspace read(String id, RegistryKey<World> dimension, CompoundNBT root) {
 		WorkspaceRegions regions = new WorkspaceRegions(dimension);
 		regions.read(root.getCompound("regions"));
 

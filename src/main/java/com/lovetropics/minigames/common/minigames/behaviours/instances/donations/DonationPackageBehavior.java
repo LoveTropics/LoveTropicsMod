@@ -1,31 +1,31 @@
 package com.lovetropics.minigames.common.minigames.behaviours.instances.donations;
 
-import java.util.List;
-import java.util.Optional;
-
-import javax.annotation.Nullable;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import com.google.common.collect.Lists;
 import com.lovetropics.minigames.common.Util;
 import com.lovetropics.minigames.common.game_actions.GamePackage;
 import com.lovetropics.minigames.common.minigames.IMinigameInstance;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigamePackageBehavior;
-
+import com.mojang.serialization.Codec;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.util.IStringSerializable;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import javax.annotation.Nullable;
+import java.util.List;
 
 // TODO: support combining behaviors for package received.. somehow..?
 public abstract class DonationPackageBehavior implements IMinigamePackageBehavior
 {
 	private static final Logger LOGGER = LogManager.getLogger(DonationPackageBehavior.class);
 
-	public enum PlayerSelect
+	public enum PlayerSelect implements IStringSerializable
 	{
 		SPECIFIC("specific"), RANDOM("random"), ALL("all");
+
+		public static final Codec<PlayerSelect> CODEC = IStringSerializable.createEnumCodec(PlayerSelect::values, PlayerSelect::getFromType);
 
 		private final String type;
 
@@ -37,14 +37,19 @@ public abstract class DonationPackageBehavior implements IMinigamePackageBehavio
 			return type;
 		}
 
-		public static Optional<PlayerSelect> getFromType(final String type) {
+		@Override
+		public String getString() {
+			return type;
+		}
+
+		@Nullable
+		public static PlayerSelect getFromType(final String type) {
 			for (final PlayerSelect select : PlayerSelect.values()) {
 				if (select.type.equals(type)) {
-					return Optional.of(select);
+					return select;
 				}
 			}
-
-			return Optional.empty();
+			return null;
 		}
 	}
 

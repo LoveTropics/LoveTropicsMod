@@ -6,7 +6,8 @@ import com.lovetropics.minigames.common.network.map.SetWorkspaceMessage;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.world.dimension.DimensionType;
+import net.minecraft.util.RegistryKey;
+import net.minecraft.world.World;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -18,18 +19,18 @@ public final class MapWorkspaceTracker {
 	public static void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
 		PlayerEntity player = event.getPlayer();
 		if (player instanceof ServerPlayerEntity) {
-			trySendWorkspace((ServerPlayerEntity) player, player.dimension);
+			trySendWorkspace((ServerPlayerEntity) player, player.world.getDimensionKey());
 		}
 	}
 
 	@SubscribeEvent
 	public static void onChangeDimension(PlayerEvent.PlayerChangedDimensionEvent event) {
 		PlayerEntity player = event.getPlayer();
-		DimensionType dimension = event.getTo();
+		RegistryKey<World> dimension = event.getTo();
 		trySendWorkspace((ServerPlayerEntity) player, dimension);
 	}
 
-	private static void trySendWorkspace(ServerPlayerEntity player, DimensionType dimension) {
+	private static void trySendWorkspace(ServerPlayerEntity player, RegistryKey<World> dimension) {
 		if (dimension == null) return;
 
 		MinecraftServer server = player.world.getServer();

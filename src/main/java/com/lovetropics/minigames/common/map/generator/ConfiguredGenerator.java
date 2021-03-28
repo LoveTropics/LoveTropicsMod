@@ -17,11 +17,11 @@ public final class ConfiguredGenerator {
 		return id;
 	}
 
-	public ChunkGenerator<?> createGenerator(World world) {
+	public ChunkGenerator createGenerator(World world) {
 		return this.factory.createGenerator(world);
 	}
 
 	public interface Factory {
-		ChunkGenerator<?> createGenerator(World world);
+		ChunkGenerator createGenerator(World world);
 	}
 }

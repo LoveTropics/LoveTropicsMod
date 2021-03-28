@@ -10,7 +10,7 @@ import com.lovetropics.minigames.common.minigames.weather.RainType;
 import com.lovetropics.minigames.common.minigames.weather.SurviveTheTideWeatherConfig;
 import com.lovetropics.minigames.common.minigames.weather.WeatherController;
 import com.lovetropics.minigames.common.minigames.weather.WeatherControllerManager;
-import com.mojang.datafixers.Dynamic;
+import com.mojang.serialization.Codec;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.potion.EffectInstance;
@@ -18,12 +18,15 @@ import net.minecraft.potion.Effects;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.world.World;
 import net.minecraft.world.gen.Heightmap;
+import net.minecraft.world.server.ServerWorld;
+import net.minecraft.world.storage.IServerWorldInfo;
 
 import java.util.Random;
 
 public class SurviveTheTideWeatherBehavior implements IMinigameBehavior {
+	public static final Codec<SurviveTheTideWeatherBehavior> CODEC = SurviveTheTideWeatherConfig.CODEC.xmap(SurviveTheTideWeatherBehavior::new, b -> b.config);
+
 	private final SurviveTheTideWeatherConfig config;
 	private WeatherController controller;
 
@@ -80,17 +83,13 @@ public class SurviveTheTideWeatherBehavior implements IMinigameBehavior {
 		this.config = config;
 	}
 
-	public static <T> SurviveTheTideWeatherBehavior parse(Dynamic<T> root) {
-		return new SurviveTheTideWeatherBehavior(SurviveTheTideWeatherConfig.parse(root));
-	}
-
 	@Override
 	public void onConstruct(IMinigameInstance minigame) {
 		controller = WeatherControllerManager.forWorld(minigame.getWorld());
 	}
 
 	@Override
-	public void worldUpdate(final IMinigameInstance minigame, World world) {
+	public void worldUpdate(final IMinigameInstance minigame, ServerWorld world) {
 		PhasesMinigameBehavior phases = minigame.getOneBehavior(MinigameBehaviorTypes.PHASES.get()).orElse(null);
 		SurviveTheTideRulesetBehavior rules = minigame.getOneBehavior(MinigameBehaviorTypes.SURVIVE_THE_TIDE_RULESET.get()).orElse(null);
 		if (phases == null || rules == null) {
@@ -135,12 +134,13 @@ public class SurviveTheTideWeatherBehavior implements IMinigameBehavior {
 
 		controller.setHeatwave(heatwaveTime > 0);
 
+		IServerWorldInfo worldInfo = (IServerWorldInfo) world.worldInfo;
 		if (specialWeatherActive() && !heatwaveActive()) {
-			world.getWorldInfo().setRaining(true);
-			world.getWorldInfo().setThundering(true);
+			worldInfo.setRaining(true);
+			worldInfo.setThundering(true);
 		} else {
-			world.getWorldInfo().setRaining(false);
-			world.getWorldInfo().setThundering(false);
+			worldInfo.setRaining(false);
+			worldInfo.setThundering(false);
 		}
 	}
 

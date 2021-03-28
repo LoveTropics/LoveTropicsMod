@@ -45,10 +45,10 @@ public class ChatEventGameAction extends GameAction {
         }
 
         minigame.getPlayers().sendMessage(
-                new StringTextComponent(this.title).applyTextStyles(TextFormatting.BOLD, TextFormatting.AQUA)
+                new StringTextComponent(this.title).mergeStyle(TextFormatting.BOLD, TextFormatting.AQUA)
                     .appendSibling(new StringTextComponent(
                             " just completed! After " + totalVotes + " votes, chat decided on something to happen... Do you trust them to have been nice?"
-                    ).applyTextStyle(TextFormatting.GRAY))
+                    ).mergeStyle(TextFormatting.GRAY))
         );
 
         boolean resolved = false;

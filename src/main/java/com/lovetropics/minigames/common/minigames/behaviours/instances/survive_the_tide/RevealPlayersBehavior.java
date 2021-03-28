@@ -1,23 +1,27 @@
 package com.lovetropics.minigames.common.minigames.behaviours.instances.survive_the_tide;
 
 import com.google.common.collect.Lists;
-import com.lovetropics.minigames.common.Util;
-import com.lovetropics.minigames.common.game_actions.DonationPackageGameAction;
 import com.lovetropics.minigames.common.minigames.IMinigameInstance;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
-import com.lovetropics.minigames.common.minigames.behaviours.instances.donations.DonationPackageData;
-import com.mojang.datafixers.Dynamic;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.potion.EffectInstance;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.world.server.ServerWorld;
 
-import java.util.*;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 
 public class RevealPlayersBehavior implements IMinigameBehavior
 {
-	private final DonationPackageData data;
+	public static final Codec<RevealPlayersBehavior> CODEC = RecordCodecBuilder.create(instance -> {
+		return instance.group(
+				Codec.INT.optionalFieldOf("players_left_required", 2).forGetter(c -> c.playersLeftRequired),
+				Codec.INT.optionalFieldOf("glow_on_time", 20).forGetter(c -> c.glowOnTime),
+				Codec.INT.optionalFieldOf("glow_off_time", 80).forGetter(c -> c.glowOffTime)
+		).apply(instance, RevealPlayersBehavior::new);
+	});
 
 	private final int playersLeftRequired;
 	private final int glowOnTime;
@@ -27,27 +31,17 @@ public class RevealPlayersBehavior implements IMinigameBehavior
 	private int curGlowOffTime;
 
 	//prevent messing with spectral arrows
-	private HashSet<UUID> playerToWasGlowingAlready = new HashSet<>();
+	private final Set<UUID> playerToWasGlowingAlready = new ObjectOpenHashSet<>();
 
-	public RevealPlayersBehavior(final DonationPackageData data, final int playersLeftRequired, final int glowOnTime, final int glowOffTime) {
-		this.data = data;
+	public RevealPlayersBehavior(final int playersLeftRequired, final int glowOnTime, final int glowOffTime) {
 		this.playersLeftRequired = playersLeftRequired;
 		this.glowOnTime = glowOnTime;
 		this.glowOffTime = glowOffTime;
 		this.curGlowOffTime = this.glowOffTime;
 	}
 
-	public static <T> RevealPlayersBehavior parse(Dynamic<T> root) {
-		final DonationPackageData data = DonationPackageData.parse(root);
-			final int playersLeftRequired = root.get("players_left_required").asInt(2);
-		final int glowOnTime = root.get("glow_on_time").asInt(20);
-		final int glowOffTime = root.get("glow_off_time").asInt(80);
-
-		return new RevealPlayersBehavior(data, playersLeftRequired, glowOnTime, glowOffTime);
-	}
-
 	@Override
-	public void worldUpdate(IMinigameInstance minigame, World world) {
+	public void worldUpdate(IMinigameInstance minigame, ServerWorld world) {
 		final List<ServerPlayerEntity> players = Lists.newArrayList(minigame.getParticipants());
 		if (players.size() <= playersLeftRequired) {
 			if (curGlowOnTime > 0) {

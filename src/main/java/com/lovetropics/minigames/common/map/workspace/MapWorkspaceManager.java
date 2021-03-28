@@ -9,7 +9,10 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.ListNBT;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.RegistryKey;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.world.IServerWorld;
+import net.minecraft.world.IWorld;
 import net.minecraft.world.World;
 import net.minecraft.world.dimension.DimensionType;
 import net.minecraft.world.server.ServerWorld;
@@ -37,14 +40,14 @@ public final class MapWorkspaceManager extends WorldSavedData {
 	}
 
 	public static MapWorkspaceManager get(MinecraftServer server) {
-		ServerWorld overworld = server.getWorld(DimensionType.OVERWORLD);
+		ServerWorld overworld = server.getWorld(World.OVERWORLD);
 		return overworld.getSavedData().getOrCreate(() -> new MapWorkspaceManager(server), ID);
 	}
 
 	public MapWorkspace openWorkspace(String id, ConfiguredGenerator generator) {
-		DimensionType dimension = getOrCreateDimension(id);
+		RegistryKey<World> dimension = getOrCreateDimension(id);
 
-		ServerWorld overworld = server.getWorld(DimensionType.OVERWORLD);
+		ServerWorld overworld = server.getWorld(World.OVERWORLD);
 		MapWorldSettings settings = MapWorldSettings.createFrom(overworld.getWorldInfo());
 
 		MapWorkspace workspace = new MapWorkspace(id, dimension, generator, settings);
@@ -53,7 +56,7 @@ public final class MapWorkspaceManager extends WorldSavedData {
 		return workspace;
 	}
 
-	private DimensionType getOrCreateDimension(String id) {
+	private RegistryKey<World> getOrCreateDimension(String id) {
 		return DimensionManager.registerOrGetDimension(Util.resource(id), MapWorkspaceDimension.MOD_DIMENSION.get(), null, true);
 	}
 
@@ -72,7 +75,7 @@ public final class MapWorkspaceManager extends WorldSavedData {
 	}
 
 	@Nullable
-	public MapWorkspace getWorkspace(DimensionType dimension) {
+	public MapWorkspace getWorkspace(RegistryKey<World> dimension) {
 		ResourceLocation name = dimension.getRegistryName();
 		if (!name.getNamespace().equals(Constants.MODID)) {
 			return null;
@@ -89,7 +92,7 @@ public final class MapWorkspaceManager extends WorldSavedData {
 		return this.workspaces.containsKey(id);
 	}
 
-	public boolean isWorkspace(DimensionType dimension) {
+	public boolean isWorkspace(RegistryKey<World> dimension) {
 		return getWorkspace(dimension) != null;
 	}
 
@@ -135,20 +138,21 @@ public final class MapWorkspaceManager extends WorldSavedData {
 
 	@SubscribeEvent
 	public static void onWorldLoad(WorldEvent.Load event) {
-		World world = event.getWorld().getWorld();
-		if (world.isRemote) {
+		IWorld world = event.getWorld();
+		if (!(world instanceof IServerWorld)) {
 			return;
 		}
 
-		MinecraftServer server = world.getServer();
+		ServerWorld serverWorld = ((IServerWorld) world).getWorld();
+		MinecraftServer server = serverWorld.getServer();
 		MapWorkspaceManager workspaceManager = get(server);
 
-		MapWorkspace workspace = workspaceManager.getWorkspace(world.getDimension().getType());
+		MapWorkspace workspace = workspaceManager.getWorkspace(serverWorld.getDimensionKey());
 		if (workspace == null) {
 			return;
 		}
 
-		World overworld = server.getWorld(DimensionType.OVERWORLD);
+		World overworld = server.getWorld(World.OVERWORLD);
 		world.worldInfo = new MapWorldInfo(overworld.getWorldInfo(), workspace.getWorldSettings());
 	}
 }

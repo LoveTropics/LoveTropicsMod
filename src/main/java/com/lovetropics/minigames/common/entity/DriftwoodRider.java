@@ -8,7 +8,7 @@ import net.minecraft.entity.MoverType;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.INBT;
 import net.minecraft.util.Direction;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.vector.Vector3d;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import net.minecraftforge.common.util.LazyOptional;
@@ -84,13 +84,13 @@ public final class DriftwoodRider implements ICapabilityProvider {
 			return;
 		}
 
-		Vec3d motion = player.getMotion();
-		boolean onGround = player.onGround;
+		Vector3d motion = player.getMotion();
+		boolean onGround = player.isOnGround();
 
-		player.move(MoverType.SELF, new Vec3d(deltaX, deltaY, deltaZ));
+		player.move(MoverType.SELF, new Vector3d(deltaX, deltaY, deltaZ));
 
 		player.setMotion(motion);
-		player.onGround = onGround;
+		player.setOnGround(onGround);
 	}
 
 	public void setRiding(DriftwoodEntity driftwood) {

@@ -2,6 +2,7 @@ package com.lovetropics.minigames.client.chase;
 
 import com.lovetropics.minigames.Constants;
 import com.mojang.authlib.GameProfile;
+import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.MainWindow;
 import net.minecraft.client.Minecraft;
@@ -131,11 +132,11 @@ public final class ChaseCameraUi {
 
 		if (event.getType() == RenderGameOverlayEvent.ElementType.ALL) {
 			MainWindow window = event.getWindow();
-			session.ui.renderChasePlayerList(window);
+			session.ui.renderChasePlayerList(event.getMatrixStack(), window);
 		}
 	}
 
-	private void renderChasePlayerList(MainWindow window) {
+	private void renderChasePlayerList(MatrixStack transform, MainWindow window) {
 		RenderSystem.enableAlphaTest();
 		RenderSystem.enableBlend();
 		RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
@@ -149,29 +150,29 @@ public final class ChaseCameraUi {
 
 		RenderSystem.disableTexture();
 
-		drawSelection(x, minY, selectedEntryIndex, 0x80000000);
+		drawSelection(transform, x, minY, selectedEntryIndex, 0x80000000);
 
 		boolean highlighting = highlightedEntryIndex != selectedEntryIndex;
 		if (highlighting) {
-			drawSelection(x, minY, highlightedEntryIndex, 0xA0A0A0A0);
+			drawSelection(transform, x, minY, highlightedEntryIndex, 0xA0A0A0A0);
 		}
 
 		RenderSystem.enableTexture();
 
 		if (highlighting) {
-			CLIENT.fontRenderer.drawStringWithShadow("Click or press ENTER to select", x, minY - CLIENT.fontRenderer.FONT_HEIGHT - 2, 0xFFFFFFFF);
+			CLIENT.fontRenderer.drawStringWithShadow(transform, "Click or press ENTER to select", x, minY - CLIENT.fontRenderer.FONT_HEIGHT - 2, 0xFFFFFFFF);
 		}
 
 		for (Entry entry : entries) {
-			entry.render(session, x, y);
+			entry.render(transform, session, x, y);
 			y += ENTRY_SIZE;
 		}
 	}
 
-	void drawSelection(int minX, int minY, int selectedEntryIndex, int color) {
+	void drawSelection(MatrixStack transform, int minX, int minY, int selectedEntryIndex, int color) {
 		int selectionWidth = minX + entries.get(selectedEntryIndex).getWidth(session);
 		int selectionY = minY + selectedEntryIndex * ENTRY_SIZE;
-		AbstractGui.fill(0, selectionY - 1, selectionWidth + 1, selectionY + ENTRY_SIZE - 1, color);
+		AbstractGui.fill(transform, 0, selectionY - 1, selectionWidth + 1, selectionY + ENTRY_SIZE - 1, color);
 	}
 
 	void updatePlayers(List<UUID> players) {
@@ -237,15 +238,15 @@ public final class ChaseCameraUi {
 			this.selectionState = selectionState;
 		}
 
-		void render(ChaseCameraSession session, int x, int y) {
+		void render(MatrixStack transform, ChaseCameraSession session, int x, int y) {
 			String name = nameFunction.apply(session);
 			ResourceLocation skin = session.getPlayerSkin(playerIcon);
 
 			CLIENT.getTextureManager().bindTexture(skin);
-			AbstractGui.blit(x, y, 12, 12, 8.0F, 8.0F, 8, 8, 64, 64);
-			AbstractGui.blit(x, y, 12, 12, 40.0F, 8.0F, 8, 8, 64, 64);
+			AbstractGui.blit(transform, x, y, 12, 12, 8.0F, 8.0F, 8, 8, 64, 64);
+			AbstractGui.blit(transform, x, y, 12, 12, 40.0F, 8.0F, 8, 8, 64, 64);
 
-			CLIENT.fontRenderer.drawString(name, x + ENTRY_SIZE, y + ENTRY_PADDING, 0xFFFFFFFF);
+			CLIENT.fontRenderer.drawString(transform, name, x + ENTRY_SIZE, y + ENTRY_PADDING, 0xFFFFFFFF);
 		}
 
 		int getWidth(ChaseCameraSession session) {

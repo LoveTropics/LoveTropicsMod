@@ -5,6 +5,7 @@ import com.lovetropics.minigames.common.network.LTNetwork;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.player.ClientPlayerEntity;
 import net.minecraft.client.renderer.ActiveRenderInfo;
+import net.minecraft.client.settings.PointOfView;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.math.MathHelper;
@@ -35,7 +36,7 @@ public interface ChaseCameraState {
 		@Override
 		public StateApplicator apply(Minecraft client, ChaseCameraSession session) {
 			client.gameSettings.smoothCamera = false;
-			client.gameSettings.thirdPersonView = 0;
+			client.gameSettings.setPointOfView(PointOfView.FIRST_PERSON);
 
 			return new StateApplicator(
 					() -> LTNetwork.CHANNEL.sendToServer(new ChaseSpectatePlayerMessage(client.player.getUniqueID())),
@@ -97,10 +98,10 @@ public interface ChaseCameraState {
 
 			if (!firstPerson) {
 				client.gameSettings.smoothCamera = true;
-				client.gameSettings.thirdPersonView = 2;
+				client.gameSettings.setPointOfView(PointOfView.THIRD_PERSON_BACK);
 			} else {
 				client.gameSettings.smoothCamera = false;
-				client.gameSettings.thirdPersonView = 0;
+				client.gameSettings.setPointOfView(PointOfView.FIRST_PERSON);
 
 				player.rotationYaw = focusEntity.rotationYaw;
 				player.rotationPitch = focusEntity.rotationPitch;
