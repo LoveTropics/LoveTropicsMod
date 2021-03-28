@@ -4,7 +4,7 @@ buildscript {
         jcenter()
         mavenCentral()
         mavenLocal()
-        maven {url='https://dist.creeper.host/Sponge/maven'}
+        maven {url='https://repo.spongepowered.org/maven'}
     }
     dependencies {
         classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '3.+', changing: true
@@ -128,8 +128,6 @@ dependencies {
     def ltlib = "com.lovetropics.lib:LTLib:${ltlib_version}"
     implementation fg.deobf(ltlib)
     shade ltlib
-
-    shadelib group: 'org.asynchttpclient', name: 'async-http-client', version: '2.5.0'
 
     // Annotation Processors
     annotationProcessor 'org.spongepowered:mixin:0.8:processor'

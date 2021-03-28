@@ -1,12 +1,13 @@
 package com.lovetropics.minigames.common.telemetry;
 
-import com.google.common.base.Strings;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.common.config.ConfigLT;
 import com.lovetropics.minigames.common.minigames.IMinigameInstance;
+import com.lovetropics.minigames.common.telemetry.connection.TelemetryConnection;
+import com.lovetropics.minigames.common.telemetry.connection.TelemetryProxy;
 import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -15,15 +16,17 @@ import net.minecraftforge.fml.server.ServerLifecycleHooks;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import javax.annotation.Nullable;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.function.Supplier;
 
 @Mod.EventBusSubscriber(modid = Constants.MODID)
 public final class Telemetry {
 	public static final Telemetry INSTANCE = new Telemetry();
-
-	private static final long RECONNECT_INTERVAL = 10 * 1000;
 
 	private static final Logger LOGGER = LogManager.getLogger(Telemetry.class);
 
@@ -36,15 +39,47 @@ public final class Telemetry {
 
 	private final TelemetrySender sender = TelemetrySender.Http.openFromConfig();
 	private final TelemetrySender pollSender = new TelemetrySender.Http(() -> "https://polling.lovetropics.com", ConfigLT.TELEMETRY.authToken::get);
-	
-	private TelemetryReader reader;
-	private boolean readerConnecting;
 
-	private long lastReconnectTime;
+	private final TelemetryProxy proxy;
 
 	private MinigameInstanceTelemetry instance;
 
 	private Telemetry() {
+		Supplier<URI> address = () -> {
+			if (ConfigLT.TELEMETRY.authToken.get() == null) {
+				return null;
+			}
+
+			try {
+				int configPort = ConfigLT.TELEMETRY.webSocketPort.get();
+				String port = configPort == 0 ? "" : ":" + configPort;
+				return new URI("wss://" + ConfigLT.TELEMETRY.webSocketUrl.get() + port + "/ws");
+			} catch (URISyntaxException e) {
+				LOGGER.warn("Malformed URI", e);
+				return null;
+			}
+		};
+
+		this.proxy = new TelemetryProxy(address, new TelemetryConnection.Handler() {
+			@Override
+			public void acceptOpened() {
+			}
+
+			@Override
+			public void acceptMessage(JsonObject payload) {
+				handlePayload(payload);
+			}
+
+			@Override
+			public void acceptError(Throwable cause) {
+				LOGGER.error("Telemetry websocket closed with error", cause);
+			}
+
+			@Override
+			public void acceptClosed(int code, @Nullable String reason) {
+				LOGGER.error("Telemetry websocket closed with code: {} and reason: {}", code, reason);
+			}
+		});
 	}
 
 	@SubscribeEvent
@@ -60,24 +95,7 @@ public final class Telemetry {
 	}
 
 	private void tick(MinecraftServer server) {
-		if (!isReaderConnected() && !readerConnecting) {
-			long time = System.currentTimeMillis();
-
-			if (time - lastReconnectTime >= RECONNECT_INTERVAL && !Strings.isNullOrEmpty(ConfigLT.TELEMETRY.authToken.get())) {
-				openReader().handle((reader, throwable) -> {
-					if (throwable == null) {
-						this.reader = reader;
-					} else {
-						this.reader = null;
-						LOGGER.error("Failed to open reader!", throwable);
-					}
-					this.readerConnecting = false;
-					return null;
-				});
-
-				lastReconnectTime = time;
-			}
-		}
+		proxy.tick();
 
 		if (instance != null) {
 			instance.tick(server);
@@ -104,31 +122,6 @@ public final class Telemetry {
 		return CompletableFuture.supplyAsync(() -> sender.get(endpoint), EXECUTOR);
 	}
 
-	private CompletableFuture<TelemetryReader> openReader() {
-		int configPort = ConfigLT.TELEMETRY.webSocketPort.get();
-		String port = configPort == 0 ? "" : ":" + configPort;
-		String url = "wss://" + ConfigLT.TELEMETRY.webSocketUrl.get() + port + "/ws";
-
-		return TelemetryReader.open(url, new TelemetryReader.Listener() {
-			@Override
-			public void onReceivePayload(JsonObject object) {
-				handlePayload(object);
-			}
-
-			@Override
-			public void onClose(int code, String reason) {
-				LOGGER.warn("Telemetry websocket was closed with code {}: {}", code, reason);
-				reader = null;
-			}
-
-			@Override
-			public void onError(Throwable t) {
-				LOGGER.error("Telemetry websocket closed with error", t);
-				reader = null;
-			}
-		});
-	}
-
 	private void handlePayload(JsonObject object) {
 		LOGGER.debug("Receive payload over websocket: {}", object);
 
@@ -151,8 +144,8 @@ public final class Telemetry {
 		instance.handlePayload(object, type, crud);
 	}
 
-	public boolean isReaderConnected() {
-		return reader != null && !reader.isClosed();
+	public boolean isConnected() {
+		return proxy.isConnected();
 	}
 
 	void openInstance(MinigameInstanceTelemetry instance) {
