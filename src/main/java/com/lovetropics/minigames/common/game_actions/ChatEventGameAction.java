@@ -1,10 +1,10 @@
 package com.lovetropics.minigames.common.game_actions;
 
-import com.google.common.collect.Lists;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
+import com.lovetropics.minigames.common.MoreCodecs;
 import com.lovetropics.minigames.common.minigames.IMinigameInstance;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
@@ -17,6 +17,16 @@ import java.util.UUID;
  * Chat-caused event
  */
 public class ChatEventGameAction extends GameAction {
+    public static final Codec<ChatEventGameAction> CODEC = RecordCodecBuilder.create(instance -> {
+        return instance.group(
+                MoreCodecs.UUID_STRING.fieldOf("uuid").forGetter(c -> c.uuid),
+                Codec.STRING.fieldOf("chat_event_type").forGetter(c -> c.resultType),
+                Codec.STRING.fieldOf("trigger_time").forGetter(c -> c.triggerTime),
+                Codec.STRING.fieldOf("title").forGetter(c -> c.title),
+                MoreCodecs.sorted(PollEntry.CODEC.listOf(), Comparator.comparingInt(PollEntry::getResults).reversed()).fieldOf("options").forGetter(c -> c.entries)
+        ).apply(instance, ChatEventGameAction::new);
+    });
+
     private final String resultType;
     private final String title;
     private final List<PollEntry> entries;
@@ -59,24 +69,6 @@ public class ChatEventGameAction extends GameAction {
         return resolved;
     }
 
-    public static ChatEventGameAction fromJson(final JsonObject obj) {
-        final UUID uuid = UUID.fromString(obj.get("uuid").getAsString());
-        final String resultType = obj.get("chat_event_type").getAsString();
-        final String triggerTime = obj.get("trigger_time").getAsString();
-
-        final String title = obj.get("title").getAsString();
-        final List<PollEntry> entries = Lists.newArrayList();
-
-        for (final JsonElement element : obj.getAsJsonArray("options")) {
-            final PollEntry entry = PollEntry.fromJson(element.getAsJsonObject());
-            entries.add(entry);
-        }
-
-        entries.sort(Comparator.comparingInt(PollEntry::getResults).reversed());
-
-        return new ChatEventGameAction(uuid, resultType, triggerTime, title, entries);
-    }
-
     public String getTitle() {
         return title;
     }
@@ -94,6 +86,14 @@ public class ChatEventGameAction extends GameAction {
     }
 
     public static class PollEntry {
+        public static final Codec<PollEntry> CODEC = RecordCodecBuilder.create(instance -> {
+            return instance.group(
+                    Codec.STRING.fieldOf("key").forGetter(c -> c.key),
+                    Codec.STRING.fieldOf("title").forGetter(c -> c.packageType),
+                    Codec.INT.fieldOf("results").forGetter(c -> c.results)
+            ).apply(instance, PollEntry::new);
+        });
+
         private final String key;
         private final String packageType;
         private final int results;
@@ -118,14 +118,6 @@ public class ChatEventGameAction extends GameAction {
 
         public GamePackage asPackage() {
             return new GamePackage(packageType, null, null);
-        }
-
-        public static PollEntry fromJson(final JsonObject obj) {
-            final String key = obj.get("key").getAsString();
-            final String packageType = obj.get("title").getAsString();
-            final int results = obj.get("results").getAsInt();
-
-            return new PollEntry(key, packageType, results);
         }
     }
 }
