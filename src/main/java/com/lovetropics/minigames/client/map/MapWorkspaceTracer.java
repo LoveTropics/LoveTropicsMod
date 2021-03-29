@@ -3,7 +3,7 @@ package com.lovetropics.minigames.client.map;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.lovetropics.minigames.Constants;
-import com.lovetropics.minigames.common.map.workspace.ClientWorkspaceRegions;
+import com.lovetropics.minigames.common.core.map.workspace.ClientWorkspaceRegions;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.player.ClientPlayerEntity;
 import net.minecraft.entity.player.PlayerEntity;

@@ -1,8 +1,8 @@
 package com.lovetropics.minigames.client.minigame;
 
 import com.lovetropics.minigames.Constants;
-import com.lovetropics.minigames.common.minigames.MinigameStatus;
-import com.lovetropics.minigames.common.minigames.PlayerRole;
+import com.lovetropics.minigames.common.core.game.GameStatus;
+import com.lovetropics.minigames.common.core.game.PlayerRole;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
 import net.minecraft.client.Minecraft;
@@ -24,8 +24,8 @@ public class MinigameGui {
 	public static void renderGameOverlay(RenderGameOverlayEvent event) {
 		ClientMinigameState.get().ifPresent(state -> {
 			// Nothing to show if they are currently playing an active minigame
-			MinigameStatus status = state.getStatus();
-			if (status == MinigameStatus.ACTIVE && state.getRole() != null) return;
+			GameStatus status = state.getStatus();
+			if (status == GameStatus.ACTIVE && state.getRole() != null) return;
 
 			if (event.getType() == ElementType.HOTBAR) {
 				Minecraft.getInstance().getTextureManager().bindTexture(new ResourceLocation("minecraft:missingno"));
@@ -45,7 +45,7 @@ public class MinigameGui {
 				fnt.drawStringWithShadow(transform, line, padding, y, -1);
 				y += lineHeight;
 
-				line = (status == MinigameStatus.POLLING ? TextFormatting.GRAY + "..." : "")
+				line = (status == GameStatus.POLLING ? TextFormatting.GRAY + "..." : "")
 						+ status.color + status.description
 						+ " (" + state.getMemberCount(PlayerRole.PARTICIPANT) + "/" + state.getMaxPlayers() + ")";
 				fnt.drawStringWithShadow(transform, line, padding, y, -1);
@@ -53,7 +53,7 @@ public class MinigameGui {
 
 				line = TextFormatting.GRAY + "Commands: ";
 				if (state.getRole() == null) {
-					if (state.getStatus() == MinigameStatus.POLLING) {
+					if (state.getStatus() == GameStatus.POLLING) {
 						line += TextFormatting.AQUA + "/join" + TextFormatting.GRAY + " or ";
 					}
 					line += TextFormatting.AQUA + "/spectate";

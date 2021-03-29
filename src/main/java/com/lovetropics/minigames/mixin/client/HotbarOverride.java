@@ -6,8 +6,8 @@ import org.spongepowered.asm.mixin.injection.ModifyArg;
 
 import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.client.minigame.ClientMinigameState;
-import com.lovetropics.minigames.common.minigames.MinigameStatus;
-import com.lovetropics.minigames.common.minigames.PlayerRole;
+import com.lovetropics.minigames.common.core.game.GameStatus;
+import com.lovetropics.minigames.common.core.game.PlayerRole;
 
 import net.minecraft.client.gui.IngameGui;
 import net.minecraft.util.ResourceLocation;
@@ -27,7 +27,7 @@ public class HotbarOverride {
 	public ResourceLocation getHotbarTexture(ResourceLocation loc) {
 		if (ClientMinigameState.get().isPresent()) {
 			ClientMinigameState state = ClientMinigameState.get().get();
-			if (state.getStatus() == MinigameStatus.ACTIVE && state.getRole() == PlayerRole.PARTICIPANT && state.getMinigame().equals(TARGET)) {
+			if (state.getStatus() == GameStatus.ACTIVE && state.getRole() == PlayerRole.PARTICIPANT && state.getMinigame().equals(TARGET)) {
 				return TEXTURE;
 			}
 		}

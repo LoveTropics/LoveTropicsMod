@@ -2,7 +2,7 @@ package com.lovetropics.minigames.client.minigame;
 
 import java.util.function.Supplier;
 
-import com.lovetropics.minigames.common.minigames.PlayerRole;
+import com.lovetropics.minigames.common.core.game.PlayerRole;
 
 import net.minecraft.network.PacketBuffer;
 import net.minecraftforge.fml.network.NetworkEvent;

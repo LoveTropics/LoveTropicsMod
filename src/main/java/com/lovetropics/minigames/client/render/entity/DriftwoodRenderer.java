@@ -1,7 +1,7 @@
 package com.lovetropics.minigames.client.render.entity;
 
 import com.lovetropics.minigames.Constants;
-import com.lovetropics.minigames.common.entity.DriftwoodEntity;
+import com.lovetropics.minigames.common.content.survive_the_tide.entity.DriftwoodEntity;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.vertex.IVertexBuilder;
 import net.minecraft.client.renderer.IRenderTypeBuffer;

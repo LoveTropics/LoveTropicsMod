@@ -1,7 +1,7 @@
 package com.lovetropics.minigames.client.chase;
 
-import com.lovetropics.minigames.common.network.ChaseSpectatePlayerMessage;
-import com.lovetropics.minigames.common.network.LTNetwork;
+import com.lovetropics.minigames.common.core.network.ChaseSpectatePlayerMessage;
+import com.lovetropics.minigames.common.core.network.LoveTropicsNetwork;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.player.ClientPlayerEntity;
 import net.minecraft.client.renderer.ActiveRenderInfo;
@@ -39,7 +39,7 @@ public interface ChaseCameraState {
 			client.gameSettings.setPointOfView(PointOfView.FIRST_PERSON);
 
 			return new StateApplicator(
-					() -> LTNetwork.CHANNEL.sendToServer(new ChaseSpectatePlayerMessage(client.player.getUniqueID())),
+					() -> LoveTropicsNetwork.CHANNEL.sendToServer(new ChaseSpectatePlayerMessage(client.player.getUniqueID())),
 					() -> client.getRenderViewEntity() == client.player
 			);
 		}
@@ -67,7 +67,7 @@ public interface ChaseCameraState {
 		@Override
 		public StateApplicator apply(Minecraft client, ChaseCameraSession session) {
 			return new StateApplicator(
-					() -> LTNetwork.CHANNEL.sendToServer(new ChaseSpectatePlayerMessage(spectatedId)),
+					() -> LoveTropicsNetwork.CHANNEL.sendToServer(new ChaseSpectatePlayerMessage(spectatedId)),
 					() -> spectatedId.equals(client.getRenderViewEntity().getUniqueID())
 			);
 		}
