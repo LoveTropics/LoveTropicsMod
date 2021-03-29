@@ -13,7 +13,6 @@ import com.lovetropics.minigames.common.item.MinigameItems;
 import com.lovetropics.minigames.common.map.VoidChunkGenerator;
 import com.lovetropics.minigames.common.minigames.MinigameManager;
 import com.lovetropics.minigames.common.minigames.behaviours.MinigameBehaviorTypes;
-import com.lovetropics.minigames.common.minigames.map.MinigameMapProviderTypes;
 import com.lovetropics.minigames.common.network.LTNetwork;
 import com.lovetropics.minigames.common.telemetry.Telemetry;
 import com.mojang.brigadier.CommandDispatcher;
@@ -99,9 +98,7 @@ public class LoveTropics {
         ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, ConfigLT.CLIENT_CONFIG);
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, ConfigLT.SERVER_CONFIG);
 
-        VoidChunkGenerator.REGISTER.register(modBus);
         MinigameBehaviorTypes.MINIGAME_BEHAVIOURS_REGISTER.register(modBus);
-        MinigameMapProviderTypes.REGISTER.register(modBus);
     }
 
     private static final Pattern QUALIFIER = Pattern.compile("-\\w+\\+\\d+");
@@ -127,6 +124,8 @@ public class LoveTropics {
 
     private void setup(final FMLCommonSetupEvent event) {
         LTNetwork.register();
+
+        VoidChunkGenerator.register();
 
         CapabilityManager.INSTANCE.register(DriftwoodRider.class, DriftwoodRider.STORAGE, () -> {
             throw new UnsupportedOperationException();

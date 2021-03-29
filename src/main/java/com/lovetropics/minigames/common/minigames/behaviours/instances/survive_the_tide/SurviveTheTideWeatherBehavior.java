@@ -134,7 +134,7 @@ public class SurviveTheTideWeatherBehavior implements IMinigameBehavior {
 
 		controller.setHeatwave(heatwaveTime > 0);
 
-		IServerWorldInfo worldInfo = (IServerWorldInfo) world.worldInfo;
+		IServerWorldInfo worldInfo = (IServerWorldInfo) world.getWorldInfo();
 		if (specialWeatherActive() && !heatwaveActive()) {
 			worldInfo.setRaining(true);
 			worldInfo.setThundering(true);

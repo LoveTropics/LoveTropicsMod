@@ -7,7 +7,7 @@ import com.lovetropics.minigames.common.minigames.MinigameSidebar;
 import com.lovetropics.minigames.common.minigames.PlayerRole;
 import com.lovetropics.minigames.common.minigames.PlayerSet;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
-import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehaviorType;
+import com.lovetropics.minigames.common.minigames.behaviours.MinigameBehaviorType;
 import com.lovetropics.minigames.common.minigames.behaviours.MinigameBehaviorTypes;
 import com.lovetropics.minigames.common.minigames.behaviours.instances.TimedMinigameBehavior;
 import com.lovetropics.minigames.common.minigames.statistics.*;
@@ -55,7 +55,7 @@ public final class TrashCollectionBehavior implements IMinigameBehavior {
 	}
 
 	@Override
-	public ImmutableList<IMinigameBehaviorType<? extends IMinigameBehavior>> dependencies() {
+	public ImmutableList<MinigameBehaviorType<? extends IMinigameBehavior>> dependencies() {
 		return ImmutableList.of(MinigameBehaviorTypes.PLACE_TRASH.get());
 	}
 

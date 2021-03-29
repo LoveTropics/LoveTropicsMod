@@ -4,10 +4,13 @@ import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.common.minigames.IMinigameDefinition;
 import com.lovetropics.minigames.common.minigames.behaviours.BehaviorMap;
 import com.lovetropics.minigames.common.minigames.map.IMinigameMapProvider;
-import com.mojang.serialization.Dynamic;
+import com.lovetropics.minigames.common.minigames.map.MinigameMapProviders;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.util.ResourceLocation;
 
 import java.util.List;
+import java.util.Optional;
 
 public final class MinigameConfig implements IMinigameDefinition {
 	public final ResourceLocation id;
@@ -39,30 +42,22 @@ public final class MinigameConfig implements IMinigameDefinition {
 		this.behaviors = behaviors;
 	}
 
-	public static <T> MinigameConfig read(BehaviorReferenceReader reader, ResourceLocation id, Dynamic<T> root) {
-		ResourceLocation displayId = root.get("display_id").asString()
-				.map(path -> new ResourceLocation(id.getNamespace(), path))
-				.orElse(id);
-		String telemetryKey = root.get("telemetry_key").asString(id.getPath());
-		String translationKey = root.get("translation_key").asString("");
-
-		IMinigameMapProvider mapProvider = IMinigameMapProvider.parse(root.get("map_provider").orElseEmptyMap());
-
-		int minimumParticipants = root.get("minimum_participants").asInt(1);
-		int maximumParticipants = root.get("maximum_participants").asInt(100);
-
-		List<BehaviorReference> behaviors = reader.readList(root.get("behaviors").orElseEmptyList());
-
-		return new MinigameConfig(
-				id,
-				displayId,
-				telemetryKey,
-				translationKey,
-				mapProvider,
-				minimumParticipants,
-				maximumParticipants,
-				behaviors
-		);
+	public static Codec<MinigameConfig> codec(BehaviorReferenceReader reader, ResourceLocation id) {
+		return RecordCodecBuilder.create(instance -> {
+			return instance.group(
+					Codec.STRING.optionalFieldOf("display_id").forGetter(c -> Optional.of(c.displayId.getPath())),
+					Codec.STRING.optionalFieldOf("telemetry_key").forGetter(c -> Optional.of(c.telemetryKey)),
+					Codec.STRING.fieldOf("translation_key").forGetter(c -> c.translationKey),
+					MinigameMapProviders.CODEC.fieldOf("map_provider").forGetter(c -> c.mapProvider),
+					Codec.INT.optionalFieldOf("minimum_participants", 1).forGetter(c -> c.minimumParticipants),
+					Codec.INT.optionalFieldOf("maximum_participants", 100).forGetter(c -> c.maximumParticipants),
+					reader.listOf().fieldOf("behaviors").forGetter(c -> c.behaviors)
+			).apply(instance, (displayIdOpt, telemetryKeyOpt, translationKey, mapProvider, minimumParticipants, maximumParticipants, behaviors) -> {
+				ResourceLocation displayId = displayIdOpt.map(string -> new ResourceLocation(id.getNamespace(), string)).orElse(id);
+				String telemetryKey = telemetryKeyOpt.orElse(id.getPath());
+				return new MinigameConfig(id, displayId, telemetryKey, translationKey, mapProvider, minimumParticipants, maximumParticipants, behaviors);
+			});
+		});
 	}
 
 	@Override
@@ -92,7 +87,7 @@ public final class MinigameConfig implements IMinigameDefinition {
 
 	@Override
 	public String getUnlocalizedName() {
-		return Constants.MODID +  ".minigame." + translationKey;
+		return Constants.MODID + ".minigame." + translationKey;
 	}
 
 	@Override

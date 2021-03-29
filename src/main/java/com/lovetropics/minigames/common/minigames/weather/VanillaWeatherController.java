@@ -17,7 +17,7 @@ public final class VanillaWeatherController implements WeatherController {
 
 	@Override
 	public void tick() {
-		world.worldInfo.setRaining(state.isRaining());
+		world.getWorldInfo().setRaining(state.isRaining());
 	}
 
 	@Override

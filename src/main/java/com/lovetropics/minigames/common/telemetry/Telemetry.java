@@ -1,5 +1,6 @@
 package com.lovetropics.minigames.common.telemetry;
 
+import com.google.common.base.Strings;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -46,13 +47,13 @@ public final class Telemetry {
 
 	private Telemetry() {
 		Supplier<URI> address = () -> {
-			if (ConfigLT.TELEMETRY.authToken.get() == null) {
+			if (Strings.isNullOrEmpty(ConfigLT.TELEMETRY.authToken.get())) {
 				return null;
 			}
 
 			try {
 				int configPort = ConfigLT.TELEMETRY.webSocketPort.get();
-				String port = configPort == 0 ? "" : ":" + configPort;
+				String port = configPort == 0 ? ":443" : ":" + configPort;
 				return new URI("wss://" + ConfigLT.TELEMETRY.webSocketUrl.get() + port + "/ws");
 			} catch (URISyntaxException e) {
 				LOGGER.warn("Malformed URI", e);

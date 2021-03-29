@@ -4,10 +4,9 @@ import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.common.dimension.DimensionUtils;
 import com.lovetropics.minigames.common.map.*;
-import com.lovetropics.minigames.common.map.generator.ConfiguredGenerator;
-import com.lovetropics.minigames.common.map.generator.ConfiguredGenerators;
 import com.lovetropics.minigames.common.map.workspace.MapWorkspace;
 import com.lovetropics.minigames.common.map.workspace.MapWorkspaceManager;
+import com.lovetropics.minigames.common.map.workspace.WorkspaceDimensionConfig;
 import com.lovetropics.minigames.common.map.workspace.WorkspacePositionTracker;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
@@ -32,8 +31,10 @@ import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.event.ClickEvent;
 import net.minecraft.util.text.event.HoverEvent;
+import net.minecraft.world.Dimension;
 import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
+import net.minecraft.world.storage.SaveFormat;
 
 import java.io.File;
 import java.io.IOException;
@@ -58,13 +59,17 @@ public final class CommandMap {
 				.requires(source -> source.hasPermissionLevel(2))
                 .then(literal("open")
                     .then(argument("id", StringArgumentType.string())
-						.then(ConfiguredGeneratorArgument.argument("generator")
+						.then(DimensionArgument.argument("dimension")
 						.executes(context ->{
-							ConfiguredGenerator generator = ConfiguredGeneratorArgument.get(context, "generator");
-							return openMap(context, generator);
+							Dimension dimension = DimensionArgument.get(context, "dimension");
+							return openMap(context, dimension);
 						})
 					)
-						.executes(context -> openMap(context, ConfiguredGenerators.VOID))
+						.executes(context -> {
+							MinecraftServer server = context.getSource().getServer();
+							Dimension dimension = new Dimension(DimensionUtils.overworld(server), new VoidChunkGenerator(server));
+							return openMap(context, dimension);
+						})
                 ))
 				.then(literal("delete")
 					.then(MapWorkspaceArgument.argument("id")
@@ -81,13 +86,17 @@ public final class CommandMap {
 				))
 				.then(literal("import")
 					.then(argument("location", ResourceLocationArgument.resourceLocation())
-							.then(ConfiguredGeneratorArgument.argument("generator")
+							.then(DimensionArgument.argument("dimension")
 							.executes(context ->{
-								ConfiguredGenerator generator = ConfiguredGeneratorArgument.get(context, "generator");
-								return importMap(context, generator);
+								Dimension dimension = DimensionArgument.get(context, "dimension");
+								return importMap(context, dimension);
 							})
 						)
-							.executes(context -> importMap(context, ConfiguredGenerators.VOID))
+							.executes(context -> {
+								MinecraftServer server = context.getSource().getServer();
+								Dimension dimension = new Dimension(DimensionUtils.overworld(server), new VoidChunkGenerator(server));
+								return importMap(context, dimension);
+							})
 					)
 				)
 				.then(literal("region")
@@ -108,28 +117,32 @@ public final class CommandMap {
         // @formatter:on
 	}
 
-	private static int openMap(CommandContext<CommandSource> context, ConfiguredGenerator generator) throws CommandSyntaxException {
+	private static int openMap(CommandContext<CommandSource> context, Dimension dimension) throws CommandSyntaxException {
 		CommandSource source = context.getSource();
-		MapWorkspaceManager workspaceManager = MapWorkspaceManager.get(source.getServer());
+		MinecraftServer server = source.getServer();
+		MapWorkspaceManager workspaceManager = MapWorkspaceManager.get(server);
 
 		String id = StringArgumentType.getString(context, "id");
 		if (workspaceManager.hasWorkspace(id)) {
 			throw WORKSPACE_ALREADY_EXISTS.create(id);
 		}
 
-		workspaceManager.openWorkspace(id, generator);
+		long seed = server.func_241755_D_().getSeed();
+		WorkspaceDimensionConfig dimensionConfig = new WorkspaceDimensionConfig(dimension.getDimensionTypeSupplier(), dimension.getChunkGenerator(), seed);
 
-		IFormattableTextComponent message = new StringTextComponent("Opened workspace with id '" + id + "'. ").mergeStyle(TextFormatting.AQUA);
-		ITextComponent join = new StringTextComponent("Click here to join")
-				.modifyStyle(style -> {
-					String command = "/minigame map join " + id;
-					style.setFormatting(TextFormatting.BLUE)
-							.setUnderlined(true)
-							.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, command))
-							.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new StringTextComponent(command)));
-				});
+		workspaceManager.openWorkspace(id, dimensionConfig).thenAcceptAsync(workspace -> {
+			IFormattableTextComponent message = new StringTextComponent("Opened workspace with id '" + id + "'. ").mergeStyle(TextFormatting.AQUA);
+			ITextComponent join = new StringTextComponent("Click here to join")
+					.modifyStyle(style -> {
+						String command = "/minigame map join " + id;
+						return style.setFormatting(TextFormatting.BLUE)
+								.setUnderlined(true)
+								.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, command))
+								.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new StringTextComponent(command)));
+					});
 
-		source.sendFeedback(message.appendSibling(join), false);
+			source.sendFeedback(message.appendSibling(join), false);
+		}, server);
 
 		return Command.SINGLE_SUCCESS;
 	}
@@ -217,13 +230,12 @@ public final class CommandMap {
 		MapWorkspace workspace = MapWorkspaceArgument.get(context, "id");
 
 		MinecraftServer server = source.getServer();
-		ServerWorld overworld = server.getWorld(World.OVERWORLD);
 
 		CompletableFuture<Void> saveAll = saveWorkspace(server, workspace);
 
 		saveAll.thenRunAsync(() -> {
-			File worldDirectory = overworld.getSaveHandler().getWorldDirectory();
-			File dimensionDirectory = workspace.getDimension().getDirectory(worldDirectory);
+			SaveFormat.LevelSave save = server.anvilConverterForAnvilFile;
+			File dimensionDirectory = save.getDimensionFolder(workspace.getDimension());
 
 			ResourceLocation id = new ResourceLocation(Constants.MODID, workspace.getId());
 			Path exportPath = MapExportWriter.pathFor(id);
@@ -248,18 +260,10 @@ public final class CommandMap {
 	}
 
 	private static CompletableFuture<Void> saveWorkspace(MinecraftServer server, MapWorkspace workspace) {
-		if (DimensionManager.getWorld(server, workspace.getDimension(), false, false) != null) {
-			return server.runAsync(() -> {
-				ServerWorld workspaceWorld = server.getWorld(workspace.getDimension());
-				try {
-					workspaceWorld.save(null, true, false);
-				} catch (SessionLockException e) {
-					LoveTropics.LOGGER.warn("Could not save workspace world", e);
-				}
-			});
-		}
-
-		return CompletableFuture.completedFuture(null);
+		return server.runAsync(() -> {
+			ServerWorld workspaceWorld = server.getWorld(workspace.getDimension());
+			workspaceWorld.save(null, true, false);
+		});
 	}
 
 	private static MapWorkspace getCurrentWorkspace(CommandContext<CommandSource> context) throws CommandSyntaxException {
@@ -275,7 +279,7 @@ public final class CommandMap {
 		return workspace;
 	}
 
-	private static int importMap(CommandContext<CommandSource> context, ConfiguredGenerator generator) throws CommandSyntaxException {
+	private static int importMap(CommandContext<CommandSource> context, Dimension dimension) throws CommandSyntaxException {
 		ResourceLocation location = ResourceLocationArgument.getResourceLocation(context, "location");
 		String id = location.getPath();
 
@@ -286,9 +290,10 @@ public final class CommandMap {
 			throw WORKSPACE_ALREADY_EXISTS.create(id);
 		}
 
-		MapWorkspace workspace = workspaceManager.openWorkspace(id, generator);
+		long seed = source.getServer().func_241755_D_().getSeed();
+		WorkspaceDimensionConfig dimensionConfig = new WorkspaceDimensionConfig(dimension.getDimensionTypeSupplier(), dimension.getChunkGenerator(), seed);
 
-		CompletableFuture.runAsync(() -> {
+		workspaceManager.openWorkspace(id, dimensionConfig).thenAcceptAsync(workspace -> {
 			try {
 				MinecraftServer server = source.getServer();
 

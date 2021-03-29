@@ -5,7 +5,7 @@ import com.lovetropics.minigames.common.MoreCodecs;
 import com.lovetropics.minigames.common.map.MapRegion;
 import com.lovetropics.minigames.common.minigames.IMinigameInstance;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
-import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehaviorType;
+import com.lovetropics.minigames.common.minigames.behaviours.MinigameBehaviorType;
 import com.lovetropics.minigames.common.minigames.behaviours.MinigameBehaviorTypes;
 import com.lovetropics.minigames.common.minigames.behaviours.instances.PhasesMinigameBehavior;
 import com.mojang.serialization.Codec;
@@ -60,7 +60,7 @@ public class SurviveTheTideRulesetBehavior implements IMinigameBehavior
 	}
 
 	@Override
-	public ImmutableList<IMinigameBehaviorType<? extends IMinigameBehavior>> dependencies() {
+	public ImmutableList<MinigameBehaviorType<? extends IMinigameBehavior>> dependencies() {
 		return ImmutableList.of(MinigameBehaviorTypes.PHASES.get());
 	}
 

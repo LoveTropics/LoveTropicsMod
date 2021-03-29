@@ -1,6 +1,5 @@
 package com.lovetropics.minigames.common.minigames.behaviours.instances.statistics;
 
-import com.lovetropics.minigames.common.MoreCodecs;
 import com.lovetropics.minigames.common.minigames.IMinigameInstance;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
 import com.lovetropics.minigames.common.minigames.behaviours.MinigameBehaviorTypes;
@@ -13,18 +12,20 @@ import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 
+import java.util.Optional;
+
 public final class TimeSurvivedTrackerBehavior implements IMinigameBehavior {
 	public static final Codec<TimeSurvivedTrackerBehavior> CODEC = RecordCodecBuilder.create(instance -> {
 		return instance.group(
-				MoreCodecs.nullableFieldOf(Codec.STRING, "after_phase").forGetter(c -> c.afterPhase)
+				Codec.STRING.optionalFieldOf("after_phase").forGetter(c -> Optional.ofNullable( c.afterPhase))
 		).apply(instance, TimeSurvivedTrackerBehavior::new);
 	});
 
 	private final String afterPhase;
 	private long startTime;
 
-	public TimeSurvivedTrackerBehavior(String afterPhase) {
-		this.afterPhase = afterPhase;
+	public TimeSurvivedTrackerBehavior(Optional<String> afterPhase) {
+		this.afterPhase = afterPhase.orElse(null);
 	}
 
 	@Override

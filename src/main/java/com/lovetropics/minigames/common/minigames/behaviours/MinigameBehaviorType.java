@@ -1,24 +1,17 @@
 package com.lovetropics.minigames.common.minigames.behaviours;
 
-import com.mojang.serialization.Dynamic;
+import com.mojang.serialization.Codec;
 import net.minecraftforge.registries.ForgeRegistryEntry;
 
-public class MinigameBehaviorType<T> extends ForgeRegistryEntry<IMinigameBehaviorType<?>> implements IMinigameBehaviorType<T>
-{
-	private final Factory<T> instanceFactory;
+public final class MinigameBehaviorType<T> extends ForgeRegistryEntry<MinigameBehaviorType<?>> {
+	public final Codec<T> codec;
 
-	public MinigameBehaviorType(final Factory<T> instanceFactory)
-	{
-		this.instanceFactory = instanceFactory;
+	public MinigameBehaviorType(Codec<T> codec) {
+		this.codec = codec;
 	}
 
-	@Override
-	public <D> T create(Dynamic<D> data)
-	{
-		return instanceFactory.create(data);
-	}
-
-	public interface Factory<T> {
-		<D> T create(Dynamic<D> data);
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	static Class<MinigameBehaviorType<?>> wildcardType() {
+		return (Class<MinigameBehaviorType<?>>) (Class) MinigameBehaviorType.class;
 	}
 }

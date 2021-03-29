@@ -2,29 +2,22 @@ package com.lovetropics.minigames.common.minigames.config;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
-import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehaviorType;
+import com.lovetropics.minigames.common.minigames.behaviours.MinigameBehaviorType;
 import com.lovetropics.minigames.common.minigames.behaviours.MinigameBehaviorTypes;
-import com.mojang.serialization.Dynamic;
-import com.mojang.serialization.JsonOps;
+import com.mojang.datafixers.util.Pair;
+import com.mojang.serialization.*;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.minecraft.resources.IResource;
 import net.minecraft.resources.IResourceManager;
 import net.minecraft.util.ResourceLocation;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
-import javax.annotation.Nullable;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.List;
-import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
 
-public final class BehaviorReferenceReader {
-	private static final Logger LOGGER = LogManager.getLogger(BehaviorReferenceReader.class);
+public final class BehaviorReferenceReader implements Codec<BehaviorReference> {
 	private static final JsonParser PARSER = new JsonParser();
 
 	private final IResourceManager resources;
@@ -34,51 +27,50 @@ public final class BehaviorReferenceReader {
 		this.resources = resources;
 	}
 
-	public <T> List<BehaviorReference> readList(Dynamic<T> list) {
-		return list.asList(this::read).stream()
-				.filter(Objects::nonNull)
-				.collect(Collectors.toList());
+	@Override
+	public <T> DataResult<Pair<BehaviorReference, T>> decode(DynamicOps<T> ops, T input) {
+		return ops.getMap(input).flatMap(mapInput -> {
+			return Codec.STRING.fieldOf("type").decode(ops, mapInput).flatMap(idString -> {
+				ResourceLocation id = new ResourceLocation(idString);
+				if (!this.currentlyReading.add(id)) {
+					return DataResult.error("Tried to recursively add behavior of" + id);
+				}
+
+				try {
+					// try parse as a statically registered behavior type
+					MinigameBehaviorType<?> type = MinigameBehaviorTypes.MINIGAME_BEHAVIOURS_REGISTRY.get().getValue(id);
+					if (type != null) {
+						BehaviorReference reference = new BehaviorReference.Static(type, new Dynamic<>(ops, input));
+						return DataResult.success(reference);
+					}
+
+					// try parse as a reference to a behavior set json
+					ResourceLocation path = new ResourceLocation(id.getNamespace(), "behaviors/" + id.getPath() + ".json");
+					if (resources.hasResource(path)) {
+						return this.readSetReference(path);
+					} else {
+						return DataResult.error("Invalid reference to behavior: " + id);
+					}
+				} finally {
+					this.currentlyReading.remove(id);
+				}
+			});
+		}).map(reference -> Pair.of(reference, input));
 	}
 
-	@Nullable
-	public <T> BehaviorReference read(Dynamic<T> root) {
-		ResourceLocation id = new ResourceLocation(root.get("type").asString(""));
-		if (!this.currentlyReading.add(id)) {
-			LOGGER.error("Tried to recursively add behavior of: {}!", id);
-			return null;
-		}
-
-		try {
-			// try parse as a statically registered behavior type
-			IMinigameBehaviorType<?> type = MinigameBehaviorTypes.MINIGAME_BEHAVIOURS_REGISTRY.get().getValue(id);
-			if (type != null) {
-				return new BehaviorReference.Static(type, root);
-			}
-
-			// try parse as a reference to a behavior set json
-			ResourceLocation path = new ResourceLocation(id.getNamespace(), "behaviors/" + id.getPath() + ".json");
-			if (resources.hasResource(path)) {
-				return this.readSetReference(path);
-			}
-
-			LOGGER.error("Invalid reference to behavior: {} - ignoring!", id);
-
-			return null;
-		} finally {
-			this.currentlyReading.remove(id);
-		}
+	@Override
+	public <T> DataResult<T> encode(BehaviorReference input, DynamicOps<T> ops, T prefix) {
+		return DataResult.error("Encoding unsupported");
 	}
 
-	private BehaviorReference readSetReference(ResourceLocation path) {
+	private DataResult<BehaviorReference> readSetReference(ResourceLocation path) {
 		try (IResource resource = resources.getResource(path)) {
 			try (InputStream input = resource.getInputStream()) {
 				JsonElement json = PARSER.parse(new BufferedReader(new InputStreamReader(input)));
-				List<BehaviorReference> behaviors = this.readList(new Dynamic<>(JsonOps.INSTANCE, json));
-				return new BehaviorReference.Set(behaviors);
+				return this.listOf().parse(JsonOps.INSTANCE, json).map(BehaviorReference.Set::new);
 			}
 		} catch (IOException e) {
-			LOGGER.error("Failed to load behavior set at {}", path);
-			return null;
+			return DataResult.error("Failed to load behavior set at " + path);
 		}
 	}
 }

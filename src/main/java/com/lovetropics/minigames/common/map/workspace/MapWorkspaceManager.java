@@ -1,33 +1,30 @@
 package com.lovetropics.minigames.common.map.workspace;
 
 import com.lovetropics.minigames.Constants;
+import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.common.Util;
+import com.lovetropics.minigames.common.dimension.RuntimeDimensionHandle;
+import com.lovetropics.minigames.common.dimension.RuntimeDimensions;
 import com.lovetropics.minigames.common.map.MapWorldInfo;
 import com.lovetropics.minigames.common.map.MapWorldSettings;
-import com.lovetropics.minigames.common.map.generator.ConfiguredGenerator;
+import com.mojang.serialization.DataResult;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.ListNBT;
+import net.minecraft.nbt.NBTDynamicOps;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.RegistryKey;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.world.IServerWorld;
-import net.minecraft.world.IWorld;
 import net.minecraft.world.World;
-import net.minecraft.world.dimension.DimensionType;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraft.world.storage.WorldSavedData;
-import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.util.Constants.NBT;
-import net.minecraftforge.event.world.WorldEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
 
 import javax.annotation.Nullable;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 
-@Mod.EventBusSubscriber(modid = Constants.MODID)
 public final class MapWorkspaceManager extends WorldSavedData {
 	private static final String ID = Constants.MODID + ":map_workspace_manager";
 
@@ -40,30 +37,32 @@ public final class MapWorkspaceManager extends WorldSavedData {
 	}
 
 	public static MapWorkspaceManager get(MinecraftServer server) {
-		ServerWorld overworld = server.getWorld(World.OVERWORLD);
+		ServerWorld overworld = server.func_241755_D_();
 		return overworld.getSavedData().getOrCreate(() -> new MapWorkspaceManager(server), ID);
 	}
 
-	public MapWorkspace openWorkspace(String id, ConfiguredGenerator generator) {
-		RegistryKey<World> dimension = getOrCreateDimension(id);
+	public CompletableFuture<MapWorkspace> openWorkspace(String id, WorkspaceDimensionConfig dimensionConfig) {
+		MapWorldSettings settings = MapWorldSettings.createFromOverworld(server);
 
-		ServerWorld overworld = server.getWorld(World.OVERWORLD);
-		MapWorldSettings settings = MapWorldSettings.createFrom(overworld.getWorldInfo());
+		return getOrCreateDimension(id, dimensionConfig, settings).thenApplyAsync(dimensionHandle -> {
+			MapWorkspace workspace = new MapWorkspace(id, dimensionConfig, settings, dimensionHandle);
+			this.workspaces.putIfAbsent(id, workspace);
 
-		MapWorkspace workspace = new MapWorkspace(id, dimension, generator, settings);
-		this.workspaces.putIfAbsent(id, workspace);
-
-		return workspace;
+			return workspace;
+		}, this.server);
 	}
 
-	private RegistryKey<World> getOrCreateDimension(String id) {
-		return DimensionManager.registerOrGetDimension(Util.resource(id), MapWorkspaceDimension.MOD_DIMENSION.get(), null, true);
+	private CompletableFuture<RuntimeDimensionHandle> getOrCreateDimension(String id, WorkspaceDimensionConfig dimensionConfig, MapWorldSettings mapSettings) {
+		return RuntimeDimensions.get(server).getOrOpenPersistent(Util.resource(id), () -> {
+			MapWorldInfo worldInfo = MapWorldInfo.create(server, mapSettings);
+			return dimensionConfig.toRuntimeConfig(server, worldInfo);
+		});
 	}
 
 	public boolean deleteWorkspace(String id) {
 		MapWorkspace workspace = this.workspaces.remove(id);
 		if (workspace != null) {
-			DimensionManager.markForDeletion(workspace.getDimension());
+			workspace.getHandle().delete();
 			return true;
 		}
 		return false;
@@ -76,11 +75,10 @@ public final class MapWorkspaceManager extends WorldSavedData {
 
 	@Nullable
 	public MapWorkspace getWorkspace(RegistryKey<World> dimension) {
-		ResourceLocation name = dimension.getRegistryName();
+		ResourceLocation name = dimension.getLocation();
 		if (!name.getNamespace().equals(Constants.MODID)) {
 			return null;
 		}
-
 		return this.workspaces.get(name.getPath());
 	}
 
@@ -101,12 +99,9 @@ public final class MapWorkspaceManager extends WorldSavedData {
 		ListNBT workspaceList = new ListNBT();
 
 		for (Map.Entry<String, MapWorkspace> entry : this.workspaces.entrySet()) {
-			CompoundNBT workspaceRoot = new CompoundNBT();
-
-			workspaceRoot.putString("id", entry.getKey());
-			entry.getValue().write(workspaceRoot);
-
-			workspaceList.add(workspaceRoot);
+			MapWorkspaceData data = entry.getValue().intoData();
+			MapWorkspaceData.CODEC.encodeStart(NBTDynamicOps.INSTANCE, data)
+					.result().ifPresent(workspaceList::add);
 		}
 
 		root.put("workspaces", workspaceList);
@@ -123,36 +118,23 @@ public final class MapWorkspaceManager extends WorldSavedData {
 		for (int i = 0; i < workspaceList.size(); i++) {
 			CompoundNBT workspaceRoot = workspaceList.getCompound(i);
 
-			String id = workspaceRoot.getString("id");
-			DimensionType dimension = getOrCreateDimension(id);
+			DataResult<MapWorkspaceData> result = MapWorkspaceData.CODEC.parse(NBTDynamicOps.INSTANCE, workspaceRoot);
+			result.result().ifPresent(workspaceData -> {
+				getOrCreateDimension(workspaceData.id, workspaceData.dimension, workspaceData.worldSettings)
+						.thenAcceptAsync(dimensionHandle -> {
+							MapWorkspace workspace = workspaceData.create(server, dimensionHandle);
+							this.workspaces.put(workspaceData.id, workspace);
+						}, this.server);
+			});
 
-			MapWorkspace workspace = MapWorkspace.read(id, dimension, workspaceRoot);
-			this.workspaces.put(id, workspace);
+			result.error().ifPresent(error -> {
+				LoveTropics.LOGGER.warn("Failed to load map workspace: {}", error);
+			});
 		}
 	}
 
 	@Override
 	public boolean isDirty() {
 		return true;
-	}
-
-	@SubscribeEvent
-	public static void onWorldLoad(WorldEvent.Load event) {
-		IWorld world = event.getWorld();
-		if (!(world instanceof IServerWorld)) {
-			return;
-		}
-
-		ServerWorld serverWorld = ((IServerWorld) world).getWorld();
-		MinecraftServer server = serverWorld.getServer();
-		MapWorkspaceManager workspaceManager = get(server);
-
-		MapWorkspace workspace = workspaceManager.getWorkspace(serverWorld.getDimensionKey());
-		if (workspace == null) {
-			return;
-		}
-
-		World overworld = server.getWorld(World.OVERWORLD);
-		world.worldInfo = new MapWorldInfo(overworld.getWorldInfo(), workspace.getWorldSettings());
 	}
 }

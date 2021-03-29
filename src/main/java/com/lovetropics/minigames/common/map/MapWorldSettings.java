@@ -1,10 +1,17 @@
 package com.lovetropics.minigames.common.map;
 
+import com.lovetropics.minigames.common.MoreCodecs;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.Dynamic;
 import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.NBTDynamicOps;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.GameRules;
-import net.minecraft.world.storage.WorldInfo;
+import net.minecraft.world.storage.IServerWorldInfo;
 
 public final class MapWorldSettings {
+	public static final Codec<MapWorldSettings> CODEC = MoreCodecs.withNbtCompound(MapWorldSettings::write, MapWorldSettings::read, MapWorldSettings::new);
+
 	public final GameRules gameRules = new GameRules();
 	public long timeOfDay;
 
@@ -14,9 +21,13 @@ public final class MapWorldSettings {
 	public boolean thundering;
 	public int thunderTime;
 
-	public static MapWorldSettings createFrom(WorldInfo info) {
+	public static MapWorldSettings createFromOverworld(MinecraftServer server) {
+		return createFrom((IServerWorldInfo) server.func_241755_D_().getWorldInfo());
+	}
+
+	public static MapWorldSettings createFrom(IServerWorldInfo info) {
 		MapWorldSettings settings = new MapWorldSettings();
-		settings.gameRules.read(info.getGameRulesInstance().write());
+		settings.gameRules.decode(new Dynamic<>(NBTDynamicOps.INSTANCE, info.getGameRulesInstance().write()));
 		settings.timeOfDay = info.getDayTime();
 		settings.sunnyTime = info.getClearWeatherTime();
 		settings.raining = info.isRaining();
@@ -42,7 +53,7 @@ public final class MapWorldSettings {
 
 	public void read(CompoundNBT root) {
 		this.timeOfDay = root.getLong("time_of_day");
-		this.gameRules.read(root.getCompound("game_rules"));
+		this.gameRules.decode(new Dynamic<>(NBTDynamicOps.INSTANCE, root.getCompound("game_rules")));
 
 		this.sunnyTime = root.getInt("sunny_time");
 		this.raining = root.getBoolean("raining");

@@ -1,6 +1,5 @@
 package com.lovetropics.minigames.common.minigames.behaviours.instances.statistics;
 
-import com.lovetropics.minigames.common.MoreCodecs;
 import com.lovetropics.minigames.common.minigames.IMinigameInstance;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
 import com.lovetropics.minigames.common.minigames.behaviours.MinigameBehaviorTypes;
@@ -15,12 +14,13 @@ import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 public final class CampingTrackerBehavior implements IMinigameBehavior {
 	public static final Codec<CampingTrackerBehavior> CODEC = RecordCodecBuilder.create(instance -> {
 		return instance.group(
-				MoreCodecs.nullableFieldOf(Codec.STRING, "after_phase").forGetter(c -> c.afterPhase),
+				Codec.STRING.optionalFieldOf("after_phase").forGetter(c -> Optional.ofNullable(c.afterPhase)),
 				Codec.LONG.optionalFieldOf("camp_time_threshold", 20L * 8).forGetter(c -> c.campTimeThreshold),
 				Codec.DOUBLE.optionalFieldOf("camp_movement_threshold", 8.0).forGetter(c -> c.campMovementThreshold)
 		).apply(instance, CampingTrackerBehavior::new);
@@ -36,8 +36,8 @@ public final class CampingTrackerBehavior implements IMinigameBehavior {
 
 	private final Map<UUID, CampingTracker> campingTrackers = new Object2ObjectOpenHashMap<>();
 
-	public CampingTrackerBehavior(String afterPhase, long campTimeThreshold, double campMovementThreshold) {
-		this.afterPhase = afterPhase;
+	public CampingTrackerBehavior(Optional<String> afterPhase, long campTimeThreshold, double campMovementThreshold) {
+		this.afterPhase = afterPhase.orElse(null);
 		this.campTimeThreshold = campTimeThreshold;
 		this.campMovementThreshold = campMovementThreshold;
 	}

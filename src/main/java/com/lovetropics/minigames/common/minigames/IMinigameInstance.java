@@ -3,7 +3,7 @@ package com.lovetropics.minigames.common.minigames;
 import com.lovetropics.minigames.common.map.MapRegions;
 import com.lovetropics.minigames.common.minigames.behaviours.BehaviorDispatcher;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
-import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehaviorType;
+import com.lovetropics.minigames.common.minigames.behaviours.MinigameBehaviorType;
 import com.lovetropics.minigames.common.minigames.statistics.MinigameStatistics;
 import com.lovetropics.minigames.common.telemetry.MinigameInstanceTelemetry;
 import net.minecraft.command.CommandSource;
@@ -25,13 +25,13 @@ public interface IMinigameInstance extends ProtoMinigame, MinigameControllable, 
     @Override
     Collection<IMinigameBehavior> getBehaviors();
 
-    <T extends IMinigameBehavior> Collection<T> getBehaviors(IMinigameBehaviorType<T> type);
+    <T extends IMinigameBehavior> Collection<T> getBehaviors(MinigameBehaviorType<T> type);
 
-    default <T extends IMinigameBehavior> Optional<T> getOneBehavior(IMinigameBehaviorType<T> type) {
+    default <T extends IMinigameBehavior> Optional<T> getOneBehavior(MinigameBehaviorType<T> type) {
         return getBehaviors(type).stream().findFirst();
     }
 
-    default <T extends IMinigameBehavior> T getOneBehaviorOrThrow(IMinigameBehaviorType<T> type) {
+    default <T extends IMinigameBehavior> T getOneBehaviorOrThrow(MinigameBehaviorType<T> type) {
         return getOneBehavior(type).orElseThrow(RuntimeException::new);
     }
 
@@ -106,4 +106,6 @@ public interface IMinigameInstance extends ProtoMinigame, MinigameControllable, 
     MinigameStatistics getStatistics();
 
     MinigameInstanceTelemetry getTelemetry();
+
+    default void close() {}
 }

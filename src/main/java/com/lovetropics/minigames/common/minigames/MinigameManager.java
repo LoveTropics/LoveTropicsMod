@@ -1,7 +1,6 @@
 package com.lovetropics.minigames.common.minigames;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.lovetropics.minigames.client.data.TropicraftLangKeys;
 import com.lovetropics.minigames.client.minigame.ClientMinigameMessage;
 import com.lovetropics.minigames.client.minigame.ClientRoleMessage;
@@ -9,6 +8,7 @@ import com.lovetropics.minigames.client.minigame.PlayerCountsMessage;
 import com.lovetropics.minigames.common.Scheduler;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
 import com.lovetropics.minigames.common.minigames.behaviours.IPollingMinigameBehavior;
+import com.lovetropics.minigames.common.minigames.config.MinigameConfigs;
 import com.lovetropics.minigames.common.minigames.polling.PollingMinigameInstance;
 import com.lovetropics.minigames.common.minigames.statistics.PlayerKey;
 import com.lovetropics.minigames.common.network.LTNetwork;
@@ -52,7 +52,6 @@ import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiConsumer;
 import java.util.stream.Stream;
@@ -67,11 +66,6 @@ public class MinigameManager implements IMinigameManager {
 	 * Singleton instance that persists throughout server lifecycle.
 	 */
 	private static IMinigameManager INSTANCE;
-
-	/**
-	 * Registry map for minigame definitions. Used to fetch and start requested minigames.
-	 */
-	private Map<ResourceLocation, IMinigameDefinition> registeredMinigames = Maps.newHashMap();
 
 	/**
 	 * Current instance of the minigame. Agnostic from minigame definition and used to store
@@ -103,6 +97,9 @@ public class MinigameManager implements IMinigameManager {
 	 * @param server The minecraft server used for fetching player list.
 	 */
 	public static void init(MinecraftServer server) {
+		if (INSTANCE != null) {
+			MinecraftForge.EVENT_BUS.unregister(INSTANCE);
+		}
 		INSTANCE = new MinigameManager(server);
 		MinecraftForge.EVENT_BUS.register(INSTANCE);
 	}
@@ -118,27 +115,8 @@ public class MinigameManager implements IMinigameManager {
 	}
 
 	@Override
-	public void register(IMinigameDefinition minigame) {
-		if (this.registeredMinigames.containsKey(minigame.getID())) {
-			throw new IllegalArgumentException("Minigame already registered with the following ID: " + minigame.getID());
-		}
-
-		this.registeredMinigames.put(minigame.getID(), minigame);
-	}
-
-	@Override
-	public void unregister(ResourceLocation minigameID) {
-		if (!this.registeredMinigames.containsKey(minigameID)) {
-			TranslationTextComponent msg = new TranslationTextComponent(TropicraftLangKeys.COMMAND_MINIGAME_NOT_REGISTERED, minigameID);
-			throw new IllegalArgumentException(msg.getString());
-		}
-
-		this.registeredMinigames.remove(minigameID);
-	}
-
-	@Override
 	public Collection<IMinigameDefinition> getAllMinigames() {
-		return Collections.unmodifiableCollection(this.registeredMinigames.values());
+		return Collections.unmodifiableCollection(MinigameConfigs.GAME_CONFIGS.values());
 	}
 
 	@Override
@@ -185,7 +163,7 @@ public class MinigameManager implements IMinigameManager {
 		} catch (Exception e) {
 			return MinigameResult.fromException("Unknown error finishing minigame", e);
 		} finally {
-			minigame.getDefinition().getMapProvider().close(minigame);
+			minigame.close();
 			LTNetwork.CHANNEL.send(PacketDistributor.ALL.noArg(), new ClientMinigameMessage());
 		}
 	}
@@ -227,7 +205,7 @@ public class MinigameManager implements IMinigameManager {
 	@Override
 	public MinigameResult<ITextComponent> startPolling(ResourceLocation minigameId, PlayerKey initiator) {
 		// Make sure minigame is registered with provided id
-		if (!this.registeredMinigames.containsKey(minigameId)) {
+		if (!MinigameConfigs.GAME_CONFIGS.containsKey(minigameId)) {
 			return MinigameResult.error(new TranslationTextComponent(TropicraftLangKeys.COMMAND_MINIGAME_ID_INVALID));
 		}
 
@@ -241,7 +219,7 @@ public class MinigameManager implements IMinigameManager {
 			return MinigameResult.error(new TranslationTextComponent(TropicraftLangKeys.COMMAND_ANOTHER_MINIGAME_POLLING));
 		}
 
-		IMinigameDefinition definition = registeredMinigames.get(minigameId);
+		IMinigameDefinition definition = MinigameConfigs.GAME_CONFIGS.get(minigameId);
 
 		MinigameResult<PollingMinigameInstance> pollResult = PollingMinigameInstance.create(server, definition, initiator);
 		if (pollResult.isError()) {

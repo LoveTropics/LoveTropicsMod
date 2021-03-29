@@ -1,17 +1,16 @@
 package com.lovetropics.minigames.common.network.map;
 
-import java.util.function.Supplier;
-
 import com.lovetropics.minigames.client.map.ClientMapWorkspace;
 import com.lovetropics.minigames.common.map.MapRegion;
 import com.lovetropics.minigames.common.map.workspace.MapWorkspace;
 import com.lovetropics.minigames.common.map.workspace.MapWorkspaceManager;
-
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.network.PacketBuffer;
 import net.minecraftforge.fml.LogicalSide;
 import net.minecraftforge.fml.network.NetworkDirection;
 import net.minecraftforge.fml.network.NetworkEvent;
+
+import java.util.function.Supplier;
 
 public class UpdateWorkspaceRegionMessage {
 	private final int id;
@@ -57,7 +56,7 @@ public class UpdateWorkspaceRegionMessage {
 		}
 
 		MapWorkspaceManager workspaceManager = MapWorkspaceManager.get(sender.server);
-		MapWorkspace workspace = workspaceManager.getWorkspace(sender.dimension);
+		MapWorkspace workspace = workspaceManager.getWorkspace(sender.world.getDimensionKey());
 		if (workspace != null) {
 			workspace.getRegions().set(id, region);
 		}

@@ -3,7 +3,7 @@ package com.lovetropics.minigames.common.minigames.statistics;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonPrimitive;
-import com.lovetropics.minigames.common.StringRegistry;
+import com.lovetropics.minigames.common.CodecRegistry;
 import com.lovetropics.minigames.common.minigames.behaviours.instances.TeamsBehavior;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
@@ -18,7 +18,7 @@ import java.util.function.Function;
 import static com.lovetropics.minigames.common.minigames.statistics.StatisticDisplays.*;
 
 public final class StatisticKey<T> {
-	private static final StringRegistry<StatisticKey<?>> REGISTRY = StringRegistry.newStable();
+	private static final CodecRegistry<String, StatisticKey<?>> REGISTRY = CodecRegistry.stringKeys();
 	public static final Codec<StatisticKey<?>> CODEC = REGISTRY;
 
 	// Generic - Per Player
