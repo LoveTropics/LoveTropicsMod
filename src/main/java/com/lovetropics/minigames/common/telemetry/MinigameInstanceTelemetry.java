@@ -2,6 +2,7 @@ package com.lovetropics.minigames.common.telemetry;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.common.config.ConfigLT;
 import com.lovetropics.minigames.common.game_actions.GameAction;
 import com.lovetropics.minigames.common.game_actions.GameActionHandler;
@@ -13,6 +14,8 @@ import com.lovetropics.minigames.common.minigames.PlayerSet;
 import com.lovetropics.minigames.common.minigames.behaviours.MinigameBehaviorTypes;
 import com.lovetropics.minigames.common.minigames.statistics.MinigameStatistics;
 import com.lovetropics.minigames.common.minigames.statistics.PlayerKey;
+import com.mojang.serialization.DataResult;
+import com.mojang.serialization.JsonOps;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.server.MinecraftServer;
 
@@ -163,9 +166,15 @@ public final class MinigameInstanceTelemetry implements PlayerSet.Listeners {
 				active.getBehaviors(MinigameBehaviorTypes.POLL_FINALISTS.get()).forEach(b -> b.handlePollEvent(active.getServer(), object, crud));
 			}
 		} else if ("create".equals(crud)) {
-			GameActionType.getFromId(type).ifPresent(request -> {
-				GameAction action = request.createAction(object.getAsJsonObject("payload"));
-				actions.enqueue(request, action);
+			GameActionType.getFromId(type).ifPresent(actionType -> {
+				JsonObject payload = object.getAsJsonObject("payload");
+				DataResult<? extends GameAction> parseResult = actionType.getCodec().parse(JsonOps.INSTANCE, payload);
+
+				parseResult.result().ifPresent(action -> actions.enqueue(actionType, action));
+
+				parseResult.error().ifPresent(error -> {
+					LoveTropics.LOGGER.warn("Received invalid game action of type {}: {}", type, error);
+				});
 			});
 		}
 	}

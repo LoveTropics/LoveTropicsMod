@@ -1,8 +1,10 @@
 package com.lovetropics.minigames.common.game_actions;
 
-import com.google.gson.JsonObject;
+import com.lovetropics.minigames.common.MoreCodecs;
 import com.lovetropics.minigames.common.minigames.IMinigameInstance;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.server.MinecraftServer;
 
 import java.util.UUID;
@@ -12,6 +14,14 @@ import java.util.UUID;
  */
 public class DonationPackageGameAction extends GameAction
 {
+    public static final Codec<DonationPackageGameAction> CODEC = RecordCodecBuilder.create(instance -> {
+        return instance.group(
+                MoreCodecs.UUID_STRING.fieldOf("uuid").forGetter(c -> c.uuid),
+                Codec.STRING.fieldOf("trigger_time").forGetter(c -> c.triggerTime),
+                GamePackage.MAP_CODEC.forGetter(c -> c.gamePackage)
+        ).apply(instance, DonationPackageGameAction::new);
+    });
+
     private final GamePackage gamePackage;
 
     public DonationPackageGameAction(UUID uuid, String triggerTime, final GamePackage gamePackage) {
@@ -32,23 +42,5 @@ public class DonationPackageGameAction extends GameAction
         }
 
         return resolved;
-    }
-
-    public static DonationPackageGameAction fromJson(final JsonObject obj) {
-        final UUID uuid = UUID.fromString(obj.get("uuid").getAsString());
-        final String packageType = obj.get("package_type").getAsString();
-        final String triggerTime = obj.get("trigger_time").getAsString();
-
-        final String sendingPlayerName =
-                obj.has("sending_player_name") ? obj.get("sending_player_name").getAsString() : "Anonymous";
-        final UUID receivingPlayer;
-
-        if (obj.has("receiving_player")) {
-            receivingPlayer = UUID.fromString(obj.get("receiving_player").getAsString());
-        } else {
-            receivingPlayer = null;
-        }
-
-        return new DonationPackageGameAction(uuid, triggerTime, new GamePackage(packageType, sendingPlayerName, receivingPlayer));
     }
 }

@@ -154,6 +154,16 @@ public final class MoreCodecs {
 		);
 	}
 
+	public static <T, C extends List<T>> Codec<C> sorted(Codec<C> codec, Comparator<? super T> comparator) {
+		return codec.xmap(
+				list -> {
+					list.sort(comparator);
+					return list;
+				},
+				Function.identity()
+		);
+	}
+
 	private static <T> List<T> unitArrayList(T t) {
 		List<T> list = new ArrayList<>(1);
 		list.add(t);
