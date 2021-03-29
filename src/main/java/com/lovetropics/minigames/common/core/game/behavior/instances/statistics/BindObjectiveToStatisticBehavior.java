@@ -1,7 +1,9 @@
-package com.lovetropics.minigames.common.core.game.statistics;
+package com.lovetropics.minigames.common.core.game.behavior.instances.statistics;
 
 import com.lovetropics.minigames.common.core.game.IGameInstance;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
+import com.lovetropics.minigames.common.core.game.statistics.MinigameStatistics;
+import com.lovetropics.minigames.common.core.game.statistics.StatisticKey;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.codecs.RecordCodecBuilder;

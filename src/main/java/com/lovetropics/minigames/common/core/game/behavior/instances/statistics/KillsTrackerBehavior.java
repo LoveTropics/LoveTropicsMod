@@ -1,7 +1,11 @@
-package com.lovetropics.minigames.common.core.game.statistics;
+package com.lovetropics.minigames.common.core.game.behavior.instances.statistics;
 
 import com.lovetropics.minigames.common.core.game.IGameInstance;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
+import com.lovetropics.minigames.common.core.game.statistics.MinigameStatistics;
+import com.lovetropics.minigames.common.core.game.statistics.PlayerKey;
+import com.lovetropics.minigames.common.core.game.statistics.StatisticKey;
+import com.lovetropics.minigames.common.core.game.statistics.StatisticsMap;
 import com.mojang.serialization.Codec;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
