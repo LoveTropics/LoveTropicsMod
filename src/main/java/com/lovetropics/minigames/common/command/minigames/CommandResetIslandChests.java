@@ -1,5 +1,6 @@
 package com.lovetropics.minigames.common.command.minigames;
 
+import com.lovetropics.minigames.Constants;
 import com.mojang.brigadier.CommandDispatcher;
 import net.minecraft.command.CommandSource;
 import net.minecraft.nbt.CompoundNBT;
@@ -18,7 +19,7 @@ public class CommandResetIslandChests {
 			.executes(c -> {
 				World world = c.getSource().getWorld();
 
-				if (world.getDimension().getType().getModType() != MapWorkspaceDimension.MOD_DIMENSION.get()) {
+				if (!world.getDimensionKey().getLocation().getNamespace().equals(Constants.MODID)) {
 					c.getSource().sendFeedback(new StringTextComponent("Must use this command in workspace dimension"), true);
 					return 0;
 				}
@@ -33,7 +34,7 @@ public class CommandResetIslandChests {
 
 						tag.putString("LootTable", "lt20:stt1/chest");
 
-						cte.read(tag);
+						cte.read(te.getBlockState(), tag);
 						cte.markDirty();
 					}
 				}

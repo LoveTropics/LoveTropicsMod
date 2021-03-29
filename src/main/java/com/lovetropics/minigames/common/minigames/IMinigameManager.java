@@ -21,26 +21,6 @@ import java.util.concurrent.CompletableFuture;
 public interface IMinigameManager extends MinigameControllable
 {
     /**
-     * Register a minigame definition, allowing it to be polled by a poll command.
-     * The getID() method of the definition is what is used within the poll command
-     * to discriminate which minigame to fetch.
-     *
-     * @param minigame The minigame definition to register.
-     * @throws IllegalArgumentException When the ID used by the minigame being registered
-     * is already taken by another registered minigame.
-     */
-    void register(IMinigameDefinition minigame) throws IllegalArgumentException;
-
-    /**
-     * Unregisters a minigame definiton, meaning the minigame commands will no longer
-     * recognise it.
-     * @param minigameID The ID of the minigame definition to unregister.
-     * @throws IllegalArgumentException When the ID used by the minigame being unregistered
-     * has not been used by any registered minigames.
-     */
-    void unregister(ResourceLocation minigameID) throws IllegalArgumentException;
-    
-    /**
      * Get all currently registered minigames.
      * @return A collection of all known minigames.
      */

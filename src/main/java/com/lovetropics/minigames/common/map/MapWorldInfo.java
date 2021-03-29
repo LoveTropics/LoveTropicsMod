@@ -1,20 +1,26 @@
 package com.lovetropics.minigames.common.map;
 
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.GameRules;
 import net.minecraft.world.storage.DerivedWorldInfo;
-import net.minecraft.world.storage.WorldInfo;
+import net.minecraft.world.storage.IServerConfiguration;
+import net.minecraft.world.storage.IServerWorldInfo;
 
 public final class MapWorldInfo extends DerivedWorldInfo {
 	private final MapWorldSettings settings;
 
-	public MapWorldInfo(WorldInfo overworld) {
-		super(overworld);
+	public MapWorldInfo(IServerConfiguration serverConfiguration, IServerWorldInfo overworld) {
+		super(serverConfiguration, overworld);
 		this.settings = MapWorldSettings.createFrom(overworld);
 	}
 
-	public MapWorldInfo(WorldInfo overworld, MapWorldSettings settings) {
-		super(overworld);
+	public MapWorldInfo(IServerConfiguration serverConfiguration, IServerWorldInfo overworld, MapWorldSettings settings) {
+		super(serverConfiguration, overworld);
 		this.settings = settings;
+	}
+
+	public static MapWorldInfo create(MinecraftServer server, MapWorldSettings settings) {
+		return new MapWorldInfo(server.getServerConfiguration(), (IServerWorldInfo) server.func_241755_D_().getWorldInfo(), settings);
 	}
 
 	@Override

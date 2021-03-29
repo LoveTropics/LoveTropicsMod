@@ -1,6 +1,5 @@
 package com.lovetropics.minigames.common.minigames.behaviours.instances.donations;
 
-import com.lovetropics.minigames.common.MoreCodecs;
 import com.lovetropics.minigames.common.minigames.IMinigameInstance;
 import com.lovetropics.minigames.common.minigames.TemplatedText;
 import com.mojang.serialization.Codec;
@@ -16,12 +15,13 @@ import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
 
 import javax.annotation.Nullable;
+import java.util.Optional;
 
 public class DonationPackageData {
 	public static final MapCodec<DonationPackageData> CODEC = RecordCodecBuilder.mapCodec(instance -> {
 		return instance.group(
 				Codec.STRING.fieldOf("package_type").forGetter(c -> c.packageType),
-				MoreCodecs.nullableFieldOf(TemplatedText.CODEC, "message_for_player").forGetter(c -> c.messageForPlayer),
+				TemplatedText.CODEC.optionalFieldOf("message_for_player").forGetter(c -> Optional.ofNullable(c.messageForPlayer)),
 				DonationPackageBehavior.PlayerSelect.CODEC.optionalFieldOf("player_select", DonationPackageBehavior.PlayerSelect.RANDOM).forGetter(c -> c.playerSelect),
 				SoundEvent.CODEC.optionalFieldOf("sound_on_receive", SoundEvents.ITEM_TOTEM_USE).forGetter(c -> c.soundOnReceive)
 		).apply(instance, DonationPackageData::new);
@@ -32,9 +32,9 @@ public class DonationPackageData {
 	protected final DonationPackageBehavior.PlayerSelect playerSelect;
 	protected final SoundEvent soundOnReceive;
 
-	public DonationPackageData(final String packageType, final TemplatedText messageForPlayer, final DonationPackageBehavior.PlayerSelect playerSelect, final SoundEvent soundOnReceive) {
+	public DonationPackageData(final String packageType, final Optional<TemplatedText> messageForPlayer, final DonationPackageBehavior.PlayerSelect playerSelect, final SoundEvent soundOnReceive) {
 		this.packageType = packageType;
-		this.messageForPlayer = messageForPlayer;
+		this.messageForPlayer = messageForPlayer.orElse(null);
 		this.playerSelect = playerSelect;
 		this.soundOnReceive = soundOnReceive;
 	}

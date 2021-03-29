@@ -12,7 +12,6 @@ import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Unit;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
 import net.minecraft.world.chunk.IChunk;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
@@ -26,7 +25,7 @@ import java.util.List;
 
 public interface IMinigameBehavior
 {
-	default ImmutableList<IMinigameBehaviorType<? extends IMinigameBehavior>> dependencies() {
+	default ImmutableList<MinigameBehaviorType<? extends IMinigameBehavior>> dependencies() {
 		return ImmutableList.of();
 	}
 

@@ -6,9 +6,8 @@ import com.lovetropics.minigames.common.map.workspace.WorkspaceRegions;
 import net.minecraft.network.PacketBuffer;
 import net.minecraftforge.fml.network.NetworkEvent;
 
-import java.util.function.Supplier;
-
 import javax.annotation.Nullable;
+import java.util.function.Supplier;
 
 public class SetWorkspaceMessage {
 
@@ -37,7 +36,7 @@ public class SetWorkspaceMessage {
 	}
 
 	public static SetWorkspaceMessage decode(PacketBuffer buffer) {
-		ClientWorkspaceRegions regions = null;
+		ClientWorkspaceRegions regions;
 		if (buffer.readBoolean()) {
 			regions = ClientWorkspaceRegions.read(buffer);
 		} else {

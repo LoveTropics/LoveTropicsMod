@@ -3,8 +3,10 @@ package com.lovetropics.minigames.common.minigames.behaviours.instances;
 import com.lovetropics.minigames.common.minigames.IMinigameInstance;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.NBTDynamicOps;
 import net.minecraft.world.GameRules;
 
 import java.util.Map;
@@ -33,14 +35,14 @@ public final class SetGameRulesBehavior implements IMinigameBehavior {
 			nbt.putString(entry.getKey(), entry.getValue());
 		}
 
-		gameRules.decode(nbt);
+		gameRules.decode(new Dynamic<>(NBTDynamicOps.INSTANCE, nbt));
 	}
 
 	@Override
 	public void onFinish(IMinigameInstance minigame) {
 		if (this.rulesSnapshot != null) {
 			GameRules gameRules = minigame.getWorld().getGameRules();
-			gameRules.decode(this.rulesSnapshot);
+			gameRules.decode(new Dynamic<>(NBTDynamicOps.INSTANCE, this.rulesSnapshot));
 		}
 	}
 }

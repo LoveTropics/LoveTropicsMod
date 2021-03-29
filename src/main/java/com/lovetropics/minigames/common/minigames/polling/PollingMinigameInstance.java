@@ -7,7 +7,6 @@ import com.lovetropics.minigames.common.minigames.*;
 import com.lovetropics.minigames.common.minigames.behaviours.BehaviorDispatcher;
 import com.lovetropics.minigames.common.minigames.behaviours.BehaviorMap;
 import com.lovetropics.minigames.common.minigames.behaviours.IPollingMinigameBehavior;
-import com.lovetropics.minigames.common.minigames.map.IMinigameMapProvider;
 import com.lovetropics.minigames.common.minigames.statistics.PlayerKey;
 import com.lovetropics.minigames.common.network.LTNetwork;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
@@ -114,14 +113,14 @@ public final class PollingMinigameInstance implements ProtoMinigame, MinigameCon
 	}
 
 	public CompletableFuture<MinigameResult<MinigameInstance>> start() {
-		IMinigameMapProvider mapProvider = definition.getMapProvider();
-		MinigameResult<Unit> openResult = mapProvider.canOpen(definition, server);
-		if (openResult.isError()) {
-			return CompletableFuture.completedFuture(openResult.castError());
-		}
-
-		return mapProvider.open(server)
-				.thenComposeAsync(map -> MinigameInstance.start(definition, server, map, behaviors, initiator, registrations), server)
+		return definition.getMapProvider().open(server)
+				.thenComposeAsync(result -> {
+					if (result.isOk()) {
+						MinigameMap map = result.getOk();
+						return MinigameInstance.start(definition, server, map, behaviors, initiator, registrations);
+					}
+					return CompletableFuture.completedFuture(result.castError());
+				}, server)
 				.handleAsync((result, throwable) -> {
 					if (throwable instanceof Exception) {
 						return MinigameResult.fromException("Unknown error starting minigame", (Exception) throwable);

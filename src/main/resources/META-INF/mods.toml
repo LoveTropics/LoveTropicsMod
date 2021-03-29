@@ -1,6 +1,7 @@
 modLoader="javafml" #mandatory
 loaderVersion="[25,)" #mandatory (24 is current forge version)
 issueTrackerURL="https://github.com/LoveTropics/LTMinigames/issues"
+license="ARR"
 
 [[mods]]
 modId="ltminigames"

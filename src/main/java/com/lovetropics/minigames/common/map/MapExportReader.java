@@ -6,15 +6,10 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.RegistryKey;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
-import net.minecraft.world.dimension.DimensionType;
-import net.minecraft.world.server.ServerWorld;
+import net.minecraft.world.storage.SaveFormat;
 import org.apache.commons.io.FileUtils;
 
-import java.io.Closeable;
-import java.io.DataInputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.zip.ZipEntry;
@@ -38,10 +33,8 @@ public final class MapExportReader implements Closeable {
 	}
 
 	public MapMetadata loadInto(MinecraftServer server, RegistryKey<World> dimension) throws IOException {
-		ServerWorld overworld = server.getWorld(World.OVERWORLD);
-		File worldDirectory = overworld.getSaveHandler().getWorldDirectory();
-		File dimensionDirectory = dimension.getDirectory(worldDirectory);
-
+		SaveFormat.LevelSave save = server.anvilConverterForAnvilFile;
+		File dimensionDirectory = save.getDimensionFolder(dimension);
 		return loadInto(dimensionDirectory.toPath());
 	}
 

@@ -1,33 +1,30 @@
 package com.lovetropics.minigames.common.map.workspace;
 
+import com.lovetropics.minigames.common.dimension.RuntimeDimensionHandle;
 import com.lovetropics.minigames.common.map.MapMetadata;
 import com.lovetropics.minigames.common.map.MapWorldSettings;
-import com.lovetropics.minigames.common.map.generator.ConfiguredGenerator;
-import com.lovetropics.minigames.common.map.generator.ConfiguredGenerators;
-import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.RegistryKey;
-import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
+
+import java.util.Optional;
 
 public final class MapWorkspace {
 	private final String id;
-	private final RegistryKey<World> dimension;
-	private final ConfiguredGenerator generator;
-
+	private final WorkspaceDimensionConfig dimension;
 	private final MapWorldSettings worldSettings;
-
 	private final WorkspaceRegions regions;
+	private final RuntimeDimensionHandle dimensionHandle;
 
-	MapWorkspace(String id, RegistryKey<World> dimension, ConfiguredGenerator generator, MapWorldSettings worldSettings) {
-		this(id, dimension, generator, worldSettings, new WorkspaceRegions(dimension));
+	MapWorkspace(String id, WorkspaceDimensionConfig dimension, MapWorldSettings worldSettings, RuntimeDimensionHandle dimensionHandle) {
+		this(id, dimension, worldSettings, new WorkspaceRegions(dimensionHandle.asKey()), dimensionHandle);
 	}
 
-	MapWorkspace(String id, RegistryKey<World> dimension, ConfiguredGenerator generator, MapWorldSettings worldSettings, WorkspaceRegions regions) {
+	MapWorkspace(String id, WorkspaceDimensionConfig dimension, MapWorldSettings worldSettings, WorkspaceRegions regions, RuntimeDimensionHandle dimensionHandle) {
 		this.id = id;
 		this.dimension = dimension;
-		this.generator = generator;
 		this.worldSettings = worldSettings;
 		this.regions = regions;
+		this.dimensionHandle = dimensionHandle;
 	}
 
 	public String getId() {
@@ -35,11 +32,15 @@ public final class MapWorkspace {
 	}
 
 	public RegistryKey<World> getDimension() {
-		return dimension;
+		return dimensionHandle.asKey();
 	}
 
-	public ConfiguredGenerator getGenerator() {
-		return generator;
+	public RuntimeDimensionHandle getHandle() {
+		return dimensionHandle;
+	}
+
+	public WorkspaceDimensionConfig getDimensionConfig() {
+		return dimension;
 	}
 
 	public WorkspaceRegions getRegions() {
@@ -50,26 +51,8 @@ public final class MapWorkspace {
 		return worldSettings;
 	}
 
-	public void write(CompoundNBT root) {
-		root.put("regions", regions.write(new CompoundNBT()));
-		root.put("settings", worldSettings.write(new CompoundNBT()));
-		root.putString("generator", generator.getId().toString());
-	}
-
-	public static MapWorkspace read(String id, RegistryKey<World> dimension, CompoundNBT root) {
-		WorkspaceRegions regions = new WorkspaceRegions(dimension);
-		regions.read(root.getCompound("regions"));
-
-		MapWorldSettings worldSettings = new MapWorldSettings();
-		worldSettings.read(root.getCompound("settings"));
-
-		ResourceLocation generatorId = new ResourceLocation(root.getString("generator"));
-		ConfiguredGenerator generator = ConfiguredGenerators.get(generatorId);
-		if (generator == null) {
-			generator = ConfiguredGenerators.VOID;
-		}
-
-		return new MapWorkspace(id, dimension, generator, worldSettings, regions);
+	public MapWorkspaceData intoData() {
+		return new MapWorkspaceData(id, Optional.of(dimension), worldSettings, regions.compile());
 	}
 
 	public void importFrom(MapMetadata metadata) {

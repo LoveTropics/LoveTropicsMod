@@ -12,8 +12,11 @@ import net.minecraft.block.BlockState;
 import net.minecraft.inventory.EquipmentSlotType;
 import net.minecraft.item.DyeColor;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.INBT;
 import net.minecraft.nbt.NBTDynamicOps;
+import net.minecraft.util.RegistryKey;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextFormatting;
@@ -22,8 +25,7 @@ import net.minecraft.world.gen.blockstateprovider.BlockStateProvider;
 import net.minecraft.world.gen.blockstateprovider.SimpleBlockStateProvider;
 
 import java.util.*;
-import java.util.function.Function;
-import java.util.function.IntFunction;
+import java.util.function.*;
 
 public final class MoreCodecs {
 	public static final Codec<ItemStack> ITEM_STACK = Codec.either(ItemStack.CODEC, Registry.ITEM)
@@ -61,10 +63,6 @@ public final class MoreCodecs {
 			},
 			UUID::toString
 	);
-
-	public static <T> MapCodec<T> nullableFieldOf(Codec<T> codec, String name) {
-		return codec.optionalFieldOf(name).xmap(opt -> opt.orElse(null), Optional::ofNullable);
-	}
 
 	public static <T> Codec<T[]> arrayOrUnit(Codec<T> codec, IntFunction<T[]> factory) {
 		return listToArray(listOrUnit(codec), factory);
@@ -106,6 +104,20 @@ public final class MoreCodecs {
 		return withOps(NBTDynamicOps.INSTANCE, encode, decode);
 	}
 
+	public static <A> Codec<A> withNbtCompound(BiFunction<A, CompoundNBT, CompoundNBT> encode, BiConsumer<A, CompoundNBT> decode, Supplier<A> factory) {
+		return withNbt(
+				value -> encode.apply(value, new CompoundNBT()),
+				nbt -> {
+					if (nbt instanceof CompoundNBT) {
+						A value = factory.get();
+						decode.accept(value, (CompoundNBT) nbt);
+						return DataResult.success(value);
+					}
+					return DataResult.error("Expected compound tag");
+				}
+		);
+	}
+
 	public static <A, T> Codec<A> withOps(DynamicOps<T> ops, Function<A, T> encode, Function<T, DataResult<A>> decode) {
 		return new MappedOpsCodec<>(ops, encode, decode);
 	}
@@ -133,6 +145,13 @@ public final class MoreCodecs {
 
 	public static <K> Codec<Object2DoubleMap<K>> object2Double(Codec<K> codec) {
 		return Codec.unboundedMap(codec, Codec.DOUBLE).xmap(Object2DoubleOpenHashMap::new, HashMap::new);
+	}
+
+	public static <T> Codec<RegistryKey<T>> registryKey(RegistryKey<? extends Registry<T>> registry) {
+		return ResourceLocation.CODEC.xmap(
+				id -> RegistryKey.getOrCreateKey(registry, id),
+				RegistryKey::getLocation
+		);
 	}
 
 	private static <T> List<T> unitArrayList(T t) {

@@ -5,7 +5,7 @@ import com.lovetropics.minigames.common.Scheduler;
 import com.lovetropics.minigames.common.map.MapRegions;
 import com.lovetropics.minigames.common.minigames.behaviours.BehaviorMap;
 import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehavior;
-import com.lovetropics.minigames.common.minigames.behaviours.IMinigameBehaviorType;
+import com.lovetropics.minigames.common.minigames.behaviours.MinigameBehaviorType;
 import com.lovetropics.minigames.common.minigames.polling.MinigameRegistrations;
 import com.lovetropics.minigames.common.minigames.statistics.MinigameStatistics;
 import com.lovetropics.minigames.common.minigames.statistics.PlayerKey;
@@ -49,7 +49,7 @@ public class MinigameInstance implements IMinigameInstance
     private final MutablePlayerSet allPlayers;
     private final EnumMap<PlayerRole, MutablePlayerSet> roles = new EnumMap<>(PlayerRole.class);
 
-    private final MapRegions mapRegions;
+    private final MinigameMap map;
     private final MinigameStatistics statistics = new MinigameStatistics();
 
     private CommandSource commandSource;
@@ -66,7 +66,7 @@ public class MinigameInstance implements IMinigameInstance
         this.definition = definition;
         this.server = server;
         this.dimension = map.getDimension();
-        this.mapRegions = map.getMapRegions();
+        this.map = map;
 
         this.allPlayers = new MutablePlayerSet(server);
 
@@ -148,7 +148,7 @@ public class MinigameInstance implements IMinigameInstance
 
     private MinigameResult<Unit> validateBehaviors() {
         for (IMinigameBehavior behavior : getBehaviors()) {
-            for (IMinigameBehaviorType<? extends IMinigameBehavior> dependency : behavior.dependencies()) {
+            for (MinigameBehaviorType<? extends IMinigameBehavior> dependency : behavior.dependencies()) {
                 if (getBehaviors(dependency).isEmpty()) {
                     return MinigameResult.error(new StringTextComponent(behavior + " is missing dependency on " + dependency + "!"));
                 }
@@ -202,7 +202,7 @@ public class MinigameInstance implements IMinigameInstance
     }
 
     @Override
-    public <T extends IMinigameBehavior> Collection<T> getBehaviors(IMinigameBehaviorType<T> type) {
+    public <T extends IMinigameBehavior> Collection<T> getBehaviors(MinigameBehaviorType<T> type) {
         return behaviors.getBehaviors(type);
     }
 
@@ -256,7 +256,7 @@ public class MinigameInstance implements IMinigameInstance
 
     @Override
     public MapRegions getMapRegions() {
-        return mapRegions;
+        return map.getRegions();
     }
 
     @Override
@@ -310,5 +310,10 @@ public class MinigameInstance implements IMinigameInstance
     @Override
     public PlayerKey getInitiator() {
         return initiator;
+    }
+
+    @Override
+    public void close() {
+        map.close(this);
     }
 }

@@ -1,42 +1,43 @@
 package com.lovetropics.minigames.common.minigames.map;
 
-import com.lovetropics.minigames.common.minigames.IMinigameDefinition;
-import com.lovetropics.minigames.common.minigames.IMinigameInstance;
+import com.lovetropics.minigames.common.MoreCodecs;
 import com.lovetropics.minigames.common.minigames.MinigameMap;
 import com.lovetropics.minigames.common.minigames.MinigameResult;
-import com.mojang.serialization.Dynamic;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.RegistryKey;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.Unit;
 import net.minecraft.util.registry.Registry;
+import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.world.World;
 
 import java.util.concurrent.CompletableFuture;
 
-public final class InlineMapProvider implements IMinigameMapProvider{
+public final class InlineMapProvider implements IMinigameMapProvider {
+	public static final Codec<InlineMapProvider> CODEC = RecordCodecBuilder.create(instance -> {
+		return instance.group(
+				MoreCodecs.registryKey(Registry.WORLD_KEY).fieldOf("dimension").forGetter(c -> c.dimension)
+		).apply(instance, InlineMapProvider::new);
+	});
+
 	private final RegistryKey<World> dimension;
 
 	public InlineMapProvider(RegistryKey<World> dimension) {
 		this.dimension = dimension;
 	}
 
-	public static <T> InlineMapProvider parse(Dynamic<T> root) {
-		RegistryKey<World> dimension = RegistryKey.getOrCreateKey(Registry.WORLD_KEY, new ResourceLocation(root.get("dimension").asString("")));
-		return new InlineMapProvider(dimension);
+	@Override
+	public Codec<? extends IMinigameMapProvider> getCodec() {
+		return CODEC;
 	}
 
 	@Override
-	public MinigameResult<Unit> canOpen(IMinigameDefinition definition, MinecraftServer server) {
-		return MinigameResult.ok();
-	}
+	public CompletableFuture<MinigameResult<MinigameMap>> open(MinecraftServer server) {
+		if (server.getWorld(dimension) == null) {
+			return CompletableFuture.completedFuture(MinigameResult.error(new StringTextComponent("Missing dimension " + dimension)));
+		}
 
-	@Override
-	public CompletableFuture<MinigameMap> open(MinecraftServer server) {
-		return CompletableFuture.completedFuture(new MinigameMap(null, dimension));
-	}
-
-	@Override
-	public void close(IMinigameInstance minigame) {
+		MinigameMap map = new MinigameMap(null, dimension);
+		return CompletableFuture.completedFuture(MinigameResult.ok(map));
 	}
 }
