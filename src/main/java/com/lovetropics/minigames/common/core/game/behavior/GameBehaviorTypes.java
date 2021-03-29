@@ -9,8 +9,8 @@ import com.lovetropics.minigames.common.core.game.behavior.instances.command.Bin
 import com.lovetropics.minigames.common.core.game.behavior.instances.command.CommandEventsBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.command.RunCommandInRegionBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.donation.*;
+import com.lovetropics.minigames.common.core.game.behavior.instances.statistics.*;
 import com.lovetropics.minigames.common.core.game.behavior.instances.tweak.*;
-import com.lovetropics.minigames.common.core.game.statistics.*;
 import com.lovetropics.minigames.common.content.trash_dive.PlaceTrashBehavior;
 import com.lovetropics.minigames.common.content.trash_dive.TrashCollectionBehavior;
 import com.mojang.serialization.Codec;
