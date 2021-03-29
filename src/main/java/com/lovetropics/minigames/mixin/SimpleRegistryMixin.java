@@ -1,7 +1,7 @@
 package com.lovetropics.minigames.mixin;
 
 import com.google.common.collect.BiMap;
-import com.lovetropics.minigames.common.dimension.RegistryEntryRemover;
+import com.lovetropics.minigames.common.core.dimension.RegistryEntryRemover;
 import com.mojang.serialization.Lifecycle;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.ObjectList;

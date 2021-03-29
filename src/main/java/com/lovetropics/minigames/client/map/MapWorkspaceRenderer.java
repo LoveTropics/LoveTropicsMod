@@ -1,8 +1,8 @@
 package com.lovetropics.minigames.client.map;
 
 import com.lovetropics.minigames.Constants;
-import com.lovetropics.minigames.common.map.MapRegion;
-import com.lovetropics.minigames.common.map.workspace.ClientWorkspaceRegions;
+import com.lovetropics.minigames.common.core.map.MapRegion;
+import com.lovetropics.minigames.common.core.map.workspace.ClientWorkspaceRegions;
 import com.mojang.blaze3d.systems.RenderSystem;
 import it.unimi.dsi.fastutil.HashCommon;
 import net.minecraft.client.Minecraft;

@@ -1,7 +1,7 @@
 package com.lovetropics.minigames.client.minigame;
 
-import com.lovetropics.minigames.common.minigames.MinigameStatus;
-import com.lovetropics.minigames.common.minigames.ProtoMinigame;
+import com.lovetropics.minigames.common.core.game.GameStatus;
+import com.lovetropics.minigames.common.core.game.ProtoGame;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.network.NetworkEvent;
@@ -12,21 +12,21 @@ public class ClientMinigameMessage {
 
 	private final ResourceLocation minigame;
 	private final String unlocName;
-	private final MinigameStatus status;
+	private final GameStatus status;
 	private final int maxPlayers;
 
 	public ClientMinigameMessage() {
 		this(null, null, null, 0);
 	}
 
-	public ClientMinigameMessage(ProtoMinigame minigame) {
+	public ClientMinigameMessage(ProtoGame minigame) {
 		this(minigame.getDefinition().getDisplayID(),
 			minigame.getDefinition().getUnlocalizedName(),
 			minigame.getStatus(),
 			minigame.getDefinition().getMaximumParticipantCount());
 	}
 
-	private ClientMinigameMessage(ResourceLocation minigame, String unlocName, MinigameStatus status, int maxPlayers) {
+	private ClientMinigameMessage(ResourceLocation minigame, String unlocName, GameStatus status, int maxPlayers) {
 		this.minigame = minigame;
 		this.unlocName = unlocName;
 		this.status = status;
@@ -47,7 +47,7 @@ public class ClientMinigameMessage {
 		if (buffer.readBoolean()) {
 			ResourceLocation minigame = buffer.readResourceLocation();
 			String unlocName = buffer.readString(200);
-			MinigameStatus status = buffer.readEnumValue(MinigameStatus.class);
+			GameStatus status = buffer.readEnumValue(GameStatus.class);
 			int maxPlayers = buffer.readInt();
 			return new ClientMinigameMessage(minigame, unlocName, status, maxPlayers);
 		}

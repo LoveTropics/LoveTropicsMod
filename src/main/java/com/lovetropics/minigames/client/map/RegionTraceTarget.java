@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.client.map;
 
-import com.lovetropics.minigames.common.map.workspace.ClientWorkspaceRegions;
+import com.lovetropics.minigames.common.core.map.workspace.ClientWorkspaceRegions;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.vector.Vector3d;
 

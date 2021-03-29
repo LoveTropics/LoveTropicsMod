@@ -2,19 +2,20 @@ package com.lovetropics.minigames;
 
 import com.google.common.base.Preconditions;
 import com.lovetropics.minigames.client.data.TropicraftLangKeys;
-import com.lovetropics.minigames.common.block.LoveTropicsBlocks;
-import com.lovetropics.minigames.common.block.TrashType;
-import com.lovetropics.minigames.common.command.CommandMap;
-import com.lovetropics.minigames.common.command.minigames.*;
 import com.lovetropics.minigames.common.config.ConfigLT;
-import com.lovetropics.minigames.common.entity.DriftwoodRider;
-import com.lovetropics.minigames.common.entity.MinigameEntities;
-import com.lovetropics.minigames.common.item.MinigameItems;
-import com.lovetropics.minigames.common.map.VoidChunkGenerator;
-import com.lovetropics.minigames.common.minigames.MinigameManager;
-import com.lovetropics.minigames.common.minigames.behaviours.MinigameBehaviorTypes;
-import com.lovetropics.minigames.common.network.LTNetwork;
-import com.lovetropics.minigames.common.telemetry.Telemetry;
+import com.lovetropics.minigames.common.content.block.LoveTropicsBlocks;
+import com.lovetropics.minigames.common.content.block.TrashType;
+import com.lovetropics.minigames.common.content.conservation_exploration.ConservationExploration;
+import com.lovetropics.minigames.common.content.survive_the_tide.SurviveTheTide;
+import com.lovetropics.minigames.common.content.survive_the_tide.entity.DriftwoodRider;
+import com.lovetropics.minigames.common.core.command.MapCommand;
+import com.lovetropics.minigames.common.core.command.game.*;
+import com.lovetropics.minigames.common.core.game.GameManager;
+import com.lovetropics.minigames.common.core.game.behavior.GameBehaviorTypes;
+import com.lovetropics.minigames.common.core.integration.Telemetry;
+import com.lovetropics.minigames.common.core.map.VoidChunkGenerator;
+import com.lovetropics.minigames.common.core.map.item.MapWorkspaceItems;
+import com.lovetropics.minigames.common.core.network.LoveTropicsNetwork;
 import com.mojang.brigadier.CommandDispatcher;
 import com.tterrag.registrate.Registrate;
 import com.tterrag.registrate.providers.ProviderType;
@@ -92,13 +93,15 @@ public class LoveTropics {
 
         // Registry objects
         LoveTropicsBlocks.init();
-        MinigameItems.init();
-        MinigameEntities.init();
+        MapWorkspaceItems.init();
+
+        SurviveTheTide.init();
+        ConservationExploration.init();
 
         ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, ConfigLT.CLIENT_CONFIG);
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, ConfigLT.SERVER_CONFIG);
 
-        MinigameBehaviorTypes.MINIGAME_BEHAVIOURS_REGISTER.register(modBus);
+        GameBehaviorTypes.REGISTER.register(modBus);
     }
 
     private static final Pattern QUALIFIER = Pattern.compile("-\\w+\\+\\d+");
@@ -123,7 +126,7 @@ public class LoveTropics {
     }
 
     private void setup(final FMLCommonSetupEvent event) {
-        LTNetwork.register();
+        LoveTropicsNetwork.register();
 
         VoidChunkGenerator.register();
 
@@ -135,29 +138,27 @@ public class LoveTropics {
     private void onServerAboutToStart(final FMLServerAboutToStartEvent event) {
         Telemetry.INSTANCE.sendOpen();
 
-        MinigameManager.init(event.getServer());
+        GameManager.init(event.getServer());
 
         // we register commands in the about-to-start event because the 'proper' starting event loads after datapacks,
         // causing functions to load incorrectly
         CommandDispatcher<CommandSource> dispatcher = event.getServer().getCommandManager().getDispatcher();
-        CommandPollMinigame.register(dispatcher);
-        CommandRegisterMinigame.register(dispatcher);
-        CommandStartMinigame.register(dispatcher);
-        CommandFinishMinigame.register(dispatcher);
-        CommandCancelMinigame.register(dispatcher);
-        CommandUnregisterMinigame.register(dispatcher);
-        CommandStopPollingMinigame.register(dispatcher);
-        CommandResetIslandChests.register(dispatcher);
-        CommandScanArea.register(dispatcher);
-        CommandMinigameControl.register(dispatcher);
-        CommandMap.register(dispatcher);
-        CommandMinigameDonate.register(dispatcher);
-        CommandMinigamePackage.register(dispatcher);
+        PollGameCommand.register(dispatcher);
+        JoinGameCommand.register(dispatcher);
+        StartGameCommand.register(dispatcher);
+        FinishGameCommand.register(dispatcher);
+        CancelGameCommand.register(dispatcher);
+        LeaveGameCommand.register(dispatcher);
+        StopPollingGameCommand.register(dispatcher);
+        GameControlCommand.register(dispatcher);
+        MapCommand.register(dispatcher);
+        GameDonateCommand.register(dispatcher);
+        GamePackageCommand.register(dispatcher);
     }
 
     private void onServerStopping(final FMLServerStoppingEvent event) {
-        if (MinigameManager.getInstance().getActiveMinigame() != null) {
-            MinigameManager.getInstance().cancel();
+        if (GameManager.getInstance().getActiveMinigame() != null) {
+            GameManager.getInstance().cancel();
         }
 
         Telemetry.INSTANCE.sendClose();

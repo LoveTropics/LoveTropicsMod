@@ -1,7 +1,7 @@
 package com.lovetropics.minigames.client.data;
 
 import com.lovetropics.minigames.Constants;
-import com.lovetropics.minigames.common.Util;
+import com.lovetropics.minigames.common.util.Util;
 import net.minecraft.block.Block;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.data.DirectoryCache;

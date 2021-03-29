@@ -1,10 +1,10 @@
 package com.lovetropics.minigames.client.map;
 
 import com.google.common.collect.ImmutableSet;
-import com.lovetropics.minigames.common.map.MapRegion;
-import com.lovetropics.minigames.common.map.workspace.ClientWorkspaceRegions;
-import com.lovetropics.minigames.common.network.LTNetwork;
-import com.lovetropics.minigames.common.network.map.UpdateWorkspaceRegionMessage;
+import com.lovetropics.minigames.common.core.map.MapRegion;
+import com.lovetropics.minigames.common.core.map.workspace.ClientWorkspaceRegions;
+import com.lovetropics.minigames.common.core.network.LoveTropicsNetwork;
+import com.lovetropics.minigames.common.core.network.workspace.UpdateWorkspaceRegionMessage;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.math.BlockPos;
@@ -39,7 +39,7 @@ public interface RegionEditOperator {
 
 		@Override
 		public boolean select(PlayerEntity player, @Nullable RegionTraceTarget target) {
-			LTNetwork.CHANNEL.sendToServer(new UpdateWorkspaceRegionMessage(this.target.entry.id, this.target.entry.region));
+			LoveTropicsNetwork.CHANNEL.sendToServer(new UpdateWorkspaceRegionMessage(this.target.entry.id, this.target.entry.region));
 			return true;
 		}
 

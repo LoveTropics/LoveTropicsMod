@@ -5,8 +5,8 @@ import java.util.Optional;
 
 import javax.annotation.Nullable;
 
-import com.lovetropics.minigames.common.minigames.MinigameStatus;
-import com.lovetropics.minigames.common.minigames.PlayerRole;
+import com.lovetropics.minigames.common.core.game.GameStatus;
+import com.lovetropics.minigames.common.core.game.PlayerRole;
 
 import net.minecraft.client.resources.I18n;
 import net.minecraft.util.ResourceLocation;
@@ -35,12 +35,12 @@ public class ClientMinigameState {
 
 	private final ResourceLocation minigame;
 	private final String unlocName;
-	private final MinigameStatus status;
+	private final GameStatus status;
 	private final int maxPlayers;
 	private @Nullable PlayerRole role;
 	private EnumMap<PlayerRole, Integer> members = new EnumMap<>(PlayerRole.class);
 
-	public ClientMinigameState(ResourceLocation minigame, String unlocName, MinigameStatus status, int maxPlayers) {
+	public ClientMinigameState(ResourceLocation minigame, String unlocName, GameStatus status, int maxPlayers) {
 		this.minigame = minigame;
 		this.unlocName = unlocName;
 		this.status = status;
@@ -55,7 +55,7 @@ public class ClientMinigameState {
 		return I18n.format(unlocName);
 	}
 
-	public MinigameStatus getStatus() {
+	public GameStatus getStatus() {
 		return status;
 	}
 
