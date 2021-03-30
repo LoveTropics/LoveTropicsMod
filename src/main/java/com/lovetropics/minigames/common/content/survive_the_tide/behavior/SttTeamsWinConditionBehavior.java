@@ -1,17 +1,19 @@
 package com.lovetropics.minigames.common.content.survive_the_tide.behavior;
 
-import com.lovetropics.minigames.common.util.MoreCodecs;
+import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.IGameInstance;
-import com.lovetropics.minigames.common.core.game.util.TemplatedText;
 import com.lovetropics.minigames.common.core.game.behavior.GameBehaviorTypes;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
+import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.lovetropics.minigames.common.core.game.behavior.instances.TeamsBehavior;
 import com.lovetropics.minigames.common.core.game.statistics.StatisticKey;
+import com.lovetropics.minigames.common.core.game.util.TemplatedText;
+import com.lovetropics.minigames.common.util.MoreCodecs;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
-import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.util.ActionResultType;
 import net.minecraft.util.text.StringTextComponent;
-import net.minecraftforge.event.entity.living.LivingDeathEvent;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
@@ -31,26 +33,32 @@ public class SttTeamsWinConditionBehavior extends SttWinConditionBehavior {
 	}
 
 	@Override
-	public void onPlayerDeath(final IGameInstance minigame, ServerPlayerEntity player, LivingDeathEvent event) {
-		if (minigameEnded) {
-			return;
-		}
+	public void register(IGameInstance registerGame, GameEventListeners events) throws GameException {
+		super.register(registerGame, events);
 
-		Optional<TeamsBehavior> teamsBehaviorOpt = minigame.getOneBehavior(GameBehaviorTypes.TEAMS.get());
-		if (!teamsBehaviorOpt.isPresent()) {
-			return;
-		}
-
-		TeamsBehavior teamsBehavior = teamsBehaviorOpt.get();
-
-		TeamsBehavior.TeamKey playerTeam = teamsBehavior.getTeamForPlayer(player);
-		if (teamsBehavior.getPlayersForTeam(playerTeam).isEmpty()) {
-			TeamsBehavior.TeamKey lastTeam = getLastTeam(teamsBehavior);
-			if (lastTeam != null) {
-				triggerWin(new StringTextComponent(lastTeam.name).mergeStyle(lastTeam.text));
-				minigame.getStatistics().getGlobal().set(StatisticKey.WINNING_TEAM, lastTeam);
+		events.listen(GamePlayerEvents.DEATH, (game, player, damageSource) -> {
+			if (minigameEnded) {
+				return ActionResultType.PASS;
 			}
-		}
+
+			Optional<TeamsBehavior> teamsBehaviorOpt = game.getOneBehavior(GameBehaviorTypes.TEAMS.get());
+			if (!teamsBehaviorOpt.isPresent()) {
+				return ActionResultType.PASS;
+			}
+
+			TeamsBehavior teamsBehavior = teamsBehaviorOpt.get();
+
+			TeamsBehavior.TeamKey playerTeam = teamsBehavior.getTeamForPlayer(player);
+			if (teamsBehavior.getPlayersForTeam(playerTeam).isEmpty()) {
+				TeamsBehavior.TeamKey lastTeam = getLastTeam(teamsBehavior);
+				if (lastTeam != null) {
+					triggerWin(new StringTextComponent(lastTeam.name).mergeStyle(lastTeam.text));
+					game.getStatistics().getGlobal().set(StatisticKey.WINNING_TEAM, lastTeam);
+				}
+			}
+
+			return ActionResultType.PASS;
+		});
 	}
 
 	@Nullable

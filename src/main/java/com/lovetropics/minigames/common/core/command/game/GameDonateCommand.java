@@ -1,9 +1,9 @@
 package com.lovetropics.minigames.common.core.command.game;
 
-import com.lovetropics.minigames.common.core.integration.game_actions.GamePackage;
-import com.lovetropics.minigames.common.core.game.IGameInstance;
 import com.lovetropics.minigames.common.core.game.GameManager;
-import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
+import com.lovetropics.minigames.common.core.game.IGameInstance;
+import com.lovetropics.minigames.common.core.game.behavior.event.GamePackageEvents;
+import com.lovetropics.minigames.common.core.integration.game_actions.GamePackage;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
@@ -28,12 +28,10 @@ public class GameDonateCommand {
 	}
 
 	private static int execute(CommandSource source, String packageType) throws CommandSyntaxException {
-		final IGameInstance instance = GameManager.getInstance().getActiveMinigame();
+		final IGameInstance instance = GameManager.get().getActiveMinigame();
 		if (instance != null) {
 			GamePackage gamePackage = new GamePackage(packageType, source.getName(), source.asPlayer().getUniqueID());
-			for (IGameBehavior behavior : instance.getBehaviors()) {
-				behavior.onGamePackageReceived(instance, gamePackage);
-			}
+			instance.events().invoker(GamePackageEvents.RECEIVE_PACKAGE).onReceivePackage(instance, gamePackage);
 			return Command.SINGLE_SUCCESS;
 		}
 		return 0;

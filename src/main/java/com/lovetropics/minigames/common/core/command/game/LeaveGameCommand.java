@@ -21,6 +21,6 @@ public class LeaveGameCommand {
 		return literal(name)
 		.requires(s -> s.getEntity() instanceof ServerPlayerEntity)
 		.executes(c -> GameCommand.executeMinigameAction(() ->
-				GameManager.getInstance().removePlayer((ServerPlayerEntity) c.getSource().getEntity()), c.getSource()));
+				GameManager.get().removePlayer((ServerPlayerEntity) c.getSource().getEntity()), c.getSource()));
 	}
 }

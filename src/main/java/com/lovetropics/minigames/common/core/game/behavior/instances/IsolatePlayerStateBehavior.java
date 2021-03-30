@@ -3,8 +3,10 @@ package com.lovetropics.minigames.common.core.game.behavior.instances;
 import com.google.common.collect.Maps;
 import com.lovetropics.minigames.common.core.game.IGameInstance;
 import com.lovetropics.minigames.common.core.game.PlayerRole;
-import com.lovetropics.minigames.common.core.game.util.PlayerSnapshot;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
+import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
+import com.lovetropics.minigames.common.core.game.util.PlayerSnapshot;
 import com.mojang.serialization.Codec;
 import net.minecraft.entity.player.ServerPlayerEntity;
 
@@ -20,15 +22,19 @@ public final class IsolatePlayerStateBehavior implements IGameBehavior {
 	private final Map<UUID, PlayerSnapshot> playerSnapshots = Maps.newHashMap();
 
 	@Override
-	public void onPlayerJoin(IGameInstance minigame, ServerPlayerEntity player, PlayerRole role) {
+	public void register(IGameInstance registerGame, GameEventListeners events) {
+		events.listen(GamePlayerEvents.JOIN, this::onPlayerJoin);
+		events.listen(GamePlayerEvents.LEAVE, this::onPlayerLeave);
+	}
+
+	private void onPlayerJoin(IGameInstance minigame, ServerPlayerEntity player, PlayerRole role) {
 		if (!this.playerSnapshots.containsKey(player.getUniqueID())) {
 			PlayerSnapshot snapshot = PlayerSnapshot.takeAndClear(player);
 			this.playerSnapshots.put(player.getUniqueID(), snapshot);
 		}
 	}
 
-	@Override
-	public void onPlayerLeave(IGameInstance minigame, ServerPlayerEntity player) {
+	private void onPlayerLeave(IGameInstance minigame, ServerPlayerEntity player) {
 		// try to restore the player to their old state
 		PlayerSnapshot snapshot = this.playerSnapshots.remove(player.getUniqueID());
 		if (snapshot != null) {

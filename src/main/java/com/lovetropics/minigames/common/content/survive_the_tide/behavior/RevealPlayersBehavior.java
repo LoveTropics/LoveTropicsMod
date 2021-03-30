@@ -1,15 +1,16 @@
 package com.lovetropics.minigames.common.content.survive_the_tide.behavior;
 
-import com.google.common.collect.Lists;
+import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.IGameInstance;
+import com.lovetropics.minigames.common.core.game.PlayerSet;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameLifecycleEvents;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.world.server.ServerWorld;
 
-import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -41,9 +42,13 @@ public class RevealPlayersBehavior implements IGameBehavior
 	}
 
 	@Override
-	public void worldUpdate(IGameInstance minigame, ServerWorld world) {
-		final List<ServerPlayerEntity> players = Lists.newArrayList(minigame.getParticipants());
-		if (players.size() <= playersLeftRequired) {
+	public void register(IGameInstance registerGame, GameEventListeners events) throws GameException {
+		events.listen(GameLifecycleEvents.TICK, game -> {
+			PlayerSet players = game.getParticipants();
+			if (players.size() > playersLeftRequired) {
+				return;
+			}
+
 			if (curGlowOnTime > 0) {
 				curGlowOnTime--;
 				if (curGlowOnTime == 0) {
@@ -69,8 +74,6 @@ public class RevealPlayersBehavior implements IGameBehavior
 					}
 				}
 			}
-		}
+		});
 	}
-
-
 }

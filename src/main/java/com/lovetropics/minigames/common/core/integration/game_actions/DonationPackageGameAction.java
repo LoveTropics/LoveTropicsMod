@@ -1,8 +1,8 @@
 package com.lovetropics.minigames.common.core.integration.game_actions;
 
-import com.lovetropics.minigames.common.util.MoreCodecs;
 import com.lovetropics.minigames.common.core.game.IGameInstance;
-import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
+import com.lovetropics.minigames.common.core.game.behavior.event.GamePackageEvents;
+import com.lovetropics.minigames.common.util.MoreCodecs;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.server.MinecraftServer;
@@ -35,12 +35,7 @@ public class DonationPackageGameAction extends GameAction
     }
 
     @Override
-    public boolean resolve(IGameInstance minigame, MinecraftServer server) {
-        boolean resolved = false;
-        for (IGameBehavior behavior : minigame.getBehaviors()) {
-            resolved |= behavior.onGamePackageReceived(minigame, gamePackage);
-        }
-
-        return resolved;
+    public boolean resolve(IGameInstance game, MinecraftServer server) {
+        return game.events().invoker(GamePackageEvents.RECEIVE_PACKAGE).onReceivePackage(game, gamePackage);
     }
 }

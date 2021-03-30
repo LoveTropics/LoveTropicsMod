@@ -1,10 +1,13 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances;
 
+import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameLifecycleEvents;
+import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
+import com.lovetropics.minigames.common.core.game.behavior.event.GamePollingEvents;
 import com.lovetropics.minigames.common.util.MoreCodecs;
 import com.lovetropics.minigames.common.util.Scheduler;
 import com.lovetropics.minigames.common.core.game.*;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
-import com.lovetropics.minigames.common.core.game.behavior.IPollingMinigameBehavior;
 import com.lovetropics.minigames.common.core.game.polling.PollingGameInstance;
 import com.lovetropics.minigames.common.core.game.statistics.StatisticKey;
 import com.lovetropics.minigames.common.core.game.util.TeamAllocator;
@@ -19,18 +22,18 @@ import net.minecraft.item.DyeColor;
 import net.minecraft.scoreboard.ScorePlayerTeam;
 import net.minecraft.scoreboard.ServerScoreboard;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.ActionResultType;
+import net.minecraft.util.DamageSource;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.Style;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.event.ClickEvent;
 import net.minecraft.util.text.event.HoverEvent;
-import net.minecraftforge.event.entity.living.LivingHurtEvent;
-import net.minecraftforge.event.entity.player.AttackEntityEvent;
 
 import javax.annotation.Nullable;
 import java.util.*;
 
-public final class TeamsBehavior implements IGameBehavior, IPollingMinigameBehavior {
+public final class TeamsBehavior implements IGameBehavior {
 	public static final Codec<TeamsBehavior> CODEC = RecordCodecBuilder.create(instance -> {
 		return instance.group(
 				TeamKey.CODEC.listOf().fieldOf("teams").forGetter(c -> c.teams),
@@ -64,11 +67,48 @@ public final class TeamsBehavior implements IGameBehavior, IPollingMinigameBehav
 	}
 
 	@Override
-	public void onStartPolling(PollingGameInstance minigame) {
+	public void registerPolling(PollingGameInstance registerGame, GameEventListeners events) throws GameException {
+		events.listen(GamePollingEvents.START, this::onStartPolling);
+		events.listen(GamePollingEvents.PLAYER_REGISTER, this::onPlayerRegister);
+	}
+
+	@Override
+	public void register(IGameInstance registerGame, GameEventListeners events) {
+		events.listen(GameLifecycleEvents.ASSIGN_ROLES, this::assignPlayerRoles);
+		events.listen(GameLifecycleEvents.START, this::onStart);
+		events.listen(GameLifecycleEvents.FINISH, this::onFinish);
+
+		events.listen(GamePlayerEvents.CHANGE_ROLE, this::onPlayerChangeRole);
+		events.listen(GamePlayerEvents.LEAVE, this::onPlayerLeave);
+		events.listen(GamePlayerEvents.DAMAGE, this::onPlayerHurt);
+		events.listen(GamePlayerEvents.ATTACK, this::onPlayerAttack);
+
+		MinecraftServer server = registerGame.getServer();
+		ServerScoreboard scoreboard = server.getScoreboard();
+
+		for (TeamKey teamKey : teams) {
+			ScorePlayerTeam team = scoreboard.getTeam(teamKey.key);
+			if (team != null) {
+				scoreboard.removeTeam(team);
+			}
+
+			ScorePlayerTeam scoreboardTeam = scoreboard.createTeam(teamKey.key);
+			scoreboardTeam.setDisplayName(new StringTextComponent(teamKey.name));
+			scoreboardTeam.setColor(teamKey.text);
+			scoreboardTeam.setAllowFriendlyFire(friendlyFire);
+
+			teamPlayers.put(teamKey, new MutablePlayerSet(server));
+			scoreboardTeams.put(teamKey, scoreboardTeam);
+		}
+
+		registerGame.getStatistics().getGlobal().set(StatisticKey.TEAMS, true);
+	}
+
+	private void onStartPolling(PollingGameInstance game) {
 		for (TeamKey team : pollingTeams) {
-			minigame.addControlCommand("join_team_" + team.key, ControlCommand.forEveryone(source -> {
+			game.addControlCommand("join_team_" + team.key, ControlCommand.forEveryone(source -> {
 				ServerPlayerEntity player = source.asPlayer();
-				if (minigame.isPlayerRegistered(player)) {
+				if (game.isPlayerRegistered(player)) {
 					onRequestJoinTeam(player, team);
 				} else {
 					player.sendStatusMessage(new StringTextComponent("You have not yet joined this minigame!").mergeStyle(TextFormatting.RED), false);
@@ -87,8 +127,7 @@ public final class TeamsBehavior implements IGameBehavior, IPollingMinigameBehav
 		);
 	}
 
-	@Override
-	public void onPlayerRegister(PollingGameInstance minigame, ServerPlayerEntity player, @Nullable PlayerRole role) {
+	private void onPlayerRegister(PollingGameInstance game, ServerPlayerEntity player, @Nullable PlayerRole role) {
 		if (role != PlayerRole.SPECTATOR && pollingTeams.size() > 1) {
 			Scheduler.INSTANCE.submit(server -> {
 				sendTeamSelectionTo(player);
@@ -115,8 +154,7 @@ public final class TeamsBehavior implements IGameBehavior, IPollingMinigameBehav
 		}
 	}
 
-	@Override
-	public void assignPlayerRoles(IGameInstance minigame, List<ServerPlayerEntity> participants, List<ServerPlayerEntity> spectators) {
+	private void assignPlayerRoles(IGameInstance game, List<ServerPlayerEntity> participants, List<ServerPlayerEntity> spectators) {
 		Set<UUID> requiredPlayers = new ObjectOpenHashSet<>();
 		for (List<UUID> assignedTeam : assignedTeams.values()) {
 			requiredPlayers.addAll(assignedTeam);
@@ -160,39 +198,14 @@ public final class TeamsBehavior implements IGameBehavior, IPollingMinigameBehav
 		}
 	}
 
-	@Override
-	public void onConstruct(IGameInstance minigame) {
-		MinecraftServer server = minigame.getServer();
-		ServerScoreboard scoreboard = server.getScoreboard();
-
-		for (TeamKey teamKey : teams) {
-			ScorePlayerTeam team = scoreboard.getTeam(teamKey.key);
-			if (team != null) {
-				scoreboard.removeTeam(team);
-			}
-
-			ScorePlayerTeam scoreboardTeam = scoreboard.createTeam(teamKey.key);
-			scoreboardTeam.setDisplayName(new StringTextComponent(teamKey.name));
-			scoreboardTeam.setColor(teamKey.text);
-			scoreboardTeam.setAllowFriendlyFire(friendlyFire);
-
-			teamPlayers.put(teamKey, new MutablePlayerSet(server));
-			scoreboardTeams.put(teamKey, scoreboardTeam);
-		}
-
-		minigame.getStatistics().getGlobal().set(StatisticKey.TEAMS, true);
-	}
-
-	@Override
-	public void onFinish(IGameInstance minigame) {
-		ServerScoreboard scoreboard = minigame.getServer().getScoreboard();
+	private void onFinish(IGameInstance game) {
+		ServerScoreboard scoreboard = game.getServer().getScoreboard();
 		for (ScorePlayerTeam team : scoreboardTeams.values()) {
 			scoreboard.removeTeam(team);
 		}
 	}
 
-	@Override
-	public void onStart(IGameInstance minigame) {
+	private void onStart(IGameInstance game) {
 		Set<UUID> assignedPlayers = new ObjectOpenHashSet<>();
 
 		for (Map.Entry<String, List<UUID>> entry : assignedTeams.entrySet()) {
@@ -200,9 +213,9 @@ public final class TeamsBehavior implements IGameBehavior, IPollingMinigameBehav
 			List<UUID> players = entry.getValue();
 
 			for (UUID id : players) {
-				ServerPlayerEntity player = minigame.getParticipants().getPlayerBy(id);
+				ServerPlayerEntity player = game.getParticipants().getPlayerBy(id);
 				if (player != null) {
-					addPlayerToTeam(minigame, player, team);
+					addPlayerToTeam(game, player, team);
 					assignedPlayers.add(id);
 				}
 			}
@@ -210,7 +223,7 @@ public final class TeamsBehavior implements IGameBehavior, IPollingMinigameBehav
 
 		if (!pollingTeams.isEmpty()) {
 			TeamAllocator teamAllocator = new TeamAllocator(pollingTeams);
-			for (ServerPlayerEntity player : minigame.getParticipants()) {
+			for (ServerPlayerEntity player : game.getParticipants()) {
 				if (!assignedPlayers.contains(player.getUniqueID())) {
 					TeamKey teamPreference = teamPreferences.get(player.getUniqueID());
 					teamAllocator.addPlayer(player, teamPreference);
@@ -218,22 +231,21 @@ public final class TeamsBehavior implements IGameBehavior, IPollingMinigameBehav
 			}
 
 			teamAllocator.allocate((player, team) -> {
-				addPlayerToTeam(minigame, player, team);
+				addPlayerToTeam(game, player, team);
 			});
 		}
 	}
 
-	@Override
-	public void onPlayerChangeRole(IGameInstance minigame, ServerPlayerEntity player, PlayerRole role, PlayerRole lastRole) {
+	private void onPlayerChangeRole(IGameInstance game, ServerPlayerEntity player, PlayerRole role, PlayerRole lastRole) {
 		if (role == PlayerRole.SPECTATOR) {
 			removePlayerFromTeams(player);
 		}
 	}
 
-	private void addPlayerToTeam(IGameInstance minigame, ServerPlayerEntity player, TeamKey team) {
+	private void addPlayerToTeam(IGameInstance game, ServerPlayerEntity player, TeamKey team) {
 		teamPlayers.get(team).add(player);
 
-		minigame.getStatistics().forPlayer(player).set(StatisticKey.TEAM, team);
+		game.getStatistics().forPlayer(player).set(StatisticKey.TEAM, team);
 
 		ServerScoreboard scoreboard = player.server.getScoreboard();
 		ScorePlayerTeam scoreboardTeam = scoreboardTeams.get(team);
@@ -255,23 +267,22 @@ public final class TeamsBehavior implements IGameBehavior, IPollingMinigameBehav
 		scoreboard.removePlayerFromTeams(player.getScoreboardName());
 	}
 
-	@Override
-	public void onPlayerLeave(IGameInstance minigame, ServerPlayerEntity player) {
+	private void onPlayerLeave(IGameInstance game, ServerPlayerEntity player) {
 		removePlayerFromTeams(player);
 	}
 
-	@Override
-	public void onPlayerHurt(final IGameInstance minigame, LivingHurtEvent event) {
-		if (!friendlyFire && areSameTeam(event.getSource().getTrueSource(), event.getEntityLiving())) {
-			event.setCanceled(true);
+	private ActionResultType onPlayerHurt(final IGameInstance game, ServerPlayerEntity player, DamageSource source, float amount) {
+		if (!friendlyFire && areSameTeam(source.getTrueSource(), player)) {
+			return ActionResultType.FAIL;
 		}
+		return ActionResultType.PASS;
 	}
 
-	@Override
-	public void onPlayerAttackEntity(final IGameInstance minigame, AttackEntityEvent event) {
-		if (!friendlyFire && areSameTeam(event.getEntityLiving(), event.getTarget())) {
-			event.setCanceled(true);
+	private ActionResultType onPlayerAttack(IGameInstance game, ServerPlayerEntity player, Entity target) {
+		if (!friendlyFire && areSameTeam(player, target)) {
+			return ActionResultType.FAIL;
 		}
+		return ActionResultType.PASS;
 	}
 
 	public boolean areSameTeam(Entity source, Entity target) {

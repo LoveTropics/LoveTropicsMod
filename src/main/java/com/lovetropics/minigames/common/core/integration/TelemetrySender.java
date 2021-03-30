@@ -2,7 +2,7 @@ package com.lovetropics.minigames.common.core.integration;
 
 import com.google.gson.*;
 import com.lovetropics.minigames.common.config.ConfigLT;
-import com.lovetropics.minigames.common.core.game.statistics.MinigameStatistics;
+import com.lovetropics.minigames.common.core.game.statistics.GameStatistics;
 import com.lovetropics.minigames.common.core.game.statistics.PlayerKey;
 import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.LogManager;
@@ -17,7 +17,7 @@ import java.util.function.Supplier;
 public interface TelemetrySender {
 	Logger LOGGER = LogManager.getLogger("Telemetry");
 	Gson GSON = new GsonBuilder()
-			.registerTypeAdapter(MinigameStatistics.class, MinigameStatistics.SERIALIZER)
+			.registerTypeAdapter(GameStatistics.class, GameStatistics.SERIALIZER)
 			.registerTypeAdapter(PlayerKey.class, PlayerKey.PROFILE_SERIALIZER)
 			.create();
 
@@ -105,7 +105,7 @@ public interface TelemetrySender {
 		public static final Log INSTANCE = new Log();
 
 		private static final Gson GSON = new GsonBuilder()
-				.registerTypeAdapter(MinigameStatistics.class, MinigameStatistics.SERIALIZER)
+				.registerTypeAdapter(GameStatistics.class, GameStatistics.SERIALIZER)
 				.registerTypeAdapter(PlayerKey.class, PlayerKey.PROFILE_SERIALIZER)
 				.setPrettyPrinting()
 				.create();

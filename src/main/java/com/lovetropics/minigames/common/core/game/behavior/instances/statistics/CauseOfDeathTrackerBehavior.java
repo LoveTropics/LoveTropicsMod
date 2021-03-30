@@ -3,37 +3,46 @@ package com.lovetropics.minigames.common.core.game.behavior.instances.statistics
 import com.lovetropics.minigames.common.core.game.IGameInstance;
 import com.lovetropics.minigames.common.core.game.PlayerRole;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
+import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.lovetropics.minigames.common.core.game.statistics.CauseOfDeath;
-import com.lovetropics.minigames.common.core.game.statistics.MinigameStatistics;
+import com.lovetropics.minigames.common.core.game.statistics.GameStatistics;
 import com.lovetropics.minigames.common.core.game.statistics.StatisticKey;
 import com.lovetropics.minigames.common.core.game.statistics.StatisticsMap;
 import com.mojang.serialization.Codec;
 import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraftforge.event.entity.living.LivingDeathEvent;
+import net.minecraft.util.ActionResultType;
+import net.minecraft.util.DamageSource;
 
 public final class CauseOfDeathTrackerBehavior implements IGameBehavior {
 	public static final Codec<CauseOfDeathTrackerBehavior> CODEC = Codec.unit(CauseOfDeathTrackerBehavior::new);
 
 	@Override
-	public void onPlayerJoin(IGameInstance minigame, ServerPlayerEntity player, PlayerRole role) {
+	public void register(IGameInstance registerGame, GameEventListeners events) {
+		events.listen(GamePlayerEvents.JOIN, this::onPlayerJoin);
+		events.listen(GamePlayerEvents.CHANGE_ROLE, this::onPlayerChangeRole);
+		events.listen(GamePlayerEvents.DEATH, this::onPlayerDeath);
+	}
+
+	private void onPlayerJoin(IGameInstance game, ServerPlayerEntity player, PlayerRole role) {
 		if (role == PlayerRole.PARTICIPANT) {
-			minigame.getStatistics().forPlayer(player).set(StatisticKey.DEAD, false);
+			game.getStatistics().forPlayer(player).set(StatisticKey.DEAD, false);
 		}
 	}
 
-	@Override
-	public void onPlayerChangeRole(IGameInstance minigame, ServerPlayerEntity player, PlayerRole role, PlayerRole lastRole) {
+	private void onPlayerChangeRole(IGameInstance game, ServerPlayerEntity player, PlayerRole role, PlayerRole lastRole) {
 		if (lastRole == PlayerRole.PARTICIPANT && role == PlayerRole.SPECTATOR) {
-			minigame.getStatistics().forPlayer(player).set(StatisticKey.DEAD, true);
+			game.getStatistics().forPlayer(player).set(StatisticKey.DEAD, true);
 		}
 	}
 
-	@Override
-	public void onPlayerDeath(IGameInstance minigame, ServerPlayerEntity player, LivingDeathEvent event) {
-		MinigameStatistics statistics = minigame.getStatistics();
+	private ActionResultType onPlayerDeath(IGameInstance game, ServerPlayerEntity player, DamageSource source) {
+		GameStatistics statistics = game.getStatistics();
 		StatisticsMap playerStatistics = statistics.forPlayer(player);
 
-		playerStatistics.set(StatisticKey.CAUSE_OF_DEATH, CauseOfDeath.from(event.getSource()));
+		playerStatistics.set(StatisticKey.CAUSE_OF_DEATH, CauseOfDeath.from(source));
 		playerStatistics.set(StatisticKey.DEAD, true);
+
+		return ActionResultType.PASS;
 	}
 }

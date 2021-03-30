@@ -4,6 +4,9 @@ import com.lovetropics.minigames.common.core.game.IGameInstance;
 import com.lovetropics.minigames.common.core.game.PlayerRole;
 import com.lovetropics.minigames.common.core.game.PlayerSet;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameLifecycleEvents;
+import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.lovetropics.minigames.common.core.network.ChaseCameraMessage;
 import com.lovetropics.minigames.common.core.network.LoveTropicsNetwork;
 import com.lovetropics.minigames.common.core.network.StopChaseCameraMessage;
@@ -19,40 +22,41 @@ public final class SpectatorChaseBehavior implements IGameBehavior {
 	public static final Codec<SpectatorChaseBehavior> CODEC = Codec.unit(SpectatorChaseBehavior::new);
 
 	@Override
-	public void onPlayerJoin(IGameInstance minigame, ServerPlayerEntity player, PlayerRole role) {
-		List<UUID> participants = collectParticipantIds(minigame);
+	public void register(IGameInstance registerGame, GameEventListeners events) {
+		events.listen(GamePlayerEvents.JOIN, this::onPlayerJoin);
+		events.listen(GamePlayerEvents.CHANGE_ROLE, (game, player, role, lastRole) -> this.onPlayerJoin(game, player, role));
+		events.listen(GamePlayerEvents.LEAVE, this::onPlayerLeave);
+
+		events.listen(GameLifecycleEvents.FINISH, this::onFinish);
+	}
+
+	private void onPlayerJoin(IGameInstance game, ServerPlayerEntity player, PlayerRole role) {
+		List<UUID> participants = collectParticipantIds(game);
 		ChaseCameraMessage message = new ChaseCameraMessage(participants);
 		if (role == PlayerRole.SPECTATOR) {
 			LoveTropicsNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), message);
 		}
 
-		minigame.getSpectators().sendPacket(LoveTropicsNetwork.CHANNEL, message);
+		game.getSpectators().sendPacket(LoveTropicsNetwork.CHANNEL, message);
 	}
 
-	@Override
-	public void onPlayerChangeRole(IGameInstance minigame, ServerPlayerEntity player, PlayerRole role, PlayerRole lastRole) {
-		onPlayerJoin(minigame, player, role);
-	}
-
-	@Override
-	public void onPlayerLeave(IGameInstance minigame, ServerPlayerEntity player) {
-		List<UUID> participants = collectParticipantIds(minigame);
+	private void onPlayerLeave(IGameInstance game, ServerPlayerEntity player) {
+		List<UUID> participants = collectParticipantIds(game);
 		ChaseCameraMessage message = new ChaseCameraMessage(participants);
-		minigame.getSpectators().sendPacket(LoveTropicsNetwork.CHANNEL, message);
+		game.getSpectators().sendPacket(LoveTropicsNetwork.CHANNEL, message);
 
 		LoveTropicsNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new StopChaseCameraMessage());
 	}
 
-	@Override
-	public void onFinish(IGameInstance minigame) {
+	private void onFinish(IGameInstance game) {
 		StopChaseCameraMessage message = new StopChaseCameraMessage();
-		for (ServerPlayerEntity spectator : minigame.getSpectators()) {
+		for (ServerPlayerEntity spectator : game.getSpectators()) {
 			LoveTropicsNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> spectator), message);
 		}
 	}
 
-	private List<UUID> collectParticipantIds(IGameInstance minigame) {
-		PlayerSet participants = minigame.getParticipants();
+	private List<UUID> collectParticipantIds(IGameInstance game) {
+		PlayerSet participants = game.getParticipants();
 		List<UUID> ids = new ArrayList<>(participants.size());
 
 		for (ServerPlayerEntity participant : participants) {

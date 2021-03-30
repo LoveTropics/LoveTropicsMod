@@ -40,7 +40,7 @@ public final class SurviveTheTide {
 	public static void init() {}
 
 	@SubscribeEvent
-	private void onServerAboutToStart(final FMLServerAboutToStartEvent event) {
+	public static void onServerAboutToStart(final FMLServerAboutToStartEvent event) {
 		CommandDispatcher<CommandSource> dispatcher = event.getServer().getCommandManager().getDispatcher();
 		ResetIslandChestsCommand.register(dispatcher);
 	}

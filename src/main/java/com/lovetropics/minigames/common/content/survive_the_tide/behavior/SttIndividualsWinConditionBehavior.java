@@ -1,19 +1,22 @@
 package com.lovetropics.minigames.common.content.survive_the_tide.behavior;
 
-import com.lovetropics.minigames.common.util.MoreCodecs;
+import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.IGameInstance;
 import com.lovetropics.minigames.common.core.game.PlayerSet;
-import com.lovetropics.minigames.common.core.game.util.TemplatedText;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
+import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.lovetropics.minigames.common.core.game.statistics.PlayerKey;
 import com.lovetropics.minigames.common.core.game.statistics.StatisticKey;
+import com.lovetropics.minigames.common.core.game.util.TemplatedText;
+import com.lovetropics.minigames.common.util.MoreCodecs;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.util.ActionResultType;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.TranslationTextComponent;
-import net.minecraftforge.event.entity.living.LivingDeathEvent;
 
 import java.util.Iterator;
 
@@ -36,28 +39,34 @@ public class SttIndividualsWinConditionBehavior extends SttWinConditionBehavior 
 	}
 
 	@Override
-	public void onPlayerDeath(final IGameInstance minigame, ServerPlayerEntity player, LivingDeathEvent event) {
-		PlayerSet participants = minigame.getParticipants();
+	public void register(IGameInstance registerGame, GameEventListeners events) throws GameException {
+		super.register(registerGame, events);
 
-		if (participants.size() == 2) {
-			Iterator<ServerPlayerEntity> it = participants.iterator();
+		events.listen(GamePlayerEvents.DEATH, (game, player, damageSource) -> {
+			PlayerSet participants = game.getParticipants();
 
-			ServerPlayerEntity p1 = it.next();
-			ServerPlayerEntity p2 = it.next();
+			if (participants.size() == 2) {
+				Iterator<ServerPlayerEntity> it = participants.iterator();
 
-			if (p1 != null && p2 != null) {
-				ITextComponent p1text = p1.getDisplayName().deepCopy().mergeStyle(TextFormatting.AQUA);
-				ITextComponent p2text = p2.getDisplayName().deepCopy().mergeStyle(TextFormatting.AQUA);
+				ServerPlayerEntity p1 = it.next();
+				ServerPlayerEntity p2 = it.next();
 
-				minigame.getPlayers().sendMessage(new TranslationTextComponent(downToTwoTranslationKey, p1text, p2text).mergeStyle(TextFormatting.GOLD));
+				if (p1 != null && p2 != null) {
+					ITextComponent p1text = p1.getDisplayName().deepCopy().mergeStyle(TextFormatting.AQUA);
+					ITextComponent p2text = p2.getDisplayName().deepCopy().mergeStyle(TextFormatting.AQUA);
+
+					game.getPlayers().sendMessage(new TranslationTextComponent(downToTwoTranslationKey, p1text, p2text).mergeStyle(TextFormatting.GOLD));
+				}
 			}
-		}
 
-		if (participants.size() == 1) {
-			ServerPlayerEntity winningPlayer = participants.iterator().next();
-			this.triggerWin(winningPlayer.getDisplayName().deepCopy());
+			if (participants.size() == 1) {
+				ServerPlayerEntity winningPlayer = participants.iterator().next();
+				this.triggerWin(winningPlayer.getDisplayName().deepCopy());
 
-			minigame.getStatistics().getGlobal().set(StatisticKey.WINNING_PLAYER, PlayerKey.from(winningPlayer));
-		}
+				game.getStatistics().getGlobal().set(StatisticKey.WINNING_PLAYER, PlayerKey.from(winningPlayer));
+			}
+
+			return ActionResultType.PASS;
+		});
 	}
 }

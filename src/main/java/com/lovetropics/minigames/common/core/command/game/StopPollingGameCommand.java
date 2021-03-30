@@ -12,7 +12,7 @@ public class StopPollingGameCommand {
 			literal("game")
 			.then(literal("stop_poll").requires(s -> s.hasPermissionLevel(2))
 			.executes(c -> GameCommand.executeMinigameAction(() ->
-				GameManager.getInstance().stopPolling(), c.getSource())))
+				GameManager.get().stopPolling(), c.getSource())))
 		);
 	}
 }

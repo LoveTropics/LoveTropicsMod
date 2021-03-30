@@ -1,9 +1,11 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances;
 
-import com.lovetropics.minigames.common.util.MoreCodecs;
 import com.lovetropics.minigames.common.core.game.IGameInstance;
 import com.lovetropics.minigames.common.core.game.PlayerRole;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
+import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
+import com.lovetropics.minigames.common.util.MoreCodecs;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.entity.player.ServerPlayerEntity;
@@ -26,13 +28,9 @@ public class SetGameTypesBehavior implements IGameBehavior {
 	}
 
 	@Override
-	public void onPlayerJoin(IGameInstance minigame, ServerPlayerEntity player, PlayerRole role) {
-		applyToPlayer(player, role);
-	}
-
-	@Override
-	public void onPlayerChangeRole(IGameInstance minigame, ServerPlayerEntity player, PlayerRole role, PlayerRole lastRole) {
-		applyToPlayer(player, role);
+	public void register(IGameInstance registerGame, GameEventListeners events) {
+		events.listen(GamePlayerEvents.JOIN, (game, player, role) -> applyToPlayer(player, role));
+		events.listen(GamePlayerEvents.CHANGE_ROLE, (game, player, role, lastRole) -> applyToPlayer(player, role));
 	}
 
 	private void applyToPlayer(ServerPlayerEntity player, PlayerRole role) {

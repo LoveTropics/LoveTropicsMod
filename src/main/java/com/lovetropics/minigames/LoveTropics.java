@@ -157,8 +157,8 @@ public class LoveTropics {
     }
 
     private void onServerStopping(final FMLServerStoppingEvent event) {
-        if (GameManager.getInstance().getActiveMinigame() != null) {
-            GameManager.getInstance().cancel();
+        if (GameManager.get().getActiveMinigame() != null) {
+            GameManager.get().cancel();
         }
 
         Telemetry.INSTANCE.sendClose();

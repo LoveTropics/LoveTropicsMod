@@ -12,7 +12,7 @@ public class CancelGameCommand {
 			literal("game")
 			.then(literal("cancel").requires(s -> s.hasPermissionLevel(2))
 			.executes(c -> GameCommand.executeMinigameAction(() ->
-				GameManager.getInstance().cancel(), c.getSource())))
+				GameManager.get().cancel(), c.getSource())))
 		);
 	}
 }

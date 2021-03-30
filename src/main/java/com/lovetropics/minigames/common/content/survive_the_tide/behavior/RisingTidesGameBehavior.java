@@ -2,6 +2,10 @@ package com.lovetropics.minigames.common.content.survive_the_tide.behavior;
 
 import com.google.common.collect.ImmutableList;
 import com.lovetropics.minigames.common.content.survive_the_tide.IcebergLine;
+import com.lovetropics.minigames.common.core.game.GameException;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameLifecycleEvents;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameLivingEntityEvents;
 import com.lovetropics.minigames.common.core.map.MapRegion;
 import com.lovetropics.minigames.common.core.game.IGameInstance;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
@@ -79,13 +83,8 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 	}
 
 	@Override
-	public ImmutableList<GameBehaviorType<? extends IGameBehavior>> dependencies() {
-		return ImmutableList.of(GameBehaviorTypes.PHASES.get());
-	}
-
-	@Override
-	public void onConstruct(IGameInstance minigame) {
-		tideArea = minigame.getMapRegions().getOne(tideAreaKey);
+	public void register(IGameInstance game, GameEventListeners events) throws GameException {
+		tideArea = game.getMapRegions().getOne(tideAreaKey);
 
 		minTideChunk = new ChunkPos(tideArea.min.getX() >> 4, tideArea.min.getZ() >> 4);
 		maxTideChunk = new ChunkPos(tideArea.max.getX() >> 4, tideArea.max.getZ() >> 4);
@@ -93,7 +92,7 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 		Random random = new Random();
 
 		icebergLines.clear();
-		for (MapRegion icebergLine : minigame.getMapRegions().get(icebergLinesKey)) {
+		for (MapRegion icebergLine : game.getMapRegions().get(icebergLinesKey)) {
 			int startX = icebergLine.min.getX();
 			int startZ = icebergLine.min.getZ();
 
@@ -117,14 +116,21 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 			icebergLines.add(new IcebergLine(start, end, 10));
 		}
 
-		minigame.getOneBehavior(GameBehaviorTypes.PHASES.get()).ifPresent(phases -> {
+		game.getOneBehavior(GameBehaviorTypes.PHASES.get()).ifPresent(phases -> {
 			waterLevel = phaseToTideHeight.get(phases.getFirstPhase().getKey());
 			chunkWaterLevels.defaultReturnValue(waterLevel);
 		});
+
+		events.listen(GameLivingEntityEvents.TICK, this::onLivingEntityUpdate);
+		events.listen(GameLifecycleEvents.TICK, this::tick);
 	}
 
 	@Override
-	public void onLivingEntityUpdate(final IGameInstance minigame, LivingEntity entity) {
+	public ImmutableList<GameBehaviorType<? extends IGameBehavior>> dependencies() {
+		return ImmutableList.of(GameBehaviorTypes.PHASES.get());
+	}
+
+	private void onLivingEntityUpdate(final IGameInstance game, LivingEntity entity) {
 		// NOTE: DO NOT REMOVE THIS CHECK, CAUSES FISH TO DIE AND SPAWN ITEMS ON DEATH
 		// FISH WILL KEEP SPAWNING, DYING AND COMPLETELY SLOW THE SERVER TO A CRAWL
 		if (!entity.canBreatheUnderwater()) {
@@ -134,23 +140,22 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 		}
 	}
 
-	@Override
-	public void worldUpdate(final IGameInstance minigame, ServerWorld world) {
-		minigame.getOneBehavior(GameBehaviorTypes.PHASES.get()).ifPresent(phases -> {
+	private void tick(IGameInstance game) {
+		game.getOneBehavior(GameBehaviorTypes.PHASES.get()).ifPresent(phases -> {
 			final PhasesGameBehavior.MinigamePhase phase = phases.getCurrentPhase();
 			final int prevWaterLevel = phaseToTideHeight.get(phases.getPreviousPhase().orElse(phase).getKey());
 
-			tickWaterLevel(minigame, phase, prevWaterLevel);
+			tickWaterLevel(game, phase, prevWaterLevel);
 
-			if (phasesIcebergsGrow.contains(phase.getKey()) && minigame.ticks() % icebergGrowthTickRate == 0) {
-				growIcebergs(world);
+			if (phasesIcebergsGrow.contains(phase.getKey()) && game.ticks() % icebergGrowthTickRate == 0) {
+				growIcebergs(game.getWorld());
 			}
 		});
 
-		processRisingTideQueue(minigame);
+		processRisingTideQueue(game);
 
-		if (world.getGameTime() % 10 == 0) {
-			spawnRisingTideParticles(minigame);
+		if (game.ticks() % 10 == 0) {
+			spawnRisingTideParticles(game);
 		}
 	}
 

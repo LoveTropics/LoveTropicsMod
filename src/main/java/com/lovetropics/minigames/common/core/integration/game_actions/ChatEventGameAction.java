@@ -1,8 +1,8 @@
 package com.lovetropics.minigames.common.core.integration.game_actions;
 
-import com.lovetropics.minigames.common.util.MoreCodecs;
 import com.lovetropics.minigames.common.core.game.IGameInstance;
-import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
+import com.lovetropics.minigames.common.core.game.behavior.event.GamePackageEvents;
+import com.lovetropics.minigames.common.util.MoreCodecs;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.server.MinecraftServer;
@@ -41,7 +41,7 @@ public class ChatEventGameAction extends GameAction {
     }
 
     @Override
-    public boolean resolve(IGameInstance minigame, MinecraftServer server) {
+    public boolean resolve(IGameInstance game, MinecraftServer server) {
         if (entries.isEmpty()) {
             return true;
         }
@@ -54,19 +54,14 @@ public class ChatEventGameAction extends GameAction {
             totalVotes += entry.results;
         }
 
-        minigame.getPlayers().sendMessage(
+        game.getPlayers().sendMessage(
                 new StringTextComponent(this.title).mergeStyle(TextFormatting.BOLD, TextFormatting.AQUA)
                     .appendSibling(new StringTextComponent(
                             " just completed! After " + totalVotes + " votes, chat decided on something to happen... Do you trust them to have been nice?"
                     ).mergeStyle(TextFormatting.GRAY))
         );
 
-        boolean resolved = false;
-        for (IGameBehavior behavior : minigame.getBehaviors()) {
-            resolved |= behavior.onGamePackageReceived(minigame, winnerPackage);
-        }
-
-        return resolved;
+        return game.events().invoker(GamePackageEvents.RECEIVE_PACKAGE).onReceivePackage(game, winnerPackage);
     }
 
     public String getTitle() {

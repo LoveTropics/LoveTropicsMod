@@ -41,7 +41,7 @@ public interface PlayerPlacement {
 	}
 
 	static <T> Score<T> fromScore(IGameInstance minigame, StatisticKey<T> scoreKey, Comparator<T> comparator) {
-		MinigameStatistics statistics = minigame.getStatistics();
+		GameStatistics statistics = minigame.getStatistics();
 
 		List<PlayerKey> players = new ArrayList<>(statistics.getPlayers());
 		players.sort(Comparator.comparing(
@@ -84,7 +84,7 @@ public interface PlayerPlacement {
 
 		@Override
 		public void placeInto(StatisticKey<Integer> placementKey) {
-			MinigameStatistics statistics = minigame.getStatistics();
+			GameStatistics statistics = minigame.getStatistics();
 			statistics.clear(placementKey);
 
 			for (Placed<PlayerKey> placed : order) {
@@ -138,7 +138,7 @@ public interface PlayerPlacement {
 
 		@Override
 		public void placeInto(StatisticKey<Integer> placementKey) {
-			MinigameStatistics statistics = minigame.getStatistics();
+			GameStatistics statistics = minigame.getStatistics();
 			statistics.clear(placementKey);
 
 			for (Entry<T> entry : entries) {

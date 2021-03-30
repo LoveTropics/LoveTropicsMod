@@ -4,21 +4,20 @@ import com.lovetropics.minigames.common.content.block.LoveTropicsBlocks;
 import com.lovetropics.minigames.common.content.block.TrashBlock;
 import com.lovetropics.minigames.common.content.block.TrashBlock.Attachment;
 import com.lovetropics.minigames.common.content.block.TrashType;
+import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.IGameInstance;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
-import it.unimi.dsi.fastutil.longs.LongSet;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.resources.IResource;
 import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.world.server.ServerWorld;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import java.io.InputStream;
 import java.nio.ByteBuffer;
@@ -35,16 +34,12 @@ public final class PlaceTrashBehavior implements IGameBehavior {
 		).apply(instance, PlaceTrashBehavior::new);
 	});
 
-	private static final Logger LOGGER = LogManager.getLogger(PlaceTrashBehavior.class);
-
 	private final TrashType[] trashTypes = TrashType.values();
 
 	private final ResourceLocation positionData;
 	private final int centerY;
 	private final int range;
 	private final int density;
-
-	private final LongSet trashBlocks = new LongOpenHashSet();
 
 	public PlaceTrashBehavior(ResourceLocation positionData, int centerY, int range, int density) {
 		this.positionData = positionData;
@@ -54,9 +49,9 @@ public final class PlaceTrashBehavior implements IGameBehavior {
 	}
 
 	@Override
-	public void onConstruct(IGameInstance minigame) {
+	public void register(IGameInstance game, GameEventListeners events) throws GameException {
 		LongBuffer candidatePositions;
-		try (IResource res = minigame.getServer().getDataPackRegistries().getResourceManager().getResource(positionData)) {
+		try (IResource res = game.getServer().getDataPackRegistries().getResourceManager().getResource(positionData)) {
 			InputStream in = res.getInputStream();
 			final byte[] data = new byte[8];
 			final ByteBuffer buf = ByteBuffer.allocate(in.available());
@@ -66,11 +61,10 @@ public final class PlaceTrashBehavior implements IGameBehavior {
 			}
 			candidatePositions.position(0);
 		} catch (Exception e) {
-			LOGGER.error("Unexpected error reading position data:", e);
-			return;
+			throw new GameException(new StringTextComponent("Unexpected error reading trash position data"), e);
 		}
 
-		ServerWorld world = minigame.getWorld();
+		ServerWorld world = game.getWorld();
 		Random random = world.rand;
 
 		BlockPos.Mutable pos = new BlockPos.Mutable();
@@ -87,7 +81,7 @@ public final class PlaceTrashBehavior implements IGameBehavior {
 		}
 	}
 
-	private boolean tryPlaceTrash(ServerWorld world, BlockPos pos) {
+	private void tryPlaceTrash(ServerWorld world, BlockPos pos) {
 		Random random = world.rand;
 		if (world.getBlockState(pos).getBlock() == Blocks.WATER) {
 			TrashType trashType = trashTypes[random.nextInt(trashTypes.length)];
@@ -96,15 +90,6 @@ public final class PlaceTrashBehavior implements IGameBehavior {
 					.with(TrashBlock.ATTACHMENT, Block.hasSolidSideOnTop(world, pos.down()) ? Attachment.FLOOR : Attachment.random(random))
 					.with(TrashBlock.FACING, Direction.byHorizontalIndex(random.nextInt(4)))
 			);
-
-			trashBlocks.add(pos.toLong());
-			return true;
 		}
-
-		return false;
-	}
-
-	public LongSet getTrashBlocks() {
-		return trashBlocks;
 	}
 }

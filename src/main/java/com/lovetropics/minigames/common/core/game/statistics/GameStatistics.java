@@ -10,8 +10,8 @@ import net.minecraft.entity.player.PlayerEntity;
 import java.util.Map;
 import java.util.Set;
 
-public final class MinigameStatistics {
-	public static final JsonSerializer<MinigameStatistics> SERIALIZER = (statistics, type, ctx) -> statistics.serialize();
+public final class GameStatistics {
+	public static final JsonSerializer<GameStatistics> SERIALIZER = (statistics, type, ctx) -> statistics.serialize();
 
 	private final StatisticsMap global = new StatisticsMap();
 	private final Map<PlayerKey, StatisticsMap> byPlayer = new Object2ObjectOpenHashMap<>();

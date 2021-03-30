@@ -1,14 +1,13 @@
 package com.lovetropics.minigames.common.content.conservation_exploration;
 
 import com.lovetropics.lib.entity.FireworkPalette;
-import com.lovetropics.minigames.common.util.Scheduler;
-import com.lovetropics.minigames.common.core.map.item.MapWorkspaceItems;
-import com.lovetropics.minigames.common.core.map.MapRegion;
-import com.lovetropics.minigames.common.core.game.ControlCommand;
-import com.lovetropics.minigames.common.core.game.IGameInstance;
-import com.lovetropics.minigames.common.core.game.GameManager;
-import com.lovetropics.minigames.common.core.game.PlayerRole;
+import com.lovetropics.minigames.common.core.game.*;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameLifecycleEvents;
+import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
+import com.lovetropics.minigames.common.core.map.MapRegion;
+import com.lovetropics.minigames.common.util.Scheduler;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.entity.*;
@@ -62,43 +61,49 @@ public final class ConservationExplorationBehavior implements IGameBehavior {
 	}
 
 	@Override
-	public void onStart(IGameInstance minigame) {
+	public void register(IGameInstance game, GameEventListeners events) throws GameException {
+		events.listen(GameLifecycleEvents.START, this::onStart);
+		events.listen(GameLifecycleEvents.FINISH, this::onFinish);
+		
+		events.listen(GamePlayerEvents.JOIN, this::onPlayerJoin);
+		events.listen(GamePlayerEvents.LEAVE, this::onPlayerLeave);
+		events.listen(GamePlayerEvents.INTERACT_ENTITY, this::onPlayerInteractEntity);
+	}
+
+	private void onStart(IGameInstance game) {
 		List<CreatureType> searchOrder = new ArrayList<>(creatures);
 		Collections.shuffle(searchOrder);
 		this.searchOrder = searchOrder.toArray(new CreatureType[0]);
 
-		nextCreature(minigame);
+		nextCreature(game);
 
-		ServerScoreboard scoreboard = minigame.getServer().getScoreboard();
+		ServerScoreboard scoreboard = game.getServer().getScoreboard();
 		discoveryTeam = scoreboard.createTeam("first_discovery");
 		discoveryTeam.setColor(TextFormatting.GREEN);
 
-		minigame.addControlCommand("next_creature", ControlCommand.forInitiator(source -> {
+		game.addControlCommand("next_creature", ControlCommand.forInitiator(source -> {
 			Scheduler.INSTANCE.submit(server -> {
-				if (!nextCreature(minigame)) {
-					GameManager.getInstance().finish();
+				if (!nextCreature(game)) {
+					GameManager.get().finish();
 				}
 			});
 		}));
 	}
 
-	@Override
-	public void onPlayerJoin(IGameInstance minigame, ServerPlayerEntity player, PlayerRole role) {
-		player.addItemStackToInventory(new ItemStack(MapWorkspaceItems.RECORD_CREATURE.get()));
+	private void onPlayerJoin(IGameInstance game, ServerPlayerEntity player, PlayerRole role) {
+		player.addItemStackToInventory(new ItemStack(ConservationExploration.RECORD_CREATURE.get()));
 		progressBar.addPlayer(player);
 	}
 
-	@Override
-	public void onPlayerLeave(IGameInstance minigame, ServerPlayerEntity player) {
+	private void onPlayerLeave(IGameInstance game, ServerPlayerEntity player) {
 		progressBar.removePlayer(player);
 	}
 
-	@Override
-	public void onPlayerInteractEntity(IGameInstance minigame, ServerPlayerEntity player, Entity entity, Hand hand) {
+	private void onPlayerInteractEntity(IGameInstance game, ServerPlayerEntity player, Entity entity, Hand hand) {
 		ItemStack heldItem = player.getHeldItem(hand);
-		if (!heldItem.isEmpty() && heldItem.getItem() == MapWorkspaceItems.RECORD_CREATURE.get()) {
+		if (!heldItem.isEmpty() && heldItem.getItem() == ConservationExploration.RECORD_CREATURE.get()) {
 			if (entity instanceof LivingEntity) {
-				this.recordEntity(minigame, player, (LivingEntity) entity);
+				this.recordEntity(game, player, (LivingEntity) entity);
 			}
 		}
 	}
@@ -185,12 +190,11 @@ public final class ConservationExplorationBehavior implements IGameBehavior {
 		return true;
 	}
 
-	@Override
-	public void onFinish(IGameInstance minigame) {
+	private void onFinish(IGameInstance game) {
 		this.progressBar.setVisible(false);
 		this.progressBar.removeAllPlayers();
 
-		ServerScoreboard scoreboard = minigame.getServer().getScoreboard();
+		ServerScoreboard scoreboard = game.getServer().getScoreboard();
 		scoreboard.removeTeam(discoveryTeam);
 	}
 

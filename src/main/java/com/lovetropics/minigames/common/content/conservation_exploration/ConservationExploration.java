@@ -21,7 +21,7 @@ public final class ConservationExploration {
 	public static void init() {}
 
 	@SubscribeEvent
-	private void onServerAboutToStart(final FMLServerAboutToStartEvent event) {
+	public static void onServerAboutToStart(final FMLServerAboutToStartEvent event) {
 		CommandDispatcher<CommandSource> dispatcher = event.getServer().getCommandManager().getDispatcher();
 		ScanAreaCommand.register(dispatcher);
 	}

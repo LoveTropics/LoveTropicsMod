@@ -1,6 +1,8 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances.donation;
 
 import com.lovetropics.minigames.common.core.game.IGameInstance;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameLifecycleEvents;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
@@ -13,6 +15,7 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.server.ServerWorld;
 
 import java.util.Iterator;
+import java.util.Random;
 
 public class ShootProjectilesAroundPlayerPackageBehavior extends DonationPackageBehavior
 {
@@ -55,12 +58,18 @@ public class ShootProjectilesAroundPlayerPackageBehavior extends DonationPackage
 	}
 
 	@Override
+	public void register(IGameInstance registerGame, GameEventListeners events) {
+		super.register(registerGame, events);
+
+		events.listen(GameLifecycleEvents.TICK, this::tick);
+	}
+
+	@Override
 	protected void receivePackage(final String sendingPlayer, final ServerPlayerEntity player) {
 		playerToAmountToSpawn.put(player, entityCountPerPlayer);
 	}
 
-	@Override
-	public void worldUpdate(IGameInstance minigame, ServerWorld world) {
+	private void tick(IGameInstance game) {
 		Iterator<Object2IntMap.Entry<ServerPlayerEntity>> it = playerToAmountToSpawn.object2IntEntrySet().iterator();
 		while (it.hasNext()) {
 			Object2IntMap.Entry<ServerPlayerEntity> entry = it.next();
@@ -78,14 +87,17 @@ public class ShootProjectilesAroundPlayerPackageBehavior extends DonationPackage
 					cooldown--;
 					playerToDelayToSpawn.put(entry.getKey(), cooldown);
 				} else {
-					cooldown = spawnRateBase + minigame.getWorld().getRandom().nextInt(spawnRateRandom);
+					ServerWorld world = game.getWorld();
+					Random random = world.getRandom();
+
+					cooldown = spawnRateBase + random.nextInt(spawnRateRandom);
 					playerToDelayToSpawn.put(entry.getKey(), cooldown);
 
-					BlockPos posSpawn = entry.getKey().getPosition().add(minigame.getWorld().getRandom().nextInt(spawnDistanceMax * 2) - spawnDistanceMax,20,
-							minigame.getWorld().getRandom().nextInt(spawnDistanceMax * 2) - spawnDistanceMax);
+					BlockPos posSpawn = entry.getKey().getPosition().add(random.nextInt(spawnDistanceMax * 2) - spawnDistanceMax,20,
+							random.nextInt(spawnDistanceMax * 2) - spawnDistanceMax);
 
-					BlockPos posTarget = entry.getKey().getPosition().add(minigame.getWorld().getRandom().nextInt(targetRandomness * 2) - targetRandomness,0,
-							minigame.getWorld().getRandom().nextInt(targetRandomness * 2) - targetRandomness);
+					BlockPos posTarget = entry.getKey().getPosition().add(random.nextInt(targetRandomness * 2) - targetRandomness,0,
+							random.nextInt(targetRandomness * 2) - targetRandomness);
 
 					entry.setValue(entry.getIntValue() - 1);
 					if (entry.getIntValue() <= 0) {

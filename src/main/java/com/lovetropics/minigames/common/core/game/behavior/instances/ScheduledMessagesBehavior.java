@@ -1,13 +1,14 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances;
 
-import com.lovetropics.minigames.common.util.MoreCodecs;
 import com.lovetropics.minigames.common.core.game.IGameInstance;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameLifecycleEvents;
+import com.lovetropics.minigames.common.util.MoreCodecs;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import net.minecraft.util.text.ITextComponent;
-import net.minecraft.world.server.ServerWorld;
 
 public class ScheduledMessagesBehavior implements IGameBehavior {
 	public static final Codec<ScheduledMessagesBehavior> CODEC = RecordCodecBuilder.create(instance -> {
@@ -23,11 +24,12 @@ public class ScheduledMessagesBehavior implements IGameBehavior {
 	}
 
 	@Override
-	public void worldUpdate(final IGameInstance minigame, ServerWorld world) {
-		if (scheduledMessages.containsKey(minigame.ticks())) {
-			final ITextComponent message = scheduledMessages.get(minigame.ticks());
-
-			minigame.getPlayers().sendMessage(message);
-		}
+	public void register(IGameInstance registerGame, GameEventListeners events) {
+		events.listen(GameLifecycleEvents.TICK, game -> {
+			ITextComponent message = scheduledMessages.remove(game.ticks());
+			if (message != null) {
+				game.getPlayers().sendMessage(message);
+			}
+		});
 	}
 }

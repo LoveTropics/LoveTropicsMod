@@ -2,10 +2,11 @@ package com.lovetropics.minigames.common.core.game.behavior.instances.statistics
 
 import com.lovetropics.minigames.common.core.game.IGameInstance;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
-import com.lovetropics.minigames.common.core.game.statistics.MinigameStatistics;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameLifecycleEvents;
+import com.lovetropics.minigames.common.core.game.statistics.GameStatistics;
 import com.lovetropics.minigames.common.core.game.statistics.StatisticKey;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.scoreboard.Score;
@@ -27,34 +28,25 @@ public final class BindObjectiveToStatisticBehavior implements IGameBehavior {
 		this.statisticToObjective = statisticToObjective;
 	}
 
-	@SuppressWarnings("unchecked")
-	public static <T> BindObjectiveToStatisticBehavior parse(Dynamic<T> root) {
-		Map<StatisticKey<Integer>, String> statisticToObjectives = root.get("objectives")
-				.asMap(
-						k -> (StatisticKey<Integer>) StatisticKey.get(k.asString("")),
-						v -> v.asString("")
-				);
-
-		return new BindObjectiveToStatisticBehavior(statisticToObjectives);
-	}
-
 	@Override
-	public void onFinish(IGameInstance minigame) {
-		ServerScoreboard scoreboard = minigame.getServer().getScoreboard();
+	public void register(IGameInstance registerGame, GameEventListeners events) {
+		events.listen(GameLifecycleEvents.FINISH, game -> {
+			ServerScoreboard scoreboard = game.getServer().getScoreboard();
 
-		for (Map.Entry<StatisticKey<Integer>, String> entry : statisticToObjective.entrySet()) {
-			StatisticKey<Integer> key = entry.getKey();
-			String objectiveKey = entry.getValue();
+			for (Map.Entry<StatisticKey<Integer>, String> entry : statisticToObjective.entrySet()) {
+				StatisticKey<Integer> key = entry.getKey();
+				String objectiveKey = entry.getValue();
 
-			ScoreObjective objective = scoreboard.getObjective(objectiveKey);
-			if (objective != null) {
-				applyFromObjective(minigame, key, objective);
+				ScoreObjective objective = scoreboard.getObjective(objectiveKey);
+				if (objective != null) {
+					applyFromObjective(game, key, objective);
+				}
 			}
-		}
+		});
 	}
 
 	private void applyFromObjective(IGameInstance minigame, StatisticKey<Integer> key, ScoreObjective objective) {
-		MinigameStatistics statistics = minigame.getStatistics();
+		GameStatistics statistics = minigame.getStatistics();
 		ServerScoreboard scoreboard = minigame.getServer().getScoreboard();
 
 		for (ServerPlayerEntity player : minigame.getPlayers()) {

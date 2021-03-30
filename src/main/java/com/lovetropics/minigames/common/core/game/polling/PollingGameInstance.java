@@ -4,9 +4,11 @@ import com.lovetropics.minigames.client.data.TropicraftLangKeys;
 import com.lovetropics.minigames.client.minigame.ClientRoleMessage;
 import com.lovetropics.minigames.client.minigame.PlayerCountsMessage;
 import com.lovetropics.minigames.common.core.game.*;
-import com.lovetropics.minigames.common.core.game.behavior.BehaviorDispatcher;
 import com.lovetropics.minigames.common.core.game.behavior.BehaviorMap;
-import com.lovetropics.minigames.common.core.game.behavior.IPollingMinigameBehavior;
+import com.lovetropics.minigames.common.core.game.behavior.GameBehaviorType;
+import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
+import com.lovetropics.minigames.common.core.game.behavior.event.GamePollingEvents;
 import com.lovetropics.minigames.common.core.game.map.GameMap;
 import com.lovetropics.minigames.common.core.game.statistics.PlayerKey;
 import com.lovetropics.minigames.common.core.network.LoveTropicsNetwork;
@@ -17,6 +19,7 @@ import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.Unit;
 import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraftforge.fml.network.PacketDistributor;
@@ -27,7 +30,7 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
 
-public final class PollingGameInstance implements ProtoGame, GameControllable, BehaviorDispatcher<IPollingMinigameBehavior, PollingGameInstance> {
+public final class PollingGameInstance implements ProtoGame, GameControllable {
 	private final MinecraftServer server;
 	private final IGameDefinition definition;
 
@@ -42,6 +45,8 @@ public final class PollingGameInstance implements ProtoGame, GameControllable, B
 
 	private final Map<String, ControlCommand> controlCommands = new Object2ObjectOpenHashMap<>();
 
+	private final GameEventListeners events = new GameEventListeners();
+
 	private PollingGameInstance(MinecraftServer server, IGameDefinition definition, PlayerKey initiator) {
 		this.server = server;
 		this.definition = definition;
@@ -52,8 +57,26 @@ public final class PollingGameInstance implements ProtoGame, GameControllable, B
 	public static GameResult<PollingGameInstance> create(MinecraftServer server, IGameDefinition definition, PlayerKey initiator) {
 		PollingGameInstance instance = new PollingGameInstance(server, definition, initiator);
 
-		GameResult<Unit> result = instance.dispatchToBehaviors(IPollingMinigameBehavior::onStartPolling);
+		GameResult<Unit> result = instance.registerBehaviors();
 		return result.mapValue(instance);
+	}
+
+	private GameResult<Unit> registerBehaviors() {
+		for (IGameBehavior behavior : getBehaviors()) {
+			for (GameBehaviorType<?> dependency : behavior.dependencies()) {
+				if (getBehaviors(dependency).isEmpty()) {
+					return GameResult.error(new StringTextComponent(behavior + " is missing dependency on " + dependency + "!"));
+				}
+			}
+
+			try {
+				behavior.registerPolling(this, events());
+			} catch (GameException e) {
+				return GameResult.error(e.getTextMessage());
+			}
+		}
+
+		return GameResult.ok();
 	}
 
 	@Override
@@ -66,9 +89,10 @@ public final class PollingGameInstance implements ProtoGame, GameControllable, B
 			return GameResult.error(new TranslationTextComponent(TropicraftLangKeys.COMMAND_MINIGAME_ALREADY_REGISTERED));
 		}
 
-		GameResult<Unit> result = dispatchToBehaviors((b, m) -> b.onPlayerRegister(m, player, requestedRole));
-		if (result.isError()) {
-			return result.castError();
+		try {
+			events().invoker(GamePollingEvents.PLAYER_REGISTER).onPlayerRegister(this, player, requestedRole);
+		} catch (Exception e) {
+			return GameResult.fromException("Failed to dispatch player register event", e);
 		}
 
 		registrations.add(player.getUniqueID(), requestedRole);
@@ -147,8 +171,13 @@ public final class PollingGameInstance implements ProtoGame, GameControllable, B
 	}
 
 	@Override
-	public Collection<IPollingMinigameBehavior> getBehaviors() {
-		return behaviors.getPollingBehaviors();
+	public Collection<IGameBehavior> getBehaviors() {
+		return behaviors.getBehaviors();
+	}
+
+	@Override
+	public <T extends IGameBehavior> Collection<T> getBehaviors(GameBehaviorType<T> type) {
+		return behaviors.getBehaviors(type);
 	}
 
 	@Override
@@ -175,6 +204,11 @@ public final class PollingGameInstance implements ProtoGame, GameControllable, B
 	@Override
 	public PlayerKey getInitiator() {
 		return initiator;
+	}
+
+	@Override
+	public GameEventListeners events() {
+		return this.events;
 	}
 
 	@Override

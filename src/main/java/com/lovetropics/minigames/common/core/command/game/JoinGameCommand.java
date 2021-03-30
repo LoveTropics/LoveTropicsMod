@@ -63,7 +63,7 @@ public class JoinGameCommand {
 	private static int registerAsRole(CommandContext<CommandSource> ctx, @Nullable PlayerRole requestedRole) throws CommandSyntaxException {
 		return GameCommand.executeMinigameAction(() -> {
 			ServerPlayerEntity player = ctx.getSource().asPlayer();
-			return GameManager.getInstance().joinPlayerAs(player, requestedRole);
+			return GameManager.get().joinPlayerAs(player, requestedRole);
 		}, ctx.getSource());
 	}
 }

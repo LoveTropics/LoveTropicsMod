@@ -2,6 +2,8 @@ package com.lovetropics.minigames.common.core.game.behavior.instances.tweak;
 
 import com.lovetropics.minigames.common.core.game.IGameInstance;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameLifecycleEvents;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -19,16 +21,23 @@ public final class SetGameRulesBehavior implements IGameBehavior {
 	});
 
 	private final Map<String, String> rules;
-	private CompoundNBT rulesSnapshot;
 
 	public SetGameRulesBehavior(Map<String, String> rules) {
 		this.rules = rules;
 	}
 
 	@Override
-	public void onConstruct(IGameInstance minigame) {
-		GameRules gameRules = minigame.getWorld().getGameRules();
-		this.rulesSnapshot = gameRules.write();
+	public void register(IGameInstance registerGame, GameEventListeners events) {
+		GameRules gameRules = registerGame.getWorld().getGameRules();
+		CompoundNBT rulesSnapshot = applyRules(gameRules);
+
+		events.listen(GameLifecycleEvents.FINISH, game -> {
+			resetRules(gameRules, rulesSnapshot);
+		});
+	}
+
+	private CompoundNBT applyRules(GameRules gameRules) {
+		CompoundNBT snapshot = gameRules.write();
 
 		CompoundNBT nbt = new CompoundNBT();
 		for (Map.Entry<String, String> entry : this.rules.entrySet()) {
@@ -36,13 +45,11 @@ public final class SetGameRulesBehavior implements IGameBehavior {
 		}
 
 		gameRules.decode(new Dynamic<>(NBTDynamicOps.INSTANCE, nbt));
+
+		return snapshot;
 	}
 
-	@Override
-	public void onFinish(IGameInstance minigame) {
-		if (this.rulesSnapshot != null) {
-			GameRules gameRules = minigame.getWorld().getGameRules();
-			gameRules.decode(new Dynamic<>(NBTDynamicOps.INSTANCE, this.rulesSnapshot));
-		}
+	private void resetRules(GameRules gameRules, CompoundNBT snapshot) {
+		gameRules.decode(new Dynamic<>(NBTDynamicOps.INSTANCE, snapshot));
 	}
 }

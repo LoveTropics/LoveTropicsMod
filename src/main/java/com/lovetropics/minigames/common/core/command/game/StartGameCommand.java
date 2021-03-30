@@ -20,7 +20,7 @@ public class StartGameCommand {
 			.executes(c -> {
 				CompletableFuture<GameResult<ITextComponent>> future;
 				try {
-					future = GameManager.getInstance().start();
+					future = GameManager.get().start();
 				} catch (Exception e) {
 					c.getSource().sendFeedback(new StringTextComponent("Unexpected error starting minigame: " + e), true);
 					return 0;
