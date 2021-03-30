@@ -4,16 +4,16 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.common.config.ConfigLT;
+import com.lovetropics.minigames.common.core.game.GameManager;
+import com.lovetropics.minigames.common.core.game.IGameDefinition;
+import com.lovetropics.minigames.common.core.game.IGameInstance;
+import com.lovetropics.minigames.common.core.game.PlayerSet;
+import com.lovetropics.minigames.common.core.game.behavior.event.GamePackageEvents;
+import com.lovetropics.minigames.common.core.game.statistics.GameStatistics;
+import com.lovetropics.minigames.common.core.game.statistics.PlayerKey;
 import com.lovetropics.minigames.common.core.integration.game_actions.GameAction;
 import com.lovetropics.minigames.common.core.integration.game_actions.GameActionHandler;
 import com.lovetropics.minigames.common.core.integration.game_actions.GameActionType;
-import com.lovetropics.minigames.common.core.game.IGameDefinition;
-import com.lovetropics.minigames.common.core.game.IGameInstance;
-import com.lovetropics.minigames.common.core.game.GameManager;
-import com.lovetropics.minigames.common.core.game.PlayerSet;
-import com.lovetropics.minigames.common.core.game.behavior.GameBehaviorTypes;
-import com.lovetropics.minigames.common.core.game.statistics.MinigameStatistics;
-import com.lovetropics.minigames.common.core.game.statistics.PlayerKey;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.JsonOps;
 import net.minecraft.entity.player.ServerPlayerEntity;
@@ -24,7 +24,7 @@ import java.time.Instant;
 import java.util.UUID;
 
 public final class GameInstanceTelemetry implements PlayerSet.Listeners {
-	private final IGameInstance minigame;
+	private final IGameInstance game;
 	private final Telemetry telemetry;
 
 	private final UUID instanceId;
@@ -36,15 +36,15 @@ public final class GameInstanceTelemetry implements PlayerSet.Listeners {
 	private PlayerSet participants;
 	private boolean closed;
 
-	private GameInstanceTelemetry(IGameInstance minigame, Telemetry telemetry, UUID instanceId) {
-		this.minigame = minigame;
+	private GameInstanceTelemetry(IGameInstance game, Telemetry telemetry, UUID instanceId) {
+		this.game = game;
 		this.telemetry = telemetry;
 		this.instanceId = instanceId;
-		this.definition = minigame.getDefinition();
-		this.initiator = minigame.getInitiator();
+		this.definition = game.getDefinition();
+		this.initiator = game.getInitiator();
 
 		this.telemetry.openInstance(this);
-		this.actions = new GameActionHandler(this.minigame, this);
+		this.actions = new GameActionHandler(this.game, this);
 	}
 
 	static GameInstanceTelemetry open(IGameInstance minigame, Telemetry telemetry) {
@@ -66,7 +66,7 @@ public final class GameInstanceTelemetry implements PlayerSet.Listeners {
 		post(ConfigLT.TELEMETRY.minigameStartEndpoint.get(), payload);
 	}
 
-	public void finish(MinigameStatistics statistics) {
+	public void finish(GameStatistics statistics) {
 		long finishTime = System.currentTimeMillis() / 1000;
 
 		JsonObject payload = new JsonObject();
@@ -161,9 +161,9 @@ public final class GameInstanceTelemetry implements PlayerSet.Listeners {
 
 	void handlePayload(JsonObject object, String type, String crud) {
 		if ("poll".equals(type)) {
-			IGameInstance active = GameManager.getInstance().getActiveMinigame();
+			IGameInstance active = GameManager.get().getActiveMinigame();
 			if (active.getDefinition() == definition) {
-				active.getBehaviors(GameBehaviorTypes.POLL_FINALISTS.get()).forEach(b -> b.handlePollEvent(active.getServer(), object, crud));
+				active.events().invoker(GamePackageEvents.RECEIVE_POLL_EVENT).onReceivePollEvent(game, object, crud);
 			}
 		} else if ("create".equals(crud)) {
 			GameActionType.getFromId(type).ifPresent(actionType -> {

@@ -1,10 +1,13 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances.tweak;
 
+import com.lovetropics.minigames.common.core.game.IGameInstance;
+import com.lovetropics.minigames.common.core.game.behavior.GameBehaviorTypes;
+import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameLifecycleEvents;
+import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.lovetropics.minigames.common.core.game.behavior.instances.TeamsBehavior;
 import com.lovetropics.minigames.common.util.MoreCodecs;
-import com.lovetropics.minigames.common.core.game.IGameInstance;
-import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
-import com.lovetropics.minigames.common.core.game.behavior.GameBehaviorTypes;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.Object2DoubleMap;
@@ -36,9 +39,14 @@ public final class SetMaxHealthBehavior implements IGameBehavior {
 	}
 
 	@Override
-	public void onStart(IGameInstance minigame) {
-		for (ServerPlayerEntity player : minigame.getParticipants()) {
-			double maxHealth = getMaxHealthForPlayer(minigame, player);
+	public void register(IGameInstance registerGame, GameEventListeners events) {
+		events.listen(GameLifecycleEvents.START, this::onStart);
+		events.listen(GamePlayerEvents.LEAVE, this::onPlayerLeave);
+	}
+
+	private void onStart(IGameInstance game) {
+		for (ServerPlayerEntity player : game.getParticipants()) {
+			double maxHealth = getMaxHealthForPlayer(game, player);
 			if (maxHealth != 20.0) {
 				player.getAttribute(Attributes.MAX_HEALTH).applyNonPersistentModifier(
 						new AttributeModifier(
@@ -60,8 +68,7 @@ public final class SetMaxHealthBehavior implements IGameBehavior {
 		return maxHealth;
 	}
 
-	@Override
-	public void onPlayerLeave(IGameInstance minigame, ServerPlayerEntity player) {
+	private void onPlayerLeave(IGameInstance game, ServerPlayerEntity player) {
 		player.getAttribute(Attributes.MAX_HEALTH).removeModifier(ATTRIBUTE_ID);
 	}
 

@@ -1,6 +1,9 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances.donation;
 
 import com.google.common.collect.Lists;
+import com.lovetropics.minigames.common.core.game.GameException;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
+import com.lovetropics.minigames.common.core.game.behavior.event.GamePackageEvents;
 import com.lovetropics.minigames.common.util.Util;
 import com.lovetropics.minigames.common.core.integration.game_actions.GamePackage;
 import com.lovetropics.minigames.common.core.map.MapRegion;
@@ -47,28 +50,28 @@ public class SpawnEntityAtRegionsPackageBehavior implements IGamePackageBehavior
 	}
 
 	@Override
-	public void onConstruct(IGameInstance minigame) {
-		MapRegions regions = minigame.getMapRegions();
+	public void register(IGameInstance game, GameEventListeners events) throws GameException {
+		MapRegions regions = game.getMapRegions();
 
 		regionsToSpawnAt.clear();
-
 		for (String key : regionsToSpawnAtKeys) {
 			regionsToSpawnAt.addAll(regions.get(key));
 		}
+
+		events.listen(GamePackageEvents.RECEIVE_PACKAGE, this::onGamePackageReceived);
 	}
 
-	@Override
-	public boolean onGamePackageReceived(final IGameInstance minigame, final GamePackage gamePackage) {
+	private boolean onGamePackageReceived(final IGameInstance game, final GamePackage gamePackage) {
 		if (gamePackage.getPackageType().equals(data.packageType)) {
 			for (final MapRegion region : regionsToSpawnAt) {
 				for (int i = 0; i < entityCountPerRegion; i++) {
-					final BlockPos pos = minigame.getWorld().getHeight(Heightmap.Type.WORLD_SURFACE, region.sample(minigame.getWorld().getRandom()));
+					final BlockPos pos = game.getWorld().getHeight(Heightmap.Type.WORLD_SURFACE, region.sample(game.getWorld().getRandom()));
 
-					Util.spawnEntity(entityId, minigame.getWorld(), pos.getX(), pos.getY(), pos.getZ());
+					Util.spawnEntity(entityId, game.getWorld(), pos.getX(), pos.getY(), pos.getZ());
 				}
 			}
 
-			data.onReceive(minigame, null, gamePackage.getSendingPlayerName());
+			data.onReceive(game, null, gamePackage.getSendingPlayerName());
 
 			return true;
 		}

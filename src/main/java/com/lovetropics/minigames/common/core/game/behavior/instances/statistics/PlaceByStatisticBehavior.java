@@ -2,6 +2,8 @@ package com.lovetropics.minigames.common.core.game.behavior.instances.statistics
 
 import com.lovetropics.minigames.common.core.game.IGameInstance;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameLifecycleEvents;
 import com.lovetropics.minigames.common.core.game.statistics.PlacementOrder;
 import com.lovetropics.minigames.common.core.game.statistics.PlayerPlacement;
 import com.lovetropics.minigames.common.core.game.statistics.StatisticKey;
@@ -25,14 +27,16 @@ public final class PlaceByStatisticBehavior implements IGameBehavior {
 	}
 
 	@Override
-	public void onFinish(IGameInstance minigame) {
-		PlayerPlacement.Score<Integer> placement;
-		if (order == PlacementOrder.MAX) {
-			placement = PlayerPlacement.fromMaxScore(minigame, statistic);
-		} else {
-			placement = PlayerPlacement.fromMinScore(minigame, statistic);
-		}
+	public void register(IGameInstance registerGame, GameEventListeners events) {
+		events.listen(GameLifecycleEvents.FINISH, game -> {
+			PlayerPlacement.Score<Integer> placement;
+			if (order == PlacementOrder.MAX) {
+				placement = PlayerPlacement.fromMaxScore(game, statistic);
+			} else {
+				placement = PlayerPlacement.fromMinScore(game, statistic);
+			}
 
-		placement.placeInto(StatisticKey.PLACEMENT);
+			placement.placeInto(StatisticKey.PLACEMENT);
+		});
 	}
 }

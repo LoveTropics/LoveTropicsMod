@@ -3,7 +3,6 @@ package com.lovetropics.minigames.common.core.game.config;
 import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.GameBehaviorType;
-import com.lovetropics.minigames.common.core.game.behavior.IPollingMinigameBehavior;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.Dynamic;
 
@@ -14,7 +13,7 @@ public abstract class BehaviorReference {
 	BehaviorReference() {
 	}
 
-	public abstract void addTo(BiConsumer<GameBehaviorType<?>, IGameBehavior> addActive, BiConsumer<GameBehaviorType<?>, IPollingMinigameBehavior> addPolling);
+	public abstract void addTo(BiConsumer<GameBehaviorType<?>, IGameBehavior> add);
 
 	static final class Static extends BehaviorReference {
 		private final GameBehaviorType<?> type;
@@ -26,17 +25,10 @@ public abstract class BehaviorReference {
 		}
 
 		@Override
-		public void addTo(BiConsumer<GameBehaviorType<?>, IGameBehavior> addActive, BiConsumer<GameBehaviorType<?>, IPollingMinigameBehavior> addPolling) {
-			DataResult<?> result = type.codec.parse(config);
+		public void addTo(BiConsumer<GameBehaviorType<?>, IGameBehavior> add) {
+			DataResult<? extends IGameBehavior> result = type.codec.parse(config);
 
-			result.result().ifPresent(behavior -> {
-				if (behavior instanceof IGameBehavior) {
-					addActive.accept(type, (IGameBehavior) behavior);
-				}
-				if (behavior instanceof IPollingMinigameBehavior) {
-					addPolling.accept(type, (IPollingMinigameBehavior) behavior);
-				}
-			});
+			result.result().ifPresent(behavior -> add.accept(type, behavior));
 
 			result.error().ifPresent(error -> {
 				LoveTropics.LOGGER.warn("Failed to parse behavior declaration of type {}: {}", type, error);
@@ -52,9 +44,9 @@ public abstract class BehaviorReference {
 		}
 
 		@Override
-		public void addTo(BiConsumer<GameBehaviorType<?>, IGameBehavior> addActive, BiConsumer<GameBehaviorType<?>, IPollingMinigameBehavior> addPolling) {
+		public void addTo(BiConsumer<GameBehaviorType<?>, IGameBehavior> add) {
 			for (BehaviorReference behavior : behaviors) {
-				behavior.addTo(addActive, addPolling);
+				behavior.addTo(add);
 			}
 		}
 	}

@@ -2,8 +2,9 @@ package com.lovetropics.minigames.common.core.game.behavior.instances.tweak;
 
 import com.lovetropics.minigames.common.core.game.IGameInstance;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
+import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.mojang.serialization.Codec;
-import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.FoodStats;
 
@@ -18,9 +19,11 @@ public final class DisableHungerBehavior implements IGameBehavior {
 	}
 
 	@Override
-	public void onParticipantUpdate(IGameInstance minigame, ServerPlayerEntity player) {
-		if (player.ticksExisted % 20 == 0) {
-			player.getFoodStats().read(this.foodStats);
-		}
+	public void register(IGameInstance registerGame, GameEventListeners events) {
+		events.listen(GamePlayerEvents.TICK, (game, player) -> {
+			if (player.ticksExisted % 20 == 0) {
+				player.getFoodStats().read(this.foodStats);
+			}
+		});
 	}
 }

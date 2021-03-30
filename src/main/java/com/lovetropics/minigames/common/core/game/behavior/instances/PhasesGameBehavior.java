@@ -1,12 +1,13 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances;
 
 import com.lovetropics.minigames.common.core.game.IGameInstance;
-import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.GameBehaviorTypes;
+import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameLifecycleEvents;
 import com.lovetropics.minigames.common.core.game.behavior.instances.command.CommandEventsBehavior;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.world.server.ServerWorld;
 
 import java.util.Iterator;
 import java.util.List;
@@ -68,22 +69,23 @@ public class PhasesGameBehavior implements IGameBehavior
 	}
 
 	@Override
-	public void worldUpdate(IGameInstance minigame, ServerWorld world) {
-		currentPhaseTicks++;
+	public void register(IGameInstance registerGame, GameEventListeners events) {
+		events.listen(GameLifecycleEvents.START, game -> {
+			hasFinishedPhases = false;
+			currentPhaseTicks = 0;
+			phaseIterator = phases.iterator();
+			nextPhase(game);
+		});
 
-		if (!hasFinishedPhases && currentPhaseTicks >= currentPhase.lengthInTicks) {
-			if (!nextPhase(minigame)) {
-				hasFinishedPhases = true;
+		events.listen(GameLifecycleEvents.TICK, game -> {
+			currentPhaseTicks++;
+
+			if (!hasFinishedPhases && currentPhaseTicks >= currentPhase.lengthInTicks) {
+				if (!nextPhase(game)) {
+					hasFinishedPhases = true;
+				}
 			}
-		}
-	}
-
-	@Override
-	public void onStart(final IGameInstance minigame) {
-		hasFinishedPhases = false;
-		currentPhaseTicks = 0;
-		phaseIterator = phases.iterator();
-		nextPhase(minigame);
+		});
 	}
 
 	public static class MinigamePhase {

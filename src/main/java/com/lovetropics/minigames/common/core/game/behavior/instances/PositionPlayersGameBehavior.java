@@ -1,12 +1,14 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances;
 
-import com.lovetropics.minigames.common.util.MoreCodecs;
 import com.lovetropics.minigames.common.core.dimension.DimensionUtils;
-import com.lovetropics.minigames.common.core.map.MapRegion;
-import com.lovetropics.minigames.common.core.map.MapRegions;
 import com.lovetropics.minigames.common.core.game.IGameInstance;
 import com.lovetropics.minigames.common.core.game.PlayerRole;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
+import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
+import com.lovetropics.minigames.common.core.map.MapRegion;
+import com.lovetropics.minigames.common.core.map.MapRegions;
+import com.lovetropics.minigames.common.util.MoreCodecs;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.entity.player.ServerPlayerEntity;
@@ -38,8 +40,8 @@ public class PositionPlayersGameBehavior implements IGameBehavior {
 	}
 
 	@Override
-	public void onConstruct(IGameInstance minigame) {
-		MapRegions regions = minigame.getMapRegions();
+	public void register(IGameInstance registerGame, GameEventListeners events) {
+		MapRegions regions = registerGame.getMapRegions();
 
 		participantSpawnRegions.clear();
 		spectatorSpawnRegions.clear();
@@ -51,25 +53,18 @@ public class PositionPlayersGameBehavior implements IGameBehavior {
 		for (String key : spectatorSpawnKeys) {
 			spectatorSpawnRegions.addAll(regions.get(key));
 		}
+
+		events.listen(GamePlayerEvents.JOIN, this::setupPlayerAsRole);
+		events.listen(GamePlayerEvents.CHANGE_ROLE, (game, player, role, lastRole) -> setupPlayerAsRole(game, player, role));
 	}
 
-	@Override
-	public void onPlayerJoin(IGameInstance minigame, ServerPlayerEntity player, PlayerRole role) {
-		setupPlayerAsRole(minigame, player, role);
-	}
-
-	@Override
-	public void onPlayerChangeRole(IGameInstance minigame, ServerPlayerEntity player, PlayerRole role, PlayerRole lastRole) {
-		setupPlayerAsRole(minigame, player, role);
-	}
-
-	private void setupPlayerAsRole(IGameInstance minigame, ServerPlayerEntity player, PlayerRole role) {
+	private void setupPlayerAsRole(IGameInstance game, ServerPlayerEntity player, PlayerRole role) {
 		if (role == PlayerRole.PARTICIPANT) {
 			MapRegion region = participantSpawnRegions.get(participantSpawnIndex++ % participantSpawnRegions.size());
-			teleportToRegion(minigame, player, region);
+			teleportToRegion(game, player, region);
 		} else {
 			MapRegion region = spectatorSpawnRegions.get(spectatorSpawnIndex++ % spectatorSpawnRegions.size());
-			teleportToRegion(minigame, player, region);
+			teleportToRegion(game, player, region);
 		}
 	}
 

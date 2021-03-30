@@ -5,9 +5,7 @@ import com.lovetropics.minigames.common.content.survive_the_tide.behavior.*;
 import com.lovetropics.minigames.common.core.game.behavior.instances.*;
 import com.lovetropics.minigames.common.content.build_competition.PollFinalistsBehavior;
 import com.lovetropics.minigames.common.content.conservation_exploration.ConservationExplorationBehavior;
-import com.lovetropics.minigames.common.core.game.behavior.instances.command.BindControlsBehavior;
-import com.lovetropics.minigames.common.core.game.behavior.instances.command.CommandEventsBehavior;
-import com.lovetropics.minigames.common.core.game.behavior.instances.command.RunCommandInRegionBehavior;
+import com.lovetropics.minigames.common.core.game.behavior.instances.command.*;
 import com.lovetropics.minigames.common.core.game.behavior.instances.donation.*;
 import com.lovetropics.minigames.common.core.game.behavior.instances.statistics.*;
 import com.lovetropics.minigames.common.core.game.behavior.instances.tweak.*;
@@ -55,9 +53,9 @@ public class GameBehaviorTypes {
 	public static final RegistryObject<GameBehaviorType<GenerateEntitiesBehavior>> GENERATE_ENTITIES;
 	public static final RegistryObject<GameBehaviorType<WeatherControlsBehavior>> WEATHER_CONTROLS;
 	public static final RegistryObject<GameBehaviorType<RunCommandInRegionBehavior>> RUN_COMMAND_IN_REGION;
-	public static final RegistryObject<GameBehaviorType<TNTAutoFuseBehavior>> TNT_AUTO_FUSE;
+	public static final RegistryObject<GameBehaviorType<TntAutoFuseBehavior>> TNT_AUTO_FUSE;
 	public static final RegistryObject<GameBehaviorType<DisableHungerBehavior>> DISABLE_HUNGER;
-	public static final RegistryObject<GameBehaviorType<DisableTNTBlockDestructionBehavior>> DISABLE_TNT_BLOCK_DESTRUCTION;
+	public static final RegistryObject<GameBehaviorType<DisableTntDestructionBehavior>> DISABLE_TNT_BLOCK_DESTRUCTION;
 	public static final RegistryObject<GameBehaviorType<RevealPlayersBehavior>> REVEAL_PLAYERS;
 	public static final RegistryObject<GameBehaviorType<SetMaxHealthBehavior>> SET_MAX_HEALTH;
 
@@ -128,9 +126,9 @@ public class GameBehaviorTypes {
 		GENERATE_ENTITIES = register("generate_entities", GenerateEntitiesBehavior.CODEC);
 		WEATHER_CONTROLS = register("weather_controls", WeatherControlsBehavior.CODEC);
 		RUN_COMMAND_IN_REGION = register("run_command_in_region", RunCommandInRegionBehavior.CODEC);
-        TNT_AUTO_FUSE = register("tnt_auto_fuse", TNTAutoFuseBehavior.CODEC);
+        TNT_AUTO_FUSE = register("tnt_auto_fuse", TntAutoFuseBehavior.CODEC);
 		DISABLE_HUNGER = register("disable_hunger", DisableHungerBehavior.CODEC);
-		DISABLE_TNT_BLOCK_DESTRUCTION = register("disable_tnt_block_destruction", DisableTNTBlockDestructionBehavior.CODEC);
+		DISABLE_TNT_BLOCK_DESTRUCTION = register("disable_tnt_block_destruction", DisableTntDestructionBehavior.CODEC);
 		REVEAL_PLAYERS = register("reveal_players", RevealPlayersBehavior.CODEC);
 		SET_MAX_HEALTH = register("set_max_health", SetMaxHealthBehavior.CODEC);
 

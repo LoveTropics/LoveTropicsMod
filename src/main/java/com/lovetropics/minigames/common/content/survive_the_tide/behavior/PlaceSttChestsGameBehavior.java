@@ -29,7 +29,7 @@ public class PlaceSttChestsGameBehavior extends ChunkGeneratingBehavior {
 	private static final ResourceLocation EQUIPMENT_LOOT = new ResourceLocation("lt20", "stt2/equipment_type");
 
 	@Override
-	protected void generateChunk(IGameInstance minigame, ServerWorld world, Chunk chunk) {
+	protected void generateChunk(IGameInstance game, ServerWorld world, Chunk chunk) {
 		List<BlockPos> chestPositions = new ArrayList<>();
 		for (TileEntity entity : chunk.getTileEntityMap().values()) {
 			if (entity instanceof ChestTileEntity) {

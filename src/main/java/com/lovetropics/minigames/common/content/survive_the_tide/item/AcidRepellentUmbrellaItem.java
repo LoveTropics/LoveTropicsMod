@@ -1,7 +1,7 @@
 package com.lovetropics.minigames.common.content.survive_the_tide.item;
 
 import com.lovetropics.minigames.Constants;
-import com.lovetropics.minigames.common.core.map.item.MapWorkspaceItems;
+import com.lovetropics.minigames.common.content.survive_the_tide.SurviveTheTide;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
@@ -40,7 +40,7 @@ public class AcidRepellentUmbrellaItem extends Item {
         }
 
         PlayerEntity player = event.player;
-        if (player.getMotion().getY() < 0.0 && !player.abilities.isFlying && isHoldingItem(player, MapWorkspaceItems.ACID_REPELLENT_UMBRELLA.get())) {
+        if (player.getMotion().getY() < 0.0 && !player.abilities.isFlying && isHoldingItem(player, SurviveTheTide.ACID_REPELLENT_UMBRELLA.get())) {
             player.setMotion(player.getMotion().mul(1.0, 0.8, 1.0));
             player.fallDistance = 0.0F;
         }

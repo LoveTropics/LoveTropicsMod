@@ -1,17 +1,20 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances.statistics;
 
 import com.lovetropics.minigames.common.core.game.IGameInstance;
-import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.GameBehaviorTypes;
-import com.lovetropics.minigames.common.core.game.statistics.MinigameStatistics;
+import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameLifecycleEvents;
+import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
+import com.lovetropics.minigames.common.core.game.statistics.GameStatistics;
 import com.lovetropics.minigames.common.core.game.statistics.StatisticKey;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.util.ActionResultType;
+import net.minecraft.util.DamageSource;
 import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.world.server.ServerWorld;
-import net.minecraftforge.event.entity.living.LivingDeathEvent;
 
 import java.util.Map;
 import java.util.Optional;
@@ -43,27 +46,33 @@ public final class CampingTrackerBehavior implements IGameBehavior {
 	}
 
 	@Override
-	public void worldUpdate(IGameInstance minigame, ServerWorld world) {
+	public void register(IGameInstance registerGame, GameEventListeners events) {
+		events.listen(GameLifecycleEvents.TICK, this::tick);
+		events.listen(GamePlayerEvents.LEAVE, this::onPlayerLeave);
+		events.listen(GamePlayerEvents.DEATH, this::onPlayerDeath);
+	}
+
+	private void tick(IGameInstance game) {
 		if (startTime == 0 && afterPhase != null) {
-			minigame.getOneBehavior(GameBehaviorTypes.PHASES.get()).ifPresent(phases -> {
+			game.getOneBehavior(GameBehaviorTypes.PHASES.get()).ifPresent(phases -> {
 				if (!phases.getCurrentPhase().is(afterPhase)) {
-					startTime = minigame.ticks();
+					startTime = game.ticks();
 				}
 			});
 		}
 
 		if (startTime != 0) {
-			long ticks = minigame.ticks();
+			long ticks = game.ticks();
 			if (ticks % CAMP_TEST_INTERVAL == 0) {
-				testForCamping(minigame, ticks);
+				testForCamping(game, ticks);
 			}
 		}
 	}
 
-	private void testForCamping(IGameInstance minigame, long time) {
-		MinigameStatistics statistics = minigame.getStatistics();
+	private void testForCamping(IGameInstance game, long time) {
+		GameStatistics statistics = game.getStatistics();
 
-		for (ServerPlayerEntity player : minigame.getParticipants()) {
+		for (ServerPlayerEntity player : game.getParticipants()) {
 			CampingTracker tracker = getCampingTracker(player);
 
 			Vector3d currentPosition = player.getPositionVec();
@@ -83,13 +92,12 @@ public final class CampingTrackerBehavior implements IGameBehavior {
 		return campingTrackers.computeIfAbsent(player.getUniqueID(), i -> new CampingTracker());
 	}
 
-	@Override
-	public void onPlayerDeath(IGameInstance minigame, ServerPlayerEntity player, LivingDeathEvent event) {
+	private ActionResultType onPlayerDeath(IGameInstance game, ServerPlayerEntity player, DamageSource source) {
 		campingTrackers.remove(player.getUniqueID());
+		return ActionResultType.PASS;
 	}
 
-	@Override
-	public void onPlayerLeave(IGameInstance minigame, ServerPlayerEntity player) {
+	private void onPlayerLeave(IGameInstance game, ServerPlayerEntity player) {
 		campingTrackers.remove(player.getUniqueID());
 	}
 

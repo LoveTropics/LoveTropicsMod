@@ -20,7 +20,7 @@ public class PollGameCommand {
 			.then(literal("poll").requires(s -> s.hasPermissionLevel(2))
 			.then(argument("minigame_id", ResourceLocationArgument.resourceLocation())
 		              .suggests((ctx, sb) -> ISuggestionProvider.suggest(
-		                      GameManager.getInstance().getAllMinigames().stream()
+		                      GameManager.get().getAllMinigames().stream()
 		                          .map(IGameDefinition::getID)
 		                          .map(ResourceLocation::toString), sb))
 		              .requires(s -> s.hasPermissionLevel(2))
@@ -28,9 +28,9 @@ public class PollGameCommand {
 				ResourceLocation id = ResourceLocationArgument.getResourceLocation(c, "minigame_id");
 				ServerPlayerEntity player = c.getSource().asPlayer();
 
-				int result = GameCommand.executeMinigameAction(() -> GameManager.getInstance().startPolling(id, PlayerKey.from(player)), c.getSource());
+				int result = GameCommand.executeMinigameAction(() -> GameManager.get().startPolling(id, PlayerKey.from(player)), c.getSource());
 				if (result == 1) {
-					GameCommand.executeMinigameAction(() -> GameManager.getInstance().joinPlayerAs(player, null), c.getSource());
+					GameCommand.executeMinigameAction(() -> GameManager.get().joinPlayerAs(player, null), c.getSource());
 				}
 
 				return result;

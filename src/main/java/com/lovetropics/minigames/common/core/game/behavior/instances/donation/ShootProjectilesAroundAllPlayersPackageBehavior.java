@@ -1,6 +1,9 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances.donation;
 
 import com.google.common.collect.Lists;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameLifecycleEvents;
+import com.lovetropics.minigames.common.core.game.behavior.event.GamePackageEvents;
 import com.lovetropics.minigames.common.core.integration.game_actions.GamePackage;
 import com.lovetropics.minigames.common.core.game.IGameInstance;
 import com.lovetropics.minigames.common.core.game.behavior.IGamePackageBehavior;
@@ -17,6 +20,7 @@ import net.minecraft.world.server.ServerWorld;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.Random;
 
 public class ShootProjectilesAroundAllPlayersPackageBehavior implements IGamePackageBehavior
 {
@@ -64,14 +68,19 @@ public class ShootProjectilesAroundAllPlayersPackageBehavior implements IGamePac
 	}
 
 	@Override
-	public boolean onGamePackageReceived(final IGameInstance minigame, final GamePackage gamePackage) {
+	public void register(IGameInstance game, GameEventListeners events) {
+		events.listen(GamePackageEvents.RECEIVE_PACKAGE, this::onGamePackageReceived);
+		events.listen(GameLifecycleEvents.TICK, this::tick);
+	}
+
+	private boolean onGamePackageReceived(final IGameInstance game, final GamePackage gamePackage) {
 		if (gamePackage.getPackageType().equals(data.packageType)) {
-			final List<ServerPlayerEntity> players = Lists.newArrayList(minigame.getParticipants());
+			final List<ServerPlayerEntity> players = Lists.newArrayList(game.getParticipants());
 			for (ServerPlayerEntity player : players) {
 				playerToAmountToSpawn.put(player, entityCountPerPlayer);
 			}
 
-			data.onReceive(minigame, null, gamePackage.getSendingPlayerName());
+			data.onReceive(game, null, gamePackage.getSendingPlayerName());
 
 			return true;
 		}
@@ -79,8 +88,7 @@ public class ShootProjectilesAroundAllPlayersPackageBehavior implements IGamePac
 		return false;
 	}
 
-	@Override
-	public void worldUpdate(IGameInstance minigame, ServerWorld world) {
+	private void tick(IGameInstance game) {
 		Iterator<Object2IntMap.Entry<ServerPlayerEntity>> it = playerToAmountToSpawn.object2IntEntrySet().iterator();
 		while (it.hasNext()) {
 			Object2IntMap.Entry<ServerPlayerEntity> entry = it.next();
@@ -98,36 +106,44 @@ public class ShootProjectilesAroundAllPlayersPackageBehavior implements IGamePac
 					cooldown--;
 					playerToDelayToSpawn.put(entry.getKey(), cooldown);
 				} else {
-					cooldown = spawnRateBase + minigame.getWorld().getRandom().nextInt(spawnRateRandom);
+					ServerWorld world = game.getWorld();
+					Random random = world.getRandom();
+
+					cooldown = spawnRateBase + random.nextInt(spawnRateRandom);
 					playerToDelayToSpawn.put(entry.getKey(), cooldown);
 
-					BlockPos posSpawn = entry.getKey().getPosition().add(minigame.getWorld().getRandom().nextInt(spawnDistanceMax * 2) - spawnDistanceMax,20,
-							minigame.getWorld().getRandom().nextInt(spawnDistanceMax * 2) - spawnDistanceMax);
+					BlockPos posSpawn = entry.getKey().getPosition().add(random.nextInt(spawnDistanceMax * 2) - spawnDistanceMax,20,
+							random.nextInt(spawnDistanceMax * 2) - spawnDistanceMax);
 
-					BlockPos posTarget = entry.getKey().getPosition().add(minigame.getWorld().getRandom().nextInt(targetRandomness * 2) - targetRandomness,0,
-							minigame.getWorld().getRandom().nextInt(targetRandomness * 2) - targetRandomness);
+					BlockPos posTarget = entry.getKey().getPosition().add(random.nextInt(targetRandomness * 2) - targetRandomness,0,
+							random.nextInt(targetRandomness * 2) - targetRandomness);
 
 					entry.setValue(entry.getIntValue() - 1);
 					if (entry.getIntValue() <= 0) {
 						it.remove();
 						playerToDelayToSpawn.removeInt(entry.getKey());
 					}
-					double d2 = posTarget.getX() - (posSpawn.getX());
-					double d3 = posTarget.getY() - (posSpawn.getY());
-					double d4 = posTarget.getZ() - (posSpawn.getZ());
-					FireballEntity fireballentity = new FireballEntity(EntityType.FIREBALL, world);
-					fireballentity.setLocationAndAngles(posSpawn.getX(), posSpawn.getY(), posSpawn.getZ(), fireballentity.rotationYaw, fireballentity.rotationPitch);
-					fireballentity.setPosition(posSpawn.getX(), posSpawn.getY(), posSpawn.getZ());
-					double d0 = (double)MathHelper.sqrt(d2 * d2 + d3 * d3 + d4 * d4);
-					fireballentity.accelerationX = d2 / d0 * 0.1D;
-					fireballentity.accelerationY = d3 / d0 * 0.1D;
-					fireballentity.accelerationZ = d4 / d0 * 0.1D;
-					fireballentity.explosionPower = explosionStrength;
-					world.addEntity(fireballentity);
+
+					world.addEntity(createFireball(world, posSpawn, posTarget));
 				}
 			}
 		}
 	}
 
+	private FireballEntity createFireball(ServerWorld world, BlockPos spawn, BlockPos target) {
+		double deltaX = target.getX() - spawn.getX();
+		double deltaY = target.getY() - spawn.getY();
+		double deltaZ = target.getZ() - spawn.getZ();
+		double distance = MathHelper.sqrt(deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ);
 
+		FireballEntity fireball = new FireballEntity(EntityType.FIREBALL, world);
+		fireball.setLocationAndAngles(spawn.getX(), spawn.getY(), spawn.getZ(), fireball.rotationYaw, fireball.rotationPitch);
+		fireball.setPosition(spawn.getX(), spawn.getY(), spawn.getZ());
+		fireball.accelerationX = deltaX / distance * 0.1;
+		fireball.accelerationY = deltaY / distance * 0.1;
+		fireball.accelerationZ = deltaZ / distance * 0.1;
+		fireball.explosionPower = explosionStrength;
+
+		return fireball;
+	}
 }

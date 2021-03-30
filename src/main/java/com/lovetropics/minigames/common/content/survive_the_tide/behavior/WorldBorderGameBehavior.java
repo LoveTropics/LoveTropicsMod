@@ -1,24 +1,24 @@
 package com.lovetropics.minigames.common.content.survive_the_tide.behavior;
 
-import com.lovetropics.minigames.common.util.MoreCodecs;
-import com.lovetropics.minigames.common.core.map.MapRegion;
+import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.IGameInstance;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameLifecycleEvents;
+import com.lovetropics.minigames.common.core.map.MapRegion;
+import com.lovetropics.minigames.common.util.MoreCodecs;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.particles.IParticleData;
 import net.minecraft.particles.ParticleTypes;
 import net.minecraft.potion.EffectInstance;
 import net.minecraft.potion.Effects;
 import net.minecraft.util.DamageSource;
-import net.minecraft.util.EntityPredicates;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.world.BossInfo;
-import net.minecraft.world.World;
 import net.minecraft.world.server.ServerBossInfo;
 import net.minecraft.world.server.ServerWorld;
 
@@ -79,118 +79,105 @@ public class WorldBorderGameBehavior implements IGameBehavior
 	}
 
 	@Override
-	public void onConstruct(IGameInstance minigame) {
-		List<MapRegion> regions = new ArrayList<>(minigame.getMapRegions().get(worldBorderCenterKey));
+	public void register(IGameInstance game, GameEventListeners events) throws GameException {
+		List<MapRegion> regions = new ArrayList<>(game.getMapRegions().get(worldBorderCenterKey));
 
 		if (!regions.isEmpty()) {
-			MapRegion centerRegion = regions.get(minigame.getWorld().getRandom().nextInt(regions.size()));
+			MapRegion centerRegion = regions.get(game.getWorld().getRandom().nextInt(regions.size()));
 			worldBorderCenter = centerRegion.getCenterBlock();
 		} else {
 			worldBorderCenter = BlockPos.ZERO;
 		}
+
+		events.listen(GameLifecycleEvents.FINISH, this::onFinish);
+		events.listen(GameLifecycleEvents.TICK, this::tickWorldBorder);
 	}
 
-	@Override
-	public void onFinish(final IGameInstance minigame) {
+	private void onFinish(final IGameInstance game) {
 		borderCollapseMessageSent = false;
 		bossInfo.removeAllPlayers();
 	}
 
-	@Override
-	public void worldUpdate(final IGameInstance minigame, ServerWorld world) {
-		tickWorldBorder(world, minigame);
+	// TODO: Clean up this mess
+	private void tickWorldBorder(final IGameInstance game) {
+		if (game.ticks() < ticksUntilStart) {
+			return;
+		}
+
+		if (!borderCollapseMessageSent) {
+			borderCollapseMessageSent = true;
+			game.getPlayers().sendMessage(collapseMessage);
+		}
+
+		long ticksSinceStart = game.ticks() - ticksUntilStart;
+
+		boolean isCollapsing = game.ticks() >= ticksUntilStart + delayUntilCollapse;
+		float borderPercent = 0.01F;
+		if (!isCollapsing) {
+			borderPercent = 1F - ((float) (ticksSinceStart + 1) / (float) delayUntilCollapse);
+			borderPercent = Math.max(borderPercent, 0.01F);
+		}
+
+		bossInfo.setPercent(borderPercent);
+
+		float maxRadius = 210;
+		float currentRadius = maxRadius * borderPercent;
+
+		//particle spawning
+		if (game.ticks() % particleRateDelay == 0) {
+			tickParticles(currentRadius, game.getWorld());
+		}
+
+		//player damage
+		if (game.ticks() % damageRateDelay == 0) {
+			tickPlayerDamage(game, isCollapsing, currentRadius);
+		}
+
+		//instance.getParticipants()
+		//this.actionAllParticipants(instance, (p) -> p.addPotionEffect(new EffectInstance(Effects.SLOW_FALLING, 10 * 20)));
+
+		//world.addParticle(borderParticle, );
 	}
 
-	// TODO: Clean up this mess
-	private void tickWorldBorder(final World world, final IGameInstance minigame) {
-		if (minigame.ticks() >= ticksUntilStart) {
-			if (!borderCollapseMessageSent) {
-				borderCollapseMessageSent = true;
-				minigame.getPlayers().sendMessage(collapseMessage);
-			}
+	private void tickParticles(float currentRadius, ServerWorld world) {
+		float amountPerCircle = 4 * currentRadius;
+		float stepAmount = 360F / amountPerCircle;
 
-			long ticksSinceStart = minigame.ticks() - ticksUntilStart;
+		int yMin = -10;
+		int yStepAmount = 5;
 
-			boolean isCollapsing = minigame.ticks() >= ticksUntilStart + delayUntilCollapse;
-			float borderPercent = 0.01F;
-			if (!isCollapsing) {
-				borderPercent = 1F - ((float) (ticksSinceStart + 1) / (float) delayUntilCollapse);
-			}
+		int randSpawn = 30;
 
-			//math safety
-			if (borderPercent < 0.01F) {
-				borderPercent = 0.01F;
-			}
-
-			bossInfo.setPercent(borderPercent);
-
-			float maxRadius = 210;
-			float currentRadius = maxRadius * borderPercent;
-			float amountPerCircle = 4 * currentRadius;
-			float stepAmount = 360F / amountPerCircle;
-
-			int yMin = -10;
-			int yStepAmount = 5;
-
-			int randSpawn = 30;
-
-			//particle spawning
-			if (world.getGameTime() % particleRateDelay == 0) {
-
-				for (float step = 0; step <= 360; step += stepAmount) {
-					for (int yStep = yMin; yStep < particleHeight; yStep += yStepAmount) {
-						if (world.rand.nextInt(randSpawn/*yMax - yMin*/) == 0) {
-							float xVec = (float) -Math.sin(Math.toRadians(step)) * currentRadius;
-							float zVec = (float) Math.cos(Math.toRadians(step)) * currentRadius;
-							//world.addParticle(borderParticle, worldBorderCenter.getX() + xVec, worldBorderCenter.getY() + yStep, worldBorderCenter.getZ() + zVec, 0, 0, 0);
-							if (world instanceof ServerWorld) {
-								ServerWorld serverWorld = (ServerWorld) world;
-								//IParticleData data = ForgeRegistries.PARTICLE_TYPES.getValue(new ResourceLocation("heart"));
-								serverWorld.spawnParticle(borderParticle, worldBorderCenter.getX() + xVec, worldBorderCenter.getY() + yStep, worldBorderCenter
-										.getZ() + zVec, 1, 0, 0, 0, 1D);
-							}
-						}
-
-					}
+		for (float step = 0; step <= 360; step += stepAmount) {
+			for (int yStep = yMin; yStep < particleHeight; yStep += yStepAmount) {
+				if (world.rand.nextInt(randSpawn/*yMax - yMin*/) == 0) {
+					float xVec = (float) -Math.sin(Math.toRadians(step)) * currentRadius;
+					float zVec = (float) Math.cos(Math.toRadians(step)) * currentRadius;
+					//world.addParticle(borderParticle, worldBorderCenter.getX() + xVec, worldBorderCenter.getY() + yStep, worldBorderCenter.getZ() + zVec, 0, 0, 0);
+					//IParticleData data = ForgeRegistries.PARTICLE_TYPES.getValue(new ResourceLocation("heart"));
+					world.spawnParticle(borderParticle, worldBorderCenter.getX() + xVec, worldBorderCenter.getY() + yStep, worldBorderCenter
+							.getZ() + zVec, 1, 0, 0, 0, 1D);
 				}
 
-				if (world instanceof ServerWorld) {
-					ServerWorld serverWorld = (ServerWorld) world;
-					//serverWorld.spawnParticle(borderParticle, worldBorderCenter.getX(), worldBorderCenter.getY(), worldBorderCenter.getZ(), 1, 0, 0, 0, 1D);
-				}
+			}
+		}
+
+		//serverWorld.spawnParticle(borderParticle, worldBorderCenter.getX(), worldBorderCenter.getY(), worldBorderCenter.getZ(), 1, 0, 0, 0, 1D);
+	}
+
+	private void tickPlayerDamage(IGameInstance game, boolean isCollapsing, float currentRadius) {
+		for (ServerPlayerEntity player : game.getParticipants()) {
+			//ignore Y val, only do X Z dist compare
+			double distanceSq = player.getDistanceSq(worldBorderCenter.getX(), player.getPosY(), worldBorderCenter.getZ());
+			if (isCollapsing || !(currentRadius < 0.0 || distanceSq < currentRadius * currentRadius)) {
+				player.attackEntityFrom(DamageSource.causeExplosionDamage((LivingEntity) null), damageAmount);
+				player.addPotionEffect(new EffectInstance(Effects.NAUSEA, 40, 0));
 			}
 
-			//player damage
-			if (world.getGameTime() % damageRateDelay == 0) {
-				for (PlayerEntity playerentity : world.getPlayers()) {
-					if (EntityPredicates.NOT_SPECTATING.test(playerentity) && EntityPredicates.IS_LIVING_ALIVE.test(playerentity)) {
-						//needs moar predicates
-						if (!playerentity.isCreative()) {
-							//ignore Y val, only do X Z dist compare
-							double d0 = playerentity.getDistanceSq(worldBorderCenter.getX(), playerentity.getPosY(), worldBorderCenter.getZ());
-							if (isCollapsing || !(currentRadius < 0.0D || d0 < currentRadius * currentRadius)) {
-								//System.out.println("hurt: " + playerentity);
-								playerentity.attackEntityFrom(DamageSource.causeExplosionDamage((LivingEntity) null), damageAmount);
-								playerentity.addPotionEffect(new EffectInstance(Effects.NAUSEA, 40, 0));
-							} else {
-
-							}
-						}
-					}
-
-					//add boss bar info to everyone in dim if not already registered for it
-					if (playerentity instanceof ServerPlayerEntity) {
-						if (!bossInfo.getPlayers().contains(playerentity)) {
-							bossInfo.addPlayer((ServerPlayerEntity) playerentity);
-						}
-					}
-				}
+			//add boss bar info to everyone in dim if not already registered for it
+			if (!bossInfo.getPlayers().contains(player)) {
+				bossInfo.addPlayer(player);
 			}
-
-			//instance.getParticipants()
-			//this.actionAllParticipants(instance, (p) -> p.addPotionEffect(new EffectInstance(Effects.SLOW_FALLING, 10 * 20)));
-
-			//world.addParticle(borderParticle, );
 		}
 	}
 }

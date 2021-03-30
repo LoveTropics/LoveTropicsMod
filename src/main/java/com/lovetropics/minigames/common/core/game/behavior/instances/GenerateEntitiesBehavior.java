@@ -34,7 +34,7 @@ public final class GenerateEntitiesBehavior extends ChunkGeneratingBehavior {
 	}
 
 	@Override
-	protected void generateChunk(IGameInstance minigame, ServerWorld world, Chunk chunk) {
+	protected void generateChunk(IGameInstance game, ServerWorld world, Chunk chunk) {
 		ChunkPos chunkPos = chunk.getPos();
 		int minX = chunkPos.getXStart();
 		int minZ = chunkPos.getZStart();

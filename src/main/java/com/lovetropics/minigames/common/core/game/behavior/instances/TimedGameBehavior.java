@@ -1,9 +1,12 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances;
 
-import com.lovetropics.minigames.common.core.game.IGameInstance;
 import com.lovetropics.minigames.common.core.game.GameManager;
+import com.lovetropics.minigames.common.core.game.IGameInstance;
 import com.lovetropics.minigames.common.core.game.PlayerRole;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameLifecycleEvents;
+import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.entity.player.ServerPlayerEntity;
@@ -12,7 +15,6 @@ import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.BossInfo;
 import net.minecraft.world.server.ServerBossInfo;
-import net.minecraft.world.server.ServerWorld;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,43 +41,48 @@ public final class TimedGameBehavior implements IGameBehavior {
 		this.timerBar = timerBar ? new ServerBossInfo(new StringTextComponent(""), BossInfo.Color.GREEN, BossInfo.Overlay.PROGRESS) : null;
 	}
 
+	@Override
+	public void register(IGameInstance registerGame, GameEventListeners events) {
+		events.listen(GamePlayerEvents.JOIN, this::onPlayerJoin);
+		events.listen(GamePlayerEvents.LEAVE, this::onPlayerLeave);
+		events.listen(GameLifecycleEvents.FINISH, this::onFinish);
+		events.listen(GameLifecycleEvents.TICK, this::onTick);
+	}
+
 	public void onFinish(Consumer<IGameInstance> listener) {
 		this.finishListeners.add(listener);
 	}
 
-	@Override
-	public void onPlayerJoin(IGameInstance minigame, ServerPlayerEntity player, PlayerRole role) {
+	// TODO: GameBossBar which accepts these events
+	private void onPlayerJoin(IGameInstance game, ServerPlayerEntity player, PlayerRole role) {
 		if (this.timerBar != null) {
 			this.timerBar.addPlayer(player);
 		}
 	}
 
-	@Override
-	public void onPlayerLeave(IGameInstance minigame, ServerPlayerEntity player) {
+	private void onPlayerLeave(IGameInstance game, ServerPlayerEntity player) {
 		if (this.timerBar != null) {
 			this.timerBar.removePlayer(player);
 		}
 	}
 
-	@Override
-	public void onFinish(IGameInstance minigame) {
+	private void onFinish(IGameInstance game) {
 		if (this.timerBar != null) {
 			this.timerBar.removeAllPlayers();
 			this.timerBar.setVisible(false);
 		}
 	}
 
-	@Override
-	public void worldUpdate(IGameInstance minigame, ServerWorld world) {
-		long ticks = minigame.ticks();
+	private void onTick(IGameInstance game) {
+		long ticks = game.ticks();
 		if (ticks >= closeTime) {
-			GameManager.getInstance().finish();
+			GameManager.get().finish();
 			return;
 		}
 
 		if (ticks == length) {
 			for (Consumer<IGameInstance> listener : finishListeners) {
-				listener.accept(minigame);
+				listener.accept(game);
 			}
 		}
 

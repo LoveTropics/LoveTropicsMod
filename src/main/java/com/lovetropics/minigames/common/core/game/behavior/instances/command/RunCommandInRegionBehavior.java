@@ -1,11 +1,11 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances.command;
 
+import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
+import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.lovetropics.minigames.common.core.map.MapRegion;
 import com.lovetropics.minigames.common.core.map.MapRegions;
-import com.lovetropics.minigames.common.core.game.IGameInstance;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.entity.player.ServerPlayerEntity;
 
 import java.util.List;
 import java.util.Map;
@@ -26,18 +26,20 @@ public final class RunCommandInRegionBehavior extends CommandInvokeBehavior {
 	}
 
 	@Override
-	public void onParticipantUpdate(IGameInstance minigame, ServerPlayerEntity player) {
-		if (player.ticksExisted % interval != 0) {
-			return;
-		}
+	protected void registerEvents(GameEventListeners events) {
+		events.listen(GamePlayerEvents.TICK, (game, player) -> {
+			if (player.ticksExisted % interval != 0) {
+				return;
+			}
 
-		MapRegions regions = minigame.getMapRegions();
-		for (String regionKey : commands.keySet()) {
-			for (MapRegion region : regions.get(regionKey)) {
-				if (region.contains(player.getPosX(), player.getPosY(), player.getPosZ())) {
-					invoke(regionKey, sourceForEntity(player));
+			MapRegions regions = game.getMapRegions();
+			for (String regionKey : commands.keySet()) {
+				for (MapRegion region : regions.get(regionKey)) {
+					if (region.contains(player.getPosX(), player.getPosY(), player.getPosZ())) {
+						invoke(regionKey, sourceForEntity(player));
+					}
 				}
 			}
-		}
+		});
 	}
 }

@@ -2,13 +2,13 @@ package com.lovetropics.minigames.common.core.game.behavior.instances.command;
 
 import com.lovetropics.minigames.common.core.game.IGameInstance;
 import com.lovetropics.minigames.common.core.game.PlayerRole;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameLifecycleEvents;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameLivingEntityEvents;
+import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.mojang.serialization.Codec;
-import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.world.server.ServerWorld;
-import net.minecraftforge.event.entity.living.LivingDeathEvent;
-import net.minecraftforge.event.entity.living.LivingHurtEvent;
-import net.minecraftforge.event.entity.player.AttackEntityEvent;
+import net.minecraft.util.ActionResultType;
 
 import java.util.List;
 import java.util.Map;
@@ -21,82 +21,41 @@ public final class CommandEventsBehavior extends CommandInvokeBehavior {
 	}
 
 	@Override
-	public void onConstruct(IGameInstance minigame) {
-		super.onConstruct(minigame);
+	protected void registerEvents(GameEventListeners events) {
 		this.invoke("ready");
+
+		events.listen(GameLifecycleEvents.START, game -> this.invoke("start"));
+		events.listen(GameLifecycleEvents.TICK, game -> this.invoke("update"));
+		events.listen(GameLifecycleEvents.FINISH, game -> this.invoke("finish"));
+		events.listen(GameLifecycleEvents.POST_FINISH, game -> this.invoke("post_finish"));
+		events.listen(GameLifecycleEvents.CANCEL, game -> this.invoke("cancel"));
+
+		events.listen(GamePlayerEvents.JOIN, this::onPlayerJoin);
+		events.listen(GamePlayerEvents.LEAVE, (game, player) -> this.invoke("player_leave", player));
+		events.listen(GamePlayerEvents.TICK, (game, player) -> this.invoke("player_update", player));
+		events.listen(GamePlayerEvents.RESPAWN, (game, player) -> this.invoke("player_respawn", player));
+
+		events.listen(GamePlayerEvents.DAMAGE, (game, player, damageSource, amount) -> {
+			this.invoke("player_hurt", player);
+			return ActionResultType.PASS;
+		});
+		events.listen(GamePlayerEvents.ATTACK, (game, player, target) -> {
+			this.invoke("player_attack", player);
+			return ActionResultType.PASS;
+		});
+		events.listen(GamePlayerEvents.DEATH, (game, player, damageSource) -> {
+			this.invoke("player_death", player);
+			return ActionResultType.PASS;
+		});
+
+		events.listen(GameLivingEntityEvents.TICK, (game, entity) -> this.invoke("entity_update", entity));
 	}
 
-	@Override
-	public void onStart(IGameInstance minigame) {
-		this.invoke("start");
-	}
-
-	@Override
-	public void worldUpdate(IGameInstance minigame, ServerWorld world) {
-		this.invoke("update");
-	}
-
-	@Override
-	public void onPlayerJoin(IGameInstance minigame, ServerPlayerEntity player, PlayerRole role) {
+	private void onPlayerJoin(IGameInstance game, ServerPlayerEntity player, PlayerRole role) {
 		if (role == PlayerRole.PARTICIPANT) {
-			this.invoke("player_join", sourceForEntity(player));
+			this.invoke("player_join", player);
 		} else {
-			this.invoke("player_spectate", sourceForEntity(player));
+			this.invoke("player_spectate", player);
 		}
-	}
-
-	@Override
-	public void onPlayerChangeRole(IGameInstance minigame, ServerPlayerEntity player, PlayerRole role, PlayerRole lastRole) {
-		this.onPlayerJoin(minigame, player, role);
-	}
-
-	@Override
-	public void onPlayerLeave(IGameInstance minigame, ServerPlayerEntity player) {
-		this.invoke("player_leave", sourceForEntity(player));
-	}
-
-	@Override
-	public void onPlayerDeath(IGameInstance minigame, ServerPlayerEntity player, LivingDeathEvent event) {
-		this.invoke("player_death", sourceForEntity(player));
-	}
-
-	@Override
-	public void onLivingEntityUpdate(IGameInstance minigame, LivingEntity entity) {
-		this.invoke("entity_update", sourceForEntity(entity));
-	}
-
-	@Override
-	public void onParticipantUpdate(IGameInstance minigame, ServerPlayerEntity player) {
-		this.invoke("player_update", sourceForEntity(player));
-	}
-
-	@Override
-	public void onPlayerRespawn(IGameInstance minigame, ServerPlayerEntity player) {
-		this.invoke("player_respawn", sourceForEntity(player));
-	}
-
-	@Override
-	public void onFinish(IGameInstance minigame) {
-		this.invoke("finish");
-	}
-
-	@Override
-	public void onPostFinish(IGameInstance minigame) {
-		this.invoke("post_finish");
-	}
-
-	@Override
-	public void onCancel(IGameInstance minigame) {
-		this.invoke("cancel");
-	}
-
-	@Override
-	public void onPlayerHurt(IGameInstance minigame, LivingHurtEvent event) {
-		this.invoke("player_hurt", sourceForEntity(event.getEntity()));
-	}
-
-	@Override
-	public void onPlayerAttackEntity(IGameInstance minigame, AttackEntityEvent event) {
-		this.invoke("player_attack", sourceForEntity(event.getTarget()));
 	}
 }

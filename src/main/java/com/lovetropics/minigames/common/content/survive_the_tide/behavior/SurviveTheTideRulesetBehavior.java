@@ -1,32 +1,35 @@
 package com.lovetropics.minigames.common.content.survive_the_tide.behavior;
 
 import com.google.common.collect.ImmutableList;
-import com.lovetropics.minigames.common.util.MoreCodecs;
-import com.lovetropics.minigames.common.core.map.MapRegion;
+import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.IGameInstance;
-import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.GameBehaviorType;
 import com.lovetropics.minigames.common.core.game.behavior.GameBehaviorTypes;
+import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameLifecycleEvents;
+import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.lovetropics.minigames.common.core.game.behavior.instances.PhasesGameBehavior;
+import com.lovetropics.minigames.common.core.map.MapRegion;
+import com.lovetropics.minigames.common.util.MoreCodecs;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.FenceBlock;
 import net.minecraft.enchantment.EnchantmentHelper;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.potion.EffectInstance;
 import net.minecraft.potion.Effects;
+import net.minecraft.util.ActionResultType;
+import net.minecraft.util.DamageSource;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.world.GameRules;
-import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
-import net.minecraftforge.event.entity.living.LivingDeathEvent;
-import net.minecraftforge.event.entity.living.LivingHurtEvent;
-import net.minecraftforge.event.entity.player.AttackEntityEvent;
 
 import java.util.List;
 
@@ -60,56 +63,56 @@ public class SurviveTheTideRulesetBehavior implements IGameBehavior
 	}
 
 	@Override
+	public void register(IGameInstance game, GameEventListeners events) throws GameException {
+		spawnArea = game.getMapRegions().getOne(spawnAreaKey);
+
+		events.listen(GamePlayerEvents.DEATH, this::onPlayerDeath);
+		events.listen(GamePlayerEvents.DAMAGE, this::onPlayerHurt);
+		events.listen(GamePlayerEvents.ATTACK, this::onPlayerAttackEntity);
+
+		events.listen(GameLifecycleEvents.TICK, this::tick);
+	}
+
+	@Override
 	public ImmutableList<GameBehaviorType<? extends IGameBehavior>> dependencies() {
 		return ImmutableList.of(GameBehaviorTypes.PHASES.get());
 	}
 
-	@Override
-	public void onConstruct(IGameInstance minigame) {
-		spawnArea = minigame.getMapRegions().getOne(spawnAreaKey);
-	}
-
-	@Override
-	public void onPlayerDeath(final IGameInstance minigame, ServerPlayerEntity player, LivingDeathEvent event) {
+	private ActionResultType onPlayerDeath(final IGameInstance game, ServerPlayerEntity player, DamageSource damageSource) {
 		if (forceDropItemsOnDeath && player.world.getGameRules().getBoolean(GameRules.KEEP_INVENTORY)) {
 			destroyVanishingCursedItems(player.inventory);
 			player.inventory.dropAllItems();
 		}
+		return ActionResultType.PASS;
 	}
 
-	@Override
-	public void onPlayerHurt(final IGameInstance minigame, LivingHurtEvent event) {
-		minigame.getOneBehavior(GameBehaviorTypes.PHASES.get()).ifPresent(phases -> {
-			if (event.getSource().getTrueSource() instanceof PlayerEntity && isSafePhase(phases.getCurrentPhase())) {
-				event.setCanceled(true);
+	private ActionResultType onPlayerHurt(final IGameInstance game, ServerPlayerEntity player, DamageSource source, float amount) {
+		return game.getOneBehavior(GameBehaviorTypes.PHASES.get()).map(phases -> {
+			if (source.getTrueSource() instanceof PlayerEntity && isSafePhase(phases.getCurrentPhase())) {
+				return ActionResultType.FAIL;
 			}
-		});
+			return ActionResultType.PASS;
+		}).orElse(ActionResultType.PASS);
 	}
 
-	@Override
-	public void onPlayerAttackEntity(final IGameInstance minigame, AttackEntityEvent event) {
-		minigame.getOneBehavior(GameBehaviorTypes.PHASES.get()).ifPresent(phases -> {
-			if (event.getTarget() instanceof PlayerEntity && isSafePhase(phases.getCurrentPhase())) {
-				event.setCanceled(true);
+	private ActionResultType onPlayerAttackEntity(final IGameInstance game, ServerPlayerEntity player, Entity target) {
+		return game.getOneBehavior(GameBehaviorTypes.PHASES.get()).map(phases -> {
+			if (target instanceof PlayerEntity && isSafePhase(phases.getCurrentPhase())) {
+				return ActionResultType.FAIL;
 			}
-		});
+			return ActionResultType.PASS;
+		}).orElse(ActionResultType.PASS);
 	}
 
-	@Override
-	public void worldUpdate(final IGameInstance minigame, ServerWorld world) {
+	private void tick(final IGameInstance game) {
 		if (!hasFreedParticipants) {
-			minigame.getOneBehavior(GameBehaviorTypes.PHASES.get()).ifPresent(phases -> {
+			game.getOneBehavior(GameBehaviorTypes.PHASES.get()).ifPresent(phases -> {
 				if (phases.getCurrentPhase().getKey().equals(phaseToFreeParticipants)) {
 					hasFreedParticipants = true;
-					setParticipantsFree(minigame, world, phases.getCurrentPhase());
+					setParticipantsFree(game, phases.getCurrentPhase());
 				}
 			});
 		}
-	}
-
-	@Override
-	public void onFinish(final IGameInstance minigame) {
-		hasFreedParticipants = false;
 	}
 
 	public boolean isSafePhase(PhasesGameBehavior.MinigamePhase phase) {
@@ -125,17 +128,18 @@ public class SurviveTheTideRulesetBehavior implements IGameBehavior
 		}
 	}
 
-	private void setParticipantsFree(final IGameInstance minigame, final World world, final PhasesGameBehavior.MinigamePhase newPhase) {
+	private void setParticipantsFree(final IGameInstance game, final PhasesGameBehavior.MinigamePhase newPhase) {
 		// Destroy all fences blocking players from getting out of spawn area for phase 0
+		ServerWorld world = game.getWorld();
 		for (BlockPos p : spawnArea) {
 			if (world.getBlockState(p).getBlock() instanceof FenceBlock) {
 				world.setBlockState(p, Blocks.AIR.getDefaultState(), 2);
 			}
 		}
 
-		minigame.getPlayers().sendMessage(messageOnSetPlayersFree);
+		game.getPlayers().sendMessage(messageOnSetPlayersFree);
 
 		// So players can drop down without fall damage
-		minigame.getPlayers().addPotionEffect(new EffectInstance(Effects.SLOW_FALLING, 20 * 20));
+		game.getPlayers().addPotionEffect(new EffectInstance(Effects.SLOW_FALLING, 20 * 20));
 	}
 }

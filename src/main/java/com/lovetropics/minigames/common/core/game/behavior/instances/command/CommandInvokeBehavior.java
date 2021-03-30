@@ -1,10 +1,12 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances.command;
 
-import com.lovetropics.minigames.common.util.MoreCodecs;
+import com.lovetropics.minigames.common.core.game.GameControllable;
+import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.IGameInstance;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
-import com.lovetropics.minigames.common.core.game.behavior.IPollingMinigameBehavior;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
 import com.lovetropics.minigames.common.core.game.polling.PollingGameInstance;
+import com.lovetropics.minigames.common.util.MoreCodecs;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.serialization.Codec;
@@ -18,7 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
-public abstract class CommandInvokeBehavior implements IGameBehavior, IPollingMinigameBehavior {
+public abstract class CommandInvokeBehavior implements IGameBehavior {
 	private static final Logger LOGGER = LogManager.getLogger(CommandInvokeBehavior.class);
 
 	public static final Codec<String> COMMAND_CODEC = Codec.STRING.xmap(
@@ -46,6 +48,10 @@ public abstract class CommandInvokeBehavior implements IGameBehavior, IPollingMi
 		this.invoke(key, this.source);
 	}
 
+	public void invoke(String key, Entity source) {
+		this.invoke(key, this.sourceForEntity(source));
+	}
+
 	public void invoke(String key, CommandSource source) {
 		List<String> commands = this.commands.get(key);
 		if (commands == null || commands.isEmpty()) {
@@ -66,14 +72,23 @@ public abstract class CommandInvokeBehavior implements IGameBehavior, IPollingMi
 	}
 
 	@Override
-	public void onStartPolling(PollingGameInstance minigame) {
-		MinecraftServer server = minigame.getServer();
+	public void registerPolling(PollingGameInstance game, GameEventListeners events) throws GameException {
+		MinecraftServer server = game.getServer();
 		this.dispatcher = server.getCommandManager().getDispatcher();
 		this.source = server.getCommandSource();
+
+		this.registerControls(game);
 	}
 
 	@Override
-	public void onConstruct(IGameInstance minigame) {
-		this.source = minigame.getCommandSource();
+	public void register(IGameInstance game, GameEventListeners events) {
+		this.source = game.getCommandSource();
+		this.registerControls(game);
+		this.registerEvents(events);
 	}
+
+	protected void registerControls(GameControllable game) {
+	}
+
+	protected abstract void registerEvents(GameEventListeners events);
 }

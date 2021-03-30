@@ -1,6 +1,10 @@
 package com.lovetropics.minigames.common.core.game.util;
 
-import com.lovetropics.minigames.common.core.game.PlayerSet;
+import com.lovetropics.minigames.common.core.game.IGameInstance;
+import com.lovetropics.minigames.common.core.game.MutablePlayerSet;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameLifecycleEvents;
+import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import it.unimi.dsi.fastutil.chars.CharArrayList;
 import it.unimi.dsi.fastutil.chars.CharList;
 import it.unimi.dsi.fastutil.chars.CharOpenHashSet;
@@ -12,14 +16,13 @@ import net.minecraft.network.play.server.SUpdateScorePacket;
 import net.minecraft.scoreboard.ScoreCriteria;
 import net.minecraft.scoreboard.ScoreObjective;
 import net.minecraft.scoreboard.ServerScoreboard;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextFormatting;
 
-import javax.annotation.Nullable;
 import java.util.Arrays;
-import java.util.UUID;
 
-public final class GameSidebar implements PlayerSet.Listeners, AutoCloseable {
+public final class GameSidebar implements AutoCloseable {
 	private static final int SIDEBAR_SLOT = 1;
 	private static final int ADD_OBJECTIVE = 0;
 	private static final int REMOVE_OBJECTIVE = 1;
@@ -44,22 +47,27 @@ public final class GameSidebar implements PlayerSet.Listeners, AutoCloseable {
 		AVAILABLE_FORMATTING_CODES = availableFormattingCodes.toCharArray();
 	}
 
-	private final PlayerSet players;
+	private final MutablePlayerSet players;
 	private final ITextComponent title;
 
 	private String[] display = new String[0];
 
-	private GameSidebar(ITextComponent title, PlayerSet players) {
-		this.players = players;
+	private GameSidebar(MinecraftServer server, ITextComponent title) {
+		this.players = new MutablePlayerSet(server);
 		this.title = title;
-		this.players.addListener(this);
 	}
 
-	public static GameSidebar open(ITextComponent title, PlayerSet players) {
-		GameSidebar widget = new GameSidebar(title, players);
-		for (ServerPlayerEntity player : players) {
-			widget.onAddPlayer(player);
+	public static GameSidebar open(IGameInstance game, ITextComponent title) {
+		GameSidebar widget = new GameSidebar(game.getServer(), title);
+
+		for (ServerPlayerEntity player : game.getPlayers()) {
+			widget.addPlayer(player);
 		}
+
+		GameEventListeners events = game.events();
+		events.listen(GamePlayerEvents.JOIN, (g, player, role) -> widget.addPlayer(player));
+		events.listen(GamePlayerEvents.LEAVE, (g, player) -> widget.removePlayer(player));
+		events.listen(GameLifecycleEvents.FINISH, g -> widget.close());
 
 		return widget;
 	}
@@ -85,8 +93,9 @@ public final class GameSidebar implements PlayerSet.Listeners, AutoCloseable {
 		}
 	}
 
-	@Override
-	public void onAddPlayer(ServerPlayerEntity player) {
+	private void addPlayer(ServerPlayerEntity player) {
+		this.players.add(player);
+
 		ScoreObjective objective = this.createDummyObjective();
 
 		player.connection.sendPacket(new SScoreboardObjectivePacket(objective, ADD_OBJECTIVE));
@@ -95,12 +104,14 @@ public final class GameSidebar implements PlayerSet.Listeners, AutoCloseable {
 		this.sendDisplay(player, this.display);
 	}
 
-	@Override
-	public void onRemovePlayer(UUID id, @Nullable ServerPlayerEntity player) {
-		if (player != null) {
-			ScoreObjective objective = this.createDummyObjective();
-			player.connection.sendPacket(new SScoreboardObjectivePacket(objective, REMOVE_OBJECTIVE));
-		}
+	private void removePlayer(ServerPlayerEntity player) {
+		this.players.remove(player);
+		this.sendRemove(player);
+	}
+
+	private void sendRemove(ServerPlayerEntity player) {
+		ScoreObjective objective = this.createDummyObjective();
+		player.connection.sendPacket(new SScoreboardObjectivePacket(objective, REMOVE_OBJECTIVE));
 	}
 
 	private void sendDisplay(ServerPlayerEntity player, String[] display) {
@@ -124,11 +135,10 @@ public final class GameSidebar implements PlayerSet.Listeners, AutoCloseable {
 
 	@Override
 	public void close() {
-		this.players.removeListener(this);
-
 		for (ServerPlayerEntity player : this.players) {
-			this.onRemovePlayer(player.getUniqueID(), player);
+			this.sendRemove(player);
 		}
+		this.players.clear();
 	}
 
 	private static String makeLine(int i, String line) {

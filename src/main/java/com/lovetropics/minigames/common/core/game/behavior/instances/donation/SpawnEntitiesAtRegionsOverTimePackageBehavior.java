@@ -1,19 +1,22 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances.donation;
 
 import com.google.common.collect.Lists;
-import com.lovetropics.minigames.common.util.Util;
+import com.lovetropics.minigames.common.core.game.GameException;
+import com.lovetropics.minigames.common.core.game.IGameInstance;
+import com.lovetropics.minigames.common.core.game.behavior.IGamePackageBehavior;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameLifecycleEvents;
+import com.lovetropics.minigames.common.core.game.behavior.event.GamePackageEvents;
 import com.lovetropics.minigames.common.core.integration.game_actions.GamePackage;
 import com.lovetropics.minigames.common.core.map.MapRegion;
 import com.lovetropics.minigames.common.core.map.MapRegions;
-import com.lovetropics.minigames.common.core.game.IGameInstance;
-import com.lovetropics.minigames.common.core.game.behavior.IGamePackageBehavior;
+import com.lovetropics.minigames.common.util.Util;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.entity.EntityType;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.gen.Heightmap;
-import net.minecraft.world.server.ServerWorld;
 
 import java.util.List;
 
@@ -59,24 +62,25 @@ public class SpawnEntitiesAtRegionsOverTimePackageBehavior implements IGamePacka
 	}
 
 	@Override
-	public void onConstruct(IGameInstance minigame) {
-		MapRegions regions = minigame.getMapRegions();
+	public void register(IGameInstance game, GameEventListeners events) throws GameException {
+		MapRegions regions = game.getMapRegions();
 
 		regionsToSpawnAt.clear();
 
 		for (String key : regionsToSpawnAtKeys) {
 			regionsToSpawnAt.addAll(regions.get(key));
 		}
+
+		events.listen(GamePackageEvents.RECEIVE_PACKAGE, this::onGamePackageReceived);
+		events.listen(GameLifecycleEvents.TICK, this::tick);
 	}
 
-	@Override
-	public boolean onGamePackageReceived(final IGameInstance minigame, final GamePackage gamePackage) {
+	private boolean onGamePackageReceived(final IGameInstance game, final GamePackage gamePackage) {
 		if (gamePackage.getPackageType().equals(data.packageType)) {
-
 			ticksRemaining += ticksToSpawnFor;
 			entityCountRemaining += entityCount;
 
-			data.onReceive(minigame, null, gamePackage.getSendingPlayerName());
+			data.onReceive(game, null, gamePackage.getSendingPlayerName());
 
 			return true;
 		}
@@ -84,8 +88,7 @@ public class SpawnEntitiesAtRegionsOverTimePackageBehavior implements IGamePacka
 		return false;
 	}
 
-	@Override
-	public void worldUpdate(IGameInstance minigame, ServerWorld world) {
+	private void tick(IGameInstance game) {
 		if (ticksRemaining > 0) {
 
 			//TODO: support less than 1 spawned per tick rate
@@ -95,10 +98,10 @@ public class SpawnEntitiesAtRegionsOverTimePackageBehavior implements IGamePacka
 			//System.out.println("spawnsPerTick: " + spawnsPerTick + ", ticksRemaining: " + ticksRemaining);
 
 			for (int i = 0; i < spawnsPerTick; i++) {
-				MapRegion region = regionsToSpawnAt.get(minigame.getWorld().getRandom().nextInt(regionsToSpawnAt.size()));
-				final BlockPos pos = minigame.getWorld().getHeight(Heightmap.Type.WORLD_SURFACE, region.sample(minigame.getWorld().getRandom()));
+				MapRegion region = regionsToSpawnAt.get(game.getWorld().getRandom().nextInt(regionsToSpawnAt.size()));
+				final BlockPos pos = game.getWorld().getHeight(Heightmap.Type.WORLD_SURFACE, region.sample(game.getWorld().getRandom()));
 
-				Util.spawnEntity(entityId, minigame.getWorld(), pos.getX(), pos.getY(), pos.getZ());
+				Util.spawnEntity(entityId, game.getWorld(), pos.getX(), pos.getY(), pos.getZ());
 				entityCountRemaining--;
 			}
 

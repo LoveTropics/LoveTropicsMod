@@ -1,10 +1,13 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances.donation;
 
 import com.google.common.collect.Lists;
-import com.lovetropics.minigames.common.util.Util;
-import com.lovetropics.minigames.common.core.integration.game_actions.GamePackage;
 import com.lovetropics.minigames.common.core.game.IGameInstance;
 import com.lovetropics.minigames.common.core.game.behavior.IGamePackageBehavior;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameLifecycleEvents;
+import com.lovetropics.minigames.common.core.game.behavior.event.GamePackageEvents;
+import com.lovetropics.minigames.common.core.integration.game_actions.GamePackage;
+import com.lovetropics.minigames.common.util.Util;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
@@ -13,7 +16,6 @@ import net.minecraft.entity.EntityType;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.registry.Registry;
-import net.minecraft.world.server.ServerWorld;
 
 import java.util.Iterator;
 import java.util.List;
@@ -57,7 +59,12 @@ public class SpawnEntitiesAroundPlayersPackageBehavior implements IGamePackageBe
 	}
 
 	@Override
-	public boolean onGamePackageReceived(final IGameInstance minigame, final GamePackage gamePackage) {
+	public void register(IGameInstance game, GameEventListeners events) {
+		events.listen(GamePackageEvents.RECEIVE_PACKAGE, this::onGamePackageReceived);
+		events.listen(GameLifecycleEvents.TICK, this::tick);
+	}
+
+	private boolean onGamePackageReceived(final IGameInstance minigame, final GamePackage gamePackage) {
 		if (gamePackage.getPackageType().equals(data.packageType)) {
 			final List<ServerPlayerEntity> players = Lists.newArrayList(minigame.getParticipants());
 			for (ServerPlayerEntity player : players) {
@@ -72,8 +79,7 @@ public class SpawnEntitiesAroundPlayersPackageBehavior implements IGamePackageBe
 		return false;
 	}
 
-	@Override
-	public void worldUpdate(IGameInstance minigame, ServerWorld world) {
+	private void tick(IGameInstance game) {
 		Iterator<Object2IntMap.Entry<ServerPlayerEntity>> it = playerToAmountToSpawn.object2IntEntrySet().iterator();
 		while (it.hasNext()) {
 			Object2IntMap.Entry<ServerPlayerEntity> entry = it.next();
@@ -82,14 +88,14 @@ public class SpawnEntitiesAroundPlayersPackageBehavior implements IGamePackageBe
 				it.remove();
 			} else {
 
-				BlockPos pos = getSpawnableRandomPositionNear(minigame, entry.getKey().getPosition(), spawnDistanceMin, spawnDistanceMax, spawnsPerTick, spawnRangeY);
+				BlockPos pos = getSpawnableRandomPositionNear(game, entry.getKey().getPosition(), spawnDistanceMin, spawnDistanceMax, spawnsPerTick, spawnRangeY);
 
 				if (pos != BlockPos.ZERO) {
 					entry.setValue(entry.getIntValue() - 1);
 					if (entry.getIntValue() <= 0) {
 						it.remove();
 					}
-					Util.spawnEntity(entityId, minigame.getWorld(), pos.getX(), pos.getY(), pos.getZ());
+					Util.spawnEntity(entityId, game.getWorld(), pos.getX(), pos.getY(), pos.getZ());
 				}
 
 			}

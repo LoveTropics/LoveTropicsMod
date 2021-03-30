@@ -1,10 +1,13 @@
 package com.lovetropics.minigames.common.content.survive_the_tide.behavior;
 
-import com.lovetropics.minigames.common.core.game.IGameInstance;
+import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.GameManager;
+import com.lovetropics.minigames.common.core.game.IGameInstance;
 import com.lovetropics.minigames.common.core.game.PlayerSet;
-import com.lovetropics.minigames.common.core.game.util.TemplatedText;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameLifecycleEvents;
+import com.lovetropics.minigames.common.core.game.util.TemplatedText;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.effect.LightningBoltEntity;
@@ -13,7 +16,6 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.world.World;
 import net.minecraft.world.gen.Heightmap;
-import net.minecraft.world.server.ServerWorld;
 
 public abstract class SttWinConditionBehavior implements IGameBehavior {
 	protected boolean minigameEnded;
@@ -38,26 +40,25 @@ public abstract class SttWinConditionBehavior implements IGameBehavior {
 	}
 
 	@Override
-	public void worldUpdate(final IGameInstance minigame, ServerWorld world) {
-		this.checkForGameEndCondition(minigame, world);
+	public void register(IGameInstance registerGame, GameEventListeners events) throws GameException {
+		events.listen(GameLifecycleEvents.TICK, game -> this.checkForGameEndCondition(game, game.getWorld()));
+
+		events.listen(GameLifecycleEvents.FINISH, game -> {
+			this.minigameEnded = false;
+			this.minigameEndedTimer = 0;
+		});
 	}
 
-	@Override
-	public void onFinish(final IGameInstance minigame) {
-		this.minigameEnded = false;
-		this.minigameEndedTimer = 0;
-	}
-
-	private void checkForGameEndCondition(final IGameInstance minigame, final World world) {
+	private void checkForGameEndCondition(final IGameInstance mgame, final World world) {
 		if (this.minigameEnded) {
 			if (spawnLightningBoltsOnFinish) {
-				spawnLightningBoltsEverywhere(minigame, world);
+				spawnLightningBoltsEverywhere(mgame, world);
 			}
 
-			sendGameFinishMessages(minigame);
+			sendGameFinishMessages(mgame);
 
 			if (this.minigameEndedTimer >= gameFinishTickDelay) {
-				GameManager.getInstance().finish();
+				GameManager.get().finish();
 			}
 
 			this.minigameEndedTimer++;

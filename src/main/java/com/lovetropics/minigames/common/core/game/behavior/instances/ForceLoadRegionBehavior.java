@@ -1,8 +1,10 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances;
 
-import com.lovetropics.minigames.common.core.map.MapRegion;
 import com.lovetropics.minigames.common.core.game.IGameInstance;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameLifecycleEvents;
+import com.lovetropics.minigames.common.core.map.MapRegion;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.longs.LongIterator;
@@ -28,10 +30,26 @@ public final class ForceLoadRegionBehavior implements IGameBehavior {
 	}
 
 	@Override
-	public void onConstruct(IGameInstance minigame) {
-		ServerChunkProvider chunkProvider = minigame.getWorld().getChunkProvider();
+	public void register(IGameInstance registerGame, GameEventListeners events) {
+		acquiredChunks = acquireChunks(registerGame);
 
-		LongSet chunks = collectChunks(minigame);
+		events.listen(GameLifecycleEvents.FINISH, this::onFinish);
+	}
+
+	private void onFinish(IGameInstance game) {
+		ServerChunkProvider chunkProvider = game.getWorld().getChunkProvider();
+
+		LongIterator iterator = acquiredChunks.iterator();
+		while (iterator.hasNext()) {
+			long chunkKey = iterator.nextLong();
+			chunkProvider.forceChunk(new ChunkPos(chunkKey), false);
+		}
+	}
+
+	private LongSet acquireChunks(IGameInstance game) {
+		ServerChunkProvider chunkProvider = game.getWorld().getChunkProvider();
+
+		LongSet chunks = collectChunks(game);
 
 		LongIterator iterator = chunks.iterator();
 		while (iterator.hasNext()) {
@@ -45,18 +63,7 @@ public final class ForceLoadRegionBehavior implements IGameBehavior {
 			chunkProvider.getChunk(ChunkPos.getX(chunkKey), ChunkPos.getZ(chunkKey), true);
 		}
 
-		acquiredChunks = chunks;
-	}
-
-	@Override
-	public void onFinish(IGameInstance minigame) {
-		ServerChunkProvider chunkProvider = minigame.getWorld().getChunkProvider();
-
-		LongIterator iterator = acquiredChunks.iterator();
-		while (iterator.hasNext()) {
-			long chunkKey = iterator.nextLong();
-			chunkProvider.forceChunk(new ChunkPos(chunkKey), false);
-		}
+		return chunks;
 	}
 
 	private LongSet collectChunks(IGameInstance minigame) {

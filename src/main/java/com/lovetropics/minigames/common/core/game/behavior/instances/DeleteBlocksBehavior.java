@@ -1,8 +1,10 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances;
 
-import com.lovetropics.minigames.common.core.map.MapRegion;
 import com.lovetropics.minigames.common.core.game.IGameInstance;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameLifecycleEvents;
+import com.lovetropics.minigames.common.core.map.MapRegion;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.block.Blocks;
@@ -31,18 +33,18 @@ public final class DeleteBlocksBehavior implements IGameBehavior {
 	}
 
 	@Override
-	public void onConstruct(IGameInstance minigame) {
-		regions = minigame.getMapRegions().get(regionKey);
-	}
+	public void register(IGameInstance registerGame, GameEventListeners events) {
+		regions = registerGame.getMapRegions().get(regionKey);
 
-	@Override
-	public void worldUpdate(IGameInstance minigame, ServerWorld world) {
-		if (time == minigame.ticks()) {
-			for (MapRegion region : regions) {
-				for (BlockPos pos : region) {
-					world.setBlockState(pos, Blocks.AIR.getDefaultState());
+		events.listen(GameLifecycleEvents.TICK, game -> {
+			if (time == game.ticks()) {
+				ServerWorld world = game.getWorld();
+				for (MapRegion region : regions) {
+					for (BlockPos pos : region) {
+						world.setBlockState(pos, Blocks.AIR.getDefaultState());
+					}
 				}
 			}
-		}
+		});
 	}
 }

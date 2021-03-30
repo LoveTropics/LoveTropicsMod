@@ -1,10 +1,9 @@
 package com.lovetropics.minigames.common.core.game;
 
 import com.lovetropics.minigames.common.core.map.MapRegions;
-import com.lovetropics.minigames.common.core.game.behavior.BehaviorDispatcher;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.GameBehaviorType;
-import com.lovetropics.minigames.common.core.game.statistics.MinigameStatistics;
+import com.lovetropics.minigames.common.core.game.statistics.GameStatistics;
 import com.lovetropics.minigames.common.core.integration.GameInstanceTelemetry;
 import net.minecraft.command.CommandSource;
 import net.minecraft.entity.player.ServerPlayerEntity;
@@ -20,9 +19,8 @@ import java.util.Optional;
  * the running minigame. Also holds the definition to process the content
  * within the minigame.
  */
-public interface IGameInstance extends ProtoGame, GameControllable, BehaviorDispatcher<IGameBehavior, IGameInstance>
+public interface IGameInstance extends ProtoGame, GameControllable
 {
-    @Override
     Collection<IGameBehavior> getBehaviors();
 
     <T extends IGameBehavior> Collection<T> getBehaviors(GameBehaviorType<T> type);
@@ -103,7 +101,7 @@ public interface IGameInstance extends ProtoGame, GameControllable, BehaviorDisp
      */
     long ticks();
 
-    MinigameStatistics getStatistics();
+    GameStatistics getStatistics();
 
     GameInstanceTelemetry getTelemetry();
 

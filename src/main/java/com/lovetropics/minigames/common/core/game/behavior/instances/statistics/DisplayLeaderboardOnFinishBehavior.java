@@ -3,6 +3,8 @@ package com.lovetropics.minigames.common.core.game.behavior.instances.statistics
 import com.lovetropics.minigames.common.core.game.IGameInstance;
 import com.lovetropics.minigames.common.core.game.PlayerSet;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameLifecycleEvents;
 import com.lovetropics.minigames.common.core.game.statistics.PlacementOrder;
 import com.lovetropics.minigames.common.core.game.statistics.PlayerPlacement;
 import com.lovetropics.minigames.common.core.game.statistics.StatisticKey;
@@ -35,16 +37,18 @@ public final class DisplayLeaderboardOnFinishBehavior<T extends Comparable<T>> i
 	}
 
 	@Override
-	public void onFinish(IGameInstance minigame) {
-		PlayerPlacement.Score<T> placement;
-		if (order == PlacementOrder.MAX) {
-			placement = PlayerPlacement.fromMaxScore(minigame, statistic);
-		} else {
-			placement = PlayerPlacement.fromMinScore(minigame, statistic);
-		}
+	public void register(IGameInstance registerGame, GameEventListeners events) {
+		events.listen(GameLifecycleEvents.FINISH, game -> {
+			PlayerPlacement.Score<T> placement;
+			if (order == PlacementOrder.MAX) {
+				placement = PlayerPlacement.fromMaxScore(game, statistic);
+			} else {
+				placement = PlayerPlacement.fromMinScore(game, statistic);
+			}
 
-		PlayerSet players = minigame.getPlayers();
-		players.sendMessage(new StringTextComponent("The game is over! Here are the results:"));
-		placement.sendTo(players, length);
+			PlayerSet players = game.getPlayers();
+			players.sendMessage(new StringTextComponent("The game is over! Here are the results:"));
+			placement.sendTo(players, length);
+		});
 	}
 }
