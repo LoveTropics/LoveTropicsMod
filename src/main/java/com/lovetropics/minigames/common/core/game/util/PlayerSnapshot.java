@@ -41,6 +41,7 @@ public final class PlayerSnapshot {
 		player.setHealth(player.getMaxHealth());
 
 		player.clearActivePotions();
+		player.setGlowing(false);
 
 		CompoundNBT foodTag = new CompoundNBT();
 		new FoodStats().write(foodTag);
