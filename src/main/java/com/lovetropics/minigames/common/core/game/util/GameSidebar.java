@@ -29,6 +29,9 @@ public final class GameSidebar implements AutoCloseable {
 
 	private static final String OBJECTIVE_NAME = "lt_sidebar";
 
+	private static final int MAX_WIDTH = 40;
+
+	private static final String FORMATTING_CHARS = "abcdefghijklmnopqrstuvwxyz.!?*+-(){}|";
 	private static final char[] AVAILABLE_FORMATTING_CODES;
 
 	static {
@@ -38,7 +41,8 @@ public final class GameSidebar implements AutoCloseable {
 		}
 
 		CharList availableFormattingCodes = new CharArrayList();
-		for (char code = 'a'; code <= 'z'; code++) {
+		for (int i = 0; i < FORMATTING_CHARS.length(); i++) {
+			char code = FORMATTING_CHARS.charAt(i);
 			if (!vanillaFormattingCodes.contains(code)) {
 				availableFormattingCodes.add(code);
 			}
@@ -52,14 +56,13 @@ public final class GameSidebar implements AutoCloseable {
 
 	private String[] display = new String[0];
 
-	private GameSidebar(MinecraftServer server, ITextComponent title) {
+	public GameSidebar(MinecraftServer server, ITextComponent title) {
 		this.players = new MutablePlayerSet(server);
 		this.title = title;
 	}
 
-	public static GameSidebar open(IGameInstance game, ITextComponent title) {
+	public static GameSidebar openGlobal(IGameInstance game, ITextComponent title) {
 		GameSidebar widget = new GameSidebar(game.getServer(), title);
-
 		for (ServerPlayerEntity player : game.getAllPlayers()) {
 			widget.addPlayer(player);
 		}
@@ -142,6 +145,10 @@ public final class GameSidebar implements AutoCloseable {
 	}
 
 	private static String makeLine(int i, String line) {
-		return "\u00a7" + AVAILABLE_FORMATTING_CODES[i] + line;
+		line = "\u00a7" + AVAILABLE_FORMATTING_CODES[i] + line;
+		if (line.length() > MAX_WIDTH) {
+			line = line.substring(0, MAX_WIDTH - 1);
+		}
+		return line;
 	}
 }
