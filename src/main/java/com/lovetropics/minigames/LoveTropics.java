@@ -64,7 +64,7 @@ public class LoveTropics {
         }
     });
 
-    private static NonNullLazyValue<Registrate> registrate = new NonNullLazyValue<>(() ->
+    private static final NonNullLazyValue<Registrate> REGISTRATE = new NonNullLazyValue<>(() ->
     	Registrate.create(Constants.MODID)
     			  .itemGroup(() -> LOVE_TROPICS_ITEM_GROUP));
 
@@ -117,7 +117,7 @@ public class LoveTropics {
     }
 
     public static Registrate registrate() {
-        return registrate.getValue();
+        return REGISTRATE.getValue();
     }
 
     @OnlyIn(Dist.CLIENT)

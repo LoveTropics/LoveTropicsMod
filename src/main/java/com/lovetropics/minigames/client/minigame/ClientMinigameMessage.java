@@ -20,7 +20,7 @@ public class ClientMinigameMessage {
 	}
 
 	public ClientMinigameMessage(ProtoGame minigame) {
-		this(minigame.getDefinition().getDisplayID(),
+		this(minigame.getDefinition().getDisplayId(),
 			minigame.getDefinition().getTranslationKey(),
 			minigame.getStatus(),
 			minigame.getDefinition().getMaximumParticipantCount());

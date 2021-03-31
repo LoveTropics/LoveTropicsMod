@@ -99,13 +99,12 @@ public class SpawnEntitiesAroundPlayersPackageBehavior implements IGameBehavior
 	 * - also checks that it isnt water under it
 	 */
 	public boolean isSpawnablePosition(final IGameInstance minigame, BlockPos pos) {
-		if (minigame.getWorld().isAirBlock(pos.add(0, -1, 0))) return false;
-		if (!minigame.getWorld().isAirBlock(pos.add(0, 0, 0))) return false;
-		if (!minigame.getWorld().isAirBlock(pos.add(0, 1, 0))) return false;
-		if (minigame.getWorld().getBlockState(pos.add(0, -1, 0)).getMaterial().isLiquid()) return false;
-		if (minigame.getWorld().getBlockState(pos.add(0, 0, 0)).getMaterial().isLiquid()) return false;
-		if (minigame.getWorld().getBlockState(pos.add(0, 1, 0)).getMaterial().isLiquid()) return false;
-		return true;
+		return !minigame.getWorld().isAirBlock(pos.add(0, -1, 0))
+				&& minigame.getWorld().isAirBlock(pos.add(0, 0, 0))
+				&& minigame.getWorld().isAirBlock(pos.add(0, 1, 0))
+				&& !minigame.getWorld().getBlockState(pos.add(0, -1, 0)).getMaterial().isLiquid()
+				&& !minigame.getWorld().getBlockState(pos.add(0, 0, 0)).getMaterial().isLiquid()
+				&& !minigame.getWorld().getBlockState(pos.add(0, 1, 0)).getMaterial().isLiquid();
 	}
 
 

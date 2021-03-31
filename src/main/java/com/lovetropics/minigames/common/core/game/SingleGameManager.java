@@ -9,12 +9,11 @@ import com.lovetropics.minigames.client.minigame.ClientRoleMessage;
 import com.lovetropics.minigames.client.minigame.PlayerCountsMessage;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameLifecycleEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePollingEvents;
+import com.lovetropics.minigames.common.core.game.control.ControlCommandInvoker;
 import com.lovetropics.minigames.common.core.game.polling.PollingGameInstance;
 import com.lovetropics.minigames.common.core.game.statistics.PlayerKey;
 import com.lovetropics.minigames.common.core.integration.Telemetry;
 import com.lovetropics.minigames.common.core.network.LoveTropicsNetwork;
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import net.minecraft.command.CommandSource;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
@@ -35,7 +34,6 @@ import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.stream.Stream;
 
 /**
  * Standard implementation of a minigame manager. Would prefer to do something other
@@ -207,7 +205,7 @@ public class SingleGameManager implements IGameManager {
 		}
 		this.pollingGame = null;
 
-		ITextComponent name = pollingGame.getDefinition().getName().deepCopy().mergeStyle(TextFormatting.ITALIC, TextFormatting.AQUA);
+		ITextComponent name = game.getDefinition().getName().deepCopy().mergeStyle(TextFormatting.ITALIC, TextFormatting.AQUA);
 		ITextComponent message = new TranslationTextComponent(TropicraftLangKeys.COMMAND_MINIGAME_STOPPED_POLLING, name).mergeStyle(TextFormatting.RED);
 		game.getServer().getPlayerList().func_232641_a_(message, ChatType.SYSTEM, Util.DUMMY_UUID);
 
@@ -221,7 +219,7 @@ public class SingleGameManager implements IGameManager {
 			return CompletableFuture.completedFuture(GameResult.error(new TranslationTextComponent(TropicraftLangKeys.COMMAND_NO_MINIGAME_POLLING)));
 		}
 
-		return pollingGame.start().thenApply(result -> {
+		return game.start().thenApply(result -> {
 			if (result.isOk()) {
 				this.pollingGame = null;
 				this.activeGame = result.getOk();
@@ -344,50 +342,12 @@ public class SingleGameManager implements IGameManager {
 	}
 
 	@Override
-	public void addControlCommand(String name, ControlCommand command) {
+	public ControlCommandInvoker getControlInvoker() {
 		if (activeGame != null) {
-			activeGame.addControlCommand(name, command);
+			return activeGame.getControlCommands();
+		} else if (pollingGame != null) {
+			return pollingGame.getControlCommands();
 		}
-
-		if (pollingGame != null) {
-			pollingGame.addControlCommand(name, command);
-		}
-	}
-
-	@Override
-	public void invokeControlCommand(String name, CommandSource source) throws CommandSyntaxException {
-		if (activeGame != null) {
-			activeGame.invokeControlCommand(name, source);
-		}
-
-		if (pollingGame != null) {
-			pollingGame.invokeControlCommand(name, source);
-		}
-	}
-
-	@Override
-	public Stream<String> controlCommandsFor(CommandSource source) {
-		if (activeGame != null) {
-			return activeGame.controlCommandsFor(source);
-		}
-
-		if (pollingGame != null) {
-			return pollingGame.controlCommandsFor(source);
-		}
-
-		return Stream.empty();
-	}
-
-	@Override
-	public PlayerKey getInitiator() {
-		if (activeGame != null) {
-			return activeGame.getInitiator();
-		}
-
-		if (pollingGame != null) {
-			return pollingGame.getInitiator();
-		}
-
-		return null;
+		return ControlCommandInvoker.EMPTY;
 	}
 }

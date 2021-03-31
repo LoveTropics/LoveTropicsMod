@@ -12,8 +12,7 @@ import net.minecraft.util.text.TranslationTextComponent;
  * ruleset for the minigame such as maximum and minimum participants, game types
  * for each player type, dimension the minigame takes place in, etc.
  */
-public interface IGameDefinition
-{
+public interface IGameDefinition {
     IGameMapProvider getMapProvider();
 
     BehaviorMap createBehaviors();
@@ -23,9 +22,9 @@ public interface IGameDefinition
      * compared to other registered minigames.
      * @return The identifier for this minigame definition.
      */
-    ResourceLocation getID();
+    ResourceLocation getId();
 
-    ResourceLocation getDisplayID();
+    ResourceLocation getDisplayId();
 
 	/**
 	 * An identifier for telemetry usage, so that variants of games can share

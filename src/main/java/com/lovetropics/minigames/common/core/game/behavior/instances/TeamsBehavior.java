@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances;
 
-import com.lovetropics.minigames.common.core.game.ControlCommand;
+import com.lovetropics.minigames.common.core.game.control.ControlCommand;
 import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.IGameInstance;
 import com.lovetropics.minigames.common.core.game.PlayerRole;
@@ -112,7 +112,7 @@ public final class TeamsBehavior implements IGameBehavior {
 
 	private void onStartPolling(PollingGameInstance game) {
 		for (TeamKey team : pollingTeams) {
-			game.addControlCommand("join_team_" + team.key, ControlCommand.forEveryone(source -> {
+			game.getControlCommands().add("join_team_" + team.key, ControlCommand.forEveryone(source -> {
 				ServerPlayerEntity player = source.asPlayer();
 				if (game.isPlayerRegistered(player)) {
 					onRequestJoinTeam(player, team);

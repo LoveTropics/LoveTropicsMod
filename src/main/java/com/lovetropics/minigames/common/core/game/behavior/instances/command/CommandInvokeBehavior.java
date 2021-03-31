@@ -1,10 +1,11 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances.command;
 
-import com.lovetropics.minigames.common.core.game.GameControllable;
 import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.IGameInstance;
+import com.lovetropics.minigames.common.core.game.ProtoGame;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
+import com.lovetropics.minigames.common.core.game.control.GameControlCommands;
 import com.lovetropics.minigames.common.core.game.polling.PollingGameInstance;
 import com.lovetropics.minigames.common.util.MoreCodecs;
 import com.mojang.brigadier.CommandDispatcher;
@@ -77,17 +78,17 @@ public abstract class CommandInvokeBehavior implements IGameBehavior {
 		this.dispatcher = server.getCommandManager().getDispatcher();
 		this.source = server.getCommandSource();
 
-		this.registerControls(game);
+		this.registerControls(game, game.getControlCommands());
 	}
 
 	@Override
 	public void register(IGameInstance game, EventRegistrar events) {
 		this.source = game.getCommandSource();
-		this.registerControls(game);
+		this.registerControls(game, game.getControlCommands());
 		this.registerEvents(events);
 	}
 
-	protected void registerControls(GameControllable game) {
+	protected void registerControls(ProtoGame game, GameControlCommands commands) {
 	}
 
 	protected abstract void registerEvents(EventRegistrar events);

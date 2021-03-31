@@ -1,4 +1,4 @@
-package com.lovetropics.minigames.common.core.game;
+package com.lovetropics.minigames.common.core.game.control;
 
 import com.lovetropics.minigames.common.util.MoreCodecs;
 import com.lovetropics.minigames.common.core.game.statistics.PlayerKey;
@@ -9,6 +9,8 @@ import com.mojang.serialization.Codec;
 import net.minecraft.command.CommandSource;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.ServerPlayerEntity;
+
+import javax.annotation.Nullable;
 
 public final class ControlCommand {
 	private static final SimpleCommandExceptionType NO_PERMISSION = new SimpleCommandExceptionType(new LiteralMessage("You do not have permission to use this command!"));
@@ -33,41 +35,40 @@ public final class ControlCommand {
 		return new ControlCommand(Scope.INITIATOR, handler);
 	}
 
-	public void invoke(GameControllable minigame, CommandSource source) throws CommandSyntaxException {
-		if (!canUse(minigame, source)) {
+	public void invoke(CommandSource source, @Nullable PlayerKey initiator) throws CommandSyntaxException {
+		if (!canUse(source, initiator)) {
 			throw NO_PERMISSION.create();
 		}
 
 		handler.run(source);
 	}
 
-	public boolean canUse(GameControllable minigame, CommandSource source) {
-		return scope.testSource(minigame, source);
+	public boolean canUse(CommandSource source, @Nullable PlayerKey initiator) {
+		return scope.testSource(source, initiator);
 	}
 
 	public enum Scope {
 		EVERYONE("everyone") {
 			@Override
-			public boolean testSource(GameControllable minigame, CommandSource source) {
+			public boolean testSource(CommandSource source, @Nullable PlayerKey initiator) {
 				return true;
 			}
 		},
 		ADMINS("admins") {
 			@Override
-			public boolean testSource(GameControllable minigame, CommandSource source) {
+			public boolean testSource(CommandSource source, @Nullable PlayerKey initiator) {
 				return source.hasPermissionLevel(2);
 			}
 		},
 		INITIATOR("initiator") {
 			@Override
-			public boolean testSource(GameControllable minigame, CommandSource source) {
+			public boolean testSource(CommandSource source, @Nullable PlayerKey initiator) {
 				if (source.hasPermissionLevel(2)) {
 					return true;
 				}
 
 				Entity entity = source.getEntity();
 				if (entity instanceof ServerPlayerEntity) {
-					PlayerKey initiator = minigame.getInitiator();
 					return initiator != null && initiator.matches(entity);
 				}
 
@@ -83,7 +84,7 @@ public final class ControlCommand {
 			this.key = key;
 		}
 
-		public abstract boolean testSource(GameControllable minigame, CommandSource source);
+		public abstract boolean testSource(CommandSource source, @Nullable PlayerKey initiator);
 	}
 
 	public interface Handler {

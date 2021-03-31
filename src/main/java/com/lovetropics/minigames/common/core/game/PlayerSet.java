@@ -5,6 +5,8 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.network.IPacket;
 import net.minecraft.potion.EffectInstance;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.management.PlayerList;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraftforge.fml.network.PacketDistributor;
 import net.minecraftforge.fml.network.simple.SimpleChannel;
@@ -45,6 +47,35 @@ public interface PlayerSet extends Iterable<ServerPlayerEntity> {
 		}
 	};
 
+	static PlayerSet ofServer(MinecraftServer server) {
+		return of(server.getPlayerList());
+	}
+
+	static PlayerSet of(PlayerList players) {
+		return new PlayerSet() {
+			@Override
+			public boolean contains(UUID id) {
+				return players.getPlayerByUUID(id) != null;
+			}
+
+			@Nullable
+			@Override
+			public ServerPlayerEntity getPlayerBy(UUID id) {
+				return players.getPlayerByUUID(id);
+			}
+
+			@Override
+			public int size() {
+				return players.getCurrentPlayerCount();
+			}
+
+			@Override
+			public Iterator<ServerPlayerEntity> iterator() {
+				return players.getPlayers().iterator();
+			}
+		};
+	}
+
 	default boolean contains(Entity entity) {
 		return this.contains(entity.getUniqueID());
 	}
@@ -61,7 +92,9 @@ public interface PlayerSet extends Iterable<ServerPlayerEntity> {
 
 	int size();
 
-	boolean isEmpty();
+	default boolean isEmpty() {
+		return size() == 0;
+	}
 
 	default void sendMessage(ITextComponent message) {
 		this.sendMessage(message, false);

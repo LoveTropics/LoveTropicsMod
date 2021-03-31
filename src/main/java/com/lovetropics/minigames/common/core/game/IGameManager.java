@@ -1,5 +1,6 @@
 package com.lovetropics.minigames.common.core.game;
 
+import com.lovetropics.minigames.common.core.game.control.ControlCommandInvoker;
 import com.lovetropics.minigames.common.core.game.polling.PollingGameInstance;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.text.ITextComponent;
@@ -16,7 +17,7 @@ import java.util.concurrent.CompletableFuture;
  * which are fed into Minecraft Commands to send these messages back to players
  * which execute the commands.
  */
-public interface IGameManager extends IGameLookup, GameControllable {
+public interface IGameManager extends IGameLookup {
 	/**
 	 * Holds metadata for which players
 	 * are participants and which are spectators.
@@ -83,4 +84,6 @@ public interface IGameManager extends IGameLookup, GameControllable {
 	 * @return The result of the unregister attempt.
 	 */
 	GameResult<ITextComponent> removePlayer(ServerPlayerEntity player);
+
+	ControlCommandInvoker getControlInvoker();
 }

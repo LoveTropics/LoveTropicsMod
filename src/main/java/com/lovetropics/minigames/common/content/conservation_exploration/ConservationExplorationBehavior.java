@@ -6,6 +6,7 @@ import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameLifecycleEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
+import com.lovetropics.minigames.common.core.game.control.ControlCommand;
 import com.lovetropics.minigames.common.core.game.util.GameBossBar;
 import com.lovetropics.minigames.common.core.map.MapRegion;
 import com.lovetropics.minigames.common.util.Scheduler;
@@ -68,7 +69,7 @@ public final class ConservationExplorationBehavior implements IGameBehavior {
 				new StringTextComponent("Conservation Exploration"),
 				BossInfo.Color.GREEN,
 				BossInfo.Overlay.PROGRESS
-		);;
+		);
 	}
 
 	private void onStart(IGameInstance game) {
@@ -82,7 +83,7 @@ public final class ConservationExplorationBehavior implements IGameBehavior {
 		discoveryTeam = scoreboard.createTeam("first_discovery");
 		discoveryTeam.setColor(TextFormatting.GREEN);
 
-		game.addControlCommand("next_creature", ControlCommand.forInitiator(source -> {
+		game.getControlCommands().add("next_creature", ControlCommand.forInitiator(source -> {
 			Scheduler.INSTANCE.submit(server -> {
 				if (!nextCreature(game)) {
 					SingleGameManager.INSTANCE.finish(game);
@@ -124,7 +125,7 @@ public final class ConservationExplorationBehavior implements IGameBehavior {
 		FireworkPalette.ISLAND_ROYALE.spawn(entity.getPosition(), entity.world);
 
 		String teleportCommand = "teleport_" + entity.getType().getTranslationKey();
-		minigame.addControlCommand(teleportCommand, ControlCommand.forEveryone(source -> {
+		minigame.getControlCommands().add(teleportCommand, ControlCommand.forEveryone(source -> {
 			ServerPlayerEntity player = source.asPlayer();
 			player.teleport(minigame.getWorld(), position.x, position.y, position.z, yaw, pitch);
 		}));
