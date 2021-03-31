@@ -1,12 +1,12 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances.tweak;
 
 import com.lovetropics.minigames.common.core.game.IGameInstance;
-import com.lovetropics.minigames.common.core.game.behavior.GameBehaviorTypes;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameLifecycleEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
-import com.lovetropics.minigames.common.core.game.behavior.instances.TeamsBehavior;
+import com.lovetropics.minigames.common.core.game.state.instances.TeamKey;
+import com.lovetropics.minigames.common.core.game.state.instances.TeamState;
 import com.lovetropics.minigames.common.util.MoreCodecs;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -61,7 +61,7 @@ public final class SetMaxHealthBehavior implements IGameBehavior {
 	}
 
 	private double getMaxHealthForPlayer(IGameInstance minigame, ServerPlayerEntity player) {
-		TeamsBehavior.TeamKey team = getTeamOrNull(minigame, player);
+		TeamKey team = getTeamOrNull(minigame, player);
 		if (team != null) {
 			return maxHealthByTeam.getOrDefault(team.key, 20.0);
 		}
@@ -73,9 +73,12 @@ public final class SetMaxHealthBehavior implements IGameBehavior {
 	}
 
 	@Nullable
-	private TeamsBehavior.TeamKey getTeamOrNull(IGameInstance minigame, ServerPlayerEntity player) {
-		return minigame.getBehaviors().getOne(GameBehaviorTypes.TEAMS.get())
-				.map(teams -> teams.getTeamForPlayer(player))
-				.orElse(null);
+	private TeamKey getTeamOrNull(IGameInstance game, ServerPlayerEntity player) {
+		TeamState teamState = game.getState().getOrNull(TeamState.TYPE);
+		if (teamState != null) {
+			return teamState.getTeamForPlayer(player);
+		} else {
+			return null;
+		}
 	}
 }

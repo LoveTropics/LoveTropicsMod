@@ -100,7 +100,7 @@ public class SurviveTheTideWeatherBehavior implements IGameBehavior {
 
 		events.listen(GamePackageEvents.RECEIVE_PACKAGE, this::onPackageReceive);
 
-		phases = game.getState().get(GamePhaseState.TYPE);
+		phases = game.getState().getOrNull(GamePhaseState.TYPE);
 	}
 
 	private void tick(final IGameInstance game) {

@@ -3,8 +3,8 @@ package com.lovetropics.minigames.common.core.game.statistics;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonPrimitive;
+import com.lovetropics.minigames.common.core.game.state.instances.TeamKey;
 import com.lovetropics.minigames.common.util.CodecRegistry;
-import com.lovetropics.minigames.common.core.game.behavior.instances.TeamsBehavior;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import it.unimi.dsi.fastutil.ints.IntList;
@@ -31,7 +31,7 @@ public final class StatisticKey<T> {
 	public static final StatisticKey<CauseOfDeath> CAUSE_OF_DEATH = register(CauseOfDeath.class, "cause_of_death", CauseOfDeath::serialize);
 	public static final StatisticKey<PlayerKey> KILLED_BY = ofPlayer("killed_by");
 	public static final StatisticKey<Integer> TIME_CAMPING = ofInt("time_camping").displays(minutesSeconds());
-	public static final StatisticKey<TeamsBehavior.TeamKey> TEAM = ofTeam("team");
+	public static final StatisticKey<TeamKey> TEAM = ofTeam("team");
 
 	public static final StatisticKey<Integer> BLOCKS_BROKEN = ofInt("blocks_broken").displays(unit("blocks"));
 
@@ -46,7 +46,7 @@ public final class StatisticKey<T> {
 	public static final StatisticKey<Boolean> TEAMS = ofBool("teams");
 
 	public static final StatisticKey<PlayerKey> WINNING_PLAYER = ofPlayer("winning_player").displays(playerName());
-	public static final StatisticKey<TeamsBehavior.TeamKey> WINNING_TEAM = ofTeam("winning_team");
+	public static final StatisticKey<TeamKey> WINNING_TEAM = ofTeam("winning_team");
 
 	public static final StatisticKey<String> MAP = ofString("map");
 
@@ -100,8 +100,8 @@ public final class StatisticKey<T> {
 		return StatisticKey.register(PlayerKey.class, key, PlayerKey::serializeId);
 	}
 
-	public static StatisticKey<TeamsBehavior.TeamKey> ofTeam(String key) {
-		return StatisticKey.register(TeamsBehavior.TeamKey.class, key, team -> new JsonPrimitive(team.key));
+	public static StatisticKey<TeamKey> ofTeam(String key) {
+		return StatisticKey.register(TeamKey.class, key, team -> new JsonPrimitive(team.key));
 	}
 
 	public static StatisticKey<IntList> ofIntList(String key) {
