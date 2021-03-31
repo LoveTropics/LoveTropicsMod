@@ -73,6 +73,11 @@ public final class DriftwoodEntity extends Entity {
 	}
 
 	@Override
+	public boolean func_241845_aY() {
+		return true;
+	}
+
+	@Override
 	public boolean canCollide(Entity entity) {
 		return (entity.func_241845_aY() || entity.canBePushed()) && !this.isRidingSameEntity(entity);
 	}

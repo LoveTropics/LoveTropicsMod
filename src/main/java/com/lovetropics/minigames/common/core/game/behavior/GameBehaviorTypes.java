@@ -44,6 +44,7 @@ public class GameBehaviorTypes {
 	public static final RegistryObject<GameBehaviorType<ScheduledMessagesBehavior>> SCHEDULED_MESSAGES;
 	public static final RegistryObject<GameBehaviorType<WorldBorderGameBehavior>> WORLD_BORDER;
 	public static final RegistryObject<GameBehaviorType<SttChatBroadcastBehavior>> SURVIVE_THE_TIDE_CHAT_BROADCAST;
+	public static final RegistryObject<GameBehaviorType<SttWinLogicBehavior>> SURVIVE_THE_TIDE_WIN_LOGIC;
 	public static final RegistryObject<GameBehaviorType<FireworksOnDeathBehavior>> FIREWORKS_ON_DEATH;
 	public static final RegistryObject<GameBehaviorType<SurviveTheTideRulesetBehavior>> SURVIVE_THE_TIDE_RULESET;
 	public static final RegistryObject<GameBehaviorType<BindControlsBehavior>> BIND_CONTROLS;
@@ -112,6 +113,7 @@ public class GameBehaviorTypes {
 		SCHEDULED_MESSAGES = register("scheduled_messages", ScheduledMessagesBehavior.CODEC);
 		WORLD_BORDER = register("world_border", WorldBorderGameBehavior.CODEC);
 		SURVIVE_THE_TIDE_CHAT_BROADCAST = register("survive_the_tide_chat_broadcast", SttChatBroadcastBehavior.CODEC);
+		SURVIVE_THE_TIDE_WIN_LOGIC = register("survive_the_tide_win_logic", SttWinLogicBehavior.CODEC);
 		FIREWORKS_ON_DEATH = register("fireworks_on_death", FireworksOnDeathBehavior.CODEC);
 		SURVIVE_THE_TIDE_RULESET = register("survive_the_tide_ruleset", SurviveTheTideRulesetBehavior.CODEC);
 		BIND_CONTROLS = register("bind_controls", BindControlsBehavior.CODEC);

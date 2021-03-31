@@ -7,6 +7,7 @@ import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameLifecycleEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameLivingEntityEvents;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameLogicEvents;
 import com.lovetropics.minigames.common.core.game.state.instances.GamePhase;
 import com.lovetropics.minigames.common.core.game.state.instances.GamePhaseState;
 import com.lovetropics.minigames.common.core.map.MapRegion;
@@ -127,6 +128,10 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 
 		events.listen(GameLivingEntityEvents.TICK, this::onLivingEntityUpdate);
 		events.listen(GameLifecycleEvents.TICK, this::tick);
+
+		events.listen(GameLogicEvents.PHASE_CHANGE, (g, phase, lastPhase) -> {
+			this.lastPhase = lastPhase;
+		});
 	}
 
 	private void onLivingEntityUpdate(final IGameInstance game, LivingEntity entity) {
@@ -153,10 +158,6 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 
 		if (game.ticks() % 10 == 0) {
 			spawnRisingTideParticles(game);
-		}
-
-		if (currentPhase != lastPhase) {
-			lastPhase = currentPhase;
 		}
 	}
 
