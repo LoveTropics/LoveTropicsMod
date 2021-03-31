@@ -18,6 +18,10 @@ import java.util.concurrent.CompletableFuture;
  * which execute the commands.
  */
 public interface IGameManager extends IGameLookup {
+	static IGameManager get() {
+		return SingleGameManager.INSTANCE;
+	}
+
 	/**
 	 * Holds metadata for which players
 	 * are participants and which are spectators.

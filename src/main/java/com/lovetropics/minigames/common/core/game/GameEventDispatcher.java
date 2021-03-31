@@ -142,7 +142,7 @@ public final class GameEventDispatcher implements AutoCloseable {
 					game.invoker(GameLifecycleEvents.TICK).tick(game);
 				} catch (Exception e) {
 					LoveTropics.LOGGER.warn("Failed to dispatch world tick event", e);
-					SingleGameManager.INSTANCE.cancel(game);
+					IGameManager.get().cancel(game);
 				}
 			}
 		}

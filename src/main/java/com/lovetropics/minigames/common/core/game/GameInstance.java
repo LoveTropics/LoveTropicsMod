@@ -9,7 +9,7 @@ import com.lovetropics.minigames.common.core.game.behavior.event.GameLifecycleEv
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.lovetropics.minigames.common.core.game.control.GameControlCommands;
 import com.lovetropics.minigames.common.core.game.map.GameMap;
-import com.lovetropics.minigames.common.core.game.polling.MinigameRegistrations;
+import com.lovetropics.minigames.common.core.game.polling.GameRegistrations;
 import com.lovetropics.minigames.common.core.game.state.GameStateMap;
 import com.lovetropics.minigames.common.core.game.statistics.GameStatistics;
 import com.lovetropics.minigames.common.core.game.statistics.PlayerKey;
@@ -87,7 +87,7 @@ public class GameInstance implements IGameInstance {
 
     public static CompletableFuture<GameResult<GameInstance>> start(
             MinecraftServer server, IGameDefinition definition, GameMap map, BehaviorMap behaviors,
-            PlayerKey initiator, MinigameRegistrations registrations
+            PlayerKey initiator, GameRegistrations registrations
     ) {
         GameInstance game = new GameInstance(server, definition, map, behaviors, initiator);
 

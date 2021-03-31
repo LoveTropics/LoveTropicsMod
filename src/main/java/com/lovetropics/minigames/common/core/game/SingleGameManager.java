@@ -43,7 +43,7 @@ import java.util.concurrent.CompletableFuture;
 // TODO: support multiple concurrent minigames
 @Mod.EventBusSubscriber(modid = Constants.MODID)
 public class SingleGameManager implements IGameManager {
-	public static final SingleGameManager INSTANCE = new SingleGameManager();
+	static final SingleGameManager INSTANCE = new SingleGameManager();
 
 	/**
 	 * Current instance of the minigame. Agnostic from minigame definition and used to store

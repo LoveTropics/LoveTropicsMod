@@ -31,7 +31,7 @@ public final class PollingGameInstance implements ProtoGame {
 	private final GameEventListeners events = new GameEventListeners();
 	private final GameControlCommands controlCommands;
 
-	private final MinigameRegistrations registrations = new MinigameRegistrations();
+	private final GameRegistrations registrations = new GameRegistrations();
 
 	private PollingGameInstance(MinecraftServer server, IGameDefinition definition, PlayerKey initiator) {
 		this.server = server;

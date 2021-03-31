@@ -1,7 +1,7 @@
 package com.lovetropics.minigames.common.core.command.game;
 
 import com.lovetropics.minigames.common.core.game.IGameDefinition;
-import com.lovetropics.minigames.common.core.game.SingleGameManager;
+import com.lovetropics.minigames.common.core.game.IGameManager;
 import com.lovetropics.minigames.common.core.game.config.GameConfig;
 import com.lovetropics.minigames.common.core.game.config.GameConfigs;
 import com.mojang.brigadier.CommandDispatcher;
@@ -36,9 +36,9 @@ public class PollGameCommand {
 					throw new SimpleCommandExceptionType(new StringTextComponent("Minigame with id " + id + " does not exist!")).create();
 				}
 
-				int result = GameCommand.executeMinigameAction(() -> SingleGameManager.INSTANCE.startPolling(gameConfig, player), c.getSource());
+				int result = GameCommand.executeMinigameAction(() -> IGameManager.get().startPolling(gameConfig, player), c.getSource());
 				if (result == 1) {
-					GameCommand.executeMinigameAction(() -> SingleGameManager.INSTANCE.joinPlayerAs(player, null), c.getSource());
+					GameCommand.executeMinigameAction(() -> IGameManager.get().joinPlayerAs(player, null), c.getSource());
 				}
 
 				return result;
