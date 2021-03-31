@@ -61,24 +61,24 @@ public class DonationPackageData {
 	}
 
 	public void onReceive(final IGameInstance instance, @Nullable final ServerPlayerEntity player, @Nullable final String sendingPlayer) {
-		if (messageForPlayer != null) {
-			PlayerSet players = instance.getAllPlayers();
+		PlayerSet players = instance.getAllPlayers();
 
+		if (messageForPlayer != null) {
 			if (player != null) {
 				players.sendMessage(messageForPlayer.apply(player.getDisplayName().deepCopy().mergeStyle(TextFormatting.BOLD, TextFormatting.GREEN)));
 			} else {
 				players.sendMessage(messageForPlayer.apply(""));
 			}
+		}
 
-			if (sendingPlayer != null) {
-				final ITextComponent sentByPlayerMessage = new StringTextComponent("Package sent by ").mergeStyle(TextFormatting.GOLD)
-						.appendSibling(new StringTextComponent(sendingPlayer).mergeStyle(TextFormatting.GREEN, TextFormatting.BOLD));
-				players.sendMessage(sentByPlayerMessage);
-			}
+		if (sendingPlayer != null) {
+			final ITextComponent sentByPlayerMessage = new StringTextComponent("Package sent by ").mergeStyle(TextFormatting.GOLD)
+					.appendSibling(new StringTextComponent(sendingPlayer).mergeStyle(TextFormatting.GREEN, TextFormatting.BOLD));
+			players.sendMessage(sentByPlayerMessage);
+		}
 
-			if (soundOnReceive != null) {
-				players.forEach(p -> p.connection.sendPacket(new SPlaySoundEffectPacket(soundOnReceive, SoundCategory.MASTER, p.getPosX(), p.getPosY(), p.getPosZ(), 0.2f, 1f)));
-			}
+		if (soundOnReceive != null) {
+			players.forEach(p -> p.connection.sendPacket(new SPlaySoundEffectPacket(soundOnReceive, SoundCategory.MASTER, p.getPosX(), p.getPosY(), p.getPosZ(), 0.2f, 1f)));
 		}
 	}
 }

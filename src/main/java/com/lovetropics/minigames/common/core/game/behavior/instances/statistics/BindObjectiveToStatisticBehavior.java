@@ -2,7 +2,7 @@ package com.lovetropics.minigames.common.core.game.behavior.instances.statistics
 
 import com.lovetropics.minigames.common.core.game.IGameInstance;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
-import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
+import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameLifecycleEvents;
 import com.lovetropics.minigames.common.core.game.statistics.GameStatistics;
 import com.lovetropics.minigames.common.core.game.statistics.StatisticKey;
@@ -29,7 +29,7 @@ public final class BindObjectiveToStatisticBehavior implements IGameBehavior {
 	}
 
 	@Override
-	public void register(IGameInstance registerGame, GameEventListeners events) {
+	public void register(IGameInstance registerGame, EventRegistrar events) {
 		events.listen(GameLifecycleEvents.FINISH, game -> {
 			ServerScoreboard scoreboard = game.getServer().getScoreboard();
 

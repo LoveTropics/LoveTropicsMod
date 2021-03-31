@@ -81,6 +81,8 @@ public class GameBehaviorTypes {
 	public static final RegistryObject<GameBehaviorType<BlocksBrokenTrackerBehavior>> BLOCKS_BROKEN_TRACKER;
 
 	public static final RegistryObject<GameBehaviorType<DisplayLeaderboardOnFinishBehavior<?>>> DISPLAY_LEADERBOARD_ON_FINISH;
+
+	public static final RegistryObject<GameBehaviorType<DonationPackageBehavior>> DONATION_PACKAGE;
 	public static final RegistryObject<GameBehaviorType<LootPackageBehavior>> LOOT_PACKAGE;
 	public static final RegistryObject<GameBehaviorType<EffectPackageBehavior>> EFFECT_PACKAGE;
 	public static final RegistryObject<GameBehaviorType<SwapPlayersPackageBehavior>> SWAP_PLAYERS_PACKAGE;
@@ -89,8 +91,7 @@ public class GameBehaviorTypes {
 	public static final RegistryObject<GameBehaviorType<SpawnEntitiesAroundPlayersPackageBehavior>> SPAWN_ENTITIES_AROUND_PLAYERS_PACKAGE;
 	public static final RegistryObject<GameBehaviorType<SpawnEntitiesAtRegionsOverTimePackageBehavior>> SPAWN_ENTITIES_AT_REGIONS_OVER_TIME_PACKAGE;
 	public static final RegistryObject<GameBehaviorType<SetBlockAtPlayerPackageBehavior>> SET_BLOCK_AT_PLAYER_PACKAGE;
-	public static final RegistryObject<GameBehaviorType<ForcedPlayerHeadPackageBehavior>> FORCED_PLAYER_HEAD_PACKAGE;
-	public static final RegistryObject<GameBehaviorType<PufferfishPackageBehavior>> PUFFERFISH_PACKAGE;
+	public static final RegistryObject<GameBehaviorType<GivePlayerHeadPackageBehavior>> GIVE_PLAYER_HEAD_PACKAGE;
 	public static final RegistryObject<GameBehaviorType<ShootProjectilesAroundAllPlayersPackageBehavior>> SHOOT_PROJECTILES_AT_ALL_PLAYERS;
 	public static final RegistryObject<GameBehaviorType<ShootProjectilesAroundPlayerPackageBehavior>> SHOOT_PROJECTILES_AT_PLAYER;
 
@@ -150,6 +151,8 @@ public class GameBehaviorTypes {
 		BLOCKS_BROKEN_TRACKER = register("blocks_broken_tracker", BlocksBrokenTrackerBehavior.CODEC);
 
 		DISPLAY_LEADERBOARD_ON_FINISH = register("display_leaderboard_on_finish", DisplayLeaderboardOnFinishBehavior.CODEC);
+
+		DONATION_PACKAGE = register("donation_package", DonationPackageBehavior.CODEC);
 		LOOT_PACKAGE = register("loot_package", LootPackageBehavior.CODEC);
 		EFFECT_PACKAGE = register("effect_package", EffectPackageBehavior.CODEC);
 		SWAP_PLAYERS_PACKAGE = register("swap_players_package", SwapPlayersPackageBehavior.CODEC);
@@ -158,8 +161,7 @@ public class GameBehaviorTypes {
 		SPAWN_ENTITIES_AROUND_PLAYERS_PACKAGE = register("spawn_entities_around_players_package", SpawnEntitiesAroundPlayersPackageBehavior.CODEC);
 		SPAWN_ENTITIES_AT_REGIONS_OVER_TIME_PACKAGE = register("spawn_entities_at_regions_over_time_package", SpawnEntitiesAtRegionsOverTimePackageBehavior.CODEC);
 		SET_BLOCK_AT_PLAYER_PACKAGE = register("set_block_at_player_package", SetBlockAtPlayerPackageBehavior.CODEC);
-		FORCED_PLAYER_HEAD_PACKAGE = register("forced_player_head_package", ForcedPlayerHeadPackageBehavior.CODEC);
-		PUFFERFISH_PACKAGE = register("pufferfish_package", PufferfishPackageBehavior.CODEC);
+		GIVE_PLAYER_HEAD_PACKAGE = register("give_player_head_package", GivePlayerHeadPackageBehavior.CODEC);
 		SHOOT_PROJECTILES_AT_ALL_PLAYERS = register("shoot_projectiles_at_all_players", ShootProjectilesAroundAllPlayersPackageBehavior.CODEC);
 		SHOOT_PROJECTILES_AT_PLAYER = register("shoot_projectiles_at_player", ShootProjectilesAroundPlayerPackageBehavior.CODEC);
 

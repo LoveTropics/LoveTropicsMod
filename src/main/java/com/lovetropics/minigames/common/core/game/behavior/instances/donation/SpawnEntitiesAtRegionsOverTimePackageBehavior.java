@@ -1,19 +1,18 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances.donation;
 
 import com.google.common.collect.Lists;
-import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.IGameInstance;
-import com.lovetropics.minigames.common.core.game.behavior.IGamePackageBehavior;
-import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
+import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
+import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameLifecycleEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePackageEvents;
-import com.lovetropics.minigames.common.core.integration.game_actions.GamePackage;
 import com.lovetropics.minigames.common.core.map.MapRegion;
 import com.lovetropics.minigames.common.core.map.MapRegions;
 import com.lovetropics.minigames.common.util.Util;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.entity.EntityType;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.gen.Heightmap;
@@ -24,11 +23,10 @@ import java.util.List;
  * Spawns an amount of entities over a set amount of ticks, spread randomly across all the given regions
  */
 
-public class SpawnEntitiesAtRegionsOverTimePackageBehavior implements IGamePackageBehavior
+public class SpawnEntitiesAtRegionsOverTimePackageBehavior implements IGameBehavior
 {
 	public static final Codec<SpawnEntitiesAtRegionsOverTimePackageBehavior> CODEC = RecordCodecBuilder.create(instance -> {
 		return instance.group(
-				DonationPackageData.CODEC.forGetter(c -> c.data),
 				Codec.STRING.listOf().fieldOf("regions_to_spawn_at").forGetter(c -> c.regionsToSpawnAtKeys),
 				Registry.ENTITY_TYPE.fieldOf("entity_id").forGetter(c -> c.entityId),
 				Codec.INT.optionalFieldOf("entity_count", 1).forGetter(c -> c.entityCount),
@@ -36,7 +34,6 @@ public class SpawnEntitiesAtRegionsOverTimePackageBehavior implements IGamePacka
 		).apply(instance, SpawnEntitiesAtRegionsOverTimePackageBehavior::new);
 	});
 
-	private final DonationPackageData data;
 	private final List<String> regionsToSpawnAtKeys;
 	private final EntityType<?> entityId;
 	private final int entityCount;
@@ -48,8 +45,7 @@ public class SpawnEntitiesAtRegionsOverTimePackageBehavior implements IGamePacka
 
 	private final List<MapRegion> regionsToSpawnAt = Lists.newArrayList();
 
-	public SpawnEntitiesAtRegionsOverTimePackageBehavior(final DonationPackageData data, final List<String> regionsToSpawnAtKeys, final EntityType<?> entityId, final int entityCount, final int ticksToSpawnFor) {
-		this.data = data;
+	public SpawnEntitiesAtRegionsOverTimePackageBehavior(final List<String> regionsToSpawnAtKeys, final EntityType<?> entityId, final int entityCount, final int ticksToSpawnFor) {
 		this.regionsToSpawnAtKeys = regionsToSpawnAtKeys;
 		this.entityId = entityId;
 		this.entityCount = entityCount;
@@ -57,12 +53,7 @@ public class SpawnEntitiesAtRegionsOverTimePackageBehavior implements IGamePacka
 	}
 
 	@Override
-	public String getPackageType() {
-		return data.getPackageType();
-	}
-
-	@Override
-	public void register(IGameInstance game, GameEventListeners events) throws GameException {
+	public void register(IGameInstance game, EventRegistrar events) {
 		MapRegions regions = game.getMapRegions();
 
 		regionsToSpawnAt.clear();
@@ -71,21 +62,13 @@ public class SpawnEntitiesAtRegionsOverTimePackageBehavior implements IGamePacka
 			regionsToSpawnAt.addAll(regions.get(key));
 		}
 
-		events.listen(GamePackageEvents.RECEIVE_PACKAGE, this::onGamePackageReceived);
+		events.listen(GamePackageEvents.APPLY_PACKAGE, this::applyPackage);
 		events.listen(GameLifecycleEvents.TICK, this::tick);
 	}
 
-	private boolean onGamePackageReceived(final IGameInstance game, final GamePackage gamePackage) {
-		if (gamePackage.getPackageType().equals(data.packageType)) {
-			ticksRemaining += ticksToSpawnFor;
-			entityCountRemaining += entityCount;
-
-			data.onReceive(game, null, gamePackage.getSendingPlayerName());
-
-			return true;
-		}
-
-		return false;
+	private void applyPackage(final IGameInstance game, ServerPlayerEntity player, String senderPlayerName) {
+		ticksRemaining += ticksToSpawnFor;
+		entityCountRemaining += entityCount;
 	}
 
 	private void tick(IGameInstance game) {

@@ -2,7 +2,7 @@ package com.lovetropics.minigames.common.core.game.behavior.instances.statistics
 
 import com.lovetropics.minigames.common.core.game.IGameInstance;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
-import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
+import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.lovetropics.minigames.common.core.game.statistics.GameStatistics;
 import com.lovetropics.minigames.common.core.game.statistics.StatisticKey;
@@ -16,7 +16,7 @@ public final class DamageTrackerBehavior implements IGameBehavior {
 	public static final Codec<DamageTrackerBehavior> CODEC = Codec.unit(DamageTrackerBehavior::new);
 
 	@Override
-	public void register(IGameInstance registerGame, GameEventListeners events) {
+	public void register(IGameInstance registerGame, EventRegistrar events) {
 		events.listen(GamePlayerEvents.DAMAGE, (game, player, source, damageAmount) -> {
 			GameStatistics statistics = game.getStatistics();
 

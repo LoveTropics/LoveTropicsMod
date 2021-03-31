@@ -2,7 +2,7 @@ package com.lovetropics.minigames.common.core.game.behavior.instances.command;
 
 import com.lovetropics.minigames.common.core.game.ControlCommand;
 import com.lovetropics.minigames.common.core.game.GameControllable;
-import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
+import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
@@ -34,7 +34,7 @@ public final class BindControlsBehavior extends CommandInvokeBehavior {
 	}
 
 	@Override
-	protected void registerEvents(GameEventListeners events) {
+	protected void registerEvents(EventRegistrar events) {
 	}
 
 	@Override

@@ -7,7 +7,7 @@ import com.lovetropics.minigames.common.content.block.TrashType;
 import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.IGameInstance;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
-import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
+import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameWorldEvents;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -52,7 +52,7 @@ public final class PlaceTrashBehavior implements IGameBehavior {
 	}
 
 	@Override
-	public void register(IGameInstance game, GameEventListeners events) throws GameException {
+	public void register(IGameInstance game, EventRegistrar events) throws GameException {
 		Long2ObjectMap<LongList> trashByChunk = loadTrashByChunk(game);
 
 		events.listen(GameWorldEvents.CHUNK_LOAD, (g, chunk) -> {

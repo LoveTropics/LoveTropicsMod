@@ -2,7 +2,7 @@ package com.lovetropics.minigames.common.core.game.behavior.instances.tweak;
 
 import com.lovetropics.minigames.common.core.game.IGameInstance;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
-import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
+import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameLifecycleEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.lovetropics.minigames.common.core.game.state.instances.TeamKey;
@@ -39,7 +39,7 @@ public final class SetMaxHealthBehavior implements IGameBehavior {
 	}
 
 	@Override
-	public void register(IGameInstance registerGame, GameEventListeners events) {
+	public void register(IGameInstance registerGame, EventRegistrar events) {
 		events.listen(GameLifecycleEvents.START, this::onStart);
 		events.listen(GamePlayerEvents.LEAVE, this::onPlayerLeave);
 	}

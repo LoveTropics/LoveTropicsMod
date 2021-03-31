@@ -5,10 +5,7 @@ import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.IGameInstance;
 import com.lovetropics.minigames.common.core.game.PlayerRole;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
-import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
-import com.lovetropics.minigames.common.core.game.behavior.event.GameLifecycleEvents;
-import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
-import com.lovetropics.minigames.common.core.game.behavior.event.GamePollingEvents;
+import com.lovetropics.minigames.common.core.game.behavior.event.*;
 import com.lovetropics.minigames.common.core.game.polling.PollingGameInstance;
 import com.lovetropics.minigames.common.core.game.state.GameStateMap;
 import com.lovetropics.minigames.common.core.game.state.instances.TeamKey;
@@ -72,7 +69,7 @@ public final class TeamsBehavior implements IGameBehavior {
 	}
 
 	@Override
-	public void registerPolling(PollingGameInstance registerGame, GameEventListeners events) throws GameException {
+	public void registerPolling(PollingGameInstance registerGame, EventRegistrar events) throws GameException {
 		events.listen(GamePollingEvents.START, this::onStartPolling);
 		events.listen(GamePollingEvents.PLAYER_REGISTER, this::onPlayerRegister);
 	}
@@ -83,7 +80,7 @@ public final class TeamsBehavior implements IGameBehavior {
 	}
 
 	@Override
-	public void register(IGameInstance game, GameEventListeners events) {
+	public void register(IGameInstance game, EventRegistrar events) {
 		events.listen(GameLifecycleEvents.ASSIGN_ROLES, this::assignPlayerRoles);
 		events.listen(GameLifecycleEvents.START, this::onStart);
 		events.listen(GameLifecycleEvents.FINISH, this::onFinish);

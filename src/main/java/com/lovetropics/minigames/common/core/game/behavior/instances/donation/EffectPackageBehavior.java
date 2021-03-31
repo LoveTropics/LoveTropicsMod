@@ -1,5 +1,10 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances.donation;
 
+import com.lovetropics.minigames.common.core.game.GameException;
+import com.lovetropics.minigames.common.core.game.IGameInstance;
+import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
+import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
+import com.lovetropics.minigames.common.core.game.behavior.event.GamePackageEvents;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.entity.player.ServerPlayerEntity;
@@ -11,26 +16,26 @@ import net.minecraft.util.registry.Registry;
 import java.util.List;
 import java.util.Optional;
 
-public class EffectPackageBehavior extends DonationPackageBehavior
-{
+public class EffectPackageBehavior implements IGameBehavior {
 	public static final Codec<EffectPackageBehavior> CODEC = RecordCodecBuilder.create(instance -> {
 		return instance.group(
-				DonationPackageData.CODEC.forGetter(c -> c.data),
 				StatusEffect.CODEC.listOf().fieldOf("effects").forGetter(c -> c.effects)
 		).apply(instance, EffectPackageBehavior::new);
 	});
 
 	private final List<StatusEffect> effects;
 
-	public EffectPackageBehavior(final DonationPackageData data, final List<StatusEffect> effects) {
-		super(data);
-
+	public EffectPackageBehavior(List<StatusEffect> effects) {
 		this.effects = effects;
 	}
 
 	@Override
-	protected void receivePackage(final String sendingPlayer, final ServerPlayerEntity player) {
-		effects.forEach(effect -> effect.applyToPlayer(player));
+	public void register(IGameInstance registerGame, EventRegistrar events) throws GameException {
+		events.listen(GamePackageEvents.APPLY_PACKAGE, (game, player, sendingPlayer) -> {
+			for (StatusEffect effect : effects) {
+				effect.applyToPlayer(player);
+			}
+		});
 	}
 
 	public static class StatusEffect {
@@ -39,7 +44,7 @@ public class EffectPackageBehavior extends DonationPackageBehavior
 					ResourceLocation.CODEC.fieldOf("type").forGetter(c -> c.type),
 					Codec.INT.fieldOf("seconds").forGetter(c -> c.seconds),
 					Codec.INT.fieldOf("amplifier").forGetter(c -> c.amplifier),
-					Codec.BOOL.fieldOf("hide_particles").forGetter(c -> c.hideParticles)
+					Codec.BOOL.optionalFieldOf("hide_particles", false).forGetter(c -> c.hideParticles)
 			).apply(instance, StatusEffect::new);
 		});
 
@@ -59,18 +64,15 @@ public class EffectPackageBehavior extends DonationPackageBehavior
 			return type;
 		}
 
-		public int getSeconds()
-		{
+		public int getSeconds() {
 			return seconds;
 		}
 
-		public int getAmplifier()
-		{
+		public int getAmplifier() {
 			return amplifier;
 		}
 
-		public boolean hideParticles()
-		{
+		public boolean hideParticles() {
 			return hideParticles;
 		}
 

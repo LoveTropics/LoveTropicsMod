@@ -1,13 +1,11 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances.donation;
 
 import com.google.common.collect.Lists;
-import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.IGameInstance;
-import com.lovetropics.minigames.common.core.game.behavior.IGamePackageBehavior;
-import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
+import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
+import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameLifecycleEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePackageEvents;
-import com.lovetropics.minigames.common.core.integration.game_actions.GamePackage;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.entity.player.ServerPlayerEntity;
@@ -16,7 +14,7 @@ import net.minecraft.util.math.vector.Vector3d;
 import java.util.Collections;
 import java.util.List;
 
-public class SwapPlayersPackageBehavior implements IGamePackageBehavior {
+public class SwapPlayersPackageBehavior implements IGameBehavior {
 	public static final Codec<SwapPlayersPackageBehavior> CODEC = RecordCodecBuilder.create(instance -> {
 		return instance.group(
 				DonationPackageData.CODEC.forGetter(c -> c.data)
@@ -31,25 +29,9 @@ public class SwapPlayersPackageBehavior implements IGamePackageBehavior {
 	}
 
 	@Override
-	public String getPackageType() {
-		return data.getPackageType();
-	}
-
-	@Override
-	public void register(IGameInstance registerGame, GameEventListeners events) throws GameException {
-		events.listen(GamePackageEvents.RECEIVE_PACKAGE, this::onGamePackageReceived);
+	public void register(IGameInstance registerGame, EventRegistrar events) {
+		events.listen(GamePackageEvents.APPLY_PACKAGE, (game, player, sendingPlayer) -> swapCountdown = 20);
 		events.listen(GameLifecycleEvents.TICK, this::tick);
-	}
-
-	private boolean onGamePackageReceived(final IGameInstance game, final GamePackage gamePackage) {
-		if (gamePackage.getPackageType().equals(data.packageType)) {
-			swapCountdown = 20;
-			data.onReceive(game, null, gamePackage.getSendingPlayerName());
-
-			return true;
-		}
-
-		return false;
 	}
 
 	private void tick(IGameInstance game) {

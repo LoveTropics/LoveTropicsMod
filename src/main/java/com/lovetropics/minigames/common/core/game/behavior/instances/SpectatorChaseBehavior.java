@@ -4,7 +4,7 @@ import com.lovetropics.minigames.common.core.game.IGameInstance;
 import com.lovetropics.minigames.common.core.game.PlayerRole;
 import com.lovetropics.minigames.common.core.game.PlayerSet;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
-import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
+import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameLifecycleEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.lovetropics.minigames.common.core.network.ChaseCameraMessage;
@@ -22,7 +22,7 @@ public final class SpectatorChaseBehavior implements IGameBehavior {
 	public static final Codec<SpectatorChaseBehavior> CODEC = Codec.unit(SpectatorChaseBehavior::new);
 
 	@Override
-	public void register(IGameInstance registerGame, GameEventListeners events) {
+	public void register(IGameInstance registerGame, EventRegistrar events) {
 		events.listen(GamePlayerEvents.JOIN, this::onPlayerJoin);
 		events.listen(GamePlayerEvents.CHANGE_ROLE, (game, player, role, lastRole) -> this.onPlayerJoin(game, player, role));
 		events.listen(GamePlayerEvents.LEAVE, this::onPlayerLeave);

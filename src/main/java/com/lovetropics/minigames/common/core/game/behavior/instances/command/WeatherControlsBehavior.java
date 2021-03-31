@@ -3,7 +3,7 @@ package com.lovetropics.minigames.common.core.game.behavior.instances.command;
 import com.lovetropics.minigames.common.core.game.ControlCommand;
 import com.lovetropics.minigames.common.core.game.IGameInstance;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
-import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
+import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameLifecycleEvents;
 import com.lovetropics.minigames.common.core.game.weather.RainType;
 import com.lovetropics.minigames.common.core.game.weather.WeatherController;
@@ -16,7 +16,7 @@ public class WeatherControlsBehavior implements IGameBehavior {
 	private WeatherController controller;
 
 	@Override
-	public void register(IGameInstance registerGame, GameEventListeners events) {
+	public void register(IGameInstance registerGame, EventRegistrar events) {
 		controller = WeatherControllerManager.forWorld(registerGame.getWorld());
 
 		events.listen(GameLifecycleEvents.FINISH, g -> controller.reset());

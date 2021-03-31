@@ -2,138 +2,118 @@ package com.lovetropics.minigames.common.core.game.behavior.instances.donation;
 
 import com.google.common.collect.Lists;
 import com.lovetropics.minigames.common.core.game.IGameInstance;
-import com.lovetropics.minigames.common.core.game.behavior.IGamePackageBehavior;
+import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
+import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePackageEvents;
 import com.lovetropics.minigames.common.core.integration.game_actions.GamePackage;
-import com.lovetropics.minigames.common.util.Util;
+import com.lovetropics.minigames.common.util.MoreCodecs;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.util.IStringSerializable;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.List;
 
-// TODO: support combining behaviors for package received.. somehow..?
-public abstract class DonationPackageBehavior implements IGamePackageBehavior
-{
+public final class DonationPackageBehavior implements IGameBehavior {
+	public static final Codec<DonationPackageBehavior> CODEC = RecordCodecBuilder.create(instance -> {
+		return instance.group(
+				DonationPackageData.CODEC.forGetter(c -> c.data),
+				IGameBehavior.CODEC.listOf().fieldOf("receive_behaviors").orElseGet(ArrayList::new).forGetter(c -> c.receiveBehaviors)
+		).apply(instance, DonationPackageBehavior::new);
+	});
+
 	private static final Logger LOGGER = LogManager.getLogger(DonationPackageBehavior.class);
 
-	public enum PlayerSelect implements IStringSerializable
-	{
+	public enum PlayerSelect {
 		SPECIFIC("specific"), RANDOM("random"), ALL("all");
 
-		public static final Codec<PlayerSelect> CODEC = IStringSerializable.createEnumCodec(PlayerSelect::values, PlayerSelect::getFromType);
+		public static final Codec<PlayerSelect> CODEC = MoreCodecs.stringVariants(PlayerSelect.values(), s -> s.type);
 
-		private final String type;
+		public final String type;
 
 		PlayerSelect(final String type) {
 			this.type = type;
 		}
-
-		public String getType() {
-			return type;
-		}
-
-		@Override
-		public String getString() {
-			return type;
-		}
-
-		@Nullable
-		public static PlayerSelect getFromType(final String type) {
-			for (final PlayerSelect select : PlayerSelect.values()) {
-				if (select.type.equals(type)) {
-					return select;
-				}
-			}
-			return null;
-		}
 	}
 
-	protected final DonationPackageData data;
+	private final DonationPackageData data;
+	private final List<IGameBehavior> receiveBehaviors;
 
-	public DonationPackageBehavior(final DonationPackageData data) {
+	private final GameEventListeners applyEvents = new GameEventListeners();
+
+	public DonationPackageBehavior(DonationPackageData data, List<IGameBehavior> receiveBehaviors) {
 		this.data = data;
+		this.receiveBehaviors = receiveBehaviors;
 	}
 
-	@Override
 	public String getPackageType() {
 		return data.getPackageType();
 	}
 
 	@Override
-	public void register(IGameInstance registerGame, GameEventListeners events) {
+	public void register(IGameInstance game, EventRegistrar events) {
 		events.listen(GamePackageEvents.RECEIVE_PACKAGE, this::onGamePackageReceived);
+
+		EventRegistrar receiveEventRegistrar = events.redirect(t -> t == GamePackageEvents.APPLY_PACKAGE, applyEvents);
+		for (IGameBehavior behavior : receiveBehaviors) {
+			behavior.register(game, receiveEventRegistrar);
+		}
 	}
 
 	private boolean onGamePackageReceived(final IGameInstance game, final GamePackage gamePackage) {
-		if (gamePackage.getPackageType().equals(data.packageType)) {
-			switch (data.playerSelect) {
-				case SPECIFIC:
-					if (gamePackage.getReceivingPlayer() == null) {
-						LOGGER.warn("Expected donation package to have a receiving player, but did not receive from backend!");
-						return false;
-					}
+		if (!gamePackage.getPackageType().equals(data.packageType)) return false;
 
-					final boolean receiverIsParticipant = game.getParticipants().contains(gamePackage.getReceivingPlayer());
-
-					if (!receiverIsParticipant) {
-						// Player either died, left the server or isn't part of the minigame for some reason.
-						return false;
-					}
-
-					final ServerPlayerEntity receivingPlayer = game.getServer().getPlayerList().getPlayerByUUID(gamePackage.getReceivingPlayer());
-
-					if (receivingPlayer == null) {
-						// Player not on the server for some reason
-						return false;
-					}
-
-					receivePackageInternal(game, gamePackage.getSendingPlayerName(), receivingPlayer);
-					data.onReceive(game, receivingPlayer, gamePackage.getSendingPlayerName());
-					break;
-				case RANDOM:
-					final List<ServerPlayerEntity> players = Lists.newArrayList(game.getParticipants());
-					final ServerPlayerEntity randomPlayer = players.get(game.getWorld().getRandom().nextInt(players.size()));
-
-					receivePackageInternal(game, gamePackage.getSendingPlayerName(), randomPlayer);
-					data.onReceive(game, randomPlayer, gamePackage.getSendingPlayerName());
-					break;
-				case ALL:
-					game.getParticipants().stream().forEach(player -> receivePackageInternal(game, gamePackage.getSendingPlayerName(), player));
-					data.onReceive(game, null, gamePackage.getSendingPlayerName());
-					break;
-			}
-
-			return true;
+		switch (data.playerSelect) {
+			case SPECIFIC: return receiveSpecific(game, gamePackage);
+			case RANDOM: return receiveRandom(game, gamePackage);
+			case ALL: return receiveAll(game, gamePackage);
+			default: return false;
 		}
-
-		return false;
 	}
 
-	protected abstract void receivePackage(@Nullable final String sendingPlayer, final ServerPlayerEntity player);
+	private boolean receiveSpecific(IGameInstance game, GamePackage gamePackage) {
+		if (gamePackage.getReceivingPlayer() == null) {
+			LOGGER.warn("Expected donation package to have a receiving player, but did not receive from backend!");
+			return false;
+		}
 
-	protected boolean shouldGiveSenderHead() {
+		ServerPlayerEntity receivingPlayer = game.getParticipants().getPlayerBy(gamePackage.getReceivingPlayer());
+		if (receivingPlayer == null) {
+			// Player not on the server or in the game for some reason
+			return false;
+		}
+
+		applyPackage(game, receivingPlayer, gamePackage.getSendingPlayerName());
+		data.onReceive(game, receivingPlayer, gamePackage.getSendingPlayerName());
+
 		return true;
 	}
 
-	private void receivePackageInternal(final IGameInstance game, final String sendingPlayer, final ServerPlayerEntity player) {
-		receivePackage(sendingPlayer, player);
+	private boolean receiveRandom(IGameInstance game, GamePackage gamePackage) {
+		final List<ServerPlayerEntity> players = Lists.newArrayList(game.getParticipants());
+		final ServerPlayerEntity randomPlayer = players.get(game.getWorld().getRandom().nextInt(players.size()));
 
-		if (sendingPlayer != null && shouldGiveSenderHead()) {
-			Util.addItemStackToInventory(player, createHeadForSender(sendingPlayer));
+		applyPackage(game, randomPlayer, gamePackage.getSendingPlayerName());
+		data.onReceive(game, randomPlayer, gamePackage.getSendingPlayerName());
+
+		return true;
+	}
+
+	private boolean receiveAll(IGameInstance game, GamePackage gamePackage) {
+		for (ServerPlayerEntity player : game.getParticipants()) {
+			applyPackage(game, player, gamePackage.getSendingPlayerName());
 		}
+
+		data.onReceive(game, null, gamePackage.getSendingPlayerName());
+
+		return true;
 	}
 
-	protected ItemStack createHeadForSender(String sendingPlayer) {
-		final ItemStack senderHead = new ItemStack(Items.PLAYER_HEAD);
-		senderHead.getOrCreateTag().putString("SkullOwner", sendingPlayer);
-		return senderHead;
+	private void applyPackage(IGameInstance game, final ServerPlayerEntity player, @Nullable final String sendingPlayer) {
+		applyEvents.invoker(GamePackageEvents.APPLY_PACKAGE).applyPackage(game, player, sendingPlayer);
 	}
-
 }

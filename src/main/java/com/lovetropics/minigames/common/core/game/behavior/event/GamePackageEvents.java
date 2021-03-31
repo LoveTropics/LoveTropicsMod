@@ -3,6 +3,9 @@ package com.lovetropics.minigames.common.core.game.behavior.event;
 import com.google.gson.JsonObject;
 import com.lovetropics.minigames.common.core.game.IGameInstance;
 import com.lovetropics.minigames.common.core.integration.game_actions.GamePackage;
+import net.minecraft.entity.player.ServerPlayerEntity;
+
+import javax.annotation.Nullable;
 
 public final class GamePackageEvents {
 	public static final GameEventType<ReceivePackage> RECEIVE_PACKAGE = GameEventType.create(ReceivePackage.class, listeners -> (game, gamePackage) -> {
@@ -19,6 +22,13 @@ public final class GamePackageEvents {
 		}
 	});
 
+
+	public static final GameEventType<ApplyPackage> APPLY_PACKAGE = GameEventType.create(ApplyPackage.class, listeners -> (game, player, sendingPlayer) -> {
+		for (ApplyPackage listener : listeners) {
+			listener.applyPackage(game, player, sendingPlayer);
+		}
+	});
+
 	private GamePackageEvents() {
 	}
 
@@ -28,5 +38,9 @@ public final class GamePackageEvents {
 
 	public interface ReceivePollEvent {
 		void onReceivePollEvent(IGameInstance game, JsonObject object, String crud);
+	}
+
+	public interface ApplyPackage {
+		void applyPackage(IGameInstance game, ServerPlayerEntity player, @Nullable String sendingPlayer);
 	}
 }

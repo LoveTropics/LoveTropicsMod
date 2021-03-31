@@ -1,8 +1,10 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances.donation;
 
 import com.lovetropics.minigames.common.core.game.IGameInstance;
-import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
+import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
+import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameLifecycleEvents;
+import com.lovetropics.minigames.common.core.game.behavior.event.GamePackageEvents;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
@@ -17,11 +19,9 @@ import net.minecraft.world.server.ServerWorld;
 import java.util.Iterator;
 import java.util.Random;
 
-public class ShootProjectilesAroundPlayerPackageBehavior extends DonationPackageBehavior
-{
+public class ShootProjectilesAroundPlayerPackageBehavior implements IGameBehavior {
 	public static final Codec<ShootProjectilesAroundPlayerPackageBehavior> CODEC = RecordCodecBuilder.create(instance -> {
 		return instance.group(
-				DonationPackageData.CODEC.forGetter(c -> c.data),
 				Codec.INT.optionalFieldOf("entity_count_per_player", 10).forGetter(c -> c.entityCountPerPlayer),
 				Codec.INT.optionalFieldOf("spawn_distance_max", 40).forGetter(c -> c.spawnDistanceMax),
 				Codec.INT.optionalFieldOf("target_randomness", 10).forGetter(c -> c.targetRandomness),
@@ -32,7 +32,6 @@ public class ShootProjectilesAroundPlayerPackageBehavior extends DonationPackage
 		).apply(instance, ShootProjectilesAroundPlayerPackageBehavior::new);
 	});
 
-	private final DonationPackageData data;
 	//private final ResourceLocation entityId;
 	private final int entityCountPerPlayer;
 	private final int spawnDistanceMax;
@@ -44,9 +43,7 @@ public class ShootProjectilesAroundPlayerPackageBehavior extends DonationPackage
 	private final Object2IntMap<ServerPlayerEntity> playerToAmountToSpawn = new Object2IntOpenHashMap<>();
 	private final Object2IntMap<ServerPlayerEntity> playerToDelayToSpawn = new Object2IntOpenHashMap<>();
 
-	public ShootProjectilesAroundPlayerPackageBehavior(final DonationPackageData data, /*final ResourceLocation entityId, */final int entityCount, final int spawnDistanceMax, final int spawnRangeY, final int spawnsPerTickBase, final int spawnsPerTickRandom, final int targetRandomness, final int explosionStrength) {
-		super(data);
-		this.data = data;
+	public ShootProjectilesAroundPlayerPackageBehavior(/*final ResourceLocation entityId, */final int entityCount, final int spawnDistanceMax, final int spawnRangeY, final int spawnsPerTickBase, final int spawnsPerTickRandom, final int targetRandomness, final int explosionStrength) {
 		//this.entityId = entityId;
 		this.entityCountPerPlayer = entityCount;
 		this.spawnDistanceMax = spawnDistanceMax;
@@ -58,15 +55,9 @@ public class ShootProjectilesAroundPlayerPackageBehavior extends DonationPackage
 	}
 
 	@Override
-	public void register(IGameInstance registerGame, GameEventListeners events) {
-		super.register(registerGame, events);
-
+	public void register(IGameInstance registerGame, EventRegistrar events) {
+		events.listen(GamePackageEvents.APPLY_PACKAGE, (game, player, sendingPlayer) -> playerToAmountToSpawn.put(player, entityCountPerPlayer));
 		events.listen(GameLifecycleEvents.TICK, this::tick);
-	}
-
-	@Override
-	protected void receivePackage(final String sendingPlayer, final ServerPlayerEntity player) {
-		playerToAmountToSpawn.put(player, entityCountPerPlayer);
 	}
 
 	private void tick(IGameInstance game) {
@@ -93,10 +84,10 @@ public class ShootProjectilesAroundPlayerPackageBehavior extends DonationPackage
 					cooldown = spawnRateBase + random.nextInt(spawnRateRandom);
 					playerToDelayToSpawn.put(entry.getKey(), cooldown);
 
-					BlockPos posSpawn = entry.getKey().getPosition().add(random.nextInt(spawnDistanceMax * 2) - spawnDistanceMax,20,
+					BlockPos posSpawn = entry.getKey().getPosition().add(random.nextInt(spawnDistanceMax * 2) - spawnDistanceMax, 20,
 							random.nextInt(spawnDistanceMax * 2) - spawnDistanceMax);
 
-					BlockPos posTarget = entry.getKey().getPosition().add(random.nextInt(targetRandomness * 2) - targetRandomness,0,
+					BlockPos posTarget = entry.getKey().getPosition().add(random.nextInt(targetRandomness * 2) - targetRandomness, 0,
 							random.nextInt(targetRandomness * 2) - targetRandomness);
 
 					entry.setValue(entry.getIntValue() - 1);
@@ -104,22 +95,27 @@ public class ShootProjectilesAroundPlayerPackageBehavior extends DonationPackage
 						it.remove();
 						playerToDelayToSpawn.removeInt(entry.getKey());
 					}
-					double d2 = posTarget.getX() - (posSpawn.getX());
-					double d3 = posTarget.getY() - (posSpawn.getY());
-					double d4 = posTarget.getZ() - (posSpawn.getZ());
-					FireballEntity fireballentity = new FireballEntity(EntityType.FIREBALL, world);
-					fireballentity.setLocationAndAngles(posSpawn.getX(), posSpawn.getY(), posSpawn.getZ(), fireballentity.rotationYaw, fireballentity.rotationPitch);
-					fireballentity.setPosition(posSpawn.getX(), posSpawn.getY(), posSpawn.getZ());
-					double d0 = (double)MathHelper.sqrt(d2 * d2 + d3 * d3 + d4 * d4);
-					fireballentity.accelerationX = d2 / d0 * 0.1D;
-					fireballentity.accelerationY = d3 / d0 * 0.1D;
-					fireballentity.accelerationZ = d4 / d0 * 0.1D;
-					fireballentity.explosionPower = explosionStrength;
-					world.addEntity(fireballentity);
+					FireballEntity fireball = createFireball(world, posSpawn, posTarget);
+					world.addEntity(fireball);
 				}
 			}
 		}
 	}
 
+	private FireballEntity createFireball(ServerWorld world, BlockPos spawn, BlockPos target) {
+		double deltaX = target.getX() - spawn.getX();
+		double deltaY = target.getY() - spawn.getY();
+		double deltaZ = target.getZ() - spawn.getZ();
+		double distance = MathHelper.sqrt(deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ);
 
+		FireballEntity fireball = new FireballEntity(EntityType.FIREBALL, world);
+		fireball.setLocationAndAngles(spawn.getX(), spawn.getY(), spawn.getZ(), fireball.rotationYaw, fireball.rotationPitch);
+		fireball.setPosition(spawn.getX(), spawn.getY(), spawn.getZ());
+		fireball.accelerationX = deltaX / distance * 0.1;
+		fireball.accelerationY = deltaY / distance * 0.1;
+		fireball.accelerationZ = deltaZ / distance * 0.1;
+		fireball.explosionPower = explosionStrength;
+
+		return fireball;
+	}
 }

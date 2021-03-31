@@ -3,7 +3,7 @@ package com.lovetropics.minigames.common.content.survive_the_tide.behavior;
 import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.IGameInstance;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
-import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
+import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameLifecycleEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.lovetropics.minigames.common.core.game.state.instances.GamePhase;
@@ -62,7 +62,7 @@ public class SurviveTheTideRulesetBehavior implements IGameBehavior
 	}
 
 	@Override
-	public void register(IGameInstance game, GameEventListeners events) throws GameException {
+	public void register(IGameInstance game, EventRegistrar events) throws GameException {
 		spawnArea = game.getMapRegions().getOne(spawnAreaKey);
 		phases = game.getState().getOrThrow(GamePhaseState.TYPE);
 

@@ -1,12 +1,10 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances.donation;
 
-import com.google.common.collect.Lists;
-import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
+import com.lovetropics.minigames.common.core.game.IGameInstance;
+import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
+import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameLifecycleEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePackageEvents;
-import com.lovetropics.minigames.common.core.integration.game_actions.GamePackage;
-import com.lovetropics.minigames.common.core.game.IGameInstance;
-import com.lovetropics.minigames.common.core.game.behavior.IGamePackageBehavior;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
@@ -19,10 +17,9 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.server.ServerWorld;
 
 import java.util.Iterator;
-import java.util.List;
 import java.util.Random;
 
-public class ShootProjectilesAroundAllPlayersPackageBehavior implements IGamePackageBehavior
+public class ShootProjectilesAroundAllPlayersPackageBehavior implements IGameBehavior
 {
 	public static final Codec<ShootProjectilesAroundAllPlayersPackageBehavior> CODEC = RecordCodecBuilder.create(instance -> {
 		return instance.group(
@@ -63,29 +60,9 @@ public class ShootProjectilesAroundAllPlayersPackageBehavior implements IGamePac
 	}
 
 	@Override
-	public String getPackageType() {
-		return data.getPackageType();
-	}
-
-	@Override
-	public void register(IGameInstance game, GameEventListeners events) {
-		events.listen(GamePackageEvents.RECEIVE_PACKAGE, this::onGamePackageReceived);
+	public void register(IGameInstance registerGame, EventRegistrar events) {
+		events.listen(GamePackageEvents.APPLY_PACKAGE, (game, player, sendingPlayer) -> playerToAmountToSpawn.put(player, entityCountPerPlayer));
 		events.listen(GameLifecycleEvents.TICK, this::tick);
-	}
-
-	private boolean onGamePackageReceived(final IGameInstance game, final GamePackage gamePackage) {
-		if (gamePackage.getPackageType().equals(data.packageType)) {
-			final List<ServerPlayerEntity> players = Lists.newArrayList(game.getParticipants());
-			for (ServerPlayerEntity player : players) {
-				playerToAmountToSpawn.put(player, entityCountPerPlayer);
-			}
-
-			data.onReceive(game, null, gamePackage.getSendingPlayerName());
-
-			return true;
-		}
-
-		return false;
 	}
 
 	private void tick(IGameInstance game) {

@@ -1,12 +1,10 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances.donation;
 
-import com.google.common.collect.Lists;
 import com.lovetropics.minigames.common.core.game.IGameInstance;
-import com.lovetropics.minigames.common.core.game.behavior.IGamePackageBehavior;
-import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
+import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
+import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameLifecycleEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePackageEvents;
-import com.lovetropics.minigames.common.core.integration.game_actions.GamePackage;
 import com.lovetropics.minigames.common.util.Util;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -18,13 +16,11 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.registry.Registry;
 
 import java.util.Iterator;
-import java.util.List;
 
-public class SpawnEntitiesAroundPlayersPackageBehavior implements IGamePackageBehavior
+public class SpawnEntitiesAroundPlayersPackageBehavior implements IGameBehavior
 {
 	public static final Codec<SpawnEntitiesAroundPlayersPackageBehavior> CODEC = RecordCodecBuilder.create(instance -> {
 		return instance.group(
-				DonationPackageData.CODEC.forGetter(c -> c.data),
 				Registry.ENTITY_TYPE.fieldOf("entity_id").forGetter(c -> c.entityId),
 				Codec.INT.optionalFieldOf("entity_count_per_player", 1).forGetter(c -> c.entityCountPerPlayer),
 				Codec.INT.optionalFieldOf("spawn_distance_min", 10).forGetter(c -> c.spawnDistanceMin),
@@ -34,7 +30,6 @@ public class SpawnEntitiesAroundPlayersPackageBehavior implements IGamePackageBe
 		).apply(instance, SpawnEntitiesAroundPlayersPackageBehavior::new);
 	});
 
-	private final DonationPackageData data;
 	private final EntityType<?> entityId;
 	private final int entityCountPerPlayer;
 	private final int spawnDistanceMin;
@@ -43,8 +38,7 @@ public class SpawnEntitiesAroundPlayersPackageBehavior implements IGamePackageBe
 	private final int spawnsPerTick;
 	private final Object2IntMap<ServerPlayerEntity> playerToAmountToSpawn = new Object2IntOpenHashMap<>();
 
-	public SpawnEntitiesAroundPlayersPackageBehavior(final DonationPackageData data, final EntityType<?> entityId, final int entityCount, final int spawnDistanceMin, final int spawnDistanceMax, final int spawnRangeY, final int spawnsPerTick) {
-		this.data = data;
+	public SpawnEntitiesAroundPlayersPackageBehavior(final EntityType<?> entityId, final int entityCount, final int spawnDistanceMin, final int spawnDistanceMax, final int spawnRangeY, final int spawnsPerTick) {
 		this.entityId = entityId;
 		this.entityCountPerPlayer = entityCount;
 		this.spawnDistanceMin = spawnDistanceMin;
@@ -54,29 +48,9 @@ public class SpawnEntitiesAroundPlayersPackageBehavior implements IGamePackageBe
 	}
 
 	@Override
-	public String getPackageType() {
-		return data.getPackageType();
-	}
-
-	@Override
-	public void register(IGameInstance game, GameEventListeners events) {
-		events.listen(GamePackageEvents.RECEIVE_PACKAGE, this::onGamePackageReceived);
+	public void register(IGameInstance registerGame, EventRegistrar events) {
+		events.listen(GamePackageEvents.APPLY_PACKAGE, (game, player, sendingPlayer) -> playerToAmountToSpawn.put(player, entityCountPerPlayer));
 		events.listen(GameLifecycleEvents.TICK, this::tick);
-	}
-
-	private boolean onGamePackageReceived(final IGameInstance minigame, final GamePackage gamePackage) {
-		if (gamePackage.getPackageType().equals(data.packageType)) {
-			final List<ServerPlayerEntity> players = Lists.newArrayList(minigame.getParticipants());
-			for (ServerPlayerEntity player : players) {
-				playerToAmountToSpawn.put(player, entityCountPerPlayer);
-			}
-
-			data.onReceive(minigame, null, gamePackage.getSendingPlayerName());
-
-			return true;
-		}
-
-		return false;
 	}
 
 	private void tick(IGameInstance game) {

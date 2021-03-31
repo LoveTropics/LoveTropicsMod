@@ -3,7 +3,7 @@ package com.lovetropics.minigames.common.content.conservation_exploration;
 import com.lovetropics.lib.entity.FireworkPalette;
 import com.lovetropics.minigames.common.core.game.*;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
-import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
+import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameLifecycleEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.lovetropics.minigames.common.core.game.util.GameBossBar;
@@ -57,7 +57,7 @@ public final class ConservationExplorationBehavior implements IGameBehavior {
 	}
 
 	@Override
-	public void register(IGameInstance game, GameEventListeners events) throws GameException {
+	public void register(IGameInstance game, EventRegistrar events) throws GameException {
 		events.listen(GameLifecycleEvents.START, this::onStart);
 		events.listen(GameLifecycleEvents.FINISH, this::onFinish);
 		

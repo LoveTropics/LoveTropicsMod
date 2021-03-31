@@ -3,7 +3,7 @@ package com.lovetropics.minigames.common.core.game.behavior.instances;
 import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.IGameInstance;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
-import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
+import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameLogicEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.lovetropics.minigames.common.core.game.state.instances.TeamKey;
@@ -22,7 +22,7 @@ public class TeamWinTrigger implements IGameBehavior {
 	private boolean winTriggered;
 
 	@Override
-	public void register(IGameInstance registerGame, GameEventListeners events) throws GameException {
+	public void register(IGameInstance registerGame, EventRegistrar events) throws GameException {
 		TeamState teamState = registerGame.getState().getOrThrow(TeamState.TYPE);
 
 		events.listen(GamePlayerEvents.DEATH, (game, player, damageSource) -> {

@@ -4,7 +4,7 @@ import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.GameManager;
 import com.lovetropics.minigames.common.core.game.IGameInstance;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
-import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
+import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameLifecycleEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameLogicEvents;
 import com.lovetropics.minigames.common.core.game.util.TemplatedText;
@@ -46,7 +46,7 @@ public class SttWinLogicBehavior implements IGameBehavior {
 	}
 
 	@Override
-	public void register(IGameInstance registerGame, GameEventListeners events) throws GameException {
+	public void register(IGameInstance registerGame, EventRegistrar events) throws GameException {
 		events.listen(GameLogicEvents.WIN_TRIGGERED, (game, winnerName) -> {
 			this.winner = winnerName;
 			this.minigameEnded = true;
