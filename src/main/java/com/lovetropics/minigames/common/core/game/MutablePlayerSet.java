@@ -10,9 +10,7 @@ import net.minecraft.server.management.PlayerList;
 import net.minecraft.util.text.ITextComponent;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -20,51 +18,20 @@ public final class MutablePlayerSet implements PlayerSet {
 	private final MinecraftServer server;
 	private final Set<UUID> players = new ObjectOpenHashSet<>();
 
-	private final List<Listeners> listeners = new ArrayList<>();
-
 	public MutablePlayerSet(MinecraftServer server) {
 		this.server = server;
 	}
 
-	@Override
-	public void addListener(Listeners listeners) {
-		this.listeners.add(listeners);
-	}
-
-	@Override
-	public void removeListener(Listeners listeners) {
-		this.listeners.remove(listeners);
-	}
-
 	public void clear() {
-		for (UUID id : this.players) {
-			ServerPlayerEntity player = this.server.getPlayerList().getPlayerByUUID(id);
-			for (Listeners listener : this.listeners) {
-				listener.onRemovePlayer(id, player);
-			}
-		}
 		this.players.clear();
 	}
 
 	public boolean add(ServerPlayerEntity player) {
-		if (this.players.add(player.getUniqueID())) {
-			for (Listeners listener : this.listeners) {
-				listener.onAddPlayer(player);
-			}
-			return true;
-		}
-		return false;
+		return this.players.add(player.getUniqueID());
 	}
 
 	public boolean remove(UUID id) {
-		if (this.players.remove(id)) {
-			ServerPlayerEntity player = this.server.getPlayerList().getPlayerByUUID(id);
-			for (Listeners listener : this.listeners) {
-				listener.onRemovePlayer(id, player);
-			}
-			return true;
-		}
-		return false;
+		return this.players.remove(id);
 	}
 
 	public boolean remove(Entity entity) {

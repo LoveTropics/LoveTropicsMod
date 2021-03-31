@@ -85,21 +85,7 @@ public class GameInstance implements IGameInstance
         for (PlayerRole role : PlayerRole.ROLES) {
             MutablePlayerSet rolePlayers = new MutablePlayerSet(server);
             roles.put(role, rolePlayers);
-
-            rolePlayers.addListener(new PlayerSet.Listeners() {
-                @Override
-                public void onAddPlayer(ServerPlayerEntity player) {
-                    GameInstance.this.onAddPlayerToRole(player, role);
-                }
-            });
         }
-
-        allPlayers.addListener(new PlayerSet.Listeners() {
-            @Override
-            public void onRemovePlayer(UUID id, @Nullable ServerPlayerEntity player) {
-                GameInstance.this.onRemovePlayer(id, player);
-            }
-        });
     }
 
     public static CompletableFuture<GameResult<GameInstance>> start(
@@ -135,7 +121,7 @@ public class GameInstance implements IGameInstance
         }
 
         map.getName().ifPresent(name -> game.getStatistics().getGlobal().set(StatisticKey.MAP, name));
-        game.telemetry.start(game.getParticipants());
+        game.telemetry.start();
 
         return Scheduler.INSTANCE.submit(s -> {
             try {
@@ -168,18 +154,30 @@ public class GameInstance implements IGameInstance
         return GameResult.ok();
     }
 
-    private void onRemovePlayer(UUID id, @Nullable ServerPlayerEntity player) {
-        for (MutablePlayerSet rolePlayers : roles.values()) {
-            rolePlayers.remove(id);
-        }
+    @Override
+    public IGameDefinition getDefinition() {
+        return this.definition;
+    }
 
-        if (player != null) {
+    @Override
+    public BehaviorMap getBehaviors() {
+        return behaviors;
+    }
+
+    @Override
+    public void addPlayer(ServerPlayerEntity player, PlayerRole role) {
+        if (!allPlayers.contains(player)) {
+            allPlayers.add(player);
+
             try {
-                invoker(GamePlayerEvents.LEAVE).onLeave(this, player);
+                invoker(GamePlayerEvents.JOIN).onJoin(this, player, role);
             } catch (Exception e) {
-                LoveTropics.LOGGER.warn("Failed to dispatch player leave event", e);
+                LoveTropics.LOGGER.warn("Failed to dispatch player join event", e);
             }
         }
+
+        roles.get(role).add(player);
+        onAddPlayerToRole(player, role);
     }
 
     private void onAddPlayerToRole(ServerPlayerEntity player, PlayerRole role) {
@@ -207,33 +205,26 @@ public class GameInstance implements IGameInstance
     }
 
     @Override
-    public IGameDefinition getDefinition() {
-        return this.definition;
+    public boolean removePlayer(ServerPlayerEntity player) {
+        if (allPlayers.remove(player)) {
+            onRemovePlayer(player.getUniqueID(), player);
+            return true;
+        }
+        return false;
     }
 
-    @Override
-    public BehaviorMap getBehaviors() {
-        return behaviors;
-    }
-
-    @Override
-    public void addPlayer(ServerPlayerEntity player, PlayerRole role) {
-        if (!allPlayers.contains(player)) {
-            allPlayers.add(player);
-
-            try {
-                invoker(GamePlayerEvents.JOIN).onJoin(this, player, role);
-            } catch (Exception e) {
-                LoveTropics.LOGGER.warn("Failed to dispatch player join event", e);
-            }
+    private void onRemovePlayer(UUID id, @Nullable ServerPlayerEntity player) {
+        for (MutablePlayerSet rolePlayers : roles.values()) {
+            rolePlayers.remove(id);
         }
 
-        roles.get(role).add(player);
-    }
-
-    @Override
-    public boolean removePlayer(ServerPlayerEntity player) {
-        return allPlayers.remove(player);
+        if (player != null) {
+            try {
+                invoker(GamePlayerEvents.LEAVE).onLeave(this, player);
+            } catch (Exception e) {
+                LoveTropics.LOGGER.warn("Failed to dispatch player leave event", e);
+            }
+        }
     }
 
     @Override

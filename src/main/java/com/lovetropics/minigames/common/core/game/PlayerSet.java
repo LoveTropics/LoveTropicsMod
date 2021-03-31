@@ -19,14 +19,6 @@ import java.util.stream.StreamSupport;
 public interface PlayerSet extends Iterable<ServerPlayerEntity> {
 	PlayerSet EMPTY = new PlayerSet() {
 		@Override
-		public void addListener(Listeners listeners) {
-		}
-
-		@Override
-		public void removeListener(Listeners listeners) {
-		}
-
-		@Override
 		public boolean contains(UUID id) {
 			return false;
 		}
@@ -52,10 +44,6 @@ public interface PlayerSet extends Iterable<ServerPlayerEntity> {
 			return Collections.emptyIterator();
 		}
 	};
-
-	void addListener(Listeners listeners);
-
-	void removeListener(Listeners listeners);
 
 	default boolean contains(Entity entity) {
 		return this.contains(entity.getUniqueID());
@@ -105,13 +93,5 @@ public interface PlayerSet extends Iterable<ServerPlayerEntity> {
 
 	default Stream<ServerPlayerEntity> stream() {
 		return StreamSupport.stream(spliterator(), false);
-	}
-
-	interface Listeners {
-		default void onAddPlayer(ServerPlayerEntity player) {
-		}
-
-		default void onRemovePlayer(UUID id, @Nullable ServerPlayerEntity player) {
-		}
 	}
 }

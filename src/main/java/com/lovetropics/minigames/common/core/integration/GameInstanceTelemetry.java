@@ -7,8 +7,9 @@ import com.lovetropics.minigames.common.config.ConfigLT;
 import com.lovetropics.minigames.common.core.game.GameManager;
 import com.lovetropics.minigames.common.core.game.IGameDefinition;
 import com.lovetropics.minigames.common.core.game.IGameInstance;
-import com.lovetropics.minigames.common.core.game.PlayerSet;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePackageEvents;
+import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.lovetropics.minigames.common.core.game.statistics.GameStatistics;
 import com.lovetropics.minigames.common.core.game.statistics.PlayerKey;
 import com.lovetropics.minigames.common.core.integration.game_actions.GameAction;
@@ -19,11 +20,10 @@ import com.mojang.serialization.JsonOps;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.server.MinecraftServer;
 
-import javax.annotation.Nullable;
 import java.time.Instant;
 import java.util.UUID;
 
-public final class GameInstanceTelemetry implements PlayerSet.Listeners {
+public final class GameInstanceTelemetry {
 	private final IGameInstance game;
 	private final Telemetry telemetry;
 
@@ -33,7 +33,6 @@ public final class GameInstanceTelemetry implements PlayerSet.Listeners {
 
 	private final GameActionHandler actions;
 
-	private PlayerSet participants;
 	private boolean closed;
 
 	private GameInstanceTelemetry(IGameInstance game, Telemetry telemetry, UUID instanceId) {
@@ -47,23 +46,20 @@ public final class GameInstanceTelemetry implements PlayerSet.Listeners {
 		this.actions = new GameActionHandler(this.game, this);
 	}
 
-	static GameInstanceTelemetry open(IGameInstance minigame, Telemetry telemetry) {
+	static GameInstanceTelemetry open(IGameInstance game, Telemetry telemetry) {
 		UUID instanceId = UUID.randomUUID();
-		return new GameInstanceTelemetry(minigame, telemetry, instanceId);
+		return new GameInstanceTelemetry(game, telemetry, instanceId);
 	}
 
-	public void start(PlayerSet participants) {
-		this.participants = participants;
-
+	public void start() {
 		JsonObject payload = new JsonObject();
-
 		payload.add("initiator", initiator.serializeProfile());
-
 		payload.add("participants", serializeParticipantsArray());
-
-		participants.addListener(this);
-
 		post(ConfigLT.TELEMETRY.minigameStartEndpoint.get(), payload);
+
+		GameEventListeners events = game.getEvents();
+		events.listen(GamePlayerEvents.JOIN, (g, p, r) -> sendParticipantsList());
+		events.listen(GamePlayerEvents.LEAVE, (g, p) -> sendParticipantsList());
 	}
 
 	public void finish(GameStatistics statistics) {
@@ -107,16 +103,6 @@ public final class GameInstanceTelemetry implements PlayerSet.Listeners {
 		telemetry.postPolling("polls/add", object);
 	}
 
-	@Override
-	public void onAddPlayer(ServerPlayerEntity player) {
-		sendParticipantsList();
-	}
-
-	@Override
-	public void onRemovePlayer(UUID id, @Nullable ServerPlayerEntity player) {
-		sendParticipantsList();
-	}
-
 	private void sendParticipantsList() {
 		JsonObject payload = new JsonObject();
 		payload.add("participants", serializeParticipantsArray());
@@ -126,7 +112,7 @@ public final class GameInstanceTelemetry implements PlayerSet.Listeners {
 
 	private JsonArray serializeParticipantsArray() {
 		JsonArray participantsArray = new JsonArray();
-		for (ServerPlayerEntity participant : participants) {
+		for (ServerPlayerEntity participant : game.getParticipants()) {
 			participantsArray.add(PlayerKey.from(participant).serializeProfile());
 		}
 		return participantsArray;
@@ -150,8 +136,6 @@ public final class GameInstanceTelemetry implements PlayerSet.Listeners {
 
 	private void close() {
 		closed = true;
-		participants.removeListener(this);
-
 		telemetry.closeInstance(this);
 	}
 
