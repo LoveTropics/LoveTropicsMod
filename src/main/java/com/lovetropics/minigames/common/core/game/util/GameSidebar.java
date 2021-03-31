@@ -1,10 +1,6 @@
 package com.lovetropics.minigames.common.core.game.util;
 
-import com.lovetropics.minigames.common.core.game.IGameInstance;
 import com.lovetropics.minigames.common.core.game.MutablePlayerSet;
-import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
-import com.lovetropics.minigames.common.core.game.behavior.event.GameLifecycleEvents;
-import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import it.unimi.dsi.fastutil.chars.CharArrayList;
 import it.unimi.dsi.fastutil.chars.CharList;
 import it.unimi.dsi.fastutil.chars.CharOpenHashSet;
@@ -22,7 +18,7 @@ import net.minecraft.util.text.TextFormatting;
 
 import java.util.Arrays;
 
-public final class GameSidebar implements AutoCloseable {
+public final class GameSidebar implements GameWidget {
 	private static final int SIDEBAR_SLOT = 1;
 	private static final int ADD_OBJECTIVE = 0;
 	private static final int REMOVE_OBJECTIVE = 1;
@@ -61,20 +57,6 @@ public final class GameSidebar implements AutoCloseable {
 		this.title = title;
 	}
 
-	public static GameSidebar openGlobal(IGameInstance game, ITextComponent title) {
-		GameSidebar widget = new GameSidebar(game.getServer(), title);
-		for (ServerPlayerEntity player : game.getAllPlayers()) {
-			widget.addPlayer(player);
-		}
-
-		GameEventListeners events = game.getEvents();
-		events.listen(GamePlayerEvents.JOIN, (g, player, role) -> widget.addPlayer(player));
-		events.listen(GamePlayerEvents.LEAVE, (g, player) -> widget.removePlayer(player));
-		events.listen(GameLifecycleEvents.FINISH, g -> widget.close());
-
-		return widget;
-	}
-
 	public void set(String[] display) {
 		if (Arrays.equals(this.display, display)) {
 			return;
@@ -96,7 +78,8 @@ public final class GameSidebar implements AutoCloseable {
 		}
 	}
 
-	private void addPlayer(ServerPlayerEntity player) {
+	@Override
+	public void addPlayer(ServerPlayerEntity player) {
 		this.players.add(player);
 
 		ScoreObjective objective = this.createDummyObjective();
@@ -107,7 +90,8 @@ public final class GameSidebar implements AutoCloseable {
 		this.sendDisplay(player, this.display);
 	}
 
-	private void removePlayer(ServerPlayerEntity player) {
+	@Override
+	public void removePlayer(ServerPlayerEntity player) {
 		this.players.remove(player);
 		this.sendRemove(player);
 	}

@@ -2,7 +2,9 @@ package com.lovetropics.minigames.common.core.game.behavior.instances.statistics
 
 import com.lovetropics.minigames.common.core.game.IGameInstance;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
-import com.lovetropics.minigames.common.core.game.behavior.event.*;
+import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameLifecycleEvents;
+import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.lovetropics.minigames.common.core.game.statistics.GameStatistics;
 import com.lovetropics.minigames.common.core.game.statistics.StatisticKey;
 import com.mojang.serialization.Codec;
@@ -14,14 +16,12 @@ import net.minecraft.util.DamageSource;
 import net.minecraft.util.math.vector.Vector3d;
 
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 
 public final class CampingTrackerBehavior implements IGameBehavior {
-	// TODO: have a codec for a config that specifies a start point (time/phase) and provides a custom listener to match that
 	public static final Codec<CampingTrackerBehavior> CODEC = RecordCodecBuilder.create(instance -> {
 		return instance.group(
-				Codec.STRING.optionalFieldOf("after_phase").forGetter(c -> Optional.ofNullable(c.afterPhase)),
+				TriggerAfterConfig.CODEC.optionalFieldOf("trigger", TriggerAfterConfig.EMPTY).forGetter(c -> c.trigger),
 				Codec.LONG.optionalFieldOf("camp_time_threshold", 20L * 8).forGetter(c -> c.campTimeThreshold),
 				Codec.DOUBLE.optionalFieldOf("camp_movement_threshold", 8.0).forGetter(c -> c.campMovementThreshold)
 		).apply(instance, CampingTrackerBehavior::new);
@@ -29,43 +29,31 @@ public final class CampingTrackerBehavior implements IGameBehavior {
 
 	private static final long CAMP_TEST_INTERVAL = 20;
 
-	private final String afterPhase;
+	private final TriggerAfterConfig trigger;
 	private final long campTimeThreshold;
 	private final double campMovementThreshold;
 
-	private long startTime = -1;
-
 	private final Map<UUID, CampingTracker> campingTrackers = new Object2ObjectOpenHashMap<>();
 
-	public CampingTrackerBehavior(Optional<String> afterPhase, long campTimeThreshold, double campMovementThreshold) {
-		this.afterPhase = afterPhase.orElse(null);
+	public CampingTrackerBehavior(TriggerAfterConfig trigger, long campTimeThreshold, double campMovementThreshold) {
+		this.trigger = trigger;
 		this.campTimeThreshold = campTimeThreshold;
 		this.campMovementThreshold = campMovementThreshold;
 	}
 
 	@Override
-	public void register(IGameInstance registerGame, EventRegistrar events) {
-		events.listen(GameLifecycleEvents.TICK, this::tick);
-		events.listen(GamePlayerEvents.LEAVE, this::onPlayerLeave);
-		events.listen(GamePlayerEvents.DEATH, this::onPlayerDeath);
-
-		if (afterPhase != null) {
-			events.listen(GameLogicEvents.PHASE_CHANGE, (game, phase, lastPhase) -> {
-				if (lastPhase.is(afterPhase)) {
-					startTime = game.ticks();
-				}
-			});
-		} else {
-			startTime = 0;
-		}
+	public void register(IGameInstance game, EventRegistrar events) {
+		trigger.awaitThen(events, () -> {
+			events.listen(GameLifecycleEvents.TICK, this::tick);
+			events.listen(GamePlayerEvents.LEAVE, this::onPlayerLeave);
+			events.listen(GamePlayerEvents.DEATH, this::onPlayerDeath);
+		});
 	}
 
 	private void tick(IGameInstance game) {
-		if (startTime != -1) {
-			long ticks = game.ticks();
-			if (ticks % CAMP_TEST_INTERVAL == 0) {
-				testForCamping(game, ticks);
-			}
+		long ticks = game.ticks();
+		if (ticks % CAMP_TEST_INTERVAL == 0) {
+			testForCamping(game, ticks);
 		}
 	}
 

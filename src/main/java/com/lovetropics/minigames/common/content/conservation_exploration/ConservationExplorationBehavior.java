@@ -8,6 +8,7 @@ import com.lovetropics.minigames.common.core.game.behavior.event.GameLifecycleEv
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.lovetropics.minigames.common.core.game.control.ControlCommand;
 import com.lovetropics.minigames.common.core.game.util.GameBossBar;
+import com.lovetropics.minigames.common.core.game.util.GlobalGameWidgets;
 import com.lovetropics.minigames.common.core.map.MapRegion;
 import com.lovetropics.minigames.common.util.Scheduler;
 import com.mojang.serialization.Codec;
@@ -65,7 +66,7 @@ public final class ConservationExplorationBehavior implements IGameBehavior {
 		events.listen(GamePlayerEvents.JOIN, this::onPlayerJoin);
 		events.listen(GamePlayerEvents.INTERACT_ENTITY, this::onPlayerInteractEntity);
 
-		this.progressBar = GameBossBar.openGlobal(game,
+		this.progressBar = new GlobalGameWidgets(game).openBossBar(
 				new StringTextComponent("Conservation Exploration"),
 				BossInfo.Color.GREEN,
 				BossInfo.Overlay.PROGRESS

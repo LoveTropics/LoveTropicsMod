@@ -11,49 +11,32 @@ import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.ActionResultType;
 import net.minecraft.util.DamageSource;
 
-import javax.annotation.Nullable;
-import java.util.Optional;
-
 public final class TimeSurvivedTrackerBehavior implements IGameBehavior {
 	public static final Codec<TimeSurvivedTrackerBehavior> CODEC = RecordCodecBuilder.create(instance -> {
 		return instance.group(
-				Codec.STRING.optionalFieldOf("after_phase").forGetter(c -> Optional.ofNullable(c.afterPhase))
+				TriggerAfterConfig.CODEC.optionalFieldOf("trigger", TriggerAfterConfig.EMPTY).forGetter(c -> c.trigger)
 		).apply(instance, TimeSurvivedTrackerBehavior::new);
 	});
 
-	private final String afterPhase;
+	private final TriggerAfterConfig trigger;
 
 	private long startTime = -1;
 
-	private TimeSurvivedTrackerBehavior(Optional<String> afterPhase) {
-		this(afterPhase.orElse(null));
-	}
-
-	public TimeSurvivedTrackerBehavior(@Nullable String afterPhase) {
-		this.afterPhase = afterPhase;
+	public TimeSurvivedTrackerBehavior(TriggerAfterConfig trigger) {
+		this.trigger = trigger;
 	}
 
 	@Override
-	public void register(IGameInstance registerGame, EventRegistrar events) {
-		events.listen(GameLifecycleEvents.FINISH, this::onFinish);
-		events.listen(GamePlayerEvents.DEATH, this::onPlayerDeath);
+	public void register(IGameInstance game, EventRegistrar events) {
+		trigger.awaitThen(events, () -> {
+			startTime = game.ticks();
 
-		if (afterPhase != null) {
-			events.listen(GameLogicEvents.PHASE_CHANGE, (game, phase, lastPhase) -> {
-				if (lastPhase.is(afterPhase)) {
-					startTime = game.ticks();
-				}
-			});
-		} else {
-			startTime = 0;
-		}
+			events.listen(GameLifecycleEvents.FINISH, this::onFinish);
+			events.listen(GamePlayerEvents.DEATH, this::onPlayerDeath);
+		});
 	}
 
 	private void onFinish(IGameInstance game) {
-		if (startTime == -1) {
-			return;
-		}
-
 		GameStatistics statistics = game.getStatistics();
 
 		int secondsSurvived = getSecondsSurvived(game);
@@ -65,10 +48,6 @@ public final class TimeSurvivedTrackerBehavior implements IGameBehavior {
 	}
 
 	private ActionResultType onPlayerDeath(IGameInstance minigame, ServerPlayerEntity player, DamageSource source) {
-		if (startTime == -1) {
-			return ActionResultType.PASS;
-		}
-
 		GameStatistics statistics = minigame.getStatistics();
 		statistics.forPlayer(player).set(StatisticKey.TIME_SURVIVED, getSecondsSurvived(minigame));
 
