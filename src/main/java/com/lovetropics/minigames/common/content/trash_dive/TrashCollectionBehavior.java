@@ -66,7 +66,7 @@ public final class TrashCollectionBehavior implements IGameBehavior {
 		ITextComponent sidebarTitle = new StringTextComponent("Trash Dive")
 				.mergeStyle(TextFormatting.BLUE, TextFormatting.BOLD);
 
-		sidebar = GameSidebar.open(game, sidebarTitle);
+		sidebar = GameSidebar.openGlobal(game, sidebarTitle);
 		sidebar.set(renderSidebar(game));
 
 		PlayerSet players = game.getParticipants();

@@ -5,6 +5,7 @@ import com.lovetropics.minigames.common.core.game.IGameInstance;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameLifecycleEvents;
+import com.lovetropics.minigames.common.core.game.util.GameBossBar;
 import com.lovetropics.minigames.common.core.map.MapRegion;
 import com.lovetropics.minigames.common.util.MoreCodecs;
 import com.mojang.serialization.Codec;
@@ -19,7 +20,6 @@ import net.minecraft.util.DamageSource;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.world.BossInfo;
-import net.minecraft.world.server.ServerBossInfo;
 import net.minecraft.world.server.ServerWorld;
 
 import java.util.ArrayList;
@@ -56,7 +56,7 @@ public class WorldBorderGameBehavior implements IGameBehavior
 	private BlockPos worldBorderCenter = BlockPos.ZERO;
 
 	private boolean borderCollapseMessageSent = false;
-	private final ServerBossInfo bossInfo;
+	private final GameBossBar bossBar;
 
 	public WorldBorderGameBehavior(final ITextComponent name, final String worldBorderCenterKey, final ITextComponent collapseMessage, final long ticksUntilStart,
 								   final long delayUntilCollapse, final int particleRateDelay, final int particleHeight, final int damageRateDelay, final int damageAmount, final IParticleData borderParticle) {
@@ -71,11 +71,7 @@ public class WorldBorderGameBehavior implements IGameBehavior
 		this.damageAmount = damageAmount;
 		this.borderParticle = borderParticle;
 
-		this.bossInfo = (ServerBossInfo)(new ServerBossInfo(
-				name,
-				BossInfo.Color.WHITE,
-				BossInfo.Overlay.PROGRESS))
-				.setDarkenSky(false);
+		this.bossBar = new GameBossBar(name, BossInfo.Color.WHITE, BossInfo.Overlay.PROGRESS);
 	}
 
 	@Override
@@ -95,7 +91,7 @@ public class WorldBorderGameBehavior implements IGameBehavior
 
 	private void onFinish(final IGameInstance game) {
 		borderCollapseMessageSent = false;
-		bossInfo.removeAllPlayers();
+		bossBar.close();
 	}
 
 	// TODO: Clean up this mess
@@ -118,7 +114,7 @@ public class WorldBorderGameBehavior implements IGameBehavior
 			borderPercent = Math.max(borderPercent, 0.01F);
 		}
 
-		bossInfo.setPercent(borderPercent);
+		bossBar.setProgress(borderPercent);
 
 		float maxRadius = 210;
 		float currentRadius = maxRadius * borderPercent;
@@ -175,9 +171,7 @@ public class WorldBorderGameBehavior implements IGameBehavior
 			}
 
 			//add boss bar info to everyone in dim if not already registered for it
-			if (!bossInfo.getPlayers().contains(player)) {
-				bossInfo.addPlayer(player);
-			}
+			bossBar.addPlayer(player);
 		}
 	}
 }

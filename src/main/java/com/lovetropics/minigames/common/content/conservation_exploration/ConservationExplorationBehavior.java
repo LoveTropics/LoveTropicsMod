@@ -6,6 +6,7 @@ import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameLifecycleEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
+import com.lovetropics.minigames.common.core.game.util.GameBossBar;
 import com.lovetropics.minigames.common.core.map.MapRegion;
 import com.lovetropics.minigames.common.util.Scheduler;
 import com.mojang.serialization.Codec;
@@ -27,7 +28,6 @@ import net.minecraft.util.text.event.ClickEvent;
 import net.minecraft.util.text.event.HoverEvent;
 import net.minecraft.world.BossInfo;
 import net.minecraft.world.chunk.IChunk;
-import net.minecraft.world.server.ServerBossInfo;
 import net.minecraft.world.server.ServerWorld;
 
 import java.util.ArrayList;
@@ -50,11 +50,7 @@ public final class ConservationExplorationBehavior implements IGameBehavior {
 
 	private ScorePlayerTeam discoveryTeam;
 
-	private final ServerBossInfo progressBar = new ServerBossInfo(
-			new StringTextComponent("Conservation Exploration"),
-			BossInfo.Color.GREEN,
-			BossInfo.Overlay.PROGRESS
-	);
+	private GameBossBar progressBar;
 
 	public ConservationExplorationBehavior(List<CreatureType> creatures) {
 		this.creatures = creatures;
@@ -66,8 +62,13 @@ public final class ConservationExplorationBehavior implements IGameBehavior {
 		events.listen(GameLifecycleEvents.FINISH, this::onFinish);
 		
 		events.listen(GamePlayerEvents.JOIN, this::onPlayerJoin);
-		events.listen(GamePlayerEvents.LEAVE, this::onPlayerLeave);
 		events.listen(GamePlayerEvents.INTERACT_ENTITY, this::onPlayerInteractEntity);
+
+		this.progressBar = GameBossBar.openGlobal(game,
+				new StringTextComponent("Conservation Exploration"),
+				BossInfo.Color.GREEN,
+				BossInfo.Overlay.PROGRESS
+		);;
 	}
 
 	private void onStart(IGameInstance game) {
@@ -92,11 +93,6 @@ public final class ConservationExplorationBehavior implements IGameBehavior {
 
 	private void onPlayerJoin(IGameInstance game, ServerPlayerEntity player, PlayerRole role) {
 		player.addItemStackToInventory(new ItemStack(ConservationExploration.RECORD_CREATURE.get()));
-		progressBar.addPlayer(player);
-	}
-
-	private void onPlayerLeave(IGameInstance game, ServerPlayerEntity player) {
-		progressBar.removePlayer(player);
 	}
 
 	private void onPlayerInteractEntity(IGameInstance game, ServerPlayerEntity player, Entity entity, Hand hand) {
@@ -180,8 +176,8 @@ public final class ConservationExplorationBehavior implements IGameBehavior {
 		CreatureType creature = searchOrder[searchIndex];
 		ITextComponent creatureName = creature.getName().deepCopy().mergeStyle(TextFormatting.AQUA);
 
-		progressBar.setName(new StringTextComponent("Looking for: ").appendSibling(creatureName));
-		progressBar.setPercent((float) searchIndex / searchOrder.length);
+		progressBar.setTitle(new StringTextComponent("Looking for: ").appendSibling(creatureName));
+		progressBar.setProgress((float) searchIndex / searchOrder.length);
 
 		minigame.getAllPlayers().sendMessage(new StringTextComponent("We are looking for a ").appendSibling(creatureName).appendString("!").mergeStyle(TextFormatting.GOLD));
 
@@ -191,9 +187,6 @@ public final class ConservationExplorationBehavior implements IGameBehavior {
 	}
 
 	private void onFinish(IGameInstance game) {
-		this.progressBar.setVisible(false);
-		this.progressBar.removeAllPlayers();
-
 		ServerScoreboard scoreboard = game.getServer().getScoreboard();
 		scoreboard.removeTeam(discoveryTeam);
 	}
