@@ -4,7 +4,7 @@ import com.lovetropics.minigames.common.core.game.GameManager;
 import com.lovetropics.minigames.common.core.game.IGameInstance;
 import com.lovetropics.minigames.common.core.game.PlayerRole;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
-import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
+import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.mojang.serialization.Codec;
 import net.minecraft.entity.player.ServerPlayerEntity;
@@ -18,7 +18,7 @@ public final class RespawnSpectatorGameBehavior implements IGameBehavior {
 	public static final Codec<RespawnSpectatorGameBehavior> CODEC = Codec.unit(RespawnSpectatorGameBehavior::new);
 
 	@Override
-	public void register(IGameInstance registerGame, GameEventListeners events) {
+	public void register(IGameInstance registerGame, EventRegistrar events) {
 		events.listen(GamePlayerEvents.CHANGE_ROLE, this::onPlayerChangeRole);
 		events.listen(GamePlayerEvents.DEATH, this::onPlayerDeath);
 	}

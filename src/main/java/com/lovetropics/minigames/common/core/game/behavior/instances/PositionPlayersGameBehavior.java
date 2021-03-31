@@ -4,7 +4,7 @@ import com.lovetropics.minigames.common.core.dimension.DimensionUtils;
 import com.lovetropics.minigames.common.core.game.IGameInstance;
 import com.lovetropics.minigames.common.core.game.PlayerRole;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
-import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
+import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.lovetropics.minigames.common.core.map.MapRegion;
 import com.lovetropics.minigames.common.core.map.MapRegions;
@@ -40,7 +40,7 @@ public class PositionPlayersGameBehavior implements IGameBehavior {
 	}
 
 	@Override
-	public void register(IGameInstance registerGame, GameEventListeners events) {
+	public void register(IGameInstance registerGame, EventRegistrar events) {
 		MapRegions regions = registerGame.getMapRegions();
 
 		participantSpawnRegions.clear();

@@ -4,10 +4,7 @@ import com.lovetropics.minigames.common.content.survive_the_tide.SurviveTheTide;
 import com.lovetropics.minigames.common.content.survive_the_tide.SurviveTheTideWeatherConfig;
 import com.lovetropics.minigames.common.core.game.IGameInstance;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
-import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
-import com.lovetropics.minigames.common.core.game.behavior.event.GameLifecycleEvents;
-import com.lovetropics.minigames.common.core.game.behavior.event.GamePackageEvents;
-import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
+import com.lovetropics.minigames.common.core.game.behavior.event.*;
 import com.lovetropics.minigames.common.core.game.state.instances.GamePhase;
 import com.lovetropics.minigames.common.core.game.state.instances.GamePhaseState;
 import com.lovetropics.minigames.common.core.game.weather.RainType;
@@ -90,7 +87,7 @@ public class SurviveTheTideWeatherBehavior implements IGameBehavior {
 	}
 
 	@Override
-	public void register(IGameInstance game, GameEventListeners events) {
+	public void register(IGameInstance game, EventRegistrar events) {
 		controller = WeatherControllerManager.forWorld(game.getWorld());
 
 		events.listen(GameLifecycleEvents.TICK, this::tick);

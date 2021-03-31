@@ -2,80 +2,62 @@ package com.lovetropics.minigames.common.core.game.behavior.instances.donation;
 
 import com.google.common.collect.Lists;
 import com.lovetropics.minigames.common.core.game.GameException;
-import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
+import com.lovetropics.minigames.common.core.game.IGameInstance;
+import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
+import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePackageEvents;
-import com.lovetropics.minigames.common.util.Util;
-import com.lovetropics.minigames.common.core.integration.game_actions.GamePackage;
 import com.lovetropics.minigames.common.core.map.MapRegion;
 import com.lovetropics.minigames.common.core.map.MapRegions;
-import com.lovetropics.minigames.common.core.game.IGameInstance;
-import com.lovetropics.minigames.common.core.game.behavior.IGamePackageBehavior;
+import com.lovetropics.minigames.common.util.Util;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.entity.EntityType;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.gen.Heightmap;
+import net.minecraft.world.server.ServerWorld;
 
 import java.util.List;
 
-public class SpawnEntityAtRegionsPackageBehavior implements IGamePackageBehavior
+public class SpawnEntityAtRegionsPackageBehavior implements IGameBehavior
 {
 	public static final Codec<SpawnEntityAtRegionsPackageBehavior> CODEC = RecordCodecBuilder.create(instance -> {
 		return instance.group(
-				DonationPackageData.CODEC.forGetter(c -> c.data),
 				Codec.STRING.listOf().fieldOf("regions_to_spawn_at").forGetter(c -> c.regionsToSpawnAtKeys),
 				Registry.ENTITY_TYPE.fieldOf("entity_id").forGetter(c -> c.entityId),
 				Codec.INT.optionalFieldOf("entity_count_per_region", 1).forGetter(c -> c.entityCountPerRegion)
 		).apply(instance, SpawnEntityAtRegionsPackageBehavior::new);
 	});
 
-	private final DonationPackageData data;
 	private final List<String> regionsToSpawnAtKeys;
 	private final EntityType<?> entityId;
 	private final int entityCountPerRegion;
 
 	private final List<MapRegion> regionsToSpawnAt = Lists.newArrayList();
 
-	public SpawnEntityAtRegionsPackageBehavior(final DonationPackageData data, final List<String> regionsToSpawnAtKeys, final EntityType<?> entityId, final int entityCountPerRegion) {
-		this.data = data;
+	public SpawnEntityAtRegionsPackageBehavior(final List<String> regionsToSpawnAtKeys, final EntityType<?> entityId, final int entityCountPerRegion) {
 		this.regionsToSpawnAtKeys = regionsToSpawnAtKeys;
 		this.entityId = entityId;
 		this.entityCountPerRegion = entityCountPerRegion;
 	}
 
 	@Override
-	public String getPackageType() {
-		return data.getPackageType();
-	}
-
-	@Override
-	public void register(IGameInstance game, GameEventListeners events) throws GameException {
-		MapRegions regions = game.getMapRegions();
+	public void register(IGameInstance registerGame, EventRegistrar events) throws GameException {
+		MapRegions regions = registerGame.getMapRegions();
 
 		regionsToSpawnAt.clear();
 		for (String key : regionsToSpawnAtKeys) {
 			regionsToSpawnAt.addAll(regions.get(key));
 		}
 
-		events.listen(GamePackageEvents.RECEIVE_PACKAGE, this::onGamePackageReceived);
-	}
-
-	private boolean onGamePackageReceived(final IGameInstance game, final GamePackage gamePackage) {
-		if (gamePackage.getPackageType().equals(data.packageType)) {
+		events.listen(GamePackageEvents.APPLY_PACKAGE, (game, player, sendingPlayer) -> {
+			ServerWorld world = game.getWorld();
 			for (final MapRegion region : regionsToSpawnAt) {
 				for (int i = 0; i < entityCountPerRegion; i++) {
-					final BlockPos pos = game.getWorld().getHeight(Heightmap.Type.WORLD_SURFACE, region.sample(game.getWorld().getRandom()));
-
-					Util.spawnEntity(entityId, game.getWorld(), pos.getX(), pos.getY(), pos.getZ());
+					final BlockPos pos = world.getHeight(Heightmap.Type.WORLD_SURFACE, region.sample(world.getRandom()));
+					Util.spawnEntity(entityId, world, pos.getX(), pos.getY(), pos.getZ());
 				}
 			}
-
-			data.onReceive(game, null, gamePackage.getSendingPlayerName());
-
-			return true;
-		}
-
-		return false;
+		});
 	}
 }

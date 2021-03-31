@@ -7,10 +7,11 @@ import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 
-public final class GameEventListeners {
+public final class GameEventListeners implements EventRegistrar {
 	private final Reference2ObjectMap<GameEventType<?>, List<Object>> listeners = new Reference2ObjectOpenHashMap<>();
 	private final Reference2ObjectMap<GameEventType<?>, Object> invokers = new Reference2ObjectOpenHashMap<>();
 
+	@Override
 	public <T> void listen(GameEventType<T> type, T listener) {
 		List<Object> listeners = this.listeners.computeIfAbsent(type, e -> new ArrayList<>());
 		listeners.add(listener);

@@ -2,8 +2,8 @@ package com.lovetropics.minigames.common.core.command.game;
 
 import com.lovetropics.minigames.common.core.game.GameManager;
 import com.lovetropics.minigames.common.core.game.IGameInstance;
-import com.lovetropics.minigames.common.core.game.behavior.IGamePackageBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePackageEvents;
+import com.lovetropics.minigames.common.core.game.behavior.instances.donation.DonationPackageBehavior;
 import com.lovetropics.minigames.common.core.integration.game_actions.GamePackage;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
@@ -39,8 +39,8 @@ public class GamePackageCommand {
 		IGameInstance active = GameManager.get().getActiveMinigame();
 		if (active != null) {
 			return ISuggestionProvider.suggest(active.getBehaviors().values().stream()
-					.filter(b -> b instanceof IGamePackageBehavior)
-					.map(b -> ((IGamePackageBehavior)b).getPackageType()), builder);
+					.filter(b -> b instanceof DonationPackageBehavior)
+					.map(b -> ((DonationPackageBehavior)b).getPackageType()), builder);
 		}
 		return Suggestions.empty();
 	}

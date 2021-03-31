@@ -4,7 +4,7 @@ import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.IGameInstance;
 import com.lovetropics.minigames.common.core.game.PlayerSet;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
-import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
+import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameLifecycleEvents;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -42,7 +42,7 @@ public class RevealPlayersBehavior implements IGameBehavior
 	}
 
 	@Override
-	public void register(IGameInstance registerGame, GameEventListeners events) throws GameException {
+	public void register(IGameInstance registerGame, EventRegistrar events) throws GameException {
 		events.listen(GameLifecycleEvents.TICK, game -> {
 			PlayerSet players = game.getParticipants();
 			if (players.size() > playersLeftRequired) {

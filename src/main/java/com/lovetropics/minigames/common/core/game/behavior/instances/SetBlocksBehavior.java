@@ -3,7 +3,7 @@ package com.lovetropics.minigames.common.core.game.behavior.instances;
 import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.IGameInstance;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
-import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
+import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameLifecycleEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameWorldEvents;
 import com.lovetropics.minigames.common.core.map.MapRegion;
@@ -54,7 +54,7 @@ public final class SetBlocksBehavior implements IGameBehavior {
 	}
 
 	@Override
-	public void register(IGameInstance registerGame, GameEventListeners events) {
+	public void register(IGameInstance registerGame, EventRegistrar events) {
 		regions = regionKey != null ? registerGame.getMapRegions().get(regionKey) : null;
 
 		if (time != -1) {
@@ -64,7 +64,7 @@ public final class SetBlocksBehavior implements IGameBehavior {
 		}
 	}
 
-	private void registerTimed(GameEventListeners events) {
+	private void registerTimed(EventRegistrar events) {
 		Collection<MapRegion> regions = this.regions;
 		if (regions == null) {
 			throw new GameException(new StringTextComponent("Regions not specified for block set behavior with a set time!"));
@@ -79,7 +79,7 @@ public final class SetBlocksBehavior implements IGameBehavior {
 		});
 	}
 
-	private void registerImmediate(GameEventListeners events) {
+	private void registerImmediate(EventRegistrar events) {
 		if (regions != null) {
 			Long2ObjectMap<List<MapRegion>> regionsByChunk = collectRegionsByChunk(regions);
 

@@ -4,7 +4,7 @@ import com.google.common.collect.Maps;
 import com.lovetropics.minigames.common.core.game.IGameInstance;
 import com.lovetropics.minigames.common.core.game.PlayerRole;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
-import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
+import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.lovetropics.minigames.common.core.game.util.PlayerSnapshot;
 import com.mojang.serialization.Codec;
@@ -22,7 +22,7 @@ public final class IsolatePlayerStateBehavior implements IGameBehavior {
 	private final Map<UUID, PlayerSnapshot> playerSnapshots = Maps.newHashMap();
 
 	@Override
-	public void register(IGameInstance registerGame, GameEventListeners events) {
+	public void register(IGameInstance registerGame, EventRegistrar events) {
 		events.listen(GamePlayerEvents.JOIN, this::onPlayerJoin);
 		events.listen(GamePlayerEvents.LEAVE, this::onPlayerLeave);
 	}

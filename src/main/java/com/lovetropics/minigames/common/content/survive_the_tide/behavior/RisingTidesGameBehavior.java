@@ -4,10 +4,7 @@ import com.lovetropics.minigames.common.content.survive_the_tide.IcebergLine;
 import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.IGameInstance;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
-import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
-import com.lovetropics.minigames.common.core.game.behavior.event.GameLifecycleEvents;
-import com.lovetropics.minigames.common.core.game.behavior.event.GameLivingEntityEvents;
-import com.lovetropics.minigames.common.core.game.behavior.event.GameLogicEvents;
+import com.lovetropics.minigames.common.core.game.behavior.event.*;
 import com.lovetropics.minigames.common.core.game.state.instances.GamePhase;
 import com.lovetropics.minigames.common.core.game.state.instances.GamePhaseState;
 import com.lovetropics.minigames.common.core.map.MapRegion;
@@ -85,7 +82,7 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 	}
 
 	@Override
-	public void register(IGameInstance game, GameEventListeners events) throws GameException {
+	public void register(IGameInstance game, EventRegistrar events) throws GameException {
 		tideArea = game.getMapRegions().getOne(tideAreaKey);
 
 		minTideChunk = new ChunkPos(tideArea.min.getX() >> 4, tideArea.min.getZ() >> 4);

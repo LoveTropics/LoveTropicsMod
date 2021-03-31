@@ -4,7 +4,7 @@ import com.lovetropics.minigames.common.core.game.GameControllable;
 import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.IGameInstance;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
-import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
+import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.polling.PollingGameInstance;
 import com.lovetropics.minigames.common.util.MoreCodecs;
 import com.mojang.brigadier.CommandDispatcher;
@@ -72,7 +72,7 @@ public abstract class CommandInvokeBehavior implements IGameBehavior {
 	}
 
 	@Override
-	public void registerPolling(PollingGameInstance game, GameEventListeners events) throws GameException {
+	public void registerPolling(PollingGameInstance game, EventRegistrar events) throws GameException {
 		MinecraftServer server = game.getServer();
 		this.dispatcher = server.getCommandManager().getDispatcher();
 		this.source = server.getCommandSource();
@@ -81,7 +81,7 @@ public abstract class CommandInvokeBehavior implements IGameBehavior {
 	}
 
 	@Override
-	public void register(IGameInstance game, GameEventListeners events) {
+	public void register(IGameInstance game, EventRegistrar events) {
 		this.source = game.getCommandSource();
 		this.registerControls(game);
 		this.registerEvents(events);
@@ -90,5 +90,5 @@ public abstract class CommandInvokeBehavior implements IGameBehavior {
 	protected void registerControls(GameControllable game) {
 	}
 
-	protected abstract void registerEvents(GameEventListeners events);
+	protected abstract void registerEvents(EventRegistrar events);
 }

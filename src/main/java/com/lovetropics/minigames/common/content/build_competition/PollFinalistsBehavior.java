@@ -7,7 +7,7 @@ import com.lovetropics.minigames.common.core.game.ControlCommand;
 import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.IGameInstance;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
-import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
+import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePackageEvents;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -57,7 +57,7 @@ public class PollFinalistsBehavior implements IGameBehavior {
 	}
 
 	@Override
-	public void register(IGameInstance game, GameEventListeners events) throws GameException {
+	public void register(IGameInstance game, EventRegistrar events) throws GameException {
 		game.addControlCommand("start_runoff", ControlCommand.forAdmins(source -> {
 			try {
 				PlayerList players = source.getServer().getPlayerList();

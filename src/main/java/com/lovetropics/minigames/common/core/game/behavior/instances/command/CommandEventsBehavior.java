@@ -19,7 +19,7 @@ public final class CommandEventsBehavior extends CommandInvokeBehavior {
 
 	// TODO: this can handle passing additional data to datapacks in the future too
 	@Override
-	protected void registerEvents(GameEventListeners events) {
+	protected void registerEvents(EventRegistrar events) {
 		this.invoke("ready");
 
 		events.listen(GameLifecycleEvents.START, game -> this.invoke("start"));
