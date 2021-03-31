@@ -2,7 +2,7 @@ package com.lovetropics.minigames.common.core.command.game;
 
 import com.lovetropics.minigames.client.data.TropicraftLangKeys;
 import com.lovetropics.minigames.common.core.game.GameResult;
-import com.lovetropics.minigames.common.core.game.SingleGameManager;
+import com.lovetropics.minigames.common.core.game.IGameManager;
 import com.lovetropics.minigames.common.core.game.polling.PollingGameInstance;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
@@ -22,14 +22,14 @@ public class StartGameCommand {
 			literal("game")
 			.then(literal("start").requires(s -> s.hasPermissionLevel(2))
 			.executes(c -> {
-				PollingGameInstance polling = SingleGameManager.INSTANCE.getPollingGame();
+				PollingGameInstance polling = IGameManager.get().getPollingGame();
 				if (polling == null) {
 					throw new SimpleCommandExceptionType(new TranslationTextComponent(TropicraftLangKeys.COMMAND_NO_MINIGAME_POLLING)).create();
 				}
 
 				CompletableFuture<GameResult<ITextComponent>> future;
 				try {
-					future = SingleGameManager.INSTANCE.start(polling);
+					future = IGameManager.get().start(polling);
 				} catch (Exception e) {
 					c.getSource().sendFeedback(new StringTextComponent("Unexpected error starting minigame: " + e), true);
 					return 0;

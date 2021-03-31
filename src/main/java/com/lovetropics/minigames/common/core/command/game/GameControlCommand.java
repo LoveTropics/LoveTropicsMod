@@ -18,12 +18,12 @@ public class GameControlCommand {
             literal("game")
                 .then(argument("control", StringArgumentType.string())
                     .suggests((context, builder) -> {
-                        IGameManager manager = SingleGameManager.INSTANCE;
+                        IGameManager manager = IGameManager.get();
                         return ISuggestionProvider.suggest(manager.getControlInvoker().list(context.getSource()), builder);
                     })
                     .executes(ctx -> {
                         String control = StringArgumentType.getString(ctx, "control");
-                        IGameManager manager = SingleGameManager.INSTANCE;
+                        IGameManager manager = IGameManager.get();
                         manager.getControlInvoker().invoke(control, ctx.getSource());
                         return Command.SINGLE_SUCCESS;
                     })

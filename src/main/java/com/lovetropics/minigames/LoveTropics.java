@@ -11,7 +11,7 @@ import com.lovetropics.minigames.common.content.survive_the_tide.entity.Driftwoo
 import com.lovetropics.minigames.common.core.command.MapCommand;
 import com.lovetropics.minigames.common.core.command.game.*;
 import com.lovetropics.minigames.common.core.game.IGameInstance;
-import com.lovetropics.minigames.common.core.game.SingleGameManager;
+import com.lovetropics.minigames.common.core.game.IGameManager;
 import com.lovetropics.minigames.common.core.game.behavior.GameBehaviorTypes;
 import com.lovetropics.minigames.common.core.integration.Telemetry;
 import com.lovetropics.minigames.common.core.map.VoidChunkGenerator;
@@ -156,9 +156,9 @@ public class LoveTropics {
     }
 
     private void onServerStopping(final FMLServerStoppingEvent event) {
-        IGameInstance game = SingleGameManager.INSTANCE.getActiveGame();
+        IGameInstance game = IGameManager.get().getActiveGame();
         if (game != null) {
-            SingleGameManager.INSTANCE.cancel(game);
+            IGameManager.get().cancel(game);
         }
 
         Telemetry.INSTANCE.sendClose();

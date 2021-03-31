@@ -9,7 +9,7 @@ import net.minecraft.server.management.PlayerList;
 import javax.annotation.Nullable;
 import java.util.*;
 
-public final class MinigameRegistrations {
+public final class GameRegistrations {
 	private final Set<UUID> any = new ObjectOpenHashSet<>();
 	private final Set<UUID> participants = new ObjectOpenHashSet<>();
 	private final Set<UUID> spectators = new ObjectOpenHashSet<>();

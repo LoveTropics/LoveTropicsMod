@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.common.core.command.game;
 
-import com.lovetropics.minigames.common.core.game.SingleGameManager;
+import com.lovetropics.minigames.common.core.game.IGameManager;
 import com.mojang.brigadier.CommandDispatcher;
 import net.minecraft.command.CommandSource;
 
@@ -12,7 +12,7 @@ public class FinishGameCommand {
 			literal("game")
 			.then(literal("finish").requires(s -> s.getEntity() == null)
 			.executes(c -> GameCommand.executeMinigameAction(() ->
-				SingleGameManager.INSTANCE.finish(SingleGameManager.INSTANCE.getActiveGame()), c.getSource())))
+				IGameManager.get().finish(IGameManager.get().getActiveGame()), c.getSource())))
 		);
 	}
 }

@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.common.core.command.game;
 
-import com.lovetropics.minigames.common.core.game.SingleGameManager;
+import com.lovetropics.minigames.common.core.game.IGameManager;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import net.minecraft.command.CommandSource;
@@ -21,6 +21,6 @@ public class LeaveGameCommand {
 		return literal(name)
 		.requires(s -> s.getEntity() instanceof ServerPlayerEntity)
 		.executes(c -> GameCommand.executeMinigameAction(() ->
-				SingleGameManager.INSTANCE.removePlayer((ServerPlayerEntity) c.getSource().getEntity()), c.getSource()));
+				IGameManager.get().removePlayer((ServerPlayerEntity) c.getSource().getEntity()), c.getSource()));
 	}
 }

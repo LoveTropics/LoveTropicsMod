@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.common.core.command.game;
 
-import com.lovetropics.minigames.common.core.game.SingleGameManager;
+import com.lovetropics.minigames.common.core.game.IGameManager;
 import com.lovetropics.minigames.common.core.game.PlayerRole;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
@@ -63,7 +63,7 @@ public class JoinGameCommand {
 	private static int registerAsRole(CommandContext<CommandSource> ctx, @Nullable PlayerRole requestedRole) throws CommandSyntaxException {
 		return GameCommand.executeMinigameAction(() -> {
 			ServerPlayerEntity player = ctx.getSource().asPlayer();
-			return SingleGameManager.INSTANCE.joinPlayerAs(player, requestedRole);
+			return IGameManager.get().joinPlayerAs(player, requestedRole);
 		}, ctx.getSource());
 	}
 }
