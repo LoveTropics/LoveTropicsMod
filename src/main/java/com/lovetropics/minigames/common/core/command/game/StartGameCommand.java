@@ -1,12 +1,16 @@
 package com.lovetropics.minigames.common.core.command.game;
 
-import com.lovetropics.minigames.common.core.game.GameManager;
+import com.lovetropics.minigames.client.data.TropicraftLangKeys;
 import com.lovetropics.minigames.common.core.game.GameResult;
+import com.lovetropics.minigames.common.core.game.SingleGameManager;
+import com.lovetropics.minigames.common.core.game.polling.PollingGameInstance;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import net.minecraft.command.CommandSource;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.util.text.TranslationTextComponent;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -18,9 +22,14 @@ public class StartGameCommand {
 			literal("game")
 			.then(literal("start").requires(s -> s.hasPermissionLevel(2))
 			.executes(c -> {
+				PollingGameInstance polling = SingleGameManager.INSTANCE.getPollingGame();
+				if (polling == null) {
+					throw new SimpleCommandExceptionType(new TranslationTextComponent(TropicraftLangKeys.COMMAND_NO_MINIGAME_POLLING)).create();
+				}
+
 				CompletableFuture<GameResult<ITextComponent>> future;
 				try {
-					future = GameManager.get().start();
+					future = SingleGameManager.INSTANCE.start(polling);
 				} catch (Exception e) {
 					c.getSource().sendFeedback(new StringTextComponent("Unexpected error starting minigame: " + e), true);
 					return 0;

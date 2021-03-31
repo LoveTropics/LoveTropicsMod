@@ -4,7 +4,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.common.config.ConfigLT;
-import com.lovetropics.minigames.common.core.game.GameManager;
+import com.lovetropics.minigames.common.core.game.SingleGameManager;
 import com.lovetropics.minigames.common.core.game.IGameDefinition;
 import com.lovetropics.minigames.common.core.game.IGameInstance;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
@@ -145,7 +145,7 @@ public final class GameInstanceTelemetry {
 
 	void handlePayload(JsonObject object, String type, String crud) {
 		if ("poll".equals(type)) {
-			IGameInstance active = GameManager.get().getActiveMinigame();
+			IGameInstance active = SingleGameManager.INSTANCE.getActiveGame();
 			if (active.getDefinition() == definition) {
 				active.invoker(GamePackageEvents.RECEIVE_POLL_EVENT).onReceivePollEvent(game, object, crud);
 			}

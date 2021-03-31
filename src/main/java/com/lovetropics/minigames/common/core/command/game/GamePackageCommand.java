@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.common.core.command.game;
 
-import com.lovetropics.minigames.common.core.game.GameManager;
+import com.lovetropics.minigames.common.core.game.SingleGameManager;
 import com.lovetropics.minigames.common.core.game.IGameInstance;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePackageEvents;
 import com.lovetropics.minigames.common.core.game.behavior.instances.donation.DonationPackageBehavior;
@@ -36,7 +36,7 @@ public class GamePackageCommand {
 	}
 
 	private static CompletableFuture<Suggestions> suggestPackages(final CommandContext<CommandSource> context, final SuggestionsBuilder builder) {
-		IGameInstance active = GameManager.get().getActiveMinigame();
+		IGameInstance active = SingleGameManager.INSTANCE.getActiveGame();
 		if (active != null) {
 			return ISuggestionProvider.suggest(active.getBehaviors().values().stream()
 					.filter(b -> b instanceof DonationPackageBehavior)
@@ -46,7 +46,7 @@ public class GamePackageCommand {
 	}
 
 	private static int spawnPackage(CommandContext<CommandSource> ctx, ServerPlayerEntity target) throws CommandSyntaxException {
-		IGameInstance active = GameManager.get().getActiveMinigame();
+		IGameInstance active = SingleGameManager.INSTANCE.getActiveGame();
 		if (active != null) {
 			String type = StringArgumentType.getString(ctx, "id");
 			GamePackage gamePackage = new GamePackage(type, "LoveTropics", target == null ? null : target.getUniqueID());

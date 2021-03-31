@@ -1,14 +1,17 @@
 package com.lovetropics.minigames.common.core.command.game;
 
 import com.lovetropics.minigames.common.core.game.IGameDefinition;
-import com.lovetropics.minigames.common.core.game.GameManager;
-import com.lovetropics.minigames.common.core.game.statistics.PlayerKey;
+import com.lovetropics.minigames.common.core.game.SingleGameManager;
+import com.lovetropics.minigames.common.core.game.config.GameConfig;
+import com.lovetropics.minigames.common.core.game.config.GameConfigs;
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.ISuggestionProvider;
 import net.minecraft.command.arguments.ResourceLocationArgument;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.text.StringTextComponent;
 
 import static net.minecraft.command.Commands.argument;
 import static net.minecraft.command.Commands.literal;
@@ -20,7 +23,7 @@ public class PollGameCommand {
 			.then(literal("poll").requires(s -> s.hasPermissionLevel(2))
 			.then(argument("minigame_id", ResourceLocationArgument.resourceLocation())
 		              .suggests((ctx, sb) -> ISuggestionProvider.suggest(
-		                      GameManager.get().getAllMinigames().stream()
+		                      GameConfigs.GAME_CONFIGS.values().stream()
 		                          .map(IGameDefinition::getID)
 		                          .map(ResourceLocation::toString), sb))
 		              .requires(s -> s.hasPermissionLevel(2))
@@ -28,9 +31,14 @@ public class PollGameCommand {
 				ResourceLocation id = ResourceLocationArgument.getResourceLocation(c, "minigame_id");
 				ServerPlayerEntity player = c.getSource().asPlayer();
 
-				int result = GameCommand.executeMinigameAction(() -> GameManager.get().startPolling(id, PlayerKey.from(player)), c.getSource());
+				GameConfig gameConfig = GameConfigs.GAME_CONFIGS.get(id);
+				if (gameConfig == null) {
+					throw new SimpleCommandExceptionType(new StringTextComponent("Minigame with id " + id + " does not exist!")).create();
+				}
+
+				int result = GameCommand.executeMinigameAction(() -> SingleGameManager.INSTANCE.startPolling(gameConfig, player), c.getSource());
 				if (result == 1) {
-					GameCommand.executeMinigameAction(() -> GameManager.get().joinPlayerAs(player, null), c.getSource());
+					GameCommand.executeMinigameAction(() -> SingleGameManager.INSTANCE.joinPlayerAs(player, null), c.getSource());
 				}
 
 				return result;

@@ -1,8 +1,12 @@
 package com.lovetropics.minigames.common.core.command.game;
 
-import com.lovetropics.minigames.common.core.game.GameManager;
+import com.lovetropics.minigames.client.data.TropicraftLangKeys;
+import com.lovetropics.minigames.common.core.game.SingleGameManager;
+import com.lovetropics.minigames.common.core.game.polling.PollingGameInstance;
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import net.minecraft.command.CommandSource;
+import net.minecraft.util.text.TranslationTextComponent;
 
 import static net.minecraft.command.Commands.literal;
 
@@ -11,8 +15,13 @@ public class StopPollingGameCommand {
 		dispatcher.register(
 			literal("game")
 			.then(literal("stop_poll").requires(s -> s.hasPermissionLevel(2))
-			.executes(c -> GameCommand.executeMinigameAction(() ->
-				GameManager.get().stopPolling(), c.getSource())))
+			.executes(c -> GameCommand.executeMinigameAction(() -> {
+				PollingGameInstance game = SingleGameManager.INSTANCE.getPollingGame();
+				if (game == null) {
+					throw new SimpleCommandExceptionType(new TranslationTextComponent(TropicraftLangKeys.COMMAND_NO_MINIGAME_POLLING)).create();
+				}
+				return SingleGameManager.INSTANCE.stopPolling(game);
+			}, c.getSource())))
 		);
 	}
 }
