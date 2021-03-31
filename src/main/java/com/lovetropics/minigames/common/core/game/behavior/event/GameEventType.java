@@ -3,7 +3,6 @@ package com.lovetropics.minigames.common.core.game.behavior.event;
 import java.lang.reflect.Array;
 import java.util.Collection;
 
-// TODO: this can handle passing data to datapacks in the future too
 public final class GameEventType<T> {
     private final Class<T> type;
     private final Combinator<T> combinator;

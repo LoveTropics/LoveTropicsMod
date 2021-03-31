@@ -38,7 +38,7 @@ public class GamePackageCommand {
 	private static CompletableFuture<Suggestions> suggestPackages(final CommandContext<CommandSource> context, final SuggestionsBuilder builder) {
 		IGameInstance active = GameManager.get().getActiveMinigame();
 		if (active != null) {
-			return ISuggestionProvider.suggest(active.getBehaviors().stream()
+			return ISuggestionProvider.suggest(active.getBehaviors().values().stream()
 					.filter(b -> b instanceof IGamePackageBehavior)
 					.map(b -> ((IGamePackageBehavior)b).getPackageType()), builder);
 		}
@@ -50,7 +50,7 @@ public class GamePackageCommand {
 		if (active != null) {
 			String type = StringArgumentType.getString(ctx, "id");
 			GamePackage gamePackage = new GamePackage(type, "LoveTropics", target == null ? null : target.getUniqueID());
-			active.events().invoker(GamePackageEvents.RECEIVE_PACKAGE).onReceivePackage(active, gamePackage);
+			active.invoker(GamePackageEvents.RECEIVE_PACKAGE).onReceivePackage(active, gamePackage);
 		}
 		return Command.SINGLE_SUCCESS;
 	}

@@ -1,12 +1,20 @@
 package com.lovetropics.minigames.common.core.game.behavior;
 
-import com.google.common.collect.ImmutableList;
 import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.IGameInstance;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
 import com.lovetropics.minigames.common.core.game.polling.PollingGameInstance;
+import com.lovetropics.minigames.common.core.game.state.GameStateMap;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
 
 public interface IGameBehavior {
+	Codec<IGameBehavior> CODEC = GameBehaviorTypes.TYPE_CODEC.partialDispatch(
+			"type",
+			behavior -> DataResult.error("Encoding unsupported"), // very sad.
+			type -> DataResult.success(type.codec)
+	);
+
 	/**
 	 * Called before the game starts. This should be used to register all event listeners and do any early setup.
 	 *
@@ -28,7 +36,6 @@ public interface IGameBehavior {
 	default void registerPolling(PollingGameInstance registerGame, GameEventListeners events) throws GameException {
 	}
 
-	default ImmutableList<GameBehaviorType<?>> dependencies() {
-		return ImmutableList.of();
+	default void registerState(GameStateMap state) {
 	}
 }

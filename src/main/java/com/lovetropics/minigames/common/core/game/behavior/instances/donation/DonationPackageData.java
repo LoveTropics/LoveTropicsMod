@@ -1,6 +1,7 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances.donation;
 
 import com.lovetropics.minigames.common.core.game.IGameInstance;
+import com.lovetropics.minigames.common.core.game.PlayerSet;
 import com.lovetropics.minigames.common.core.game.util.TemplatedText;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
@@ -61,22 +62,22 @@ public class DonationPackageData {
 
 	public void onReceive(final IGameInstance instance, @Nullable final ServerPlayerEntity player, @Nullable final String sendingPlayer) {
 		if (messageForPlayer != null) {
-			instance.getPlayers().forEach(p -> {
-				if (player != null) {
-					p.sendStatusMessage(messageForPlayer.apply(player.getDisplayName().deepCopy().mergeStyle(TextFormatting.BOLD, TextFormatting.GREEN)), false);
-				} else {
-					p.sendStatusMessage(messageForPlayer.apply(""), false);
-				}
-			});
+			PlayerSet players = instance.getAllPlayers();
+
+			if (player != null) {
+				players.sendMessage(messageForPlayer.apply(player.getDisplayName().deepCopy().mergeStyle(TextFormatting.BOLD, TextFormatting.GREEN)));
+			} else {
+				players.sendMessage(messageForPlayer.apply(""));
+			}
 
 			if (sendingPlayer != null) {
 				final ITextComponent sentByPlayerMessage = new StringTextComponent("Package sent by ").mergeStyle(TextFormatting.GOLD)
 						.appendSibling(new StringTextComponent(sendingPlayer).mergeStyle(TextFormatting.GREEN, TextFormatting.BOLD));
-				instance.getPlayers().sendMessage(sentByPlayerMessage);
+				players.sendMessage(sentByPlayerMessage);
 			}
 
 			if (soundOnReceive != null) {
-				instance.getPlayers().forEach(p -> p.connection.sendPacket(new SPlaySoundEffectPacket(soundOnReceive, SoundCategory.MASTER, p.getPosX(), p.getPosY(), p.getPosZ(), 0.2f, 1f)));
+				players.forEach(p -> p.connection.sendPacket(new SPlaySoundEffectPacket(soundOnReceive, SoundCategory.MASTER, p.getPosX(), p.getPosY(), p.getPosZ(), 0.2f, 1f)));
 			}
 		}
 	}

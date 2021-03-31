@@ -106,7 +106,7 @@ public class WorldBorderGameBehavior implements IGameBehavior
 
 		if (!borderCollapseMessageSent) {
 			borderCollapseMessageSent = true;
-			game.getPlayers().sendMessage(collapseMessage);
+			game.getAllPlayers().sendMessage(collapseMessage);
 		}
 
 		long ticksSinceStart = game.ticks() - ticksUntilStart;

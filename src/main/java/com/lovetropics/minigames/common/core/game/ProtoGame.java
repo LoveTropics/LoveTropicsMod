@@ -1,11 +1,9 @@
 package com.lovetropics.minigames.common.core.game;
 
-import com.lovetropics.minigames.common.core.game.behavior.GameBehaviorType;
-import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
+import com.lovetropics.minigames.common.core.game.behavior.BehaviorMap;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameEventType;
 import net.minecraft.server.MinecraftServer;
-
-import java.util.Collection;
 
 public interface ProtoGame {
 
@@ -21,9 +19,11 @@ public interface ProtoGame {
 
 	int getMemberCount(PlayerRole role);
 
-	GameEventListeners events();
+	BehaviorMap getBehaviors();
 
-	Collection<IGameBehavior> getBehaviors();
+	GameEventListeners getEvents();
 
-	<T extends IGameBehavior> Collection<T> getBehaviors(GameBehaviorType<T> type);
+	default <T> T invoker(GameEventType<T> eventType) {
+		return this.getEvents().invoker(eventType);
+	}
 }

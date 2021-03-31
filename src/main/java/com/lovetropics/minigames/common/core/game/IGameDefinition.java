@@ -39,10 +39,10 @@ public interface IGameDefinition
      * Used within messages sent to players as the minigame starts, stops, etc.
      * @return The unlocalized key string for the name of this minigame.
      */
-    String getUnlocalizedName();
+    String getTranslationKey();
 
     default ITextComponent getName() {
-        return new TranslationTextComponent(getUnlocalizedName());
+        return new TranslationTextComponent(getTranslationKey());
     }
 
     /**

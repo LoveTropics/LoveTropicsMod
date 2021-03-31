@@ -23,6 +23,8 @@ import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.GameType;
 import net.minecraft.world.gen.blockstateprovider.BlockStateProvider;
 import net.minecraft.world.gen.blockstateprovider.SimpleBlockStateProvider;
+import net.minecraftforge.registries.IForgeRegistry;
+import net.minecraftforge.registries.IForgeRegistryEntry;
 
 import java.util.*;
 import java.util.function.*;
@@ -162,6 +164,44 @@ public final class MoreCodecs {
 				},
 				Function.identity()
 		);
+	}
+
+	public static <T extends IForgeRegistryEntry<T>> Codec<T> ofForgeRegistry(Supplier<IForgeRegistry<T>> registry) {
+		return new Codec<T>() {
+			@Override
+			public <U> DataResult<Pair<T, U>> decode(DynamicOps<U> ops, U input) {
+				return ResourceLocation.CODEC.decode(ops, input)
+						.flatMap(pair -> {
+							if (!registry.get().containsKey(pair.getFirst())) {
+								return DataResult.error("Unknown registry key: " + pair.getFirst());
+							}
+							return DataResult.success(pair.mapFirst(registry.get()::getValue));
+						});
+			}
+
+			@Override
+			public <U> DataResult<U> encode(T input, DynamicOps<U> ops, U prefix) {
+				ResourceLocation key = registry.get().getKey(input);
+				if (key == null) {
+					return DataResult.error("Unknown registry element " + input);
+				}
+				return ops.mergeToPrimitive(prefix, ops.createString(key.toString()));
+			}
+		};
+	}
+
+	public static <T> Codec<T> validate(Codec<T> codec, Function<T, DataResult<T>> validate) {
+		return codec.flatXmap(validate, validate);
+	}
+
+	public static <T> Codec<T> validate(Codec<T> codec, Predicate<T> validate, String error) {
+		return validate(codec, value -> {
+			if (validate.test(value)) {
+				return DataResult.success(value);
+			} else {
+				return DataResult.error(error);
+			}
+		});
 	}
 
 	private static <T> List<T> unitArrayList(T t) {

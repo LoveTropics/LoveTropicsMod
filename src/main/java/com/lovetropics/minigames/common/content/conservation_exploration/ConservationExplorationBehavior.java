@@ -147,8 +147,8 @@ public final class ConservationExplorationBehavior implements IGameBehavior {
 							.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/minigame " + teleportCommand));
 				});
 
-		minigame.getPlayers().sendMessage(message.appendSibling(teleportLink));
-		minigame.getPlayers().sendMessage(new StringTextComponent("How is this creature being impacted by human activities?").mergeStyle(TextFormatting.GRAY, TextFormatting.ITALIC));
+		minigame.getAllPlayers().sendMessage(message.appendSibling(teleportLink));
+		minigame.getAllPlayers().sendMessage(new StringTextComponent("How is this creature being impacted by human activities?").mergeStyle(TextFormatting.GRAY, TextFormatting.ITALIC));
 
 		ITextComponent nextLink = new StringTextComponent("click here")
 				.mergeStyle(TextFormatting.BLUE, TextFormatting.UNDERLINE)
@@ -163,7 +163,7 @@ public final class ConservationExplorationBehavior implements IGameBehavior {
 				.appendString(" to move onto the next creature")
 				.mergeStyle(TextFormatting.AQUA, TextFormatting.ITALIC);
 
-		ServerPlayerEntity initiator = minigame.getPlayers().getPlayerBy(minigame.getInitiator());
+		ServerPlayerEntity initiator = minigame.getAllPlayers().getPlayerBy(minigame.getInitiator());
 		if (initiator != null) {
 			initiator.sendStatusMessage(nextMessage, false);
 		}
@@ -183,7 +183,7 @@ public final class ConservationExplorationBehavior implements IGameBehavior {
 		progressBar.setName(new StringTextComponent("Looking for: ").appendSibling(creatureName));
 		progressBar.setPercent((float) searchIndex / searchOrder.length);
 
-		minigame.getPlayers().sendMessage(new StringTextComponent("We are looking for a ").appendSibling(creatureName).appendString("!").mergeStyle(TextFormatting.GOLD));
+		minigame.getAllPlayers().sendMessage(new StringTextComponent("We are looking for a ").appendSibling(creatureName).appendString("!").mergeStyle(TextFormatting.GOLD));
 
 		spawnCreaturesFor(minigame, creature);
 

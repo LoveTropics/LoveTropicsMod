@@ -60,11 +60,11 @@ public final class GameSidebar implements AutoCloseable {
 	public static GameSidebar open(IGameInstance game, ITextComponent title) {
 		GameSidebar widget = new GameSidebar(game.getServer(), title);
 
-		for (ServerPlayerEntity player : game.getPlayers()) {
+		for (ServerPlayerEntity player : game.getAllPlayers()) {
 			widget.addPlayer(player);
 		}
 
-		GameEventListeners events = game.events();
+		GameEventListeners events = game.getEvents();
 		events.listen(GamePlayerEvents.JOIN, (g, player, role) -> widget.addPlayer(player));
 		events.listen(GamePlayerEvents.LEAVE, (g, player) -> widget.removePlayer(player));
 		events.listen(GameLifecycleEvents.FINISH, g -> widget.close());

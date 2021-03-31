@@ -28,7 +28,7 @@ public class ScheduledMessagesBehavior implements IGameBehavior {
 		events.listen(GameLifecycleEvents.TICK, game -> {
 			ITextComponent message = scheduledMessages.remove(game.ticks());
 			if (message != null) {
-				game.getPlayers().sendMessage(message);
+				game.getAllPlayers().sendMessage(message);
 			}
 		});
 	}

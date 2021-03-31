@@ -51,6 +51,6 @@ public final class RespawnSpectatorGameBehavior implements IGameBehavior {
 		}
 
 		ITextComponent message = player.getCombatTracker().getDeathMessage();
-		minigame.getPlayers().sendMessage(message);
+		minigame.getAllPlayers().sendMessage(message);
 	}
 }

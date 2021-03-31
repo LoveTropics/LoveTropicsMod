@@ -1,16 +1,17 @@
 package com.lovetropics.minigames.common.core.game.behavior;
 
 import com.lovetropics.minigames.Constants;
-import com.lovetropics.minigames.common.content.survive_the_tide.behavior.*;
-import com.lovetropics.minigames.common.core.game.behavior.instances.*;
 import com.lovetropics.minigames.common.content.build_competition.PollFinalistsBehavior;
 import com.lovetropics.minigames.common.content.conservation_exploration.ConservationExplorationBehavior;
+import com.lovetropics.minigames.common.content.survive_the_tide.behavior.*;
+import com.lovetropics.minigames.common.content.trash_dive.PlaceTrashBehavior;
+import com.lovetropics.minigames.common.content.trash_dive.TrashCollectionBehavior;
+import com.lovetropics.minigames.common.core.game.behavior.instances.*;
 import com.lovetropics.minigames.common.core.game.behavior.instances.command.*;
 import com.lovetropics.minigames.common.core.game.behavior.instances.donation.*;
 import com.lovetropics.minigames.common.core.game.behavior.instances.statistics.*;
 import com.lovetropics.minigames.common.core.game.behavior.instances.tweak.*;
-import com.lovetropics.minigames.common.content.trash_dive.PlaceTrashBehavior;
-import com.lovetropics.minigames.common.content.trash_dive.TrashCollectionBehavior;
+import com.lovetropics.minigames.common.util.MoreCodecs;
 import com.mojang.serialization.Codec;
 import net.minecraftforge.fml.RegistryObject;
 import net.minecraftforge.registries.DeferredRegister;
@@ -19,9 +20,17 @@ import net.minecraftforge.registries.RegistryBuilder;
 
 import java.util.function.Supplier;
 
+// TODO: split out game-specific types
 public class GameBehaviorTypes {
 	public static final DeferredRegister<GameBehaviorType<?>> REGISTER = DeferredRegister.create(GameBehaviorType.wildcardType(), Constants.MODID);
-	public static final Supplier<IForgeRegistry<GameBehaviorType<?>>> REGISTRY;
+
+	public static final Supplier<IForgeRegistry<GameBehaviorType<?>>> REGISTRY = REGISTER.makeRegistry("minigame_behaviours", () -> {
+		return new RegistryBuilder<GameBehaviorType<?>>()
+				.disableSync()
+				.disableSaving();
+	});
+
+	public static final Codec<GameBehaviorType<?>> TYPE_CODEC = MoreCodecs.ofForgeRegistry(REGISTRY);
 
 	public static final RegistryObject<GameBehaviorType<PositionPlayersGameBehavior>> POSITION_PLAYERS;
 	public static final RegistryObject<GameBehaviorType<SurviveTheTideWeatherBehavior>> WEATHER_EVENTS;
@@ -30,12 +39,11 @@ public class GameBehaviorTypes {
 	public static final RegistryObject<GameBehaviorType<CommandEventsBehavior>> COMMANDS;
 	public static final RegistryObject<GameBehaviorType<IsolatePlayerStateBehavior>> ISOLATE_PLAYER_STATE;
 	public static final RegistryObject<GameBehaviorType<SetGameTypesBehavior>> SET_GAME_TYPES;
-	public static final RegistryObject<GameBehaviorType<PhasesGameBehavior>> PHASES;
+	public static final RegistryObject<GameBehaviorType<PhaseControllerBehavior>> PHASE_CONTROLLER;
 	public static final RegistryObject<GameBehaviorType<RisingTidesGameBehavior>> RISING_TIDES;
 	public static final RegistryObject<GameBehaviorType<ScheduledMessagesBehavior>> SCHEDULED_MESSAGES;
 	public static final RegistryObject<GameBehaviorType<WorldBorderGameBehavior>> WORLD_BORDER;
-	public static final RegistryObject<GameBehaviorType<SttIndividualsWinConditionBehavior>> SURVIVE_THE_TIDE_INDIVIDUALS_WIN_CONDITION;
-	public static final RegistryObject<GameBehaviorType<SttTeamsWinConditionBehavior>> SURVIVE_THE_TIDE_TEAMS_WIN_CONDITION;
+	public static final RegistryObject<GameBehaviorType<SttChatBroadcastBehavior>> SURVIVE_THE_TIDE_CHAT_BROADCAST;
 	public static final RegistryObject<GameBehaviorType<FireworksOnDeathBehavior>> FIREWORKS_ON_DEATH;
 	public static final RegistryObject<GameBehaviorType<SurviveTheTideRulesetBehavior>> SURVIVE_THE_TIDE_RULESET;
 	public static final RegistryObject<GameBehaviorType<BindControlsBehavior>> BIND_CONTROLS;
@@ -49,7 +57,7 @@ public class GameBehaviorTypes {
 	public static final RegistryObject<GameBehaviorType<ForceLoadRegionBehavior>> FORCE_LOAD_REGION;
 	public static final RegistryObject<GameBehaviorType<DeleteBlocksBehavior>> DELETE_BLOCKS;
 	public static final RegistryObject<GameBehaviorType<EliminatePlayerControlBehavior>> ELIMINATE_PLAYER_CONTROL;
-	public static final RegistryObject<GameBehaviorType<PlaceSttChestsGameBehavior>> PLACE_STT_CHESTS;
+	public static final RegistryObject<GameBehaviorType<SttChestsBehavior>> PLACE_STT_CHESTS;
 	public static final RegistryObject<GameBehaviorType<GenerateEntitiesBehavior>> GENERATE_ENTITIES;
 	public static final RegistryObject<GameBehaviorType<WeatherControlsBehavior>> WEATHER_CONTROLS;
 	public static final RegistryObject<GameBehaviorType<RunCommandInRegionBehavior>> RUN_COMMAND_IN_REGION;
@@ -58,6 +66,8 @@ public class GameBehaviorTypes {
 	public static final RegistryObject<GameBehaviorType<DisableTntDestructionBehavior>> DISABLE_TNT_BLOCK_DESTRUCTION;
 	public static final RegistryObject<GameBehaviorType<RevealPlayersBehavior>> REVEAL_PLAYERS;
 	public static final RegistryObject<GameBehaviorType<SetMaxHealthBehavior>> SET_MAX_HEALTH;
+	public static final RegistryObject<GameBehaviorType<IndividualWinTrigger>> INDIVIDUAL_WIN_TRIGGER;
+	public static final RegistryObject<GameBehaviorType<TeamWinTrigger>> TEAM_WIN_TRIGGER;
 
 	public static final RegistryObject<GameBehaviorType<BindObjectiveToStatisticBehavior>> BIND_OBJECTIVE_TO_STATISTIC;
 	public static final RegistryObject<GameBehaviorType<PlaceByStatisticBehavior>> PLACE_BY_STATISTIC;
@@ -90,12 +100,6 @@ public class GameBehaviorTypes {
 	}
 
 	static {
-		REGISTRY = REGISTER.makeRegistry("minigame_behaviours", () -> {
-			return new RegistryBuilder<GameBehaviorType<?>>()
-					.disableSync()
-					.disableSaving();
-		});
-
 		POSITION_PLAYERS = register("position_players", PositionPlayersGameBehavior.CODEC);
 		WEATHER_EVENTS = register("weather_events", SurviveTheTideWeatherBehavior.CODEC);
 		TIMED = register("timed", TimedGameBehavior.CODEC);
@@ -103,12 +107,11 @@ public class GameBehaviorTypes {
 		COMMANDS = register("commands", CommandEventsBehavior.CODEC);
 		ISOLATE_PLAYER_STATE = register("isolate_player_state", IsolatePlayerStateBehavior.CODEC);
 		SET_GAME_TYPES = register("set_game_types", SetGameTypesBehavior.CODEC);
-		PHASES = register("phases", PhasesGameBehavior.CODEC);
+		PHASE_CONTROLLER = register("phase_controller", PhaseControllerBehavior.CODEC);
 		RISING_TIDES = register("rising_tides", RisingTidesGameBehavior.CODEC);
 		SCHEDULED_MESSAGES = register("scheduled_messages", ScheduledMessagesBehavior.CODEC);
 		WORLD_BORDER = register("world_border", WorldBorderGameBehavior.CODEC);
-		SURVIVE_THE_TIDE_INDIVIDUALS_WIN_CONDITION = register("survive_the_tide_individuals_win_condition", SttIndividualsWinConditionBehavior.CODEC);
-		SURVIVE_THE_TIDE_TEAMS_WIN_CONDITION = register("survive_the_tide_teams_win_condition", SttTeamsWinConditionBehavior.CODEC);
+		SURVIVE_THE_TIDE_CHAT_BROADCAST = register("survive_the_tide_chat_broadcast", SttChatBroadcastBehavior.CODEC);
 		FIREWORKS_ON_DEATH = register("fireworks_on_death", FireworksOnDeathBehavior.CODEC);
 		SURVIVE_THE_TIDE_RULESET = register("survive_the_tide_ruleset", SurviveTheTideRulesetBehavior.CODEC);
 		BIND_CONTROLS = register("bind_controls", BindControlsBehavior.CODEC);
@@ -122,15 +125,17 @@ public class GameBehaviorTypes {
 		FORCE_LOAD_REGION = register("force_load_region", ForceLoadRegionBehavior.CODEC);
 		DELETE_BLOCKS = register("delete_blocks", DeleteBlocksBehavior.CODEC);
 		ELIMINATE_PLAYER_CONTROL = register("eliminate_player_control", EliminatePlayerControlBehavior.CODEC);
-		PLACE_STT_CHESTS = register("place_stt_chests", PlaceSttChestsGameBehavior.CODEC);
+		PLACE_STT_CHESTS = register("place_stt_chests", SttChestsBehavior.CODEC);
 		GENERATE_ENTITIES = register("generate_entities", GenerateEntitiesBehavior.CODEC);
 		WEATHER_CONTROLS = register("weather_controls", WeatherControlsBehavior.CODEC);
 		RUN_COMMAND_IN_REGION = register("run_command_in_region", RunCommandInRegionBehavior.CODEC);
-        TNT_AUTO_FUSE = register("tnt_auto_fuse", TntAutoFuseBehavior.CODEC);
+		TNT_AUTO_FUSE = register("tnt_auto_fuse", TntAutoFuseBehavior.CODEC);
 		DISABLE_HUNGER = register("disable_hunger", DisableHungerBehavior.CODEC);
 		DISABLE_TNT_BLOCK_DESTRUCTION = register("disable_tnt_block_destruction", DisableTntDestructionBehavior.CODEC);
 		REVEAL_PLAYERS = register("reveal_players", RevealPlayersBehavior.CODEC);
 		SET_MAX_HEALTH = register("set_max_health", SetMaxHealthBehavior.CODEC);
+		TEAM_WIN_TRIGGER = register("team_win_trigger", TeamWinTrigger.CODEC);
+		INDIVIDUAL_WIN_TRIGGER = register("individual_win_trigger", IndividualWinTrigger.CODEC);
 
 		BIND_OBJECTIVE_TO_STATISTIC = register("bind_objective_to_statistic", BindObjectiveToStatisticBehavior.CODEC);
 		PLACE_BY_STATISTIC = register("place_by_statistic", PlaceByStatisticBehavior.CODEC);

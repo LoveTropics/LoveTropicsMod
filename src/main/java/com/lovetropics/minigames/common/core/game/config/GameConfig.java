@@ -86,7 +86,7 @@ public final class GameConfig implements IGameDefinition {
 	}
 
 	@Override
-	public String getUnlocalizedName() {
+	public String getTranslationKey() {
 		return Constants.MODID + ".minigame." + translationKey;
 	}
 

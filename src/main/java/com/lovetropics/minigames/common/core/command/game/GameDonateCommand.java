@@ -31,7 +31,7 @@ public class GameDonateCommand {
 		final IGameInstance instance = GameManager.get().getActiveMinigame();
 		if (instance != null) {
 			GamePackage gamePackage = new GamePackage(packageType, source.getName(), source.asPlayer().getUniqueID());
-			instance.events().invoker(GamePackageEvents.RECEIVE_PACKAGE).onReceivePackage(instance, gamePackage);
+			instance.invoker(GamePackageEvents.RECEIVE_PACKAGE).onReceivePackage(instance, gamePackage);
 			return Command.SINGLE_SUCCESS;
 		}
 		return 0;

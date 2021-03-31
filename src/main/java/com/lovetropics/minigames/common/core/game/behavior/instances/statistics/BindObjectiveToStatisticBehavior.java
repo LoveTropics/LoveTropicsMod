@@ -49,7 +49,7 @@ public final class BindObjectiveToStatisticBehavior implements IGameBehavior {
 		GameStatistics statistics = minigame.getStatistics();
 		ServerScoreboard scoreboard = minigame.getServer().getScoreboard();
 
-		for (ServerPlayerEntity player : minigame.getPlayers()) {
+		for (ServerPlayerEntity player : minigame.getAllPlayers()) {
 			Map<ScoreObjective, Score> objectives = scoreboard.getObjectivesForEntity(player.getScoreboardName());
 			Score score = objectives.get(objective);
 			if (score != null) {

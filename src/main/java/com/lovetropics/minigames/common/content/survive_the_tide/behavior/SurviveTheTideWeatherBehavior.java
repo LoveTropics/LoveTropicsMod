@@ -3,13 +3,13 @@ package com.lovetropics.minigames.common.content.survive_the_tide.behavior;
 import com.lovetropics.minigames.common.content.survive_the_tide.SurviveTheTide;
 import com.lovetropics.minigames.common.content.survive_the_tide.SurviveTheTideWeatherConfig;
 import com.lovetropics.minigames.common.core.game.IGameInstance;
-import com.lovetropics.minigames.common.core.game.behavior.GameBehaviorTypes;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameLifecycleEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePackageEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
-import com.lovetropics.minigames.common.core.game.behavior.instances.PhasesGameBehavior;
+import com.lovetropics.minigames.common.core.game.state.instances.GamePhase;
+import com.lovetropics.minigames.common.core.game.state.instances.GamePhaseState;
 import com.lovetropics.minigames.common.core.game.weather.RainType;
 import com.lovetropics.minigames.common.core.game.weather.WeatherController;
 import com.lovetropics.minigames.common.core.game.weather.WeatherControllerManager;
@@ -83,6 +83,8 @@ public class SurviveTheTideWeatherBehavior implements IGameBehavior {
 	protected long acidRainTime = 0;
 	protected long heatwaveTime = 0;
 
+	protected GamePhaseState phases;
+
 	public SurviveTheTideWeatherBehavior(final SurviveTheTideWeatherConfig config) {
 		this.config = config;
 	}
@@ -97,30 +99,30 @@ public class SurviveTheTideWeatherBehavior implements IGameBehavior {
 		events.listen(GamePlayerEvents.TICK, this::onParticipantUpdate);
 
 		events.listen(GamePackageEvents.RECEIVE_PACKAGE, this::onPackageReceive);
+
+		phases = game.getState().get(GamePhaseState.TYPE);
 	}
 
 	private void tick(final IGameInstance game) {
-		PhasesGameBehavior phases = game.getOneBehavior(GameBehaviorTypes.PHASES.get()).orElse(null);
-		SurviveTheTideRulesetBehavior rules = game.getOneBehavior(GameBehaviorTypes.SURVIVE_THE_TIDE_RULESET.get()).orElse(null);
-		if (phases == null || rules == null) {
+		if (phases == null) {
 			return;
 		}
 
-		PhasesGameBehavior.MinigamePhase phase = phases.getCurrentPhase();
+		GamePhase phase = phases.get();
 
 		ServerWorld world = game.getWorld();
 		if (world.getGameTime() % 20 == 0) {
 			if (!specialWeatherActive()) {
-				if (random.nextFloat() <= config.getRainHeavyChance(phase.getKey())) {
+				if (random.nextFloat() <= config.getRainHeavyChance(phase.key)) {
 					heavyRainfallStart(phase);
-				} else if (random.nextFloat() <= config.getRainAcidChance(phase.getKey())) {
+				} else if (random.nextFloat() <= config.getRainAcidChance(phase.key)) {
 					acidRainStart(phase);
-				} else if (random.nextFloat() <= config.getHeatwaveChance(phase.getKey())) {
+				} else if (random.nextFloat() <= config.getHeatwaveChance(phase.key)) {
 					heatwaveStart(phase);
 				}
 			}
 
-			controller.setWind(config.getWindSpeed(phase.getKey()));
+			controller.setWind(config.getWindSpeed(phase.key));
 		}
 
 		if (heavyRainfallTime > 0) {
@@ -215,21 +217,21 @@ public class SurviveTheTideWeatherBehavior implements IGameBehavior {
 	}
 
 	// TODO phase names
-	private void heavyRainfallStart(PhasesGameBehavior.MinigamePhase phase) {
+	private void heavyRainfallStart(GamePhase phase) {
 		heavyRainfallTime = config.getRainHeavyMinTime() + random.nextInt(config.getRainHeavyExtraRandTime());
 		if (phase.is("phase4")) {
 			heavyRainfallTime /= 2;
 		}
 	}
 
-	private void acidRainStart(PhasesGameBehavior.MinigamePhase phase) {
+	private void acidRainStart(GamePhase phase) {
 		acidRainTime = config.getRainAcidMinTime() + random.nextInt(config.getRainAcidExtraRandTime());
 		if (phase.is("phase4")) {
 			acidRainTime /= 2;
 		}
 	}
 
-	private void heatwaveStart(PhasesGameBehavior.MinigamePhase phase) {
+	private void heatwaveStart(GamePhase phase) {
 		heatwaveTime = config.getHeatwaveMinTime() + random.nextInt(config.getHeatwaveExtraRandTime());
 		if (phase.is("phase4")) {
 			heatwaveTime /= 2;

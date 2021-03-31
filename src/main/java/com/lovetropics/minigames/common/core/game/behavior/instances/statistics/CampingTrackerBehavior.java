@@ -1,10 +1,10 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances.statistics;
 
 import com.lovetropics.minigames.common.core.game.IGameInstance;
-import com.lovetropics.minigames.common.core.game.behavior.GameBehaviorTypes;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameLifecycleEvents;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameLogicEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.lovetropics.minigames.common.core.game.statistics.GameStatistics;
 import com.lovetropics.minigames.common.core.game.statistics.StatisticKey;
@@ -21,6 +21,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 public final class CampingTrackerBehavior implements IGameBehavior {
+	// TODO: have a codec for a config that specifies a start point (time/phase) and provides a custom listener to match that
 	public static final Codec<CampingTrackerBehavior> CODEC = RecordCodecBuilder.create(instance -> {
 		return instance.group(
 				Codec.STRING.optionalFieldOf("after_phase").forGetter(c -> Optional.ofNullable(c.afterPhase)),
@@ -35,7 +36,7 @@ public final class CampingTrackerBehavior implements IGameBehavior {
 	private final long campTimeThreshold;
 	private final double campMovementThreshold;
 
-	private long startTime;
+	private long startTime = -1;
 
 	private final Map<UUID, CampingTracker> campingTrackers = new Object2ObjectOpenHashMap<>();
 
@@ -50,18 +51,20 @@ public final class CampingTrackerBehavior implements IGameBehavior {
 		events.listen(GameLifecycleEvents.TICK, this::tick);
 		events.listen(GamePlayerEvents.LEAVE, this::onPlayerLeave);
 		events.listen(GamePlayerEvents.DEATH, this::onPlayerDeath);
-	}
 
-	private void tick(IGameInstance game) {
-		if (startTime == 0 && afterPhase != null) {
-			game.getOneBehavior(GameBehaviorTypes.PHASES.get()).ifPresent(phases -> {
-				if (!phases.getCurrentPhase().is(afterPhase)) {
+		if (afterPhase != null) {
+			events.listen(GameLogicEvents.PHASE_CHANGE, (game, phase, lastPhase) -> {
+				if (lastPhase.is(afterPhase)) {
 					startTime = game.ticks();
 				}
 			});
+		} else {
+			startTime = 0;
 		}
+	}
 
-		if (startTime != 0) {
+	private void tick(IGameInstance game) {
+		if (startTime != -1) {
 			long ticks = game.ticks();
 			if (ticks % CAMP_TEST_INTERVAL == 0) {
 				testForCamping(game, ticks);

@@ -5,7 +5,6 @@ import com.lovetropics.minigames.client.minigame.ClientRoleMessage;
 import com.lovetropics.minigames.client.minigame.PlayerCountsMessage;
 import com.lovetropics.minigames.common.core.game.*;
 import com.lovetropics.minigames.common.core.game.behavior.BehaviorMap;
-import com.lovetropics.minigames.common.core.game.behavior.GameBehaviorType;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePollingEvents;
@@ -19,13 +18,11 @@ import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.Unit;
 import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraftforge.fml.network.PacketDistributor;
 
 import javax.annotation.Nullable;
-import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
@@ -63,14 +60,8 @@ public final class PollingGameInstance implements ProtoGame, GameControllable {
 
 	private GameResult<Unit> registerBehaviors() {
 		for (IGameBehavior behavior : getBehaviors()) {
-			for (GameBehaviorType<?> dependency : behavior.dependencies()) {
-				if (getBehaviors(dependency).isEmpty()) {
-					return GameResult.error(new StringTextComponent(behavior + " is missing dependency on " + dependency + "!"));
-				}
-			}
-
 			try {
-				behavior.registerPolling(this, events());
+				behavior.registerPolling(this, events);
 			} catch (GameException e) {
 				return GameResult.error(e.getTextMessage());
 			}
@@ -90,7 +81,7 @@ public final class PollingGameInstance implements ProtoGame, GameControllable {
 		}
 
 		try {
-			events().invoker(GamePollingEvents.PLAYER_REGISTER).onPlayerRegister(this, player, requestedRole);
+			invoker(GamePollingEvents.PLAYER_REGISTER).onPlayerRegister(this, player, requestedRole);
 		} catch (Exception e) {
 			return GameResult.fromException("Failed to dispatch player register event", e);
 		}
@@ -171,13 +162,8 @@ public final class PollingGameInstance implements ProtoGame, GameControllable {
 	}
 
 	@Override
-	public Collection<IGameBehavior> getBehaviors() {
-		return behaviors.getBehaviors();
-	}
-
-	@Override
-	public <T extends IGameBehavior> Collection<T> getBehaviors(GameBehaviorType<T> type) {
-		return behaviors.getBehaviors(type);
+	public BehaviorMap getBehaviors() {
+		return behaviors;
 	}
 
 	@Override
@@ -207,7 +193,7 @@ public final class PollingGameInstance implements ProtoGame, GameControllable {
 	}
 
 	@Override
-	public GameEventListeners events() {
+	public GameEventListeners getEvents() {
 		return this.events;
 	}
 

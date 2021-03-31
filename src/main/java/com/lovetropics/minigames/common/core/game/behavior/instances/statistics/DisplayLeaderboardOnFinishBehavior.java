@@ -46,7 +46,7 @@ public final class DisplayLeaderboardOnFinishBehavior<T extends Comparable<T>> i
 				placement = PlayerPlacement.fromMinScore(game, statistic);
 			}
 
-			PlayerSet players = game.getPlayers();
+			PlayerSet players = game.getAllPlayers();
 			players.sendMessage(new StringTextComponent("The game is over! Here are the results:"));
 			placement.sendTo(players, length);
 		});

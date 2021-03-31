@@ -2,10 +2,7 @@ package com.lovetropics.minigames.common.core.game.behavior.instances.command;
 
 import com.lovetropics.minigames.common.core.game.IGameInstance;
 import com.lovetropics.minigames.common.core.game.PlayerRole;
-import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
-import com.lovetropics.minigames.common.core.game.behavior.event.GameLifecycleEvents;
-import com.lovetropics.minigames.common.core.game.behavior.event.GameLivingEntityEvents;
-import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
+import com.lovetropics.minigames.common.core.game.behavior.event.*;
 import com.mojang.serialization.Codec;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.ActionResultType;
@@ -20,6 +17,7 @@ public final class CommandEventsBehavior extends CommandInvokeBehavior {
 		super(commands);
 	}
 
+	// TODO: this can handle passing additional data to datapacks in the future too
 	@Override
 	protected void registerEvents(GameEventListeners events) {
 		this.invoke("ready");
@@ -49,6 +47,12 @@ public final class CommandEventsBehavior extends CommandInvokeBehavior {
 		});
 
 		events.listen(GameLivingEntityEvents.TICK, (game, entity) -> this.invoke("entity_update", entity));
+
+		events.listen(GameLogicEvents.GAME_OVER, game -> this.invoke("game_over"));
+		events.listen(GameLogicEvents.PHASE_CHANGE, (game, phase, lastPhase) -> {
+			this.invoke("phase_finish/" + lastPhase.key);
+			this.invoke("phase_start/" + phase.key);
+		});
 	}
 
 	private void onPlayerJoin(IGameInstance game, ServerPlayerEntity player, PlayerRole role) {

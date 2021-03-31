@@ -58,6 +58,7 @@ import java.util.stream.Stream;
  * than singleton-style implementation to allow for multiple managers to run multiple
  * minigames at once.
  */
+// TODO: support multiple concurrent minigames
 public class GameManager implements IGameManager {
 	/**
 	 * Singleton instance that persists throughout server lifecycle.
@@ -133,12 +134,12 @@ public class GameManager implements IGameManager {
 			IGameDefinition definition = game.getDefinition();
 
 			try {
-				game.events().invoker(GameLifecycleEvents.FINISH).stop(game);
+				game.invoker(GameLifecycleEvents.FINISH).stop(game);
 			} catch (Exception e) {
 				return GameResult.fromException("Failed to dispatch finish event", e);
 			}
 
-			List<ServerPlayerEntity> players = Lists.newArrayList(game.getPlayers());
+			List<ServerPlayerEntity> players = Lists.newArrayList(game.getAllPlayers());
 			for (ServerPlayerEntity player : players) {
 				game.removePlayer(player);
 			}
@@ -152,7 +153,7 @@ public class GameManager implements IGameManager {
 			}
 
 			try {
-				game.events().invoker(GameLifecycleEvents.POST_FINISH).stop(game);
+				game.invoker(GameLifecycleEvents.POST_FINISH).stop(game);
 			} catch (Exception e) {
 				return GameResult.fromException("Failed to dispatch post finish event", e);
 			}
@@ -194,7 +195,7 @@ public class GameManager implements IGameManager {
 		game.getTelemetry().cancel();
 
 		try {
-			game.events().invoker(GameLifecycleEvents.CANCEL).stop(game);
+			game.invoker(GameLifecycleEvents.CANCEL).stop(game);
 		} catch (Exception e) {
 			return GameResult.fromException("Failed to dispatch cancel event", e);
 		}
@@ -229,7 +230,7 @@ public class GameManager implements IGameManager {
 		PollingGameInstance polling = pollResult.getOk();
 
 		try {
-			polling.events().invoker(GamePollingEvents.START).start(polling);
+			polling.getEvents().invoker(GamePollingEvents.START).start(polling);
 		} catch (Exception e) {
 			return GameResult.fromException("Failed to dispatch polling start event", e);
 		}
@@ -311,7 +312,7 @@ public class GameManager implements IGameManager {
 	@Override
 	public GameResult<ITextComponent> joinPlayerAs(ServerPlayerEntity player, @Nullable PlayerRole requestedRole) {
 		GameInstance minigame = this.currentInstance;
-		if (minigame != null && !minigame.getPlayers().contains(player)) {
+		if (minigame != null && !minigame.getAllPlayers().contains(player)) {
 			minigame.addPlayer(player, PlayerRole.SPECTATOR);
 			LoveTropicsNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new ClientRoleMessage(PlayerRole.SPECTATOR));
 			LoveTropicsNetwork.CHANNEL.send(PacketDistributor.ALL.noArg(), new PlayerCountsMessage(PlayerRole.SPECTATOR, minigame.getMemberCount(PlayerRole.SPECTATOR)));
@@ -356,7 +357,7 @@ public class GameManager implements IGameManager {
 				IChunk chunk = event.getChunk();
 				Scheduler.INSTANCE.submit(s -> {
 					if (this.currentInstance != game) return;
-					game.events().invoker(GameWorldEvents.CHUNK_LOAD).onChunkLoad(game, chunk);
+					game.invoker(GameWorldEvents.CHUNK_LOAD).onChunkLoad(game, chunk);
 				});
 			}
 		}
@@ -369,7 +370,7 @@ public class GameManager implements IGameManager {
 			GameInstance game = getGameFor(entity);
 			if (game != null) {
 				try {
-					ActionResultType result = game.events().invoker(GamePlayerEvents.DAMAGE).onDamage(game, (ServerPlayerEntity) entity, event.getSource(), event.getAmount());
+					ActionResultType result = game.invoker(GamePlayerEvents.DAMAGE).onDamage(game, (ServerPlayerEntity) entity, event.getSource(), event.getAmount());
 					if (result == ActionResultType.FAIL) {
 						event.setCanceled(true);
 					}
@@ -385,7 +386,7 @@ public class GameManager implements IGameManager {
 		GameInstance game = getGameFor(event.getPlayer());
 		if (game != null && event.getPlayer() instanceof ServerPlayerEntity) {
 			try {
-				ActionResultType result = game.events().invoker(GamePlayerEvents.ATTACK).onAttack(game, (ServerPlayerEntity) event.getPlayer(), event.getTarget());
+				ActionResultType result = game.invoker(GamePlayerEvents.ATTACK).onAttack(game, (ServerPlayerEntity) event.getPlayer(), event.getTarget());
 				if (result == ActionResultType.FAIL) {
 					event.setCanceled(true);
 				}
@@ -402,14 +403,14 @@ public class GameManager implements IGameManager {
 		if (game != null) {
 			if (entity instanceof ServerPlayerEntity && game.getParticipants().contains(entity)) {
 				try {
-					game.events().invoker(GamePlayerEvents.TICK).tick(game, (ServerPlayerEntity) entity);
+					game.invoker(GamePlayerEvents.TICK).tick(game, (ServerPlayerEntity) entity);
 				} catch (Exception e) {
 					LoveTropics.LOGGER.warn("Failed to dispatch player tick event", e);
 				}
 			}
 
 			try {
-				game.events().invoker(GameLivingEntityEvents.TICK).tick(game, entity);
+				game.invoker(GameLivingEntityEvents.TICK).tick(game, entity);
 			} catch (Exception e) {
 				LoveTropics.LOGGER.warn("Failed to dispatch living tick event", e);
 			}
@@ -423,7 +424,7 @@ public class GameManager implements IGameManager {
 			GameInstance game = getGameFor(entity);
 			if (game != null) {
 				try {
-					ActionResultType result = game.events().invoker(GamePlayerEvents.DEATH).onDeath(game, (ServerPlayerEntity) entity, event.getSource());
+					ActionResultType result = game.invoker(GamePlayerEvents.DEATH).onDeath(game, (ServerPlayerEntity) entity, event.getSource());
 					if (result == ActionResultType.FAIL) {
 						event.setCanceled(true);
 					}
@@ -439,7 +440,7 @@ public class GameManager implements IGameManager {
 		GameInstance game = getGameFor(event.getPlayer());
 		if (game != null) {
 			try {
-				game.events().invoker(GamePlayerEvents.RESPAWN).onRespawn(game, (ServerPlayerEntity) event.getPlayer());
+				game.invoker(GamePlayerEvents.RESPAWN).onRespawn(game, (ServerPlayerEntity) event.getPlayer());
 			} catch (Exception e) {
 				LoveTropics.LOGGER.warn("Failed to dispatch player respawn event", e);
 			}
@@ -452,7 +453,7 @@ public class GameManager implements IGameManager {
 			GameInstance game = this.currentInstance;
 			if (game != null && event.world.getDimensionKey() == game.getDimension() && !event.world.isRemote) {
 				try {
-					game.events().invoker(GameLifecycleEvents.TICK).tick(game);
+					game.invoker(GameLifecycleEvents.TICK).tick(game);
 					game.update();
 				} catch (Exception e) {
 					LoveTropics.LOGGER.warn("Failed to dispatch world tick event", e);
@@ -491,7 +492,7 @@ public class GameManager implements IGameManager {
 			ServerPlayerEntity player = (ServerPlayerEntity) event.getPlayer();
 
 			try {
-				game.events().invoker(GamePlayerEvents.INTERACT_ENTITY).onInteract(game, player, event.getTarget(), event.getHand());
+				game.invoker(GamePlayerEvents.INTERACT_ENTITY).onInteract(game, player, event.getTarget(), event.getHand());
 			} catch (Exception e) {
 				LoveTropics.LOGGER.warn("Failed to dispatch player interact entity event", e);
 			}
@@ -505,7 +506,7 @@ public class GameManager implements IGameManager {
 			ServerPlayerEntity player = (ServerPlayerEntity) event.getPlayer();
 
 			try {
-				game.events().invoker(GamePlayerEvents.LEFT_CLICK_BLOCK).onLeftClickBlock(game, player, event.getPos());
+				game.invoker(GamePlayerEvents.LEFT_CLICK_BLOCK).onLeftClickBlock(game, player, event.getPos());
 			} catch (Exception e) {
 				LoveTropics.LOGGER.warn("Failed to dispatch player left click block event", e);
 			}
@@ -518,7 +519,7 @@ public class GameManager implements IGameManager {
 		if (game != null) {
 			try {
 				ServerPlayerEntity player = (ServerPlayerEntity) event.getPlayer();
-				ActionResultType result = game.events().invoker(GamePlayerEvents.BREAK_BLOCK).onBreakBlock(game, player, event.getPos(), event.getState());
+				ActionResultType result = game.invoker(GamePlayerEvents.BREAK_BLOCK).onBreakBlock(game, player, event.getPos(), event.getState());
 				if (result == ActionResultType.FAIL) {
 					event.setCanceled(true);
 				}
@@ -534,7 +535,7 @@ public class GameManager implements IGameManager {
 		if (game != null && event.getEntity() instanceof ServerPlayerEntity) {
 			try {
 				ServerPlayerEntity player = (ServerPlayerEntity) event.getEntity();
-				ActionResultType result = game.events().invoker(GamePlayerEvents.PLACE_BLOCK).onPlaceBlock(game, player, event.getPos(), event.getPlacedBlock(), event.getPlacedAgainst());
+				ActionResultType result = game.invoker(GamePlayerEvents.PLACE_BLOCK).onPlaceBlock(game, player, event.getPos(), event.getPlacedBlock(), event.getPlacedAgainst());
 				if (result == ActionResultType.FAIL) {
 					event.setCanceled(true);
 				}
@@ -549,7 +550,7 @@ public class GameManager implements IGameManager {
 		GameInstance game = this.currentInstance;
 		if (game != null && event.getWorld() == game.getWorld()) {
 			try {
-				game.events().invoker(GameWorldEvents.EXPLOSION_DETONATE).onExplosionDetonate(game, event.getExplosion(), event.getAffectedBlocks(), event.getAffectedEntities());
+				game.invoker(GameWorldEvents.EXPLOSION_DETONATE).onExplosionDetonate(game, event.getExplosion(), event.getAffectedBlocks(), event.getAffectedEntities());
 			} catch (Exception e) {
 				LoveTropics.LOGGER.warn("Failed to dispatch explosion event", e);
 			}
@@ -579,7 +580,7 @@ public class GameManager implements IGameManager {
 		if (entity.world.isRemote) return null;
 
 		if (entity instanceof ServerPlayerEntity) {
-			return game.getPlayers().contains(entity) ? game : null;
+			return game.getAllPlayers().contains(entity) ? game : null;
 		} else {
 			return entity.world.getDimensionKey() == game.getDimension() ? game : null;
 		}
