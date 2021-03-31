@@ -7,6 +7,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.server.MinecraftServer;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 /**
@@ -17,14 +18,14 @@ public class DonationPackageGameAction extends GameAction
     public static final Codec<DonationPackageGameAction> CODEC = RecordCodecBuilder.create(instance -> {
         return instance.group(
                 MoreCodecs.UUID_STRING.fieldOf("uuid").forGetter(c -> c.uuid),
-                Codec.STRING.fieldOf("trigger_time").forGetter(c -> c.triggerTime),
+                TIME_CODEC.fieldOf("trigger_time").forGetter(c -> c.triggerTime),
                 GamePackage.MAP_CODEC.forGetter(c -> c.gamePackage)
         ).apply(instance, DonationPackageGameAction::new);
     });
 
     private final GamePackage gamePackage;
 
-    public DonationPackageGameAction(UUID uuid, String triggerTime, final GamePackage gamePackage) {
+    public DonationPackageGameAction(UUID uuid, LocalDateTime triggerTime, final GamePackage gamePackage) {
         super(uuid, triggerTime);
 
         this.gamePackage = gamePackage;

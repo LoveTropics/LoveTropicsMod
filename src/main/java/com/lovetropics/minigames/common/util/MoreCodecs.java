@@ -28,6 +28,9 @@ import net.minecraft.world.gen.blockstateprovider.SimpleBlockStateProvider;
 import net.minecraftforge.registries.IForgeRegistry;
 import net.minecraftforge.registries.IForgeRegistryEntry;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.*;
 import java.util.function.*;
 
@@ -212,6 +215,19 @@ public final class MoreCodecs {
 				return DataResult.error(error);
 			}
 		});
+	}
+
+	public static Codec<LocalDateTime> localDateTime(DateTimeFormatter formatter) {
+		return Codec.STRING.comapFlatMap(
+				string -> {
+					try {
+						return DataResult.success(LocalDateTime.parse(string, formatter));
+					} catch (DateTimeParseException e) {
+						return DataResult.error("Failed to parse date: " + string);
+					}
+				},
+				formatter::format
+		);
 	}
 
 	private static <T> List<T> unitArrayList(T t) {
