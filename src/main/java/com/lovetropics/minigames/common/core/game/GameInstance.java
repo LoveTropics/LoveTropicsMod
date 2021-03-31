@@ -59,7 +59,6 @@ public class GameInstance implements IGameInstance
     private CommandSource commandSource;
 
     private final Map<String, ControlCommand> controlCommands = new Object2ObjectOpenHashMap<>();
-    private long ticks;
 
     private final BehaviorMap behaviors;
     private final PlayerKey initiator;
@@ -68,6 +67,8 @@ public class GameInstance implements IGameInstance
 
     private final GameEventListeners events = new GameEventListeners();
     private final GameStateMap state = new GameStateMap();
+
+    private long startTime;
 
     private GameInstance(IGameDefinition definition, MinecraftServer server, GameMap map, BehaviorMap behaviors, PlayerKey initiator) {
         this.definition = definition;
@@ -125,6 +126,7 @@ public class GameInstance implements IGameInstance
 
         return Scheduler.INSTANCE.submit(s -> {
             try {
+                game.startTime = game.getWorld().getGameTime();
                 game.invoker(GameLifecycleEvents.START).start(game);
                 return GameResult.ok(game);
             } catch (Exception e) {
@@ -287,14 +289,9 @@ public class GameInstance implements IGameInstance
         return server.getWorld(dimension);
     }
 
-    public void update() {
-        ticks++;
-    }
-
     @Override
-    public long ticks()
-    {
-        return ticks;
+    public long ticks() {
+        return getWorld().getGameTime() - startTime;
     }
 
     @Override

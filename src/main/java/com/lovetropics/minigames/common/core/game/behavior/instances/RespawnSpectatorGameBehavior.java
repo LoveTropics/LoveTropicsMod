@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances;
 
-import com.lovetropics.minigames.common.core.game.GameManager;
+import com.lovetropics.minigames.common.core.game.SingleGameManager;
 import com.lovetropics.minigames.common.core.game.IGameInstance;
 import com.lovetropics.minigames.common.core.game.PlayerRole;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
@@ -23,20 +23,20 @@ public final class RespawnSpectatorGameBehavior implements IGameBehavior {
 		events.listen(GamePlayerEvents.DEATH, this::onPlayerDeath);
 	}
 
-	private void onPlayerChangeRole(IGameInstance minigame, ServerPlayerEntity player, PlayerRole role, PlayerRole lastRole) {
-		if (minigame.getParticipants().isEmpty()) {
-			GameManager.get().finish();
+	private void onPlayerChangeRole(IGameInstance game, ServerPlayerEntity player, PlayerRole role, PlayerRole lastRole) {
+		if (game.getParticipants().isEmpty()) {
+			SingleGameManager.INSTANCE.finish(game);
 		}
 	}
 
-	private ActionResultType onPlayerDeath(IGameInstance minigame, ServerPlayerEntity player, DamageSource source) {
+	private ActionResultType onPlayerDeath(IGameInstance game, ServerPlayerEntity player, DamageSource source) {
 		player.inventory.dropAllItems();
 
-		if (!minigame.getSpectators().contains(player.getUniqueID())) {
-			minigame.addPlayer(player, PlayerRole.SPECTATOR);
+		if (!game.getSpectators().contains(player.getUniqueID())) {
+			game.addPlayer(player, PlayerRole.SPECTATOR);
 			player.setHealth(20.0F);
 
-			sendDeathMessage(minigame, player);
+			sendDeathMessage(game, player);
 
 			return ActionResultType.FAIL;
 		}
@@ -44,13 +44,13 @@ public final class RespawnSpectatorGameBehavior implements IGameBehavior {
 		return ActionResultType.PASS;
 	}
 
-	private void sendDeathMessage(IGameInstance minigame, ServerPlayerEntity player) {
-		ServerWorld world = minigame.getWorld();
+	private void sendDeathMessage(IGameInstance game, ServerPlayerEntity player) {
+		ServerWorld world = game.getWorld();
 		if (!world.getGameRules().getBoolean(GameRules.SHOW_DEATH_MESSAGES)) {
 			return;
 		}
 
 		ITextComponent message = player.getCombatTracker().getDeathMessage();
-		minigame.getAllPlayers().sendMessage(message);
+		game.getAllPlayers().sendMessage(message);
 	}
 }

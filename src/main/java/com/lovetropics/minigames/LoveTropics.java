@@ -10,7 +10,8 @@ import com.lovetropics.minigames.common.content.survive_the_tide.SurviveTheTide;
 import com.lovetropics.minigames.common.content.survive_the_tide.entity.DriftwoodRider;
 import com.lovetropics.minigames.common.core.command.MapCommand;
 import com.lovetropics.minigames.common.core.command.game.*;
-import com.lovetropics.minigames.common.core.game.GameManager;
+import com.lovetropics.minigames.common.core.game.IGameInstance;
+import com.lovetropics.minigames.common.core.game.SingleGameManager;
 import com.lovetropics.minigames.common.core.game.behavior.GameBehaviorTypes;
 import com.lovetropics.minigames.common.core.integration.Telemetry;
 import com.lovetropics.minigames.common.core.map.VoidChunkGenerator;
@@ -138,8 +139,6 @@ public class LoveTropics {
     private void onServerAboutToStart(final FMLServerAboutToStartEvent event) {
         Telemetry.INSTANCE.sendOpen();
 
-        GameManager.init(event.getServer());
-
         // we register commands in the about-to-start event because the 'proper' starting event loads after datapacks,
         // causing functions to load incorrectly
         CommandDispatcher<CommandSource> dispatcher = event.getServer().getCommandManager().getDispatcher();
@@ -157,8 +156,9 @@ public class LoveTropics {
     }
 
     private void onServerStopping(final FMLServerStoppingEvent event) {
-        if (GameManager.get().getActiveMinigame() != null) {
-            GameManager.get().cancel();
+        IGameInstance game = SingleGameManager.INSTANCE.getActiveGame();
+        if (game != null) {
+            SingleGameManager.INSTANCE.cancel(game);
         }
 
         Telemetry.INSTANCE.sendClose();

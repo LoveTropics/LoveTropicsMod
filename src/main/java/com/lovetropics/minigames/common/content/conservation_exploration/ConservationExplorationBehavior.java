@@ -85,7 +85,7 @@ public final class ConservationExplorationBehavior implements IGameBehavior {
 		game.addControlCommand("next_creature", ControlCommand.forInitiator(source -> {
 			Scheduler.INSTANCE.submit(server -> {
 				if (!nextCreature(game)) {
-					GameManager.get().finish();
+					SingleGameManager.INSTANCE.finish(game);
 				}
 			});
 		}));

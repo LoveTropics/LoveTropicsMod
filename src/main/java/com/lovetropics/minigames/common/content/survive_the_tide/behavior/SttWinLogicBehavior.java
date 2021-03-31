@@ -1,7 +1,7 @@
 package com.lovetropics.minigames.common.content.survive_the_tide.behavior;
 
 import com.lovetropics.minigames.common.core.game.GameException;
-import com.lovetropics.minigames.common.core.game.GameManager;
+import com.lovetropics.minigames.common.core.game.SingleGameManager;
 import com.lovetropics.minigames.common.core.game.IGameInstance;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
@@ -70,7 +70,7 @@ public class SttWinLogicBehavior implements IGameBehavior {
 			sendGameFinishMessages(game);
 
 			if (this.minigameEndedTimer >= gameFinishTickDelay) {
-				GameManager.get().finish();
+				SingleGameManager.INSTANCE.finish(game);
 			}
 
 			this.minigameEndedTimer++;
