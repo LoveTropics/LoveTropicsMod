@@ -2,7 +2,7 @@ package com.lovetropics.minigames.common.core.game.util;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
-import com.lovetropics.minigames.common.core.game.behavior.instances.TeamsBehavior;
+import com.lovetropics.minigames.common.core.game.state.instances.TeamKey;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.entity.player.ServerPlayerEntity;
 
@@ -11,22 +11,22 @@ import java.util.*;
 import java.util.function.BiConsumer;
 
 public final class TeamAllocator {
-	private final List<TeamsBehavior.TeamKey> teams;
+	private final List<TeamKey> teams;
 	private final List<ServerPlayerEntity> players = new ArrayList<>();
-	private final Map<ServerPlayerEntity, TeamsBehavior.TeamKey> teamPreferences = new Object2ObjectOpenHashMap<>();
+	private final Map<ServerPlayerEntity, TeamKey> teamPreferences = new Object2ObjectOpenHashMap<>();
 
-	public TeamAllocator(List<TeamsBehavior.TeamKey> teams) {
+	public TeamAllocator(List<TeamKey> teams) {
 		this.teams = new ArrayList<>(teams);
 	}
 
-	public void addPlayer(ServerPlayerEntity player, @Nullable TeamsBehavior.TeamKey teamPreference) {
+	public void addPlayer(ServerPlayerEntity player, @Nullable TeamKey teamPreference) {
 		players.add(player);
 		teamPreferences.put(player, teamPreference);
 	}
 
-	public void allocate(BiConsumer<ServerPlayerEntity, TeamsBehavior.TeamKey> applyTeam) {
-		Multimap<TeamsBehavior.TeamKey, ServerPlayerEntity> teamToPlayers = HashMultimap.create();
-		Map<ServerPlayerEntity, TeamsBehavior.TeamKey> playerToTeam = new Object2ObjectOpenHashMap<>();
+	public void allocate(BiConsumer<ServerPlayerEntity, TeamKey> applyTeam) {
+		Multimap<TeamKey, ServerPlayerEntity> teamToPlayers = HashMultimap.create();
+		Map<ServerPlayerEntity, TeamKey> playerToTeam = new Object2ObjectOpenHashMap<>();
 
 		// shuffle the player and teams list for random initial allocation
 		Collections.shuffle(teams);
@@ -35,7 +35,7 @@ public final class TeamAllocator {
 		// 1. place everyone in all the teams in an even distribution
 		int teamIndex = 0;
 		for (ServerPlayerEntity player : players) {
-			TeamsBehavior.TeamKey team = teams.get(teamIndex++ % teams.size());
+			TeamKey team = teams.get(teamIndex++ % teams.size());
 			teamToPlayers.put(team, player);
 			playerToTeam.put(player, team);
 		}
@@ -45,8 +45,8 @@ public final class TeamAllocator {
 
 		// 2. go through and try to swap players whose preferences mismatch with their assigned team
 		for (ServerPlayerEntity player : players) {
-			TeamsBehavior.TeamKey preference = teamPreferences.get(player);
-			TeamsBehavior.TeamKey current = playerToTeam.get(player);
+			TeamKey preference = teamPreferences.get(player);
+			TeamKey current = playerToTeam.get(player);
 
 			// we have no preference or we are already in our desired position, continue
 			if (preference == null || current == preference) {
@@ -66,7 +66,7 @@ public final class TeamAllocator {
 				ServerPlayerEntity swapWith = null;
 
 				for (ServerPlayerEntity swapCandidate : swapCandidates) {
-					TeamsBehavior.TeamKey swapCandidatePreference = teamPreferences.get(swapCandidate);
+					TeamKey swapCandidatePreference = teamPreferences.get(swapCandidate);
 					if (swapCandidatePreference == preference) {
 						// we can't swap with this player: they are already in their chosen team
 						continue;
@@ -92,7 +92,7 @@ public final class TeamAllocator {
 		}
 
 		// 3. in theory we have a good allocation of players now: apply these choices to the minigame
-		for (Map.Entry<ServerPlayerEntity, TeamsBehavior.TeamKey> entry : playerToTeam.entrySet()) {
+		for (Map.Entry<ServerPlayerEntity, TeamKey> entry : playerToTeam.entrySet()) {
 			applyTeam.accept(entry.getKey(), entry.getValue());
 		}
 	}

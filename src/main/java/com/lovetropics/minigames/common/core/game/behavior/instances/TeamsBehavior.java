@@ -1,21 +1,28 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances;
 
-import com.lovetropics.minigames.common.core.game.behavior.event.*;
-import com.lovetropics.minigames.common.util.MoreCodecs;
-import com.lovetropics.minigames.common.util.Scheduler;
-import com.lovetropics.minigames.common.core.game.*;
+import com.lovetropics.minigames.common.core.game.ControlCommand;
+import com.lovetropics.minigames.common.core.game.GameException;
+import com.lovetropics.minigames.common.core.game.IGameInstance;
+import com.lovetropics.minigames.common.core.game.PlayerRole;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameLifecycleEvents;
+import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
+import com.lovetropics.minigames.common.core.game.behavior.event.GamePollingEvents;
 import com.lovetropics.minigames.common.core.game.polling.PollingGameInstance;
+import com.lovetropics.minigames.common.core.game.state.GameStateMap;
+import com.lovetropics.minigames.common.core.game.state.instances.TeamKey;
+import com.lovetropics.minigames.common.core.game.state.instances.TeamState;
 import com.lovetropics.minigames.common.core.game.statistics.StatisticKey;
 import com.lovetropics.minigames.common.core.game.util.TeamAllocator;
+import com.lovetropics.minigames.common.util.MoreCodecs;
+import com.lovetropics.minigames.common.util.Scheduler;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.item.DyeColor;
 import net.minecraft.scoreboard.ScorePlayerTeam;
 import net.minecraft.scoreboard.ServerScoreboard;
 import net.minecraft.server.MinecraftServer;
@@ -40,7 +47,6 @@ public final class TeamsBehavior implements IGameBehavior {
 	});
 
 	private final List<TeamKey> teams;
-	private final Map<TeamKey, MutablePlayerSet> teamPlayers = new Object2ObjectOpenHashMap<>();
 	private final Map<TeamKey, ScorePlayerTeam> scoreboardTeams = new Object2ObjectOpenHashMap<>();
 	private final Map<String, List<UUID>> assignedTeams;
 
@@ -49,6 +55,8 @@ public final class TeamsBehavior implements IGameBehavior {
 	private final boolean friendlyFire;
 
 	private final Map<UUID, TeamKey> teamPreferences = new Object2ObjectOpenHashMap<>();
+
+	private TeamState teamState;
 
 	public TeamsBehavior(List<TeamKey> teams, boolean friendlyFire, Map<String, List<UUID>> assignedTeams) {
 		this.teams = teams;
@@ -70,7 +78,12 @@ public final class TeamsBehavior implements IGameBehavior {
 	}
 
 	@Override
-	public void register(IGameInstance registerGame, GameEventListeners events) {
+	public void registerState(GameStateMap state) {
+		teamState = state.register(TeamState.TYPE, new TeamState(this.teams));
+	}
+
+	@Override
+	public void register(IGameInstance game, GameEventListeners events) {
 		events.listen(GameLifecycleEvents.ASSIGN_ROLES, this::assignPlayerRoles);
 		events.listen(GameLifecycleEvents.START, this::onStart);
 		events.listen(GameLifecycleEvents.FINISH, this::onFinish);
@@ -80,7 +93,7 @@ public final class TeamsBehavior implements IGameBehavior {
 		events.listen(GamePlayerEvents.DAMAGE, this::onPlayerHurt);
 		events.listen(GamePlayerEvents.ATTACK, this::onPlayerAttack);
 
-		MinecraftServer server = registerGame.getServer();
+		MinecraftServer server = game.getServer();
 		ServerScoreboard scoreboard = server.getScoreboard();
 
 		for (TeamKey teamKey : teams) {
@@ -94,11 +107,10 @@ public final class TeamsBehavior implements IGameBehavior {
 			scoreboardTeam.setColor(teamKey.text);
 			scoreboardTeam.setAllowFriendlyFire(friendlyFire);
 
-			teamPlayers.put(teamKey, new MutablePlayerSet(server));
 			scoreboardTeams.put(teamKey, scoreboardTeam);
 		}
 
-		registerGame.getStatistics().getGlobal().set(StatisticKey.TEAMS, true);
+		game.getStatistics().getGlobal().set(StatisticKey.TEAMS, true);
 	}
 
 	private void onStartPolling(PollingGameInstance game) {
@@ -206,7 +218,7 @@ public final class TeamsBehavior implements IGameBehavior {
 		Set<UUID> assignedPlayers = new ObjectOpenHashSet<>();
 
 		for (Map.Entry<String, List<UUID>> entry : assignedTeams.entrySet()) {
-			TeamKey team = getTeamByKey(entry.getKey());
+			TeamKey team = teamState.getTeamByKey(entry.getKey());
 			List<UUID> players = entry.getValue();
 
 			for (UUID id : players) {
@@ -240,7 +252,7 @@ public final class TeamsBehavior implements IGameBehavior {
 	}
 
 	private void addPlayerToTeam(IGameInstance game, ServerPlayerEntity player, TeamKey team) {
-		teamPlayers.get(team).add(player);
+		teamState.addPlayerTo(player, team);
 
 		game.getStatistics().forPlayer(player).set(StatisticKey.TEAM, team);
 
@@ -256,9 +268,7 @@ public final class TeamsBehavior implements IGameBehavior {
 	}
 
 	private void removePlayerFromTeams(ServerPlayerEntity player) {
-		for (TeamKey team : teams) {
-			teamPlayers.get(team).remove(player);
-		}
+		teamState.removePlayer(player);
 
 		ServerScoreboard scoreboard = player.server.getScoreboard();
 		scoreboard.removePlayerFromTeams(player.getScoreboardName());
@@ -269,99 +279,16 @@ public final class TeamsBehavior implements IGameBehavior {
 	}
 
 	private ActionResultType onPlayerHurt(final IGameInstance game, ServerPlayerEntity player, DamageSource source, float amount) {
-		if (!friendlyFire && areSameTeam(source.getTrueSource(), player)) {
+		if (!friendlyFire && teamState.areSameTeam(source.getTrueSource(), player)) {
 			return ActionResultType.FAIL;
 		}
 		return ActionResultType.PASS;
 	}
 
 	private ActionResultType onPlayerAttack(IGameInstance game, ServerPlayerEntity player, Entity target) {
-		if (!friendlyFire && areSameTeam(player, target)) {
+		if (!friendlyFire && teamState.areSameTeam(player, target)) {
 			return ActionResultType.FAIL;
 		}
 		return ActionResultType.PASS;
-	}
-
-	public boolean areSameTeam(Entity source, Entity target) {
-		if (!(source instanceof PlayerEntity) || !(target instanceof PlayerEntity)) {
-			return false;
-		}
-		TeamKey sourceTeam = getTeamForPlayer((PlayerEntity) source);
-		TeamKey targetTeam = getTeamForPlayer((PlayerEntity) target);
-		return Objects.equals(sourceTeam, targetTeam);
-	}
-
-	@Nullable
-	public TeamKey getTeamForPlayer(PlayerEntity player) {
-		for (TeamKey team : teams) {
-			if (teamPlayers.get(team).contains(player)) {
-				return team;
-			}
-		}
-		return null;
-	}
-
-	public PlayerSet getPlayersForTeam(TeamKey team) {
-		PlayerSet players = teamPlayers.get(team);
-		return players != null ? players : PlayerSet.EMPTY;
-	}
-
-	public List<TeamKey> getTeams() {
-		return teams;
-	}
-
-	@Nullable
-	public TeamKey getTeamByKey(String key) {
-		for (TeamKey team : teams) {
-			if (team.key.equals(key)) {
-				return team;
-			}
-		}
-		return null;
-	}
-
-	public static class TeamKey {
-		public static final Codec<TeamKey> CODEC = RecordCodecBuilder.create(instance -> {
-			return instance.group(
-					Codec.STRING.fieldOf("key").forGetter(c -> c.key),
-					Codec.STRING.fieldOf("name").forGetter(c -> c.name),
-					MoreCodecs.DYE_COLOR.optionalFieldOf("dye", DyeColor.WHITE).forGetter(c -> c.dye),
-					MoreCodecs.FORMATTING.optionalFieldOf("text", TextFormatting.WHITE).forGetter(c -> c.text)
-			).apply(instance, TeamKey::new);
-		});
-
-		public final String key;
-		public final String name;
-		public final DyeColor dye;
-		public final TextFormatting text;
-
-		public TeamKey(String key, String name, DyeColor dye, TextFormatting text) {
-			this.key = key;
-			this.name = name;
-			this.dye = dye;
-			this.text = text;
-		}
-
-		@Override
-		public String toString() {
-			return name;
-		}
-
-		@Override
-		public boolean equals(Object obj) {
-			if (this == obj) return true;
-
-			if (obj instanceof TeamKey) {
-				TeamKey team = (TeamKey) obj;
-				return key.equals(team.key);
-			}
-
-			return false;
-		}
-
-		@Override
-		public int hashCode() {
-			return key.hashCode();
-		}
 	}
 }

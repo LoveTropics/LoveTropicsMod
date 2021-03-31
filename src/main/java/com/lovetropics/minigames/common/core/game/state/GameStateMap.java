@@ -21,16 +21,16 @@ public final class GameStateMap {
 
 	@Nullable
 	@SuppressWarnings("unchecked")
-	public <T extends IGameState> T get(GameStateType<T> type) {
+	public <T extends IGameState> T getOrNull(GameStateType<T> type) {
 		return (T) this.state.get(type);
 	}
 
 	public <T extends IGameState> Optional<T> getOptional(GameStateType<T> type) {
-		return Optional.ofNullable(this.get(type));
+		return Optional.ofNullable(this.getOrNull(type));
 	}
 
 	public <T extends IGameState> T getOrThrow(GameStateType<T> type) {
-		T state = this.get(type);
+		T state = this.getOrNull(type);
 		if (state == null) {
 			throw new GameException(new StringTextComponent("Missing expected game state of type: " + type.getName()));
 		}
