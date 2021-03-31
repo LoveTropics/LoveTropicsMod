@@ -1,19 +1,21 @@
 package com.lovetropics.minigames.common.core.integration.game_actions;
 
 import com.lovetropics.minigames.common.core.game.IGameInstance;
+import com.lovetropics.minigames.common.util.MoreCodecs;
+import com.mojang.serialization.Codec;
 import net.minecraft.server.MinecraftServer;
 
-import javax.annotation.Nullable;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
 import java.util.UUID;
 
 public abstract class GameAction implements Comparable<GameAction> {
-    public UUID uuid;
-    public String triggerTime;
+    public static final Codec<LocalDateTime> TIME_CODEC = MoreCodecs.localDateTime(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS"));
 
-    protected GameAction(final UUID uuid, final String triggerTime) {
+    public UUID uuid;
+    public LocalDateTime triggerTime;
+
+    protected GameAction(final UUID uuid, final LocalDateTime triggerTime) {
         this.uuid = uuid;
         this.triggerTime = triggerTime;
     }
@@ -21,12 +23,12 @@ public abstract class GameAction implements Comparable<GameAction> {
     /**
      * Resolves the requested action.
      *
-     * @param minigame The minigame that this occurred within
+     * @param game The minigame that this occurred within
      * @param server The game server the action is resolved on.
      * @return Whether or not to send an acknowledgement back that
      * the action has been resolved.
      */
-    public abstract boolean resolve(IGameInstance minigame, MinecraftServer server);
+    public abstract boolean resolve(IGameInstance game, MinecraftServer server);
 
     @Override
     public boolean equals(Object obj) {
@@ -46,26 +48,9 @@ public abstract class GameAction implements Comparable<GameAction> {
 
     @Override
     public int compareTo(final GameAction other) {
-        final LocalDateTime thisDate = getDate(triggerTime);
-        final LocalDateTime thatDate = getDate(other.triggerTime);
-        if (thisDate != null && thatDate != null) {
-            return thisDate.compareTo(thatDate);
+        if (triggerTime != null && other.triggerTime != null) {
+            return triggerTime.compareTo(other.triggerTime);
         }
         return 0;
-    }
-
-    @Nullable
-    private LocalDateTime getDate(String dateStr) {
-        dateStr = dateStr.split("\\.")[0];
-        LocalDateTime date;
-        try {
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-            date = LocalDateTime.parse(dateStr, formatter);
-        }
-        catch (final DateTimeParseException exc) {
-            System.out.printf("%s is not parsable!%n", dateStr);
-            return null;
-        }
-        return date;
     }
 }

@@ -9,6 +9,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
 
+import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
@@ -21,7 +22,7 @@ public class ChatEventGameAction extends GameAction {
         return instance.group(
                 MoreCodecs.UUID_STRING.fieldOf("uuid").forGetter(c -> c.uuid),
                 Codec.STRING.fieldOf("chat_event_type").forGetter(c -> c.resultType),
-                Codec.STRING.fieldOf("trigger_time").forGetter(c -> c.triggerTime),
+                TIME_CODEC.fieldOf("trigger_time").forGetter(c -> c.triggerTime),
                 Codec.STRING.fieldOf("title").forGetter(c -> c.title),
                 MoreCodecs.sorted(PollEntry.CODEC.listOf(), Comparator.comparingInt(PollEntry::getResults).reversed()).fieldOf("options").forGetter(c -> c.entries)
         ).apply(instance, ChatEventGameAction::new);
@@ -33,7 +34,7 @@ public class ChatEventGameAction extends GameAction {
 
     // UUID is not human readable
     // resultType is readable, ex: loot_package
-    public ChatEventGameAction(UUID uuid, String resultType, String triggerTime, final String title, final List<PollEntry> entries) {
+    public ChatEventGameAction(UUID uuid, String resultType, LocalDateTime triggerTime, final String title, final List<PollEntry> entries) {
         super(uuid, triggerTime);
         this.resultType = resultType;
         this.title = title;
