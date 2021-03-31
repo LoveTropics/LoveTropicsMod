@@ -1,12 +1,14 @@
 package com.lovetropics.minigames.common.util;
 
 import com.google.gson.JsonElement;
+import com.google.gson.JsonSyntaxException;
 import com.mojang.datafixers.util.Either;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.*;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.*;
+import net.minecraft.advancements.criterion.BlockPredicate;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.inventory.EquipmentSlotType;
@@ -65,6 +67,14 @@ public final class MoreCodecs {
 			},
 			UUID::toString
 	);
+
+	public static final Codec<BlockPredicate> BLOCK_PREDICATE = withJson(BlockPredicate::serialize, json -> {
+		try {
+			return DataResult.success(BlockPredicate.deserialize(json));
+		} catch (JsonSyntaxException e) {
+			return DataResult.error(e.getMessage());
+		}
+	});
 
 	public static <T> Codec<T[]> arrayOrUnit(Codec<T> codec, IntFunction<T[]> factory) {
 		return listToArray(listOrUnit(codec), factory);

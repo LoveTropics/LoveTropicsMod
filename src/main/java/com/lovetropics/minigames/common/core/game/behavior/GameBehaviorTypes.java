@@ -55,9 +55,9 @@ public class GameBehaviorTypes {
 	public static final RegistryObject<GameBehaviorType<TeamsBehavior>> TEAMS;
 	public static final RegistryObject<GameBehaviorType<SpectatorChaseBehavior>> SPECTATOR_CHASE;
 	public static final RegistryObject<GameBehaviorType<ForceLoadRegionBehavior>> FORCE_LOAD_REGION;
-	public static final RegistryObject<GameBehaviorType<DeleteBlocksBehavior>> DELETE_BLOCKS;
+	public static final RegistryObject<GameBehaviorType<SetBlocksBehavior>> SET_BLOCKS;
 	public static final RegistryObject<GameBehaviorType<EliminatePlayerControlBehavior>> ELIMINATE_PLAYER_CONTROL;
-	public static final RegistryObject<GameBehaviorType<SttChestsBehavior>> PLACE_STT_CHESTS;
+	public static final RegistryObject<GameBehaviorType<FillChestsByMarkerBehavior>> FILL_CHESTS_BY_MARKER;
 	public static final RegistryObject<GameBehaviorType<GenerateEntitiesBehavior>> GENERATE_ENTITIES;
 	public static final RegistryObject<GameBehaviorType<WeatherControlsBehavior>> WEATHER_CONTROLS;
 	public static final RegistryObject<GameBehaviorType<RunCommandInRegionBehavior>> RUN_COMMAND_IN_REGION;
@@ -123,9 +123,9 @@ public class GameBehaviorTypes {
 		TRASH_COLLECTION = register("trash_collection", TrashCollectionBehavior.CODEC);
 		SPECTATOR_CHASE = register("spectator_chase", SpectatorChaseBehavior.CODEC);
 		FORCE_LOAD_REGION = register("force_load_region", ForceLoadRegionBehavior.CODEC);
-		DELETE_BLOCKS = register("delete_blocks", DeleteBlocksBehavior.CODEC);
+		SET_BLOCKS = register("set_blocks", SetBlocksBehavior.CODEC);
 		ELIMINATE_PLAYER_CONTROL = register("eliminate_player_control", EliminatePlayerControlBehavior.CODEC);
-		PLACE_STT_CHESTS = register("place_stt_chests", SttChestsBehavior.CODEC);
+		FILL_CHESTS_BY_MARKER = register("fill_chests_by_marker", FillChestsByMarkerBehavior.CODEC);
 		GENERATE_ENTITIES = register("generate_entities", GenerateEntitiesBehavior.CODEC);
 		WEATHER_CONTROLS = register("weather_controls", WeatherControlsBehavior.CODEC);
 		RUN_COMMAND_IN_REGION = register("run_command_in_region", RunCommandInRegionBehavior.CODEC);
