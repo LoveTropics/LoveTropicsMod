@@ -1,8 +1,8 @@
-package com.lovetropics.minigames.common.content.survive_the_tide.behavior;
+package com.lovetropics.minigames.common.core.game.behavior.instances;
 
 import com.lovetropics.minigames.common.core.game.IGameInstance;
-import com.lovetropics.minigames.common.core.game.behavior.instances.ChunkGeneratingBehavior;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -13,20 +13,26 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.registry.Registry;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.server.ServerWorld;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
-// TODO: make data driven
-public class SttChestsBehavior extends ChunkGeneratingBehavior {
-	public static final Codec<SttChestsBehavior> CODEC = Codec.unit(SttChestsBehavior::new);
+public class FillChestsByMarkerBehavior extends ChunkGeneratingBehavior {
+	public static final Codec<FillChestsByMarkerBehavior> CODEC = RecordCodecBuilder.create(instance -> {
+		return instance.group(
+				Codec.unboundedMap(Registry.BLOCK, ResourceLocation.CODEC).fieldOf("loot_tables").forGetter(c -> c.lootTableByMarker)
+		).apply(instance, FillChestsByMarkerBehavior::new);
+	});
 
-	private static final ResourceLocation MISC_LOOT = new ResourceLocation("lt20", "stt2/misc_type");
-	private static final ResourceLocation FOOD_LOOT = new ResourceLocation("lt20", "stt2/food_type");
-	private static final ResourceLocation MILITARY_LOOT = new ResourceLocation("lt20", "stt2/military_type");
-	private static final ResourceLocation EQUIPMENT_LOOT = new ResourceLocation("lt20", "stt2/equipment_type");
+	private final Map<Block, ResourceLocation> lootTableByMarker;
+
+	public FillChestsByMarkerBehavior(Map<Block, ResourceLocation> lootTableByMarker) {
+		this.lootTableByMarker = lootTableByMarker;
+	}
 
 	@Override
 	protected void generateChunk(IGameInstance game, ServerWorld world, Chunk chunk) {
@@ -60,6 +66,14 @@ public class SttChestsBehavior extends ChunkGeneratingBehavior {
 	}
 
 	private ResourceLocation getLootTableFor(Block block) {
+		return this.lootTableByMarker.get(block);
+
+		/*
+		TODO: datapack
+		private static final ResourceLocation MISC_LOOT = new ResourceLocation("lt20", "stt2/misc_type");
+		private static final ResourceLocation FOOD_LOOT = new ResourceLocation("lt20", "stt2/food_type");
+		private static final ResourceLocation MILITARY_LOOT = new ResourceLocation("lt20", "stt2/military_type");
+		private static final ResourceLocation EQUIPMENT_LOOT = new ResourceLocation("lt20", "stt2/equipment_type");
 		if (block == Blocks.CYAN_GLAZED_TERRACOTTA) {
 			return MISC_LOOT;
 		} else if (block == Blocks.GREEN_GLAZED_TERRACOTTA) {
@@ -69,6 +83,6 @@ public class SttChestsBehavior extends ChunkGeneratingBehavior {
 		} else if (block == Blocks.ORANGE_GLAZED_TERRACOTTA) {
 			return EQUIPMENT_LOOT;
 		}
-		return null;
+		return null;*/
 	}
 }

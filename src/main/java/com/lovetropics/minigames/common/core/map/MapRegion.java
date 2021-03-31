@@ -9,6 +9,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.vector.Vector3d;
 
+import javax.annotation.Nullable;
 import java.util.Iterator;
 import java.util.Random;
 
@@ -27,6 +28,17 @@ public final class MapRegion implements Iterable<BlockPos> {
 
 	public static MapRegion of(BlockPos a, BlockPos b) {
 		return new MapRegion(MapRegion.min(a, b), MapRegion.max(a, b));
+	}
+
+	public static MapRegion ofChunk(int chunkX, int chunkZ) {
+		return new MapRegion(
+				new BlockPos(chunkX << 4, 0, chunkZ << 4),
+				new BlockPos((chunkX << 4) + 15, 256, (chunkZ << 16) + 15)
+		);
+	}
+
+	public static MapRegion ofChunk(ChunkPos chunkPos) {
+		return ofChunk(chunkPos.x, chunkPos.z);
 	}
 
 	public static BlockPos min(BlockPos a, BlockPos b) {
@@ -117,6 +129,16 @@ public final class MapRegion implements Iterable<BlockPos> {
 
 	public boolean intersects(AxisAlignedBB bounds) {
 		return bounds.intersects(min.getX(), min.getY(), min.getZ(), max.getX() + 1.0, max.getY() + 1.0, max.getZ() + 1.0);
+	}
+
+	@Nullable
+	public MapRegion intersection(MapRegion other) {
+		BlockPos min = max(this.min, other.min);
+		BlockPos max = min(this.max, other.max);
+		if (min.getX() >= max.getX() || min.getY() >= max.getY() || min.getZ() >= max.getZ()) {
+			return null;
+		}
+		return new MapRegion(min, max);
 	}
 
 	public AxisAlignedBB toAabb() {
