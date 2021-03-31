@@ -9,6 +9,7 @@ import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.*;
 import com.lovetropics.minigames.common.core.game.statistics.*;
 import com.lovetropics.minigames.common.core.game.util.GameSidebar;
+import com.lovetropics.minigames.common.core.game.util.GlobalGameWidgets;
 import com.mojang.serialization.Codec;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import net.minecraft.block.Block;
@@ -66,7 +67,7 @@ public final class TrashCollectionBehavior implements IGameBehavior {
 		ITextComponent sidebarTitle = new StringTextComponent("Trash Dive")
 				.mergeStyle(TextFormatting.BLUE, TextFormatting.BOLD);
 
-		sidebar = GameSidebar.openGlobal(game, sidebarTitle);
+		sidebar = new GlobalGameWidgets(game).openSidebar(sidebarTitle);
 		sidebar.set(renderSidebar(game));
 
 		PlayerSet players = game.getParticipants();

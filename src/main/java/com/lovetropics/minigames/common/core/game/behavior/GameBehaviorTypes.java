@@ -92,7 +92,6 @@ public class GameBehaviorTypes {
 	public static final RegistryObject<GameBehaviorType<SpawnEntitiesAtRegionsOverTimePackageBehavior>> SPAWN_ENTITIES_AT_REGIONS_OVER_TIME_PACKAGE;
 	public static final RegistryObject<GameBehaviorType<SetBlockAtPlayerPackageBehavior>> SET_BLOCK_AT_PLAYER_PACKAGE;
 	public static final RegistryObject<GameBehaviorType<GivePlayerHeadPackageBehavior>> GIVE_PLAYER_HEAD_PACKAGE;
-	public static final RegistryObject<GameBehaviorType<ShootProjectilesAroundAllPlayersPackageBehavior>> SHOOT_PROJECTILES_AT_ALL_PLAYERS;
 	public static final RegistryObject<GameBehaviorType<ShootProjectilesAroundPlayerPackageBehavior>> SHOOT_PROJECTILES_AT_PLAYER;
 
 	public static final RegistryObject<GameBehaviorType<PollFinalistsBehavior>> POLL_FINALISTS;
@@ -162,7 +161,6 @@ public class GameBehaviorTypes {
 		SPAWN_ENTITIES_AT_REGIONS_OVER_TIME_PACKAGE = register("spawn_entities_at_regions_over_time_package", SpawnEntitiesAtRegionsOverTimePackageBehavior.CODEC);
 		SET_BLOCK_AT_PLAYER_PACKAGE = register("set_block_at_player_package", SetBlockAtPlayerPackageBehavior.CODEC);
 		GIVE_PLAYER_HEAD_PACKAGE = register("give_player_head_package", GivePlayerHeadPackageBehavior.CODEC);
-		SHOOT_PROJECTILES_AT_ALL_PLAYERS = register("shoot_projectiles_at_all_players", ShootProjectilesAroundAllPlayersPackageBehavior.CODEC);
 		SHOOT_PROJECTILES_AT_PLAYER = register("shoot_projectiles_at_player", ShootProjectilesAroundPlayerPackageBehavior.CODEC);
 
 		POLL_FINALISTS = register("poll_finalists", PollFinalistsBehavior.CODEC);

@@ -7,6 +7,7 @@ import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameLifecycleEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameLogicEvents;
 import com.lovetropics.minigames.common.core.game.util.GameBossBar;
+import com.lovetropics.minigames.common.core.game.util.GlobalGameWidgets;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.util.text.ITextComponent;
@@ -39,7 +40,10 @@ public final class TimedGameBehavior implements IGameBehavior {
 	public void register(IGameInstance game, EventRegistrar events) {
 		events.listen(GameLifecycleEvents.TICK, this::onTick);
 
-		timerBar = hasTimerBar ? GameBossBar.openGlobal(game, new StringTextComponent(""), BossInfo.Color.GREEN, BossInfo.Overlay.PROGRESS) : null;
+		if (hasTimerBar) {
+			GlobalGameWidgets widgets = new GlobalGameWidgets(game);
+			timerBar = widgets.openBossBar(new StringTextComponent(""), BossInfo.Color.GREEN, BossInfo.Overlay.PROGRESS);
+		}
 	}
 
 	private void onTick(IGameInstance game) {
