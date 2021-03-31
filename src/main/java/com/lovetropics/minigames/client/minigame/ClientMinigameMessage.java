@@ -21,7 +21,7 @@ public class ClientMinigameMessage {
 
 	public ClientMinigameMessage(ProtoGame minigame) {
 		this(minigame.getDefinition().getDisplayID(),
-			minigame.getDefinition().getUnlocalizedName(),
+			minigame.getDefinition().getTranslationKey(),
 			minigame.getStatus(),
 			minigame.getDefinition().getMaximumParticipantCount());
 	}

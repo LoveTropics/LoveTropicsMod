@@ -20,8 +20,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 // TODO: make data driven
-public class PlaceSttChestsGameBehavior extends ChunkGeneratingBehavior {
-	public static final Codec<PlaceSttChestsGameBehavior> CODEC = Codec.unit(PlaceSttChestsGameBehavior::new);
+public class SttChestsBehavior extends ChunkGeneratingBehavior {
+	public static final Codec<SttChestsBehavior> CODEC = Codec.unit(SttChestsBehavior::new);
 
 	private static final ResourceLocation MISC_LOOT = new ResourceLocation("lt20", "stt2/misc_type");
 	private static final ResourceLocation FOOD_LOOT = new ResourceLocation("lt20", "stt2/food_type");

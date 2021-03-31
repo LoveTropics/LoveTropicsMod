@@ -8,16 +8,19 @@ import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.IGameInstance;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameWorldEvents;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import it.unimi.dsi.fastutil.longs.*;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.resources.IResource;
 import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.world.server.ServerWorld;
+import net.minecraft.world.chunk.IChunk;
 
 import java.io.InputStream;
 import java.nio.ByteBuffer;
@@ -50,6 +53,32 @@ public final class PlaceTrashBehavior implements IGameBehavior {
 
 	@Override
 	public void register(IGameInstance game, GameEventListeners events) throws GameException {
+		Long2ObjectMap<LongList> trashByChunk = loadTrashByChunk(game);
+
+		events.listen(GameWorldEvents.CHUNK_LOAD, (g, chunk) -> {
+			LongList positions = trashByChunk.remove(chunk.getPos().asLong());
+			if (positions == null) {
+				return;
+			}
+
+			Random random = chunk.getWorldForge().getRandom();
+			BlockPos.Mutable pos = new BlockPos.Mutable();
+
+			LongListIterator iterator = positions.iterator();
+			while (iterator.hasNext()) {
+				pos.setPos(iterator.nextLong());
+
+				int count = random.nextInt(density);
+				for (int i = 0; i < count; i++) {
+					// range defines 3 standard deviations from the mean (centerY)
+					pos.setY(centerY + (int) ((random.nextGaussian() / 3) * range));
+					tryPlaceTrash(chunk, pos, random);
+				}
+			}
+		});
+	}
+
+	private Long2ObjectMap<LongList> loadTrashByChunk(IGameInstance game) {
 		LongBuffer candidatePositions;
 		try (IResource res = game.getServer().getDataPackRegistries().getResourceManager().getResource(positionData)) {
 			InputStream in = res.getInputStream();
@@ -64,31 +93,28 @@ public final class PlaceTrashBehavior implements IGameBehavior {
 			throw new GameException(new StringTextComponent("Unexpected error reading trash position data"), e);
 		}
 
-		ServerWorld world = game.getWorld();
-		Random random = world.rand;
-
-		BlockPos.Mutable pos = new BlockPos.Mutable();
+		Long2ObjectMap<LongList> trashByChunk = new Long2ObjectOpenHashMap<>();
 		while (candidatePositions.hasRemaining()) {
-			pos.setPos(candidatePositions.get());
-			pos.setY(centerY);
-			int count = random.nextInt(density);
-			for (int i = 0; i < count; i++) {
-				// range defines 3 standard deviations from the mean (centerY)
-				pos.move(Direction.UP, (int) ((random.nextGaussian() / 3) * range));
-				tryPlaceTrash(world, pos);
-				pos.setY(centerY);
-			}
+			long candidatePos = candidatePositions.get();
+
+			int chunkX = BlockPos.unpackX(candidatePos) >> 4;
+			int chunkZ = BlockPos.unpackZ(candidatePos) >> 4;
+			long chunkKey = ChunkPos.asLong(chunkX, chunkZ);
+
+			trashByChunk.computeIfAbsent(chunkKey, l -> new LongArrayList()).add(candidatePos);
 		}
+
+		return trashByChunk;
 	}
 
-	private void tryPlaceTrash(ServerWorld world, BlockPos pos) {
-		Random random = world.rand;
-		if (world.getBlockState(pos).getBlock() == Blocks.WATER) {
+	private void tryPlaceTrash(IChunk chunk, BlockPos pos, Random random) {
+		if (chunk.getBlockState(pos).getBlock() == Blocks.WATER) {
 			TrashType trashType = trashTypes[random.nextInt(trashTypes.length)];
-			world.setBlockState(pos, LoveTropicsBlocks.TRASH.get(trashType).getDefaultState()
-					.with(TrashBlock.WATERLOGGED, true)
-					.with(TrashBlock.ATTACHMENT, Block.hasSolidSideOnTop(world, pos.down()) ? Attachment.FLOOR : Attachment.random(random))
-					.with(TrashBlock.FACING, Direction.byHorizontalIndex(random.nextInt(4)))
+			chunk.setBlockState(pos, LoveTropicsBlocks.TRASH.get(trashType).getDefaultState()
+							.with(TrashBlock.WATERLOGGED, true)
+							.with(TrashBlock.ATTACHMENT, Block.hasSolidSideOnTop(chunk, pos.down()) ? Attachment.FLOOR : Attachment.random(random))
+							.with(TrashBlock.FACING, Direction.byHorizontalIndex(random.nextInt(4))),
+					false
 			);
 		}
 	}

@@ -54,14 +54,14 @@ public class ChatEventGameAction extends GameAction {
             totalVotes += entry.results;
         }
 
-        game.getPlayers().sendMessage(
+        game.getAllPlayers().sendMessage(
                 new StringTextComponent(this.title).mergeStyle(TextFormatting.BOLD, TextFormatting.AQUA)
                     .appendSibling(new StringTextComponent(
                             " just completed! After " + totalVotes + " votes, chat decided on something to happen... Do you trust them to have been nice?"
                     ).mergeStyle(TextFormatting.GRAY))
         );
 
-        return game.events().invoker(GamePackageEvents.RECEIVE_PACKAGE).onReceivePackage(game, winnerPackage);
+        return game.invoker(GamePackageEvents.RECEIVE_PACKAGE).onReceivePackage(game, winnerPackage);
     }
 
     public String getTitle() {

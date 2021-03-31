@@ -74,7 +74,7 @@ public final class SetMaxHealthBehavior implements IGameBehavior {
 
 	@Nullable
 	private TeamsBehavior.TeamKey getTeamOrNull(IGameInstance minigame, ServerPlayerEntity player) {
-		return minigame.getOneBehavior(GameBehaviorTypes.TEAMS.get())
+		return minigame.getBehaviors().getOne(GameBehaviorTypes.TEAMS.get())
 				.map(teams -> teams.getTeamForPlayer(player))
 				.orElse(null);
 	}

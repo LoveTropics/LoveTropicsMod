@@ -1,18 +1,12 @@
 package com.lovetropics.minigames.common.content.trash_dive;
 
-import com.google.common.collect.ImmutableList;
 import com.lovetropics.minigames.common.content.block.TrashType;
 import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.IGameInstance;
 import com.lovetropics.minigames.common.core.game.PlayerRole;
 import com.lovetropics.minigames.common.core.game.PlayerSet;
-import com.lovetropics.minigames.common.core.game.behavior.GameBehaviorType;
-import com.lovetropics.minigames.common.core.game.behavior.GameBehaviorTypes;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
-import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
-import com.lovetropics.minigames.common.core.game.behavior.event.GameLifecycleEvents;
-import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
-import com.lovetropics.minigames.common.core.game.behavior.instances.TimedGameBehavior;
+import com.lovetropics.minigames.common.core.game.behavior.event.*;
 import com.lovetropics.minigames.common.core.game.statistics.*;
 import com.lovetropics.minigames.common.core.game.util.GameSidebar;
 import com.mojang.serialization.Codec;
@@ -64,11 +58,8 @@ public final class TrashCollectionBehavior implements IGameBehavior {
 		events.listen(GamePlayerEvents.JOIN,this::onPlayerJoin);
 		events.listen(GamePlayerEvents.LEFT_CLICK_BLOCK, this::onPlayerLeftClickBlock);
 		events.listen(GamePlayerEvents.BREAK_BLOCK, this::onPlayerBreakBlock);
-	}
 
-	@Override
-	public ImmutableList<GameBehaviorType<? extends IGameBehavior>> dependencies() {
-		return ImmutableList.of(GameBehaviorTypes.PLACE_TRASH.get());
+		events.listen(GameLogicEvents.GAME_OVER, this::triggerGameOver);
 	}
 
 	private void onStart(IGameInstance game) {
@@ -78,11 +69,7 @@ public final class TrashCollectionBehavior implements IGameBehavior {
 		sidebar = GameSidebar.open(game, sidebarTitle);
 		sidebar.set(renderSidebar(game));
 
-		for (TimedGameBehavior timed : game.getBehaviors(GameBehaviorTypes.TIMED.get())) {
-			timed.onFinish(this::triggerGameOver);
-		}
-
-		PlayerSet players = game.getPlayers();
+		PlayerSet players = game.getParticipants();
 		players.addPotionEffect(new EffectInstance(Effects.NIGHT_VISION, Integer.MAX_VALUE, 1, false, false));
 
 		for (ServerPlayerEntity player : players) {
@@ -99,12 +86,12 @@ public final class TrashCollectionBehavior implements IGameBehavior {
 		statistics.forPlayer(player).set(StatisticKey.TRASH_COLLECTED, 0);
 	}
 
-	private ActionResultType onPlayerLeftClickBlock(IGameInstance game, ServerPlayerEntity player, BlockPos pos) {
+	private void onPlayerLeftClickBlock(IGameInstance game, ServerPlayerEntity player, BlockPos pos) {
 		ServerWorld world = game.getWorld();
 
 		BlockState state = world.getBlockState(pos);
 		if (!isTrash(state)) {
-			return ActionResultType.PASS;
+			return;
 		}
 
 		world.removeBlock(pos, false);
@@ -118,8 +105,6 @@ public final class TrashCollectionBehavior implements IGameBehavior {
 		collectedTrash++;
 
 		sidebar.set(renderSidebar(game));
-
-		return ActionResultType.PASS;
 	}
 
 	private ActionResultType onPlayerBreakBlock(IGameInstance game, ServerPlayerEntity player, BlockPos pos, BlockState state) {
@@ -137,7 +122,7 @@ public final class TrashCollectionBehavior implements IGameBehavior {
 
 		ITextComponent finishMessage = new StringTextComponent("The game ended! Here are the results for this game:");
 
-		PlayerSet players = minigame.getPlayers();
+		PlayerSet players = minigame.getAllPlayers();
 		players.sendMessage(finishMessage.deepCopy().mergeStyle(TextFormatting.GREEN));
 
 		GameStatistics statistics = minigame.getStatistics();

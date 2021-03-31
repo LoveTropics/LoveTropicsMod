@@ -1,18 +1,14 @@
 package com.lovetropics.minigames.common.core.game;
 
-import com.lovetropics.minigames.common.core.map.MapRegions;
-import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
-import com.lovetropics.minigames.common.core.game.behavior.GameBehaviorType;
+import com.lovetropics.minigames.common.core.game.state.GameStateMap;
 import com.lovetropics.minigames.common.core.game.statistics.GameStatistics;
 import com.lovetropics.minigames.common.core.integration.GameInstanceTelemetry;
+import com.lovetropics.minigames.common.core.map.MapRegions;
 import net.minecraft.command.CommandSource;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.RegistryKey;
 import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
-
-import java.util.Collection;
-import java.util.Optional;
 
 /**
  * An instance used to track which participants and spectators are inside
@@ -21,18 +17,6 @@ import java.util.Optional;
  */
 public interface IGameInstance extends ProtoGame, GameControllable
 {
-    Collection<IGameBehavior> getBehaviors();
-
-    <T extends IGameBehavior> Collection<T> getBehaviors(GameBehaviorType<T> type);
-
-    default <T extends IGameBehavior> Optional<T> getOneBehavior(GameBehaviorType<T> type) {
-        return getBehaviors(type).stream().findFirst();
-    }
-
-    default <T extends IGameBehavior> T getOneBehaviorOrThrow(GameBehaviorType<T> type) {
-        return getOneBehavior(type).orElseThrow(RuntimeException::new);
-    }
-
     /**
      * Adds the player to this minigame with the given role, or sets the players role if they are already added.
      * This method will also remove the player from any other role they are contained within.
@@ -51,7 +35,7 @@ public interface IGameInstance extends ProtoGame, GameControllable
     /**
      * @return The list of all players that are a part of this minigame instance.
      */
-    PlayerSet getPlayers();
+    PlayerSet getAllPlayers();
 
     /**
      * @return The list of players within this minigame instance that belong to the given role
@@ -94,8 +78,6 @@ public interface IGameInstance extends ProtoGame, GameControllable
      */
     RegistryKey<World> getDimension();
 
-    default void update() {}
-
     /**
      * @return The ticks since minigame start
      */
@@ -104,6 +86,8 @@ public interface IGameInstance extends ProtoGame, GameControllable
     GameStatistics getStatistics();
 
     GameInstanceTelemetry getTelemetry();
+
+    GameStateMap getState();
 
     default void close() {}
 }

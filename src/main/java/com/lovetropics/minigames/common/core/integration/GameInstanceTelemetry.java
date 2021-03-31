@@ -163,7 +163,7 @@ public final class GameInstanceTelemetry implements PlayerSet.Listeners {
 		if ("poll".equals(type)) {
 			IGameInstance active = GameManager.get().getActiveMinigame();
 			if (active.getDefinition() == definition) {
-				active.events().invoker(GamePackageEvents.RECEIVE_POLL_EVENT).onReceivePollEvent(game, object, crud);
+				active.invoker(GamePackageEvents.RECEIVE_POLL_EVENT).onReceivePollEvent(game, object, crud);
 			}
 		} else if ("create".equals(crud)) {
 			GameActionType.getFromId(type).ifPresent(actionType -> {

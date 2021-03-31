@@ -11,20 +11,27 @@ public final class GameEventListeners {
 	private final Reference2ObjectMap<GameEventType<?>, List<Object>> listeners = new Reference2ObjectOpenHashMap<>();
 	private final Reference2ObjectMap<GameEventType<?>, Object> invokers = new Reference2ObjectOpenHashMap<>();
 
-	public <T> void listen(GameEventType<T> event, T listener) {
-		List<Object> listeners = this.listeners.computeIfAbsent(event, e -> new ArrayList<>());
+	public <T> void listen(GameEventType<T> type, T listener) {
+		List<Object> listeners = this.listeners.computeIfAbsent(type, e -> new ArrayList<>());
 		listeners.add(listener);
-		this.rebuildInvoker(event);
+		this.rebuildInvoker(type);
 	}
 
-	private <T> void rebuildInvoker(GameEventType<T> event) {
-		Object combined = event.combineUnchecked(this.listeners.get(event));
-		this.invokers.put(event, combined);
+	public <T> void unlisten(GameEventType<T> type, T listener) {
+		List<Object> listeners = this.listeners.get(type);
+		if (listeners != null && listeners.remove(listener)) {
+			this.rebuildInvoker(type);
+		}
+	}
+
+	private <T> void rebuildInvoker(GameEventType<T> type) {
+		Object combined = type.combineUnchecked(this.listeners.get(type));
+		this.invokers.put(type, combined);
 	}
 
 	@SuppressWarnings("unchecked")
 	@Nonnull
-	public <T> T invoker(GameEventType<T> event) {
-		return (T) this.invokers.computeIfAbsent(event, GameEventType::createEmpty);
+	public <T> T invoker(GameEventType<T> type) {
+		return (T) this.invokers.computeIfAbsent(type, GameEventType::createEmpty);
 	}
 }

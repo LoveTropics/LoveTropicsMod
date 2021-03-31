@@ -4,9 +4,7 @@ import com.lovetropics.minigames.common.core.game.GameManager;
 import com.lovetropics.minigames.common.core.game.IGameInstance;
 import com.lovetropics.minigames.common.core.game.PlayerRole;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
-import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
-import com.lovetropics.minigames.common.core.game.behavior.event.GameLifecycleEvents;
-import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
+import com.lovetropics.minigames.common.core.game.behavior.event.*;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.entity.player.ServerPlayerEntity;
@@ -15,10 +13,6 @@ import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.BossInfo;
 import net.minecraft.world.server.ServerBossInfo;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.Consumer;
 
 public final class TimedGameBehavior implements IGameBehavior {
 	public static final Codec<TimedGameBehavior> CODEC = RecordCodecBuilder.create(instance -> {
@@ -33,8 +27,6 @@ public final class TimedGameBehavior implements IGameBehavior {
 	private final long closeTime;
 	private final ServerBossInfo timerBar;
 
-	private final List<Consumer<IGameInstance>> finishListeners = new ArrayList<>();
-
 	public TimedGameBehavior(long length, long closeTime, boolean timerBar) {
 		this.length = length;
 		this.closeTime = length + closeTime;
@@ -47,10 +39,6 @@ public final class TimedGameBehavior implements IGameBehavior {
 		events.listen(GamePlayerEvents.LEAVE, this::onPlayerLeave);
 		events.listen(GameLifecycleEvents.FINISH, this::onFinish);
 		events.listen(GameLifecycleEvents.TICK, this::onTick);
-	}
-
-	public void onFinish(Consumer<IGameInstance> listener) {
-		this.finishListeners.add(listener);
 	}
 
 	// TODO: GameBossBar which accepts these events
@@ -81,9 +69,7 @@ public final class TimedGameBehavior implements IGameBehavior {
 		}
 
 		if (ticks == length) {
-			for (Consumer<IGameInstance> listener : finishListeners) {
-				listener.accept(game);
-			}
+			game.invoker(GameLogicEvents.GAME_OVER).onGameOver(game);
 		}
 
 		if (ticks % 20 == 0 && timerBar != null) {

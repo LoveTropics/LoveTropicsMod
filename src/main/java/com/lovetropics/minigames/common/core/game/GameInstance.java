@@ -2,22 +2,22 @@ package com.lovetropics.minigames.common.core.game;
 
 import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.client.minigame.ClientRoleMessage;
+import com.lovetropics.minigames.common.core.game.behavior.BehaviorMap;
+import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameLifecycleEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
-import com.lovetropics.minigames.common.util.Scheduler;
 import com.lovetropics.minigames.common.core.game.map.GameMap;
-import com.lovetropics.minigames.common.core.map.MapRegions;
-import com.lovetropics.minigames.common.core.game.behavior.BehaviorMap;
-import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
-import com.lovetropics.minigames.common.core.game.behavior.GameBehaviorType;
 import com.lovetropics.minigames.common.core.game.polling.MinigameRegistrations;
+import com.lovetropics.minigames.common.core.game.state.GameStateMap;
 import com.lovetropics.minigames.common.core.game.statistics.GameStatistics;
 import com.lovetropics.minigames.common.core.game.statistics.PlayerKey;
 import com.lovetropics.minigames.common.core.game.statistics.StatisticKey;
-import com.lovetropics.minigames.common.core.network.LoveTropicsNetwork;
 import com.lovetropics.minigames.common.core.integration.GameInstanceTelemetry;
 import com.lovetropics.minigames.common.core.integration.Telemetry;
+import com.lovetropics.minigames.common.core.map.MapRegions;
+import com.lovetropics.minigames.common.core.network.LoveTropicsNetwork;
+import com.lovetropics.minigames.common.util.Scheduler;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.command.CommandSource;
@@ -29,7 +29,6 @@ import net.minecraft.util.Unit;
 import net.minecraft.util.math.vector.Vector2f;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.fml.network.PacketDistributor;
@@ -68,6 +67,7 @@ public class GameInstance implements IGameInstance
     private final GameInstanceTelemetry telemetry;
 
     private final GameEventListeners events = new GameEventListeners();
+    private final GameStateMap state = new GameStateMap();
 
     private GameInstance(IGameDefinition definition, MinecraftServer server, GameMap map, BehaviorMap behaviors, PlayerKey initiator) {
         this.definition = definition;
@@ -119,7 +119,7 @@ public class GameInstance implements IGameInstance
         registrations.collectInto(server, participants, spectators, definition.getMaximumParticipantCount());
 
         try {
-            game.events().invoker(GameLifecycleEvents.ASSIGN_ROLES).assignRoles(game, participants, spectators);
+            game.invoker(GameLifecycleEvents.ASSIGN_ROLES).assignRoles(game, participants, spectators);
         } catch (Exception e) {
             return CompletableFuture.completedFuture(GameResult.fromException("Failed to dispatch assign roles event", e));
         }
@@ -139,7 +139,7 @@ public class GameInstance implements IGameInstance
 
         return Scheduler.INSTANCE.submit(s -> {
             try {
-                game.events().invoker(GameLifecycleEvents.START).start(game);
+                game.invoker(GameLifecycleEvents.START).start(game);
                 return GameResult.ok(game);
             } catch (Exception e) {
                 return GameResult.fromException("Failed to dispatch game start event", e);
@@ -154,14 +154,12 @@ public class GameInstance implements IGameInstance
 
     private GameResult<Unit> registerBehaviors() {
         for (IGameBehavior behavior : getBehaviors()) {
-            for (GameBehaviorType<? extends IGameBehavior> dependency : behavior.dependencies()) {
-                if (getBehaviors(dependency).isEmpty()) {
-                    return GameResult.error(new StringTextComponent(behavior + " is missing dependency on " + dependency + "!"));
-                }
-            }
+            behavior.registerState(state);
+        }
 
+        for (IGameBehavior behavior : getBehaviors()) {
             try {
-                behavior.register(this, events());
+                behavior.register(this, events);
             } catch (GameException e) {
                 return GameResult.error(e.getTextMessage());
             }
@@ -177,7 +175,7 @@ public class GameInstance implements IGameInstance
 
         if (player != null) {
             try {
-                events().invoker(GamePlayerEvents.LEAVE).onLeave(this, player);
+                invoker(GamePlayerEvents.LEAVE).onLeave(this, player);
             } catch (Exception e) {
                 LoveTropics.LOGGER.warn("Failed to dispatch player leave event", e);
             }
@@ -202,7 +200,7 @@ public class GameInstance implements IGameInstance
 
     private void onPlayerChangeRole(ServerPlayerEntity player, PlayerRole role, PlayerRole lastRole) {
         try {
-            events().invoker(GamePlayerEvents.CHANGE_ROLE).onChangeRole(this, player, role, lastRole);
+            invoker(GamePlayerEvents.CHANGE_ROLE).onChangeRole(this, player, role, lastRole);
         } catch (Exception e) {
             LoveTropics.LOGGER.warn("Failed to dispatch player change role event", e);
         }
@@ -214,13 +212,8 @@ public class GameInstance implements IGameInstance
     }
 
     @Override
-    public Collection<IGameBehavior> getBehaviors() {
-        return behaviors.getBehaviors();
-    }
-
-    @Override
-    public <T extends IGameBehavior> Collection<T> getBehaviors(GameBehaviorType<T> type) {
-        return behaviors.getBehaviors(type);
+    public BehaviorMap getBehaviors() {
+        return behaviors;
     }
 
     @Override
@@ -229,7 +222,7 @@ public class GameInstance implements IGameInstance
             allPlayers.add(player);
 
             try {
-                events().invoker(GamePlayerEvents.JOIN).onJoin(this, player, role);
+                invoker(GamePlayerEvents.JOIN).onJoin(this, player, role);
             } catch (Exception e) {
                 LoveTropics.LOGGER.warn("Failed to dispatch player join event", e);
             }
@@ -264,7 +257,7 @@ public class GameInstance implements IGameInstance
     }
 
     @Override
-    public PlayerSet getPlayers() {
+    public PlayerSet getAllPlayers() {
         return this.allPlayers;
     }
 
@@ -281,10 +274,8 @@ public class GameInstance implements IGameInstance
     @Override
     public CommandSource getCommandSource() {
         if (this.commandSource == null) {
-            String unlocalizedName = definition.getUnlocalizedName();
-            ITextComponent text = new StringTextComponent(unlocalizedName);
-            ServerWorld world = getWorld();
-            this.commandSource = new CommandSource(ICommandSource.DUMMY, Vector3d.ZERO, Vector2f.ZERO, world, 4, unlocalizedName, text, this.server, null);
+            ITextComponent name = definition.getName();
+            this.commandSource = new CommandSource(ICommandSource.DUMMY, Vector3d.ZERO, Vector2f.ZERO, getWorld(), 4, name.getString(), name, this.server, null);
         }
 
         return this.commandSource;
@@ -305,7 +296,6 @@ public class GameInstance implements IGameInstance
         return server.getWorld(dimension);
     }
 
-    @Override
     public void update() {
         ticks++;
     }
@@ -327,12 +317,17 @@ public class GameInstance implements IGameInstance
     }
 
     @Override
+    public GameStateMap getState() {
+        return state;
+    }
+
+    @Override
     public PlayerKey getInitiator() {
         return initiator;
     }
 
     @Override
-    public GameEventListeners events() {
+    public GameEventListeners getEvents() {
         return events;
     }
 
