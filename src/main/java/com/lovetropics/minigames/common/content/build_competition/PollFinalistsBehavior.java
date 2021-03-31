@@ -3,7 +3,7 @@ package com.lovetropics.minigames.common.content.build_competition;
 import com.google.common.collect.Iterables;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
-import com.lovetropics.minigames.common.core.game.ControlCommand;
+import com.lovetropics.minigames.common.core.game.control.ControlCommand;
 import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.IGameInstance;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
@@ -58,7 +58,7 @@ public class PollFinalistsBehavior implements IGameBehavior {
 
 	@Override
 	public void register(IGameInstance game, EventRegistrar events) throws GameException {
-		game.addControlCommand("start_runoff", ControlCommand.forAdmins(source -> {
+		game.getControlCommands().add("start_runoff", ControlCommand.forAdmins(source -> {
 			try {
 				PlayerList players = source.getServer().getPlayerList();
 				players.getPlayers().forEach(p -> p.removeTag(winnerTag));
@@ -147,13 +147,13 @@ public class PollFinalistsBehavior implements IGameBehavior {
 		}
 	}
 
-	public class PollEvent {
+	public static class PollEvent {
 
 		int id;
 		List<Option> options;
 	}
 
-	public class Option {
+	public static class Option {
 
 	    char key;
 	    String title;

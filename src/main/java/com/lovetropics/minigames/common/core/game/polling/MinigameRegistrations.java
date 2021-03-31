@@ -74,7 +74,7 @@ public final class MinigameRegistrations {
 	}
 
 	public boolean remove(UUID id) {
-		return any.remove(id) || participants.remove(id) || spectators.remove(id);
+		return any.remove(id) | participants.remove(id) | spectators.remove(id);
 	}
 
 	public boolean contains(UUID id) {

@@ -1,7 +1,7 @@
 package com.lovetropics.minigames.common.core.command.game;
 
-import com.lovetropics.minigames.common.core.game.SingleGameManager;
 import com.lovetropics.minigames.common.core.game.IGameInstance;
+import com.lovetropics.minigames.common.core.game.SingleGameManager;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePackageEvents;
 import com.lovetropics.minigames.common.core.game.behavior.instances.donation.DonationPackageBehavior;
 import com.lovetropics.minigames.common.core.integration.game_actions.GamePackage;
@@ -9,7 +9,6 @@ import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.minecraft.command.CommandSource;
@@ -38,14 +37,14 @@ public class GamePackageCommand {
 	private static CompletableFuture<Suggestions> suggestPackages(final CommandContext<CommandSource> context, final SuggestionsBuilder builder) {
 		IGameInstance active = SingleGameManager.INSTANCE.getActiveGame();
 		if (active != null) {
-			return ISuggestionProvider.suggest(active.getBehaviors().values().stream()
+			return ISuggestionProvider.suggest(active.getBehaviors().stream()
 					.filter(b -> b instanceof DonationPackageBehavior)
 					.map(b -> ((DonationPackageBehavior)b).getPackageType()), builder);
 		}
 		return Suggestions.empty();
 	}
 
-	private static int spawnPackage(CommandContext<CommandSource> ctx, ServerPlayerEntity target) throws CommandSyntaxException {
+	private static int spawnPackage(CommandContext<CommandSource> ctx, ServerPlayerEntity target) {
 		IGameInstance active = SingleGameManager.INSTANCE.getActiveGame();
 		if (active != null) {
 			String type = StringArgumentType.getString(ctx, "id");

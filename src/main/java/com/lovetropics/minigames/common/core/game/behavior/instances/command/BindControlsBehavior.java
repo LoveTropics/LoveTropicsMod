@@ -1,8 +1,9 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances.command;
 
-import com.lovetropics.minigames.common.core.game.ControlCommand;
-import com.lovetropics.minigames.common.core.game.GameControllable;
+import com.lovetropics.minigames.common.core.game.ProtoGame;
+import com.lovetropics.minigames.common.core.game.control.ControlCommand;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
+import com.lovetropics.minigames.common.core.game.control.GameControlCommands;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
@@ -38,13 +39,13 @@ public final class BindControlsBehavior extends CommandInvokeBehavior {
 	}
 
 	@Override
-	protected void registerControls(GameControllable game) {
+	protected void registerControls(ProtoGame game, GameControlCommands controlCommands) {
 		for (Map.Entry<ControlCommand.Scope, Map<String, List<String>>> entry : scopedCommands.entrySet()) {
 			ControlCommand.Scope scope = entry.getKey();
 			Map<String, List<String>> commands = entry.getValue();
 
 			for (String control : commands.keySet()) {
-				game.addControlCommand(control, new ControlCommand(scope, source -> invoke(control, source)));
+				controlCommands.add(control, new ControlCommand(scope, source -> invoke(control, source)));
 			}
 		}
 	}

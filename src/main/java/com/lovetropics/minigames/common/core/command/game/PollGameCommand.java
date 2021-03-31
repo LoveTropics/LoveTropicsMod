@@ -24,7 +24,7 @@ public class PollGameCommand {
 			.then(argument("minigame_id", ResourceLocationArgument.resourceLocation())
 		              .suggests((ctx, sb) -> ISuggestionProvider.suggest(
 		                      GameConfigs.GAME_CONFIGS.values().stream()
-		                          .map(IGameDefinition::getID)
+		                          .map(IGameDefinition::getId)
 		                          .map(ResourceLocation::toString), sb))
 		              .requires(s -> s.hasPermissionLevel(2))
 			.executes(c -> {

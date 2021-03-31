@@ -2,6 +2,7 @@ package com.lovetropics.minigames.common.core.game;
 
 import com.lovetropics.minigames.common.core.game.state.GameStateMap;
 import com.lovetropics.minigames.common.core.game.statistics.GameStatistics;
+import com.lovetropics.minigames.common.core.game.statistics.PlayerKey;
 import com.lovetropics.minigames.common.core.integration.GameInstanceTelemetry;
 import com.lovetropics.minigames.common.core.map.MapRegions;
 import net.minecraft.command.CommandSource;
@@ -15,8 +16,7 @@ import net.minecraft.world.server.ServerWorld;
  * the running minigame. Also holds the definition to process the content
  * within the minigame.
  */
-public interface IGameInstance extends ProtoGame, GameControllable
-{
+public interface IGameInstance extends ProtoGame {
     /**
      * Adds the player to this minigame with the given role, or sets the players role if they are already added.
      * This method will also remove the player from any other role they are contained within.
@@ -88,6 +88,8 @@ public interface IGameInstance extends ProtoGame, GameControllable
     GameInstanceTelemetry getTelemetry();
 
     GameStateMap getState();
+
+    PlayerKey getInitiator();
 
     default void close() {}
 }

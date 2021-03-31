@@ -103,7 +103,7 @@ public final class Telemetry {
 		}
 	}
 
-	public GameInstanceTelemetry openMinigame(IGameInstance minigame) {
+	public GameInstanceTelemetry openGame(IGameInstance minigame) {
 		return GameInstanceTelemetry.open(minigame, this);
 	}
 

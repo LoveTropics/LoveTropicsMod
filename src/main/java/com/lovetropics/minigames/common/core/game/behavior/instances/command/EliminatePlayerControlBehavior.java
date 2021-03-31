@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances.command;
 
-import com.lovetropics.minigames.common.core.game.ControlCommand;
+import com.lovetropics.minigames.common.core.game.control.ControlCommand;
 import com.lovetropics.minigames.common.core.game.IGameInstance;
 import com.lovetropics.minigames.common.core.game.PlayerRole;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
@@ -13,7 +13,7 @@ public final class EliminatePlayerControlBehavior implements IGameBehavior {
 
 	@Override
 	public void register(IGameInstance game, EventRegistrar events) {
-		game.addControlCommand("eliminate", ControlCommand.forAdmins(source -> {
+		game.getControlCommands().add("eliminate", ControlCommand.forAdmins(source -> {
 			ServerPlayerEntity player = source.asPlayer();
 			if (!game.getSpectators().contains(player.getUniqueID())) {
 				game.addPlayer(player, PlayerRole.SPECTATOR);

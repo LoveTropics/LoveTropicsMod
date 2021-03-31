@@ -12,8 +12,8 @@ import java.util.UUID;
 public abstract class GameAction implements Comparable<GameAction> {
     public static final Codec<LocalDateTime> TIME_CODEC = MoreCodecs.localDateTime(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS"));
 
-    public UUID uuid;
-    public LocalDateTime triggerTime;
+    public final UUID uuid;
+    public final LocalDateTime triggerTime;
 
     protected GameAction(final UUID uuid, final LocalDateTime triggerTime) {
         this.uuid = uuid;

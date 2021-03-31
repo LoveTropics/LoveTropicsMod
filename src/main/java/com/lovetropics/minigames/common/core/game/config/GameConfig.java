@@ -71,12 +71,12 @@ public final class GameConfig implements IGameDefinition {
 	}
 
 	@Override
-	public ResourceLocation getID() {
+	public ResourceLocation getId() {
 		return id;
 	}
 
 	@Override
-	public ResourceLocation getDisplayID() {
+	public ResourceLocation getDisplayId() {
 		return displayId;
 	}
 

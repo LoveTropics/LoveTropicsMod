@@ -126,7 +126,7 @@ public final class GameInstanceTelemetry {
 		payload.addProperty("id", instanceId.toString());
 
 		JsonObject minigame = new JsonObject();
-		minigame.addProperty("id", definition.getDisplayID().toString());
+		minigame.addProperty("id", definition.getDisplayId().toString());
 		minigame.addProperty("telemetry_key", definition.getTelemetryKey());
 		minigame.addProperty("name", definition.getName().getString());
 		payload.add("minigame", minigame);

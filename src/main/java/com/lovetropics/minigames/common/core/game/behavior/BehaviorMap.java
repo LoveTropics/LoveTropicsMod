@@ -4,10 +4,10 @@ import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Multimap;
 import com.lovetropics.minigames.common.core.game.config.BehaviorReference;
 
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Optional;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 public final class BehaviorMap implements Iterable<IGameBehavior> {
 	private final Multimap<GameBehaviorType<?>, IGameBehavior> behaviors;
@@ -25,25 +25,12 @@ public final class BehaviorMap implements Iterable<IGameBehavior> {
 		return new BehaviorMap(behaviors);
 	}
 
-	public Collection<IGameBehavior> values() {
-		return behaviors.values();
-	}
-
-	@SuppressWarnings("unchecked")
-	public <T extends IGameBehavior> Collection<T> get(GameBehaviorType<T> type) {
-		return (Collection<T>) behaviors.get(type);
-	}
-
-	public <T extends IGameBehavior> Optional<T> getOne(GameBehaviorType<T> type) {
-		return get(type).stream().findFirst();
-	}
-
-	public <T extends IGameBehavior> T getOneOrThrow(GameBehaviorType<T> type) {
-		return getOne(type).orElseThrow(RuntimeException::new);
-	}
-
 	@Override
 	public Iterator<IGameBehavior> iterator() {
 		return this.behaviors.values().iterator();
+	}
+
+	public Stream<IGameBehavior> stream() {
+		return StreamSupport.stream(spliterator(), false);
 	}
 }
