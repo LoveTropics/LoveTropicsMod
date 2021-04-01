@@ -25,7 +25,8 @@ public final class CommandEventsBehavior extends CommandInvokeBehavior {
 		events.listen(GameLifecycleEvents.START, game -> this.invoke("start"));
 		events.listen(GameLifecycleEvents.TICK, game -> this.invoke("update"));
 		events.listen(GameLifecycleEvents.FINISH, game -> this.invoke("finish"));
-		events.listen(GameLifecycleEvents.POST_FINISH, game -> this.invoke("post_finish"));
+		events.listen(GameLifecycleEvents.STOP, game -> this.invoke("stop"));
+		events.listen(GameLifecycleEvents.POST_STOP, game -> this.invoke("post_stop"));
 		events.listen(GameLifecycleEvents.CANCEL, game -> this.invoke("cancel"));
 
 		events.listen(GamePlayerEvents.JOIN, this::onPlayerJoin);

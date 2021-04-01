@@ -20,7 +20,7 @@ public class WeatherControlsBehavior implements IGameBehavior {
 	public void register(IGameInstance game, EventRegistrar events) {
 		controller = WeatherControllerManager.forWorld(game.getWorld());
 
-		events.listen(GameLifecycleEvents.FINISH, g -> controller.reset());
+		events.listen(GameLifecycleEvents.STOP, g -> controller.reset());
 
 		GameControlCommands controls = game.getControlCommands();
 		controls.add("start_heatwave", ControlCommand.forAdmins(source -> controller.setHeatwave(true)));

@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.common.core.command.game;
 
-import com.lovetropics.minigames.client.data.TropicraftLangKeys;
+import com.lovetropics.minigames.client.data.LoveTropicsLangKeys;
 import com.lovetropics.minigames.common.core.game.GameResult;
 import com.lovetropics.minigames.common.core.game.IGameManager;
 import com.lovetropics.minigames.common.core.game.polling.PollingGameInstance;
@@ -24,7 +24,7 @@ public class StartGameCommand {
 			.executes(c -> {
 				PollingGameInstance polling = IGameManager.get().getPollingGame();
 				if (polling == null) {
-					throw new SimpleCommandExceptionType(new TranslationTextComponent(TropicraftLangKeys.COMMAND_NO_MINIGAME_POLLING)).create();
+					throw new SimpleCommandExceptionType(new TranslationTextComponent(LoveTropicsLangKeys.COMMAND_NO_MINIGAME_POLLING)).create();
 				}
 
 				CompletableFuture<GameResult<ITextComponent>> future;

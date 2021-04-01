@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.common.core.command.game;
 
-import com.lovetropics.minigames.client.data.TropicraftLangKeys;
+import com.lovetropics.minigames.client.data.LoveTropicsLangKeys;
 import com.lovetropics.minigames.common.core.game.IGameInstance;
 import com.lovetropics.minigames.common.core.game.IGameManager;
 import com.mojang.brigadier.CommandDispatcher;
@@ -18,7 +18,7 @@ public class CancelGameCommand {
 			.executes(c -> GameCommand.executeMinigameAction(() -> {
 				IGameInstance game = IGameManager.get().getActiveGame();
 				if (game == null) {
-					throw new SimpleCommandExceptionType(new TranslationTextComponent(TropicraftLangKeys.COMMAND_NO_MINIGAME)).create();
+					throw new SimpleCommandExceptionType(new TranslationTextComponent(LoveTropicsLangKeys.COMMAND_NO_MINIGAME)).create();
 				}
 				return IGameManager.get().cancel(game);
 			}, c.getSource())))

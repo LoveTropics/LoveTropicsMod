@@ -55,7 +55,7 @@ public final class TrashCollectionBehavior implements IGameBehavior {
 	@Override
 	public void register(IGameInstance game, EventRegistrar events) throws GameException {
 		events.listen(GameLifecycleEvents.START, this::onStart);
-		events.listen(GameLifecycleEvents.FINISH, this::onFinish);
+		events.listen(GameLifecycleEvents.STOP, this::onFinish);
 		events.listen(GamePlayerEvents.JOIN,this::onPlayerJoin);
 		events.listen(GamePlayerEvents.LEFT_CLICK_BLOCK, this::onPlayerLeftClickBlock);
 		events.listen(GamePlayerEvents.BREAK_BLOCK, this::onPlayerBreakBlock);

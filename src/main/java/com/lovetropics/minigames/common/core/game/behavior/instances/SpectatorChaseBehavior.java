@@ -27,7 +27,7 @@ public final class SpectatorChaseBehavior implements IGameBehavior {
 		events.listen(GamePlayerEvents.CHANGE_ROLE, (game, player, role, lastRole) -> this.onPlayerJoin(game, player, role));
 		events.listen(GamePlayerEvents.LEAVE, this::onPlayerLeave);
 
-		events.listen(GameLifecycleEvents.FINISH, this::onFinish);
+		events.listen(GameLifecycleEvents.STOP, this::onFinish);
 	}
 
 	private void onPlayerJoin(IGameInstance game, ServerPlayerEntity player, PlayerRole role) {

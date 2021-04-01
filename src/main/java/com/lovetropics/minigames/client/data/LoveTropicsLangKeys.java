@@ -7,7 +7,7 @@ import com.lovetropics.minigames.Constants;
  * to merge generated lang json and another lang json from
  * resources directory.
  */
-public class TropicraftLangKeys
+public class LoveTropicsLangKeys
 {
     public static final String COMMAND_UNREGISTERED_MINIGAME = Constants.MODID + ".command.unregistered_minigame";
     public static final String COMMAND_NOT_REGISTERED_FOR_MINIGAME = Constants.MODID + ".command.not_registered_minigame";
