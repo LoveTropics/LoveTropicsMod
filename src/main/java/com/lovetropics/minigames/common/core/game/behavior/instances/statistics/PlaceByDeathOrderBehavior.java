@@ -25,7 +25,7 @@ public final class PlaceByDeathOrderBehavior implements IGameBehavior {
 	public void register(IGameInstance registerGame, EventRegistrar events) {
 		events.listen(GamePlayerEvents.DEATH, this::onPlayerDeath);
 		events.listen(GamePlayerEvents.LEAVE, this::onPlayerLeave);
-		events.listen(GameLifecycleEvents.FINISH, this::onFinish);
+		events.listen(GameLifecycleEvents.STOP, this::onFinish);
 	}
 
 	private ActionResultType onPlayerDeath(IGameInstance game, ServerPlayerEntity player, DamageSource source) {

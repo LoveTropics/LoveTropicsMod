@@ -32,7 +32,7 @@ public final class GlobalGameWidgets {
 
 		events.listen(GamePlayerEvents.JOIN, (g, player, role) -> widget.addPlayer(player));
 		events.listen(GamePlayerEvents.LEAVE, (g, player) -> widget.removePlayer(player));
-		events.listen(GameLifecycleEvents.FINISH, g -> widget.close());
+		events.listen(GameLifecycleEvents.STOP, g -> widget.close());
 
 		return widget;
 	}

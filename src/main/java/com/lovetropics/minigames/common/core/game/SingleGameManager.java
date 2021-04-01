@@ -3,7 +3,7 @@ package com.lovetropics.minigames.common.core.game;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.lovetropics.minigames.Constants;
-import com.lovetropics.minigames.client.data.TropicraftLangKeys;
+import com.lovetropics.minigames.client.data.LoveTropicsLangKeys;
 import com.lovetropics.minigames.client.minigame.ClientMinigameMessage;
 import com.lovetropics.minigames.client.minigame.ClientRoleMessage;
 import com.lovetropics.minigames.client.minigame.PlayerCountsMessage;
@@ -19,11 +19,11 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.management.PlayerList;
-import net.minecraft.util.Util;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.*;
-import net.minecraft.util.text.event.ClickEvent;
-import net.minecraft.util.text.event.HoverEvent;
+import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.util.text.TextFormatting;
+import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.World;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -58,6 +58,8 @@ public class SingleGameManager implements IGameManager {
 	 */
 	private PollingGameInstance pollingGame;
 
+	private final GameEventDispatcher eventDispatcher = new GameEventDispatcher(this);
+
 	@Nullable
 	@Override
 	public IGameInstance getActiveGame() {
@@ -70,9 +72,9 @@ public class SingleGameManager implements IGameManager {
 		return pollingGame;
 	}
 
-	private GameResult<ITextComponent> close(IGameInstance game) {
+	private GameResult<ITextComponent> stop(IGameInstance game) {
 		if (this.activeGame != game) {
-			return GameResult.error(new TranslationTextComponent(TropicraftLangKeys.COMMAND_NO_MINIGAME));
+			return GameResult.error(new TranslationTextComponent(LoveTropicsLangKeys.COMMAND_NO_MINIGAME));
 		}
 		this.activeGame = null;
 
@@ -80,9 +82,9 @@ public class SingleGameManager implements IGameManager {
 			IGameDefinition definition = game.getDefinition();
 
 			try {
-				game.invoker(GameLifecycleEvents.FINISH).stop(game);
+				game.invoker(GameLifecycleEvents.STOP).stop(game);
 			} catch (Exception e) {
-				return GameResult.fromException("Failed to dispatch finish event", e);
+				return GameResult.fromException("Failed to dispatch stop event", e);
 			}
 
 			List<ServerPlayerEntity> players = Lists.newArrayList(game.getAllPlayers());
@@ -90,24 +92,18 @@ public class SingleGameManager implements IGameManager {
 				game.removePlayer(player);
 			}
 
-			// Send all players a message letting them know the minigame has finished
-			for (ServerPlayerEntity player : game.getServer().getPlayerList().getPlayers()) {
-				IFormattableTextComponent message = new TranslationTextComponent(TropicraftLangKeys.COMMAND_FINISHED_MINIGAME,
-						definition.getName().deepCopy().mergeStyle(TextFormatting.ITALIC)).mergeStyle(TextFormatting.AQUA)
-						.mergeStyle(TextFormatting.GOLD);
-				player.sendStatusMessage(message, false);
-			}
+			PlayerSet.ofServer(game.getServer()).sendMessage(GameMessages.forGame(game).finished());
 
 			try {
-				game.invoker(GameLifecycleEvents.POST_FINISH).stop(game);
+				game.invoker(GameLifecycleEvents.POST_STOP).stop(game);
 			} catch (Exception e) {
-				return GameResult.fromException("Failed to dispatch post finish event", e);
+				return GameResult.fromException("Failed to dispatch post stop event", e);
 			}
 
-			ITextComponent minigameName = definition.getName().deepCopy().mergeStyle(TextFormatting.AQUA);
-			return GameResult.ok(new TranslationTextComponent(TropicraftLangKeys.COMMAND_STOPPED_MINIGAME, minigameName).mergeStyle(TextFormatting.GREEN));
+			ITextComponent gameName = definition.getName().deepCopy().mergeStyle(TextFormatting.AQUA);
+			return GameResult.ok(new TranslationTextComponent(LoveTropicsLangKeys.COMMAND_STOPPED_MINIGAME, gameName).mergeStyle(TextFormatting.GREEN));
 		} catch (Exception e) {
-			return GameResult.fromException("Unknown error finishing minigame", e);
+			return GameResult.fromException("Unknown error stopping game", e);
 		} finally {
 			game.close();
 			LoveTropicsNetwork.CHANNEL.send(PacketDistributor.ALL.noArg(), new ClientMinigameMessage());
@@ -116,11 +112,17 @@ public class SingleGameManager implements IGameManager {
 
 	@Override
 	public GameResult<ITextComponent> finish(IGameInstance game) {
-		GameResult<ITextComponent> result = close(game);
+		GameResult<ITextComponent> result = stop(game);
 		if (result.isOk()) {
 			game.getTelemetry().finish(game.getStatistics());
 		} else {
 			game.getTelemetry().cancel();
+		}
+
+		try {
+			game.invoker(GameLifecycleEvents.FINISH).stop(game);
+		} catch (Exception e) {
+			return GameResult.fromException("Failed to dispatch finish event", e);
 		}
 
 		return result;
@@ -136,19 +138,19 @@ public class SingleGameManager implements IGameManager {
 			return GameResult.fromException("Failed to dispatch cancel event", e);
 		}
 
-		return close(game);
+		return stop(game);
 	}
 
 	@Override
 	public GameResult<ITextComponent> startPolling(IGameDefinition game, ServerPlayerEntity initiator) {
 		// Make sure there isn't a currently running minigame
 		if (this.activeGame != null) {
-			return GameResult.error(new TranslationTextComponent(TropicraftLangKeys.COMMAND_MINIGAME_ALREADY_STARTED));
+			return GameResult.error(new TranslationTextComponent(LoveTropicsLangKeys.COMMAND_MINIGAME_ALREADY_STARTED));
 		}
 
 		// Make sure another minigame isn't already polling
 		if (this.pollingGame != null) {
-			return GameResult.error(new TranslationTextComponent(TropicraftLangKeys.COMMAND_ANOTHER_MINIGAME_POLLING));
+			return GameResult.error(new TranslationTextComponent(LoveTropicsLangKeys.COMMAND_ANOTHER_MINIGAME_POLLING));
 		}
 
 		GameResult<PollingGameInstance> pollResult = PollingGameInstance.create(initiator.server, game, PlayerKey.from(initiator));
@@ -164,18 +166,7 @@ public class SingleGameManager implements IGameManager {
 			return GameResult.fromException("Failed to dispatch polling start event", e);
 		}
 
-		ITextComponent name = game.getName().deepCopy().mergeStyle(TextFormatting.ITALIC, TextFormatting.AQUA);
-		Style linkStyle = Style.EMPTY
-				.setUnderlined(true)
-				.setFormatting(TextFormatting.BLUE)
-				.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/minigame join"))
-				.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new StringTextComponent("Join this minigame")));
-
-		ITextComponent link = new StringTextComponent("/minigame join").setStyle(linkStyle);
-		ITextComponent message = new TranslationTextComponent(TropicraftLangKeys.COMMAND_MINIGAME_POLLING, name, link)
-				.mergeStyle(TextFormatting.GOLD);
-
-		initiator.server.getPlayerList().func_232641_a_(message, ChatType.SYSTEM, Util.DUMMY_UUID);
+		PlayerSet.ofServer(initiator.server).sendMessage(GameMessages.forGame(game).startPolling());
 
 		this.pollingGame = polling;
 		LoveTropicsNetwork.CHANNEL.send(PacketDistributor.ALL.noArg(), new ClientMinigameMessage(this.pollingGame));
@@ -186,7 +177,7 @@ public class SingleGameManager implements IGameManager {
 			sendWarningToOperators(initiator.server, warning);
 		}
 
-		return GameResult.ok(new TranslationTextComponent(TropicraftLangKeys.COMMAND_MINIGAME_POLLED));
+		return GameResult.ok(new TranslationTextComponent(LoveTropicsLangKeys.COMMAND_MINIGAME_POLLED));
 	}
 
 	private void sendWarningToOperators(MinecraftServer server, ITextComponent warning) {
@@ -201,22 +192,21 @@ public class SingleGameManager implements IGameManager {
 	@Override
 	public GameResult<ITextComponent> stopPolling(PollingGameInstance game) {
 		if (this.pollingGame != game) {
-			return GameResult.error(new TranslationTextComponent(TropicraftLangKeys.COMMAND_NO_MINIGAME_POLLING));
+			return GameResult.error(new TranslationTextComponent(LoveTropicsLangKeys.COMMAND_NO_MINIGAME_POLLING));
 		}
 		this.pollingGame = null;
 
-		ITextComponent name = game.getDefinition().getName().deepCopy().mergeStyle(TextFormatting.ITALIC, TextFormatting.AQUA);
-		ITextComponent message = new TranslationTextComponent(TropicraftLangKeys.COMMAND_MINIGAME_STOPPED_POLLING, name).mergeStyle(TextFormatting.RED);
-		game.getServer().getPlayerList().func_232641_a_(message, ChatType.SYSTEM, Util.DUMMY_UUID);
+		GameMessages gameMessages = GameMessages.forGame(game);
+		PlayerSet.ofServer(game.getServer()).sendMessage(gameMessages.stopPolling());
 
 		LoveTropicsNetwork.CHANNEL.send(PacketDistributor.ALL.noArg(), new ClientMinigameMessage());
-		return GameResult.ok(new TranslationTextComponent(TropicraftLangKeys.COMMAND_STOP_POLL).mergeStyle(TextFormatting.GREEN));
+		return GameResult.ok(gameMessages.stopPollSuccess());
 	}
 
 	@Override
 	public CompletableFuture<GameResult<ITextComponent>> start(PollingGameInstance game) {
 		if (this.pollingGame != game) {
-			return CompletableFuture.completedFuture(GameResult.error(new TranslationTextComponent(TropicraftLangKeys.COMMAND_NO_MINIGAME_POLLING)));
+			return CompletableFuture.completedFuture(GameResult.error(new TranslationTextComponent(LoveTropicsLangKeys.COMMAND_NO_MINIGAME_POLLING)));
 		}
 
 		return game.start().thenApply(result -> {
@@ -224,7 +214,7 @@ public class SingleGameManager implements IGameManager {
 				this.pollingGame = null;
 				this.activeGame = result.getOk();
 				LoveTropicsNetwork.CHANNEL.send(PacketDistributor.ALL.noArg(), new ClientMinigameMessage(this.activeGame));
-				return GameResult.ok(new TranslationTextComponent(TropicraftLangKeys.COMMAND_MINIGAME_STARTED).mergeStyle(TextFormatting.GREEN));
+				return GameResult.ok(GameMessages.forGame(game).startSuccess());
 			} else {
 				return result.castError();
 			}
@@ -243,7 +233,7 @@ public class SingleGameManager implements IGameManager {
 
 		PollingGameInstance polling = this.pollingGame;
 		if (polling == null) {
-			return GameResult.error(new TranslationTextComponent(TropicraftLangKeys.COMMAND_NO_MINIGAME_POLLING));
+			return GameResult.error(new TranslationTextComponent(LoveTropicsLangKeys.COMMAND_NO_MINIGAME_POLLING));
 		}
 
 		// Client state is updated within this method to allow preconditions to be checked there
@@ -254,8 +244,7 @@ public class SingleGameManager implements IGameManager {
 	public GameResult<ITextComponent> removePlayer(ServerPlayerEntity player) {
 		GameInstance game = this.activeGame;
 		if (game != null && game.removePlayer(player)) {
-			ITextComponent name = game.getDefinition().getName();
-			return GameResult.ok(new TranslationTextComponent(TropicraftLangKeys.COMMAND_UNREGISTERED_MINIGAME, name).mergeStyle(TextFormatting.RED));
+			return GameResult.ok(GameMessages.forGame(game).unregisterSuccess());
 		}
 
 		PollingGameInstance polling = this.pollingGame;
@@ -264,7 +253,7 @@ public class SingleGameManager implements IGameManager {
 			return polling.removePlayer(player);
 		}
 
-		return GameResult.error(new TranslationTextComponent(TropicraftLangKeys.COMMAND_NO_MINIGAME));
+		return GameResult.error(new TranslationTextComponent(LoveTropicsLangKeys.COMMAND_NO_MINIGAME));
 	}
 
 	@SubscribeEvent

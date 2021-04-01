@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.common.core.game.polling;
 
-import com.lovetropics.minigames.client.data.TropicraftLangKeys;
+import com.lovetropics.minigames.client.data.LoveTropicsLangKeys;
 import com.lovetropics.minigames.client.minigame.ClientRoleMessage;
 import com.lovetropics.minigames.client.minigame.PlayerCountsMessage;
 import com.lovetropics.minigames.common.core.game.*;
@@ -15,7 +15,6 @@ import com.lovetropics.minigames.common.core.network.LoveTropicsNetwork;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraftforge.fml.network.PacketDistributor;
 
@@ -63,7 +62,7 @@ public final class PollingGameInstance implements ProtoGame {
 
 	public GameResult<ITextComponent> joinPlayerAs(ServerPlayerEntity player, @Nullable PlayerRole requestedRole) {
 		if (registrations.contains(player.getUniqueID())) {
-			return GameResult.error(new TranslationTextComponent(TropicraftLangKeys.COMMAND_MINIGAME_ALREADY_REGISTERED));
+			return GameResult.error(new TranslationTextComponent(LoveTropicsLangKeys.COMMAND_MINIGAME_ALREADY_REGISTERED));
 		}
 
 		try {
@@ -74,35 +73,30 @@ public final class PollingGameInstance implements ProtoGame {
 
 		registrations.add(player.getUniqueID(), requestedRole);
 
+		PlayerSet serverPlayers = PlayerSet.ofServer(server);
+		GameMessages gameMessages = GameMessages.forGame(definition);
+
 		if (registrations.participantCount() == definition.getMinimumParticipantCount()) {
-			PlayerSet.ofServer(server).sendMessage(new TranslationTextComponent(TropicraftLangKeys.COMMAND_ENOUGH_PLAYERS).mergeStyle(TextFormatting.AQUA));
+			serverPlayers.sendMessage(gameMessages.enoughPlayers());
 		}
 
-		ITextComponent playerName = player.getDisplayName().deepCopy().mergeStyle(TextFormatting.GOLD);
-		ITextComponent gameName = definition.getName().deepCopy().mergeStyle(TextFormatting.GREEN);
-
-		String message = requestedRole != PlayerRole.SPECTATOR ? "%s has joined the %s minigame!" : "%s has joined to spectate the %s minigame!";
-		PlayerSet.ofServer(server).sendMessage(new TranslationTextComponent(message, playerName, gameName).mergeStyle(TextFormatting.AQUA));
+		serverPlayers.sendMessage(gameMessages.playerJoined(player, requestedRole));
 
 		PlayerRole trueRole = requestedRole == null ? PlayerRole.PARTICIPANT : requestedRole;
 		LoveTropicsNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new ClientRoleMessage(trueRole));
 		LoveTropicsNetwork.CHANNEL.send(PacketDistributor.ALL.noArg(), new PlayerCountsMessage(trueRole, getMemberCount(trueRole)));
 
-		return GameResult.ok(
-				new TranslationTextComponent(
-						TropicraftLangKeys.COMMAND_REGISTERED_FOR_MINIGAME,
-						gameName.deepCopy().mergeStyle(TextFormatting.AQUA)
-				).mergeStyle(TextFormatting.GREEN)
-		);
+		return GameResult.ok(gameMessages.registerSuccess());
 	}
 
 	public GameResult<ITextComponent> removePlayer(ServerPlayerEntity player) {
 		if (!registrations.remove(player.getUniqueID())) {
-			return GameResult.error(new TranslationTextComponent(TropicraftLangKeys.COMMAND_NOT_REGISTERED_FOR_MINIGAME));
+			return GameResult.error(new TranslationTextComponent(LoveTropicsLangKeys.COMMAND_NOT_REGISTERED_FOR_MINIGAME));
 		}
 
+		GameMessages gameMessages = GameMessages.forGame(definition);
 		if (registrations.participantCount() == definition.getMinimumParticipantCount() - 1) {
-			PlayerSet.ofServer(server).sendMessage(new TranslationTextComponent(TropicraftLangKeys.COMMAND_NO_LONGER_ENOUGH_PLAYERS).mergeStyle(TextFormatting.RED));
+			PlayerSet.ofServer(server).sendMessage(gameMessages.noLongerEnoughPlayers());
 		}
 
 		LoveTropicsNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new ClientRoleMessage(null));
@@ -110,8 +104,7 @@ public final class PollingGameInstance implements ProtoGame {
 			LoveTropicsNetwork.CHANNEL.send(PacketDistributor.ALL.noArg(), new PlayerCountsMessage(role, getMemberCount(role)));
 		}
 
-		ITextComponent gameName = definition.getName().deepCopy().mergeStyle(TextFormatting.AQUA);
-		return GameResult.ok(new TranslationTextComponent(TropicraftLangKeys.COMMAND_UNREGISTERED_MINIGAME, gameName).mergeStyle(TextFormatting.RED));
+		return GameResult.ok(gameMessages.unregisterSuccess());
 	}
 
 	public CompletableFuture<GameResult<GameInstance>> start() {
@@ -124,12 +117,12 @@ public final class PollingGameInstance implements ProtoGame {
 						return CompletableFuture.completedFuture(result.castError());
 					}
 				}, server)
-				.handleAsync((result, throwable) -> {
+				.handle((result, throwable) -> {
 					if (throwable instanceof Exception) {
 						return GameResult.fromException("Unknown error starting minigame", (Exception) throwable);
 					}
 					return result;
-				}, server);
+				});
 	}
 
 	@Override

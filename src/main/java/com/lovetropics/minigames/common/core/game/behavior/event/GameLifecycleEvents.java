@@ -12,13 +12,19 @@ public final class GameLifecycleEvents {
 		}
 	});
 
-	public static final GameEventType<Stop> FINISH = GameEventType.create(Stop.class, listeners -> game -> {
+	public static final GameEventType<Stop> STOP = GameEventType.create(Stop.class, listeners -> game -> {
 		for (Stop listener : listeners) {
 			listener.stop(game);
 		}
 	});
 
-	public static final GameEventType<Stop> POST_FINISH = GameEventType.create(Stop.class, listeners -> game -> {
+	public static final GameEventType<Stop> POST_STOP = GameEventType.create(Stop.class, listeners -> game -> {
+		for (Stop listener : listeners) {
+			listener.stop(game);
+		}
+	});
+
+	public static final GameEventType<Stop> FINISH = GameEventType.create(Stop.class, listeners -> game -> {
 		for (Stop listener : listeners) {
 			listener.stop(game);
 		}

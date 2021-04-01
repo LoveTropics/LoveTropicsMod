@@ -55,7 +55,7 @@ public class SttWinLogicBehavior implements IGameBehavior {
 
 		events.listen(GameLifecycleEvents.TICK, game -> this.checkForGameEndCondition(game, game.getWorld()));
 
-		events.listen(GameLifecycleEvents.FINISH, game -> {
+		events.listen(GameLifecycleEvents.STOP, game -> {
 			this.minigameEnded = false;
 			this.minigameEndedTimer = 0;
 		});

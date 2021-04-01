@@ -61,7 +61,7 @@ public final class ConservationExplorationBehavior implements IGameBehavior {
 	@Override
 	public void register(IGameInstance game, EventRegistrar events) throws GameException {
 		events.listen(GameLifecycleEvents.START, this::onStart);
-		events.listen(GameLifecycleEvents.FINISH, this::onFinish);
+		events.listen(GameLifecycleEvents.STOP, this::onFinish);
 		
 		events.listen(GamePlayerEvents.JOIN, this::onPlayerJoin);
 		events.listen(GamePlayerEvents.INTERACT_ENTITY, this::onPlayerInteractEntity);

@@ -83,7 +83,7 @@ public final class TeamsBehavior implements IGameBehavior {
 	public void register(IGameInstance game, EventRegistrar events) {
 		events.listen(GameLifecycleEvents.ASSIGN_ROLES, this::assignPlayerRoles);
 		events.listen(GameLifecycleEvents.START, this::onStart);
-		events.listen(GameLifecycleEvents.FINISH, this::onFinish);
+		events.listen(GameLifecycleEvents.STOP, this::onFinish);
 
 		events.listen(GamePlayerEvents.CHANGE_ROLE, this::onPlayerChangeRole);
 		events.listen(GamePlayerEvents.LEAVE, this::onPlayerLeave);
