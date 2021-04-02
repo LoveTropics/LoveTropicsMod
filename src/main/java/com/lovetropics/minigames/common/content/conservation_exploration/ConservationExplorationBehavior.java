@@ -142,7 +142,7 @@ public final class ConservationExplorationBehavior implements IGameBehavior {
 				.modifyStyle(style -> {
 					return style
 							.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new StringTextComponent("Teleport to this entity")))
-							.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/minigame " + teleportCommand));
+							.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/game " + teleportCommand));
 				});
 
 		minigame.getAllPlayers().sendMessage(message.appendSibling(teleportLink));
@@ -153,7 +153,7 @@ public final class ConservationExplorationBehavior implements IGameBehavior {
 				.modifyStyle(style -> {
 					return style
 							.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new StringTextComponent("Move on to the next creature")))
-							.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/minigame next_creature"));
+							.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/game next_creature"));
 				});
 
 		ITextComponent nextMessage = new StringTextComponent("Host: Once we are finished viewing and discussing this entity, ")

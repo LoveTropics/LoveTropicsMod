@@ -175,7 +175,7 @@ public class LoveTropics {
             prov.add(LoveTropicsLangKeys.COMMAND_MINIGAME_ALREADY_STARTED, "Another minigame is already in progress! Stop that one first before polling another.");
             prov.add(LoveTropicsLangKeys.COMMAND_ANOTHER_MINIGAME_POLLING, "Another minigame is already polling! Stop that one first before polling another.");
             prov.add(LoveTropicsLangKeys.COMMAND_MINIGAME_POLLING, "Minigame %s is polling. Type %s to get a chance to play!");
-            prov.add(LoveTropicsLangKeys.COMMAND_SORRY_ALREADY_STARTED, "Sorry, the current minigame has already started! You can join as a spectator with /minigame spectate");
+            prov.add(LoveTropicsLangKeys.COMMAND_SORRY_ALREADY_STARTED, "Sorry, the current minigame has already started! You can join as a spectator with /game spectate");
             prov.add(LoveTropicsLangKeys.COMMAND_NO_MINIGAME_POLLING, "There is no minigame currently polling.");
             prov.add(LoveTropicsLangKeys.COMMAND_REGISTERED_FOR_MINIGAME, "You have registered for this minigame!");
             prov.add(LoveTropicsLangKeys.COMMAND_NOT_REGISTERED_FOR_MINIGAME, "You are not currently registered for any minigames.");
