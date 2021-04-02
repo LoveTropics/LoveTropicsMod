@@ -28,10 +28,10 @@ public class GameDonateCommand {
 	}
 
 	private static int execute(CommandSource source, String packageType) throws CommandSyntaxException {
-		final IGameInstance instance = IGameManager.get().getActiveGame();
-		if (instance != null) {
+		IGameInstance game = IGameManager.get().getGameFor(source);
+		if (game != null) {
 			GamePackage gamePackage = new GamePackage(packageType, source.getName(), source.asPlayer().getUniqueID());
-			instance.invoker(GamePackageEvents.RECEIVE_PACKAGE).onReceivePackage(instance, gamePackage);
+			game.invoker(GamePackageEvents.RECEIVE_PACKAGE).onReceivePackage(game, gamePackage);
 			return Command.SINGLE_SUCCESS;
 		}
 		return 0;

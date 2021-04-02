@@ -1,7 +1,6 @@
 package com.lovetropics.minigames.common.core.game;
 
 import com.lovetropics.minigames.LoveTropics;
-import com.lovetropics.minigames.common.core.game.behavior.event.GameLifecycleEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameLivingEntityEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameWorldEvents;
@@ -14,8 +13,6 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IServerWorld;
 import net.minecraft.world.chunk.IChunk;
 import net.minecraft.world.server.ServerWorld;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.living.LivingEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
@@ -27,13 +24,11 @@ import net.minecraftforge.event.world.ChunkEvent;
 import net.minecraftforge.event.world.ExplosionEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
-public final class GameEventDispatcher implements AutoCloseable {
+public final class GameEventDispatcher {
 	private final IGameLookup gameLookup;
 
 	public GameEventDispatcher(IGameLookup gameLookup) {
 		this.gameLookup = gameLookup;
-
-		MinecraftForge.EVENT_BUS.register(this);
 	}
 
 	@SubscribeEvent
@@ -135,20 +130,6 @@ public final class GameEventDispatcher implements AutoCloseable {
 	}
 
 	@SubscribeEvent
-	public void onServerTick(TickEvent.ServerTickEvent event) {
-		if (event.phase == TickEvent.Phase.END) {
-			for (IGameInstance game : gameLookup.getAllGames()) {
-				try {
-					game.invoker(GameLifecycleEvents.TICK).tick(game);
-				} catch (Exception e) {
-					LoveTropics.LOGGER.warn("Failed to dispatch world tick event", e);
-					IGameManager.get().cancel(game);
-				}
-			}
-		}
-	}
-
-	@SubscribeEvent
 	public void onPlayerInteractEntity(PlayerInteractEvent.EntityInteract event) {
 		IGameInstance game = gameLookup.getGameFor(event.getPlayer());
 		if (game != null) {
@@ -218,10 +199,5 @@ public final class GameEventDispatcher implements AutoCloseable {
 				LoveTropics.LOGGER.warn("Failed to dispatch explosion event", e);
 			}
 		}
-	}
-
-	@Override
-	public void close() {
-		MinecraftForge.EVENT_BUS.unregister(this);
 	}
 }

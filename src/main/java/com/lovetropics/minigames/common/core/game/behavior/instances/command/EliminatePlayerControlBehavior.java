@@ -15,8 +15,8 @@ public final class EliminatePlayerControlBehavior implements IGameBehavior {
 	public void register(IGameInstance game, EventRegistrar events) {
 		game.getControlCommands().add("eliminate", ControlCommand.forAdmins(source -> {
 			ServerPlayerEntity player = source.asPlayer();
-			if (!game.getSpectators().contains(player.getUniqueID())) {
-				game.addPlayer(player, PlayerRole.SPECTATOR);
+			if (!game.getSpectators().contains(player)) {
+				game.setPlayerRole(player, PlayerRole.SPECTATOR);
 				player.setHealth(20.0F);
 			}
 		}));

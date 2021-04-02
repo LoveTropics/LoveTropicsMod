@@ -12,45 +12,31 @@ import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
 
 /**
- * An instance used to track which participants and spectators are inside
- * the running minigame. Also holds the definition to process the content
- * within the minigame.
+ * Represents an active game instance and all of its state.
+ * Managed by a {@link IGameManager} and interfaced with through behaviors and events.
  */
-public interface IGameInstance extends ProtoGame {
-    /**
-     * Adds the player to this minigame with the given role, or sets the players role if they are already added.
-     * This method will also remove the player from any other role they are contained within.
-     *
-     * @param player the player to add
-     */
-    void addPlayer(ServerPlayerEntity player, PlayerRole role);
-
-    /**
-     * Removes the player from this minigame.
-     * @param player the player to remove
-     * @return
-     */
-    boolean removePlayer(ServerPlayerEntity player);
-
-    /**
-     * @return The list of all players that are a part of this minigame instance.
+public interface IGameInstance extends ProtoGameInstance {
+	/**
+     * @return The list of all players that are a part of this game, including both participants and spectators.
      */
     PlayerSet getAllPlayers();
 
     /**
-     * @return The list of players within this minigame instance that belong to the given role
+     * @return The list of players within this game instance that belong to the given role
      */
     PlayerSet getPlayersWithRole(PlayerRole role);
 
+    boolean setPlayerRole(ServerPlayerEntity player, PlayerRole role);
+
     /**
-     * @return The list of active participants that are playing within the minigame instance.
+     * @return The list of active participants that are playing within the game instance.
      */
     default PlayerSet getParticipants() {
         return getPlayersWithRole(PlayerRole.PARTICIPANT);
     }
 
     /**
-     * @return The list of spectators that are observing the minigame instance.
+     * @return The list of spectators that are observing the game instance.
      */
     default PlayerSet getSpectators() {
         return getPlayersWithRole(PlayerRole.SPECTATOR);
@@ -62,24 +48,25 @@ public interface IGameInstance extends ProtoGame {
     }
 
     /**
-     * Used for executing commands of datapacks within the minigames.
-     * @return The command source for this minigame instance.
+     * Used for executing commands of datapacks within the games.
+     * @return The command source for this game instance.
      */
     CommandSource getCommandSource();
 
     MapRegions getMapRegions();
 
+    /**
+     * @return the world that this game takes place within
+     */
     ServerWorld getWorld();
 
     /**
-     * The targeted dimension you'd like this minigame to teleport players to
-     * when they join as players or spectators.
-     * @return The dimension type players are teleported to when joining.
+     * @return the dimension that this game takes places within
      */
     RegistryKey<World> getDimension();
 
     /**
-     * @return The ticks since minigame start
+     * @return the tick counter since the game started
      */
     long ticks();
 
@@ -91,5 +78,5 @@ public interface IGameInstance extends ProtoGame {
 
     PlayerKey getInitiator();
 
-    default void close() {}
+    default void close() {};
 }

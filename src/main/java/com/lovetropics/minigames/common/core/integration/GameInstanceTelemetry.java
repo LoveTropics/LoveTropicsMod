@@ -6,7 +6,6 @@ import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.common.config.ConfigLT;
 import com.lovetropics.minigames.common.core.game.IGameDefinition;
 import com.lovetropics.minigames.common.core.game.IGameInstance;
-import com.lovetropics.minigames.common.core.game.IGameManager;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePackageEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
@@ -145,10 +144,7 @@ public final class GameInstanceTelemetry {
 
 	void handlePayload(JsonObject object, String type, String crud) {
 		if ("poll".equals(type)) {
-			IGameInstance active = IGameManager.get().getActiveGame();
-			if (active.getDefinition() == definition) {
-				active.invoker(GamePackageEvents.RECEIVE_POLL_EVENT).onReceivePollEvent(game, object, crud);
-			}
+			game.invoker(GamePackageEvents.RECEIVE_POLL_EVENT).onReceivePollEvent(game, object, crud);
 		} else if ("create".equals(crud)) {
 			GameActionType.getFromId(type).ifPresent(actionType -> {
 				JsonObject payload = object.getAsJsonObject("payload");

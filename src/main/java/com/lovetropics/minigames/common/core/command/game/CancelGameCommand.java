@@ -1,6 +1,7 @@
 package com.lovetropics.minigames.common.core.command.game;
 
 import com.lovetropics.minigames.client.data.LoveTropicsLangKeys;
+import com.lovetropics.minigames.common.core.game.GameMessages;
 import com.lovetropics.minigames.common.core.game.IGameInstance;
 import com.lovetropics.minigames.common.core.game.IGameManager;
 import com.mojang.brigadier.CommandDispatcher;
@@ -16,11 +17,11 @@ public class CancelGameCommand {
 			literal("game")
 			.then(literal("cancel").requires(s -> s.hasPermissionLevel(2))
 			.executes(c -> GameCommand.executeMinigameAction(() -> {
-				IGameInstance game = IGameManager.get().getActiveGame();
+				IGameInstance game = IGameManager.get().getGameFor(c.getSource());
 				if (game == null) {
 					throw new SimpleCommandExceptionType(new TranslationTextComponent(LoveTropicsLangKeys.COMMAND_NO_MINIGAME)).create();
 				}
-				return IGameManager.get().cancel(game);
+				return IGameManager.get().cancel(game).map(u -> GameMessages.forGame(game).stopSuccess());
 			}, c.getSource())))
 		);
 	}

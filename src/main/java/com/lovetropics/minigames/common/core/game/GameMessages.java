@@ -21,7 +21,7 @@ public final class GameMessages {
 		return new GameMessages(game);
 	}
 
-	public static GameMessages forGame(ProtoGame game) {
+	public static GameMessages forGame(ProtoGameInstance game) {
 		return new GameMessages(game.getDefinition());
 	}
 
@@ -90,6 +90,10 @@ public final class GameMessages {
 
 	public ITextComponent startSuccess() {
 		return formatGamePositive(new TranslationTextComponent(COMMAND_MINIGAME_STARTED));
+	}
+
+	public ITextComponent stopSuccess() {
+		return formatGamePositive(new TranslationTextComponent(LoveTropicsLangKeys.COMMAND_STOPPED_MINIGAME, gameName()));
 	}
 
 	public ITextComponent stopPollSuccess() {

@@ -2,6 +2,7 @@ package com.lovetropics.minigames.common.core.game;
 
 import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.client.minigame.ClientRoleMessage;
+import com.lovetropics.minigames.client.minigame.PlayerCountsMessage;
 import com.lovetropics.minigames.common.core.game.behavior.BehaviorMap;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
@@ -45,6 +46,7 @@ import java.util.concurrent.CompletableFuture;
  * used to specify the rulesets for the minigame.
  */
 public class GameInstance implements IGameInstance {
+    private final String instanceId;
     private final MinecraftServer server;
     private final IGameDefinition definition;
     private final GameMap map;
@@ -66,7 +68,8 @@ public class GameInstance implements IGameInstance {
 
     private long startTime;
 
-    private GameInstance(MinecraftServer server, IGameDefinition definition, GameMap map, BehaviorMap behaviors, PlayerKey initiator) {
+    private GameInstance(String instanceId, MinecraftServer server, IGameDefinition definition, GameMap map, BehaviorMap behaviors, PlayerKey initiator) {
+        this.instanceId = instanceId;
         this.server = server;
         this.definition = definition;
         this.map = map;
@@ -86,10 +89,10 @@ public class GameInstance implements IGameInstance {
     }
 
     public static CompletableFuture<GameResult<GameInstance>> start(
-            MinecraftServer server, IGameDefinition definition, GameMap map, BehaviorMap behaviors,
+            String instanceId, MinecraftServer server, IGameDefinition definition, GameMap map, BehaviorMap behaviors,
             PlayerKey initiator, GameRegistrations registrations
     ) {
-        GameInstance game = new GameInstance(server, definition, map, behaviors, initiator);
+        GameInstance game = new GameInstance(instanceId, server, definition, map, behaviors, initiator);
 
         GameResult<Unit> result = game.registerBehaviors();
         if (result.isError()) {
@@ -153,6 +156,11 @@ public class GameInstance implements IGameInstance {
         }
     }
 
+    @Override
+    public String getInstanceId() {
+        return instanceId;
+    }
+
 	@Override
 	public GameStatus getStatus() {
 		return GameStatus.ACTIVE;
@@ -169,21 +177,38 @@ public class GameInstance implements IGameInstance {
     }
 
     @Override
-    public void addPlayer(ServerPlayerEntity player, PlayerRole role) {
-        if (!allPlayers.contains(player)) {
-            allPlayers.add(player);
+    public boolean requestPlayerJoin(ServerPlayerEntity player, @Nullable PlayerRole requestedRole) {
+        return addPlayer(player, PlayerRole.SPECTATOR);
+    }
+
+    public boolean addPlayer(ServerPlayerEntity player, PlayerRole role) {
+        if (allPlayers.add(player)) {
+            roles.get(role).add(player);
 
             try {
                 invoker(GamePlayerEvents.JOIN).onJoin(this, player, role);
             } catch (Exception e) {
                 LoveTropics.LOGGER.warn("Failed to dispatch player join event", e);
             }
+
+            LoveTropicsNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new ClientRoleMessage(role));
+            sendPlayerCountUpdate(role);
+
+            return true;
+        } else {
+            return setPlayerRole(player, role);
+        }
+    }
+
+    @Override
+    public boolean setPlayerRole(ServerPlayerEntity player, PlayerRole role) {
+        PlayerRole lastRole = getRoleFor(player);
+        if (lastRole == null) {
+            return false;
         }
 
-        PlayerRole lastRole = getRoleFor(player);
-        roles.get(role).add(player);
-
         if (lastRole != role) {
+            roles.get(role).add(player);
             roles.get(lastRole).remove(player);
 
             try {
@@ -191,9 +216,19 @@ public class GameInstance implements IGameInstance {
             } catch (Exception e) {
                 LoveTropics.LOGGER.warn("Failed to dispatch player change role event", e);
             }
-        }
 
-        LoveTropicsNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new ClientRoleMessage(role));
+            LoveTropicsNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new ClientRoleMessage(role));
+            sendPlayerCountUpdate(role);
+            sendPlayerCountUpdate(lastRole);
+
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    private void sendPlayerCountUpdate(PlayerRole role) {
+        LoveTropicsNetwork.CHANNEL.send(PacketDistributor.ALL.noArg(), new PlayerCountsMessage(role, getMemberCount(role)));
     }
 
     @Nullable
