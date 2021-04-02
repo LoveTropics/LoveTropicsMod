@@ -149,7 +149,7 @@ public final class TeamsBehavior implements IGameBehavior {
 			Style linkStyle = Style.EMPTY
 					.setFormatting(team.text)
 					.setUnderlined(true)
-					.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/minigame join_team_" + team.key))
+					.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/game join_team_" + team.key))
 					.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new StringTextComponent("Join " + team.name)));
 
 			player.sendStatusMessage(
