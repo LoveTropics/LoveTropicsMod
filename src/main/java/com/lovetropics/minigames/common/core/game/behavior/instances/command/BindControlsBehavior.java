@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances.command;
 
-import com.lovetropics.minigames.common.core.game.ProtoGame;
+import com.lovetropics.minigames.common.core.game.ProtoGameInstance;
 import com.lovetropics.minigames.common.core.game.control.ControlCommand;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.control.GameControlCommands;
@@ -39,7 +39,7 @@ public final class BindControlsBehavior extends CommandInvokeBehavior {
 	}
 
 	@Override
-	protected void registerControls(ProtoGame game, GameControlCommands controlCommands) {
+	protected void registerControls(ProtoGameInstance game, GameControlCommands controlCommands) {
 		for (Map.Entry<ControlCommand.Scope, Map<String, List<String>>> entry : scopedCommands.entrySet()) {
 			ControlCommand.Scope scope = entry.getKey();
 			Map<String, List<String>> commands = entry.getValue();

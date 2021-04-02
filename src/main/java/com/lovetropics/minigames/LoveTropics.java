@@ -10,7 +10,7 @@ import com.lovetropics.minigames.common.content.survive_the_tide.SurviveTheTide;
 import com.lovetropics.minigames.common.content.survive_the_tide.entity.DriftwoodRider;
 import com.lovetropics.minigames.common.core.command.MapCommand;
 import com.lovetropics.minigames.common.core.command.game.*;
-import com.lovetropics.minigames.common.core.game.IGameInstance;
+import com.lovetropics.minigames.common.core.game.GameEventDispatcher;
 import com.lovetropics.minigames.common.core.game.IGameManager;
 import com.lovetropics.minigames.common.core.game.behavior.GameBehaviorTypes;
 import com.lovetropics.minigames.common.core.integration.Telemetry;
@@ -103,6 +103,9 @@ public class LoveTropics {
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, ConfigLT.SERVER_CONFIG);
 
         GameBehaviorTypes.REGISTER.register(modBus);
+
+        GameEventDispatcher eventDispatcher = new GameEventDispatcher(IGameManager.get());
+        MinecraftForge.EVENT_BUS.register(eventDispatcher);
     }
 
     private static final Pattern QUALIFIER = Pattern.compile("-\\w+\\+\\d+");
@@ -156,10 +159,7 @@ public class LoveTropics {
     }
 
     private void onServerStopping(final FMLServerStoppingEvent event) {
-        IGameInstance game = IGameManager.get().getActiveGame();
-        if (game != null) {
-            IGameManager.get().cancel(game);
-        }
+        IGameManager.get().close();
 
         Telemetry.INSTANCE.sendClose();
     }
@@ -177,7 +177,7 @@ public class LoveTropics {
             prov.add(LoveTropicsLangKeys.COMMAND_MINIGAME_POLLING, "Minigame %s is polling. Type %s to get a chance to play!");
             prov.add(LoveTropicsLangKeys.COMMAND_SORRY_ALREADY_STARTED, "Sorry, the current minigame has already started! You can join as a spectator with /minigame spectate");
             prov.add(LoveTropicsLangKeys.COMMAND_NO_MINIGAME_POLLING, "There is no minigame currently polling.");
-            prov.add(LoveTropicsLangKeys.COMMAND_REGISTERED_FOR_MINIGAME, "You have registered for Minigame %s. When the minigame starts, random registered players will be picked to play. Please wait for hosts to start the minigame. You can continue to do what you were doing until then.");
+            prov.add(LoveTropicsLangKeys.COMMAND_REGISTERED_FOR_MINIGAME, "You have registered for this minigame!");
             prov.add(LoveTropicsLangKeys.COMMAND_NOT_REGISTERED_FOR_MINIGAME, "You are not currently registered for any minigames.");
             prov.add(LoveTropicsLangKeys.COMMAND_UNREGISTERED_MINIGAME, "You have unregistered for Minigame %s.");
             prov.add(LoveTropicsLangKeys.COMMAND_ENTITY_NOT_PLAYER, "Entity that attempted command is not player.");

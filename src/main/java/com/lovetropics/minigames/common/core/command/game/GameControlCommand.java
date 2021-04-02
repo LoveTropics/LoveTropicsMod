@@ -1,7 +1,6 @@
 package com.lovetropics.minigames.common.core.command.game;
 
 import com.lovetropics.minigames.common.core.game.IGameManager;
-import com.lovetropics.minigames.common.core.game.SingleGameManager;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
@@ -19,12 +18,14 @@ public class GameControlCommand {
                 .then(argument("control", StringArgumentType.string())
                     .suggests((context, builder) -> {
                         IGameManager manager = IGameManager.get();
-                        return ISuggestionProvider.suggest(manager.getControlInvoker().list(context.getSource()), builder);
+                        CommandSource source = context.getSource();
+                        return ISuggestionProvider.suggest(manager.getControlInvoker(source).list(source), builder);
                     })
                     .executes(ctx -> {
                         String control = StringArgumentType.getString(ctx, "control");
                         IGameManager manager = IGameManager.get();
-                        manager.getControlInvoker().invoke(control, ctx.getSource());
+                        CommandSource source = ctx.getSource();
+                        manager.getControlInvoker(source).invoke(control, source);
                         return Command.SINGLE_SUCCESS;
                     })
                 )

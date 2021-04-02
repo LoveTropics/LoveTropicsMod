@@ -2,18 +2,20 @@ package com.lovetropics.minigames.common.core.game;
 
 import com.lovetropics.minigames.common.core.game.control.ControlCommandInvoker;
 import com.lovetropics.minigames.common.core.game.polling.PollingGameInstance;
+import net.minecraft.command.CommandSource;
 import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.Unit;
 
 import javax.annotation.Nullable;
+import java.util.Collection;
 import java.util.concurrent.CompletableFuture;
 
 /**
- * Specification for a minigame manager. Used to register minigame definitions
- * as well as hold the currently running minigame instance if applicable.
+ * Specification for a game manager. Used to register game definitions
+ * as well as hold the currently running game instance if applicable.
  * <p>
  * Implementations get to define the logic for polling, starting, stopping and
- * registering for polling minigames. Each of these actions return an ActionResult,
+ * registering for polling games. Each of these actions return an ActionResult,
  * which are fed into Minecraft Commands to send these messages back to players
  * which execute the commands.
  */
@@ -23,71 +25,47 @@ public interface IGameManager extends IGameLookup {
 	}
 
 	/**
-	 * Holds metadata for which players
-	 * are participants and which are spectators.
+	 * Starts polling the given game, allowing for players to register to join.
 	 *
-	 * @return The actively running minigame instance.
-	 */
-	@Nullable
-	IGameInstance getActiveGame();
-
-	@Nullable
-	PollingGameInstance getPollingGame();
-
-	/**
-	 * Finishes the actively running minigame, teleporting players back to
-	 * their original state before joining the minigame.
-	 */
-	GameResult<ITextComponent> finish(IGameInstance game);
-
-	/**
-	 * Cancels the actively running minigame. Inherents all logic of {@link IGameManager#finish(IGameInstance)}
-	 */
-	GameResult<ITextComponent> cancel(IGameInstance game);
-
-	/**
-	 * Starts polling the minigame.
-	 *
-	 * @param game The minigame to be polled
-	 * @param initiator the player starting this minigame
+	 * @param game The game to be polled
+	 * @param initiator the player starting this game
 	 * @return The result of the polling attempt.
 	 */
-	GameResult<ITextComponent> startPolling(IGameDefinition game, ServerPlayerEntity initiator);
+	GameResult<PollingGameInstance> startPolling(IGameDefinition game, ServerPlayerEntity initiator);
 
 	/**
-	 * Stops polling an actively polling minigame.
+	 * Stops polling the given actively polling game instance.
 	 *
-	 * @return The result of stopping the polling of an actively polling minigame.
+	 * @return The result of stopping the polling of an actively polling game.
 	 */
-	GameResult<ITextComponent> stopPolling(PollingGameInstance game);
+	GameResult<Unit> stopPolling(PollingGameInstance game);
 
 	/**
-	 * Starts an actively polling minigame if it has at least the minimum amount of
-	 * participants registered to the minigame, specified by the minigame definition.
+	 * Starts the given actively polling game if it has at least the minimum amount of
+	 * participants registered to the game, specified by the game definition.
 	 *
 	 * @return The result of the start attempt.
 	 */
-	CompletableFuture<GameResult<ITextComponent>> start(PollingGameInstance game);
+	CompletableFuture<GameResult<IGameInstance>> start(PollingGameInstance game);
 
 	/**
-	 * Registers a player for the currently polling minigame. Puts them in a queue
-	 * to be selected as either a participant or a spectator when the minigame starts.
-	 *
-	 * @param player The player being registered for the currently polling minigame.
-	 * @param requestedRole The role that this player has requested to join as, or null if they have no preference
-	 * @return The result of the register attempt.
+	 * Finishes the actively running game, indicating that the game exited normally.
+	 * Generally, this means that games will upload results such as statistics and report a winner to players.
 	 */
-	GameResult<ITextComponent> joinPlayerAs(ServerPlayerEntity player, @Nullable PlayerRole requestedRole);
+	GameResult<Unit> finish(IGameInstance game);
 
 	/**
-	 * Unregisters a player for a currently polling minigame if they've registered
-	 * previously. Removes them from the queue for the minigame if they don't want
-	 * to be a part of it when it starts.
-	 *
-	 * @param player The player being unregistered for the currently polling minigame/
-	 * @return The result of the unregister attempt.
+	 * Cancels the actively running game, indicating that it did not exit normally.
+	 * Generally, this means games will not upload results such as statistics or report a winner to players.
 	 */
-	GameResult<ITextComponent> removePlayer(ServerPlayerEntity player);
+	GameResult<Unit> cancel(IGameInstance game);
 
-	ControlCommandInvoker getControlInvoker();
+	ControlCommandInvoker getControlInvoker(CommandSource source);
+
+	Collection<ProtoGameInstance> getAllGames();
+
+	@Nullable
+	ProtoGameInstance getGameById(String id);
+
+	void close();
 }

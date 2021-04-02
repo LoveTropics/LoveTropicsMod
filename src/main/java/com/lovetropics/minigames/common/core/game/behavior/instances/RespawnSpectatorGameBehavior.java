@@ -32,8 +32,8 @@ public final class RespawnSpectatorGameBehavior implements IGameBehavior {
 	private ActionResultType onPlayerDeath(IGameInstance game, ServerPlayerEntity player, DamageSource source) {
 		player.inventory.dropAllItems();
 
-		if (!game.getSpectators().contains(player.getUniqueID())) {
-			game.addPlayer(player, PlayerRole.SPECTATOR);
+		if (!game.getSpectators().contains(player)) {
+			game.setPlayerRole(player, PlayerRole.SPECTATOR);
 			player.setHealth(20.0F);
 
 			sendDeathMessage(game, player);

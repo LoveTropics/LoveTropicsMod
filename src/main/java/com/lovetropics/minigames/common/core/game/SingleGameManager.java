@@ -3,9 +3,9 @@ package com.lovetropics.minigames.common.core.game;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.lovetropics.minigames.Constants;
+import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.client.data.LoveTropicsLangKeys;
 import com.lovetropics.minigames.client.minigame.ClientMinigameMessage;
-import com.lovetropics.minigames.client.minigame.ClientRoleMessage;
 import com.lovetropics.minigames.client.minigame.PlayerCountsMessage;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameLifecycleEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePollingEvents;
@@ -14,17 +14,20 @@ import com.lovetropics.minigames.common.core.game.polling.PollingGameInstance;
 import com.lovetropics.minigames.common.core.game.statistics.PlayerKey;
 import com.lovetropics.minigames.common.core.integration.Telemetry;
 import com.lovetropics.minigames.common.core.network.LoveTropicsNetwork;
+import net.minecraft.command.CommandSource;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.management.PlayerList;
+import net.minecraft.util.Unit;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.World;
+import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -41,6 +44,7 @@ import java.util.concurrent.CompletableFuture;
  * minigames at once.
  */
 // TODO: support multiple concurrent minigames
+// TODO: a wrapper type for game instances where changing polling->active just means changing the inner mutable state?
 @Mod.EventBusSubscriber(modid = Constants.MODID)
 public class SingleGameManager implements IGameManager {
 	static final SingleGameManager INSTANCE = new SingleGameManager();
@@ -58,29 +62,13 @@ public class SingleGameManager implements IGameManager {
 	 */
 	private PollingGameInstance pollingGame;
 
-	private final GameEventDispatcher eventDispatcher = new GameEventDispatcher(this);
-
-	@Nullable
-	@Override
-	public IGameInstance getActiveGame() {
-		return this.activeGame;
-	}
-
-	@Nullable
-	@Override
-	public PollingGameInstance getPollingGame() {
-		return pollingGame;
-	}
-
-	private GameResult<ITextComponent> stop(IGameInstance game) {
+	private GameResult<Unit> stop(IGameInstance game) {
 		if (this.activeGame != game) {
 			return GameResult.error(new TranslationTextComponent(LoveTropicsLangKeys.COMMAND_NO_MINIGAME));
 		}
 		this.activeGame = null;
 
 		try {
-			IGameDefinition definition = game.getDefinition();
-
 			try {
 				game.invoker(GameLifecycleEvents.STOP).stop(game);
 			} catch (Exception e) {
@@ -100,8 +88,7 @@ public class SingleGameManager implements IGameManager {
 				return GameResult.fromException("Failed to dispatch post stop event", e);
 			}
 
-			ITextComponent gameName = definition.getName().deepCopy().mergeStyle(TextFormatting.AQUA);
-			return GameResult.ok(new TranslationTextComponent(LoveTropicsLangKeys.COMMAND_STOPPED_MINIGAME, gameName).mergeStyle(TextFormatting.GREEN));
+			return GameResult.ok();
 		} catch (Exception e) {
 			return GameResult.fromException("Unknown error stopping game", e);
 		} finally {
@@ -111,8 +98,8 @@ public class SingleGameManager implements IGameManager {
 	}
 
 	@Override
-	public GameResult<ITextComponent> finish(IGameInstance game) {
-		GameResult<ITextComponent> result = stop(game);
+	public GameResult<Unit> finish(IGameInstance game) {
+		GameResult<Unit> result = stop(game);
 		if (result.isOk()) {
 			game.getTelemetry().finish(game.getStatistics());
 		} else {
@@ -129,7 +116,7 @@ public class SingleGameManager implements IGameManager {
 	}
 
 	@Override
-	public GameResult<ITextComponent> cancel(IGameInstance game) {
+	public GameResult<Unit> cancel(IGameInstance game) {
 		game.getTelemetry().cancel();
 
 		try {
@@ -142,7 +129,7 @@ public class SingleGameManager implements IGameManager {
 	}
 
 	@Override
-	public GameResult<ITextComponent> startPolling(IGameDefinition game, ServerPlayerEntity initiator) {
+	public GameResult<PollingGameInstance> startPolling(IGameDefinition game, ServerPlayerEntity initiator) {
 		// Make sure there isn't a currently running minigame
 		if (this.activeGame != null) {
 			return GameResult.error(new TranslationTextComponent(LoveTropicsLangKeys.COMMAND_MINIGAME_ALREADY_STARTED));
@@ -177,7 +164,7 @@ public class SingleGameManager implements IGameManager {
 			sendWarningToOperators(initiator.server, warning);
 		}
 
-		return GameResult.ok(new TranslationTextComponent(LoveTropicsLangKeys.COMMAND_MINIGAME_POLLED));
+		return GameResult.ok(polling);
 	}
 
 	private void sendWarningToOperators(MinecraftServer server, ITextComponent warning) {
@@ -190,7 +177,7 @@ public class SingleGameManager implements IGameManager {
 	}
 
 	@Override
-	public GameResult<ITextComponent> stopPolling(PollingGameInstance game) {
+	public GameResult<Unit> stopPolling(PollingGameInstance game) {
 		if (this.pollingGame != game) {
 			return GameResult.error(new TranslationTextComponent(LoveTropicsLangKeys.COMMAND_NO_MINIGAME_POLLING));
 		}
@@ -200,97 +187,27 @@ public class SingleGameManager implements IGameManager {
 		PlayerSet.ofServer(game.getServer()).sendMessage(gameMessages.stopPolling());
 
 		LoveTropicsNetwork.CHANNEL.send(PacketDistributor.ALL.noArg(), new ClientMinigameMessage());
-		return GameResult.ok(gameMessages.stopPollSuccess());
+
+		return GameResult.ok();
 	}
 
 	@Override
-	public CompletableFuture<GameResult<ITextComponent>> start(PollingGameInstance game) {
+	public CompletableFuture<GameResult<IGameInstance>> start(PollingGameInstance game) {
 		if (this.pollingGame != game) {
 			return CompletableFuture.completedFuture(GameResult.error(new TranslationTextComponent(LoveTropicsLangKeys.COMMAND_NO_MINIGAME_POLLING)));
 		}
 
 		return game.start().thenApply(result -> {
 			if (result.isOk()) {
+				GameInstance resultGame = result.getOk();
 				this.pollingGame = null;
-				this.activeGame = result.getOk();
+				this.activeGame = resultGame;
 				LoveTropicsNetwork.CHANNEL.send(PacketDistributor.ALL.noArg(), new ClientMinigameMessage(this.activeGame));
-				return GameResult.ok(GameMessages.forGame(game).startSuccess());
+				return GameResult.ok(resultGame);
 			} else {
 				return result.castError();
 			}
 		});
-	}
-
-	@Override
-	public GameResult<ITextComponent> joinPlayerAs(ServerPlayerEntity player, @Nullable PlayerRole requestedRole) {
-		GameInstance game = this.activeGame;
-		if (game != null && !game.getAllPlayers().contains(player)) {
-			game.addPlayer(player, PlayerRole.SPECTATOR);
-			LoveTropicsNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new ClientRoleMessage(PlayerRole.SPECTATOR));
-			LoveTropicsNetwork.CHANNEL.send(PacketDistributor.ALL.noArg(), new PlayerCountsMessage(PlayerRole.SPECTATOR, game.getMemberCount(PlayerRole.SPECTATOR)));
-			return GameResult.ok(new StringTextComponent("You have joined the game as a spectator!").mergeStyle(TextFormatting.GREEN));
-		}
-
-		PollingGameInstance polling = this.pollingGame;
-		if (polling == null) {
-			return GameResult.error(new TranslationTextComponent(LoveTropicsLangKeys.COMMAND_NO_MINIGAME_POLLING));
-		}
-
-		// Client state is updated within this method to allow preconditions to be checked there
-		return polling.joinPlayerAs(player, requestedRole);
-	}
-
-	@Override
-	public GameResult<ITextComponent> removePlayer(ServerPlayerEntity player) {
-		GameInstance game = this.activeGame;
-		if (game != null && game.removePlayer(player)) {
-			return GameResult.ok(GameMessages.forGame(game).unregisterSuccess());
-		}
-
-		PollingGameInstance polling = this.pollingGame;
-		if (polling != null) {
-			// Client state is updated within this method to allow preconditions to be checked there
-			return polling.removePlayer(player);
-		}
-
-		return GameResult.error(new TranslationTextComponent(LoveTropicsLangKeys.COMMAND_NO_MINIGAME));
-	}
-
-	@SubscribeEvent
-	public static void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
-		ProtoGame game = INSTANCE.pollingGame;
-		if (game == null) {
-			game = INSTANCE.getActiveGame();
-		}
-		if (game != null) {
-			PacketDistributor.PacketTarget target = PacketDistributor.PLAYER.with(() -> (ServerPlayerEntity) event.getPlayer());
-			LoveTropicsNetwork.CHANNEL.send(target, new ClientMinigameMessage(game));
-			for (PlayerRole role : PlayerRole.values()) {
-				LoveTropicsNetwork.CHANNEL.send(target, new PlayerCountsMessage(role, game.getMemberCount(role)));
-			}
-		}
-	}
-
-	/**
-	 * When a player logs out, remove them from the currently running minigame instance
-	 * if they are inside, and teleport back them to their original state.
-	 * <p>
-	 * Also if they have registered for a minigame poll, they will be removed from the
-	 * list of registered players.
-	 */
-	@SubscribeEvent
-	public static void onPlayerLoggedOut(PlayerEvent.PlayerLoggedOutEvent event) {
-		ServerPlayerEntity player = (ServerPlayerEntity) event.getPlayer();
-
-		GameInstance game = INSTANCE.activeGame;
-		if (game != null) {
-			game.removePlayer(player);
-		}
-
-		PollingGameInstance polling = INSTANCE.pollingGame;
-		if (polling != null) {
-			polling.removePlayer(player);
-		}
 	}
 
 	@Nullable
@@ -326,17 +243,99 @@ public class SingleGameManager implements IGameManager {
 	}
 
 	@Override
-	public Collection<IGameInstance> getAllGames() {
-		return activeGame != null ? ImmutableList.of(activeGame) : ImmutableList.of();
+	public Collection<ProtoGameInstance> getAllGames() {
+		if (activeGame != null) {
+			return ImmutableList.of(activeGame);
+		} else if (pollingGame != null) {
+			return ImmutableList.of(pollingGame);
+		}
+		return null;
+	}
+
+	@Nullable
+	@Override
+	public ProtoGameInstance getGameById(String id) {
+		if (activeGame.getInstanceId().equals(id)) {
+			return activeGame;
+		} else if (pollingGame.getInstanceId().equals(id)) {
+			return pollingGame;
+		}
+		return null;
 	}
 
 	@Override
-	public ControlCommandInvoker getControlInvoker() {
-		if (activeGame != null) {
-			return activeGame.getControlCommands();
+	public ControlCommandInvoker getControlInvoker(CommandSource source) {
+		IGameInstance game = getGameFor(source);
+		if (game != null) {
+			return game.getControlCommands();
 		} else if (pollingGame != null) {
+			// TODO
 			return pollingGame.getControlCommands();
 		}
 		return ControlCommandInvoker.EMPTY;
+	}
+
+	@Override
+	public void close() {
+		if (activeGame != null) {
+			cancel(activeGame);
+		}
+		if (pollingGame != null) {
+			stopPolling(pollingGame);
+		}
+	}
+
+	// TODO: should these be separated from the specific game manager instance?
+	@SubscribeEvent
+	public static void onServerTick(TickEvent.ServerTickEvent event) {
+		if (event.phase == TickEvent.Phase.END) {
+			GameInstance game = INSTANCE.activeGame;
+			if (game != null) {
+				try {
+					game.invoker(GameLifecycleEvents.TICK).tick(game);
+				} catch (Exception e) {
+					LoveTropics.LOGGER.warn("Failed to dispatch world tick event", e);
+					INSTANCE.cancel(game);
+				}
+			}
+		}
+	}
+
+	@SubscribeEvent
+	public static void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
+		ProtoGameInstance game = INSTANCE.pollingGame;
+		if (game == null) {
+			game = INSTANCE.activeGame;
+		}
+
+		if (game != null) {
+			PacketDistributor.PacketTarget target = PacketDistributor.PLAYER.with(() -> (ServerPlayerEntity) event.getPlayer());
+			LoveTropicsNetwork.CHANNEL.send(target, new ClientMinigameMessage(game));
+			for (PlayerRole role : PlayerRole.ROLES) {
+				LoveTropicsNetwork.CHANNEL.send(target, new PlayerCountsMessage(role, game.getMemberCount(role)));
+			}
+		}
+	}
+
+	/**
+	 * When a player logs out, remove them from the currently running minigame instance
+	 * if they are inside, and teleport back them to their original state.
+	 * <p>
+	 * Also if they have registered for a minigame poll, they will be removed from the
+	 * list of registered players.
+	 */
+	@SubscribeEvent
+	public static void onPlayerLoggedOut(PlayerEvent.PlayerLoggedOutEvent event) {
+		ServerPlayerEntity player = (ServerPlayerEntity) event.getPlayer();
+
+		GameInstance game = INSTANCE.activeGame;
+		if (game != null) {
+			game.removePlayer(player);
+		}
+
+		PollingGameInstance polling = INSTANCE.pollingGame;
+		if (polling != null) {
+			polling.removePlayer(player);
+		}
 	}
 }

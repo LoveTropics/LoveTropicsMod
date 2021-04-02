@@ -1,7 +1,7 @@
 package com.lovetropics.minigames.client.minigame;
 
 import com.lovetropics.minigames.common.core.game.GameStatus;
-import com.lovetropics.minigames.common.core.game.ProtoGame;
+import com.lovetropics.minigames.common.core.game.ProtoGameInstance;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.network.NetworkEvent;
@@ -19,7 +19,7 @@ public class ClientMinigameMessage {
 		this(null, null, null, 0);
 	}
 
-	public ClientMinigameMessage(ProtoGame minigame) {
+	public ClientMinigameMessage(ProtoGameInstance minigame) {
 		this(minigame.getDefinition().getDisplayId(),
 			minigame.getDefinition().getTranslationKey(),
 			minigame.getStatus(),

@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.common.core.game.polling;
 
-import com.lovetropics.minigames.client.data.LoveTropicsLangKeys;
+import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.client.minigame.ClientRoleMessage;
 import com.lovetropics.minigames.client.minigame.PlayerCountsMessage;
 import com.lovetropics.minigames.common.core.game.*;
@@ -14,14 +14,14 @@ import com.lovetropics.minigames.common.core.game.statistics.PlayerKey;
 import com.lovetropics.minigames.common.core.network.LoveTropicsNetwork;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraftforge.fml.network.PacketDistributor;
+import org.apache.commons.lang3.RandomStringUtils;
 
 import javax.annotation.Nullable;
 import java.util.concurrent.CompletableFuture;
 
-public final class PollingGameInstance implements ProtoGame {
+public final class PollingGameInstance implements ProtoGameInstance {
+	private final String instanceId;
 	private final MinecraftServer server;
 	private final IGameDefinition definition;
 	private final PlayerKey initiator;
@@ -32,7 +32,8 @@ public final class PollingGameInstance implements ProtoGame {
 
 	private final GameRegistrations registrations = new GameRegistrations();
 
-	private PollingGameInstance(MinecraftServer server, IGameDefinition definition, PlayerKey initiator) {
+	private PollingGameInstance(String instanceId, MinecraftServer server, IGameDefinition definition, PlayerKey initiator) {
+		this.instanceId = instanceId;
 		this.server = server;
 		this.definition = definition;
 		this.behaviors = definition.createBehaviors();
@@ -42,7 +43,9 @@ public final class PollingGameInstance implements ProtoGame {
 	}
 
 	public static GameResult<PollingGameInstance> create(MinecraftServer server, IGameDefinition definition, PlayerKey initiator) {
-		PollingGameInstance instance = new PollingGameInstance(server, definition, initiator);
+		String instanceId = generateInstanceId(definition);
+
+		PollingGameInstance instance = new PollingGameInstance(instanceId, server, definition, initiator);
 
 		for (IGameBehavior behavior : instance.behaviors) {
 			try {
@@ -55,20 +58,30 @@ public final class PollingGameInstance implements ProtoGame {
 		return GameResult.ok(instance);
 	}
 
+	private static String generateInstanceId(IGameDefinition definition) {
+		return definition.getDisplayId().getPath() + "_" + RandomStringUtils.randomAlphanumeric(5);
+	}
+
+	@Override
+	public String getInstanceId() {
+		return instanceId;
+	}
+
 	@Override
 	public GameStatus getStatus() {
 		return GameStatus.POLLING;
 	}
 
-	public GameResult<ITextComponent> joinPlayerAs(ServerPlayerEntity player, @Nullable PlayerRole requestedRole) {
+	@Override
+	public boolean requestPlayerJoin(ServerPlayerEntity player, @Nullable PlayerRole requestedRole) {
 		if (registrations.contains(player.getUniqueID())) {
-			return GameResult.error(new TranslationTextComponent(LoveTropicsLangKeys.COMMAND_MINIGAME_ALREADY_REGISTERED));
+			return false;
 		}
 
 		try {
 			invoker(GamePollingEvents.PLAYER_REGISTER).onPlayerRegister(this, player, requestedRole);
 		} catch (Exception e) {
-			return GameResult.fromException("Failed to dispatch player register event", e);
+			LoveTropics.LOGGER.warn("Failed to dispatch player register event", e);
 		}
 
 		registrations.add(player.getUniqueID(), requestedRole);
@@ -86,12 +99,13 @@ public final class PollingGameInstance implements ProtoGame {
 		LoveTropicsNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new ClientRoleMessage(trueRole));
 		LoveTropicsNetwork.CHANNEL.send(PacketDistributor.ALL.noArg(), new PlayerCountsMessage(trueRole, getMemberCount(trueRole)));
 
-		return GameResult.ok(gameMessages.registerSuccess());
+		return true;
 	}
 
-	public GameResult<ITextComponent> removePlayer(ServerPlayerEntity player) {
+	@Override
+	public boolean removePlayer(ServerPlayerEntity player) {
 		if (!registrations.remove(player.getUniqueID())) {
-			return GameResult.error(new TranslationTextComponent(LoveTropicsLangKeys.COMMAND_NOT_REGISTERED_FOR_MINIGAME));
+			return false;
 		}
 
 		GameMessages gameMessages = GameMessages.forGame(definition);
@@ -104,7 +118,7 @@ public final class PollingGameInstance implements ProtoGame {
 			LoveTropicsNetwork.CHANNEL.send(PacketDistributor.ALL.noArg(), new PlayerCountsMessage(role, getMemberCount(role)));
 		}
 
-		return GameResult.ok(gameMessages.unregisterSuccess());
+		return true;
 	}
 
 	public CompletableFuture<GameResult<GameInstance>> start() {
@@ -112,7 +126,7 @@ public final class PollingGameInstance implements ProtoGame {
 				.thenComposeAsync(result -> {
 					if (result.isOk()) {
 						GameMap map = result.getOk();
-						return GameInstance.start(server, definition, map, behaviors, initiator, registrations);
+						return GameInstance.start(instanceId, server, definition, map, behaviors, initiator, registrations);
 					} else {
 						return CompletableFuture.completedFuture(result.castError());
 					}

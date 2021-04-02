@@ -2,7 +2,7 @@ package com.lovetropics.minigames.common.core.game.behavior.instances.command;
 
 import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.IGameInstance;
-import com.lovetropics.minigames.common.core.game.ProtoGame;
+import com.lovetropics.minigames.common.core.game.ProtoGameInstance;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.control.GameControlCommands;
@@ -88,7 +88,7 @@ public abstract class CommandInvokeBehavior implements IGameBehavior {
 		this.registerEvents(events);
 	}
 
-	protected void registerControls(ProtoGame game, GameControlCommands commands) {
+	protected void registerControls(ProtoGameInstance game, GameControlCommands commands) {
 	}
 
 	protected abstract void registerEvents(EventRegistrar events);

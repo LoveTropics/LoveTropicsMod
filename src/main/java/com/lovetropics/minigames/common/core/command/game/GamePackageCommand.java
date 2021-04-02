@@ -35,9 +35,9 @@ public class GamePackageCommand {
 	}
 
 	private static CompletableFuture<Suggestions> suggestPackages(final CommandContext<CommandSource> context, final SuggestionsBuilder builder) {
-		IGameInstance active = IGameManager.get().getActiveGame();
-		if (active != null) {
-			return ISuggestionProvider.suggest(active.getBehaviors().stream()
+		IGameInstance game = IGameManager.get().getGameFor(context.getSource());
+		if (game != null) {
+			return ISuggestionProvider.suggest(game.getBehaviors().stream()
 					.filter(b -> b instanceof DonationPackageBehavior)
 					.map(b -> ((DonationPackageBehavior)b).getPackageType()), builder);
 		}
@@ -45,11 +45,11 @@ public class GamePackageCommand {
 	}
 
 	private static int spawnPackage(CommandContext<CommandSource> ctx, ServerPlayerEntity target) {
-		IGameInstance active = IGameManager.get().getActiveGame();
-		if (active != null) {
+		IGameInstance game = IGameManager.get().getGameFor(ctx.getSource());
+		if (game != null) {
 			String type = StringArgumentType.getString(ctx, "id");
 			GamePackage gamePackage = new GamePackage(type, "LoveTropics", target == null ? null : target.getUniqueID());
-			active.invoker(GamePackageEvents.RECEIVE_PACKAGE).onReceivePackage(active, gamePackage);
+			game.invoker(GamePackageEvents.RECEIVE_PACKAGE).onReceivePackage(game, gamePackage);
 		}
 		return Command.SINGLE_SUCCESS;
 	}
