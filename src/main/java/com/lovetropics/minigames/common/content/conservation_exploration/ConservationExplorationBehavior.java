@@ -59,7 +59,7 @@ public final class ConservationExplorationBehavior implements IGameBehavior {
 	}
 
 	@Override
-	public void register(IGameInstance game, EventRegistrar events) throws GameException {
+	public void register(IActiveGame game, EventRegistrar events) throws GameException {
 		events.listen(GameLifecycleEvents.START, this::onStart);
 		events.listen(GameLifecycleEvents.STOP, this::onFinish);
 		
@@ -73,7 +73,7 @@ public final class ConservationExplorationBehavior implements IGameBehavior {
 		);
 	}
 
-	private void onStart(IGameInstance game) {
+	private void onStart(IActiveGame game) {
 		List<CreatureType> searchOrder = new ArrayList<>(creatures);
 		Collections.shuffle(searchOrder);
 		this.searchOrder = searchOrder.toArray(new CreatureType[0]);
@@ -87,17 +87,17 @@ public final class ConservationExplorationBehavior implements IGameBehavior {
 		game.getControlCommands().add("next_creature", ControlCommand.forInitiator(source -> {
 			Scheduler.INSTANCE.submit(server -> {
 				if (!nextCreature(game)) {
-					IGameManager.get().finish(game);
+					game.finish();
 				}
 			});
 		}));
 	}
 
-	private void onPlayerJoin(IGameInstance game, ServerPlayerEntity player, PlayerRole role) {
+	private void onPlayerJoin(IActiveGame game, ServerPlayerEntity player, PlayerRole role) {
 		player.addItemStackToInventory(new ItemStack(ConservationExploration.RECORD_CREATURE.get()));
 	}
 
-	private void onPlayerInteractEntity(IGameInstance game, ServerPlayerEntity player, Entity entity, Hand hand) {
+	private void onPlayerInteractEntity(IActiveGame game, ServerPlayerEntity player, Entity entity, Hand hand) {
 		ItemStack heldItem = player.getHeldItem(hand);
 		if (!heldItem.isEmpty() && heldItem.getItem() == ConservationExploration.RECORD_CREATURE.get()) {
 			if (entity instanceof LivingEntity) {
@@ -106,14 +106,14 @@ public final class ConservationExplorationBehavior implements IGameBehavior {
 		}
 	}
 
-	private void recordEntity(IGameInstance minigame, ServerPlayerEntity reporter, LivingEntity entity) {
+	private void recordEntity(IActiveGame minigame, ServerPlayerEntity reporter, LivingEntity entity) {
 		if (!creatureDiscovered && entity.getType() == searchOrder[searchIndex].entity) {
 			onDiscoverNewEntity(minigame, reporter, entity);
 			creatureDiscovered = true;
 		}
 	}
 
-	private void onDiscoverNewEntity(IGameInstance minigame, ServerPlayerEntity reporter, LivingEntity entity) {
+	private void onDiscoverNewEntity(IActiveGame minigame, ServerPlayerEntity reporter, LivingEntity entity) {
 		Vector3d position = reporter.getPositionVec();
 		float yaw = reporter.rotationYaw;
 		float pitch = reporter.rotationPitch;
@@ -167,7 +167,7 @@ public final class ConservationExplorationBehavior implements IGameBehavior {
 		}
 	}
 
-	private boolean nextCreature(IGameInstance minigame) {
+	private boolean nextCreature(IActiveGame minigame) {
 		int searchIndex = ++this.searchIndex;
 		if (searchIndex >= searchOrder.length) {
 			return false;
@@ -188,12 +188,12 @@ public final class ConservationExplorationBehavior implements IGameBehavior {
 		return true;
 	}
 
-	private void onFinish(IGameInstance game) {
+	private void onFinish(IActiveGame game) {
 		ServerScoreboard scoreboard = game.getServer().getScoreboard();
 		scoreboard.removeTeam(discoveryTeam);
 	}
 
-	private void spawnCreaturesFor(IGameInstance minigame, CreatureType creature) {
+	private void spawnCreaturesFor(IActiveGame minigame, CreatureType creature) {
 		ServerWorld world = minigame.getWorld();
 		Random random = world.rand;
 

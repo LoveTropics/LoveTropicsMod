@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.common.core.game.behavior.event;
 
-import com.lovetropics.minigames.common.core.game.IGameInstance;
+import com.lovetropics.minigames.common.core.game.IActiveGame;
 import com.lovetropics.minigames.common.core.game.PlayerRole;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
@@ -107,50 +107,50 @@ public final class GamePlayerEvents {
 	}
 
 	public interface Join {
-		void onJoin(IGameInstance game, ServerPlayerEntity player, PlayerRole role);
+		void onJoin(IActiveGame game, ServerPlayerEntity player, PlayerRole role);
 	}
 
 	public interface Leave {
-		void onLeave(IGameInstance game, ServerPlayerEntity player);
+		void onLeave(IActiveGame game, ServerPlayerEntity player);
 	}
 
 	public interface Tick {
-		void tick(IGameInstance game, ServerPlayerEntity player);
+		void tick(IActiveGame game, ServerPlayerEntity player);
 	}
 
 	public interface ChangeRole {
-		void onChangeRole(IGameInstance game, ServerPlayerEntity player, PlayerRole role, PlayerRole lastRole);
+		void onChangeRole(IActiveGame game, ServerPlayerEntity player, PlayerRole role, PlayerRole lastRole);
 	}
 
 	public interface Damage {
-		ActionResultType onDamage(IGameInstance game, ServerPlayerEntity player, DamageSource damageSource, float amount);
+		ActionResultType onDamage(IActiveGame game, ServerPlayerEntity player, DamageSource damageSource, float amount);
 	}
 
 	public interface Attack {
-		ActionResultType onAttack(IGameInstance game, ServerPlayerEntity player, Entity target);
+		ActionResultType onAttack(IActiveGame game, ServerPlayerEntity player, Entity target);
 	}
 
 	public interface InteractEntity {
-		void onInteract(IGameInstance game, ServerPlayerEntity player, Entity target, Hand hand);
+		void onInteract(IActiveGame game, ServerPlayerEntity player, Entity target, Hand hand);
 	}
 
 	public interface LeftClickBlock {
-		void onLeftClickBlock(IGameInstance game, ServerPlayerEntity player, BlockPos pos);
+		void onLeftClickBlock(IActiveGame game, ServerPlayerEntity player, BlockPos pos);
 	}
 
 	public interface BreakBlock {
-		ActionResultType onBreakBlock(IGameInstance game, ServerPlayerEntity player, BlockPos pos, BlockState state);
+		ActionResultType onBreakBlock(IActiveGame game, ServerPlayerEntity player, BlockPos pos, BlockState state);
 	}
 
 	public interface PlaceBlock {
-		ActionResultType onPlaceBlock(IGameInstance game, ServerPlayerEntity player, BlockPos pos, BlockState placed, BlockState placedOn);
+		ActionResultType onPlaceBlock(IActiveGame game, ServerPlayerEntity player, BlockPos pos, BlockState placed, BlockState placedOn);
 	}
 
 	public interface Death {
-		ActionResultType onDeath(IGameInstance game, ServerPlayerEntity player, DamageSource damageSource);
+		ActionResultType onDeath(IActiveGame game, ServerPlayerEntity player, DamageSource damageSource);
 	}
 
 	public interface Respawn {
-		void onRespawn(IGameInstance game, ServerPlayerEntity player);
+		void onRespawn(IActiveGame game, ServerPlayerEntity player);
 	}
 }

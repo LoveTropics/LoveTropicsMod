@@ -50,21 +50,27 @@ public final class GameResult<T> {
 		return error != null;
 	}
 
-	@SuppressWarnings("unchecked")
 	public <U> GameResult<U> map(Function<T, U> function) {
 		if (ok != null) {
 			return GameResult.ok(function.apply(ok));
 		} else {
-			return (GameResult<U>) this;
+			return castError();
 		}
 	}
 
-	@SuppressWarnings("unchecked")
+	public <U> GameResult<U> flatMap(Function<T, GameResult<U>> function) {
+		if (ok != null) {
+			return function.apply(ok);
+		} else {
+			return castError();
+		}
+	}
+
 	public <U> GameResult<U> mapValue(U value) {
 		if (ok != null) {
 			return GameResult.ok(value);
 		} else {
-			return (GameResult<U>) this;
+			return castError();
 		}
 	}
 

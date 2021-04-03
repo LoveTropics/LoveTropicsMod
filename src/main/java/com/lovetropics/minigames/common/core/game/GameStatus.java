@@ -4,7 +4,8 @@ import net.minecraft.util.text.TextFormatting;
 
 public enum GameStatus {
 	POLLING("waiting for players", TextFormatting.GOLD),
-	ACTIVE("in progress", TextFormatting.GREEN);
+	ACTIVE("in progress", TextFormatting.GREEN),
+	INACTIVE("inactive", TextFormatting.RED);
 
 	public final String description;
 	public final TextFormatting color;

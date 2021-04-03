@@ -1,7 +1,6 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances;
 
-import com.lovetropics.minigames.common.core.game.IGameInstance;
-import com.lovetropics.minigames.common.core.game.IGameManager;
+import com.lovetropics.minigames.common.core.game.IActiveGame;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameLifecycleEvents;
@@ -37,7 +36,7 @@ public final class TimedGameBehavior implements IGameBehavior {
 	}
 
 	@Override
-	public void register(IGameInstance game, EventRegistrar events) {
+	public void register(IActiveGame game, EventRegistrar events) {
 		events.listen(GameLifecycleEvents.TICK, this::onTick);
 
 		if (hasTimerBar) {
@@ -46,10 +45,10 @@ public final class TimedGameBehavior implements IGameBehavior {
 		}
 	}
 
-	private void onTick(IGameInstance game) {
+	private void onTick(IActiveGame game) {
 		long ticks = game.ticks();
 		if (ticks >= closeTime) {
-			IGameManager.get().finish(game);
+			game.finish();
 			return;
 		}
 

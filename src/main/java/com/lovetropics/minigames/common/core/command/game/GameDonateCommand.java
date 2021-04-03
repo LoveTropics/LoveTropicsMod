@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.common.core.command.game;
 
-import com.lovetropics.minigames.common.core.game.IGameInstance;
+import com.lovetropics.minigames.common.core.game.IActiveGame;
 import com.lovetropics.minigames.common.core.game.IGameManager;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePackageEvents;
 import com.lovetropics.minigames.common.core.integration.game_actions.GamePackage;
@@ -28,7 +28,7 @@ public class GameDonateCommand {
 	}
 
 	private static int execute(CommandSource source, String packageType) throws CommandSyntaxException {
-		IGameInstance game = IGameManager.get().getGameFor(source);
+		IActiveGame game = IGameManager.get().getActiveGameFor(source);
 		if (game != null) {
 			GamePackage gamePackage = new GamePackage(packageType, source.getName(), source.asPlayer().getUniqueID());
 			game.invoker(GamePackageEvents.RECEIVE_PACKAGE).onReceivePackage(game, gamePackage);

@@ -1,9 +1,9 @@
 package com.lovetropics.minigames.common.core.game.behavior;
 
 import com.lovetropics.minigames.common.core.game.GameException;
-import com.lovetropics.minigames.common.core.game.IGameInstance;
+import com.lovetropics.minigames.common.core.game.IActiveGame;
+import com.lovetropics.minigames.common.core.game.IPollingGame;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
-import com.lovetropics.minigames.common.core.game.polling.PollingGameInstance;
 import com.lovetropics.minigames.common.core.game.state.GameStateMap;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
@@ -23,7 +23,7 @@ public interface IGameBehavior {
 	 *
 	 * @throws GameException if this behavior was not able to be initialized
 	 */
-	void register(IGameInstance registerGame, EventRegistrar events) throws GameException;
+	void register(IActiveGame registerGame, EventRegistrar events) throws GameException;
 
 	/**
 	 * Called before the game starts polling. This should be used to register all event listeners and do any early setup.
@@ -33,7 +33,7 @@ public interface IGameBehavior {
 	 *
 	 * @throws GameException if this behavior was not able to be initialized
 	 */
-	default void registerPolling(PollingGameInstance registerGame, EventRegistrar events) throws GameException {
+	default void registerPolling(IPollingGame registerGame, EventRegistrar events) throws GameException {
 	}
 
 	default void registerState(GameStateMap state) {

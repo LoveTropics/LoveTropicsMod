@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances;
 
-import com.lovetropics.minigames.common.core.game.IGameInstance;
+import com.lovetropics.minigames.common.core.game.IActiveGame;
 import com.lovetropics.minigames.common.core.game.PlayerRole;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
@@ -28,7 +28,7 @@ public class SetGameTypesBehavior implements IGameBehavior {
 	}
 
 	@Override
-	public void register(IGameInstance registerGame, EventRegistrar events) {
+	public void register(IActiveGame registerGame, EventRegistrar events) {
 		events.listen(GamePlayerEvents.JOIN, (game, player, role) -> applyToPlayer(player, role));
 		events.listen(GamePlayerEvents.CHANGE_ROLE, (game, player, role, lastRole) -> applyToPlayer(player, role));
 	}

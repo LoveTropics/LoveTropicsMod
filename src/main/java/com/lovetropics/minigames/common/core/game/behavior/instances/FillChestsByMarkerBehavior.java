@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances;
 
-import com.lovetropics.minigames.common.core.game.IGameInstance;
+import com.lovetropics.minigames.common.core.game.IActiveGame;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.block.Block;
@@ -35,7 +35,7 @@ public class FillChestsByMarkerBehavior extends ChunkGeneratingBehavior {
 	}
 
 	@Override
-	protected void generateChunk(IGameInstance game, ServerWorld world, Chunk chunk) {
+	protected void generateChunk(IActiveGame game, ServerWorld world, Chunk chunk) {
 		List<BlockPos> chestPositions = new ArrayList<>();
 		for (TileEntity entity : chunk.getTileEntityMap().values()) {
 			if (entity instanceof ChestTileEntity) {

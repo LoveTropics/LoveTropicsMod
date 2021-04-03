@@ -32,10 +32,10 @@ public class GameBehaviorTypes {
 
 	public static final Codec<GameBehaviorType<?>> TYPE_CODEC = MoreCodecs.ofForgeRegistry(REGISTRY);
 
-	public static final RegistryObject<GameBehaviorType<PositionPlayersGameBehavior>> POSITION_PLAYERS;
+	public static final RegistryObject<GameBehaviorType<PositionPlayersBehavior>> POSITION_PLAYERS;
 	public static final RegistryObject<GameBehaviorType<SurviveTheTideWeatherBehavior>> WEATHER_EVENTS;
 	public static final RegistryObject<GameBehaviorType<TimedGameBehavior>> TIMED;
-	public static final RegistryObject<GameBehaviorType<RespawnSpectatorGameBehavior>> RESPAWN_SPECTATOR;
+	public static final RegistryObject<GameBehaviorType<RespawnSpectatorBehavior>> RESPAWN_SPECTATOR;
 	public static final RegistryObject<GameBehaviorType<CommandEventsBehavior>> COMMANDS;
 	public static final RegistryObject<GameBehaviorType<IsolatePlayerStateBehavior>> ISOLATE_PLAYER_STATE;
 	public static final RegistryObject<GameBehaviorType<SetGameTypesBehavior>> SET_GAME_TYPES;
@@ -101,10 +101,10 @@ public class GameBehaviorTypes {
 	}
 
 	static {
-		POSITION_PLAYERS = register("position_players", PositionPlayersGameBehavior.CODEC);
+		POSITION_PLAYERS = register("position_players", PositionPlayersBehavior.CODEC);
 		WEATHER_EVENTS = register("weather_events", SurviveTheTideWeatherBehavior.CODEC);
 		TIMED = register("timed", TimedGameBehavior.CODEC);
-		RESPAWN_SPECTATOR = register("respawn_spectator", RespawnSpectatorGameBehavior.CODEC);
+		RESPAWN_SPECTATOR = register("respawn_spectator", RespawnSpectatorBehavior.CODEC);
 		COMMANDS = register("commands", CommandEventsBehavior.CODEC);
 		ISOLATE_PLAYER_STATE = register("isolate_player_state", IsolatePlayerStateBehavior.CODEC);
 		SET_GAME_TYPES = register("set_game_types", SetGameTypesBehavior.CODEC);

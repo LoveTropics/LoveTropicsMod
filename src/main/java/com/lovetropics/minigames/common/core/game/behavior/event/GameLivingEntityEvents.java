@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.common.core.game.behavior.event;
 
-import com.lovetropics.minigames.common.core.game.IGameInstance;
+import com.lovetropics.minigames.common.core.game.IActiveGame;
 import net.minecraft.entity.LivingEntity;
 
 public final class GameLivingEntityEvents {
@@ -14,6 +14,6 @@ public final class GameLivingEntityEvents {
 	}
 
 	public interface Tick {
-		void tick(IGameInstance game, LivingEntity entity);
+		void tick(IActiveGame game, LivingEntity entity);
 	}
 }

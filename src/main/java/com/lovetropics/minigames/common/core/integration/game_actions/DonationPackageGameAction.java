@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.common.core.integration.game_actions;
 
-import com.lovetropics.minigames.common.core.game.IGameInstance;
+import com.lovetropics.minigames.common.core.game.IActiveGame;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePackageEvents;
 import com.lovetropics.minigames.common.util.MoreCodecs;
 import com.mojang.serialization.Codec;
@@ -36,7 +36,7 @@ public class DonationPackageGameAction extends GameAction
     }
 
     @Override
-    public boolean resolve(IGameInstance game, MinecraftServer server) {
+    public boolean resolve(IActiveGame game, MinecraftServer server) {
         return game.invoker(GamePackageEvents.RECEIVE_PACKAGE).onReceivePackage(game, gamePackage);
     }
 }

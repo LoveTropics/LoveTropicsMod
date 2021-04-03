@@ -1,7 +1,7 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances;
 
 import com.lovetropics.minigames.common.core.game.GameException;
-import com.lovetropics.minigames.common.core.game.IGameInstance;
+import com.lovetropics.minigames.common.core.game.IActiveGame;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameLifecycleEvents;
@@ -54,7 +54,7 @@ public final class SetBlocksBehavior implements IGameBehavior {
 	}
 
 	@Override
-	public void register(IGameInstance registerGame, EventRegistrar events) {
+	public void register(IActiveGame registerGame, EventRegistrar events) {
 		regions = regionKey != null ? registerGame.getMapRegions().get(regionKey) : null;
 
 		if (time != -1) {
@@ -120,7 +120,7 @@ public final class SetBlocksBehavior implements IGameBehavior {
 		return regionsByChunk;
 	}
 
-	private void setInRegion(IGameInstance game, MapRegion region) {
+	private void setInRegion(IActiveGame game, MapRegion region) {
 		ServerWorld world = game.getWorld();
 		BlockPredicate replace = this.replace;
 		BlockStateProvider set = this.set;

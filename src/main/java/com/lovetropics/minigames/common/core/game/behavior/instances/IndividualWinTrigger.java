@@ -1,7 +1,7 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances;
 
 import com.lovetropics.minigames.common.core.game.GameException;
-import com.lovetropics.minigames.common.core.game.IGameInstance;
+import com.lovetropics.minigames.common.core.game.IActiveGame;
 import com.lovetropics.minigames.common.core.game.PlayerSet;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
@@ -17,7 +17,7 @@ public class IndividualWinTrigger implements IGameBehavior {
 	public static final Codec<IndividualWinTrigger> CODEC = Codec.unit(IndividualWinTrigger::new);
 
 	@Override
-	public void register(IGameInstance registerGame, EventRegistrar events) throws GameException {
+	public void register(IActiveGame registerGame, EventRegistrar events) throws GameException {
 		events.listen(GamePlayerEvents.DEATH, (game, player, damageSource) -> {
 			PlayerSet participants = game.getParticipants();
 			if (participants.size() == 1) {

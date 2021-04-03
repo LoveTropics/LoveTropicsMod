@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances.statistics;
 
-import com.lovetropics.minigames.common.core.game.IGameInstance;
+import com.lovetropics.minigames.common.core.game.IActiveGame;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameLifecycleEvents;
@@ -22,13 +22,13 @@ public final class PlaceByDeathOrderBehavior implements IGameBehavior {
 	private final List<PlayerKey> deathOrder = new ArrayList<>();
 
 	@Override
-	public void register(IGameInstance registerGame, EventRegistrar events) {
+	public void register(IActiveGame registerGame, EventRegistrar events) {
 		events.listen(GamePlayerEvents.DEATH, this::onPlayerDeath);
 		events.listen(GamePlayerEvents.LEAVE, this::onPlayerLeave);
 		events.listen(GameLifecycleEvents.STOP, this::onFinish);
 	}
 
-	private ActionResultType onPlayerDeath(IGameInstance game, ServerPlayerEntity player, DamageSource source) {
+	private ActionResultType onPlayerDeath(IActiveGame game, ServerPlayerEntity player, DamageSource source) {
 		PlayerKey playerKey = PlayerKey.from(player);
 		if (!deathOrder.contains(playerKey)) {
 			deathOrder.add(playerKey);
@@ -36,14 +36,14 @@ public final class PlaceByDeathOrderBehavior implements IGameBehavior {
 		return ActionResultType.PASS;
 	}
 
-	private void onPlayerLeave(IGameInstance game, ServerPlayerEntity player) {
+	private void onPlayerLeave(IActiveGame game, ServerPlayerEntity player) {
 		PlayerKey playerKey = PlayerKey.from(player);
 		if (!deathOrder.contains(playerKey)) {
 			deathOrder.add(playerKey);
 		}
 	}
 
-	private void onFinish(IGameInstance game) {
+	private void onFinish(IActiveGame game) {
 		PlayerPlacement.fromDeathOrder(game, deathOrder).placeInto(StatisticKey.PLACEMENT);
 	}
 }

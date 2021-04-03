@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances;
 
-import com.lovetropics.minigames.common.core.game.IGameInstance;
+import com.lovetropics.minigames.common.core.game.IActiveGame;
 import com.lovetropics.minigames.common.core.game.PlayerRole;
 import com.lovetropics.minigames.common.core.game.PlayerSet;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
@@ -22,7 +22,7 @@ public final class SpectatorChaseBehavior implements IGameBehavior {
 	public static final Codec<SpectatorChaseBehavior> CODEC = Codec.unit(SpectatorChaseBehavior::new);
 
 	@Override
-	public void register(IGameInstance registerGame, EventRegistrar events) {
+	public void register(IActiveGame registerGame, EventRegistrar events) {
 		events.listen(GamePlayerEvents.JOIN, this::onPlayerJoin);
 		events.listen(GamePlayerEvents.CHANGE_ROLE, (game, player, role, lastRole) -> this.onPlayerJoin(game, player, role));
 		events.listen(GamePlayerEvents.LEAVE, this::onPlayerLeave);
@@ -30,7 +30,7 @@ public final class SpectatorChaseBehavior implements IGameBehavior {
 		events.listen(GameLifecycleEvents.STOP, this::onFinish);
 	}
 
-	private void onPlayerJoin(IGameInstance game, ServerPlayerEntity player, PlayerRole role) {
+	private void onPlayerJoin(IActiveGame game, ServerPlayerEntity player, PlayerRole role) {
 		List<UUID> participants = collectParticipantIds(game);
 		ChaseCameraMessage message = new ChaseCameraMessage(participants);
 		if (role == PlayerRole.SPECTATOR) {
@@ -40,7 +40,7 @@ public final class SpectatorChaseBehavior implements IGameBehavior {
 		game.getSpectators().sendPacket(LoveTropicsNetwork.CHANNEL, message);
 	}
 
-	private void onPlayerLeave(IGameInstance game, ServerPlayerEntity player) {
+	private void onPlayerLeave(IActiveGame game, ServerPlayerEntity player) {
 		List<UUID> participants = collectParticipantIds(game);
 		ChaseCameraMessage message = new ChaseCameraMessage(participants);
 		game.getSpectators().sendPacket(LoveTropicsNetwork.CHANNEL, message);
@@ -48,14 +48,14 @@ public final class SpectatorChaseBehavior implements IGameBehavior {
 		LoveTropicsNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new StopChaseCameraMessage());
 	}
 
-	private void onFinish(IGameInstance game) {
+	private void onFinish(IActiveGame game) {
 		StopChaseCameraMessage message = new StopChaseCameraMessage();
 		for (ServerPlayerEntity spectator : game.getSpectators()) {
 			LoveTropicsNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> spectator), message);
 		}
 	}
 
-	private List<UUID> collectParticipantIds(IGameInstance game) {
+	private List<UUID> collectParticipantIds(IActiveGame game) {
 		PlayerSet participants = game.getParticipants();
 		List<UUID> ids = new ArrayList<>(participants.size());
 

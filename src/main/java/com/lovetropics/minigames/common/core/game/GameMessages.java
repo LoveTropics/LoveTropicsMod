@@ -21,7 +21,7 @@ public final class GameMessages {
 		return new GameMessages(game);
 	}
 
-	public static GameMessages forGame(ProtoGameInstance game) {
+	public static GameMessages forGame(IProtoGame game) {
 		return new GameMessages(game.getDefinition());
 	}
 

@@ -2,7 +2,7 @@ package com.lovetropics.minigames.common.core.game.behavior.instances.donation;
 
 import com.google.common.collect.Lists;
 import com.lovetropics.minigames.common.core.game.GameException;
-import com.lovetropics.minigames.common.core.game.IGameInstance;
+import com.lovetropics.minigames.common.core.game.IActiveGame;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePackageEvents;
@@ -42,7 +42,7 @@ public class SpawnEntityAtRegionsPackageBehavior implements IGameBehavior
 	}
 
 	@Override
-	public void register(IGameInstance registerGame, EventRegistrar events) throws GameException {
+	public void register(IActiveGame registerGame, EventRegistrar events) throws GameException {
 		MapRegions regions = registerGame.getMapRegions();
 
 		regionsToSpawnAt.clear();

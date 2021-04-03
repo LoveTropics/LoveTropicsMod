@@ -5,7 +5,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.lovetropics.minigames.common.core.game.control.ControlCommand;
 import com.lovetropics.minigames.common.core.game.GameException;
-import com.lovetropics.minigames.common.core.game.IGameInstance;
+import com.lovetropics.minigames.common.core.game.IActiveGame;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePackageEvents;
@@ -57,7 +57,7 @@ public class PollFinalistsBehavior implements IGameBehavior {
 	}
 
 	@Override
-	public void register(IGameInstance game, EventRegistrar events) throws GameException {
+	public void register(IActiveGame game, EventRegistrar events) throws GameException {
 		game.getControlCommands().add("start_runoff", ControlCommand.forAdmins(source -> {
 			try {
 				PlayerList players = source.getServer().getPlayerList();
@@ -76,7 +76,7 @@ public class PollFinalistsBehavior implements IGameBehavior {
 		events.listen(GamePackageEvents.RECEIVE_POLL_EVENT, this::handlePollEvent);
 	}
 
-	private void handlePollEvent(IGameInstance game, JsonObject object, String crud) {
+	private void handlePollEvent(IActiveGame game, JsonObject object, String crud) {
 		MinecraftServer server = game.getServer();
 
 		if (crud.equals("create")) {

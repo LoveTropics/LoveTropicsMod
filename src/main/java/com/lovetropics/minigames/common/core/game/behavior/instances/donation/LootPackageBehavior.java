@@ -1,7 +1,7 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances.donation;
 
 import com.lovetropics.minigames.common.core.game.GameException;
-import com.lovetropics.minigames.common.core.game.IGameInstance;
+import com.lovetropics.minigames.common.core.game.IActiveGame;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePackageEvents;
@@ -29,7 +29,7 @@ public class LootPackageBehavior implements IGameBehavior {
 	}
 
 	@Override
-	public void register(IGameInstance registerGame, EventRegistrar events) throws GameException {
+	public void register(IActiveGame registerGame, EventRegistrar events) throws GameException {
 		events.listen(GamePackageEvents.APPLY_PACKAGE, (game, player, sendingPlayer) -> addLootTableToInventory(player));
 	}
 

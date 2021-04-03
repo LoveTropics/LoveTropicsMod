@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.common.core.game.behavior.event;
 
-import com.lovetropics.minigames.common.core.game.IGameInstance;
+import com.lovetropics.minigames.common.core.game.IActiveGame;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.Explosion;
@@ -25,10 +25,10 @@ public final class GameWorldEvents {
 	}
 
 	public interface ChunkLoad {
-		void onChunkLoad(IGameInstance game, IChunk chunk);
+		void onChunkLoad(IActiveGame game, IChunk chunk);
 	}
 
 	public interface ExplosionDetonate {
-		void onExplosionDetonate(IGameInstance game, Explosion explosion, List<BlockPos> affectedBlocks, List<Entity> affectedEntities);
+		void onExplosionDetonate(IActiveGame game, Explosion explosion, List<BlockPos> affectedBlocks, List<Entity> affectedEntities);
 	}
 }

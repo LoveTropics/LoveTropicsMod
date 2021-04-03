@@ -1,7 +1,7 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances;
 
 import com.lovetropics.minigames.common.core.dimension.DimensionUtils;
-import com.lovetropics.minigames.common.core.game.IGameInstance;
+import com.lovetropics.minigames.common.core.game.IActiveGame;
 import com.lovetropics.minigames.common.core.game.PlayerRole;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
@@ -17,12 +17,12 @@ import net.minecraft.util.math.BlockPos;
 import java.util.ArrayList;
 import java.util.List;
 
-public class PositionPlayersGameBehavior implements IGameBehavior {
-	public static final Codec<PositionPlayersGameBehavior> CODEC = RecordCodecBuilder.create(instance -> {
+public class PositionPlayersBehavior implements IGameBehavior {
+	public static final Codec<PositionPlayersBehavior> CODEC = RecordCodecBuilder.create(instance -> {
 		return instance.group(
 				MoreCodecs.arrayOrUnit(Codec.STRING, String[]::new).fieldOf("participants").forGetter(c -> c.participantSpawnKeys),
 				MoreCodecs.arrayOrUnit(Codec.STRING, String[]::new).fieldOf("spectators").forGetter(c -> c.spectatorSpawnKeys)
-		).apply(instance, PositionPlayersGameBehavior::new);
+		).apply(instance, PositionPlayersBehavior::new);
 	});
 
 	private final String[] participantSpawnKeys;
@@ -34,13 +34,13 @@ public class PositionPlayersGameBehavior implements IGameBehavior {
 	private int participantSpawnIndex;
 	private int spectatorSpawnIndex;
 
-	public PositionPlayersGameBehavior(final String[] participantSpawnKeys, String[] spectatorSpawnKeys) {
+	public PositionPlayersBehavior(final String[] participantSpawnKeys, String[] spectatorSpawnKeys) {
 		this.participantSpawnKeys = participantSpawnKeys;
 		this.spectatorSpawnKeys = spectatorSpawnKeys;
 	}
 
 	@Override
-	public void register(IGameInstance registerGame, EventRegistrar events) {
+	public void register(IActiveGame registerGame, EventRegistrar events) {
 		MapRegions regions = registerGame.getMapRegions();
 
 		participantSpawnRegions.clear();
@@ -58,7 +58,7 @@ public class PositionPlayersGameBehavior implements IGameBehavior {
 		events.listen(GamePlayerEvents.CHANGE_ROLE, (game, player, role, lastRole) -> setupPlayerAsRole(game, player, role));
 	}
 
-	private void setupPlayerAsRole(IGameInstance game, ServerPlayerEntity player, PlayerRole role) {
+	private void setupPlayerAsRole(IActiveGame game, ServerPlayerEntity player, PlayerRole role) {
 		if (role == PlayerRole.PARTICIPANT) {
 			MapRegion region = participantSpawnRegions.get(participantSpawnIndex++ % participantSpawnRegions.size());
 			teleportToRegion(game, player, region);
@@ -68,7 +68,7 @@ public class PositionPlayersGameBehavior implements IGameBehavior {
 		}
 	}
 
-	private void teleportToRegion(IGameInstance minigame, ServerPlayerEntity player, MapRegion region) {
+	private void teleportToRegion(IActiveGame minigame, ServerPlayerEntity player, MapRegion region) {
 		BlockPos pos = region.sample(player.getRNG());
 		DimensionUtils.teleportPlayerNoPortal(player, minigame.getDimension(), pos);
 	}

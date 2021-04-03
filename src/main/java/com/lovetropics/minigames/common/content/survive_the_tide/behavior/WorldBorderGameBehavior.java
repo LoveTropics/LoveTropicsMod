@@ -1,7 +1,7 @@
 package com.lovetropics.minigames.common.content.survive_the_tide.behavior;
 
 import com.lovetropics.minigames.common.core.game.GameException;
-import com.lovetropics.minigames.common.core.game.IGameInstance;
+import com.lovetropics.minigames.common.core.game.IActiveGame;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameLifecycleEvents;
@@ -75,7 +75,7 @@ public class WorldBorderGameBehavior implements IGameBehavior
 	}
 
 	@Override
-	public void register(IGameInstance game, EventRegistrar events) throws GameException {
+	public void register(IActiveGame game, EventRegistrar events) throws GameException {
 		List<MapRegion> regions = new ArrayList<>(game.getMapRegions().get(worldBorderCenterKey));
 
 		if (!regions.isEmpty()) {
@@ -89,13 +89,13 @@ public class WorldBorderGameBehavior implements IGameBehavior
 		events.listen(GameLifecycleEvents.TICK, this::tickWorldBorder);
 	}
 
-	private void onFinish(final IGameInstance game) {
+	private void onFinish(final IActiveGame game) {
 		borderCollapseMessageSent = false;
 		bossBar.close();
 	}
 
 	// TODO: Clean up this mess
-	private void tickWorldBorder(final IGameInstance game) {
+	private void tickWorldBorder(final IActiveGame game) {
 		if (game.ticks() < ticksUntilStart) {
 			return;
 		}
@@ -161,7 +161,7 @@ public class WorldBorderGameBehavior implements IGameBehavior
 		//serverWorld.spawnParticle(borderParticle, worldBorderCenter.getX(), worldBorderCenter.getY(), worldBorderCenter.getZ(), 1, 0, 0, 0, 1D);
 	}
 
-	private void tickPlayerDamage(IGameInstance game, boolean isCollapsing, float currentRadius) {
+	private void tickPlayerDamage(IActiveGame game, boolean isCollapsing, float currentRadius) {
 		for (ServerPlayerEntity player : game.getParticipants()) {
 			//ignore Y val, only do X Z dist compare
 			double distanceSq = player.getDistanceSq(worldBorderCenter.getX(), player.getPosY(), worldBorderCenter.getZ());

@@ -1,7 +1,7 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances.donation;
 
 import com.google.common.collect.Lists;
-import com.lovetropics.minigames.common.core.game.IGameInstance;
+import com.lovetropics.minigames.common.core.game.IActiveGame;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
@@ -55,7 +55,7 @@ public final class DonationPackageBehavior implements IGameBehavior {
 	}
 
 	@Override
-	public void register(IGameInstance game, EventRegistrar events) {
+	public void register(IActiveGame game, EventRegistrar events) {
 		events.listen(GamePackageEvents.RECEIVE_PACKAGE, this::onGamePackageReceived);
 
 		EventRegistrar receiveEventRegistrar = events.redirect(t -> t == GamePackageEvents.APPLY_PACKAGE, applyEvents);
@@ -64,7 +64,7 @@ public final class DonationPackageBehavior implements IGameBehavior {
 		}
 	}
 
-	private boolean onGamePackageReceived(final IGameInstance game, final GamePackage gamePackage) {
+	private boolean onGamePackageReceived(final IActiveGame game, final GamePackage gamePackage) {
 		if (!gamePackage.getPackageType().equals(data.packageType)) return false;
 
 		switch (data.playerSelect) {
@@ -75,7 +75,7 @@ public final class DonationPackageBehavior implements IGameBehavior {
 		}
 	}
 
-	private boolean receiveSpecific(IGameInstance game, GamePackage gamePackage) {
+	private boolean receiveSpecific(IActiveGame game, GamePackage gamePackage) {
 		if (gamePackage.getReceivingPlayer() == null) {
 			LOGGER.warn("Expected donation package to have a receiving player, but did not receive from backend!");
 			return false;
@@ -93,7 +93,7 @@ public final class DonationPackageBehavior implements IGameBehavior {
 		return true;
 	}
 
-	private boolean receiveRandom(IGameInstance game, GamePackage gamePackage) {
+	private boolean receiveRandom(IActiveGame game, GamePackage gamePackage) {
 		final List<ServerPlayerEntity> players = Lists.newArrayList(game.getParticipants());
 		final ServerPlayerEntity randomPlayer = players.get(game.getWorld().getRandom().nextInt(players.size()));
 
@@ -103,7 +103,7 @@ public final class DonationPackageBehavior implements IGameBehavior {
 		return true;
 	}
 
-	private boolean receiveAll(IGameInstance game, GamePackage gamePackage) {
+	private boolean receiveAll(IActiveGame game, GamePackage gamePackage) {
 		for (ServerPlayerEntity player : game.getParticipants()) {
 			applyPackage(game, player, gamePackage.getSendingPlayerName());
 		}
@@ -113,7 +113,7 @@ public final class DonationPackageBehavior implements IGameBehavior {
 		return true;
 	}
 
-	private void applyPackage(IGameInstance game, final ServerPlayerEntity player, @Nullable final String sendingPlayer) {
+	private void applyPackage(IActiveGame game, final ServerPlayerEntity player, @Nullable final String sendingPlayer) {
 		applyEvents.invoker(GamePackageEvents.APPLY_PACKAGE).applyPackage(game, player, sendingPlayer);
 	}
 }

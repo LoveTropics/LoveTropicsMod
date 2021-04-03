@@ -2,7 +2,7 @@ package com.lovetropics.minigames.common.content.survive_the_tide.behavior;
 
 import com.lovetropics.minigames.common.content.survive_the_tide.SurviveTheTide;
 import com.lovetropics.minigames.common.content.survive_the_tide.SurviveTheTideWeatherConfig;
-import com.lovetropics.minigames.common.core.game.IGameInstance;
+import com.lovetropics.minigames.common.core.game.IActiveGame;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.*;
 import com.lovetropics.minigames.common.core.game.state.instances.GamePhase;
@@ -87,7 +87,7 @@ public class SurviveTheTideWeatherBehavior implements IGameBehavior {
 	}
 
 	@Override
-	public void register(IGameInstance game, EventRegistrar events) {
+	public void register(IActiveGame game, EventRegistrar events) {
 		controller = WeatherControllerManager.forWorld(game.getWorld());
 
 		events.listen(GameLifecycleEvents.TICK, this::tick);
@@ -100,7 +100,7 @@ public class SurviveTheTideWeatherBehavior implements IGameBehavior {
 		phases = game.getState().getOrNull(GamePhaseState.TYPE);
 	}
 
-	private void tick(final IGameInstance game) {
+	private void tick(final IActiveGame game) {
 		if (phases == null) {
 			return;
 		}
@@ -154,7 +154,7 @@ public class SurviveTheTideWeatherBehavior implements IGameBehavior {
 		}
 	}
 
-	private void onParticipantUpdate(IGameInstance game, ServerPlayerEntity player) {
+	private void onParticipantUpdate(IActiveGame game, ServerPlayerEntity player) {
 		if (acidRainActive() && !isPlayerSheltered(player)) {
 			if (player.world.getGameTime() % config.getAcidRainDamageRate() == 0) {
 				if (!isPlayerHolding(player, SurviveTheTide.ACID_REPELLENT_UMBRELLA.get())) {
@@ -235,7 +235,7 @@ public class SurviveTheTideWeatherBehavior implements IGameBehavior {
 		}
 	}
 
-	private boolean onPackageReceive(IGameInstance game, GamePackage gamePackage) {
+	private boolean onPackageReceive(IActiveGame game, GamePackage gamePackage) {
 		// TODO: hardcoded
 		String packageType = gamePackage.getPackageType();
 		if (packageType.equals("acid_rain_event")) {

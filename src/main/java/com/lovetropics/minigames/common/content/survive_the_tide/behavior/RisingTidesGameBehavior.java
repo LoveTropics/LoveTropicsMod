@@ -2,7 +2,7 @@ package com.lovetropics.minigames.common.content.survive_the_tide.behavior;
 
 import com.lovetropics.minigames.common.content.survive_the_tide.IcebergLine;
 import com.lovetropics.minigames.common.core.game.GameException;
-import com.lovetropics.minigames.common.core.game.IGameInstance;
+import com.lovetropics.minigames.common.core.game.IActiveGame;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.*;
 import com.lovetropics.minigames.common.core.game.state.instances.GamePhase;
@@ -82,7 +82,7 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 	}
 
 	@Override
-	public void register(IGameInstance game, EventRegistrar events) throws GameException {
+	public void register(IActiveGame game, EventRegistrar events) throws GameException {
 		tideArea = game.getMapRegions().getOne(tideAreaKey);
 
 		minTideChunk = new ChunkPos(tideArea.min.getX() >> 4, tideArea.min.getZ() >> 4);
@@ -131,7 +131,7 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 		});
 	}
 
-	private void onLivingEntityUpdate(final IGameInstance game, LivingEntity entity) {
+	private void onLivingEntityUpdate(final IActiveGame game, LivingEntity entity) {
 		// NOTE: DO NOT REMOVE THIS CHECK, CAUSES FISH TO DIE AND SPAWN ITEMS ON DEATH
 		// FISH WILL KEEP SPAWNING, DYING AND COMPLETELY SLOW THE SERVER TO A CRAWL
 		if (!entity.canBreatheUnderwater()) {
@@ -141,7 +141,7 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 		}
 	}
 
-	private void tick(IGameInstance game) {
+	private void tick(IActiveGame game) {
 		GamePhase currentPhase = phases.get();
 		int prevWaterLevel = phaseToTideHeight.get(lastPhase.key);
 
@@ -158,7 +158,7 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 		}
 	}
 
-	private void spawnRisingTideParticles(IGameInstance minigame) {
+	private void spawnRisingTideParticles(IActiveGame minigame) {
 		ServerWorld world = minigame.getWorld();
 		Random random = world.rand;
 
@@ -192,7 +192,7 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 		return phaseLength / Math.max(1, Math.abs(waterLevelDiff));
 	}
 
-	private void processRisingTideQueue(IGameInstance game) {
+	private void processRisingTideQueue(IActiveGame game) {
 		if (queuedChunksToUpdate.isEmpty()) {
 			return;
 		}
@@ -230,7 +230,7 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 		}
 	}
 
-	private void tickWaterLevel(final IGameInstance game, final GamePhase phase, final int prevWaterLevel) {
+	private void tickWaterLevel(final IActiveGame game, final GamePhase phase, final int prevWaterLevel) {
 		final int targetWaterLevel = phaseToTideHeight.get(phase.key);
 
 		int waterChangeInterval = this.calculateWaterChangeInterval(

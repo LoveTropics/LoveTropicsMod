@@ -1,12 +1,9 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances;
 
+import com.lovetropics.minigames.common.core.game.*;
 import com.lovetropics.minigames.common.core.game.control.ControlCommand;
-import com.lovetropics.minigames.common.core.game.GameException;
-import com.lovetropics.minigames.common.core.game.IGameInstance;
-import com.lovetropics.minigames.common.core.game.PlayerRole;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.*;
-import com.lovetropics.minigames.common.core.game.polling.PollingGameInstance;
 import com.lovetropics.minigames.common.core.game.state.GameStateMap;
 import com.lovetropics.minigames.common.core.game.state.instances.TeamKey;
 import com.lovetropics.minigames.common.core.game.state.instances.TeamState;
@@ -69,7 +66,7 @@ public final class TeamsBehavior implements IGameBehavior {
 	}
 
 	@Override
-	public void registerPolling(PollingGameInstance registerGame, EventRegistrar events) throws GameException {
+	public void registerPolling(IPollingGame registerGame, EventRegistrar events) throws GameException {
 		events.listen(GamePollingEvents.START, this::onStartPolling);
 		events.listen(GamePollingEvents.PLAYER_REGISTER, this::onPlayerRegister);
 	}
@@ -80,7 +77,7 @@ public final class TeamsBehavior implements IGameBehavior {
 	}
 
 	@Override
-	public void register(IGameInstance game, EventRegistrar events) {
+	public void register(IActiveGame game, EventRegistrar events) {
 		events.listen(GameLifecycleEvents.ASSIGN_ROLES, this::assignPlayerRoles);
 		events.listen(GameLifecycleEvents.START, this::onStart);
 		events.listen(GameLifecycleEvents.STOP, this::onFinish);
@@ -110,11 +107,11 @@ public final class TeamsBehavior implements IGameBehavior {
 		game.getStatistics().getGlobal().set(StatisticKey.TEAMS, true);
 	}
 
-	private void onStartPolling(PollingGameInstance game) {
+	private void onStartPolling(IPollingGame game) {
 		for (TeamKey team : pollingTeams) {
 			game.getControlCommands().add("join_team_" + team.key, ControlCommand.forEveryone(source -> {
 				ServerPlayerEntity player = source.asPlayer();
-				if (game.isPlayerRegistered(player)) {
+				if (game.getAllPlayers().contains(player)) {
 					onRequestJoinTeam(player, team);
 				} else {
 					player.sendStatusMessage(new StringTextComponent("You have not yet joined this minigame!").mergeStyle(TextFormatting.RED), false);
@@ -133,7 +130,7 @@ public final class TeamsBehavior implements IGameBehavior {
 		);
 	}
 
-	private void onPlayerRegister(PollingGameInstance game, ServerPlayerEntity player, @Nullable PlayerRole role) {
+	private void onPlayerRegister(IPollingGame game, ServerPlayerEntity player, @Nullable PlayerRole role) {
 		if (role != PlayerRole.SPECTATOR && pollingTeams.size() > 1) {
 			Scheduler.INSTANCE.submit(server -> {
 				sendTeamSelectionTo(player);
@@ -160,7 +157,7 @@ public final class TeamsBehavior implements IGameBehavior {
 		}
 	}
 
-	private void assignPlayerRoles(IGameInstance game, List<ServerPlayerEntity> participants, List<ServerPlayerEntity> spectators) {
+	private void assignPlayerRoles(IActiveGame game, List<ServerPlayerEntity> participants, List<ServerPlayerEntity> spectators) {
 		Set<UUID> requiredPlayers = new ObjectOpenHashSet<>();
 		for (List<UUID> assignedTeam : assignedTeams.values()) {
 			requiredPlayers.addAll(assignedTeam);
@@ -204,14 +201,14 @@ public final class TeamsBehavior implements IGameBehavior {
 		}
 	}
 
-	private void onFinish(IGameInstance game) {
+	private void onFinish(IActiveGame game) {
 		ServerScoreboard scoreboard = game.getServer().getScoreboard();
 		for (ScorePlayerTeam team : scoreboardTeams.values()) {
 			scoreboard.removeTeam(team);
 		}
 	}
 
-	private void onStart(IGameInstance game) {
+	private void onStart(IActiveGame game) {
 		Set<UUID> assignedPlayers = new ObjectOpenHashSet<>();
 
 		for (Map.Entry<String, List<UUID>> entry : assignedTeams.entrySet()) {
@@ -242,13 +239,13 @@ public final class TeamsBehavior implements IGameBehavior {
 		}
 	}
 
-	private void onPlayerChangeRole(IGameInstance game, ServerPlayerEntity player, PlayerRole role, PlayerRole lastRole) {
+	private void onPlayerChangeRole(IActiveGame game, ServerPlayerEntity player, PlayerRole role, PlayerRole lastRole) {
 		if (role == PlayerRole.SPECTATOR) {
 			removePlayerFromTeams(player);
 		}
 	}
 
-	private void addPlayerToTeam(IGameInstance game, ServerPlayerEntity player, TeamKey team) {
+	private void addPlayerToTeam(IActiveGame game, ServerPlayerEntity player, TeamKey team) {
 		teamState.addPlayerTo(player, team);
 
 		game.getStatistics().forPlayer(player).set(StatisticKey.TEAM, team);
@@ -271,18 +268,18 @@ public final class TeamsBehavior implements IGameBehavior {
 		scoreboard.removePlayerFromTeams(player.getScoreboardName());
 	}
 
-	private void onPlayerLeave(IGameInstance game, ServerPlayerEntity player) {
+	private void onPlayerLeave(IActiveGame game, ServerPlayerEntity player) {
 		removePlayerFromTeams(player);
 	}
 
-	private ActionResultType onPlayerHurt(final IGameInstance game, ServerPlayerEntity player, DamageSource source, float amount) {
+	private ActionResultType onPlayerHurt(final IActiveGame game, ServerPlayerEntity player, DamageSource source, float amount) {
 		if (!friendlyFire && teamState.areSameTeam(source.getTrueSource(), player)) {
 			return ActionResultType.FAIL;
 		}
 		return ActionResultType.PASS;
 	}
 
-	private ActionResultType onPlayerAttack(IGameInstance game, ServerPlayerEntity player, Entity target) {
+	private ActionResultType onPlayerAttack(IActiveGame game, ServerPlayerEntity player, Entity target) {
 		if (!friendlyFire && teamState.areSameTeam(player, target)) {
 			return ActionResultType.FAIL;
 		}

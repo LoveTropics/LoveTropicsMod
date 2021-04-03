@@ -1,7 +1,7 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances.donation;
 
 import com.google.common.collect.Lists;
-import com.lovetropics.minigames.common.core.game.IGameInstance;
+import com.lovetropics.minigames.common.core.game.IActiveGame;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameLifecycleEvents;
@@ -29,12 +29,12 @@ public class SwapPlayersPackageBehavior implements IGameBehavior {
 	}
 
 	@Override
-	public void register(IGameInstance registerGame, EventRegistrar events) {
+	public void register(IActiveGame registerGame, EventRegistrar events) {
 		events.listen(GamePackageEvents.APPLY_PACKAGE, (game, player, sendingPlayer) -> swapCountdown = 20);
 		events.listen(GameLifecycleEvents.TICK, this::tick);
 	}
 
-	private void tick(IGameInstance game) {
+	private void tick(IActiveGame game) {
 		if (swapCountdown <= 0) return;
 
 		if (--swapCountdown <= 0) {

@@ -26,4 +26,52 @@ public interface IGameLookup {
 		}
 		return null;
 	}
+
+	@Nullable
+	default IActiveGame getActiveGameFor(PlayerEntity player) {
+		IGameInstance game = getGameFor(player);
+		return game != null ? game.asActive() : null;
+	}
+
+	@Nullable
+	default IActiveGame getActiveGameFor(Entity entity) {
+		IGameInstance game = getGameFor(entity);
+		return game != null ? game.asActive() : null;
+	}
+
+	@Nullable
+	default IActiveGame getActiveGameAt(World world, BlockPos pos) {
+		IGameInstance game = getGameAt(world, pos);
+		return game != null ? game.asActive() : null;
+	}
+
+	@Nullable
+	default IActiveGame getActiveGameFor(CommandSource source) {
+		IGameInstance game = getGameFor(source);
+		return game != null ? game.asActive() : null;
+	}
+
+	@Nullable
+	default IPollingGame getPollingGameFor(PlayerEntity player) {
+		IGameInstance game = getGameFor(player);
+		return game != null ? game.asPolling() : null;
+	}
+
+	@Nullable
+	default IPollingGame getPollingGameFor(Entity entity) {
+		IGameInstance game = getGameFor(entity);
+		return game != null ? game.asPolling() : null;
+	}
+
+	@Nullable
+	default IPollingGame getPollingGameAt(World world, BlockPos pos) {
+		IGameInstance game = getGameAt(world, pos);
+		return game != null ? game.asPolling() : null;
+	}
+
+	@Nullable
+	default IPollingGame getPollingGameFor(CommandSource source) {
+		IGameInstance game = getGameFor(source);
+		return game != null ? game.asPolling() : null;
+	}
 }

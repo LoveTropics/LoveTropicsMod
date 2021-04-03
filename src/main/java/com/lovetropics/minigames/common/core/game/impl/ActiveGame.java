@@ -1,8 +1,10 @@
-package com.lovetropics.minigames.common.core.game;
+package com.lovetropics.minigames.common.core.game.impl;
 
+import com.google.common.collect.Lists;
 import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.client.minigame.ClientRoleMessage;
 import com.lovetropics.minigames.client.minigame.PlayerCountsMessage;
+import com.lovetropics.minigames.common.core.game.*;
 import com.lovetropics.minigames.common.core.game.behavior.BehaviorMap;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
@@ -10,10 +12,8 @@ import com.lovetropics.minigames.common.core.game.behavior.event.GameLifecycleEv
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.lovetropics.minigames.common.core.game.control.GameControlCommands;
 import com.lovetropics.minigames.common.core.game.map.GameMap;
-import com.lovetropics.minigames.common.core.game.polling.GameRegistrations;
 import com.lovetropics.minigames.common.core.game.state.GameStateMap;
 import com.lovetropics.minigames.common.core.game.statistics.GameStatistics;
-import com.lovetropics.minigames.common.core.game.statistics.PlayerKey;
 import com.lovetropics.minigames.common.core.game.statistics.StatisticKey;
 import com.lovetropics.minigames.common.core.integration.GameInstanceTelemetry;
 import com.lovetropics.minigames.common.core.integration.Telemetry;
@@ -34,7 +34,6 @@ import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.fml.network.PacketDistributor;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -45,13 +44,11 @@ import java.util.concurrent.CompletableFuture;
  * of the minigame instance, as well as the definition that is being
  * used to specify the rulesets for the minigame.
  */
-public class GameInstance implements IGameInstance {
-    private final String instanceId;
+public class ActiveGame implements IActiveGame {
+    private final GameInstance instance;
     private final MinecraftServer server;
-    private final IGameDefinition definition;
     private final GameMap map;
     private final BehaviorMap behaviors;
-    private final PlayerKey initiator;
 
     private final MutablePlayerSet allPlayers;
     private final EnumMap<PlayerRole, MutablePlayerSet> roles = new EnumMap<>(PlayerRole.class);
@@ -68,13 +65,11 @@ public class GameInstance implements IGameInstance {
 
     private long startTime;
 
-    private GameInstance(String instanceId, MinecraftServer server, IGameDefinition definition, GameMap map, BehaviorMap behaviors, PlayerKey initiator) {
-        this.instanceId = instanceId;
-        this.server = server;
-        this.definition = definition;
+    private ActiveGame(GameInstance instance, GameMap map, BehaviorMap behaviors) {
+        this.instance = instance;
+        this.server = instance.getServer();
         this.map = map;
         this.behaviors = behaviors;
-        this.initiator = initiator;
 
         this.allPlayers = new MutablePlayerSet(server);
 
@@ -85,24 +80,19 @@ public class GameInstance implements IGameInstance {
 
         this.telemetry = Telemetry.INSTANCE.openGame(this);
 
-        this.controlCommands = new GameControlCommands(initiator);
+        this.controlCommands = new GameControlCommands(instance.getInitiator());
     }
 
-    public static CompletableFuture<GameResult<GameInstance>> start(
-            String instanceId, MinecraftServer server, IGameDefinition definition, GameMap map, BehaviorMap behaviors,
-            PlayerKey initiator, GameRegistrations registrations
+    static CompletableFuture<GameResult<ActiveGame>> start(
+            GameInstance instance, GameMap map, BehaviorMap behaviors,
+            List<ServerPlayerEntity> participants, List<ServerPlayerEntity> spectators
     ) {
-        GameInstance game = new GameInstance(instanceId, server, definition, map, behaviors, initiator);
+        ActiveGame game = new ActiveGame(instance, map, behaviors);
 
         GameResult<Unit> result = game.registerBehaviors();
         if (result.isError()) {
             return CompletableFuture.completedFuture(result.castError());
         }
-
-        List<ServerPlayerEntity> participants = new ArrayList<>();
-        List<ServerPlayerEntity> spectators = new ArrayList<>();
-
-        registrations.collectInto(server, participants, spectators, definition.getMaximumParticipantCount());
 
         try {
             game.invoker(GameLifecycleEvents.ASSIGN_ROLES).assignRoles(game, participants, spectators);
@@ -157,18 +147,8 @@ public class GameInstance implements IGameInstance {
     }
 
     @Override
-    public String getInstanceId() {
-        return instanceId;
-    }
-
-	@Override
-	public GameStatus getStatus() {
-		return GameStatus.ACTIVE;
-	}
-
-    @Override
-    public IGameDefinition getDefinition() {
-        return this.definition;
+    public IGameInstance getInstance() {
+        return instance;
     }
 
     @Override
@@ -262,7 +242,68 @@ public class GameInstance implements IGameInstance {
 
     @Override
     public PlayerSet getAllPlayers() {
-        return this.allPlayers;
+        return allPlayers;
+    }
+
+    private GameResult<Unit> stop() {
+        try {
+            try {
+                invoker(GameLifecycleEvents.STOP).stop(this);
+            } catch (Exception e) {
+                return GameResult.fromException("Failed to dispatch stop event", e);
+            }
+
+            List<ServerPlayerEntity> players = Lists.newArrayList(getAllPlayers());
+            for (ServerPlayerEntity player : players) {
+                removePlayer(player);
+            }
+
+            PlayerSet.ofServer(server).sendMessage(GameMessages.forGame(this).finished());
+
+            try {
+                invoker(GameLifecycleEvents.POST_STOP).stop(this);
+            } catch (Exception e) {
+                return GameResult.fromException("Failed to dispatch post stop event", e);
+            }
+
+            return GameResult.ok();
+        } catch (Exception e) {
+            return GameResult.fromException("Unknown error stopping game", e);
+        } finally {
+            map.close(this);
+            instance.stop();
+        }
+    }
+
+    @Override
+    public GameResult<Unit> finish() {
+        try {
+            invoker(GameLifecycleEvents.FINISH).stop(this);
+        } catch (Exception e) {
+            return GameResult.fromException("Failed to dispatch finish event", e);
+        }
+
+        GameResult<Unit> result = stop();
+        if (result.isOk()) {
+            telemetry.finish(statistics);
+        } else {
+            telemetry.cancel();
+        }
+
+        return result;
+    }
+
+    @Override
+    public GameResult<Unit> cancel() {
+        try {
+            invoker(GameLifecycleEvents.CANCEL).stop(this);
+        } catch (Exception e) {
+            return GameResult.fromException("Failed to dispatch cancel event", e);
+        }
+
+        telemetry.cancel();
+
+        return stop();
     }
 
     @Override
@@ -278,7 +319,7 @@ public class GameInstance implements IGameInstance {
     @Override
     public CommandSource getCommandSource() {
         if (this.commandSource == null) {
-            ITextComponent name = definition.getName();
+            ITextComponent name = instance.getDefinition().getName();
             this.commandSource = new CommandSource(ICommandSource.DUMMY, Vector3d.ZERO, Vector2f.ZERO, getWorld(), 4, name.getString(), name, this.server, null);
         }
 
@@ -288,11 +329,6 @@ public class GameInstance implements IGameInstance {
     @Override
     public RegistryKey<World> getDimension() {
         return map.getDimension();
-    }
-
-    @Override
-    public MinecraftServer getServer() {
-        return server;
     }
 
     @Override
@@ -328,15 +364,5 @@ public class GameInstance implements IGameInstance {
     @Override
     public GameInstanceTelemetry getTelemetry() {
         return telemetry;
-    }
-
-    @Override
-    public PlayerKey getInitiator() {
-        return initiator;
-    }
-
-    @Override
-    public void close() {
-        map.close(this);
     }
 }

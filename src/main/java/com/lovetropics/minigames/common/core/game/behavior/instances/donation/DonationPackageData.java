@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances.donation;
 
-import com.lovetropics.minigames.common.core.game.IGameInstance;
+import com.lovetropics.minigames.common.core.game.IActiveGame;
 import com.lovetropics.minigames.common.core.game.PlayerSet;
 import com.lovetropics.minigames.common.core.game.util.TemplatedText;
 import com.mojang.serialization.Codec;
@@ -60,7 +60,7 @@ public class DonationPackageData {
 		return soundOnReceive;
 	}
 
-	public void onReceive(final IGameInstance instance, @Nullable final ServerPlayerEntity player, @Nullable final String sendingPlayer) {
+	public void onReceive(final IActiveGame instance, @Nullable final ServerPlayerEntity player, @Nullable final String sendingPlayer) {
 		PlayerSet players = instance.getAllPlayers();
 
 		if (messageForPlayer != null) {

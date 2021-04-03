@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.common.core.game.behavior.event;
 
-import com.lovetropics.minigames.common.core.game.IGameInstance;
+import com.lovetropics.minigames.common.core.game.IActiveGame;
 import net.minecraft.entity.player.ServerPlayerEntity;
 
 import java.util.List;
@@ -52,18 +52,18 @@ public final class GameLifecycleEvents {
 	}
 
 	public interface Start {
-		void start(IGameInstance game);
+		void start(IActiveGame game);
 	}
 
 	public interface Stop {
-		void stop(IGameInstance game);
+		void stop(IActiveGame game);
 	}
 
 	public interface Tick {
-		void tick(IGameInstance game);
+		void tick(IActiveGame game);
 	}
 
 	public interface AssignRoles {
-		void assignRoles(IGameInstance game, List<ServerPlayerEntity> participants, List<ServerPlayerEntity> spectators);
+		void assignRoles(IActiveGame game, List<ServerPlayerEntity> participants, List<ServerPlayerEntity> spectators);
 	}
 }

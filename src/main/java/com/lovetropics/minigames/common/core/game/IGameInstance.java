@@ -1,82 +1,70 @@
 package com.lovetropics.minigames.common.core.game;
 
-import com.lovetropics.minigames.common.core.game.state.GameStateMap;
-import com.lovetropics.minigames.common.core.game.statistics.GameStatistics;
-import com.lovetropics.minigames.common.core.game.statistics.PlayerKey;
-import com.lovetropics.minigames.common.core.integration.GameInstanceTelemetry;
-import com.lovetropics.minigames.common.core.map.MapRegions;
-import net.minecraft.command.CommandSource;
+import com.lovetropics.minigames.common.core.game.behavior.BehaviorMap;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
+import com.lovetropics.minigames.common.core.game.control.GameControlCommands;
 import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.util.RegistryKey;
-import net.minecraft.world.World;
-import net.minecraft.world.server.ServerWorld;
+import net.minecraft.util.Unit;
 
-/**
- * Represents an active game instance and all of its state.
- * Managed by a {@link IGameManager} and interfaced with through behaviors and events.
- */
-public interface IGameInstance extends ProtoGameInstance {
-	/**
-     * @return The list of all players that are a part of this game, including both participants and spectators.
-     */
-    PlayerSet getAllPlayers();
+import javax.annotation.Nullable;
 
-    /**
-     * @return The list of players within this game instance that belong to the given role
-     */
-    PlayerSet getPlayersWithRole(PlayerRole role);
+public interface IGameInstance extends IProtoGame {
+	IGamePhase getPhase();
 
-    boolean setPlayerRole(ServerPlayerEntity player, PlayerRole role);
+	@Override
+	default GameResult<Unit> cancel() {
+		return getPhase().cancel();
+	}
 
-    /**
-     * @return The list of active participants that are playing within the game instance.
-     */
-    default PlayerSet getParticipants() {
-        return getPlayersWithRole(PlayerRole.PARTICIPANT);
-    }
+	@Override
+	default BehaviorMap getBehaviors() {
+		return getPhase().getBehaviors();
+	}
 
-    /**
-     * @return The list of spectators that are observing the game instance.
-     */
-    default PlayerSet getSpectators() {
-        return getPlayersWithRole(PlayerRole.SPECTATOR);
-    }
+	@Override
+	default GameEventListeners getEvents() {
+		return getPhase().getEvents();
+	}
 
-    @Override
-    default int getMemberCount(PlayerRole role) {
-    	return getPlayersWithRole(role).size();
-    }
+	@Override
+	default GameControlCommands getControlCommands() {
+		return getPhase().getControlCommands();
+	}
 
-    /**
-     * Used for executing commands of datapacks within the games.
-     * @return The command source for this game instance.
-     */
-    CommandSource getCommandSource();
+	@Override
+	default GameStatus getStatus() {
+		return getPhase().getStatus();
+	}
 
-    MapRegions getMapRegions();
+	@Override
+	default PlayerSet getAllPlayers() {
+		return getPhase().getAllPlayers();
+	}
 
-    /**
-     * @return the world that this game takes place within
-     */
-    ServerWorld getWorld();
+	@Override
+	default boolean requestPlayerJoin(ServerPlayerEntity player, @Nullable PlayerRole requestedRole) {
+		return getPhase().requestPlayerJoin(player, requestedRole);
+	}
 
-    /**
-     * @return the dimension that this game takes places within
-     */
-    RegistryKey<World> getDimension();
+	@Override
+	default boolean removePlayer(ServerPlayerEntity player) {
+		return getPhase().removePlayer(player);
+	}
 
-    /**
-     * @return the tick counter since the game started
-     */
-    long ticks();
+	@Override
+	default int getMemberCount(PlayerRole role) {
+		return getPhase().getMemberCount(role);
+	}
 
-    GameStatistics getStatistics();
+	@Override
+	@Nullable
+	default IPollingGame asPolling() {
+		return getPhase().asPolling();
+	}
 
-    GameInstanceTelemetry getTelemetry();
-
-    GameStateMap getState();
-
-    PlayerKey getInitiator();
-
-    default void close() {};
+	@Override
+	@Nullable
+	default IActiveGame asActive() {
+		return getPhase().asActive();
+	}
 }

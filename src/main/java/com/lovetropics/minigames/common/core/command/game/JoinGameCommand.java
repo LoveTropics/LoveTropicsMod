@@ -1,10 +1,7 @@
 package com.lovetropics.minigames.common.core.command.game;
 
 import com.lovetropics.minigames.client.data.LoveTropicsLangKeys;
-import com.lovetropics.minigames.common.core.game.GameResult;
-import com.lovetropics.minigames.common.core.game.IGameManager;
-import com.lovetropics.minigames.common.core.game.PlayerRole;
-import com.lovetropics.minigames.common.core.game.ProtoGameInstance;
+import com.lovetropics.minigames.common.core.game.*;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
@@ -70,7 +67,7 @@ public class JoinGameCommand {
 			ServerPlayerEntity player = ctx.getSource().asPlayer();
 
 			// TODO: support concurrent minigames
-			Collection<ProtoGameInstance> games = IGameManager.get().getAllGames();
+			Collection<IGameInstance> games = IGameManager.get().getAllGames();
 			if (games.size() == 1) {
 				if (games.iterator().next().requestPlayerJoin(player, requestedRole)) {
 					return GameResult.ok(new TranslationTextComponent(LoveTropicsLangKeys.COMMAND_REGISTERED_FOR_MINIGAME));
