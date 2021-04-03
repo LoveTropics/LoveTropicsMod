@@ -1,10 +1,7 @@
 package com.lovetropics.minigames.common.core.command.game;
 
 import com.lovetropics.minigames.client.data.LoveTropicsLangKeys;
-import com.lovetropics.minigames.common.core.game.GameMessages;
-import com.lovetropics.minigames.common.core.game.GameResult;
-import com.lovetropics.minigames.common.core.game.IActiveGame;
-import com.lovetropics.minigames.common.core.game.IGameManager;
+import com.lovetropics.minigames.common.core.game.*;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import net.minecraft.command.CommandSource;
@@ -26,7 +23,7 @@ public class LeaveGameCommand {
 		return literal(name).requires(s -> s.getEntity() instanceof ServerPlayerEntity)
 			.executes(c -> GameCommand.executeMinigameAction(() -> {
 				CommandSource source = c.getSource();
-				IActiveGame game = IGameManager.get().getActiveGameFor(source);
+				IGameInstance game = IGameManager.get().getGameFor(source);
 				if (game != null && game.removePlayer(source.asPlayer())) {
 					return GameResult.ok(GameMessages.forGame(game).unregisterSuccess());
 				}
