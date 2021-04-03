@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.common.core.game.util;
 
-import com.lovetropics.minigames.common.core.game.IGameInstance;
+import com.lovetropics.minigames.common.core.game.IActiveGame;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameLifecycleEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
@@ -9,9 +9,9 @@ import net.minecraft.util.text.ITextComponent;
 import net.minecraft.world.BossInfo;
 
 public final class GlobalGameWidgets {
-	private final IGameInstance game;
+	private final IActiveGame game;
 
-	public GlobalGameWidgets(IGameInstance game) {
+	public GlobalGameWidgets(IActiveGame game) {
 		this.game = game;
 	}
 

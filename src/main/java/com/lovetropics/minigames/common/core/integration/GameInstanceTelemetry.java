@@ -4,8 +4,8 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.common.config.ConfigLT;
+import com.lovetropics.minigames.common.core.game.IActiveGame;
 import com.lovetropics.minigames.common.core.game.IGameDefinition;
-import com.lovetropics.minigames.common.core.game.IGameInstance;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePackageEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
@@ -20,13 +20,11 @@ import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.server.MinecraftServer;
 
 import java.time.Instant;
-import java.util.UUID;
 
 public final class GameInstanceTelemetry {
-	private final IGameInstance game;
+	private final IActiveGame game;
 	private final Telemetry telemetry;
 
-	private final UUID instanceId;
 	private final IGameDefinition definition;
 	private final PlayerKey initiator;
 
@@ -34,10 +32,9 @@ public final class GameInstanceTelemetry {
 
 	private boolean closed;
 
-	private GameInstanceTelemetry(IGameInstance game, Telemetry telemetry, UUID instanceId) {
+	private GameInstanceTelemetry(IActiveGame game, Telemetry telemetry) {
 		this.game = game;
 		this.telemetry = telemetry;
-		this.instanceId = instanceId;
 		this.definition = game.getDefinition();
 		this.initiator = game.getInitiator();
 
@@ -45,9 +42,8 @@ public final class GameInstanceTelemetry {
 		this.actions = new GameActionHandler(this.game, this);
 	}
 
-	static GameInstanceTelemetry open(IGameInstance game, Telemetry telemetry) {
-		UUID instanceId = UUID.randomUUID();
-		return new GameInstanceTelemetry(game, telemetry, instanceId);
+	static GameInstanceTelemetry open(IActiveGame game, Telemetry telemetry) {
+		return new GameInstanceTelemetry(game, telemetry);
 	}
 
 	public void start() {
@@ -122,7 +118,7 @@ public final class GameInstanceTelemetry {
 			return;
 		}
 
-		payload.addProperty("id", instanceId.toString());
+		payload.addProperty("id", game.getInstanceId().uuid.toString());
 
 		JsonObject minigame = new JsonObject();
 		minigame.addProperty("id", definition.getDisplayId().toString());

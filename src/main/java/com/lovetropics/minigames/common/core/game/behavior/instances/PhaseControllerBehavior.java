@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances;
 
-import com.lovetropics.minigames.common.core.game.IGameInstance;
+import com.lovetropics.minigames.common.core.game.IActiveGame;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameLifecycleEvents;
@@ -34,7 +34,7 @@ public class PhaseControllerBehavior implements IGameBehavior {
 		this.phases = phases;
 	}
 
-	private boolean nextPhase(final IGameInstance game) {
+	private boolean nextPhase(final IActiveGame game) {
 		if (phaseIterator.hasNext()) {
 			GamePhase lastPhase = phaseState.get();
 
@@ -58,7 +58,7 @@ public class PhaseControllerBehavior implements IGameBehavior {
 	}
 
 	@Override
-	public void register(IGameInstance registerGame, EventRegistrar events) {
+	public void register(IActiveGame registerGame, EventRegistrar events) {
 		events.listen(GameLifecycleEvents.START, game -> {
 			hasFinishedPhases = false;
 			phaseIterator = phases.iterator();

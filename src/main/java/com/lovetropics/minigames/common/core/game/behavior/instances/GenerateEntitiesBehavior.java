@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances;
 
-import com.lovetropics.minigames.common.core.game.IGameInstance;
+import com.lovetropics.minigames.common.core.game.IActiveGame;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.entity.EntityType;
@@ -34,7 +34,7 @@ public final class GenerateEntitiesBehavior extends ChunkGeneratingBehavior {
 	}
 
 	@Override
-	protected void generateChunk(IGameInstance game, ServerWorld world, Chunk chunk) {
+	protected void generateChunk(IActiveGame game, ServerWorld world, Chunk chunk) {
 		ChunkPos chunkPos = chunk.getPos();
 		int minX = chunkPos.getXStart();
 		int minZ = chunkPos.getZStart();

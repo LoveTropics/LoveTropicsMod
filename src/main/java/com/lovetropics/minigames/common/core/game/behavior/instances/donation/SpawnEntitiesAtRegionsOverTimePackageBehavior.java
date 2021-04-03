@@ -1,7 +1,7 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances.donation;
 
 import com.google.common.collect.Lists;
-import com.lovetropics.minigames.common.core.game.IGameInstance;
+import com.lovetropics.minigames.common.core.game.IActiveGame;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameLifecycleEvents;
@@ -53,7 +53,7 @@ public class SpawnEntitiesAtRegionsOverTimePackageBehavior implements IGameBehav
 	}
 
 	@Override
-	public void register(IGameInstance game, EventRegistrar events) {
+	public void register(IActiveGame game, EventRegistrar events) {
 		MapRegions regions = game.getMapRegions();
 
 		regionsToSpawnAt.clear();
@@ -66,12 +66,12 @@ public class SpawnEntitiesAtRegionsOverTimePackageBehavior implements IGameBehav
 		events.listen(GameLifecycleEvents.TICK, this::tick);
 	}
 
-	private void applyPackage(final IGameInstance game, ServerPlayerEntity player, String senderPlayerName) {
+	private void applyPackage(final IActiveGame game, ServerPlayerEntity player, String senderPlayerName) {
 		ticksRemaining += ticksToSpawnFor;
 		entityCountRemaining += entityCount;
 	}
 
-	private void tick(IGameInstance game) {
+	private void tick(IActiveGame game) {
 		if (ticksRemaining > 0) {
 
 			//TODO: support less than 1 spawned per tick rate

@@ -2,7 +2,7 @@ package com.lovetropics.minigames.common.content.trash_dive;
 
 import com.lovetropics.minigames.common.content.block.TrashType;
 import com.lovetropics.minigames.common.core.game.GameException;
-import com.lovetropics.minigames.common.core.game.IGameInstance;
+import com.lovetropics.minigames.common.core.game.IActiveGame;
 import com.lovetropics.minigames.common.core.game.PlayerRole;
 import com.lovetropics.minigames.common.core.game.PlayerSet;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
@@ -53,7 +53,7 @@ public final class TrashCollectionBehavior implements IGameBehavior {
 	}
 
 	@Override
-	public void register(IGameInstance game, EventRegistrar events) throws GameException {
+	public void register(IActiveGame game, EventRegistrar events) throws GameException {
 		events.listen(GameLifecycleEvents.START, this::onStart);
 		events.listen(GameLifecycleEvents.STOP, this::onFinish);
 		events.listen(GamePlayerEvents.JOIN,this::onPlayerJoin);
@@ -63,7 +63,7 @@ public final class TrashCollectionBehavior implements IGameBehavior {
 		events.listen(GameLogicEvents.GAME_OVER, this::triggerGameOver);
 	}
 
-	private void onStart(IGameInstance game) {
+	private void onStart(IActiveGame game) {
 		ITextComponent sidebarTitle = new StringTextComponent("Trash Dive")
 				.mergeStyle(TextFormatting.BLUE, TextFormatting.BOLD);
 
@@ -78,16 +78,16 @@ public final class TrashCollectionBehavior implements IGameBehavior {
 		}
 	}
 
-	private void onFinish(IGameInstance minigame) {
+	private void onFinish(IActiveGame minigame) {
 		triggerGameOver(minigame);
 	}
 
-	private void onPlayerJoin(IGameInstance game, ServerPlayerEntity player, PlayerRole role) {
+	private void onPlayerJoin(IActiveGame game, ServerPlayerEntity player, PlayerRole role) {
 		GameStatistics statistics = game.getStatistics();
 		statistics.forPlayer(player).set(StatisticKey.TRASH_COLLECTED, 0);
 	}
 
-	private void onPlayerLeftClickBlock(IGameInstance game, ServerPlayerEntity player, BlockPos pos) {
+	private void onPlayerLeftClickBlock(IActiveGame game, ServerPlayerEntity player, BlockPos pos) {
 		ServerWorld world = game.getWorld();
 
 		BlockState state = world.getBlockState(pos);
@@ -108,7 +108,7 @@ public final class TrashCollectionBehavior implements IGameBehavior {
 		sidebar.set(renderSidebar(game));
 	}
 
-	private ActionResultType onPlayerBreakBlock(IGameInstance game, ServerPlayerEntity player, BlockPos pos, BlockState state) {
+	private ActionResultType onPlayerBreakBlock(IActiveGame game, ServerPlayerEntity player, BlockPos pos, BlockState state) {
 		return isTrash(state) ? ActionResultType.PASS : ActionResultType.FAIL;
 	}
 
@@ -116,7 +116,7 @@ public final class TrashCollectionBehavior implements IGameBehavior {
 		return trashBlocks.contains(state.getBlock());
 	}
 
-	private void triggerGameOver(IGameInstance minigame) {
+	private void triggerGameOver(IActiveGame minigame) {
 		if (gameOver) return;
 
 		gameOver = true;
@@ -144,7 +144,7 @@ public final class TrashCollectionBehavior implements IGameBehavior {
 		placement.sendTo(players, 5);
 	}
 
-	private String[] renderSidebar(IGameInstance minigame) {
+	private String[] renderSidebar(IActiveGame minigame) {
 		List<String> sidebar = new ArrayList<>(10);
 		sidebar.add(TextFormatting.GREEN + "Pick up trash! " + TextFormatting.GRAY + collectedTrash + " collected");
 

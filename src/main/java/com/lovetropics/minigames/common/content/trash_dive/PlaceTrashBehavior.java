@@ -5,7 +5,7 @@ import com.lovetropics.minigames.common.content.block.TrashBlock;
 import com.lovetropics.minigames.common.content.block.TrashBlock.Attachment;
 import com.lovetropics.minigames.common.content.block.TrashType;
 import com.lovetropics.minigames.common.core.game.GameException;
-import com.lovetropics.minigames.common.core.game.IGameInstance;
+import com.lovetropics.minigames.common.core.game.IActiveGame;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameWorldEvents;
@@ -52,7 +52,7 @@ public final class PlaceTrashBehavior implements IGameBehavior {
 	}
 
 	@Override
-	public void register(IGameInstance game, EventRegistrar events) throws GameException {
+	public void register(IActiveGame game, EventRegistrar events) throws GameException {
 		Long2ObjectMap<LongList> trashByChunk = loadTrashByChunk(game);
 
 		events.listen(GameWorldEvents.CHUNK_LOAD, (g, chunk) -> {
@@ -78,7 +78,7 @@ public final class PlaceTrashBehavior implements IGameBehavior {
 		});
 	}
 
-	private Long2ObjectMap<LongList> loadTrashByChunk(IGameInstance game) {
+	private Long2ObjectMap<LongList> loadTrashByChunk(IActiveGame game) {
 		LongBuffer candidatePositions;
 		try (IResource res = game.getServer().getDataPackRegistries().getResourceManager().getResource(positionData)) {
 			InputStream in = res.getInputStream();

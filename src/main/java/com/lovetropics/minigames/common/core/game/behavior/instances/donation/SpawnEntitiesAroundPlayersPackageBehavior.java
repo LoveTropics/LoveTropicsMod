@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances.donation;
 
-import com.lovetropics.minigames.common.core.game.IGameInstance;
+import com.lovetropics.minigames.common.core.game.IActiveGame;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameLifecycleEvents;
@@ -48,12 +48,12 @@ public class SpawnEntitiesAroundPlayersPackageBehavior implements IGameBehavior
 	}
 
 	@Override
-	public void register(IGameInstance registerGame, EventRegistrar events) {
+	public void register(IActiveGame registerGame, EventRegistrar events) {
 		events.listen(GamePackageEvents.APPLY_PACKAGE, (game, player, sendingPlayer) -> playerToAmountToSpawn.put(player, entityCountPerPlayer));
 		events.listen(GameLifecycleEvents.TICK, this::tick);
 	}
 
-	private void tick(IGameInstance game) {
+	private void tick(IActiveGame game) {
 		Iterator<Object2IntMap.Entry<ServerPlayerEntity>> it = playerToAmountToSpawn.object2IntEntrySet().iterator();
 		while (it.hasNext()) {
 			Object2IntMap.Entry<ServerPlayerEntity> entry = it.next();
@@ -81,7 +81,7 @@ public class SpawnEntitiesAroundPlayersPackageBehavior implements IGameBehavior
 	 *
 	 * @return BlockPos.ZERO if it fails, otherwise a real position
 	 */
-	public BlockPos getSpawnableRandomPositionNear(final IGameInstance minigame, BlockPos pos, int minDist, int maxDist, int loopAttempts, int yRange) {
+	public BlockPos getSpawnableRandomPositionNear(final IActiveGame minigame, BlockPos pos, int minDist, int maxDist, int loopAttempts, int yRange) {
 		for (int i = 0; i < loopAttempts; i++) {
 			BlockPos posTry = pos.add(minigame.getWorld().getRandom().nextInt(maxDist * 2) - maxDist,
 					minigame.getWorld().getRandom().nextInt(yRange * 2) - yRange,
@@ -98,7 +98,7 @@ public class SpawnEntitiesAroundPlayersPackageBehavior implements IGameBehavior
 	 * Quick and dirty check for 2 high air with non air block under it
 	 * - also checks that it isnt water under it
 	 */
-	public boolean isSpawnablePosition(final IGameInstance minigame, BlockPos pos) {
+	public boolean isSpawnablePosition(final IActiveGame minigame, BlockPos pos) {
 		return !minigame.getWorld().isAirBlock(pos.add(0, -1, 0))
 				&& minigame.getWorld().isAirBlock(pos.add(0, 0, 0))
 				&& minigame.getWorld().isAirBlock(pos.add(0, 1, 0))

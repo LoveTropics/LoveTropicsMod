@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances.tweak;
 
-import com.lovetropics.minigames.common.core.game.IGameInstance;
+import com.lovetropics.minigames.common.core.game.IActiveGame;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameLifecycleEvents;
@@ -39,12 +39,12 @@ public final class SetMaxHealthBehavior implements IGameBehavior {
 	}
 
 	@Override
-	public void register(IGameInstance registerGame, EventRegistrar events) {
+	public void register(IActiveGame registerGame, EventRegistrar events) {
 		events.listen(GameLifecycleEvents.START, this::onStart);
 		events.listen(GamePlayerEvents.LEAVE, this::onPlayerLeave);
 	}
 
-	private void onStart(IGameInstance game) {
+	private void onStart(IActiveGame game) {
 		for (ServerPlayerEntity player : game.getParticipants()) {
 			double maxHealth = getMaxHealthForPlayer(game, player);
 			if (maxHealth != 20.0) {
@@ -60,7 +60,7 @@ public final class SetMaxHealthBehavior implements IGameBehavior {
 		}
 	}
 
-	private double getMaxHealthForPlayer(IGameInstance minigame, ServerPlayerEntity player) {
+	private double getMaxHealthForPlayer(IActiveGame minigame, ServerPlayerEntity player) {
 		TeamKey team = getTeamOrNull(minigame, player);
 		if (team != null) {
 			return maxHealthByTeam.getOrDefault(team.key, 20.0);
@@ -68,12 +68,12 @@ public final class SetMaxHealthBehavior implements IGameBehavior {
 		return maxHealth;
 	}
 
-	private void onPlayerLeave(IGameInstance game, ServerPlayerEntity player) {
+	private void onPlayerLeave(IActiveGame game, ServerPlayerEntity player) {
 		player.getAttribute(Attributes.MAX_HEALTH).removeModifier(ATTRIBUTE_ID);
 	}
 
 	@Nullable
-	private TeamKey getTeamOrNull(IGameInstance game, ServerPlayerEntity player) {
+	private TeamKey getTeamOrNull(IActiveGame game, ServerPlayerEntity player) {
 		TeamState teamState = game.getState().getOrNull(TeamState.TYPE);
 		if (teamState != null) {
 			return teamState.getTeamForPlayer(player);

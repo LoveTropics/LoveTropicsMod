@@ -8,7 +8,7 @@ import com.lovetropics.lib.backend.BackendConnection;
 import com.lovetropics.lib.backend.BackendProxy;
 import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.common.config.ConfigLT;
-import com.lovetropics.minigames.common.core.game.IGameInstance;
+import com.lovetropics.minigames.common.core.game.IActiveGame;
 import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -43,6 +43,7 @@ public final class Telemetry {
 
 	private final BackendProxy proxy;
 
+	// TODO: support multiple games (needs backend support)
 	private GameInstanceTelemetry instance;
 
 	private Telemetry() {
@@ -103,7 +104,7 @@ public final class Telemetry {
 		}
 	}
 
-	public GameInstanceTelemetry openGame(IGameInstance minigame) {
+	public GameInstanceTelemetry openGame(IActiveGame minigame) {
 		return GameInstanceTelemetry.open(minigame, this);
 	}
 

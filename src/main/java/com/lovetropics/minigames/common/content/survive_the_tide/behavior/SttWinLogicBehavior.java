@@ -1,8 +1,7 @@
 package com.lovetropics.minigames.common.content.survive_the_tide.behavior;
 
 import com.lovetropics.minigames.common.core.game.GameException;
-import com.lovetropics.minigames.common.core.game.IGameInstance;
-import com.lovetropics.minigames.common.core.game.IGameManager;
+import com.lovetropics.minigames.common.core.game.IActiveGame;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameLifecycleEvents;
@@ -46,7 +45,7 @@ public class SttWinLogicBehavior implements IGameBehavior {
 	}
 
 	@Override
-	public void register(IGameInstance registerGame, EventRegistrar events) throws GameException {
+	public void register(IActiveGame registerGame, EventRegistrar events) throws GameException {
 		events.listen(GameLogicEvents.WIN_TRIGGERED, (game, winnerName) -> {
 			this.winner = winnerName;
 			this.minigameEnded = true;
@@ -61,7 +60,7 @@ public class SttWinLogicBehavior implements IGameBehavior {
 		});
 	}
 
-	private void checkForGameEndCondition(final IGameInstance game, final World world) {
+	private void checkForGameEndCondition(final IActiveGame game, final World world) {
 		if (this.minigameEnded) {
 			if (spawnLightningBoltsOnFinish) {
 				spawnLightningBoltsEverywhere(game, world);
@@ -70,14 +69,14 @@ public class SttWinLogicBehavior implements IGameBehavior {
 			sendGameFinishMessages(game);
 
 			if (this.minigameEndedTimer >= gameFinishTickDelay) {
-				IGameManager.get().finish(game);
+				game.finish();
 			}
 
 			this.minigameEndedTimer++;
 		}
 	}
 
-	private void spawnLightningBoltsEverywhere(IGameInstance minigame, final World world) {
+	private void spawnLightningBoltsEverywhere(IActiveGame minigame, final World world) {
 		if (this.minigameEndedTimer % lightningBoltSpawnTickRate == 0) {
 			for (ServerPlayerEntity player : minigame.getParticipants()) {
 				int xOffset = (7 + world.rand.nextInt(5)) * (world.rand.nextBoolean() ? 1 : -1);
@@ -97,7 +96,7 @@ public class SttWinLogicBehavior implements IGameBehavior {
 		}
 	}
 
-	private void sendGameFinishMessages(final IGameInstance game) {
+	private void sendGameFinishMessages(final IActiveGame game) {
 		TemplatedText message = scheduledGameFinishMessages.remove(minigameEndedTimer);
 		if (message != null) {
 			game.getAllPlayers().sendMessage(message.apply(winner));

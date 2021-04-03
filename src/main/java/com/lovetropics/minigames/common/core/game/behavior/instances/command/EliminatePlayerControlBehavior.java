@@ -1,7 +1,7 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances.command;
 
 import com.lovetropics.minigames.common.core.game.control.ControlCommand;
-import com.lovetropics.minigames.common.core.game.IGameInstance;
+import com.lovetropics.minigames.common.core.game.IActiveGame;
 import com.lovetropics.minigames.common.core.game.PlayerRole;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
@@ -12,7 +12,7 @@ public final class EliminatePlayerControlBehavior implements IGameBehavior {
 	public static final Codec<EliminatePlayerControlBehavior> CODEC = Codec.unit(EliminatePlayerControlBehavior::new);
 
 	@Override
-	public void register(IGameInstance game, EventRegistrar events) {
+	public void register(IActiveGame game, EventRegistrar events) {
 		game.getControlCommands().add("eliminate", ControlCommand.forAdmins(source -> {
 			ServerPlayerEntity player = source.asPlayer();
 			if (!game.getSpectators().contains(player)) {

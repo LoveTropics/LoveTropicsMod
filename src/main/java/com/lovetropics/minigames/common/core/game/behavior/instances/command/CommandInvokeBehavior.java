@@ -1,12 +1,9 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances.command;
 
-import com.lovetropics.minigames.common.core.game.GameException;
-import com.lovetropics.minigames.common.core.game.IGameInstance;
-import com.lovetropics.minigames.common.core.game.ProtoGameInstance;
+import com.lovetropics.minigames.common.core.game.*;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.control.GameControlCommands;
-import com.lovetropics.minigames.common.core.game.polling.PollingGameInstance;
 import com.lovetropics.minigames.common.util.MoreCodecs;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
@@ -73,7 +70,7 @@ public abstract class CommandInvokeBehavior implements IGameBehavior {
 	}
 
 	@Override
-	public void registerPolling(PollingGameInstance game, EventRegistrar events) throws GameException {
+	public void registerPolling(IPollingGame game, EventRegistrar events) throws GameException {
 		MinecraftServer server = game.getServer();
 		this.dispatcher = server.getCommandManager().getDispatcher();
 		this.source = server.getCommandSource();
@@ -82,13 +79,13 @@ public abstract class CommandInvokeBehavior implements IGameBehavior {
 	}
 
 	@Override
-	public void register(IGameInstance game, EventRegistrar events) {
+	public void register(IActiveGame game, EventRegistrar events) {
 		this.source = game.getCommandSource();
 		this.registerControls(game, game.getControlCommands());
 		this.registerEvents(events);
 	}
 
-	protected void registerControls(ProtoGameInstance game, GameControlCommands commands) {
+	protected void registerControls(IProtoGame game, GameControlCommands commands) {
 	}
 
 	protected abstract void registerEvents(EventRegistrar events);

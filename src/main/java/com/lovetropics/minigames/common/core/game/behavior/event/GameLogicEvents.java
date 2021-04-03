@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.common.core.game.behavior.event;
 
-import com.lovetropics.minigames.common.core.game.IGameInstance;
+import com.lovetropics.minigames.common.core.game.IActiveGame;
 import com.lovetropics.minigames.common.core.game.state.instances.GamePhase;
 import net.minecraft.util.text.ITextComponent;
 
@@ -27,14 +27,14 @@ public final class GameLogicEvents {
 	}
 
 	public interface WinTriggered {
-		void onWinTriggered(IGameInstance game, ITextComponent winnerName);
+		void onWinTriggered(IActiveGame game, ITextComponent winnerName);
 	}
 
 	public interface GameOver {
-		void onGameOver(IGameInstance game);
+		void onGameOver(IActiveGame game);
 	}
 
 	public interface PhaseChange {
-		void onPhaseChange(IGameInstance game, GamePhase phase, GamePhase lastPhase);
+		void onPhaseChange(IActiveGame game, GamePhase phase, GamePhase lastPhase);
 	}
 }

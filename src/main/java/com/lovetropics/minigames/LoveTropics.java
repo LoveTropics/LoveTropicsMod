@@ -159,8 +159,6 @@ public class LoveTropics {
     }
 
     private void onServerStopping(final FMLServerStoppingEvent event) {
-        IGameManager.get().close();
-
         Telemetry.INSTANCE.sendClose();
     }
 

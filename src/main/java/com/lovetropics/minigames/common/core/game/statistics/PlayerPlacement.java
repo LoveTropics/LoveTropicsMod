@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.common.core.game.statistics;
 
-import com.lovetropics.minigames.common.core.game.IGameInstance;
+import com.lovetropics.minigames.common.core.game.IActiveGame;
 import com.lovetropics.minigames.common.core.game.PlayerSet;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.text.IFormattableTextComponent;
@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Objects;
 
 public interface PlayerPlacement {
-	static Order fromDeathOrder(IGameInstance minigame, List<PlayerKey> deathOrder) {
+	static Order fromDeathOrder(IActiveGame minigame, List<PlayerKey> deathOrder) {
 		PlayerSet participants = minigame.getParticipants();
 		List<Placed<PlayerKey>> order = new ArrayList<>(participants.size() + deathOrder.size());
 
@@ -32,15 +32,15 @@ public interface PlayerPlacement {
 		return new Order(minigame, order);
 	}
 
-	static <T extends Comparable<T>> Score<T> fromMinScore(IGameInstance minigame, StatisticKey<T> score) {
+	static <T extends Comparable<T>> Score<T> fromMinScore(IActiveGame minigame, StatisticKey<T> score) {
 		return fromScore(minigame, score, Comparator.naturalOrder());
 	}
 
-	static <T extends Comparable<T>> Score<T> fromMaxScore(IGameInstance minigame, StatisticKey<T> score) {
+	static <T extends Comparable<T>> Score<T> fromMaxScore(IActiveGame minigame, StatisticKey<T> score) {
 		return fromScore(minigame, score, Comparator.reverseOrder());
 	}
 
-	static <T> Score<T> fromScore(IGameInstance minigame, StatisticKey<T> scoreKey, Comparator<T> comparator) {
+	static <T> Score<T> fromScore(IActiveGame minigame, StatisticKey<T> scoreKey, Comparator<T> comparator) {
 		GameStatistics statistics = minigame.getStatistics();
 
 		List<PlayerKey> players = new ArrayList<>(statistics.getPlayers());
@@ -74,10 +74,10 @@ public interface PlayerPlacement {
 	void addToSidebar(List<String> sidebar, int length);
 
 	final class Order implements PlayerPlacement {
-		private final IGameInstance minigame;
+		private final IActiveGame minigame;
 		private final List<Placed<PlayerKey>> order;
 
-		Order(IGameInstance minigame, List<Placed<PlayerKey>> order) {
+		Order(IActiveGame minigame, List<Placed<PlayerKey>> order) {
 			this.minigame = minigame;
 			this.order = order;
 		}
@@ -126,11 +126,11 @@ public interface PlayerPlacement {
 	}
 
 	final class Score<T> implements PlayerPlacement {
-		private final IGameInstance minigame;
+		private final IActiveGame minigame;
 		private final StatisticKey<T> scoreKey;
 		private final List<Entry<T>> entries;
 
-		Score(IGameInstance minigame, StatisticKey<T> scoreKey, List<Entry<T>> entries) {
+		Score(IActiveGame minigame, StatisticKey<T> scoreKey, List<Entry<T>> entries) {
 			this.minigame = minigame;
 			this.scoreKey = scoreKey;
 			this.entries = entries;

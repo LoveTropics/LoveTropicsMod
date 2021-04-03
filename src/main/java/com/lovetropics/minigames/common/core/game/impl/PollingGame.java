@@ -1,4 +1,4 @@
-package com.lovetropics.minigames.common.core.game.polling;
+package com.lovetropics.minigames.common.core.game.impl;
 
 import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.client.minigame.ClientRoleMessage;
@@ -10,66 +10,53 @@ import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListen
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePollingEvents;
 import com.lovetropics.minigames.common.core.game.control.GameControlCommands;
 import com.lovetropics.minigames.common.core.game.map.GameMap;
-import com.lovetropics.minigames.common.core.game.statistics.PlayerKey;
 import com.lovetropics.minigames.common.core.network.LoveTropicsNetwork;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.Unit;
 import net.minecraftforge.fml.network.PacketDistributor;
-import org.apache.commons.lang3.RandomStringUtils;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-public final class PollingGameInstance implements ProtoGameInstance {
-	private final String instanceId;
+public final class PollingGame implements IPollingGame {
+	private final GameInstance instance;
 	private final MinecraftServer server;
-	private final IGameDefinition definition;
-	private final PlayerKey initiator;
 
 	private final BehaviorMap behaviors;
 	private final GameEventListeners events = new GameEventListeners();
 	private final GameControlCommands controlCommands;
 
-	private final GameRegistrations registrations = new GameRegistrations();
+	private final GameRegistrations registrations;
 
-	private PollingGameInstance(String instanceId, MinecraftServer server, IGameDefinition definition, PlayerKey initiator) {
-		this.instanceId = instanceId;
-		this.server = server;
-		this.definition = definition;
-		this.behaviors = definition.createBehaviors();
-		this.initiator = initiator;
+	private PollingGame(GameInstance instance) {
+		this.instance = instance;
+		this.server = instance.getServer();
+		this.behaviors = instance.getDefinition().createBehaviors();
 
-		this.controlCommands = new GameControlCommands(initiator);
+		this.controlCommands = new GameControlCommands(instance.getInitiator());
+		this.registrations = new GameRegistrations(server);
 	}
 
-	public static GameResult<PollingGameInstance> create(MinecraftServer server, IGameDefinition definition, PlayerKey initiator) {
-		String instanceId = generateInstanceId(definition);
+	static GameResult<PollingGame> create(GameInstance instance) {
+		PollingGame polling = new PollingGame(instance);
 
-		PollingGameInstance instance = new PollingGameInstance(instanceId, server, definition, initiator);
-
-		for (IGameBehavior behavior : instance.behaviors) {
+		for (IGameBehavior behavior : polling.behaviors) {
 			try {
-				behavior.registerPolling(instance, instance.events);
+				behavior.registerPolling(polling, polling.events);
 			} catch (GameException e) {
 				return GameResult.error(e.getTextMessage());
 			}
 		}
 
-		return GameResult.ok(instance);
-	}
-
-	private static String generateInstanceId(IGameDefinition definition) {
-		return definition.getDisplayId().getPath() + "_" + RandomStringUtils.randomAlphanumeric(5);
+		return GameResult.ok(polling);
 	}
 
 	@Override
-	public String getInstanceId() {
-		return instanceId;
-	}
-
-	@Override
-	public GameStatus getStatus() {
-		return GameStatus.POLLING;
+	public GameInstance getInstance() {
+		return instance;
 	}
 
 	@Override
@@ -87,9 +74,9 @@ public final class PollingGameInstance implements ProtoGameInstance {
 		registrations.add(player.getUniqueID(), requestedRole);
 
 		PlayerSet serverPlayers = PlayerSet.ofServer(server);
-		GameMessages gameMessages = GameMessages.forGame(definition);
+		GameMessages gameMessages = GameMessages.forGame(instance);
 
-		if (registrations.participantCount() == definition.getMinimumParticipantCount()) {
+		if (registrations.participantCount() == instance.getDefinition().getMinimumParticipantCount()) {
 			serverPlayers.sendMessage(gameMessages.enoughPlayers());
 		}
 
@@ -108,8 +95,8 @@ public final class PollingGameInstance implements ProtoGameInstance {
 			return false;
 		}
 
-		GameMessages gameMessages = GameMessages.forGame(definition);
-		if (registrations.participantCount() == definition.getMinimumParticipantCount() - 1) {
+		GameMessages gameMessages = GameMessages.forGame(instance);
+		if (registrations.participantCount() == instance.getDefinition().getMinimumParticipantCount() - 1) {
 			PlayerSet.ofServer(server).sendMessage(gameMessages.noLongerEnoughPlayers());
 		}
 
@@ -121,32 +108,46 @@ public final class PollingGameInstance implements ProtoGameInstance {
 		return true;
 	}
 
-	public CompletableFuture<GameResult<GameInstance>> start() {
-		return definition.getMapProvider().open(server)
+	@Override
+	public CompletableFuture<GameResult<IActiveGame>> start() {
+		return instance.getDefinition().getMapProvider().open(server)
 				.thenComposeAsync(result -> {
 					if (result.isOk()) {
 						GameMap map = result.getOk();
-						return GameInstance.start(instanceId, server, definition, map, behaviors, initiator, registrations);
+
+						List<ServerPlayerEntity> participants = new ArrayList<>();
+						List<ServerPlayerEntity> spectators = new ArrayList<>();
+
+						registrations.collectInto(instance.getServer(), participants, spectators, instance.getDefinition().getMaximumParticipantCount());
+
+						return ActiveGame.start(instance, map, behaviors, participants, spectators);
 					} else {
 						return CompletableFuture.completedFuture(result.castError());
 					}
 				}, server)
 				.handle((result, throwable) -> {
 					if (throwable instanceof Exception) {
-						return GameResult.fromException("Unknown error starting minigame", (Exception) throwable);
+						return GameResult.<ActiveGame>fromException("Unknown error starting game", (Exception) throwable);
 					}
 					return result;
+				})
+				.thenApply(result -> {
+					if (result.isOk()) {
+						ActiveGame resultGame = result.getOk();
+						instance.setPhase(resultGame);
+						return GameResult.ok(resultGame);
+					} else {
+						return result.castError();
+					}
 				});
 	}
 
 	@Override
-	public MinecraftServer getServer() {
-		return server;
-	}
+	public GameResult<Unit> cancel() {
+		PlayerSet.ofServer(server).sendMessage(GameMessages.forGame(this).stopPolling());
+		instance.stop();
 
-	@Override
-	public IGameDefinition getDefinition() {
-		return definition;
+		return GameResult.ok();
 	}
 
 	@Override
@@ -165,12 +166,13 @@ public final class PollingGameInstance implements ProtoGameInstance {
 	}
 
 	@Override
+	public PlayerSet getAllPlayers() {
+		return registrations;
+	}
+
+	@Override
 	public int getMemberCount(PlayerRole role) {
 		// TODO extensible
 		return role == PlayerRole.PARTICIPANT ? registrations.participantCount() : registrations.spectatorCount();
-	}
-
-	public boolean isPlayerRegistered(ServerPlayerEntity player) {
-		return registrations.contains(player.getUniqueID());
 	}
 }

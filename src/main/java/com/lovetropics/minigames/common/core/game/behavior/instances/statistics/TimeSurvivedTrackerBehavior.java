@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances.statistics;
 
-import com.lovetropics.minigames.common.core.game.IGameInstance;
+import com.lovetropics.minigames.common.core.game.IActiveGame;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.*;
 import com.lovetropics.minigames.common.core.game.statistics.GameStatistics;
@@ -27,7 +27,7 @@ public final class TimeSurvivedTrackerBehavior implements IGameBehavior {
 	}
 
 	@Override
-	public void register(IGameInstance game, EventRegistrar events) {
+	public void register(IActiveGame game, EventRegistrar events) {
 		trigger.awaitThen(events, () -> {
 			startTime = game.ticks();
 
@@ -36,7 +36,7 @@ public final class TimeSurvivedTrackerBehavior implements IGameBehavior {
 		});
 	}
 
-	private void onFinish(IGameInstance game) {
+	private void onFinish(IActiveGame game) {
 		GameStatistics statistics = game.getStatistics();
 
 		int secondsSurvived = getSecondsSurvived(game);
@@ -47,14 +47,14 @@ public final class TimeSurvivedTrackerBehavior implements IGameBehavior {
 		statistics.getGlobal().set(StatisticKey.TOTAL_TIME, secondsSurvived);
 	}
 
-	private ActionResultType onPlayerDeath(IGameInstance minigame, ServerPlayerEntity player, DamageSource source) {
+	private ActionResultType onPlayerDeath(IActiveGame minigame, ServerPlayerEntity player, DamageSource source) {
 		GameStatistics statistics = minigame.getStatistics();
 		statistics.forPlayer(player).set(StatisticKey.TIME_SURVIVED, getSecondsSurvived(minigame));
 
 		return ActionResultType.PASS;
 	}
 
-	private int getSecondsSurvived(IGameInstance minigame) {
+	private int getSecondsSurvived(IActiveGame minigame) {
 		return (int) ((minigame.ticks() - startTime) / 20);
 	}
 }

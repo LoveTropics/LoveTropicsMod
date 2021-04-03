@@ -1,7 +1,7 @@
 package com.lovetropics.minigames.common.core.game.behavior.event;
 
+import com.lovetropics.minigames.common.core.game.IPollingGame;
 import com.lovetropics.minigames.common.core.game.PlayerRole;
-import com.lovetropics.minigames.common.core.game.polling.PollingGameInstance;
 import net.minecraft.entity.player.ServerPlayerEntity;
 
 import javax.annotation.Nullable;
@@ -23,10 +23,10 @@ public final class GamePollingEvents {
 	}
 
 	public interface Start {
-		void start(PollingGameInstance game);
+		void start(IPollingGame game);
 	}
 
 	public interface PlayerRegister {
-		void onPlayerRegister(PollingGameInstance game, ServerPlayerEntity player, @Nullable PlayerRole role);
+		void onPlayerRegister(IPollingGame game, ServerPlayerEntity player, @Nullable PlayerRole role);
 	}
 }

@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances.statistics;
 
-import com.lovetropics.minigames.common.core.game.IGameInstance;
+import com.lovetropics.minigames.common.core.game.IActiveGame;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameLifecycleEvents;
@@ -42,7 +42,7 @@ public final class CampingTrackerBehavior implements IGameBehavior {
 	}
 
 	@Override
-	public void register(IGameInstance game, EventRegistrar events) {
+	public void register(IActiveGame game, EventRegistrar events) {
 		trigger.awaitThen(events, () -> {
 			events.listen(GameLifecycleEvents.TICK, this::tick);
 			events.listen(GamePlayerEvents.LEAVE, this::onPlayerLeave);
@@ -50,14 +50,14 @@ public final class CampingTrackerBehavior implements IGameBehavior {
 		});
 	}
 
-	private void tick(IGameInstance game) {
+	private void tick(IActiveGame game) {
 		long ticks = game.ticks();
 		if (ticks % CAMP_TEST_INTERVAL == 0) {
 			testForCamping(game, ticks);
 		}
 	}
 
-	private void testForCamping(IGameInstance game, long time) {
+	private void testForCamping(IActiveGame game, long time) {
 		GameStatistics statistics = game.getStatistics();
 
 		for (ServerPlayerEntity player : game.getParticipants()) {
@@ -80,12 +80,12 @@ public final class CampingTrackerBehavior implements IGameBehavior {
 		return campingTrackers.computeIfAbsent(player.getUniqueID(), i -> new CampingTracker());
 	}
 
-	private ActionResultType onPlayerDeath(IGameInstance game, ServerPlayerEntity player, DamageSource source) {
+	private ActionResultType onPlayerDeath(IActiveGame game, ServerPlayerEntity player, DamageSource source) {
 		campingTrackers.remove(player.getUniqueID());
 		return ActionResultType.PASS;
 	}
 
-	private void onPlayerLeave(IGameInstance game, ServerPlayerEntity player) {
+	private void onPlayerLeave(IActiveGame game, ServerPlayerEntity player) {
 		campingTrackers.remove(player.getUniqueID());
 	}
 

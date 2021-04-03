@@ -1,7 +1,7 @@
 package com.lovetropics.minigames.client.minigame;
 
 import com.lovetropics.minigames.common.core.game.GameStatus;
-import com.lovetropics.minigames.common.core.game.ProtoGameInstance;
+import com.lovetropics.minigames.common.core.game.IProtoGame;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.network.NetworkEvent;
@@ -19,11 +19,11 @@ public class ClientMinigameMessage {
 		this(null, null, null, 0);
 	}
 
-	public ClientMinigameMessage(ProtoGameInstance minigame) {
-		this(minigame.getDefinition().getDisplayId(),
-			minigame.getDefinition().getTranslationKey(),
-			minigame.getStatus(),
-			minigame.getDefinition().getMaximumParticipantCount());
+	public ClientMinigameMessage(IProtoGame game) {
+		this(game.getDefinition().getDisplayId(),
+			game.getDefinition().getTranslationKey(),
+			game.getStatus(),
+			game.getDefinition().getMaximumParticipantCount());
 	}
 
 	private ClientMinigameMessage(ResourceLocation minigame, String unlocName, GameStatus status, int maxPlayers) {

@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances.command;
 
-import com.lovetropics.minigames.common.core.game.IGameInstance;
+import com.lovetropics.minigames.common.core.game.IActiveGame;
 import com.lovetropics.minigames.common.core.game.PlayerRole;
 import com.lovetropics.minigames.common.core.game.behavior.event.*;
 import com.mojang.serialization.Codec;
@@ -56,7 +56,7 @@ public final class CommandEventsBehavior extends CommandInvokeBehavior {
 		});
 	}
 
-	private void onPlayerJoin(IGameInstance game, ServerPlayerEntity player, PlayerRole role) {
+	private void onPlayerJoin(IActiveGame game, ServerPlayerEntity player, PlayerRole role) {
 		if (role == PlayerRole.PARTICIPANT) {
 			this.invoke("player_join", player);
 		} else {

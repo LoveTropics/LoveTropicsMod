@@ -1,7 +1,7 @@
 package com.lovetropics.minigames.common.content.survive_the_tide.behavior;
 
 import com.lovetropics.minigames.common.core.game.GameException;
-import com.lovetropics.minigames.common.core.game.IGameInstance;
+import com.lovetropics.minigames.common.core.game.IActiveGame;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameLifecycleEvents;
@@ -62,7 +62,7 @@ public class SurviveTheTideRulesetBehavior implements IGameBehavior
 	}
 
 	@Override
-	public void register(IGameInstance game, EventRegistrar events) throws GameException {
+	public void register(IActiveGame game, EventRegistrar events) throws GameException {
 		spawnArea = game.getMapRegions().getOne(spawnAreaKey);
 		phases = game.getState().getOrThrow(GamePhaseState.TYPE);
 
@@ -73,7 +73,7 @@ public class SurviveTheTideRulesetBehavior implements IGameBehavior
 		events.listen(GameLifecycleEvents.TICK, this::tick);
 	}
 
-	private ActionResultType onPlayerDeath(final IGameInstance game, ServerPlayerEntity player, DamageSource damageSource) {
+	private ActionResultType onPlayerDeath(final IActiveGame game, ServerPlayerEntity player, DamageSource damageSource) {
 		if (forceDropItemsOnDeath && player.world.getGameRules().getBoolean(GameRules.KEEP_INVENTORY)) {
 			destroyVanishingCursedItems(player.inventory);
 			player.inventory.dropAllItems();
@@ -81,21 +81,21 @@ public class SurviveTheTideRulesetBehavior implements IGameBehavior
 		return ActionResultType.PASS;
 	}
 
-	private ActionResultType onPlayerHurt(final IGameInstance game, ServerPlayerEntity player, DamageSource source, float amount) {
+	private ActionResultType onPlayerHurt(final IActiveGame game, ServerPlayerEntity player, DamageSource source, float amount) {
 		if (source.getTrueSource() instanceof ServerPlayerEntity && phases.is(this::isSafePhase)) {
 			return ActionResultType.FAIL;
 		}
 		return ActionResultType.PASS;
 	}
 
-	private ActionResultType onPlayerAttackEntity(final IGameInstance game, ServerPlayerEntity player, Entity target) {
+	private ActionResultType onPlayerAttackEntity(final IActiveGame game, ServerPlayerEntity player, Entity target) {
 		if (target instanceof ServerPlayerEntity && phases.is(this::isSafePhase)) {
 			return ActionResultType.FAIL;
 		}
 		return ActionResultType.PASS;
 	}
 
-	private void tick(final IGameInstance game) {
+	private void tick(final IActiveGame game) {
 		if (!hasFreedParticipants && phases.is(phaseToFreeParticipants)) {
 			hasFreedParticipants = true;
 			setParticipantsFree(game);
@@ -115,7 +115,7 @@ public class SurviveTheTideRulesetBehavior implements IGameBehavior
 		}
 	}
 
-	private void setParticipantsFree(final IGameInstance game) {
+	private void setParticipantsFree(final IActiveGame game) {
 		// Destroy all fences blocking players from getting out of spawn area for phase 0
 		ServerWorld world = game.getWorld();
 		for (BlockPos p : spawnArea) {

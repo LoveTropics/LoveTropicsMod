@@ -1,7 +1,7 @@
 package com.lovetropics.minigames.common.core.game.behavior.event;
 
 import com.google.gson.JsonObject;
-import com.lovetropics.minigames.common.core.game.IGameInstance;
+import com.lovetropics.minigames.common.core.game.IActiveGame;
 import com.lovetropics.minigames.common.core.integration.game_actions.GamePackage;
 import net.minecraft.entity.player.ServerPlayerEntity;
 
@@ -33,14 +33,14 @@ public final class GamePackageEvents {
 	}
 
 	public interface ReceivePackage {
-		boolean onReceivePackage(IGameInstance game, GamePackage gamePackage);
+		boolean onReceivePackage(IActiveGame game, GamePackage gamePackage);
 	}
 
 	public interface ReceivePollEvent {
-		void onReceivePollEvent(IGameInstance game, JsonObject object, String crud);
+		void onReceivePollEvent(IActiveGame game, JsonObject object, String crud);
 	}
 
 	public interface ApplyPackage {
-		void applyPackage(IGameInstance game, ServerPlayerEntity player, @Nullable String sendingPlayer);
+		void applyPackage(IActiveGame game, ServerPlayerEntity player, @Nullable String sendingPlayer);
 	}
 }

@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.common.core.integration.game_actions;
 
-import com.lovetropics.minigames.common.core.game.IGameInstance;
+import com.lovetropics.minigames.common.core.game.IActiveGame;
 import com.lovetropics.minigames.common.core.integration.GameInstanceTelemetry;
 import net.minecraft.server.MinecraftServer;
 import org.apache.logging.log4j.LogManager;
@@ -15,11 +15,11 @@ import java.util.concurrent.PriorityBlockingQueue;
 public final class GameActionHandler {
 	private static final Logger LOGGER = LogManager.getLogger(GameActionHandler.class);
 
-	private final IGameInstance minigame;
+	private final IActiveGame minigame;
 	private final GameInstanceTelemetry telemetry;
 	private final Map<GameActionType, ActionsQueue> queues = new EnumMap<>(GameActionType.class);
 
-	public GameActionHandler(IGameInstance minigame, GameInstanceTelemetry telemetry) {
+	public GameActionHandler(IActiveGame minigame, GameInstanceTelemetry telemetry) {
 		this.telemetry = telemetry;
 		this.minigame = minigame;
 	}
@@ -36,7 +36,7 @@ public final class GameActionHandler {
 					telemetry.acknowledgeActionDelivery(request, action);
 				}
 			} catch (Exception e) {
-				LOGGER.error("Failed to resolve minigame action", e);
+				LOGGER.error("Failed to resolve game action", e);
 			}
 		}
 	}
@@ -47,11 +47,7 @@ public final class GameActionHandler {
 	}
 
 	private ActionsQueue getQueueFor(GameActionType requestType) {
-		ActionsQueue queue = queues.get(requestType);
-		if (queue == null) {
-			queues.put(requestType, queue = new ActionsQueue(requestType));
-		}
-		return queue;
+		return queues.computeIfAbsent(requestType, ActionsQueue::new);
 	}
 
 	static class ActionsQueue {

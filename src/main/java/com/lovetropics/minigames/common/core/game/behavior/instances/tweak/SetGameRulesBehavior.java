@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances.tweak;
 
-import com.lovetropics.minigames.common.core.game.IGameInstance;
+import com.lovetropics.minigames.common.core.game.IActiveGame;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameLifecycleEvents;
@@ -27,7 +27,7 @@ public final class SetGameRulesBehavior implements IGameBehavior {
 	}
 
 	@Override
-	public void register(IGameInstance registerGame, EventRegistrar events) {
+	public void register(IActiveGame registerGame, EventRegistrar events) {
 		GameRules gameRules = registerGame.getWorld().getGameRules();
 		CompoundNBT rulesSnapshot = applyRules(gameRules);
 

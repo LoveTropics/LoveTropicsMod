@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances;
 
-import com.lovetropics.minigames.common.core.game.IGameInstance;
+import com.lovetropics.minigames.common.core.game.IActiveGame;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameLifecycleEvents;
@@ -30,13 +30,13 @@ public final class ForceLoadRegionBehavior implements IGameBehavior {
 	}
 
 	@Override
-	public void register(IGameInstance registerGame, EventRegistrar events) {
+	public void register(IActiveGame registerGame, EventRegistrar events) {
 		acquiredChunks = acquireChunks(registerGame);
 
 		events.listen(GameLifecycleEvents.STOP, this::onFinish);
 	}
 
-	private void onFinish(IGameInstance game) {
+	private void onFinish(IActiveGame game) {
 		ServerChunkProvider chunkProvider = game.getWorld().getChunkProvider();
 
 		LongIterator iterator = acquiredChunks.iterator();
@@ -46,7 +46,7 @@ public final class ForceLoadRegionBehavior implements IGameBehavior {
 		}
 	}
 
-	private LongSet acquireChunks(IGameInstance game) {
+	private LongSet acquireChunks(IActiveGame game) {
 		ServerChunkProvider chunkProvider = game.getWorld().getChunkProvider();
 
 		LongSet chunks = collectChunks(game);
@@ -66,7 +66,7 @@ public final class ForceLoadRegionBehavior implements IGameBehavior {
 		return chunks;
 	}
 
-	private LongSet collectChunks(IGameInstance minigame) {
+	private LongSet collectChunks(IActiveGame minigame) {
 		LongSet chunks = new LongOpenHashSet();
 
 		Collection<MapRegion> regions = minigame.getMapRegions().get(regionKey);
