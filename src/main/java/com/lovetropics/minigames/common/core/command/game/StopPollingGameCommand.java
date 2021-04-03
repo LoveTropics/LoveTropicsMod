@@ -24,7 +24,7 @@ public class StopPollingGameCommand {
 				}
 
 				PollingGame polling = (PollingGame) game;
-				return polling.cancel().map(u -> GameMessages.forGame(game).stopPolling());
+				return polling.cancel().map(u -> GameMessages.forGame(game).stopPollSuccess());
 			}, c.getSource())))
 		);
 	}
