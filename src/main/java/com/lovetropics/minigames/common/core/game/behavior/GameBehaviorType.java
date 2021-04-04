@@ -11,7 +11,7 @@ public final class GameBehaviorType<T extends IGameBehavior> extends ForgeRegist
 	}
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	static Class<GameBehaviorType<?>> wildcardType() {
+	public static Class<GameBehaviorType<?>> type() {
 		return (Class<GameBehaviorType<?>>) (Class) GameBehaviorType.class;
 	}
 }
