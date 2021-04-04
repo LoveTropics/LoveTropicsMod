@@ -171,7 +171,7 @@ public class ActiveGame implements IActiveGame {
                 LoveTropics.LOGGER.warn("Failed to dispatch player join event", e);
             }
 
-            LoveTropicsNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new ClientRoleMessage(role));
+            LoveTropicsNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new ClientRoleMessage(getInstanceId().networkId, role));
             sendPlayerCountUpdate(role);
 
             return true;
@@ -197,7 +197,7 @@ public class ActiveGame implements IActiveGame {
                 LoveTropics.LOGGER.warn("Failed to dispatch player change role event", e);
             }
 
-            LoveTropicsNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new ClientRoleMessage(role));
+            LoveTropicsNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new ClientRoleMessage(getInstanceId().networkId, role));
             sendPlayerCountUpdate(role);
             sendPlayerCountUpdate(lastRole);
 
@@ -208,7 +208,7 @@ public class ActiveGame implements IActiveGame {
     }
 
     private void sendPlayerCountUpdate(PlayerRole role) {
-        LoveTropicsNetwork.CHANNEL.send(PacketDistributor.ALL.noArg(), new PlayerCountsMessage(role, getMemberCount(role)));
+        LoveTropicsNetwork.CHANNEL.send(PacketDistributor.ALL.noArg(), new PlayerCountsMessage(getInstanceId().networkId, role, getMemberCount(role)));
     }
 
     @Nullable
