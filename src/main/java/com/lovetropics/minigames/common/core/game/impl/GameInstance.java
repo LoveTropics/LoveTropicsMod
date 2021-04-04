@@ -10,7 +10,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.fml.network.PacketDistributor;
 
 public final class GameInstance implements IGameInstance {
-	private final SingleGameManager manager;
+	private final MultiGameManager manager;
 	private final MinecraftServer server;
 	private final GameInstanceId instanceId;
 	private final IGameDefinition definition;
@@ -18,7 +18,7 @@ public final class GameInstance implements IGameInstance {
 
 	private IGamePhase phase;
 
-	private GameInstance(SingleGameManager manager, MinecraftServer server, GameInstanceId instanceId, IGameDefinition definition, PlayerKey initiator) {
+	private GameInstance(MultiGameManager manager, MinecraftServer server, GameInstanceId instanceId, IGameDefinition definition, PlayerKey initiator) {
 		this.manager = manager;
 		this.server = server;
 		this.instanceId = instanceId;
@@ -26,7 +26,7 @@ public final class GameInstance implements IGameInstance {
 		this.initiator = initiator;
 	}
 
-	static GameResult<PollingGame> createPolling(SingleGameManager manager, MinecraftServer server, IGameDefinition definition, PlayerKey initiator) {
+	static GameResult<PollingGame> createPolling(MultiGameManager manager, MinecraftServer server, IGameDefinition definition, PlayerKey initiator) {
 		GameInstanceId instanceId = GameInstanceId.generate(definition);
 
 		GameInstance instance = new GameInstance(manager, server, instanceId, definition, initiator);

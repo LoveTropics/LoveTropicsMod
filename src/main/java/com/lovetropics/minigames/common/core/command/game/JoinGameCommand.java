@@ -79,7 +79,7 @@ public class JoinGameCommand {
 		if (givenGame != null) {
 			return GameResult.ok(givenGame);
 		} else {
-			Collection<IGameInstance> games = IGameManager.get().getAllGames();
+			Collection<? extends IGameInstance> games = IGameManager.get().getAllGames();
 			if (games.size() == 1) {
 				return GameResult.ok(games.iterator().next());
 			} else if (games.isEmpty()){
@@ -90,7 +90,7 @@ public class JoinGameCommand {
 		}
 	}
 
-	private static IFormattableTextComponent buildGameSelection(@Nullable PlayerRole requestedRole, Collection<IGameInstance> games) {
+	private static IFormattableTextComponent buildGameSelection(@Nullable PlayerRole requestedRole, Collection<? extends IGameInstance> games) {
 		IFormattableTextComponent selection = new StringTextComponent("There are multiple games available to join! Select one from this list:\n")
 				.mergeStyle(TextFormatting.GOLD, TextFormatting.BOLD);
 

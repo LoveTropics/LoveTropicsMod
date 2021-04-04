@@ -2,7 +2,7 @@ package com.lovetropics.minigames.common.core.game;
 
 import com.lovetropics.minigames.common.core.game.control.ControlCommandInvoker;
 import com.lovetropics.minigames.common.core.game.impl.PollingGame;
-import com.lovetropics.minigames.common.core.game.impl.SingleGameManager;
+import com.lovetropics.minigames.common.core.game.impl.MultiGameManager;
 import net.minecraft.command.CommandSource;
 import net.minecraft.entity.player.ServerPlayerEntity;
 
@@ -20,7 +20,7 @@ import java.util.Collection;
  */
 public interface IGameManager extends IGameLookup {
 	static IGameManager get() {
-		return SingleGameManager.INSTANCE;
+		return MultiGameManager.INSTANCE;
 	}
 
 	/**
@@ -34,7 +34,7 @@ public interface IGameManager extends IGameLookup {
 
 	ControlCommandInvoker getControlInvoker(CommandSource source);
 
-	Collection<IGameInstance> getAllGames();
+	Collection<? extends IGameInstance> getAllGames();
 
 	@Nullable
 	IGameInstance getGameByCommandId(String id);

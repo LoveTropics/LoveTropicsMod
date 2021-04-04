@@ -4,6 +4,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.common.config.ConfigLT;
+import com.lovetropics.minigames.common.core.game.GameInstanceId;
 import com.lovetropics.minigames.common.core.game.IActiveGame;
 import com.lovetropics.minigames.common.core.game.IGameDefinition;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
@@ -44,6 +45,10 @@ public final class GameInstanceTelemetry {
 
 	static GameInstanceTelemetry open(IActiveGame game, Telemetry telemetry) {
 		return new GameInstanceTelemetry(game, telemetry);
+	}
+
+	public GameInstanceId getInstanceId() {
+		return game.getInstanceId();
 	}
 
 	public void start() {
