@@ -5,9 +5,11 @@ import com.lovetropics.minigames.client.data.LoveTropicsLangKeys;
 import com.lovetropics.minigames.common.config.ConfigLT;
 import com.lovetropics.minigames.common.content.block.LoveTropicsBlocks;
 import com.lovetropics.minigames.common.content.block.TrashType;
+import com.lovetropics.minigames.common.content.build_competition.BuildCompetition;
 import com.lovetropics.minigames.common.content.conservation_exploration.ConservationExploration;
 import com.lovetropics.minigames.common.content.survive_the_tide.SurviveTheTide;
 import com.lovetropics.minigames.common.content.survive_the_tide.entity.DriftwoodRider;
+import com.lovetropics.minigames.common.content.trash_dive.TrashDive;
 import com.lovetropics.minigames.common.core.command.MapCommand;
 import com.lovetropics.minigames.common.core.command.game.*;
 import com.lovetropics.minigames.common.core.game.GameEventDispatcher;
@@ -17,8 +19,8 @@ import com.lovetropics.minigames.common.core.integration.Telemetry;
 import com.lovetropics.minigames.common.core.map.VoidChunkGenerator;
 import com.lovetropics.minigames.common.core.map.item.MapWorkspaceItems;
 import com.lovetropics.minigames.common.core.network.LoveTropicsNetwork;
+import com.lovetropics.minigames.common.util.LoveTropicsRegistrate;
 import com.mojang.brigadier.CommandDispatcher;
-import com.tterrag.registrate.Registrate;
 import com.tterrag.registrate.providers.ProviderType;
 import com.tterrag.registrate.util.NonNullLazyValue;
 import net.minecraft.command.CommandSource;
@@ -32,6 +34,7 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityInject;
 import net.minecraftforge.common.capabilities.CapabilityManager;
+import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.ExtensionPoint;
@@ -58,14 +61,15 @@ public class LoveTropics {
     public static final Logger LOGGER = LogManager.getLogger(Constants.MODID);
 
     public static final ItemGroup LOVE_TROPICS_ITEM_GROUP = (new ItemGroup("love_tropics") {
+        @Override
         @OnlyIn(Dist.CLIENT)
         public ItemStack createIcon() {
             return new ItemStack(LoveTropicsBlocks.TRASH.get(TrashType.COLA).get());
         }
     });
 
-    private static final NonNullLazyValue<Registrate> REGISTRATE = new NonNullLazyValue<>(() ->
-    	Registrate.create(Constants.MODID)
+    private static final NonNullLazyValue<LoveTropicsRegistrate> REGISTRATE = new NonNullLazyValue<>(() ->
+    	LoveTropicsRegistrate.create(Constants.MODID)
     			  .itemGroup(() -> LOVE_TROPICS_ITEM_GROUP));
 
     @CapabilityInject(DriftwoodRider.class)
@@ -88,6 +92,7 @@ public class LoveTropics {
 
         MinecraftForge.EVENT_BUS.addListener(this::onServerAboutToStart);
         MinecraftForge.EVENT_BUS.addListener(this::onServerStopping);
+        MinecraftForge.EVENT_BUS.addListener(this::registerCommands);
 
         modBus.addListener(ConfigLT::onLoad);
         modBus.addListener(ConfigLT::onFileChange);
@@ -96,13 +101,15 @@ public class LoveTropics {
         LoveTropicsBlocks.init();
         MapWorkspaceItems.init();
 
-        SurviveTheTide.init();
+        GameBehaviorTypes.init(modBus);
+
+        BuildCompetition.init();
         ConservationExploration.init();
+        SurviveTheTide.init();
+        TrashDive.init();
 
         ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, ConfigLT.CLIENT_CONFIG);
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, ConfigLT.SERVER_CONFIG);
-
-        GameBehaviorTypes.REGISTER.register(modBus);
 
         GameEventDispatcher eventDispatcher = new GameEventDispatcher(IGameManager.get());
         MinecraftForge.EVENT_BUS.register(eventDispatcher);
@@ -119,7 +126,7 @@ public class LoveTropics {
     	return getCompatVersion().equals(getCompatVersion(version));
     }
 
-    public static Registrate registrate() {
+    public static LoveTropicsRegistrate registrate() {
         return REGISTRATE.getValue();
     }
 
@@ -139,12 +146,8 @@ public class LoveTropics {
         });
     }
 
-    private void onServerAboutToStart(final FMLServerAboutToStartEvent event) {
-        Telemetry.INSTANCE.sendOpen();
-
-        // we register commands in the about-to-start event because the 'proper' starting event loads after datapacks,
-        // causing functions to load incorrectly
-        CommandDispatcher<CommandSource> dispatcher = event.getServer().getCommandManager().getDispatcher();
+    private void registerCommands(RegisterCommandsEvent event) {
+        CommandDispatcher<CommandSource> dispatcher = event.getDispatcher();
         PollGameCommand.register(dispatcher);
         JoinGameCommand.register(dispatcher);
         StartGameCommand.register(dispatcher);
@@ -156,6 +159,10 @@ public class LoveTropics {
         MapCommand.register(dispatcher);
         GameDonateCommand.register(dispatcher);
         GamePackageCommand.register(dispatcher);
+    }
+
+    private void onServerAboutToStart(final FMLServerAboutToStartEvent event) {
+        Telemetry.INSTANCE.sendOpen();
     }
 
     private void onServerStopping(final FMLServerStoppingEvent event) {

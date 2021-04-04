@@ -67,22 +67,5 @@ public class FillChestsByMarkerBehavior extends ChunkGeneratingBehavior {
 
 	private ResourceLocation getLootTableFor(Block block) {
 		return this.lootTableByMarker.get(block);
-
-		/*
-		TODO: datapack
-		private static final ResourceLocation MISC_LOOT = new ResourceLocation("lt20", "stt2/misc_type");
-		private static final ResourceLocation FOOD_LOOT = new ResourceLocation("lt20", "stt2/food_type");
-		private static final ResourceLocation MILITARY_LOOT = new ResourceLocation("lt20", "stt2/military_type");
-		private static final ResourceLocation EQUIPMENT_LOOT = new ResourceLocation("lt20", "stt2/equipment_type");
-		if (block == Blocks.CYAN_GLAZED_TERRACOTTA) {
-			return MISC_LOOT;
-		} else if (block == Blocks.GREEN_GLAZED_TERRACOTTA) {
-			return FOOD_LOOT;
-		} else if (block == Blocks.RED_GLAZED_TERRACOTTA) {
-			return MILITARY_LOOT;
-		} else if (block == Blocks.ORANGE_GLAZED_TERRACOTTA) {
-			return EQUIPMENT_LOOT;
-		}
-		return null;*/
 	}
 }

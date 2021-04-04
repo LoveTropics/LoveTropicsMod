@@ -1,16 +1,9 @@
 package com.lovetropics.minigames.common.content.block;
 
-import java.util.Arrays;
-import java.util.EnumMap;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
 import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.common.content.block.TrashBlock.Attachment;
-import com.tterrag.registrate.Registrate;
+import com.lovetropics.minigames.common.util.LoveTropicsRegistrate;
 import com.tterrag.registrate.util.entry.BlockEntry;
-
 import net.minecraft.block.Block;
 import net.minecraft.block.LadderBlock;
 import net.minecraft.block.material.Material;
@@ -19,9 +12,15 @@ import net.minecraft.state.properties.BlockStateProperties;
 import net.minecraftforge.client.model.generators.ConfiguredModel;
 import net.minecraftforge.client.model.generators.ModelBuilder.Perspective;
 
+import java.util.Arrays;
+import java.util.EnumMap;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
 public class LoveTropicsBlocks {
     
-    public static final Registrate REGISTRATE = LoveTropics.registrate();
+    public static final LoveTropicsRegistrate REGISTRATE = LoveTropics.registrate();
 
     public static final Map<TrashType, BlockEntry<TrashBlock>> TRASH = Arrays.<TrashType>stream(TrashType.values())
             .collect(Collectors.toMap(Function.identity(), t -> REGISTRATE.block(t.getId(), p -> new TrashBlock(t, p))
