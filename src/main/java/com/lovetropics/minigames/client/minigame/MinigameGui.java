@@ -22,7 +22,18 @@ public class MinigameGui {
 
 	@SubscribeEvent
 	public static void renderGameOverlay(RenderGameOverlayEvent event) {
-		ClientMinigameState.get().ifPresent(state -> {
+		if (event.getType() != ElementType.TEXT && event.getType() != ElementType.HOTBAR) {
+			return;
+		}
+
+		MatrixStack transform = event.getMatrixStack();
+		FontRenderer fnt = Minecraft.getInstance().fontRenderer;
+
+		final int padding = 2;
+		final int lineHeight = fnt.FONT_HEIGHT + padding;
+		int y = padding;
+
+		for (ClientMinigameState state : ClientMinigameState.getGames()) {
 			// Nothing to show if they are currently playing an active minigame
 			GameStatus status = state.getStatus();
 			if (status == GameStatus.ACTIVE && state.getRole() != null) return;
@@ -31,13 +42,6 @@ public class MinigameGui {
 				Minecraft.getInstance().getTextureManager().bindTexture(new ResourceLocation("minecraft:missingno"));
 			}
 			if (event.getType() == ElementType.TEXT) {
-				MatrixStack transform = event.getMatrixStack();
-				FontRenderer fnt = Minecraft.getInstance().fontRenderer;
-
-				final int padding = 2;
-				final int lineHeight = fnt.FONT_HEIGHT + padding;
-				int y = padding;
-
 				String line = TextFormatting.GRAY + "Minigame: " + TextFormatting.YELLOW + TextFormatting.BOLD + state.getDisplayName();
 				if (state.getRole() != null) {
 					line += TextFormatting.GREEN + " [Joined]";
@@ -62,11 +66,11 @@ public class MinigameGui {
 				}
 				fnt.drawStringWithShadow(transform, line, padding, y, -1);
 			}
-		});
+		}
 	}
 
 	@SubscribeEvent
 	public static void onClientDisconnect(LoggedOutEvent event) {
-		ClientMinigameState.set(null);
+		ClientMinigameState.clear();
 	}
 }

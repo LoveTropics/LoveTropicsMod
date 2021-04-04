@@ -190,8 +190,10 @@ public class SingleGameManager implements IGameManager {
 		if (game != null) {
 			PacketDistributor.PacketTarget target = PacketDistributor.PLAYER.with(() -> (ServerPlayerEntity) event.getPlayer());
 			LoveTropicsNetwork.CHANNEL.send(target, new ClientMinigameMessage(game));
+
+			int networkId = game.getInstanceId().networkId;
 			for (PlayerRole role : PlayerRole.ROLES) {
-				LoveTropicsNetwork.CHANNEL.send(target, new PlayerCountsMessage(role, game.getMemberCount(role)));
+				LoveTropicsNetwork.CHANNEL.send(target, new PlayerCountsMessage(networkId, role, game.getMemberCount(role)));
 			}
 		}
 	}

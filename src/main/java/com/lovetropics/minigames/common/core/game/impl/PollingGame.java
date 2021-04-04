@@ -82,9 +82,11 @@ public final class PollingGame implements IPollingGame {
 
 		serverPlayers.sendMessage(gameMessages.playerJoined(player, requestedRole));
 
+		int networkId = getInstanceId().networkId;
+
 		PlayerRole trueRole = requestedRole == null ? PlayerRole.PARTICIPANT : requestedRole;
-		LoveTropicsNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new ClientRoleMessage(trueRole));
-		LoveTropicsNetwork.CHANNEL.send(PacketDistributor.ALL.noArg(), new PlayerCountsMessage(trueRole, getMemberCount(trueRole)));
+		LoveTropicsNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new ClientRoleMessage(networkId, trueRole));
+		LoveTropicsNetwork.CHANNEL.send(PacketDistributor.ALL.noArg(), new PlayerCountsMessage(networkId, trueRole, getMemberCount(trueRole)));
 
 		return true;
 	}
@@ -100,9 +102,11 @@ public final class PollingGame implements IPollingGame {
 			PlayerSet.ofServer(server).sendMessage(gameMessages.noLongerEnoughPlayers());
 		}
 
-		LoveTropicsNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new ClientRoleMessage(null));
+		int networkId = getInstanceId().networkId;
+
+		LoveTropicsNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new ClientRoleMessage(networkId, null));
 		for (PlayerRole role : PlayerRole.ROLES) {
-			LoveTropicsNetwork.CHANNEL.send(PacketDistributor.ALL.noArg(), new PlayerCountsMessage(role, getMemberCount(role)));
+			LoveTropicsNetwork.CHANNEL.send(PacketDistributor.ALL.noArg(), new PlayerCountsMessage(networkId, role, getMemberCount(role)));
 		}
 
 		return true;

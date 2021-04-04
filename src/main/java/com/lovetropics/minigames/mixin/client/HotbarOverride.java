@@ -25,8 +25,8 @@ public class HotbarOverride {
 					target = "Lnet/minecraft/client/renderer/texture/TextureManager;bindTexture(Lnet/minecraft/util/ResourceLocation;)V"),
 			index = 0)
 	public ResourceLocation getHotbarTexture(ResourceLocation loc) {
-		if (ClientMinigameState.get().isPresent()) {
-			ClientMinigameState state = ClientMinigameState.get().get();
+		ClientMinigameState state = ClientMinigameState.getCurrent();
+		if (state != null) {
 			if (state.getStatus() == GameStatus.ACTIVE && state.getRole() == PlayerRole.PARTICIPANT && state.getMinigame().equals(TARGET)) {
 				return TEXTURE;
 			}

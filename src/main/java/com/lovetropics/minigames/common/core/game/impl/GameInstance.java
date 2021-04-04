@@ -81,7 +81,7 @@ public final class GameInstance implements IGameInstance {
 
 	void stop() {
 		phase = new InactiveGame(this);
-		LoveTropicsNetwork.CHANNEL.send(PacketDistributor.ALL.noArg(), new ClientMinigameMessage());
+		LoveTropicsNetwork.CHANNEL.send(PacketDistributor.ALL.noArg(), new ClientMinigameMessage(instanceId.networkId));
 
 		manager.stop(this);
 	}
