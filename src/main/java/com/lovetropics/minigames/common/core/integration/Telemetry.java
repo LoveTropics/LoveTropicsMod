@@ -9,6 +9,7 @@ import com.lovetropics.lib.backend.BackendProxy;
 import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.common.config.ConfigLT;
 import com.lovetropics.minigames.common.core.game.IActiveGame;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -20,6 +21,8 @@ import org.apache.logging.log4j.Logger;
 import javax.annotation.Nullable;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -43,8 +46,7 @@ public final class Telemetry {
 
 	private final BackendProxy proxy;
 
-	// TODO: support multiple games (needs backend support)
-	private GameInstanceTelemetry instance;
+	private final Map<UUID, GameInstanceTelemetry> instances = new Object2ObjectOpenHashMap<>();
 
 	private Telemetry() {
 		Supplier<URI> address = () -> {
@@ -99,7 +101,7 @@ public final class Telemetry {
 	private void tick(MinecraftServer server) {
 		proxy.tick();
 
-		if (instance != null) {
+		for (GameInstanceTelemetry instance : instances.values()) {
 			instance.tick(server);
 		}
 	}
@@ -138,7 +140,10 @@ public final class Telemetry {
 	}
 
 	private void handlePayload(JsonObject object, String type, String crud) {
-		GameInstanceTelemetry instance = this.instance;
+		// TODO: backend support
+		UUID instanceId = UUID.fromString(object.get("instance_id").getAsString());
+
+		GameInstanceTelemetry instance = instances.get(instanceId);
 
 		// we can ignore the payload because we will request it again when a minigame starts
 		if (instance == null) return;
@@ -151,13 +156,11 @@ public final class Telemetry {
 	}
 
 	void openInstance(GameInstanceTelemetry instance) {
-		this.instance = instance;
+		instances.put(instance.getInstanceId().uuid, instance);
 	}
 
 	void closeInstance(GameInstanceTelemetry instance) {
-		if (this.instance == instance) {
-			this.instance = null;
-		}
+		instances.remove(instance.getInstanceId().uuid, instance);
 	}
 
 	public void sendOpen() {
