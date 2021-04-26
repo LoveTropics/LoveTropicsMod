@@ -22,19 +22,19 @@ public final class IsolatePlayerStateBehavior implements IGameBehavior {
 	private final Map<UUID, PlayerSnapshot> playerSnapshots = Maps.newHashMap();
 
 	@Override
-	public void register(IActiveGame registerGame, EventRegistrar events) {
+	public void register(IActiveGame game, EventRegistrar events) {
 		events.listen(GamePlayerEvents.JOIN, this::onPlayerJoin);
 		events.listen(GamePlayerEvents.LEAVE, this::onPlayerLeave);
 	}
 
-	private void onPlayerJoin(IActiveGame minigame, ServerPlayerEntity player, PlayerRole role) {
+	private void onPlayerJoin(IActiveGame game, ServerPlayerEntity player, PlayerRole role) {
 		if (!this.playerSnapshots.containsKey(player.getUniqueID())) {
 			PlayerSnapshot snapshot = PlayerSnapshot.takeAndClear(player);
 			this.playerSnapshots.put(player.getUniqueID(), snapshot);
 		}
 	}
 
-	private void onPlayerLeave(IActiveGame minigame, ServerPlayerEntity player) {
+	private void onPlayerLeave(IActiveGame game, ServerPlayerEntity player) {
 		// try to restore the player to their old state
 		PlayerSnapshot snapshot = this.playerSnapshots.remove(player.getUniqueID());
 		if (snapshot != null) {

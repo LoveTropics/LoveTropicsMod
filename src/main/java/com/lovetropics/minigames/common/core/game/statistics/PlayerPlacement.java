@@ -14,8 +14,8 @@ import java.util.List;
 import java.util.Objects;
 
 public interface PlayerPlacement {
-	static Order fromDeathOrder(IActiveGame minigame, List<PlayerKey> deathOrder) {
-		PlayerSet participants = minigame.getParticipants();
+	static Order fromDeathOrder(IActiveGame game, List<PlayerKey> deathOrder) {
+		PlayerSet participants = game.getParticipants();
 		List<Placed<PlayerKey>> order = new ArrayList<>(participants.size() + deathOrder.size());
 
 		boolean anyFirst = false;
@@ -29,19 +29,19 @@ public interface PlayerPlacement {
 			order.add(Placed.at(++placement, deathOrder.get(i)));
 		}
 
-		return new Order(minigame, order);
+		return new Order(game, order);
 	}
 
-	static <T extends Comparable<T>> Score<T> fromMinScore(IActiveGame minigame, StatisticKey<T> score) {
-		return fromScore(minigame, score, Comparator.naturalOrder());
+	static <T extends Comparable<T>> Score<T> fromMinScore(IActiveGame game, StatisticKey<T> score) {
+		return fromScore(game, score, Comparator.naturalOrder());
 	}
 
-	static <T extends Comparable<T>> Score<T> fromMaxScore(IActiveGame minigame, StatisticKey<T> score) {
-		return fromScore(minigame, score, Comparator.reverseOrder());
+	static <T extends Comparable<T>> Score<T> fromMaxScore(IActiveGame game, StatisticKey<T> score) {
+		return fromScore(game, score, Comparator.reverseOrder());
 	}
 
-	static <T> Score<T> fromScore(IActiveGame minigame, StatisticKey<T> scoreKey, Comparator<T> comparator) {
-		GameStatistics statistics = minigame.getStatistics();
+	static <T> Score<T> fromScore(IActiveGame game, StatisticKey<T> scoreKey, Comparator<T> comparator) {
+		GameStatistics statistics = game.getStatistics();
 
 		List<PlayerKey> players = new ArrayList<>(statistics.getPlayers());
 		players.sort(Comparator.comparing(
@@ -64,7 +64,7 @@ public interface PlayerPlacement {
 			entries.add(new Score.Entry<>(player, placement, score));
 		}
 
-		return new Score<>(minigame, scoreKey, entries);
+		return new Score<>(game, scoreKey, entries);
 	}
 
 	void placeInto(StatisticKey<Integer> placementKey);
@@ -74,17 +74,17 @@ public interface PlayerPlacement {
 	void addToSidebar(List<String> sidebar, int length);
 
 	final class Order implements PlayerPlacement {
-		private final IActiveGame minigame;
+		private final IActiveGame game;
 		private final List<Placed<PlayerKey>> order;
 
-		Order(IActiveGame minigame, List<Placed<PlayerKey>> order) {
-			this.minigame = minigame;
+		Order(IActiveGame game, List<Placed<PlayerKey>> order) {
+			this.game = game;
 			this.order = order;
 		}
 
 		@Override
 		public void placeInto(StatisticKey<Integer> placementKey) {
-			GameStatistics statistics = minigame.getStatistics();
+			GameStatistics statistics = game.getStatistics();
 			statistics.clear(placementKey);
 
 			for (Placed<PlayerKey> placed : order) {
@@ -126,19 +126,19 @@ public interface PlayerPlacement {
 	}
 
 	final class Score<T> implements PlayerPlacement {
-		private final IActiveGame minigame;
+		private final IActiveGame game;
 		private final StatisticKey<T> scoreKey;
 		private final List<Entry<T>> entries;
 
-		Score(IActiveGame minigame, StatisticKey<T> scoreKey, List<Entry<T>> entries) {
-			this.minigame = minigame;
+		Score(IActiveGame game, StatisticKey<T> scoreKey, List<Entry<T>> entries) {
+			this.game = game;
 			this.scoreKey = scoreKey;
 			this.entries = entries;
 		}
 
 		@Override
 		public void placeInto(StatisticKey<Integer> placementKey) {
-			GameStatistics statistics = minigame.getStatistics();
+			GameStatistics statistics = game.getStatistics();
 			statistics.clear(placementKey);
 
 			for (Entry<T> entry : entries) {

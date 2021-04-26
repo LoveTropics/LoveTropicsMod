@@ -47,14 +47,14 @@ public final class TimeSurvivedTrackerBehavior implements IGameBehavior {
 		statistics.getGlobal().set(StatisticKey.TOTAL_TIME, secondsSurvived);
 	}
 
-	private ActionResultType onPlayerDeath(IActiveGame minigame, ServerPlayerEntity player, DamageSource source) {
-		GameStatistics statistics = minigame.getStatistics();
-		statistics.forPlayer(player).set(StatisticKey.TIME_SURVIVED, getSecondsSurvived(minigame));
+	private ActionResultType onPlayerDeath(IActiveGame game, ServerPlayerEntity player, DamageSource source) {
+		GameStatistics statistics = game.getStatistics();
+		statistics.forPlayer(player).set(StatisticKey.TIME_SURVIVED, getSecondsSurvived(game));
 
 		return ActionResultType.PASS;
 	}
 
-	private int getSecondsSurvived(IActiveGame minigame) {
-		return (int) ((minigame.ticks() - startTime) / 20);
+	private int getSecondsSurvived(IActiveGame game) {
+		return (int) ((game.ticks() - startTime) / 20);
 	}
 }

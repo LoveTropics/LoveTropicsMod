@@ -76,9 +76,9 @@ public class SttWinLogicBehavior implements IGameBehavior {
 		}
 	}
 
-	private void spawnLightningBoltsEverywhere(IActiveGame minigame, final World world) {
+	private void spawnLightningBoltsEverywhere(IActiveGame game, final World world) {
 		if (this.minigameEndedTimer % lightningBoltSpawnTickRate == 0) {
-			for (ServerPlayerEntity player : minigame.getParticipants()) {
+			for (ServerPlayerEntity player : game.getParticipants()) {
 				int xOffset = (7 + world.rand.nextInt(5)) * (world.rand.nextBoolean() ? 1 : -1);
 				int zOffset = (7 + world.rand.nextInt(5)) * (world.rand.nextBoolean() ? 1 : -1);
 

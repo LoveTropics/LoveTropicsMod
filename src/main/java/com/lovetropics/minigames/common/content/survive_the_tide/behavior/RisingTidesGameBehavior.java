@@ -158,13 +158,13 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 		}
 	}
 
-	private void spawnRisingTideParticles(IActiveGame minigame) {
-		ServerWorld world = minigame.getWorld();
+	private void spawnRisingTideParticles(IActiveGame game) {
+		ServerWorld world = game.getWorld();
 		Random random = world.rand;
 
 		BlockPos.Mutable mutablePos = new BlockPos.Mutable();
 
-		for (ServerPlayerEntity player : minigame.getParticipants()) {
+		for (ServerPlayerEntity player : game.getParticipants()) {
 			// only attempt to spawn particles if the player is near the water surface
 			if (Math.abs(player.getPosY() - waterLevel) > 10) {
 				continue;

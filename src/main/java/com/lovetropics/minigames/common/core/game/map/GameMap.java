@@ -50,9 +50,9 @@ public final class GameMap {
 		return new GameMap(name, dimension, mapRegions, close);
 	}
 
-	public void close(IActiveGame minigame) {
+	public void close(IActiveGame game) {
 		if (this.close != null) {
-			this.close.accept(minigame);
+			this.close.accept(game);
 		}
 	}
 }

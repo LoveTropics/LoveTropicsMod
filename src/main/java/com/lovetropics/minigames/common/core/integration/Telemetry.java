@@ -106,8 +106,8 @@ public final class Telemetry {
 		}
 	}
 
-	public GameInstanceTelemetry openGame(IActiveGame minigame) {
-		return GameInstanceTelemetry.open(minigame, this);
+	public GameInstanceTelemetry openGame(IActiveGame game) {
+		return GameInstanceTelemetry.open(game, this);
 	}
 
 	void post(final String endpoint, final JsonElement body) {

@@ -15,13 +15,13 @@ import java.util.concurrent.PriorityBlockingQueue;
 public final class GameActionHandler {
 	private static final Logger LOGGER = LogManager.getLogger(GameActionHandler.class);
 
-	private final IActiveGame minigame;
+	private final IActiveGame game;
 	private final GameInstanceTelemetry telemetry;
 	private final Map<GameActionType, ActionsQueue> queues = new EnumMap<>(GameActionType.class);
 
-	public GameActionHandler(IActiveGame minigame, GameInstanceTelemetry telemetry) {
+	public GameActionHandler(IActiveGame game, GameInstanceTelemetry telemetry) {
 		this.telemetry = telemetry;
-		this.minigame = minigame;
+		this.game = game;
 	}
 
 	public void pollGameActions(final MinecraftServer server, final int tick) {
@@ -31,7 +31,7 @@ public final class GameActionHandler {
 
 			GameAction action = polling.tryPoll(tick);
 			try {
-				if (action != null && action.resolve(minigame, server)) {
+				if (action != null && action.resolve(game, server)) {
 					// If we resolved the action, send acknowledgement to the backend
 					telemetry.acknowledgeActionDelivery(request, action);
 				}

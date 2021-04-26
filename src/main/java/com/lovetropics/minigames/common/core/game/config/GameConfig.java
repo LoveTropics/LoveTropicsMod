@@ -51,7 +51,7 @@ public final class GameConfig implements IGameDefinition {
 					GameMapProviders.CODEC.fieldOf("map_provider").forGetter(c -> c.mapProvider),
 					Codec.INT.optionalFieldOf("minimum_participants", 1).forGetter(c -> c.minimumParticipants),
 					Codec.INT.optionalFieldOf("maximum_participants", 100).forGetter(c -> c.maximumParticipants),
-					reader.listOf().fieldOf("behaviors").forGetter(c -> c.behaviors)
+					reader.fieldOf("behaviors").forGetter(c -> c.behaviors)
 			).apply(instance, (displayIdOpt, telemetryKeyOpt, translationKey, mapProvider, minimumParticipants, maximumParticipants, behaviors) -> {
 				ResourceLocation displayId = displayIdOpt.map(string -> new ResourceLocation(id.getNamespace(), string)).orElse(id);
 				String telemetryKey = telemetryKeyOpt.orElse(id.getPath());

@@ -14,6 +14,7 @@ import net.minecraft.entity.EntityType;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.registry.Registry;
+import net.minecraft.world.server.ServerWorld;
 
 import java.util.Iterator;
 
@@ -81,13 +82,13 @@ public class SpawnEntitiesAroundPlayersPackageBehavior implements IGameBehavior
 	 *
 	 * @return BlockPos.ZERO if it fails, otherwise a real position
 	 */
-	public BlockPos getSpawnableRandomPositionNear(final IActiveGame minigame, BlockPos pos, int minDist, int maxDist, int loopAttempts, int yRange) {
+	public BlockPos getSpawnableRandomPositionNear(final IActiveGame game, BlockPos pos, int minDist, int maxDist, int loopAttempts, int yRange) {
 		for (int i = 0; i < loopAttempts; i++) {
-			BlockPos posTry = pos.add(minigame.getWorld().getRandom().nextInt(maxDist * 2) - maxDist,
-					minigame.getWorld().getRandom().nextInt(yRange * 2) - yRange,
-					minigame.getWorld().getRandom().nextInt(maxDist * 2) - maxDist);
+			BlockPos posTry = pos.add(game.getWorld().getRandom().nextInt(maxDist * 2) - maxDist,
+					game.getWorld().getRandom().nextInt(yRange * 2) - yRange,
+					game.getWorld().getRandom().nextInt(maxDist * 2) - maxDist);
 
-			if (pos.distanceSq(posTry) >= minDist * minDist && isSpawnablePosition(minigame, posTry)) {
+			if (pos.distanceSq(posTry) >= minDist * minDist && isSpawnablePosition(game, posTry)) {
 				return posTry;
 			}
 		}
@@ -98,13 +99,14 @@ public class SpawnEntitiesAroundPlayersPackageBehavior implements IGameBehavior
 	 * Quick and dirty check for 2 high air with non air block under it
 	 * - also checks that it isnt water under it
 	 */
-	public boolean isSpawnablePosition(final IActiveGame minigame, BlockPos pos) {
-		return !minigame.getWorld().isAirBlock(pos.add(0, -1, 0))
-				&& minigame.getWorld().isAirBlock(pos.add(0, 0, 0))
-				&& minigame.getWorld().isAirBlock(pos.add(0, 1, 0))
-				&& !minigame.getWorld().getBlockState(pos.add(0, -1, 0)).getMaterial().isLiquid()
-				&& !minigame.getWorld().getBlockState(pos.add(0, 0, 0)).getMaterial().isLiquid()
-				&& !minigame.getWorld().getBlockState(pos.add(0, 1, 0)).getMaterial().isLiquid();
+	public boolean isSpawnablePosition(final IActiveGame game, BlockPos pos) {
+		ServerWorld world = game.getWorld();
+		return !world.isAirBlock(pos.add(0, -1, 0))
+				&& world.isAirBlock(pos.add(0, 0, 0))
+				&& world.isAirBlock(pos.add(0, 1, 0))
+				&& !world.getBlockState(pos.add(0, -1, 0)).getMaterial().isLiquid()
+				&& !world.getBlockState(pos.add(0, 0, 0)).getMaterial().isLiquid()
+				&& !world.getBlockState(pos.add(0, 1, 0)).getMaterial().isLiquid();
 	}
 
 

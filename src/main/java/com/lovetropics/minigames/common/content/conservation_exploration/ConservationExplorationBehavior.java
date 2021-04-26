@@ -106,14 +106,14 @@ public final class ConservationExplorationBehavior implements IGameBehavior {
 		}
 	}
 
-	private void recordEntity(IActiveGame minigame, ServerPlayerEntity reporter, LivingEntity entity) {
+	private void recordEntity(IActiveGame game, ServerPlayerEntity reporter, LivingEntity entity) {
 		if (!creatureDiscovered && entity.getType() == searchOrder[searchIndex].entity) {
-			onDiscoverNewEntity(minigame, reporter, entity);
+			onDiscoverNewEntity(game, reporter, entity);
 			creatureDiscovered = true;
 		}
 	}
 
-	private void onDiscoverNewEntity(IActiveGame minigame, ServerPlayerEntity reporter, LivingEntity entity) {
+	private void onDiscoverNewEntity(IActiveGame game, ServerPlayerEntity reporter, LivingEntity entity) {
 		Vector3d position = reporter.getPositionVec();
 		float yaw = reporter.rotationYaw;
 		float pitch = reporter.rotationPitch;
@@ -121,14 +121,14 @@ public final class ConservationExplorationBehavior implements IGameBehavior {
 		// highlight and stop the reported entity from moving for a bit
 		entity.addPotionEffect(new EffectInstance(Effects.SLOWNESS, 20 * 20, 10, false, false));
 
-		minigame.getServer().getScoreboard().addPlayerToTeam(entity.getScoreboardName(), discoveryTeam);
+		game.getServer().getScoreboard().addPlayerToTeam(entity.getScoreboardName(), discoveryTeam);
 
 		FireworkPalette.ISLAND_ROYALE.spawn(entity.getPosition(), entity.world);
 
 		String teleportCommand = "teleport_" + entity.getType().getTranslationKey();
-		minigame.getControlCommands().add(teleportCommand, ControlCommand.forEveryone(source -> {
+		game.getControlCommands().add(teleportCommand, ControlCommand.forEveryone(source -> {
 			ServerPlayerEntity player = source.asPlayer();
-			player.teleport(minigame.getWorld(), position.x, position.y, position.z, yaw, pitch);
+			player.teleport(game.getWorld(), position.x, position.y, position.z, yaw, pitch);
 		}));
 
 		IFormattableTextComponent message = reporter.getDisplayName().deepCopy()
@@ -145,8 +145,8 @@ public final class ConservationExplorationBehavior implements IGameBehavior {
 							.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/game " + teleportCommand));
 				});
 
-		minigame.getAllPlayers().sendMessage(message.appendSibling(teleportLink));
-		minigame.getAllPlayers().sendMessage(new StringTextComponent("How is this creature being impacted by human activities?").mergeStyle(TextFormatting.GRAY, TextFormatting.ITALIC));
+		game.getAllPlayers().sendMessage(message.appendSibling(teleportLink));
+		game.getAllPlayers().sendMessage(new StringTextComponent("How is this creature being impacted by human activities?").mergeStyle(TextFormatting.GRAY, TextFormatting.ITALIC));
 
 		ITextComponent nextLink = new StringTextComponent("click here")
 				.mergeStyle(TextFormatting.BLUE, TextFormatting.UNDERLINE)
@@ -161,13 +161,13 @@ public final class ConservationExplorationBehavior implements IGameBehavior {
 				.appendString(" to move onto the next creature")
 				.mergeStyle(TextFormatting.AQUA, TextFormatting.ITALIC);
 
-		ServerPlayerEntity initiator = minigame.getAllPlayers().getPlayerBy(minigame.getInitiator());
+		ServerPlayerEntity initiator = game.getAllPlayers().getPlayerBy(game.getInitiator());
 		if (initiator != null) {
 			initiator.sendStatusMessage(nextMessage, false);
 		}
 	}
 
-	private boolean nextCreature(IActiveGame minigame) {
+	private boolean nextCreature(IActiveGame game) {
 		int searchIndex = ++this.searchIndex;
 		if (searchIndex >= searchOrder.length) {
 			return false;
@@ -181,9 +181,9 @@ public final class ConservationExplorationBehavior implements IGameBehavior {
 		progressBar.setTitle(new StringTextComponent("Looking for: ").appendSibling(creatureName));
 		progressBar.setProgress((float) searchIndex / searchOrder.length);
 
-		minigame.getAllPlayers().sendMessage(new StringTextComponent("We are looking for a ").appendSibling(creatureName).appendString("!").mergeStyle(TextFormatting.GOLD));
+		game.getAllPlayers().sendMessage(new StringTextComponent("We are looking for a ").appendSibling(creatureName).appendString("!").mergeStyle(TextFormatting.GOLD));
 
-		spawnCreaturesFor(minigame, creature);
+		spawnCreaturesFor(game, creature);
 
 		return true;
 	}
@@ -193,12 +193,12 @@ public final class ConservationExplorationBehavior implements IGameBehavior {
 		scoreboard.removeTeam(discoveryTeam);
 	}
 
-	private void spawnCreaturesFor(IActiveGame minigame, CreatureType creature) {
-		ServerWorld world = minigame.getWorld();
+	private void spawnCreaturesFor(IActiveGame game, CreatureType creature) {
+		ServerWorld world = game.getWorld();
 		Random random = world.rand;
 
 		String regionKey = creature.region;
-		List<MapRegion> regions = new ArrayList<>(minigame.getMapRegions().get(regionKey));
+		List<MapRegion> regions = new ArrayList<>(game.getMapRegions().get(regionKey));
 		if (regions.isEmpty()) {
 			return;
 		}

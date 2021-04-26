@@ -78,8 +78,8 @@ public final class TrashCollectionBehavior implements IGameBehavior {
 		}
 	}
 
-	private void onFinish(IActiveGame minigame) {
-		triggerGameOver(minigame);
+	private void onFinish(IActiveGame game) {
+		triggerGameOver(game);
 	}
 
 	private void onPlayerJoin(IActiveGame game, ServerPlayerEntity player, PlayerRole role) {
@@ -116,19 +116,19 @@ public final class TrashCollectionBehavior implements IGameBehavior {
 		return trashBlocks.contains(state.getBlock());
 	}
 
-	private void triggerGameOver(IActiveGame minigame) {
+	private void triggerGameOver(IActiveGame game) {
 		if (gameOver) return;
 
 		gameOver = true;
 
 		ITextComponent finishMessage = new StringTextComponent("The game ended! Here are the results for this game:");
 
-		PlayerSet players = minigame.getAllPlayers();
+		PlayerSet players = game.getAllPlayers();
 		players.sendMessage(finishMessage.deepCopy().mergeStyle(TextFormatting.GREEN));
 
-		GameStatistics statistics = minigame.getStatistics();
+		GameStatistics statistics = game.getStatistics();
 
-		int totalTimeSeconds = (int) (minigame.ticks() / 20);
+		int totalTimeSeconds = (int) (game.ticks() / 20);
 		int totalTrashCollected = 0;
 
 		for (PlayerKey player : statistics.getPlayers()) {
@@ -139,16 +139,16 @@ public final class TrashCollectionBehavior implements IGameBehavior {
 		globalStatistics.set(StatisticKey.TOTAL_TIME, totalTimeSeconds);
 		globalStatistics.set(StatisticKey.TRASH_COLLECTED, totalTrashCollected);
 
-		PlayerPlacement.Score<Integer> placement = PlayerPlacement.fromMaxScore(minigame, StatisticKey.TRASH_COLLECTED);
+		PlayerPlacement.Score<Integer> placement = PlayerPlacement.fromMaxScore(game, StatisticKey.TRASH_COLLECTED);
 		placement.placeInto(StatisticKey.PLACEMENT);
 		placement.sendTo(players, 5);
 	}
 
-	private String[] renderSidebar(IActiveGame minigame) {
+	private String[] renderSidebar(IActiveGame game) {
 		List<String> sidebar = new ArrayList<>(10);
 		sidebar.add(TextFormatting.GREEN + "Pick up trash! " + TextFormatting.GRAY + collectedTrash + " collected");
 
-		PlayerPlacement.Score<Integer> placement = PlayerPlacement.fromMaxScore(minigame, StatisticKey.TRASH_COLLECTED);
+		PlayerPlacement.Score<Integer> placement = PlayerPlacement.fromMaxScore(game, StatisticKey.TRASH_COLLECTED);
 
 		sidebar.add("");
 		sidebar.add(TextFormatting.GREEN + "MVPs:");

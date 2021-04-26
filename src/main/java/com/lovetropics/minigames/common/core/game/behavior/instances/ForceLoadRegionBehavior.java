@@ -66,10 +66,10 @@ public final class ForceLoadRegionBehavior implements IGameBehavior {
 		return chunks;
 	}
 
-	private LongSet collectChunks(IActiveGame minigame) {
+	private LongSet collectChunks(IActiveGame game) {
 		LongSet chunks = new LongOpenHashSet();
 
-		Collection<MapRegion> regions = minigame.getMapRegions().get(regionKey);
+		Collection<MapRegion> regions = game.getMapRegions().get(regionKey);
 		for (MapRegion region : regions) {
 			chunks.addAll(region.asChunks());
 		}

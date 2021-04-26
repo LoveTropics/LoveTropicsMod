@@ -60,8 +60,8 @@ public final class SetMaxHealthBehavior implements IGameBehavior {
 		}
 	}
 
-	private double getMaxHealthForPlayer(IActiveGame minigame, ServerPlayerEntity player) {
-		TeamKey team = getTeamOrNull(minigame, player);
+	private double getMaxHealthForPlayer(IActiveGame game, ServerPlayerEntity player) {
+		TeamKey team = getTeamOrNull(game, player);
 		if (team != null) {
 			return maxHealthByTeam.getOrDefault(team.key, 20.0);
 		}
