@@ -189,6 +189,7 @@ public class LoveTropics {
             prov.add(LoveTropicsLangKeys.COMMAND_MINIGAME_POLLED, "Minigame successfully polled!");
             prov.add(LoveTropicsLangKeys.COMMAND_NOT_ENOUGH_PLAYERS, "There aren't enough players to start this minigame. It requires at least %s amount of players.");
             prov.add(LoveTropicsLangKeys.COMMAND_MINIGAME_STARTED, "You have started the minigame.");
+            prov.add(LoveTropicsLangKeys.COMMAND_MINIGAMES_INTERSECT, "This minigame cannot be started because its area intersects with another ongoing minigame.");
             prov.add(LoveTropicsLangKeys.MINIGAME_SURVIVE_THE_TIDE_1, "Survive The Tide I");
             prov.add(LoveTropicsLangKeys.MINIGAME_SURVIVE_THE_TIDE_1_TEAMS, "Survive The Tide I (Teams)");
             prov.add(LoveTropicsLangKeys.MINIGAME_SURVIVE_THE_TIDE_2, "Survive The Tide II");

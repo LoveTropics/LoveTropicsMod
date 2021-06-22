@@ -1,27 +1,37 @@
 package com.lovetropics.minigames.common.core.game.map;
 
-import com.lovetropics.minigames.common.core.dimension.RuntimeDimensionConfig;
-import com.lovetropics.minigames.common.core.dimension.RuntimeDimensionHandle;
-import com.lovetropics.minigames.common.core.dimension.RuntimeDimensions;
-import com.lovetropics.minigames.common.core.map.*;
-import com.lovetropics.minigames.common.core.game.GameResult;
-import com.mojang.datafixers.util.Pair;
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.resources.IResource;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.Util;
-import net.minecraft.world.Dimension;
-import net.minecraft.world.DimensionType;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import java.io.IOException;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.function.Supplier;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import com.lovetropics.minigames.common.core.dimension.RuntimeDimensionConfig;
+import com.lovetropics.minigames.common.core.dimension.RuntimeDimensionHandle;
+import com.lovetropics.minigames.common.core.dimension.RuntimeDimensions;
+import com.lovetropics.minigames.common.core.game.GameResult;
+import com.lovetropics.minigames.common.core.map.MapExportReader;
+import com.lovetropics.minigames.common.core.map.MapMetadata;
+import com.lovetropics.minigames.common.core.map.MapWorldInfo;
+import com.lovetropics.minigames.common.core.map.MapWorldSettings;
+import com.lovetropics.minigames.common.core.map.VoidChunkGenerator;
+import com.mojang.datafixers.util.Pair;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+
+import net.minecraft.resources.IResource;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.RegistryKey;
+import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.Util;
+import net.minecraft.util.registry.DynamicRegistries;
+import net.minecraft.util.registry.Registry;
+import net.minecraft.world.Dimension;
+import net.minecraft.world.DimensionType;
+import net.minecraft.world.World;
 
 public class LoadMapProvider implements IGameMapProvider {
 	public static final Codec<LoadMapProvider> CODEC = RecordCodecBuilder.create(instance -> {

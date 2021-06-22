@@ -30,10 +30,12 @@ public final class GameInstance implements IGameInstance {
 		GameInstanceId instanceId = GameInstanceId.generate(definition);
 
 		GameInstance instance = new GameInstance(manager, server, instanceId, definition, initiator);
-		return PollingGame.create(instance).map(polling -> {
-			instance.setPhase(polling);
-			return polling;
-		});
+		return GameResult.ok(instance)
+			.flatMap(PollingGame::create)
+			.map(polling -> {
+				instance.setPhase(polling);
+				return polling;
+			});
 	}
 
 	@Override

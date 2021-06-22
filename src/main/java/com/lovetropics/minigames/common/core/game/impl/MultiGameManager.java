@@ -1,14 +1,32 @@
 package com.lovetropics.minigames.common.core.game.impl;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.function.Predicate;
+
+import javax.annotation.Nullable;
+
+import com.google.common.base.Predicates;
 import com.lovetropics.minigames.Constants;
+import com.lovetropics.minigames.client.data.LoveTropicsLangKeys;
 import com.lovetropics.minigames.client.minigame.ClientMinigameMessage;
 import com.lovetropics.minigames.client.minigame.PlayerCountsMessage;
-import com.lovetropics.minigames.common.core.game.*;
+import com.lovetropics.minigames.common.core.game.GameMessages;
+import com.lovetropics.minigames.common.core.game.GameResult;
+import com.lovetropics.minigames.common.core.game.IActiveGame;
+import com.lovetropics.minigames.common.core.game.IGameDefinition;
+import com.lovetropics.minigames.common.core.game.IGameInstance;
+import com.lovetropics.minigames.common.core.game.IGameManager;
+import com.lovetropics.minigames.common.core.game.PlayerRole;
+import com.lovetropics.minigames.common.core.game.PlayerSet;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePollingEvents;
 import com.lovetropics.minigames.common.core.game.control.ControlCommandInvoker;
 import com.lovetropics.minigames.common.core.game.statistics.PlayerKey;
 import com.lovetropics.minigames.common.core.integration.Telemetry;
 import com.lovetropics.minigames.common.core.network.LoveTropicsNetwork;
+
 import net.minecraft.command.CommandSource;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -16,9 +34,11 @@ import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.management.PlayerList;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
+import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.World;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
@@ -26,11 +46,6 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.server.FMLServerStoppingEvent;
 import net.minecraftforge.fml.network.PacketDistributor;
-
-import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 
 /**
  * Standard implementation of a game manager. Would prefer to do something other
@@ -45,6 +60,11 @@ public class MultiGameManager implements IGameManager {
 
 	@Override
 	public GameResult<PollingGame> startPolling(IGameDefinition game, ServerPlayerEntity initiator) {
+		if (currentGames.stream().map(GameInstance::getDefinition)
+				.filter(d -> d.getGameArea().intersects(game.getGameArea()))
+				.anyMatch(d -> !Collections.disjoint(d.getMapProvider().getPossibleDimensions(), game.getMapProvider().getPossibleDimensions()))) {
+			return GameResult.error(new TranslationTextComponent(LoveTropicsLangKeys.COMMAND_MINIGAMES_INTERSECT));
+		}
 		GameResult<PollingGame> pollResult = GameInstance.createPolling(this, initiator.server, game, PlayerKey.from(initiator));
 		if (pollResult.isError()) {
 			return pollResult.castError();
@@ -83,44 +103,42 @@ public class MultiGameManager implements IGameManager {
 	@Nullable
 	@Override
 	public GameInstance getGameFor(PlayerEntity player) {
-		if (player.world.isRemote) return null;
-
-		for (GameInstance game : currentGames) {
-			if (game.getAllPlayers().contains(player)) {
-				return game;
-			}
-		}
-
-		return null;
+		return getGameForWorld(player.world, g -> g.getAllPlayers().contains(player));
 	}
 
 	@Nullable
 	@Override
 	public GameInstance getGameFor(Entity entity) {
-		if (entity instanceof PlayerEntity) {
-			return getGameFor((PlayerEntity) entity);
-		}
-		return getGameForWorld(entity.world);
+		return getGameForWorld(entity.world, g -> g.getDefinition().getGameArea().contains(entity.getPositionVec()));
 	}
 
 	@Nullable
 	@Override
 	public GameInstance getGameAt(World world, BlockPos pos) {
-		return getGameForWorld(world);
+		return getGameForWorld(world, g -> g.getDefinition().getGameArea().contains(Vector3d.copyCentered(pos)));
 	}
 
-	@Nullable
-	public GameInstance getGameForWorld(World world) {
-		if (world.isRemote) return null;
+	public List<GameInstance> getGamesForWorld(World world) {
+		return getGamesForWorld(world, Predicates.alwaysTrue());
+	}
 
+	public List<GameInstance> getGamesForWorld(World world, Predicate<GameInstance> pred) {
+		if (world.isRemote) return Collections.emptyList();
+
+		List<GameInstance> ret = new ArrayList<>();
 		for (GameInstance game : currentGames) {
 			IActiveGame active = game.asActive();
-			if (active != null && active.getDimension() == world.getDimensionKey()) {
-				return game;
+			if (active != null && active.getDimension() == world.getDimensionKey() && pred.test(game)) {
+				ret.add(game);
 			}
 		}
 
-		return null;
+		return ret;
+	}
+
+	@Nullable
+	public GameInstance getGameForWorld(World world, Predicate<GameInstance> pred) {
+		return getGamesForWorld(world, pred).stream().findFirst().orElse(null);
 	}
 
 	@Override

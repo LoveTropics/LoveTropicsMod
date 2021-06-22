@@ -3,6 +3,7 @@ package com.lovetropics.minigames.common.core.game;
 import com.lovetropics.minigames.common.core.game.behavior.BehaviorMap;
 import com.lovetropics.minigames.common.core.game.map.IGameMapProvider;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TranslationTextComponent;
 
@@ -62,4 +63,6 @@ public interface IGameDefinition {
      * minigame.
      */
     int getMaximumParticipantCount();
+
+    AxisAlignedBB getGameArea();
 }

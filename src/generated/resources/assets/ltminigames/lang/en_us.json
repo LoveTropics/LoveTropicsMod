@@ -17,6 +17,7 @@
   "ltminigames.command.another_minigame_polling": "Another minigame is already polling! Stop that one first before polling another.",
   "ltminigames.command.enough_players": "There are now enough players to start the minigame!",
   "ltminigames.command.entity_not_player": "Entity that attempted command is not player.",
+  "ltminigames.command.intersects": "This minigame cannot be started because its area intersects with another ongoing minigame.",
   "ltminigames.command.minigame_already_registered": "You've already registered for the current minigame!",
   "ltminigames.command.minigame_already_started": "Another minigame is already in progress! Stop that one first before polling another.",
   "ltminigames.command.minigame_id_invalid": "A minigame with that ID doesn't exist!",

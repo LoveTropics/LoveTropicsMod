@@ -27,6 +27,8 @@ public class LoveTropicsLangKeys
     public static final String COMMAND_MINIGAME_STARTED = Constants.MODID + ".command.minigame_started";
     public static final String COMMAND_ENOUGH_PLAYERS = Constants.MODID + ".command.enough_players";
     public static final String COMMAND_NO_LONGER_ENOUGH_PLAYERS = Constants.MODID + ".command.no_longer_enough_players";
+    public static final String COMMAND_MINIGAMES_INTERSECT = Constants.MODID + ".command.intersects"; 
+
     public static final String MINIGAME_SURVIVE_THE_TIDE_1 = Constants.MODID + ".minigame.survive_the_tide_1";
     public static final String MINIGAME_SURVIVE_THE_TIDE_1_TEAMS = Constants.MODID + ".minigame.survive_the_tide_1_teams";
     public static final String MINIGAME_SURVIVE_THE_TIDE_2 = Constants.MODID + ".minigame.survive_the_tide_2";
