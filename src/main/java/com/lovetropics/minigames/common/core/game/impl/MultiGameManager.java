@@ -103,12 +103,15 @@ public class MultiGameManager implements IGameManager {
 	@Nullable
 	@Override
 	public GameInstance getGameFor(PlayerEntity player) {
-		return getGameForWorld(player.world, g -> g.getAllPlayers().contains(player));
+		return getGame(g -> g.getAllPlayers().contains(player));
 	}
 
 	@Nullable
 	@Override
 	public GameInstance getGameFor(Entity entity) {
+		if (entity instanceof PlayerEntity) {
+			return getGameFor((PlayerEntity) entity);
+		}
 		return getGameForWorld(entity.world, g -> g.getDefinition().getGameArea().contains(entity.getPositionVec()));
 	}
 
@@ -125,10 +128,16 @@ public class MultiGameManager implements IGameManager {
 	public List<GameInstance> getGamesForWorld(World world, Predicate<GameInstance> pred) {
 		if (world.isRemote) return Collections.emptyList();
 
+		return getGames(pred.and(g -> {
+			IActiveGame active = g.asActive();
+			return active != null && active.getDimension() == world.getDimensionKey();
+		}));
+	}
+
+	public List<GameInstance> getGames(Predicate<GameInstance> pred) {
 		List<GameInstance> ret = new ArrayList<>();
 		for (GameInstance game : currentGames) {
-			IActiveGame active = game.asActive();
-			if (active != null && active.getDimension() == world.getDimensionKey() && pred.test(game)) {
+			if (pred.test(game)) {
 				ret.add(game);
 			}
 		}
@@ -139,6 +148,11 @@ public class MultiGameManager implements IGameManager {
 	@Nullable
 	public GameInstance getGameForWorld(World world, Predicate<GameInstance> pred) {
 		return getGamesForWorld(world, pred).stream().findFirst().orElse(null);
+	}
+
+	@Nullable
+	public GameInstance getGame(Predicate<GameInstance> pred) {
+		return getGames(pred).stream().findFirst().orElse(null);
 	}
 
 	@Override

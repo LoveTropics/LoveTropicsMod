@@ -65,6 +65,7 @@ public class MinigameGui {
 					line += TextFormatting.AQUA + "/leave";
 				}
 				fnt.drawStringWithShadow(transform, line, padding, y, -1);
+				y += lineHeight + padding;
 			}
 		}
 	}
