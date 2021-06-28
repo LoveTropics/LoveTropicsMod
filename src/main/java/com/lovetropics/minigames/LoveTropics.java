@@ -12,6 +12,7 @@ import com.lovetropics.minigames.common.content.survive_the_tide.entity.Driftwoo
 import com.lovetropics.minigames.common.content.trash_dive.TrashDive;
 import com.lovetropics.minigames.common.core.command.MapCommand;
 import com.lovetropics.minigames.common.core.command.game.*;
+import com.lovetropics.minigames.common.core.diguise.PlayerDisguise;
 import com.lovetropics.minigames.common.core.game.GameEventDispatcher;
 import com.lovetropics.minigames.common.core.game.IGameManager;
 import com.lovetropics.minigames.common.core.game.behavior.GameBehaviorTypes;
@@ -74,6 +75,9 @@ public class LoveTropics {
 
     @CapabilityInject(DriftwoodRider.class)
     private static Capability<DriftwoodRider> driftwoodRiderCap;
+
+    @CapabilityInject(PlayerDisguise.class)
+    private static Capability<PlayerDisguise> playerDisguiseCap;
 
     public LoveTropics() {
     	// Compatible with all versions that match the semver (excluding the qualifier e.g. "-beta+42")
@@ -142,6 +146,10 @@ public class LoveTropics {
         VoidChunkGenerator.register();
 
         CapabilityManager.INSTANCE.register(DriftwoodRider.class, DriftwoodRider.STORAGE, () -> {
+            throw new UnsupportedOperationException();
+        });
+
+        CapabilityManager.INSTANCE.register(PlayerDisguise.class, PlayerDisguise.STORAGE, () -> {
             throw new UnsupportedOperationException();
         });
     }
@@ -234,7 +242,10 @@ public class LoveTropics {
     }
 
     public static Capability<DriftwoodRider> driftwoodRiderCap() {
-        Preconditions.checkNotNull(driftwoodRiderCap, "driftwood rider capability not initialized");
-        return driftwoodRiderCap;
+        return Preconditions.checkNotNull(driftwoodRiderCap, "driftwood rider capability not initialized");
+    }
+
+    public static Capability<PlayerDisguise> playerDisguiseCap() {
+        return Preconditions.checkNotNull(playerDisguiseCap, "player disguise capability not initialized");
     }
 }

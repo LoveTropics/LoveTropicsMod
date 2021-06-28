@@ -3,7 +3,6 @@ package com.lovetropics.minigames.common.core.game.config;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
 import org.apache.commons.lang3.mutable.MutableBoolean;
-import org.apache.commons.lang3.mutable.MutableObject;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -58,21 +57,22 @@ final class BehaviorParameterReplacer<T> {
 
 	@Nullable
 	private Dynamic<T> replaceInMap(Dynamic<T> target, Map<Dynamic<T>, Dynamic<T>> targetMap) {
-		MutableObject<Dynamic<T>> result = new MutableObject<>();
+		Dynamic<T> result = null;
 
 		for (Map.Entry<Dynamic<T>, Dynamic<T>> entry : targetMap.entrySet()) {
-			entry.getKey().asString().result().ifPresent(key -> {
+			Optional<String> key = entry.getKey().asString().result();
+			if (key.isPresent()) {
 				Dynamic<T> replacedValue = this.replaceInAny(entry.getValue());
 				if (replacedValue != null) {
-					if (result.getValue() == null) {
-						result.setValue(target);
+					if (result == null) {
+						result = target;
 					}
-					result.setValue(result.getValue().set(key, replacedValue));
+					result = result.set(key.get(), replacedValue);
 				}
-			});
+			}
 		}
 
-		return result.getValue();
+		return result;
 	}
 
 	@Nullable

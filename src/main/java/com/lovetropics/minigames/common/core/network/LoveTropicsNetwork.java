@@ -77,5 +77,11 @@ public final class LoveTropicsNetwork {
 				.decoder(PlayerCountsMessage::decode)
 				.consumer(PlayerCountsMessage::handle)
 				.add();
+
+		CHANNEL.messageBuilder(PlayerDisguiseMessage.class, 9, NetworkDirection.PLAY_TO_CLIENT)
+				.encoder(PlayerDisguiseMessage::encode)
+				.decoder(PlayerDisguiseMessage::decode)
+				.consumer(PlayerDisguiseMessage::handle)
+				.add();
 	}
 }
