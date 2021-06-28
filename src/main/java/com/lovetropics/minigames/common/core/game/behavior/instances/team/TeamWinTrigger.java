@@ -1,4 +1,4 @@
-package com.lovetropics.minigames.common.core.game.behavior.instances;
+package com.lovetropics.minigames.common.core.game.behavior.instances.team;
 
 import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.IActiveGame;

@@ -1,4 +1,4 @@
-package com.lovetropics.minigames.common.core.game.behavior.instances;
+package com.lovetropics.minigames.common.core.game.behavior.instances.team;
 
 import com.lovetropics.minigames.common.core.game.*;
 import com.lovetropics.minigames.common.core.game.control.ControlCommand;
@@ -27,6 +27,7 @@ import net.minecraft.util.text.Style;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.event.ClickEvent;
 import net.minecraft.util.text.event.HoverEvent;
+import org.apache.commons.lang3.RandomStringUtils;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -91,12 +92,10 @@ public final class TeamsBehavior implements IGameBehavior {
 		ServerScoreboard scoreboard = server.getScoreboard();
 
 		for (TeamKey teamKey : teams) {
-			ScorePlayerTeam team = scoreboard.getTeam(teamKey.key);
-			if (team != null) {
-				scoreboard.removeTeam(team);
-			}
+			// generate a unique team id since we want to have concurrent games!
+			String teamId = teamKey.key + "_" + RandomStringUtils.randomAlphabetic(3);
 
-			ScorePlayerTeam scoreboardTeam = scoreboard.createTeam(teamKey.key);
+			ScorePlayerTeam scoreboardTeam = scoreboard.createTeam(teamId);
 			scoreboardTeam.setDisplayName(new StringTextComponent(teamKey.name));
 			scoreboardTeam.setColor(teamKey.text);
 			scoreboardTeam.setAllowFriendlyFire(friendlyFire);

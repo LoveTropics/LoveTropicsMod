@@ -8,8 +8,12 @@ import net.minecraft.client.MainWindow;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.AbstractGui;
 import net.minecraft.client.util.InputMappings;
+import net.minecraft.client.world.ClientWorld;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.scoreboard.ScorePlayerTeam;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
@@ -17,7 +21,9 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.lwjgl.glfw.GLFW;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Function;
@@ -212,8 +218,12 @@ public final class ChaseCameraUi {
 
 	List<Entry> createEntriesFor(List<UUID> players) {
 		List<Entry> entries = new ArrayList<>(players.size() + 1);
+		entries.add(new Entry(CLIENT.player.getUniqueID(), s -> "Free Camera", TextFormatting.RESET, ChaseCameraState.FREE_CAMERA));
 
-		entries.add(new Entry(CLIENT.player.getUniqueID(), s -> "Free Camera", ChaseCameraState.FREE_CAMERA));
+		players.sort(Comparator.comparing(player -> {
+			ScorePlayerTeam team = getTeamFor(player);
+			return team != null ? team.getName() : "";
+		}));
 
 		for (UUID player : players) {
 			Function<ChaseCameraSession, String> nameFunction = s -> {
@@ -221,20 +231,45 @@ public final class ChaseCameraUi {
 				return profile != null ? profile.getName() : "...";
 			};
 
-			entries.add(new Entry(player, nameFunction, new ChaseCameraState.SelectedPlayer(player)));
+			ScorePlayerTeam team = getTeamFor(player);
+			TextFormatting color = team != null ? team.getColor() : TextFormatting.RESET;
+
+			entries.add(new Entry(player, nameFunction, color, new ChaseCameraState.SelectedPlayer(player)));
 		}
 
 		return entries;
 	}
 
+	@Nullable
+	private static ScorePlayerTeam getTeamFor(UUID playerId) {
+		ClientWorld world = CLIENT.world;
+		if (world == null) {
+			return null;
+		}
+
+		PlayerEntity player = world.getPlayerByUuid(playerId);
+		if (player != null) {
+			return world.getScoreboard().getPlayersTeam(player.getScoreboardName());
+		} else {
+			return null;
+		}
+	}
+
 	static class Entry {
 		final UUID playerIcon;
 		final Function<ChaseCameraSession, String> nameFunction;
+		final int color;
 		final ChaseCameraState selectionState;
 
-		Entry(UUID playerIcon, Function<ChaseCameraSession, String> name, ChaseCameraState selectionState) {
+		Entry(
+				UUID playerIcon,
+				Function<ChaseCameraSession, String> name,
+				TextFormatting color,
+				ChaseCameraState selectionState
+		) {
 			this.playerIcon = playerIcon;
 			this.nameFunction = name;
+			this.color = color.getColor() != null ? color.getColor() | (0xFF << 24) : 0xFFFFFFFF;
 			this.selectionState = selectionState;
 		}
 
@@ -246,7 +281,7 @@ public final class ChaseCameraUi {
 			AbstractGui.blit(transform, x, y, 12, 12, 8.0F, 8.0F, 8, 8, 64, 64);
 			AbstractGui.blit(transform, x, y, 12, 12, 40.0F, 8.0F, 8, 8, 64, 64);
 
-			CLIENT.fontRenderer.drawString(transform, name, x + ENTRY_SIZE, y + ENTRY_PADDING, 0xFFFFFFFF);
+			CLIENT.fontRenderer.drawString(transform, name, x + ENTRY_SIZE, y + ENTRY_PADDING, color);
 		}
 
 		int getWidth(ChaseCameraSession session) {

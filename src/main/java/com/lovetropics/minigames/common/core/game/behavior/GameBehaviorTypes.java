@@ -6,6 +6,8 @@ import com.lovetropics.minigames.common.core.game.behavior.instances.*;
 import com.lovetropics.minigames.common.core.game.behavior.instances.command.*;
 import com.lovetropics.minigames.common.core.game.behavior.instances.donation.*;
 import com.lovetropics.minigames.common.core.game.behavior.instances.statistics.*;
+import com.lovetropics.minigames.common.core.game.behavior.instances.team.TeamWinTrigger;
+import com.lovetropics.minigames.common.core.game.behavior.instances.team.TeamsBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.tweak.*;
 import com.lovetropics.minigames.common.util.GameBehaviorEntry;
 import com.lovetropics.minigames.common.util.LoveTropicsRegistrate;
