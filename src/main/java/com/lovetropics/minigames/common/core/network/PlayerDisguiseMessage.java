@@ -1,18 +1,16 @@
 package com.lovetropics.minigames.common.core.network;
 
-import com.lovetropics.minigames.common.core.diguise.PlayerDisguise;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.world.ClientWorld;
-import net.minecraft.entity.Entity;
+import java.util.UUID;
+import java.util.function.Supplier;
+
+import javax.annotation.Nullable;
+
+import com.lovetropics.minigames.client.ClientPlayerDisguises;
+
 import net.minecraft.entity.EntityType;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.registry.Registry;
 import net.minecraftforge.fml.network.NetworkEvent;
-
-import javax.annotation.Nullable;
-import java.util.UUID;
-import java.util.function.Supplier;
 
 public class PlayerDisguiseMessage {
 	private final UUID player;
@@ -46,21 +44,7 @@ public class PlayerDisguiseMessage {
 	}
 
 	public void handle(Supplier<NetworkEvent.Context> ctx) {
-		ctx.get().enqueueWork(() -> {
-			ClientWorld world = Minecraft.getInstance().world;
-
-			PlayerEntity player = world.getPlayerByUuid(this.player);
-			if (player != null) {
-				PlayerDisguise.get(player).ifPresent(playerDisguise -> {
-					if (disguise != null) {
-						Entity entity = disguise.create(world);
-						playerDisguise.setDisguiseEntity(entity);
-					} else {
-						playerDisguise.setDisguiseEntity(null);
-					}
-				});
-			}
-		});
+		ctx.get().enqueueWork(() -> ClientPlayerDisguises.updateClientDisguise(player, disguise));
 		ctx.get().setPacketHandled(true);
 	}
 }

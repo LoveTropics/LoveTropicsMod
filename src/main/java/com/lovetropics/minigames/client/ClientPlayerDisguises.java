@@ -1,5 +1,7 @@
 package com.lovetropics.minigames.client;
 
+import java.util.UUID;
+
 import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.common.core.diguise.PlayerDisguise;
 import com.mojang.blaze3d.matrix.MatrixStack;
@@ -7,9 +9,11 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.IRenderTypeBuffer;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.world.World;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RenderPlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -84,5 +88,20 @@ public final class ClientPlayerDisguises {
 		}
 
 		disguise.ticksExisted = player.ticksExisted;
+	}
+
+	public static void updateClientDisguise(UUID uuid, EntityType<?> disguise) {
+		World world = Minecraft.getInstance().world;
+		PlayerEntity player = world.getPlayerByUuid(uuid);
+		if (player != null) {
+			PlayerDisguise.get(player).ifPresent(playerDisguise -> {
+				if (disguise != null) {
+					Entity entity = disguise.create(world);
+					playerDisguise.setDisguiseEntity(entity);
+				} else {
+					playerDisguise.setDisguiseEntity(null);
+				}
+			});
+		}
 	}
 }
