@@ -2,11 +2,11 @@ package com.lovetropics.minigames.common.core.map.workspace;
 
 import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.LoveTropics;
-import com.lovetropics.minigames.common.util.Util;
 import com.lovetropics.minigames.common.core.dimension.RuntimeDimensionHandle;
 import com.lovetropics.minigames.common.core.dimension.RuntimeDimensions;
 import com.lovetropics.minigames.common.core.map.MapWorldInfo;
 import com.lovetropics.minigames.common.core.map.MapWorldSettings;
+import com.lovetropics.minigames.common.util.Util;
 import com.mojang.serialization.DataResult;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.nbt.CompoundNBT;
@@ -44,15 +44,16 @@ public final class MapWorkspaceManager extends WorldSavedData {
 	public CompletableFuture<MapWorkspace> openWorkspace(String id, WorkspaceDimensionConfig dimensionConfig) {
 		MapWorldSettings settings = MapWorldSettings.createFromOverworld(server);
 
-		return getOrCreateDimension(id, dimensionConfig, settings).thenApplyAsync(dimensionHandle -> {
-			MapWorkspace workspace = new MapWorkspace(id, dimensionConfig, settings, dimensionHandle);
-			this.workspaces.putIfAbsent(id, workspace);
+		return CompletableFuture.supplyAsync(() -> getOrCreateDimension(id, dimensionConfig, settings), server)
+				.thenApplyAsync(dimensionHandle -> {
+					MapWorkspace workspace = new MapWorkspace(id, dimensionConfig, settings, dimensionHandle);
+					this.workspaces.putIfAbsent(id, workspace);
 
-			return workspace;
-		}, this.server);
+					return workspace;
+				}, this.server);
 	}
 
-	private CompletableFuture<RuntimeDimensionHandle> getOrCreateDimension(String id, WorkspaceDimensionConfig dimensionConfig, MapWorldSettings mapSettings) {
+	private RuntimeDimensionHandle getOrCreateDimension(String id, WorkspaceDimensionConfig dimensionConfig, MapWorldSettings mapSettings) {
 		return RuntimeDimensions.get(server).getOrOpenPersistent(Util.resource(id), () -> {
 			MapWorldInfo worldInfo = MapWorldInfo.create(server, mapSettings);
 			return dimensionConfig.toRuntimeConfig(server, worldInfo);
@@ -120,11 +121,9 @@ public final class MapWorkspaceManager extends WorldSavedData {
 
 			DataResult<MapWorkspaceData> result = MapWorkspaceData.CODEC.parse(NBTDynamicOps.INSTANCE, workspaceRoot);
 			result.result().ifPresent(workspaceData -> {
-				getOrCreateDimension(workspaceData.id, workspaceData.dimension, workspaceData.worldSettings)
-						.thenAcceptAsync(dimensionHandle -> {
-							MapWorkspace workspace = workspaceData.create(server, dimensionHandle);
-							this.workspaces.put(workspaceData.id, workspace);
-						}, this.server);
+				RuntimeDimensionHandle dimensionHandle = getOrCreateDimension(workspaceData.id, workspaceData.dimension, workspaceData.worldSettings);
+				MapWorkspace workspace = workspaceData.create(server, dimensionHandle);
+				this.workspaces.put(workspaceData.id, workspace);
 			});
 
 			result.error().ifPresent(error -> {

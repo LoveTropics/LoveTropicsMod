@@ -86,27 +86,23 @@ public final class RuntimeDimensions {
 		return instance;
 	}
 
-	public CompletableFuture<RuntimeDimensionHandle> getOrOpenPersistent(ResourceLocation key, Supplier<RuntimeDimensionConfig> config) {
-		return CompletableFuture.supplyAsync(() -> {
-			RegistryKey<World> worldKey = RegistryKey.getOrCreateKey(Registry.WORLD_KEY, key);
-			ServerWorld world = this.server.getWorld(worldKey);
-			if (world != null) {
-				this.deletionQueue.remove(world);
-				return world;
-			}
+	public RuntimeDimensionHandle getOrOpenPersistent(ResourceLocation key, Supplier<RuntimeDimensionConfig> config) {
+		RegistryKey<World> worldKey = RegistryKey.getOrCreateKey(Registry.WORLD_KEY, key);
+		ServerWorld world = this.server.getWorld(worldKey);
+		if (world != null) {
+			this.deletionQueue.remove(world);
+			return new RuntimeDimensionHandle(this, world);
+		}
 
-			return this.openWorld(key, config.get());
-		}, this.server).thenApply(world -> new RuntimeDimensionHandle(this, world));
+		return this.openWorld(key, config.get());
 	}
 
-	public CompletableFuture<RuntimeDimensionHandle> openTemporary(RuntimeDimensionConfig config) {
-		return CompletableFuture.supplyAsync(() -> {
-			ResourceLocation key = generateTemporaryDimensionKey();
-			return this.openWorld(key, config);
-		}, this.server).thenApply(world -> new RuntimeDimensionHandle(this, world));
+	public RuntimeDimensionHandle openTemporary(RuntimeDimensionConfig config) {
+		ResourceLocation key = generateTemporaryDimensionKey();
+		return this.openWorld(key, config);
 	}
 
-	ServerWorld openWorld(ResourceLocation key, RuntimeDimensionConfig config) {
+	RuntimeDimensionHandle openWorld(ResourceLocation key, RuntimeDimensionConfig config) {
 		RegistryKey<World> worldKey = RegistryKey.getOrCreateKey(Registry.WORLD_KEY, key);
 
 		SimpleRegistry<Dimension> dimensionsRegistry = getDimensionsRegistry(this.server);
@@ -130,7 +126,9 @@ public final class RuntimeDimensions {
 
 		MinecraftForge.EVENT_BUS.post(new WorldEvent.Load(world));
 
-		return world;
+		world.tick(() -> true);
+
+		return new RuntimeDimensionHandle(this, world);
 	}
 
 	void tick() {

@@ -20,5 +20,6 @@ public final class GameMapProviders {
 		register("load_map", LoadMapProvider.CODEC);
 		register("random", RandomMapProvider.CODEC);
 		register("inline", InlineMapProvider.CODEC);
+		register("void", VoidMapProvider.CODEC);
 	}
 }
