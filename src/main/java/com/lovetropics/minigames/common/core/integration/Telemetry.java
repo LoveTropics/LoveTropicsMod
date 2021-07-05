@@ -1,6 +1,5 @@
 package com.lovetropics.minigames.common.core.integration;
 
-import com.google.common.base.Strings;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -41,8 +40,8 @@ public final class Telemetry {
 					.build()
 	);
 
-	private final TelemetrySender sender = TelemetrySender.Http.openFromConfig();
-	private final TelemetrySender pollSender = new TelemetrySender.Http(() -> "https://polling.lovetropics.com", ConfigLT.TELEMETRY.authToken::get);
+	private final TelemetrySender sender = TelemetrySender.open();
+	private final TelemetrySender pollSender = TelemetrySender.openPoll();
 
 	private final BackendProxy proxy;
 
@@ -50,18 +49,18 @@ public final class Telemetry {
 
 	private Telemetry() {
 		Supplier<URI> address = () -> {
-			if (Strings.isNullOrEmpty(ConfigLT.TELEMETRY.authToken.get())) {
-				return null;
+			ConfigLT.CategoryTelemetry telemetry = ConfigLT.TELEMETRY;
+			if (telemetry.isEnabled()) {
+				try {
+					int configPort = telemetry.webSocketPort.get();
+					String port = configPort == 0 ? ":443" : ":" + configPort;
+					return new URI("wss://" + telemetry.webSocketUrl.get() + port + "/ws");
+				} catch (URISyntaxException e) {
+					LOGGER.warn("Malformed URI", e);
+				}
 			}
 
-			try {
-				int configPort = ConfigLT.TELEMETRY.webSocketPort.get();
-				String port = configPort == 0 ? ":443" : ":" + configPort;
-				return new URI("wss://" + ConfigLT.TELEMETRY.webSocketUrl.get() + port + "/ws");
-			} catch (URISyntaxException e) {
-				LOGGER.warn("Malformed URI", e);
-				return null;
-			}
+			return null;
 		};
 
 		this.proxy = new BackendProxy(address, new BackendConnection.Handler() {

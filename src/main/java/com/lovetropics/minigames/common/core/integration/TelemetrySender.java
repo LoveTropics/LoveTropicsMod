@@ -21,6 +21,32 @@ public interface TelemetrySender {
 			.registerTypeAdapter(PlayerKey.class, PlayerKey.PROFILE_SERIALIZER)
 			.create();
 
+	static TelemetrySender open() {
+		ConfigLT.CategoryTelemetry telemetry = ConfigLT.TELEMETRY;
+		if (!telemetry.isEnabled()) {
+			return new Void();
+		}
+
+		return new Http(() -> {
+			StringBuilder url = new StringBuilder();
+			url.append(telemetry.baseUrl.get());
+			if (telemetry.port.get() > 0) {
+				url.append(':');
+				url.append(telemetry.port.get());
+			}
+			return url.toString();
+		}, telemetry.authToken::get);
+	}
+
+	static TelemetrySender openPoll() {
+		ConfigLT.CategoryTelemetry telemetry = ConfigLT.TELEMETRY;
+		if (!telemetry.isEnabled()) {
+			return new Void();
+		}
+
+		return new TelemetrySender.Http(() -> "https://polling.lovetropics.com", telemetry.authToken::get);
+	}
+
 	default void post(final String endpoint, final JsonElement body) {
 		post(endpoint, GSON.toJson(body));
 	}
@@ -38,18 +64,6 @@ public interface TelemetrySender {
 		public Http(Supplier<String> url, Supplier<String> authToken) {
 			this.url = url;
 			this.authToken = authToken;
-		}
-
-		public static Http openFromConfig() {
-			return new Http(() -> {
-				StringBuilder url = new StringBuilder();
-				url.append(ConfigLT.TELEMETRY.baseUrl.get());
-				if (ConfigLT.TELEMETRY.port.get() > 0) {
-					url.append(':');
-					url.append(ConfigLT.TELEMETRY.port.get());
-				}
-				return url.toString();
-			}, ConfigLT.TELEMETRY.authToken::get);
 		}
 
 		@Override
@@ -122,6 +136,17 @@ public interface TelemetrySender {
 		public void post(String endpoint, String body) {
 			LOGGER.info("POST to {}", endpoint);
 			LOGGER.info(body);
+		}
+
+		@Override
+		public JsonElement get(String endpoint) {
+			return new JsonObject();
+		}
+	}
+
+	final class Void implements TelemetrySender {
+		@Override
+		public void post(String endpoint, String body) {
 		}
 
 		@Override

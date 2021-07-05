@@ -1,5 +1,6 @@
 package com.lovetropics.minigames.common.config;
 
+import com.google.common.base.Strings;
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.common.ForgeConfigSpec.BooleanValue;
 import net.minecraftforge.common.ForgeConfigSpec.Builder;
@@ -109,6 +110,10 @@ public class ConfigLT {
                     .comment("URL to receive any care/sabotage packages or chat events that were triggered but never acknowledged by the mod (maybe due to a premature shutdown)")
                     .define("pendingActionsEndpoint", "minigame/pendingactions");
             COMMON_BUILDER.pop();
+        }
+
+        public boolean isEnabled() {
+            return !Strings.isNullOrEmpty(authToken.get());
         }
     }
 
