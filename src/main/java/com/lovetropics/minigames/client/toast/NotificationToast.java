@@ -1,5 +1,6 @@
 package com.lovetropics.minigames.client.toast;
 
+import com.lovetropics.minigames.Constants;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
@@ -10,12 +11,15 @@ import net.minecraft.client.gui.toasts.ToastGui;
 import net.minecraft.client.renderer.ItemRenderer;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.util.IReorderingProcessor;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.ITextComponent;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public final class NotificationToast implements IToast {
+	private static final ResourceLocation TEXTURE = new ResourceLocation(Constants.MODID, "textures/gui/toasts.png");
+
 	private static final int TEXTURE_WIDTH = 160;
 	private static final int TEXTURE_HEIGHT = 32;
 	private static final int TEXTURE_BORDER = 4;
@@ -52,7 +56,7 @@ public final class NotificationToast implements IToast {
 	public Visibility func_230444_a_(MatrixStack matrixStack, ToastGui gui, long time) {
 		RenderSystem.color3f(1.0F, 1.0F, 1.0F);
 
-		CLIENT.getTextureManager().bindTexture(TEXTURE_TOASTS);
+		CLIENT.getTextureManager().bindTexture(TEXTURE);
 		this.drawBackground(matrixStack, gui);
 
 		this.drawText(matrixStack);
@@ -85,7 +89,7 @@ public final class NotificationToast implements IToast {
 
 	private void drawBackgroundRow(MatrixStack matrixStack, ToastGui gui, int x, int u, int width) {
 		int height = this.height;
-		int vOffset = this.display.type.vOffset;
+		int vOffset = this.display.getTextureOffset();
 
 		if (height == TEXTURE_HEIGHT) {
 			gui.blit(matrixStack, x, 0, u, vOffset, width, height);
