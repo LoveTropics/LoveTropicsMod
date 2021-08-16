@@ -1,27 +1,24 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances.donation;
 
-import com.lovetropics.minigames.client.minigame.NotifyDonationPackageMessage;
+import com.lovetropics.minigames.client.toast.NotificationDisplay;
+import com.lovetropics.minigames.client.toast.NotificationIcon;
+import com.lovetropics.minigames.client.toast.ShowNotificationToastMessage;
 import com.lovetropics.minigames.common.core.game.IActiveGame;
 import com.lovetropics.minigames.common.core.game.PlayerSet;
 import com.lovetropics.minigames.common.core.game.util.TemplatedText;
 import com.lovetropics.minigames.common.core.network.LoveTropicsNetwork;
-import com.lovetropics.minigames.common.util.MoreCodecs;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.network.PacketBuffer;
+import net.minecraft.item.Items;
 import net.minecraft.network.play.server.SPlaySoundEffectPacket;
-import net.minecraft.potion.Effect;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.util.SoundEvents;
-import net.minecraft.util.registry.Registry;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.TextFormatting;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraft.util.text.*;
+import net.minecraftforge.fml.network.PacketDistributor;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
@@ -58,82 +55,66 @@ public class DonationPackageData {
 		return playerSelect;
 	}
 
-	public void onReceive(final IActiveGame instance, @Nullable final ServerPlayerEntity player, @Nullable final String sendingPlayer) {
+	public void onReceive(final IActiveGame instance, @Nullable final ServerPlayerEntity receiver, @Nullable final String sender) {
 		Notification notification = this.notification;
 		if (notification == null) return;
 
 		PlayerSet players = instance.getAllPlayers();
 
-		ITextComponent message = notification.createMessage(player, sendingPlayer);
-		players.sendPacket(LoveTropicsNetwork.CHANNEL, new NotifyDonationPackageMessage(message, notification.icon));
+		ITextComponent targetedMessage = notification.createTargetedMessage(receiver, sender);
+		ITextComponent globalMessage = notification.createGlobalMessage(receiver);
 
-		players.forEach(p -> p.connection.sendPacket(new SPlaySoundEffectPacket(notification.sound, SoundCategory.MASTER, p.getPosX(), p.getPosY(), p.getPosZ(), 0.2f, 1f)));
+		for (ServerPlayerEntity player : players) {
+			boolean targeted = player == receiver || receiver == null;
+			NotificationDisplay.Type type = targeted ? NotificationDisplay.Type.LIGHT : NotificationDisplay.Type.DARK;
+			ITextComponent message = targeted ? targetedMessage : globalMessage;
+			long visibleTime = targeted ? 8000 : 4000;
+
+			NotificationDisplay display = new NotificationDisplay(notification.icon, type, visibleTime);
+			LoveTropicsNetwork.CHANNEL.send(
+					PacketDistributor.PLAYER.with(() -> player),
+					new ShowNotificationToastMessage(message, display)
+			);
+
+			if (targeted) {
+				player.connection.sendPacket(new SPlaySoundEffectPacket(notification.sound, SoundCategory.MASTER, player.getPosX(), player.getPosY(), player.getPosZ(), 0.2f, 1f));
+			}
+		}
 	}
 
 	public static final class Notification {
 		public static final Codec<Notification> CODEC = RecordCodecBuilder.create(instance -> {
 			return instance.group(
 					TemplatedText.CODEC.fieldOf("message").forGetter(c -> c.message),
-					Icon.CODEC.forGetter(c -> c.icon),
+					NotificationIcon.CODEC.optionalFieldOf("icon", NotificationIcon.item(new ItemStack(Items.GRASS_BLOCK))).forGetter(c -> c.icon),
 					SoundEvent.CODEC.optionalFieldOf("sound_on_receive", SoundEvents.ITEM_TOTEM_USE).forGetter(c -> c.sound)
 			).apply(instance, Notification::new);
 		});
 
 		public final TemplatedText message;
-		public final Icon icon;
+		public final NotificationIcon icon;
 		public final SoundEvent sound;
 
-		public Notification(TemplatedText message, Icon icon, SoundEvent sound) {
+		public Notification(TemplatedText message, NotificationIcon icon, SoundEvent sound) {
 			this.message = message;
 			this.icon = icon;
 			this.sound = sound;
 		}
 
-		ITextComponent createMessage(@Nullable ServerPlayerEntity receiver, @Nullable String sender) {
-			return this.message.apply(
-					new StringTextComponent(sender != null ? sender : "an unknown donor").mergeStyle(TextFormatting.GREEN),
-					(receiver != null ? receiver.getDisplayName().deepCopy() : new StringTextComponent("Everyone")).mergeStyle(TextFormatting.GREEN)
-			);
-		}
-	}
-
-	public static final class Icon {
-		public static final MapCodec<Icon> CODEC = RecordCodecBuilder.mapCodec(instance -> {
-			return instance.group(
-					MoreCodecs.ITEM_STACK.optionalFieldOf("item_icon").forGetter(c -> Optional.ofNullable(c.item)),
-					Registry.EFFECTS.optionalFieldOf("effect_icon").forGetter(c -> Optional.ofNullable(c.effect))
-			).apply(instance, Icon::new);
-		});
-
-		public final ItemStack item;
-		public final Effect effect;
-
-		public Icon(@Nullable ItemStack item, @Nullable Effect effect) {
-			this.item = item;
-			this.effect = effect;
+		ITextComponent createTargetedMessage(@Nullable ServerPlayerEntity receiver, @Nullable String sender) {
+			return this.message.apply(this.getSenderName(sender), this.getReceiverName(receiver));
 		}
 
-		public Icon(Optional<ItemStack> item, Optional<Effect> effect) {
-			this(item.orElse(null), effect.orElse(null));
+		ITextComponent createGlobalMessage(@Nullable ServerPlayerEntity receiver) {
+			return new TranslationTextComponent("%s received a package!", this.getReceiverName(receiver));
 		}
 
-		public void encode(PacketBuffer buffer) {
-			if (this.item != null) {
-				buffer.writeBoolean(true);
-				buffer.writeItemStack(this.item);
-			} else {
-				buffer.writeBoolean(false);
-				buffer.writeRegistryIdUnsafe(ForgeRegistries.POTIONS, this.effect);
-			}
+		private IFormattableTextComponent getReceiverName(ServerPlayerEntity receiver) {
+			return (receiver != null ? receiver.getDisplayName().deepCopy() : new StringTextComponent("Everyone")).mergeStyle(TextFormatting.BLUE);
 		}
 
-		public static Icon decode(PacketBuffer buffer) {
-			if (buffer.readBoolean()) {
-				return new Icon(buffer.readItemStack(), null);
-			} else {
-				Effect effect = buffer.readRegistryIdUnsafe(ForgeRegistries.POTIONS);
-				return new Icon(null, effect);
-			}
+		private IFormattableTextComponent getSenderName(String sender) {
+			return new StringTextComponent(sender != null ? sender : "an unknown donor").mergeStyle(TextFormatting.BLUE);
 		}
 	}
 }
