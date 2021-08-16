@@ -66,11 +66,11 @@ public class DonationPackageData {
 
 		for (ServerPlayerEntity player : players) {
 			boolean targeted = player == receiver || receiver == null;
-			NotificationDisplay.Type type = targeted ? NotificationDisplay.Type.LIGHT : NotificationDisplay.Type.DARK;
+			NotificationDisplay.Color color = targeted ? NotificationDisplay.Color.LIGHT : NotificationDisplay.Color.DARK;
 			ITextComponent message = targeted ? targetedMessage : globalMessage;
 			long visibleTime = targeted ? 8000 : 4000;
 
-			NotificationDisplay display = new NotificationDisplay(notification.icon, type, visibleTime);
+			NotificationDisplay display = new NotificationDisplay(notification.icon, notification.sentiment, color, visibleTime);
 			LoveTropicsNetwork.CHANNEL.send(
 					PacketDistributor.PLAYER.with(() -> player),
 					new ShowNotificationToastMessage(message, display)
@@ -87,17 +87,20 @@ public class DonationPackageData {
 			return instance.group(
 					TemplatedText.CODEC.fieldOf("message").forGetter(c -> c.message),
 					NotificationIcon.CODEC.optionalFieldOf("icon", NotificationIcon.item(new ItemStack(Items.GRASS_BLOCK))).forGetter(c -> c.icon),
+					NotificationDisplay.Sentiment.CODEC.optionalFieldOf("sentiment", NotificationDisplay.Sentiment.NEUTRAL).forGetter(c -> c.sentiment),
 					SoundEvent.CODEC.optionalFieldOf("sound_on_receive", SoundEvents.ITEM_TOTEM_USE).forGetter(c -> c.sound)
 			).apply(instance, Notification::new);
 		});
 
 		public final TemplatedText message;
 		public final NotificationIcon icon;
+		public final NotificationDisplay.Sentiment sentiment;
 		public final SoundEvent sound;
 
-		public Notification(TemplatedText message, NotificationIcon icon, SoundEvent sound) {
+		public Notification(TemplatedText message, NotificationIcon icon, NotificationDisplay.Sentiment sentiment, SoundEvent sound) {
 			this.message = message;
 			this.icon = icon;
+			this.sentiment = sentiment;
 			this.sound = sound;
 		}
 

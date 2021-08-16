@@ -6,41 +6,63 @@ import net.minecraft.network.PacketBuffer;
 
 public final class NotificationDisplay {
 	public final NotificationIcon icon;
-	public final Type type;
+	public final Sentiment sentiment;
+	public final Color color;
 	public final long visibleTimeMs;
 
-	public NotificationDisplay(NotificationIcon icon, Type type, long visibleTimeMs) {
+	public NotificationDisplay(NotificationIcon icon, Sentiment sentiment, Color color, long visibleTimeMs) {
 		this.icon = icon;
-		this.type = type;
+		this.sentiment = sentiment;
+		this.color = color;
 		this.visibleTimeMs = visibleTimeMs;
 	}
 
 	public void encode(PacketBuffer buffer) {
 		this.icon.encode(buffer);
-		buffer.writeByte(this.type.ordinal() & 0xFF);
+		buffer.writeByte(this.sentiment.ordinal() & 0xFF);
+		buffer.writeByte(this.color.ordinal() & 0xFF);
 		buffer.writeVarLong(this.visibleTimeMs);
 	}
 
 	public static NotificationDisplay decode(PacketBuffer buffer) {
 		NotificationIcon icon = NotificationIcon.decode(buffer);
-		Type type = Type.VALUES[buffer.readUnsignedByte() % Type.VALUES.length];
+		Sentiment sentiment = Sentiment.VALUES[buffer.readUnsignedByte() % Sentiment.VALUES.length];
+		Color color = Color.VALUES[buffer.readUnsignedByte() % Color.VALUES.length];
 		long timeMs = buffer.readVarLong();
-		return new NotificationDisplay(icon, type, timeMs);
+		return new NotificationDisplay(icon, sentiment, color, timeMs);
 	}
 
-	public enum Type {
-		DARK("dark", 0),
-		LIGHT("light", 32);
+	public int getTextureOffset() {
+		return this.sentiment.offset + this.color.offset;
+	}
 
-		public static final Type[] VALUES = values();
-		public static final Codec<Type> CODEC = MoreCodecs.stringVariants(VALUES, t -> t.name);
+	public enum Color {
+		DARK(0),
+		LIGHT(32);
+
+		public static final Color[] VALUES = values();
+
+		public final int offset;
+
+		Color(int offset) {
+			this.offset = offset;
+		}
+	}
+
+	public enum Sentiment {
+		NEUTRAL("neutral", 0),
+		POSITIVE("positive", 64),
+		NEGATIVE("negative", 128);
+
+		public static final Sentiment[] VALUES = values();
+		public static final Codec<Sentiment> CODEC = MoreCodecs.stringVariants(VALUES, s -> s.name);
 
 		public final String name;
-		public final int vOffset;
+		public final int offset;
 
-		Type(String name, int vOffset) {
+		Sentiment(String name, int offset) {
 			this.name = name;
-			this.vOffset = vOffset;
+			this.offset = offset;
 		}
 	}
 }
