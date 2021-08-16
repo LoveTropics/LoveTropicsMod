@@ -1,6 +1,5 @@
 package com.lovetropics.minigames.client.toast;
 
-import com.lovetropics.minigames.common.core.game.behavior.instances.donation.DonationPackageData;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
@@ -16,9 +15,7 @@ import net.minecraft.util.text.ITextComponent;
 import java.util.ArrayList;
 import java.util.List;
 
-public final class DonationPackageToast implements IToast {
-	private static final long VISIBLE_TIME_MS = 4000;
-
+public final class NotificationToast implements IToast {
 	private static final int TEXTURE_WIDTH = 160;
 	private static final int TEXTURE_HEIGHT = 32;
 	private static final int TEXTURE_BORDER = 4;
@@ -32,12 +29,12 @@ public final class DonationPackageToast implements IToast {
 	private static final Minecraft CLIENT = Minecraft.getInstance();
 
 	private final List<IReorderingProcessor> lines;
-	private final DonationPackageData.Icon icon;
+	private final NotificationDisplay display;
 
 	private final int width;
 	private final int height;
 
-	public DonationPackageToast(ITextComponent message, DonationPackageData.Icon icon) {
+	public NotificationToast(ITextComponent message, NotificationDisplay display) {
 		FontRenderer fontRenderer = CLIENT.fontRenderer;
 
 		List<IReorderingProcessor> lines = new ArrayList<>(2);
@@ -45,10 +42,10 @@ public final class DonationPackageToast implements IToast {
 
 		int textWidth = Math.max(lines.stream().mapToInt(fontRenderer::func_243245_a).max().orElse(MAX_WIDTH), MAX_WIDTH);
 		this.width = textWidth + TEXT_PADDING + 2;
-		this.height = lines.size() * LINE_HEIGHT + 8;
+		this.height = Math.max(lines.size() * LINE_HEIGHT + 8, 22);
 
 		this.lines = lines;
-		this.icon = icon;
+		this.display = display;
 	}
 
 	@Override
@@ -61,7 +58,7 @@ public final class DonationPackageToast implements IToast {
 		this.drawText(matrixStack);
 		this.drawIcon(matrixStack);
 
-		return time >= VISIBLE_TIME_MS ? IToast.Visibility.HIDE : IToast.Visibility.SHOW;
+		return time >= this.display.visibleTimeMs ? IToast.Visibility.HIDE : IToast.Visibility.SHOW;
 	}
 
 	private void drawBackground(MatrixStack matrixStack, ToastGui gui) {
@@ -88,12 +85,14 @@ public final class DonationPackageToast implements IToast {
 
 	private void drawBackgroundRow(MatrixStack matrixStack, ToastGui gui, int x, int u, int width) {
 		int height = this.height;
+		int vOffset = this.display.type.vOffset;
+
 		if (height == TEXTURE_HEIGHT) {
-			gui.blit(matrixStack, x, 0, u, 0, width, height);
+			gui.blit(matrixStack, x, 0, u, vOffset, width, height);
 			return;
 		}
 
-		gui.blit(matrixStack, x, 0, u, 0, width, TEXTURE_BORDER);
+		gui.blit(matrixStack, x, 0, u, vOffset, width, TEXTURE_BORDER);
 
 		int maxRowHeight = TEXTURE_HEIGHT - TEXTURE_BORDER * 2;
 		int maxRowY = height - TEXTURE_BORDER;
@@ -101,11 +100,11 @@ public final class DonationPackageToast implements IToast {
 		int y = TEXTURE_BORDER;
 		while (y < maxRowY) {
 			int rowHeight = Math.min(maxRowHeight, maxRowY - y);
-			gui.blit(matrixStack, x, y, u, TEXTURE_BORDER, width, rowHeight);
+			gui.blit(matrixStack, x, y, u, TEXTURE_BORDER + vOffset, width, rowHeight);
 			y += rowHeight;
 		}
 
-		gui.blit(matrixStack, x, height - TEXTURE_BORDER, u, TEXTURE_HEIGHT - TEXTURE_BORDER, width, TEXTURE_BORDER);
+		gui.blit(matrixStack, x, height - TEXTURE_BORDER, u, TEXTURE_HEIGHT - TEXTURE_BORDER + vOffset, width, TEXTURE_BORDER);
 	}
 
 	private void drawText(MatrixStack matrixStack) {
@@ -121,7 +120,7 @@ public final class DonationPackageToast implements IToast {
 	private void drawIcon(MatrixStack matrixStack) {
 		int y = (this.height - ICON_SIZE) / 2;
 
-		DonationPackageData.Icon icon = this.icon;
+		NotificationIcon icon = this.display.icon;
 		if (icon.item != null) {
 			ItemRenderer itemRenderer = CLIENT.getItemRenderer();
 			itemRenderer.renderItemAndEffectIntoGuiWithoutEntity(icon.item, 6, y);

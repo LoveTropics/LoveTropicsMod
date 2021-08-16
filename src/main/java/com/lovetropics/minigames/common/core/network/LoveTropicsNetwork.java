@@ -4,7 +4,7 @@ import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.client.minigame.ClientMinigameMessage;
 import com.lovetropics.minigames.client.minigame.ClientRoleMessage;
-import com.lovetropics.minigames.client.minigame.NotifyDonationPackageMessage;
+import com.lovetropics.minigames.client.toast.ShowNotificationToastMessage;
 import com.lovetropics.minigames.client.minigame.PlayerCountsMessage;
 import com.lovetropics.minigames.common.core.network.workspace.AddWorkspaceRegionMessage;
 import com.lovetropics.minigames.common.core.network.workspace.SetWorkspaceMessage;
@@ -85,10 +85,10 @@ public final class LoveTropicsNetwork {
 				.consumer(PlayerDisguiseMessage::handle)
 				.add();
 
-		CHANNEL.messageBuilder(NotifyDonationPackageMessage.class, 10, NetworkDirection.PLAY_TO_CLIENT)
-				.encoder(NotifyDonationPackageMessage::encode)
-				.decoder(NotifyDonationPackageMessage::decode)
-				.consumer(NotifyDonationPackageMessage::handle)
+		CHANNEL.messageBuilder(ShowNotificationToastMessage.class, 10, NetworkDirection.PLAY_TO_CLIENT)
+				.encoder(ShowNotificationToastMessage::encode)
+				.decoder(ShowNotificationToastMessage::decode)
+				.consumer(ShowNotificationToastMessage::handle)
 				.add();
 	}
 }
