@@ -1,6 +1,5 @@
 package com.lovetropics.minigames.client.toast;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraftforge.fml.network.NetworkEvent;
@@ -29,13 +28,8 @@ public final class ShowNotificationToastMessage {
 
 	public void handle(Supplier<NetworkEvent.Context> ctx) {
 		ctx.get().enqueueWork(() -> {
-			displayToast(this.message, this.display);
+			NotificationToasts.display(this.message, this.display);
 		});
 		ctx.get().setPacketHandled(true);
-	}
-
-	private static void displayToast(ITextComponent message, NotificationDisplay display) {
-		Minecraft client = Minecraft.getInstance();
-		client.getToastGui().add(new NotificationToast(message, display));
 	}
 }
