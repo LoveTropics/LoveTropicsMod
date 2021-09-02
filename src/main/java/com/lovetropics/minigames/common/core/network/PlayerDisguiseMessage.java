@@ -1,22 +1,19 @@
 package com.lovetropics.minigames.common.core.network;
 
+import com.lovetropics.minigames.client.ClientPlayerDisguises;
+import com.lovetropics.minigames.common.core.diguise.DisguiseType;
+import net.minecraft.network.PacketBuffer;
+import net.minecraftforge.fml.network.NetworkEvent;
+
+import javax.annotation.Nullable;
 import java.util.UUID;
 import java.util.function.Supplier;
 
-import javax.annotation.Nullable;
-
-import com.lovetropics.minigames.client.ClientPlayerDisguises;
-
-import net.minecraft.entity.EntityType;
-import net.minecraft.network.PacketBuffer;
-import net.minecraft.util.registry.Registry;
-import net.minecraftforge.fml.network.NetworkEvent;
-
 public class PlayerDisguiseMessage {
 	private final UUID player;
-	private final EntityType<?> disguise;
+	private final DisguiseType disguise;
 
-	public PlayerDisguiseMessage(UUID player, @Nullable EntityType<?> disguise) {
+	public PlayerDisguiseMessage(UUID player, @Nullable DisguiseType disguise) {
 		this.player = player;
 		this.disguise = disguise;
 	}
@@ -26,16 +23,16 @@ public class PlayerDisguiseMessage {
 
 		buffer.writeBoolean(disguise != null);
 		if (disguise != null) {
-			buffer.writeVarInt(Registry.ENTITY_TYPE.getId(disguise));
+			disguise.encode(buffer);
 		}
 	}
 
 	public static PlayerDisguiseMessage decode(PacketBuffer buffer) {
 		UUID player = buffer.readUniqueId();
 
-		EntityType<?> disguise;
+		DisguiseType disguise;
 		if (buffer.readBoolean()) {
-			disguise = Registry.ENTITY_TYPE.getByValue(buffer.readVarInt());
+			disguise = DisguiseType.decode(buffer);
 		} else {
 			disguise = null;
 		}

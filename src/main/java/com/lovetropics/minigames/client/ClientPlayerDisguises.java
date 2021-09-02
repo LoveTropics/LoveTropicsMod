@@ -1,23 +1,22 @@
 package com.lovetropics.minigames.client;
 
-import java.util.UUID;
-
 import com.lovetropics.minigames.Constants;
+import com.lovetropics.minigames.common.core.diguise.DisguiseType;
 import com.lovetropics.minigames.common.core.diguise.PlayerDisguise;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.IRenderTypeBuffer;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.world.World;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RenderPlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+
+import java.util.UUID;
 
 @Mod.EventBusSubscriber(modid = Constants.MODID, value = Dist.CLIENT)
 public final class ClientPlayerDisguises {
@@ -27,22 +26,21 @@ public final class ClientPlayerDisguises {
 	public static void onRenderPlayer(RenderPlayerEvent.Pre event) {
 		PlayerEntity player = event.getPlayer();
 		Entity disguise = PlayerDisguise.getDisguiseEntity(player);
+		if (disguise == null) return;
 
-		if (disguise != null) {
-			EntityRenderer<? super Entity> renderer = CLIENT.getRenderManager().getRenderer(disguise);
-			if (renderer != null) {
-				copyDisguiseState(disguise, player);
+		EntityRenderer<? super Entity> renderer = CLIENT.getRenderManager().getRenderer(disguise);
+		if (renderer != null) {
+			copyDisguiseState(disguise, player);
 
-				float partialTicks = event.getPartialRenderTick();
-				MatrixStack transform = event.getMatrixStack();
-				IRenderTypeBuffer buffers = event.getBuffers();
-				int packedLight = event.getLight();
+			float partialTicks = event.getPartialRenderTick();
+			MatrixStack transform = event.getMatrixStack();
+			IRenderTypeBuffer buffers = event.getBuffers();
+			int packedLight = event.getLight();
 
-				float yaw = MathHelper.lerp(partialTicks, player.prevRotationYaw, player.rotationYaw);
-				renderer.render(disguise, yaw, partialTicks, transform, buffers, packedLight);
+			float yaw = MathHelper.lerp(partialTicks, player.prevRotationYaw, player.rotationYaw);
+			renderer.render(disguise, yaw, partialTicks, transform, buffers, packedLight);
 
-				event.setCanceled(true);
-			}
+			event.setCanceled(true);
 		}
 	}
 
@@ -62,9 +60,6 @@ public final class ClientPlayerDisguises {
 		disguise.setInvisible(player.isInvisible());
 		disguise.setSprinting(player.isSprinting());
 		disguise.setSwimming(player.isSwimming());
-
-		disguise.setCustomName(player.getCustomName());
-		disguise.setCustomNameVisible(player.isCustomNameVisible());
 
 		if (disguise instanceof LivingEntity) {
 			LivingEntity livingDisguise = (LivingEntity) disguise;
@@ -90,18 +85,10 @@ public final class ClientPlayerDisguises {
 		disguise.ticksExisted = player.ticksExisted;
 	}
 
-	public static void updateClientDisguise(UUID uuid, EntityType<?> disguise) {
-		World world = Minecraft.getInstance().world;
-		PlayerEntity player = world.getPlayerByUuid(uuid);
+	public static void updateClientDisguise(UUID uuid, DisguiseType disguiseType) {
+		PlayerEntity player = Minecraft.getInstance().world.getPlayerByUuid(uuid);
 		if (player != null) {
-			PlayerDisguise.get(player).ifPresent(playerDisguise -> {
-				if (disguise != null) {
-					Entity entity = disguise.create(world);
-					playerDisguise.setDisguiseEntity(entity);
-				} else {
-					playerDisguise.setDisguiseEntity(null);
-				}
-			});
+			PlayerDisguise.get(player).ifPresent(playerDisguise -> playerDisguise.setDisguise(disguiseType));
 		}
 	}
 }

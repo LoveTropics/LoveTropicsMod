@@ -4,14 +4,19 @@ import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.common.core.network.LoveTropicsNetwork;
 import com.lovetropics.minigames.common.core.network.PlayerDisguiseMessage;
 import com.mojang.brigadier.Command;
+import com.mojang.brigadier.context.CommandContext;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import net.minecraft.command.CommandSource;
 import net.minecraft.command.Commands;
 import net.minecraft.command.arguments.EntitySummonArgument;
+import net.minecraft.command.arguments.NBTCompoundTagArgument;
 import net.minecraft.command.arguments.SuggestionProviders;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.registry.Registry;
 import net.minecraftforge.event.RegisterCommandsEvent;
@@ -32,23 +37,13 @@ public final class ServerPlayerDisguises {
 				.then(Commands.literal("as")
 					.then(Commands.argument("entity", EntitySummonArgument.entitySummon())
 						.suggests(SuggestionProviders.SUMMONABLE_ENTITIES)
-						.executes(context -> {
-							ServerPlayerEntity player = context.getSource().asPlayer();
-							ResourceLocation entityId = EntitySummonArgument.getEntityId(context, "entity");
-							EntityType<?> entityType = Registry.ENTITY_TYPE.getOrDefault(entityId);
-
-							ServerPlayerDisguises.set(player, entityType);
-
-							return Command.SINGLE_SUCCESS;
-						})
+						.executes(context -> disguiseAs(context, null))
+							.then(Commands.argument("nbt", NBTCompoundTagArgument.nbt())
+								.executes(context -> disguiseAs(context, NBTCompoundTagArgument.getNbt(context, "nbt")))
+							)
 					))
 				.then(Commands.literal("clear")
-					.executes(context -> {
-						ServerPlayerEntity player = context.getSource().asPlayer();
-						ServerPlayerDisguises.set(player, null);
-
-						return Command.SINGLE_SUCCESS;
-					})
+					.executes(ServerPlayerDisguises::clearDisguise)
 				)
 		);
 		// @formatter:on
@@ -64,33 +59,43 @@ public final class ServerPlayerDisguises {
 		Entity tracked = event.getTarget();
 
 		if (tracked instanceof PlayerEntity) {
-			Entity disguise = PlayerDisguise.getDisguiseEntity((PlayerEntity) tracked);
+			DisguiseType disguise = PlayerDisguise.getDisguiseType((PlayerEntity) tracked);
 			if (disguise != null) {
 				LoveTropicsNetwork.CHANNEL.send(
 						PacketDistributor.PLAYER.with(() -> player),
-						new PlayerDisguiseMessage(player.getUniqueID(), disguise.getType())
+						new PlayerDisguiseMessage(player.getUniqueID(), disguise)
 				);
 			}
 		}
 	}
 
-	public static void set(ServerPlayerEntity player, @Nullable EntityType<?> disguiseType) {
-		PlayerDisguise.get(player).ifPresent(playerDisguise -> {
-			Entity disguise = disguiseType != null ? createDisguiseEntity(player, disguiseType) : null;
+	private static int disguiseAs(CommandContext<CommandSource> context, @Nullable CompoundNBT nbt) throws CommandSyntaxException {
+		ServerPlayerEntity player = context.getSource().asPlayer();
+		ResourceLocation entityId = EntitySummonArgument.getEntityId(context, "entity");
+		EntityType<?> entityType = Registry.ENTITY_TYPE.getOrDefault(entityId);
 
-			playerDisguise.setDisguiseEntity(disguise);
-			onSetDisguise(player, disguise);
+		ServerPlayerDisguises.set(player, new DisguiseType(entityType, nbt));
+
+		return Command.SINGLE_SUCCESS;
+	}
+
+	private static int clearDisguise(CommandContext<CommandSource> context) throws CommandSyntaxException {
+		ServerPlayerEntity player = context.getSource().asPlayer();
+		ServerPlayerDisguises.set(player, null);
+
+		return Command.SINGLE_SUCCESS;
+	}
+
+	public static void set(ServerPlayerEntity player, @Nullable DisguiseType disguiseType) {
+		PlayerDisguise.get(player).ifPresent(playerDisguise -> {
+			playerDisguise.setDisguise(disguiseType);
+			onSetDisguise(player, playerDisguise.getDisguiseEntity());
 
 			LoveTropicsNetwork.CHANNEL.send(
 					PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> player),
 					new PlayerDisguiseMessage(player.getUniqueID(), disguiseType)
 			);
 		});
-	}
-
-	@Nullable
-	private static Entity createDisguiseEntity(ServerPlayerEntity player, EntityType<?> type) {
-		return type.create(player.world);
 	}
 
 	private static void onSetDisguise(ServerPlayerEntity player, @Nullable Entity disguise) {
