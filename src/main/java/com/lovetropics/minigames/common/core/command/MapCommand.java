@@ -135,7 +135,7 @@ public final class MapCommand {
 			IFormattableTextComponent message = new StringTextComponent("Opened workspace with id '" + id + "'. ").mergeStyle(TextFormatting.AQUA);
 			ITextComponent join = new StringTextComponent("Click here to join")
 					.modifyStyle(style -> {
-						String command = "/game map join " + id;
+						String command = "/map join " + id;
 						return style.setFormatting(TextFormatting.BLUE)
 								.setUnderlined(true)
 								.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, command))

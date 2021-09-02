@@ -34,6 +34,8 @@ public final class PlayerDisguise implements ICapabilityProvider {
 	private final LazyOptional<PlayerDisguise> instance = LazyOptional.of(() -> this);
 
 	private final PlayerEntity player;
+
+	private DisguiseType disguiseType;
 	private Entity disguiseEntity;
 
 	PlayerDisguise(PlayerEntity player) {
@@ -53,18 +55,32 @@ public final class PlayerDisguise implements ICapabilityProvider {
 	}
 
 	@Nullable
-	public static Entity getDisguiseEntity(PlayerEntity player) {
+	public static DisguiseType getDisguiseType(PlayerEntity player) {
 		PlayerDisguise disguise = get(player).orElse(null);
-		if (disguise != null) {
-			return disguise.getDisguiseEntity();
-		} else {
-			return null;
-		}
+		return disguise != null ? disguise.getDisguiseType() : null;
 	}
 
-	public void setDisguiseEntity(@Nullable Entity disguiseEntity) {
-		this.disguiseEntity = disguiseEntity;
+	@Nullable
+	public static Entity getDisguiseEntity(PlayerEntity player) {
+		PlayerDisguise disguise = get(player).orElse(null);
+		return disguise != null ? disguise.getDisguiseEntity() : null;
+	}
+
+	public void setDisguise(@Nullable DisguiseType disguise) {
+		if (disguise != null) {
+			this.disguiseType = disguise;
+			this.disguiseEntity = disguise.createEntityFor(this.player);
+		} else {
+			this.disguiseType = null;
+			this.disguiseEntity = null;
+		}
+
 		this.player.recalculateSize();
+	}
+
+	@Nullable
+	public DisguiseType getDisguiseType() {
+		return disguiseType;
 	}
 
 	@Nullable
