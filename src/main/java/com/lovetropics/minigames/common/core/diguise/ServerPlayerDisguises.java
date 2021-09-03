@@ -63,7 +63,7 @@ public final class ServerPlayerDisguises {
 			if (disguise != null) {
 				LoveTropicsNetwork.CHANNEL.send(
 						PacketDistributor.PLAYER.with(() -> player),
-						new PlayerDisguiseMessage(player.getUniqueID(), disguise)
+						new PlayerDisguiseMessage(tracked.getUniqueID(), disguise)
 				);
 			}
 		}
