@@ -1,19 +1,18 @@
 package com.lovetropics.minigames.common.core.network.workspace;
 
-import java.util.function.Supplier;
-
+import com.lovetropics.lib.BlockBox;
 import com.lovetropics.minigames.client.map.ClientMapWorkspace;
-import com.lovetropics.minigames.common.core.map.MapRegion;
-
 import net.minecraft.network.PacketBuffer;
 import net.minecraftforge.fml.network.NetworkEvent;
+
+import java.util.function.Supplier;
 
 public class AddWorkspaceRegionMessage {
 	private final int id;
 	private final String key;
-	private final MapRegion region;
+	private final BlockBox region;
 
-	public AddWorkspaceRegionMessage(int id, String key, MapRegion region) {
+	public AddWorkspaceRegionMessage(int id, String key, BlockBox region) {
 		this.id = id;
 		this.key = key;
 		this.region = region;
@@ -28,7 +27,7 @@ public class AddWorkspaceRegionMessage {
 	public static AddWorkspaceRegionMessage decode(PacketBuffer buffer) {
 		int id = buffer.readVarInt();
 		String key = buffer.readString(64);
-		MapRegion region = MapRegion.read(buffer);
+		BlockBox region = BlockBox.read(buffer);
 		return new AddWorkspaceRegionMessage(id, key, region);
 	}
 

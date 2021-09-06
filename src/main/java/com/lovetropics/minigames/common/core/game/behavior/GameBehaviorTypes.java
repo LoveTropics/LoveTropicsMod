@@ -1,5 +1,6 @@
 package com.lovetropics.minigames.common.core.game.behavior;
 
+import com.lovetropics.lib.codec.MoreCodecs;
 import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.common.core.game.behavior.instances.*;
@@ -11,7 +12,6 @@ import com.lovetropics.minigames.common.core.game.behavior.instances.team.TeamsB
 import com.lovetropics.minigames.common.core.game.behavior.instances.tweak.*;
 import com.lovetropics.minigames.common.util.GameBehaviorEntry;
 import com.lovetropics.minigames.common.util.LoveTropicsRegistrate;
-import com.lovetropics.minigames.common.util.MoreCodecs;
 import com.mojang.serialization.Codec;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;

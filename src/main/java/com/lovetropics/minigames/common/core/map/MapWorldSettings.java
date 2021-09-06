@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.common.core.map;
 
-import com.lovetropics.minigames.common.util.MoreCodecs;
+import com.lovetropics.lib.codec.MoreCodecs;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.Dynamic;
 import net.minecraft.nbt.CompoundNBT;

@@ -2,7 +2,7 @@ package com.lovetropics.minigames.common.core.map.workspace;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
-import com.lovetropics.minigames.common.core.map.MapRegion;
+import com.lovetropics.lib.BlockBox;
 import com.lovetropics.minigames.common.core.map.MapRegions;
 import com.lovetropics.minigames.common.core.network.LoveTropicsNetwork;
 import com.lovetropics.minigames.common.core.network.workspace.AddWorkspaceRegionMessage;
@@ -55,11 +55,11 @@ public final class WorkspaceRegions implements Iterable<WorkspaceRegions.Entry> 
 		LoveTropicsNetwork.CHANNEL.send(PacketDistributor.DIMENSION.with(() -> dimension), message);
 	}
 
-	public void add(String key, MapRegion region) {
+	public void add(String key, BlockBox region) {
 		add(nextId(), key, region);
 	}
 
-	public void add(int id, String key, MapRegion region) {
+	public void add(int id, String key, BlockBox region) {
 		add(new Entry(id, key, region));
 	}
 
@@ -68,7 +68,7 @@ public final class WorkspaceRegions implements Iterable<WorkspaceRegions.Entry> 
 		sendMessage(new AddWorkspaceRegionMessage(entry.id, entry.key, entry.region));
 	}
 
-	public void set(int id, @Nullable MapRegion region) {
+	public void set(int id, @Nullable BlockBox region) {
 		if (region != null) {
 			WorkspaceRegions.Entry entry = entries.get(id);
 			if (entry != null) {
@@ -108,7 +108,7 @@ public final class WorkspaceRegions implements Iterable<WorkspaceRegions.Entry> 
 		for (String key : root.keySet()) {
 			ListNBT regionsList = root.getList(key, Constants.NBT.TAG_COMPOUND);
 			for (int i = 0; i < regionsList.size(); i++) {
-				MapRegion region = MapRegion.read(regionsList.getCompound(i));
+				BlockBox region = BlockBox.read(regionsList.getCompound(i));
 				this.add(key, region);
 			}
 		}
@@ -158,7 +158,7 @@ public final class WorkspaceRegions implements Iterable<WorkspaceRegions.Entry> 
 	public void importFrom(MapRegions regions) {
 		entries.clear();
 		for (String key : regions.keySet()) {
-			for (MapRegion region : regions.get(key)) {
+			for (BlockBox region : regions.get(key)) {
 				add(key, region);
 			}
 		}
@@ -167,9 +167,9 @@ public final class WorkspaceRegions implements Iterable<WorkspaceRegions.Entry> 
 	public static class Entry {
 		public final int id;
 		public final String key;
-		public MapRegion region;
+		public BlockBox region;
 
-		Entry(int id, String key, MapRegion region) {
+		Entry(int id, String key, BlockBox region) {
 			this.id = id;
 			this.key = key;
 			this.region = region;

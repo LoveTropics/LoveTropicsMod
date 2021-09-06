@@ -2,7 +2,8 @@ package com.lovetropics.minigames.common.core.map;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
-import com.lovetropics.minigames.common.util.MoreCodecs;
+import com.lovetropics.lib.BlockBox;
+import com.lovetropics.lib.codec.MoreCodecs;
 import com.mojang.serialization.Codec;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.ListNBT;
@@ -15,9 +16,9 @@ import java.util.Set;
 public final class MapRegions {
 	public static final Codec<MapRegions> CODEC = MoreCodecs.withNbtCompound(MapRegions::write, MapRegions::read, MapRegions::new);
 
-	private final Multimap<String, MapRegion> regions = HashMultimap.create();
+	private final Multimap<String, BlockBox> regions = HashMultimap.create();
 
-	public void add(String key, MapRegion region) {
+	public void add(String key, BlockBox region) {
 		regions.put(key, region);
 	}
 
@@ -29,13 +30,13 @@ public final class MapRegions {
 		return regions.keySet();
 	}
 
-	public Collection<MapRegion> get(String key) {
+	public Collection<BlockBox> get(String key) {
 		return regions.get(key);
 	}
 
 	@Nullable
-	public MapRegion getOne(String key) {
-		Collection<MapRegion> regions = this.regions.get(key);
+	public BlockBox getOne(String key) {
+		Collection<BlockBox> regions = this.regions.get(key);
 		if (!regions.isEmpty()) {
 			return regions.iterator().next();
 		} else {
@@ -46,7 +47,7 @@ public final class MapRegions {
 	public CompoundNBT write(CompoundNBT root) {
 		for (String key : regions.keySet()) {
 			ListNBT regionsList = new ListNBT();
-			for (MapRegion region : regions.get(key)) {
+			for (BlockBox region : regions.get(key)) {
 				regionsList.add(region.write(new CompoundNBT()));
 			}
 
@@ -62,7 +63,7 @@ public final class MapRegions {
 		for (String key : root.keySet()) {
 			ListNBT regionsList = root.getList(key, Constants.NBT.TAG_COMPOUND);
 			for (int i = 0; i < regionsList.size(); i++) {
-				MapRegion region = MapRegion.read(regionsList.getCompound(i));
+				BlockBox region = BlockBox.read(regionsList.getCompound(i));
 				this.regions.put(key, region);
 			}
 		}

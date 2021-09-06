@@ -1,4 +1,4 @@
-package com.lovetropics.minigames.common.core.game.behavior.instances;
+package com.lovetropics.minigames.common.core.game.behavior.instances.tweak;
 
 import com.lovetropics.minigames.common.core.game.IActiveGame;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;

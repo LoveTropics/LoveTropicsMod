@@ -1,12 +1,12 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances.donation;
 
 import com.google.common.collect.Lists;
+import com.lovetropics.lib.BlockBox;
 import com.lovetropics.minigames.common.core.game.IActiveGame;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameLifecycleEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePackageEvents;
-import com.lovetropics.minigames.common.core.map.MapRegion;
 import com.lovetropics.minigames.common.core.map.MapRegions;
 import com.lovetropics.minigames.common.util.Util;
 import com.mojang.serialization.Codec;
@@ -43,7 +43,7 @@ public class SpawnEntitiesAtRegionsOverTimePackageBehavior implements IGameBehav
 	private int ticksRemaining;
 	private int entityCountRemaining;
 
-	private final List<MapRegion> regionsToSpawnAt = Lists.newArrayList();
+	private final List<BlockBox> regionsToSpawnAt = Lists.newArrayList();
 
 	public SpawnEntitiesAtRegionsOverTimePackageBehavior(final List<String> regionsToSpawnAtKeys, final EntityType<?> entityId, final int entityCount, final int ticksToSpawnFor) {
 		this.regionsToSpawnAtKeys = regionsToSpawnAtKeys;
@@ -81,7 +81,7 @@ public class SpawnEntitiesAtRegionsOverTimePackageBehavior implements IGameBehav
 			//System.out.println("spawnsPerTick: " + spawnsPerTick + ", ticksRemaining: " + ticksRemaining);
 
 			for (int i = 0; i < spawnsPerTick; i++) {
-				MapRegion region = regionsToSpawnAt.get(game.getWorld().getRandom().nextInt(regionsToSpawnAt.size()));
+				BlockBox region = regionsToSpawnAt.get(game.getWorld().getRandom().nextInt(regionsToSpawnAt.size()));
 				final BlockPos pos = game.getWorld().getHeight(Heightmap.Type.WORLD_SURFACE, region.sample(game.getWorld().getRandom()));
 
 				Util.spawnEntity(entityId, game.getWorld(), pos.getX(), pos.getY(), pos.getZ());

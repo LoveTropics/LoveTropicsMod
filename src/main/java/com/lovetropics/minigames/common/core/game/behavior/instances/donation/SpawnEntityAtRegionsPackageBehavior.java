@@ -1,12 +1,12 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances.donation;
 
 import com.google.common.collect.Lists;
+import com.lovetropics.lib.BlockBox;
 import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.IActiveGame;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePackageEvents;
-import com.lovetropics.minigames.common.core.map.MapRegion;
 import com.lovetropics.minigames.common.core.map.MapRegions;
 import com.lovetropics.minigames.common.util.Util;
 import com.mojang.serialization.Codec;
@@ -33,7 +33,7 @@ public class SpawnEntityAtRegionsPackageBehavior implements IGameBehavior
 	private final EntityType<?> entityId;
 	private final int entityCountPerRegion;
 
-	private final List<MapRegion> regionsToSpawnAt = Lists.newArrayList();
+	private final List<BlockBox> regionsToSpawnAt = Lists.newArrayList();
 
 	public SpawnEntityAtRegionsPackageBehavior(final List<String> regionsToSpawnAtKeys, final EntityType<?> entityId, final int entityCountPerRegion) {
 		this.regionsToSpawnAtKeys = regionsToSpawnAtKeys;
@@ -52,7 +52,7 @@ public class SpawnEntityAtRegionsPackageBehavior implements IGameBehavior
 
 		events.listen(GamePackageEvents.APPLY_PACKAGE, (game, player, sendingPlayer) -> {
 			ServerWorld world = game.getWorld();
-			for (final MapRegion region : regionsToSpawnAt) {
+			for (final BlockBox region : regionsToSpawnAt) {
 				for (int i = 0; i < entityCountPerRegion; i++) {
 					final BlockPos pos = world.getHeight(Heightmap.Type.WORLD_SURFACE, region.sample(world.getRandom()));
 					Util.spawnEntity(entityId, world, pos.getX(), pos.getY(), pos.getZ());

@@ -1,15 +1,21 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances.team;
 
-import com.lovetropics.minigames.common.core.game.*;
-import com.lovetropics.minigames.common.core.game.control.ControlCommand;
+import com.lovetropics.lib.codec.MoreCodecs;
+import com.lovetropics.minigames.common.core.game.GameException;
+import com.lovetropics.minigames.common.core.game.IActiveGame;
+import com.lovetropics.minigames.common.core.game.IPollingGame;
+import com.lovetropics.minigames.common.core.game.PlayerRole;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
-import com.lovetropics.minigames.common.core.game.behavior.event.*;
+import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameLifecycleEvents;
+import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
+import com.lovetropics.minigames.common.core.game.behavior.event.GamePollingEvents;
+import com.lovetropics.minigames.common.core.game.control.ControlCommand;
 import com.lovetropics.minigames.common.core.game.state.GameStateMap;
 import com.lovetropics.minigames.common.core.game.state.instances.TeamKey;
 import com.lovetropics.minigames.common.core.game.state.instances.TeamState;
 import com.lovetropics.minigames.common.core.game.statistics.StatisticKey;
 import com.lovetropics.minigames.common.core.game.util.TeamAllocator;
-import com.lovetropics.minigames.common.util.MoreCodecs;
 import com.lovetropics.minigames.common.util.Scheduler;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;

@@ -1,7 +1,7 @@
 package com.lovetropics.minigames.client.map;
 
+import com.lovetropics.lib.BlockBox;
 import com.lovetropics.minigames.Constants;
-import com.lovetropics.minigames.common.core.map.MapRegion;
 import com.lovetropics.minigames.common.core.map.workspace.ClientWorkspaceRegions;
 import net.minecraft.world.IWorld;
 import net.minecraftforge.api.distmarker.Dist;
@@ -24,11 +24,11 @@ public final class ClientMapWorkspace {
 		this.regions = regions;
 	}
 
-	public void addRegion(int id, String key, MapRegion region) {
+	public void addRegion(int id, String key, BlockBox region) {
 		regions.add(id, key, region);
 	}
 
-	public void updateRegion(int id, @Nullable MapRegion region) {
+	public void updateRegion(int id, @Nullable BlockBox region) {
 		regions.set(id, region);
 	}
 

@@ -1,13 +1,13 @@
 package com.lovetropics.minigames.common.content.survive_the_tide.behavior;
 
+import com.lovetropics.lib.BlockBox;
+import com.lovetropics.lib.codec.MoreCodecs;
 import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.IActiveGame;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameLifecycleEvents;
 import com.lovetropics.minigames.common.core.game.util.GameBossBar;
-import com.lovetropics.minigames.common.core.map.MapRegion;
-import com.lovetropics.minigames.common.util.MoreCodecs;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.entity.LivingEntity;
@@ -76,10 +76,10 @@ public class WorldBorderGameBehavior implements IGameBehavior
 
 	@Override
 	public void register(IActiveGame game, EventRegistrar events) throws GameException {
-		List<MapRegion> regions = new ArrayList<>(game.getMapRegions().get(worldBorderCenterKey));
+		List<BlockBox> regions = new ArrayList<>(game.getMapRegions().get(worldBorderCenterKey));
 
 		if (!regions.isEmpty()) {
-			MapRegion centerRegion = regions.get(game.getWorld().getRandom().nextInt(regions.size()));
+			BlockBox centerRegion = regions.get(game.getWorld().getRandom().nextInt(regions.size()));
 			worldBorderCenter = centerRegion.getCenterBlock();
 		} else {
 			worldBorderCenter = BlockPos.ZERO;

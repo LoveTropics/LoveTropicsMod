@@ -2,11 +2,11 @@ package com.lovetropics.minigames.common.core.game.config;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
+import com.lovetropics.lib.codec.CodecRegistry;
 import com.lovetropics.minigames.Constants;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.JsonOps;
-import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.resources.IResource;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.event.AddReloadListenerEvent;
@@ -20,14 +20,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Collection;
-import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 @Mod.EventBusSubscriber(modid = Constants.MODID)
 public final class GameConfigs {
 	private static final Logger LOGGER = LogManager.getLogger(GameConfigs.class);
 
-	public static final Map<ResourceLocation, GameConfig> GAME_CONFIGS = new Object2ObjectOpenHashMap<>();
+	public static final CodecRegistry<ResourceLocation, GameConfig> REGISTRY = CodecRegistry.resourceLocationKeys();
 
 	private static final JsonParser PARSER = new JsonParser();
 
@@ -35,7 +34,7 @@ public final class GameConfigs {
 	public static void addReloadListener(AddReloadListenerEvent event) {
 		event.addListener((stage, resourceManager, preparationsProfiler, reloadProfiler, backgroundExecutor, gameExecutor) -> {
 			CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
-				GAME_CONFIGS.clear();
+				REGISTRY.clear();
 
 				BehaviorReferenceReader behaviorReader = new BehaviorReferenceReader(resourceManager);
 
@@ -43,7 +42,7 @@ public final class GameConfigs {
 				for (ResourceLocation path : paths) {
 					try (IResource resource = resourceManager.getResource(path)) {
 						DataResult<GameConfig> result = loadConfig(behaviorReader, path, resource);
-						result.result().ifPresent(config -> GAME_CONFIGS.put(config.id, config));
+						result.result().ifPresent(config -> REGISTRY.register(config.id, config));
 
 						result.error().ifPresent(error -> {
 							LOGGER.error("Failed to load game config at {}: {}", path, error);

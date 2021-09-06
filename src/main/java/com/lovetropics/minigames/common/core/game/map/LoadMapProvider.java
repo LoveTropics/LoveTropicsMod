@@ -78,7 +78,7 @@ public class LoadMapProvider implements IGameMapProvider {
 					MapMetadata metadata = pair.getSecond();
 
 					GameMap map = new GameMap(name, dimensionHandle.asKey(), metadata.regions)
-							.onClose(minigame -> dimensionHandle.delete());
+							.onClose(game -> dimensionHandle.delete());
 
 					return GameResult.ok(map);
 				}, server);

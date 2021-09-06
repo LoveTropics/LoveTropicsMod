@@ -1,19 +1,18 @@
 package com.lovetropics.minigames.common.core.game.map;
 
+import com.lovetropics.lib.codec.MoreCodecs;
+import com.lovetropics.minigames.common.core.game.GameResult;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.RegistryKey;
+import net.minecraft.world.World;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
-
-import com.lovetropics.minigames.common.core.game.GameResult;
-import com.lovetropics.minigames.common.util.MoreCodecs;
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
-
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.RegistryKey;
-import net.minecraft.world.World;
 
 public final class RandomMapProvider implements IGameMapProvider {
 	public static final Codec<RandomMapProvider> CODEC = RecordCodecBuilder.create(instance -> {

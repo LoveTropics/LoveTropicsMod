@@ -1,8 +1,8 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances.command;
 
+import com.lovetropics.lib.BlockBox;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
-import com.lovetropics.minigames.common.core.map.MapRegion;
 import com.lovetropics.minigames.common.core.map.MapRegions;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -34,7 +34,7 @@ public final class RunCommandInRegionBehavior extends CommandInvokeBehavior {
 
 			MapRegions regions = game.getMapRegions();
 			for (String regionKey : commands.keySet()) {
-				for (MapRegion region : regions.get(regionKey)) {
+				for (BlockBox region : regions.get(regionKey)) {
 					if (region.contains(player.getPosX(), player.getPosY(), player.getPosZ())) {
 						invoke(regionKey, sourceForEntity(player));
 					}

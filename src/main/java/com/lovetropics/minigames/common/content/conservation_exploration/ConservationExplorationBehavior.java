@@ -1,7 +1,10 @@
 package com.lovetropics.minigames.common.content.conservation_exploration;
 
+import com.lovetropics.lib.BlockBox;
 import com.lovetropics.lib.entity.FireworkPalette;
-import com.lovetropics.minigames.common.core.game.*;
+import com.lovetropics.minigames.common.core.game.GameException;
+import com.lovetropics.minigames.common.core.game.IActiveGame;
+import com.lovetropics.minigames.common.core.game.PlayerRole;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameLifecycleEvents;
@@ -9,7 +12,6 @@ import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvent
 import com.lovetropics.minigames.common.core.game.control.ControlCommand;
 import com.lovetropics.minigames.common.core.game.util.GameBossBar;
 import com.lovetropics.minigames.common.core.game.util.GlobalGameWidgets;
-import com.lovetropics.minigames.common.core.map.MapRegion;
 import com.lovetropics.minigames.common.util.Scheduler;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -198,7 +200,7 @@ public final class ConservationExplorationBehavior implements IGameBehavior {
 		Random random = world.rand;
 
 		String regionKey = creature.region;
-		List<MapRegion> regions = new ArrayList<>(game.getMapRegions().get(regionKey));
+		List<BlockBox> regions = new ArrayList<>(game.getMapRegions().get(regionKey));
 		if (regions.isEmpty()) {
 			return;
 		}
@@ -206,7 +208,7 @@ public final class ConservationExplorationBehavior implements IGameBehavior {
 		int groupCount = Math.max(regions.size() / 6, 1);
 
 		for (int i = 0; i < groupCount; i++) {
-			MapRegion region = regions.get(random.nextInt(regions.size()));
+			BlockBox region = regions.get(random.nextInt(regions.size()));
 
 			EntityType<?> entityType = creature.entity;
 			for (int j = 0; j < creature.count; j++) {

@@ -1,14 +1,14 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances;
 
+import com.lovetropics.lib.BlockBox;
+import com.lovetropics.lib.codec.MoreCodecs;
 import com.lovetropics.minigames.common.core.dimension.DimensionUtils;
 import com.lovetropics.minigames.common.core.game.IActiveGame;
 import com.lovetropics.minigames.common.core.game.PlayerRole;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
-import com.lovetropics.minigames.common.core.map.MapRegion;
 import com.lovetropics.minigames.common.core.map.MapRegions;
-import com.lovetropics.minigames.common.util.MoreCodecs;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.entity.player.ServerPlayerEntity;
@@ -28,8 +28,8 @@ public class PositionPlayersBehavior implements IGameBehavior {
 	private final String[] participantSpawnKeys;
 	private final String[] spectatorSpawnKeys;
 
-	private final List<MapRegion> participantSpawnRegions = new ArrayList<>();
-	private final List<MapRegion> spectatorSpawnRegions = new ArrayList<>();
+	private final List<BlockBox> participantSpawnRegions = new ArrayList<>();
+	private final List<BlockBox> spectatorSpawnRegions = new ArrayList<>();
 
 	private int participantSpawnIndex;
 	private int spectatorSpawnIndex;
@@ -60,15 +60,15 @@ public class PositionPlayersBehavior implements IGameBehavior {
 
 	private void setupPlayerAsRole(IActiveGame game, ServerPlayerEntity player, PlayerRole role) {
 		if (role == PlayerRole.PARTICIPANT) {
-			MapRegion region = participantSpawnRegions.get(participantSpawnIndex++ % participantSpawnRegions.size());
+			BlockBox region = participantSpawnRegions.get(participantSpawnIndex++ % participantSpawnRegions.size());
 			teleportToRegion(game, player, region);
 		} else {
-			MapRegion region = spectatorSpawnRegions.get(spectatorSpawnIndex++ % spectatorSpawnRegions.size());
+			BlockBox region = spectatorSpawnRegions.get(spectatorSpawnIndex++ % spectatorSpawnRegions.size());
 			teleportToRegion(game, player, region);
 		}
 	}
 
-	private void teleportToRegion(IActiveGame game, ServerPlayerEntity player, MapRegion region) {
+	private void teleportToRegion(IActiveGame game, ServerPlayerEntity player, BlockBox region) {
 		BlockPos pos = region.sample(player.getRNG());
 		DimensionUtils.teleportPlayerNoPortal(player, game.getDimension(), pos);
 	}

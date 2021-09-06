@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.common.core.map.workspace;
 
-import com.lovetropics.minigames.common.core.map.MapRegion;
+import com.lovetropics.lib.BlockBox;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.minecraft.network.PacketBuffer;
@@ -19,13 +19,13 @@ public class ClientWorkspaceRegions implements Iterable<ClientWorkspaceRegions.E
 			protected void add(Entry entry) {}
 			
 			@Override
-			public void set(int id, MapRegion region) {}
+			public void set(int id, BlockBox region) {}
 		};
 	}
 
 	private final Int2ObjectMap<Entry> entries = new Int2ObjectOpenHashMap<>();
 
-	public final void add(int id, String key, MapRegion region) {
+	public final void add(int id, String key, BlockBox region) {
 		add(new Entry(id, key, region));
 	}
 
@@ -33,7 +33,7 @@ public class ClientWorkspaceRegions implements Iterable<ClientWorkspaceRegions.E
 		entries.put(entry.id, entry);
 	}
 
-	public void set(int id, @Nullable MapRegion region) {
+	public void set(int id, @Nullable BlockBox region) {
 		if (region != null) {
 			ClientWorkspaceRegions.Entry entry = entries.get(id);
 			if (entry != null) {
@@ -59,7 +59,7 @@ public class ClientWorkspaceRegions implements Iterable<ClientWorkspaceRegions.E
 			int regionCount = buffer.readVarInt();
 			for (int j = 0; j < regionCount; j++) {
 				int id = buffer.readVarInt();
-				MapRegion region = MapRegion.read(buffer);
+				BlockBox region = BlockBox.read(buffer);
 				regions.add(new Entry(id, key, region));
 			}
 		}
@@ -75,9 +75,9 @@ public class ClientWorkspaceRegions implements Iterable<ClientWorkspaceRegions.E
 	public static class Entry {
 		public final int id;
 		public final String key;
-		public MapRegion region;
+		public BlockBox region;
 
-		Entry(int id, String key, MapRegion region) {
+		Entry(int id, String key, BlockBox region) {
 			this.id = id;
 			this.key = key;
 			this.region = region;
