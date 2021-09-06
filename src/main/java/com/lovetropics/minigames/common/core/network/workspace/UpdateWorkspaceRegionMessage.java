@@ -1,7 +1,7 @@
 package com.lovetropics.minigames.common.core.network.workspace;
 
+import com.lovetropics.lib.BlockBox;
 import com.lovetropics.minigames.client.map.ClientMapWorkspace;
-import com.lovetropics.minigames.common.core.map.MapRegion;
 import com.lovetropics.minigames.common.core.map.workspace.MapWorkspace;
 import com.lovetropics.minigames.common.core.map.workspace.MapWorkspaceManager;
 import net.minecraft.entity.player.ServerPlayerEntity;
@@ -14,9 +14,9 @@ import java.util.function.Supplier;
 
 public class UpdateWorkspaceRegionMessage {
 	private final int id;
-	private final MapRegion region;
+	private final BlockBox region;
 
-	public UpdateWorkspaceRegionMessage(int id, MapRegion region) {
+	public UpdateWorkspaceRegionMessage(int id, BlockBox region) {
 		this.id = id;
 		this.region = region;
 	}
@@ -33,7 +33,7 @@ public class UpdateWorkspaceRegionMessage {
 
 	public static UpdateWorkspaceRegionMessage decode(PacketBuffer buffer) {
 		int id = buffer.readVarInt();
-		MapRegion region = buffer.readBoolean() ? MapRegion.read(buffer) : null;
+		BlockBox region = buffer.readBoolean() ? BlockBox.read(buffer) : null;
 		return new UpdateWorkspaceRegionMessage(id, region);
 	}
 

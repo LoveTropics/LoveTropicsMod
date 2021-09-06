@@ -23,7 +23,7 @@ public final class GameConfigArgument {
         return Commands.argument(name, ResourceLocationArgument.resourceLocation())
                 .suggests((context, builder) -> {
                     return ISuggestionProvider.func_212476_a(
-							GameConfigs.GAME_CONFIGS.values().stream().map(IGameDefinition::getId),
+							GameConfigs.REGISTRY.stream().map(IGameDefinition::getId),
                             builder
                     );
                 });
@@ -32,7 +32,7 @@ public final class GameConfigArgument {
 	public static GameConfig get(CommandContext<CommandSource> context, String name) throws CommandSyntaxException {
 		ResourceLocation id = ResourceLocationArgument.getResourceLocation(context, name);
 
-		GameConfig config = GameConfigs.GAME_CONFIGS.get(id);
+		GameConfig config = GameConfigs.REGISTRY.get(id);
 		if (config == null) {
 			throw GAME_CONFIG_NOT_FOUND.create(id);
 		}

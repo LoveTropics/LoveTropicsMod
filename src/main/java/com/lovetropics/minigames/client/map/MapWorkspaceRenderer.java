@@ -1,7 +1,7 @@
 package com.lovetropics.minigames.client.map;
 
+import com.lovetropics.lib.BlockBox;
 import com.lovetropics.minigames.Constants;
-import com.lovetropics.minigames.common.core.map.MapRegion;
 import com.lovetropics.minigames.common.core.map.workspace.ClientWorkspaceRegions;
 import com.mojang.blaze3d.systems.RenderSystem;
 import it.unimi.dsi.fastutil.HashCommon;
@@ -78,7 +78,7 @@ public final class MapWorkspaceRenderer {
 				outlineRed = outlineGreen = outlineBlue = 1.0F;
 			}
 
-			MapRegion region = entry.region;
+			BlockBox region = entry.region;
 			double minX = region.min.getX() - view.x;
 			double minY = region.min.getY() - view.y;
 			double minZ = region.min.getZ() - view.z;

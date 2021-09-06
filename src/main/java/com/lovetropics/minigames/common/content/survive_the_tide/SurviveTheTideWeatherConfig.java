@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.common.content.survive_the_tide;
 
-import com.lovetropics.minigames.common.util.MoreCodecs;
+import com.lovetropics.lib.codec.MoreCodecs;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.Object2FloatMap;

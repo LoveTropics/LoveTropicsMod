@@ -62,7 +62,7 @@ public final class MapWorkspaceTracer {
 				continue;
 			}
 
-			AxisAlignedBB bounds = entry.region.toAabb();
+			AxisAlignedBB bounds = entry.region.asAabb();
 			BlockRayTraceResult traceResult = AxisAlignedBB.rayTrace(ImmutableList.of(bounds), origin, target, BlockPos.ZERO);
 			if (traceResult != null) {
 				Vector3d intersectPoint = traceResult.getHitVec();

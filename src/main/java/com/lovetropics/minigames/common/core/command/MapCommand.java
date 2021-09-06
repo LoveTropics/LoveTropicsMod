@@ -1,5 +1,6 @@
 package com.lovetropics.minigames.common.core.command;
 
+import com.lovetropics.lib.BlockBox;
 import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.common.core.command.argument.DimensionArgument;
@@ -202,7 +203,7 @@ public final class MapCommand {
 		BlockPos min = BlockPosArgument.getBlockPos(context, "min");
 		BlockPos max = BlockPosArgument.getBlockPos(context, "max");
 
-		workspace.getRegions().add(key, MapRegion.of(min, max));
+		workspace.getRegions().add(key, BlockBox.of(min, max));
 
 		return Command.SINGLE_SUCCESS;
 	}
@@ -213,7 +214,7 @@ public final class MapCommand {
 
 		String key = StringArgumentType.getString(context, "key");
 
-		workspace.getRegions().add(key, MapRegion.of(new BlockPos(pos)));
+		workspace.getRegions().add(key, BlockBox.of(new BlockPos(pos)));
 
 		return Command.SINGLE_SUCCESS;
 	}

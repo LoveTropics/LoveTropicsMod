@@ -1,10 +1,10 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances;
 
+import com.lovetropics.lib.BlockBox;
 import com.lovetropics.minigames.common.core.game.IActiveGame;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameLifecycleEvents;
-import com.lovetropics.minigames.common.core.map.MapRegion;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.longs.LongIterator;
@@ -69,8 +69,8 @@ public final class ForceLoadRegionBehavior implements IGameBehavior {
 	private LongSet collectChunks(IActiveGame game) {
 		LongSet chunks = new LongOpenHashSet();
 
-		Collection<MapRegion> regions = game.getMapRegions().get(regionKey);
-		for (MapRegion region : regions) {
+		Collection<BlockBox> regions = game.getMapRegions().get(regionKey);
+		for (BlockBox region : regions) {
 			chunks.addAll(region.asChunks());
 		}
 

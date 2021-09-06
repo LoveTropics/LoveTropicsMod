@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.common.core.game.map;
 
-import com.lovetropics.minigames.common.util.CodecRegistry;
+import com.lovetropics.lib.codec.CodecRegistry;
 import com.lovetropics.minigames.common.util.Util;
 import com.mojang.serialization.Codec;
 import net.minecraft.util.ResourceLocation;

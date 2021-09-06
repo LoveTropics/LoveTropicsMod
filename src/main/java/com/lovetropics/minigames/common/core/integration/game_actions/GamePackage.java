@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.common.core.integration.game_actions;
 
-import com.lovetropics.minigames.common.util.MoreCodecs;
+import com.lovetropics.lib.codec.MoreCodecs;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;

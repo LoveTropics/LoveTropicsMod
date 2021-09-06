@@ -165,7 +165,6 @@ public class LoveTropics {
         StopPollingGameCommand.register(dispatcher);
         GameControlCommand.register(dispatcher);
         MapCommand.register(dispatcher);
-        GameDonateCommand.register(dispatcher);
         GamePackageCommand.register(dispatcher);
     }
 

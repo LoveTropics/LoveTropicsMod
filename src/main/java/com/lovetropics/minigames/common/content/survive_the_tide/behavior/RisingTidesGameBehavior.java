@@ -1,13 +1,16 @@
 package com.lovetropics.minigames.common.content.survive_the_tide.behavior;
 
+import com.lovetropics.lib.BlockBox;
 import com.lovetropics.minigames.common.content.survive_the_tide.IcebergLine;
 import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.IActiveGame;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
-import com.lovetropics.minigames.common.core.game.behavior.event.*;
+import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameLifecycleEvents;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameLivingEntityEvents;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameLogicEvents;
 import com.lovetropics.minigames.common.core.game.state.instances.GamePhase;
 import com.lovetropics.minigames.common.core.game.state.instances.GamePhaseState;
-import com.lovetropics.minigames.common.core.map.MapRegion;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.longs.*;
@@ -61,7 +64,7 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 	private final int icebergGrowthTickRate;
 	private int waterLevel;
 
-	private MapRegion tideArea;
+	private BlockBox tideArea;
 	private final List<IcebergLine> icebergLines = new ArrayList<>();
 
 	private ChunkPos minTideChunk;
@@ -91,7 +94,7 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 		Random random = new Random();
 
 		icebergLines.clear();
-		for (MapRegion icebergLine : game.getMapRegions().get(icebergLinesKey)) {
+		for (BlockBox icebergLine : game.getMapRegions().get(icebergLinesKey)) {
 			int startX = icebergLine.min.getX();
 			int startZ = icebergLine.min.getZ();
 

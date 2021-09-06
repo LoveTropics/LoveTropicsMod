@@ -1,7 +1,7 @@
 package com.lovetropics.minigames.client.map;
 
 import com.google.common.collect.ImmutableSet;
-import com.lovetropics.minigames.common.core.map.MapRegion;
+import com.lovetropics.lib.BlockBox;
 import com.lovetropics.minigames.common.core.map.workspace.ClientWorkspaceRegions;
 import com.lovetropics.minigames.common.core.network.LoveTropicsNetwork;
 import com.lovetropics.minigames.common.core.network.workspace.UpdateWorkspaceRegionMessage;
@@ -48,7 +48,7 @@ public interface RegionEditOperator {
 			return selected;
 		}
 
-		protected abstract MapRegion updateEditing(PlayerEntity player, RegionTraceTarget editTarget);
+		protected abstract BlockBox updateEditing(PlayerEntity player, RegionTraceTarget editTarget);
 	}
 
 	final class Resize extends EditOne {
@@ -57,14 +57,14 @@ public interface RegionEditOperator {
 		}
 
 		@Override
-		protected MapRegion updateEditing(PlayerEntity player, RegionTraceTarget editTarget) {
+		protected BlockBox updateEditing(PlayerEntity player, RegionTraceTarget editTarget) {
 			Vector3d origin = player.getEyePosition(1.0F);
 
 			// TODO: not totally sure how to make this feel natural
 			Vector3d grabPoint = origin.add(player.getLookVec().scale(target.distanceToSide));
 			BlockPos grabPos = new BlockPos(grabPoint);
 
-			MapRegion region = editTarget.entry.region;
+			BlockBox region = editTarget.entry.region;
 
 			switch (editTarget.side) {
 				case DOWN: return region.withMin(new BlockPos(region.min.getX(), grabPos.getY(), region.min.getZ()));
@@ -87,10 +87,10 @@ public interface RegionEditOperator {
 		}
 
 		@Override
-		protected MapRegion updateEditing(PlayerEntity player, RegionTraceTarget editTarget) {
+		protected BlockBox updateEditing(PlayerEntity player, RegionTraceTarget editTarget) {
 			Vector3d origin = player.getEyePosition(1.0F);
 
-			MapRegion region = editTarget.entry.region;
+			BlockBox region = editTarget.entry.region;
 
 			Vector3d grabPoint = region.getCenter().add(offset);
 			Vector3d targetPoint = origin.add(player.getLookVec().scale(target.distanceToSide));

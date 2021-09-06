@@ -1,8 +1,6 @@
 package com.lovetropics.minigames.common.core.game.config;
 
-import java.util.List;
-import java.util.Optional;
-
+import com.lovetropics.lib.codec.MoreCodecs;
 import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.common.core.game.IGameDefinition;
 import com.lovetropics.minigames.common.core.game.behavior.BehaviorMap;
@@ -10,11 +8,12 @@ import com.lovetropics.minigames.common.core.game.map.GameMapProviders;
 import com.lovetropics.minigames.common.core.game.map.IGameMapProvider;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.common.extensions.IForgeTileEntity;
+
+import java.util.List;
+import java.util.Optional;
 
 public final class GameConfig implements IGameDefinition {
 	public final ResourceLocation id;
@@ -49,12 +48,6 @@ public final class GameConfig implements IGameDefinition {
 		this.behaviors = behaviors;
 	}
 
-	private static final Codec<AxisAlignedBB> AREA_CODEC = RecordCodecBuilder.create(instance ->
-			instance.group(
-					BlockPos.CODEC.fieldOf("start").forGetter(aabb -> new BlockPos(aabb.minX, aabb.minY, aabb.minZ)),
-					BlockPos.CODEC.fieldOf("end").forGetter(aabb -> new BlockPos(aabb.maxX, aabb.maxY, aabb.maxZ)))
-			.apply(instance, (min, max) -> new AxisAlignedBB(min, max)));
-
 	public static Codec<GameConfig> codec(BehaviorReferenceReader reader, ResourceLocation id) {
 		return RecordCodecBuilder.create(instance -> {
 			return instance.group(
@@ -64,7 +57,7 @@ public final class GameConfig implements IGameDefinition {
 					GameMapProviders.CODEC.fieldOf("map_provider").forGetter(c -> c.mapProvider),
 					Codec.INT.optionalFieldOf("minimum_participants", 1).forGetter(c -> c.minimumParticipants),
 					Codec.INT.optionalFieldOf("maximum_participants", 100).forGetter(c -> c.maximumParticipants),
-					AREA_CODEC.optionalFieldOf("area", IForgeTileEntity.INFINITE_EXTENT_AABB).forGetter(c -> c.area),
+					MoreCodecs.AABB.optionalFieldOf("area", IForgeTileEntity.INFINITE_EXTENT_AABB).forGetter(c -> c.area),
 					reader.fieldOf("behaviors").forGetter(c -> c.behaviors)
 			).apply(instance, (displayIdOpt, telemetryKeyOpt, translationKey, mapProvider, minimumParticipants, maximumParticipants, area, behaviors) -> {
 				ResourceLocation displayId = displayIdOpt.map(string -> new ResourceLocation(id.getNamespace(), string)).orElse(id);

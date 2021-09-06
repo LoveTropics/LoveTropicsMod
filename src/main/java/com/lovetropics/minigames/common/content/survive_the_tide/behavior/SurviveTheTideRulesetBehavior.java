@@ -1,5 +1,7 @@
 package com.lovetropics.minigames.common.content.survive_the_tide.behavior;
 
+import com.lovetropics.lib.BlockBox;
+import com.lovetropics.lib.codec.MoreCodecs;
 import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.IActiveGame;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
@@ -8,8 +10,6 @@ import com.lovetropics.minigames.common.core.game.behavior.event.GameLifecycleEv
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.lovetropics.minigames.common.core.game.state.instances.GamePhase;
 import com.lovetropics.minigames.common.core.game.state.instances.GamePhaseState;
-import com.lovetropics.minigames.common.core.map.MapRegion;
-import com.lovetropics.minigames.common.util.MoreCodecs;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.block.Blocks;
@@ -43,7 +43,7 @@ public class SurviveTheTideRulesetBehavior implements IGameBehavior
 	});
 
 	private final String spawnAreaKey;
-	private MapRegion spawnArea;
+	private BlockBox spawnArea;
 	private final String phaseToFreeParticipants;
 	private final List<String> phasesWithNoPVP;
 	private final boolean forceDropItemsOnDeath;

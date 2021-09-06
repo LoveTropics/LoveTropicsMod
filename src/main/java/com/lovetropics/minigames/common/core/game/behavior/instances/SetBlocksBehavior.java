@@ -1,13 +1,13 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances;
 
+import com.lovetropics.lib.BlockBox;
+import com.lovetropics.lib.codec.MoreCodecs;
 import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.IActiveGame;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameLifecycleEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameWorldEvents;
-import com.lovetropics.minigames.common.core.map.MapRegion;
-import com.lovetropics.minigames.common.util.MoreCodecs;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
@@ -40,7 +40,7 @@ public final class SetBlocksBehavior implements IGameBehavior {
 	private final @Nullable String regionKey;
 	private final long time;
 
-	private Collection<MapRegion> regions;
+	private Collection<BlockBox> regions;
 
 	private SetBlocksBehavior(Optional<BlockPredicate> replace, BlockStateProvider set, Optional<String> regionKey, Optional<Long> time) {
 		this(replace.orElse(null), set, regionKey.orElse(null), time.orElse(-1L));
@@ -65,7 +65,7 @@ public final class SetBlocksBehavior implements IGameBehavior {
 	}
 
 	private void registerTimed(EventRegistrar events) {
-		Collection<MapRegion> regions = this.regions;
+		Collection<BlockBox> regions = this.regions;
 		if (regions == null) {
 			throw new GameException(new StringTextComponent("Regions not specified for block set behavior with a set time!"));
 		}
@@ -73,7 +73,7 @@ public final class SetBlocksBehavior implements IGameBehavior {
 		events.listen(GameLifecycleEvents.TICK, game -> {
 			if (time != game.ticks()) return;
 
-			for (MapRegion region : regions) {
+			for (BlockBox region : regions) {
 				setInRegion(game, region);
 			}
 		});
@@ -81,36 +81,36 @@ public final class SetBlocksBehavior implements IGameBehavior {
 
 	private void registerImmediate(EventRegistrar events) {
 		if (regions != null) {
-			Long2ObjectMap<List<MapRegion>> regionsByChunk = collectRegionsByChunk(regions);
+			Long2ObjectMap<List<BlockBox>> regionsByChunk = collectRegionsByChunk(regions);
 
 			events.listen(GameWorldEvents.CHUNK_LOAD, (game, chunk) -> {
-				List<MapRegion> regions = regionsByChunk.remove(chunk.getPos().asLong());
+				List<BlockBox> regions = regionsByChunk.remove(chunk.getPos().asLong());
 				if (regions == null) {
 					return;
 				}
 
-				for (MapRegion region : regions) {
+				for (BlockBox region : regions) {
 					setInRegion(game, region);
 				}
 			});
 		} else {
 			events.listen(GameWorldEvents.CHUNK_LOAD, (game, chunk) -> {
-				MapRegion region = MapRegion.ofChunk(chunk.getPos());
+				BlockBox region = BlockBox.ofChunk(chunk.getPos());
 				setInRegion(game, region);
 			});
 		}
 	}
 
-	private static Long2ObjectMap<List<MapRegion>> collectRegionsByChunk(Collection<MapRegion> regions) {
-		Long2ObjectMap<List<MapRegion>> regionsByChunk = new Long2ObjectOpenHashMap<>();
+	private static Long2ObjectMap<List<BlockBox>> collectRegionsByChunk(Collection<BlockBox> regions) {
+		Long2ObjectMap<List<BlockBox>> regionsByChunk = new Long2ObjectOpenHashMap<>();
 
-		for (MapRegion region : regions) {
+		for (BlockBox region : regions) {
 			LongIterator chunkIterator = region.asChunks().iterator();
 			while (chunkIterator.hasNext()) {
 				long chunkPos = chunkIterator.nextLong();
-				MapRegion chunkRegion = MapRegion.ofChunk(ChunkPos.getX(chunkPos), ChunkPos.getZ(chunkPos));
+				BlockBox chunkRegion = BlockBox.ofChunk(ChunkPos.getX(chunkPos), ChunkPos.getZ(chunkPos));
 
-				MapRegion intersectionRegion = region.intersection(chunkRegion);
+				BlockBox intersectionRegion = region.intersection(chunkRegion);
 				if (intersectionRegion != null) {
 					regionsByChunk.computeIfAbsent(chunkPos, l -> new ArrayList<>()).add(intersectionRegion);
 				}
@@ -120,7 +120,7 @@ public final class SetBlocksBehavior implements IGameBehavior {
 		return regionsByChunk;
 	}
 
-	private void setInRegion(IActiveGame game, MapRegion region) {
+	private void setInRegion(IActiveGame game, BlockBox region) {
 		ServerWorld world = game.getWorld();
 		BlockPredicate replace = this.replace;
 		BlockStateProvider set = this.set;

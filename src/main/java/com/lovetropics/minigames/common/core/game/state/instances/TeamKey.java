@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.common.core.game.state.instances;
 
-import com.lovetropics.minigames.common.util.MoreCodecs;
+import com.lovetropics.lib.codec.MoreCodecs;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.item.DyeColor;
