@@ -18,12 +18,12 @@ public final class Flex {
 
 	final List<Flex> children = new ArrayList<>();
 
-	public Flex columns() {
-		return this.axis(Axis.Y);
-	}
-
 	public Flex rows() {
 		return this.axis(Axis.X);
+	}
+
+	public Flex columns() {
+		return this.axis(Axis.Y);
 	}
 
 	public Flex axis(Axis axis) {
@@ -122,6 +122,26 @@ public final class Flex {
 		return this.padding(padding, padding);
 	}
 
+	public Flex paddingLeft(int padding) {
+		this.padding = this.padding.left(padding);
+		return this;
+	}
+
+	public Flex paddingTop(int padding) {
+		this.padding = this.padding.top(padding);
+		return this;
+	}
+
+	public Flex paddingRight(int padding) {
+		this.padding = this.padding.right(padding);
+		return this;
+	}
+
+	public Flex paddingBottom(int padding) {
+		this.padding = this.padding.bottom(padding);
+		return this;
+	}
+	
 	public Flex margin(int left, int top, int right, int bottom) {
 		this.margin = new Box(left, top, right, bottom);
 		return this;
@@ -133,6 +153,26 @@ public final class Flex {
 
 	public Flex margin(int margin) {
 		return this.margin(margin, margin);
+	}
+
+	public Flex marginLeft(int margin) {
+		this.margin = this.margin.left(margin);
+		return this;
+	}
+
+	public Flex marginTop(int margin) {
+		this.margin = this.margin.top(margin);
+		return this;
+	}
+
+	public Flex marginRight(int margin) {
+		this.margin = this.margin.right(margin);
+		return this;
+	}
+
+	public Flex marginBottom(int margin) {
+		this.margin = this.margin.bottom(margin);
+		return this;
 	}
 
 	public Flex alignMain(Align.Main align) {
@@ -220,7 +260,7 @@ public final class Flex {
 			return Math.round(percent * parent);
 		};
 		Unit BORDER_PERCENT = (flex, axis, percent) -> parent -> {
-			int padding = flex.padding.borderAlong(axis);
+			int padding = flex.padding.borderAlong(axis) + flex.margin.borderAlong(axis);
 			return Math.round(percent * parent) - padding;
 		};
 		Unit PERCENT = BORDER_PERCENT;

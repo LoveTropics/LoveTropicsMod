@@ -7,6 +7,7 @@ import com.lovetropics.minigames.client.minigame.PlayerCountsMessage;
 import com.lovetropics.minigames.common.core.game.GameResult;
 import com.lovetropics.minigames.common.core.game.IGameManager;
 import com.lovetropics.minigames.common.core.game.lobby.GameLobbyId;
+import com.lovetropics.minigames.common.core.game.lobby.GameLobbyMetadata;
 import com.lovetropics.minigames.common.core.game.lobby.IGameLobby;
 import com.lovetropics.minigames.common.core.game.player.PlayerIterable;
 import com.lovetropics.minigames.common.core.game.player.PlayerOps;
@@ -46,7 +47,7 @@ import java.util.function.Predicate;
 public class MultiGameManager implements IGameManager {
 	public static final MultiGameManager INSTANCE = new MultiGameManager();
 
-	private final LobbyIdManager ids = new LobbyIdManager();
+	private final LobbyCommandIdManager commandIds = new LobbyCommandIdManager();
 
 	private final List<GameLobby> lobbies = new ArrayList<>();
 
@@ -55,9 +56,11 @@ public class MultiGameManager implements IGameManager {
 
 	@Override
 	public GameResult<IGameLobby> createGameLobby(String name, ServerPlayerEntity initiator) {
-		GameLobbyId id = ids.acquire(name);
+		GameLobbyId id = GameLobbyId.next();
+		String commandId = commandIds.acquire(name);
+		GameLobbyMetadata metadata = new GameLobbyMetadata(id, PlayerKey.from(initiator), name, commandId);
 
-		GameLobby lobby = new GameLobby(this, initiator.server, id, PlayerKey.from(initiator));
+		GameLobby lobby = new GameLobby(this, initiator.server, metadata);
 		lobbies.add(lobby);
 
 		return GameResult.ok(lobby);
@@ -165,7 +168,7 @@ public class MultiGameManager implements IGameManager {
 	@Override
 	public GameLobby getLobbyByCommandId(String id) {
 		for (GameLobby lobby : lobbies) {
-			if (lobby.getId().getCommandId().equals(id)) {
+			if (lobby.getMetadata().commandId().equals(id)) {
 				return lobby;
 			}
 		}
@@ -202,7 +205,9 @@ public class MultiGameManager implements IGameManager {
 	}
 
 	void removeLobby(GameLobby lobby) {
-		lobbies.remove(lobby);
+		if (lobbies.remove(lobby)) {
+			commandIds.release(lobby.getMetadata().commandId());
+		}
 	}
 
 	@SubscribeEvent
@@ -239,7 +244,7 @@ public class MultiGameManager implements IGameManager {
 			PacketDistributor.PacketTarget target = PacketDistributor.PLAYER.with(() -> (ServerPlayerEntity) event.getPlayer());
 			LoveTropicsNetwork.CHANNEL.send(target, ClientGameLobbyMessage.update(lobby));
 
-			int networkId = lobby.getId().getNetworkId();
+			int networkId = lobby.getMetadata().id().networkId();
 			for (PlayerRole role : PlayerRole.ROLES) {
 				LoveTropicsNetwork.CHANNEL.send(target, new PlayerCountsMessage(networkId, role, lobby.getMemberCount(role)));
 			}

@@ -17,7 +17,7 @@ public interface IGamePhase {
 	}
 
 	default PlayerKey getInitiator() {
-		return getLobby().getInitiator();
+		return getLobby().getMetadata().initiator();
 	}
 
 	default PlayerSet getAllPlayers() {

@@ -1,28 +1,21 @@
 package com.lovetropics.minigames.client.chase;
 
 import com.mojang.authlib.GameProfile;
-import com.mojang.authlib.minecraft.MinecraftProfileTexture;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.network.play.ClientPlayNetHandler;
+import net.minecraft.client.network.play.NetworkPlayerInfo;
 import net.minecraft.client.renderer.ActiveRenderInfo;
-import net.minecraft.client.resources.DefaultPlayerSkin;
-import net.minecraft.client.resources.SkinManager;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.MathHelper;
 import net.minecraftforge.client.event.EntityViewRenderEvent;
 
 import javax.annotation.Nullable;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 class ChaseCameraSession {
 	private static final Minecraft CLIENT = Minecraft.getInstance();
 
 	List<UUID> players;
-	private final Map<UUID, GameProfile> playerProfiles = new HashMap<>();
-	private final Map<UUID, ResourceLocation> playerSkins = new HashMap<>();
 
 	final ChaseCameraUi ui;
 
@@ -39,54 +32,16 @@ class ChaseCameraSession {
 		this.applyState(ChaseCameraState.FREE_CAMERA);
 	}
 
-	ResourceLocation getPlayerSkin(UUID id) {
-		GameProfile profile = getPlayerProfile(id);
-		if (profile == null) {
-			return DefaultPlayerSkin.getDefaultSkin(id);
-		}
-
-		return getPlayerSkin(profile);
-	}
-
-	ResourceLocation getPlayerSkin(GameProfile profile) {
-		ResourceLocation existingSkin = playerSkins.get(profile.getId());
-		if (existingSkin != null) {
-			return existingSkin;
-		}
-
-		ResourceLocation skin = loadPlayerSkin(profile);
-		playerSkins.put(profile.getId(), skin);
-
-		return skin;
+	@Nullable
+	GameProfile getPlayerProfile(UUID uuid) {
+		NetworkPlayerInfo playerInfo = this.getPlayerInfo(uuid);
+		return playerInfo != null ? playerInfo.getGameProfile() : null;
 	}
 
 	@Nullable
-	GameProfile getPlayerProfile(UUID id) {
-		GameProfile existingProfile = playerProfiles.get(id);
-		if (existingProfile != null) {
-			return existingProfile;
-		}
-
-		PlayerEntity player = CLIENT.world.getPlayerByUuid(id);
-		if (player == null) {
-			return null;
-		}
-
-		GameProfile profile = player.getGameProfile();
-		playerProfiles.put(id, profile);
-
-		return profile;
-	}
-
-	private ResourceLocation loadPlayerSkin(GameProfile profile) {
-		SkinManager skinManager = CLIENT.getSkinManager();
-
-		Map<MinecraftProfileTexture.Type, MinecraftProfileTexture> textures = skinManager.loadSkinFromCache(profile);
-		if (textures.containsKey(MinecraftProfileTexture.Type.SKIN)) {
-			return skinManager.loadSkin(textures.get(MinecraftProfileTexture.Type.SKIN), MinecraftProfileTexture.Type.SKIN);
-		} else {
-			return DefaultPlayerSkin.getDefaultSkin(PlayerEntity.getUUID(profile));
-		}
+	private NetworkPlayerInfo getPlayerInfo(UUID uuid) {
+		ClientPlayNetHandler connection = CLIENT.getConnection();
+		return connection != null ? connection.getPlayerInfo(uuid) : null;
 	}
 
 	void tick() {

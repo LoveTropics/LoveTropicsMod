@@ -5,19 +5,18 @@ import com.lovetropics.minigames.common.core.game.IActiveGame;
 import com.lovetropics.minigames.common.core.game.player.PlayerRole;
 import com.lovetropics.minigames.common.core.game.player.PlayerSet;
 import com.lovetropics.minigames.common.core.game.state.instances.control.ControlCommandInvoker;
-import com.lovetropics.minigames.common.core.game.statistics.PlayerKey;
+import net.minecraft.command.CommandSource;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.Unit;
 
 import javax.annotation.Nullable;
 
+// TODO: compose to reduce size of this interface
 public interface IGameLobby {
 	MinecraftServer getServer();
 
-	GameLobbyId getId();
-
-	PlayerKey getInitiator();
+	GameLobbyMetadata getMetadata();
 
 	PlayerSet getAllPlayers();
 
@@ -34,7 +33,7 @@ public interface IGameLobby {
 
 	GameResult<Unit> requestStart();
 
-	default LobbyVisibility getVisibility() {
-		return LobbyVisibility.PUBLIC;
+	default boolean isVisibleTo(CommandSource source) {
+		return true;
 	}
 }

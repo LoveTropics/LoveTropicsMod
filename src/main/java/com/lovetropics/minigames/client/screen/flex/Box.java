@@ -1,5 +1,7 @@
 package com.lovetropics.minigames.client.screen.flex;
 
+import net.minecraft.client.gui.screen.Screen;
+
 public final class Box {
 	private final int left;
 	private final int top;
@@ -15,6 +17,10 @@ public final class Box {
 
 	public Box(Size size) {
 		this(0, 0, size.width(), size.height());
+	}
+
+	public Box(Screen screen) {
+		this(0, 0, screen.width, screen.height);
 	}
 
 	public Box grow(int amount) {
@@ -62,6 +68,10 @@ public final class Box {
 		return this.bottom - this.top;
 	}
 
+	public Size size() {
+		return new Size(this.width(), this.height());
+	}
+
 	public int centerX() {
 		return (this.left + this.right) / 2;
 	}
@@ -76,6 +86,22 @@ public final class Box {
 
 	public int borderY() {
 		return this.top + this.bottom;
+	}
+
+	public Box left(int left) {
+		return new Box(left, this.top, this.right, this.bottom);
+	}
+
+	public Box top(int top) {
+		return new Box(this.left, top, this.right, this.bottom);
+	}
+
+	public Box right(int right) {
+		return new Box(this.left, this.top, right, this.bottom);
+	}
+
+	public Box bottom(int bottom) {
+		return new Box(this.left, this.top, this.right, bottom);
 	}
 
 	static Box combine(Axis mainAxis, Interval main, Interval cross) {

@@ -46,7 +46,7 @@ public final class GameInstanceTelemetry {
 	}
 
 	public GameLobbyId getLobbyId() {
-		return game.getLobby().getId();
+		return game.getLobby().getMetadata().id();
 	}
 
 	public void start(EventRegistrar events) {
@@ -120,7 +120,7 @@ public final class GameInstanceTelemetry {
 			return;
 		}
 
-		payload.addProperty("id", game.getLobby().getId().getUuid().toString());
+		payload.addProperty("id", game.getLobby().getMetadata().id().uuid().toString());
 
 		// TODO
 		/*JsonObject minigame = new JsonObject();
