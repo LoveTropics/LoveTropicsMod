@@ -9,6 +9,7 @@ import com.lovetropics.minigames.Constants;
  */
 public class LoveTropicsLangKeys
 {
+    // TODO: update all the lang keys for lobbies
     public static final String COMMAND_UNREGISTERED_MINIGAME = Constants.MODID + ".command.unregistered_minigame";
     public static final String COMMAND_NOT_REGISTERED_FOR_MINIGAME = Constants.MODID + ".command.not_registered_minigame";
     public static final String COMMAND_NO_MINIGAME_POLLING = Constants.MODID + ".command.no_minigame_polling";

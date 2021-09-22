@@ -1,11 +1,15 @@
 package com.lovetropics.minigames.common.core.game;
 
 import com.lovetropics.minigames.common.core.game.behavior.BehaviorMap;
+import com.lovetropics.minigames.common.core.game.config.WaitingLobbyConfig;
 import com.lovetropics.minigames.common.core.game.map.IGameMapProvider;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TranslationTextComponent;
+
+import javax.annotation.Nullable;
 
 /**
  * Used as a discriminant for a registered minigame. Defines the logic of the
@@ -14,7 +18,7 @@ import net.minecraft.util.text.TranslationTextComponent;
  * for each player type, dimension the minigame takes place in, etc.
  */
 public interface IGameDefinition {
-    IGameMapProvider getMapProvider();
+    IGameMapProvider getMap();
 
     BehaviorMap createBehaviors();
 
@@ -25,7 +29,10 @@ public interface IGameDefinition {
      */
     ResourceLocation getId();
 
-    ResourceLocation getDisplayId();
+	// TODO: with parameterised games we can get rid of these extra ids
+    default ResourceLocation getDisplayId() {
+		return getId();
+	}
 
 	/**
 	 * An identifier for telemetry usage, so that variants of games can share
@@ -33,7 +40,9 @@ public interface IGameDefinition {
 	 * 
 	 * @return The telemetry key for this minigame.
 	 */
-    String getTelemetryKey();
+    default String getTelemetryKey() {
+		return getId().getPath();
+	}
 
     /**
      * Used within messages sent to players as the minigame starts, stops, etc.
@@ -51,7 +60,9 @@ public interface IGameDefinition {
      *
      * @return The minimum amount of players required to start the minigame.
      */
-    int getMinimumParticipantCount();
+    default int getMinimumParticipantCount() {
+		return 0;
+	}
 
     /**
      * Will only select up to this many participants to actually play
@@ -62,7 +73,16 @@ public interface IGameDefinition {
      * @return The maximum amount of players that can be participants in the
      * minigame.
      */
-    int getMaximumParticipantCount();
+    default int getMaximumParticipantCount() {
+		return Integer.MAX_VALUE;
+	}
 
-    AxisAlignedBB getGameArea();
+	@Nullable
+	default WaitingLobbyConfig getWaitingLobby() {
+		return null;
+	}
+
+    default AxisAlignedBB getGameArea() {
+		return TileEntity.INFINITE_EXTENT_AABB;
+	}
 }

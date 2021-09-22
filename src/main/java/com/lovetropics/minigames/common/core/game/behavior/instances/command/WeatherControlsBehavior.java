@@ -1,11 +1,11 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances.command;
 
-import com.lovetropics.minigames.common.core.game.control.ControlCommand;
+import com.lovetropics.minigames.common.core.game.state.instances.control.ControlCommand;
 import com.lovetropics.minigames.common.core.game.IActiveGame;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameLifecycleEvents;
-import com.lovetropics.minigames.common.core.game.control.GameControlCommands;
+import com.lovetropics.minigames.common.core.game.state.instances.control.ControlCommandState;
 import com.lovetropics.minigames.common.core.game.weather.RainType;
 import com.lovetropics.minigames.common.core.game.weather.WeatherController;
 import com.lovetropics.minigames.common.core.game.weather.WeatherControllerManager;
@@ -20,9 +20,9 @@ public class WeatherControlsBehavior implements IGameBehavior {
 	public void register(IActiveGame game, EventRegistrar events) {
 		controller = WeatherControllerManager.forWorld(game.getWorld());
 
-		events.listen(GameLifecycleEvents.STOP, g -> controller.reset());
+		events.listen(GameLifecycleEvents.STOP, (g, reason) -> controller.reset());
 
-		GameControlCommands controls = game.getControlCommands();
+		ControlCommandState controls = game.getState().get(ControlCommandState.TYPE);
 		controls.add("start_heatwave", ControlCommand.forAdmins(source -> controller.setHeatwave(true)));
 		controls.add("stop_heatwave", ControlCommand.forAdmins(source -> controller.setHeatwave(false)));
 

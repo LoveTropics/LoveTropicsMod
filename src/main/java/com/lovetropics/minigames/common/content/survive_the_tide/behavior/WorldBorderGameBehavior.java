@@ -85,7 +85,7 @@ public class WorldBorderGameBehavior implements IGameBehavior
 			worldBorderCenter = BlockPos.ZERO;
 		}
 
-		events.listen(GameLifecycleEvents.STOP, this::onFinish);
+		events.listen(GameLifecycleEvents.STOP, (game1, reason) -> onFinish(game1));
 		events.listen(GameLifecycleEvents.TICK, this::tickWorldBorder);
 	}
 

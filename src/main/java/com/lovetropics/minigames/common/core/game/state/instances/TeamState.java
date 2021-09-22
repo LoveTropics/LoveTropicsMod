@@ -1,8 +1,8 @@
 package com.lovetropics.minigames.common.core.game.state.instances;
 
 import com.google.common.base.Preconditions;
-import com.lovetropics.minigames.common.core.game.MutablePlayerSet;
-import com.lovetropics.minigames.common.core.game.PlayerSet;
+import com.lovetropics.minigames.common.core.game.player.MutablePlayerSet;
+import com.lovetropics.minigames.common.core.game.player.PlayerSet;
 import com.lovetropics.minigames.common.core.game.state.GameStateType;
 import com.lovetropics.minigames.common.core.game.state.IGameState;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;

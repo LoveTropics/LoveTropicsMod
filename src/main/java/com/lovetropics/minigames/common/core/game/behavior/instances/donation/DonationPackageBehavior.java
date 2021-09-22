@@ -7,6 +7,7 @@ import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePackageEvents;
+import com.lovetropics.minigames.common.core.game.state.instances.GamePackageState;
 import com.lovetropics.minigames.common.core.integration.game_actions.GamePackage;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -62,6 +63,8 @@ public final class DonationPackageBehavior implements IGameBehavior {
 		for (IGameBehavior behavior : receiveBehaviors) {
 			behavior.register(game, receiveEventRegistrar);
 		}
+
+		game.getState().get(GamePackageState.TYPE).addPackageType(data.packageType);
 	}
 
 	private boolean onGamePackageReceived(final IActiveGame game, final GamePackage gamePackage) {

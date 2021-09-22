@@ -91,7 +91,7 @@ public class SurviveTheTideWeatherBehavior implements IGameBehavior {
 		controller = WeatherControllerManager.forWorld(game.getWorld());
 
 		events.listen(GameLifecycleEvents.TICK, this::tick);
-		events.listen(GameLifecycleEvents.STOP, g -> controller.reset());
+		events.listen(GameLifecycleEvents.STOP, (g, reason) -> controller.reset());
 
 		events.listen(GamePlayerEvents.TICK, this::onParticipantUpdate);
 

@@ -3,12 +3,13 @@ package com.lovetropics.minigames.common.content.build_competition;
 import com.google.common.collect.Iterables;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
-import com.lovetropics.minigames.common.core.game.control.ControlCommand;
+import com.lovetropics.minigames.common.core.game.state.instances.control.ControlCommand;
 import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.IActiveGame;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePackageEvents;
+import com.lovetropics.minigames.common.core.game.state.instances.control.ControlCommandState;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
@@ -58,7 +59,8 @@ public class PollFinalistsBehavior implements IGameBehavior {
 
 	@Override
 	public void register(IActiveGame game, EventRegistrar events) throws GameException {
-		game.getControlCommands().add("start_runoff", ControlCommand.forAdmins(source -> {
+		ControlCommandState commands = game.getState().get(ControlCommandState.TYPE);
+		commands.add("start_runoff", ControlCommand.forAdmins(source -> {
 			try {
 				PlayerList players = source.getServer().getPlayerList();
 				players.getPlayers().forEach(p -> p.removeTag(winnerTag));

@@ -33,6 +33,6 @@ public final class GameEventListeners implements EventRegistrar {
 	@SuppressWarnings("unchecked")
 	@Nonnull
 	public <T> T invoker(GameEventType<T> type) {
-		return (T) this.invokers.computeIfAbsent(type, GameEventType::createEmpty);
+		return (T) this.invokers.getOrDefault(type, type.empty());
 	}
 }

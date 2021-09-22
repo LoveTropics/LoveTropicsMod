@@ -1,4 +1,4 @@
-package com.lovetropics.minigames.common.core.game;
+package com.lovetropics.minigames.common.core.game.player;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 

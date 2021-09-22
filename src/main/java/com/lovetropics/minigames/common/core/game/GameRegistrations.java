@@ -2,6 +2,8 @@ package com.lovetropics.minigames.common.core.game;
 
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.Iterators;
+import com.lovetropics.minigames.common.core.game.player.PlayerRole;
+import com.lovetropics.minigames.common.core.game.player.PlayerSet;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.server.MinecraftServer;
@@ -75,9 +77,13 @@ public final class GameRegistrations implements PlayerSet {
 		}
 	}
 
-	public void add(UUID id, @Nullable PlayerRole requestedRole) {
-		remove(id);
-		getSetForRole(requestedRole).add(id);
+	public boolean add(UUID id, @Nullable PlayerRole requestedRole) {
+		if (contains(id)) {
+			getSetForRole(requestedRole).add(id);
+			return true;
+		} else {
+			return false;
+		}
 	}
 
 	public boolean remove(UUID id) {

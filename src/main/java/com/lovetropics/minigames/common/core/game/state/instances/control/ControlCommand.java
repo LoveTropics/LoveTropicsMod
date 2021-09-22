@@ -1,4 +1,4 @@
-package com.lovetropics.minigames.common.core.game.control;
+package com.lovetropics.minigames.common.core.game.state.instances.control;
 
 import com.lovetropics.lib.codec.MoreCodecs;
 import com.lovetropics.minigames.common.core.game.statistics.PlayerKey;

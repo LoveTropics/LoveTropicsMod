@@ -29,6 +29,10 @@ public final class GameResult<T> {
 		return new GameResult<>(null, error);
 	}
 
+	public static <T> GameResult<T> error(GameException exception) {
+		return new GameResult<>(null, exception.getTextMessage());
+	}
+
 	public static <T> GameResult<T> fromException(String message, Exception exception) {
 		exception.printStackTrace();
 		return GameResult.error(new StringTextComponent(message + ": " + exception.toString()));
@@ -71,6 +75,14 @@ public final class GameResult<T> {
 			return GameResult.ok(value);
 		} else {
 			return castError();
+		}
+	}
+
+	public T orElseGet(Function<ITextComponent, T> orElse) {
+		if (ok != null) {
+			return ok;
+		} else {
+			return orElse.apply(error);
 		}
 	}
 

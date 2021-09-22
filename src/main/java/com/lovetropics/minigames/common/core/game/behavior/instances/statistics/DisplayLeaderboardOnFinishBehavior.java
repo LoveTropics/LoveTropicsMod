@@ -1,7 +1,7 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances.statistics;
 
 import com.lovetropics.minigames.common.core.game.IActiveGame;
-import com.lovetropics.minigames.common.core.game.PlayerSet;
+import com.lovetropics.minigames.common.core.game.player.PlayerSet;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameLifecycleEvents;
@@ -38,7 +38,7 @@ public final class DisplayLeaderboardOnFinishBehavior<T extends Comparable<T>> i
 
 	@Override
 	public void register(IActiveGame registerGame, EventRegistrar events) {
-		events.listen(GameLifecycleEvents.STOP, game -> {
+		events.listen(GameLifecycleEvents.STOP, (game, reason) -> {
 			PlayerPlacement.Score<T> placement;
 			if (order == PlacementOrder.MAX) {
 				placement = PlayerPlacement.fromMaxScore(game, statistic);

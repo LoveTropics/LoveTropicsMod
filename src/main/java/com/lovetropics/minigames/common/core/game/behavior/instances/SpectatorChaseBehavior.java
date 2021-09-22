@@ -1,8 +1,8 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances;
 
 import com.lovetropics.minigames.common.core.game.IActiveGame;
-import com.lovetropics.minigames.common.core.game.PlayerRole;
-import com.lovetropics.minigames.common.core.game.PlayerSet;
+import com.lovetropics.minigames.common.core.game.player.PlayerRole;
+import com.lovetropics.minigames.common.core.game.player.PlayerSet;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameLifecycleEvents;
@@ -27,7 +27,7 @@ public final class SpectatorChaseBehavior implements IGameBehavior {
 		events.listen(GamePlayerEvents.CHANGE_ROLE, (game, player, role, lastRole) -> this.onPlayerJoin(game, player, role));
 		events.listen(GamePlayerEvents.LEAVE, this::onPlayerLeave);
 
-		events.listen(GameLifecycleEvents.STOP, this::onFinish);
+		events.listen(GameLifecycleEvents.STOP, (game, reason) -> onFinish(game));
 	}
 
 	private void onPlayerJoin(IActiveGame game, ServerPlayerEntity player, PlayerRole role) {

@@ -4,12 +4,11 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.common.config.ConfigLT;
-import com.lovetropics.minigames.common.core.game.GameInstanceId;
 import com.lovetropics.minigames.common.core.game.IActiveGame;
-import com.lovetropics.minigames.common.core.game.IGameDefinition;
-import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
+import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePackageEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
+import com.lovetropics.minigames.common.core.game.lobby.GameLobbyId;
 import com.lovetropics.minigames.common.core.game.statistics.GameStatistics;
 import com.lovetropics.minigames.common.core.game.statistics.PlayerKey;
 import com.lovetropics.minigames.common.core.integration.game_actions.GameAction;
@@ -22,11 +21,11 @@ import net.minecraft.server.MinecraftServer;
 
 import java.time.Instant;
 
+// TODO: update backend for handling lobby system: should it be local to a lobby or to an actual minigame?
 public final class GameInstanceTelemetry {
 	private final IActiveGame game;
 	private final Telemetry telemetry;
 
-	private final IGameDefinition definition;
 	private final PlayerKey initiator;
 
 	private final GameActionHandler actions;
@@ -36,7 +35,6 @@ public final class GameInstanceTelemetry {
 	private GameInstanceTelemetry(IActiveGame game, Telemetry telemetry) {
 		this.game = game;
 		this.telemetry = telemetry;
-		this.definition = game.getDefinition();
 		this.initiator = game.getInitiator();
 
 		this.telemetry.openInstance(this);
@@ -47,17 +45,16 @@ public final class GameInstanceTelemetry {
 		return new GameInstanceTelemetry(game, telemetry);
 	}
 
-	public GameInstanceId getInstanceId() {
-		return game.getInstanceId();
+	public GameLobbyId getLobbyId() {
+		return game.getLobby().getId();
 	}
 
-	public void start() {
+	public void start(EventRegistrar events) {
 		JsonObject payload = new JsonObject();
 		payload.add("initiator", initiator.serializeProfile());
 		payload.add("participants", serializeParticipantsArray());
 		post(ConfigLT.TELEMETRY.minigameStartEndpoint.get(), payload);
 
-		GameEventListeners events = game.getEvents();
 		events.listen(GamePlayerEvents.JOIN, (g, p, r) -> sendParticipantsList());
 		events.listen(GamePlayerEvents.LEAVE, (g, p) -> sendParticipantsList());
 	}
@@ -123,13 +120,14 @@ public final class GameInstanceTelemetry {
 			return;
 		}
 
-		payload.addProperty("id", game.getInstanceId().uuid.toString());
+		payload.addProperty("id", game.getLobby().getId().getUuid().toString());
 
-		JsonObject minigame = new JsonObject();
+		// TODO
+		/*JsonObject minigame = new JsonObject();
 		minigame.addProperty("id", definition.getDisplayId().toString());
 		minigame.addProperty("telemetry_key", definition.getTelemetryKey());
 		minigame.addProperty("name", definition.getName().getString());
-		payload.add("minigame", minigame);
+		payload.add("minigame", minigame);*/
 
 		telemetry.post(endpoint, payload);
 	}
