@@ -78,6 +78,22 @@ public final class Box {
 		return this.top + this.bottom;
 	}
 
+	public Box left(int left) {
+		return new Box(left, this.top, this.right, this.bottom);
+	}
+
+	public Box top(int top) {
+		return new Box(this.left, top, this.right, this.bottom);
+	}
+
+	public Box right(int right) {
+		return new Box(this.left, this.top, right, this.bottom);
+	}
+
+	public Box bottom(int bottom) {
+		return new Box(this.left, this.top, this.right, bottom);
+	}
+
 	static Box combine(Axis mainAxis, Interval main, Interval cross) {
 		if (mainAxis == Axis.X) {
 			return new Box(main.start, cross.start, main.end, cross.end);

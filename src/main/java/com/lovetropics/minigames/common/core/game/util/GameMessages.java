@@ -41,7 +41,7 @@ public final class GameMessages {
 	}
 
 	public ITextComponent lobbyName() {
-		return formatLobbyName(lobby.getId().getName());
+		return formatLobbyName(new StringTextComponent(lobby.getMetadata().name()));
 	}
 
 	// TODO: rename: open registrations?
@@ -51,7 +51,7 @@ public final class GameMessages {
 		Style linkStyle = Style.EMPTY
 				.setUnderlined(true)
 				.setFormatting(TextFormatting.BLUE)
-				.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/game join " + lobby.getId().getCommandId()))
+				.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/game join " + lobby.getMetadata().commandId()))
 				.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new StringTextComponent("Join ").appendSibling(lobbyName)));
 		ITextComponent link = new StringTextComponent("/game join").setStyle(linkStyle);
 

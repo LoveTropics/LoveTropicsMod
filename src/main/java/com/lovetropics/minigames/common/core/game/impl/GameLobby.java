@@ -6,16 +6,16 @@ import com.lovetropics.minigames.client.minigame.PlayerCountsMessage;
 import com.lovetropics.minigames.common.core.game.GameRegistrations;
 import com.lovetropics.minigames.common.core.game.GameResult;
 import com.lovetropics.minigames.common.core.game.IActiveGame;
-import com.lovetropics.minigames.common.core.game.lobby.GameLobbyId;
+import com.lovetropics.minigames.common.core.game.lobby.GameLobbyMetadata;
 import com.lovetropics.minigames.common.core.game.lobby.IGameLobby;
 import com.lovetropics.minigames.common.core.game.lobby.LobbyGameQueue;
 import com.lovetropics.minigames.common.core.game.lobby.LobbyVisibility;
 import com.lovetropics.minigames.common.core.game.player.PlayerRole;
 import com.lovetropics.minigames.common.core.game.player.PlayerSet;
 import com.lovetropics.minigames.common.core.game.state.instances.control.ControlCommandInvoker;
-import com.lovetropics.minigames.common.core.game.statistics.PlayerKey;
 import com.lovetropics.minigames.common.core.game.util.GameMessages;
 import com.lovetropics.minigames.common.core.network.LoveTropicsNetwork;
+import net.minecraft.command.CommandSource;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.Unit;
@@ -27,8 +27,7 @@ import javax.annotation.Nullable;
 public final class GameLobby implements IGameLobby {
 	private final MultiGameManager manager;
 	private final MinecraftServer server;
-	private final GameLobbyId id;
-	private final PlayerKey initiator;
+	private final GameLobbyMetadata metadata;
 
 	final GameRegistrations registrations;
 
@@ -40,11 +39,10 @@ public final class GameLobby implements IGameLobby {
 	final LobbyState.Factory states = new LobbyState.Factory(this);
 	LobbyState state = states.paused();
 
-	GameLobby(MultiGameManager manager, MinecraftServer server, GameLobbyId id, PlayerKey initiator) {
+	GameLobby(MultiGameManager manager, MinecraftServer server, GameLobbyMetadata metadata) {
 		this.manager = manager;
 		this.server = server;
-		this.id = id;
-		this.initiator = initiator;
+		this.metadata = metadata;
 
 		this.registrations = new GameRegistrations(server);
 	}
@@ -55,13 +53,8 @@ public final class GameLobby implements IGameLobby {
 	}
 
 	@Override
-	public GameLobbyId getId() {
-		return id;
-	}
-
-	@Override
-	public PlayerKey getInitiator() {
-		return initiator;
+	public GameLobbyMetadata getMetadata() {
+		return this.metadata;
 	}
 
 	@Override
@@ -86,8 +79,12 @@ public final class GameLobby implements IGameLobby {
 	}
 
 	@Override
-	public LobbyVisibility getVisibility() {
-		return state.isAccessible() ? visibility : LobbyVisibility.PRIVATE;
+	public boolean isVisibleTo(CommandSource source) {
+		if (source.hasPermissionLevel(2) || metadata.initiator().matches(source.getEntity())) {
+			return true;
+		}
+
+		return state.isAccessible() && visibility == LobbyVisibility.PUBLIC;
 	}
 
 	boolean tick() {
@@ -104,7 +101,7 @@ public final class GameLobby implements IGameLobby {
 		PlayerSet.ofServer(server).sendMessage(GameMessages.forLobby(this).stopPolling()); // TODO: polling message?
 
 		state = states.stopped();
-		LoveTropicsNetwork.CHANNEL.send(PacketDistributor.ALL.noArg(), ClientGameLobbyMessage.stop(id));
+		LoveTropicsNetwork.CHANNEL.send(PacketDistributor.ALL.noArg(), ClientGameLobbyMessage.stop(metadata.id()));
 
 		manager.removeLobby(this);
 	}
@@ -134,7 +131,7 @@ public final class GameLobby implements IGameLobby {
 
 		serverPlayers.sendMessage(gameMessages.playerJoined(player, requestedRole));
 
-		int networkId = id.getNetworkId();
+		int networkId = metadata.id().networkId();
 
 		PlayerRole trueRole = requestedRole == null ? PlayerRole.PARTICIPANT : requestedRole;
 		LoveTropicsNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new ClientRoleMessage(networkId, trueRole));
@@ -154,7 +151,7 @@ public final class GameLobby implements IGameLobby {
 			PlayerSet.ofServer(server).sendMessage(gameMessages.noLongerEnoughPlayers());
 		}*/
 
-		int networkId = id.getNetworkId();
+		int networkId = metadata.id().networkId();
 
 		LoveTropicsNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new ClientRoleMessage(networkId, null));
 		for (PlayerRole role : PlayerRole.ROLES) {

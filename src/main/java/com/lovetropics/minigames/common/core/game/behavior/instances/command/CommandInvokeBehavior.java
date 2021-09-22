@@ -16,7 +16,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.vector.Vector2f;
 import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.util.text.IFormattableTextComponent;
+import net.minecraft.util.text.StringTextComponent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -93,8 +93,8 @@ public abstract class CommandInvokeBehavior implements IGameBehavior {
 	}
 
 	private CommandSource createCommandSource(IActiveGame game) {
-		IFormattableTextComponent name = game.getLobby().getId().getName();
-		return new CommandSource(ICommandSource.DUMMY, Vector3d.ZERO, Vector2f.ZERO, game.getWorld(), 4, name.getString(), name, game.getServer(), null);
+		String name = game.getLobby().getMetadata().name();
+		return new CommandSource(ICommandSource.DUMMY, Vector3d.ZERO, Vector2f.ZERO, game.getWorld(), 4, name, new StringTextComponent(name), game.getServer(), null);
 	}
 
 	protected void registerControls(IGamePhase game, ControlCommandState commands) {

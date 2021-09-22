@@ -155,11 +155,11 @@ public final class Telemetry {
 	}
 
 	void openInstance(GameInstanceTelemetry instance) {
-		instances.put(instance.getLobbyId().getUuid(), instance);
+		instances.put(instance.getLobbyId().uuid(), instance);
 	}
 
 	void closeInstance(GameInstanceTelemetry instance) {
-		instances.remove(instance.getLobbyId().getUuid(), instance);
+		instances.remove(instance.getLobbyId().uuid(), instance);
 	}
 
 	public void sendOpen() {

@@ -19,11 +19,11 @@ public class ClientGameLobbyMessage {
 
 	public static ClientGameLobbyMessage update(IGameLobby lobby) {
 		// TODO
-		return new ClientGameLobbyMessage(lobby.getId().getNetworkId(), new ResourceLocation("a"), "", GameStatus.ACTIVE, 1);
+		return new ClientGameLobbyMessage(lobby.getMetadata().id().networkId(), new ResourceLocation("a"), "", GameStatus.ACTIVE, 1);
 	}
 
 	public static ClientGameLobbyMessage stop(GameLobbyId lobbyId) {
-		return new ClientGameLobbyMessage(lobbyId.getNetworkId(), null, null, null, 0);
+		return new ClientGameLobbyMessage(lobbyId.networkId(), null, null, null, 0);
 	}
 
 	private ClientGameLobbyMessage(int lobbyId, ResourceLocation minigame, String unlocName, GameStatus status, int maxPlayers) {
