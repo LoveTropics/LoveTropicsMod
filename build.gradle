@@ -104,6 +104,10 @@ configurations {
     implementation.extendsFrom shadelib
 }
 
+configurations.all {
+    resolutionStrategy.cacheDynamicVersionsFor 1, 'minutes'
+}
+
 repositories {
     maven { // Registrate
         url "http://maven.tterrag.com/"

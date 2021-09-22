@@ -3,6 +3,7 @@ package com.lovetropics.minigames.common.core.game.behavior;
 import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.IActiveGame;
 import com.lovetropics.minigames.common.core.game.IPollingGame;
+import com.lovetropics.minigames.common.core.game.behavior.config.BehaviorConfig;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.state.GameStateMap;
 import com.mojang.serialization.Codec;
@@ -14,6 +15,14 @@ public interface IGameBehavior {
 			behavior -> DataResult.error("Encoding unsupported"), // very sad.
 			type -> DataResult.success(type.codec)
 	);
+
+	default BehaviorConfig<?> getConfigurables() {
+		return new BehaviorConfig<Void>("NONE", null);
+	}
+
+//	default IGameBehavior withConfig(ConfigList config) {
+//		return this;
+//	}
 
 	/**
 	 * Called before the game starts. This should be used to register all event listeners and do any early setup.

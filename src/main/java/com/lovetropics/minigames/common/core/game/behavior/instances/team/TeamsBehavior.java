@@ -6,6 +6,9 @@ import com.lovetropics.minigames.common.core.game.IActiveGame;
 import com.lovetropics.minigames.common.core.game.IPollingGame;
 import com.lovetropics.minigames.common.core.game.PlayerRole;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
+import com.lovetropics.minigames.common.core.game.behavior.config.BehaviorConfig;
+import com.lovetropics.minigames.common.core.game.behavior.config.ConfigData.CompositeConfigData;
+import com.lovetropics.minigames.common.core.game.behavior.config.ConfigDataOps;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameLifecycleEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
@@ -70,6 +73,14 @@ public final class TeamsBehavior implements IGameBehavior {
 				this.pollingTeams.add(team);
 			}
 		}
+		
+		getConfigurables();
+	}
+	
+	@Override
+	public BehaviorConfig<?> getConfigurables() {
+		System.out.println(CODEC.encode(this, ConfigDataOps.INSTANCE, new CompositeConfigData()));
+		return null;
 	}
 
 	@Override
