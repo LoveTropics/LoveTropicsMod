@@ -19,13 +19,13 @@ public class GameControlCommand {
                     .suggests((context, builder) -> {
                         IGameManager manager = IGameManager.get();
                         CommandSource source = context.getSource();
-                        return ISuggestionProvider.suggest(manager.getControlInvoker(source).list(source), builder);
+                        return ISuggestionProvider.suggest(manager.getControlCommands(source).list(source), builder);
                     })
                     .executes(ctx -> {
                         String control = StringArgumentType.getString(ctx, "control");
                         IGameManager manager = IGameManager.get();
                         CommandSource source = ctx.getSource();
-                        manager.getControlInvoker(source).invoke(control, source);
+                        manager.getControlCommands(source).invoke(control,  source);
                         return Command.SINGLE_SUCCESS;
                     })
                 )

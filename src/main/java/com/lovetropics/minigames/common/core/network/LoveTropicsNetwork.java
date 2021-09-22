@@ -2,7 +2,8 @@ package com.lovetropics.minigames.common.core.network;
 
 import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.LoveTropics;
-import com.lovetropics.minigames.client.minigame.ClientMinigameMessage;
+import com.lovetropics.minigames.client.lobby.ManageLobbyMessage;
+import com.lovetropics.minigames.client.minigame.ClientGameLobbyMessage;
 import com.lovetropics.minigames.client.minigame.ClientRoleMessage;
 import com.lovetropics.minigames.client.toast.ShowNotificationToastMessage;
 import com.lovetropics.minigames.client.minigame.PlayerCountsMessage;
@@ -61,10 +62,10 @@ public final class LoveTropicsNetwork {
 				.consumer(ChaseSpectatePlayerMessage::handle)
 				.add();
 
-		CHANNEL.messageBuilder(ClientMinigameMessage.class, 6, NetworkDirection.PLAY_TO_CLIENT)
-				.encoder(ClientMinigameMessage::encode)
-				.decoder(ClientMinigameMessage::decode)
-				.consumer(ClientMinigameMessage::handle)
+		CHANNEL.messageBuilder(ClientGameLobbyMessage.class, 6, NetworkDirection.PLAY_TO_CLIENT)
+				.encoder(ClientGameLobbyMessage::encode)
+				.decoder(ClientGameLobbyMessage::decode)
+				.consumer(ClientGameLobbyMessage::handle)
 				.add();
 
 		CHANNEL.messageBuilder(ClientRoleMessage.class, 7, NetworkDirection.PLAY_TO_CLIENT)
@@ -89,6 +90,12 @@ public final class LoveTropicsNetwork {
 				.encoder(ShowNotificationToastMessage::encode)
 				.decoder(ShowNotificationToastMessage::decode)
 				.consumer(ShowNotificationToastMessage::handle)
+				.add();
+
+		CHANNEL.messageBuilder(ManageLobbyMessage.class, 11, NetworkDirection.PLAY_TO_CLIENT)
+				.encoder(ManageLobbyMessage::encode)
+				.decoder(ManageLobbyMessage::decode)
+				.consumer(ManageLobbyMessage::handle)
 				.add();
 	}
 }

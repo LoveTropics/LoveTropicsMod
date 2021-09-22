@@ -86,7 +86,7 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 
 	@Override
 	public void register(IActiveGame game, EventRegistrar events) throws GameException {
-		tideArea = game.getMapRegions().getOne(tideAreaKey);
+		tideArea = game.getMapRegions().getAny(tideAreaKey);
 
 		minTideChunk = new ChunkPos(tideArea.min.getX() >> 4, tideArea.min.getZ() >> 4);
 		maxTideChunk = new ChunkPos(tideArea.max.getX() >> 4, tideArea.max.getZ() >> 4);

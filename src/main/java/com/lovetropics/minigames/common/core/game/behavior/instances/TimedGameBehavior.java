@@ -1,5 +1,6 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances;
 
+import com.lovetropics.minigames.common.core.game.GameStopReason;
 import com.lovetropics.minigames.common.core.game.IActiveGame;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
@@ -40,7 +41,7 @@ public final class TimedGameBehavior implements IGameBehavior {
 		events.listen(GameLifecycleEvents.TICK, this::onTick);
 
 		if (hasTimerBar) {
-			GlobalGameWidgets widgets = new GlobalGameWidgets(game);
+			GlobalGameWidgets widgets = GlobalGameWidgets.registerTo(game, events);
 			timerBar = widgets.openBossBar(new StringTextComponent(""), BossInfo.Color.GREEN, BossInfo.Overlay.PROGRESS);
 		}
 	}
@@ -48,7 +49,7 @@ public final class TimedGameBehavior implements IGameBehavior {
 	private void onTick(IActiveGame game) {
 		long ticks = game.ticks();
 		if (ticks >= closeTime) {
-			game.finish();
+			game.stop(GameStopReason.FINISHED);
 			return;
 		}
 

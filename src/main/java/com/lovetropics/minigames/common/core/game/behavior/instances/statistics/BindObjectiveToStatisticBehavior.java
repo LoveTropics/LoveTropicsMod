@@ -30,7 +30,7 @@ public final class BindObjectiveToStatisticBehavior implements IGameBehavior {
 
 	@Override
 	public void register(IActiveGame registerGame, EventRegistrar events) {
-		events.listen(GameLifecycleEvents.STOP, game -> {
+		events.listen(GameLifecycleEvents.STOP, (game, reason) -> {
 			ServerScoreboard scoreboard = game.getServer().getScoreboard();
 
 			for (Map.Entry<StatisticKey<Integer>, String> entry : statisticToObjective.entrySet()) {

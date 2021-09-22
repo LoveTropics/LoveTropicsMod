@@ -2,7 +2,7 @@ package com.lovetropics.minigames.client.minigame;
 
 import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.common.core.game.GameStatus;
-import com.lovetropics.minigames.common.core.game.PlayerRole;
+import com.lovetropics.minigames.common.core.game.player.PlayerRole;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
 import net.minecraft.client.Minecraft;

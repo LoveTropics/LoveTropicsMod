@@ -2,11 +2,15 @@ package com.lovetropics.minigames.common.content.trash_dive;
 
 import com.lovetropics.minigames.common.content.block.TrashType;
 import com.lovetropics.minigames.common.core.game.GameException;
+import com.lovetropics.minigames.common.core.game.GameStopReason;
 import com.lovetropics.minigames.common.core.game.IActiveGame;
-import com.lovetropics.minigames.common.core.game.PlayerRole;
-import com.lovetropics.minigames.common.core.game.PlayerSet;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
-import com.lovetropics.minigames.common.core.game.behavior.event.*;
+import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameLifecycleEvents;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameLogicEvents;
+import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
+import com.lovetropics.minigames.common.core.game.player.PlayerRole;
+import com.lovetropics.minigames.common.core.game.player.PlayerSet;
 import com.lovetropics.minigames.common.core.game.statistics.*;
 import com.lovetropics.minigames.common.core.game.util.GameSidebar;
 import com.lovetropics.minigames.common.core.game.util.GlobalGameWidgets;
@@ -38,6 +42,8 @@ public final class TrashCollectionBehavior implements IGameBehavior {
 
 	private final Set<Block> trashBlocks;
 
+	private GlobalGameWidgets widgets;
+
 	private boolean gameOver;
 	private GameSidebar sidebar;
 
@@ -54,9 +60,11 @@ public final class TrashCollectionBehavior implements IGameBehavior {
 
 	@Override
 	public void register(IActiveGame game, EventRegistrar events) throws GameException {
+		widgets = GlobalGameWidgets.registerTo(game, events);
+
 		events.listen(GameLifecycleEvents.START, this::onStart);
 		events.listen(GameLifecycleEvents.STOP, this::onFinish);
-		events.listen(GamePlayerEvents.JOIN,this::onPlayerJoin);
+		events.listen(GamePlayerEvents.JOIN, this::onPlayerJoin);
 		events.listen(GamePlayerEvents.LEFT_CLICK_BLOCK, this::onPlayerLeftClickBlock);
 		events.listen(GamePlayerEvents.BREAK_BLOCK, this::onPlayerBreakBlock);
 
@@ -67,7 +75,7 @@ public final class TrashCollectionBehavior implements IGameBehavior {
 		ITextComponent sidebarTitle = new StringTextComponent("Trash Dive")
 				.mergeStyle(TextFormatting.BLUE, TextFormatting.BOLD);
 
-		sidebar = new GlobalGameWidgets(game).openSidebar(sidebarTitle);
+		sidebar = widgets.openSidebar(sidebarTitle);
 		sidebar.set(renderSidebar(game));
 
 		PlayerSet players = game.getParticipants();
@@ -78,7 +86,7 @@ public final class TrashCollectionBehavior implements IGameBehavior {
 		}
 	}
 
-	private void onFinish(IActiveGame game) {
+	private void onFinish(IActiveGame game, GameStopReason reason) {
 		triggerGameOver(game);
 	}
 

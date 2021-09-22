@@ -1,5 +1,6 @@
 package com.lovetropics.minigames.common.core.game;
 
+import com.lovetropics.minigames.common.core.game.lobby.IGameLobby;
 import net.minecraft.command.CommandSource;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -10,68 +11,44 @@ import javax.annotation.Nullable;
 
 public interface IGameLookup {
 	@Nullable
-	IGameInstance getGameFor(PlayerEntity player);
+	IGameLobby getLobbyFor(PlayerEntity player);
 
 	@Nullable
-	IGameInstance getGameFor(Entity entity);
+	IGameLobby getLobbyFor(Entity entity);
 
 	@Nullable
-	IGameInstance getGameAt(World world, BlockPos pos);
+	IGameLobby getLobbyAt(World world, BlockPos pos);
 
 	@Nullable
-	default IGameInstance getGameFor(CommandSource source) {
+	default IGameLobby getLobbyFor(CommandSource source) {
 		Entity entity = source.getEntity();
 		if (entity != null) {
-			return getGameFor(entity);
+			return getLobbyFor(entity);
 		}
 		return null;
 	}
 
 	@Nullable
-	default IActiveGame getActiveGameFor(PlayerEntity player) {
-		IGameInstance game = getGameFor(player);
-		return game != null ? game.asActive() : null;
+	default IActiveGame getGameFor(PlayerEntity player) {
+		IGameLobby lobby = getLobbyFor(player);
+		return lobby != null ? lobby.getActiveGame() : null;
 	}
 
 	@Nullable
-	default IActiveGame getActiveGameFor(Entity entity) {
-		IGameInstance game = getGameFor(entity);
-		return game != null ? game.asActive() : null;
+	default IActiveGame getGameFor(Entity entity) {
+		IGameLobby lobby = getLobbyFor(entity);
+		return lobby != null ? lobby.getActiveGame() : null;
 	}
 
 	@Nullable
-	default IActiveGame getActiveGameAt(World world, BlockPos pos) {
-		IGameInstance game = getGameAt(world, pos);
-		return game != null ? game.asActive() : null;
+	default IActiveGame getGameAt(World world, BlockPos pos) {
+		IGameLobby lobby = getLobbyAt(world, pos);
+		return lobby != null ? lobby.getActiveGame() : null;
 	}
 
 	@Nullable
-	default IActiveGame getActiveGameFor(CommandSource source) {
-		IGameInstance game = getGameFor(source);
-		return game != null ? game.asActive() : null;
-	}
-
-	@Nullable
-	default IPollingGame getPollingGameFor(PlayerEntity player) {
-		IGameInstance game = getGameFor(player);
-		return game != null ? game.asPolling() : null;
-	}
-
-	@Nullable
-	default IPollingGame getPollingGameFor(Entity entity) {
-		IGameInstance game = getGameFor(entity);
-		return game != null ? game.asPolling() : null;
-	}
-
-	@Nullable
-	default IPollingGame getPollingGameAt(World world, BlockPos pos) {
-		IGameInstance game = getGameAt(world, pos);
-		return game != null ? game.asPolling() : null;
-	}
-
-	@Nullable
-	default IPollingGame getPollingGameFor(CommandSource source) {
-		IGameInstance game = getGameFor(source);
-		return game != null ? game.asPolling() : null;
+	default IActiveGame getGameFor(CommandSource source) {
+		IGameLobby lobby = getLobbyFor(source);
+		return lobby != null ? lobby.getActiveGame() : null;
 	}
 }

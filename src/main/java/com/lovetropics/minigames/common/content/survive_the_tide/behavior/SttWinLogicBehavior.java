@@ -2,6 +2,7 @@ package com.lovetropics.minigames.common.content.survive_the_tide.behavior;
 
 import com.lovetropics.lib.codec.MoreCodecs;
 import com.lovetropics.minigames.common.core.game.GameException;
+import com.lovetropics.minigames.common.core.game.GameStopReason;
 import com.lovetropics.minigames.common.core.game.IActiveGame;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
@@ -54,7 +55,7 @@ public class SttWinLogicBehavior implements IGameBehavior {
 
 		events.listen(GameLifecycleEvents.TICK, game -> this.checkForGameEndCondition(game, game.getWorld()));
 
-		events.listen(GameLifecycleEvents.STOP, game -> {
+		events.listen(GameLifecycleEvents.STOP, (game, reason) -> {
 			this.minigameEnded = false;
 			this.minigameEndedTimer = 0;
 		});
@@ -69,7 +70,7 @@ public class SttWinLogicBehavior implements IGameBehavior {
 			sendGameFinishMessages(game);
 
 			if (this.minigameEndedTimer >= gameFinishTickDelay) {
-				game.finish();
+				game.stop(GameStopReason.FINISHED);
 			}
 
 			this.minigameEndedTimer++;

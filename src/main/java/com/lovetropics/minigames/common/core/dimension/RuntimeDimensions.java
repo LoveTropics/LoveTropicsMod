@@ -31,6 +31,7 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -100,6 +101,16 @@ public final class RuntimeDimensions {
 	public RuntimeDimensionHandle openTemporary(RuntimeDimensionConfig config) {
 		ResourceLocation key = generateTemporaryDimensionKey();
 		return this.openWorld(key, config);
+	}
+
+	@Nullable
+	public RuntimeDimensionHandle openTemporaryWithKey(ResourceLocation key, RuntimeDimensionConfig config) {
+		RegistryKey<World> worldKey = RegistryKey.getOrCreateKey(Registry.WORLD_KEY, key);
+		if (this.server.getWorld(worldKey) == null) {
+			return this.openWorld(key, config);
+		} else {
+			return null;
+		}
 	}
 
 	RuntimeDimensionHandle openWorld(ResourceLocation key, RuntimeDimensionConfig config) {

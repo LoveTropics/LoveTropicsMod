@@ -13,7 +13,7 @@ import com.lovetropics.minigames.common.content.trash_dive.TrashDive;
 import com.lovetropics.minigames.common.core.command.MapCommand;
 import com.lovetropics.minigames.common.core.command.game.*;
 import com.lovetropics.minigames.common.core.diguise.PlayerDisguise;
-import com.lovetropics.minigames.common.core.game.GameEventDispatcher;
+import com.lovetropics.minigames.common.core.game.impl.GameEventDispatcher;
 import com.lovetropics.minigames.common.core.game.IGameManager;
 import com.lovetropics.minigames.common.core.game.behavior.GameBehaviorTypes;
 import com.lovetropics.minigames.common.core.integration.Telemetry;
@@ -156,16 +156,15 @@ public class LoveTropics {
 
     private void registerCommands(RegisterCommandsEvent event) {
         CommandDispatcher<CommandSource> dispatcher = event.getDispatcher();
-        PollGameCommand.register(dispatcher);
         JoinGameCommand.register(dispatcher);
         StartGameCommand.register(dispatcher);
         FinishGameCommand.register(dispatcher);
         CancelGameCommand.register(dispatcher);
         LeaveGameCommand.register(dispatcher);
-        StopPollingGameCommand.register(dispatcher);
         GameControlCommand.register(dispatcher);
         MapCommand.register(dispatcher);
         GamePackageCommand.register(dispatcher);
+        GameLobbyCommand.register(dispatcher);
     }
 
     private void onServerAboutToStart(final FMLServerAboutToStartEvent event) {
