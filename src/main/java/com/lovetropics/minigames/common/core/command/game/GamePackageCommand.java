@@ -3,7 +3,7 @@ package com.lovetropics.minigames.common.core.command.game;
 import com.lovetropics.minigames.common.core.game.IActiveGame;
 import com.lovetropics.minigames.common.core.game.IGameManager;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePackageEvents;
-import com.lovetropics.minigames.common.core.game.behavior.instances.donation.DonationPackageBehavior;
+import com.lovetropics.minigames.common.core.game.state.instances.GamePackageState;
 import com.lovetropics.minigames.common.core.integration.game_actions.GamePackage;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
@@ -35,17 +35,16 @@ public class GamePackageCommand {
 	}
 
 	private static CompletableFuture<Suggestions> suggestPackages(final CommandContext<CommandSource> context, final SuggestionsBuilder builder) {
-		IActiveGame game = IGameManager.get().getActiveGameFor(context.getSource());
+		IActiveGame game = IGameManager.get().getGameFor(context.getSource());
 		if (game != null) {
-			return ISuggestionProvider.suggest(game.getBehaviors().stream()
-					.filter(b -> b instanceof DonationPackageBehavior)
-					.map(b -> ((DonationPackageBehavior)b).getPackageType()), builder);
+			GamePackageState packages = game.getState().get(GamePackageState.TYPE);
+			return ISuggestionProvider.suggest(packages.stream(), builder);
 		}
 		return Suggestions.empty();
 	}
 
 	private static int spawnPackage(CommandContext<CommandSource> ctx, ServerPlayerEntity target) {
-		IActiveGame game = IGameManager.get().getActiveGameFor(ctx.getSource());
+		IActiveGame game = IGameManager.get().getGameFor(ctx.getSource());
 		if (game != null) {
 			String type = StringArgumentType.getString(ctx, "id");
 			GamePackage gamePackage = new GamePackage(type, "LoveTropics", target == null ? null : target.getUniqueID());

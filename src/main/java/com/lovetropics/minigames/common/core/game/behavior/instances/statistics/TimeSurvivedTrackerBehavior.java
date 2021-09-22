@@ -31,7 +31,7 @@ public final class TimeSurvivedTrackerBehavior implements IGameBehavior {
 		trigger.awaitThen(events, () -> {
 			startTime = game.ticks();
 
-			events.listen(GameLifecycleEvents.STOP, this::onFinish);
+			events.listen(GameLifecycleEvents.STOP, (game1, reason) -> onFinish(game1));
 			events.listen(GamePlayerEvents.DEATH, this::onPlayerDeath);
 		});
 	}

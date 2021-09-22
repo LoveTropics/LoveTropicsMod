@@ -1,4 +1,4 @@
-package com.lovetropics.minigames.common.core.game;
+package com.lovetropics.minigames.common.core.game.player;
 
 import net.minecraft.network.IPacket;
 import net.minecraft.potion.EffectInstance;

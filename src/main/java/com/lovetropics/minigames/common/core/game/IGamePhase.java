@@ -1,28 +1,34 @@
 package com.lovetropics.minigames.common.core.game;
 
+import com.lovetropics.minigames.common.core.game.behavior.event.GameEventType;
+import com.lovetropics.minigames.common.core.game.lobby.IGameLobby;
+import com.lovetropics.minigames.common.core.game.player.PlayerSet;
+import com.lovetropics.minigames.common.core.game.state.GameStateMap;
+import com.lovetropics.minigames.common.core.game.state.instances.control.ControlCommandInvoker;
 import com.lovetropics.minigames.common.core.game.statistics.PlayerKey;
 import net.minecraft.server.MinecraftServer;
 
-public interface IGamePhase extends IProtoGame {
-	IGameInstance getInstance();
+// TODO: name? what should be the surface of this api?
+public interface IGamePhase {
+	IGameLobby getLobby();
 
-	@Override
-	default GameInstanceId getInstanceId() {
-		return getInstance().getInstanceId();
-	}
-
-	@Override
-	default IGameDefinition getDefinition() {
-		return getInstance().getDefinition();
-	}
-
-	@Override
 	default MinecraftServer getServer() {
-		return getInstance().getServer();
+		return getLobby().getServer();
 	}
 
-	@Override
 	default PlayerKey getInitiator() {
-		return getInstance().getInitiator();
+		return getLobby().getInitiator();
+	}
+
+	default PlayerSet getAllPlayers() {
+		return getLobby().getAllPlayers();
+	}
+
+	<T> T invoker(GameEventType<T> type);
+
+	GameStateMap getState();
+
+	default ControlCommandInvoker getControlCommands() {
+		return ControlCommandInvoker.EMPTY;
 	}
 }

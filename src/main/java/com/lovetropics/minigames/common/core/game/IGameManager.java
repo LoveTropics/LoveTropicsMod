@@ -1,13 +1,14 @@
 package com.lovetropics.minigames.common.core.game;
 
-import com.lovetropics.minigames.common.core.game.control.ControlCommandInvoker;
-import com.lovetropics.minigames.common.core.game.impl.PollingGame;
 import com.lovetropics.minigames.common.core.game.impl.MultiGameManager;
+import com.lovetropics.minigames.common.core.game.lobby.IGameLobby;
+import com.lovetropics.minigames.common.core.game.state.instances.control.ControlCommandInvoker;
 import net.minecraft.command.CommandSource;
 import net.minecraft.entity.player.ServerPlayerEntity;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
+import java.util.stream.Stream;
 
 /**
  * Specification for a game manager. Used to register game definitions
@@ -23,19 +24,17 @@ public interface IGameManager extends IGameLookup {
 		return MultiGameManager.INSTANCE;
 	}
 
-	/**
-	 * Starts polling the given game, allowing for players to register to join.
-	 *
-	 * @param game The game to be polled
-	 * @param initiator the player starting this game
-	 * @return The result of the polling attempt.
-	 */
-	GameResult<PollingGame> startPolling(IGameDefinition game, ServerPlayerEntity initiator);
+	GameResult<IGameLobby> createGameLobby(String name, ServerPlayerEntity initiator);
 
-	ControlCommandInvoker getControlInvoker(CommandSource source);
+	Collection<? extends IGameLobby> getAllLobbies();
 
-	Collection<? extends IGameInstance> getAllGames();
+	default Stream<? extends IGameLobby> getPublicLobbies() {
+		return getAllLobbies().stream()
+				.filter(lobby -> lobby.getVisibility().isPublic());
+	}
 
 	@Nullable
-	IGameInstance getGameByCommandId(String id);
+	IGameLobby getLobbyByCommandId(String id);
+
+	ControlCommandInvoker getControlCommands(CommandSource source);
 }

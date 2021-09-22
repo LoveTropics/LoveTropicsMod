@@ -1,6 +1,8 @@
-package com.lovetropics.minigames.common.core.game;
+package com.lovetropics.minigames.common.core.game.impl;
 
 import com.lovetropics.minigames.LoveTropics;
+import com.lovetropics.minigames.common.core.game.IActiveGame;
+import com.lovetropics.minigames.common.core.game.IGameLookup;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameLivingEntityEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameWorldEvents;
@@ -35,7 +37,7 @@ public final class GameEventDispatcher {
 	public void onChunkLoad(ChunkEvent.Load event) {
 		if (event.getWorld() instanceof IServerWorld) {
 			ServerWorld world = ((IServerWorld) event.getWorld()).getWorld();
-			IActiveGame game = gameLookup.getActiveGameAt(world, event.getChunk().getPos().asBlockPos());
+			IActiveGame game = gameLookup.getGameAt(world, event.getChunk().getPos().asBlockPos());
 			if (game != null) {
 				IChunk chunk = event.getChunk();
 				Scheduler.INSTANCE.submit(s -> {
@@ -49,7 +51,7 @@ public final class GameEventDispatcher {
 	public void onPlayerHurt(LivingHurtEvent event) {
 		Entity entity = event.getEntity();
 		if (entity instanceof ServerPlayerEntity) {
-			IActiveGame game = gameLookup.getActiveGameFor(entity);
+			IActiveGame game = gameLookup.getGameFor(entity);
 			if (game != null) {
 				try {
 					ActionResultType result = game.invoker(GamePlayerEvents.DAMAGE).onDamage(game, (ServerPlayerEntity) entity, event.getSource(), event.getAmount());
@@ -65,7 +67,7 @@ public final class GameEventDispatcher {
 
 	@SubscribeEvent
 	public void onAttackEntity(AttackEntityEvent event) {
-		IActiveGame game = gameLookup.getActiveGameFor(event.getPlayer());
+		IActiveGame game = gameLookup.getGameFor(event.getPlayer());
 		if (game != null && event.getPlayer() instanceof ServerPlayerEntity) {
 			try {
 				ActionResultType result = game.invoker(GamePlayerEvents.ATTACK).onAttack(game, (ServerPlayerEntity) event.getPlayer(), event.getTarget());
@@ -81,7 +83,7 @@ public final class GameEventDispatcher {
 	@SubscribeEvent
 	public void onLivingUpdate(LivingEvent.LivingUpdateEvent event) {
 		LivingEntity entity = event.getEntityLiving();
-		IActiveGame game = gameLookup.getActiveGameFor(entity);
+		IActiveGame game = gameLookup.getGameFor(entity);
 		if (game != null) {
 			if (entity instanceof ServerPlayerEntity && game.getParticipants().contains(entity)) {
 				try {
@@ -103,7 +105,7 @@ public final class GameEventDispatcher {
 	public void onPlayerDeath(LivingDeathEvent event) {
 		LivingEntity entity = event.getEntityLiving();
 		if (entity instanceof ServerPlayerEntity) {
-			IActiveGame game = gameLookup.getActiveGameFor(entity);
+			IActiveGame game = gameLookup.getGameFor(entity);
 			if (game != null) {
 				try {
 					ActionResultType result = game.invoker(GamePlayerEvents.DEATH).onDeath(game, (ServerPlayerEntity) entity, event.getSource());
@@ -119,7 +121,7 @@ public final class GameEventDispatcher {
 
 	@SubscribeEvent
 	public void onPlayerRespawn(PlayerEvent.PlayerRespawnEvent event) {
-		IActiveGame game = gameLookup.getActiveGameFor(event.getPlayer());
+		IActiveGame game = gameLookup.getGameFor(event.getPlayer());
 		if (game != null) {
 			try {
 				game.invoker(GamePlayerEvents.RESPAWN).onRespawn(game, (ServerPlayerEntity) event.getPlayer());
@@ -131,7 +133,7 @@ public final class GameEventDispatcher {
 
 	@SubscribeEvent
 	public void onPlayerInteractEntity(PlayerInteractEvent.EntityInteract event) {
-		IActiveGame game = gameLookup.getActiveGameFor(event.getPlayer());
+		IActiveGame game = gameLookup.getGameFor(event.getPlayer());
 		if (game != null) {
 			ServerPlayerEntity player = (ServerPlayerEntity) event.getPlayer();
 
@@ -145,7 +147,7 @@ public final class GameEventDispatcher {
 
 	@SubscribeEvent
 	public void onPlayerLeftClickBlock(PlayerInteractEvent.LeftClickBlock event) {
-		IActiveGame game = gameLookup.getActiveGameFor(event.getPlayer());
+		IActiveGame game = gameLookup.getGameFor(event.getPlayer());
 		if (game != null) {
 			ServerPlayerEntity player = (ServerPlayerEntity) event.getPlayer();
 
@@ -159,7 +161,7 @@ public final class GameEventDispatcher {
 
 	@SubscribeEvent
 	public void onPlayerBreakBlock(BlockEvent.BreakEvent event) {
-		IActiveGame game = gameLookup.getActiveGameFor(event.getPlayer());
+		IActiveGame game = gameLookup.getGameFor(event.getPlayer());
 		if (game != null) {
 			try {
 				ServerPlayerEntity player = (ServerPlayerEntity) event.getPlayer();
@@ -175,7 +177,7 @@ public final class GameEventDispatcher {
 
 	@SubscribeEvent
 	public void onEntityPlaceBlock(BlockEvent.EntityPlaceEvent event) {
-		IActiveGame game = gameLookup.getActiveGameFor(event.getEntity());
+		IActiveGame game = gameLookup.getGameFor(event.getEntity());
 		if (game != null && event.getEntity() instanceof ServerPlayerEntity) {
 			try {
 				ServerPlayerEntity player = (ServerPlayerEntity) event.getEntity();
@@ -191,7 +193,7 @@ public final class GameEventDispatcher {
 
 	@SubscribeEvent
 	public void onExplosion(ExplosionEvent.Detonate event) {
-		IActiveGame game = gameLookup.getActiveGameAt(event.getWorld(), new BlockPos(event.getExplosion().getPosition()));
+		IActiveGame game = gameLookup.getGameAt(event.getWorld(), new BlockPos(event.getExplosion().getPosition()));
 		if (game != null) {
 			try {
 				game.invoker(GameWorldEvents.EXPLOSION_DETONATE).onExplosionDetonate(game, event.getExplosion(), event.getAffectedBlocks(), event.getAffectedEntities());

@@ -31,7 +31,7 @@ public final class SetGameRulesBehavior implements IGameBehavior {
 		GameRules gameRules = registerGame.getWorld().getGameRules();
 		CompoundNBT rulesSnapshot = applyRules(gameRules);
 
-		events.listen(GameLifecycleEvents.STOP, game -> {
+		events.listen(GameLifecycleEvents.STOP, (game, reason) -> {
 			resetRules(gameRules, rulesSnapshot);
 		});
 	}

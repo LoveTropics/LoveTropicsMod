@@ -7,7 +7,7 @@ import org.spongepowered.asm.mixin.injection.ModifyArg;
 import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.client.minigame.ClientMinigameState;
 import com.lovetropics.minigames.common.core.game.GameStatus;
-import com.lovetropics.minigames.common.core.game.PlayerRole;
+import com.lovetropics.minigames.common.core.game.player.PlayerRole;
 
 import net.minecraft.client.gui.IngameGui;
 import net.minecraft.util.ResourceLocation;

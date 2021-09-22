@@ -1,8 +1,8 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances.command;
 
 import com.lovetropics.minigames.common.core.game.IActiveGame;
-import com.lovetropics.minigames.common.core.game.PlayerRole;
 import com.lovetropics.minigames.common.core.game.behavior.event.*;
+import com.lovetropics.minigames.common.core.game.player.PlayerRole;
 import com.mojang.serialization.Codec;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.ActionResultType;
@@ -24,10 +24,15 @@ public final class CommandEventsBehavior extends CommandInvokeBehavior {
 
 		events.listen(GameLifecycleEvents.START, game -> this.invoke("start"));
 		events.listen(GameLifecycleEvents.TICK, game -> this.invoke("update"));
-		events.listen(GameLifecycleEvents.FINISH, game -> this.invoke("finish"));
-		events.listen(GameLifecycleEvents.STOP, game -> this.invoke("stop"));
-		events.listen(GameLifecycleEvents.POST_STOP, game -> this.invoke("post_stop"));
-		events.listen(GameLifecycleEvents.CANCEL, game -> this.invoke("cancel"));
+		events.listen(GameLifecycleEvents.STOP, (game, reason) -> {
+			this.invoke("stop");
+			if (reason.isFinished()) {
+				this.invoke("finish");
+			} else {
+				this.invoke("canceled");
+			}
+		});
+		events.listen(GameLifecycleEvents.POST_STOP, (game, reason) -> this.invoke("post_stop"));
 
 		events.listen(GamePlayerEvents.JOIN, this::onPlayerJoin);
 		events.listen(GamePlayerEvents.LEAVE, (game, player) -> this.invoke("player_leave", player));

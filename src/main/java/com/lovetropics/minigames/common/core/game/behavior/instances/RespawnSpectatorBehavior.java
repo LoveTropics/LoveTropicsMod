@@ -1,7 +1,8 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances;
 
+import com.lovetropics.minigames.common.core.game.GameStopReason;
 import com.lovetropics.minigames.common.core.game.IActiveGame;
-import com.lovetropics.minigames.common.core.game.PlayerRole;
+import com.lovetropics.minigames.common.core.game.player.PlayerRole;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
@@ -24,7 +25,7 @@ public final class RespawnSpectatorBehavior implements IGameBehavior {
 
 	private void onPlayerChangeRole(IActiveGame game, ServerPlayerEntity player, PlayerRole role, PlayerRole lastRole) {
 		if (game.getParticipants().isEmpty()) {
-			game.finish();
+			game.stop(GameStopReason.FINISHED);
 		}
 	}
 

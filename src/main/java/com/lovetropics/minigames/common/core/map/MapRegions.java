@@ -35,7 +35,7 @@ public final class MapRegions {
 	}
 
 	@Nullable
-	public BlockBox getOne(String key) {
+	public BlockBox getAny(String key) {
 		Collection<BlockBox> regions = this.regions.get(key);
 		if (!regions.isEmpty()) {
 			return regions.iterator().next();

@@ -1,7 +1,8 @@
 package com.lovetropics.minigames.common.core.command.game;
 
 import com.lovetropics.minigames.client.data.LoveTropicsLangKeys;
-import com.lovetropics.minigames.common.core.game.GameMessages;
+import com.lovetropics.minigames.common.core.game.GameStopReason;
+import com.lovetropics.minigames.common.core.game.util.GameMessages;
 import com.lovetropics.minigames.common.core.game.IActiveGame;
 import com.lovetropics.minigames.common.core.game.IGameManager;
 import com.mojang.brigadier.CommandDispatcher;
@@ -16,12 +17,12 @@ public class FinishGameCommand {
 		dispatcher.register(
 			literal("game")
 			.then(literal("finish").requires(s -> s.getEntity() == null)
-			.executes(c -> GameCommand.executeMinigameAction(() -> {
-				IActiveGame game = IGameManager.get().getActiveGameFor(c.getSource());
+			.executes(c -> GameCommand.executeGameAction(() -> {
+				IActiveGame game = IGameManager.get().getGameFor(c.getSource());
 				if (game == null) {
 					throw new SimpleCommandExceptionType(new TranslationTextComponent(LoveTropicsLangKeys.COMMAND_NO_MINIGAME)).create();
 				}
-				return game.finish().map(u -> GameMessages.forGame(game).stopSuccess());
+				return game.stop(GameStopReason.FINISHED).map(u -> GameMessages.forLobby(game.getLobby()).stopSuccess());
 			}, c.getSource())))
 		);
 	}

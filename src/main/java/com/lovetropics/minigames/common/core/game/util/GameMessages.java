@@ -1,6 +1,8 @@
-package com.lovetropics.minigames.common.core.game;
+package com.lovetropics.minigames.common.core.game.util;
 
 import com.lovetropics.minigames.client.data.LoveTropicsLangKeys;
+import com.lovetropics.minigames.common.core.game.lobby.IGameLobby;
+import com.lovetropics.minigames.common.core.game.player.PlayerRole;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.text.*;
 import net.minecraft.util.text.event.ClickEvent;
@@ -10,22 +12,19 @@ import javax.annotation.Nullable;
 
 import static com.lovetropics.minigames.client.data.LoveTropicsLangKeys.*;
 
+// TODO: per-game messages too?
 public final class GameMessages {
-	private final IGameDefinition game;
+	private final IGameLobby lobby;
 
-	private GameMessages(IGameDefinition game) {
-		this.game = game;
+	private GameMessages(IGameLobby lobby) {
+		this.lobby = lobby;
 	}
 
-	public static GameMessages forGame(IGameDefinition game) {
-		return new GameMessages(game);
+	public static GameMessages forLobby(IGameLobby lobby) {
+		return new GameMessages(lobby);
 	}
 
-	public static GameMessages forGame(IProtoGame game) {
-		return new GameMessages(game.getDefinition());
-	}
-
-	private static IFormattableTextComponent formatGameName(IFormattableTextComponent name) {
+	private static IFormattableTextComponent formatLobbyName(IFormattableTextComponent name) {
 		return name.mergeStyle(TextFormatting.ITALIC, TextFormatting.GREEN);
 	}
 
@@ -41,31 +40,33 @@ public final class GameMessages {
 		return message.mergeStyle(TextFormatting.RED);
 	}
 
-	public ITextComponent gameName() {
-		return formatGameName(game.getName().deepCopy());
+	public ITextComponent lobbyName() {
+		return formatLobbyName(lobby.getId().getName());
 	}
 
+	// TODO: rename: open registrations?
 	public ITextComponent startPolling() {
-		ITextComponent gameName = gameName();
+		// TODO: update message to not have a command written but rather be a 'click here'
+		ITextComponent lobbyName = lobbyName();
 		Style linkStyle = Style.EMPTY
 				.setUnderlined(true)
 				.setFormatting(TextFormatting.BLUE)
-				.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/game join"))
-				.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new StringTextComponent("Join ").appendSibling(gameName)));
+				.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/game join " + lobby.getId().getCommandId()))
+				.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new StringTextComponent("Join ").appendSibling(lobbyName)));
 		ITextComponent link = new StringTextComponent("/game join").setStyle(linkStyle);
 
-		return formatGameLifecycle(new TranslationTextComponent(COMMAND_MINIGAME_POLLING, gameName, link));
+		return formatGameLifecycle(new TranslationTextComponent(COMMAND_MINIGAME_POLLING, lobbyName, link));
 	}
 
 	public ITextComponent stopPolling() {
-		return formatGameNegative(new TranslationTextComponent(COMMAND_MINIGAME_STOPPED_POLLING, gameName()));
+		return formatGameNegative(new TranslationTextComponent(COMMAND_MINIGAME_STOPPED_POLLING, lobbyName()));
 	}
 
 	public ITextComponent playerJoined(ServerPlayerEntity player, @Nullable PlayerRole role) {
 		ITextComponent playerName = player.getDisplayName().deepCopy().mergeStyle(TextFormatting.GOLD);
 
 		String message = role != PlayerRole.SPECTATOR ? "%s has joined the %s game!" : "%s has joined to spectate the %s game!";
-		return formatGamePositive(new TranslationTextComponent(message, playerName, gameName()));
+		return formatGamePositive(new TranslationTextComponent(message, playerName, lobbyName()));
 	}
 
 	public ITextComponent enoughPlayers() {
@@ -77,15 +78,15 @@ public final class GameMessages {
 	}
 
 	public ITextComponent finished() {
-		return formatGameLifecycle(new TranslationTextComponent(COMMAND_FINISHED_MINIGAME, gameName()));
+		return formatGameLifecycle(new TranslationTextComponent(COMMAND_FINISHED_MINIGAME, lobbyName()));
 	}
 
 	public ITextComponent registerSuccess() {
-		return formatGamePositive(new TranslationTextComponent(COMMAND_REGISTERED_FOR_MINIGAME, gameName()));
+		return formatGamePositive(new TranslationTextComponent(COMMAND_REGISTERED_FOR_MINIGAME, lobbyName()));
 	}
 
 	public ITextComponent unregisterSuccess() {
-		return formatGameNegative(new TranslationTextComponent(COMMAND_UNREGISTERED_MINIGAME, gameName()));
+		return formatGameNegative(new TranslationTextComponent(COMMAND_UNREGISTERED_MINIGAME, lobbyName()));
 	}
 
 	public ITextComponent startSuccess() {
@@ -93,7 +94,7 @@ public final class GameMessages {
 	}
 
 	public ITextComponent stopSuccess() {
-		return formatGamePositive(new TranslationTextComponent(LoveTropicsLangKeys.COMMAND_STOPPED_MINIGAME, gameName()));
+		return formatGamePositive(new TranslationTextComponent(LoveTropicsLangKeys.COMMAND_STOPPED_MINIGAME, lobbyName()));
 	}
 
 	public ITextComponent stopPollSuccess() {

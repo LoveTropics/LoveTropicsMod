@@ -33,7 +33,7 @@ public final class ForceLoadRegionBehavior implements IGameBehavior {
 	public void register(IActiveGame registerGame, EventRegistrar events) {
 		acquiredChunks = acquireChunks(registerGame);
 
-		events.listen(GameLifecycleEvents.STOP, this::onFinish);
+		events.listen(GameLifecycleEvents.STOP, (game, reason) -> onFinish(game));
 	}
 
 	private void onFinish(IActiveGame game) {

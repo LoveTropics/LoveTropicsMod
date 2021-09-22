@@ -4,6 +4,7 @@ import com.lovetropics.minigames.common.core.game.GameException;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 import net.minecraft.util.text.StringTextComponent;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Map;
 import java.util.Optional;
@@ -17,6 +18,12 @@ public final class GameStateMap {
 		} else {
 			throw new IllegalStateException("Multiple callers tried to register game state of type: " + type.getName());
 		}
+	}
+
+	@SuppressWarnings("unchecked")
+	@Nonnull
+	public <T extends IGameState> T get(GameStateType.Defaulted<T> type) {
+		return (T) this.state.computeIfAbsent(type, t -> type.createDefault());
 	}
 
 	@Nullable

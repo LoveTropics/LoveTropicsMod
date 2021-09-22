@@ -1,5 +1,6 @@
 package com.lovetropics.minigames.common.core.game.behavior.event;
 
+import com.lovetropics.minigames.common.core.game.GameStopReason;
 import com.lovetropics.minigames.common.core.game.IActiveGame;
 import net.minecraft.entity.player.ServerPlayerEntity;
 
@@ -12,27 +13,15 @@ public final class GameLifecycleEvents {
 		}
 	});
 
-	public static final GameEventType<Stop> STOP = GameEventType.create(Stop.class, listeners -> game -> {
+	public static final GameEventType<Stop> STOP = GameEventType.create(Stop.class, listeners -> (game, reason) -> {
 		for (Stop listener : listeners) {
-			listener.stop(game);
+			listener.stop(game, reason);
 		}
 	});
 
-	public static final GameEventType<Stop> POST_STOP = GameEventType.create(Stop.class, listeners -> game -> {
+	public static final GameEventType<Stop> POST_STOP = GameEventType.create(Stop.class, listeners -> (game, reason) -> {
 		for (Stop listener : listeners) {
-			listener.stop(game);
-		}
-	});
-
-	public static final GameEventType<Stop> FINISH = GameEventType.create(Stop.class, listeners -> game -> {
-		for (Stop listener : listeners) {
-			listener.stop(game);
-		}
-	});
-
-	public static final GameEventType<Stop> CANCEL = GameEventType.create(Stop.class, listeners -> game -> {
-		for (Stop listener : listeners) {
-			listener.stop(game);
+			listener.stop(game, reason);
 		}
 	});
 
@@ -56,7 +45,7 @@ public final class GameLifecycleEvents {
 	}
 
 	public interface Stop {
-		void stop(IActiveGame game);
+		void stop(IActiveGame game, GameStopReason reason);
 	}
 
 	public interface Tick {

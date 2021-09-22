@@ -3,8 +3,8 @@ package com.lovetropics.minigames.common.core.game.behavior.instances.team;
 import com.lovetropics.lib.codec.MoreCodecs;
 import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.IActiveGame;
-import com.lovetropics.minigames.common.core.game.IPollingGame;
-import com.lovetropics.minigames.common.core.game.PlayerRole;
+import com.lovetropics.minigames.common.core.game.IGamePhase;
+import com.lovetropics.minigames.common.core.game.player.PlayerRole;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.config.BehaviorConfig;
 import com.lovetropics.minigames.common.core.game.behavior.config.ConfigData.CompositeConfigData;
@@ -13,10 +13,11 @@ import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameLifecycleEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePollingEvents;
-import com.lovetropics.minigames.common.core.game.control.ControlCommand;
+import com.lovetropics.minigames.common.core.game.state.instances.control.ControlCommand;
 import com.lovetropics.minigames.common.core.game.state.GameStateMap;
 import com.lovetropics.minigames.common.core.game.state.instances.TeamKey;
 import com.lovetropics.minigames.common.core.game.state.instances.TeamState;
+import com.lovetropics.minigames.common.core.game.state.instances.control.ControlCommandState;
 import com.lovetropics.minigames.common.core.game.statistics.StatisticKey;
 import com.lovetropics.minigames.common.core.game.util.TeamAllocator;
 import com.lovetropics.minigames.common.util.Scheduler;
@@ -84,7 +85,7 @@ public final class TeamsBehavior implements IGameBehavior {
 	}
 
 	@Override
-	public void registerPolling(IPollingGame registerGame, EventRegistrar events) throws GameException {
+	public void registerWaiting(IGamePhase registerGame, EventRegistrar events) throws GameException {
 		events.listen(GamePollingEvents.START, this::onStartPolling);
 		events.listen(GamePollingEvents.PLAYER_REGISTER, this::onPlayerRegister);
 	}
@@ -98,7 +99,7 @@ public final class TeamsBehavior implements IGameBehavior {
 	public void register(IActiveGame game, EventRegistrar events) {
 		events.listen(GameLifecycleEvents.ASSIGN_ROLES, this::assignPlayerRoles);
 		events.listen(GameLifecycleEvents.START, this::onStart);
-		events.listen(GameLifecycleEvents.STOP, this::onFinish);
+		events.listen(GameLifecycleEvents.STOP, (game1, reason) -> onFinish(game1));
 
 		events.listen(GamePlayerEvents.CHANGE_ROLE, this::onPlayerChangeRole);
 		events.listen(GamePlayerEvents.LEAVE, this::onPlayerLeave);
@@ -123,14 +124,15 @@ public final class TeamsBehavior implements IGameBehavior {
 		game.getStatistics().getGlobal().set(StatisticKey.TEAMS, true);
 	}
 
-	private void onStartPolling(IPollingGame game) {
+	private void onStartPolling(IGamePhase game) {
+		ControlCommandState commands = game.getState().get(ControlCommandState.TYPE);
 		for (TeamKey team : pollingTeams) {
-			game.getControlCommands().add("join_team_" + team.key, ControlCommand.forEveryone(source -> {
+			commands.add("join_team_" + team.key, ControlCommand.forEveryone(source -> {
 				ServerPlayerEntity player = source.asPlayer();
 				if (game.getAllPlayers().contains(player)) {
 					onRequestJoinTeam(player, team);
 				} else {
-					player.sendStatusMessage(new StringTextComponent("You have not yet joined this minigame!").mergeStyle(TextFormatting.RED), false);
+					player.sendStatusMessage(new StringTextComponent("You have not yet joined this game!").mergeStyle(TextFormatting.RED), false);
 				}
 			}));
 		}
@@ -146,7 +148,7 @@ public final class TeamsBehavior implements IGameBehavior {
 		);
 	}
 
-	private void onPlayerRegister(IPollingGame game, ServerPlayerEntity player, @Nullable PlayerRole role) {
+	private void onPlayerRegister(IGamePhase game, ServerPlayerEntity player, @Nullable PlayerRole role) {
 		if (role != PlayerRole.SPECTATOR && pollingTeams.size() > 1) {
 			Scheduler.INSTANCE.submit(server -> {
 				sendTeamSelectionTo(player);
