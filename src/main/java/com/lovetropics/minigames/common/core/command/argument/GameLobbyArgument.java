@@ -1,7 +1,7 @@
 package com.lovetropics.minigames.common.core.command.argument;
 
-import com.lovetropics.minigames.common.core.game.lobby.IGameLobby;
 import com.lovetropics.minigames.common.core.game.IGameManager;
+import com.lovetropics.minigames.common.core.game.lobby.IGameLobby;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
@@ -21,7 +21,7 @@ public final class GameLobbyArgument {
 		return Commands.argument(name, StringArgumentType.string())
 				.suggests((context, builder) -> {
 					return ISuggestionProvider.suggest(
-							IGameManager.get().getPublicLobbies().map(lobby -> lobby.getId().getCommandId()),
+							IGameManager.get().getVisibleLobbies(context.getSource()).map(lobby -> lobby.getMetadata().commandId()),
 							builder
 					);
 				});
@@ -31,7 +31,7 @@ public final class GameLobbyArgument {
 		String id = StringArgumentType.getString(context, name);
 
 		IGameLobby lobby = IGameManager.get().getLobbyByCommandId(id);
-		if (lobby == null || lobby.getVisibility().isPrivate()) {
+		if (lobby == null || !lobby.isVisibleTo(context.getSource())) {
 			throw GAME_LOBBY_NOT_FOUND.create(id);
 		}
 

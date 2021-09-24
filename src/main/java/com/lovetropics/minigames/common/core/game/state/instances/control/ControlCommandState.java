@@ -22,13 +22,13 @@ public final class ControlCommandState implements IGameState {
 	public void invoke(IGameLobby lobby, String name, CommandSource source) throws CommandSyntaxException {
 		ControlCommand command = this.commands.get(name);
 		if (command != null) {
-			command.invoke(source, lobby.getInitiator());
+			command.invoke(source, lobby.getMetadata().initiator());
 		}
 	}
 
 	public Stream<String> list(IGameLobby lobby, CommandSource source) {
 		return this.commands.entrySet().stream()
-				.filter(entry -> entry.getValue().canUse(source, lobby.getInitiator()))
+				.filter(entry -> entry.getValue().canUse(source, lobby.getMetadata().initiator()))
 				.map(Map.Entry::getKey);
 	}
 }

@@ -28,9 +28,9 @@ public interface IGameManager extends IGameLookup {
 
 	Collection<? extends IGameLobby> getAllLobbies();
 
-	default Stream<? extends IGameLobby> getPublicLobbies() {
+	default Stream<? extends IGameLobby> getVisibleLobbies(CommandSource source) {
 		return getAllLobbies().stream()
-				.filter(lobby -> lobby.getVisibility().isPublic());
+				.filter(lobby -> lobby.isVisibleTo(source));
 	}
 
 	@Nullable

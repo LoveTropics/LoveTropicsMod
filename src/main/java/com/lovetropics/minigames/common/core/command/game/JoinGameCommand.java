@@ -4,7 +4,7 @@ import com.lovetropics.minigames.client.data.LoveTropicsLangKeys;
 import com.lovetropics.minigames.common.core.command.argument.GameLobbyArgument;
 import com.lovetropics.minigames.common.core.command.argument.PlayerRoleArgument;
 import com.lovetropics.minigames.common.core.game.*;
-import com.lovetropics.minigames.common.core.game.lobby.GameLobbyId;
+import com.lovetropics.minigames.common.core.game.lobby.GameLobbyMetadata;
 import com.lovetropics.minigames.common.core.game.lobby.IGameLobby;
 import com.lovetropics.minigames.common.core.game.player.PlayerRole;
 import com.lovetropics.minigames.common.core.game.util.GameMessages;
@@ -69,23 +69,24 @@ public class JoinGameCommand {
 	}
 
 	private static int registerAsRole(CommandContext<CommandSource> ctx, @Nullable IGameLobby givenLobby, @Nullable PlayerRole requestedRole) throws CommandSyntaxException {
+		CommandSource source = ctx.getSource();
+		ServerPlayerEntity player = source.asPlayer();
 		return GameCommand.executeGameAction(() -> {
-			ServerPlayerEntity player = ctx.getSource().asPlayer();
-			return resolveLobby(givenLobby, requestedRole).flatMap(lobby -> {
+			return resolveLobby(source, givenLobby, requestedRole).flatMap(lobby -> {
 				if (lobby.registerPlayer(player, requestedRole)) {
 					return GameResult.ok(GameMessages.forLobby(lobby).registerSuccess());
 				} else {
 					return GameResult.error(new TranslationTextComponent(LoveTropicsLangKeys.COMMAND_MINIGAME_ALREADY_REGISTERED));
 				}
 			});
-		}, ctx.getSource());
+		}, source);
 	}
 
-	private static GameResult<IGameLobby> resolveLobby(@Nullable IGameLobby givenLobby, @Nullable PlayerRole requestedRole) {
+	private static GameResult<IGameLobby> resolveLobby(CommandSource source, @Nullable IGameLobby givenLobby, @Nullable PlayerRole requestedRole) {
 		if (givenLobby != null) {
 			return GameResult.ok(givenLobby);
 		} else {
-			List<? extends IGameLobby> publicLobbies = IGameManager.get().getPublicLobbies().collect(Collectors.toList());
+			List<? extends IGameLobby> publicLobbies = IGameManager.get().getVisibleLobbies(source).collect(Collectors.toList());
 			if (publicLobbies.size() == 1) {
 				return GameResult.ok(publicLobbies.get(0));
 			} else if (publicLobbies.isEmpty()){
@@ -101,7 +102,7 @@ public class JoinGameCommand {
 				.mergeStyle(TextFormatting.GOLD, TextFormatting.BOLD);
 
 		for (IGameLobby lobby : lobbies) {
-			String joinCommand = getJoinCommand(lobby.getId(), requestedRole);
+			String joinCommand = getJoinCommand(lobby.getMetadata(), requestedRole);
 
 			ITextComponent joinLink = new StringTextComponent("Click to join")
 					.modifyStyle(style -> {
@@ -112,7 +113,7 @@ public class JoinGameCommand {
 					});
 
 			IFormattableTextComponent line = new StringTextComponent(" - ").mergeStyle(TextFormatting.GRAY)
-					.appendSibling(lobby.getId().getName().mergeStyle(TextFormatting.AQUA))
+					.appendSibling(new StringTextComponent(lobby.getMetadata().name()).mergeStyle(TextFormatting.AQUA))
 					.appendSibling(new StringTextComponent(" (" + lobby.getAllPlayers().size() + " players)").mergeStyle(TextFormatting.GREEN))
 					.appendString(": ")
 					.appendSibling(joinLink)
@@ -124,8 +125,8 @@ public class JoinGameCommand {
 		return selector;
 	}
 
-	private static String getJoinCommand(GameLobbyId lobby, @Nullable PlayerRole requestedRole) {
-		String command = "/game join " + lobby.getCommandId();
+	private static String getJoinCommand(GameLobbyMetadata lobby, @Nullable PlayerRole requestedRole) {
+		String command = "/game join " + lobby.commandId();
 		if (requestedRole != null) {
 			command += " as " + requestedRole.getKey();
 		}

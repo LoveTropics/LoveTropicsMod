@@ -2,7 +2,7 @@ package com.lovetropics.minigames.common.core.network;
 
 import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.LoveTropics;
-import com.lovetropics.minigames.client.lobby.ManageLobbyMessage;
+import com.lovetropics.minigames.client.lobby.ManageLobbyScreenMessage;
 import com.lovetropics.minigames.client.minigame.ClientGameLobbyMessage;
 import com.lovetropics.minigames.client.minigame.ClientRoleMessage;
 import com.lovetropics.minigames.client.toast.ShowNotificationToastMessage;
@@ -92,10 +92,10 @@ public final class LoveTropicsNetwork {
 				.consumer(ShowNotificationToastMessage::handle)
 				.add();
 
-		CHANNEL.messageBuilder(ManageLobbyMessage.class, 11, NetworkDirection.PLAY_TO_CLIENT)
-				.encoder(ManageLobbyMessage::encode)
-				.decoder(ManageLobbyMessage::decode)
-				.consumer(ManageLobbyMessage::handle)
+		CHANNEL.messageBuilder(ManageLobbyScreenMessage.class, 11, NetworkDirection.PLAY_TO_CLIENT)
+				.encoder(ManageLobbyScreenMessage::encode)
+				.decoder(ManageLobbyScreenMessage::decode)
+				.consumer(ManageLobbyScreenMessage::handle)
 				.add();
 	}
 }
