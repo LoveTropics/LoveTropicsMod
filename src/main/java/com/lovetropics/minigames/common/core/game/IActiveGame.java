@@ -19,6 +19,8 @@ import javax.annotation.Nullable;
  */
 // TODO: clean up
 public interface IActiveGame extends IGamePhase {
+	IGameDefinition getDefinition();
+
 	/**
 	 * Adds the player to this game instance with the given role, or if already in the change, changes their role.
 	 * The given player will be removed from their former role, if any.

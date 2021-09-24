@@ -1,17 +1,13 @@
 package com.lovetropics.minigames.client.lobby.screen.player_list;
 
+import com.lovetropics.minigames.client.lobby.state.ClientLobbyPlayerEntry;
+import com.lovetropics.minigames.client.lobby.state.ClientLobbyState;
 import com.lovetropics.minigames.client.screen.PlayerFaces;
 import com.lovetropics.minigames.client.screen.flex.Box;
 import com.lovetropics.minigames.client.screen.flex.Layout;
 import com.mojang.blaze3d.matrix.MatrixStack;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.entity.player.AbstractClientPlayerEntity;
 import net.minecraft.client.gui.AbstractGui;
 import net.minecraft.client.gui.IGuiEventListener;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
 
 public final class LobbyPlayerList extends AbstractGui implements IGuiEventListener {
 	private static final int FACE_SIZE = 16;
@@ -19,12 +15,16 @@ public final class LobbyPlayerList extends AbstractGui implements IGuiEventListe
 
 	private static final int BLOCK_SIZE = FACE_SIZE + SPACING;
 
+	private final ClientLobbyState lobby;
+
 	private final int rows;
 	private final int columns;
 
 	private final Box layout;
 
-	public LobbyPlayerList(Layout layout) {
+	public LobbyPlayerList(ClientLobbyState lobby, Layout layout) {
+		this.lobby = lobby;
+
 		Box content = layout.content();
 		this.rows = (content.width() + SPACING) / BLOCK_SIZE;
 		this.columns = (content.height() + SPACING) / BLOCK_SIZE;
@@ -39,16 +39,11 @@ public final class LobbyPlayerList extends AbstractGui implements IGuiEventListe
 	}
 
 	public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
-		// TODO: use actual player list (and group by spectator/participant?)
-		List<UUID> players = new ArrayList<>();
-		for (AbstractClientPlayerEntity player : Minecraft.getInstance().world.getPlayers()) {
-			players.add(player.getUniqueID());
-		}
-
 		// TODO: handling overflow with scrollbar
-		for (int i = 0; i < players.size(); i++) {
-			UUID player = players.get(i);
 
+		// TODO: unordered list of players
+		int i = 0;
+		for (ClientLobbyPlayerEntry player : lobby.getPlayers()) {
 			int x = this.faceX(i % rows);
 			int y = this.faceY(i / rows);
 
@@ -59,7 +54,9 @@ public final class LobbyPlayerList extends AbstractGui implements IGuiEventListe
 					x + FACE_SIZE + 1, y + FACE_SIZE + 1,
 					hovered ? 0xFFF0F0F0 : 0xFF000000
 			);
-			PlayerFaces.render(player, matrixStack, x, y, FACE_SIZE);
+			PlayerFaces.render(player.uuid(), matrixStack, x, y, FACE_SIZE);
+
+			i++;
 		}
 	}
 

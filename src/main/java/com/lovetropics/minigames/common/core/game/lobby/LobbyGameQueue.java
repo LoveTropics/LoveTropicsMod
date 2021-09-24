@@ -1,7 +1,7 @@
 package com.lovetropics.minigames.common.core.game.lobby;
 
-import com.lovetropics.minigames.client.lobby.ClientGameDefinition;
-import com.lovetropics.minigames.client.lobby.ClientQueuedGame;
+import com.lovetropics.minigames.client.lobby.state.ClientGameDefinition;
+import com.lovetropics.minigames.client.lobby.state.ClientQueuedGame;
 import com.lovetropics.minigames.common.core.game.IGameDefinition;
 
 import javax.annotation.Nullable;

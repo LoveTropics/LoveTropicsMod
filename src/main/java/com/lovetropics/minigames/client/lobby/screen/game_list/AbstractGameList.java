@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.client.lobby.screen.game_list;
 
-import com.lovetropics.minigames.client.lobby.ClientGameDefinition;
+import com.lovetropics.minigames.client.lobby.state.ClientGameDefinition;
 import com.lovetropics.minigames.client.screen.flex.Layout;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import net.minecraft.client.Minecraft;

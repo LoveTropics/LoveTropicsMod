@@ -1,4 +1,4 @@
-package com.lovetropics.minigames.client.lobby;
+package com.lovetropics.minigames.client.lobby.state;
 
 import net.minecraft.network.PacketBuffer;
 

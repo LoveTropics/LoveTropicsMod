@@ -132,7 +132,7 @@ interface LobbyState {
 			List<ServerPlayerEntity> spectators = new ArrayList<>();
 			lobby.collectRegistrations(participants, spectators, game.definition());
 
-			return ActiveGame.start(lobby, map, game.behaviors(), participants, spectators);
+			return ActiveGame.start(lobby, game.definition(), map, game.behaviors(), participants, spectators);
 		}
 	}
 
