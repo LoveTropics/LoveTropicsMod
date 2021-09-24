@@ -1,8 +1,7 @@
 package com.lovetropics.minigames.common.core.game.impl;
 
-import com.lovetropics.minigames.client.minigame.ClientGameLobbyMessage;
-import com.lovetropics.minigames.client.minigame.ClientRoleMessage;
-import com.lovetropics.minigames.client.minigame.PlayerCountsMessage;
+import com.lovetropics.minigames.client.lobby.state.message.ClientJoinedLobbyMessage;
+import com.lovetropics.minigames.client.lobby.state.message.ClientLobbyUpdateMessage;
 import com.lovetropics.minigames.common.core.game.GameRegistrations;
 import com.lovetropics.minigames.common.core.game.GameResult;
 import com.lovetropics.minigames.common.core.game.IActiveGame;
@@ -93,7 +92,8 @@ public final class GameLobby implements IGameLobby {
 		LobbyState nextState = state.tick();
 		if (nextState != state) {
 			state = nextState;
-			LoveTropicsNetwork.CHANNEL.send(PacketDistributor.ALL.noArg(), ClientGameLobbyMessage.update(this));
+			// TODO: check where we send this
+			LoveTropicsNetwork.CHANNEL.send(PacketDistributor.ALL.noArg(), ClientLobbyUpdateMessage.update(this));
 		}
 
 		return nextState != null;
@@ -103,7 +103,7 @@ public final class GameLobby implements IGameLobby {
 		PlayerSet.ofServer(server).sendMessage(GameMessages.forLobby(this).stopPolling()); // TODO: polling message?
 
 		state = states.stopped();
-		LoveTropicsNetwork.CHANNEL.send(PacketDistributor.ALL.noArg(), ClientGameLobbyMessage.stop(metadata.id()));
+		LoveTropicsNetwork.CHANNEL.send(PacketDistributor.ALL.noArg(), ClientLobbyUpdateMessage.remove(this));
 
 		manager.removeLobby(this);
 	}
@@ -138,9 +138,10 @@ public final class GameLobby implements IGameLobby {
 
 		int networkId = metadata.id().networkId();
 
+		// TODO
 		PlayerRole trueRole = requestedRole == null ? PlayerRole.PARTICIPANT : requestedRole;
-		LoveTropicsNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new ClientRoleMessage(networkId, trueRole));
-		LoveTropicsNetwork.CHANNEL.send(PacketDistributor.ALL.noArg(), new PlayerCountsMessage(networkId, trueRole, getMemberCount(trueRole)));
+		LoveTropicsNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new ClientJoinedLobbyMessage(networkId, trueRole));
+//		LoveTropicsNetwork.CHANNEL.send(PacketDistributor.ALL.noArg(), new ClientLobbyPlayersMessage(networkId, trueRole, getMemberCount(trueRole)));
 
 		return true;
 	}
@@ -158,10 +159,11 @@ public final class GameLobby implements IGameLobby {
 
 		int networkId = metadata.id().networkId();
 
-		LoveTropicsNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new ClientRoleMessage(networkId, null));
-		for (PlayerRole role : PlayerRole.ROLES) {
-			LoveTropicsNetwork.CHANNEL.send(PacketDistributor.ALL.noArg(), new PlayerCountsMessage(networkId, role, getMemberCount(role)));
-		}
+		LoveTropicsNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new ClientJoinedLobbyMessage(networkId, null));
+		// TODO
+		/*for (PlayerRole role : PlayerRole.ROLES) {
+			LoveTropicsNetwork.CHANNEL.send(PacketDistributor.ALL.noArg(), new ClientLobbyPlayersMessage(networkId, role, getMemberCount(role)));
+		}*/
 
 		return true;
 	}

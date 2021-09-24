@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.client.lobby.screen.game_list;
 
-import com.lovetropics.minigames.client.lobby.ClientQueuedGame;
+import com.lovetropics.minigames.client.lobby.state.ClientQueuedGame;
 import com.lovetropics.minigames.client.screen.FlexUi;
 import com.lovetropics.minigames.client.screen.flex.Flex;
 import com.lovetropics.minigames.client.screen.flex.FlexSolver;

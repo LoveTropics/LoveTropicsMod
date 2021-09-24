@@ -3,10 +3,7 @@ package com.lovetropics.minigames.common.core.game.impl;
 import com.google.common.collect.Lists;
 import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.client.data.LoveTropicsLangKeys;
-import com.lovetropics.minigames.common.core.game.GameException;
-import com.lovetropics.minigames.common.core.game.GameResult;
-import com.lovetropics.minigames.common.core.game.GameStopReason;
-import com.lovetropics.minigames.common.core.game.IActiveGame;
+import com.lovetropics.minigames.common.core.game.*;
 import com.lovetropics.minigames.common.core.game.behavior.BehaviorMap;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
@@ -48,6 +45,7 @@ import java.util.concurrent.CompletableFuture;
 public class ActiveGame implements IActiveGame {
 	private final GameLobby lobby;
 	private final MinecraftServer server;
+	private final IGameDefinition definition;
 	private final GameMap map;
 	private final BehaviorMap behaviors;
 
@@ -66,9 +64,10 @@ public class ActiveGame implements IActiveGame {
 
 	private boolean stopped;
 
-	private ActiveGame(GameLobby lobby, GameMap map, BehaviorMap behaviors) {
+	private ActiveGame(GameLobby lobby, IGameDefinition definition, GameMap map, BehaviorMap behaviors) {
 		this.lobby = lobby;
 		this.server = lobby.getServer();
+		this.definition = definition;
 		this.map = map;
 		this.behaviors = behaviors;
 
@@ -83,10 +82,10 @@ public class ActiveGame implements IActiveGame {
 	}
 
 	static CompletableFuture<GameResult<ActiveGame>> start(
-			GameLobby lobby, GameMap map, BehaviorMap behaviors,
+			GameLobby lobby, IGameDefinition definition, GameMap map, BehaviorMap behaviors,
 			List<ServerPlayerEntity> participants, List<ServerPlayerEntity> spectators
 	) {
-		ActiveGame game = new ActiveGame(lobby, map, behaviors);
+		ActiveGame game = new ActiveGame(lobby, definition, map, behaviors);
 
 		GameResult<Unit> result = game.registerBehaviors();
 		if (result.isError()) {
@@ -164,6 +163,11 @@ public class ActiveGame implements IActiveGame {
 	@Override
 	public IGameLobby getLobby() {
 		return lobby;
+	}
+
+	@Override
+	public IGameDefinition getDefinition() {
+		return definition;
 	}
 
 	@Override

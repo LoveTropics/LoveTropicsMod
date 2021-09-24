@@ -1,7 +1,8 @@
 package com.lovetropics.minigames.client.lobby.screen;
 
-import com.lovetropics.minigames.client.lobby.ClientGameDefinition;
-import com.lovetropics.minigames.client.lobby.ClientQueuedGame;
+import com.lovetropics.minigames.client.lobby.state.ClientGameDefinition;
+import com.lovetropics.minigames.client.lobby.state.ClientLobbyState;
+import com.lovetropics.minigames.client.lobby.state.ClientQueuedGame;
 import com.lovetropics.minigames.client.lobby.screen.game_list.GameList;
 import com.lovetropics.minigames.client.lobby.screen.player_list.LobbyPlayerList;
 import com.lovetropics.minigames.client.screen.FlexUi;
@@ -20,8 +21,7 @@ import java.util.List;
 public final class ManageLobbyScreen extends Screen {
 	private static final ITextComponent TITLE = new StringTextComponent("Manage Game Lobby");
 
-	private final String name;
-	private final List<ClientQueuedGame> queue;
+	private final ClientLobbyState lobby;
 	private final List<ClientGameDefinition> installedGames;
 
 	private Layouts layouts;
@@ -32,10 +32,9 @@ public final class ManageLobbyScreen extends Screen {
 
 	private int selectedGameIndex = -1;
 
-	public ManageLobbyScreen(String name, List<ClientQueuedGame> queue, List<ClientGameDefinition> installedGames) {
+	public ManageLobbyScreen(ClientLobbyState lobby, List<ClientGameDefinition> installedGames) {
 		super(TITLE);
-		this.name = name;
-		this.queue = queue;
+		this.lobby = lobby;
 		this.installedGames = installedGames;
 	}
 
@@ -47,7 +46,7 @@ public final class ManageLobbyScreen extends Screen {
 
 		minecraft.keyboardListener.enableRepeatEvents(true);
 
-		gameList = addListener(new GameList(this, layouts.gameList, layouts.leftFooter, queue, installedGames, new GameList.Handlers() {
+		gameList = addListener(new GameList(this, layouts.gameList, layouts.leftFooter, lobby.getQueue(), installedGames, new GameList.Handlers() {
 			@Override
 			public void selectQueuedGame(int queuedGameIndex) {
 				selectedGameIndex = queuedGameIndex;
@@ -55,6 +54,7 @@ public final class ManageLobbyScreen extends Screen {
 
 			@Override
 			public void enqueueGame(int installedGameIndex) {
+				List<ClientQueuedGame> queue = lobby.getQueue();
 				if (installedGameIndex >= 0 && installedGameIndex < installedGames.size()) {
 					queue.add(new ClientQueuedGame(installedGames.get(installedGameIndex)));
 				}
@@ -62,6 +62,7 @@ public final class ManageLobbyScreen extends Screen {
 
 			@Override
 			public void removeQueuedGame(int queuedGameIndex) {
+				List<ClientQueuedGame> queue = lobby.getQueue();
 				if (queuedGameIndex >= 0 && queuedGameIndex < queue.size()) {
 					queue.remove(queuedGameIndex);
 				}
@@ -70,7 +71,7 @@ public final class ManageLobbyScreen extends Screen {
 
 		nameField = addListener(FlexUi.createTextField(layouts.name, font, new StringTextComponent("Lobby Name")));
 		nameField.setMaxStringLength(128);
-		nameField.setText(name);
+		nameField.setText(lobby.getName());
 		setFocusedDefault(nameField);
 
 		playerList = addListener(new LobbyPlayerList(layouts.playerList));
@@ -108,6 +109,7 @@ public final class ManageLobbyScreen extends Screen {
 		Box header = layouts.header.content();
 		drawCenteredString(matrixStack, font, title, header.centerX(), header.centerY(), 0xFFFFFF);
 
+		List<ClientQueuedGame> queue = lobby.getQueue();
 		if (selectedGameIndex >= 0 && selectedGameIndex < queue.size()) {
 			ClientQueuedGame selectedEntry = queue.get(selectedGameIndex);
 			renderSelectedGame(selectedEntry, matrixStack, mouseX, mouseY, partialTicks);
