@@ -2,20 +2,14 @@ package com.lovetropics.minigames.common.core.game.impl;
 
 import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.GameResult;
-import com.lovetropics.minigames.common.core.game.IGameDefinition;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.BehaviorMap;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameEventType;
 import com.lovetropics.minigames.common.core.game.lobby.IGameLobby;
-import com.lovetropics.minigames.common.core.game.map.GameMap;
 import com.lovetropics.minigames.common.core.game.state.GameStateMap;
 import com.lovetropics.minigames.common.core.game.state.instances.control.ControlCommandInvoker;
-import net.minecraft.entity.player.ServerPlayerEntity;
-
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
 public final class WaitingGame implements IGamePhase {
 	private final GameLobby lobby;
@@ -26,14 +20,14 @@ public final class WaitingGame implements IGamePhase {
 
 	private final ControlCommandInvoker controlCommands = ControlCommandInvoker.forGame(this);
 
-	private WaitingGame(GameLobby lobby, IGameDefinition definition) {
+	private WaitingGame(GameLobby lobby, BehaviorMap behaviors) {
 		this.lobby = lobby;
-		this.behaviors = definition.createBehaviors();
+		this.behaviors = behaviors;
 	}
 
-	static GameResult<WaitingGame> create(GameLobby lobby, IGameDefinition definition) {
+	static GameResult<WaitingGame> create(GameLobby lobby, BehaviorMap behaviors) {
 		try {
-			WaitingGame waiting = new WaitingGame(lobby, definition);
+			WaitingGame waiting = new WaitingGame(lobby, behaviors);
 
 			// TODO: how should waiting state work?
 			for (IGameBehavior behavior : waiting.behaviors) {
@@ -48,13 +42,6 @@ public final class WaitingGame implements IGamePhase {
 		} catch (GameException e) {
 			return GameResult.error(e.getTextMessage());
 		}
-	}
-
-	// TODO: ew
-	public CompletableFuture<GameResult<ActiveGame>> intoActive(
-			GameMap map, List<ServerPlayerEntity> participants, List<ServerPlayerEntity> spectators
-	) {
-		return ActiveGame.start(lobby, map, behaviors, participants, spectators);
 	}
 
 	@Override

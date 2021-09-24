@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.client.lobby.screen.game_list;
 
-import com.lovetropics.minigames.client.lobby.ClientGameQueueEntry;
+import com.lovetropics.minigames.client.lobby.ClientQueuedGame;
 import com.lovetropics.minigames.client.screen.FlexUi;
 import com.lovetropics.minigames.client.screen.flex.Flex;
 import com.lovetropics.minigames.client.screen.flex.FlexSolver;
@@ -39,11 +39,11 @@ public final class GameQueueList extends AbstractGameList {
 		this.setSelected(null);
 	}
 
-	public void setEntries(List<ClientGameQueueEntry> games) {
+	public void setEntries(List<ClientQueuedGame> games) {
 		this.setSelected(null);
 
 		this.clearEntries();
-		for (ClientGameQueueEntry game : games) {
+		for (ClientQueuedGame game : games) {
 			this.addEntry(new Entry(this, game.definition));
 		}
 	}

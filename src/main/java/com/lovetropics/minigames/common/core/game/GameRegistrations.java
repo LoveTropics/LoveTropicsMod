@@ -30,7 +30,6 @@ public final class GameRegistrations implements PlayerSet {
 	}
 
 	public void collectInto(
-			MinecraftServer server,
 			Collection<ServerPlayerEntity> participants,
 			Collection<ServerPlayerEntity> spectators,
 			int maximumParticipants
@@ -47,8 +46,6 @@ public final class GameRegistrations implements PlayerSet {
 
 		tryCollectPlayers(players, this.participants, participants, spectators, maximumParticipants);
 		tryCollectPlayers(players, this.any, participants, spectators, maximumParticipants);
-
-		this.clear();
 	}
 
 	private void tryCollectPlayers(

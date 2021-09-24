@@ -1,7 +1,7 @@
 package com.lovetropics.minigames.common.core.game.lobby;
 
 import com.lovetropics.minigames.client.lobby.ClientGameDefinition;
-import com.lovetropics.minigames.client.lobby.ClientGameQueueEntry;
+import com.lovetropics.minigames.client.lobby.ClientQueuedGame;
 import com.lovetropics.minigames.common.core.game.IGameDefinition;
 
 import javax.annotation.Nullable;
@@ -11,22 +11,22 @@ import java.util.List;
 import java.util.Queue;
 
 public final class LobbyGameQueue {
-	private final Queue<IGameDefinition> queue = new ArrayDeque<>();
+	private final Queue<QueuedGame> queue = new ArrayDeque<>();
 
 	public void enqueue(IGameDefinition game) {
-		queue.add(game);
+		queue.add(QueuedGame.create(game));
 	}
 
 	@Nullable
-	public IGameDefinition next() {
+	public QueuedGame next() {
 		return queue.poll();
 	}
 
-	public List<ClientGameQueueEntry> clientEntries() {
-		List<ClientGameQueueEntry> entries = new ArrayList<>(queue.size());
-		for (IGameDefinition game : queue) {
-			ClientGameDefinition clientDefinition = ClientGameDefinition.from(game);
-			entries.add(new ClientGameQueueEntry(clientDefinition));
+	public List<ClientQueuedGame> clientEntries() {
+		List<ClientQueuedGame> entries = new ArrayList<>(queue.size());
+		for (QueuedGame game : queue) {
+			ClientGameDefinition clientDefinition = ClientGameDefinition.from(game.definition());
+			entries.add(new ClientQueuedGame(clientDefinition));
 		}
 		return entries;
 	}

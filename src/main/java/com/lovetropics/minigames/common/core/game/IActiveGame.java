@@ -20,13 +20,14 @@ import javax.annotation.Nullable;
 // TODO: clean up
 public interface IActiveGame extends IGamePhase {
 	/**
-	 * Requests that this player join this game instance with the given role preference.
+	 * Adds the player to this game instance with the given role, or if already in the change, changes their role.
+	 * The given player will be removed from their former role, if any.
 	 *
 	 * @param player the player to add
-	 * @param requestedRole the preferred role to add this player as, or null if none
-	 * @return whether the given player was successfully added
+	 * @param role the role to add the player to
+	 * @return whether the player was successfully added or if their role was changed
 	 */
-	boolean requestPlayerJoin(ServerPlayerEntity player, @Nullable PlayerRole requestedRole);
+	boolean addPlayerTo(ServerPlayerEntity player, PlayerRole role);
 
 	/**
 	 * Removes the player from this game instance.
@@ -37,8 +38,6 @@ public interface IActiveGame extends IGamePhase {
 	boolean removePlayer(ServerPlayerEntity player);
 
 	GameResult<Unit> stop(GameStopReason reason);
-
-	boolean setPlayerRole(ServerPlayerEntity player, PlayerRole role);
 
 	/**
 	 * @return The list of players within this game instance that belong to the given role
@@ -57,6 +56,16 @@ public interface IActiveGame extends IGamePhase {
 	 */
 	default PlayerSet getSpectators() {
 		return getPlayersWithRole(PlayerRole.SPECTATOR);
+	}
+
+	@Nullable
+	default PlayerRole getRoleFor(ServerPlayerEntity player) {
+		for (PlayerRole role : PlayerRole.ROLES) {
+			if (getPlayersWithRole(role).contains(player)) {
+				return role;
+			}
+		}
+		return null;
 	}
 
 	/**

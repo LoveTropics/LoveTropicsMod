@@ -1,7 +1,7 @@
 package com.lovetropics.minigames.client.lobby.screen.game_list;
 
 import com.lovetropics.minigames.client.lobby.ClientGameDefinition;
-import com.lovetropics.minigames.client.lobby.ClientGameQueueEntry;
+import com.lovetropics.minigames.client.lobby.ClientQueuedGame;
 import com.lovetropics.minigames.client.screen.flex.Layout;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import net.minecraft.client.gui.IGuiEventListener;
@@ -15,7 +15,7 @@ public final class GameList implements IGuiEventListener {
 	private final Layout mainLayout;
 	private final Layout footerLayout;
 
-	private final List<ClientGameQueueEntry> queue;
+	private final List<ClientQueuedGame> queue;
 	private final List<ClientGameDefinition> installedGames;
 
 	private final Handlers handlers;
@@ -24,7 +24,7 @@ public final class GameList implements IGuiEventListener {
 
 	public GameList(
 			Screen screen, Layout main, Layout footer,
-			List<ClientGameQueueEntry> queue, List<ClientGameDefinition> installedGames,
+			List<ClientQueuedGame> queue, List<ClientGameDefinition> installedGames,
 			Handlers handlers
 	) {
 		this.screen = screen;
