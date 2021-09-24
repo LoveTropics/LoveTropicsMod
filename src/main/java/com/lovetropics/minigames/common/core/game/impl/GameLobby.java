@@ -6,6 +6,7 @@ import com.lovetropics.minigames.client.minigame.PlayerCountsMessage;
 import com.lovetropics.minigames.common.core.game.GameRegistrations;
 import com.lovetropics.minigames.common.core.game.GameResult;
 import com.lovetropics.minigames.common.core.game.IActiveGame;
+import com.lovetropics.minigames.common.core.game.IGameDefinition;
 import com.lovetropics.minigames.common.core.game.lobby.GameLobbyMetadata;
 import com.lovetropics.minigames.common.core.game.lobby.IGameLobby;
 import com.lovetropics.minigames.common.core.game.lobby.LobbyGameQueue;
@@ -22,6 +23,7 @@ import net.minecraft.util.Unit;
 import net.minecraftforge.fml.network.PacketDistributor;
 
 import javax.annotation.Nullable;
+import java.util.Collection;
 
 // TODO: do we want a different game lobby implementation for something like carnival games?
 public final class GameLobby implements IGameLobby {
@@ -29,7 +31,7 @@ public final class GameLobby implements IGameLobby {
 	private final MinecraftServer server;
 	private final GameLobbyMetadata metadata;
 
-	final GameRegistrations registrations;
+	private final GameRegistrations registrations;
 
 	// TODO: private by default
 	private final LobbyVisibility visibility = LobbyVisibility.PUBLIC;
@@ -106,6 +108,10 @@ public final class GameLobby implements IGameLobby {
 		manager.removeLobby(this);
 	}
 
+	void collectRegistrations(Collection<ServerPlayerEntity> participants, Collection<ServerPlayerEntity> spectators, IGameDefinition game) {
+		registrations.collectInto(participants, spectators, game.getMaximumParticipantCount());
+	}
+
 	public int getMemberCount(PlayerRole role) {
 		// TODO extensible
 		return role == PlayerRole.PARTICIPANT ? registrations.participantCount() : registrations.spectatorCount();
@@ -117,8 +123,7 @@ public final class GameLobby implements IGameLobby {
 			return false;
 		}
 
-		// TODO: all states need to handle player registration really
-		state.registerPlayer(player, requestedRole);
+		state.onPlayerRegister(player, requestedRole);
 
 		// TODO: extract out all notifications / packet logic?
 		PlayerSet serverPlayers = PlayerSet.ofServer(server);

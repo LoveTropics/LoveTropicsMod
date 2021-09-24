@@ -35,7 +35,6 @@ import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
 
-import javax.annotation.Nullable;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -131,11 +130,11 @@ public class ActiveGame implements IActiveGame {
 		}
 
 		for (ServerPlayerEntity player : participants) {
-			addPlayer(player, PlayerRole.PARTICIPANT);
+			addPlayerTo(player, PlayerRole.PARTICIPANT);
 		}
 
 		for (ServerPlayerEntity player : spectators) {
-			addPlayer(player, PlayerRole.SPECTATOR);
+			addPlayerTo(player, PlayerRole.SPECTATOR);
 		}
 
 		return GameResult.ok();
@@ -168,71 +167,22 @@ public class ActiveGame implements IActiveGame {
 	}
 
 	@Override
-	public boolean requestPlayerJoin(ServerPlayerEntity player, @Nullable PlayerRole requestedRole) {
-		return addPlayer(player, PlayerRole.SPECTATOR);
-	}
-
-	public boolean addPlayer(ServerPlayerEntity player, PlayerRole role) {
-		if (allPlayers.add(player)) {
-			roles.get(role).add(player);
-
-			try {
-				invoker(GamePlayerEvents.JOIN).onJoin(this, player, role);
-			} catch (Exception e) {
-				LoveTropics.LOGGER.warn("Failed to dispatch player join event", e);
-			}
-
-			// TODO: implement
-			/*LoveTropicsNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new ClientRoleMessage(getLobbyId().networkId, role));
-			sendPlayerCountUpdate(role);*/
-
-			return true;
-		} else {
-			return setPlayerRole(player, role);
-		}
-	}
-
-	@Override
-	public boolean setPlayerRole(ServerPlayerEntity player, PlayerRole role) {
+	public boolean addPlayerTo(ServerPlayerEntity player, PlayerRole role) {
 		PlayerRole lastRole = getRoleFor(player);
-		if (lastRole == null) {
-			return false;
-		}
 
-		if (lastRole != role) {
+		if (lastRole == null) {
+			allPlayers.add(player);
+			roles.get(role).add(player);
+			onPlayerJoin(player, role);
+			return true;
+		} else if (lastRole != role) {
 			roles.get(role).add(player);
 			roles.get(lastRole).remove(player);
-
-			try {
-				invoker(GamePlayerEvents.CHANGE_ROLE).onChangeRole(this, player, role, lastRole);
-			} catch (Exception e) {
-				LoveTropics.LOGGER.warn("Failed to dispatch player change role event", e);
-			}
-
-			// TODO: Implement
-			/*LoveTropicsNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new ClientRoleMessage(lobby.getId().getNetworkId(), role));
-			sendPlayerCountUpdate(role);
-			sendPlayerCountUpdate(lastRole);*/
-
+			onPlayerChangeRole(player, role, lastRole);
 			return true;
-		} else {
-			return false;
 		}
-	}
 
-	// TODO: implement
-	/*private void sendPlayerCountUpdate(PlayerRole role) {
-		LoveTropicsNetwork.CHANNEL.send(PacketDistributor.ALL.noArg(), new PlayerCountsMessage(lobby.getId().getNetworkId(), role, getMemberCount(role)));
-	}*/
-
-	@Nullable
-	private PlayerRole getRoleFor(ServerPlayerEntity player) {
-		for (PlayerRole role : PlayerRole.ROLES) {
-			if (roles.get(role).contains(player)) {
-				return role;
-			}
-		}
-		return null;
+		return false;
 	}
 
 	@Override
@@ -242,17 +192,51 @@ public class ActiveGame implements IActiveGame {
 				rolePlayers.remove(player);
 			}
 
-			try {
-				invoker(GamePlayerEvents.LEAVE).onLeave(this, player);
-			} catch (Exception e) {
-				LoveTropics.LOGGER.warn("Failed to dispatch player leave event", e);
-			}
+			onPlayerLeave(player);
 
 			return true;
 		}
 
 		return false;
 	}
+
+	private void onPlayerJoin(ServerPlayerEntity player, PlayerRole role) {
+		try {
+			invoker(GamePlayerEvents.JOIN).onJoin(this, player, role);
+		} catch (Exception e) {
+			LoveTropics.LOGGER.warn("Failed to dispatch player join event", e);
+		}
+
+		// TODO: implement
+		/*LoveTropicsNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new ClientRoleMessage(getLobbyId().networkId, role));
+		sendPlayerCountUpdate(role);*/
+	}
+
+	private void onPlayerChangeRole(ServerPlayerEntity player, PlayerRole role, PlayerRole lastRole) {
+		try {
+			invoker(GamePlayerEvents.CHANGE_ROLE).onChangeRole(this, player, role, lastRole);
+		} catch (Exception e) {
+			LoveTropics.LOGGER.warn("Failed to dispatch player change role event", e);
+		}
+
+		// TODO: Implement
+		/*LoveTropicsNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new ClientRoleMessage(lobby.getId().getNetworkId(), role));
+		sendPlayerCountUpdate(role);
+		sendPlayerCountUpdate(lastRole);*/
+	}
+
+	private void onPlayerLeave(ServerPlayerEntity player) {
+		try {
+			invoker(GamePlayerEvents.LEAVE).onLeave(this, player);
+		} catch (Exception e) {
+			LoveTropics.LOGGER.warn("Failed to dispatch player leave event", e);
+		}
+	}
+
+	// TODO: implement
+	/*private void sendPlayerCountUpdate(PlayerRole role) {
+		LoveTropicsNetwork.CHANNEL.send(PacketDistributor.ALL.noArg(), new PlayerCountsMessage(lobby.getId().getNetworkId(), role, getMemberCount(role)));
+	}*/
 
 	@Override
 	public PlayerSet getAllPlayers() {

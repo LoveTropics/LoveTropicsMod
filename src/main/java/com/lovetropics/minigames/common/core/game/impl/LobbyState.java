@@ -3,15 +3,19 @@ package com.lovetropics.minigames.common.core.game.impl;
 import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.client.data.LoveTropicsLangKeys;
 import com.lovetropics.minigames.common.core.game.GameResult;
+import com.lovetropics.minigames.common.core.game.GameStopReason;
 import com.lovetropics.minigames.common.core.game.IActiveGame;
-import com.lovetropics.minigames.common.core.game.IGameDefinition;
-import com.lovetropics.minigames.common.core.game.behavior.event.GamePollingEvents;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameWaitingEvents;
+import com.lovetropics.minigames.common.core.game.config.WaitingLobbyConfig;
+import com.lovetropics.minigames.common.core.game.lobby.QueuedGame;
 import com.lovetropics.minigames.common.core.game.map.GameMap;
 import com.lovetropics.minigames.common.core.game.player.PlayerRole;
 import com.lovetropics.minigames.common.core.game.state.instances.control.ControlCommandInvoker;
 import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Unit;
-import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.TranslationTextComponent;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -19,13 +23,21 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
 
+// TODO: can we better compose this interface to not have a lot of methods to override?
 interface LobbyState {
 	default GameResult<Unit> requestStart() {
-		return GameResult.error(new StringTextComponent(LoveTropicsLangKeys.COMMAND_MINIGAME_ALREADY_STARTED));
+		return GameResult.error(new TranslationTextComponent(LoveTropicsLangKeys.COMMAND_MINIGAME_ALREADY_STARTED));
 	}
 
-	// TODO: all these functions aren't that nice
-	default void registerPlayer(ServerPlayerEntity player, PlayerRole requestedRole) {
+	default GameResult<Unit> requestStop() {
+		return GameResult.error(new TranslationTextComponent(LoveTropicsLangKeys.COMMAND_NO_MINIGAME));
+	}
+
+	default GameResult<Unit> requestPause() {
+		return GameResult.error(new TranslationTextComponent(LoveTropicsLangKeys.COMMAND_NO_MINIGAME));
+	}
+
+	default void onPlayerRegister(ServerPlayerEntity player, PlayerRole requestedRole) {
 	}
 
 	@Nullable
@@ -47,7 +59,6 @@ interface LobbyState {
 
 	// TODO: Name
 	final class Factory {
-		// TODO: circular reference
 		private final GameLobby lobby;
 
 		Factory(GameLobby lobby) {
@@ -62,57 +73,66 @@ interface LobbyState {
 			return new Paused(this::nextGame);
 		}
 
-		public LobbyState nextGame() {
-			IGameDefinition definition = lobby.gameQueue.next();
-			if (definition == null) return null;
-
-			GameResult<WaitingGame> waitingResult = WaitingGame.create(lobby, definition);
-			if (waitingResult.isError()) {
-				// TODO: do something with the error
-				return paused();
-			}
-
-			WaitingGame waiting = waitingResult.getOk();
-			return new Waiting(waiting, () -> startGame(definition, waiting));
+		public LobbyState errored(ITextComponent error) {
+			// TODO: use the error
+			return this.paused();
 		}
 
-		public LobbyState startGame(IGameDefinition definition, WaitingGame waiting) {
-			// TODO: waiting lobby if the game wants it
-			CompletableFuture<LobbyState> future = this.tryStartGame(definition, waiting)
-					.thenApply(result -> result.<LobbyState>map(game -> new Active(game, this::nextGame)))
-					.thenApply(result -> {
-						// TODO: do something with the error
-						return result.orElseGet(error -> paused());
-					});
+		@Nullable
+		public LobbyState nextGame() {
+			QueuedGame game = lobby.gameQueue.next();
+			if (game == null) return null;
 
+			WaitingLobbyConfig waitingLobby = game.definition().getWaitingLobby();
+			if (waitingLobby != null) {
+				return waitingLobby(game, waitingLobby);
+			} else {
+				return startGame(game);
+			}
+		}
+
+		private LobbyState waitingLobby(QueuedGame game, WaitingLobbyConfig waitingLobby) {
+			// TODO: use the waiting lobby map!
+			ResourceLocation map = waitingLobby.map();
+
+			return WaitingGame.create(lobby, game.behaviors())
+					.map(waiting -> (LobbyState) new Waiting(waiting, () -> startGame(game), this::nextGame))
+					.orElseGet(this::errored);
+		}
+
+		private LobbyState startGame(QueuedGame game) {
+			CompletableFuture<LobbyState> future = this.startGameAsync(game)
+					.thenApply(result ->
+							result.map(active -> (LobbyState) new Active(active, this::nextGame))
+									.orElseGet(this::errored)
+					);
 			return new Pending(future);
 		}
 
-		// TODO: this code is all cursed
-		private CompletableFuture<GameResult<ActiveGame>> tryStartGame(IGameDefinition definition, WaitingGame waiting) {
-			return definition.getMap().open(lobby.getServer())
-					.thenComposeAsync(map -> {
-						if (map.isOk()) {
-							return intoActive(definition, waiting, map.getOk());
-						} else {
-							return CompletableFuture.completedFuture(map.castError());
-						}
-					}, lobby.getServer())
-					.handle((result, throwable) -> {
-						if (throwable instanceof Exception) {
-							return GameResult.fromException("Unknown error starting game", (Exception) throwable);
-						}
-						return result;
-					});
+		// TODO: extract this code somewhere else?
+		private CompletableFuture<GameResult<ActiveGame>> startGameAsync(QueuedGame game) {
+			CompletableFuture<GameResult<ActiveGame>> future = openMap(game).thenComposeAsync(map -> {
+				if (map.isOk()) {
+					return startGame(game, map.getOk());
+				} else {
+					return CompletableFuture.completedFuture(map.castError());
+				}
+			}, lobby.getServer());
+
+			return GameResult.handleException(future, "Unknown exception starting game");
 		}
 
-		private CompletableFuture<GameResult<ActiveGame>> intoActive(IGameDefinition definition, WaitingGame waiting, GameMap map) {
+		private CompletableFuture<GameResult<GameMap>> openMap(QueuedGame game) {
+			return game.definition().getMap().open(lobby.getServer());
+		}
+
+		private CompletableFuture<GameResult<ActiveGame>> startGame(QueuedGame game, GameMap map) {
+			// TODO: if a player registers after this point they won't be considered at all to join as a spectator
 			List<ServerPlayerEntity> participants = new ArrayList<>();
 			List<ServerPlayerEntity> spectators = new ArrayList<>();
+			lobby.collectRegistrations(participants, spectators, game.definition());
 
-			lobby.registrations.collectInto(lobby.getServer(), participants, spectators, definition.getMaximumParticipantCount());
-
-			return waiting.intoActive(map, participants, spectators);
+			return ActiveGame.start(lobby, map, game.behaviors(), participants, spectators);
 		}
 	}
 
@@ -124,11 +144,15 @@ interface LobbyState {
 			this.start = start;
 		}
 
-		// TODO: split controls for start / unpause?
 		@Override
 		public GameResult<Unit> requestStart() {
 			started = true;
 			return GameResult.ok();
+		}
+
+		@Override
+		public GameResult<Unit> requestStop() {
+			return requestStart();
 		}
 
 		@Override
@@ -140,11 +164,17 @@ interface LobbyState {
 	final class Waiting implements LobbyState {
 		private final WaitingGame waiting;
 		private final Supplier<LobbyState> start;
-		private boolean started;
+		private final Supplier<LobbyState> skip;
 
-		Waiting(WaitingGame waiting, Supplier<LobbyState> start) {
+		private boolean started;
+		private boolean stopped;
+
+		Waiting(WaitingGame waiting, Supplier<LobbyState> start, Supplier<LobbyState> skip) {
 			this.waiting = waiting;
 			this.start = start;
+			this.skip = skip;
+
+			// TODO: we need to call the player waiting listener for waiting players: we probably need a start/stop function in the state
 		}
 
 		@Override
@@ -154,9 +184,15 @@ interface LobbyState {
 		}
 
 		@Override
-		public void registerPlayer(ServerPlayerEntity player, PlayerRole requestedRole) {
+		public GameResult<Unit> requestStop() {
+			stopped = true;
+			return GameResult.ok();
+		}
+
+		@Override
+		public void onPlayerRegister(ServerPlayerEntity player, PlayerRole requestedRole) {
 			try {
-				waiting.invoker(GamePollingEvents.PLAYER_REGISTER).onPlayerRegister(waiting, player, requestedRole);
+				waiting.invoker(GameWaitingEvents.PLAYER_WAITING).onPlayerWaiting(waiting, player, requestedRole);
 			} catch (Exception e) {
 				LoveTropics.LOGGER.warn("Failed to dispatch player register event", e);
 			}
@@ -175,7 +211,9 @@ interface LobbyState {
 
 		@Override
 		public LobbyState tick() {
-			return started ? start.get() : this;
+			if (started) return start.get();
+			if (stopped) return skip.get();
+			return this;
 		}
 	}
 
@@ -197,9 +235,29 @@ interface LobbyState {
 		private final ActiveGame game;
 		private final Supplier<LobbyState> next;
 
+		private boolean stopped;
+		private boolean paused;
+
 		Active(ActiveGame game, Supplier<LobbyState> next) {
 			this.game = game;
 			this.next = next;
+		}
+
+		@Override
+		public void onPlayerRegister(ServerPlayerEntity player, PlayerRole requestedRole) {
+			game.addPlayerTo(player, PlayerRole.SPECTATOR);
+		}
+
+		@Override
+		public GameResult<Unit> requestStop() {
+			stopped = true;
+			return GameResult.ok();
+		}
+
+		@Override
+		public GameResult<Unit> requestPause() {
+			paused = true;
+			return GameResult.ok();
 		}
 
 		@Override
@@ -222,6 +280,13 @@ interface LobbyState {
 		@Override
 		@Nullable
 		public LobbyState tick() {
+			if (stopped) {
+				game.stop(GameStopReason.CANCELED);
+				return next.get();
+			} else if (paused) {
+				return new Paused(() -> this);
+			}
+
 			return game.tick() ? this : next.get();
 		}
 	}

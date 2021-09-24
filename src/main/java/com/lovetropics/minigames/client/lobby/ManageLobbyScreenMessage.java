@@ -13,13 +13,13 @@ import java.util.function.Supplier;
 public final class ManageLobbyScreenMessage {
 	private final int lobbyId;
 	private final String name;
-	private final List<ClientGameQueueEntry> queue;
+	private final List<ClientQueuedGame> queue;
 
 	private final List<ClientGameDefinition> installedGames;
 
 	private ManageLobbyScreenMessage(
 			int lobbyId, String name,
-			List<ClientGameQueueEntry> queue,
+			List<ClientQueuedGame> queue,
 			List<ClientGameDefinition> installedGames
 	) {
 		this.lobbyId = lobbyId;
@@ -31,7 +31,7 @@ public final class ManageLobbyScreenMessage {
 	public static ManageLobbyScreenMessage create(IGameLobby lobby) {
 		int networkId = lobby.getMetadata().id().networkId();
 		String name = lobby.getMetadata().name();
-		List<ClientGameQueueEntry> queue = lobby.getGameQueue().clientEntries();
+		List<ClientQueuedGame> queue = lobby.getGameQueue().clientEntries();
 
 		return new ManageLobbyScreenMessage(networkId, name, queue, ClientGameDefinition.installed());
 	}
@@ -42,7 +42,7 @@ public final class ManageLobbyScreenMessage {
 		buffer.writeString(this.name);
 
 		buffer.writeVarInt(this.queue.size());
-		for (ClientGameQueueEntry entry : this.queue) {
+		for (ClientQueuedGame entry : this.queue) {
 			entry.encode(buffer);
 		}
 
@@ -58,9 +58,9 @@ public final class ManageLobbyScreenMessage {
 		String name = buffer.readString();
 
 		int queueSize = buffer.readVarInt();
-		List<ClientGameQueueEntry> queue = new ArrayList<>(queueSize);
+		List<ClientQueuedGame> queue = new ArrayList<>(queueSize);
 		for (int i = 0; i < queueSize; i++) {
-			queue.add(ClientGameQueueEntry.decode(buffer));
+			queue.add(ClientQueuedGame.decode(buffer));
 		}
 
 		int installedSize = buffer.readVarInt();
@@ -80,7 +80,7 @@ public final class ManageLobbyScreenMessage {
 	}
 
 	// TODO: dedicated server
-	private static void openScreen(String name, List<ClientGameQueueEntry> queue, List<ClientGameDefinition> installedGames) {
+	private static void openScreen(String name, List<ClientQueuedGame> queue, List<ClientGameDefinition> installedGames) {
 		Minecraft.getInstance().displayGuiScreen(new ManageLobbyScreen(name, queue, installedGames));
 	}
 }

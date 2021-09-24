@@ -1,7 +1,7 @@
 package com.lovetropics.minigames.client.lobby.screen;
 
 import com.lovetropics.minigames.client.lobby.ClientGameDefinition;
-import com.lovetropics.minigames.client.lobby.ClientGameQueueEntry;
+import com.lovetropics.minigames.client.lobby.ClientQueuedGame;
 import com.lovetropics.minigames.client.lobby.screen.game_list.GameList;
 import com.lovetropics.minigames.client.lobby.screen.player_list.LobbyPlayerList;
 import com.lovetropics.minigames.client.screen.FlexUi;
@@ -21,7 +21,7 @@ public final class ManageLobbyScreen extends Screen {
 	private static final ITextComponent TITLE = new StringTextComponent("Manage Game Lobby");
 
 	private final String name;
-	private final List<ClientGameQueueEntry> queue;
+	private final List<ClientQueuedGame> queue;
 	private final List<ClientGameDefinition> installedGames;
 
 	private Layouts layouts;
@@ -32,7 +32,7 @@ public final class ManageLobbyScreen extends Screen {
 
 	private int selectedGameIndex = -1;
 
-	public ManageLobbyScreen(String name, List<ClientGameQueueEntry> queue, List<ClientGameDefinition> installedGames) {
+	public ManageLobbyScreen(String name, List<ClientQueuedGame> queue, List<ClientGameDefinition> installedGames) {
 		super(TITLE);
 		this.name = name;
 		this.queue = queue;
@@ -56,7 +56,7 @@ public final class ManageLobbyScreen extends Screen {
 			@Override
 			public void enqueueGame(int installedGameIndex) {
 				if (installedGameIndex >= 0 && installedGameIndex < installedGames.size()) {
-					queue.add(new ClientGameQueueEntry(installedGames.get(installedGameIndex)));
+					queue.add(new ClientQueuedGame(installedGames.get(installedGameIndex)));
 				}
 			}
 
@@ -109,14 +109,14 @@ public final class ManageLobbyScreen extends Screen {
 		drawCenteredString(matrixStack, font, title, header.centerX(), header.centerY(), 0xFFFFFF);
 
 		if (selectedGameIndex >= 0 && selectedGameIndex < queue.size()) {
-			ClientGameQueueEntry selectedEntry = queue.get(selectedGameIndex);
+			ClientQueuedGame selectedEntry = queue.get(selectedGameIndex);
 			renderSelectedGame(selectedEntry, matrixStack, mouseX, mouseY, partialTicks);
 		}
 
 		super.render(matrixStack, mouseX, mouseY, partialTicks);
 	}
 
-	private void renderSelectedGame(ClientGameQueueEntry entry, MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
+	private void renderSelectedGame(ClientQueuedGame entry, MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
 		FlexUi.fill(layouts.centerHeader, matrixStack, 0x80101010);
 
 		ITextComponent title = new StringTextComponent("")
