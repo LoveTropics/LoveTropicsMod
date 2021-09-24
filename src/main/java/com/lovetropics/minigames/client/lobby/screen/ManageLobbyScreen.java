@@ -74,7 +74,7 @@ public final class ManageLobbyScreen extends Screen {
 		nameField.setText(lobby.getName());
 		setFocusedDefault(nameField);
 
-		playerList = addListener(new LobbyPlayerList(layouts.playerList));
+		playerList = addListener(new LobbyPlayerList(lobby, layouts.playerList));
 
 		addButton(FlexUi.createButton(layouts.done, DialogTexts.GUI_DONE, b -> closeScreen()));
 

@@ -6,15 +6,15 @@ import net.minecraftforge.fml.network.NetworkEvent;
 
 import java.util.function.Supplier;
 
-public class ClientLeftLobbyMessage {
-	public ClientLeftLobbyMessage() {
+public class LeftLobbyMessage {
+	public LeftLobbyMessage() {
 	}
 
 	public void encode(PacketBuffer buffer) {
 	}
 
-	public static ClientLeftLobbyMessage decode(PacketBuffer buffer) {
-		return new ClientLeftLobbyMessage();
+	public static LeftLobbyMessage decode(PacketBuffer buffer) {
+		return new LeftLobbyMessage();
 	}
 
 	public void handle(Supplier<NetworkEvent.Context> ctx) {

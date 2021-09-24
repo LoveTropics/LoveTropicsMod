@@ -11,18 +11,18 @@ public final class ClientLobbyPlayerEntry {
 	@Nullable
 	private final PlayerRole registeredRole;
 	@Nullable
-	private final PlayerRole currentRole;
+	private final PlayerRole activeRole;
 
-	public ClientLobbyPlayerEntry(UUID uuid, @Nullable PlayerRole registeredRole, @Nullable PlayerRole currentRole) {
+	public ClientLobbyPlayerEntry(UUID uuid, @Nullable PlayerRole registeredRole, @Nullable PlayerRole activeRole) {
 		this.uuid = uuid;
 		this.registeredRole = registeredRole;
-		this.currentRole = currentRole;
+		this.activeRole = activeRole;
 	}
 
 	public void encode(PacketBuffer buffer) {
 		buffer.writeUniqueId(this.uuid);
 		encodeRole(buffer, this.registeredRole);
-		encodeRole(buffer, this.currentRole);
+		encodeRole(buffer, this.activeRole);
 	}
 
 	public static ClientLobbyPlayerEntry decode(PacketBuffer buffer) {
@@ -44,8 +44,8 @@ public final class ClientLobbyPlayerEntry {
 	@Nullable
 	private static PlayerRole decodeRole(PacketBuffer buffer) {
 		int ordinal = buffer.readVarInt() - 1;
-		if (ordinal >= 0 && ordinal < PlayerRole.values().length) {
-			return PlayerRole.values()[ordinal];
+		if (ordinal >= 0 && ordinal < PlayerRole.ROLES.length) {
+			return PlayerRole.ROLES[ordinal];
 		} else {
 			return null;
 		}
@@ -61,7 +61,7 @@ public final class ClientLobbyPlayerEntry {
 	}
 
 	@Nullable
-	public PlayerRole currentRole() {
-		return this.currentRole;
+	public PlayerRole activeRole() {
+		return this.activeRole;
 	}
 }

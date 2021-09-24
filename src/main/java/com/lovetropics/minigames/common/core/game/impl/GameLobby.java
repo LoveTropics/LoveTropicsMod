@@ -1,7 +1,9 @@
 package com.lovetropics.minigames.common.core.game.impl;
 
-import com.lovetropics.minigames.client.lobby.state.message.ClientJoinedLobbyMessage;
-import com.lovetropics.minigames.client.lobby.state.message.ClientLobbyUpdateMessage;
+import com.lovetropics.minigames.client.lobby.state.message.JoinedLobbyMessage;
+import com.lovetropics.minigames.client.lobby.state.message.LeftLobbyMessage;
+import com.lovetropics.minigames.client.lobby.state.message.LobbyPlayersMessage;
+import com.lovetropics.minigames.client.lobby.state.message.LobbyUpdateMessage;
 import com.lovetropics.minigames.common.core.game.GameRegistrations;
 import com.lovetropics.minigames.common.core.game.GameResult;
 import com.lovetropics.minigames.common.core.game.IActiveGame;
@@ -17,12 +19,16 @@ import com.lovetropics.minigames.common.core.game.util.GameMessages;
 import com.lovetropics.minigames.common.core.network.LoveTropicsNetwork;
 import net.minecraft.command.CommandSource;
 import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.network.NetworkManager;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.Unit;
 import net.minecraftforge.fml.network.PacketDistributor;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 // TODO: do we want a different game lobby implementation for something like carnival games?
 public final class GameLobby implements IGameLobby {
@@ -32,8 +38,7 @@ public final class GameLobby implements IGameLobby {
 
 	private final GameRegistrations registrations;
 
-	// TODO: private by default
-	private final LobbyVisibility visibility = LobbyVisibility.PUBLIC;
+	private final LobbyVisibility visibility = LobbyVisibility.PRIVATE;
 
 	final LobbyGameQueue gameQueue = new LobbyGameQueue();
 
@@ -63,6 +68,12 @@ public final class GameLobby implements IGameLobby {
 		return registrations;
 	}
 
+	@Nullable
+	@Override
+	public PlayerRole getRegisteredRoleFor(ServerPlayerEntity player) {
+		return registrations.getRoleFor(player.getUniqueID());
+	}
+
 	@Override
 	public LobbyGameQueue getGameQueue() {
 		return gameQueue;
@@ -79,6 +90,7 @@ public final class GameLobby implements IGameLobby {
 		return state.getControlCommands();
 	}
 
+	// TODO: publish state to all tracking players when visibility changes
 	@Override
 	public boolean isVisibleTo(CommandSource source) {
 		if (source.hasPermissionLevel(2) || metadata.initiator().matches(source.getEntity())) {
@@ -93,7 +105,7 @@ public final class GameLobby implements IGameLobby {
 		if (nextState != state) {
 			state = nextState;
 			// TODO: check where we send this
-			LoveTropicsNetwork.CHANNEL.send(PacketDistributor.ALL.noArg(), ClientLobbyUpdateMessage.update(this));
+			LoveTropicsNetwork.CHANNEL.send(PacketDistributor.ALL.noArg(), LobbyUpdateMessage.update(this));
 		}
 
 		return nextState != null;
@@ -103,18 +115,13 @@ public final class GameLobby implements IGameLobby {
 		PlayerSet.ofServer(server).sendMessage(GameMessages.forLobby(this).stopPolling()); // TODO: polling message?
 
 		state = states.stopped();
-		LoveTropicsNetwork.CHANNEL.send(PacketDistributor.ALL.noArg(), ClientLobbyUpdateMessage.remove(this));
+		LoveTropicsNetwork.CHANNEL.send(PacketDistributor.ALL.noArg(), LobbyUpdateMessage.remove(this));
 
 		manager.removeLobby(this);
 	}
 
 	void collectRegistrations(Collection<ServerPlayerEntity> participants, Collection<ServerPlayerEntity> spectators, IGameDefinition game) {
 		registrations.collectInto(participants, spectators, game.getMaximumParticipantCount());
-	}
-
-	public int getMemberCount(PlayerRole role) {
-		// TODO extensible
-		return role == PlayerRole.PARTICIPANT ? registrations.participantCount() : registrations.spectatorCount();
 	}
 
 	@Override
@@ -136,12 +143,10 @@ public final class GameLobby implements IGameLobby {
 
 		serverPlayers.sendMessage(gameMessages.playerJoined(player, requestedRole));
 
-		int networkId = metadata.id().networkId();
-
-		// TODO
+		// TODO: setting roles within the active game must also send update packets, but we don't want to duplicate
 		PlayerRole trueRole = requestedRole == null ? PlayerRole.PARTICIPANT : requestedRole;
-		LoveTropicsNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new ClientJoinedLobbyMessage(networkId, trueRole));
-//		LoveTropicsNetwork.CHANNEL.send(PacketDistributor.ALL.noArg(), new ClientLobbyPlayersMessage(networkId, trueRole, getMemberCount(trueRole)));
+		LoveTropicsNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), JoinedLobbyMessage.create(this, trueRole));
+		LoveTropicsNetwork.CHANNEL.send(this.trackingPlayers(), LobbyPlayersMessage.add(this, Collections.singleton(player)));
 
 		return true;
 	}
@@ -157,15 +162,23 @@ public final class GameLobby implements IGameLobby {
 			PlayerSet.ofServer(server).sendMessage(gameMessages.noLongerEnoughPlayers());
 		}*/
 
-		int networkId = metadata.id().networkId();
-
-		LoveTropicsNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new ClientJoinedLobbyMessage(networkId, null));
-		// TODO
-		/*for (PlayerRole role : PlayerRole.ROLES) {
-			LoveTropicsNetwork.CHANNEL.send(PacketDistributor.ALL.noArg(), new ClientLobbyPlayersMessage(networkId, role, getMemberCount(role)));
-		}*/
+		//TODO
+		LoveTropicsNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new LeftLobbyMessage());
+		LoveTropicsNetwork.CHANNEL.send(this.trackingPlayers(), LobbyPlayersMessage.remove(this, Collections.singleton(player)));
 
 		return true;
+	}
+
+	private PacketDistributor.PacketTarget trackingPlayers() {
+		return PacketDistributor.NMLIST.with(() -> {
+			List<NetworkManager> tracking = new ArrayList<>();
+			for (ServerPlayerEntity player : server.getPlayerList().getPlayers()) {
+				if (isVisibleTo(player.getCommandSource())) {
+					tracking.add(player.connection.netManager);
+				}
+			}
+			return tracking;
+		});
 	}
 
 	@Override

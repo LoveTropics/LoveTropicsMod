@@ -4,10 +4,7 @@ import com.lovetropics.minigames.common.core.game.player.PlayerRole;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 public class ClientLobbyState {
 	final int id;
@@ -56,5 +53,9 @@ public class ClientLobbyState {
 	public void setPlayers(List<ClientLobbyPlayerEntry> players) {
 		this.players.clear();
 		this.addPlayers(players);
+	}
+
+	public Collection<ClientLobbyPlayerEntry> getPlayers() {
+		return this.players.values();
 	}
 }

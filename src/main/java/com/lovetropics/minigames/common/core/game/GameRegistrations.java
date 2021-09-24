@@ -1,7 +1,8 @@
 package com.lovetropics.minigames.common.core.game;
 
-import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.Iterators;
+import com.google.common.collect.Sets;
+import com.lovetropics.minigames.common.core.game.player.PlayerIterable;
 import com.lovetropics.minigames.common.core.game.player.PlayerRole;
 import com.lovetropics.minigames.common.core.game.player.PlayerSet;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
@@ -76,10 +77,20 @@ public final class GameRegistrations implements PlayerSet {
 
 	public boolean add(UUID id, @Nullable PlayerRole requestedRole) {
 		if (contains(id)) {
-			getSetForRole(requestedRole).add(id);
+			getSetForRequestedRole(requestedRole).add(id);
 			return true;
 		} else {
 			return false;
+		}
+	}
+
+	private Set<UUID> getSetForRequestedRole(@Nullable PlayerRole role) {
+		if (role == PlayerRole.PARTICIPANT) {
+			return participants;
+		} else if (role == PlayerRole.SPECTATOR) {
+			return spectators;
+		} else {
+			return any;
 		}
 	}
 
@@ -97,22 +108,27 @@ public final class GameRegistrations implements PlayerSet {
 		return any.size() + participants.size() + spectators.size();
 	}
 
-	public int participantCount() {
-		return any.size() + participants.size();
+	public PlayerSet getPlayersWithRole(PlayerRole role) {
+		return role == PlayerRole.PARTICIPANT ? this.getParticipants() : this.getSpectators();
 	}
 
-	public int spectatorCount() {
-		return spectators.size();
-	}
-
-	private Set<UUID> getSetForRole(@Nullable PlayerRole role) {
-		if (role == PlayerRole.PARTICIPANT) {
-			return participants;
-		} else if (role == PlayerRole.SPECTATOR) {
-			return spectators;
+	@Nullable
+	public PlayerRole getRoleFor(UUID id) {
+		if (any.contains(id) || participants.contains(id)) {
+			return PlayerRole.PARTICIPANT;
+		} else if (spectators.contains(id)) {
+			return PlayerRole.SPECTATOR;
 		} else {
-			return any;
+			return null;
 		}
+	}
+
+	public PlayerSet getParticipants() {
+		return PlayerSet.wrap(server, Sets.union(participants, any));
+	}
+
+	public PlayerSet getSpectators() {
+		return PlayerSet.wrap(server, spectators);
 	}
 
 	@Nullable
@@ -123,24 +139,7 @@ public final class GameRegistrations implements PlayerSet {
 
 	@Override
 	public Iterator<ServerPlayerEntity> iterator() {
-		PlayerList playerList = server.getPlayerList();
 		Iterator<UUID> ids = Iterators.concat(any.iterator(), participants.iterator(), spectators.iterator());
-
-		return new AbstractIterator<ServerPlayerEntity>() {
-			@Override
-			protected ServerPlayerEntity computeNext() {
-				while (true) {
-					if (!ids.hasNext()) {
-						return endOfData();
-					}
-
-					UUID id = ids.next();
-					ServerPlayerEntity player = playerList.getPlayerByUUID(id);
-					if (player != null) {
-						return player;
-					}
-				}
-			}
-		};
+		return PlayerIterable.resolvingIterator(server, ids);
 	}
 }

@@ -12,26 +12,26 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
 
-public class ClientLobbyUpdateMessage {
+public class LobbyUpdateMessage {
 	private final int id;
 	@Nullable
 	private final Update update;
 
-	private ClientLobbyUpdateMessage(int id, @Nullable Update update) {
+	private LobbyUpdateMessage(int id, @Nullable Update update) {
 		this.id = id;
 		this.update = update;
 	}
 
-	public static ClientLobbyUpdateMessage update(IGameLobby lobby) {
+	public static LobbyUpdateMessage update(IGameLobby lobby) {
 		int id = lobby.getMetadata().id().networkId();
 		String name = lobby.getMetadata().name();
 		List<ClientQueuedGame> queue = lobby.getGameQueue().clientEntries();
 		ClientGameDefinition definition = lobby.getActiveGame() != null ? ClientGameDefinition.from(lobby.getActiveGame().getDefinition()) : null;
-		return new ClientLobbyUpdateMessage(id, new Update(name, queue, definition));
+		return new LobbyUpdateMessage(id, new Update(name, queue, definition));
 	}
 
-	public static ClientLobbyUpdateMessage remove(IGameLobby lobby) {
-		return new ClientLobbyUpdateMessage(lobby.getMetadata().id().networkId(), null);
+	public static LobbyUpdateMessage remove(IGameLobby lobby) {
+		return new LobbyUpdateMessage(lobby.getMetadata().id().networkId(), null);
 	}
 
 	public void encode(PacketBuffer buffer) {
@@ -43,13 +43,13 @@ public class ClientLobbyUpdateMessage {
 		}
 	}
 
-	public static ClientLobbyUpdateMessage decode(PacketBuffer buffer) {
+	public static LobbyUpdateMessage decode(PacketBuffer buffer) {
 		int id = buffer.readVarInt();
 		if (buffer.readBoolean()) {
 			Update update = Update.decode(buffer);
-			return new ClientLobbyUpdateMessage(id, update);
+			return new LobbyUpdateMessage(id, update);
 		}
-		return new ClientLobbyUpdateMessage(id, null);
+		return new LobbyUpdateMessage(id, null);
 	}
 
 	public void handle(Supplier<NetworkEvent.Context> ctx) {

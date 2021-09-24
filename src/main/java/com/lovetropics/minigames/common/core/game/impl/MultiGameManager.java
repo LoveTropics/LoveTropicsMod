@@ -1,14 +1,12 @@
 package com.lovetropics.minigames.common.core.game.impl;
 
-import com.google.common.collect.Iterables;
 import com.lovetropics.minigames.Constants;
-import com.lovetropics.minigames.client.lobby.state.message.ClientLobbyUpdateMessage;
+import com.lovetropics.minigames.client.lobby.state.message.LobbyUpdateMessage;
 import com.lovetropics.minigames.common.core.game.GameResult;
 import com.lovetropics.minigames.common.core.game.IGameManager;
 import com.lovetropics.minigames.common.core.game.lobby.GameLobbyId;
 import com.lovetropics.minigames.common.core.game.lobby.GameLobbyMetadata;
 import com.lovetropics.minigames.common.core.game.lobby.IGameLobby;
-import com.lovetropics.minigames.common.core.game.player.PlayerIterable;
 import com.lovetropics.minigames.common.core.game.player.PlayerOps;
 import com.lovetropics.minigames.common.core.game.player.PlayerSet;
 import com.lovetropics.minigames.common.core.game.state.instances.control.ControlCommandInvoker;
@@ -103,10 +101,8 @@ public class MultiGameManager implements IGameManager {
 
 	private static PlayerOps operators(MinecraftServer server) {
 		PlayerList playerList = server.getPlayerList();
-		return PlayerIterable.from(Iterables.filter(
-				PlayerSet.of(playerList),
-				player -> playerList.canSendCommands(player.getGameProfile())
-		));
+		return PlayerSet.of(playerList)
+				.filter(player -> playerList.canSendCommands(player.getGameProfile()));
 	}
 
 	@Nullable
@@ -240,7 +236,7 @@ public class MultiGameManager implements IGameManager {
 	public static void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
 		for (GameLobby lobby : INSTANCE.lobbies) {
 			PacketDistributor.PacketTarget target = PacketDistributor.PLAYER.with(() -> (ServerPlayerEntity) event.getPlayer());
-			LoveTropicsNetwork.CHANNEL.send(target, ClientLobbyUpdateMessage.update(lobby));
+			LoveTropicsNetwork.CHANNEL.send(target, LobbyUpdateMessage.update(lobby));
 
 			// TODO
 			/*int networkId = lobby.getMetadata().id().networkId();
