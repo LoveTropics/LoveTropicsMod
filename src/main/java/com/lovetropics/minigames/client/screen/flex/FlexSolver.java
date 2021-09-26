@@ -8,22 +8,18 @@ import java.util.Map;
 import java.util.Objects;
 
 public final class FlexSolver {
-	private final int width;
-	private final int height;
+	private final Box screen;
 
-	public FlexSolver(int width, int height) {
-		this.width = width;
-		this.height = height;
+	public FlexSolver(Box screen) {
+		this.screen = screen;
 	}
 
 	public Results apply(Flex root) {
 		Results results = new Results();
 
-		Box.Size size = new Box.Size(this.width, this.height);
-
 		FlexSolve rootSolve = results.flexSolve(root);
-		rootSolve.size = size;
-		rootSolve.layout = layout(root, new Box(size));
+		rootSolve.size = this.screen.size();
+		rootSolve.layout = layout(root, this.screen);
 
 		this.updateInnerSizes(results, root, rootSolve);
 		this.solveSizes(results, root, rootSolve);

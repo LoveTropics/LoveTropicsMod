@@ -1,4 +1,4 @@
-package com.lovetropics.minigames.client.lobby;
+package com.lovetropics.minigames.client.lobby.state;
 
 import com.lovetropics.minigames.common.core.game.IGameDefinition;
 import com.lovetropics.minigames.common.core.game.config.GameConfigs;

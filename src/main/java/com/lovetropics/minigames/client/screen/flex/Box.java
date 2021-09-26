@@ -1,5 +1,7 @@
 package com.lovetropics.minigames.client.screen.flex;
 
+import net.minecraft.client.gui.screen.Screen;
+
 public final class Box {
 	private final int left;
 	private final int top;
@@ -15,6 +17,10 @@ public final class Box {
 
 	public Box(Size size) {
 		this(0, 0, size.width(), size.height());
+	}
+
+	public Box(Screen screen) {
+		this(0, 0, screen.width, screen.height);
 	}
 
 	public Box grow(int amount) {
@@ -60,6 +66,10 @@ public final class Box {
 
 	public int height() {
 		return this.bottom - this.top;
+	}
+
+	public Size size() {
+		return new Size(this.width(), this.height());
 	}
 
 	public int centerX() {

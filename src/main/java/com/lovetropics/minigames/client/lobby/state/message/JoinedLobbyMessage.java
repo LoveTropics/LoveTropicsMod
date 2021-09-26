@@ -1,41 +1,46 @@
-package com.lovetropics.minigames.client.minigame;
+package com.lovetropics.minigames.client.lobby.state.message;
 
+import com.lovetropics.minigames.client.lobby.state.ClientLobbyManager;
+import com.lovetropics.minigames.common.core.game.lobby.IGameLobby;
 import com.lovetropics.minigames.common.core.game.player.PlayerRole;
 import net.minecraft.network.PacketBuffer;
 import net.minecraftforge.fml.network.NetworkEvent;
 
 import java.util.function.Supplier;
 
-public class ClientRoleMessage {
-
-	private final int instanceId;
+public class JoinedLobbyMessage {
+	private final int id;
 	private final PlayerRole role;
 
-	public ClientRoleMessage(int instanceId, PlayerRole role) {
-		this.instanceId = instanceId;
+	private JoinedLobbyMessage(int id, PlayerRole role) {
+		this.id = id;
 		this.role = role;
 	}
 
+	public static JoinedLobbyMessage create(IGameLobby lobby, PlayerRole role) {
+		return new JoinedLobbyMessage(lobby.getMetadata().id().networkId(), role);
+	}
+
 	public void encode(PacketBuffer buffer) {
-		buffer.writeVarInt(instanceId);
+		buffer.writeVarInt(id);
 		buffer.writeBoolean(role != null);
 		if (role != null) {
 			buffer.writeEnumValue(role);
 		}
 	}
 
-	public static ClientRoleMessage decode(PacketBuffer buffer) {
+	public static JoinedLobbyMessage decode(PacketBuffer buffer) {
 		int instanceId = buffer.readVarInt();
 		PlayerRole role = null;
 		if (buffer.readBoolean()) {
 			role = buffer.readEnumValue(PlayerRole.class);
 		}
-		return new ClientRoleMessage(instanceId, role);
+		return new JoinedLobbyMessage(instanceId, role);
 	}
 
 	public void handle(Supplier<NetworkEvent.Context> ctx) {
 		ctx.get().enqueueWork(() -> {
-			ClientMinigameState.get(instanceId).ifPresent(s -> s.setRole(role));
+			ClientLobbyManager.setJoined(id, role);
 		});
 		ctx.get().setPacketHandled(true);
 	}

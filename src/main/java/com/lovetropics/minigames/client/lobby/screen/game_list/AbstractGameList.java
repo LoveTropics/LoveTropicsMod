@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.client.lobby.screen.game_list;
 
-import com.lovetropics.minigames.client.lobby.ClientGameDefinition;
+import com.lovetropics.minigames.client.lobby.state.ClientGameDefinition;
 import com.lovetropics.minigames.client.screen.flex.Layout;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import net.minecraft.client.Minecraft;
@@ -44,6 +44,9 @@ public abstract class AbstractGameList extends ExtendedList<AbstractGameList.Ent
 		);
 	}
 
+	public void renderButtons(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
+	}
+
 	@Override
 	public int getRowWidth() {
 		return this.width;
@@ -59,27 +62,21 @@ public abstract class AbstractGameList extends ExtendedList<AbstractGameList.Ent
 		return super.getRowTop(index);
 	}
 
-	public static abstract class Entry extends ExtendedList.AbstractListEntry<Entry> {
+	public static final class Entry extends ExtendedList.AbstractListEntry<Entry> {
 		public static final int HEIGHT = 32;
 		static final int PADDING = 4;
 
-		final Minecraft client;
-		final AbstractGameList list;
+		private final Minecraft client;
+		private final AbstractGameList list;
 
-		public Entry(AbstractGameList list) {
-			this.client = list.minecraft;
-			this.list = list;
-		}
-	}
-
-	public static final class GameEntry extends Entry {
 		private final IReorderingProcessor name;
 		private final String description;
 
-		public GameEntry(AbstractGameList list, ClientGameDefinition game) {
-			super(list);
+		public Entry(AbstractGameList list, ClientGameDefinition game) {
+			this.client = list.minecraft;
+			this.list = list;
 
-			FontRenderer font = client.fontRenderer;
+			FontRenderer font = this.client.fontRenderer;
 			int maxTextWidth = list.getRowWidth() - 2 * PADDING;
 
 			this.name = LanguageMap.getInstance().func_241870_a(font.func_238417_a_(game.name, maxTextWidth));
@@ -100,7 +97,7 @@ public abstract class AbstractGameList extends ExtendedList<AbstractGameList.Ent
 			int fontHeight = font.FONT_HEIGHT;
 
 			if (isMouseOver) {
-				fill(matrixStack, left, top, left + width - 3, top + height, 0xFF000000);
+				fill(matrixStack, left, top, left + width - 4, top + height, 0xFF000000);
 			}
 
 			font.func_238422_b_(matrixStack, this.name, left + PADDING, top + PADDING, 0xFFFFFF);

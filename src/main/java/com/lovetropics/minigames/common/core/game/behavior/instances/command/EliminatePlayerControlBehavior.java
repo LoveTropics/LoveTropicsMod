@@ -18,7 +18,7 @@ public final class EliminatePlayerControlBehavior implements IGameBehavior {
 		commands.add("eliminate", ControlCommand.forAdmins(source -> {
 			ServerPlayerEntity player = source.asPlayer();
 			if (!game.getSpectators().contains(player)) {
-				game.setPlayerRole(player, PlayerRole.SPECTATOR);
+				game.addPlayerTo(player, PlayerRole.SPECTATOR);
 				player.setHealth(20.0F);
 			}
 		}));

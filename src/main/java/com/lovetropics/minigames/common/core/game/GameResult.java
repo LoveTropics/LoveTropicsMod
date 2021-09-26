@@ -4,6 +4,7 @@ import net.minecraft.util.Unit;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
 
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 
 public final class GameResult<T> {
@@ -36,6 +37,15 @@ public final class GameResult<T> {
 	public static <T> GameResult<T> fromException(String message, Exception exception) {
 		exception.printStackTrace();
 		return GameResult.error(new StringTextComponent(message + ": " + exception.toString()));
+	}
+
+	public static <T> CompletableFuture<GameResult<T>> handleException(CompletableFuture<GameResult<T>> future, String message) {
+		return future.handle((result, throwable) -> {
+			if (throwable instanceof Exception) {
+				return GameResult.fromException(message, (Exception) throwable);
+			}
+			return result;
+		});
 	}
 
 	public T getOk() {

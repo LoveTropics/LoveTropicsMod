@@ -1,6 +1,7 @@
 package com.lovetropics.minigames.client.chase;
 
 import com.lovetropics.minigames.Constants;
+import com.lovetropics.minigames.client.screen.PlayerFaces;
 import com.mojang.authlib.GameProfile;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -11,7 +12,6 @@ import net.minecraft.client.util.InputMappings;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.scoreboard.ScorePlayerTeam;
-import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.api.distmarker.Dist;
@@ -274,13 +274,9 @@ public final class ChaseCameraUi {
 		}
 
 		void render(MatrixStack transform, ChaseCameraSession session, int x, int y) {
+			PlayerFaces.render(playerIcon, transform, x, y, 12);
+
 			String name = nameFunction.apply(session);
-			ResourceLocation skin = session.getPlayerSkin(playerIcon);
-
-			CLIENT.getTextureManager().bindTexture(skin);
-			AbstractGui.blit(transform, x, y, 12, 12, 8.0F, 8.0F, 8, 8, 64, 64);
-			AbstractGui.blit(transform, x, y, 12, 12, 40.0F, 8.0F, 8, 8, 64, 64);
-
 			CLIENT.fontRenderer.drawString(transform, name, x + ENTRY_SIZE, y + ENTRY_PADDING, color);
 		}
 

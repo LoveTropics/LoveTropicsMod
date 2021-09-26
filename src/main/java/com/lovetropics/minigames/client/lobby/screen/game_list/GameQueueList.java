@@ -1,9 +1,11 @@
 package com.lovetropics.minigames.client.lobby.screen.game_list;
 
-import com.lovetropics.minigames.client.lobby.ClientGameQueueEntry;
+import com.lovetropics.minigames.client.lobby.state.ClientQueuedGame;
+import com.lovetropics.minigames.client.screen.FlexUi;
+import com.lovetropics.minigames.client.screen.flex.Flex;
+import com.lovetropics.minigames.client.screen.flex.FlexSolver;
 import com.lovetropics.minigames.client.screen.flex.Layout;
 import com.mojang.blaze3d.matrix.MatrixStack;
-import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.button.Button;
 import net.minecraft.util.text.ITextComponent;
@@ -12,68 +14,85 @@ import net.minecraft.util.text.TextFormatting;
 
 import javax.annotation.Nullable;
 import java.util.List;
-import java.util.function.IntConsumer;
 
 public final class GameQueueList extends AbstractGameList {
 	private static final ITextComponent TITLE = new StringTextComponent("Game Queue")
 			.mergeStyle(TextFormatting.UNDERLINE, TextFormatting.BOLD);
 
-	private final IntConsumer select;
-	private final Runnable enqueue;
+	private final Handlers handlers;
 
-	public GameQueueList(Screen screen, Layout layout, IntConsumer select, Runnable enqueue) {
-		super(screen, layout, TITLE);
+	private final Button enqueueButton;
+	private final Button removeButton;
 
-		this.select = select;
-		this.enqueue = enqueue;
+	public GameQueueList(Screen screen, Layout main, Layout footer, Handlers handlers) {
+		super(screen, main, TITLE);
+		this.handlers = handlers;
+
+		Flex root = new Flex().rows();
+		Flex enqueue = root.child().size(20, 20).marginRight(2);
+		Flex cancel = root.child().size(20, 20).marginLeft(2);
+
+		FlexSolver.Results solve = new FlexSolver(footer.content()).apply(root);
+		this.enqueueButton = FlexUi.createButton(solve.layout(enqueue), new StringTextComponent("+"), this::enqueue);
+		this.removeButton = FlexUi.createButton(solve.layout(cancel), new StringTextComponent("-"), this::remove);
+
+		this.setSelected(null);
 	}
 
-	public void setEntries(List<ClientGameQueueEntry> games) {
-		this.clearEntries();
-		for (ClientGameQueueEntry entry : games) {
-			this.addEntry(new GameEntry(this, entry.definition));
-		}
+	public void setEntries(List<ClientQueuedGame> games) {
+		this.setSelected(null);
 
-		this.addEntry(new EnqueueEntry(this));
+		this.clearEntries();
+		for (ClientQueuedGame game : games) {
+			this.addEntry(new Entry(this, game.definition));
+		}
+	}
+
+	private void enqueue(Button button) {
+		this.handlers.enqueue();
+	}
+
+	private void remove(Button button) {
+		Entry selected = this.getSelected();
+		this.setSelected(null);
+
+		if (selected != null && this.removeEntry(selected)) {
+			int selectedIdx = this.getEventListeners().indexOf(selected);
+			if (selectedIdx != -1) {
+				this.handlers.remove(selectedIdx);
+			}
+		}
 	}
 
 	@Override
 	public void setSelected(@Nullable Entry entry) {
 		int index = this.getEventListeners().indexOf(entry);
-		this.select.accept(index);
+		this.handlers.select(index);
+
+		this.removeButton.active = entry != null;
 
 		super.setSelected(entry);
 	}
 
-	public static final class EnqueueEntry extends Entry {
-		private final Button button;
+	@Override
+	public void renderButtons(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
+		this.enqueueButton.render(matrixStack, mouseX, mouseY, partialTicks);
+		this.removeButton.render(matrixStack, mouseX, mouseY, partialTicks);
+	}
 
-		EnqueueEntry(GameQueueList list) {
-			super(list);
-
-			this.button = new Button(
-					PADDING, PADDING,
-					20, 20,
-					new StringTextComponent("+"), b -> list.enqueue.run()
-			);
+	@Override
+	public boolean mouseClicked(double mouseX, double mouseY, int button) {
+		if (this.enqueueButton.mouseClicked(mouseX, mouseY, button) || this.removeButton.mouseClicked(mouseX, mouseY, button)) {
+			return true;
 		}
+		return super.mouseClicked(mouseX, mouseY, button);
+	}
 
-		@Override
-		public void render(MatrixStack matrixStack, int index, int top, int left, int width, int height, int mouseX, int mouseY, boolean isMouseOver, float partialTicks) {
-			FontRenderer font = client.fontRenderer;
-			font.drawString(matrixStack, "Enqueue", left + 20 + 2 * PADDING, top + (height - font.FONT_HEIGHT) / 2, 0xFFFFFF);
+	public interface Handlers {
+		void select(int index);
 
-			matrixStack.push();
-			matrixStack.translate(left, top, 0.0);
-			this.button.render(matrixStack, mouseX - left, mouseY - top, partialTicks);
-			matrixStack.pop();
-		}
+		void enqueue();
 
-		@Override
-		public boolean mouseClicked(double mouseX, double mouseY, int button) {
-			double entryMouseX = mouseX - list.getRowLeft();
-			double entryMouseY = mouseY - list.getRowTop(list.getEventListeners().indexOf(this));
-			return this.button.mouseClicked(entryMouseX, entryMouseY, button);
-		}
+		void remove(int index);
 	}
 }

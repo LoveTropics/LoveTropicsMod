@@ -1,11 +1,11 @@
-package com.lovetropics.minigames.client.lobby;
+package com.lovetropics.minigames.client.lobby.state;
 
 import net.minecraft.network.PacketBuffer;
 
-public final class ClientGameQueueEntry {
+public final class ClientQueuedGame {
 	public final ClientGameDefinition definition;
 
-	public ClientGameQueueEntry(ClientGameDefinition definition) {
+	public ClientQueuedGame(ClientGameDefinition definition) {
 		this.definition = definition;
 	}
 
@@ -13,8 +13,8 @@ public final class ClientGameQueueEntry {
 		this.definition.encode(buffer);
 	}
 
-	public static ClientGameQueueEntry decode(PacketBuffer buffer) {
+	public static ClientQueuedGame decode(PacketBuffer buffer) {
 		ClientGameDefinition definition = ClientGameDefinition.decode(buffer);
-		return new ClientGameQueueEntry(definition);
+		return new ClientQueuedGame(definition);
 	}
 }

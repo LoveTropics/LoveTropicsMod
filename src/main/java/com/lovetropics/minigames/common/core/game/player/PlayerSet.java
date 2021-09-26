@@ -7,6 +7,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.management.PlayerList;
 
 import javax.annotation.Nullable;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.UUID;
@@ -65,6 +66,31 @@ public interface PlayerSet extends PlayerIterable {
 			@Override
 			public Iterator<ServerPlayerEntity> iterator() {
 				return players.getPlayers().iterator();
+			}
+		};
+	}
+
+	static PlayerSet wrap(MinecraftServer server, Collection<UUID> players) {
+		return new PlayerSet() {
+			@Override
+			public boolean contains(UUID id) {
+				return players.contains(id);
+			}
+
+			@Nullable
+			@Override
+			public ServerPlayerEntity getPlayerBy(UUID id) {
+				return this.contains(id) ? server.getPlayerList().getPlayerByUUID(id) : null;
+			}
+
+			@Override
+			public int size() {
+				return players.size();
+			}
+
+			@Override
+			public Iterator<ServerPlayerEntity> iterator() {
+				return PlayerIterable.resolvingIterator(server, players.iterator());
 			}
 		};
 	}

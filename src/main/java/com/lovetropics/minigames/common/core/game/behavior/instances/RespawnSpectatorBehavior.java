@@ -33,7 +33,7 @@ public final class RespawnSpectatorBehavior implements IGameBehavior {
 		player.inventory.dropAllItems();
 
 		if (!game.getSpectators().contains(player)) {
-			game.setPlayerRole(player, PlayerRole.SPECTATOR);
+			game.addPlayerTo(player, PlayerRole.SPECTATOR);
 			player.setHealth(20.0F);
 
 			sendDeathMessage(game, player);

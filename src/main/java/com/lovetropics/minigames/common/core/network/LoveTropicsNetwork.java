@@ -2,11 +2,12 @@ package com.lovetropics.minigames.common.core.network;
 
 import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.LoveTropics;
+import com.lovetropics.minigames.client.lobby.state.message.LeftLobbyMessage;
 import com.lovetropics.minigames.client.lobby.ManageLobbyScreenMessage;
-import com.lovetropics.minigames.client.minigame.ClientGameLobbyMessage;
-import com.lovetropics.minigames.client.minigame.ClientRoleMessage;
+import com.lovetropics.minigames.client.lobby.state.message.JoinedLobbyMessage;
+import com.lovetropics.minigames.client.lobby.state.message.LobbyUpdateMessage;
 import com.lovetropics.minigames.client.toast.ShowNotificationToastMessage;
-import com.lovetropics.minigames.client.minigame.PlayerCountsMessage;
+import com.lovetropics.minigames.client.lobby.state.message.LobbyPlayersMessage;
 import com.lovetropics.minigames.common.core.network.workspace.AddWorkspaceRegionMessage;
 import com.lovetropics.minigames.common.core.network.workspace.SetWorkspaceMessage;
 import com.lovetropics.minigames.common.core.network.workspace.UpdateWorkspaceRegionMessage;
@@ -62,37 +63,43 @@ public final class LoveTropicsNetwork {
 				.consumer(ChaseSpectatePlayerMessage::handle)
 				.add();
 
-		CHANNEL.messageBuilder(ClientGameLobbyMessage.class, 6, NetworkDirection.PLAY_TO_CLIENT)
-				.encoder(ClientGameLobbyMessage::encode)
-				.decoder(ClientGameLobbyMessage::decode)
-				.consumer(ClientGameLobbyMessage::handle)
+		CHANNEL.messageBuilder(LobbyUpdateMessage.class, 6, NetworkDirection.PLAY_TO_CLIENT)
+				.encoder(LobbyUpdateMessage::encode)
+				.decoder(LobbyUpdateMessage::decode)
+				.consumer(LobbyUpdateMessage::handle)
 				.add();
 
-		CHANNEL.messageBuilder(ClientRoleMessage.class, 7, NetworkDirection.PLAY_TO_CLIENT)
-				.encoder(ClientRoleMessage::encode)
-				.decoder(ClientRoleMessage::decode)
-				.consumer(ClientRoleMessage::handle)
+		CHANNEL.messageBuilder(JoinedLobbyMessage.class, 7, NetworkDirection.PLAY_TO_CLIENT)
+				.encoder(JoinedLobbyMessage::encode)
+				.decoder(JoinedLobbyMessage::decode)
+				.consumer(JoinedLobbyMessage::handle)
 				.add();
 
-		CHANNEL.messageBuilder(PlayerCountsMessage.class, 8, NetworkDirection.PLAY_TO_CLIENT)
-				.encoder(PlayerCountsMessage::encode)
-				.decoder(PlayerCountsMessage::decode)
-				.consumer(PlayerCountsMessage::handle)
+		CHANNEL.messageBuilder(LeftLobbyMessage.class, 8, NetworkDirection.PLAY_TO_CLIENT)
+				.encoder(LeftLobbyMessage::encode)
+				.decoder(LeftLobbyMessage::decode)
+				.consumer(LeftLobbyMessage::handle)
 				.add();
 
-		CHANNEL.messageBuilder(PlayerDisguiseMessage.class, 9, NetworkDirection.PLAY_TO_CLIENT)
+		CHANNEL.messageBuilder(LobbyPlayersMessage.class, 9, NetworkDirection.PLAY_TO_CLIENT)
+				.encoder(LobbyPlayersMessage::encode)
+				.decoder(LobbyPlayersMessage::decode)
+				.consumer(LobbyPlayersMessage::handle)
+				.add();
+
+		CHANNEL.messageBuilder(PlayerDisguiseMessage.class, 10, NetworkDirection.PLAY_TO_CLIENT)
 				.encoder(PlayerDisguiseMessage::encode)
 				.decoder(PlayerDisguiseMessage::decode)
 				.consumer(PlayerDisguiseMessage::handle)
 				.add();
 
-		CHANNEL.messageBuilder(ShowNotificationToastMessage.class, 10, NetworkDirection.PLAY_TO_CLIENT)
+		CHANNEL.messageBuilder(ShowNotificationToastMessage.class, 11, NetworkDirection.PLAY_TO_CLIENT)
 				.encoder(ShowNotificationToastMessage::encode)
 				.decoder(ShowNotificationToastMessage::decode)
 				.consumer(ShowNotificationToastMessage::handle)
 				.add();
 
-		CHANNEL.messageBuilder(ManageLobbyScreenMessage.class, 11, NetworkDirection.PLAY_TO_CLIENT)
+		CHANNEL.messageBuilder(ManageLobbyScreenMessage.class, 12, NetworkDirection.PLAY_TO_CLIENT)
 				.encoder(ManageLobbyScreenMessage::encode)
 				.decoder(ManageLobbyScreenMessage::decode)
 				.consumer(ManageLobbyScreenMessage::handle)

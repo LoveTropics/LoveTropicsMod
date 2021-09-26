@@ -1,16 +1,10 @@
 package com.lovetropics.minigames.client.minigame;
 
 import com.lovetropics.minigames.Constants;
-import com.lovetropics.minigames.common.core.game.GameStatus;
-import com.lovetropics.minigames.common.core.game.player.PlayerRole;
-
 import com.mojang.blaze3d.matrix.MatrixStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.ClientPlayerNetworkEvent.LoggedOutEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent.ElementType;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -33,7 +27,8 @@ public class MinigameGui {
 		final int lineHeight = fnt.FONT_HEIGHT + padding;
 		int y = padding;
 
-		for (ClientMinigameState state : ClientMinigameState.getGames()) {
+		// TODO: reimplement
+		/*for (ClientLobbyState state : ClientLobbyState.getLobbies()) {
 			// Nothing to show if they are currently playing an active minigame
 			GameStatus status = state.getStatus();
 			if (status == GameStatus.ACTIVE && state.getRole() != null) return;
@@ -67,11 +62,6 @@ public class MinigameGui {
 				fnt.drawStringWithShadow(transform, line, padding, y, -1);
 				y += lineHeight + padding;
 			}
-		}
-	}
-
-	@SubscribeEvent
-	public static void onClientDisconnect(LoggedOutEvent event) {
-		ClientMinigameState.clear();
+		}*/
 	}
 }

@@ -20,6 +20,9 @@ public interface IGameLobby {
 
 	PlayerSet getAllPlayers();
 
+	@Nullable
+	PlayerRole getRegisteredRoleFor(ServerPlayerEntity player);
+
 	LobbyGameQueue getGameQueue();
 
 	@Nullable
