@@ -14,3 +14,13 @@ authors="Cojomax99, tterrag, kingbdogz" #optional
 description='''
 Minigame engine for the LoveTropics livestream event.
 '''
+
+[[mods]]
+modId="weather2"
+version="${file.jarVersion}"
+displayName="Weather2"
+logoFile="itcrowd.png"
+authors="Corosus"
+description='''
+
+'''
