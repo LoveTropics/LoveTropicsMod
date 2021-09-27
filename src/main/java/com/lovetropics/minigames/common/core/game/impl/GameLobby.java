@@ -10,7 +10,6 @@ import com.lovetropics.minigames.common.core.game.IActiveGame;
 import com.lovetropics.minigames.common.core.game.IGameDefinition;
 import com.lovetropics.minigames.common.core.game.lobby.GameLobbyMetadata;
 import com.lovetropics.minigames.common.core.game.lobby.IGameLobby;
-import com.lovetropics.minigames.common.core.game.lobby.LobbyGameQueue;
 import com.lovetropics.minigames.common.core.game.lobby.LobbyVisibility;
 import com.lovetropics.minigames.common.core.game.player.PlayerRole;
 import com.lovetropics.minigames.common.core.game.player.PlayerSet;

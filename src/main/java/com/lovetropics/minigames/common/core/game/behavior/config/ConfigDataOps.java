@@ -300,7 +300,7 @@ public class ConfigDataOps implements DynamicOps<ConfigData> {
         return new ArrayBuilder();
     }
 
-    private static final class ArrayBuilder implements ListBuilder<ConfigData> {
+    private final class ArrayBuilder implements ListBuilder<ConfigData> {
         private DataResult<ListConfigData> builder = DataResult.success(ListConfigData.EMPTY, Lifecycle.stable());
 
         @Override
@@ -322,7 +322,7 @@ public class ConfigDataOps implements DynamicOps<ConfigData> {
         public ListBuilder<ConfigData> add(final DataResult<ConfigData> value) {
             builder = builder.apply2stable((b, element) -> {
             	if (b == ListConfigData.EMPTY) b = new ListConfigData(element.type());
-                b.add(element.value());
+                b.add(element.type() == ConfigType.COMPOSITE ? element : element.value());
                 return b;
             }, value);
             return this;
@@ -343,6 +343,9 @@ public class ConfigDataOps implements DynamicOps<ConfigData> {
         @Override
         public DataResult<ConfigData> build(final ConfigData prefix) {
             final DataResult<ConfigData> result = builder.flatMap(b -> {
+            	if (prefix == empty()) {
+            		return DataResult.success(b);
+            	}
                 if (prefix.type() != ConfigType.LIST) {
                     return DataResult.error("Cannot append a list to not a list: " + prefix, prefix);
                 }

@@ -1,21 +1,27 @@
 package com.lovetropics.minigames.client.lobby.screen;
 
+import java.util.List;
+
+import com.lovetropics.minigames.client.lobby.screen.game_config.GameConfig;
+import com.lovetropics.minigames.client.lobby.screen.game_list.GameList;
+import com.lovetropics.minigames.client.lobby.screen.player_list.LobbyPlayerList;
 import com.lovetropics.minigames.client.lobby.state.ClientGameDefinition;
 import com.lovetropics.minigames.client.lobby.state.ClientLobbyState;
 import com.lovetropics.minigames.client.lobby.state.ClientQueuedGame;
-import com.lovetropics.minigames.client.lobby.screen.game_list.GameList;
-import com.lovetropics.minigames.client.lobby.screen.player_list.LobbyPlayerList;
 import com.lovetropics.minigames.client.screen.FlexUi;
-import com.lovetropics.minigames.client.screen.flex.*;
+import com.lovetropics.minigames.client.screen.flex.Align;
+import com.lovetropics.minigames.client.screen.flex.Box;
+import com.lovetropics.minigames.client.screen.flex.Flex;
+import com.lovetropics.minigames.client.screen.flex.FlexSolver;
+import com.lovetropics.minigames.client.screen.flex.Layout;
 import com.mojang.blaze3d.matrix.MatrixStack;
+
 import net.minecraft.client.gui.DialogTexts;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
-
-import java.util.List;
 
 // TODO: localisation
 public final class ManageLobbyScreen extends Screen {
@@ -28,6 +34,7 @@ public final class ManageLobbyScreen extends Screen {
 
 	private TextFieldWidget nameField;
 	private GameList gameList;
+	private GameConfig gameConfig;
 	private LobbyPlayerList playerList;
 
 	private int selectedGameIndex = -1;
@@ -68,6 +75,9 @@ public final class ManageLobbyScreen extends Screen {
 				}
 			}
 		}));
+		
+		// TODO actually save config data
+		gameConfig = addListener(new GameConfig(this, layouts.centerColumn, () -> {}));
 
 		nameField = addListener(FlexUi.createTextField(layouts.name, font, new StringTextComponent("Lobby Name")));
 		nameField.setMaxStringLength(128);

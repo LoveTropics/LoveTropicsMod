@@ -23,7 +23,7 @@ public final class BehaviorReference {
 		result.result().ifPresent(behavior -> add.accept(type, behavior));
 
 		result.error().ifPresent(error -> {
-			LoveTropics.LOGGER.warn("Failed to parse behavior declaration of type {}: {}", type, error);
+			LoveTropics.LOGGER.warn("Failed to parse behavior declaration of type {}: {}", type.getRegistryName(), error);
 		});
 	}
 }

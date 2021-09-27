@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -12,13 +13,6 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
 public abstract class ConfigData {
-	
-	public enum DisplayHint {
-		NONE,
-		SLIDER,
-		//TBD
-		;
-	}
 	
 	private DisplayHint display = DisplayHint.NONE;
 	
@@ -80,7 +74,7 @@ public abstract class ConfigData {
 		}
 	}
 	
-	public static class ListConfigData extends ConfigData {
+	public static class ListConfigData extends ConfigData implements Iterable<Object> {
 		
 		public static final ListConfigData EMPTY = new ListConfigData(ConfigType.NONE);
 		
@@ -154,6 +148,11 @@ public abstract class ConfigData {
 					.append("componentType", componentType())
 					.append("values", values)
 					.build();
+		}
+
+		@Override
+		public Iterator<Object> iterator() {
+			return values.iterator();
 		}
 	}
 

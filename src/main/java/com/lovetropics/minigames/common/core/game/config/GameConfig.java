@@ -58,7 +58,7 @@ public final class GameConfig implements IGameDefinition {
 					Codec.STRING.optionalFieldOf("display_id").forGetter(c -> Optional.of(c.displayId.getPath())),
 					Codec.STRING.optionalFieldOf("telemetry_key").forGetter(c -> Optional.of(c.telemetryKey)),
 					Codec.STRING.fieldOf("translation_key").forGetter(c -> c.translationKey),
-					GameMapProviders.CODEC.fieldOf("map").forGetter(c -> c.map),
+					GameMapProviders.CODEC.fieldOf("map_provider").forGetter(c -> c.map),
 					Codec.INT.optionalFieldOf("minimum_participants", 1).forGetter(c -> c.minimumParticipants),
 					Codec.INT.optionalFieldOf("maximum_participants", 100).forGetter(c -> c.maximumParticipants),
 					MoreCodecs.AABB.optionalFieldOf("area", IForgeTileEntity.INFINITE_EXTENT_AABB).forGetter(c -> c.area),

@@ -4,9 +4,11 @@ import net.minecraft.network.PacketBuffer;
 
 public final class ClientQueuedGame {
 	public final ClientGameDefinition definition;
+	public final ClientBehaviorMap configs;
 
-	public ClientQueuedGame(ClientGameDefinition definition) {
+	public ClientQueuedGame(ClientGameDefinition definition, ClientBehaviorMap configs) {
 		this.definition = definition;
+		this.configs = configs;
 	}
 
 	public void encode(PacketBuffer buffer) {
@@ -15,6 +17,7 @@ public final class ClientQueuedGame {
 
 	public static ClientQueuedGame decode(PacketBuffer buffer) {
 		ClientGameDefinition definition = ClientGameDefinition.decode(buffer);
-		return new ClientQueuedGame(definition);
+		ClientBehaviorMap configs = ClientBehaviorMap.decode(buffer);
+		return new ClientQueuedGame(definition, configs);
 	}
 }

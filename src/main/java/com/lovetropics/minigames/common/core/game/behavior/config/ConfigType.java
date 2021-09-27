@@ -10,7 +10,7 @@ public enum ConfigType {
 	BOOLEAN(Boolean.class),
 	ENUM(Enum.class),
 	LIST(Collection.class),
-	COMPOSITE,
+	COMPOSITE(ConfigData.class),
 	;
 	
 	private final Class<?> requiredType;

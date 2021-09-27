@@ -3,7 +3,7 @@ package com.lovetropics.minigames.common.core.game.behavior;
 import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.IActiveGame;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
-import com.lovetropics.minigames.common.core.game.behavior.config.BehaviorConfig;
+import com.lovetropics.minigames.common.core.game.behavior.config.ConfigList;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.state.GameStateMap;
 import com.mojang.serialization.Codec;
@@ -16,8 +16,8 @@ public interface IGameBehavior {
 			type -> DataResult.success(type.codec)
 	);
 
-	default BehaviorConfig<?> getConfigurables() {
-		return new BehaviorConfig<Void>("NONE", null);
+	default ConfigList getConfigurables() {
+		return ConfigList.empty();
 	}
 
 //	default IGameBehavior withConfig(ConfigList config) {

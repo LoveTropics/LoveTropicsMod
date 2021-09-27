@@ -7,7 +7,6 @@ import com.lovetropics.minigames.common.core.game.GameStopReason;
 import com.lovetropics.minigames.common.core.game.IActiveGame;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameWaitingEvents;
 import com.lovetropics.minigames.common.core.game.config.WaitingLobbyConfig;
-import com.lovetropics.minigames.common.core.game.lobby.QueuedGame;
 import com.lovetropics.minigames.common.core.game.map.GameMap;
 import com.lovetropics.minigames.common.core.game.player.PlayerRole;
 import com.lovetropics.minigames.common.core.game.state.instances.control.ControlCommandInvoker;
@@ -84,23 +83,23 @@ interface LobbyState {
 			if (game == null) return null;
 
 			WaitingLobbyConfig waitingLobby = game.definition().getWaitingLobby();
-			if (waitingLobby != null) {
+//			if (waitingLobby != null) {
 				return waitingLobby(game, waitingLobby);
-			} else {
-				return startGame(game);
-			}
+//			} else {
+//				return startGame(game);
+//			}
 		}
 
-		private LobbyState waitingLobby(QueuedGame game, WaitingLobbyConfig waitingLobby) {
+		private LobbyState waitingLobby(QueuedGame game, @Nullable WaitingLobbyConfig waitingLobby) {
 			// TODO: use the waiting lobby map!
-			ResourceLocation map = waitingLobby.map();
+			ResourceLocation map = waitingLobby == null ? null : waitingLobby.map();
 
-			return WaitingGame.create(lobby, game.behaviors())
-					.map(waiting -> (LobbyState) new Waiting(waiting, () -> startGame(game), this::nextGame))
+			return WaitingGame.create(lobby, game)
+					.map(waiting -> (LobbyState) new Waiting(waiting, () -> startGame(waiting), this::nextGame))
 					.orElseGet(this::errored);
 		}
 
-		private LobbyState startGame(QueuedGame game) {
+		private LobbyState startGame(WaitingGame game) {
 			CompletableFuture<LobbyState> future = this.startGameAsync(game)
 					.thenApply(result ->
 							result.map(active -> (LobbyState) new Active(active, this::nextGame))
@@ -110,7 +109,7 @@ interface LobbyState {
 		}
 
 		// TODO: extract this code somewhere else?
-		private CompletableFuture<GameResult<ActiveGame>> startGameAsync(QueuedGame game) {
+		private CompletableFuture<GameResult<ActiveGame>> startGameAsync(WaitingGame game) {
 			CompletableFuture<GameResult<ActiveGame>> future = openMap(game).thenComposeAsync(map -> {
 				if (map.isOk()) {
 					return startGame(game, map.getOk());
@@ -122,11 +121,11 @@ interface LobbyState {
 			return GameResult.handleException(future, "Unknown exception starting game");
 		}
 
-		private CompletableFuture<GameResult<GameMap>> openMap(QueuedGame game) {
+		private CompletableFuture<GameResult<GameMap>> openMap(WaitingGame game) {
 			return game.definition().getMap().open(lobby.getServer());
-		}
+		}	
 
-		private CompletableFuture<GameResult<ActiveGame>> startGame(QueuedGame game, GameMap map) {
+		private CompletableFuture<GameResult<ActiveGame>> startGame(WaitingGame game, GameMap map) {
 			// TODO: if a player registers after this point they won't be considered at all to join as a spectator
 			List<ServerPlayerEntity> participants = new ArrayList<>();
 			List<ServerPlayerEntity> spectators = new ArrayList<>();

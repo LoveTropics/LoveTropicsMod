@@ -1,13 +1,24 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances.team;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.Set;
+import java.util.UUID;
+
+import javax.annotation.Nullable;
+
+import org.apache.commons.lang3.RandomStringUtils;
+
 import com.lovetropics.lib.codec.MoreCodecs;
 import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.IActiveGame;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.config.BehaviorConfig;
-import com.lovetropics.minigames.common.core.game.behavior.config.ConfigData.CompositeConfigData;
-import com.lovetropics.minigames.common.core.game.behavior.config.ConfigDataOps;
+import com.lovetropics.minigames.common.core.game.behavior.config.ConfigList;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameLifecycleEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
@@ -23,10 +34,12 @@ import com.lovetropics.minigames.common.core.game.util.TeamAllocator;
 import com.lovetropics.minigames.common.util.Scheduler;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.item.DyeColor;
 import net.minecraft.scoreboard.ScorePlayerTeam;
 import net.minecraft.scoreboard.ServerScoreboard;
 import net.minecraft.server.MinecraftServer;
@@ -37,17 +50,19 @@ import net.minecraft.util.text.Style;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.event.ClickEvent;
 import net.minecraft.util.text.event.HoverEvent;
-import org.apache.commons.lang3.RandomStringUtils;
-
-import javax.annotation.Nullable;
-import java.util.*;
 
 public final class TeamsBehavior implements IGameBehavior {
+	
+	private static final BehaviorConfig<List<TeamKey>> CFG_TEAMS = new BehaviorConfig<>("teams", TeamKey.CODEC.listOf())
+			.enumHint("dye", s -> DyeColor.byTranslationKey(s, null));
+	private static final BehaviorConfig<Boolean> CFG_FF = new BehaviorConfig<>("friendly_fire", Codec.BOOL);
+	private static final BehaviorConfig<Map<String, List<UUID>>> CFG_ASSIGNED = new BehaviorConfig<>("assign", Codec.unboundedMap(Codec.STRING, MoreCodecs.UUID_STRING.listOf()));
+	
 	public static final Codec<TeamsBehavior> CODEC = RecordCodecBuilder.create(instance -> {
 		return instance.group(
-				TeamKey.CODEC.listOf().fieldOf("teams").forGetter(c -> c.teams),
-				Codec.BOOL.optionalFieldOf("friendly_fire", false).forGetter(c -> c.friendlyFire),
-				Codec.unboundedMap(Codec.STRING, MoreCodecs.UUID_STRING.listOf()).fieldOf("assign").orElseGet(Object2ObjectOpenHashMap::new).forGetter(c -> c.assignedTeams)
+				CFG_TEAMS.forGetter(c -> c.teams),
+				CFG_FF.forGetterOptional(c -> c.friendlyFire, false),
+				CFG_ASSIGNED.fieldOf().orElseGet(Object2ObjectOpenHashMap::new).forGetter(c -> c.assignedTeams)
 		).apply(instance, TeamsBehavior::new);
 	});
 
@@ -75,13 +90,16 @@ public final class TeamsBehavior implements IGameBehavior {
 			}
 		}
 		
-		getConfigurables();
+		System.out.println(getConfigurables());
 	}
-	
+
 	@Override
-	public BehaviorConfig<?> getConfigurables() {
-		System.out.println(CODEC.encode(this, ConfigDataOps.INSTANCE, new CompositeConfigData()));
-		return null;
+	public ConfigList getConfigurables() {
+		return ConfigList.builder()
+				.with(CFG_TEAMS, this.teams)
+				.with(CFG_FF, friendlyFire)
+				.with(CFG_ASSIGNED, this.assignedTeams)
+				.build();
 	}
 
 	@Override

@@ -1,4 +1,4 @@
-package com.lovetropics.minigames.common.core.game.lobby;
+package com.lovetropics.minigames.common.core.game.impl;
 
 import com.lovetropics.minigames.common.core.game.IGameDefinition;
 import com.lovetropics.minigames.common.core.game.behavior.BehaviorMap;
@@ -17,11 +17,11 @@ public final class QueuedGame {
 		return new QueuedGame(game, behaviors);
 	}
 
-	public IGameDefinition definition() {
+	IGameDefinition definition() {
 		return this.definition;
 	}
 
-	public BehaviorMap behaviors() {
+	BehaviorMap behaviors() {
 		return this.behaviors;
 	}
 }

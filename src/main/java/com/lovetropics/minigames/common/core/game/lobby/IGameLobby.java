@@ -2,6 +2,7 @@ package com.lovetropics.minigames.common.core.game.lobby;
 
 import com.lovetropics.minigames.common.core.game.GameResult;
 import com.lovetropics.minigames.common.core.game.IActiveGame;
+import com.lovetropics.minigames.common.core.game.impl.LobbyGameQueue;
 import com.lovetropics.minigames.common.core.game.player.PlayerRole;
 import com.lovetropics.minigames.common.core.game.player.PlayerSet;
 import com.lovetropics.minigames.common.core.game.state.instances.control.ControlCommandInvoker;
