@@ -4,6 +4,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.common.config.ConfigLT;
+import com.lovetropics.minigames.common.core.game.IGameDefinition;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePackageEvents;
@@ -127,12 +128,12 @@ public final class GameInstanceTelemetry implements IGameState {
 
 		payload.addProperty("id", game.getLobby().getMetadata().id().uuid().toString());
 
-		// TODO
-		/*JsonObject minigame = new JsonObject();
+		IGameDefinition definition = game.getDefinition();
+		JsonObject minigame = new JsonObject();
 		minigame.addProperty("id", definition.getDisplayId().toString());
 		minigame.addProperty("telemetry_key", definition.getTelemetryKey());
 		minigame.addProperty("name", definition.getName().getString());
-		payload.add("minigame", minigame);*/
+		payload.add("minigame", minigame);
 
 		telemetry.post(endpoint, payload);
 	}

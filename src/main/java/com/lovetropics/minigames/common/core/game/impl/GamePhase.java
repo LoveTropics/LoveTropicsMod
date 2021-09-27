@@ -29,24 +29,26 @@ import java.util.EnumMap;
 import java.util.concurrent.CompletableFuture;
 
 public class GamePhase implements IGamePhase {
-	private final GameInstance game;
-	private final MinecraftServer server;
-	private final GameMap map;
+	final GameInstance game;
+	final MinecraftServer server;
+	final IGamePhaseDefinition definition;
 
-	private final BehaviorMap behaviors;
+	final GameMap map;
+	final BehaviorMap behaviors;
 
-	private final EnumMap<PlayerRole, MutablePlayerSet> roles = new EnumMap<>(PlayerRole.class);
+	final EnumMap<PlayerRole, MutablePlayerSet> roles = new EnumMap<>(PlayerRole.class);
 
-	private final GameEventListeners events = new GameEventListeners();
+	final GameEventListeners events = new GameEventListeners();
 
-	private long startTime;
-	private boolean stopped;
+	long startTime;
+	boolean stopped;
 
-	private GamePhase(GameInstance game, GameMap map, BehaviorMap behaviors) {
+	private GamePhase(GameInstance game, IGamePhaseDefinition definition, GameMap map, BehaviorMap behaviors) {
 		this.game = game;
 		this.server = game.getServer();
-		this.map = map;
+		this.definition = definition;
 
+		this.map = map;
 		this.behaviors = behaviors;
 
 		for (PlayerRole role : PlayerRole.ROLES) {
@@ -61,7 +63,7 @@ public class GamePhase implements IGamePhase {
 		CompletableFuture<GameResult<GamePhase>> future = definition.getMap().open(server)
 				.thenComposeAsync(r -> r.thenFlatMap(map -> {
 					BehaviorMap behaviors = definition.createBehaviors();
-					GamePhase phase = new GamePhase(game, map, behaviors);
+					GamePhase phase = new GamePhase(game, definition, map, behaviors);
 
 					return phase.registerBehaviors()
 							.thenFlatMap($ -> phase.start())
@@ -89,6 +91,8 @@ public class GamePhase implements IGamePhase {
 
 	private CompletableFuture<GameResult<Unit>> start() {
 		this.map.getName().ifPresent(mapName -> this.getStatistics().global().set(StatisticKey.MAP, mapName));
+
+		this.game.onPhaseStart(this);
 
 		try {
 			invoker(GamePhaseEvents.INITIALIZE).start();
@@ -124,6 +128,11 @@ public class GamePhase implements IGamePhase {
 	@Override
 	public IGameInstance getGame() {
 		return game;
+	}
+
+	@Override
+	public IGamePhaseDefinition getPhaseDefinition() {
+		return definition;
 	}
 
 	@Override
@@ -194,6 +203,8 @@ public class GamePhase implements IGamePhase {
 		if (stopped) {
 			return GameResult.error(new TranslationTextComponent(LoveTropicsLangKeys.COMMAND_NO_MINIGAME));
 		}
+
+		game.onPhaseStop(this);
 
 		stopped = true;
 

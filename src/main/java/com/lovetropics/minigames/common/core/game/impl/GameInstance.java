@@ -3,6 +3,7 @@ package com.lovetropics.minigames.common.core.game.impl;
 import com.lovetropics.minigames.client.data.LoveTropicsLangKeys;
 import com.lovetropics.minigames.common.core.game.*;
 import com.lovetropics.minigames.common.core.game.lobby.IGameLobby;
+import com.lovetropics.minigames.common.core.game.lobby.LobbyControl;
 import com.lovetropics.minigames.common.core.game.player.PlayerSet;
 import com.lovetropics.minigames.common.core.game.state.GameStateMap;
 import com.lovetropics.minigames.common.core.game.util.GameMessages;
@@ -44,7 +45,7 @@ final class GameInstance implements IGameInstance {
 	}
 
 	private State playing(IGamePhaseDefinition playingPhase) {
-		return startPhase(playingPhase, Finished::new);
+		return startPhase(playingPhase, () -> null);
 	}
 
 	private State startPhase(IGamePhaseDefinition phaseDefinition, Supplier<State> next) {
@@ -58,7 +59,7 @@ final class GameInstance implements IGameInstance {
 
 	private State errored(ITextComponent error) {
 		// TODO
-		return new Finished();
+		return null;
 	}
 
 	@Override
@@ -79,17 +80,32 @@ final class GameInstance implements IGameInstance {
 	@Override
 	@Nullable
 	public GamePhase getCurrentPhase() {
-		return state.getCurrentPhase();
+		State state = this.state;
+		return state != null ? state.getCurrentPhase() : null;
+	}
+
+	GameResult<Unit> requestStart() {
+		State state = this.state;
+		if (state == null) {
+			return GameResult.error(new TranslationTextComponent(LoveTropicsLangKeys.COMMAND_NO_MINIGAME));
+		}
+
+		LobbyControl control = state.getControl(LobbyControl.Type.PLAY);
+		if (control == null) {
+			return GameResult.error(new TranslationTextComponent(LoveTropicsLangKeys.COMMAND_NO_MINIGAME));
+		}
+
+		return control.run();
 	}
 
 	@Override
 	public GameResult<Unit> stop(GameStopReason reason) {
-		GamePhase phase = state.getCurrentPhase();
+		GamePhase phase = getCurrentPhase();
 		if (phase == null) {
 			return GameResult.error(new TranslationTextComponent(LoveTropicsLangKeys.COMMAND_NO_MINIGAME));
 		}
 
-		state = new Finished();
+		state = null;
 
 		// TODO: update message
 		PlayerSet.ofServer(server).sendMessage(GameMessages.forLobby(lobby).finished());
@@ -98,40 +114,41 @@ final class GameInstance implements IGameInstance {
 	}
 
 	boolean tick() {
-		state = state.tick();
-		return state != null;
+		State state = this.state;
+		if (state != null) {
+			State newState = state.tick();
+			this.state = newState;
+			return newState != null;
+		}
+		return false;
 	}
 
 	void onPlayerJoin(ServerPlayerEntity player) {
-		GamePhase phase = state.getCurrentPhase();
+		GamePhase phase = getCurrentPhase();
 		if (phase != null) {
 			phase.onPlayerJoin(player);
 		}
 	}
 
 	void onPlayerLeave(ServerPlayerEntity player) {
-		GamePhase phase = state.getCurrentPhase();
+		GamePhase phase = getCurrentPhase();
 		if (phase != null) {
 			phase.onPlayerLeave(player);
 		}
 	}
 
-	GameResult<Unit> requestStart() {
-		return state.requestStart();
+	void onPhaseStart(GamePhase phase) {
+		lobby.onPhaseStart(phase);
 	}
 
-	GameResult<Unit> requestStop() {
-		return state.requestStop();
+	void onPhaseStop(GamePhase phase) {
+		lobby.onPhaseStop(phase);
 	}
 
-	// TODO: we maybe don't need a state interface
 	interface State {
-		default GameResult<Unit> requestStart() {
-			return GameResult.error(new TranslationTextComponent(LoveTropicsLangKeys.COMMAND_MINIGAME_ALREADY_STARTED));
-		}
-
-		default GameResult<Unit> requestStop() {
-			return GameResult.error(new TranslationTextComponent(LoveTropicsLangKeys.COMMAND_NO_MINIGAME));
+		@Nullable
+		default LobbyControl getControl(LobbyControl.Type type) {
+			return null;
 		}
 
 		@Nullable
@@ -143,7 +160,6 @@ final class GameInstance implements IGameInstance {
 		State tick();
 	}
 
-	// TODO: pending must still be able to delegate to inner state
 	static final class Pending implements State {
 		private final CompletableFuture<State> next;
 
@@ -162,23 +178,24 @@ final class GameInstance implements IGameInstance {
 		private final Supplier<State> next;
 
 		private boolean started;
-		private boolean stopped;
 
 		Playing(GamePhase phase, Supplier<State> next) {
 			this.phase = phase;
 			this.next = next;
 		}
 
+		// TODO: getters might not be the best way to handle this
+		@Nullable
 		@Override
-		public GameResult<Unit> requestStart() {
-			started = true;
-			return GameResult.ok();
-		}
-
-		@Override
-		public GameResult<Unit> requestStop() {
-			stopped = true; // TODO: invoke stop on phase
-			return GameResult.ok();
+		public LobbyControl getControl(LobbyControl.Type type) {
+			switch (type) {
+				case PLAY: return () -> {
+					started = true; // TODO: different when waiting lobby
+					return GameResult.ok();
+				};
+				case STOP: return () -> phase.stop(GameStopReason.CANCELED);
+				default: return null;
+			}
 		}
 
 		@Override
@@ -190,17 +207,8 @@ final class GameInstance implements IGameInstance {
 		@Override
 		public State tick() {
 			if (started) return next.get();
-			else if (stopped) return null;
 
 			return phase.tick() ? this : null;
-		}
-	}
-
-	static final class Finished implements State {
-		@Nullable
-		@Override
-		public State tick() {
-			return null;
 		}
 	}
 }

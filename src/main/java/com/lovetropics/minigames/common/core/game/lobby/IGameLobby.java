@@ -9,18 +9,15 @@ import net.minecraft.util.Unit;
 
 import javax.annotation.Nullable;
 
-// TODO: compose to reduce size of this interface
 public interface IGameLobby {
 	MinecraftServer getServer();
 
 	GameLobbyMetadata getMetadata();
 
-	// TODO: extract into player management type
 	IGameLobbyPlayers getPlayers();
 
 	LobbyGameQueue getGameQueue();
 
-	// TODO: exposing the game phase or the underlying game?
 	// TODO: merge into the game queue?
 	@Nullable
 	IGameInstance getCurrentGame();

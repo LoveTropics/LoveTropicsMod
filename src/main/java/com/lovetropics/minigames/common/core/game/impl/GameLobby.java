@@ -18,20 +18,20 @@ import javax.annotation.Nullable;
 
 // TODO: do we want a different game lobby implementation for something like carnival games?
 final class GameLobby implements IGameLobby {
-	private final MultiGameManager manager;
-	private final MinecraftServer server;
-	private final GameLobbyMetadata metadata;
+	final MultiGameManager manager;
+	final MinecraftServer server;
+	final GameLobbyMetadata metadata;
 
-	private final LobbyPlayerManager players;
+	final LobbyPlayerManager players;
 
-	private final LobbyVisibility visibility = LobbyVisibility.PRIVATE;
+	final LobbyVisibility visibility = LobbyVisibility.PRIVATE;
 
 	final LobbyGameQueue gameQueue = new LobbyGameQueue();
 
 	final LobbyWatcher watcher = LobbyWatcher.compose(new LobbyWatcher.Network(), new LobbyWatcher.Messages());
 
-	private GameInstance currentGame;
-	private boolean paused;
+	GameInstance currentGame;
+	boolean paused;
 
 	GameLobby(MultiGameManager manager, MinecraftServer server, GameLobbyMetadata metadata) {
 		this.manager = manager;
@@ -141,6 +141,8 @@ final class GameLobby implements IGameLobby {
 	}
 
 	void onPlayerRegister(ServerPlayerEntity player, PlayerRole requestedRole) {
+		manager.addPlayerToLobby(player, this);
+
 		GameInstance currentGame = this.currentGame;
 		if (currentGame != null) {
 			currentGame.onPlayerJoin(player);
@@ -158,5 +160,15 @@ final class GameLobby implements IGameLobby {
 		}
 
 		watcher.onPlayerLeave(this, player);
+
+		manager.removePlayerFromLobby(player, this);
+	}
+
+	void onPhaseStart(GamePhase game) {
+		manager.addGamePhaseToDimension(game.getDimension(), game);
+	}
+
+	void onPhaseStop(GamePhase game) {
+		manager.removeGamePhaseFromDimension(game.getDimension(), game);
 	}
 }
