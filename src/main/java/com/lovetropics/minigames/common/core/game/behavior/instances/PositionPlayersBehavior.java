@@ -3,11 +3,12 @@ package com.lovetropics.minigames.common.core.game.behavior.instances;
 import com.lovetropics.lib.BlockBox;
 import com.lovetropics.lib.codec.MoreCodecs;
 import com.lovetropics.minigames.common.core.dimension.DimensionUtils;
-import com.lovetropics.minigames.common.core.game.IActiveGame;
-import com.lovetropics.minigames.common.core.game.player.PlayerRole;
+import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
+import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
+import com.lovetropics.minigames.common.core.game.player.PlayerRole;
 import com.lovetropics.minigames.common.core.map.MapRegions;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -17,6 +18,7 @@ import net.minecraft.util.math.BlockPos;
 import java.util.ArrayList;
 import java.util.List;
 
+// TODO: ability to specify generic 'everyone' (or a custom behavior for waiting)
 public class PositionPlayersBehavior implements IGameBehavior {
 	public static final Codec<PositionPlayersBehavior> CODEC = RecordCodecBuilder.create(instance -> {
 		return instance.group(
@@ -40,25 +42,26 @@ public class PositionPlayersBehavior implements IGameBehavior {
 	}
 
 	@Override
-	public void register(IActiveGame registerGame, EventRegistrar events) {
-		MapRegions regions = registerGame.getMapRegions();
+	public void register(IGamePhase game, EventRegistrar events) {
+		events.listen(GamePhaseEvents.START, () -> {
+			MapRegions regions = game.getMapRegions();
 
-		participantSpawnRegions.clear();
-		spectatorSpawnRegions.clear();
+			participantSpawnRegions.clear();
+			spectatorSpawnRegions.clear();
 
-		for (String key : participantSpawnKeys) {
-			participantSpawnRegions.addAll(regions.get(key));
-		}
+			for (String key : participantSpawnKeys) {
+				participantSpawnRegions.addAll(regions.get(key));
+			}
 
-		for (String key : spectatorSpawnKeys) {
-			spectatorSpawnRegions.addAll(regions.get(key));
-		}
+			for (String key : spectatorSpawnKeys) {
+				spectatorSpawnRegions.addAll(regions.get(key));
+			}
+		});
 
-		events.listen(GamePlayerEvents.JOIN, this::setupPlayerAsRole);
-		events.listen(GamePlayerEvents.CHANGE_ROLE, (game, player, role, lastRole) -> setupPlayerAsRole(game, player, role));
+		events.listen(GamePlayerEvents.SET_ROLE, (player, role, lastRole) -> setupPlayerAsRole(game, player, role));
 	}
 
-	private void setupPlayerAsRole(IActiveGame game, ServerPlayerEntity player, PlayerRole role) {
+	private void setupPlayerAsRole(IGamePhase game, ServerPlayerEntity player, PlayerRole role) {
 		if (role == PlayerRole.PARTICIPANT) {
 			BlockBox region = participantSpawnRegions.get(participantSpawnIndex++ % participantSpawnRegions.size());
 			teleportToRegion(game, player, region);
@@ -68,7 +71,7 @@ public class PositionPlayersBehavior implements IGameBehavior {
 		}
 	}
 
-	private void teleportToRegion(IActiveGame game, ServerPlayerEntity player, BlockBox region) {
+	private void teleportToRegion(IGamePhase game, ServerPlayerEntity player, BlockBox region) {
 		BlockPos pos = region.sample(player.getRNG());
 		DimensionUtils.teleportPlayerNoPortal(player, game.getDimension(), pos);
 	}

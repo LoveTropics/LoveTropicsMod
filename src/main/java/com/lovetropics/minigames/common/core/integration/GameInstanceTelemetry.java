@@ -4,13 +4,15 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.common.config.ConfigLT;
-import com.lovetropics.minigames.common.core.game.IActiveGame;
+import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePackageEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.lovetropics.minigames.common.core.game.lobby.GameLobbyId;
-import com.lovetropics.minigames.common.core.game.statistics.GameStatistics;
-import com.lovetropics.minigames.common.core.game.statistics.PlayerKey;
+import com.lovetropics.minigames.common.core.game.state.GameStateKey;
+import com.lovetropics.minigames.common.core.game.state.IGameState;
+import com.lovetropics.minigames.common.core.game.state.statistics.GameStatistics;
+import com.lovetropics.minigames.common.core.game.state.statistics.PlayerKey;
 import com.lovetropics.minigames.common.core.integration.game_actions.GameAction;
 import com.lovetropics.minigames.common.core.integration.game_actions.GameActionHandler;
 import com.lovetropics.minigames.common.core.integration.game_actions.GameActionType;
@@ -22,8 +24,10 @@ import net.minecraft.server.MinecraftServer;
 import java.time.Instant;
 
 // TODO: update backend for handling lobby system: should it be local to a lobby or to an actual minigame?
-public final class GameInstanceTelemetry {
-	private final IActiveGame game;
+public final class GameInstanceTelemetry implements IGameState {
+	public static final GameStateKey<GameInstanceTelemetry> KEY = GameStateKey.create("Game Telemetry");
+
+	private final IGamePhase game;
 	private final Telemetry telemetry;
 
 	private final PlayerKey initiator;
@@ -32,7 +36,7 @@ public final class GameInstanceTelemetry {
 
 	private boolean closed;
 
-	private GameInstanceTelemetry(IActiveGame game, Telemetry telemetry) {
+	private GameInstanceTelemetry(IGamePhase game, Telemetry telemetry) {
 		this.game = game;
 		this.telemetry = telemetry;
 		this.initiator = game.getInitiator();
@@ -41,10 +45,11 @@ public final class GameInstanceTelemetry {
 		this.actions = new GameActionHandler(this.game, this);
 	}
 
-	static GameInstanceTelemetry open(IActiveGame game, Telemetry telemetry) {
+	static GameInstanceTelemetry open(IGamePhase game, Telemetry telemetry) {
 		return new GameInstanceTelemetry(game, telemetry);
 	}
 
+	// TODO: game specific id?
 	public GameLobbyId getLobbyId() {
 		return game.getLobby().getMetadata().id();
 	}
@@ -55,8 +60,8 @@ public final class GameInstanceTelemetry {
 		payload.add("participants", serializeParticipantsArray());
 		post(ConfigLT.TELEMETRY.minigameStartEndpoint.get(), payload);
 
-		events.listen(GamePlayerEvents.JOIN, (g, p, r) -> sendParticipantsList());
-		events.listen(GamePlayerEvents.LEAVE, (g, p) -> sendParticipantsList());
+		events.listen(GamePlayerEvents.JOIN, (p) -> sendParticipantsList());
+		events.listen(GamePlayerEvents.LEAVE, (p) -> sendParticipantsList());
 	}
 
 	public void finish(GameStatistics statistics) {
@@ -143,7 +148,7 @@ public final class GameInstanceTelemetry {
 
 	void handlePayload(JsonObject object, String type, String crud) {
 		if ("poll".equals(type)) {
-			game.invoker(GamePackageEvents.RECEIVE_POLL_EVENT).onReceivePollEvent(game, object, crud);
+			game.invoker(GamePackageEvents.RECEIVE_POLL_EVENT).onReceivePollEvent(object, crud);
 		} else if ("create".equals(crud)) {
 			GameActionType.getFromId(type).ifPresent(actionType -> {
 				JsonObject payload = object.getAsJsonObject("payload");

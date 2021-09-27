@@ -1,12 +1,11 @@
 package com.lovetropics.minigames.common.core.game.behavior.event;
 
-import com.lovetropics.minigames.common.core.game.IActiveGame;
 import net.minecraft.entity.LivingEntity;
 
 public final class GameLivingEntityEvents {
-	public static final GameEventType<Tick> TICK = GameEventType.create(Tick.class, listeners -> (game, entity) -> {
+	public static final GameEventType<Tick> TICK = GameEventType.create(Tick.class, listeners -> entity -> {
 		for (Tick listener : listeners) {
-			listener.tick(game, entity);
+			listener.tick(entity);
 		}
 	});
 
@@ -14,6 +13,6 @@ public final class GameLivingEntityEvents {
 	}
 
 	public interface Tick {
-		void tick(IActiveGame game, LivingEntity entity);
+		void tick(LivingEntity entity);
 	}
 }

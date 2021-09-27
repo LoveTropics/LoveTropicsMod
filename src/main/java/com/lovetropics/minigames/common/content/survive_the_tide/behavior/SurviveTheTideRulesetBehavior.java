@@ -3,13 +3,13 @@ package com.lovetropics.minigames.common.content.survive_the_tide.behavior;
 import com.lovetropics.lib.BlockBox;
 import com.lovetropics.lib.codec.MoreCodecs;
 import com.lovetropics.minigames.common.core.game.GameException;
-import com.lovetropics.minigames.common.core.game.IActiveGame;
+import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
-import com.lovetropics.minigames.common.core.game.behavior.event.GameLifecycleEvents;
+import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
-import com.lovetropics.minigames.common.core.game.state.instances.GamePhase;
-import com.lovetropics.minigames.common.core.game.state.instances.GamePhaseState;
+import com.lovetropics.minigames.common.core.game.state.GamePhase;
+import com.lovetropics.minigames.common.core.game.state.GamePhaseState;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.block.Blocks;
@@ -30,8 +30,7 @@ import net.minecraft.world.server.ServerWorld;
 
 import java.util.List;
 
-public class SurviveTheTideRulesetBehavior implements IGameBehavior
-{
+public class SurviveTheTideRulesetBehavior implements IGameBehavior {
 	public static final Codec<SurviveTheTideRulesetBehavior> CODEC = RecordCodecBuilder.create(instance -> {
 		return instance.group(
 				Codec.STRING.optionalFieldOf("spawn_area_region", "spawn_area").forGetter(c -> c.spawnAreaKey),
@@ -62,18 +61,19 @@ public class SurviveTheTideRulesetBehavior implements IGameBehavior
 	}
 
 	@Override
-	public void register(IActiveGame game, EventRegistrar events) throws GameException {
+	public void register(IGamePhase game, EventRegistrar events) throws GameException {
+		phases = game.getState().getOrThrow(GamePhaseState.KEY);
+
 		spawnArea = game.getMapRegions().getAny(spawnAreaKey);
-		phases = game.getState().getOrThrow(GamePhaseState.TYPE);
 
 		events.listen(GamePlayerEvents.DEATH, this::onPlayerDeath);
 		events.listen(GamePlayerEvents.DAMAGE, this::onPlayerHurt);
 		events.listen(GamePlayerEvents.ATTACK, this::onPlayerAttackEntity);
 
-		events.listen(GameLifecycleEvents.TICK, this::tick);
+		events.listen(GamePhaseEvents.TICK, () -> tick(game));
 	}
 
-	private ActionResultType onPlayerDeath(final IActiveGame game, ServerPlayerEntity player, DamageSource damageSource) {
+	private ActionResultType onPlayerDeath(ServerPlayerEntity player, DamageSource damageSource) {
 		if (forceDropItemsOnDeath && player.world.getGameRules().getBoolean(GameRules.KEEP_INVENTORY)) {
 			destroyVanishingCursedItems(player.inventory);
 			player.inventory.dropAllItems();
@@ -81,21 +81,21 @@ public class SurviveTheTideRulesetBehavior implements IGameBehavior
 		return ActionResultType.PASS;
 	}
 
-	private ActionResultType onPlayerHurt(final IActiveGame game, ServerPlayerEntity player, DamageSource source, float amount) {
+	private ActionResultType onPlayerHurt(ServerPlayerEntity player, DamageSource source, float amount) {
 		if (source.getTrueSource() instanceof ServerPlayerEntity && phases.is(this::isSafePhase)) {
 			return ActionResultType.FAIL;
 		}
 		return ActionResultType.PASS;
 	}
 
-	private ActionResultType onPlayerAttackEntity(final IActiveGame game, ServerPlayerEntity player, Entity target) {
+	private ActionResultType onPlayerAttackEntity(ServerPlayerEntity player, Entity target) {
 		if (target instanceof ServerPlayerEntity && phases.is(this::isSafePhase)) {
 			return ActionResultType.FAIL;
 		}
 		return ActionResultType.PASS;
 	}
 
-	private void tick(final IActiveGame game) {
+	private void tick(final IGamePhase game) {
 		if (!hasFreedParticipants && phases.is(phaseToFreeParticipants)) {
 			hasFreedParticipants = true;
 			setParticipantsFree(game);
@@ -107,7 +107,7 @@ public class SurviveTheTideRulesetBehavior implements IGameBehavior
 	}
 
 	private void destroyVanishingCursedItems(IInventory inventory) {
-		for(int i = 0; i < inventory.getSizeInventory(); ++i) {
+		for (int i = 0; i < inventory.getSizeInventory(); ++i) {
 			ItemStack itemstack = inventory.getStackInSlot(i);
 			if (!itemstack.isEmpty() && EnchantmentHelper.hasVanishingCurse(itemstack)) {
 				inventory.removeStackFromSlot(i);
@@ -115,7 +115,7 @@ public class SurviveTheTideRulesetBehavior implements IGameBehavior
 		}
 	}
 
-	private void setParticipantsFree(final IActiveGame game) {
+	private void setParticipantsFree(final IGamePhase game) {
 		// Destroy all fences blocking players from getting out of spawn area for phase 0
 		ServerWorld world = game.getWorld();
 		for (BlockPos p : spawnArea) {

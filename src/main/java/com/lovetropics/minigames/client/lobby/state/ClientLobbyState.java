@@ -15,7 +15,7 @@ public class ClientLobbyState {
 	List<ClientQueuedGame> queue = new ArrayList<>();
 
 	@Nullable
-	ClientGameDefinition activeGame;
+	ClientGameDefinition currentGame;
 
 	@Nullable
 	PlayerRole joinedRole;
@@ -33,8 +33,8 @@ public class ClientLobbyState {
 	}
 
 	@Nullable
-	public ClientGameDefinition getActiveGame() {
-		return activeGame;
+	public ClientGameDefinition getCurrentGame() {
+		return currentGame;
 	}
 
 	public void addPlayers(List<ClientLobbyPlayerEntry> players) {

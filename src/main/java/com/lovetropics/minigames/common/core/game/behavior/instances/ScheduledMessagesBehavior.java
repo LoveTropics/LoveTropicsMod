@@ -1,10 +1,10 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances;
 
 import com.lovetropics.lib.codec.MoreCodecs;
-import com.lovetropics.minigames.common.core.game.IActiveGame;
+import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
-import com.lovetropics.minigames.common.core.game.behavior.event.GameLifecycleEvents;
+import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
@@ -24,8 +24,8 @@ public class ScheduledMessagesBehavior implements IGameBehavior {
 	}
 
 	@Override
-	public void register(IActiveGame registerGame, EventRegistrar events) {
-		events.listen(GameLifecycleEvents.TICK, game -> {
+	public void register(IGamePhase game, EventRegistrar events) {
+		events.listen(GamePhaseEvents.TICK, () -> {
 			ITextComponent message = scheduledMessages.remove(game.ticks());
 			if (message != null) {
 				game.getAllPlayers().sendMessage(message);

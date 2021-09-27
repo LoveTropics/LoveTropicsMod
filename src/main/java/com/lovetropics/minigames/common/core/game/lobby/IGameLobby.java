@@ -1,12 +1,9 @@
 package com.lovetropics.minigames.common.core.game.lobby;
 
 import com.lovetropics.minigames.common.core.game.GameResult;
-import com.lovetropics.minigames.common.core.game.IActiveGame;
-import com.lovetropics.minigames.common.core.game.player.PlayerRole;
-import com.lovetropics.minigames.common.core.game.player.PlayerSet;
-import com.lovetropics.minigames.common.core.game.state.instances.control.ControlCommandInvoker;
+import com.lovetropics.minigames.common.core.game.IGameInstance;
+import com.lovetropics.minigames.common.core.game.IGamePhase;
 import net.minecraft.command.CommandSource;
-import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.Unit;
 
@@ -18,21 +15,21 @@ public interface IGameLobby {
 
 	GameLobbyMetadata getMetadata();
 
-	PlayerSet getAllPlayers();
-
-	@Nullable
-	PlayerRole getRegisteredRoleFor(ServerPlayerEntity player);
+	// TODO: extract into player management type
+	IGameLobbyPlayers getPlayers();
 
 	LobbyGameQueue getGameQueue();
 
+	// TODO: exposing the game phase or the underlying game?
+	// TODO: merge into the game queue?
 	@Nullable
-	IActiveGame getActiveGame();
+	IGameInstance getCurrentGame();
 
-	ControlCommandInvoker getControlCommands();
-
-	boolean registerPlayer(ServerPlayerEntity player, @Nullable PlayerRole requestedRole);
-
-	boolean removePlayer(ServerPlayerEntity player);
+	@Nullable
+	default IGamePhase getCurrentPhase() {
+		IGameInstance game = getCurrentGame();
+		return game != null ? game.getCurrentPhase() : null;
+	}
 
 	GameResult<Unit> requestStart();
 

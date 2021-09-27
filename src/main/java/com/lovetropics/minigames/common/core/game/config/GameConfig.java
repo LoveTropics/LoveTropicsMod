@@ -1,19 +1,14 @@
 package com.lovetropics.minigames.common.core.game.config;
 
-import com.lovetropics.lib.codec.MoreCodecs;
 import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.common.core.game.IGameDefinition;
-import com.lovetropics.minigames.common.core.game.behavior.BehaviorMap;
-import com.lovetropics.minigames.common.core.game.map.GameMapProviders;
-import com.lovetropics.minigames.common.core.game.map.IGameMapProvider;
+import com.lovetropics.minigames.common.core.game.IGamePhaseDefinition;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraftforge.common.extensions.IForgeTileEntity;
 
 import javax.annotation.Nullable;
-import java.util.List;
 import java.util.Optional;
 
 public final class GameConfig implements IGameDefinition {
@@ -21,66 +16,51 @@ public final class GameConfig implements IGameDefinition {
 	public final ResourceLocation displayId;
 	public final String telemetryKey;
 	public final String translationKey;
-	public final IGameMapProvider map;
 	public final int minimumParticipants;
 	public final int maximumParticipants;
-	public final AxisAlignedBB area;
-	public final WaitingLobbyConfig waitingLobby;
-	public final List<BehaviorReference> behaviors;
+	@Nullable
+	public final GamePhaseConfig waiting;
+	public final GamePhaseConfig playing;
 
 	public GameConfig(
 			ResourceLocation id,
 			ResourceLocation displayId,
 			String telemetryKey,
 			String translationKey,
-			IGameMapProvider map,
 			int minimumParticipants,
 			int maximumParticipants,
-			AxisAlignedBB area,
-			WaitingLobbyConfig waitingLobby,
-			List<BehaviorReference> behaviors
+			@Nullable GamePhaseConfig waiting,
+			GamePhaseConfig playing
 	) {
 		this.id = id;
 		this.displayId = displayId;
 		this.telemetryKey = telemetryKey;
 		this.translationKey = translationKey;
-		this.map = map;
 		this.minimumParticipants = minimumParticipants;
 		this.maximumParticipants = maximumParticipants;
-		this.area = area;
-		this.waitingLobby = waitingLobby;
-		this.behaviors = behaviors;
+		this.waiting = waiting;
+		this.playing = playing;
 	}
 
 	public static Codec<GameConfig> codec(BehaviorReferenceReader reader, ResourceLocation id) {
+		MapCodec<GamePhaseConfig> phaseCodec = GamePhaseConfig.mapCodec(reader);
+
 		return RecordCodecBuilder.create(instance -> {
 			return instance.group(
 					Codec.STRING.optionalFieldOf("display_id").forGetter(c -> Optional.of(c.displayId.getPath())),
 					Codec.STRING.optionalFieldOf("telemetry_key").forGetter(c -> Optional.of(c.telemetryKey)),
 					Codec.STRING.fieldOf("translation_key").forGetter(c -> c.translationKey),
-					GameMapProviders.CODEC.fieldOf("map").forGetter(c -> c.map),
 					Codec.INT.optionalFieldOf("minimum_participants", 1).forGetter(c -> c.minimumParticipants),
 					Codec.INT.optionalFieldOf("maximum_participants", 100).forGetter(c -> c.maximumParticipants),
-					MoreCodecs.AABB.optionalFieldOf("area", IForgeTileEntity.INFINITE_EXTENT_AABB).forGetter(c -> c.area),
-					WaitingLobbyConfig.CODEC.optionalFieldOf("waiting_lobby").forGetter(c -> Optional.ofNullable(c.waitingLobby)),
-					reader.fieldOf("behaviors").forGetter(c -> c.behaviors)
-			).apply(instance, (displayIdOpt, telemetryKeyOpt, translationKey, mapProvider, minimumParticipants, maximumParticipants, area, waitingLobbyOpt, behaviors) -> {
+					phaseCodec.codec().optionalFieldOf("waiting").forGetter(c -> Optional.ofNullable(c.waiting)),
+					phaseCodec.forGetter(c -> c.playing)
+			).apply(instance, (displayIdOpt, telemetryKeyOpt, translationKey, minimumParticipants, maximumParticipants, waitingOpt, active) -> {
 				ResourceLocation displayId = displayIdOpt.map(string -> new ResourceLocation(id.getNamespace(), string)).orElse(id);
 				String telemetryKey = telemetryKeyOpt.orElse(id.getPath());
-				WaitingLobbyConfig waitingLobby = waitingLobbyOpt.orElse(null);
-				return new GameConfig(id, displayId, telemetryKey, translationKey, mapProvider, minimumParticipants, maximumParticipants, area, waitingLobby, behaviors);
+				GamePhaseConfig waiting = waitingOpt.orElse(null);
+				return new GameConfig(id, displayId, telemetryKey, translationKey, minimumParticipants, maximumParticipants, waiting, active);
 			});
 		});
-	}
-
-	@Override
-	public IGameMapProvider getMap() {
-		return map;
-	}
-
-	@Override
-	public BehaviorMap createBehaviors() {
-		return BehaviorMap.create(behaviors);
 	}
 
 	@Override
@@ -114,13 +94,13 @@ public final class GameConfig implements IGameDefinition {
 	}
 
 	@Override
-	public AxisAlignedBB getGameArea() {
-		return area;
+	public IGamePhaseDefinition getPlayingPhase() {
+		return playing;
 	}
 
 	@Nullable
 	@Override
-	public WaitingLobbyConfig getWaitingLobby() {
-		return waitingLobby;
+	public IGamePhaseDefinition getWaitingPhase() {
+		return waiting;
 	}
 }

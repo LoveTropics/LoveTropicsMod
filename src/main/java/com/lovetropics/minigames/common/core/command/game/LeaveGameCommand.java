@@ -26,7 +26,7 @@ public class LeaveGameCommand {
 			.executes(c -> GameCommand.executeGameAction(() -> {
 				CommandSource source = c.getSource();
 				IGameLobby lobby = IGameManager.get().getLobbyFor(source);
-				if (lobby != null && lobby.removePlayer(source.asPlayer())) {
+				if (lobby != null && lobby.getPlayers().remove(source.asPlayer())) {
 					return GameResult.ok(GameMessages.forLobby(lobby).unregisterSuccess());
 				}
 				return GameResult.error(new TranslationTextComponent(LoveTropicsLangKeys.COMMAND_NOT_REGISTERED_FOR_MINIGAME));

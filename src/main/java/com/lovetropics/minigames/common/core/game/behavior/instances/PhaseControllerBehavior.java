@@ -1,14 +1,14 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances;
 
 import com.lovetropics.lib.codec.MoreCodecs;
-import com.lovetropics.minigames.common.core.game.IActiveGame;
+import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
-import com.lovetropics.minigames.common.core.game.behavior.event.GameLifecycleEvents;
+import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameLogicEvents;
 import com.lovetropics.minigames.common.core.game.state.GameStateMap;
-import com.lovetropics.minigames.common.core.game.state.instances.GamePhase;
-import com.lovetropics.minigames.common.core.game.state.instances.GamePhaseState;
+import com.lovetropics.minigames.common.core.game.state.GamePhase;
+import com.lovetropics.minigames.common.core.game.state.GamePhaseState;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
@@ -34,7 +34,7 @@ public class PhaseControllerBehavior implements IGameBehavior {
 		this.phases = phases;
 	}
 
-	private boolean nextPhase(final IActiveGame game) {
+	private boolean nextPhase(final IGamePhase game) {
 		if (phaseIterator.hasNext()) {
 			GamePhase lastPhase = phaseState.get();
 
@@ -43,7 +43,7 @@ public class PhaseControllerBehavior implements IGameBehavior {
 			currentPhaseTicks = nextPhase.lengthInTicks;
 
 			if (lastPhase != nextPhase) {
-				game.invoker(GameLogicEvents.PHASE_CHANGE).onPhaseChange(game, nextPhase, lastPhase);
+				game.invoker(GameLogicEvents.PHASE_CHANGE).onPhaseChange(nextPhase, lastPhase);
 			}
 
 			return true;
@@ -53,19 +53,19 @@ public class PhaseControllerBehavior implements IGameBehavior {
 	}
 
 	@Override
-	public void registerState(GameStateMap state) {
-		phaseState = state.register(GamePhaseState.TYPE, new GamePhaseState(phases.get(0)));
+	public void registerState(IGamePhase game, GameStateMap state) {
+		phaseState = state.register(GamePhaseState.KEY, new GamePhaseState(phases.get(0)));
 	}
 
 	@Override
-	public void register(IActiveGame registerGame, EventRegistrar events) {
-		events.listen(GameLifecycleEvents.START, game -> {
+	public void register(IGamePhase game, EventRegistrar events) {
+		events.listen(GamePhaseEvents.START, () -> {
 			hasFinishedPhases = false;
 			phaseIterator = phases.iterator();
 			nextPhase(game);
 		});
 
-		events.listen(GameLifecycleEvents.TICK, game -> {
+		events.listen(GamePhaseEvents.TICK, () -> {
 			if (!hasFinishedPhases && currentPhaseTicks-- < 0) {
 				if (!nextPhase(game)) {
 					hasFinishedPhases = true;

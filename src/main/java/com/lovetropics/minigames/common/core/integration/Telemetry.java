@@ -7,7 +7,7 @@ import com.lovetropics.lib.backend.BackendConnection;
 import com.lovetropics.lib.backend.BackendProxy;
 import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.common.config.ConfigLT;
-import com.lovetropics.minigames.common.core.game.IActiveGame;
+import com.lovetropics.minigames.common.core.game.IGamePhase;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.event.TickEvent;
@@ -105,7 +105,7 @@ public final class Telemetry {
 		}
 	}
 
-	public GameInstanceTelemetry openGame(IActiveGame game) {
+	public GameInstanceTelemetry openGame(IGamePhase game) {
 		return GameInstanceTelemetry.open(game, this);
 	}
 

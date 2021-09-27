@@ -29,26 +29,26 @@ public interface IGameLookup {
 	}
 
 	@Nullable
-	default IActiveGame getGameFor(PlayerEntity player) {
+	default IGamePhase getGamePhaseFor(PlayerEntity player) {
 		IGameLobby lobby = getLobbyFor(player);
-		return lobby != null ? lobby.getActiveGame() : null;
+		return lobby != null ? lobby.getCurrentPhase() : null;
 	}
 
 	@Nullable
-	default IActiveGame getGameFor(Entity entity) {
+	default IGamePhase getGamePhaseFor(Entity entity) {
 		IGameLobby lobby = getLobbyFor(entity);
-		return lobby != null ? lobby.getActiveGame() : null;
+		return lobby != null ? lobby.getCurrentPhase() : null;
 	}
 
 	@Nullable
-	default IActiveGame getGameAt(World world, BlockPos pos) {
+	default IGamePhase getGamePhaseAt(World world, BlockPos pos) {
 		IGameLobby lobby = getLobbyAt(world, pos);
-		return lobby != null ? lobby.getActiveGame() : null;
+		return lobby != null ? lobby.getCurrentPhase() : null;
 	}
 
 	@Nullable
-	default IActiveGame getGameFor(CommandSource source) {
+	default IGamePhase getGamePhaseFor(CommandSource source) {
 		IGameLobby lobby = getLobbyFor(source);
-		return lobby != null ? lobby.getActiveGame() : null;
+		return lobby != null ? lobby.getCurrentPhase() : null;
 	}
 }

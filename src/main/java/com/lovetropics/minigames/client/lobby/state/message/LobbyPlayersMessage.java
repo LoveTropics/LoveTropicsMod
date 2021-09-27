@@ -2,7 +2,7 @@ package com.lovetropics.minigames.client.lobby.state.message;
 
 import com.lovetropics.minigames.client.lobby.state.ClientLobbyManager;
 import com.lovetropics.minigames.client.lobby.state.ClientLobbyPlayerEntry;
-import com.lovetropics.minigames.common.core.game.IActiveGame;
+import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.lobby.IGameLobby;
 import com.lovetropics.minigames.common.core.game.player.PlayerRole;
 import net.minecraft.entity.player.ServerPlayerEntity;
@@ -38,14 +38,14 @@ public final class LobbyPlayersMessage {
 	}
 
 	private static LobbyPlayersMessage create(IGameLobby lobby, Operation operation, Iterable<ServerPlayerEntity> players) {
-		IActiveGame activeGame = lobby.getActiveGame();
+		IGamePhase currentPhase = lobby.getCurrentPhase();
 
 		List<ClientLobbyPlayerEntry> entries = new ArrayList<>();
 		for (ServerPlayerEntity player : players) {
 			UUID uuid = player.getUniqueID();
-			PlayerRole registeredRole = lobby.getRegisteredRoleFor(player);
-			PlayerRole activeRole = activeGame != null ? activeGame.getRoleFor(player) : null;
-			entries.add(new ClientLobbyPlayerEntry(uuid, registeredRole, activeRole));
+			PlayerRole registeredRole = lobby.getPlayers().getRegisteredRoleFor(player);
+			PlayerRole playingRole = currentPhase != null ? currentPhase.getRoleFor(player) : null;
+			entries.add(new ClientLobbyPlayerEntry(uuid, registeredRole, playingRole));
 		}
 
 		return new LobbyPlayersMessage(lobby.getMetadata().id().networkId(), operation, entries);

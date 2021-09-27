@@ -1,12 +1,10 @@
 package com.lovetropics.minigames.common.content.survive_the_tide.behavior;
 
 import com.lovetropics.lib.codec.MoreCodecs;
-import com.lovetropics.minigames.common.core.game.GameException;
-import com.lovetropics.minigames.common.core.game.GameStopReason;
-import com.lovetropics.minigames.common.core.game.IActiveGame;
+import com.lovetropics.minigames.common.core.game.*;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
-import com.lovetropics.minigames.common.core.game.behavior.event.GameLifecycleEvents;
+import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameLogicEvents;
 import com.lovetropics.minigames.common.core.game.util.TemplatedText;
 import com.mojang.serialization.Codec;
@@ -46,22 +44,22 @@ public class SttWinLogicBehavior implements IGameBehavior {
 	}
 
 	@Override
-	public void register(IActiveGame registerGame, EventRegistrar events) throws GameException {
-		events.listen(GameLogicEvents.WIN_TRIGGERED, (game, winnerName) -> {
+	public void register(IGamePhase game, EventRegistrar events) throws GameException {
+		events.listen(GameLogicEvents.WIN_TRIGGERED, (winnerName) -> {
 			this.winner = winnerName;
 			this.minigameEnded = true;
 			this.minigameEndedTimer = 0;
 		});
 
-		events.listen(GameLifecycleEvents.TICK, game -> this.checkForGameEndCondition(game, game.getWorld()));
+		events.listen(GamePhaseEvents.TICK, () -> this.checkForGameEndCondition(game, game.getWorld()));
 
-		events.listen(GameLifecycleEvents.STOP, (game, reason) -> {
+		events.listen(GamePhaseEvents.STOP, (reason) -> {
 			this.minigameEnded = false;
 			this.minigameEndedTimer = 0;
 		});
 	}
 
-	private void checkForGameEndCondition(final IActiveGame game, final World world) {
+	private void checkForGameEndCondition(final IGamePhase game, final World world) {
 		if (this.minigameEnded) {
 			if (spawnLightningBoltsOnFinish) {
 				spawnLightningBoltsEverywhere(game, world);
@@ -77,7 +75,7 @@ public class SttWinLogicBehavior implements IGameBehavior {
 		}
 	}
 
-	private void spawnLightningBoltsEverywhere(IActiveGame game, final World world) {
+	private void spawnLightningBoltsEverywhere(IGamePhase game, final World world) {
 		if (this.minigameEndedTimer % lightningBoltSpawnTickRate == 0) {
 			for (ServerPlayerEntity player : game.getParticipants()) {
 				int xOffset = (7 + world.rand.nextInt(5)) * (world.rand.nextBoolean() ? 1 : -1);
@@ -97,7 +95,7 @@ public class SttWinLogicBehavior implements IGameBehavior {
 		}
 	}
 
-	private void sendGameFinishMessages(final IActiveGame game) {
+	private void sendGameFinishMessages(final IGamePhase game) {
 		TemplatedText message = scheduledGameFinishMessages.remove(minigameEndedTimer);
 		if (message != null) {
 			game.getAllPlayers().sendMessage(message.apply(winner));

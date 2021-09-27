@@ -1,13 +1,13 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances.tweak;
 
 import com.lovetropics.lib.codec.MoreCodecs;
-import com.lovetropics.minigames.common.core.game.IActiveGame;
+import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
-import com.lovetropics.minigames.common.core.game.behavior.event.GameLifecycleEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
-import com.lovetropics.minigames.common.core.game.state.instances.TeamKey;
-import com.lovetropics.minigames.common.core.game.state.instances.TeamState;
+import com.lovetropics.minigames.common.core.game.player.PlayerRole;
+import com.lovetropics.minigames.common.core.game.state.team.TeamKey;
+import com.lovetropics.minigames.common.core.game.state.team.TeamState;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.Object2DoubleMap;
@@ -39,28 +39,37 @@ public final class SetMaxHealthBehavior implements IGameBehavior {
 	}
 
 	@Override
-	public void register(IActiveGame registerGame, EventRegistrar events) {
-		events.listen(GameLifecycleEvents.START, this::onStart);
-		events.listen(GamePlayerEvents.LEAVE, this::onPlayerLeave);
+	public void register(IGamePhase game, EventRegistrar events) {
+		events.listen(GamePlayerEvents.SET_ROLE, (player, role, lastRole) -> {
+			if (role == PlayerRole.PARTICIPANT) {
+				applyToPlayer(game, player);
+			} else if (lastRole == PlayerRole.PARTICIPANT) {
+				removeFromPlayer(player);
+			}
+		});
+
+		events.listen(GamePlayerEvents.LEAVE, this::removeFromPlayer);
 	}
 
-	private void onStart(IActiveGame game) {
-		for (ServerPlayerEntity player : game.getParticipants()) {
-			double maxHealth = getMaxHealthForPlayer(game, player);
-			if (maxHealth != 20.0) {
-				player.getAttribute(Attributes.MAX_HEALTH).applyNonPersistentModifier(
-						new AttributeModifier(
-								ATTRIBUTE_ID,
-								ATTRIBUTE_NAME,
-								maxHealth - 20.0,
-								AttributeModifier.Operation.ADDITION
-						)
-				);
-			}
+	private void applyToPlayer(IGamePhase game, ServerPlayerEntity player) {
+		double maxHealth = getMaxHealthForPlayer(game, player);
+		if (maxHealth != 20.0) {
+			player.getAttribute(Attributes.MAX_HEALTH).applyNonPersistentModifier(
+					new AttributeModifier(
+							ATTRIBUTE_ID,
+							ATTRIBUTE_NAME,
+							maxHealth - 20.0,
+							AttributeModifier.Operation.ADDITION
+					)
+			);
 		}
 	}
 
-	private double getMaxHealthForPlayer(IActiveGame game, ServerPlayerEntity player) {
+	private void removeFromPlayer(ServerPlayerEntity player) {
+		player.getAttribute(Attributes.MAX_HEALTH).removeModifier(ATTRIBUTE_ID);
+	}
+
+	private double getMaxHealthForPlayer(IGamePhase game, ServerPlayerEntity player) {
 		TeamKey team = getTeamOrNull(game, player);
 		if (team != null) {
 			return maxHealthByTeam.getOrDefault(team.key, 20.0);
@@ -68,13 +77,9 @@ public final class SetMaxHealthBehavior implements IGameBehavior {
 		return maxHealth;
 	}
 
-	private void onPlayerLeave(IActiveGame game, ServerPlayerEntity player) {
-		player.getAttribute(Attributes.MAX_HEALTH).removeModifier(ATTRIBUTE_ID);
-	}
-
 	@Nullable
-	private TeamKey getTeamOrNull(IActiveGame game, ServerPlayerEntity player) {
-		TeamState teamState = game.getState().getOrNull(TeamState.TYPE);
+	private TeamKey getTeamOrNull(IGamePhase game, ServerPlayerEntity player) {
+		TeamState teamState = game.getState().getOrNull(TeamState.KEY);
 		if (teamState != null) {
 			return teamState.getTeamForPlayer(player);
 		} else {

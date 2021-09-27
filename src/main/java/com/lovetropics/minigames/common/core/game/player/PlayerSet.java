@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.common.core.game.player;
 
-import com.lovetropics.minigames.common.core.game.statistics.PlayerKey;
+import com.lovetropics.minigames.common.core.game.state.statistics.PlayerKey;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.server.MinecraftServer;

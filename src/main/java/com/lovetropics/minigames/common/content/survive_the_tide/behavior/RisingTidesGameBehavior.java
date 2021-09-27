@@ -3,14 +3,14 @@ package com.lovetropics.minigames.common.content.survive_the_tide.behavior;
 import com.lovetropics.lib.BlockBox;
 import com.lovetropics.minigames.common.content.survive_the_tide.IcebergLine;
 import com.lovetropics.minigames.common.core.game.GameException;
-import com.lovetropics.minigames.common.core.game.IActiveGame;
+import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
-import com.lovetropics.minigames.common.core.game.behavior.event.GameLifecycleEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameLivingEntityEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameLogicEvents;
-import com.lovetropics.minigames.common.core.game.state.instances.GamePhase;
-import com.lovetropics.minigames.common.core.game.state.instances.GamePhaseState;
+import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
+import com.lovetropics.minigames.common.core.game.state.GamePhase;
+import com.lovetropics.minigames.common.core.game.state.GamePhaseState;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.longs.*;
@@ -46,7 +46,7 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 		return instance.group(
 				Codec.STRING.optionalFieldOf("tide_area_region", "tide_area").forGetter(c -> c.tideAreaKey),
 				Codec.STRING.optionalFieldOf("iceberg_lines_region", "iceberg_lines").forGetter(c -> c.icebergLinesKey),
-				Codec.unboundedMap(Codec.STRING,  Codec.INT).fieldOf("water_levels").forGetter(c -> c.phaseToTideHeight),
+				Codec.unboundedMap(Codec.STRING, Codec.INT).fieldOf("water_levels").forGetter(c -> c.phaseToTideHeight),
 				Codec.STRING.listOf().fieldOf("phases_icebergs_grow").forGetter(c -> new ArrayList<>(c.phasesIcebergsGrow)),
 				Codec.INT.fieldOf("iceberg_growth_tick_rate").forGetter(c -> c.icebergGrowthTickRate)
 		).apply(instance, RisingTidesGameBehavior::new);
@@ -85,7 +85,7 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 	}
 
 	@Override
-	public void register(IActiveGame game, EventRegistrar events) throws GameException {
+	public void register(IGamePhase game, EventRegistrar events) throws GameException {
 		tideArea = game.getMapRegions().getAny(tideAreaKey);
 
 		minTideChunk = new ChunkPos(tideArea.min.getX() >> 4, tideArea.min.getZ() >> 4);
@@ -118,23 +118,23 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 			icebergLines.add(new IcebergLine(start, end, 10));
 		}
 
-		phases = game.getState().getOrThrow(GamePhaseState.TYPE);
+		phases = game.getState().getOrThrow(GamePhaseState.KEY);
 
-		events.listen(GameLifecycleEvents.START, g -> {
+		events.listen(GamePhaseEvents.START, () -> {
 			lastPhase = phases.get();
 			waterLevel = phaseToTideHeight.get(phases.get().key);
 			chunkWaterLevels.defaultReturnValue(waterLevel);
 		});
 
 		events.listen(GameLivingEntityEvents.TICK, this::onLivingEntityUpdate);
-		events.listen(GameLifecycleEvents.TICK, this::tick);
+		events.listen(GamePhaseEvents.TICK, () -> tick(game));
 
-		events.listen(GameLogicEvents.PHASE_CHANGE, (g, phase, lastPhase) -> {
+		events.listen(GameLogicEvents.PHASE_CHANGE, (phase, lastPhase) -> {
 			this.lastPhase = lastPhase;
 		});
 	}
 
-	private void onLivingEntityUpdate(final IActiveGame game, LivingEntity entity) {
+	private void onLivingEntityUpdate(LivingEntity entity) {
 		// NOTE: DO NOT REMOVE THIS CHECK, CAUSES FISH TO DIE AND SPAWN ITEMS ON DEATH
 		// FISH WILL KEEP SPAWNING, DYING AND COMPLETELY SLOW THE SERVER TO A CRAWL
 		if (!entity.canBreatheUnderwater()) {
@@ -144,7 +144,7 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 		}
 	}
 
-	private void tick(IActiveGame game) {
+	private void tick(IGamePhase game) {
 		GamePhase currentPhase = phases.get();
 		int prevWaterLevel = phaseToTideHeight.get(lastPhase.key);
 
@@ -161,7 +161,7 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 		}
 	}
 
-	private void spawnRisingTideParticles(IActiveGame game) {
+	private void spawnRisingTideParticles(IGamePhase game) {
 		ServerWorld world = game.getWorld();
 		Random random = world.rand;
 
@@ -195,7 +195,7 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 		return phaseLength / Math.max(1, Math.abs(waterLevelDiff));
 	}
 
-	private void processRisingTideQueue(IActiveGame game) {
+	private void processRisingTideQueue(IGamePhase game) {
 		if (queuedChunksToUpdate.isEmpty()) {
 			return;
 		}
@@ -233,7 +233,7 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 		}
 	}
 
-	private void tickWaterLevel(final IActiveGame game, final GamePhase phase, final int prevWaterLevel) {
+	private void tickWaterLevel(final IGamePhase game, final GamePhase phase, final int prevWaterLevel) {
 		final int targetWaterLevel = phaseToTideHeight.get(phase.key);
 
 		int waterChangeInterval = this.calculateWaterChangeInterval(

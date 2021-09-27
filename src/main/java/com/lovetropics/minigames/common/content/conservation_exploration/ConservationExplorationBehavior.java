@@ -4,14 +4,12 @@ import com.lovetropics.lib.BlockBox;
 import com.lovetropics.lib.entity.FireworkPalette;
 import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.GameStopReason;
-import com.lovetropics.minigames.common.core.game.IActiveGame;
-import com.lovetropics.minigames.common.core.game.player.PlayerRole;
+import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
-import com.lovetropics.minigames.common.core.game.behavior.event.GameLifecycleEvents;
+import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
-import com.lovetropics.minigames.common.core.game.state.instances.control.ControlCommand;
-import com.lovetropics.minigames.common.core.game.state.instances.control.ControlCommandState;
+import com.lovetropics.minigames.common.core.game.state.control.ControlCommand;
 import com.lovetropics.minigames.common.core.game.util.GameBossBar;
 import com.lovetropics.minigames.common.core.game.util.GlobalGameWidgets;
 import com.lovetropics.minigames.common.util.Scheduler;
@@ -63,12 +61,12 @@ public final class ConservationExplorationBehavior implements IGameBehavior {
 	}
 
 	@Override
-	public void register(IActiveGame game, EventRegistrar events) throws GameException {
-		events.listen(GameLifecycleEvents.START, this::onStart);
-		events.listen(GameLifecycleEvents.STOP, (game1, reason) -> onFinish(game1));
+	public void register(IGamePhase game, EventRegistrar events) throws GameException {
+		events.listen(GamePhaseEvents.START, () -> onStart(game));
+		events.listen(GamePhaseEvents.STOP, reason -> onStop(game));
 		
-		events.listen(GamePlayerEvents.JOIN, this::onPlayerJoin);
-		events.listen(GamePlayerEvents.INTERACT_ENTITY, this::onPlayerInteractEntity);
+		events.listen(GamePlayerEvents.ADD, this::onAddPlayer);
+		events.listen(GamePlayerEvents.INTERACT_ENTITY, (player, entity, hand) -> onPlayerInteractEntity(game, player, entity, hand));
 
 		this.progressBar = GlobalGameWidgets.registerTo(game, events).openBossBar(
 				new StringTextComponent("Conservation Exploration"),
@@ -77,7 +75,7 @@ public final class ConservationExplorationBehavior implements IGameBehavior {
 		);
 	}
 
-	private void onStart(IActiveGame game) {
+	private void onStart(IGamePhase game) {
 		List<CreatureType> searchOrder = new ArrayList<>(creatures);
 		Collections.shuffle(searchOrder);
 		this.searchOrder = searchOrder.toArray(new CreatureType[0]);
@@ -88,9 +86,8 @@ public final class ConservationExplorationBehavior implements IGameBehavior {
 		discoveryTeam = scoreboard.createTeam("first_discovery");
 		discoveryTeam.setColor(TextFormatting.GREEN);
 
-		ControlCommandState commands = game.getState().get(ControlCommandState.TYPE);
-		commands.add("next_creature", ControlCommand.forInitiator(source -> {
-			Scheduler.INSTANCE.submit(server -> {
+		game.getControlCommands().add("next_creature", ControlCommand.forInitiator(source -> {
+			Scheduler.thisTick().run(server -> {
 				if (!nextCreature(game)) {
 					game.stop(GameStopReason.FINISHED);
 				}
@@ -98,11 +95,11 @@ public final class ConservationExplorationBehavior implements IGameBehavior {
 		}));
 	}
 
-	private void onPlayerJoin(IActiveGame game, ServerPlayerEntity player, PlayerRole role) {
+	private void onAddPlayer(ServerPlayerEntity player) {
 		player.addItemStackToInventory(new ItemStack(ConservationExploration.RECORD_CREATURE.get()));
 	}
 
-	private void onPlayerInteractEntity(IActiveGame game, ServerPlayerEntity player, Entity entity, Hand hand) {
+	private void onPlayerInteractEntity(IGamePhase game, ServerPlayerEntity player, Entity entity, Hand hand) {
 		ItemStack heldItem = player.getHeldItem(hand);
 		if (!heldItem.isEmpty() && heldItem.getItem() == ConservationExploration.RECORD_CREATURE.get()) {
 			if (entity instanceof LivingEntity) {
@@ -111,14 +108,14 @@ public final class ConservationExplorationBehavior implements IGameBehavior {
 		}
 	}
 
-	private void recordEntity(IActiveGame game, ServerPlayerEntity reporter, LivingEntity entity) {
+	private void recordEntity(IGamePhase game, ServerPlayerEntity reporter, LivingEntity entity) {
 		if (!creatureDiscovered && entity.getType() == searchOrder[searchIndex].entity) {
 			onDiscoverNewEntity(game, reporter, entity);
 			creatureDiscovered = true;
 		}
 	}
 
-	private void onDiscoverNewEntity(IActiveGame game, ServerPlayerEntity reporter, LivingEntity entity) {
+	private void onDiscoverNewEntity(IGamePhase game, ServerPlayerEntity reporter, LivingEntity entity) {
 		Vector3d position = reporter.getPositionVec();
 		float yaw = reporter.rotationYaw;
 		float pitch = reporter.rotationPitch;
@@ -130,10 +127,8 @@ public final class ConservationExplorationBehavior implements IGameBehavior {
 
 		FireworkPalette.ISLAND_ROYALE.spawn(entity.getPosition(), entity.world);
 
-		ControlCommandState commands = game.getState().get(ControlCommandState.TYPE);
-
 		String teleportCommand = "teleport_" + entity.getType().getTranslationKey();
-		commands.add(teleportCommand, ControlCommand.forEveryone(source -> {
+		game.getControlCommands().add(teleportCommand, ControlCommand.forEveryone(source -> {
 			ServerPlayerEntity player = source.asPlayer();
 			player.teleport(game.getWorld(), position.x, position.y, position.z, yaw, pitch);
 		}));
@@ -174,7 +169,7 @@ public final class ConservationExplorationBehavior implements IGameBehavior {
 		}
 	}
 
-	private boolean nextCreature(IActiveGame game) {
+	private boolean nextCreature(IGamePhase game) {
 		int searchIndex = ++this.searchIndex;
 		if (searchIndex >= searchOrder.length) {
 			return false;
@@ -195,12 +190,12 @@ public final class ConservationExplorationBehavior implements IGameBehavior {
 		return true;
 	}
 
-	private void onFinish(IActiveGame game) {
+	private void onStop(IGamePhase game) {
 		ServerScoreboard scoreboard = game.getServer().getScoreboard();
 		scoreboard.removeTeam(discoveryTeam);
 	}
 
-	private void spawnCreaturesFor(IActiveGame game, CreatureType creature) {
+	private void spawnCreaturesFor(IGamePhase game, CreatureType creature) {
 		ServerWorld world = game.getWorld();
 		Random random = world.rand;
 

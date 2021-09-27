@@ -73,7 +73,7 @@ public class JoinGameCommand {
 		ServerPlayerEntity player = source.asPlayer();
 		return GameCommand.executeGameAction(() -> {
 			return resolveLobby(source, givenLobby, requestedRole).flatMap(lobby -> {
-				if (lobby.registerPlayer(player, requestedRole)) {
+				if (lobby.getPlayers().register(player, requestedRole)) {
 					return GameResult.ok(GameMessages.forLobby(lobby).registerSuccess());
 				} else {
 					return GameResult.error(new TranslationTextComponent(LoveTropicsLangKeys.COMMAND_MINIGAME_ALREADY_REGISTERED));
@@ -114,7 +114,7 @@ public class JoinGameCommand {
 
 			IFormattableTextComponent line = new StringTextComponent(" - ").mergeStyle(TextFormatting.GRAY)
 					.appendSibling(new StringTextComponent(lobby.getMetadata().name()).mergeStyle(TextFormatting.AQUA))
-					.appendSibling(new StringTextComponent(" (" + lobby.getAllPlayers().size() + " players)").mergeStyle(TextFormatting.GREEN))
+					.appendSibling(new StringTextComponent(" (" + lobby.getPlayers().size() + " players)").mergeStyle(TextFormatting.GREEN))
 					.appendString(": ")
 					.appendSibling(joinLink)
 					.appendString("\n");

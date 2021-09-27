@@ -17,6 +17,10 @@ public final class LobbyGameQueue {
 		queue.add(QueuedGame.create(game));
 	}
 
+	public void clear() {
+		this.queue.clear();
+	}
+
 	@Nullable
 	public QueuedGame next() {
 		return queue.poll();

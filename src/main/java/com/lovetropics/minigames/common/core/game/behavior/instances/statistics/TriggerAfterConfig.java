@@ -29,7 +29,7 @@ public final class TriggerAfterConfig {
 
 	public void awaitThen(EventRegistrar events, Runnable handler) {
 		if (afterPhase != null) {
-			events.listen(GameLogicEvents.PHASE_CHANGE, (game, phase, lastPhase) -> {
+			events.listen(GameLogicEvents.PHASE_CHANGE, (phase, lastPhase) -> {
 				if (lastPhase.is(afterPhase)) {
 					handler.run();
 				}

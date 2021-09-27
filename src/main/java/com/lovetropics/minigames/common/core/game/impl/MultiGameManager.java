@@ -4,13 +4,14 @@ import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.client.lobby.state.message.LobbyUpdateMessage;
 import com.lovetropics.minigames.common.core.game.GameResult;
 import com.lovetropics.minigames.common.core.game.IGameManager;
+import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.lobby.GameLobbyId;
 import com.lovetropics.minigames.common.core.game.lobby.GameLobbyMetadata;
 import com.lovetropics.minigames.common.core.game.lobby.IGameLobby;
 import com.lovetropics.minigames.common.core.game.player.PlayerOps;
 import com.lovetropics.minigames.common.core.game.player.PlayerSet;
-import com.lovetropics.minigames.common.core.game.state.instances.control.ControlCommandInvoker;
-import com.lovetropics.minigames.common.core.game.statistics.PlayerKey;
+import com.lovetropics.minigames.common.core.game.state.control.ControlCommandInvoker;
+import com.lovetropics.minigames.common.core.game.state.statistics.PlayerKey;
 import com.lovetropics.minigames.common.core.network.LoveTropicsNetwork;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
@@ -170,9 +171,9 @@ public class MultiGameManager implements IGameManager {
 	}
 
 	@Override
-	public ControlCommandInvoker getControlCommands(CommandSource source) {
-		IGameLobby lobby = getLobbyFor(source);
-		return lobby != null ? lobby.getControlCommands() : ControlCommandInvoker.EMPTY;
+	public ControlCommandInvoker getControlInvoker(CommandSource source) {
+		IGamePhase phase = getGamePhaseFor(source);
+		return phase != null ? phase.getControlInvoker() : ControlCommandInvoker.EMPTY;
 	}
 
 	// TODO: call
@@ -208,7 +209,7 @@ public class MultiGameManager implements IGameManager {
 	public static void onServerStopping(FMLServerStoppingEvent event) {
 		List<GameLobby> lobbies = new ArrayList<>(INSTANCE.lobbies);
 		for (GameLobby lobby : lobbies) {
-			lobby.stop();
+			lobby.cancel();
 		}
 	}
 
@@ -228,17 +229,17 @@ public class MultiGameManager implements IGameManager {
 		}
 
 		if (canceled != null) {
-			canceled.forEach(GameLobby::stop);
+			canceled.forEach(GameLobby::cancel);
 		}
 	}
 
 	@SubscribeEvent
 	public static void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
 		for (GameLobby lobby : INSTANCE.lobbies) {
+			// TODO: watcher
 			PacketDistributor.PacketTarget target = PacketDistributor.PLAYER.with(() -> (ServerPlayerEntity) event.getPlayer());
 			LoveTropicsNetwork.CHANNEL.send(target, LobbyUpdateMessage.update(lobby));
 
-			// TODO
 			/*int networkId = lobby.getMetadata().id().networkId();
 			for (PlayerRole role : PlayerRole.ROLES) {
 				LoveTropicsNetwork.CHANNEL.send(target, new ClientLobbyPlayersMessage(networkId, role, lobby.getMemberCount(role)));
@@ -256,7 +257,8 @@ public class MultiGameManager implements IGameManager {
 	@SubscribeEvent
 	public static void onPlayerLoggedOut(PlayerEvent.PlayerLoggedOutEvent event) {
 		for (GameLobby lobby : INSTANCE.lobbies) {
-			lobby.removePlayer((ServerPlayerEntity) event.getPlayer());
+			ServerPlayerEntity player = (ServerPlayerEntity) event.getPlayer();
+			lobby.getPlayers().remove(player);
 		}
 	}
 }
