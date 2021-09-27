@@ -49,6 +49,8 @@ public interface IGamePhase extends IProtoGame {
 		return getGame().getState();
 	}
 
+	IGamePhaseDefinition getPhaseDefinition();
+
 	<T> T invoker(GameEventType<T> type);
 
 	GameResult<Unit> stop(GameStopReason reason);

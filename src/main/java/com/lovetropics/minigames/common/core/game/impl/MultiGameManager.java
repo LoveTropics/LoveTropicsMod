@@ -16,13 +16,12 @@ import com.lovetropics.minigames.common.core.network.LoveTropicsNetwork;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 import net.minecraft.command.CommandSource;
-import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.management.PlayerList;
 import net.minecraft.util.RegistryKey;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.World;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
@@ -48,8 +47,8 @@ public class MultiGameManager implements IGameManager {
 
 	private final List<GameLobby> lobbies = new ArrayList<>();
 
-	private final Map<RegistryKey<World>, List<GameLobby>> lobbiesByDimension = new Reference2ObjectOpenHashMap<>();
 	private final Map<UUID, GameLobby> lobbiesByPlayer = new Object2ObjectOpenHashMap<>();
+	private final Map<RegistryKey<World>, List<GamePhase>> gamesByDimension = new Reference2ObjectOpenHashMap<>();
 
 	@Override
 	public GameResult<IGameLobby> createGameLobby(String name, ServerPlayerEntity initiator) {
@@ -116,37 +115,28 @@ public class MultiGameManager implements IGameManager {
 
 	@Nullable
 	@Override
-	public GameLobby getLobbyFor(Entity entity) {
-		if (entity.world.isRemote) return null;
-
-		if (entity instanceof PlayerEntity) {
-			return getLobbyFor((PlayerEntity) entity);
-		}
-
-		// TODO: implement
-		return getLobbyForWorld(entity.world, g -> true);
-//		return getLobbyForWorld(entity.world, g -> g.getDefinition().getGameArea().contains(entity.getPositionVec()));
+	public IGamePhase getGamePhaseFor(PlayerEntity player) {
+		GameLobby lobby = getLobbyFor(player);
+		return lobby != null ? lobby.getCurrentPhase() : null;
 	}
 
-	// TODO: maybe we don't want to look up lobbies by location/world but rather the specific game
 	@Nullable
 	@Override
-	public GameLobby getLobbyAt(World world, BlockPos pos) {
-		// TODO: implement
-//		return getLobbyForWorld(world, g -> g.getDefinition().getGameArea().contains(Vector3d.copyCentered(pos)));
-		return getLobbyForWorld(world, g -> true);
+	public IGamePhase getGamePhaseAt(World world, Vector3d pos) {
+		return getGamePhaseForWorld(world, phase -> phase.getPhaseDefinition().getGameArea().contains(pos));
 	}
 
-	public List<GameLobby> getLobbiesForWorld(World world) {
-		if (world.isRemote) return Collections.emptyList();
+	public List<GamePhase> getGamePhaseForWorld(World world) {
+		if (world.isRemote) {
+			return Collections.emptyList();
+		}
 
-		List<GameLobby> lobbies = lobbiesByDimension.get(world.getDimensionKey());
-		return lobbies != null ? lobbies : Collections.emptyList();
+		return gamesByDimension.getOrDefault(world.getDimensionKey(), Collections.emptyList());
 	}
 
 	@Nullable
-	public GameLobby getLobbyForWorld(World world, Predicate<GameLobby> pred) {
-		return getLobbiesForWorld(world).stream().filter(pred).findFirst().orElse(null);
+	public GamePhase getGamePhaseForWorld(World world, Predicate<GamePhase> pred) {
+		return getGamePhaseForWorld(world).stream().filter(pred).findFirst().orElse(null);
 	}
 
 	@Nullable
@@ -176,18 +166,17 @@ public class MultiGameManager implements IGameManager {
 		return phase != null ? phase.getControlInvoker() : ControlCommandInvoker.EMPTY;
 	}
 
-	// TODO: call
-	void addLobbyToDimension(RegistryKey<World> dimension, GameLobby lobby) {
-		lobbiesByDimension.computeIfAbsent(dimension, k -> new ArrayList<>())
-				.add(lobby);
+	void addGamePhaseToDimension(RegistryKey<World> dimension, GamePhase game) {
+		gamesByDimension.computeIfAbsent(dimension, k -> new ArrayList<>())
+				.add(game);
 	}
 
-	void removeLobbyFromDimension(RegistryKey<World> dimension, GameLobby lobby) {
-		List<GameLobby> lobbies = lobbiesByDimension.get(dimension);
-		if (lobbies == null) return;
+	void removeGamePhaseFromDimension(RegistryKey<World> dimension, GamePhase game) {
+		List<GamePhase> games = gamesByDimension.get(dimension);
+		if (games == null) return;
 
-		if (lobbies.remove(lobby) && lobbies.isEmpty()) {
-			lobbiesByDimension.remove(dimension, lobbies);
+		if (games.remove(game) && games.isEmpty()) {
+			gamesByDimension.remove(dimension, games);
 		}
 	}
 

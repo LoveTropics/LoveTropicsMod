@@ -15,30 +15,35 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.math.BlockPos;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
-// TODO: ability to specify generic 'everyone' (or a custom behavior for waiting)
 public class PositionPlayersBehavior implements IGameBehavior {
 	public static final Codec<PositionPlayersBehavior> CODEC = RecordCodecBuilder.create(instance -> {
 		return instance.group(
-				MoreCodecs.arrayOrUnit(Codec.STRING, String[]::new).fieldOf("participants").forGetter(c -> c.participantSpawnKeys),
-				MoreCodecs.arrayOrUnit(Codec.STRING, String[]::new).fieldOf("spectators").forGetter(c -> c.spectatorSpawnKeys)
+				MoreCodecs.arrayOrUnit(Codec.STRING, String[]::new).optionalFieldOf("participants", new String[0]).forGetter(c -> c.participantSpawnKeys),
+				MoreCodecs.arrayOrUnit(Codec.STRING, String[]::new).optionalFieldOf("spectators", new String[0]).forGetter(c -> c.spectatorSpawnKeys),
+				MoreCodecs.arrayOrUnit(Codec.STRING, String[]::new).optionalFieldOf("all", new String[0]).forGetter(c -> c.allSpawnKeys)
 		).apply(instance, PositionPlayersBehavior::new);
 	});
 
 	private final String[] participantSpawnKeys;
 	private final String[] spectatorSpawnKeys;
+	private final String[] allSpawnKeys;
 
 	private final List<BlockBox> participantSpawnRegions = new ArrayList<>();
 	private final List<BlockBox> spectatorSpawnRegions = new ArrayList<>();
+	private final List<BlockBox> allSpawnRegions = new ArrayList<>();
 
 	private int participantSpawnIndex;
 	private int spectatorSpawnIndex;
+	private int allSpawnIndex;
 
-	public PositionPlayersBehavior(final String[] participantSpawnKeys, String[] spectatorSpawnKeys) {
+	public PositionPlayersBehavior(String[] participantSpawnKeys, String[] spectatorSpawnKeys, String[] allSpawnKeys) {
 		this.participantSpawnKeys = participantSpawnKeys;
 		this.spectatorSpawnKeys = spectatorSpawnKeys;
+		this.allSpawnKeys = allSpawnKeys;
 	}
 
 	@Override
@@ -48,6 +53,7 @@ public class PositionPlayersBehavior implements IGameBehavior {
 
 			participantSpawnRegions.clear();
 			spectatorSpawnRegions.clear();
+			allSpawnRegions.clear();
 
 			for (String key : participantSpawnKeys) {
 				participantSpawnRegions.addAll(regions.get(key));
@@ -56,18 +62,27 @@ public class PositionPlayersBehavior implements IGameBehavior {
 			for (String key : spectatorSpawnKeys) {
 				spectatorSpawnRegions.addAll(regions.get(key));
 			}
+
+			for (String key : allSpawnKeys) {
+				allSpawnRegions.addAll(regions.get(key));
+			}
 		});
 
 		events.listen(GamePlayerEvents.SET_ROLE, (player, role, lastRole) -> setupPlayerAsRole(game, player, role));
 	}
 
-	private void setupPlayerAsRole(IGamePhase game, ServerPlayerEntity player, PlayerRole role) {
-		if (role == PlayerRole.PARTICIPANT) {
-			BlockBox region = participantSpawnRegions.get(participantSpawnIndex++ % participantSpawnRegions.size());
-			teleportToRegion(game, player, region);
+	private void setupPlayerAsRole(IGamePhase game, ServerPlayerEntity player, @Nullable PlayerRole role) {
+		BlockBox region = getSpawnRegionFor(role);
+		teleportToRegion(game, player, region);
+	}
+
+	private BlockBox getSpawnRegionFor(PlayerRole role) {
+		if (role == PlayerRole.PARTICIPANT && !participantSpawnRegions.isEmpty()) {
+			return participantSpawnRegions.get(participantSpawnIndex++ % participantSpawnRegions.size());
+		} else if (role == PlayerRole.SPECTATOR && !spectatorSpawnRegions.isEmpty()) {
+			return spectatorSpawnRegions.get(spectatorSpawnIndex++ % spectatorSpawnRegions.size());
 		} else {
-			BlockBox region = spectatorSpawnRegions.get(spectatorSpawnIndex++ % spectatorSpawnRegions.size());
-			teleportToRegion(game, player, region);
+			return allSpawnRegions.get(allSpawnIndex++ % allSpawnRegions.size());
 		}
 	}
 
