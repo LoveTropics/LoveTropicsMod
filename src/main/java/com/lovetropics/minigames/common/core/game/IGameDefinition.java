@@ -1,11 +1,6 @@
 package com.lovetropics.minigames.common.core.game;
 
-import com.lovetropics.minigames.common.core.game.behavior.BehaviorMap;
-import com.lovetropics.minigames.common.core.game.config.WaitingLobbyConfig;
-import com.lovetropics.minigames.common.core.game.map.IGameMapProvider;
-import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TranslationTextComponent;
 
@@ -18,71 +13,67 @@ import javax.annotation.Nullable;
  * for each player type, dimension the minigame takes place in, etc.
  */
 public interface IGameDefinition {
-    IGameMapProvider getMap();
-
-    BehaviorMap createBehaviors();
-
-    /**
-     * The identifier for this minigame definition. Must be unique
-     * compared to other registered minigames.
-     * @return The identifier for this minigame definition.
-     */
-    ResourceLocation getId();
+	/**
+	 * The identifier for this minigame definition. Must be unique
+	 * compared to other registered minigames.
+	 *
+	 * @return The identifier for this minigame definition.
+	 */
+	ResourceLocation getId();
 
 	// TODO: with parameterised games we can get rid of these extra ids
-    default ResourceLocation getDisplayId() {
+	default ResourceLocation getDisplayId() {
 		return getId();
 	}
 
 	/**
 	 * An identifier for telemetry usage, so that variants of games can share
 	 * statistics. Defaults to the ID if not set in the JSON.
-	 * 
+	 *
 	 * @return The telemetry key for this minigame.
 	 */
-    default String getTelemetryKey() {
+	default String getTelemetryKey() {
 		return getId().getPath();
 	}
 
-    /**
-     * Used within messages sent to players as the minigame starts, stops, etc.
-     * @return The unlocalized key string for the name of this minigame.
-     */
-    String getTranslationKey();
+	/**
+	 * Used within messages sent to players as the minigame starts, stops, etc.
+	 *
+	 * @return The unlocalized key string for the name of this minigame.
+	 */
+	String getTranslationKey();
 
-    default ITextComponent getName() {
-        return new TranslationTextComponent(getTranslationKey());
-    }
+	default ITextComponent getName() {
+		return new TranslationTextComponent(getTranslationKey());
+	}
 
-    /**
-     * Will not let you start the minigame without at least this amount of
-     * players registered for the polling minigame.
-     *
-     * @return The minimum amount of players required to start the minigame.
-     */
-    default int getMinimumParticipantCount() {
+	/**
+	 * Will not let you start the minigame without at least this amount of
+	 * players registered for the polling minigame.
+	 *
+	 * @return The minimum amount of players required to start the minigame.
+	 */
+	default int getMinimumParticipantCount() {
 		return 0;
 	}
 
-    /**
-     * Will only select up to this many participants to actually play
-     * in the started minigame. The rest of the players registered for
-     * the minigame will be slotted in as spectators where they can watch
-     * the minigame unfold.
-     *
-     * @return The maximum amount of players that can be participants in the
-     * minigame.
-     */
-    default int getMaximumParticipantCount() {
+	/**
+	 * Will only select up to this many participants to actually play
+	 * in the started minigame. The rest of the players registered for
+	 * the minigame will be slotted in as spectators where they can watch
+	 * the minigame unfold.
+	 *
+	 * @return The maximum amount of players that can be participants in the
+	 * minigame.
+	 */
+	default int getMaximumParticipantCount() {
 		return Integer.MAX_VALUE;
 	}
 
-	@Nullable
-	default WaitingLobbyConfig getWaitingLobby() {
-		return null;
-	}
+	IGamePhaseDefinition getPlayingPhase();
 
-    default AxisAlignedBB getGameArea() {
-		return TileEntity.INFINITE_EXTENT_AABB;
+	@Nullable
+	default IGamePhaseDefinition getWaitingPhase() {
+		return null;
 	}
 }

@@ -2,7 +2,7 @@ package com.lovetropics.minigames.common.core.game;
 
 import com.lovetropics.minigames.common.core.game.impl.MultiGameManager;
 import com.lovetropics.minigames.common.core.game.lobby.IGameLobby;
-import com.lovetropics.minigames.common.core.game.state.instances.control.ControlCommandInvoker;
+import com.lovetropics.minigames.common.core.game.state.control.ControlCommandInvoker;
 import net.minecraft.command.CommandSource;
 import net.minecraft.entity.player.ServerPlayerEntity;
 
@@ -36,5 +36,5 @@ public interface IGameManager extends IGameLookup {
 	@Nullable
 	IGameLobby getLobbyByCommandId(String id);
 
-	ControlCommandInvoker getControlCommands(CommandSource source);
+	ControlCommandInvoker getControlInvoker(CommandSource source);
 }

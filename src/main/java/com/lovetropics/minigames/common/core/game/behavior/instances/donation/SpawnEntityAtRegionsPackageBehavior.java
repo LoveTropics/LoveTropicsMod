@@ -3,7 +3,7 @@ package com.lovetropics.minigames.common.core.game.behavior.instances.donation;
 import com.google.common.collect.Lists;
 import com.lovetropics.lib.BlockBox;
 import com.lovetropics.minigames.common.core.game.GameException;
-import com.lovetropics.minigames.common.core.game.IActiveGame;
+import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePackageEvents;
@@ -19,8 +19,7 @@ import net.minecraft.world.server.ServerWorld;
 
 import java.util.List;
 
-public class SpawnEntityAtRegionsPackageBehavior implements IGameBehavior
-{
+public class SpawnEntityAtRegionsPackageBehavior implements IGameBehavior {
 	public static final Codec<SpawnEntityAtRegionsPackageBehavior> CODEC = RecordCodecBuilder.create(instance -> {
 		return instance.group(
 				Codec.STRING.listOf().fieldOf("regions_to_spawn_at").forGetter(c -> c.regionsToSpawnAtKeys),
@@ -42,15 +41,15 @@ public class SpawnEntityAtRegionsPackageBehavior implements IGameBehavior
 	}
 
 	@Override
-	public void register(IActiveGame registerGame, EventRegistrar events) throws GameException {
-		MapRegions regions = registerGame.getMapRegions();
+	public void register(IGamePhase game, EventRegistrar events) throws GameException {
+		MapRegions regions = game.getMapRegions();
 
 		regionsToSpawnAt.clear();
 		for (String key : regionsToSpawnAtKeys) {
 			regionsToSpawnAt.addAll(regions.get(key));
 		}
 
-		events.listen(GamePackageEvents.APPLY_PACKAGE, (game, player, sendingPlayer) -> {
+		events.listen(GamePackageEvents.APPLY_PACKAGE, (player, sendingPlayer) -> {
 			ServerWorld world = game.getWorld();
 			for (final BlockBox region : regionsToSpawnAt) {
 				for (int i = 0; i < entityCountPerRegion; i++) {

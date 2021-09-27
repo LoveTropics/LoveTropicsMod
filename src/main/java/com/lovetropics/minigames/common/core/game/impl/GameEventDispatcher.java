@@ -1,8 +1,8 @@
 package com.lovetropics.minigames.common.core.game.impl;
 
 import com.lovetropics.minigames.LoveTropics;
-import com.lovetropics.minigames.common.core.game.IActiveGame;
 import com.lovetropics.minigames.common.core.game.IGameLookup;
+import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameLivingEntityEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameWorldEvents;
@@ -37,11 +37,11 @@ public final class GameEventDispatcher {
 	public void onChunkLoad(ChunkEvent.Load event) {
 		if (event.getWorld() instanceof IServerWorld) {
 			ServerWorld world = ((IServerWorld) event.getWorld()).getWorld();
-			IActiveGame game = gameLookup.getGameAt(world, event.getChunk().getPos().asBlockPos());
+			IGamePhase game = gameLookup.getGamePhaseAt(world, event.getChunk().getPos().asBlockPos());
 			if (game != null) {
 				IChunk chunk = event.getChunk();
-				Scheduler.INSTANCE.submit(s -> {
-					game.invoker(GameWorldEvents.CHUNK_LOAD).onChunkLoad(game, chunk);
+				Scheduler.thisTick().run(server -> {
+					game.invoker(GameWorldEvents.CHUNK_LOAD).onChunkLoad(chunk);
 				});
 			}
 		}
@@ -51,10 +51,10 @@ public final class GameEventDispatcher {
 	public void onPlayerHurt(LivingHurtEvent event) {
 		Entity entity = event.getEntity();
 		if (entity instanceof ServerPlayerEntity) {
-			IActiveGame game = gameLookup.getGameFor(entity);
+			IGamePhase game = gameLookup.getGamePhaseFor(entity);
 			if (game != null) {
 				try {
-					ActionResultType result = game.invoker(GamePlayerEvents.DAMAGE).onDamage(game, (ServerPlayerEntity) entity, event.getSource(), event.getAmount());
+					ActionResultType result = game.invoker(GamePlayerEvents.DAMAGE).onDamage((ServerPlayerEntity) entity, event.getSource(), event.getAmount());
 					if (result == ActionResultType.FAIL) {
 						event.setCanceled(true);
 					}
@@ -67,10 +67,10 @@ public final class GameEventDispatcher {
 
 	@SubscribeEvent
 	public void onAttackEntity(AttackEntityEvent event) {
-		IActiveGame game = gameLookup.getGameFor(event.getPlayer());
+		IGamePhase game = gameLookup.getGamePhaseFor(event.getPlayer());
 		if (game != null && event.getPlayer() instanceof ServerPlayerEntity) {
 			try {
-				ActionResultType result = game.invoker(GamePlayerEvents.ATTACK).onAttack(game, (ServerPlayerEntity) event.getPlayer(), event.getTarget());
+				ActionResultType result = game.invoker(GamePlayerEvents.ATTACK).onAttack((ServerPlayerEntity) event.getPlayer(), event.getTarget());
 				if (result == ActionResultType.FAIL) {
 					event.setCanceled(true);
 				}
@@ -83,18 +83,18 @@ public final class GameEventDispatcher {
 	@SubscribeEvent
 	public void onLivingUpdate(LivingEvent.LivingUpdateEvent event) {
 		LivingEntity entity = event.getEntityLiving();
-		IActiveGame game = gameLookup.getGameFor(entity);
+		IGamePhase game = gameLookup.getGamePhaseFor(entity);
 		if (game != null) {
 			if (entity instanceof ServerPlayerEntity && game.getParticipants().contains(entity)) {
 				try {
-					game.invoker(GamePlayerEvents.TICK).tick(game, (ServerPlayerEntity) entity);
+					game.invoker(GamePlayerEvents.TICK).tick((ServerPlayerEntity) entity);
 				} catch (Exception e) {
 					LoveTropics.LOGGER.warn("Failed to dispatch player tick event", e);
 				}
 			}
 
 			try {
-				game.invoker(GameLivingEntityEvents.TICK).tick(game, entity);
+				game.invoker(GameLivingEntityEvents.TICK).tick(entity);
 			} catch (Exception e) {
 				LoveTropics.LOGGER.warn("Failed to dispatch living tick event", e);
 			}
@@ -105,10 +105,10 @@ public final class GameEventDispatcher {
 	public void onPlayerDeath(LivingDeathEvent event) {
 		LivingEntity entity = event.getEntityLiving();
 		if (entity instanceof ServerPlayerEntity) {
-			IActiveGame game = gameLookup.getGameFor(entity);
+			IGamePhase game = gameLookup.getGamePhaseFor(entity);
 			if (game != null) {
 				try {
-					ActionResultType result = game.invoker(GamePlayerEvents.DEATH).onDeath(game, (ServerPlayerEntity) entity, event.getSource());
+					ActionResultType result = game.invoker(GamePlayerEvents.DEATH).onDeath((ServerPlayerEntity) entity, event.getSource());
 					if (result == ActionResultType.FAIL) {
 						event.setCanceled(true);
 					}
@@ -121,10 +121,10 @@ public final class GameEventDispatcher {
 
 	@SubscribeEvent
 	public void onPlayerRespawn(PlayerEvent.PlayerRespawnEvent event) {
-		IActiveGame game = gameLookup.getGameFor(event.getPlayer());
+		IGamePhase game = gameLookup.getGamePhaseFor(event.getPlayer());
 		if (game != null) {
 			try {
-				game.invoker(GamePlayerEvents.RESPAWN).onRespawn(game, (ServerPlayerEntity) event.getPlayer());
+				game.invoker(GamePlayerEvents.RESPAWN).onRespawn((ServerPlayerEntity) event.getPlayer());
 			} catch (Exception e) {
 				LoveTropics.LOGGER.warn("Failed to dispatch player respawn event", e);
 			}
@@ -133,12 +133,12 @@ public final class GameEventDispatcher {
 
 	@SubscribeEvent
 	public void onPlayerInteractEntity(PlayerInteractEvent.EntityInteract event) {
-		IActiveGame game = gameLookup.getGameFor(event.getPlayer());
+		IGamePhase game = gameLookup.getGamePhaseFor(event.getPlayer());
 		if (game != null) {
 			ServerPlayerEntity player = (ServerPlayerEntity) event.getPlayer();
 
 			try {
-				game.invoker(GamePlayerEvents.INTERACT_ENTITY).onInteract(game, player, event.getTarget(), event.getHand());
+				game.invoker(GamePlayerEvents.INTERACT_ENTITY).onInteract(player, event.getTarget(), event.getHand());
 			} catch (Exception e) {
 				LoveTropics.LOGGER.warn("Failed to dispatch player interact entity event", e);
 			}
@@ -147,12 +147,12 @@ public final class GameEventDispatcher {
 
 	@SubscribeEvent
 	public void onPlayerLeftClickBlock(PlayerInteractEvent.LeftClickBlock event) {
-		IActiveGame game = gameLookup.getGameFor(event.getPlayer());
+		IGamePhase game = gameLookup.getGamePhaseFor(event.getPlayer());
 		if (game != null) {
 			ServerPlayerEntity player = (ServerPlayerEntity) event.getPlayer();
 
 			try {
-				game.invoker(GamePlayerEvents.LEFT_CLICK_BLOCK).onLeftClickBlock(game, player, event.getPos());
+				game.invoker(GamePlayerEvents.LEFT_CLICK_BLOCK).onLeftClickBlock(player, player.getServerWorld(), event.getPos());
 			} catch (Exception e) {
 				LoveTropics.LOGGER.warn("Failed to dispatch player left click block event", e);
 			}
@@ -161,11 +161,11 @@ public final class GameEventDispatcher {
 
 	@SubscribeEvent
 	public void onPlayerBreakBlock(BlockEvent.BreakEvent event) {
-		IActiveGame game = gameLookup.getGameFor(event.getPlayer());
+		IGamePhase game = gameLookup.getGamePhaseFor(event.getPlayer());
 		if (game != null) {
 			try {
 				ServerPlayerEntity player = (ServerPlayerEntity) event.getPlayer();
-				ActionResultType result = game.invoker(GamePlayerEvents.BREAK_BLOCK).onBreakBlock(game, player, event.getPos(), event.getState());
+				ActionResultType result = game.invoker(GamePlayerEvents.BREAK_BLOCK).onBreakBlock(player, event.getPos(), event.getState());
 				if (result == ActionResultType.FAIL) {
 					event.setCanceled(true);
 				}
@@ -177,11 +177,11 @@ public final class GameEventDispatcher {
 
 	@SubscribeEvent
 	public void onEntityPlaceBlock(BlockEvent.EntityPlaceEvent event) {
-		IActiveGame game = gameLookup.getGameFor(event.getEntity());
+		IGamePhase game = gameLookup.getGamePhaseFor(event.getEntity());
 		if (game != null && event.getEntity() instanceof ServerPlayerEntity) {
 			try {
 				ServerPlayerEntity player = (ServerPlayerEntity) event.getEntity();
-				ActionResultType result = game.invoker(GamePlayerEvents.PLACE_BLOCK).onPlaceBlock(game, player, event.getPos(), event.getPlacedBlock(), event.getPlacedAgainst());
+				ActionResultType result = game.invoker(GamePlayerEvents.PLACE_BLOCK).onPlaceBlock(player, event.getPos(), event.getPlacedBlock(), event.getPlacedAgainst());
 				if (result == ActionResultType.FAIL) {
 					event.setCanceled(true);
 				}
@@ -193,10 +193,10 @@ public final class GameEventDispatcher {
 
 	@SubscribeEvent
 	public void onExplosion(ExplosionEvent.Detonate event) {
-		IActiveGame game = gameLookup.getGameAt(event.getWorld(), new BlockPos(event.getExplosion().getPosition()));
+		IGamePhase game = gameLookup.getGamePhaseAt(event.getWorld(), new BlockPos(event.getExplosion().getPosition()));
 		if (game != null) {
 			try {
-				game.invoker(GameWorldEvents.EXPLOSION_DETONATE).onExplosionDetonate(game, event.getExplosion(), event.getAffectedBlocks(), event.getAffectedEntities());
+				game.invoker(GameWorldEvents.EXPLOSION_DETONATE).onExplosionDetonate(event.getExplosion(), event.getAffectedBlocks(), event.getAffectedEntities());
 			} catch (Exception e) {
 				LoveTropics.LOGGER.warn("Failed to dispatch explosion event", e);
 			}

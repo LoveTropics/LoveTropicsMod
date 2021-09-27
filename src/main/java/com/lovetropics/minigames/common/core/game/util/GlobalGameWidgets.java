@@ -1,8 +1,8 @@
 package com.lovetropics.minigames.common.core.game.util;
 
-import com.lovetropics.minigames.common.core.game.IActiveGame;
+import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
-import com.lovetropics.minigames.common.core.game.behavior.event.GameLifecycleEvents;
+import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.text.ITextComponent;
@@ -12,20 +12,20 @@ import java.util.ArrayList;
 import java.util.List;
 
 public final class GlobalGameWidgets {
-	private final IActiveGame game;
+	private final IGamePhase game;
 
 	private final List<GameWidget> widgets = new ArrayList<>();
 
-	private GlobalGameWidgets(IActiveGame game) {
+	private GlobalGameWidgets(IGamePhase game) {
 		this.game = game;
 	}
 
-	public static GlobalGameWidgets registerTo(IActiveGame game, EventRegistrar events) {
+	public static GlobalGameWidgets registerTo(IGamePhase game, EventRegistrar events) {
 		GlobalGameWidgets widgets = new GlobalGameWidgets(game);
 
-		events.listen(GamePlayerEvents.JOIN, (g, player, role) -> widgets.addPlayer(player));
-		events.listen(GamePlayerEvents.LEAVE, (g, player) -> widgets.removePlayer(player));
-		events.listen(GameLifecycleEvents.STOP, (g, reason) -> widgets.close());
+		events.listen(GamePlayerEvents.ADD, (player) -> widgets.addPlayer(player));
+		events.listen(GamePlayerEvents.REMOVE, (player) -> widgets.removePlayer(player));
+		events.listen(GamePhaseEvents.STOP, (reason) -> widgets.close());
 
 		return widgets;
 	}
@@ -39,7 +39,7 @@ public final class GlobalGameWidgets {
 	}
 
 	private <T extends GameWidget> T registerWidget(T widget) {
-		game.getLobby().getAllPlayers().forEach(widget::addPlayer);
+		game.getLobby().getPlayers().forEach(widget::addPlayer);
 		widgets.add(widget);
 		return widget;
 	}

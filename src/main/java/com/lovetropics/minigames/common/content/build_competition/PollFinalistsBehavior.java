@@ -3,13 +3,13 @@ package com.lovetropics.minigames.common.content.build_competition;
 import com.google.common.collect.Iterables;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
-import com.lovetropics.minigames.common.core.game.state.instances.control.ControlCommand;
 import com.lovetropics.minigames.common.core.game.GameException;
-import com.lovetropics.minigames.common.core.game.IActiveGame;
+import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePackageEvents;
-import com.lovetropics.minigames.common.core.game.state.instances.control.ControlCommandState;
+import com.lovetropics.minigames.common.core.game.state.control.ControlCommand;
+import com.lovetropics.minigames.common.core.integration.GameInstanceTelemetry;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
@@ -58,9 +58,10 @@ public class PollFinalistsBehavior implements IGameBehavior {
 	}
 
 	@Override
-	public void register(IActiveGame game, EventRegistrar events) throws GameException {
-		ControlCommandState commands = game.getState().get(ControlCommandState.TYPE);
-		commands.add("start_runoff", ControlCommand.forAdmins(source -> {
+	public void register(IGamePhase game, EventRegistrar events) throws GameException {
+		GameInstanceTelemetry telemetry = game.getState().getOrThrow(GameInstanceTelemetry.KEY);
+
+		game.getControlCommands().add("start_runoff", ControlCommand.forAdmins(source -> {
 			try {
 				PlayerList players = source.getServer().getPlayerList();
 				players.getPlayers().forEach(p -> p.removeTag(winnerTag));
@@ -69,16 +70,16 @@ public class PollFinalistsBehavior implements IGameBehavior {
 						.map(p -> p.getGameProfile().getName())
 						.toArray(String[]::new);
 				ObjectArrays.shuffle(finalists, RANDOM);
-				game.getTelemetry().createPoll("Choose the best build!", pollDuration, finalists);
+				telemetry.createPoll("Choose the best build!", pollDuration, finalists);
 			} catch (Exception e) {
 				LOGGER.error("Failed to start runoff:", e);
 			}
 		}));
 
-		events.listen(GamePackageEvents.RECEIVE_POLL_EVENT, this::handlePollEvent);
+		events.listen(GamePackageEvents.RECEIVE_POLL_EVENT, (object, crud) -> handlePollEvent(game, object, crud));
 	}
 
-	private void handlePollEvent(IActiveGame game, JsonObject object, String crud) {
+	private void handlePollEvent(IGamePhase game, JsonObject object, String crud) {
 		MinecraftServer server = game.getServer();
 
 		if (crud.equals("create")) {
@@ -111,6 +112,7 @@ public class PollFinalistsBehavior implements IGameBehavior {
 			updateScores(server, event, false);
 		}
 	}
+
 	private static final Random RANDOM = new Random();
 
 	private void updateScores(MinecraftServer server, PollEvent event, boolean forceWinner) {
@@ -157,8 +159,8 @@ public class PollFinalistsBehavior implements IGameBehavior {
 
 	public static class Option {
 
-	    char key;
-	    String title;
-	    int results;
+		char key;
+		String title;
+		int results;
 	}
 }

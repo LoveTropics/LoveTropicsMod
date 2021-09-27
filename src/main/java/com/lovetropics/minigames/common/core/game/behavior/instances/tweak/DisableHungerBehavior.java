@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances.tweak;
 
-import com.lovetropics.minigames.common.core.game.IActiveGame;
+import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
@@ -19,8 +19,8 @@ public final class DisableHungerBehavior implements IGameBehavior {
 	}
 
 	@Override
-	public void register(IActiveGame registerGame, EventRegistrar events) {
-		events.listen(GamePlayerEvents.TICK, (game, player) -> {
+	public void register(IGamePhase game, EventRegistrar events) {
+		events.listen(GamePlayerEvents.TICK, (player) -> {
 			if (player.ticksExisted % 20 == 0) {
 				player.getFoodStats().read(this.foodStats);
 			}

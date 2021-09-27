@@ -1,5 +1,7 @@
 package com.lovetropics.minigames.common.core.game.player;
 
+import com.lovetropics.lib.codec.MoreCodecs;
+import com.mojang.serialization.Codec;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 
 import javax.annotation.Nullable;
@@ -13,6 +15,8 @@ public enum PlayerRole {
 
 	public static final PlayerRole[] ROLES = values();
 	private static final Map<String, PlayerRole> BY_KEY = new Object2ObjectOpenHashMap<>(ROLES.length);
+
+	public static final Codec<PlayerRole> CODEC = MoreCodecs.stringVariants(ROLES, PlayerRole::getKey);
 
 	private final String key;
 

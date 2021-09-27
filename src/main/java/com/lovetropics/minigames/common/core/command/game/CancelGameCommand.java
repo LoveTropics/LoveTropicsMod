@@ -2,8 +2,8 @@ package com.lovetropics.minigames.common.core.command.game;
 
 import com.lovetropics.minigames.client.data.LoveTropicsLangKeys;
 import com.lovetropics.minigames.common.core.game.GameStopReason;
-import com.lovetropics.minigames.common.core.game.IActiveGame;
 import com.lovetropics.minigames.common.core.game.IGameManager;
+import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.util.GameMessages;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
@@ -18,7 +18,7 @@ public class CancelGameCommand {
 			literal("game")
 			.then(literal("cancel").requires(s -> s.hasPermissionLevel(2))
 			.executes(c -> GameCommand.executeGameAction(() -> {
-				IActiveGame game = IGameManager.get().getGameFor(c.getSource());
+				IGamePhase game = IGameManager.get().getGamePhaseFor(c.getSource());
 				if (game == null) {
 					throw new SimpleCommandExceptionType(new TranslationTextComponent(LoveTropicsLangKeys.COMMAND_NO_MINIGAME)).create();
 				}

@@ -55,11 +55,11 @@ public final class ClientLobbyManager {
 		return joinedLobby;
 	}
 
-	public static ClientLobbyState addOrUpdate(int id, String name, List<ClientQueuedGame> queue, @Nullable ClientGameDefinition activeGame) {
+	public static ClientLobbyState addOrUpdate(int id, String name, List<ClientQueuedGame> queue, @Nullable ClientGameDefinition currentGame) {
 		ClientLobbyState lobby = LOBBIES.computeIfAbsent(id, ClientLobbyState::new);
 		lobby.name = name;
 		lobby.queue = queue;
-		lobby.activeGame = activeGame;
+		lobby.currentGame = currentGame;
 		return lobby;
 	}
 

@@ -1,11 +1,11 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances.statistics;
 
-import com.lovetropics.minigames.common.core.game.IActiveGame;
+import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
-import com.lovetropics.minigames.common.core.game.statistics.GameStatistics;
-import com.lovetropics.minigames.common.core.game.statistics.StatisticKey;
+import com.lovetropics.minigames.common.core.game.state.statistics.GameStatistics;
+import com.lovetropics.minigames.common.core.game.state.statistics.StatisticKey;
 import com.mojang.serialization.Codec;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -16,8 +16,8 @@ public final class DamageTrackerBehavior implements IGameBehavior {
 	public static final Codec<DamageTrackerBehavior> CODEC = Codec.unit(DamageTrackerBehavior::new);
 
 	@Override
-	public void register(IActiveGame registerGame, EventRegistrar events) {
-		events.listen(GamePlayerEvents.DAMAGE, (game, player, source, damageAmount) -> {
+	public void register(IGamePhase game, EventRegistrar events) {
+		events.listen(GamePlayerEvents.DAMAGE, (player, source, damageAmount) -> {
 			GameStatistics statistics = game.getStatistics();
 
 			statistics.forPlayer(player)

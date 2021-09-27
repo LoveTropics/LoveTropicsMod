@@ -8,76 +8,73 @@ import net.minecraftforge.fml.LogicalSide;
 import net.minecraftforge.fml.LogicalSidedProvider;
 import net.minecraftforge.fml.common.Mod;
 
-import java.util.Iterator;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
 @Mod.EventBusSubscriber(modid = Constants.MODID)
 public final class Scheduler {
-	public static final Scheduler INSTANCE = new Scheduler();
-
-	private final ConcurrentLinkedQueue<Task> taskQueue = new ConcurrentLinkedQueue<>();
-	private int tick = 0;
+	private static final ConcurrentMap<Integer, Tick> TICKS = new ConcurrentHashMap<>();
+	private static int time = 0;
 
 	@SubscribeEvent
 	public static void onTick(TickEvent.ServerTickEvent event) {
 		if (event.phase == TickEvent.Phase.END) {
 			MinecraftServer server = LogicalSidedProvider.INSTANCE.get(LogicalSide.SERVER);
-			Scheduler.INSTANCE.runTasks(server);
+			Scheduler.runTasks(server);
 		}
 	}
 
-	public <T> CompletableFuture<T> submit(Function<MinecraftServer, T> task) {
-		return this.submit(task, 0);
+	public static Tick atTime(int time) {
+		return Scheduler.TICKS.computeIfAbsent(time, t -> new Tick());
 	}
 
-	public <T> CompletableFuture<T> submit(Function<MinecraftServer, T> task, int delay) {
-		CompletableFuture<T> future = new CompletableFuture<>();
-		this.submit(server -> {
-			T result = task.apply(server);
-			future.complete(result);
-		}, delay);
-		return future;
+	public static Tick inTicks(int delay) {
+		return Scheduler.atTime(Scheduler.time + delay);
 	}
 
-	public void submit(Consumer<MinecraftServer> task) {
-		this.submit(task, 0);
+	public static Tick thisTick() {
+		return inTicks(0);
 	}
 
-	public void submit(Consumer<MinecraftServer> task, int delay) {
-		this.taskQueue.add(new Task(task, this.tick + delay));
+	public static Tick nextTick() {
+		return inTicks(1);
 	}
 
-	private void runTasks(MinecraftServer server) {
+	private static void runTasks(MinecraftServer server) {
 		int time = server.getTickCounter();
-		this.tick = time;
+		Scheduler.time = time;
 
-		Iterator<Task> iterator = this.taskQueue.iterator();
-		while (iterator.hasNext()) {
-			Task task = iterator.next();
-			if (task.tryRun(server, time)) {
-				iterator.remove();
-			}
+		Tick tick = TICKS.remove(time);
+		if (tick != null) {
+			tick.run(server);
 		}
 	}
 
-	static class Task {
-		private final Consumer<MinecraftServer> action;
-		private final int time;
+	public static final class Tick {
+		private final List<Consumer<MinecraftServer>> tasks = new ArrayList<>();
 
-		Task(Consumer<MinecraftServer> action, int time) {
-			this.action = action;
-			this.time = time;
+		public <T> CompletableFuture<T> supply(Function<MinecraftServer, T> task) {
+			CompletableFuture<T> future = new CompletableFuture<>();
+			this.run(server -> {
+				T result = task.apply(server);
+				future.complete(result);
+			});
+			return future;
 		}
 
-		boolean tryRun(MinecraftServer server, int time) {
-			if (time >= this.time) {
-				this.action.accept(server);
-				return true;
+		public void run(Consumer<MinecraftServer> task) {
+			this.tasks.add(task);
+		}
+
+		void run(MinecraftServer server) {
+			for (Consumer<MinecraftServer> task : this.tasks) {
+				task.accept(server);
 			}
-			return false;
 		}
 	}
 }

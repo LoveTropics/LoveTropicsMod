@@ -1,12 +1,12 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances.statistics;
 
-import com.lovetropics.minigames.common.core.game.IActiveGame;
+import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
-import com.lovetropics.minigames.common.core.game.behavior.event.GameLifecycleEvents;
+import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
-import com.lovetropics.minigames.common.core.game.statistics.GameStatistics;
-import com.lovetropics.minigames.common.core.game.statistics.StatisticKey;
+import com.lovetropics.minigames.common.core.game.state.statistics.GameStatistics;
+import com.lovetropics.minigames.common.core.game.state.statistics.StatisticKey;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
@@ -42,22 +42,22 @@ public final class CampingTrackerBehavior implements IGameBehavior {
 	}
 
 	@Override
-	public void register(IActiveGame game, EventRegistrar events) {
+	public void register(IGamePhase game, EventRegistrar events) {
 		trigger.awaitThen(events, () -> {
-			events.listen(GameLifecycleEvents.TICK, this::tick);
+			events.listen(GamePhaseEvents.TICK, () -> tick(game));
 			events.listen(GamePlayerEvents.LEAVE, this::onPlayerLeave);
 			events.listen(GamePlayerEvents.DEATH, this::onPlayerDeath);
 		});
 	}
 
-	private void tick(IActiveGame game) {
+	private void tick(IGamePhase game) {
 		long ticks = game.ticks();
 		if (ticks % CAMP_TEST_INTERVAL == 0) {
 			testForCamping(game, ticks);
 		}
 	}
 
-	private void testForCamping(IActiveGame game, long time) {
+	private void testForCamping(IGamePhase game, long time) {
 		GameStatistics statistics = game.getStatistics();
 
 		for (ServerPlayerEntity player : game.getParticipants()) {
@@ -80,12 +80,12 @@ public final class CampingTrackerBehavior implements IGameBehavior {
 		return campingTrackers.computeIfAbsent(player.getUniqueID(), i -> new CampingTracker());
 	}
 
-	private ActionResultType onPlayerDeath(IActiveGame game, ServerPlayerEntity player, DamageSource source) {
+	private ActionResultType onPlayerDeath(ServerPlayerEntity player, DamageSource source) {
 		campingTrackers.remove(player.getUniqueID());
 		return ActionResultType.PASS;
 	}
 
-	private void onPlayerLeave(IActiveGame game, ServerPlayerEntity player) {
+	private void onPlayerLeave(ServerPlayerEntity player) {
 		campingTrackers.remove(player.getUniqueID());
 	}
 

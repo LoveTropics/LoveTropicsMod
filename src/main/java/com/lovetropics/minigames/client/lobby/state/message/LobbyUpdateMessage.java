@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
 
+// TODO: only send for initiator & split out the current game management
 public class LobbyUpdateMessage {
 	private final int id;
 	@Nullable
@@ -26,7 +27,7 @@ public class LobbyUpdateMessage {
 		int id = lobby.getMetadata().id().networkId();
 		String name = lobby.getMetadata().name();
 		List<ClientQueuedGame> queue = lobby.getGameQueue().clientEntries();
-		ClientGameDefinition definition = lobby.getActiveGame() != null ? ClientGameDefinition.from(lobby.getActiveGame().getDefinition()) : null;
+		ClientGameDefinition definition = lobby.getCurrentGame() != null ? ClientGameDefinition.from(lobby.getCurrentGame().getDefinition()) : null;
 		return new LobbyUpdateMessage(id, new Update(name, queue, definition));
 	}
 
@@ -55,7 +56,7 @@ public class LobbyUpdateMessage {
 	public void handle(Supplier<NetworkEvent.Context> ctx) {
 		ctx.get().enqueueWork(() -> {
 			if (update != null) {
-				ClientLobbyManager.addOrUpdate(id, update.name, update.queue, update.activeGame);
+				ClientLobbyManager.addOrUpdate(id, update.name, update.queue, update.currentGame);
 			} else {
 				ClientLobbyManager.remove(id);
 			}
@@ -67,12 +68,12 @@ public class LobbyUpdateMessage {
 		final String name;
 		final List<ClientQueuedGame> queue;
 		@Nullable
-		final ClientGameDefinition activeGame;
+		final ClientGameDefinition currentGame;
 
-		Update(String name, List<ClientQueuedGame> queue, @Nullable ClientGameDefinition activeGame) {
+		Update(String name, List<ClientQueuedGame> queue, @Nullable ClientGameDefinition currentGame) {
 			this.name = name;
 			this.queue = queue;
-			this.activeGame = activeGame;
+			this.currentGame = currentGame;
 		}
 
 		static Update decode(PacketBuffer buffer) {
@@ -84,12 +85,12 @@ public class LobbyUpdateMessage {
 				queue.add(ClientQueuedGame.decode(buffer));
 			}
 
-			ClientGameDefinition activeGame = null;
+			ClientGameDefinition currentGame = null;
 			if (buffer.readBoolean()) {
-				activeGame = ClientGameDefinition.decode(buffer);
+				currentGame = ClientGameDefinition.decode(buffer);
 			}
 
-			return new Update(name, queue, activeGame);
+			return new Update(name, queue, currentGame);
 		}
 
 		void encode(PacketBuffer buffer) {
@@ -100,9 +101,9 @@ public class LobbyUpdateMessage {
 				game.encode(buffer);
 			}
 
-			buffer.writeBoolean(activeGame != null);
-			if (activeGame != null) {
-				activeGame.encode(buffer);
+			buffer.writeBoolean(currentGame != null);
+			if (currentGame != null) {
+				currentGame.encode(buffer);
 			}
 		}
 	}
