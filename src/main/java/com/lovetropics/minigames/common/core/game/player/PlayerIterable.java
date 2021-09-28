@@ -5,6 +5,7 @@ import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.Iterators;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.network.IPacket;
+import net.minecraft.network.NetworkManager;
 import net.minecraft.potion.EffectInstance;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.management.PlayerList;
@@ -12,7 +13,9 @@ import net.minecraft.util.text.ITextComponent;
 import net.minecraftforge.fml.network.PacketDistributor;
 import net.minecraftforge.fml.network.simple.SimpleChannel;
 
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -52,9 +55,15 @@ public interface PlayerIterable extends PlayerOps, Iterable<ServerPlayerEntity> 
 
 	@Override
 	default void sendPacket(SimpleChannel channel, Object message) {
-		for (ServerPlayerEntity player : this) {
-			channel.send(PacketDistributor.PLAYER.with(() -> player), message);
-		}
+		PacketDistributor.PacketTarget target = PacketDistributor.NMLIST.with(() -> {
+			List<NetworkManager> networkManagers = new ArrayList<>();
+			for (ServerPlayerEntity player : this) {
+				networkManagers.add(player.connection.netManager);
+			}
+			return networkManagers;
+		});
+
+		channel.send(target, message);
 	}
 
 	static Iterator<ServerPlayerEntity> resolvingIterator(MinecraftServer server, Iterator<UUID> ids) {

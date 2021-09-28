@@ -14,6 +14,7 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.IntList;
 import net.minecraft.client.Minecraft;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.function.UnaryOperator;
 
@@ -21,6 +22,10 @@ public final class ClientLobbyManagement {
 	private static Session session;
 
 	public static void update(int id, ClientLobbyUpdate.Set updates) {
+		if (!isScreenValid(session)) {
+			session = null;
+		}
+
 		Session session = ClientLobbyManagement.session;
 		if (session == null || session.id != id) {
 			ClientLobbyManagement.session = session = new Session(id, new ClientLobbyManageState());
@@ -28,6 +33,10 @@ public final class ClientLobbyManagement {
 		}
 
 		updates.applyTo(session);
+	}
+
+	private static boolean isScreenValid(Session session) {
+		return Minecraft.getInstance().currentScreen == session.screen;
 	}
 
 	static void displayScreen(Session session) {
@@ -53,12 +62,20 @@ public final class ClientLobbyManagement {
 			return this.lobby;
 		}
 
+		public void setName(String name) {
+			sendUpdates(updates -> updates.setName(name));
+		}
+
 		public void enqueueGame(ClientGameDefinition game) {
 			sendUpdates(updates -> updates.enqueue(game));
 		}
 
 		public void removeQueuedGame(int id) {
-			// TODO
+			sendUpdates(updates -> updates.removeQueuedGame(id));
+		}
+
+		public void selectControl(LobbyControls.Type control) {
+			sendUpdates(updates -> updates.selectControl(control));
 		}
 
 		private void sendUpdates(UnaryOperator<ServerLobbyUpdate.Set> updates) {
@@ -70,7 +87,8 @@ public final class ClientLobbyManagement {
 		}
 
 		public void close() {
-			// TODO: send message to stop tracking
+			LoveTropicsNetwork.CHANNEL.sendToServer(ServerManageLobbyMessage.stop(id));
+
 			if (ClientLobbyManagement.session == this) {
 				ClientLobbyManagement.session = null;
 			}
@@ -78,22 +96,27 @@ public final class ClientLobbyManagement {
 
 		public void handleInstalledGames(List<ClientGameDefinition> installedGames) {
 			lobby.setInstalledGames(installedGames);
-			screen.initGamesList();
+			screen.updateGameList();
 		}
 
 		public void handleQueue(ClientLobbyQueue queue) {
 			lobby.setQueue(queue);
-			screen.initGamesList();
+			screen.updateGameList();
 		}
 
 		public void handleName(String name) {
 			lobby.setName(name);
-			screen.initNameField();
+			screen.updateNameField();
+		}
+
+		public void handleCurrentGame(@Nullable ClientGameDefinition currentGame) {
+			lobby.setCurrentGame(currentGame);
+			screen.updateGameList();
 		}
 
 		public void handleQueueUpdate(IntList queue, Int2ObjectMap<ClientLobbyQueuedGame> updated) {
 			lobby.updateQueue(queue, updated);
-			screen.initGamesList();
+			screen.updateGameList();
 		}
 
 		public void handlePlayers(List<ClientLobbyPlayer> players) {

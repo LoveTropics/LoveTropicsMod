@@ -6,19 +6,25 @@ import com.lovetropics.minigames.common.core.game.lobby.LobbyControls;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.IntList;
 
-import java.util.ArrayList;
+import javax.annotation.Nullable;
 import java.util.List;
 
 public final class ClientLobbyManageState {
 	private String name = "";
-	private final ClientLobbyQueue queue = new ClientLobbyQueue();
-	private final List<ClientLobbyPlayer> players = new ArrayList<>();
-	private final LobbyControls.State controlsState = LobbyControls.State.disabled();
+	private ClientGameDefinition currentGame;
+	private ClientLobbyQueue queue = new ClientLobbyQueue();
+	private List<ClientLobbyPlayer> players = ImmutableList.of();
+	private LobbyControls.State controlsState = LobbyControls.State.disabled();
 
 	private List<ClientGameDefinition> installedGames = ImmutableList.of();
 
 	public String getName() {
 		return name;
+	}
+
+	@Nullable
+	public ClientGameDefinition getCurrentGame() {
+		return currentGame;
 	}
 
 	public ClientLobbyQueue getQueue() {
@@ -41,9 +47,12 @@ public final class ClientLobbyManageState {
 		this.name = name;
 	}
 
+	public void setCurrentGame(ClientGameDefinition currentGame) {
+		this.currentGame = currentGame;
+	}
+
 	public void setQueue(ClientLobbyQueue queue) {
-		this.queue.clear();
-		this.queue.addAll(queue);
+		this.queue = queue;
 	}
 
 	public void setInstalledGames(List<ClientGameDefinition> installedGames) {
@@ -55,11 +64,10 @@ public final class ClientLobbyManageState {
 	}
 
 	public void setPlayers(List<ClientLobbyPlayer> players) {
-		this.players.clear();
-		this.players.addAll(players);
+		this.players = players;
 	}
 
 	public void setControlsState(LobbyControls.State state) {
-		this.controlsState.setFrom(state);
+		this.controlsState = state;
 	}
 }

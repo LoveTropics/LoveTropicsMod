@@ -187,6 +187,13 @@ public class MultiGameManager implements IGameManager {
 		}
 	}
 
+	GameLobbyMetadata renameLobby(GameLobbyMetadata metadata, String name) {
+		commandIds.release(metadata.commandId());
+
+		String commandId = commandIds.acquire(name);
+		return new GameLobbyMetadata(metadata.id(), metadata.initiator(), name, commandId);
+	}
+
 	@SubscribeEvent
 	public static void onServerStopping(FMLServerStoppingEvent event) {
 		List<GameLobby> lobbies = new ArrayList<>(INSTANCE.lobbies);

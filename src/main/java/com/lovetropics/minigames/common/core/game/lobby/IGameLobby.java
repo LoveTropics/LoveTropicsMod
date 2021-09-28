@@ -28,6 +28,8 @@ public interface IGameLobby {
 
 	LobbyControls getControls();
 
+	ILobbyManagement getManagement();
+
 	default boolean isVisibleTo(CommandSource source) {
 		return true;
 	}

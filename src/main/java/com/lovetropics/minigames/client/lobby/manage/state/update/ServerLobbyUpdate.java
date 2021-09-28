@@ -4,20 +4,18 @@ import com.lovetropics.minigames.client.lobby.manage.ServerManageLobbyMessage;
 import com.lovetropics.minigames.client.lobby.state.ClientGameDefinition;
 import com.lovetropics.minigames.common.core.game.config.GameConfig;
 import com.lovetropics.minigames.common.core.game.config.GameConfigs;
-import com.lovetropics.minigames.common.core.game.lobby.IGameLobby;
+import com.lovetropics.minigames.common.core.game.lobby.ILobbyManagement;
+import com.lovetropics.minigames.common.core.game.lobby.LobbyControls;
 import com.lovetropics.minigames.common.util.PartialUpdate;
-import it.unimi.dsi.fastutil.ints.IntArrayList;
-import it.unimi.dsi.fastutil.ints.IntList;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.ResourceLocation;
 
 import java.util.function.Function;
-import java.util.function.IntConsumer;
 
-public abstract class ServerLobbyUpdate extends PartialUpdate<IGameLobby> {
-	private static final Family<IGameLobby> FAMILY = Family.of(Type.values());
+public abstract class ServerLobbyUpdate extends PartialUpdate<ILobbyManagement> {
+	private static final Family<ILobbyManagement> FAMILY = Family.of(Type.values());
 
-	public static final class Set extends AbstractSet<IGameLobby> {
+	public static final class Set extends AbstractSet<ILobbyManagement> {
 		private Set() {
 			super(FAMILY);
 		}
@@ -42,15 +40,26 @@ public abstract class ServerLobbyUpdate extends PartialUpdate<IGameLobby> {
 			return this;
 		}
 
+		public Set removeQueuedGame(int id) {
+			this.add(new RemoveQueuedGame(id));
+			return this;
+		}
+
+		public Set selectControl(LobbyControls.Type control) {
+			this.add(new SelectControl(control));
+			return this;
+		}
+
 		public ServerManageLobbyMessage intoMessage(int id) {
-			return new ServerManageLobbyMessage(id, this);
+			return ServerManageLobbyMessage.update(id, this);
 		}
 	}
 
-	public enum Type implements AbstractType<IGameLobby> {
+	public enum Type implements AbstractType<ILobbyManagement> {
 		SET_NAME(SetName::decode),
 		ENQUEUE(Enqueue::decode),
-		UPDATE_QUEUE(UpdateQueue::decode);
+		REMOVE_QUEUED_GAME(RemoveQueuedGame::decode),
+		SELECT_CONTROL(SelectControl::decode);
 
 		private final Function<PacketBuffer, ServerLobbyUpdate> decode;
 
@@ -71,14 +80,14 @@ public abstract class ServerLobbyUpdate extends PartialUpdate<IGameLobby> {
 	public static final class SetName extends ServerLobbyUpdate {
 		private final String name;
 
-		public SetName(String name) {
+		SetName(String name) {
 			super(Type.SET_NAME);
 			this.name = name;
 		}
 
 		@Override
-		public void applyTo(IGameLobby lobby) {
-			// TODO
+		public void applyTo(ILobbyManagement lobby) {
+			lobby.setName(name);
 		}
 
 		@Override
@@ -94,17 +103,16 @@ public abstract class ServerLobbyUpdate extends PartialUpdate<IGameLobby> {
 	public static final class Enqueue extends ServerLobbyUpdate {
 		private final ResourceLocation definition;
 
-		public Enqueue(ResourceLocation definition) {
+		Enqueue(ResourceLocation definition) {
 			super(Type.ENQUEUE);
 			this.definition = definition;
 		}
 
 		@Override
-		public void applyTo(IGameLobby lobby) {
+		public void applyTo(ILobbyManagement lobby) {
 			GameConfig config = GameConfigs.REGISTRY.get(definition);
 			if (config != null) {
-				lobby.getGameQueue().enqueue(config);
-				// TODO: packets & centralised packet tracking handling
+				lobby.enqueueGame(config);
 			}
 		}
 
@@ -118,34 +126,51 @@ public abstract class ServerLobbyUpdate extends PartialUpdate<IGameLobby> {
 		}
 	}
 
-	public static final class UpdateQueue extends ServerLobbyUpdate {
-		private final IntList queue;
+	public static final class RemoveQueuedGame extends ServerLobbyUpdate {
+		private final int id;
 
-		public UpdateQueue(IntList queue) {
-			super(Type.UPDATE_QUEUE);
-			this.queue = queue;
+		RemoveQueuedGame(int id) {
+			super(Type.REMOVE_QUEUED_GAME);
+			this.id = id;
 		}
 
 		@Override
-		public void applyTo(IGameLobby lobby) {
-			// TODO
-			// TODO: drop stale entries
+		public void applyTo(ILobbyManagement lobby) {
+			lobby.removeQueuedGame(id);
 		}
 
 		@Override
 		protected void encode(PacketBuffer buffer) {
-			buffer.writeVarInt(queue.size());
-			queue.forEach((IntConsumer) buffer::writeVarInt);
+			buffer.writeVarInt(id);
 		}
 
-		static UpdateQueue decode(PacketBuffer buffer) {
-			int queueSize = buffer.readVarInt();
-			IntList queue = new IntArrayList(queueSize);
-			for (int i = 0; i < queueSize; i++) {
-				queue.add(buffer.readVarInt());
-			}
+		static RemoveQueuedGame decode(PacketBuffer buffer) {
+			return new RemoveQueuedGame(buffer.readVarInt());
+		}
+	}
 
-			return new UpdateQueue(queue);
+	public static final class SelectControl extends ServerLobbyUpdate {
+		private final LobbyControls.Type control;
+
+		SelectControl(LobbyControls.Type control) {
+			super(Type.SELECT_CONTROL);
+			this.control = control;
+		}
+
+		@Override
+		public void applyTo(ILobbyManagement lobby) {
+			lobby.selectControl(control);
+		}
+
+		@Override
+		protected void encode(PacketBuffer buffer) {
+			buffer.writeByte(control.ordinal() & 0xFF);
+		}
+
+		static SelectControl decode(PacketBuffer buffer) {
+			LobbyControls.Type[] types = LobbyControls.Type.values();
+			LobbyControls.Type control = types[buffer.readUnsignedByte() % types.length];
+			return new SelectControl(control);
 		}
 	}
 }

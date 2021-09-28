@@ -98,7 +98,10 @@ final class GameInstance implements IGameInstance {
 		State state = this.state;
 		if (state != null) {
 			State newState = state.tick();
-			this.state = newState;
+			if (newState != state) {
+				this.state = newState;
+				this.lobby.onGameStateChange();
+			}
 			return newState != null;
 		}
 		return false;

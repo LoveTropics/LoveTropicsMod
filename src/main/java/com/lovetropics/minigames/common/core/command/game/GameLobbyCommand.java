@@ -7,6 +7,7 @@ import com.lovetropics.minigames.common.core.game.GameResult;
 import com.lovetropics.minigames.common.core.game.config.GameConfig;
 import com.lovetropics.minigames.common.core.game.impl.MultiGameManager;
 import com.lovetropics.minigames.common.core.game.lobby.IGameLobby;
+import com.lovetropics.minigames.common.core.game.lobby.ILobbyManagement;
 import com.lovetropics.minigames.common.core.network.LoveTropicsNetwork;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
@@ -21,8 +22,8 @@ import net.minecraftforge.fml.network.PacketDistributor;
 import static net.minecraft.command.Commands.literal;
 
 public class GameLobbyCommand {
-	private static final SimpleCommandExceptionType NOT_LOBBY_INITIATOR = new SimpleCommandExceptionType(
-			new StringTextComponent("You cannot manage this lobby because you are not the initiator!")
+	private static final SimpleCommandExceptionType MISSING_MANAGE_PERMISSIONS = new SimpleCommandExceptionType(
+			new StringTextComponent("You do not have permission to manage this lobby!")
 	);
 
 	public static void register(CommandDispatcher<CommandSource> dispatcher) {
@@ -59,9 +60,9 @@ public class GameLobbyCommand {
 		}
 
 		IGameLobby lobby = result.getOk();
+		lobby.getPlayers().register(player, null);
 
-		ClientManageLobbyMessage message = ClientManageLobbyMessage.open(lobby);
-		LoveTropicsNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), message);
+		startManaging(player, lobby);
 
 		return Command.SINGLE_SUCCESS;
 	}
@@ -70,14 +71,22 @@ public class GameLobbyCommand {
 		ServerPlayerEntity player = context.getSource().asPlayer();
 		IGameLobby lobby = GameLobbyArgument.get(context, "lobby");
 
-		if (lobby.getMetadata().initiator().matches(player)) {
-			ClientManageLobbyMessage message = ClientManageLobbyMessage.open(lobby);
-			LoveTropicsNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), message);
-		} else {
-			throw NOT_LOBBY_INITIATOR.create();
+		if (!startManaging(player, lobby)) {
+			throw MISSING_MANAGE_PERMISSIONS.create();
 		}
 
 		return Command.SINGLE_SUCCESS;
+	}
+
+	private static boolean startManaging(ServerPlayerEntity player, IGameLobby lobby) {
+		ILobbyManagement management = lobby.getManagement();
+		if (management.startManaging(player)) {
+			ClientManageLobbyMessage message = ClientManageLobbyMessage.open(lobby);
+			LoveTropicsNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), message);
+			return true;
+		} else {
+			return false;
+		}
 	}
 
 	private static int enqueueGame(CommandContext<CommandSource> context) throws CommandSyntaxException {

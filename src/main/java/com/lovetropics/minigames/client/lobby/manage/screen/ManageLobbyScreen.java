@@ -53,31 +53,9 @@ public final class ManageLobbyScreen extends Screen {
 
 		layout = new ManageLobbyLayout(this);
 
-		initGamesList();
-		initNameField();
-
 		ClientLobbyManageState lobby = session.lobby();
 
-		playerList = addListener(new LobbyPlayerList(lobby, layout.playerList));
-
-		addButton(FlexUi.createButton(layout.done, DialogTexts.GUI_DONE, b -> closeScreen()));
-
-		pauseButton = addButton(FlexUi.createButton(layout.pause, new StringTextComponent("\u23F8"), b -> {}));
-		playButton = addButton(FlexUi.createButton(layout.play, new StringTextComponent("\u25B6"), b -> {}));
-		stopButton = addButton(FlexUi.createButton(layout.stop, new StringTextComponent("\u23F9"), b -> {}));
-
-		setControlsState();
-	}
-
-	public void initGamesList() {
-		ClientLobbyManageState lobby = session.lobby();
-
-		// TODO: be able to update without recreating
-		if (gameList != null) {
-			children.remove(gameList);
-		}
-
-		gameList = addListener(new GameList(this, layout.gameList, layout.leftFooter, lobby.getQueue(), lobby.getInstalledGames(), new GameList.Handlers() {
+		gameList = addListener(new GameList(this, layout.gameList, layout.leftFooter, lobby, new GameList.Handlers() {
 			@Override
 			public void selectQueuedGame(int queuedGameId) {
 				selectedGameId = queuedGameId;
@@ -96,20 +74,35 @@ public final class ManageLobbyScreen extends Screen {
 				session.removeQueuedGame(queuedGameId);
 			}
 		}));
-	}
-
-	public void initNameField() {
-		ClientLobbyManageState lobby = session.lobby();
-
-		// TODO: be able to update without recreating
-		if (nameField != null) {
-			children.remove(nameField);
-		}
 
 		nameField = addListener(FlexUi.createTextField(layout.name, font, new StringTextComponent("Lobby Name")));
 		nameField.setMaxStringLength(200);
 		nameField.setText(lobby.getName());
-		setFocusedDefault(nameField);
+
+		playerList = addListener(new LobbyPlayerList(lobby, layout.playerList));
+
+		addButton(FlexUi.createButton(layout.done, DialogTexts.GUI_DONE, b -> closeScreen()));
+
+		pauseButton = addButton(FlexUi.createButton(layout.pause, new StringTextComponent("\u23F8"), b -> {
+			session.selectControl(LobbyControls.Type.PAUSE);
+		}));
+		playButton = addButton(FlexUi.createButton(layout.play, new StringTextComponent("\u25B6"), b -> {
+			session.selectControl(LobbyControls.Type.PLAY);
+		}));
+		stopButton = addButton(FlexUi.createButton(layout.stop, new StringTextComponent("\u23F9"), b -> {
+			session.selectControl(LobbyControls.Type.STOP);
+		}));
+
+		setControlsState();
+	}
+
+	public void updateGameList() {
+		gameList.updateEntries();
+	}
+
+	public void updateNameField() {
+		ClientLobbyManageState lobby = session.lobby();
+		nameField.setText(lobby.getName());
 	}
 
 	public void setControlsState() {
@@ -123,7 +116,14 @@ public final class ManageLobbyScreen extends Screen {
 	@Override
 	public void closeScreen() {
 		super.closeScreen();
+
 		session.close();
+
+		// TODO: send on stop focus too!
+		String name = nameField.getText();
+		if (!name.equals(session.lobby().getName())) {
+			session.setName(name);
+		}
 	}
 
 	@Override
@@ -161,12 +161,12 @@ public final class ManageLobbyScreen extends Screen {
 		super.render(matrixStack, mouseX, mouseY, partialTicks);
 	}
 
-	private void renderSelectedGame(ClientLobbyQueuedGame entry, MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
+	private void renderSelectedGame(ClientLobbyQueuedGame game, MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
 		FlexUi.fill(layout.centerHeader, matrixStack, 0x80101010);
 
 		ITextComponent title = new StringTextComponent("")
 				.appendSibling(new StringTextComponent("Managing: ").mergeStyle(TextFormatting.BOLD))
-				.appendSibling(entry.definition().name);
+				.appendSibling(game.definition().name);
 
 		Box header = layout.centerHeader.content();
 		drawCenteredString(matrixStack, font, title, header.centerX(), header.centerY() - font.FONT_HEIGHT / 2, 0xFFFFFF);

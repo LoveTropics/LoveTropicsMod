@@ -16,7 +16,7 @@ import javax.annotation.Nullable;
 final class GameLobby implements IGameLobby {
 	final MultiGameManager manager;
 	final MinecraftServer server;
-	final GameLobbyMetadata metadata;
+	GameLobbyMetadata metadata;
 
 	final LobbyPlayerManager players;
 
@@ -25,9 +25,10 @@ final class GameLobby implements IGameLobby {
 	final LobbyGameQueue gameQueue = new LobbyGameQueue();
 
 	final LobbyWatcher watcher = LobbyWatcher.compose(new LobbyWatcher.Network(), new LobbyWatcher.Messages());
+	final LobbyManagement management;
 
 	GameInstance currentGame;
-	boolean paused;
+	boolean paused = true;
 
 	GameLobby(MultiGameManager manager, MinecraftServer server, GameLobbyMetadata metadata) {
 		this.manager = manager;
@@ -35,6 +36,7 @@ final class GameLobby implements IGameLobby {
 		this.metadata = metadata;
 
 		this.players = new LobbyPlayerManager(this);
+		this.management = new LobbyManagement(this);
 
 		// TODO: move out of constructor
 		this.watcher.onLobbyCreate(this);
@@ -72,6 +74,7 @@ final class GameLobby implements IGameLobby {
 			return new LobbyControls()
 					.add(LobbyControls.Type.PLAY, () -> {
 						this.paused = false;
+						onGameStateChange();
 						return GameResult.ok();
 					});
 		}
@@ -80,20 +83,31 @@ final class GameLobby implements IGameLobby {
 		return currentGame != null ? currentGame.getControls() : LobbyControls.empty();
 	}
 
+	@Override
+	public ILobbyManagement getManagement() {
+		return management;
+	}
+
 	// TODO: publish state to all tracking players when visibility changes
 	@Override
 	public boolean isVisibleTo(CommandSource source) {
-		if (source.hasPermissionLevel(2) || metadata.initiator().matches(source.getEntity())) {
+		if (management.canManage(source)) {
 			return true;
 		}
 
 		return currentGame != null && visibility.isPublic();
 	}
 
+	void setName(String name) {
+		metadata = manager.renameLobby(metadata, name);
+	}
+
 	boolean tick() {
 		GameInstance currentGame = this.currentGame;
 		if (currentGame != null) {
 			tickPlaying(currentGame);
+		} else {
+			tickInactive();
 		}
 
 		return true;
@@ -101,13 +115,22 @@ final class GameLobby implements IGameLobby {
 
 	private void tickPlaying(GameInstance game) {
 		if (!game.tick()) {
-			GameInstance next = nextGame();
-			currentGame = next;
-			paused |= next == null;
-
-			// TODO: check where we send this & move into watcher
-			LoveTropicsNetwork.CHANNEL.send(PacketDistributor.ALL.noArg(), LobbyUpdateMessage.update(this));
+			tryMoveToNextGame();
 		}
+	}
+
+	private void tickInactive() {
+		if (!paused) {
+			tryMoveToNextGame();
+		}
+	}
+
+	private void tryMoveToNextGame() {
+		GameInstance next = nextGame();
+		currentGame = next;
+		paused |= next == null;
+
+		onGameStateChange();
 	}
 
 	@Nullable
@@ -118,6 +141,13 @@ final class GameLobby implements IGameLobby {
 		if (game == null) return null;
 
 		return new GameInstance(this, game.definition());
+	}
+
+	void onGameStateChange() {
+		management.onGameStateChange();
+
+		// TODO: check where we send this & move into watcher
+		LoveTropicsNetwork.CHANNEL.send(PacketDistributor.ALL.noArg(), LobbyUpdateMessage.update(this));
 	}
 
 	void cancel() {
@@ -160,6 +190,7 @@ final class GameLobby implements IGameLobby {
 		}
 
 		watcher.onPlayerLeave(this, player);
+		management.stopManaging(player);
 
 		manager.removePlayerFromLobby(player, this);
 	}

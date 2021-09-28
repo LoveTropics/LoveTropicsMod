@@ -6,7 +6,6 @@ import com.lovetropics.minigames.common.core.dimension.DimensionUtils;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
-import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.lovetropics.minigames.common.core.game.player.PlayerRole;
 import com.lovetropics.minigames.common.core.map.MapRegions;
@@ -48,42 +47,45 @@ public class PositionPlayersBehavior implements IGameBehavior {
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
-		events.listen(GamePhaseEvents.START, () -> {
-			MapRegions regions = game.getMapRegions();
+		MapRegions regions = game.getMapRegions();
 
-			participantSpawnRegions.clear();
-			spectatorSpawnRegions.clear();
-			allSpawnRegions.clear();
+		participantSpawnRegions.clear();
+		spectatorSpawnRegions.clear();
+		allSpawnRegions.clear();
 
-			for (String key : participantSpawnKeys) {
-				participantSpawnRegions.addAll(regions.get(key));
-			}
+		for (String key : participantSpawnKeys) {
+			participantSpawnRegions.addAll(regions.get(key));
+		}
 
-			for (String key : spectatorSpawnKeys) {
-				spectatorSpawnRegions.addAll(regions.get(key));
-			}
+		for (String key : spectatorSpawnKeys) {
+			spectatorSpawnRegions.addAll(regions.get(key));
+		}
 
-			for (String key : allSpawnKeys) {
-				allSpawnRegions.addAll(regions.get(key));
-			}
-		});
+		for (String key : allSpawnKeys) {
+			allSpawnRegions.addAll(regions.get(key));
+		}
 
+		events.listen(GamePlayerEvents.ADD, player -> setupPlayerAsRole(game, player, null));
 		events.listen(GamePlayerEvents.SET_ROLE, (player, role, lastRole) -> setupPlayerAsRole(game, player, role));
 	}
 
 	private void setupPlayerAsRole(IGamePhase game, ServerPlayerEntity player, @Nullable PlayerRole role) {
 		BlockBox region = getSpawnRegionFor(role);
-		teleportToRegion(game, player, region);
+		if (region != null) {
+			teleportToRegion(game, player, region);
+		}
 	}
 
+	@Nullable
 	private BlockBox getSpawnRegionFor(PlayerRole role) {
 		if (role == PlayerRole.PARTICIPANT && !participantSpawnRegions.isEmpty()) {
 			return participantSpawnRegions.get(participantSpawnIndex++ % participantSpawnRegions.size());
 		} else if (role == PlayerRole.SPECTATOR && !spectatorSpawnRegions.isEmpty()) {
 			return spectatorSpawnRegions.get(spectatorSpawnIndex++ % spectatorSpawnRegions.size());
-		} else {
+		} else if (!allSpawnRegions.isEmpty()) {
 			return allSpawnRegions.get(allSpawnIndex++ % allSpawnRegions.size());
 		}
+		return null;
 	}
 
 	private void teleportToRegion(IGamePhase game, ServerPlayerEntity player, BlockBox region) {

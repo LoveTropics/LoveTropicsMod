@@ -10,8 +10,10 @@ import java.util.Queue;
 public final class LobbyGameQueue implements Iterable<QueuedGame> {
 	private final Queue<QueuedGame> queue = new ArrayDeque<>();
 
-	public void enqueue(IGameDefinition game) {
-		queue.add(QueuedGame.create(game));
+	public QueuedGame enqueue(IGameDefinition game) {
+		QueuedGame queued = QueuedGame.create(game);
+		queue.add(queued);
+		return queued;
 	}
 
 	public void clear() {
@@ -21,6 +23,10 @@ public final class LobbyGameQueue implements Iterable<QueuedGame> {
 	@Nullable
 	public QueuedGame next() {
 		return queue.poll();
+	}
+
+	public boolean remove(QueuedGame game) {
+		return queue.remove(game);
 	}
 
 	@Nullable
@@ -36,5 +42,9 @@ public final class LobbyGameQueue implements Iterable<QueuedGame> {
 	@Override
 	public Iterator<QueuedGame> iterator() {
 		return queue.iterator();
+	}
+
+	public int size() {
+		return queue.size();
 	}
 }
