@@ -123,6 +123,13 @@ public final class ManageLobbyScreen extends Screen {
 	@Override
 	public void closeScreen() {
 		super.closeScreen();
+
+		// TODO: move out of here?
+		String name = nameField.getText();
+		if (!name.equals(session.lobby().getName())) {
+			session.setName(name);
+		}
+
 		session.close();
 	}
 

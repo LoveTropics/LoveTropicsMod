@@ -7,6 +7,7 @@ import com.lovetropics.minigames.common.core.game.GameResult;
 import com.lovetropics.minigames.common.core.game.config.GameConfig;
 import com.lovetropics.minigames.common.core.game.impl.MultiGameManager;
 import com.lovetropics.minigames.common.core.game.lobby.IGameLobby;
+import com.lovetropics.minigames.common.core.game.lobby.ILobbyManagement;
 import com.lovetropics.minigames.common.core.network.LoveTropicsNetwork;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
@@ -70,7 +71,8 @@ public class GameLobbyCommand {
 		ServerPlayerEntity player = context.getSource().asPlayer();
 		IGameLobby lobby = GameLobbyArgument.get(context, "lobby");
 
-		if (lobby.getMetadata().initiator().matches(player)) {
+		ILobbyManagement management = lobby.getManagement();
+		if (management.startManaging(player)) {
 			ClientManageLobbyMessage message = ClientManageLobbyMessage.open(lobby);
 			LoveTropicsNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), message);
 		} else {

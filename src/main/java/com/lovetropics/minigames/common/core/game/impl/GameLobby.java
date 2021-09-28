@@ -16,7 +16,7 @@ import javax.annotation.Nullable;
 final class GameLobby implements IGameLobby {
 	final MultiGameManager manager;
 	final MinecraftServer server;
-	final GameLobbyMetadata metadata;
+	GameLobbyMetadata metadata;
 
 	final LobbyPlayerManager players;
 
@@ -25,6 +25,7 @@ final class GameLobby implements IGameLobby {
 	final LobbyGameQueue gameQueue = new LobbyGameQueue();
 
 	final LobbyWatcher watcher = LobbyWatcher.compose(new LobbyWatcher.Network(), new LobbyWatcher.Messages());
+	final LobbyManagement management;
 
 	GameInstance currentGame;
 	boolean paused;
@@ -35,6 +36,7 @@ final class GameLobby implements IGameLobby {
 		this.metadata = metadata;
 
 		this.players = new LobbyPlayerManager(this);
+		this.management = new LobbyManagement(this);
 
 		// TODO: move out of constructor
 		this.watcher.onLobbyCreate(this);
@@ -80,14 +82,23 @@ final class GameLobby implements IGameLobby {
 		return currentGame != null ? currentGame.getControls() : LobbyControls.empty();
 	}
 
+	@Override
+	public ILobbyManagement getManagement() {
+		return management;
+	}
+
 	// TODO: publish state to all tracking players when visibility changes
 	@Override
 	public boolean isVisibleTo(CommandSource source) {
-		if (source.hasPermissionLevel(2) || metadata.initiator().matches(source.getEntity())) {
+		if (management.canManage(source)) {
 			return true;
 		}
 
 		return currentGame != null && visibility.isPublic();
+	}
+
+	void setName(String name) {
+		metadata = manager.renameLobby(metadata, name);
 	}
 
 	boolean tick() {
@@ -160,6 +171,7 @@ final class GameLobby implements IGameLobby {
 		}
 
 		watcher.onPlayerLeave(this, player);
+		management.stopManaging(player);
 
 		manager.removePlayerFromLobby(player, this);
 	}

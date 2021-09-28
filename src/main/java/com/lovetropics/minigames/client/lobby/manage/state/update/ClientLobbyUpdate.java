@@ -9,6 +9,7 @@ import com.lovetropics.minigames.client.lobby.state.ClientGameDefinition;
 import com.lovetropics.minigames.common.core.game.lobby.IGameLobby;
 import com.lovetropics.minigames.common.core.game.lobby.LobbyControls;
 import com.lovetropics.minigames.common.core.game.lobby.LobbyGameQueue;
+import com.lovetropics.minigames.common.core.game.lobby.QueuedGame;
 import com.lovetropics.minigames.common.util.PartialUpdate;
 import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
@@ -60,7 +61,14 @@ public abstract class ClientLobbyUpdate extends PartialUpdate<ClientLobbyManagem
 		}
 
 		public Set initQueue(LobbyGameQueue queue) {
-			this.add(new InitQueue(ClientLobbyQueue.from(queue)));
+			ClientLobbyQueue clientQueue = new ClientLobbyQueue();
+			for (QueuedGame game : queue) {
+				ClientGameDefinition definition = ClientGameDefinition.from(game.definition());
+				clientQueue.add(game.networkId(), new ClientLobbyQueuedGame(definition));
+			}
+
+			this.add(new InitQueue(clientQueue));
+
 			return this;
 		}
 
@@ -74,6 +82,27 @@ public abstract class ClientLobbyUpdate extends PartialUpdate<ClientLobbyManagem
 
 		public Set setControlState(LobbyControls.State controlsState) {
 			this.add(new SetControlsState(controlsState));
+			return this;
+		}
+
+		public Set updateQueue(LobbyGameQueue queue, int... updatedIds) {
+			IntList order = new IntArrayList(queue.size());
+			Int2ObjectMap<ClientLobbyQueuedGame> updated = new Int2ObjectArrayMap<>();
+
+			for (QueuedGame game : queue) {
+				order.add(game.networkId());
+
+				for (int id : updatedIds) {
+					if (id == game.networkId()) {
+						ClientGameDefinition definition = ClientGameDefinition.from(game.definition());
+						updated.put(id, new ClientLobbyQueuedGame(definition));
+						break;
+					}
+				}
+			}
+
+			this.add(new UpdateQueue(order, updated));
+
 			return this;
 		}
 

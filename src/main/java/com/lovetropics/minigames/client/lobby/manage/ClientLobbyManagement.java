@@ -53,6 +53,10 @@ public final class ClientLobbyManagement {
 			return this.lobby;
 		}
 
+		public void setName(String name) {
+			sendUpdates(updates -> updates.setName(name));
+		}
+
 		public void enqueueGame(ClientGameDefinition game) {
 			sendUpdates(updates -> updates.enqueue(game));
 		}
@@ -70,7 +74,8 @@ public final class ClientLobbyManagement {
 		}
 
 		public void close() {
-			// TODO: send message to stop tracking
+			LoveTropicsNetwork.CHANNEL.sendToServer(ServerManageLobbyMessage.stop(id));
+
 			if (ClientLobbyManagement.session == this) {
 				ClientLobbyManagement.session = null;
 			}

@@ -2,9 +2,6 @@ package com.lovetropics.minigames.client.lobby.manage.state;
 
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.Iterators;
-import com.lovetropics.minigames.client.lobby.state.ClientGameDefinition;
-import com.lovetropics.minigames.common.core.game.lobby.LobbyGameQueue;
-import com.lovetropics.minigames.common.core.game.lobby.QueuedGame;
 import it.unimi.dsi.fastutil.ints.*;
 import net.minecraft.network.PacketBuffer;
 
@@ -18,17 +15,6 @@ import java.util.function.IntPredicate;
 public final class ClientLobbyQueue implements Iterable<ClientLobbyQueuedGame> {
 	private final IntList queue = new IntArrayList();
 	private final Int2ObjectMap<ClientLobbyQueuedGame> games = new Int2ObjectOpenHashMap<>();
-
-	public static ClientLobbyQueue from(LobbyGameQueue queue) {
-		ClientLobbyQueue client = new ClientLobbyQueue();
-
-		for (QueuedGame game : queue) {
-			ClientGameDefinition definition = ClientGameDefinition.from(game.definition());
-			client.add(game.networkId(), new ClientLobbyQueuedGame(definition));
-		}
-
-		return client;
-	}
 
 	public void clear() {
 		this.queue.clear();
