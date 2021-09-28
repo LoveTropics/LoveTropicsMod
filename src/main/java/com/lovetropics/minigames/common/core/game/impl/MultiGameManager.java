@@ -1,7 +1,6 @@
 package com.lovetropics.minigames.common.core.game.impl;
 
 import com.lovetropics.minigames.Constants;
-import com.lovetropics.minigames.client.lobby.state.message.LobbyUpdateMessage;
 import com.lovetropics.minigames.common.core.game.GameResult;
 import com.lovetropics.minigames.common.core.game.IGameManager;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
@@ -13,7 +12,6 @@ import com.lovetropics.minigames.common.core.game.player.PlayerSet;
 import com.lovetropics.minigames.common.core.game.state.control.ControlCommandInvoker;
 import com.lovetropics.minigames.common.core.game.state.statistics.PlayerKey;
 import com.lovetropics.minigames.common.core.integration.Telemetry;
-import com.lovetropics.minigames.common.core.network.LoveTropicsNetwork;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 import net.minecraft.command.CommandSource;
@@ -32,7 +30,6 @@ import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.server.FMLServerStoppingEvent;
-import net.minecraftforge.fml.network.PacketDistributor;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -224,15 +221,9 @@ public class MultiGameManager implements IGameManager {
 
 	@SubscribeEvent
 	public static void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
+		ServerPlayerEntity player = (ServerPlayerEntity) event.getPlayer();
 		for (GameLobby lobby : INSTANCE.lobbies) {
-			// TODO: watcher
-			PacketDistributor.PacketTarget target = PacketDistributor.PLAYER.with(() -> (ServerPlayerEntity) event.getPlayer());
-			LoveTropicsNetwork.CHANNEL.send(target, LobbyUpdateMessage.update(lobby));
-
-			/*int networkId = lobby.getMetadata().id().networkId();
-			for (PlayerRole role : PlayerRole.ROLES) {
-				LoveTropicsNetwork.CHANNEL.send(target, new ClientLobbyPlayersMessage(networkId, role, lobby.getMemberCount(role)));
-			}*/
+			lobby.onPlayerLoggedIn(player);
 		}
 	}
 
@@ -245,9 +236,9 @@ public class MultiGameManager implements IGameManager {
 	 */
 	@SubscribeEvent
 	public static void onPlayerLoggedOut(PlayerEvent.PlayerLoggedOutEvent event) {
+		ServerPlayerEntity player = (ServerPlayerEntity) event.getPlayer();
 		for (GameLobby lobby : INSTANCE.lobbies) {
-			ServerPlayerEntity player = (ServerPlayerEntity) event.getPlayer();
-			lobby.getPlayers().remove(player);
+			lobby.onPlayerLoggedOut(player);
 		}
 	}
 }
