@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances.donation;
 
-import com.lovetropics.minigames.common.core.game.IActiveGame;
+import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePackageEvents;
@@ -26,8 +26,8 @@ public final class GivePlayerHeadPackageBehavior implements IGameBehavior {
 	}
 
 	@Override
-	public void register(IActiveGame registerGame, EventRegistrar events) {
-		events.listen(GamePackageEvents.APPLY_PACKAGE, (game, player, sendingPlayer) -> {
+	public void register(IGamePhase game, EventRegistrar events) {
+		events.listen(GamePackageEvents.APPLY_PACKAGE, (player, sendingPlayer) -> {
 			if (sendingPlayer == null) {
 				return;
 			}

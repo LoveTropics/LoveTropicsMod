@@ -1,9 +1,9 @@
 package com.lovetropics.minigames.common.core.command.game;
 
-import com.lovetropics.minigames.common.core.game.IActiveGame;
 import com.lovetropics.minigames.common.core.game.IGameManager;
+import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePackageEvents;
-import com.lovetropics.minigames.common.core.game.state.instances.GamePackageState;
+import com.lovetropics.minigames.common.core.game.state.GamePackageState;
 import com.lovetropics.minigames.common.core.integration.game_actions.GamePackage;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
@@ -34,21 +34,21 @@ public class GamePackageCommand {
 		);
 	}
 
-	private static CompletableFuture<Suggestions> suggestPackages(final CommandContext<CommandSource> context, final SuggestionsBuilder builder) {
-		IActiveGame game = IGameManager.get().getGameFor(context.getSource());
+	private static CompletableFuture<Suggestions> suggestPackages(final CommandContext<CommandSource> ctx, final SuggestionsBuilder builder) {
+		IGamePhase game = IGameManager.get().getGamePhaseFor(ctx.getSource());
 		if (game != null) {
-			GamePackageState packages = game.getState().get(GamePackageState.TYPE);
+			GamePackageState packages = game.getState().get(GamePackageState.KEY);
 			return ISuggestionProvider.suggest(packages.stream(), builder);
 		}
 		return Suggestions.empty();
 	}
 
 	private static int spawnPackage(CommandContext<CommandSource> ctx, ServerPlayerEntity target) {
-		IActiveGame game = IGameManager.get().getGameFor(ctx.getSource());
+		IGamePhase game = IGameManager.get().getGamePhaseFor(ctx.getSource());
 		if (game != null) {
 			String type = StringArgumentType.getString(ctx, "id");
 			GamePackage gamePackage = new GamePackage(type, "LoveTropics", target == null ? null : target.getUniqueID());
-			game.invoker(GamePackageEvents.RECEIVE_PACKAGE).onReceivePackage(game, gamePackage);
+			game.invoker(GamePackageEvents.RECEIVE_PACKAGE).onReceivePackage(gamePackage);
 		}
 		return Command.SINGLE_SUCCESS;
 	}

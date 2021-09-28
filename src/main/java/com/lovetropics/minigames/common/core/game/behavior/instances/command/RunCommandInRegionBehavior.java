@@ -1,6 +1,7 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances.command;
 
 import com.lovetropics.lib.BlockBox;
+import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.lovetropics.minigames.common.core.map.MapRegions;
@@ -26,8 +27,8 @@ public final class RunCommandInRegionBehavior extends CommandInvokeBehavior {
 	}
 
 	@Override
-	protected void registerEvents(EventRegistrar events) {
-		events.listen(GamePlayerEvents.TICK, (game, player) -> {
+	protected void registerEvents(IGamePhase game, EventRegistrar events) {
+		events.listen(GamePlayerEvents.TICK, (player) -> {
 			if (player.ticksExisted % interval != 0) {
 				return;
 			}

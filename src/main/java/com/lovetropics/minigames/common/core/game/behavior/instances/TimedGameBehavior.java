@@ -1,10 +1,10 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances;
 
 import com.lovetropics.minigames.common.core.game.GameStopReason;
-import com.lovetropics.minigames.common.core.game.IActiveGame;
+import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
-import com.lovetropics.minigames.common.core.game.behavior.event.GameLifecycleEvents;
+import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameLogicEvents;
 import com.lovetropics.minigames.common.core.game.util.GameBossBar;
 import com.lovetropics.minigames.common.core.game.util.GlobalGameWidgets;
@@ -37,8 +37,8 @@ public final class TimedGameBehavior implements IGameBehavior {
 	}
 
 	@Override
-	public void register(IActiveGame game, EventRegistrar events) {
-		events.listen(GameLifecycleEvents.TICK, this::onTick);
+	public void register(IGamePhase game, EventRegistrar events) {
+		events.listen(GamePhaseEvents.TICK, () -> onTick(game));
 
 		if (hasTimerBar) {
 			GlobalGameWidgets widgets = GlobalGameWidgets.registerTo(game, events);
@@ -46,7 +46,7 @@ public final class TimedGameBehavior implements IGameBehavior {
 		}
 	}
 
-	private void onTick(IActiveGame game) {
+	private void onTick(IGamePhase game) {
 		long ticks = game.ticks();
 		if (ticks >= closeTime) {
 			game.stop(GameStopReason.FINISHED);
@@ -54,7 +54,7 @@ public final class TimedGameBehavior implements IGameBehavior {
 		}
 
 		if (ticks == length) {
-			game.invoker(GameLogicEvents.GAME_OVER).onGameOver(game);
+			game.invoker(GameLogicEvents.GAME_OVER).onGameOver();
 		}
 
 		if (ticks % 20 == 0 && timerBar != null) {

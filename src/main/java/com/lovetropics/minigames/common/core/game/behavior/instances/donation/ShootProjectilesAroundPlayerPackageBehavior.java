@@ -1,9 +1,9 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances.donation;
 
-import com.lovetropics.minigames.common.core.game.IActiveGame;
+import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
-import com.lovetropics.minigames.common.core.game.behavior.event.GameLifecycleEvents;
+import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePackageEvents;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -55,12 +55,12 @@ public class ShootProjectilesAroundPlayerPackageBehavior implements IGameBehavio
 	}
 
 	@Override
-	public void register(IActiveGame registerGame, EventRegistrar events) {
-		events.listen(GamePackageEvents.APPLY_PACKAGE, (game, player, sendingPlayer) -> playerToAmountToSpawn.put(player, entityCountPerPlayer));
-		events.listen(GameLifecycleEvents.TICK, this::tick);
+	public void register(IGamePhase game, EventRegistrar events) {
+		events.listen(GamePackageEvents.APPLY_PACKAGE, (player, sendingPlayer) -> playerToAmountToSpawn.put(player, entityCountPerPlayer));
+		events.listen(GamePhaseEvents.TICK, () -> tick(game));
 	}
 
-	private void tick(IActiveGame game) {
+	private void tick(IGamePhase game) {
 		Iterator<Object2IntMap.Entry<ServerPlayerEntity>> it = playerToAmountToSpawn.object2IntEntrySet().iterator();
 		while (it.hasNext()) {
 			Object2IntMap.Entry<ServerPlayerEntity> entry = it.next();

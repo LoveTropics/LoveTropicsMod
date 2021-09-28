@@ -1,137 +1,73 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances.team;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.Set;
-import java.util.UUID;
-
-import javax.annotation.Nullable;
-
-import org.apache.commons.lang3.RandomStringUtils;
-
-import com.lovetropics.lib.codec.MoreCodecs;
-import com.lovetropics.minigames.common.core.game.GameException;
-import com.lovetropics.minigames.common.core.game.IActiveGame;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.config.BehaviorConfig;
 import com.lovetropics.minigames.common.core.game.behavior.config.ConfigList;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
-import com.lovetropics.minigames.common.core.game.behavior.event.GameLifecycleEvents;
+import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
-import com.lovetropics.minigames.common.core.game.behavior.event.GameWaitingEvents;
 import com.lovetropics.minigames.common.core.game.player.PlayerRole;
-import com.lovetropics.minigames.common.core.game.state.GameStateMap;
-import com.lovetropics.minigames.common.core.game.state.instances.TeamKey;
-import com.lovetropics.minigames.common.core.game.state.instances.TeamState;
-import com.lovetropics.minigames.common.core.game.state.instances.control.ControlCommand;
-import com.lovetropics.minigames.common.core.game.state.instances.control.ControlCommandState;
-import com.lovetropics.minigames.common.core.game.statistics.StatisticKey;
+import com.lovetropics.minigames.common.core.game.state.statistics.StatisticKey;
+import com.lovetropics.minigames.common.core.game.state.team.TeamKey;
+import com.lovetropics.minigames.common.core.game.state.team.TeamState;
 import com.lovetropics.minigames.common.core.game.util.TeamAllocator;
-import com.lovetropics.minigames.common.util.Scheduler;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.item.DyeColor;
 import net.minecraft.scoreboard.ScorePlayerTeam;
 import net.minecraft.scoreboard.ServerScoreboard;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ActionResultType;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.Style;
 import net.minecraft.util.text.TextFormatting;
-import net.minecraft.util.text.event.ClickEvent;
-import net.minecraft.util.text.event.HoverEvent;
+import org.apache.commons.lang3.RandomStringUtils;
+
+import javax.annotation.Nullable;
+import java.util.Map;
+import java.util.UUID;
 
 public final class TeamsBehavior implements IGameBehavior {
-	
-	private static final BehaviorConfig<List<TeamKey>> CFG_TEAMS = new BehaviorConfig<>("teams", TeamKey.CODEC.listOf())
-			.enumHint("dye", s -> DyeColor.byTranslationKey(s, null));
 	private static final BehaviorConfig<Boolean> CFG_FF = new BehaviorConfig<>("friendly_fire", Codec.BOOL);
-	private static final BehaviorConfig<Map<String, List<UUID>>> CFG_ASSIGNED = new BehaviorConfig<>("assign", Codec.unboundedMap(Codec.STRING, MoreCodecs.UUID_STRING.listOf()));
-	
+
 	public static final Codec<TeamsBehavior> CODEC = RecordCodecBuilder.create(instance -> {
 		return instance.group(
-				CFG_TEAMS.forGetter(c -> c.teams),
-				CFG_FF.forGetterOptional(c -> c.friendlyFire, false),
-				CFG_ASSIGNED.fieldOf().orElseGet(Object2ObjectOpenHashMap::new).forGetter(c -> c.assignedTeams)
+				CFG_FF.orElse(false).forGetter(c -> c.friendlyFire)
 		).apply(instance, TeamsBehavior::new);
 	});
 
-	private final List<TeamKey> teams;
 	private final Map<TeamKey, ScorePlayerTeam> scoreboardTeams = new Object2ObjectOpenHashMap<>();
-	private final Map<String, List<UUID>> assignedTeams;
-
-	private final List<TeamKey> pollingTeams;
 
 	private final boolean friendlyFire;
 
-	private final Map<UUID, TeamKey> teamPreferences = new Object2ObjectOpenHashMap<>();
+	private TeamState teams;
 
-	private TeamState teamState;
-
-	public TeamsBehavior(List<TeamKey> teams, boolean friendlyFire, Map<String, List<UUID>> assignedTeams) {
-		this.teams = teams;
+	public TeamsBehavior(boolean friendlyFire) {
 		this.friendlyFire = friendlyFire;
-		this.assignedTeams = assignedTeams;
 
-		this.pollingTeams = new ArrayList<>(teams.size());
-		for (TeamKey team : teams) {
-			if (!assignedTeams.containsKey(team.key)) {
-				this.pollingTeams.add(team);
-			}
-		}
-		
 		System.out.println(getConfigurables());
 	}
 
 	@Override
 	public ConfigList getConfigurables() {
 		return ConfigList.builder()
-				.with(CFG_TEAMS, this.teams)
 				.with(CFG_FF, friendlyFire)
-				.with(CFG_ASSIGNED, this.assignedTeams)
 				.build();
 	}
 
 	@Override
-	public void registerWaiting(IGamePhase game, EventRegistrar events) throws GameException {
-		ControlCommandState commands = game.getState().get(ControlCommandState.TYPE);
-		for (TeamKey team : pollingTeams) {
-			commands.add("join_team_" + team.key, ControlCommand.forEveryone(source -> {
-				ServerPlayerEntity player = source.asPlayer();
-				if (game.getAllPlayers().contains(player)) {
-					onRequestJoinTeam(player, team);
-				} else {
-					player.sendStatusMessage(new StringTextComponent("You have not yet joined this game!").mergeStyle(TextFormatting.RED), false);
-				}
-			}));
-		}
+	public void register(IGamePhase game, EventRegistrar events) {
+		teams = game.getState().getOrThrow(TeamState.KEY);
 
-		events.listen(GameWaitingEvents.PLAYER_WAITING, this::onPlayerWaiting);
-	}
+		events.listen(GamePhaseEvents.START, () -> onStart(game));
+		events.listen(GamePhaseEvents.STOP, (reason) -> onFinish(game));
+		events.listen(GamePlayerEvents.ALLOCATE_ROLES, allocator -> reassignPlayerRoles(game, allocator));
 
-	@Override
-	public void registerState(GameStateMap state) {
-		teamState = state.register(TeamState.TYPE, new TeamState(this.teams));
-	}
-
-	@Override
-	public void register(IActiveGame game, EventRegistrar events) {
-		events.listen(GameLifecycleEvents.ASSIGN_ROLES, this::assignPlayerRoles);
-		events.listen(GameLifecycleEvents.START, this::onStart);
-		events.listen(GameLifecycleEvents.STOP, (game1, reason) -> onFinish(game1));
-
-		events.listen(GamePlayerEvents.CHANGE_ROLE, this::onPlayerChangeRole);
-		events.listen(GamePlayerEvents.LEAVE, this::onPlayerLeave);
+		events.listen(GamePlayerEvents.SET_ROLE, this::onPlayerSetRole);
+		events.listen(GamePlayerEvents.LEAVE, this::removePlayerFromTeams);
 		events.listen(GamePlayerEvents.DAMAGE, this::onPlayerHurt);
 		events.listen(GamePlayerEvents.ATTACK, this::onPlayerAttack);
 
@@ -150,136 +86,40 @@ public final class TeamsBehavior implements IGameBehavior {
 			scoreboardTeams.put(teamKey, scoreboardTeam);
 		}
 
-		game.getStatistics().getGlobal().set(StatisticKey.TEAMS, true);
+		game.getStatistics().global().set(StatisticKey.TEAMS, true);
 	}
 
-	private void onRequestJoinTeam(ServerPlayerEntity player, TeamKey team) {
-		teamPreferences.put(player.getUniqueID(), team);
-
-		player.sendStatusMessage(
-				new StringTextComponent("You have requested to join ").mergeStyle(TextFormatting.GRAY)
-						.appendSibling(new StringTextComponent(team.name).mergeStyle(team.text, TextFormatting.BOLD)),
-				false
-		);
-	}
-
-	private void onPlayerWaiting(IGamePhase game, ServerPlayerEntity player, @Nullable PlayerRole role) {
-		if (role != PlayerRole.SPECTATOR && pollingTeams.size() > 1) {
-			Scheduler.INSTANCE.submit(server -> {
-				sendTeamSelectionTo(player);
-			}, 1);
-		}
-	}
-
-	private void sendTeamSelectionTo(ServerPlayerEntity player) {
-		player.sendStatusMessage(new StringTextComponent("This is a team-based game!").mergeStyle(TextFormatting.GOLD, TextFormatting.BOLD), false);
-		player.sendStatusMessage(new StringTextComponent("You can select a team preference by clicking the links below:").mergeStyle(TextFormatting.GRAY), false);
-
-		for (TeamKey team : pollingTeams) {
-			Style linkStyle = Style.EMPTY
-					.setFormatting(team.text)
-					.setUnderlined(true)
-					.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/game join_team_" + team.key))
-					.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new StringTextComponent("Join " + team.name)));
-
-			player.sendStatusMessage(
-					new StringTextComponent(" - ").mergeStyle(TextFormatting.GRAY)
-							.appendSibling(new StringTextComponent("Join " + team.name).setStyle(linkStyle)),
-					false
-			);
-		}
-	}
-
-	private void assignPlayerRoles(IActiveGame game, List<ServerPlayerEntity> participants, List<ServerPlayerEntity> spectators) {
-		Set<UUID> requiredPlayers = new ObjectOpenHashSet<>();
-		for (List<UUID> assignedTeam : assignedTeams.values()) {
-			requiredPlayers.addAll(assignedTeam);
-		}
-
-		Random random = new Random();
-
-		for (UUID id : requiredPlayers) {
-			// try find this player within the spectators list
-			ServerPlayerEntity requiredPlayer = null;
-			for (ServerPlayerEntity player : spectators) {
-				if (player.getUniqueID().equals(id)) {
-					requiredPlayer = player;
-					break;
-				}
-			}
-
-			// if this required player is in the spectators list, try to swap them with another player
-			if (requiredPlayer != null) {
-				ServerPlayerEntity swapWithPlayer = null;
-
-				// find another player to swap with
-				List<ServerPlayerEntity> shuffledParticipants = new ArrayList<>(participants);
-				Collections.shuffle(shuffledParticipants, random);
-
-				for (ServerPlayerEntity swapCandidate : shuffledParticipants) {
-					if (!requiredPlayers.contains(swapCandidate.getUniqueID())) {
-						swapWithPlayer = swapCandidate;
-						break;
-					}
-				}
-
-				// if we found a player to swap with, do that
-				if (swapWithPlayer != null) {
-					participants.remove(swapWithPlayer);
-					spectators.add(swapWithPlayer);
-					spectators.remove(requiredPlayer);
-					participants.add(requiredPlayer);
-				}
+	private void reassignPlayerRoles(IGamePhase game, TeamAllocator<PlayerRole, ServerPlayerEntity> allocator) {
+		// force all assigned players to be a participant
+		for (UUID uuid : teams.getAllocations().getAssignedPlayers()) {
+			ServerPlayerEntity player = game.getAllPlayers().getPlayerBy(uuid);
+			if (player != null) {
+				allocator.addPlayer(player, PlayerRole.PARTICIPANT);
 			}
 		}
 	}
 
-	private void onFinish(IActiveGame game) {
+	private void onFinish(IGamePhase game) {
 		ServerScoreboard scoreboard = game.getServer().getScoreboard();
 		for (ScorePlayerTeam team : scoreboardTeams.values()) {
 			scoreboard.removeTeam(team);
 		}
 	}
 
-	private void onStart(IActiveGame game) {
-		Set<UUID> assignedPlayers = new ObjectOpenHashSet<>();
-
-		for (Map.Entry<String, List<UUID>> entry : assignedTeams.entrySet()) {
-			TeamKey team = teamState.getTeamByKey(entry.getKey());
-			List<UUID> players = entry.getValue();
-
-			for (UUID id : players) {
-				ServerPlayerEntity player = game.getParticipants().getPlayerBy(id);
-				if (player != null) {
-					addPlayerToTeam(game, player, team);
-					assignedPlayers.add(id);
-				}
-			}
-		}
-
-		if (!pollingTeams.isEmpty()) {
-			TeamAllocator teamAllocator = new TeamAllocator(pollingTeams);
-			for (ServerPlayerEntity player : game.getParticipants()) {
-				if (!assignedPlayers.contains(player.getUniqueID())) {
-					TeamKey teamPreference = teamPreferences.get(player.getUniqueID());
-					teamAllocator.addPlayer(player, teamPreference);
-				}
-			}
-
-			teamAllocator.allocate((player, team) -> {
-				addPlayerToTeam(game, player, team);
-			});
-		}
+	private void onStart(IGamePhase game) {
+		teams.getAllocations().allocate(game.getParticipants(), (player, team) -> {
+			addPlayerToTeam(game, player, team);
+		});
 	}
 
-	private void onPlayerChangeRole(IActiveGame game, ServerPlayerEntity player, PlayerRole role, PlayerRole lastRole) {
-		if (role == PlayerRole.SPECTATOR) {
+	private void onPlayerSetRole(ServerPlayerEntity player, @Nullable PlayerRole role, @Nullable PlayerRole lastRole) {
+		if (lastRole == PlayerRole.PARTICIPANT && role != PlayerRole.PARTICIPANT) {
 			removePlayerFromTeams(player);
 		}
 	}
 
-	private void addPlayerToTeam(IActiveGame game, ServerPlayerEntity player, TeamKey team) {
-		teamState.addPlayerTo(player, team);
+	private void addPlayerToTeam(IGamePhase game, ServerPlayerEntity player, TeamKey team) {
+		teams.addPlayerTo(player, team);
 
 		game.getStatistics().forPlayer(player).set(StatisticKey.TEAM, team);
 
@@ -295,25 +135,21 @@ public final class TeamsBehavior implements IGameBehavior {
 	}
 
 	private void removePlayerFromTeams(ServerPlayerEntity player) {
-		teamState.removePlayer(player);
+		teams.removePlayer(player);
 
 		ServerScoreboard scoreboard = player.server.getScoreboard();
 		scoreboard.removePlayerFromTeams(player.getScoreboardName());
 	}
 
-	private void onPlayerLeave(IActiveGame game, ServerPlayerEntity player) {
-		removePlayerFromTeams(player);
-	}
-
-	private ActionResultType onPlayerHurt(final IActiveGame game, ServerPlayerEntity player, DamageSource source, float amount) {
-		if (!friendlyFire && teamState.areSameTeam(source.getTrueSource(), player)) {
+	private ActionResultType onPlayerHurt(ServerPlayerEntity player, DamageSource source, float amount) {
+		if (!friendlyFire && teams.areSameTeam(source.getTrueSource(), player)) {
 			return ActionResultType.FAIL;
 		}
 		return ActionResultType.PASS;
 	}
 
-	private ActionResultType onPlayerAttack(IActiveGame game, ServerPlayerEntity player, Entity target) {
-		if (!friendlyFire && teamState.areSameTeam(player, target)) {
+	private ActionResultType onPlayerAttack(ServerPlayerEntity player, Entity target) {
+		if (!friendlyFire && teams.areSameTeam(player, target)) {
 			return ActionResultType.FAIL;
 		}
 		return ActionResultType.PASS;

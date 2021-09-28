@@ -4,14 +4,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.google.common.collect.LinkedHashMultimap;
+import com.lovetropics.minigames.client.lobby.manage.state.ClientLobbyQueuedGame;
 import com.lovetropics.minigames.client.lobby.state.ClientBehaviorMap;
-import com.lovetropics.minigames.client.lobby.state.ClientQueuedGame;
 import com.lovetropics.minigames.client.screen.flex.Layout;
 import com.lovetropics.minigames.common.core.game.behavior.config.ConfigData;
 import com.lovetropics.minigames.common.core.game.behavior.config.ConfigData.CompositeConfigData;
 import com.lovetropics.minigames.common.core.game.behavior.config.ConfigData.ListConfigData;
 import com.lovetropics.minigames.common.core.game.behavior.config.ConfigData.SimpleConfigData;
-import com.mojang.blaze3d.matrix.MatrixStack;
 
 import net.minecraft.client.gui.FocusableGui;
 import net.minecraft.client.gui.IGuiEventListener;
@@ -24,7 +23,7 @@ public final class GameConfig extends FocusableGui {
 
 	private final Handlers handlers;
 	
-	private ClientQueuedGame configuring;
+	private ClientLobbyQueuedGame configuring;
 	private ClientBehaviorMap configData = new ClientBehaviorMap(LinkedHashMultimap.create());
 	private final List<INestedGuiEventHandler> children = new ArrayList<>();
 
@@ -39,9 +38,9 @@ public final class GameConfig extends FocusableGui {
 		void saveConfigs();
 	}
 	
-	public void setGame(ClientQueuedGame game) {
+	public void setGame(ClientLobbyQueuedGame game) {
 		this.configuring = game;
-		this.configData = game.configs;
+		this.configData = game.configs();
 		this.children.clear();
 		this.children.add(createWidget(this.configData));
 	}

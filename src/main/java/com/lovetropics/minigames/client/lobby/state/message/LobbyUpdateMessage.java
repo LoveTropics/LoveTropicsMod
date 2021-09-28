@@ -2,14 +2,12 @@ package com.lovetropics.minigames.client.lobby.state.message;
 
 import com.lovetropics.minigames.client.lobby.state.ClientGameDefinition;
 import com.lovetropics.minigames.client.lobby.state.ClientLobbyManager;
-import com.lovetropics.minigames.client.lobby.state.ClientQueuedGame;
+import com.lovetropics.minigames.common.core.game.IGameInstance;
 import com.lovetropics.minigames.common.core.game.lobby.IGameLobby;
 import net.minecraft.network.PacketBuffer;
 import net.minecraftforge.fml.network.NetworkEvent;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.function.Supplier;
 
 public class LobbyUpdateMessage {
@@ -25,9 +23,9 @@ public class LobbyUpdateMessage {
 	public static LobbyUpdateMessage update(IGameLobby lobby) {
 		int id = lobby.getMetadata().id().networkId();
 		String name = lobby.getMetadata().name();
-		List<ClientQueuedGame> queue = lobby.getGameQueue().clientEntries();
-		ClientGameDefinition definition = lobby.getActiveGame() != null ? ClientGameDefinition.from(lobby.getActiveGame().getDefinition()) : null;
-		return new LobbyUpdateMessage(id, new Update(name, queue, definition));
+		IGameInstance currentGame = lobby.getCurrentGame();
+		ClientGameDefinition definition = currentGame != null ? ClientGameDefinition.from(currentGame.getDefinition()) : null;
+		return new LobbyUpdateMessage(id, new Update(name, definition));
 	}
 
 	public static LobbyUpdateMessage remove(IGameLobby lobby) {
@@ -55,7 +53,7 @@ public class LobbyUpdateMessage {
 	public void handle(Supplier<NetworkEvent.Context> ctx) {
 		ctx.get().enqueueWork(() -> {
 			if (update != null) {
-				ClientLobbyManager.addOrUpdate(id, update.name, update.queue, update.activeGame);
+				ClientLobbyManager.addOrUpdate(id, update.name, update.currentGame);
 			} else {
 				ClientLobbyManager.remove(id);
 			}
@@ -65,44 +63,31 @@ public class LobbyUpdateMessage {
 
 	static final class Update {
 		final String name;
-		final List<ClientQueuedGame> queue;
 		@Nullable
-		final ClientGameDefinition activeGame;
+		final ClientGameDefinition currentGame;
 
-		Update(String name, List<ClientQueuedGame> queue, @Nullable ClientGameDefinition activeGame) {
+		Update(String name, @Nullable ClientGameDefinition currentGame) {
 			this.name = name;
-			this.queue = queue;
-			this.activeGame = activeGame;
+			this.currentGame = currentGame;
 		}
 
 		static Update decode(PacketBuffer buffer) {
 			String name = buffer.readString(200);
 
-			int queueSize = buffer.readVarInt();
-			List<ClientQueuedGame> queue = new ArrayList<>(queueSize);
-			for (int i = 0; i < queueSize; i++) {
-				queue.add(ClientQueuedGame.decode(buffer));
-			}
-
-			ClientGameDefinition activeGame = null;
+			ClientGameDefinition currentGame = null;
 			if (buffer.readBoolean()) {
-				activeGame = ClientGameDefinition.decode(buffer);
+				currentGame = ClientGameDefinition.decode(buffer);
 			}
 
-			return new Update(name, queue, activeGame);
+			return new Update(name, currentGame);
 		}
 
 		void encode(PacketBuffer buffer) {
 			buffer.writeString(name, 200);
 
-			buffer.writeVarInt(queue.size());
-			for (ClientQueuedGame game : queue) {
-				game.encode(buffer);
-			}
-
-			buffer.writeBoolean(activeGame != null);
-			if (activeGame != null) {
-				activeGame.encode(buffer);
+			buffer.writeBoolean(currentGame != null);
+			if (currentGame != null) {
+				currentGame.encode(buffer);
 			}
 		}
 	}

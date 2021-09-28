@@ -197,6 +197,7 @@ public final class RuntimeDimensions {
 	private void deleteDimension(ServerWorld world) {
 		RegistryKey<World> dimensionKey = world.getDimensionKey();
 
+		// TODO: removing does not seem to be working
 		if (this.server.worlds.remove(dimensionKey, world)) {
 			this.server.markWorldsDirty();
 

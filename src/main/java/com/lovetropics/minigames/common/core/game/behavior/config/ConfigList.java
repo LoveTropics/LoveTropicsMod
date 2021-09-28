@@ -1,13 +1,9 @@
 package com.lovetropics.minigames.common.core.game.behavior.config;
 
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.DataResult;
+
+import java.util.*;
 
 public class ConfigList {
 

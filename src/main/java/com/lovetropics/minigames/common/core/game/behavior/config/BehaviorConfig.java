@@ -1,34 +1,33 @@
 package com.lovetropics.minigames.common.core.game.behavior.config;
 
+import com.lovetropics.minigames.common.core.game.behavior.config.ConfigData.CompositeConfigData;
+import com.lovetropics.minigames.common.core.game.behavior.config.ConfigData.ListConfigData;
+import com.mojang.serialization.*;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
+import java.util.stream.Stream;
 
-import com.lovetropics.minigames.common.core.game.behavior.config.ConfigData.CompositeConfigData;
-import com.lovetropics.minigames.common.core.game.behavior.config.ConfigData.ListConfigData;
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
-
-public final class BehaviorConfig<T> {
-
+public final class BehaviorConfig<A> extends MapCodec<A> {
 	private final String name;
-	private final Codec<T> codec;
 	private final Map<String, UnaryOperator<ConfigData>> hints = new HashMap<>();
+	private final Codec<A> codec;
+	private final MapCodec<A> mapCodec;
 
-	public BehaviorConfig(String name, Codec<T> codec) {
+	public BehaviorConfig(String name, Codec<A> codec) {
 		this.name = name;
 		this.codec = codec;
+		this.mapCodec = codec.fieldOf(name);
 	}
 
-	public <E extends Enum<E>> BehaviorConfig<T> enumHint(String key, Function<String, E> fromName) {
+	public <E extends Enum<E>> BehaviorConfig<A> enumHint(String key, Function<String, E> fromName) {
 		return hint(key, data -> new ConfigData.SimpleConfigData(ConfigType.ENUM, fromName.apply((String) data.value())));
 	}
 	
-	private BehaviorConfig<T> hint(String key, UnaryOperator<ConfigData> hint) {
+	private BehaviorConfig<A> hint(String key, UnaryOperator<ConfigData> hint) {
 		this.hints.put(key, hint);
 		return this;
 	}
@@ -63,28 +62,27 @@ public final class BehaviorConfig<T> {
 		return name;
 	}
 	
-	public Codec<T> getCodec() {
+	public Codec<A> getCodec() {
 		return codec;
-	}
-
-	public MapCodec<T> fieldOf() {
-		return codec.fieldOf(getName());
-	}
-	
-	public MapCodec<T> optionalFieldOf(T def) {
-		return codec.optionalFieldOf(getName(), def);
-	}
-
-	public <O> RecordCodecBuilder<O, T> forGetter(Function<O, T> getter) {
-		return fieldOf().forGetter(getter);
-	}
-	
-	public <O> RecordCodecBuilder<O, T> forGetterOptional(Function<O, T> getter, T def) {
-		return optionalFieldOf(def).forGetter(getter);
 	}
 
 	@Override
 	public String toString() {
 		return name;
+	}
+
+	@Override
+	public <T> Stream<T> keys(DynamicOps<T> ops) {
+		return mapCodec.keys(ops);
+	}
+
+	@Override
+	public <T> DataResult<A> decode(DynamicOps<T> ops, MapLike<T> input) {
+		return mapCodec.decode(ops, input);
+	}
+
+	@Override
+	public <T> RecordBuilder<T> encode(A input, DynamicOps<T> ops, RecordBuilder<T> prefix) {
+		return mapCodec.encode(input, ops, prefix);
 	}
 }

@@ -1,11 +1,10 @@
 package com.lovetropics.minigames.common.core.game.behavior.configold;
 
+import com.lovetropics.minigames.common.core.game.state.team.TeamKey;
+import com.mojang.serialization.Codec;
+
 import java.util.HashMap;
 import java.util.Map;
-
-import com.lovetropics.lib.codec.MoreCodecs;
-import com.lovetropics.minigames.common.core.game.state.instances.TeamKey;
-import com.mojang.serialization.Codec;
 
 public class BehaviorConfigs {
 
@@ -24,7 +23,7 @@ public class BehaviorConfigs {
 		return (Codec<T>) types.get(configType).codec();
 	}
 
-	public static <T> Codec<T> orConfig(Codec<T> source, Class<? super T> configType) {
+	/*public static <T> Codec<T> orConfig(Codec<T> source, Class<? super T> configType) {
 		return MoreCodecs.tryFirst(decode(configType), source);
-	}
+	}*/
 }

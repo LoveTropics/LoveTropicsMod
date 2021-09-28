@@ -2,11 +2,11 @@ package com.lovetropics.minigames.common.core.game.behavior.instances.donation;
 
 import com.google.common.collect.Lists;
 import com.lovetropics.lib.BlockBox;
-import com.lovetropics.minigames.common.core.game.IActiveGame;
+import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
-import com.lovetropics.minigames.common.core.game.behavior.event.GameLifecycleEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePackageEvents;
+import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.lovetropics.minigames.common.core.map.MapRegions;
 import com.lovetropics.minigames.common.util.Util;
 import com.mojang.serialization.Codec;
@@ -23,8 +23,7 @@ import java.util.List;
  * Spawns an amount of entities over a set amount of ticks, spread randomly across all the given regions
  */
 
-public class SpawnEntitiesAtRegionsOverTimePackageBehavior implements IGameBehavior
-{
+public class SpawnEntitiesAtRegionsOverTimePackageBehavior implements IGameBehavior {
 	public static final Codec<SpawnEntitiesAtRegionsOverTimePackageBehavior> CODEC = RecordCodecBuilder.create(instance -> {
 		return instance.group(
 				Codec.STRING.listOf().fieldOf("regions_to_spawn_at").forGetter(c -> c.regionsToSpawnAtKeys),
@@ -53,25 +52,24 @@ public class SpawnEntitiesAtRegionsOverTimePackageBehavior implements IGameBehav
 	}
 
 	@Override
-	public void register(IActiveGame game, EventRegistrar events) {
+	public void register(IGamePhase game, EventRegistrar events) {
 		MapRegions regions = game.getMapRegions();
 
 		regionsToSpawnAt.clear();
-
 		for (String key : regionsToSpawnAtKeys) {
 			regionsToSpawnAt.addAll(regions.get(key));
 		}
 
-		events.listen(GamePackageEvents.APPLY_PACKAGE, this::applyPackage);
-		events.listen(GameLifecycleEvents.TICK, this::tick);
+		events.listen(GamePackageEvents.APPLY_PACKAGE, (player, senderPlayerName) -> applyPackage(game, player, senderPlayerName));
+		events.listen(GamePhaseEvents.TICK, () -> tick(game));
 	}
 
-	private void applyPackage(final IActiveGame game, ServerPlayerEntity player, String senderPlayerName) {
+	private void applyPackage(final IGamePhase game, ServerPlayerEntity player, String senderPlayerName) {
 		ticksRemaining += ticksToSpawnFor;
 		entityCountRemaining += entityCount;
 	}
 
-	private void tick(IActiveGame game) {
+	private void tick(IGamePhase game) {
 		if (ticksRemaining > 0) {
 
 			//TODO: support less than 1 spawned per tick rate

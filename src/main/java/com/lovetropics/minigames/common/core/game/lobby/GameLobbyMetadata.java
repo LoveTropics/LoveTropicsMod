@@ -1,8 +1,7 @@
 package com.lovetropics.minigames.common.core.game.lobby;
 
-import com.lovetropics.minigames.common.core.game.statistics.PlayerKey;
+import com.lovetropics.minigames.common.core.game.state.statistics.PlayerKey;
 
-// TODO: metadata is a weird name
 public final class GameLobbyMetadata {
 	private final GameLobbyId id;
 	private final PlayerKey initiator;

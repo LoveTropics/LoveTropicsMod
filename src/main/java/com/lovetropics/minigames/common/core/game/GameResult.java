@@ -39,7 +39,7 @@ public final class GameResult<T> {
 		return GameResult.error(new StringTextComponent(message + ": " + exception.toString()));
 	}
 
-	public static <T> CompletableFuture<GameResult<T>> handleException(CompletableFuture<GameResult<T>> future, String message) {
+	public static <T> CompletableFuture<GameResult<T>> handleException(String message, CompletableFuture<GameResult<T>> future) {
 		return future.handle((result, throwable) -> {
 			if (throwable instanceof Exception) {
 				return GameResult.fromException(message, (Exception) throwable);
@@ -64,7 +64,7 @@ public final class GameResult<T> {
 		return error != null;
 	}
 
-	public <U> GameResult<U> map(Function<T, U> function) {
+	public <U> GameResult<U> map(Function<? super T, ? extends U> function) {
 		if (ok != null) {
 			return GameResult.ok(function.apply(ok));
 		} else {
@@ -72,7 +72,7 @@ public final class GameResult<T> {
 		}
 	}
 
-	public <U> GameResult<U> flatMap(Function<T, GameResult<U>> function) {
+	public <U> GameResult<U> flatMap(Function<? super T, GameResult<U>> function) {
 		if (ok != null) {
 			return function.apply(ok);
 		} else {
@@ -85,6 +85,14 @@ public final class GameResult<T> {
 			return GameResult.ok(value);
 		} else {
 			return castError();
+		}
+	}
+
+	public <U> CompletableFuture<GameResult<U>> thenFlatMap(Function<T, CompletableFuture<GameResult<U>>> function) {
+		if (ok != null) {
+			return function.apply(ok);
+		} else {
+			return CompletableFuture.completedFuture(castError());
 		}
 	}
 

@@ -2,11 +2,11 @@ package com.lovetropics.minigames.common.content.survive_the_tide.behavior;
 
 import com.lovetropics.minigames.common.content.survive_the_tide.SurviveTheTide;
 import com.lovetropics.minigames.common.content.survive_the_tide.SurviveTheTideWeatherConfig;
-import com.lovetropics.minigames.common.core.game.IActiveGame;
+import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.*;
-import com.lovetropics.minigames.common.core.game.state.instances.GamePhase;
-import com.lovetropics.minigames.common.core.game.state.instances.GamePhaseState;
+import com.lovetropics.minigames.common.core.game.state.GamePhase;
+import com.lovetropics.minigames.common.core.game.state.GamePhaseState;
 import com.lovetropics.minigames.common.core.game.weather.RainType;
 import com.lovetropics.minigames.common.core.game.weather.WeatherController;
 import com.lovetropics.minigames.common.core.game.weather.WeatherControllerManager;
@@ -87,20 +87,20 @@ public class SurviveTheTideWeatherBehavior implements IGameBehavior {
 	}
 
 	@Override
-	public void register(IActiveGame game, EventRegistrar events) {
+	public void register(IGamePhase game, EventRegistrar events) {
 		controller = WeatherControllerManager.forWorld(game.getWorld());
 
-		events.listen(GameLifecycleEvents.TICK, this::tick);
-		events.listen(GameLifecycleEvents.STOP, (g, reason) -> controller.reset());
+		events.listen(GamePhaseEvents.TICK, () -> tick(game));
+		events.listen(GamePhaseEvents.STOP, (reason) -> controller.reset());
 
 		events.listen(GamePlayerEvents.TICK, this::onParticipantUpdate);
 
 		events.listen(GamePackageEvents.RECEIVE_PACKAGE, this::onPackageReceive);
 
-		phases = game.getState().getOrNull(GamePhaseState.TYPE);
+		phases = game.getState().getOrNull(GamePhaseState.KEY);
 	}
 
-	private void tick(final IActiveGame game) {
+	private void tick(final IGamePhase game) {
 		if (phases == null) {
 			return;
 		}
@@ -154,7 +154,7 @@ public class SurviveTheTideWeatherBehavior implements IGameBehavior {
 		}
 	}
 
-	private void onParticipantUpdate(IActiveGame game, ServerPlayerEntity player) {
+	private void onParticipantUpdate(ServerPlayerEntity player) {
 		if (acidRainActive() && !isPlayerSheltered(player)) {
 			if (player.world.getGameTime() % config.getAcidRainDamageRate() == 0) {
 				if (!isPlayerHolding(player, SurviveTheTide.ACID_REPELLENT_UMBRELLA.get())) {
@@ -235,7 +235,7 @@ public class SurviveTheTideWeatherBehavior implements IGameBehavior {
 		}
 	}
 
-	private boolean onPackageReceive(IActiveGame game, GamePackage gamePackage) {
+	private boolean onPackageReceive(GamePackage gamePackage) {
 		// TODO: hardcoded
 		String packageType = gamePackage.getPackageType();
 		if (packageType.equals("acid_rain_event")) {

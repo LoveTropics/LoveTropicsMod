@@ -1,34 +1,35 @@
 package com.lovetropics.minigames.common.core.game.impl;
 
 import com.lovetropics.minigames.Constants;
-import com.lovetropics.minigames.client.lobby.state.message.LobbyUpdateMessage;
 import com.lovetropics.minigames.common.core.game.GameResult;
 import com.lovetropics.minigames.common.core.game.IGameManager;
+import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.lobby.GameLobbyId;
 import com.lovetropics.minigames.common.core.game.lobby.GameLobbyMetadata;
 import com.lovetropics.minigames.common.core.game.lobby.IGameLobby;
 import com.lovetropics.minigames.common.core.game.player.PlayerOps;
 import com.lovetropics.minigames.common.core.game.player.PlayerSet;
-import com.lovetropics.minigames.common.core.game.state.instances.control.ControlCommandInvoker;
-import com.lovetropics.minigames.common.core.game.statistics.PlayerKey;
-import com.lovetropics.minigames.common.core.network.LoveTropicsNetwork;
+import com.lovetropics.minigames.common.core.game.state.control.ControlCommandInvoker;
+import com.lovetropics.minigames.common.core.game.state.statistics.PlayerKey;
+import com.lovetropics.minigames.common.core.integration.Telemetry;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 import net.minecraft.command.CommandSource;
-import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.management.PlayerList;
 import net.minecraft.util.RegistryKey;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.server.FMLServerStoppingEvent;
-import net.minecraftforge.fml.network.PacketDistributor;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -47,8 +48,8 @@ public class MultiGameManager implements IGameManager {
 
 	private final List<GameLobby> lobbies = new ArrayList<>();
 
-	private final Map<RegistryKey<World>, List<GameLobby>> lobbiesByDimension = new Reference2ObjectOpenHashMap<>();
 	private final Map<UUID, GameLobby> lobbiesByPlayer = new Object2ObjectOpenHashMap<>();
+	private final Map<RegistryKey<World>, List<GamePhase>> gamesByDimension = new Reference2ObjectOpenHashMap<>();
 
 	@Override
 	public GameResult<IGameLobby> createGameLobby(String name, ServerPlayerEntity initiator) {
@@ -59,45 +60,23 @@ public class MultiGameManager implements IGameManager {
 		GameLobby lobby = new GameLobby(this, initiator.server, metadata);
 		lobbies.add(lobby);
 
-		return GameResult.ok(lobby);
-	}
-
-	// TODO: ?
-	/*@Override
-	public GameResult<WaitingGame> startPolling(IGameDefinition game, ServerPlayerEntity initiator) {
-		if (lobbies.stream().map(GameLobby::getDefinition)
-				.filter(d -> d.getGameArea().intersects(game.getGameArea()))
-				.anyMatch(d -> !Collections.disjoint(d.getMapProvider().getPossibleDimensions(), game.getMap().getPossibleDimensions()))) {
-			return GameResult.error(new TranslationTextComponent(LoveTropicsLangKeys.COMMAND_MINIGAMES_INTERSECT));
-		}
-
-		GameLobbyId id = ids.acquire(name);
-
-		GameResult<WaitingGame> pollResult = GameLobby.createPolling(this, initiator.server, id, game, PlayerKey.from(initiator));
-		if (pollResult.isError()) {
-			return pollResult.castError();
-		}
-
-		WaitingGame polling = pollResult.getOk();
-
-		try {
-			polling.invoker(GamePollingEvents.START).start(polling);
-		} catch (Exception e) {
-			return GameResult.fromException("Failed to dispatch polling start event", e);
-		}
-
-		PlayerSet.ofServer(initiator.server).sendMessage(GameMessages.forLobby(game).startPolling());
-
-		lobbies.add(polling.getLobby());
-
 		if (!Telemetry.INSTANCE.isConnected()) {
 			ITextComponent warning = new StringTextComponent("Warning: Telemetry websocket is not connected!")
 					.mergeStyle(TextFormatting.RED, TextFormatting.BOLD);
 			operators(initiator.server).sendMessage(warning);
 		}
 
-		return GameResult.ok(polling);
-	}*/
+		// TODO: handling game intersections with a queue?
+		/*
+		if (lobbies.stream().map(GameLobby::getDefinition)
+				.filter(d -> d.getGameArea().intersects(game.getGameArea()))
+				.anyMatch(d -> !Collections.disjoint(d.getMapProvider().getPossibleDimensions(), game.getMap().getPossibleDimensions()))) {
+			return GameResult.error(new TranslationTextComponent(LoveTropicsLangKeys.COMMAND_MINIGAMES_INTERSECT));
+		}
+		*/
+
+		return GameResult.ok(lobby);
+	}
 
 	private static PlayerOps operators(MinecraftServer server) {
 		PlayerList playerList = server.getPlayerList();
@@ -115,37 +94,28 @@ public class MultiGameManager implements IGameManager {
 
 	@Nullable
 	@Override
-	public GameLobby getLobbyFor(Entity entity) {
-		if (entity.world.isRemote) return null;
-
-		if (entity instanceof PlayerEntity) {
-			return getLobbyFor((PlayerEntity) entity);
-		}
-
-		// TODO: implement
-		return getLobbyForWorld(entity.world, g -> true);
-//		return getLobbyForWorld(entity.world, g -> g.getDefinition().getGameArea().contains(entity.getPositionVec()));
+	public IGamePhase getGamePhaseFor(PlayerEntity player) {
+		GameLobby lobby = getLobbyFor(player);
+		return lobby != null ? lobby.getCurrentPhase() : null;
 	}
 
-	// TODO: maybe we don't want to look up lobbies by location/world but rather the specific game
 	@Nullable
 	@Override
-	public GameLobby getLobbyAt(World world, BlockPos pos) {
-		// TODO: implement
-//		return getLobbyForWorld(world, g -> g.getDefinition().getGameArea().contains(Vector3d.copyCentered(pos)));
-		return getLobbyForWorld(world, g -> true);
+	public IGamePhase getGamePhaseAt(World world, Vector3d pos) {
+		return getGamePhaseForWorld(world, phase -> phase.getPhaseDefinition().getGameArea().contains(pos));
 	}
 
-	public List<GameLobby> getLobbiesForWorld(World world) {
-		if (world.isRemote) return Collections.emptyList();
+	public List<GamePhase> getGamePhaseForWorld(World world) {
+		if (world.isRemote) {
+			return Collections.emptyList();
+		}
 
-		List<GameLobby> lobbies = lobbiesByDimension.get(world.getDimensionKey());
-		return lobbies != null ? lobbies : Collections.emptyList();
+		return gamesByDimension.getOrDefault(world.getDimensionKey(), Collections.emptyList());
 	}
 
 	@Nullable
-	public GameLobby getLobbyForWorld(World world, Predicate<GameLobby> pred) {
-		return getLobbiesForWorld(world).stream().filter(pred).findFirst().orElse(null);
+	public GamePhase getGamePhaseForWorld(World world, Predicate<GamePhase> pred) {
+		return getGamePhaseForWorld(world).stream().filter(pred).findFirst().orElse(null);
 	}
 
 	@Nullable
@@ -160,6 +130,17 @@ public class MultiGameManager implements IGameManager {
 
 	@Nullable
 	@Override
+	public IGameLobby getLobbyByNetworkId(int id) {
+		for (GameLobby lobby : lobbies) {
+			if (lobby.getMetadata().id().networkId() == id) {
+				return lobby;
+			}
+		}
+		return null;
+	}
+
+	@Nullable
+	@Override
 	public GameLobby getLobbyByCommandId(String id) {
 		for (GameLobby lobby : lobbies) {
 			if (lobby.getMetadata().commandId().equals(id)) {
@@ -170,23 +151,22 @@ public class MultiGameManager implements IGameManager {
 	}
 
 	@Override
-	public ControlCommandInvoker getControlCommands(CommandSource source) {
-		IGameLobby lobby = getLobbyFor(source);
-		return lobby != null ? lobby.getControlCommands() : ControlCommandInvoker.EMPTY;
+	public ControlCommandInvoker getControlInvoker(CommandSource source) {
+		IGamePhase phase = getGamePhaseFor(source);
+		return phase != null ? phase.getControlInvoker() : ControlCommandInvoker.EMPTY;
 	}
 
-	// TODO: call
-	void addLobbyToDimension(RegistryKey<World> dimension, GameLobby lobby) {
-		lobbiesByDimension.computeIfAbsent(dimension, k -> new ArrayList<>())
-				.add(lobby);
+	void addGamePhaseToDimension(RegistryKey<World> dimension, GamePhase game) {
+		gamesByDimension.computeIfAbsent(dimension, k -> new ArrayList<>())
+				.add(game);
 	}
 
-	void removeLobbyFromDimension(RegistryKey<World> dimension, GameLobby lobby) {
-		List<GameLobby> lobbies = lobbiesByDimension.get(dimension);
-		if (lobbies == null) return;
+	void removeGamePhaseFromDimension(RegistryKey<World> dimension, GamePhase game) {
+		List<GamePhase> games = gamesByDimension.get(dimension);
+		if (games == null) return;
 
-		if (lobbies.remove(lobby) && lobbies.isEmpty()) {
-			lobbiesByDimension.remove(dimension, lobbies);
+		if (games.remove(game) && games.isEmpty()) {
+			gamesByDimension.remove(dimension, games);
 		}
 	}
 
@@ -204,11 +184,18 @@ public class MultiGameManager implements IGameManager {
 		}
 	}
 
+	GameLobbyMetadata renameLobby(GameLobbyMetadata metadata, String name) {
+		commandIds.release(metadata.commandId());
+
+		String commandId = commandIds.acquire(name);
+		return new GameLobbyMetadata(metadata.id(), metadata.initiator(), name, commandId);
+	}
+
 	@SubscribeEvent
 	public static void onServerStopping(FMLServerStoppingEvent event) {
 		List<GameLobby> lobbies = new ArrayList<>(INSTANCE.lobbies);
 		for (GameLobby lobby : lobbies) {
-			lobby.stop();
+			lobby.cancel();
 		}
 	}
 
@@ -228,21 +215,15 @@ public class MultiGameManager implements IGameManager {
 		}
 
 		if (canceled != null) {
-			canceled.forEach(GameLobby::stop);
+			canceled.forEach(GameLobby::cancel);
 		}
 	}
 
 	@SubscribeEvent
 	public static void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
+		ServerPlayerEntity player = (ServerPlayerEntity) event.getPlayer();
 		for (GameLobby lobby : INSTANCE.lobbies) {
-			PacketDistributor.PacketTarget target = PacketDistributor.PLAYER.with(() -> (ServerPlayerEntity) event.getPlayer());
-			LoveTropicsNetwork.CHANNEL.send(target, LobbyUpdateMessage.update(lobby));
-
-			// TODO
-			/*int networkId = lobby.getMetadata().id().networkId();
-			for (PlayerRole role : PlayerRole.ROLES) {
-				LoveTropicsNetwork.CHANNEL.send(target, new ClientLobbyPlayersMessage(networkId, role, lobby.getMemberCount(role)));
-			}*/
+			lobby.onPlayerLoggedIn(player);
 		}
 	}
 
@@ -255,8 +236,9 @@ public class MultiGameManager implements IGameManager {
 	 */
 	@SubscribeEvent
 	public static void onPlayerLoggedOut(PlayerEvent.PlayerLoggedOutEvent event) {
+		ServerPlayerEntity player = (ServerPlayerEntity) event.getPlayer();
 		for (GameLobby lobby : INSTANCE.lobbies) {
-			lobby.removePlayer((ServerPlayerEntity) event.getPlayer());
+			lobby.onPlayerLoggedOut(player);
 		}
 	}
 }

@@ -3,10 +3,10 @@ package com.lovetropics.minigames.common.content.survive_the_tide.behavior;
 import com.lovetropics.lib.BlockBox;
 import com.lovetropics.lib.codec.MoreCodecs;
 import com.lovetropics.minigames.common.core.game.GameException;
-import com.lovetropics.minigames.common.core.game.IActiveGame;
+import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
-import com.lovetropics.minigames.common.core.game.behavior.event.GameLifecycleEvents;
+import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.lovetropics.minigames.common.core.game.util.GameBossBar;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -25,8 +25,7 @@ import net.minecraft.world.server.ServerWorld;
 import java.util.ArrayList;
 import java.util.List;
 
-public class WorldBorderGameBehavior implements IGameBehavior
-{
+public class WorldBorderGameBehavior implements IGameBehavior {
 	public static final Codec<WorldBorderGameBehavior> CODEC = RecordCodecBuilder.create(instance -> {
 		return instance.group(
 				MoreCodecs.TEXT.fieldOf("name").forGetter(c -> c.name),
@@ -75,7 +74,7 @@ public class WorldBorderGameBehavior implements IGameBehavior
 	}
 
 	@Override
-	public void register(IActiveGame game, EventRegistrar events) throws GameException {
+	public void register(IGamePhase game, EventRegistrar events) throws GameException {
 		List<BlockBox> regions = new ArrayList<>(game.getMapRegions().get(worldBorderCenterKey));
 
 		if (!regions.isEmpty()) {
@@ -85,17 +84,17 @@ public class WorldBorderGameBehavior implements IGameBehavior
 			worldBorderCenter = BlockPos.ZERO;
 		}
 
-		events.listen(GameLifecycleEvents.STOP, (game1, reason) -> onFinish(game1));
-		events.listen(GameLifecycleEvents.TICK, this::tickWorldBorder);
+		events.listen(GamePhaseEvents.STOP, r -> onFinish());
+		events.listen(GamePhaseEvents.TICK, () -> tickWorldBorder(game));
 	}
 
-	private void onFinish(final IActiveGame game) {
+	private void onFinish() {
 		borderCollapseMessageSent = false;
 		bossBar.close();
 	}
 
 	// TODO: Clean up this mess
-	private void tickWorldBorder(final IActiveGame game) {
+	private void tickWorldBorder(final IGamePhase game) {
 		if (game.ticks() < ticksUntilStart) {
 			return;
 		}
@@ -119,12 +118,10 @@ public class WorldBorderGameBehavior implements IGameBehavior
 		float maxRadius = 210;
 		float currentRadius = maxRadius * borderPercent;
 
-		//particle spawning
 		if (game.ticks() % particleRateDelay == 0) {
 			tickParticles(currentRadius, game.getWorld());
 		}
 
-		//player damage
 		if (game.ticks() % damageRateDelay == 0) {
 			tickPlayerDamage(game, isCollapsing, currentRadius);
 		}
@@ -154,14 +151,13 @@ public class WorldBorderGameBehavior implements IGameBehavior
 					world.spawnParticle(borderParticle, worldBorderCenter.getX() + xVec, worldBorderCenter.getY() + yStep, worldBorderCenter
 							.getZ() + zVec, 1, 0, 0, 0, 1D);
 				}
-
 			}
 		}
 
 		//serverWorld.spawnParticle(borderParticle, worldBorderCenter.getX(), worldBorderCenter.getY(), worldBorderCenter.getZ(), 1, 0, 0, 0, 1D);
 	}
 
-	private void tickPlayerDamage(IActiveGame game, boolean isCollapsing, float currentRadius) {
+	private void tickPlayerDamage(IGamePhase game, boolean isCollapsing, float currentRadius) {
 		for (ServerPlayerEntity player : game.getParticipants()) {
 			//ignore Y val, only do X Z dist compare
 			double distanceSq = player.getDistanceSq(worldBorderCenter.getX(), player.getPosY(), worldBorderCenter.getZ());

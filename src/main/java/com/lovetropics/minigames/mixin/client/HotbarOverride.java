@@ -25,8 +25,8 @@ public class HotbarOverride {
 	public ResourceLocation getHotbarTexture(ResourceLocation loc) {
 		ClientLobbyState state = ClientLobbyManager.getJoined();
 		if (state != null) {
-			ClientGameDefinition activeGame = state.getActiveGame();
-			if (activeGame != null && activeGame.id.equals(TARGET)) {
+			ClientGameDefinition currentGame = state.getCurrentGame();
+			if (currentGame != null && currentGame.id.equals(TARGET)) {
 				return TEXTURE;
 			}
 		}

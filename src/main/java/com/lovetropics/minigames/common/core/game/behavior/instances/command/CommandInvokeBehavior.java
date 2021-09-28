@@ -1,19 +1,16 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances.command;
 
 import com.lovetropics.lib.codec.MoreCodecs;
-import com.lovetropics.minigames.common.core.game.GameException;
-import com.lovetropics.minigames.common.core.game.IActiveGame;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
-import com.lovetropics.minigames.common.core.game.state.instances.control.ControlCommandState;
+import com.lovetropics.minigames.common.core.game.state.control.ControlCommands;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.serialization.Codec;
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.ICommandSource;
 import net.minecraft.entity.Entity;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.vector.Vector2f;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.text.StringTextComponent;
@@ -76,29 +73,21 @@ public abstract class CommandInvokeBehavior implements IGameBehavior {
 	}
 
 	@Override
-	public void registerWaiting(IGamePhase game, EventRegistrar events) throws GameException {
-		MinecraftServer server = game.getServer();
-		this.dispatcher = server.getCommandManager().getDispatcher();
-		this.source = server.getCommandSource();
-
-		this.registerControls(game, game.getState().get(ControlCommandState.TYPE));
-	}
-
-	@Override
-	public void register(IActiveGame game, EventRegistrar events) {
+	public void register(IGamePhase game, EventRegistrar events) {
+		this.dispatcher = game.getServer().getCommandManager().getDispatcher();
 		this.source = this.createCommandSource(game);
 
-		this.registerControls(game, game.getState().get(ControlCommandState.TYPE));
-		this.registerEvents(events);
+		this.registerControls(game, game.getControlCommands());
+		this.registerEvents(game, events);
 	}
 
-	private CommandSource createCommandSource(IActiveGame game) {
+	private CommandSource createCommandSource(IGamePhase game) {
 		String name = game.getLobby().getMetadata().name();
 		return new CommandSource(ICommandSource.DUMMY, Vector3d.ZERO, Vector2f.ZERO, game.getWorld(), 4, name, new StringTextComponent(name), game.getServer(), null);
 	}
 
-	protected void registerControls(IGamePhase game, ControlCommandState commands) {
+	protected void registerControls(IGamePhase game, ControlCommands commands) {
 	}
 
-	protected abstract void registerEvents(EventRegistrar events);
+	protected abstract void registerEvents(IGamePhase game, EventRegistrar events);
 }

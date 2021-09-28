@@ -1,14 +1,14 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances.team;
 
 import com.lovetropics.minigames.common.core.game.GameException;
-import com.lovetropics.minigames.common.core.game.IActiveGame;
+import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameLogicEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
-import com.lovetropics.minigames.common.core.game.state.instances.TeamKey;
-import com.lovetropics.minigames.common.core.game.state.instances.TeamState;
-import com.lovetropics.minigames.common.core.game.statistics.StatisticKey;
+import com.lovetropics.minigames.common.core.game.state.team.TeamKey;
+import com.lovetropics.minigames.common.core.game.state.team.TeamState;
+import com.lovetropics.minigames.common.core.game.state.statistics.StatisticKey;
 import com.mojang.serialization.Codec;
 import net.minecraft.util.ActionResultType;
 import net.minecraft.util.text.ITextComponent;
@@ -22,10 +22,10 @@ public class TeamWinTrigger implements IGameBehavior {
 	private boolean winTriggered;
 
 	@Override
-	public void register(IActiveGame registerGame, EventRegistrar events) throws GameException {
-		TeamState teamState = registerGame.getState().getOrThrow(TeamState.TYPE);
+	public void register(IGamePhase game, EventRegistrar events) throws GameException {
+		TeamState teamState = game.getState().getOrThrow(TeamState.KEY);
 
-		events.listen(GamePlayerEvents.DEATH, (game, player, damageSource) -> {
+		events.listen(GamePlayerEvents.DEATH, (player, damageSource) -> {
 			if (winTriggered) {
 				return ActionResultType.PASS;
 			}
@@ -37,10 +37,10 @@ public class TeamWinTrigger implements IGameBehavior {
 					winTriggered = true;
 
 					ITextComponent winnerName = new StringTextComponent(finalTeam.name).mergeStyle(finalTeam.text);
-					game.invoker(GameLogicEvents.WIN_TRIGGERED).onWinTriggered(game, winnerName);
-					game.invoker(GameLogicEvents.GAME_OVER).onGameOver(game);
+					game.invoker(GameLogicEvents.WIN_TRIGGERED).onWinTriggered(winnerName);
+					game.invoker(GameLogicEvents.GAME_OVER).onGameOver();
 
-					game.getStatistics().getGlobal().set(StatisticKey.WINNING_TEAM, finalTeam);
+					game.getStatistics().global().set(StatisticKey.WINNING_TEAM, finalTeam);
 				}
 			}
 
