@@ -1,22 +1,32 @@
-package com.lovetropics.minigames.client.lobby.state;
+package com.lovetropics.minigames.client.lobby.manage.state;
 
+import com.lovetropics.minigames.common.core.game.IGamePhase;
+import com.lovetropics.minigames.common.core.game.lobby.IGameLobby;
 import com.lovetropics.minigames.common.core.game.player.PlayerRole;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.network.PacketBuffer;
 
 import javax.annotation.Nullable;
 import java.util.UUID;
 
-public final class ClientLobbyPlayerEntry {
+public final class ClientLobbyPlayer {
 	private final UUID uuid;
 	@Nullable
 	private final PlayerRole registeredRole;
 	@Nullable
 	private final PlayerRole playingRole;
 
-	public ClientLobbyPlayerEntry(UUID uuid, @Nullable PlayerRole registeredRole, @Nullable PlayerRole playingRole) {
+	private ClientLobbyPlayer(UUID uuid, @Nullable PlayerRole registeredRole, @Nullable PlayerRole playingRole) {
 		this.uuid = uuid;
 		this.registeredRole = registeredRole;
 		this.playingRole = playingRole;
+	}
+
+	public static ClientLobbyPlayer from(IGameLobby lobby, ServerPlayerEntity player) {
+		IGamePhase currentPhase = lobby.getCurrentPhase();
+		PlayerRole playingRole = currentPhase != null ? currentPhase.getRoleFor(player) : null;
+		PlayerRole registeredRole = lobby.getPlayers().getRegisteredRoleFor(player);
+		return new ClientLobbyPlayer(player.getUniqueID(), registeredRole, playingRole);
 	}
 
 	public void encode(PacketBuffer buffer) {
@@ -25,8 +35,8 @@ public final class ClientLobbyPlayerEntry {
 		encodeRole(buffer, this.playingRole);
 	}
 
-	public static ClientLobbyPlayerEntry decode(PacketBuffer buffer) {
-		return new ClientLobbyPlayerEntry(
+	public static ClientLobbyPlayer decode(PacketBuffer buffer) {
+		return new ClientLobbyPlayer(
 				buffer.readUniqueId(),
 				decodeRole(buffer),
 				decodeRole(buffer)

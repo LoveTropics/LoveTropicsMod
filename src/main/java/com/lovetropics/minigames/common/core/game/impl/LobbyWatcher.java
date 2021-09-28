@@ -14,7 +14,6 @@ import net.minecraft.network.NetworkManager;
 import net.minecraftforge.fml.network.PacketDistributor;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 public interface LobbyWatcher {
@@ -95,13 +94,13 @@ public interface LobbyWatcher {
 		@Override
 		public void onPlayerJoin(IGameLobby lobby, ServerPlayerEntity player, PlayerRole role) {
 			LoveTropicsNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), JoinedLobbyMessage.create(lobby, role));
-			LoveTropicsNetwork.CHANNEL.send(this.trackingPlayers(lobby), LobbyPlayersMessage.add(lobby, Collections.singleton(player)));
+			LoveTropicsNetwork.CHANNEL.send(this.trackingPlayers(lobby), LobbyPlayersMessage.update(lobby));
 		}
 
 		@Override
 		public void onPlayerLeave(IGameLobby lobby, ServerPlayerEntity player) {
 			LoveTropicsNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new LeftLobbyMessage());
-			LoveTropicsNetwork.CHANNEL.send(this.trackingPlayers(lobby), LobbyPlayersMessage.remove(lobby, Collections.singleton(player)));
+			LoveTropicsNetwork.CHANNEL.send(this.trackingPlayers(lobby), LobbyPlayersMessage.update(lobby));
 		}
 
 		@Override
@@ -111,7 +110,7 @@ public interface LobbyWatcher {
 
 		@Override
 		public void onLobbyStop(IGameLobby lobby) {
-			LoveTropicsNetwork.CHANNEL.send(PacketDistributor.ALL.noArg(), LobbyUpdateMessage.remove(lobby));
+			LoveTropicsNetwork.CHANNEL.send(this.trackingPlayers(lobby), LobbyUpdateMessage.remove(lobby));
 		}
 
 		private PacketDistributor.PacketTarget trackingPlayers(IGameLobby lobby) {

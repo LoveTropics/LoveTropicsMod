@@ -22,7 +22,7 @@ public final class ClientGameDefinition {
 		this.maximumParticipants = maximumParticipants;
 	}
 
-	public static List<ClientGameDefinition> installed() {
+	public static List<ClientGameDefinition> collectInstalled() {
 		return GameConfigs.REGISTRY.stream()
 				.map(ClientGameDefinition::from)
 				.collect(Collectors.toList());

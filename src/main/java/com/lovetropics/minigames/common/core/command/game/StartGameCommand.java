@@ -4,6 +4,7 @@ import com.lovetropics.minigames.client.data.LoveTropicsLangKeys;
 import com.lovetropics.minigames.common.core.game.GameResult;
 import com.lovetropics.minigames.common.core.game.IGameManager;
 import com.lovetropics.minigames.common.core.game.lobby.IGameLobby;
+import com.lovetropics.minigames.common.core.game.lobby.LobbyControls;
 import com.lovetropics.minigames.common.core.game.util.GameMessages;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
@@ -25,7 +26,13 @@ public class StartGameCommand {
 					throw new SimpleCommandExceptionType(new TranslationTextComponent(LoveTropicsLangKeys.COMMAND_NO_MINIGAME_POLLING)).create();
 				}
 
-				GameResult<Unit> result = lobby.requestStart();
+				LobbyControls.Action action = lobby.getControls().get(LobbyControls.Type.PLAY);
+				if (action == null) {
+					// TODO: message
+					throw new SimpleCommandExceptionType(new TranslationTextComponent(LoveTropicsLangKeys.COMMAND_NO_MINIGAME_POLLING)).create();
+				}
+
+				GameResult<Unit> result = action.run();
 				if (result.isOk()) {
 					c.getSource().sendFeedback(GameMessages.forLobby(lobby).startSuccess(), false);
 				} else {

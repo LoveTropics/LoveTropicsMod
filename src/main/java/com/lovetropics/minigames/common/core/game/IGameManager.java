@@ -34,6 +34,9 @@ public interface IGameManager extends IGameLookup {
 	}
 
 	@Nullable
+	IGameLobby getLobbyByNetworkId(int id);
+
+	@Nullable
 	IGameLobby getLobbyByCommandId(String id);
 
 	ControlCommandInvoker getControlInvoker(CommandSource source);

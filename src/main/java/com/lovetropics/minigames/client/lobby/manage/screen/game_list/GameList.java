@@ -1,7 +1,7 @@
-package com.lovetropics.minigames.client.lobby.screen.game_list;
+package com.lovetropics.minigames.client.lobby.manage.screen.game_list;
 
+import com.lovetropics.minigames.client.lobby.manage.state.ClientLobbyQueue;
 import com.lovetropics.minigames.client.lobby.state.ClientGameDefinition;
-import com.lovetropics.minigames.client.lobby.state.ClientQueuedGame;
 import com.lovetropics.minigames.client.screen.flex.Layout;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import net.minecraft.client.gui.IGuiEventListener;
@@ -15,7 +15,7 @@ public final class GameList implements IGuiEventListener {
 	private final Layout mainLayout;
 	private final Layout footerLayout;
 
-	private final List<ClientQueuedGame> queue;
+	private final ClientLobbyQueue queue;
 	private final List<ClientGameDefinition> installedGames;
 
 	private final Handlers handlers;
@@ -24,7 +24,7 @@ public final class GameList implements IGuiEventListener {
 
 	public GameList(
 			Screen screen, Layout main, Layout footer,
-			List<ClientQueuedGame> queue, List<ClientGameDefinition> installedGames,
+			ClientLobbyQueue queue, List<ClientGameDefinition> installedGames,
 			Handlers handlers
 	) {
 		this.screen = screen;
@@ -40,8 +40,8 @@ public final class GameList implements IGuiEventListener {
 	private GameQueueList createQueue() {
 		GameQueueList queue = new GameQueueList(this.screen, this.mainLayout, this.footerLayout, new GameQueueList.Handlers() {
 			@Override
-			public void select(int index) {
-				GameList.this.handlers.selectQueuedGame(index);
+			public void select(int id) {
+				GameList.this.handlers.selectQueuedGame(id);
 			}
 
 			@Override
@@ -50,8 +50,8 @@ public final class GameList implements IGuiEventListener {
 			}
 
 			@Override
-			public void remove(int index) {
-				GameList.this.handlers.removeQueuedGame(index);
+			public void remove(int id) {
+				GameList.this.handlers.removeQueuedGame(id);
 			}
 		});
 		queue.setEntries(this.queue);
@@ -130,10 +130,10 @@ public final class GameList implements IGuiEventListener {
 	}
 
 	public interface Handlers {
-		void selectQueuedGame(int queuedGameIndex);
+		void selectQueuedGame(int queuedGameId);
 
 		void enqueueGame(int installedGameIndex);
 
-		void removeQueuedGame(int queuedGameIndex);
+		void removeQueuedGame(int queuedGameId);
 	}
 }

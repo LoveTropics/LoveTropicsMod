@@ -1,16 +1,13 @@
 package com.lovetropics.minigames.common.core.game.lobby;
 
-import com.lovetropics.minigames.client.lobby.state.ClientGameDefinition;
-import com.lovetropics.minigames.client.lobby.state.ClientQueuedGame;
 import com.lovetropics.minigames.common.core.game.IGameDefinition;
 
 import javax.annotation.Nullable;
 import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Iterator;
 import java.util.Queue;
 
-public final class LobbyGameQueue {
+public final class LobbyGameQueue implements Iterable<QueuedGame> {
 	private final Queue<QueuedGame> queue = new ArrayDeque<>();
 
 	public void enqueue(IGameDefinition game) {
@@ -26,12 +23,18 @@ public final class LobbyGameQueue {
 		return queue.poll();
 	}
 
-	public List<ClientQueuedGame> clientEntries() {
-		List<ClientQueuedGame> entries = new ArrayList<>(queue.size());
+	@Nullable
+	public QueuedGame byNetworkId(int networkId) {
 		for (QueuedGame game : queue) {
-			ClientGameDefinition clientDefinition = ClientGameDefinition.from(game.definition());
-			entries.add(new ClientQueuedGame(clientDefinition));
+			if (game.networkId() == networkId) {
+				return game;
+			}
 		}
-		return entries;
+		return null;
+	}
+
+	@Override
+	public Iterator<QueuedGame> iterator() {
+		return queue.iterator();
 	}
 }

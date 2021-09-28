@@ -1,7 +1,7 @@
-package com.lovetropics.minigames.client.lobby.screen.player_list;
+package com.lovetropics.minigames.client.lobby.manage.screen.player_list;
 
-import com.lovetropics.minigames.client.lobby.state.ClientLobbyPlayerEntry;
-import com.lovetropics.minigames.client.lobby.state.ClientLobbyState;
+import com.lovetropics.minigames.client.lobby.manage.state.ClientLobbyManageState;
+import com.lovetropics.minigames.client.lobby.manage.state.ClientLobbyPlayer;
 import com.lovetropics.minigames.client.screen.PlayerFaces;
 import com.lovetropics.minigames.client.screen.flex.Box;
 import com.lovetropics.minigames.client.screen.flex.Layout;
@@ -15,14 +15,14 @@ public final class LobbyPlayerList extends AbstractGui implements IGuiEventListe
 
 	private static final int BLOCK_SIZE = FACE_SIZE + SPACING;
 
-	private final ClientLobbyState lobby;
+	private final ClientLobbyManageState lobby;
 
 	private final int rows;
 	private final int columns;
 
 	private final Box layout;
 
-	public LobbyPlayerList(ClientLobbyState lobby, Layout layout) {
+	public LobbyPlayerList(ClientLobbyManageState lobby, Layout layout) {
 		this.lobby = lobby;
 
 		Box content = layout.content();
@@ -41,9 +41,8 @@ public final class LobbyPlayerList extends AbstractGui implements IGuiEventListe
 	public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
 		// TODO: handling overflow with scrollbar
 
-		// TODO: unordered list of players
 		int i = 0;
-		for (ClientLobbyPlayerEntry player : lobby.getPlayers()) {
+		for (ClientLobbyPlayer player : lobby.getPlayers()) {
 			int x = this.faceX(i % rows);
 			int y = this.faceY(i / rows);
 

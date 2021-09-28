@@ -1,18 +1,15 @@
 package com.lovetropics.minigames.client.lobby.state;
 
 import com.lovetropics.minigames.common.core.game.player.PlayerRole;
-import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 
 import javax.annotation.Nullable;
-import java.util.*;
 
 public class ClientLobbyState {
 	final int id;
 
 	String name;
-	final Map<UUID, ClientLobbyPlayerEntry> players = new Object2ObjectOpenHashMap<>();
-
-	List<ClientQueuedGame> queue = new ArrayList<>();
+	int participantCount;
+	int spectatorCount;
 
 	@Nullable
 	ClientGameDefinition currentGame;
@@ -24,12 +21,12 @@ public class ClientLobbyState {
 		this.id = id;
 	}
 
-	public String getName() {
-		return name;
+	public int getId() {
+		return id;
 	}
 
-	public List<ClientQueuedGame> getQueue() {
-		return queue;
+	public String getName() {
+		return name;
 	}
 
 	@Nullable
@@ -37,25 +34,24 @@ public class ClientLobbyState {
 		return currentGame;
 	}
 
-	public void addPlayers(List<ClientLobbyPlayerEntry> players) {
-		for (ClientLobbyPlayerEntry player : players) {
-			this.players.put(player.uuid(), player);
-		}
+	public void setPlayerCounts(int participantCount, int spectatorCount) {
+		this.participantCount = participantCount;
+		this.spectatorCount = spectatorCount;
 	}
 
-	// TODO: sending full metadata for removing?
-	public void removePlayers(List<ClientLobbyPlayerEntry> players) {
-		for (ClientLobbyPlayerEntry player : players) {
-			this.players.remove(player.uuid());
-		}
+	public int getParticipantCount() {
+		return participantCount;
 	}
 
-	public void setPlayers(List<ClientLobbyPlayerEntry> players) {
-		this.players.clear();
-		this.addPlayers(players);
+	public int getSpectatorCount() {
+		return spectatorCount;
 	}
 
-	public Collection<ClientLobbyPlayerEntry> getPlayers() {
-		return this.players.values();
+	public int getPlayerCount(PlayerRole role) {
+		return role == PlayerRole.PARTICIPANT ? participantCount : spectatorCount;
+	}
+
+	public int getPlayerCount() {
+		return participantCount + spectatorCount;
 	}
 }
