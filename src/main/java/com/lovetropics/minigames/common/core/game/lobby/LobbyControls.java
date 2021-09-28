@@ -83,9 +83,5 @@ public final class LobbyControls {
 		public static State decode(PacketBuffer buffer) {
 			return new State(buffer.readUnsignedByte());
 		}
-
-		public void setFrom(State state) {
-			this.bits = state.bits;
-		}
 	}
 }

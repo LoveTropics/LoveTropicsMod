@@ -1,5 +1,6 @@
 package com.lovetropics.minigames.client.lobby.manage.screen.game_list;
 
+import com.lovetropics.minigames.client.lobby.manage.state.ClientLobbyManageState;
 import com.lovetropics.minigames.client.lobby.manage.state.ClientLobbyQueue;
 import com.lovetropics.minigames.client.screen.FlexUi;
 import com.lovetropics.minigames.client.screen.flex.Flex;
@@ -18,13 +19,16 @@ public final class GameQueueList extends AbstractGameList {
 	private static final ITextComponent TITLE = new StringTextComponent("Game Queue")
 			.mergeStyle(TextFormatting.UNDERLINE, TextFormatting.BOLD);
 
+	private final ClientLobbyManageState lobby;
+
 	private final Handlers handlers;
 
 	private final Button enqueueButton;
 	private final Button removeButton;
 
-	public GameQueueList(Screen screen, Layout main, Layout footer, Handlers handlers) {
+	public GameQueueList(Screen screen, Layout main, Layout footer, ClientLobbyManageState lobby, Handlers handlers) {
 		super(screen, main, TITLE);
+		this.lobby = lobby;
 		this.handlers = handlers;
 
 		Flex root = new Flex().rows();
@@ -35,16 +39,21 @@ public final class GameQueueList extends AbstractGameList {
 		this.enqueueButton = FlexUi.createButton(solve.layout(enqueue), new StringTextComponent("+"), this::enqueue);
 		this.removeButton = FlexUi.createButton(solve.layout(cancel), new StringTextComponent("-"), this::remove);
 
-		this.setSelected(null);
+		this.updateEntries();
 	}
 
-	public void setEntries(ClientLobbyQueue queue) {
-		this.setSelected(null);
+	@Override
+	public void updateEntries() {
+		int selectedId = getSelected() != null ? getSelected().getId() : -1;
 
 		this.clearEntries();
+		for (ClientLobbyQueue.Entry entry : this.lobby.getQueue().entries()) {
+			Entry listEntry = new Entry(this, entry.id(), entry.game().definition());
+			this.addEntry(listEntry);
 
-		for (ClientLobbyQueue.Entry entry : queue.entries()) {
-			this.addEntry(new Entry(this, entry.id(), entry.game().definition()));
+			if (listEntry.getId() == selectedId) {
+				this.setSelected(listEntry);
+			}
 		}
 	}
 

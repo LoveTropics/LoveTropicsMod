@@ -1,13 +1,10 @@
 package com.lovetropics.minigames.client.lobby.manage.screen.game_list;
 
-import com.lovetropics.minigames.client.lobby.manage.state.ClientLobbyQueue;
-import com.lovetropics.minigames.client.lobby.state.ClientGameDefinition;
+import com.lovetropics.minigames.client.lobby.manage.state.ClientLobbyManageState;
 import com.lovetropics.minigames.client.screen.flex.Layout;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import net.minecraft.client.gui.IGuiEventListener;
 import net.minecraft.client.gui.screen.Screen;
-
-import java.util.List;
 
 // TODO: name?
 public final class GameList implements IGuiEventListener {
@@ -15,8 +12,7 @@ public final class GameList implements IGuiEventListener {
 	private final Layout mainLayout;
 	private final Layout footerLayout;
 
-	private final ClientLobbyQueue queue;
-	private final List<ClientGameDefinition> installedGames;
+	private final ClientLobbyManageState lobby;
 
 	private final Handlers handlers;
 
@@ -24,21 +20,20 @@ public final class GameList implements IGuiEventListener {
 
 	public GameList(
 			Screen screen, Layout main, Layout footer,
-			ClientLobbyQueue queue, List<ClientGameDefinition> installedGames,
+			ClientLobbyManageState lobby,
 			Handlers handlers
 	) {
 		this.screen = screen;
 		this.mainLayout = main;
 		this.footerLayout = footer;
-		this.queue = queue;
-		this.installedGames = installedGames;
+		this.lobby = lobby;
 		this.handlers = handlers;
 
 		this.active = this.createQueue();
 	}
 
 	private GameQueueList createQueue() {
-		GameQueueList queue = new GameQueueList(this.screen, this.mainLayout, this.footerLayout, new GameQueueList.Handlers() {
+		return new GameQueueList(this.screen, this.mainLayout, this.footerLayout, this.lobby, new GameQueueList.Handlers() {
 			@Override
 			public void select(int id) {
 				GameList.this.handlers.selectQueuedGame(id);
@@ -54,21 +49,19 @@ public final class GameList implements IGuiEventListener {
 				GameList.this.handlers.removeQueuedGame(id);
 			}
 		});
-		queue.setEntries(this.queue);
-
-		return queue;
 	}
 
 	private InstalledGameList createInstalled() {
-		InstalledGameList installed = new InstalledGameList(this.screen, this.mainLayout, this.footerLayout, index -> {
+		return new InstalledGameList(this.screen, this.mainLayout, this.footerLayout, this.lobby, index -> {
 			this.handlers.selectQueuedGame(-1);
 			this.handlers.enqueueGame(index);
 
 			this.active = this.createQueue();
 		});
-		installed.setEntries(this.installedGames);
+	}
 
-		return installed;
+	public void updateEntries() {
+		this.active.updateEntries();
 	}
 
 	public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {

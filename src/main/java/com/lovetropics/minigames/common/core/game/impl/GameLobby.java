@@ -28,7 +28,7 @@ final class GameLobby implements IGameLobby {
 	final LobbyManagement management;
 
 	GameInstance currentGame;
-	boolean paused;
+	boolean paused = true;
 
 	GameLobby(MultiGameManager manager, MinecraftServer server, GameLobbyMetadata metadata) {
 		this.manager = manager;
@@ -74,6 +74,7 @@ final class GameLobby implements IGameLobby {
 			return new LobbyControls()
 					.add(LobbyControls.Type.PLAY, () -> {
 						this.paused = false;
+						onGameStateChange();
 						return GameResult.ok();
 					});
 		}
@@ -105,6 +106,8 @@ final class GameLobby implements IGameLobby {
 		GameInstance currentGame = this.currentGame;
 		if (currentGame != null) {
 			tickPlaying(currentGame);
+		} else {
+			tickInactive();
 		}
 
 		return true;
@@ -112,13 +115,22 @@ final class GameLobby implements IGameLobby {
 
 	private void tickPlaying(GameInstance game) {
 		if (!game.tick()) {
-			GameInstance next = nextGame();
-			currentGame = next;
-			paused |= next == null;
-
-			// TODO: check where we send this & move into watcher
-			LoveTropicsNetwork.CHANNEL.send(PacketDistributor.ALL.noArg(), LobbyUpdateMessage.update(this));
+			tryMoveToNextGame();
 		}
+	}
+
+	private void tickInactive() {
+		if (!paused) {
+			tryMoveToNextGame();
+		}
+	}
+
+	private void tryMoveToNextGame() {
+		GameInstance next = nextGame();
+		currentGame = next;
+		paused |= next == null;
+
+		onGameStateChange();
 	}
 
 	@Nullable
@@ -129,6 +141,13 @@ final class GameLobby implements IGameLobby {
 		if (game == null) return null;
 
 		return new GameInstance(this, game.definition());
+	}
+
+	void onGameStateChange() {
+		management.updateControlsState();
+
+		// TODO: check where we send this & move into watcher
+		LoveTropicsNetwork.CHANNEL.send(PacketDistributor.ALL.noArg(), LobbyUpdateMessage.update(this));
 	}
 
 	void cancel() {

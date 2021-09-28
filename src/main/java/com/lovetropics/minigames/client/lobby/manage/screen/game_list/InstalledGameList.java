@@ -1,5 +1,6 @@
 package com.lovetropics.minigames.client.lobby.manage.screen.game_list;
 
+import com.lovetropics.minigames.client.lobby.manage.state.ClientLobbyManageState;
 import com.lovetropics.minigames.client.lobby.state.ClientGameDefinition;
 import com.lovetropics.minigames.client.screen.FlexUi;
 import com.lovetropics.minigames.client.screen.flex.Flex;
@@ -20,13 +21,15 @@ public final class InstalledGameList extends AbstractGameList {
 	private static final ITextComponent TITLE = new StringTextComponent("Installed")
 			.mergeStyle(TextFormatting.UNDERLINE, TextFormatting.BOLD);
 
+	private final ClientLobbyManageState lobby;
 	private final IntConsumer select;
 
 	private final Button enqueueButton;
 	private final Button cancelButton;
 
-	public InstalledGameList(Screen screen, Layout main, Layout footer, IntConsumer select) {
+	public InstalledGameList(Screen screen, Layout main, Layout footer, ClientLobbyManageState lobby, IntConsumer select) {
 		super(screen, main, TITLE);
+		this.lobby = lobby;
 		this.select = select;
 
 		Flex root = new Flex().rows();
@@ -37,11 +40,14 @@ public final class InstalledGameList extends AbstractGameList {
 		this.enqueueButton = FlexUi.createButton(solve.layout(enqueue), new StringTextComponent("\u2714"), this::enqueue);
 		this.cancelButton = FlexUi.createButton(solve.layout(cancel), new StringTextComponent("\u274C"), this::cancel);
 
-		this.setSelected(null);
+		this.updateEntries();
 	}
 
-	public void setEntries(List<ClientGameDefinition> games) {
+	@Override
+	public void updateEntries() {
 		this.setSelected(null);
+
+		List<ClientGameDefinition> games = this.lobby.getInstalledGames();
 
 		this.clearEntries();
 		for (int id = 0; id < games.size(); id++) {

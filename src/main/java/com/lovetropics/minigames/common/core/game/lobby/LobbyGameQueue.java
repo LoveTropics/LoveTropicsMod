@@ -25,6 +25,10 @@ public final class LobbyGameQueue implements Iterable<QueuedGame> {
 		return queue.poll();
 	}
 
+	public boolean remove(QueuedGame game) {
+		return queue.remove(game);
+	}
+
 	@Nullable
 	public QueuedGame byNetworkId(int networkId) {
 		for (QueuedGame game : queue) {

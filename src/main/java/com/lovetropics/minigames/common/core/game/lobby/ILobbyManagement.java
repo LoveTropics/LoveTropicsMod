@@ -14,4 +14,8 @@ public interface ILobbyManagement {
 	void setName(String name);
 
 	void enqueueGame(IGameDefinition game);
+
+	void removeQueuedGame(int id);
+
+	void selectControl(LobbyControls.Type type);
 }

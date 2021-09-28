@@ -62,7 +62,11 @@ public final class ClientLobbyManagement {
 		}
 
 		public void removeQueuedGame(int id) {
-			// TODO
+			sendUpdates(updates -> updates.removeQueuedGame(id));
+		}
+
+		public void selectControl(LobbyControls.Type control) {
+			sendUpdates(updates -> updates.selectControl(control));
 		}
 
 		private void sendUpdates(UnaryOperator<ServerLobbyUpdate.Set> updates) {
@@ -83,22 +87,22 @@ public final class ClientLobbyManagement {
 
 		public void handleInstalledGames(List<ClientGameDefinition> installedGames) {
 			lobby.setInstalledGames(installedGames);
-			screen.initGamesList();
+			screen.updateGameList();
 		}
 
 		public void handleQueue(ClientLobbyQueue queue) {
 			lobby.setQueue(queue);
-			screen.initGamesList();
+			screen.updateGameList();
 		}
 
 		public void handleName(String name) {
 			lobby.setName(name);
-			screen.initNameField();
+			screen.updateNameField();
 		}
 
 		public void handleQueueUpdate(IntList queue, Int2ObjectMap<ClientLobbyQueuedGame> updated) {
 			lobby.updateQueue(queue, updated);
-			screen.initGamesList();
+			screen.updateGameList();
 		}
 
 		public void handlePlayers(List<ClientLobbyPlayer> players) {

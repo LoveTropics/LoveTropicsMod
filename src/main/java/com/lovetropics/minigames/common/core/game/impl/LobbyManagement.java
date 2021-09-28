@@ -4,6 +4,8 @@ import com.lovetropics.minigames.client.lobby.manage.ClientManageLobbyMessage;
 import com.lovetropics.minigames.client.lobby.manage.state.update.ClientLobbyUpdate;
 import com.lovetropics.minigames.common.core.game.IGameDefinition;
 import com.lovetropics.minigames.common.core.game.lobby.ILobbyManagement;
+import com.lovetropics.minigames.common.core.game.lobby.LobbyControls;
+import com.lovetropics.minigames.common.core.game.lobby.LobbyGameQueue;
 import com.lovetropics.minigames.common.core.game.lobby.QueuedGame;
 import com.lovetropics.minigames.common.core.game.player.MutablePlayerSet;
 import com.lovetropics.minigames.common.core.network.LoveTropicsNetwork;
@@ -20,6 +22,10 @@ final class LobbyManagement implements ILobbyManagement {
 	LobbyManagement(GameLobby lobby) {
 		this.lobby = lobby;
 		this.managingPlayers = new MutablePlayerSet(lobby.getServer());
+	}
+
+	void updateControlsState() {
+		sendUpdates(updates -> updates.setControlState(lobby.getControls().asState()));
 	}
 
 	@Override
@@ -52,6 +58,24 @@ final class LobbyManagement implements ILobbyManagement {
 	public void enqueueGame(IGameDefinition game) {
 		QueuedGame queued = lobby.gameQueue.enqueue(game);
 		sendUpdates(updates -> updates.updateQueue(lobby.getGameQueue(), queued.networkId()));
+	}
+
+	@Override
+	public void removeQueuedGame(int id) {
+		LobbyGameQueue gameQueue = lobby.getGameQueue();
+		QueuedGame queued = gameQueue.byNetworkId(id);
+		if (queued != null && gameQueue.remove(queued)) {
+			sendUpdates(updates -> updates.updateQueue(gameQueue));
+		}
+	}
+
+	@Override
+	public void selectControl(LobbyControls.Type type) {
+		LobbyControls.Action action = lobby.getControls().get(type);
+		if (action != null) {
+			// TODO: handle result
+			action.run();
+		}
 	}
 
 	private void sendUpdates(UnaryOperator<ClientLobbyUpdate.Set> updates) {

@@ -47,6 +47,8 @@ public abstract class AbstractGameList extends ExtendedList<AbstractGameList.Ent
 	public void renderButtons(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
 	}
 
+	public abstract void updateEntries();
+
 	@Override
 	public int getRowWidth() {
 		return this.width;
