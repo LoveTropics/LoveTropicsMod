@@ -16,4 +16,22 @@ public interface IGameLobbyPlayers extends PlayerSet {
 
 	@Nullable
 	PlayerRole getRegisteredRoleFor(ServerPlayerEntity player);
+
+	default int getParticipantCount() {
+		return getCountWithRole(PlayerRole.PARTICIPANT);
+	}
+
+	default int getSpectatorCount() {
+		return getCountWithRole(PlayerRole.SPECTATOR);
+	}
+
+	default int getCountWithRole(PlayerRole role) {
+		int count = 0;
+		for (ServerPlayerEntity player : this) {
+			if (getRegisteredRoleFor(player) == role) {
+				count++;
+			}
+		}
+		return count;
+	}
 }

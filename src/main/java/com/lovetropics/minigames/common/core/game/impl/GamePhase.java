@@ -163,11 +163,6 @@ public class GamePhase implements IGamePhase {
 		} catch (Exception e) {
 			LoveTropics.LOGGER.warn("Failed to dispatch player set role event", e);
 		}
-
-		// TODO: Implement
-		/*LoveTropicsNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new ClientRoleMessage(lobby.getId().getNetworkId(), role));
-		sendPlayerCountUpdate(role);
-		sendPlayerCountUpdate(lastRole);*/
 	}
 
 	void onPlayerJoin(ServerPlayerEntity player) {
@@ -177,10 +172,6 @@ public class GamePhase implements IGamePhase {
 		} catch (Exception e) {
 			LoveTropics.LOGGER.warn("Failed to dispatch player join event", e);
 		}
-
-		// TODO: implement
-		/*LoveTropicsNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new ClientRoleMessage(getLobbyId().networkId, role));
-		sendPlayerCountUpdate(role);*/
 	}
 
 	void onPlayerLeave(ServerPlayerEntity player) {

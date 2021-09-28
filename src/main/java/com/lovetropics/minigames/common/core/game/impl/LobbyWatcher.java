@@ -4,6 +4,7 @@ import com.lovetropics.minigames.client.lobby.state.message.JoinedLobbyMessage;
 import com.lovetropics.minigames.client.lobby.state.message.LeftLobbyMessage;
 import com.lovetropics.minigames.client.lobby.state.message.LobbyPlayersMessage;
 import com.lovetropics.minigames.client.lobby.state.message.LobbyUpdateMessage;
+import com.lovetropics.minigames.common.core.game.IGameInstance;
 import com.lovetropics.minigames.common.core.game.lobby.IGameLobby;
 import com.lovetropics.minigames.common.core.game.player.PlayerRole;
 import com.lovetropics.minigames.common.core.game.player.PlayerSet;
@@ -11,6 +12,7 @@ import com.lovetropics.minigames.common.core.game.util.GameMessages;
 import com.lovetropics.minigames.common.core.network.LoveTropicsNetwork;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.network.NetworkManager;
+import net.minecraft.util.text.ITextComponent;
 import net.minecraftforge.fml.network.PacketDistributor;
 
 import java.util.ArrayList;
@@ -20,9 +22,9 @@ public interface LobbyWatcher {
 	static LobbyWatcher compose(LobbyWatcher... watchers) {
 		return new LobbyWatcher() {
 			@Override
-			public void onPlayerJoin(IGameLobby lobby, ServerPlayerEntity player, PlayerRole role) {
+			public void onPlayerJoin(IGameLobby lobby, ServerPlayerEntity player, PlayerRole registeredRole) {
 				for (LobbyWatcher watcher : watchers) {
-					watcher.onPlayerJoin(lobby, player, role);
+					watcher.onPlayerJoin(lobby, player, registeredRole);
 				}
 			}
 
@@ -49,7 +51,7 @@ public interface LobbyWatcher {
 		};
 	}
 
-	default void onPlayerJoin(IGameLobby lobby, ServerPlayerEntity player, PlayerRole role) {
+	default void onPlayerJoin(IGameLobby lobby, ServerPlayerEntity player, PlayerRole registeredRole) {
 	}
 
 	default void onPlayerLeave(IGameLobby lobby, ServerPlayerEntity player) {
@@ -63,24 +65,38 @@ public interface LobbyWatcher {
 
 	final class Messages implements LobbyWatcher {
 		@Override
-		public void onPlayerJoin(IGameLobby lobby, ServerPlayerEntity player, PlayerRole role) {
-			PlayerSet players = PlayerSet.ofServer(lobby.getServer());
-			GameMessages gameMessages = GameMessages.forLobby(lobby);
+		public void onPlayerJoin(IGameLobby lobby, ServerPlayerEntity player, PlayerRole registeredRole) {
+			IGameInstance currentGame = lobby.getCurrentGame();
+			if (currentGame != null) {
+				onPlayerJoinGame(lobby, currentGame);
+			}
 
-			// TODO: how do we want to manage these?
-			/*if (registrations.participantCount() == definition.getMinimumParticipantCount()) {
-				serverPlayers.sendMessage(gameMessages.enoughPlayers());
-			}*/
-
-			players.sendMessage(gameMessages.playerJoined(player, role));
+			ITextComponent message = GameMessages.forLobby(lobby).playerJoined(player, registeredRole);
+			PlayerSet.ofServer(lobby.getServer()).sendMessage(message);
 		}
 
 		@Override
 		public void onPlayerLeave(IGameLobby lobby, ServerPlayerEntity player) {
-			/*GameMessages gameMessages = GameMessages.forLobby(this);
-			if (registrations.participantCount() == definition.getMinimumParticipantCount() - 1) {
-				PlayerSet.ofServer(server).sendMessage(gameMessages.noLongerEnoughPlayers());
-			}*/
+			IGameInstance currentGame = lobby.getCurrentGame();
+			if (currentGame != null) {
+				onPlayerLeaveGame(lobby, currentGame);
+			}
+		}
+
+		private void onPlayerJoinGame(IGameLobby lobby, IGameInstance currentGame) {
+			int minimumParticipants = currentGame.getDefinition().getMinimumParticipantCount();
+			if (lobby.getPlayers().getParticipantCount() == minimumParticipants) {
+				ITextComponent enoughPlayers = GameMessages.forLobby(lobby).enoughPlayers();
+				PlayerSet.ofServer(lobby.getServer()).sendMessage(enoughPlayers);
+			}
+		}
+
+		private void onPlayerLeaveGame(IGameLobby lobby, IGameInstance currentGame) {
+			int minimumParticipants = currentGame.getDefinition().getMinimumParticipantCount();
+			if (lobby.getPlayers().getParticipantCount() == minimumParticipants - 1) {
+				ITextComponent noLongerEnoughPlayers = GameMessages.forLobby(lobby).noLongerEnoughPlayers();
+				PlayerSet.ofServer(lobby.getServer()).sendMessage(noLongerEnoughPlayers);
+			}
 		}
 
 		@Override
@@ -92,8 +108,8 @@ public interface LobbyWatcher {
 
 	final class Network implements LobbyWatcher {
 		@Override
-		public void onPlayerJoin(IGameLobby lobby, ServerPlayerEntity player, PlayerRole role) {
-			LoveTropicsNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), JoinedLobbyMessage.create(lobby, role));
+		public void onPlayerJoin(IGameLobby lobby, ServerPlayerEntity player, PlayerRole registeredRole) {
+			LoveTropicsNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), JoinedLobbyMessage.create(lobby, registeredRole));
 			LoveTropicsNetwork.CHANNEL.send(this.trackingPlayers(lobby), LobbyPlayersMessage.update(lobby));
 		}
 

@@ -1,10 +1,8 @@
 package com.lovetropics.minigames.client.lobby.state.message;
 
 import com.lovetropics.minigames.client.lobby.state.ClientLobbyManager;
-import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.lobby.IGameLobby;
-import com.lovetropics.minigames.common.core.game.player.PlayerRole;
-import net.minecraft.entity.player.ServerPlayerEntity;
+import com.lovetropics.minigames.common.core.game.lobby.IGameLobbyPlayers;
 import net.minecraft.network.PacketBuffer;
 import net.minecraftforge.fml.network.NetworkEvent;
 
@@ -22,26 +20,10 @@ public final class LobbyPlayersMessage {
 	}
 
 	public static LobbyPlayersMessage update(IGameLobby lobby) {
-		int participantCount = 0;
-		int spectatorCount = 0;
-
-		for (ServerPlayerEntity player : lobby.getPlayers()) {
-			PlayerRole role = getEffectiveRoleFor(lobby, player);
-
-			if (role == PlayerRole.PARTICIPANT) participantCount++;
-			else spectatorCount++;
-		}
-
+		IGameLobbyPlayers players = lobby.getPlayers();
+		int participantCount = players.getParticipantCount();
+		int spectatorCount = players.getSpectatorCount();
 		return new LobbyPlayersMessage(lobby.getMetadata().id().networkId(), participantCount, spectatorCount);
-	}
-
-	private static PlayerRole getEffectiveRoleFor(IGameLobby lobby, ServerPlayerEntity player) {
-		IGamePhase currentPhase = lobby.getCurrentPhase();
-
-		PlayerRole playingRole = currentPhase != null ? currentPhase.getRoleFor(player) : null;
-		PlayerRole registeredRole = lobby.getPlayers().getRegisteredRoleFor(player);
-
-		return playingRole != null ? playingRole : registeredRole;
 	}
 
 	public void encode(PacketBuffer buffer) {
