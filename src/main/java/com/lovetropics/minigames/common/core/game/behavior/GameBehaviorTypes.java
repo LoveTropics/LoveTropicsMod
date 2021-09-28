@@ -42,7 +42,6 @@ public class GameBehaviorTypes {
 	public static final GameBehaviorEntry<TimedGameBehavior> TIMED;
 	public static final GameBehaviorEntry<RespawnSpectatorBehavior> RESPAWN_SPECTATOR;
 	public static final GameBehaviorEntry<CommandEventsBehavior> COMMANDS;
-	public static final GameBehaviorEntry<IsolatePlayerStateBehavior> ISOLATE_PLAYER_STATE;
 	public static final GameBehaviorEntry<SetGameTypesBehavior> SET_GAME_TYPES;
 	public static final GameBehaviorEntry<PhaseControllerBehavior> PHASE_CONTROLLER;
 	public static final GameBehaviorEntry<ScheduledMessagesBehavior> SCHEDULED_MESSAGES;
@@ -104,7 +103,6 @@ public class GameBehaviorTypes {
 		TIMED = register("timed", TimedGameBehavior.CODEC);
 		RESPAWN_SPECTATOR = register("respawn_spectator", RespawnSpectatorBehavior.CODEC);
 		COMMANDS = register("commands", CommandEventsBehavior.CODEC);
-		ISOLATE_PLAYER_STATE = register("isolate_player_state", IsolatePlayerStateBehavior.CODEC);
 		SET_GAME_TYPES = register("set_game_types", SetGameTypesBehavior.CODEC);
 		PHASE_CONTROLLER = register("phase_controller", PhaseControllerBehavior.CODEC);
 		SCHEDULED_MESSAGES = register("scheduled_messages", ScheduledMessagesBehavior.CODEC);

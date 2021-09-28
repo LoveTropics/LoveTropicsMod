@@ -37,10 +37,6 @@ public final class Scheduler {
 		return Scheduler.atTime(Scheduler.time + delay);
 	}
 
-	public static Tick thisTick() {
-		return inTicks(0);
-	}
-
 	public static Tick nextTick() {
 		return inTicks(1);
 	}

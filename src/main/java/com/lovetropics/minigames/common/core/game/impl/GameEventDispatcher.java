@@ -40,7 +40,7 @@ public final class GameEventDispatcher {
 			IGamePhase game = gameLookup.getGamePhaseAt(world, event.getChunk().getPos().asBlockPos());
 			if (game != null) {
 				IChunk chunk = event.getChunk();
-				Scheduler.thisTick().run(server -> {
+				Scheduler.nextTick().run(server -> {
 					game.invoker(GameWorldEvents.CHUNK_LOAD).onChunkLoad(chunk);
 				});
 			}
