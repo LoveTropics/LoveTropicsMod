@@ -1,4 +1,4 @@
-package com.lovetropics.minigames.client.lobby.screen.game_list;
+package com.lovetropics.minigames.client.lobby.manage.screen.game_list;
 
 import com.lovetropics.minigames.client.lobby.state.ClientGameDefinition;
 import com.lovetropics.minigames.client.screen.flex.Layout;
@@ -69,12 +69,15 @@ public abstract class AbstractGameList extends ExtendedList<AbstractGameList.Ent
 		private final Minecraft client;
 		private final AbstractGameList list;
 
+		private final int id;
 		private final IReorderingProcessor name;
 		private final String description;
 
-		public Entry(AbstractGameList list, ClientGameDefinition game) {
+		public Entry(AbstractGameList list, int id, ClientGameDefinition game) {
 			this.client = list.minecraft;
 			this.list = list;
+
+			this.id = id;
 
 			FontRenderer font = this.client.fontRenderer;
 			int maxTextWidth = list.getRowWidth() - 2 * PADDING;
@@ -108,6 +111,10 @@ public abstract class AbstractGameList extends ExtendedList<AbstractGameList.Ent
 		public boolean mouseClicked(double mouseX, double mouseY, int button) {
 			this.list.setSelected(this);
 			return true;
+		}
+
+		public int getId() {
+			return id;
 		}
 	}
 }

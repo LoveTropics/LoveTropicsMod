@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.common.core.command.game;
 
-import com.lovetropics.minigames.client.lobby.ManageLobbyScreenMessage;
+import com.lovetropics.minigames.client.lobby.manage.ClientManageLobbyMessage;
 import com.lovetropics.minigames.common.core.command.argument.GameConfigArgument;
 import com.lovetropics.minigames.common.core.command.argument.GameLobbyArgument;
 import com.lovetropics.minigames.common.core.game.GameResult;
@@ -59,7 +59,8 @@ public class GameLobbyCommand {
 		}
 
 		IGameLobby lobby = result.getOk();
-		ManageLobbyScreenMessage message = ManageLobbyScreenMessage.create(lobby);
+
+		ClientManageLobbyMessage message = ClientManageLobbyMessage.open(lobby);
 		LoveTropicsNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), message);
 
 		return Command.SINGLE_SUCCESS;
@@ -70,7 +71,7 @@ public class GameLobbyCommand {
 		IGameLobby lobby = GameLobbyArgument.get(context, "lobby");
 
 		if (lobby.getMetadata().initiator().matches(player)) {
-			ManageLobbyScreenMessage message = ManageLobbyScreenMessage.create(lobby);
+			ClientManageLobbyMessage message = ClientManageLobbyMessage.open(lobby);
 			LoveTropicsNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), message);
 		} else {
 			throw NOT_LOBBY_INITIATOR.create();

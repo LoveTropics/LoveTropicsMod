@@ -1,7 +1,6 @@
 package com.lovetropics.minigames.client.lobby.state.message;
 
 import com.lovetropics.minigames.client.lobby.state.ClientLobbyManager;
-import com.lovetropics.minigames.client.lobby.state.ClientLobbyPlayerEntry;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.lobby.IGameLobby;
 import com.lovetropics.minigames.common.core.game.player.PlayerRole;
@@ -9,84 +8,59 @@ import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.network.PacketBuffer;
 import net.minecraftforge.fml.network.NetworkEvent;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
 import java.util.function.Supplier;
 
 public final class LobbyPlayersMessage {
 	private final int id;
-	private final Operation operation;
-	private final List<ClientLobbyPlayerEntry> players;
+	private final int participantCount;
+	private final int spectatorCount;
 
-	private LobbyPlayersMessage(int id, Operation operation, List<ClientLobbyPlayerEntry> players) {
+	private LobbyPlayersMessage(int id, int participantCount, int spectatorCount) {
 		this.id = id;
-		this.operation = operation;
-		this.players = players;
+		this.participantCount = participantCount;
+		this.spectatorCount = spectatorCount;
 	}
 
-	public static LobbyPlayersMessage add(IGameLobby lobby, Iterable<ServerPlayerEntity> players) {
-		return create(lobby, Operation.ADD, players);
-	}
+	public static LobbyPlayersMessage update(IGameLobby lobby) {
+		int participantCount = 0;
+		int spectatorCount = 0;
 
-	public static LobbyPlayersMessage remove(IGameLobby lobby, Iterable<ServerPlayerEntity> players) {
-		return create(lobby, Operation.REMOVE, players);
-	}
+		for (ServerPlayerEntity player : lobby.getPlayers()) {
+			PlayerRole role = getEffectiveRoleFor(lobby, player);
 
-	public static LobbyPlayersMessage set(IGameLobby lobby, Iterable<ServerPlayerEntity> players) {
-		return create(lobby, Operation.SET, players);
-	}
-
-	private static LobbyPlayersMessage create(IGameLobby lobby, Operation operation, Iterable<ServerPlayerEntity> players) {
-		IGamePhase currentPhase = lobby.getCurrentPhase();
-
-		List<ClientLobbyPlayerEntry> entries = new ArrayList<>();
-		for (ServerPlayerEntity player : players) {
-			UUID uuid = player.getUniqueID();
-			PlayerRole registeredRole = lobby.getPlayers().getRegisteredRoleFor(player);
-			PlayerRole playingRole = currentPhase != null ? currentPhase.getRoleFor(player) : null;
-			entries.add(new ClientLobbyPlayerEntry(uuid, registeredRole, playingRole));
+			if (role == PlayerRole.PARTICIPANT) participantCount++;
+			else spectatorCount++;
 		}
 
-		return new LobbyPlayersMessage(lobby.getMetadata().id().networkId(), operation, entries);
+		return new LobbyPlayersMessage(lobby.getMetadata().id().networkId(), participantCount, spectatorCount);
+	}
+
+	private static PlayerRole getEffectiveRoleFor(IGameLobby lobby, ServerPlayerEntity player) {
+		IGamePhase currentPhase = lobby.getCurrentPhase();
+
+		PlayerRole playingRole = currentPhase != null ? currentPhase.getRoleFor(player) : null;
+		PlayerRole registeredRole = lobby.getPlayers().getRegisteredRoleFor(player);
+
+		return playingRole != null ? playingRole : registeredRole;
 	}
 
 	public void encode(PacketBuffer buffer) {
 		buffer.writeVarInt(id);
-		buffer.writeEnumValue(operation);
-		buffer.writeVarInt(players.size());
-		for (ClientLobbyPlayerEntry player : players) {
-			player.encode(buffer);
-		}
+		buffer.writeVarInt(participantCount);
+		buffer.writeVarInt(spectatorCount);
 	}
 
 	public static LobbyPlayersMessage decode(PacketBuffer buffer) {
 		int id = buffer.readVarInt();
-		Operation operation = buffer.readEnumValue(Operation.class);
-
-		int playerCount = buffer.readVarInt();
-		List<ClientLobbyPlayerEntry> players = new ArrayList<>(playerCount);
-		for (int i = 0; i < playerCount; i++) {
-			players.add(ClientLobbyPlayerEntry.decode(buffer));
-		}
-
-		return new LobbyPlayersMessage(id, operation, players);
+		int participantCount = buffer.readVarInt();
+		int spectatorCount = buffer.readVarInt();
+		return new LobbyPlayersMessage(id, participantCount, spectatorCount);
 	}
 
 	public void handle(Supplier<NetworkEvent.Context> ctx) {
 		ctx.get().enqueueWork(() -> {
 			ClientLobbyManager.get(id).ifPresent(state -> {
-				switch (operation) {
-					case ADD:
-						state.addPlayers(players);
-						break;
-					case REMOVE:
-						state.removePlayers(players);
-						break;
-					case SET:
-						state.setPlayers(players);
-						break;
-				}
+				state.setPlayerCounts(participantCount, spectatorCount);
 			});
 		});
 		ctx.get().setPacketHandled(true);

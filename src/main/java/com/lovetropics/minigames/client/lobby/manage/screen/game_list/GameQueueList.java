@@ -1,6 +1,6 @@
-package com.lovetropics.minigames.client.lobby.screen.game_list;
+package com.lovetropics.minigames.client.lobby.manage.screen.game_list;
 
-import com.lovetropics.minigames.client.lobby.state.ClientQueuedGame;
+import com.lovetropics.minigames.client.lobby.manage.state.ClientLobbyQueue;
 import com.lovetropics.minigames.client.screen.FlexUi;
 import com.lovetropics.minigames.client.screen.flex.Flex;
 import com.lovetropics.minigames.client.screen.flex.FlexSolver;
@@ -13,7 +13,6 @@ import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
 
 import javax.annotation.Nullable;
-import java.util.List;
 
 public final class GameQueueList extends AbstractGameList {
 	private static final ITextComponent TITLE = new StringTextComponent("Game Queue")
@@ -39,12 +38,13 @@ public final class GameQueueList extends AbstractGameList {
 		this.setSelected(null);
 	}
 
-	public void setEntries(List<ClientQueuedGame> games) {
+	public void setEntries(ClientLobbyQueue queue) {
 		this.setSelected(null);
 
 		this.clearEntries();
-		for (ClientQueuedGame game : games) {
-			this.addEntry(new Entry(this, game.definition));
+
+		for (ClientLobbyQueue.Entry entry : queue.entries()) {
+			this.addEntry(new Entry(this, entry.id(), entry.game().definition()));
 		}
 	}
 
@@ -57,18 +57,13 @@ public final class GameQueueList extends AbstractGameList {
 		this.setSelected(null);
 
 		if (selected != null && this.removeEntry(selected)) {
-			int selectedIdx = this.getEventListeners().indexOf(selected);
-			if (selectedIdx != -1) {
-				this.handlers.remove(selectedIdx);
-			}
+			this.handlers.remove(selected.getId());
 		}
 	}
 
 	@Override
 	public void setSelected(@Nullable Entry entry) {
-		int index = this.getEventListeners().indexOf(entry);
-		this.handlers.select(index);
-
+		this.handlers.select(entry != null ? entry.getId() : -1);
 		this.removeButton.active = entry != null;
 
 		super.setSelected(entry);
@@ -89,10 +84,10 @@ public final class GameQueueList extends AbstractGameList {
 	}
 
 	public interface Handlers {
-		void select(int index);
+		void select(int id);
 
 		void enqueue();
 
-		void remove(int index);
+		void remove(int id);
 	}
 }

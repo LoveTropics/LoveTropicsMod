@@ -1,11 +1,9 @@
 package com.lovetropics.minigames.common.core.game.lobby;
 
-import com.lovetropics.minigames.common.core.game.GameResult;
 import com.lovetropics.minigames.common.core.game.IGameInstance;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import net.minecraft.command.CommandSource;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.Unit;
 
 import javax.annotation.Nullable;
 
@@ -28,7 +26,7 @@ public interface IGameLobby {
 		return game != null ? game.getCurrentPhase() : null;
 	}
 
-	GameResult<Unit> requestStart();
+	LobbyControls getControls();
 
 	default boolean isVisibleTo(CommandSource source) {
 		return true;

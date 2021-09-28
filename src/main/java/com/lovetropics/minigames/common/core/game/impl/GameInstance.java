@@ -1,20 +1,16 @@
 package com.lovetropics.minigames.common.core.game.impl;
 
-import com.lovetropics.minigames.client.data.LoveTropicsLangKeys;
 import com.lovetropics.minigames.common.core.game.*;
 import com.lovetropics.minigames.common.core.game.lobby.IGameLobby;
-import com.lovetropics.minigames.common.core.game.lobby.LobbyControl;
-import com.lovetropics.minigames.common.core.game.player.PlayerSet;
+import com.lovetropics.minigames.common.core.game.lobby.LobbyControls;
 import com.lovetropics.minigames.common.core.game.state.GameStateMap;
-import com.lovetropics.minigames.common.core.game.util.GameMessages;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.Unit;
 import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.TranslationTextComponent;
 
 import javax.annotation.Nullable;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 final class GameInstance implements IGameInstance {
@@ -40,20 +36,21 @@ final class GameInstance implements IGameInstance {
 		return waitingPhase != null ? waiting(playingPhase, waitingPhase) : playing(playingPhase);
 	}
 
-	private State waiting(IGamePhaseDefinition playingPhase, IGamePhaseDefinition waitingPhase) {
-		return startPhase(waitingPhase, () -> playing(playingPhase));
+	private State waiting(IGamePhaseDefinition playingDefinition, IGamePhaseDefinition waitingDefinition) {
+		return startPhase(waitingDefinition, phase -> {
+			Supplier<State> start = () -> playing(playingDefinition);
+			return new Waiting(phase, start);
+		});
 	}
 
 	private State playing(IGamePhaseDefinition playingPhase) {
-		return startPhase(playingPhase, () -> null);
+		return startPhase(playingPhase, Playing::new);
 	}
 
-	private State startPhase(IGamePhaseDefinition phaseDefinition, Supplier<State> next) {
-		CompletableFuture<State> future = GamePhase.start(this, phaseDefinition)
-				.thenApply(result ->
-						result.map(phase -> (State) new Playing(phase, next))
-								.orElseGet(this::errored)
-				);
+	private State startPhase(IGamePhaseDefinition definition, Function<GamePhase, State> stateFactory) {
+		CompletableFuture<State> future = GamePhase.start(this, definition)
+				.thenApply(result -> result.map(stateFactory).orElseGet(this::errored));
+
 		return new Pending(future);
 	}
 
@@ -81,36 +78,20 @@ final class GameInstance implements IGameInstance {
 	@Nullable
 	public GamePhase getCurrentPhase() {
 		State state = this.state;
-		return state != null ? state.getCurrentPhase() : null;
+		return state != null ? state.phase : null;
 	}
 
-	GameResult<Unit> requestStart() {
+	public LobbyControls getControls() {
 		State state = this.state;
-		if (state == null) {
-			return GameResult.error(new TranslationTextComponent(LoveTropicsLangKeys.COMMAND_NO_MINIGAME));
-		}
-
-		LobbyControl control = state.getControl(LobbyControl.Type.PLAY);
-		if (control == null) {
-			return GameResult.error(new TranslationTextComponent(LoveTropicsLangKeys.COMMAND_NO_MINIGAME));
-		}
-
-		return control.run();
+		return state != null ? state.controls : LobbyControls.empty();
 	}
 
-	@Override
-	public GameResult<Unit> stop(GameStopReason reason) {
+	void cancel() {
 		GamePhase phase = getCurrentPhase();
-		if (phase == null) {
-			return GameResult.error(new TranslationTextComponent(LoveTropicsLangKeys.COMMAND_NO_MINIGAME));
+		if (phase != null) {
+			state = null;
+			phase.stop(GameStopReason.CANCELED);
 		}
-
-		state = null;
-
-		// TODO: update message
-		PlayerSet.ofServer(server).sendMessage(GameMessages.forLobby(lobby).finished());
-
-		return phase.stop(reason);
 	}
 
 	boolean tick() {
@@ -145,25 +126,27 @@ final class GameInstance implements IGameInstance {
 		lobby.onPhaseStop(phase);
 	}
 
-	interface State {
-		@Nullable
-		default LobbyControl getControl(LobbyControl.Type type) {
-			return null;
+	static abstract class State {
+		final GamePhase phase;
+		final LobbyControls controls = new LobbyControls();
+
+		protected State(GamePhase phase) {
+			this.phase = phase;
 		}
 
 		@Nullable
-		default GamePhase getCurrentPhase() {
+		abstract State tick();
+
+		static State finish() {
 			return null;
 		}
-
-		@Nullable
-		State tick();
 	}
 
-	static final class Pending implements State {
+	static final class Pending extends State {
 		private final CompletableFuture<State> next;
 
 		Pending(CompletableFuture<State> next) {
+			super(null);
 			this.next = next;
 		}
 
@@ -173,42 +156,42 @@ final class GameInstance implements IGameInstance {
 		}
 	}
 
-	static final class Playing implements State {
-		private final GamePhase phase;
-		private final Supplier<State> next;
-
-		private boolean started;
-
-		Playing(GamePhase phase, Supplier<State> next) {
-			this.phase = phase;
-			this.next = next;
-		}
-
-		// TODO: getters might not be the best way to handle this
-		@Nullable
-		@Override
-		public LobbyControl getControl(LobbyControl.Type type) {
-			switch (type) {
-				case PLAY: return () -> {
-					started = true; // TODO: different when waiting lobby
-					return GameResult.ok();
-				};
-				case STOP: return () -> phase.stop(GameStopReason.CANCELED);
-				default: return null;
-			}
-		}
-
-		@Override
-		public GamePhase getCurrentPhase() {
-			return phase;
+	static final class Playing extends State {
+		Playing(GamePhase phase) {
+			super(phase);
+			this.controls.add(LobbyControls.Type.STOP, () -> phase.stop(GameStopReason.CANCELED));
 		}
 
 		@Nullable
 		@Override
 		public State tick() {
-			if (started) return next.get();
+			return phase.tick() ? this : finish();
+		}
+	}
 
-			return phase.tick() ? this : null;
+	static final class Waiting extends State {
+		private final Supplier<State> start;
+		private boolean started;
+
+		Waiting(GamePhase phase, Supplier<State> start) {
+			super(phase);
+			this.start = start;
+
+			this.controls.add(LobbyControls.Type.PLAY, () -> {
+				started = true;
+				return GameResult.ok();
+			});
+			this.controls.add(LobbyControls.Type.STOP, () -> phase.stop(GameStopReason.CANCELED));
+		}
+
+		@Nullable
+		@Override
+		public State tick() {
+			if (started) {
+				return start.get();
+			}
+
+			return phase.tick() ? this : finish();
 		}
 	}
 }

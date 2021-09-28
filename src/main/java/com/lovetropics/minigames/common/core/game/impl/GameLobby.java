@@ -1,17 +1,13 @@
 package com.lovetropics.minigames.common.core.game.impl;
 
-import com.lovetropics.minigames.client.data.LoveTropicsLangKeys;
 import com.lovetropics.minigames.client.lobby.state.message.LobbyUpdateMessage;
 import com.lovetropics.minigames.common.core.game.GameResult;
-import com.lovetropics.minigames.common.core.game.GameStopReason;
 import com.lovetropics.minigames.common.core.game.lobby.*;
 import com.lovetropics.minigames.common.core.game.player.PlayerRole;
 import com.lovetropics.minigames.common.core.network.LoveTropicsNetwork;
 import net.minecraft.command.CommandSource;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.Unit;
-import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraftforge.fml.network.PacketDistributor;
 
 import javax.annotation.Nullable;
@@ -70,6 +66,20 @@ final class GameLobby implements IGameLobby {
 		return currentGame;
 	}
 
+	@Override
+	public LobbyControls getControls() {
+		if (this.paused) {
+			return new LobbyControls()
+					.add(LobbyControls.Type.PLAY, () -> {
+						this.paused = false;
+						return GameResult.ok();
+					});
+		}
+
+		GameInstance currentGame = this.currentGame;
+		return currentGame != null ? currentGame.getControls() : LobbyControls.empty();
+	}
+
 	// TODO: publish state to all tracking players when visibility changes
 	@Override
 	public boolean isVisibleTo(CommandSource source) {
@@ -115,7 +125,7 @@ final class GameLobby implements IGameLobby {
 		this.currentGame = null;
 
 		if (game != null) {
-			game.stop(GameStopReason.CANCELED);
+			game.cancel();
 		}
 
 		this.onStopped();
@@ -128,16 +138,6 @@ final class GameLobby implements IGameLobby {
 		paused = true;
 
 		manager.removeLobby(this);
-	}
-
-	@Override
-	public GameResult<Unit> requestStart() {
-		GameInstance currentGame = this.currentGame;
-		if (currentGame == null) {
-			return GameResult.error(new TranslationTextComponent(LoveTropicsLangKeys.COMMAND_NO_MINIGAME));
-		}
-
-		return currentGame.requestStart();
 	}
 
 	void onPlayerRegister(ServerPlayerEntity player, PlayerRole requestedRole) {

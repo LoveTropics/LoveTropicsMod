@@ -14,9 +14,11 @@ public final class LobbyCommandIdManager {
 
 		String commandId = sanitizedName;
 		while (this.acquired.contains(commandId)) {
-			String salt = RandomStringUtils.randomAlphabetic(3).toLowerCase(Locale.ROOT);
+			String salt = RandomStringUtils.randomNumeric(3);
 			commandId = sanitizedName + "_" + salt;
 		}
+
+		this.acquired.add(commandId);
 
 		return commandId;
 	}

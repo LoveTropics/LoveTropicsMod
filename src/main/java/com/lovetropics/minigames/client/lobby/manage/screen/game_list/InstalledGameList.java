@@ -1,4 +1,4 @@
-package com.lovetropics.minigames.client.lobby.screen.game_list;
+package com.lovetropics.minigames.client.lobby.manage.screen.game_list;
 
 import com.lovetropics.minigames.client.lobby.state.ClientGameDefinition;
 import com.lovetropics.minigames.client.screen.FlexUi;
@@ -44,14 +44,15 @@ public final class InstalledGameList extends AbstractGameList {
 		this.setSelected(null);
 
 		this.clearEntries();
-		for (ClientGameDefinition game : games) {
-			this.addEntry(new Entry(this, game));
+		for (int id = 0; id < games.size(); id++) {
+			ClientGameDefinition game = games.get(id);
+			this.addEntry(new Entry(this, id, game));
 		}
 	}
 
 	private void enqueue(Button button) {
-		int index = this.getEventListeners().indexOf(this.getSelected());
-		this.select.accept(index);
+		Entry selected = this.getSelected();
+		this.select.accept(selected != null ? selected.getId() : -1);
 	}
 
 	private void cancel(Button button) {
