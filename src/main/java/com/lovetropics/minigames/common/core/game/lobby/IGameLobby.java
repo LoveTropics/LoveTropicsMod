@@ -16,7 +16,6 @@ public interface IGameLobby {
 
 	LobbyGameQueue getGameQueue();
 
-	// TODO: merge into the game queue?
 	@Nullable
 	IGameInstance getCurrentGame();
 

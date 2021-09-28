@@ -189,7 +189,7 @@ final class GameLobby implements IGameLobby {
 		manager.removeLobby(this);
 	}
 
-	void onPlayerRegister(ServerPlayerEntity player, PlayerRole requestedRole) {
+	void onPlayerRegister(ServerPlayerEntity player) {
 		manager.addPlayerToLobby(player, this);
 
 		GameInstance currentGame = this.currentGame;
@@ -198,9 +198,8 @@ final class GameLobby implements IGameLobby {
 			onPlayerEnterGame(player);
 		}
 
-		// TODO: setting roles within the active game must also send update packets, but we don't want to duplicate
-		PlayerRole trueRole = requestedRole != null ? requestedRole : PlayerRole.PARTICIPANT;
-		watcher.onPlayerJoin(this, player, trueRole);
+		PlayerRole role = players.getRegisteredRoleFor(player);
+		watcher.onPlayerJoin(this, player, role);
 	}
 
 	void onPlayerLeave(ServerPlayerEntity player) {

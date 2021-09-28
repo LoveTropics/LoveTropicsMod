@@ -10,22 +10,22 @@ import java.util.function.Supplier;
 
 public class JoinedLobbyMessage {
 	private final int id;
-	private final PlayerRole role;
+	private final PlayerRole registeredRole;
 
-	private JoinedLobbyMessage(int id, PlayerRole role) {
+	private JoinedLobbyMessage(int id, PlayerRole registeredRole) {
 		this.id = id;
-		this.role = role;
+		this.registeredRole = registeredRole;
 	}
 
-	public static JoinedLobbyMessage create(IGameLobby lobby, PlayerRole role) {
-		return new JoinedLobbyMessage(lobby.getMetadata().id().networkId(), role);
+	public static JoinedLobbyMessage create(IGameLobby lobby, PlayerRole registeredRole) {
+		return new JoinedLobbyMessage(lobby.getMetadata().id().networkId(), registeredRole);
 	}
 
 	public void encode(PacketBuffer buffer) {
 		buffer.writeVarInt(id);
-		buffer.writeBoolean(role != null);
-		if (role != null) {
-			buffer.writeEnumValue(role);
+		buffer.writeBoolean(registeredRole != null);
+		if (registeredRole != null) {
+			buffer.writeEnumValue(registeredRole);
 		}
 	}
 
@@ -40,7 +40,7 @@ public class JoinedLobbyMessage {
 
 	public void handle(Supplier<NetworkEvent.Context> ctx) {
 		ctx.get().enqueueWork(() -> {
-			ClientLobbyManager.setJoined(id, role);
+			ClientLobbyManager.setJoined(id, registeredRole);
 		});
 		ctx.get().setPacketHandled(true);
 	}
