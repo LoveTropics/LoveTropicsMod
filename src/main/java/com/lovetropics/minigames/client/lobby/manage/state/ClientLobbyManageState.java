@@ -6,10 +6,12 @@ import com.lovetropics.minigames.common.core.game.lobby.LobbyControls;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.IntList;
 
+import javax.annotation.Nullable;
 import java.util.List;
 
 public final class ClientLobbyManageState {
 	private String name = "";
+	private ClientGameDefinition currentGame;
 	private ClientLobbyQueue queue = new ClientLobbyQueue();
 	private List<ClientLobbyPlayer> players = ImmutableList.of();
 	private LobbyControls.State controlsState = LobbyControls.State.disabled();
@@ -18,6 +20,11 @@ public final class ClientLobbyManageState {
 
 	public String getName() {
 		return name;
+	}
+
+	@Nullable
+	public ClientGameDefinition getCurrentGame() {
+		return currentGame;
 	}
 
 	public ClientLobbyQueue getQueue() {
@@ -38,6 +45,10 @@ public final class ClientLobbyManageState {
 
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	public void setCurrentGame(ClientGameDefinition currentGame) {
+		this.currentGame = currentGame;
 	}
 
 	public void setQueue(ClientLobbyQueue queue) {

@@ -144,7 +144,7 @@ final class GameLobby implements IGameLobby {
 	}
 
 	void onGameStateChange() {
-		management.updateControlsState();
+		management.onGameStateChange();
 
 		// TODO: check where we send this & move into watcher
 		LoveTropicsNetwork.CHANNEL.send(PacketDistributor.ALL.noArg(), LobbyUpdateMessage.update(this));

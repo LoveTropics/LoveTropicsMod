@@ -14,6 +14,7 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.IntList;
 import net.minecraft.client.Minecraft;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.function.UnaryOperator;
 
@@ -21,6 +22,10 @@ public final class ClientLobbyManagement {
 	private static Session session;
 
 	public static void update(int id, ClientLobbyUpdate.Set updates) {
+		if (!isScreenValid(session)) {
+			session = null;
+		}
+
 		Session session = ClientLobbyManagement.session;
 		if (session == null || session.id != id) {
 			ClientLobbyManagement.session = session = new Session(id, new ClientLobbyManageState());
@@ -28,6 +33,10 @@ public final class ClientLobbyManagement {
 		}
 
 		updates.applyTo(session);
+	}
+
+	private static boolean isScreenValid(Session session) {
+		return Minecraft.getInstance().currentScreen == session.screen;
 	}
 
 	static void displayScreen(Session session) {
@@ -98,6 +107,11 @@ public final class ClientLobbyManagement {
 		public void handleName(String name) {
 			lobby.setName(name);
 			screen.updateNameField();
+		}
+
+		public void handleCurrentGame(@Nullable ClientGameDefinition currentGame) {
+			lobby.setCurrentGame(currentGame);
+			screen.updateGameList();
 		}
 
 		public void handleQueueUpdate(IntList queue, Int2ObjectMap<ClientLobbyQueuedGame> updated) {

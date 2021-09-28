@@ -24,8 +24,15 @@ final class LobbyManagement implements ILobbyManagement {
 		this.managingPlayers = new MutablePlayerSet(lobby.getServer());
 	}
 
-	void updateControlsState() {
-		sendUpdates(updates -> updates.setControlState(lobby.getControls().asState()));
+	void onGameStateChange() {
+		sendUpdates(updates -> {
+			GameInstance currentGame = lobby.getCurrentGame();
+			LobbyGameQueue gameQueue = lobby.getGameQueue();
+			LobbyControls controls = lobby.getControls();
+			return updates.setCurrentGame(currentGame != null ? currentGame.getDefinition() : null)
+					.updateQueue(gameQueue)
+					.setControlState(controls.asState());
+		});
 	}
 
 	@Override

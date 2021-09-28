@@ -16,16 +16,6 @@ public final class ClientLobbyQueue implements Iterable<ClientLobbyQueuedGame> {
 	private final IntList queue = new IntArrayList();
 	private final Int2ObjectMap<ClientLobbyQueuedGame> games = new Int2ObjectOpenHashMap<>();
 
-	public void clear() {
-		this.queue.clear();
-		this.games.clear();
-	}
-
-	public void addAll(ClientLobbyQueue queue) {
-		this.queue.addAll(queue.queue);
-		this.games.putAll(queue.games);
-	}
-
 	public void add(int id, ClientLobbyQueuedGame game) {
 		this.queue.add(id);
 		this.games.put(id, game);

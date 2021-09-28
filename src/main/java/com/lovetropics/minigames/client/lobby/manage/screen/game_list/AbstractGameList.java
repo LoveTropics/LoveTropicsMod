@@ -75,7 +75,13 @@ public abstract class AbstractGameList extends ExtendedList<AbstractGameList.Ent
 		private final IReorderingProcessor name;
 		private final String description;
 
+		private boolean important;
+
 		public Entry(AbstractGameList list, int id, ClientGameDefinition game) {
+			this(list, id, game.name, description(game));
+		}
+
+		public Entry(AbstractGameList list, int id, ITextComponent name, String description) {
 			this.client = list.minecraft;
 			this.list = list;
 
@@ -84,8 +90,12 @@ public abstract class AbstractGameList extends ExtendedList<AbstractGameList.Ent
 			FontRenderer font = this.client.fontRenderer;
 			int maxTextWidth = list.getRowWidth() - 2 * PADDING;
 
-			this.name = LanguageMap.getInstance().func_241870_a(font.func_238417_a_(game.name, maxTextWidth));
-			this.description = font.trimStringToWidth(description(game), maxTextWidth);
+			this.name = LanguageMap.getInstance().func_241870_a(font.func_238417_a_(name, maxTextWidth));
+			this.description = font.trimStringToWidth(description, maxTextWidth);
+		}
+
+		public void setImportant(boolean important) {
+			this.important = important;
 		}
 
 		private static String description(ClientGameDefinition game) {
@@ -101,8 +111,9 @@ public abstract class AbstractGameList extends ExtendedList<AbstractGameList.Ent
 			FontRenderer font = this.client.fontRenderer;
 			int fontHeight = font.FONT_HEIGHT;
 
-			if (isMouseOver) {
-				fill(matrixStack, left, top, left + width - 4, top + height, 0xFF000000);
+			if (isMouseOver || important) {
+				int color = isMouseOver ? 0xFF202020 : 0xFF000000;
+				fill(matrixStack, left - 1, top - 1, left + width - 4 + 1, top + height + 1, color);
 			}
 
 			font.func_238422_b_(matrixStack, this.name, left + PADDING, top + PADDING, 0xFFFFFF);

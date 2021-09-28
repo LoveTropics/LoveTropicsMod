@@ -6,6 +6,7 @@ import com.lovetropics.minigames.client.lobby.manage.state.ClientLobbyPlayer;
 import com.lovetropics.minigames.client.lobby.manage.state.ClientLobbyQueue;
 import com.lovetropics.minigames.client.lobby.manage.state.ClientLobbyQueuedGame;
 import com.lovetropics.minigames.client.lobby.state.ClientGameDefinition;
+import com.lovetropics.minigames.common.core.game.IGameDefinition;
 import com.lovetropics.minigames.common.core.game.lobby.IGameLobby;
 import com.lovetropics.minigames.common.core.game.lobby.LobbyControls;
 import com.lovetropics.minigames.common.core.game.lobby.LobbyGameQueue;
@@ -17,6 +18,7 @@ import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
 import net.minecraft.network.PacketBuffer;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
@@ -41,6 +43,7 @@ public abstract class ClientLobbyUpdate extends PartialUpdate<ClientLobbyManagem
 					.initInstalledGames(ClientGameDefinition.collectInstalled())
 					.initQueue(lobby.getGameQueue())
 					.setPlayersFrom(lobby)
+					.setCurrentGame(lobby.getCurrentGame() != null ? lobby.getCurrentGame().getDefinition() : null)
 					.setControlState(lobby.getControls().asState());
 		}
 
@@ -85,6 +88,11 @@ public abstract class ClientLobbyUpdate extends PartialUpdate<ClientLobbyManagem
 			return this;
 		}
 
+		public Set setCurrentGame(IGameDefinition currentGame) {
+			this.add(new SetCurrentGame(currentGame != null ? ClientGameDefinition.from(currentGame) : null));
+			return this;
+		}
+
 		public Set updateQueue(LobbyGameQueue queue, int... updatedIds) {
 			IntList order = new IntArrayList(queue.size());
 			Int2ObjectMap<ClientLobbyQueuedGame> updated = new Int2ObjectArrayMap<>();
@@ -115,6 +123,7 @@ public abstract class ClientLobbyUpdate extends PartialUpdate<ClientLobbyManagem
 		INIT_INSTALLED_GAMES(InitInstalledGames::decode),
 		INIT_QUEUE(InitQueue::decode),
 		SET_NAME(SetName::decode),
+		SET_CURRENT_GAME(SetCurrentGame::decode),
 		UPDATE_QUEUE(UpdateQueue::decode),
 		SET_PLAYERS(SetPlayers::decode),
 		SET_CONTROLS_STATE(SetControlsState::decode);
@@ -210,6 +219,34 @@ public abstract class ClientLobbyUpdate extends PartialUpdate<ClientLobbyManagem
 
 		static SetName decode(PacketBuffer buffer) {
 			return new SetName(buffer.readString(200));
+		}
+	}
+
+	public static final class SetCurrentGame extends ClientLobbyUpdate {
+		@Nullable
+		private final ClientGameDefinition currentGame;
+
+		SetCurrentGame(@Nullable ClientGameDefinition currentGame) {
+			super(Type.SET_CURRENT_GAME);
+			this.currentGame = currentGame;
+		}
+
+		@Override
+		public void applyTo(ClientLobbyManagement.Session session) {
+			session.handleCurrentGame(currentGame);
+		}
+
+		@Override
+		protected void encode(PacketBuffer buffer) {
+			buffer.writeBoolean(currentGame != null);
+			if (currentGame != null) {
+				currentGame.encode(buffer);
+			}
+		}
+
+		static SetCurrentGame decode(PacketBuffer buffer) {
+			ClientGameDefinition game = buffer.readBoolean() ? ClientGameDefinition.decode(buffer) : null;
+			return new SetCurrentGame(game);
 		}
 	}
 

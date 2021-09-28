@@ -6,6 +6,7 @@ import com.lovetropics.minigames.client.screen.PlayerFaces;
 import com.lovetropics.minigames.client.screen.flex.Box;
 import com.lovetropics.minigames.client.screen.flex.Layout;
 import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gui.AbstractGui;
 import net.minecraft.client.gui.IGuiEventListener;
 
@@ -40,6 +41,8 @@ public final class LobbyPlayerList extends AbstractGui implements IGuiEventListe
 
 	public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
 		// TODO: handling overflow with scrollbar
+
+		RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
 
 		int i = 0;
 		for (ClientLobbyPlayer player : lobby.getPlayers()) {

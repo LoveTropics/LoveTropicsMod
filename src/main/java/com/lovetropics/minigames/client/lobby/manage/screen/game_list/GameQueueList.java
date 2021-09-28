@@ -2,6 +2,7 @@ package com.lovetropics.minigames.client.lobby.manage.screen.game_list;
 
 import com.lovetropics.minigames.client.lobby.manage.state.ClientLobbyManageState;
 import com.lovetropics.minigames.client.lobby.manage.state.ClientLobbyQueue;
+import com.lovetropics.minigames.client.lobby.state.ClientGameDefinition;
 import com.lovetropics.minigames.client.screen.FlexUi;
 import com.lovetropics.minigames.client.screen.flex.Flex;
 import com.lovetropics.minigames.client.screen.flex.FlexSolver;
@@ -47,6 +48,10 @@ public final class GameQueueList extends AbstractGameList {
 		int selectedId = getSelected() != null ? getSelected().getId() : -1;
 
 		this.clearEntries();
+
+		// TODO: don't use an entry to render
+		this.addEntry(createCurrentGameEntry(lobby.getCurrentGame()));
+
 		for (ClientLobbyQueue.Entry entry : this.lobby.getQueue().entries()) {
 			Entry listEntry = new Entry(this, entry.id(), entry.game().definition());
 			this.addEntry(listEntry);
@@ -55,6 +60,18 @@ public final class GameQueueList extends AbstractGameList {
 				this.setSelected(listEntry);
 			}
 		}
+	}
+
+	private Entry createCurrentGameEntry(@Nullable ClientGameDefinition game) {
+		Entry entry;
+		if (game != null) {
+			entry = new Entry(this, -1, game);
+		} else {
+			entry = new Entry(this, -1, new StringTextComponent("Inactive"), "");
+		}
+
+		entry.setImportant(true);
+		return entry;
 	}
 
 	private void enqueue(Button button) {
