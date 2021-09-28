@@ -2,7 +2,10 @@ package com.lovetropics.minigames.common.core.game.lobby;
 
 import com.lovetropics.minigames.common.core.game.IGameInstance;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
+import com.lovetropics.minigames.common.core.game.player.PlayerIterable;
+import com.lovetropics.minigames.common.core.game.player.PlayerSet;
 import net.minecraft.command.CommandSource;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.server.MinecraftServer;
 
 import javax.annotation.Nullable;
@@ -29,7 +32,15 @@ public interface IGameLobby {
 
 	ILobbyManagement getManagement();
 
+	default PlayerIterable getTrackingPlayers() {
+		return PlayerSet.ofServer(getServer()).filter(this::isVisibleTo);
+	}
+
 	default boolean isVisibleTo(CommandSource source) {
 		return true;
+	}
+
+	default boolean isVisibleTo(ServerPlayerEntity player) {
+		return this.isVisibleTo(player.getCommandSource());
 	}
 }
