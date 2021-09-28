@@ -1,7 +1,9 @@
 package com.lovetropics.minigames.common.core.game.impl;
 
+import com.google.common.collect.Lists;
 import com.lovetropics.minigames.client.lobby.state.message.LobbyUpdateMessage;
 import com.lovetropics.minigames.common.core.game.GameResult;
+import com.lovetropics.minigames.common.core.game.PlayerIsolation;
 import com.lovetropics.minigames.common.core.game.lobby.*;
 import com.lovetropics.minigames.common.core.game.player.PlayerRole;
 import com.lovetropics.minigames.common.core.network.LoveTropicsNetwork;
@@ -26,6 +28,8 @@ final class GameLobby implements IGameLobby {
 
 	final LobbyWatcher watcher = LobbyWatcher.compose(new LobbyWatcher.Network(), new LobbyWatcher.Messages());
 	final LobbyManagement management;
+
+	final PlayerIsolation playerIsolation = new PlayerIsolation();
 
 	GameInstance currentGame;
 	boolean paused = true;
@@ -115,20 +119,31 @@ final class GameLobby implements IGameLobby {
 
 	private void tickPlaying(GameInstance game) {
 		if (!game.tick()) {
-			tryMoveToNextGame();
+			setCurrentGame(nextGame());
 		}
 	}
 
 	private void tickInactive() {
 		if (!paused) {
-			tryMoveToNextGame();
+			setCurrentGame(nextGame());
 		}
 	}
 
-	private void tryMoveToNextGame() {
-		GameInstance next = nextGame();
-		currentGame = next;
-		paused |= next == null;
+	private void setCurrentGame(@Nullable GameInstance game) {
+		GameInstance lastGame = currentGame;
+		currentGame = game;
+		paused |= game == null;
+
+		// TODO: this logic is a bit messy
+		if (game != null && lastGame == null) {
+			for (ServerPlayerEntity player : getPlayers()) {
+				onPlayerEnterGame(player);
+			}
+		} else if (game == null && lastGame != null) {
+			for (ServerPlayerEntity player : getPlayers()) {
+				onPlayerExitGame(player);
+			}
+		}
 
 		onGameStateChange();
 	}
@@ -151,6 +166,10 @@ final class GameLobby implements IGameLobby {
 	}
 
 	void cancel() {
+		for (ServerPlayerEntity player : Lists.newArrayList(getPlayers())) {
+			getPlayers().remove(player);
+		}
+
 		GameInstance game = this.currentGame;
 		this.currentGame = null;
 
@@ -176,6 +195,7 @@ final class GameLobby implements IGameLobby {
 		GameInstance currentGame = this.currentGame;
 		if (currentGame != null) {
 			currentGame.onPlayerJoin(player);
+			onPlayerEnterGame(player);
 		}
 
 		// TODO: setting roles within the active game must also send update packets, but we don't want to duplicate
@@ -187,12 +207,21 @@ final class GameLobby implements IGameLobby {
 		GameInstance currentGame = this.currentGame;
 		if (currentGame != null) {
 			currentGame.onPlayerLeave(player);
+			onPlayerExitGame(player);
 		}
 
 		watcher.onPlayerLeave(this, player);
 		management.stopManaging(player);
 
 		manager.removePlayerFromLobby(player, this);
+	}
+
+	void onPlayerEnterGame(ServerPlayerEntity player) {
+		playerIsolation.accept(player);
+	}
+
+	void onPlayerExitGame(ServerPlayerEntity player) {
+		playerIsolation.restore(player);
 	}
 
 	void onPhaseStart(GamePhase game) {

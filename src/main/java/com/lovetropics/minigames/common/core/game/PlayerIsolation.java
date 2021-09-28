@@ -1,5 +1,6 @@
-package com.lovetropics.minigames.common.core.game.state;
+package com.lovetropics.minigames.common.core.game;
 
+import com.lovetropics.minigames.common.core.game.state.IGameState;
 import com.lovetropics.minigames.common.core.game.util.PlayerSnapshot;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.entity.player.ServerPlayerEntity;
@@ -7,9 +8,7 @@ import net.minecraft.entity.player.ServerPlayerEntity;
 import java.util.Map;
 import java.util.UUID;
 
-public final class PlayerIsolationState implements IGameState {
-	public static final GameStateKey.Defaulted<PlayerIsolationState> KEY = GameStateKey.create("Player Isolation", PlayerIsolationState::new);
-
+public final class PlayerIsolation implements IGameState {
 	private final Map<UUID, PlayerSnapshot> playerSnapshots = new Object2ObjectOpenHashMap<>();
 
 	public void accept(ServerPlayerEntity player) {

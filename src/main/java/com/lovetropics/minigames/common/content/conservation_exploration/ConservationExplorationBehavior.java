@@ -87,7 +87,7 @@ public final class ConservationExplorationBehavior implements IGameBehavior {
 		discoveryTeam.setColor(TextFormatting.GREEN);
 
 		game.getControlCommands().add("next_creature", ControlCommand.forInitiator(source -> {
-			Scheduler.thisTick().run(server -> {
+			Scheduler.nextTick().run(server -> {
 				if (!nextCreature(game)) {
 					game.stop(GameStopReason.FINISHED);
 				}

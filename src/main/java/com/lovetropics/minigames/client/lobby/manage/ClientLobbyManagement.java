@@ -1,5 +1,6 @@
 package com.lovetropics.minigames.client.lobby.manage;
 
+import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.client.lobby.manage.screen.ManageLobbyScreen;
 import com.lovetropics.minigames.client.lobby.manage.state.ClientLobbyManageState;
 import com.lovetropics.minigames.client.lobby.manage.state.ClientLobbyPlayer;
@@ -13,19 +14,30 @@ import com.lovetropics.minigames.common.core.network.LoveTropicsNetwork;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.IntList;
 import net.minecraft.client.Minecraft;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
 
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.function.UnaryOperator;
 
+@Mod.EventBusSubscriber(value = Dist.CLIENT, modid = Constants.MODID)
 public final class ClientLobbyManagement {
 	private static Session session;
 
-	public static void update(int id, ClientLobbyUpdate.Set updates) {
-		if (!isScreenValid(session)) {
-			session = null;
+	@SubscribeEvent
+	public static void onClientTick(TickEvent.ClientTickEvent event) {
+		if (event.phase == TickEvent.Phase.END) {
+			Session session = ClientLobbyManagement.session;
+			if (session != null && !isScreenValid(session)) {
+				session.close();
+			}
 		}
+	}
 
+	public static void update(int id, ClientLobbyUpdate.Set updates) {
 		Session session = ClientLobbyManagement.session;
 		if (session == null || session.id != id) {
 			ClientLobbyManagement.session = session = new Session(id, new ClientLobbyManageState());
@@ -39,7 +51,7 @@ public final class ClientLobbyManagement {
 		return Minecraft.getInstance().currentScreen == session.screen;
 	}
 
-	static void displayScreen(Session session) {
+	private static void displayScreen(Session session) {
 		Minecraft.getInstance().displayGuiScreen(session.screen);
 	}
 
