@@ -145,8 +145,8 @@ public final class Box {
 			return axis == Axis.X ? this.grow(amount, 0) : this.grow(0, amount);
 		}
 
-		public Size contract(Box border) {
-			return this.grow(-border.borderX(), -border.borderY());
+		public Size grow(Box border) {
+			return this.grow(border.borderX(), border.borderY());
 		}
 
 		public int width() {

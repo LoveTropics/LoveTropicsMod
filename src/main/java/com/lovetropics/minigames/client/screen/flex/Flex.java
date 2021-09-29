@@ -220,6 +220,10 @@ public final class Flex {
 				return Length.this.resolve(parent) + resolvedAmount;
 			};
 		}
+
+		default Length add(int amount) {
+			return add(value(amount));
+		}
 	}
 
 	static final class LengthRange {

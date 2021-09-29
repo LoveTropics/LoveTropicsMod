@@ -29,7 +29,7 @@ public final class GameList implements IGuiEventListener {
 		this.lobby = lobby;
 		this.handlers = handlers;
 
-		this.active = this.createQueue();
+		this.setActive(this.createQueue());
 	}
 
 	private GameQueueList createQueue() {
@@ -41,7 +41,7 @@ public final class GameList implements IGuiEventListener {
 
 			@Override
 			public void enqueue() {
-				GameList.this.active = GameList.this.createInstalled();
+				GameList.this.setActive(GameList.this.createInstalled());
 			}
 
 			@Override
@@ -56,8 +56,13 @@ public final class GameList implements IGuiEventListener {
 			this.handlers.selectQueuedGame(-1);
 			this.handlers.enqueueGame(index);
 
-			this.active = this.createQueue();
+			this.setActive(this.createQueue());
 		});
+	}
+
+	private void setActive(AbstractGameList active) {
+		active.updateEntries();
+		this.active = active;
 	}
 
 	public void updateEntries() {

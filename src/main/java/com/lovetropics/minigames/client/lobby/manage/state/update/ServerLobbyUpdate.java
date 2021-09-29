@@ -56,6 +56,11 @@ public abstract class ServerLobbyUpdate extends PartialUpdate<ILobbyManagement> 
 			return this;
 		}
 
+		public Set close() {
+			this.add(new Close());
+			return this;
+		}
+
 		public ServerManageLobbyMessage intoMessage(int id) {
 			return ServerManageLobbyMessage.update(id, this);
 		}
@@ -66,7 +71,8 @@ public abstract class ServerLobbyUpdate extends PartialUpdate<ILobbyManagement> 
 		ENQUEUE(Enqueue::decode),
 		REMOVE_QUEUED_GAME(RemoveQueuedGame::decode),
 		SELECT_CONTROL(SelectControl::decode),
-		SET_VISIBILITY(SetVisibility::decode);
+		SET_VISIBILITY(SetVisibility::decode),
+		CLOSE(Close::decode);
 
 		private final Function<PacketBuffer, ServerLobbyUpdate> decode;
 
@@ -201,6 +207,25 @@ public abstract class ServerLobbyUpdate extends PartialUpdate<ILobbyManagement> 
 
 		static SetVisibility decode(PacketBuffer buffer) {
 			return new SetVisibility(buffer.readBoolean() ? LobbyVisibility.PUBLIC : LobbyVisibility.PRIVATE);
+		}
+	}
+
+	public static final class Close extends ServerLobbyUpdate {
+		public Close() {
+			super(Type.CLOSE);
+		}
+
+		@Override
+		public void applyTo(ILobbyManagement lobby) {
+			lobby.close();
+		}
+
+		@Override
+		protected void encode(PacketBuffer buffer) {
+		}
+
+		static Close decode(PacketBuffer buffer) {
+			return new Close();
 		}
 	}
 }

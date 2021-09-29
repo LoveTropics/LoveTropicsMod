@@ -20,4 +20,6 @@ public interface ILobbyManagement {
 	void selectControl(LobbyControls.Type type);
 
 	void setVisibility(LobbyVisibility visibility);
+
+	void close();
 }

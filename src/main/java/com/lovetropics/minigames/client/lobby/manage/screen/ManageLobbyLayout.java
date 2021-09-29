@@ -31,6 +31,7 @@ final class ManageLobbyLayout {
 	final Layout publish;
 	final Layout playerList;
 
+	final Layout close;
 	final Layout done;
 
 	final Layout[] marginals;
@@ -99,13 +100,18 @@ final class ManageLobbyLayout {
 				.width(1.0F, Flex.Unit.PERCENT).grow(1.0F)
 				.marginTop(PADDING);
 
-		Flex rightFooter = rightColumn.child()
-				.width(1.0F, Flex.Unit.PERCENT).height(FOOTER_HEIGHT).padding(PADDING)
+		Flex rightFooter = rightColumn.child().rows()
+				.width(1.0F, Flex.Unit.PERCENT)
+				.padding(PADDING / 2)
 				.alignMain(Align.Main.END);
 
+		Flex close = rightFooter.child()
+				.grow(1.0F).height(20)
+				.margin(PADDING / 2);
+
 		Flex done = rightFooter.child()
-				.width(1.0F, Flex.Unit.PERCENT).height(20)
-				.alignMain(Align.Main.END);
+				.grow(1.0F).height(20)
+				.margin(PADDING / 2);
 
 		FlexSolver.Results solve = new FlexSolver(new Box(screen)).apply(root);
 
@@ -129,6 +135,7 @@ final class ManageLobbyLayout {
 		this.name = solve.layout(name);
 		this.publish = solve.layout(publish);
 		this.playerList = solve.layout(playerList);
+		this.close = solve.layout(close);
 		this.done = solve.layout(done);
 
 		this.marginals = new Layout[] { this.header, this.leftFooter, this.centerFooter, this.rightFooter };

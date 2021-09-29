@@ -41,8 +41,6 @@ public final class GameQueueList extends AbstractGameList {
 		FlexSolver.Results solve = new FlexSolver(footer.content()).apply(root);
 		this.enqueueButton = FlexUi.createButton(solve.layout(enqueue), new StringTextComponent("+"), this::enqueue);
 		this.removeButton = FlexUi.createButton(solve.layout(cancel), new StringTextComponent("-"), this::remove);
-
-		this.updateEntries();
 	}
 
 	@Override

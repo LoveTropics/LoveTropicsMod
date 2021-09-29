@@ -40,8 +40,6 @@ public final class InstalledGameList extends AbstractGameList {
 		FlexSolver.Results solve = new FlexSolver(footer.content()).apply(root);
 		this.enqueueButton = FlexUi.createButton(solve.layout(enqueue), new StringTextComponent("\u2714"), this::enqueue);
 		this.cancelButton = FlexUi.createButton(solve.layout(cancel), new StringTextComponent("\u274C"), this::cancel);
-
-		this.updateEntries();
 	}
 
 	@Override

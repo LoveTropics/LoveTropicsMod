@@ -23,6 +23,10 @@ final class LobbyManagement implements ILobbyManagement {
 		this.managingPlayers = new MutablePlayerSet(lobby.getServer());
 	}
 
+	void disable() {
+		managingPlayers.clear();
+	}
+
 	void onGameStateChange() {
 		sendUpdates(updates -> {
 			IGame currentGame = lobby.getCurrentGame();
@@ -90,6 +94,11 @@ final class LobbyManagement implements ILobbyManagement {
 	public void setVisibility(LobbyVisibility visibility) {
 		lobby.setVisibility(visibility);
 		sendUpdates(updates -> updates.setVisibility(visibility));
+	}
+
+	@Override
+	public void close() {
+		lobby.close();
 	}
 
 	private void sendUpdates(UnaryOperator<ClientLobbyUpdate.Set> updates) {

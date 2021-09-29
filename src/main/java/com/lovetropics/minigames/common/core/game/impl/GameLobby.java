@@ -44,6 +44,7 @@ final class GameLobby implements IGameLobby {
 	final PlayerIsolation playerIsolation = new PlayerIsolation();
 
 	LobbyState state = pausedState();
+	private boolean closed;
 
 	GameLobby(MultiGameManager manager, MinecraftServer server, GameLobbyMetadata metadata) {
 		this.manager = manager;
@@ -69,7 +70,7 @@ final class GameLobby implements IGameLobby {
 		return new LobbyState(null, controls);
 	}
 
-	LobbyState stoppedState() {
+	LobbyState closedState() {
 		return new LobbyState(null, LobbyControls.empty());
 	}
 
@@ -266,8 +267,13 @@ final class GameLobby implements IGameLobby {
 	}
 
 	void close() {
+		if (closed) return;
+		closed = true;
+
+		management.disable();
+
 		try {
-			setState(stoppedState());
+			setState(closedState());
 
 			LobbyPlayerManager players = getPlayers();
 			for (ServerPlayerEntity player : Lists.newArrayList(players)) {

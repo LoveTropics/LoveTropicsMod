@@ -48,6 +48,10 @@ public final class ClientLobbyQueue implements Iterable<ClientLobbyQueuedGame> {
 		return this.queue.size();
 	}
 
+	public boolean isEmpty() {
+		return queue.isEmpty();
+	}
+
 	@Override
 	public Iterator<ClientLobbyQueuedGame> iterator() {
 		return Iterators.transform(entries().iterator(), Entry::game);
