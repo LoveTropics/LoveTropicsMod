@@ -12,7 +12,7 @@ import com.lovetropics.minigames.common.core.game.PlayerIsolation;
 import com.lovetropics.minigames.common.core.game.lobby.*;
 import com.lovetropics.minigames.common.core.game.player.PlayerIterable;
 import com.lovetropics.minigames.common.core.game.player.PlayerRole;
-import com.lovetropics.minigames.common.core.game.util.GameMessages;
+import com.lovetropics.minigames.common.core.game.util.GameTexts;
 import com.lovetropics.minigames.common.core.network.LoveTropicsNetwork;
 import net.minecraft.command.CommandSource;
 import net.minecraft.entity.player.ServerPlayerEntity;
@@ -208,6 +208,8 @@ final class GameLobby implements IGameLobby {
 		for (ServerPlayerEntity player : getPlayers()) {
 			onPlayerExitGame(player);
 		}
+
+		stateListener.onLobbyPaused(this);
 	}
 
 	void onPlayerLoggedIn(ServerPlayerEntity player) {
@@ -288,7 +290,7 @@ final class GameLobby implements IGameLobby {
 				onPlayerJoinGame(lobby, currentGame);
 			}
 
-			ITextComponent message = GameMessages.forLobby(lobby).playerJoined(player, registeredRole);
+			ITextComponent message = GameTexts.Status.playerJoined(lobby, player, registeredRole);
 			lobby.getTrackingPlayers().sendMessage(message);
 		}
 
@@ -303,7 +305,7 @@ final class GameLobby implements IGameLobby {
 		private void onPlayerJoinGame(IGameLobby lobby, IGame currentGame) {
 			int minimumParticipants = currentGame.getDefinition().getMinimumParticipantCount();
 			if (lobby.getPlayers().getParticipantCount() == minimumParticipants) {
-				ITextComponent enoughPlayers = GameMessages.forLobby(lobby).enoughPlayers();
+				ITextComponent enoughPlayers = GameTexts.Status.enoughPlayers();
 				lobby.getTrackingPlayers().sendMessage(enoughPlayers);
 			}
 		}
@@ -311,14 +313,19 @@ final class GameLobby implements IGameLobby {
 		private void onPlayerLeaveGame(IGameLobby lobby, IGame currentGame) {
 			int minimumParticipants = currentGame.getDefinition().getMinimumParticipantCount();
 			if (lobby.getPlayers().getParticipantCount() == minimumParticipants - 1) {
-				ITextComponent noLongerEnoughPlayers = GameMessages.forLobby(lobby).noLongerEnoughPlayers();
+				ITextComponent noLongerEnoughPlayers = GameTexts.Status.noLongerEnoughPlayers();
 				lobby.getTrackingPlayers().sendMessage(noLongerEnoughPlayers);
 			}
 		}
 
 		@Override
+		public void onLobbyPaused(IGameLobby lobby) {
+			lobby.getPlayers().sendMessage(GameTexts.Status.lobbyPaused());
+		}
+
+		@Override
 		public void onLobbyStop(IGameLobby lobby) {
-			lobby.getTrackingPlayers().sendMessage(GameMessages.forLobby(lobby).stopPolling()); // TODO: wrong message
+			lobby.getPlayers().sendMessage(GameTexts.Status.lobbyStopped());
 		}
 	}
 

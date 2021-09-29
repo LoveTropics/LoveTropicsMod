@@ -6,6 +6,7 @@ import com.lovetropics.minigames.client.screen.FlexUi;
 import com.lovetropics.minigames.client.screen.flex.Flex;
 import com.lovetropics.minigames.client.screen.flex.FlexSolver;
 import com.lovetropics.minigames.client.screen.flex.Layout;
+import com.lovetropics.minigames.common.core.game.util.GameTexts;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.button.Button;
@@ -18,7 +19,7 @@ import java.util.List;
 import java.util.function.IntConsumer;
 
 public final class InstalledGameList extends AbstractGameList {
-	private static final ITextComponent TITLE = new StringTextComponent("Installed")
+	private static final ITextComponent TITLE =  GameTexts.Ui.installedGames()
 			.mergeStyle(TextFormatting.UNDERLINE, TextFormatting.BOLD);
 
 	private final ClientLobbyManageState lobby;

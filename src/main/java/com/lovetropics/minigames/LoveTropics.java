@@ -1,8 +1,8 @@
 package com.lovetropics.minigames;
 
 import com.google.common.base.Preconditions;
-import com.lovetropics.minigames.client.data.LoveTropicsLangKeys;
 import com.lovetropics.minigames.common.config.ConfigLT;
+import com.lovetropics.minigames.common.content.MinigameTexts;
 import com.lovetropics.minigames.common.content.block.LoveTropicsBlocks;
 import com.lovetropics.minigames.common.content.block.TrashType;
 import com.lovetropics.minigames.common.content.build_competition.BuildCompetition;
@@ -13,9 +13,10 @@ import com.lovetropics.minigames.common.content.trash_dive.TrashDive;
 import com.lovetropics.minigames.common.core.command.MapCommand;
 import com.lovetropics.minigames.common.core.command.game.*;
 import com.lovetropics.minigames.common.core.diguise.PlayerDisguise;
-import com.lovetropics.minigames.common.core.game.impl.GameEventDispatcher;
 import com.lovetropics.minigames.common.core.game.IGameManager;
 import com.lovetropics.minigames.common.core.game.behavior.GameBehaviorTypes;
+import com.lovetropics.minigames.common.core.game.impl.GameEventDispatcher;
+import com.lovetropics.minigames.common.core.game.util.GameTexts;
 import com.lovetropics.minigames.common.core.integration.Telemetry;
 import com.lovetropics.minigames.common.core.map.VoidChunkGenerator;
 import com.lovetropics.minigames.common.core.map.item.MapWorkspaceItems;
@@ -179,63 +180,8 @@ public class LoveTropics {
         registrate().addDataGenerator(ProviderType.LANG, prov -> {
             prov.add(LoveTropics.LOVE_TROPICS_ITEM_GROUP, "Love Tropics");
 
-            // TODO move this into an enum
-            prov.add(LoveTropicsLangKeys.COMMAND_MINIGAME_ALREADY_REGISTERED, "You've already registered for the current minigame!");
-            prov.add(LoveTropicsLangKeys.COMMAND_MINIGAME_NOT_REGISTERED, "Minigame with that ID has not been registered: %s");
-            prov.add(LoveTropicsLangKeys.COMMAND_MINIGAME_ID_INVALID, "A minigame with that ID doesn't exist!");
-            prov.add(LoveTropicsLangKeys.COMMAND_MINIGAME_ALREADY_STARTED, "Another minigame is already in progress! Stop that one first before polling another.");
-            prov.add(LoveTropicsLangKeys.COMMAND_ANOTHER_MINIGAME_POLLING, "Another minigame is already polling! Stop that one first before polling another.");
-            prov.add(LoveTropicsLangKeys.COMMAND_MINIGAME_POLLING, "Minigame %s is polling. Type %s to get a chance to play!");
-            prov.add(LoveTropicsLangKeys.COMMAND_SORRY_ALREADY_STARTED, "Sorry, the current minigame has already started! You can join as a spectator with /game spectate");
-            prov.add(LoveTropicsLangKeys.COMMAND_NO_MINIGAME_POLLING, "There is no minigame currently polling.");
-            prov.add(LoveTropicsLangKeys.COMMAND_REGISTERED_FOR_MINIGAME, "You have registered for this minigame!");
-            prov.add(LoveTropicsLangKeys.COMMAND_NOT_REGISTERED_FOR_MINIGAME, "You are not currently registered for any minigames.");
-            prov.add(LoveTropicsLangKeys.COMMAND_UNREGISTERED_MINIGAME, "You have unregistered for Minigame %s.");
-            prov.add(LoveTropicsLangKeys.COMMAND_ENTITY_NOT_PLAYER, "Entity that attempted command is not player.");
-            prov.add(LoveTropicsLangKeys.COMMAND_MINIGAME_POLLED, "Minigame successfully polled!");
-            prov.add(LoveTropicsLangKeys.COMMAND_NOT_ENOUGH_PLAYERS, "There aren't enough players to start this minigame. It requires at least %s amount of players.");
-            prov.add(LoveTropicsLangKeys.COMMAND_MINIGAME_STARTED, "You have started the minigame.");
-            prov.add(LoveTropicsLangKeys.COMMAND_MINIGAMES_INTERSECT, "This minigame cannot be started because its area intersects with another ongoing minigame.");
-            prov.add(LoveTropicsLangKeys.MINIGAME_SURVIVE_THE_TIDE_1, "Survive The Tide I");
-            prov.add(LoveTropicsLangKeys.MINIGAME_SURVIVE_THE_TIDE_1_TEAMS, "Survive The Tide I (Teams)");
-            prov.add(LoveTropicsLangKeys.MINIGAME_SURVIVE_THE_TIDE_2, "Survive The Tide II");
-            prov.add(LoveTropicsLangKeys.MINIGAME_SURVIVE_THE_TIDE_2_TEAMS, "Survive The Tide II (Teams)");
-            prov.add(LoveTropicsLangKeys.MINIGAME_SIGNATURE_RUN, "Signature Run");
-            prov.add(LoveTropicsLangKeys.MINIGAME_TRASH_DIVE, "Trash Dive");
-            prov.add(LoveTropicsLangKeys.MINIGAME_CONSERVATION_EXPLORATION, "Conservation Exploration");
-            prov.add(LoveTropicsLangKeys.MINIGAME_VOLCANO_SPLEEF, "Volcano Spleef");
-            prov.add(LoveTropicsLangKeys.MINIGAME_TREASURE_HUNT_X, "Treasure Hunt X");
-            prov.add(LoveTropicsLangKeys.MINIGAME_BUILD_COMPETITION, "Build Competition");
-            prov.add(LoveTropicsLangKeys.MINIGAME_TURTLE_RACE, "Turtle Race");
-            prov.add(LoveTropicsLangKeys.MINIGAME_TURTLE_RACE_ARCADE, "Turtle Race (Arcade)");
-            prov.add(LoveTropicsLangKeys.MINIGAME_FLYING_TURTLE_RACE, "Flying Turtle Race");
-            prov.add(LoveTropicsLangKeys.MINIGAME_TURTLE_SPRINT, "Turtle Sprint");
-            prov.add(LoveTropicsLangKeys.MINIGAME_ELYTRA_RACE, "Elytra Race");
-            prov.add(LoveTropicsLangKeys.MINIGAME_ONE_MANS_TRASH, "One Man's Trash");
-
-            prov.add(LoveTropicsLangKeys.COMMAND_NO_LONGER_ENOUGH_PLAYERS, "There are no longer enough players to start the minigame!");
-            prov.add(LoveTropicsLangKeys.COMMAND_ENOUGH_PLAYERS, "There are now enough players to start the minigame!");
-            prov.add(LoveTropicsLangKeys.COMMAND_NO_MINIGAME, "There is no currently running minigame to stop!");
-            prov.add(LoveTropicsLangKeys.COMMAND_STOPPED_MINIGAME, "You have stopped the %s minigame.");
-            prov.add(LoveTropicsLangKeys.COMMAND_FINISHED_MINIGAME, "The minigame %s has finished. If you were inside the minigame, you have been teleported back to your original position.");
-            prov.add(LoveTropicsLangKeys.COMMAND_MINIGAME_STOPPED_POLLING, "An operator has stopped polling the minigame %s.");
-            prov.add(LoveTropicsLangKeys.COMMAND_STOP_POLL, "You have successfully stopped the poll.");
-
-            prov.add(LoveTropicsLangKeys.SURVIVE_THE_TIDE_FINISH1, "Through the rising sea levels, the volatile and chaotic weather, and the struggle to survive, one player remains: %s.");
-            prov.add(LoveTropicsLangKeys.SURVIVE_THE_TIDE_FINISH2, "\nThose who have fallen have been swept away by the encroaching tides that engulf countless landmasses in this dire future.");
-            prov.add(LoveTropicsLangKeys.SURVIVE_THE_TIDE_FINISH3, "\nThe lone survivor of this island, %s, has won - but at what cost? The world is not what it once was, and they must survive in this new apocalyptic land.");
-            prov.add(LoveTropicsLangKeys.SURVIVE_THE_TIDE_FINISH4, "\nWhat would you do different next time? Together, we could stop this from becoming our future.");
-
-            prov.add(LoveTropicsLangKeys.MINIGAME_FINISH, "The minigame will end in 10 seconds...");
-            prov.add(LoveTropicsLangKeys.SURVIVE_THE_TIDE_INTRO1, "The year...2050. Human-caused climate change has gone unmitigated and the human population has been forced to flee to higher ground.");
-            prov.add(LoveTropicsLangKeys.SURVIVE_THE_TIDE_INTRO2, "\nYour task, should you choose to accept it, which you have to because of climate change, is to survive the rising tides, unpredictable weather, and other players.");
-            prov.add(LoveTropicsLangKeys.SURVIVE_THE_TIDE_INTRO3, "\nBrave the conditions and defeat the others who are just trying to survive, like you. And remember...your resources are as limited as your time.");
-            prov.add(LoveTropicsLangKeys.SURVIVE_THE_TIDE_INTRO4, "\nSomeone else may have the tool or food you need to survive. What kind of person will you be when the world is falling apart?");
-            prov.add(LoveTropicsLangKeys.SURVIVE_THE_TIDE_INTRO5, "\nLet's see!");
-            prov.add(LoveTropicsLangKeys.SURVIVE_THE_TIDE_PVP_DISABLED, "NOTE: PvP is disabled for %s minutes! Go fetch resources before time runs out.");
-            prov.add(LoveTropicsLangKeys.SURVIVE_THE_TIDE_PVP_ENABLED, "WARNING: PVP HAS BEEN ENABLED! Beware of other players...");
-
-            prov.add(LoveTropicsLangKeys.SURVIVE_THE_TIDE_DOWN_TO_TWO, "IT'S DOWN TO TWO PLAYERS! %s and %s are now head to head - who will triumph above these rising tides?");
+            GameTexts.collectTranslations(prov::add);
+            MinigameTexts.collectTranslations(prov::add);
         });
     }
 

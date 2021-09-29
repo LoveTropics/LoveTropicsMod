@@ -1,26 +1,20 @@
 package com.lovetropics.minigames.common.core.command.game;
 
-import com.lovetropics.minigames.client.data.LoveTropicsLangKeys;
 import com.lovetropics.minigames.common.core.command.argument.GameLobbyArgument;
 import com.lovetropics.minigames.common.core.command.argument.PlayerRoleArgument;
-import com.lovetropics.minigames.common.core.game.*;
-import com.lovetropics.minigames.common.core.game.lobby.GameLobbyMetadata;
+import com.lovetropics.minigames.common.core.game.GameResult;
+import com.lovetropics.minigames.common.core.game.IGameManager;
 import com.lovetropics.minigames.common.core.game.lobby.IGameLobby;
 import com.lovetropics.minigames.common.core.game.player.PlayerRole;
-import com.lovetropics.minigames.common.core.game.util.GameMessages;
+import com.lovetropics.minigames.common.core.game.util.GameTexts;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.command.CommandSource;
 import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.util.text.*;
-import net.minecraft.util.text.event.ClickEvent;
-import net.minecraft.util.text.event.HoverEvent;
 
 import javax.annotation.Nullable;
-
-import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -31,15 +25,15 @@ public class JoinGameCommand {
 		// @formatter:off
 		dispatcher.register(
 			literal("game")
-				.then(registerBuilder("register"))
-				.then(registerBuilder("join"))
-				.then(registerBuilder("play"))
+				.then(joinBuilder("register"))
+				.then(joinBuilder("join"))
+				.then(joinBuilder("play"))
 				.then(literal("spectate")
-					.executes(ctx -> registerAsRole(ctx, null, PlayerRole.SPECTATOR))
+					.executes(ctx -> joinAsRole(ctx, null, PlayerRole.SPECTATOR))
 					.then(GameLobbyArgument.argument("lobby")
 						.executes(ctx -> {
 							IGameLobby lobby = GameLobbyArgument.get(ctx, "lobby");
-							return registerAsRole(ctx, lobby, PlayerRole.SPECTATOR);
+							return joinAsRole(ctx, lobby, PlayerRole.SPECTATOR);
 						})
 					)
 				)
@@ -47,36 +41,36 @@ public class JoinGameCommand {
 		// @formatter:on
 	}
 
-	private static LiteralArgumentBuilder<CommandSource> registerBuilder(String name) {
+	private static LiteralArgumentBuilder<CommandSource> joinBuilder(String name) {
 		// @formatter:off
 		return literal(name)
-				.executes(ctx -> registerAsRole(ctx, null, null))
+				.executes(ctx -> joinAsRole(ctx, null, null))
 				.then(GameLobbyArgument.argument("lobby")
 					.executes(ctx -> {
 						IGameLobby lobby = GameLobbyArgument.get(ctx, "lobby");
-						return registerAsRole(ctx, lobby, null);
+						return joinAsRole(ctx, lobby, null);
 					})
 					.then(literal("as").requires(source -> source.hasPermissionLevel(2))
 						.then(PlayerRoleArgument.argument("role")
 						.executes(ctx -> {
 							IGameLobby lobby = GameLobbyArgument.get(ctx, "lobby");
 							PlayerRole role = PlayerRoleArgument.get(ctx, "role");
-							return registerAsRole(ctx, lobby, role);
+							return joinAsRole(ctx, lobby, role);
 						})
 					))
 				);
 		// @formatter:on
 	}
 
-	private static int registerAsRole(CommandContext<CommandSource> ctx, @Nullable IGameLobby givenLobby, @Nullable PlayerRole requestedRole) throws CommandSyntaxException {
+	private static int joinAsRole(CommandContext<CommandSource> ctx, @Nullable IGameLobby givenLobby, @Nullable PlayerRole requestedRole) throws CommandSyntaxException {
 		CommandSource source = ctx.getSource();
 		ServerPlayerEntity player = source.asPlayer();
 		return GameCommand.executeGameAction(() -> {
 			return resolveLobby(source, givenLobby, requestedRole).andThen(lobby -> {
-				if (lobby.getPlayers().register(player, requestedRole)) {
-					return GameResult.ok(GameMessages.forLobby(lobby).registerSuccess());
+				if (lobby.getPlayers().join(player, requestedRole)) {
+					return GameResult.ok(GameTexts.Commands.joinedLobby(lobby));
 				} else {
-					return GameResult.error(new TranslationTextComponent(LoveTropicsLangKeys.COMMAND_MINIGAME_ALREADY_REGISTERED));
+					return GameResult.error(GameTexts.Commands.alreadyInLobby());
 				}
 			});
 		}, source);
@@ -89,47 +83,11 @@ public class JoinGameCommand {
 			List<? extends IGameLobby> publicLobbies = IGameManager.get().getVisibleLobbies(source).collect(Collectors.toList());
 			if (publicLobbies.size() == 1) {
 				return GameResult.ok(publicLobbies.get(0));
-			} else if (publicLobbies.isEmpty()){
-				return GameResult.error(new TranslationTextComponent(LoveTropicsLangKeys.COMMAND_NO_MINIGAME_POLLING));
+			} else if (publicLobbies.isEmpty()) {
+				return GameResult.error(GameTexts.Commands.noJoinableLobbies());
 			}
 
-			return GameResult.error(buildLobbySelector(requestedRole, publicLobbies));
+			return GameResult.error(GameTexts.Commands.lobbySelector(publicLobbies, requestedRole));
 		}
-	}
-
-	private static IFormattableTextComponent buildLobbySelector(@Nullable PlayerRole requestedRole, Collection<? extends IGameLobby> lobbies) {
-		IFormattableTextComponent selector = new StringTextComponent("There are multiple games lobbies available to join! Select one from this list:\n")
-				.mergeStyle(TextFormatting.GOLD, TextFormatting.BOLD);
-
-		for (IGameLobby lobby : lobbies) {
-			String joinCommand = getJoinCommand(lobby.getMetadata(), requestedRole);
-
-			ITextComponent joinLink = new StringTextComponent("Click to join")
-					.modifyStyle(style -> {
-						return style.setFormatting(TextFormatting.BLUE)
-								.setUnderlined(true)
-								.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, joinCommand))
-								.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new StringTextComponent(joinCommand)));
-					});
-
-			IFormattableTextComponent line = new StringTextComponent(" - ").mergeStyle(TextFormatting.GRAY)
-					.appendSibling(new StringTextComponent(lobby.getMetadata().name()).mergeStyle(TextFormatting.AQUA))
-					.appendSibling(new StringTextComponent(" (" + lobby.getPlayers().size() + " players)").mergeStyle(TextFormatting.GREEN))
-					.appendString(": ")
-					.appendSibling(joinLink)
-					.appendString("\n");
-
-			selector = selector.appendSibling(line);
-		}
-
-		return selector;
-	}
-
-	private static String getJoinCommand(GameLobbyMetadata lobby, @Nullable PlayerRole requestedRole) {
-		String command = "/game join " + lobby.commandId();
-		if (requestedRole != null) {
-			command += " as " + requestedRole.getKey();
-		}
-		return command;
 	}
 }

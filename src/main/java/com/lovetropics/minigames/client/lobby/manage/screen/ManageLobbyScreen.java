@@ -11,6 +11,7 @@ import com.lovetropics.minigames.client.screen.FlexUi;
 import com.lovetropics.minigames.client.screen.flex.Box;
 import com.lovetropics.minigames.client.screen.flex.Layout;
 import com.lovetropics.minigames.common.core.game.lobby.LobbyControls;
+import com.lovetropics.minigames.common.core.game.util.GameTexts;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import net.minecraft.client.gui.DialogTexts;
 import net.minecraft.client.gui.IGuiEventListener;
@@ -19,15 +20,11 @@ import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.client.gui.widget.button.Button;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.TextFormatting;
 
 import javax.annotation.Nullable;
 import java.util.List;
 
-// TODO: localisation
 public final class ManageLobbyScreen extends Screen {
-	private static final ITextComponent TITLE = new StringTextComponent("Manage Game Lobby");
-
 	private final ClientLobbyManagement.Session session;
 
 	private ManageLobbyLayout layout;
@@ -44,7 +41,7 @@ public final class ManageLobbyScreen extends Screen {
 	private int selectedGameId = -1;
 
 	public ManageLobbyScreen(ClientLobbyManagement.Session session) {
-		super(TITLE);
+		super(GameTexts.Ui.manageGameLobby());
 		this.session = session;
 	}
 
@@ -78,11 +75,11 @@ public final class ManageLobbyScreen extends Screen {
 			}
 		}));
 
-		nameField = addListener(FlexUi.createTextField(layout.name, font, new StringTextComponent("Lobby Name")));
+		nameField = addListener(FlexUi.createTextField(layout.name, font, GameTexts.Ui.lobbyName()));
 		nameField.setMaxStringLength(200);
 		nameField.setText(lobby.getName());
 
-		publishButton = addButton(FlexUi.createButton(layout.publish, new StringTextComponent("Publish"), button -> {
+		publishButton = addButton(FlexUi.createButton(layout.publish, GameTexts.Ui.publish(), button -> {
 			session.publishLobby();
 		}));
 
@@ -190,9 +187,7 @@ public final class ManageLobbyScreen extends Screen {
 	private void renderSelectedGame(ClientLobbyQueuedGame game, MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
 		FlexUi.fill(layout.centerHeader, matrixStack, 0x80101010);
 
-		ITextComponent title = new StringTextComponent("")
-				.appendSibling(new StringTextComponent("Managing: ").mergeStyle(TextFormatting.BOLD))
-				.appendSibling(game.definition().name);
+		ITextComponent title = GameTexts.Ui.managingGame(game.definition());
 
 		Box header = layout.centerHeader.content();
 		drawCenteredString(matrixStack, font, title, header.centerX(), header.centerY() - font.FONT_HEIGHT / 2, 0xFFFFFF);

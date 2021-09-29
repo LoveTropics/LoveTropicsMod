@@ -7,6 +7,7 @@ import com.lovetropics.minigames.client.screen.FlexUi;
 import com.lovetropics.minigames.client.screen.flex.Flex;
 import com.lovetropics.minigames.client.screen.flex.FlexSolver;
 import com.lovetropics.minigames.client.screen.flex.Layout;
+import com.lovetropics.minigames.common.core.game.util.GameTexts;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.button.Button;
@@ -18,7 +19,7 @@ import net.minecraft.util.text.TextFormatting;
 import javax.annotation.Nullable;
 
 public final class GameQueueList extends AbstractGameList {
-	private static final ITextComponent TITLE = new StringTextComponent("Game Queue")
+	private static final ITextComponent TITLE = GameTexts.Ui.gameQueue()
 			.mergeStyle(TextFormatting.UNDERLINE, TextFormatting.BOLD);
 
 	private final ClientLobbyManageState lobby;
@@ -75,7 +76,7 @@ public final class GameQueueList extends AbstractGameList {
 					.setSelectedColor(0xFF204020)
 					.setOutlineColor(0xFF408040);
 		} else {
-			IFormattableTextComponent inactive = new StringTextComponent("Inactive").mergeStyle(TextFormatting.UNDERLINE);
+			IFormattableTextComponent inactive = GameTexts.Ui.gameInactive().mergeStyle(TextFormatting.UNDERLINE);
 			entry.setTitle(new StringTextComponent("\u23F8 ").appendSibling(inactive));
 
 			entry.setBackgroundColor(0xFF201010)

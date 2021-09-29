@@ -8,6 +8,7 @@ import com.lovetropics.minigames.common.core.game.config.GameConfig;
 import com.lovetropics.minigames.common.core.game.impl.MultiGameManager;
 import com.lovetropics.minigames.common.core.game.lobby.IGameLobby;
 import com.lovetropics.minigames.common.core.game.lobby.ILobbyManagement;
+import com.lovetropics.minigames.common.core.game.util.GameTexts;
 import com.lovetropics.minigames.common.core.network.LoveTropicsNetwork;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
@@ -16,15 +17,12 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import net.minecraft.command.CommandSource;
 import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.util.text.StringTextComponent;
 import net.minecraftforge.fml.network.PacketDistributor;
 
 import static net.minecraft.command.Commands.literal;
 
 public class ManageGameLobbyCommand {
-	private static final SimpleCommandExceptionType MISSING_MANAGE_PERMISSIONS = new SimpleCommandExceptionType(
-			new StringTextComponent("You do not have permission to manage this lobby!")
-	);
+	private static final SimpleCommandExceptionType NO_MANAGE_PERMISSION = new SimpleCommandExceptionType(GameTexts.Commands.noManagePermission());
 
 	public static void register(CommandDispatcher<CommandSource> dispatcher) {
 		// @formatter:off
@@ -62,7 +60,7 @@ public class ManageGameLobbyCommand {
 		}
 
 		IGameLobby lobby = result.getOk();
-		lobby.getPlayers().register(player, null);
+		lobby.getPlayers().join(player, null);
 
 		startManaging(player, lobby);
 
@@ -74,7 +72,7 @@ public class ManageGameLobbyCommand {
 		IGameLobby lobby = GameLobbyArgument.get(context, "lobby");
 
 		if (!startManaging(player, lobby)) {
-			throw MISSING_MANAGE_PERMISSIONS.create();
+			throw NO_MANAGE_PERMISSION.create();
 		}
 
 		return Command.SINGLE_SUCCESS;
