@@ -15,9 +15,11 @@ final class LobbyTrackingPlayers implements PlayerSet {
 	LobbyTrackingPlayers(GameLobby lobby) {
 		this.lobby = lobby;
 		this.tracking = new MutablePlayerSet(lobby.getServer());
+
+		this.rebuildTracking();
 	}
 
-	void onVisibilityChange() {
+	void rebuildTracking() {
 		for (ServerPlayerEntity player : PlayerSet.ofServer(this.lobby.getServer())) {
 			if (this.lobby.isVisibleTo(player)) {
 				this.startTracking(player);
