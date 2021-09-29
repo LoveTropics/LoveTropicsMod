@@ -1,7 +1,6 @@
 package com.lovetropics.minigames.common.core.game.impl;
 
 import com.lovetropics.minigames.LoveTropics;
-import com.lovetropics.minigames.client.data.LoveTropicsLangKeys;
 import com.lovetropics.minigames.common.core.game.*;
 import com.lovetropics.minigames.common.core.game.behavior.BehaviorMap;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
@@ -13,13 +12,13 @@ import com.lovetropics.minigames.common.core.game.player.MutablePlayerSet;
 import com.lovetropics.minigames.common.core.game.player.PlayerRole;
 import com.lovetropics.minigames.common.core.game.player.PlayerSet;
 import com.lovetropics.minigames.common.core.game.state.statistics.StatisticKey;
+import com.lovetropics.minigames.common.core.game.util.GameTexts;
 import com.lovetropics.minigames.common.core.map.MapRegions;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.RegistryKey;
 import net.minecraft.util.Unit;
 import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
 
@@ -175,7 +174,7 @@ public class GamePhase implements IGamePhase {
 	@Override
 	public GameResult<Unit> requestStop(GameStopReason reason) {
 		if (stopped != null) {
-			return GameResult.error(new TranslationTextComponent(LoveTropicsLangKeys.COMMAND_NO_MINIGAME));
+			return GameResult.error(GameTexts.Commands.gameAlreadyStopped());
 		}
 
 		stopped = reason;

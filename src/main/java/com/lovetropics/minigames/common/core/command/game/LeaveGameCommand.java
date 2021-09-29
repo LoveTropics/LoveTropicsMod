@@ -1,14 +1,13 @@
 package com.lovetropics.minigames.common.core.command.game;
 
-import com.lovetropics.minigames.client.data.LoveTropicsLangKeys;
-import com.lovetropics.minigames.common.core.game.*;
+import com.lovetropics.minigames.common.core.game.GameResult;
+import com.lovetropics.minigames.common.core.game.IGameManager;
 import com.lovetropics.minigames.common.core.game.lobby.IGameLobby;
-import com.lovetropics.minigames.common.core.game.util.GameMessages;
+import com.lovetropics.minigames.common.core.game.util.GameTexts;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import net.minecraft.command.CommandSource;
 import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.util.text.TranslationTextComponent;
 
 import static net.minecraft.command.Commands.literal;
 
@@ -27,9 +26,9 @@ public class LeaveGameCommand {
 				CommandSource source = c.getSource();
 				IGameLobby lobby = IGameManager.get().getLobbyFor(source);
 				if (lobby != null && lobby.getPlayers().remove(source.asPlayer())) {
-					return GameResult.ok(GameMessages.forLobby(lobby).unregisterSuccess());
+					return GameResult.ok(GameTexts.Commands.leftLobby(lobby));
 				}
-				return GameResult.error(new TranslationTextComponent(LoveTropicsLangKeys.COMMAND_NOT_REGISTERED_FOR_MINIGAME));
+				return GameResult.error(GameTexts.Commands.notInLobby());
 			}, c.getSource()));
 	}
 }

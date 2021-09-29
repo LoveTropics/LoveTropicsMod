@@ -25,7 +25,7 @@ final class LobbyPlayerManager implements IGameLobbyPlayers {
 	}
 
 	@Override
-	public boolean register(ServerPlayerEntity player, @Nullable PlayerRole requestedRole) {
+	public boolean join(ServerPlayerEntity player, @Nullable PlayerRole requestedRole) {
 		if (registrations.add(player.getUniqueID(), requestedRole)) {
 			lobby.onPlayerRegister(player);
 			return true;

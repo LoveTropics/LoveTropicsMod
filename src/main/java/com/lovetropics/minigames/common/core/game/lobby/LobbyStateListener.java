@@ -35,6 +35,13 @@ public interface LobbyStateListener {
 			}
 
 			@Override
+			public void onLobbyPaused(IGameLobby lobby) {
+				for (LobbyStateListener watcher : watchers) {
+					watcher.onLobbyPaused(lobby);
+				}
+			}
+
+			@Override
 			public void onLobbyStop(IGameLobby lobby) {
 				for (LobbyStateListener watcher : watchers) {
 					watcher.onLobbyStop(lobby);
@@ -60,6 +67,9 @@ public interface LobbyStateListener {
 	}
 
 	default void onPlayerStopTracking(IGameLobby lobby, ServerPlayerEntity player) {
+	}
+
+	default void onLobbyPaused(IGameLobby lobby) {
 	}
 
 	default void onLobbyStop(IGameLobby lobby) {

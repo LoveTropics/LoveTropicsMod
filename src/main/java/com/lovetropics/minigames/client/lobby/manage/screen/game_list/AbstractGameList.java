@@ -3,6 +3,7 @@ package com.lovetropics.minigames.client.lobby.manage.screen.game_list;
 import com.lovetropics.minigames.client.lobby.state.ClientGameDefinition;
 import com.lovetropics.minigames.client.screen.TrimmedText;
 import com.lovetropics.minigames.client.screen.flex.Layout;
+import com.lovetropics.minigames.common.core.game.util.GameTexts;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
@@ -10,7 +11,6 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.list.ExtendedList;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.StringTextComponent;
 
 public abstract class AbstractGameList extends ExtendedList<AbstractGameList.Entry> {
 	private static final int SCROLL_WIDTH = 6;
@@ -97,15 +97,9 @@ public abstract class AbstractGameList extends ExtendedList<AbstractGameList.Ent
 		}
 
 		public static Entry game(AbstractGameList list, int id, ClientGameDefinition game) {
-			String description;
-			if (game.maximumParticipants != game.minimumParticipants) {
-				description = game.minimumParticipants + "-" + game.maximumParticipants + " players";
-			} else {
-				description = game.minimumParticipants + " players";
-			}
 			return new Entry(list, id)
 					.setTitle(game.name)
-					.setDescription(new StringTextComponent(description));
+					.setDescription(GameTexts.Ui.playerRange(game.minimumParticipants, game.maximumParticipants));
 		}
 
 		public Entry setTitle(ITextComponent title) {
