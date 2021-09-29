@@ -138,11 +138,10 @@ public final class ManageLobbyScreen extends Screen {
 	}
 
 	@Override
-	public void closeScreen() {
-		super.closeScreen();
+	public void onClose() {
+		super.onClose();
 
 		session.close();
-
 		applyNameField();
 	}
 
