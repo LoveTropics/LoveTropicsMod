@@ -32,10 +32,10 @@ public final class ForceLoadRegionBehavior implements IGameBehavior {
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
 		events.listen(GamePhaseEvents.START, () -> acquiredChunks = acquireChunks(game));
-		events.listen(GamePhaseEvents.STOP, (reason) -> onFinish(game));
+		events.listen(GamePhaseEvents.STOP, reason -> onStop(game));
 	}
 
-	private void onFinish(IGamePhase game) {
+	private void onStop(IGamePhase game) {
 		ServerChunkProvider chunkProvider = game.getWorld().getChunkProvider();
 
 		LongIterator iterator = acquiredChunks.iterator();

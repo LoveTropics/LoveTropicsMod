@@ -22,7 +22,7 @@ public class FinishGameCommand {
 				if (game == null) {
 					throw new SimpleCommandExceptionType(new TranslationTextComponent(LoveTropicsLangKeys.COMMAND_NO_MINIGAME)).create();
 				}
-				return game.stop(GameStopReason.FINISHED).map(u -> GameMessages.forLobby(game.getLobby()).stopSuccess());
+				return game.requestStop(GameStopReason.finished()).map(u -> GameMessages.forLobby(game.getLobby()).stopSuccess());
 			}, c.getSource())))
 		);
 	}

@@ -6,7 +6,8 @@ import com.lovetropics.minigames.client.lobby.state.message.LeftLobbyMessage;
 import com.lovetropics.minigames.client.lobby.state.message.LobbyPlayersMessage;
 import com.lovetropics.minigames.client.lobby.state.message.LobbyUpdateMessage;
 import com.lovetropics.minigames.common.core.game.GameResult;
-import com.lovetropics.minigames.common.core.game.IGameInstance;
+import com.lovetropics.minigames.common.core.game.IGame;
+import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.PlayerIsolation;
 import com.lovetropics.minigames.common.core.game.lobby.*;
 import com.lovetropics.minigames.common.core.game.player.PlayerIterable;
@@ -16,6 +17,7 @@ import com.lovetropics.minigames.common.core.network.LoveTropicsNetwork;
 import net.minecraft.command.CommandSource;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.Unit;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraftforge.fml.network.PacketDistributor;
 
@@ -27,13 +29,12 @@ final class GameLobby implements IGameLobby {
 	final MinecraftServer server;
 	GameLobbyMetadata metadata;
 
+	final LobbyGameQueue gameQueue;
 	final LobbyPlayerManager players;
-	final LobbyGameQueue gameQueue = new LobbyGameQueue();
-
 	final LobbyManagement management;
+	final LobbyTrackingPlayers trackingPlayers;
 
 	final LobbyVisibility visibility = LobbyVisibility.PRIVATE;
-	final LobbyTrackingPlayers trackingPlayers;
 
 	final LobbyStateListener stateListener = LobbyStateListener.compose(
 			new NetworkUpdateListener(),
@@ -42,17 +43,31 @@ final class GameLobby implements IGameLobby {
 
 	final PlayerIsolation playerIsolation = new PlayerIsolation();
 
-	GameInstance currentGame;
-	boolean paused = true;
+	LobbyState state = pausedState();
 
 	GameLobby(MultiGameManager manager, MinecraftServer server, GameLobbyMetadata metadata) {
 		this.manager = manager;
 		this.server = server;
 		this.metadata = metadata;
 
+		this.gameQueue = new LobbyGameQueue(this);
 		this.players = new LobbyPlayerManager(this);
 		this.management = new LobbyManagement(this);
 		this.trackingPlayers = new LobbyTrackingPlayers(this);
+	}
+
+	LobbyState pausedState() {
+		LobbyControls controls = new LobbyControls()
+				.add(LobbyControls.Type.PLAY, () -> {
+					this.gameQueue.tryResume();
+					return GameResult.ok();
+				});
+
+		return new LobbyState(null, controls);
+	}
+
+	LobbyState stoppedState() {
+		return new LobbyState(null, LobbyControls.empty());
 	}
 
 	@Override
@@ -77,23 +92,13 @@ final class GameLobby implements IGameLobby {
 
 	@Nullable
 	@Override
-	public GameInstance getCurrentGame() {
-		return currentGame;
+	public IGamePhase getCurrentPhase() {
+		return state.phase();
 	}
 
 	@Override
 	public LobbyControls getControls() {
-		if (this.paused) {
-			return new LobbyControls()
-					.add(LobbyControls.Type.PLAY, () -> {
-						this.paused = false;
-						onGameStateChange();
-						return GameResult.ok();
-					});
-		}
-
-		GameInstance currentGame = this.currentGame;
-		return currentGame != null ? currentGame.getControls() : LobbyControls.empty();
+		return state.controls();
 	}
 
 	@Override
@@ -112,92 +117,84 @@ final class GameLobby implements IGameLobby {
 			return true;
 		}
 
-		return currentGame != null && visibility.isPublic();
+		return state.game() != null && visibility.isPublic();
 	}
 
 	void setName(String name) {
 		metadata = manager.renameLobby(metadata, name);
 	}
 
-	boolean tick() {
-		GameInstance currentGame = this.currentGame;
-		if (currentGame != null) {
-			tickPlaying(currentGame);
+	void tick() {
+		GameResult<Unit> result = tickState();
+		if (result.isError()) {
+			// TODO: handle error
+			this.setState(pausedState());
+		}
+	}
+
+	private GameResult<Unit> tickState() {
+		GameResult<LobbyState> tickResult = gameQueue.tick(this::pausedState);
+		if (tickResult != null) {
+			return tickResult.andThen(this::setState);
 		} else {
-			tickInactive();
-		}
-
-		return true;
-	}
-
-	private void tickPlaying(GameInstance game) {
-		if (!game.tick()) {
-			setCurrentGame(nextGame());
+			return GameResult.ok();
 		}
 	}
 
-	private void tickInactive() {
-		if (!paused) {
-			setCurrentGame(nextGame());
-		}
+	private GameResult<Unit> setState(LobbyState newState) {
+		LobbyState oldState = state;
+		state = newState;
+		return onGameStateChange(oldState, newState);
 	}
 
-	private void setCurrentGame(@Nullable GameInstance game) {
-		GameInstance lastGame = currentGame;
-		currentGame = game;
-		paused |= game == null;
+	GameResult<Unit> onGameStateChange(LobbyState oldState, LobbyState newState) {
+		GameResult<Unit> result = GameResult.ok();
 
-		// TODO: this logic is a bit messy
-		if (game != null && lastGame == null) {
-			for (ServerPlayerEntity player : getPlayers()) {
-				onPlayerEnterGame(player);
-			}
-		} else if (game == null && lastGame != null) {
-			for (ServerPlayerEntity player : getPlayers()) {
-				onPlayerExitGame(player);
-			}
+		GamePhase oldPhase = oldState.phase();
+		GamePhase newPhase = newState.phase();
+		if (oldPhase != newPhase) {
+			result = onGamePhaseChanged(oldPhase, newPhase);
 		}
 
-		onGameStateChange();
-	}
-
-	@Nullable
-	private GameInstance nextGame() {
-		if (paused) return null;
-
-		QueuedGame game = gameQueue.next();
-		if (game == null) return null;
-
-		return new GameInstance(this, game.definition());
-	}
-
-	void onGameStateChange() {
 		management.onGameStateChange();
-		stateListener.onGameStateChange(this);
+
+		return result;
 	}
 
-	void cancel() {
-		for (ServerPlayerEntity player : Lists.newArrayList(getPlayers())) {
-			getPlayers().remove(player);
+	private GameResult<Unit> onGamePhaseChanged(GamePhase oldPhase, GamePhase newPhase) {
+		GameResult<Unit> result = GameResult.ok();
+
+		if (newPhase != null && oldPhase == null) {
+			onQueueResume();
+		} else if (newPhase == null && oldPhase != null) {
+			onQueuePaused();
 		}
 
-		GameInstance game = this.currentGame;
-		this.currentGame = null;
-
-		if (game != null) {
-			game.cancel();
+		if (newPhase != null) {
+			manager.addGamePhaseToDimension(newPhase.getDimension(), newPhase);
+			result = newPhase.start();
 		}
 
-		this.onStopped();
+		if (oldPhase != null) {
+			oldPhase.destroy();
+			manager.removeGamePhaseFromDimension(oldPhase.getDimension(), oldPhase);
+		}
+
+		stateListener.onGamePhaseChange(this);
+
+		return result;
 	}
 
-	void onStopped() {
-		stateListener.onLobbyStop(this);
-		gameQueue.clear();
-		currentGame = null;
-		paused = true;
+	void onQueueResume() {
+		for (ServerPlayerEntity player : getPlayers()) {
+			onPlayerEnterGame(player);
+		}
+	}
 
-		manager.removeLobby(this);
+	void onQueuePaused() {
+		for (ServerPlayerEntity player : getPlayers()) {
+			onPlayerExitGame(player);
+		}
 	}
 
 	void onPlayerLoggedIn(ServerPlayerEntity player) {
@@ -213,10 +210,10 @@ final class GameLobby implements IGameLobby {
 	void onPlayerRegister(ServerPlayerEntity player) {
 		manager.addPlayerToLobby(player, this);
 
-		GameInstance currentGame = this.currentGame;
-		if (currentGame != null) {
-			currentGame.onPlayerJoin(player);
+		GamePhase phase = state.phase();
+		if (phase != null) {
 			onPlayerEnterGame(player);
+			phase.onPlayerJoin(player);
 		}
 
 		PlayerRole role = players.getRegisteredRoleFor(player);
@@ -224,9 +221,9 @@ final class GameLobby implements IGameLobby {
 	}
 
 	void onPlayerLeave(ServerPlayerEntity player) {
-		GameInstance currentGame = this.currentGame;
-		if (currentGame != null) {
-			currentGame.onPlayerLeave(player);
+		GamePhase phase = state.phase();
+		if (phase != null) {
+			phase.onPlayerLeave(player);
 			onPlayerExitGame(player);
 		}
 
@@ -236,20 +233,13 @@ final class GameLobby implements IGameLobby {
 		manager.removePlayerFromLobby(player, this);
 	}
 
+	// TODO: better abstract this logic?
 	void onPlayerEnterGame(ServerPlayerEntity player) {
 		playerIsolation.accept(player);
 	}
 
 	void onPlayerExitGame(ServerPlayerEntity player) {
 		playerIsolation.restore(player);
-	}
-
-	void onPhaseStart(GamePhase game) {
-		manager.addGamePhaseToDimension(game.getDimension(), game);
-	}
-
-	void onPhaseStop(GamePhase game) {
-		manager.removeGamePhaseFromDimension(game.getDimension(), game);
 	}
 
 	void onPlayerStartTracking(ServerPlayerEntity player) {
@@ -260,11 +250,27 @@ final class GameLobby implements IGameLobby {
 		stateListener.onPlayerStopTracking(this, player);
 	}
 
+	void close() {
+		try {
+			setState(stoppedState());
+
+			LobbyPlayerManager players = getPlayers();
+			for (ServerPlayerEntity player : Lists.newArrayList(players)) {
+				players.remove(player);
+			}
+
+			stateListener.onLobbyStop(this);
+			gameQueue.clear();
+		} finally {
+			manager.removeLobby(this);
+		}
+	}
+
 	// TODO: reduce message clutter and use toasts where possible
 	static final class ChatNotifyListener implements LobbyStateListener {
 		@Override
 		public void onPlayerJoin(IGameLobby lobby, ServerPlayerEntity player, PlayerRole registeredRole) {
-			IGameInstance currentGame = lobby.getCurrentGame();
+			IGame currentGame = lobby.getCurrentGame();
 			if (currentGame != null) {
 				onPlayerJoinGame(lobby, currentGame);
 			}
@@ -275,13 +281,13 @@ final class GameLobby implements IGameLobby {
 
 		@Override
 		public void onPlayerLeave(IGameLobby lobby, ServerPlayerEntity player) {
-			IGameInstance currentGame = lobby.getCurrentGame();
+			IGame currentGame = lobby.getCurrentGame();
 			if (currentGame != null) {
 				onPlayerLeaveGame(lobby, currentGame);
 			}
 		}
 
-		private void onPlayerJoinGame(IGameLobby lobby, IGameInstance currentGame) {
+		private void onPlayerJoinGame(IGameLobby lobby, IGame currentGame) {
 			int minimumParticipants = currentGame.getDefinition().getMinimumParticipantCount();
 			if (lobby.getPlayers().getParticipantCount() == minimumParticipants) {
 				ITextComponent enoughPlayers = GameMessages.forLobby(lobby).enoughPlayers();
@@ -289,7 +295,7 @@ final class GameLobby implements IGameLobby {
 			}
 		}
 
-		private void onPlayerLeaveGame(IGameLobby lobby, IGameInstance currentGame) {
+		private void onPlayerLeaveGame(IGameLobby lobby, IGame currentGame) {
 			int minimumParticipants = currentGame.getDefinition().getMinimumParticipantCount();
 			if (lobby.getPlayers().getParticipantCount() == minimumParticipants - 1) {
 				ITextComponent noLongerEnoughPlayers = GameMessages.forLobby(lobby).noLongerEnoughPlayers();
@@ -332,7 +338,7 @@ final class GameLobby implements IGameLobby {
 		}
 
 		@Override
-		public void onGameStateChange(IGameLobby lobby) {
+		public void onGamePhaseChange(IGameLobby lobby) {
 			lobby.getTrackingPlayers().sendPacket(LoveTropicsNetwork.CHANNEL, LobbyUpdateMessage.update(lobby));
 		}
 	}

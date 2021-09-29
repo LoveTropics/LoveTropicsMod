@@ -28,7 +28,7 @@ public final class PlaceByStatisticBehavior implements IGameBehavior {
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
-		events.listen(GamePhaseEvents.STOP, (reason) -> {
+		events.listen(GamePhaseEvents.FINISH, () -> {
 			PlayerPlacement.Score<Integer> placement;
 			if (order == PlacementOrder.MAX) {
 				placement = PlayerPlacement.fromMaxScore(game, statistic);

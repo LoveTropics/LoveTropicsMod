@@ -20,9 +20,8 @@ final class ManageLobbyLayout {
 	final Layout centerHeader;
 	final Layout edit;
 
-	final Layout pause;
 	final Layout play;
-	final Layout stop;
+	final Layout skip;
 
 	final Layout rightColumn;
 	final Layout rightFooter;
@@ -77,7 +76,6 @@ final class ManageLobbyLayout {
 		Flex controls = centerFooter.child().rows()
 				.alignCross(Align.Cross.CENTER);
 
-		Flex pause = controls.child().size(20, 20).margin(2, 0);
 		Flex play = controls.child().size(20, 20).margin(2, 0);
 		Flex stop = controls.child().size(20, 20).margin(2, 0);
 
@@ -117,9 +115,8 @@ final class ManageLobbyLayout {
 		this.centerFooter = solve.layout(centerFooter);
 		this.edit = solve.layout(edit);
 
-		this.pause = solve.layout(pause);
 		this.play = solve.layout(play);
-		this.stop = solve.layout(stop);
+		this.skip = solve.layout(stop);
 
 		this.rightColumn = solve.layout(rightColumn);
 		this.rightFooter = solve.layout(rightFooter);

@@ -2,7 +2,10 @@ package com.lovetropics.minigames.common.core.game.behavior;
 
 import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Multimap;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
 import com.lovetropics.minigames.common.core.game.config.BehaviorReference;
+import com.lovetropics.minigames.common.core.game.impl.GamePhase;
+import com.lovetropics.minigames.common.core.game.state.GameStateMap;
 
 import java.util.Iterator;
 import java.util.List;
@@ -23,6 +26,16 @@ public final class BehaviorMap implements Iterable<IGameBehavior> {
 		}
 
 		return new BehaviorMap(behaviors);
+	}
+
+	public void registerTo(GamePhase phase, GameStateMap state, GameEventListeners events) {
+		for (IGameBehavior behavior : this) {
+			behavior.registerState(phase, state);
+		}
+
+		for (IGameBehavior behavior : this) {
+			behavior.register(phase, events);
+		}
 	}
 
 	@Override

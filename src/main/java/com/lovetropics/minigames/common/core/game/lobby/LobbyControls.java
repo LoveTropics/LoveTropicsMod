@@ -45,8 +45,7 @@ public final class LobbyControls {
 
 	public enum Type {
 		PLAY,
-		PAUSE,
-		STOP;
+		SKIP;
 
 		public int mask() {
 			return 1 << this.ordinal();

@@ -62,7 +62,7 @@ public class LoadMapProvider implements IGameMapProvider {
 		RuntimeDimensionConfig config = new RuntimeDimensionConfig(dimension, 0, worldInfo);
 
 		return CompletableFuture.supplyAsync(() -> this.openDimension(server, config), server)
-				.thenApplyAsync(result -> result.flatMap(handle -> {
+				.thenApplyAsync(result -> result.andThen(handle -> {
 					return this.loadMapInto(server, worldSettings, handle);
 				}), Util.getServerExecutor())
 				.thenApplyAsync(result -> result.map(pair -> {

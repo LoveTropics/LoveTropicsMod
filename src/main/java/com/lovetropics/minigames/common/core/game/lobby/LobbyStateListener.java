@@ -42,9 +42,9 @@ public interface LobbyStateListener {
 			}
 
 			@Override
-			public void onGameStateChange(IGameLobby lobby) {
+			public void onGamePhaseChange(IGameLobby lobby) {
 				for (LobbyStateListener watcher : watchers) {
-					watcher.onGameStateChange(lobby);
+					watcher.onGamePhaseChange(lobby);
 				}
 			}
 		};
@@ -65,6 +65,6 @@ public interface LobbyStateListener {
 	default void onLobbyStop(IGameLobby lobby) {
 	}
 
-	default void onGameStateChange(IGameLobby lobby) {
+	default void onGamePhaseChange(IGameLobby lobby) {
 	}
 }

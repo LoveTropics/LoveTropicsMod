@@ -22,7 +22,7 @@ public class CancelGameCommand {
 				if (game == null) {
 					throw new SimpleCommandExceptionType(new TranslationTextComponent(LoveTropicsLangKeys.COMMAND_NO_MINIGAME)).create();
 				}
-				return game.stop(GameStopReason.CANCELED).map(u -> GameMessages.forLobby(game.getLobby()).stopSuccess());
+				return game.requestStop(GameStopReason.canceled()).map(u -> GameMessages.forLobby(game.getLobby()).stopSuccess());
 			}, c.getSource())))
 		);
 	}

@@ -26,7 +26,7 @@ public final class SetupTelemetryBehavior implements IGameBehavior {
 		events.listen(GamePhaseEvents.START, () -> telemetry.start(events));
 
 		events.listen(GamePhaseEvents.STOP, reason -> {
-			if (reason == GameStopReason.FINISHED) {
+			if (reason == GameStopReason.finished()) {
 				telemetry.finish(game.getStatistics());
 			} else {
 				telemetry.cancel();

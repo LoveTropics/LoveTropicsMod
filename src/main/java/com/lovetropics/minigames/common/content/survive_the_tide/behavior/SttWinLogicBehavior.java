@@ -52,11 +52,6 @@ public class SttWinLogicBehavior implements IGameBehavior {
 		});
 
 		events.listen(GamePhaseEvents.TICK, () -> this.checkForGameEndCondition(game, game.getWorld()));
-
-		events.listen(GamePhaseEvents.STOP, (reason) -> {
-			this.minigameEnded = false;
-			this.minigameEndedTimer = 0;
-		});
 	}
 
 	private void checkForGameEndCondition(final IGamePhase game, final World world) {
@@ -68,7 +63,7 @@ public class SttWinLogicBehavior implements IGameBehavior {
 			sendGameFinishMessages(game);
 
 			if (this.minigameEndedTimer >= gameFinishTickDelay) {
-				game.stop(GameStopReason.FINISHED);
+				game.requestStop(GameStopReason.finished());
 			}
 
 			this.minigameEndedTimer++;

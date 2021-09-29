@@ -72,7 +72,7 @@ public class JoinGameCommand {
 		CommandSource source = ctx.getSource();
 		ServerPlayerEntity player = source.asPlayer();
 		return GameCommand.executeGameAction(() -> {
-			return resolveLobby(source, givenLobby, requestedRole).flatMap(lobby -> {
+			return resolveLobby(source, givenLobby, requestedRole).andThen(lobby -> {
 				if (lobby.getPlayers().register(player, requestedRole)) {
 					return GameResult.ok(GameMessages.forLobby(lobby).registerSuccess());
 				} else {

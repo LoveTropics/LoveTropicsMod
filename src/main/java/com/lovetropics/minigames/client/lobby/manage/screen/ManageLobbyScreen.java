@@ -13,6 +13,7 @@ import com.lovetropics.minigames.client.screen.flex.Layout;
 import com.lovetropics.minigames.common.core.game.lobby.LobbyControls;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import net.minecraft.client.gui.DialogTexts;
+import net.minecraft.client.gui.IGuiEventListener;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.client.gui.widget.button.Button;
@@ -20,6 +21,7 @@ import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
 
+import javax.annotation.Nullable;
 import java.util.List;
 
 // TODO: localisation
@@ -34,9 +36,8 @@ public final class ManageLobbyScreen extends Screen {
 	private GameList gameList;
 	private LobbyPlayerList playerList;
 
-	private Button pauseButton;
 	private Button playButton;
-	private Button stopButton;
+	private Button skipButton;
 
 	private int selectedGameId = -1;
 
@@ -83,17 +84,30 @@ public final class ManageLobbyScreen extends Screen {
 
 		addButton(FlexUi.createButton(layout.done, DialogTexts.GUI_DONE, b -> closeScreen()));
 
-		pauseButton = addButton(FlexUi.createButton(layout.pause, new StringTextComponent("\u23F8"), b -> {
-			session.selectControl(LobbyControls.Type.PAUSE);
-		}));
 		playButton = addButton(FlexUi.createButton(layout.play, new StringTextComponent("\u25B6"), b -> {
 			session.selectControl(LobbyControls.Type.PLAY);
 		}));
-		stopButton = addButton(FlexUi.createButton(layout.stop, new StringTextComponent("\u23F9"), b -> {
-			session.selectControl(LobbyControls.Type.STOP);
+		skipButton = addButton(FlexUi.createButton(layout.skip, new StringTextComponent("\u23ED"), b -> {
+			session.selectControl(LobbyControls.Type.SKIP);
 		}));
 
 		setControlsState();
+	}
+
+	// TODO: custom text field instance
+	@Override
+	public void setListener(@Nullable IGuiEventListener listener) {
+		IGuiEventListener lastListener = this.getListener();
+		if (lastListener != null && lastListener != listener) {
+			this.onLoseFocus(lastListener);
+		}
+		super.setListener(listener);
+	}
+
+	private void onLoseFocus(IGuiEventListener listener) {
+		if (listener == nameField) {
+			applyNameField();
+		}
 	}
 
 	public void updateGameList() {
@@ -108,9 +122,8 @@ public final class ManageLobbyScreen extends Screen {
 	public void setControlsState() {
 		ClientLobbyManageState lobby = session.lobby();
 		LobbyControls.State controls = lobby.getControlsState();
-		pauseButton.active = controls.enabled(LobbyControls.Type.PAUSE);
 		playButton.active = controls.enabled(LobbyControls.Type.PLAY);
-		stopButton.active = controls.enabled(LobbyControls.Type.STOP);
+		skipButton.active = controls.enabled(LobbyControls.Type.SKIP);
 	}
 
 	@Override
@@ -119,7 +132,10 @@ public final class ManageLobbyScreen extends Screen {
 
 		session.close();
 
-		// TODO: send on stop focus too!
+		applyNameField();
+	}
+
+	private void applyNameField() {
 		String name = nameField.getText();
 		if (!name.equals(session.lobby().getName())) {
 			session.setName(name);

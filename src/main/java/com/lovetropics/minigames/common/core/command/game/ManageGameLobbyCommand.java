@@ -21,7 +21,7 @@ import net.minecraftforge.fml.network.PacketDistributor;
 
 import static net.minecraft.command.Commands.literal;
 
-public class GameLobbyCommand {
+public class ManageGameLobbyCommand {
 	private static final SimpleCommandExceptionType MISSING_MANAGE_PERMISSIONS = new SimpleCommandExceptionType(
 			new StringTextComponent("You do not have permission to manage this lobby!")
 	);
@@ -29,21 +29,23 @@ public class GameLobbyCommand {
 	public static void register(CommandDispatcher<CommandSource> dispatcher) {
 		// @formatter:off
         dispatcher.register(
-            literal("game").then(literal("lobby")
-				.requires(source -> source.hasPermissionLevel(2))
+            literal("game")
                 .then(literal("create")
-                    .executes(GameLobbyCommand::createLobby)
+						.requires(source -> source.hasPermissionLevel(2))
+						.executes(ManageGameLobbyCommand::createLobby)
                 )
 				.then(literal("manage")
+					.requires(source -> source.hasPermissionLevel(2))
 					.then(GameLobbyArgument.argument("lobby")
-					.executes(GameLobbyCommand::manageLobby)
+					.executes(ManageGameLobbyCommand::manageLobby)
 				))
 				.then(literal("enqueue")
+					.requires(source -> source.hasPermissionLevel(2))
 					.then(GameLobbyArgument.argument("lobby")
 					.then(GameConfigArgument.argument("game")
-					.executes(GameLobbyCommand::enqueueGame)
-				)))
-            )
+					.executes(ManageGameLobbyCommand::enqueueGame)
+				))
+			)
         );
         // @formatter:on
 	}

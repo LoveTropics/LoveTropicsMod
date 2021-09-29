@@ -2,7 +2,7 @@ package com.lovetropics.minigames.client.lobby.state.message;
 
 import com.lovetropics.minigames.client.lobby.state.ClientGameDefinition;
 import com.lovetropics.minigames.client.lobby.state.ClientLobbyManager;
-import com.lovetropics.minigames.common.core.game.IGameInstance;
+import com.lovetropics.minigames.common.core.game.IGame;
 import com.lovetropics.minigames.common.core.game.lobby.IGameLobby;
 import net.minecraft.network.PacketBuffer;
 import net.minecraftforge.fml.network.NetworkEvent;
@@ -23,7 +23,7 @@ public class LobbyUpdateMessage {
 	public static LobbyUpdateMessage update(IGameLobby lobby) {
 		int id = lobby.getMetadata().id().networkId();
 		String name = lobby.getMetadata().name();
-		IGameInstance currentGame = lobby.getCurrentGame();
+		IGame currentGame = lobby.getCurrentGame();
 		ClientGameDefinition definition = currentGame != null ? ClientGameDefinition.from(currentGame.getDefinition()) : null;
 		return new LobbyUpdateMessage(id, new Update(name, definition));
 	}

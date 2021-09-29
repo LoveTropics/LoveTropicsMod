@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.common.core.game.lobby;
 
-import com.lovetropics.minigames.common.core.game.IGameInstance;
+import com.lovetropics.minigames.common.core.game.IGame;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.player.PlayerIterable;
 import com.lovetropics.minigames.common.core.game.player.PlayerSet;
@@ -17,16 +17,16 @@ public interface IGameLobby {
 
 	IGameLobbyPlayers getPlayers();
 
-	LobbyGameQueue getGameQueue();
+	ILobbyGameQueue getGameQueue();
 
 	@Nullable
-	IGameInstance getCurrentGame();
-
-	@Nullable
-	default IGamePhase getCurrentPhase() {
-		IGameInstance game = getCurrentGame();
-		return game != null ? game.getCurrentPhase() : null;
+	default IGame getCurrentGame() {
+		IGamePhase phase = getCurrentPhase();
+		return phase != null ? phase.getGame() : null;
 	}
+
+	@Nullable
+	IGamePhase getCurrentPhase();
 
 	LobbyControls getControls();
 

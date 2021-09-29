@@ -57,7 +57,7 @@ public final class GameResult<T> {
 	}
 
 	public boolean isOk() {
-		return ok != null;
+		return !isError();
 	}
 
 	public boolean isError() {
@@ -65,15 +65,15 @@ public final class GameResult<T> {
 	}
 
 	public <U> GameResult<U> map(Function<? super T, ? extends U> function) {
-		if (ok != null) {
+		if (isOk()) {
 			return GameResult.ok(function.apply(ok));
 		} else {
 			return castError();
 		}
 	}
 
-	public <U> GameResult<U> flatMap(Function<? super T, GameResult<U>> function) {
-		if (ok != null) {
+	public <U> GameResult<U> andThen(Function<? super T, GameResult<U>> function) {
+		if (isOk()) {
 			return function.apply(ok);
 		} else {
 			return castError();
@@ -81,15 +81,15 @@ public final class GameResult<T> {
 	}
 
 	public <U> GameResult<U> mapValue(U value) {
-		if (ok != null) {
+		if (isOk()) {
 			return GameResult.ok(value);
 		} else {
 			return castError();
 		}
 	}
 
-	public <U> CompletableFuture<GameResult<U>> thenFlatMap(Function<T, CompletableFuture<GameResult<U>>> function) {
-		if (ok != null) {
+	public <U> CompletableFuture<GameResult<U>> andThenFuture(Function<T, CompletableFuture<GameResult<U>>> function) {
+		if (isOk()) {
 			return function.apply(ok);
 		} else {
 			return CompletableFuture.completedFuture(castError());
@@ -97,7 +97,7 @@ public final class GameResult<T> {
 	}
 
 	public T orElseGet(Function<ITextComponent, T> orElse) {
-		if (ok != null) {
+		if (isOk()) {
 			return ok;
 		} else {
 			return orElse.apply(error);
@@ -106,7 +106,7 @@ public final class GameResult<T> {
 
 	@SuppressWarnings("unchecked")
 	public <U> GameResult<U> castError() {
-		if (error != null) {
+		if (isError()) {
 			return (GameResult<U>) this;
 		} else {
 			throw new UnsupportedOperationException("not an error!");

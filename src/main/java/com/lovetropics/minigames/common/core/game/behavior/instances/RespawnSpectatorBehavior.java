@@ -26,7 +26,7 @@ public final class RespawnSpectatorBehavior implements IGameBehavior {
 
 	private void onPlayerSetRole(IGamePhase game, @Nullable PlayerRole lastRole) {
 		if (lastRole == PlayerRole.PARTICIPANT && game.getParticipants().isEmpty()) {
-			game.stop(GameStopReason.FINISHED);
+			game.requestStop(GameStopReason.finished());
 		}
 	}
 
