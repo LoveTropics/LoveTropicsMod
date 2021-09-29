@@ -134,7 +134,7 @@ final class GameLobby implements IGameLobby {
 
 	void setVisibility(LobbyVisibility visibility) {
 		this.visibility = visibility;
-		this.trackingPlayers.onVisibilityChange();
+		this.trackingPlayers.rebuildTracking();
 	}
 
 	void tick() {
@@ -300,6 +300,11 @@ final class GameLobby implements IGameLobby {
 			if (currentGame != null) {
 				onPlayerLeaveGame(lobby, currentGame);
 			}
+		}
+
+		@Override
+		public void onPlayerStartTracking(IGameLobby lobby, ServerPlayerEntity player) {
+			player.sendStatusMessage(GameTexts.Status.lobbyOpened(lobby), false);
 		}
 
 		private void onPlayerJoinGame(IGameLobby lobby, IGame currentGame) {

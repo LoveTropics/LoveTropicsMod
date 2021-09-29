@@ -14,7 +14,6 @@ import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.function.BiConsumer;
 
-// TODO: migrate all texts through here!
 public final class GameTexts {
 	public static void collectTranslations(BiConsumer<String, String> consumer) {
 		Keys.collectTranslations(consumer);
