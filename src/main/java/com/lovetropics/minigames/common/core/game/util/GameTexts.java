@@ -254,6 +254,7 @@ public final class GameTexts {
 			static final String GAME_QUEUE = key("game_queue");
 			static final String INSTALLED_GAMES = key("installed_games");
 			static final String GAME_INACTIVE = key("game_inactive");
+			static final String CLOSE_LOBBY = key("close_lobby");
 
 			static final String GAME_PLAYER_COUNT = key("game_player_count");
 			static final String GAME_PLAYER_RANGE = key("game_player_bounds");
@@ -269,6 +270,7 @@ public final class GameTexts {
 				consumer.accept(GAME_QUEUE, "Game Queue");
 				consumer.accept(INSTALLED_GAMES, "Installed");
 				consumer.accept(GAME_INACTIVE, "Inactive");
+				consumer.accept(CLOSE_LOBBY, "Close");
 
 				consumer.accept(GAME_PLAYER_COUNT, "%s players");
 				consumer.accept(GAME_PLAYER_RANGE, "%s-%s players");
@@ -320,7 +322,11 @@ public final class GameTexts {
 		}
 
 		public static IFormattableTextComponent roleDescription(PlayerRole role) {
-			return new StringTextComponent(role == PlayerRole.SPECTATOR ? Keys.SPECTATING : Keys.PARTICIPATING);
+			return new TranslationTextComponent(role == PlayerRole.SPECTATOR ? Keys.SPECTATING : Keys.PARTICIPATING);
+		}
+
+		public static IFormattableTextComponent closeLobby() {
+			return new TranslationTextComponent(Keys.CLOSE_LOBBY);
 		}
 	}
 }

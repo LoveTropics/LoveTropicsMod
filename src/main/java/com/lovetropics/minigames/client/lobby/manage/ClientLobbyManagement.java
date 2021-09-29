@@ -79,6 +79,10 @@ public final class ClientLobbyManagement {
 			}
 		}
 
+		public void closeLobby() {
+			sendUpdates(ServerLobbyUpdate.Set::close);
+		}
+
 		private void sendUpdates(UnaryOperator<ServerLobbyUpdate.Set> updates) {
 			ServerLobbyUpdate.Set set = ServerLobbyUpdate.Set.create();
 			set = updates.apply(set);
@@ -97,12 +101,12 @@ public final class ClientLobbyManagement {
 
 		public void handleInstalledGames(List<ClientGameDefinition> installedGames) {
 			lobby.setInstalledGames(installedGames);
-			screen.updateGameList();
+			screen.updateGameEntries();
 		}
 
 		public void handleQueue(ClientLobbyQueue queue) {
 			lobby.setQueue(queue);
-			screen.updateGameList();
+			screen.updateGameEntries();
 		}
 
 		public void handleName(String name) {
@@ -112,12 +116,12 @@ public final class ClientLobbyManagement {
 
 		public void handleCurrentGame(@Nullable ClientGameDefinition currentGame) {
 			lobby.setCurrentGame(currentGame);
-			screen.updateGameList();
+			screen.updateGameEntries();
 		}
 
 		public void handleQueueUpdate(IntList queue, Int2ObjectMap<ClientLobbyQueuedGame> updated) {
 			lobby.updateQueue(queue, updated);
-			screen.updateGameList();
+			screen.updateGameEntries();
 		}
 
 		public void handlePlayers(List<ClientLobbyPlayer> players) {

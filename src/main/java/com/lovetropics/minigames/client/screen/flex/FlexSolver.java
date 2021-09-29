@@ -18,7 +18,7 @@ public final class FlexSolver {
 		Results results = new Results();
 
 		FlexSolve rootSolve = results.flexSolve(root);
-		rootSolve.size = this.screen.size();
+		rootSolve.outerSize = rootSolve.innerSize = this.screen.size();
 		rootSolve.layout = layout(root, this.screen);
 
 		this.updateInnerSizes(results, root, rootSolve);
@@ -36,12 +36,15 @@ public final class FlexSolver {
 			FlexSolve childSolve = results.flexSolve(child);
 			this.updateInnerSizes(results, child, childSolve);
 
+			Flex.Length childOuterWidth = child.width.min.add(totalBorderX(child));
+			Flex.Length childOuterHeight = child.height.min.add(totalBorderY(child));
+
 			if (flex.axis == Axis.X) {
-				innerWidth = innerWidth.add(childSolve.outerWidth.min);
-				innerHeight = Flex.Length.max(innerHeight, childSolve.outerHeight.min);
+				innerWidth = innerWidth.add(childOuterWidth);
+				innerHeight = Flex.Length.max(innerHeight, childOuterHeight);
 			} else {
-				innerWidth = Flex.Length.max(innerWidth, childSolve.outerWidth.min);
-				innerHeight = innerHeight.add(childSolve.outerHeight.min);
+				innerWidth = Flex.Length.max(innerWidth, childOuterWidth);
+				innerHeight = innerHeight.add(childOuterHeight);
 			}
 		}
 
@@ -50,12 +53,11 @@ public final class FlexSolver {
 	}
 
 	private void solveSizes(Results results, Flex flex, FlexSolve solve) {
-		Box.Size innerSize = innerSize(flex, solve.size);
-
 		float totalGrow = 0.0F;
 		for (Flex child : flex.children) {
 			FlexSolve childSolve = results.flexSolve(child);
-			childSolve.size = this.solveSize(innerSize, childSolve);
+			childSolve.innerSize = this.solveInnerSize(solve.innerSize, child, childSolve);
+			childSolve.outerSize = outerSize(child, childSolve.innerSize);
 			totalGrow += child.grow;
 		}
 
@@ -80,15 +82,15 @@ public final class FlexSolver {
 			totalGrow -= child.grow;
 
 			FlexSolve childSolve = results.flexSolve(child);
-			childSolve.size = childSolve.size.grow(flex.axis, growSize);
+			childSolve.applyGrow(flex.axis, growSize);
 		}
 	}
 
 	private int remainingSizeForGrow(Results results, Flex flex, FlexSolve solve) {
-		int remainingSize = solve.size.along(flex.axis);
+		int remainingSize = solve.innerSize.along(flex.axis);
 		for (Flex child : flex.children) {
 			FlexSolve childSolve = results.flexSolve(child);
-			remainingSize -= childSolve.size.along(flex.axis);
+			remainingSize -= childSolve.outerSize.along(flex.axis);
 		}
 		return remainingSize;
 	}
@@ -103,8 +105,8 @@ public final class FlexSolver {
 		for (Flex child : flex.children) {
 			FlexSolve childSolve = results.flexSolve(child);
 
-			Box.Interval childMain = innerMain.applyMainAlign(child.alignMain, childSolve.size.along(axis));
-			Box.Interval childCross = innerCross.applyCrossAlign(child.alignCross, childSolve.size.along(axis.cross()));
+			Box.Interval childMain = innerMain.applyMainAlign(child.alignMain, childSolve.outerSize.along(axis));
+			Box.Interval childCross = innerCross.applyCrossAlign(child.alignCross, childSolve.outerSize.along(axis.cross()));
 
 			childSolve.layout = layout(child, Box.combine(axis, childMain, childCross));
 
@@ -114,29 +116,37 @@ public final class FlexSolver {
 		}
 	}
 
-	private Box.Size solveSize(Box.Size parent, FlexSolve solve) {
-		int minWidth = solve.outerWidth.min.resolve(parent.width());
-		int minHeight = solve.outerHeight.min.resolve(parent.height());
-		int maxWidth = solve.outerWidth.max.resolve(parent.width());
-		int maxHeight = solve.outerHeight.max.resolve(parent.height());
+	private Box.Size solveInnerSize(Box.Size parent, Flex flex, FlexSolve solve) {
+		int minInnerWidth = flex.width.min.resolve(parent.width());
+		int minInnerHeight = flex.height.min.resolve(parent.height());
+		int maxInnerWidth = flex.width.max.resolve(parent.width());
+		int maxInnerHeight = flex.height.max.resolve(parent.height());
 
-		int innerWidth = solve.innerWidth.resolve(minWidth);
-		int innerHeight = solve.innerHeight.resolve(minHeight);
+		int innerWidth = solve.innerWidth.resolve(minInnerWidth);
+		int innerHeight = solve.innerHeight.resolve(minInnerHeight);
 
 		return new Box.Size(
-				MathHelper.clamp(innerWidth, minWidth, maxWidth),
-				MathHelper.clamp(innerHeight, minHeight, maxHeight)
+				MathHelper.clamp(innerWidth, minInnerWidth, maxInnerWidth),
+				MathHelper.clamp(innerHeight, minInnerHeight, maxInnerHeight)
 		);
 	}
 
-	private static Box.Size innerSize(Flex flex, Box.Size size) {
-		return size.contract(flex.margin).contract(flex.padding);
+	private static Box.Size outerSize(Flex flex, Box.Size size) {
+		return size.grow(flex.margin).grow(flex.padding);
 	}
 
 	private static Layout layout(Flex flex, Box margin) {
 		Box padding = margin.contract(flex.margin);
 		Box content = padding.contract(flex.padding);
 		return new Layout(content, padding, margin);
+	}
+
+	static int totalBorderX(Flex flex) {
+		return flex.padding.borderX() + flex.margin.borderX();
+	}
+
+	static int totalBorderY(Flex flex) {
+		return flex.padding.borderY() + flex.margin.borderY();
 	}
 
 	public static final class Results {
@@ -153,22 +163,21 @@ public final class FlexSolver {
 		}
 
 		private FlexSolve flexSolve(Flex flex) {
-			return this.flexSolves.computeIfAbsent(flex, FlexSolve::new);
+			return this.flexSolves.computeIfAbsent(flex, f -> new FlexSolve());
 		}
 	}
 
 	static final class FlexSolve {
-		final Flex.LengthRange outerWidth;
-		final Flex.LengthRange outerHeight;
 		Flex.Length innerWidth = Flex.Length.ZERO;
 		Flex.Length innerHeight = Flex.Length.ZERO;
 
-		Box.Size size;
+		Box.Size outerSize;
+		Box.Size innerSize;
 		Layout layout;
 
-		FlexSolve(Flex flex) {
-			this.outerWidth = flex.width.add(flex.padding.borderX() + flex.margin.borderX());
-			this.outerHeight = flex.height.add(flex.padding.borderY() + flex.margin.borderY());
+		void applyGrow(Axis axis, int size) {
+			outerSize = outerSize.grow(axis, size);
+			innerSize = innerSize.grow(axis, size);
 		}
 	}
 }

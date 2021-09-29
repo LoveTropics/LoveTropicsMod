@@ -20,6 +20,7 @@ import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.client.gui.widget.button.Button;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.util.text.TextFormatting;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -34,6 +35,8 @@ public final class ManageLobbyScreen extends Screen {
 
 	private GameList gameList;
 	private LobbyPlayerList playerList;
+
+	private Button closeButton;
 
 	private Button playButton;
 	private Button skipButton;
@@ -85,8 +88,6 @@ public final class ManageLobbyScreen extends Screen {
 
 		playerList = addListener(new LobbyPlayerList(this, lobby, layout.playerList));
 
-		addButton(FlexUi.createButton(layout.done, DialogTexts.GUI_DONE, b -> closeScreen()));
-
 		playButton = addButton(FlexUi.createButton(layout.play, new StringTextComponent("\u25B6"), b -> {
 			session.selectControl(LobbyControls.Type.PLAY);
 		}));
@@ -94,6 +95,15 @@ public final class ManageLobbyScreen extends Screen {
 			session.selectControl(LobbyControls.Type.SKIP);
 		}));
 
+		ITextComponent closeLobby = GameTexts.Ui.closeLobby()
+				.mergeStyle(TextFormatting.RED, TextFormatting.UNDERLINE);
+		closeButton = addButton(FlexUi.createButton(layout.close, closeLobby, b -> {
+			session.closeLobby();
+			closeScreen();
+		}));
+		addButton(FlexUi.createButton(layout.done, DialogTexts.GUI_DONE, b -> closeScreen()));
+
+		updateGameEntries();
 		updatePublishState();
 		updateControlsState();
 	}
@@ -114,8 +124,11 @@ public final class ManageLobbyScreen extends Screen {
 		}
 	}
 
-	public void updateGameList() {
+	public void updateGameEntries() {
 		gameList.updateEntries();
+
+		ClientLobbyManageState lobby = session.lobby();
+		closeButton.active = lobby.getQueue().isEmpty();
 	}
 
 	public void updateNameField() {
