@@ -20,7 +20,7 @@
   "ltminigames.command.game_already_stopped": "This game has already been stopped!",
   "ltminigames.command.joined_lobby": "You have joined %s!",
   "ltminigames.command.left_lobby": "You have left %s!",
-  "ltminigames.command.lobby_selector_entry": "- %s (%s players): %n to join",
+  "ltminigames.command.lobby_selector_entry": "- %s (%s players): %s to join",
   "ltminigames.command.lobby_selector_header": "There are multiple lobbies available to join! Select one from this list:",
   "ltminigames.command.no_joinable_lobbies": "There are no public lobbies to join!",
   "ltminigames.command.no_manage_permission": "You do not have permission to manage this lobby!",
@@ -72,5 +72,7 @@
   "ltminigames.ui.lobby_name": "Lobby Name",
   "ltminigames.ui.manage_game_lobby": "Manage Game Lobby",
   "ltminigames.ui.managing_game": "Managing Game: %s",
-  "ltminigames.ui.publish": "Publish"
+  "ltminigames.ui.participating": "Participating",
+  "ltminigames.ui.publish": "Publish",
+  "ltminigames.ui.spectating": "Spectating"
 }

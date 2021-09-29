@@ -83,7 +83,7 @@ public final class ManageLobbyScreen extends Screen {
 			session.publishLobby();
 		}));
 
-		playerList = addListener(new LobbyPlayerList(lobby, layout.playerList));
+		playerList = addListener(new LobbyPlayerList(this, lobby, layout.playerList));
 
 		addButton(FlexUi.createButton(layout.done, DialogTexts.GUI_DONE, b -> closeScreen()));
 
@@ -170,7 +170,7 @@ public final class ManageLobbyScreen extends Screen {
 		drawString(matrixStack, font, nameField.getMessage(), nameField.x, nameField.y - fontHeight - 2, 0xFFFFFF);
 		nameField.render(matrixStack, mouseX, mouseY, partialTicks);
 
-		playerList.render(matrixStack, mouseX, mouseY, partialTicks);
+		playerList.render(matrixStack, mouseX, mouseY);
 
 		Box header = layout.header.content();
 		drawCenteredString(matrixStack, font, title, header.centerX(), header.centerY(), 0xFFFFFF);
@@ -180,6 +180,8 @@ public final class ManageLobbyScreen extends Screen {
 		if (selectedEntry != null) {
 			renderSelectedGame(selectedEntry, matrixStack, mouseX, mouseY, partialTicks);
 		}
+
+		playerList.renderTooltip(matrixStack, mouseX, mouseY);
 
 		super.render(matrixStack, mouseX, mouseY, partialTicks);
 	}

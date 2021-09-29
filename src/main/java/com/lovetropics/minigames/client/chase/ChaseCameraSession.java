@@ -1,14 +1,10 @@
 package com.lovetropics.minigames.client.chase;
 
-import com.mojang.authlib.GameProfile;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.network.play.ClientPlayNetHandler;
-import net.minecraft.client.network.play.NetworkPlayerInfo;
 import net.minecraft.client.renderer.ActiveRenderInfo;
 import net.minecraft.util.math.MathHelper;
 import net.minecraftforge.client.event.EntityViewRenderEvent;
 
-import javax.annotation.Nullable;
 import java.util.List;
 import java.util.UUID;
 
@@ -30,18 +26,6 @@ class ChaseCameraSession {
 		this.players = players;
 		this.ui = new ChaseCameraUi(this);
 		this.applyState(ChaseCameraState.FREE_CAMERA);
-	}
-
-	@Nullable
-	GameProfile getPlayerProfile(UUID uuid) {
-		NetworkPlayerInfo playerInfo = this.getPlayerInfo(uuid);
-		return playerInfo != null ? playerInfo.getGameProfile() : null;
-	}
-
-	@Nullable
-	private NetworkPlayerInfo getPlayerInfo(UUID uuid) {
-		ClientPlayNetHandler connection = CLIENT.getConnection();
-		return connection != null ? connection.getPlayerInfo(uuid) : null;
 	}
 
 	void tick() {

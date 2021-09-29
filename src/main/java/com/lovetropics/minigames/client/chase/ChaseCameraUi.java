@@ -1,6 +1,7 @@
 package com.lovetropics.minigames.client.chase;
 
 import com.lovetropics.minigames.Constants;
+import com.lovetropics.minigames.client.screen.ClientPlayerInfo;
 import com.lovetropics.minigames.client.screen.PlayerFaces;
 import com.mojang.authlib.GameProfile;
 import com.mojang.blaze3d.matrix.MatrixStack;
@@ -227,7 +228,7 @@ public final class ChaseCameraUi {
 
 		for (UUID player : players) {
 			Function<ChaseCameraSession, String> nameFunction = s -> {
-				GameProfile profile = s.getPlayerProfile(player);
+				GameProfile profile = ClientPlayerInfo.getPlayerProfile(player);
 				return profile != null ? profile.getName() : "...";
 			};
 

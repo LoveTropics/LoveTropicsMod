@@ -110,7 +110,7 @@ public final class GameTexts {
 				consumer.accept(NO_MANAGE_PERMISSION, "You do not have permission to manage this lobby!");
 
 				consumer.accept(LOBBY_SELECTOR_HEADER, "There are multiple lobbies available to join! Select one from this list:");
-				consumer.accept(LOBBY_SELECTOR_ENTRY, "- %s (%s players): %n to join");
+				consumer.accept(LOBBY_SELECTOR_ENTRY, "- %s (%s players): %s to join");
 			}
 
 			static String key(String key) {
@@ -258,6 +258,9 @@ public final class GameTexts {
 			static final String GAME_PLAYER_COUNT = key("game_player_count");
 			static final String GAME_PLAYER_RANGE = key("game_player_bounds");
 
+			static final String PARTICIPATING = key("participating");
+			static final String SPECTATING = key("spectating");
+
 			static void collectTranslations(BiConsumer<String, String> consumer) {
 				consumer.accept(MANAGE_GAME_LOBBY, "Manage Game Lobby");
 				consumer.accept(MANAGING_GAME, "Managing Game: %s");
@@ -269,6 +272,9 @@ public final class GameTexts {
 
 				consumer.accept(GAME_PLAYER_COUNT, "%s players");
 				consumer.accept(GAME_PLAYER_RANGE, "%s-%s players");
+
+				consumer.accept(PARTICIPATING, "Participating");
+				consumer.accept(SPECTATING, "Spectating");
 			}
 
 			static String key(String key) {
@@ -311,6 +317,10 @@ public final class GameTexts {
 			} else {
 				return new TranslationTextComponent(Keys.GAME_PLAYER_RANGE, min, max);
 			}
+		}
+
+		public static IFormattableTextComponent roleDescription(PlayerRole role) {
+			return new StringTextComponent(role == PlayerRole.SPECTATOR ? Keys.SPECTATING : Keys.PARTICIPATING);
 		}
 	}
 }
