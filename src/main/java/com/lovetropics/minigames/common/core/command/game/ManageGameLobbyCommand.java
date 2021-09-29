@@ -50,13 +50,11 @@ public class ManageGameLobbyCommand {
 
 	private static int createLobby(CommandContext<CommandSource> context) throws CommandSyntaxException {
 		ServerPlayerEntity player = context.getSource().asPlayer();
-
 		String name = player.getScoreboardName() + "'s Lobby";
 
 		GameResult<IGameLobby> result = MultiGameManager.INSTANCE.createGameLobby(name, player);
 		if (result.isError()) {
-			context.getSource().sendErrorMessage(result.getError());
-			return Command.SINGLE_SUCCESS;
+			throw new SimpleCommandExceptionType(result.getError()).create();
 		}
 
 		IGameLobby lobby = result.getOk();
