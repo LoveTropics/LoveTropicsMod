@@ -1,6 +1,7 @@
 package com.lovetropics.minigames.client.lobby.manage.screen.game_list;
 
 import com.lovetropics.minigames.client.lobby.state.ClientGameDefinition;
+import com.lovetropics.minigames.client.screen.TrimmedText;
 import com.lovetropics.minigames.client.screen.flex.Layout;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import net.minecraft.client.Minecraft;
@@ -8,9 +9,8 @@ import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.list.ExtendedList;
 import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.util.IReorderingProcessor;
 import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.LanguageMap;
+import net.minecraft.util.text.StringTextComponent;
 
 public abstract class AbstractGameList extends ExtendedList<AbstractGameList.Entry> {
 	private static final int SCROLL_WIDTH = 6;
@@ -20,7 +20,7 @@ public abstract class AbstractGameList extends ExtendedList<AbstractGameList.Ent
 	public AbstractGameList(Screen screen, Layout layout, ITextComponent title) {
 		super(
 				Minecraft.getInstance(),
-				layout.background().width() - SCROLL_WIDTH, screen.height,
+				layout.background().width(), screen.height,
 				layout.background().top(), layout.background().bottom(),
 				Entry.HEIGHT
 		);
@@ -30,6 +30,8 @@ public abstract class AbstractGameList extends ExtendedList<AbstractGameList.Ent
 		// disable background
 		this.func_244605_b(false);
 		this.func_244606_c(false);
+
+		this.setRenderSelection(false);
 
 		this.title = title;
 	}
@@ -50,13 +52,18 @@ public abstract class AbstractGameList extends ExtendedList<AbstractGameList.Ent
 	public abstract void updateEntries();
 
 	@Override
+	public int getRowLeft() {
+		return this.x0;
+	}
+
+	@Override
 	public int getRowWidth() {
-		return this.width;
+		return this.getMaxScroll() > 0 ? this.width - SCROLL_WIDTH : this.width;
 	}
 
 	@Override
 	protected int getScrollbarPosition() {
-		return this.x1;
+		return this.x1 - SCROLL_WIDTH;
 	}
 
 	@Override
@@ -72,52 +79,122 @@ public abstract class AbstractGameList extends ExtendedList<AbstractGameList.Ent
 		private final AbstractGameList list;
 
 		private final int id;
-		private final IReorderingProcessor name;
-		private final String description;
+		private TrimmedText title = TrimmedText.of("");
+		private TrimmedText description = null;
 
-		private boolean important;
+		private int backgroundColor = -1;
+		private int selectedColor = 0xFF000000;
+		private int hoveredColor = 0xFF202020;
+		private int outlineColor = 0xFF808080;
 
-		public Entry(AbstractGameList list, int id, ClientGameDefinition game) {
-			this(list, id, game.name, description(game));
-		}
+		private boolean banner;
 
-		public Entry(AbstractGameList list, int id, ITextComponent name, String description) {
+		public Entry(AbstractGameList list, int id) {
 			this.client = list.minecraft;
 			this.list = list;
 
 			this.id = id;
-
-			FontRenderer font = this.client.fontRenderer;
-			int maxTextWidth = list.getRowWidth() - 2 * PADDING;
-
-			this.name = LanguageMap.getInstance().func_241870_a(font.func_238417_a_(name, maxTextWidth));
-			this.description = font.trimStringToWidth(description, maxTextWidth);
 		}
 
-		public void setImportant(boolean important) {
-			this.important = important;
-		}
-
-		private static String description(ClientGameDefinition game) {
+		public static Entry game(AbstractGameList list, int id, ClientGameDefinition game) {
+			String description;
 			if (game.maximumParticipants != game.minimumParticipants) {
-				return game.minimumParticipants + "-" + game.maximumParticipants + " players";
+				description = game.minimumParticipants + "-" + game.maximumParticipants + " players";
 			} else {
-				return game.minimumParticipants + " players";
+				description = game.minimumParticipants + " players";
 			}
+			return new Entry(list, id)
+					.setTitle(game.name)
+					.setDescription(new StringTextComponent(description));
+		}
+
+		public Entry setTitle(ITextComponent title) {
+			this.title = TrimmedText.of(title);
+			return this;
+		}
+
+		public Entry setDescription(ITextComponent description) {
+			this.description = TrimmedText.of(description);
+			return this;
+		}
+
+		public Entry setBackgroundColor(int color) {
+			this.backgroundColor = color;
+			return this;
+		}
+
+		public Entry setHoveredColor(int color) {
+			this.hoveredColor = color;
+			return this;
+		}
+
+		public Entry setSelectedColor(int color) {
+			this.selectedColor = color;
+			return this;
+		}
+
+		public Entry setOutlineColor(int color) {
+			this.outlineColor = color;
+			return this;
+		}
+
+		public Entry setBanner(boolean banner) {
+			this.banner = banner;
+			return this;
 		}
 
 		@Override
-		public void render(MatrixStack matrixStack, int index, int top, int left, int width, int height, int mouseX, int mouseY, boolean isMouseOver, float partialTicks) {
+		public void render(MatrixStack matrixStack, int index, int top, int left, int width, int height, int mouseX, int mouseY, boolean hovered, float partialTicks) {
 			FontRenderer font = this.client.fontRenderer;
 			int fontHeight = font.FONT_HEIGHT;
 
-			if (isMouseOver || important) {
-				int color = isMouseOver ? 0xFF202020 : 0xFF000000;
-				fill(matrixStack, left - 1, top - 1, left + width - 4 + 1, top + height + 1, color);
+			boolean selected = list.isSelectedItem(index);
+			boolean outline = banner || selected;
+
+			this.fillEntry(matrixStack, left, top, width, height, hovered, selected, outline);
+
+			int maxTextWidth = list.getRowWidth() - 2 * PADDING;
+
+			if (description != null) {
+				font.func_238422_b_(matrixStack, title.forWidth(font, maxTextWidth), left + PADDING, top + PADDING, 0xFFFFFF);
+				font.func_238422_b_(matrixStack, description.forWidth(font, maxTextWidth), left + PADDING, top + height - PADDING - fontHeight, 0x555555);
+			} else {
+				font.func_238422_b_(matrixStack, title.forWidth(font, maxTextWidth), left + PADDING, top + (height - fontHeight) / 2, 0xFFFFFF);
+			}
+		}
+
+		private void fillEntry(MatrixStack matrixStack, int left, int top, int width, int height, boolean hovered, boolean selected, boolean outline) {
+			if (banner) {
+				top += 4;
+				height -= 8;
 			}
 
-			font.func_238422_b_(matrixStack, this.name, left + PADDING, top + PADDING, 0xFFFFFF);
-			font.drawString(matrixStack, this.description, left + PADDING, top + height - PADDING - fontHeight, 0x555555);
+			int fillColor = getFillColor(hovered, selected);
+
+			if (outline) {
+				fillEntry(matrixStack, left, top, width, height, outlineColor);
+				if (fillColor != -1) {
+					fillEntry(matrixStack, left + 1, top + 1, width - 2, height - 2, fillColor);
+				}
+			} else {
+				if (fillColor != -1) {
+					fillEntry(matrixStack, left, top, width, height, fillColor);
+				}
+			}
+		}
+
+		private int getFillColor(boolean hovered, boolean selected) {
+			if (selected) {
+				return selectedColor;
+			} else if (hovered) {
+				return hoveredColor;
+			} else {
+				return backgroundColor;
+			}
+		}
+
+		private void fillEntry(MatrixStack matrixStack, int left, int top, int width, int height, int color) {
+			fill(matrixStack, left, top - 2, left + width, top + height + 2, color);
 		}
 
 		@Override

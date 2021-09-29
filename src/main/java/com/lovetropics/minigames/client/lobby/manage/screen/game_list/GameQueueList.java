@@ -10,6 +10,7 @@ import com.lovetropics.minigames.client.screen.flex.Layout;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.button.Button;
+import net.minecraft.util.text.IFormattableTextComponent;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
@@ -49,11 +50,10 @@ public final class GameQueueList extends AbstractGameList {
 
 		this.clearEntries();
 
-		// TODO: don't use an entry to render
 		this.addEntry(createCurrentGameEntry(lobby.getCurrentGame()));
 
 		for (ClientLobbyQueue.Entry entry : this.lobby.getQueue().entries()) {
-			Entry listEntry = new Entry(this, entry.id(), entry.game().definition());
+			Entry listEntry = Entry.game(this, entry.id(), entry.game().definition());
 			this.addEntry(listEntry);
 
 			if (listEntry.getId() == selectedId) {
@@ -63,14 +63,27 @@ public final class GameQueueList extends AbstractGameList {
 	}
 
 	private Entry createCurrentGameEntry(@Nullable ClientGameDefinition game) {
-		Entry entry;
+		Entry entry = new Entry(this, -1)
+				.setBanner(true);
+
 		if (game != null) {
-			entry = new Entry(this, -1, game);
+			IFormattableTextComponent gameName = game.name.deepCopy().mergeStyle(TextFormatting.UNDERLINE);
+			entry.setTitle(new StringTextComponent("\u25B6 ").appendSibling(gameName));
+
+			entry.setBackgroundColor(0xFF102010)
+					.setHoveredColor(0xFF204020)
+					.setSelectedColor(0xFF204020)
+					.setOutlineColor(0xFF408040);
 		} else {
-			entry = new Entry(this, -1, new StringTextComponent("Inactive"), "");
+			IFormattableTextComponent inactive = new StringTextComponent("Inactive").mergeStyle(TextFormatting.UNDERLINE);
+			entry.setTitle(new StringTextComponent("\u23F8 ").appendSibling(inactive));
+
+			entry.setBackgroundColor(0xFF201010)
+					.setHoveredColor(0xFF402020)
+					.setSelectedColor(0xFF402020)
+					.setOutlineColor(0xFF804040);
 		}
 
-		entry.setImportant(true);
 		return entry;
 	}
 

@@ -52,7 +52,7 @@ public final class InstalledGameList extends AbstractGameList {
 		this.clearEntries();
 		for (int id = 0; id < games.size(); id++) {
 			ClientGameDefinition game = games.get(id);
-			this.addEntry(new Entry(this, id, game));
+			this.addEntry(Entry.game(this, id, game));
 		}
 	}
 
