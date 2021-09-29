@@ -75,6 +75,7 @@ public final class ClientLobbyManagement {
 		}
 
 		public void setName(String name) {
+			lobby.setName(name);
 			sendUpdates(updates -> updates.setName(name));
 		}
 

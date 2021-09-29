@@ -10,7 +10,7 @@ import com.lovetropics.minigames.common.core.game.state.statistics.GameStatistic
 import com.lovetropics.minigames.common.core.game.state.statistics.PlayerKey;
 import net.minecraft.server.MinecraftServer;
 
-public interface IProtoGame {
+public interface IGame {
 	IGameLobby getLobby();
 
 	default MinecraftServer getServer() {

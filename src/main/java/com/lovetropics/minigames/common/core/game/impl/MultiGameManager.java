@@ -195,7 +195,7 @@ public class MultiGameManager implements IGameManager {
 	public static void onServerStopping(FMLServerStoppingEvent event) {
 		List<GameLobby> lobbies = new ArrayList<>(INSTANCE.lobbies);
 		for (GameLobby lobby : lobbies) {
-			lobby.cancel();
+			lobby.close();
 		}
 	}
 
@@ -203,19 +203,9 @@ public class MultiGameManager implements IGameManager {
 	public static void onServerTick(TickEvent.ServerTickEvent event) {
 		if (event.phase == TickEvent.Phase.START) return;
 
-		List<GameLobby> canceled = null;
-
+		// TODO: support closing lobbies
 		for (GameLobby lobby : INSTANCE.lobbies) {
-			if (!lobby.tick()) {
-				if (canceled == null) {
-					canceled = new ArrayList<>();
-				}
-				canceled.add(lobby);
-			}
-		}
-
-		if (canceled != null) {
-			canceled.forEach(GameLobby::cancel);
+			lobby.tick();
 		}
 	}
 

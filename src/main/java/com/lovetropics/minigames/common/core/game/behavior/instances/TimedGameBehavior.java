@@ -49,7 +49,7 @@ public final class TimedGameBehavior implements IGameBehavior {
 	private void onTick(IGamePhase game) {
 		long ticks = game.ticks();
 		if (ticks >= closeTime) {
-			game.stop(GameStopReason.FINISHED);
+			game.requestStop(GameStopReason.finished());
 			return;
 		}
 

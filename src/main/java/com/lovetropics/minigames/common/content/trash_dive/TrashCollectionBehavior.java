@@ -60,7 +60,7 @@ public final class TrashCollectionBehavior implements IGameBehavior {
 		widgets = GlobalGameWidgets.registerTo(game, events);
 
 		events.listen(GamePhaseEvents.START, () -> onStart(game));
-		events.listen(GamePhaseEvents.STOP, reason -> onFinish(game));
+		events.listen(GamePhaseEvents.FINISH, () -> triggerGameOver(game));
 		events.listen(GamePlayerEvents.ADD, player -> onAddPlayer(game, player));
 		events.listen(GamePlayerEvents.LEFT_CLICK_BLOCK, (player, world, pos) -> onPlayerLeftClickBlock(game, player, pos));
 		events.listen(GamePlayerEvents.BREAK_BLOCK, this::onPlayerBreakBlock);
@@ -81,10 +81,6 @@ public final class TrashCollectionBehavior implements IGameBehavior {
 		for (ServerPlayerEntity player : players) {
 			player.setItemStackToSlot(EquipmentSlotType.HEAD, new ItemStack(Items.TURTLE_HELMET));
 		}
-	}
-
-	private void onFinish(IGamePhase game) {
-		triggerGameOver(game);
 	}
 
 	private void onAddPlayer(IGamePhase game, ServerPlayerEntity player) {

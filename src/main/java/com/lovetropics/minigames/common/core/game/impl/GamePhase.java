@@ -4,7 +4,6 @@ import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.client.data.LoveTropicsLangKeys;
 import com.lovetropics.minigames.common.core.game.*;
 import com.lovetropics.minigames.common.core.game.behavior.BehaviorMap;
-import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameEventType;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
@@ -15,11 +14,11 @@ import com.lovetropics.minigames.common.core.game.player.PlayerRole;
 import com.lovetropics.minigames.common.core.game.player.PlayerSet;
 import com.lovetropics.minigames.common.core.game.state.statistics.StatisticKey;
 import com.lovetropics.minigames.common.core.map.MapRegions;
-import com.lovetropics.minigames.common.util.Scheduler;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.RegistryKey;
 import net.minecraft.util.Unit;
+import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
@@ -41,7 +40,8 @@ public class GamePhase implements IGamePhase {
 	final GameEventListeners events = new GameEventListeners();
 
 	long startTime;
-	boolean stopped;
+	GameStopReason stopped;
+	boolean destroyed;
 
 	private GamePhase(GameInstance game, IGamePhaseDefinition definition, GameMap map, BehaviorMap behaviors) {
 		this.game = game;
@@ -57,76 +57,56 @@ public class GamePhase implements IGamePhase {
 		}
 	}
 
-	static CompletableFuture<GameResult<GamePhase>> start(GameInstance game, IGamePhaseDefinition definition) {
+	static CompletableFuture<GameResult<GamePhase>> create(GameInstance game, IGamePhaseDefinition definition) {
 		MinecraftServer server = game.getServer();
 
 		CompletableFuture<GameResult<GamePhase>> future = definition.getMap().open(server)
-				.thenComposeAsync(r -> r.thenFlatMap(map -> {
+				.thenApplyAsync(r -> r.map(map -> {
 					BehaviorMap behaviors = definition.createBehaviors();
-					GamePhase phase = new GamePhase(game, definition, map, behaviors);
-
-					return phase.registerBehaviors()
-							.thenFlatMap($ -> phase.start())
-							.thenApply(result -> result.map($ -> phase));
+					return new GamePhase(game, definition, map, behaviors);
 				}), server);
 
 		return GameResult.handleException("Unknown exception starting game phase", future);
 	}
 
-	private GameResult<Unit> registerBehaviors() {
+	GameResult<Unit> start() {
 		try {
-			for (IGameBehavior behavior : behaviors) {
-				behavior.registerState(this, game.stateMap);
-			}
-
-			for (IGameBehavior behavior : behaviors) {
-				behavior.register(this, events);
-			}
-
-			return GameResult.ok();
+			behaviors.registerTo(this, game.stateMap, events);
 		} catch (GameException e) {
 			return GameResult.error(e.getTextMessage());
 		}
-	}
 
-	private CompletableFuture<GameResult<Unit>> start() {
-		this.map.getName().ifPresent(mapName -> this.getStatistics().global().set(StatisticKey.MAP, mapName));
+		map.getName().ifPresent(mapName -> getStatistics().global().set(StatisticKey.MAP, mapName));
 
-		this.game.onPhaseStart(this);
+		startTime = getWorld().getGameTime();
 
 		try {
-			invoker(GamePhaseEvents.INITIALIZE).start();
+			invoker(GamePhaseEvents.CREATE).start();
 
 			for (ServerPlayerEntity player : getAllPlayers()) {
 				invoker(GamePlayerEvents.ADD).onAdd(player);
 			}
+
+			invoker(GamePhaseEvents.START).start();
 		} catch (Exception e) {
-			return CompletableFuture.completedFuture(GameResult.fromException("Failed to dispatch game pre-start event", e));
+			return GameResult.fromException("Failed to start game", e);
 		}
 
-		return Scheduler.nextTick().supply(s -> {
-			this.startTime = getWorld().getGameTime();
-			try {
-				invoker(GamePhaseEvents.START).start();
-				return GameResult.ok();
-			} catch (Exception e) {
-				return GameResult.fromException("Failed to dispatch game start event", e);
-			}
-		});
+		return GameResult.ok();
 	}
 
-	boolean tick() {
+	@Nullable
+	GameStopReason tick() {
 		try {
 			invoker(GamePhaseEvents.TICK).tick();
 		} catch (Exception e) {
-			stopWithError(e);
+			cancelWithError(e);
 		}
-
-		return !stopped;
+		return stopped;
 	}
 
 	@Override
-	public IGameInstance getGame() {
+	public IGame getGame() {
 		return game;
 	}
 
@@ -183,32 +163,46 @@ public class GamePhase implements IGamePhase {
 		}
 	}
 
-	public void stopWithError(Exception exception) {
-		// TODO: pass up errors?
-		LoveTropics.LOGGER.error("Game stopping due to exception", exception);
-		this.stop(GameStopReason.ERRORED);
+	public void cancelWithError(Exception exception) {
+		LoveTropics.LOGGER.warn("Game canceled due to exception", exception);
+		this.requestStop(GameStopReason.errored(new StringTextComponent("Game stopped due to exception: " + exception)));
 	}
 
 	@Override
-	public GameResult<Unit> stop(GameStopReason reason) {
-		if (stopped) {
+	public GameResult<Unit> requestStop(GameStopReason reason) {
+		if (stopped != null) {
 			return GameResult.error(new TranslationTextComponent(LoveTropicsLangKeys.COMMAND_NO_MINIGAME));
 		}
 
-		game.onPhaseStop(this);
-
-		stopped = true;
+		stopped = reason;
 
 		try {
 			invoker(GamePhaseEvents.STOP).stop(reason);
 
-			for (ServerPlayerEntity player : getAllPlayers()) {
-				invoker(GamePlayerEvents.REMOVE).onRemove(player);
+			if (reason.isFinished()) {
+				invoker(GamePhaseEvents.FINISH).finish();
 			}
 
 			return GameResult.ok();
 		} catch (Exception e) {
-			return GameResult.fromException("Unknown error stopping game", e);
+			return GameResult.fromException("Unknown error while stopping game", e);
+		}
+	}
+
+	void destroy() {
+		if (destroyed) return;
+		destroyed = true;
+
+		requestStop(GameStopReason.canceled());
+
+		try {
+			for (ServerPlayerEntity player : getAllPlayers()) {
+				invoker(GamePlayerEvents.REMOVE).onRemove(player);
+			}
+
+			invoker(GamePhaseEvents.DESTROY).destroy();
+		} catch (Exception e) {
+			LoveTropics.LOGGER.warn("Unknown error while stopping game", e);
 		} finally {
 			map.close(this);
 		}

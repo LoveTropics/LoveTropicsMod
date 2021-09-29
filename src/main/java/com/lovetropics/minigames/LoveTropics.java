@@ -164,7 +164,7 @@ public class LoveTropics {
         GameControlCommand.register(dispatcher);
         MapCommand.register(dispatcher);
         GamePackageCommand.register(dispatcher);
-        GameLobbyCommand.register(dispatcher);
+        ManageGameLobbyCommand.register(dispatcher);
     }
 
     private void onServerAboutToStart(final FMLServerAboutToStartEvent event) {

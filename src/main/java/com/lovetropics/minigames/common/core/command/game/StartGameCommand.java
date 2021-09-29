@@ -6,6 +6,7 @@ import com.lovetropics.minigames.common.core.game.IGameManager;
 import com.lovetropics.minigames.common.core.game.lobby.IGameLobby;
 import com.lovetropics.minigames.common.core.game.lobby.LobbyControls;
 import com.lovetropics.minigames.common.core.game.util.GameMessages;
+import com.lovetropics.minigames.common.util.Scheduler;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
@@ -32,12 +33,14 @@ public class StartGameCommand {
 					throw new SimpleCommandExceptionType(new TranslationTextComponent(LoveTropicsLangKeys.COMMAND_NO_MINIGAME_POLLING)).create();
 				}
 
-				GameResult<Unit> result = action.run();
-				if (result.isOk()) {
-					c.getSource().sendFeedback(GameMessages.forLobby(lobby).startSuccess(), false);
-				} else {
-					c.getSource().sendErrorMessage(result.getError());
-				}
+				Scheduler.nextTick().run(server -> {
+					GameResult<Unit> result = action.run();
+					if (result.isOk()) {
+						c.getSource().sendFeedback(GameMessages.forLobby(lobby).startSuccess(), false);
+					} else {
+						c.getSource().sendErrorMessage(result.getError());
+					}
+				});
 
 				return Command.SINGLE_SUCCESS;
 			}))

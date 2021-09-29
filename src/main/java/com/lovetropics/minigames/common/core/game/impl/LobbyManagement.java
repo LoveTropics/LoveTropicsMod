@@ -2,13 +2,15 @@ package com.lovetropics.minigames.common.core.game.impl;
 
 import com.lovetropics.minigames.client.lobby.manage.ClientManageLobbyMessage;
 import com.lovetropics.minigames.client.lobby.manage.state.update.ClientLobbyUpdate;
+import com.lovetropics.minigames.common.core.game.IGame;
 import com.lovetropics.minigames.common.core.game.IGameDefinition;
+import com.lovetropics.minigames.common.core.game.lobby.ILobbyGameQueue;
 import com.lovetropics.minigames.common.core.game.lobby.ILobbyManagement;
 import com.lovetropics.minigames.common.core.game.lobby.LobbyControls;
-import com.lovetropics.minigames.common.core.game.lobby.LobbyGameQueue;
 import com.lovetropics.minigames.common.core.game.lobby.QueuedGame;
 import com.lovetropics.minigames.common.core.game.player.MutablePlayerSet;
 import com.lovetropics.minigames.common.core.network.LoveTropicsNetwork;
+import com.lovetropics.minigames.common.util.Scheduler;
 import net.minecraft.command.CommandSource;
 import net.minecraft.entity.player.ServerPlayerEntity;
 
@@ -26,8 +28,8 @@ final class LobbyManagement implements ILobbyManagement {
 
 	void onGameStateChange() {
 		sendUpdates(updates -> {
-			GameInstance currentGame = lobby.getCurrentGame();
-			LobbyGameQueue gameQueue = lobby.getGameQueue();
+			IGame currentGame = lobby.getCurrentGame();
+			ILobbyGameQueue gameQueue = lobby.getGameQueue();
 			LobbyControls controls = lobby.getControls();
 			return updates.setCurrentGame(currentGame != null ? currentGame.getDefinition() : null)
 					.updateQueue(gameQueue)
@@ -69,7 +71,7 @@ final class LobbyManagement implements ILobbyManagement {
 
 	@Override
 	public void removeQueuedGame(int id) {
-		LobbyGameQueue gameQueue = lobby.getGameQueue();
+		LobbyGameQueue gameQueue = lobby.gameQueue;
 		QueuedGame queued = gameQueue.byNetworkId(id);
 		if (queued != null && gameQueue.remove(queued)) {
 			sendUpdates(updates -> updates.updateQueue(gameQueue));
@@ -80,8 +82,10 @@ final class LobbyManagement implements ILobbyManagement {
 	public void selectControl(LobbyControls.Type type) {
 		LobbyControls.Action action = lobby.getControls().get(type);
 		if (action != null) {
-			// TODO: handle result
-			action.run();
+			Scheduler.nextTick().run(server -> {
+				// TODO: handle result
+				action.run();
+			});
 		}
 	}
 

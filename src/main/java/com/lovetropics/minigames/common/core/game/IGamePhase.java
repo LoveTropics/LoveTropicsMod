@@ -16,8 +16,8 @@ import net.minecraft.world.server.ServerWorld;
 
 import javax.annotation.Nullable;
 
-public interface IGamePhase extends IProtoGame {
-	IGameInstance getGame();
+public interface IGamePhase extends IGame {
+	IGame getGame();
 
 	@Override
 	default IGameLobby getLobby() {
@@ -53,7 +53,7 @@ public interface IGamePhase extends IProtoGame {
 
 	<T> T invoker(GameEventType<T> type);
 
-	GameResult<Unit> stop(GameStopReason reason);
+	GameResult<Unit> requestStop(GameStopReason reason);
 
 	/**
 	 * Adds the player to this game instance with the given role, or if already in the change, changes their role.

@@ -33,6 +33,6 @@ public class WeatherControlsBehavior implements IGameBehavior {
 		commands.add("start_wind", ControlCommand.forAdmins(source -> controller.setWind(0.5F)));
 		commands.add("stop_wind", ControlCommand.forAdmins(source -> controller.setWind(0.0F)));
 
-		events.listen(GamePhaseEvents.STOP, (reason) -> controller.reset());
+		events.listen(GamePhaseEvents.STOP, reason -> controller.reset());
 	}
 }

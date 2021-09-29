@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -51,7 +52,7 @@ public final class Scheduler {
 		}
 	}
 
-	public static final class Tick {
+	public static final class Tick implements Executor {
 		private final List<Consumer<MinecraftServer>> tasks = new ArrayList<>();
 
 		public <T> CompletableFuture<T> supply(Function<MinecraftServer, T> task) {
@@ -71,6 +72,11 @@ public final class Scheduler {
 			for (Consumer<MinecraftServer> task : this.tasks) {
 				task.accept(server);
 			}
+		}
+
+		@Override
+		public void execute(Runnable command) {
+			this.run(server -> command.run());
 		}
 	}
 }

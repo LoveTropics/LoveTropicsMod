@@ -63,7 +63,7 @@ public final class ConservationExplorationBehavior implements IGameBehavior {
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) throws GameException {
 		events.listen(GamePhaseEvents.START, () -> onStart(game));
-		events.listen(GamePhaseEvents.STOP, reason -> onStop(game));
+		events.listen(GamePhaseEvents.DESTROY, () -> onDestroy(game));
 		
 		events.listen(GamePlayerEvents.ADD, this::onAddPlayer);
 		events.listen(GamePlayerEvents.INTERACT_ENTITY, (player, entity, hand) -> onPlayerInteractEntity(game, player, entity, hand));
@@ -89,7 +89,7 @@ public final class ConservationExplorationBehavior implements IGameBehavior {
 		game.getControlCommands().add("next_creature", ControlCommand.forInitiator(source -> {
 			Scheduler.nextTick().run(server -> {
 				if (!nextCreature(game)) {
-					game.stop(GameStopReason.FINISHED);
+					game.requestStop(GameStopReason.finished());
 				}
 			});
 		}));
@@ -190,7 +190,7 @@ public final class ConservationExplorationBehavior implements IGameBehavior {
 		return true;
 	}
 
-	private void onStop(IGamePhase game) {
+	private void onDestroy(IGamePhase game) {
 		ServerScoreboard scoreboard = game.getServer().getScoreboard();
 		scoreboard.removeTeam(discoveryTeam);
 	}
