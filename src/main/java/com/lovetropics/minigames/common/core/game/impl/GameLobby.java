@@ -34,7 +34,7 @@ final class GameLobby implements IGameLobby {
 	final LobbyManagement management;
 	final LobbyTrackingPlayers trackingPlayers;
 
-	final LobbyVisibility visibility = LobbyVisibility.PRIVATE;
+	LobbyVisibility visibility = LobbyVisibility.PRIVATE;
 
 	final LobbyStateListener stateListener = LobbyStateListener.compose(
 			new NetworkUpdateListener(),
@@ -59,7 +59,10 @@ final class GameLobby implements IGameLobby {
 	LobbyState pausedState() {
 		LobbyControls controls = new LobbyControls()
 				.add(LobbyControls.Type.PLAY, () -> {
-					this.gameQueue.tryResume();
+					LobbyState newState = this.gameQueue.tryResume();
+					if (newState != null) {
+						this.setState(newState);
+					}
 					return GameResult.ok();
 				});
 
@@ -120,8 +123,18 @@ final class GameLobby implements IGameLobby {
 		return state.game() != null && visibility.isPublic();
 	}
 
+	@Override
+	public LobbyVisibility getVisibility() {
+		return visibility;
+	}
+
 	void setName(String name) {
 		metadata = manager.renameLobby(metadata, name);
+	}
+
+	void setVisibility(LobbyVisibility visibility) {
+		this.visibility = visibility;
+		this.trackingPlayers.onVisibilityChange();
 	}
 
 	void tick() {

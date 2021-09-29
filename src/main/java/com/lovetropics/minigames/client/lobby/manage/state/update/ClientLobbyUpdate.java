@@ -7,10 +7,7 @@ import com.lovetropics.minigames.client.lobby.manage.state.ClientLobbyQueue;
 import com.lovetropics.minigames.client.lobby.manage.state.ClientLobbyQueuedGame;
 import com.lovetropics.minigames.client.lobby.state.ClientGameDefinition;
 import com.lovetropics.minigames.common.core.game.IGameDefinition;
-import com.lovetropics.minigames.common.core.game.lobby.IGameLobby;
-import com.lovetropics.minigames.common.core.game.lobby.LobbyControls;
-import com.lovetropics.minigames.common.core.game.lobby.ILobbyGameQueue;
-import com.lovetropics.minigames.common.core.game.lobby.QueuedGame;
+import com.lovetropics.minigames.common.core.game.lobby.*;
 import com.lovetropics.minigames.common.util.PartialUpdate;
 import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
@@ -44,7 +41,8 @@ public abstract class ClientLobbyUpdate extends PartialUpdate<ClientLobbyManagem
 					.initQueue(lobby.getGameQueue())
 					.setPlayersFrom(lobby)
 					.setCurrentGame(lobby.getCurrentGame() != null ? lobby.getCurrentGame().getDefinition() : null)
-					.setControlState(lobby.getControls().asState());
+					.setControlState(lobby.getControls().asState())
+					.setVisibility(lobby.getVisibility());
 		}
 
 		public static Set decode(PacketBuffer buffer) {
@@ -114,6 +112,11 @@ public abstract class ClientLobbyUpdate extends PartialUpdate<ClientLobbyManagem
 			return this;
 		}
 
+		public Set setVisibility(LobbyVisibility visibility) {
+			this.add(new SetVisibility(visibility));
+			return this;
+		}
+
 		public ClientManageLobbyMessage intoMessage(int id) {
 			return new ClientManageLobbyMessage(id, this);
 		}
@@ -126,7 +129,8 @@ public abstract class ClientLobbyUpdate extends PartialUpdate<ClientLobbyManagem
 		SET_CURRENT_GAME(SetCurrentGame::decode),
 		UPDATE_QUEUE(UpdateQueue::decode),
 		SET_PLAYERS(SetPlayers::decode),
-		SET_CONTROLS_STATE(SetControlsState::decode);
+		SET_CONTROLS_STATE(SetControlsState::decode),
+		SET_VISIBILITY(SetVisibility::decode);
 
 		private final Function<PacketBuffer, ClientLobbyUpdate> decode;
 
@@ -347,6 +351,29 @@ public abstract class ClientLobbyUpdate extends PartialUpdate<ClientLobbyManagem
 
 		static SetControlsState decode(PacketBuffer buffer) {
 			return new SetControlsState(LobbyControls.State.decode(buffer));
+		}
+	}
+
+	public static final class SetVisibility extends ClientLobbyUpdate {
+		private final LobbyVisibility visibility;
+
+		public SetVisibility(LobbyVisibility visibility) {
+			super(Type.SET_VISIBILITY);
+			this.visibility = visibility;
+		}
+
+		@Override
+		public void applyTo(ClientLobbyManagement.Session session) {
+			session.handleVisibility(visibility);
+		}
+
+		@Override
+		protected void encode(PacketBuffer buffer) {
+			buffer.writeBoolean(visibility.isPublic());
+		}
+
+		static SetVisibility decode(PacketBuffer buffer) {
+			return new SetVisibility(buffer.readBoolean() ? LobbyVisibility.PUBLIC : LobbyVisibility.PRIVATE);
 		}
 	}
 }

@@ -33,6 +33,8 @@ public final class ManageLobbyScreen extends Screen {
 	private ManageLobbyLayout layout;
 
 	private TextFieldWidget nameField;
+	private Button publishButton;
+
 	private GameList gameList;
 	private LobbyPlayerList playerList;
 
@@ -80,6 +82,10 @@ public final class ManageLobbyScreen extends Screen {
 		nameField.setMaxStringLength(200);
 		nameField.setText(lobby.getName());
 
+		publishButton = addButton(FlexUi.createButton(layout.publish, new StringTextComponent("Publish"), button -> {
+			session.publishLobby();
+		}));
+
 		playerList = addListener(new LobbyPlayerList(lobby, layout.playerList));
 
 		addButton(FlexUi.createButton(layout.done, DialogTexts.GUI_DONE, b -> closeScreen()));
@@ -91,7 +97,8 @@ public final class ManageLobbyScreen extends Screen {
 			session.selectControl(LobbyControls.Type.SKIP);
 		}));
 
-		setControlsState();
+		updatePublishState();
+		updateControlsState();
 	}
 
 	// TODO: custom text field instance
@@ -119,11 +126,15 @@ public final class ManageLobbyScreen extends Screen {
 		nameField.setText(lobby.getName());
 	}
 
-	public void setControlsState() {
+	public void updateControlsState() {
 		ClientLobbyManageState lobby = session.lobby();
 		LobbyControls.State controls = lobby.getControlsState();
 		playButton.active = controls.enabled(LobbyControls.Type.PLAY);
 		skipButton.active = controls.enabled(LobbyControls.Type.SKIP);
+	}
+
+	public void updatePublishState() {
+		publishButton.active = session.lobby().getVisibility().isPrivate();
 	}
 
 	@Override
