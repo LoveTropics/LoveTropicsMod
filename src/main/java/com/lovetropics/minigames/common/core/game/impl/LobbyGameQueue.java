@@ -62,14 +62,19 @@ final class LobbyGameQueue implements ILobbyGameQueue {
 		return queue.size();
 	}
 
-	void tryResume() {
-		if (state != null) return;
+	@Nullable
+	LobbyState tryResume() {
+		if (state != null) return null;
 
 		QueuedGame game = queue.peek();
 		if (game != null) {
 			CompletableFuture<GameResult<State>> future = createGame(game.definition());
 			state = new State.Pending(null, future)
 					.then(() -> queue.remove(game));
+
+			return createLobbyState(state);
+		} else {
+			return null;
 		}
 	}
 
@@ -92,10 +97,14 @@ final class LobbyGameQueue implements ILobbyGameQueue {
 		State newState = result.getOk();
 		if (newState != state) {
 			this.state = newState;
-			return GameResult.ok(new LobbyState(newState.phase, newState.controls));
+			return GameResult.ok(createLobbyState(newState));
 		} else {
 			return null;
 		}
+	}
+
+	private LobbyState createLobbyState(State state) {
+		return new LobbyState(state.phase, state.controls);
 	}
 
 	CompletableFuture<GameResult<State>> createGame(IGameDefinition definition) {

@@ -155,6 +155,10 @@ public class GamePhase implements IGamePhase {
 	}
 
 	void onPlayerLeave(ServerPlayerEntity player) {
+		for (PlayerRole role : PlayerRole.ROLES) {
+			roles.get(role).remove(player);
+		}
+
 		try {
 			invoker(GamePlayerEvents.LEAVE).onRemove(player);
 			invoker(GamePlayerEvents.REMOVE).onRemove(player);

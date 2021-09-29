@@ -4,10 +4,7 @@ import com.lovetropics.minigames.client.lobby.manage.ClientManageLobbyMessage;
 import com.lovetropics.minigames.client.lobby.manage.state.update.ClientLobbyUpdate;
 import com.lovetropics.minigames.common.core.game.IGame;
 import com.lovetropics.minigames.common.core.game.IGameDefinition;
-import com.lovetropics.minigames.common.core.game.lobby.ILobbyGameQueue;
-import com.lovetropics.minigames.common.core.game.lobby.ILobbyManagement;
-import com.lovetropics.minigames.common.core.game.lobby.LobbyControls;
-import com.lovetropics.minigames.common.core.game.lobby.QueuedGame;
+import com.lovetropics.minigames.common.core.game.lobby.*;
 import com.lovetropics.minigames.common.core.game.player.MutablePlayerSet;
 import com.lovetropics.minigames.common.core.network.LoveTropicsNetwork;
 import com.lovetropics.minigames.common.util.Scheduler;
@@ -87,6 +84,12 @@ final class LobbyManagement implements ILobbyManagement {
 				action.run();
 			});
 		}
+	}
+
+	@Override
+	public void setVisibility(LobbyVisibility visibility) {
+		lobby.setVisibility(visibility);
+		sendUpdates(updates -> updates.setVisibility(visibility));
 	}
 
 	private void sendUpdates(UnaryOperator<ClientLobbyUpdate.Set> updates) {

@@ -17,7 +17,6 @@ final class LobbyTrackingPlayers implements PlayerSet {
 		this.tracking = new MutablePlayerSet(lobby.getServer());
 	}
 
-	// TODO: allow games to be published
 	void onVisibilityChange() {
 		for (ServerPlayerEntity player : PlayerSet.ofServer(this.lobby.getServer())) {
 			if (this.lobby.isVisibleTo(player)) {

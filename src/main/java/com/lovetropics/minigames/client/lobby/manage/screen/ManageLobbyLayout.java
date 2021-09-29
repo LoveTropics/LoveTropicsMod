@@ -28,6 +28,7 @@ final class ManageLobbyLayout {
 
 	final Layout properties;
 	final Layout name;
+	final Layout publish;
 	final Layout playerList;
 
 	final Layout done;
@@ -90,6 +91,10 @@ final class ManageLobbyLayout {
 				.width(1.0F, Flex.Unit.PERCENT).height(20)
 				.margin(2).marginTop(fontHeight);
 
+		Flex publish = properties.child()
+				.width(1.0F, Flex.Unit.PERCENT).height(20)
+				.marginTop(PADDING);
+
 		Flex playerList = properties.child()
 				.width(1.0F, Flex.Unit.PERCENT).grow(1.0F)
 				.marginTop(PADDING);
@@ -122,6 +127,7 @@ final class ManageLobbyLayout {
 		this.rightFooter = solve.layout(rightFooter);
 		this.properties = solve.layout(properties);
 		this.name = solve.layout(name);
+		this.publish = solve.layout(publish);
 		this.playerList = solve.layout(playerList);
 		this.done = solve.layout(done);
 

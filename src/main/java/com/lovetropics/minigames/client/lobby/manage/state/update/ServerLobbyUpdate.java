@@ -6,6 +6,7 @@ import com.lovetropics.minigames.common.core.game.config.GameConfig;
 import com.lovetropics.minigames.common.core.game.config.GameConfigs;
 import com.lovetropics.minigames.common.core.game.lobby.ILobbyManagement;
 import com.lovetropics.minigames.common.core.game.lobby.LobbyControls;
+import com.lovetropics.minigames.common.core.game.lobby.LobbyVisibility;
 import com.lovetropics.minigames.common.util.PartialUpdate;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.ResourceLocation;
@@ -50,6 +51,11 @@ public abstract class ServerLobbyUpdate extends PartialUpdate<ILobbyManagement> 
 			return this;
 		}
 
+		public Set setVisibility(LobbyVisibility visibility) {
+			this.add(new SetVisibility(visibility));
+			return this;
+		}
+
 		public ServerManageLobbyMessage intoMessage(int id) {
 			return ServerManageLobbyMessage.update(id, this);
 		}
@@ -59,7 +65,8 @@ public abstract class ServerLobbyUpdate extends PartialUpdate<ILobbyManagement> 
 		SET_NAME(SetName::decode),
 		ENQUEUE(Enqueue::decode),
 		REMOVE_QUEUED_GAME(RemoveQueuedGame::decode),
-		SELECT_CONTROL(SelectControl::decode);
+		SELECT_CONTROL(SelectControl::decode),
+		SET_VISIBILITY(SetVisibility::decode);
 
 		private final Function<PacketBuffer, ServerLobbyUpdate> decode;
 
@@ -171,6 +178,29 @@ public abstract class ServerLobbyUpdate extends PartialUpdate<ILobbyManagement> 
 			LobbyControls.Type[] types = LobbyControls.Type.values();
 			LobbyControls.Type control = types[buffer.readUnsignedByte() % types.length];
 			return new SelectControl(control);
+		}
+	}
+
+	public static final class SetVisibility extends ServerLobbyUpdate {
+		private final LobbyVisibility visibility;
+
+		public SetVisibility(LobbyVisibility visibility) {
+			super(Type.SET_VISIBILITY);
+			this.visibility = visibility;
+		}
+
+		@Override
+		public void applyTo(ILobbyManagement lobby) {
+			lobby.setVisibility(visibility);
+		}
+
+		@Override
+		protected void encode(PacketBuffer buffer) {
+			buffer.writeBoolean(visibility.isPublic());
+		}
+
+		static SetVisibility decode(PacketBuffer buffer) {
+			return new SetVisibility(buffer.readBoolean() ? LobbyVisibility.PUBLIC : LobbyVisibility.PRIVATE);
 		}
 	}
 }

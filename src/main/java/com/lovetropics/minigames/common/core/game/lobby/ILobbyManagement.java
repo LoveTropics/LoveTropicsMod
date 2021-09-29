@@ -18,4 +18,6 @@ public interface ILobbyManagement {
 	void removeQueuedGame(int id);
 
 	void selectControl(LobbyControls.Type type);
+
+	void setVisibility(LobbyVisibility visibility);
 }

@@ -10,6 +10,7 @@ import com.lovetropics.minigames.client.lobby.manage.state.update.ClientLobbyUpd
 import com.lovetropics.minigames.client.lobby.manage.state.update.ServerLobbyUpdate;
 import com.lovetropics.minigames.client.lobby.state.ClientGameDefinition;
 import com.lovetropics.minigames.common.core.game.lobby.LobbyControls;
+import com.lovetropics.minigames.common.core.game.lobby.LobbyVisibility;
 import com.lovetropics.minigames.common.core.network.LoveTropicsNetwork;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.IntList;
@@ -29,11 +30,9 @@ public final class ClientLobbyManagement {
 
 	@SubscribeEvent
 	public static void onClientTick(TickEvent.ClientTickEvent event) {
-		if (event.phase == TickEvent.Phase.END) {
-			Session session = ClientLobbyManagement.session;
-			if (session != null && !isScreenValid(session)) {
-				session.close();
-			}
+		Session session = ClientLobbyManagement.session;
+		if (session != null && !isScreenValid(session)) {
+			session.close();
 		}
 	}
 
@@ -91,6 +90,13 @@ public final class ClientLobbyManagement {
 			sendUpdates(updates -> updates.selectControl(control));
 		}
 
+		public void publishLobby() {
+			if (lobby.getVisibility().isPrivate()) {
+				lobby.setVisibility(LobbyVisibility.PUBLIC);
+				sendUpdates(updates -> updates.setVisibility(LobbyVisibility.PUBLIC));
+			}
+		}
+
 		private void sendUpdates(UnaryOperator<ServerLobbyUpdate.Set> updates) {
 			ServerLobbyUpdate.Set set = ServerLobbyUpdate.Set.create();
 			set = updates.apply(set);
@@ -138,7 +144,12 @@ public final class ClientLobbyManagement {
 
 		public void handleControlsState(LobbyControls.State state) {
 			lobby.setControlsState(state);
-			screen.setControlsState();
+			screen.updateControlsState();
+		}
+
+		public void handleVisibility(LobbyVisibility visibility) {
+			lobby.setVisibility(visibility);
+			screen.updatePublishState();
 		}
 	}
 }
