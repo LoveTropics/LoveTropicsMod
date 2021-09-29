@@ -120,6 +120,10 @@ public final class Box {
 		return axis == Axis.X ? new Interval(this.left, this.right) : new Interval(this.top, this.bottom);
 	}
 
+	public boolean contains(int x, int y) {
+		return x >= this.left && y >= this.top && x < this.right && y < this.bottom;
+	}
+
 	static final class Size {
 		private final int width;
 		private final int height;
