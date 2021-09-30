@@ -2,7 +2,7 @@ package com.lovetropics.minigames.client.lobby.manage.state.update;
 
 import com.lovetropics.minigames.client.lobby.manage.ClientLobbyManagement;
 import com.lovetropics.minigames.client.lobby.manage.ClientManageLobbyMessage;
-import com.lovetropics.minigames.client.lobby.manage.state.ClientCurrentGame;
+import com.lovetropics.minigames.client.lobby.state.ClientCurrentGame;
 import com.lovetropics.minigames.client.lobby.manage.state.ClientLobbyPlayer;
 import com.lovetropics.minigames.client.lobby.manage.state.ClientLobbyQueue;
 import com.lovetropics.minigames.client.lobby.manage.state.ClientLobbyQueuedGame;

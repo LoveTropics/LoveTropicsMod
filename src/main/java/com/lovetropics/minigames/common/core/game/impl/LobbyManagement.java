@@ -1,7 +1,7 @@
 package com.lovetropics.minigames.common.core.game.impl;
 
 import com.lovetropics.minigames.client.lobby.manage.ClientManageLobbyMessage;
-import com.lovetropics.minigames.client.lobby.manage.state.ClientCurrentGame;
+import com.lovetropics.minigames.client.lobby.state.ClientCurrentGame;
 import com.lovetropics.minigames.client.lobby.manage.state.update.ClientLobbyUpdate;
 import com.lovetropics.minigames.client.lobby.state.ClientGameDefinition;
 import com.lovetropics.minigames.common.core.game.IGameDefinition;

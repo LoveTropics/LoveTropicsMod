@@ -38,6 +38,7 @@ public final class ClientLobbyManager {
 		ClientLobbyState lobby = LOBBIES.get(id);
 		if (lobby != null) {
 			lobby.joinedRole = role;
+			ClientLobbyManager.joinedLobby = lobby;
 		}
 	}
 
@@ -54,7 +55,7 @@ public final class ClientLobbyManager {
 		return joinedLobby;
 	}
 
-	public static ClientLobbyState addOrUpdate(int id, String name, @Nullable ClientGameDefinition currentGame) {
+	public static ClientLobbyState addOrUpdate(int id, String name, @Nullable ClientCurrentGame currentGame) {
 		ClientLobbyState lobby = LOBBIES.computeIfAbsent(id, ClientLobbyState::new);
 		lobby.name = name;
 		lobby.currentGame = currentGame;

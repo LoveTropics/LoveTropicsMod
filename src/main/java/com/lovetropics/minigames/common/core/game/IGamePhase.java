@@ -49,6 +49,8 @@ public interface IGamePhase extends IGame {
 		return getGame().getState();
 	}
 
+	GamePhaseType getPhaseType();
+
 	IGamePhaseDefinition getPhaseDefinition();
 
 	<T> T invoker(GameEventType<T> type);

@@ -1,5 +1,6 @@
 package com.lovetropics.minigames.client.lobby.state;
 
+import com.lovetropics.minigames.common.core.game.LobbyStatus;
 import com.lovetropics.minigames.common.core.game.player.PlayerRole;
 
 import javax.annotation.Nullable;
@@ -12,7 +13,7 @@ public class ClientLobbyState {
 	int spectatorCount;
 
 	@Nullable
-	ClientGameDefinition currentGame;
+	ClientCurrentGame currentGame;
 
 	@Nullable
 	PlayerRole joinedRole;
@@ -30,7 +31,7 @@ public class ClientLobbyState {
 	}
 
 	@Nullable
-	public ClientGameDefinition getCurrentGame() {
+	public ClientCurrentGame getCurrentGame() {
 		return currentGame;
 	}
 
@@ -53,5 +54,20 @@ public class ClientLobbyState {
 
 	public int getPlayerCount() {
 		return participantCount + spectatorCount;
+	}
+
+	@Nullable
+	public PlayerRole getJoinedRole() {
+		return joinedRole;
+	}
+
+	public LobbyStatus getStatus() {
+		if (currentGame != null) {
+			switch (currentGame.phase()) {
+				case PLAYING: return LobbyStatus.PLAYING;
+				case WAITING: return LobbyStatus.WAITING;
+			}
+		}
+		return LobbyStatus.PAUSED;
 	}
 }

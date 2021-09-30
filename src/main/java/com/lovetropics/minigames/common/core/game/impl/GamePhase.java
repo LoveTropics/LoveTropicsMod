@@ -30,6 +30,7 @@ public class GamePhase implements IGamePhase {
 	final GameInstance game;
 	final MinecraftServer server;
 	final IGamePhaseDefinition definition;
+	final GamePhaseType phaseType;
 
 	final GameMap map;
 	final BehaviorMap behaviors;
@@ -42,10 +43,11 @@ public class GamePhase implements IGamePhase {
 	GameStopReason stopped;
 	boolean destroyed;
 
-	private GamePhase(GameInstance game, IGamePhaseDefinition definition, GameMap map, BehaviorMap behaviors) {
+	private GamePhase(GameInstance game, IGamePhaseDefinition definition, GamePhaseType phaseType, GameMap map, BehaviorMap behaviors) {
 		this.game = game;
 		this.server = game.getServer();
 		this.definition = definition;
+		this.phaseType = phaseType;
 
 		this.map = map;
 		this.behaviors = behaviors;
@@ -56,7 +58,7 @@ public class GamePhase implements IGamePhase {
 		}
 	}
 
-	static CompletableFuture<GameResult<GamePhase>> create(GameInstance game, IGamePhaseDefinition definition) {
+	static CompletableFuture<GameResult<GamePhase>> create(GameInstance game, IGamePhaseDefinition definition, GamePhaseType phaseType) {
 		MinecraftServer server = game.getServer();
 
 		GameResult<Unit> result = game.lobby.manager.canStartGamePhase(definition);
@@ -67,7 +69,7 @@ public class GamePhase implements IGamePhase {
 		CompletableFuture<GameResult<GamePhase>> future = definition.getMap().open(server)
 				.thenApplyAsync(r -> r.map(map -> {
 					BehaviorMap behaviors = definition.createBehaviors();
-					return new GamePhase(game, definition, map, behaviors);
+					return new GamePhase(game, definition, phaseType, map, behaviors);
 				}), server);
 
 		return GameResult.handleException("Unknown exception starting game phase", future);
@@ -112,6 +114,11 @@ public class GamePhase implements IGamePhase {
 	@Override
 	public IGame getGame() {
 		return game;
+	}
+
+	@Override
+	public GamePhaseType getPhaseType() {
+		return phaseType;
 	}
 
 	@Override

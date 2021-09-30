@@ -4,6 +4,7 @@ import com.lovetropics.minigames.client.lobby.manage.screen.ManageLobbyScreen;
 import com.lovetropics.minigames.client.lobby.manage.state.*;
 import com.lovetropics.minigames.client.lobby.manage.state.update.ClientLobbyUpdate;
 import com.lovetropics.minigames.client.lobby.manage.state.update.ServerLobbyUpdate;
+import com.lovetropics.minigames.client.lobby.state.ClientCurrentGame;
 import com.lovetropics.minigames.client.lobby.state.ClientGameDefinition;
 import com.lovetropics.minigames.common.core.game.lobby.LobbyControls;
 import com.lovetropics.minigames.common.core.game.lobby.LobbyVisibility;
