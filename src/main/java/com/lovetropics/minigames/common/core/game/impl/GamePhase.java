@@ -59,6 +59,11 @@ public class GamePhase implements IGamePhase {
 	static CompletableFuture<GameResult<GamePhase>> create(GameInstance game, IGamePhaseDefinition definition) {
 		MinecraftServer server = game.getServer();
 
+		GameResult<Unit> result = game.lobby.manager.canStartGamePhase(definition);
+		if (result.isError()) {
+			return CompletableFuture.completedFuture(result.castError());
+		}
+
 		CompletableFuture<GameResult<GamePhase>> future = definition.getMap().open(server)
 				.thenApplyAsync(r -> r.map(map -> {
 					BehaviorMap behaviors = definition.createBehaviors();

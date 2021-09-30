@@ -18,6 +18,7 @@
   "ltminigames.command.already_in_lobby": "You have already joined this lobby!",
   "ltminigames.command.cannot_start": "There is no game to start in this lobby!",
   "ltminigames.command.game_already_stopped": "This game has already been stopped!",
+  "ltminigames.command.games_intersect": "The game cannot be started because it intersects with another active game!",
   "ltminigames.command.joined_lobby": "You have joined %s!",
   "ltminigames.command.left_lobby": "You have left %s!",
   "ltminigames.command.lobby_selector_entry": "- %s (%s players): %s to join",

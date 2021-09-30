@@ -91,6 +91,8 @@ public final class GameTexts {
 			static final String GAME_ALREADY_STOPPED = key("game_already_stopped");
 			static final String NO_MANAGE_PERMISSION = key("no_manage_permission");
 
+			static final String GAMES_INTERSECT = key("games_intersect");
+
 			static final String LOBBY_SELECTOR_HEADER = key("lobby_selector_header");
 			static final String LOBBY_SELECTOR_ENTRY = key("lobby_selector_entry");
 
@@ -108,6 +110,8 @@ public final class GameTexts {
 				consumer.accept(NOT_IN_GAME, "You are not currently in any game!");
 				consumer.accept(GAME_ALREADY_STOPPED, "This game has already been stopped!");
 				consumer.accept(NO_MANAGE_PERMISSION, "You do not have permission to manage this lobby!");
+
+				consumer.accept(GAMES_INTERSECT, "The game cannot be started because it intersects with another active game!");
 
 				consumer.accept(LOBBY_SELECTOR_HEADER, "There are multiple lobbies available to join! Select one from this list:");
 				consumer.accept(LOBBY_SELECTOR_ENTRY, "- %s (%s players): %s to join");
@@ -160,6 +164,10 @@ public final class GameTexts {
 
 		public static IFormattableTextComponent noManagePermission() {
 			return formatNegative(new TranslationTextComponent(Keys.NO_MANAGE_PERMISSION));
+		}
+
+		public static IFormattableTextComponent gamesIntersect() {
+			return formatNegative(new TranslationTextComponent(Keys.GAMES_INTERSECT));
 		}
 
 		public static IFormattableTextComponent lobbySelector(Collection<? extends IGameLobby> lobbies, @Nullable PlayerRole role) {
