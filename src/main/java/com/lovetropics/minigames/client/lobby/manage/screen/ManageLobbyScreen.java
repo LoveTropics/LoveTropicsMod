@@ -12,38 +12,42 @@ import com.lovetropics.minigames.client.screen.FlexUi;
 import com.lovetropics.minigames.client.screen.flex.Box;
 import com.lovetropics.minigames.client.screen.flex.Layout;
 import com.lovetropics.minigames.common.core.game.lobby.LobbyControls;
+import com.lovetropics.minigames.common.core.game.util.GameTexts;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import net.minecraft.client.gui.DialogTexts;
+import net.minecraft.client.gui.IGuiEventListener;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.client.gui.widget.button.Button;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
 
+import javax.annotation.Nullable;
 import java.util.List;
 
-// TODO: localisation
 public final class ManageLobbyScreen extends Screen {
-	private static final ITextComponent TITLE = new StringTextComponent("Manage Game Lobby");
-
 	private final ClientLobbyManagement.Session session;
 
 	private ManageLobbyLayout layout;
 
 	private TextFieldWidget nameField;
+	private Button publishButton;
+
 	private GameList gameList;
 	private GameConfig gameConfig;
 	private LobbyPlayerList playerList;
 
-	private Button pauseButton;
+	private Button closeButton;
+
 	private Button playButton;
-	private Button stopButton;
+	private Button skipButton;
 
 	private int selectedGameId = -1;
 
 	public ManageLobbyScreen(ClientLobbyManagement.Session session) {
-		super(TITLE);
+		super(GameTexts.Ui.manageGameLobby());
 		this.session = session;
 	}
 
@@ -75,34 +79,72 @@ public final class ManageLobbyScreen extends Screen {
 			public void removeQueuedGame(int queuedGameId) {
 				session.removeQueuedGame(queuedGameId);
 			}
+
+			@Override
+			public void reorderQueuedGame(int queuedGameId, int offset) {
+				ClientLobbyQueue queue = lobby.getQueue();
+				int index = queue.indexById(queuedGameId);
+				if (index != -1) {
+					int newIndex = MathHelper.clamp(index + offset, 0, queue.size());
+					session.reorderQueuedGame(queuedGameId, newIndex);
+				}
+			}
 		}));
 
 		// TODO actually save config data
 		gameConfig = addListener(new GameConfig(this, layout.centerColumn, () -> {}));
 
-		nameField = addListener(FlexUi.createTextField(layout.name, font, new StringTextComponent("Lobby Name")));
+		nameField = addListener(FlexUi.createTextField(layout.name, font, GameTexts.Ui.lobbyName()));
 		nameField.setMaxStringLength(200);
 		nameField.setText(lobby.getName());
 
-		playerList = addListener(new LobbyPlayerList(lobby, layout.playerList));
-
-		addButton(FlexUi.createButton(layout.done, DialogTexts.GUI_DONE, b -> closeScreen()));
-
-		pauseButton = addButton(FlexUi.createButton(layout.pause, new StringTextComponent("\u23F8"), b -> {
-			session.selectControl(LobbyControls.Type.PAUSE);
+		publishButton = addButton(FlexUi.createButton(layout.publish, GameTexts.Ui.publish(), button -> {
+			session.publishLobby();
 		}));
+
+		playerList = addListener(new LobbyPlayerList(this, lobby, layout.playerList));
+
 		playButton = addButton(FlexUi.createButton(layout.play, new StringTextComponent("\u25B6"), b -> {
 			session.selectControl(LobbyControls.Type.PLAY);
 		}));
-		stopButton = addButton(FlexUi.createButton(layout.stop, new StringTextComponent("\u23F9"), b -> {
-			session.selectControl(LobbyControls.Type.STOP);
+		skipButton = addButton(FlexUi.createButton(layout.skip, new StringTextComponent("\u23ED"), b -> {
+			session.selectControl(LobbyControls.Type.SKIP);
 		}));
 
-		setControlsState();
+		ITextComponent closeLobby = GameTexts.Ui.closeLobby()
+				.mergeStyle(TextFormatting.RED, TextFormatting.UNDERLINE);
+		closeButton = addButton(FlexUi.createButton(layout.close, closeLobby, b -> {
+			session.closeLobby();
+			closeScreen();
+		}));
+		addButton(FlexUi.createButton(layout.done, DialogTexts.GUI_DONE, b -> closeScreen()));
+
+		updateGameEntries();
+		updatePublishState();
+		updateControlsState();
 	}
 
-	public void updateGameList() {
+	// TODO: custom text field instance
+	@Override
+	public void setListener(@Nullable IGuiEventListener listener) {
+		IGuiEventListener lastListener = this.getListener();
+		if (lastListener != null && lastListener != listener) {
+			this.onLoseFocus(lastListener);
+		}
+		super.setListener(listener);
+	}
+
+	private void onLoseFocus(IGuiEventListener listener) {
+		if (listener == nameField) {
+			applyNameField();
+		}
+	}
+
+	public void updateGameEntries() {
 		gameList.updateEntries();
+
+		ClientLobbyManageState lobby = session.lobby();
+		closeButton.active = lobby.getCurrentGame() == null && lobby.getQueue().isEmpty();
 	}
 
 	public void updateNameField() {
@@ -110,21 +152,26 @@ public final class ManageLobbyScreen extends Screen {
 		nameField.setText(lobby.getName());
 	}
 
-	public void setControlsState() {
+	public void updateControlsState() {
 		ClientLobbyManageState lobby = session.lobby();
 		LobbyControls.State controls = lobby.getControlsState();
-		pauseButton.active = controls.enabled(LobbyControls.Type.PAUSE);
 		playButton.active = controls.enabled(LobbyControls.Type.PLAY);
-		stopButton.active = controls.enabled(LobbyControls.Type.STOP);
+		skipButton.active = controls.enabled(LobbyControls.Type.SKIP);
+	}
+
+	public void updatePublishState() {
+		publishButton.active = session.lobby().getVisibility().isPrivate();
 	}
 
 	@Override
-	public void closeScreen() {
-		super.closeScreen();
+	public void onClose() {
+		super.onClose();
 
 		session.close();
+		applyNameField();
+	}
 
-		// TODO: send on stop focus too!
+	private void applyNameField() {
 		String name = nameField.getText();
 		if (!name.equals(session.lobby().getName())) {
 			session.setName(name);
@@ -146,13 +193,13 @@ public final class ManageLobbyScreen extends Screen {
 			FlexUi.fill(marginal, matrixStack, 0xFF101010);
 		}
 
-		gameList.renderButtons(matrixStack, mouseX, mouseY, partialTicks);
+		gameList.renderOverlays(matrixStack, mouseX, mouseY, partialTicks);
 
 		// TODO: make this name rendering better
 		drawString(matrixStack, font, nameField.getMessage(), nameField.x, nameField.y - fontHeight - 2, 0xFFFFFF);
 		nameField.render(matrixStack, mouseX, mouseY, partialTicks);
 
-		playerList.render(matrixStack, mouseX, mouseY, partialTicks);
+		playerList.render(matrixStack, mouseX, mouseY);
 
 		Box header = layout.header.content();
 		drawCenteredString(matrixStack, font, title, header.centerX(), header.centerY(), 0xFFFFFF);
@@ -163,15 +210,15 @@ public final class ManageLobbyScreen extends Screen {
 			renderSelectedGame(selectedEntry, matrixStack, mouseX, mouseY, partialTicks);
 		}
 
+		playerList.renderTooltip(matrixStack, mouseX, mouseY);
+
 		super.render(matrixStack, mouseX, mouseY, partialTicks);
 	}
 
 	private void renderSelectedGame(ClientLobbyQueuedGame game, MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
 		FlexUi.fill(layout.centerHeader, matrixStack, 0x80101010);
 
-		ITextComponent title = new StringTextComponent("")
-				.appendSibling(new StringTextComponent("Managing: ").mergeStyle(TextFormatting.BOLD))
-				.appendSibling(game.definition().name);
+		ITextComponent title = GameTexts.Ui.managingGame(game.definition());
 
 		Box header = layout.centerHeader.content();
 		drawCenteredString(matrixStack, font, title, header.centerX(), header.centerY() - font.FONT_HEIGHT / 2, 0xFFFFFF);

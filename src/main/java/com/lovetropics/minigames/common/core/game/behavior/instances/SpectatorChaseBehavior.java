@@ -24,9 +24,9 @@ public final class SpectatorChaseBehavior implements IGameBehavior {
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
 		events.listen(GamePlayerEvents.SET_ROLE, (player, role, lastRole) -> this.onPlayerJoin(game, player, role));
-		events.listen(GamePlayerEvents.REMOVE, (player) -> onRemovePlayer(game, player));
+		events.listen(GamePlayerEvents.REMOVE, player -> onRemovePlayer(game, player));
 
-		events.listen(GamePhaseEvents.STOP, (reason) -> onFinish(game));
+		events.listen(GamePhaseEvents.DESTROY, () -> onStop(game));
 	}
 
 	private void onPlayerJoin(IGamePhase game, ServerPlayerEntity player, PlayerRole role) {
@@ -47,7 +47,7 @@ public final class SpectatorChaseBehavior implements IGameBehavior {
 		LoveTropicsNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new StopChaseCameraMessage());
 	}
 
-	private void onFinish(IGamePhase game) {
+	private void onStop(IGamePhase game) {
 		StopChaseCameraMessage message = new StopChaseCameraMessage();
 		for (ServerPlayerEntity spectator : game.getSpectators()) {
 			LoveTropicsNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> spectator), message);

@@ -6,6 +6,7 @@ import com.lovetropics.minigames.common.core.game.player.PlayerRole;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.network.PacketBuffer;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.UUID;
 
@@ -65,9 +66,10 @@ public final class ClientLobbyPlayer {
 		return this.uuid;
 	}
 
-	@Nullable
+	@Nonnull
 	public PlayerRole registeredRole() {
-		return this.registeredRole;
+		PlayerRole role = this.registeredRole;
+		return role != null ? role : PlayerRole.PARTICIPANT;
 	}
 
 	@Nullable

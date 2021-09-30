@@ -1,41 +1,24 @@
 package com.lovetropics.minigames.client.lobby.manage;
 
-import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.client.lobby.manage.screen.ManageLobbyScreen;
-import com.lovetropics.minigames.client.lobby.manage.state.ClientLobbyManageState;
-import com.lovetropics.minigames.client.lobby.manage.state.ClientLobbyPlayer;
-import com.lovetropics.minigames.client.lobby.manage.state.ClientLobbyQueue;
-import com.lovetropics.minigames.client.lobby.manage.state.ClientLobbyQueuedGame;
+import com.lovetropics.minigames.client.lobby.manage.state.*;
 import com.lovetropics.minigames.client.lobby.manage.state.update.ClientLobbyUpdate;
 import com.lovetropics.minigames.client.lobby.manage.state.update.ServerLobbyUpdate;
+import com.lovetropics.minigames.client.lobby.state.ClientCurrentGame;
 import com.lovetropics.minigames.client.lobby.state.ClientGameDefinition;
 import com.lovetropics.minigames.common.core.game.lobby.LobbyControls;
+import com.lovetropics.minigames.common.core.game.lobby.LobbyVisibility;
 import com.lovetropics.minigames.common.core.network.LoveTropicsNetwork;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.IntList;
 import net.minecraft.client.Minecraft;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
 
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.function.UnaryOperator;
 
-@Mod.EventBusSubscriber(value = Dist.CLIENT, modid = Constants.MODID)
 public final class ClientLobbyManagement {
 	private static Session session;
-
-	@SubscribeEvent
-	public static void onClientTick(TickEvent.ClientTickEvent event) {
-		if (event.phase == TickEvent.Phase.END) {
-			Session session = ClientLobbyManagement.session;
-			if (session != null && !isScreenValid(session)) {
-				session.close();
-			}
-		}
-	}
 
 	public static void update(int id, ClientLobbyUpdate.Set updates) {
 		Session session = ClientLobbyManagement.session;
@@ -45,10 +28,6 @@ public final class ClientLobbyManagement {
 		}
 
 		updates.applyTo(session);
-	}
-
-	private static boolean isScreenValid(Session session) {
-		return Minecraft.getInstance().currentScreen == session.screen;
 	}
 
 	private static void displayScreen(Session session) {
@@ -75,6 +54,7 @@ public final class ClientLobbyManagement {
 		}
 
 		public void setName(String name) {
+			lobby.setName(name);
 			sendUpdates(updates -> updates.setName(name));
 		}
 
@@ -86,8 +66,23 @@ public final class ClientLobbyManagement {
 			sendUpdates(updates -> updates.removeQueuedGame(id));
 		}
 
+		public void reorderQueuedGame(int id, int newIndex) {
+			sendUpdates(updates -> updates.reorderQueuedGame(id, newIndex));
+		}
+
 		public void selectControl(LobbyControls.Type control) {
 			sendUpdates(updates -> updates.selectControl(control));
+		}
+
+		public void publishLobby() {
+			if (lobby.getVisibility().isPrivate()) {
+				lobby.setVisibility(LobbyVisibility.PUBLIC);
+				sendUpdates(updates -> updates.setVisibility(LobbyVisibility.PUBLIC));
+			}
+		}
+
+		public void closeLobby() {
+			sendUpdates(ServerLobbyUpdate.Set::close);
 		}
 
 		private void sendUpdates(UnaryOperator<ServerLobbyUpdate.Set> updates) {
@@ -108,12 +103,12 @@ public final class ClientLobbyManagement {
 
 		public void handleInstalledGames(List<ClientGameDefinition> installedGames) {
 			lobby.setInstalledGames(installedGames);
-			screen.updateGameList();
+			screen.updateGameEntries();
 		}
 
 		public void handleQueue(ClientLobbyQueue queue) {
 			lobby.setQueue(queue);
-			screen.updateGameList();
+			screen.updateGameEntries();
 		}
 
 		public void handleName(String name) {
@@ -121,14 +116,14 @@ public final class ClientLobbyManagement {
 			screen.updateNameField();
 		}
 
-		public void handleCurrentGame(@Nullable ClientGameDefinition currentGame) {
-			lobby.setCurrentGame(currentGame);
-			screen.updateGameList();
+		public void handleCurrentGame(@Nullable ClientCurrentGame game) {
+			lobby.setCurrentGame(game);
+			screen.updateGameEntries();
 		}
 
 		public void handleQueueUpdate(IntList queue, Int2ObjectMap<ClientLobbyQueuedGame> updated) {
 			lobby.updateQueue(queue, updated);
-			screen.updateGameList();
+			screen.updateGameEntries();
 		}
 
 		public void handlePlayers(List<ClientLobbyPlayer> players) {
@@ -137,7 +132,12 @@ public final class ClientLobbyManagement {
 
 		public void handleControlsState(LobbyControls.State state) {
 			lobby.setControlsState(state);
-			screen.setControlsState();
+			screen.updateControlsState();
+		}
+
+		public void handleVisibility(LobbyVisibility visibility) {
+			lobby.setVisibility(visibility);
+			screen.updatePublishState();
 		}
 	}
 }

@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+// TODO: use items in player inventory for team selector instead of chat message
 public final class SetupTeamsBehavior implements IGameBehavior {
 	private static final UnboundedMapCodec<String, List<UUID>> TEAM_ASSIGN = Codec.unboundedMap(Codec.STRING, MoreCodecs.UUID_STRING.listOf());
 	private static final Codec<Object2IntMap<String>> TEAM_TO_SIZE = Codec.unboundedMap(Codec.STRING, Codec.INT)

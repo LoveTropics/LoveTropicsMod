@@ -63,7 +63,7 @@ public final class TeamsBehavior implements IGameBehavior {
 		teams = game.getState().getOrThrow(TeamState.KEY);
 
 		events.listen(GamePhaseEvents.START, () -> onStart(game));
-		events.listen(GamePhaseEvents.STOP, (reason) -> onFinish(game));
+		events.listen(GamePhaseEvents.DESTROY, () -> onDestroy(game));
 		events.listen(GamePlayerEvents.ALLOCATE_ROLES, allocator -> reassignPlayerRoles(game, allocator));
 
 		events.listen(GamePlayerEvents.SET_ROLE, this::onPlayerSetRole);
@@ -99,7 +99,7 @@ public final class TeamsBehavior implements IGameBehavior {
 		}
 	}
 
-	private void onFinish(IGamePhase game) {
+	private void onDestroy(IGamePhase game) {
 		ServerScoreboard scoreboard = game.getServer().getScoreboard();
 		for (ScorePlayerTeam team : scoreboardTeams.values()) {
 			scoreboard.removeTeam(team);

@@ -15,7 +15,7 @@ public final class AssignPlayerRolesBehavior implements IGameBehavior {
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
-		events.listen(GamePhaseEvents.INITIALIZE, () -> {
+		events.listen(GamePhaseEvents.CREATE, () -> {
 			TeamAllocator<PlayerRole, ServerPlayerEntity> allocator = game.getLobby().getPlayers().createRoleAllocator();
 			allocator.setSizeForTeam(PlayerRole.PARTICIPANT, game.getDefinition().getMaximumParticipantCount());
 

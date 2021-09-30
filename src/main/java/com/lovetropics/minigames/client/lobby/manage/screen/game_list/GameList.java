@@ -29,7 +29,7 @@ public final class GameList implements IGuiEventListener {
 		this.lobby = lobby;
 		this.handlers = handlers;
 
-		this.active = this.createQueue();
+		this.setActive(this.createQueue());
 	}
 
 	private GameQueueList createQueue() {
@@ -41,12 +41,17 @@ public final class GameList implements IGuiEventListener {
 
 			@Override
 			public void enqueue() {
-				GameList.this.active = GameList.this.createInstalled();
+				GameList.this.setActive(GameList.this.createInstalled());
 			}
 
 			@Override
 			public void remove(int id) {
 				GameList.this.handlers.removeQueuedGame(id);
+			}
+
+			@Override
+			public void reorder(int id, int offset) {
+				GameList.this.handlers.reorderQueuedGame(id, offset);
 			}
 		});
 	}
@@ -56,8 +61,13 @@ public final class GameList implements IGuiEventListener {
 			this.handlers.selectQueuedGame(-1);
 			this.handlers.enqueueGame(index);
 
-			this.active = this.createQueue();
+			this.setActive(this.createQueue());
 		});
+	}
+
+	private void setActive(AbstractGameList active) {
+		active.updateEntries();
+		this.active = active;
 	}
 
 	public void updateEntries() {
@@ -68,8 +78,8 @@ public final class GameList implements IGuiEventListener {
 		this.active.render(matrixStack, mouseX, mouseY, partialTicks);
 	}
 
-	public void renderButtons(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
-		this.active.renderButtons(matrixStack, mouseX, mouseY, partialTicks);
+	public void renderOverlays(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
+		this.active.renderOverlays(matrixStack, mouseX, mouseY, partialTicks);
 	}
 
 	@Override
@@ -128,5 +138,7 @@ public final class GameList implements IGuiEventListener {
 		void enqueueGame(int installedGameIndex);
 
 		void removeQueuedGame(int queuedGameId);
+
+		void reorderQueuedGame(int queuedGameId, int offset);
 	}
 }

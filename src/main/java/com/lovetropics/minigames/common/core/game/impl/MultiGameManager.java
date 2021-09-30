@@ -4,13 +4,16 @@ import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.common.core.game.GameResult;
 import com.lovetropics.minigames.common.core.game.IGameManager;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
+import com.lovetropics.minigames.common.core.game.IGamePhaseDefinition;
 import com.lovetropics.minigames.common.core.game.lobby.GameLobbyId;
 import com.lovetropics.minigames.common.core.game.lobby.GameLobbyMetadata;
 import com.lovetropics.minigames.common.core.game.lobby.IGameLobby;
+import com.lovetropics.minigames.common.core.game.map.IGameMapProvider;
 import com.lovetropics.minigames.common.core.game.player.PlayerOps;
 import com.lovetropics.minigames.common.core.game.player.PlayerSet;
 import com.lovetropics.minigames.common.core.game.state.control.ControlCommandInvoker;
 import com.lovetropics.minigames.common.core.game.state.statistics.PlayerKey;
+import com.lovetropics.minigames.common.core.game.util.GameTexts;
 import com.lovetropics.minigames.common.core.integration.Telemetry;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
@@ -20,9 +23,10 @@ import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.management.PlayerList;
 import net.minecraft.util.RegistryKey;
+import net.minecraft.util.Unit;
+import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
 import net.minecraftforge.event.TickEvent;
@@ -61,21 +65,28 @@ public class MultiGameManager implements IGameManager {
 		lobbies.add(lobby);
 
 		if (!Telemetry.INSTANCE.isConnected()) {
-			ITextComponent warning = new StringTextComponent("Warning: Telemetry websocket is not connected!")
-					.mergeStyle(TextFormatting.RED, TextFormatting.BOLD);
+			ITextComponent warning = GameTexts.Status.telemetryWarning().mergeStyle(TextFormatting.BOLD);
 			operators(initiator.server).sendMessage(warning);
 		}
 
-		// TODO: handling game intersections with a queue?
-		/*
-		if (lobbies.stream().map(GameLobby::getDefinition)
-				.filter(d -> d.getGameArea().intersects(game.getGameArea()))
-				.anyMatch(d -> !Collections.disjoint(d.getMapProvider().getPossibleDimensions(), game.getMap().getPossibleDimensions()))) {
-			return GameResult.error(new TranslationTextComponent(LoveTropicsLangKeys.COMMAND_MINIGAMES_INTERSECT));
-		}
-		*/
-
 		return GameResult.ok(lobby);
+	}
+
+	GameResult<Unit> canStartGamePhase(IGamePhaseDefinition definition) {
+		IGameMapProvider map = definition.getMap();
+		List<RegistryKey<World>> possibleDimensions = map.getPossibleDimensions();
+		AxisAlignedBB area = definition.getGameArea();
+
+		for (RegistryKey<World> dimension : possibleDimensions) {
+			List<GamePhase> games = gamesByDimension.getOrDefault(dimension, Collections.emptyList());
+			for (GamePhase game : games) {
+				if (game.getPhaseDefinition().getGameArea().intersects(area)) {
+					return GameResult.error(GameTexts.Commands.gamesIntersect());
+				}
+			}
+		}
+
+		return GameResult.ok();
 	}
 
 	private static PlayerOps operators(MinecraftServer server) {
@@ -105,7 +116,7 @@ public class MultiGameManager implements IGameManager {
 		return getGamePhaseForWorld(world, phase -> phase.getPhaseDefinition().getGameArea().contains(pos));
 	}
 
-	public List<GamePhase> getGamePhaseForWorld(World world) {
+	public List<GamePhase> getGamePhasesForWorld(World world) {
 		if (world.isRemote) {
 			return Collections.emptyList();
 		}
@@ -115,7 +126,7 @@ public class MultiGameManager implements IGameManager {
 
 	@Nullable
 	public GamePhase getGamePhaseForWorld(World world, Predicate<GamePhase> pred) {
-		return getGamePhaseForWorld(world).stream().filter(pred).findFirst().orElse(null);
+		return getGamePhasesForWorld(world).stream().filter(pred).findFirst().orElse(null);
 	}
 
 	@Nullable
@@ -195,7 +206,7 @@ public class MultiGameManager implements IGameManager {
 	public static void onServerStopping(FMLServerStoppingEvent event) {
 		List<GameLobby> lobbies = new ArrayList<>(INSTANCE.lobbies);
 		for (GameLobby lobby : lobbies) {
-			lobby.cancel();
+			lobby.close();
 		}
 	}
 
@@ -203,19 +214,8 @@ public class MultiGameManager implements IGameManager {
 	public static void onServerTick(TickEvent.ServerTickEvent event) {
 		if (event.phase == TickEvent.Phase.START) return;
 
-		List<GameLobby> canceled = null;
-
 		for (GameLobby lobby : INSTANCE.lobbies) {
-			if (!lobby.tick()) {
-				if (canceled == null) {
-					canceled = new ArrayList<>();
-				}
-				canceled.add(lobby);
-			}
-		}
-
-		if (canceled != null) {
-			canceled.forEach(GameLobby::cancel);
+			lobby.tick();
 		}
 	}
 

@@ -6,6 +6,7 @@ import com.lovetropics.minigames.client.screen.FlexUi;
 import com.lovetropics.minigames.client.screen.flex.Flex;
 import com.lovetropics.minigames.client.screen.flex.FlexSolver;
 import com.lovetropics.minigames.client.screen.flex.Layout;
+import com.lovetropics.minigames.common.core.game.util.GameTexts;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.button.Button;
@@ -18,7 +19,7 @@ import java.util.List;
 import java.util.function.IntConsumer;
 
 public final class InstalledGameList extends AbstractGameList {
-	private static final ITextComponent TITLE = new StringTextComponent("Installed")
+	private static final ITextComponent TITLE =  GameTexts.Ui.installedGames()
 			.mergeStyle(TextFormatting.UNDERLINE, TextFormatting.BOLD);
 
 	private final ClientLobbyManageState lobby;
@@ -39,8 +40,6 @@ public final class InstalledGameList extends AbstractGameList {
 		FlexSolver.Results solve = new FlexSolver(footer.content()).apply(root);
 		this.enqueueButton = FlexUi.createButton(solve.layout(enqueue), new StringTextComponent("\u2714"), this::enqueue);
 		this.cancelButton = FlexUi.createButton(solve.layout(cancel), new StringTextComponent("\u274C"), this::cancel);
-
-		this.updateEntries();
 	}
 
 	@Override
@@ -52,7 +51,7 @@ public final class InstalledGameList extends AbstractGameList {
 		this.clearEntries();
 		for (int id = 0; id < games.size(); id++) {
 			ClientGameDefinition game = games.get(id);
-			this.addEntry(new Entry(this, id, game));
+			this.addEntry(Entry.game(this, id, game));
 		}
 	}
 
@@ -66,7 +65,8 @@ public final class InstalledGameList extends AbstractGameList {
 	}
 
 	@Override
-	public void renderButtons(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
+	public void renderOverlays(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
+		super.renderOverlays(matrixStack, mouseX, mouseY, partialTicks);
 		this.enqueueButton.render(matrixStack, mouseX, mouseY, partialTicks);
 		this.cancelButton.render(matrixStack, mouseX, mouseY, partialTicks);
 	}

@@ -6,6 +6,7 @@ import com.lovetropics.minigames.common.core.game.config.GameConfig;
 import com.lovetropics.minigames.common.core.game.config.GameConfigs;
 import com.lovetropics.minigames.common.core.game.lobby.ILobbyManagement;
 import com.lovetropics.minigames.common.core.game.lobby.LobbyControls;
+import com.lovetropics.minigames.common.core.game.lobby.LobbyVisibility;
 import com.lovetropics.minigames.common.util.PartialUpdate;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.ResourceLocation;
@@ -45,8 +46,23 @@ public abstract class ServerLobbyUpdate extends PartialUpdate<ILobbyManagement> 
 			return this;
 		}
 
+		public Set reorderQueuedGame(int id, int newIndex) {
+			this.add(new ReorderQueuedGame(id, newIndex));
+			return this;
+		}
+
 		public Set selectControl(LobbyControls.Type control) {
 			this.add(new SelectControl(control));
+			return this;
+		}
+
+		public Set setVisibility(LobbyVisibility visibility) {
+			this.add(new SetVisibility(visibility));
+			return this;
+		}
+
+		public Set close() {
+			this.add(new Close());
 			return this;
 		}
 
@@ -59,7 +75,10 @@ public abstract class ServerLobbyUpdate extends PartialUpdate<ILobbyManagement> 
 		SET_NAME(SetName::decode),
 		ENQUEUE(Enqueue::decode),
 		REMOVE_QUEUED_GAME(RemoveQueuedGame::decode),
-		SELECT_CONTROL(SelectControl::decode);
+		REORDER_QUEUED_GAME(ReorderQueuedGame::decode),
+		SELECT_CONTROL(SelectControl::decode),
+		SET_VISIBILITY(SetVisibility::decode),
+		CLOSE(Close::decode);
 
 		private final Function<PacketBuffer, ServerLobbyUpdate> decode;
 
@@ -149,6 +168,32 @@ public abstract class ServerLobbyUpdate extends PartialUpdate<ILobbyManagement> 
 		}
 	}
 
+	public static final class ReorderQueuedGame extends ServerLobbyUpdate {
+		private final int id;
+		private final int newIndex;
+
+		ReorderQueuedGame(int id, int newIndex) {
+			super(Type.REORDER_QUEUED_GAME);
+			this.id = id;
+			this.newIndex = newIndex;
+		}
+
+		@Override
+		public void applyTo(ILobbyManagement lobby) {
+			lobby.reorderQueuedGame(id, newIndex);
+		}
+
+		@Override
+		protected void encode(PacketBuffer buffer) {
+			buffer.writeVarInt(id);
+			buffer.writeVarInt(newIndex);
+		}
+
+		static ReorderQueuedGame decode(PacketBuffer buffer) {
+			return new ReorderQueuedGame(buffer.readVarInt(), buffer.readVarInt());
+		}
+	}
+
 	public static final class SelectControl extends ServerLobbyUpdate {
 		private final LobbyControls.Type control;
 
@@ -171,6 +216,48 @@ public abstract class ServerLobbyUpdate extends PartialUpdate<ILobbyManagement> 
 			LobbyControls.Type[] types = LobbyControls.Type.values();
 			LobbyControls.Type control = types[buffer.readUnsignedByte() % types.length];
 			return new SelectControl(control);
+		}
+	}
+
+	public static final class SetVisibility extends ServerLobbyUpdate {
+		private final LobbyVisibility visibility;
+
+		public SetVisibility(LobbyVisibility visibility) {
+			super(Type.SET_VISIBILITY);
+			this.visibility = visibility;
+		}
+
+		@Override
+		public void applyTo(ILobbyManagement lobby) {
+			lobby.setVisibility(visibility);
+		}
+
+		@Override
+		protected void encode(PacketBuffer buffer) {
+			buffer.writeBoolean(visibility.isPublic());
+		}
+
+		static SetVisibility decode(PacketBuffer buffer) {
+			return new SetVisibility(buffer.readBoolean() ? LobbyVisibility.PUBLIC : LobbyVisibility.PRIVATE);
+		}
+	}
+
+	public static final class Close extends ServerLobbyUpdate {
+		public Close() {
+			super(Type.CLOSE);
+		}
+
+		@Override
+		public void applyTo(ILobbyManagement lobby) {
+			lobby.close();
+		}
+
+		@Override
+		protected void encode(PacketBuffer buffer) {
+		}
+
+		static Close decode(PacketBuffer buffer) {
+			return new Close();
 		}
 	}
 }

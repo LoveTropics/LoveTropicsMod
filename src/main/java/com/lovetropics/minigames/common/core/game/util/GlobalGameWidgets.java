@@ -22,10 +22,9 @@ public final class GlobalGameWidgets {
 
 	public static GlobalGameWidgets registerTo(IGamePhase game, EventRegistrar events) {
 		GlobalGameWidgets widgets = new GlobalGameWidgets(game);
-
-		events.listen(GamePlayerEvents.ADD, (player) -> widgets.addPlayer(player));
-		events.listen(GamePlayerEvents.REMOVE, (player) -> widgets.removePlayer(player));
-		events.listen(GamePhaseEvents.STOP, (reason) -> widgets.close());
+		events.listen(GamePlayerEvents.ADD, widgets::addPlayer);
+		events.listen(GamePlayerEvents.REMOVE, widgets::removePlayer);
+		events.listen(GamePhaseEvents.DESTROY, widgets::close);
 
 		return widgets;
 	}

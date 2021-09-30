@@ -23,12 +23,12 @@ public final class PlaceByDeathOrderBehavior implements IGameBehavior {
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
-		events.listen(GamePlayerEvents.DEATH, (player1, source) -> onPlayerDeath(game, player1, source));
-		events.listen(GamePlayerEvents.LEAVE, (player) -> onPlayerLeave(game, player));
-		events.listen(GamePhaseEvents.STOP, (reason) -> onFinish(game));
+		events.listen(GamePlayerEvents.DEATH, this::onPlayerDeath);
+		events.listen(GamePlayerEvents.LEAVE, this::onPlayerLeave);
+		events.listen(GamePhaseEvents.FINISH, () -> onFinish(game));
 	}
 
-	private ActionResultType onPlayerDeath(IGamePhase game, ServerPlayerEntity player, DamageSource source) {
+	private ActionResultType onPlayerDeath(ServerPlayerEntity player, DamageSource source) {
 		PlayerKey playerKey = PlayerKey.from(player);
 		if (!deathOrder.contains(playerKey)) {
 			deathOrder.add(playerKey);
@@ -36,7 +36,7 @@ public final class PlaceByDeathOrderBehavior implements IGameBehavior {
 		return ActionResultType.PASS;
 	}
 
-	private void onPlayerLeave(IGamePhase game, ServerPlayerEntity player) {
+	private void onPlayerLeave(ServerPlayerEntity player) {
 		PlayerKey playerKey = PlayerKey.from(player);
 		if (!deathOrder.contains(playerKey)) {
 			deathOrder.add(playerKey);

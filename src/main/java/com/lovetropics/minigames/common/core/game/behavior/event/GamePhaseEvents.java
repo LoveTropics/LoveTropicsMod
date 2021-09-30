@@ -1,14 +1,17 @@
 package com.lovetropics.minigames.common.core.game.behavior.event;
 
 import com.lovetropics.minigames.common.core.game.GameStopReason;
-import net.minecraft.entity.player.ServerPlayerEntity;
-
-import java.util.List;
 
 public final class GamePhaseEvents {
-	public static final GameEventType<Start> INITIALIZE = GameEventType.create(Start.class, listeners -> () -> {
+	public static final GameEventType<Start> CREATE = GameEventType.create(Start.class, listeners -> () -> {
 		for (Start listener : listeners) {
 			listener.start();
+		}
+	});
+
+	public static final GameEventType<Destroy> DESTROY = GameEventType.create(Destroy.class, listeners -> () -> {
+		for (Destroy listener : listeners) {
+			listener.destroy();
 		}
 	});
 
@@ -18,9 +21,15 @@ public final class GamePhaseEvents {
 		}
 	});
 
-	public static final GameEventType<Stop> STOP = GameEventType.create(Stop.class, listeners -> (reason) -> {
+	public static final GameEventType<Stop> STOP = GameEventType.create(Stop.class, listeners -> reason -> {
 		for (Stop listener : listeners) {
 			listener.stop(reason);
+		}
+	});
+
+	public static final GameEventType<Finish> FINISH = GameEventType.create(Finish.class, listeners -> () -> {
+		for (Finish listener : listeners) {
+			listener.finish();
 		}
 	});
 
@@ -41,11 +50,15 @@ public final class GamePhaseEvents {
 		void stop(GameStopReason reason);
 	}
 
-	public interface Tick {
-		void tick();
+	public interface Destroy {
+		void destroy();
 	}
 
-	public interface AssignRoles {
-		void assignRoles(List<ServerPlayerEntity> participants, List<ServerPlayerEntity> spectators);
+	public interface Finish {
+		void finish();
+	}
+
+	public interface Tick {
+		void tick();
 	}
 }

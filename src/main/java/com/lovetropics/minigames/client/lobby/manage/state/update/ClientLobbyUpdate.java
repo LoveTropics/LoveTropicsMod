@@ -2,15 +2,12 @@ package com.lovetropics.minigames.client.lobby.manage.state.update;
 
 import com.lovetropics.minigames.client.lobby.manage.ClientLobbyManagement;
 import com.lovetropics.minigames.client.lobby.manage.ClientManageLobbyMessage;
+import com.lovetropics.minigames.client.lobby.state.ClientCurrentGame;
 import com.lovetropics.minigames.client.lobby.manage.state.ClientLobbyPlayer;
 import com.lovetropics.minigames.client.lobby.manage.state.ClientLobbyQueue;
 import com.lovetropics.minigames.client.lobby.manage.state.ClientLobbyQueuedGame;
 import com.lovetropics.minigames.client.lobby.state.ClientGameDefinition;
-import com.lovetropics.minigames.common.core.game.IGameDefinition;
-import com.lovetropics.minigames.common.core.game.lobby.IGameLobby;
-import com.lovetropics.minigames.common.core.game.lobby.LobbyControls;
-import com.lovetropics.minigames.common.core.game.lobby.LobbyGameQueue;
-import com.lovetropics.minigames.common.core.game.lobby.QueuedGame;
+import com.lovetropics.minigames.common.core.game.lobby.*;
 import com.lovetropics.minigames.common.util.PartialUpdate;
 import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
@@ -37,16 +34,6 @@ public abstract class ClientLobbyUpdate extends PartialUpdate<ClientLobbyManagem
 			return new Set();
 		}
 
-		public static Set initialize(IGameLobby lobby) {
-			return new Set()
-					.setName(lobby.getMetadata().name())
-					.initInstalledGames(ClientGameDefinition.collectInstalled())
-					.initQueue(lobby.getGameQueue())
-					.setPlayersFrom(lobby)
-					.setCurrentGame(lobby.getCurrentGame() != null ? lobby.getCurrentGame().getDefinition() : null)
-					.setControlState(lobby.getControls().asState());
-		}
-
 		public static Set decode(PacketBuffer buffer) {
 			Set set = new Set();
 			set.decodeSelf(buffer);
@@ -63,7 +50,7 @@ public abstract class ClientLobbyUpdate extends PartialUpdate<ClientLobbyManagem
 			return this;
 		}
 
-		public Set initQueue(LobbyGameQueue queue) {
+		public Set initQueue(ILobbyGameQueue queue) {
 			ClientLobbyQueue clientQueue = new ClientLobbyQueue();
 			for (QueuedGame game : queue) {
 				clientQueue.add(game.networkId(), ClientLobbyQueuedGame.from(game));
@@ -87,12 +74,12 @@ public abstract class ClientLobbyUpdate extends PartialUpdate<ClientLobbyManagem
 			return this;
 		}
 
-		public Set setCurrentGame(IGameDefinition currentGame) {
-			this.add(new SetCurrentGame(currentGame != null ? ClientGameDefinition.from(currentGame) : null));
+		public Set setCurrentGame(ClientCurrentGame currentGame) {
+			this.add(new SetCurrentGame(currentGame));
 			return this;
 		}
 
-		public Set updateQueue(LobbyGameQueue queue, int... updatedIds) {
+		public Set updateQueue(ILobbyGameQueue queue, int... updatedIds) {
 			IntList order = new IntArrayList(queue.size());
 			Int2ObjectMap<ClientLobbyQueuedGame> updated = new Int2ObjectArrayMap<>();
 
@@ -112,6 +99,11 @@ public abstract class ClientLobbyUpdate extends PartialUpdate<ClientLobbyManagem
 			return this;
 		}
 
+		public Set setVisibility(LobbyVisibility visibility) {
+			this.add(new SetVisibility(visibility));
+			return this;
+		}
+
 		public ClientManageLobbyMessage intoMessage(int id) {
 			return new ClientManageLobbyMessage(id, this);
 		}
@@ -124,7 +116,8 @@ public abstract class ClientLobbyUpdate extends PartialUpdate<ClientLobbyManagem
 		SET_CURRENT_GAME(SetCurrentGame::decode),
 		UPDATE_QUEUE(UpdateQueue::decode),
 		SET_PLAYERS(SetPlayers::decode),
-		SET_CONTROLS_STATE(SetControlsState::decode);
+		SET_CONTROLS_STATE(SetControlsState::decode),
+		SET_VISIBILITY(SetVisibility::decode);
 
 		private final Function<PacketBuffer, ClientLobbyUpdate> decode;
 
@@ -222,28 +215,28 @@ public abstract class ClientLobbyUpdate extends PartialUpdate<ClientLobbyManagem
 
 	public static final class SetCurrentGame extends ClientLobbyUpdate {
 		@Nullable
-		private final ClientGameDefinition currentGame;
+		private final ClientCurrentGame game;
 
-		SetCurrentGame(@Nullable ClientGameDefinition currentGame) {
+		SetCurrentGame(@Nullable ClientCurrentGame game) {
 			super(Type.SET_CURRENT_GAME);
-			this.currentGame = currentGame;
+			this.game = game;
 		}
 
 		@Override
 		public void applyTo(ClientLobbyManagement.Session session) {
-			session.handleCurrentGame(currentGame);
+			session.handleCurrentGame(game);
 		}
 
 		@Override
 		protected void encode(PacketBuffer buffer) {
-			buffer.writeBoolean(currentGame != null);
-			if (currentGame != null) {
-				currentGame.encode(buffer);
+			buffer.writeBoolean(game != null);
+			if (game != null) {
+				game.encode(buffer);
 			}
 		}
 
 		static SetCurrentGame decode(PacketBuffer buffer) {
-			ClientGameDefinition game = buffer.readBoolean() ? ClientGameDefinition.decode(buffer) : null;
+			ClientCurrentGame game = buffer.readBoolean() ? ClientCurrentGame.decode(buffer) : null;
 			return new SetCurrentGame(game);
 		}
 	}
@@ -345,6 +338,29 @@ public abstract class ClientLobbyUpdate extends PartialUpdate<ClientLobbyManagem
 
 		static SetControlsState decode(PacketBuffer buffer) {
 			return new SetControlsState(LobbyControls.State.decode(buffer));
+		}
+	}
+
+	public static final class SetVisibility extends ClientLobbyUpdate {
+		private final LobbyVisibility visibility;
+
+		public SetVisibility(LobbyVisibility visibility) {
+			super(Type.SET_VISIBILITY);
+			this.visibility = visibility;
+		}
+
+		@Override
+		public void applyTo(ClientLobbyManagement.Session session) {
+			session.handleVisibility(visibility);
+		}
+
+		@Override
+		protected void encode(PacketBuffer buffer) {
+			buffer.writeBoolean(visibility.isPublic());
+		}
+
+		static SetVisibility decode(PacketBuffer buffer) {
+			return new SetVisibility(buffer.readBoolean() ? LobbyVisibility.PUBLIC : LobbyVisibility.PRIVATE);
 		}
 	}
 }

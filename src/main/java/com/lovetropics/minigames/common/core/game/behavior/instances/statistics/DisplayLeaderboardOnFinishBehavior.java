@@ -38,7 +38,7 @@ public final class DisplayLeaderboardOnFinishBehavior<T extends Comparable<T>> i
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
-		events.listen(GamePhaseEvents.STOP, (reason) -> {
+		events.listen(GamePhaseEvents.FINISH, () -> {
 			PlayerPlacement.Score<T> placement;
 			if (order == PlacementOrder.MAX) {
 				placement = PlayerPlacement.fromMaxScore(game, statistic);

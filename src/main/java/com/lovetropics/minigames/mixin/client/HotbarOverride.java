@@ -1,7 +1,7 @@
 package com.lovetropics.minigames.mixin.client;
 
 import com.lovetropics.minigames.Constants;
-import com.lovetropics.minigames.client.lobby.state.ClientGameDefinition;
+import com.lovetropics.minigames.client.lobby.state.ClientCurrentGame;
 import com.lovetropics.minigames.client.lobby.state.ClientLobbyManager;
 import com.lovetropics.minigames.client.lobby.state.ClientLobbyState;
 import net.minecraft.client.gui.IngameGui;
@@ -25,8 +25,8 @@ public class HotbarOverride {
 	public ResourceLocation getHotbarTexture(ResourceLocation loc) {
 		ClientLobbyState state = ClientLobbyManager.getJoined();
 		if (state != null) {
-			ClientGameDefinition currentGame = state.getCurrentGame();
-			if (currentGame != null && currentGame.id.equals(TARGET)) {
+			ClientCurrentGame currentGame = state.getCurrentGame();
+			if (currentGame != null && currentGame.definition().id.equals(TARGET)) {
 				return TEXTURE;
 			}
 		}

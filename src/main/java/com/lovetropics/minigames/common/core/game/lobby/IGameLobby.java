@@ -1,6 +1,7 @@
 package com.lovetropics.minigames.common.core.game.lobby;
 
-import com.lovetropics.minigames.common.core.game.IGameInstance;
+import com.lovetropics.minigames.client.lobby.state.ClientCurrentGame;
+import com.lovetropics.minigames.common.core.game.IGame;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.player.PlayerIterable;
 import com.lovetropics.minigames.common.core.game.player.PlayerSet;
@@ -17,15 +18,21 @@ public interface IGameLobby {
 
 	IGameLobbyPlayers getPlayers();
 
-	LobbyGameQueue getGameQueue();
+	ILobbyGameQueue getGameQueue();
 
 	@Nullable
-	IGameInstance getCurrentGame();
+	default IGame getCurrentGame() {
+		IGamePhase phase = getCurrentPhase();
+		return phase != null ? phase.getGame() : null;
+	}
 
 	@Nullable
-	default IGamePhase getCurrentPhase() {
-		IGameInstance game = getCurrentGame();
-		return game != null ? game.getCurrentPhase() : null;
+	IGamePhase getCurrentPhase();
+
+	@Nullable
+	default ClientCurrentGame getClientCurrentGame() {
+		IGamePhase phase = getCurrentPhase();
+		return phase != null ? ClientCurrentGame.create(phase) : null;
 	}
 
 	LobbyControls getControls();
@@ -42,5 +49,9 @@ public interface IGameLobby {
 
 	default boolean isVisibleTo(ServerPlayerEntity player) {
 		return this.isVisibleTo(player.getCommandSource());
+	}
+
+	default LobbyVisibility getVisibility() {
+		return LobbyVisibility.PUBLIC;
 	}
 }

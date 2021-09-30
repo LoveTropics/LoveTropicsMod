@@ -20,17 +20,18 @@ final class ManageLobbyLayout {
 	final Layout centerHeader;
 	final Layout edit;
 
-	final Layout pause;
 	final Layout play;
-	final Layout stop;
+	final Layout skip;
 
 	final Layout rightColumn;
 	final Layout rightFooter;
 
 	final Layout properties;
 	final Layout name;
+	final Layout publish;
 	final Layout playerList;
 
+	final Layout close;
 	final Layout done;
 
 	final Layout[] marginals;
@@ -77,7 +78,6 @@ final class ManageLobbyLayout {
 		Flex controls = centerFooter.child().rows()
 				.alignCross(Align.Cross.CENTER);
 
-		Flex pause = controls.child().size(20, 20).margin(2, 0);
 		Flex play = controls.child().size(20, 20).margin(2, 0);
 		Flex stop = controls.child().size(20, 20).margin(2, 0);
 
@@ -92,17 +92,26 @@ final class ManageLobbyLayout {
 				.width(1.0F, Flex.Unit.PERCENT).height(20)
 				.margin(2).marginTop(fontHeight);
 
+		Flex publish = properties.child()
+				.width(1.0F, Flex.Unit.PERCENT).height(20)
+				.marginTop(PADDING);
+
 		Flex playerList = properties.child()
 				.width(1.0F, Flex.Unit.PERCENT).grow(1.0F)
 				.marginTop(PADDING);
 
-		Flex rightFooter = rightColumn.child()
-				.width(1.0F, Flex.Unit.PERCENT).height(FOOTER_HEIGHT).padding(PADDING)
+		Flex rightFooter = rightColumn.child().rows()
+				.width(1.0F, Flex.Unit.PERCENT)
+				.padding(PADDING / 2)
 				.alignMain(Align.Main.END);
 
+		Flex close = rightFooter.child()
+				.grow(1.0F).height(20)
+				.margin(PADDING / 2);
+
 		Flex done = rightFooter.child()
-				.width(1.0F, Flex.Unit.PERCENT).height(20)
-				.alignMain(Align.Main.END);
+				.grow(1.0F).height(20)
+				.margin(PADDING / 2);
 
 		FlexSolver.Results solve = new FlexSolver(new Box(screen)).apply(root);
 
@@ -117,15 +126,16 @@ final class ManageLobbyLayout {
 		this.centerFooter = solve.layout(centerFooter);
 		this.edit = solve.layout(edit);
 
-		this.pause = solve.layout(pause);
 		this.play = solve.layout(play);
-		this.stop = solve.layout(stop);
+		this.skip = solve.layout(stop);
 
 		this.rightColumn = solve.layout(rightColumn);
 		this.rightFooter = solve.layout(rightFooter);
 		this.properties = solve.layout(properties);
 		this.name = solve.layout(name);
+		this.publish = solve.layout(publish);
 		this.playerList = solve.layout(playerList);
+		this.close = solve.layout(close);
 		this.done = solve.layout(done);
 
 		this.marginals = new Layout[] { this.header, this.leftFooter, this.centerFooter, this.rightFooter };

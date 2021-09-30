@@ -10,7 +10,7 @@ import javax.annotation.Nullable;
 public interface IGameLobbyPlayers extends PlayerSet {
 	TeamAllocator<PlayerRole, ServerPlayerEntity> createRoleAllocator();
 
-	boolean register(ServerPlayerEntity player, @Nullable PlayerRole requestedRole);
+	boolean join(ServerPlayerEntity player, @Nullable PlayerRole requestedRole);
 
 	boolean remove(ServerPlayerEntity player);
 

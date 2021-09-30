@@ -1,8 +1,7 @@
 package com.lovetropics.minigames.client.lobby.state.message;
 
-import com.lovetropics.minigames.client.lobby.state.ClientGameDefinition;
+import com.lovetropics.minigames.client.lobby.state.ClientCurrentGame;
 import com.lovetropics.minigames.client.lobby.state.ClientLobbyManager;
-import com.lovetropics.minigames.common.core.game.IGameInstance;
 import com.lovetropics.minigames.common.core.game.lobby.IGameLobby;
 import net.minecraft.network.PacketBuffer;
 import net.minecraftforge.fml.network.NetworkEvent;
@@ -23,9 +22,8 @@ public class LobbyUpdateMessage {
 	public static LobbyUpdateMessage update(IGameLobby lobby) {
 		int id = lobby.getMetadata().id().networkId();
 		String name = lobby.getMetadata().name();
-		IGameInstance currentGame = lobby.getCurrentGame();
-		ClientGameDefinition definition = currentGame != null ? ClientGameDefinition.from(currentGame.getDefinition()) : null;
-		return new LobbyUpdateMessage(id, new Update(name, definition));
+		ClientCurrentGame currentGame = lobby.getClientCurrentGame();
+		return new LobbyUpdateMessage(id, new Update(name, currentGame));
 	}
 
 	public static LobbyUpdateMessage remove(IGameLobby lobby) {
@@ -64,9 +62,9 @@ public class LobbyUpdateMessage {
 	static final class Update {
 		final String name;
 		@Nullable
-		final ClientGameDefinition currentGame;
+		final ClientCurrentGame currentGame;
 
-		Update(String name, @Nullable ClientGameDefinition currentGame) {
+		Update(String name, @Nullable ClientCurrentGame currentGame) {
 			this.name = name;
 			this.currentGame = currentGame;
 		}
@@ -74,9 +72,9 @@ public class LobbyUpdateMessage {
 		static Update decode(PacketBuffer buffer) {
 			String name = buffer.readString(200);
 
-			ClientGameDefinition currentGame = null;
+			ClientCurrentGame currentGame = null;
 			if (buffer.readBoolean()) {
-				currentGame = ClientGameDefinition.decode(buffer);
+				currentGame = ClientCurrentGame.decode(buffer);
 			}
 
 			return new Update(name, currentGame);

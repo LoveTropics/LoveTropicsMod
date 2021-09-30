@@ -107,7 +107,9 @@ public final class RuntimeDimensions {
 	public RuntimeDimensionHandle openTemporaryWithKey(ResourceLocation key, RuntimeDimensionConfig config) {
 		RegistryKey<World> worldKey = RegistryKey.getOrCreateKey(Registry.WORLD_KEY, key);
 		if (this.server.getWorld(worldKey) == null) {
-			return this.openWorld(key, config);
+			RuntimeDimensionHandle world = this.openWorld(key, config);
+			this.temporaryDimensions.add(worldKey);
+			return world;
 		} else {
 			return null;
 		}
@@ -197,7 +199,6 @@ public final class RuntimeDimensions {
 	private void deleteDimension(ServerWorld world) {
 		RegistryKey<World> dimensionKey = world.getDimensionKey();
 
-		// TODO: removing does not seem to be working
 		if (this.server.worlds.remove(dimensionKey, world)) {
 			this.server.markWorldsDirty();
 
