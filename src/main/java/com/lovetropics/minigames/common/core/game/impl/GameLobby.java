@@ -30,6 +30,7 @@ final class GameLobby implements IGameLobby {
 	GameLobbyMetadata metadata;
 
 	final LobbyGameQueue gameQueue;
+	final LobbyStateManager state;
 	final LobbyPlayerManager players;
 	final LobbyManagement management;
 	final LobbyTrackingPlayers trackingPlayers;
@@ -43,7 +44,6 @@ final class GameLobby implements IGameLobby {
 
 	final PlayerIsolation playerIsolation = new PlayerIsolation();
 
-	LobbyState state = pausedState();
 	private boolean closed;
 
 	GameLobby(MultiGameManager manager, MinecraftServer server, GameLobbyMetadata metadata) {
@@ -51,27 +51,11 @@ final class GameLobby implements IGameLobby {
 		this.server = server;
 		this.metadata = metadata;
 
-		this.gameQueue = new LobbyGameQueue(this);
+		this.gameQueue = new LobbyGameQueue();
+		this.state = new LobbyStateManager(this);
 		this.players = new LobbyPlayerManager(this);
 		this.management = new LobbyManagement(this);
 		this.trackingPlayers = new LobbyTrackingPlayers(this);
-	}
-
-	LobbyState pausedState() {
-		LobbyControls controls = new LobbyControls()
-				.add(LobbyControls.Type.PLAY, () -> {
-					LobbyState newState = this.gameQueue.tryResume();
-					if (newState != null) {
-						this.setState(newState);
-					}
-					return GameResult.ok();
-				});
-
-		return new LobbyState(null, controls);
-	}
-
-	LobbyState closedState() {
-		return new LobbyState(null, LobbyControls.empty());
 	}
 
 	@Override
@@ -97,7 +81,7 @@ final class GameLobby implements IGameLobby {
 	@Nullable
 	@Override
 	public IGamePhase getCurrentPhase() {
-		return state.phase();
+		return state.getPhase();
 	}
 
 	@Override
@@ -121,7 +105,7 @@ final class GameLobby implements IGameLobby {
 			return true;
 		}
 
-		return state.game() != null && visibility.isPublic();
+		return state.getGame() != null && visibility.isPublic();
 	}
 
 	@Override
@@ -139,43 +123,31 @@ final class GameLobby implements IGameLobby {
 	}
 
 	void tick() {
-		GameResult<Unit> result = tickState();
-		if (result.isError()) {
-			// TODO: handle error
-			this.setState(pausedState());
+		LobbyStateManager.Change change = state.tick();
+		if (change != null) {
+			GameResult<Unit> result = onStateChange(change);
+			if (result.isError()) {
+				onStateChange(state.handleError(result.getError()));
+			}
 		}
 	}
 
-	private GameResult<Unit> tickState() {
-		GameResult<LobbyState> tickResult = gameQueue.tick(this::pausedState);
-		if (tickResult != null) {
-			return tickResult.andThen(this::setState);
-		} else {
-			return GameResult.ok();
-		}
-	}
-
-	private GameResult<Unit> setState(LobbyState newState) {
-		LobbyState oldState = state;
-		state = newState;
-		return onGameStateChange(oldState, newState);
-	}
-
-	GameResult<Unit> onGameStateChange(LobbyState oldState, LobbyState newState) {
-		GameResult<Unit> result = GameResult.ok();
-
-		GamePhase oldPhase = oldState.phase();
-		GamePhase newPhase = newState.phase();
-		if (oldPhase != newPhase) {
-			result = onGamePhaseChanged(oldPhase, newPhase);
+	private GameResult<Unit> onStateChange(LobbyStateManager.Change change) {
+		GamePhase oldPhase = change.oldPhase;
+		GamePhase newPhase = change.newPhase;
+		if (newPhase != oldPhase) {
+			GameResult<Unit> result = onGamePhaseChange(oldPhase, newPhase);
+			if (result.isError()) {
+				return result;
+			}
 		}
 
 		management.onGameStateChange();
 
-		return result;
+		return GameResult.ok();
 	}
 
-	private GameResult<Unit> onGamePhaseChanged(GamePhase oldPhase, GamePhase newPhase) {
+	private GameResult<Unit> onGamePhaseChange(GamePhase oldPhase, GamePhase newPhase) {
 		GameResult<Unit> result = GameResult.ok();
 
 		if (newPhase != null && oldPhase == null) {
@@ -226,7 +198,7 @@ final class GameLobby implements IGameLobby {
 	void onPlayerRegister(ServerPlayerEntity player) {
 		manager.addPlayerToLobby(player, this);
 
-		GamePhase phase = state.phase();
+		GamePhase phase = state.getPhase();
 		if (phase != null) {
 			onPlayerEnterGame(player);
 			phase.onPlayerJoin(player);
@@ -237,7 +209,7 @@ final class GameLobby implements IGameLobby {
 	}
 
 	void onPlayerLeave(ServerPlayerEntity player) {
-		GamePhase phase = state.phase();
+		GamePhase phase = state.getPhase();
 		if (phase != null) {
 			phase.onPlayerLeave(player);
 			onPlayerExitGame(player);
@@ -270,10 +242,9 @@ final class GameLobby implements IGameLobby {
 		if (closed) return;
 		closed = true;
 
-		management.disable();
-
 		try {
-			setState(closedState());
+			management.disable();
+			onStateChange(state.close());
 
 			LobbyPlayerManager players = getPlayers();
 			for (ServerPlayerEntity player : Lists.newArrayList(players)) {

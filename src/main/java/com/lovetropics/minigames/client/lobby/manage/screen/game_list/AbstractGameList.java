@@ -1,5 +1,6 @@
 package com.lovetropics.minigames.client.lobby.manage.screen.game_list;
 
+import com.google.common.collect.ImmutableList;
 import com.lovetropics.minigames.client.lobby.state.ClientGameDefinition;
 import com.lovetropics.minigames.client.screen.TrimmedText;
 import com.lovetropics.minigames.client.screen.flex.Layout;
@@ -15,6 +16,7 @@ import net.minecraft.util.text.ITextComponent;
 public abstract class AbstractGameList extends ExtendedList<AbstractGameList.Entry> {
 	private static final int SCROLL_WIDTH = 6;
 
+	private final Screen screen;
 	private final ITextComponent title;
 
 	public AbstractGameList(Screen screen, Layout layout, ITextComponent title) {
@@ -33,6 +35,7 @@ public abstract class AbstractGameList extends ExtendedList<AbstractGameList.Ent
 
 		this.setRenderSelection(false);
 
+		this.screen = screen;
 		this.title = title;
 	}
 
@@ -46,7 +49,32 @@ public abstract class AbstractGameList extends ExtendedList<AbstractGameList.Ent
 		);
 	}
 
-	public void renderButtons(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
+	public void renderOverlays(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
+		renderTooltips(matrixStack, mouseX, mouseY);
+	}
+
+	private void renderTooltips(MatrixStack matrixStack, int mouseX, int mouseY) {
+		if (!isMouseOver(mouseX, mouseY)) {
+			return;
+		}
+
+		int count = this.getItemCount();
+		int rowWidth = this.getRowWidth();
+
+		for (int index = 0; index < count; index++) {
+			int rowTop = this.getRowTop(index);
+			int rowBottom = rowTop + this.itemHeight;
+			if (rowBottom < this.y0 || rowTop > this.y1) {
+				continue;
+			}
+
+			Entry entry = this.getEntry(index);
+			boolean hoveredEntry = this.getEntryAtPosition(mouseX, mouseY) == entry;
+			if (hoveredEntry) {
+				entry.renderTooltips(matrixStack, rowWidth, mouseX, mouseY);
+				break;
+			}
+		}
 	}
 
 	public abstract void updateEntries();
@@ -63,7 +91,7 @@ public abstract class AbstractGameList extends ExtendedList<AbstractGameList.Ent
 
 	@Override
 	protected int getScrollbarPosition() {
-		return this.x1 - SCROLL_WIDTH;
+		return this.getMaxScroll() > 0 ? this.x1 - SCROLL_WIDTH : this.x1;
 	}
 
 	@Override
@@ -147,14 +175,26 @@ public abstract class AbstractGameList extends ExtendedList<AbstractGameList.Ent
 
 			this.fillEntry(matrixStack, left, top, width, height, hovered, selected, outline);
 
-			int maxTextWidth = list.getRowWidth() - 2 * PADDING;
+			int maxTextWidth = getMaxTextWidth(width);
 
 			if (description != null) {
-				font.func_238422_b_(matrixStack, title.forWidth(font, maxTextWidth), left + PADDING, top + PADDING, 0xFFFFFF);
+				font.func_238422_b_(matrixStack, title.forWidth(font, maxTextWidth), left + PADDING, top + PADDING + 1, 0xFFFFFF);
 				font.func_238422_b_(matrixStack, description.forWidth(font, maxTextWidth), left + PADDING, top + height - PADDING - fontHeight, 0x555555);
 			} else {
 				font.func_238422_b_(matrixStack, title.forWidth(font, maxTextWidth), left + PADDING, top + (height - fontHeight) / 2, 0xFFFFFF);
 			}
+		}
+
+		public void renderTooltips(MatrixStack matrixStack, int width, int mouseX, int mouseY) {
+			TrimmedText description = this.description;
+			int maxTextWidth = getMaxTextWidth(width);
+			if (description != null && description.isTrimmedForWidth(client.fontRenderer, maxTextWidth)) {
+				list.screen.func_243308_b(matrixStack, ImmutableList.of(description.text()), mouseX, mouseY);
+			}
+		}
+
+		private static int getMaxTextWidth(int width) {
+			return width - 2 * PADDING;
 		}
 
 		private void fillEntry(MatrixStack matrixStack, int left, int top, int width, int height, boolean hovered, boolean selected, boolean outline) {

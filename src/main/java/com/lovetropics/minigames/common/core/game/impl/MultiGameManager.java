@@ -202,7 +202,6 @@ public class MultiGameManager implements IGameManager {
 	public static void onServerTick(TickEvent.ServerTickEvent event) {
 		if (event.phase == TickEvent.Phase.START) return;
 
-		// TODO: support closing lobbies
 		for (GameLobby lobby : INSTANCE.lobbies) {
 			lobby.tick();
 		}

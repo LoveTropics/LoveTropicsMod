@@ -73,8 +73,8 @@ public final class GameList implements IGuiEventListener {
 		this.active.render(matrixStack, mouseX, mouseY, partialTicks);
 	}
 
-	public void renderButtons(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
-		this.active.renderButtons(matrixStack, mouseX, mouseY, partialTicks);
+	public void renderOverlays(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
+		this.active.renderOverlays(matrixStack, mouseX, mouseY, partialTicks);
 	}
 
 	@Override

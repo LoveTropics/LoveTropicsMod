@@ -1,15 +1,12 @@
 package com.lovetropics.minigames.common.core.command.game;
 
-import com.lovetropics.minigames.client.lobby.manage.ClientManageLobbyMessage;
 import com.lovetropics.minigames.common.core.command.argument.GameConfigArgument;
 import com.lovetropics.minigames.common.core.command.argument.GameLobbyArgument;
 import com.lovetropics.minigames.common.core.game.GameResult;
 import com.lovetropics.minigames.common.core.game.config.GameConfig;
 import com.lovetropics.minigames.common.core.game.impl.MultiGameManager;
 import com.lovetropics.minigames.common.core.game.lobby.IGameLobby;
-import com.lovetropics.minigames.common.core.game.lobby.ILobbyManagement;
 import com.lovetropics.minigames.common.core.game.util.GameTexts;
-import com.lovetropics.minigames.common.core.network.LoveTropicsNetwork;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
@@ -17,7 +14,6 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import net.minecraft.command.CommandSource;
 import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraftforge.fml.network.PacketDistributor;
 
 import static net.minecraft.command.Commands.literal;
 
@@ -60,7 +56,7 @@ public class ManageGameLobbyCommand {
 		IGameLobby lobby = result.getOk();
 		lobby.getPlayers().join(player, null);
 
-		startManaging(player, lobby);
+		lobby.getManagement().startManaging(player);
 
 		return Command.SINGLE_SUCCESS;
 	}
@@ -69,22 +65,11 @@ public class ManageGameLobbyCommand {
 		ServerPlayerEntity player = context.getSource().asPlayer();
 		IGameLobby lobby = GameLobbyArgument.get(context, "lobby");
 
-		if (!startManaging(player, lobby)) {
+		if (!lobby.getManagement().startManaging(player)) {
 			throw NO_MANAGE_PERMISSION.create();
 		}
 
 		return Command.SINGLE_SUCCESS;
-	}
-
-	private static boolean startManaging(ServerPlayerEntity player, IGameLobby lobby) {
-		ILobbyManagement management = lobby.getManagement();
-		if (management.startManaging(player)) {
-			ClientManageLobbyMessage message = ClientManageLobbyMessage.open(lobby);
-			LoveTropicsNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), message);
-			return true;
-		} else {
-			return false;
-		}
 	}
 
 	private static int enqueueGame(CommandContext<CommandSource> context) throws CommandSyntaxException {

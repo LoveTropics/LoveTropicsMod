@@ -12,7 +12,7 @@ import java.util.List;
 
 public final class ClientLobbyManageState {
 	private String name = "";
-	private ClientGameDefinition currentGame;
+	private ClientCurrentGame currentGame;
 	private ClientLobbyQueue queue = new ClientLobbyQueue();
 	private List<ClientLobbyPlayer> players = ImmutableList.of();
 	private LobbyControls.State controlsState = LobbyControls.State.disabled();
@@ -25,7 +25,7 @@ public final class ClientLobbyManageState {
 	}
 
 	@Nullable
-	public ClientGameDefinition getCurrentGame() {
+	public ClientCurrentGame getCurrentGame() {
 		return currentGame;
 	}
 
@@ -53,8 +53,8 @@ public final class ClientLobbyManageState {
 		this.name = name;
 	}
 
-	public void setCurrentGame(ClientGameDefinition currentGame) {
-		this.currentGame = currentGame;
+	public void setCurrentGame(@Nullable ClientCurrentGame game) {
+		this.currentGame = game;
 	}
 
 	public void setQueue(ClientLobbyQueue queue) {

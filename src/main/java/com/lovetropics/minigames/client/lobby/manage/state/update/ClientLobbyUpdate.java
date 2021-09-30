@@ -2,11 +2,11 @@ package com.lovetropics.minigames.client.lobby.manage.state.update;
 
 import com.lovetropics.minigames.client.lobby.manage.ClientLobbyManagement;
 import com.lovetropics.minigames.client.lobby.manage.ClientManageLobbyMessage;
+import com.lovetropics.minigames.client.lobby.manage.state.ClientCurrentGame;
 import com.lovetropics.minigames.client.lobby.manage.state.ClientLobbyPlayer;
 import com.lovetropics.minigames.client.lobby.manage.state.ClientLobbyQueue;
 import com.lovetropics.minigames.client.lobby.manage.state.ClientLobbyQueuedGame;
 import com.lovetropics.minigames.client.lobby.state.ClientGameDefinition;
-import com.lovetropics.minigames.common.core.game.IGameDefinition;
 import com.lovetropics.minigames.common.core.game.lobby.*;
 import com.lovetropics.minigames.common.util.PartialUpdate;
 import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
@@ -34,17 +34,6 @@ public abstract class ClientLobbyUpdate extends PartialUpdate<ClientLobbyManagem
 			return new Set();
 		}
 
-		public static Set initialize(IGameLobby lobby) {
-			return new Set()
-					.setName(lobby.getMetadata().name())
-					.initInstalledGames(ClientGameDefinition.collectInstalled())
-					.initQueue(lobby.getGameQueue())
-					.setPlayersFrom(lobby)
-					.setCurrentGame(lobby.getCurrentGame() != null ? lobby.getCurrentGame().getDefinition() : null)
-					.setControlState(lobby.getControls().asState())
-					.setVisibility(lobby.getVisibility());
-		}
-
 		public static Set decode(PacketBuffer buffer) {
 			Set set = new Set();
 			set.decodeSelf(buffer);
@@ -64,8 +53,7 @@ public abstract class ClientLobbyUpdate extends PartialUpdate<ClientLobbyManagem
 		public Set initQueue(ILobbyGameQueue queue) {
 			ClientLobbyQueue clientQueue = new ClientLobbyQueue();
 			for (QueuedGame game : queue) {
-				ClientGameDefinition definition = ClientGameDefinition.from(game.definition());
-				clientQueue.add(game.networkId(), new ClientLobbyQueuedGame(definition));
+				clientQueue.add(game.networkId(), ClientLobbyQueuedGame.from(game));
 			}
 
 			this.add(new InitQueue(clientQueue));
@@ -86,8 +74,8 @@ public abstract class ClientLobbyUpdate extends PartialUpdate<ClientLobbyManagem
 			return this;
 		}
 
-		public Set setCurrentGame(IGameDefinition currentGame) {
-			this.add(new SetCurrentGame(currentGame != null ? ClientGameDefinition.from(currentGame) : null));
+		public Set setCurrentGame(ClientCurrentGame currentGame) {
+			this.add(new SetCurrentGame(currentGame));
 			return this;
 		}
 
@@ -100,8 +88,7 @@ public abstract class ClientLobbyUpdate extends PartialUpdate<ClientLobbyManagem
 
 				for (int id : updatedIds) {
 					if (id == game.networkId()) {
-						ClientGameDefinition definition = ClientGameDefinition.from(game.definition());
-						updated.put(id, new ClientLobbyQueuedGame(definition));
+						updated.put(id, ClientLobbyQueuedGame.from(game));
 						break;
 					}
 				}
@@ -228,28 +215,28 @@ public abstract class ClientLobbyUpdate extends PartialUpdate<ClientLobbyManagem
 
 	public static final class SetCurrentGame extends ClientLobbyUpdate {
 		@Nullable
-		private final ClientGameDefinition currentGame;
+		private final ClientCurrentGame game;
 
-		SetCurrentGame(@Nullable ClientGameDefinition currentGame) {
+		SetCurrentGame(@Nullable ClientCurrentGame game) {
 			super(Type.SET_CURRENT_GAME);
-			this.currentGame = currentGame;
+			this.game = game;
 		}
 
 		@Override
 		public void applyTo(ClientLobbyManagement.Session session) {
-			session.handleCurrentGame(currentGame);
+			session.handleCurrentGame(game);
 		}
 
 		@Override
 		protected void encode(PacketBuffer buffer) {
-			buffer.writeBoolean(currentGame != null);
-			if (currentGame != null) {
-				currentGame.encode(buffer);
+			buffer.writeBoolean(game != null);
+			if (game != null) {
+				game.encode(buffer);
 			}
 		}
 
 		static SetCurrentGame decode(PacketBuffer buffer) {
-			ClientGameDefinition game = buffer.readBoolean() ? ClientGameDefinition.decode(buffer) : null;
+			ClientCurrentGame game = buffer.readBoolean() ? ClientCurrentGame.decode(buffer) : null;
 			return new SetCurrentGame(game);
 		}
 	}

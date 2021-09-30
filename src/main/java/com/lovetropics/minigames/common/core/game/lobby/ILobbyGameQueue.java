@@ -9,8 +9,6 @@ public interface ILobbyGameQueue extends Iterable<QueuedGame> {
 
 	void clear();
 
-	boolean remove(QueuedGame game);
-
 	int size();
 
 	@Override

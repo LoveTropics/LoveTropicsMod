@@ -24,6 +24,6 @@ public final class QueuedGame {
 	}
 
 	public IGameDefinition definition() {
-		return this.definition;
+		return definition;
 	}
 }

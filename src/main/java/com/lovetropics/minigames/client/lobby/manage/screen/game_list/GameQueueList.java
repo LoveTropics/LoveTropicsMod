@@ -1,8 +1,8 @@
 package com.lovetropics.minigames.client.lobby.manage.screen.game_list;
 
+import com.lovetropics.minigames.client.lobby.manage.state.ClientCurrentGame;
 import com.lovetropics.minigames.client.lobby.manage.state.ClientLobbyManageState;
 import com.lovetropics.minigames.client.lobby.manage.state.ClientLobbyQueue;
-import com.lovetropics.minigames.client.lobby.state.ClientGameDefinition;
 import com.lovetropics.minigames.client.screen.FlexUi;
 import com.lovetropics.minigames.client.screen.flex.Flex;
 import com.lovetropics.minigames.client.screen.flex.FlexSolver;
@@ -61,29 +61,46 @@ public final class GameQueueList extends AbstractGameList {
 		}
 	}
 
-	private Entry createCurrentGameEntry(@Nullable ClientGameDefinition game) {
+	private Entry createCurrentGameEntry(@Nullable ClientCurrentGame game) {
 		Entry entry = new Entry(this, -1)
 				.setBanner(true);
 
 		if (game != null) {
-			IFormattableTextComponent gameName = game.name.deepCopy().mergeStyle(TextFormatting.UNDERLINE);
-			entry.setTitle(new StringTextComponent("\u25B6 ").appendSibling(gameName));
-
-			entry.setBackgroundColor(0xFF102010)
-					.setHoveredColor(0xFF204020)
-					.setSelectedColor(0xFF204020)
-					.setOutlineColor(0xFF408040);
+			applyRunningGame(game, entry);
 		} else {
-			IFormattableTextComponent inactive = GameTexts.Ui.gameInactive().mergeStyle(TextFormatting.UNDERLINE);
-			entry.setTitle(new StringTextComponent("\u23F8 ").appendSibling(inactive));
+			applyInactiveGame(entry);
+		}
+
+		return entry;
+	}
+
+	private void applyRunningGame(ClientCurrentGame game, Entry entry) {
+		IFormattableTextComponent gameName = game.definition().name.deepCopy().mergeStyle(TextFormatting.UNDERLINE);
+		entry.setTitle(new StringTextComponent("\u25B6 ").appendSibling(gameName));
+
+		if (game.error() != null) {
+			entry.setDescription(new StringTextComponent("\u26A0 ").appendSibling(game.error()));
 
 			entry.setBackgroundColor(0xFF201010)
 					.setHoveredColor(0xFF402020)
 					.setSelectedColor(0xFF402020)
 					.setOutlineColor(0xFF804040);
+		} else {
+			entry.setBackgroundColor(0xFF102010)
+					.setHoveredColor(0xFF204020)
+					.setSelectedColor(0xFF204020)
+					.setOutlineColor(0xFF408040);
 		}
+	}
 
-		return entry;
+	private void applyInactiveGame(Entry entry) {
+		IFormattableTextComponent inactive = GameTexts.Ui.gameInactive().mergeStyle(TextFormatting.UNDERLINE);
+		entry.setTitle(new StringTextComponent("\u23F8 ").appendSibling(inactive));
+
+		entry.setBackgroundColor(0xFF202010)
+				.setHoveredColor(0xFF404020)
+				.setSelectedColor(0xFF404020)
+				.setOutlineColor(0xFF808040);
 	}
 
 	private void enqueue(Button button) {
@@ -108,7 +125,8 @@ public final class GameQueueList extends AbstractGameList {
 	}
 
 	@Override
-	public void renderButtons(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
+	public void renderOverlays(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
+		super.renderOverlays(matrixStack, mouseX, mouseY, partialTicks);
 		this.enqueueButton.render(matrixStack, mouseX, mouseY, partialTicks);
 		this.removeButton.render(matrixStack, mouseX, mouseY, partialTicks);
 	}
