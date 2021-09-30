@@ -83,7 +83,7 @@ public final class ManageLobbyScreen extends Screen {
 				ClientLobbyQueue queue = lobby.getQueue();
 				int index = queue.indexById(queuedGameId);
 				if (index != -1) {
-					int newIndex = MathHelper.clamp(index + offset, 0, queue.size());
+					int newIndex = MathHelper.clamp(index + offset, 0, queue.size() - 1);
 					session.reorderQueuedGame(queuedGameId, newIndex);
 				}
 			}

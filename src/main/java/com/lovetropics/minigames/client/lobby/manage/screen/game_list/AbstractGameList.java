@@ -13,6 +13,7 @@ import net.minecraft.client.gui.widget.list.ExtendedList;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.text.ITextComponent;
+import org.lwjgl.glfw.GLFW;
 
 import java.util.List;
 
@@ -153,20 +154,8 @@ public abstract class AbstractGameList extends ExtendedList<AbstractGameList.Ent
 		if (this.draggingEntry != entry) {
 			this.startDragging(entry, mouseY);
 		} else {
-			this.moveDragging(entry, mouseY);
-		}
-	}
-
-	private void moveDragging(Entry entry, double mouseY) {
-		List<Entry> entries = this.getEventListeners();
-		int index = entries.indexOf(entry);
-		int insertIndex = this.getDragInsertIndex(MathHelper.floor(mouseY));
-		if (insertIndex != index && insertIndex >= 0 && insertIndex < entries.size()) {
-			Entry replaceEntry = entries.get(insertIndex);
-			if (replaceEntry.draggable != null) {
-				entries.remove(index);
-				entries.add(insertIndex, entry);
-			}
+			int insertIndex = this.getDragInsertIndex(MathHelper.floor(mouseY));
+			this.tryReorderTo(entry, insertIndex);
 		}
 	}
 
@@ -175,6 +164,35 @@ public abstract class AbstractGameList extends ExtendedList<AbstractGameList.Ent
 
 		int index = this.getEventListeners().indexOf(entry);
 		this.dragOffset = MathHelper.floor(this.getRowTop(index) - mouseY);
+	}
+
+	@Override
+	public boolean mouseReleased(double mouseX, double mouseY, int button) {
+		Entry dragging = this.draggingEntry;
+		if (dragging != null) {
+			this.stopDragging(dragging);
+		}
+		return super.mouseReleased(mouseX, mouseY, button);
+	}
+
+	@Override
+	public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+		Entry selected = getSelected();
+		if (selected != null && selected.reorder != null && Screen.hasShiftDown()) {
+			int offset = 0;
+			if (keyCode == GLFW.GLFW_KEY_UP) offset = -1;
+			else if (keyCode == GLFW.GLFW_KEY_DOWN) offset = 1;
+
+			if (offset != 0) {
+				int index = getEventListeners().indexOf(selected);
+				if (tryReorderTo(selected, index + offset)) {
+					selected.reorder.onReorder(offset);
+					return true;
+				}
+			}
+		}
+
+		return super.keyPressed(keyCode, scanCode, modifiers);
 	}
 
 	private int getDraggingY(int mouseY) {
@@ -188,20 +206,28 @@ public abstract class AbstractGameList extends ExtendedList<AbstractGameList.Ent
 		return getEntryIndexAt(getDraggingY(mouseY) + itemHeight / 2);
 	}
 
-	@Override
-	public boolean mouseReleased(double mouseX, double mouseY, int button) {
-		Entry dragging = this.draggingEntry;
-		if (dragging != null) {
-			this.stopDragging(dragging);
+	private boolean tryReorderTo(Entry entry, int insertIndex) {
+		List<Entry> entries = getEventListeners();
+		int index = entries.indexOf(entry);
+		if (index == -1) return false;
+
+		if (insertIndex != index && insertIndex >= 0 && insertIndex < entries.size()) {
+			Entry replaceEntry = entries.get(insertIndex);
+			if (replaceEntry.reorder != null) {
+				entries.remove(index);
+				entries.add(insertIndex, entry);
+				return true;
+			}
 		}
-		return super.mouseReleased(mouseX, mouseY, button);
+
+		return false;
 	}
 
 	private void stopDragging(Entry dragging) {
 		int startIndex = dragging.dragStartIndex;
 		int index = this.getEventListeners().indexOf(dragging);
-		if (startIndex != index) {
-			dragging.draggable.onDragged(index - startIndex);
+		if (startIndex != index && dragging.reorder != null) {
+			dragging.reorder.onReorder(index - startIndex);
 		}
 		this.draggingEntry = null;
 	}
@@ -223,7 +249,7 @@ public abstract class AbstractGameList extends ExtendedList<AbstractGameList.Ent
 		private int outlineColor = 0xFF808080;
 
 		private boolean banner;
-		private Draggable draggable;
+		private Reorder reorder;
 		private int dragStartIndex;
 
 		public Entry(AbstractGameList list, int id) {
@@ -274,8 +300,8 @@ public abstract class AbstractGameList extends ExtendedList<AbstractGameList.Ent
 			return this;
 		}
 
-		public Entry setDraggable(Draggable draggable) {
-			this.draggable = draggable;
+		public Entry setDraggable(Reorder reorder) {
+			this.reorder = reorder;
 			return this;
 		}
 
@@ -354,7 +380,7 @@ public abstract class AbstractGameList extends ExtendedList<AbstractGameList.Ent
 
 		@Override
 		public boolean mouseDragged(double mouseX, double mouseY, int button, double dragX, double dragY) {
-			if (this.draggable != null) {
+			if (this.reorder != null) {
 				this.list.drag(this, mouseY);
 				return true;
 			}
@@ -366,7 +392,7 @@ public abstract class AbstractGameList extends ExtendedList<AbstractGameList.Ent
 		}
 	}
 
-	public interface Draggable {
-		void onDragged(int offset);
+	public interface Reorder {
+		void onReorder(int offset);
 	}
 }
