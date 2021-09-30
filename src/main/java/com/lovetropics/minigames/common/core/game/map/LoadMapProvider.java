@@ -1,5 +1,6 @@
 package com.lovetropics.minigames.common.core.game.map;
 
+import com.google.common.collect.ImmutableList;
 import com.lovetropics.minigames.common.core.dimension.RuntimeDimensionConfig;
 import com.lovetropics.minigames.common.core.dimension.RuntimeDimensionHandle;
 import com.lovetropics.minigames.common.core.dimension.RuntimeDimensions;
@@ -10,15 +11,20 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.resources.IResource;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.RegistryKey;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Util;
+import net.minecraft.util.registry.Registry;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.world.Dimension;
 import net.minecraft.world.DimensionType;
+import net.minecraft.world.World;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
@@ -50,6 +56,15 @@ public class LoadMapProvider implements IGameMapProvider {
 	@Override
 	public Codec<? extends IGameMapProvider> getCodec() {
 		return CODEC;
+	}
+
+	@Override
+	public List<RegistryKey<World>> getPossibleDimensions() {
+		if (dimension != null) {
+			return ImmutableList.of(RegistryKey.getOrCreateKey(Registry.WORLD_KEY, dimension));
+		} else {
+			return Collections.emptyList();
+		}
 	}
 
 	@Override
