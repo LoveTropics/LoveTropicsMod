@@ -1,11 +1,8 @@
 package com.lovetropics.minigames.common.core.game.impl;
 
-import com.lovetropics.minigames.client.lobby.manage.state.ClientCurrentGame;
+import com.lovetropics.minigames.client.lobby.state.ClientCurrentGame;
 import com.lovetropics.minigames.client.lobby.state.ClientGameDefinition;
-import com.lovetropics.minigames.common.core.game.GameResult;
-import com.lovetropics.minigames.common.core.game.GameStopReason;
-import com.lovetropics.minigames.common.core.game.IGameDefinition;
-import com.lovetropics.minigames.common.core.game.IGamePhaseDefinition;
+import com.lovetropics.minigames.common.core.game.*;
 import com.lovetropics.minigames.common.core.game.lobby.LobbyControls;
 import com.lovetropics.minigames.common.core.game.lobby.QueuedGame;
 import net.minecraft.util.text.ITextComponent;
@@ -26,11 +23,7 @@ abstract class LobbyState {
 
 	@Nullable
 	protected ClientCurrentGame getClientCurrentGame() {
-		if (phase != null) {
-			return new ClientCurrentGame(ClientGameDefinition.from(phase.getDefinition()), null);
-		} else {
-			return null;
-		}
+		return phase != null ? ClientCurrentGame.create(phase) : null;
 	}
 
 	final Yield yield() {
@@ -56,16 +49,18 @@ abstract class LobbyState {
 
 	static final class Errored extends Paused {
 		final IGameDefinition game;
+		final GamePhaseType phaseType;
 		final ITextComponent error;
 
-		Errored(IGameDefinition game, ITextComponent error) {
+		Errored(IGameDefinition game, GamePhaseType phaseType, ITextComponent error) {
 			this.game = game;
+			this.phaseType = phaseType;
 			this.error = error;
 		}
 
 		@Override
 		protected ClientCurrentGame getClientCurrentGame() {
-			return new ClientCurrentGame(ClientGameDefinition.from(game), error);
+			return ClientCurrentGame.create(ClientGameDefinition.from(game), phaseType).withError(error);
 		}
 	}
 
@@ -96,7 +91,10 @@ abstract class LobbyState {
 			QueuedGame game = lobby.gameQueue.next();
 			if (game != null) {
 				Pending pending = new Pending(phase, createGame(lobby, game.definition()));
-				pending.pendingGame = game.definition();
+				pending.pendingGame = ClientCurrentGame.create(
+						ClientGameDefinition.from(game.definition()),
+						GamePhaseType.WAITING
+				);
 				return pending;
 			} else {
 				return null;
@@ -116,12 +114,12 @@ abstract class LobbyState {
 		}
 
 		private CompletableFuture<GameResult<LobbyState>> createPlaying(GameInstance game, IGamePhaseDefinition definition) {
-			return GamePhase.create(game, definition)
+			return GamePhase.create(game, definition, GamePhaseType.PLAYING)
 					.thenApply(result -> result.map(Playing::new));
 		}
 
 		private CompletableFuture<GameResult<LobbyState>> createWaiting(GameInstance game, IGamePhaseDefinition definition, IGamePhaseDefinition playing) {
-			return GamePhase.create(game, definition)
+			return GamePhase.create(game, definition, GamePhaseType.WAITING)
 					.thenApply(result -> result.map(waiting -> {
 						Supplier<LobbyState> start = () -> {
 							CompletableFuture<GameResult<LobbyState>> next = createPlaying(waiting.game, playing);
@@ -190,7 +188,7 @@ abstract class LobbyState {
 
 	static final class Pending extends LobbyState {
 		final CompletableFuture<GameResult<LobbyState>> next;
-		IGameDefinition pendingGame;
+		ClientCurrentGame pendingGame;
 
 		Pending(@Nullable GamePhase phase, CompletableFuture<GameResult<LobbyState>> next) {
 			super(phase);
@@ -208,11 +206,7 @@ abstract class LobbyState {
 		@Nullable
 		@Override
 		protected ClientCurrentGame getClientCurrentGame() {
-			if (pendingGame != null) {
-				return new ClientCurrentGame(ClientGameDefinition.from(pendingGame), null);
-			} else {
-				return super.getClientCurrentGame();
-			}
+			return pendingGame != null ? pendingGame : super.getClientCurrentGame();
 		}
 	}
 }

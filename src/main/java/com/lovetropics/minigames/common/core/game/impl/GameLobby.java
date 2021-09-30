@@ -1,6 +1,7 @@
 package com.lovetropics.minigames.common.core.game.impl;
 
 import com.google.common.collect.Lists;
+import com.lovetropics.minigames.client.lobby.state.ClientCurrentGame;
 import com.lovetropics.minigames.client.lobby.state.message.JoinedLobbyMessage;
 import com.lovetropics.minigames.client.lobby.state.message.LeftLobbyMessage;
 import com.lovetropics.minigames.client.lobby.state.message.LobbyPlayersMessage;
@@ -84,6 +85,12 @@ final class GameLobby implements IGameLobby {
 		return state.getPhase();
 	}
 
+	@Nullable
+	@Override
+	public ClientCurrentGame getClientCurrentGame() {
+		return state.getClientCurrentGame();
+	}
+
 	@Override
 	public LobbyControls getControls() {
 		return state.controls();
@@ -115,6 +122,7 @@ final class GameLobby implements IGameLobby {
 
 	void setName(String name) {
 		metadata = manager.renameLobby(metadata, name);
+		stateListener.onLobbyNameChange(this);
 	}
 
 	void setVisibility(LobbyVisibility visibility) {
@@ -143,6 +151,7 @@ final class GameLobby implements IGameLobby {
 		}
 
 		management.onGameStateChange();
+		stateListener.onLobbyStateChange(this);
 
 		return GameResult.ok();
 	}
@@ -332,6 +341,16 @@ final class GameLobby implements IGameLobby {
 		@Override
 		public void onPlayerStopTracking(IGameLobby lobby, ServerPlayerEntity player) {
 			LoveTropicsNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), LobbyUpdateMessage.remove(lobby));
+		}
+
+		@Override
+		public void onLobbyStateChange(IGameLobby lobby) {
+			lobby.getTrackingPlayers().sendPacket(LoveTropicsNetwork.CHANNEL, LobbyUpdateMessage.update(lobby));
+		}
+
+		@Override
+		public void onLobbyNameChange(IGameLobby lobby) {
+			lobby.getTrackingPlayers().sendPacket(LoveTropicsNetwork.CHANNEL, LobbyUpdateMessage.update(lobby));
 		}
 
 		@Override

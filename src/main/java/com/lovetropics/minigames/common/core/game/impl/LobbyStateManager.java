@@ -1,6 +1,7 @@
 package com.lovetropics.minigames.common.core.game.impl;
 
-import com.lovetropics.minigames.client.lobby.manage.state.ClientCurrentGame;
+import com.lovetropics.minigames.client.lobby.state.ClientCurrentGame;
+import com.lovetropics.minigames.common.core.game.GamePhaseType;
 import com.lovetropics.minigames.common.core.game.IGameDefinition;
 import com.lovetropics.minigames.common.core.game.lobby.LobbyControls;
 import net.minecraft.util.text.ITextComponent;
@@ -63,7 +64,8 @@ final class LobbyStateManager {
 		GamePhase phase = state.phase;
 		if (phase != null) {
 			IGameDefinition definition = phase.getDefinition();
-			return new LobbyState.Errored(definition, error);
+			GamePhaseType phaseType = phase.getPhaseType();
+			return new LobbyState.Errored(definition, phaseType, error);
 		} else {
 			return new LobbyState.Paused();
 		}

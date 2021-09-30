@@ -1,6 +1,7 @@
 package com.lovetropics.minigames.client.lobby.manage.state;
 
 import com.google.common.collect.ImmutableList;
+import com.lovetropics.minigames.client.lobby.state.ClientCurrentGame;
 import com.lovetropics.minigames.client.lobby.state.ClientGameDefinition;
 import com.lovetropics.minigames.common.core.game.lobby.LobbyControls;
 import com.lovetropics.minigames.common.core.game.lobby.LobbyVisibility;

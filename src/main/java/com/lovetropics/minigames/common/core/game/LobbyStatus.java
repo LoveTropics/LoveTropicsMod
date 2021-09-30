@@ -2,15 +2,15 @@ package com.lovetropics.minigames.common.core.game;
 
 import net.minecraft.util.text.TextFormatting;
 
-public enum GameStatus {
-	POLLING("waiting for players", TextFormatting.GOLD),
-	ACTIVE("in progress", TextFormatting.GREEN),
-	INACTIVE("inactive", TextFormatting.RED);
+public enum LobbyStatus {
+	WAITING("waiting", TextFormatting.GOLD),
+	PLAYING("in progress", TextFormatting.GREEN),
+	PAUSED("paused", TextFormatting.RED);
 
 	public final String description;
 	public final TextFormatting color;
 
-	GameStatus(String description, TextFormatting color) {
+	LobbyStatus(String description, TextFormatting color) {
 		this.description = description;
 		this.color = color;
 	}

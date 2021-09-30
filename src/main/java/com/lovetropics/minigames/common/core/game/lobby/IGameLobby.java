@@ -1,5 +1,6 @@
 package com.lovetropics.minigames.common.core.game.lobby;
 
+import com.lovetropics.minigames.client.lobby.state.ClientCurrentGame;
 import com.lovetropics.minigames.common.core.game.IGame;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.player.PlayerIterable;
@@ -27,6 +28,12 @@ public interface IGameLobby {
 
 	@Nullable
 	IGamePhase getCurrentPhase();
+
+	@Nullable
+	default ClientCurrentGame getClientCurrentGame() {
+		IGamePhase phase = getCurrentPhase();
+		return phase != null ? ClientCurrentGame.create(phase) : null;
+	}
 
 	LobbyControls getControls();
 

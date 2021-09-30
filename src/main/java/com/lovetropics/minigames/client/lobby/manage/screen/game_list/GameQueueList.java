@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.client.lobby.manage.screen.game_list;
 
-import com.lovetropics.minigames.client.lobby.manage.state.ClientCurrentGame;
+import com.lovetropics.minigames.client.lobby.state.ClientCurrentGame;
 import com.lovetropics.minigames.client.lobby.manage.state.ClientLobbyManageState;
 import com.lovetropics.minigames.client.lobby.manage.state.ClientLobbyQueue;
 import com.lovetropics.minigames.client.screen.FlexUi;
