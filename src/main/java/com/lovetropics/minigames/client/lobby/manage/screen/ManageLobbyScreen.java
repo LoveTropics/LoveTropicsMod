@@ -18,6 +18,7 @@ import net.minecraft.client.gui.IGuiEventListener;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.client.gui.widget.button.Button;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
@@ -75,6 +76,16 @@ public final class ManageLobbyScreen extends Screen {
 			@Override
 			public void removeQueuedGame(int queuedGameId) {
 				session.removeQueuedGame(queuedGameId);
+			}
+
+			@Override
+			public void reorderQueuedGame(int queuedGameId, int offset) {
+				ClientLobbyQueue queue = lobby.getQueue();
+				int index = queue.indexById(queuedGameId);
+				if (index != -1) {
+					int newIndex = MathHelper.clamp(index + offset, 0, queue.size());
+					session.reorderQueuedGame(queuedGameId, newIndex);
+				}
 			}
 		}));
 

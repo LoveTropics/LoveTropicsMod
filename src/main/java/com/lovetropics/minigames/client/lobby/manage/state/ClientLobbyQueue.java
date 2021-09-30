@@ -44,6 +44,10 @@ public final class ClientLobbyQueue implements Iterable<ClientLobbyQueuedGame> {
 		return Objects.requireNonNull(game, "game in queue with missing definition");
 	}
 
+	public int indexById(int id) {
+		return queue.indexOf(id);
+	}
+
 	public int size() {
 		return this.queue.size();
 	}
