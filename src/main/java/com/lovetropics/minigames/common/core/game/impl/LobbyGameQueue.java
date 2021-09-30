@@ -3,18 +3,19 @@ package com.lovetropics.minigames.common.core.game.impl;
 import com.lovetropics.minigames.common.core.game.IGameDefinition;
 import com.lovetropics.minigames.common.core.game.lobby.ILobbyGameQueue;
 import com.lovetropics.minigames.common.core.game.lobby.QueuedGame;
+import net.minecraft.util.math.MathHelper;
 
 import javax.annotation.Nullable;
-import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.Queue;
+import java.util.List;
 
 final class LobbyGameQueue implements ILobbyGameQueue {
-	private final Queue<QueuedGame> entries = new ArrayDeque<>();
+	private final List<QueuedGame> entries = new ArrayList<>();
 
 	@Nullable
 	QueuedGame next() {
-		return entries.poll();
+		return !entries.isEmpty() ? entries.remove(0) : null;
 	}
 
 	@Override
@@ -41,24 +42,27 @@ final class LobbyGameQueue implements ILobbyGameQueue {
 
 	@Nullable
 	QueuedGame removeByNetworkId(int networkId) {
-		Iterator<QueuedGame> iterator = entries.iterator();
-		while (iterator.hasNext()) {
-			QueuedGame game = iterator.next();
-			if (game.networkId() == networkId) {
-				iterator.remove();
-				return game;
-			}
-		}
-		return null;
+		int index = indexByNetworkId(networkId);
+		return index != -1 ? entries.remove(index) : null;
 	}
 
-	@Nullable
-	QueuedGame byNetworkId(int networkId) {
-		for (QueuedGame game : this) {
-			if (game.networkId() == networkId) {
-				return game;
+	boolean reorderByNetworkId(int networkId, int newIndex) {
+		int index = indexByNetworkId(networkId);
+		if (index == -1 || index == newIndex) return false;
+
+		QueuedGame entry = entries.remove(index);
+		entries.add(MathHelper.clamp(newIndex, 0, entries.size()), entry);
+
+		return true;
+	}
+
+	int indexByNetworkId(int networkId) {
+		List<QueuedGame> entries = this.entries;
+		for (int index = 0; index < entries.size(); index++) {
+			if (entries.get(index).networkId() == networkId) {
+				return index;
 			}
 		}
-		return null;
+		return -1;
 	}
 }

@@ -46,6 +46,11 @@ public abstract class ServerLobbyUpdate extends PartialUpdate<ILobbyManagement> 
 			return this;
 		}
 
+		public Set reorderQueuedGame(int id, int newIndex) {
+			this.add(new ReorderQueuedGame(id, newIndex));
+			return this;
+		}
+
 		public Set selectControl(LobbyControls.Type control) {
 			this.add(new SelectControl(control));
 			return this;
@@ -70,6 +75,7 @@ public abstract class ServerLobbyUpdate extends PartialUpdate<ILobbyManagement> 
 		SET_NAME(SetName::decode),
 		ENQUEUE(Enqueue::decode),
 		REMOVE_QUEUED_GAME(RemoveQueuedGame::decode),
+		REORDER_QUEUED_GAME(ReorderQueuedGame::decode),
 		SELECT_CONTROL(SelectControl::decode),
 		SET_VISIBILITY(SetVisibility::decode),
 		CLOSE(Close::decode);
@@ -159,6 +165,32 @@ public abstract class ServerLobbyUpdate extends PartialUpdate<ILobbyManagement> 
 
 		static RemoveQueuedGame decode(PacketBuffer buffer) {
 			return new RemoveQueuedGame(buffer.readVarInt());
+		}
+	}
+
+	public static final class ReorderQueuedGame extends ServerLobbyUpdate {
+		private final int id;
+		private final int newIndex;
+
+		ReorderQueuedGame(int id, int newIndex) {
+			super(Type.REORDER_QUEUED_GAME);
+			this.id = id;
+			this.newIndex = newIndex;
+		}
+
+		@Override
+		public void applyTo(ILobbyManagement lobby) {
+			lobby.reorderQueuedGame(id, newIndex);
+		}
+
+		@Override
+		protected void encode(PacketBuffer buffer) {
+			buffer.writeVarInt(id);
+			buffer.writeVarInt(newIndex);
+		}
+
+		static ReorderQueuedGame decode(PacketBuffer buffer) {
+			return new ReorderQueuedGame(buffer.readVarInt(), buffer.readVarInt());
 		}
 	}
 

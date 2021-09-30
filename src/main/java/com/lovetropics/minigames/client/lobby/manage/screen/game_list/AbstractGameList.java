@@ -11,13 +11,21 @@ import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.list.ExtendedList;
 import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.text.ITextComponent;
+import org.lwjgl.glfw.GLFW;
 
+import java.util.List;
+
+// TODO: ideally we extract this out into a general list widget utility that supports all the features we need
 public abstract class AbstractGameList extends ExtendedList<AbstractGameList.Entry> {
 	private static final int SCROLL_WIDTH = 6;
 
 	private final Screen screen;
 	private final ITextComponent title;
+
+	private Entry draggingEntry;
+	private int dragOffset;
 
 	public AbstractGameList(Screen screen, Layout layout, ITextComponent title) {
 		super(
@@ -49,12 +57,46 @@ public abstract class AbstractGameList extends ExtendedList<AbstractGameList.Ent
 		);
 	}
 
+	@Override
+	protected void renderList(MatrixStack matrixStack, int x, int y, int mouseX, int mouseY, float partialTicks) {
+		boolean listHovered = this.isMouseOver(mouseX, mouseY);
+
+		int count = this.getItemCount();
+		int left = this.getRowLeft();
+		int width = this.getRowWidth();
+		int height = this.itemHeight;
+
+		boolean dragging = draggingEntry != null;
+
+		for (int index = 0; index < count; index++) {
+			int top = this.getRowTop(index);
+			int bottom = top + height;
+			if (bottom < this.y0 || top > this.y1) continue;
+
+			Entry entry = this.getEntry(index);
+			if (draggingEntry == entry) continue;
+
+			boolean entryHovered = !dragging && listHovered && mouseX >= left && mouseY >= top && mouseX < left + width && mouseY < bottom;
+			entry.render(matrixStack, index, top, left, width, height, mouseX, mouseY, entryHovered, partialTicks);
+		}
+	}
+
 	public void renderOverlays(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
+		renderDragging(matrixStack, mouseX, mouseY, partialTicks);
 		renderTooltips(matrixStack, mouseX, mouseY);
 	}
 
+	private void renderDragging(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
+		Entry dragging = this.draggingEntry;
+		if (dragging != null) {
+			int index = getEventListeners().indexOf(dragging);
+			int y = getDraggingY(mouseY);
+			dragging.render(matrixStack, index, y, getRowLeft(), getRowWidth(), itemHeight, mouseX, mouseY, false, partialTicks);
+		}
+	}
+
 	private void renderTooltips(MatrixStack matrixStack, int mouseX, int mouseY) {
-		if (!isMouseOver(mouseX, mouseY)) {
+		if (!isMouseOver(mouseX, mouseY) || draggingEntry != null) {
 			return;
 		}
 
@@ -69,8 +111,7 @@ public abstract class AbstractGameList extends ExtendedList<AbstractGameList.Ent
 			}
 
 			Entry entry = this.getEntry(index);
-			boolean hoveredEntry = this.getEntryAtPosition(mouseX, mouseY) == entry;
-			if (hoveredEntry) {
+			if (isMouseOverEntry(mouseX, mouseY, entry)) {
 				entry.renderTooltips(matrixStack, rowWidth, mouseX, mouseY);
 				break;
 			}
@@ -96,7 +137,99 @@ public abstract class AbstractGameList extends ExtendedList<AbstractGameList.Ent
 
 	@Override
 	protected int getRowTop(int index) {
-		return super.getRowTop(index);
+		return this.y0 + this.headerHeight - (int) this.getScrollAmount()
+				+ index * this.itemHeight;
+	}
+
+	private boolean isMouseOverEntry(int mouseX, int mouseY, Entry entry) {
+		return this.getEntryAtPosition(mouseX, mouseY) == entry;
+	}
+
+	private int getEntryIndexAt(int y) {
+		int contentY = y - this.y0 - this.headerHeight + (int) this.getScrollAmount();
+		return contentY / this.itemHeight;
+	}
+
+	void drag(Entry entry, double mouseY) {
+		if (this.draggingEntry != entry) {
+			this.startDragging(entry, mouseY);
+		} else {
+			int insertIndex = this.getDragInsertIndex(MathHelper.floor(mouseY));
+			this.tryReorderTo(entry, insertIndex);
+		}
+	}
+
+	private void startDragging(Entry entry, double mouseY) {
+		this.draggingEntry = entry;
+
+		int index = this.getEventListeners().indexOf(entry);
+		this.dragOffset = MathHelper.floor(this.getRowTop(index) - mouseY);
+	}
+
+	@Override
+	public boolean mouseReleased(double mouseX, double mouseY, int button) {
+		Entry dragging = this.draggingEntry;
+		if (dragging != null) {
+			this.stopDragging(dragging);
+		}
+		return super.mouseReleased(mouseX, mouseY, button);
+	}
+
+	@Override
+	public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+		Entry selected = getSelected();
+		if (selected != null && selected.reorder != null && Screen.hasShiftDown()) {
+			int offset = 0;
+			if (keyCode == GLFW.GLFW_KEY_UP) offset = -1;
+			else if (keyCode == GLFW.GLFW_KEY_DOWN) offset = 1;
+
+			if (offset != 0) {
+				int index = getEventListeners().indexOf(selected);
+				if (tryReorderTo(selected, index + offset)) {
+					selected.reorder.onReorder(offset);
+					return true;
+				}
+			}
+		}
+
+		return super.keyPressed(keyCode, scanCode, modifiers);
+	}
+
+	private int getDraggingY(int mouseY) {
+		int draggingY = mouseY + dragOffset;
+		int minY = this.y0 + this.headerHeight;
+		int maxY = this.y1 - this.itemHeight;
+		return MathHelper.clamp(draggingY, minY, maxY);
+	}
+
+	private int getDragInsertIndex(int mouseY) {
+		return getEntryIndexAt(getDraggingY(mouseY) + itemHeight / 2);
+	}
+
+	private boolean tryReorderTo(Entry entry, int insertIndex) {
+		List<Entry> entries = getEventListeners();
+		int index = entries.indexOf(entry);
+		if (index == -1) return false;
+
+		if (insertIndex != index && insertIndex >= 0 && insertIndex < entries.size()) {
+			Entry replaceEntry = entries.get(insertIndex);
+			if (replaceEntry.reorder != null) {
+				entries.remove(index);
+				entries.add(insertIndex, entry);
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	private void stopDragging(Entry dragging) {
+		int startIndex = dragging.dragStartIndex;
+		int index = this.getEventListeners().indexOf(dragging);
+		if (startIndex != index && dragging.reorder != null) {
+			dragging.reorder.onReorder(index - startIndex);
+		}
+		this.draggingEntry = null;
 	}
 
 	public static final class Entry extends ExtendedList.AbstractListEntry<Entry> {
@@ -116,6 +249,8 @@ public abstract class AbstractGameList extends ExtendedList<AbstractGameList.Ent
 		private int outlineColor = 0xFF808080;
 
 		private boolean banner;
+		private Reorder reorder;
+		private int dragStartIndex;
 
 		public Entry(AbstractGameList list, int id) {
 			this.client = list.minecraft;
@@ -162,6 +297,11 @@ public abstract class AbstractGameList extends ExtendedList<AbstractGameList.Ent
 
 		public Entry setBanner(boolean banner) {
 			this.banner = banner;
+			return this;
+		}
+
+		public Entry setDraggable(Reorder reorder) {
+			this.reorder = reorder;
 			return this;
 		}
 
@@ -228,17 +368,31 @@ public abstract class AbstractGameList extends ExtendedList<AbstractGameList.Ent
 		}
 
 		private void fillEntry(MatrixStack matrixStack, int left, int top, int width, int height, int color) {
-			fill(matrixStack, left, top - 2, left + width, top + height + 2, color);
+			fill(matrixStack, left, top, left + width, top + height, color);
 		}
 
 		@Override
 		public boolean mouseClicked(double mouseX, double mouseY, int button) {
 			this.list.setSelected(this);
+			this.dragStartIndex = this.list.getEventListeners().indexOf(this);
 			return true;
+		}
+
+		@Override
+		public boolean mouseDragged(double mouseX, double mouseY, int button, double dragX, double dragY) {
+			if (this.reorder != null) {
+				this.list.drag(this, mouseY);
+				return true;
+			}
+			return false;
 		}
 
 		public int getId() {
 			return id;
 		}
+	}
+
+	public interface Reorder {
+		void onReorder(int offset);
 	}
 }

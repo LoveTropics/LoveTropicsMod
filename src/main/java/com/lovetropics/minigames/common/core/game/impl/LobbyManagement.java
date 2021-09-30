@@ -93,6 +93,13 @@ final class LobbyManagement implements ILobbyManagement {
 	}
 
 	@Override
+	public void reorderQueuedGame(int id, int newIndex) {
+		if (lobby.gameQueue.reorderByNetworkId(id, newIndex)) {
+			sendUpdates(updates -> updates.updateQueue(lobby.gameQueue));
+		}
+	}
+
+	@Override
 	public void selectControl(LobbyControls.Type type) {
 		LobbyControls.Action action = lobby.getControls().get(type);
 		if (action != null) {

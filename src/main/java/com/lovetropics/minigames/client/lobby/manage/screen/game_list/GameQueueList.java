@@ -52,7 +52,10 @@ public final class GameQueueList extends AbstractGameList {
 		this.addEntry(createCurrentGameEntry(lobby.getCurrentGame()));
 
 		for (ClientLobbyQueue.Entry entry : this.lobby.getQueue().entries()) {
-			Entry listEntry = Entry.game(this, entry.id(), entry.game().definition());
+			int id = entry.id();
+			Entry listEntry = Entry.game(this, id, entry.game().definition())
+					.setDraggable(offset -> handlers.reorder(id, offset));
+
 			this.addEntry(listEntry);
 
 			if (listEntry.getId() == selectedId) {
@@ -145,5 +148,7 @@ public final class GameQueueList extends AbstractGameList {
 		void enqueue();
 
 		void remove(int id);
+
+		void reorder(int id, int offset);
 	}
 }

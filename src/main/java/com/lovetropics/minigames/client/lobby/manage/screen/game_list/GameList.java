@@ -48,6 +48,11 @@ public final class GameList implements IGuiEventListener {
 			public void remove(int id) {
 				GameList.this.handlers.removeQueuedGame(id);
 			}
+
+			@Override
+			public void reorder(int id, int offset) {
+				GameList.this.handlers.reorderQueuedGame(id, offset);
+			}
 		});
 	}
 
@@ -133,5 +138,7 @@ public final class GameList implements IGuiEventListener {
 		void enqueueGame(int installedGameIndex);
 
 		void removeQueuedGame(int queuedGameId);
+
+		void reorderQueuedGame(int queuedGameId, int offset);
 	}
 }
