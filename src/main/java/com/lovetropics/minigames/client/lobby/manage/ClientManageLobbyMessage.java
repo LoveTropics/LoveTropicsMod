@@ -1,7 +1,6 @@
 package com.lovetropics.minigames.client.lobby.manage;
 
 import com.lovetropics.minigames.client.lobby.manage.state.update.ClientLobbyUpdate;
-import com.lovetropics.minigames.common.core.game.lobby.IGameLobby;
 import net.minecraft.network.PacketBuffer;
 import net.minecraftforge.fml.network.NetworkEvent;
 
@@ -14,10 +13,6 @@ public final class ClientManageLobbyMessage {
 	public ClientManageLobbyMessage(int id, ClientLobbyUpdate.Set updates) {
 		this.id = id;
 		this.updates = updates;
-	}
-
-	public static ClientManageLobbyMessage open(IGameLobby lobby) {
-		return new ClientManageLobbyMessage(lobby.getMetadata().id().networkId(), ClientLobbyUpdate.Set.initialize(lobby));
 	}
 
 	public void encode(PacketBuffer buffer) {

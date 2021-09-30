@@ -128,7 +128,7 @@ public final class ManageLobbyScreen extends Screen {
 		gameList.updateEntries();
 
 		ClientLobbyManageState lobby = session.lobby();
-		closeButton.active = lobby.getQueue().isEmpty();
+		closeButton.active = lobby.getCurrentGame() == null && lobby.getQueue().isEmpty();
 	}
 
 	public void updateNameField() {
@@ -177,7 +177,7 @@ public final class ManageLobbyScreen extends Screen {
 			FlexUi.fill(marginal, matrixStack, 0xFF101010);
 		}
 
-		gameList.renderButtons(matrixStack, mouseX, mouseY, partialTicks);
+		gameList.renderOverlays(matrixStack, mouseX, mouseY, partialTicks);
 
 		// TODO: make this name rendering better
 		drawString(matrixStack, font, nameField.getMessage(), nameField.x, nameField.y - fontHeight - 2, 0xFFFFFF);

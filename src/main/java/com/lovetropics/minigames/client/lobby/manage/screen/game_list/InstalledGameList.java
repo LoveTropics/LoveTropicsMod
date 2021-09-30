@@ -65,7 +65,8 @@ public final class InstalledGameList extends AbstractGameList {
 	}
 
 	@Override
-	public void renderButtons(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
+	public void renderOverlays(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
+		super.renderOverlays(matrixStack, mouseX, mouseY, partialTicks);
 		this.enqueueButton.render(matrixStack, mouseX, mouseY, partialTicks);
 		this.cancelButton.render(matrixStack, mouseX, mouseY, partialTicks);
 	}

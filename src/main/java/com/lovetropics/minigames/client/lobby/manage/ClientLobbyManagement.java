@@ -1,10 +1,7 @@
 package com.lovetropics.minigames.client.lobby.manage;
 
 import com.lovetropics.minigames.client.lobby.manage.screen.ManageLobbyScreen;
-import com.lovetropics.minigames.client.lobby.manage.state.ClientLobbyManageState;
-import com.lovetropics.minigames.client.lobby.manage.state.ClientLobbyPlayer;
-import com.lovetropics.minigames.client.lobby.manage.state.ClientLobbyQueue;
-import com.lovetropics.minigames.client.lobby.manage.state.ClientLobbyQueuedGame;
+import com.lovetropics.minigames.client.lobby.manage.state.*;
 import com.lovetropics.minigames.client.lobby.manage.state.update.ClientLobbyUpdate;
 import com.lovetropics.minigames.client.lobby.manage.state.update.ServerLobbyUpdate;
 import com.lovetropics.minigames.client.lobby.state.ClientGameDefinition;
@@ -114,8 +111,8 @@ public final class ClientLobbyManagement {
 			screen.updateNameField();
 		}
 
-		public void handleCurrentGame(@Nullable ClientGameDefinition currentGame) {
-			lobby.setCurrentGame(currentGame);
+		public void handleCurrentGame(@Nullable ClientCurrentGame game) {
+			lobby.setCurrentGame(game);
 			screen.updateGameEntries();
 		}
 

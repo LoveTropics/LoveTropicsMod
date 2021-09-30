@@ -24,6 +24,10 @@ public final class TrimmedText {
 		return new TrimmedText(new StringTextComponent(text));
 	}
 
+	public ITextComponent text() {
+		return this.text;
+	}
+
 	public IReorderingProcessor forWidth(FontRenderer font, int width) {
 		IReorderingProcessor trimmed = this.trimmedText;
 		if (trimmed == null || width != this.trimmedWidth) {
@@ -31,6 +35,10 @@ public final class TrimmedText {
 			this.trimmedWidth = width;
 		}
 		return trimmed;
+	}
+
+	public boolean isTrimmedForWidth(FontRenderer font, int width) {
+		return font.getStringPropertyWidth(this.text) > width;
 	}
 
 	private IReorderingProcessor computeForWidth(FontRenderer font, int width) {

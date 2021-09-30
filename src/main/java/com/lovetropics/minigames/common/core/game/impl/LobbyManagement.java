@@ -1,8 +1,9 @@
 package com.lovetropics.minigames.common.core.game.impl;
 
 import com.lovetropics.minigames.client.lobby.manage.ClientManageLobbyMessage;
+import com.lovetropics.minigames.client.lobby.manage.state.ClientCurrentGame;
 import com.lovetropics.minigames.client.lobby.manage.state.update.ClientLobbyUpdate;
-import com.lovetropics.minigames.common.core.game.IGame;
+import com.lovetropics.minigames.client.lobby.state.ClientGameDefinition;
 import com.lovetropics.minigames.common.core.game.IGameDefinition;
 import com.lovetropics.minigames.common.core.game.lobby.*;
 import com.lovetropics.minigames.common.core.game.player.MutablePlayerSet;
@@ -10,6 +11,7 @@ import com.lovetropics.minigames.common.core.network.LoveTropicsNetwork;
 import com.lovetropics.minigames.common.util.Scheduler;
 import net.minecraft.command.CommandSource;
 import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraftforge.fml.network.PacketDistributor;
 
 import java.util.function.UnaryOperator;
 
@@ -29,10 +31,10 @@ final class LobbyManagement implements ILobbyManagement {
 
 	void onGameStateChange() {
 		sendUpdates(updates -> {
-			IGame currentGame = lobby.getCurrentGame();
+			ClientCurrentGame currentGame = lobby.state.getClientCurrentGame();
 			ILobbyGameQueue gameQueue = lobby.getGameQueue();
 			LobbyControls controls = lobby.getControls();
-			return updates.setCurrentGame(currentGame != null ? currentGame.getDefinition() : null)
+			return updates.setCurrentGame(currentGame)
 					.updateQueue(gameQueue)
 					.setControlState(controls.asState());
 		});
@@ -41,6 +43,18 @@ final class LobbyManagement implements ILobbyManagement {
 	@Override
 	public boolean startManaging(ServerPlayerEntity player) {
 		if (canManage(player.getCommandSource())) {
+			ClientLobbyUpdate.Set initialize = ClientLobbyUpdate.Set.create()
+					.setName(lobby.getMetadata().name())
+					.initInstalledGames(ClientGameDefinition.collectInstalled())
+					.initQueue(lobby.getGameQueue())
+					.setCurrentGame(lobby.state.getClientCurrentGame())
+					.setPlayersFrom(lobby)
+					.setControlState(lobby.getControls().asState())
+					.setVisibility(lobby.getVisibility());
+
+			ClientManageLobbyMessage message = initialize.intoMessage(lobby.metadata.id().networkId());
+			LoveTropicsNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), message);
+
 			managingPlayers.add(player);
 			return true;
 		} else {
@@ -72,10 +86,9 @@ final class LobbyManagement implements ILobbyManagement {
 
 	@Override
 	public void removeQueuedGame(int id) {
-		LobbyGameQueue gameQueue = lobby.gameQueue;
-		QueuedGame queued = gameQueue.byNetworkId(id);
-		if (queued != null && gameQueue.remove(queued)) {
-			sendUpdates(updates -> updates.updateQueue(gameQueue));
+		QueuedGame removed = lobby.gameQueue.removeByNetworkId(id);
+		if (removed != null) {
+			sendUpdates(updates -> updates.updateQueue(lobby.gameQueue));
 		}
 	}
 
