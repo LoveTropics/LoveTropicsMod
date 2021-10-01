@@ -1,7 +1,9 @@
 package weather2;
 
 import com.lovetropics.minigames.common.core.game.weather.WeatherControllerManager;
+import net.minecraft.resources.IResourceManagerReloadListener;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.AddReloadListenerEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.DeferredWorkQueue;
@@ -52,6 +54,10 @@ public class Weather
     public void serverStop(FMLServerStoppedEvent event) {
         initProperNeededForWorld = true;
     }
+
+    /*private void addReloadListenersLate(AddReloadListenerEvent event) {
+        event.addListener((IResourceManagerReloadListener) resourceManager -> CookingRegistry.initFoodRegistry(event.getDataPackRegistries().getRecipeManager()));
+    }*/
 
     public static void dbg(Object obj) {
 }

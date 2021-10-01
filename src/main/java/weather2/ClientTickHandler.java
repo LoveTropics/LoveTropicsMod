@@ -2,6 +2,7 @@ package weather2;
 
 import extendedrenderer.ParticleManagerExtended;
 import net.minecraft.client.Minecraft;
+import net.minecraft.resources.IReloadableResourceManager;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import net.minecraftforge.api.distmarker.Dist;
@@ -34,6 +35,8 @@ public class ClientTickHandler
 
 	public int prevDir = 0;
 
+	private static ParticleManagerExtended particleManagerExtended;
+
 	private ClientTickHandler() {
 		//this constructor gets called multiple times when created from proxy, this prevents multiple inits
 		if (sceneEnhancer == null) {
@@ -59,6 +62,8 @@ public class ClientTickHandler
 
 			weatherManager.tick();
 			sceneEnhancer.tickClient();
+
+			particleManagerExtended().tick();
 
 			//TODO: evaluate if best here
 			float windDir = WindReader.getWindAngle(world);
@@ -136,24 +141,11 @@ public class ClientTickHandler
 
     	Minecraft mc = Minecraft.getInstance();
 
-    	if (!(mc.particles instanceof ParticleManagerExtended) && false) {
-			System.out.println("setting particle manager override");
-    		try {
-				Field field = ObfuscationReflectionHelper.findField(Minecraft.class, "particles");
-
-				field.setAccessible(true);
-
-				Field modifiersField = Field.class.getDeclaredField("modifiers");
-				modifiersField.setAccessible(true);
-				modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
-
-				ParticleManagerExtended particlesNew = new ParticleManagerExtended(mc.world, mc.textureManager);
-
-				field.set(mc, particlesNew);
-			} catch (NoSuchFieldException | IllegalAccessException ex) {
-    			ex.printStackTrace();
-			}
-
-		}
+    	particleManagerExtended = new ParticleManagerExtended(mc.world, mc.textureManager);
+		((IReloadableResourceManager)mc.getResourceManager()).addReloadListener(particleManagerExtended);
     }
+
+	public static ParticleManagerExtended particleManagerExtended() {
+		return particleManagerExtended;
+	}
 }

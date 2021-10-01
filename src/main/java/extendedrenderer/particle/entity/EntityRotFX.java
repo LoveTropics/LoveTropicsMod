@@ -22,6 +22,7 @@ import net.minecraft.world.World;
 import net.minecraft.world.gen.Heightmap;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import weather2.ClientTickHandler;
 
 import java.util.stream.Stream;
 
@@ -375,7 +376,8 @@ public class EntityRotFX extends SpriteTexturedParticle
     public void spawnAsWeatherEffect()
     {
         weatherEffect = true;
-        Minecraft.getInstance().particles.addEffect(this);
+        //Minecraft.getInstance().particles.addEffect(this);
+        ClientTickHandler.particleManagerExtended().addEffect(this);
     }
 
     public int getAge()

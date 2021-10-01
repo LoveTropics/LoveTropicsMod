@@ -415,8 +415,8 @@ public class SceneEnhancer implements Runnable {
 					spawnCount = 0;
 					int spawnAreaSize = 20;
 
-					boolean rainParticle = false;
-					boolean groundSplash = false;
+					boolean rainParticle = true;
+					boolean groundSplash = true;
 					boolean downfall = true;
 
 					if (rainParticle && spawnNeed > 0) {
@@ -453,7 +453,7 @@ public class SceneEnhancer implements Runnable {
 								//rain.setFacePlayer(true);
 								rain.setScale(2F * 0.15F);
 								rain.isTransparent = true;
-								rain.setGravity(2.5F);
+								rain.setGravity(0.5F);
 								//rain.isTransparent = true;
 								rain.setMaxAge(50);
 								//opted to leave the popin for rain, its not as bad as snow, and using fade in causes less rain visual overall
@@ -1047,7 +1047,7 @@ public class SceneEnhancer implements Runnable {
 		if (client.world != null/* && weather.hasWeather()*/) {
 			ClientTickHandler.checkClientWeather();
 			client.world.setRainStrength(weather.getVanillaRainAmount());
-			client.world.setRainStrength(1);
+			//client.world.setRainStrength(1);
 		}
 	}
 }
