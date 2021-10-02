@@ -36,8 +36,6 @@ final class GameLobby implements IGameLobby {
 	final LobbyManagement management;
 	final LobbyTrackingPlayers trackingPlayers;
 
-	LobbyVisibility visibility = LobbyVisibility.PRIVATE;
-
 	final LobbyStateListener stateListener = LobbyStateListener.compose(
 			new NetworkUpdateListener(),
 			new ChatNotifyListener()
@@ -112,12 +110,7 @@ final class GameLobby implements IGameLobby {
 			return true;
 		}
 
-		return state.getGame() != null && visibility.isPublic();
-	}
-
-	@Override
-	public LobbyVisibility getVisibility() {
-		return visibility;
+		return state.getGame() != null && metadata.visibility().isPublic();
 	}
 
 	void setName(String name) {
@@ -126,7 +119,7 @@ final class GameLobby implements IGameLobby {
 	}
 
 	void setVisibility(LobbyVisibility visibility) {
-		this.visibility = visibility;
+		metadata = manager.setVisibility(this, visibility);
 		this.trackingPlayers.rebuildTracking();
 	}
 

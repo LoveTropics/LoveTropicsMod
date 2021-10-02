@@ -318,8 +318,8 @@ public abstract class AbstractGameList extends ExtendedList<AbstractGameList.Ent
 			int maxTextWidth = getMaxTextWidth(width);
 
 			if (description != null) {
-				font.func_238422_b_(matrixStack, title.forWidth(font, maxTextWidth), left + PADDING, top + PADDING + 1, 0xFFFFFF);
-				font.func_238422_b_(matrixStack, description.forWidth(font, maxTextWidth), left + PADDING, top + height - PADDING - fontHeight, 0x555555);
+				font.func_238422_b_(matrixStack, title.forWidth(font, maxTextWidth), left + PADDING, top + PADDING + 3, 0xFFFFFF);
+				font.func_238422_b_(matrixStack, description.forWidth(font, maxTextWidth), left + PADDING, top + height - PADDING - fontHeight - 1, 0x555555);
 			} else {
 				font.func_238422_b_(matrixStack, title.forWidth(font, maxTextWidth), left + PADDING, top + (height - fontHeight) / 2, 0xFFFFFF);
 			}

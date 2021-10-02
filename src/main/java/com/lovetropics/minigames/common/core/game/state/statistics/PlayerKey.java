@@ -59,9 +59,13 @@ public final class PlayerKey {
 			skinRoot.addProperty("url", skinTexture.getUrl());
 
 			String model = skinTexture.getMetadata("model");
-			if (model != null) {
-				skinRoot.addProperty("model", model);
+			if (model == null) {
+				model = "default";
 			}
+
+			skinRoot.addProperty("model", model);
+
+			root.add("skin", skinRoot);
 		}
 
 		return root;

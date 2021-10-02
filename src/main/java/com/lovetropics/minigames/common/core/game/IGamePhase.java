@@ -15,6 +15,7 @@ import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
 
 import javax.annotation.Nullable;
+import java.util.UUID;
 
 public interface IGamePhase extends IGame {
 	IGame getGame();
@@ -22,6 +23,11 @@ public interface IGamePhase extends IGame {
 	@Override
 	default IGameLobby getLobby() {
 		return getGame().getLobby();
+	}
+
+	@Override
+	default UUID getUuid() {
+		return getGame().getUuid();
 	}
 
 	@Override

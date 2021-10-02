@@ -5,6 +5,7 @@ import net.minecraft.util.text.StringTextComponent;
 
 public enum LobbyVisibility {
 	PUBLIC(new StringTextComponent("Public")),
+	PUBLIC_LIVE(new StringTextComponent("Public (Live)")),
 	PRIVATE(new StringTextComponent("Private"));
 
 	private final ITextComponent name;
@@ -14,11 +15,15 @@ public enum LobbyVisibility {
 	}
 
 	public boolean isPublic() {
-		return this == PUBLIC;
+		return !this.isPrivate();
 	}
 
 	public boolean isPrivate() {
 		return this == PRIVATE;
+	}
+
+	public boolean isFocusedLive() {
+		return this == PUBLIC_LIVE;
 	}
 
 	public ITextComponent getName() {

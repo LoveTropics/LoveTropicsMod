@@ -21,7 +21,7 @@ public interface IGameDefinition {
 	 */
 	ResourceLocation getId();
 
-	// TODO: with parameterised games we can get rid of these extra ids
+	// TODO: with parameterised games we can get rid of this extra id(?)
 	default ResourceLocation getDisplayId() {
 		return getId();
 	}
