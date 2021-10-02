@@ -6,12 +6,14 @@ import java.util.Map;
 
 import com.lovetropics.minigames.common.core.game.behavior.config.ConfigData;
 import com.lovetropics.minigames.common.core.game.behavior.config.ConfigData.CompositeConfigData;
+import com.mojang.blaze3d.matrix.MatrixStack;
 
 import net.minecraft.client.gui.FocusableGui;
 import net.minecraft.client.gui.IGuiEventListener;
 import net.minecraft.client.gui.INestedGuiEventHandler;
+import net.minecraft.client.gui.IRenderable;
 
-public class CompositeConfigWidget extends FocusableGui {
+public class CompositeConfigWidget extends FocusableGui implements IRenderable {
 	
 	private final List<INestedGuiEventHandler> children = new ArrayList<>();
 	
@@ -26,5 +28,11 @@ public class CompositeConfigWidget extends FocusableGui {
 	@Override
 	public List<? extends IGuiEventListener> getEventListeners() {
 		return children;
+	}
+
+	@Override
+	public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
+		// TODO Auto-generated method stub
+		
 	}
 }

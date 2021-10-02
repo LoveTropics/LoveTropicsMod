@@ -1,12 +1,19 @@
 package com.lovetropics.minigames.client.lobby.screen.game_config;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map.Entry;
 
 import com.google.common.collect.LinkedHashMultimap;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Multimap;
+import com.lovetropics.minigames.client.lobby.manage.screen.ManageLobbyScreen;
 import com.lovetropics.minigames.client.lobby.manage.state.ClientLobbyQueuedGame;
 import com.lovetropics.minigames.client.lobby.state.ClientBehaviorMap;
+import com.lovetropics.minigames.client.lobby.state.ClientConfigList;
 import com.lovetropics.minigames.client.screen.flex.Layout;
+import com.lovetropics.minigames.common.core.game.behavior.GameBehaviorType;
 import com.lovetropics.minigames.common.core.game.behavior.config.ConfigData;
 import com.lovetropics.minigames.common.core.game.behavior.config.ConfigData.CompositeConfigData;
 import com.lovetropics.minigames.common.core.game.behavior.config.ConfigData.ListConfigData;
@@ -25,7 +32,7 @@ public final class GameConfig extends FocusableGui {
 	
 	private ClientLobbyQueuedGame configuring;
 	private ClientBehaviorMap configData = new ClientBehaviorMap(LinkedHashMultimap.create());
-	private final List<INestedGuiEventHandler> children = new ArrayList<>();
+	private final Multimap<GameBehaviorType<?>, BehaviorConfigUI> children = LinkedHashMultimap.create();
 
 	public GameConfig(Screen screen, Layout main, Handlers handlers) {
 		this.screen = screen;
@@ -42,12 +49,14 @@ public final class GameConfig extends FocusableGui {
 		this.configuring = game;
 		this.configData = game.configs();
 		this.children.clear();
-		this.children.add(createWidget(this.configData));
+		for (Entry<GameBehaviorType<?>, ClientConfigList> e : configData.behaviors.entries()) {
+			this.children.put(e.getKey(), new BehaviorConfigUI((ManageLobbyScreen) screen, mainLayout, e.getKey(), e.getValue()));
+		}
 	}
 
 	@Override
 	public List<? extends IGuiEventListener> getEventListeners() {
-		return children;
+		return Lists.newArrayList(children.values());
 	}
 
 	public static INestedGuiEventHandler createWidget(ConfigData value) {

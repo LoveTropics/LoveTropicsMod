@@ -36,6 +36,8 @@ public abstract class SimpleConfigWidget extends FocusableGui {
 		}
 	}
 	
+	
+	
 	protected SimpleConfigWidget(SimpleConfigData config, Widget control) {
 		this.config = config;
 		this.control = control;
