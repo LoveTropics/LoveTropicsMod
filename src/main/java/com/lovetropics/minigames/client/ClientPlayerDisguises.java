@@ -1,6 +1,7 @@
 package com.lovetropics.minigames.client;
 
 import com.lovetropics.minigames.Constants;
+import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.common.core.diguise.DisguiseType;
 import com.lovetropics.minigames.common.core.diguise.PlayerDisguise;
 import com.mojang.blaze3d.matrix.MatrixStack;
@@ -30,15 +31,20 @@ public final class ClientPlayerDisguises {
 
 		EntityRenderer<? super Entity> renderer = CLIENT.getRenderManager().getRenderer(disguise);
 		if (renderer != null) {
-			copyDisguiseState(disguise, player);
+			try {
+				copyDisguiseState(disguise, player);
 
-			float partialTicks = event.getPartialRenderTick();
-			MatrixStack transform = event.getMatrixStack();
-			IRenderTypeBuffer buffers = event.getBuffers();
-			int packedLight = event.getLight();
+				float partialTicks = event.getPartialRenderTick();
+				MatrixStack transform = event.getMatrixStack();
+				IRenderTypeBuffer buffers = event.getBuffers();
+				int packedLight = event.getLight();
 
-			float yaw = MathHelper.lerp(partialTicks, player.prevRotationYaw, player.rotationYaw);
-			renderer.render(disguise, yaw, partialTicks, transform, buffers, packedLight);
+				float yaw = MathHelper.lerp(partialTicks, player.prevRotationYaw, player.rotationYaw);
+				renderer.render(disguise, yaw, partialTicks, transform, buffers, packedLight);
+			} catch (Exception e) {
+				PlayerDisguise.get(player).ifPresent(PlayerDisguise::clearDisguise);
+				LoveTropics.LOGGER.error("Failed to render player disguise", e);
+			}
 
 			event.setCanceled(true);
 		}
