@@ -8,26 +8,20 @@ import com.lovetropics.minigames.common.core.game.IGamePhaseDefinition;
 import com.lovetropics.minigames.common.core.game.lobby.GameLobbyId;
 import com.lovetropics.minigames.common.core.game.lobby.GameLobbyMetadata;
 import com.lovetropics.minigames.common.core.game.lobby.IGameLobby;
+import com.lovetropics.minigames.common.core.game.lobby.LobbyVisibility;
 import com.lovetropics.minigames.common.core.game.map.IGameMapProvider;
-import com.lovetropics.minigames.common.core.game.player.PlayerOps;
-import com.lovetropics.minigames.common.core.game.player.PlayerSet;
 import com.lovetropics.minigames.common.core.game.state.control.ControlCommandInvoker;
 import com.lovetropics.minigames.common.core.game.state.statistics.PlayerKey;
 import com.lovetropics.minigames.common.core.game.util.GameTexts;
-import com.lovetropics.minigames.common.core.integration.Telemetry;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 import net.minecraft.command.CommandSource;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.management.PlayerList;
 import net.minecraft.util.RegistryKey;
 import net.minecraft.util.Unit;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
@@ -55,6 +49,8 @@ public class MultiGameManager implements IGameManager {
 	private final Map<UUID, GameLobby> lobbiesByPlayer = new Object2ObjectOpenHashMap<>();
 	private final Map<RegistryKey<World>, List<GamePhase>> gamesByDimension = new Reference2ObjectOpenHashMap<>();
 
+	private GameLobby focusedLiveLobby;
+
 	@Override
 	public GameResult<IGameLobby> createGameLobby(String name, ServerPlayerEntity initiator) {
 		GameLobbyId id = GameLobbyId.next();
@@ -63,11 +59,6 @@ public class MultiGameManager implements IGameManager {
 
 		GameLobby lobby = new GameLobby(this, initiator.server, metadata);
 		lobbies.add(lobby);
-
-		if (!Telemetry.INSTANCE.isConnected()) {
-			ITextComponent warning = GameTexts.Status.telemetryWarning().mergeStyle(TextFormatting.BOLD);
-			operators(initiator.server).sendMessage(warning);
-		}
 
 		return GameResult.ok(lobby);
 	}
@@ -87,12 +78,6 @@ public class MultiGameManager implements IGameManager {
 		}
 
 		return GameResult.ok();
-	}
-
-	private static PlayerOps operators(MinecraftServer server) {
-		PlayerList playerList = server.getPlayerList();
-		return PlayerSet.of(playerList)
-				.filter(player -> playerList.canSendCommands(player.getGameProfile()));
 	}
 
 	@Nullable
@@ -193,13 +178,48 @@ public class MultiGameManager implements IGameManager {
 		if (lobbies.remove(lobby)) {
 			commandIds.release(lobby.getMetadata().commandId());
 		}
+
+		if (focusedLiveLobby == lobby) {
+			setFocusedLiveLobby(null);
+		}
 	}
 
 	GameLobbyMetadata renameLobby(GameLobbyMetadata metadata, String name) {
 		commandIds.release(metadata.commandId());
 
 		String commandId = commandIds.acquire(name);
-		return new GameLobbyMetadata(metadata.id(), metadata.initiator(), name, commandId);
+		return metadata.withName(name, commandId);
+	}
+
+	GameLobbyMetadata setVisibility(GameLobby lobby, LobbyVisibility visibility) {
+		if (visibility.isFocusedLive()) {
+			if (!this.setFocusedLive(lobby)) {
+				return lobby.metadata;
+			}
+		}
+
+		return lobby.metadata.withVisibility(visibility);
+	}
+
+	private boolean setFocusedLive(GameLobby lobby) {
+		if (focusedLiveLobby == null) {
+			setFocusedLiveLobby(lobby);
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	private void setFocusedLiveLobby(@Nullable GameLobby lobby) {
+		focusedLiveLobby = lobby;
+
+		for (GameLobby otherLobby : lobbies) {
+			otherLobby.management.onFocusedLiveLobbyChanged();
+		}
+	}
+
+	boolean hasFocusedLiveLobby() {
+		return focusedLiveLobby != null;
 	}
 
 	@SubscribeEvent

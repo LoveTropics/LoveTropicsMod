@@ -64,7 +64,7 @@
   "ltminigames.status.no_longer_enough_players": "\u00A1\u01DD\u026F\u0250b \u0287\u0279\u0250\u0287s o\u0287 s\u0279\u01DD\u028E\u0250\u05DFd \u0265bnou\u01DD \u0279\u01DDbuo\u05DF ou \u01DD\u0279\u0250 \u01DD\u0279\u01DD\u0265\u27D8",
   "ltminigames.status.player_joined": "\u00A1%s p\u01DDu\u0131o\u0638 s\u0250\u0265 %s",
   "ltminigames.status.spectator_joined": "\u00A1\u0279o\u0287\u0250\u0287\u0254\u01DDds \u0250 s\u0250 %s p\u01DDu\u0131o\u0638 s\u0250\u0265 %s",
-  "ltminigames.status.telemetry_warning": "\u00A1p\u01DD\u0287\u0254\u01DDuuo\u0254 \u0287ou s\u0131 \u0287\u01DD\u029E\u0254os \u028E\u0279\u0287\u01DD\u026F\u01DD\u05DF\u01DD\u27D8 :bu\u0131u\u0279\u0250M",
+  "ltminigames.status.telemetry_warning": "\u00A1p\u01DD\u0287\u0254\u01DDuuo\u0254 \u0287ou s\u0131 \u0287\u01DD\u029E\u0254os \u028E\u0279\u0287\u01DD\u026F\u01DD\u05DF\u01DD\u27D8",
   "ltminigames.ui.close_lobby": "\u01DDso\u05DF\u0186",
   "ltminigames.ui.game_inactive": "\u01DD\u028C\u0131\u0287\u0254\u0250uI",
   "ltminigames.ui.game_player_bounds": "s\u0279\u01DD\u028E\u0250\u05DFd %s-%s",

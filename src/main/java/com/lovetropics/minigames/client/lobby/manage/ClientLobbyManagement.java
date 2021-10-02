@@ -75,9 +75,18 @@ public final class ClientLobbyManagement {
 		}
 
 		public void publishLobby() {
-			if (lobby.getVisibility().isPrivate()) {
-				lobby.setVisibility(LobbyVisibility.PUBLIC);
+			LobbyVisibility visibility = lobby.getVisibility();
+			if (visibility.isPrivate()) {
+				lobby.setVisibility(LobbyVisibility.PUBLIC, lobby.canFocusLive());
 				sendUpdates(updates -> updates.setVisibility(LobbyVisibility.PUBLIC));
+			}
+		}
+
+		public void focusLive() {
+			LobbyVisibility visibility = lobby.getVisibility();
+			if (visibility.isPublic() && !visibility.isFocusedLive() && lobby.canFocusLive()) {
+				lobby.setVisibility(LobbyVisibility.PUBLIC_LIVE, false);
+				sendUpdates(updates -> updates.setVisibility(LobbyVisibility.PUBLIC_LIVE));
 			}
 		}
 
@@ -135,8 +144,8 @@ public final class ClientLobbyManagement {
 			screen.updateControlsState();
 		}
 
-		public void handleVisibility(LobbyVisibility visibility) {
-			lobby.setVisibility(visibility);
+		public void handleVisibility(LobbyVisibility visibility, boolean canFocusLive) {
+			lobby.setVisibility(visibility, canFocusLive);
 			screen.updatePublishState();
 		}
 	}

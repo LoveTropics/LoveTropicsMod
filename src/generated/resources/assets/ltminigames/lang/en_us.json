@@ -64,7 +64,7 @@
   "ltminigames.status.no_longer_enough_players": "There are no longer enough players to start game!",
   "ltminigames.status.player_joined": "%s has joined %s!",
   "ltminigames.status.spectator_joined": "%s has joined %s as a spectator!",
-  "ltminigames.status.telemetry_warning": "Warning: Telemetry socket is not connected!",
+  "ltminigames.status.telemetry_warning": "Telemetry socket is not connected!",
   "ltminigames.ui.close_lobby": "Close",
   "ltminigames.ui.game_inactive": "Inactive",
   "ltminigames.ui.game_player_bounds": "%s-%s players",

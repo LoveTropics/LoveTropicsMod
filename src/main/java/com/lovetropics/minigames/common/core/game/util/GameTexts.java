@@ -200,7 +200,7 @@ public final class GameTexts {
 			static final String LOBBY_PAUSED = key("lobby_paused");
 			static final String LOBBY_STOPPED = key("lobby_stopped");
 
-			static final String TELEMETRY_WARNING = key("telemetry_warning");
+			static final String TELEMETRY_NOT_CONNECTED = key("telemetry_warning");
 
 			static void collectTranslations(BiConsumer<String, String> consumer) {
 				consumer.accept(LOBBY_OPENED, "%s has opened for registration! %s to get a chance to play!");
@@ -214,7 +214,7 @@ public final class GameTexts {
 				consumer.accept(LOBBY_PAUSED, "Your current lobby has paused! You have been teleported to your last location.");
 				consumer.accept(LOBBY_STOPPED, "Your current lobby has stopped! You have been teleported to your last location.");
 
-				consumer.accept(TELEMETRY_WARNING, "Warning: Telemetry socket is not connected!");
+				consumer.accept(TELEMETRY_NOT_CONNECTED, "Telemetry socket is not connected!");
 			}
 
 			static String key(String key) {
@@ -248,8 +248,8 @@ public final class GameTexts {
 			return formatNegative(new TranslationTextComponent(Keys.NO_LONGER_ENOUGH_PLAYERS));
 		}
 
-		public static IFormattableTextComponent telemetryWarning() {
-			return formatNegative(new TranslationTextComponent(Keys.TELEMETRY_WARNING));
+		public static IFormattableTextComponent telemetryNotConnected() {
+			return formatNegative(new TranslationTextComponent(Keys.TELEMETRY_NOT_CONNECTED));
 		}
 	}
 
@@ -259,6 +259,7 @@ public final class GameTexts {
 			static final String MANAGING_GAME = key("managing_game");
 			static final String LOBBY_NAME = key("lobby_name");
 			static final String PUBLISH = key("publish");
+			static final String FOCUS_LIVE = key("focus_live");
 			static final String GAME_QUEUE = key("game_queue");
 			static final String INSTALLED_GAMES = key("installed_games");
 			static final String GAME_INACTIVE = key("game_inactive");
@@ -307,6 +308,10 @@ public final class GameTexts {
 
 		public static IFormattableTextComponent publish() {
 			return new TranslationTextComponent(Keys.PUBLISH);
+		}
+
+		public static IFormattableTextComponent focusLive() {
+			return new TranslationTextComponent(Keys.FOCUS_LIVE);
 		}
 
 		public static IFormattableTextComponent gameQueue() {

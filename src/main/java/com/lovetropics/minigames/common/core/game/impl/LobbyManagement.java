@@ -50,7 +50,7 @@ final class LobbyManagement implements ILobbyManagement {
 					.setCurrentGame(lobby.state.getClientCurrentGame())
 					.setPlayersFrom(lobby)
 					.setControlState(lobby.getControls().asState())
-					.setVisibility(lobby.getVisibility());
+					.setVisibility(lobby.getMetadata().visibility(), !lobby.manager.hasFocusedLiveLobby());
 
 			ClientManageLobbyMessage message = initialize.intoMessage(lobby.metadata.id().networkId());
 			LoveTropicsNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), message);
@@ -113,7 +113,7 @@ final class LobbyManagement implements ILobbyManagement {
 	@Override
 	public void setVisibility(LobbyVisibility visibility) {
 		lobby.setVisibility(visibility);
-		sendUpdates(updates -> updates.setVisibility(visibility));
+		sendUpdates(updates -> updates.setVisibility(visibility, !lobby.manager.hasFocusedLiveLobby()));
 	}
 
 	@Override
@@ -121,7 +121,15 @@ final class LobbyManagement implements ILobbyManagement {
 		lobby.close();
 	}
 
+	void onFocusedLiveLobbyChanged() {
+		sendUpdates(updates -> updates.setVisibility(lobby.metadata.visibility(), !lobby.manager.hasFocusedLiveLobby()));
+	}
+
 	private void sendUpdates(UnaryOperator<ClientLobbyUpdate.Set> updates) {
+		if (managingPlayers.isEmpty()) {
+			return;
+		}
+
 		ClientLobbyUpdate.Set set = ClientLobbyUpdate.Set.create();
 		set = updates.apply(set);
 
