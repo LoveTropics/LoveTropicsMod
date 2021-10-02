@@ -3,6 +3,7 @@ package extendedrenderer;
 import com.google.common.base.Charsets;
 import com.google.common.collect.*;
 import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import extendedrenderer.particle.ParticleRegistry;
 import extendedrenderer.particle.entity.EntityRotFX;
@@ -352,8 +353,16 @@ public class ParticleManagerExtended implements IFutureReloadListener {
       RenderSystem.pushMatrix();
       RenderSystem.multMatrix(matrixStackIn.getLast().getMatrix());
 
+      GlStateManager.depthMask(false);
+
       //temp?
       enable.run();
+
+      RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
+      Tessellator tessellator = Tessellator.getInstance();
+      BufferBuilder bufferbuilder = tessellator.getBuffer();
+      EntityRotFX.SORTED_TRANSLUCENT.beginRender(bufferbuilder, this.renderer);
+      //IParticleRenderType.PARTICLE_SHEET_TRANSLUCENT.beginRender(bufferbuilder, this.renderer);
 
       this.byType.forEach((sprite, byType2) -> {
          for(IParticleRenderType iparticlerendertype : byType2.keySet()) { // Forge: allow custom IParticleRenderType's
@@ -361,10 +370,10 @@ public class ParticleManagerExtended implements IFutureReloadListener {
             //enable.run(); //Forge: MC-168672 Make sure all render types have the correct GL state.
             Iterable<Particle> iterable = byType2.get(iparticlerendertype);
             if (iterable != null) {
-               RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
+               /*RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
                Tessellator tessellator = Tessellator.getInstance();
                BufferBuilder bufferbuilder = tessellator.getBuffer();
-               iparticlerendertype.beginRender(bufferbuilder, this.renderer);
+               iparticlerendertype.beginRender(bufferbuilder, this.renderer);*/
 
                for(Particle particle : iterable) {
                   if (clippingHelper != null && particle.shouldCull() && !clippingHelper.isBoundingBoxInFrustum(particle.getBoundingBox())) continue;
@@ -379,10 +388,13 @@ public class ParticleManagerExtended implements IFutureReloadListener {
                   }
                }
 
-               iparticlerendertype.finishRender(tessellator);
+
             }
          }
       });
+
+      EntityRotFX.SORTED_TRANSLUCENT.finishRender(tessellator);
+      //IParticleRenderType.PARTICLE_SHEET_TRANSLUCENT.finishRender(tessellator);
 
       RenderSystem.popMatrix();
       RenderSystem.depthMask(true);

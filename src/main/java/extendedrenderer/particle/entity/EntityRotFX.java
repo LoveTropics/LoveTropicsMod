@@ -29,7 +29,7 @@ import java.util.stream.Stream;
 @OnlyIn(Dist.CLIENT)
 public class EntityRotFX extends SpriteTexturedParticle
 {
-	protected static final IParticleRenderType SORTED_TRANSLUCENT = new IParticleRenderType() {
+	public static final IParticleRenderType SORTED_TRANSLUCENT = new IParticleRenderType() {
 		
 		@Override
 		public void beginRender(BufferBuilder p_217600_1_, TextureManager p_217600_2_) {
@@ -40,7 +40,8 @@ public class EntityRotFX extends SpriteTexturedParticle
 		public void finishRender(Tessellator p_217599_1_) {
 			ActiveRenderInfo activeInfo = Minecraft.getInstance().getRenderManager().info;
 			Vector3d eye = activeInfo.getProjectedView();
-			p_217599_1_.getBuffer().sortVertexData((float) eye.x, (float) eye.y, (float) eye.z);
+			//p_217599_1_.getBuffer().sortVertexData((float) eye.x, (float) eye.y, (float) eye.z);
+			p_217599_1_.getBuffer().sortVertexData(0, 0, 0);
 			IParticleRenderType.PARTICLE_SHEET_TRANSLUCENT.finishRender(p_217599_1_);
 		}
 
@@ -775,7 +776,8 @@ public class EntityRotFX extends SpriteTexturedParticle
     public IParticleRenderType getRenderType() {
         //TODO: replaces getFXLayer of 5, possibly reimplement extra layers later for clouds etc
         //actually anything > 2 was custom texture sheet, then it just uses higher numbers for diff render orders, higher = later
-        return SORTED_TRANSLUCENT;
+        //return SORTED_TRANSLUCENT;
+        return IParticleRenderType.PARTICLE_SHEET_TRANSLUCENT;
     }
 
     @Override

@@ -95,6 +95,8 @@ public class WindManager {
 		if (windAngleGlobal > 180) {
 			windAngleGlobal -= 360;
 		}
+
+		windSpeedGlobal = 0;
 	}
 
 	/**

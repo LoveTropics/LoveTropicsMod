@@ -75,6 +75,10 @@ public class SceneEnhancer implements Runnable {
 	public static final ResourceLocation RAIN_TEXTURES_GREEN = new ResourceLocation(Weather.MODID, "textures/environment/rain_green.png");
 	public static final ResourceLocation RAIN_TEXTURES = new ResourceLocation("textures/environment/rain.png");
 
+	public static ParticleTexFX downfallTest;
+	public static ParticleTexFX groundSplashTest;
+	public static ParticleTexFX rainTest;
+
 	public SceneEnhancer() {
 		listPosRandom.clear();
 		listPosRandom.add(new BlockPos(0, -1, 0));
@@ -419,6 +423,90 @@ public class SceneEnhancer implements Runnable {
 					boolean groundSplash = true;
 					boolean downfall = true;
 
+					if (rainTest == null) {
+						BlockPos pos2 = new BlockPos(
+								entP.getPosX() + 4,
+								entP.getPosY(),
+								entP.getPosZ());
+
+						rainTest = new ParticleTexExtraRender((ClientWorld) entP.world,
+								pos2.getX(),
+								pos2.getY(),
+								pos2.getZ(),
+								0D, 0D, 0D, ParticleRegistry.rain_white);
+
+						rainTest.spawnAsWeatherEffect();
+					}
+
+					if (rainTest != null) {
+
+						((ParticleTexExtraRender)rainTest).setExtraParticlesBaseAmount(0);
+						((ParticleTexExtraRender)rainTest).noExtraParticles = true;
+						/*rainTest.setPosX(entP.getPosX() + 5);
+						rainTest.setPosY(entP.getPosY());
+						rainTest.setPosZ(entP.getPosZ());
+						rainTest.setPrevPosX(entP.getPosX() + 5);
+						rainTest.setPrevPosY(entP.getPosY());
+						rainTest.setPrevPosZ(entP.getPosZ());*/
+						rainTest.setAge(10);
+						rainTest.setMotionX(0);
+						rainTest.setMotionY(0);
+						rainTest.setMotionZ(0);
+						rainTest.setMaxAge(99999);
+						rainTest.setScale(5F);
+						rainTest.setAlphaF(0.5F);
+
+
+						if (world.getGameTime() % 300 == 0) {
+							rainTest.setExpired();
+							rainTest = null;
+						}
+					}
+
+					if (downfallTest == null) {
+						BlockPos pos2 = new BlockPos(
+								entP.getPosX() + 3,
+								entP.getPosY(),
+								entP.getPosZ());
+
+						pos2 = new BlockPos(
+								-100,
+								/*entP.getPosY()*/95,
+								-350);
+
+						downfallTest = new ParticleTexFX((ClientWorld) entP.world,
+								pos2.getX(),
+								pos2.getY(),
+								pos2.getZ(),
+								0D, 0D, 0D, ParticleRegistry.downfall3);
+
+						downfallTest.spawnAsWeatherEffect();
+					}
+
+					if (downfallTest != null) {
+
+						/*downfallTest.setPosY(entP.getPosY());
+						downfallTest.setPrevPosY(entP.getPosY());*/
+
+						/*downfallTest.setPosX(entP.getPosX() + 5);
+						downfallTest.setPosY(entP.getPosY());
+						downfallTest.setPosZ(entP.getPosZ());*/
+						/*downfallTest.setPrevPosX(entP.getPosX() + 5);
+						downfallTest.setPrevPosY(entP.getPosY());
+						downfallTest.setPrevPosZ(entP.getPosZ());*/
+						downfallTest.setAge(10);
+						downfallTest.setMotionX(0);
+						downfallTest.setMotionY(0);
+						downfallTest.setMotionZ(0);
+						downfallTest.setMaxAge(99999);
+						downfallTest.setScale(10F);
+
+						if (world.getGameTime() % 40 == 0) {
+							downfallTest.setExpired();
+							downfallTest = null;
+						}
+					}
+
 					if (rainParticle && spawnNeed > 0) {
 						for (int i = 0; i < safetyCutout; i++) {
 							BlockPos pos = new BlockPos(
@@ -453,7 +541,7 @@ public class SceneEnhancer implements Runnable {
 								//rain.setFacePlayer(true);
 								rain.setScale(2F * 0.15F);
 								rain.isTransparent = true;
-								rain.setGravity(0.5F);
+								rain.setGravity(0.05F);
 								//rain.isTransparent = true;
 								rain.setMaxAge(50);
 								//opted to leave the popin for rain, its not as bad as snow, and using fade in causes less rain visual overall
@@ -462,6 +550,10 @@ public class SceneEnhancer implements Runnable {
 								rain.rotationYaw = rain.getWorld().rand.nextInt(360) - 180F;
 								rain.setMotionY(-0.5D/*-5D - (entP.world.rand.nextInt(5) * -1D)*/);
 
+								/*if (rainTest == null) {
+									rainTest = rain;
+
+								}*/
 								rain.spawnAsWeatherEffect();
 
 								spawnCount++;
@@ -574,6 +666,7 @@ public class SceneEnhancer implements Runnable {
 					//if (true) return;
 
 					spawnAreaSize = 20;
+					spawnAreaSize = 30;
 					//downfall - at just above 0.3 cause rainstorms lock at 0.3 but flicker a bit above and below
 					if (downfall == true && curPrecipVal > 0.32) {
 
@@ -587,13 +680,13 @@ public class SceneEnhancer implements Runnable {
 							scanAheadRange = 10;
 						}
 
-						for (int i = 0; i < 2F * curPrecipVal * PRECIPITATION_PARTICLE_EFFECT_RATE * adjustedRate; i++) {
+						for (int i = 0; i < 2F * curPrecipVal * PRECIPITATION_PARTICLE_EFFECT_RATE * adjustedRate * 3; i++) {
 							BlockPos pos = new BlockPos(
 									entP.getPosX() + rand.nextInt(spawnAreaSize) - (spawnAreaSize / 2),
 									entP.getPosY() + 5 + rand.nextInt(15),
 									entP.getPosZ() + rand.nextInt(spawnAreaSize) - (spawnAreaSize / 2));
 
-							if (WeatherUtilEntity.getDistanceSqEntToPos(entP, pos) < 10D * 10D) continue;
+							//if (WeatherUtilEntity.getDistanceSqEntToPos(entP, pos) < 3D * 3D) continue;
 
 							//pos = world.getPrecipitationHeight(pos).add(0, 1, 0);
 
@@ -630,7 +723,7 @@ public class SceneEnhancer implements Runnable {
 								rain.setScale(9F + (rand.nextFloat() * 0.3F));
 								//rain.setScale(25F);
 								rain.setMaxAge(60);
-								rain.setGravity(0.35F);
+								rain.setGravity(0.05F);
 								//opted to leave the popin for rain, its not as bad as snow, and using fade in causes less rain visual overall
 								rain.setTicksFadeInMax(20);
 								rain.setAlphaF(0);
@@ -657,6 +750,17 @@ public class SceneEnhancer implements Runnable {
 								}
 
 								rain.spawnAsWeatherEffect();
+
+								/*if (downfallTest == null) {
+									downfallTest = rain;
+									downfallTest.killWhenUnderCameraAtLeast = 50;
+									downfallTest.setKillWhenUnderTopmostBlock(false);
+									downfallTest.setKillWhenUnderTopmostBlock_ScanAheadRange(0);
+									downfallTest.setTicksFadeInMax(0);
+									downfallTest.setAlphaF(1);
+									downfallTest.setTicksFadeOutMax(0);
+
+								}*/
 							}
 						}
 					}
