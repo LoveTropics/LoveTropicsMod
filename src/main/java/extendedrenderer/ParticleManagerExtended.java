@@ -355,6 +355,8 @@ public class ParticleManagerExtended implements IFutureReloadListener {
 
       GlStateManager.depthMask(false);
 
+      GlStateManager.disableCull();
+
       //temp?
       enable.run();
 

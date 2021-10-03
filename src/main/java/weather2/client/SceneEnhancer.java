@@ -420,12 +420,12 @@ public class SceneEnhancer implements Runnable {
 					int spawnAreaSize = 20;
 
 					boolean rainParticle = true;
-					boolean groundSplash = true;
-					boolean downfall = true;
+					boolean groundSplash = false;
+					boolean downfall = false;
 
 					if (rainTest == null) {
 						BlockPos pos2 = new BlockPos(
-								entP.getPosX() + 4,
+								entP.getPosX(),
 								entP.getPosY(),
 								entP.getPosZ());
 
@@ -435,7 +435,10 @@ public class SceneEnhancer implements Runnable {
 								pos2.getZ(),
 								0D, 0D, 0D, ParticleRegistry.rain_white);
 
-						rainTest.spawnAsWeatherEffect();
+						rainTest.rotationYaw = 0;
+						rainTest.rotationPitch = 0;
+
+						//rainTest.spawnAsWeatherEffect();
 					}
 
 					if (rainTest != null) {
@@ -448,16 +451,21 @@ public class SceneEnhancer implements Runnable {
 						rainTest.setPrevPosX(entP.getPosX() + 5);
 						rainTest.setPrevPosY(entP.getPosY());
 						rainTest.setPrevPosZ(entP.getPosZ());*/
+
+						rainTest.setFacePlayer(false);
+						rainTest.setSlantParticleToWind(true);
 						rainTest.setAge(10);
-						rainTest.setMotionX(0);
+						/*rainTest.setMotionX(0);
+
+						rainTest.setMotionZ(0);*/
+
 						rainTest.setMotionY(0);
-						rainTest.setMotionZ(0);
 						rainTest.setMaxAge(99999);
 						rainTest.setScale(5F);
 						rainTest.setAlphaF(0.5F);
 
 
-						if (world.getGameTime() % 300 == 0) {
+						if (world.getGameTime() % 40 == 0) {
 							rainTest.setExpired();
 							rainTest = null;
 						}
@@ -536,6 +544,7 @@ public class SceneEnhancer implements Runnable {
 
 								//old slanty rain way
 								rain.setFacePlayer(true);
+								rain.setFacePlayer(false);
 								rain.setSlantParticleToWind(true);
 
 								//rain.setFacePlayer(true);
@@ -547,7 +556,13 @@ public class SceneEnhancer implements Runnable {
 								//opted to leave the popin for rain, its not as bad as snow, and using fade in causes less rain visual overall
 								rain.setTicksFadeInMax(5);
 								rain.setAlphaF(0);
-								rain.rotationYaw = rain.getWorld().rand.nextInt(360) - 180F;
+								/*for (int ii = 0; ii < 20; ii++) {
+									windMan.applyWindForceNew(rain, 1F/20F, 0.5F);
+								}*/
+								//rain.rotationYaw = rain.getWorld().rand.nextInt(360) - 180F;
+								rain.rotationYaw = 0;
+								rain.rotationPitch = 0;
+								//rain.rotationPitch = rain.getWorld().rand.nextInt(360) - 180F;
 								rain.setMotionY(-0.5D/*-5D - (entP.world.rand.nextInt(5) * -1D)*/);
 
 								/*if (rainTest == null) {

@@ -71,6 +71,9 @@ public class WindManager {
 
 		float randGustWindFactor = 1F;
 
+		//TODO: TEMP!!!
+		chanceOfWindGustEvent = 0;
+
 		//gust data
 		if (this.windTimeGust == 0)
 		{
@@ -88,6 +91,12 @@ public class WindManager {
 
 		windAngleGlobal += rand.nextFloat() - rand.nextFloat();
 
+
+		//TODO: TEMP
+		//windSpeedGlobal = 0;
+		windSpeedGlobal = 1;
+		windAngleGlobal += 1;
+
 		if (windAngleGlobal < -180) {
 			windAngleGlobal += 360;
 		}
@@ -95,8 +104,6 @@ public class WindManager {
 		if (windAngleGlobal > 180) {
 			windAngleGlobal -= 360;
 		}
-
-		windSpeedGlobal = 0;
 	}
 
 	/**
