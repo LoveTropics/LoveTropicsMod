@@ -94,7 +94,7 @@ public class WindManager {
 
 		//TODO: TEMP
 		//windSpeedGlobal = 0;
-		windSpeedGlobal = 1;
+		windSpeedGlobal = 0.5F;
 		windAngleGlobal += 1;
 
 		if (windAngleGlobal < -180) {

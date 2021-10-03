@@ -93,11 +93,11 @@ public class ParticleTexExtraRender extends ParticleTexFX {
 			//rotationPitch = -45;
 			//rotationPitch *= 10F;
 			rotationPitch = 0;
-			rotationPitch = (float)(speed * 45);
+			rotationPitch = (float)(speed * 45 * 1.3);
 			rotationPitch += (this.getEntityId() % 10) - 5;
 		}
 		//windMan.applyWindForceNew(this, 1F/20F, 0.5F);
-		for (int ii = 0; ii < 20; ii++) {
+		for (int ii = 0; ii < 5; ii++) {
 			windMan.applyWindForceNew(this, 1F / 20F, 0.5F);
 		}
 
@@ -120,6 +120,7 @@ public class ParticleTexExtraRender extends ParticleTexFX {
            quaternion.multiply(Vector3f.YP.rotationDegrees(this.rotationYaw));
            //quaternion.multiply(Vector3f.XP.rotationDegrees(this.rotationPitch));
            quaternion.multiply(Vector3f.ZP.rotationDegrees(this.rotationPitch));
+           quaternion.multiply(Vector3f.YP.rotationDegrees(getEntityId() % 180));
         }
         
         float posX = (float)(MathHelper.lerp((double)partialTicks, this.prevPosX, this.posX) - Vector3d.getX());
