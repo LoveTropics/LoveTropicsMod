@@ -75,6 +75,8 @@ public class SceneEnhancer implements Runnable {
 	public static final ResourceLocation RAIN_TEXTURES_GREEN = new ResourceLocation(Weather.MODID, "textures/environment/rain_green.png");
 	public static final ResourceLocation RAIN_TEXTURES = new ResourceLocation("textures/environment/rain.png");
 
+	public static boolean FORCE_ON_DEBUG_TESTING = true;
+
 	public SceneEnhancer() {
 		listPosRandom.clear();
 		listPosRandom.add(new BlockPos(0, -1, 0));
@@ -376,14 +378,16 @@ public class SceneEnhancer implements Runnable {
 
 			curPrecipVal *= 1F;
 
-			float adjustedRate = 1F;
+			float adjustedRate = 2F;
 			if (Minecraft.getInstance().gameSettings.particles == ParticleStatus.DECREASED) {
 				adjustedRate = 0.5F;
 			} else if (Minecraft.getInstance().gameSettings.particles == ParticleStatus.MINIMAL) {
 				adjustedRate = 0.2F;
 			}
 
-			curPrecipVal = 1;
+			if (FORCE_ON_DEBUG_TESTING) {
+				curPrecipVal = 1;
+			}
 
 			if (curPrecipVal > 0) {
 
@@ -393,7 +397,7 @@ public class SceneEnhancer implements Runnable {
 				int spawnNeed = (int)(curPrecipVal * 40F * PRECIPITATION_PARTICLE_EFFECT_RATE * particleAmp);
 				int safetyCutout = 100;
 
-				int extraRenderCount = 15;
+				int extraRenderCount = (int)(15 * (adjustedRate / 2));
 
 				//attempt to fix the cluttering issue more noticable when barely anything spawning
 				if (curPrecipVal < 0.1 && PRECIPITATION_PARTICLE_EFFECT_RATE > 0) {
@@ -415,8 +419,8 @@ public class SceneEnhancer implements Runnable {
 					spawnCount = 0;
 					int spawnAreaSize = 20;
 
-					boolean rainParticle = true;
-					boolean groundSplash = true;
+					boolean rainParticle = false;
+					boolean groundSplash = false;
 					boolean downfall = true;
 
 					if (rainParticle && spawnNeed > 0) {
@@ -447,8 +451,7 @@ public class SceneEnhancer implements Runnable {
 								rain.windWeight = 1F;
 
 								//old slanty rain way
-								rain.setFacePlayer(true);
-								rain.setSlantParticleToWind(true);
+								rain.setFacePlayer(false);
 
 								//rain.setFacePlayer(true);
 								rain.setScale(2F * 0.15F);
@@ -587,7 +590,7 @@ public class SceneEnhancer implements Runnable {
 							scanAheadRange = 10;
 						}
 
-						for (int i = 0; i < 2F * curPrecipVal * PRECIPITATION_PARTICLE_EFFECT_RATE * adjustedRate; i++) {
+						for (int i = 0; i < 2F * curPrecipVal * PRECIPITATION_PARTICLE_EFFECT_RATE * adjustedRate * 0.1; i++) {
 							BlockPos pos = new BlockPos(
 									entP.getPosX() + rand.nextInt(spawnAreaSize) - (spawnAreaSize / 2),
 									entP.getPosY() + 5 + rand.nextInt(15),
@@ -610,6 +613,7 @@ public class SceneEnhancer implements Runnable {
 								rain.setKillWhenUnderTopmostBlock(true);
 								rain.setKillWhenUnderTopmostBlock_ScanAheadRange(scanAheadRange);
 								rain.setTicksFadeOutMaxOnDeath(10);
+								//rain.setTicksFadeOutMaxOnDeath(0);
 
 								//rain.particleTextureJitterX = 0;
 								//rain.particleTextureJitterY = 0;
@@ -629,12 +633,16 @@ public class SceneEnhancer implements Runnable {
 
 								rain.setScale(9F + (rand.nextFloat() * 0.3F));
 								//rain.setScale(25F);
-								rain.setMaxAge(60);
+								rain.setMaxAge(120);
 								rain.setGravity(0.35F);
 								//opted to leave the popin for rain, its not as bad as snow, and using fade in causes less rain visual overall
 								rain.setTicksFadeInMax(20);
 								rain.setAlphaF(0);
 								rain.setTicksFadeOutMax(20);
+
+								/*rain.setTicksFadeInMax(0);
+								rain.setAlphaF(1);
+								rain.setTicksFadeOutMax(0);*/
 
 								rain.rotationYaw = rain.getWorld().rand.nextInt(360) - 180F;
 								rain.rotationPitch = 90;
@@ -689,7 +697,7 @@ public class SceneEnhancer implements Runnable {
 								snow.killWhenFarFromCameraAtLeast = 20;
 
 								snow.setMotionY(-0.1D);
-								snow.setScale(1.3F);
+								snow.setScale(0.3F);
 								snow.setGravity(0.1F);
 								snow.windWeight = 0.2F;
 								snow.setMaxAge(40);
@@ -1047,7 +1055,9 @@ public class SceneEnhancer implements Runnable {
 		if (client.world != null/* && weather.hasWeather()*/) {
 			ClientTickHandler.checkClientWeather();
 			client.world.setRainStrength(weather.getVanillaRainAmount());
-			//client.world.setRainStrength(1);
+			if (FORCE_ON_DEBUG_TESTING) {
+				//client.world.setRainStrength(1);
+			}
 		}
 	}
 }

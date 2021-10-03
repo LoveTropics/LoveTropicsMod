@@ -25,6 +25,8 @@ public class WindManager {
 	public int windTimeGust = 0;
 	public int windGustEventTimeRand = 60;
 	public float chanceOfWindGustEvent = 0.5F;
+
+	public static boolean FORCE_ON_DEBUG_TESTING = true;
 	
 	public WindManager(WeatherManager parManager) {
 		manager = parManager;
@@ -87,6 +89,12 @@ public class WindManager {
 		}
 
 		windAngleGlobal += rand.nextFloat() - rand.nextFloat();
+
+		if (FORCE_ON_DEBUG_TESTING) {
+			//windAngleGlobal += 1;
+			windSpeedGlobal = 0.8F;
+			chanceOfWindGustEvent = 0;
+		}
 
 		if (windAngleGlobal < -180) {
 			windAngleGlobal += 360;

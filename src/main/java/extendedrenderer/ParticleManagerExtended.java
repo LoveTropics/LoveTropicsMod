@@ -3,6 +3,7 @@ package extendedrenderer;
 import com.google.common.base.Charsets;
 import com.google.common.collect.*;
 import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import extendedrenderer.particle.ParticleRegistry;
 import extendedrenderer.particle.entity.EntityRotFX;
@@ -51,8 +52,8 @@ import java.util.stream.Collectors;
 public class ParticleManagerExtended implements IFutureReloadListener {
    private static final List<IParticleRenderType> TYPES = ImmutableList.of(IParticleRenderType.TERRAIN_SHEET, IParticleRenderType.PARTICLE_SHEET_OPAQUE, IParticleRenderType.PARTICLE_SHEET_LIT, IParticleRenderType.PARTICLE_SHEET_TRANSLUCENT, IParticleRenderType.CUSTOM);
    protected ClientWorld world;
-   //private final Map<IParticleRenderType, Queue<Particle>> byType = Maps.newIdentityHashMap();
-   private final LinkedHashMap<TextureAtlasSprite, Map<IParticleRenderType, Queue<Particle>>> byType = new LinkedHashMap<>();
+   private final Map<IParticleRenderType, Queue<Particle>> byType = Maps.newIdentityHashMap();
+   //private final LinkedHashMap<TextureAtlasSprite, Map<IParticleRenderType, Queue<Particle>>> byType = new LinkedHashMap<>();
    private final Queue<EmitterParticle> particleEmitters = Queues.newArrayDeque();
    private final TextureManager renderer;
    private final Random rand = new Random();
@@ -66,10 +67,10 @@ public class ParticleManagerExtended implements IFutureReloadListener {
       this.world = world;
       this.renderer = textureManager;
       this.registerFactories();
-      this.setupRenderOrders();
+      //this.setupRenderOrders();
    }
 
-   private void setupRenderOrders() {
+   /*private void setupRenderOrders() {
       addRenderLayer(ParticleRegistry.downfall3);
       addRenderLayer(ParticleRegistry.cloud256_6);
       addRenderLayer(ParticleRegistry.rain_white);
@@ -80,7 +81,7 @@ public class ParticleManagerExtended implements IFutureReloadListener {
          Map<IParticleRenderType, Queue<Particle>> byType2 = Maps.newIdentityHashMap();
          return byType2;
       });
-   }
+   }*/
 
    private void registerFactories() {
       this.registerFactory(ParticleTypes.AMBIENT_ENTITY_EFFECT, SpellParticle.AmbientMobFactory::new);
@@ -262,12 +263,10 @@ public class ParticleManagerExtended implements IFutureReloadListener {
    }
 
    public void tick() {
-      this.byType.forEach((sprite, byType2) -> {
-         byType2.forEach((renderType, particleQueue) -> {
-            this.world.getProfiler().startSection(renderType.toString());
-            this.tickParticleList(particleQueue);
-            this.world.getProfiler().endSection();
-         });
+      this.byType.forEach((renderType, particleQueue) -> {
+         this.world.getProfiler().startSection(renderType.toString());
+         this.tickParticleList(particleQueue);
+         this.world.getProfiler().endSection();
       });
       if (!this.particleEmitters.isEmpty()) {
          List<EmitterParticle> list = Lists.newArrayList();
@@ -285,20 +284,9 @@ public class ParticleManagerExtended implements IFutureReloadListener {
       Particle particle;
       if (!this.queue.isEmpty()) {
          while((particle = this.queue.poll()) != null) {
-
-            //Note, this will result in no processing of non textured particles, perhaps add some sort of placeholder for the others later not that we'd need it
-
-            if (particle instanceof EntityRotFX) {
-               EntityRotFX finalParticle = (EntityRotFX) particle;
-               byType.computeIfAbsent(finalParticle.getParticleTexture(), (texture) -> {
-                  Map<IParticleRenderType, Queue<Particle>> byType2 = Maps.newIdentityHashMap();
-                  return byType2;
-               });
-               Map<IParticleRenderType, Queue<Particle>> byType2 = byType.get(finalParticle.getParticleTexture());
-               byType2.computeIfAbsent(particle.getRenderType(), (renderType) -> {
-                  return EvictingQueue.create(16384);
-               }).add(particle);
-            }
+            this.byType.computeIfAbsent(particle.getRenderType(), (renderType) -> {
+               return EvictingQueue.create(16384);
+            }).add(particle);
          }
       }
 
@@ -340,11 +328,11 @@ public class ParticleManagerExtended implements IFutureReloadListener {
    public void renderParticles(MatrixStack matrixStackIn, IRenderTypeBuffer.Impl bufferIn, LightTexture lightTextureIn, ActiveRenderInfo activeRenderInfoIn, float partialTicks, @Nullable net.minecraft.client.renderer.culling.ClippingHelper clippingHelper) {
       lightTextureIn.enableLightmap();
       Runnable enable = () -> {
-      RenderSystem.enableAlphaTest();
-      RenderSystem.defaultAlphaFunc();
-      RenderSystem.enableDepthTest();
-      RenderSystem.depthMask(false);
-      RenderSystem.enableFog();
+         RenderSystem.enableAlphaTest();
+         RenderSystem.defaultAlphaFunc();
+         RenderSystem.enableDepthTest();
+         RenderSystem.enableFog();
+         //RenderSystem.depthMask(false);
          RenderSystem.activeTexture(org.lwjgl.opengl.GL13.GL_TEXTURE2);
          RenderSystem.enableTexture();
          RenderSystem.activeTexture(org.lwjgl.opengl.GL13.GL_TEXTURE0);
@@ -352,37 +340,39 @@ public class ParticleManagerExtended implements IFutureReloadListener {
       RenderSystem.pushMatrix();
       RenderSystem.multMatrix(matrixStackIn.getLast().getMatrix());
 
+      GlStateManager.disableCull();
+
       //temp?
-      enable.run();
+      //enable.run();
 
-      this.byType.forEach((sprite, byType2) -> {
-         for(IParticleRenderType iparticlerendertype : byType2.keySet()) { // Forge: allow custom IParticleRenderType's
-            if (iparticlerendertype == IParticleRenderType.NO_RENDER) continue;
-            //enable.run(); //Forge: MC-168672 Make sure all render types have the correct GL state.
-            Iterable<Particle> iterable = byType2.get(iparticlerendertype);
-            if (iterable != null) {
-               RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
-               Tessellator tessellator = Tessellator.getInstance();
-               BufferBuilder bufferbuilder = tessellator.getBuffer();
-               iparticlerendertype.beginRender(bufferbuilder, this.renderer);
+      for(IParticleRenderType iparticlerendertype : this.byType.keySet()) { // Forge: allow custom IParticleRenderType's
+         if (iparticlerendertype == IParticleRenderType.NO_RENDER) continue;
+         enable.run(); //Forge: MC-168672 Make sure all render types have the correct GL state.
+         Iterable<Particle> iterable = byType.get(iparticlerendertype);
+         if (iterable != null) {
+            RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
+            Tessellator tessellator = Tessellator.getInstance();
+            BufferBuilder bufferbuilder = tessellator.getBuffer();
+            iparticlerendertype.beginRender(bufferbuilder, this.renderer);
 
-               for(Particle particle : iterable) {
-                  if (clippingHelper != null && particle.shouldCull() && !clippingHelper.isBoundingBoxInFrustum(particle.getBoundingBox())) continue;
-                  try {
-                     particle.renderParticle(bufferbuilder, activeRenderInfoIn, partialTicks);
-                  } catch (Throwable throwable) {
-                     CrashReport crashreport = CrashReport.makeCrashReport(throwable, "Rendering Particle");
-                     CrashReportCategory crashreportcategory = crashreport.makeCategory("Particle being rendered");
-                     crashreportcategory.addDetail("Particle", particle::toString);
-                     crashreportcategory.addDetail("Particle Type", iparticlerendertype::toString);
-                     throw new ReportedException(crashreport);
-                  }
+            for(Particle particle : iterable) {
+               if (clippingHelper != null && particle.shouldCull() && !clippingHelper.isBoundingBoxInFrustum(particle.getBoundingBox())) continue;
+               try {
+                  particle.renderParticle(bufferbuilder, activeRenderInfoIn, partialTicks);
+               } catch (Throwable throwable) {
+                  CrashReport crashreport = CrashReport.makeCrashReport(throwable, "Rendering Particle");
+                  CrashReportCategory crashreportcategory = crashreport.makeCategory("Particle being rendered");
+                  crashreportcategory.addDetail("Particle", particle::toString);
+                  crashreportcategory.addDetail("Particle Type", iparticlerendertype::toString);
+                  throw new ReportedException(crashreport);
                }
-
-               iparticlerendertype.finishRender(tessellator);
             }
+
+            iparticlerendertype.finishRender(tessellator);
          }
-      });
+      }
+
+      GlStateManager.enableCull();
 
       RenderSystem.popMatrix();
       RenderSystem.depthMask(true);

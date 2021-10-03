@@ -23,6 +23,8 @@ import net.minecraft.world.gen.Heightmap;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import weather2.ClientTickHandler;
+import weather2.weathersystem.WeatherManagerClient;
+import weather2.weathersystem.wind.WindManager;
 
 import java.util.stream.Stream;
 
@@ -40,7 +42,7 @@ public class EntityRotFX extends SpriteTexturedParticle
 		public void finishRender(Tessellator p_217599_1_) {
 			ActiveRenderInfo activeInfo = Minecraft.getInstance().getRenderManager().info;
 			Vector3d eye = activeInfo.getProjectedView();
-			p_217599_1_.getBuffer().sortVertexData((float) eye.x, (float) eye.y, (float) eye.z);
+			p_217599_1_.getBuffer().sortVertexData(0, 0, 0);
 			IParticleRenderType.PARTICLE_SHEET_TRANSLUCENT.finishRender(p_217599_1_);
 		}
 
@@ -344,6 +346,12 @@ public class EntityRotFX extends SpriteTexturedParticle
             double motionXZ = Math.sqrt(motionX * motionX + motionZ * motionZ);
             rotationPitch = (float)Math.atan2(motionY, motionXZ);
         }
+
+        WeatherManagerClient weatherMan = ClientTickHandler.weatherManager;
+        if (weatherMan == null) return;
+        WindManager windMan = weatherMan.getWindManager();
+        if (windMan == null) return;
+        windMan.applyWindForceNew(this, 1F / 20F, 0.5F);
 
         /*if (!quatControl) {
             rotationPrev = new Quaternion(rotation);

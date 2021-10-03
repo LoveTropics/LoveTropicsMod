@@ -11,6 +11,9 @@ import net.minecraft.util.math.vector.Quaternion;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.math.vector.Vector3f;
 import net.minecraft.world.gen.Heightmap;
+import weather2.ClientTickHandler;
+import weather2.weathersystem.WeatherManagerClient;
+import weather2.weathersystem.wind.WindManager;
 
 public class ParticleTexExtraRender extends ParticleTexFX {
 
@@ -19,6 +22,8 @@ public class ParticleTexExtraRender extends ParticleTexFX {
 	private int extraParticlesBaseAmount = 5;
 
 	public boolean noExtraParticles = false;
+
+	private float extraRandomSecondaryYawRotation = 360;
 
 	//public float[] cachedLight;
 	
@@ -56,20 +61,44 @@ public class ParticleTexExtraRender extends ParticleTexFX {
 	public void tickExtraRotations() {
 		//super.tickExtraRotations();
 
-		if (isSlantParticleToWind()) {
-			rotationYaw = (float)Math.toDegrees(Math.atan2(motionZ, motionX)) - 90;
+		WeatherManagerClient weatherMan = ClientTickHandler.weatherManager;
+		if (weatherMan == null) return;
+		WindManager windMan = weatherMan.getWindManager();
+		if (windMan == null) return;
+
+		if (false && isSlantParticleToWind()) {
+			double speed = motionX * motionX + motionZ * motionZ;
+			rotationYaw = -(float)Math.toDegrees(Math.atan2(motionZ, motionX)) - 90;
+
 			double motionXZ = Math.sqrt(motionX * motionX + motionZ * motionZ);
 			//motionXZ = motionX/* + motionZ*/;
-			rotationPitch = -(float)Math.toDegrees(Math.atan2(motionXZ, Math.abs(motionY)));
+			rotationPitch = (float)Math.toDegrees(Math.atan2(motionXZ, Math.abs(motionY)));
 			//rotationPitch = rotationPitch;
 			//rotationPitch = -45;
 			//rotationPitch *= 10F;
+			rotationPitch = 0;
+			rotationPitch = (float)(speed * 1200);
 		}
 
-		/*if (!quatControl) {
-			Entity ent = Minecraft.getInstance().getRenderViewEntity();
-			updateQuaternion(ent);
-		}*/
+		if (isSlantParticleToWind()) {
+
+			double speed = windMan.windSpeedGlobal;
+			rotationYaw = -(float)Math.toDegrees(Math.atan2(motionZ, motionX)) - 90;
+			rotationYaw = -windMan.windAngleGlobal - 180 + 0;
+			rotationYaw += (this.getEntityId() % 20) - 10;
+
+			double motionXZ = Math.sqrt(motionX * motionX + motionZ * motionZ);
+			//motionXZ = motionX/* + motionZ*/;
+			rotationPitch = (float)Math.toDegrees(Math.atan2(motionXZ, Math.abs(motionY)));
+			//rotationPitch = rotationPitch;
+			//rotationPitch = -45;
+			//rotationPitch *= 10F;
+			rotationPitch = 0;
+			rotationPitch = (float)(speed * 45 * 1.1);
+			rotationPitch += (this.getEntityId() % 10) - 5;
+		}
+
+		windMan.applyWindForceNew(this, 1F / 2F, 0.5F);
 	}
 
 	@Override
@@ -84,6 +113,9 @@ public class ParticleTexExtraRender extends ParticleTexFX {
            quaternion = new Quaternion(0, 0, 0, 1);
            quaternion.multiply(Vector3f.YP.rotationDegrees(this.rotationYaw));
            quaternion.multiply(Vector3f.XP.rotationDegrees(this.rotationPitch));
+           if (extraRandomSecondaryYawRotation > 0) {
+			   quaternion.multiply(Vector3f.YP.rotationDegrees(getEntityId() % extraRandomSecondaryYawRotation));
+		   }
         }
         
         float posX = (float)(MathHelper.lerp((double)partialTicks, this.prevPosX, this.posX) - Vector3d.getX());
