@@ -12,7 +12,7 @@ import net.minecraft.util.math.MathHelper;
 public abstract class AbstractLTList<T extends LTListEntry<T>> extends ExtendedList<T> {
 
 	private static final int SCROLL_WIDTH = 6;
-	protected final Screen screen;
+	public final Screen screen;
 	protected T draggingEntry;
 	private int dragOffset;
 
@@ -154,5 +154,29 @@ public abstract class AbstractLTList<T extends LTListEntry<T>> extends ExtendedL
 			dragging.draggable.onDragged(index - startIndex);
 		}
 		this.draggingEntry = null;
+	}
+
+	@Override
+	protected void renderList(MatrixStack matrixStack, int x, int y, int mouseX, int mouseY, float partialTicks) {
+		boolean listHovered = this.isMouseOver(mouseX, mouseY);
+	
+		int count = this.getItemCount();
+		int left = this.getRowLeft();
+		int width = this.getRowWidth();
+		int height = this.itemHeight;
+	
+		boolean dragging = draggingEntry != null;
+	
+		for (int index = 0; index < count; index++) {
+			int top = this.getRowTop(index);
+			int bottom = top + height;
+			if (bottom < this.y0 || top > this.y1) continue;
+	
+			T entry = this.getEntry(index);
+			if (draggingEntry == entry) continue;
+	
+			boolean entryHovered = !dragging && listHovered && mouseX >= left && mouseY >= top && mouseX < left + width && mouseY < bottom;
+			entry.render(matrixStack, index, top, left, width, height, mouseX, mouseY, entryHovered, partialTicks);
+		}
 	}
 }

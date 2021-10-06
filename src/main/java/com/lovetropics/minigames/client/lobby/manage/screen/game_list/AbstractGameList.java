@@ -14,7 +14,6 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.util.text.ITextComponent;
 
-// TODO: ideally we extract this out into a general list widget utility that supports all the features we need
 public abstract class AbstractGameList extends AbstractLTList<AbstractGameList.Entry> {
 	private final ITextComponent title;
 
@@ -41,29 +40,10 @@ public abstract class AbstractGameList extends AbstractLTList<AbstractGameList.E
 				0xFFFFFF
 		);
 	}
-
+	
 	@Override
-	protected void renderList(MatrixStack matrixStack, int x, int y, int mouseX, int mouseY, float partialTicks) {
-		boolean listHovered = this.isMouseOver(mouseX, mouseY);
-
-		int count = this.getItemCount();
-		int left = this.getRowLeft();
-		int width = this.getRowWidth();
-		int height = this.itemHeight;
-
-		boolean dragging = draggingEntry != null;
-
-		for (int index = 0; index < count; index++) {
-			int top = this.getRowTop(index);
-			int bottom = top + height;
-			if (bottom < this.y0 || top > this.y1) continue;
-
-			LTListEntry entry = this.getEntry(index);
-			if (draggingEntry == entry) continue;
-
-			boolean entryHovered = !dragging && listHovered && mouseX >= left && mouseY >= top && mouseX < left + width && mouseY < bottom;
-			entry.render(matrixStack, index, top, left, width, height, mouseX, mouseY, entryHovered, partialTicks);
-		}
+	public boolean isSelectedItem(int index) {
+		return index >= 0 && index < this.getItemCount() && super.isSelectedItem(index);
 	}
 
 	public static final class Entry extends LTListEntry<Entry> {
@@ -80,12 +60,12 @@ public abstract class AbstractGameList extends AbstractLTList<AbstractGameList.E
 		private int outlineColor = 0xFF808080;
 
 		boolean banner;
-		public Entry(AbstractGameList list, int id) {
+		public Entry(AbstractLTList<Entry> list, int id) {
 			super(list, list.screen);
 			this.id = id;
 		}
 
-		public static Entry game(AbstractGameList list, int id, ClientGameDefinition game) {
+		public static Entry game(AbstractLTList<Entry> list, int id, ClientGameDefinition game) {
 			return new Entry(list, id)
 					.setTitle(game.name)
 					.setDescription(GameTexts.Ui.playerRange(game.minimumParticipants, game.maximumParticipants));

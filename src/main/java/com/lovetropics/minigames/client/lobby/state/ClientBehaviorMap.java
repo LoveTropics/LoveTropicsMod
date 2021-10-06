@@ -1,6 +1,7 @@
 package com.lovetropics.minigames.client.lobby.state;
 
 import java.util.Collection;
+import java.util.Set;
 
 import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Multimap;
@@ -36,8 +37,9 @@ public final class ClientBehaviorMap {
 	}
 
 	public void encode(PacketBuffer buffer) {
-		buffer.writeVarInt(behaviors.size());
-		for (GameBehaviorType<?> k : behaviors.keySet()) {
+		Set<GameBehaviorType<?>> keys = behaviors.keySet();
+		buffer.writeVarInt(keys.size());
+		for (GameBehaviorType<?> k : keys) {
 			buffer.writeRegistryId(k);
 			Collection<ClientConfigList> v = behaviors.get(k);
 			buffer.writeVarInt(v.size());

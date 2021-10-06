@@ -65,6 +65,7 @@ public final class ManageLobbyScreen extends Screen {
 			@Override
 			public void selectQueuedGame(int queuedGameId) {
 				selectedGameId = queuedGameId;
+				gameConfig.setGame(session.lobby().getQueue().byId(queuedGameId));
 			}
 
 			@Override
@@ -92,7 +93,7 @@ public final class ManageLobbyScreen extends Screen {
 		}));
 
 		// TODO actually save config data
-		gameConfig = addListener(new GameConfig(this, layout.centerColumn, () -> {}));
+		gameConfig = addListener(new GameConfig(this, layout.edit, () -> {}));
 
 		nameField = addListener(FlexUi.createTextField(layout.name, font, GameTexts.Ui.lobbyName()));
 		nameField.setMaxStringLength(200);
@@ -188,6 +189,7 @@ public final class ManageLobbyScreen extends Screen {
 		FlexUi.fill(layout.rightColumn, matrixStack, 0x80101010);
 
 		gameList.render(matrixStack, mouseX, mouseY, partialTicks);
+		gameConfig.render(matrixStack, mouseX, mouseY, partialTicks);
 
 		for (Layout marginal : layout.marginals) {
 			FlexUi.fill(marginal, matrixStack, 0xFF101010);
