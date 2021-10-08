@@ -41,7 +41,6 @@ public class EntityRotFX extends SpriteTexturedParticle
 		@Override
 		public void finishRender(Tessellator p_217599_1_) {
 			ActiveRenderInfo activeInfo = Minecraft.getInstance().getRenderManager().info;
-			Vector3d eye = activeInfo.getProjectedView();
 			p_217599_1_.getBuffer().sortVertexData(0, 0, 0);
 			IParticleRenderType.PARTICLE_SHEET_TRANSLUCENT.finishRender(p_217599_1_);
 		}
@@ -104,6 +103,8 @@ public class EntityRotFX extends SpriteTexturedParticle
 
     private float ticksFadeInMax = 0;
     private float ticksFadeOutMax = 0;
+
+    private float fullAlphaTarget = 1F;
 
     private boolean dontRenderUnderTopmostBlock = false;
 
@@ -304,16 +305,16 @@ public class EntityRotFX extends SpriteTexturedParticle
         if (!fadingOut) {
             if (ticksFadeInMax > 0 && this.getAge() < ticksFadeInMax) {
                 //System.out.println("particle.getAge(): " + particle.getAge());
-                this.setAlphaF((float)this.getAge() / ticksFadeInMax);
+                this.setAlphaF((float)this.getAge() / ticksFadeInMax * getFullAlphaTarget());
                 //particle.setAlphaF(1);
             } else if (ticksFadeOutMax > 0 && this.getAge() > this.getMaxAge() - ticksFadeOutMax) {
                 float count = this.getAge() - (this.getMaxAge() - ticksFadeOutMax);
                 float val = (ticksFadeOutMax - (count)) / ticksFadeOutMax;
                 //System.out.println(val);
-                this.setAlphaF(val);
+                this.setAlphaF(val * getFullAlphaTarget());
                 //make sure fully visible otherwise
             } else if (ticksFadeInMax > 0 || ticksFadeOutMax > 0) {
-                this.setAlphaF(1F);
+                this.setAlphaF(getFullAlphaTarget());
             }
         } else {
     	    if (ticksFadeOutCurOnDeath < ticksFadeOutMaxOnDeath) {
@@ -323,7 +324,7 @@ public class EntityRotFX extends SpriteTexturedParticle
             }
             float val = 1F - (ticksFadeOutCurOnDeath / ticksFadeOutMaxOnDeath);
             //System.out.println(val);
-            this.setAlphaF(val);
+            this.setAlphaF(0);
         }
 
         if (world.getGameTime() % 5 == 0) {
@@ -793,5 +794,13 @@ public class EntityRotFX extends SpriteTexturedParticle
 
     public TextureAtlasSprite getSprite() {
         return sprite;
+    }
+
+    public float getFullAlphaTarget() {
+        return fullAlphaTarget;
+    }
+
+    public void setFullAlphaTarget(float fullAlphaTarget) {
+        this.fullAlphaTarget = fullAlphaTarget;
     }
 }

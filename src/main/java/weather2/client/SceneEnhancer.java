@@ -77,6 +77,9 @@ public class SceneEnhancer implements Runnable {
 
 	public static boolean FORCE_ON_DEBUG_TESTING = true;
 
+	public static int fadeInTimer = 0;
+	public static int fadeInTimerMax = 400;
+
 	public SceneEnhancer() {
 		listPosRandom.clear();
 		listPosRandom.add(new BlockPos(0, -1, 0));
@@ -368,6 +371,11 @@ public class SceneEnhancer implements Runnable {
 
 		double particleAmp = 1F;
 
+		fadeInTimer++;
+		if (fadeInTimer > fadeInTimerMax) {
+			fadeInTimer = 0;
+		}
+
 		//funnel.tickGame();
 
 		//check rules same way vanilla texture precip does
@@ -419,8 +427,8 @@ public class SceneEnhancer implements Runnable {
 					spawnCount = 0;
 					int spawnAreaSize = 20;
 
-					boolean rainParticle = false;
-					boolean groundSplash = false;
+					boolean rainParticle = true;
+					boolean groundSplash = true;
 					boolean downfall = true;
 
 					if (rainParticle && spawnNeed > 0) {
@@ -461,7 +469,14 @@ public class SceneEnhancer implements Runnable {
 								rain.setMaxAge(50);
 								//opted to leave the popin for rain, its not as bad as snow, and using fade in causes less rain visual overall
 								rain.setTicksFadeInMax(5);
+								rain.setTicksFadeInMax(5);
+								rain.setTicksFadeOutMax(5);
+								rain.setTicksFadeOutMaxOnDeath(5);
+								float alpha = ((float)fadeInTimer / (float)fadeInTimerMax);
+
+								rain.setFullAlphaTarget(alpha * 0.6F);
 								rain.setAlphaF(0);
+
 								rain.rotationYaw = rain.getWorld().rand.nextInt(360) - 180F;
 								rain.setMotionY(-0.5D/*-5D - (entP.world.rand.nextInt(5) * -1D)*/);
 
