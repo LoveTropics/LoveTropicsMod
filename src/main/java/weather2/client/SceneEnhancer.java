@@ -419,8 +419,8 @@ public class SceneEnhancer implements Runnable {
 					spawnCount = 0;
 					int spawnAreaSize = 20;
 
-					boolean rainParticle = false;
-					boolean groundSplash = false;
+					boolean rainParticle = true;
+					boolean groundSplash = true;
 					boolean downfall = true;
 
 					if (rainParticle && spawnNeed > 0) {
