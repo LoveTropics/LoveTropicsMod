@@ -70,6 +70,12 @@ public final class PlayerDisguise implements ICapabilityProvider {
 		this.setDisguise(null);
 	}
 
+	public void clearDisguise(DisguiseType disguise) {
+		if (this.disguiseType == disguise) {
+			this.clearDisguise();
+		}
+	}
+
 	public void setDisguise(@Nullable DisguiseType disguise) {
 		if (disguise != null) {
 			this.disguiseType = disguise;

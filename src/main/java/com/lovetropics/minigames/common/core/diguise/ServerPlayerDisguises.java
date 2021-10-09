@@ -89,20 +89,31 @@ public final class ServerPlayerDisguises {
 	public static void set(ServerPlayerEntity player, @Nullable DisguiseType disguiseType) {
 		PlayerDisguise.get(player).ifPresent(playerDisguise -> {
 			playerDisguise.setDisguise(disguiseType);
-			onSetDisguise(player, playerDisguise.getDisguiseEntity());
-
-			LoveTropicsNetwork.CHANNEL.send(
-					PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> player),
-					new PlayerDisguiseMessage(player.getUniqueID(), disguiseType)
-			);
+			onSetDisguise(player, playerDisguise);
 		});
 	}
 
-	private static void onSetDisguise(ServerPlayerEntity player, @Nullable Entity disguise) {
+	public static void clear(ServerPlayerEntity player, DisguiseType disguiseType) {
+		PlayerDisguise.get(player).ifPresent(playerDisguise -> {
+			playerDisguise.clearDisguise(disguiseType);
+			onSetDisguise(player, playerDisguise);
+		});
+	}
+
+	private static void onSetDisguise(ServerPlayerEntity player, PlayerDisguise disguise) {
+		LoveTropicsNetwork.CHANNEL.send(
+				PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> player),
+				new PlayerDisguiseMessage(player.getUniqueID(), disguise.getDisguiseType())
+		);
+
 		PlayerDisguiseBehavior.clearAttributes(player);
 
-		if (disguise instanceof LivingEntity) {
-			PlayerDisguiseBehavior.applyAttributes(player, (LivingEntity) disguise);
+		DisguiseType disguiseType = disguise.getDisguiseType();
+		if (disguiseType != null && disguiseType.applyAttributes) {
+			Entity entity = disguise.getDisguiseEntity();
+			if (entity instanceof LivingEntity) {
+				PlayerDisguiseBehavior.applyAttributes(player, (LivingEntity) entity);
+			}
 		}
 	}
 }

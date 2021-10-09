@@ -1,5 +1,7 @@
 package com.lovetropics.minigames.common.core.game.util;
 
+import com.lovetropics.minigames.common.core.diguise.DisguiseType;
+import com.lovetropics.minigames.common.core.diguise.PlayerDisguise;
 import com.lovetropics.minigames.common.core.dimension.DimensionUtils;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.nbt.CompoundNBT;
@@ -21,6 +23,8 @@ public final class PlayerSnapshot {
 	private final BlockPos pos;
 	private final CompoundNBT playerData;
 
+	private final DisguiseType disguise;
+
 	private PlayerSnapshot(ServerPlayerEntity player) {
 		this.gameType = player.interactionManager.getGameType();
 		this.dimension = player.world.getDimensionKey();
@@ -28,6 +32,8 @@ public final class PlayerSnapshot {
 
 		this.playerData = new CompoundNBT();
 		player.writeAdditional(this.playerData);
+
+		this.disguise = PlayerDisguise.getDisguiseType(player);
 	}
 
 	public static PlayerSnapshot takeAndClear(ServerPlayerEntity player) {
@@ -46,6 +52,8 @@ public final class PlayerSnapshot {
 		CompoundNBT foodTag = new CompoundNBT();
 		new FoodStats().write(foodTag);
 		player.getFoodStats().read(foodTag);
+
+		PlayerDisguise.get(player).ifPresent(PlayerDisguise::clearDisguise);
 	}
 
 	/**
@@ -61,5 +69,7 @@ public final class PlayerSnapshot {
 		player.setGameType(this.gameType);
 
 		DimensionUtils.teleportPlayerNoPortal(player, this.dimension, this.pos);
+
+		PlayerDisguise.get(player).ifPresent(disguise -> disguise.setDisguise(this.disguise));
 	}
 }

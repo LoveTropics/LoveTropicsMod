@@ -89,6 +89,7 @@ public class GameBehaviorTypes {
 	public static final GameBehaviorEntry<SetBlockAtPlayerPackageBehavior> SET_BLOCK_AT_PLAYER_PACKAGE;
 	public static final GameBehaviorEntry<GivePlayerHeadPackageBehavior> GIVE_PLAYER_HEAD_PACKAGE;
 	public static final GameBehaviorEntry<ShootProjectilesAroundPlayerPackageBehavior> SHOOT_PROJECTILES_AT_PLAYER;
+	public static final GameBehaviorEntry<ApplyDisguisePackageBehavior> APPLY_DISGUISE_PACKAGE;
 
 	public static final GameBehaviorEntry<SetupTelemetryBehavior> SETUP_TELEMETRY;
 	public static final GameBehaviorEntry<AssignPlayerRolesBehavior> ASSIGN_PLAYER_ROLES;
@@ -150,6 +151,7 @@ public class GameBehaviorTypes {
 		SET_BLOCK_AT_PLAYER_PACKAGE = register("set_block_at_player_package", SetBlockAtPlayerPackageBehavior.CODEC);
 		GIVE_PLAYER_HEAD_PACKAGE = register("give_player_head_package", GivePlayerHeadPackageBehavior.CODEC);
 		SHOOT_PROJECTILES_AT_PLAYER = register("shoot_projectiles_at_player", ShootProjectilesAroundPlayerPackageBehavior.CODEC);
+		APPLY_DISGUISE_PACKAGE = register("apply_disguise_package", ApplyDisguisePackageBehavior.CODEC);
 
 		SETUP_TELEMETRY = register("setup_telemetry", SetupTelemetryBehavior.CODEC);
 		ASSIGN_PLAYER_ROLES = register("assign_player_roles", AssignPlayerRolesBehavior.CODEC);
