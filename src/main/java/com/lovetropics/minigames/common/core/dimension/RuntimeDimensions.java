@@ -7,6 +7,7 @@ import com.mojang.serialization.Lifecycle;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.IProgressUpdate;
 import net.minecraft.util.RegistryKey;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Util;
@@ -95,19 +96,19 @@ public final class RuntimeDimensions {
 			return new RuntimeDimensionHandle(this, world);
 		}
 
-		return this.openWorld(key, config.get());
+		return this.openWorld(key, config.get(), false);
 	}
 
 	public RuntimeDimensionHandle openTemporary(RuntimeDimensionConfig config) {
 		ResourceLocation key = generateTemporaryDimensionKey();
-		return this.openWorld(key, config);
+		return this.openWorld(key, config, true);
 	}
 
 	@Nullable
 	public RuntimeDimensionHandle openTemporaryWithKey(ResourceLocation key, RuntimeDimensionConfig config) {
 		RegistryKey<World> worldKey = RegistryKey.getOrCreateKey(Registry.WORLD_KEY, key);
 		if (this.server.getWorld(worldKey) == null) {
-			RuntimeDimensionHandle world = this.openWorld(key, config);
+			RuntimeDimensionHandle world = this.openWorld(key, config, true);
 			this.temporaryDimensions.add(worldKey);
 			return world;
 		} else {
@@ -115,7 +116,7 @@ public final class RuntimeDimensions {
 		}
 	}
 
-	RuntimeDimensionHandle openWorld(ResourceLocation key, RuntimeDimensionConfig config) {
+	RuntimeDimensionHandle openWorld(ResourceLocation key, RuntimeDimensionConfig config, boolean temporary) {
 		RegistryKey<World> worldKey = RegistryKey.getOrCreateKey(Registry.WORLD_KEY, key);
 
 		SimpleRegistry<Dimension> dimensionsRegistry = getDimensionsRegistry(this.server);
@@ -132,7 +133,15 @@ public final class RuntimeDimensions {
 				BiomeManager.getHashedSeed(config.seed),
 				ImmutableList.of(),
 				false
-		);
+		) {
+			@Override
+			public void save(@Nullable IProgressUpdate progress, boolean flush, boolean skipSave) {
+				if (flush && temporary) {
+					return;
+				}
+				super.save(progress, flush, skipSave);
+			}
+		};
 
 		this.server.worlds.put(worldKey, world);
 		this.server.markWorldsDirty();
