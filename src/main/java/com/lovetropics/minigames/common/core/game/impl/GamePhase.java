@@ -13,6 +13,7 @@ import com.lovetropics.minigames.common.core.game.player.PlayerRole;
 import com.lovetropics.minigames.common.core.game.player.PlayerSet;
 import com.lovetropics.minigames.common.core.game.state.statistics.StatisticKey;
 import com.lovetropics.minigames.common.core.game.util.GameTexts;
+import com.lovetropics.minigames.common.core.game.util.PlayerSnapshot;
 import com.lovetropics.minigames.common.core.map.MapRegions;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.server.MinecraftServer;
@@ -90,6 +91,7 @@ public class GamePhase implements IGamePhase {
 			invoker(GamePhaseEvents.CREATE).start();
 
 			for (ServerPlayerEntity player : getAllPlayers()) {
+				PlayerSnapshot.clearPlayer(player);
 				invoker(GamePlayerEvents.ADD).onAdd(player);
 			}
 
@@ -157,6 +159,8 @@ public class GamePhase implements IGamePhase {
 	}
 
 	void onPlayerJoin(ServerPlayerEntity player) {
+		PlayerSnapshot.clearPlayer(player);
+
 		try {
 			invoker(GamePlayerEvents.JOIN).onAdd(player);
 			invoker(GamePlayerEvents.ADD).onAdd(player);
