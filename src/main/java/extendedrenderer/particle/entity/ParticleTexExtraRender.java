@@ -66,21 +66,21 @@ public class ParticleTexExtraRender extends ParticleTexFX {
 		WindManager windMan = weatherMan.getWindManager();
 		if (windMan == null) return;
 
-		if (false && isSlantParticleToWind()) {
+		if (isSlantParticleToWind()) {
 			double speed = motionX * motionX + motionZ * motionZ;
 			rotationYaw = -(float)Math.toDegrees(Math.atan2(motionZ, motionX)) - 90;
 
 			double motionXZ = Math.sqrt(motionX * motionX + motionZ * motionZ);
 			//motionXZ = motionX/* + motionZ*/;
-			rotationPitch = (float)Math.toDegrees(Math.atan2(motionXZ, Math.abs(motionY)));
+			//rotationPitch = (float)Math.toDegrees(Math.atan2(motionXZ, Math.abs(motionY)));
 			//rotationPitch = rotationPitch;
 			//rotationPitch = -45;
 			//rotationPitch *= 10F;
-			rotationPitch = 0;
-			rotationPitch = (float)(speed * 1200);
+			//rotationPitch = 0;
+			rotationPitch = (float)(speed * 120);
 		}
 
-		if (isSlantParticleToWind()) {
+		if (false && isSlantParticleToWind()) {
 
 			double speed = windMan.windSpeedGlobal;
 			rotationYaw = -(float)Math.toDegrees(Math.atan2(motionZ, motionX)) - 90;

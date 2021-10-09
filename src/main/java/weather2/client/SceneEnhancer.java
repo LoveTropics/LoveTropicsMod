@@ -475,10 +475,16 @@ public class SceneEnhancer implements Runnable {
 								float alpha = ((float)fadeInTimer / (float)fadeInTimerMax);
 
 								rain.setFullAlphaTarget(alpha * 0.6F);
+								rain.setFullAlphaTarget(0.6F);
 								rain.setAlphaF(0);
 
 								rain.rotationYaw = rain.getWorld().rand.nextInt(360) - 180F;
 								rain.setMotionY(-0.5D/*-5D - (entP.world.rand.nextInt(5) * -1D)*/);
+
+								//for (int ii = 0; ii < 20; ii++) {
+									//windMan.applyWindForceNew(rain, 1F / 2F, 0.5F);
+									windMan.applyWindForceNew(rain, 10F, 0.5F);
+								//}
 
 								rain.spawnAsWeatherEffect();
 
