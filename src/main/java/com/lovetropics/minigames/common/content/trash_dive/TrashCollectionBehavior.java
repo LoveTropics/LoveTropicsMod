@@ -7,6 +7,7 @@ import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameLogicEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
+import com.lovetropics.minigames.common.core.game.player.PlayerRole;
 import com.lovetropics.minigames.common.core.game.player.PlayerSet;
 import com.lovetropics.minigames.common.core.game.state.statistics.*;
 import com.lovetropics.minigames.common.core.game.util.GameSidebar;
@@ -61,7 +62,11 @@ public final class TrashCollectionBehavior implements IGameBehavior {
 
 		events.listen(GamePhaseEvents.START, () -> onStart(game));
 		events.listen(GamePhaseEvents.FINISH, () -> triggerGameOver(game));
-		events.listen(GamePlayerEvents.ADD, player -> onAddPlayer(game, player));
+		events.listen(GamePlayerEvents.SET_ROLE, (player, role, lastRole) -> {
+			if (role == PlayerRole.PARTICIPANT) {
+				onAddPlayer(game, player);
+			}
+		});
 		events.listen(GamePlayerEvents.LEFT_CLICK_BLOCK, (player, world, pos) -> onPlayerLeftClickBlock(game, player, pos));
 		events.listen(GamePlayerEvents.BREAK_BLOCK, this::onPlayerBreakBlock);
 
