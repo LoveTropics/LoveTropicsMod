@@ -1,0 +1,26 @@
+package com.lovetropics.minigames.common.content.mangroves_and_pianguas;
+
+import com.lovetropics.minigames.Constants;
+import com.lovetropics.minigames.LoveTropics;
+import com.lovetropics.minigames.common.content.mangroves_and_pianguas.behaviors.MpBehavior;
+import com.lovetropics.minigames.common.util.GameBehaviorEntry;
+import com.lovetropics.minigames.common.util.LoveTropicsRegistrate;
+import net.minecraftforge.event.RegisterCommandsEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
+
+import java.util.function.BiConsumer;
+
+@Mod.EventBusSubscriber(modid = Constants.MODID)
+public final class MangrovesAndPianguas {
+    private static final LoveTropicsRegistrate REGISTRATE = LoveTropics.registrate();
+
+    public static final GameBehaviorEntry<MpBehavior> MANGROVES_AND_PIANGUAS = REGISTRATE.object("mangroves_and_pianguas")
+            .behavior(MpBehavior.CODEC)
+            .register();
+
+    @SubscribeEvent
+    public static void onRegisterCommands(RegisterCommandsEvent event) {
+
+    }
+}

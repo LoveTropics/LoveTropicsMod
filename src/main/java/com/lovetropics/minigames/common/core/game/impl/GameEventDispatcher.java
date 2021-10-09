@@ -13,6 +13,7 @@ import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.ActionResultType;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IServerWorld;
+import net.minecraft.world.World;
 import net.minecraft.world.chunk.IChunk;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
@@ -24,6 +25,7 @@ import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.world.BlockEvent;
 import net.minecraftforge.event.world.ChunkEvent;
 import net.minecraftforge.event.world.ExplosionEvent;
+import net.minecraftforge.event.world.SaplingGrowTreeEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 public final class GameEventDispatcher {
@@ -102,11 +104,13 @@ public final class GameEventDispatcher {
 	}
 
 	@SubscribeEvent
-	public void onPlayerDeath(LivingDeathEvent event) {
+	public void onDeath(LivingDeathEvent event) {
 		LivingEntity entity = event.getEntityLiving();
-		if (entity instanceof ServerPlayerEntity) {
-			IGamePhase game = gameLookup.getGamePhaseFor(entity);
-			if (game != null) {
+
+
+		IGamePhase game = gameLookup.getGamePhaseFor(entity);
+		if (game != null) {
+			if (entity instanceof ServerPlayerEntity) {
 				try {
 					ActionResultType result = game.invoker(GamePlayerEvents.DEATH).onDeath((ServerPlayerEntity) entity, event.getSource());
 					if (result == ActionResultType.FAIL) {
@@ -114,6 +118,15 @@ public final class GameEventDispatcher {
 					}
 				} catch (Exception e) {
 					LoveTropics.LOGGER.warn("Failed to dispatch player death event", e);
+				}
+			} else {
+				try {
+					ActionResultType result = game.invoker(GameLivingEntityEvents.DEATH).onDeath(entity, event.getSource());
+					if (result == ActionResultType.FAIL) {
+						event.setCanceled(true);
+					}
+				} catch (Exception e) {
+					LoveTropics.LOGGER.warn("Failed to dispatch entity death event", e);
 				}
 			}
 		}
@@ -197,6 +210,22 @@ public final class GameEventDispatcher {
 		if (game != null) {
 			try {
 				game.invoker(GameWorldEvents.EXPLOSION_DETONATE).onExplosionDetonate(event.getExplosion(), event.getAffectedBlocks(), event.getAffectedEntities());
+			} catch (Exception e) {
+				LoveTropics.LOGGER.warn("Failed to dispatch explosion event", e);
+			}
+		}
+	}
+
+	@SubscribeEvent
+	public void onTreeGrow(SaplingGrowTreeEvent event) {
+		IGamePhase game = gameLookup.getGamePhaseAt((World) event.getWorld(), event.getPos());
+		if (game != null) {
+			try {
+				ActionResultType result = game.invoker(GameWorldEvents.SAPLING_GROW).onSaplingGrow((World) event.getWorld(), event.getPos());
+
+				if (result == ActionResultType.FAIL) {
+					event.setCanceled(true);
+				}
 			} catch (Exception e) {
 				LoveTropics.LOGGER.warn("Failed to dispatch explosion event", e);
 			}

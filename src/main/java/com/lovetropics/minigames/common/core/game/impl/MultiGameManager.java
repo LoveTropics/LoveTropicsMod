@@ -1,6 +1,7 @@
 package com.lovetropics.minigames.common.core.game.impl;
 
 import com.lovetropics.minigames.Constants;
+import com.lovetropics.minigames.common.content.mangroves_and_pianguas.time.TimeInterpolation;
 import com.lovetropics.minigames.common.core.game.GameResult;
 import com.lovetropics.minigames.common.core.game.IGameManager;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
@@ -15,6 +16,8 @@ import com.lovetropics.minigames.common.core.game.state.statistics.PlayerKey;
 import com.lovetropics.minigames.common.core.game.util.GameTexts;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.world.ClientWorld;
 import net.minecraft.command.CommandSource;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
@@ -23,6 +26,7 @@ import net.minecraft.util.Unit;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.World;
+import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -240,8 +244,22 @@ public class MultiGameManager implements IGameManager {
 	}
 
 	@SubscribeEvent
+	public static void onClientTick(TickEvent.ClientTickEvent event) {
+		if (event.phase == TickEvent.Phase.START) return;
+
+		ClientWorld world = Minecraft.getInstance().world;
+
+		if (world != null) {
+			TimeInterpolation.handleTick(world);
+		}
+	}
+
+
+
+	@SubscribeEvent
 	public static void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
 		ServerPlayerEntity player = (ServerPlayerEntity) event.getPlayer();
+
 		for (GameLobby lobby : INSTANCE.lobbies) {
 			lobby.onPlayerLoggedIn(player);
 		}
@@ -260,5 +278,11 @@ public class MultiGameManager implements IGameManager {
 		for (GameLobby lobby : INSTANCE.lobbies) {
 			lobby.onPlayerLoggedOut(player);
 		}
+	}
+
+	@SubscribeEvent
+	public static void onPlayerLoggedOutClient(ClientPlayerNetworkEvent.LoggedOutEvent event) {
+		// Reset speed on logged out so that players don't get issues with phantom time smearing in places where it doesn't make sense
+		TimeInterpolation.updateSpeed(0);
 	}
 }
