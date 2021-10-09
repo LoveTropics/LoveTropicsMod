@@ -276,6 +276,7 @@ public final class GameTexts {
 				consumer.accept(MANAGING_GAME, "Managing Game: %s");
 				consumer.accept(LOBBY_NAME, "Lobby Name");
 				consumer.accept(PUBLISH, "Publish");
+				consumer.accept(FOCUS_LIVE, "Focus Live");
 				consumer.accept(GAME_QUEUE, "Game Queue");
 				consumer.accept(INSTALLED_GAMES, "Installed");
 				consumer.accept(GAME_INACTIVE, "Inactive");

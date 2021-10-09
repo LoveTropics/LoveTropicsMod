@@ -66,6 +66,7 @@
   "ltminigames.status.spectator_joined": "%s has joined %s as a spectator!",
   "ltminigames.status.telemetry_warning": "Telemetry socket is not connected!",
   "ltminigames.ui.close_lobby": "Close",
+  "ltminigames.ui.focus_live": "Focus Live",
   "ltminigames.ui.game_inactive": "Inactive",
   "ltminigames.ui.game_player_bounds": "%s-%s players",
   "ltminigames.ui.game_player_count": "%s players",
