@@ -9,6 +9,7 @@ import com.lovetropics.minigames.client.lobby.state.message.LeftLobbyMessage;
 import com.lovetropics.minigames.client.lobby.state.message.LobbyPlayersMessage;
 import com.lovetropics.minigames.client.lobby.state.message.LobbyUpdateMessage;
 import com.lovetropics.minigames.client.toast.ShowNotificationToastMessage;
+import com.lovetropics.minigames.common.content.mangroves_and_pianguas.time.TimeInterpolationMessage;
 import com.lovetropics.minigames.common.core.network.workspace.AddWorkspaceRegionMessage;
 import com.lovetropics.minigames.common.core.network.workspace.SetWorkspaceMessage;
 import com.lovetropics.minigames.common.core.network.workspace.UpdateWorkspaceRegionMessage;
@@ -95,6 +96,11 @@ public final class LoveTropicsNetwork {
 		CHANNEL.messageBuilder(ServerManageLobbyMessage.class, 13, NetworkDirection.PLAY_TO_SERVER)
 				.encoder(ServerManageLobbyMessage::encode).decoder(ServerManageLobbyMessage::decode)
 				.consumer(ServerManageLobbyMessage::handle)
+				.add();
+
+		CHANNEL.messageBuilder(TimeInterpolationMessage.class, 14, NetworkDirection.PLAY_TO_CLIENT)
+				.encoder(TimeInterpolationMessage::encode).decoder(TimeInterpolationMessage::decode)
+				.consumer(TimeInterpolationMessage::handle)
 				.add();
 	}
 }
