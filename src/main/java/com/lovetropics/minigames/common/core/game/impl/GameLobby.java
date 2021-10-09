@@ -208,6 +208,8 @@ final class GameLobby implements IGameLobby {
 
 		PlayerRole role = players.getRegisteredRoleFor(player);
 		stateListener.onPlayerJoin(this, player, role);
+
+		management.onPlayersChanged();
 	}
 
 	void onPlayerLeave(ServerPlayerEntity player) {
@@ -219,6 +221,8 @@ final class GameLobby implements IGameLobby {
 
 		stateListener.onPlayerLeave(this, player);
 		management.stopManaging(player);
+
+		management.onPlayersChanged();
 
 		manager.removePlayerFromLobby(player, this);
 	}

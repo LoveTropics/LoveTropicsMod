@@ -125,6 +125,10 @@ final class LobbyManagement implements ILobbyManagement {
 		sendUpdates(updates -> updates.setVisibility(lobby.metadata.visibility(), !lobby.manager.hasFocusedLiveLobby()));
 	}
 
+	void onPlayersChanged() {
+		sendUpdates(updates -> updates.setPlayersFrom(lobby));
+	}
+
 	private void sendUpdates(UnaryOperator<ClientLobbyUpdate.Set> updates) {
 		if (managingPlayers.isEmpty()) {
 			return;

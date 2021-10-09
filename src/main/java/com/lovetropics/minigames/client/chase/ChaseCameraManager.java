@@ -41,7 +41,7 @@ public final class ChaseCameraManager {
 	@SubscribeEvent
 	public static void onWorldLoad(WorldEvent.Load event) {
 		if (event.getWorld().isRemote()) {
-			session = null;
+			stop();
 		}
 	}
 
