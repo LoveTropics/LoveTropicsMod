@@ -87,6 +87,7 @@ public final class TeamAllocator<T, V> {
 				if (allocations.playersIn(team).size() >= maxTeamSize) {
 					// we've reached the maximum size for this team; exclude it from further consideration
 					availableTeams.remove(teamIndex);
+					continue;
 				}
 
 				teamIndex = (teamIndex + 1) % availableTeams.size();
