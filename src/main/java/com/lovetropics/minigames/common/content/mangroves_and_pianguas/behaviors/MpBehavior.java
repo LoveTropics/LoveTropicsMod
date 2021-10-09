@@ -124,6 +124,7 @@ public final class MpBehavior implements IGameBehavior {
         // Don't grow any trees- we handle that ourselves
         events.listen(GameWorldEvents.SAPLING_GROW, (w, p) -> ActionResultType.FAIL);
         events.listen(GamePhaseEvents.STOP, (reason) -> LoveTropicsNetwork.CHANNEL.send(PacketDistributor.DIMENSION.with(game::getDimension), new TimeInterpolationMessage(1)));
+        events.listen(GamePlayerEvents.ATTACK, this::onAttack);
     }
 
     private void setupPlayerAsRole(IGamePhase game, ServerPlayerEntity player, @Nullable PlayerRole role) {
@@ -197,6 +198,14 @@ public final class MpBehavior implements IGameBehavior {
             MpMerchant merchant = new MpMerchant(player);
             merchant.openMerchantContainer(player, new TranslationTextComponent("ltminigames.minigame.mp_trading"), 1);
         }
+    }
+
+    private ActionResultType onAttack(ServerPlayerEntity player, Entity target) {
+        if (target instanceof VillagerEntity) {
+            return ActionResultType.FAIL;
+        }
+
+        return ActionResultType.PASS;
     }
 
     private ActionResultType onPlaceBlock(ServerPlayerEntity player, BlockPos pos, BlockState placed, BlockState placedOn) {
