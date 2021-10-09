@@ -37,9 +37,10 @@ public class FillChestsByMarkerBehavior extends ChunkGeneratingBehavior {
 	@Override
 	protected void generateChunk(IGamePhase game, ServerWorld world, Chunk chunk) {
 		List<BlockPos> chestPositions = new ArrayList<>();
-		for (TileEntity entity : chunk.getTileEntityMap().values()) {
+		for (BlockPos pos : chunk.getTileEntitiesPos()) {
+			TileEntity entity = chunk.getTileEntity(pos);
 			if (entity instanceof ChestTileEntity) {
-				chestPositions.add(entity.getPos());
+				chestPositions.add(pos);
 			}
 		}
 
