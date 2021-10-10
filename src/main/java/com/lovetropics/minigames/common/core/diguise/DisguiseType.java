@@ -2,6 +2,8 @@ package com.lovetropics.minigames.common.core.diguise;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
+import net.minecraft.entity.item.PaintingEntity;
+import net.minecraft.entity.item.PaintingType;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.PacketBuffer;
@@ -26,11 +28,19 @@ public final class DisguiseType {
 		entity.setCustomName(player.getDisplayName());
 		entity.setCustomNameVisible(true);
 
+		this.fixInvalidEntities(entity);
+
 		if (this.nbt != null) {
 			entity.read(this.nbt);
 		}
 
 		return entity;
+	}
+
+	private void fixInvalidEntities(Entity entity) {
+		if (entity instanceof PaintingEntity) {
+			((PaintingEntity) entity).art = PaintingType.KEBAB;
+		}
 	}
 
 	public void encode(PacketBuffer buffer) {

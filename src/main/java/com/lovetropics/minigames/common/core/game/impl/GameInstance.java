@@ -6,12 +6,16 @@ import com.lovetropics.minigames.common.core.game.lobby.IGameLobby;
 import com.lovetropics.minigames.common.core.game.state.GameStateMap;
 import net.minecraft.server.MinecraftServer;
 
+import java.util.UUID;
+
 final class GameInstance implements IGame {
 	final GameLobby lobby;
 	final MinecraftServer server;
 	final IGameDefinition definition;
 
 	final GameStateMap stateMap = new GameStateMap();
+
+	final UUID uuid = UUID.randomUUID();
 
 	GameInstance(GameLobby lobby, IGameDefinition definition) {
 		this.lobby = lobby;
@@ -22,6 +26,11 @@ final class GameInstance implements IGame {
 	@Override
 	public IGameLobby getLobby() {
 		return lobby;
+	}
+
+	@Override
+	public UUID getUuid() {
+		return uuid;
 	}
 
 	@Override

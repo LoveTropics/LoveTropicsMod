@@ -136,8 +136,8 @@ public abstract class AbstractGameList extends AbstractLTList<AbstractGameList.E
 			return this;
 		}
 
-		public Entry setDraggable(Draggable draggable) {
-			this.draggable = draggable;
+		public Entry setDraggable(Reorder reorder) {
+			this.reorder = reorder;
 			return this;
 		}
 

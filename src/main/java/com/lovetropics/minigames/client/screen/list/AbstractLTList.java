@@ -2,6 +2,8 @@ package com.lovetropics.minigames.client.screen.list;
 
 import java.util.List;
 
+import org.lwjgl.glfw.GLFW;
+
 import com.lovetropics.minigames.client.screen.flex.Layout;
 import com.mojang.blaze3d.matrix.MatrixStack;
 
@@ -16,8 +18,8 @@ public abstract class AbstractLTList<T extends LTListEntry<T>> extends ExtendedL
 	protected T draggingEntry;
 	private int dragOffset;
 
-	public interface Draggable {
-		void onDragged(int offset);
+	public interface Reorder {
+		void onReorder(int offset);
 	}
 	
 	public AbstractLTList(Screen screen, Layout layout, int slotHeightIn) {
@@ -103,20 +105,8 @@ public abstract class AbstractLTList<T extends LTListEntry<T>> extends ExtendedL
 		if (this.draggingEntry != entry) {
 			this.startDragging(entry, mouseY);
 		} else {
-			this.moveDragging(entry, mouseY);
-		}
-	}
-
-	private void moveDragging(T entry, double mouseY) {
-		List<T> entries = this.getEventListeners();
-		int index = entries.indexOf(entry);
-		int insertIndex = this.getDragInsertIndex(MathHelper.floor(mouseY));
-		if (insertIndex != index && insertIndex >= 0 && insertIndex < entries.size()) {
-			T replaceEntry = entries.get(insertIndex);
-			if (replaceEntry.draggable != null) {
-				entries.remove(index);
-				entries.add(insertIndex, entry);
-			}
+			int insertIndex = this.getDragInsertIndex(MathHelper.floor(mouseY));
+			this.tryReorderTo(entry, insertIndex);
 		}
 	}
 
@@ -125,6 +115,35 @@ public abstract class AbstractLTList<T extends LTListEntry<T>> extends ExtendedL
 	
 		int index = this.getEventListeners().indexOf(entry);
 		this.dragOffset = MathHelper.floor(this.getRowTop(index) - mouseY);
+	}
+
+	@Override
+	public boolean mouseReleased(double mouseX, double mouseY, int button) {
+		T dragging = this.draggingEntry;
+		if (dragging != null) {
+			this.stopDragging(dragging);
+		}
+		return super.mouseReleased(mouseX, mouseY, button);
+	}
+
+	@Override
+	public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+		T selected = getSelected();
+		if (selected != null && selected.reorder != null && Screen.hasShiftDown()) {
+			int offset = 0;
+			if (keyCode == GLFW.GLFW_KEY_UP) offset = -1;
+			else if (keyCode == GLFW.GLFW_KEY_DOWN) offset = 1;
+
+			if (offset != 0) {
+				int index = getEventListeners().indexOf(selected);
+				if (tryReorderTo(selected, index + offset)) {
+					selected.reorder.onReorder(offset);
+					return true;
+				}
+			}
+		}
+
+		return super.keyPressed(keyCode, scanCode, modifiers);
 	}
 
 	protected int getDraggingY(int mouseY) {
@@ -138,20 +157,27 @@ public abstract class AbstractLTList<T extends LTListEntry<T>> extends ExtendedL
 		return getEntryIndexAt(getDraggingY(mouseY) + itemHeight / 2);
 	}
 
-	@Override
-	public boolean mouseReleased(double mouseX, double mouseY, int button) {
-		T dragging = this.draggingEntry;
-		if (dragging != null) {
-			this.stopDragging(dragging);
+	private boolean tryReorderTo(T entry, int insertIndex) {
+		List<T> entries = getEventListeners();
+		int index = entries.indexOf(entry);
+		if (index == -1) return false;
+
+		if (insertIndex != index && insertIndex >= 0 && insertIndex < entries.size()) {
+			T replaceEntry = entries.get(insertIndex);
+			if (replaceEntry.reorder != null) {
+				entries.remove(index);
+				entries.add(insertIndex, entry);
+				return true;
+			}
 		}
-		return super.mouseReleased(mouseX, mouseY, button);
+		return false;
 	}
 
 	private void stopDragging(T dragging) {
 		int startIndex = dragging.dragStartIndex;
 		int index = this.getEventListeners().indexOf(dragging);
-		if (startIndex != index) {
-			dragging.draggable.onDragged(index - startIndex);
+		if (startIndex != index && dragging.reorder != null) {
+			dragging.reorder.onReorder(index - startIndex);
 		}
 		this.draggingEntry = null;
 	}

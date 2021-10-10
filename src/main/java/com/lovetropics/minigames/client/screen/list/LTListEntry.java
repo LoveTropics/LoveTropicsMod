@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.client.screen.list;
 
-import com.lovetropics.minigames.client.screen.list.AbstractLTList.Draggable;
+import com.lovetropics.minigames.client.screen.list.AbstractLTList.Reorder;
 import com.mojang.blaze3d.matrix.MatrixStack;
 
 import net.minecraft.client.Minecraft;
@@ -11,7 +11,7 @@ public abstract class LTListEntry<T extends LTListEntry<T>> extends AbstractList
 
 	protected final Screen screen;
 	protected final AbstractLTList<T> list;
-	protected Draggable draggable;
+	protected Reorder reorder;
 	protected int dragStartIndex;
 
 	public LTListEntry(AbstractLTList<T> list, Screen screen) {
@@ -33,7 +33,7 @@ public abstract class LTListEntry<T extends LTListEntry<T>> extends AbstractList
 	@SuppressWarnings("unchecked")
 	@Override
 	public boolean mouseDragged(double mouseX, double mouseY, int button, double dragX, double dragY) {
-		if (this.draggable != null) {
+		if (this.reorder != null) {
 			this.list.drag((T) this, mouseY);
 			return true;
 		}

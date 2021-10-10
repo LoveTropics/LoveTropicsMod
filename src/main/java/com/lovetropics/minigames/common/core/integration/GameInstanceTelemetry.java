@@ -9,7 +9,6 @@ import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePackageEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
-import com.lovetropics.minigames.common.core.game.lobby.GameLobbyId;
 import com.lovetropics.minigames.common.core.game.state.GameStateKey;
 import com.lovetropics.minigames.common.core.game.state.IGameState;
 import com.lovetropics.minigames.common.core.game.state.statistics.GameStatistics;
@@ -23,8 +22,8 @@ import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.server.MinecraftServer;
 
 import java.time.Instant;
+import java.util.UUID;
 
-// TODO: update backend for handling lobby system: should it be local to a lobby or to an actual minigame?
 public final class GameInstanceTelemetry implements IGameState {
 	public static final GameStateKey<GameInstanceTelemetry> KEY = GameStateKey.create("Game Telemetry");
 
@@ -37,22 +36,16 @@ public final class GameInstanceTelemetry implements IGameState {
 
 	private boolean closed;
 
-	private GameInstanceTelemetry(IGamePhase game, Telemetry telemetry) {
+	public GameInstanceTelemetry(IGamePhase game, Telemetry telemetry) {
 		this.game = game;
 		this.telemetry = telemetry;
 		this.initiator = game.getInitiator();
 
-		this.telemetry.openInstance(this);
 		this.actions = new GameActionHandler(this.game, this);
 	}
 
-	static GameInstanceTelemetry open(IGamePhase game, Telemetry telemetry) {
-		return new GameInstanceTelemetry(game, telemetry);
-	}
-
-	// TODO: game specific id?
-	public GameLobbyId getLobbyId() {
-		return game.getLobby().getMetadata().id();
+	public UUID getUuid() {
+		return game.getUuid();
 	}
 
 	public void start(EventRegistrar events) {
@@ -66,10 +59,8 @@ public final class GameInstanceTelemetry implements IGameState {
 	}
 
 	public void finish(GameStatistics statistics) {
-		long finishTime = System.currentTimeMillis() / 1000;
-
 		JsonObject payload = new JsonObject();
-		payload.addProperty("finish_time_utc", finishTime);
+		payload.addProperty("finish_time_utc", Instant.now().getEpochSecond());
 		payload.add("statistics", statistics.serialize());
 
 		post(ConfigLT.TELEMETRY.minigameEndEndpoint.get(), payload);
@@ -126,14 +117,14 @@ public final class GameInstanceTelemetry implements IGameState {
 			return;
 		}
 
-		payload.addProperty("id", game.getLobby().getMetadata().id().uuid().toString());
+		payload.addProperty("id", game.getUuid().toString());
 
 		IGameDefinition definition = game.getDefinition();
-		JsonObject minigame = new JsonObject();
-		minigame.addProperty("id", definition.getDisplayId().toString());
-		minigame.addProperty("telemetry_key", definition.getTelemetryKey());
-		minigame.addProperty("name", definition.getName().getString());
-		payload.add("minigame", minigame);
+		JsonObject game = new JsonObject();
+		game.addProperty("id", definition.getDisplayId().toString());
+		game.addProperty("telemetry_key", definition.getTelemetryKey());
+		game.addProperty("name", definition.getName().getString());
+		payload.add("game", game);
 
 		telemetry.post(endpoint, payload);
 	}

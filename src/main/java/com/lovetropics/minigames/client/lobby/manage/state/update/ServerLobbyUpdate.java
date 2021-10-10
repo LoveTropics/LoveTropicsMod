@@ -234,11 +234,11 @@ public abstract class ServerLobbyUpdate extends PartialUpdate<ILobbyManagement> 
 
 		@Override
 		protected void encode(PacketBuffer buffer) {
-			buffer.writeBoolean(visibility.isPublic());
+			buffer.writeEnumValue(visibility);
 		}
 
 		static SetVisibility decode(PacketBuffer buffer) {
-			return new SetVisibility(buffer.readBoolean() ? LobbyVisibility.PUBLIC : LobbyVisibility.PRIVATE);
+			return new SetVisibility(buffer.readEnumValue(LobbyVisibility.class));
 		}
 	}
 

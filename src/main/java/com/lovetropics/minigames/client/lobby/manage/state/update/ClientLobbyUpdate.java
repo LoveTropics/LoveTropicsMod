@@ -99,8 +99,8 @@ public abstract class ClientLobbyUpdate extends PartialUpdate<ClientLobbyManagem
 			return this;
 		}
 
-		public Set setVisibility(LobbyVisibility visibility) {
-			this.add(new SetVisibility(visibility));
+		public Set setVisibility(LobbyVisibility visibility, boolean canFocusLive) {
+			this.add(new SetVisibility(visibility, canFocusLive));
 			return this;
 		}
 
@@ -343,24 +343,27 @@ public abstract class ClientLobbyUpdate extends PartialUpdate<ClientLobbyManagem
 
 	public static final class SetVisibility extends ClientLobbyUpdate {
 		private final LobbyVisibility visibility;
+		private final boolean canFocusLive;
 
-		public SetVisibility(LobbyVisibility visibility) {
+		public SetVisibility(LobbyVisibility visibility, boolean canFocusLive) {
 			super(Type.SET_VISIBILITY);
 			this.visibility = visibility;
+			this.canFocusLive = canFocusLive;
 		}
 
 		@Override
 		public void applyTo(ClientLobbyManagement.Session session) {
-			session.handleVisibility(visibility);
+			session.handleVisibility(visibility, canFocusLive);
 		}
 
 		@Override
 		protected void encode(PacketBuffer buffer) {
-			buffer.writeBoolean(visibility.isPublic());
+			buffer.writeEnumValue(visibility);
+			buffer.writeBoolean(canFocusLive);
 		}
 
 		static SetVisibility decode(PacketBuffer buffer) {
-			return new SetVisibility(buffer.readBoolean() ? LobbyVisibility.PUBLIC : LobbyVisibility.PRIVATE);
+			return new SetVisibility(buffer.readEnumValue(LobbyVisibility.class), buffer.readBoolean());
 		}
 	}
 }

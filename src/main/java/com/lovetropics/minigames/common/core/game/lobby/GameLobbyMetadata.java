@@ -10,13 +10,18 @@ public final class GameLobbyMetadata {
 	private final PlayerKey initiator;
 	private final String name;
 	private final String commandId;
+	private final LobbyVisibility visibility;
 
 	public GameLobbyMetadata(GameLobbyId id, PlayerKey initiator, String name, String commandId) {
+		this(id, initiator, name, commandId, LobbyVisibility.PRIVATE);
+	}
+
+	private GameLobbyMetadata(GameLobbyId id, PlayerKey initiator, String name, String commandId, LobbyVisibility visibility) {
 		this.id = id;
 		this.initiator = initiator;
-
 		this.name = name;
 		this.commandId = commandId;
+		this.visibility = visibility;
 	}
 
 	public GameLobbyId id() {
@@ -35,11 +40,23 @@ public final class GameLobbyMetadata {
 		return this.commandId;
 	}
 
+	public LobbyVisibility visibility() {
+		return this.visibility;
+	}
+
 	public String joinCommand(@Nullable PlayerRole role) {
 		String command = "/game join " + commandId;
 		if (role != null) {
 			command += " as " + role.getKey();
 		}
 		return command;
+	}
+
+	public GameLobbyMetadata withName(String name, String commandId) {
+		return new GameLobbyMetadata(this.id, this.initiator, name, commandId, this.visibility);
+	}
+
+	public GameLobbyMetadata withVisibility(LobbyVisibility visibility) {
+		return new GameLobbyMetadata(this.id, this.initiator, this.name, this.commandId, visibility);
 	}
 }

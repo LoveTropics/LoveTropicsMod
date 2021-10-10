@@ -12,6 +12,7 @@ import com.lovetropics.minigames.client.screen.FlexUi;
 import com.lovetropics.minigames.client.screen.flex.Box;
 import com.lovetropics.minigames.client.screen.flex.Layout;
 import com.lovetropics.minigames.common.core.game.lobby.LobbyControls;
+import com.lovetropics.minigames.common.core.game.lobby.LobbyVisibility;
 import com.lovetropics.minigames.common.core.game.util.GameTexts;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import net.minecraft.client.gui.DialogTexts;
@@ -86,7 +87,7 @@ public final class ManageLobbyScreen extends Screen {
 				ClientLobbyQueue queue = lobby.getQueue();
 				int index = queue.indexById(queuedGameId);
 				if (index != -1) {
-					int newIndex = MathHelper.clamp(index + offset, 0, queue.size());
+					int newIndex = MathHelper.clamp(index + offset, 0, queue.size() - 1);
 					session.reorderQueuedGame(queuedGameId, newIndex);
 				}
 			}
@@ -100,7 +101,11 @@ public final class ManageLobbyScreen extends Screen {
 		nameField.setText(lobby.getName());
 
 		publishButton = addButton(FlexUi.createButton(layout.publish, GameTexts.Ui.publish(), button -> {
-			session.publishLobby();
+			if (session.lobby().getVisibility().isPrivate()) {
+				session.publishLobby();
+			} else {
+				session.focusLive();
+			}
 		}));
 
 		playerList = addListener(new LobbyPlayerList(this, lobby, layout.playerList));
@@ -161,7 +166,23 @@ public final class ManageLobbyScreen extends Screen {
 	}
 
 	public void updatePublishState() {
-		publishButton.active = session.lobby().getVisibility().isPrivate();
+		ClientLobbyManageState lobby = session.lobby();
+		LobbyVisibility visibility = lobby.getVisibility();
+		switch (visibility) {
+			case PRIVATE:
+			default:
+				publishButton.setMessage(GameTexts.Ui.publish());
+				publishButton.active = true;
+				break;
+			case PUBLIC:
+				publishButton.setMessage(GameTexts.Ui.focusLive());
+				publishButton.active = lobby.canFocusLive();
+				break;
+			case PUBLIC_LIVE:
+				publishButton.setMessage(GameTexts.Ui.focusLive());
+				publishButton.active = false;
+				break;
+		}
 	}
 
 	@Override

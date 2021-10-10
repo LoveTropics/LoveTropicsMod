@@ -10,8 +10,12 @@ import com.lovetropics.minigames.common.core.game.state.statistics.GameStatistic
 import com.lovetropics.minigames.common.core.game.state.statistics.PlayerKey;
 import net.minecraft.server.MinecraftServer;
 
+import java.util.UUID;
+
 public interface IGame {
 	IGameLobby getLobby();
+
+	UUID getUuid();
 
 	default MinecraftServer getServer() {
 		return getLobby().getServer();

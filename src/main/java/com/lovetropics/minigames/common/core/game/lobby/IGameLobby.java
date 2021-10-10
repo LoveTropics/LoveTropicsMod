@@ -44,14 +44,10 @@ public interface IGameLobby {
 	}
 
 	default boolean isVisibleTo(CommandSource source) {
-		return true;
+		return getMetadata().visibility().isPublic();
 	}
 
 	default boolean isVisibleTo(ServerPlayerEntity player) {
 		return this.isVisibleTo(player.getCommandSource());
-	}
-
-	default LobbyVisibility getVisibility() {
-		return LobbyVisibility.PUBLIC;
 	}
 }
