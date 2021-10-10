@@ -109,6 +109,7 @@ public final class LobbyPlayerList extends AbstractGui implements IGuiEventListe
 		return (y - layout.top()) / BLOCK_SIZE;
 	}
 
+	// TODO: this does not match up with what it should
 	private int hoveredFaceAt(int x, int y) {
 		if (!layout.contains(x, y)) {
 			return -1;

@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "ltminigames:item/record_creature"
+    "layer0": "ltminigames:item/net"
   }
 }

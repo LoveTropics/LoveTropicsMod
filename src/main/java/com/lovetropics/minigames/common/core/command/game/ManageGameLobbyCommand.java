@@ -44,13 +44,12 @@ public class ManageGameLobbyCommand {
 					.then(GameLobbyArgument.argument("lobby")
 					.then(GameConfigArgument.argument("game")
 					.executes(ManageGameLobbyCommand::enqueueGame)
-				))
+				)))
 				.then(literal("close")
 					.requires(source -> source.hasPermissionLevel(2))
 					.then(GameLobbyArgument.argument("lobby")
 					.executes(ManageGameLobbyCommand::closeLobby)
 				))
-			)
         );
         // @formatter:on
 	}

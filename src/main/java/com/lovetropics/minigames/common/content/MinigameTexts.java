@@ -26,6 +26,7 @@ public final class MinigameTexts {
 		static final String ARCADE_TURTLE_RACE = key("arcade_turtle_race");
 		static final String FLYING_TURTLE_RACE = key("flying_turtle_race");
 		static final String TURTLE_SPRINT = key("turtle_sprint");
+		static final String HIDE_AND_SEEK = key("hide_and_seek");
 		static final String MANGROVES_AND_PIANGUAS = key("mangroves_and_pianguas");
 		static final String MP_WAVE_WARNING = key("mp_wave_warning");
 		static final String MP_DEATH_DECREASE = key("mp_death_decrease");
@@ -67,6 +68,7 @@ public final class MinigameTexts {
 			consumer.accept(ARCADE_TURTLE_RACE, "Arcade Turtle Race");
 			consumer.accept(FLYING_TURTLE_RACE, "Flying Turtle Race");
 			consumer.accept(TURTLE_SPRINT, "Turtle Sprint");
+			consumer.accept(HIDE_AND_SEEK, "Hide & Seek");
 
 			consumer.accept(MANGROVES_AND_PIANGUAS, "Mangroves And Pianguas");
 			consumer.accept(MP_WAVE_WARNING, "A wave is coming soon!");

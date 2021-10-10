@@ -6,9 +6,7 @@ import com.lovetropics.minigames.common.core.game.player.PlayerSet;
 import com.lovetropics.minigames.common.core.game.state.GameStateKey;
 import com.lovetropics.minigames.common.core.game.state.IGameState;
 import com.lovetropics.minigames.common.core.game.util.TeamAllocator;
-import it.unimi.dsi.fastutil.objects.Object2IntMap;
-import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
-import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.*;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
@@ -22,7 +20,7 @@ public final class TeamState implements IGameState, Iterable<TeamKey> {
 	public static final GameStateKey<TeamState> KEY = GameStateKey.create("Teams");
 
 	private final List<TeamKey> teams;
-	private final Map<TeamKey, MutablePlayerSet> teamPlayers = new Object2ObjectOpenHashMap<>();
+	private final Object2ObjectMap<TeamKey, MutablePlayerSet> teamPlayers = new Object2ObjectOpenHashMap<>();
 
 	private final Allocations allocations = new Allocations();
 
@@ -35,14 +33,21 @@ public final class TeamState implements IGameState, Iterable<TeamKey> {
 	}
 
 	public void addPlayerTo(ServerPlayerEntity player, TeamKey team) {
+		removePlayer(player);
+
 		MutablePlayerSet players = getPlayersForTeamMutable(player.server, team);
 		players.add(player);
 	}
 
-	public void removePlayer(ServerPlayerEntity player) {
-		for (MutablePlayerSet players : teamPlayers.values()) {
-			players.remove(player);
+	@Nullable
+	public TeamKey removePlayer(ServerPlayerEntity player) {
+		for (Object2ObjectMap.Entry<TeamKey, MutablePlayerSet> entry : Object2ObjectMaps.fastIterable(teamPlayers)) {
+			if (entry.getValue().remove(player)) {
+				return entry.getKey();
+			}
 		}
+
+		return null;
 	}
 
 	public PlayerSet getPlayersForTeam(TeamKey team) {
@@ -68,6 +73,11 @@ public final class TeamState implements IGameState, Iterable<TeamKey> {
 			}
 		}
 		return null;
+	}
+
+	public boolean isOnTeam(PlayerEntity player, TeamKey team) {
+		MutablePlayerSet players = teamPlayers.get(team);
+		return players != null && players.contains(player);
 	}
 
 	public List<TeamKey> getTeams() {

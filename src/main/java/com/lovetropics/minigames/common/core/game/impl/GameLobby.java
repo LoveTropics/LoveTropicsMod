@@ -333,6 +333,7 @@ final class GameLobby implements IGameLobby {
 		@Override
 		public void onPlayerStartTracking(IGameLobby lobby, ServerPlayerEntity player) {
 			LoveTropicsNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), LobbyUpdateMessage.update(lobby));
+			LoveTropicsNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), LobbyPlayersMessage.update(lobby));
 		}
 
 		@Override
