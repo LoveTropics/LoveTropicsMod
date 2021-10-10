@@ -23,10 +23,12 @@ import net.minecraft.entity.ai.attributes.Attributes;
 import net.minecraft.entity.ai.attributes.ModifiableAttributeInstance;
 import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.entity.merchant.villager.VillagerEntity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.network.play.server.SExplosionPacket;
+import net.minecraft.particles.ParticleTypes;
 import net.minecraft.potion.EffectInstance;
 import net.minecraft.potion.Effects;
 import net.minecraft.tags.BlockTags;
@@ -35,10 +37,10 @@ import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.registry.Registry;
-import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.Explosion;
+import net.minecraft.world.GameType;
 import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraft.world.storage.ServerWorldInfo;
@@ -60,7 +62,7 @@ public final class MpBehavior implements IGameBehavior {
     private static final ResourceLocation KOA_LOCATION = new ResourceLocation("tropicraft", "koa");
     private static final ResourceLocation IRIS = new ResourceLocation("tropicraft", "iris");
     private static final Map<Difficulty, Double> DEATH_DECREASE = new HashMap<>();
-    private static final Map<Difficulty, Double> DEATH_MOB_SCALAR = new HashMap<>();
+    private static final Map<Difficulty, Double> MOB_SCALAR = new HashMap<>();
 
     private static final Direction[] DIRECTIONS = Direction.values();
 
@@ -71,9 +73,9 @@ public final class MpBehavior implements IGameBehavior {
         DEATH_DECREASE.put(Difficulty.NORMAL, 0.8);
         DEATH_DECREASE.put(Difficulty.HARD, 0.5);
 
-        DEATH_MOB_SCALAR.put(Difficulty.EASY, 0.5);
-        DEATH_MOB_SCALAR.put(Difficulty.NORMAL, 1.0);
-        DEATH_MOB_SCALAR.put(Difficulty.HARD, 1.5);
+        MOB_SCALAR.put(Difficulty.EASY, 0.5);
+        MOB_SCALAR.put(Difficulty.NORMAL, 1.0);
+        MOB_SCALAR.put(Difficulty.HARD, 1.5);
     }
 
     private final PlayerRegionKey[] participantSpawnKeys;
@@ -84,6 +86,7 @@ public final class MpBehavior implements IGameBehavior {
     private final Map<ServerPlayerEntity, PlayerRegions> allocatedRegions = new HashMap<>();
     private final List<BlockPos> trackedMelons = new ArrayList<>();
     private final List<BlockPos> trackedJackOLanterns = new ArrayList<>();
+    private final List<BlockPos> trackedPumpkins = new ArrayList<>();
     private final Set<BlockPos> globallyTrackedTrees = new HashSet<>();
     private final Map<BlockPos, Set<BlockPos>> treesPerTrunk = new HashMap<>();
     private final Map<BlockPos, Integer> jackOLanternAliveSeconds = new HashMap<>();
@@ -104,9 +107,6 @@ public final class MpBehavior implements IGameBehavior {
     public void register(IGamePhase game, EventRegistrar events) {
         MapRegions regions = game.getMapRegions();
 
-        this.freeRegions.clear();
-        this.allocatedRegions.clear();
-
         for (PlayerRegionKey key : this.participantSpawnKeys) {
             this.freeRegions.add(PlayerRegions.associate(key, regions));
         }
@@ -125,12 +125,17 @@ public final class MpBehavior implements IGameBehavior {
         events.listen(GameWorldEvents.SAPLING_GROW, (w, p) -> ActionResultType.FAIL);
         events.listen(GamePhaseEvents.STOP, (reason) -> LoveTropicsNetwork.CHANNEL.send(PacketDistributor.DIMENSION.with(game::getDimension), new TimeInterpolationMessage(1)));
         events.listen(GamePlayerEvents.ATTACK, this::onAttack);
+        // No mob drops
+        events.listen(GameLivingEntityEvents.MOB_DROP, (e, d, r) -> ActionResultType.FAIL);
+        events.listen(GameLivingEntityEvents.FARMLAND_TRAMPLE, this::onFarmlandTrample);
     }
 
     private void setupPlayerAsRole(IGamePhase game, ServerPlayerEntity player, @Nullable PlayerRole role) {
         if (role == PlayerRole.SPECTATOR) {
             // Teleport players to center for now
             teleportToRegion(game, player, BlockBox.of(new BlockPos(0, 105, 0)));
+
+            player.setGameType(GameType.SPECTATOR);
         } else if (role == PlayerRole.PARTICIPANT) {
             // Get next region
             PlayerRegions regions = this.freeRegions.get(this.participantSpawnIndex++ % this.freeRegions.size());
@@ -184,8 +189,10 @@ public final class MpBehavior implements IGameBehavior {
     private void onExplosion(Explosion explosion, List<BlockPos> affectedBlocks, List<Entity> affectedEntities) {
         // Remove players from friendly explosions
         if (explosion instanceof FriendlyExplosion) {
-            affectedEntities.removeIf(e -> e instanceof ServerPlayerEntity || e instanceof VillagerEntity);
+            affectedEntities.removeIf(e -> e instanceof ServerPlayerEntity);
         }
+
+        affectedEntities.removeIf(e -> e instanceof VillagerEntity);
 
         // Blocks should not explode
         affectedBlocks.clear();
@@ -201,7 +208,8 @@ public final class MpBehavior implements IGameBehavior {
     }
 
     private ActionResultType onAttack(ServerPlayerEntity player, Entity target) {
-        if (target instanceof VillagerEntity) {
+        // disable pvp and pvv (player vs villager)
+        if (target instanceof VillagerEntity || target instanceof PlayerEntity) {
             return ActionResultType.FAIL;
         }
 
@@ -228,7 +236,12 @@ public final class MpBehavior implements IGameBehavior {
 
         if (placed.getBlock() == Blocks.JACK_O_LANTERN) {
             this.trackedJackOLanterns.add(pos);
-            this.jackOLanternAliveSeconds.put(pos, 2400); // Jack o lanterns live for 2 minutes
+            this.jackOLanternAliveSeconds.put(pos, 120); // Jack o lanterns live for 2 minutes
+        }
+
+        if (placed.getBlock() == Blocks.PUMPKIN) {
+            this.trackedPumpkins.add(pos);
+            this.pumpkinHealth.put(pos, 30);
         }
 
         return ActionResultType.PASS;
@@ -271,14 +284,27 @@ public final class MpBehavior implements IGameBehavior {
         }
 
         if (state.getBlock() == Blocks.JACK_O_LANTERN) {
-            world.removeBlock(pos, false);
-
-            ItemEntity lantern = new ItemEntity(world, pos.getX(), pos.getY(), pos.getZ(), new ItemStack(Blocks.JACK_O_LANTERN));
-            world.addEntity(lantern);
-
             this.trackedJackOLanterns.remove(pos);
             // TODO: this allows people to perpetually replace jack o' lanterns to reset their timer. Is there a better way to do this?
             this.jackOLanternAliveSeconds.remove(pos);
+        }
+
+        if (state.getBlock() == Blocks.PUMPKIN) {
+            this.trackedPumpkins.remove(pos);
+            this.pumpkinHealth.remove(pos);
+        }
+
+        return ActionResultType.PASS;
+    }
+
+    private ActionResultType onFarmlandTrample(Entity entity, BlockPos pos, BlockState state) {
+        if (entity instanceof ServerPlayerEntity) {
+            PlayerRegions regions = this.allocatedRegions.get((ServerPlayerEntity) entity);
+
+            // Don't trample farmland if it's not found in the player's plot. Normalizes with up() as farmland is below the plot
+            if (!regions.plot.contains(pos.up())) {
+                return ActionResultType.FAIL;
+            }
         }
 
         return ActionResultType.PASS;
@@ -323,7 +349,7 @@ public final class MpBehavior implements IGameBehavior {
             }
         }
 
-        int targetCount = (int) (totalCount * 0.8);
+        int targetCount = (int) (totalCount * DEATH_DECREASE.get(this.difficulty));
 
         // First insert all the full stacks
         int stacks = targetCount / 64;
@@ -335,6 +361,8 @@ public final class MpBehavior implements IGameBehavior {
 
         // Add the remaining items
         player.addItemStackToInventory(new ItemStack(Items.SUNFLOWER, targetCount));
+        player.playSound(SoundEvents.ENTITY_ARROW_HIT_PLAYER, 0.18F, 0.1F);
+        player.sendStatusMessage(new TranslationTextComponent("ltminigames.minigame.mp_death_decrease", (totalCount - targetCount)), false);
 
         return ActionResultType.FAIL;
     }
@@ -348,6 +376,7 @@ public final class MpBehavior implements IGameBehavior {
         }
 
         ServerWorld world = game.getWorld();
+        Random random = world.getRandom();
         long ticks = this.gameStartTime + game.ticks();
 
         // Tick melons and jack o' lanterns every 5 ticks
@@ -388,6 +417,15 @@ public final class MpBehavior implements IGameBehavior {
 
                     // zoooooom
                     entity.addVelocity(dist * Math.cos(theta), 0.25, dist * Math.sin(theta));
+
+                    // Prevent mobs from flying to the moon due to too much motion
+                    Vector3d motion = entity.getMotion();
+                    entity.setMotion(Math.min(motion.x, 10), Math.min(motion.y, 0.25), Math.min(motion.z, 10));
+
+                    // Make it so that using a jack o lantern a lot will reduce alive time
+                    if (random.nextInt(6) == 0) {
+                        this.jackOLanternAliveSeconds.put(lantern, this.jackOLanternAliveSeconds.get(lantern) - 1);
+                    }
                 }
             }
         }
@@ -413,16 +451,60 @@ public final class MpBehavior implements IGameBehavior {
             }
 
             // Reduce lantern times
+            List<BlockPos> toRemove = new ArrayList<>();
             for (Map.Entry<BlockPos, Integer> entry : this.jackOLanternAliveSeconds.entrySet()) {
                 BlockPos pos = entry.getKey();
                 int newTime = entry.getValue() - 1;
 
                 if (newTime <= 0) {
-                    this.jackOLanternAliveSeconds.remove(pos);
+                    toRemove.add(pos);
                     world.setBlockState(pos, Blocks.PUMPKIN.getDefaultState());
+                    this.pumpkinHealth.put(pos, 30);
+
+                    // Spawn poof when jack o' lanterns downgrade to pumpkins
+                    for(int i = 0; i < 20; ++i) {
+                        double d3 = random.nextGaussian() * 0.02;
+                        double d1 = random.nextGaussian() * 0.02;
+                        double d2 = random.nextGaussian() * 0.02;
+                        world.spawnParticle(ParticleTypes.POOF, pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5, 1, d3, d1, d2, 0.15F);
+                    }
                 } else {
                     this.jackOLanternAliveSeconds.put(pos, newTime);
                 }
+            }
+
+            for (BlockPos pos : toRemove) {
+                this.jackOLanternAliveSeconds.remove(pos);
+                this.trackedJackOLanterns.remove(pos);
+            }
+
+            toRemove.clear();
+
+            for (Map.Entry<BlockPos, Integer> entry : this.pumpkinHealth.entrySet()) {
+                BlockPos pos = entry.getKey();
+
+                List<MobEntity> entities = world.getEntitiesWithinAABB(MobEntity.class, new AxisAlignedBB(pos.add(-1, -5, -1), pos.add(1, 5, 1)));
+                entities.removeIf(e -> e instanceof VillagerEntity);
+
+                int newHealth = this.pumpkinHealth.get(pos) - entities.size();
+                if (newHealth <= 0) {
+                    toRemove.add(pos);
+                    world.removeBlock(pos, false);
+
+                    for(int i = 0; i < 20; ++i) {
+                        double d3 = random.nextGaussian() * 0.02;
+                        double d1 = random.nextGaussian() * 0.02;
+                        double d2 = random.nextGaussian() * 0.02;
+                        world.spawnParticle(ParticleTypes.POOF, pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5, 1, d3, d1, d2, 0.15F);
+                    }
+                } else {
+                    this.pumpkinHealth.put(pos, newHealth);
+                }
+            }
+
+            for (BlockPos pos : toRemove) {
+                this.pumpkinHealth.remove(pos);
+                this.trackedPumpkins.remove(pos);
             }
         }
 
@@ -443,8 +525,16 @@ public final class MpBehavior implements IGameBehavior {
                         // TODO: should sweet berries grow slower? might be too op!
                         int age = state.get(BeetrootBlock.BEETROOT_AGE);
 
-                        if (age < 3) {
-                            world.setBlockState(pos, state.with(BeetrootBlock.BEETROOT_AGE, age + 1));
+                        if (state.getBlock() == Blocks.SWEET_BERRY_BUSH) {
+                            if (age < 1) {
+                                world.setBlockState(pos, state.with(BeetrootBlock.BEETROOT_AGE, age + 1));
+                            } else if (world.rand.nextInt(64) == 0) {
+                                world.setBlockState(pos, state.with(BeetrootBlock.BEETROOT_AGE, age + 1));
+                            }
+                        } else {
+                            if (age < 3) {
+                                world.setBlockState(pos, state.with(BeetrootBlock.BEETROOT_AGE, age + 1));
+                            }
                         }
                     } else if (state.getBlock() == Blocks.BIRCH_SAPLING) {
                         boolean grew = BIRCH_TREE.attemptGrowTree(world, world.getChunkProvider().getChunkGenerator(), pos, state, world.rand);
@@ -497,15 +587,11 @@ public final class MpBehavior implements IGameBehavior {
 
                     if (state.getBlock() instanceof CropsBlock) {
                         value += 0.05;
-                    } else if (state.getBlock() instanceof SweetBerryBushBlock) {
-                        value += 0.1;
                     } else if (state.getBlock() == Blocks.GRASS) {
-                        value += 0.075;
+                        value += 0.025;
                     } else if (state.getBlock() == Blocks.WITHER_ROSE) {
-                        value += 0.125;
-                    } else if (state.getBlock() == Blocks.MELON) {
-                        value += 0.1;
-                    } else if (state.getBlock() == Blocks.BIRCH_LOG) {
+                        value += 0.075;
+                    }else if (state.getBlock() == Blocks.BIRCH_LOG) {
                         value += 0.85;
                     }
 
@@ -520,7 +606,10 @@ public final class MpBehavior implements IGameBehavior {
                     count++;
                 }
 
-                entry.getKey().addItemStackToInventory(new ItemStack(Items.SUNFLOWER, count));
+                ServerPlayerEntity player = entry.getKey();
+                player.playSound(SoundEvents.ENTITY_ARROW_HIT_PLAYER, 0.18F, 1.0F);
+                player.sendStatusMessage(new TranslationTextComponent("ltminigames.minigame.mp_currency_addition", count), false);
+                player.addItemStackToInventory(new ItemStack(Items.SUNFLOWER, count));
             }
         }
 
@@ -536,12 +625,10 @@ public final class MpBehavior implements IGameBehavior {
         }
 
         if (timeTilNextWave == 0) {
-            Random random = world.rand;
-
             for (Map.Entry<ServerPlayerEntity, PlayerRegions> entry : this.allocatedRegions.entrySet()) {
                 // Temp wave scaling equation- seems to work fine?
                 int x = this.sentWaves / 2;
-                int amount = (int) (Math.pow(x, 1.2) + x) + 2 + random.nextInt(3);
+                int amount = (int) (MOB_SCALAR.get(this.difficulty) * (Math.pow(x, 1.2) + x) + 2 + random.nextInt(3));
 
                 for (int i = 0; i < amount; i++) {
                     BlockPos pos = entry.getValue().mobSpawn.sample(random);

@@ -17,6 +17,7 @@ import net.minecraft.world.World;
 import net.minecraft.world.chunk.IChunk;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
+import net.minecraftforge.event.entity.living.LivingDropsEvent;
 import net.minecraftforge.event.entity.living.LivingEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.player.AttackEntityEvent;
@@ -133,6 +134,23 @@ public final class GameEventDispatcher {
 	}
 
 	@SubscribeEvent
+	public void onMobDrop(LivingDropsEvent event) {
+		LivingEntity entity = event.getEntityLiving();
+
+		IGamePhase game = gameLookup.getGamePhaseFor(entity);
+		if (game != null) {
+			try {
+				ActionResultType result = game.invoker(GameLivingEntityEvents.MOB_DROP).onMobDrop(entity, event.getSource(), event.getDrops());
+				if (result == ActionResultType.FAIL) {
+					event.setCanceled(true);
+				}
+			} catch (Exception e) {
+				LoveTropics.LOGGER.warn("Failed to dispatch entity mob drop event", e);
+			}
+		}
+	}
+
+	@SubscribeEvent
 	public void onPlayerRespawn(PlayerEvent.PlayerRespawnEvent event) {
 		IGamePhase game = gameLookup.getGamePhaseFor(event.getPlayer());
 		if (game != null) {
@@ -140,6 +158,21 @@ public final class GameEventDispatcher {
 				game.invoker(GamePlayerEvents.RESPAWN).onRespawn((ServerPlayerEntity) event.getPlayer());
 			} catch (Exception e) {
 				LoveTropics.LOGGER.warn("Failed to dispatch player respawn event", e);
+			}
+		}
+	}
+
+	@SubscribeEvent
+	public void onFarmlandTrample(BlockEvent.FarmlandTrampleEvent event) {
+		IGamePhase game = gameLookup.getGamePhaseFor(event.getEntity());
+		if (game != null) {
+			try {
+				ActionResultType result = game.invoker(GameLivingEntityEvents.FARMLAND_TRAMPLE).onFarmlandTrample(event.getEntity(), event.getPos(), event.getState());
+				if (result == ActionResultType.FAIL) {
+					event.setCanceled(true);
+				}
+			} catch (Exception e) {
+				LoveTropics.LOGGER.warn("Failed to dispatch farmland trample event", e);
 			}
 		}
 	}

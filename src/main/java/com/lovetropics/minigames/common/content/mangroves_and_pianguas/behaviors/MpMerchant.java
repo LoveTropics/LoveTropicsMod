@@ -16,7 +16,7 @@ import net.tropicraft.core.common.block.TropicraftBlocks;
 import javax.annotation.Nullable;
 
 public final class MpMerchant implements IMerchant {
-    private static final RegistryObject<Item> IRIS = RegistryObject.of(new ResourceLocation("tropicraft", "iris"), ForgeRegistries.ITEMS);
+    private static final ResourceLocation IRIS = new ResourceLocation("tropicraft", "iris");
     private static final MerchantOffers OFFERS = new MerchantOffers();
     static {
         populateOffers();
@@ -36,7 +36,9 @@ public final class MpMerchant implements IMerchant {
         OFFERS.add(offer(2, Items.GRASS));
         OFFERS.add(offer(32, Items.WITHER_ROSE));
         OFFERS.add(offer(12, Items.MELON));
-        IRIS.ifPresent(i -> OFFERS.add(offer(8, i)));
+        if (Registry.ITEM.containsKey(IRIS)) {
+            OFFERS.add(offer(12, Registry.ITEM.getOrDefault(IRIS)));
+        }
         OFFERS.add(offer(32, Items.JACK_O_LANTERN));
         OFFERS.add(offer(24, Items.BIRCH_SAPLING));
         OFFERS.add(offer(12, Items.PUMPKIN));
