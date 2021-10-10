@@ -528,7 +528,7 @@ public final class MpBehavior implements IGameBehavior {
                         if (state.getBlock() == Blocks.SWEET_BERRY_BUSH) {
                             if (age < 1) {
                                 world.setBlockState(pos, state.with(BeetrootBlock.BEETROOT_AGE, age + 1));
-                            } else if (world.rand.nextInt(64) == 0) {
+                            } else if (world.rand.nextInt(128) == 0 && age < 3) {
                                 world.setBlockState(pos, state.with(BeetrootBlock.BEETROOT_AGE, age + 1));
                             }
                         } else {

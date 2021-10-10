@@ -39,6 +39,7 @@ public final class MpMerchant implements IMerchant {
         if (Registry.ITEM.getOptional(IRIS).isPresent()) {
             OFFERS.add(offer(12, Registry.ITEM.getOrDefault(IRIS)));
         }
+
         OFFERS.add(offer(32, Items.JACK_O_LANTERN));
         OFFERS.add(offer(24, Items.BIRCH_SAPLING));
         OFFERS.add(offer(12, Items.PUMPKIN));
