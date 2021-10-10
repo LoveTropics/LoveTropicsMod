@@ -25,8 +25,8 @@ public final class NotificationToast implements IToast {
 	private static final int TEXTURE_BORDER = 4;
 
 	private static final int ICON_SIZE = 18;
-	private static final int TEXT_PADDING = ICON_SIZE + 4;
-	private static final int MAX_WIDTH = 160 - TEXT_PADDING;
+	private static final int TEXT_LEFT = ICON_SIZE + 8;
+	private static final int MAX_WIDTH = 160 - TEXT_LEFT;
 
 	private static final int LINE_HEIGHT = 12;
 
@@ -45,7 +45,7 @@ public final class NotificationToast implements IToast {
 		lines.addAll(fontRenderer.trimStringToWidth(message, MAX_WIDTH));
 
 		int textWidth = Math.max(lines.stream().mapToInt(fontRenderer::func_243245_a).max().orElse(MAX_WIDTH), MAX_WIDTH);
-		this.width = textWidth + TEXT_PADDING + 2;
+		this.width = TEXT_LEFT + textWidth + 4;
 		this.height = Math.max(lines.size() * LINE_HEIGHT + 8, 22);
 
 		this.lines = lines;
@@ -117,7 +117,7 @@ public final class NotificationToast implements IToast {
 		List<IReorderingProcessor> lines = this.lines;
 		for (int i = 0; i < lines.size(); i++) {
 			IReorderingProcessor line = lines.get(i);
-			fontRenderer.func_238422_b_(matrixStack, line, ICON_SIZE + 8, 7 + (i * 12), 0xFFFFFFFF);
+			fontRenderer.func_238422_b_(matrixStack, line, TEXT_LEFT, 7 + (i * 12), 0xFFFFFFFF);
 		}
 	}
 

@@ -1,5 +1,7 @@
 package com.lovetropics.minigames.common.core.diguise;
 
+import com.lovetropics.minigames.common.core.diguise.ability.DisguiseAbilities;
+import com.lovetropics.minigames.common.core.diguise.ability.DisguiseAbilitiesRegistry;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.entity.Entity;
@@ -21,25 +23,33 @@ public final class DisguiseType {
 				Registry.ENTITY_TYPE.fieldOf("entity").forGetter(c -> c.type),
 				CompoundNBT.CODEC.optionalFieldOf("tag").forGetter(c -> Optional.ofNullable(c.nbt)),
 				Codec.BOOL.optionalFieldOf("apply_attributes", true).forGetter(c -> c.applyAttributes)
-		).apply(instance, DisguiseType::new);
+		).apply(instance, DisguiseType::create);
 	});
 
 	public final EntityType<?> type;
+
 	public final CompoundNBT nbt;
 	public final boolean applyAttributes;
+	public final DisguiseAbilities abilities;
 
-	public DisguiseType(EntityType<?> type, CompoundNBT nbt) {
-		this(type, nbt, true);
-	}
-
-	public DisguiseType(EntityType<?> type, @Nullable CompoundNBT nbt, boolean applyAttributes) {
+	private DisguiseType(EntityType<?> type, @Nullable CompoundNBT nbt, boolean applyAttributes, DisguiseAbilities abilities) {
 		this.type = type;
 		this.nbt = nbt;
 		this.applyAttributes = applyAttributes;
+		this.abilities = abilities;
 	}
 
-	private DisguiseType(EntityType<?> type, Optional<CompoundNBT> nbt, boolean applyAttributes) {
-		this(type, nbt.orElse(null), applyAttributes);
+	public static DisguiseType create(EntityType<?> type, @Nullable CompoundNBT nbt, boolean applyAttributes) {
+		DisguiseAbilities abilities = DisguiseAbilitiesRegistry.create(type);
+		return new DisguiseType(type, nbt, applyAttributes, abilities);
+	}
+
+	public static DisguiseType create(EntityType<?> type, @Nullable CompoundNBT nbt) {
+		return create(type, nbt, true);
+	}
+
+	private static DisguiseType create(EntityType<?> type, Optional<CompoundNBT> nbt, Boolean applyAttributes) {
+		return create(type, nbt.orElse(null), applyAttributes);
 	}
 
 	@Nullable
@@ -75,6 +85,6 @@ public final class DisguiseType {
 		EntityType<?> type = buffer.readRegistryIdUnsafe(ForgeRegistries.ENTITIES);
 		CompoundNBT nbt = buffer.readCompoundTag();
 		boolean applyAttributes = buffer.readBoolean();
-		return new DisguiseType(type, nbt, applyAttributes);
+		return DisguiseType.create(type, nbt, applyAttributes);
 	}
 }

@@ -15,6 +15,7 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.text.ITextComponent;
 import org.lwjgl.glfw.GLFW;
 
+import javax.annotation.Nullable;
 import java.util.List;
 
 // TODO: ideally we extract this out into a general list widget utility that supports all the features we need
@@ -230,6 +231,15 @@ public abstract class AbstractGameList extends ExtendedList<AbstractGameList.Ent
 			dragging.reorder.onReorder(index - startIndex);
 		}
 		this.draggingEntry = null;
+	}
+
+	@Override
+	public void setSelected(@Nullable Entry entry) {
+		Entry dragging = this.draggingEntry;
+		if (entry == null && dragging != null && dragging == this.getSelected()) {
+			this.stopDragging(dragging);
+		}
+		super.setSelected(entry);
 	}
 
 	public static final class Entry extends ExtendedList.AbstractListEntry<Entry> {

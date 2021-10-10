@@ -103,4 +103,8 @@ public final class PlayerDisguise implements ICapabilityProvider {
 	public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> cap, @Nullable Direction side) {
 		return LoveTropics.playerDisguiseCap().orEmpty(cap, instance);
 	}
+
+	public void copyFrom(PlayerDisguise from) {
+		this.setDisguise(from.getDisguiseType());
+	}
 }
