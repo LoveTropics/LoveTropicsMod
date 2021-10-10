@@ -39,9 +39,9 @@ public final class GameEventDispatcher {
 	public void onChunkLoad(ChunkEvent.Load event) {
 		if (event.getWorld() instanceof IServerWorld) {
 			ServerWorld world = ((IServerWorld) event.getWorld()).getWorld();
-			IGamePhase game = gameLookup.getGamePhaseAt(world, event.getChunk().getPos().asBlockPos());
+			IChunk chunk = event.getChunk();
+			IGamePhase game = gameLookup.getGamePhaseAt(world, chunk.getPos().asBlockPos());
 			if (game != null) {
-				IChunk chunk = event.getChunk();
 				Scheduler.nextTick().run(server -> {
 					game.invoker(GameWorldEvents.CHUNK_LOAD).onChunkLoad(chunk);
 				});

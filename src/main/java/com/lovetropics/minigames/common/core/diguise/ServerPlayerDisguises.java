@@ -69,12 +69,27 @@ public final class ServerPlayerDisguises {
 		}
 	}
 
+	@SubscribeEvent
+	public static void onPlayerClone(PlayerEvent.Clone event) {
+		if (event.isWasDeath()) {
+			return;
+		}
+
+		PlayerEntity newPlayer = event.getPlayer();
+		PlayerEntity oldPlayer = event.getOriginal();
+		PlayerDisguise.get(oldPlayer).ifPresent(oldDisguise -> {
+			PlayerDisguise.get(newPlayer).ifPresent(newDisguise -> {
+				newDisguise.copyFrom(oldDisguise);
+			});
+		});
+	}
+
 	private static int disguiseAs(CommandContext<CommandSource> context, @Nullable CompoundNBT nbt) throws CommandSyntaxException {
 		ServerPlayerEntity player = context.getSource().asPlayer();
 		ResourceLocation entityId = EntitySummonArgument.getEntityId(context, "entity");
 		EntityType<?> entityType = Registry.ENTITY_TYPE.getOrDefault(entityId);
 
-		ServerPlayerDisguises.set(player, new DisguiseType(entityType, nbt));
+		ServerPlayerDisguises.set(player, DisguiseType.create(entityType, nbt));
 
 		return Command.SINGLE_SUCCESS;
 	}
