@@ -118,7 +118,7 @@ dependencies {
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
     
     // Utilize tropicraft worldgen code
-    implementation fg.deobf('net.tropicraft:Tropicraft:9.0.0-beta+custom')
+    implementation fg.deobf('net.tropicraft:Tropicraft:9.1.0-alpha+custom')
     
     // Shaded deps
     def registrate = "com.tterrag.registrate:Registrate:MC1.16.2-${registrate_version}"
