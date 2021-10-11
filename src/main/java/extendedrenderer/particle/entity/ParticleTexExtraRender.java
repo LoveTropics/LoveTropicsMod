@@ -69,32 +69,7 @@ public class ParticleTexExtraRender extends ParticleTexFX {
 		if (isSlantParticleToWind()) {
 			double speed = motionX * motionX + motionZ * motionZ;
 			rotationYaw = -(float)Math.toDegrees(Math.atan2(motionZ, motionX)) - 90;
-
-			double motionXZ = Math.sqrt(motionX * motionX + motionZ * motionZ);
-			//motionXZ = motionX/* + motionZ*/;
-			//rotationPitch = (float)Math.toDegrees(Math.atan2(motionXZ, Math.abs(motionY)));
-			//rotationPitch = rotationPitch;
-			//rotationPitch = -45;
-			//rotationPitch *= 10F;
-			//rotationPitch = 0;
-			rotationPitch = (float)(speed * 120);
-		}
-
-		if (false && isSlantParticleToWind()) {
-
-			double speed = windMan.windSpeedGlobal;
-			rotationYaw = -(float)Math.toDegrees(Math.atan2(motionZ, motionX)) - 90;
-			rotationYaw = -windMan.windAngleGlobal - 180 + 0;
-			rotationYaw += (this.getEntityId() % 20) - 10;
-
-			double motionXZ = Math.sqrt(motionX * motionX + motionZ * motionZ);
-			//motionXZ = motionX/* + motionZ*/;
-			rotationPitch = (float)Math.toDegrees(Math.atan2(motionXZ, Math.abs(motionY)));
-			//rotationPitch = rotationPitch;
-			//rotationPitch = -45;
-			//rotationPitch *= 10F;
-			rotationPitch = 0;
-			rotationPitch = (float)(speed * 45 * 1.1);
+			rotationPitch = Math.min(45, (float)(speed * 120));
 			rotationPitch += (this.getEntityId() % 10) - 5;
 		}
 
@@ -122,75 +97,27 @@ public class ParticleTexExtraRender extends ParticleTexFX {
         float posY = (float)(MathHelper.lerp((double)partialTicks, this.prevPosY, this.posY) - Vector3d.getY());
         float posZ = (float)(MathHelper.lerp((double)partialTicks, this.prevPosZ, this.posZ) - Vector3d.getZ());
 
-//		if (!facePlayer) {
-			// TODO particle rotations
-//			rotationX = MathHelper.cos(this.rotationYaw * (float)Math.PI / 180.0F);
-//			rotationYZ = MathHelper.sin(this.rotationYaw * (float)Math.PI / 180.0F);
-//	        rotationXY = -rotationYZ * MathHelper.sin(this.rotationPitch * (float)Math.PI / 180.0F);
-//	        rotationXZ = rotationX * MathHelper.sin(this.rotationPitch * (float)Math.PI / 180.0F);
-//	        rotationZ = MathHelper.cos(this.rotationPitch * (float)Math.PI / 180.0F);
-//		} else {
-//			if (this.isSlantParticleToWind()) {
-//				rotationXZ = (float) -this.motionZ;
-//				rotationXY = (float) -this.motionX;
-//			}
-			//rotationXZ = 6.28F;
-			//rotationXY = 1;
-			//rotationZ -= 1;
-//		}
-
 
 		float f = this.getMinU();
 		float f1 = this.getMaxU();
 		float f2 = this.getMinV();
 		float f3 = this.getMaxV();
-        float f4 = 0.1F * this.particleScale;
-		float scaleY = 0.4F * this.particleScale;
-
-		float scale1 = 0.1F * this.particleScale;
-		float scale2 = 0.1F * this.particleScale;
-		float scale3 = 0.1F * this.particleScale;
-		float scale4 = 0.1F * this.particleScale;
 
 		float fixY = 0;
 
-        /*if (this.particleTexture != null)
-        {*/
-            /*f = this.getMinU();
-            f1 = this.getMaxU();
-            f2 = this.getMinV();
-            f3 = this.getMaxV();*/
+		float part = 16F / 3F;
+		float offset = 0;
+		float posBottom = (float)(this.posY - 10D);
 
-			/*f = this.particleTexture.getInterpolatedU((double)(this.particleTextureJitterX / 4.0F * 16.0F));
-			f1 = this.particleTexture.getInterpolatedU((double)((this.particleTextureJitterX + 1.0F) / 4.0F * 16.0F));
-			f2 = this.particleTexture.getInterpolatedV((double)(this.particleTextureJitterY / 4.0F * 16.0F));
-			f3 = this.particleTexture.getInterpolatedV((double)((this.particleTextureJitterY + 1.0F) / 4.0F * 16.0F));*/
+		float height = world.getHeight(Heightmap.Type.MOTION_BLOCKING, new BlockPos(this.posX, this.posY, this.posZ)).getY();
 
-			float part = 16F / 3F;
-			float offset = 0;
-			float posBottom = (float)(this.posY - 10D);
+		if (posBottom < height) {
+			float diff = height - posBottom;
+			offset = diff;
+			fixY = 0;//diff * 1.0F;
+			if (offset > part) offset = part;
+		}
 
-			float height = world.getHeight(Heightmap.Type.MOTION_BLOCKING, new BlockPos(this.posX, this.posY, this.posZ)).getY();
-
-			if (posBottom < height) {
-				float diff = height - posBottom;
-				offset = diff;
-				fixY = 0;//diff * 1.0F;
-				if (offset > part) offset = part;
-			}
-
-			/*f = this.particleTexture.getInterpolatedU(part);
-			f1 = this.particleTexture.getInterpolatedU(part*2F);
-			f2 = this.particleTexture.getInterpolatedV((part*2F) + offset);
-			f3 = this.particleTexture.getInterpolatedV(part + offset);*/
-
-			/*f = this.particleTexture.getInterpolatedU(4);
-			f1 = this.particleTexture.getInterpolatedU(12);
-			f2 = this.particleTexture.getInterpolatedV(16);
-			f3 = this.particleTexture.getInterpolatedV(8);*/
-        //}
-
-		//int rainDrops = extraParticlesBaseAmount + ((Math.max(0, severityOfRainRate-1)) * 5);
 		int renderAmount = 0;
 		if (noExtraParticles) {
 			renderAmount = 1;
@@ -198,12 +125,9 @@ public class ParticleTexExtraRender extends ParticleTexFX {
 			renderAmount = Math.min(extraParticlesBaseAmount + ((Math.max(0, severityOfRainRate-1)) * 5), CoroUtilParticle.maxRainDrops);
 		}
 
-        //test
-		//rainDrops = 100;
-
 		//catch code hotload crash, doesnt help much anyways
 		try {
-			for (int ii = 0; ii < renderAmount/*(noExtraParticles ? 1 : Math.min(rainDrops, CoroUtilParticle.maxRainDrops))*/; ii++) {
+			for (int ii = 0; ii < renderAmount; ii++) {
 				double xx = 0;
 				double zz = 0;
 				double yy = 0;
@@ -228,9 +152,15 @@ public class ParticleTexExtraRender extends ParticleTexFX {
 				if (ActiveRenderInfo.getPosition().yCoord + f6 <= height) continue;*/
 
 				int i = this.getBrightnessForRender(partialTicks);
-				i = 15728640;
-				int j = i >> 16 & 65535;
-				int k = i & 65535;
+				if (i > 0) {
+					setLastNonZeroBrightness(i);
+				} else {
+					i = getLastNonZeroBrightness();
+				}
+				//i = 15728640;
+				//i = 0;
+				//int j = i >> 16 & 65535;
+				//int k = i & 65535;
 
 				//range between 0 and 240 for first value, second value always 0
 				//j = 240;
@@ -255,32 +185,10 @@ public class ParticleTexExtraRender extends ParticleTexFX {
 		           vector3f.add(posX, posY, posZ);
 		        }
 
-		        // TODO particle rotation
-//				Vector3d[] aVector3d = new Vector3d[] {
-//						new Vector3d((double)(-rotationX * scale1 - rotationXY * scale1), (double)(-rotationZ * scale1), (double)(-rotationYZ * scale1 - rotationXZ * scale1)),
-//						new Vector3d((double)(-rotationX * scale2 + rotationXY * scale2), (double)(rotationZ * scale2), (double)(-rotationYZ * scale2 + rotationXZ * scale2)),
-//						new Vector3d((double)(rotationX * scale3 + rotationXY * scale3), (double)(rotationZ * scale3), (double)(rotationYZ * scale3 + rotationXZ * scale3)),
-//						new Vector3d((double)(rotationX * scale4 - rotationXY * scale4), (double)(-rotationZ * scale4), (double)(rotationYZ * scale4 - rotationXZ * scale4))};
-
-				/*if (this.field_190014_F != 0.0F)
-				{
-					float f8 = this.field_190014_F + (this.field_190014_F - this.field_190015_G) * partialTicks;
-					float f9 = MathHelper.cos(f8 * 0.5F);
-					float f10 = MathHelper.sin(f8 * 0.5F) * (float)field_190016_K.xCoord;
-					float f11 = MathHelper.sin(f8 * 0.5F) * (float)field_190016_K.yCoord;
-					float f12 = MathHelper.sin(f8 * 0.5F) * (float)field_190016_K.zCoord;
-					Vector3d Vector3d = new Vector3d((double)f10, (double)f11, (double)f12);
-
-					for (int l = 0; l < 4; ++l)
-					{
-						aVector3d[l] = Vector3d.scale(2.0D * aVector3d[l].dotProduct(Vector3d)).add(aVector3d[l].scale((double)(f9 * f9) - Vector3d.dotProduct(Vector3d))).add(Vector3d.crossProduct(aVector3d[l]).scale((double)(2.0F * f9)));
-					}
-				}*/
-
-				buffer.pos(xx + avector3f[0].getX(), yy + avector3f[0].getY(), zz + avector3f[0].getZ()).tex(f1, f3).color(this.particleRed, this.particleGreen, this.particleBlue, this.particleAlpha).lightmap(j, k).endVertex();
-				buffer.pos(xx + avector3f[1].getX(), yy + avector3f[1].getY(), zz + avector3f[1].getZ()).tex(f1, f2).color(this.particleRed, this.particleGreen, this.particleBlue, this.particleAlpha).lightmap(j, k).endVertex();
-				buffer.pos(xx + avector3f[2].getX(), yy + avector3f[2].getY(), zz + avector3f[2].getZ()).tex(f, f2).color(this.particleRed, this.particleGreen, this.particleBlue, this.particleAlpha).lightmap(j, k).endVertex();
-				buffer.pos(xx + avector3f[3].getX(), yy + avector3f[3].getY(), zz + avector3f[3].getZ()).tex(f, f3).color(this.particleRed, this.particleGreen, this.particleBlue, this.particleAlpha).lightmap(j, k).endVertex();
+				buffer.pos(xx + avector3f[0].getX(), yy + avector3f[0].getY(), zz + avector3f[0].getZ()).tex(f1, f3).color(this.particleRed, this.particleGreen, this.particleBlue, this.particleAlpha).lightmap(i).endVertex();
+				buffer.pos(xx + avector3f[1].getX(), yy + avector3f[1].getY(), zz + avector3f[1].getZ()).tex(f1, f2).color(this.particleRed, this.particleGreen, this.particleBlue, this.particleAlpha).lightmap(i).endVertex();
+				buffer.pos(xx + avector3f[2].getX(), yy + avector3f[2].getY(), zz + avector3f[2].getZ()).tex(f, f2).color(this.particleRed, this.particleGreen, this.particleBlue, this.particleAlpha).lightmap(i).endVertex();
+				buffer.pos(xx + avector3f[3].getX(), yy + avector3f[3].getY(), zz + avector3f[3].getZ()).tex(f, f3).color(this.particleRed, this.particleGreen, this.particleBlue, this.particleAlpha).lightmap(i).endVertex();
 			}
 		} catch (Throwable ex) {
 			ex.printStackTrace();

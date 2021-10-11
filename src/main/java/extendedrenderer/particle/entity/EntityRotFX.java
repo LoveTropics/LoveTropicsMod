@@ -151,6 +151,9 @@ public class EntityRotFX extends SpriteTexturedParticle
     //used for translational rotation around a point
     public Vector3f rotationAround = new Vector3f();
 
+    //workaround for particles that are fading out while partially in the ground, keeps them rendering at previous brightness instead of 0
+    private int lastNonZeroBrightness = 15728640;
+
     public EntityRotFX(ClientWorld par1World, double par2, double par4, double par6, double par8, double par10, double par12)
     {
         super(par1World, par2, par4, par6, par8, par10, par12);
@@ -304,7 +307,7 @@ public class EntityRotFX extends SpriteTexturedParticle
 
         if (!fadingOut) {
             if (ticksFadeInMax > 0 && this.getAge() < ticksFadeInMax) {
-                //System.out.println("particle.getAge(): " + particle.getAge());
+                //System.out.println("this.getAge() / ticksFadeInMax: " + this.getAge() / ticksFadeInMax);
                 this.setAlphaF((float)this.getAge() / ticksFadeInMax * getFullAlphaTarget());
                 //particle.setAlphaF(1);
             } else if (ticksFadeOutMax > 0 && this.getAge() > this.getMaxAge() - ticksFadeOutMax) {
@@ -324,7 +327,7 @@ public class EntityRotFX extends SpriteTexturedParticle
             }
             float val = 1F - (ticksFadeOutCurOnDeath / ticksFadeOutMaxOnDeath);
             //System.out.println(val);
-            this.setAlphaF(0);
+            this.setAlphaF(val * getFullAlphaTarget());
         }
 
         if (world.getGameTime() % 5 == 0) {
@@ -579,7 +582,12 @@ public class EntityRotFX extends SpriteTexturedParticle
         } else {
             // override rotations
             quaternion = new Quaternion(0, 0, 0, 1);
-            quaternion.multiply(Vector3f.YP.rotationDegrees(this.rotationYaw));
+            if (facePlayerYaw) {
+                float wat = renderInfo.getYaw();
+                quaternion.multiply(Vector3f.YP.rotationDegrees(-renderInfo.getYaw()));
+            } else {
+                quaternion.multiply(Vector3f.YP.rotationDegrees(this.rotationYaw));
+            }
             quaternion.multiply(Vector3f.XP.rotationDegrees(this.rotationPitch));
          }
 
@@ -600,6 +608,13 @@ public class EntityRotFX extends SpriteTexturedParticle
         float f5 = this.getMinV();
         float f6 = this.getMaxV();
         int j = this.getBrightnessForRender(partialTicks);
+        if (j > 0) {
+            lastNonZeroBrightness = j;
+        } else {
+            j = lastNonZeroBrightness;
+        }
+        //TODO: temp to prevent downfall rendering black as it fades out
+        //j = 15728800;
         buffer.pos((double)avector3f[0].getX(), (double)avector3f[0].getY(), (double)avector3f[0].getZ()).tex(f8, f6).color(this.particleRed, this.particleGreen, this.particleBlue, this.particleAlpha).lightmap(j).endVertex();
         buffer.pos((double)avector3f[1].getX(), (double)avector3f[1].getY(), (double)avector3f[1].getZ()).tex(f8, f5).color(this.particleRed, this.particleGreen, this.particleBlue, this.particleAlpha).lightmap(j).endVertex();
         buffer.pos((double)avector3f[2].getX(), (double)avector3f[2].getY(), (double)avector3f[2].getZ()).tex(f7, f5).color(this.particleRed, this.particleGreen, this.particleBlue, this.particleAlpha).lightmap(j).endVertex();
@@ -802,5 +817,13 @@ public class EntityRotFX extends SpriteTexturedParticle
 
     public void setFullAlphaTarget(float fullAlphaTarget) {
         this.fullAlphaTarget = fullAlphaTarget;
+    }
+
+    public int getLastNonZeroBrightness() {
+        return lastNonZeroBrightness;
+    }
+
+    public void setLastNonZeroBrightness(int lastNonZeroBrightness) {
+        this.lastNonZeroBrightness = lastNonZeroBrightness;
     }
 }
