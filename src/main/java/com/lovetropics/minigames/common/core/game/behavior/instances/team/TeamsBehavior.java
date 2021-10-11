@@ -2,6 +2,8 @@ package com.lovetropics.minigames.common.core.game.behavior.instances.team;
 
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
+import com.lovetropics.minigames.common.core.game.behavior.config.BehaviorConfig;
+import com.lovetropics.minigames.common.core.game.behavior.config.ConfigList;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
@@ -29,9 +31,11 @@ import java.util.Map;
 import java.util.UUID;
 
 public final class TeamsBehavior implements IGameBehavior {
+	private static final BehaviorConfig<Boolean> CFG_FF = new BehaviorConfig<>("friendly_fire", Codec.BOOL);
+
 	public static final Codec<TeamsBehavior> CODEC = RecordCodecBuilder.create(instance -> {
 		return instance.group(
-				Codec.BOOL.optionalFieldOf("friendly_fire", false).forGetter(c -> c.friendlyFire)
+				CFG_FF.orElse(false).forGetter(c -> c.friendlyFire)
 		).apply(instance, TeamsBehavior::new);
 	});
 
@@ -43,6 +47,15 @@ public final class TeamsBehavior implements IGameBehavior {
 
 	public TeamsBehavior(boolean friendlyFire) {
 		this.friendlyFire = friendlyFire;
+
+		System.out.println(getConfigurables());
+	}
+
+	@Override
+	public ConfigList getConfigurables() {
+		return ConfigList.builder()
+				.with(CFG_FF, friendlyFire)
+				.build();
 	}
 
 	@Override

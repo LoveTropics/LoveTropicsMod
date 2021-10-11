@@ -2,6 +2,7 @@ package com.lovetropics.minigames.common.core.game.behavior;
 
 import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
+import com.lovetropics.minigames.common.core.game.behavior.config.ConfigList;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.state.GameStateMap;
 import com.mojang.serialization.Codec;
@@ -13,6 +14,17 @@ public interface IGameBehavior {
 			behavior -> DataResult.error("Encoding unsupported"), // very sad.
 			type -> DataResult.success(type.codec)
 	);
+
+	default ConfigList getConfigurables() {
+		return ConfigList.empty();
+	}
+
+//	default IGameBehavior withConfig(ConfigList config) {
+//		return this;
+//	}
+
+	default void registerState(GameStateMap state) {
+	}
 
 	default void registerState(IGamePhase game, GameStateMap state) {
 	}
