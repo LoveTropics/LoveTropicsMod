@@ -77,6 +77,9 @@ public class SceneEnhancer implements Runnable {
 
 	public static boolean FORCE_ON_DEBUG_TESTING = true;
 
+	public static int fadeInTimer = 0;
+	public static int fadeInTimerMax = 400;
+
 	public SceneEnhancer() {
 		listPosRandom.clear();
 		listPosRandom.add(new BlockPos(0, -1, 0));
@@ -368,6 +371,11 @@ public class SceneEnhancer implements Runnable {
 
 		double particleAmp = 1F;
 
+		fadeInTimer++;
+		if (fadeInTimer > fadeInTimerMax) {
+			fadeInTimer = 0;
+		}
+
 		//funnel.tickGame();
 
 		//check rules same way vanilla texture precip does
@@ -417,7 +425,7 @@ public class SceneEnhancer implements Runnable {
 					//Weather.dbg("precip: " + curPrecipVal);
 
 					spawnCount = 0;
-					int spawnAreaSize = 20;
+					int spawnAreaSize = 30;
 
 					boolean rainParticle = true;
 					boolean groundSplash = true;
@@ -456,14 +464,24 @@ public class SceneEnhancer implements Runnable {
 								//rain.setFacePlayer(true);
 								rain.setScale(2F * 0.15F);
 								rain.isTransparent = true;
-								rain.setGravity(0.5F);
+								rain.setGravity(1.5F);
 								//rain.isTransparent = true;
 								rain.setMaxAge(50);
 								//opted to leave the popin for rain, its not as bad as snow, and using fade in causes less rain visual overall
 								rain.setTicksFadeInMax(5);
+								rain.setTicksFadeInMax(5);
+								rain.setTicksFadeOutMax(5);
+								rain.setTicksFadeOutMaxOnDeath(5);
+								float alpha = ((float)fadeInTimer / (float)fadeInTimerMax);
+
+								rain.setFullAlphaTarget(alpha * 0.6F);
+								rain.setFullAlphaTarget(0.6F);
 								rain.setAlphaF(0);
+
 								rain.rotationYaw = rain.getWorld().rand.nextInt(360) - 180F;
 								rain.setMotionY(-0.5D/*-5D - (entP.world.rand.nextInt(5) * -1D)*/);
+
+								windMan.applyWindForceNew(rain, 10F, 0.5F);
 
 								rain.spawnAsWeatherEffect();
 
@@ -487,7 +505,7 @@ public class SceneEnhancer implements Runnable {
 
 					spawnAreaSize = 40;
 					//ground splash
-					if (groundSplash == true && curPrecipVal > 0.15) {
+					if (groundSplash && curPrecipVal > 0.15) {
 						for (int i = 0; i < 30F * curPrecipVal * PRECIPITATION_PARTICLE_EFFECT_RATE * particleAmp * 4F * adjustedRate; i++) {
 							BlockPos pos = new BlockPos(
 									entP.getPosX() + rand.nextInt(spawnAreaSize) - (spawnAreaSize / 2),
@@ -547,6 +565,7 @@ public class SceneEnhancer implements Runnable {
 								rain.setGravity(-0.0F);
 								//opted to leave the popin for rain, its not as bad as snow, and using fade in causes less rain visual overall
 								rain.setTicksFadeInMax(0);
+								rain.setFullAlphaTarget(0.6F);
 								rain.setAlphaF(0);
 								rain.setTicksFadeOutMax(4);
 								rain.renderOrder = 2;
@@ -558,6 +577,8 @@ public class SceneEnhancer implements Runnable {
 								rain.setMotionZ(0);*/
 								rain.setMotionX((rand.nextFloat() - 0.5F) * 0.01F);
 								rain.setMotionZ((rand.nextFloat() - 0.5F) * 0.01F);
+
+								windMan.applyWindForceNew(rain, 1F / 5F, 0.5F);
 
 								if (weather.getRainType() == RainType.ACID) {
 									rain.particleRed = acidRainRed;
@@ -576,9 +597,9 @@ public class SceneEnhancer implements Runnable {
 
 					//if (true) return;
 
-					spawnAreaSize = 20;
+					spawnAreaSize = 30;
 					//downfall - at just above 0.3 cause rainstorms lock at 0.3 but flicker a bit above and below
-					if (downfall == true && curPrecipVal > 0.32) {
+					if (downfall && curPrecipVal > 0.32) {
 
 						int scanAheadRange = 0;
 						//quick is outside check, prevent them spawning right near ground
@@ -590,7 +611,7 @@ public class SceneEnhancer implements Runnable {
 							scanAheadRange = 10;
 						}
 
-						for (int i = 0; i < 2F * curPrecipVal * PRECIPITATION_PARTICLE_EFFECT_RATE * adjustedRate * 0.1; i++) {
+						for (int i = 0; i < 2F * curPrecipVal * PRECIPITATION_PARTICLE_EFFECT_RATE * adjustedRate * 1; i++) {
 							BlockPos pos = new BlockPos(
 									entP.getPosX() + rand.nextInt(spawnAreaSize) - (spawnAreaSize / 2),
 									entP.getPosY() + 5 + rand.nextInt(15),
@@ -609,9 +630,9 @@ public class SceneEnhancer implements Runnable {
 								//rain.setCanCollide(true);
 								//rain.setKillOnCollide(true);
 								rain.setCanCollide(false);
-								rain.killWhenUnderCameraAtLeast = 5;
+								rain.killWhenUnderCameraAtLeast = 15;
 								rain.setKillWhenUnderTopmostBlock(true);
-								rain.setKillWhenUnderTopmostBlock_ScanAheadRange(scanAheadRange);
+								rain.setKillWhenUnderTopmostBlock_ScanAheadRange(3);
 								rain.setTicksFadeOutMaxOnDeath(10);
 								//rain.setTicksFadeOutMaxOnDeath(0);
 
@@ -620,25 +641,25 @@ public class SceneEnhancer implements Runnable {
 
 								//rain.setDontRenderUnderTopmostBlock(true);
 								//rain.setExtraParticlesBaseAmount(5);
-								//rain.setDontRenderUnderTopmostBlock(true);
+								rain.setDontRenderUnderTopmostBlock(false);
 								//rain.setSlantParticleToWind(true);
 
-								boolean upward = rand.nextBoolean();
-
 								rain.windWeight = 8F;
-								rain.setFacePlayer(true);
-								//SHADER COMPARE TEST
 								rain.setFacePlayer(false);
 								rain.facePlayerYaw = true;
 
 								rain.setScale(9F + (rand.nextFloat() * 0.3F));
+								rain.setScale(6F + (rand.nextFloat() * 0.3F));
+								//setting size so it doesnt pop in and out when near camera edge due to its size
+								rain.setSize(10, 30);
 								//rain.setScale(25F);
 								rain.setMaxAge(120);
 								rain.setGravity(0.35F);
 								//opted to leave the popin for rain, its not as bad as snow, and using fade in causes less rain visual overall
-								rain.setTicksFadeInMax(20);
+								rain.setTicksFadeInMax(10);
+								rain.setFullAlphaTarget(1F);
 								rain.setAlphaF(0);
-								rain.setTicksFadeOutMax(20);
+								rain.setTicksFadeOutMax(10);
 
 								/*rain.setTicksFadeInMax(0);
 								rain.setAlphaF(1);

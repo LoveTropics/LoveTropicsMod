@@ -91,9 +91,10 @@ public class WindManager {
 		windAngleGlobal += rand.nextFloat() - rand.nextFloat();
 
 		if (FORCE_ON_DEBUG_TESTING) {
-			//windAngleGlobal += 1;
+			windAngleGlobal += 1;
 			windSpeedGlobal = 0.8F;
 			chanceOfWindGustEvent = 0;
+			chanceOfWindGustEvent = 0.5F;
 		}
 
 		if (windAngleGlobal < -180) {
@@ -160,7 +161,10 @@ public class WindManager {
     	double speedCheck = (Math.abs(vecX) + Math.abs(vecZ)) / 2D;
         if (speedCheck < maxSpeed) {
         	newMotion = new Vector3d(objX - vecX, motion.y, objZ - vecZ);
-        }
+        } else {
+        	float speedDampen = (float)(maxSpeed / speedCheck);
+			newMotion = new Vector3d(objX - vecX*speedDampen, motion.y, objZ - vecZ*speedDampen);
+		}
         
         return newMotion;
 	}
