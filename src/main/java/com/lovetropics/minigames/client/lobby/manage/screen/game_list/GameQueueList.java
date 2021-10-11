@@ -1,8 +1,8 @@
 package com.lovetropics.minigames.client.lobby.manage.screen.game_list;
 
-import com.lovetropics.minigames.client.lobby.state.ClientCurrentGame;
 import com.lovetropics.minigames.client.lobby.manage.state.ClientLobbyManageState;
 import com.lovetropics.minigames.client.lobby.manage.state.ClientLobbyQueue;
+import com.lovetropics.minigames.client.lobby.state.ClientCurrentGame;
 import com.lovetropics.minigames.client.screen.FlexUi;
 import com.lovetropics.minigames.client.screen.flex.Flex;
 import com.lovetropics.minigames.client.screen.flex.FlexSolver;
@@ -121,8 +121,9 @@ public final class GameQueueList extends AbstractGameList {
 
 	@Override
 	public void setSelected(@Nullable Entry entry) {
-		this.handlers.select(entry != null ? entry.getId() : -1);
-		this.removeButton.active = entry != null;
+		int entryId = entry != null ? entry.getId() : -1;
+		this.handlers.select(entryId);
+		this.removeButton.active = entryId != -1;
 
 		super.setSelected(entry);
 	}

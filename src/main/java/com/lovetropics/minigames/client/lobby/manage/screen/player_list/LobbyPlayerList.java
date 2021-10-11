@@ -20,6 +20,7 @@ import net.minecraft.util.text.TextFormatting;
 public final class LobbyPlayerList extends AbstractGui implements IGuiEventListener {
 	private static final int FACE_SIZE = 16;
 	private static final int SPACING = 4;
+	private static final int HALF_SPACING = SPACING / 2;
 
 	private static final int BLOCK_SIZE = FACE_SIZE + SPACING;
 
@@ -102,19 +103,14 @@ public final class LobbyPlayerList extends AbstractGui implements IGuiEventListe
 	}
 
 	private int faceRow(int x) {
-		return (x - layout.left()) / BLOCK_SIZE;
+		return (x - layout.left() + HALF_SPACING) / BLOCK_SIZE;
 	}
 
 	private int faceColumn(int y) {
-		return (y - layout.top()) / BLOCK_SIZE;
+		return (y - layout.top() + HALF_SPACING) / BLOCK_SIZE;
 	}
 
-	// TODO: this does not match up with what it should
 	private int hoveredFaceAt(int x, int y) {
-		if (!layout.contains(x, y)) {
-			return -1;
-		}
-
 		int row = faceRow(x);
 		int column = faceColumn(y);
 		return isFaceHovered(faceX(row), faceY(column), x, y) ? faceIndex(row, column) : -1;
