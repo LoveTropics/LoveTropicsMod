@@ -3,6 +3,7 @@ package weather2.weathersystem.wind;
 import CoroUtil.util.CoroUtilEntOrParticle;
 import com.lovetropics.minigames.common.core.game.weather.WeatherController;
 import com.lovetropics.minigames.common.core.game.weather.WeatherControllerManager;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
@@ -44,12 +45,38 @@ public class WindManager {
 		}
 	}
 
+	public float getWindSpeedForGusts() {
+		return windSpeedGust;
+	}
+
+	public float getWindSpeedForClouds() {
+		return windSpeedGlobal;
+	}
+
 	public float getWindAngle() {
 		if (windTimeGust > 0) {
 			return windAngleGust;
 		} else {
 			return windAngleGlobal;
 		}
+	}
+
+	/**
+	 * Returns angle in degrees, 0-360
+	 *
+	 * @return
+	 */
+	public float getWindAngleForGusts() {
+		return windAngleGust;
+	}
+
+	/**
+	 * Returns angle in degrees, 0-360
+	 *
+	 * @return
+	 */
+	public float getWindAngleForClouds() {
+		return windAngleGlobal;
 	}
 
 	public void setWindTimeGust(int time) {
@@ -167,5 +194,38 @@ public class WindManager {
 		}
         
         return newMotion;
+	}
+
+	public CompoundNBT nbtSyncForClient() {
+		CompoundNBT data = new CompoundNBT();
+
+		//idea: only sync the wind data client cares about (the active priority wind)
+
+		data.putFloat("windSpeedGlobal", windSpeedGlobal);
+		data.putFloat("windAngleGlobal", windAngleGlobal);
+		data.putFloat("windSpeedGust", windSpeedGust);
+		data.putFloat("windAngleGust", windAngleGust);
+
+		/*data.putFloat("windSpeedEvent", windSpeedEvent);
+		data.putFloat("windAngleEvent", windAngleEvent);
+		data.putInt("windTimeEvent", windTimeEvent);*/
+
+		data.putInt("windTimeGust", windTimeGust);
+
+		return data;
+	}
+
+	public void nbtSyncFromServer(CompoundNBT parNBT) {
+
+		windSpeedGlobal = parNBT.getFloat("windSpeedGlobal");
+		windAngleGlobal = parNBT.getFloat("windAngleGlobal");
+		windSpeedGust = parNBT.getFloat("windSpeedGust");
+		windAngleGust = parNBT.getFloat("windAngleGust");
+
+		/*windSpeedEvent = parNBT.getFloat("windSpeedEvent");
+		windAngleEvent = parNBT.getFloat("windAngleEvent");
+		windTimeEvent = parNBT.getInt("windTimeEvent");*/
+
+		windTimeGust = parNBT.getInt("windTimeGust");
 	}
 }

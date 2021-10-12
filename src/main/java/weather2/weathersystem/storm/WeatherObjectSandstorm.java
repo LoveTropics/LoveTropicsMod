@@ -17,7 +17,6 @@ import net.minecraft.world.biome.Biomes;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import weather2.client.entity.particle.ParticleSandstorm;
-import weather2.config.ConfigParticle;
 import weather2.config.ConfigSand;
 import weather2.util.CachedNBTTagCompound;
 import weather2.util.WeatherUtil;
@@ -130,7 +129,9 @@ public class WeatherObjectSandstorm extends WeatherObject {
 	 * @return
 	 */
 	public static boolean isDesert(Biome biome, boolean forSpawn) {
-		return biome == Biomes.DESERT || biome == Biomes.DESERT_HILLS || (!forSpawn && biome == Biomes.RIVER) || biome.getCategory().getName().toLowerCase().contains("desert");
+		//TODO: make sure new comparison works
+		return biome.equals(Biomes.DESERT) || biome.equals(Biomes.DESERT_HILLS) || (!forSpawn && biome.equals(Biomes.RIVER)) || biome.getCategory().getName().toLowerCase().contains("desert");
+		//return biome == Biomes.DESERT || biome == Biomes.DESERT_HILLS || (!forSpawn && biome == Biomes.RIVER) || biome.getCategory().getName().toLowerCase().contains("desert");
 	}
 	
 	/**
@@ -215,9 +216,10 @@ public class WeatherObjectSandstorm extends WeatherObject {
 			}*/
 			
 			//keep high wind active incase it dies off during storm
-            if (windMan.highWindTimer < 100) {
+			//TODO: enforce high wind for sandstorms via minigame system
+            /*if (windMan.highWindTimer < 100) {
                 windMan.highWindTimer = 100;
-            }
+            }*/
 			
 		}
 		
@@ -422,7 +424,7 @@ public class WeatherObjectSandstorm extends WeatherObject {
     	 */
     	float sandstormScale = getSandstormScale();
 
-		double sandstormParticleRateDust = ConfigParticle.Sandstorm_Particle_Dust_effect_rate;
+		double sandstormParticleRateDust = ConfigSand.Sandstorm_Particle_Dust_effect_rate;
     	if (size > 0/*isFrontGrowing || sandstormScale > 0.5F*/) {
 	    	for (int heightLayer = 0; heightLayer < heightLayers && spawnedThisTick < 500; heightLayer++) {
 	    		//youd think this should be angle - 90 to angle + 90, but minecraft / bad math
@@ -442,9 +444,6 @@ public class WeatherObjectSandstorm extends WeatherObject {
 			    		double y = pos.y + (heightLayer * distBetweenParticles * 2);
 			    		
 			    		TextureAtlasSprite sprite = ParticleRegistry.cloud256;
-						if (WeatherUtil.isAprilFoolsDay()) {
-							sprite = ParticleRegistry.chicken;
-						}
 			    		
 			    		ParticleSandstorm part = new ParticleSandstorm(mc.world, x, y, z
 			    				, 0, 0, 0, sprite);
@@ -537,9 +536,6 @@ public class WeatherObjectSandstorm extends WeatherObject {
 	    		double y = yy/*posSpawn.yCoord*/ + 2 + randHeight;
 	    		
 	    		TextureAtlasSprite sprite = ParticleRegistry.cloud256;
-	    		if (WeatherUtil.isAprilFoolsDay()) {
-	    			sprite = ParticleRegistry.chicken;
-				}
 	    		
 	    		ParticleSandstorm part = new ParticleSandstorm(mc.world, x, y, z
 	    				, 0, 0, 0, sprite);

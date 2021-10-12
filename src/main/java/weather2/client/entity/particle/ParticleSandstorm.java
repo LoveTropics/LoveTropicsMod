@@ -3,6 +3,7 @@ package weather2.client.entity.particle;
 import net.minecraft.client.renderer.ActiveRenderInfo;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.Entity;
 import net.minecraft.world.World;
 
@@ -20,7 +21,7 @@ public class ParticleSandstorm extends ParticleTexFX {
 	public ParticleSandstorm(World worldIn, double posXIn, double posYIn,
 			double posZIn, double mX, double mY, double mZ,
 			TextureAtlasSprite par8Item) {
-		super(worldIn, posXIn, posYIn, posZIn, mX, mY, mZ, par8Item);
+		super((ClientWorld) worldIn, posXIn, posYIn, posZIn, mX, mY, mZ, par8Item);
 	}
 
 	/**

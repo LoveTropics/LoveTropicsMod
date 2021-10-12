@@ -27,6 +27,8 @@ public class WeatherNetworking {
             .simpleChannel();
 
     public static void register() {
+        registerMessage(PacketNBTFromServer.class, PacketNBTFromServer::encode, PacketNBTFromServer::decode, PacketNBTFromServer.Handler::handle, NetworkDirection.PLAY_TO_CLIENT);
+        registerMessage(PacketNBTFromClient.class, PacketNBTFromClient::encode, PacketNBTFromClient::decode, PacketNBTFromClient.Handler::handle, NetworkDirection.PLAY_TO_SERVER);
         registerMessage(UpdateWeatherPacket.class, UpdateWeatherPacket::encode, UpdateWeatherPacket::decode, UpdateWeatherPacket::handle, NetworkDirection.PLAY_TO_CLIENT);
     }
 

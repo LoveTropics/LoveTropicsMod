@@ -1,6 +1,8 @@
 package weather2;
 
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.RegistryKey;
 import net.minecraft.world.IWorld;
 import net.minecraft.world.World;
@@ -45,7 +47,26 @@ public class ServerTickHandler {
 		}
 	}
 
+	@SubscribeEvent
+	public static void tickPlayer(TickEvent.PlayerTickEvent event) {
+		WeatherManagerServer wms = MANAGERS.get(event.player.world.getDimensionKey());
+		if (wms.sandstorm == null || wms.sandstorm.isDead) {
+			PlayerEntity player = event.player;//event.player.world.getClosestPlayer(-100, 78, -360, -1, true);
+			if (player != null) {
+				System.out.println("spawn sandstorm");
+				wms.sandstorm = wms.spawnSandStorm(player.getPosition());
+			}
+		}
+	}
+
 	public static WeatherManagerServer getWeatherManagerFor(RegistryKey<World> dimension) {
 		return MANAGERS.get(dimension);
+	}
+
+	public static void playerClientRequestsFullSync(ServerPlayerEntity entP) {
+		WeatherManagerServer wm = MANAGERS.get(entP.world.getDimensionKey());
+		if (wm != null) {
+			wm.playerJoinedWorldSyncFull(entP);
+		}
 	}
 }
