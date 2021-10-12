@@ -81,7 +81,6 @@ public final class MpBehavior implements IGameBehavior {
     private final PlayerRegionKey[] participantSpawnKeys;
     private final Difficulty difficulty;
 
-    // TODO: reset all this info!!!!!
     private final List<PlayerRegions> freeRegions = new ArrayList<>();
     private final Map<ServerPlayerEntity, PlayerRegions> allocatedRegions = new HashMap<>();
     private final List<BlockPos> trackedMelons = new ArrayList<>();
@@ -591,7 +590,7 @@ public final class MpBehavior implements IGameBehavior {
                         value += 0.025;
                     } else if (state.getBlock() == Blocks.WITHER_ROSE) {
                         value += 0.075;
-                    }else if (state.getBlock() == Blocks.BIRCH_LOG) {
+                    } else if (state.getBlock() == Blocks.BIRCH_LOG) {
                         value += 0.85;
                     }
 

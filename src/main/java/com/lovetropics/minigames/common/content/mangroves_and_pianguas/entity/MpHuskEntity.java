@@ -16,8 +16,10 @@ public class MpHuskEntity extends HuskEntity {
     public MpHuskEntity(EntityType<? extends HuskEntity> type, World worldIn) {
         super(type, worldIn);
 
+        // Ignore sweet berry bushes and water
         this.setPathPriority(PathNodeType.DANGER_OTHER, 0.0F);
         this.setPathPriority(PathNodeType.DAMAGE_OTHER, 0.0F);
+        this.setPathPriority(PathNodeType.WATER, -1.0F);
     }
 
     @Override

@@ -23,9 +23,10 @@ public class MpPillagerEntity extends PillagerEntity {
     public MpPillagerEntity(EntityType<? extends PillagerEntity> type, World worldIn) {
         super(type, worldIn);
 
-        // Ignore sweet berry bushes
+        // Ignore sweet berry bushes and water
         this.setPathPriority(PathNodeType.DANGER_OTHER, 0.0F);
         this.setPathPriority(PathNodeType.DAMAGE_OTHER, 0.0F);
+        this.setPathPriority(PathNodeType.WATER, -1.0F);
     }
 
     @Override
