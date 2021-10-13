@@ -1,25 +1,28 @@
-package com.lovetropics.minigames.common.content.mangroves_and_pianguas.state;
+package com.lovetropics.minigames.common.content.mangroves_and_pianguas.plot;
 
 import com.lovetropics.lib.BlockBox;
+import com.lovetropics.minigames.common.content.mangroves_and_pianguas.plot.plant.PlantMap;
 import com.lovetropics.minigames.common.core.map.MapRegions;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
-public final class MpPlot {
+public final class Plot {
 	public final BlockBox bounds;
 	public final BlockBox spawn;
 	public final BlockBox shop;
 	public final BlockBox mobSpawn;
 
-	private MpPlot(BlockBox bounds, BlockBox spawn, BlockBox shop, BlockBox mobSpawn) {
+	public final PlantMap plants = new PlantMap();
+
+	private Plot(BlockBox bounds, BlockBox spawn, BlockBox shop, BlockBox mobSpawn) {
 		this.bounds = bounds;
 		this.spawn = spawn;
 		this.shop = shop;
 		this.mobSpawn = mobSpawn;
 	}
 
-	public static MpPlot associate(Keys keys, MapRegions regions) {
-		return new MpPlot(
+	public static Plot associate(Keys keys, MapRegions regions) {
+		return new Plot(
 				regions.getAny(keys.plot),
 				regions.getAny(keys.spawn),
 				regions.getAny(keys.shop),

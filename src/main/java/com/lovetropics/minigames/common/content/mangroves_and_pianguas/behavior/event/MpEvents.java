@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.common.content.mangroves_and_pianguas.behavior.event;
 
-import com.lovetropics.minigames.common.content.mangroves_and_pianguas.state.MpPlot;
+import com.lovetropics.minigames.common.content.mangroves_and_pianguas.plot.Plot;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameEventType;
 import net.minecraft.entity.player.ServerPlayerEntity;
 
@@ -15,6 +15,6 @@ public final class MpEvents {
 	}
 
 	public interface AssignPlot {
-		void onAssignPlot(ServerPlayerEntity player, MpPlot plot);
+		void onAssignPlot(ServerPlayerEntity player, Plot plot);
 	}
 }

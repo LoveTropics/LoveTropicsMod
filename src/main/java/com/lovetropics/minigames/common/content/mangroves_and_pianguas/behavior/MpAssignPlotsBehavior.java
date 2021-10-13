@@ -2,8 +2,8 @@ package com.lovetropics.minigames.common.content.mangroves_and_pianguas.behavior
 
 import com.lovetropics.lib.codec.MoreCodecs;
 import com.lovetropics.minigames.common.content.mangroves_and_pianguas.behavior.event.MpEvents;
-import com.lovetropics.minigames.common.content.mangroves_and_pianguas.state.MpPlot;
-import com.lovetropics.minigames.common.content.mangroves_and_pianguas.state.MpPlotsState;
+import com.lovetropics.minigames.common.content.mangroves_and_pianguas.plot.Plot;
+import com.lovetropics.minigames.common.content.mangroves_and_pianguas.plot.PlotsState;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
@@ -21,29 +21,29 @@ import java.util.List;
 
 public final class MpAssignPlotsBehavior implements IGameBehavior {
 	public static final Codec<MpAssignPlotsBehavior> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-			MoreCodecs.arrayOrUnit(MpPlot.Keys.CODEC, MpPlot.Keys[]::new).optionalFieldOf("plots", new MpPlot.Keys[0]).forGetter(c -> c.plotKeys)
+			MoreCodecs.arrayOrUnit(Plot.Keys.CODEC, Plot.Keys[]::new).optionalFieldOf("plots", new Plot.Keys[0]).forGetter(c -> c.plotKeys)
 	).apply(instance, MpAssignPlotsBehavior::new));
 
-	private final MpPlot.Keys[] plotKeys;
-	private final List<MpPlot> freePlots = new ArrayList<>();
+	private final Plot.Keys[] plotKeys;
+	private final List<Plot> freePlots = new ArrayList<>();
 
-	private MpPlotsState plots;
+	private PlotsState plots;
 
-	public MpAssignPlotsBehavior(MpPlot.Keys[] plotKeys) {
+	public MpAssignPlotsBehavior(Plot.Keys[] plotKeys) {
 		this.plotKeys = plotKeys;
 	}
 
 	@Override
 	public void registerState(IGamePhase game, GameStateMap state) {
-		plots = state.register(MpPlotsState.KEY, new MpPlotsState());
+		plots = state.register(PlotsState.KEY, new PlotsState());
 	}
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
 		MapRegions regions = game.getMapRegions();
 
-		for (MpPlot.Keys keys : this.plotKeys) {
-			this.freePlots.add(MpPlot.associate(keys, regions));
+		for (Plot.Keys keys : this.plotKeys) {
+			this.freePlots.add(Plot.associate(keys, regions));
 		}
 
 		Collections.shuffle(this.freePlots);
@@ -63,7 +63,7 @@ public final class MpAssignPlotsBehavior implements IGameBehavior {
 			return;
 		}
 
-		MpPlot plot = this.freePlots.remove(this.freePlots.size() - 1);
+		Plot plot = this.freePlots.remove(this.freePlots.size() - 1);
 		plots.addPlayer(player, plot);
 
 		game.invoker(MpEvents.ASSIGN_PLOT).onAssignPlot(player, plot);
