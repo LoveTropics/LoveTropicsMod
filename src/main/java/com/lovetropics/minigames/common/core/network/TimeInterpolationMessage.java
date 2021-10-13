@@ -1,5 +1,6 @@
-package com.lovetropics.minigames.common.content.mangroves_and_pianguas.time;
+package com.lovetropics.minigames.common.core.network;
 
+import com.lovetropics.minigames.client.ClientTimeInterpolation;
 import net.minecraft.network.PacketBuffer;
 import net.minecraftforge.fml.network.NetworkEvent;
 
@@ -10,6 +11,10 @@ public final class TimeInterpolationMessage {
 
     public TimeInterpolationMessage(int speed) {
         this.speed = speed;
+    }
+
+    public static TimeInterpolationMessage reset() {
+        return new TimeInterpolationMessage(0);
     }
 
     public void encode(PacketBuffer buffer) {
@@ -24,7 +29,7 @@ public final class TimeInterpolationMessage {
 
     public void handle(Supplier<NetworkEvent.Context> ctx) {
         ctx.get().enqueueWork(() -> {
-            TimeInterpolation.updateSpeed(this.speed);
+            ClientTimeInterpolation.updateSpeed(this.speed);
         });
         ctx.get().setPacketHandled(true);
     }

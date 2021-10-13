@@ -1,4 +1,4 @@
-package com.lovetropics.minigames.common.content.mangroves_and_pianguas.time;
+package com.lovetropics.minigames.client;
 
 import com.lovetropics.minigames.Constants;
 import net.minecraft.client.Minecraft;
@@ -10,7 +10,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
 @Mod.EventBusSubscriber(modid = Constants.MODID, value = Dist.CLIENT)
-public final class TimeInterpolation {
+public final class ClientTimeInterpolation {
 	private static int speed = 0;
 
 	public static void updateSpeed(int newSpeed) {
@@ -18,9 +18,13 @@ public final class TimeInterpolation {
 	}
 
 	public static void handleTick(ClientWorld world) {
-		if (speed != 0 && !(Minecraft.getInstance().isGamePaused() && Minecraft.getInstance().isSingleplayer())) {
-			world.setDayTime(world.getDayTime() + speed);
+		if (speed != 0 && !isTimePaused()) {
+			world.setDayTime(world.getDayTime() + speed - 1);
 		}
+	}
+
+	private static boolean isTimePaused() {
+		return Minecraft.getInstance().isGamePaused() && Minecraft.getInstance().isSingleplayer();
 	}
 
 	@SubscribeEvent

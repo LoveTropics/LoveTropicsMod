@@ -5,14 +5,12 @@ import com.lovetropics.lib.codec.MoreCodecs;
 import com.lovetropics.minigames.common.content.mangroves_and_pianguas.FriendlyExplosion;
 import com.lovetropics.minigames.common.content.mangroves_and_pianguas.entity.MpHuskEntity;
 import com.lovetropics.minigames.common.content.mangroves_and_pianguas.entity.MpPillagerEntity;
-import com.lovetropics.minigames.common.content.mangroves_and_pianguas.time.TimeInterpolationMessage;
 import com.lovetropics.minigames.common.core.dimension.DimensionUtils;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.*;
 import com.lovetropics.minigames.common.core.game.player.PlayerRole;
 import com.lovetropics.minigames.common.core.map.MapRegions;
-import com.lovetropics.minigames.common.core.network.LoveTropicsNetwork;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.block.*;
@@ -45,7 +43,6 @@ import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraft.world.storage.ServerWorldInfo;
 import net.minecraftforge.fml.RegistryObject;
-import net.minecraftforge.fml.network.PacketDistributor;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import javax.annotation.Nullable;
@@ -95,7 +92,6 @@ public final class MpBehavior implements IGameBehavior {
     private final Map<BlockPos, Integer> pumpkinHealth = new HashMap<>();
 
     private int participantSpawnIndex;
-    private boolean firstTick = true;
 
     private long gameStartTime = 0;
     private int sentWaves = 0;
@@ -125,7 +121,6 @@ public final class MpBehavior implements IGameBehavior {
         events.listen(GameWorldEvents.EXPLOSION_DETONATE, this::onExplosion);
         // Don't grow any trees- we handle that ourselves
         events.listen(GameWorldEvents.SAPLING_GROW, (w, p) -> ActionResultType.FAIL);
-        events.listen(GamePhaseEvents.STOP, (reason) -> LoveTropicsNetwork.CHANNEL.send(PacketDistributor.DIMENSION.with(game::getDimension), new TimeInterpolationMessage(1)));
         events.listen(GamePlayerEvents.ATTACK, this::onAttack);
         // No mob drops
         events.listen(GameLivingEntityEvents.MOB_DROP, (e, d, r) -> ActionResultType.FAIL);
@@ -356,12 +351,6 @@ public final class MpBehavior implements IGameBehavior {
 
     // TODO: staggered tick per player because this much logic in a single tick is not ideal
     private void tick(IGamePhase game) {
-        // Send time data
-        if (this.firstTick) {
-            LoveTropicsNetwork.CHANNEL.send(PacketDistributor.DIMENSION.with(game::getDimension), new TimeInterpolationMessage(5));
-            this.firstTick = false;
-        }
-
         ServerWorld world = game.getWorld();
         Random random = world.getRandom();
         long ticks = this.gameStartTime + game.ticks();
@@ -633,9 +622,6 @@ public final class MpBehavior implements IGameBehavior {
 
             this.sentWaves++;
         }
-
-        // 4x faster ticking
-        world.setDayTime(world.getDayTime() + 5);
     }
 
     private static MobEntity selectEntityForWave(Random random, World world) {
