@@ -4,10 +4,12 @@ import com.lovetropics.lib.codec.MoreCodecs;
 import com.lovetropics.minigames.common.content.MinigameTexts;
 import com.lovetropics.minigames.common.content.mangroves_and_pianguas.behavior.event.MpEvents;
 import com.lovetropics.minigames.common.content.mangroves_and_pianguas.plot.Plot;
+import com.lovetropics.minigames.common.content.mangroves_and_pianguas.plot.plant.PlantItemType;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
+import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.entity.Entity;
@@ -25,6 +27,7 @@ import net.minecraft.util.registry.Registry;
 import net.minecraft.world.server.ServerWorld;
 
 import java.util.List;
+import java.util.function.Function;
 
 public final class MpMerchantBehavior implements IGameBehavior {
 	public static final Codec<MpMerchantBehavior> CODEC = RecordCodecBuilder.create(instance -> {
@@ -36,18 +39,12 @@ public final class MpMerchantBehavior implements IGameBehavior {
 
 	private final EntityType<?> entity;
 	private final List<Offer> offers;
-	private final MerchantOffers builtOffers;
 
 	private IGamePhase game;
 
 	public MpMerchantBehavior(EntityType<?> entity, List<Offer> offers) {
 		this.entity = entity;
 		this.offers = offers;
-
-		this.builtOffers = new MerchantOffers();
-		for (Offer offer : this.offers) {
-			this.builtOffers.add(offer.build());
-		}
 	}
 
 	@Override
@@ -81,7 +78,12 @@ public final class MpMerchantBehavior implements IGameBehavior {
 
 	private void interactWithEntity(ServerPlayerEntity player, Entity target, Hand hand) {
 		if (this.entity == target.getType()) {
-			MpMerchant merchant = new MpMerchant(player, this.builtOffers);
+			MerchantOffers builtOffers = new MerchantOffers();
+			for (Offer offer : this.offers) {
+				builtOffers.add(offer.build(game));
+			}
+
+			MpMerchant merchant = new MpMerchant(player, builtOffers);
 			merchant.openMerchantContainer(player, MinigameTexts.mpTrading(), 1);
 		}
 	}
@@ -90,25 +92,64 @@ public final class MpMerchantBehavior implements IGameBehavior {
 		public static final Codec<Offer> CODEC = RecordCodecBuilder.create(instance -> {
 			return instance.group(
 					MoreCodecs.ITEM_STACK.fieldOf("input").forGetter(c -> c.input),
-					MoreCodecs.ITEM_STACK.fieldOf("output").forGetter(c -> c.output)
+					Output.CODEC.fieldOf("output").forGetter(c -> c.output)
 			).apply(instance, Offer::new);
 		});
 
 		final ItemStack input;
-		final ItemStack output;
+		final Output output;
 
-		public Offer(ItemStack input, ItemStack output) {
+		public Offer(ItemStack input, Output output) {
 			this.input = input;
 			this.output = output;
 		}
 
-		public MerchantOffer build() {
+		public MerchantOffer build(IGamePhase game) {
 			return new MerchantOffer(
-					this.input, this.output,
+					this.input, this.output.build(game),
 					Integer.MAX_VALUE,
 					0,
 					0
 			);
+		}
+	}
+
+	public static final class Output {
+		private static final Codec<Output> ITEM_CODEC = MoreCodecs.ITEM_STACK.xmap(Output::item, output -> output.item);
+		private static final Codec<Output> PLANT_CODEC = RecordCodecBuilder.create(instance -> {
+			return instance.group(
+					PlantItemType.CODEC.fieldOf("plant").forGetter(c -> c.plant)
+			).apply(instance, Output::plant);
+		});
+
+		public static final Codec<Output> CODEC = Codec.either(ITEM_CODEC, PLANT_CODEC)
+				.xmap(
+						either -> either.map(Function.identity(), Function.identity()),
+						output -> output.item != null ? Either.left(output) : Either.right(output)
+				);
+
+		final ItemStack item;
+		final PlantItemType plant;
+
+		private Output(ItemStack item, PlantItemType plant) {
+			this.item = item;
+			this.plant = plant;
+		}
+
+		static Output item(ItemStack item) {
+			return new Output(item, null);
+		}
+
+		static Output plant(PlantItemType plant) {
+			return new Output(null, plant);
+		}
+
+		ItemStack build(IGamePhase game) {
+			if (this.item != null) {
+				return this.item;
+			} else {
+				return game.invoker(MpEvents.CREATE_PLANT_ITEM).createPlantItem(this.plant);
+			}
 		}
 	}
 }

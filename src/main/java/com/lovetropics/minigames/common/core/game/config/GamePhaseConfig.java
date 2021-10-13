@@ -8,6 +8,7 @@ import com.lovetropics.minigames.common.core.game.map.IGameMapProvider;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraftforge.common.extensions.IForgeTileEntity;
 
@@ -49,7 +50,7 @@ public final class GamePhaseConfig implements IGamePhaseDefinition {
 	}
 
 	@Override
-	public BehaviorMap createBehaviors() {
-		return BehaviorMap.create(behaviors);
+	public BehaviorMap createBehaviors(MinecraftServer server) {
+		return BehaviorMap.create(server, behaviors);
 	}
 }

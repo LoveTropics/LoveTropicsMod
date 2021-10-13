@@ -64,7 +64,7 @@ public class SurviveTheTideRulesetBehavior implements IGameBehavior {
 	public void register(IGamePhase game, EventRegistrar events) throws GameException {
 		phases = game.getState().getOrThrow(GamePhaseState.KEY);
 
-		spawnArea = game.getMapRegions().getAny(spawnAreaKey);
+		spawnArea = game.getMapRegions().getOrThrow(spawnAreaKey);
 
 		events.listen(GamePlayerEvents.DEATH, this::onPlayerDeath);
 		events.listen(GamePlayerEvents.DAMAGE, this::onPlayerHurt);

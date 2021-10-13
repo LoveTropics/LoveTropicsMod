@@ -82,10 +82,7 @@ public final class HideAndSeekBehavior implements IGameBehavior {
 			throw new GameException(new StringTextComponent("Missing hiders or seekers team!"));
 		}
 
-		spawnRegion = game.getMapRegions().getAny(spawnRegionKey);
-		if (spawnRegion == null) {
-			throw new GameException(new StringTextComponent("Missing spawn region!"));
-		}
+		spawnRegion = game.getMapRegions().getOrThrow(spawnRegionKey);
 
 		events.listen(GamePhaseEvents.START, this::start);
 

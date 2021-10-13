@@ -5,17 +5,23 @@ import com.lovetropics.minigames.common.content.mangroves_and_pianguas.plot.plan
 import com.lovetropics.minigames.common.core.map.MapRegions;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.util.math.BlockPos;
 
 public final class Plot {
 	public final BlockBox bounds;
+	public final BlockBox plantBounds;
 	public final BlockBox spawn;
 	public final BlockBox shop;
 	public final BlockBox mobSpawn;
 
 	public final PlantMap plants = new PlantMap();
 
-	private Plot(BlockBox bounds, BlockBox spawn, BlockBox shop, BlockBox mobSpawn) {
-		this.bounds = bounds;
+	private Plot(BlockBox plantBounds, BlockBox spawn, BlockBox shop, BlockBox mobSpawn) {
+		this.bounds = BlockBox.of(
+				new BlockPos(plantBounds.min.getX(), 0, plantBounds.min.getZ()),
+				new BlockPos(plantBounds.max.getX(), 256, plantBounds.max.getZ())
+		);
+		this.plantBounds = plantBounds;
 		this.spawn = spawn;
 		this.shop = shop;
 		this.mobSpawn = mobSpawn;
@@ -23,10 +29,10 @@ public final class Plot {
 
 	public static Plot associate(Keys keys, MapRegions regions) {
 		return new Plot(
-				regions.getAny(keys.plot),
-				regions.getAny(keys.spawn),
-				regions.getAny(keys.shop),
-				regions.getAny(keys.mobSpawn)
+				regions.getOrThrow(keys.plot),
+				regions.getOrThrow(keys.spawn),
+				regions.getOrThrow(keys.shop),
+				regions.getOrThrow(keys.mobSpawn)
 		);
 	}
 

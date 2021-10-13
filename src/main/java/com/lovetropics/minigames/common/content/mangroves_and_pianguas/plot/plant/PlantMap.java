@@ -2,29 +2,35 @@ package com.lovetropics.minigames.common.content.mangroves_and_pianguas.plot.pla
 
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.objects.Reference2ObjectMap;
-import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
-import net.minecraft.util.Unit;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.util.math.BlockPos;
 
 import javax.annotation.Nullable;
 import java.util.*;
 
-public final class PlantMap implements Iterable<Plant<?>> {
-	private final List<Plant<?>> plants = new ArrayList<>();
+public final class PlantMap implements Iterable<Plant> {
+	private final List<Plant> plants = new ArrayList<>();
 
-	private final Long2ObjectMap<Plant<?>> plantByPos = new Long2ObjectOpenHashMap<>();
-	private final Reference2ObjectMap<PlantType<?>, List<Plant<?>>> plantsByType = new Reference2ObjectOpenHashMap<>();
+	private final Long2ObjectMap<Plant> plantByPos = new Long2ObjectOpenHashMap<>();
+	private final Map<PlantType, List<Plant>> plantsByType = new Object2ObjectOpenHashMap<>();
 
-	public <S> void addPlant(PlantType<S> type, PlantCoverage coverage, S state) {
-		this.addPlant(Plant.create(type, coverage, state));
+	@Nullable
+	public Plant addPlant(PlantType type, PlantCoverage coverage) {
+		Plant plant = new Plant(type, coverage);
+		if (this.addPlant(plant)) {
+			return plant;
+		} else {
+			return null;
+		}
 	}
 
-	public void addPlant(PlantType<Unit> type, PlantCoverage coverage) {
-		this.addPlant(Plant.create(type, coverage));
-	}
+	public boolean addPlant(Plant plant) {
+		for (BlockPos pos : plant.coverage()) {
+			if (this.plantByPos.containsKey(pos.toLong())) {
+				return false;
+			}
+		}
 
-	public <S> void addPlant(Plant<S> plant) {
 		// TODO: test intersection
 		this.plants.add(plant);
 
@@ -34,15 +40,17 @@ public final class PlantMap implements Iterable<Plant<?>> {
 		for (BlockPos pos : plant.coverage()) {
 			this.plantByPos.put(pos.toLong(), plant);
 		}
+
+		return true;
 	}
 
-	public boolean removePlant(Plant<?> plant) {
+	public boolean removePlant(Plant plant) {
 		if (this.plants.remove(plant)) {
 			for (BlockPos pos : plant.coverage()) {
 				this.plantByPos.remove(pos.toLong(), plant);
 			}
 
-			List<Plant<?>> plantsByType = this.plantsByType.get(plant.type());
+			List<Plant> plantsByType = this.plantsByType.get(plant.type());
 			if (plantsByType != null) {
 				plantsByType.remove(plant);
 			}
@@ -54,27 +62,31 @@ public final class PlantMap implements Iterable<Plant<?>> {
 	}
 
 	@Nullable
-	public Plant<?> getPlantAt(long pos) {
+	public Plant getPlantAt(long pos) {
 		return this.plantByPos.get(pos);
 	}
 
 	@Nullable
-	public Plant<?> getPlantAt(BlockPos pos) {
+	public Plant getPlantAt(BlockPos pos) {
 		return this.getPlantAt(pos.toLong());
+	}
+
+	@Nullable
+	public Plant getPlantAt(BlockPos pos, PlantType type) {
+		Plant plant = this.getPlantAt(pos);
+		return plant != null && plant.type().equals(type) ? plant : null;
 	}
 
 	public boolean hasPlantAt(BlockPos pos) {
 		return this.getPlantAt(pos) != null;
 	}
 
-	@SuppressWarnings("unchecked")
-	public <S> Collection<Plant<S>> getPlantsByType(PlantType<S> type) {
-		List<Plant<?>> plants = this.plantsByType.getOrDefault(type, Collections.emptyList());
-		return (List<Plant<S>>) (List<?>) plants;
+	public Collection<Plant> getPlantsByType(PlantType type) {
+		return this.plantsByType.getOrDefault(type, Collections.emptyList());
 	}
 
 	@Override
-	public Iterator<Plant<?>> iterator() {
+	public Iterator<Plant> iterator() {
 		return this.plants.iterator();
 	}
 }

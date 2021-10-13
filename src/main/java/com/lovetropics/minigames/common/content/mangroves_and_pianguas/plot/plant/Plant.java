@@ -1,27 +1,24 @@
 package com.lovetropics.minigames.common.content.mangroves_and_pianguas.plot.plant;
 
-import net.minecraft.util.Unit;
+import com.lovetropics.minigames.common.content.mangroves_and_pianguas.plot.plant.state.PlantState;
+import net.minecraft.particles.ParticleTypes;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.server.ServerWorld;
 
-public final class Plant<S> {
-	private final PlantType<S> type;
+import javax.annotation.Nullable;
+import java.util.Random;
+
+public final class Plant {
+	private final PlantType type;
 	private final PlantCoverage coverage;
-	private final S state;
+	private final PlantState state = new PlantState();
 
-	private Plant(PlantType<S> type, PlantCoverage coverage, S state) {
+	public Plant(PlantType type, PlantCoverage coverage) {
 		this.type = type;
 		this.coverage = coverage;
-		this.state = state;
 	}
 
-	public static <S> Plant<S> create(PlantType<S> type, PlantCoverage coverage, S state) {
-		return new Plant<>(type, coverage, state);
-	}
-
-	public static Plant<Unit> create(PlantType<Unit> type, PlantCoverage coverage) {
-		return new Plant<>(type, coverage, Unit.INSTANCE);
-	}
-
-	public PlantType<S> type() {
+	public PlantType type() {
 		return type;
 	}
 
@@ -29,7 +26,25 @@ public final class Plant<S> {
 		return coverage;
 	}
 
-	public S state() {
+	public PlantState state() {
 		return state;
+	}
+
+	@Nullable
+	public <S> S state(PlantState.Key<S> key) {
+		return state.get(key);
+	}
+
+	public void spawnPoof(ServerWorld world) {
+		Random random = world.rand;
+
+		for (BlockPos pos : this.coverage) {
+			for (int i = 0; i < 20; i++) {
+				double vx = random.nextGaussian() * 0.02;
+				double vy = random.nextGaussian() * 0.02;
+				double vz = random.nextGaussian() * 0.02;
+				world.spawnParticle(ParticleTypes.POOF, pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5, 1, vx, vy, vz, 0.15F);
+			}
+		}
 	}
 }

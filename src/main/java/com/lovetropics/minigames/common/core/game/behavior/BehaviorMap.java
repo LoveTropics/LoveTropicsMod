@@ -6,6 +6,7 @@ import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListen
 import com.lovetropics.minigames.common.core.game.config.BehaviorReference;
 import com.lovetropics.minigames.common.core.game.impl.GamePhase;
 import com.lovetropics.minigames.common.core.game.state.GameStateMap;
+import net.minecraft.server.MinecraftServer;
 
 import java.util.Iterator;
 import java.util.List;
@@ -19,10 +20,10 @@ public final class BehaviorMap implements Iterable<IGameBehavior> {
 		this.behaviors = behaviors;
 	}
 
-	public static BehaviorMap create(List<BehaviorReference> references) {
+	public static BehaviorMap create(MinecraftServer server, List<BehaviorReference> references) {
 		Multimap<GameBehaviorType<?>, IGameBehavior> behaviors = LinkedHashMultimap.create();
 		for (BehaviorReference reference : references) {
-			reference.addTo(behaviors::put);
+			reference.addTo(server, behaviors::put);
 		}
 
 		return new BehaviorMap(behaviors);

@@ -4,11 +4,14 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.lovetropics.lib.BlockBox;
 import com.lovetropics.lib.codec.MoreCodecs;
+import com.lovetropics.minigames.common.core.game.GameException;
 import com.mojang.serialization.Codec;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.ListNBT;
+import net.minecraft.util.text.StringTextComponent;
 import net.minecraftforge.common.util.Constants;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.Set;
@@ -42,6 +45,15 @@ public final class MapRegions {
 		} else {
 			return null;
 		}
+	}
+
+	@Nonnull
+	public BlockBox getOrThrow(String key) {
+		BlockBox box = this.getAny(key);
+		if (box == null) {
+			throw new GameException(new StringTextComponent("Missing expected region with key '" + key + "'"));
+		}
+		return box;
 	}
 
 	public CompoundNBT write(CompoundNBT root) {

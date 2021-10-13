@@ -3,6 +3,7 @@ package com.lovetropics.minigames.common.content.mangroves_and_pianguas.plot.pla
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterators;
 import it.unimi.dsi.fastutil.longs.LongIterator;
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
@@ -14,13 +15,22 @@ public interface PlantCoverage extends Iterable<BlockPos> {
 		return new Single(block);
 	}
 
-	static PlantCoverage of(LongSet blocks) {
-		return new Set(blocks);
+	static PlantCoverage ofDouble(BlockPos block) {
+		LongSet blocks = new LongOpenHashSet(2);
+		blocks.add(block.toLong());
+		blocks.add(block.up().toLong());
+		return new Set(blocks, block);
+	}
+
+	static PlantCoverage of(LongSet blocks, BlockPos origin) {
+		return new Set(blocks, origin);
 	}
 
 	boolean covers(BlockPos pos);
 
 	AxisAlignedBB asBounds();
+
+	BlockPos getOrigin();
 
 	final class Single implements PlantCoverage {
 		private final BlockPos block;
@@ -42,6 +52,11 @@ public interface PlantCoverage extends Iterable<BlockPos> {
 		}
 
 		@Override
+		public BlockPos getOrigin() {
+			return this.block;
+		}
+
+		@Override
 		public Iterator<BlockPos> iterator() {
 			return Iterators.singletonIterator(this.block);
 		}
@@ -49,10 +64,12 @@ public interface PlantCoverage extends Iterable<BlockPos> {
 
 	final class Set implements PlantCoverage {
 		private final LongSet blocks;
+		private final BlockPos origin;
 		private final AxisAlignedBB bounds;
 
-		Set(LongSet blocks) {
+		Set(LongSet blocks, BlockPos origin) {
 			this.blocks = blocks;
+			this.origin = origin;
 
 			AxisAlignedBB bounds = null;
 			for (BlockPos pos : this) {
@@ -75,6 +92,11 @@ public interface PlantCoverage extends Iterable<BlockPos> {
 		@Override
 		public AxisAlignedBB asBounds() {
 			return this.bounds;
+		}
+
+		@Override
+		public BlockPos getOrigin() {
+			return this.origin;
 		}
 
 		@Override
