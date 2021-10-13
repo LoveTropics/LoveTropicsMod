@@ -44,7 +44,9 @@ import net.minecraft.world.GameType;
 import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraft.world.storage.ServerWorldInfo;
+import net.minecraftforge.fml.RegistryObject;
 import net.minecraftforge.fml.network.PacketDistributor;
+import net.minecraftforge.registries.ForgeRegistries;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -59,7 +61,8 @@ public final class MpBehavior implements IGameBehavior {
     ).apply(instance, MpBehavior::new));
 
     private static final AttributeModifier GRASS_SLOW = new AttributeModifier(UUID.fromString("0b5baa42-2576-11ec-9621-0242ac130002"), "Slowness from tall grass", -0.65F, AttributeModifier.Operation.MULTIPLY_TOTAL);
-    private static final ResourceLocation KOA_LOCATION = new ResourceLocation("tropicraft", "koa");
+    private static final RegistryObject<EntityType<?>> KOA = RegistryObject.of(new ResourceLocation("tropicraft","koa"), ForgeRegistries.ENTITIES);
+
     private static final ResourceLocation IRIS = new ResourceLocation("tropicraft", "iris");
     private static final Map<Difficulty, Double> DEATH_DECREASE = new HashMap<>();
     private static final Map<Difficulty, Double> MOB_SCALAR = new HashMap<>();
@@ -138,19 +141,7 @@ public final class MpBehavior implements IGameBehavior {
         } else if (role == PlayerRole.PARTICIPANT) {
             // Get next region
             PlayerRegions regions = this.freeRegions.get(this.participantSpawnIndex++ % this.freeRegions.size());
-
             this.allocatedRegions.put(player, regions);
-
-            // Unbreakable hoe
-            ItemStack stack = new ItemStack(Items.DIAMOND_HOE);
-            stack.getOrCreateTag().putBoolean("Unbreakable", true);
-            player.addItemStackToInventory(stack);
-
-            stack = new ItemStack(Items.STONE_SWORD);
-            stack.getOrCreateTag().putBoolean("Unbreakable", true);
-            player.addItemStackToInventory(stack);
-
-            player.addItemStackToInventory(new ItemStack(Items.SUNFLOWER, 32));
 
             teleportToRegion(game, player, regions.spawn);
         }
@@ -163,9 +154,8 @@ public final class MpBehavior implements IGameBehavior {
             ((ServerWorldInfo)(game.getWorld().getWorldInfo())).setDifficulty(this.difficulty);
         }
 
-        Optional<EntityType<?>> optional = Registry.ENTITY_TYPE.getOptional(KOA_LOCATION);
-        if (optional.isPresent()) {
-            EntityType<?> type = optional.get();
+        if (KOA.isPresent()) {
+            EntityType<?> type = KOA.get();
 
             for (Map.Entry<ServerPlayerEntity, PlayerRegions> entry : this.allocatedRegions.entrySet()) {
                 ServerWorld world = game.getWorld();
@@ -198,9 +188,7 @@ public final class MpBehavior implements IGameBehavior {
     }
 
     private void interactWithEntity(ServerPlayerEntity player, Entity target, Hand hand) {
-        ResourceLocation location = Registry.ENTITY_TYPE.getKey(target.getType());
-
-        if (location.equals(KOA_LOCATION)) {
+        if (KOA.isPresent() && KOA.get() == target.getType()) {
             MpMerchant merchant = new MpMerchant(player);
             merchant.openMerchantContainer(player, new TranslationTextComponent("ltminigames.minigame.mp_trading"), 1);
         }

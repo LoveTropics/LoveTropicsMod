@@ -65,6 +65,7 @@ public class GameBehaviorTypes {
 	public static final GameBehaviorEntry<SetMaxHealthBehavior> SET_MAX_HEALTH;
 	public static final GameBehaviorEntry<IndividualWinTrigger> INDIVIDUAL_WIN_TRIGGER;
 	public static final GameBehaviorEntry<TeamWinTrigger> TEAM_WIN_TRIGGER;
+	public static final GameBehaviorEntry<EquipParticipantsBehavior> EQUIP_PARTICIPANTS;
 
 	public static final GameBehaviorEntry<BindObjectiveToStatisticBehavior> BIND_OBJECTIVE_TO_STATISTIC;
 	public static final GameBehaviorEntry<PlaceByStatisticBehavior> PLACE_BY_STATISTIC;
@@ -127,6 +128,7 @@ public class GameBehaviorTypes {
 		SET_MAX_HEALTH = register("set_max_health", SetMaxHealthBehavior.CODEC);
 		TEAM_WIN_TRIGGER = register("team_win_trigger", TeamWinTrigger.CODEC);
 		INDIVIDUAL_WIN_TRIGGER = register("individual_win_trigger", IndividualWinTrigger.CODEC);
+		EQUIP_PARTICIPANTS = register("equip_participants", EquipParticipantsBehavior.CODEC);
 
 		BIND_OBJECTIVE_TO_STATISTIC = register("bind_objective_to_statistic", BindObjectiveToStatisticBehavior.CODEC);
 		PLACE_BY_STATISTIC = register("place_by_statistic", PlaceByStatisticBehavior.CODEC);
