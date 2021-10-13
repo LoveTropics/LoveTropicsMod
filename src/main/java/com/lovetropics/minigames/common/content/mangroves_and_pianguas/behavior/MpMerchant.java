@@ -2,61 +2,22 @@ package com.lovetropics.minigames.common.content.mangroves_and_pianguas.behavior
 
 import net.minecraft.entity.merchant.IMerchant;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.*;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.MerchantOffer;
+import net.minecraft.item.MerchantOffers;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.util.SoundEvents;
-import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 
 import javax.annotation.Nullable;
 
 public final class MpMerchant implements IMerchant {
-    private static final ResourceLocation IRIS = new ResourceLocation("tropicraft", "iris");
-    private static final MerchantOffers OFFERS = new MerchantOffers();
-    static {
-        populateOffers();
-    }
-
     private final PlayerEntity customer;
+    private final MerchantOffers offers;
 
-    public MpMerchant(PlayerEntity player) {
+    public MpMerchant(PlayerEntity player, MerchantOffers offers) {
         this.customer = player;
-    }
-
-    private static void populateOffers() {
-        OFFERS.add(offer(4, Items.SWEET_BERRIES));
-        OFFERS.add(offer(1, Items.POTATO));
-        OFFERS.add(offer(1, Items.CARROT));
-        OFFERS.add(offer(1, new ItemStack(Items.WHEAT_SEEDS, 2)));
-        OFFERS.add(offer(2, Items.GRASS));
-        OFFERS.add(offer(32, Items.WITHER_ROSE));
-        OFFERS.add(offer(12, Items.MELON));
-        if (Registry.ITEM.getOptional(IRIS).isPresent()) {
-            OFFERS.add(offer(12, Registry.ITEM.getOrDefault(IRIS)));
-        }
-
-        OFFERS.add(offer(32, Items.JACK_O_LANTERN));
-        OFFERS.add(offer(24, Items.BIRCH_SAPLING));
-        OFFERS.add(offer(12, Items.PUMPKIN));
-        OFFERS.add(offer(12, Items.OAK_BOAT));
-        OFFERS.add(offer(32, Items.IRON_SWORD));
-        OFFERS.add(offer(64, Items.IRON_AXE));
-        OFFERS.add(offer(64, Items.BOW));
-        OFFERS.add(offer(16, new ItemStack(Items.ARROW, 4)));
-    }
-
-    private static MerchantOffer offer(int price, Item out) {
-        return offer(price, new ItemStack(out));
-    }
-
-    private static MerchantOffer offer(int price, ItemStack out) {
-        return new MerchantOffer(
-                new ItemStack(Items.SUNFLOWER, price),
-                out,
-                Integer.MAX_VALUE,
-                0, 0
-        );
+        this.offers = offers;
     }
 
     @Override
@@ -72,7 +33,7 @@ public final class MpMerchant implements IMerchant {
 
     @Override
     public MerchantOffers getOffers() {
-        return OFFERS;
+        return this.offers;
     }
 
     @Override

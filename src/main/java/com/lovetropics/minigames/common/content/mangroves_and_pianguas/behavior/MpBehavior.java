@@ -44,15 +44,12 @@ import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.registry.Registry;
-import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.Explosion;
 import net.minecraft.world.GameType;
 import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraft.world.storage.ServerWorldInfo;
-import net.minecraftforge.fml.RegistryObject;
-import net.minecraftforge.registries.ForgeRegistries;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -66,7 +63,6 @@ public final class MpBehavior implements IGameBehavior {
     ).apply(instance, MpBehavior::new));
 
     private static final AttributeModifier GRASS_SLOW = new AttributeModifier(UUID.fromString("0b5baa42-2576-11ec-9621-0242ac130002"), "Slowness from tall grass", -0.65F, AttributeModifier.Operation.MULTIPLY_TOTAL);
-    private static final RegistryObject<EntityType<?>> KOA = RegistryObject.of(new ResourceLocation("tropicraft","koa"), ForgeRegistries.ENTITIES);
 
     private static final ResourceLocation IRIS = new ResourceLocation("tropicraft", "iris");
     private static final Map<Difficulty, Double> DEATH_DECREASE = new HashMap<>();
@@ -108,7 +104,6 @@ public final class MpBehavior implements IGameBehavior {
         events.listen(MpEvents.ASSIGN_PLOT, this::onAssignPlot);
         events.listen(GamePhaseEvents.TICK, () -> tick(game));
         events.listen(GamePhaseEvents.START, () -> start(game));
-        events.listen(GamePlayerEvents.INTERACT_ENTITY, this::interactWithEntity);
         events.listen(GamePlayerEvents.PLACE_BLOCK, this::onPlaceBlock);
         events.listen(GamePlayerEvents.BREAK_BLOCK, this::onBreakBlock);
         events.listen(GameLivingEntityEvents.TICK, this::entityTick);
@@ -138,22 +133,6 @@ public final class MpBehavior implements IGameBehavior {
 
     private void onAssignPlot(ServerPlayerEntity player, Plot plot) {
         teleportToRegion(player, plot.spawn);
-
-        if (KOA.isPresent()) {
-            ServerWorld world = game.getWorld();
-
-            Vector3d center = plot.shop.getCenter();
-
-            VillagerEntity koa = (VillagerEntity) KOA.get().create(world);
-            koa.setLocationAndAngles(center.getX(), center.getY(), center.getZ(), 0, 0);
-            koa.setPosition(center.getX(), center.getY() - 0.5, center.getZ());
-
-            world.addEntity(koa);
-
-            koa.onInitialSpawn(world, world.getDifficultyForLocation(new BlockPos(center)), SpawnReason.MOB_SUMMONED, null, null);
-
-            koa.setNoAI(true);
-        }
     }
 
     private void start(IGamePhase game) {
@@ -174,13 +153,6 @@ public final class MpBehavior implements IGameBehavior {
 
         // Blocks should not explode
         affectedBlocks.clear();
-    }
-
-    private void interactWithEntity(ServerPlayerEntity player, Entity target, Hand hand) {
-        if (KOA.isPresent() && KOA.get() == target.getType()) {
-            MpMerchant merchant = new MpMerchant(player);
-            merchant.openMerchantContainer(player, new TranslationTextComponent("ltminigames.minigame.mp_trading"), 1);
-        }
     }
 
     private ActionResultType onAttack(ServerPlayerEntity player, Entity target) {

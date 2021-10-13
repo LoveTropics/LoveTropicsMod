@@ -4,6 +4,7 @@ import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.common.content.mangroves_and_pianguas.behavior.MpAssignPlotsBehavior;
 import com.lovetropics.minigames.common.content.mangroves_and_pianguas.behavior.MpBehavior;
+import com.lovetropics.minigames.common.content.mangroves_and_pianguas.behavior.MpMerchantBehavior;
 import com.lovetropics.minigames.common.util.GameBehaviorEntry;
 import com.lovetropics.minigames.common.util.LoveTropicsRegistrate;
 import net.minecraftforge.event.RegisterCommandsEvent;
@@ -20,6 +21,10 @@ public final class MangrovesAndPianguas {
 
     public static final GameBehaviorEntry<MpAssignPlotsBehavior> ASSIGN_PLOTS = REGISTRATE.object("mangroves_and_pianguas_assign_plots")
             .behavior(MpAssignPlotsBehavior.CODEC)
+            .register();
+
+    public static final GameBehaviorEntry<MpMerchantBehavior> MERCHANT = REGISTRATE.object("mangroves_and_pianguas_merchant")
+            .behavior(MpMerchantBehavior.CODEC)
             .register();
 
     @SubscribeEvent
