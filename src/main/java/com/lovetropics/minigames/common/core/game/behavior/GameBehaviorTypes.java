@@ -67,6 +67,7 @@ public class GameBehaviorTypes {
 	public static final GameBehaviorEntry<TeamWinTrigger> TEAM_WIN_TRIGGER;
 	public static final GameBehaviorEntry<EquipParticipantsBehavior> EQUIP_PARTICIPANTS;
 	public static final GameBehaviorEntry<SetTimeSpeedBehavior> SET_TIME_SPEED;
+	public static final GameBehaviorEntry<SetDifficultyBehavior> SET_DIFFICULTY;
 
 	public static final GameBehaviorEntry<BindObjectiveToStatisticBehavior> BIND_OBJECTIVE_TO_STATISTIC;
 	public static final GameBehaviorEntry<PlaceByStatisticBehavior> PLACE_BY_STATISTIC;
@@ -131,6 +132,7 @@ public class GameBehaviorTypes {
 		INDIVIDUAL_WIN_TRIGGER = register("individual_win_trigger", IndividualWinTrigger.CODEC);
 		EQUIP_PARTICIPANTS = register("equip_participants", EquipParticipantsBehavior.CODEC);
 		SET_TIME_SPEED = register("set_time_speed", SetTimeSpeedBehavior.CODEC);
+		SET_DIFFICULTY = register("set_difficulty", SetDifficultyBehavior.CODEC);
 
 		BIND_OBJECTIVE_TO_STATISTIC = register("bind_objective_to_statistic", BindObjectiveToStatisticBehavior.CODEC);
 		PLACE_BY_STATISTIC = register("place_by_statistic", PlaceByStatisticBehavior.CODEC);

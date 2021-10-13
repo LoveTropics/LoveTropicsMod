@@ -6,6 +6,7 @@ import com.mojang.serialization.Dynamic;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.NBTDynamicOps;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.world.Difficulty;
 import net.minecraft.world.GameRules;
 import net.minecraft.world.storage.IServerWorldInfo;
 
@@ -20,6 +21,7 @@ public final class MapWorldSettings {
 	public int rainTime;
 	public boolean thundering;
 	public int thunderTime;
+	public Difficulty difficulty = Difficulty.NORMAL;
 
 	public static MapWorldSettings createFromOverworld(MinecraftServer server) {
 		return createFrom((IServerWorldInfo) server.func_241755_D_().getWorldInfo());
@@ -34,6 +36,7 @@ public final class MapWorldSettings {
 		settings.rainTime = info.getRainTime();
 		settings.thundering = info.isThundering();
 		settings.thunderTime = info.getThunderTime();
+		settings.difficulty = info.getDifficulty();
 
 		return settings;
 	}
@@ -48,6 +51,8 @@ public final class MapWorldSettings {
 		root.putBoolean("thundering", this.thundering);
 		root.putInt("thunder_time", this.thunderTime);
 
+		root.putString("difficulty", this.difficulty.getTranslationKey());
+
 		return root;
 	}
 
@@ -60,6 +65,9 @@ public final class MapWorldSettings {
 		this.rainTime = root.getInt("rain_time");
 		this.thundering = root.getBoolean("thundering");
 		this.thunderTime = root.getInt("thunder_time");
+
+		Difficulty difficulty = Difficulty.byName(root.getString("difficulty"));
+		this.difficulty = difficulty != null ? difficulty : Difficulty.NORMAL;
 	}
 
 	public void importFrom(MapWorldSettings settings) {

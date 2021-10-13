@@ -4,8 +4,6 @@ import com.lovetropics.lib.BlockBox;
 import com.lovetropics.minigames.common.content.MinigameTexts;
 import com.lovetropics.minigames.common.content.mangroves_and_pianguas.FriendlyExplosion;
 import com.lovetropics.minigames.common.content.mangroves_and_pianguas.behavior.event.MpEvents;
-import com.lovetropics.minigames.common.content.mangroves_and_pianguas.entity.MpHuskEntity;
-import com.lovetropics.minigames.common.content.mangroves_and_pianguas.entity.MpPillagerEntity;
 import com.lovetropics.minigames.common.content.mangroves_and_pianguas.plot.Plot;
 import com.lovetropics.minigames.common.content.mangroves_and_pianguas.plot.PlotsState;
 import com.lovetropics.minigames.common.content.mangroves_and_pianguas.plot.plant.Plant;
@@ -19,12 +17,13 @@ import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.*;
 import com.lovetropics.minigames.common.core.game.player.PlayerRole;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import net.minecraft.block.*;
 import net.minecraft.block.trees.BirchTree;
-import net.minecraft.entity.*;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.MobEntity;
 import net.minecraft.entity.ai.attributes.AttributeModifier;
 import net.minecraft.entity.ai.attributes.Attributes;
 import net.minecraft.entity.ai.attributes.ModifiableAttributeInstance;
@@ -47,26 +46,19 @@ import net.minecraft.util.registry.Registry;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.Explosion;
 import net.minecraft.world.GameType;
-import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
-import net.minecraft.world.storage.ServerWorldInfo;
 
 import javax.annotation.Nullable;
 import java.util.*;
 
 // TODO: needs to be split up!
 public final class MpBehavior implements IGameBehavior {
-    private static final Codec<Difficulty> DIFFICULTY_CODEC = Codec.STRING.xmap(Difficulty::byName, Difficulty::getTranslationKey);
-
-    public static final Codec<MpBehavior> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-            DIFFICULTY_CODEC.fieldOf("difficulty").forGetter(c -> c.difficulty)
-    ).apply(instance, MpBehavior::new));
+    public static final Codec<MpBehavior> CODEC = Codec.unit(MpBehavior::new);
 
     private static final AttributeModifier GRASS_SLOW = new AttributeModifier(UUID.fromString("0b5baa42-2576-11ec-9621-0242ac130002"), "Slowness from tall grass", -0.65F, AttributeModifier.Operation.MULTIPLY_TOTAL);
 
     private static final ResourceLocation IRIS = new ResourceLocation("tropicraft", "iris");
     private static final Map<Difficulty, Double> DEATH_DECREASE = new HashMap<>();
-    private static final Map<Difficulty, Double> MOB_SCALAR = new HashMap<>();
 
     private static final Direction[] DIRECTIONS = Direction.values();
 
@@ -76,23 +68,10 @@ public final class MpBehavior implements IGameBehavior {
         DEATH_DECREASE.put(Difficulty.EASY, 0.9);
         DEATH_DECREASE.put(Difficulty.NORMAL, 0.8);
         DEATH_DECREASE.put(Difficulty.HARD, 0.5);
-
-        MOB_SCALAR.put(Difficulty.EASY, 0.5);
-        MOB_SCALAR.put(Difficulty.NORMAL, 1.0);
-        MOB_SCALAR.put(Difficulty.HARD, 1.5);
     }
-
-    private final Difficulty difficulty;
 
     private IGamePhase game;
     private PlotsState plots;
-
-    private long gameStartTime = 0;
-    private int sentWaves = 0;
-
-    public MpBehavior(Difficulty difficulty) {
-        this.difficulty = difficulty;
-    }
 
     @Override
     public void register(IGamePhase game, EventRegistrar events) {
@@ -103,7 +82,6 @@ public final class MpBehavior implements IGameBehavior {
         events.listen(GamePlayerEvents.SET_ROLE, (player, role, lastRole) -> setupPlayerAsRole(player, role));
         events.listen(MpEvents.ASSIGN_PLOT, this::onAssignPlot);
         events.listen(GamePhaseEvents.TICK, () -> tick(game));
-        events.listen(GamePhaseEvents.START, () -> start(game));
         events.listen(GamePlayerEvents.PLACE_BLOCK, this::onPlaceBlock);
         events.listen(GamePlayerEvents.BREAK_BLOCK, this::onBreakBlock);
         events.listen(GameLivingEntityEvents.TICK, this::entityTick);
@@ -133,14 +111,6 @@ public final class MpBehavior implements IGameBehavior {
 
     private void onAssignPlot(ServerPlayerEntity player, Plot plot) {
         teleportToRegion(player, plot.spawn);
-    }
-
-    private void start(IGamePhase game) {
-        this.gameStartTime = game.ticks();
-
-        if (game.getWorld().getWorldInfo() instanceof ServerWorldInfo) {
-            ((ServerWorldInfo)(game.getWorld().getWorldInfo())).setDifficulty(this.difficulty);
-        }
     }
 
     private void onExplosion(Explosion explosion, List<BlockPos> affectedBlocks, List<Entity> affectedEntities) {
@@ -301,7 +271,8 @@ public final class MpBehavior implements IGameBehavior {
             }
         }
 
-        int targetCount = (int) (totalCount * DEATH_DECREASE.get(this.difficulty));
+        Difficulty difficulty = game.getWorld().getDifficulty();
+        int targetCount = (int) (totalCount * DEATH_DECREASE.get(difficulty));
 
         // First insert all the full stacks
         int stacks = targetCount / 64;
@@ -322,8 +293,7 @@ public final class MpBehavior implements IGameBehavior {
     // TODO: staggered tick per player because this much logic in a single tick is not ideal
     private void tick(IGamePhase game) {
         ServerWorld world = game.getWorld();
-        Random random = world.getRandom();
-        long ticks = this.gameStartTime + game.ticks();
+        long ticks = game.ticks();
 
         for (Plot plot : plots) {
             this.tickPlot(world, plot, ticks);
@@ -461,41 +431,6 @@ public final class MpBehavior implements IGameBehavior {
                 player.addItemStackToInventory(new ItemStack(Items.SUNFLOWER, count));
             }
         }
-
-        // Spawn mobs every 2 minutes (in daytime)
-        long timeTilNextWave = ticks % 2400;
-
-        // Warn players of an impending wave
-        // Idea: upgrade that allows you to predict waves in the future?
-        if (timeTilNextWave == 1800) {
-            game.getParticipants().sendMessage(MinigameTexts.mpWaveWarning());
-        }
-
-        if (timeTilNextWave == 0) {
-            for (ServerPlayerEntity player : game.getParticipants()) {
-                Plot plot = plots.getPlotFor(player);
-                if (plot == null) continue;
-
-                // Temp wave scaling equation- seems to work fine?
-                int x = this.sentWaves / 2;
-                int amount = (int) (MOB_SCALAR.get(this.difficulty) * (Math.pow(x, 1.2) + x) + 2 + random.nextInt(3));
-
-                for (int i = 0; i < amount; i++) {
-                    BlockPos pos = plot.mobSpawn.sample(random);
-
-                    MobEntity entity = selectEntityForWave(random, world);
-
-                    entity.setLocationAndAngles(pos.getX(), pos.getY(), pos.getZ(), 0, 0);
-                    entity.setPosition(pos.getX(), pos.getY(), pos.getZ());
-
-                    world.addEntity(entity);
-
-                    entity.onInitialSpawn(world, world.getDifficultyForLocation(pos), SpawnReason.MOB_SUMMONED, null, null);
-                }
-            }
-
-            this.sentWaves++;
-        }
     }
 
     private void tickPlot(ServerWorld world, Plot plot, long ticks) {
@@ -598,11 +533,6 @@ public final class MpBehavior implements IGameBehavior {
             world.spawnParticle(ParticleTypes.POOF, pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5, 1, vx, vy, vz, 0.15F);
         }
     }
-
-    private static MobEntity selectEntityForWave(Random random, World world) {
-        return random.nextBoolean() ? new MpPillagerEntity(EntityType.PILLAGER, world) : new MpHuskEntity(EntityType.HUSK, world);
-    }
-
 
     private static boolean isTreeBlock(BlockState state) {
         // Add stuff like vines and propagules as needed

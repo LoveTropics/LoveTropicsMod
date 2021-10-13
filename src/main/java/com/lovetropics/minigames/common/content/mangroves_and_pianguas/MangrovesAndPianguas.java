@@ -5,6 +5,7 @@ import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.common.content.mangroves_and_pianguas.behavior.MpAssignPlotsBehavior;
 import com.lovetropics.minigames.common.content.mangroves_and_pianguas.behavior.MpBehavior;
 import com.lovetropics.minigames.common.content.mangroves_and_pianguas.behavior.MpMerchantBehavior;
+import com.lovetropics.minigames.common.content.mangroves_and_pianguas.behavior.MpWaveSpawnerBehavior;
 import com.lovetropics.minigames.common.util.GameBehaviorEntry;
 import com.lovetropics.minigames.common.util.LoveTropicsRegistrate;
 import net.minecraftforge.event.RegisterCommandsEvent;
@@ -25,6 +26,10 @@ public final class MangrovesAndPianguas {
 
     public static final GameBehaviorEntry<MpMerchantBehavior> MERCHANT = REGISTRATE.object("mangroves_and_pianguas_merchant")
             .behavior(MpMerchantBehavior.CODEC)
+            .register();
+
+    public static final GameBehaviorEntry<MpWaveSpawnerBehavior> WAVE_SPAWNER = REGISTRATE.object("mangroves_and_pianguas_wave_spawner")
+            .behavior(MpWaveSpawnerBehavior.CODEC)
             .register();
 
     @SubscribeEvent
