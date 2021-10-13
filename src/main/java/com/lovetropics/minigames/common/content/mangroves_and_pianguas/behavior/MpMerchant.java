@@ -1,17 +1,13 @@
-package com.lovetropics.minigames.common.content.mangroves_and_pianguas.behaviors;
+package com.lovetropics.minigames.common.content.mangroves_and_pianguas.behavior;
 
 import net.minecraft.entity.merchant.IMerchant;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.inventory.MerchantInventory;
 import net.minecraft.item.*;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.util.SoundEvents;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
-import net.minecraftforge.fml.RegistryObject;
-import net.minecraftforge.registries.ForgeRegistries;
-import net.tropicraft.core.common.block.TropicraftBlocks;
 
 import javax.annotation.Nullable;
 

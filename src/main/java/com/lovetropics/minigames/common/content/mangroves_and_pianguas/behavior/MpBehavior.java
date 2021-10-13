@@ -1,16 +1,18 @@
-package com.lovetropics.minigames.common.content.mangroves_and_pianguas.behaviors;
+package com.lovetropics.minigames.common.content.mangroves_and_pianguas.behavior;
 
 import com.lovetropics.lib.BlockBox;
-import com.lovetropics.lib.codec.MoreCodecs;
+import com.lovetropics.minigames.common.content.MinigameTexts;
 import com.lovetropics.minigames.common.content.mangroves_and_pianguas.FriendlyExplosion;
+import com.lovetropics.minigames.common.content.mangroves_and_pianguas.behavior.event.MpEvents;
 import com.lovetropics.minigames.common.content.mangroves_and_pianguas.entity.MpHuskEntity;
 import com.lovetropics.minigames.common.content.mangroves_and_pianguas.entity.MpPillagerEntity;
+import com.lovetropics.minigames.common.content.mangroves_and_pianguas.state.MpPlot;
+import com.lovetropics.minigames.common.content.mangroves_and_pianguas.state.MpPlotsState;
 import com.lovetropics.minigames.common.core.dimension.DimensionUtils;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.*;
 import com.lovetropics.minigames.common.core.game.player.PlayerRole;
-import com.lovetropics.minigames.common.core.map.MapRegions;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.block.*;
@@ -53,7 +55,6 @@ public final class MpBehavior implements IGameBehavior {
     private static final Codec<Difficulty> DIFFICULTY_CODEC = Codec.STRING.xmap(Difficulty::byName, Difficulty::getTranslationKey);
 
     public static final Codec<MpBehavior> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-            MoreCodecs.arrayOrUnit(PlayerRegionKey.CODEC, PlayerRegionKey[]::new).optionalFieldOf("participants", new PlayerRegionKey[0]).forGetter(c -> c.participantSpawnKeys),
             DIFFICULTY_CODEC.fieldOf("difficulty").forGetter(c -> c.difficulty)
     ).apply(instance, MpBehavior::new));
 
@@ -78,11 +79,8 @@ public final class MpBehavior implements IGameBehavior {
         MOB_SCALAR.put(Difficulty.HARD, 1.5);
     }
 
-    private final PlayerRegionKey[] participantSpawnKeys;
     private final Difficulty difficulty;
 
-    private final List<PlayerRegions> freeRegions = new ArrayList<>();
-    private final Map<ServerPlayerEntity, PlayerRegions> allocatedRegions = new HashMap<>();
     private final List<BlockPos> trackedMelons = new ArrayList<>();
     private final List<BlockPos> trackedJackOLanterns = new ArrayList<>();
     private final List<BlockPos> trackedPumpkins = new ArrayList<>();
@@ -91,26 +89,24 @@ public final class MpBehavior implements IGameBehavior {
     private final Map<BlockPos, Integer> jackOLanternAliveSeconds = new HashMap<>();
     private final Map<BlockPos, Integer> pumpkinHealth = new HashMap<>();
 
-    private int participantSpawnIndex;
+    private IGamePhase game;
+    private MpPlotsState plots;
 
     private long gameStartTime = 0;
     private int sentWaves = 0;
 
-    public MpBehavior(PlayerRegionKey[] participantSpawnKeys, Difficulty difficulty) {
-        this.participantSpawnKeys = participantSpawnKeys;
+    public MpBehavior(Difficulty difficulty) {
         this.difficulty = difficulty;
     }
 
     @Override
     public void register(IGamePhase game, EventRegistrar events) {
-        MapRegions regions = game.getMapRegions();
+        this.game = game;
+        this.plots = game.getState().getOrThrow(MpPlotsState.KEY);
 
-        for (PlayerRegionKey key : this.participantSpawnKeys) {
-            this.freeRegions.add(PlayerRegions.associate(key, regions));
-        }
-
-        events.listen(GamePlayerEvents.ADD, player -> setupPlayerAsRole(game, player, null));
-        events.listen(GamePlayerEvents.SET_ROLE, (player, role, lastRole) -> setupPlayerAsRole(game, player, role));
+        events.listen(GamePlayerEvents.ADD, player -> setupPlayerAsRole(player, null));
+        events.listen(GamePlayerEvents.SET_ROLE, (player, role, lastRole) -> setupPlayerAsRole(player, role));
+        events.listen(MpEvents.ASSIGN_PLOT, this::onAssignPlot);
         events.listen(GamePhaseEvents.TICK, () -> tick(game));
         events.listen(GamePhaseEvents.START, () -> start(game));
         events.listen(GamePlayerEvents.INTERACT_ENTITY, this::interactWithEntity);
@@ -127,18 +123,37 @@ public final class MpBehavior implements IGameBehavior {
         events.listen(GameLivingEntityEvents.FARMLAND_TRAMPLE, this::onFarmlandTrample);
     }
 
-    private void setupPlayerAsRole(IGamePhase game, ServerPlayerEntity player, @Nullable PlayerRole role) {
+    private void setupPlayerAsRole(ServerPlayerEntity player, @Nullable PlayerRole role) {
         if (role == PlayerRole.SPECTATOR) {
-            // Teleport players to center for now
-            teleportToRegion(game, player, BlockBox.of(new BlockPos(0, 105, 0)));
+            this.spawnSpectator(player);
+        }
+    }
 
-            player.setGameType(GameType.SPECTATOR);
-        } else if (role == PlayerRole.PARTICIPANT) {
-            // Get next region
-            PlayerRegions regions = this.freeRegions.get(this.participantSpawnIndex++ % this.freeRegions.size());
-            this.allocatedRegions.put(player, regions);
+    private void spawnSpectator(ServerPlayerEntity player) {
+        // Teleport players to center for now
+        // TODO: hardcoded region
+        teleportToRegion(player, BlockBox.of(new BlockPos(0, 105, 0)));
 
-            teleportToRegion(game, player, regions.spawn);
+        player.setGameType(GameType.SPECTATOR);
+    }
+
+    private void onAssignPlot(ServerPlayerEntity player, MpPlot plot) {
+        teleportToRegion(player, plot.spawn);
+
+        if (KOA.isPresent()) {
+            ServerWorld world = game.getWorld();
+
+            Vector3d center = plot.shop.getCenter();
+
+            VillagerEntity koa = (VillagerEntity) KOA.get().create(world);
+            koa.setLocationAndAngles(center.getX(), center.getY(), center.getZ(), 0, 0);
+            koa.setPosition(center.getX(), center.getY() - 0.5, center.getZ());
+
+            world.addEntity(koa);
+
+            koa.onInitialSpawn(world, world.getDifficultyForLocation(new BlockPos(center)), SpawnReason.MOB_SUMMONED, null, null);
+
+            koa.setNoAI(true);
         }
     }
 
@@ -147,26 +162,6 @@ public final class MpBehavior implements IGameBehavior {
 
         if (game.getWorld().getWorldInfo() instanceof ServerWorldInfo) {
             ((ServerWorldInfo)(game.getWorld().getWorldInfo())).setDifficulty(this.difficulty);
-        }
-
-        if (KOA.isPresent()) {
-            EntityType<?> type = KOA.get();
-
-            for (Map.Entry<ServerPlayerEntity, PlayerRegions> entry : this.allocatedRegions.entrySet()) {
-                ServerWorld world = game.getWorld();
-                VillagerEntity koa = (VillagerEntity) type.create(world);
-
-                Vector3d center = entry.getValue().shop.getCenter();
-
-                koa.setLocationAndAngles(center.getX(), center.getY(), center.getZ(), 0, 0);
-                koa.setPosition(center.getX(), center.getY() - 0.5, center.getZ());
-
-                world.addEntity(koa);
-
-                koa.onInitialSpawn(world, world.getDifficultyForLocation(new BlockPos(center)), SpawnReason.MOB_SUMMONED, null, null);
-
-                koa.setNoAI(true);
-            }
         }
     }
 
@@ -199,17 +194,18 @@ public final class MpBehavior implements IGameBehavior {
     }
 
     private ActionResultType onPlaceBlock(ServerPlayerEntity player, BlockPos pos, BlockState placed, BlockState placedOn) {
-        PlayerRegions regions = this.allocatedRegions.get(player);
-
-        // Check to see if the farmland block is below the plot
-        if (placed.getBlock() == Blocks.FARMLAND && regions.plot.contains(pos.up())) {
+        MpPlot plot = plots.getPlotFor(player);
+        if (plot == null) {
             return ActionResultType.PASS;
         }
 
-        if (regions != null) {
-            if (!regions.plot.contains(pos)) {
-                return ActionResultType.FAIL;
-            }
+        // Check to see if the farmland block is below the plot
+        if (placed.getBlock() == Blocks.FARMLAND && plot.bounds.contains(pos.up())) {
+            return ActionResultType.PASS;
+        }
+
+        if (!plot.bounds.contains(pos)) {
+            return ActionResultType.FAIL;
         }
 
         if (placed.getBlock() == Blocks.MELON) {
@@ -230,12 +226,13 @@ public final class MpBehavior implements IGameBehavior {
     }
 
     private ActionResultType onBreakBlock(ServerPlayerEntity player, BlockPos pos, BlockState state) {
-        PlayerRegions regions = this.allocatedRegions.get(player);
+        MpPlot plot = plots.getPlotFor(player);
+        if (plot == null) {
+            return ActionResultType.PASS;
+        }
 
-        if (regions != null) {
-            if (!regions.plot.contains(pos)) {
-                return ActionResultType.FAIL;
-            }
+        if (!plot.bounds.contains(pos)) {
+            return ActionResultType.FAIL;
         }
 
         ServerWorld world = player.getServerWorld();
@@ -281,10 +278,9 @@ public final class MpBehavior implements IGameBehavior {
 
     private ActionResultType onFarmlandTrample(Entity entity, BlockPos pos, BlockState state) {
         if (entity instanceof ServerPlayerEntity) {
-            PlayerRegions regions = this.allocatedRegions.get((ServerPlayerEntity) entity);
-
             // Don't trample farmland if it's not found in the player's plot. Normalizes with up() as farmland is below the plot
-            if (!regions.plot.contains(pos.up())) {
+            MpPlot plot = plots.getPlotFor(entity);
+            if (plot != null && !plot.bounds.contains(pos.up())) {
                 return ActionResultType.FAIL;
             }
         }
@@ -308,7 +304,12 @@ public final class MpBehavior implements IGameBehavior {
     }
 
     private ActionResultType onPlayerDeath(ServerPlayerEntity player, DamageSource damageSource) {
-        Vector3d center = this.allocatedRegions.get(player).spawn.getCenter();
+        MpPlot plot = plots.getPlotFor(player);
+        if (plot == null) {
+            return ActionResultType.PASS;
+        }
+
+        Vector3d center = plot.spawn.getCenter();
 
         player.teleport(player.getServerWorld(), center.x, center.y, center.z, player.rotationYaw, player.rotationPitch);
         player.setHealth(20.0F);
@@ -344,7 +345,7 @@ public final class MpBehavior implements IGameBehavior {
         // Add the remaining items
         player.addItemStackToInventory(new ItemStack(Items.SUNFLOWER, targetCount));
         player.playSound(SoundEvents.ENTITY_ARROW_HIT_PLAYER, 0.18F, 0.1F);
-        player.sendStatusMessage(new TranslationTextComponent("ltminigames.minigame.mp_death_decrease", (totalCount - targetCount)), false);
+        player.sendStatusMessage(MinigameTexts.mpDeathDecrease(totalCount - targetCount), false);
 
         return ActionResultType.FAIL;
     }
@@ -408,8 +409,11 @@ public final class MpBehavior implements IGameBehavior {
 
         // Tick every second
         if (ticks % 20 == 0) {
-            for (Map.Entry<ServerPlayerEntity, PlayerRegions> entry : this.allocatedRegions.entrySet()) {
-                for (BlockPos pos : entry.getValue().plot) {
+            for (ServerPlayerEntity player : game.getParticipants()) {
+                MpPlot plot = plots.getPlotFor(player);
+                if (plot == null) continue;
+
+                for (BlockPos pos : plot.bounds) {
                     BlockState state = world.getBlockState(pos);
 
                     if (Registry.BLOCK.getKey(state.getBlock()).equals(IRIS)) {
@@ -439,10 +443,10 @@ public final class MpBehavior implements IGameBehavior {
 
                     // Spawn poof when jack o' lanterns downgrade to pumpkins
                     for(int i = 0; i < 20; ++i) {
-                        double d3 = random.nextGaussian() * 0.02;
-                        double d1 = random.nextGaussian() * 0.02;
-                        double d2 = random.nextGaussian() * 0.02;
-                        world.spawnParticle(ParticleTypes.POOF, pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5, 1, d3, d1, d2, 0.15F);
+                        double vx = random.nextGaussian() * 0.02;
+                        double vy = random.nextGaussian() * 0.02;
+                        double vz = random.nextGaussian() * 0.02;
+                        world.spawnParticle(ParticleTypes.POOF, pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5, 1, vx, vy, vz, 0.15F);
                     }
                 } else {
                     this.jackOLanternAliveSeconds.put(pos, newTime);
@@ -486,8 +490,11 @@ public final class MpBehavior implements IGameBehavior {
 
         // Tick growables every 15 seconds
         if (ticks % 300 == 0) {
-            for (Map.Entry<ServerPlayerEntity, PlayerRegions> entry : this.allocatedRegions.entrySet()) {
-                for (BlockPos pos : entry.getValue().plot) {
+            for (ServerPlayerEntity player : game.getParticipants()) {
+                MpPlot plot = plots.getPlotFor(player);
+                if (plot == null) continue;
+
+                for (BlockPos pos : plot.bounds) {
                     BlockState state = world.getBlockState(pos);
 
                     if (state.hasProperty(CropsBlock.AGE)) {
@@ -551,15 +558,18 @@ public final class MpBehavior implements IGameBehavior {
 
         // Drop currency every 30 seconds
         if (ticks % 600 == 0) {
-            for (Map.Entry<ServerPlayerEntity, PlayerRegions> entry : this.allocatedRegions.entrySet()) {
+            for (ServerPlayerEntity player : game.getParticipants()) {
+                MpPlot plot = plots.getPlotFor(player);
+                if (plot == null) continue;
+
                 double value = 2;
 
                 // TODO: calculate crops, plants, and trees separately
-                Set<Block> blocks = new HashSet<>();
+                Set<Block> uniqueBlocks = new HashSet<>();
 
-                for (BlockPos pos : entry.getValue().plot) {
+                for (BlockPos pos : plot.bounds) {
                     BlockState state = world.getBlockState(pos);
-                    blocks.add(state.getBlock());
+                    uniqueBlocks.add(state.getBlock());
 
                     if (state.getBlock() instanceof CropsBlock) {
                         value += 0.05;
@@ -575,16 +585,15 @@ public final class MpBehavior implements IGameBehavior {
                 }
 
                 // TODO: temp math equation
-                value += (blocks.size() / 4.0) * value;
+                value += (uniqueBlocks.size() / 4.0) * value;
                 int count = (int) value;
 
                 if (world.rand.nextDouble() < value - count) {
                     count++;
                 }
 
-                ServerPlayerEntity player = entry.getKey();
                 player.playSound(SoundEvents.ENTITY_ARROW_HIT_PLAYER, 0.18F, 1.0F);
-                player.sendStatusMessage(new TranslationTextComponent("ltminigames.minigame.mp_currency_addition", count), false);
+                player.sendStatusMessage(MinigameTexts.mpCurrencyAddition(count), false);
                 player.addItemStackToInventory(new ItemStack(Items.SUNFLOWER, count));
             }
         }
@@ -595,19 +604,20 @@ public final class MpBehavior implements IGameBehavior {
         // Warn players of an impending wave
         // Idea: upgrade that allows you to predict waves in the future?
         if (timeTilNextWave == 1800) {
-            for (Map.Entry<ServerPlayerEntity, PlayerRegions> entry : this.allocatedRegions.entrySet()) {
-                entry.getKey().sendStatusMessage(new TranslationTextComponent("ltminigames.minigame.mp_wave_warning"), false);
-            }
+            game.getParticipants().sendMessage(MinigameTexts.mpWaveWarning());
         }
 
         if (timeTilNextWave == 0) {
-            for (Map.Entry<ServerPlayerEntity, PlayerRegions> entry : this.allocatedRegions.entrySet()) {
+            for (ServerPlayerEntity player : game.getParticipants()) {
+                MpPlot plot = plots.getPlotFor(player);
+                if (plot == null) continue;
+
                 // Temp wave scaling equation- seems to work fine?
                 int x = this.sentWaves / 2;
                 int amount = (int) (MOB_SCALAR.get(this.difficulty) * (Math.pow(x, 1.2) + x) + 2 + random.nextInt(3));
 
                 for (int i = 0; i < amount; i++) {
-                    BlockPos pos = entry.getValue().mobSpawn.sample(random);
+                    BlockPos pos = plot.mobSpawn.sample(random);
 
                     MobEntity entity = selectEntityForWave(random, world);
 
@@ -655,52 +665,8 @@ public final class MpBehavior implements IGameBehavior {
         }
     }
 
-    private void teleportToRegion(IGamePhase game, ServerPlayerEntity player, BlockBox region) {
+    private void teleportToRegion(ServerPlayerEntity player, BlockBox region) {
         BlockPos pos = region.sample(player.getRNG());
         DimensionUtils.teleportPlayerNoPortal(player, game.getDimension(), pos);
-    }
-
-    private static final class PlayerRegionKey {
-        public static final Codec<PlayerRegionKey> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-                Codec.STRING.fieldOf("plot").forGetter(k -> k.plot),
-                Codec.STRING.fieldOf("spawn").forGetter(k -> k.spawn),
-                Codec.STRING.fieldOf("shop").forGetter(k -> k.shop),
-                Codec.STRING.fieldOf("mob_spawn").forGetter(k -> k.mobSpawn)
-        ).apply(instance, PlayerRegionKey::new));
-        private final String plot;
-        private final String spawn;
-        private final String shop;
-        private final String mobSpawn;
-
-        private PlayerRegionKey(String plot, String spawn, String shop, String mobSpawn) {
-            this.plot = plot;
-            this.spawn = spawn;
-            this.shop = shop;
-            this.mobSpawn = mobSpawn;
-        }
-    }
-
-    private static final class PlayerRegions {
-        private final BlockBox plot;
-        private final BlockBox spawn;
-        private final BlockBox shop;
-        private final BlockBox mobSpawn;
-
-        private PlayerRegions(BlockBox plot, BlockBox spawn, BlockBox shop, BlockBox mobSpawn) {
-            this.plot = plot;
-            this.spawn = spawn;
-            this.shop = shop;
-            this.mobSpawn = mobSpawn;
-        }
-
-        // Gathers all the regions out of the provided key. Assumes that each region is defined once.
-        private static PlayerRegions associate(PlayerRegionKey key, MapRegions regions) {
-            return new PlayerRegions(
-                    regions.getAny(key.plot),
-                    regions.getAny(key.spawn),
-                    regions.getAny(key.shop),
-                    regions.getAny(key.mobSpawn)
-            );
-        }
     }
 }

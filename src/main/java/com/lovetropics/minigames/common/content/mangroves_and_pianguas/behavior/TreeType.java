@@ -1,4 +1,4 @@
-package com.lovetropics.minigames.common.content.mangroves_and_pianguas.behaviors;
+package com.lovetropics.minigames.common.content.mangroves_and_pianguas.behavior;
 
 public enum TreeType {
     OAK,

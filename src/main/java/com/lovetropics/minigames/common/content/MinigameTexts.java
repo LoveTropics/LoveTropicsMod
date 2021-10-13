@@ -1,6 +1,8 @@
 package com.lovetropics.minigames.common.content;
 
 import com.lovetropics.minigames.Constants;
+import net.minecraft.util.text.IFormattableTextComponent;
+import net.minecraft.util.text.TranslationTextComponent;
 
 import java.util.function.BiConsumer;
 
@@ -96,5 +98,21 @@ public final class MinigameTexts {
 		static String key(String key) {
 			return Constants.MODID + ".minigame." + key;
 		}
+	}
+
+	public static IFormattableTextComponent mpWaveWarning() {
+		return new TranslationTextComponent(Keys.MP_WAVE_WARNING);
+	}
+
+	public static IFormattableTextComponent mpDeathDecrease(int count) {
+		return new TranslationTextComponent(Keys.MP_DEATH_DECREASE, count);
+	}
+
+	public static IFormattableTextComponent mpCurrencyAddition(int amount) {
+		return new TranslationTextComponent(Keys.MP_CURRENCY_ADDITION, amount);
+	}
+
+	public static IFormattableTextComponent mpTrading() {
+		return new TranslationTextComponent(Keys.MP_TRADING);
 	}
 }
