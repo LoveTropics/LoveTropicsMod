@@ -16,11 +16,9 @@ import java.util.Random;
 
 // TODO: can we make this a more generic data driven behavior?
 public final class BerriesPlantBehavior implements IGameBehavior {
-	public static final Codec<BerriesPlantBehavior> CODEC = RecordCodecBuilder.create(instance -> {
-		return instance.group(
-				Codec.INT.fieldOf("interval").forGetter(c -> c.interval)
-		).apply(instance, BerriesPlantBehavior::new);
-	});
+	public static final Codec<BerriesPlantBehavior> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+			Codec.INT.fieldOf("interval").forGetter(c -> c.interval)
+	).apply(instance, BerriesPlantBehavior::new));
 
 	private final int interval;
 

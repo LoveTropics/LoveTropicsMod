@@ -17,13 +17,11 @@ import java.util.List;
 import java.util.Optional;
 
 public final class PlantHealthBehavior implements IGameBehavior {
-	public static final Codec<PlantHealthBehavior> CODEC = RecordCodecBuilder.create(instance -> {
-		return instance.group(
-				Codec.INT.fieldOf("initial").forGetter(c -> c.initial),
-				Codec.INT.optionalFieldOf("decay_per_tick", 0).forGetter(c -> c.decayPerTick),
-				PlantType.CODEC.optionalFieldOf("decay_into").forGetter(c -> Optional.ofNullable(c.decayInto))
-		).apply(instance, PlantHealthBehavior::new);
-	});
+	public static final Codec<PlantHealthBehavior> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+			Codec.INT.fieldOf("initial").forGetter(c -> c.initial),
+			Codec.INT.optionalFieldOf("decay_per_tick", 0).forGetter(c -> c.decayPerTick),
+			PlantType.CODEC.optionalFieldOf("decay_into").forGetter(c -> Optional.ofNullable(c.decayInto))
+	).apply(instance, PlantHealthBehavior::new));
 
 	private final int initial;
 	private final int decayPerTick;

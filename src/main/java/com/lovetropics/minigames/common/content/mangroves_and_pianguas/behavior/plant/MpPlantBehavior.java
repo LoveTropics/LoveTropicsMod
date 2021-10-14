@@ -28,14 +28,12 @@ import java.util.List;
 import java.util.Optional;
 
 public final class MpPlantBehavior implements IGameBehavior {
-	public static final Codec<MpPlantBehavior> CODEC = RecordCodecBuilder.create(instance -> {
-		return instance.group(
-				PlantType.CODEC.fieldOf("id").forGetter(c -> c.plantType),
-				PlantPlacement.CODEC.fieldOf("place").forGetter(c -> c.place),
-				PlantItemType.CODEC.optionalFieldOf("drops").forGetter(c -> Optional.ofNullable(c.drops)), // TODO: support count
-				IGameBehavior.CODEC.listOf().optionalFieldOf("behaviors", Collections.emptyList()).forGetter(c -> c.behaviors)
-		).apply(instance, MpPlantBehavior::new);
-	});
+	public static final Codec<MpPlantBehavior> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+			PlantType.CODEC.fieldOf("id").forGetter(c -> c.plantType),
+			PlantPlacement.CODEC.fieldOf("place").forGetter(c -> c.place),
+			PlantItemType.CODEC.optionalFieldOf("drops").forGetter(c -> Optional.ofNullable(c.drops)), // TODO: support count
+			IGameBehavior.CODEC.listOf().optionalFieldOf("behaviors", Collections.emptyList()).forGetter(c -> c.behaviors)
+	).apply(instance, MpPlantBehavior::new));
 
 	private final PlantType plantType;
 	private final PlantPlacement place;

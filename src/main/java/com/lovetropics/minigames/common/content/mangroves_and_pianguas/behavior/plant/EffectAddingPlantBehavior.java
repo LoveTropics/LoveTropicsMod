@@ -17,12 +17,10 @@ import net.minecraft.world.server.ServerWorld;
 import java.util.List;
 
 public final class EffectAddingPlantBehavior implements IGameBehavior {
-	public static final Codec<EffectAddingPlantBehavior> CODEC = RecordCodecBuilder.create(instance -> {
-		return instance.group(
-				MoreCodecs.EFFECT_INSTANCE.fieldOf("effect").forGetter(c -> c.effect),
-				Codec.DOUBLE.fieldOf("radius").forGetter(c -> c.radius)
-		).apply(instance, EffectAddingPlantBehavior::new);
-	});
+	public static final Codec<EffectAddingPlantBehavior> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+			MoreCodecs.EFFECT_INSTANCE.fieldOf("effect").forGetter(c -> c.effect),
+			Codec.DOUBLE.fieldOf("radius").forGetter(c -> c.radius)
+	).apply(instance, EffectAddingPlantBehavior::new));
 
 	private final EffectInstance effect;
 	private final double radius;

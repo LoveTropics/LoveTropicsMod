@@ -19,12 +19,10 @@ import java.util.Random;
 
 // TODO: people can perpetually replace jack o' lanterns to reset their timer. Is there a better way to do this?
 public final class ScaryPlantBehavior implements IGameBehavior {
-	public static final Codec<ScaryPlantBehavior> CODEC = RecordCodecBuilder.create(instance -> {
-		return instance.group(
-				Codec.DOUBLE.fieldOf("radius").forGetter(c -> c.radius),
-				Codec.INT.fieldOf("push_cost").forGetter(c -> c.pushCost)
-		).apply(instance, ScaryPlantBehavior::new);
-	});
+	public static final Codec<ScaryPlantBehavior> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+			Codec.DOUBLE.fieldOf("radius").forGetter(c -> c.radius),
+			Codec.INT.fieldOf("push_cost").forGetter(c -> c.pushCost)
+	).apply(instance, ScaryPlantBehavior::new));
 
 	private final double radius;
 
@@ -70,6 +68,7 @@ public final class ScaryPlantBehavior implements IGameBehavior {
 					// Make it so that using a jack o lantern a lot will reduce alive time
 					if (random.nextInt(6) == 0) {
 						PlantHealth health = plant.state(PlantHealth.KEY);
+
 						if (health != null) {
 							health.decrement(this.pushCost);
 						}

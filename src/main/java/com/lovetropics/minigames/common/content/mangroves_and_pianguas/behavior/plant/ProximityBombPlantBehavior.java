@@ -22,11 +22,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public final class ProximityBombPlantBehavior implements IGameBehavior {
-	public static final Codec<ProximityBombPlantBehavior> CODEC = RecordCodecBuilder.create(instance -> {
-		return instance.group(
-				Codec.DOUBLE.fieldOf("radius").forGetter(c -> c.radius)
-		).apply(instance, ProximityBombPlantBehavior::new);
-	});
+	public static final Codec<ProximityBombPlantBehavior> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+			Codec.DOUBLE.fieldOf("radius").forGetter(c -> c.radius)
+	).apply(instance, ProximityBombPlantBehavior::new));
 
 	private final double radius;
 

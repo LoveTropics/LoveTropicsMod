@@ -19,13 +19,11 @@ import net.minecraft.util.ActionResultType;
 import net.minecraft.util.math.BlockPos;
 
 public final class MpPlantItemBehavior implements IGameBehavior {
-	public static final Codec<MpPlantItemBehavior> CODEC = RecordCodecBuilder.create(instance -> {
-		return instance.group(
-				PlantItemType.CODEC.fieldOf("id").forGetter(c -> c.itemType),
-				PlantType.CODEC.fieldOf("places").forGetter(c -> c.places),
-				MoreCodecs.ITEM_STACK.fieldOf("item").forGetter(c -> c.item)
-		).apply(instance, MpPlantItemBehavior::new);
-	});
+	public static final Codec<MpPlantItemBehavior> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+			PlantItemType.CODEC.fieldOf("id").forGetter(c -> c.itemType),
+			PlantType.CODEC.fieldOf("places").forGetter(c -> c.places),
+			MoreCodecs.ITEM_STACK.fieldOf("item").forGetter(c -> c.item)
+	).apply(instance, MpPlantItemBehavior::new));
 
 	private final PlantItemType itemType;
 	private final PlantType places;

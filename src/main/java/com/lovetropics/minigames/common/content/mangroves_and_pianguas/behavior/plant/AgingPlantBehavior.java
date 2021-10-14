@@ -13,11 +13,9 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.server.ServerWorld;
 
 public final class AgingPlantBehavior implements IGameBehavior {
-	public static final Codec<AgingPlantBehavior> CODEC = RecordCodecBuilder.create(instance -> {
-		return instance.group(
-				Codec.INT.fieldOf("interval").forGetter(c -> c.interval)
-		).apply(instance, AgingPlantBehavior::new);
-	});
+	public static final Codec<AgingPlantBehavior> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+			Codec.INT.fieldOf("interval").forGetter(c -> c.interval)
+	).apply(instance, AgingPlantBehavior::new));
 
 	private final int interval;
 

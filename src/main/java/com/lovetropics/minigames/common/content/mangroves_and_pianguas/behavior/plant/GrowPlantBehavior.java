@@ -18,12 +18,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public final class GrowPlantBehavior implements IGameBehavior {
-	public static final Codec<GrowPlantBehavior> CODEC = RecordCodecBuilder.create(instance -> {
-		return instance.group(
-				Codec.INT.fieldOf("time").forGetter(c -> c.time),
-				PlantType.CODEC.fieldOf("grow_into").forGetter(c -> c.growInto)
-		).apply(instance, GrowPlantBehavior::new);
-	});
+	public static final Codec<GrowPlantBehavior> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+			Codec.INT.fieldOf("time").forGetter(c -> c.time),
+			PlantType.CODEC.fieldOf("grow_into").forGetter(c -> c.growInto)
+	).apply(instance, GrowPlantBehavior::new));
 
 	private final int time;
 	private final PlantType growInto;

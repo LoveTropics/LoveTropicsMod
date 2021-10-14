@@ -16,11 +16,9 @@ import net.minecraft.world.server.ServerWorld;
 import java.util.List;
 
 public final class BarrierPlantBehavior implements IGameBehavior {
-	public static final Codec<BarrierPlantBehavior> CODEC = RecordCodecBuilder.create(instance -> {
-		return instance.group(
-				Codec.DOUBLE.fieldOf("radius").forGetter(c -> c.radius)
-		).apply(instance, BarrierPlantBehavior::new);
-	});
+	public static final Codec<BarrierPlantBehavior> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+			Codec.DOUBLE.fieldOf("radius").forGetter(c -> c.radius)
+	).apply(instance, BarrierPlantBehavior::new));
 
 	private final double radius;
 
