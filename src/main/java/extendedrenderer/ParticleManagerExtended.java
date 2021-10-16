@@ -5,8 +5,6 @@ import com.google.common.collect.*;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
-import extendedrenderer.particle.ParticleRegistry;
-import extendedrenderer.particle.entity.EntityRotFX;
 import net.minecraft.block.BlockRenderType;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.Minecraft;
@@ -33,11 +31,10 @@ import net.minecraft.util.JSONUtils;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.shapes.VoxelShape;
 import net.minecraft.util.registry.Registry;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import org.lwjgl.opengl.GL11;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
@@ -345,6 +342,8 @@ public class ParticleManagerExtended implements IFutureReloadListener {
       //temp?
       //enable.run();
 
+
+
       for(IParticleRenderType iparticlerendertype : this.byType.keySet()) { // Forge: allow custom IParticleRenderType's
          if (iparticlerendertype == IParticleRenderType.NO_RENDER) continue;
          enable.run(); //Forge: MC-168672 Make sure all render types have the correct GL state.
@@ -354,6 +353,8 @@ public class ParticleManagerExtended implements IFutureReloadListener {
             Tessellator tessellator = Tessellator.getInstance();
             BufferBuilder bufferbuilder = tessellator.getBuffer();
             iparticlerendertype.beginRender(bufferbuilder, this.renderer);
+
+            RenderSystem.depthMask(false);
 
             for(Particle particle : iterable) {
                if (clippingHelper != null && particle.shouldCull() && !clippingHelper.isBoundingBoxInFrustum(particle.getBoundingBox())) continue;
@@ -370,6 +371,44 @@ public class ParticleManagerExtended implements IFutureReloadListener {
 
             iparticlerendertype.finishRender(tessellator);
          }
+      }
+
+      boolean extraRenderPass = Minecraft.isFabulousGraphicsEnabled();
+
+      if (extraRenderPass) {
+         GL11.glColorMask(false, false, false, false);
+
+         for (IParticleRenderType iparticlerendertype : this.byType.keySet()) { // Forge: allow custom IParticleRenderType's
+            if (iparticlerendertype == IParticleRenderType.NO_RENDER) continue;
+            enable.run(); //Forge: MC-168672 Make sure all render types have the correct GL state.
+            Iterable<Particle> iterable = byType.get(iparticlerendertype);
+            if (iterable != null) {
+               RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
+               Tessellator tessellator = Tessellator.getInstance();
+               BufferBuilder bufferbuilder = tessellator.getBuffer();
+               iparticlerendertype.beginRender(bufferbuilder, this.renderer);
+
+               RenderSystem.depthMask(true);
+
+               for (Particle particle : iterable) {
+                  if (clippingHelper != null && particle.shouldCull() && !clippingHelper.isBoundingBoxInFrustum(particle.getBoundingBox()))
+                     continue;
+                  try {
+                     particle.renderParticle(bufferbuilder, activeRenderInfoIn, partialTicks);
+                  } catch (Throwable throwable) {
+                     CrashReport crashreport = CrashReport.makeCrashReport(throwable, "Rendering Particle");
+                     CrashReportCategory crashreportcategory = crashreport.makeCategory("Particle being rendered");
+                     crashreportcategory.addDetail("Particle", particle::toString);
+                     crashreportcategory.addDetail("Particle Type", iparticlerendertype::toString);
+                     throw new ReportedException(crashreport);
+                  }
+               }
+
+               iparticlerendertype.finishRender(tessellator);
+            }
+         }
+
+         GL11.glColorMask(true, true, true, true);
       }
 
       GlStateManager.enableCull();

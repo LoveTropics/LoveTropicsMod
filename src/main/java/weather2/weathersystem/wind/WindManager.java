@@ -118,7 +118,8 @@ public class WindManager {
 		windAngleGlobal += rand.nextFloat() - rand.nextFloat();
 
 		if (FORCE_ON_DEBUG_TESTING) {
-			windAngleGlobal += 1;
+			//windAngleGlobal += 1;
+			windAngleGlobal = 0;
 			windSpeedGlobal = 0.8F;
 			chanceOfWindGustEvent = 0;
 			chanceOfWindGustEvent = 0.5F;

@@ -49,12 +49,13 @@ public class ServerTickHandler {
 
 	@SubscribeEvent
 	public static void tickPlayer(TickEvent.PlayerTickEvent event) {
+		//TODO: VERY TEMP
 		WeatherManagerServer wms = MANAGERS.get(event.player.world.getDimensionKey());
 		if (wms.sandstorm == null || wms.sandstorm.isDead) {
 			PlayerEntity player = event.player;//event.player.world.getClosestPlayer(-100, 78, -360, -1, true);
 			if (player != null) {
-				System.out.println("spawn sandstorm");
-				wms.sandstorm = wms.spawnSandStorm(player.getPosition());
+				//System.out.println("spawn sandstorm");
+				//wms.sandstorm = wms.spawnSandStorm(player.getPosition().add(0, 0, -50));
 			}
 		}
 	}

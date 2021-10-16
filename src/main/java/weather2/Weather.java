@@ -60,5 +60,6 @@ public class Weather
     }*/
 
     public static void dbg(Object obj) {
-}
+        System.out.println(obj);
+    }
 }

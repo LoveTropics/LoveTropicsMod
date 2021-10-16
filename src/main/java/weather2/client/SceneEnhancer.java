@@ -342,6 +342,8 @@ public class SceneEnhancer implements Runnable {
 
 		//if (true) return;
 
+		//FORCE_ON_DEBUG_TESTING = false;
+
 		PlayerEntity entP = Minecraft.getInstance().player;
 
 		WeatherManagerClient weatherMan = ClientTickHandler.weatherManager;

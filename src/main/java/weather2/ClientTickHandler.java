@@ -11,6 +11,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
 import weather2.client.SceneEnhancer;
+import weather2.util.WeatherUtil;
 import weather2.util.WindReader;
 import weather2.weathersystem.WeatherManagerClient;
 
@@ -63,7 +64,9 @@ public class ClientTickHandler
 			weatherManager.tick();
 			sceneEnhancer.tickClient();
 
-			particleManagerExtended().tick();
+			if (!WeatherUtil.isPausedForClient()) {
+				particleManagerExtended().tick();
+			}
 
 			//TODO: evaluate if best here
 			float windDir = WindReader.getWindAngle(world);
@@ -142,7 +145,7 @@ public class ClientTickHandler
     	Minecraft mc = Minecraft.getInstance();
 
     	particleManagerExtended = new ParticleManagerExtended(mc.world, mc.textureManager);
-		((IReloadableResourceManager)mc.getResourceManager()).addReloadListener(particleManagerExtended);
+		//((IReloadableResourceManager)mc.getResourceManager()).addReloadListener(particleManagerExtended);
     }
 
 	public static ParticleManagerExtended particleManagerExtended() {
