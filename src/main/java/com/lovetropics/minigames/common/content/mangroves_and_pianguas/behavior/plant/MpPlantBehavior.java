@@ -134,7 +134,7 @@ public final class MpPlantBehavior implements IGameBehavior {
 	}
 
 	private void onTickPlot(ServerPlayerEntity player, Plot plot) {
-		Collection<Plant> plants = plot.plants.getPlantsByType(this.plantType);
+		List<Plant> plants = plot.plants.getPlantsByType(this.plantType);
 		if (!plants.isEmpty()) {
 			this.plantEvents.invoker(MpEvents.TICK_PLANTS).onTickPlants(player, plot, plants);
 		}

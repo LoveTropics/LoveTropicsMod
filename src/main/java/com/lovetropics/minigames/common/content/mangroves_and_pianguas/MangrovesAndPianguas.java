@@ -74,6 +74,10 @@ public final class MangrovesAndPianguas {
 			.behavior(ScaryPlantBehavior.CODEC)
 			.register();
 
+	public static final GameBehaviorEntry<FlamingPlantBehavior> FLAMING_PLANT = REGISTRATE.object("flaming_plant")
+			.behavior(FlamingPlantBehavior.CODEC)
+			.register();
+
 	static {
 		PlantPlacement.register();
 	}

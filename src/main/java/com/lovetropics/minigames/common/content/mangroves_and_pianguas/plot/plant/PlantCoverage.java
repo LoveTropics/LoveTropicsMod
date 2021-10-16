@@ -102,6 +102,7 @@ public interface PlantCoverage extends Iterable<BlockPos> {
 		@Override
 		public Iterator<BlockPos> iterator() {
 			LongIterator blockIterator = this.blocks.iterator();
+
 			return new Iterator<BlockPos>() {
 				private final BlockPos.Mutable mutablePos = new BlockPos.Mutable();
 

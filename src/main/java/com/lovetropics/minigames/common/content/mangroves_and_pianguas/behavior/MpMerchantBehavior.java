@@ -56,7 +56,7 @@ public final class MpMerchantBehavior implements IGameBehavior {
 	}
 
 	private void onAssignPlot(ServerPlayerEntity player, Plot plot) {
-		ServerWorld world = game.getWorld();
+		ServerWorld world = this.game.getWorld();
 
 		Vector3d center = plot.shop.getCenter();
 
@@ -80,7 +80,7 @@ public final class MpMerchantBehavior implements IGameBehavior {
 		if (this.entity == target.getType()) {
 			MerchantOffers builtOffers = new MerchantOffers();
 			for (Offer offer : this.offers) {
-				builtOffers.add(offer.build(game));
+				builtOffers.add(offer.build(this.game));
 			}
 
 			MpMerchant merchant = new MpMerchant(player, builtOffers);
@@ -89,15 +89,13 @@ public final class MpMerchantBehavior implements IGameBehavior {
 	}
 
 	public static final class Offer {
-		public static final Codec<Offer> CODEC = RecordCodecBuilder.create(instance -> {
-			return instance.group(
-					MoreCodecs.ITEM_STACK.fieldOf("input").forGetter(c -> c.input),
-					Output.CODEC.fieldOf("output").forGetter(c -> c.output)
-			).apply(instance, Offer::new);
-		});
+		public static final Codec<Offer> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+				MoreCodecs.ITEM_STACK.fieldOf("input").forGetter(c -> c.input),
+				Output.CODEC.fieldOf("output").forGetter(c -> c.output)
+		).apply(instance, Offer::new));
 
-		final ItemStack input;
-		final Output output;
+		private final ItemStack input;
+		private final Output output;
 
 		public Offer(ItemStack input, Output output) {
 			this.input = input;
@@ -128,23 +126,23 @@ public final class MpMerchantBehavior implements IGameBehavior {
 						output -> output.item != null ? Either.left(output) : Either.right(output)
 				);
 
-		final ItemStack item;
-		final PlantItemType plant;
+		private final ItemStack item;
+		private final PlantItemType plant;
 
 		private Output(ItemStack item, PlantItemType plant) {
 			this.item = item;
 			this.plant = plant;
 		}
 
-		static Output item(ItemStack item) {
+		private static Output item(ItemStack item) {
 			return new Output(item, null);
 		}
 
-		static Output plant(PlantItemType plant) {
+		private static Output plant(PlantItemType plant) {
 			return new Output(null, plant);
 		}
 
-		ItemStack build(IGamePhase game) {
+		private ItemStack build(IGamePhase game) {
 			if (this.item != null) {
 				return this.item;
 			} else {

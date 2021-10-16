@@ -4,6 +4,7 @@ import com.lovetropics.lib.codec.CodecRegistry;
 import com.lovetropics.lib.codec.MoreCodecs;
 import com.lovetropics.minigames.common.content.mangroves_and_pianguas.plot.Plot;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.PrimitiveCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
@@ -41,11 +42,9 @@ public interface PlantPlacement {
 	Codec<? extends PlantPlacement> getCodec();
 
 	final class SingleBlock implements PlantPlacement {
-		public static final Codec<SingleBlock> CODEC = RecordCodecBuilder.create(instance -> {
-			return instance.group(
-					MoreCodecs.BLOCK_STATE.fieldOf("block").forGetter(c -> c.block)
-			).apply(instance, SingleBlock::new);
-		});
+		public static final Codec<SingleBlock> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+				MoreCodecs.BLOCK_STATE.fieldOf("block").forGetter(c -> c.block)
+		).apply(instance, SingleBlock::new));
 
 		private final BlockState block;
 
@@ -66,11 +65,9 @@ public interface PlantPlacement {
 	}
 
 	final class DoubleBlock implements PlantPlacement {
-		public static final Codec<DoubleBlock> CODEC = RecordCodecBuilder.create(instance -> {
-			return instance.group(
-					MoreCodecs.BLOCK_STATE.fieldOf("block").forGetter(c -> c.block)
-			).apply(instance, DoubleBlock::new);
-		});
+		public static final Codec<DoubleBlock> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+				MoreCodecs.BLOCK_STATE.fieldOf("block").forGetter(c -> c.block)
+		).apply(instance, DoubleBlock::new));
 
 		private final BlockState block;
 
@@ -91,11 +88,9 @@ public interface PlantPlacement {
 	}
 
 	final class Tree implements PlantPlacement {
-		public static final Codec<Tree> CODEC = RecordCodecBuilder.create(instance -> {
-			return instance.group(
-					ConfiguredFeature.field_236264_b_.fieldOf("tree").forGetter(c -> c.tree)
-			).apply(instance, Tree::new);
-		});
+		public static final Codec<Tree> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+				ConfiguredFeature.field_236264_b_.fieldOf("tree").forGetter(c -> c.tree)
+		).apply(instance, Tree::new));
 
 		private static final Direction[] DIRECTIONS = Direction.values();
 

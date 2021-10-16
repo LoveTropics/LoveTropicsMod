@@ -9,6 +9,8 @@ import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
 
+import java.util.List;
+
 public final class MpEvents {
 	public static final GameEventType<AssignPlot> ASSIGN_PLOT = GameEventType.create(AssignPlot.class, listeners -> (player, plot) -> {
 		for (AssignPlot listener : listeners) {
@@ -78,7 +80,7 @@ public final class MpEvents {
 	}
 
 	public interface TickPlants {
-		void onTickPlants(ServerPlayerEntity player, Plot plot, Iterable<Plant> plants);
+		void onTickPlants(ServerPlayerEntity player, Plot plot, List<Plant> plants);
 	}
 
 	public interface PlacePlant {

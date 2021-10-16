@@ -81,7 +81,7 @@ public final class PlantMap implements Iterable<Plant> {
 		return this.getPlantAt(pos) != null;
 	}
 
-	public Collection<Plant> getPlantsByType(PlantType type) {
+	public List<Plant> getPlantsByType(PlantType type) {
 		return this.plantsByType.getOrDefault(type, Collections.emptyList());
 	}
 

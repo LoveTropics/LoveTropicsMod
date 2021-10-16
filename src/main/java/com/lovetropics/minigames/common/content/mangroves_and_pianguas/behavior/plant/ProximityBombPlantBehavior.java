@@ -41,14 +41,15 @@ public final class ProximityBombPlantBehavior implements IGameBehavior {
 			}
 
 			ServerWorld world = game.getWorld();
-
 			List<Plant> removedPlants = new ArrayList<>();
 
 			for (Plant plant : plants) {
 				AxisAlignedBB detonateBounds = plant.coverage().asBounds().grow(this.radius);
 				List<MobEntity> entities = world.getEntitiesWithinAABB(MobEntity.class, detonateBounds, entity -> !(entity instanceof VillagerEntity));
+
 				if (!entities.isEmpty()) {
 					removedPlants.add(plant);
+
 					explode(world, plant.coverage());
 				}
 			}
