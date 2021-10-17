@@ -31,19 +31,19 @@ public final class ExtendedBossBarCommand {
 	public static void register(CommandDispatcher<CommandSource> dispatcher) {
 		// @formatter:off
 		dispatcher.register(
-			literal("bossbar").requires(source -> source.hasPermissionLevel(2))
-				.then(literal("add")
-				.then(literal("players")
-				.then(argument("id", ResourceLocationArgument.resourceLocation()).suggests(BossBarCommand.SUGGESTIONS_PROVIDER)
-				.then(argument("players", GameProfileArgument.gameProfile())
-					.executes(ExtendedBossBarCommand::addPlayers)
-				))))
-				.then(literal("remove")
-				.then(literal("players")
-				.then(argument("id", ResourceLocationArgument.resourceLocation()).suggests(BossBarCommand.SUGGESTIONS_PROVIDER)
-				.then(argument("players", GameProfileArgument.gameProfile())
-					.executes(ExtendedBossBarCommand::removePlayers)
-				))))
+			literal("bossbar")
+				.then(literal("players").requires(source -> source.hasPermissionLevel(2))
+					.then(literal("add")
+					.then(argument("id", ResourceLocationArgument.resourceLocation()).suggests(BossBarCommand.SUGGESTIONS_PROVIDER)
+					.then(argument("players", GameProfileArgument.gameProfile())
+						.executes(ExtendedBossBarCommand::addPlayers)
+					)))
+					.then(literal("remove")
+					.then(argument("id", ResourceLocationArgument.resourceLocation()).suggests(BossBarCommand.SUGGESTIONS_PROVIDER)
+					.then(argument("players", GameProfileArgument.gameProfile())
+						.executes(ExtendedBossBarCommand::removePlayers)
+					)))
+			)
 		);
 		// @formatter:on
 	}
