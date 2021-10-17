@@ -42,8 +42,8 @@ public final class MangrovesAndPianguas {
 			.behavior(MpPlantItemBehavior.CODEC)
 			.register();
 
-	public static final GameBehaviorEntry<AgingPlantBehavior> AGING_PLANT = REGISTRATE.object("aging_plant")
-			.behavior(AgingPlantBehavior.CODEC)
+	public static final GameBehaviorEntry<AgingCropPlantBehavior> AGING_PLANT = REGISTRATE.object("aging_plant")
+			.behavior(AgingCropPlantBehavior.CODEC)
 			.register();
 
 	public static final GameBehaviorEntry<BarrierPlantBehavior> BARRIER_PLANT = REGISTRATE.object("barrier_plant")

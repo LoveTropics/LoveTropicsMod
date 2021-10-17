@@ -14,19 +14,31 @@ import net.minecraft.world.server.ServerWorld;
 
 import java.util.Random;
 
-public final class BerriesPlantBehavior extends AgingPlantBehavior {
-	public static final Codec<BerriesPlantBehavior> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+public final class AgingCropPlantBehavior extends AgingPlantBehavior {
+	public static final Codec<AgingCropPlantBehavior> CODEC = RecordCodecBuilder.create(instance -> instance.group(
 			Codec.INT.fieldOf("interval").forGetter(c -> c.interval)
-	).apply(instance, BerriesPlantBehavior::new));
+	).apply(instance, AgingCropPlantBehavior::new));
 
-	public BerriesPlantBehavior(int interval) {
+	public AgingCropPlantBehavior(int interval) {
 		super(interval);
 	}
 
 	protected BlockState ageUp(Random random, BlockState state) {
-		int age = state.get(BlockStateProperties.AGE_0_3);
-		if (age < 1 || age < 3 && random.nextInt(128) == 0) {
-			return state.with(BlockStateProperties.AGE_0_3, age + 1);
+		// Skip 50% of crops this tick
+		if (random.nextInt(2) == 0) {
+			return state;
+		}
+
+		if (state.hasProperty(BlockStateProperties.AGE_0_3)) {
+			int age = state.get(BlockStateProperties.AGE_0_3);
+			if (age < 3) {
+				return state.with(BlockStateProperties.AGE_0_3, age + 1);
+			}
+		} else if (state.hasProperty(BlockStateProperties.AGE_0_7)) {
+			int age = state.get(BlockStateProperties.AGE_0_7);
+			if (age < 7) {
+				return state.with(BlockStateProperties.AGE_0_7, age + 1);
+			}
 		}
 
 		return state;

@@ -36,14 +36,18 @@ public final class Plant {
 	}
 
 	public void spawnPoof(ServerWorld world) {
+		spawnPoof(world, 20, 0.15);
+	}
+
+	public void spawnPoof(ServerWorld world, int count, double speed) {
 		Random random = world.rand;
 
 		for (BlockPos pos : this.coverage) {
-			for (int i = 0; i < 20; i++) {
+			for (int i = 0; i < count; i++) {
 				double vx = random.nextGaussian() * 0.02;
 				double vy = random.nextGaussian() * 0.02;
 				double vz = random.nextGaussian() * 0.02;
-				world.spawnParticle(ParticleTypes.POOF, pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5, 1, vx, vy, vz, 0.15F);
+				world.spawnParticle(ParticleTypes.POOF, pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5, 1, vx, vy, vz, speed);
 			}
 		}
 	}
