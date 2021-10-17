@@ -3,7 +3,7 @@
   "package": "com.lovetropics.minigames.mixin",
   "compatibilityLevel": "JAVA_8",
   "refmap": "ltminigames.refmap.json",
-  "mixins": ["SimpleRegistryMixin"],
+  "mixins": ["EntityTypeMixin", "SimpleRegistryMixin"],
   "client": ["client.HotbarOverride"],
   "injectors": {
     "defaultRequire": 1

@@ -61,6 +61,10 @@ public final class SurviveTheTide {
 			.behavior(SurviveTheTideWeatherBehavior.CODEC)
 			.register();
 
+	public static final GameBehaviorEntry<SttPetsBehavior> PETS = REGISTRATE.object("survive_the_tide_pets")
+			.behavior(SttPetsBehavior.CODEC)
+			.register();
+
 	public static void init() {
 	}
 

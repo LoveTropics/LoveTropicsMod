@@ -1,7 +1,7 @@
 package com.lovetropics.minigames.client.lobby.manage;
 
 import com.lovetropics.minigames.client.lobby.manage.state.update.ServerLobbyUpdate;
-import com.lovetropics.minigames.common.core.game.impl.MultiGameManager;
+import com.lovetropics.minigames.common.core.game.IGameManager;
 import com.lovetropics.minigames.common.core.game.lobby.IGameLobby;
 import com.lovetropics.minigames.common.core.game.lobby.ILobbyManagement;
 import net.minecraft.entity.player.ServerPlayerEntity;
@@ -45,7 +45,7 @@ public final class ServerManageLobbyMessage {
 
 	public void handle(Supplier<NetworkEvent.Context> ctx) {
 		ctx.get().enqueueWork(() -> {
-			IGameLobby lobby = MultiGameManager.INSTANCE.getLobbyByNetworkId(id);
+			IGameLobby lobby = IGameManager.get().getLobbyByNetworkId(id);
 			ServerPlayerEntity player = ctx.get().getSender();
 			if (lobby == null || player == null) return;
 

@@ -3,11 +3,14 @@ package com.lovetropics.minigames.common.core.game.behavior.event;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.SpawnReason;
 import net.minecraft.entity.item.ItemEntity;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.ActionResultType;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.math.BlockPos;
 
+import javax.annotation.Nullable;
 import java.util.Collection;
 
 public final class GameLivingEntityEvents {
@@ -50,6 +53,12 @@ public final class GameLivingEntityEvents {
 		return ActionResultType.PASS;
 	});
 
+	public static final GameEventType<Spawn> SPAWNED = GameEventType.create(Spawn.class, listeners -> (entity, reason, player) -> {
+		for (Spawn listener : listeners) {
+			listener.onSpawn(entity, reason, player);
+		}
+	});
+
 	private GameLivingEntityEvents() {
 	}
 
@@ -67,5 +76,9 @@ public final class GameLivingEntityEvents {
 
 	public interface FarmlandTrample {
 		ActionResultType onFarmlandTrample(Entity entity, BlockPos pos, BlockState state);
+	}
+
+	public interface Spawn {
+		void onSpawn(LivingEntity entity, SpawnReason reason, @Nullable ServerPlayerEntity player);
 	}
 }

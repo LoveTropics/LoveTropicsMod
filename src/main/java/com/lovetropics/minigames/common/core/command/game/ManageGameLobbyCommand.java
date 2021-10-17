@@ -3,8 +3,8 @@ package com.lovetropics.minigames.common.core.command.game;
 import com.lovetropics.minigames.common.core.command.argument.GameConfigArgument;
 import com.lovetropics.minigames.common.core.command.argument.GameLobbyArgument;
 import com.lovetropics.minigames.common.core.game.GameResult;
+import com.lovetropics.minigames.common.core.game.IGameManager;
 import com.lovetropics.minigames.common.core.game.config.GameConfig;
-import com.lovetropics.minigames.common.core.game.impl.MultiGameManager;
 import com.lovetropics.minigames.common.core.game.lobby.IGameLobby;
 import com.lovetropics.minigames.common.core.game.lobby.ILobbyManagement;
 import com.lovetropics.minigames.common.core.game.util.GameTexts;
@@ -58,7 +58,7 @@ public class ManageGameLobbyCommand {
 		ServerPlayerEntity player = context.getSource().asPlayer();
 		String name = player.getScoreboardName() + "'s Lobby";
 
-		GameResult<IGameLobby> result = MultiGameManager.INSTANCE.createGameLobby(name, player);
+		GameResult<IGameLobby> result = IGameManager.get().createGameLobby(name, player);
 		if (result.isError()) {
 			throw new SimpleCommandExceptionType(result.getError()).create();
 		}
@@ -73,7 +73,7 @@ public class ManageGameLobbyCommand {
 
 	private static int manageCurrentLobby(CommandContext<CommandSource> context) throws CommandSyntaxException {
 		ServerPlayerEntity player = context.getSource().asPlayer();
-		IGameLobby lobby = MultiGameManager.INSTANCE.getLobbyFor(player);
+		IGameLobby lobby = IGameManager.get().getLobbyFor(player);
 		if (lobby == null) {
 			throw NOT_IN_LOBBY.create();
 		}

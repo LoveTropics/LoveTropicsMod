@@ -16,10 +16,7 @@ import net.minecraft.world.IServerWorld;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.IChunk;
 import net.minecraft.world.server.ServerWorld;
-import net.minecraftforge.event.entity.living.LivingDeathEvent;
-import net.minecraftforge.event.entity.living.LivingDropsEvent;
-import net.minecraftforge.event.entity.living.LivingEvent;
-import net.minecraftforge.event.entity.living.LivingHurtEvent;
+import net.minecraftforge.event.entity.living.*;
 import net.minecraftforge.event.entity.player.AttackEntityEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
@@ -260,7 +257,7 @@ public final class GameEventDispatcher {
 					event.setCanceled(true);
 				}
 			} catch (Exception e) {
-				LoveTropics.LOGGER.warn("Failed to dispatch explosion event", e);
+				LoveTropics.LOGGER.warn("Failed to dispatch tree grow event", e);
 			}
 		}
 	}
