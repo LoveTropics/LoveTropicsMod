@@ -6,6 +6,7 @@ import com.lovetropics.minigames.common.core.game.behavior.event.GamePackageEven
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.ActionResultType;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -37,6 +38,7 @@ public class DonationPackageGameAction extends GameAction
 
     @Override
     public boolean resolve(IGamePhase game, MinecraftServer server) {
-        return game.invoker(GamePackageEvents.RECEIVE_PACKAGE).onReceivePackage(gamePackage);
+        ActionResultType result = game.invoker(GamePackageEvents.RECEIVE_PACKAGE).onReceivePackage(gamePackage);
+        return result == ActionResultType.SUCCESS;
     }
 }

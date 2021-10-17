@@ -16,6 +16,7 @@ import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.potion.EffectInstance;
 import net.minecraft.potion.Effects;
+import net.minecraft.util.ActionResultType;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.MathHelper;
@@ -235,21 +236,21 @@ public class SurviveTheTideWeatherBehavior implements IGameBehavior {
 		}
 	}
 
-	private boolean onPackageReceive(GamePackage gamePackage) {
+	private ActionResultType onPackageReceive(GamePackage gamePackage) {
 		// TODO: hardcoded
 		String packageType = gamePackage.getPackageType();
 		if (packageType.equals("acid_rain_event")) {
 			heatwaveTime = 0;
 			heavyRainfallTime = 0;
 			acidRainTime = config.getRainAcidMinTime() + config.getRainAcidExtraRandTime() / 2;
-			return true;
+			return ActionResultType.SUCCESS;
 		} else if (packageType.equals("heatwave_event")) {
 			acidRainTime = 0;
 			heavyRainfallTime = 0;
 			heatwaveTime = config.getHeatwaveMinTime() + config.getHeatwaveExtraRandTime() / 2;
-			return true;
+			return ActionResultType.SUCCESS;
 		}
 
-		return false;
+		return ActionResultType.PASS;
 	}
 }

@@ -6,6 +6,7 @@ import com.lovetropics.minigames.common.core.game.behavior.event.GamePackageEven
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.ActionResultType;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
 
@@ -62,7 +63,8 @@ public class ChatEventGameAction extends GameAction {
                     ).mergeStyle(TextFormatting.GRAY))
         );
 
-        return game.invoker(GamePackageEvents.RECEIVE_PACKAGE).onReceivePackage(winnerPackage);
+        ActionResultType result = game.invoker(GamePackageEvents.RECEIVE_PACKAGE).onReceivePackage(winnerPackage);
+        return result == ActionResultType.SUCCESS;
     }
 
     public String getTitle() {
