@@ -608,6 +608,7 @@ public class EntityRotFX extends SpriteTexturedParticle
         float f5 = this.getMinV();
         float f6 = this.getMaxV();
         int j = this.getBrightnessForRender(partialTicks);
+        //int j = 15728800;
         if (j > 0) {
             lastNonZeroBrightness = j;
         } else {

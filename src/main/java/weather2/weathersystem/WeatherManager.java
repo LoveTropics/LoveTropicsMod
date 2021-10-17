@@ -1,9 +1,13 @@
 package weather2.weathersystem;
 
+import CoroUtil.util.CoroUtilPhysics;
 import net.minecraft.util.RegistryKey;
+import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.util.math.vector.Vector3f;
 import net.minecraft.world.World;
 import weather2.Weather;
 import weather2.weathersystem.storm.WeatherObject;
+import weather2.weathersystem.storm.WeatherObjectSandstorm;
 import weather2.weathersystem.wind.WindManager;
 
 import java.util.ArrayList;
@@ -107,5 +111,52 @@ public abstract class WeatherManager {
 		} else {
 			Weather.dbg("error looking up storm ID on server for removal: " + ID + " - lookup count: " + lookupStormObjectsByID.size() + " - last used ID: " + WeatherObject.lastUsedStormID);
 		}
+	}
+
+	/**
+	 * Gets the most intense sandstorm, used for effects and sounds
+	 *
+	 * @param parPos
+	 * @return
+	 */
+	public WeatherObjectSandstorm getClosestSandstormByIntensity(Vector3d parPos/*, double maxDist*/) {
+
+		WeatherObjectSandstorm bestStorm = null;
+		double closestDist = 9999999;
+		double mostIntense = 0;
+
+		List<WeatherObject> listStorms = getStormObjects();
+
+		for (int i = 0; i < listStorms.size(); i++) {
+			WeatherObject wo = listStorms.get(i);
+			if (wo instanceof WeatherObjectSandstorm) {
+				WeatherObjectSandstorm sandstorm = (WeatherObjectSandstorm) wo;
+				if (sandstorm == null || sandstorm.isDead) continue;
+
+				List<Vector3d> field_75884_a = sandstorm.getSandstormAsShape();
+
+				double scale = sandstorm.getSandstormScale();
+				boolean inStorm = CoroUtilPhysics.isInConvexShape(parPos, field_75884_a);
+				double dist = CoroUtilPhysics.getDistanceToShape(parPos, field_75884_a);
+				//if best is within storm, compare intensity
+				if (inStorm) {
+					//System.out.println("in storm");
+					closestDist = 0;
+					if (scale > mostIntense) {
+						mostIntense = scale;
+						bestStorm = sandstorm;
+					}
+					//if best is not within storm, compare distance to shape
+				} else if (closestDist > 0/* && dist < maxDist*/) {
+					if (dist < closestDist) {
+						closestDist = dist;
+						bestStorm = sandstorm;
+					}
+				}
+			}
+
+		}
+
+		return bestStorm;
 	}
 }

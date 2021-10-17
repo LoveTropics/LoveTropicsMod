@@ -16,6 +16,7 @@ import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.Biomes;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import weather2.Weather;
 import weather2.client.entity.particle.ParticleSandstorm;
 import weather2.config.ConfigSand;
 import weather2.util.CachedNBTTagCompound;
@@ -55,17 +56,21 @@ public class WeatherObjectSandstorm extends WeatherObject {
 	public ParticleBehaviorSandstorm particleBehavior;
 	
 	public int age = 0;
+	public int ageAtMaxSize = 0;
 	//public int maxAge = 20*20;
 	
 	public int sizePeak = 1;
 	
 	public int ageFadeout = 0;
-	public int ageFadeoutMax = 20*60*5;
-	
+	public int ageFadeoutMax = 20*30;
+	//public int ageFadeoutMax = 20*60*5;
+
 	//public boolean dying = false;
 	public boolean isFrontGrowing = true;
 	
 	public Random rand = new Random();
+
+	public boolean onlyDecayFromTime = true;
 	
 	public WeatherObjectSandstorm(WeatherManager parManager) {
 		super(parManager);
@@ -152,6 +157,11 @@ public class WeatherObjectSandstorm extends WeatherObject {
 		
 		float angle = windMan.getWindAngleForClouds();
 		float speedWind = windMan.getWindSpeedForClouds();
+
+		//TEMP
+		if (age > 300) {
+			remove();
+		}
 		
 		/**
 		 * Progression
@@ -159,6 +169,12 @@ public class WeatherObjectSandstorm extends WeatherObject {
 		
 		if (!world.isRemote) {
 			age++;
+
+			/*Weather.dbg("age: " + age);
+			Weather.dbg("size: " + size);
+			Weather.dbg("ageFadeout: " + ageFadeout);
+			Weather.dbg("ageAtMaxSize: " + ageAtMaxSize);
+			Weather.dbg("posGround: " + posGround);*/
 
 			//boolean isGrowing = true;
 			
@@ -168,11 +184,17 @@ public class WeatherObjectSandstorm extends WeatherObject {
 			if (isFrontGrowing && world.isBlockLoaded(posBlock)) {
 				Biome biomeIn = world.getBiome(posBlock);
 
-				if (isDesert(biomeIn)) {
-					isFrontGrowing = true;
+				if (onlyDecayFromTime) {
+					if (ageAtMaxSize > 20*20) {
+						isFrontGrowing = false;
+					}
 				} else {
-					//System.out.println("sandstorm fadeout started");
-					isFrontGrowing = false;
+					if (isDesert(biomeIn)) {
+						isFrontGrowing = true;
+					} else {
+						//System.out.println("sandstorm fadeout started");
+						isFrontGrowing = false;
+					}
 				}
 			} else {
 				isFrontGrowing = false;
@@ -185,6 +207,8 @@ public class WeatherObjectSandstorm extends WeatherObject {
 					if (size < maxSize) {
 						size++;
 						//System.out.println("size: " + size);
+					} else {
+						ageAtMaxSize += sizeAdjRate;
 					}
 				}
 			} else {
@@ -333,7 +357,7 @@ public class WeatherObjectSandstorm extends WeatherObject {
 		
 		//if (size >= 2) {
 		if (getSandstormScale() > 0.2D) {
-			tickBlockSandBuildup();
+			//tickBlockSandBuildup();
 		}
 		
 		this.posGround = new Vector3d(pos.x, yy, pos.z);
@@ -427,6 +451,8 @@ public class WeatherObjectSandstorm extends WeatherObject {
 		double sandstormParticleRateDust = ConfigSand.Sandstorm_Particle_Dust_effect_rate;
     	if (size > 0/*isFrontGrowing || sandstormScale > 0.5F*/) {
 	    	for (int heightLayer = 0; heightLayer < heightLayers && spawnedThisTick < 500; heightLayer++) {
+			//for (int ii = 0; ii < 2; ii++) {
+				//int heightLayer = 0;
 	    		//youd think this should be angle - 90 to angle + 90, but minecraft / bad math
 			    //for (double i = directionAngleDeg; i < directionAngleDeg + (180); i += degRate) {
 	    			double i = directionAngleDeg + (rand.nextDouble() * 180D);
@@ -439,6 +465,10 @@ public class WeatherObjectSandstorm extends WeatherObject {
 			    		double inwardsAdj = rand.nextDouble() * 5D;//(sizeDyn * 0.75D);
 			    		
 			    		double sizeRand = (sizeDyn + /*rand.nextDouble() * 30D*/ - inwardsAdj/*30D*/)/* / (double)heightLayer*/;
+
+			    		//TEMP TESTING
+			    		sizeRand = 5;
+
 			    		double x = pos.x + (-Math.sin(Math.toRadians(i)) * (sizeRand));
 			    		double z = pos.z + (Math.cos(Math.toRadians(i)) * (sizeRand));
 			    		double y = pos.y + (heightLayer * distBetweenParticles * 2);
@@ -457,14 +487,17 @@ public class WeatherObjectSandstorm extends WeatherObject {
 			    		part.setFacePlayer(false);
 			    		part.isTransparent = true;
 			    		part.rotationYaw = (float) i + rand.nextInt(20) - 10;//Math.toDegrees(Math.cos(Math.toRadians(i)) * 2D);
+			    		//part.rotationYaw = 0;
 			    		part.rotationPitch = 0;
 			    		part.setMaxAge(300);
 			    		part.setGravity(0.09F);
 			    		part.setAlphaF(1F);
 			    		float brightnessMulti = 1F - (rand.nextFloat() * 0.5F);
 			    		part.setColor(0.65F * brightnessMulti, 0.6F * brightnessMulti, 0.3F * brightnessMulti);
-			    		part.setScale(100);
-			    		
+			    		part.setScale(100 * 0.15F);
+			    		//part.setScale(5F);
+			    		//part.setScale(100);
+
 			    		//part.windWeight = 5F;
 			    		
 			    		part.setKillOnCollide(true);
@@ -545,12 +578,15 @@ public class WeatherObjectSandstorm extends WeatherObject {
 	    		part.isTransparent = true;
 	    		part.rotationYaw = (float)rand.nextInt(360);
 	    		part.rotationPitch = (float)rand.nextInt(360);
+				part.rotationYaw = 0;
+				part.rotationPitch = 0;
 	    		part.setMaxAge(100);
 	    		part.setGravity(0.09F);
 	    		part.setAlphaF(1F);
 	    		float brightnessMulti = 1F - (rand.nextFloat() * 0.5F);
 	    		part.setColor(0.65F * brightnessMulti, 0.6F * brightnessMulti, 0.3F * brightnessMulti);
-	    		part.setScale(100);
+	    		//part.setScale(100);
+				part.setScale(100 * 0.15F);
 	    		
 	    		part.setKillOnCollide(true);
 	    		

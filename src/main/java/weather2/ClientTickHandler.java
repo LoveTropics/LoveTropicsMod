@@ -2,6 +2,7 @@ package weather2;
 
 import extendedrenderer.ParticleManagerExtended;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screen.ConfirmBackupScreen;
 import net.minecraft.resources.IReloadableResourceManager;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
@@ -57,6 +58,12 @@ public class ClientTickHandler
     {
         Minecraft mc = Minecraft.getInstance();
         World world = mc.world;
+
+		System.out.println(mc.currentScreen);
+
+		if (mc.currentScreen instanceof ConfirmBackupScreen) {
+
+		}
 
 		if (world != null) {
 			checkClientWeather();

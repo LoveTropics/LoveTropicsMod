@@ -66,6 +66,22 @@ public final class ServerWeatherController implements WeatherController {
 	}
 
 	@Override
+	public void setSandstorm(boolean sandstorm) {
+		if (sandstorm != this.state.sandstorm) {
+			this.state.sandstorm = sandstorm;
+			this.dirty = true;
+		}
+	}
+
+	@Override
+	public void setSnowstorm(boolean snowstorm) {
+		if (snowstorm != this.state.snowstorm) {
+			this.state.snowstorm = snowstorm;
+			this.dirty = true;
+		}
+	}
+
+	@Override
 	public float getRainAmount() {
 		return this.state.rainAmount;
 	}
@@ -83,5 +99,15 @@ public final class ServerWeatherController implements WeatherController {
 	@Override
 	public boolean isHeatwave() {
 		return this.state.heatwave;
+	}
+
+	@Override
+	public boolean isSandstorm() {
+		return this.state.sandstorm;
+	}
+
+	@Override
+	public boolean isSnowstorm() {
+		return this.state.snowstorm;
 	}
 }

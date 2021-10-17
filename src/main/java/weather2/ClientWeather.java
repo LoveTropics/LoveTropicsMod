@@ -2,11 +2,13 @@ package weather2;
 
 import com.lovetropics.minigames.common.core.game.weather.RainType;
 import com.lovetropics.minigames.common.core.game.weather.WeatherState;
+import net.minecraft.client.Minecraft;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import weather2.client.SceneEnhancer;
 
 @Mod.EventBusSubscriber(modid = Weather.MODID, value = Dist.CLIENT)
 public final class ClientWeather {
@@ -53,6 +55,8 @@ public final class ClientWeather {
 		if (this.lerpTicks <= 0) {
 			this.state.rainType = this.lerpState.rainType;
 			this.state.heatwave = this.lerpState.heatwave;
+			this.state.sandstorm = this.lerpState.sandstorm;
+			this.state.snowstorm = this.lerpState.snowstorm;
 			return;
 		}
 
@@ -79,11 +83,26 @@ public final class ClientWeather {
 	}
 
 	public boolean isHeatwave() {
+		if (false) return true;
+		if (Minecraft.getInstance().world != null && Minecraft.getInstance().world.getGameTime() % 800 >= 600) return true;
 		return this.state.heatwave;
 	}
 
+	public boolean isSandstorm() {
+		if (false) return true;
+		if (Minecraft.getInstance().world != null && Minecraft.getInstance().world.getGameTime() % 800 >= 400 && Minecraft.getInstance().world.getGameTime() % 800 < 600) return true;
+		return this.state.sandstorm;
+	}
+
+	public boolean isSnowstorm() {
+		if (false) return true;
+		if (Minecraft.getInstance().world != null && Minecraft.getInstance().world.getGameTime() % 800 >= 200 && Minecraft.getInstance().world.getGameTime() % 800 < 400) return true;
+		//if (Minecraft.getInstance().world != null && Minecraft.getInstance().world.getGameTime() % 400 < 200) return true;
+		return this.state.snowstorm;
+	}
+
 	public boolean hasWeather() {
-		if (true) return true;
+		if (SceneEnhancer.FORCE_ON_DEBUG_TESTING) return true;
 		return this.state.hasWeather();
 	}
 }

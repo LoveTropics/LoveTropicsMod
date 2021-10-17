@@ -37,6 +37,16 @@ public final class VanillaWeatherController implements WeatherController {
 	}
 
 	@Override
+	public void setSandstorm(boolean sandstorm) {
+		state.sandstorm = sandstorm;
+	}
+
+	@Override
+	public void setSnowstorm(boolean snowstorm) {
+		state.snowstorm = snowstorm;
+	}
+
+	@Override
 	public float getRainAmount() {
 		return state.rainAmount;
 	}
@@ -54,5 +64,15 @@ public final class VanillaWeatherController implements WeatherController {
 	@Override
 	public boolean isHeatwave() {
 		return state.heatwave;
+	}
+
+	@Override
+	public boolean isSandstorm() {
+		return state.sandstorm;
+	}
+
+	@Override
+	public boolean isSnowstorm() {
+		return state.snowstorm;
 	}
 }

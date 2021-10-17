@@ -31,41 +31,14 @@ public class EventHandlerForge {
 	@SubscribeEvent
 	@OnlyIn(Dist.CLIENT)
     public void onFogColors(FogColors event) {
-		// TODO minigames
-        if (SceneEnhancer.isFogOverridding()) {
-        	float intensity = SceneEnhancer.heatwaveIntensity;
-
-        	float red = MathHelper.lerp(intensity, event.getRed(), 0.5F);
-			float green = MathHelper.lerp(intensity, event.getGreen(), 0.2F);
-			float blue = MathHelper.lerp(intensity, event.getBlue(), 0.1F);
-
-			event.setRed(red);
-        	event.setGreen(green);
-        	event.setBlue(blue);
-        	RenderSystem.fogMode(GlStateManager.FogMode.LINEAR);
-        }
+        SceneEnhancer.getFogAdjuster().onFogColors(event);
 		
 	}
 	
 	@SubscribeEvent
 	@OnlyIn(Dist.CLIENT)
 	public void onFogRender(RenderFogEvent event) {
-		// TODO minigames
-		if (SceneEnhancer.isFogOverridding()) {
-			//TODO: make use of this, density only works with EXP or EXP 2 mode
-			RenderSystem.fogMode(GlStateManager.FogMode.LINEAR);
-
-			float intensity = SceneEnhancer.heatwaveIntensity;
-			float farPlaneDistance = event.getFarPlaneDistance();
-
-			if (event.getType() == FogType.FOG_SKY) {
-				RenderSystem.fogStart(0.0F);
-				RenderSystem.fogEnd(MathHelper.lerp(intensity, farPlaneDistance, 20.0F));
-			} else {
-				RenderSystem.fogStart(MathHelper.lerp(intensity, farPlaneDistance * 0.75F, 0.0F));
-				RenderSystem.fogEnd(MathHelper.lerp(intensity, farPlaneDistance, 15.0F));
-			}
-        }
+		SceneEnhancer.getFogAdjuster().onFogRender(event);
 	}
 	
 	@SubscribeEvent

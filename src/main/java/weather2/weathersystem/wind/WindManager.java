@@ -229,4 +229,12 @@ public class WindManager {
 
 		windTimeGust = parNBT.getInt("windTimeGust");
 	}
+
+	public Vector3d getWindForce() {
+		float windSpeed = this.getWindSpeed();
+		float windAngle = this.getWindAngle();
+		float windX = (float) -Math.sin(Math.toRadians(windAngle)) * windSpeed;
+		float windZ = (float) Math.cos(Math.toRadians(windAngle)) * windSpeed;
+		return new Vector3d(windX, 0, windZ);
+	}
 }

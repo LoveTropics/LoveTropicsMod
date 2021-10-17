@@ -13,6 +13,10 @@ public interface WeatherController {
 
 	void setHeatwave(boolean heatwave);
 
+	void setSandstorm(boolean sandstorm);
+
+	void setSnowstorm(boolean snowstorm);
+
 	float getRainAmount();
 
 	RainType getRainType();
@@ -20,6 +24,10 @@ public interface WeatherController {
 	float getWindSpeed();
 
 	boolean isHeatwave();
+
+	boolean isSandstorm();
+
+	boolean isSnowstorm();
 
 	default void reset() {
 		setRain(0.0F, RainType.NORMAL);
