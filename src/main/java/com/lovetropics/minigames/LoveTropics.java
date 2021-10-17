@@ -10,6 +10,7 @@ import com.lovetropics.minigames.common.content.hide_and_seek.HideAndSeek;
 import com.lovetropics.minigames.common.content.survive_the_tide.SurviveTheTide;
 import com.lovetropics.minigames.common.content.survive_the_tide.entity.DriftwoodRider;
 import com.lovetropics.minigames.common.content.trash_dive.TrashDive;
+import com.lovetropics.minigames.common.core.command.ExtendedBossBarCommand;
 import com.lovetropics.minigames.common.core.command.MapCommand;
 import com.lovetropics.minigames.common.core.command.game.*;
 import com.lovetropics.minigames.common.core.diguise.PlayerDisguise;
@@ -166,6 +167,7 @@ public class LoveTropics {
         MapCommand.register(dispatcher);
         GamePackageCommand.register(dispatcher);
         ManageGameLobbyCommand.register(dispatcher);
+        ExtendedBossBarCommand.register(dispatcher);
     }
 
     private void onServerAboutToStart(final FMLServerAboutToStartEvent event) {
