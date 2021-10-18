@@ -5,13 +5,13 @@ import net.minecraft.util.math.vector.Vector3f;
 
 public class FogProfile {
 
-    private Vector3f rgb = new Vector3f(1, 1, 1);
-    private float fogStart = 0;
-    private float fogEnd = 20;
-    private float fogStartSky = 20;
-    private float fogEndSky = 20;
-    private GlStateManager.FogMode fogMode = GlStateManager.FogMode.LINEAR;
-    private float fadeToRate = 0.1F;
+    private Vector3f rgb;
+    private float fogStart;
+    private float fogEnd;
+    private float fogStartSky;
+    private float fogEndSky;
+    private GlStateManager.FogMode fogMode;
+    private float fadeToRate;
 
     //likely only used when we fade back to vanilla fog, otherwise fadeToRate for the new profile will take control
     private float fadeFromRate = 0.1F;

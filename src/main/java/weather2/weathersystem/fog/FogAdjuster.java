@@ -7,10 +7,8 @@ import net.minecraft.client.renderer.FogRenderer;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.vector.Vector3f;
 import net.minecraftforge.client.event.EntityViewRenderEvent;
-import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
 import weather2.ClientTickHandler;
 import weather2.ClientWeather;
-import weather2.Weather;
 import weather2.client.SceneEnhancer;
 
 public class FogAdjuster {
@@ -25,14 +23,7 @@ public class FogAdjuster {
     private FogProfile activeProfile;
     private FogProfile prevProfile;
 
-    //smoothly transitioned to in this class
-    private float activeIntensity = 0;
     private float lerpAmount = 0;
-
-    //set based on minigame config
-    private float activeIntensityTarget = 0;
-
-    private boolean transitioningToVanilla = false;
 
     /**
      *
@@ -60,23 +51,15 @@ public class FogAdjuster {
     }
 
     public void tickGame(ClientWeather weather) {
-        //steady client tick
-        //heatwaveIntensity = CoroUtilMisc.adjVal(heatwaveIntensity, heatwaveIntensityTarget, 0.01F);
-
-        //initProfiles();
-
         updateWeatherState();
 
-        activeIntensity = CoroUtilMisc.adjVal(activeIntensity, activeIntensityTarget, 0.01F);
         lerpAmount = CoroUtilMisc.adjVal(lerpAmount, 1F, 0.01F);
 
-        Weather.dbg("activeIntensity: " + activeIntensity);
-        Weather.dbg("lerpAmount: " + lerpAmount);
+        //Weather.dbg("activeIntensity: " + activeIntensity);
+        //Weather.dbg("lerpAmount: " + lerpAmount);
     }
 
     public void onFogColors(EntityViewRenderEvent.FogColors event) {
-        //use partialticks
-
         updateWeatherState();
 
         if (SceneEnhancer.isFogOverridding()) {
@@ -97,115 +80,62 @@ public class FogAdjuster {
     }
 
     public void onFogRender(EntityViewRenderEvent.RenderFogEvent event) {
-        //use partialticks
-
         updateWeatherState();
 
         if (SceneEnhancer.isFogOverridding()) {
             //TODO: make use of this, density only works with EXP or EXP 2 mode
             RenderSystem.fogMode(GlStateManager.FogMode.LINEAR);
 
-
-
-            //float intensity = SceneEnhancer.heatwaveIntensity;
-            float farPlaneDistance = event.getFarPlaneDistance();
-
             if (event.getType() == FogRenderer.FogType.FOG_SKY) {
-                //value from FogRenderer.setupFog method
                 //TODO: note, this value can be different depending on other contexts, we should try to grab GlStateManager.FOG.start, if we dont, itll glitch with bosses that cause fog and blindness effect, maybe more
+                //value from FogRenderer.setupFog method
                 fogVanilla.setFogStartSky(0);
                 fogVanilla.setFogEndSky(event.getFarPlaneDistance());
-                //RenderSystem.fogStart(0.0F);
                 RenderSystem.fogStart(MathHelper.lerp(lerpAmount, prevProfile.getFogStartSky(), activeProfile.getFogStartSky()));
                 RenderSystem.fogEnd(MathHelper.lerp(lerpAmount, prevProfile.getFogEndSky(), activeProfile.getFogEndSky()));
-                //RenderSystem.fogEnd(0);
             } else {
                 //value from FogRenderer.setupFog method
                 fogVanilla.setFogStart(event.getFarPlaneDistance() * 0.75F);
                 fogVanilla.setFogEnd(event.getFarPlaneDistance());
-                Weather.dbg("getFarPlaneDistance: " + event.getFarPlaneDistance());
-                //RenderSystem.fogStart(MathHelper.lerp(lerpAmount, prevProfile.getFogStart() * 0.75F, activeProfile.getFogStart()));
+                //Weather.dbg("getFarPlaneDistance: " + event.getFarPlaneDistance());
                 RenderSystem.fogStart(MathHelper.lerp(lerpAmount, prevProfile.getFogStart(), activeProfile.getFogStart()));
                 RenderSystem.fogEnd(MathHelper.lerp(lerpAmount, prevProfile.getFogEnd(), activeProfile.getFogEnd()));
             }
-
-            /*RenderSystem.fogStart(MathHelper.lerp(lerpAmount, prevProfile.getFogStart(), activeProfile.getFogStart()));
-            RenderSystem.fogEnd(MathHelper.lerp(lerpAmount, prevProfile.getFogEnd(), activeProfile.getFogEnd()));*/
-
-            /*if (event.getType() == FogRenderer.FogType.FOG_SKY) {
-                RenderSystem.fogStart(0.0F);
-                RenderSystem.fogEnd(MathHelper.lerp(activeIntensity, farPlaneDistance, 20.0F));
-                //test
-                RenderSystem.fogStart(0);
-                RenderSystem.fogEnd(7);
-            } else {
-                RenderSystem.fogStart(MathHelper.lerp(activeIntensity, farPlaneDistance * 0.75F, 0.0F));
-                RenderSystem.fogEnd(MathHelper.lerp(activeIntensity, farPlaneDistance, 15.0F));
-
-                //test
-                RenderSystem.fogStart(0);
-                RenderSystem.fogEnd(20);
-            }*/
-
-            /*RenderSystem.fogStart(0);
-            RenderSystem.fogEnd(20);*/
         }
     }
 
     public void startHeatwave() {
         prevProfile = activeProfile;
         activeProfile = fogHeatwave;
-        activeIntensityTarget = 1F;
         lerpAmount = 0;
     }
 
     public void startSandstorm() {
         prevProfile = activeProfile;
         activeProfile = fogSandstorm;
-        activeIntensityTarget = 1F;
         lerpAmount = 0;
     }
 
     public void startSnowstorm() {
         prevProfile = activeProfile;
         activeProfile = fogSnowstorm;
-        activeIntensityTarget = 1F;
         lerpAmount = 0;
     }
 
     public void restoreVanilla() {
         prevProfile = activeProfile;
         activeProfile = fogVanilla;
-        activeIntensityTarget = 0F;
         lerpAmount = 0;
     }
 
-    public float getActiveIntensity() {
-        return activeIntensity;
-    }
-
-    public void setActiveIntensity(float activeIntensity) {
-        this.activeIntensity = activeIntensity;
-    }
-
-    public float getActiveIntensityTarget() {
-        return activeIntensityTarget;
-    }
-
-    public void setActiveIntensityTarget(float activeIntensityTarget) {
-        this.activeIntensityTarget = activeIntensityTarget;
-    }
-
     public boolean isFogOverriding() {
-        //if (true) return true;
         ClientTickHandler.checkClientWeather();
         ClientWeather weather = ClientWeather.get();
-        //return weather.isHeatwave() || weather.isSandstorm() || weather.isSnowstorm();
-        return (weather.isHeatwave() || weather.isSandstorm() || weather.isSnowstorm()) || /*lerpAmount != 0*//*(lerpAmount > 0 && lerpAmount < 1)*/!(/*lerpAmount == 0 || */lerpAmount == 1);
+        return (weather.isHeatwave() || weather.isSandstorm() || weather.isSnowstorm()) || lerpAmount != 1;
     }
 
     /**
-     * in its own method so quick render update calls can forge an update check to prevent old data which causes flickers
+     * In its own method so quick render update calls can force an update check to prevent old data use which causes flickers
      */
     public void updateWeatherState() {
         ClientTickHandler.checkClientWeather();
