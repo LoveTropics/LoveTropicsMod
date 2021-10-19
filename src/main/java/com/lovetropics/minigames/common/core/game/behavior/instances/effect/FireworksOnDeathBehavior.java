@@ -1,4 +1,4 @@
-package com.lovetropics.minigames.common.core.game.behavior.instances;
+package com.lovetropics.minigames.common.core.game.behavior.instances.effect;
 
 import com.lovetropics.lib.entity.FireworkPalette;
 import com.lovetropics.minigames.common.core.game.IGamePhase;

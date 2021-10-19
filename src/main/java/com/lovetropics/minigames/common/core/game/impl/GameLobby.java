@@ -50,7 +50,7 @@ final class GameLobby implements IGameLobby {
 		this.server = server;
 		this.metadata = metadata;
 
-		this.gameQueue = new LobbyGameQueue();
+		this.gameQueue = new LobbyGameQueue(server);
 		this.state = new LobbyStateManager(this);
 		this.players = new LobbyPlayerManager(this);
 		this.management = new LobbyManagement(this);

@@ -1,7 +1,9 @@
 package com.lovetropics.minigames.common.core.game.behavior;
 
+import com.google.common.base.Function;
 import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Multimap;
+import com.google.common.collect.Multimaps;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
 import com.lovetropics.minigames.common.core.game.config.BehaviorReference;
 import com.lovetropics.minigames.common.core.game.impl.GamePhase;
@@ -46,5 +48,9 @@ public final class BehaviorMap implements Iterable<IGameBehavior> {
 
 	public Stream<IGameBehavior> stream() {
 		return StreamSupport.stream(spliterator(), false);
+	}
+
+	public <V> Multimap<GameBehaviorType<?>, V> mapValues(Function<? super IGameBehavior, V> valMap) {
+		return Multimaps.transformValues(behaviors, valMap);
 	}
 }

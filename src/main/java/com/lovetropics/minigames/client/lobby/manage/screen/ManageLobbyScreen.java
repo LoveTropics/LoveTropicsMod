@@ -6,6 +6,7 @@ import com.lovetropics.minigames.client.lobby.manage.screen.player_list.LobbyPla
 import com.lovetropics.minigames.client.lobby.manage.state.ClientLobbyManageState;
 import com.lovetropics.minigames.client.lobby.manage.state.ClientLobbyQueue;
 import com.lovetropics.minigames.client.lobby.manage.state.ClientLobbyQueuedGame;
+import com.lovetropics.minigames.client.lobby.screen.game_config.GameConfig;
 import com.lovetropics.minigames.client.lobby.state.ClientGameDefinition;
 import com.lovetropics.minigames.client.screen.FlexUi;
 import com.lovetropics.minigames.client.screen.flex.Box;
@@ -36,6 +37,7 @@ public final class ManageLobbyScreen extends Screen {
 	private Button publishButton;
 
 	private GameList gameList;
+	private GameConfig gameConfig;
 	private LobbyPlayerList playerList;
 
 	private Button closeButton;
@@ -64,6 +66,7 @@ public final class ManageLobbyScreen extends Screen {
 			@Override
 			public void selectQueuedGame(int queuedGameId) {
 				selectedGameId = queuedGameId;
+				gameConfig.setGame(session.lobby().getQueue().byId(queuedGameId));
 			}
 
 			@Override
@@ -89,6 +92,9 @@ public final class ManageLobbyScreen extends Screen {
 				}
 			}
 		}));
+
+		// TODO actually save config data
+		gameConfig = addListener(new GameConfig(this, layout.edit, () -> {}));
 
 		nameField = addListener(FlexUi.createTextField(layout.name, font, GameTexts.Ui.lobbyName()));
 		nameField.setMaxStringLength(200);
@@ -204,6 +210,7 @@ public final class ManageLobbyScreen extends Screen {
 		FlexUi.fill(layout.rightColumn, matrixStack, 0x80101010);
 
 		gameList.render(matrixStack, mouseX, mouseY, partialTicks);
+		gameConfig.render(matrixStack, mouseX, mouseY, partialTicks);
 
 		for (Layout marginal : layout.marginals) {
 			FlexUi.fill(marginal, matrixStack, 0xFF101010);

@@ -181,7 +181,7 @@ public final class GameEventDispatcher {
 			ServerPlayerEntity player = (ServerPlayerEntity) event.getPlayer();
 
 			try {
-				game.invoker(GamePlayerEvents.INTERACT_ENTITY).onInteract(player, event.getTarget(), event.getHand());
+				game.invoker(GamePlayerEvents.INTERACT_ENTITY).onInteractEntity(player, event.getTarget(), event.getHand());
 			} catch (Exception e) {
 				LoveTropics.LOGGER.warn("Failed to dispatch player interact entity event", e);
 			}
@@ -198,6 +198,24 @@ public final class GameEventDispatcher {
 				game.invoker(GamePlayerEvents.LEFT_CLICK_BLOCK).onLeftClickBlock(player, player.getServerWorld(), event.getPos());
 			} catch (Exception e) {
 				LoveTropics.LOGGER.warn("Failed to dispatch player left click block event", e);
+			}
+		}
+	}
+
+	@SubscribeEvent
+	public void onPlayerRightClickItem(PlayerInteractEvent.RightClickItem event) {
+		IGamePhase game = gameLookup.getGamePhaseFor(event.getPlayer());
+		if (game != null) {
+			ServerPlayerEntity player = (ServerPlayerEntity) event.getPlayer();
+
+			try {
+				ActionResultType result = game.invoker(GamePlayerEvents.USE_ITEM).onUseItem(player, event.getHand());
+				if (result != ActionResultType.PASS) {
+					event.setCancellationResult(result);
+					event.setCanceled(true);
+				}
+			} catch (Exception e) {
+				LoveTropics.LOGGER.warn("Failed to dispatch player item use event", e);
 			}
 		}
 	}

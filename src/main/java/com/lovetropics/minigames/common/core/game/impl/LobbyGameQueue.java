@@ -3,6 +3,7 @@ package com.lovetropics.minigames.common.core.game.impl;
 import com.lovetropics.minigames.common.core.game.IGameDefinition;
 import com.lovetropics.minigames.common.core.game.lobby.ILobbyGameQueue;
 import com.lovetropics.minigames.common.core.game.lobby.QueuedGame;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.MathHelper;
 
 import javax.annotation.Nullable;
@@ -11,7 +12,12 @@ import java.util.Iterator;
 import java.util.List;
 
 final class LobbyGameQueue implements ILobbyGameQueue {
+	private final MinecraftServer server;
 	private final List<QueuedGame> entries = new ArrayList<>();
+
+	LobbyGameQueue(MinecraftServer server) {
+		this.server = server;
+	}
 
 	@Nullable
 	QueuedGame next() {
@@ -20,7 +26,7 @@ final class LobbyGameQueue implements ILobbyGameQueue {
 
 	@Override
 	public QueuedGame enqueue(IGameDefinition game) {
-		QueuedGame entry = QueuedGame.create(game);
+		QueuedGame entry = QueuedGame.create(this.server, game);
 		entries.add(entry);
 		return entry;
 	}

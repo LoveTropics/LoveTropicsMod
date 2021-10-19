@@ -6,6 +6,7 @@ import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.common.core.game.behavior.instances.*;
 import com.lovetropics.minigames.common.core.game.behavior.instances.command.*;
 import com.lovetropics.minigames.common.core.game.behavior.instances.donation.*;
+import com.lovetropics.minigames.common.core.game.behavior.instances.effect.FireworksOnDeathBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.statistics.*;
 import com.lovetropics.minigames.common.core.game.behavior.instances.team.SetupTeamsBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.team.TeamWinTrigger;

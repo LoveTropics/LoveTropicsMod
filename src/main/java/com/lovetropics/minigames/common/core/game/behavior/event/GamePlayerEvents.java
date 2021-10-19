@@ -72,8 +72,18 @@ public final class GamePlayerEvents {
 
 	public static final GameEventType<InteractEntity> INTERACT_ENTITY = GameEventType.create(InteractEntity.class, listeners -> (player, target, hand) -> {
 		for (InteractEntity listener : listeners) {
-			listener.onInteract(player, target, hand);
+			listener.onInteractEntity(player, target, hand);
 		}
+	});
+
+	public static final GameEventType<UseItem> USE_ITEM = GameEventType.create(UseItem.class, listeners -> (player, hand) -> {
+		for (UseItem listener : listeners) {
+			ActionResultType result = listener.onUseItem(player, hand);
+			if (result != ActionResultType.PASS) {
+				return result;
+			}
+		}
+		return ActionResultType.PASS;
 	});
 
 	public static final GameEventType<LeftClickBlock> LEFT_CLICK_BLOCK = GameEventType.create(LeftClickBlock.class, listeners -> (player, world, pos) -> {
@@ -152,7 +162,11 @@ public final class GamePlayerEvents {
 	}
 
 	public interface InteractEntity {
-		void onInteract(ServerPlayerEntity player, Entity target, Hand hand);
+		void onInteractEntity(ServerPlayerEntity player, Entity target, Hand hand);
+	}
+
+	public interface UseItem {
+		ActionResultType onUseItem(ServerPlayerEntity player, Hand hand);
 	}
 
 	public interface LeftClickBlock {
