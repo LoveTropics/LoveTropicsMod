@@ -8,6 +8,7 @@ import it.unimi.dsi.fastutil.longs.LongSet;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 
+import javax.annotation.Nullable;
 import java.util.Iterator;
 
 public interface PlantCoverage extends Iterable<BlockPos> {
@@ -31,6 +32,36 @@ public interface PlantCoverage extends Iterable<BlockPos> {
 	AxisAlignedBB asBounds();
 
 	BlockPos getOrigin();
+
+	default boolean intersects(PlantCoverage other) {
+		if (!this.asBounds().intersects(other.asBounds())) {
+			return false;
+		}
+
+		for (BlockPos pos : this) {
+			if (other.covers(pos)) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	@Nullable
+	default PlantCoverage removeIntersection(PlantCoverage other) {
+		if (!this.intersects(other)) {
+			return this;
+		}
+
+		LongSet blocks = new LongOpenHashSet();
+		for (BlockPos pos : this) {
+			if (!other.covers(pos)) {
+				blocks.add(pos.toLong());
+			}
+		}
+
+		return !blocks.isEmpty() ? new Set(blocks, this.getOrigin()) : null;
+	}
 
 	final class Single implements PlantCoverage {
 		private final BlockPos block;

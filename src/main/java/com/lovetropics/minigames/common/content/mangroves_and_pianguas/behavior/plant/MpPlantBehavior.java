@@ -22,7 +22,6 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.common.util.Constants;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -83,8 +82,6 @@ public final class MpPlantBehavior implements IGameBehavior {
 		if (coverage == null) return false;
 
 		Plant plant = plot.plants.addPlant(plantType, coverage);
-		if (plant == null) return false;
-
 		game.invoker(MpEvents.ADD_PLANT).onAddPlant(player, plot, plant);
 
 		return true;

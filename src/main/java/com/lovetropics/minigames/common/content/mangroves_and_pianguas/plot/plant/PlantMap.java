@@ -3,6 +3,7 @@ package com.lovetropics.minigames.common.content.mangroves_and_pianguas.plot.pla
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import net.minecraft.util.math.BlockPos;
 
 import javax.annotation.Nullable;
@@ -10,46 +11,63 @@ import java.util.*;
 
 public final class PlantMap implements Iterable<Plant> {
 	private final List<Plant> plants = new ArrayList<>();
-
-	private final Long2ObjectMap<Plant> plantByPos = new Long2ObjectOpenHashMap<>();
 	private final Map<PlantType, List<Plant>> plantsByType = new Object2ObjectOpenHashMap<>();
 
-	@Nullable
+	private final Long2ObjectMap<Plant> plantByPos = new Long2ObjectOpenHashMap<>();
+
 	public Plant addPlant(PlantType type, PlantCoverage coverage) {
 		Plant plant = new Plant(type, coverage);
-		if (this.addPlant(plant)) {
-			return plant;
-		} else {
-			return null;
-		}
+		this.addPlant(plant);
+		return plant;
 	}
 
-	public boolean addPlant(Plant plant) {
+	public void addPlant(Plant plant) {
+		this.addPlantToList(plant);
+		this.assignPlantCoverage(plant);
+	}
+
+	private void assignPlantCoverage(Plant plant) {
+		Set<Plant> intersectingPlants = new ReferenceOpenHashSet<>();
 		for (BlockPos pos : plant.coverage()) {
-			if (this.plantByPos.containsKey(pos.toLong())) {
-				return false;
+			Plant intersecting = this.plantByPos.put(pos.toLong(), plant);
+			if (intersecting != null) {
+				intersectingPlants.add(intersecting);
 			}
 		}
 
-		// TODO: test intersection
-		this.plants.add(plant);
+		this.removeIntersectingPlants(plant, intersectingPlants);
+	}
 
-		this.plantsByType.computeIfAbsent(plant.type(), t -> new ArrayList<>())
-				.add(plant);
+	private void removeIntersectingPlants(Plant plant, Set<Plant> intersectingPlants) {
+		for (Plant intersecting : intersectingPlants) {
+			this.removePlantFromList(intersecting);
 
-		for (BlockPos pos : plant.coverage()) {
-			this.plantByPos.put(pos.toLong(), plant);
+			Plant newIntersecting = intersecting.removeIntersection(plant);
+			if (newIntersecting != null) {
+				this.addPlantToList(newIntersecting);
+			}
 		}
-
-		return true;
 	}
 
 	public boolean removePlant(Plant plant) {
-		if (this.plants.remove(plant)) {
+		if (this.removePlantFromList(plant)) {
 			for (BlockPos pos : plant.coverage()) {
 				this.plantByPos.remove(pos.toLong(), plant);
 			}
+			return true;
+		} else {
+			return false;
+		}
+	}
 
+	private void addPlantToList(Plant plant) {
+		this.plants.add(plant);
+		this.plantsByType.computeIfAbsent(plant.type(), t -> new ArrayList<>())
+				.add(plant);
+	}
+
+	private boolean removePlantFromList(Plant plant) {
+		if (this.plants.remove(plant)) {
 			List<Plant> plantsByType = this.plantsByType.get(plant.type());
 			if (plantsByType != null) {
 				plantsByType.remove(plant);

@@ -1,14 +1,17 @@
 package com.lovetropics.minigames.common.content.mangroves_and_pianguas.behavior.plant;
 
 import com.lovetropics.minigames.common.content.mangroves_and_pianguas.behavior.event.MpEvents;
+import com.lovetropics.minigames.common.content.mangroves_and_pianguas.plot.Plot;
 import com.lovetropics.minigames.common.content.mangroves_and_pianguas.plot.plant.Plant;
-import com.lovetropics.minigames.common.content.mangroves_and_pianguas.plot.plant.PlantCoverage;
 import com.lovetropics.minigames.common.content.mangroves_and_pianguas.plot.plant.PlantType;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
+import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
+import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.server.ServerWorld;
@@ -40,24 +43,52 @@ public final class GrowPlantBehavior implements IGameBehavior {
 
 			ServerWorld world = game.getWorld();
 
-			List<Plant> removedPlants = new ArrayList<>();
+			List<PlantSnapshot> removedPlants = new ArrayList<>();
 			for (Plant plant : plants) {
-				for (BlockPos pos : plant.coverage()) {
-					world.setBlockState(pos, Blocks.AIR.getDefaultState(), Constants.BlockFlags.BLOCK_UPDATE | Constants.BlockFlags.UPDATE_NEIGHBORS);
-				}
-
-				removedPlants.add(plant);
+				removedPlants.add(this.removePlantBlocks(world, plant));
 			}
 
-			for (Plant plant : removedPlants) {
-				game.invoker(MpEvents.BREAK_PLANT).breakPlant(player, plot, plant);
+			for (PlantSnapshot snapshot : removedPlants) {
+				Plant plant = snapshot.plant;
 				plot.plants.removePlant(plant);
 
-				PlantCoverage coverage = plant.coverage();
-
-				BlockPos origin = coverage.getOrigin();
-				game.invoker(MpEvents.PLACE_PLANT).placePlant(player, plot, origin, this.growInto);
+				BlockPos origin = plant.coverage().getOrigin();
+				if (!game.invoker(MpEvents.PLACE_PLANT).placePlant(player, plot, origin, this.growInto)) {
+					this.restoreSnapshot(world, plot, snapshot);
+				}
 			}
 		});
+	}
+
+	private PlantSnapshot removePlantBlocks(ServerWorld world, Plant plant) {
+		Long2ObjectMap<BlockState> blocks = new Long2ObjectOpenHashMap<>();
+		for (BlockPos pos : plant.coverage()) {
+			blocks.put(pos.toLong(), world.getBlockState(pos));
+
+			world.setBlockState(pos, Blocks.AIR.getDefaultState(), Constants.BlockFlags.BLOCK_UPDATE | Constants.BlockFlags.UPDATE_NEIGHBORS);
+		}
+
+		return new PlantSnapshot(plant, blocks);
+	}
+
+	private void restoreSnapshot(ServerWorld world, Plot plot, PlantSnapshot snapshot) {
+		plot.plants.addPlant(snapshot.plant);
+
+		for (BlockPos pos : snapshot.plant.coverage()) {
+			BlockState block = snapshot.blocks.get(pos.toLong());
+			if (block != null) {
+				world.setBlockState(pos, block, Constants.BlockFlags.BLOCK_UPDATE | Constants.BlockFlags.UPDATE_NEIGHBORS);
+			}
+		}
+	}
+
+	static final class PlantSnapshot {
+		final Plant plant;
+		final Long2ObjectMap<BlockState> blocks;
+
+		PlantSnapshot(Plant plant, Long2ObjectMap<BlockState> blocks) {
+			this.plant = plant;
+			this.blocks = blocks;
+		}
 	}
 }

@@ -3,15 +3,14 @@ package com.lovetropics.minigames.common.content.mangroves_and_pianguas.plot.pla
 import com.lovetropics.lib.codec.CodecRegistry;
 import com.lovetropics.lib.codec.MoreCodecs;
 import com.lovetropics.minigames.common.content.mangroves_and_pianguas.plot.Plot;
+import com.lovetropics.minigames.common.util.world.DelegatingSeedReader;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.PrimitiveCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.tags.BlockTags;
-import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.gen.ChunkGenerator;
 import net.minecraft.world.gen.blockplacer.DoublePlantBlockPlacer;
@@ -21,9 +20,8 @@ import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.common.util.Constants;
 
 import javax.annotation.Nullable;
-import java.util.Deque;
-import java.util.LinkedList;
 import java.util.function.Function;
+import java.util.function.LongPredicate;
 import java.util.function.Supplier;
 
 public interface PlantPlacement {
@@ -92,8 +90,6 @@ public interface PlantPlacement {
 				ConfiguredFeature.field_236264_b_.fieldOf("tree").forGetter(c -> c.tree)
 		).apply(instance, Tree::new));
 
-		private static final Direction[] DIRECTIONS = Direction.values();
-
 		private final Supplier<ConfiguredFeature<?, ?>> tree;
 
 		public Tree(Supplier<ConfiguredFeature<?, ?>> tree) {
@@ -103,14 +99,16 @@ public interface PlantPlacement {
 		@Override
 		public PlantCoverage place(ServerWorld world, Plot plot, BlockPos pos) {
 			ConfiguredFeature<?, ?> tree = this.tree.get();
-			if (this.generateTree(world, pos, tree)) {
-				return this.buildCoverage(world, plot, pos);
+			LongSet changedBlocks = this.generateTree(world, pos, tree);
+			if (changedBlocks != null) {
+				return this.buildCoverage(world, plot, changedBlocks);
 			} else {
 				return null;
 			}
 		}
 
-		private boolean generateTree(ServerWorld world, BlockPos pos, ConfiguredFeature<?, ?> tree) {
+		@Nullable
+		private LongSet generateTree(ServerWorld world, BlockPos pos, ConfiguredFeature<?, ?> tree) {
 			if (tree.config instanceof BaseTreeFeatureConfig) {
 				((BaseTreeFeatureConfig) tree.config).forcePlacement();
 			}
@@ -118,45 +116,48 @@ public interface PlantPlacement {
 			BlockState saplingState = world.getBlockState(pos);
 			world.setBlockState(pos, Blocks.AIR.getDefaultState(), Constants.BlockFlags.NO_RERENDER);
 
+			LongSet changedBlocks = new LongOpenHashSet();
+
+			DelegatingSeedReader placementWorld = new DelegatingSeedReader(world) {
+				@Override
+				public boolean setBlockState(BlockPos pos, BlockState state, int flags, int recursionLeft) {
+					if (super.setBlockState(pos, state, flags, recursionLeft)) {
+						changedBlocks.add(pos.toLong());
+						return true;
+					} else {
+						return false;
+					}
+				}
+			};
+
 			ChunkGenerator chunkGenerator = world.getChunkProvider().getChunkGenerator();
-			if (tree.generate(world, chunkGenerator, world.rand, pos)) {
-				return true;
+			if (tree.generate(placementWorld, chunkGenerator, world.rand, pos)) {
+				return changedBlocks;
 			} else {
 				world.setBlockState(pos, saplingState, Constants.BlockFlags.NO_RERENDER);
-				return false;
+				return null;
 			}
 		}
 
 		@Nullable
-		private PlantCoverage buildCoverage(ServerWorld world, Plot plot, BlockPos pos) {
-			// iterate all new tree blocks
-			LongSet blocks = new LongOpenHashSet();
+		private PlantCoverage buildCoverage(ServerWorld world, Plot plot, LongSet changedBlocks) {
+			LongSet coverage = new LongOpenHashSet(changedBlocks);
 
-			Deque<BlockPos> queue = new LinkedList<>();
-			queue.add(pos.toImmutable());
+			BlockPos.Mutable pos = new BlockPos.Mutable();
+			coverage.removeIf((LongPredicate) packedPos -> {
+				pos.setPos(packedPos);
 
-			// DFS new blocks from trees
-			while (!queue.isEmpty()) {
-				BlockPos poll = queue.poll();
+				BlockState state = world.getBlockState(pos);
+				if (!isTreeBlock(state)) return true;
 
-				// TODO: prioritize trunk blocks so trunks are never cut off
+				return plot.plants.hasPlantAt(pos) && !state.isIn(BlockTags.LOGS);
+			});
 
-				// DFS more if this is a tree block and it's not an already globally tracked tree or a part of this current tree that we've already seen
-				if (isTreeBlock(world.getBlockState(poll)) && !plot.plants.hasPlantAt(poll) && !blocks.contains(poll.toLong())) {
-					blocks.add(poll.toLong());
-
-					// Go forth in all directions
-					for (Direction value : DIRECTIONS) {
-						queue.add(poll.offset(value));
-					}
-				}
-			}
-
-			if (blocks.isEmpty()) {
+			if (!coverage.isEmpty()) {
+				return PlantCoverage.of(coverage, pos);
+			} else {
 				return null;
 			}
-
-			return PlantCoverage.of(blocks, pos);
 		}
 
 		@Override
@@ -168,7 +169,7 @@ public interface PlantPlacement {
 			// Add stuff like vines and propagules as needed
 
 			// TODO: beehives are above the floor and have a leaves block above them
-			return BlockTags.LOGS.contains(state.getBlock()) || BlockTags.LEAVES.contains(state.getBlock());
+			return state.isIn(BlockTags.LOGS) || state.isIn(BlockTags.LEAVES);
 		}
 	}
 }
