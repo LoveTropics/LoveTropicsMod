@@ -15,12 +15,14 @@ public final class BehaviorConfig<A> extends MapCodec<A> {
 	private final String name;
 	private final Map<String, UnaryOperator<ConfigData>> hints = new HashMap<>();
 	private final Codec<A> codec;
-	private final MapCodec<A> mapCodec;
 
-	public BehaviorConfig(String name, Codec<A> codec) {
+	private BehaviorConfig(String name, Codec<A> codec) {
 		this.name = name;
 		this.codec = codec;
-		this.mapCodec = codec.fieldOf(name);
+	}
+
+	public static <A> BehaviorConfig<A> fieldOf(String name, Codec<A> codec) {
+		return new BehaviorConfig<>(name, codec);
 	}
 
 	public <E extends Enum<E>> BehaviorConfig<A> enumHint(String key, Function<String, E> fromName) {
@@ -61,7 +63,7 @@ public final class BehaviorConfig<A> extends MapCodec<A> {
 	public String getName() {
 		return name;
 	}
-	
+
 	public Codec<A> getCodec() {
 		return codec;
 	}
@@ -73,16 +75,17 @@ public final class BehaviorConfig<A> extends MapCodec<A> {
 
 	@Override
 	public <T> Stream<T> keys(DynamicOps<T> ops) {
-		return mapCodec.keys(ops);
+		return Stream.of(ops.createString(name));
 	}
 
 	@Override
 	public <T> DataResult<A> decode(DynamicOps<T> ops, MapLike<T> input) {
-		return mapCodec.decode(ops, input);
+		return codec.parse(ops, input.get(name));
 	}
 
 	@Override
 	public <T> RecordBuilder<T> encode(A input, DynamicOps<T> ops, RecordBuilder<T> prefix) {
-		return mapCodec.encode(input, ops, prefix);
+		DataResult<T> fieldResult = codec.encodeStart(ops, input);
+		return prefix.add(name, fieldResult);
 	}
 }
