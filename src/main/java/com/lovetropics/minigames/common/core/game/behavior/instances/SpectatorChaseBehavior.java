@@ -23,13 +23,13 @@ public final class SpectatorChaseBehavior implements IGameBehavior {
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
-		events.listen(GamePlayerEvents.SET_ROLE, (player, role, lastRole) -> this.onPlayerJoin(game, player, role));
+		events.listen(GamePlayerEvents.SET_ROLE, (player, role, lastRole) -> this.onPlayerSetRole(game, player, role));
 		events.listen(GamePlayerEvents.REMOVE, player -> onRemovePlayer(game, player));
 
 		events.listen(GamePhaseEvents.DESTROY, () -> onStop(game));
 	}
 
-	private void onPlayerJoin(IGamePhase game, ServerPlayerEntity player, PlayerRole role) {
+	private void onPlayerSetRole(IGamePhase game, ServerPlayerEntity player, PlayerRole role) {
 		List<UUID> participants = collectParticipantIds(game);
 		ChaseCameraMessage message = new ChaseCameraMessage(participants);
 		if (role == PlayerRole.SPECTATOR) {
