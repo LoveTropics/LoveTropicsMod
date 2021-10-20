@@ -262,4 +262,20 @@ public class MultiGameManager implements IGameManager {
 			lobby.onPlayerLoggedOut(player);
 		}
 	}
+
+	@SubscribeEvent
+	public static void onPlayerChangeDimension(PlayerEvent.PlayerChangedDimensionEvent event) {
+		PlayerEntity player = event.getPlayer();
+		if (player instanceof ServerPlayerEntity) {
+			IGamePhase phase = INSTANCE.getGamePhaseFor(player);
+			if (phase == null) return;
+
+			RegistryKey<World> dimension = phase.getDimension();
+			if (event.getFrom() == dimension && event.getTo() != dimension) {
+				if (phase.getLobby().getPlayers().remove((ServerPlayerEntity) player)) {
+					player.sendStatusMessage(GameTexts.Status.leftGameDimension(), false);
+				}
+			}
+		}
+	}
 }
