@@ -108,6 +108,10 @@ public final class ServerPlayerDisguises {
 		});
 	}
 
+	public static void clear(ServerPlayerEntity player) {
+		set(player, null);
+	}
+
 	public static void clear(ServerPlayerEntity player, DisguiseType disguiseType) {
 		PlayerDisguise.get(player).ifPresent(playerDisguise -> {
 			playerDisguise.clearDisguise(disguiseType);

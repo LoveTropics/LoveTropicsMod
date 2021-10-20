@@ -2,6 +2,7 @@ package com.lovetropics.minigames.common.core.game.util;
 
 import com.lovetropics.minigames.common.core.diguise.DisguiseType;
 import com.lovetropics.minigames.common.core.diguise.PlayerDisguise;
+import com.lovetropics.minigames.common.core.diguise.ServerPlayerDisguises;
 import com.lovetropics.minigames.common.core.dimension.DimensionUtils;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.nbt.CompoundNBT;
@@ -60,7 +61,7 @@ public final class PlayerSnapshot {
 
 		player.getWorldScoreboard().removePlayerFromTeams(player.getScoreboardName());
 
-		PlayerDisguise.get(player).ifPresent(PlayerDisguise::clearDisguise);
+		ServerPlayerDisguises.clear(player);
 	}
 
 	/**
