@@ -53,7 +53,9 @@ public final class AssignPlayerRolesBehavior implements IGameBehavior {
 
 		events.listen(GamePlayerEvents.ADD, player -> {
 			PlayerRole role = roles.remove(player);
-			game.setPlayerRole(player, role);
+			if (role != null) {
+				game.setPlayerRole(player, role);
+			}
 		});
 	}
 
