@@ -74,6 +74,7 @@ public final class MpBehavior implements IGameBehavior {
 		events.listen(GameLivingEntityEvents.MOB_DROP, (e, d, r) -> ActionResultType.FAIL);
 		events.listen(GameLivingEntityEvents.FARMLAND_TRAMPLE, this::onFarmlandTrample);
 
+		events.listen(GamePlayerEvents.PLACE_BLOCK, (player, pos, placed, placedOn) -> ActionResultType.FAIL);
 		events.listen(GamePlayerEvents.BREAK_BLOCK, (player, pos, state) -> ActionResultType.FAIL);
 	}
 
