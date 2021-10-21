@@ -64,6 +64,7 @@
   "ltminigames.minigame.turtle_sprint": "Turtle Sprint",
   "ltminigames.minigame.volcano_spleef": "Volcano Spleef",
   "ltminigames.status.enough_players": "There are now enough players to start the game!",
+  "ltminigames.status.left_game_dimension": "You left the game dimension and have been removed from the lobby!",
   "ltminigames.status.lobby_opened": "%s has opened for registration! %s to get a chance to play!",
   "ltminigames.status.lobby_paused": "Your current lobby has paused! You have been teleported to your last location.",
   "ltminigames.status.lobby_stopped": "Your current lobby has stopped! You have been teleported to your last location.",

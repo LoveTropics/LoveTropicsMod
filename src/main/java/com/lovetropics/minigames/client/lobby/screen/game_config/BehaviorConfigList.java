@@ -5,44 +5,49 @@ import java.util.List;
 import java.util.Map;
 
 import com.lovetropics.minigames.client.lobby.state.ClientConfigList;
-import com.lovetropics.minigames.client.screen.LayoutGui;
-import com.lovetropics.minigames.client.screen.flex.Layout;
+import com.lovetropics.minigames.client.screen.DynamicLayoutGui;
+import com.lovetropics.minigames.client.screen.flex.Flex;
+import com.lovetropics.minigames.client.screen.flex.Flex.Unit;
 import com.lovetropics.minigames.common.core.game.behavior.config.ConfigData;
 import com.mojang.blaze3d.matrix.MatrixStack;
 
 import net.minecraft.client.gui.IGuiEventListener;
 import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.renderer.Tessellator;
-import net.minecraftforge.client.gui.ScrollPanel;
 
-public class BehaviorConfigList extends LayoutGui {
+public class BehaviorConfigList extends DynamicLayoutGui {
 
 	private final ClientConfigList configList;
 
-	private final List<ConfigDataUI<?>> children = new ArrayList<>();
+	private final List<ConfigDataUI> children = new ArrayList<>();
 
-	public BehaviorConfigList(Screen screen, Layout layout, ClientConfigList configs) {
-		super(layout);
+	public BehaviorConfigList(Screen screen, Flex basis, ClientConfigList configs) {
+		super(basis);
 		this.configList = configs;
 
-		updateEntries(screen, layout);
+		updateEntries(screen, basis);
 	}
 
-	public void updateEntries(Screen screen, Layout layout) {
+	public void updateEntries(Screen screen, Flex basis) {
 		Map<String, ConfigData> configs = configList.configs;
 
+		basis = basis.column();
 		for (Map.Entry<String, ConfigData> e : configs.entrySet()) {
-			// TODO narrow layout
-			ConfigDataUI<?> listEntry = new ConfigDataUI<>(screen, layout, e.getKey(), e.getValue());
+			Flex childBasis = basis.child().column().padding(3).width(1, Unit.PERCENT);
+			ConfigDataUI listEntry = new ConfigDataUI(screen, childBasis, e.getKey(), e.getValue());
 			children.add(listEntry);
 		}
 	}
 	
 	@Override
 	public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
-		for (ConfigDataUI<?> child : children) {
+		super.render(matrixStack, mouseX, mouseY, partialTicks);
+		for (ConfigDataUI child : children) {
 			child.render(matrixStack, mouseX, mouseY, partialTicks);
 		}
+	}
+
+	public int getHeight() {
+		return children.stream().mapToInt(ConfigDataUI::getHeight).sum();
 	}
 	
 	@Override

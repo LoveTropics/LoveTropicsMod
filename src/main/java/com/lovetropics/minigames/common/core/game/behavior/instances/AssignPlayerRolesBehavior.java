@@ -3,6 +3,8 @@ package com.lovetropics.minigames.common.core.game.behavior.instances;
 import com.lovetropics.lib.codec.MoreCodecs;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
+import com.lovetropics.minigames.common.core.game.behavior.config.BehaviorConfig;
+import com.lovetropics.minigames.common.core.game.behavior.config.ConfigList;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
@@ -20,17 +22,25 @@ import java.util.UUID;
 import java.util.function.BiConsumer;
 
 public final class AssignPlayerRolesBehavior implements IGameBehavior {
+	private static final BehaviorConfig<List<UUID>> CFG_FORCED_PARTICIPANTS = BehaviorConfig.fieldOf("forced_participants", MoreCodecs.UUID_STRING.listOf());
+
 	public static final Codec<AssignPlayerRolesBehavior> CODEC = RecordCodecBuilder.create(instance -> {
 		return instance.group(
-				MoreCodecs.UUID_STRING.listOf().optionalFieldOf("forced_participants", Collections.emptyList()).forGetter(c -> c.forcedParticipants)
+				CFG_FORCED_PARTICIPANTS.orElse(Collections.emptyList()).forGetter(c -> c.forcedParticipants)
 		).apply(instance, AssignPlayerRolesBehavior::new);
 	});
 
-	// TODO: allow configuration with GUI
 	private final List<UUID> forcedParticipants;
 
 	public AssignPlayerRolesBehavior(List<UUID> forcedParticipants) {
 		this.forcedParticipants = forcedParticipants;
+	}
+
+	@Override
+	public ConfigList getConfigurables() {
+		return ConfigList.builder()
+				.with(CFG_FORCED_PARTICIPANTS, this.forcedParticipants)
+				.build();
 	}
 
 	@Override
@@ -43,7 +53,9 @@ public final class AssignPlayerRolesBehavior implements IGameBehavior {
 
 		events.listen(GamePlayerEvents.ADD, player -> {
 			PlayerRole role = roles.remove(player);
-			game.setPlayerRole(player, role);
+			if (role != null) {
+				game.setPlayerRole(player, role);
+			}
 		});
 	}
 

@@ -1,32 +1,33 @@
 package com.lovetropics.minigames.client.lobby.screen.game_config;
 
-import com.lovetropics.minigames.client.screen.LayoutGui;
-import com.lovetropics.minigames.client.screen.flex.Layout;
+import java.util.ArrayList;
+import java.util.List;
+
+import com.lovetropics.minigames.client.screen.DynamicLayoutGui;
+import com.lovetropics.minigames.client.screen.flex.Flex;
+import com.lovetropics.minigames.client.screen.flex.Flex.Unit;
 import com.lovetropics.minigames.common.core.game.behavior.config.ConfigData;
 import com.lovetropics.minigames.common.core.game.behavior.config.ConfigData.ListConfigData;
 import com.lovetropics.minigames.common.core.game.behavior.config.ConfigType;
 import com.mojang.blaze3d.matrix.MatrixStack;
+
 import net.minecraft.client.gui.IGuiEventListener;
-import net.minecraft.client.gui.INestedGuiEventHandler;
-import net.minecraft.client.gui.IRenderable;
+import net.minecraft.client.gui.screen.Screen;
 
-import java.util.ArrayList;
-import java.util.List;
-
-public class ListConfigWidget<T extends INestedGuiEventHandler & IRenderable> extends LayoutGui {
+public class ListConfigWidget extends DynamicLayoutGui implements IConfigWidget {
 	
-	public ListConfigWidget(Layout mainLayout) {
-		super(mainLayout);
+	public ListConfigWidget(Flex basis) {
+		super(basis);
 	}
 
-	private final List<T> children = new ArrayList<>();
+	private final List<IConfigWidget> children = new ArrayList<>();
 	
-	public static <T extends INestedGuiEventHandler & IRenderable> ListConfigWidget<T> from(Layout layout, ListConfigData data) {
-		ListConfigWidget<T> ret = new ListConfigWidget<>(layout);
+	public static ListConfigWidget from(Screen screen, Flex basis, ListConfigData data) {
+		ListConfigWidget ret = new ListConfigWidget(basis);
 		if (data.type() == ConfigType.COMPOSITE) {
 			for (Object val : data.value()) {
-				// TODO narrow layout
-				ret.children.add(GameConfig.createWidget(layout, (ConfigData) val));
+				Flex childBasis = basis.child().column().marginLeft(5).padding(3).width(1, Unit.PERCENT);
+				ret.children.add(GameConfig.createWidget(screen, childBasis, (ConfigData) val));
 			}
 		} else {
 			// TODO others?
@@ -41,8 +42,14 @@ public class ListConfigWidget<T extends INestedGuiEventHandler & IRenderable> ex
 
 	@Override
 	public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
-		for (T child : children) {
+		super.render(matrixStack, mouseX, mouseY, partialTicks);
+		for (IConfigWidget child : children) {
 			child.render(matrixStack, mouseX, mouseY, partialTicks);
 		}
+	}
+
+	@Override
+	public int getHeight() {
+		return children.stream().mapToInt(IConfigWidget::getHeight).sum();
 	}
 }

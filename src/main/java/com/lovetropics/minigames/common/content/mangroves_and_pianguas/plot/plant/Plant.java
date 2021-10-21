@@ -11,11 +11,16 @@ import java.util.Random;
 public final class Plant {
 	private final PlantType type;
 	private final PlantCoverage coverage;
-	private final PlantState state = new PlantState();
+	private final PlantState state;
 
 	public Plant(PlantType type, PlantCoverage coverage) {
+		this(type, coverage, new PlantState());
+	}
+
+	private Plant(PlantType type, PlantCoverage coverage, PlantState state) {
 		this.type = type;
 		this.coverage = coverage;
+		this.state = state;
 	}
 
 	public PlantType type() {
@@ -49,6 +54,16 @@ public final class Plant {
 				double vz = random.nextGaussian() * 0.02;
 				world.spawnParticle(ParticleTypes.POOF, pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5, 1, vx, vy, vz, speed);
 			}
+		}
+	}
+
+	@Nullable
+	public Plant removeIntersection(Plant other) {
+		PlantCoverage coverage = this.coverage.removeIntersection(other.coverage);
+		if (coverage != null) {
+			return new Plant(this.type, coverage, this.state);
+		} else {
+			return null;
 		}
 	}
 }

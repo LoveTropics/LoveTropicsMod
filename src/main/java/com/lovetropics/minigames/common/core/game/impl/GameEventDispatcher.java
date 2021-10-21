@@ -17,7 +17,6 @@ import net.minecraft.world.World;
 import net.minecraft.world.chunk.IChunk;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.event.entity.living.*;
-import net.minecraftforge.event.entity.player.AttackEntityEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.world.BlockEvent;
@@ -66,16 +65,22 @@ public final class GameEventDispatcher {
 	}
 
 	@SubscribeEvent
-	public void onAttackEntity(AttackEntityEvent event) {
-		IGamePhase game = gameLookup.getGamePhaseFor(event.getPlayer());
-		if (game != null && event.getPlayer() instanceof ServerPlayerEntity) {
-			try {
-				ActionResultType result = game.invoker(GamePlayerEvents.ATTACK).onAttack((ServerPlayerEntity) event.getPlayer(), event.getTarget());
-				if (result == ActionResultType.FAIL) {
-					event.setCanceled(true);
+	public void onDamageEntity(LivingDamageEvent event) {
+		Entity target = event.getEntity();
+
+		IGamePhase game = gameLookup.getGamePhaseFor(target);
+		if (game != null) {
+			Entity sourceEntity = event.getSource().getTrueSource();
+			if (sourceEntity instanceof ServerPlayerEntity) {
+				ServerPlayerEntity sourcePlayer = (ServerPlayerEntity) sourceEntity;
+				try {
+					ActionResultType result = game.invoker(GamePlayerEvents.ATTACK).onAttack(sourcePlayer, target);
+					if (result == ActionResultType.FAIL) {
+						event.setCanceled(true);
+					}
+				} catch (Exception e) {
+					LoveTropics.LOGGER.warn("Failed to dispatch player attack event", e);
 				}
-			} catch (Exception e) {
-				LoveTropics.LOGGER.warn("Failed to dispatch player attack event", e);
 			}
 		}
 	}
@@ -104,7 +109,6 @@ public final class GameEventDispatcher {
 	@SubscribeEvent
 	public void onDeath(LivingDeathEvent event) {
 		LivingEntity entity = event.getEntityLiving();
-
 
 		IGamePhase game = gameLookup.getGamePhaseFor(entity);
 		if (game != null) {

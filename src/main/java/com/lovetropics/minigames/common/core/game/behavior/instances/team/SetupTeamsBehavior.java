@@ -43,15 +43,15 @@ public final class SetupTeamsBehavior implements IGameBehavior {
 	private static final Codec<Object2IntMap<String>> TEAM_TO_SIZE = Codec.unboundedMap(Codec.STRING, Codec.INT)
 			.xmap(Object2IntOpenHashMap::new, HashMap::new);
 
-	private static final BehaviorConfig<List<TeamKey>> CFG_TEAMS = new BehaviorConfig<>("teams", TeamKey.CODEC.listOf())
+	private static final BehaviorConfig<List<TeamKey>> CFG_TEAMS = BehaviorConfig.fieldOf("teams", TeamKey.CODEC.listOf())
 			.enumHint("dye", s -> DyeColor.byTranslationKey(s, null));
-	private static final BehaviorConfig<Map<String, List<UUID>>> CFG_ASSIGNED = new BehaviorConfig<>("assign", TEAM_ASSIGN);
-	private static final BehaviorConfig<Object2IntMap<String>> CFG_MAX_SIZES = new BehaviorConfig<>("max_sizes", TEAM_TO_SIZE);
+	private static final BehaviorConfig<Map<String, List<UUID>>> CFG_ASSIGN = BehaviorConfig.fieldOf("assign", TEAM_ASSIGN);
+	private static final BehaviorConfig<Object2IntMap<String>> CFG_MAX_SIZES = BehaviorConfig.fieldOf("max_sizes", TEAM_TO_SIZE);
 
 	public static final Codec<SetupTeamsBehavior> CODEC = RecordCodecBuilder.create(instance -> {
 		return instance.group(
 				CFG_TEAMS.forGetter(c -> c.teams),
-				CFG_ASSIGNED.orElseGet(Object2ObjectOpenHashMap::new).forGetter(c -> c.assignedTeams),
+				CFG_ASSIGN.orElseGet(Object2ObjectOpenHashMap::new).forGetter(c -> c.assignedTeams),
 				CFG_MAX_SIZES.orElseGet(Object2IntOpenHashMap::new).forGetter(c -> c.maxTeamSizes)
 		).apply(instance, SetupTeamsBehavior::new);
 	});
@@ -74,7 +74,7 @@ public final class SetupTeamsBehavior implements IGameBehavior {
 	public ConfigList getConfigurables() {
 		return ConfigList.builder()
 				.with(CFG_TEAMS, this.teams)
-				.with(CFG_ASSIGNED, this.assignedTeams)
+				.with(CFG_ASSIGN, this.assignedTeams)
 				.with(CFG_MAX_SIZES, this.maxTeamSizes)
 				.build();
 	}

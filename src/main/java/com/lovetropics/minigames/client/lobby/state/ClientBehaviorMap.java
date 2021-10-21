@@ -5,6 +5,7 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 import com.lovetropics.minigames.common.core.game.behavior.BehaviorMap;
 import com.lovetropics.minigames.common.core.game.behavior.GameBehaviorType;
+import com.lovetropics.minigames.common.core.game.behavior.GameBehaviorTypes;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import net.minecraft.network.PacketBuffer;
 
@@ -26,7 +27,7 @@ public final class ClientBehaviorMap {
 		Multimap<GameBehaviorType<?>, ClientConfigList> behaviors = LinkedHashMultimap.create();
 		int size = buffer.readVarInt();
 		for (int i = 0; i < size; i++) {
-			GameBehaviorType<?> type = buffer.readRegistryIdSafe(GameBehaviorType.class);
+			GameBehaviorType<?> type = buffer.readRegistryIdUnsafe(GameBehaviorTypes.REGISTRY.get());
 			int valueSize = buffer.readVarInt();
 			for (int j = 0; j < valueSize; j++) {
 				behaviors.put(type, ClientConfigList.decode(buffer));
@@ -39,7 +40,7 @@ public final class ClientBehaviorMap {
 		Set<GameBehaviorType<?>> keys = behaviors.keySet();
 		buffer.writeVarInt(keys.size());
 		for (GameBehaviorType<?> k : keys) {
-			buffer.writeRegistryId(k);
+			buffer.writeRegistryIdUnsafe(GameBehaviorTypes.REGISTRY.get(), k);
 			Collection<ClientConfigList> v = behaviors.get(k);
 			buffer.writeVarInt(v.size());
 			for (ClientConfigList list : v) {

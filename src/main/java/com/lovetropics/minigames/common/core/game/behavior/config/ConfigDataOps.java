@@ -69,6 +69,19 @@ public class ConfigDataOps implements DynamicOps<ConfigData> {
     }
 
     @Override
+    public ConfigData createByte(byte value) {
+    	if (value == 0 || value == 1) {
+    		// NBT coalesces booleans to bytes.
+    		// This reverses that, at the cost of some ambiguity, however it is very
+    		// unlikely for a true byte value to come through this code
+    		ConfigData ret = new SimpleConfigData(ConfigType.BOOLEAN);
+    		ret.setValue(value == 1);
+    		return ret;
+    	}
+    	return DynamicOps.super.createByte(value);
+    }
+    
+    @Override
     public ConfigData createNumeric(final Number i) {
         ConfigData ret = new SimpleConfigData(ConfigType.NUMBER);
         ret.setValue(i);

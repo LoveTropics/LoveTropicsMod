@@ -6,8 +6,10 @@ import com.lovetropics.minigames.common.core.dimension.RuntimeDimensionHandle;
 import com.lovetropics.minigames.common.core.dimension.RuntimeDimensions;
 import com.lovetropics.minigames.common.core.map.MapWorldInfo;
 import com.lovetropics.minigames.common.core.map.MapWorldSettings;
+import com.lovetropics.minigames.common.util.DynamicRegistryReadingOps;
 import com.lovetropics.minigames.common.util.Util;
 import com.mojang.serialization.DataResult;
+import com.mojang.serialization.DynamicOps;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.INBT;
@@ -16,9 +18,7 @@ import net.minecraft.nbt.NBTDynamicOps;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.RegistryKey;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.registry.DynamicRegistries;
 import net.minecraft.util.registry.WorldGenSettingsExport;
-import net.minecraft.util.registry.WorldSettingsImport;
 import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraft.world.storage.WorldSavedData;
@@ -122,11 +122,7 @@ public final class MapWorkspaceManager extends WorldSavedData {
 
 		ListNBT workspaceList = root.getList("workspaces", NBT.TAG_COMPOUND);
 
-		WorldSettingsImport<INBT> ops = WorldSettingsImport.create(
-				NBTDynamicOps.INSTANCE,
-				this.server.getDataPackRegistries().getResourceManager(),
-				(DynamicRegistries.Impl) this.server.getDynamicRegistries()
-		);
+		DynamicOps<INBT> ops = DynamicRegistryReadingOps.create(this.server, NBTDynamicOps.INSTANCE);
 
 		for (int i = 0; i < workspaceList.size(); i++) {
 			CompoundNBT workspaceRoot = workspaceList.getCompound(i);

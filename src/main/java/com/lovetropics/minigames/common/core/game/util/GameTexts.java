@@ -197,6 +197,8 @@ public final class GameTexts {
 			static final String ENOUGH_PLAYERS = key("enough_players");
 			static final String NO_LONGER_ENOUGH_PLAYERS = key("no_longer_enough_players");
 
+			static final String LEFT_GAME_DIMENSION = key("left_game_dimension");
+
 			static final String LOBBY_PAUSED = key("lobby_paused");
 			static final String LOBBY_STOPPED = key("lobby_stopped");
 
@@ -210,6 +212,8 @@ public final class GameTexts {
 
 				consumer.accept(ENOUGH_PLAYERS, "There are now enough players to start the game!");
 				consumer.accept(NO_LONGER_ENOUGH_PLAYERS, "There are no longer enough players to start game!");
+
+				consumer.accept(LEFT_GAME_DIMENSION, "You left the game dimension and have been removed from the lobby!");
 
 				consumer.accept(LOBBY_PAUSED, "Your current lobby has paused! You have been teleported to your last location.");
 				consumer.accept(LOBBY_STOPPED, "Your current lobby has stopped! You have been teleported to your last location.");
@@ -246,6 +250,10 @@ public final class GameTexts {
 
 		public static IFormattableTextComponent noLongerEnoughPlayers() {
 			return formatNegative(new TranslationTextComponent(Keys.NO_LONGER_ENOUGH_PLAYERS));
+		}
+
+		public static IFormattableTextComponent leftGameDimension() {
+			return formatNegative(new TranslationTextComponent(Keys.LEFT_GAME_DIMENSION));
 		}
 
 		public static IFormattableTextComponent telemetryNotConnected() {

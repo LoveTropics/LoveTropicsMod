@@ -5,27 +5,26 @@ import java.util.List;
 import com.google.common.collect.Lists;
 import com.lovetropics.minigames.client.lobby.manage.screen.ManageLobbyScreen;
 import com.lovetropics.minigames.client.lobby.state.ClientConfigList;
-import com.lovetropics.minigames.client.screen.LayoutGui;
-import com.lovetropics.minigames.client.screen.flex.Layout;
+import com.lovetropics.minigames.client.screen.DynamicLayoutGui;
+import com.lovetropics.minigames.client.screen.flex.Flex;
 import com.lovetropics.minigames.common.core.game.behavior.GameBehaviorType;
 import com.mojang.blaze3d.matrix.MatrixStack;
 
 import net.minecraft.client.gui.IGuiEventListener;
 
-public class BehaviorConfigUI extends LayoutGui {
+public class BehaviorConfigUI extends DynamicLayoutGui {
 	
 	private final GameBehaviorType<?> behavior;
 	private final ClientConfigList configs;
 	
 	private final BehaviorConfigList list;
 
-	public BehaviorConfigUI(ManageLobbyScreen screen, Layout layout, GameBehaviorType<?> behavior, ClientConfigList configs) {
-		super(layout);
+	public BehaviorConfigUI(ManageLobbyScreen screen, Flex basis, GameBehaviorType<?> behavior, ClientConfigList configs) {
+		super(basis);
 		this.behavior = behavior;
 		this.configs = configs;
 		
-		// TODO narrow layout
-		this.list = new BehaviorConfigList(screen, layout, configs);
+		this.list = new BehaviorConfigList(screen, basis, configs);
 	}
 
 	@Override
@@ -35,6 +34,11 @@ public class BehaviorConfigUI extends LayoutGui {
 	
 	@Override
 	public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
+		super.render(matrixStack, mouseX, mouseY, partialTicks);
 		list.render(matrixStack, mouseX, mouseY, partialTicks);
+	}
+
+	public int getHeight() {
+		return list.getHeight();
 	}
 }
