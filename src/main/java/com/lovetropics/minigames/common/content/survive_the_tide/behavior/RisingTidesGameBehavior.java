@@ -341,6 +341,15 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 						section.setBlockState(pos.getX(), pos.getY(), pos.getZ(), toSet);
 					}
 
+					// We need to replace grass and paths with dirt- this is done here as doing it above would replace dirt that was at water level, and not just below.
+					BlockPos down = worldPos.down();
+					BlockState downState = world.getBlockState(down);
+
+					if (downState.getBlock() == Blocks.GRASS_BLOCK || downState.getBlock() == Blocks.GRASS_PATH) {
+
+						world.setBlockState(down, Blocks.DIRT.getDefaultState(), Constants.BlockFlags.NO_RERENDER | Constants.BlockFlags.BLOCK_UPDATE);
+					}
+
 					// Tell the client about the change
 					((ServerChunkProvider) world.getChunkProvider()).markBlockChanged(worldPos);
 					// Update heightmap
