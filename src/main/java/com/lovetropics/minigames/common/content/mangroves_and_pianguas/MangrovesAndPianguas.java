@@ -82,6 +82,10 @@ public final class MangrovesAndPianguas {
 			.behavior(WateryPlantBehavior.CODEC)
 			.register();
 
+	public static final GameBehaviorEntry<DropItemPlantBehavior> DROP_ITEM = REGISTRATE.object("drop_item")
+			.behavior(DropItemPlantBehavior.CODEC)
+			.register();
+
 	static {
 		PlantPlacement.register();
 	}
