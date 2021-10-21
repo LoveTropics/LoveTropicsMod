@@ -39,13 +39,13 @@ final class ManageLobbyLayout {
 	ManageLobbyLayout(Screen screen) {
 		int fontHeight = screen.getMinecraft().fontRenderer.FONT_HEIGHT;
 
-		Flex root = new Flex().columns();
+		Flex root = new Flex().column();
 
-		Flex header = root.child().rows()
+		Flex header = root.child().row()
 				.width(1.0F, Flex.Unit.PERCENT).height(fontHeight).padding(PADDING)
 				.alignMain(Align.Main.START);
 
-		Flex body = root.child().rows()
+		Flex body = root.child().row()
 				.width(1.0F, Flex.Unit.PERCENT).grow(1.0F);
 
 		Flex leftColumn = body.child()
@@ -60,7 +60,7 @@ final class ManageLobbyLayout {
 				.width(1.0F, Flex.Unit.PERCENT).height(FOOTER_HEIGHT).padding(PADDING)
 				.alignMain(Align.Main.END);
 
-		Flex centerColumn = body.child().columns()
+		Flex centerColumn = body.child().column()
 				.height(1.0F, Flex.Unit.PERCENT).grow(1.0F);
 
 		Flex centerHeader = centerColumn.child()
@@ -71,21 +71,21 @@ final class ManageLobbyLayout {
 				.width(1.0F, Flex.Unit.PERCENT).grow(1.0F)
 				.padding(PADDING);
 
-		Flex centerFooter = centerColumn.child().columns()
+		Flex centerFooter = centerColumn.child().column()
 				.width(1.0F, Flex.Unit.PERCENT).height(FOOTER_HEIGHT).padding(PADDING)
 				.alignMain(Align.Main.END);
 
-		Flex controls = centerFooter.child().rows()
+		Flex controls = centerFooter.child().row()
 				.alignCross(Align.Cross.CENTER);
 
 		Flex play = controls.child().size(20, 20).margin(2, 0);
 		Flex stop = controls.child().size(20, 20).margin(2, 0);
 
-		Flex rightColumn = body.child().columns()
+		Flex rightColumn = body.child().column()
 				.size(0.25F, 1.0F, Flex.Unit.PERCENT)
 				.alignMain(Align.Main.END);
 
-		Flex properties = rightColumn.child().columns()
+		Flex properties = rightColumn.child().column()
 				.width(1.0F, Flex.Unit.PERCENT).grow(1.0F).padding(PADDING);
 
 		Flex name = properties.child()
@@ -100,7 +100,7 @@ final class ManageLobbyLayout {
 				.width(1.0F, Flex.Unit.PERCENT).grow(1.0F)
 				.marginTop(PADDING);
 
-		Flex rightFooter = rightColumn.child().rows()
+		Flex rightFooter = rightColumn.child().row()
 				.width(1.0F, Flex.Unit.PERCENT)
 				.padding(PADDING / 2)
 				.alignMain(Align.Main.END);

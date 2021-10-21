@@ -1,8 +1,11 @@
 package com.lovetropics.minigames.client.screen.flex;
 
+import java.util.Objects;
+
 import net.minecraft.client.gui.screen.Screen;
 
 public final class Box {
+
 	private final int left;
 	private final int top;
 	private final int right;
@@ -122,6 +125,28 @@ public final class Box {
 
 	public boolean contains(double x, double y) {
 		return x >= this.left && y >= this.top && x < this.right && y < this.bottom;
+	}
+
+	@Override
+	public String toString() {
+		return "Box [" + left + "," + top + " -> " + right + "," + bottom + "]";
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(bottom, left, right, top);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Box other = (Box) obj;
+		return bottom == other.bottom && left == other.left && right == other.right && top == other.top;
 	}
 
 	static final class Size {

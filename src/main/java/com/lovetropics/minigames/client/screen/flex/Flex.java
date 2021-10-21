@@ -18,11 +18,11 @@ public final class Flex {
 
 	final List<Flex> children = new ArrayList<>();
 
-	public Flex rows() {
+	public Flex row() {
 		return this.axis(Axis.X);
 	}
 
-	public Flex columns() {
+	public Flex column() {
 		return this.axis(Axis.Y);
 	}
 

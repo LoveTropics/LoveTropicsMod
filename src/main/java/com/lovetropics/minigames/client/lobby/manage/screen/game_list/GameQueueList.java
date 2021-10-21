@@ -34,7 +34,7 @@ public final class GameQueueList extends AbstractGameList {
 		this.lobby = lobby;
 		this.handlers = handlers;
 
-		Flex root = new Flex().rows();
+		Flex root = new Flex().row();
 		Flex enqueue = root.child().size(20, 20).marginRight(2);
 		Flex cancel = root.child().size(20, 20).marginLeft(2);
 

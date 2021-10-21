@@ -78,7 +78,7 @@ public abstract class ConfigData {
 		
 		public static final ListConfigData EMPTY = new ListConfigData(ConfigType.NONE);
 		
-		private final ConfigType type;
+		private ConfigType type;
 		private final List<Object> values = new ArrayList<>();
 
 		public ListConfigData(ConfigType type) {
@@ -86,6 +86,14 @@ public abstract class ConfigData {
 		}
 		
 		public void add(Object value) {
+			if (componentType() == ConfigType.NONE) {
+				for (ConfigType type : ConfigType.values()) {
+					if (type.isValidValue(value)) {
+						this.type = type;
+						break;
+					}
+				}
+			}
 			if (componentType().isValidValue(value)) {
 				this.values.add(value);
 			} else {
