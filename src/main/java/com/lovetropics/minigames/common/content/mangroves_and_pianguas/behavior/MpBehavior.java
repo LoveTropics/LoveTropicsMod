@@ -64,7 +64,6 @@ public final class MpBehavior implements IGameBehavior {
 		events.listen(GamePlayerEvents.SET_ROLE, (player, role, lastRole) -> setupPlayerAsRole(player, role));
 		events.listen(MpEvents.ASSIGN_PLOT, this::onAssignPlot);
 		events.listen(GamePhaseEvents.TICK, () -> tick(game));
-		events.listen(GamePlayerEvents.PLACE_BLOCK, this::onPlaceBlock);
 		events.listen(GamePlayerEvents.DEATH, this::onPlayerDeath);
 		events.listen(GameWorldEvents.EXPLOSION_DETONATE, this::onExplosion);
 		// Don't grow any trees- we handle that ourselves
@@ -74,7 +73,7 @@ public final class MpBehavior implements IGameBehavior {
 		events.listen(GameLivingEntityEvents.MOB_DROP, (e, d, r) -> ActionResultType.FAIL);
 		events.listen(GameLivingEntityEvents.FARMLAND_TRAMPLE, this::onFarmlandTrample);
 
-		events.listen(GamePlayerEvents.PLACE_BLOCK, (player, pos, placed, placedOn) -> ActionResultType.FAIL);
+		events.listen(GamePlayerEvents.PLACE_BLOCK, this::onPlaceBlock);
 		events.listen(GamePlayerEvents.BREAK_BLOCK, (player, pos, state) -> ActionResultType.FAIL);
 	}
 
@@ -119,11 +118,13 @@ public final class MpBehavior implements IGameBehavior {
 
 	private ActionResultType onPlaceBlock(ServerPlayerEntity player, BlockPos pos, BlockState placed, BlockState placedOn) {
 		Plot plot = plots.getPlotFor(player);
-		if (plot != null && !plot.bounds.contains(pos)) {
-			return ActionResultType.FAIL;
-		} else {
-			return ActionResultType.PASS;
+		if (plot != null && plot.bounds.contains(pos)) {
+			if (placed.matchesBlock(Blocks.FARMLAND)) {
+				return ActionResultType.PASS;
+			}
 		}
+
+		return ActionResultType.FAIL;
 	}
 
 	private ActionResultType onFarmlandTrample(Entity entity, BlockPos pos, BlockState state) {
