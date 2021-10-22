@@ -1,6 +1,7 @@
 package com.lovetropics.minigames.common.content.mangroves_and_pianguas.behavior.plant;
 
 import com.lovetropics.minigames.common.content.mangroves_and_pianguas.behavior.event.MpEvents;
+import com.lovetropics.minigames.common.content.mangroves_and_pianguas.behavior.event.MpPlantEvents;
 import com.lovetropics.minigames.common.content.mangroves_and_pianguas.plot.Plot;
 import com.lovetropics.minigames.common.content.mangroves_and_pianguas.plot.plant.Plant;
 import com.lovetropics.minigames.common.content.mangroves_and_pianguas.plot.plant.PlantType;
@@ -37,7 +38,7 @@ public final class GrowPlantBehavior implements IGameBehavior {
 	// TODO: rather store the planted time than going on an interval
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
-		events.listen(MpEvents.TICK_PLANTS, (player, plot, plants) -> {
+		events.listen(MpPlantEvents.TICK, (player, plot, plants) -> {
 			long ticks = game.ticks();
 			if (ticks % this.time != 0) return;
 
@@ -53,7 +54,7 @@ public final class GrowPlantBehavior implements IGameBehavior {
 				plot.plants.removePlant(plant);
 
 				BlockPos origin = plant.coverage().getOrigin();
-				if (!game.invoker(MpEvents.PLACE_PLANT).placePlant(player, plot, origin, this.growInto)) {
+				if (game.invoker(MpEvents.PLACE_AND_ADD_PLANT).placePlant(player, plot, origin, this.growInto) == null) {
 					this.restoreSnapshot(world, plot, snapshot);
 				}
 			}

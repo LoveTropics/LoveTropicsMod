@@ -2,6 +2,7 @@ package com.lovetropics.minigames.common.content.mangroves_and_pianguas.behavior
 
 import com.lovetropics.minigames.common.content.mangroves_and_pianguas.plot.Plot;
 import com.lovetropics.minigames.common.content.mangroves_and_pianguas.plot.plant.Plant;
+import com.lovetropics.minigames.common.content.mangroves_and_pianguas.plot.plant.PlantCoverage;
 import com.lovetropics.minigames.common.content.mangroves_and_pianguas.plot.plant.PlantItemType;
 import com.lovetropics.minigames.common.content.mangroves_and_pianguas.plot.plant.PlantType;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameEventType;
@@ -9,6 +10,7 @@ import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
 
+import javax.annotation.Nullable;
 import java.util.List;
 
 public final class MpEvents {
@@ -24,29 +26,18 @@ public final class MpEvents {
 		}
 	});
 
-	public static final GameEventType<AddPlant> ADD_PLANT = GameEventType.create(AddPlant.class, listeners -> (player, plot, plant) -> {
-		for (AddPlant listener : listeners) {
-			listener.onAddPlant(player, plot, plant);
-		}
-	});
-
-	public static final GameEventType<TickPlants> TICK_PLANTS = GameEventType.create(TickPlants.class, listeners -> (player, plot, plants) -> {
-		for (TickPlants listener : listeners) {
-			listener.onTickPlants(player, plot, plants);
-		}
-	});
-
-	public static final GameEventType<PlacePlant> PLACE_PLANT = GameEventType.create(PlacePlant.class, listeners -> (player, plot, pos, plantType) -> {
-		for (PlacePlant listener : listeners) {
-			if (listener.placePlant(player, plot, pos, plantType)) {
-				return true;
+	public static final GameEventType<PlaceAndAddPlant> PLACE_AND_ADD_PLANT = GameEventType.create(PlaceAndAddPlant.class, listeners -> (player, plot, pos, plantType) -> {
+		for (PlaceAndAddPlant listener : listeners) {
+			Plant plant = listener.placePlant(player, plot, pos, plantType);
+			if (plant != null) {
+				return plant;
 			}
 		}
-		return false;
+		return null;
 	});
 
-	public static final GameEventType<BreakPlant> BREAK_PLANT = GameEventType.create(BreakPlant.class, listeners -> (player, plot, plant) -> {
-		for (BreakPlant listener : listeners) {
+	public static final GameEventType<BreakAndRemovePlant> BREAK_AND_REMOVE_PLANT = GameEventType.create(BreakAndRemovePlant.class, listeners -> (player, plot, plant) -> {
+		for (BreakAndRemovePlant listener : listeners) {
 			if (listener.breakPlant(player, plot, plant)) {
 				return true;
 			}
@@ -83,12 +74,22 @@ public final class MpEvents {
 		void onTickPlants(ServerPlayerEntity player, Plot plot, List<Plant> plants);
 	}
 
+	public interface PlaceAndAddPlant {
+		@Nullable
+		Plant placePlant(ServerPlayerEntity player, Plot plot, BlockPos pos, PlantType plantType);
+	}
+
 	public interface PlacePlant {
-		boolean placePlant(ServerPlayerEntity player, Plot plot, BlockPos pos, PlantType plantType);
+		@Nullable
+		PlantCoverage placePlant(ServerPlayerEntity player, Plot plot, BlockPos pos);
+	}
+
+	public interface BreakAndRemovePlant {
+		boolean breakPlant(ServerPlayerEntity player, Plot plot, Plant plant);
 	}
 
 	public interface BreakPlant {
-		boolean breakPlant(ServerPlayerEntity player, Plot plot, Plant plant);
+		void breakPlant(ServerPlayerEntity player, Plot plot, Plant plant, BlockPos pos);
 	}
 
 	public interface CreatePlantItem {

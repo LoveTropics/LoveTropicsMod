@@ -1,16 +1,9 @@
 package com.lovetropics.minigames.common.content.mangroves_and_pianguas.behavior.plant;
 
-import com.lovetropics.minigames.common.content.mangroves_and_pianguas.behavior.event.MpEvents;
-import com.lovetropics.minigames.common.content.mangroves_and_pianguas.plot.plant.Plant;
-import com.lovetropics.minigames.common.core.game.IGamePhase;
-import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
-import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.block.BlockState;
 import net.minecraft.state.properties.BlockStateProperties;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.server.ServerWorld;
 
 import java.util.Random;
 
@@ -23,6 +16,7 @@ public final class BerriesPlantBehavior extends AgingPlantBehavior {
 		super(interval);
 	}
 
+	@Override
 	protected BlockState ageUp(Random random, BlockState state) {
 		int age = state.get(BlockStateProperties.AGE_0_3);
 		if (age < 1 || age < 3 && random.nextInt(128) == 0) {

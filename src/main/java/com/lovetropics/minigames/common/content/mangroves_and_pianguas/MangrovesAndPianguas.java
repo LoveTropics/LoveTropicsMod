@@ -7,7 +7,11 @@ import com.lovetropics.minigames.common.content.mangroves_and_pianguas.behavior.
 import com.lovetropics.minigames.common.content.mangroves_and_pianguas.behavior.MpMerchantBehavior;
 import com.lovetropics.minigames.common.content.mangroves_and_pianguas.behavior.MpWaveSpawnerBehavior;
 import com.lovetropics.minigames.common.content.mangroves_and_pianguas.behavior.plant.*;
-import com.lovetropics.minigames.common.content.mangroves_and_pianguas.plot.plant.PlantPlacement;
+import com.lovetropics.minigames.common.content.mangroves_and_pianguas.behavior.plant.drops.DropLootTableBehavior;
+import com.lovetropics.minigames.common.content.mangroves_and_pianguas.behavior.plant.drops.DropPlantItemBehavior;
+import com.lovetropics.minigames.common.content.mangroves_and_pianguas.behavior.plant.placement.PlaceDoublePlantBehavior;
+import com.lovetropics.minigames.common.content.mangroves_and_pianguas.behavior.plant.placement.PlaceFeaturePlantBehavior;
+import com.lovetropics.minigames.common.content.mangroves_and_pianguas.behavior.plant.placement.PlaceSinglePlantBehavior;
 import com.lovetropics.minigames.common.util.GameBehaviorEntry;
 import com.lovetropics.minigames.common.util.LoveTropicsRegistrate;
 import net.minecraftforge.event.RegisterCommandsEvent;
@@ -42,6 +46,26 @@ public final class MangrovesAndPianguas {
 			.behavior(MpPlantItemBehavior.CODEC)
 			.register();
 
+	public static final GameBehaviorEntry<PlaceSinglePlantBehavior> PLACE_SINGLE_PLANT = REGISTRATE.object("place_single_plant")
+			.behavior(PlaceSinglePlantBehavior.CODEC)
+			.register();
+
+	public static final GameBehaviorEntry<PlaceDoublePlantBehavior> PLACE_DOUBLE_PLANT = REGISTRATE.object("place_double_plant")
+			.behavior(PlaceDoublePlantBehavior.CODEC)
+			.register();
+
+	public static final GameBehaviorEntry<PlaceFeaturePlantBehavior> PLACE_FEATURE_PLANT = REGISTRATE.object("place_feature_plant")
+			.behavior(PlaceFeaturePlantBehavior.CODEC)
+			.register();
+
+	public static final GameBehaviorEntry<DropPlantItemBehavior> DROP_PLANT_ITEM = REGISTRATE.object("drop_plant_item")
+			.behavior(DropPlantItemBehavior.CODEC)
+			.register();
+
+	public static final GameBehaviorEntry<DropLootTableBehavior> DROP_LOOT_TABLE = REGISTRATE.object("drop_loot_table")
+			.behavior(DropLootTableBehavior.CODEC)
+			.register();
+
 	public static final GameBehaviorEntry<AgingCropPlantBehavior> AGING_PLANT = REGISTRATE.object("aging_plant")
 			.behavior(AgingCropPlantBehavior.CODEC)
 			.register();
@@ -70,8 +94,8 @@ public final class MangrovesAndPianguas {
 			.behavior(ProximityBombPlantBehavior.CODEC)
 			.register();
 
-	public static final GameBehaviorEntry<ScaryPlantBehavior> SCARY_PLANT = REGISTRATE.object("scary_plant")
-			.behavior(ScaryPlantBehavior.CODEC)
+	public static final GameBehaviorEntry<ScareTrapPlantBehavior> SCARE_TRAP_PLANT = REGISTRATE.object("scare_trap_plant")
+			.behavior(ScareTrapPlantBehavior.CODEC)
 			.register();
 
 	public static final GameBehaviorEntry<FlamingPlantBehavior> FLAMING_PLANT = REGISTRATE.object("flaming_plant")
@@ -82,13 +106,9 @@ public final class MangrovesAndPianguas {
 			.behavior(WateryPlantBehavior.CODEC)
 			.register();
 
-	public static final GameBehaviorEntry<DropItemPlantBehavior> DROP_ITEM = REGISTRATE.object("drop_item")
-			.behavior(DropItemPlantBehavior.CODEC)
+	public static final GameBehaviorEntry<IdleDropItemPlantBehavior> IDLE_DROP_ITEM = REGISTRATE.object("idle_drop_item")
+			.behavior(IdleDropItemPlantBehavior.CODEC)
 			.register();
-
-	static {
-		PlantPlacement.register();
-	}
 
 	@SubscribeEvent
 	public static void onRegisterCommands(RegisterCommandsEvent event) {

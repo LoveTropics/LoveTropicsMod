@@ -4,6 +4,7 @@ import com.lovetropics.lib.codec.MoreCodecs;
 import com.lovetropics.minigames.common.content.mangroves_and_pianguas.behavior.event.MpEvents;
 import com.lovetropics.minigames.common.content.mangroves_and_pianguas.plot.Plot;
 import com.lovetropics.minigames.common.content.mangroves_and_pianguas.plot.PlotsState;
+import com.lovetropics.minigames.common.content.mangroves_and_pianguas.plot.plant.Plant;
 import com.lovetropics.minigames.common.content.mangroves_and_pianguas.plot.plant.PlantItemType;
 import com.lovetropics.minigames.common.content.mangroves_and_pianguas.plot.plant.PlantType;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
@@ -55,7 +56,8 @@ public final class MpPlantItemBehavior implements IGameBehavior {
 
 		Plot plot = plots.getPlotFor(player);
 		if (plot != null && plot.plantBounds.contains(pos)) {
-			if (game.invoker(MpEvents.PLACE_PLANT).placePlant(player, plot, pos, this.places)) {
+			Plant plant = game.invoker(MpEvents.PLACE_AND_ADD_PLANT).placePlant(player, plot, pos, this.places);
+			if (plant != null) {
 				return ActionResultType.SUCCESS;
 			} else {
 				// TODO: indicate failure

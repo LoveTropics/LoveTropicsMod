@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.common.content.mangroves_and_pianguas.behavior.plant;
 
-import com.lovetropics.minigames.common.content.mangroves_and_pianguas.behavior.event.MpEvents;
+import com.lovetropics.minigames.common.content.mangroves_and_pianguas.behavior.event.MpPlantEvents;
 import com.lovetropics.minigames.common.content.mangroves_and_pianguas.plot.Plot;
 import com.lovetropics.minigames.common.content.mangroves_and_pianguas.plot.plant.Plant;
 import com.lovetropics.minigames.common.core.game.GameException;
@@ -17,7 +17,6 @@ import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.server.ServerWorld;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
@@ -36,7 +35,7 @@ public final class FlamingPlantBehavior implements IGameBehavior {
     @Override
     public void register(IGamePhase game, EventRegistrar events) throws GameException {
         this.game = game;
-        events.listen(MpEvents.TICK_PLANTS, this::tickPlants);
+        events.listen(MpPlantEvents.TICK, this::tickPlants);
     }
 
     private void tickPlants(ServerPlayerEntity player, Plot plot, List<Plant> plants) {

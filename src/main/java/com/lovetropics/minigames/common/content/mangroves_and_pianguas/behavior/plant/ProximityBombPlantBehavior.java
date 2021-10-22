@@ -2,6 +2,7 @@ package com.lovetropics.minigames.common.content.mangroves_and_pianguas.behavior
 
 import com.lovetropics.minigames.common.content.mangroves_and_pianguas.FriendlyExplosion;
 import com.lovetropics.minigames.common.content.mangroves_and_pianguas.behavior.event.MpEvents;
+import com.lovetropics.minigames.common.content.mangroves_and_pianguas.behavior.event.MpPlantEvents;
 import com.lovetropics.minigames.common.content.mangroves_and_pianguas.plot.plant.Plant;
 import com.lovetropics.minigames.common.content.mangroves_and_pianguas.plot.plant.PlantCoverage;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
@@ -34,7 +35,7 @@ public final class ProximityBombPlantBehavior implements IGameBehavior {
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
-		events.listen(MpEvents.TICK_PLANTS, (player, plot, plants) -> {
+		events.listen(MpPlantEvents.TICK, (player, plot, plants) -> {
 			long ticks = game.ticks();
 			if (ticks % 5 != 0) {
 				return;
@@ -55,7 +56,7 @@ public final class ProximityBombPlantBehavior implements IGameBehavior {
 			}
 
 			for (Plant plant : removedPlants) {
-				game.invoker(MpEvents.BREAK_PLANT).breakPlant(player, plot, plant);
+				game.invoker(MpEvents.BREAK_AND_REMOVE_PLANT).breakPlant(player, plot, plant);
 			}
 		});
 	}
