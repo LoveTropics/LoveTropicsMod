@@ -52,6 +52,7 @@ public final class DropLootTableBehavior implements IGameBehavior {
 				.withParameter(LootParameters.THIS_ENTITY, player)
 				.withParameter(LootParameters.ORIGIN, Vector3d.copyCentered(pos))
 				.withParameter(LootParameters.BLOCK_STATE, player.world.getBlockState(pos))
+				.withParameter(LootParameters.TOOL, player.getActiveItemStack())
 				.withRandom(player.getRNG())
 				.withLuck(player.getLuck())
 				.build(LootParameterSets.BLOCK);

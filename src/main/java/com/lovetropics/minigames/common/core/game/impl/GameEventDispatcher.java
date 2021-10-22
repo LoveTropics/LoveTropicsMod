@@ -10,7 +10,10 @@ import com.lovetropics.minigames.common.util.Scheduler;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.item.ItemStack;
+import net.minecraft.network.play.server.SSetSlotPacket;
 import net.minecraft.util.ActionResultType;
+import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IServerWorld;
 import net.minecraft.world.World;
@@ -249,11 +252,19 @@ public final class GameEventDispatcher {
 				ActionResultType result = game.invoker(GamePlayerEvents.PLACE_BLOCK).onPlaceBlock(player, event.getPos(), event.getPlacedBlock(), event.getPlacedAgainst());
 				if (result == ActionResultType.FAIL) {
 					event.setCanceled(true);
+					this.resetPlayerHeldItem(player);
 				}
 			} catch (Exception e) {
 				LoveTropics.LOGGER.warn("Failed to dispatch player place block event", e);
 			}
 		}
+	}
+
+	private void resetPlayerHeldItem(ServerPlayerEntity player) {
+		Hand hand = player.getActiveHand();
+		int handSlot = hand == Hand.MAIN_HAND ? player.inventory.currentItem : 40;
+		ItemStack handItem = player.getHeldItem(hand);
+		player.connection.sendPacket(new SSetSlotPacket(-2, handSlot, handItem));
 	}
 
 	@SubscribeEvent
