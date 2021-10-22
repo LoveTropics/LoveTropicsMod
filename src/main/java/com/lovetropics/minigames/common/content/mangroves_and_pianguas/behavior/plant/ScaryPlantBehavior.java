@@ -50,10 +50,15 @@ public final class ScaryPlantBehavior implements IGameBehavior {
 				Vector3d pushFrom = bounds.getCenter();
 
 				for (MobEntity entity : entities) {
+					// Skip 2/3 ticks
+					if (random.nextInt(3) > 0) {
+						continue;
+					}
+
 					Vector3d entityPos = entity.getPositionVec();
 
-					// Scaled so that closer values are higher, with a max of 10
-					double dist = 2.0 / (0.1 + entityPos.distanceTo(pushFrom));
+					// Scaled so that closer values are higher, with a max of 5
+					double dist = 0.5 / (0.1 + entityPos.distanceTo(pushFrom));
 
 					// Angle between entity and center of lantern
 					double theta = Math.atan2(entityPos.z - pushFrom.z, entityPos.x - pushFrom.x);
@@ -63,15 +68,13 @@ public final class ScaryPlantBehavior implements IGameBehavior {
 
 					// Prevent mobs from flying to the moon due to too much motion
 					Vector3d motion = entity.getMotion();
-					entity.setMotion(Math.min(motion.x, 10), Math.min(motion.y, 0.25), Math.min(motion.z, 10));
+					entity.setMotion(Math.min(motion.x, 5), Math.min(motion.y, 0.25), Math.min(motion.z, 5));
 
 					// Make it so that using a jack o lantern a lot will reduce alive time
-					if (random.nextInt(6) == 0) {
-						PlantHealth health = plant.state(PlantHealth.KEY);
+					PlantHealth health = plant.state(PlantHealth.KEY);
 
-						if (health != null) {
-							health.decrement(this.pushCost);
-						}
+					if (health != null) {
+						health.decrement(this.pushCost);
 					}
 				}
 			}
