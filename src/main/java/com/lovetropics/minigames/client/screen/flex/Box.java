@@ -11,6 +11,10 @@ public final class Box {
 	private final int right;
 	private final int bottom;
 
+	public Box() {
+		this(0, 0, 0, 0);
+	}
+
 	public Box(int left, int top, int right, int bottom) {
 		this.left = left;
 		this.top = top;
@@ -105,6 +109,26 @@ public final class Box {
 
 	public Box bottom(int bottom) {
 		return new Box(this.left, this.top, this.right, bottom);
+	}
+
+	public Box union(Box other) {
+		return new Box(Math.min(this.left, other.left), Math.min(this.top, other.top), Math.max(this.right, other.right), Math.max(this.bottom, other.bottom));
+	}
+
+	public Box intersect(Box other) {
+		Box intersect = new Box(Math.max(this.left, other.left), Math.max(this.top, other.top), Math.min(this.right, other.right), Math.min(this.bottom, other.bottom));
+		if (intersect.width() <= 0 || intersect.height() <= 0) {
+			return new Box();
+		}
+		return intersect;
+	}
+
+	public Box withDimensions(int width, int height) {
+		return new Box(left, top, width >= 0 ? left + width : right, height >= 0 ? top + height : bottom);
+	}
+
+	public Box shift(int x, int y) {
+		return new Box(left + x, top + y, right + x, bottom + y);
 	}
 
 	static Box combine(Axis mainAxis, Interval main, Interval cross) {

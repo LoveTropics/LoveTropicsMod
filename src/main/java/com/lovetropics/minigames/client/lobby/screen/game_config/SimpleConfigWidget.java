@@ -5,9 +5,8 @@ import java.util.List;
 
 import org.apache.commons.lang3.math.NumberUtils;
 
-import com.lovetropics.minigames.client.screen.DynamicLayoutGui;
-import com.lovetropics.minigames.client.screen.flex.Flex;
-import com.lovetropics.minigames.client.screen.flex.Flex.Unit;
+import com.lovetropics.minigames.client.screen.LayoutGui;
+import com.lovetropics.minigames.client.screen.LayoutTree;
 import com.lovetropics.minigames.client.screen.flex.FlexSolver;
 import com.lovetropics.minigames.client.screen.flex.Layout;
 import com.lovetropics.minigames.common.core.game.behavior.config.ConfigData.SimpleConfigData;
@@ -20,31 +19,32 @@ import net.minecraft.client.gui.widget.Widget;
 import net.minecraft.util.Util;
 import net.minecraft.util.text.StringTextComponent;
 
-public abstract class SimpleConfigWidget extends DynamicLayoutGui implements IConfigWidget {
+public abstract class SimpleConfigWidget extends LayoutGui implements IConfigWidget {
 	
 	protected final SimpleConfigData config;
 	private Widget control;
 	
-	public static SimpleConfigWidget from(Flex basis, SimpleConfigData data) {
-		Flex widgetBasis = basis.child().margin(3);
+	public static SimpleConfigWidget from(LayoutTree ltree, SimpleConfigData data) {
 		switch (data.type()) {
 		case BOOLEAN:
-			return new BooleanConfigWidget(widgetBasis, data);
+			return new BooleanConfigWidget(ltree, data);
 		case NUMBER:
-			return new NumericConfigWidget(widgetBasis, data);
+			return new NumericConfigWidget(ltree, data);
 		case STRING:
-			return new StringConfigWidget(widgetBasis, data);
+			return new StringConfigWidget(ltree, data);
 		case ENUM:
-			return new EnumConfigWidget(widgetBasis, data);
+			return new EnumConfigWidget(ltree, data);
 		default:
 			throw new IllegalArgumentException("Invalid config type " + data.type() + " for simple config widget");	
 		}
 	}
 	
-	protected SimpleConfigWidget(Flex basis, SimpleConfigData config) {
-		super(basis);
-		basis.height(20, Unit.PX).width(getHeight());
+	protected SimpleConfigWidget(LayoutTree ltree, SimpleConfigData config) {
+		super();
 		this.config = config;
+		ltree.definiteChild(-1, getHeight());
+		this.control = createControl(ltree.pop());
+		this.mainLayout = ltree.pop();
 	}
 	
 	@Override
@@ -58,23 +58,17 @@ public abstract class SimpleConfigWidget extends DynamicLayoutGui implements ICo
 		super.render(matrixStack, mouseX, mouseY, partialTicks);
 	}
 	
-	@Override
-	public void bake(FlexSolver.Results solve) {
-		super.bake(solve);
-		this.control = createControl(this.mainLayout);
-	}
-	
-	protected abstract Widget createControl(Layout mainLayout);
+	protected abstract Widget createControl(Layout ltree);
 
 	@Override
 	public int getHeight() {
-		return this.control.getHeight();
+		return 20;
 	}
 
 	private static final class BooleanConfigWidget extends SimpleConfigWidget {
 
-		BooleanConfigWidget(Flex basis, SimpleConfigData config) {
-			super(basis, config);
+		BooleanConfigWidget(LayoutTree ltree, SimpleConfigData config) {
+			super(ltree, config);
 		}
 		
 		@Override
@@ -87,8 +81,8 @@ public abstract class SimpleConfigWidget extends DynamicLayoutGui implements ICo
 	
 	private static final class NumericConfigWidget extends SimpleConfigWidget {
 
-		NumericConfigWidget(Flex basis, SimpleConfigData config) {
-			super(basis, config);
+		NumericConfigWidget(LayoutTree ltree, SimpleConfigData config) {
+			super(ltree, config);
 		}
 
 		@Override
@@ -102,8 +96,8 @@ public abstract class SimpleConfigWidget extends DynamicLayoutGui implements ICo
 	
 	private static final class StringConfigWidget extends SimpleConfigWidget {
 
-		StringConfigWidget(Flex basis, SimpleConfigData config) {
-			super(basis, config);
+		StringConfigWidget(LayoutTree ltree, SimpleConfigData config) {
+			super(ltree, config);
 		}
 		
 		@Override
@@ -117,8 +111,8 @@ public abstract class SimpleConfigWidget extends DynamicLayoutGui implements ICo
 	
 	private static final class EnumConfigWidget extends SimpleConfigWidget {
 
-		EnumConfigWidget(Flex basis, SimpleConfigData config) {
-			super(basis, config);
+		EnumConfigWidget(LayoutTree ltree, SimpleConfigData config) {
+			super(ltree, config);
 		}
 		
 		@Override

@@ -29,6 +29,31 @@ public final class Layout {
 		return this.padding;
 	}
 
+	public Layout clip(Box bounds) {
+		Box origArea = margin();
+		Box newArea = origArea.intersect(bounds);
+		int dl = newArea.left() - origArea.left();
+		int dr = newArea.right() - origArea.right();
+		int dt = newArea.top() - origArea.top();
+		int db = newArea.bottom() - origArea.bottom();
+		return new Layout(content().grow(-dl, -dt, dr, db), padding().grow(-dl, -dt, dr, db), newArea);
+	}
+
+	public Layout shrinkTo(Box bounds) {
+		Box origArea = content();
+		Box newArea = bounds;
+		int dl = newArea.left() - origArea.left();
+		int dr = newArea.right() - origArea.right();
+		int dt = newArea.top() - origArea.top();
+		int db = newArea.bottom() - origArea.bottom();
+		return new Layout(newArea, padding().grow(-dl, -dt, dr, db), margin().grow(-dl, -dt, dr, db));
+	}
+
+	public Layout moveY(int y) {
+		int dy = y - margin().top();
+		return new Layout(content().shift(0, dy), padding().shift(0, dy), margin().shift(0, dy));
+	}
+
 	@Override
 	public String toString() {
 		return "Layout [content=" + content + ", padding=" + padding + ", margin=" + margin + "]";

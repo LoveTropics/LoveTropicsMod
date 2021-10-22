@@ -4,9 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import com.lovetropics.minigames.client.screen.DynamicLayoutGui;
-import com.lovetropics.minigames.client.screen.flex.Flex;
-import com.lovetropics.minigames.client.screen.flex.Flex.Unit;
+import com.lovetropics.minigames.client.screen.LayoutGui;
+import com.lovetropics.minigames.client.screen.LayoutTree;
+import com.lovetropics.minigames.client.screen.flex.Box;
 import com.lovetropics.minigames.common.core.game.behavior.config.ConfigData;
 import com.lovetropics.minigames.common.core.game.behavior.config.ConfigData.CompositeConfigData;
 import com.mojang.blaze3d.matrix.MatrixStack;
@@ -14,20 +14,21 @@ import com.mojang.blaze3d.matrix.MatrixStack;
 import net.minecraft.client.gui.IGuiEventListener;
 import net.minecraft.client.gui.screen.Screen;
 
-public class CompositeConfigWidget extends DynamicLayoutGui implements IConfigWidget {
+public class CompositeConfigWidget extends LayoutGui implements IConfigWidget {
 
 	private final List<IConfigWidget> children = new ArrayList<>();
 
-	public CompositeConfigWidget(Flex basis) {
-		super(basis);
+	public CompositeConfigWidget() {
+		super();
 	}
 
-	public static CompositeConfigWidget from(Screen screen, Flex basis, CompositeConfigData data) {
-		CompositeConfigWidget ret = new CompositeConfigWidget(basis);
+	public static CompositeConfigWidget from(Screen screen, LayoutTree ltree, CompositeConfigData data) {
+		CompositeConfigWidget ret = new CompositeConfigWidget();
 		for (Map.Entry<String, ConfigData> e : data.value().entrySet()) {
-			Flex childBasis = basis.child().column().marginLeft(5).padding(3).width(1, Unit.PERCENT);
-			ret.children.add(new ConfigDataUI(screen, childBasis, e.getKey(), e.getValue()));
+			ltree.child(new Box(5, 0, 0, 0), new Box(3, 3, 3, 3));
+			ret.children.add(new ConfigDataUI(screen, ltree, e.getKey(), e.getValue()));
 		}
+		ret.mainLayout = ltree.pop();
 		return ret;
 	}
 

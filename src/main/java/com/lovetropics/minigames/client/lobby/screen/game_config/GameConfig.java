@@ -12,6 +12,7 @@ import com.lovetropics.minigames.client.lobby.manage.screen.ManageLobbyScreen;
 import com.lovetropics.minigames.client.lobby.manage.state.ClientLobbyQueuedGame;
 import com.lovetropics.minigames.client.lobby.state.ClientBehaviorMap;
 import com.lovetropics.minigames.client.lobby.state.ClientConfigList;
+import com.lovetropics.minigames.client.screen.LayoutTree;
 import com.lovetropics.minigames.client.screen.flex.Box;
 import com.lovetropics.minigames.client.screen.flex.Flex;
 import com.lovetropics.minigames.client.screen.flex.FlexSolver;
@@ -31,6 +32,7 @@ import net.minecraftforge.client.gui.ScrollPanel;
 
 public final class GameConfig extends ScrollPanel {
 	private final Layout mainLayout;
+	private Layout content;
 	private final Screen screen;
 
 	private final Handlers handlers;
@@ -38,7 +40,6 @@ public final class GameConfig extends ScrollPanel {
 	private ClientLobbyQueuedGame configuring;
 	private ClientBehaviorMap configData = new ClientBehaviorMap(LinkedHashMultimap.create());
 	private final Multimap<GameBehaviorType<?>, BehaviorConfigUI> children = LinkedHashMultimap.create();
-	private int height;
 
 	public GameConfig(Screen screen, Layout main, Handlers handlers) {
 		super(screen.getMinecraft(), main.background().width(), main.background().height(), main.background().top(),
@@ -46,6 +47,7 @@ public final class GameConfig extends ScrollPanel {
 		this.mainLayout = main;
 		this.screen = screen;
 		this.handlers = handlers;
+		this.content = main;
 	}
 
 	public interface Handlers {
@@ -58,18 +60,15 @@ public final class GameConfig extends ScrollPanel {
 		this.configData = game == null ? new ClientBehaviorMap(LinkedHashMultimap.create()) : game.configs();
 		this.children.clear();
 		
-		Flex flex = new Flex().column();
+		LayoutTree ltree = new LayoutTree(this.mainLayout);
+		ltree.child(new Box(0, 0, 6, 0), new Box()); // Add margin where the scroll bar is
 		for (Entry<GameBehaviorType<?>, ClientConfigList> e : configData.behaviors.entries()) {
 			if (!e.getValue().configs.isEmpty()) {
-				Flex basis = flex.child().column().padding(3).width(1, Unit.PERCENT);
-				this.children.put(e.getKey(), new BehaviorConfigUI((ManageLobbyScreen) screen, basis, e.getKey(), e.getValue()));
+				ltree.child(0, 3);
+				this.children.put(e.getKey(), new BehaviorConfigUI((ManageLobbyScreen) screen, ltree, e.getKey(), e.getValue()));
 			}
 		}
-		FlexSolver solver = new FlexSolver(this.mainLayout.content());
-		FlexSolver.Results results = solver.apply(flex);
-		this.children.values().forEach(b -> b.bake(results));
-
-		this.height = this.children.values().stream().mapToInt(BehaviorConfigUI::getHeight).sum();
+		this.content = ltree.pop();
 	}
 
 	@Override
@@ -77,13 +76,13 @@ public final class GameConfig extends ScrollPanel {
 		return Lists.newArrayList(children.values());
 	}
 
-	public static IConfigWidget createWidget(Screen screen, Flex basis, ConfigData value) {
+	public static IConfigWidget createWidget(Screen screen, LayoutTree ltree, ConfigData value) {
 		if (value instanceof SimpleConfigData) {
-			return SimpleConfigWidget.from(basis, (SimpleConfigData) value);
+			return SimpleConfigWidget.from(ltree, (SimpleConfigData) value);
 		} else if (value instanceof ListConfigData) {
-			return ListConfigWidget.from(screen, basis, (ListConfigData) value);
+			return ListConfigWidget.from(screen, ltree, (ListConfigData) value);
 		} else if (value instanceof CompositeConfigData) {
-			return CompositeConfigWidget.from(screen, basis, (CompositeConfigData) value);
+			return CompositeConfigWidget.from(screen, ltree, (CompositeConfigData) value);
 		}
 		throw new IllegalArgumentException("Unknown config type: " + value);
 	}
@@ -95,17 +94,17 @@ public final class GameConfig extends ScrollPanel {
 
 	@Override
 	protected int getContentHeight() {
-		return this.height;
+		return this.mainLayout.margin().height();
 	}
 
 	@Override
 	protected void drawPanel(MatrixStack mStack, int entryRight, int relativeY, Tessellator tess, int mouseX,
 			int mouseY) {
-		Box outline = mainLayout.background();
-		vLine(mStack, outline.left(), outline.top(), outline.bottom(), 0xFFFF0000);
-		vLine(mStack, outline.right() - 1, outline.top(), outline.bottom(), 0xFFFF0000);
-		hLine(mStack, outline.left(), outline.right(), outline.top(), 0xFFFF0000);
-		hLine(mStack, outline.left(), outline.right(), outline.bottom() - 1, 0xFFFF0000);
+		Box outline = content.background();
+		vLine(mStack, outline.left(), outline.top(), outline.bottom() - 1, 0xFFFF0000);
+		vLine(mStack, outline.right() - 1, outline.top(), outline.bottom() - 1, 0xFFFF0000);
+		hLine(mStack, outline.left(), outline.right() - 1, outline.top(), 0xFFFF0000);
+		hLine(mStack, outline.left(), outline.right() - 1, outline.bottom() - 1, 0xFFFF0000);
 		children.values().forEach(ui -> ui.render(mStack, mouseX, mouseY, 0));
 	}
 }
