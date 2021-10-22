@@ -68,7 +68,7 @@ public final class GameEventDispatcher {
 	}
 
 	@SubscribeEvent
-	public void onDamageEntity(LivingDamageEvent event) {
+	public void onDamageEntity(LivingHurtEvent event) {
 		Entity target = event.getEntity();
 
 		IGamePhase game = gameLookup.getGamePhaseFor(target);
