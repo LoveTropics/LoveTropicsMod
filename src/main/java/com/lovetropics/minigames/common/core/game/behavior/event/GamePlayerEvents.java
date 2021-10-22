@@ -72,8 +72,12 @@ public final class GamePlayerEvents {
 
 	public static final GameEventType<InteractEntity> INTERACT_ENTITY = GameEventType.create(InteractEntity.class, listeners -> (player, target, hand) -> {
 		for (InteractEntity listener : listeners) {
-			listener.onInteractEntity(player, target, hand);
+			ActionResultType result = listener.onInteractEntity(player, target, hand);
+			if (result != ActionResultType.PASS) {
+				return result;
+			}
 		}
+		return ActionResultType.PASS;
 	});
 
 	public static final GameEventType<UseItem> USE_ITEM = GameEventType.create(UseItem.class, listeners -> (player, hand) -> {
@@ -162,7 +166,7 @@ public final class GamePlayerEvents {
 	}
 
 	public interface InteractEntity {
-		void onInteractEntity(ServerPlayerEntity player, Entity target, Hand hand);
+		ActionResultType onInteractEntity(ServerPlayerEntity player, Entity target, Hand hand);
 	}
 
 	public interface UseItem {

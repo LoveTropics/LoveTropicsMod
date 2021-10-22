@@ -8,6 +8,7 @@ import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import net.minecraft.block.BlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.server.ServerWorld;
+import net.minecraftforge.common.util.Constants;
 
 import java.util.Random;
 
@@ -34,7 +35,10 @@ public abstract class AgingPlantBehavior implements IGameBehavior {
                     BlockState agedState = ageUp(world.rand, state);
 
                     if (state != agedState) {
-                        plant.spawnPoof(world, 5, 0.01);
+                        for (BlockPos plantPos : plant.coverage()) {
+                            world.playEvent(Constants.WorldEvents.BONEMEAL_PARTICLES, plantPos, 0);
+                        }
+
                         world.setBlockState(pos, agedState);
                     }
                 }

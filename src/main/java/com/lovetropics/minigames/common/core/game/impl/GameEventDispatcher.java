@@ -188,7 +188,11 @@ public final class GameEventDispatcher {
 			ServerPlayerEntity player = (ServerPlayerEntity) event.getPlayer();
 
 			try {
-				game.invoker(GamePlayerEvents.INTERACT_ENTITY).onInteractEntity(player, event.getTarget(), event.getHand());
+				ActionResultType result = game.invoker(GamePlayerEvents.INTERACT_ENTITY).onInteractEntity(player, event.getTarget(), event.getHand());
+				if (result != ActionResultType.PASS) {
+					event.setCancellationResult(result);
+					event.setCanceled(true);
+				}
 			} catch (Exception e) {
 				LoveTropics.LOGGER.warn("Failed to dispatch player interact entity event", e);
 			}
