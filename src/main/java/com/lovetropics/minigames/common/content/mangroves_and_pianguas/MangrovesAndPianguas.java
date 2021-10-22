@@ -126,10 +126,6 @@ public final class MangrovesAndPianguas {
 	public static final ItemEntry<BlockNamedItem> SWEET_BERRY_SEEDS = REGISTRATE.item("sweet_berry_seeds", p -> new BlockNamedItem(Blocks.SWEET_BERRY_BUSH, p))
 			.register();
 
-	static {
-		PlantPlacement.register();
-	}
-
 	@SubscribeEvent
 	public static void onRegisterCommands(RegisterCommandsEvent event) {
 
