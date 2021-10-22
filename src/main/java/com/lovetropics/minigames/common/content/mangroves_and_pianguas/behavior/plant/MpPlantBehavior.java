@@ -18,7 +18,9 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.item.SwordItem;
 import net.minecraft.util.ActionResultType;
+import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.common.util.Constants;
@@ -99,10 +101,14 @@ public final class MpPlantBehavior implements IGameBehavior {
 		return true;
 	}
 
-	private ActionResultType onBreakBlock(ServerPlayerEntity player, BlockPos pos, BlockState state) {
+	private ActionResultType onBreakBlock(ServerPlayerEntity player, BlockPos pos, BlockState state, Hand hand) {
 		Plot plot = plots.getPlotFor(player);
 		if (plot == null) {
 			return ActionResultType.PASS;
+		}
+
+		if (player.getHeldItem(hand).getItem() instanceof SwordItem) {
+			return ActionResultType.FAIL;
 		}
 
 		Plant plant = plot.plants.getPlantAt(pos, this.plantType);

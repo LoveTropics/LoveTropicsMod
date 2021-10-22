@@ -92,9 +92,9 @@ public final class GamePlayerEvents {
 		}
 	});
 
-	public static final GameEventType<BreakBlock> BREAK_BLOCK = GameEventType.create(BreakBlock.class, listeners -> (player, pos, state) -> {
+	public static final GameEventType<BreakBlock> BREAK_BLOCK = GameEventType.create(BreakBlock.class, listeners -> (player, pos, state, hand) -> {
 		for (BreakBlock listener : listeners) {
-			ActionResultType result = listener.onBreakBlock(player, pos, state);
+			ActionResultType result = listener.onBreakBlock(player, pos, state, hand);
 			if (result != ActionResultType.PASS) {
 				return result;
 			}
@@ -174,7 +174,7 @@ public final class GamePlayerEvents {
 	}
 
 	public interface BreakBlock {
-		ActionResultType onBreakBlock(ServerPlayerEntity player, BlockPos pos, BlockState state);
+		ActionResultType onBreakBlock(ServerPlayerEntity player, BlockPos pos, BlockState state, Hand hand);
 	}
 
 	public interface PlaceBlock {

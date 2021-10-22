@@ -74,7 +74,7 @@ public final class MpBehavior implements IGameBehavior {
 		events.listen(GameLivingEntityEvents.FARMLAND_TRAMPLE, this::onFarmlandTrample);
 
 		events.listen(GamePlayerEvents.PLACE_BLOCK, this::onPlaceBlock);
-		events.listen(GamePlayerEvents.BREAK_BLOCK, (player, pos, state) -> ActionResultType.FAIL);
+		events.listen(GamePlayerEvents.BREAK_BLOCK, (player, pos, state, hand) -> ActionResultType.FAIL);
 	}
 
 	private void setupPlayerAsRole(ServerPlayerEntity player, @Nullable PlayerRole role) {

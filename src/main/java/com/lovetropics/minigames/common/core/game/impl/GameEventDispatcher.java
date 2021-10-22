@@ -233,7 +233,8 @@ public final class GameEventDispatcher {
 		if (game != null) {
 			try {
 				ServerPlayerEntity player = (ServerPlayerEntity) event.getPlayer();
-				ActionResultType result = game.invoker(GamePlayerEvents.BREAK_BLOCK).onBreakBlock(player, event.getPos(), event.getState());
+				Hand hand = player.getActiveHand();
+				ActionResultType result = game.invoker(GamePlayerEvents.BREAK_BLOCK).onBreakBlock(player, event.getPos(), event.getState(), hand);
 				if (result == ActionResultType.FAIL) {
 					event.setCanceled(true);
 				}
