@@ -107,4 +107,7 @@ public final class GameConfig extends ScrollPanel {
 		hLine(mStack, outline.left(), outline.right() - 1, outline.bottom() - 1, 0xFFFF0000);
 		children.values().forEach(ui -> ui.render(mStack, mouseX, mouseY, 0));
 	}
+
+	@Override
+	protected void drawGradientRect(MatrixStack mStack, int left, int top, int right, int bottom, int color1, int color2) {}
 }
