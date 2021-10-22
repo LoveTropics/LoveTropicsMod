@@ -72,6 +72,8 @@ public final class WateryPlantBehavior implements IGameBehavior {
                 int waterCount = 2 + random.nextInt(3);
 
                 if (ticks % 15 == 0) {
+                    // Extinguish fire
+                    entity.forceFireTicks(0);
                     entity.attackEntityFrom(DamageSource.MAGIC, 2 + random.nextInt(3));
                     waterCount += 5 + random.nextInt(8);
                 }
