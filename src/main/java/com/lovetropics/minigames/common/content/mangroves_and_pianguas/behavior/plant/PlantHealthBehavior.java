@@ -1,6 +1,7 @@
 package com.lovetropics.minigames.common.content.mangroves_and_pianguas.behavior.plant;
 
 import com.lovetropics.minigames.common.content.mangroves_and_pianguas.behavior.event.MpEvents;
+import com.lovetropics.minigames.common.content.mangroves_and_pianguas.behavior.event.MpPlantEvents;
 import com.lovetropics.minigames.common.content.mangroves_and_pianguas.plot.plant.Plant;
 import com.lovetropics.minigames.common.content.mangroves_and_pianguas.plot.plant.PlantType;
 import com.lovetropics.minigames.common.content.mangroves_and_pianguas.plot.plant.state.PlantHealth;
@@ -36,11 +37,11 @@ public final class PlantHealthBehavior implements IGameBehavior {
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
-		events.listen(MpEvents.ADD_PLANT, (player, plot, plant) -> {
+		events.listen(MpPlantEvents.ADD, (player, plot, plant) -> {
 			plant.state().put(PlantHealth.KEY, new PlantHealth(this.initial));
 		});
 
-		events.listen(MpEvents.TICK_PLANTS, (player, plot, plants) -> {
+		events.listen(MpPlantEvents.TICK, (player, plot, plants) -> {
 			ServerWorld world = game.getWorld();
 
 			List<Plant> decayedPlants = new ArrayList<>();
@@ -58,11 +59,11 @@ public final class PlantHealthBehavior implements IGameBehavior {
 			}
 
 			for (Plant plant : decayedPlants) {
-				game.invoker(MpEvents.BREAK_PLANT).breakPlant(player, plot, plant);
+				game.invoker(MpEvents.BREAK_AND_REMOVE_PLANT).breakPlant(player, plot, plant);
 
 				if (this.decayInto != null) {
 					BlockPos origin = plant.coverage().getOrigin();
-					game.invoker(MpEvents.PLACE_PLANT).placePlant(player, plot, origin, this.decayInto);
+					game.invoker(MpEvents.PLACE_AND_ADD_PLANT).placePlant(player, plot, origin, this.decayInto);
 				}
 			}
 		});

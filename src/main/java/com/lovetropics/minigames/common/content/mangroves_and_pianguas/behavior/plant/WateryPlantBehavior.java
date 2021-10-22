@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.common.content.mangroves_and_pianguas.behavior.plant;
 
-import com.lovetropics.minigames.common.content.mangroves_and_pianguas.behavior.event.MpEvents;
+import com.lovetropics.minigames.common.content.mangroves_and_pianguas.behavior.event.MpPlantEvents;
 import com.lovetropics.minigames.common.content.mangroves_and_pianguas.plot.Plot;
 import com.lovetropics.minigames.common.content.mangroves_and_pianguas.plot.plant.Plant;
 import com.lovetropics.minigames.common.core.game.GameException;
@@ -9,7 +9,6 @@ import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.entity.Entity;
 import net.minecraft.entity.MobEntity;
 import net.minecraft.entity.merchant.villager.VillagerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
@@ -39,7 +38,7 @@ public final class WateryPlantBehavior implements IGameBehavior {
     @Override
     public void register(IGamePhase game, EventRegistrar events) throws GameException {
         this.game = game;
-        events.listen(MpEvents.TICK_PLANTS, this::tickPlants);
+        events.listen(MpPlantEvents.TICK, this::tickPlants);
     }
 
     private void tickPlants(ServerPlayerEntity player, Plot plot, List<Plant> plants) {

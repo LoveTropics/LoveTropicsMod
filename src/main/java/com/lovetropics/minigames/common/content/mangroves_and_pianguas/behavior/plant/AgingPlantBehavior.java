@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.common.content.mangroves_and_pianguas.behavior.plant;
 
-import com.lovetropics.minigames.common.content.mangroves_and_pianguas.behavior.event.MpEvents;
+import com.lovetropics.minigames.common.content.mangroves_and_pianguas.behavior.event.MpPlantEvents;
 import com.lovetropics.minigames.common.content.mangroves_and_pianguas.plot.plant.Plant;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
@@ -20,7 +20,7 @@ public abstract class AgingPlantBehavior implements IGameBehavior {
 
     @Override
     public void register(IGamePhase game, EventRegistrar events) {
-        events.listen(MpEvents.TICK_PLANTS, (player, plot, plants) -> {
+        events.listen(MpPlantEvents.TICK, (player, plot, plants) -> {
             long ticks = game.ticks();
             if (ticks % this.interval != 0) {
                 return;

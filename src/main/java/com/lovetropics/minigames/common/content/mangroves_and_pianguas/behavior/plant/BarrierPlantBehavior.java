@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.common.content.mangroves_and_pianguas.behavior.plant;
 
-import com.lovetropics.minigames.common.content.mangroves_and_pianguas.behavior.event.MpEvents;
+import com.lovetropics.minigames.common.content.mangroves_and_pianguas.behavior.event.MpPlantEvents;
 import com.lovetropics.minigames.common.content.mangroves_and_pianguas.plot.plant.Plant;
 import com.lovetropics.minigames.common.content.mangroves_and_pianguas.plot.plant.state.PlantHealth;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
@@ -28,7 +28,7 @@ public final class BarrierPlantBehavior implements IGameBehavior {
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
-		events.listen(MpEvents.TICK_PLANTS, (player, plot, plants) -> {
+		events.listen(MpPlantEvents.TICK, (player, plot, plants) -> {
 			long ticks = game.ticks();
 			if (ticks % 20 != 0) return;
 

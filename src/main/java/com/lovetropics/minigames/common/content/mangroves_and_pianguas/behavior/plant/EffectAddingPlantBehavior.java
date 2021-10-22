@@ -1,7 +1,7 @@
 package com.lovetropics.minigames.common.content.mangroves_and_pianguas.behavior.plant;
 
 import com.lovetropics.lib.codec.MoreCodecs;
-import com.lovetropics.minigames.common.content.mangroves_and_pianguas.behavior.event.MpEvents;
+import com.lovetropics.minigames.common.content.mangroves_and_pianguas.behavior.event.MpPlantEvents;
 import com.lovetropics.minigames.common.content.mangroves_and_pianguas.plot.plant.Plant;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
@@ -35,7 +35,7 @@ public final class EffectAddingPlantBehavior implements IGameBehavior {
 		int effectDuration = this.effect.getDuration();
 		int applyTime = Math.max(effectDuration - 5, 0);
 
-		events.listen(MpEvents.TICK_PLANTS, (player, plot, plants) -> {
+		events.listen(MpPlantEvents.TICK, (player, plot, plants) -> {
 			long ticks = game.ticks();
 			if (ticks % effectDuration != applyTime) {
 				return;
