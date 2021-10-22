@@ -10,6 +10,11 @@ import com.lovetropics.minigames.common.content.mangroves_and_pianguas.behavior.
 import com.lovetropics.minigames.common.content.mangroves_and_pianguas.plot.plant.PlantPlacement;
 import com.lovetropics.minigames.common.util.GameBehaviorEntry;
 import com.lovetropics.minigames.common.util.LoveTropicsRegistrate;
+import com.tterrag.registrate.util.entry.ItemEntry;
+import net.minecraft.block.Blocks;
+import net.minecraft.item.BlockItem;
+import net.minecraft.item.BlockNamedItem;
+import net.minecraft.item.Item;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -17,6 +22,8 @@ import net.minecraftforge.fml.common.Mod;
 @Mod.EventBusSubscriber(modid = Constants.MODID)
 public final class MangrovesAndPianguas {
 	private static final LoveTropicsRegistrate REGISTRATE = LoveTropics.registrate();
+
+	// Behaviors
 
 	public static final GameBehaviorEntry<MpBehavior> MANGROVES_AND_PIANGUAS = REGISTRATE.object("mangroves_and_pianguas")
 			.behavior(MpBehavior.CODEC)
@@ -84,6 +91,17 @@ public final class MangrovesAndPianguas {
 
 	public static final GameBehaviorEntry<DropItemPlantBehavior> DROP_ITEM = REGISTRATE.object("drop_item")
 			.behavior(DropItemPlantBehavior.CODEC)
+			.register();
+
+	// Items
+
+	public static final ItemEntry<BlockNamedItem> CARROT_SEEDS = REGISTRATE.item("carrot_seeds", p -> new BlockNamedItem(Blocks.CARROTS, p))
+			.register();
+
+	public static final ItemEntry<BlockNamedItem> POTATO_SEEDS = REGISTRATE.item("potato_seeds", p -> new BlockNamedItem(Blocks.POTATOES, p))
+			.register();
+
+	public static final ItemEntry<BlockNamedItem> SWEET_BERRY_SEEDS = REGISTRATE.item("sweet_berry_seeds", p -> new BlockNamedItem(Blocks.SWEET_BERRY_BUSH, p))
 			.register();
 
 	static {
