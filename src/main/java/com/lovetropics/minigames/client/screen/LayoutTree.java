@@ -141,10 +141,10 @@ public class LayoutTree {
 	public Layout get(float amount, Axis axis) {
 		Box area = head().content();
 		Box contract = new Box()
-				.left(	(int) (axis == Axis.X && amount < 0 ? -amount * area.width() : 0))
-				.right(	(int) (axis == Axis.X && amount > 0 ? (1 - amount) * area.width() : 0))
-				.top(	(int) (axis == Axis.Y && amount < 0 ? -amount * area.height() : 0))
-				.bottom((int) (axis == Axis.Y && amount > 0 ? (1 - amount) * area.height() : 0));
+				.left(	(int) (axis == Axis.X && amount < 0 ? Math.ceil(-amount * area.width()) : 0))
+				.right(	(int) (axis == Axis.X && amount > 0 ? Math.ceil((1 - amount) * area.width()) : 0))
+				.top(	(int) (axis == Axis.Y && amount < 0 ? Math.ceil(-amount * area.height()) : 0))
+				.bottom((int) (axis == Axis.Y && amount > 0 ? Math.ceil((1 - amount) * area.height()) : 0));
 		return get(area.contract(contract), new Box(), new Box());
 	}
 
