@@ -1,5 +1,6 @@
 package com.lovetropics.minigames.common.core.game;
 
+import com.lovetropics.minigames.common.core.game.client_tweak.GameClientTweakMap;
 import com.lovetropics.minigames.common.core.game.lobby.GameLobbyMetadata;
 import com.lovetropics.minigames.common.core.game.lobby.IGameLobby;
 import com.lovetropics.minigames.common.core.game.player.PlayerSet;
@@ -45,5 +46,9 @@ public interface IGame {
 		ControlCommands commands = getControlCommands();
 		GameLobbyMetadata lobby = getLobby().getMetadata();
 		return ControlCommandInvoker.create(commands, lobby);
+	}
+
+	default GameClientTweakMap getClientTweaks() {
+		return getState().get(GameClientTweakMap.STATE_KEY);
 	}
 }

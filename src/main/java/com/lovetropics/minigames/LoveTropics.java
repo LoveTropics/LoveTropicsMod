@@ -10,6 +10,7 @@ import com.lovetropics.minigames.common.content.hide_and_seek.HideAndSeek;
 import com.lovetropics.minigames.common.content.survive_the_tide.SurviveTheTide;
 import com.lovetropics.minigames.common.content.survive_the_tide.entity.DriftwoodRider;
 import com.lovetropics.minigames.common.content.trash_dive.TrashDive;
+import com.lovetropics.minigames.common.core.game.client_tweak.GameClientTweakTypes;
 import com.lovetropics.minigames.common.core.command.ExtendedBossBarCommand;
 import com.lovetropics.minigames.common.core.command.MapCommand;
 import com.lovetropics.minigames.common.core.command.game.*;
@@ -22,7 +23,7 @@ import com.lovetropics.minigames.common.core.integration.Telemetry;
 import com.lovetropics.minigames.common.core.map.VoidChunkGenerator;
 import com.lovetropics.minigames.common.core.map.item.MapWorkspaceItems;
 import com.lovetropics.minigames.common.core.network.LoveTropicsNetwork;
-import com.lovetropics.minigames.common.util.LoveTropicsRegistrate;
+import com.lovetropics.minigames.common.util.registry.LoveTropicsRegistrate;
 import com.mojang.brigadier.CommandDispatcher;
 import com.tterrag.registrate.providers.ProviderType;
 import com.tterrag.registrate.util.NonNullLazyValue;
@@ -108,6 +109,7 @@ public class LoveTropics {
         MapWorkspaceItems.init();
 
         GameBehaviorTypes.init(modBus);
+        GameClientTweakTypes.init(modBus);
 
         BuildCompetition.init();
         HideAndSeek.init();

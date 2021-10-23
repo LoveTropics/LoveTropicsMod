@@ -12,8 +12,10 @@ import com.lovetropics.minigames.common.content.mangroves_and_pianguas.behavior.
 import com.lovetropics.minigames.common.content.mangroves_and_pianguas.behavior.plant.placement.PlaceDoublePlantBehavior;
 import com.lovetropics.minigames.common.content.mangroves_and_pianguas.behavior.plant.placement.PlaceFeaturePlantBehavior;
 import com.lovetropics.minigames.common.content.mangroves_and_pianguas.behavior.plant.placement.PlaceSinglePlantBehavior;
-import com.lovetropics.minigames.common.util.GameBehaviorEntry;
-import com.lovetropics.minigames.common.util.LoveTropicsRegistrate;
+import com.lovetropics.minigames.common.content.mangroves_and_pianguas.client_tweak.CheckeredPlotsTweak;
+import com.lovetropics.minigames.common.util.registry.GameBehaviorEntry;
+import com.lovetropics.minigames.common.util.registry.GameClientTweakEntry;
+import com.lovetropics.minigames.common.util.registry.LoveTropicsRegistrate;
 import com.tterrag.registrate.util.entry.ItemEntry;
 import net.minecraft.block.Blocks;
 import net.minecraft.item.BlockNamedItem;
@@ -113,6 +115,10 @@ public final class MangrovesAndPianguas {
 
 	public static final GameBehaviorEntry<IdleDropItemPlantBehavior> IDLE_DROP_ITEM = REGISTRATE.object("idle_drop_item")
 			.behavior(IdleDropItemPlantBehavior.CODEC)
+			.register();
+
+	public static final GameClientTweakEntry<CheckeredPlotsTweak> CHECKERED_PLOTS = REGISTRATE.object("checkered_plots")
+			.clientTweak(CheckeredPlotsTweak.CODEC)
 			.register();
 
 	// Items

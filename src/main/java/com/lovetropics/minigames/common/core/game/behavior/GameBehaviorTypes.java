@@ -16,8 +16,8 @@ import com.lovetropics.minigames.common.core.game.behavior.instances.world.FillC
 import com.lovetropics.minigames.common.core.game.behavior.instances.world.ForceLoadRegionBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.world.GenerateEntitiesBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.world.SetBlocksBehavior;
-import com.lovetropics.minigames.common.util.GameBehaviorEntry;
-import com.lovetropics.minigames.common.util.LoveTropicsRegistrate;
+import com.lovetropics.minigames.common.util.registry.GameBehaviorEntry;
+import com.lovetropics.minigames.common.util.registry.LoveTropicsRegistrate;
 import com.mojang.serialization.Codec;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
@@ -100,6 +100,8 @@ public class GameBehaviorTypes {
 	public static final GameBehaviorEntry<AssignPlayerRolesBehavior> ASSIGN_PLAYER_ROLES;
 	public static final GameBehaviorEntry<JoinAsRoleBehavior> JOIN_AS_ROLE;
 
+	public static final GameBehaviorEntry<SetGameClientTweakBehavior> SET_CLIENT_TWEAK;
+
 	public static <T extends IGameBehavior> GameBehaviorEntry<T> register(final String name, final Codec<T> codec) {
 		return REGISTRATE.object(name).behavior(codec).register();
 	}
@@ -165,6 +167,8 @@ public class GameBehaviorTypes {
 		SETUP_TELEMETRY = register("setup_telemetry", SetupTelemetryBehavior.CODEC);
 		ASSIGN_PLAYER_ROLES = register("assign_player_roles", AssignPlayerRolesBehavior.CODEC);
 		JOIN_AS_ROLE = register("join_as_role", JoinAsRoleBehavior.CODEC);
+
+		SET_CLIENT_TWEAK = register("set_client_tweak", SetGameClientTweakBehavior.CODEC);
 	}
 
 	public static void init(IEventBus modBus) {

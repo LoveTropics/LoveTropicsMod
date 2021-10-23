@@ -1,4 +1,4 @@
-package com.lovetropics.minigames.common.util;
+package com.lovetropics.minigames.common.util.registry;
 
 import com.lovetropics.minigames.common.core.game.behavior.GameBehaviorType;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;

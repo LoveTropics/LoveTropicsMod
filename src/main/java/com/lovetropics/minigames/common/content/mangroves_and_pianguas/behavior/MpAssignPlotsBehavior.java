@@ -1,7 +1,9 @@
 package com.lovetropics.minigames.common.content.mangroves_and_pianguas.behavior;
 
+import com.lovetropics.lib.BlockBox;
 import com.lovetropics.lib.codec.MoreCodecs;
 import com.lovetropics.minigames.common.content.mangroves_and_pianguas.behavior.event.MpEvents;
+import com.lovetropics.minigames.common.content.mangroves_and_pianguas.client_tweak.CheckeredPlotsTweak;
 import com.lovetropics.minigames.common.content.mangroves_and_pianguas.plot.Plot;
 import com.lovetropics.minigames.common.content.mangroves_and_pianguas.plot.PlotsState;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
@@ -45,6 +47,9 @@ public final class MpAssignPlotsBehavior implements IGameBehavior {
 		for (Plot.Keys keys : this.plotKeys) {
 			this.freePlots.add(Plot.associate(keys, regions));
 		}
+
+		BlockBox[] plotBoxes = this.freePlots.stream().map(plot -> plot.bounds).toArray(BlockBox[]::new);
+		game.getClientTweaks().add(new CheckeredPlotsTweak(plotBoxes));
 
 		Collections.shuffle(this.freePlots);
 

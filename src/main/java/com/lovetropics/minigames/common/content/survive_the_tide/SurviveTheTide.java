@@ -8,8 +8,8 @@ import com.lovetropics.minigames.common.content.survive_the_tide.entity.Driftwoo
 import com.lovetropics.minigames.common.content.survive_the_tide.item.AcidRepellentUmbrellaItem;
 import com.lovetropics.minigames.common.content.survive_the_tide.item.PaddleItem;
 import com.lovetropics.minigames.common.content.survive_the_tide.item.SuperSunscreenItem;
-import com.lovetropics.minigames.common.util.GameBehaviorEntry;
-import com.lovetropics.minigames.common.util.LoveTropicsRegistrate;
+import com.lovetropics.minigames.common.util.registry.GameBehaviorEntry;
+import com.lovetropics.minigames.common.util.registry.LoveTropicsRegistrate;
 import com.mojang.brigadier.CommandDispatcher;
 import com.tterrag.registrate.util.entry.ItemEntry;
 import com.tterrag.registrate.util.entry.RegistryEntry;
