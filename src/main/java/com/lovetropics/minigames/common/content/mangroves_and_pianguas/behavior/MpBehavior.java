@@ -31,6 +31,7 @@ import net.minecraft.util.SoundEvents;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.Explosion;
 import net.minecraft.world.GameType;
@@ -167,7 +168,7 @@ public final class MpBehavior implements IGameBehavior {
 		// Add the remaining items
 		player.addItemStackToInventory(new ItemStack(Items.SUNFLOWER, targetCount));
 		player.playSound(SoundEvents.ENTITY_ARROW_HIT_PLAYER, 0.18F, 0.1F);
-		player.sendStatusMessage(MinigameTexts.mpDeathDecrease(totalCount - targetCount), false);
+		player.sendStatusMessage(MinigameTexts.mpDeathDecrease(totalCount - targetCount).mergeStyle(TextFormatting.RED), false);
 
 		return ActionResultType.FAIL;
 	}
@@ -213,7 +214,7 @@ public final class MpBehavior implements IGameBehavior {
 				value += 0.025;
 			} else if (state.getBlock() == Blocks.WITHER_ROSE) {
 				value += 0.075;
-			} else if (state.getBlock() == Blocks.BIRCH_LOG) {
+			} else if (state.getBlock() == Blocks.BIRCH_LOG || state.getBlock() == Blocks.OAK_LOG) {
 				value += 0.85;
 			}
 
@@ -232,7 +233,7 @@ public final class MpBehavior implements IGameBehavior {
 			count++;
 		}
 
-		player.playSound(SoundEvents.ENTITY_ARROW_HIT_PLAYER, 0.18F, 1.0F);
+		player.playSound(SoundEvents.ENTITY_ARROW_HIT_PLAYER, 0.24F, 1.0F);
 		player.sendStatusMessage(MinigameTexts.mpCurrencyAddition(count), false);
 		player.addItemStackToInventory(new ItemStack(Items.SUNFLOWER, count));
 	}

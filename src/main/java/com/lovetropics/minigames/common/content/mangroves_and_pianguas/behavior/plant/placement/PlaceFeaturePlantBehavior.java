@@ -11,13 +11,16 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
+import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.tags.BlockTags;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.gen.ChunkGenerator;
 import net.minecraft.world.gen.feature.BaseTreeFeatureConfig;
 import net.minecraft.world.gen.feature.ConfiguredFeature;
 import net.minecraft.world.server.ServerWorld;
+import net.minecraftforge.common.Tags;
 
 import javax.annotation.Nullable;
 import java.util.function.LongPredicate;
@@ -28,6 +31,7 @@ public final class PlaceFeaturePlantBehavior implements IGameBehavior {
 			ConfiguredFeature.field_236264_b_.fieldOf("feature").forGetter(c -> c.feature)
 	).apply(instance, PlaceFeaturePlantBehavior::new));
 
+	private static final Tags.IOptionalNamedTag<Block> ROOTS = BlockTags.createOptional(new ResourceLocation("tropicraft", "roots"));
 	private final Supplier<ConfiguredFeature<?, ?>> feature;
 
 	public PlaceFeaturePlantBehavior(Supplier<ConfiguredFeature<?, ?>> feature) {
@@ -101,6 +105,6 @@ public final class PlaceFeaturePlantBehavior implements IGameBehavior {
 		// Add stuff like vines and propagules as needed
 
 		// TODO: beehives are above the floor and have a leaves block above them
-		return state.isIn(BlockTags.LOGS) || state.isIn(BlockTags.LEAVES);
+		return state.isIn(BlockTags.LOGS) || state.isIn(BlockTags.LEAVES) || state.isIn(ROOTS);
 	}
 }

@@ -115,6 +115,10 @@ public final class MangrovesAndPianguas {
 			.behavior(IdleDropItemPlantBehavior.CODEC)
 			.register();
 
+	public static final GameBehaviorEntry<PianguasPlantBehavior> PIANGUAS = REGISTRATE.object("pianguas")
+			.behavior(PianguasPlantBehavior.CODEC)
+			.register();
+
 	// Items
 
 	public static final ItemEntry<BlockNamedItem> CARROT_SEEDS = REGISTRATE.item("carrot_seeds", p -> new BlockNamedItem(Blocks.CARROTS, p))
