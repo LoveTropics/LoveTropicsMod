@@ -214,6 +214,24 @@ public final class GameEventDispatcher {
 	}
 
 	@SubscribeEvent
+	public void onPlayerRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
+		IGamePhase game = gameLookup.getGamePhaseFor(event.getPlayer());
+		if (game != null) {
+			ServerPlayerEntity player = (ServerPlayerEntity) event.getPlayer();
+
+			try {
+				ActionResultType result = game.invoker(GamePlayerEvents.USE_BLOCK).onUseBlock(player, player.getServerWorld(), event.getPos(), event.getHand(), event.getHitVec());
+				if (result != ActionResultType.PASS) {
+					event.setCanceled(true);
+					event.setCancellationResult(result);
+				}
+			} catch (Exception e) {
+				LoveTropics.LOGGER.warn("Failed to dispatch player use block event", e);
+			}
+		}
+	}
+
+	@SubscribeEvent
 	public void onPlayerRightClickItem(PlayerInteractEvent.RightClickItem event) {
 		IGamePhase game = gameLookup.getGamePhaseFor(event.getPlayer());
 		if (game != null) {

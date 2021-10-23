@@ -2,11 +2,9 @@ package com.lovetropics.minigames.common.content.mangroves_and_pianguas.plot.pla
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterators;
-import com.mojang.serialization.codecs.PrimitiveCodec;
 import it.unimi.dsi.fastutil.longs.*;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.vector.Vector3d;
 
 import javax.annotation.Nullable;
 import java.util.Iterator;
@@ -162,6 +160,36 @@ public interface PlantCoverage extends Iterable<BlockPos> {
 					return blockIterator.hasNext();
 				}
 			};
+		}
+	}
+
+	final class Builder {
+		private final LongSet blocks = new LongOpenHashSet();
+		private BlockPos origin;
+
+		public Builder add(BlockPos pos) {
+			this.blocks.add(pos.toLong());
+			if (this.origin == null) {
+				this.origin = pos;
+			}
+			return this;
+		}
+
+		public Builder setOrigin(BlockPos pos) {
+			this.origin = pos;
+			return this;
+		}
+
+		public PlantCoverage build() {
+			if (this.blocks.isEmpty() || this.origin == null) {
+				throw new IllegalStateException("cannot build empty plant");
+			}
+
+			if (this.blocks.size() == 1) {
+				return PlantCoverage.of(BlockPos.fromLong(blocks.iterator().nextLong()));
+			} else {
+				return PlantCoverage.of(this.blocks, this.origin);
+			}
 		}
 	}
 }

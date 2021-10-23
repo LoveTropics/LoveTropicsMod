@@ -23,15 +23,15 @@ import java.util.List;
 
 public final class MpAssignPlotsBehavior implements IGameBehavior {
 	public static final Codec<MpAssignPlotsBehavior> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-			MoreCodecs.arrayOrUnit(Plot.Keys.CODEC, Plot.Keys[]::new).optionalFieldOf("plots", new Plot.Keys[0]).forGetter(c -> c.plotKeys)
+			MoreCodecs.arrayOrUnit(Plot.Config.CODEC, Plot.Config[]::new).optionalFieldOf("plots", new Plot.Config[0]).forGetter(c -> c.plotKeys)
 	).apply(instance, MpAssignPlotsBehavior::new));
 
-	private final Plot.Keys[] plotKeys;
+	private final Plot.Config[] plotKeys;
 	private final List<Plot> freePlots = new ArrayList<>();
 
 	private PlotsState plots;
 
-	public MpAssignPlotsBehavior(Plot.Keys[] plotKeys) {
+	public MpAssignPlotsBehavior(Plot.Config[] plotKeys) {
 		this.plotKeys = plotKeys;
 	}
 
@@ -44,8 +44,8 @@ public final class MpAssignPlotsBehavior implements IGameBehavior {
 	public void register(IGamePhase game, EventRegistrar events) {
 		MapRegions regions = game.getMapRegions();
 
-		for (Plot.Keys keys : this.plotKeys) {
-			this.freePlots.add(Plot.associate(keys, regions));
+		for (Plot.Config config : this.plotKeys) {
+			this.freePlots.add(Plot.associate(config, regions));
 		}
 
 		BlockBox[] plotBoxes = this.freePlots.stream().map(plot -> plot.bounds).toArray(BlockBox[]::new);

@@ -9,6 +9,7 @@ import net.minecraft.util.ActionResultType;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.BlockRayTraceResult;
 import net.minecraft.world.server.ServerWorld;
 
 import javax.annotation.Nullable;
@@ -83,6 +84,16 @@ public final class GamePlayerEvents {
 	public static final GameEventType<UseItem> USE_ITEM = GameEventType.create(UseItem.class, listeners -> (player, hand) -> {
 		for (UseItem listener : listeners) {
 			ActionResultType result = listener.onUseItem(player, hand);
+			if (result != ActionResultType.PASS) {
+				return result;
+			}
+		}
+		return ActionResultType.PASS;
+	});
+
+	public static final GameEventType<UseBlock> USE_BLOCK = GameEventType.create(UseBlock.class, listeners -> (player, world, pos, hand, traceResult) -> {
+		for (UseBlock listener : listeners) {
+			ActionResultType result = listener.onUseBlock(player, world, pos, hand, traceResult);
 			if (result != ActionResultType.PASS) {
 				return result;
 			}
@@ -171,6 +182,10 @@ public final class GamePlayerEvents {
 
 	public interface UseItem {
 		ActionResultType onUseItem(ServerPlayerEntity player, Hand hand);
+	}
+
+	public interface UseBlock {
+		ActionResultType onUseBlock(ServerPlayerEntity player, ServerWorld world, BlockPos pos, Hand hand, BlockRayTraceResult traceResult);
 	}
 
 	public interface LeftClickBlock {

@@ -39,7 +39,7 @@ public final class PlaceFeaturePlantBehavior implements IGameBehavior {
 		events.listen(MpPlantEvents.PLACE, (player, plot, pos) -> {
 			ServerWorld world = game.getWorld();
 			ConfiguredFeature<?, ?> tree = this.feature.get();
-			LongSet changedBlocks = this.generateFeature(world, pos, tree);
+			LongSet changedBlocks = this.generateFeature(world, plot, pos, tree);
 			if (changedBlocks != null) {
 				return this.buildCoverage(world, plot, changedBlocks);
 			} else {
@@ -49,7 +49,7 @@ public final class PlaceFeaturePlantBehavior implements IGameBehavior {
 	}
 
 	@Nullable
-	private LongSet generateFeature(ServerWorld world, BlockPos pos, ConfiguredFeature<?, ?> feature) {
+	private LongSet generateFeature(ServerWorld world, Plot plot, BlockPos pos, ConfiguredFeature<?, ?> feature) {
 		if (feature.config instanceof BaseTreeFeatureConfig) {
 			((BaseTreeFeatureConfig) feature.config).forcePlacement();
 		}
@@ -59,6 +59,10 @@ public final class PlaceFeaturePlantBehavior implements IGameBehavior {
 		DelegatingSeedReader placementWorld = new DelegatingSeedReader(world) {
 			@Override
 			public boolean setBlockState(BlockPos pos, BlockState state, int flags, int recursionLeft) {
+				if (!plot.bounds.contains(pos) || plot.plants.getPlantAt(pos) != null) {
+					return false;
+				}
+
 				if (super.setBlockState(pos, state, flags, recursionLeft)) {
 					changedBlocks.add(pos.toLong());
 					return true;

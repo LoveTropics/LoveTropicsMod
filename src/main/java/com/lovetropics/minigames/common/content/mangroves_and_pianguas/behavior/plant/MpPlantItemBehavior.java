@@ -56,6 +56,10 @@ public final class MpPlantItemBehavior implements IGameBehavior {
 
 		Plot plot = plots.getPlotFor(player);
 		if (plot != null && plot.plantBounds.contains(pos)) {
+			if (plot.plants.getPlantAt(pos) != null) {
+				return ActionResultType.FAIL;
+			}
+
 			Plant plant = game.invoker(MpEvents.PLACE_AND_ADD_PLANT).placePlant(player, plot, pos, this.places);
 			if (plant != null) {
 				return ActionResultType.SUCCESS;

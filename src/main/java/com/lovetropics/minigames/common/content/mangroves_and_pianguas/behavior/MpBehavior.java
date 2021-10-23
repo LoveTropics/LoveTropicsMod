@@ -15,10 +15,7 @@ import com.mojang.serialization.Codec;
 import it.unimi.dsi.fastutil.objects.Object2FloatMap;
 import it.unimi.dsi.fastutil.objects.Object2FloatOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.CropsBlock;
+import net.minecraft.block.*;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.merchant.villager.VillagerEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -27,10 +24,14 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.util.ActionResultType;
 import net.minecraft.util.DamageSource;
+import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvents;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.Explosion;
 import net.minecraft.world.GameType;
@@ -120,7 +121,15 @@ public final class MpBehavior implements IGameBehavior {
 		Plot plot = plots.getPlotFor(player);
 		if (plot != null && plot.bounds.contains(pos)) {
 			if (placed.matchesBlock(Blocks.FARMLAND)) {
+				player.world.setBlockState(pos, Blocks.FARMLAND.getDefaultState().with(FarmlandBlock.MOISTURE, 7));
 				return ActionResultType.PASS;
+			}
+
+			if (plot.plantBounds.contains(pos)) {
+				ITextComponent message = new StringTextComponent("You can only place plants you got from the shop!")
+						.mergeStyle(TextFormatting.RED);
+				player.sendStatusMessage(message, true);
+				player.playSound(SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, SoundCategory.PLAYERS, 1.0F, 1.0F);
 			}
 		}
 

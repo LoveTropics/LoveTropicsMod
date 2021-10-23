@@ -77,6 +77,7 @@ public final class MpPlantBehavior implements IGameBehavior {
 			return null;
 		}
 
+		// TODO: more strict prevention of placing intersecting plants
 		PlantCoverage coverage = plantEvents.invoker(MpPlantEvents.PLACE).placePlant(player, plot, pos);
 		if (coverage == null) return null;
 
