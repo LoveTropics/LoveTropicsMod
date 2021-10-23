@@ -1,6 +1,7 @@
 package com.lovetropics.minigames.common.content.mangroves_and_pianguas.plot;
 
 import com.lovetropics.lib.BlockBox;
+import com.lovetropics.minigames.common.content.mangroves_and_pianguas.entity.PlotWalls;
 import com.lovetropics.minigames.common.content.mangroves_and_pianguas.plot.plant.PlantMap;
 import com.lovetropics.minigames.common.core.map.MapRegions;
 import com.mojang.serialization.Codec;
@@ -20,6 +21,7 @@ public final class Plot {
 	public final Direction spawnForward;
 
 	public final PlantMap plants = new PlantMap();
+	public final PlotWalls walls;
 
 	private Plot(
 			BlockBox bounds, BlockBox plantBounds,
@@ -35,6 +37,8 @@ public final class Plot {
 		this.forward = forward;
 		this.shopForward = shopForward;
 		this.spawnForward = spawnForward;
+
+		this.walls = new PlotWalls(this.bounds.asAabb().union(this.mobSpawn.asAabb()));
 	}
 
 	public static Plot associate(Config config, MapRegions regions) {

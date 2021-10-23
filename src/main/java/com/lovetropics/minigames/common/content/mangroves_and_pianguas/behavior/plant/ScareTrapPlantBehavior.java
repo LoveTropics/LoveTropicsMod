@@ -1,7 +1,7 @@
 package com.lovetropics.minigames.common.content.mangroves_and_pianguas.behavior.plant;
 
 import com.lovetropics.minigames.common.content.mangroves_and_pianguas.behavior.event.MpPlantEvents;
-import com.lovetropics.minigames.common.content.mangroves_and_pianguas.entity.ScareableEntity;
+import com.lovetropics.minigames.common.content.mangroves_and_pianguas.entity.MpMobEntity;
 import com.lovetropics.minigames.common.content.mangroves_and_pianguas.plot.Plot;
 import com.lovetropics.minigames.common.content.mangroves_and_pianguas.plot.PlotsState;
 import com.lovetropics.minigames.common.content.mangroves_and_pianguas.plot.plant.Plant;
@@ -160,8 +160,8 @@ public final class ScareTrapPlantBehavior implements IGameBehavior {
 		Vector3d motion = entity.getMotion();
 		entity.setMotion(Math.min(motion.x, 5), Math.min(motion.y, 0.25), Math.min(motion.z, 5));
 
-		if (entity instanceof ScareableEntity) {
-			((ScareableEntity) entity).getScareManager().addSource(pos);
+		if (entity instanceof MpMobEntity) {
+			((MpMobEntity) entity).getScareManager().addSource(pos);
 		}
 
 		// Spawn critical hit particles around the entity

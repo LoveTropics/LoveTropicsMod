@@ -97,7 +97,7 @@ public final class MpWaveSpawnerBehavior implements IGameBehavior {
 		for (int i = 0; i < amount; i++) {
 			BlockPos pos = plot.mobSpawn.sample(random);
 
-			MobEntity entity = selectEntityForWave(random, world);
+			MobEntity entity = selectEntityForWave(random, world, plot);
 
 			entity.setLocationAndAngles(pos.getX(), pos.getY(), pos.getZ(), 0, 0);
 			entity.setPosition(pos.getX(), pos.getY(), pos.getZ());
@@ -109,7 +109,11 @@ public final class MpWaveSpawnerBehavior implements IGameBehavior {
 	}
 
 	// TODO: data-drive
-	private static MobEntity selectEntityForWave(Random random, World world) {
-		return random.nextBoolean() ? new MpPillagerEntity(EntityType.PILLAGER, world) : new MpHuskEntity(EntityType.HUSK, world);
+	private static MobEntity selectEntityForWave(Random random, World world, Plot plot) {
+		if (random.nextBoolean()) {
+			return new MpPillagerEntity(EntityType.PILLAGER, world, plot.walls);
+		} else {
+			return new MpHuskEntity(EntityType.HUSK, world, plot.walls);
+		}
 	}
 }
