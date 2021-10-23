@@ -66,8 +66,11 @@ public final class MpMerchantBehavior implements IGameBehavior {
 			return;
 		}
 
-		merchant.setLocationAndAngles(center.getX(), center.getY() - 0.5, center.getZ(), 0, 0);
+		float yaw = plot.shopForward.getHorizontalAngle();
+		merchant.setLocationAndAngles(center.getX(), center.getY() - 0.5, center.getZ(), yaw, 0);
+		merchant.setRotationYawHead(yaw);
 
+		world.getChunk(plot.shop.getCenterBlock());
 		world.addEntity(merchant);
 
 		if (merchant instanceof MobEntity) {

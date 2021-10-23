@@ -22,13 +22,9 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.util.ActionResultType;
-import net.minecraft.util.DamageSource;
-import net.minecraft.util.SoundCategory;
-import net.minecraft.util.SoundEvents;
+import net.minecraft.util.*;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.text.IFormattableTextComponent;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.Difficulty;
@@ -84,15 +80,16 @@ public final class MpBehavior implements IGameBehavior {
 	}
 
 	private void spawnSpectator(ServerPlayerEntity player) {
-		// Teleport players to center for now
-		// TODO: hardcoded region
-		teleportToRegion(player, BlockBox.of(new BlockPos(0, 105, 0)));
+		Plot plot = plots.getRandomPlot(player.getRNG());
+		if (plot != null) {
+			teleportToRegion(player, plot.plantBounds, plot.forward);
+		}
 
 		player.setGameType(GameType.SPECTATOR);
 	}
 
 	private void onAssignPlot(ServerPlayerEntity player, Plot plot) {
-		teleportToRegion(player, plot.spawn);
+		teleportToRegion(player, plot.spawn, plot.spawnForward);
 	}
 
 	private void onExplosion(Explosion explosion, List<BlockPos> affectedBlocks, List<Entity> affectedEntities) {
@@ -161,9 +158,7 @@ public final class MpBehavior implements IGameBehavior {
 			return ActionResultType.PASS;
 		}
 
-		Vector3d center = plot.spawn.getCenter();
-
-		player.teleport(player.getServerWorld(), center.x, center.y, center.z, player.rotationYaw, player.rotationPitch);
+		teleportToRegion(player, plot.spawn, plot.spawnForward);
 		player.setHealth(20.0F);
 
 		// Resets all currency from the player's inventory and adds a new stack with 80% of the amount.
@@ -254,8 +249,10 @@ public final class MpBehavior implements IGameBehavior {
 		player.addItemStackToInventory(new ItemStack(Items.SUNFLOWER, count));
 	}
 
-	private void teleportToRegion(ServerPlayerEntity player, BlockBox region) {
+	private void teleportToRegion(ServerPlayerEntity player, BlockBox region, Direction direction) {
 		BlockPos pos = region.sample(player.getRNG());
+
+		player.rotationYaw = direction.getHorizontalAngle();
 		DimensionUtils.teleportPlayerNoPortal(player, game.getDimension(), pos);
 	}
 }

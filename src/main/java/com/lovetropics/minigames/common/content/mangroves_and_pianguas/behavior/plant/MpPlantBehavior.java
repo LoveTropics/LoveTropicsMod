@@ -17,10 +17,8 @@ import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvent
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
 import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.state.properties.BlockStateProperties;
-import net.minecraft.util.ActionResultType;
+import net.minecraft.fluid.FluidState;
 import net.minecraft.item.SwordItem;
 import net.minecraft.util.*;
 import net.minecraft.util.math.BlockPos;
@@ -105,15 +103,8 @@ public final class MpPlantBehavior implements IGameBehavior {
 
 		ServerWorld world = game.getWorld();
 		for (BlockPos plantPos : plant.coverage()) {
-			BlockState plantState = world.getBlockState(plantPos);
-			boolean water = false;
-
-			// Prevent air blocks from replacing water in pneumataphores that grow underwater
-			if (plantState.hasProperty(BlockStateProperties.WATERLOGGED)) {
-				water = plantState.get(BlockStateProperties.WATERLOGGED);
-			}
-
-			world.setBlockState(plantPos, water ? Blocks.WATER.getDefaultState() : Blocks.AIR.getDefaultState(), Constants.BlockFlags.BLOCK_UPDATE | Constants.BlockFlags.UPDATE_NEIGHBORS);
+			FluidState fluidState = world.getFluidState(plantPos);
+			world.setBlockState(plantPos, fluidState.getBlockState(), Constants.BlockFlags.BLOCK_UPDATE | Constants.BlockFlags.UPDATE_NEIGHBORS);
 		}
 
 		plot.plants.removePlant(plant);

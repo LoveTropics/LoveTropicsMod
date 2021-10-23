@@ -34,7 +34,7 @@ public final class CheckeredPlotsTweak implements GameClientTweak {
 			BlockBox plot = plots[i];
 			global = BlockBox.of(
 					BlockBox.min(global.min, plot.min),
-					BlockBox.max(global.min, plot.max)
+					BlockBox.max(global.max, plot.max)
 			);
 		}
 
