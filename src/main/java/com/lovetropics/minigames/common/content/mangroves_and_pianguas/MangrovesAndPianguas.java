@@ -117,6 +117,10 @@ public final class MangrovesAndPianguas {
 			.behavior(IdleDropItemPlantBehavior.CODEC)
 			.register();
 
+	public static final GameBehaviorEntry<PianguasPlantBehavior> PIANGUAS = REGISTRATE.object("pianguas")
+			.behavior(PianguasPlantBehavior.CODEC)
+			.register();
+
 	public static final GameClientTweakEntry<CheckeredPlotsTweak> CHECKERED_PLOTS = REGISTRATE.object("checkered_plots")
 			.clientTweak(CheckeredPlotsTweak.CODEC)
 			.register();
