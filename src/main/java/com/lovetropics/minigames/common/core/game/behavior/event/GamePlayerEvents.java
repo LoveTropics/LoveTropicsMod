@@ -9,6 +9,7 @@ import net.minecraft.util.ActionResultType;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.BlockRayTraceResult;
 import net.minecraft.world.server.ServerWorld;
 
 import javax.annotation.Nullable;
@@ -72,13 +73,27 @@ public final class GamePlayerEvents {
 
 	public static final GameEventType<InteractEntity> INTERACT_ENTITY = GameEventType.create(InteractEntity.class, listeners -> (player, target, hand) -> {
 		for (InteractEntity listener : listeners) {
-			listener.onInteractEntity(player, target, hand);
+			ActionResultType result = listener.onInteractEntity(player, target, hand);
+			if (result != ActionResultType.PASS) {
+				return result;
+			}
 		}
+		return ActionResultType.PASS;
 	});
 
 	public static final GameEventType<UseItem> USE_ITEM = GameEventType.create(UseItem.class, listeners -> (player, hand) -> {
 		for (UseItem listener : listeners) {
 			ActionResultType result = listener.onUseItem(player, hand);
+			if (result != ActionResultType.PASS) {
+				return result;
+			}
+		}
+		return ActionResultType.PASS;
+	});
+
+	public static final GameEventType<UseBlock> USE_BLOCK = GameEventType.create(UseBlock.class, listeners -> (player, world, pos, hand, traceResult) -> {
+		for (UseBlock listener : listeners) {
+			ActionResultType result = listener.onUseBlock(player, world, pos, hand, traceResult);
 			if (result != ActionResultType.PASS) {
 				return result;
 			}
@@ -92,9 +107,9 @@ public final class GamePlayerEvents {
 		}
 	});
 
-	public static final GameEventType<BreakBlock> BREAK_BLOCK = GameEventType.create(BreakBlock.class, listeners -> (player, pos, state) -> {
+	public static final GameEventType<BreakBlock> BREAK_BLOCK = GameEventType.create(BreakBlock.class, listeners -> (player, pos, state, hand) -> {
 		for (BreakBlock listener : listeners) {
-			ActionResultType result = listener.onBreakBlock(player, pos, state);
+			ActionResultType result = listener.onBreakBlock(player, pos, state, hand);
 			if (result != ActionResultType.PASS) {
 				return result;
 			}
@@ -162,11 +177,15 @@ public final class GamePlayerEvents {
 	}
 
 	public interface InteractEntity {
-		void onInteractEntity(ServerPlayerEntity player, Entity target, Hand hand);
+		ActionResultType onInteractEntity(ServerPlayerEntity player, Entity target, Hand hand);
 	}
 
 	public interface UseItem {
 		ActionResultType onUseItem(ServerPlayerEntity player, Hand hand);
+	}
+
+	public interface UseBlock {
+		ActionResultType onUseBlock(ServerPlayerEntity player, ServerWorld world, BlockPos pos, Hand hand, BlockRayTraceResult traceResult);
 	}
 
 	public interface LeftClickBlock {
@@ -174,7 +193,7 @@ public final class GamePlayerEvents {
 	}
 
 	public interface BreakBlock {
-		ActionResultType onBreakBlock(ServerPlayerEntity player, BlockPos pos, BlockState state);
+		ActionResultType onBreakBlock(ServerPlayerEntity player, BlockPos pos, BlockState state, Hand hand);
 	}
 
 	public interface PlaceBlock {

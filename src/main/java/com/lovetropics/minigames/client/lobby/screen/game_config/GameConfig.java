@@ -64,8 +64,7 @@ public final class GameConfig extends ScrollPanel {
 		ltree.child(new Box(0, 0, 6, 0), new Box()); // Add margin where the scroll bar is
 		for (Entry<GameBehaviorType<?>, ClientConfigList> e : configData.behaviors.entries()) {
 			if (!e.getValue().configs.isEmpty()) {
-				ltree.child(0, 3);
-				this.children.put(e.getKey(), new BehaviorConfigUI((ManageLobbyScreen) screen, ltree, e.getKey(), e.getValue()));
+				this.children.put(e.getKey(), new BehaviorConfigUI((ManageLobbyScreen) screen, ltree.child(0, 3), e.getKey(), e.getValue()));
 			}
 		}
 		this.content = ltree.pop();
@@ -98,13 +97,9 @@ public final class GameConfig extends ScrollPanel {
 	}
 
 	@Override
-	protected void drawPanel(MatrixStack mStack, int entryRight, int relativeY, Tessellator tess, int mouseX,
-			int mouseY) {
-		Box outline = content.background();
-		vLine(mStack, outline.left(), outline.top(), outline.bottom() - 1, 0xFFFF0000);
-		vLine(mStack, outline.right() - 1, outline.top(), outline.bottom() - 1, 0xFFFF0000);
-		hLine(mStack, outline.left(), outline.right() - 1, outline.top(), 0xFFFF0000);
-		hLine(mStack, outline.left(), outline.right() - 1, outline.bottom() - 1, 0xFFFF0000);
+	protected void drawPanel(MatrixStack mStack, int entryRight, int relativeY, Tessellator tess, int mouseX, int mouseY) {
+		this.mainLayout.debugRender(mStack);
+		this.content.debugRender(mStack);
 		children.values().forEach(ui -> ui.render(mStack, mouseX, mouseY, 0));
 	}
 

@@ -1,7 +1,7 @@
 package com.lovetropics.minigames.common.core.map.item;
 
 import com.lovetropics.minigames.LoveTropics;
-import com.lovetropics.minigames.common.util.LoveTropicsRegistrate;
+import com.lovetropics.minigames.common.util.registry.LoveTropicsRegistrate;
 import com.tterrag.registrate.util.entry.ItemEntry;
 
 public class MapWorkspaceItems {

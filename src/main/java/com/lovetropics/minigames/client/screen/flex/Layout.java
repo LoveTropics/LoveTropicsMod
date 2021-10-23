@@ -2,7 +2,11 @@ package com.lovetropics.minigames.client.screen.flex;
 
 import java.util.Objects;
 
-public final class Layout {
+import com.mojang.blaze3d.matrix.MatrixStack;
+
+import net.minecraft.client.gui.AbstractGui;
+
+public final class Layout extends AbstractGui {
 	private final Box content;
 	private final Box padding;
 	private final Box margin;
@@ -75,5 +79,22 @@ public final class Layout {
 		Layout other = (Layout) obj;
 		return Objects.equals(content, other.content) && Objects.equals(margin, other.margin)
 				&& Objects.equals(padding, other.padding);
+	}
+
+	public void debugRender(MatrixStack mStack) {
+		vLine(mStack, margin().left(), margin().top(), margin().bottom() - 1, 0xFFF9CC9D);
+		vLine(mStack, margin().right() - 1, margin().top(), margin().bottom() - 1, 0xFFF9CC9D);
+		hLine(mStack, margin().left(), margin().right() - 1, margin().top(), 0xFFF9CC9D);
+		hLine(mStack, margin().left(), margin().right() - 1, margin().bottom() - 1, 0xFFF9CC9D);
+		
+		vLine(mStack, padding().left(), padding().top(), padding().bottom() - 1, 0xFFC3D08B);
+		vLine(mStack, padding().right() - 1, padding().top(), padding().bottom() - 1, 0xFFC3D08B);
+		hLine(mStack, padding().left(), padding().right() - 1, padding().top(), 0xFFC3D08B);
+		hLine(mStack, padding().left(), padding().right() - 1, padding().bottom() - 1, 0xFFC3D08B);
+		
+		vLine(mStack, content().left(), content().top(), content().bottom() - 1, 0xFF8CB6C0);
+		vLine(mStack, content().right() - 1, content().top(), content().bottom() - 1, 0xFF8CB6C0);
+		hLine(mStack, content().left(), content().right() - 1, content().top(), 0xFF8CB6C0);
+		hLine(mStack, content().left(), content().right() - 1, content().bottom() - 1, 0xFF8CB6C0);
 	}
 }

@@ -1,8 +1,8 @@
 package com.lovetropics.minigames.common.content.build_competition;
 
 import com.lovetropics.minigames.LoveTropics;
-import com.lovetropics.minigames.common.util.GameBehaviorEntry;
-import com.lovetropics.minigames.common.util.LoveTropicsRegistrate;
+import com.lovetropics.minigames.common.util.registry.GameBehaviorEntry;
+import com.lovetropics.minigames.common.util.registry.LoveTropicsRegistrate;
 
 public final class BuildCompetition {
 	private static final LoveTropicsRegistrate REGISTRATE = LoveTropics.registrate();

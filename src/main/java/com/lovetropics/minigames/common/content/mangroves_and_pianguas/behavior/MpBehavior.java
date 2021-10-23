@@ -15,10 +15,7 @@ import com.mojang.serialization.Codec;
 import it.unimi.dsi.fastutil.objects.Object2FloatMap;
 import it.unimi.dsi.fastutil.objects.Object2FloatOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.CropsBlock;
+import net.minecraft.block.*;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.merchant.villager.VillagerEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -27,10 +24,12 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.util.ActionResultType;
 import net.minecraft.util.DamageSource;
+import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvents;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.util.text.IFormattableTextComponent;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.Explosion;
@@ -75,7 +74,7 @@ public final class MpBehavior implements IGameBehavior {
 		events.listen(GameLivingEntityEvents.FARMLAND_TRAMPLE, this::onFarmlandTrample);
 
 		events.listen(GamePlayerEvents.PLACE_BLOCK, this::onPlaceBlock);
-		events.listen(GamePlayerEvents.BREAK_BLOCK, (player, pos, state) -> ActionResultType.FAIL);
+		events.listen(GamePlayerEvents.BREAK_BLOCK, (player, pos, state, hand) -> ActionResultType.FAIL);
 	}
 
 	private void setupPlayerAsRole(ServerPlayerEntity player, @Nullable PlayerRole role) {
@@ -120,12 +119,29 @@ public final class MpBehavior implements IGameBehavior {
 	private ActionResultType onPlaceBlock(ServerPlayerEntity player, BlockPos pos, BlockState placed, BlockState placedOn) {
 		Plot plot = plots.getPlotFor(player);
 		if (plot != null && plot.bounds.contains(pos)) {
-			if (placed.matchesBlock(Blocks.FARMLAND)) {
-				return ActionResultType.PASS;
-			}
+			return this.onPlaceBlockInOwnPlot(player, pos, placed, plot);
+		} else {
+			this.sendActionRejection(player, MinigameTexts.mpNotYourPlot());
+			return ActionResultType.FAIL;
+		}
+	}
+
+	private ActionResultType onPlaceBlockInOwnPlot(ServerPlayerEntity player, BlockPos pos, BlockState placed, Plot plot) {
+		if (placed.matchesBlock(Blocks.FARMLAND)) {
+			player.world.setBlockState(pos, Blocks.FARMLAND.getDefaultState().with(FarmlandBlock.MOISTURE, 7));
+			return ActionResultType.PASS;
+		}
+
+		if (plot.plantBounds.contains(pos)) {
+			this.sendActionRejection(player, MinigameTexts.mpCanOnlyPlacePlants());
 		}
 
 		return ActionResultType.FAIL;
+	}
+
+	private void sendActionRejection(ServerPlayerEntity player, IFormattableTextComponent message) {
+		player.sendStatusMessage(message.mergeStyle(TextFormatting.RED), true);
+		player.playSound(SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, SoundCategory.PLAYERS, 1.0F, 1.0F);
 	}
 
 	private ActionResultType onFarmlandTrample(Entity entity, BlockPos pos, BlockState state) {

@@ -20,6 +20,7 @@ import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.MerchantOffer;
 import net.minecraft.item.MerchantOffers;
+import net.minecraft.util.ActionResultType;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.vector.Vector3d;
@@ -76,7 +77,7 @@ public final class MpMerchantBehavior implements IGameBehavior {
 		}
 	}
 
-	private void interactWithEntity(ServerPlayerEntity player, Entity target, Hand hand) {
+	private ActionResultType interactWithEntity(ServerPlayerEntity player, Entity target, Hand hand) {
 		if (this.entity == target.getType()) {
 			MerchantOffers builtOffers = new MerchantOffers();
 			for (Offer offer : this.offers) {
@@ -85,7 +86,11 @@ public final class MpMerchantBehavior implements IGameBehavior {
 
 			MpMerchant merchant = new MpMerchant(player, builtOffers);
 			merchant.openMerchantContainer(player, MinigameTexts.mpTrading(), 1);
+
+			return ActionResultType.SUCCESS;
 		}
+
+		return ActionResultType.PASS;
 	}
 
 	public static final class Offer {

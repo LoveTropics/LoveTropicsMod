@@ -5,6 +5,6 @@ import net.minecraft.client.gui.IRenderable;
 
 public interface IConfigWidget extends INestedGuiEventHandler, IRenderable {
 	
-	public int getHeight();
+	int getHeight();
 
 }

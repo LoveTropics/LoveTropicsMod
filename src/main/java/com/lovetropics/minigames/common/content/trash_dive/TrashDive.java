@@ -2,8 +2,8 @@ package com.lovetropics.minigames.common.content.trash_dive;
 
 import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.LoveTropics;
-import com.lovetropics.minigames.common.util.GameBehaviorEntry;
-import com.lovetropics.minigames.common.util.LoveTropicsRegistrate;
+import com.lovetropics.minigames.common.util.registry.GameBehaviorEntry;
+import com.lovetropics.minigames.common.util.registry.LoveTropicsRegistrate;
 import com.mojang.brigadier.CommandDispatcher;
 import net.minecraft.command.CommandSource;
 import net.minecraftforge.event.RegisterCommandsEvent;

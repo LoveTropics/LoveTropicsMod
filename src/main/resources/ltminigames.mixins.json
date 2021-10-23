@@ -4,7 +4,7 @@
   "compatibilityLevel": "JAVA_8",
   "refmap": "ltminigames.refmap.json",
   "mixins": ["EntityTypeMixin", "SimpleRegistryMixin"],
-  "client": ["client.HotbarOverride"],
+  "client": ["client.BiomeColorsMixin", "client.HotbarOverride"],
   "injectors": {
     "defaultRequire": 1
   },

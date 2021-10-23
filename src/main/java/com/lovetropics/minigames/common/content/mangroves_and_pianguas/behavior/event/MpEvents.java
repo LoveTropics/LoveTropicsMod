@@ -8,6 +8,8 @@ import com.lovetropics.minigames.common.content.mangroves_and_pianguas.plot.plan
 import com.lovetropics.minigames.common.core.game.behavior.event.GameEventType;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.ActionResult;
+import net.minecraft.util.ActionResultType;
 import net.minecraft.util.math.BlockPos;
 
 import javax.annotation.Nullable;
@@ -28,12 +30,12 @@ public final class MpEvents {
 
 	public static final GameEventType<PlaceAndAddPlant> PLACE_AND_ADD_PLANT = GameEventType.create(PlaceAndAddPlant.class, listeners -> (player, plot, pos, plantType) -> {
 		for (PlaceAndAddPlant listener : listeners) {
-			Plant plant = listener.placePlant(player, plot, pos, plantType);
-			if (plant != null) {
-				return plant;
+			ActionResult<Plant> result = listener.placePlant(player, plot, pos, plantType);
+			if (result.getType() != ActionResultType.PASS) {
+				return result;
 			}
 		}
-		return null;
+		return ActionResult.resultPass(null);
 	});
 
 	public static final GameEventType<BreakAndRemovePlant> BREAK_AND_REMOVE_PLANT = GameEventType.create(BreakAndRemovePlant.class, listeners -> (player, plot, plant) -> {
@@ -75,8 +77,7 @@ public final class MpEvents {
 	}
 
 	public interface PlaceAndAddPlant {
-		@Nullable
-		Plant placePlant(ServerPlayerEntity player, Plot plot, BlockPos pos, PlantType plantType);
+		ActionResult<Plant> placePlant(ServerPlayerEntity player, Plot plot, BlockPos pos, PlantType plantType);
 	}
 
 	public interface PlacePlant {

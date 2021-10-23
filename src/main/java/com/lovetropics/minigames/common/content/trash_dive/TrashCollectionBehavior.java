@@ -23,6 +23,7 @@ import net.minecraft.item.Items;
 import net.minecraft.potion.EffectInstance;
 import net.minecraft.potion.Effects;
 import net.minecraft.util.ActionResultType;
+import net.minecraft.util.Hand;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvents;
 import net.minecraft.util.math.BlockPos;
@@ -114,7 +115,7 @@ public final class TrashCollectionBehavior implements IGameBehavior {
 		sidebar.set(renderSidebar(game));
 	}
 
-	private ActionResultType onPlayerBreakBlock(ServerPlayerEntity player, BlockPos pos, BlockState state) {
+	private ActionResultType onPlayerBreakBlock(ServerPlayerEntity player, BlockPos pos, BlockState state, Hand hand) {
 		return isTrash(state) ? ActionResultType.PASS : ActionResultType.FAIL;
 	}
 

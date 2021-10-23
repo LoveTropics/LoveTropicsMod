@@ -10,7 +10,10 @@ import com.lovetropics.minigames.common.util.Scheduler;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.item.ItemStack;
+import net.minecraft.network.play.server.SSetSlotPacket;
 import net.minecraft.util.ActionResultType;
+import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IServerWorld;
 import net.minecraft.world.World;
@@ -65,7 +68,7 @@ public final class GameEventDispatcher {
 	}
 
 	@SubscribeEvent
-	public void onDamageEntity(LivingDamageEvent event) {
+	public void onDamageEntity(LivingHurtEvent event) {
 		Entity target = event.getEntity();
 
 		IGamePhase game = gameLookup.getGamePhaseFor(target);
@@ -185,7 +188,11 @@ public final class GameEventDispatcher {
 			ServerPlayerEntity player = (ServerPlayerEntity) event.getPlayer();
 
 			try {
-				game.invoker(GamePlayerEvents.INTERACT_ENTITY).onInteractEntity(player, event.getTarget(), event.getHand());
+				ActionResultType result = game.invoker(GamePlayerEvents.INTERACT_ENTITY).onInteractEntity(player, event.getTarget(), event.getHand());
+				if (result != ActionResultType.PASS) {
+					event.setCancellationResult(result);
+					event.setCanceled(true);
+				}
 			} catch (Exception e) {
 				LoveTropics.LOGGER.warn("Failed to dispatch player interact entity event", e);
 			}
@@ -207,6 +214,25 @@ public final class GameEventDispatcher {
 	}
 
 	@SubscribeEvent
+	public void onPlayerRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
+		IGamePhase game = gameLookup.getGamePhaseFor(event.getPlayer());
+		if (game != null) {
+			ServerPlayerEntity player = (ServerPlayerEntity) event.getPlayer();
+
+			try {
+				ActionResultType result = game.invoker(GamePlayerEvents.USE_BLOCK).onUseBlock(player, player.getServerWorld(), event.getPos(), event.getHand(), event.getHitVec());
+				if (result != ActionResultType.PASS) {
+					event.setCanceled(true);
+					event.setCancellationResult(result);
+					this.resendPlayerHeldItem(player);
+				}
+			} catch (Exception e) {
+				LoveTropics.LOGGER.warn("Failed to dispatch player use block event", e);
+			}
+		}
+	}
+
+	@SubscribeEvent
 	public void onPlayerRightClickItem(PlayerInteractEvent.RightClickItem event) {
 		IGamePhase game = gameLookup.getGamePhaseFor(event.getPlayer());
 		if (game != null) {
@@ -217,6 +243,7 @@ public final class GameEventDispatcher {
 				if (result != ActionResultType.PASS) {
 					event.setCancellationResult(result);
 					event.setCanceled(true);
+					this.resendPlayerHeldItem(player);
 				}
 			} catch (Exception e) {
 				LoveTropics.LOGGER.warn("Failed to dispatch player item use event", e);
@@ -230,7 +257,8 @@ public final class GameEventDispatcher {
 		if (game != null) {
 			try {
 				ServerPlayerEntity player = (ServerPlayerEntity) event.getPlayer();
-				ActionResultType result = game.invoker(GamePlayerEvents.BREAK_BLOCK).onBreakBlock(player, event.getPos(), event.getState());
+				Hand hand = player.getActiveHand();
+				ActionResultType result = game.invoker(GamePlayerEvents.BREAK_BLOCK).onBreakBlock(player, event.getPos(), event.getState(), hand);
 				if (result == ActionResultType.FAIL) {
 					event.setCanceled(true);
 				}
@@ -249,11 +277,19 @@ public final class GameEventDispatcher {
 				ActionResultType result = game.invoker(GamePlayerEvents.PLACE_BLOCK).onPlaceBlock(player, event.getPos(), event.getPlacedBlock(), event.getPlacedAgainst());
 				if (result == ActionResultType.FAIL) {
 					event.setCanceled(true);
+					this.resendPlayerHeldItem(player);
 				}
 			} catch (Exception e) {
 				LoveTropics.LOGGER.warn("Failed to dispatch player place block event", e);
 			}
 		}
+	}
+
+	private void resendPlayerHeldItem(ServerPlayerEntity player) {
+		Hand hand = player.getActiveHand();
+		int handSlot = hand == Hand.MAIN_HAND ? player.inventory.currentItem : 40;
+		ItemStack handItem = player.getHeldItem(hand);
+		player.connection.sendPacket(new SSetSlotPacket(-2, handSlot, handItem));
 	}
 
 	@SubscribeEvent

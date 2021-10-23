@@ -2,7 +2,7 @@ package com.lovetropics.minigames.common.content.block;
 
 import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.common.content.block.TrashBlock.Attachment;
-import com.lovetropics.minigames.common.util.LoveTropicsRegistrate;
+import com.lovetropics.minigames.common.util.registry.LoveTropicsRegistrate;
 import com.tterrag.registrate.util.entry.BlockEntry;
 import net.minecraft.block.Block;
 import net.minecraft.block.LadderBlock;

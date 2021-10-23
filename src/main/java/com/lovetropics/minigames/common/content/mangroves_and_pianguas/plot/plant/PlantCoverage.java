@@ -2,11 +2,9 @@ package com.lovetropics.minigames.common.content.mangroves_and_pianguas.plot.pla
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterators;
-import com.mojang.serialization.codecs.PrimitiveCodec;
 import it.unimi.dsi.fastutil.longs.*;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.vector.Vector3d;
 
 import javax.annotation.Nullable;
 import java.util.Iterator;
@@ -26,6 +24,10 @@ public interface PlantCoverage extends Iterable<BlockPos> {
 
 	static PlantCoverage of(LongSet blocks, BlockPos origin) {
 		return new Set(blocks, origin);
+	}
+
+	static PlantCoverage or(PlantCoverage left, PlantCoverage right) {
+		return new Or(left, right);
 	}
 
 	boolean covers(BlockPos pos);
@@ -51,14 +53,10 @@ public interface PlantCoverage extends Iterable<BlockPos> {
 	}
 
 	@Nullable
-	default PlantCoverage removeIntersection(PlantCoverage other) {
-		if (!this.intersects(other)) {
-			return this;
-		}
-
+	default PlantCoverage removeIntersection(LongSet intersection) {
 		LongSet blocks = new LongOpenHashSet();
 		for (BlockPos pos : this) {
-			if (!other.covers(pos)) {
+			if (!intersection.contains(pos.toLong())) {
 				blocks.add(pos.toLong());
 			}
 		}
@@ -162,6 +160,73 @@ public interface PlantCoverage extends Iterable<BlockPos> {
 					return blockIterator.hasNext();
 				}
 			};
+		}
+	}
+
+	final class Or implements PlantCoverage {
+		private final PlantCoverage left;
+		private final PlantCoverage right;
+		private final AxisAlignedBB bounds;
+
+		Or(PlantCoverage left, PlantCoverage right) {
+			this.left = left;
+			this.right = right;
+			this.bounds = left.asBounds().union(right.asBounds());
+		}
+
+		@Override
+		public boolean covers(BlockPos pos) {
+			return this.left.covers(pos) || this.right.covers(pos);
+		}
+
+		@Override
+		public BlockPos random(Random random) {
+			return random.nextBoolean() ? this.left.random(random) : this.right.random(random);
+		}
+
+		@Override
+		public AxisAlignedBB asBounds() {
+			return this.bounds;
+		}
+
+		@Override
+		public BlockPos getOrigin() {
+			return this.left.getOrigin();
+		}
+
+		@Override
+		public Iterator<BlockPos> iterator() {
+			return Iterators.concat(this.left.iterator(), this.right.iterator());
+		}
+	}
+
+	final class Builder {
+		private final LongSet blocks = new LongOpenHashSet();
+		private BlockPos origin;
+
+		public Builder add(BlockPos pos) {
+			this.blocks.add(pos.toLong());
+			if (this.origin == null) {
+				this.origin = pos;
+			}
+			return this;
+		}
+
+		public Builder setOrigin(BlockPos pos) {
+			this.origin = pos;
+			return this;
+		}
+
+		public PlantCoverage build() {
+			if (this.blocks.isEmpty() || this.origin == null) {
+				throw new IllegalStateException("cannot build empty plant");
+			}
+
+			if (this.blocks.size() == 1) {
+				return PlantCoverage.of(BlockPos.fromLong(blocks.iterator().nextLong()));
+			} else {
+				return PlantCoverage.of(this.blocks, this.origin);
+			}
 		}
 	}
 }

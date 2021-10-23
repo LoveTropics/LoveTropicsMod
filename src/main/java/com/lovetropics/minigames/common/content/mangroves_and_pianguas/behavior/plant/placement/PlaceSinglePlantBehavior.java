@@ -2,14 +2,14 @@ package com.lovetropics.minigames.common.content.mangroves_and_pianguas.behavior
 
 import com.lovetropics.lib.codec.MoreCodecs;
 import com.lovetropics.minigames.common.content.mangroves_and_pianguas.behavior.event.MpPlantEvents;
-import com.lovetropics.minigames.common.content.mangroves_and_pianguas.plot.plant.PlantCoverage;
+import com.lovetropics.minigames.common.content.mangroves_and_pianguas.plot.Plot;
+import com.lovetropics.minigames.common.content.mangroves_and_pianguas.plot.plant.PlantPlacement;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.block.BlockState;
-import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.state.properties.BlockStateProperties;
 
 public final class PlaceSinglePlantBehavior implements IGameBehavior {
@@ -25,16 +25,18 @@ public final class PlaceSinglePlantBehavior implements IGameBehavior {
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
-		events.listen(MpPlantEvents.PLACE, (player, plot, pos) -> {
-			game.getWorld().setBlockState(pos, getPlaceBlock(player));
-			return PlantCoverage.of(pos);
-		});
+		events.listen(MpPlantEvents.PLACE, (player, plot, pos) -> new PlantPlacement()
+				.covers(pos)
+				.places(world -> {
+					world.setBlockState(pos, getPlaceBlock(plot));
+					return true;
+				}));
 	}
 
-	private BlockState getPlaceBlock(ServerPlayerEntity player) {
+	private BlockState getPlaceBlock(Plot plot) {
 		BlockState block = this.block;
 		if (block.hasProperty(BlockStateProperties.HORIZONTAL_FACING)) {
-			block = block.with(BlockStateProperties.HORIZONTAL_FACING, player.getHorizontalFacing().getOpposite());
+			block = block.with(BlockStateProperties.HORIZONTAL_FACING, plot.forward);
 		}
 		return block;
 	}

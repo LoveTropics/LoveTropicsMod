@@ -1,17 +1,18 @@
 package com.lovetropics.minigames.common.content.mangroves_and_pianguas.entity;
 
 import com.lovetropics.minigames.common.content.mangroves_and_pianguas.entity.ai.MoveToPumpkinGoal;
+import com.lovetropics.minigames.common.content.mangroves_and_pianguas.entity.ai.ScaredGroundNavigator;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.ILivingEntityData;
 import net.minecraft.entity.MobEntity;
 import net.minecraft.entity.SpawnReason;
 import net.minecraft.entity.ai.goal.*;
-import net.minecraft.entity.merchant.villager.AbstractVillagerEntity;
 import net.minecraft.entity.monster.AbstractRaiderEntity;
 import net.minecraft.entity.monster.PillagerEntity;
 import net.minecraft.entity.passive.IronGolemEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.pathfinding.PathNavigator;
 import net.minecraft.pathfinding.PathNodeType;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.IServerWorld;
@@ -19,7 +20,9 @@ import net.minecraft.world.World;
 
 import javax.annotation.Nullable;
 
-public class MpPillagerEntity extends PillagerEntity {
+public class MpPillagerEntity extends PillagerEntity implements ScareableEntity {
+    private final ScareManager scares = new ScareManager(2);
+
     public MpPillagerEntity(EntityType<? extends PillagerEntity> type, World worldIn) {
         super(type, worldIn);
 
@@ -27,6 +30,11 @@ public class MpPillagerEntity extends PillagerEntity {
         this.setPathPriority(PathNodeType.DANGER_OTHER, 0.0F);
         this.setPathPriority(PathNodeType.DAMAGE_OTHER, 0.0F);
         this.setPathPriority(PathNodeType.WATER, -1.0F);
+    }
+
+    @Override
+    protected PathNavigator createNavigator(World world) {
+        return new ScaredGroundNavigator(this, this, world);
     }
 
     @Override
@@ -50,5 +58,10 @@ public class MpPillagerEntity extends PillagerEntity {
         this.setLeader(false); // Make sure that the pillagers aren't raid leaders
         this.setPatrolling(false);
         return data;
+    }
+
+    @Override
+    public ScareManager getScareManager() {
+        return this.scares;
     }
 }

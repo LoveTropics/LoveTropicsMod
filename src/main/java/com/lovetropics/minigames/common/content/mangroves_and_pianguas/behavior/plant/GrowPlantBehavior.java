@@ -14,6 +14,8 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
+import net.minecraft.util.ActionResult;
+import net.minecraft.util.ActionResultType;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.common.util.Constants;
@@ -54,7 +56,8 @@ public final class GrowPlantBehavior implements IGameBehavior {
 				plot.plants.removePlant(plant);
 
 				BlockPos origin = plant.coverage().getOrigin();
-				if (game.invoker(MpEvents.PLACE_AND_ADD_PLANT).placePlant(player, plot, origin, this.growInto) == null) {
+				ActionResult<Plant> result = game.invoker(MpEvents.PLACE_AND_ADD_PLANT).placePlant(player, plot, origin, this.growInto);
+				if (result.getType() != ActionResultType.SUCCESS) {
 					this.restoreSnapshot(world, plot, snapshot);
 				}
 			}

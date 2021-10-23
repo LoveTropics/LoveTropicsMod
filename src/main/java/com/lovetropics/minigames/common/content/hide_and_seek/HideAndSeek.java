@@ -1,8 +1,8 @@
 package com.lovetropics.minigames.common.content.hide_and_seek;
 
 import com.lovetropics.minigames.LoveTropics;
-import com.lovetropics.minigames.common.util.GameBehaviorEntry;
-import com.lovetropics.minigames.common.util.LoveTropicsRegistrate;
+import com.lovetropics.minigames.common.util.registry.GameBehaviorEntry;
+import com.lovetropics.minigames.common.util.registry.LoveTropicsRegistrate;
 import com.tterrag.registrate.util.entry.ItemEntry;
 
 public final class HideAndSeek {
