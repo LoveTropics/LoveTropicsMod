@@ -1,11 +1,12 @@
 package com.lovetropics.minigames.common.content.mangroves_and_pianguas.behavior.plant;
 
+import com.lovetropics.minigames.common.content.MinigameTexts;
 import com.lovetropics.minigames.common.content.mangroves_and_pianguas.behavior.event.MpEvents;
 import com.lovetropics.minigames.common.content.mangroves_and_pianguas.behavior.event.MpPlantEvents;
 import com.lovetropics.minigames.common.content.mangroves_and_pianguas.plot.Plot;
 import com.lovetropics.minigames.common.content.mangroves_and_pianguas.plot.PlotsState;
 import com.lovetropics.minigames.common.content.mangroves_and_pianguas.plot.plant.Plant;
-import com.lovetropics.minigames.common.content.mangroves_and_pianguas.plot.plant.PlantCoverage;
+import com.lovetropics.minigames.common.content.mangroves_and_pianguas.plot.plant.PlantPlacement;
 import com.lovetropics.minigames.common.content.mangroves_and_pianguas.plot.plant.PlantType;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
@@ -19,13 +20,12 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.SwordItem;
-import net.minecraft.util.ActionResultType;
-import net.minecraft.util.Hand;
+import net.minecraft.util.*;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.common.util.Constants;
 
-import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.List;
 
@@ -58,8 +58,8 @@ public final class MpPlantBehavior implements IGameBehavior {
 		this.game = game;
 		this.plots = game.getState().getOrThrow(PlotsState.KEY);
 
-		events.listen(MpEvents.PLACE_AND_ADD_PLANT, this::placePlant);
-		events.listen(MpEvents.BREAK_AND_REMOVE_PLANT, this::removePlant);
+		events.listen(MpEvents.PLACE_AND_ADD_PLANT, this::addAndPlantPlant);
+		events.listen(MpEvents.BREAK_AND_REMOVE_PLANT, this::breakAndRemovePlant);
 
 		events.listen(GamePlayerEvents.BREAK_BLOCK, this::onBreakBlock);
 
@@ -71,23 +71,32 @@ public final class MpPlantBehavior implements IGameBehavior {
 		}
 	}
 
-	@Nullable
-	private Plant placePlant(ServerPlayerEntity player, Plot plot, BlockPos pos, PlantType plantType) {
+	private ActionResult<Plant> addAndPlantPlant(ServerPlayerEntity player, Plot plot, BlockPos pos, PlantType plantType) {
 		if (!this.plantType.equals(plantType)) {
-			return null;
+			return ActionResult.resultPass(null);
 		}
 
-		// TODO: more strict prevention of placing intersecting plants
-		PlantCoverage coverage = plantEvents.invoker(MpPlantEvents.PLACE).placePlant(player, plot, pos);
-		if (coverage == null) return null;
+		PlantPlacement placement = plantEvents.invoker(MpPlantEvents.PLACE).placePlant(player, plot, pos);
+		if (placement == null) return ActionResult.resultPass(null);
 
-		Plant plant = plot.plants.addPlant(plantType, coverage);
-		plantEvents.invoker(MpPlantEvents.ADD).onAddPlant(player, plot, plant);
+		Plant plant = plot.plants.addPlant(plantType, placement);
+		if (plant == null) {
+			player.sendStatusMessage(MinigameTexts.mpPlantCannotFit().mergeStyle(TextFormatting.RED), true);
+			player.playSound(SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, SoundCategory.PLAYERS, 1.0F, 1.0F);
 
-		return plant;
+			return ActionResult.resultFail(null);
+		}
+
+		if (placement.place(game.getWorld())) {
+			plantEvents.invoker(MpPlantEvents.ADD).onAddPlant(player, plot, plant);
+			return ActionResult.resultSuccess(plant);
+		} else {
+			plot.plants.removePlant(plant);
+			return ActionResult.resultFail(null);
+		}
 	}
 
-	private boolean removePlant(ServerPlayerEntity player, Plot plot, Plant plant) {
+	private boolean breakAndRemovePlant(ServerPlayerEntity player, Plot plot, Plant plant) {
 		if (!this.plantType.equals(plant.type())) {
 			return false;
 		}

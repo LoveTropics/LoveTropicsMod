@@ -2,7 +2,7 @@ package com.lovetropics.minigames.common.content.mangroves_and_pianguas.behavior
 
 import com.lovetropics.minigames.common.content.mangroves_and_pianguas.plot.Plot;
 import com.lovetropics.minigames.common.content.mangroves_and_pianguas.plot.plant.Plant;
-import com.lovetropics.minigames.common.content.mangroves_and_pianguas.plot.plant.PlantCoverage;
+import com.lovetropics.minigames.common.content.mangroves_and_pianguas.plot.plant.PlantPlacement;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameEventType;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.math.BlockPos;
@@ -25,9 +25,9 @@ public final class MpPlantEvents {
 
 	public static final GameEventType<Place> PLACE = GameEventType.create(Place.class, listeners -> (player, plot, pos) -> {
 		for (Place listener : listeners) {
-			PlantCoverage coverage = listener.placePlant(player, plot, pos);
-			if (coverage != null) {
-				return coverage;
+			PlantPlacement placement = listener.placePlant(player, plot, pos);
+			if (placement != null) {
+				return placement;
 			}
 		}
 		return null;
@@ -52,7 +52,7 @@ public final class MpPlantEvents {
 
 	public interface Place {
 		@Nullable
-		PlantCoverage placePlant(ServerPlayerEntity player, Plot plot, BlockPos pos);
+		PlantPlacement placePlant(ServerPlayerEntity player, Plot plot, BlockPos pos);
 	}
 
 	public interface Break {

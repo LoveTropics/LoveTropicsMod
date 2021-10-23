@@ -224,6 +224,7 @@ public final class GameEventDispatcher {
 				if (result != ActionResultType.PASS) {
 					event.setCanceled(true);
 					event.setCancellationResult(result);
+					this.resendPlayerHeldItem(player);
 				}
 			} catch (Exception e) {
 				LoveTropics.LOGGER.warn("Failed to dispatch player use block event", e);
@@ -242,6 +243,7 @@ public final class GameEventDispatcher {
 				if (result != ActionResultType.PASS) {
 					event.setCancellationResult(result);
 					event.setCanceled(true);
+					this.resendPlayerHeldItem(player);
 				}
 			} catch (Exception e) {
 				LoveTropics.LOGGER.warn("Failed to dispatch player item use event", e);
@@ -275,7 +277,7 @@ public final class GameEventDispatcher {
 				ActionResultType result = game.invoker(GamePlayerEvents.PLACE_BLOCK).onPlaceBlock(player, event.getPos(), event.getPlacedBlock(), event.getPlacedAgainst());
 				if (result == ActionResultType.FAIL) {
 					event.setCanceled(true);
-					this.resetPlayerHeldItem(player);
+					this.resendPlayerHeldItem(player);
 				}
 			} catch (Exception e) {
 				LoveTropics.LOGGER.warn("Failed to dispatch player place block event", e);
@@ -283,7 +285,7 @@ public final class GameEventDispatcher {
 		}
 	}
 
-	private void resetPlayerHeldItem(ServerPlayerEntity player) {
+	private void resendPlayerHeldItem(ServerPlayerEntity player) {
 		Hand hand = player.getActiveHand();
 		int handSlot = hand == Hand.MAIN_HAND ? player.inventory.currentItem : 40;
 		ItemStack handItem = player.getHeldItem(hand);

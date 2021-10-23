@@ -3,7 +3,7 @@ package com.lovetropics.minigames.common.content.mangroves_and_pianguas.behavior
 import com.lovetropics.lib.codec.MoreCodecs;
 import com.lovetropics.minigames.common.content.mangroves_and_pianguas.behavior.event.MpPlantEvents;
 import com.lovetropics.minigames.common.content.mangroves_and_pianguas.plot.Plot;
-import com.lovetropics.minigames.common.content.mangroves_and_pianguas.plot.plant.PlantCoverage;
+import com.lovetropics.minigames.common.content.mangroves_and_pianguas.plot.plant.PlantPlacement;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
@@ -25,10 +25,12 @@ public final class PlaceSinglePlantBehavior implements IGameBehavior {
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
-		events.listen(MpPlantEvents.PLACE, (player, plot, pos) -> {
-			game.getWorld().setBlockState(pos, getPlaceBlock(plot));
-			return PlantCoverage.of(pos);
-		});
+		events.listen(MpPlantEvents.PLACE, (player, plot, pos) -> new PlantPlacement()
+				.covers(pos)
+				.places(world -> {
+					world.setBlockState(pos, getPlaceBlock(plot));
+					return true;
+				}));
 	}
 
 	private BlockState getPlaceBlock(Plot plot) {

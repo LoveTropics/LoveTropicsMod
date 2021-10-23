@@ -16,6 +16,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.ActionResult;
 import net.minecraft.util.ActionResultType;
 import net.minecraft.util.math.BlockPos;
 
@@ -60,12 +61,12 @@ public final class MpPlantItemBehavior implements IGameBehavior {
 				return ActionResultType.FAIL;
 			}
 
-			Plant plant = game.invoker(MpEvents.PLACE_AND_ADD_PLANT).placePlant(player, plot, pos, this.places);
-			if (plant != null) {
-				return ActionResultType.SUCCESS;
-			} else {
+			ActionResult<Plant> result = game.invoker(MpEvents.PLACE_AND_ADD_PLANT).placePlant(player, plot, pos, this.places);
+			if (result.getResult() == null) {
 				// TODO: indicate failure
 			}
+
+			return result.getType();
 		}
 
 		return ActionResultType.PASS;

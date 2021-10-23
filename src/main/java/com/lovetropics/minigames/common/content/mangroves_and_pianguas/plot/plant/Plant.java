@@ -10,21 +10,37 @@ import java.util.Random;
 
 public final class Plant {
 	private final PlantType type;
-	private final PlantCoverage coverage;
+	private final PlantCoverage functionalCoverage;
+	@Nullable
+	private final PlantCoverage decorationCoverage;
 	private final PlantState state;
 
-	public Plant(PlantType type, PlantCoverage coverage) {
-		this(type, coverage, new PlantState());
+	private final PlantCoverage coverage;
+
+	public Plant(PlantType type, PlantCoverage functionalCoverage, @Nullable PlantCoverage decorationCoverage) {
+		this(type, functionalCoverage, decorationCoverage, new PlantState());
 	}
 
-	private Plant(PlantType type, PlantCoverage coverage, PlantState state) {
+	private Plant(PlantType type, PlantCoverage functionalCoverage, @Nullable PlantCoverage decorationCoverage, PlantState state) {
 		this.type = type;
-		this.coverage = coverage;
+		this.functionalCoverage = functionalCoverage;
+		this.decorationCoverage = decorationCoverage;
 		this.state = state;
+
+		this.coverage = decorationCoverage != null ? PlantCoverage.or(functionalCoverage, decorationCoverage) : functionalCoverage;
 	}
 
 	public PlantType type() {
 		return type;
+	}
+
+	public PlantCoverage functionalCoverage() {
+		return functionalCoverage;
+	}
+
+	@Nullable
+	public PlantCoverage decorationCoverage() {
+		return decorationCoverage;
 	}
 
 	public PlantCoverage coverage() {
@@ -54,16 +70,6 @@ public final class Plant {
 				double vz = random.nextGaussian() * 0.02;
 				world.spawnParticle(ParticleTypes.POOF, pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5, 1, vx, vy, vz, speed);
 			}
-		}
-	}
-
-	@Nullable
-	public Plant removeIntersection(Plant other) {
-		PlantCoverage coverage = this.coverage.removeIntersection(other.coverage);
-		if (coverage != null) {
-			return new Plant(this.type, coverage, this.state);
-		} else {
-			return null;
 		}
 	}
 }

@@ -29,11 +29,15 @@ public final class MinigameTexts {
 		static final String FLYING_TURTLE_RACE = key("flying_turtle_race");
 		static final String TURTLE_SPRINT = key("turtle_sprint");
 		static final String HIDE_AND_SEEK = key("hide_and_seek");
+
 		static final String MANGROVES_AND_PIANGUAS = key("mangroves_and_pianguas");
 		static final String MP_WAVE_WARNING = key("mp_wave_warning");
 		static final String MP_DEATH_DECREASE = key("mp_death_decrease");
 		static final String MP_CURRENCY_ADDITION = key("mp_currency_addition");
 		static final String MP_TRADING = key("mp_trading");
+		static final String MP_CAN_ONLY_PLACE_PLANTS = key("mp_can_only_place_plants");
+		static final String MP_PLANT_CANNOT_FIT = key("mp_plant_cannot_fit");
+		static final String MP_NOT_YOUR_PLOT = key("mp_not_your_plot");
 
 		static final String[] SURVIVE_THE_TIDE_INTRO = new String[] {
 				key("survive_the_tide_intro1"),
@@ -77,6 +81,9 @@ public final class MinigameTexts {
 			consumer.accept(MP_TRADING, "Trading");
 			consumer.accept(MP_DEATH_DECREASE, "You died and lost %s currency!");
 			consumer.accept(MP_CURRENCY_ADDITION, "You gained %s currency!");
+			consumer.accept(MP_CAN_ONLY_PLACE_PLANTS, "You can only place plants you got from the shop!");
+			consumer.accept(MP_PLANT_CANNOT_FIT, "This plant cannot fit here!");
+			consumer.accept(MP_NOT_YOUR_PLOT, "This is not your plot, you cannot edit here!");
 
 			consumer.accept(SURVIVE_THE_TIDE_INTRO[0], "The year...2050. Human-caused climate change has gone unmitigated and the human population has been forced to flee to higher ground.");
 			consumer.accept(SURVIVE_THE_TIDE_INTRO[1], "\nYour task, should you choose to accept it, which you have to because of climate change, is to survive the rising tides, unpredictable weather, and other players.");
@@ -114,5 +121,17 @@ public final class MinigameTexts {
 
 	public static IFormattableTextComponent mpTrading() {
 		return new TranslationTextComponent(Keys.MP_TRADING);
+	}
+
+	public static IFormattableTextComponent mpCanOnlyPlacePlants() {
+		return new TranslationTextComponent(Keys.MP_CAN_ONLY_PLACE_PLANTS);
+	}
+
+	public static IFormattableTextComponent mpPlantCannotFit() {
+		return new TranslationTextComponent(Keys.MP_PLANT_CANNOT_FIT);
+	}
+
+	public static IFormattableTextComponent mpNotYourPlot() {
+		return new TranslationTextComponent(Keys.MP_NOT_YOUR_PLOT);
 	}
 }

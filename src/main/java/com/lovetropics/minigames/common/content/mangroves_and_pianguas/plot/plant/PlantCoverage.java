@@ -26,6 +26,10 @@ public interface PlantCoverage extends Iterable<BlockPos> {
 		return new Set(blocks, origin);
 	}
 
+	static PlantCoverage or(PlantCoverage left, PlantCoverage right) {
+		return new Or(left, right);
+	}
+
 	boolean covers(BlockPos pos);
 
 	BlockPos random(Random random);
@@ -49,14 +53,10 @@ public interface PlantCoverage extends Iterable<BlockPos> {
 	}
 
 	@Nullable
-	default PlantCoverage removeIntersection(PlantCoverage other) {
-		if (!this.intersects(other)) {
-			return this;
-		}
-
+	default PlantCoverage removeIntersection(LongSet intersection) {
 		LongSet blocks = new LongOpenHashSet();
 		for (BlockPos pos : this) {
-			if (!other.covers(pos)) {
+			if (!intersection.contains(pos.toLong())) {
 				blocks.add(pos.toLong());
 			}
 		}
@@ -160,6 +160,43 @@ public interface PlantCoverage extends Iterable<BlockPos> {
 					return blockIterator.hasNext();
 				}
 			};
+		}
+	}
+
+	final class Or implements PlantCoverage {
+		private final PlantCoverage left;
+		private final PlantCoverage right;
+		private final AxisAlignedBB bounds;
+
+		Or(PlantCoverage left, PlantCoverage right) {
+			this.left = left;
+			this.right = right;
+			this.bounds = left.asBounds().union(right.asBounds());
+		}
+
+		@Override
+		public boolean covers(BlockPos pos) {
+			return this.left.covers(pos) || this.right.covers(pos);
+		}
+
+		@Override
+		public BlockPos random(Random random) {
+			return random.nextBoolean() ? this.left.random(random) : this.right.random(random);
+		}
+
+		@Override
+		public AxisAlignedBB asBounds() {
+			return this.bounds;
+		}
+
+		@Override
+		public BlockPos getOrigin() {
+			return this.left.getOrigin();
+		}
+
+		@Override
+		public Iterator<BlockPos> iterator() {
+			return Iterators.concat(this.left.iterator(), this.right.iterator());
 		}
 	}
 

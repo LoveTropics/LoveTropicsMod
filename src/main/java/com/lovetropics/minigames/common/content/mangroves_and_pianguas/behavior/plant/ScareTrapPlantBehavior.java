@@ -5,6 +5,7 @@ import com.lovetropics.minigames.common.content.mangroves_and_pianguas.plot.Plot
 import com.lovetropics.minigames.common.content.mangroves_and_pianguas.plot.PlotsState;
 import com.lovetropics.minigames.common.content.mangroves_and_pianguas.plot.plant.Plant;
 import com.lovetropics.minigames.common.content.mangroves_and_pianguas.plot.plant.PlantCoverage;
+import com.lovetropics.minigames.common.content.mangroves_and_pianguas.plot.plant.PlantPlacement;
 import com.lovetropics.minigames.common.content.mangroves_and_pianguas.plot.plant.state.PlantState;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
@@ -14,8 +15,8 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
+import net.minecraft.block.LeverBlock;
 import net.minecraft.block.PistonHeadBlock;
-import net.minecraft.block.StoneButtonBlock;
 import net.minecraft.entity.MobEntity;
 import net.minecraft.entity.merchant.villager.VillagerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
@@ -28,6 +29,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockRayTraceResult;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.server.ServerWorld;
+import net.minecraftforge.common.util.Constants;
 
 import java.util.List;
 import java.util.function.Predicate;
@@ -65,12 +67,20 @@ public final class ScareTrapPlantBehavior implements IGameBehavior {
 		events.listen(GamePlayerEvents.USE_BLOCK, this::useBlock);
 	}
 
-	private PlantCoverage place(ServerPlayerEntity player, Plot plot, BlockPos pos) {
-		this.placeReadyTrap(plot, pos);
-		return this.buildPlantCoverage(plot, pos);
+	private PlantPlacement place(ServerPlayerEntity player, Plot plot, BlockPos pos) {
+		return new PlantPlacement()
+				.covers(this.buildPlantCoverage(plot, pos))
+				.places(world -> {
+					this.placeReadyTrap(plot, pos);
+					return true;
+				});
 	}
 
 	private ActionResultType useBlock(ServerPlayerEntity player, ServerWorld world, BlockPos pos, Hand hand, BlockRayTraceResult traceResult) {
+		if (!world.getBlockState(pos).matchesBlock(Blocks.LEVER)) {
+			return ActionResultType.PASS;
+		}
+
 		Plot plot = plots.getPlotFor(player);
 		if (plot != null && plot.bounds.contains(pos)) {
 			Plant plant = plot.plants.getPlantAt(pos);
@@ -84,7 +94,7 @@ public final class ScareTrapPlantBehavior implements IGameBehavior {
 
 	private void tick(ServerPlayerEntity player, Plot plot, List<Plant> plants) {
 		long ticks = game.ticks();
-		if (ticks % 5 != 0) return;
+		if (ticks % 10 != 0) return;
 
 		for (Plant plant : plants) {
 			Trap trap = plant.state(Trap.KEY);
@@ -181,7 +191,7 @@ public final class ScareTrapPlantBehavior implements IGameBehavior {
 	private void clearTrap(Plant plant) {
 		ServerWorld world = game.getWorld();
 		for (BlockPos pos : plant.coverage()) {
-			world.setBlockState(pos, Blocks.AIR.getDefaultState());
+			world.setBlockState(pos, Blocks.AIR.getDefaultState(), Constants.BlockFlags.DEFAULT | Constants.BlockFlags.UPDATE_NEIGHBORS);
 		}
 	}
 
@@ -191,10 +201,10 @@ public final class ScareTrapPlantBehavior implements IGameBehavior {
 		world.setBlockState(pos, Blocks.PISTON_HEAD.getDefaultState().with(PistonHeadBlock.FACING, Direction.UP));
 		world.setBlockState(pos.up(), Blocks.JACK_O_LANTERN.getDefaultState().with(BlockStateProperties.HORIZONTAL_FACING, plot.forward));
 
-		BlockState button = Blocks.STONE_BUTTON.getDefaultState()
-				.with(StoneButtonBlock.HORIZONTAL_FACING, plot.forward)
-				.with(StoneButtonBlock.FACE, AttachFace.FLOOR);
-		world.setBlockState(pos.offset(plot.forward.getOpposite()), button);
+		BlockState lever = Blocks.LEVER.getDefaultState()
+				.with(LeverBlock.HORIZONTAL_FACING, plot.forward.getOpposite())
+				.with(LeverBlock.FACE, AttachFace.WALL);
+		world.setBlockState(pos.up().offset(plot.forward.getOpposite()), lever);
 	}
 
 	private void placeReadyTrap(Plot plot, BlockPos pos) {
@@ -206,7 +216,7 @@ public final class ScareTrapPlantBehavior implements IGameBehavior {
 		// TODO: duplication
 		return new PlantCoverage.Builder()
 				.add(pos).add(pos.up())
-				.add(pos.offset(plot.forward.getOpposite()))
+				.add(pos.up().offset(plot.forward.getOpposite()))
 				.build();
 	}
 
