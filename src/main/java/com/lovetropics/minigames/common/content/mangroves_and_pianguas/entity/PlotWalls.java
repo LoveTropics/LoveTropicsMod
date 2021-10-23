@@ -29,7 +29,7 @@ public final class PlotWalls {
 			Direction.Axis axis = direction.getAxis();
 			double size = bounds.getMax(axis) - bounds.getMin(axis);
 			Vector3d offset = Vector3d.copy(direction.getDirectionVec()).scale(size);
-			AxisAlignedBB plotFace = bounds.offset(offset);
+			AxisAlignedBB plotFace = bounds.offset(offset).grow(0.1);
 
 			int index = direction.getIndex();
 			this.faces[index] = plotFace;

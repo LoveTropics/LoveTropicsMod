@@ -17,6 +17,7 @@ import net.minecraft.entity.EntityType;
 import net.minecraft.entity.MobEntity;
 import net.minecraft.entity.SpawnReason;
 import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.Difficulty;
@@ -99,8 +100,8 @@ public final class MpWaveSpawnerBehavior implements IGameBehavior {
 
 			MobEntity entity = selectEntityForWave(random, world, plot);
 
-			entity.setLocationAndAngles(pos.getX(), pos.getY(), pos.getZ(), 0, 0);
-			entity.setPosition(pos.getX(), pos.getY(), pos.getZ());
+			Direction direction = plot.forward.getOpposite();
+			entity.setLocationAndAngles(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5, direction.getHorizontalAngle(), 0);
 
 			world.addEntity(entity);
 

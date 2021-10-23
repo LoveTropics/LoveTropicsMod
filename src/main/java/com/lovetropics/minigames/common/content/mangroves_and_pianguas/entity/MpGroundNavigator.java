@@ -25,7 +25,7 @@ public final class MpGroundNavigator extends GroundPathNavigator {
 	final class NodeProcessor extends WalkNodeProcessor {
 		@Override
 		public PathNodeType getFloorNodeType(IBlockReader world, int x, int y, int z) {
-			if (mob.getPlotWalls().getBounds().contains(x + 0.5, y + 0.5, z + 0.5)) {
+			if (!mob.getPlotWalls().getBounds().contains(x + 0.5, y + 0.5, z + 0.5)) {
 				return PathNodeType.BLOCKED;
 			}
 
