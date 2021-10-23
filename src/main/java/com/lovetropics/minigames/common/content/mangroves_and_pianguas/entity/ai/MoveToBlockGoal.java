@@ -28,7 +28,7 @@ public abstract class MoveToBlockGoal extends Goal {
 
         // If players are 3 blocks or closer to the mob then don't consider
         for (PlayerEntity player : this.mob.world.getPlayers()) {
-            if (player.getDistance(this.mob) <= 3) {
+            if (player.getDistanceSq(this.mob) <= 3 * 3) {
                 return false;
             }
         }
@@ -46,7 +46,7 @@ public abstract class MoveToBlockGoal extends Goal {
     public void startExecuting() {
         this.playerCheckTicks = 20;
 
-        this.mob.getNavigator().tryMoveToXYZ(this.targetPos.getX() + 0.25, this.targetPos.getY(), this.targetPos.getZ() + 0.25, 1.0);
+        this.mob.getNavigator().tryMoveToXYZ(this.targetPos.getX(), this.targetPos.getY(), this.targetPos.getZ(), 1.0);
     }
 
     @Override
@@ -58,7 +58,7 @@ public abstract class MoveToBlockGoal extends Goal {
     public boolean shouldContinueExecuting() {
         if (this.playerCheckTicks <= 0) {
             for (PlayerEntity player : this.mob.world.getPlayers()) {
-                if (player.getDistance(this.mob) <= 5) {
+                if (player.getDistanceSq(this.mob) <= 5 * 5) {
                     return false;
                 }
             }
@@ -71,30 +71,20 @@ public abstract class MoveToBlockGoal extends Goal {
 
     @Nullable
     protected BlockPos locateBlock(IBlockReader world, int rangeX, int rangeY) {
-        BlockPos blockPos = this.mob.getPosition();
-        int x = blockPos.getX();
-        int y = blockPos.getY();
-        int z = blockPos.getZ();
+        BlockPos origin = this.mob.getPosition();
         int minimumDist = Integer.MAX_VALUE;
         BlockPos minPos = null;
-        BlockPos.Mutable mutable = new BlockPos.Mutable();
 
-        for(int dx = x - rangeX; dx <= x + rangeX; ++dx) {
-            for(int dy = y - rangeY; dy <= y + rangeY; ++dy) {
-                for(int dz = z - rangeX; dz <= z + rangeX; ++dz) {
-                    mutable.setPos(dx, dy, dz);
+        for (BlockPos pos : BlockPos.getAllInBoxMutable(origin.add(-rangeX, -rangeY, -rangeX), origin.add(rangeX, rangeY, rangeX))) {
+            if (isValidBlock(world.getBlockState(pos))) {
+                int dx = pos.getX() - origin.getX();
+                int dy = pos.getY() - origin.getY();
+                int dz = pos.getZ() - origin.getZ();
 
-                    if (isValidBlock(world.getBlockState(mutable))) {
-                        int ax = dx - x;
-                        int ay = dy - y;
-                        int az = dz - z;
-
-                        int dist = ax * ax + ay * ay + az * az;
-                        if (dist < minimumDist) {
-                            minimumDist = dist;
-                            minPos = mutable.toImmutable();
-                        }
-                    }
+                int dist = dx * dx + dy * dy + dz * dz;
+                if (dist < minimumDist) {
+                    minimumDist = dist;
+                    minPos = pos.toImmutable();
                 }
             }
         }

@@ -1,6 +1,7 @@
 package com.lovetropics.minigames.common.content.mangroves_and_pianguas.behavior.plant;
 
 import com.lovetropics.minigames.common.content.mangroves_and_pianguas.behavior.event.MpPlantEvents;
+import com.lovetropics.minigames.common.content.mangroves_and_pianguas.entity.ScareableEntity;
 import com.lovetropics.minigames.common.content.mangroves_and_pianguas.plot.Plot;
 import com.lovetropics.minigames.common.content.mangroves_and_pianguas.plot.PlotsState;
 import com.lovetropics.minigames.common.content.mangroves_and_pianguas.plot.plant.Plant;
@@ -109,7 +110,7 @@ public final class ScareTrapPlantBehavior implements IGameBehavior {
 	}
 
 	private boolean tickTrap(Plot plot, Plant plant) {
-		// TODO: once triggered, mob should run around avoiding going near the jack o lantern (even when no longer panicking)
+		// TODO: mobs should run around in panic after being scared
 
 		AxisAlignedBB bounds = plant.coverage().asBounds();
 		AxisAlignedBB triggerBounds = bounds.grow(this.triggerRadius);
@@ -123,24 +124,27 @@ public final class ScareTrapPlantBehavior implements IGameBehavior {
 
 		AxisAlignedBB scareBounds = bounds.grow(this.scareRadius);
 		List<MobEntity> entities = world.getEntitiesWithinAABB(MobEntity.class, scareBounds, SCARE_PREDICATE);
-		this.triggerTrap(plot, plant, bounds, entities);
+		this.triggerTrap(plot, plant, entities);
 
 		return true;
 	}
 
-	private void triggerTrap(Plot plot, Plant plant, AxisAlignedBB bounds, List<MobEntity> entities) {
+	private void triggerTrap(Plot plot, Plant plant, List<MobEntity> entities) {
+		BlockPos origin = plant.coverage().getOrigin();
+		Vector3d pushFrom = Vector3d.copyCentered(origin);
+
 		for (MobEntity entity : entities) {
-			this.scareEntity(bounds.getCenter(), entity);
+			this.scareEntity(origin, pushFrom, entity);
 		}
 
 		this.extendTrap(plot, plant);
 	}
 
-	private void scareEntity(Vector3d pushFrom, MobEntity entity) {
+	private void scareEntity(BlockPos pos, Vector3d pushFrom, MobEntity entity) {
 		Vector3d entityPos = entity.getPositionVec();
 
 		// Scaled so that closer values are higher, with a max of 5
-		double dist = 1.5 / (0.1 + entityPos.distanceTo(pushFrom));
+		double dist = 2.0 / (0.1 + entityPos.distanceTo(pushFrom));
 
 		// Angle between entity and center of lantern
 		double theta = Math.atan2(entityPos.z - pushFrom.z, entityPos.x - pushFrom.x);
@@ -151,6 +155,10 @@ public final class ScareTrapPlantBehavior implements IGameBehavior {
 		// Prevent mobs from flying to the moon due to too much motion
 		Vector3d motion = entity.getMotion();
 		entity.setMotion(Math.min(motion.x, 5), Math.min(motion.y, 0.25), Math.min(motion.z, 5));
+
+		if (entity instanceof ScareableEntity) {
+			((ScareableEntity) entity).getScareManager().addSource(pos);
+		}
 
 		// Spawn critical hit particles around the entity
 		game.getAllPlayers().sendPacket(new SAnimateHandPacket(entity, 4));
