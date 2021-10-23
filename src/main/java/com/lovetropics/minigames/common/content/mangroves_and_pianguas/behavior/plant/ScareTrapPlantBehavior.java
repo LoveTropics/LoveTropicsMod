@@ -78,10 +78,14 @@ public final class ScareTrapPlantBehavior implements IGameBehavior {
 	}
 
 	private ActionResultType useBlock(ServerPlayerEntity player, ServerWorld world, BlockPos pos, Hand hand, BlockRayTraceResult traceResult) {
-		if (!world.getBlockState(pos).matchesBlock(Blocks.LEVER)) {
-			return ActionResultType.PASS;
+		if (world.getBlockState(pos).matchesBlock(Blocks.LEVER)) {
+			return this.useLever(player, pos);
 		}
 
+		return ActionResultType.PASS;
+	}
+
+	private ActionResultType useLever(ServerPlayerEntity player, BlockPos pos) {
 		Plot plot = plots.getPlotFor(player);
 		if (plot != null && plot.bounds.contains(pos)) {
 			Plant plant = plot.plants.getPlantAt(pos);
@@ -90,7 +94,7 @@ public final class ScareTrapPlantBehavior implements IGameBehavior {
 			}
 		}
 
-		return ActionResultType.PASS;
+		return ActionResultType.FAIL;
 	}
 
 	private void tick(ServerPlayerEntity player, Plot plot, List<Plant> plants) {
@@ -166,9 +170,9 @@ public final class ScareTrapPlantBehavior implements IGameBehavior {
 
 	private void extendTrap(Plot plot, Plant plant) {
 		Trap trap = plant.state(Trap.KEY);
-		if (trap == null || !trap.ready) return;
-
-		trap.ready = false;
+		if (trap == null || !trap.trigger(game)) {
+			return;
+		}
 
 		BlockPos origin = plant.coverage().getOrigin();
 
@@ -180,11 +184,9 @@ public final class ScareTrapPlantBehavior implements IGameBehavior {
 
 	private boolean resetTrap(Plot plot, Plant plant) {
 		Trap trap = plant.state(Trap.KEY);
-		if (trap == null || trap.ready) {
+		if (trap == null || !trap.tryReset(game)) {
 			return false;
 		}
-
-		trap.ready = true;
 
 		BlockPos origin = plant.coverage().getOrigin();
 
@@ -229,8 +231,30 @@ public final class ScareTrapPlantBehavior implements IGameBehavior {
 	}
 
 	static final class Trap {
+		private static final long TRIGGER_FROZEN_TICKS = 5 * 20;
+
 		static final PlantState.Key<Trap> KEY = PlantState.Key.create();
 
 		boolean ready = true;
+		long frozenExpiry;
+
+		boolean trigger(IGamePhase game) {
+			if (ready) {
+				frozenExpiry = game.ticks() + TRIGGER_FROZEN_TICKS;
+				ready = false;
+				return true;
+			} else {
+				return false;
+			}
+		}
+
+		boolean tryReset(IGamePhase game) {
+			if (!ready && game.ticks() > frozenExpiry) {
+				ready = true;
+				return true;
+			} else {
+				return false;
+			}
+		}
 	}
 }
