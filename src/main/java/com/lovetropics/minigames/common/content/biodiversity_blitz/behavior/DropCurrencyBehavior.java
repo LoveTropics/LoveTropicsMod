@@ -16,6 +16,7 @@ import com.mojang.serialization.Codec;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvents;
 import net.minecraft.world.server.ServerWorld;
 
@@ -83,9 +84,8 @@ public final class DropCurrencyBehavior implements IGameBehavior {
         }
 
         count = preventCapitalism(count);
-
-        // TODO: world.playSound! this isn't sent to the player
-        player.playSound(SoundEvents.ENTITY_ARROW_HIT_PLAYER, 0.24F, 1.0F);
+        
+        world.playSound(null, player.getPosition(), SoundEvents.ENTITY_ARROW_HIT_PLAYER, SoundCategory.PLAYERS,  0.24F, 1.0F);
         player.sendStatusMessage(BiodiversityBlitzTexts.currencyAddition(count), false);
         player.addItemStackToInventory(new ItemStack(BiodiversityBlitz.OSA_POINT.get(), count));
     }

@@ -139,7 +139,7 @@ public final class BbBehavior implements IGameBehavior {
 
 	private void sendActionRejection(ServerPlayerEntity player, IFormattableTextComponent message) {
 		player.sendStatusMessage(message.mergeStyle(TextFormatting.RED), true);
-		player.playSound(SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, SoundCategory.PLAYERS, 1.0F, 1.0F);
+		player.getServerWorld().playSound(null, player.getPosition(), SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, SoundCategory.PLAYERS,  1.0F, 1.0F);
 	}
 
 	private ActionResultType onPlayerDeath(ServerPlayerEntity player, DamageSource damageSource) {
@@ -168,75 +168,19 @@ public final class BbBehavior implements IGameBehavior {
 
 		// Add the remaining items
 		player.addItemStackToInventory(new ItemStack(BiodiversityBlitz.OSA_POINT.get(), targetCount));
-		player.playSound(SoundEvents.ENTITY_ARROW_HIT_PLAYER, 0.18F, 0.1F);
+		player.getServerWorld().playSound(null, player.getPosition(), SoundEvents.ENTITY_ARROW_HIT_PLAYER, SoundCategory.PLAYERS,  0.18F, 1.0F);
 		player.sendStatusMessage(BiodiversityBlitzTexts.deathDecrease(totalCount - targetCount).mergeStyle(TextFormatting.RED), false);
 
 		return ActionResultType.FAIL;
 	}
 
-	// TODO: staggered tick per player because this much logic in a single tick is not ideal
 	private void tick(IGamePhase game) {
-		ServerWorld world = game.getWorld();
-		long ticks = game.ticks();
-
 		for (ServerPlayerEntity player : game.getParticipants()) {
 			Plot plot = plots.getPlotFor(player);
 			if (plot != null) {
 				game.invoker(BbEvents.TICK_PLOT).onTickPlot(player, plot);
 			}
 		}
-
-		// Drop currency every 30 seconds
-//		if (ticks % 600 == 0) {
-//			for (ServerPlayerEntity player : game.getParticipants()) {
-//				Plot plot = plots.getPlotFor(player);
-//				if (plot == null) continue;
-//
-//				double value = this.computeCurrency(world, plot);
-//				this.givePlayerCurrency(world, player, value);
-//			}
-//		}
-	}
-
-	private double computeCurrency(ServerWorld world, Plot plot) {
-		double value = 2;
-
-		// TODO: calculate crops, plants, and trees separately
-		Set<Block> uniqueBlocks = new ReferenceOpenHashSet<>();
-
-		// TODO: reference plants instead of blocks!
-		for (BlockPos pos : plot.plantBounds) {
-			BlockState state = world.getBlockState(pos);
-			uniqueBlocks.add(state.getBlock());
-
-			if (state.getBlock() instanceof CropsBlock) {
-				value += 0.05;
-			} else if (state.getBlock() == Blocks.GRASS) {
-				value += 0.025;
-			} else if (state.getBlock() == Blocks.WITHER_ROSE) {
-				value += 0.075;
-			} else if (state.getBlock() == Blocks.BIRCH_LOG || state.getBlock() == Blocks.OAK_LOG) {
-				value += 0.85;
-			}
-
-			// ...
-		}
-
-		// TODO: temp math equation
-		value += (uniqueBlocks.size() / 4.0) * value;
-
-		return value;
-	}
-
-	private void givePlayerCurrency(ServerWorld world, ServerPlayerEntity player, double value) {
-		int count = MathHelper.floor(value);
-		if (world.rand.nextDouble() < value - count) {
-			count++;
-		}
-
-		player.playSound(SoundEvents.ENTITY_ARROW_HIT_PLAYER, 0.24F, 1.0F);
-		player.sendStatusMessage(BiodiversityBlitzTexts.currencyAddition(count), true);
-		player.addItemStackToInventory(new ItemStack(BiodiversityBlitz.OSA_POINT.get(), count));
 	}
 
 	private void teleportToRegion(ServerPlayerEntity player, BlockBox region, Direction direction) {
