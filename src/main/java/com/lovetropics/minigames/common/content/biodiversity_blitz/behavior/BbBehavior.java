@@ -67,7 +67,7 @@ public final class BbBehavior implements IGameBehavior {
 		events.listen(GamePlayerEvents.ATTACK, this::onAttack);
 		// No mob drops
 		events.listen(GameLivingEntityEvents.MOB_DROP, (e, d, r) -> ActionResultType.FAIL);
-		events.listen(GameLivingEntityEvents.FARMLAND_TRAMPLE, this::onFarmlandTrample);
+		events.listen(GameLivingEntityEvents.FARMLAND_TRAMPLE, (e, p, s) -> ActionResultType.FAIL);
 
 		events.listen(GamePlayerEvents.PLACE_BLOCK, this::onPlaceBlock);
 		events.listen(GamePlayerEvents.BREAK_BLOCK, (player, pos, state, hand) -> ActionResultType.FAIL);
@@ -139,17 +139,6 @@ public final class BbBehavior implements IGameBehavior {
 	private void sendActionRejection(ServerPlayerEntity player, IFormattableTextComponent message) {
 		player.sendStatusMessage(message.mergeStyle(TextFormatting.RED), true);
 		player.playSound(SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, SoundCategory.PLAYERS, 1.0F, 1.0F);
-	}
-
-	private ActionResultType onFarmlandTrample(Entity entity, BlockPos pos, BlockState state) {
-		if (entity instanceof ServerPlayerEntity) {
-			Plot plot = plots.getPlotFor(entity);
-			if (plot != null && !plot.bounds.contains(pos)) {
-				return ActionResultType.FAIL;
-			}
-		}
-
-		return ActionResultType.PASS;
 	}
 
 	private ActionResultType onPlayerDeath(ServerPlayerEntity player, DamageSource damageSource) {

@@ -4,6 +4,7 @@ import com.lovetropics.minigames.common.core.game.player.PlayerRole;
 import com.lovetropics.minigames.common.core.game.util.TeamAllocator;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.ActionResultType;
 import net.minecraft.util.DamageSource;
@@ -127,6 +128,16 @@ public final class GamePlayerEvents {
 		return ActionResultType.PASS;
 	});
 
+	public static final GameEventType<ThrowItem> THROW_ITEM = GameEventType.create(ThrowItem.class, listeners -> (player, item) -> {
+		for (ThrowItem listener : listeners) {
+			ActionResultType result = listener.onThrowItem(player, item);
+			if (result != ActionResultType.PASS) {
+				return result;
+			}
+		}
+		return ActionResultType.PASS;
+	});
+
 	public static final GameEventType<Death> DEATH = GameEventType.create(Death.class, listeners -> (player, damageSource) -> {
 		for (Death listener : listeners) {
 			ActionResultType result = listener.onDeath(player, damageSource);
@@ -198,6 +209,10 @@ public final class GamePlayerEvents {
 
 	public interface PlaceBlock {
 		ActionResultType onPlaceBlock(ServerPlayerEntity player, BlockPos pos, BlockState placed, BlockState placedOn);
+	}
+
+	public interface ThrowItem {
+		ActionResultType onThrowItem(ServerPlayerEntity player, ItemEntity item);
 	}
 
 	public interface Death {
