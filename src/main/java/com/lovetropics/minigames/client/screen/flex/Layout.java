@@ -58,6 +58,11 @@ public final class Layout extends AbstractGui {
 		return new Layout(content().shift(0, dy), padding().shift(0, dy), margin().shift(0, dy));
 	}
 
+	public Layout unboundedY() {
+		int unbounded = 1_000_000;
+		return new Layout(content().grow(0, 0, 0, unbounded), padding().grow(0, 0, 0, unbounded), margin().grow(0, 0, 0, unbounded));
+	}
+
 	@Override
 	public String toString() {
 		return "Layout [content=" + content + ", padding=" + padding + ", margin=" + margin + "]";

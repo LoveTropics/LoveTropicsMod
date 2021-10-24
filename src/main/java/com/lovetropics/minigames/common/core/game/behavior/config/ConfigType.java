@@ -8,13 +8,31 @@ public enum ConfigType {
 	STRING(String.class, false),
 	NUMBER(Number.class, false),
 	BOOLEAN(Boolean.class, false),
-	ENUM(Enum.class, false),
-	LIST(Collection.class, true),
-	COMPOSITE(ConfigData.class, true),
+	ENUM(Enum.class, false) {
+		
+		@Override
+		public Object defaultInstance() {
+			return this.requiredType.getEnumConstants()[0];
+		}
+	},
+	LIST(Collection.class, true) {
+		
+		@Override
+		public Object defaultInstance() {
+			return new ConfigData.ListConfigData(NONE);
+		}
+	},
+	COMPOSITE(ConfigData.class, true) {
+		
+		@Override
+		public Object defaultInstance() {
+			return new ConfigData.CompositeConfigData();
+		}
+	},
 	;
 	
-	private final Class<?> requiredType;
-	private final boolean isComplex;
+	protected final Class<?> requiredType;
+	protected final boolean isComplex;
 
 	private ConfigType(Class<?> requiredType, boolean isComplex) {
 		this.requiredType = requiredType;
@@ -27,5 +45,13 @@ public enum ConfigType {
 
 	public boolean isComplex() {
 		return isComplex;
+	}
+
+	public Object defaultInstance() {
+		try {
+			return this.requiredType.newInstance();
+		} catch (InstantiationException | IllegalAccessException e) {
+			throw new IllegalArgumentException("Cannot create a default instance for ConfigType " + this.name(), e);
+		}
 	}
 }

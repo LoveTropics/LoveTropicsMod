@@ -7,6 +7,7 @@ import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.config.BehaviorConfig;
 import com.lovetropics.minigames.common.core.game.behavior.config.ConfigList;
+import com.lovetropics.minigames.common.core.game.behavior.config.ConfigType;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.lovetropics.minigames.common.core.game.player.PlayerRole;
@@ -44,6 +45,8 @@ public final class SetupTeamsBehavior implements IGameBehavior {
 			.xmap(Object2IntOpenHashMap::new, HashMap::new);
 
 	private static final BehaviorConfig<List<TeamKey>> CFG_TEAMS = BehaviorConfig.fieldOf("teams", TeamKey.CODEC.listOf())
+			.defaultInstanceHint("", new TeamKey("", "", DyeColor.WHITE, TextFormatting.RESET), TeamKey.CODEC)
+			.listTypeHint("", ConfigType.COMPOSITE)
 			.enumHint("dye", s -> DyeColor.byTranslationKey(s, null));
 	private static final BehaviorConfig<Map<String, List<UUID>>> CFG_ASSIGN = BehaviorConfig.fieldOf("assign", TEAM_ASSIGN);
 	private static final BehaviorConfig<Object2IntMap<String>> CFG_MAX_SIZES = BehaviorConfig.fieldOf("max_sizes", TEAM_TO_SIZE);

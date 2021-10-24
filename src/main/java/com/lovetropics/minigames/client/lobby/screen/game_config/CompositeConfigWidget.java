@@ -22,11 +22,11 @@ public class CompositeConfigWidget extends LayoutGui implements IConfigWidget {
 		super();
 	}
 
-	public static CompositeConfigWidget from(Screen screen, LayoutTree ltree, CompositeConfigData data) {
+	public static CompositeConfigWidget from(GameConfig parent, LayoutTree ltree, CompositeConfigData data) {
 		CompositeConfigWidget ret = new CompositeConfigWidget();
 		for (Map.Entry<String, ConfigData> e : data.value().entrySet()) {
 			ltree.child(new Box(5, 0, 0, 0), new Box(3, 3, 3, 3));
-			ret.children.add(new ConfigDataUI(screen, ltree, e.getKey(), e.getValue()));
+			ret.children.add(new ConfigDataUI(parent, ltree, e.getKey(), e.getValue()));
 		}
 		ret.mainLayout = ltree.pop();
 		return ret;
@@ -39,7 +39,7 @@ public class CompositeConfigWidget extends LayoutGui implements IConfigWidget {
 
 	@Override
 	public int getHeight() {
-		return children.stream().mapToInt(IConfigWidget::getHeight).sum();
+		return this.mainLayout.margin().height();
 	}
 	
 	@Override

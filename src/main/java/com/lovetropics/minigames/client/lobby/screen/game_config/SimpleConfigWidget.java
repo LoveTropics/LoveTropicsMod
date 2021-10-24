@@ -41,8 +41,7 @@ public abstract class SimpleConfigWidget extends LayoutGui implements IConfigWid
 	protected SimpleConfigWidget(LayoutTree ltree, SimpleConfigData config) {
 		super();
 		this.config = config;
-		ltree.definiteChild(-1, getHeight());
-		this.control = createControl(ltree.pop());
+		this.control = createControl(ltree.definiteChild(-1, getHeight()).pop());
 		this.mainLayout = ltree.pop();
 	}
 	

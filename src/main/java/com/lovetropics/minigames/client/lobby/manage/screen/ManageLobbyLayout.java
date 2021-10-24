@@ -68,8 +68,7 @@ final class ManageLobbyLayout {
 				.alignMain(Align.Main.START);
 
 		Flex edit = centerColumn.child()
-				.width(1.0F, Flex.Unit.PERCENT).grow(1.0F)
-				.padding(PADDING);
+				.width(1.0F, Flex.Unit.PERCENT).grow(1.0F);
 
 		Flex centerFooter = centerColumn.child().column()
 				.width(1.0F, Flex.Unit.PERCENT).height(FOOTER_HEIGHT).padding(PADDING)

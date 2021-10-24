@@ -3,9 +3,7 @@ package com.lovetropics.minigames.client.lobby.screen.game_config;
 import java.util.List;
 
 import com.google.common.collect.Lists;
-import com.lovetropics.minigames.client.lobby.manage.screen.ManageLobbyScreen;
 import com.lovetropics.minigames.client.lobby.state.ClientConfigList;
-import com.lovetropics.minigames.client.screen.LayoutGui;
 import com.lovetropics.minigames.client.screen.LayoutTree;
 import com.lovetropics.minigames.client.screen.flex.Align;
 import com.lovetropics.minigames.client.screen.flex.Axis;
@@ -25,13 +23,13 @@ public class BehaviorConfigUI extends FocusableGui implements IRenderable {
 	private final TextLabel title;
 	private final BehaviorConfigList list;
 
-	public BehaviorConfigUI(ManageLobbyScreen screen, LayoutTree ltree, GameBehaviorType<?> behavior, ClientConfigList configs) {
+	public BehaviorConfigUI(GameConfig parent, LayoutTree ltree, GameBehaviorType<?> behavior, ClientConfigList configs) {
 		super();
 		this.behavior = behavior;
 		this.configs = configs;
 		
 		this.title = new TextLabel(ltree.child(1, Axis.X), 10, new TranslationTextComponent(behavior.getRegistryName().toString()), Align.Cross.CENTER, Align.Cross.START);
-		this.list = new BehaviorConfigList(screen, ltree.child(), configs);
+		this.list = new BehaviorConfigList(parent, ltree.child(), configs);
 		ltree.pop(); // This UI doesn't have a layout, but we still need to pop our layout from the tree
 	}
 

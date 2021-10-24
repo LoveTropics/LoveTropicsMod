@@ -13,6 +13,8 @@ import java.util.Set;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
+import com.mojang.serialization.DataResult;
+
 public abstract class ConfigData {
 	
 	private DisplayHint display = DisplayHint.NONE;
@@ -83,12 +85,35 @@ public abstract class ConfigData {
 		public static final ListConfigData EMPTY = new ListConfigData(ConfigType.NONE);
 		
 		private ConfigType type;
+		private Object defaultValue;
 		private final List<Object> values = new ArrayList<>();
 
 		public ListConfigData(ConfigType type) {
 			this.type = type;
 		}
-		
+
+		public ListConfigData setDefaultValue(Object defaultValue) {
+			this.defaultValue = defaultValue;
+			return this;
+		}
+
+		public void addDefault() {
+			if (this.defaultValue != null) {
+				add(this.defaultValue);
+			} else {
+				add(type.defaultInstance());
+			}
+		}
+
+		public ListConfigData setComponentType(ConfigType type) {
+			if (type == this.type) return this;
+			if (this.type != ConfigType.NONE) {
+				throw new IllegalStateException("List component type already set");
+			}
+			this.type = type;
+			return this;
+		}
+
 		public void add(Object value) {
 			if (componentType() == ConfigType.NONE) {
 				for (ConfigType type : ConfigType.values()) {
