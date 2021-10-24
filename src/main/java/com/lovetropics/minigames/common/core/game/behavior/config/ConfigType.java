@@ -4,26 +4,28 @@ import java.util.Collection;
 
 public enum ConfigType {
 	
-	NONE(Void.class),
-	STRING(String.class),
-	NUMBER(Number.class),
-	BOOLEAN(Boolean.class),
-	ENUM(Enum.class),
-	LIST(Collection.class),
-	COMPOSITE(ConfigData.class),
+	NONE(Void.class, true),
+	STRING(String.class, false),
+	NUMBER(Number.class, false),
+	BOOLEAN(Boolean.class, false),
+	ENUM(Enum.class, false),
+	LIST(Collection.class, true),
+	COMPOSITE(ConfigData.class, true),
 	;
 	
 	private final Class<?> requiredType;
-	
-	private ConfigType() {
-		this(Object.class);
-	}
+	private final boolean isComplex;
 
-	private ConfigType(Class<?> requiredType) {
+	private ConfigType(Class<?> requiredType, boolean isComplex) {
 		this.requiredType = requiredType;
+		this.isComplex = isComplex;
 	}
 	
 	public boolean isValidValue(Object val) {
 		return requiredType.isInstance(val);
+	}
+
+	public boolean isComplex() {
+		return isComplex;
 	}
 }

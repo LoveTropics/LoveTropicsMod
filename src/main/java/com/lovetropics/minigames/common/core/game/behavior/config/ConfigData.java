@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
@@ -42,10 +43,13 @@ public abstract class ConfigData {
 		private Object value;
 		
 		public SimpleConfigData(ConfigType type) {
-			this.type = type;
+			this(type, null);
 		}
 
 		public SimpleConfigData(ConfigType type, Object value) {
+			if (type == ConfigType.COMPOSITE || type == ConfigType.LIST) {
+				throw new IllegalArgumentException("Simple config data cannot be of type COMPOSITE or LIST");
+			}
 			this.type = type;
 			this.value = value;
 		}
@@ -97,7 +101,7 @@ public abstract class ConfigData {
 			if (componentType().isValidValue(value)) {
 				this.values.add(value);
 			} else {
-				throw new IllegalArgumentException("Invalid list value for type " + componentType() + ": " + value);
+				throw new IllegalArgumentException("Invalid list value for type " + componentType() + ": " + value.getClass().getSimpleName() + " " + value);
 			}
 		}
 
@@ -178,6 +182,14 @@ public abstract class ConfigData {
 
 		public ConfigData value(String name) {
 			return values.get(name);
+		}
+
+		public Set<String> keys() {
+			return values.keySet();
+		}
+
+		public ConfigData put(String name, ConfigData value) {
+			return values.put(name, value);
 		}
 		
 		@Override
