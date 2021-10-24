@@ -65,11 +65,12 @@ public final class PlaceFeaturePlantBehavior implements IGameBehavior {
 		DelegatingSeedReader placementWorld = new DelegatingSeedReader(world) {
 			@Override
 			public boolean setBlockState(BlockPos pos, BlockState state, int flags, int recursionLeft) {
-				if (!plot.plants.canAddPlantAt(pos)) {
+				BlockState oldState = this.getBlockState(pos);
+				if (!this.canChangeBlock(pos, oldState, state)) {
 					return false;
 				}
 
-				if (this.getBlockState(pos) != state) {
+				if (oldState != state) {
 					if (!state.equals(super.getBlockState(pos))) {
 						changedBlocks.put(pos.toLong(), state);
 					} else {
@@ -79,6 +80,18 @@ public final class PlaceFeaturePlantBehavior implements IGameBehavior {
 				} else {
 					return false;
 				}
+			}
+
+			private boolean canChangeBlock(BlockPos pos, BlockState oldState, BlockState newState) {
+				if (!oldState.isAir() && !isTreeBlock(oldState)) {
+					return false;
+				}
+
+				if (isDecorationBlock(newState) && !plot.plants.canAddPlantAt(pos)) {
+					return false;
+				}
+
+				return true;
 			}
 
 			@Override
@@ -107,12 +120,10 @@ public final class PlaceFeaturePlantBehavior implements IGameBehavior {
 		for (Long2ObjectMap.Entry<BlockState> entry : Long2ObjectMaps.fastIterable(changedBlocks)) {
 			long pos = entry.getLongKey();
 			BlockState state = entry.getValue();
-			if (isTreeBlock(state)) {
-				if (!isDecorationBlock(state)) {
-					coverage.add(pos);
-				} else {
-					decorationCoverage.add(pos);
-				}
+			if (!isDecorationBlock(state)) {
+				coverage.add(pos);
+			} else {
+				decorationCoverage.add(pos);
 			}
 		}
 
