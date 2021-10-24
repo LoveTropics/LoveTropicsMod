@@ -79,12 +79,12 @@ public final class GameEventDispatcher {
 
 	@SubscribeEvent
 	public void onAttackEntity(AttackEntityEvent event) {
-		Entity target = event.getEntity();
+		Entity target = event.getTarget();
 
 		PlayerEntity player = event.getPlayer();
 		IGamePhase game = gameLookup.getGamePhaseFor(player);
 		if (game != null) {
-			if (this.dispatchAttackEvent(game, (ServerPlayerEntity) player,target)) {
+			if (this.dispatchAttackEvent(game, (ServerPlayerEntity) player, target)) {
 				event.setCanceled(true);
 			}
 		}

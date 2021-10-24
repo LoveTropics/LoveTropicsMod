@@ -31,6 +31,7 @@ import net.minecraft.world.gen.feature.structure.StructureStart;
 import net.minecraft.world.lighting.WorldLightManager;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraft.world.storage.IWorldInfo;
+import net.minecraftforge.common.util.Constants;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -204,16 +205,23 @@ public abstract class DelegatingSeedReader implements ISeedReader {
 
 	@Override
 	public boolean removeBlock(BlockPos pos, boolean isMoving) {
-		return this.parent.removeBlock(pos, isMoving);
+		FluidState fluid = this.getFluidState(pos);
+		int flags = Constants.BlockFlags.DEFAULT | (isMoving ? Constants.BlockFlags.IS_MOVING : 0);
+		return this.setBlockState(pos, fluid.getBlockState(), flags);
 	}
 
 	@Override
 	public boolean destroyBlock(BlockPos pos, boolean dropBlock, @Nullable Entity entity, int recursionLeft) {
-		return this.parent.destroyBlock(pos, dropBlock, entity, recursionLeft);
+		BlockState block = this.getBlockState(pos);
+		if (!block.isAir(this, pos)) {
+			FluidState fluid = this.getFluidState(pos);
+			return this.setBlockState(pos, fluid.getBlockState(), Constants.BlockFlags.DEFAULT, recursionLeft);
+		}
+		return false;
 	}
 
 	@Override
 	public boolean hasBlockState(BlockPos pos, Predicate<BlockState> predicate) {
-		return this.parent.hasBlockState(pos, predicate);
+		return predicate.test(this.getBlockState(pos));
 	}
 }
