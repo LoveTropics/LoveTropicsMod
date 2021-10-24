@@ -6,7 +6,7 @@ import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.lovetropics.minigames.common.core.game.player.PlayerRole;
-import com.lovetropics.minigames.common.core.game.state.team.TeamKey;
+import com.lovetropics.minigames.common.core.game.state.team.GameTeamKey;
 import com.lovetropics.minigames.common.core.game.state.team.TeamState;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -23,7 +23,7 @@ public final class SetMaxHealthBehavior implements IGameBehavior {
 	public static final Codec<SetMaxHealthBehavior> CODEC = RecordCodecBuilder.create(instance -> {
 		return instance.group(
 				Codec.DOUBLE.optionalFieldOf("max_health", 20.0).forGetter(c -> c.maxHealth),
-				MoreCodecs.object2Double(Codec.STRING).fieldOf("max_health_by_team").orElseGet(Object2DoubleOpenHashMap::new).forGetter(c -> c.maxHealthByTeam)
+				MoreCodecs.object2Double(GameTeamKey.CODEC).fieldOf("max_health_by_team").orElseGet(Object2DoubleOpenHashMap::new).forGetter(c -> c.maxHealthByTeam)
 		).apply(instance, SetMaxHealthBehavior::new);
 	});
 
@@ -31,9 +31,9 @@ public final class SetMaxHealthBehavior implements IGameBehavior {
 	private static final String ATTRIBUTE_NAME = "minigame_max_health";
 
 	private final double maxHealth;
-	private final Object2DoubleMap<String> maxHealthByTeam;
+	private final Object2DoubleMap<GameTeamKey> maxHealthByTeam;
 
-	public SetMaxHealthBehavior(double maxHealth, Object2DoubleMap<String> maxHealthByTeam) {
+	public SetMaxHealthBehavior(double maxHealth, Object2DoubleMap<GameTeamKey> maxHealthByTeam) {
 		this.maxHealth = maxHealth;
 		this.maxHealthByTeam = maxHealthByTeam;
 	}
@@ -70,15 +70,15 @@ public final class SetMaxHealthBehavior implements IGameBehavior {
 	}
 
 	private double getMaxHealthForPlayer(IGamePhase game, ServerPlayerEntity player) {
-		TeamKey team = getTeamOrNull(game, player);
+		GameTeamKey team = getTeamOrNull(game, player);
 		if (team != null) {
-			return maxHealthByTeam.getOrDefault(team.key, 20.0);
+			return maxHealthByTeam.getOrDefault(team, 20.0);
 		}
 		return maxHealth;
 	}
 
 	@Nullable
-	private TeamKey getTeamOrNull(IGamePhase game, ServerPlayerEntity player) {
+	private GameTeamKey getTeamOrNull(IGamePhase game, ServerPlayerEntity player) {
 		TeamState teamState = game.getState().getOrNull(TeamState.KEY);
 		if (teamState != null) {
 			return teamState.getTeamForPlayer(player);

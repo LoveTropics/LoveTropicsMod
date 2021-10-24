@@ -6,13 +6,13 @@ import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameLogicEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
-import com.lovetropics.minigames.common.core.game.state.team.TeamKey;
-import com.lovetropics.minigames.common.core.game.state.team.TeamState;
 import com.lovetropics.minigames.common.core.game.state.statistics.StatisticKey;
+import com.lovetropics.minigames.common.core.game.state.team.GameTeam;
+import com.lovetropics.minigames.common.core.game.state.team.GameTeamKey;
+import com.lovetropics.minigames.common.core.game.state.team.TeamState;
 import com.mojang.serialization.Codec;
 import net.minecraft.util.ActionResultType;
 import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.StringTextComponent;
 
 import javax.annotation.Nullable;
 
@@ -30,17 +30,18 @@ public class TeamWinTrigger implements IGameBehavior {
 				return ActionResultType.PASS;
 			}
 
-			TeamKey playerTeam = teamState.getTeamForPlayer(player);
+			GameTeamKey playerTeam = teamState.getTeamForPlayer(player);
 			if (teamState.getPlayersForTeam(playerTeam).isEmpty()) {
-				TeamKey finalTeam = getFinalTeam(teamState);
+				GameTeam finalTeam = getFinalTeam(teamState);
 				if (finalTeam != null) {
 					winTriggered = true;
 
-					ITextComponent winnerName = new StringTextComponent(finalTeam.name).mergeStyle(finalTeam.text);
+					ITextComponent winnerName = finalTeam.config().name().deepCopy()
+							.mergeStyle(finalTeam.config().formatting());
 					game.invoker(GameLogicEvents.WIN_TRIGGERED).onWinTriggered(winnerName);
 					game.invoker(GameLogicEvents.GAME_OVER).onGameOver();
 
-					game.getStatistics().global().set(StatisticKey.WINNING_TEAM, finalTeam);
+					game.getStatistics().global().set(StatisticKey.WINNING_TEAM, finalTeam.key());
 				}
 			}
 
@@ -49,10 +50,10 @@ public class TeamWinTrigger implements IGameBehavior {
 	}
 
 	@Nullable
-	private TeamKey getFinalTeam(TeamState teamState) {
-		TeamKey finalTeam = null;
-		for (TeamKey team : teamState.getTeams()) {
-			if (teamState.getPlayersForTeam(team).isEmpty()) {
+	private GameTeam getFinalTeam(TeamState teamState) {
+		GameTeam finalTeam = null;
+		for (GameTeam team : teamState) {
+			if (teamState.getPlayersForTeam(team.key()).isEmpty()) {
 				continue;
 			}
 
