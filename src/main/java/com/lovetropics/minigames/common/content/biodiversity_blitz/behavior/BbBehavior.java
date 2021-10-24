@@ -69,6 +69,13 @@ public final class BbBehavior implements IGameBehavior {
 		// No mob drops
 		events.listen(GameLivingEntityEvents.MOB_DROP, (e, d, r) -> ActionResultType.FAIL);
 		events.listen(GameLivingEntityEvents.FARMLAND_TRAMPLE, (e, p, s) -> ActionResultType.FAIL);
+		events.listen(GameEntityEvents.MOUNTED, (mounting, beingMounted) -> {
+			if (mounting instanceof ServerPlayerEntity) {
+				return ActionResultType.PASS;
+			} else {
+				return ActionResultType.FAIL;
+			}
+		});
 
 		events.listen(GamePlayerEvents.PLACE_BLOCK, this::onPlaceBlock);
 		events.listen(GamePlayerEvents.BREAK_BLOCK, (player, pos, state, hand) -> ActionResultType.FAIL);
