@@ -45,9 +45,10 @@ public final class SetupTeamsBehavior implements IGameBehavior {
 			.xmap(Object2IntOpenHashMap::new, HashMap::new);
 
 	private static final BehaviorConfig<List<TeamKey>> CFG_TEAMS = BehaviorConfig.fieldOf("teams", TeamKey.CODEC.listOf())
-			.defaultInstanceHint("", new TeamKey("", "", DyeColor.WHITE, TextFormatting.RESET), TeamKey.CODEC)
+			.defaultInstanceHint("", new TeamKey("", "", DyeColor.BLACK, TextFormatting.BLACK), TeamKey.CODEC)
 			.listTypeHint("", ConfigType.COMPOSITE)
-			.enumHint("dye", s -> DyeColor.byTranslationKey(s, null));
+			.enumHint("[].dye", s -> DyeColor.byTranslationKey(s, null))
+			.enumHint("[].text", TextFormatting::getValueByName);
 	private static final BehaviorConfig<Map<String, List<UUID>>> CFG_ASSIGN = BehaviorConfig.fieldOf("assign", TEAM_ASSIGN);
 	private static final BehaviorConfig<Object2IntMap<String>> CFG_MAX_SIZES = BehaviorConfig.fieldOf("max_sizes", TEAM_TO_SIZE);
 

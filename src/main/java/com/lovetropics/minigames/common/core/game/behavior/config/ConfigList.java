@@ -49,7 +49,7 @@ public class ConfigList {
 
 		public <T> Builder with(BehaviorConfig<T> key, T defVal) {
 			ConfigData data = key.getCodec().encodeStart(ConfigDataOps.INSTANCE, defVal).getOrThrow(false, s -> { throw new IllegalArgumentException(s); });
-			this.configs.put(key, key.postProcess(data));
+			this.configs.put(key, data);
 			return this;
 		}
 

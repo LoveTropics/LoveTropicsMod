@@ -12,6 +12,7 @@ public class EnumButton<E extends Enum<E>> extends Button {
 	public EnumButton(Layout layout, E def) {
 		super(layout.content().left(), layout.content().top(), layout.content().width(), layout.content().height(),
 				new StringTextComponent(def.name()), EnumButton::toggle, EMPTY_TOOLTIP);
+		this.value = def;
 	}
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
