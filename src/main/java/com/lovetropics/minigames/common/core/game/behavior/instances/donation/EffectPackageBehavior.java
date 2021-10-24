@@ -8,14 +8,9 @@ import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePackageEvents;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.potion.Effect;
 import net.minecraft.potion.EffectInstance;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.registry.Registry;
 
 import java.util.List;
-import java.util.Optional;
 
 public class EffectPackageBehavior implements IGameBehavior {
 	public static final Codec<EffectPackageBehavior> CODEC = RecordCodecBuilder.create(instance -> {
@@ -36,6 +31,7 @@ public class EffectPackageBehavior implements IGameBehavior {
 			for (EffectInstance effect : effects) {
 				player.addPotionEffect(new EffectInstance(effect));
 			}
+			return true;
 		});
 	}
 }

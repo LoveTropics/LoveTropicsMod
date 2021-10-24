@@ -60,13 +60,14 @@ public class SpawnEntitiesAtRegionsOverTimePackageBehavior implements IGameBehav
 			regionsToSpawnAt.addAll(regions.get(key));
 		}
 
-		events.listen(GamePackageEvents.APPLY_PACKAGE, (player, senderPlayerName) -> applyPackage(game, player, senderPlayerName));
+		events.listen(GamePackageEvents.APPLY_PACKAGE, this::applyPackage);
 		events.listen(GamePhaseEvents.TICK, () -> tick(game));
 	}
 
-	private void applyPackage(final IGamePhase game, ServerPlayerEntity player, String senderPlayerName) {
+	private boolean applyPackage(ServerPlayerEntity player, String senderPlayerName) {
 		ticksRemaining += ticksToSpawnFor;
 		entityCountRemaining += entityCount;
+		return true;
 	}
 
 	private void tick(IGamePhase game) {

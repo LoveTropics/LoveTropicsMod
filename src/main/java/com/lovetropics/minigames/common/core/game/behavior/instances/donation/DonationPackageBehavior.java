@@ -93,25 +93,36 @@ public final class DonationPackageBehavior implements IGameBehavior {
 			return ActionResultType.FAIL;
 		}
 
-		applyPackage(game, receivingPlayer, gamePackage.getSendingPlayerName());
-		data.onReceive(game, receivingPlayer, gamePackage.getSendingPlayerName());
+		if (applyPackage(game, receivingPlayer, gamePackage.getSendingPlayerName())) {
+			data.onReceive(game, receivingPlayer, gamePackage.getSendingPlayerName());
 
-		return ActionResultType.SUCCESS;
+			return ActionResultType.SUCCESS;
+		} else {
+			return ActionResultType.FAIL;
+		}
 	}
 
 	private ActionResultType receiveRandom(IGamePhase game, GamePackage gamePackage) {
 		final List<ServerPlayerEntity> players = Lists.newArrayList(game.getParticipants());
 		final ServerPlayerEntity randomPlayer = players.get(game.getWorld().getRandom().nextInt(players.size()));
 
-		applyPackage(game, randomPlayer, gamePackage.getSendingPlayerName());
-		data.onReceive(game, randomPlayer, gamePackage.getSendingPlayerName());
+		if (applyPackage(game, randomPlayer, gamePackage.getSendingPlayerName())) {
+			data.onReceive(game, randomPlayer, gamePackage.getSendingPlayerName());
 
-		return ActionResultType.SUCCESS;
+			return ActionResultType.SUCCESS;
+		} else {
+			return ActionResultType.FAIL;
+		}
 	}
 
 	private ActionResultType receiveAll(IGamePhase game, GamePackage gamePackage) {
+		boolean applied = false;
 		for (ServerPlayerEntity player : game.getParticipants()) {
-			applyPackage(game, player, gamePackage.getSendingPlayerName());
+			applied |= applyPackage(game, player, gamePackage.getSendingPlayerName());
+		}
+
+		if (!applied) {
+			return ActionResultType.FAIL;
 		}
 
 		data.onReceive(game, null, gamePackage.getSendingPlayerName());
@@ -119,7 +130,7 @@ public final class DonationPackageBehavior implements IGameBehavior {
 		return ActionResultType.SUCCESS;
 	}
 
-	private void applyPackage(IGamePhase game, final ServerPlayerEntity player, @Nullable final String sendingPlayer) {
-		applyEvents.invoker(GamePackageEvents.APPLY_PACKAGE).applyPackage(player, sendingPlayer);
+	private boolean applyPackage(IGamePhase game, final ServerPlayerEntity player, @Nullable final String sendingPlayer) {
+		return applyEvents.invoker(GamePackageEvents.APPLY_PACKAGE).applyPackage(player, sendingPlayer);
 	}
 }

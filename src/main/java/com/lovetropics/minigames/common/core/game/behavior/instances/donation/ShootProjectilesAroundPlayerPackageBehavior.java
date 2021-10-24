@@ -56,7 +56,10 @@ public class ShootProjectilesAroundPlayerPackageBehavior implements IGameBehavio
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
-		events.listen(GamePackageEvents.APPLY_PACKAGE, (player, sendingPlayer) -> playerToAmountToSpawn.put(player, entityCountPerPlayer));
+		events.listen(GamePackageEvents.APPLY_PACKAGE, (player, sendingPlayer) -> {
+			playerToAmountToSpawn.put(player, entityCountPerPlayer);
+			return true;
+		});
 		events.listen(GamePhaseEvents.TICK, () -> tick(game));
 	}
 

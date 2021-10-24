@@ -50,6 +50,10 @@ public class SpawnEntityAtRegionsPackageBehavior implements IGameBehavior {
 		}
 
 		events.listen(GamePackageEvents.APPLY_PACKAGE, (player, sendingPlayer) -> {
+			if (regionsToSpawnAt.isEmpty()) {
+				return false;
+			}
+
 			ServerWorld world = game.getWorld();
 			for (final BlockBox region : regionsToSpawnAt) {
 				for (int i = 0; i < entityCountPerRegion; i++) {
@@ -57,6 +61,8 @@ public class SpawnEntityAtRegionsPackageBehavior implements IGameBehavior {
 					Util.spawnEntity(entityId, world, pos.getX(), pos.getY(), pos.getZ());
 				}
 			}
+
+			return true;
 		});
 	}
 }

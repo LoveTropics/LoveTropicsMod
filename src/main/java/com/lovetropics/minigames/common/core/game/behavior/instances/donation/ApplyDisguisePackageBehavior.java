@@ -35,6 +35,9 @@ public final class ApplyDisguisePackageBehavior implements IGameBehavior {
 			if (this.finishTime == -1) {
 				this.apply(game);
 				this.finishTime = game.ticks() + this.durationTicks;
+				return true;
+			} else {
+				return false;
 			}
 		});
 		events.listen(GamePhaseEvents.TICK, () -> tick(game));
