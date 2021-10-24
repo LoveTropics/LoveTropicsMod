@@ -23,6 +23,8 @@ public final class Plot {
 	public final PlantMap plants = new PlantMap();
 	public final PlotWalls walls;
 
+	public int nextCurrencyIncrement;
+
 	private Plot(
 			BlockBox bounds, BlockBox plantBounds,
 			BlockBox spawn, BlockBox shop,

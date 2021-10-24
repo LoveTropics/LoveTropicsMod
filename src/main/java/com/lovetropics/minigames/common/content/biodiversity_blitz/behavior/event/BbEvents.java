@@ -53,6 +53,12 @@ public final class BbEvents {
 		return ItemStack.EMPTY;
 	});
 
+	public static final GameEventType<PlantsChanged> PLANTS_CHANGED = GameEventType.create(PlantsChanged.class, listeners -> (player, plot) -> {
+		for (PlantsChanged listener : listeners) {
+			listener.onPlantsChanged(player, plot);
+		}
+	});
+
 	private BbEvents() {
 	}
 
@@ -74,5 +80,9 @@ public final class BbEvents {
 
 	public interface CreatePlantItem {
 		ItemStack createPlantItem(PlantItemType itemType);
+	}
+
+	public interface PlantsChanged {
+		void onPlantsChanged(ServerPlayerEntity player, Plot plot);
 	}
 }

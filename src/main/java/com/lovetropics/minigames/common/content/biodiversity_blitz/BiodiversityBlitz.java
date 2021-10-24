@@ -120,8 +120,8 @@ public final class BiodiversityBlitz {
 			.behavior(PianguasPlantBehavior.CODEC)
 			.register();
 
-	public static final GameBehaviorEntry<DropCurrencyBehavior> DROP_CURRENCY = REGISTRATE.object("drop_currency")
-			.behavior(DropCurrencyBehavior.CODEC)
+	public static final GameBehaviorEntry<BbDropCurrencyBehavior> DROP_CURRENCY = REGISTRATE.object("drop_currency")
+			.behavior(BbDropCurrencyBehavior.CODEC)
 			.register();
 
 	public static final GameBehaviorEntry<BbClientStateBehavior> CLIENT_STATE = REGISTRATE.object("biodiversity_blitz_client_state")

@@ -66,8 +66,8 @@ public final class PlantBehavior implements IGameBehavior {
 		this.game = game;
 		this.plots = game.getState().getOrThrow(PlotsState.KEY);
 
-		events.listen(BbEvents.PLACE_PLANT, this::addAndPlantPlant);
-		events.listen(BbEvents.BREAK_PLANT, this::breakAndRemovePlant);
+		events.listen(BbEvents.PLACE_PLANT, this::placePlant);
+		events.listen(BbEvents.BREAK_PLANT, this::breakPlant);
 
 		events.listen(GamePlayerEvents.BREAK_BLOCK, this::onBreakBlock);
 
@@ -79,7 +79,7 @@ public final class PlantBehavior implements IGameBehavior {
 		}
 	}
 
-	private ActionResult<Plant> addAndPlantPlant(ServerPlayerEntity player, Plot plot, BlockPos pos, PlantType plantType) {
+	private ActionResult<Plant> placePlant(ServerPlayerEntity player, Plot plot, BlockPos pos, PlantType plantType) {
 		if (!this.plantType.equals(plantType)) {
 			return ActionResult.resultPass(null);
 		}
@@ -97,6 +97,8 @@ public final class PlantBehavior implements IGameBehavior {
 
 		if (placement.place(game.getWorld())) {
 			plantEvents.invoker(BbPlantEvents.ADD).onAddPlant(player, plot, plant);
+			game.invoker(BbEvents.PLANTS_CHANGED).onPlantsChanged(player, plot);
+
 			return ActionResult.resultSuccess(plant);
 		} else {
 			plot.plants.removePlant(plant);
@@ -104,7 +106,7 @@ public final class PlantBehavior implements IGameBehavior {
 		}
 	}
 
-	private boolean breakAndRemovePlant(ServerPlayerEntity player, Plot plot, Plant plant) {
+	private boolean breakPlant(ServerPlayerEntity player, Plot plot, Plant plant) {
 		if (!this.plantType.equals(plant.type())) {
 			return false;
 		}
@@ -116,6 +118,8 @@ public final class PlantBehavior implements IGameBehavior {
 		}
 
 		plot.plants.removePlant(plant);
+
+		game.invoker(BbEvents.PLANTS_CHANGED).onPlantsChanged(player, plot);
 
 		return true;
 	}
@@ -132,13 +136,13 @@ public final class PlantBehavior implements IGameBehavior {
 
 		Plant plant = plot.plants.getPlantAt(pos, this.plantType);
 		if (plant != null) {
-			return this.onBreakPlant(player, pos, plot, plant);
+			return this.onBreakPlantBlock(player, pos, plot, plant);
 		} else {
 			return ActionResultType.PASS;
 		}
 	}
 
-	private ActionResultType onBreakPlant(ServerPlayerEntity player, BlockPos pos, Plot plot, Plant plant) {
+	private ActionResultType onBreakPlantBlock(ServerPlayerEntity player, BlockPos pos, Plot plot, Plant plant) {
 		plantEvents.invoker(BbPlantEvents.BREAK).breakPlant(player, plot, plant, pos);
 		game.invoker(BbEvents.BREAK_PLANT).breakPlant(player, plot, plant);
 

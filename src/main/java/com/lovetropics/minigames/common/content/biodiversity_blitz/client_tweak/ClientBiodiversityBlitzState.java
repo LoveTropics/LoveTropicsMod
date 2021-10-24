@@ -7,21 +7,20 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 // TODO: this can possibly be a more generic UI display tweak
-// TODO: name more generically for biodiversity blitz status?
 public final class ClientBiodiversityBlitzState implements GameClientTweak {
 	public static final Codec<ClientBiodiversityBlitzState> CODEC = RecordCodecBuilder.create(instance -> {
 		return instance.group(
 				Codec.INT.fieldOf("currency").forGetter(c -> c.currency),
-				Codec.INT.fieldOf("next_currency").forGetter(c -> c.nextCurrency)
+				Codec.INT.fieldOf("next_increment").forGetter(c -> c.nextIncrement)
 		).apply(instance, ClientBiodiversityBlitzState::new);
 	});
 
 	private final int currency;
-	private final int nextCurrency;
+	private final int nextIncrement;
 
-	public ClientBiodiversityBlitzState(int currency, int nextCurrency) {
+	public ClientBiodiversityBlitzState(int currency, int nextIncrement) {
 		this.currency = currency;
-		this.nextCurrency = nextCurrency;
+		this.nextIncrement = nextIncrement;
 	}
 
 	@Override
@@ -33,7 +32,7 @@ public final class ClientBiodiversityBlitzState implements GameClientTweak {
 		return currency;
 	}
 
-	public int getNextCurrency() {
-		return nextCurrency;
+	public int getNextIncrement() {
+		return nextIncrement;
 	}
 }

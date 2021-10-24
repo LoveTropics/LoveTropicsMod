@@ -10,6 +10,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -49,10 +50,18 @@ public final class BbClientOverlayGui {
 		int y = top;
 
 		renderItem(matrixStack, CURRENCY_ITEM.get(), x, y);
-		x += ITEM_SIZE + PADDING;
 
 		String currency = String.valueOf(display.getCurrency());
-		font.drawStringWithShadow(matrixStack, currency, x, y + (ITEM_SIZE - font.FONT_HEIGHT) / 2, 0xFFFFFFFF);
+		font.drawStringWithShadow(
+				matrixStack, currency,
+				x + ITEM_SIZE + PADDING,
+				y + (ITEM_SIZE - font.FONT_HEIGHT) / 2,
+				0xFFFFFFFF
+		);
+		y += ITEM_SIZE + PADDING;
+
+		String nextCurrencyIncrement = TextFormatting.AQUA + "+" + display.getNextIncrement() + TextFormatting.GRAY + " per drop";
+		font.drawStringWithShadow(matrixStack, nextCurrencyIncrement, x, y, 0xFFFFFFFF);
 	}
 
 	private static void renderItem(MatrixStack matrixStack, ItemStack stack, int x, int y) {

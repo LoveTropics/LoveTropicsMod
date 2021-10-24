@@ -23,21 +23,20 @@ import net.minecraft.util.SoundEvents;
 import net.minecraft.util.math.MathHelper;
 
 import java.util.Collections;
-import java.util.Random;
 import java.util.Set;
 
-public final class DropCurrencyBehavior implements IGameBehavior {
-	public static final Codec<DropCurrencyBehavior> CODEC = RecordCodecBuilder.create(instance -> {
+public final class BbDropCurrencyBehavior implements IGameBehavior {
+	public static final Codec<BbDropCurrencyBehavior> CODEC = RecordCodecBuilder.create(instance -> {
 		return instance.group(
 				Codec.LONG.fieldOf("interval").forGetter(c -> c.interval)
-		).apply(instance, DropCurrencyBehavior::new);
+		).apply(instance, BbDropCurrencyBehavior::new);
 	});
 
 	private final long interval;
 
 	private IGamePhase game;
 
-	public DropCurrencyBehavior(long interval) {
+	public BbDropCurrencyBehavior(long interval) {
 		this.interval = interval;
 	}
 
@@ -45,6 +44,9 @@ public final class DropCurrencyBehavior implements IGameBehavior {
 	public void register(IGamePhase game, EventRegistrar events) throws GameException {
 		this.game = game;
 		events.listen(BbEvents.TICK_PLOT, this::tickPlot);
+
+		events.listen(BbEvents.ASSIGN_PLOT, this::onPlotChanged);
+		events.listen(BbEvents.PLANTS_CHANGED, this::onPlotChanged);
 	}
 
 	private void tickPlot(ServerPlayerEntity player, Plot plot) {
@@ -54,16 +56,17 @@ public final class DropCurrencyBehavior implements IGameBehavior {
 			return;
 		}
 
-		int count = this.computeNextCurrency(plot);
-		count = CurrencyManager.add(player, count);
+		int count = CurrencyManager.add(player, plot.nextCurrencyIncrement);
 
 		player.playSound(SoundEvents.ENTITY_ARROW_HIT_PLAYER, SoundCategory.PLAYERS, 0.24F, 1.0F);
 		player.sendStatusMessage(BiodiversityBlitzTexts.currencyAddition(count), true);
 	}
 
-	private int computeNextCurrency(Plot plot) {
-		Random random = this.game.getWorld().getRandom();
+	private void onPlotChanged(ServerPlayerEntity player, Plot plot) {
+		plot.nextCurrencyIncrement = computeNextCurrency(plot);
+	}
 
+	private int computeNextCurrency(Plot plot) {
 		Reference2DoubleOpenHashMap<PlantFamily> values = new Reference2DoubleOpenHashMap<>();
 		Reference2ObjectMap<PlantFamily, Set<PlantType>> counts = new Reference2ObjectOpenHashMap<>();
 
@@ -90,13 +93,7 @@ public final class DropCurrencyBehavior implements IGameBehavior {
 
 		count = preventCapitalism(count);
 
-		// Highly cursed but we keep the boxed version to prevent instant NPE
-		int resultCount = MathHelper.floor(count);
-		if (random.nextDouble() < (count - resultCount)) {
-			resultCount++;
-		}
-
-		return resultCount;
+		return MathHelper.floor(count);
 	}
 
 	private static double preventCapitalism(double count) {
