@@ -3,6 +3,7 @@ package com.lovetropics.minigames.common.core.game.impl;
 import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.common.core.game.IGameLookup;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameEntityEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameLivingEntityEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameWorldEvents;
@@ -22,6 +23,7 @@ import net.minecraft.world.IServerWorld;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.IChunk;
 import net.minecraft.world.server.ServerWorld;
+import net.minecraftforge.event.entity.EntityMountEvent;
 import net.minecraftforge.event.entity.item.ItemTossEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.living.LivingDropsEvent;
@@ -369,6 +371,24 @@ public final class GameEventDispatcher {
 				}
 			} catch (Exception e) {
 				LoveTropics.LOGGER.warn("Failed to dispatch tree grow event", e);
+			}
+		}
+	}
+
+	@SubscribeEvent
+	public void onEntityMount(EntityMountEvent event) {
+		Entity entityMounting = event.getEntityMounting();
+		Entity entityBeingMounted = event.getEntityBeingMounted();
+
+		IGamePhase game = gameLookup.getGamePhaseFor(entityBeingMounted);
+		if (game != null) {
+			try {
+				ActionResultType result = game.invoker(GameEntityEvents.MOUNTED).onEntityMounted(entityMounting, entityBeingMounted);
+				if (result == ActionResultType.FAIL) {
+					event.setCanceled(true);
+				}
+			} catch (Exception e) {
+				LoveTropics.LOGGER.warn("Failed to dispatch entity mount event", e);
 			}
 		}
 	}

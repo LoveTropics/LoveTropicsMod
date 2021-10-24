@@ -10,7 +10,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 
 public abstract class GameAction implements Comparable<GameAction> {
-    public static final Codec<LocalDateTime> TIME_CODEC = MoreCodecs.localDateTime(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS"));
+    public static final Codec<LocalDateTime> TIME_CODEC = MoreCodecs.localDateTime(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSS"));
 
     public final UUID uuid;
     public final LocalDateTime triggerTime;

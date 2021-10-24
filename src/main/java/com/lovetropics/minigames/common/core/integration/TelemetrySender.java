@@ -1,5 +1,6 @@
 package com.lovetropics.minigames.common.core.integration;
 
+import com.google.common.base.Strings;
 import com.google.gson.*;
 import com.lovetropics.minigames.common.config.ConfigLT;
 import com.lovetropics.minigames.common.core.game.state.statistics.GameStatistics;
@@ -23,10 +24,6 @@ public interface TelemetrySender {
 
 	static TelemetrySender open() {
 		ConfigLT.CategoryTelemetry telemetry = ConfigLT.TELEMETRY;
-		if (!telemetry.isEnabled()) {
-			return new Void();
-		}
-
 		return new Http(() -> {
 			StringBuilder url = new StringBuilder();
 			url.append(telemetry.baseUrl.get());
@@ -40,10 +37,6 @@ public interface TelemetrySender {
 
 	static TelemetrySender openPoll() {
 		ConfigLT.CategoryTelemetry telemetry = ConfigLT.TELEMETRY;
-		if (!telemetry.isEnabled()) {
-			return new Void();
-		}
-
 		return new TelemetrySender.Http(() -> "https://polling.lovetropics.com", telemetry.authToken::get);
 	}
 
@@ -68,8 +61,12 @@ public interface TelemetrySender {
 
 		@Override
 		public void post(String endpoint, String body) {
+			if (this.isDisabled()) {
+				return;
+			}
+
 			try {
-				LOGGER.debug("Posting {} to {}/{}", body, this.url.get(), endpoint);
+				LOGGER.debug("Posting {} to {}/{}", body, url, endpoint);
 
 				HttpURLConnection connection = openAuthorizedConnection("POST", endpoint);
 				try (OutputStream output = connection.getOutputStream()) {
@@ -79,18 +76,22 @@ public interface TelemetrySender {
 				int code = connection.getResponseCode();
 				try {
 					String payload = IOUtils.toString(connection.getInputStream(), StandardCharsets.UTF_8);
-					LOGGER.debug("Received response from post to {}/{}: {}", this.url.get(), endpoint, payload);
+					LOGGER.debug("Received response from post to {}/{}: {}", url, endpoint, payload);
 				} catch (IOException e) {
 					String response = IOUtils.toString(connection.getErrorStream(), StandardCharsets.UTF_8);
-					LOGGER.error("Received unexpected response code ({}) from {}/{}: {}", code, this.url.get(), endpoint, response);
+					LOGGER.error("Received unexpected response code ({}) from {}/{}: {}", code, url, endpoint, response);
 				}
 			} catch (Exception e) {
-				LOGGER.error("An exception occurred while trying to POST to {}/{}", this.url.get(), endpoint, e);
+				LOGGER.error("An exception occurred while trying to POST to {}/{}", url, endpoint, e);
 			}
 		}
 
 		@Override
 		public JsonElement get(String endpoint) {
+			if (this.isDisabled()) {
+				return new JsonObject();
+			}
+
 			try {
 				HttpURLConnection connection = openAuthorizedConnection("GET", endpoint);
 				try (InputStream input = connection.getInputStream()) {
@@ -101,6 +102,10 @@ public interface TelemetrySender {
 			}
 
 			return new JsonObject();
+		}
+
+		private boolean isDisabled() {
+			return Strings.isNullOrEmpty(this.url.get()) || Strings.isNullOrEmpty(this.authToken.get());
 		}
 
 		private HttpURLConnection openAuthorizedConnection(String method, String endpoint) throws IOException {
