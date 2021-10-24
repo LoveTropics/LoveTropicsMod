@@ -151,6 +151,10 @@ public final class Box {
 		return x >= this.left && y >= this.top && x < this.right && y < this.bottom;
 	}
 
+	public boolean intersects(Box other) {
+		return this.right() > other.left() && this.bottom() > other.top() && this.left() < other.right() && this.top() < other.bottom();
+	}
+
 	@Override
 	public String toString() {
 		return "Box [" + left + "," + top + " -> " + right + "," + bottom + "]";

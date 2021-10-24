@@ -14,7 +14,8 @@ import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.lovetropics.minigames.common.core.game.player.PlayerRole;
 import com.lovetropics.minigames.common.core.game.player.PlayerSet;
-import com.lovetropics.minigames.common.core.game.state.team.TeamKey;
+import com.lovetropics.minigames.common.core.game.state.team.GameTeam;
+import com.lovetropics.minigames.common.core.game.state.team.GameTeamKey;
 import com.lovetropics.minigames.common.core.game.state.team.TeamState;
 import com.lovetropics.minigames.common.core.game.util.PlayerSnapshot;
 import com.mojang.serialization.Codec;
@@ -53,8 +54,8 @@ public final class HideAndSeekBehavior implements IGameBehavior {
 
 	private IGamePhase game;
 	private TeamState teams;
-	private TeamKey hiders;
-	private TeamKey seekers;
+	private GameTeam hiders;
+	private GameTeam seekers;
 
 	private BlockBox spawnRegion;
 
@@ -94,8 +95,8 @@ public final class HideAndSeekBehavior implements IGameBehavior {
 	private void start() {
 		int hideTicks = initialHideSeconds * 20;
 
-		PlayerSet seekers = teams.getPlayersForTeam(this.seekers);
-		PlayerSet hiders = teams.getPlayersForTeam(this.hiders);
+		PlayerSet seekers = teams.getPlayersForTeam(this.seekers.key());
+		PlayerSet hiders = teams.getPlayersForTeam(this.hiders.key());
 
 		seekers.addPotionEffect(new EffectInstance(Effects.SLOWNESS, hideTicks, 255, true, false));
 		seekers.addPotionEffect(new EffectInstance(Effects.BLINDNESS, hideTicks, 255, true, false));
@@ -104,7 +105,7 @@ public final class HideAndSeekBehavior implements IGameBehavior {
 		hiders.sendMessage(new StringTextComponent("You have " + initialHideSeconds + " seconds to hide from the seekers!"));
 
 		for (ServerPlayerEntity player : game.getParticipants()) {
-			if (teams.isOnTeam(player, this.hiders)) {
+			if (teams.isOnTeam(player, this.hiders.key())) {
 				setHider(player);
 			} else {
 				setSeeker(player);
@@ -126,8 +127,8 @@ public final class HideAndSeekBehavior implements IGameBehavior {
 	}
 
 	private ActionResultType onPlayerAttack(ServerPlayerEntity player, Entity target) {
-		if (teams.isOnTeam(player, seekers) && player.getHeldItemMainhand().getItem() == HideAndSeek.NET.get()) {
-			if (target instanceof ServerPlayerEntity && teams.isOnTeam((ServerPlayerEntity) target, hiders)) {
+		if (teams.isOnTeam(player, seekers.key()) && player.getHeldItemMainhand().getItem() == HideAndSeek.NET.get()) {
+			if (target instanceof ServerPlayerEntity && teams.isOnTeam((ServerPlayerEntity) target, hiders.key())) {
 				return ActionResultType.PASS;
 			}
 		}
@@ -135,17 +136,17 @@ public final class HideAndSeekBehavior implements IGameBehavior {
 	}
 
 	private ActionResultType onPlayerDeath(ServerPlayerEntity player, DamageSource damageSource) {
-		TeamKey team = teams.getTeamForPlayer(player);
-		if (team == hiders) {
+		GameTeamKey team = teams.getTeamForPlayer(player);
+		if (team == hiders.key()) {
 			this.onHiderCaptured(player);
-		} else if (team == seekers) {
+		} else if (team == seekers.key()) {
 			this.onSeekerDied(player);
 		}
 		return ActionResultType.FAIL;
 	}
 
 	private void removeParticipant(ServerPlayerEntity player) {
-		if (teams.isOnTeam(player, hiders)) {
+		if (teams.isOnTeam(player, hiders.key())) {
 			this.removeHider(player);
 		}
 	}
@@ -172,7 +173,7 @@ public final class HideAndSeekBehavior implements IGameBehavior {
 	}
 
 	private void onHiderCaptured(ServerPlayerEntity player) {
-		teams.addPlayerTo(player, seekers);
+		teams.addPlayerTo(player, seekers.key());
 
 		this.spawnPlayer(player);
 		this.setSeeker(player);

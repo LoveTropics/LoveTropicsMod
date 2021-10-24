@@ -97,9 +97,9 @@ public final class LoveTropicsNetwork {
 				.consumer(ServerManageLobbyMessage::handle)
 				.add();
 
-		CHANNEL.messageBuilder(TimeInterpolationMessage.class, 14, NetworkDirection.PLAY_TO_CLIENT)
-				.encoder(TimeInterpolationMessage::encode).decoder(TimeInterpolationMessage::decode)
-				.consumer(TimeInterpolationMessage::handle)
+		CHANNEL.messageBuilder(SetGameClientTweakMessage.class, 14, NetworkDirection.PLAY_TO_CLIENT)
+				.encoder(SetGameClientTweakMessage::encode).decoder(SetGameClientTweakMessage::decode)
+				.consumer(SetGameClientTweakMessage::handle)
 				.add();
 	}
 }

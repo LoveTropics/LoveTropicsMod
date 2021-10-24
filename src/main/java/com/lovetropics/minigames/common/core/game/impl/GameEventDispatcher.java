@@ -9,17 +9,25 @@ import com.lovetropics.minigames.common.core.game.behavior.event.GameWorldEvents
 import com.lovetropics.minigames.common.util.Scheduler;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.item.ItemEntity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.play.server.SSetSlotPacket;
 import net.minecraft.util.ActionResultType;
+import net.minecraft.util.DamageSource;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IServerWorld;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.IChunk;
 import net.minecraft.world.server.ServerWorld;
-import net.minecraftforge.event.entity.living.*;
+import net.minecraftforge.event.entity.item.ItemTossEvent;
+import net.minecraftforge.event.entity.living.LivingDeathEvent;
+import net.minecraftforge.event.entity.living.LivingDropsEvent;
+import net.minecraftforge.event.entity.living.LivingEvent;
+import net.minecraftforge.event.entity.living.LivingHurtEvent;
+import net.minecraftforge.event.entity.player.AttackEntityEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.world.BlockEvent;
@@ -27,6 +35,8 @@ import net.minecraftforge.event.world.ChunkEvent;
 import net.minecraftforge.event.world.ExplosionEvent;
 import net.minecraftforge.event.world.SaplingGrowTreeEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+
+import javax.annotation.Nullable;
 
 public final class GameEventDispatcher {
 	private final IGameLookup gameLookup;
@@ -68,24 +78,50 @@ public final class GameEventDispatcher {
 	}
 
 	@SubscribeEvent
-	public void onDamageEntity(LivingHurtEvent event) {
+	public void onAttackEntity(AttackEntityEvent event) {
+		Entity target = event.getTarget();
+
+		PlayerEntity player = event.getPlayer();
+		IGamePhase game = gameLookup.getGamePhaseFor(player);
+		if (game != null) {
+			if (this.dispatchAttackEvent(game, (ServerPlayerEntity) player, target)) {
+				event.setCanceled(true);
+			}
+		}
+	}
+
+	@SubscribeEvent
+	public void onDamageEntityIndirect(LivingHurtEvent event) {
 		Entity target = event.getEntity();
 
 		IGamePhase game = gameLookup.getGamePhaseFor(target);
 		if (game != null) {
-			Entity sourceEntity = event.getSource().getTrueSource();
-			if (sourceEntity instanceof ServerPlayerEntity) {
-				ServerPlayerEntity sourcePlayer = (ServerPlayerEntity) sourceEntity;
-				try {
-					ActionResultType result = game.invoker(GamePlayerEvents.ATTACK).onAttack(sourcePlayer, target);
-					if (result == ActionResultType.FAIL) {
-						event.setCanceled(true);
-					}
-				} catch (Exception e) {
-					LoveTropics.LOGGER.warn("Failed to dispatch player attack event", e);
+			Entity indirectSource = getIndirectSource(event.getSource());
+			if (indirectSource instanceof ServerPlayerEntity) {
+				ServerPlayerEntity sourcePlayer = (ServerPlayerEntity) indirectSource;
+				if (this.dispatchAttackEvent(game, sourcePlayer, target)) {
+					event.setCanceled(true);
 				}
 			}
 		}
+	}
+
+	@Nullable
+	private Entity getIndirectSource(DamageSource source) {
+		if (source.getTrueSource() != source.getImmediateSource()) {
+			return source.getTrueSource();
+		}
+		return null;
+	}
+
+	private boolean dispatchAttackEvent(IGamePhase game, ServerPlayerEntity player, Entity target) {
+		try {
+			ActionResultType result = game.invoker(GamePlayerEvents.ATTACK).onAttack(player, target);
+			return result == ActionResultType.FAIL;
+		} catch (Exception e) {
+			LoveTropics.LOGGER.warn("Failed to dispatch player attack event", e);
+		}
+		return false;
 	}
 
 	@SubscribeEvent
@@ -177,6 +213,23 @@ public final class GameEventDispatcher {
 				}
 			} catch (Exception e) {
 				LoveTropics.LOGGER.warn("Failed to dispatch farmland trample event", e);
+			}
+		}
+	}
+
+	@SubscribeEvent
+	public void onPlayerThrowItem(ItemTossEvent event) {
+		PlayerEntity player = event.getPlayer();
+		IGamePhase game = gameLookup.getGamePhaseFor(player);
+		if (game != null) {
+			try {
+				ItemEntity item = event.getEntityItem();
+				ActionResultType result = game.invoker(GamePlayerEvents.THROW_ITEM).onThrowItem((ServerPlayerEntity) player, item);
+				if (result == ActionResultType.FAIL) {
+					event.setCanceled(true);
+				}
+			} catch (Exception e) {
+				LoveTropics.LOGGER.warn("Failed to dispatch player throw item event", e);
 			}
 		}
 	}

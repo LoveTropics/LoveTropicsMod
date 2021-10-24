@@ -11,28 +11,30 @@ import com.lovetropics.minigames.common.core.game.behavior.config.ConfigData;
 import com.mojang.blaze3d.matrix.MatrixStack;
 
 import net.minecraft.client.gui.IGuiEventListener;
+import net.minecraft.client.gui.INestedGuiEventHandler;
+import net.minecraft.client.gui.IRenderable;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.util.text.TranslationTextComponent;
 
 public class ConfigDataUI extends LayoutGui implements IConfigWidget {
 
-	private final Screen screen;
+	private final GameConfig parent;
 	private final String name;
 	private final ConfigData configs;
 	private final TextLabel label;
 	
-	private final List<IConfigWidget> children = new ArrayList<>();
+	private final List<INestedGuiEventHandler> children = new ArrayList<>();
 
-	public ConfigDataUI(Screen screen, LayoutTree ltree, String name, ConfigData configs) {
+	public ConfigDataUI(GameConfig parent, LayoutTree ltree, String name, ConfigData configs) {
 		super();
-		this.screen = screen;
+		this.parent = parent;
 		this.name = name;
 		this.configs = configs;
 		
-		float textWidth = 0.35F;
-		IConfigWidget widget = GameConfig.createWidget(screen, ltree.child(-textWidth, Axis.X), configs);
+
+		this.label = new TextLabel(ltree.child(1, Axis.X), 11, new TranslationTextComponent(name), Align.Cross.START, Align.Cross.START);
+		IConfigWidget widget = parent.createWidget(ltree.child(1, Axis.X), configs);
 		children.add(widget);
-		this.label = new TextLabel(ltree.child(textWidth, Axis.X), widget.getHeight(), new TranslationTextComponent(name), Align.Cross.START, Align.Cross.CENTER);
 		this.mainLayout = ltree.pop();
 	}
 
@@ -50,8 +52,10 @@ public class ConfigDataUI extends LayoutGui implements IConfigWidget {
 	public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
 		super.render(matrixStack, mouseX, mouseY, partialTicks);
 		this.label.render(matrixStack, mouseX, mouseY, partialTicks);
-		for (IConfigWidget child : children) {
-			child.render(matrixStack, mouseX, mouseY, partialTicks);
+		for (INestedGuiEventHandler child : children) {
+			if (child instanceof IRenderable) {
+				((IRenderable)child).render(matrixStack, mouseX, mouseY, partialTicks);
+			}
 		}
 	}
 }

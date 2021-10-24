@@ -31,6 +31,7 @@ public final class SetBlockAtPlayerPackageBehavior implements IGameBehavior {
 			BlockPos pos = player.getPosition();
 			BlockState state = block.getBlockState(player.world.rand, pos);
 			player.world.setBlockState(pos, state);
+			return true;
 		});
 	}
 }

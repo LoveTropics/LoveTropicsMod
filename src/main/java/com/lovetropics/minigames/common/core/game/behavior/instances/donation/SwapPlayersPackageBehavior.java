@@ -22,7 +22,14 @@ public class SwapPlayersPackageBehavior implements IGameBehavior {
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
-		events.listen(GamePackageEvents.APPLY_PACKAGE, (player, sendingPlayer) -> swapCountdown = 20);
+		events.listen(GamePackageEvents.APPLY_PACKAGE, (player, sendingPlayer) -> {
+			if (swapCountdown <= 0) {
+				swapCountdown = 20;
+				return true;
+			} else {
+				return false;
+			}
+		});
 		events.listen(GamePhaseEvents.TICK, () -> tick(game));
 	}
 

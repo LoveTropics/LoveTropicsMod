@@ -3,6 +3,7 @@ package com.lovetropics.minigames;
 import com.google.common.base.Preconditions;
 import com.lovetropics.minigames.common.config.ConfigLT;
 import com.lovetropics.minigames.common.content.MinigameTexts;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.BiodiversityBlitzTexts;
 import com.lovetropics.minigames.common.content.block.LoveTropicsBlocks;
 import com.lovetropics.minigames.common.content.block.TrashType;
 import com.lovetropics.minigames.common.content.build_competition.BuildCompetition;
@@ -186,6 +187,7 @@ public class LoveTropics {
 
             GameTexts.collectTranslations(prov::add);
             MinigameTexts.collectTranslations(prov::add);
+            BiodiversityBlitzTexts.collectTranslations(prov::add);
         });
     }
 

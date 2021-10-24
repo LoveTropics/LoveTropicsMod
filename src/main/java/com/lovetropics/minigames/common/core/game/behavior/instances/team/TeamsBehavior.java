@@ -2,14 +2,15 @@ package com.lovetropics.minigames.common.core.game.behavior.instances.team;
 
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
-import com.lovetropics.minigames.common.core.game.behavior.config.ConfigList;
 import com.lovetropics.minigames.common.core.game.behavior.config.BehaviorConfig;
+import com.lovetropics.minigames.common.core.game.behavior.config.ConfigList;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.lovetropics.minigames.common.core.game.player.PlayerRole;
 import com.lovetropics.minigames.common.core.game.state.statistics.StatisticKey;
-import com.lovetropics.minigames.common.core.game.state.team.TeamKey;
+import com.lovetropics.minigames.common.core.game.state.team.GameTeam;
+import com.lovetropics.minigames.common.core.game.state.team.GameTeamKey;
 import com.lovetropics.minigames.common.core.game.state.team.TeamState;
 import com.lovetropics.minigames.common.core.game.util.TeamAllocator;
 import com.mojang.serialization.Codec;
@@ -22,6 +23,7 @@ import net.minecraft.scoreboard.ServerScoreboard;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ActionResultType;
 import net.minecraft.util.DamageSource;
+import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -39,7 +41,7 @@ public final class TeamsBehavior implements IGameBehavior {
 		).apply(instance, TeamsBehavior::new);
 	});
 
-	private final Map<TeamKey, ScorePlayerTeam> scoreboardTeams = new Object2ObjectOpenHashMap<>();
+	private final Map<GameTeamKey, ScorePlayerTeam> scoreboardTeams = new Object2ObjectOpenHashMap<>();
 
 	private final boolean friendlyFire;
 
@@ -72,16 +74,16 @@ public final class TeamsBehavior implements IGameBehavior {
 		MinecraftServer server = game.getServer();
 		ServerScoreboard scoreboard = server.getScoreboard();
 
-		for (TeamKey teamKey : teams) {
+		for (GameTeam team : teams) {
 			// generate a unique team id since we want to have concurrent games!
-			String teamId = teamKey.key + "_" + RandomStringUtils.randomAlphabetic(3);
+			String teamId = team.key().id() + "_" + RandomStringUtils.randomAlphabetic(3);
 
 			ScorePlayerTeam scoreboardTeam = scoreboard.createTeam(teamId);
-			scoreboardTeam.setDisplayName(new StringTextComponent(teamKey.name));
-			scoreboardTeam.setColor(teamKey.text);
+			scoreboardTeam.setDisplayName(team.config().name());
+			scoreboardTeam.setColor(team.config().formatting());
 			scoreboardTeam.setAllowFriendlyFire(friendlyFire);
 
-			scoreboardTeams.put(teamKey, scoreboardTeam);
+			scoreboardTeams.put(team.key(), scoreboardTeam);
 		}
 
 		game.getStatistics().global().set(StatisticKey.TEAMS, true);
@@ -89,7 +91,7 @@ public final class TeamsBehavior implements IGameBehavior {
 
 	private void reassignPlayerRoles(IGamePhase game, TeamAllocator<PlayerRole, ServerPlayerEntity> allocator) {
 		// force all assigned players to be a participant
-		for (UUID uuid : teams.getAllocations().getAssignedPlayers()) {
+		for (UUID uuid : teams.getAssignedPlayers()) {
 			ServerPlayerEntity player = game.getAllPlayers().getPlayerBy(uuid);
 			if (player != null) {
 				allocator.addPlayer(player, PlayerRole.PARTICIPANT);
@@ -116,18 +118,25 @@ public final class TeamsBehavior implements IGameBehavior {
 		}
 	}
 
-	private void addPlayerToTeam(IGamePhase game, ServerPlayerEntity player, TeamKey team) {
-		teams.addPlayerTo(player, team);
+	private void addPlayerToTeam(IGamePhase game, ServerPlayerEntity player, GameTeamKey teamKey) {
+		GameTeam team = teams.getTeamByKey(teamKey);
+		if (team == null) {
+			return;
+		}
 
-		game.getStatistics().forPlayer(player).set(StatisticKey.TEAM, team);
+		teams.addPlayerTo(player, teamKey);
+
+		game.getStatistics().forPlayer(player).set(StatisticKey.TEAM, teamKey);
 
 		ServerScoreboard scoreboard = player.server.getScoreboard();
-		ScorePlayerTeam scoreboardTeam = scoreboardTeams.get(team);
+		ScorePlayerTeam scoreboardTeam = scoreboardTeams.get(teamKey);
 		scoreboard.addPlayerToTeam(player.getScoreboardName(), scoreboardTeam);
 
+		ITextComponent teamName = team.config().name().deepCopy().appendString(" Team!")
+				.mergeStyle(TextFormatting.BOLD, team.config().formatting());
+
 		player.sendStatusMessage(
-				new StringTextComponent("You are on ").mergeStyle(TextFormatting.GRAY)
-						.appendSibling(new StringTextComponent(team.name + " Team!").mergeStyle(TextFormatting.BOLD, team.text)),
+				new StringTextComponent("You are on ").mergeStyle(TextFormatting.GRAY).appendSibling(teamName),
 				false
 		);
 	}

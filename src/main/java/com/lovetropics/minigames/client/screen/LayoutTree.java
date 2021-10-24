@@ -64,8 +64,8 @@ public class LayoutTree {
 		LayoutNode addChild(Layout layout, Axis... definite) {
 			if (contracted) throw new IllegalArgumentException("Cannot add child to contracted node");
 			LayoutNode child = new LayoutNode(this, layout, definite);
-			this.children.descendingIterator().forEachRemaining(n -> {
-				if (n.bounds.margin().contains(child.bounds.margin().left(), child.bounds.margin().top())) {
+			this.children.forEach(n -> {
+				if (n.bounds.margin().intersects(child.bounds.margin())) {
 					child.bounds = child.bounds.moveY(n.bounds.margin().bottom());
 				}
 			});
@@ -161,6 +161,9 @@ public class LayoutTree {
 	}
 
 	public Layout pop() {
+		if (head.parent == null) {
+			throw new IllegalStateException("LayoutTree Underflow");
+		}
 		contract();
 		Layout ret = head.bounds;
 		head = head.parent;
@@ -173,15 +176,15 @@ public class LayoutTree {
 			.forEach(LayoutNode::fitToChildren);
 	}
 
-	public void definiteChild(int width, int height, Box margin, Box padding) {
+	public LayoutTree definiteChild(int width, int height, Box margin, Box padding) {
 		Box area = head().content();
 		Box newMargin = area.withDimensions(width, height);
 		Box newPadding = newMargin.contract(margin);
 		Box newContent = newPadding.contract(padding);
-		child(new Layout(newContent, newPadding, newMargin), Axis.values());
+		return child(new Layout(newContent, newPadding, newMargin), Axis.values());
 	}
 
-	public void definiteChild(int width, int height) {
-		definiteChild(width, height, new Box(), new Box());
+	public LayoutTree definiteChild(int width, int height) {
+		return definiteChild(width, height, new Box(), new Box());
 	}
 }

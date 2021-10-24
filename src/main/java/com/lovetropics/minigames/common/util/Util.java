@@ -14,6 +14,7 @@ import net.minecraft.entity.effect.LightningBoltEntity;
 import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvents;
@@ -24,6 +25,7 @@ import net.minecraft.world.World;
 import net.minecraft.world.gen.Heightmap;
 import org.apache.commons.lang3.StringUtils;
 
+import javax.annotation.Nullable;
 import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.List;
@@ -345,5 +347,46 @@ public class Util {
         }
 
         return randValues;
+    }
+
+    @Nullable
+    public static BlockPos findGround(World world, BlockPos origin, int maximumDistance) {
+        if (!isSolidGround(world, origin) && isSolidGround(world, origin.down())) {
+            return origin;
+        }
+
+        // if this position is not free, scan upwards to find the ground
+        if (isSolidGround(world, origin)) {
+            BlockPos.Mutable mutablePos = origin.toMutable();
+
+            for (int i = 0; i < maximumDistance; i++) {
+                mutablePos.move(Direction.UP);
+                if (World.isOutsideBuildHeight(mutablePos) || !isSolidGround(world, mutablePos)) {
+                    return mutablePos.toImmutable();
+                }
+            }
+        }
+
+        // if the position below us is not solid, scan downwards to find the ground
+        if (!isSolidGround(world, origin.down())) {
+            BlockPos.Mutable mutablePos = origin.toMutable();
+
+            for (int i = 0; i < maximumDistance; i++) {
+                mutablePos.move(Direction.DOWN);
+                if (World.isOutsideBuildHeight(mutablePos)) {
+                    return null;
+                }
+
+                if (isSolidGround(world, mutablePos)) {
+                    return mutablePos.move(Direction.UP).toImmutable();
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private static boolean isSolidGround(World world, BlockPos pos) {
+        return world.getBlockState(pos).getMaterial().isSolid();
     }
 }

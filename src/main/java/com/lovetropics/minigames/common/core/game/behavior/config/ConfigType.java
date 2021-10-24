@@ -4,26 +4,54 @@ import java.util.Collection;
 
 public enum ConfigType {
 	
-	NONE(Void.class),
-	STRING(String.class),
-	NUMBER(Number.class),
-	BOOLEAN(Boolean.class),
-	ENUM(Enum.class),
-	LIST(Collection.class),
-	COMPOSITE(ConfigData.class),
+	NONE(Void.class, true),
+	STRING(String.class, false),
+	NUMBER(Number.class, false),
+	BOOLEAN(Boolean.class, false),
+	ENUM(Enum.class, false) {
+		
+		@Override
+		public Object defaultInstance() {
+			return this.requiredType.getEnumConstants()[0];
+		}
+	},
+	LIST(Collection.class, true) {
+		
+		@Override
+		public Object defaultInstance() {
+			return new ConfigData.ListConfigData(NONE);
+		}
+	},
+	COMPOSITE(ConfigData.class, true) {
+		
+		@Override
+		public Object defaultInstance() {
+			return new ConfigData.CompositeConfigData();
+		}
+	},
 	;
 	
-	private final Class<?> requiredType;
-	
-	private ConfigType() {
-		this(Object.class);
-	}
+	protected final Class<?> requiredType;
+	protected final boolean isComplex;
 
-	private ConfigType(Class<?> requiredType) {
+	private ConfigType(Class<?> requiredType, boolean isComplex) {
 		this.requiredType = requiredType;
+		this.isComplex = isComplex;
 	}
 	
 	public boolean isValidValue(Object val) {
 		return requiredType.isInstance(val);
+	}
+
+	public boolean isComplex() {
+		return isComplex;
+	}
+
+	public Object defaultInstance() {
+		try {
+			return this.requiredType.newInstance();
+		} catch (InstantiationException | IllegalAccessException e) {
+			throw new IllegalArgumentException("Cannot create a default instance for ConfigType " + this.name(), e);
+		}
 	}
 }

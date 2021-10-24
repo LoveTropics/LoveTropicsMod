@@ -261,7 +261,13 @@ public class ConfigDataOps implements DynamicOps<ConfigData> {
     public DataResult<Stream<ConfigData>> getStream(final ConfigData input) {
         if (input.type() == ConfigType.LIST) {
         	ListConfigData list = (ListConfigData) input;
-            return DataResult.success(list.value().stream().map(v -> new SimpleConfigData(list.componentType(), v)));
+            return DataResult.success(list.value().stream().map(v -> {
+            	if (list.componentType().isComplex()) {
+            		return (ConfigData) v;
+            	} else {
+            		return new SimpleConfigData(list.componentType(), v);
+            	}	
+            }));
         }
         return DataResult.error("Not a list config: " + input);
     }
@@ -272,7 +278,11 @@ public class ConfigDataOps implements DynamicOps<ConfigData> {
         	ListConfigData list = (ListConfigData) input;
             return DataResult.success(c -> {
                 for (final Object element : list.value()) {
-                    c.accept(new SimpleConfigData(list.componentType(), element));
+                	if (list.componentType().isComplex()) {
+                		c.accept((ConfigData) element);
+                	} else {
+                		c.accept(new SimpleConfigData(list.componentType(), element));
+                	}
                 }
             });
         }
@@ -289,7 +299,7 @@ public class ConfigDataOps implements DynamicOps<ConfigData> {
     		return ListConfigData.EMPTY;
     	}
         final ListConfigData result = new ListConfigData(list.get(0).type());
-        list.stream().map(ConfigData::value).forEach(result::add);
+        list.stream().map(d -> d.type().isComplex() ? d : d.value()).forEach(result::add);
         return result;
     }
 

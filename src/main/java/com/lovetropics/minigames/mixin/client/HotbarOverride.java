@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.mixin.client;
 
-import com.lovetropics.minigames.client.lobby.state.ClientLobbyManager;
+import com.lovetropics.minigames.client.tweaks.ClientGameTweaksState;
 import com.lovetropics.minigames.common.core.game.client_tweak.GameClientTweakTypes;
 import com.lovetropics.minigames.common.core.game.client_tweak.instance.HotbarTextureTweak;
 import net.minecraft.client.gui.IngameGui;
@@ -19,7 +19,7 @@ public class HotbarOverride {
 					target = "Lnet/minecraft/client/renderer/texture/TextureManager;bindTexture(Lnet/minecraft/util/ResourceLocation;)V"),
 			index = 0)
 	public ResourceLocation getHotbarTexture(ResourceLocation loc) {
-		HotbarTextureTweak hotbarTexture = ClientLobbyManager.getTweakOrNull(GameClientTweakTypes.HOTBAR_TEXTURE);
+		HotbarTextureTweak hotbarTexture = ClientGameTweaksState.getOrNull(GameClientTweakTypes.HOTBAR_TEXTURE);
 		return hotbarTexture != null ? hotbarTexture.getTexture() : loc;
 	}
 }

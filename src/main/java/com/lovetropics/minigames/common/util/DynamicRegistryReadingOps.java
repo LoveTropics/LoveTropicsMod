@@ -5,6 +5,7 @@ import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.Decoder;
 import com.mojang.serialization.DynamicOps;
+import net.minecraft.resources.IResourceManager;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.RegistryKey;
 import net.minecraft.util.ResourceLocation;
@@ -36,6 +37,11 @@ public final class DynamicRegistryReadingOps {
 	public static <T> DynamicOps<T> create(MinecraftServer server, DynamicOps<T> ops) {
 		DynamicRegistries.Impl dynamicRegistries = (DynamicRegistries.Impl) server.getDynamicRegistries();
 		return Factory.create(ops, VOID_RESOURCE_ACCESS, dynamicRegistries);
+	}
+
+	public static <T> DynamicOps<T> create(IResourceManager resources, DynamicOps<T> ops) {
+		DynamicRegistries.Impl dynamicRegistries = new DynamicRegistries.Impl();
+		return Factory.create(ops, WorldSettingsImport.IResourceAccess.create(resources), dynamicRegistries);
 	}
 
 	/**

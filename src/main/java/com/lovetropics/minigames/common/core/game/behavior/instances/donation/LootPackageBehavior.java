@@ -33,7 +33,7 @@ public class LootPackageBehavior implements IGameBehavior {
 		events.listen(GamePackageEvents.APPLY_PACKAGE, (player, sendingPlayer) -> addLootTableToInventory(player));
 	}
 
-	private void addLootTableToInventory(final ServerPlayerEntity player) {
+	private boolean addLootTableToInventory(final ServerPlayerEntity player) {
 		LootContext context = (new LootContext.Builder(player.getServerWorld()))
 				.withParameter(LootParameters.THIS_ENTITY, player)
 				.withParameter(LootParameters.ORIGIN, player.getPositionVec())
@@ -50,6 +50,9 @@ public class LootPackageBehavior implements IGameBehavior {
 
 		if (changed) {
 			player.container.detectAndSendChanges();
+			return true;
+		} else {
+			return false;
 		}
 	}
 }

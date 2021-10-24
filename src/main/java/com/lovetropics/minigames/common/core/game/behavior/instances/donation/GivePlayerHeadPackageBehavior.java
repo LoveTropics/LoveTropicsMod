@@ -29,7 +29,7 @@ public final class GivePlayerHeadPackageBehavior implements IGameBehavior {
 	public void register(IGamePhase game, EventRegistrar events) {
 		events.listen(GamePackageEvents.APPLY_PACKAGE, (player, sendingPlayer) -> {
 			if (sendingPlayer == null) {
-				return;
+				sendingPlayer = "An Unknown Donor";
 			}
 
 			ItemStack head = createHeadForSender(sendingPlayer);
@@ -39,6 +39,8 @@ public final class GivePlayerHeadPackageBehavior implements IGameBehavior {
 			} else {
 				Util.addItemStackToInventory(player, head);
 			}
+
+			return true;
 		});
 	}
 

@@ -25,9 +25,11 @@ public final class GamePackageEvents {
 	});
 
 	public static final GameEventType<ApplyPackage> APPLY_PACKAGE = GameEventType.create(ApplyPackage.class, listeners -> (player, sendingPlayer) -> {
+		boolean applied = false;
 		for (ApplyPackage listener : listeners) {
-			listener.applyPackage(player, sendingPlayer);
+			applied |= listener.applyPackage(player, sendingPlayer);
 		}
+		return applied;
 	});
 
 	private GamePackageEvents() {
@@ -42,6 +44,6 @@ public final class GamePackageEvents {
 	}
 
 	public interface ApplyPackage {
-		void applyPackage(ServerPlayerEntity player, @Nullable String sendingPlayer);
+		boolean applyPackage(ServerPlayerEntity player, @Nullable String sendingPlayer);
 	}
 }
