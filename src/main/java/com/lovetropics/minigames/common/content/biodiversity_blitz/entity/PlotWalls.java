@@ -1,5 +1,6 @@
 package com.lovetropics.minigames.common.content.biodiversity_blitz.entity;
 
+import net.minecraft.entity.Entity;
 import net.minecraft.util.Direction;
 import net.minecraft.util.ReuseableStream;
 import net.minecraft.util.math.AxisAlignedBB;
@@ -26,10 +27,7 @@ public final class PlotWalls {
 		this.faceShapes = new VoxelShape[directions.length];
 
 		for (Direction direction : directions) {
-			Direction.Axis axis = direction.getAxis();
-			double size = bounds.getMax(axis) - bounds.getMin(axis);
-			Vector3d offset = Vector3d.copy(direction.getDirectionVec()).scale(size);
-			AxisAlignedBB plotFace = bounds.offset(offset).grow(0.1);
+			AxisAlignedBB plotFace = createWallBounds(bounds, direction);
 
 			int index = direction.getIndex();
 			this.faces[index] = plotFace;
@@ -37,25 +35,39 @@ public final class PlotWalls {
 		}
 	}
 
+	private AxisAlignedBB createWallBounds(AxisAlignedBB bounds, Direction direction) {
+		Direction.Axis axis = direction.getAxis();
+		double size = bounds.getMax(axis) - bounds.getMin(axis);
+
+		// offset to the edge in this direction
+		Vector3d offset = Vector3d.copy(direction.getDirectionVec()).scale(size);
+
+		// grow on every other axis to not create any holes
+		Vector3d grow = new Vector3d(
+				axis != Direction.Axis.X ? bounds.getXSize() : 0.0,
+				axis != Direction.Axis.Y ? bounds.getYSize() : 0.0,
+				axis != Direction.Axis.Z ? bounds.getZSize() : 0.0
+		);
+
+		return bounds
+				.offset(offset)
+				.grow(grow.x, grow.y, grow.z);
+	}
+
 	public Vector3d collide(AxisAlignedBB box, Vector3d offset) {
 		if (offset.lengthSquared() == 0.0) {
 			return offset;
 		}
 
-		ReuseableStream<VoxelShape> collisions = new ReuseableStream<>(this.collisions(box.expand(offset)));
+		AxisAlignedBB collidingBox = box.expand(offset);
 
-		double dx = offset.x;
-		double dy = offset.y;
-		double dz = offset.z;
-		if (dx != 0.0) dx = VoxelShapes.getAllowedOffset(Direction.Axis.X, box, collisions.createStream(), dx);
-		if (dy != 0.0) dy = VoxelShapes.getAllowedOffset(Direction.Axis.Y, box, collisions.createStream(), dy);
-		if (dz != 0.0) dz = VoxelShapes.getAllowedOffset(Direction.Axis.Z, box, collisions.createStream(), dz);
-
-		if (dx != offset.x || dy != offset.y || dz != offset.z) {
-			return new Vector3d(dx, dy, dz);
-		} else {
+		// we're definitely not going to collide
+		if (!collidingBox.intersects(this.bounds)) {
 			return offset;
 		}
+
+		Stream<VoxelShape> collisions = this.collisions(collidingBox);
+		return Entity.collideBoundingBox(offset, box, new ReuseableStream<>(collisions));
 	}
 
 	public Stream<VoxelShape> collisions(AxisAlignedBB box) {
@@ -71,7 +83,8 @@ public final class PlotWalls {
 		private final AxisAlignedBB box;
 		private final AxisAlignedBB[] faces;
 		private final VoxelShape[] faceShapes;
-		private boolean consumed;
+
+		private int faceIndex;
 
 		CollisionSpliterator(AxisAlignedBB box, AxisAlignedBB[] faces, VoxelShape[] faceShapes) {
 			super(Long.MAX_VALUE, Spliterator.NONNULL | Spliterator.IMMUTABLE);
@@ -82,16 +95,11 @@ public final class PlotWalls {
 
 		@Override
 		public boolean tryAdvance(Consumer<? super VoxelShape> action) {
-			if (this.consumed) {
-				return false;
-			}
-
-			this.consumed = true;
-
 			AxisAlignedBB[] faces = this.faces;
-			for (int i = 0; i < faces.length; i++) {
-				if (this.box.intersects(faces[i])) {
-					action.accept(this.faceShapes[i]);
+			while (this.faceIndex < faces.length) {
+				int index = this.faceIndex++;
+				if (this.box.intersects(faces[index])) {
+					action.accept(this.faceShapes[index]);
 					return true;
 				}
 			}
