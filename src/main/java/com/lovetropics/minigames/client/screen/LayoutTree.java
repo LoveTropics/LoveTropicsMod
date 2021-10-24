@@ -65,7 +65,7 @@ public class LayoutTree {
 			if (contracted) throw new IllegalArgumentException("Cannot add child to contracted node");
 			LayoutNode child = new LayoutNode(this, layout, definite);
 			this.children.descendingIterator().forEachRemaining(n -> {
-				if (n.bounds.margin().contains(child.bounds.margin().left(), child.bounds.margin().top())) {
+				if (n.bounds.margin().intersects(child.bounds.margin())) {
 					child.bounds = child.bounds.moveY(n.bounds.margin().bottom());
 				}
 			});
