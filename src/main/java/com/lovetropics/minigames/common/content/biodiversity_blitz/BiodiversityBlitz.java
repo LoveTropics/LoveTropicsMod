@@ -10,6 +10,7 @@ import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.plan
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.plant.placement.PlaceFeaturePlantBehavior;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.plant.placement.PlaceSinglePlantBehavior;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.client_tweak.CheckeredPlotsTweak;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.client_tweak.ClientBiodiversityBlitzState;
 import com.lovetropics.minigames.common.util.registry.GameBehaviorEntry;
 import com.lovetropics.minigames.common.util.registry.GameClientTweakEntry;
 import com.lovetropics.minigames.common.util.registry.LoveTropicsRegistrate;
@@ -123,10 +124,18 @@ public final class BiodiversityBlitz {
 			.behavior(DropCurrencyBehavior.CODEC)
 			.register();
 
+	public static final GameBehaviorEntry<BbClientStateBehavior> CLIENT_STATE = REGISTRATE.object("biodiversity_blitz_client_state")
+			.behavior(BbClientStateBehavior.CODEC)
+			.register();
+
 	// Tweaks
 
-	public static final GameClientTweakEntry<CheckeredPlotsTweak> CHECKERED_PLOTS = REGISTRATE.object("checkered_plots")
+	public static final GameClientTweakEntry<CheckeredPlotsTweak> CHECKERED_PLOTS_TWEAK = REGISTRATE.object("checkered_plots")
 			.clientTweak(CheckeredPlotsTweak.CODEC)
+			.register();
+
+	public static final GameClientTweakEntry<ClientBiodiversityBlitzState> CLIENT_STATE_TWEAK = REGISTRATE.object("biodiversity_blitz_client_state")
+			.clientTweak(ClientBiodiversityBlitzState.CODEC)
 			.register();
 
 	// Items

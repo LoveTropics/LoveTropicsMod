@@ -124,7 +124,7 @@ public final class GameInstanceTelemetry implements IGameState {
 		game.addProperty("id", definition.getDisplayId().toString());
 		game.addProperty("telemetry_key", definition.getTelemetryKey());
 		game.addProperty("name", definition.getName().getString());
-		payload.add("game", game);
+		payload.add("minigame", game);
 
 		telemetry.post(endpoint, payload);
 	}

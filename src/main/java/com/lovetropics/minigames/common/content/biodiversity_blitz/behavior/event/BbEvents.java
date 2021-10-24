@@ -2,7 +2,6 @@ package com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.eve
 
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.Plot;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.plant.Plant;
-import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.plant.PlantCoverage;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.plant.PlantItemType;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.plant.PlantType;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameEventType;
@@ -11,9 +10,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.ActionResultType;
 import net.minecraft.util.math.BlockPos;
-
-import javax.annotation.Nullable;
-import java.util.List;
 
 public final class BbEvents {
 	public static final GameEventType<AssignPlot> ASSIGN_PLOT = GameEventType.create(AssignPlot.class, listeners -> (player, plot) -> {
@@ -28,8 +24,8 @@ public final class BbEvents {
 		}
 	});
 
-	public static final GameEventType<PlaceAndAddPlant> PLACE_AND_ADD_PLANT = GameEventType.create(PlaceAndAddPlant.class, listeners -> (player, plot, pos, plantType) -> {
-		for (PlaceAndAddPlant listener : listeners) {
+	public static final GameEventType<PlacePlant> PLACE_PLANT = GameEventType.create(PlacePlant.class, listeners -> (player, plot, pos, plantType) -> {
+		for (PlacePlant listener : listeners) {
 			ActionResult<Plant> result = listener.placePlant(player, plot, pos, plantType);
 			if (result.getType() != ActionResultType.PASS) {
 				return result;
@@ -38,8 +34,8 @@ public final class BbEvents {
 		return ActionResult.resultPass(null);
 	});
 
-	public static final GameEventType<BreakAndRemovePlant> BREAK_AND_REMOVE_PLANT = GameEventType.create(BreakAndRemovePlant.class, listeners -> (player, plot, plant) -> {
-		for (BreakAndRemovePlant listener : listeners) {
+	public static final GameEventType<BreakPlant> BREAK_PLANT = GameEventType.create(BreakPlant.class, listeners -> (player, plot, plant) -> {
+		for (BreakPlant listener : listeners) {
 			if (listener.breakPlant(player, plot, plant)) {
 				return true;
 			}
@@ -68,29 +64,12 @@ public final class BbEvents {
 		void onTickPlot(ServerPlayerEntity player, Plot plot);
 	}
 
-	public interface AddPlant {
-		void onAddPlant(ServerPlayerEntity player, Plot plot, Plant plant);
-	}
-
-	public interface TickPlants {
-		void onTickPlants(ServerPlayerEntity player, Plot plot, List<Plant> plants);
-	}
-
-	public interface PlaceAndAddPlant {
+	public interface PlacePlant {
 		ActionResult<Plant> placePlant(ServerPlayerEntity player, Plot plot, BlockPos pos, PlantType plantType);
 	}
 
-	public interface PlacePlant {
-		@Nullable
-		PlantCoverage placePlant(ServerPlayerEntity player, Plot plot, BlockPos pos);
-	}
-
-	public interface BreakAndRemovePlant {
-		boolean breakPlant(ServerPlayerEntity player, Plot plot, Plant plant);
-	}
-
 	public interface BreakPlant {
-		void breakPlant(ServerPlayerEntity player, Plot plot, Plant plant, BlockPos pos);
+		boolean breakPlant(ServerPlayerEntity player, Plot plot, Plant plant);
 	}
 
 	public interface CreatePlantItem {

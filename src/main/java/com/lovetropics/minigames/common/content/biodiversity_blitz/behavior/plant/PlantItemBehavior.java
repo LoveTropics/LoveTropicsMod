@@ -61,7 +61,7 @@ public final class PlantItemBehavior implements IGameBehavior {
 				return ActionResultType.FAIL;
 			}
 
-			ActionResult<Plant> result = game.invoker(BbEvents.PLACE_AND_ADD_PLANT).placePlant(player, plot, pos, this.places);
+			ActionResult<Plant> result = game.invoker(BbEvents.PLACE_PLANT).placePlant(player, plot, pos, this.places);
 			if (result.getResult() == null) {
 				// TODO: indicate failure
 			}

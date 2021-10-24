@@ -59,11 +59,11 @@ public final class PlantHealthBehavior implements IGameBehavior {
 			}
 
 			for (Plant plant : decayedPlants) {
-				game.invoker(BbEvents.BREAK_AND_REMOVE_PLANT).breakPlant(player, plot, plant);
+				game.invoker(BbEvents.BREAK_PLANT).breakPlant(player, plot, plant);
 
 				if (this.decayInto != null) {
 					BlockPos origin = plant.coverage().getOrigin();
-					game.invoker(BbEvents.PLACE_AND_ADD_PLANT).placePlant(player, plot, origin, this.decayInto);
+					game.invoker(BbEvents.PLACE_PLANT).placePlant(player, plot, origin, this.decayInto);
 				}
 			}
 		});

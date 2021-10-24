@@ -41,7 +41,7 @@ public final class Plot {
 		this.walls = new PlotWalls(this.bounds.asAabb().union(this.mobSpawn.asAabb()));
 	}
 
-	public static Plot associate(Config config, MapRegions regions) {
+	public static Plot create(Config config, MapRegions regions) {
 		BlockBox plantBounds = regions.getOrThrow(config.plot);
 		BlockBox bounds = BlockBox.of(
 				new BlockPos(plantBounds.min.getX(), 0, plantBounds.min.getZ()),

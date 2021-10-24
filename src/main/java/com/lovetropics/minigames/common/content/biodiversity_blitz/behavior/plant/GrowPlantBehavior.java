@@ -56,7 +56,7 @@ public final class GrowPlantBehavior implements IGameBehavior {
 				plot.plants.removePlant(plant);
 
 				BlockPos origin = plant.coverage().getOrigin();
-				ActionResult<Plant> result = game.invoker(BbEvents.PLACE_AND_ADD_PLANT).placePlant(player, plot, origin, this.growInto);
+				ActionResult<Plant> result = game.invoker(BbEvents.PLACE_PLANT).placePlant(player, plot, origin, this.growInto);
 				if (result.getType() != ActionResultType.SUCCESS) {
 					this.restoreSnapshot(world, plot, snapshot);
 				}

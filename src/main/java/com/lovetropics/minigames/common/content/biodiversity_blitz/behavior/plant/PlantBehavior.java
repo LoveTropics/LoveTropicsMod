@@ -66,8 +66,8 @@ public final class PlantBehavior implements IGameBehavior {
 		this.game = game;
 		this.plots = game.getState().getOrThrow(PlotsState.KEY);
 
-		events.listen(BbEvents.PLACE_AND_ADD_PLANT, this::addAndPlantPlant);
-		events.listen(BbEvents.BREAK_AND_REMOVE_PLANT, this::breakAndRemovePlant);
+		events.listen(BbEvents.PLACE_PLANT, this::addAndPlantPlant);
+		events.listen(BbEvents.BREAK_PLANT, this::breakAndRemovePlant);
 
 		events.listen(GamePlayerEvents.BREAK_BLOCK, this::onBreakBlock);
 
@@ -140,7 +140,7 @@ public final class PlantBehavior implements IGameBehavior {
 
 	private ActionResultType onBreakPlant(ServerPlayerEntity player, BlockPos pos, Plot plot, Plant plant) {
 		plantEvents.invoker(BbPlantEvents.BREAK).breakPlant(player, plot, plant, pos);
-		game.invoker(BbEvents.BREAK_AND_REMOVE_PLANT).breakPlant(player, plot, plant);
+		game.invoker(BbEvents.BREAK_PLANT).breakPlant(player, plot, plant);
 
 		return ActionResultType.FAIL;
 	}

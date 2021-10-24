@@ -5,6 +5,7 @@ import com.lovetropics.minigames.common.content.biodiversity_blitz.BiodiversityB
 import com.lovetropics.minigames.common.content.biodiversity_blitz.BiodiversityBlitzTexts;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.FriendlyExplosion;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.event.BbEvents;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.CurrencyManager;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.Plot;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.PlotsState;
 import com.lovetropics.minigames.common.core.dimension.DimensionUtils;
@@ -13,16 +14,17 @@ import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.*;
 import com.lovetropics.minigames.common.core.game.player.PlayerRole;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.Object2FloatMap;
 import it.unimi.dsi.fastutil.objects.Object2FloatOpenHashMap;
-import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
-import net.minecraft.block.*;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
+import net.minecraft.block.FarmlandBlock;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.merchant.villager.VillagerEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
 import net.minecraft.util.*;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
@@ -31,15 +33,17 @@ import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.Explosion;
 import net.minecraft.world.GameType;
-import net.minecraft.world.server.ServerWorld;
 
 import javax.annotation.Nullable;
 import java.util.List;
-import java.util.Set;
 
 // TODO: needs to be split up & data-driven more!
 public final class BbBehavior implements IGameBehavior {
-	public static final Codec<BbBehavior> CODEC = Codec.unit(BbBehavior::new);
+	public static final Codec<BbBehavior> CODEC = RecordCodecBuilder.create(instance -> {
+	    return instance.group(
+	        Codec.INT.fieldOf("initial_currency").forGetter(c -> c.initialCurrency)
+	    ).apply(instance, BbBehavior::new);
+	});
 
 	private static final Object2FloatMap<Difficulty> DEATH_DECREASE = new Object2FloatOpenHashMap<>();
 
@@ -49,8 +53,14 @@ public final class BbBehavior implements IGameBehavior {
 		DEATH_DECREASE.put(Difficulty.HARD, 0.5F);
 	}
 
+	private final int initialCurrency;
+
 	private IGamePhase game;
 	private PlotsState plots;
+
+	public BbBehavior(int initialCurrency) {
+		this.initialCurrency = initialCurrency;
+	}
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
@@ -79,6 +89,16 @@ public final class BbBehavior implements IGameBehavior {
 
 		events.listen(GamePlayerEvents.PLACE_BLOCK, this::onPlaceBlock);
 		events.listen(GamePlayerEvents.BREAK_BLOCK, (player, pos, state, hand) -> ActionResultType.FAIL);
+
+		events.listen(GamePlayerEvents.THROW_ITEM, (player, item) -> {
+			ItemStack stack = item.getItem();
+			if (stack.getItem() == BiodiversityBlitz.OSA_POINT.get()) {
+				player.inventory.addItemStackToInventory(stack);
+				player.sendContainerToPlayer(player.openContainer);
+				return ActionResultType.FAIL;
+			}
+			return ActionResultType.PASS;
+		});
 	}
 
 	private void setupPlayerAsRole(ServerPlayerEntity player, @Nullable PlayerRole role) {
@@ -98,6 +118,8 @@ public final class BbBehavior implements IGameBehavior {
 
 	private void onAssignPlot(ServerPlayerEntity player, Plot plot) {
 		teleportToRegion(player, plot.spawn, plot.spawnForward);
+
+		CurrencyManager.set(player, initialCurrency);
 	}
 
 	private void onExplosion(Explosion explosion, List<BlockPos> affectedBlocks, List<Entity> affectedEntities) {
@@ -160,23 +182,16 @@ public final class BbBehavior implements IGameBehavior {
 
 		// Resets all currency from the player's inventory and adds a new stack with 80% of the amount.
 		// A better way of just removing 20% of the existing stacks could be done but this was chosen for the time being to save time
-		int totalCount = player.inventory.func_234564_a_(stack -> stack.getItem() == BiodiversityBlitz.OSA_POINT.get(), -1, player.container.func_234641_j_());
-
 		Difficulty difficulty = game.getWorld().getDifficulty();
-		int targetCount = (int) (totalCount * DEATH_DECREASE.getFloat(difficulty));
 
-		// First insert all the full stacks
-		int stacks = targetCount / 64;
-		for (int i = 0; i < stacks; i++) {
-			player.addItemStackToInventory(new ItemStack(BiodiversityBlitz.OSA_POINT.get(), 64));
-			// Reduce the target by 64 as we just inserted a full stack
-			targetCount -= 64;
-		}
+		int oldCurrency = CurrencyManager.get(player);
+		int newCurrency = MathHelper.floor(oldCurrency * DEATH_DECREASE.getFloat(difficulty));
+
+		CurrencyManager.set(player, newCurrency);
 
 		// Add the remaining items
-		player.addItemStackToInventory(new ItemStack(BiodiversityBlitz.OSA_POINT.get(), targetCount));
-		player.getServerWorld().playSound(null, player.getPosition(), SoundEvents.ENTITY_ARROW_HIT_PLAYER, SoundCategory.PLAYERS,  0.18F, 1.0F);
-		player.sendStatusMessage(BiodiversityBlitzTexts.deathDecrease(totalCount - targetCount).mergeStyle(TextFormatting.RED), false);
+		player.playSound(SoundEvents.ENTITY_ARROW_HIT_PLAYER, SoundCategory.PLAYERS, 0.18F, 1.0F);
+		player.sendStatusMessage(BiodiversityBlitzTexts.deathDecrease(oldCurrency - newCurrency).mergeStyle(TextFormatting.RED), true);
 
 		return ActionResultType.FAIL;
 	}

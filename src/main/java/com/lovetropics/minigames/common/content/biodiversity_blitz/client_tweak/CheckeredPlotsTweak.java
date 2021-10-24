@@ -43,7 +43,7 @@ public final class CheckeredPlotsTweak implements GameClientTweak {
 
 	@Override
 	public GameClientTweakType<?> getType() {
-		return BiodiversityBlitz.CHECKERED_PLOTS.get();
+		return BiodiversityBlitz.CHECKERED_PLOTS_TWEAK.get();
 	}
 
 	public boolean contains(BlockPos pos) {

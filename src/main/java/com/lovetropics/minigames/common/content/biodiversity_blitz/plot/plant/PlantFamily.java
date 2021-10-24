@@ -5,6 +5,8 @@ public enum PlantFamily {
     PLANT("plant"),
     TREE("tree");
 
+    public static final PlantFamily[] VALUES = values();
+
     private final String name;
 
     PlantFamily(String name) {

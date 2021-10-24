@@ -45,7 +45,7 @@ public final class BbAssignPlotsBehavior implements IGameBehavior {
 		MapRegions regions = game.getMapRegions();
 
 		for (Plot.Config config : this.plotKeys) {
-			this.freePlots.add(Plot.associate(config, regions));
+			this.freePlots.add(Plot.create(config, regions));
 		}
 
 		this.applyCheckeredPlots(events);

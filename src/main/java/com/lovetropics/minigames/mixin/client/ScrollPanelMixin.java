@@ -13,7 +13,7 @@ import net.minecraftforge.client.gui.ScrollPanel;
 @Mixin(ScrollPanel.class)
 public abstract class ScrollPanelMixin extends FocusableGui {
 
-	@Shadow
+	@Shadow(remap = false)
 	private float scrollDistance;
 
 	@ModifyArg(method = {"mouseClicked", "mouseReleased"},

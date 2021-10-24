@@ -56,7 +56,7 @@ public final class ProximityBombPlantBehavior implements IGameBehavior {
 			}
 
 			for (Plant plant : removedPlants) {
-				game.invoker(BbEvents.BREAK_AND_REMOVE_PLANT).breakPlant(player, plot, plant);
+				game.invoker(BbEvents.BREAK_PLANT).breakPlant(player, plot, plant);
 			}
 		});
 	}

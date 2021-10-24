@@ -18,15 +18,15 @@ public interface GameClientTweak {
 	GameClientTweakType<?> getType();
 
 	default void applyGloballyTo(EventRegistrar events) {
-		events.listen(GamePlayerEvents.ADD, this::sendToPlayer);
-		events.listen(GamePlayerEvents.REMOVE, this::removeFromPlayer);
+		events.listen(GamePlayerEvents.ADD, player -> sendToPlayer(this, player));
+		events.listen(GamePlayerEvents.REMOVE, player -> removeFromPlayer(getType(), player));
 	}
 
-	default void sendToPlayer(ServerPlayerEntity player) {
-		LoveTropicsNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), SetGameClientTweakMessage.set(this));
+	static void sendToPlayer(GameClientTweak tweak, ServerPlayerEntity player) {
+		LoveTropicsNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), SetGameClientTweakMessage.set(tweak));
 	}
 
-	default void removeFromPlayer(ServerPlayerEntity player) {
-		LoveTropicsNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), SetGameClientTweakMessage.remove(this.getType()));
+	static void removeFromPlayer(GameClientTweakType<?> type, ServerPlayerEntity player) {
+		LoveTropicsNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), SetGameClientTweakMessage.remove(type));
 	}
 }
