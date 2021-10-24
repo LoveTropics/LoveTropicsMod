@@ -1,12 +1,5 @@
 package com.lovetropics.minigames.client.lobby.screen.game_config;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map.Entry;
-import java.util.Optional;
-
-import javax.annotation.Nullable;
-
 import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
@@ -22,11 +15,16 @@ import com.lovetropics.minigames.common.core.game.behavior.config.ConfigData.Com
 import com.lovetropics.minigames.common.core.game.behavior.config.ConfigData.ListConfigData;
 import com.lovetropics.minigames.common.core.game.behavior.config.ConfigData.SimpleConfigData;
 import com.mojang.blaze3d.matrix.MatrixStack;
-
 import net.minecraft.client.gui.IGuiEventListener;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraftforge.client.gui.ScrollPanel;
+
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map.Entry;
+import java.util.Optional;
 
 public final class GameConfig extends ScrollPanel {
 	private final Layout mainLayout;
@@ -57,7 +55,9 @@ public final class GameConfig extends ScrollPanel {
 		this.configuring = game;
 		this.configData.clear();
 		if (game != null) {
-			this.configData.add(game.waitingConfigs());
+			if (game.waitingConfigs() != null) {
+				this.configData.add(game.waitingConfigs());
+			}
 			this.configData.add(game.playingConfigs());
 		}
 		reflow();
