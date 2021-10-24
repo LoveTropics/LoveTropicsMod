@@ -18,7 +18,7 @@ public final class PlantMap implements Iterable<Plant> {
 	private final Long2ObjectMap<Plant> plantByDecorationPos = new Long2ObjectOpenHashMap<>();
 
 	@Nullable
-	public Plant addPlant(PlantType type, PlantPlacement placement) {
+	public Plant addPlant(PlantType type, PlantFamily family, double value, PlantPlacement placement) {
 		PlantCoverage functionalCoverage = placement.getFunctionalCoverage();
 		if (functionalCoverage == null || !this.canAddPlantAt(functionalCoverage)) {
 			return null;
@@ -29,7 +29,7 @@ public final class PlantMap implements Iterable<Plant> {
 			decoration = this.removeDecorationIntersection(decoration);
 		}
 
-		Plant plant = new Plant(type, functionalCoverage, decoration);
+		Plant plant = new Plant(type, functionalCoverage, decoration, family, value);
 		this.addPlant(plant);
 		return plant;
 	}

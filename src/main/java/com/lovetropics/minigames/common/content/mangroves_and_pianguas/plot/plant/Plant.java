@@ -16,18 +16,22 @@ public final class Plant {
 	private final PlantState state;
 
 	private final PlantCoverage coverage;
+	private final PlantFamily family;
+	private final double value;
 
-	public Plant(PlantType type, PlantCoverage functionalCoverage, @Nullable PlantCoverage decorationCoverage) {
-		this(type, functionalCoverage, decorationCoverage, new PlantState());
+	public Plant(PlantType type, PlantCoverage functionalCoverage, @Nullable PlantCoverage decorationCoverage, PlantFamily family, double value) {
+		this(type, functionalCoverage, decorationCoverage, new PlantState(), family, value);
 	}
 
-	private Plant(PlantType type, PlantCoverage functionalCoverage, @Nullable PlantCoverage decorationCoverage, PlantState state) {
+	private Plant(PlantType type, PlantCoverage functionalCoverage, @Nullable PlantCoverage decorationCoverage, PlantState state, PlantFamily family, double value) {
 		this.type = type;
 		this.functionalCoverage = functionalCoverage;
 		this.decorationCoverage = decorationCoverage;
 		this.state = state;
 
 		this.coverage = decorationCoverage != null ? PlantCoverage.or(functionalCoverage, decorationCoverage) : functionalCoverage;
+		this.family = family;
+		this.value = value;
 	}
 
 	public PlantType type() {
@@ -49,6 +53,14 @@ public final class Plant {
 
 	public PlantState state() {
 		return state;
+	}
+
+	public PlantFamily family() {
+		return this.family;
+	}
+
+	public double value() {
+		return this.value;
 	}
 
 	@Nullable

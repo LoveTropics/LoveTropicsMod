@@ -202,15 +202,15 @@ public final class MpBehavior implements IGameBehavior {
 		}
 
 		// Drop currency every 30 seconds
-		if (ticks % 600 == 0) {
-			for (ServerPlayerEntity player : game.getParticipants()) {
-				Plot plot = plots.getPlotFor(player);
-				if (plot == null) continue;
-
-				double value = this.computeCurrency(world, plot);
-				this.givePlayerCurrency(world, player, value);
-			}
-		}
+//		if (ticks % 600 == 0) {
+//			for (ServerPlayerEntity player : game.getParticipants()) {
+//				Plot plot = plots.getPlotFor(player);
+//				if (plot == null) continue;
+//
+//				double value = this.computeCurrency(world, plot);
+//				this.givePlayerCurrency(world, player, value);
+//			}
+//		}
 	}
 
 	private double computeCurrency(ServerWorld world, Plot plot) {

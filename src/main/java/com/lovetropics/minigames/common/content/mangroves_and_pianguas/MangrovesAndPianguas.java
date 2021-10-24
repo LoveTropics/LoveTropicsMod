@@ -2,10 +2,7 @@ package com.lovetropics.minigames.common.content.mangroves_and_pianguas;
 
 import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.LoveTropics;
-import com.lovetropics.minigames.common.content.mangroves_and_pianguas.behavior.MpAssignPlotsBehavior;
-import com.lovetropics.minigames.common.content.mangroves_and_pianguas.behavior.MpBehavior;
-import com.lovetropics.minigames.common.content.mangroves_and_pianguas.behavior.MpMerchantBehavior;
-import com.lovetropics.minigames.common.content.mangroves_and_pianguas.behavior.MpWaveSpawnerBehavior;
+import com.lovetropics.minigames.common.content.mangroves_and_pianguas.behavior.*;
 import com.lovetropics.minigames.common.content.mangroves_and_pianguas.behavior.plant.*;
 import com.lovetropics.minigames.common.content.mangroves_and_pianguas.behavior.plant.drops.DropLootTableBehavior;
 import com.lovetropics.minigames.common.content.mangroves_and_pianguas.behavior.plant.drops.DropPlantItemBehavior;
@@ -19,6 +16,7 @@ import com.lovetropics.minigames.common.util.registry.LoveTropicsRegistrate;
 import com.tterrag.registrate.util.entry.ItemEntry;
 import net.minecraft.block.Blocks;
 import net.minecraft.item.BlockNamedItem;
+import net.minecraft.item.Item;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -121,6 +119,12 @@ public final class MangrovesAndPianguas {
 			.behavior(PianguasPlantBehavior.CODEC)
 			.register();
 
+	public static final GameBehaviorEntry<DropCurrencyBehavior> DROP_CURRENCY = REGISTRATE.object("drop_currency")
+			.behavior(DropCurrencyBehavior.CODEC)
+			.register();
+
+	// Tweaks
+
 	public static final GameClientTweakEntry<CheckeredPlotsTweak> CHECKERED_PLOTS = REGISTRATE.object("checkered_plots")
 			.clientTweak(CheckeredPlotsTweak.CODEC)
 			.register();
@@ -134,6 +138,9 @@ public final class MangrovesAndPianguas {
 			.register();
 
 	public static final ItemEntry<BlockNamedItem> SWEET_BERRY_SEEDS = REGISTRATE.item("sweet_berry_seeds", p -> new BlockNamedItem(Blocks.SWEET_BERRY_BUSH, p))
+			.register();
+
+	public static final ItemEntry<Item> OSA_POINT = REGISTRATE.item("osa_point", Item::new)
 			.register();
 
 	@SubscribeEvent
