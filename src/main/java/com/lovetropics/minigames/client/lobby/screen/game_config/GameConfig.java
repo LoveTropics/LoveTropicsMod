@@ -1,5 +1,6 @@
 package com.lovetropics.minigames.client.lobby.screen.game_config;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
 
@@ -38,7 +39,7 @@ public final class GameConfig extends ScrollPanel {
 	private final Handlers handlers;
 	
 	private ClientLobbyQueuedGame configuring;
-	private ClientBehaviorMap configData = new ClientBehaviorMap(LinkedHashMultimap.create());
+	private final List<ClientBehaviorMap> configData = new ArrayList<>();
 	private final Multimap<GameBehaviorType<?>, BehaviorConfigUI> children = LinkedHashMultimap.create();
 
 	public GameConfig(Screen screen, Layout main, Handlers handlers) {
@@ -57,14 +58,20 @@ public final class GameConfig extends ScrollPanel {
 	
 	public void setGame(@Nullable ClientLobbyQueuedGame game) {
 		this.configuring = game;
-		this.configData = game == null ? new ClientBehaviorMap(LinkedHashMultimap.create()) : game.configs();
+		this.configData.clear();
+		if (game != null) {
+			this.configData.add(game.waitingConfigs());
+			this.configData.add(game.playingConfigs());
+		}
 		this.children.clear();
 		
 		LayoutTree ltree = new LayoutTree(this.mainLayout);
 		ltree.child(new Box(0, 0, 6, 0), new Box()); // Add margin where the scroll bar is
-		for (Entry<GameBehaviorType<?>, ClientConfigList> e : configData.behaviors.entries()) {
-			if (!e.getValue().configs.isEmpty()) {
-				this.children.put(e.getKey(), new BehaviorConfigUI((ManageLobbyScreen) screen, ltree.child(0, 3), e.getKey(), e.getValue()));
+		for (ClientBehaviorMap configSet : configData) {
+			for (Entry<GameBehaviorType<?>, ClientConfigList> e : configSet.behaviors.entries()) {
+				if (!e.getValue().configs.isEmpty()) {
+					this.children.put(e.getKey(), new BehaviorConfigUI((ManageLobbyScreen) screen, ltree.child(0, 3), e.getKey(), e.getValue()));
+				}
 			}
 		}
 		this.content = ltree.pop();

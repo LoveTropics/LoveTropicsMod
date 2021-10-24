@@ -29,10 +29,10 @@ public class ConfigDataUI extends LayoutGui implements IConfigWidget {
 		this.name = name;
 		this.configs = configs;
 		
-		float textWidth = 0.35F;
-		IConfigWidget widget = GameConfig.createWidget(screen, ltree.child(-textWidth, Axis.X), configs);
+
+		this.label = new TextLabel(ltree.child(1, Axis.X), 11, new TranslationTextComponent(name), Align.Cross.START, Align.Cross.START);
+		IConfigWidget widget = GameConfig.createWidget(screen, ltree.child(1, Axis.X), configs);
 		children.add(widget);
-		this.label = new TextLabel(ltree.child(textWidth, Axis.X), widget.getHeight(), new TranslationTextComponent(name), Align.Cross.START, Align.Cross.CENTER);
 		this.mainLayout = ltree.pop();
 	}
 

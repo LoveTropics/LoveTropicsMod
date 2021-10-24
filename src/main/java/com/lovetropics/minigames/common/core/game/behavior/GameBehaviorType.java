@@ -14,4 +14,9 @@ public final class GameBehaviorType<T extends IGameBehavior> extends ForgeRegist
 	public static Class<GameBehaviorType<?>> type() {
 		return (Class<GameBehaviorType<?>>) (Class) GameBehaviorType.class;
 	}
+
+	@Override
+	public String toString() {
+		return getRegistryName().toString();
+	}
 }

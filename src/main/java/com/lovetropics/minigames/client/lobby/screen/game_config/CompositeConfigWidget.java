@@ -45,6 +45,7 @@ public class CompositeConfigWidget extends LayoutGui implements IConfigWidget {
 	@Override
 	public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
 		super.render(matrixStack, mouseX, mouseY, partialTicks);
+		vLine(matrixStack, mainLayout.background().left(), mainLayout.background().top(), mainLayout.background().bottom(), -1);
 		for (IConfigWidget child : children) {
 			child.render(matrixStack, mouseX, mouseY, partialTicks);
 		}

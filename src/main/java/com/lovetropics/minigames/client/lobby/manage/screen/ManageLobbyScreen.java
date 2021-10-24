@@ -56,15 +56,15 @@ public final class ManageLobbyScreen extends Screen {
 	protected void init() {
 		minecraft.keyboardListener.enableRepeatEvents(true);
 
-		selectedGameId = -1;
-
 		layout = new ManageLobbyLayout(this);
 
 		ClientLobbyManageState lobby = session.lobby();
 
+		selectedGameId = -1;
 		gameList = addListener(new GameList(this, layout.gameList, layout.leftFooter, lobby, new GameList.Handlers() {
 			@Override
 			public void selectQueuedGame(int queuedGameId) {
+				if (queuedGameId == selectedGameId) return;
 				selectedGameId = queuedGameId;
 				gameConfig.setGame(session.lobby().getQueue().byId(queuedGameId));
 			}

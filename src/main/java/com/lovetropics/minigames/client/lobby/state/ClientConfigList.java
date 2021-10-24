@@ -46,4 +46,9 @@ public class ClientConfigList {
 			buffer.writeCompoundTag(tag);
 		}
 	}
+
+	@Override
+	public String toString() {
+		return configs.toString();
+	}
 }

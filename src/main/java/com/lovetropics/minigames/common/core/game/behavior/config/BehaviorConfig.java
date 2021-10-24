@@ -40,8 +40,9 @@ public final class BehaviorConfig<A> extends MapCodec<A> {
 
 	private final ConfigData postProcessRecursive(String path, ConfigData data) {
 		if (data instanceof CompositeConfigData) {
-			for (Map.Entry<String, ConfigData> e : ((CompositeConfigData) data).value().entrySet()) {
-				e.setValue(postProcessRecursive(path.isEmpty() ? e.getKey() : "." + e.getKey(), e.getValue()));
+			CompositeConfigData composite = (CompositeConfigData) data;
+			for (String key : composite.keys()) {
+				composite.put(key, postProcessRecursive(path.isEmpty() ? key : "." + key, composite.value(key)));
 			}
 		} else if (data instanceof ListConfigData) {
 			ListConfigData list = (ListConfigData) data;

@@ -9,35 +9,43 @@ import net.minecraft.network.PacketBuffer;
 
 public final class ClientLobbyQueuedGame {
 	private final ClientGameDefinition definition;
-	private final ClientBehaviorMap configs;
+	private final ClientBehaviorMap playingConfigs, waitingConfigs;
 
-	private ClientLobbyQueuedGame(ClientGameDefinition definition, ClientBehaviorMap configs) {
+	private ClientLobbyQueuedGame(ClientGameDefinition definition, ClientBehaviorMap playingConfigs, ClientBehaviorMap waitingConfigs) {
 		this.definition = definition;
-		this.configs = configs;
+		this.playingConfigs = playingConfigs;
+		this.waitingConfigs = waitingConfigs;
 	}
 
 	public static ClientLobbyQueuedGame from(QueuedGame game) {
 		ClientGameDefinition definition = ClientGameDefinition.from(game.definition());
-		ClientBehaviorMap configs = ClientBehaviorMap.from(game.playingBehaviors());
-		return new ClientLobbyQueuedGame(definition, configs);
+		ClientBehaviorMap playingConfigs = ClientBehaviorMap.from(game.playingBehaviors());
+		ClientBehaviorMap waitingConfigs = ClientBehaviorMap.from(game.waitingBehaviors());
+		return new ClientLobbyQueuedGame(definition, playingConfigs, waitingConfigs);
 	}
 
 	public void encode(PacketBuffer buffer) {
 		this.definition.encode(buffer);
-		this.configs.encode(buffer);
+		this.playingConfigs.encode(buffer);
+		this.waitingConfigs.encode(buffer);
 	}
 
 	public static ClientLobbyQueuedGame decode(PacketBuffer buffer) {
 		ClientGameDefinition definition = ClientGameDefinition.decode(buffer);
-		ClientBehaviorMap configs = ClientBehaviorMap.decode(buffer);
-		return new ClientLobbyQueuedGame(definition, configs);
+		ClientBehaviorMap playingConfigs = ClientBehaviorMap.decode(buffer);
+		ClientBehaviorMap waitingConfigs = ClientBehaviorMap.decode(buffer);
+		return new ClientLobbyQueuedGame(definition, playingConfigs, waitingConfigs);
 	}
 
 	public ClientGameDefinition definition() {
 		return definition;
 	}
 
-	public ClientBehaviorMap configs() {
-		return configs;
+	public ClientBehaviorMap playingConfigs() {
+		return playingConfigs;
+	}
+
+	public ClientBehaviorMap waitingConfigs() {
+		return waitingConfigs;
 	}
 }

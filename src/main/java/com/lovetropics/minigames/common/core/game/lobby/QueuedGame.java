@@ -12,17 +12,19 @@ public final class QueuedGame {
 	private final int networkId;
 	private final IGameDefinition definition;
 	private final BehaviorMap playingBehaviors;
+	private final BehaviorMap waitingBehaviors;
 
-	private QueuedGame(int networkId, IGameDefinition definition, BehaviorMap playingBehaviors) {
+	private QueuedGame(int networkId, IGameDefinition definition, BehaviorMap playingBehaviors, BehaviorMap waitingBehaviors) {
 		this.networkId = networkId;
 		this.definition = definition;
 		this.playingBehaviors = playingBehaviors;
+		this.waitingBehaviors = waitingBehaviors;
 	}
 
 	public static QueuedGame create(MinecraftServer server, IGameDefinition game) {
-		// TODO: integrate waiting behaviors
 		BehaviorMap playingBehaviors = game.getPlayingPhase().createBehaviors(server);
-		return new QueuedGame(NEXT_NETWORK_ID.getAndIncrement(), game, playingBehaviors);
+		BehaviorMap waitingBehaviors = game.getWaitingPhase().createBehaviors(server);
+		return new QueuedGame(NEXT_NETWORK_ID.getAndIncrement(), game, playingBehaviors, waitingBehaviors);
 	}
 
 	public int networkId() {
@@ -35,5 +37,9 @@ public final class QueuedGame {
 
 	public BehaviorMap playingBehaviors() {
 		return this.playingBehaviors;
+	}
+
+	public BehaviorMap waitingBehaviors() {
+		return this.waitingBehaviors;
 	}
 }
