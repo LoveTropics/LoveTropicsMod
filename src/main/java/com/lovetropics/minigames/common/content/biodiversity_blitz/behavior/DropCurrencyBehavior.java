@@ -1,11 +1,12 @@
-package com.lovetropics.minigames.common.content.mangroves_and_pianguas.behavior;
+package com.lovetropics.minigames.common.content.biodiversity_blitz.behavior;
 
 import com.lovetropics.minigames.common.content.MinigameTexts;
-import com.lovetropics.minigames.common.content.mangroves_and_pianguas.behavior.event.MpEvents;
-import com.lovetropics.minigames.common.content.mangroves_and_pianguas.plot.Plot;
-import com.lovetropics.minigames.common.content.mangroves_and_pianguas.plot.plant.Plant;
-import com.lovetropics.minigames.common.content.mangroves_and_pianguas.plot.plant.PlantFamily;
-import com.lovetropics.minigames.common.content.mangroves_and_pianguas.plot.plant.PlantType;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.BiodiversityBlitzTexts;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.event.BbEvents;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.Plot;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.plant.Plant;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.plant.PlantFamily;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.plant.PlantType;
 import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
@@ -26,7 +27,7 @@ public final class DropCurrencyBehavior implements IGameBehavior {
     @Override
     public void register(IGamePhase game, EventRegistrar events) throws GameException {
         this.game = game;
-        events.listen(MpEvents.TICK_PLOT, this::tickPlot);
+        events.listen(BbEvents.TICK_PLOT, this::tickPlot);
     }
 
     private void tickPlot(ServerPlayerEntity player, Plot plot) {
@@ -66,6 +67,8 @@ public final class DropCurrencyBehavior implements IGameBehavior {
 
             int biodiversity = counts.get(family).size();
 
+            value += 0.25;
+
             value += (biodiversity / 3.0) * value;
 
             // Highly cursed but we keep the boxed version to prevent instant NPE
@@ -82,7 +85,7 @@ public final class DropCurrencyBehavior implements IGameBehavior {
 
         // TODO: world.playSound! this isn't sent to the player
         player.playSound(SoundEvents.ENTITY_ARROW_HIT_PLAYER, 0.24F, 1.0F);
-        player.sendStatusMessage(MinigameTexts.mpCurrencyAddition(count), false);
+        player.sendStatusMessage(BiodiversityBlitzTexts.currencyAddition(count), false);
         player.addItemStackToInventory(new ItemStack(Items.SUNFLOWER, count));
     }
 

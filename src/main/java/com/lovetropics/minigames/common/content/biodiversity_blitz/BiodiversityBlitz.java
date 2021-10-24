@@ -2,10 +2,7 @@ package com.lovetropics.minigames.common.content.biodiversity_blitz;
 
 import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.LoveTropics;
-import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.BbAssignPlotsBehavior;
-import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.BbBehavior;
-import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.BbMerchantBehavior;
-import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.BbWaveSpawnerBehavior;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.*;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.plant.*;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.plant.drops.DropLootTableBehavior;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.plant.drops.DropPlantItemBehavior;

@@ -1,4 +1,4 @@
-package com.lovetropics.minigames.common.content.mangroves_and_pianguas.plot.plant;
+package com.lovetropics.minigames.common.content.biodiversity_blitz.plot.plant;
 
 public enum PlantFamily {
     CROP("crop"),
