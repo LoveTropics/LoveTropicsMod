@@ -122,7 +122,7 @@ final class BehaviorParameterReplacer<T> {
 		if (source.getOps() == ops) {
 			return (Dynamic<T>) source;
 		} else {
-			return source.castTyped(ops);
+			return source.convert(ops);
 		}
 	}
 }

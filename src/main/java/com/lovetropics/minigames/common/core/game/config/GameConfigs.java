@@ -4,8 +4,10 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import com.lovetropics.lib.codec.CodecRegistry;
 import com.lovetropics.minigames.Constants;
+import com.lovetropics.minigames.common.util.DynamicRegistryReadingOps;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
+import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.JsonOps;
 import net.minecraft.resources.IResource;
 import net.minecraft.util.ResourceLocation;
@@ -36,12 +38,14 @@ public final class GameConfigs {
 			CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
 				REGISTRY.clear();
 
+				DynamicOps<JsonElement> ops = DynamicRegistryReadingOps.create(resourceManager, JsonOps.INSTANCE);
+
 				BehaviorReferenceReader behaviorReader = new BehaviorReferenceReader(resourceManager);
 
 				Collection<ResourceLocation> paths = resourceManager.getAllResourceLocations("games", file -> file.endsWith(".json"));
 				for (ResourceLocation path : paths) {
 					try (IResource resource = resourceManager.getResource(path)) {
-						DataResult<GameConfig> result = loadConfig(behaviorReader, path, resource);
+						DataResult<GameConfig> result = loadConfig(ops, behaviorReader, path, resource);
 						result.result().ifPresent(config -> REGISTRY.register(config.id, config));
 
 						result.error().ifPresent(error -> {
@@ -57,11 +61,14 @@ public final class GameConfigs {
 		});
 	}
 
-	private static DataResult<GameConfig> loadConfig(BehaviorReferenceReader reader, ResourceLocation path, IResource resource) throws IOException {
+	private static DataResult<GameConfig> loadConfig(
+			DynamicOps<JsonElement> ops, BehaviorReferenceReader reader,
+			ResourceLocation path, IResource resource
+	) throws IOException {
 		try (InputStream input = resource.getInputStream()) {
 			JsonElement json = PARSER.parse(new BufferedReader(new InputStreamReader(input)));
 			Codec<GameConfig> codec = GameConfig.codec(reader, getIdFromPath(path));
-			return codec.parse(JsonOps.INSTANCE, json);
+			return codec.parse(ops, json);
 		}
 	}
 
