@@ -1,6 +1,7 @@
 package com.lovetropics.minigames.common.content.biodiversity_blitz.behavior;
 
 import com.lovetropics.lib.BlockBox;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.BiodiversityBlitz;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.BiodiversityBlitzTexts;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.FriendlyExplosion;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.event.BbEvents;
@@ -152,7 +153,7 @@ public final class BbBehavior implements IGameBehavior {
 
 		// Resets all currency from the player's inventory and adds a new stack with 80% of the amount.
 		// A better way of just removing 20% of the existing stacks could be done but this was chosen for the time being to save time
-		int totalCount = player.inventory.func_234564_a_(stack -> stack.getItem() == Items.SUNFLOWER, -1, player.container.func_234641_j_());
+		int totalCount = player.inventory.func_234564_a_(stack -> stack.getItem() == BiodiversityBlitz.OSA_POINT.get(), -1, player.container.func_234641_j_());
 
 		Difficulty difficulty = game.getWorld().getDifficulty();
 		int targetCount = (int) (totalCount * DEATH_DECREASE.getFloat(difficulty));
@@ -160,13 +161,13 @@ public final class BbBehavior implements IGameBehavior {
 		// First insert all the full stacks
 		int stacks = targetCount / 64;
 		for (int i = 0; i < stacks; i++) {
-			player.addItemStackToInventory(new ItemStack(Items.SUNFLOWER, 64));
+			player.addItemStackToInventory(new ItemStack(BiodiversityBlitz.OSA_POINT.get(), 64));
 			// Reduce the target by 64 as we just inserted a full stack
 			targetCount -= 64;
 		}
 
 		// Add the remaining items
-		player.addItemStackToInventory(new ItemStack(Items.SUNFLOWER, targetCount));
+		player.addItemStackToInventory(new ItemStack(BiodiversityBlitz.OSA_POINT.get(), targetCount));
 		player.playSound(SoundEvents.ENTITY_ARROW_HIT_PLAYER, 0.18F, 0.1F);
 		player.sendStatusMessage(BiodiversityBlitzTexts.deathDecrease(totalCount - targetCount).mergeStyle(TextFormatting.RED), false);
 
@@ -235,7 +236,7 @@ public final class BbBehavior implements IGameBehavior {
 
 		player.playSound(SoundEvents.ENTITY_ARROW_HIT_PLAYER, 0.24F, 1.0F);
 		player.sendStatusMessage(BiodiversityBlitzTexts.currencyAddition(count), true);
-		player.addItemStackToInventory(new ItemStack(Items.SUNFLOWER, count));
+		player.addItemStackToInventory(new ItemStack(BiodiversityBlitz.OSA_POINT.get(), count));
 	}
 
 	private void teleportToRegion(ServerPlayerEntity player, BlockBox region, Direction direction) {

@@ -1,6 +1,7 @@
 package com.lovetropics.minigames.common.content.biodiversity_blitz.behavior;
 
 import com.lovetropics.minigames.common.content.MinigameTexts;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.BiodiversityBlitz;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.BiodiversityBlitzTexts;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.event.BbEvents;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.Plot;
@@ -67,7 +68,7 @@ public final class DropCurrencyBehavior implements IGameBehavior {
 
             int biodiversity = counts.get(family).size();
 
-            value += 0.25;
+            value += 0.5;
 
             value += (biodiversity / 3.0) * value;
 
@@ -86,7 +87,7 @@ public final class DropCurrencyBehavior implements IGameBehavior {
         // TODO: world.playSound! this isn't sent to the player
         player.playSound(SoundEvents.ENTITY_ARROW_HIT_PLAYER, 0.24F, 1.0F);
         player.sendStatusMessage(BiodiversityBlitzTexts.currencyAddition(count), false);
-        player.addItemStackToInventory(new ItemStack(Items.SUNFLOWER, count));
+        player.addItemStackToInventory(new ItemStack(BiodiversityBlitz.OSA_POINT.get(), count));
     }
 
     private static int preventCapitalism(int count) {
