@@ -1,8 +1,7 @@
 package com.lovetropics.minigames.common.content.biodiversity_blitz;
 
 import com.lovetropics.minigames.Constants;
-import net.minecraft.util.text.IFormattableTextComponent;
-import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.util.text.*;
 
 import java.util.function.BiConsumer;
 
@@ -46,7 +45,9 @@ public final class BiodiversityBlitzTexts {
 	}
 
 	public static IFormattableTextComponent currencyAddition(int amount) {
-		return new TranslationTextComponent(Keys.CURRENCY_ADDITION, amount);
+		ITextComponent amountText = new StringTextComponent(String.valueOf(amount))
+				.mergeStyle(amount > 0 ? TextFormatting.AQUA : TextFormatting.RED);
+		return new TranslationTextComponent(Keys.CURRENCY_ADDITION, amountText);
 	}
 
 	public static IFormattableTextComponent trading() {

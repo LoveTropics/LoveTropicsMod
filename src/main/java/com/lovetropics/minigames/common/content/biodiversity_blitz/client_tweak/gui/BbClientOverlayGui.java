@@ -60,7 +60,10 @@ public final class BbClientOverlayGui {
 		);
 		y += ITEM_SIZE + PADDING;
 
-		String nextCurrencyIncrement = TextFormatting.AQUA + "+" + display.getNextIncrement() + TextFormatting.GRAY + " per drop";
+		int increment = display.getNextIncrement();
+		TextFormatting incrementColor = increment > 0 ? TextFormatting.AQUA : TextFormatting.RED;
+
+		String nextCurrencyIncrement = incrementColor + "+" + increment + TextFormatting.GRAY + " next drop";
 		font.drawStringWithShadow(matrixStack, nextCurrencyIncrement, x, y, 0xFFFFFFFF);
 	}
 

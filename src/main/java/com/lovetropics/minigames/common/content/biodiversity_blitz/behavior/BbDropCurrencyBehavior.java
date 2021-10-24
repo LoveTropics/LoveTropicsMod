@@ -43,30 +43,46 @@ public final class BbDropCurrencyBehavior implements IGameBehavior {
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) throws GameException {
 		this.game = game;
-		events.listen(BbEvents.TICK_PLOT, this::tickPlot);
 
-		events.listen(BbEvents.ASSIGN_PLOT, this::onPlotChanged);
-		events.listen(BbEvents.PLANTS_CHANGED, this::onPlotChanged);
+		events.listen(BbEvents.TICK_PLOT, this::tickPlot);
 	}
 
 	private void tickPlot(ServerPlayerEntity player, Plot plot) {
 		long ticks = this.game.ticks();
-		long intervalTicks = interval * 20;
-		if (ticks % intervalTicks != 0) {
-			return;
+
+		if (ticks % 20 == 0) {
+			plot.nextCurrencyIncrement = this.computeNextCurrency(player, plot);
 		}
 
+		long intervalTicks = interval * 20;
+		if (ticks % intervalTicks == 0) {
+			this.giveCurrency(player, plot);
+		}
+	}
+
+	private void giveCurrency(ServerPlayerEntity player, Plot plot) {
 		int count = CurrencyManager.add(player, plot.nextCurrencyIncrement);
 
-		player.playSound(SoundEvents.ENTITY_ARROW_HIT_PLAYER, SoundCategory.PLAYERS, 0.24F, 1.0F);
 		player.sendStatusMessage(BiodiversityBlitzTexts.currencyAddition(count), true);
+
+		if (count > 0) {
+			player.playSound(SoundEvents.ENTITY_ARROW_HIT_PLAYER, SoundCategory.PLAYERS, 0.24F, 1.0F);
+		}
 	}
 
-	private void onPlotChanged(ServerPlayerEntity player, Plot plot) {
-		plot.nextCurrencyIncrement = computeNextCurrency(plot);
+	private int computeNextCurrency(ServerPlayerEntity player, Plot plot) {
+		boolean atPlot = plot.bounds.contains(player.getPositionVec());
+		if (atPlot) {
+			double value = this.computePlotValue(plot);
+			value = preventCapitalism(value);
+
+			return MathHelper.floor(value);
+		} else {
+			return 0;
+		}
 	}
 
-	private int computeNextCurrency(Plot plot) {
+	private double computePlotValue(Plot plot) {
 		Reference2DoubleOpenHashMap<PlantFamily> values = new Reference2DoubleOpenHashMap<>();
 		Reference2ObjectMap<PlantFamily, Set<PlantType>> counts = new Reference2ObjectOpenHashMap<>();
 
@@ -81,19 +97,17 @@ public final class BbDropCurrencyBehavior implements IGameBehavior {
 			set.add(type);
 		}
 
-		double count = 2.0;
+		double value = 2.0;
 		for (PlantFamily family : PlantFamily.VALUES) {
 			int biodiversity = counts.getOrDefault(family, Collections.emptySet()).size();
 
-			double value = values.getDouble(family) + 0.5;
-			value += (biodiversity / 3.0) * value;
+			double plantValue = values.getDouble(family) + 0.5;
+			plantValue += (biodiversity / 3.0) * plantValue;
 
-			count += value;
+			value += plantValue;
 		}
 
-		count = preventCapitalism(count);
-
-		return MathHelper.floor(count);
+		return value;
 	}
 
 	private static double preventCapitalism(double count) {
