@@ -48,8 +48,7 @@ public final class BbAssignPlotsBehavior implements IGameBehavior {
 			this.freePlots.add(Plot.associate(config, regions));
 		}
 
-		BlockBox[] plotBoxes = this.freePlots.stream().map(plot -> plot.bounds).toArray(BlockBox[]::new);
-		game.getClientTweaks().add(new CheckeredPlotsTweak(plotBoxes));
+		this.applyCheckeredPlots(events);
 
 		Collections.shuffle(this.freePlots);
 
@@ -60,6 +59,13 @@ public final class BbAssignPlotsBehavior implements IGameBehavior {
 		});
 
 		events.listen(GamePlayerEvents.REMOVE, plots::removePlayer);
+	}
+
+	private void applyCheckeredPlots(EventRegistrar events) {
+		CheckeredPlotsTweak checkeredPlots = new CheckeredPlotsTweak(
+				this.freePlots.stream().map(plot -> plot.bounds).toArray(BlockBox[]::new)
+		);
+		checkeredPlots.applyGloballyTo(events);
 	}
 
 	private void trySpawnParticipant(IGamePhase game, ServerPlayerEntity player) {

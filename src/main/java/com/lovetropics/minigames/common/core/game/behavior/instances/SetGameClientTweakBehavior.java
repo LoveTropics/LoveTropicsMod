@@ -22,6 +22,6 @@ public final class SetGameClientTweakBehavior implements IGameBehavior {
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
-		game.getClientTweaks().add(tweak);
+		tweak.applyGloballyTo(events);
 	}
 }

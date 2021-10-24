@@ -48,6 +48,7 @@ public final class ClientLobbyManager {
 	public static void clearJoined() {
 		ClientLobbyState joinedLobby = ClientLobbyManager.joinedLobby;
 		ClientLobbyManager.joinedLobby = null;
+
 		if (joinedLobby != null) {
 			joinedLobby.joinedRole = null;
 		}
@@ -58,22 +59,9 @@ public final class ClientLobbyManager {
 		return joinedLobby;
 	}
 
-	@Nullable
-	public static <T extends GameClientTweak> T getTweakOrNull(Supplier<GameClientTweakType<T>> type) {
-		ClientLobbyState lobby = ClientLobbyManager.joinedLobby;
-		if (lobby != null) {
-			ClientCurrentGame game = lobby.getCurrentGame();
-			if (game != null) {
-				return game.tweaks().getOrNull(type.get());
-			}
-		}
-		return null;
-	}
-
 	public static ClientLobbyState addOrUpdate(int id, String name, @Nullable ClientCurrentGame currentGame) {
 		ClientLobbyState lobby = LOBBIES.computeIfAbsent(id, ClientLobbyState::new);
-		lobby.name = name;
-		lobby.currentGame = currentGame;
+		lobby.update(name, currentGame);
 		return lobby;
 	}
 

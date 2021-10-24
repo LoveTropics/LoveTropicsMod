@@ -22,6 +22,16 @@ public class ClientLobbyState {
 		this.id = id;
 	}
 
+	public void update(String name, ClientCurrentGame currentGame) {
+		this.name = name;
+		this.currentGame = currentGame;
+	}
+
+	public void setPlayerCounts(int participantCount, int spectatorCount) {
+		this.participantCount = participantCount;
+		this.spectatorCount = spectatorCount;
+	}
+
 	public int getId() {
 		return id;
 	}
@@ -33,11 +43,6 @@ public class ClientLobbyState {
 	@Nullable
 	public ClientCurrentGame getCurrentGame() {
 		return currentGame;
-	}
-
-	public void setPlayerCounts(int participantCount, int spectatorCount) {
-		this.participantCount = participantCount;
-		this.spectatorCount = spectatorCount;
 	}
 
 	public int getParticipantCount() {

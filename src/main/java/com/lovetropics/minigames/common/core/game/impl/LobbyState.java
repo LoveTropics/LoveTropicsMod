@@ -3,7 +3,6 @@ package com.lovetropics.minigames.common.core.game.impl;
 import com.lovetropics.minigames.client.lobby.state.ClientCurrentGame;
 import com.lovetropics.minigames.client.lobby.state.ClientGameDefinition;
 import com.lovetropics.minigames.common.core.game.*;
-import com.lovetropics.minigames.common.core.game.client_tweak.GameClientTweakMap;
 import com.lovetropics.minigames.common.core.game.lobby.LobbyControls;
 import com.lovetropics.minigames.common.core.game.lobby.QueuedGame;
 import net.minecraft.util.text.ITextComponent;
@@ -62,7 +61,7 @@ abstract class LobbyState {
 		@Override
 		protected ClientCurrentGame getClientCurrentGame() {
 			ClientGameDefinition definition = ClientGameDefinition.from(game);
-			return ClientCurrentGame.create(definition, phaseType, GameClientTweakMap.empty()).withError(error);
+			return ClientCurrentGame.create(definition, phaseType).withError(error);
 		}
 	}
 
@@ -95,8 +94,7 @@ abstract class LobbyState {
 				Pending pending = new Pending(phase, createGame(lobby, game.definition()));
 				pending.pendingGame = ClientCurrentGame.create(
 						ClientGameDefinition.from(game.definition()),
-						GamePhaseType.WAITING,
-						GameClientTweakMap.empty()
+						GamePhaseType.WAITING
 				);
 				return pending;
 			} else {
