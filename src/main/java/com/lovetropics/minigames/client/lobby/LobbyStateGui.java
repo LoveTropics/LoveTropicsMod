@@ -7,6 +7,7 @@ import com.lovetropics.minigames.client.lobby.state.ClientLobbyState;
 import com.lovetropics.minigames.common.core.game.LobbyStatus;
 import com.lovetropics.minigames.common.core.game.player.PlayerRole;
 import com.mojang.blaze3d.matrix.MatrixStack;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.util.ResourceLocation;
@@ -14,12 +15,29 @@ import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent.ElementType;
+import net.minecraftforge.event.TickEvent.ClientTickEvent;
+import net.minecraftforge.event.TickEvent.Phase;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber.Bus;
 
 @EventBusSubscriber(modid = Constants.MODID, bus = Bus.FORGE, value = Dist.CLIENT)
 public class LobbyStateGui {
+
+	@SubscribeEvent
+	public static void onKeyInput(ClientTickEvent event) {
+		if (event.phase == Phase.END) {
+			if (LobbyKeybinds.JOIN.isPressed()) {
+				Minecraft.getInstance().player.sendChatMessage("/game join");
+			}
+			if (LobbyKeybinds.SPECTATE.isPressed()) {
+				Minecraft.getInstance().player.sendChatMessage("/game spectate");
+			}
+			if (LobbyKeybinds.LEAVE.isPressed()) {
+				Minecraft.getInstance().player.sendChatMessage("/game leave");
+			}
+		}
+	}
 
 	@SubscribeEvent
 	public static void renderGameOverlay(RenderGameOverlayEvent event) {
@@ -62,14 +80,15 @@ public class LobbyStateGui {
 				fnt.drawStringWithShadow(transform, line, padding, y, -1);
 				y += lineHeight;
 
-				line = TextFormatting.GRAY + "Commands: ";
+				line = TextFormatting.GRAY.toString();
 				if (joinedRole == null) {
-					if (status == LobbyStatus.WAITING) {
-						line += TextFormatting.AQUA + "/join" + TextFormatting.GRAY + " or ";
-					}
-					line += TextFormatting.AQUA + "/spectate";
+					// TODO is this right?
+//					if (status == LobbyStatus.WAITING) {
+						line += TextFormatting.AQUA + "Join [" + LobbyKeybinds.JOIN.func_238171_j_().getString().toUpperCase() + "]" + TextFormatting.GRAY + " or ";
+//					}
+					line += TextFormatting.AQUA + "Spectate [" + LobbyKeybinds.SPECTATE.func_238171_j_().getString().toUpperCase() + "]";
 				} else {
-					line += TextFormatting.AQUA + "/leave";
+					line += TextFormatting.AQUA + "Leave [" + LobbyKeybinds.LEAVE.func_238171_j_().getString().toUpperCase() + "]";
 				}
 				fnt.drawStringWithShadow(transform, line, padding, y, -1);
 				y += lineHeight + padding;
