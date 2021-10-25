@@ -105,13 +105,10 @@ abstract class LobbyState {
 		private CompletableFuture<GameResult<LobbyState>> createGame(GameLobby lobby, IGameDefinition definition) {
 			GameInstance game = new GameInstance(lobby, definition);
 
-			IGamePhaseDefinition playing = definition.getPlayingPhase();
-			IGamePhaseDefinition waiting = definition.getWaitingPhase();
-			if (waiting != null) {
-				return this.createWaiting(game, waiting, playing);
-			} else {
-				return this.createPlaying(game, playing);
-			}
+			final IGamePhaseDefinition playing = definition.getPlayingPhase();
+			return definition.getWaitingPhase()
+					.map(ph -> this.createWaiting(game, ph, playing))
+					.orElseGet(() -> this.createPlaying(game, playing));
 		}
 
 		private CompletableFuture<GameResult<LobbyState>> createPlaying(GameInstance game, IGamePhaseDefinition definition) {

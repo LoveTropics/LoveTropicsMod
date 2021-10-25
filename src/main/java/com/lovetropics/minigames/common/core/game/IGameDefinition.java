@@ -1,10 +1,10 @@
 package com.lovetropics.minigames.common.core.game;
 
+import java.util.Optional;
+
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TranslationTextComponent;
-
-import javax.annotation.Nullable;
 
 /**
  * Used as a discriminant for a registered minigame. Defines the logic of the
@@ -72,8 +72,7 @@ public interface IGameDefinition {
 
 	IGamePhaseDefinition getPlayingPhase();
 
-	@Nullable
-	default IGamePhaseDefinition getWaitingPhase() {
-		return null;
+	default Optional<IGamePhaseDefinition> getWaitingPhase() {
+		return Optional.empty();
 	}
 }

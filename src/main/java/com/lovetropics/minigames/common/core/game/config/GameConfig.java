@@ -98,9 +98,8 @@ public final class GameConfig implements IGameDefinition {
 		return playing;
 	}
 
-	@Nullable
 	@Override
-	public IGamePhaseDefinition getWaitingPhase() {
-		return waiting;
+	public Optional<IGamePhaseDefinition> getWaitingPhase() {
+		return Optional.ofNullable(waiting);
 	}
 }

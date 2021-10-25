@@ -1,6 +1,7 @@
 package com.lovetropics.minigames.common.core.game.behavior;
 
 import com.google.common.base.Function;
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
@@ -16,6 +17,9 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 public final class BehaviorMap implements Iterable<IGameBehavior> {
+
+	public static final BehaviorMap EMPTY = new BehaviorMap(HashMultimap.create());
+
 	private final Multimap<GameBehaviorType<?>, IGameBehavior> behaviors;
 
 	BehaviorMap(Multimap<GameBehaviorType<?>, IGameBehavior> behaviors) {

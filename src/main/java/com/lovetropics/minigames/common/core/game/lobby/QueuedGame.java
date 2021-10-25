@@ -26,8 +26,7 @@ public final class QueuedGame {
 
 	public static QueuedGame create(MinecraftServer server, IGameDefinition game) {
 		BehaviorMap playingBehaviors = game.getPlayingPhase().createBehaviors(server);
-		IGamePhaseDefinition waitingPhase = game.getWaitingPhase();
-		BehaviorMap waitingBehaviors = waitingPhase != null ? waitingPhase.createBehaviors(server) : null;
+		BehaviorMap waitingBehaviors = game.getWaitingPhase().map(ph -> ph.createBehaviors(server)).orElse(BehaviorMap.EMPTY);
 		return new QueuedGame(NEXT_NETWORK_ID.getAndIncrement(), game, playingBehaviors, waitingBehaviors);
 	}
 
