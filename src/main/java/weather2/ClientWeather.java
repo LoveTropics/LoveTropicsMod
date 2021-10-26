@@ -84,19 +84,19 @@ public final class ClientWeather {
 
 	public boolean isHeatwave() {
 		if (false) return true;
-		if (Minecraft.getInstance().world != null && Minecraft.getInstance().world.getGameTime() % 800 >= 600) return true;
+		//if (Minecraft.getInstance().world != null && Minecraft.getInstance().world.getGameTime() % 800 >= 600) return true;
 		return this.state.heatwave;
 	}
 
 	public boolean isSandstorm() {
 		if (false) return true;
-		if (Minecraft.getInstance().world != null && Minecraft.getInstance().world.getGameTime() % 800 >= 400 && Minecraft.getInstance().world.getGameTime() % 800 < 600) return true;
+		//if (Minecraft.getInstance().world != null && Minecraft.getInstance().world.getGameTime() % 800 >= 400 && Minecraft.getInstance().world.getGameTime() % 800 < 600) return true;
 		return this.state.sandstorm;
 	}
 
 	public boolean isSnowstorm() {
 		if (false) return true;
-		if (Minecraft.getInstance().world != null && Minecraft.getInstance().world.getGameTime() % 800 >= 200 && Minecraft.getInstance().world.getGameTime() % 800 < 400) return true;
+		//if (Minecraft.getInstance().world != null && Minecraft.getInstance().world.getGameTime() % 800 >= 200 && Minecraft.getInstance().world.getGameTime() % 800 < 400) return true;
 		//if (Minecraft.getInstance().world != null && Minecraft.getInstance().world.getGameTime() % 400 < 200) return true;
 		return this.state.snowstorm;
 	}

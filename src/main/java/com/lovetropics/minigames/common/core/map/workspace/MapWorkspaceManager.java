@@ -6,15 +6,19 @@ import com.lovetropics.minigames.common.core.dimension.RuntimeDimensionHandle;
 import com.lovetropics.minigames.common.core.dimension.RuntimeDimensions;
 import com.lovetropics.minigames.common.core.map.MapWorldInfo;
 import com.lovetropics.minigames.common.core.map.MapWorldSettings;
+import com.lovetropics.minigames.common.util.DynamicRegistryReadingOps;
 import com.lovetropics.minigames.common.util.Util;
 import com.mojang.serialization.DataResult;
+import com.mojang.serialization.DynamicOps;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.INBT;
 import net.minecraft.nbt.ListNBT;
 import net.minecraft.nbt.NBTDynamicOps;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.RegistryKey;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.registry.WorldGenSettingsExport;
 import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraft.world.storage.WorldSavedData;
@@ -26,7 +30,7 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
 public final class MapWorkspaceManager extends WorldSavedData {
-	private static final String ID = Constants.MODID + ":map_workspace_manager";
+	private static final String ID = Constants.MODID + "_map_workspace_manager";
 
 	private final MinecraftServer server;
 	private final Map<String, MapWorkspace> workspaces = new Object2ObjectOpenHashMap<>();
@@ -99,9 +103,11 @@ public final class MapWorkspaceManager extends WorldSavedData {
 	public CompoundNBT write(CompoundNBT root) {
 		ListNBT workspaceList = new ListNBT();
 
+		WorldGenSettingsExport<INBT> ops = WorldGenSettingsExport.create(NBTDynamicOps.INSTANCE, this.server.getDynamicRegistries());
+
 		for (Map.Entry<String, MapWorkspace> entry : this.workspaces.entrySet()) {
 			MapWorkspaceData data = entry.getValue().intoData();
-			MapWorkspaceData.CODEC.encodeStart(NBTDynamicOps.INSTANCE, data)
+			MapWorkspaceData.CODEC.encodeStart(ops, data)
 					.result().ifPresent(workspaceList::add);
 		}
 
@@ -116,10 +122,12 @@ public final class MapWorkspaceManager extends WorldSavedData {
 
 		ListNBT workspaceList = root.getList("workspaces", NBT.TAG_COMPOUND);
 
+		DynamicOps<INBT> ops = DynamicRegistryReadingOps.create(this.server, NBTDynamicOps.INSTANCE);
+
 		for (int i = 0; i < workspaceList.size(); i++) {
 			CompoundNBT workspaceRoot = workspaceList.getCompound(i);
 
-			DataResult<MapWorkspaceData> result = MapWorkspaceData.CODEC.parse(NBTDynamicOps.INSTANCE, workspaceRoot);
+			DataResult<MapWorkspaceData> result = MapWorkspaceData.CODEC.parse(ops, workspaceRoot);
 			result.result().ifPresent(workspaceData -> {
 				RuntimeDimensionHandle dimensionHandle = getOrCreateDimension(workspaceData.id, workspaceData.dimension, workspaceData.worldSettings);
 				MapWorkspace workspace = workspaceData.create(server, dimensionHandle);

@@ -25,7 +25,7 @@ public class GameControlCommand {
                         String control = StringArgumentType.getString(ctx, "control");
                         IGameManager manager = IGameManager.get();
                         CommandSource source = ctx.getSource();
-                        manager.getControlInvoker(source).invoke(control, source);
+                        manager.getControlInvoker(source).invoke(control,  source);
                         return Command.SINGLE_SUCCESS;
                     })
                 )

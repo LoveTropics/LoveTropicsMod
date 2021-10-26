@@ -3,14 +3,14 @@ package com.lovetropics.minigames.common.content.survive_the_tide.behavior;
 import com.lovetropics.lib.BlockBox;
 import com.lovetropics.minigames.common.content.survive_the_tide.IcebergLine;
 import com.lovetropics.minigames.common.core.game.GameException;
-import com.lovetropics.minigames.common.core.game.IActiveGame;
+import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
-import com.lovetropics.minigames.common.core.game.behavior.event.GameLifecycleEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameLivingEntityEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameLogicEvents;
-import com.lovetropics.minigames.common.core.game.state.instances.GamePhase;
-import com.lovetropics.minigames.common.core.game.state.instances.GamePhaseState;
+import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
+import com.lovetropics.minigames.common.core.game.state.GamePhase;
+import com.lovetropics.minigames.common.core.game.state.GamePhaseState;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.longs.*;
@@ -39,6 +39,7 @@ import net.minecraftforge.fml.RegistryObject;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.apache.logging.log4j.LogManager;
 
+import javax.annotation.Nullable;
 import java.util.*;
 
 public class RisingTidesGameBehavior implements IGameBehavior {
@@ -46,7 +47,7 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 		return instance.group(
 				Codec.STRING.optionalFieldOf("tide_area_region", "tide_area").forGetter(c -> c.tideAreaKey),
 				Codec.STRING.optionalFieldOf("iceberg_lines_region", "iceberg_lines").forGetter(c -> c.icebergLinesKey),
-				Codec.unboundedMap(Codec.STRING,  Codec.INT).fieldOf("water_levels").forGetter(c -> c.phaseToTideHeight),
+				Codec.unboundedMap(Codec.STRING, Codec.INT).fieldOf("water_levels").forGetter(c -> c.phaseToTideHeight),
 				Codec.STRING.listOf().fieldOf("phases_icebergs_grow").forGetter(c -> new ArrayList<>(c.phasesIcebergsGrow)),
 				Codec.INT.fieldOf("iceberg_growth_tick_rate").forGetter(c -> c.icebergGrowthTickRate)
 		).apply(instance, RisingTidesGameBehavior::new);
@@ -85,8 +86,8 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 	}
 
 	@Override
-	public void register(IActiveGame game, EventRegistrar events) throws GameException {
-		tideArea = game.getMapRegions().getOne(tideAreaKey);
+	public void register(IGamePhase game, EventRegistrar events) throws GameException {
+		tideArea = game.getMapRegions().getOrThrow(tideAreaKey);
 
 		minTideChunk = new ChunkPos(tideArea.min.getX() >> 4, tideArea.min.getZ() >> 4);
 		maxTideChunk = new ChunkPos(tideArea.max.getX() >> 4, tideArea.max.getZ() >> 4);
@@ -118,23 +119,23 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 			icebergLines.add(new IcebergLine(start, end, 10));
 		}
 
-		phases = game.getState().getOrThrow(GamePhaseState.TYPE);
+		phases = game.getState().getOrThrow(GamePhaseState.KEY);
 
-		events.listen(GameLifecycleEvents.START, g -> {
+		events.listen(GamePhaseEvents.START, () -> {
 			lastPhase = phases.get();
 			waterLevel = phaseToTideHeight.get(phases.get().key);
 			chunkWaterLevels.defaultReturnValue(waterLevel);
 		});
 
 		events.listen(GameLivingEntityEvents.TICK, this::onLivingEntityUpdate);
-		events.listen(GameLifecycleEvents.TICK, this::tick);
+		events.listen(GamePhaseEvents.TICK, () -> tick(game));
 
-		events.listen(GameLogicEvents.PHASE_CHANGE, (g, phase, lastPhase) -> {
+		events.listen(GameLogicEvents.PHASE_CHANGE, (phase, lastPhase) -> {
 			this.lastPhase = lastPhase;
 		});
 	}
 
-	private void onLivingEntityUpdate(final IActiveGame game, LivingEntity entity) {
+	private void onLivingEntityUpdate(LivingEntity entity) {
 		// NOTE: DO NOT REMOVE THIS CHECK, CAUSES FISH TO DIE AND SPAWN ITEMS ON DEATH
 		// FISH WILL KEEP SPAWNING, DYING AND COMPLETELY SLOW THE SERVER TO A CRAWL
 		if (!entity.canBreatheUnderwater()) {
@@ -144,7 +145,7 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 		}
 	}
 
-	private void tick(IActiveGame game) {
+	private void tick(IGamePhase game) {
 		GamePhase currentPhase = phases.get();
 		int prevWaterLevel = phaseToTideHeight.get(lastPhase.key);
 
@@ -161,7 +162,7 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 		}
 	}
 
-	private void spawnRisingTideParticles(IActiveGame game) {
+	private void spawnRisingTideParticles(IGamePhase game) {
 		ServerWorld world = game.getWorld();
 		Random random = world.rand;
 
@@ -195,7 +196,7 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 		return phaseLength / Math.max(1, Math.abs(waterLevelDiff));
 	}
 
-	private void processRisingTideQueue(IActiveGame game) {
+	private void processRisingTideQueue(IGamePhase game) {
 		if (queuedChunksToUpdate.isEmpty()) {
 			return;
 		}
@@ -219,7 +220,7 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 			}
 
 			iterator.remove();
-			updatedBlocks += increaseTideForChunk(world, chunk);
+			updatedBlocks += increaseTideForChunk(chunk);
 
 			// limit the time we spend rising the tide each tick
 			if (System.currentTimeMillis() - startTime > RISING_TIDE_THRESHOLD_MS) {
@@ -233,7 +234,7 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 		}
 	}
 
-	private void tickWaterLevel(final IActiveGame game, final GamePhase phase, final int prevWaterLevel) {
+	private void tickWaterLevel(final IGamePhase game, final GamePhase phase, final int prevWaterLevel) {
 		final int targetWaterLevel = phaseToTideHeight.get(phase.key);
 
 		int waterChangeInterval = this.calculateWaterChangeInterval(
@@ -255,102 +256,84 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 	}
 
 	// thicc boi
-	private long increaseTideForChunk(World world, Chunk chunk) {
+	private long increaseTideForChunk(Chunk chunk) {
 		ChunkPos chunkPos = chunk.getPos();
 
 		int targetLevel = this.waterLevel;
 		int lastLevel = this.chunkWaterLevels.put(chunkPos.asLong(), targetLevel);
 
-		// no work to be done
-		if (lastLevel >= targetLevel) {
+		if (targetLevel > lastLevel) {
+			return increaseTideForChunk(chunk, lastLevel, targetLevel);
+		} else {
 			return 0;
 		}
+	}
+
+	private long increaseTideForChunk(Chunk chunk, int fromWaterLevel, int toWaterLevel) {
+		World world = chunk.getWorld();
+		ServerChunkProvider chunkProvider = (ServerChunkProvider) world.getChunkProvider();
+
+		ChunkPos chunkPos = chunk.getPos();
+
+		Heightmap heightmapSurface = chunk.getHeightmap(Heightmap.Type.WORLD_SURFACE);
+		Heightmap heightmapMotionBlocking = chunk.getHeightmap(Heightmap.Type.MOTION_BLOCKING);
+
+		int fromY = fromWaterLevel;
+		int toY = toWaterLevel;
 
 		// this is the total area over which we need to increase the tide
-		BlockPos min = new BlockPos(tideArea.min.getX(), lastLevel, tideArea.min.getZ());
-		BlockPos max = new BlockPos(tideArea.max.getX(), targetLevel, tideArea.max.getZ());
+		BlockPos chunkMin = new BlockPos(
+				Math.max(tideArea.min.getX(), chunkPos.getXStart()),
+				fromY,
+				Math.max(tideArea.min.getZ(), chunkPos.getZStart())
+		);
+		BlockPos chunkMax = new BlockPos(
+				Math.min(tideArea.max.getX(), chunkPos.getXEnd()),
+				toY,
+				Math.min(tideArea.max.getZ(), chunkPos.getZEnd())
+		);
 
 		long updatedBlocks = 0;
 
-		ChunkSection[] sectionArray = chunk.getSections();
-
-		int minChunkX = chunkPos.getXStart();
-		int minChunkZ = chunkPos.getZStart();
-
-		int minSection = lastLevel >> 4;
-		int maxSection = targetLevel >> 4;
-
-		BlockState waterBarrier = WATER_BARRIER.orElse(Blocks.BARRIER).getDefaultState();
+		int fromSection = fromY >> 4;
+		int toSection = toY >> 4;
 
 		// iterate through all the sections that need to be changed
-		for (int sectionY = minSection; sectionY <= maxSection; sectionY++) {
-			ChunkSection section = sectionArray[sectionY];
+		for (int sectionY = fromSection; sectionY <= toSection; sectionY++) {
+			ChunkSection section = getOrCreateSection(chunk, sectionY);
 			int minSectionY = sectionY << 4;
+			int maxSectionY = minSectionY + 15;
 
 			// Calculate start/end within the current section
-			BlockPos localMin = new BlockPos(
-					Math.max(0, min.getX() - minChunkX),
-					Math.max(0, min.getY() - minSectionY),
-					Math.max(0, min.getZ() - minChunkZ)
-			);
+			BlockPos sectionMin = new BlockPos(chunkMin.getX(), Math.max(chunkMin.getY(), minSectionY), chunkMin.getZ());
+			BlockPos sectionMax = new BlockPos(chunkMax.getX(), Math.min(chunkMax.getY(), maxSectionY), chunkMax.getZ());
 
-			BlockPos localMax = new BlockPos(
-					Math.min(15, max.getX() - minChunkX),
-					Math.min(15, max.getY() - minSectionY),
-					Math.min(15, max.getZ() - minChunkZ)
-			);
+			for (BlockPos worldPos : BlockPos.getAllInBoxMutable(sectionMin, sectionMax)) {
+				int localX = worldPos.getX() & 15;
+				int localY = worldPos.getY() & 15;
+				int localZ = worldPos.getZ() & 15;
 
-			// If this section is empty, we must add a new one
-			if (section == Chunk.EMPTY_SECTION) {
-				// This constructor expects the "base y" which means the real Y-level floored to the nearest multiple of 16
-				// This is accomplished by removing the last 4 bits of the coordinate
-				section = new ChunkSection(targetLevel & ~0xF);
-				sectionArray[targetLevel >> 4] = section;
-			}
+				BlockState existingBlock = section.getBlockState(localX, localY, localZ);
 
-			Heightmap heightmapSurface = chunk.getHeightmap(Heightmap.Type.WORLD_SURFACE);
-			Heightmap heightmapMotionBlocking = chunk.getHeightmap(Heightmap.Type.MOTION_BLOCKING);
+				BlockState newBlock = mapBlock(existingBlock, worldPos.getY(), fromWaterLevel);
+				if (newBlock == null) continue;
 
-			BlockPos.Mutable worldPos = new BlockPos.Mutable();
-
-			for (BlockPos pos : BlockPos.getAllInBoxMutable(localMin, localMax)) {
-				BlockState existing = section.getBlockState(pos.getX(), pos.getY(), pos.getZ());
-				worldPos.setPos(minChunkX + pos.getX(), minSectionY + pos.getY(), minChunkZ + pos.getZ());
-
-				BlockState toSet = null;
-				if (existing.isAir(world, worldPos) || !existing.getMaterial().blocksMovement() || existing.getBlock() == Blocks.BAMBOO) {
-					// If air or a replaceable block, just set to water
-					toSet = Blocks.WATER.getDefaultState();
-				} else if (existing.getBlock() instanceof IWaterLoggable) {
-					// If waterloggable, set the waterloggable property to true
-					toSet = existing.with(BlockStateProperties.WATERLOGGED, true);
-					if (existing.getBlock() == Blocks.CAMPFIRE) {
-						toSet = toSet.with(CampfireBlock.LIT, false);
-					}
-				} else if (existing.getBlock() == Blocks.BARRIER) {
-					toSet = waterBarrier;
-				} else if (existing.getBlock() == Blocks.BLACK_CONCRETE_POWDER) {
-					// adding to the amazing list of hardcoded replacements.. yes!
-					toSet = Blocks.BLACK_CONCRETE.getDefaultState();
+				if (existingBlock.getBlock() != Blocks.BAMBOO) {
+					section.setBlockState(localX, localY, localZ, newBlock);
+				} else {
+					world.setBlockState(worldPos, newBlock, Constants.BlockFlags.NO_RERENDER | Constants.BlockFlags.BLOCK_UPDATE);
 				}
 
-				if (toSet != null) {
-					if (existing.getBlock() == Blocks.BAMBOO) {
-						world.setBlockState(worldPos, toSet, Constants.BlockFlags.NO_RERENDER | Constants.BlockFlags.BLOCK_UPDATE);
-					} else {
-						section.setBlockState(pos.getX(), pos.getY(), pos.getZ(), toSet);
-					}
+				// Update heightmap
+				heightmapSurface.update(localX, localY, localZ, newBlock);
+				heightmapMotionBlocking.update(localX, localY, localZ, newBlock);
 
-					// Tell the client about the change
-					((ServerChunkProvider) world.getChunkProvider()).markBlockChanged(worldPos);
-					// Update heightmap
-					heightmapSurface.update(pos.getX(), worldPos.getY(), pos.getZ(), toSet);
-					heightmapMotionBlocking.update(pos.getX(), worldPos.getY(), pos.getZ(), toSet);
+				// Tell the client about the change
+				chunkProvider.markBlockChanged(worldPos);
+				// FIXES LIGHTING AT THE COST OF PERFORMANCE - TODO ask fry?
+				// chunkProvider.getLightManager().checkBlock(realPos);
 
-					updatedBlocks++;
-					// FIXES LIGHTING AT THE COST OF PERFORMANCE - TODO ask fry?
-					// world.getChunkProvider().getLightManager().checkBlock(realPos);
-				}
+				updatedBlocks++;
 			}
 		}
 
@@ -360,5 +343,63 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 		}
 
 		return updatedBlocks;
+	}
+
+	private static ChunkSection getOrCreateSection(Chunk chunk, int sectionY) {
+		ChunkSection section = chunk.getSections()[sectionY];
+		if (section == Chunk.EMPTY_SECTION) {
+			section = new ChunkSection(sectionY << 4);
+			chunk.getSections()[sectionY] = section;
+		}
+
+		return section;
+	}
+
+	@Nullable
+	private static BlockState mapBlock(BlockState state, int y, int fromWaterLevel) {
+		if (y <= fromWaterLevel) {
+			return mapBlockBelowWater(state);
+		} else {
+			return mapBlockRisingWater(state);
+		}
+	}
+
+	@Nullable
+	private static BlockState mapBlockRisingWater(BlockState state) {
+		Block block = state.getBlock();
+
+		if (state.isAir() || !state.getMaterial().blocksMovement() || block == Blocks.BAMBOO) {
+			// If air or a replaceable block, just set to water
+			return Blocks.WATER.getDefaultState();
+		}
+
+		if (block instanceof IWaterLoggable) {
+			// If waterloggable, set the waterloggable property to true
+			state = state.with(BlockStateProperties.WATERLOGGED, true);
+			if (block == Blocks.CAMPFIRE) {
+				state = state.with(CampfireBlock.LIT, false);
+			}
+			return state;
+		}
+
+		if (block == Blocks.BARRIER) {
+			return WATER_BARRIER.orElse(Blocks.BARRIER).getDefaultState();
+		}
+
+		if (block == Blocks.BLACK_CONCRETE_POWDER) {
+			// adding to the amazing list of hardcoded replacements.. yes!
+			return Blocks.BLACK_CONCRETE.getDefaultState();
+		}
+
+		return null;
+	}
+
+	@Nullable
+	private static BlockState mapBlockBelowWater(BlockState state) {
+		if (state.getBlock() == Blocks.GRASS_BLOCK || state.getBlock() == Blocks.GRASS_PATH) {
+			return Blocks.DIRT.getDefaultState();
+		}
+
+		return null;
 	}
 }

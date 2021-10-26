@@ -4,6 +4,7 @@ import net.minecraft.util.Unit;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
 
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 
 public final class GameResult<T> {
@@ -29,9 +30,22 @@ public final class GameResult<T> {
 		return new GameResult<>(null, error);
 	}
 
+	public static <T> GameResult<T> error(GameException exception) {
+		return new GameResult<>(null, exception.getTextMessage());
+	}
+
 	public static <T> GameResult<T> fromException(String message, Exception exception) {
 		exception.printStackTrace();
 		return GameResult.error(new StringTextComponent(message + ": " + exception.toString()));
+	}
+
+	public static <T> CompletableFuture<GameResult<T>> handleException(String message, CompletableFuture<GameResult<T>> future) {
+		return future.handle((result, throwable) -> {
+			if (throwable instanceof Exception) {
+				return GameResult.fromException(message, (Exception) throwable);
+			}
+			return result;
+		});
 	}
 
 	public T getOk() {
@@ -43,23 +57,23 @@ public final class GameResult<T> {
 	}
 
 	public boolean isOk() {
-		return ok != null;
+		return !isError();
 	}
 
 	public boolean isError() {
 		return error != null;
 	}
 
-	public <U> GameResult<U> map(Function<T, U> function) {
-		if (ok != null) {
+	public <U> GameResult<U> map(Function<? super T, ? extends U> function) {
+		if (isOk()) {
 			return GameResult.ok(function.apply(ok));
 		} else {
 			return castError();
 		}
 	}
 
-	public <U> GameResult<U> flatMap(Function<T, GameResult<U>> function) {
-		if (ok != null) {
+	public <U> GameResult<U> andThen(Function<? super T, GameResult<U>> function) {
+		if (isOk()) {
 			return function.apply(ok);
 		} else {
 			return castError();
@@ -67,16 +81,32 @@ public final class GameResult<T> {
 	}
 
 	public <U> GameResult<U> mapValue(U value) {
-		if (ok != null) {
+		if (isOk()) {
 			return GameResult.ok(value);
 		} else {
 			return castError();
 		}
 	}
 
+	public <U> CompletableFuture<GameResult<U>> andThenFuture(Function<T, CompletableFuture<GameResult<U>>> function) {
+		if (isOk()) {
+			return function.apply(ok);
+		} else {
+			return CompletableFuture.completedFuture(castError());
+		}
+	}
+
+	public T orElseGet(Function<ITextComponent, T> orElse) {
+		if (isOk()) {
+			return ok;
+		} else {
+			return orElse.apply(error);
+		}
+	}
+
 	@SuppressWarnings("unchecked")
 	public <U> GameResult<U> castError() {
-		if (error != null) {
+		if (isError()) {
 			return (GameResult<U>) this;
 		} else {
 			throw new UnsupportedOperationException("not an error!");

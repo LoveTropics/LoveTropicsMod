@@ -25,4 +25,11 @@ public abstract class RenderParticlesOverride {
         particleManager.renderParticles(matrixStackIn, bufferIn, lightTextureIn, activeRenderInfoIn, partialTicks, clippingHelper);
 
     }
+
+    @Redirect(method = "updateCameraAndRender",
+            at = @At(value = "INVOKE",
+                    target = "Lnet/minecraft/client/renderer/WorldRenderer;renderRainSnow(Lnet/minecraft/client/renderer/LightTexture;FDDD)V"))
+    public void renderRainSnow(WorldRenderer worldRenderer, LightTexture lightmapIn, float partialTicks, double xIn, double yIn, double zIn) {
+        //stopping vanilla from running renderRainSnow
+    }
 }

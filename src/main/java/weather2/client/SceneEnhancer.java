@@ -309,7 +309,7 @@ public class SceneEnhancer implements Runnable {
 
 		heatwaveIntensity = CoroUtilMisc.adjVal(heatwaveIntensity, heatwaveIntensityTarget, 0.01F);*/
 
-		if (fogAdjuster.getActiveIntensity() > 0) {
+		/*if (fogAdjuster.getActiveIntensity() > 0) {
 			if (fogAdjuster.getActiveIntensity() < 0.33F) {
 				tryPlayPlayerLockedSound(WeatherUtilSound.snd_sandstorm_low, 5, client.player, 1F);
 			} else if (fogAdjuster.getActiveIntensity() < 0.66F) {
@@ -317,7 +317,7 @@ public class SceneEnhancer implements Runnable {
 			} else {
 				tryPlayPlayerLockedSound(WeatherUtilSound.snd_sandstorm_high, 3, client.player, 1F);
 			}
-		}
+		}*/
 	}
 
 	public static boolean tryPlayPlayerLockedSound(String[] sound, int arrIndex, Entity source, float vol)
@@ -449,6 +449,14 @@ public class SceneEnhancer implements Runnable {
 					boolean groundSplash = true;
 					boolean downfall = true;
 
+					float acidRainRed = 0.5F;
+					float acidRainGreen = 1F;
+					float acidRainBlue = 0.5F;
+
+					float vanillaRainRed = 0.7F;
+					float vanillaRainGreen = 0.7F;
+					float vanillaRainBlue = 1F;
+
 					if (rainParticle && spawnNeed > 0) {
 						for (int i = 0; i < safetyCutout; i++) {
 							BlockPos pos = new BlockPos(
@@ -501,6 +509,16 @@ public class SceneEnhancer implements Runnable {
 
 								windMan.applyWindForceNew(rain, 10F, 0.5F);
 
+								if (weather.getRainType() == RainType.ACID) {
+									rain.particleRed = acidRainRed;
+									rain.particleGreen = acidRainGreen;
+									rain.particleBlue = acidRainBlue;
+								} else {
+									rain.particleRed = vanillaRainRed;
+									rain.particleGreen = vanillaRainGreen;
+									rain.particleBlue = vanillaRainBlue;
+								}
+
 								rain.spawnAsWeatherEffect();
 
 								spawnCount++;
@@ -513,13 +531,7 @@ public class SceneEnhancer implements Runnable {
 
 					//TODO: make ground splash and downfall use spawnNeed var style design
 
-					float acidRainRed = 0.5F;
-					float acidRainGreen = 1F;
-					float acidRainBlue = 0.5F;
 
-					float vanillaRainRed = 0.7F;
-					float vanillaRainGreen = 0.7F;
-					float vanillaRainBlue = 1F;
 
 					spawnAreaSize = 40;
 					//ground splash
@@ -629,7 +641,7 @@ public class SceneEnhancer implements Runnable {
 							scanAheadRange = 10;
 						}
 
-						for (int i = 0; i < 2F * curPrecipVal * PRECIPITATION_PARTICLE_EFFECT_RATE * adjustedRate * 1; i++) {
+						for (int i = 0; i < 2F * curPrecipVal * PRECIPITATION_PARTICLE_EFFECT_RATE * adjustedRate * 0.5F; i++) {
 							BlockPos pos = new BlockPos(
 									entP.getPosX() + rand.nextInt(spawnAreaSize) - (spawnAreaSize / 2),
 									entP.getPosY() + 5 + rand.nextInt(15),
@@ -662,19 +674,21 @@ public class SceneEnhancer implements Runnable {
 								rain.setDontRenderUnderTopmostBlock(false);
 								//rain.setSlantParticleToWind(true);
 
-								rain.windWeight = 8F;
+								rain.windWeight = 5F;
 								rain.setFacePlayer(false);
 								rain.facePlayerYaw = true;
 
 								rain.setScale(9F + (rand.nextFloat() * 0.3F));
-								rain.setScale(6F + (rand.nextFloat() * 0.3F));
+								rain.setScale(12F + (rand.nextFloat() * 0.3F));
+								//rain.setScale(15F + (rand.nextFloat() * 0.3F));
+								//rain.setScale(6F + (rand.nextFloat() * 0.3F));
 								//setting size so it doesnt pop in and out when near camera edge due to its size
-								rain.setSize(10, 30);
+								rain.setSize(10, 50);
 								//rain.setScale(25F);
 								rain.setMaxAge(120);
 								rain.setGravity(0.35F);
 								//opted to leave the popin for rain, its not as bad as snow, and using fade in causes less rain visual overall
-								rain.setTicksFadeInMax(10);
+								rain.setTicksFadeInMax(20);
 								rain.setFullAlphaTarget(1F);
 								rain.setAlphaF(0);
 								rain.setTicksFadeOutMax(10);

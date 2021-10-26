@@ -66,6 +66,16 @@ public final class PlayerDisguise implements ICapabilityProvider {
 		return disguise != null ? disguise.getDisguiseEntity() : null;
 	}
 
+	public void clearDisguise() {
+		this.setDisguise(null);
+	}
+
+	public void clearDisguise(DisguiseType disguise) {
+		if (this.disguiseType == disguise) {
+			this.clearDisguise();
+		}
+	}
+
 	public void setDisguise(@Nullable DisguiseType disguise) {
 		if (disguise != null) {
 			this.disguiseType = disguise;
@@ -92,5 +102,9 @@ public final class PlayerDisguise implements ICapabilityProvider {
 	@Override
 	public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> cap, @Nullable Direction side) {
 		return LoveTropics.playerDisguiseCap().orEmpty(cap, instance);
+	}
+
+	public void copyFrom(PlayerDisguise from) {
+		this.setDisguise(from.getDisguiseType());
 	}
 }

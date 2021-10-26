@@ -1,6 +1,7 @@
 package com.lovetropics.minigames.common.core.map;
 
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.world.Difficulty;
 import net.minecraft.world.GameRules;
 import net.minecraft.world.storage.DerivedWorldInfo;
 import net.minecraft.world.storage.IServerConfiguration;
@@ -58,6 +59,10 @@ public final class MapWorldInfo extends DerivedWorldInfo {
 		this.settings.thunderTime = time;
 	}
 
+	public void setDifficulty(Difficulty difficulty) {
+		this.settings.difficulty = difficulty;
+	}
+
 	@Override
 	public boolean isRaining() {
 		return this.settings.raining;
@@ -86,5 +91,10 @@ public final class MapWorldInfo extends DerivedWorldInfo {
 	@Override
 	public GameRules getGameRulesInstance() {
 		return this.settings.gameRules;
+	}
+
+	@Override
+	public Difficulty getDifficulty() {
+		return this.settings.difficulty;
 	}
 }

@@ -1,19 +1,19 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances.command;
 
 import com.lovetropics.lib.codec.MoreCodecs;
-import com.lovetropics.minigames.common.core.game.GameException;
-import com.lovetropics.minigames.common.core.game.IActiveGame;
-import com.lovetropics.minigames.common.core.game.IPollingGame;
-import com.lovetropics.minigames.common.core.game.IProtoGame;
+import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
-import com.lovetropics.minigames.common.core.game.control.GameControlCommands;
+import com.lovetropics.minigames.common.core.game.state.control.ControlCommands;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.serialization.Codec;
 import net.minecraft.command.CommandSource;
+import net.minecraft.command.ICommandSource;
 import net.minecraft.entity.Entity;
-import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.math.vector.Vector2f;
+import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.util.text.StringTextComponent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -73,23 +73,21 @@ public abstract class CommandInvokeBehavior implements IGameBehavior {
 	}
 
 	@Override
-	public void registerPolling(IPollingGame game, EventRegistrar events) throws GameException {
-		MinecraftServer server = game.getServer();
-		this.dispatcher = server.getCommandManager().getDispatcher();
-		this.source = server.getCommandSource();
+	public void register(IGamePhase game, EventRegistrar events) {
+		this.dispatcher = game.getServer().getCommandManager().getDispatcher();
+		this.source = this.createCommandSource(game);
 
 		this.registerControls(game, game.getControlCommands());
+		this.registerEvents(game, events);
 	}
 
-	@Override
-	public void register(IActiveGame game, EventRegistrar events) {
-		this.source = game.getCommandSource();
-		this.registerControls(game, game.getControlCommands());
-		this.registerEvents(events);
+	private CommandSource createCommandSource(IGamePhase game) {
+		String name = game.getLobby().getMetadata().name();
+		return new CommandSource(ICommandSource.DUMMY, Vector3d.ZERO, Vector2f.ZERO, game.getWorld(), 4, name, new StringTextComponent(name), game.getServer(), null);
 	}
 
-	protected void registerControls(IProtoGame game, GameControlCommands commands) {
+	protected void registerControls(IGamePhase game, ControlCommands commands) {
 	}
 
-	protected abstract void registerEvents(EventRegistrar events);
+	protected abstract void registerEvents(IGamePhase game, EventRegistrar events);
 }

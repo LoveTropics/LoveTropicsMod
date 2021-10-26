@@ -2,8 +2,8 @@ package com.lovetropics.minigames.common.core.integration;
 
 import com.google.gson.*;
 import com.lovetropics.minigames.common.config.ConfigLT;
-import com.lovetropics.minigames.common.core.game.statistics.GameStatistics;
-import com.lovetropics.minigames.common.core.game.statistics.PlayerKey;
+import com.lovetropics.minigames.common.core.game.state.statistics.GameStatistics;
+import com.lovetropics.minigames.common.core.game.state.statistics.PlayerKey;
 import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

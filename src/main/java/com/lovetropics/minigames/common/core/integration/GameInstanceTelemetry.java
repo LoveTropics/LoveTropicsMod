@@ -4,14 +4,15 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.common.config.ConfigLT;
-import com.lovetropics.minigames.common.core.game.GameInstanceId;
-import com.lovetropics.minigames.common.core.game.IActiveGame;
 import com.lovetropics.minigames.common.core.game.IGameDefinition;
-import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
+import com.lovetropics.minigames.common.core.game.IGamePhase;
+import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePackageEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
-import com.lovetropics.minigames.common.core.game.statistics.GameStatistics;
-import com.lovetropics.minigames.common.core.game.statistics.PlayerKey;
+import com.lovetropics.minigames.common.core.game.state.GameStateKey;
+import com.lovetropics.minigames.common.core.game.state.IGameState;
+import com.lovetropics.minigames.common.core.game.state.statistics.GameStatistics;
+import com.lovetropics.minigames.common.core.game.state.statistics.PlayerKey;
 import com.lovetropics.minigames.common.core.integration.game_actions.GameAction;
 import com.lovetropics.minigames.common.core.integration.game_actions.GameActionHandler;
 import com.lovetropics.minigames.common.core.integration.game_actions.GameActionType;
@@ -21,52 +22,45 @@ import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.server.MinecraftServer;
 
 import java.time.Instant;
+import java.util.UUID;
 
-public final class GameInstanceTelemetry {
-	private final IActiveGame game;
+public final class GameInstanceTelemetry implements IGameState {
+	public static final GameStateKey<GameInstanceTelemetry> KEY = GameStateKey.create("Game Telemetry");
+
+	private final IGamePhase game;
 	private final Telemetry telemetry;
 
-	private final IGameDefinition definition;
 	private final PlayerKey initiator;
 
 	private final GameActionHandler actions;
 
 	private boolean closed;
 
-	private GameInstanceTelemetry(IActiveGame game, Telemetry telemetry) {
+	public GameInstanceTelemetry(IGamePhase game, Telemetry telemetry) {
 		this.game = game;
 		this.telemetry = telemetry;
-		this.definition = game.getDefinition();
 		this.initiator = game.getInitiator();
 
-		this.telemetry.openInstance(this);
 		this.actions = new GameActionHandler(this.game, this);
 	}
 
-	static GameInstanceTelemetry open(IActiveGame game, Telemetry telemetry) {
-		return new GameInstanceTelemetry(game, telemetry);
+	public UUID getUuid() {
+		return game.getUuid();
 	}
 
-	public GameInstanceId getInstanceId() {
-		return game.getInstanceId();
-	}
-
-	public void start() {
+	public void start(EventRegistrar events) {
 		JsonObject payload = new JsonObject();
 		payload.add("initiator", initiator.serializeProfile());
 		payload.add("participants", serializeParticipantsArray());
 		post(ConfigLT.TELEMETRY.minigameStartEndpoint.get(), payload);
 
-		GameEventListeners events = game.getEvents();
-		events.listen(GamePlayerEvents.JOIN, (g, p, r) -> sendParticipantsList());
-		events.listen(GamePlayerEvents.LEAVE, (g, p) -> sendParticipantsList());
+		events.listen(GamePlayerEvents.JOIN, (p) -> sendParticipantsList());
+		events.listen(GamePlayerEvents.LEAVE, (p) -> sendParticipantsList());
 	}
 
 	public void finish(GameStatistics statistics) {
-		long finishTime = System.currentTimeMillis() / 1000;
-
 		JsonObject payload = new JsonObject();
-		payload.addProperty("finish_time_utc", finishTime);
+		payload.addProperty("finish_time_utc", Instant.now().getEpochSecond());
 		payload.add("statistics", statistics.serialize());
 
 		post(ConfigLT.TELEMETRY.minigameEndEndpoint.get(), payload);
@@ -123,13 +117,14 @@ public final class GameInstanceTelemetry {
 			return;
 		}
 
-		payload.addProperty("id", game.getInstanceId().uuid.toString());
+		payload.addProperty("id", game.getUuid().toString());
 
-		JsonObject minigame = new JsonObject();
-		minigame.addProperty("id", definition.getDisplayId().toString());
-		minigame.addProperty("telemetry_key", definition.getTelemetryKey());
-		minigame.addProperty("name", definition.getName().getString());
-		payload.add("minigame", minigame);
+		IGameDefinition definition = game.getDefinition();
+		JsonObject game = new JsonObject();
+		game.addProperty("id", definition.getDisplayId().toString());
+		game.addProperty("telemetry_key", definition.getTelemetryKey());
+		game.addProperty("name", definition.getName().getString());
+		payload.add("game", game);
 
 		telemetry.post(endpoint, payload);
 	}
@@ -145,7 +140,7 @@ public final class GameInstanceTelemetry {
 
 	void handlePayload(JsonObject object, String type, String crud) {
 		if ("poll".equals(type)) {
-			game.invoker(GamePackageEvents.RECEIVE_POLL_EVENT).onReceivePollEvent(game, object, crud);
+			game.invoker(GamePackageEvents.RECEIVE_POLL_EVENT).onReceivePollEvent(object, crud);
 		} else if ("create".equals(crud)) {
 			GameActionType.getFromId(type).ifPresent(actionType -> {
 				JsonObject payload = object.getAsJsonObject("payload");

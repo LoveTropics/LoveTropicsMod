@@ -69,12 +69,27 @@ public final class ServerPlayerDisguises {
 		}
 	}
 
+	@SubscribeEvent
+	public static void onPlayerClone(PlayerEvent.Clone event) {
+		if (event.isWasDeath()) {
+			return;
+		}
+
+		PlayerEntity newPlayer = event.getPlayer();
+		PlayerEntity oldPlayer = event.getOriginal();
+		PlayerDisguise.get(oldPlayer).ifPresent(oldDisguise -> {
+			PlayerDisguise.get(newPlayer).ifPresent(newDisguise -> {
+				newDisguise.copyFrom(oldDisguise);
+			});
+		});
+	}
+
 	private static int disguiseAs(CommandContext<CommandSource> context, @Nullable CompoundNBT nbt) throws CommandSyntaxException {
 		ServerPlayerEntity player = context.getSource().asPlayer();
 		ResourceLocation entityId = EntitySummonArgument.getEntityId(context, "entity");
 		EntityType<?> entityType = Registry.ENTITY_TYPE.getOrDefault(entityId);
 
-		ServerPlayerDisguises.set(player, new DisguiseType(entityType, nbt));
+		ServerPlayerDisguises.set(player, DisguiseType.create(entityType, nbt));
 
 		return Command.SINGLE_SUCCESS;
 	}
@@ -89,20 +104,35 @@ public final class ServerPlayerDisguises {
 	public static void set(ServerPlayerEntity player, @Nullable DisguiseType disguiseType) {
 		PlayerDisguise.get(player).ifPresent(playerDisguise -> {
 			playerDisguise.setDisguise(disguiseType);
-			onSetDisguise(player, playerDisguise.getDisguiseEntity());
-
-			LoveTropicsNetwork.CHANNEL.send(
-					PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> player),
-					new PlayerDisguiseMessage(player.getUniqueID(), disguiseType)
-			);
+			onSetDisguise(player, playerDisguise);
 		});
 	}
 
-	private static void onSetDisguise(ServerPlayerEntity player, @Nullable Entity disguise) {
+	public static void clear(ServerPlayerEntity player) {
+		set(player, null);
+	}
+
+	public static void clear(ServerPlayerEntity player, DisguiseType disguiseType) {
+		PlayerDisguise.get(player).ifPresent(playerDisguise -> {
+			playerDisguise.clearDisguise(disguiseType);
+			onSetDisguise(player, playerDisguise);
+		});
+	}
+
+	private static void onSetDisguise(ServerPlayerEntity player, PlayerDisguise disguise) {
+		LoveTropicsNetwork.CHANNEL.send(
+				PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> player),
+				new PlayerDisguiseMessage(player.getUniqueID(), disguise.getDisguiseType())
+		);
+
 		PlayerDisguiseBehavior.clearAttributes(player);
 
-		if (disguise instanceof LivingEntity) {
-			PlayerDisguiseBehavior.applyAttributes(player, (LivingEntity) disguise);
+		DisguiseType disguiseType = disguise.getDisguiseType();
+		if (disguiseType != null && disguiseType.applyAttributes) {
+			Entity entity = disguise.getDisguiseEntity();
+			if (entity instanceof LivingEntity) {
+				PlayerDisguiseBehavior.applyAttributes(player, (LivingEntity) entity);
+			}
 		}
 	}
 }

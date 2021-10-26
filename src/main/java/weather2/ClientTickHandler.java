@@ -59,7 +59,7 @@ public class ClientTickHandler
         Minecraft mc = Minecraft.getInstance();
         World world = mc.world;
 
-		System.out.println(mc.currentScreen);
+		//System.out.println(mc.currentScreen);
 
 		if (mc.currentScreen instanceof ConfirmBackupScreen) {
 

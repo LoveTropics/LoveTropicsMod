@@ -18,7 +18,7 @@ public class GameCommand {
      * @param source The source of the executing command.
      * @return The result of the execution (0 == fail, 1 == success)
      */
-    public static int executeMinigameAction(CommandAction action, CommandSource source) throws CommandSyntaxException {
+    public static int executeGameAction(CommandAction action, CommandSource source) throws CommandSyntaxException {
         GameResult<ITextComponent> result;
         try {
             result = action.run();

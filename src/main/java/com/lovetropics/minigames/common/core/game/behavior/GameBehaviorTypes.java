@@ -6,10 +6,16 @@ import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.common.core.game.behavior.instances.*;
 import com.lovetropics.minigames.common.core.game.behavior.instances.command.*;
 import com.lovetropics.minigames.common.core.game.behavior.instances.donation.*;
+import com.lovetropics.minigames.common.core.game.behavior.instances.effect.FireworksOnDeathBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.statistics.*;
+import com.lovetropics.minigames.common.core.game.behavior.instances.team.SetupTeamsBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.team.TeamWinTrigger;
 import com.lovetropics.minigames.common.core.game.behavior.instances.team.TeamsBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.tweak.*;
+import com.lovetropics.minigames.common.core.game.behavior.instances.world.FillChestsByMarkerBehavior;
+import com.lovetropics.minigames.common.core.game.behavior.instances.world.ForceLoadRegionBehavior;
+import com.lovetropics.minigames.common.core.game.behavior.instances.world.GenerateEntitiesBehavior;
+import com.lovetropics.minigames.common.core.game.behavior.instances.world.SetBlocksBehavior;
 import com.lovetropics.minigames.common.util.GameBehaviorEntry;
 import com.lovetropics.minigames.common.util.LoveTropicsRegistrate;
 import com.mojang.serialization.Codec;
@@ -37,7 +43,6 @@ public class GameBehaviorTypes {
 	public static final GameBehaviorEntry<TimedGameBehavior> TIMED;
 	public static final GameBehaviorEntry<RespawnSpectatorBehavior> RESPAWN_SPECTATOR;
 	public static final GameBehaviorEntry<CommandEventsBehavior> COMMANDS;
-	public static final GameBehaviorEntry<IsolatePlayerStateBehavior> ISOLATE_PLAYER_STATE;
 	public static final GameBehaviorEntry<SetGameTypesBehavior> SET_GAME_TYPES;
 	public static final GameBehaviorEntry<PhaseControllerBehavior> PHASE_CONTROLLER;
 	public static final GameBehaviorEntry<ScheduledMessagesBehavior> SCHEDULED_MESSAGES;
@@ -45,6 +50,7 @@ public class GameBehaviorTypes {
 	public static final GameBehaviorEntry<BindControlsBehavior> BIND_CONTROLS;
 	public static final GameBehaviorEntry<CancelPlayerDamageBehavior> CANCEL_PLAYER_DAMAGE;
 	public static final GameBehaviorEntry<SetGameRulesBehavior> SET_GAME_RULES;
+	public static final GameBehaviorEntry<SetupTeamsBehavior> SETUP_TEAMS;
 	public static final GameBehaviorEntry<TeamsBehavior> TEAMS;
 	public static final GameBehaviorEntry<SpectatorChaseBehavior> SPECTATOR_CHASE;
 	public static final GameBehaviorEntry<ForceLoadRegionBehavior> FORCE_LOAD_REGION;
@@ -60,6 +66,9 @@ public class GameBehaviorTypes {
 	public static final GameBehaviorEntry<SetMaxHealthBehavior> SET_MAX_HEALTH;
 	public static final GameBehaviorEntry<IndividualWinTrigger> INDIVIDUAL_WIN_TRIGGER;
 	public static final GameBehaviorEntry<TeamWinTrigger> TEAM_WIN_TRIGGER;
+	public static final GameBehaviorEntry<EquipParticipantsBehavior> EQUIP_PARTICIPANTS;
+	public static final GameBehaviorEntry<SetTimeSpeedBehavior> SET_TIME_SPEED;
+	public static final GameBehaviorEntry<SetDifficultyBehavior> SET_DIFFICULTY;
 
 	public static final GameBehaviorEntry<BindObjectiveToStatisticBehavior> BIND_OBJECTIVE_TO_STATISTIC;
 	public static final GameBehaviorEntry<PlaceByStatisticBehavior> PLACE_BY_STATISTIC;
@@ -84,6 +93,12 @@ public class GameBehaviorTypes {
 	public static final GameBehaviorEntry<SetBlockAtPlayerPackageBehavior> SET_BLOCK_AT_PLAYER_PACKAGE;
 	public static final GameBehaviorEntry<GivePlayerHeadPackageBehavior> GIVE_PLAYER_HEAD_PACKAGE;
 	public static final GameBehaviorEntry<ShootProjectilesAroundPlayerPackageBehavior> SHOOT_PROJECTILES_AT_PLAYER;
+	public static final GameBehaviorEntry<ApplyDisguisePackageBehavior> APPLY_DISGUISE_PACKAGE;
+	public static final GameBehaviorEntry<BlockPackagesDuringPhaseBehavior> BLOCK_PACKAGES_DURING_PHASE;
+
+	public static final GameBehaviorEntry<SetupTelemetryBehavior> SETUP_TELEMETRY;
+	public static final GameBehaviorEntry<AssignPlayerRolesBehavior> ASSIGN_PLAYER_ROLES;
+	public static final GameBehaviorEntry<JoinAsRoleBehavior> JOIN_AS_ROLE;
 
 	public static <T extends IGameBehavior> GameBehaviorEntry<T> register(final String name, final Codec<T> codec) {
 		return REGISTRATE.object(name).behavior(codec).register();
@@ -94,7 +109,6 @@ public class GameBehaviorTypes {
 		TIMED = register("timed", TimedGameBehavior.CODEC);
 		RESPAWN_SPECTATOR = register("respawn_spectator", RespawnSpectatorBehavior.CODEC);
 		COMMANDS = register("commands", CommandEventsBehavior.CODEC);
-		ISOLATE_PLAYER_STATE = register("isolate_player_state", IsolatePlayerStateBehavior.CODEC);
 		SET_GAME_TYPES = register("set_game_types", SetGameTypesBehavior.CODEC);
 		PHASE_CONTROLLER = register("phase_controller", PhaseControllerBehavior.CODEC);
 		SCHEDULED_MESSAGES = register("scheduled_messages", ScheduledMessagesBehavior.CODEC);
@@ -102,6 +116,7 @@ public class GameBehaviorTypes {
 		BIND_CONTROLS = register("bind_controls", BindControlsBehavior.CODEC);
 		CANCEL_PLAYER_DAMAGE = register("cancel_player_damage", CancelPlayerDamageBehavior.CODEC);
 		SET_GAME_RULES = register("set_game_rules", SetGameRulesBehavior.CODEC);
+		SETUP_TEAMS = register("setup_teams", SetupTeamsBehavior.CODEC);
 		TEAMS = register("teams", TeamsBehavior.CODEC);
 		SPECTATOR_CHASE = register("spectator_chase", SpectatorChaseBehavior.CODEC);
 		FORCE_LOAD_REGION = register("force_load_region", ForceLoadRegionBehavior.CODEC);
@@ -117,6 +132,9 @@ public class GameBehaviorTypes {
 		SET_MAX_HEALTH = register("set_max_health", SetMaxHealthBehavior.CODEC);
 		TEAM_WIN_TRIGGER = register("team_win_trigger", TeamWinTrigger.CODEC);
 		INDIVIDUAL_WIN_TRIGGER = register("individual_win_trigger", IndividualWinTrigger.CODEC);
+		EQUIP_PARTICIPANTS = register("equip_participants", EquipParticipantsBehavior.CODEC);
+		SET_TIME_SPEED = register("set_time_speed", SetTimeSpeedBehavior.CODEC);
+		SET_DIFFICULTY = register("set_difficulty", SetDifficultyBehavior.CODEC);
 
 		BIND_OBJECTIVE_TO_STATISTIC = register("bind_objective_to_statistic", BindObjectiveToStatisticBehavior.CODEC);
 		PLACE_BY_STATISTIC = register("place_by_statistic", PlaceByStatisticBehavior.CODEC);
@@ -141,6 +159,12 @@ public class GameBehaviorTypes {
 		SET_BLOCK_AT_PLAYER_PACKAGE = register("set_block_at_player_package", SetBlockAtPlayerPackageBehavior.CODEC);
 		GIVE_PLAYER_HEAD_PACKAGE = register("give_player_head_package", GivePlayerHeadPackageBehavior.CODEC);
 		SHOOT_PROJECTILES_AT_PLAYER = register("shoot_projectiles_at_player", ShootProjectilesAroundPlayerPackageBehavior.CODEC);
+		APPLY_DISGUISE_PACKAGE = register("apply_disguise_package", ApplyDisguisePackageBehavior.CODEC);
+		BLOCK_PACKAGES_DURING_PHASE = register("block_packages_during_phase", BlockPackagesDuringPhaseBehavior.CODEC);
+
+		SETUP_TELEMETRY = register("setup_telemetry", SetupTelemetryBehavior.CODEC);
+		ASSIGN_PLAYER_ROLES = register("assign_player_roles", AssignPlayerRolesBehavior.CODEC);
+		JOIN_AS_ROLE = register("join_as_role", JoinAsRoleBehavior.CODEC);
 	}
 
 	public static void init(IEventBus modBus) {

@@ -40,7 +40,6 @@ public class EntityRotFX extends SpriteTexturedParticle
 		
 		@Override
 		public void finishRender(Tessellator p_217599_1_) {
-			ActiveRenderInfo activeInfo = Minecraft.getInstance().getRenderManager().info;
 			p_217599_1_.getBuffer().sortVertexData(0, 0, 0);
 			IParticleRenderType.PARTICLE_SHEET_TRANSLUCENT.finishRender(p_217599_1_);
 		}

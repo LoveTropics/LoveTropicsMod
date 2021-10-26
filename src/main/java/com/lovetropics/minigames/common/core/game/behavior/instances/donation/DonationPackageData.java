@@ -3,8 +3,8 @@ package com.lovetropics.minigames.common.core.game.behavior.instances.donation;
 import com.lovetropics.minigames.client.toast.NotificationDisplay;
 import com.lovetropics.minigames.client.toast.NotificationIcon;
 import com.lovetropics.minigames.client.toast.ShowNotificationToastMessage;
-import com.lovetropics.minigames.common.core.game.IActiveGame;
-import com.lovetropics.minigames.common.core.game.PlayerSet;
+import com.lovetropics.minigames.common.core.game.IGamePhase;
+import com.lovetropics.minigames.common.core.game.player.PlayerSet;
 import com.lovetropics.minigames.common.core.game.util.TemplatedText;
 import com.lovetropics.minigames.common.core.network.LoveTropicsNetwork;
 import com.mojang.serialization.Codec;
@@ -55,11 +55,11 @@ public class DonationPackageData {
 		return playerSelect;
 	}
 
-	public void onReceive(final IActiveGame instance, @Nullable final ServerPlayerEntity receiver, @Nullable final String sender) {
+	public void onReceive(final IGamePhase game, @Nullable final ServerPlayerEntity receiver, @Nullable final String sender) {
 		Notification notification = this.notification;
 		if (notification == null) return;
 
-		PlayerSet players = instance.getAllPlayers();
+		PlayerSet players = game.getAllPlayers();
 
 		ITextComponent targetedMessage = notification.createTargetedMessage(receiver, sender);
 		ITextComponent globalMessage = notification.createGlobalMessage(receiver);

@@ -1,9 +1,9 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances.tweak;
 
-import com.lovetropics.minigames.common.core.game.IActiveGame;
+import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
-import com.lovetropics.minigames.common.core.game.behavior.event.GameLifecycleEvents;
+import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -27,11 +27,11 @@ public final class SetGameRulesBehavior implements IGameBehavior {
 	}
 
 	@Override
-	public void register(IActiveGame registerGame, EventRegistrar events) {
-		GameRules gameRules = registerGame.getWorld().getGameRules();
+	public void register(IGamePhase game, EventRegistrar events) {
+		GameRules gameRules = game.getWorld().getGameRules();
 		CompoundNBT rulesSnapshot = applyRules(gameRules);
 
-		events.listen(GameLifecycleEvents.STOP, game -> {
+		events.listen(GamePhaseEvents.DESTROY, () -> {
 			resetRules(gameRules, rulesSnapshot);
 		});
 	}

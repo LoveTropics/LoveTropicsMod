@@ -1,7 +1,7 @@
 package com.lovetropics.minigames.common.core.integration.game_actions;
 
 import com.lovetropics.lib.codec.MoreCodecs;
-import com.lovetropics.minigames.common.core.game.IActiveGame;
+import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.mojang.serialization.Codec;
 import net.minecraft.server.MinecraftServer;
 
@@ -28,7 +28,7 @@ public abstract class GameAction implements Comparable<GameAction> {
      * @return Whether or not to send an acknowledgement back that
      * the action has been resolved.
      */
-    public abstract boolean resolve(IActiveGame game, MinecraftServer server);
+    public abstract boolean resolve(IGamePhase game, MinecraftServer server);
 
     @Override
     public boolean equals(Object obj) {

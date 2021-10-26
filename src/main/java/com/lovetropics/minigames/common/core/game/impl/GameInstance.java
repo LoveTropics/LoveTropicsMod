@@ -1,51 +1,36 @@
 package com.lovetropics.minigames.common.core.game.impl;
 
-import com.lovetropics.minigames.LoveTropics;
-import com.lovetropics.minigames.client.minigame.ClientMinigameMessage;
-import com.lovetropics.minigames.common.core.game.*;
-import com.lovetropics.minigames.common.core.game.behavior.event.GameLifecycleEvents;
-import com.lovetropics.minigames.common.core.game.statistics.PlayerKey;
-import com.lovetropics.minigames.common.core.network.LoveTropicsNetwork;
+import com.lovetropics.minigames.common.core.game.IGameDefinition;
+import com.lovetropics.minigames.common.core.game.IGame;
+import com.lovetropics.minigames.common.core.game.lobby.IGameLobby;
+import com.lovetropics.minigames.common.core.game.state.GameStateMap;
 import net.minecraft.server.MinecraftServer;
-import net.minecraftforge.fml.network.PacketDistributor;
 
-public final class GameInstance implements IGameInstance {
-	private final MultiGameManager manager;
-	private final MinecraftServer server;
-	private final GameInstanceId instanceId;
-	private final IGameDefinition definition;
-	private final PlayerKey initiator;
+import java.util.UUID;
 
-	private IGamePhase phase;
+final class GameInstance implements IGame {
+	final GameLobby lobby;
+	final MinecraftServer server;
+	final IGameDefinition definition;
 
-	private GameInstance(MultiGameManager manager, MinecraftServer server, GameInstanceId instanceId, IGameDefinition definition, PlayerKey initiator) {
-		this.manager = manager;
-		this.server = server;
-		this.instanceId = instanceId;
+	final GameStateMap stateMap = new GameStateMap();
+
+	final UUID uuid = UUID.randomUUID();
+
+	GameInstance(GameLobby lobby, IGameDefinition definition) {
+		this.lobby = lobby;
+		this.server = lobby.getServer();
 		this.definition = definition;
-		this.initiator = initiator;
-	}
-
-	static GameResult<PollingGame> createPolling(MultiGameManager manager, MinecraftServer server, IGameDefinition definition, PlayerKey initiator) {
-		GameInstanceId instanceId = GameInstanceId.generate(definition);
-
-		GameInstance instance = new GameInstance(manager, server, instanceId, definition, initiator);
-		return GameResult.ok(instance)
-			.flatMap(PollingGame::create)
-			.map(polling -> {
-				instance.setPhase(polling);
-				return polling;
-			});
 	}
 
 	@Override
-	public MinecraftServer getServer() {
-		return server;
+	public IGameLobby getLobby() {
+		return lobby;
 	}
 
 	@Override
-	public GameInstanceId getInstanceId() {
-		return instanceId;
+	public UUID getUuid() {
+		return uuid;
 	}
 
 	@Override
@@ -54,37 +39,7 @@ public final class GameInstance implements IGameInstance {
 	}
 
 	@Override
-	public PlayerKey getInitiator() {
-		return initiator;
-	}
-
-	@Override
-	public IGamePhase getPhase() {
-		return phase;
-	}
-
-	boolean tick() {
-		IActiveGame active = asActive();
-		if (active != null) {
-			try {
-				active.invoker(GameLifecycleEvents.TICK).tick(active);
-			} catch (Exception e) {
-				LoveTropics.LOGGER.warn("Failed to dispatch world tick event", e);
-				return false;
-			}
-		}
-		return true;
-	}
-
-	void setPhase(IGamePhase phase) {
-		this.phase = phase;
-		LoveTropicsNetwork.CHANNEL.send(PacketDistributor.ALL.noArg(), new ClientMinigameMessage(this));
-	}
-
-	void stop() {
-		phase = new InactiveGame(this);
-		LoveTropicsNetwork.CHANNEL.send(PacketDistributor.ALL.noArg(), new ClientMinigameMessage(instanceId.networkId));
-
-		manager.stop(this);
+	public GameStateMap getState() {
+		return stateMap;
 	}
 }

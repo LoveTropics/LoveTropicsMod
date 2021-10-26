@@ -1,16 +1,14 @@
 package com.lovetropics.minigames.mixin.client;
 
+import com.lovetropics.minigames.Constants;
+import com.lovetropics.minigames.client.lobby.state.ClientCurrentGame;
+import com.lovetropics.minigames.client.lobby.state.ClientLobbyManager;
+import com.lovetropics.minigames.client.lobby.state.ClientLobbyState;
+import net.minecraft.client.gui.IngameGui;
+import net.minecraft.util.ResourceLocation;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
-
-import com.lovetropics.minigames.Constants;
-import com.lovetropics.minigames.client.minigame.ClientMinigameState;
-import com.lovetropics.minigames.common.core.game.GameStatus;
-import com.lovetropics.minigames.common.core.game.PlayerRole;
-
-import net.minecraft.client.gui.IngameGui;
-import net.minecraft.util.ResourceLocation;
 
 @Mixin(IngameGui.class)
 public class HotbarOverride {
@@ -25,9 +23,10 @@ public class HotbarOverride {
 					target = "Lnet/minecraft/client/renderer/texture/TextureManager;bindTexture(Lnet/minecraft/util/ResourceLocation;)V"),
 			index = 0)
 	public ResourceLocation getHotbarTexture(ResourceLocation loc) {
-		ClientMinigameState state = ClientMinigameState.getCurrent();
+		ClientLobbyState state = ClientLobbyManager.getJoined();
 		if (state != null) {
-			if (state.getStatus() == GameStatus.ACTIVE && state.getRole() == PlayerRole.PARTICIPANT && state.getMinigame().equals(TARGET)) {
+			ClientCurrentGame currentGame = state.getCurrentGame();
+			if (currentGame != null && currentGame.definition().id.equals(TARGET)) {
 				return TEXTURE;
 			}
 		}

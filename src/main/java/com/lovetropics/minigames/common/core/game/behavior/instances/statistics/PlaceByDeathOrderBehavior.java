@@ -1,13 +1,13 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances.statistics;
 
-import com.lovetropics.minigames.common.core.game.IActiveGame;
+import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
-import com.lovetropics.minigames.common.core.game.behavior.event.GameLifecycleEvents;
+import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
-import com.lovetropics.minigames.common.core.game.statistics.PlayerKey;
-import com.lovetropics.minigames.common.core.game.statistics.PlayerPlacement;
-import com.lovetropics.minigames.common.core.game.statistics.StatisticKey;
+import com.lovetropics.minigames.common.core.game.state.statistics.PlayerKey;
+import com.lovetropics.minigames.common.core.game.state.statistics.PlayerPlacement;
+import com.lovetropics.minigames.common.core.game.state.statistics.StatisticKey;
 import com.mojang.serialization.Codec;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.ActionResultType;
@@ -22,13 +22,13 @@ public final class PlaceByDeathOrderBehavior implements IGameBehavior {
 	private final List<PlayerKey> deathOrder = new ArrayList<>();
 
 	@Override
-	public void register(IActiveGame registerGame, EventRegistrar events) {
+	public void register(IGamePhase game, EventRegistrar events) {
 		events.listen(GamePlayerEvents.DEATH, this::onPlayerDeath);
 		events.listen(GamePlayerEvents.LEAVE, this::onPlayerLeave);
-		events.listen(GameLifecycleEvents.STOP, this::onFinish);
+		events.listen(GamePhaseEvents.FINISH, () -> onFinish(game));
 	}
 
-	private ActionResultType onPlayerDeath(IActiveGame game, ServerPlayerEntity player, DamageSource source) {
+	private ActionResultType onPlayerDeath(ServerPlayerEntity player, DamageSource source) {
 		PlayerKey playerKey = PlayerKey.from(player);
 		if (!deathOrder.contains(playerKey)) {
 			deathOrder.add(playerKey);
@@ -36,14 +36,14 @@ public final class PlaceByDeathOrderBehavior implements IGameBehavior {
 		return ActionResultType.PASS;
 	}
 
-	private void onPlayerLeave(IActiveGame game, ServerPlayerEntity player) {
+	private void onPlayerLeave(ServerPlayerEntity player) {
 		PlayerKey playerKey = PlayerKey.from(player);
 		if (!deathOrder.contains(playerKey)) {
 			deathOrder.add(playerKey);
 		}
 	}
 
-	private void onFinish(IActiveGame game) {
+	private void onFinish(IGamePhase game) {
 		PlayerPlacement.fromDeathOrder(game, deathOrder).placeInto(StatisticKey.PLACEMENT);
 	}
 }

@@ -7,8 +7,7 @@ import com.lovetropics.lib.backend.BackendConnection;
 import com.lovetropics.lib.backend.BackendProxy;
 import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.common.config.ConfigLT;
-import com.lovetropics.minigames.common.core.game.IActiveGame;
-import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import com.lovetropics.minigames.common.core.game.IGamePhase;
 import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -20,8 +19,6 @@ import org.apache.logging.log4j.Logger;
 import javax.annotation.Nullable;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Map;
-import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -45,7 +42,7 @@ public final class Telemetry {
 
 	private final BackendProxy proxy;
 
-	private final Map<UUID, GameInstanceTelemetry> instances = new Object2ObjectOpenHashMap<>();
+	private GameInstanceTelemetry liveInstance;
 
 	private Telemetry() {
 		Supplier<URI> address = () -> {
@@ -100,13 +97,16 @@ public final class Telemetry {
 	private void tick(MinecraftServer server) {
 		proxy.tick();
 
-		for (GameInstanceTelemetry instance : instances.values()) {
+		GameInstanceTelemetry instance = this.liveInstance;
+		if (instance != null) {
 			instance.tick(server);
 		}
 	}
 
-	public GameInstanceTelemetry openGame(IActiveGame game) {
-		return GameInstanceTelemetry.open(game, this);
+	public GameInstanceTelemetry openGame(IGamePhase game) {
+		GameInstanceTelemetry instance = new GameInstanceTelemetry(game, this);
+		this.liveInstance = instance;
+		return instance;
 	}
 
 	void post(final String endpoint, final JsonElement body) {
@@ -139,27 +139,22 @@ public final class Telemetry {
 	}
 
 	private void handlePayload(JsonObject object, String type, String crud) {
-		// TODO: backend support
-		UUID instanceId = UUID.fromString(object.get("instance_id").getAsString());
-
-		GameInstanceTelemetry instance = instances.get(instanceId);
+		GameInstanceTelemetry liveInstance = this.liveInstance;
 
 		// we can ignore the payload because we will request it again when a minigame starts
-		if (instance == null) return;
+		if (liveInstance == null) return;
 
-		instance.handlePayload(object, type, crud);
+		liveInstance.handlePayload(object, type, crud);
 	}
 
 	public boolean isConnected() {
 		return proxy.isConnected();
 	}
 
-	void openInstance(GameInstanceTelemetry instance) {
-		instances.put(instance.getInstanceId().uuid, instance);
-	}
-
 	void closeInstance(GameInstanceTelemetry instance) {
-		instances.remove(instance.getInstanceId().uuid, instance);
+		if (liveInstance == instance) {
+			liveInstance = null;
+		}
 	}
 
 	public void sendOpen() {

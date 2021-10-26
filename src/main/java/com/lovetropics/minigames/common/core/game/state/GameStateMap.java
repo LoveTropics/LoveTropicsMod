@@ -4,35 +4,42 @@ import com.lovetropics.minigames.common.core.game.GameException;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 import net.minecraft.util.text.StringTextComponent;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Map;
 import java.util.Optional;
 
 public final class GameStateMap {
-	private final Map<GameStateType<?>, IGameState> state = new Reference2ObjectOpenHashMap<>();
+	private final Map<GameStateKey<?>, IGameState> state = new Reference2ObjectOpenHashMap<>();
 
-	public <T extends IGameState> T register(GameStateType<T> type, T state) {
-		if (this.state.putIfAbsent(type, state) == null) {
+	public <T extends IGameState> T register(GameStateKey<T> key, T state) {
+		if (this.state.putIfAbsent(key, state) == null) {
 			return state;
 		} else {
-			throw new IllegalStateException("Multiple callers tried to register game state of type: " + type.getName());
+			throw new IllegalStateException("Multiple callers tried to register game state of key: " + key.getName());
 		}
+	}
+
+	@SuppressWarnings("unchecked")
+	@Nonnull
+	public <T extends IGameState> T get(GameStateKey.Defaulted<T> key) {
+		return (T) this.state.computeIfAbsent(key, k -> key.createDefault());
 	}
 
 	@Nullable
 	@SuppressWarnings("unchecked")
-	public <T extends IGameState> T getOrNull(GameStateType<T> type) {
-		return (T) this.state.get(type);
+	public <T extends IGameState> T getOrNull(GameStateKey<T> key) {
+		return (T) this.state.get(key);
 	}
 
-	public <T extends IGameState> Optional<T> getOptional(GameStateType<T> type) {
-		return Optional.ofNullable(this.getOrNull(type));
+	public <T extends IGameState> Optional<T> getOptional(GameStateKey<T> key) {
+		return Optional.ofNullable(this.getOrNull(key));
 	}
 
-	public <T extends IGameState> T getOrThrow(GameStateType<T> type) {
-		T state = this.getOrNull(type);
+	public <T extends IGameState> T getOrThrow(GameStateKey<T> key) {
+		T state = this.getOrNull(key);
 		if (state == null) {
-			throw new GameException(new StringTextComponent("Missing expected game state of type: " + type.getName()));
+			throw new GameException(new StringTextComponent("Missing expected game state of key: " + key.getName()));
 		}
 		return state;
 	}

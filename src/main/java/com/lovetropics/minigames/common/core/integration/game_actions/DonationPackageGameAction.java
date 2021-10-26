@@ -1,11 +1,12 @@
 package com.lovetropics.minigames.common.core.integration.game_actions;
 
 import com.lovetropics.lib.codec.MoreCodecs;
-import com.lovetropics.minigames.common.core.game.IActiveGame;
+import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePackageEvents;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.ActionResultType;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -36,7 +37,8 @@ public class DonationPackageGameAction extends GameAction
     }
 
     @Override
-    public boolean resolve(IActiveGame game, MinecraftServer server) {
-        return game.invoker(GamePackageEvents.RECEIVE_PACKAGE).onReceivePackage(game, gamePackage);
+    public boolean resolve(IGamePhase game, MinecraftServer server) {
+        ActionResultType result = game.invoker(GamePackageEvents.RECEIVE_PACKAGE).onReceivePackage(gamePackage);
+        return result == ActionResultType.SUCCESS;
     }
 }

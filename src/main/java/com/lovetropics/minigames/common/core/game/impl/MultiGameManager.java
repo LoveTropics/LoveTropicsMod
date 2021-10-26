@@ -1,51 +1,37 @@
 package com.lovetropics.minigames.common.core.game.impl;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.function.Predicate;
-
-import javax.annotation.Nullable;
-
-import com.google.common.base.Predicates;
 import com.lovetropics.minigames.Constants;
-import com.lovetropics.minigames.client.data.LoveTropicsLangKeys;
-import com.lovetropics.minigames.client.minigame.ClientMinigameMessage;
-import com.lovetropics.minigames.client.minigame.PlayerCountsMessage;
-import com.lovetropics.minigames.common.core.game.GameMessages;
 import com.lovetropics.minigames.common.core.game.GameResult;
-import com.lovetropics.minigames.common.core.game.IActiveGame;
-import com.lovetropics.minigames.common.core.game.IGameDefinition;
-import com.lovetropics.minigames.common.core.game.IGameInstance;
 import com.lovetropics.minigames.common.core.game.IGameManager;
-import com.lovetropics.minigames.common.core.game.PlayerRole;
-import com.lovetropics.minigames.common.core.game.PlayerSet;
-import com.lovetropics.minigames.common.core.game.behavior.event.GamePollingEvents;
-import com.lovetropics.minigames.common.core.game.control.ControlCommandInvoker;
-import com.lovetropics.minigames.common.core.game.statistics.PlayerKey;
-import com.lovetropics.minigames.common.core.integration.Telemetry;
-import com.lovetropics.minigames.common.core.network.LoveTropicsNetwork;
-
+import com.lovetropics.minigames.common.core.game.IGamePhase;
+import com.lovetropics.minigames.common.core.game.IGamePhaseDefinition;
+import com.lovetropics.minigames.common.core.game.lobby.GameLobbyId;
+import com.lovetropics.minigames.common.core.game.lobby.GameLobbyMetadata;
+import com.lovetropics.minigames.common.core.game.lobby.IGameLobby;
+import com.lovetropics.minigames.common.core.game.lobby.LobbyVisibility;
+import com.lovetropics.minigames.common.core.game.map.IGameMapProvider;
+import com.lovetropics.minigames.common.core.game.state.control.ControlCommandInvoker;
+import com.lovetropics.minigames.common.core.game.state.statistics.PlayerKey;
+import com.lovetropics.minigames.common.core.game.util.GameTexts;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 import net.minecraft.command.CommandSource;
-import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.management.PlayerList;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.RegistryKey;
+import net.minecraft.util.Unit;
+import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.TextFormatting;
-import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.World;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.server.FMLServerStoppingEvent;
-import net.minecraftforge.fml.network.PacketDistributor;
+
+import javax.annotation.Nullable;
+import java.util.*;
+import java.util.function.Predicate;
 
 /**
  * Standard implementation of a game manager. Would prefer to do something other
@@ -56,116 +42,105 @@ import net.minecraftforge.fml.network.PacketDistributor;
 public class MultiGameManager implements IGameManager {
 	public static final MultiGameManager INSTANCE = new MultiGameManager();
 
-	private final List<GameInstance> currentGames = new ArrayList<>();
+	private final LobbyCommandIdManager commandIds = new LobbyCommandIdManager();
+
+	private final List<GameLobby> lobbies = new ArrayList<>();
+
+	private final Map<UUID, GameLobby> lobbiesByPlayer = new Object2ObjectOpenHashMap<>();
+	private final Map<RegistryKey<World>, List<GamePhase>> gamesByDimension = new Reference2ObjectOpenHashMap<>();
+
+	private GameLobby focusedLiveLobby;
 
 	@Override
-	public GameResult<PollingGame> startPolling(IGameDefinition game, ServerPlayerEntity initiator) {
-		if (currentGames.stream().map(GameInstance::getDefinition)
-				.filter(d -> d.getGameArea().intersects(game.getGameArea()))
-				.anyMatch(d -> !Collections.disjoint(d.getMapProvider().getPossibleDimensions(), game.getMapProvider().getPossibleDimensions()))) {
-			return GameResult.error(new TranslationTextComponent(LoveTropicsLangKeys.COMMAND_MINIGAMES_INTERSECT));
-		}
-		GameResult<PollingGame> pollResult = GameInstance.createPolling(this, initiator.server, game, PlayerKey.from(initiator));
-		if (pollResult.isError()) {
-			return pollResult.castError();
-		}
+	public GameResult<IGameLobby> createGameLobby(String name, ServerPlayerEntity initiator) {
+		GameLobbyId id = GameLobbyId.next();
+		String commandId = commandIds.acquire(name);
+		GameLobbyMetadata metadata = new GameLobbyMetadata(id, PlayerKey.from(initiator), name, commandId);
 
-		PollingGame polling = pollResult.getOk();
+		GameLobby lobby = new GameLobby(this, initiator.server, metadata);
+		lobbies.add(lobby);
 
-		try {
-			polling.getEvents().invoker(GamePollingEvents.START).start(polling);
-		} catch (Exception e) {
-			return GameResult.fromException("Failed to dispatch polling start event", e);
-		}
-
-		PlayerSet.ofServer(initiator.server).sendMessage(GameMessages.forGame(game).startPolling());
-
-		this.currentGames.add(polling.getInstance());
-
-		if (!Telemetry.INSTANCE.isConnected()) {
-			ITextComponent warning = new StringTextComponent("Warning: Minigame telemetry websocket is not connected!")
-					.mergeStyle(TextFormatting.RED, TextFormatting.BOLD);
-			sendWarningToOperators(initiator.server, warning);
-		}
-
-		return GameResult.ok(polling);
+		return GameResult.ok(lobby);
 	}
 
-	private void sendWarningToOperators(MinecraftServer server, ITextComponent warning) {
-		PlayerList playerList = server.getPlayerList();
-		for (ServerPlayerEntity player : playerList.getPlayers()) {
-			if (playerList.canSendCommands(player.getGameProfile())) {
-				player.sendStatusMessage(warning, false);
-			}
-		}
-	}
+	GameResult<Unit> canStartGamePhase(IGamePhaseDefinition definition) {
+		IGameMapProvider map = definition.getMap();
+		List<RegistryKey<World>> possibleDimensions = map.getPossibleDimensions();
+		AxisAlignedBB area = definition.getGameArea();
 
-	@Nullable
-	@Override
-	public GameInstance getGameFor(PlayerEntity player) {
-		return getGame(g -> g.getAllPlayers().contains(player));
-	}
-
-	@Nullable
-	@Override
-	public GameInstance getGameFor(Entity entity) {
-		if (entity instanceof PlayerEntity) {
-			return getGameFor((PlayerEntity) entity);
-		}
-		return getGameForWorld(entity.world, g -> g.getDefinition().getGameArea().contains(entity.getPositionVec()));
-	}
-
-	@Nullable
-	@Override
-	public GameInstance getGameAt(World world, BlockPos pos) {
-		return getGameForWorld(world, g -> g.getDefinition().getGameArea().contains(Vector3d.copyCentered(pos)));
-	}
-
-	public List<GameInstance> getGamesForWorld(World world) {
-		return getGamesForWorld(world, Predicates.alwaysTrue());
-	}
-
-	public List<GameInstance> getGamesForWorld(World world, Predicate<GameInstance> pred) {
-		if (world.isRemote) return Collections.emptyList();
-
-		return getGames(pred.and(g -> {
-			IActiveGame active = g.asActive();
-			return active != null && active.getDimension() == world.getDimensionKey();
-		}));
-	}
-
-	public List<GameInstance> getGames(Predicate<GameInstance> pred) {
-		List<GameInstance> ret = new ArrayList<>();
-		for (GameInstance game : currentGames) {
-			if (pred.test(game)) {
-				ret.add(game);
+		for (RegistryKey<World> dimension : possibleDimensions) {
+			List<GamePhase> games = gamesByDimension.getOrDefault(dimension, Collections.emptyList());
+			for (GamePhase game : games) {
+				if (game.getPhaseDefinition().getGameArea().intersects(area)) {
+					return GameResult.error(GameTexts.Commands.gamesIntersect());
+				}
 			}
 		}
 
-		return ret;
-	}
-
-	@Nullable
-	public GameInstance getGameForWorld(World world, Predicate<GameInstance> pred) {
-		return getGamesForWorld(world, pred).stream().findFirst().orElse(null);
-	}
-
-	@Nullable
-	public GameInstance getGame(Predicate<GameInstance> pred) {
-		return getGames(pred).stream().findFirst().orElse(null);
-	}
-
-	@Override
-	public Collection<? extends IGameInstance> getAllGames() {
-		return currentGames;
+		return GameResult.ok();
 	}
 
 	@Nullable
 	@Override
-	public GameInstance getGameByCommandId(String id) {
-		for (GameInstance game : currentGames) {
-			if (game.getInstanceId().commandId.equals(id)) {
-				return game;
+	public GameLobby getLobbyFor(PlayerEntity player) {
+		if (player.world.isRemote) return null;
+
+		return lobbiesByPlayer.get(player.getUniqueID());
+	}
+
+	@Nullable
+	@Override
+	public IGamePhase getGamePhaseFor(PlayerEntity player) {
+		GameLobby lobby = getLobbyFor(player);
+		return lobby != null ? lobby.getCurrentPhase() : null;
+	}
+
+	@Nullable
+	@Override
+	public IGamePhase getGamePhaseAt(World world, Vector3d pos) {
+		return getGamePhaseForWorld(world, phase -> phase.getPhaseDefinition().getGameArea().contains(pos));
+	}
+
+	public List<GamePhase> getGamePhasesForWorld(World world) {
+		if (world.isRemote) {
+			return Collections.emptyList();
+		}
+
+		return gamesByDimension.getOrDefault(world.getDimensionKey(), Collections.emptyList());
+	}
+
+	@Nullable
+	public GamePhase getGamePhaseForWorld(World world, Predicate<GamePhase> pred) {
+		return getGamePhasesForWorld(world).stream().filter(pred).findFirst().orElse(null);
+	}
+
+	@Nullable
+	public GameLobby getLobby(Predicate<GameLobby> pred) {
+		return lobbies.stream().filter(pred).findFirst().orElse(null);
+	}
+
+	@Override
+	public Collection<? extends IGameLobby> getAllLobbies() {
+		return lobbies;
+	}
+
+	@Nullable
+	@Override
+	public IGameLobby getLobbyByNetworkId(int id) {
+		for (GameLobby lobby : lobbies) {
+			if (lobby.getMetadata().id().networkId() == id) {
+				return lobby;
+			}
+		}
+		return null;
+	}
+
+	@Nullable
+	@Override
+	public GameLobby getLobbyByCommandId(String id) {
+		for (GameLobby lobby : lobbies) {
+			if (lobby.getMetadata().commandId().equals(id)) {
+				return lobby;
 			}
 		}
 		return null;
@@ -173,23 +148,85 @@ public class MultiGameManager implements IGameManager {
 
 	@Override
 	public ControlCommandInvoker getControlInvoker(CommandSource source) {
-		IGameInstance game = getGameFor(source);
-		if (game != null) {
-			return game.getControlCommands();
-		}
-		return ControlCommandInvoker.EMPTY;
+		IGamePhase phase = getGamePhaseFor(source);
+		return phase != null ? phase.getControlInvoker() : ControlCommandInvoker.EMPTY;
 	}
 
-	// TODO: should these be separated from the specific game manager instance?
-	void stop(GameInstance game) {
-		INSTANCE.currentGames.remove(game);
+	void addGamePhaseToDimension(RegistryKey<World> dimension, GamePhase game) {
+		gamesByDimension.computeIfAbsent(dimension, k -> new ArrayList<>())
+				.add(game);
+	}
+
+	void removeGamePhaseFromDimension(RegistryKey<World> dimension, GamePhase game) {
+		List<GamePhase> games = gamesByDimension.get(dimension);
+		if (games == null) return;
+
+		if (games.remove(game) && games.isEmpty()) {
+			gamesByDimension.remove(dimension, games);
+		}
+	}
+
+	void addPlayerToLobby(ServerPlayerEntity player, GameLobby lobby) {
+		lobbiesByPlayer.put(player.getUniqueID(), lobby);
+	}
+
+	void removePlayerFromLobby(ServerPlayerEntity player, GameLobby lobby) {
+		lobbiesByPlayer.remove(player.getUniqueID(), lobby);
+	}
+
+	void removeLobby(GameLobby lobby) {
+		if (lobbies.remove(lobby)) {
+			commandIds.release(lobby.getMetadata().commandId());
+		}
+
+		if (focusedLiveLobby == lobby) {
+			setFocusedLiveLobby(null);
+		}
+	}
+
+	GameLobbyMetadata renameLobby(GameLobbyMetadata metadata, String name) {
+		commandIds.release(metadata.commandId());
+
+		String commandId = commandIds.acquire(name);
+		return metadata.withName(name, commandId);
+	}
+
+	GameLobbyMetadata setVisibility(GameLobby lobby, LobbyVisibility visibility) {
+		if (visibility.isFocusedLive()) {
+			if (!this.setFocusedLive(lobby)) {
+				return lobby.metadata;
+			}
+		}
+
+		return lobby.metadata.withVisibility(visibility);
+	}
+
+	private boolean setFocusedLive(GameLobby lobby) {
+		if (focusedLiveLobby == null) {
+			setFocusedLiveLobby(lobby);
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	private void setFocusedLiveLobby(@Nullable GameLobby lobby) {
+		focusedLiveLobby = lobby;
+
+		for (GameLobby otherLobby : lobbies) {
+			otherLobby.management.onFocusedLiveLobbyChanged();
+		}
+	}
+
+	boolean hasFocusedLiveLobby() {
+		return focusedLiveLobby != null;
 	}
 
 	@SubscribeEvent
 	public static void onServerStopping(FMLServerStoppingEvent event) {
-		List<GameInstance> games = new ArrayList<>(INSTANCE.currentGames);
-		for (GameInstance game : games) {
-			game.cancel();
+		List<GameLobby> lobbies = new ArrayList<>(INSTANCE.lobbies);
+		for (GameLobby lobby : lobbies) {
+			lobby.close();
 		}
 	}
 
@@ -197,32 +234,17 @@ public class MultiGameManager implements IGameManager {
 	public static void onServerTick(TickEvent.ServerTickEvent event) {
 		if (event.phase == TickEvent.Phase.START) return;
 
-		List<GameInstance> canceled = null;
-
-		for (GameInstance game : INSTANCE.currentGames) {
-			if (!game.tick()) {
-				if (canceled == null) {
-					canceled = new ArrayList<>();
-				}
-				canceled.add(game);
-			}
-		}
-
-		if (canceled != null) {
-			canceled.forEach(IGameInstance::cancel);
+		for (GameLobby lobby : INSTANCE.lobbies) {
+			lobby.tick();
 		}
 	}
 
 	@SubscribeEvent
 	public static void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
-		for (GameInstance game : INSTANCE.currentGames) {
-			PacketDistributor.PacketTarget target = PacketDistributor.PLAYER.with(() -> (ServerPlayerEntity) event.getPlayer());
-			LoveTropicsNetwork.CHANNEL.send(target, new ClientMinigameMessage(game));
+		ServerPlayerEntity player = (ServerPlayerEntity) event.getPlayer();
 
-			int networkId = game.getInstanceId().networkId;
-			for (PlayerRole role : PlayerRole.ROLES) {
-				LoveTropicsNetwork.CHANNEL.send(target, new PlayerCountsMessage(networkId, role, game.getMemberCount(role)));
-			}
+		for (GameLobby lobby : INSTANCE.lobbies) {
+			lobby.onPlayerLoggedIn(player);
 		}
 	}
 
@@ -235,8 +257,25 @@ public class MultiGameManager implements IGameManager {
 	 */
 	@SubscribeEvent
 	public static void onPlayerLoggedOut(PlayerEvent.PlayerLoggedOutEvent event) {
-		for (GameInstance game : INSTANCE.currentGames) {
-			game.removePlayer((ServerPlayerEntity) event.getPlayer());
+		ServerPlayerEntity player = (ServerPlayerEntity) event.getPlayer();
+		for (GameLobby lobby : INSTANCE.lobbies) {
+			lobby.onPlayerLoggedOut(player);
+		}
+	}
+
+	@SubscribeEvent
+	public static void onPlayerChangeDimension(PlayerEvent.PlayerChangedDimensionEvent event) {
+		PlayerEntity player = event.getPlayer();
+		if (player instanceof ServerPlayerEntity) {
+			IGamePhase phase = INSTANCE.getGamePhaseFor(player);
+			if (phase == null) return;
+
+			RegistryKey<World> dimension = phase.getDimension();
+			if (event.getFrom() == dimension && event.getTo() != dimension) {
+				if (phase.getLobby().getPlayers().remove((ServerPlayerEntity) player)) {
+					player.sendStatusMessage(GameTexts.Status.leftGameDimension(), false);
+				}
+			}
 		}
 	}
 }

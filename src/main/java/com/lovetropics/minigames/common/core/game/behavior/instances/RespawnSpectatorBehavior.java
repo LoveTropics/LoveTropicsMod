@@ -1,37 +1,39 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances;
 
-import com.lovetropics.minigames.common.core.game.IActiveGame;
-import com.lovetropics.minigames.common.core.game.PlayerRole;
+import com.lovetropics.minigames.common.core.game.GameStopReason;
+import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
+import com.lovetropics.minigames.common.core.game.player.PlayerRole;
 import com.mojang.serialization.Codec;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.ActionResultType;
-import net.minecraft.util.DamageSource;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.world.GameRules;
 import net.minecraft.world.server.ServerWorld;
+
+import javax.annotation.Nullable;
 
 public final class RespawnSpectatorBehavior implements IGameBehavior {
 	public static final Codec<RespawnSpectatorBehavior> CODEC = Codec.unit(RespawnSpectatorBehavior::new);
 
 	@Override
-	public void register(IActiveGame registerGame, EventRegistrar events) {
-		events.listen(GamePlayerEvents.CHANGE_ROLE, this::onPlayerChangeRole);
-		events.listen(GamePlayerEvents.DEATH, this::onPlayerDeath);
+	public void register(IGamePhase game, EventRegistrar events) {
+		events.listen(GamePlayerEvents.SET_ROLE, (player, role, lastRole) -> onPlayerSetRole(game, lastRole));
+		events.listen(GamePlayerEvents.DEATH, (player, source) -> onPlayerDeath(game, player));
 	}
 
-	private void onPlayerChangeRole(IActiveGame game, ServerPlayerEntity player, PlayerRole role, PlayerRole lastRole) {
-		if (game.getParticipants().isEmpty()) {
-			game.finish();
+	private void onPlayerSetRole(IGamePhase game, @Nullable PlayerRole lastRole) {
+		if (lastRole == PlayerRole.PARTICIPANT && game.getParticipants().isEmpty()) {
+			game.requestStop(GameStopReason.finished());
 		}
 	}
 
-	private ActionResultType onPlayerDeath(IActiveGame game, ServerPlayerEntity player, DamageSource source) {
+	private ActionResultType onPlayerDeath(IGamePhase game, ServerPlayerEntity player) {
 		player.inventory.dropAllItems();
 
-		if (!game.getSpectators().contains(player)) {
+		if (game.getParticipants().contains(player)) {
 			game.setPlayerRole(player, PlayerRole.SPECTATOR);
 			player.setHealth(20.0F);
 
@@ -43,7 +45,7 @@ public final class RespawnSpectatorBehavior implements IGameBehavior {
 		return ActionResultType.PASS;
 	}
 
-	private void sendDeathMessage(IActiveGame game, ServerPlayerEntity player) {
+	private void sendDeathMessage(IGamePhase game, ServerPlayerEntity player) {
 		ServerWorld world = game.getWorld();
 		if (!world.getGameRules().getBoolean(GameRules.SHOW_DEATH_MESSAGES)) {
 			return;

@@ -1,11 +1,11 @@
 package com.lovetropics.minigames.common.content.survive_the_tide.behavior;
 
 import com.lovetropics.minigames.common.core.game.GameException;
-import com.lovetropics.minigames.common.core.game.IActiveGame;
-import com.lovetropics.minigames.common.core.game.PlayerSet;
+import com.lovetropics.minigames.common.core.game.IGamePhase;
+import com.lovetropics.minigames.common.core.game.player.PlayerSet;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
-import com.lovetropics.minigames.common.core.game.behavior.event.GameLifecycleEvents;
+import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
@@ -42,8 +42,8 @@ public class RevealPlayersBehavior implements IGameBehavior
 	}
 
 	@Override
-	public void register(IActiveGame registerGame, EventRegistrar events) throws GameException {
-		events.listen(GameLifecycleEvents.TICK, game -> {
+	public void register(IGamePhase game, EventRegistrar events) throws GameException {
+		events.listen(GamePhaseEvents.TICK, () -> {
 			PlayerSet players = game.getParticipants();
 			if (players.size() > playersLeftRequired) {
 				return;

@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.common.core.integration.game_actions;
 
-import com.lovetropics.minigames.common.core.game.IActiveGame;
+import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.integration.GameInstanceTelemetry;
 import net.minecraft.server.MinecraftServer;
 import org.apache.logging.log4j.LogManager;
@@ -15,11 +15,11 @@ import java.util.concurrent.PriorityBlockingQueue;
 public final class GameActionHandler {
 	private static final Logger LOGGER = LogManager.getLogger(GameActionHandler.class);
 
-	private final IActiveGame game;
+	private final IGamePhase game;
 	private final GameInstanceTelemetry telemetry;
 	private final Map<GameActionType, ActionsQueue> queues = new EnumMap<>(GameActionType.class);
 
-	public GameActionHandler(IActiveGame game, GameInstanceTelemetry telemetry) {
+	public GameActionHandler(IGamePhase game, GameInstanceTelemetry telemetry) {
 		this.telemetry = telemetry;
 		this.game = game;
 	}

@@ -1,8 +1,12 @@
 package com.lovetropics.minigames.common.core.game.util;
 
+import com.lovetropics.minigames.common.core.diguise.DisguiseType;
+import com.lovetropics.minigames.common.core.diguise.PlayerDisguise;
+import com.lovetropics.minigames.common.core.diguise.ServerPlayerDisguises;
 import com.lovetropics.minigames.common.core.dimension.DimensionUtils;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.scoreboard.ScorePlayerTeam;
 import net.minecraft.util.FoodStats;
 import net.minecraft.util.RegistryKey;
 import net.minecraft.util.math.BlockPos;
@@ -21,6 +25,10 @@ public final class PlayerSnapshot {
 	private final BlockPos pos;
 	private final CompoundNBT playerData;
 
+	private final ScorePlayerTeam team;
+
+	private final DisguiseType disguise;
+
 	private PlayerSnapshot(ServerPlayerEntity player) {
 		this.gameType = player.interactionManager.getGameType();
 		this.dimension = player.world.getDimensionKey();
@@ -28,6 +36,10 @@ public final class PlayerSnapshot {
 
 		this.playerData = new CompoundNBT();
 		player.writeAdditional(this.playerData);
+
+		this.team = player.getWorldScoreboard().getPlayersTeam(player.getScoreboardName());
+
+		this.disguise = PlayerDisguise.getDisguiseType(player);
 	}
 
 	public static PlayerSnapshot takeAndClear(ServerPlayerEntity player) {
@@ -36,7 +48,7 @@ public final class PlayerSnapshot {
 		return snapshot;
 	}
 
-	private static void clearPlayer(ServerPlayerEntity player) {
+	public static void clearPlayer(ServerPlayerEntity player) {
 		player.inventory.clear();
 		player.setHealth(player.getMaxHealth());
 
@@ -46,6 +58,10 @@ public final class PlayerSnapshot {
 		CompoundNBT foodTag = new CompoundNBT();
 		new FoodStats().write(foodTag);
 		player.getFoodStats().read(foodTag);
+
+		player.getWorldScoreboard().removePlayerFromTeams(player.getScoreboardName());
+
+		ServerPlayerDisguises.clear(player);
 	}
 
 	/**
@@ -61,5 +77,11 @@ public final class PlayerSnapshot {
 		player.setGameType(this.gameType);
 
 		DimensionUtils.teleportPlayerNoPortal(player, this.dimension, this.pos);
+
+		if (this.team != null) {
+			player.getWorldScoreboard().addPlayerToTeam(player.getScoreboardName(), this.team);
+		}
+
+		PlayerDisguise.get(player).ifPresent(disguise -> disguise.setDisguise(this.disguise));
 	}
 }

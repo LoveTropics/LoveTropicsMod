@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.common.core.game.map;
 
-import com.lovetropics.minigames.common.core.game.IActiveGame;
+import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.map.MapRegions;
 import net.minecraft.util.RegistryKey;
 import net.minecraft.world.World;
@@ -13,9 +13,9 @@ public final class GameMap {
 	private final @Nullable String name;
 	private final RegistryKey<World> dimension;
 	private final MapRegions mapRegions;
-	private final Consumer<IActiveGame> close;
+	private final Consumer<IGamePhase> close;
 
-	private GameMap(@Nullable String name, RegistryKey<World> dimension, MapRegions mapRegions, @Nullable Consumer<IActiveGame> close) {
+	private GameMap(@Nullable String name, RegistryKey<World> dimension, MapRegions mapRegions, @Nullable Consumer<IGamePhase> close) {
 		this.name = name;
 		this.dimension = dimension;
 		this.mapRegions = mapRegions;
@@ -46,11 +46,11 @@ public final class GameMap {
 		return new GameMap(key, dimension, mapRegions);
 	}
 
-	public GameMap onClose(Consumer<IActiveGame> close) {
+	public GameMap onClose(Consumer<IGamePhase> close) {
 		return new GameMap(name, dimension, mapRegions, close);
 	}
 
-	public void close(IActiveGame game) {
+	public void close(IGamePhase game) {
 		if (this.close != null) {
 			this.close.accept(game);
 		}

@@ -1,8 +1,14 @@
 package com.lovetropics.minigames.common.core.game.behavior;
 
+import com.google.common.base.Function;
 import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Multimap;
+import com.google.common.collect.Multimaps;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
 import com.lovetropics.minigames.common.core.game.config.BehaviorReference;
+import com.lovetropics.minigames.common.core.game.impl.GamePhase;
+import com.lovetropics.minigames.common.core.game.state.GameStateMap;
+import net.minecraft.server.MinecraftServer;
 
 import java.util.Iterator;
 import java.util.List;
@@ -16,13 +22,23 @@ public final class BehaviorMap implements Iterable<IGameBehavior> {
 		this.behaviors = behaviors;
 	}
 
-	public static BehaviorMap create(List<BehaviorReference> references) {
+	public static BehaviorMap create(MinecraftServer server, List<BehaviorReference> references) {
 		Multimap<GameBehaviorType<?>, IGameBehavior> behaviors = LinkedHashMultimap.create();
 		for (BehaviorReference reference : references) {
-			reference.addTo(behaviors::put);
+			reference.addTo(server, behaviors::put);
 		}
 
 		return new BehaviorMap(behaviors);
+	}
+
+	public void registerTo(GamePhase phase, GameStateMap state, GameEventListeners events) {
+		for (IGameBehavior behavior : this) {
+			behavior.registerState(phase, state);
+		}
+
+		for (IGameBehavior behavior : this) {
+			behavior.register(phase, events);
+		}
 	}
 
 	@Override
@@ -32,5 +48,9 @@ public final class BehaviorMap implements Iterable<IGameBehavior> {
 
 	public Stream<IGameBehavior> stream() {
 		return StreamSupport.stream(spliterator(), false);
+	}
+
+	public <V> Multimap<GameBehaviorType<?>, V> mapValues(Function<? super IGameBehavior, V> valMap) {
+		return Multimaps.transformValues(behaviors, valMap);
 	}
 }
