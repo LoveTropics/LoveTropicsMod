@@ -10,10 +10,8 @@ import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.util.world.DelegatingSeedReader;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
-import it.unimi.dsi.fastutil.longs.LongSet;
-import net.minecraft.block.Block;
 import it.unimi.dsi.fastutil.longs.*;
+import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.ResourceLocation;
@@ -83,7 +81,7 @@ public final class PlaceFeaturePlantBehavior implements IGameBehavior {
 			}
 
 			private boolean canChangeBlock(BlockPos pos, BlockState oldState, BlockState newState) {
-				if (!oldState.isAir() && !isTreeBlock(oldState)) {
+				if (isTreeBlock(newState) && !oldState.isAir() && !isTreeBlock(oldState)) {
 					return false;
 				}
 
