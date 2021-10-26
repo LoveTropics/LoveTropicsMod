@@ -108,9 +108,7 @@ public final class RuntimeDimensions {
 	public RuntimeDimensionHandle openTemporaryWithKey(ResourceLocation key, RuntimeDimensionConfig config) {
 		RegistryKey<World> worldKey = RegistryKey.getOrCreateKey(Registry.WORLD_KEY, key);
 		if (this.server.getWorld(worldKey) == null) {
-			RuntimeDimensionHandle world = this.openWorld(key, config, true);
-			this.temporaryDimensions.add(worldKey);
-			return world;
+			return this.openWorld(key, config, true);
 		} else {
 			return null;
 		}
@@ -136,15 +134,22 @@ public final class RuntimeDimensions {
 		) {
 			@Override
 			public void save(@Nullable IProgressUpdate progress, boolean flush, boolean skipSave) {
-				if (flush && temporary) {
-					return;
+				if (temporary) {
+					if (!flush && temporaryDimensions.contains(getDimensionKey())) {
+						super.save(progress, false, skipSave);
+					}
+				} else {
+					super.save(progress, flush, skipSave);
 				}
-				super.save(progress, flush, skipSave);
 			}
 		};
 
 		this.server.worlds.put(worldKey, world);
 		this.server.markWorldsDirty();
+
+		if (temporary) {
+			this.temporaryDimensions.add(worldKey);
+		}
 
 		MinecraftForge.EVENT_BUS.post(new WorldEvent.Load(world));
 
