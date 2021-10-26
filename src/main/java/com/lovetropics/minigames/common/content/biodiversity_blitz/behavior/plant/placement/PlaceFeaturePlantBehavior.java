@@ -1,7 +1,6 @@
 package com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.plant.placement;
 
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.event.BbPlantEvents;
-import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.Plot;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.plant.PlantCoverage;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.plant.PlantPlacement;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
@@ -16,6 +15,7 @@ import net.minecraft.block.BlockState;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.ISeedReader;
 import net.minecraft.world.gen.ChunkGenerator;
 import net.minecraft.world.gen.feature.BaseTreeFeatureConfig;
 import net.minecraft.world.gen.feature.ConfiguredFeature;
@@ -24,6 +24,7 @@ import net.minecraftforge.common.Tags;
 import net.minecraftforge.common.util.Constants;
 
 import javax.annotation.Nullable;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 public final class PlaceFeaturePlantBehavior implements IGameBehavior {
@@ -43,7 +44,7 @@ public final class PlaceFeaturePlantBehavior implements IGameBehavior {
 		events.listen(BbPlantEvents.PLACE, (player, plot, pos) -> {
 			ServerWorld world = game.getWorld();
 			ConfiguredFeature<?, ?> tree = this.feature.get();
-			Long2ObjectMap<BlockState> changedBlocks = this.generateFeature(world, plot, pos, tree);
+			Long2ObjectMap<BlockState> changedBlocks = this.generateFeature(world, pos, tree);
 			if (changedBlocks != null) {
 				return this.buildPlacement(pos, changedBlocks);
 			} else {
@@ -53,69 +54,27 @@ public final class PlaceFeaturePlantBehavior implements IGameBehavior {
 	}
 
 	@Nullable
-	private Long2ObjectMap<BlockState> generateFeature(ServerWorld world, Plot plot, BlockPos pos, ConfiguredFeature<?, ?> feature) {
+	private Long2ObjectMap<BlockState> generateFeature(ServerWorld world, BlockPos pos, ConfiguredFeature<?, ?> feature) {
 		if (feature.config instanceof BaseTreeFeatureConfig) {
 			((BaseTreeFeatureConfig) feature.config).forcePlacement();
 		}
 
-		Long2ObjectMap<BlockState> changedBlocks = new Long2ObjectOpenHashMap<>();
-
-		DelegatingSeedReader placementWorld = new DelegatingSeedReader(world) {
-			@Override
-			public boolean setBlockState(BlockPos pos, BlockState state, int flags, int recursionLeft) {
-				BlockState oldState = this.getBlockState(pos);
-				if (!this.canChangeBlock(pos, oldState, state)) {
-					return false;
-				}
-
-				if (oldState != state) {
-					if (!state.equals(super.getBlockState(pos))) {
-						changedBlocks.put(pos.toLong(), state);
-					} else {
-						changedBlocks.remove(pos.toLong());
-					}
-					return true;
-				} else {
-					return false;
-				}
-			}
-
-			private boolean canChangeBlock(BlockPos pos, BlockState oldState, BlockState newState) {
-				if (isTreeBlock(newState) && !oldState.isAir() && !isTreeBlock(oldState)) {
-					return false;
-				}
-
-				if (isDecorationBlock(newState) && !plot.plants.canAddPlantAt(pos)) {
-					return false;
-				}
-
-				return true;
-			}
-
-			@Override
-			public BlockState getBlockState(BlockPos pos) {
-				BlockState changedBlock = changedBlocks.get(pos.toLong());
-				if (changedBlock != null) {
-					return changedBlock;
-				} else {
-					return super.getBlockState(pos);
-				}
-			}
-		};
+		BlockCapturingWorld capturingWorld = new BlockCapturingWorld(world, PlaceFeaturePlantBehavior::isTreeBlock);
 
 		ChunkGenerator chunkGenerator = world.getChunkProvider().getChunkGenerator();
-		if (feature.generate(placementWorld, chunkGenerator, world.rand, pos)) {
-			return changedBlocks;
+		if (feature.generate(capturingWorld, chunkGenerator, world.rand, pos)) {
+			return capturingWorld.getCapturedBlocks();
 		} else {
 			return null;
 		}
 	}
 
 	@Nullable
-	private PlantPlacement buildPlacement(BlockPos origin, Long2ObjectMap<BlockState> changedBlocks) {
+	private PlantPlacement buildPlacement(BlockPos origin, Long2ObjectMap<BlockState> blocks) {
 		LongSet coverage = new LongOpenHashSet();
 		LongSet decorationCoverage = new LongOpenHashSet();
-		for (Long2ObjectMap.Entry<BlockState> entry : Long2ObjectMaps.fastIterable(changedBlocks)) {
+
+		for (Long2ObjectMap.Entry<BlockState> entry : Long2ObjectMaps.fastIterable(blocks)) {
 			long pos = entry.getLongKey();
 			BlockState state = entry.getValue();
 			if (!isDecorationBlock(state)) {
@@ -138,7 +97,7 @@ public final class PlaceFeaturePlantBehavior implements IGameBehavior {
 
 		return placement.places(world -> {
 			BlockPos.Mutable pos = new BlockPos.Mutable();
-			for (Long2ObjectMap.Entry<BlockState> entry : Long2ObjectMaps.fastIterable(changedBlocks)) {
+			for (Long2ObjectMap.Entry<BlockState> entry : Long2ObjectMaps.fastIterable(blocks)) {
 				pos.setPos(entry.getLongKey());
 				BlockState state = entry.getValue();
 				world.setBlockState(pos, state, Constants.BlockFlags.DEFAULT | Constants.BlockFlags.UPDATE_NEIGHBORS);
@@ -148,13 +107,59 @@ public final class PlaceFeaturePlantBehavior implements IGameBehavior {
 	}
 
 	private static boolean isTreeBlock(BlockState state) {
-		// Add stuff like vines and propagules as needed
-
-		// TODO: beehives are above the floor and have a leaves block above them
 		return state.isIn(BlockTags.LOGS) || state.isIn(BlockTags.LEAVES) || state.isIn(ROOTS);
 	}
 
 	private static boolean isDecorationBlock(BlockState state) {
 		return !state.isIn(BlockTags.LOGS);
+	}
+
+	static class BlockCapturingWorld extends DelegatingSeedReader {
+		private final Long2ObjectMap<BlockState> simulatedBlocks = new Long2ObjectOpenHashMap<>();
+		private final Long2ObjectMap<BlockState> capturedBlocks = new Long2ObjectOpenHashMap<>();
+
+		private final Predicate<BlockState> filter;
+
+		BlockCapturingWorld(ISeedReader parent, Predicate<BlockState> filter) {
+			super(parent);
+			this.filter = filter;
+		}
+
+		Long2ObjectMap<BlockState> getCapturedBlocks() {
+			return capturedBlocks;
+		}
+
+		@Override
+		public boolean setBlockState(BlockPos pos, BlockState state, int flags, int recursionLeft) {
+			BlockState oldState = this.getBlockState(pos);
+			if (oldState == state) {
+				return false;
+			}
+
+			long posKey = pos.toLong();
+			if (!state.equals(super.getBlockState(pos))) {
+				simulatedBlocks.put(posKey, state);
+				if (filter.test(state)) {
+					capturedBlocks.put(posKey, state);
+				} else {
+					capturedBlocks.remove(posKey);
+				}
+			} else {
+				simulatedBlocks.remove(posKey);
+				capturedBlocks.remove(posKey);
+			}
+
+			return true;
+		}
+
+		@Override
+		public BlockState getBlockState(BlockPos pos) {
+			BlockState changedBlock = simulatedBlocks.get(pos.toLong());
+			if (changedBlock != null) {
+				return changedBlock;
+			} else {
+				return super.getBlockState(pos);
+			}
+		}
 	}
 }

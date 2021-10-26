@@ -71,7 +71,7 @@ public final class BbDropCurrencyBehavior implements IGameBehavior {
 	}
 
 	private int computeNextCurrency(ServerPlayerEntity player, Plot plot) {
-		boolean atPlot = plot.bounds.contains(player.getPositionVec());
+		boolean atPlot = plot.walls.getBounds().contains(player.getPositionVec());
 		if (atPlot) {
 			double value = this.computePlotValue(plot);
 			value = preventCapitalism(value);

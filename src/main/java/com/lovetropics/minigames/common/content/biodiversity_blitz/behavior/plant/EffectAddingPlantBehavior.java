@@ -33,11 +33,11 @@ public final class EffectAddingPlantBehavior implements IGameBehavior {
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
 		int effectDuration = this.effect.getDuration();
-		int applyTime = Math.max(effectDuration - 5, 0);
+		int applyTime = Math.max(effectDuration - 5, 1);
 
 		events.listen(BbPlantEvents.TICK, (player, plot, plants) -> {
 			long ticks = game.ticks();
-			if (ticks % effectDuration != applyTime) {
+			if (ticks % applyTime != 0) {
 				return;
 			}
 

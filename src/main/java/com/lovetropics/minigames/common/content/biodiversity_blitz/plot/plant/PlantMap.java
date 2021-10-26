@@ -114,12 +114,12 @@ public final class PlantMap implements Iterable<Plant> {
 	}
 
 	public boolean canAddPlantAt(BlockPos pos) {
-		return this.plantByPos.get(pos.toLong()) == null;
+		return this.plantByDecorationPos.get(pos.toLong()) == null;
 	}
 
 	public boolean canAddPlantAt(PlantCoverage coverage) {
 		for (BlockPos pos : coverage) {
-			Plant plant = this.plantByPos.get(pos.toLong());
+			Plant plant = this.plantByDecorationPos.get(pos.toLong());
 			if (plant != null) {
 				return false;
 			}
