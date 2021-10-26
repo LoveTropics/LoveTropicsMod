@@ -1,6 +1,7 @@
 package com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.plant;
 
 import com.lovetropics.lib.codec.MoreCodecs;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.BiodiversityBlitzTexts;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.event.BbEvents;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.Plot;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.PlotsState;
@@ -18,7 +19,10 @@ import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.ActionResultType;
+import net.minecraft.util.SoundCategory;
+import net.minecraft.util.SoundEvents;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.TextFormatting;
 
 public final class PlantItemBehavior implements IGameBehavior {
 	public static final Codec<PlantItemBehavior> CODEC = RecordCodecBuilder.create(instance -> instance.group(
@@ -63,7 +67,8 @@ public final class PlantItemBehavior implements IGameBehavior {
 
 			ActionResult<Plant> result = game.invoker(BbEvents.PLACE_PLANT).placePlant(player, plot, pos, this.places);
 			if (result.getResult() == null) {
-				// TODO: indicate failure
+				player.sendStatusMessage(BiodiversityBlitzTexts.plantCannotFit().mergeStyle(TextFormatting.RED), true);
+				player.playSound(SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, SoundCategory.PLAYERS, 1.0F, 1.0F);
 			}
 
 			return result.getType();

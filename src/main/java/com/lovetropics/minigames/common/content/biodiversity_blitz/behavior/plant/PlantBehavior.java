@@ -1,7 +1,6 @@
 package com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.plant;
 
 import com.lovetropics.lib.codec.MoreCodecs;
-import com.lovetropics.minigames.common.content.biodiversity_blitz.BiodiversityBlitzTexts;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.event.BbEvents;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.event.BbPlantEvents;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.Plot;
@@ -22,9 +21,10 @@ import net.minecraft.block.BlockState;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.fluid.FluidState;
 import net.minecraft.item.SwordItem;
-import net.minecraft.util.*;
+import net.minecraft.util.ActionResult;
+import net.minecraft.util.ActionResultType;
+import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.common.util.Constants;
 
@@ -89,9 +89,6 @@ public final class PlantBehavior implements IGameBehavior {
 
 		Plant plant = plot.plants.addPlant(plantType, this.family, this.value, placement);
 		if (plant == null) {
-			player.sendStatusMessage(BiodiversityBlitzTexts.plantCannotFit().mergeStyle(TextFormatting.RED), true);
-			player.playSound(SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, SoundCategory.PLAYERS, 1.0F, 1.0F);
-
 			return ActionResult.resultFail(null);
 		}
 
