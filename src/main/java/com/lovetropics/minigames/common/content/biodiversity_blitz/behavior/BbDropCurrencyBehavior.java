@@ -87,18 +87,19 @@ public final class BbDropCurrencyBehavior implements IGameBehavior {
 		Reference2ObjectMap<PlantFamily, Set<PlantType>> counts = new Reference2ObjectOpenHashMap<>();
 
 		for (Plant plant : plot.plants) {
+			if (plant.value() < 0) continue; // Negative value marks plants that shouldn't count towards biodiversity
+
 			PlantFamily family = plant.family();
 			PlantType type = plant.type();
 
 			values.addTo(family, plant.value());
 
-			// TODO: plants like saplings should not contribute to biodiversity!
 			Set<PlantType> set = counts.computeIfAbsent(family, f -> new ObjectOpenHashSet<>());
 			set.add(type);
 		}
 
 		double value = 2.0;
-		for (PlantFamily family : PlantFamily.VALUES) {
+		for (PlantFamily family : PlantFamily.BIODIVERSITY_VALUES) {
 			int biodiversity = counts.getOrDefault(family, Collections.emptySet()).size();
 
 			double plantValue = values.getDouble(family) + 0.5;
