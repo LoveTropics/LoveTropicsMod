@@ -17,6 +17,7 @@ public final class ClientGameStateHandlers {
 
 	static {
 		register(GameClientStateTypes.SPECTATING, ClientSpectatingManager.INSTANCE);
+		register(GameClientStateTypes.RESOURCE_PACK, GameResourcePackHandler.INSTANCE);
 	}
 
 	public static <T extends GameClientState> void register(RegistryEntry<GameClientStateType<T>> type, ClientGameStateHandler<T> handler) {

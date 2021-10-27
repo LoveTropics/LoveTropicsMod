@@ -4,6 +4,7 @@ import com.lovetropics.lib.codec.MoreCodecs;
 import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.common.core.game.client_state.instance.HotbarTextureClientState;
+import com.lovetropics.minigames.common.core.game.client_state.instance.ResourcePackClientState;
 import com.lovetropics.minigames.common.core.game.client_state.instance.SpectatingClientState;
 import com.lovetropics.minigames.common.core.game.client_state.instance.TimeInterpolationClientState;
 import com.lovetropics.minigames.common.util.registry.GameClientTweakEntry;
@@ -30,6 +31,7 @@ public final class GameClientStateTypes {
 	public static final GameClientTweakEntry<HotbarTextureClientState> HOTBAR_TEXTURE = register("hotbar_texture", HotbarTextureClientState.CODEC);
 	public static final GameClientTweakEntry<TimeInterpolationClientState> TIME_INTERPOLATION = register("time_interpolation", TimeInterpolationClientState.CODEC);
 	public static final GameClientTweakEntry<SpectatingClientState> SPECTATING = register("spectating", SpectatingClientState.CODEC);
+	public static final GameClientTweakEntry<ResourcePackClientState> RESOURCE_PACK = register("resource_pack", ResourcePackClientState.CODEC);
 
 	public static <T extends GameClientState> GameClientTweakEntry<T> register(final String name, final Codec<T> codec) {
 		return REGISTRATE.object(name)
