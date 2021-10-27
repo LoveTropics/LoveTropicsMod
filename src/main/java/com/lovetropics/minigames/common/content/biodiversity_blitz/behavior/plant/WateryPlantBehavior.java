@@ -15,6 +15,7 @@ import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.particles.ParticleTypes;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.server.ServerWorld;
 
@@ -60,37 +61,61 @@ public final class WateryPlantBehavior implements IGameBehavior {
                 continue;
             }
 
-            for (MobEntity entity : entities) {
-                // Don't attack the same entity multiple times
-                if (seen.contains(entity)) {
-                    continue;
-                }
+            MobEntity entity = entities.get(random.nextInt(entities.size()));
 
-                seen.add(entity);
+            // Don't attack the same entity multiple times
+            if (seen.contains(entity)) {
+                continue;
+            }
 
-                int waterCount = 2 + random.nextInt(3);
+            seen.add(entity);
 
-                if (ticks % 15 == 0) {
-                    // Extinguish fire
-                    entity.forceFireTicks(0);
-                    entity.attackEntityFrom(DamageSource.MAGIC, 2 + random.nextInt(3));
-                    waterCount += 5 + random.nextInt(8);
-                }
+            int waterCount = 2 + random.nextInt(3);
 
-                // Don't add particles to mobs that should be dead
-                if (entity.getShouldBeDead()) {
-                    continue;
-                }
+            AxisAlignedBB aabb = entity.getBoundingBox();
 
-                for (int i = 0; i < waterCount; i++) {
-                    Vector3d sample = random(entity.getBoundingBox(), world.rand);
-                    double d3 = random.nextGaussian() * 0.05;
-                    double d1 = random.nextGaussian() * 0.1;
-                    double d2 = random.nextGaussian() * 0.05;
-                    world.spawnParticle(ParticleTypes.FALLING_WATER, sample.x, sample.y, sample.z, 1 + random.nextInt(2), d3, d1, d2, 0.03 + random.nextDouble() * 0.02);
-                }
+            if (ticks % 15 == 0) {
+                // Extinguish fire
+                entity.forceFireTicks(0);
+                entity.attackEntityFrom(DamageSource.MAGIC, 1 + random.nextInt(3));
+                waterCount += 5 + random.nextInt(8);
+
+                // Draw extra water as a line
+
+                Vector3d positionVec = entity.getPositionVec();
+                // Needs to target the middle of the entity position vector
+                Vector3d scaledVec = new Vector3d(positionVec.x, (aabb.minY + aabb.maxY) / 2.0, positionVec.z);
+
+                drawWaterBetween(plant.coverage().asBounds().getCenter(), scaledVec, world, random);
+            }
+
+            // Don't add particles to mobs that should be dead
+            if (entity.getShouldBeDead()) {
+                continue;
+            }
+
+            for (int i = 0; i < waterCount; i++) {
+                Vector3d sample = random(aabb, world.rand);
+                double d3 = random.nextGaussian() * 0.05;
+                double d1 = random.nextGaussian() * 0.1;
+                double d2 = random.nextGaussian() * 0.05;
+                world.spawnParticle(ParticleTypes.FALLING_WATER, sample.x, sample.y, sample.z, 1 + random.nextInt(2), d3, d1, d2, 0.03 + random.nextDouble() * 0.02);
             }
         }
+    }
+
+    private static void drawWaterBetween(Vector3d start, Vector3d end, ServerWorld world, Random random) {
+        for (int i = 0; i < 20; i++) {
+            Vector3d sample = lerpVector(start, end, i / 20.0);
+            double d3 = random.nextGaussian() * 0.05;
+            double d1 = random.nextGaussian() * 0.1;
+            double d2 = random.nextGaussian() * 0.05;
+            world.spawnParticle(ParticleTypes.FALLING_WATER, sample.x, sample.y, sample.z, 1 + random.nextInt(2), d3, d1, d2, 0.03 + random.nextDouble() * 0.02);
+        }
+    }
+
+    private static Vector3d lerpVector(Vector3d start, Vector3d end, double d) {
+        return new Vector3d(MathHelper.lerp(d, start.x, end.x), MathHelper.lerp(d, start.y, end.y), MathHelper.lerp(d, start.z, end.z));
     }
 
     private static Vector3d random(AxisAlignedBB aabb, Random random) {
