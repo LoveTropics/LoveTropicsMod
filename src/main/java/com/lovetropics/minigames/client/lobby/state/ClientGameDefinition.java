@@ -6,18 +6,26 @@ import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.ITextComponent;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public final class ClientGameDefinition {
 	public final ResourceLocation id;
 	public final ITextComponent name;
+	@Nullable
+	public final ITextComponent subtitle;
 	public final int minimumParticipants;
 	public final int maximumParticipants;
 
-	public ClientGameDefinition(ResourceLocation id, ITextComponent name, int minimumParticipants, int maximumParticipants) {
+	public ClientGameDefinition(
+			ResourceLocation id,
+			ITextComponent name, @Nullable ITextComponent subtitle,
+			int minimumParticipants, int maximumParticipants
+	) {
 		this.id = id;
 		this.name = name;
+		this.subtitle = subtitle;
 		this.minimumParticipants = minimumParticipants;
 		this.maximumParticipants = maximumParticipants;
 	}
@@ -32,6 +40,7 @@ public final class ClientGameDefinition {
 		return new ClientGameDefinition(
 				definition.getId(),
 				definition.getName(),
+				definition.getSubtitle(),
 				definition.getMinimumParticipantCount(),
 				definition.getMaximumParticipantCount()
 		);
@@ -40,14 +49,19 @@ public final class ClientGameDefinition {
 	public static ClientGameDefinition decode(PacketBuffer buffer) {
 		ResourceLocation id = buffer.readResourceLocation();
 		ITextComponent name = buffer.readTextComponent();
+		ITextComponent subtitle = buffer.readBoolean() ? buffer.readTextComponent() : null;
 		int minimumParticipants = buffer.readVarInt();
 		int maximumParticipants = buffer.readVarInt();
-		return new ClientGameDefinition(id, name, minimumParticipants, maximumParticipants);
+		return new ClientGameDefinition(id, name, subtitle, minimumParticipants, maximumParticipants);
 	}
 
 	public void encode(PacketBuffer buffer) {
 		buffer.writeResourceLocation(this.id);
 		buffer.writeTextComponent(this.name);
+		buffer.writeBoolean(this.subtitle != null);
+		if (this.subtitle != null) {
+			buffer.writeTextComponent(this.subtitle);
+		}
 		buffer.writeVarInt(this.minimumParticipants);
 		buffer.writeVarInt(this.maximumParticipants);
 	}

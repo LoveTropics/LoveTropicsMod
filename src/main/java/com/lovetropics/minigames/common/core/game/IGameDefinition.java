@@ -1,10 +1,10 @@
 package com.lovetropics.minigames.common.core.game;
 
-import java.util.Optional;
-
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.TranslationTextComponent;
+
+import javax.annotation.Nullable;
+import java.util.Optional;
 
 /**
  * Used as a discriminant for a registered minigame. Defines the logic of the
@@ -21,11 +21,6 @@ public interface IGameDefinition {
 	 */
 	ResourceLocation getId();
 
-	// TODO: with parameterised games we can get rid of this extra id(?)
-	default ResourceLocation getDisplayId() {
-		return getId();
-	}
-
 	/**
 	 * An identifier for telemetry usage, so that variants of games can share
 	 * statistics. Defaults to the ID if not set in the JSON.
@@ -36,16 +31,10 @@ public interface IGameDefinition {
 		return getId().getPath();
 	}
 
-	/**
-	 * Used within messages sent to players as the minigame starts, stops, etc.
-	 *
-	 * @return The unlocalized key string for the name of this minigame.
-	 */
-	String getTranslationKey();
+	ITextComponent getName();
 
-	default ITextComponent getName() {
-		return new TranslationTextComponent(getTranslationKey());
-	}
+	@Nullable
+	ITextComponent getSubtitle();
 
 	/**
 	 * Will not let you start the minigame without at least this amount of

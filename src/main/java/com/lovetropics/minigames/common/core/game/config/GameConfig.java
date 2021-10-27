@@ -1,21 +1,23 @@
 package com.lovetropics.minigames.common.core.game.config;
 
-import com.lovetropics.minigames.Constants;
+import com.lovetropics.lib.codec.MoreCodecs;
 import com.lovetropics.minigames.common.core.game.IGameDefinition;
 import com.lovetropics.minigames.common.core.game.IGamePhaseDefinition;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.text.ITextComponent;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
 
 public final class GameConfig implements IGameDefinition {
 	public final ResourceLocation id;
-	public final ResourceLocation displayId;
 	public final String telemetryKey;
-	public final String translationKey;
+	public final ITextComponent name;
+	@Nullable
+	public final ITextComponent subtitle;
 	public final int minimumParticipants;
 	public final int maximumParticipants;
 	@Nullable
@@ -24,18 +26,18 @@ public final class GameConfig implements IGameDefinition {
 
 	public GameConfig(
 			ResourceLocation id,
-			ResourceLocation displayId,
 			String telemetryKey,
-			String translationKey,
+			ITextComponent name,
+			@Nullable ITextComponent subtitle,
 			int minimumParticipants,
 			int maximumParticipants,
 			@Nullable GamePhaseConfig waiting,
 			GamePhaseConfig playing
 	) {
 		this.id = id;
-		this.displayId = displayId;
 		this.telemetryKey = telemetryKey;
-		this.translationKey = translationKey;
+		this.name = name;
+		this.subtitle = subtitle;
 		this.minimumParticipants = minimumParticipants;
 		this.maximumParticipants = maximumParticipants;
 		this.waiting = waiting;
@@ -47,18 +49,18 @@ public final class GameConfig implements IGameDefinition {
 
 		return RecordCodecBuilder.create(instance -> {
 			return instance.group(
-					Codec.STRING.optionalFieldOf("display_id").forGetter(c -> Optional.of(c.displayId.getPath())),
 					Codec.STRING.optionalFieldOf("telemetry_key").forGetter(c -> Optional.of(c.telemetryKey)),
-					Codec.STRING.fieldOf("translation_key").forGetter(c -> c.translationKey),
+					MoreCodecs.TEXT.fieldOf("name").forGetter(c -> c.name),
+					MoreCodecs.TEXT.optionalFieldOf("subtitle").forGetter(c -> Optional.ofNullable(c.subtitle)),
 					Codec.INT.optionalFieldOf("minimum_participants", 1).forGetter(c -> c.minimumParticipants),
 					Codec.INT.optionalFieldOf("maximum_participants", 100).forGetter(c -> c.maximumParticipants),
 					phaseCodec.codec().optionalFieldOf("waiting").forGetter(c -> Optional.ofNullable(c.waiting)),
 					phaseCodec.forGetter(c -> c.playing)
-			).apply(instance, (displayIdOpt, telemetryKeyOpt, translationKey, minimumParticipants, maximumParticipants, waitingOpt, active) -> {
-				ResourceLocation displayId = displayIdOpt.map(string -> new ResourceLocation(id.getNamespace(), string)).orElse(id);
+			).apply(instance, (telemetryKeyOpt, name, subtitleOpt, minimumParticipants, maximumParticipants, waitingOpt, active) -> {
 				String telemetryKey = telemetryKeyOpt.orElse(id.getPath());
+				ITextComponent subtitle = subtitleOpt.orElse(null);
 				GamePhaseConfig waiting = waitingOpt.orElse(null);
-				return new GameConfig(id, displayId, telemetryKey, translationKey, minimumParticipants, maximumParticipants, waiting, active);
+				return new GameConfig(id, telemetryKey, name, subtitle, minimumParticipants, maximumParticipants, waiting, active);
 			});
 		});
 	}
@@ -69,18 +71,19 @@ public final class GameConfig implements IGameDefinition {
 	}
 
 	@Override
-	public ResourceLocation getDisplayId() {
-		return displayId;
-	}
-
-	@Override
 	public String getTelemetryKey() {
 		return telemetryKey;
 	}
 
 	@Override
-	public String getTranslationKey() {
-		return Constants.MODID + ".minigame." + translationKey;
+	public ITextComponent getName() {
+		return name;
+	}
+
+	@Nullable
+	@Override
+	public ITextComponent getSubtitle() {
+		return subtitle;
 	}
 
 	@Override
