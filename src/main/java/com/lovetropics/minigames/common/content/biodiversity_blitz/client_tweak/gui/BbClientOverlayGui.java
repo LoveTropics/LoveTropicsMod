@@ -61,10 +61,16 @@ public final class BbClientOverlayGui {
 		y += ITEM_SIZE + PADDING;
 
 		int increment = display.getNextIncrement();
-		TextFormatting incrementColor = increment > 0 ? TextFormatting.AQUA : TextFormatting.RED;
+		// Increment can never be 0 otherwise, as 2 osas per drop is guaranteed
+		boolean isInPlot = increment > 0;
+		TextFormatting incrementColor = isInPlot ? TextFormatting.AQUA : TextFormatting.RED;
 
 		String nextCurrencyIncrement = incrementColor + "+" + increment + TextFormatting.GRAY + " next drop";
 		font.drawStringWithShadow(matrixStack, nextCurrencyIncrement, x, y, 0xFFFFFFFF);
+
+		if (!isInPlot) {
+			font.drawStringWithShadow(matrixStack, TextFormatting.GRAY + "Get back in your plot to receive osas!", x, y + font.FONT_HEIGHT, 0xFFFFFFFF);
+		}
 	}
 
 	private static void renderItem(MatrixStack matrixStack, ItemStack stack, int x, int y) {
