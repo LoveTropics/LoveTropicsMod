@@ -9,7 +9,7 @@ import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.plan
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.plant.placement.PlaceDoublePlantBehavior;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.plant.placement.PlaceFeaturePlantBehavior;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.plant.placement.PlaceSinglePlantBehavior;
-import com.lovetropics.minigames.common.content.biodiversity_blitz.client_tweak.CheckeredPlotsTweak;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.client_tweak.CheckeredPlotsState;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.client_tweak.ClientBiodiversityBlitzState;
 import com.lovetropics.minigames.common.util.registry.GameBehaviorEntry;
 import com.lovetropics.minigames.common.util.registry.GameClientTweakEntry;
@@ -124,7 +124,7 @@ public final class BiodiversityBlitz {
 			.behavior(BbDropCurrencyBehavior.CODEC)
 			.register();
 
-	public static final GameBehaviorEntry<BbClientStateBehavior> CLIENT_STATE = REGISTRATE.object("biodiversity_blitz_client_state")
+	public static final GameBehaviorEntry<BbClientStateBehavior> SEND_CLIENT_STATE = REGISTRATE.object("biodiversity_blitz_client_state")
 			.behavior(BbClientStateBehavior.CODEC)
 			.register();
 
@@ -134,12 +134,12 @@ public final class BiodiversityBlitz {
 
 	// Tweaks
 
-	public static final GameClientTweakEntry<CheckeredPlotsTweak> CHECKERED_PLOTS_TWEAK = REGISTRATE.object("checkered_plots")
-			.clientTweak(CheckeredPlotsTweak.CODEC)
+	public static final GameClientTweakEntry<CheckeredPlotsState> CHECKERED_PLOTS_STATE = REGISTRATE.object("checkered_plots")
+			.clientState(CheckeredPlotsState.CODEC)
 			.register();
 
-	public static final GameClientTweakEntry<ClientBiodiversityBlitzState> CLIENT_STATE_TWEAK = REGISTRATE.object("biodiversity_blitz_client_state")
-			.clientTweak(ClientBiodiversityBlitzState.CODEC)
+	public static final GameClientTweakEntry<ClientBiodiversityBlitzState> CLIENT_STATE = REGISTRATE.object("biodiversity_blitz_client_state")
+			.clientState(ClientBiodiversityBlitzState.CODEC)
 			.register();
 
 	// Items

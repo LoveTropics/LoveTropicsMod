@@ -1,18 +1,16 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances;
 
 import com.lovetropics.minigames.common.core.game.IGamePhase;
-import com.lovetropics.minigames.common.core.game.player.PlayerRole;
-import com.lovetropics.minigames.common.core.game.player.PlayerSet;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
-import com.lovetropics.minigames.common.core.network.ChaseCameraMessage;
-import com.lovetropics.minigames.common.core.network.LoveTropicsNetwork;
-import com.lovetropics.minigames.common.core.network.StopChaseCameraMessage;
+import com.lovetropics.minigames.common.core.game.client_state.GameClientState;
+import com.lovetropics.minigames.common.core.game.client_state.GameClientStateTypes;
+import com.lovetropics.minigames.common.core.game.client_state.instance.SpectatingClientState;
+import com.lovetropics.minigames.common.core.game.player.PlayerSet;
 import com.mojang.serialization.Codec;
 import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraftforge.fml.network.PacketDistributor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,45 +21,34 @@ public final class SpectatorChaseBehavior implements IGameBehavior {
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
-		events.listen(GamePlayerEvents.SET_ROLE, (player, role, lastRole) -> this.onPlayerSetRole(game, player, role));
-		events.listen(GamePlayerEvents.REMOVE, player -> onRemovePlayer(game, player));
-
-		events.listen(GamePhaseEvents.DESTROY, () -> onStop(game));
+		events.listen(GamePlayerEvents.SET_ROLE, (player, role, lastRole) -> sendSpectatingUpdate(game));
+		events.listen(GamePlayerEvents.REMOVE, player -> removePlayer(game, player));
+		events.listen(GamePhaseEvents.DESTROY, () -> stop(game));
 	}
 
-	private void onPlayerSetRole(IGamePhase game, ServerPlayerEntity player, PlayerRole role) {
-		List<UUID> participants = collectParticipantIds(game);
-		ChaseCameraMessage message = new ChaseCameraMessage(participants);
-		if (role == PlayerRole.SPECTATOR) {
-			LoveTropicsNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), message);
-		}
+	private void removePlayer(IGamePhase game, ServerPlayerEntity player) {
+		GameClientState.removeFromPlayer(GameClientStateTypes.SPECTATING.get(), player);
 
-		game.getSpectators().sendPacket(LoveTropicsNetwork.CHANNEL, message);
+		this.sendSpectatingUpdate(game);
 	}
 
-	private void onRemovePlayer(IGamePhase game, ServerPlayerEntity player) {
-		List<UUID> participants = collectParticipantIds(game);
-		ChaseCameraMessage message = new ChaseCameraMessage(participants);
-		game.getSpectators().sendPacket(LoveTropicsNetwork.CHANNEL, message);
-
-		LoveTropicsNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new StopChaseCameraMessage());
+	private void sendSpectatingUpdate(IGamePhase game) {
+		SpectatingClientState spectating = this.buildSpectatingState(game);
+		GameClientState.sendToPlayers(spectating, game.getSpectators());
 	}
 
-	private void onStop(IGamePhase game) {
-		StopChaseCameraMessage message = new StopChaseCameraMessage();
-		for (ServerPlayerEntity spectator : game.getSpectators()) {
-			LoveTropicsNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> spectator), message);
-		}
+	private void stop(IGamePhase game) {
+		GameClientState.removeFromPlayers(GameClientStateTypes.SPECTATING.get(), game.getSpectators());
 	}
 
-	private List<UUID> collectParticipantIds(IGamePhase game) {
+	private SpectatingClientState buildSpectatingState(IGamePhase game) {
 		PlayerSet participants = game.getParticipants();
-		List<UUID> ids = new ArrayList<>(participants.size());
 
+		List<UUID> ids = new ArrayList<>(participants.size());
 		for (ServerPlayerEntity participant : participants) {
 			ids.add(participant.getUniqueID());
 		}
 
-		return ids;
+		return new SpectatingClientState(ids);
 	}
 }

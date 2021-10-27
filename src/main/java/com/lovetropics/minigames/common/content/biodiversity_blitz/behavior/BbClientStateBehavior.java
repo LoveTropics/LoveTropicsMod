@@ -9,7 +9,7 @@ import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
-import com.lovetropics.minigames.common.core.game.client_tweak.GameClientTweak;
+import com.lovetropics.minigames.common.core.game.client_state.GameClientState;
 import com.mojang.serialization.Codec;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.entity.player.ServerPlayerEntity;
@@ -41,7 +41,7 @@ public final class BbClientStateBehavior implements IGameBehavior {
 	private void removePlayer(ServerPlayerEntity player) {
 		this.trackedCurrency.remove(player.getUniqueID());
 
-		GameClientTweak.removeFromPlayer(BiodiversityBlitz.CLIENT_STATE_TWEAK.get(), player);
+		GameClientState.removeFromPlayer(BiodiversityBlitz.CLIENT_STATE.get(), player);
 	}
 
 	private void tickPlot(ServerPlayerEntity player, Plot plot) {
@@ -61,7 +61,7 @@ public final class BbClientStateBehavior implements IGameBehavior {
 	private void sendOverlayUpdate(ServerPlayerEntity player) {
 		Currency currency = this.trackedCurrency.get(player.getUniqueID());
 		if (currency != null) {
-			GameClientTweak.sendToPlayer(currency.asStateTweak(), player);
+			GameClientState.sendToPlayer(currency.asStateTweak(), player);
 		}
 	}
 

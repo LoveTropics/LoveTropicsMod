@@ -1,8 +1,9 @@
-package com.lovetropics.minigames.client.tweaks;
+package com.lovetropics.minigames.client.game.handler;
 
 import com.lovetropics.minigames.Constants;
-import com.lovetropics.minigames.common.core.game.client_tweak.GameClientTweakTypes;
-import com.lovetropics.minigames.common.core.game.client_tweak.instance.TimeInterpolationTweak;
+import com.lovetropics.minigames.client.game.ClientGameStateManager;
+import com.lovetropics.minigames.common.core.game.client_state.GameClientStateTypes;
+import com.lovetropics.minigames.common.core.game.client_state.instance.TimeInterpolationClientState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraftforge.api.distmarker.Dist;
@@ -11,7 +12,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
 @Mod.EventBusSubscriber(modid = Constants.MODID, value = Dist.CLIENT)
-public final class ClientTimeInterpolationManager {
+public final class ClientTimeInterpolationHandler {
 	@SubscribeEvent
 	public static void onClientTick(TickEvent.ClientTickEvent event) {
 		if (event.phase == TickEvent.Phase.START) return;
@@ -23,7 +24,7 @@ public final class ClientTimeInterpolationManager {
 	}
 
 	private static void handleTick(ClientWorld world) {
-		TimeInterpolationTweak time = ClientGameTweaksState.getOrNull(GameClientTweakTypes.TIME_INTERPOLATION);
+		TimeInterpolationClientState time = ClientGameStateManager.getOrNull(GameClientStateTypes.TIME_INTERPOLATION);
 		if (time != null) {
 			int speed = time.getSpeed();
 			world.setDayTime(world.getDayTime() + speed - 1);

@@ -100,7 +100,7 @@ public class GameBehaviorTypes {
 	public static final GameBehaviorEntry<AssignPlayerRolesBehavior> ASSIGN_PLAYER_ROLES;
 	public static final GameBehaviorEntry<JoinAsRoleBehavior> JOIN_AS_ROLE;
 
-	public static final GameBehaviorEntry<SetGameClientTweakBehavior> SET_CLIENT_TWEAK;
+	public static final GameBehaviorEntry<SetGameClientStateBehavior> SET_CLIENT_STATE;
 
 	public static <T extends IGameBehavior> GameBehaviorEntry<T> register(final String name, final Codec<T> codec) {
 		return REGISTRATE.object(name).behavior(codec).register();
@@ -168,7 +168,7 @@ public class GameBehaviorTypes {
 		ASSIGN_PLAYER_ROLES = register("assign_player_roles", AssignPlayerRolesBehavior.CODEC);
 		JOIN_AS_ROLE = register("join_as_role", JoinAsRoleBehavior.CODEC);
 
-		SET_CLIENT_TWEAK = register("set_client_tweak", SetGameClientTweakBehavior.CODEC);
+		SET_CLIENT_STATE = register("set_client_state", SetGameClientStateBehavior.CODEC);
 	}
 
 	public static void init(IEventBus modBus) {

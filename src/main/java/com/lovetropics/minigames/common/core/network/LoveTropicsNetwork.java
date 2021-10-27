@@ -42,64 +42,54 @@ public final class LoveTropicsNetwork {
 				.consumer(UpdateWorkspaceRegionMessage::handle)
 				.add();
 
-		CHANNEL.messageBuilder(ChaseCameraMessage.class, 3, NetworkDirection.PLAY_TO_CLIENT)
-				.encoder(ChaseCameraMessage::encode).decoder(ChaseCameraMessage::decode)
-				.consumer(ChaseCameraMessage::handle)
+		CHANNEL.messageBuilder(SpectatePlayerAndTeleportMessage.class, 3, NetworkDirection.PLAY_TO_SERVER)
+				.encoder(SpectatePlayerAndTeleportMessage::encode).decoder(SpectatePlayerAndTeleportMessage::decode)
+				.consumer(SpectatePlayerAndTeleportMessage::handle)
 				.add();
 
-		CHANNEL.messageBuilder(StopChaseCameraMessage.class, 4, NetworkDirection.PLAY_TO_CLIENT)
-				.encoder((p, b) -> {}).decoder(buffer -> new StopChaseCameraMessage())
-				.consumer(StopChaseCameraMessage::handle)
-				.add();
-
-		CHANNEL.messageBuilder(ChaseSpectatePlayerMessage.class, 5, NetworkDirection.PLAY_TO_SERVER)
-				.encoder(ChaseSpectatePlayerMessage::encode).decoder(ChaseSpectatePlayerMessage::decode)
-				.consumer(ChaseSpectatePlayerMessage::handle)
-				.add();
-
-		CHANNEL.messageBuilder(LobbyUpdateMessage.class, 6, NetworkDirection.PLAY_TO_CLIENT)
+		CHANNEL.messageBuilder(LobbyUpdateMessage.class, 4, NetworkDirection.PLAY_TO_CLIENT)
 				.encoder(LobbyUpdateMessage::encode).decoder(LobbyUpdateMessage::decode)
 				.consumer(LobbyUpdateMessage::handle)
 				.add();
 
-		CHANNEL.messageBuilder(JoinedLobbyMessage.class, 7, NetworkDirection.PLAY_TO_CLIENT)
+		CHANNEL.messageBuilder(JoinedLobbyMessage.class, 5, NetworkDirection.PLAY_TO_CLIENT)
 				.encoder(JoinedLobbyMessage::encode).decoder(JoinedLobbyMessage::decode)
 				.consumer(JoinedLobbyMessage::handle)
 				.add();
 
-		CHANNEL.messageBuilder(LeftLobbyMessage.class, 8, NetworkDirection.PLAY_TO_CLIENT)
+		CHANNEL.messageBuilder(LeftLobbyMessage.class, 6, NetworkDirection.PLAY_TO_CLIENT)
 				.encoder(LeftLobbyMessage::encode).decoder(LeftLobbyMessage::decode)
 				.consumer(LeftLobbyMessage::handle)
 				.add();
 
-		CHANNEL.messageBuilder(LobbyPlayersMessage.class, 9, NetworkDirection.PLAY_TO_CLIENT)
+		CHANNEL.messageBuilder(LobbyPlayersMessage.class, 7, NetworkDirection.PLAY_TO_CLIENT)
 				.encoder(LobbyPlayersMessage::encode).decoder(LobbyPlayersMessage::decode)
 				.consumer(LobbyPlayersMessage::handle)
 				.add();
 
-		CHANNEL.messageBuilder(PlayerDisguiseMessage.class, 10, NetworkDirection.PLAY_TO_CLIENT)
+		CHANNEL.messageBuilder(PlayerDisguiseMessage.class, 8, NetworkDirection.PLAY_TO_CLIENT)
 				.encoder(PlayerDisguiseMessage::encode).decoder(PlayerDisguiseMessage::decode)
 				.consumer(PlayerDisguiseMessage::handle)
 				.add();
 
-		CHANNEL.messageBuilder(ShowNotificationToastMessage.class, 11, NetworkDirection.PLAY_TO_CLIENT)
+		CHANNEL.messageBuilder(ShowNotificationToastMessage.class, 9, NetworkDirection.PLAY_TO_CLIENT)
 				.encoder(ShowNotificationToastMessage::encode).decoder(ShowNotificationToastMessage::decode)
 				.consumer(ShowNotificationToastMessage::handle)
 				.add();
 
-		CHANNEL.messageBuilder(ClientManageLobbyMessage.class, 12, NetworkDirection.PLAY_TO_CLIENT)
+		CHANNEL.messageBuilder(ClientManageLobbyMessage.class, 10, NetworkDirection.PLAY_TO_CLIENT)
 				.encoder(ClientManageLobbyMessage::encode).decoder(ClientManageLobbyMessage::decode)
 				.consumer(ClientManageLobbyMessage::handle)
 				.add();
 
-		CHANNEL.messageBuilder(ServerManageLobbyMessage.class, 13, NetworkDirection.PLAY_TO_SERVER)
+		CHANNEL.messageBuilder(ServerManageLobbyMessage.class, 11, NetworkDirection.PLAY_TO_SERVER)
 				.encoder(ServerManageLobbyMessage::encode).decoder(ServerManageLobbyMessage::decode)
 				.consumer(ServerManageLobbyMessage::handle)
 				.add();
 
-		CHANNEL.messageBuilder(SetGameClientTweakMessage.class, 14, NetworkDirection.PLAY_TO_CLIENT)
-				.encoder(SetGameClientTweakMessage::encode).decoder(SetGameClientTweakMessage::decode)
-				.consumer(SetGameClientTweakMessage::handle)
+		CHANNEL.messageBuilder(SetGameClientStateMessage.class, 12, NetworkDirection.PLAY_TO_CLIENT)
+				.encoder(SetGameClientStateMessage::encode).decoder(SetGameClientStateMessage::decode)
+				.consumer(SetGameClientStateMessage::handle)
 				.add();
 	}
 }

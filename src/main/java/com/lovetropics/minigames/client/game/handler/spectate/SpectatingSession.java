@@ -1,4 +1,4 @@
-package com.lovetropics.minigames.client.chase;
+package com.lovetropics.minigames.client.game.handler.spectate;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ActiveRenderInfo;
@@ -8,24 +8,24 @@ import net.minecraftforge.client.event.EntityViewRenderEvent;
 import java.util.List;
 import java.util.UUID;
 
-class ChaseCameraSession {
+class SpectatingSession {
 	private static final Minecraft CLIENT = Minecraft.getInstance();
 
 	List<UUID> players;
 
-	final ChaseCameraUi ui;
+	final SpectatingUi ui;
 
-	ChaseCameraState state;
-	ChaseCameraState.StateApplicator stateApplicator;
+	SpectatingState state;
+	SpectatingState.StateApplicator stateApplicator;
 
 	double targetZoom = 1.0;
 	double zoom = 1.0;
 	double prevZoom = 1.0;
 
-	ChaseCameraSession(List<UUID> players) {
+	SpectatingSession(List<UUID> players) {
 		this.players = players;
-		this.ui = new ChaseCameraUi(this);
-		this.applyState(ChaseCameraState.FREE_CAMERA);
+		this.ui = new SpectatingUi(this);
+		this.applyState(SpectatingState.FREE_CAMERA);
 	}
 
 	void tick() {
@@ -40,7 +40,7 @@ class ChaseCameraSession {
 			}
 		}
 
-		ChaseCameraState newState = state.tick(CLIENT, this, CLIENT.player);
+		SpectatingState newState = state.tick(CLIENT, this, CLIENT.player);
 		if (!newState.equals(state)) {
 			applyState(newState);
 			ui.updateState(newState);
@@ -59,7 +59,7 @@ class ChaseCameraSession {
 		state.applyToCamera(CLIENT, this, CLIENT.player, camera, partialTicks, event);
 	}
 
-	void applyState(ChaseCameraState state) {
+	void applyState(SpectatingState state) {
 		this.state = state;
 		this.stateApplicator = state.apply(CLIENT, this);
 	}
@@ -70,6 +70,6 @@ class ChaseCameraSession {
 	}
 
 	void close() {
-		applyState(ChaseCameraState.FREE_CAMERA);
+		applyState(SpectatingState.FREE_CAMERA);
 	}
 }

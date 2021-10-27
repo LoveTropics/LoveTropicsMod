@@ -3,7 +3,7 @@ package com.lovetropics.minigames.common.content.biodiversity_blitz.behavior;
 import com.lovetropics.lib.BlockBox;
 import com.lovetropics.lib.codec.MoreCodecs;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.event.BbEvents;
-import com.lovetropics.minigames.common.content.biodiversity_blitz.client_tweak.CheckeredPlotsTweak;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.client_tweak.CheckeredPlotsState;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.Plot;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.PlotsState;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
@@ -62,7 +62,7 @@ public final class BbAssignPlotsBehavior implements IGameBehavior {
 	}
 
 	private void applyCheckeredPlots(EventRegistrar events) {
-		CheckeredPlotsTweak checkeredPlots = new CheckeredPlotsTweak(
+		CheckeredPlotsState checkeredPlots = new CheckeredPlotsState(
 				this.freePlots.stream().map(plot -> plot.bounds).toArray(BlockBox[]::new)
 		);
 		checkeredPlots.applyGloballyTo(events);

@@ -1,7 +1,7 @@
-package com.lovetropics.minigames.client.chase;
+package com.lovetropics.minigames.client.game.handler.spectate;
 
-import com.lovetropics.minigames.common.core.network.ChaseSpectatePlayerMessage;
 import com.lovetropics.minigames.common.core.network.LoveTropicsNetwork;
+import com.lovetropics.minigames.common.core.network.SpectatePlayerAndTeleportMessage;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.player.ClientPlayerEntity;
 import net.minecraft.client.renderer.ActiveRenderInfo;
@@ -14,38 +14,38 @@ import net.minecraftforge.client.event.EntityViewRenderEvent;
 import java.util.UUID;
 import java.util.function.BooleanSupplier;
 
-public interface ChaseCameraState {
+interface SpectatingState {
 	FreeCamera FREE_CAMERA = new FreeCamera();
 
-	StateApplicator apply(Minecraft client, ChaseCameraSession session);
+	StateApplicator apply(Minecraft client, SpectatingSession session);
 
-	default ChaseCameraState tick(Minecraft client, ChaseCameraSession session, ClientPlayerEntity player) {
+	default SpectatingState tick(Minecraft client, SpectatingSession session, ClientPlayerEntity player) {
 		return this;
 	}
 
-	default void renderTick(Minecraft client, ChaseCameraSession session, ClientPlayerEntity player) {
+	default void renderTick(Minecraft client, SpectatingSession session, ClientPlayerEntity player) {
 	}
 
-	default void applyToCamera(Minecraft client, ChaseCameraSession session, ClientPlayerEntity player, ActiveRenderInfo camera, float partialTicks, EntityViewRenderEvent.CameraSetup event) {
+	default void applyToCamera(Minecraft client, SpectatingSession session, ClientPlayerEntity player, ActiveRenderInfo camera, float partialTicks, EntityViewRenderEvent.CameraSetup event) {
 	}
 
-	class FreeCamera implements ChaseCameraState {
+	class FreeCamera implements SpectatingState {
 		FreeCamera() {
 		}
 
 		@Override
-		public StateApplicator apply(Minecraft client, ChaseCameraSession session) {
+		public StateApplicator apply(Minecraft client, SpectatingSession session) {
 			client.gameSettings.smoothCamera = false;
 			client.gameSettings.setPointOfView(PointOfView.FIRST_PERSON);
 
 			return new StateApplicator(
-					() -> LoveTropicsNetwork.CHANNEL.sendToServer(new ChaseSpectatePlayerMessage(client.player.getUniqueID())),
+					() -> LoveTropicsNetwork.CHANNEL.sendToServer(new SpectatePlayerAndTeleportMessage(client.player.getUniqueID())),
 					() -> client.getRenderViewEntity() == client.player
 			);
 		}
 
 		@Override
-		public ChaseCameraState tick(Minecraft client, ChaseCameraSession session, ClientPlayerEntity player) {
+		public SpectatingState tick(Minecraft client, SpectatingSession session, ClientPlayerEntity player) {
 			// force player to maximum flying speed
 			player.abilities.setFlySpeed(0.2F);
 
@@ -57,7 +57,7 @@ public interface ChaseCameraState {
 		}
 	}
 
-	class SelectedPlayer implements ChaseCameraState {
+	class SelectedPlayer implements SpectatingState {
 		final UUID spectatedId;
 
 		public SelectedPlayer(UUID spectatedId) {
@@ -65,15 +65,15 @@ public interface ChaseCameraState {
 		}
 
 		@Override
-		public StateApplicator apply(Minecraft client, ChaseCameraSession session) {
+		public StateApplicator apply(Minecraft client, SpectatingSession session) {
 			return new StateApplicator(
-					() -> LoveTropicsNetwork.CHANNEL.sendToServer(new ChaseSpectatePlayerMessage(spectatedId)),
+					() -> LoveTropicsNetwork.CHANNEL.sendToServer(new SpectatePlayerAndTeleportMessage(spectatedId)),
 					() -> spectatedId.equals(client.getRenderViewEntity().getUniqueID())
 			);
 		}
 
 		@Override
-		public ChaseCameraState tick(Minecraft client, ChaseCameraSession session, ClientPlayerEntity player) {
+		public SpectatingState tick(Minecraft client, SpectatingSession session, ClientPlayerEntity player) {
 			if (player.world.getGameTime() % 10 == 0) {
 				// we need to send position updates to the server or we won't properly track chunks
 				PlayerEntity spectatedPlayer = player.world.getPlayerByUuid(spectatedId);
@@ -83,14 +83,14 @@ public interface ChaseCameraState {
 			}
 
 			if (!spectatedId.equals(client.getRenderViewEntity().getUniqueID())) {
-				return ChaseCameraState.FREE_CAMERA;
+				return SpectatingState.FREE_CAMERA;
 			}
 
 			return this;
 		}
 
 		@Override
-		public void renderTick(Minecraft client, ChaseCameraSession session, ClientPlayerEntity player) {
+		public void renderTick(Minecraft client, SpectatingSession session, ClientPlayerEntity player) {
 			Entity focusEntity = client.getRenderViewEntity();
 			focusEntity = focusEntity != null ? focusEntity : player;
 
@@ -109,7 +109,7 @@ public interface ChaseCameraState {
 		}
 
 		@Override
-		public void applyToCamera(Minecraft client, ChaseCameraSession session, ClientPlayerEntity player, ActiveRenderInfo camera, float partialTicks, EntityViewRenderEvent.CameraSetup event) {
+		public void applyToCamera(Minecraft client, SpectatingSession session, ClientPlayerEntity player, ActiveRenderInfo camera, float partialTicks, EntityViewRenderEvent.CameraSetup event) {
 			Entity focusEntity = client.getRenderViewEntity();
 			focusEntity = focusEntity != null ? focusEntity : player;
 
@@ -130,7 +130,7 @@ public interface ChaseCameraState {
 						MathHelper.lerp(partialTicks, focusEntity.prevPosZ, focusEntity.getPosZ())
 				);
 
-				double distance = zoom * ChaseCameraManager.MAX_CHASE_DISTANCE;
+				double distance = zoom * ClientSpectatingManager.MAX_CHASE_DISTANCE;
 				camera.movePosition(-camera.calcCameraDistance(distance), 0.0, 0.0);
 			}
 		}

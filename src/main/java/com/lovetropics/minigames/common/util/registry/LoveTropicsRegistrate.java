@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.common.util.registry;
 
-import com.lovetropics.minigames.common.core.game.client_tweak.GameClientTweak;
+import com.lovetropics.minigames.common.core.game.client_state.GameClientState;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.mojang.serialization.Codec;
 import com.tterrag.registrate.AbstractRegistrate;
@@ -27,15 +27,15 @@ public final class LoveTropicsRegistrate extends AbstractRegistrate<LoveTropicsR
 		return entry(name, callback -> new GameBehaviorBuilder<>(this, parent, name, callback, codec));
 	}
 
-	public <T extends GameClientTweak> GameClientTweakBuilder<T, LoveTropicsRegistrate> clientTweak(Codec<T> codec) {
-		return clientTweak(this, codec);
+	public <T extends GameClientState> GameClientTweakBuilder<T, LoveTropicsRegistrate> clientState(Codec<T> codec) {
+		return clientState(this, codec);
 	}
 
-	public <T extends GameClientTweak, P> GameClientTweakBuilder<T, P> clientTweak(P parent, Codec<T> codec) {
-		return clientTweak(parent, currentName(), codec);
+	public <T extends GameClientState, P> GameClientTweakBuilder<T, P> clientState(P parent, Codec<T> codec) {
+		return clientState(parent, currentName(), codec);
 	}
 
-	public <T extends GameClientTweak, P> GameClientTweakBuilder<T, P> clientTweak(P parent, String name, Codec<T> codec) {
+	public <T extends GameClientState, P> GameClientTweakBuilder<T, P> clientState(P parent, String name, Codec<T> codec) {
 		return entry(name, callback -> new GameClientTweakBuilder<>(this, parent, name, callback, codec));
 	}
 }

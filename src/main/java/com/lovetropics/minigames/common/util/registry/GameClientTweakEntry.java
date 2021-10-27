@@ -1,14 +1,14 @@
 package com.lovetropics.minigames.common.util.registry;
 
-import com.lovetropics.minigames.common.core.game.client_tweak.GameClientTweak;
-import com.lovetropics.minigames.common.core.game.client_tweak.GameClientTweakType;
+import com.lovetropics.minigames.common.core.game.client_state.GameClientState;
+import com.lovetropics.minigames.common.core.game.client_state.GameClientStateType;
 import com.mojang.serialization.Codec;
 import com.tterrag.registrate.AbstractRegistrate;
 import com.tterrag.registrate.util.entry.RegistryEntry;
 import net.minecraftforge.fml.RegistryObject;
 
-public final class GameClientTweakEntry<T extends GameClientTweak> extends RegistryEntry<GameClientTweakType<T>> {
-	public GameClientTweakEntry(AbstractRegistrate<?> owner, RegistryObject<GameClientTweakType<T>> delegate) {
+public final class GameClientTweakEntry<T extends GameClientState> extends RegistryEntry<GameClientStateType<T>> {
+	public GameClientTweakEntry(AbstractRegistrate<?> owner, RegistryObject<GameClientStateType<T>> delegate) {
 		super(owner, delegate);
 	}
 

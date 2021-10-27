@@ -8,10 +8,10 @@ import net.minecraftforge.fml.network.NetworkEvent;
 import java.util.UUID;
 import java.util.function.Supplier;
 
-public class ChaseSpectatePlayerMessage {
+public class SpectatePlayerAndTeleportMessage {
 	private final UUID player;
 
-	public ChaseSpectatePlayerMessage(UUID player) {
+	public SpectatePlayerAndTeleportMessage(UUID player) {
 		this.player = player;
 	}
 
@@ -19,9 +19,9 @@ public class ChaseSpectatePlayerMessage {
 		buffer.writeUniqueId(player);
 	}
 
-	public static ChaseSpectatePlayerMessage decode(PacketBuffer buffer) {
+	public static SpectatePlayerAndTeleportMessage decode(PacketBuffer buffer) {
 		UUID player = buffer.readUniqueId();
-		return new ChaseSpectatePlayerMessage(player);
+		return new SpectatePlayerAndTeleportMessage(player);
 	}
 
 	public void handle(Supplier<NetworkEvent.Context> ctx) {

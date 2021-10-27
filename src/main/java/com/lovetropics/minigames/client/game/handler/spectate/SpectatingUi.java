@@ -1,4 +1,4 @@
-package com.lovetropics.minigames.client.chase;
+package com.lovetropics.minigames.client.game.handler.spectate;
 
 import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.client.screen.ClientPlayerInfo;
@@ -30,13 +30,13 @@ import java.util.UUID;
 import java.util.function.Function;
 
 @Mod.EventBusSubscriber(modid = Constants.MODID, value = Dist.CLIENT)
-public final class ChaseCameraUi {
+public final class SpectatingUi {
 	private static final Minecraft CLIENT = Minecraft.getInstance();
 
 	private static final int ENTRY_PADDING = 2;
 	private static final int ENTRY_SIZE = 12 + ENTRY_PADDING;
 
-	private final ChaseCameraSession session;
+	private final SpectatingSession session;
 	private List<Entry> entries;
 
 	private int selectedEntryIndex;
@@ -44,14 +44,14 @@ public final class ChaseCameraUi {
 
 	private double accumulatedScroll;
 
-	ChaseCameraUi(ChaseCameraSession session) {
+	SpectatingUi(SpectatingSession session) {
 		this.session = session;
 		this.entries = createEntriesFor(session.players);
 	}
 
 	@SubscribeEvent
 	public static void onMouseScroll(InputEvent.MouseScrollEvent event) {
-		ChaseCameraSession session = ChaseCameraManager.session;
+		SpectatingSession session = ClientSpectatingManager.INSTANCE.session;
 		if (session == null) {
 			return;
 		}
@@ -85,7 +85,7 @@ public final class ChaseCameraUi {
 
 	@SubscribeEvent
 	public static void onKeyInput(InputEvent.KeyInputEvent event) {
-		ChaseCameraSession session = ChaseCameraManager.session;
+		SpectatingSession session = ClientSpectatingManager.INSTANCE.session;
 		if (session == null || event.getAction() == GLFW.GLFW_RELEASE) {
 			return;
 		}
@@ -103,7 +103,7 @@ public final class ChaseCameraUi {
 
 	@SubscribeEvent
 	public static void onMouseInput(InputEvent.MouseInputEvent event) {
-		ChaseCameraSession session = ChaseCameraManager.session;
+		SpectatingSession session = ClientSpectatingManager.INSTANCE.session;
 		if (session == null || event.getAction() == GLFW.GLFW_RELEASE) {
 			return;
 		}
@@ -132,7 +132,7 @@ public final class ChaseCameraUi {
 
 	@SubscribeEvent
 	public static void onRenderOverlay(RenderGameOverlayEvent.Post event) {
-		ChaseCameraSession session = ChaseCameraManager.session;
+		SpectatingSession session = ClientSpectatingManager.INSTANCE.session;
 		if (session == null) {
 			return;
 		}
@@ -197,7 +197,7 @@ public final class ChaseCameraUi {
 		highlightedEntryIndex = newHighlightedEntry != -1 ? newHighlightedEntry : selectedEntryIndex;
 	}
 
-	void updateState(ChaseCameraState state) {
+	void updateState(SpectatingState state) {
 		int index = getSelectedEntryIndex(state);
 		if (index != -1) {
 			selectedEntryIndex = index;
@@ -206,7 +206,7 @@ public final class ChaseCameraUi {
 		}
 	}
 
-	private int getSelectedEntryIndex(ChaseCameraState state) {
+	private int getSelectedEntryIndex(SpectatingState state) {
 		for (int i = 0; i < entries.size(); i++) {
 			Entry entry = entries.get(i);
 			if (entry.selectionState.equals(state)) {
@@ -219,7 +219,7 @@ public final class ChaseCameraUi {
 
 	List<Entry> createEntriesFor(List<UUID> players) {
 		List<Entry> entries = new ArrayList<>(players.size() + 1);
-		entries.add(new Entry(CLIENT.player.getUniqueID(), s -> "Free Camera", TextFormatting.RESET, ChaseCameraState.FREE_CAMERA));
+		entries.add(new Entry(CLIENT.player.getUniqueID(), s -> "Free Camera", TextFormatting.RESET, SpectatingState.FREE_CAMERA));
 
 		players.sort(Comparator.comparing(player -> {
 			ScorePlayerTeam team = getTeamFor(player);
@@ -227,7 +227,7 @@ public final class ChaseCameraUi {
 		}));
 
 		for (UUID player : players) {
-			Function<ChaseCameraSession, String> nameFunction = s -> {
+			Function<SpectatingSession, String> nameFunction = s -> {
 				GameProfile profile = ClientPlayerInfo.getPlayerProfile(player);
 				return profile != null ? profile.getName() : "...";
 			};
@@ -235,7 +235,7 @@ public final class ChaseCameraUi {
 			ScorePlayerTeam team = getTeamFor(player);
 			TextFormatting color = team != null ? team.getColor() : TextFormatting.RESET;
 
-			entries.add(new Entry(player, nameFunction, color, new ChaseCameraState.SelectedPlayer(player)));
+			entries.add(new Entry(player, nameFunction, color, new SpectatingState.SelectedPlayer(player)));
 		}
 
 		return entries;
@@ -258,15 +258,15 @@ public final class ChaseCameraUi {
 
 	static class Entry {
 		final UUID playerIcon;
-		final Function<ChaseCameraSession, String> nameFunction;
+		final Function<SpectatingSession, String> nameFunction;
 		final int color;
-		final ChaseCameraState selectionState;
+		final SpectatingState selectionState;
 
 		Entry(
 				UUID playerIcon,
-				Function<ChaseCameraSession, String> name,
+				Function<SpectatingSession, String> name,
 				TextFormatting color,
-				ChaseCameraState selectionState
+				SpectatingState selectionState
 		) {
 			this.playerIcon = playerIcon;
 			this.nameFunction = name;
@@ -274,14 +274,14 @@ public final class ChaseCameraUi {
 			this.selectionState = selectionState;
 		}
 
-		void render(MatrixStack transform, ChaseCameraSession session, int x, int y) {
+		void render(MatrixStack transform, SpectatingSession session, int x, int y) {
 			PlayerFaces.render(playerIcon, transform, x, y, 12);
 
 			String name = nameFunction.apply(session);
 			CLIENT.fontRenderer.drawString(transform, name, x + ENTRY_SIZE, y + ENTRY_PADDING, color);
 		}
 
-		int getWidth(ChaseCameraSession session) {
+		int getWidth(SpectatingSession session) {
 			String name = nameFunction.apply(session);
 			return ENTRY_SIZE + CLIENT.fontRenderer.getStringWidth(name);
 		}
