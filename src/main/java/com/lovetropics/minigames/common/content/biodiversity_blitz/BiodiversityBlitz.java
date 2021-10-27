@@ -128,6 +128,10 @@ public final class BiodiversityBlitz {
 			.behavior(BbClientStateBehavior.CODEC)
 			.register();
 
+	public static final GameBehaviorEntry<RemoveFromBlockBehavior> REMOVE_FROM_BLOCK = REGISTRATE.object("remove_from_block")
+            .behavior(RemoveFromBlockBehavior.CODEC)
+            .register();
+
 	// Tweaks
 
 	public static final GameClientTweakEntry<CheckeredPlotsTweak> CHECKERED_PLOTS_TWEAK = REGISTRATE.object("checkered_plots")
