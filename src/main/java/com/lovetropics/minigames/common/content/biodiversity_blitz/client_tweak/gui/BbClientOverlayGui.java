@@ -2,7 +2,7 @@ package com.lovetropics.minigames.common.content.biodiversity_blitz.client_tweak
 
 import com.google.common.base.Suppliers;
 import com.lovetropics.minigames.Constants;
-import com.lovetropics.minigames.client.tweaks.ClientGameTweaksState;
+import com.lovetropics.minigames.client.game.ClientGameStateManager;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.BiodiversityBlitz;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.client_tweak.ClientBiodiversityBlitzState;
 import com.mojang.blaze3d.matrix.MatrixStack;
@@ -33,13 +33,13 @@ public final class BbClientOverlayGui {
 			return;
 		}
 
-		ClientBiodiversityBlitzState display = ClientGameTweaksState.getOrNull(BiodiversityBlitz.CLIENT_STATE_TWEAK);
-		if (display != null) {
-			render(event, display);
+		ClientBiodiversityBlitzState state = ClientGameStateManager.getOrNull(BiodiversityBlitz.CLIENT_STATE);
+		if (state != null) {
+			render(event, state);
 		}
 	}
 
-	private static void render(RenderGameOverlayEvent event, ClientBiodiversityBlitzState display) {
+	private static void render(RenderGameOverlayEvent event, ClientBiodiversityBlitzState state) {
 		MatrixStack matrixStack = event.getMatrixStack();
 		FontRenderer font = CLIENT.fontRenderer;
 
@@ -51,7 +51,7 @@ public final class BbClientOverlayGui {
 
 		renderItem(matrixStack, CURRENCY_ITEM.get(), x, y);
 
-		String currency = String.valueOf(display.getCurrency());
+		String currency = String.valueOf(state.getCurrency());
 		font.drawStringWithShadow(
 				matrixStack, currency,
 				x + ITEM_SIZE + PADDING,
@@ -60,7 +60,7 @@ public final class BbClientOverlayGui {
 		);
 		y += ITEM_SIZE + PADDING;
 
-		int increment = display.getNextIncrement();
+		int increment = state.getNextIncrement();
 		// Increment can never be 0 otherwise, as 2 osas per drop is guaranteed
 		boolean isInPlot = increment > 0;
 		TextFormatting incrementColor = isInPlot ? TextFormatting.AQUA : TextFormatting.RED;

@@ -82,7 +82,7 @@ public final class GameQueueList extends AbstractGameList {
 		entry.setTitle(new StringTextComponent("\u25B6 ").appendSibling(gameName));
 
 		if (game.error() != null) {
-			entry.setDescription(new StringTextComponent("\u26A0 ").appendSibling(game.error()));
+			entry.setSubtitle(new StringTextComponent("\u26A0 ").appendSibling(game.error()));
 
 			entry.setBackgroundColor(0xFF201010)
 					.setHoveredColor(0xFF402020)
