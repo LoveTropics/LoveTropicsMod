@@ -7,12 +7,16 @@ public final class WeatherState {
 	public RainType rainType = RainType.NORMAL;
 	public float windSpeed;
 	public boolean heatwave;
+	public boolean sandstorm;
+	public boolean snowstorm;
 
 	public void serialize(PacketBuffer buffer) {
 		buffer.writeFloat(this.rainAmount);
 		buffer.writeByte(this.rainType.ordinal() & 0xFF);
 		buffer.writeFloat(this.windSpeed);
 		buffer.writeBoolean(this.heatwave);
+		buffer.writeBoolean(this.sandstorm);
+		buffer.writeBoolean(this.snowstorm);
 	}
 
 	public void deserialize(PacketBuffer buffer) {
@@ -20,6 +24,8 @@ public final class WeatherState {
 		this.rainType = RainType.VALUES[buffer.readUnsignedByte()];
 		this.windSpeed = buffer.readFloat();
 		this.heatwave = buffer.readBoolean();
+		this.sandstorm = buffer.readBoolean();
+		this.snowstorm = buffer.readBoolean();
 	}
 
 	public boolean isRaining() {
@@ -31,6 +37,6 @@ public final class WeatherState {
 	}
 
 	public boolean hasWeather() {
-		return (this.isRaining() && this.isWindy()) || this.heatwave;
+		return (this.isRaining() && this.isWindy()) || this.heatwave || this.sandstorm || this.snowstorm;
 	}
 }
