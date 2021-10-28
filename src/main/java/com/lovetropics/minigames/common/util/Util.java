@@ -14,6 +14,9 @@ import net.minecraft.entity.effect.LightningBoltEntity;
 import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.particles.IParticleData;
+import net.minecraft.particles.ParticleType;
+import net.minecraft.particles.ParticleTypes;
 import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundCategory;
@@ -23,6 +26,7 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.World;
 import net.minecraft.world.gen.Heightmap;
+import net.minecraft.world.server.ServerWorld;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nullable;
@@ -388,5 +392,19 @@ public class Util {
 
     private static boolean isSolidGround(World world, BlockPos pos) {
         return world.getBlockState(pos).getMaterial().isSolid();
+    }
+
+    public static void drawParticleBetween(IParticleData data, Vector3d start, Vector3d end, ServerWorld world, Random random, int count, double xzScale, double yScale, double speedBase, double speedScale) {
+        for (int i = 0; i < count; i++) {
+            Vector3d sample = lerpVector(start, end, i / 20.0);
+            double d3 = random.nextGaussian() * xzScale;
+            double d1 = random.nextGaussian() * yScale;
+            double d2 = random.nextGaussian() * xzScale;
+            world.spawnParticle(data, sample.x, sample.y, sample.z, 1 + random.nextInt(2), d3, d1, d2, speedBase + random.nextDouble() * speedScale);
+        }
+    }
+
+    public static Vector3d lerpVector(Vector3d start, Vector3d end, double d) {
+        return new Vector3d(MathHelper.lerp(d, start.x, end.x), MathHelper.lerp(d, start.y, end.y), MathHelper.lerp(d, start.z, end.z));
     }
 }

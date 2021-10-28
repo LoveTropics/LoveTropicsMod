@@ -7,6 +7,7 @@ import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
+import com.lovetropics.minigames.common.util.Util;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.entity.MobEntity;
@@ -86,7 +87,7 @@ public final class WateryPlantBehavior implements IGameBehavior {
                 // Needs to target the middle of the entity position vector
                 Vector3d scaledVec = new Vector3d(positionVec.x, (aabb.minY + aabb.maxY) / 2.0, positionVec.z);
 
-                drawWaterBetween(plant.coverage().asBounds().getCenter(), scaledVec, world, random);
+                Util.drawParticleBetween(ParticleTypes.FALLING_WATER, plant.coverage().asBounds().getCenter(), scaledVec, world, random, 20, 0.05, 0.1, 0.03, 0.02);
             }
 
             // Don't add particles to mobs that should be dead
@@ -102,20 +103,6 @@ public final class WateryPlantBehavior implements IGameBehavior {
                 world.spawnParticle(ParticleTypes.FALLING_WATER, sample.x, sample.y, sample.z, 1 + random.nextInt(2), d3, d1, d2, 0.03 + random.nextDouble() * 0.02);
             }
         }
-    }
-
-    private static void drawWaterBetween(Vector3d start, Vector3d end, ServerWorld world, Random random) {
-        for (int i = 0; i < 20; i++) {
-            Vector3d sample = lerpVector(start, end, i / 20.0);
-            double d3 = random.nextGaussian() * 0.05;
-            double d1 = random.nextGaussian() * 0.1;
-            double d2 = random.nextGaussian() * 0.05;
-            world.spawnParticle(ParticleTypes.FALLING_WATER, sample.x, sample.y, sample.z, 1 + random.nextInt(2), d3, d1, d2, 0.03 + random.nextDouble() * 0.02);
-        }
-    }
-
-    private static Vector3d lerpVector(Vector3d start, Vector3d end, double d) {
-        return new Vector3d(MathHelper.lerp(d, start.x, end.x), MathHelper.lerp(d, start.y, end.y), MathHelper.lerp(d, start.z, end.z));
     }
 
     private static Vector3d random(AxisAlignedBB aabb, Random random) {
