@@ -418,6 +418,9 @@ public class SceneEnhancer implements Runnable {
 			if (curPrecipVal > 0) {
 
 				//particleAmp = 1;
+				//if (curPrecipVal != 0 && curPrecipVal != 0.5F) {
+					//Weather.dbg("curPrecipVal:" + curPrecipVal + " - " + weather.getRainType());
+				//}
 
 				int spawnCount;
 				int spawnNeed = (int)(curPrecipVal * 40F * PRECIPITATION_PARTICLE_EFFECT_RATE * particleAmp);

@@ -23,6 +23,7 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.gen.Heightmap;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraft.world.storage.IServerWorldInfo;
+import weather2.Weather;
 
 import java.util.Random;
 
@@ -80,6 +81,8 @@ public class SurviveTheTideWeatherBehavior implements IGameBehavior {
 	protected long heavyRainfallTime = 0;
 	protected long acidRainTime = 0;
 	protected long heatwaveTime = 0;
+	protected long sandstormTime = 0;
+	protected long snowstormTime = 0;
 
 	protected GamePhaseState phases;
 
@@ -117,6 +120,10 @@ public class SurviveTheTideWeatherBehavior implements IGameBehavior {
 					acidRainStart(phase);
 				} else if (random.nextFloat() <= config.getHeatwaveChance(phase.key)) {
 					heatwaveStart(phase);
+				} else if (random.nextFloat() <= config.getSandstormChance(phase.key)) {
+					sandstormStart(phase);
+				} else if (random.nextFloat() <= config.getSnowstormChance(phase.key)) {
+					snowstormStart(phase);
 				}
 			}
 
@@ -135,6 +142,14 @@ public class SurviveTheTideWeatherBehavior implements IGameBehavior {
 			heatwaveTime--;
 		}
 
+		if (sandstormTime > 0) {
+			sandstormTime--;
+		}
+
+		if (snowstormTime > 0) {
+			snowstormTime--;
+		}
+
 		if (heavyRainfallTime > 0) {
 			controller.setRain(1.0F, RainType.NORMAL);
 		} else if (acidRainTime > 0) {
@@ -144,6 +159,8 @@ public class SurviveTheTideWeatherBehavior implements IGameBehavior {
 		}
 
 		controller.setHeatwave(heatwaveTime > 0);
+		controller.setSandstorm(sandstormTime > 0);
+		controller.setSnowstorm(snowstormTime > 0);
 
 		IServerWorldInfo worldInfo = (IServerWorldInfo) world.getWorldInfo();
 		if (specialWeatherActive() && !heatwaveActive()) {
@@ -233,6 +250,22 @@ public class SurviveTheTideWeatherBehavior implements IGameBehavior {
 		heatwaveTime = config.getHeatwaveMinTime() + random.nextInt(config.getHeatwaveExtraRandTime());
 		if (phase.is("phase4")) {
 			heatwaveTime /= 2;
+		}
+	}
+
+	private void sandstormStart(GamePhase phase) {
+		//TODO: more config
+		sandstormTime = config.getHeatwaveMinTime() + random.nextInt(config.getHeatwaveExtraRandTime());
+		if (phase.is("phase4")) {
+			sandstormTime /= 2;
+		}
+	}
+
+	private void snowstormStart(GamePhase phase) {
+		//TODO: more config
+		snowstormTime = config.getHeatwaveMinTime() + random.nextInt(config.getHeatwaveExtraRandTime());
+		if (phase.is("phase4")) {
+			snowstormTime /= 2;
 		}
 	}
 

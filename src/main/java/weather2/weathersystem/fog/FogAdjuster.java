@@ -44,7 +44,7 @@ public class FogAdjuster {
     public void initProfiles() {
         fogHeatwave = new FogProfile(new Vector3f(0.5F, 0.2F, 0.1F), 0, 75, GlStateManager.FogMode.LINEAR);
         fogSandstorm = new FogProfile(new Vector3f(0.7F, 0.5F, 0.2F), 0, 12, GlStateManager.FogMode.LINEAR);
-        fogSnowstorm = new FogProfile(new Vector3f(1F, 1F, 1F), 0, 7, GlStateManager.FogMode.LINEAR);
+        fogSnowstorm = new FogProfile(new Vector3f(0.7F, 0.7F, 0.7F), 0, 7, GlStateManager.FogMode.LINEAR);
         fogVanilla = new FogProfile(new Vector3f(0.3F, 0.3F, 1F), 0, 7, GlStateManager.FogMode.LINEAR);
         prevProfile = fogVanilla;
         activeProfile = fogVanilla;

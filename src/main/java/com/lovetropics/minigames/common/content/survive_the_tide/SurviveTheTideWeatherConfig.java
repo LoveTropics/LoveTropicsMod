@@ -11,6 +11,8 @@ public class SurviveTheTideWeatherConfig {
 				MoreCodecs.object2Float(Codec.STRING).fieldOf("rain_heavy_chance").forGetter(c -> c.phaseToHeavyRainChance),
 				MoreCodecs.object2Float(Codec.STRING).fieldOf("rain_acid_chance").forGetter(c -> c.phaseToAcidRainChance),
 				MoreCodecs.object2Float(Codec.STRING).fieldOf("heatwave_chance").forGetter(c -> c.phaseToHeatwaveChance),
+				MoreCodecs.object2Float(Codec.STRING).fieldOf("sandstorm_chance").forGetter(c -> c.phaseToSandstormChance),
+				MoreCodecs.object2Float(Codec.STRING).fieldOf("snowstorm_chance").forGetter(c -> c.phaseToSnowstormChance),
 				MoreCodecs.object2Float(Codec.STRING).fieldOf("wind_speed").forGetter(c -> c.phaseToWindSpeed),
 				Codec.INT.optionalFieldOf("rain_heavy_min_time", 1200).forGetter(c -> c.rainHeavyMinTime),
 				Codec.INT.optionalFieldOf("rain_heavy_extra_rand_time", 1200).forGetter(c -> c.rainHeavyExtraRandTime),
@@ -27,6 +29,8 @@ public class SurviveTheTideWeatherConfig {
 	private final Object2FloatMap<String> phaseToHeavyRainChance;
 	private final Object2FloatMap<String> phaseToAcidRainChance;
 	private final Object2FloatMap<String> phaseToHeatwaveChance;
+	private final Object2FloatMap<String> phaseToSandstormChance;
+	private final Object2FloatMap<String> phaseToSnowstormChance;
 	private final Object2FloatMap<String> phaseToWindSpeed;
 
 	private final int rainHeavyMinTime;
@@ -44,6 +48,7 @@ public class SurviveTheTideWeatherConfig {
 
 	public SurviveTheTideWeatherConfig(
 			Object2FloatMap<String> phaseToHeavyRainChance, Object2FloatMap<String> phaseToAcidRainChance, Object2FloatMap<String> phaseToHeatwaveChance,
+			Object2FloatMap<String> phaseToSandstormChance, Object2FloatMap<String> phaseToSnowstormChance,
 			Object2FloatMap<String> phaseToWindSpeed,
 			final int rainHeavyMinTime, final int rainHeavyExtraRandTime,
 			final int rainAcidMinTime, final int rainAcidExtraRandTime,
@@ -53,6 +58,8 @@ public class SurviveTheTideWeatherConfig {
 		this.phaseToHeavyRainChance = phaseToHeavyRainChance;
 		this.phaseToAcidRainChance = phaseToAcidRainChance;
 		this.phaseToHeatwaveChance = phaseToHeatwaveChance;
+		this.phaseToSandstormChance = phaseToSandstormChance;
+		this.phaseToSnowstormChance = phaseToSnowstormChance;
 		this.phaseToWindSpeed = phaseToWindSpeed;
 
 		this.rainHeavyMinTime = rainHeavyMinTime;
@@ -79,6 +86,14 @@ public class SurviveTheTideWeatherConfig {
 
 	public double getHeatwaveChance(String phase) {
 		return phaseToHeatwaveChance.getOrDefault(phase, 0.0F);
+	}
+
+	public double getSandstormChance(String phase) {
+		return phaseToSandstormChance.getOrDefault(phase, 0.0F);
+	}
+
+	public double getSnowstormChance(String phase) {
+		return phaseToSnowstormChance.getOrDefault(phase, 0.0F);
 	}
 
 	public float getWindSpeed(String phase) {
