@@ -8,7 +8,6 @@ import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
@@ -41,10 +40,14 @@ public final class RemoveFromBlockBehavior implements IGameBehavior {
         events.listen(GamePlayerEvents.USE_BLOCK, this::onUseBlock);
     }
 
-    private ActionResultType onUseBlock(ServerPlayerEntity player, ServerWorld world, BlockPos blockPos, Hand hand, BlockRayTraceResult blockRayTraceResult) {
-        if (world.getBlockState(blockPos).getBlock() == this.in.getBlock()) {
-            world.setBlockState(blockPos, this.out);
-            world.addEntity(new ItemEntity(world, blockPos.getX(), blockPos.getY() + 1.0, blockPos.getZ(), this.drop.copy()));
+    private ActionResultType onUseBlock(ServerPlayerEntity player, ServerWorld world, BlockPos pos, Hand hand, BlockRayTraceResult result) {
+        if (world.getBlockState(pos).getBlock() == this.in.getBlock()) {
+            world.setBlockState(pos, this.out);
+
+            BlockPos spawnPos = pos.offset(result.getFace());
+            world.addEntity(new ItemEntity(world, spawnPos.getX() + 0.5, spawnPos.getY() + 0.5, spawnPos.getZ() + 0.5, this.drop.copy()));
+
+            return ActionResultType.SUCCESS;
         }
 
         return ActionResultType.PASS;
