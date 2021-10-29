@@ -16,10 +16,7 @@ import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvent
 import com.lovetropics.minigames.common.core.game.state.GameStateMap;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
-import it.unimi.dsi.fastutil.objects.Reference2DoubleOpenHashMap;
-import it.unimi.dsi.fastutil.objects.Reference2ObjectMap;
-import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.*;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -29,7 +26,6 @@ import net.minecraft.util.SoundEvents;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.registry.Registry;
 
-import java.util.Collections;
 import java.util.Set;
 
 public final class BbCurrencyBehavior implements IGameBehavior {
@@ -37,20 +33,24 @@ public final class BbCurrencyBehavior implements IGameBehavior {
 		return instance.group(
 				Registry.ITEM.fieldOf("item").forGetter(c -> c.item),
 				Codec.INT.fieldOf("initial_currency").forGetter(c -> c.initialCurrency),
+				DropCalculation.CODEC.fieldOf("drop_calculation").forGetter(c -> c.dropCalculation),
 				Codec.LONG.fieldOf("drop_interval").forGetter(c -> c.dropInterval)
 		).apply(instance, BbCurrencyBehavior::new);
 	});
 
 	private final Item item;
 	private final int initialCurrency;
+
+	private final DropCalculation dropCalculation;
 	private final long dropInterval;
 
 	private IGamePhase game;
 	private CurrencyManager currency;
 
-	public BbCurrencyBehavior(Item item, int initialCurrency, long dropInterval) {
+	public BbCurrencyBehavior(Item item, int initialCurrency, DropCalculation dropCalculation, long dropInterval) {
 		this.initialCurrency = initialCurrency;
 		this.item = item;
+		this.dropCalculation = dropCalculation;
 		this.dropInterval = dropInterval;
 	}
 
@@ -113,8 +113,6 @@ public final class BbCurrencyBehavior implements IGameBehavior {
 		boolean atPlot = plot.walls.getBounds().contains(player.getPositionVec());
 		if (atPlot) {
 			double value = this.computePlotValue(plot);
-			value = preventCapitalism(value);
-
 			return MathHelper.floor(value);
 		} else {
 			return 0;
@@ -122,40 +120,75 @@ public final class BbCurrencyBehavior implements IGameBehavior {
 	}
 
 	private double computePlotValue(Plot plot) {
-		Reference2DoubleOpenHashMap<PlantFamily> values = new Reference2DoubleOpenHashMap<>();
-		Reference2ObjectMap<PlantFamily, Set<PlantType>> counts = new Reference2ObjectOpenHashMap<>();
-
-		for (Plant plant : plot.plants) {
-			if (plant.value() < 0) continue; // Negative value marks plants that shouldn't count towards biodiversity
-
-			PlantFamily family = plant.family();
-			PlantType type = plant.type();
-
-			values.addTo(family, plant.value());
-
-			Set<PlantType> set = counts.computeIfAbsent(family, f -> new ObjectOpenHashSet<>());
-			set.add(type);
-		}
+		PlotMetrics metrics = PlotMetrics.compute(plot.plants);
 
 		double value = 2.0;
 		for (PlantFamily family : PlantFamily.BIODIVERSITY_VALUES) {
-			int biodiversity = counts.getOrDefault(family, Collections.emptySet()).size();
-
-			double plantValue = values.getDouble(family) + 0.5;
-			plantValue += (biodiversity / 3.0) * plantValue;
-
-			value += plantValue;
+			double familyValue = metrics.valuesByFamily.getDouble(family);
+			int diversity = metrics.diversityByFamily.getInt(family);
+			value += dropCalculation.applyFamily(familyValue, diversity);
 		}
 
-		return value;
+		return dropCalculation.applyGlobal(value);
 	}
 
-	private static double preventCapitalism(double count) {
-		if (count < 60) {
-			return count;
+	private static final class DropCalculation {
+		public static final Codec<DropCalculation> CODEC = RecordCodecBuilder.create(instance -> {
+			return instance.group(
+					Codec.DOUBLE.fieldOf("base").forGetter(c -> c.base),
+					Codec.DOUBLE.fieldOf("bound").forGetter(c -> c.bound),
+					Codec.DOUBLE.fieldOf("diversity_factor").forGetter(c -> c.diversityFactor)
+			).apply(instance, DropCalculation::new);
+		});
+
+		private final double base;
+		private final double bound;
+		private final double diversityFactor;
+
+		private DropCalculation(double base, double bound, double diversityFactor) {
+			this.base = base;
+			this.bound = bound;
+			this.diversityFactor = diversityFactor;
 		}
 
-		// \left(60+\frac{x}{20}\right)-1.23^{-\frac{x}{3}}+1
-		return 60 + count / 20.0 - Math.pow(1.23, -count / 3.0) + 1;
+		public double applyFamily(double familyValue, int diversity) {
+			return (familyValue + 0.5) * (1.0 + diversityFactor * diversity);
+		}
+
+		public double applyGlobal(double value) {
+			return bound - bound * Math.pow(base, -value / bound);
+		}
+	}
+
+	private static final class PlotMetrics {
+		private final Reference2DoubleMap<PlantFamily> valuesByFamily;
+		private final Reference2IntMap<PlantFamily> diversityByFamily;
+
+		private PlotMetrics(Reference2DoubleMap<PlantFamily> valuesByFamily, Reference2IntMap<PlantFamily> diversityByFamily) {
+			this.valuesByFamily = valuesByFamily;
+			this.diversityByFamily = diversityByFamily;
+		}
+
+		private static PlotMetrics compute(Iterable<Plant> plants) {
+			Reference2DoubleOpenHashMap<PlantFamily> values = new Reference2DoubleOpenHashMap<>();
+			Reference2ObjectMap<PlantFamily, Set<PlantType>> distinct = new Reference2ObjectOpenHashMap<>();
+
+			for (Plant plant : plants) {
+				// Negative value marks plants that shouldn't count towards biodiversity
+				if (plant.value() > 0.0) {
+					values.addTo(plant.family(), plant.value());
+				}
+
+				distinct.computeIfAbsent(plant.family(), f -> new ObjectOpenHashSet<>())
+						.add(plant.type());
+			}
+
+			Reference2IntMap<PlantFamily> diversity = new Reference2IntOpenHashMap<>(distinct.size());
+			for (Reference2ObjectMap.Entry<PlantFamily, Set<PlantType>> entry : Reference2ObjectMaps.fastIterable(distinct)) {
+				diversity.put(entry.getKey(), entry.getValue().size());
+			}
+
+			return new PlotMetrics(values, diversity);
+		}
 	}
 }

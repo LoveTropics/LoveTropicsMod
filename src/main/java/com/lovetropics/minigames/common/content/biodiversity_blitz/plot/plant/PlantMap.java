@@ -15,7 +15,6 @@ public final class PlantMap implements Iterable<Plant> {
 	private final Map<PlantType, List<Plant>> plantsByType = new Object2ObjectOpenHashMap<>();
 
 	private final Long2ObjectMap<Plant> plantByPos = new Long2ObjectOpenHashMap<>();
-	private final Long2ObjectMap<Plant> plantByDecorationPos = new Long2ObjectOpenHashMap<>();
 
 	@Nullable
 	public Plant addPlant(PlantType type, PlantFamily family, double value, PlantPlacement placement) {
@@ -41,13 +40,12 @@ public final class PlantMap implements Iterable<Plant> {
 
 		for (BlockPos pos : plant.functionalCoverage()) {
 			this.plantByPos.put(pos.toLong(), plant);
-			this.plantByDecorationPos.put(pos.toLong(), plant);
 		}
 
 		PlantCoverage decoration = plant.decorationCoverage();
 		if (decoration != null) {
 			for (BlockPos pos : decoration) {
-				this.plantByDecorationPos.put(pos.toLong(), plant);
+				this.plantByPos.put(pos.toLong(), plant);
 			}
 		}
 	}
@@ -56,7 +54,7 @@ public final class PlantMap implements Iterable<Plant> {
 		LongSet intersection = new LongOpenHashSet();
 		for (BlockPos pos : decoration) {
 			long posKey = pos.toLong();
-			if (this.plantByDecorationPos.containsKey(posKey)) {
+			if (this.plantByPos.containsKey(posKey)) {
 				intersection.add(posKey);
 			}
 		}
@@ -77,13 +75,12 @@ public final class PlantMap implements Iterable<Plant> {
 
 			for (BlockPos pos : plant.functionalCoverage()) {
 				this.plantByPos.remove(pos.toLong(), plant);
-				this.plantByDecorationPos.remove(pos.toLong(), plant);
 			}
 
 			PlantCoverage decoration = plant.decorationCoverage();
 			if (decoration != null) {
 				for (BlockPos pos : decoration) {
-					this.plantByDecorationPos.remove(pos.toLong(), plant);
+					this.plantByPos.remove(pos.toLong(), plant);
 				}
 			}
 
@@ -95,7 +92,7 @@ public final class PlantMap implements Iterable<Plant> {
 
 	@Nullable
 	public Plant getPlantAt(long pos) {
-		return this.plantByDecorationPos.get(pos);
+		return this.plantByPos.get(pos);
 	}
 
 	@Nullable
@@ -114,12 +111,12 @@ public final class PlantMap implements Iterable<Plant> {
 	}
 
 	public boolean canAddPlantAt(BlockPos pos) {
-		return this.plantByDecorationPos.get(pos.toLong()) == null;
+		return this.plantByPos.get(pos.toLong()) == null;
 	}
 
 	public boolean canAddPlantAt(PlantCoverage coverage) {
 		for (BlockPos pos : coverage) {
-			Plant plant = this.plantByDecorationPos.get(pos.toLong());
+			Plant plant = this.plantByPos.get(pos.toLong());
 			if (plant != null) {
 				return false;
 			}
