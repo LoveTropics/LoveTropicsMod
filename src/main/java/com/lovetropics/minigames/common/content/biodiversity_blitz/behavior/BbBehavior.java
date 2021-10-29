@@ -25,6 +25,8 @@ import net.minecraft.entity.merchant.villager.VillagerEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.util.*;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockRayTraceResult;
@@ -101,6 +103,27 @@ public final class BbBehavior implements IGameBehavior {
 			}
 			return ActionResultType.PASS;
 		});
+
+		events.listen(GamePlayerEvents.USE_BLOCK, this::onUseBlock);
+	}
+
+	private ActionResultType onUseBlock(ServerPlayerEntity player, ServerWorld world, BlockPos blockPos, Hand hand, BlockRayTraceResult blockRayTraceResult) {
+		Plot plot = this.plots.getPlotFor(player);
+		BlockPos pos = blockRayTraceResult.getPos();
+
+		if (plot != null) {
+			// Check if farmland is being used and the user has a diamond hoe TODO: can we make it not hardcoded?
+			if (world.getBlockState(pos).getBlock() == Blocks.FARMLAND && player.getHeldItem(hand).getItem() == Items.DIAMOND_HOE) {
+				// If there is no plant above we can change to grass safely
+				if (!plot.plants.hasPlantAt(pos.up())) {
+					player.swingArm(hand);
+					world.setBlockState(pos, Blocks.GRASS_BLOCK.getDefaultState());
+					return ActionResultType.FAIL;
+				}
+			}
+		}
+
+		return ActionResultType.PASS;
 	}
 
 	private void setupPlayerAsRole(ServerPlayerEntity player, @Nullable PlayerRole role) {
