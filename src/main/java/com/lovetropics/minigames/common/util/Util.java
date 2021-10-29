@@ -1,6 +1,7 @@
 package com.lovetropics.minigames.common.util;
 
 import com.google.common.collect.Lists;
+import com.lovetropics.lib.BlockBox;
 import com.lovetropics.minigames.Constants;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -15,8 +16,6 @@ import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.particles.IParticleData;
-import net.minecraft.particles.ParticleType;
-import net.minecraft.particles.ParticleTypes;
 import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundCategory;
@@ -406,5 +405,17 @@ public class Util {
 
     public static Vector3d lerpVector(Vector3d start, Vector3d end, double d) {
         return new Vector3d(MathHelper.lerp(d, start.x, end.x), MathHelper.lerp(d, start.y, end.y), MathHelper.lerp(d, start.z, end.z));
+    }
+
+    public static Direction getDirectionBetween(BlockBox from, BlockBox to) {
+        BlockPos fromCenter = from.getCenterBlock();
+        BlockPos toCenter = to.getCenterBlock();
+        int dx = toCenter.getX() - fromCenter.getX();
+        int dz = toCenter.getZ() - fromCenter.getZ();
+        if (Math.abs(dx) > Math.abs(dz)) {
+            return dx > 0 ? Direction.EAST : Direction.WEST;
+        } else {
+            return dz > 0 ? Direction.SOUTH : Direction.NORTH;
+        }
     }
 }

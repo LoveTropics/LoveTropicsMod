@@ -24,15 +24,19 @@ import java.util.List;
 
 public final class BbAssignPlotsBehavior implements IGameBehavior {
 	public static final Codec<BbAssignPlotsBehavior> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-			MoreCodecs.arrayOrUnit(Plot.Config.CODEC, Plot.Config[]::new).optionalFieldOf("plots", new Plot.Config[0]).forGetter(c -> c.plotKeys)
+			Plot.RegionKeys.CODEC.fieldOf("regions").forGetter(c -> c.regionKeys),
+			MoreCodecs.arrayOrUnit(Plot.Config.CODEC, Plot.Config[]::new).fieldOf("plots").forGetter(c -> c.plotKeys)
 	).apply(instance, BbAssignPlotsBehavior::new));
+
+	private final Plot.RegionKeys regionKeys;
 
 	private final Plot.Config[] plotKeys;
 	private final List<Plot> freePlots = new ArrayList<>();
 
 	private PlotsState plots;
 
-	public BbAssignPlotsBehavior(Plot.Config[] plotKeys) {
+	public BbAssignPlotsBehavior(Plot.RegionKeys regionKeys, Plot.Config[] plotKeys) {
+		this.regionKeys = regionKeys;
 		this.plotKeys = plotKeys;
 	}
 
@@ -46,7 +50,7 @@ public final class BbAssignPlotsBehavior implements IGameBehavior {
 		MapRegions regions = game.getMapRegions();
 
 		for (Plot.Config config : this.plotKeys) {
-			this.freePlots.add(Plot.create(config, regions));
+			this.freePlots.add(Plot.create(config, this.regionKeys, regions));
 		}
 
 		this.applyCheckeredPlots(events);

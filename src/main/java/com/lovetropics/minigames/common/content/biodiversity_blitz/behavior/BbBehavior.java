@@ -94,9 +94,8 @@ public final class BbBehavior implements IGameBehavior {
 			if (world.getBlockState(pos).getBlock() == Blocks.FARMLAND && player.getHeldItem(hand).getItem() instanceof HoeItem) {
 				// If there is no plant above we can change to grass safely
 				if (!plot.plants.hasPlantAt(pos.up())) {
-					player.swingArm(hand);
 					world.setBlockState(pos, Blocks.GRASS_BLOCK.getDefaultState());
-					return ActionResultType.FAIL;
+					return ActionResultType.SUCCESS;
 				}
 			}
 		}

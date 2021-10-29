@@ -1,18 +1,9 @@
 package com.lovetropics.minigames.common.content.biodiversity_blitz.behavior;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.Set;
-import java.util.UUID;
-import java.util.WeakHashMap;
-
 import com.lovetropics.lib.codec.MoreCodecs;
 import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.BiodiversityBlitzTexts;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.event.BbEvents;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.BbHuskEntity;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.BbPillagerEntity;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.Plot;
@@ -21,9 +12,9 @@ import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
+import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntStack;
 import it.unimi.dsi.fastutil.objects.Object2FloatMap;
@@ -42,6 +33,8 @@ import net.minecraft.world.BossInfo.Color;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
+
+import java.util.*;
 
 public final class BbWaveSpawnerBehavior implements IGameBehavior {
 	public static final Codec<BbWaveSpawnerBehavior> CODEC = RecordCodecBuilder.create(instance -> {
@@ -78,9 +71,11 @@ public final class BbWaveSpawnerBehavior implements IGameBehavior {
 		this.game = game;
 		this.plots = game.getState().getOrThrow(PlotsState.KEY);
 
-		events.listen(GamePhaseEvents.START, () -> game.getParticipants().forEach(this.waveCharging::addPlayer));
+		events.listen(BbEvents.ASSIGN_PLOT, this::addPlayer);
+		events.listen(GamePlayerEvents.REMOVE, this::removePlayer);
+
 		events.listen(GamePhaseEvents.TICK, this::tick);
-		events.listen(GamePhaseEvents.FINISH, () -> {
+		events.listen(GamePhaseEvents.STOP, reason -> {
 			bossBars.values().stream()
 				.flatMap(List::stream)
 				.forEach(this::cleanupBossBar);
@@ -92,6 +87,22 @@ public final class BbWaveSpawnerBehavior implements IGameBehavior {
 		this.waveCharging.setMax(40);
 		this.waveCharging.setValue(0);
 		this.waveCharging.setVisible(false);
+	}
+
+	private void addPlayer(ServerPlayerEntity player, Plot plot) {
+		this.waveCharging.addPlayer(player);
+	}
+
+	private void removePlayer(ServerPlayerEntity player) {
+		this.waveCharging.removePlayer(player);
+		this.entitiesInWave.remove(player.getUniqueID());
+
+		List<CustomServerBossInfo> bars = this.bossBars.remove(player.getUniqueID());
+		if (bars != null) {
+			for (CustomServerBossInfo bar : bars) {
+				cleanupBossBar(bar);
+			}
+		}
 	}
 
 	private void tick() {
