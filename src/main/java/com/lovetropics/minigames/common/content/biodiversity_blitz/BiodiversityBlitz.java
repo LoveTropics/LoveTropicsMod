@@ -11,6 +11,7 @@ import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.plan
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.plant.placement.PlaceSinglePlantBehavior;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.client_tweak.CheckeredPlotsState;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.client_tweak.ClientBiodiversityBlitzState;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.item.UniqueBlockNamedItem;
 import com.lovetropics.minigames.common.util.registry.GameBehaviorEntry;
 import com.lovetropics.minigames.common.util.registry.GameClientTweakEntry;
 import com.lovetropics.minigames.common.util.registry.LoveTropicsRegistrate;
@@ -144,13 +145,13 @@ public final class BiodiversityBlitz {
 
 	// Items
 
-	public static final ItemEntry<BlockNamedItem> CARROT_SEEDS = REGISTRATE.item("carrot_seeds", p -> new BlockNamedItem(Blocks.CARROTS, p))
+	public static final ItemEntry<UniqueBlockNamedItem> CARROT_SEEDS = REGISTRATE.item("carrot_seeds", p -> new UniqueBlockNamedItem(Blocks.CARROTS, p))
 			.register();
 
-	public static final ItemEntry<BlockNamedItem> POTATO_SEEDS = REGISTRATE.item("potato_seeds", p -> new BlockNamedItem(Blocks.POTATOES, p))
+	public static final ItemEntry<UniqueBlockNamedItem> POTATO_SEEDS = REGISTRATE.item("potato_seeds", p -> new UniqueBlockNamedItem(Blocks.POTATOES, p))
 			.register();
 
-	public static final ItemEntry<BlockNamedItem> SWEET_BERRY_SEEDS = REGISTRATE.item("sweet_berry_seeds", p -> new BlockNamedItem(Blocks.SWEET_BERRY_BUSH, p))
+	public static final ItemEntry<UniqueBlockNamedItem> SWEET_BERRY_SEEDS = REGISTRATE.item("sweet_berry_seeds", p -> new UniqueBlockNamedItem(Blocks.SWEET_BERRY_BUSH, p))
 			.register();
 
 	public static final ItemEntry<Item> OSA_POINT = REGISTRATE.item("osa_point", Item::new)
