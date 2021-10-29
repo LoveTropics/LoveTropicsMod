@@ -92,7 +92,7 @@ public final class PlantBehavior implements IGameBehavior {
 			return ActionResult.resultFail(null);
 		}
 
-		if (placement.place(game.getWorld())) {
+		if (placement.place(game.getWorld(), plant.coverage())) {
 			plantEvents.invoker(BbPlantEvents.ADD).onAddPlant(player, plot, plant);
 			game.invoker(BbEvents.PLANTS_CHANGED).onPlantsChanged(player, plot);
 

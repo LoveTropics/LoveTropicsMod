@@ -4,12 +4,11 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.server.ServerWorld;
 
 import javax.annotation.Nullable;
-import java.util.function.Predicate;
 
 public final class PlantPlacement {
 	private PlantCoverage functionalCoverage;
 	private PlantCoverage decorationCoverage;
-	private Predicate<ServerWorld> place;
+	private Place place;
 
 	public PlantPlacement covers(BlockPos pos) {
 		return this.covers(PlantCoverage.of(pos));
@@ -25,7 +24,7 @@ public final class PlantPlacement {
 		return this;
 	}
 
-	public PlantPlacement places(Predicate<ServerWorld> place) {
+	public PlantPlacement places(Place place) {
 		this.place = place;
 		return this;
 	}
@@ -40,10 +39,14 @@ public final class PlantPlacement {
 		return this.decorationCoverage;
 	}
 
-	public boolean place(ServerWorld world) {
+	public boolean place(ServerWorld world, PlantCoverage coverage) {
 		if (this.place == null) {
 			return false;
 		}
-		return this.place.test(world);
+		return this.place.place(world, coverage);
+	}
+
+	public interface Place {
+		boolean place(ServerWorld world, PlantCoverage coverage);
 	}
 }

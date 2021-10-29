@@ -70,7 +70,7 @@ public final class ScareTrapPlantBehavior implements IGameBehavior {
 	private PlantPlacement place(ServerPlayerEntity player, Plot plot, BlockPos pos) {
 		return new PlantPlacement()
 				.covers(this.buildPlantCoverage(plot, pos))
-				.places(world -> {
+				.places((world, coverage) -> {
 					this.placeReadyTrap(plot, pos);
 					return true;
 				});
