@@ -2,8 +2,7 @@ package com.lovetropics.minigames.common.content.biodiversity_blitz.behavior;
 
 import com.lovetropics.minigames.common.content.biodiversity_blitz.BiodiversityBlitz;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.event.BbEvents;
-import com.lovetropics.minigames.common.content.biodiversity_blitz.client_tweak.ClientBiodiversityBlitzState;
-import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.CurrencyManager;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.client_state.ClientBiodiversityBlitzState;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.Plot;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
@@ -16,26 +15,29 @@ import net.minecraft.entity.player.ServerPlayerEntity;
 
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Consumer;
 
 public final class BbClientStateBehavior implements IGameBehavior {
 	public static final Codec<BbClientStateBehavior> CODEC = Codec.unit(BbClientStateBehavior::new);
-
-	private IGamePhase game;
 
 	private final Map<UUID, Currency> trackedCurrency = new Object2ObjectOpenHashMap<>();
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
-		this.game = game;
-
 		events.listen(BbEvents.ASSIGN_PLOT, this::addPlayer);
 		events.listen(GamePlayerEvents.REMOVE, this::removePlayer);
 
-		events.listen(BbEvents.TICK_PLOT, this::tickPlot);
+		events.listen(BbEvents.CURRENCY_CHANGED, (player, value, lastValue) -> {
+			this.updateState(player, currency -> currency.value = value);
+		});
+
+		events.listen(BbEvents.CURRENCY_INCREMENT_CHANGED, (player, value, lastValue) -> {
+			this.updateState(player, currency -> currency.nextIncrement = value);
+		});
 	}
 
 	private void addPlayer(ServerPlayerEntity player, Plot plot) {
-		this.sendOverlayUpdate(player);
+		this.sendStateUpdate(player);
 	}
 
 	private void removePlayer(ServerPlayerEntity player) {
@@ -44,24 +46,17 @@ public final class BbClientStateBehavior implements IGameBehavior {
 		GameClientState.removeFromPlayer(BiodiversityBlitz.CLIENT_STATE.get(), player);
 	}
 
-	private void tickPlot(ServerPlayerEntity player, Plot plot) {
-		if (this.game.ticks() % 10 == 0) {
-			this.tickTrackedCurrency(player, plot);
-		}
+	private void updateState(ServerPlayerEntity player, Consumer<Currency> update) {
+		Currency currency = this.trackedCurrency.computeIfAbsent(player.getUniqueID(), uuid -> new Currency());
+		update.accept(currency);
+
+		GameClientState.sendToPlayer(currency.asState(), player);
 	}
 
-	private void tickTrackedCurrency(ServerPlayerEntity player, Plot plot) {
-		Currency trackedCurrency = this.trackedCurrency.computeIfAbsent(player.getUniqueID(), uuid -> new Currency());
-
-		if (trackedCurrency.set(CurrencyManager.get(player), plot.nextCurrencyIncrement)) {
-			this.sendOverlayUpdate(player);
-		}
-	}
-
-	private void sendOverlayUpdate(ServerPlayerEntity player) {
+	private void sendStateUpdate(ServerPlayerEntity player) {
 		Currency currency = this.trackedCurrency.get(player.getUniqueID());
 		if (currency != null) {
-			GameClientState.sendToPlayer(currency.asStateTweak(), player);
+			GameClientState.sendToPlayer(currency.asState(), player);
 		}
 	}
 
@@ -69,17 +64,7 @@ public final class BbClientStateBehavior implements IGameBehavior {
 		int value;
 		int nextIncrement;
 
-		boolean set(int value, int nextIncrement) {
-			if (this.value == value && this.nextIncrement == nextIncrement) {
-				return false;
-			}
-
-			this.value = value;
-			this.nextIncrement = nextIncrement;
-			return true;
-		}
-
-		ClientBiodiversityBlitzState asStateTweak() {
+		ClientBiodiversityBlitzState asState() {
 			return new ClientBiodiversityBlitzState(this.value, this.nextIncrement);
 		}
 	}

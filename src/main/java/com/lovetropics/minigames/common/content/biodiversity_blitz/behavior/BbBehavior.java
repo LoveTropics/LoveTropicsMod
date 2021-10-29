@@ -1,7 +1,6 @@
 package com.lovetropics.minigames.common.content.biodiversity_blitz.behavior;
 
 import com.lovetropics.lib.BlockBox;
-import com.lovetropics.minigames.common.content.biodiversity_blitz.BiodiversityBlitz;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.BiodiversityBlitzTexts;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.FriendlyExplosion;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.event.BbEvents;
@@ -14,7 +13,6 @@ import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.*;
 import com.lovetropics.minigames.common.core.game.player.PlayerRole;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.Object2FloatMap;
 import it.unimi.dsi.fastutil.objects.Object2FloatOpenHashMap;
 import net.minecraft.block.BlockState;
@@ -24,9 +22,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.merchant.villager.VillagerEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.tags.ItemTags;
+import net.minecraft.item.HoeItem;
 import net.minecraft.util.*;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockRayTraceResult;
@@ -43,11 +39,7 @@ import java.util.List;
 
 // TODO: needs to be split up & data-driven more!
 public final class BbBehavior implements IGameBehavior {
-	public static final Codec<BbBehavior> CODEC = RecordCodecBuilder.create(instance -> {
-	    return instance.group(
-	        Codec.INT.fieldOf("initial_currency").forGetter(c -> c.initialCurrency)
-	    ).apply(instance, BbBehavior::new);
-	});
+	public static final Codec<BbBehavior> CODEC = Codec.unit(BbBehavior::new);
 
 	private static final Object2FloatMap<Difficulty> DEATH_DECREASE = new Object2FloatOpenHashMap<>();
 
@@ -57,19 +49,15 @@ public final class BbBehavior implements IGameBehavior {
 		DEATH_DECREASE.put(Difficulty.HARD, 0.5F);
 	}
 
-	private final int initialCurrency;
-
 	private IGamePhase game;
 	private PlotsState plots;
-
-	public BbBehavior(int initialCurrency) {
-		this.initialCurrency = initialCurrency;
-	}
+	private CurrencyManager currency;
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
 		this.game = game;
 		this.plots = game.getState().getOrThrow(PlotsState.KEY);
+		this.currency = game.getState().getOrNull(CurrencyManager.KEY);
 
 		events.listen(GamePlayerEvents.ADD, player -> setupPlayerAsRole(player, null));
 		events.listen(GamePlayerEvents.SET_ROLE, (player, role, lastRole) -> setupPlayerAsRole(player, role));
@@ -82,7 +70,7 @@ public final class BbBehavior implements IGameBehavior {
 		events.listen(GamePlayerEvents.ATTACK, this::onAttack);
 		// No mob drops
 		events.listen(GameLivingEntityEvents.MOB_DROP, (e, d, r) -> ActionResultType.FAIL);
-		events.listen(GameLivingEntityEvents.FARMLAND_TRAMPLE, (e, p, s) -> ActionResultType.FAIL);
+		events.listen(GameLivingEntityEvents.FARMLAND_TRAMPLE, this::onTrampleFarmland);
 		events.listen(GameEntityEvents.MOUNTED, (mounting, beingMounted) -> {
 			if (mounting instanceof ServerPlayerEntity) {
 				return ActionResultType.PASS;
@@ -94,16 +82,6 @@ public final class BbBehavior implements IGameBehavior {
 		events.listen(GamePlayerEvents.PLACE_BLOCK, this::onPlaceBlock);
 		events.listen(GamePlayerEvents.BREAK_BLOCK, (player, pos, state, hand) -> ActionResultType.FAIL);
 
-		events.listen(GamePlayerEvents.THROW_ITEM, (player, item) -> {
-			ItemStack stack = item.getItem();
-			if (stack.getItem() == BiodiversityBlitz.OSA_POINT.get()) {
-				player.inventory.addItemStackToInventory(stack);
-				player.sendContainerToPlayer(player.openContainer);
-				return ActionResultType.FAIL;
-			}
-			return ActionResultType.PASS;
-		});
-
 		events.listen(GamePlayerEvents.USE_BLOCK, this::onUseBlock);
 	}
 
@@ -112,8 +90,8 @@ public final class BbBehavior implements IGameBehavior {
 		BlockPos pos = blockRayTraceResult.getPos();
 
 		if (plot != null) {
-			// Check if farmland is being used and the user has a diamond hoe TODO: can we make it not hardcoded?
-			if (world.getBlockState(pos).getBlock() == Blocks.FARMLAND && player.getHeldItem(hand).getItem() == Items.DIAMOND_HOE) {
+			// Check if farmland is being used and the user has a hoe TODO: can we make it not hardcoded?
+			if (world.getBlockState(pos).getBlock() == Blocks.FARMLAND && player.getHeldItem(hand).getItem() instanceof HoeItem) {
 				// If there is no plant above we can change to grass safely
 				if (!plot.plants.hasPlantAt(pos.up())) {
 					player.swingArm(hand);
@@ -124,6 +102,17 @@ public final class BbBehavior implements IGameBehavior {
 		}
 
 		return ActionResultType.PASS;
+	}
+
+	private ActionResultType onTrampleFarmland(Entity entity, BlockPos pos, BlockState state) {
+		Plot plot = this.plots.getPlotFor(entity);
+		if (plot != null && plot.bounds.contains(pos)) {
+			if (!plot.plants.hasPlantAt(pos.up())) {
+				return ActionResultType.PASS;
+			}
+		}
+
+		return ActionResultType.FAIL;
 	}
 
 	private void setupPlayerAsRole(ServerPlayerEntity player, @Nullable PlayerRole role) {
@@ -143,8 +132,6 @@ public final class BbBehavior implements IGameBehavior {
 
 	private void onAssignPlot(ServerPlayerEntity player, Plot plot) {
 		teleportToRegion(player, plot.spawn, plot.spawnForward);
-
-		CurrencyManager.set(player, initialCurrency);
 	}
 
 	private void onExplosion(Explosion explosion, List<BlockPos> affectedBlocks, List<Entity> affectedEntities) {
@@ -205,18 +192,21 @@ public final class BbBehavior implements IGameBehavior {
 		teleportToRegion(player, plot.spawn, plot.spawnForward);
 		player.setHealth(20.0F);
 
-		// Resets all currency from the player's inventory and adds a new stack with 80% of the amount.
-		// A better way of just removing 20% of the existing stacks could be done but this was chosen for the time being to save time
-		Difficulty difficulty = game.getWorld().getDifficulty();
+		// TODO: this should really be in the currency behavior
+		if (currency != null) {
+			// Resets all currency from the player's inventory and adds a new stack with 80% of the amount.
+			// A better way of just removing 20% of the existing stacks could be done but this was chosen for the time being to save time
+			Difficulty difficulty = game.getWorld().getDifficulty();
 
-		int oldCurrency = CurrencyManager.get(player);
-		int newCurrency = MathHelper.floor(oldCurrency * DEATH_DECREASE.getFloat(difficulty));
+			int oldCurrency = currency.get(player);
+			int newCurrency = MathHelper.floor(oldCurrency * DEATH_DECREASE.getFloat(difficulty));
 
-		CurrencyManager.set(player, newCurrency);
+			currency.set(player, newCurrency);
 
-		// Add the remaining items
+			player.sendStatusMessage(BiodiversityBlitzTexts.deathDecrease(oldCurrency - newCurrency).mergeStyle(TextFormatting.RED), true);
+		}
+
 		player.playSound(SoundEvents.ENTITY_ARROW_HIT_PLAYER, SoundCategory.PLAYERS, 0.18F, 1.0F);
-		player.sendStatusMessage(BiodiversityBlitzTexts.deathDecrease(oldCurrency - newCurrency).mergeStyle(TextFormatting.RED), true);
 
 		return ActionResultType.FAIL;
 	}

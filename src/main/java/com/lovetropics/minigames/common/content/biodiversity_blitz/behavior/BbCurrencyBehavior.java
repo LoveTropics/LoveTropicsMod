@@ -11,6 +11,9 @@ import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
+import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
+import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
+import com.lovetropics.minigames.common.core.game.state.GameStateMap;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
@@ -18,31 +21,63 @@ import it.unimi.dsi.fastutil.objects.Reference2DoubleOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+import net.minecraft.util.ActionResultType;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvents;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.registry.Registry;
 
 import java.util.Collections;
 import java.util.Set;
 
-public final class BbDropCurrencyBehavior implements IGameBehavior {
-	public static final Codec<BbDropCurrencyBehavior> CODEC = RecordCodecBuilder.create(instance -> {
+public final class BbCurrencyBehavior implements IGameBehavior {
+	public static final Codec<BbCurrencyBehavior> CODEC = RecordCodecBuilder.create(instance -> {
 		return instance.group(
-				Codec.LONG.fieldOf("interval").forGetter(c -> c.interval)
-		).apply(instance, BbDropCurrencyBehavior::new);
+				Registry.ITEM.fieldOf("item").forGetter(c -> c.item),
+				Codec.INT.fieldOf("initial_currency").forGetter(c -> c.initialCurrency),
+				Codec.LONG.fieldOf("drop_interval").forGetter(c -> c.dropInterval)
+		).apply(instance, BbCurrencyBehavior::new);
 	});
 
-	private final long interval;
+	private final Item item;
+	private final int initialCurrency;
+	private final long dropInterval;
 
 	private IGamePhase game;
+	private CurrencyManager currency;
 
-	public BbDropCurrencyBehavior(long interval) {
-		this.interval = interval;
+	public BbCurrencyBehavior(Item item, int initialCurrency, long dropInterval) {
+		this.initialCurrency = initialCurrency;
+		this.item = item;
+		this.dropInterval = dropInterval;
+	}
+
+	@Override
+	public void registerState(IGamePhase game, GameStateMap state) {
+		this.currency = state.register(CurrencyManager.KEY, new CurrencyManager(game, this.item));
 	}
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) throws GameException {
 		this.game = game;
+
+		events.listen(BbEvents.ASSIGN_PLOT, (player, plot) -> {
+			this.currency.set(player, this.initialCurrency);
+		});
+
+		events.listen(GamePlayerEvents.THROW_ITEM, (player, item) -> {
+			ItemStack stack = item.getItem();
+			if (stack.getItem() == this.item) {
+				player.inventory.addItemStackToInventory(stack);
+				player.sendContainerToPlayer(player.openContainer);
+				return ActionResultType.FAIL;
+			}
+			return ActionResultType.PASS;
+		});
+
+		events.listen(GamePhaseEvents.TICK, () -> this.currency.tickTracked());
 
 		events.listen(BbEvents.TICK_PLOT, this::tickPlot);
 	}
@@ -51,17 +86,21 @@ public final class BbDropCurrencyBehavior implements IGameBehavior {
 		long ticks = this.game.ticks();
 
 		if (ticks % 20 == 0) {
-			plot.nextCurrencyIncrement = this.computeNextCurrency(player, plot);
+			int nextCurrencyIncrement = this.computeNextCurrency(player, plot);
+			if (plot.nextCurrencyIncrement != nextCurrencyIncrement) {
+				game.invoker(BbEvents.CURRENCY_INCREMENT_CHANGED).onCurrencyChanged(player, nextCurrencyIncrement, plot.nextCurrencyIncrement);
+				plot.nextCurrencyIncrement = nextCurrencyIncrement;
+			}
 		}
 
-		long intervalTicks = interval * 20;
+		long intervalTicks = this.dropInterval * 20;
 		if (ticks % intervalTicks == 0) {
 			this.giveCurrency(player, plot);
 		}
 	}
 
 	private void giveCurrency(ServerPlayerEntity player, Plot plot) {
-		int count = CurrencyManager.add(player, plot.nextCurrencyIncrement);
+		int count = currency.add(player, plot.nextCurrencyIncrement);
 
 		player.sendStatusMessage(BiodiversityBlitzTexts.currencyAddition(count), true);
 

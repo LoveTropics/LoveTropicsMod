@@ -4,6 +4,7 @@ import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
+import com.lovetropics.minigames.common.core.game.client_state.GameClientState;
 import com.lovetropics.minigames.common.core.game.client_state.instance.TimeInterpolationClientState;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -29,7 +30,7 @@ public final class SetTimeSpeedBehavior implements IGameBehavior {
 			world.setDayTime(world.getDayTime() + this.factor - 1);
 		});
 
-		TimeInterpolationClientState tweak = new TimeInterpolationClientState(this.factor);
-		tweak.applyGloballyTo(events);
+		TimeInterpolationClientState state = new TimeInterpolationClientState(this.factor);
+		GameClientState.applyGlobally(state, events);
 	}
 }

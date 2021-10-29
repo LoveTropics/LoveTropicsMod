@@ -18,9 +18,9 @@ public interface GameClientState {
 
 	GameClientStateType<?> getType();
 
-	default void applyGloballyTo(EventRegistrar events) {
-		events.listen(GamePlayerEvents.ADD, player -> sendToPlayer(this, player));
-		events.listen(GamePlayerEvents.REMOVE, player -> removeFromPlayer(getType(), player));
+	static void applyGlobally(GameClientState state, EventRegistrar events) {
+		events.listen(GamePlayerEvents.ADD, player -> sendToPlayer(state, player));
+		events.listen(GamePlayerEvents.REMOVE, player -> removeFromPlayer(state.getType(), player));
 	}
 
 	static void sendToPlayer(GameClientState state, ServerPlayerEntity player) {

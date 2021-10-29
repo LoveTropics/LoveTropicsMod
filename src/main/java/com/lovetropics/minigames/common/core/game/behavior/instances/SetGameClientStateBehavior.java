@@ -22,6 +22,6 @@ public final class SetGameClientStateBehavior implements IGameBehavior {
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
-		state.applyGloballyTo(events);
+		GameClientState.applyGlobally(state, events);
 	}
 }

@@ -1,10 +1,11 @@
-package com.lovetropics.minigames.common.content.biodiversity_blitz.client_tweak.gui;
+package com.lovetropics.minigames.common.content.biodiversity_blitz.client_state.gui;
 
 import com.google.common.base.Suppliers;
 import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.client.game.ClientGameStateManager;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.BiodiversityBlitz;
-import com.lovetropics.minigames.common.content.biodiversity_blitz.client_tweak.ClientBiodiversityBlitzState;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.client_state.ClientBiodiversityBlitzState;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.client_state.CurrencyTargetState;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
@@ -35,11 +36,12 @@ public final class BbClientOverlayGui {
 
 		ClientBiodiversityBlitzState state = ClientGameStateManager.getOrNull(BiodiversityBlitz.CLIENT_STATE);
 		if (state != null) {
-			render(event, state);
+			CurrencyTargetState currencyTarget = ClientGameStateManager.getOrNull(BiodiversityBlitz.CURRENCY_TARGET);
+			render(event, state, currencyTarget);
 		}
 	}
 
-	private static void render(RenderGameOverlayEvent event, ClientBiodiversityBlitzState state) {
+	private static void render(RenderGameOverlayEvent event, ClientBiodiversityBlitzState state, CurrencyTargetState currencyTarget) {
 		MatrixStack matrixStack = event.getMatrixStack();
 		FontRenderer font = CLIENT.fontRenderer;
 
@@ -52,6 +54,10 @@ public final class BbClientOverlayGui {
 		renderItem(matrixStack, CURRENCY_ITEM.get(), x, y);
 
 		String currency = String.valueOf(state.getCurrency());
+		if (currencyTarget != null) {
+			currency = currency + TextFormatting.GRAY + "/" + currencyTarget.getValue();
+		}
+
 		font.drawStringWithShadow(
 				matrixStack, currency,
 				x + ITEM_SIZE + PADDING,

@@ -1,4 +1,4 @@
-package com.lovetropics.minigames.common.content.biodiversity_blitz.client_tweak;
+package com.lovetropics.minigames.common.content.biodiversity_blitz.client_state;
 
 import com.lovetropics.minigames.common.content.biodiversity_blitz.BiodiversityBlitz;
 import com.lovetropics.minigames.common.core.game.client_state.GameClientState;
