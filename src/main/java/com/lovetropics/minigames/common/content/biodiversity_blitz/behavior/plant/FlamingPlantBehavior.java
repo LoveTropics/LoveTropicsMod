@@ -1,6 +1,7 @@
 package com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.plant;
 
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.event.BbPlantEvents;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.BbMobEntity;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.Plot;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.plant.Plant;
 import com.lovetropics.minigames.common.core.game.GameException;
@@ -11,7 +12,6 @@ import com.lovetropics.minigames.common.util.Util;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.entity.MobEntity;
-import net.minecraft.entity.merchant.villager.VillagerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.particles.ParticleTypes;
 import net.minecraft.util.DamageSource;
@@ -57,7 +57,7 @@ public final class FlamingPlantBehavior implements IGameBehavior {
 
         for (Plant plant : plants) {
             AxisAlignedBB flameBounds = plant.coverage().asBounds().grow(this.radius);
-            List<MobEntity> entities = world.getEntitiesWithinAABB(MobEntity.class, flameBounds, entity -> !(entity instanceof VillagerEntity));
+            List<MobEntity> entities = world.getEntitiesWithinAABB(MobEntity.class, flameBounds, BbMobEntity.PREDICATE);
 
             int count = random.nextInt(3);
             if (!entities.isEmpty()) {

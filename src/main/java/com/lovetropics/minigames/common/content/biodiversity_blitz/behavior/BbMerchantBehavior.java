@@ -99,6 +99,7 @@ public final class BbMerchantBehavior implements IGameBehavior {
 			mob.onInitialSpawn(world, world.getDifficultyForLocation(new BlockPos(center)), SpawnReason.MOB_SUMMONED, null, null);
 			mob.setNoAI(true);
 			mob.setChild(false);
+			mob.setInvulnerable(true);
 		}
 
 		merchants.add(merchant.getUniqueID());

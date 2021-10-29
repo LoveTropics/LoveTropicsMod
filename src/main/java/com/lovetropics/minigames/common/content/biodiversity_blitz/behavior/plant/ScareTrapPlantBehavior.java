@@ -19,7 +19,6 @@ import net.minecraft.block.Blocks;
 import net.minecraft.block.LeverBlock;
 import net.minecraft.block.PistonHeadBlock;
 import net.minecraft.entity.MobEntity;
-import net.minecraft.entity.merchant.villager.VillagerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.network.play.server.SAnimateHandPacket;
 import net.minecraft.state.properties.AttachFace;
@@ -41,7 +40,7 @@ public final class ScareTrapPlantBehavior implements IGameBehavior {
 			Codec.DOUBLE.fieldOf("scare_radius").forGetter(c -> c.scareRadius)
 	).apply(instance, ScareTrapPlantBehavior::new));
 
-	private static final Predicate<MobEntity> SCARE_PREDICATE = entity -> !(entity instanceof VillagerEntity);
+	private static final Predicate<MobEntity> SCARE_PREDICATE = BbMobEntity.PREDICATE;
 
 	private final double triggerRadius;
 	private final double scareRadius;

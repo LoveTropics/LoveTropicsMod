@@ -4,6 +4,7 @@ import com.lovetropics.lib.BlockBox;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.BiodiversityBlitzTexts;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.FriendlyExplosion;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.event.BbEvents;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.BbMobEntity;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.CurrencyManager;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.Plot;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.PlotsState;
@@ -19,8 +20,6 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.FarmlandBlock;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.merchant.villager.VillagerEntity;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.HoeItem;
 import net.minecraft.util.*;
@@ -139,19 +138,12 @@ public final class BbBehavior implements IGameBehavior {
 			affectedEntities.removeIf(e -> e instanceof ServerPlayerEntity);
 		}
 
-		affectedEntities.removeIf(e -> e instanceof VillagerEntity);
-
 		// Blocks should not explode
 		affectedBlocks.clear();
 	}
 
 	private ActionResultType onAttack(ServerPlayerEntity player, Entity target) {
-		// disable pvp and pvv (player vs villager)
-		if (target instanceof VillagerEntity || target instanceof PlayerEntity) {
-			return ActionResultType.FAIL;
-		}
-
-		return ActionResultType.PASS;
+		return BbMobEntity.matches(target) ? ActionResultType.PASS : ActionResultType.FAIL;
 	}
 
 	private ActionResultType onPlaceBlock(ServerPlayerEntity player, BlockPos pos, BlockState placed, BlockState placedOn) {

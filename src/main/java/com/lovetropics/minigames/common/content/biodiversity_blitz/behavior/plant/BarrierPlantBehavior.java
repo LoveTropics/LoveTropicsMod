@@ -1,6 +1,7 @@
 package com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.plant;
 
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.event.BbPlantEvents;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.BbMobEntity;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.plant.Plant;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.plant.state.PlantHealth;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
@@ -9,7 +10,6 @@ import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.entity.MobEntity;
-import net.minecraft.entity.merchant.villager.VillagerEntity;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.world.server.ServerWorld;
 
@@ -43,7 +43,7 @@ public final class BarrierPlantBehavior implements IGameBehavior {
 				AxisAlignedBB bounds = plant.coverage().asBounds();
 				AxisAlignedBB damageBounds = bounds.grow(1.0, 5.0, 1.0);
 
-				List<MobEntity> entities = world.getEntitiesWithinAABB(MobEntity.class, damageBounds, entity -> !(entity instanceof VillagerEntity));
+				List<MobEntity> entities = world.getEntitiesWithinAABB(MobEntity.class, damageBounds, BbMobEntity.PREDICATE);
 				if (!entities.isEmpty()) {
 					health.decrement(entities.size());
 				}
