@@ -26,7 +26,6 @@ import net.minecraft.util.SoundEvents;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.registry.Registry;
 
-import java.util.Set;
 import java.util.stream.IntStream;
 
 public final class BbCurrencyBehavior implements IGameBehavior {
@@ -123,7 +122,7 @@ public final class BbCurrencyBehavior implements IGameBehavior {
 	private double computePlotValue(Plot plot) {
 		PlotMetrics metrics = PlotMetrics.compute(plot.plants);
 
-		double value = 2.0;
+		double value = 1.0;
 		for (PlantFamily family : PlantFamily.BIODIVERSITY_VALUES) {
 			double familyValue = metrics.valuesByFamily.getDouble(family);
 			double diversity = metrics.diversityByFamily.getDouble(family);

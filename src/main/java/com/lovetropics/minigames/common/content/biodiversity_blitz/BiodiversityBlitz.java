@@ -138,6 +138,10 @@ public final class BiodiversityBlitz {
 			.behavior(BbCurrencyWinTrigger.CODEC)
 			.register();
 
+	public static final GameBehaviorEntry<BbGivePlantsBehavior> GIVE_PLANTS = REGISTRATE.object("biodiversity_blitz_give_plants")
+			.behavior(BbGivePlantsBehavior.CODEC)
+			.register();
+
 	// Client State
 
 	public static final GameClientTweakEntry<CheckeredPlotsState> CHECKERED_PLOTS_STATE = REGISTRATE.object("checkered_plots")
