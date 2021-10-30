@@ -77,11 +77,14 @@ public final class ServerPlayerDisguises {
 
 		PlayerEntity newPlayer = event.getPlayer();
 		PlayerEntity oldPlayer = event.getOriginal();
-		PlayerDisguise.get(oldPlayer).ifPresent(oldDisguise -> {
-			PlayerDisguise.get(newPlayer).ifPresent(newDisguise -> {
-				newDisguise.copyFrom(oldDisguise);
+		if (newPlayer instanceof ServerPlayerEntity && oldPlayer instanceof ServerPlayerEntity) {
+			PlayerDisguise.get(oldPlayer).ifPresent(oldDisguise -> {
+				PlayerDisguise.get(newPlayer).ifPresent(newDisguise -> {
+					newDisguise.copyFrom(oldDisguise);
+					onSetDisguise((ServerPlayerEntity) newPlayer, newDisguise);
+				});
 			});
-		});
+		}
 	}
 
 	private static int disguiseAs(CommandContext<CommandSource> context, @Nullable CompoundNBT nbt) throws CommandSyntaxException {
