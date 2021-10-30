@@ -27,6 +27,7 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.registry.Registry;
 
 import java.util.Set;
+import java.util.stream.IntStream;
 
 public final class BbCurrencyBehavior implements IGameBehavior {
 	public static final Codec<BbCurrencyBehavior> CODEC = RecordCodecBuilder.create(instance -> {
@@ -125,7 +126,7 @@ public final class BbCurrencyBehavior implements IGameBehavior {
 		double value = 2.0;
 		for (PlantFamily family : PlantFamily.BIODIVERSITY_VALUES) {
 			double familyValue = metrics.valuesByFamily.getDouble(family);
-			int diversity = metrics.diversityByFamily.getInt(family);
+			double diversity = metrics.diversityByFamily.getDouble(family);
 			value += dropCalculation.applyFamily(familyValue, diversity);
 		}
 
@@ -151,8 +152,8 @@ public final class BbCurrencyBehavior implements IGameBehavior {
 			this.diversityFactor = diversityFactor;
 		}
 
-		public double applyFamily(double familyValue, int diversity) {
-			return (familyValue + 0.5) * (1.0 + diversityFactor * diversity);
+		public double applyFamily(double familyValue, double diversity) {
+			return familyValue * (1.0 + diversityFactor * diversity);
 		}
 
 		public double applyGlobal(double value) {
@@ -162,16 +163,18 @@ public final class BbCurrencyBehavior implements IGameBehavior {
 
 	private static final class PlotMetrics {
 		private final Reference2DoubleMap<PlantFamily> valuesByFamily;
-		private final Reference2IntMap<PlantFamily> diversityByFamily;
+		private final Reference2DoubleMap<PlantFamily> diversityByFamily;
 
-		private PlotMetrics(Reference2DoubleMap<PlantFamily> valuesByFamily, Reference2IntMap<PlantFamily> diversityByFamily) {
+		private PlotMetrics(Reference2DoubleMap<PlantFamily> valuesByFamily, Reference2DoubleMap<PlantFamily> diversityByFamily) {
 			this.valuesByFamily = valuesByFamily;
 			this.diversityByFamily = diversityByFamily;
 		}
 
 		private static PlotMetrics compute(Iterable<Plant> plants) {
 			Reference2DoubleOpenHashMap<PlantFamily> values = new Reference2DoubleOpenHashMap<>();
-			Reference2ObjectMap<PlantFamily, Set<PlantType>> distinct = new Reference2ObjectOpenHashMap<>();
+
+			// Number of plants per plant type in family
+			Reference2ObjectMap<PlantFamily, Object2IntOpenHashMap<PlantType>> numberOfPlants = new Reference2ObjectOpenHashMap<>();
 
 			for (Plant plant : plants) {
 				// Negative value marks plants that shouldn't count towards biodiversity
@@ -179,13 +182,31 @@ public final class BbCurrencyBehavior implements IGameBehavior {
 					values.addTo(plant.family(), plant.value());
 				}
 
-				distinct.computeIfAbsent(plant.family(), f -> new ObjectOpenHashSet<>())
-						.add(plant.type());
+				// Increment plant type
+				numberOfPlants.computeIfAbsent(plant.family(), f -> new Object2IntOpenHashMap<>())
+								.addTo(plant.type(), 1);
 			}
 
-			Reference2IntMap<PlantFamily> diversity = new Reference2IntOpenHashMap<>(distinct.size());
-			for (Reference2ObjectMap.Entry<PlantFamily, Set<PlantType>> entry : Reference2ObjectMaps.fastIterable(distinct)) {
-				diversity.put(entry.getKey(), entry.getValue().size());
+			Reference2DoubleMap<PlantFamily> diversity = new Reference2DoubleOpenHashMap<>();
+
+			for (Reference2ObjectMap.Entry<PlantFamily, Object2IntOpenHashMap<PlantType>> entry : Reference2ObjectMaps.fastIterable(numberOfPlants)) {
+				// Total amount of plants in this family
+				int total = IntStream.of(entry.getValue().values().toIntArray()).sum();
+				
+				// Amount of plant types
+				int types = entry.getValue().size();
+
+				double biodiversity = 0.0;
+
+				// The target is to have an equal amount of plant types in the family
+				int target = total / types;
+
+				// Scale the plants, so when you have a lot of a single plant type and less of another, the biodiversity is proportional to that
+				for (Object2IntMap.Entry<PlantType> e : Object2IntMaps.fastIterable(entry.getValue())) {
+					biodiversity += Math.max(1, (double) e.getIntValue() / target);
+				}
+
+				diversity.put(entry.getKey(), biodiversity);
 			}
 
 			return new PlotMetrics(values, diversity);
