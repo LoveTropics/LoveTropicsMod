@@ -2,6 +2,7 @@ package com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.pla
 
 import com.lovetropics.lib.codec.MoreCodecs;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.event.BbPlantEvents;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.BbMobEntity;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.plant.Plant;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
@@ -9,7 +10,6 @@ import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.entity.MobEntity;
-import net.minecraft.entity.merchant.villager.VillagerEntity;
 import net.minecraft.potion.EffectInstance;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.world.server.ServerWorld;
@@ -46,7 +46,7 @@ public final class EffectAddingPlantBehavior implements IGameBehavior {
 			for (Plant plant : plants) {
 				AxisAlignedBB applyBounds = plant.coverage().asBounds().grow(this.radius);
 
-				List<MobEntity> entities = world.getEntitiesWithinAABB(MobEntity.class, applyBounds, entity -> !(entity instanceof VillagerEntity));
+				List<MobEntity> entities = world.getEntitiesWithinAABB(MobEntity.class, applyBounds, BbMobEntity.PREDICATE);
 				for (MobEntity entity : entities) {
 					entity.addPotionEffect(new EffectInstance(this.effect));
 				}

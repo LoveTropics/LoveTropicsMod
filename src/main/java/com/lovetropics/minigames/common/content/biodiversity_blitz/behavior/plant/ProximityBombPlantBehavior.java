@@ -3,6 +3,7 @@ package com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.pla
 import com.lovetropics.minigames.common.content.biodiversity_blitz.FriendlyExplosion;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.event.BbEvents;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.event.BbPlantEvents;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.BbMobEntity;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.plant.Plant;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.plant.PlantCoverage;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
@@ -11,7 +12,6 @@ import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.entity.MobEntity;
-import net.minecraft.entity.merchant.villager.VillagerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.network.play.server.SExplosionPacket;
 import net.minecraft.util.math.AxisAlignedBB;
@@ -46,7 +46,7 @@ public final class ProximityBombPlantBehavior implements IGameBehavior {
 
 			for (Plant plant : plants) {
 				AxisAlignedBB detonateBounds = plant.coverage().asBounds().grow(this.radius);
-				List<MobEntity> entities = world.getEntitiesWithinAABB(MobEntity.class, detonateBounds, entity -> !(entity instanceof VillagerEntity));
+				List<MobEntity> entities = world.getEntitiesWithinAABB(MobEntity.class, detonateBounds, BbMobEntity.PREDICATE);
 
 				if (!entities.isEmpty()) {
 					removedPlants.add(plant);

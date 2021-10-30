@@ -27,6 +27,7 @@ public final class MinigameTexts {
 		static final String FLYING_TURTLE_RACE = key("flying_turtle_race");
 		static final String TURTLE_SPRINT = key("turtle_sprint");
 		static final String HIDE_AND_SEEK = key("hide_and_seek");
+		static final String CALAMITY = key("calamity");
 
 		static final String[] SURVIVE_THE_TIDE_INTRO = new String[] {
 				key("survive_the_tide_intro1"),
@@ -64,6 +65,7 @@ public final class MinigameTexts {
 			consumer.accept(FLYING_TURTLE_RACE, "Flying Turtle Race");
 			consumer.accept(TURTLE_SPRINT, "Turtle Sprint");
 			consumer.accept(HIDE_AND_SEEK, "Hide & Seek");
+			consumer.accept(CALAMITY, "Calamity");
 
 			consumer.accept(SURVIVE_THE_TIDE_INTRO[0], "The year...2050. Human-caused climate change has gone unmitigated and the human population has been forced to flee to higher ground.");
 			consumer.accept(SURVIVE_THE_TIDE_INTRO[1], "\nYour task, should you choose to accept it, which you have to because of climate change, is to survive the rising tides, unpredictable weather, and other players.");

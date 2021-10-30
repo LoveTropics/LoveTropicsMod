@@ -59,6 +59,18 @@ public final class BbEvents {
 		}
 	});
 
+	public static final GameEventType<CurrencyChanged> CURRENCY_CHANGED = GameEventType.create(CurrencyChanged.class, listeners -> (player, value, lastValue) -> {
+		for (CurrencyChanged listener : listeners) {
+			listener.onCurrencyChanged(player, value, lastValue);
+		}
+	});
+
+	public static final GameEventType<CurrencyChanged> CURRENCY_INCREMENT_CHANGED = GameEventType.create(CurrencyChanged.class, listeners -> (player, value, lastValue) -> {
+		for (CurrencyChanged listener : listeners) {
+			listener.onCurrencyChanged(player, value, lastValue);
+		}
+	});
+
 	private BbEvents() {
 	}
 
@@ -84,5 +96,9 @@ public final class BbEvents {
 
 	public interface PlantsChanged {
 		void onPlantsChanged(ServerPlayerEntity player, Plot plot);
+	}
+
+	public interface CurrencyChanged {
+		void onCurrencyChanged(ServerPlayerEntity player, int value, int lastValue);
 	}
 }

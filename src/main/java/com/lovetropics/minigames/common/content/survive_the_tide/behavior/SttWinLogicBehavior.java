@@ -1,54 +1,41 @@
 package com.lovetropics.minigames.common.content.survive_the_tide.behavior;
 
-import com.lovetropics.lib.codec.MoreCodecs;
-import com.lovetropics.minigames.common.core.game.*;
+import com.lovetropics.minigames.common.core.game.GameException;
+import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
-import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameLogicEvents;
-import com.lovetropics.minigames.common.core.game.util.TemplatedText;
+import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.effect.LightningBoltEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.text.ITextComponent;
 import net.minecraft.world.World;
 import net.minecraft.world.gen.Heightmap;
 
 public class SttWinLogicBehavior implements IGameBehavior {
 	public static final Codec<SttWinLogicBehavior> CODEC = RecordCodecBuilder.create(instance -> {
 		return instance.group(
-				Codec.LONG.optionalFieldOf("game_finish_tick_delay", 0L).forGetter(c -> c.gameFinishTickDelay),
-				MoreCodecs.long2Object(TemplatedText.CODEC).fieldOf("scheduled_game_finish_messages").forGetter(c -> c.scheduledGameFinishMessages),
 				Codec.BOOL.optionalFieldOf("spawn_lightning_bolts_on_finish", false).forGetter(c -> c.spawnLightningBoltsOnFinish),
 				Codec.INT.optionalFieldOf("lightning_bolt_spawn_tick_rate", 60).forGetter(c -> c.lightningBoltSpawnTickRate)
 		).apply(instance, SttWinLogicBehavior::new);
 	});
 
-	protected boolean minigameEnded;
-	private long minigameEndedTimer = 0;
-	protected final long gameFinishTickDelay;
-	private ITextComponent winner;
-	protected final Long2ObjectMap<TemplatedText> scheduledGameFinishMessages;
 	protected final boolean spawnLightningBoltsOnFinish;
 	protected final int lightningBoltSpawnTickRate;
+	protected boolean minigameEnded;
 
-	public SttWinLogicBehavior(final long gameFinishTickDelay, final Long2ObjectMap<TemplatedText> scheduledGameFinishMessages, final boolean spawnLightningBoltsOnFinish, final int lightningBoltSpawnTickRate) {
-		this.gameFinishTickDelay = gameFinishTickDelay;
-		this.scheduledGameFinishMessages = scheduledGameFinishMessages;
+	public SttWinLogicBehavior(final boolean spawnLightningBoltsOnFinish, final int lightningBoltSpawnTickRate) {
 		this.spawnLightningBoltsOnFinish = spawnLightningBoltsOnFinish;
 		this.lightningBoltSpawnTickRate = lightningBoltSpawnTickRate;
 	}
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) throws GameException {
-		events.listen(GameLogicEvents.WIN_TRIGGERED, (winnerName) -> {
-			this.winner = winnerName;
+		events.listen(GameLogicEvents.GAME_OVER, () -> {
 			this.minigameEnded = true;
-			this.minigameEndedTimer = 0;
 		});
 
 		events.listen(GamePhaseEvents.TICK, () -> this.checkForGameEndCondition(game, game.getWorld()));
@@ -59,19 +46,11 @@ public class SttWinLogicBehavior implements IGameBehavior {
 			if (spawnLightningBoltsOnFinish) {
 				spawnLightningBoltsEverywhere(game, world);
 			}
-
-			sendGameFinishMessages(game);
-
-			if (this.minigameEndedTimer >= gameFinishTickDelay) {
-				game.requestStop(GameStopReason.finished());
-			}
-
-			this.minigameEndedTimer++;
 		}
 	}
 
 	private void spawnLightningBoltsEverywhere(IGamePhase game, final World world) {
-		if (this.minigameEndedTimer % lightningBoltSpawnTickRate == 0) {
+		if (game.ticks() % lightningBoltSpawnTickRate == 0) {
 			for (ServerPlayerEntity player : game.getParticipants()) {
 				int xOffset = (7 + world.rand.nextInt(5)) * (world.rand.nextBoolean() ? 1 : -1);
 				int zOffset = (7 + world.rand.nextInt(5)) * (world.rand.nextBoolean() ? 1 : -1);
@@ -87,13 +66,6 @@ public class SttWinLogicBehavior implements IGameBehavior {
 
 				world.addEntity(lightning);
 			}
-		}
-	}
-
-	private void sendGameFinishMessages(final IGamePhase game) {
-		TemplatedText message = scheduledGameFinishMessages.remove(minigameEndedTimer);
-		if (message != null) {
-			game.getAllPlayers().sendMessage(message.apply(winner));
 		}
 	}
 }

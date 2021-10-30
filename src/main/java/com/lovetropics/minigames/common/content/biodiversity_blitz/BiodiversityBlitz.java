@@ -9,15 +9,16 @@ import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.plan
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.plant.placement.PlaceDoublePlantBehavior;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.plant.placement.PlaceFeaturePlantBehavior;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.plant.placement.PlaceSinglePlantBehavior;
-import com.lovetropics.minigames.common.content.biodiversity_blitz.client_tweak.CheckeredPlotsState;
-import com.lovetropics.minigames.common.content.biodiversity_blitz.client_tweak.ClientBiodiversityBlitzState;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.client_state.CheckeredPlotsState;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.client_state.ClientBbGlobalState;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.client_state.ClientBbSelfState;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.client_state.CurrencyTargetState;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.item.UniqueBlockNamedItem;
 import com.lovetropics.minigames.common.util.registry.GameBehaviorEntry;
 import com.lovetropics.minigames.common.util.registry.GameClientTweakEntry;
 import com.lovetropics.minigames.common.util.registry.LoveTropicsRegistrate;
 import com.tterrag.registrate.util.entry.ItemEntry;
 import net.minecraft.block.Blocks;
-import net.minecraft.item.BlockNamedItem;
 import net.minecraft.item.Item;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -121,8 +122,8 @@ public final class BiodiversityBlitz {
 			.behavior(PianguasPlantBehavior.CODEC)
 			.register();
 
-	public static final GameBehaviorEntry<BbDropCurrencyBehavior> DROP_CURRENCY = REGISTRATE.object("drop_currency")
-			.behavior(BbDropCurrencyBehavior.CODEC)
+	public static final GameBehaviorEntry<BbCurrencyBehavior> CURRENCY = REGISTRATE.object("biodiversity_blitz_currency")
+			.behavior(BbCurrencyBehavior.CODEC)
 			.register();
 
 	public static final GameBehaviorEntry<BbClientStateBehavior> SEND_CLIENT_STATE = REGISTRATE.object("biodiversity_blitz_client_state")
@@ -133,14 +134,26 @@ public final class BiodiversityBlitz {
             .behavior(RemoveFromBlockBehavior.CODEC)
             .register();
 
-	// Tweaks
+	public static final GameBehaviorEntry<BbCurrencyWinTrigger> CURRENCY_WIN_TRIGGER = REGISTRATE.object("biodiversity_blitz_currency_win_trigger")
+			.behavior(BbCurrencyWinTrigger.CODEC)
+			.register();
+
+	// Client State
 
 	public static final GameClientTweakEntry<CheckeredPlotsState> CHECKERED_PLOTS_STATE = REGISTRATE.object("checkered_plots")
 			.clientState(CheckeredPlotsState.CODEC)
 			.register();
 
-	public static final GameClientTweakEntry<ClientBiodiversityBlitzState> CLIENT_STATE = REGISTRATE.object("biodiversity_blitz_client_state")
-			.clientState(ClientBiodiversityBlitzState.CODEC)
+	public static final GameClientTweakEntry<CurrencyTargetState> CURRENCY_TARGET = REGISTRATE.object("currency_target")
+			.clientState(CurrencyTargetState.CODEC)
+			.register();
+
+	public static final GameClientTweakEntry<ClientBbSelfState> SELF_STATE = REGISTRATE.object("biodiversity_blitz_self_state")
+			.clientState(ClientBbSelfState.CODEC)
+			.register();
+
+	public static final GameClientTweakEntry<ClientBbGlobalState> GLOBAL_STATE = REGISTRATE.object("biodiversity_blitz_global_state")
+			.clientState(ClientBbGlobalState.CODEC)
 			.register();
 
 	// Items

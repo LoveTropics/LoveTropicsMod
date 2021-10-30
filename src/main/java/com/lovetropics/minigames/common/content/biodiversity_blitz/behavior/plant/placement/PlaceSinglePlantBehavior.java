@@ -27,7 +27,7 @@ public final class PlaceSinglePlantBehavior implements IGameBehavior {
 	public void register(IGamePhase game, EventRegistrar events) {
 		events.listen(BbPlantEvents.PLACE, (player, plot, pos) -> new PlantPlacement()
 				.covers(pos)
-				.places(world -> {
+				.places((world, coverage) -> {
 					world.setBlockState(pos, getPlaceBlock(plot));
 					return true;
 				}));

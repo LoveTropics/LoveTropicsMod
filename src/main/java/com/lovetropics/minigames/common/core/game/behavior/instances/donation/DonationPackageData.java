@@ -68,7 +68,7 @@ public class DonationPackageData {
 			boolean targeted = player == receiver || receiver == null;
 			NotificationDisplay.Color color = targeted ? NotificationDisplay.Color.LIGHT : NotificationDisplay.Color.DARK;
 			ITextComponent message = targeted ? targetedMessage : globalMessage;
-			long visibleTime = targeted ? 8000 : 4000;
+			long visibleTime = targeted ? 8000 : 6000;
 
 			NotificationDisplay display = new NotificationDisplay(notification.icon, notification.sentiment, color, visibleTime);
 			LoveTropicsNetwork.CHANNEL.send(

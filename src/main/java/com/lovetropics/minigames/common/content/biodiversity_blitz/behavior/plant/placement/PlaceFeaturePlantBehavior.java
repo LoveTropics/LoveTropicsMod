@@ -95,12 +95,14 @@ public final class PlaceFeaturePlantBehavior implements IGameBehavior {
 			placement.decorationCovers(PlantCoverage.of(decorationCoverage, origin));
 		}
 
-		return placement.places(world -> {
+		return placement.places((world, finalCoverage) -> {
 			BlockPos.Mutable pos = new BlockPos.Mutable();
 			for (Long2ObjectMap.Entry<BlockState> entry : Long2ObjectMaps.fastIterable(blocks)) {
 				pos.setPos(entry.getLongKey());
-				BlockState state = entry.getValue();
-				world.setBlockState(pos, state, Constants.BlockFlags.DEFAULT | Constants.BlockFlags.UPDATE_NEIGHBORS);
+				if (finalCoverage.covers(pos)) {
+					BlockState state = entry.getValue();
+					world.setBlockState(pos, state, Constants.BlockFlags.DEFAULT | Constants.BlockFlags.UPDATE_NEIGHBORS);
+				}
 			}
 			return true;
 		});

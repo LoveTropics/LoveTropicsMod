@@ -1,4 +1,4 @@
-package com.lovetropics.minigames.common.content.biodiversity_blitz.client_tweak;
+package com.lovetropics.minigames.common.content.biodiversity_blitz.client_state;
 
 import com.lovetropics.lib.BlockBox;
 import com.lovetropics.lib.codec.MoreCodecs;

@@ -3,13 +3,14 @@ package com.lovetropics.minigames.common.content.biodiversity_blitz.behavior;
 import com.lovetropics.lib.BlockBox;
 import com.lovetropics.lib.codec.MoreCodecs;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.event.BbEvents;
-import com.lovetropics.minigames.common.content.biodiversity_blitz.client_tweak.CheckeredPlotsState;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.client_state.CheckeredPlotsState;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.Plot;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.PlotsState;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
+import com.lovetropics.minigames.common.core.game.client_state.GameClientState;
 import com.lovetropics.minigames.common.core.game.player.PlayerRole;
 import com.lovetropics.minigames.common.core.game.state.GameStateMap;
 import com.lovetropics.minigames.common.core.map.MapRegions;
@@ -23,15 +24,19 @@ import java.util.List;
 
 public final class BbAssignPlotsBehavior implements IGameBehavior {
 	public static final Codec<BbAssignPlotsBehavior> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-			MoreCodecs.arrayOrUnit(Plot.Config.CODEC, Plot.Config[]::new).optionalFieldOf("plots", new Plot.Config[0]).forGetter(c -> c.plotKeys)
+			Plot.RegionKeys.CODEC.fieldOf("regions").forGetter(c -> c.regionKeys),
+			MoreCodecs.arrayOrUnit(Plot.Config.CODEC, Plot.Config[]::new).fieldOf("plots").forGetter(c -> c.plotKeys)
 	).apply(instance, BbAssignPlotsBehavior::new));
+
+	private final Plot.RegionKeys regionKeys;
 
 	private final Plot.Config[] plotKeys;
 	private final List<Plot> freePlots = new ArrayList<>();
 
 	private PlotsState plots;
 
-	public BbAssignPlotsBehavior(Plot.Config[] plotKeys) {
+	public BbAssignPlotsBehavior(Plot.RegionKeys regionKeys, Plot.Config[] plotKeys) {
+		this.regionKeys = regionKeys;
 		this.plotKeys = plotKeys;
 	}
 
@@ -45,7 +50,7 @@ public final class BbAssignPlotsBehavior implements IGameBehavior {
 		MapRegions regions = game.getMapRegions();
 
 		for (Plot.Config config : this.plotKeys) {
-			this.freePlots.add(Plot.create(config, regions));
+			this.freePlots.add(Plot.create(config, this.regionKeys, regions));
 		}
 
 		this.applyCheckeredPlots(events);
@@ -65,7 +70,8 @@ public final class BbAssignPlotsBehavior implements IGameBehavior {
 		CheckeredPlotsState checkeredPlots = new CheckeredPlotsState(
 				this.freePlots.stream().map(plot -> plot.bounds).toArray(BlockBox[]::new)
 		);
-		checkeredPlots.applyGloballyTo(events);
+
+		GameClientState.applyGlobally(checkeredPlots, events);
 	}
 
 	private void trySpawnParticipant(IGamePhase game, ServerPlayerEntity player) {

@@ -1,6 +1,7 @@
 package com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.plant;
 
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.event.BbPlantEvents;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.BbMobEntity;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.Plot;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.plant.Plant;
 import com.lovetropics.minigames.common.core.game.GameException;
@@ -11,12 +12,10 @@ import com.lovetropics.minigames.common.util.Util;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.entity.MobEntity;
-import net.minecraft.entity.merchant.villager.VillagerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.particles.ParticleTypes;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.server.ServerWorld;
 
@@ -55,8 +54,8 @@ public final class WateryPlantBehavior implements IGameBehavior {
         Set<MobEntity> seen = new HashSet<>();
 
         for (Plant plant : plants) {
-            AxisAlignedBB flameBounds = plant.coverage().asBounds().grow(this.radius);
-            List<MobEntity> entities = world.getEntitiesWithinAABB(MobEntity.class, flameBounds, entity -> !(entity instanceof VillagerEntity));
+            AxisAlignedBB attackBounds = plant.coverage().asBounds().grow(this.radius);
+            List<MobEntity> entities = world.getEntitiesWithinAABB(MobEntity.class, attackBounds, BbMobEntity.PREDICATE);
 
             if (entities.isEmpty()) {
                 continue;

@@ -221,7 +221,8 @@ public final class SpectatingUi {
 		List<Entry> entries = new ArrayList<>(players.size() + 1);
 		entries.add(new Entry(CLIENT.player.getUniqueID(), s -> "Free Camera", TextFormatting.RESET, SpectatingState.FREE_CAMERA));
 
-		players.sort(Comparator.comparing(player -> {
+		List<UUID> sortedPlayers = new ArrayList<>(players);
+		sortedPlayers.sort(Comparator.comparing(player -> {
 			ScorePlayerTeam team = getTeamFor(player);
 			return team != null ? team.getName() : "";
 		}));
