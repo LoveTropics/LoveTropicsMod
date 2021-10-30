@@ -13,10 +13,12 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.server.ServerWorld;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 public class PositionPlayersBehavior implements IGameBehavior {
 	public static final Codec<PositionPlayersBehavior> CODEC = RecordCodecBuilder.create(instance -> {
@@ -89,7 +91,21 @@ public class PositionPlayersBehavior implements IGameBehavior {
 	}
 
 	private void teleportToRegion(IGamePhase game, ServerPlayerEntity player, BlockBox region) {
-		BlockPos pos = region.sample(player.getRNG());
-		DimensionUtils.teleportPlayerNoPortal(player, game.getDimension(), pos);
+		BlockPos pos = tryFindEmptyPos(game, player.getRNG(), region);
+		if (pos != null) {
+			DimensionUtils.teleportPlayerNoPortal(player, game.getDimension(), pos);
+		}
+	}
+
+	@Nullable
+	private BlockPos tryFindEmptyPos(IGamePhase game, Random random, BlockBox box) {
+		ServerWorld world = game.getWorld();
+		for (int i = 0; i < 20; i++) {
+			BlockPos pos = box.sample(random);
+			if (world.isAirBlock(pos)) {
+				return pos;
+			}
+		}
+		return null;
 	}
 }

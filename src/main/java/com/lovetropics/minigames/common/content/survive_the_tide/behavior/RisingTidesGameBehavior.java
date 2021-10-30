@@ -193,7 +193,7 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 
 	private int calculateWaterChangeInterval(int targetLevel, int prevLevel, int phaseLength) {
 		int waterLevelDiff = prevLevel - targetLevel;
-		return phaseLength / Math.max(1, Math.abs(waterLevelDiff));
+		return Math.max(phaseLength / Math.max(1, Math.abs(waterLevelDiff)), 1);
 	}
 
 	private void processRisingTideQueue(IGamePhase game) {

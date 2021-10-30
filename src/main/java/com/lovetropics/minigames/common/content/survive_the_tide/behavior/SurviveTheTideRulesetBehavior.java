@@ -28,6 +28,7 @@ import net.minecraft.util.text.ITextComponent;
 import net.minecraft.world.GameRules;
 import net.minecraft.world.server.ServerWorld;
 
+import javax.annotation.Nullable;
 import java.util.List;
 
 public class SurviveTheTideRulesetBehavior implements IGameBehavior {
@@ -42,6 +43,7 @@ public class SurviveTheTideRulesetBehavior implements IGameBehavior {
 	});
 
 	private final String spawnAreaKey;
+	@Nullable
 	private BlockBox spawnArea;
 	private final String phaseToFreeParticipants;
 	private final List<String> phasesWithNoPVP;
@@ -64,7 +66,7 @@ public class SurviveTheTideRulesetBehavior implements IGameBehavior {
 	public void register(IGamePhase game, EventRegistrar events) throws GameException {
 		phases = game.getState().getOrThrow(GamePhaseState.KEY);
 
-		spawnArea = game.getMapRegions().getOrThrow(spawnAreaKey);
+		spawnArea = game.getMapRegions().getAny(spawnAreaKey);
 
 		events.listen(GamePlayerEvents.DEATH, this::onPlayerDeath);
 		events.listen(GamePlayerEvents.DAMAGE, this::onPlayerHurt);
@@ -118,9 +120,11 @@ public class SurviveTheTideRulesetBehavior implements IGameBehavior {
 	private void setParticipantsFree(final IGamePhase game) {
 		// Destroy all fences blocking players from getting out of spawn area for phase 0
 		ServerWorld world = game.getWorld();
-		for (BlockPos p : spawnArea) {
-			if (world.getBlockState(p).getBlock() instanceof FenceBlock) {
-				world.setBlockState(p, Blocks.AIR.getDefaultState(), 2);
+		if (spawnArea != null) {
+			for (BlockPos p : spawnArea) {
+				if (world.getBlockState(p).getBlock() instanceof FenceBlock) {
+					world.setBlockState(p, Blocks.AIR.getDefaultState(), 2);
+				}
 			}
 		}
 

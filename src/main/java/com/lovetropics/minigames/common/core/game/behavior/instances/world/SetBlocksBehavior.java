@@ -13,6 +13,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongIterator;
+import it.unimi.dsi.fastutil.longs.LongSet;
 import net.minecraft.advancements.criterion.BlockPredicate;
 import net.minecraft.block.BlockState;
 import net.minecraft.util.math.BlockPos;
@@ -128,11 +129,22 @@ public final class SetBlocksBehavior implements IGameBehavior {
 		BlockStateProvider set = this.set;
 		Random random = world.rand;
 
+		this.loadRegionChunks(region, world);
+
 		for (BlockPos pos : region) {
 			if (replace == null || replace.test(world, pos)) {
 				BlockState state = set.getBlockState(random, pos);
 				world.setBlockState(pos, state);
 			}
+		}
+	}
+
+	private void loadRegionChunks(BlockBox region, ServerWorld world) {
+		LongSet chunks = region.asChunks();
+		LongIterator chunkIterator = chunks.iterator();
+		while (chunkIterator.hasNext()) {
+			long chunkPos = chunkIterator.nextLong();
+			world.getChunk(ChunkPos.getX(chunkPos), ChunkPos.getZ(chunkPos));
 		}
 	}
 }
