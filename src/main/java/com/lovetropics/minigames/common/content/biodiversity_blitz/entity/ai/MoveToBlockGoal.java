@@ -13,7 +13,7 @@ import java.util.EnumSet;
 public abstract class MoveToBlockGoal extends Goal {
     private final MobEntity mob;
     // State
-    private BlockPos targetPos;
+    protected BlockPos targetPos;
     private int playerCheckTicks = 20;
 
     protected MoveToBlockGoal(MobEntity mob) {
@@ -66,7 +66,15 @@ public abstract class MoveToBlockGoal extends Goal {
             this.playerCheckTicks = 20;
         }
 
+        if (!shouldContinueExecuting(this.targetPos)) {
+            return false;
+        }
+
         return !this.mob.getNavigator().noPath();
+    }
+
+    protected boolean shouldContinueExecuting(BlockPos pos) {
+        return true;
     }
 
     @Nullable
@@ -76,7 +84,7 @@ public abstract class MoveToBlockGoal extends Goal {
         BlockPos minPos = null;
 
         for (BlockPos pos : BlockPos.getAllInBoxMutable(origin.add(-rangeX, -rangeY, -rangeX), origin.add(rangeX, rangeY, rangeX))) {
-            if (isValidBlock(world.getBlockState(pos))) {
+            if (isValidBlock(pos, world.getBlockState(pos))) {
                 int dx = pos.getX() - origin.getX();
                 int dy = pos.getY() - origin.getY();
                 int dz = pos.getZ() - origin.getZ();
@@ -92,5 +100,5 @@ public abstract class MoveToBlockGoal extends Goal {
         return minPos;
     }
 
-    protected abstract boolean isValidBlock(BlockState state);
+    protected abstract boolean isValidBlock(BlockPos pos, BlockState state);
 }

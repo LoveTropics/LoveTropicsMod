@@ -2,9 +2,13 @@ package com.lovetropics.minigames.common.content.biodiversity_blitz.entity;
 
 import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.ai.BbGroundNavigator;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.ai.BbMobBrain;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.ai.DestroyCropGoal;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.ai.MoveToPumpkinGoal;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.Plot;
 import net.minecraft.entity.EntityType;
+import net.minecraft.entity.MobEntity;
 import net.minecraft.entity.MoverType;
+import net.minecraft.entity.ai.attributes.Attributes;
 import net.minecraft.entity.ai.goal.HurtByTargetGoal;
 import net.minecraft.entity.ai.goal.NearestAttackableTargetGoal;
 import net.minecraft.entity.ai.goal.WaterAvoidingRandomWalkingGoal;
@@ -20,15 +24,19 @@ import net.minecraft.world.World;
 
 public class BbHuskEntity extends HuskEntity implements BbMobEntity {
 	private final BbMobBrain mobBrain;
+	private final Plot plot;
 
-	public BbHuskEntity(EntityType<? extends HuskEntity> type, World world, PlotWalls plotWalls) {
+	public BbHuskEntity(EntityType<? extends HuskEntity> type, World world, Plot plot) {
 		super(type, world);
-		this.mobBrain = new BbMobBrain(plotWalls);
+		this.mobBrain = new BbMobBrain(plot.walls);
+		this.plot = plot;
 
 		// Ignore sweet berry bushes and water
 		this.setPathPriority(PathNodeType.DANGER_OTHER, 0.0F);
 		this.setPathPriority(PathNodeType.DAMAGE_OTHER, 0.0F);
 		this.setPathPriority(PathNodeType.WATER, -1.0F);
+
+		this.getAttribute(Attributes.FOLLOW_RANGE).setBaseValue(8);
 	}
 
 	@Override
@@ -41,6 +49,7 @@ public class BbHuskEntity extends HuskEntity implements BbMobEntity {
 		this.goalSelector.addGoal(2, new ZombieAttackGoal(this, 1.0D, false));
 		this.goalSelector.addGoal(7, new WaterAvoidingRandomWalkingGoal(this, 1.0D));
 		this.goalSelector.addGoal(1, new MoveToPumpkinGoal(this));
+		this.goalSelector.addGoal(2, new DestroyCropGoal(this));
 		this.targetSelector.addGoal(1, (new HurtByTargetGoal(this)).setCallsForHelp(ZombifiedPiglinEntity.class));
 		this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, PlayerEntity.class, true));
 		this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, IronGolemEntity.class, true));
@@ -54,5 +63,15 @@ public class BbHuskEntity extends HuskEntity implements BbMobEntity {
 	@Override
 	public BbMobBrain getMobBrain() {
 		return mobBrain;
+	}
+
+	@Override
+	public MobEntity asMob() {
+		return this;
+	}
+
+	@Override
+	public Plot getPlot() {
+		return this.plot;
 	}
 }

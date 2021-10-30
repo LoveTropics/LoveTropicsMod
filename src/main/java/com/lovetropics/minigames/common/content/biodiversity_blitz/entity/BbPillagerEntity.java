@@ -2,8 +2,11 @@ package com.lovetropics.minigames.common.content.biodiversity_blitz.entity;
 
 import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.ai.BbGroundNavigator;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.ai.BbMobBrain;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.ai.DestroyCropGoal;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.ai.MoveToPumpkinGoal;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.Plot;
 import net.minecraft.entity.*;
+import net.minecraft.entity.ai.attributes.Attributes;
 import net.minecraft.entity.ai.goal.*;
 import net.minecraft.entity.monster.AbstractRaiderEntity;
 import net.minecraft.entity.monster.PillagerEntity;
@@ -21,15 +24,19 @@ import javax.annotation.Nullable;
 
 public class BbPillagerEntity extends PillagerEntity implements BbMobEntity {
     private final BbMobBrain mobBrain;
+    private final Plot plot;
 
-    public BbPillagerEntity(EntityType<? extends PillagerEntity> type, World world, PlotWalls plotWalls) {
+    public BbPillagerEntity(EntityType<? extends PillagerEntity> type, World world, Plot plot) {
         super(type, world);
-        this.mobBrain = new BbMobBrain(plotWalls);
+        this.mobBrain = new BbMobBrain(plot.walls);
+        this.plot = plot;
 
         // Ignore sweet berry bushes and water
         this.setPathPriority(PathNodeType.DANGER_OTHER, 0.0F);
         this.setPathPriority(PathNodeType.DAMAGE_OTHER, 0.0F);
         this.setPathPriority(PathNodeType.WATER, -1.0F);
+
+        this.getAttribute(Attributes.FOLLOW_RANGE).setBaseValue(8);
     }
 
     @Override
@@ -40,12 +47,13 @@ public class BbPillagerEntity extends PillagerEntity implements BbMobEntity {
     @Override
     protected void registerGoals() {
         this.goalSelector.addGoal(0, new SwimGoal(this));
-        this.goalSelector.addGoal(2, new AbstractRaiderEntity.FindTargetGoal(this, 10.0F));
-        this.goalSelector.addGoal(3, new RangedCrossbowAttackGoal<>(this, 1.0D, 8.0F));
+        this.goalSelector.addGoal(2, new AbstractRaiderEntity.FindTargetGoal(this, 6.0F));
+        this.goalSelector.addGoal(2, new RangedCrossbowAttackGoal<>(this, 1.0D, 6.0F));
         this.goalSelector.addGoal(8, new RandomWalkingGoal(this, 0.6D));
         this.goalSelector.addGoal(9, new LookAtGoal(this, PlayerEntity.class, 15.0F, 0.02F));
         this.goalSelector.addGoal(10, new LookAtGoal(this, MobEntity.class, 15.0F));
         this.goalSelector.addGoal(1, new MoveToPumpkinGoal(this));
+        this.goalSelector.addGoal(2, new DestroyCropGoal(this));
         this.targetSelector.addGoal(1, (new HurtByTargetGoal(this, AbstractRaiderEntity.class)).setCallsForHelp());
         this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, PlayerEntity.class, true));
         this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, IronGolemEntity.class, true));
@@ -68,5 +76,15 @@ public class BbPillagerEntity extends PillagerEntity implements BbMobEntity {
     @Override
     public BbMobBrain getMobBrain() {
         return mobBrain;
+    }
+
+    @Override
+    public MobEntity asMob() {
+        return this;
+    }
+
+    @Override
+    public Plot getPlot() {
+        return this.plot;
     }
 }

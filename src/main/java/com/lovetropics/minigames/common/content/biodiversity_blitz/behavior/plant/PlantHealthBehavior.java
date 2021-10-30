@@ -5,6 +5,7 @@ import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.even
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.plant.Plant;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.plant.PlantType;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.plant.state.PlantHealth;
+import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
@@ -19,26 +20,19 @@ import java.util.Optional;
 
 public final class PlantHealthBehavior implements IGameBehavior {
 	public static final Codec<PlantHealthBehavior> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-			Codec.INT.fieldOf("initial").forGetter(c -> c.initial),
-			Codec.INT.optionalFieldOf("decay_per_tick", 0).forGetter(c -> c.decayPerTick),
-			PlantType.CODEC.optionalFieldOf("decay_into").forGetter(c -> Optional.ofNullable(c.decayInto))
+			Codec.INT.fieldOf("health").forGetter(b -> b.health)
 	).apply(instance, PlantHealthBehavior::new));
 
-	private final int initial;
-	private final int decayPerTick;
+	private final int health;
 
-	private final PlantType decayInto;
-
-	public PlantHealthBehavior(int initial, int decayPerTick, Optional<PlantType> decayInto) {
-		this.initial = initial;
-		this.decayPerTick = decayPerTick;
-		this.decayInto = decayInto.orElse(null);
+	public PlantHealthBehavior(int health) {
+		this.health = health;
 	}
 
 	@Override
-	public void register(IGamePhase game, EventRegistrar events) {
+	public void register(IGamePhase game, EventRegistrar events) throws GameException {
 		events.listen(BbPlantEvents.ADD, (player, plot, plant) -> {
-			plant.state().put(PlantHealth.KEY, new PlantHealth(this.initial));
+			plant.state().put(PlantHealth.KEY, new PlantHealth(this.health));
 		});
 
 		events.listen(BbPlantEvents.TICK, (player, plot, plants) -> {
@@ -48,9 +42,9 @@ public final class PlantHealthBehavior implements IGameBehavior {
 
 			for (Plant plant : plants) {
 				PlantHealth health = plant.state(PlantHealth.KEY);
-				if (health == null) continue;
-
-				health.decrement(decayPerTick);
+				if (health == null) {
+					continue;
+				}
 
 				if (health.isDead()) {
 					plant.spawnPoof(world);
@@ -58,14 +52,7 @@ public final class PlantHealthBehavior implements IGameBehavior {
 				}
 			}
 
-			for (Plant plant : decayedPlants) {
-				game.invoker(BbEvents.BREAK_PLANT).breakPlant(player, plot, plant);
-
-				if (this.decayInto != null) {
-					BlockPos origin = plant.coverage().getOrigin();
-					game.invoker(BbEvents.PLACE_PLANT).placePlant(player, plot, origin, this.decayInto);
-				}
-			}
+			decayedPlants.forEach(plant -> game.invoker(BbEvents.BREAK_PLANT).breakPlant(player, plot, plant));
 		});
 	}
 }

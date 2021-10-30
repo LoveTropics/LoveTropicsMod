@@ -189,9 +189,9 @@ public final class BbWaveSpawnerBehavior implements IGameBehavior {
 	// TODO: data-drive
 	private static MobEntity selectEntityForWave(Random random, World world, Plot plot) {
 		if (random.nextBoolean()) {
-			return new BbPillagerEntity(EntityType.PILLAGER, world, plot.walls);
+			return new BbPillagerEntity(EntityType.PILLAGER, world, plot);
 		} else {
-			return new BbHuskEntity(EntityType.HUSK, world, plot.walls);
+			return new BbHuskEntity(EntityType.HUSK, world, plot);
 		}
 	}
 }
