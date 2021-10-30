@@ -1,6 +1,7 @@
 package com.lovetropics.minigames.common.content.biodiversity_blitz.entity;
 
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.util.Direction;
 import net.minecraft.util.ReuseableStream;
 import net.minecraft.util.math.AxisAlignedBB;
@@ -77,6 +78,10 @@ public final class PlotWalls {
 
 	public AxisAlignedBB getBounds() {
 		return this.bounds;
+	}
+
+	public boolean containsEntity(LivingEntity entity) {
+		return this.bounds.contains(entity.getPositionVec());
 	}
 
 	public static final class CollisionSpliterator extends Spliterators.AbstractSpliterator<VoxelShape> {

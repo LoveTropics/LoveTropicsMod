@@ -3,7 +3,6 @@ package com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.pla
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.event.BbEvents;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.event.BbPlantEvents;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.plant.Plant;
-import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.plant.PlantType;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.plant.state.PlantHealth;
 import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
@@ -11,12 +10,14 @@ import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.server.ServerWorld;
+import net.minecraftforge.common.util.Constants;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 public final class PlantHealthBehavior implements IGameBehavior {
 	public static final Codec<PlantHealthBehavior> CODEC = RecordCodecBuilder.create(instance -> instance.group(
@@ -47,7 +48,11 @@ public final class PlantHealthBehavior implements IGameBehavior {
 				}
 
 				if (health.isDead()) {
-					plant.spawnPoof(world);
+					for (BlockPos pos : plant.coverage()) {
+						BlockState state = world.getBlockState(pos);
+						world.playEvent(Constants.WorldEvents.BREAK_BLOCK_EFFECTS, pos, Block.getStateId(state));
+					}
+
 					decayedPlants.add(plant);
 				}
 			}

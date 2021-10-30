@@ -1,20 +1,11 @@
 package com.lovetropics.minigames.common.content.biodiversity_blitz.entity;
 
-import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.ai.BbGroundNavigator;
-import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.ai.BbMobBrain;
-import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.ai.DestroyCropGoal;
-import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.ai.MoveToPumpkinGoal;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.ai.*;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.Plot;
 import net.minecraft.entity.*;
 import net.minecraft.entity.ai.attributes.Attributes;
-import net.minecraft.entity.ai.goal.HurtByTargetGoal;
-import net.minecraft.entity.ai.goal.NearestAttackableTargetGoal;
-import net.minecraft.entity.ai.goal.WaterAvoidingRandomWalkingGoal;
 import net.minecraft.entity.ai.goal.ZombieAttackGoal;
 import net.minecraft.entity.monster.HuskEntity;
-import net.minecraft.entity.monster.ZombifiedPiglinEntity;
-import net.minecraft.entity.passive.IronGolemEntity;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.pathfinding.PathNavigator;
 import net.minecraft.pathfinding.PathNodeType;
@@ -49,13 +40,11 @@ public class BbHuskEntity extends HuskEntity implements BbMobEntity {
 
 	@Override
 	protected void applyEntityAI() {
-		this.goalSelector.addGoal(2, new ZombieAttackGoal(this, 1.0D, false));
-		this.goalSelector.addGoal(7, new WaterAvoidingRandomWalkingGoal(this, 1.0D));
 		this.goalSelector.addGoal(1, new MoveToPumpkinGoal(this));
-		this.goalSelector.addGoal(2, new DestroyCropGoal(this));
-		this.targetSelector.addGoal(1, (new HurtByTargetGoal(this)).setCallsForHelp(ZombifiedPiglinEntity.class));
-		this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, PlayerEntity.class, true));
-		this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, IronGolemEntity.class, true));
+		this.goalSelector.addGoal(2, new ZombieAttackGoal(this, 1.0, false));
+		this.goalSelector.addGoal(3, new DestroyCropGoal(this));
+
+		this.targetSelector.addGoal(1, new BbAttackGoal(this));
 	}
 
 	@Override
@@ -65,14 +54,9 @@ public class BbHuskEntity extends HuskEntity implements BbMobEntity {
 
 	@Nullable
 	@Override
-	public ILivingEntityData onInitialSpawn(IServerWorld worldIn, DifficultyInstance difficultyIn, SpawnReason reason, @Nullable ILivingEntityData spawnDataIn, @Nullable CompoundNBT dataTag) {
-		if (this.rand.nextFloat() < 0.05F) {
-			this.setLeftHanded(true);
-		} else {
-			this.setLeftHanded(false);
-		}
-
-		return spawnDataIn;
+	public ILivingEntityData onInitialSpawn(IServerWorld world, DifficultyInstance difficulty, SpawnReason reason, @Nullable ILivingEntityData spawnData, @Nullable CompoundNBT dataTag) {
+		this.setLeftHanded(this.rand.nextFloat() < 0.05F);
+		return spawnData;
 	}
 
 	@Override

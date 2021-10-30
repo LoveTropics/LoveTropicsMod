@@ -1,16 +1,13 @@
 package com.lovetropics.minigames.common.content.biodiversity_blitz.entity;
 
-import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.ai.BbGroundNavigator;
-import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.ai.BbMobBrain;
-import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.ai.DestroyCropGoal;
-import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.ai.MoveToPumpkinGoal;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.ai.*;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.Plot;
 import net.minecraft.entity.*;
 import net.minecraft.entity.ai.attributes.Attributes;
-import net.minecraft.entity.ai.goal.*;
+import net.minecraft.entity.ai.goal.LookAtGoal;
+import net.minecraft.entity.ai.goal.RangedCrossbowAttackGoal;
 import net.minecraft.entity.monster.AbstractRaiderEntity;
 import net.minecraft.entity.monster.PillagerEntity;
-import net.minecraft.entity.passive.IronGolemEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.EquipmentSlotType;
 import net.minecraft.item.ItemStack;
@@ -21,7 +18,6 @@ import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.IServerWorld;
 import net.minecraft.world.World;
-import net.minecraft.world.raid.Raid;
 
 import javax.annotation.Nullable;
 
@@ -49,17 +45,13 @@ public class BbPillagerEntity extends PillagerEntity implements BbMobEntity {
 
     @Override
     protected void registerGoals() {
-        this.goalSelector.addGoal(0, new SwimGoal(this));
-        this.goalSelector.addGoal(2, new AbstractRaiderEntity.FindTargetGoal(this, 6.0F));
-        this.goalSelector.addGoal(2, new RangedCrossbowAttackGoal<>(this, 1.0D, 6.0F));
-        this.goalSelector.addGoal(8, new RandomWalkingGoal(this, 0.6D));
-        this.goalSelector.addGoal(9, new LookAtGoal(this, PlayerEntity.class, 15.0F, 0.02F));
-        this.goalSelector.addGoal(10, new LookAtGoal(this, MobEntity.class, 15.0F));
         this.goalSelector.addGoal(1, new MoveToPumpkinGoal(this));
-        this.goalSelector.addGoal(2, new DestroyCropGoal(this));
-        this.targetSelector.addGoal(1, (new HurtByTargetGoal(this, AbstractRaiderEntity.class)).setCallsForHelp());
-        this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, PlayerEntity.class, true));
-        this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, IronGolemEntity.class, true));
+        this.goalSelector.addGoal(2, new AbstractRaiderEntity.FindTargetGoal(this, 6.0F));
+        this.goalSelector.addGoal(2, new RangedCrossbowAttackGoal<>(this, 1.0, 6.0F));
+        this.goalSelector.addGoal(3, new DestroyCropGoal(this));
+        this.goalSelector.addGoal(4, new LookAtGoal(this, PlayerEntity.class, 15.0F, 0.02F));
+
+        this.targetSelector.addGoal(1, new BbAttackGoal(this));
     }
 
     @Nullable

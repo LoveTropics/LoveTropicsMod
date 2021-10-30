@@ -1,7 +1,7 @@
 package com.lovetropics.minigames.common.content.biodiversity_blitz.entity.ai;
 
 import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.BbMobEntity;
-import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.Plot;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.plant.Plant;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.plant.state.PlantHealth;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.MobEntity;
@@ -12,8 +12,11 @@ import net.minecraft.world.server.ServerWorld;
 import java.util.Random;
 
 public class DestroyCropGoal extends MoveToBlockGoal {
+    private static final int DAMAGE_VALUE = 8;
+    private static final int DAMAGE_INTERVAL = 30;
+
     private final BbMobEntity mob;
-    private int ticksAtTarget = 30;
+    private int ticksAtTarget = DAMAGE_INTERVAL;
 
     public DestroyCropGoal(BbMobEntity mob) {
         super(mob.asMob());
@@ -25,59 +28,60 @@ public class DestroyCropGoal extends MoveToBlockGoal {
         super.tick();
 
         MobEntity mob = this.mob.asMob();
-        if (mob.getPosition().distanceSq(this.targetPos) <= 2 * 2) {
+        double distance2 = mob.getPositionVec().squareDistanceTo(targetPos.getX() + 0.5, targetPos.getY() + 0.5, targetPos.getZ() + 0.5);
+        if (distance2 <= 1.5 * 1.5) {
             this.ticksAtTarget--;
-
             if (this.ticksAtTarget <= 0) {
-                this.ticksAtTarget = 30;
-
-                if (this.mob.getPlot().plants.hasPlantAt(this.targetPos)) {
-                    PlantHealth health = this.mob.getPlot().plants.getPlantAt(this.targetPos).state(PlantHealth.KEY);
-
-                    if (health != null) {
-                        health.decrement(8);
-
-                        Random random = mob.world.rand;
-                        for(int i = 0; i < 6; ++i) {
-                            double d0 = random.nextGaussian() * 0.02D;
-                            double d1 = random.nextGaussian() * 0.02D;
-                            double d2 = random.nextGaussian() * 0.02D;
-
-                            ((ServerWorld)mob.world).spawnParticle(ParticleTypes.ANGRY_VILLAGER, this.targetPos.getX() + 0.5, this.targetPos.getY() + 0.5, this.targetPos.getZ() + 0.5, 1 + random.nextInt(2), d0, d1, d2, 0.01 + random.nextDouble() * 0.02);
-                        }
-                    }
-                }
+                this.ticksAtTarget = DAMAGE_INTERVAL;
+                this.tryDamagePlant(mob);
             }
         }
     }
 
-    @Override
-    public boolean shouldExecute() {
-        if (super.shouldExecute()) {
-//            this.ticksAtTarget = 30;
-            return true;
+    private void tryDamagePlant(MobEntity mob) {
+        Plant plant = this.mob.getPlot().plants.getPlantAt(this.targetPos);
+        if (plant != null) {
+            PlantHealth health = plant.state(PlantHealth.KEY);
+
+            if (health != null) {
+                health.decrement(DAMAGE_VALUE);
+
+                this.spawnDamageParticles(mob);
+            }
         }
-
-        return false;
     }
 
-    @Override
-    public void startExecuting() {
-        super.startExecuting();
-    }
+    private void spawnDamageParticles(MobEntity mob) {
+        Random random = mob.world.rand;
+        for (int i = 0; i < 6; ++i) {
+            double dx = random.nextGaussian() * 0.02;
+            double dy = random.nextGaussian() * 0.02;
+            double dz = random.nextGaussian() * 0.02;
 
-    @Override
-    public void resetTask() {
-        super.resetTask();
+            ((ServerWorld) mob.world).spawnParticle(
+                    ParticleTypes.ANGRY_VILLAGER,
+                    this.targetPos.getX() + 0.5,
+                    this.targetPos.getY() + 0.5,
+                    this.targetPos.getZ() + 0.5,
+                    1 + random.nextInt(2),
+                    dx, dy, dz,
+                    0.01 + random.nextDouble() * 0.02
+            );
+        }
     }
 
     @Override
     protected boolean shouldContinueExecuting(BlockPos pos) {
-        return mob.getPlot().plants.hasPlantAt(pos) && this.mob.getPlot().plants.getPlantAt(pos).state(PlantHealth.KEY) != null;
+        return this.isPlantBreakable(this.targetPos);
     }
 
     @Override
     protected boolean isValidBlock(BlockPos pos, BlockState state) {
-        return mob.getPlot().plants.hasPlantAt(pos) && this.mob.getPlot().plants.getPlantAt(pos).state(PlantHealth.KEY) != null;
+        return this.isPlantBreakable(pos);
+    }
+
+    private boolean isPlantBreakable(BlockPos pos) {
+        Plant plant = this.mob.getPlot().plants.getPlantAt(pos);
+        return plant != null && plant.state(PlantHealth.KEY) != null;
     }
 }
