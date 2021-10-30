@@ -12,6 +12,8 @@ import net.minecraft.entity.monster.AbstractRaiderEntity;
 import net.minecraft.entity.monster.PillagerEntity;
 import net.minecraft.entity.passive.IronGolemEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.inventory.EquipmentSlotType;
+import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.pathfinding.PathNavigator;
 import net.minecraft.pathfinding.PathNodeType;
@@ -19,6 +21,7 @@ import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.IServerWorld;
 import net.minecraft.world.World;
+import net.minecraft.world.raid.Raid;
 
 import javax.annotation.Nullable;
 
@@ -65,6 +68,9 @@ public class BbPillagerEntity extends PillagerEntity implements BbMobEntity {
         ILivingEntityData data = super.onInitialSpawn(worldIn, difficultyIn, reason, spawnDataIn, dataTag);
         this.setLeader(false); // Make sure that the pillagers aren't raid leaders
         this.setPatrolling(false);
+        this.setCanJoinRaid(false);
+        this.setItemStackToSlot(EquipmentSlotType.HEAD, ItemStack.EMPTY.copy());
+        this.setDropChance(EquipmentSlotType.HEAD, 0);
         return data;
     }
 
