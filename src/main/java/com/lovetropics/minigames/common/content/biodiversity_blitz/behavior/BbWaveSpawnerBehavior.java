@@ -23,6 +23,7 @@ import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.world.BossInfo;
 import net.minecraft.world.BossInfo.Color;
@@ -39,7 +40,8 @@ public final class BbWaveSpawnerBehavior implements IGameBehavior {
 				Codec.LONG.fieldOf("interval_seconds").forGetter(c -> c.intervalTicks / 20),
 				Codec.LONG.fieldOf("warn_seconds").forGetter(c -> c.warnTicks / 20),
 				SizeCurve.CODEC.fieldOf("size_curve").forGetter(c -> c.sizeCurve),
-				MoreCodecs.object2Float(MoreCodecs.DIFFICULTY).fieldOf("difficulty_factors").forGetter(c -> c.difficultyFactors)
+				MoreCodecs.object2Float(MoreCodecs.DIFFICULTY).fieldOf("difficulty_factors").forGetter(c -> c.difficultyFactors),
+				MoreCodecs.TEXT.optionalFieldOf("first_message", StringTextComponent.EMPTY).forGetter(c -> c.firstMessage)
 		).apply(instance, BbWaveSpawnerBehavior::new);
 	});
 
@@ -48,6 +50,8 @@ public final class BbWaveSpawnerBehavior implements IGameBehavior {
 	private final SizeCurve sizeCurve;
 
 	private final Object2FloatMap<Difficulty> difficultyFactors;
+	
+	private final ITextComponent firstMessage;
 
 	private IGamePhase game;
 	private PlotsState plots;
@@ -56,13 +60,15 @@ public final class BbWaveSpawnerBehavior implements IGameBehavior {
 	private Map<UUID, List<WaveTracker>> waveTrackers = new HashMap<>();
 	private ServerBossInfo waveCharging;
 
-	public BbWaveSpawnerBehavior(long intervalSeconds, long warnSeconds, SizeCurve sizeCurve, Object2FloatMap<Difficulty> difficultyFactors) {
+	public BbWaveSpawnerBehavior(long intervalSeconds, long warnSeconds, SizeCurve sizeCurve, Object2FloatMap<Difficulty> difficultyFactors, ITextComponent firstMessage) {
 		this.intervalTicks = intervalSeconds * 20;
 		this.warnTicks = warnSeconds * 20;
 		this.sizeCurve = sizeCurve;
 
 		this.difficultyFactors = difficultyFactors;
 		this.difficultyFactors.defaultReturnValue(1.0F);
+		
+		this.firstMessage = firstMessage;
 	}
 
 	@Override
@@ -152,6 +158,10 @@ public final class BbWaveSpawnerBehavior implements IGameBehavior {
 	}
 
 	private void spawnWave(ServerWorld world, Random random, ServerPlayerEntity player, Plot plot, int waveIndex) {
+		if (waveIndex == 0 && firstMessage != StringTextComponent.EMPTY) {
+			player.sendStatusMessage(firstMessage, false);
+		}
+
 		Difficulty difficulty = world.getDifficulty();
 		float difficultyFactor = difficultyFactors.getFloat(difficulty);
 
