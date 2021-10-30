@@ -10,7 +10,8 @@ import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.plan
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.plant.placement.PlaceFeaturePlantBehavior;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.plant.placement.PlaceSinglePlantBehavior;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.client_state.CheckeredPlotsState;
-import com.lovetropics.minigames.common.content.biodiversity_blitz.client_state.ClientBiodiversityBlitzState;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.client_state.ClientBbGlobalState;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.client_state.ClientBbSelfState;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.client_state.CurrencyTargetState;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.item.UniqueBlockNamedItem;
 import com.lovetropics.minigames.common.util.registry.GameBehaviorEntry;
@@ -147,8 +148,12 @@ public final class BiodiversityBlitz {
 			.clientState(CurrencyTargetState.CODEC)
 			.register();
 
-	public static final GameClientTweakEntry<ClientBiodiversityBlitzState> CLIENT_STATE = REGISTRATE.object("biodiversity_blitz_client_state")
-			.clientState(ClientBiodiversityBlitzState.CODEC)
+	public static final GameClientTweakEntry<ClientBbSelfState> SELF_STATE = REGISTRATE.object("biodiversity_blitz_self_state")
+			.clientState(ClientBbSelfState.CODEC)
+			.register();
+
+	public static final GameClientTweakEntry<ClientBbGlobalState> GLOBAL_STATE = REGISTRATE.object("biodiversity_blitz_global_state")
+			.clientState(ClientBbGlobalState.CODEC)
 			.register();
 
 	// Items
