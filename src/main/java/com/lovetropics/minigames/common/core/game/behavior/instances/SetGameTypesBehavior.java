@@ -8,7 +8,10 @@ import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvent
 import com.lovetropics.minigames.common.core.game.player.PlayerRole;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.world.GameType;
+
+import javax.annotation.Nullable;
 
 public class SetGameTypesBehavior implements IGameBehavior {
 	public static final Codec<SetGameTypesBehavior> CODEC = RecordCodecBuilder.create(instance -> {
@@ -31,14 +34,17 @@ public class SetGameTypesBehavior implements IGameBehavior {
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
-		events.listen(GamePlayerEvents.SET_ROLE, (player, role, lastRole) -> {
-			GameType gameType = noneGameType;
-			if (role == PlayerRole.PARTICIPANT) {
-				gameType = participantGameType;
-			} else if (role == PlayerRole.SPECTATOR) {
-				gameType = spectatorGameType;
-			}
-			player.setGameType(gameType);
-		});
+		events.listen(GamePlayerEvents.ADD, player -> applyRoleTo(player, null));
+		events.listen(GamePlayerEvents.SET_ROLE, (player, role, lastRole) -> applyRoleTo(player, role));
+	}
+
+	private void applyRoleTo(ServerPlayerEntity player, @Nullable PlayerRole role) {
+		GameType gameType = noneGameType;
+		if (role == PlayerRole.PARTICIPANT) {
+			gameType = participantGameType;
+		} else if (role == PlayerRole.SPECTATOR) {
+			gameType = spectatorGameType;
+		}
+		player.setGameType(gameType);
 	}
 }
