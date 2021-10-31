@@ -44,7 +44,7 @@ public abstract class MoveToBlockGoal extends Goal {
     @Override
     public boolean shouldExecute() {
         BlockPos target = locateBlock(this.getBlockSearchRange(), 2);
-        if (target != null && shouldPrioritiseAttackPlant(targetPos)) {
+        if (target != null && shouldPrioritiseAttackPlant(target)) {
             this.targetPos = target;
             return true;
         } else {
