@@ -186,6 +186,9 @@ public final class BbBehavior implements IGameBehavior {
 
 		teleportToRegion(player, plot.spawn, plot.spawnForward);
 		player.setHealth(20.0F);
+		if (player.getFoodStats().getFoodLevel() < 10) {
+			player.getFoodStats().addStats(2, 0.8f);
+		}
 
 		// TODO: this should really be in the currency behavior
 		if (currency != null) {
