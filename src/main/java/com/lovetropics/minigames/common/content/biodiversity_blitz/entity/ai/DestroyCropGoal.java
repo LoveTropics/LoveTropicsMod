@@ -12,8 +12,7 @@ import net.minecraft.world.server.ServerWorld;
 import java.util.Random;
 
 public class DestroyCropGoal extends MoveToBlockGoal {
-    private static final int DAMAGE_VALUE = 8;
-    private static final int DAMAGE_INTERVAL = 30;
+    private static final int DAMAGE_INTERVAL = 40;
 
     private final BbMobEntity mob;
     private int ticksAtTarget = DAMAGE_INTERVAL;
@@ -48,16 +47,17 @@ public class DestroyCropGoal extends MoveToBlockGoal {
             PlantHealth health = plant.state(PlantHealth.KEY);
 
             if (health != null) {
-                health.decrement(DAMAGE_VALUE);
+                int damage = 3 + mob.world.rand.nextInt(6);
+                health.decrement(damage);
 
-                this.spawnDamageParticles(mob);
+                this.spawnDamageParticles(mob, damage);
             }
         }
     }
 
-    private void spawnDamageParticles(MobEntity mob) {
+    private void spawnDamageParticles(MobEntity mob, int damage) {
         Random random = mob.world.rand;
-        for (int i = 0; i < 6; ++i) {
+        for (int i = 0; i < 2 + (damage / 2); ++i) {
             double dx = random.nextGaussian() * 0.02;
             double dy = random.nextGaussian() * 0.02;
             double dz = random.nextGaussian() * 0.02;
