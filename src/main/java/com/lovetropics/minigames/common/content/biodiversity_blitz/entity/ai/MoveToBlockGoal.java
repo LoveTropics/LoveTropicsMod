@@ -56,7 +56,7 @@ public abstract class MoveToBlockGoal extends Goal {
 
     @Override
     public boolean shouldContinueExecuting() {
-        if (this.playerCheckTicks <= 0) {
+        if (this.playerCheckTicks <= 0 && checkForNearbyPlayer()) {
             for (PlayerEntity player : this.mob.world.getPlayers()) {
                 if (player.getDistanceSq(this.mob) <= 5 * 5) {
                     return false;
@@ -71,6 +71,10 @@ public abstract class MoveToBlockGoal extends Goal {
         }
 
         return !this.mob.getNavigator().noPath();
+    }
+
+    protected boolean checkForNearbyPlayer() {
+        return true;
     }
 
     protected boolean shouldContinueExecuting(BlockPos pos) {

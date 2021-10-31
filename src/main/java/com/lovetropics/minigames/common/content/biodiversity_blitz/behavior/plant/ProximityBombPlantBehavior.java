@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.plant;
 
-import com.lovetropics.minigames.common.content.biodiversity_blitz.FriendlyExplosion;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.explosion.FilteredExplosion;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.event.BbEvents;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.event.BbPlantEvents;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.BbMobEntity;
@@ -70,7 +70,7 @@ public final class ProximityBombPlantBehavior implements IGameBehavior {
 			double y = pos.getY() + 0.5;
 			double z = pos.getZ() + 0.5;
 
-			Explosion explosion = new FriendlyExplosion(world, null, null, null, x, y, z, 4.0f, false, Explosion.Mode.BREAK);
+			Explosion explosion = new FilteredExplosion(world, null, null, null, x, y, z, 4.0f, false, Explosion.Mode.BREAK, e -> e instanceof ServerPlayerEntity);
 			explosion.doExplosionA();
 			explosion.doExplosionB(false);
 

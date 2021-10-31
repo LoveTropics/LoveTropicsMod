@@ -3,6 +3,7 @@ package com.lovetropics.minigames.common.content.biodiversity_blitz.behavior;
 import com.lovetropics.lib.codec.MoreCodecs;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.BiodiversityBlitzTexts;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.event.BbEvents;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.BbCreeperEntity;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.BbHuskEntity;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.BbPillagerEntity;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.Plot;
@@ -171,19 +172,19 @@ public final class BbWaveSpawnerBehavior implements IGameBehavior {
 			count++;
 		}
 
-		Set<Entity> entities = this.spawnWaveEntities(world, random, plot, count);
+		Set<Entity> entities = this.spawnWaveEntities(world, random, plot, count, waveIndex);
 		ServerBossInfo bossBar = this.createWaveBar(player, waveIndex, count, entities);
 
 		WaveTracker wave = new WaveTracker(bossBar, entities);
 		waveTrackers.computeIfAbsent(player.getUniqueID(), $ -> new ArrayList<>()).add(wave);
 	}
 
-	private Set<Entity> spawnWaveEntities(ServerWorld world, Random random, Plot plot, int count) {
+	private Set<Entity> spawnWaveEntities(ServerWorld world, Random random, Plot plot, int count, int waveIndex) {
 		Set<Entity> entities = Collections.newSetFromMap(new WeakHashMap<>());
 		for (int i = 0; i < count; i++) {
 			BlockPos pos = plot.mobSpawn.sample(random);
 
-			MobEntity entity = selectEntityForWave(random, world, plot);
+			MobEntity entity = selectEntityForWave(random, world, plot, waveIndex);
 
 			Direction direction = plot.forward.getOpposite();
 			entity.setLocationAndAngles(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5, direction.getHorizontalAngle(), 0);
@@ -207,7 +208,11 @@ public final class BbWaveSpawnerBehavior implements IGameBehavior {
 	}
 
 	// TODO: data-drive, more entity types & getting harder as time goes on
-	private static MobEntity selectEntityForWave(Random random, World world, Plot plot) {
+	private static MobEntity selectEntityForWave(Random random, World world, Plot plot, int waveIndex) {
+		if (random.nextInt(8) == 0 && waveIndex > 4) {
+			return new BbCreeperEntity(EntityType.CREEPER, world, plot);
+		}
+
 		if (random.nextBoolean()) {
 			return new BbPillagerEntity(EntityType.PILLAGER, world, plot);
 		} else {

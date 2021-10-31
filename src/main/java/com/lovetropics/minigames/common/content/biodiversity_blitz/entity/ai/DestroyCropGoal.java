@@ -29,7 +29,7 @@ public class DestroyCropGoal extends MoveToBlockGoal {
 
         MobEntity mob = this.mob.asMob();
         double distance2 = mob.getPositionVec().squareDistanceTo(targetPos.getX() + 0.5, targetPos.getY() + 0.5, targetPos.getZ() + 0.5);
-        if (distance2 <= 1.5 * 1.5) {
+        if (distance2 <= getDistanceSq()) {
             this.ticksAtTarget--;
             if (this.ticksAtTarget <= 0) {
                 this.ticksAtTarget = DAMAGE_INTERVAL;
@@ -38,7 +38,11 @@ public class DestroyCropGoal extends MoveToBlockGoal {
         }
     }
 
-    private void tryDamagePlant(MobEntity mob) {
+    protected double getDistanceSq() {
+        return 1.5 * 1.5;
+    }
+
+    protected void tryDamagePlant(MobEntity mob) {
         Plant plant = this.mob.getPlot().plants.getPlantAt(this.targetPos);
         if (plant != null) {
             PlantHealth health = plant.state(PlantHealth.KEY);

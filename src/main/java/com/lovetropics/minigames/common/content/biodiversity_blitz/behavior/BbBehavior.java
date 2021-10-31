@@ -2,9 +2,10 @@ package com.lovetropics.minigames.common.content.biodiversity_blitz.behavior;
 
 import com.lovetropics.lib.BlockBox;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.BiodiversityBlitzTexts;
-import com.lovetropics.minigames.common.content.biodiversity_blitz.FriendlyExplosion;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.explosion.FilteredExplosion;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.event.BbEvents;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.BbMobEntity;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.explosion.PlantAffectingExplosion;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.CurrencyManager;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.Plot;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.PlotsState;
@@ -30,7 +31,6 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockRayTraceResult;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.text.IFormattableTextComponent;
-import net.minecraft.util.text.TextComponentUtils;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.Explosion;
@@ -141,9 +141,13 @@ public final class BbBehavior implements IGameBehavior {
 	}
 
 	private void onExplosion(Explosion explosion, List<BlockPos> affectedBlocks, List<Entity> affectedEntities) {
-		// Remove players from friendly explosions
-		if (explosion instanceof FriendlyExplosion) {
-			affectedEntities.removeIf(e -> e instanceof ServerPlayerEntity);
+		// Remove from filtered explosions
+		if (explosion instanceof FilteredExplosion) {
+			affectedEntities.removeIf(((FilteredExplosion)explosion).remove);
+		}
+
+		if (explosion instanceof PlantAffectingExplosion) {
+			((PlantAffectingExplosion)explosion).affectPlants(affectedBlocks);
 		}
 
 		// Blocks should not explode
