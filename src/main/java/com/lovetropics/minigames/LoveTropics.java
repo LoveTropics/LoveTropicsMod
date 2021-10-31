@@ -11,6 +11,7 @@ import com.lovetropics.minigames.common.content.hide_and_seek.HideAndSeek;
 import com.lovetropics.minigames.common.content.survive_the_tide.SurviveTheTide;
 import com.lovetropics.minigames.common.content.survive_the_tide.entity.DriftwoodRider;
 import com.lovetropics.minigames.common.content.trash_dive.TrashDive;
+import com.lovetropics.minigames.common.core.command.LoveTropicsEntityOptions;
 import com.lovetropics.minigames.common.core.game.client_state.GameClientStateTypes;
 import com.lovetropics.minigames.common.core.command.ExtendedBossBarCommand;
 import com.lovetropics.minigames.common.core.command.MapCommand;
@@ -116,6 +117,8 @@ public class LoveTropics {
         HideAndSeek.init();
         SurviveTheTide.init();
         TrashDive.init();
+
+        LoveTropicsEntityOptions.register();
 
         ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, ConfigLT.CLIENT_CONFIG);
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, ConfigLT.SERVER_CONFIG);
