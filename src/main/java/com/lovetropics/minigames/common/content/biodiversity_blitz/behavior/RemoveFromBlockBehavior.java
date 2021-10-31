@@ -1,6 +1,8 @@
 package com.lovetropics.minigames.common.content.biodiversity_blitz.behavior;
 
 import com.lovetropics.lib.codec.MoreCodecs;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.Plot;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.PlotsState;
 import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
@@ -25,9 +27,12 @@ public final class RemoveFromBlockBehavior implements IGameBehavior {
             MoreCodecs.BLOCK_STATE.fieldOf("out").forGetter(b -> b.out),
             MoreCodecs.ITEM_STACK.fieldOf("drop").forGetter(b -> b.drop)
     ).apply(instance, RemoveFromBlockBehavior::new));
+
     private final BlockState in;
     private final BlockState out;
     private final ItemStack drop;
+
+    private PlotsState plots;
 
     public RemoveFromBlockBehavior(BlockState in, BlockState out, ItemStack drop) {
         this.in = in;
@@ -37,17 +42,22 @@ public final class RemoveFromBlockBehavior implements IGameBehavior {
 
     @Override
     public void register(IGamePhase game, EventRegistrar events) throws GameException {
+        plots = game.getState().getOrThrow(PlotsState.KEY);
+
         events.listen(GamePlayerEvents.USE_BLOCK, this::onUseBlock);
     }
 
     private ActionResultType onUseBlock(ServerPlayerEntity player, ServerWorld world, BlockPos pos, Hand hand, BlockRayTraceResult result) {
-        if (world.getBlockState(pos).getBlock() == this.in.getBlock()) {
-            world.setBlockState(pos, this.out);
+        Plot plot = plots.getPlotFor(player);
+        if (plot != null && plot.bounds.contains(pos)) {
+            if (world.getBlockState(pos).getBlock() == this.in.getBlock()) {
+                world.setBlockState(pos, this.out);
 
-            BlockPos spawnPos = pos.offset(result.getFace());
-            world.addEntity(new ItemEntity(world, spawnPos.getX() + 0.5, spawnPos.getY() + 0.5, spawnPos.getZ() + 0.5, this.drop.copy()));
+                BlockPos spawnPos = pos.offset(result.getFace());
+                world.addEntity(new ItemEntity(world, spawnPos.getX() + 0.5, spawnPos.getY() + 0.5, spawnPos.getZ() + 0.5, this.drop.copy()));
 
-            return ActionResultType.SUCCESS;
+                return ActionResultType.SUCCESS;
+            }
         }
 
         return ActionResultType.PASS;
