@@ -3,6 +3,7 @@ package com.lovetropics.minigames.common.content.biodiversity_blitz.entity.ai;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.BbMobEntity;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.plant.Plant;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.plant.state.PlantHealth;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.plant.state.PlantNotPathfindable;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.MobEntity;
 import net.minecraft.particles.ParticleTypes;
@@ -84,8 +85,8 @@ public class DestroyCropGoal extends MoveToBlockGoal {
         return this.isPlantBreakable(pos);
     }
 
-    private boolean isPlantBreakable(BlockPos pos) {
+    protected boolean isPlantBreakable(BlockPos pos) {
         Plant plant = this.mob.getPlot().plants.getPlantAt(pos);
-        return plant != null && plant.state(PlantHealth.KEY) != null;
+        return plant != null && plant.state(PlantHealth.KEY) != null && plant.state(PlantNotPathfindable.KEY) == null;
     }
 }
