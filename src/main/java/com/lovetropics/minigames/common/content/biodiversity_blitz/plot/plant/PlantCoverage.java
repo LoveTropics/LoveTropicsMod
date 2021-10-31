@@ -1,14 +1,23 @@
 package com.lovetropics.minigames.common.content.biodiversity_blitz.plot.plant;
 
-import com.google.common.base.Preconditions;
-import com.google.common.collect.Iterators;
-import it.unimi.dsi.fastutil.longs.*;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.BlockPos;
-
-import javax.annotation.Nullable;
 import java.util.Iterator;
 import java.util.Random;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
+
+import javax.annotation.Nullable;
+
+import com.google.common.base.Preconditions;
+import com.google.common.collect.Iterators;
+
+import it.unimi.dsi.fastutil.longs.LongArrayList;
+import it.unimi.dsi.fastutil.longs.LongIterator;
+import it.unimi.dsi.fastutil.longs.LongList;
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+import it.unimi.dsi.fastutil.longs.LongSet;
+import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.vector.Vector3d;
 
 public interface PlantCoverage extends Iterable<BlockPos> {
 	static PlantCoverage of(BlockPos block) {
@@ -37,6 +46,14 @@ public interface PlantCoverage extends Iterable<BlockPos> {
 	AxisAlignedBB asBounds();
 
 	BlockPos getOrigin();
+	
+	default void add(BlockPos pos) {
+		throw new UnsupportedOperationException("This coverage type cannot be added to");
+	}
+
+	default Stream<BlockPos> stream() {
+		return StreamSupport.stream(spliterator(), false);
+	}
 
 	default boolean intersects(PlantCoverage other) {
 		if (!this.asBounds().intersects(other.asBounds())) {
@@ -140,6 +157,15 @@ public interface PlantCoverage extends Iterable<BlockPos> {
 		public BlockPos random(Random random) {
 			long pos = this.blocks.getLong(random.nextInt(blocks.size()));
 			return new BlockPos(BlockPos.unpackX(pos), BlockPos.unpackY(pos), BlockPos.unpackZ(pos));
+		}
+
+		@Override
+		public void add(BlockPos pos) {
+			if (this.bounds.contains(Vector3d.copyCentered(pos))) {
+				this.blocks.add(pos.toLong());
+			} else {
+				throw new IllegalArgumentException("Position not within bounds");
+			}
 		}
 
 		@Override

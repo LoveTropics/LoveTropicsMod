@@ -109,7 +109,8 @@ public final class PlaceFeaturePlantBehavior implements IGameBehavior {
 	}
 
 	private static boolean isTreeBlock(BlockState state) {
-		return state.isIn(BlockTags.LOGS) || state.isIn(BlockTags.LEAVES) || state.isIn(ROOTS);
+		// TODO data drive this pls
+		return state.isIn(BlockTags.LOGS) || state.isIn(BlockTags.LEAVES) || state.isIn(ROOTS) || state.getBlock().getRegistryName().getPath().equals("coconut");
 	}
 
 	private static boolean isDecorationBlock(BlockState state) {

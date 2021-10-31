@@ -1,12 +1,16 @@
 package com.lovetropics.minigames.common.content.biodiversity_blitz.plot.plant;
 
+import java.util.Random;
+import java.util.stream.Stream;
+
+import javax.annotation.Nullable;
+
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.plant.state.PlantState;
+
+import net.minecraft.block.Block;
 import net.minecraft.particles.ParticleTypes;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.server.ServerWorld;
-
-import javax.annotation.Nullable;
-import java.util.Random;
 
 public final class Plant {
 	private final PlantType type;
@@ -83,5 +87,11 @@ public final class Plant {
 				world.spawnParticle(ParticleTypes.POOF, pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5, 1, vx, vy, vz, speed);
 			}
 		}
+	}
+
+	public Stream<BlockPos> getBlockPositions(ServerWorld world, Block block) {
+		return coverage().stream()
+				.peek(bp -> System.out.println(world.getBlockState(bp)))
+				.filter(bp -> world.getBlockState(bp).getBlock() == block);
 	}
 }

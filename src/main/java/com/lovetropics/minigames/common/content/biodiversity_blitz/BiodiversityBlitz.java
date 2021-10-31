@@ -122,6 +122,14 @@ public final class BiodiversityBlitz {
 			.behavior(PianguasPlantBehavior.CODEC)
 			.register();
 
+	public static final GameBehaviorEntry<FruitDropEntityBehavior> FRUIT_DROP_ENTITY = REGISTRATE.object("fruit_drop_entity")
+			.behavior(FruitDropEntityBehavior.CODEC)
+			.register();
+
+	public static final GameBehaviorEntry<GrowCoconutsBehavior> GROW_COCONUTS = REGISTRATE.object("grow_coconuts")
+			.behavior(GrowCoconutsBehavior.CODEC)
+			.register();
+
 	public static final GameBehaviorEntry<BbCurrencyBehavior> CURRENCY = REGISTRATE.object("biodiversity_blitz_currency")
 			.behavior(BbCurrencyBehavior.CODEC)
 			.register();
