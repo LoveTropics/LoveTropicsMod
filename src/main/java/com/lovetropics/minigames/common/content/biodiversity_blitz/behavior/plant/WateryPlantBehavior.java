@@ -61,45 +61,45 @@ public final class WateryPlantBehavior implements IGameBehavior {
                 continue;
             }
 
-            MobEntity entity = entities.get(random.nextInt(entities.size()));
+            for (MobEntity entity : entities) {
+                // Don't attack the same entity multiple times
+                if (seen.contains(entity)) {
+                    continue;
+                }
 
-            // Don't attack the same entity multiple times
-            if (seen.contains(entity)) {
-                continue;
-            }
+                seen.add(entity);
 
-            seen.add(entity);
+                int waterCount = 2 + random.nextInt(3);
 
-            int waterCount = 2 + random.nextInt(3);
+                AxisAlignedBB aabb = entity.getBoundingBox();
 
-            AxisAlignedBB aabb = entity.getBoundingBox();
+                if (ticks % 15 == 0) {
+                    // Extinguish fire
+                    entity.forceFireTicks(0);
+                    entity.attackEntityFrom(DamageSource.MAGIC, 1 + random.nextInt(3));
+                    waterCount += 5 + random.nextInt(8);
 
-            if (ticks % 15 == 0) {
-                // Extinguish fire
-                entity.forceFireTicks(0);
-                entity.attackEntityFrom(DamageSource.MAGIC, 1 + random.nextInt(3));
-                waterCount += 5 + random.nextInt(8);
+                    // Draw extra water as a line
 
-                // Draw extra water as a line
+                    Vector3d positionVec = entity.getPositionVec();
+                    // Needs to target the middle of the entity position vector
+                    Vector3d scaledVec = new Vector3d(positionVec.x, (aabb.minY + aabb.maxY) / 2.0, positionVec.z);
 
-                Vector3d positionVec = entity.getPositionVec();
-                // Needs to target the middle of the entity position vector
-                Vector3d scaledVec = new Vector3d(positionVec.x, (aabb.minY + aabb.maxY) / 2.0, positionVec.z);
+                    Util.drawParticleBetween(ParticleTypes.FALLING_WATER, plant.coverage().asBounds().getCenter(), scaledVec, world, random, 20, 0.05, 0.1, 0.03, 0.02);
+                }
 
-                Util.drawParticleBetween(ParticleTypes.FALLING_WATER, plant.coverage().asBounds().getCenter(), scaledVec, world, random, 20, 0.05, 0.1, 0.03, 0.02);
-            }
+                // Don't add particles to mobs that should be dead
+                if (entity.getShouldBeDead()) {
+                    continue;
+                }
 
-            // Don't add particles to mobs that should be dead
-            if (entity.getShouldBeDead()) {
-                continue;
-            }
-
-            for (int i = 0; i < waterCount; i++) {
-                Vector3d sample = random(aabb, world.rand);
-                double d3 = random.nextGaussian() * 0.05;
-                double d1 = random.nextGaussian() * 0.1;
-                double d2 = random.nextGaussian() * 0.05;
-                world.spawnParticle(ParticleTypes.FALLING_WATER, sample.x, sample.y, sample.z, 1 + random.nextInt(2), d3, d1, d2, 0.03 + random.nextDouble() * 0.02);
+                for (int i = 0; i < waterCount; i++) {
+                    Vector3d sample = random(aabb, world.rand);
+                    double d3 = random.nextGaussian() * 0.05;
+                    double d1 = random.nextGaussian() * 0.1;
+                    double d2 = random.nextGaussian() * 0.05;
+                    world.spawnParticle(ParticleTypes.FALLING_WATER, sample.x, sample.y, sample.z, 1 + random.nextInt(2), d3, d1, d2, 0.03 + random.nextDouble() * 0.02);
+                }
             }
         }
     }

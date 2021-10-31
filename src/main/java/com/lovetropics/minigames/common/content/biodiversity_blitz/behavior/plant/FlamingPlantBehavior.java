@@ -61,30 +61,30 @@ public final class FlamingPlantBehavior implements IGameBehavior {
 
             int count = random.nextInt(3);
             if (!entities.isEmpty()) {
-                MobEntity entity = entities.get(random.nextInt(entities.size()));
+                for (MobEntity entity : entities) {
+                    if (!seen.contains(entity)) {
 
-                if (!seen.contains(entity)) {
+                        seen.add(entity);
 
-                    seen.add(entity);
+                        // In plant
+                        if (entity.getPosition() == plant.coverage().getOrigin()) {
+                            entity.setFire(6);
 
-                    // In plant
-                    if (entity.getPosition() == plant.coverage().getOrigin()) {
-                        entity.setFire(6);
-
-                        if (random.nextInt(3) == 0) {
-                            entity.attackEntityFrom(DamageSource.IN_FIRE, 1 + random.nextInt(3));
+                            if (random.nextInt(3) == 0) {
+                                entity.attackEntityFrom(DamageSource.IN_FIRE, 1 + random.nextInt(3));
+                            }
+                        } else {
+                            entity.setFire(3);
                         }
-                    } else {
-                        entity.setFire(3);
+
+                        AxisAlignedBB aabb = entity.getBoundingBox();
+
+                        Vector3d positionVec = entity.getPositionVec();
+                        // Needs to target the middle of the entity position vector
+                        Vector3d scaledVec = new Vector3d(positionVec.x, (aabb.minY + aabb.maxY) / 2.0, positionVec.z);
+
+                        Util.drawParticleBetween(ParticleTypes.FLAME, plant.coverage().asBounds().getCenter(), scaledVec, world, random, 10, 0.01, 0.02, 0.001, 0.01);
                     }
-
-                    AxisAlignedBB aabb = entity.getBoundingBox();
-
-                    Vector3d positionVec = entity.getPositionVec();
-                    // Needs to target the middle of the entity position vector
-                    Vector3d scaledVec = new Vector3d(positionVec.x, (aabb.minY + aabb.maxY) / 2.0, positionVec.z);
-
-                    Util.drawParticleBetween(ParticleTypes.FLAME, plant.coverage().asBounds().getCenter(), scaledVec, world, random, 10, 0.01, 0.02, 0.001, 0.01);
                 }
             }
 
