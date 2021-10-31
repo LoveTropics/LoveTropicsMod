@@ -57,8 +57,8 @@ public final class SurviveTheTide {
 	public static final GameBehaviorEntry<WorldBorderGameBehavior> WORLD_BORDER = REGISTRATE.object("world_border")
 			.behavior(WorldBorderGameBehavior.CODEC)
 			.register();
-	public static final GameBehaviorEntry<SurviveTheTideWeatherBehavior> WEATHER_EVENTS = REGISTRATE.object("weather_events")
-			.behavior(SurviveTheTideWeatherBehavior.CODEC)
+	public static final GameBehaviorEntry<SurviveTheTideWeatherControlBehavior> WEATHER_CONTROL = REGISTRATE.object("stt_weather_control")
+			.behavior(SurviveTheTideWeatherControlBehavior.CODEC)
 			.register();
 
 	public static final GameBehaviorEntry<SttPetsBehavior> PETS = REGISTRATE.object("survive_the_tide_pets")

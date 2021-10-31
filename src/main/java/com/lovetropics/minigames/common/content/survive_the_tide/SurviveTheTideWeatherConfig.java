@@ -20,9 +20,7 @@ public class SurviveTheTideWeatherConfig {
 				Codec.INT.optionalFieldOf("rain_acid_extra_rand_time", 1200).forGetter(c -> c.rainAcidExtraRandTime),
 				Codec.INT.optionalFieldOf("heatwave_min_time", 1200).forGetter(c -> c.heatwaveMinTime),
 				Codec.INT.optionalFieldOf("heatwave_extra_rand_time", 1200).forGetter(c -> c.heatwaveExtraRandTime),
-				Codec.DOUBLE.optionalFieldOf("heatwave_movement_multiplier", 0.5).forGetter(c -> c.heatwaveMovementMultiplier),
-				Codec.FLOAT.optionalFieldOf("acid_rain_damage", 1.0F).forGetter(c -> c.acidRainDamage),
-				Codec.DOUBLE.optionalFieldOf("acid_rain_damage_rate", 60.0).forGetter(c -> c.acidRainDamageRate)
+				Codec.DOUBLE.optionalFieldOf("heatwave_movement_multiplier", 0.5).forGetter(c -> c.heatwaveMovementMultiplier)
 		).apply(instance, SurviveTheTideWeatherConfig::new);
 	});
 
@@ -43,17 +41,13 @@ public class SurviveTheTideWeatherConfig {
 	private final int heatwaveExtraRandTime;
 	private final double heatwaveMovementMultiplier;
 
-	private final float acidRainDamage;
-	private final double acidRainDamageRate;
-
 	public SurviveTheTideWeatherConfig(
 			Object2FloatMap<String> phaseToHeavyRainChance, Object2FloatMap<String> phaseToAcidRainChance, Object2FloatMap<String> phaseToHeatwaveChance,
 			Object2FloatMap<String> phaseToSandstormChance, Object2FloatMap<String> phaseToSnowstormChance,
 			Object2FloatMap<String> phaseToWindSpeed,
 			final int rainHeavyMinTime, final int rainHeavyExtraRandTime,
 			final int rainAcidMinTime, final int rainAcidExtraRandTime,
-			int heatwaveMinTime, int heatwaveExtraRandTime, final double heatwaveMovementMultiplier,
-			final float acidRainDamage, final double acidRainDamageRate
+			int heatwaveMinTime, int heatwaveExtraRandTime, final double heatwaveMovementMultiplier
 	) {
 		this.phaseToHeavyRainChance = phaseToHeavyRainChance;
 		this.phaseToAcidRainChance = phaseToAcidRainChance;
@@ -71,9 +65,6 @@ public class SurviveTheTideWeatherConfig {
 		this.heatwaveExtraRandTime = heatwaveExtraRandTime;
 
 		this.heatwaveMovementMultiplier = heatwaveMovementMultiplier;
-
-		this.acidRainDamage = acidRainDamage;
-		this.acidRainDamageRate = acidRainDamageRate;
 	}
 
 	public double getRainHeavyChance(String phase) {
@@ -106,14 +97,6 @@ public class SurviveTheTideWeatherConfig {
 
 	public int getRainHeavyExtraRandTime() {
 		return rainHeavyExtraRandTime;
-	}
-
-	public double getAcidRainDamageRate() {
-		return acidRainDamageRate;
-	}
-
-	public float getAcidRainDamage() {
-		return acidRainDamage;
 	}
 
 	public int getHeatwaveMinTime() {

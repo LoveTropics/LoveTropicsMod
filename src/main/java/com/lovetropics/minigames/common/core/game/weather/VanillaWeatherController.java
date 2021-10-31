@@ -2,6 +2,7 @@ package com.lovetropics.minigames.common.core.game.weather;
 
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.world.server.ServerWorld;
+import net.minecraft.world.storage.IServerWorldInfo;
 
 public final class VanillaWeatherController implements WeatherController {
 	private final ServerWorld world;
@@ -24,6 +25,11 @@ public final class VanillaWeatherController implements WeatherController {
 	public void setRain(float amount, RainType type) {
 		state.rainAmount = amount;
 		state.rainType = type;
+
+		boolean raining = amount > 0.0F;
+		IServerWorldInfo info = (IServerWorldInfo) world.getWorldInfo();
+		info.setRaining(raining);
+		info.setThundering(raining);
 	}
 
 	@Override

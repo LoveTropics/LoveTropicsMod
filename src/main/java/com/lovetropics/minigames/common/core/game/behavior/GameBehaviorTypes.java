@@ -58,6 +58,7 @@ public class GameBehaviorTypes {
 	public static final GameBehaviorEntry<EliminatePlayerControlBehavior> ELIMINATE_PLAYER_CONTROL;
 	public static final GameBehaviorEntry<FillChestsByMarkerBehavior> FILL_CHESTS_BY_MARKER;
 	public static final GameBehaviorEntry<GenerateEntitiesBehavior> GENERATE_ENTITIES;
+	public static final GameBehaviorEntry<AddWeatherBehavior> ADD_WEATHER;
 	public static final GameBehaviorEntry<WeatherControlsBehavior> WEATHER_CONTROLS;
 	public static final GameBehaviorEntry<RunCommandInRegionBehavior> RUN_COMMAND_IN_REGION;
 	public static final GameBehaviorEntry<TntAutoFuseBehavior> TNT_AUTO_FUSE;
@@ -96,6 +97,7 @@ public class GameBehaviorTypes {
 	public static final GameBehaviorEntry<ShootProjectilesAroundPlayerPackageBehavior> SHOOT_PROJECTILES_AT_PLAYER;
 	public static final GameBehaviorEntry<ApplyDisguisePackageBehavior> APPLY_DISGUISE_PACKAGE;
 	public static final GameBehaviorEntry<BlockPackagesDuringPhaseBehavior> BLOCK_PACKAGES_DURING_PHASE;
+	public static final GameBehaviorEntry<WeatherEventPackageBehavior> WEATHER_EVENT_PACKAGE;
 
 	public static final GameBehaviorEntry<SetupTelemetryBehavior> SETUP_TELEMETRY;
 	public static final GameBehaviorEntry<AssignPlayerRolesBehavior> ASSIGN_PLAYER_ROLES;
@@ -127,6 +129,7 @@ public class GameBehaviorTypes {
 		ELIMINATE_PLAYER_CONTROL = register("eliminate_player_control", EliminatePlayerControlBehavior.CODEC);
 		FILL_CHESTS_BY_MARKER = register("fill_chests_by_marker", FillChestsByMarkerBehavior.CODEC);
 		GENERATE_ENTITIES = register("generate_entities", GenerateEntitiesBehavior.CODEC);
+		ADD_WEATHER = register("add_weather", AddWeatherBehavior.CODEC);
 		WEATHER_CONTROLS = register("weather_controls", WeatherControlsBehavior.CODEC);
 		RUN_COMMAND_IN_REGION = register("run_command_in_region", RunCommandInRegionBehavior.CODEC);
 		TNT_AUTO_FUSE = register("tnt_auto_fuse", TntAutoFuseBehavior.CODEC);
@@ -165,6 +168,7 @@ public class GameBehaviorTypes {
 		SHOOT_PROJECTILES_AT_PLAYER = register("shoot_projectiles_at_player", ShootProjectilesAroundPlayerPackageBehavior.CODEC);
 		APPLY_DISGUISE_PACKAGE = register("apply_disguise_package", ApplyDisguisePackageBehavior.CODEC);
 		BLOCK_PACKAGES_DURING_PHASE = register("block_packages_during_phase", BlockPackagesDuringPhaseBehavior.CODEC);
+		WEATHER_EVENT_PACKAGE = register("weather_event_package", WeatherEventPackageBehavior.CODEC);
 
 		SETUP_TELEMETRY = register("setup_telemetry", SetupTelemetryBehavior.CODEC);
 		ASSIGN_PLAYER_ROLES = register("assign_player_roles", AssignPlayerRolesBehavior.CODEC);
