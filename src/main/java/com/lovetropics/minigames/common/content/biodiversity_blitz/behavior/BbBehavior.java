@@ -156,7 +156,7 @@ public final class BbBehavior implements IGameBehavior {
 
 	private ActionResultType onAttack(ServerPlayerEntity player, Entity target) {
 		if (BbMobEntity.matches(target)) {
-			Plot plot = plots.getPlotFor(player);
+			Plot plot = plots.getPlotAt(target.getPosition());
 			if (plot != null && plot.walls.containsEntity(player)) {
 				return ActionResultType.PASS;
 			}

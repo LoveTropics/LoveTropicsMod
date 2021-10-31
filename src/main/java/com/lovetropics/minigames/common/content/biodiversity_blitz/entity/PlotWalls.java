@@ -4,6 +4,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.util.Direction;
 import net.minecraft.util.ReuseableStream;
 import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.shapes.VoxelShape;
 import net.minecraft.util.math.shapes.VoxelShapes;
 import net.minecraft.util.math.vector.Vector3d;
@@ -81,6 +82,10 @@ public final class PlotWalls {
 
 	public boolean containsEntity(Entity entity) {
 		return this.bounds.contains(entity.getPositionVec());
+	}
+
+	public boolean containsBlock(BlockPos pos) {
+		return this.bounds.contains(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5);
 	}
 
 	public static final class CollisionSpliterator extends Spliterators.AbstractSpliterator<VoxelShape> {

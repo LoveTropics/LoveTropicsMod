@@ -5,6 +5,7 @@ import com.lovetropics.minigames.common.core.game.state.IGameState;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.util.math.BlockPos;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -14,6 +15,16 @@ public final class PlotsState implements Iterable<Plot>, IGameState {
 
 	private final List<Plot> plots = new ArrayList<>();
 	private final Map<UUID, Plot> plotsByPlayer = new Object2ObjectOpenHashMap<>();
+
+	@Nullable
+	public Plot getPlotAt(BlockPos pos) {
+		for (Plot plot : plots) {
+			if (plot.walls.containsBlock(pos)) {
+				return plot;
+			}
+		}
+		return null;
+	}
 
 	public void addPlayer(ServerPlayerEntity player, Plot plot) {
 		this.plotsByPlayer.put(player.getUniqueID(), plot);
