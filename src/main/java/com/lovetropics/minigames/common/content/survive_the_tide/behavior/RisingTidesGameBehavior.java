@@ -56,7 +56,10 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 	private static final RegistryObject<Block> WATER_BARRIER = RegistryObject.of(new ResourceLocation("ltextras", "water_barrier"), ForgeRegistries.BLOCKS);
 
 	// the maximum time in milliseconds that we should spend updating the tide per tick
-	private static final long RISING_TIDE_THRESHOLD_MS = 15;
+	private static final int HIGH_PRIORITY_BUDGET_PER_TICK = 200;
+	private static final int LOW_PRIORITY_BUDGET_PER_TICK = 20;
+
+	private static final int HIGH_PRIORITY_DISTANCE_2 = 64 * 64;
 
 	private final String tideAreaKey;
 	private final String icebergLinesKey;
@@ -71,7 +74,8 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 	private ChunkPos minTideChunk;
 	private ChunkPos maxTideChunk;
 
-	private final LongSet queuedChunksToUpdate = new LongOpenHashSet();
+	private final LongSet highPriorityUpdates = new LongLinkedOpenHashSet();
+	private final LongSet lowPriorityUpdates = new LongLinkedOpenHashSet();
 	private final Long2IntMap chunkWaterLevels = new Long2IntOpenHashMap();
 
 	private GamePhaseState phases;
@@ -197,18 +201,26 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 	}
 
 	private void processRisingTideQueue(IGamePhase game) {
-		if (queuedChunksToUpdate.isEmpty()) {
+		if (highPriorityUpdates.isEmpty() && lowPriorityUpdates.isEmpty()) {
 			return;
 		}
 
+		int count = this.processUpdates(game, highPriorityUpdates.iterator(), HIGH_PRIORITY_BUDGET_PER_TICK);
+		if (count <= 0) {
+			this.processUpdates(game, lowPriorityUpdates.iterator(), LOW_PRIORITY_BUDGET_PER_TICK);
+		}
+	}
+
+	private int processUpdates(IGamePhase game, LongIterator iterator, int maxToProcess) {
 		ServerWorld world = game.getWorld();
 		ServerChunkProvider chunkProvider = world.getChunkProvider();
 
 		long startTime = System.currentTimeMillis();
 		long updatedBlocks = 0;
 
-		LongIterator iterator = queuedChunksToUpdate.iterator();
-		while (iterator.hasNext()) {
+		int count = 0;
+
+		while (count < maxToProcess && iterator.hasNext()) {
 			long chunkPos = iterator.nextLong();
 			int chunkX = ChunkPos.getX(chunkPos);
 			int chunkZ = ChunkPos.getZ(chunkPos);
@@ -221,17 +233,15 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 
 			iterator.remove();
 			updatedBlocks += increaseTideForChunk(chunk);
-
-			// limit the time we spend rising the tide each tick
-			if (System.currentTimeMillis() - startTime > RISING_TIDE_THRESHOLD_MS) {
-				break;
-			}
+			count++;
 		}
 
 		if (updatedBlocks > 0) {
 			long endTime = System.currentTimeMillis();
-			LogManager.getLogger().info("Updated {} blocks in {}ms", updatedBlocks, endTime - startTime);
+			LogManager.getLogger().debug("Updated {} blocks in {}ms", updatedBlocks, endTime - startTime);
 		}
+
+		return count;
 	}
 
 	private void tickWaterLevel(final IGamePhase game, final GamePhase phase, final int prevWaterLevel) {
@@ -244,15 +254,69 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 		);
 
 		if (waterLevel < targetWaterLevel && game.ticks() % waterChangeInterval == 0) {
-			this.waterLevel++;
+			waterLevel++;
 
-			// queue all the chunks to be updated!
-			for (int z = minTideChunk.z; z <= maxTideChunk.z; z++) {
-				for (int x = minTideChunk.x; x <= maxTideChunk.x; x++) {
-					queuedChunksToUpdate.add(ChunkPos.asLong(x, z));
+			long[] chunks = collectSortedChunks(game);
+
+			boolean close = true;
+			for (long chunkPos : chunks) {
+				if (close) {
+					highPriorityUpdates.add(chunkPos);
+					int distance2 = getChunkDistance2(game, ChunkPos.getX(chunkPos), ChunkPos.getZ(chunkPos));
+					if (distance2 >= HIGH_PRIORITY_DISTANCE_2) {
+						close = false;
+					}
+				} else {
+					lowPriorityUpdates.add(chunkPos);
 				}
 			}
 		}
+	}
+
+	private long[] collectSortedChunks(IGamePhase game) {
+		LongComparator distanceComparator = (pos1, pos2) -> Integer.compare(
+				getChunkDistance2(game, ChunkPos.getX(pos1), ChunkPos.getZ(pos1)),
+				getChunkDistance2(game, ChunkPos.getX(pos2), ChunkPos.getZ(pos2))
+		);
+
+		int sizeX = maxTideChunk.x - minTideChunk.x + 1;
+		int sizeZ = maxTideChunk.z - minTideChunk.z + 1;
+		long[] chunks = new long[sizeX * sizeZ];
+		int length = 0;
+
+		for (int z = minTideChunk.z; z <= maxTideChunk.z; z++) {
+			for (int x = minTideChunk.x; x <= maxTideChunk.x; x++) {
+				long chunkPos = ChunkPos.asLong(x, z);
+
+				// insertion sort time!
+				int index = LongArrays.binarySearch(chunks, 0, length, chunkPos, distanceComparator);
+				if (index < 0) {
+					index = -index - 1;
+				}
+
+				System.arraycopy(chunks, index, chunks, index + 1, length - index);
+
+				chunks[index] = chunkPos;
+				length++;
+			}
+		}
+
+		return chunks;
+	}
+
+	private int getChunkDistance2(IGamePhase game, int x, int z) {
+		int minDistance2 = Integer.MAX_VALUE;
+		int centerX = (x << 4) + 8;
+		int centerZ = (z << 4) + 8;
+		for (ServerPlayerEntity player : game.getAllPlayers()) {
+			int dx = MathHelper.floor(player.getPosX()) - centerX;
+			int dz = MathHelper.floor(player.getPosZ()) - centerZ;
+			int distance2 = dx * dx + dz * dz;
+			if (distance2 < minDistance2) {
+				minDistance2 = distance2;
+			}
+		}
+		return minDistance2;
 	}
 
 	// thicc boi
