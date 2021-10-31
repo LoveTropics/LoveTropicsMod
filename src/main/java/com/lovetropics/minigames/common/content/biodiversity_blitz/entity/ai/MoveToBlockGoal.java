@@ -1,10 +1,8 @@
 package com.lovetropics.minigames.common.content.biodiversity_blitz.entity.ai;
 
-import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.MobEntity;
 import net.minecraft.entity.ai.goal.Goal;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
 
 import javax.annotation.Nullable;
 import java.util.EnumSet;
@@ -20,31 +18,10 @@ public abstract class MoveToBlockGoal extends Goal {
         this.setMutexFlags(EnumSet.of(Goal.Flag.MOVE, Goal.Flag.JUMP));
     }
 
-    private boolean shouldPrioritiseAttackPlant(BlockPos pos) {
-        LivingEntity target = this.mob.getAttackTarget();
-        if (target != null && this.shouldCompareWithTargetDistance()) {
-            double plantDistance2 = this.mob.getDistanceSq(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5);
-            double targetDistance2 = this.mob.getDistance(target);
-            return plantDistance2 < targetDistance2;
-        } else {
-            return true;
-        }
-    }
-
-    private int getBlockSearchRange() {
-        LivingEntity attackTarget = this.mob.getAttackTarget();
-        int maxRange = Integer.MAX_VALUE;
-        if (attackTarget != null) {
-            maxRange = MathHelper.floor(mob.getDistance(attackTarget));
-        }
-
-        return Math.min(12, maxRange);
-    }
-
     @Override
     public boolean shouldExecute() {
-        BlockPos target = locateBlock(this.getBlockSearchRange(), 2);
-        if (target != null && shouldPrioritiseAttackPlant(target)) {
+        BlockPos target = locateBlock(12, 2);
+        if (target != null) {
             this.targetPos = target;
             return true;
         } else {
@@ -59,19 +36,11 @@ public abstract class MoveToBlockGoal extends Goal {
 
     @Override
     public boolean shouldContinueExecuting() {
-        if (!shouldPrioritiseAttackPlant(this.targetPos)) {
-            return false;
-        }
-
         if (!shouldTargetBlock(this.targetPos)) {
             return false;
         }
 
         return !this.mob.getNavigator().noPath();
-    }
-
-    protected boolean shouldCompareWithTargetDistance() {
-        return true;
     }
 
     @Nullable

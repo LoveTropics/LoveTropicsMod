@@ -7,9 +7,16 @@ import net.minecraft.entity.player.PlayerEntity;
 
 import java.util.function.Predicate;
 
-public final class BbAttackGoal extends NearestAttackableTargetGoal<PlayerEntity> {
-	public BbAttackGoal(BbMobEntity owner) {
-		super(owner.asMob(), PlayerEntity.class, 10, true, false, entityInPlot(owner));
+public final class BbTargetPlayerGoal extends NearestAttackableTargetGoal<PlayerEntity> {
+	private static final double TARGET_RANGE = 8.0;
+
+	public BbTargetPlayerGoal(BbMobEntity owner) {
+		super(owner.asMob(), PlayerEntity.class, 10, true, true, entityInPlot(owner));
+	}
+
+	@Override
+	protected double getTargetDistance() {
+		return TARGET_RANGE;
 	}
 
 	private static Predicate<LivingEntity> entityInPlot(BbMobEntity owner) {

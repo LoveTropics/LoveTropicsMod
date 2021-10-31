@@ -15,11 +15,6 @@ public class KaboomCropGoal extends DestroyCropGoal {
     }
 
     @Override
-    protected boolean shouldCompareWithTargetDistance() {
-        return false; // Creeper can and will explode right next to you :)
-    }
-
-    @Override
     protected double getDistanceSq() {
         // Longer reach distance
         return 2 * 2;

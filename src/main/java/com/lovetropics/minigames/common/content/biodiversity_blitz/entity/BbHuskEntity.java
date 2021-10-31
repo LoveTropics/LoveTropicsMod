@@ -3,7 +3,6 @@ package com.lovetropics.minigames.common.content.biodiversity_blitz.entity;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.ai.*;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.Plot;
 import net.minecraft.entity.*;
-import net.minecraft.entity.ai.attributes.Attributes;
 import net.minecraft.entity.ai.goal.ZombieAttackGoal;
 import net.minecraft.entity.monster.HuskEntity;
 import net.minecraft.nbt.CompoundNBT;
@@ -29,8 +28,6 @@ public class BbHuskEntity extends HuskEntity implements BbMobEntity {
 		this.setPathPriority(PathNodeType.DANGER_OTHER, 0.0F);
 		this.setPathPriority(PathNodeType.DAMAGE_OTHER, 0.0F);
 		this.setPathPriority(PathNodeType.WATER, -1.0F);
-
-		this.getAttribute(Attributes.FOLLOW_RANGE).setBaseValue(8);
 	}
 
 	@Override
@@ -41,10 +38,10 @@ public class BbHuskEntity extends HuskEntity implements BbMobEntity {
 	@Override
 	protected void applyEntityAI() {
 		this.goalSelector.addGoal(1, new MoveToPumpkinGoal(this));
-		this.goalSelector.addGoal(2, new DestroyCropGoal(this));
-		this.goalSelector.addGoal(3, new ZombieAttackGoal(this, 1.0, false));
+		this.goalSelector.addGoal(2, new ZombieAttackGoal(this, 1.0, false));
+		this.goalSelector.addGoal(3, new DestroyCropGoal(this));
 
-		this.targetSelector.addGoal(1, new BbAttackGoal(this));
+		this.targetSelector.addGoal(1, new BbTargetPlayerGoal(this));
 	}
 
 	@Override

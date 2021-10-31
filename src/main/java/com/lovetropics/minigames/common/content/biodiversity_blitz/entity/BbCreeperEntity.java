@@ -1,24 +1,21 @@
 package com.lovetropics.minigames.common.content.biodiversity_blitz.entity;
 
 import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.ai.BbGroundNavigator;
-import com.lovetropics.minigames.common.content.biodiversity_blitz.explosion.FilteredExplosion;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.ai.BbMobBrain;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.ai.KaboomCropGoal;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.explosion.PlantAffectingExplosion;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.Plot;
-import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.plant.Plant;
-import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.plant.state.PlantHealth;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.MobEntity;
 import net.minecraft.entity.MoverType;
-import net.minecraft.entity.ai.attributes.Attributes;
-import net.minecraft.entity.ai.goal.*;
+import net.minecraft.entity.ai.goal.LookRandomlyGoal;
+import net.minecraft.entity.ai.goal.SwimGoal;
+import net.minecraft.entity.ai.goal.WaterAvoidingRandomWalkingGoal;
 import net.minecraft.entity.monster.CreeperEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.network.play.server.SExplosionPacket;
 import net.minecraft.pathfinding.PathNavigator;
 import net.minecraft.pathfinding.PathNodeType;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.Explosion;
 import net.minecraft.world.World;
@@ -37,8 +34,6 @@ public class BbCreeperEntity extends CreeperEntity implements BbMobEntity {
         this.setPathPriority(PathNodeType.DANGER_OTHER, 0.0F);
         this.setPathPriority(PathNodeType.DAMAGE_OTHER, 0.0F);
         this.setPathPriority(PathNodeType.WATER, -1.0F);
-
-        this.getAttribute(Attributes.FOLLOW_RANGE).setBaseValue(8);
     }
 
     @Override

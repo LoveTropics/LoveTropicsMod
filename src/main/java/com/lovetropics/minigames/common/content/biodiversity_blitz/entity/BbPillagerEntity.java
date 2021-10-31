@@ -3,7 +3,6 @@ package com.lovetropics.minigames.common.content.biodiversity_blitz.entity;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.ai.*;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.Plot;
 import net.minecraft.entity.*;
-import net.minecraft.entity.ai.attributes.Attributes;
 import net.minecraft.entity.ai.goal.LookAtGoal;
 import net.minecraft.entity.ai.goal.RangedCrossbowAttackGoal;
 import net.minecraft.entity.monster.AbstractRaiderEntity;
@@ -34,8 +33,6 @@ public class BbPillagerEntity extends PillagerEntity implements BbMobEntity {
         this.setPathPriority(PathNodeType.DANGER_OTHER, 0.0F);
         this.setPathPriority(PathNodeType.DAMAGE_OTHER, 0.0F);
         this.setPathPriority(PathNodeType.WATER, -1.0F);
-
-        this.getAttribute(Attributes.FOLLOW_RANGE).setBaseValue(8);
     }
 
     @Override
@@ -46,12 +43,12 @@ public class BbPillagerEntity extends PillagerEntity implements BbMobEntity {
     @Override
     protected void registerGoals() {
         this.goalSelector.addGoal(1, new MoveToPumpkinGoal(this));
-        this.goalSelector.addGoal(2, new DestroyCropGoal(this));
-        this.goalSelector.addGoal(3, new AbstractRaiderEntity.FindTargetGoal(this, 6.0F));
-        this.goalSelector.addGoal(3, new RangedCrossbowAttackGoal<>(this, 1.0, 6.0F));
+        this.goalSelector.addGoal(2, new AbstractRaiderEntity.FindTargetGoal(this, 6.0F));
+        this.goalSelector.addGoal(2, new RangedCrossbowAttackGoal<>(this, 1.0, 6.0F));
+        this.goalSelector.addGoal(3, new DestroyCropGoal(this));
         this.goalSelector.addGoal(4, new LookAtGoal(this, PlayerEntity.class, 15.0F, 0.02F));
 
-        this.targetSelector.addGoal(1, new BbAttackGoal(this));
+        this.targetSelector.addGoal(1, new BbTargetPlayerGoal(this));
     }
 
     @Nullable
