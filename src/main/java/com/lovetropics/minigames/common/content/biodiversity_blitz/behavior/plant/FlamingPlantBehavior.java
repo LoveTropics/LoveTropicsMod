@@ -75,6 +75,10 @@ public final class FlamingPlantBehavior implements IGameBehavior {
                             }
                         } else {
                             entity.setFire(3);
+
+                            if (random.nextInt(3) == 0) {
+                                entity.attackEntityFrom(DamageSource.IN_FIRE, 1 + random.nextInt(2));
+                            }
                         }
 
                         AxisAlignedBB aabb = entity.getBoundingBox();

@@ -30,6 +30,10 @@ public class DestroyCropGoal extends MoveToBlockGoal {
         double distance2 = mob.getPositionVec().squareDistanceTo(targetPos.getX() + 0.5, targetPos.getY() + 0.5, targetPos.getZ() + 0.5);
         if (distance2 <= getDistanceSq()) {
             this.ticksAtTarget--;
+            if (mob.world.rand.nextInt(4) == 0) {
+                spawnDamageParticles(mob, 0);
+            }
+            
             if (this.ticksAtTarget <= 0) {
                 this.ticksAtTarget = DAMAGE_INTERVAL;
                 this.tryDamagePlant(mob);
