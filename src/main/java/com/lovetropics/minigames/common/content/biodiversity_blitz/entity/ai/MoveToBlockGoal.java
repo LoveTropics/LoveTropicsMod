@@ -84,24 +84,12 @@ public abstract class MoveToBlockGoal extends Goal {
     @Nullable
     protected BlockPos locateBlock(IBlockReader world, int rangeX, int rangeY) {
         BlockPos origin = this.mob.getPosition();
-        int minimumDist = Integer.MAX_VALUE;
-        BlockPos minPos = null;
-
-        for (BlockPos pos : BlockPos.getAllInBoxMutable(origin.add(-rangeX, -rangeY, -rangeX), origin.add(rangeX, rangeY, rangeX))) {
+        for (BlockPos pos : BlockPos.getProximitySortedBoxPositionsIterator(origin, rangeX, rangeY, rangeX)) {
             if (isValidBlock(pos, world.getBlockState(pos))) {
-                int dx = pos.getX() - origin.getX();
-                int dy = pos.getY() - origin.getY();
-                int dz = pos.getZ() - origin.getZ();
-
-                int dist = dx * dx + dy * dy + dz * dz;
-                if (dist < minimumDist) {
-                    minimumDist = dist;
-                    minPos = pos.toImmutable();
-                }
+                return pos;
             }
         }
-
-        return minPos;
+        return null;
     }
 
     protected abstract boolean isValidBlock(BlockPos pos, BlockState state);
