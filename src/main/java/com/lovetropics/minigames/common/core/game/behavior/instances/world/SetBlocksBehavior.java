@@ -30,35 +30,38 @@ public final class SetBlocksBehavior implements IGameBehavior {
 		return instance.group(
 				MoreCodecs.BLOCK_PREDICATE.optionalFieldOf("replace").forGetter(c -> Optional.ofNullable(c.replace)),
 				MoreCodecs.BLOCK_STATE_PROVIDER.fieldOf("set").forGetter(c -> c.set),
-				Codec.STRING.optionalFieldOf("region").forGetter(c -> Optional.ofNullable(c.regionKey)),
+				MoreCodecs.arrayOrUnit(Codec.STRING, String[]::new).optionalFieldOf("region", new String[0]).forGetter(c -> c.regionKeys),
 				Codec.LONG.optionalFieldOf("time").forGetter(c -> c.time != -1 ? Optional.of(c.time) : Optional.empty())
 		).apply(instance, SetBlocksBehavior::new);
 	});
 
-	private final @Nullable
-	BlockPredicate replace;
+	private final @Nullable BlockPredicate replace;
 	private final BlockStateProvider set;
 
-	private final @Nullable
-	String regionKey;
+	private final String[] regionKeys;
 	private final long time;
 
 	private Collection<BlockBox> regions;
 
-	private SetBlocksBehavior(Optional<BlockPredicate> replace, BlockStateProvider set, Optional<String> regionKey, Optional<Long> time) {
-		this(replace.orElse(null), set, regionKey.orElse(null), time.orElse(-1L));
+	private SetBlocksBehavior(Optional<BlockPredicate> replace, BlockStateProvider set, String[] regionKeys, Optional<Long> time) {
+		this(replace.orElse(null), set, regionKeys, time.orElse(-1L));
 	}
 
-	public SetBlocksBehavior(BlockPredicate replace, BlockStateProvider set, @Nullable String regionKey, long time) {
+	public SetBlocksBehavior(BlockPredicate replace, BlockStateProvider set, String[] regionKeys, long time) {
 		this.replace = replace;
 		this.set = set;
-		this.regionKey = regionKey;
+		this.regionKeys = regionKeys;
 		this.time = time;
 	}
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
-		regions = regionKey != null ? game.getMapRegions().get(regionKey) : null;
+		List<BlockBox> regions = new ArrayList<>();
+		for (String regionKey : regionKeys) {
+			regions.addAll(game.getMapRegions().get(regionKey));
+		}
+
+		this.regions = !regions.isEmpty() ? regions : null;
 
 		if (time != -1) {
 			registerTimed(game, events);

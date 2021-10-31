@@ -12,10 +12,7 @@ import com.lovetropics.minigames.common.core.game.behavior.instances.team.SetupT
 import com.lovetropics.minigames.common.core.game.behavior.instances.team.TeamWinTrigger;
 import com.lovetropics.minigames.common.core.game.behavior.instances.team.TeamsBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.tweak.*;
-import com.lovetropics.minigames.common.core.game.behavior.instances.world.FillChestsByMarkerBehavior;
-import com.lovetropics.minigames.common.core.game.behavior.instances.world.ForceLoadRegionBehavior;
-import com.lovetropics.minigames.common.core.game.behavior.instances.world.GenerateEntitiesBehavior;
-import com.lovetropics.minigames.common.core.game.behavior.instances.world.SetBlocksBehavior;
+import com.lovetropics.minigames.common.core.game.behavior.instances.world.*;
 import com.lovetropics.minigames.common.util.registry.GameBehaviorEntry;
 import com.lovetropics.minigames.common.util.registry.LoveTropicsRegistrate;
 import com.mojang.serialization.Codec;
@@ -55,6 +52,7 @@ public class GameBehaviorTypes {
 	public static final GameBehaviorEntry<SpectatorChaseBehavior> SPECTATOR_CHASE;
 	public static final GameBehaviorEntry<ForceLoadRegionBehavior> FORCE_LOAD_REGION;
 	public static final GameBehaviorEntry<SetBlocksBehavior> SET_BLOCKS;
+	public static final GameBehaviorEntry<SetExtendingBlocksBehavior> SET_EXTENDING_BLOCKS;
 	public static final GameBehaviorEntry<EliminatePlayerControlBehavior> ELIMINATE_PLAYER_CONTROL;
 	public static final GameBehaviorEntry<FillChestsByMarkerBehavior> FILL_CHESTS_BY_MARKER;
 	public static final GameBehaviorEntry<GenerateEntitiesBehavior> GENERATE_ENTITIES;
@@ -126,6 +124,7 @@ public class GameBehaviorTypes {
 		SPECTATOR_CHASE = register("spectator_chase", SpectatorChaseBehavior.CODEC);
 		FORCE_LOAD_REGION = register("force_load_region", ForceLoadRegionBehavior.CODEC);
 		SET_BLOCKS = register("set_blocks", SetBlocksBehavior.CODEC);
+		SET_EXTENDING_BLOCKS = register("set_extending_blocks", SetExtendingBlocksBehavior.CODEC);
 		ELIMINATE_PLAYER_CONTROL = register("eliminate_player_control", EliminatePlayerControlBehavior.CODEC);
 		FILL_CHESTS_BY_MARKER = register("fill_chests_by_marker", FillChestsByMarkerBehavior.CODEC);
 		GENERATE_ENTITIES = register("generate_entities", GenerateEntitiesBehavior.CODEC);
