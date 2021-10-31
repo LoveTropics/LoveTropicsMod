@@ -14,6 +14,7 @@ public final class BiodiversityBlitzTexts {
 		static final String BIODIVERSITY_BLITZ = Constants.MODID + ".minigame.biodiversity_blitz";
 		static final String WAVE_WARNING = key("wave_warning");
 		static final String DEATH_DECREASE = key("death_decrease");
+		static final String DEATH_TITLE = key("death_title");
 		static final String CURRENCY_ADDITION = key("currency_addition");
 		static final String TRADING = key("trading");
 		static final String CAN_ONLY_PLACE_PLANTS = key("can_only_place_plants");
@@ -24,7 +25,8 @@ public final class BiodiversityBlitzTexts {
 			consumer.accept(BIODIVERSITY_BLITZ, "Biodiversity Blitz");
 			consumer.accept(WAVE_WARNING, "A wave is coming soon!");
 			consumer.accept(TRADING, "Trading");
-			consumer.accept(DEATH_DECREASE, "You died and lost %s currency!");
+			consumer.accept(DEATH_DECREASE, "...and lost %s currency!");
+			consumer.accept(DEATH_TITLE, "YOU DIED");
 			consumer.accept(CURRENCY_ADDITION, "You gained %s currency!");
 			consumer.accept(CAN_ONLY_PLACE_PLANTS, "You can only place plants you got from the shop!");
 			consumer.accept(PLANT_CANNOT_FIT, "This plant cannot fit here!");
@@ -64,5 +66,9 @@ public final class BiodiversityBlitzTexts {
 
 	public static IFormattableTextComponent notYourPlot() {
 		return new TranslationTextComponent(Keys.NOT_YOUR_PLOT);
+	}
+
+	public static IFormattableTextComponent deathTitle() {
+		return new TranslationTextComponent(Keys.DEATH_TITLE);
 	}
 }

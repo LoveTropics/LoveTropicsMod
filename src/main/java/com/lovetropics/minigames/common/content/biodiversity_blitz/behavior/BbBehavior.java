@@ -22,11 +22,15 @@ import net.minecraft.block.FarmlandBlock;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.HoeItem;
+import net.minecraft.network.play.server.STitlePacket;
+import net.minecraft.potion.EffectInstance;
+import net.minecraft.potion.Effects;
 import net.minecraft.util.*;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockRayTraceResult;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.text.IFormattableTextComponent;
+import net.minecraft.util.text.TextComponentUtils;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.Explosion;
@@ -192,12 +196,18 @@ public final class BbBehavior implements IGameBehavior {
 			int oldCurrency = currency.get(player);
 			int newCurrency = MathHelper.floor(oldCurrency * DEATH_DECREASE.getFloat(difficulty));
 
-			currency.set(player, newCurrency);
-
-			player.sendStatusMessage(BiodiversityBlitzTexts.deathDecrease(oldCurrency - newCurrency).mergeStyle(TextFormatting.RED), true);
+			if (oldCurrency != newCurrency) {
+				currency.set(player, newCurrency);
+		
+	//			player.sendStatusMessage(BiodiversityBlitzTexts.deathDecrease(oldCurrency - newCurrency).mergeStyle(TextFormatting.RED), true);
+		        player.connection.sendPacket(new STitlePacket(STitlePacket.Type.SUBTITLE, BiodiversityBlitzTexts.deathDecrease(oldCurrency - newCurrency).mergeStyle(TextFormatting.RED, TextFormatting.ITALIC)));
+			}
 		}
 
 		player.playSound(SoundEvents.ENTITY_ARROW_HIT_PLAYER, SoundCategory.PLAYERS, 0.18F, 1.0F);
+		player.addPotionEffect(new EffectInstance(Effects.BLINDNESS, 80));
+        player.connection.sendPacket(new STitlePacket(40, 20, 0));
+        player.connection.sendPacket(new STitlePacket(STitlePacket.Type.TITLE, BiodiversityBlitzTexts.deathTitle().mergeStyle(TextFormatting.RED)));
 
 		return ActionResultType.FAIL;
 	}
