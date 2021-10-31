@@ -155,7 +155,13 @@ public final class BbBehavior implements IGameBehavior {
 	}
 
 	private ActionResultType onAttack(ServerPlayerEntity player, Entity target) {
-		return BbMobEntity.matches(target) ? ActionResultType.PASS : ActionResultType.FAIL;
+		if (BbMobEntity.matches(target)) {
+			Plot plot = plots.getPlotFor(player);
+			if (plot != null && plot.walls.containsEntity(player)) {
+				return ActionResultType.PASS;
+			}
+		}
+		return ActionResultType.FAIL;
 	}
 
 	private ActionResultType onPlaceBlock(ServerPlayerEntity player, BlockPos pos, BlockState placed, BlockState placedOn) {

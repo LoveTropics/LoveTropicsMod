@@ -1,7 +1,6 @@
 package com.lovetropics.minigames.common.content.biodiversity_blitz.entity;
 
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
 import net.minecraft.util.Direction;
 import net.minecraft.util.ReuseableStream;
 import net.minecraft.util.math.AxisAlignedBB;
@@ -80,7 +79,7 @@ public final class PlotWalls {
 		return this.bounds;
 	}
 
-	public boolean containsEntity(LivingEntity entity) {
+	public boolean containsEntity(Entity entity) {
 		return this.bounds.contains(entity.getPositionVec());
 	}
 
