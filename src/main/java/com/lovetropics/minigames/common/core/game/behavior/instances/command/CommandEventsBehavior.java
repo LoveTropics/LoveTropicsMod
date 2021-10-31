@@ -57,13 +57,15 @@ public final class CommandEventsBehavior extends CommandInvokeBehavior {
 			return ActionResultType.PASS;
 		});
 
-		events.listen(GameLivingEntityEvents.TICK, (entity) -> this.invoke("entity_update", entity));
+		events.listen(GameLivingEntityEvents.TICK, entity -> this.invoke("entity_update", entity));
 
 		events.listen(GameLogicEvents.GAME_OVER, () -> this.invoke("game_over"));
 		events.listen(GameLogicEvents.PHASE_CHANGE, (phase, lastPhase) -> {
 			this.invoke("phase_finish/" + lastPhase.key);
 			this.invoke("phase_start/" + phase.key);
 		});
+
+		events.listen(GamePhaseEvents.TICK, () -> this.invoke("tick"));
 	}
 
 	private void onPlayerSetRole(ServerPlayerEntity player, @Nullable PlayerRole role, @Nullable PlayerRole lastRole) {
