@@ -33,5 +33,7 @@ public interface WeatherController {
 		setRain(0.0F, RainType.NORMAL);
 		setWind(0.0F);
 		setHeatwave(false);
+		setSandstorm(false);
+		setSnowstorm(false);
 	}
 }
