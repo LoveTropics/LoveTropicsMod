@@ -6,21 +6,19 @@ import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.plant.Pl
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
+import com.lovetropics.minigames.common.util.BlockStatePredicate;
 import com.lovetropics.minigames.common.util.world.DelegatingSeedReader;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.longs.*;
-import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.tags.BlockTags;
-import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.ISeedReader;
 import net.minecraft.world.gen.ChunkGenerator;
 import net.minecraft.world.gen.feature.BaseTreeFeatureConfig;
 import net.minecraft.world.gen.feature.ConfiguredFeature;
 import net.minecraft.world.server.ServerWorld;
-import net.minecraftforge.common.Tags;
 import net.minecraftforge.common.util.Constants;
 
 import javax.annotation.Nullable;
@@ -29,14 +27,16 @@ import java.util.function.Supplier;
 
 public final class PlaceFeaturePlantBehavior implements IGameBehavior {
 	public static final Codec<PlaceFeaturePlantBehavior> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-			ConfiguredFeature.field_236264_b_.fieldOf("feature").forGetter(c -> c.feature)
+			ConfiguredFeature.field_236264_b_.fieldOf("feature").forGetter(c -> c.feature),
+			BlockStatePredicate.CODEC.fieldOf("blocks").forGetter(c -> c.blocks)
 	).apply(instance, PlaceFeaturePlantBehavior::new));
 
-	private static final Tags.IOptionalNamedTag<Block> ROOTS = BlockTags.createOptional(new ResourceLocation("tropicraft", "roots"));
 	private final Supplier<ConfiguredFeature<?, ?>> feature;
+	private final BlockStatePredicate blocks;
 
-	public PlaceFeaturePlantBehavior(Supplier<ConfiguredFeature<?, ?>> feature) {
+	public PlaceFeaturePlantBehavior(Supplier<ConfiguredFeature<?, ?>> feature, BlockStatePredicate blocks) {
 		this.feature = feature;
+		this.blocks = blocks;
 	}
 
 	@Override
@@ -59,7 +59,7 @@ public final class PlaceFeaturePlantBehavior implements IGameBehavior {
 			((BaseTreeFeatureConfig) feature.config).forcePlacement();
 		}
 
-		BlockCapturingWorld capturingWorld = new BlockCapturingWorld(world, PlaceFeaturePlantBehavior::isTreeBlock);
+		BlockCapturingWorld capturingWorld = new BlockCapturingWorld(world, this.blocks);
 
 		ChunkGenerator chunkGenerator = world.getChunkProvider().getChunkGenerator();
 		if (feature.generate(capturingWorld, chunkGenerator, world.rand, pos)) {
@@ -106,11 +106,6 @@ public final class PlaceFeaturePlantBehavior implements IGameBehavior {
 			}
 			return true;
 		});
-	}
-
-	private static boolean isTreeBlock(BlockState state) {
-		// TODO data drive this pls
-		return state.isIn(BlockTags.LOGS) || state.isIn(BlockTags.LEAVES) || state.isIn(ROOTS) || state.getBlock().getRegistryName().getPath().equals("coconut");
 	}
 
 	private static boolean isDecorationBlock(BlockState state) {

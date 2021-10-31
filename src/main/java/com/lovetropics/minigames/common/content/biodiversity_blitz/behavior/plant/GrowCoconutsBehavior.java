@@ -1,15 +1,5 @@
 package com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.plant;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.WeakHashMap;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-
-import org.apache.commons.lang3.tuple.Pair;
-
-import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.event.BbEvents;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.event.BbPlantEvents;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.Plot;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.PlotsState;
@@ -20,7 +10,6 @@ import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.mojang.serialization.Codec;
-
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.DirectionalBlock;
@@ -33,6 +22,14 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.fml.RegistryObject;
 import net.minecraftforge.registries.ForgeRegistries;
+import org.apache.commons.lang3.tuple.Pair;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.WeakHashMap;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class GrowCoconutsBehavior implements IGameBehavior {
 
@@ -91,6 +88,7 @@ public class GrowCoconutsBehavior implements IGameBehavior {
 		}
 	}
 
+	// TODO: manual handling of coverage is not a good solution! next year: change our approach to how we're handling dynamic coverages like this
 	private ActionResultType breakFromCoconut(ServerPlayerEntity player, BlockPos pos, BlockState state, Hand hand) {
 		if (state.getBlock() == COCONUT.get()) {
 			BlockPos trunkPos = pos.offset(state.get(DirectionalBlock.FACING));

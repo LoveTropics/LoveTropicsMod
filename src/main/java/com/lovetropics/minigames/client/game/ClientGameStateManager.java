@@ -7,7 +7,6 @@ import com.lovetropics.minigames.common.core.game.client_state.GameClientStateMa
 import com.lovetropics.minigames.common.core.game.client_state.GameClientStateType;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
-import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
@@ -49,13 +48,6 @@ public final class ClientGameStateManager {
 			return map.getOrNull(type.get());
 		}
 		return null;
-	}
-
-	@SubscribeEvent
-	public static void onWorldLoad(WorldEvent.Load event) {
-		if (event.getWorld().isRemote()) {
-			ClientGameStateManager.clearState();
-		}
 	}
 
 	@SubscribeEvent
