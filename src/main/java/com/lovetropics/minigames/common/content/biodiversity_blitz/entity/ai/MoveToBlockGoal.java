@@ -1,20 +1,18 @@
 package com.lovetropics.minigames.common.content.biodiversity_blitz.entity.ai;
 
-import net.minecraft.block.BlockState;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.MobEntity;
 import net.minecraft.entity.ai.goal.Goal;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.IBlockReader;
+import net.minecraft.util.math.MathHelper;
 
 import javax.annotation.Nullable;
 import java.util.EnumSet;
 
 public abstract class MoveToBlockGoal extends Goal {
-    private final MobEntity mob;
+    protected final MobEntity mob;
     // State
     protected BlockPos targetPos;
-    private int playerCheckTicks = 20;
 
     protected MoveToBlockGoal(MobEntity mob) {
         this.mob = mob;
@@ -22,75 +20,70 @@ public abstract class MoveToBlockGoal extends Goal {
         this.setMutexFlags(EnumSet.of(Goal.Flag.MOVE, Goal.Flag.JUMP));
     }
 
+    private boolean shouldPrioritiseAttackPlant(BlockPos pos) {
+        LivingEntity target = this.mob.getAttackTarget();
+        if (target != null && this.shouldCompareWithTargetDistance()) {
+            double plantDistance2 = this.mob.getDistanceSq(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5);
+            double targetDistance2 = this.mob.getDistance(target);
+            return plantDistance2 < targetDistance2;
+        } else {
+            return true;
+        }
+    }
+
+    private int getBlockSearchRange() {
+        LivingEntity attackTarget = this.mob.getAttackTarget();
+        int maxRange = Integer.MAX_VALUE;
+        if (attackTarget != null) {
+            maxRange = MathHelper.floor(mob.getDistance(attackTarget));
+        }
+
+        return Math.min(12, maxRange);
+    }
+
     @Override
     public boolean shouldExecute() {
-        BlockPos target = locateBlock(this.mob.world, 12, 6);
-
-        // If players are 3 blocks or closer to the mob then don't consider
-        for (PlayerEntity player : this.mob.world.getPlayers()) {
-            if (player.getDistanceSq(this.mob) <= 3 * 3) {
-                return false;
-            }
-        }
-
-        if (target == null) {
+        BlockPos target = locateBlock(this.getBlockSearchRange(), 2);
+        if (target != null && shouldPrioritiseAttackPlant(targetPos)) {
+            this.targetPos = target;
+            return true;
+        } else {
             return false;
         }
-
-        this.targetPos = target;
-
-        return true;
     }
 
     @Override
     public void startExecuting() {
-        this.playerCheckTicks = 20;
-
         this.mob.getNavigator().tryMoveToXYZ(this.targetPos.getX(), this.targetPos.getY(), this.targetPos.getZ(), 1.0);
     }
 
     @Override
-    public void tick() {
-        this.playerCheckTicks--;
-    }
-
-    @Override
     public boolean shouldContinueExecuting() {
-        if (this.playerCheckTicks <= 0 && checkForNearbyPlayer()) {
-            for (PlayerEntity player : this.mob.world.getPlayers()) {
-                if (player.getDistanceSq(this.mob) <= 5 * 5) {
-                    return false;
-                }
-            }
-
-            this.playerCheckTicks = 20;
+        if (!shouldPrioritiseAttackPlant(this.targetPos)) {
+            return false;
         }
 
-        if (!shouldContinueExecuting(this.targetPos)) {
+        if (!shouldTargetBlock(this.targetPos)) {
             return false;
         }
 
         return !this.mob.getNavigator().noPath();
     }
 
-    protected boolean checkForNearbyPlayer() {
-        return true;
-    }
-
-    protected boolean shouldContinueExecuting(BlockPos pos) {
+    protected boolean shouldCompareWithTargetDistance() {
         return true;
     }
 
     @Nullable
-    protected BlockPos locateBlock(IBlockReader world, int rangeX, int rangeY) {
+    protected BlockPos locateBlock(int rangeX, int rangeY) {
         BlockPos origin = this.mob.getPosition();
         for (BlockPos pos : BlockPos.getProximitySortedBoxPositionsIterator(origin, rangeX, rangeY, rangeX)) {
-            if (isValidBlock(pos, world.getBlockState(pos))) {
+            if (shouldTargetBlock(pos)) {
                 return pos;
             }
         }
         return null;
     }
 
-    protected abstract boolean isValidBlock(BlockPos pos, BlockState state);
+    protected abstract boolean shouldTargetBlock(BlockPos pos);
 }

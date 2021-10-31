@@ -11,7 +11,8 @@ public final class MoveToPumpkinGoal extends MoveToBlockGoal {
     }
 
     @Override
-    protected boolean isValidBlock(BlockPos pos, BlockState state) {
+    protected boolean shouldTargetBlock(BlockPos pos) {
+        BlockState state = mob.world.getBlockState(pos);
         return state.getBlock() == Blocks.PUMPKIN || state.getBlock() == Blocks.CARVED_PUMPKIN;
     }
 }

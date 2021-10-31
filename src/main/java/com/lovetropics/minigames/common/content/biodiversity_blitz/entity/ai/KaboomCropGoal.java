@@ -15,7 +15,7 @@ public class KaboomCropGoal extends DestroyCropGoal {
     }
 
     @Override
-    protected boolean checkForNearbyPlayer() {
+    protected boolean shouldCompareWithTargetDistance() {
         return false; // Creeper can and will explode right next to you :)
     }
 

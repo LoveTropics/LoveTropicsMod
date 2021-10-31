@@ -4,7 +4,6 @@ import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.BbMobE
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.plant.Plant;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.plant.state.PlantHealth;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.plant.state.PlantNotPathfindable;
-import net.minecraft.block.BlockState;
 import net.minecraft.entity.MobEntity;
 import net.minecraft.particles.ParticleTypes;
 import net.minecraft.util.math.BlockPos;
@@ -76,12 +75,7 @@ public class DestroyCropGoal extends MoveToBlockGoal {
     }
 
     @Override
-    protected boolean shouldContinueExecuting(BlockPos pos) {
-        return this.isPlantBreakable(this.targetPos);
-    }
-
-    @Override
-    protected boolean isValidBlock(BlockPos pos, BlockState state) {
+    protected boolean shouldTargetBlock(BlockPos pos) {
         return this.isPlantBreakable(pos);
     }
 

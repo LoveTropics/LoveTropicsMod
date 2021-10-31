@@ -41,8 +41,8 @@ public class BbHuskEntity extends HuskEntity implements BbMobEntity {
 	@Override
 	protected void applyEntityAI() {
 		this.goalSelector.addGoal(1, new MoveToPumpkinGoal(this));
-		this.goalSelector.addGoal(2, new ZombieAttackGoal(this, 1.0, false));
-		this.goalSelector.addGoal(3, new DestroyCropGoal(this));
+		this.goalSelector.addGoal(2, new DestroyCropGoal(this));
+		this.goalSelector.addGoal(3, new ZombieAttackGoal(this, 1.0, false));
 
 		this.targetSelector.addGoal(1, new BbAttackGoal(this));
 	}
