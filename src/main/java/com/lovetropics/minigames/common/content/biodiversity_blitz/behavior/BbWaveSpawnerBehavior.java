@@ -213,11 +213,11 @@ public final class BbWaveSpawnerBehavior implements IGameBehavior {
 			return new BbCreeperEntity(EntityType.CREEPER, world, plot);
 		}
 
-		if (random.nextBoolean()) {
+		if (random.nextInt(3) == 0 && waveIndex > 2) {
 			return new BbPillagerEntity(EntityType.PILLAGER, world, plot);
-		} else {
-			return new BbHuskEntity(EntityType.HUSK, world, plot);
 		}
+
+		return new BbHuskEntity(EntityType.HUSK, world, plot);
 	}
 
 	static final class WaveTracker {
