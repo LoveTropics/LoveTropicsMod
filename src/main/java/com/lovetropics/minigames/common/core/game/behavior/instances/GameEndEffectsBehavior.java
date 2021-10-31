@@ -74,7 +74,7 @@ public final class GameEndEffectsBehavior implements IGameBehavior {
 			ITextComponent title = this.title.apply(winner);
 			PlayerSet players = game.getAllPlayers();
 			players.sendPacket(new STitlePacket(10, 3 * 20, 10));
-			players.sendPacket(new STitlePacket(STitlePacket.Type.TITLE, title));
+			players.sendPacket(new STitlePacket(STitlePacket.Type.SUBTITLE, title));
 		}
 	}
 

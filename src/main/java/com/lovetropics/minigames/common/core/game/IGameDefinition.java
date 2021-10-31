@@ -21,13 +21,17 @@ public interface IGameDefinition {
 	 */
 	ResourceLocation getId();
 
+	default ResourceLocation getBackendId() {
+		return getId();
+	}
+
 	/**
 	 * An identifier for telemetry usage, so that variants of games can share
 	 * statistics. Defaults to the ID if not set in the JSON.
 	 *
 	 * @return The telemetry key for this minigame.
 	 */
-	default String getTelemetryKey() {
+	default String getStatisticsKey() {
 		return getId().getPath();
 	}
 

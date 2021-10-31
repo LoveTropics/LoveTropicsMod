@@ -14,7 +14,8 @@ import java.util.Optional;
 
 public final class GameConfig implements IGameDefinition {
 	public final ResourceLocation id;
-	public final String telemetryKey;
+	public final ResourceLocation backendId;
+	public final String statisticsKey;
 	public final ITextComponent name;
 	@Nullable
 	public final ITextComponent subtitle;
@@ -26,7 +27,8 @@ public final class GameConfig implements IGameDefinition {
 
 	public GameConfig(
 			ResourceLocation id,
-			String telemetryKey,
+			ResourceLocation backendId,
+			String statisticsKey,
 			ITextComponent name,
 			@Nullable ITextComponent subtitle,
 			int minimumParticipants,
@@ -35,7 +37,8 @@ public final class GameConfig implements IGameDefinition {
 			GamePhaseConfig playing
 	) {
 		this.id = id;
-		this.telemetryKey = telemetryKey;
+		this.backendId = backendId;
+		this.statisticsKey = statisticsKey;
 		this.name = name;
 		this.subtitle = subtitle;
 		this.minimumParticipants = minimumParticipants;
@@ -49,18 +52,20 @@ public final class GameConfig implements IGameDefinition {
 
 		return RecordCodecBuilder.create(instance -> {
 			return instance.group(
-					Codec.STRING.optionalFieldOf("telemetry_key").forGetter(c -> Optional.of(c.telemetryKey)),
+					ResourceLocation.CODEC.optionalFieldOf("backend_id").forGetter(c -> Optional.of(c.backendId)),
+					Codec.STRING.optionalFieldOf("statistics_key").forGetter(c -> Optional.of(c.statisticsKey)),
 					MoreCodecs.TEXT.fieldOf("name").forGetter(c -> c.name),
 					MoreCodecs.TEXT.optionalFieldOf("subtitle").forGetter(c -> Optional.ofNullable(c.subtitle)),
 					Codec.INT.optionalFieldOf("minimum_participants", 1).forGetter(c -> c.minimumParticipants),
 					Codec.INT.optionalFieldOf("maximum_participants", 100).forGetter(c -> c.maximumParticipants),
 					phaseCodec.codec().optionalFieldOf("waiting").forGetter(c -> Optional.ofNullable(c.waiting)),
 					phaseCodec.forGetter(c -> c.playing)
-			).apply(instance, (telemetryKeyOpt, name, subtitleOpt, minimumParticipants, maximumParticipants, waitingOpt, active) -> {
-				String telemetryKey = telemetryKeyOpt.orElse(id.getPath());
+			).apply(instance, (backendIdOpt, statisticsKeyOpt, name, subtitleOpt, minimumParticipants, maximumParticipants, waitingOpt, active) -> {
+				ResourceLocation backendId = backendIdOpt.orElse(id);
+				String telemetryKey = statisticsKeyOpt.orElse(id.getPath());
 				ITextComponent subtitle = subtitleOpt.orElse(null);
 				GamePhaseConfig waiting = waitingOpt.orElse(null);
-				return new GameConfig(id, telemetryKey, name, subtitle, minimumParticipants, maximumParticipants, waiting, active);
+				return new GameConfig(id, backendId, telemetryKey, name, subtitle, minimumParticipants, maximumParticipants, waiting, active);
 			});
 		});
 	}
@@ -71,8 +76,13 @@ public final class GameConfig implements IGameDefinition {
 	}
 
 	@Override
-	public String getTelemetryKey() {
-		return telemetryKey;
+	public ResourceLocation getBackendId() {
+		return backendId;
+	}
+
+	@Override
+	public String getStatisticsKey() {
+		return statisticsKey;
 	}
 
 	@Override

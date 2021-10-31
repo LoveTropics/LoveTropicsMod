@@ -121,8 +121,8 @@ public final class GameInstanceTelemetry implements IGameState {
 
 		IGameDefinition definition = game.getDefinition();
 		JsonObject game = new JsonObject();
-		game.addProperty("id", definition.getId().toString());
-		game.addProperty("telemetry_key", definition.getTelemetryKey());
+		game.addProperty("id", definition.getBackendId().toString());
+		game.addProperty("telemetry_key", definition.getStatisticsKey());
 		game.addProperty("name", definition.getName().getString());
 		payload.add("minigame", game);
 
