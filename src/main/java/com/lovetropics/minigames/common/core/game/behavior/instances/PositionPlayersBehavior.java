@@ -92,12 +92,9 @@ public class PositionPlayersBehavior implements IGameBehavior {
 
 	private void teleportToRegion(IGamePhase game, ServerPlayerEntity player, BlockBox region) {
 		BlockPos pos = tryFindEmptyPos(game, player.getRNG(), region);
-		if (pos != null) {
-			DimensionUtils.teleportPlayerNoPortal(player, game.getDimension(), pos);
-		}
+		DimensionUtils.teleportPlayerNoPortal(player, game.getDimension(), pos);
 	}
 
-	@Nullable
 	private BlockPos tryFindEmptyPos(IGamePhase game, Random random, BlockBox box) {
 		ServerWorld world = game.getWorld();
 		for (int i = 0; i < 20; i++) {
@@ -106,6 +103,6 @@ public class PositionPlayersBehavior implements IGameBehavior {
 				return pos;
 			}
 		}
-		return null;
+		return box.getCenterBlock();
 	}
 }

@@ -4,14 +4,22 @@ import com.lovetropics.minigames.common.core.diguise.DisguiseType;
 import com.lovetropics.minigames.common.core.diguise.PlayerDisguise;
 import com.lovetropics.minigames.common.core.diguise.ServerPlayerDisguises;
 import com.lovetropics.minigames.common.core.dimension.DimensionUtils;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.scoreboard.Score;
+import net.minecraft.scoreboard.ScoreObjective;
 import net.minecraft.scoreboard.ScorePlayerTeam;
+import net.minecraft.scoreboard.ServerScoreboard;
 import net.minecraft.util.FoodStats;
 import net.minecraft.util.RegistryKey;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.GameType;
 import net.minecraft.world.World;
+
+import java.util.ArrayList;
+import java.util.Map;
 
 /**
  * Used to cache previous game type, dimension and position of player
@@ -26,6 +34,7 @@ public final class PlayerSnapshot {
 	private final CompoundNBT playerData;
 
 	private final ScorePlayerTeam team;
+	private final Object2IntMap<ScoreObjective> objectives = new Object2IntOpenHashMap<>();
 
 	private final DisguiseType disguise;
 
@@ -37,7 +46,11 @@ public final class PlayerSnapshot {
 		this.playerData = new CompoundNBT();
 		player.writeAdditional(this.playerData);
 
-		this.team = player.getWorldScoreboard().getPlayersTeam(player.getScoreboardName());
+		ServerScoreboard scoreboard = player.getServerWorld().getScoreboard();
+		this.team = scoreboard.getPlayersTeam(player.getScoreboardName());
+		for (Map.Entry<ScoreObjective, Score> entry : scoreboard.getObjectivesForEntity(player.getScoreboardName()).entrySet()) {
+			this.objectives.put(entry.getKey(), entry.getValue().getScorePoints());
+		}
 
 		this.disguise = PlayerDisguise.getDisguiseType(player);
 	}
@@ -59,9 +72,15 @@ public final class PlayerSnapshot {
 		new FoodStats().write(foodTag);
 		player.getFoodStats().read(foodTag);
 
-		player.getWorldScoreboard().removePlayerFromTeams(player.getScoreboardName());
-
 		ServerPlayerDisguises.clear(player);
+
+		ServerScoreboard scoreboard = player.getServerWorld().getScoreboard();
+		scoreboard.removePlayerFromTeams(player.getScoreboardName());
+
+		Map<ScoreObjective, Score> objectives = scoreboard.getObjectivesForEntity(player.getScoreboardName());
+		for (ScoreObjective objective : new ArrayList<>(objectives.keySet())) {
+			scoreboard.removeObjectiveFromEntity(player.getScoreboardName(), objective);
+		}
 	}
 
 	/**
@@ -78,10 +97,17 @@ public final class PlayerSnapshot {
 
 		DimensionUtils.teleportPlayerNoPortal(player, this.dimension, this.pos);
 
+		PlayerDisguise.get(player).ifPresent(disguise -> disguise.setDisguise(this.disguise));
+
+		ServerScoreboard scoreboard = player.getServerWorld().getScoreboard();
+
 		if (this.team != null) {
-			player.getWorldScoreboard().addPlayerToTeam(player.getScoreboardName(), this.team);
+			scoreboard.addPlayerToTeam(player.getScoreboardName(), this.team);
 		}
 
-		PlayerDisguise.get(player).ifPresent(disguise -> disguise.setDisguise(this.disguise));
+		for (Object2IntMap.Entry<ScoreObjective> entry : this.objectives.object2IntEntrySet()) {
+			Score score = scoreboard.getOrCreateScore(player.getScoreboardName(), entry.getKey());
+			score.setScorePoints(entry.getIntValue());
+		}
 	}
 }

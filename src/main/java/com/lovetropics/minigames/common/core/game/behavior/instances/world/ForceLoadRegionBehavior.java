@@ -31,7 +31,7 @@ public final class ForceLoadRegionBehavior implements IGameBehavior {
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
-		events.listen(GamePhaseEvents.START, () -> acquiredChunks = acquireChunks(game));
+		acquiredChunks = acquireChunks(game);
 		events.listen(GamePhaseEvents.STOP, reason -> onStop(game));
 	}
 
