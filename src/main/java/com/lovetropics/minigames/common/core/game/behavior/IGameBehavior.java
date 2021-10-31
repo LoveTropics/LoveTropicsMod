@@ -23,9 +23,6 @@ public interface IGameBehavior {
 //		return this;
 //	}
 
-	default void registerState(GameStateMap state) {
-	}
-
 	default void registerState(IGamePhase game, GameStateMap state) {
 	}
 

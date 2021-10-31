@@ -21,6 +21,7 @@ import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.world.gen.blockstateprovider.BlockStateProvider;
 import net.minecraft.world.server.ServerWorld;
+import net.minecraftforge.common.util.Constants;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -31,7 +32,8 @@ public final class SetBlocksBehavior implements IGameBehavior {
 				MoreCodecs.BLOCK_PREDICATE.optionalFieldOf("replace").forGetter(c -> Optional.ofNullable(c.replace)),
 				MoreCodecs.BLOCK_STATE_PROVIDER.fieldOf("set").forGetter(c -> c.set),
 				MoreCodecs.arrayOrUnit(Codec.STRING, String[]::new).optionalFieldOf("region", new String[0]).forGetter(c -> c.regionKeys),
-				Codec.LONG.optionalFieldOf("time").forGetter(c -> c.time != -1 ? Optional.of(c.time) : Optional.empty())
+				Codec.LONG.optionalFieldOf("time").forGetter(c -> c.time != -1 ? Optional.of(c.time) : Optional.empty()),
+				Codec.BOOL.optionalFieldOf("notify_neighbors", true).forGetter(c -> c.notifyNeighbors)
 		).apply(instance, SetBlocksBehavior::new);
 	});
 
@@ -41,17 +43,20 @@ public final class SetBlocksBehavior implements IGameBehavior {
 	private final String[] regionKeys;
 	private final long time;
 
+	private final boolean notifyNeighbors;
+
 	private Collection<BlockBox> regions;
 
-	private SetBlocksBehavior(Optional<BlockPredicate> replace, BlockStateProvider set, String[] regionKeys, Optional<Long> time) {
-		this(replace.orElse(null), set, regionKeys, time.orElse(-1L));
+	private SetBlocksBehavior(Optional<BlockPredicate> replace, BlockStateProvider set, String[] regionKeys, Optional<Long> time, boolean notifyNeighbors) {
+		this(replace.orElse(null), set, regionKeys, time.orElse(-1L), notifyNeighbors);
 	}
 
-	public SetBlocksBehavior(BlockPredicate replace, BlockStateProvider set, String[] regionKeys, long time) {
+	public SetBlocksBehavior(BlockPredicate replace, BlockStateProvider set, String[] regionKeys, long time, boolean notifyNeighbors) {
 		this.replace = replace;
 		this.set = set;
 		this.regionKeys = regionKeys;
 		this.time = time;
+		this.notifyNeighbors = notifyNeighbors;
 	}
 
 	@Override
@@ -134,10 +139,16 @@ public final class SetBlocksBehavior implements IGameBehavior {
 
 		this.loadRegionChunks(region, world);
 
+		int flags = Constants.BlockFlags.DEFAULT;
+		if (!notifyNeighbors) {
+			// the constant name is inverted
+			flags |= Constants.BlockFlags.UPDATE_NEIGHBORS;
+		}
+
 		for (BlockPos pos : region) {
 			if (replace == null || replace.test(world, pos)) {
 				BlockState state = set.getBlockState(random, pos);
-				world.setBlockState(pos, state);
+				world.setBlockState(pos, state, flags);
 			}
 		}
 	}

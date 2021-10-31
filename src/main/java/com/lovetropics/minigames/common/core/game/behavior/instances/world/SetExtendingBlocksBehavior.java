@@ -10,6 +10,7 @@ import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.advancements.criterion.BlockPredicate;
+import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
@@ -17,6 +18,7 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.world.gen.blockstateprovider.BlockStateProvider;
 import net.minecraft.world.server.ServerWorld;
+import net.minecraftforge.common.util.Constants;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -32,7 +34,8 @@ public final class SetExtendingBlocksBehavior implements IGameBehavior {
 				MoreCodecs.stringVariants(Direction.values(), Direction::getName2).fieldOf("direction").forGetter(c -> c.direction),
 				MoreCodecs.arrayOrUnit(Codec.STRING, String[]::new).optionalFieldOf("region", new String[0]).forGetter(c -> c.regionKeys),
 				Codec.LONG.fieldOf("start_time").forGetter(c -> c.startTime),
-				Codec.LONG.fieldOf("end_time").forGetter(c -> c.endTime)
+				Codec.LONG.fieldOf("end_time").forGetter(c -> c.endTime),
+				Codec.BOOL.optionalFieldOf("notify_neighbors", true).forGetter(c -> c.notifyNeighbors)
 		).apply(instance, SetExtendingBlocksBehavior::new);
 	});
 
@@ -44,17 +47,20 @@ public final class SetExtendingBlocksBehavior implements IGameBehavior {
 	private final long startTime;
 	private final long endTime;
 
-	private SetExtendingBlocksBehavior(Optional<BlockPredicate> replace, BlockStateProvider set, Direction direction, String[] regionKeys, long startTime, long endTime) {
-		this(replace.orElse(null), set, direction, regionKeys, startTime, endTime);
+	private final boolean notifyNeighbors;
+
+	private SetExtendingBlocksBehavior(Optional<BlockPredicate> replace, BlockStateProvider set, Direction direction, String[] regionKeys, long startTime, long endTime, boolean notifyNeighbors) {
+		this(replace.orElse(null), set, direction, regionKeys, startTime, endTime, notifyNeighbors);
 	}
 
-	public SetExtendingBlocksBehavior(BlockPredicate replace, BlockStateProvider set, Direction direction, String[] regionKeys, long startTime, long endTime) {
+	public SetExtendingBlocksBehavior(BlockPredicate replace, BlockStateProvider set, Direction direction, String[] regionKeys, long startTime, long endTime, boolean notifyNeighbors) {
 		this.replace = replace;
 		this.set = set;
 		this.direction = direction;
 		this.regionKeys = regionKeys;
 		this.startTime = startTime;
 		this.endTime = endTime;
+		this.notifyNeighbors = notifyNeighbors;
 	}
 
 	@Override
@@ -72,7 +78,9 @@ public final class SetExtendingBlocksBehavior implements IGameBehavior {
 			long gameTime = game.ticks();
 			if (gameTime >= startTime && gameTime < endTime) {
 				long time = gameTime - startTime;
-				float progress = (float) time / (endTime - startTime + 1);
+				long timeLength = endTime - startTime + 1;
+
+				float progress = MathHelper.clamp((float) time / timeLength, 0.0F, 1.0F);
 
 				for (BlockBox region : regions) {
 					this.tickExtendingInBox(game, region, progress);
@@ -90,10 +98,17 @@ public final class SetExtendingBlocksBehavior implements IGameBehavior {
 		BlockStateProvider set = this.set;
 		Random random = world.rand;
 
+		int flags = Constants.BlockFlags.DEFAULT;
+		if (!notifyNeighbors) {
+			// the constant name is inverted
+			flags |= Constants.BlockFlags.UPDATE_NEIGHBORS;
+		}
+
 		for (BlockPos pos : extendingBox) {
 			if (replace == null || replace.test(world, pos)) {
 				BlockState state = set.getBlockState(random, pos);
-				world.setBlockState(pos, state);
+				state = Block.getValidBlockForPosition(state, world, pos);
+				world.setBlockState(pos, state, flags);
 			}
 		}
 	}
@@ -102,7 +117,7 @@ public final class SetExtendingBlocksBehavior implements IGameBehavior {
 		BlockPos size = box.getSize();
 
 		int totalLength = direction.getAxis().getCoordinate(size.getX(), size.getY(), size.getZ());
-		int currentLength = MathHelper.ceil(totalLength * progress);
+		int currentLength = MathHelper.floor(totalLength * progress);
 
 		if (direction.getAxisDirection() == Direction.AxisDirection.POSITIVE) {
 			return box.withMax(box.min.offset(direction, currentLength));
