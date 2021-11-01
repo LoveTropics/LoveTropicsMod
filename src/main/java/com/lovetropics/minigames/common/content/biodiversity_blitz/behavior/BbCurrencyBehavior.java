@@ -110,13 +110,8 @@ public final class BbCurrencyBehavior implements IGameBehavior {
 	}
 
 	private int computeNextCurrency(ServerPlayerEntity player, Plot plot) {
-		boolean atPlot = plot.walls.getBounds().contains(player.getPositionVec());
-		if (atPlot) {
-			double value = this.computePlotValue(plot);
-			return MathHelper.floor(value);
-		} else {
-			return 0;
-		}
+		double value = this.computePlotValue(plot);
+		return MathHelper.floor(value);
 	}
 
 	private double computePlotValue(Plot plot) {
