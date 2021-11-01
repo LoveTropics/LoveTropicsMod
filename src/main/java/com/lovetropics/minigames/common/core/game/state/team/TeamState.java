@@ -81,7 +81,7 @@ public final class TeamState implements IGameState, Iterable<GameTeam> {
 	private MutablePlayerSet getPlayersForTeamMutable(MinecraftServer server, GameTeamKey team) {
 		MutablePlayerSet players = playersByKey.get(team);
 		if (players == null) {
-			Preconditions.checkState(teams.contains(team), "invalid team " + team);
+			Preconditions.checkState(teams.contains(getTeamByKey(team)), "invalid team " + team);
 			players = new MutablePlayerSet(server);
 			playersByKey.put(team, players);
 		}
