@@ -1,5 +1,7 @@
 package com.lovetropics.minigames.common.core.game.state.team;
 
+import static com.lovetropics.lib.codec.MoreCodecs.inputOptionalFieldOf;
+
 import com.lovetropics.lib.codec.MoreCodecs;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
@@ -16,10 +18,10 @@ public class GameTeamConfig {
 	public static final MapCodec<GameTeamConfig> MAP_CODEC = RecordCodecBuilder.mapCodec(instance -> {
 		return instance.group(
 				MoreCodecs.TEXT.fieldOf("name").forGetter(GameTeamConfig::name),
-				MoreCodecs.DYE_COLOR.optionalFieldOf("dye", DyeColor.WHITE).forGetter(GameTeamConfig::dye),
-				MoreCodecs.FORMATTING.optionalFieldOf("text", TextFormatting.WHITE).forGetter(GameTeamConfig::formatting),
-				MoreCodecs.UUID_STRING.listOf().optionalFieldOf("assign", Collections.emptyList()).forGetter(GameTeamConfig::assignedPlayers),
-				Codec.INT.optionalFieldOf("max_size", Integer.MAX_VALUE).forGetter(GameTeamConfig::maxSize)
+				inputOptionalFieldOf(MoreCodecs.DYE_COLOR, "dye", DyeColor.WHITE).forGetter(GameTeamConfig::dye),
+				inputOptionalFieldOf(MoreCodecs.FORMATTING, "text", TextFormatting.WHITE).forGetter(GameTeamConfig::formatting),
+				inputOptionalFieldOf(MoreCodecs.UUID_STRING.listOf(), "assign", Collections.emptyList()).forGetter(GameTeamConfig::assignedPlayers),
+				inputOptionalFieldOf(Codec.INT, "max_size", Integer.MAX_VALUE).forGetter(GameTeamConfig::maxSize)
 		).apply(instance, GameTeamConfig::new);
 	});
 

@@ -70,6 +70,11 @@ public final class SetupTeamsBehavior implements IGameBehavior {
 	}
 
 	@Override
+	public IGameBehavior configure(ConfigList configs) {
+		return new SetupTeamsBehavior(CFG_TEAMS.getValue(configs));
+	}
+
+	@Override
 	public void registerState(IGamePhase game, GameStateMap state) {
 		teamState = state.register(TeamState.KEY, new TeamState(this.teams));
 	}
