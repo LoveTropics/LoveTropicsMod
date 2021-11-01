@@ -133,7 +133,8 @@ public final class GameConfig extends ScrollPanel {
 	public Optional<IGuiEventListener> getEventListenerForPos(double mouseX, double mouseY) {
 		Optional<IGuiEventListener> ret = super.getEventListenerForPos(mouseX, mouseY);
 		if (!ret.isPresent() || ret.get() != saveButton) {
-			ret = super.getEventListenerForPos(mouseX, mouseY + this.scrollDistance);
+			// Can't allow the save button to activate here, the mouse position is wrong for it
+			ret = super.getEventListenerForPos(mouseX, mouseY + this.scrollDistance).filter(g -> g != saveButton);
 		}
 		return ret;
 	}
@@ -143,6 +144,10 @@ public final class GameConfig extends ScrollPanel {
 		if (this.saveButton.isMouseOver(mouseX, mouseY)) {
 			return saveButton.mouseClicked(mouseX, mouseY, button);
 		}
-		return super.mouseClicked(mouseX, mouseY, button);
+		// Can't allow the save button to activate here, the mouse position is wrong for it
+		this.saveButton.visible = false;
+		boolean ret = super.mouseClicked(mouseX, mouseY, button);
+		this.saveButton.visible = true;
+		return ret;
 	}
 }
