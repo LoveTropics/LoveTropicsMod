@@ -6,10 +6,10 @@ import java.util.stream.Collectors;
 import com.google.common.collect.ImmutableSet;
 
 public enum PlantFamily {
-    CROP("crop", true),
-    PLANT("plant", true),
-    SAPLING("sapling", false),
-    TREE("tree", true);
+    CROP("crop", true, 8),
+    PLANT("plant", true, 6),
+    SAPLING("sapling", false, 0),
+    TREE("tree", true, 2);
 
     public static final ImmutableSet<PlantFamily> BIODIVERSITY_VALUES = ImmutableSet.copyOf(Arrays.stream(values())
     		.filter(f -> f.countsForBiodiversity)
@@ -17,13 +17,19 @@ public enum PlantFamily {
 
     private final String name;
     private final boolean countsForBiodiversity;
+    private final int minBeforeMonoculture;
 
-    PlantFamily(String name, boolean countsForBiodiversity) {
+    PlantFamily(String name, boolean countsForBiodiversity, int minBeforeMonoculture) {
         this.name = name;
         this.countsForBiodiversity = countsForBiodiversity;
+        this.minBeforeMonoculture = minBeforeMonoculture;
     }
 
     public String friendlyName() {
         return name;
+    }
+
+    public int getMinBeforeMonoculture() {
+        return minBeforeMonoculture;
     }
 }

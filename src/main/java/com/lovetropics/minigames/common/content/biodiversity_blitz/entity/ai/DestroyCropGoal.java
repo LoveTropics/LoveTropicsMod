@@ -12,7 +12,7 @@ import net.minecraft.world.server.ServerWorld;
 import java.util.Random;
 
 public class DestroyCropGoal extends MoveToBlockGoal {
-    private static final int DAMAGE_INTERVAL = 40;
+    private static final int DAMAGE_INTERVAL = 35;
 
     private final BbMobEntity mob;
     private int ticksAtTarget = DAMAGE_INTERVAL;
