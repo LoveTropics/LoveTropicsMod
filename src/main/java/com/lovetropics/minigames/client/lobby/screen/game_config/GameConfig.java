@@ -1,7 +1,13 @@
 package com.lovetropics.minigames.client.lobby.screen.game_config;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map.Entry;
+import java.util.Optional;
+
+import javax.annotation.Nullable;
+
 import com.google.common.collect.LinkedHashMultimap;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.lovetropics.minigames.client.lobby.manage.state.ClientLobbyQueuedGame;
 import com.lovetropics.minigames.client.lobby.state.ClientBehaviorMap;
@@ -15,16 +21,13 @@ import com.lovetropics.minigames.common.core.game.behavior.config.ConfigData.Com
 import com.lovetropics.minigames.common.core.game.behavior.config.ConfigData.ListConfigData;
 import com.lovetropics.minigames.common.core.game.behavior.config.ConfigData.SimpleConfigData;
 import com.mojang.blaze3d.matrix.MatrixStack;
+
 import net.minecraft.client.gui.IGuiEventListener;
 import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.widget.button.Button;
 import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.util.text.StringTextComponent;
 import net.minecraftforge.client.gui.ScrollPanel;
-
-import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map.Entry;
-import java.util.Optional;
 
 public final class GameConfig extends ScrollPanel {
 	private final Layout mainLayout;
@@ -35,7 +38,11 @@ public final class GameConfig extends ScrollPanel {
 	
 	private ClientLobbyQueuedGame configuring;
 	private final List<ClientBehaviorMap> configData = new ArrayList<>();
-	private final Multimap<GameBehaviorType<?>, BehaviorConfigUI> children = LinkedHashMultimap.create();
+	private final Multimap<GameBehaviorType<?>, BehaviorConfigUI> configMenus = LinkedHashMultimap.create();
+
+	private final List<IGuiEventListener> children = new ArrayList<>();
+
+	private final Button saveButton;
 
 	public GameConfig(Screen screen, Layout main, Handlers handlers) {
 		super(screen.getMinecraft(), main.background().width(), main.background().height(), main.background().top(),
@@ -44,13 +51,15 @@ public final class GameConfig extends ScrollPanel {
 		this.screen = screen;
 		this.handlers = handlers;
 		this.content = main;
+
+		children.add(this.saveButton = new Button(main.content().right() - 46, main.content().bottom() - 20, 40, 20, new StringTextComponent("Save"), $ -> handlers.saveConfigs()));
 	}
 
 	public interface Handlers {
 
 		void saveConfigs();
 	}
-	
+
 	public void setGame(@Nullable ClientLobbyQueuedGame game) {
 		this.configuring = game;
 		this.configData.clear();
@@ -64,13 +73,16 @@ public final class GameConfig extends ScrollPanel {
 	}
 
 	public void reflow() {
-		this.children.clear();
+		this.configMenus.values().forEach(children::remove);
+		this.configMenus.clear();
 		LayoutTree ltree = new LayoutTree(this.mainLayout.unboundedY());
 		ltree.child(new Box(0, 0, 6, 0), new Box()); // Add margin where the scroll bar is
 		for (ClientBehaviorMap configSet : configData) {
 			for (Entry<GameBehaviorType<?>, ClientConfigList> e : configSet.behaviors.entries()) {
 				if (!e.getValue().configs.isEmpty()) {
-					this.children.put(e.getKey(), new BehaviorConfigUI(this, ltree.child(0, 3), e.getKey(), e.getValue()));
+					BehaviorConfigUI menu = new BehaviorConfigUI(this, ltree.child(0, 3), e.getKey(), e.getValue());
+					this.configMenus.put(e.getKey(), menu);
+					children.add(menu);
 				}
 			}
 		}
@@ -79,7 +91,7 @@ public final class GameConfig extends ScrollPanel {
 
 	@Override
 	public List<? extends IGuiEventListener> getEventListeners() {
-		return Lists.newArrayList(children.values());
+		return children;
 	}
 
 	public IConfigWidget createWidget(LayoutTree ltree, ConfigData value) {
@@ -109,8 +121,9 @@ public final class GameConfig extends ScrollPanel {
 		mStack.push();
 		mStack.translate(0, relativeY - this.top - this.border, 0);
 		this.content.debugRender(mStack);
-		children.values().forEach(ui -> ui.render(mStack, mouseX, mouseY + (int) this.scrollDistance, 0));
+		configMenus.values().forEach(ui -> ui.render(mStack, mouseX, mouseY + (int) this.scrollDistance, 0));
 		mStack.pop();
+		this.saveButton.render(mStack, mouseX, mouseY, mouseY);
 	}
 
 	@Override
@@ -118,6 +131,18 @@ public final class GameConfig extends ScrollPanel {
 
 	@Override
 	public Optional<IGuiEventListener> getEventListenerForPos(double mouseX, double mouseY) {
-		return super.getEventListenerForPos(mouseX, mouseY + this.scrollDistance);
+		Optional<IGuiEventListener> ret = super.getEventListenerForPos(mouseX, mouseY);
+		if (!ret.isPresent() || ret.get() != saveButton) {
+			ret = super.getEventListenerForPos(mouseX, mouseY + this.scrollDistance);
+		}
+		return ret;
+	}
+
+	@Override
+	public boolean mouseClicked(double mouseX, double mouseY, int button) {
+		if (this.saveButton.isMouseOver(mouseX, mouseY)) {
+			return saveButton.mouseClicked(mouseX, mouseY, button);
+		}
+		return super.mouseClicked(mouseX, mouseY, button);
 	}
 }

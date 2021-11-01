@@ -1,17 +1,20 @@
 package com.lovetropics.minigames.client.lobby.manage.state.update;
 
+import java.util.function.Function;
+
 import com.lovetropics.minigames.client.lobby.manage.ServerManageLobbyMessage;
+import com.lovetropics.minigames.client.lobby.manage.state.ClientLobbyQueuedGame;
 import com.lovetropics.minigames.client.lobby.state.ClientGameDefinition;
 import com.lovetropics.minigames.common.core.game.config.GameConfig;
 import com.lovetropics.minigames.common.core.game.config.GameConfigs;
 import com.lovetropics.minigames.common.core.game.lobby.ILobbyManagement;
 import com.lovetropics.minigames.common.core.game.lobby.LobbyControls;
 import com.lovetropics.minigames.common.core.game.lobby.LobbyVisibility;
+import com.lovetropics.minigames.common.core.game.lobby.QueuedGame;
 import com.lovetropics.minigames.common.util.PartialUpdate;
+
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.ResourceLocation;
-
-import java.util.function.Function;
 
 public abstract class ServerLobbyUpdate extends PartialUpdate<ILobbyManagement> {
 	private static final Family<ILobbyManagement> FAMILY = Family.of(Type.values());
@@ -66,6 +69,11 @@ public abstract class ServerLobbyUpdate extends PartialUpdate<ILobbyManagement> 
 			return this;
 		}
 
+		public Set configure(int id, ClientLobbyQueuedGame game) {
+			this.add(new Configure(id, game));
+			return this;
+		}
+
 		public ServerManageLobbyMessage intoMessage(int id) {
 			return ServerManageLobbyMessage.update(id, this);
 		}
@@ -78,7 +86,8 @@ public abstract class ServerLobbyUpdate extends PartialUpdate<ILobbyManagement> 
 		REORDER_QUEUED_GAME(ReorderQueuedGame::decode),
 		SELECT_CONTROL(SelectControl::decode),
 		SET_VISIBILITY(SetVisibility::decode),
-		CLOSE(Close::decode);
+		CLOSE(Close::decode),
+		CONFIGURE(Configure::decode);
 
 		private final Function<PacketBuffer, ServerLobbyUpdate> decode;
 
@@ -258,6 +267,34 @@ public abstract class ServerLobbyUpdate extends PartialUpdate<ILobbyManagement> 
 
 		static Close decode(PacketBuffer buffer) {
 			return new Close();
+		}
+	}
+
+	public static final class Configure extends ServerLobbyUpdate {
+		private final int id;
+		private final ClientLobbyQueuedGame game;
+
+		public Configure(int id, ClientLobbyQueuedGame game) {
+			super(Type.CONFIGURE);
+			this.id = id;
+			this.game = game;
+		}
+
+		@Override
+		public void applyTo(ILobbyManagement lobby) {
+			QueuedGame serverGame = lobby.getQueuedGame(id);
+			serverGame.configurePlaying(game.playingConfigs());
+			serverGame.configureWaiting(game.waitingConfigs());
+		}
+
+		@Override
+		protected void encode(PacketBuffer buffer) {
+			buffer.writeVarInt(id);
+			game.encode(buffer);
+		}
+
+		static Configure decode(PacketBuffer buffer) {
+			return new Configure(buffer.readVarInt(), ClientLobbyQueuedGame.decode(buffer));
 		}
 	}
 }

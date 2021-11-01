@@ -100,6 +100,11 @@ final class LobbyManagement implements ILobbyManagement {
 	}
 
 	@Override
+	public QueuedGame getQueuedGame(int id) {
+		return lobby.gameQueue.getByNetworkId(id);
+	}
+
+	@Override
 	public void selectControl(LobbyControls.Type type) {
 		LobbyControls.Action action = lobby.getControls().get(type);
 		if (action != null) {

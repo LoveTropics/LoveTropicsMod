@@ -1,5 +1,6 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances.team;
 
+import com.lovetropics.minigames.client.lobby.state.ClientConfigList;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.config.BehaviorConfig;
@@ -56,6 +57,11 @@ public final class TeamsBehavior implements IGameBehavior {
 		return ConfigList.builder()
 				.with(CFG_FRIENDLY_FIRE, friendlyFire)
 				.build();
+	}
+
+	@Override
+	public IGameBehavior configure(ConfigList configs) {
+		return new TeamsBehavior(CFG_FRIENDLY_FIRE.getValue(configs));
 	}
 
 	@Override

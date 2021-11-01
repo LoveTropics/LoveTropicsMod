@@ -1,7 +1,12 @@
 package com.lovetropics.minigames.common.core.game.behavior;
 
+import java.util.Map;
+
+import com.lovetropics.minigames.client.lobby.state.ClientConfigList;
 import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
+import com.lovetropics.minigames.common.core.game.behavior.config.BehaviorConfig;
+import com.lovetropics.minigames.common.core.game.behavior.config.ConfigData;
 import com.lovetropics.minigames.common.core.game.behavior.config.ConfigList;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.state.GameStateMap;
@@ -17,6 +22,10 @@ public interface IGameBehavior {
 
 	default ConfigList getConfigurables() {
 		return ConfigList.empty();
+	}
+
+	default IGameBehavior configure(ConfigList configs) {
+		return this;
 	}
 
 //	default IGameBehavior withConfig(ConfigList config) {

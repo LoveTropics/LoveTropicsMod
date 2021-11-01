@@ -94,6 +94,10 @@ public final class ClientLobbyManagement {
 			sendUpdates(ServerLobbyUpdate.Set::close);
 		}
 
+		public void configure(int id) {
+			sendUpdates(updates -> updates.configure(id, session.lobby().getQueue().byId(id)));
+		}
+
 		private void sendUpdates(UnaryOperator<ServerLobbyUpdate.Set> updates) {
 			ServerLobbyUpdate.Set set = ServerLobbyUpdate.Set.create();
 			set = updates.apply(set);

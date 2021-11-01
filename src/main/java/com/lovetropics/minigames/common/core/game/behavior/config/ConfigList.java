@@ -9,7 +9,7 @@ public class ConfigList {
 
 	private final Map<BehaviorConfig<?>, ConfigData> configs;
 
-	private ConfigList(Map<BehaviorConfig<?>, ConfigData> configs) {
+	public ConfigList(Map<BehaviorConfig<?>, ConfigData> configs) {
 		this.configs = configs;
 	}
 

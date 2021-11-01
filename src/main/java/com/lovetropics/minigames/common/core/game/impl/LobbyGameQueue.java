@@ -62,6 +62,12 @@ final class LobbyGameQueue implements ILobbyGameQueue {
 		return true;
 	}
 
+	@Nullable
+	QueuedGame getByNetworkId(int networkId) {
+		int index = indexByNetworkId(networkId);
+		return index != -1 ? entries.get(index) : null;
+	}
+
 	int indexByNetworkId(int networkId) {
 		List<QueuedGame> entries = this.entries;
 		for (int index = 0; index < entries.size(); index++) {

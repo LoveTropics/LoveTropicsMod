@@ -84,7 +84,11 @@ public final class BehaviorConfig<A> extends MapCodec<A> {
 		}
 		return data;
 	}
-	
+
+	public A getValue(ConfigList configs) {
+		return configs.decode(this).getOrThrow(false, IllegalArgumentException::new).getFirst();
+	}
+
 	public String getName() {
 		return name;
 	}

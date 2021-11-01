@@ -19,6 +19,8 @@ public interface ILobbyManagement {
 
 	void reorderQueuedGame(int id, int newIndex);
 
+	QueuedGame getQueuedGame(int id);
+
 	void selectControl(LobbyControls.Type type);
 
 	void setVisibility(LobbyVisibility visibility);
