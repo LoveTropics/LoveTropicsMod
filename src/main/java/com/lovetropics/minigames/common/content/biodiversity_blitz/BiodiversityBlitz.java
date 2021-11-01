@@ -150,6 +150,10 @@ public final class BiodiversityBlitz {
 			.behavior(BbGivePlantsBehavior.CODEC)
 			.register();
 
+	public static final GameBehaviorEntry<SpawnSurpriseWaveBehavior> SPAWN_SURPRISE_WAVE = REGISTRATE.object("spawn_surprise_wave")
+			.behavior(SpawnSurpriseWaveBehavior.CODEC)
+			.register();
+
 	// Client State
 
 	public static final GameClientTweakEntry<CheckeredPlotsState> CHECKERED_PLOTS_STATE = REGISTRATE.object("checkered_plots")

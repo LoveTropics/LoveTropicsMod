@@ -5,6 +5,7 @@ import com.lovetropics.minigames.common.content.biodiversity_blitz.BiodiversityB
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.event.BbEvents;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.BbCreeperEntity;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.BbHuskEntity;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.BbMobSpawner;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.BbPillagerEntity;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.Plot;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.PlotsState;
@@ -172,30 +173,11 @@ public final class BbWaveSpawnerBehavior implements IGameBehavior {
 			count++;
 		}
 
-		Set<Entity> entities = this.spawnWaveEntities(world, random, plot, count, waveIndex);
+		Set<Entity> entities = BbMobSpawner.spawnWaveEntities(world, random, plot, count, waveIndex, BbMobSpawner::selectEntityForWave);
 		ServerBossInfo bossBar = this.createWaveBar(player, waveIndex, count, entities);
 
 		WaveTracker wave = new WaveTracker(bossBar, entities);
 		waveTrackers.computeIfAbsent(player.getUniqueID(), $ -> new ArrayList<>()).add(wave);
-	}
-
-	private Set<Entity> spawnWaveEntities(ServerWorld world, Random random, Plot plot, int count, int waveIndex) {
-		Set<Entity> entities = Collections.newSetFromMap(new WeakHashMap<>());
-		for (int i = 0; i < count; i++) {
-			BlockPos pos = plot.mobSpawn.sample(random);
-
-			MobEntity entity = selectEntityForWave(random, world, plot, waveIndex);
-
-			Direction direction = plot.forward.getOpposite();
-			entity.setLocationAndAngles(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5, direction.getHorizontalAngle(), 0);
-
-			world.addEntity(entity);
-
-			entity.onInitialSpawn(world, world.getDifficultyForLocation(pos), SpawnReason.MOB_SUMMONED, null, null);
-			entities.add(entity);
-		}
-
-		return entities;
 	}
 
 	private ServerBossInfo createWaveBar(ServerPlayerEntity player, int waveIndex, int count, Set<Entity> entities) {
@@ -205,19 +187,6 @@ public final class BbWaveSpawnerBehavior implements IGameBehavior {
 		bossBar.addPlayer(player);
 
 		return bossBar;
-	}
-
-	// TODO: data-drive, more entity types & getting harder as time goes on
-	private static MobEntity selectEntityForWave(Random random, World world, Plot plot, int waveIndex) {
-		if (random.nextInt(8) == 0 && waveIndex > 4) {
-			return new BbCreeperEntity(EntityType.CREEPER, world, plot);
-		}
-
-		if (random.nextInt(3) == 0 && waveIndex > 2) {
-			return new BbPillagerEntity(EntityType.PILLAGER, world, plot);
-		}
-
-		return new BbHuskEntity(EntityType.HUSK, world, plot);
 	}
 
 	static final class WaveTracker {
