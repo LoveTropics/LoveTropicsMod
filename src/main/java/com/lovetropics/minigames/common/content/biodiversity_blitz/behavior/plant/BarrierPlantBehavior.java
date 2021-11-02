@@ -30,7 +30,7 @@ public final class BarrierPlantBehavior implements IGameBehavior {
 	public void register(IGamePhase game, EventRegistrar events) {
 		events.listen(BbPlantEvents.TICK, (player, plot, plants) -> {
 			long ticks = game.ticks();
-			if (ticks % 20 != 0) return;
+			if (ticks % 10 != 0) return;
 
 			ServerWorld world = game.getWorld();
 
