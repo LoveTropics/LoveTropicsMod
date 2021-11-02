@@ -31,7 +31,7 @@ public final class BbClientStateBehavior implements IGameBehavior {
 		events.listen(GamePlayerEvents.ADD, this::addPlayer);
 		events.listen(GamePlayerEvents.REMOVE, this::removePlayer);
 
-		events.listen(BbEvents.CURRENCY_CHANGED, (player, value, lastValue) -> {
+		events.listen(BbEvents.CURRENCY_ACCUMULATE, (player, value, lastValue) -> {
 			this.updateState(player, currency -> currency.value = value);
 		});
 

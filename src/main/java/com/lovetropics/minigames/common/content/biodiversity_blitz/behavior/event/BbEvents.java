@@ -65,6 +65,12 @@ public final class BbEvents {
 		}
 	});
 
+	public static final GameEventType<CurrencyChanged> CURRENCY_ACCUMULATE = GameEventType.create(CurrencyChanged.class, listeners -> (player, value, lastValue) -> {
+		for (CurrencyChanged listener : listeners) {
+			listener.onCurrencyChanged(player, value, lastValue);
+		}
+	});
+
 	public static final GameEventType<CurrencyChanged> CURRENCY_INCREMENT_CHANGED = GameEventType.create(CurrencyChanged.class, listeners -> (player, value, lastValue) -> {
 		for (CurrencyChanged listener : listeners) {
 			listener.onCurrencyChanged(player, value, lastValue);

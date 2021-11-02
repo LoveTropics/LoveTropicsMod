@@ -65,7 +65,7 @@ public final class BbClientRenderEffects {
 
 		String currency = String.valueOf(selfState.getCurrency());
 		if (currencyTarget != null) {
-			currency = currency + TextFormatting.GRAY + "/" + currencyTarget.getValue();
+			currency = TextFormatting.GRAY + "Total: " + TextFormatting.WHITE + currency + TextFormatting.GRAY + "/" + currencyTarget.getValue();
 		}
 
 		font.drawStringWithShadow(

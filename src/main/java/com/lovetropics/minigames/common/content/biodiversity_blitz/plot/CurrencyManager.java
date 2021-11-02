@@ -25,6 +25,7 @@ public final class CurrencyManager implements IGameState {
 	private final Predicate<ItemStack> itemPredicate;
 
 	private final Object2IntMap<UUID> trackedValues = new Object2IntOpenHashMap<>();
+	private final Object2IntOpenHashMap<UUID> accumulator = new Object2IntOpenHashMap<>();
 
 	public CurrencyManager(IGamePhase game, Item item) {
 		this.game = game;
@@ -71,6 +72,13 @@ public final class CurrencyManager implements IGameState {
 	public int add(ServerPlayerEntity player, int amount) {
 		int added = this.addToInventory(player, amount);
 		this.incrementTracked(player, added);
+
+		// Accumulate currency
+		int lastValue = this.accumulator.getInt(player.getUniqueID());
+		this.accumulator.addTo(player.getUniqueID(), added);
+
+		this.game.invoker(BbEvents.CURRENCY_ACCUMULATE).onCurrencyChanged(player, accumulator.getInt(player.getUniqueID()), lastValue);
+
 		return added;
 	}
 
