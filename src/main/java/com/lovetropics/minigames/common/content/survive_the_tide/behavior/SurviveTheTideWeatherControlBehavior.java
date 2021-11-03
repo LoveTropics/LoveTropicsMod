@@ -11,6 +11,7 @@ import com.lovetropics.minigames.common.core.game.state.weather.GameWeatherState
 import com.lovetropics.minigames.common.core.game.state.weather.WeatherEventType;
 import com.mojang.serialization.Codec;
 import net.minecraft.world.server.ServerWorld;
+import net.minecraft.world.storage.IServerWorldInfo;
 
 import java.util.Random;
 
@@ -113,6 +114,15 @@ public class SurviveTheTideWeatherControlBehavior implements IGameBehavior {
             } else {
                 weather.setWind(config.getWindSpeed(phase.key));
             }
+        }
+
+        IServerWorldInfo worldInfo = (IServerWorldInfo) world.getWorldInfo();
+        if (weather.getEventType() == WeatherEventType.HEAVY_RAIN || weather.getEventType() == WeatherEventType.ACID_RAIN) {
+            worldInfo.setRaining(true);
+            worldInfo.setThundering(true);
+        } else {
+            worldInfo.setRaining(false);
+            worldInfo.setThundering(false);
         }
     }
 
