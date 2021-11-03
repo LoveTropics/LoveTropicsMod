@@ -163,8 +163,8 @@ public class GamePhase implements IGamePhase {
 		PlayerSnapshot.clearPlayer(player);
 
 		try {
-			invoker(GamePlayerEvents.JOIN).onAdd(player);
 			invoker(GamePlayerEvents.ADD).onAdd(player);
+			invoker(GamePlayerEvents.JOIN).onAdd(player);
 
 			invoker(GamePlayerEvents.SPAWN).onSpawn(player, null);
 		} catch (Exception e) {

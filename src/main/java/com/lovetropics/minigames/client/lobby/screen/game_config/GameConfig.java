@@ -51,6 +51,7 @@ public final class GameConfig extends ScrollPanel {
 		this.content = main;
 
 		children.add(this.saveButton = new Button(main.content().right() - 46, main.content().bottom() - 20, 40, 20, new StringTextComponent("Save"), $ -> handlers.saveConfigs()));
+		this.saveButton.active = false;
 	}
 
 	public interface Handlers {

@@ -67,6 +67,7 @@ public final class PlayerSnapshot {
 
 		player.clearActivePotions();
 		player.setGlowing(false);
+		player.setArrowCountInEntity(0);
 
 		CompoundNBT foodTag = new CompoundNBT();
 		new FoodStats().write(foodTag);
