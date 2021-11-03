@@ -9,6 +9,8 @@ import net.minecraft.network.NetworkManager;
 import net.minecraft.potion.EffectInstance;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.management.PlayerList;
+import net.minecraft.util.SoundCategory;
+import net.minecraft.util.SoundEvent;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraftforge.fml.network.PacketDistributor;
 import net.minecraftforge.fml.network.simple.SimpleChannel;
@@ -47,6 +49,13 @@ public interface PlayerIterable extends PlayerOps, Iterable<ServerPlayerEntity> 
 	default void addPotionEffect(EffectInstance effect) {
 		for (ServerPlayerEntity player : this) {
 			player.addPotionEffect(effect);
+		}
+	}
+
+	@Override
+	default void playSound(SoundEvent sound, SoundCategory category, float volume, float pitch) {
+		for (ServerPlayerEntity player : this) {
+			player.playSound(sound, category, volume, pitch);
 		}
 	}
 

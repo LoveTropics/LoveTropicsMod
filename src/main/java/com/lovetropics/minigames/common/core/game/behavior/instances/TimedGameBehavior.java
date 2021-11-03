@@ -4,43 +4,51 @@ import com.lovetropics.minigames.common.core.game.GameStopReason;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
-import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameLogicEvents;
+import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.lovetropics.minigames.common.core.game.util.GameBossBar;
 import com.lovetropics.minigames.common.core.game.util.GlobalGameWidgets;
+import com.lovetropics.minigames.common.core.game.util.TemplatedText;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.util.SoundCategory;
+import net.minecraft.util.SoundEvents;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.BossInfo;
+
+import java.util.Optional;
 
 public final class TimedGameBehavior implements IGameBehavior {
 	public static final Codec<TimedGameBehavior> CODEC = RecordCodecBuilder.create(instance -> {
 		return instance.group(
 				Codec.LONG.optionalFieldOf("length", 20L * 60).forGetter(c -> c.length),
 				Codec.LONG.optionalFieldOf("close_length", 0L).forGetter(c -> c.closeTime - c.length),
-				Codec.BOOL.optionalFieldOf("timer_bar", false).forGetter(c -> c.hasTimerBar)
+				TemplatedText.CODEC.optionalFieldOf("timer_bar").forGetter(c -> Optional.ofNullable(c.timerBarText)),
+				Codec.LONG.optionalFieldOf("countdown_seconds", 0L).forGetter(c -> c.countdownSeconds)
 		).apply(instance, TimedGameBehavior::new);
 	});
 
 	private final long length;
 	private final long closeTime;
-	private final boolean hasTimerBar;
+	private final TemplatedText timerBarText;
+	private final long countdownSeconds;
 
 	private GameBossBar timerBar;
 
-	public TimedGameBehavior(long length, long closeTime, boolean timerBar) {
+	public TimedGameBehavior(long length, long closeTime, Optional<TemplatedText> timerBar, long countdownSeconds) {
 		this.length = length;
 		this.closeTime = length + closeTime;
-		this.hasTimerBar = timerBar;
+		this.timerBarText = timerBar.orElse(null);
+		this.countdownSeconds = countdownSeconds;
 	}
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
 		events.listen(GamePhaseEvents.TICK, () -> onTick(game));
 
-		if (hasTimerBar) {
+		if (timerBarText != null) {
 			GlobalGameWidgets widgets = GlobalGameWidgets.registerTo(game, events);
 			timerBar = widgets.openBossBar(new StringTextComponent(""), BossInfo.Color.GREEN, BossInfo.Overlay.PROGRESS);
 		}
@@ -59,9 +67,20 @@ public final class TimedGameBehavior implements IGameBehavior {
 
 		if (ticks % 20 == 0 && timerBar != null) {
 			long ticksRemaining = Math.max(length - ticks, 0);
+			long secondsRemaining = ticksRemaining / 20;
+
+			if (secondsRemaining < countdownSeconds) {
+				playCountdownSound(game, secondsRemaining);
+			}
+
 			timerBar.setTitle(this.getTimeRemainingText(ticksRemaining));
 			timerBar.setProgress((float) ticksRemaining / length);
 		}
+	}
+
+	private void playCountdownSound(IGamePhase game, long seconds) {
+		float pitch = seconds == 0 ? 1.5F : 1.0F;
+		game.getAllPlayers().playSound(SoundEvents.ENTITY_ARROW_HIT_PLAYER, SoundCategory.MASTER, 0.8F, pitch);
 	}
 
 	private ITextComponent getTimeRemainingText(long ticksRemaining) {
@@ -71,8 +90,6 @@ public final class TimedGameBehavior implements IGameBehavior {
 		long seconds = secondsRemaining % 60;
 		String time = String.format("%02d:%02d", minutes, seconds);
 
-		return new StringTextComponent("Time Remaining: ")
-				.appendSibling(new StringTextComponent(time).mergeStyle(TextFormatting.GRAY))
-				.appendString("...");
+		return timerBarText.apply(new StringTextComponent(time).mergeStyle(TextFormatting.GRAY));
 	}
 }
