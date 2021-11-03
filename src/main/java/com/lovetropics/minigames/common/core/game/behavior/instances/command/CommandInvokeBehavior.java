@@ -1,6 +1,5 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances.command;
 
-import com.lovetropics.lib.codec.MoreCodecs;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
@@ -17,8 +16,6 @@ import net.minecraft.util.text.StringTextComponent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.util.List;
-import java.util.Map;
 import java.util.function.Function;
 
 public abstract class CommandInvokeBehavior implements IGameBehavior {
@@ -34,37 +31,18 @@ public abstract class CommandInvokeBehavior implements IGameBehavior {
 			Function.identity()
 	);
 
-	public static final Codec<Map<String, List<String>>> COMMANDS_CODEC = Codec.unboundedMap(Codec.STRING, MoreCodecs.listOrUnit(COMMAND_CODEC));
+	protected CommandDispatcher<CommandSource> dispatcher;
+	protected CommandSource source;
 
-	protected final Map<String, List<String>> commands;
-
-	private CommandDispatcher<CommandSource> dispatcher;
-	private CommandSource source;
-
-	public CommandInvokeBehavior(Map<String, List<String>> commands) {
-		this.commands = commands;
+	public void invokeCommand(String command) {
+		this.invokeCommand(command, this.source);
 	}
 
-	public void invoke(String key) {
-		this.invoke(key, this.source);
-	}
-
-	public void invoke(String key, Entity source) {
-		this.invoke(key, this.sourceForEntity(source));
-	}
-
-	public void invoke(String key, CommandSource source) {
-		List<String> commands = this.commands.get(key);
-		if (commands == null || commands.isEmpty()) {
-			return;
-		}
-
-		for (String command : commands) {
-			try {
-				this.dispatcher.execute(command, source);
-			} catch (CommandSyntaxException e) {
-				LOGGER.error("Failed to execute command `{}` for {}", command, key, e);
-			}
+	public void invokeCommand(String command, CommandSource source) {
+		try {
+			this.dispatcher.execute(command, source);
+		} catch (CommandSyntaxException e) {
+			LOGGER.error("Failed to execute command `{}` for {}", command, e);
 		}
 	}
 

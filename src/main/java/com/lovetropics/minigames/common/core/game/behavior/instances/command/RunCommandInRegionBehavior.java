@@ -11,7 +11,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
 import java.util.Map;
 
-public final class RunCommandInRegionBehavior extends CommandInvokeBehavior {
+public final class RunCommandInRegionBehavior extends CommandInvokeMapBehavior {
 	public static final Codec<RunCommandInRegionBehavior> CODEC = RecordCodecBuilder.create(instance -> {
 		return instance.group(
 				COMMANDS_CODEC.fieldOf("regions").forGetter(c -> c.commands),

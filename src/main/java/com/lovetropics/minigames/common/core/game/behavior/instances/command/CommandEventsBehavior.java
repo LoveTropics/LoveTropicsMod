@@ -11,7 +11,7 @@ import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 
-public final class CommandEventsBehavior extends CommandInvokeBehavior {
+public final class CommandEventsBehavior extends CommandInvokeMapBehavior {
 	public static final Codec<CommandEventsBehavior> CODEC = COMMANDS_CODEC.xmap(CommandEventsBehavior::new, c -> c.commands);
 
 	public CommandEventsBehavior(Map<String, List<String>> commands) {
@@ -25,7 +25,7 @@ public final class CommandEventsBehavior extends CommandInvokeBehavior {
 
 		events.listen(GamePhaseEvents.START, () -> this.invoke("start"));
 		events.listen(GamePhaseEvents.TICK, () -> this.invoke("update"));
-		events.listen(GamePhaseEvents.STOP, (reason) -> {
+		events.listen(GamePhaseEvents.STOP, reason -> {
 			this.invoke("stop");
 			if (reason.isFinished()) {
 				this.invoke("finish");

@@ -11,7 +11,7 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import java.util.List;
 import java.util.Map;
 
-public final class BindControlsBehavior extends CommandInvokeBehavior {
+public final class BindControlsBehavior extends CommandInvokeMapBehavior {
 	public static final Codec<BindControlsBehavior> CODEC = RecordCodecBuilder.create(instance -> {
 		return instance.group(
 			Codec.unboundedMap(ControlCommand.Scope.CODEC, COMMANDS_CODEC).fieldOf("controls").forGetter(c -> c.scopedCommands)
