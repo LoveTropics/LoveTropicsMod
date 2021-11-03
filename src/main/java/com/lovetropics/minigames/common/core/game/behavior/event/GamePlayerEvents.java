@@ -68,6 +68,13 @@ public final class GamePlayerEvents {
 		return ActionResultType.PASS;
 	});
 
+	public static final GameEventType<DamageAmount> DAMAGE_AMOUNT = GameEventType.create(DamageAmount.class, listeners -> (player, damageSource, amount, originalAmount) -> {
+		for (DamageAmount listener : listeners) {
+			amount = listener.getDamageAmount(player, damageSource, amount, originalAmount);
+		}
+		return amount;
+	});
+
 	public static final GameEventType<Attack> ATTACK = GameEventType.create(Attack.class, listeners -> (player, target) -> {
 		for (Attack listener : listeners) {
 			ActionResultType result = listener.onAttack(player, target);
@@ -191,6 +198,10 @@ public final class GamePlayerEvents {
 
 	public interface Damage {
 		ActionResultType onDamage(ServerPlayerEntity player, DamageSource damageSource, float amount);
+	}
+
+	public interface DamageAmount {
+		float getDamageAmount(ServerPlayerEntity player, DamageSource damageSource, float amount, float originalAmount);
 	}
 
 	public interface Attack {

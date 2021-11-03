@@ -68,9 +68,19 @@ public final class GameEventDispatcher {
 			IGamePhase game = gameLookup.getGamePhaseFor(entity);
 			if (game != null) {
 				try {
-					ActionResultType result = game.invoker(GamePlayerEvents.DAMAGE).onDamage((ServerPlayerEntity) entity, event.getSource(), event.getAmount());
+					ServerPlayerEntity player = (ServerPlayerEntity) entity;
+					DamageSource source = event.getSource();
+					float amount = event.getAmount();
+
+					ActionResultType result = game.invoker(GamePlayerEvents.DAMAGE).onDamage(player, source, amount);
 					if (result == ActionResultType.FAIL) {
 						event.setCanceled(true);
+						return;
+					}
+
+					float newAmount = game.invoker(GamePlayerEvents.DAMAGE_AMOUNT).getDamageAmount(player, source, amount, amount);
+					if (newAmount != amount) {
+						event.setAmount(newAmount);
 					}
 				} catch (Exception e) {
 					LoveTropics.LOGGER.warn("Failed to dispatch player hurt event", e);
