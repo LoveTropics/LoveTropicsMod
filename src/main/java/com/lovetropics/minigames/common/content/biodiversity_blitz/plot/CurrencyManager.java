@@ -4,6 +4,7 @@ import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.even
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.state.GameStateKey;
 import com.lovetropics.minigames.common.core.game.state.IGameState;
+import com.lovetropics.minigames.common.core.game.state.statistics.StatisticKey;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.minecraft.entity.player.ServerPlayerEntity;
@@ -73,13 +74,19 @@ public final class CurrencyManager implements IGameState {
 		int added = this.addToInventory(player, amount);
 		this.incrementTracked(player, added);
 
-		// Accumulate currency
-		int lastValue = this.accumulator.getInt(player.getUniqueID());
-		this.accumulator.addTo(player.getUniqueID(), added);
-
-		this.game.invoker(BbEvents.CURRENCY_ACCUMULATE).onCurrencyChanged(player, accumulator.getInt(player.getUniqueID()), lastValue);
+		this.accumulateCurrency(player, added);
 
 		return added;
+	}
+
+	private void accumulateCurrency(ServerPlayerEntity player, int added) {
+		int lastValue = this.accumulator.addTo(player.getUniqueID(), added);
+		int newValue = lastValue + added;
+
+		this.game.invoker(BbEvents.CURRENCY_ACCUMULATE).onCurrencyChanged(player, newValue, lastValue);
+
+		this.game.getStatistics().forPlayer(player)
+				.set(StatisticKey.POINTS, newValue);
 	}
 
 	public int remove(ServerPlayerEntity player, int amount) {

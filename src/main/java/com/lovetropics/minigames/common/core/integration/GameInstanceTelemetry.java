@@ -62,6 +62,7 @@ public final class GameInstanceTelemetry implements IGameState {
 		JsonObject payload = new JsonObject();
 		payload.addProperty("finish_time_utc", Instant.now().getEpochSecond());
 		payload.add("statistics", statistics.serialize());
+		payload.add("participants", serializeParticipantsArray());
 
 		post(ConfigLT.TELEMETRY.minigameEndEndpoint.get(), payload);
 
