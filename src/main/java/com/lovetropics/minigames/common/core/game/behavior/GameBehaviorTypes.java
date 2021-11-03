@@ -115,7 +115,7 @@ public class GameBehaviorTypes {
 		TIMED = register("timed", TimedGameBehavior.CODEC);
 		IMMEDIATE_RESPAWN = register("immediate_respawn", ImmediateRespawnBehavior.CODEC);
 		COMMANDS = register("commands", CommandEventsBehavior.CODEC);
-		SCHEDULED_COMMANDS = register("scheduled_messages", ScheduledCommandsBehavior.CODEC);
+		SCHEDULED_COMMANDS = register("scheduled_commands", ScheduledCommandsBehavior.CODEC);
 		SET_GAME_TYPES = register("set_game_types", SetGameTypesBehavior.CODEC);
 		PHASE_CONTROLLER = register("phase_controller", PhaseControllerBehavior.CODEC);
 		SCHEDULED_MESSAGES = register("scheduled_messages", ScheduledMessagesBehavior.CODEC);
