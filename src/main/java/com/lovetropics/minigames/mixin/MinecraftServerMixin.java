@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.mixin;
 
-import com.lovetropics.minigames.common.core.game.impl.MultiGameManager;
+import com.lovetropics.minigames.LoveTropics;
 import net.minecraft.server.MinecraftServer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -11,6 +11,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class MinecraftServerMixin {
 	@Inject(method = "stopServer", at = @At("HEAD"))
 	private void stopServer(CallbackInfo ci) {
-		MultiGameManager.onServerUnstoppingUnsafely((MinecraftServer) (Object) this);
+		LoveTropics.onServerStoppingUnsafely((MinecraftServer) (Object) this);
 	}
 }

@@ -239,7 +239,7 @@ public class MultiGameManager implements IGameManager {
 		}
 	}
 
-	public static void onServerUnstoppingUnsafely(MinecraftServer server) {
+	public static void onServerStoppingUnsafely(MinecraftServer server) {
 		List<GameLobby> lobbies = INSTANCE.lobbies;
 		if (!lobbies.isEmpty()) {
 			onServerStoppingUngracefully(server, lobbies);

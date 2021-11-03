@@ -11,15 +11,17 @@ import com.lovetropics.minigames.common.content.hide_and_seek.HideAndSeek;
 import com.lovetropics.minigames.common.content.survive_the_tide.SurviveTheTide;
 import com.lovetropics.minigames.common.content.survive_the_tide.entity.DriftwoodRider;
 import com.lovetropics.minigames.common.content.trash_dive.TrashDive;
-import com.lovetropics.minigames.common.core.command.LoveTropicsEntityOptions;
-import com.lovetropics.minigames.common.core.game.client_state.GameClientStateTypes;
 import com.lovetropics.minigames.common.core.command.ExtendedBossBarCommand;
+import com.lovetropics.minigames.common.core.command.LoveTropicsEntityOptions;
 import com.lovetropics.minigames.common.core.command.MapCommand;
 import com.lovetropics.minigames.common.core.command.game.*;
 import com.lovetropics.minigames.common.core.diguise.PlayerDisguise;
+import com.lovetropics.minigames.common.core.dimension.RuntimeDimensions;
 import com.lovetropics.minigames.common.core.game.IGameManager;
 import com.lovetropics.minigames.common.core.game.behavior.GameBehaviorTypes;
+import com.lovetropics.minigames.common.core.game.client_state.GameClientStateTypes;
 import com.lovetropics.minigames.common.core.game.impl.GameEventDispatcher;
+import com.lovetropics.minigames.common.core.game.impl.MultiGameManager;
 import com.lovetropics.minigames.common.core.game.util.GameTexts;
 import com.lovetropics.minigames.common.core.integration.Telemetry;
 import com.lovetropics.minigames.common.core.map.VoidChunkGenerator;
@@ -32,6 +34,7 @@ import com.tterrag.registrate.util.NonNullLazyValue;
 import net.minecraft.command.CommandSource;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
+import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.ForgeConfig;
@@ -200,5 +203,10 @@ public class LoveTropics {
 
     public static Capability<PlayerDisguise> playerDisguiseCap() {
         return Preconditions.checkNotNull(playerDisguiseCap, "player disguise capability not initialized");
+    }
+
+    public static void onServerStoppingUnsafely(MinecraftServer server) {
+        MultiGameManager.onServerStoppingUnsafely(server);
+        RuntimeDimensions.onServerStoppingUnsafely(server);
     }
 }

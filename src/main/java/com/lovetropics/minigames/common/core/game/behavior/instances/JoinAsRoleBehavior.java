@@ -8,6 +8,7 @@ import com.lovetropics.minigames.common.core.game.player.PlayerRole;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
+// TODO: rename this is not very clear!
 public final class JoinAsRoleBehavior implements IGameBehavior {
 	public static final Codec<JoinAsRoleBehavior> CODEC = RecordCodecBuilder.create(instance -> {
 		return instance.group(

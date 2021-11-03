@@ -75,6 +75,14 @@ public final class RuntimeDimensions {
 
 	@SubscribeEvent
 	public static void onServerStopping(FMLServerStoppingEvent event) {
+		RuntimeDimensions.tryStop();
+	}
+
+	public static void onServerStoppingUnsafely(MinecraftServer server) {
+		RuntimeDimensions.tryStop();
+	}
+
+	private static void tryStop() {
 		RuntimeDimensions instance = RuntimeDimensions.instance;
 		if (instance != null) {
 			RuntimeDimensions.instance = null;
