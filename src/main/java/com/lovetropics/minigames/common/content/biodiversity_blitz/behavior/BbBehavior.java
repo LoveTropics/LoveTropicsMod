@@ -227,7 +227,9 @@ public final class BbBehavior implements IGameBehavior {
 
 		player.playSound(SoundEvents.ENTITY_ARROW_HIT_PLAYER, SoundCategory.PLAYERS, 0.18F, 1.0F);
 		player.addPotionEffect(new EffectInstance(Effects.BLINDNESS, 80));
-        player.connection.sendPacket(new STitlePacket(40, 20, 0));
+		player.addPotionEffect(new EffectInstance(Effects.RESISTANCE, 255, 80));
+
+		player.connection.sendPacket(new STitlePacket(40, 20, 0));
         player.connection.sendPacket(new STitlePacket(STitlePacket.Type.TITLE, BiodiversityBlitzTexts.deathTitle().mergeStyle(TextFormatting.RED)));
 
 		return ActionResultType.FAIL;
