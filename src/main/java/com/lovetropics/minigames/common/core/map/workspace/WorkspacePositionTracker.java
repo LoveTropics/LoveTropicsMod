@@ -1,6 +1,7 @@
 package com.lovetropics.minigames.common.core.map.workspace;
 
 import com.lovetropics.minigames.Constants;
+import com.lovetropics.minigames.common.core.dimension.RuntimeDimensions;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.server.MinecraftServer;
@@ -87,8 +88,15 @@ public final class WorkspacePositionTracker {
 		if (fromWorkspace != null) {
 			WorkspacePositionTracker.setPositionFor(player, fromWorkspace, position);
 		} else {
-			WorkspacePositionTracker.setReturnPositionFor(player, position);
+			if (isValidReturnDimension(server, from)) {
+				WorkspacePositionTracker.setReturnPositionFor(player, position);
+			}
 		}
+	}
+
+	private static boolean isValidReturnDimension(MinecraftServer server, RegistryKey<World> dimension) {
+		RuntimeDimensions dimensions = RuntimeDimensions.get(server);
+		return !dimensions.isTemporaryDimension(dimension);
 	}
 
 	@SubscribeEvent

@@ -251,4 +251,8 @@ public final class RuntimeDimensions {
 		String random = RandomStringUtils.random(16, "abcdefghijklmnopqrstuvwxyz0123456789");
 		return new ResourceLocation(Constants.MODID, "tmp_" + random);
 	}
+
+	public boolean isTemporaryDimension(RegistryKey<World> dimension) {
+		return this.temporaryDimensions.contains(dimension);
+	}
 }
