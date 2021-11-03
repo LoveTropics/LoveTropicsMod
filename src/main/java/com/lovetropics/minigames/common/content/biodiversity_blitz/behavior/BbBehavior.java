@@ -63,7 +63,7 @@ public final class BbBehavior implements IGameBehavior {
 		this.currency = game.getState().getOrNull(CurrencyManager.KEY);
 
 		events.listen(GamePlayerEvents.ADD, player -> setupPlayerAsRole(player, null));
-		events.listen(GamePlayerEvents.SET_ROLE, (player, role, lastRole) -> setupPlayerAsRole(player, role));
+		events.listen(GamePlayerEvents.SPAWN, this::setupPlayerAsRole);
 		events.listen(BbEvents.ASSIGN_PLOT, this::onAssignPlot);
 		events.listen(GamePhaseEvents.TICK, () -> tick(game));
 		events.listen(GamePlayerEvents.DEATH, this::onPlayerDeath);

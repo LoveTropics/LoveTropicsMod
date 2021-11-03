@@ -87,6 +87,7 @@ public final class HideAndSeekBehavior implements IGameBehavior {
 
 		events.listen(GamePhaseEvents.START, this::start);
 
+		events.listen(GamePlayerEvents.SPAWN, (player, role) -> this.spawnPlayer(player));
 		events.listen(GamePlayerEvents.SET_ROLE, this::onPlayerSetRole);
 		events.listen(GamePlayerEvents.ATTACK, this::onPlayerAttack);
 		events.listen(GamePlayerEvents.DEATH, this::onPlayerDeath);
@@ -114,8 +115,6 @@ public final class HideAndSeekBehavior implements IGameBehavior {
 	}
 
 	private void onPlayerSetRole(ServerPlayerEntity player, PlayerRole role, PlayerRole lastRole) {
-		this.spawnPlayer(player);
-
 		if (lastRole == PlayerRole.PARTICIPANT) {
 			this.removeParticipant(player);
 		}

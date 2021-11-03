@@ -48,19 +48,25 @@ public final class ImmediateRespawnBehavior implements IGameBehavior {
 	private ActionResultType onPlayerDeath(IGamePhase game, ServerPlayerEntity player) {
 		player.inventory.dropAllItems();
 
-		if (this.role == null || this.role == game.getRoleFor(player)) {
-			if (this.respawnAsRole != null) {
-				game.setPlayerRole(player, this.respawnAsRole);
-			}
-
-			player.setHealth(20.0F);
-
+		PlayerRole playerRole = game.getRoleFor(player);
+		if (this.role == null || this.role == playerRole) {
+			this.respawnPlayer(game, player, playerRole);
 			this.sendDeathMessage(game, player);
 
 			return ActionResultType.FAIL;
 		}
 
 		return ActionResultType.PASS;
+	}
+
+	private void respawnPlayer(IGamePhase game, ServerPlayerEntity player, PlayerRole playerRole) {
+		if (respawnAsRole != null) {
+			game.setPlayerRole(player, respawnAsRole);
+		} else {
+			game.invoker(GamePlayerEvents.SPAWN).onSpawn(player, playerRole);
+		}
+
+		player.setHealth(20.0F);
 	}
 
 	private void sendDeathMessage(IGamePhase game, ServerPlayerEntity player) {

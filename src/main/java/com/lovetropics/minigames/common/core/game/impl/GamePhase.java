@@ -153,6 +153,7 @@ public class GamePhase implements IGamePhase {
 	private void onSetPlayerRole(ServerPlayerEntity player, @Nullable PlayerRole role, @Nullable PlayerRole lastRole) {
 		try {
 			invoker(GamePlayerEvents.SET_ROLE).onSetRole(player, role, lastRole);
+			invoker(GamePlayerEvents.SPAWN).onSpawn(player, role);
 		} catch (Exception e) {
 			LoveTropics.LOGGER.warn("Failed to dispatch player set role event", e);
 		}
@@ -164,6 +165,8 @@ public class GamePhase implements IGamePhase {
 		try {
 			invoker(GamePlayerEvents.JOIN).onAdd(player);
 			invoker(GamePlayerEvents.ADD).onAdd(player);
+
+			invoker(GamePlayerEvents.SPAWN).onSpawn(player, null);
 		} catch (Exception e) {
 			LoveTropics.LOGGER.warn("Failed to dispatch player join event", e);
 		}

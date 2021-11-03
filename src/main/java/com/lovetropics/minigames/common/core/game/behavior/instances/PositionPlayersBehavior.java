@@ -67,11 +67,10 @@ public class PositionPlayersBehavior implements IGameBehavior {
 			allSpawnRegions.addAll(regions.get(key));
 		}
 
-		events.listen(GamePlayerEvents.ADD, player -> setupPlayerAsRole(game, player, null));
-		events.listen(GamePlayerEvents.SET_ROLE, (player, role, lastRole) -> setupPlayerAsRole(game, player, role));
+		events.listen(GamePlayerEvents.SPAWN, (player, role) -> spawnPlayerAsRole(game, player, role));
 	}
 
-	private void setupPlayerAsRole(IGamePhase game, ServerPlayerEntity player, @Nullable PlayerRole role) {
+	private void spawnPlayerAsRole(IGamePhase game, ServerPlayerEntity player, @Nullable PlayerRole role) {
 		BlockBox region = getSpawnRegionFor(role);
 		if (region != null) {
 			teleportToRegion(game, player, region);

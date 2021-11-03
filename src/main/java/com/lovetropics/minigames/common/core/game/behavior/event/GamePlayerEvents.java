@@ -46,6 +46,12 @@ public final class GamePlayerEvents {
 		}
 	});
 
+	public static final GameEventType<Spawn> SPAWN = GameEventType.create(Spawn.class, listeners -> (player, role) -> {
+		for (Spawn listener : listeners) {
+			listener.onSpawn(player, role);
+		}
+	});
+
 	public static final GameEventType<Tick> TICK = GameEventType.create(Tick.class, listeners -> (player) -> {
 		for (Tick listener : listeners) {
 			listener.tick(player);
@@ -172,7 +178,11 @@ public final class GamePlayerEvents {
 	}
 
 	public interface SetRole {
-		void onSetRole(ServerPlayerEntity player, PlayerRole role, @Nullable PlayerRole lastRole);
+		void onSetRole(ServerPlayerEntity player, @Nullable PlayerRole role, @Nullable PlayerRole lastRole);
+	}
+
+	public interface Spawn {
+		void onSpawn(ServerPlayerEntity player, @Nullable PlayerRole role);
 	}
 
 	public interface Tick {
