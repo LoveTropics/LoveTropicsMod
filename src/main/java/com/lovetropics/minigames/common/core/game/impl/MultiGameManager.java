@@ -23,9 +23,6 @@ import net.minecraft.util.RegistryKey;
 import net.minecraft.util.Unit;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.event.TickEvent;
@@ -59,6 +56,11 @@ public class MultiGameManager implements IGameManager {
 
 	@Override
 	public GameResult<IGameLobby> createGameLobby(String name, ServerPlayerEntity initiator) {
+		GameLobby currentLobby = lobbiesByPlayer.get(initiator.getUniqueID());
+		if (currentLobby != null) {
+			return GameResult.error(GameTexts.Commands.alreadyInLobby());
+		}
+
 		GameLobbyId id = GameLobbyId.next();
 		String commandId = commandIds.acquire(name);
 		GameLobbyMetadata metadata = new GameLobbyMetadata(id, PlayerKey.from(initiator), name, commandId);
@@ -282,9 +284,7 @@ public class MultiGameManager implements IGameManager {
 			IGamePhase playerPhase = INSTANCE.getGamePhaseFor(player);
 			IGamePhase targetPhase = INSTANCE.getGamePhaseAt(targetWorld, player.getPosition());
 			if (!canTravelBetweenPhases(playerPhase, targetPhase)) {
-				ITextComponent message = new StringTextComponent("You cannot teleport into a game without being apart of it!")
-						.mergeStyle(TextFormatting.RED);
-				player.sendStatusMessage(message, true);
+				player.sendStatusMessage(GameTexts.Commands.cannotTeleportIntoGame(), true);
 
 				event.setCanceled(true);
 			}

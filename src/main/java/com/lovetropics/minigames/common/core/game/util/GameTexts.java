@@ -96,6 +96,8 @@ public final class GameTexts {
 			static final String LOBBY_SELECTOR_HEADER = key("lobby_selector_header");
 			static final String LOBBY_SELECTOR_ENTRY = key("lobby_selector_entry");
 
+			static final String CANNOT_TELEPORT_INTO_GAME = key("cannot_teleport_into_game");
+
 			static void collectTranslations(BiConsumer<String, String> consumer) {
 				consumer.accept(JOINED_LOBBY, "You have joined %s!");
 				consumer.accept(LEFT_LOBBY, "You have left %s!");
@@ -103,7 +105,7 @@ public final class GameTexts {
 				consumer.accept(STARTED_GAME, "You have started %s!");
 				consumer.accept(STOPPED_GAME, "You have stopped %s!");
 
-				consumer.accept(ALREADY_IN_LOBBY, "You have already joined this lobby!");
+				consumer.accept(ALREADY_IN_LOBBY, "You have already joined a lobby!");
 				consumer.accept(NO_JOINABLE_LOBBIES, "There are no public lobbies to join!");
 				consumer.accept(CANNOT_START_LOBBY, "There is no game to start in this lobby!");
 				consumer.accept(NOT_IN_LOBBY, "You are not currently in any lobby!");
@@ -115,6 +117,8 @@ public final class GameTexts {
 
 				consumer.accept(LOBBY_SELECTOR_HEADER, "There are multiple lobbies available to join! Select one from this list:");
 				consumer.accept(LOBBY_SELECTOR_ENTRY, "- %s (%s players): %s to join");
+
+				consumer.accept(CANNOT_TELEPORT_INTO_GAME, "You cannot teleport into a game without being apart of it!");
 			}
 
 			static String key(String key) {
@@ -184,6 +188,10 @@ public final class GameTexts {
 			}
 
 			return selector;
+		}
+
+		public static IFormattableTextComponent cannotTeleportIntoGame() {
+			return formatNegative(new TranslationTextComponent(Keys.CANNOT_TELEPORT_INTO_GAME));
 		}
 	}
 
