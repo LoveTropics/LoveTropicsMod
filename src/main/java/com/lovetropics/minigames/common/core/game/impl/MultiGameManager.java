@@ -16,14 +16,20 @@ import com.lovetropics.minigames.common.core.game.util.GameTexts;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 import net.minecraft.command.CommandSource;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.RegistryKey;
 import net.minecraft.util.Unit;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
+import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.entity.EntityTravelToDimensionEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -264,7 +270,33 @@ public class MultiGameManager implements IGameManager {
 	}
 
 	@SubscribeEvent
-	public static void onPlayerChangeDimension(PlayerEvent.PlayerChangedDimensionEvent event) {
+	public static void onPlayerTryChangeDimension(EntityTravelToDimensionEvent event) {
+		Entity entity = event.getEntity();
+		if (entity instanceof ServerPlayerEntity) {
+			ServerPlayerEntity player = (ServerPlayerEntity) entity;
+			ServerWorld targetWorld = player.server.getWorld(event.getDimension());
+			if (targetWorld == null) {
+				return;
+			}
+
+			IGamePhase playerPhase = INSTANCE.getGamePhaseFor(player);
+			IGamePhase targetPhase = INSTANCE.getGamePhaseAt(targetWorld, player.getPosition());
+			if (!canTravelBetweenPhases(playerPhase, targetPhase)) {
+				ITextComponent message = new StringTextComponent("You cannot teleport into a game without being apart of it!")
+						.mergeStyle(TextFormatting.RED);
+				player.sendStatusMessage(message, true);
+
+				event.setCanceled(true);
+			}
+		}
+	}
+
+	private static boolean canTravelBetweenPhases(@Nullable IGamePhase from, @Nullable IGamePhase to) {
+		return to == null || from == to;
+	}
+
+	@SubscribeEvent
+	public static void onPlayerChangedDimension(PlayerEvent.PlayerChangedDimensionEvent event) {
 		PlayerEntity player = event.getPlayer();
 		if (player instanceof ServerPlayerEntity) {
 			IGamePhase phase = INSTANCE.getGamePhaseFor(player);
