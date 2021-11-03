@@ -93,6 +93,7 @@ public class GamePhase implements IGamePhase {
 			for (ServerPlayerEntity player : getAllPlayers()) {
 				PlayerSnapshot.clearPlayer(player);
 				invoker(GamePlayerEvents.ADD).onAdd(player);
+				invoker(GamePlayerEvents.SPAWN).onSpawn(player, getRoleFor(player));
 			}
 
 			invoker(GamePhaseEvents.START).start();
