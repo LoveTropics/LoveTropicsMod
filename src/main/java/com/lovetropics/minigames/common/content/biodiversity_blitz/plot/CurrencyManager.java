@@ -16,6 +16,7 @@ import net.minecraft.item.ItemStack;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Predicate;
+import java.util.stream.IntStream;
 
 public final class CurrencyManager implements IGameState {
 	public static final GameStateKey<CurrencyManager> KEY = GameStateKey.create("Currency");
@@ -151,5 +152,15 @@ public final class CurrencyManager implements IGameState {
 	private static void sendInventoryUpdate(ServerPlayerEntity player) {
 		player.openContainer.detectAndSendChanges();
 		player.updateHeldItem();
+	}
+
+	public void equalize() {
+		int sum = IntStream.of(this.accumulator.values().toIntArray()).sum();
+		int count = this.accumulator.keySet().size();
+		int newSum = sum / count;
+
+		for (UUID uuid : this.accumulator.keySet()) {
+			this.accumulator.put(uuid, newSum);
+		}
 	}
 }

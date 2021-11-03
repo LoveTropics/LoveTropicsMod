@@ -154,6 +154,10 @@ public final class BiodiversityBlitz {
 			.behavior(SpawnSurpriseWaveBehavior.CODEC)
 			.register();
 
+	public static final GameBehaviorEntry<EqualizeCurrencyBehavior> EQUALIZE_CURRENCY = REGISTRATE.object("equaize_currency")
+			.behavior(EqualizeCurrencyBehavior.CODEC)
+			.register();
+
 	// Client State
 
 	public static final GameClientTweakEntry<CheckeredPlotsState> CHECKERED_PLOTS_STATE = REGISTRATE.object("checkered_plots")
