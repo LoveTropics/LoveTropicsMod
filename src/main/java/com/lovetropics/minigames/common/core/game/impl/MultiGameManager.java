@@ -19,6 +19,7 @@ import net.minecraft.command.CommandSource;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.RegistryKey;
 import net.minecraft.util.Unit;
 import net.minecraft.util.math.AxisAlignedBB;
@@ -235,6 +236,21 @@ public class MultiGameManager implements IGameManager {
 		List<GameLobby> lobbies = new ArrayList<>(INSTANCE.lobbies);
 		for (GameLobby lobby : lobbies) {
 			lobby.close();
+		}
+	}
+
+	public static void onServerUnstoppingUnsafely(MinecraftServer server) {
+		List<GameLobby> lobbies = INSTANCE.lobbies;
+		if (!lobbies.isEmpty()) {
+			onServerStoppingUngracefully(server, lobbies);
+		}
+	}
+
+	private static void onServerStoppingUngracefully(MinecraftServer server, List<GameLobby> lobbies) {
+		for (GameLobby lobby : lobbies) {
+			for (ServerPlayerEntity player : lobby.getPlayers()) {
+				lobby.playerIsolation.restore(player);
+			}
 		}
 	}
 
