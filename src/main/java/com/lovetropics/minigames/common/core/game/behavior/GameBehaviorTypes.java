@@ -99,6 +99,7 @@ public class GameBehaviorTypes {
 	public static final GameBehaviorEntry<ApplyDisguisePackageBehavior> APPLY_DISGUISE_PACKAGE;
 	public static final GameBehaviorEntry<BlockPackagesDuringPhaseBehavior> BLOCK_PACKAGES_DURING_PHASE;
 	public static final GameBehaviorEntry<WeatherEventPackageBehavior> WEATHER_EVENT_PACKAGE;
+	public static final GameBehaviorEntry<CountdownPackageBehavior> COUNTDOWN_PACKAGE;
 
 	public static final GameBehaviorEntry<SetupTelemetryBehavior> SETUP_TELEMETRY;
 	public static final GameBehaviorEntry<AssignPlayerRolesBehavior> ASSIGN_PLAYER_ROLES;
@@ -175,6 +176,7 @@ public class GameBehaviorTypes {
 		APPLY_DISGUISE_PACKAGE = register("apply_disguise_package", ApplyDisguisePackageBehavior.CODEC);
 		BLOCK_PACKAGES_DURING_PHASE = register("block_packages_during_phase", BlockPackagesDuringPhaseBehavior.CODEC);
 		WEATHER_EVENT_PACKAGE = register("weather_event_package", WeatherEventPackageBehavior.CODEC);
+		COUNTDOWN_PACKAGE = register("countdown_package", CountdownPackageBehavior.CODEC);
 
 		SETUP_TELEMETRY = register("setup_telemetry", SetupTelemetryBehavior.CODEC);
 		ASSIGN_PLAYER_ROLES = register("assign_player_roles", AssignPlayerRolesBehavior.CODEC);
