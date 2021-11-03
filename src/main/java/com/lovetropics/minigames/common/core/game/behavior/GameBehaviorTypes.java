@@ -67,6 +67,7 @@ public class GameBehaviorTypes {
 	public static final GameBehaviorEntry<TeamWinTrigger> TEAM_WIN_TRIGGER;
 	public static final GameBehaviorEntry<EquipParticipantsBehavior> EQUIP_PARTICIPANTS;
 	public static final GameBehaviorEntry<SetTimeSpeedBehavior> SET_TIME_SPEED;
+	public static final GameBehaviorEntry<SetDayTimeBehavior> SET_DAY_TIME;
 	public static final GameBehaviorEntry<SetDifficultyBehavior> SET_DIFFICULTY;
 	public static final GameBehaviorEntry<GameEndEffectsBehavior> GAME_END_EFFECTS;
 	public static final GameBehaviorEntry<TipsAndTricksBehavior> TIPS_AND_TRICKS;
@@ -140,6 +141,7 @@ public class GameBehaviorTypes {
 		INDIVIDUAL_WIN_TRIGGER = register("individual_win_trigger", IndividualWinTrigger.CODEC);
 		EQUIP_PARTICIPANTS = register("equip_participants", EquipParticipantsBehavior.CODEC);
 		SET_TIME_SPEED = register("set_time_speed", SetTimeSpeedBehavior.CODEC);
+		SET_DAY_TIME = register("set_day_time", SetDayTimeBehavior.CODEC);
 		SET_DIFFICULTY = register("set_difficulty", SetDifficultyBehavior.CODEC);
 		GAME_END_EFFECTS = register("game_end_effects", GameEndEffectsBehavior.CODEC);
 		TIPS_AND_TRICKS = register("tips_and_tricks", TipsAndTricksBehavior.CODEC);
