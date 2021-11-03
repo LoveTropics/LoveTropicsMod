@@ -20,6 +20,7 @@ public final class MinigameTexts {
 		static final String TRASH_DIVE = key("trash_dive");
 		static final String CONSERVATION_EXPLORATION = key("conservation_exploration");
 		static final String TREASURE_HUNT = key("treasure_hunt");
+		static final String SPLEEF_STANDARD = key("spleef_standard");
 		static final String VOLCANO_SPLEEF = key("volcano_spleef");
 		static final String BUILD_COMPETITION = key("build_competition");
 		static final String TURTLE_RACE = key("turtle_race");
@@ -58,6 +59,7 @@ public final class MinigameTexts {
 			consumer.accept(TRASH_DIVE, "Trash Dive");
 			consumer.accept(CONSERVATION_EXPLORATION, "Conservation Exploration");
 			consumer.accept(TREASURE_HUNT, "Treasure Hunt");
+			consumer.accept(SPLEEF_STANDARD, "Spleef");
 			consumer.accept(VOLCANO_SPLEEF, "Volcano Spleef");
 			consumer.accept(BUILD_COMPETITION, "Build Competition");
 			consumer.accept(TURTLE_RACE, "Turtle Race");
