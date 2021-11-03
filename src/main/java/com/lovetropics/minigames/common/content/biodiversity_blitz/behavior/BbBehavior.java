@@ -81,6 +81,18 @@ public final class BbBehavior implements IGameBehavior {
 				return ActionResultType.FAIL;
 			}
 		});
+		events.listen(GamePlayerEvents.DAMAGE, (player, damageSource, amount) -> {
+			Plot plot = this.plots.getPlotFor(player);
+			if (plot == null) {
+				return ActionResultType.PASS;
+			}
+
+			if (!plot.walls.getBounds().contains(player.getPositionVec())) {
+				return ActionResultType.FAIL;
+			}
+
+			return ActionResultType.PASS;
+		});
 
 		events.listen(GamePlayerEvents.PLACE_BLOCK, this::onPlaceBlock);
 		events.listen(GamePlayerEvents.BREAK_BLOCK, (player, pos, state, hand) -> ActionResultType.FAIL);
