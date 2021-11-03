@@ -38,18 +38,21 @@ public final class TeamsBehavior implements IGameBehavior {
 
 	public static final Codec<TeamsBehavior> CODEC = RecordCodecBuilder.create(instance -> {
 		return instance.group(
-				CFG_FRIENDLY_FIRE.orElse(false).forGetter(c -> c.friendlyFire)
+				CFG_FRIENDLY_FIRE.orElse(false).forGetter(c -> c.friendlyFire),
+				Codec.BOOL.optionalFieldOf("static_team_ids", false).forGetter(c -> c.staticTeamIds)
 		).apply(instance, TeamsBehavior::new);
 	});
 
 	private final Map<GameTeamKey, ScorePlayerTeam> scoreboardTeams = new Object2ObjectOpenHashMap<>();
 
 	private final boolean friendlyFire;
+	private final boolean staticTeamIds;
 
 	private TeamState teams;
 
-	public TeamsBehavior(boolean friendlyFire) {
+	public TeamsBehavior(boolean friendlyFire, boolean staticTeamIds) {
 		this.friendlyFire = friendlyFire;
+		this.staticTeamIds = staticTeamIds;
 	}
 
 	@Override
@@ -61,7 +64,7 @@ public final class TeamsBehavior implements IGameBehavior {
 
 	@Override
 	public IGameBehavior configure(ConfigList configs) {
-		return new TeamsBehavior(CFG_FRIENDLY_FIRE.getValue(configs));
+		return new TeamsBehavior(CFG_FRIENDLY_FIRE.getValue(configs), staticTeamIds);
 	}
 
 	@Override
@@ -94,8 +97,7 @@ public final class TeamsBehavior implements IGameBehavior {
 		ServerScoreboard scoreboard = server.getScoreboard();
 
 		for (GameTeam team : teams) {
-			// generate a unique team id since we want to have concurrent games!
-			String teamId = team.key().id() + "_" + RandomStringUtils.randomAlphabetic(3);
+			String teamId = createTeamId(team.key());
 
 			ScorePlayerTeam scoreboardTeam = scoreboard.createTeam(teamId);
 			scoreboardTeam.setDisplayName(team.config().name());
@@ -103,6 +105,14 @@ public final class TeamsBehavior implements IGameBehavior {
 			scoreboardTeam.setAllowFriendlyFire(friendlyFire);
 
 			scoreboardTeams.put(team.key(), scoreboardTeam);
+		}
+	}
+
+	private String createTeamId(GameTeamKey team) {
+		if (staticTeamIds) {
+			return team.id();
+		} else {
+			return team.id() + "_" + RandomStringUtils.randomAlphabetic(3);
 		}
 	}
 
