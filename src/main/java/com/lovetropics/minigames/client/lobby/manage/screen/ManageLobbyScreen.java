@@ -95,7 +95,10 @@ public final class ManageLobbyScreen extends Screen {
 
 		// TODO actually save config data
 		gameConfig = addListener(new GameConfig(this, layout.edit, () -> {
-			this.session.configure(this.selectedGameId);
+			int selectedId = selectedGameId;
+			if (selectedId != -1) {
+				this.session.configure(selectedId);
+			}
 		}));
 
 		nameField = addListener(FlexUi.createTextField(layout.name, font, GameTexts.Ui.lobbyName()));

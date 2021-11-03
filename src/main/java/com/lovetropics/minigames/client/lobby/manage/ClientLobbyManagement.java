@@ -95,7 +95,10 @@ public final class ClientLobbyManagement {
 		}
 
 		public void configure(int id) {
-			sendUpdates(updates -> updates.configure(id, session.lobby().getQueue().byId(id)));
+			ClientLobbyQueuedGame game = lobby.getQueue().byId(id);
+			if (game != null) {
+				sendUpdates(updates -> updates.configure(id, game));
+			}
 		}
 
 		private void sendUpdates(UnaryOperator<ServerLobbyUpdate.Set> updates) {
