@@ -25,6 +25,10 @@ public interface PlayerIterable extends PlayerOps, Iterable<ServerPlayerEntity> 
 		return () -> Iterators.filter(this.iterator(), predicate);
 	}
 
+	default PlayerIterable excluding(ServerPlayerEntity player) {
+		return this.filter(target -> target != player);
+	}
+
 	@Override
 	Iterator<ServerPlayerEntity> iterator();
 

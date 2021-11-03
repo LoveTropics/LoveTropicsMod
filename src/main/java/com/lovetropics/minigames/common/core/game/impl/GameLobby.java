@@ -274,7 +274,7 @@ final class GameLobby implements IGameLobby {
 			}
 
 			ITextComponent message = GameTexts.Status.playerJoined(lobby, player, registeredRole);
-			lobby.getTrackingPlayers().sendMessage(message);
+			lobby.getTrackingPlayers().excluding(player).sendMessage(message);
 		}
 
 		@Override
