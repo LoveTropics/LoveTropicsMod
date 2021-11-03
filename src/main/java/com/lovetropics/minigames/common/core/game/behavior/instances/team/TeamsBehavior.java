@@ -1,6 +1,5 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances.team;
 
-import com.lovetropics.minigames.client.lobby.state.ClientConfigList;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.config.BehaviorConfig;
@@ -17,6 +16,7 @@ import com.lovetropics.minigames.common.core.game.util.TeamAllocator;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.scoreboard.ScorePlayerTeam;
@@ -68,7 +68,16 @@ public final class TeamsBehavior implements IGameBehavior {
 	public void register(IGamePhase game, EventRegistrar events) {
 		teams = game.getState().getOrThrow(TeamState.KEY);
 
-		events.listen(GamePhaseEvents.START, () -> onStart(game));
+		this.addTeamsToScoreboard(game);
+
+		Map<ServerPlayerEntity, GameTeamKey> assignedTeams = new Reference2ObjectOpenHashMap<>();
+		teams.getAllocations().allocate(game.getParticipants(), assignedTeams::put);
+
+		events.listen(GamePlayerEvents.ADD, player -> {
+			GameTeamKey team = assignedTeams.remove(player);
+			addPlayerToTeam(game, player, team);
+		});
+
 		events.listen(GamePhaseEvents.DESTROY, () -> onDestroy(game));
 		events.listen(GamePlayerEvents.ALLOCATE_ROLES, allocator -> reassignPlayerRoles(game, allocator));
 
@@ -77,6 +86,10 @@ public final class TeamsBehavior implements IGameBehavior {
 		events.listen(GamePlayerEvents.DAMAGE, this::onPlayerHurt);
 		events.listen(GamePlayerEvents.ATTACK, this::onPlayerAttack);
 
+		game.getStatistics().global().set(StatisticKey.TEAMS, true);
+	}
+
+	private void addTeamsToScoreboard(IGamePhase game) {
 		MinecraftServer server = game.getServer();
 		ServerScoreboard scoreboard = server.getScoreboard();
 
@@ -91,8 +104,6 @@ public final class TeamsBehavior implements IGameBehavior {
 
 			scoreboardTeams.put(team.key(), scoreboardTeam);
 		}
-
-		game.getStatistics().global().set(StatisticKey.TEAMS, true);
 	}
 
 	private void reassignPlayerRoles(IGamePhase game, TeamAllocator<PlayerRole, ServerPlayerEntity> allocator) {
@@ -110,12 +121,6 @@ public final class TeamsBehavior implements IGameBehavior {
 		for (ScorePlayerTeam team : scoreboardTeams.values()) {
 			scoreboard.removeTeam(team);
 		}
-	}
-
-	private void onStart(IGamePhase game) {
-		teams.getAllocations().allocate(game.getParticipants(), (player, team) -> {
-			addPlayerToTeam(game, player, team);
-		});
 	}
 
 	private void onPlayerSetRole(ServerPlayerEntity player, @Nullable PlayerRole role, @Nullable PlayerRole lastRole) {
