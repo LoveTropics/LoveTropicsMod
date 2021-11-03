@@ -114,15 +114,6 @@ public class SurviveTheTideWeatherControlBehavior implements IGameBehavior {
                 weather.setWind(config.getWindSpeed(phase.key));
             }
         }
-
-        IServerWorldInfo worldInfo = (IServerWorldInfo) world.getWorldInfo();
-        if (weather.getEventType() == WeatherEventType.HEAVY_RAIN || weather.getEventType() == WeatherEventType.ACID_RAIN) {
-            worldInfo.setRaining(true);
-            worldInfo.setThundering(true);
-        } else {
-            worldInfo.setRaining(false);
-            worldInfo.setThundering(false);
-        }
     }
 
     // TODO phase names
