@@ -71,4 +71,8 @@ public final class GameWeatherState implements IGameState {
 	public WeatherEventType getEventType() {
 		return event != null ? event.getType() : null;
 	}
+
+	public WeatherController getController() {
+		return controller;
+	}
 }

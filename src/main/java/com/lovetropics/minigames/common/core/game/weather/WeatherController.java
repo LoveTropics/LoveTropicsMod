@@ -1,5 +1,6 @@
 package com.lovetropics.minigames.common.core.game.weather;
 
+import com.lovetropics.minigames.common.content.survive_the_tide.SurviveTheTideWeatherConfig;
 import net.minecraft.entity.player.ServerPlayerEntity;
 
 public interface WeatherController {
@@ -36,4 +37,8 @@ public interface WeatherController {
 		setSandstorm(false);
 		setSnowstorm(false);
 	}
+
+	void setConfig(SurviveTheTideWeatherConfig config);
+
+	SurviveTheTideWeatherConfig getConfig();
 }

@@ -1,12 +1,14 @@
 package com.lovetropics.minigames.common.core.game.weather;
 
+import com.lovetropics.minigames.common.content.survive_the_tide.SurviveTheTideWeatherConfig;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.world.server.ServerWorld;
-import net.minecraft.world.storage.IServerWorldInfo;
 
 public final class VanillaWeatherController implements WeatherController {
 	private final ServerWorld world;
 	private final WeatherState state = new WeatherState();
+
+	private SurviveTheTideWeatherConfig config;
 
 	public VanillaWeatherController(ServerWorld world) {
 		this.world = world;
@@ -25,11 +27,6 @@ public final class VanillaWeatherController implements WeatherController {
 	public void setRain(float amount, RainType type) {
 		state.rainAmount = amount;
 		state.rainType = type;
-
-		boolean raining = amount > 0.0F;
-		IServerWorldInfo info = (IServerWorldInfo) world.getWorldInfo();
-		info.setRaining(raining);
-		info.setThundering(raining);
 	}
 
 	@Override
@@ -80,5 +77,15 @@ public final class VanillaWeatherController implements WeatherController {
 	@Override
 	public boolean isSnowstorm() {
 		return state.snowstorm;
+	}
+
+	@Override
+	public void setConfig(SurviveTheTideWeatherConfig config) {
+		this.config = config;
+	}
+
+	@Override
+	public SurviveTheTideWeatherConfig getConfig() {
+		return config;
 	}
 }

@@ -78,6 +78,8 @@ public class SurviveTheTideWeatherControlBehavior implements IGameBehavior {
         events.listen(GamePhaseEvents.STOP, reason -> weather.clear());
 
         phases = game.getState().getOrNull(GamePhaseState.KEY);
+
+        weather.getController().setConfig(config);
     }
 
     private void tick(final IGamePhase game) {
@@ -104,6 +106,11 @@ public class SurviveTheTideWeatherControlBehavior implements IGameBehavior {
             }
 
             weather.setWind(config.getWindSpeed(phase.key));
+            if (weather.getEventType() == WeatherEventType.SNOWSTORM || weather.getEventType() == WeatherEventType.SANDSTORM) {
+                weather.setWind(0.7F);
+            } else {
+                weather.setWind(config.getWindSpeed(phase.key));
+            }
         }
     }
 

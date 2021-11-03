@@ -432,7 +432,7 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 	private static BlockState mapBlockRisingWater(BlockState state) {
 		Block block = state.getBlock();
 
-		if (state.isAir() || !state.getMaterial().blocksMovement() || block == Blocks.BAMBOO) {
+		if (state.isAir() || !state.getMaterial().blocksMovement() || block == Blocks.BAMBOO || block.getRegistryName().toString().equals("weather2:sand_layer")) {
 			// If air or a replaceable block, just set to water
 			return Blocks.WATER.getDefaultState();
 		}

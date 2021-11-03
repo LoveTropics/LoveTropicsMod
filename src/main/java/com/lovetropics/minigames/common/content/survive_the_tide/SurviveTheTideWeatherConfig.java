@@ -20,7 +20,10 @@ public class SurviveTheTideWeatherConfig {
 				Codec.INT.optionalFieldOf("rain_acid_extra_rand_time", 1200).forGetter(c -> c.rainAcidExtraRandTime),
 				Codec.INT.optionalFieldOf("heatwave_min_time", 1200).forGetter(c -> c.heatwaveMinTime),
 				Codec.INT.optionalFieldOf("heatwave_extra_rand_time", 1200).forGetter(c -> c.heatwaveExtraRandTime),
-				Codec.DOUBLE.optionalFieldOf("heatwave_movement_multiplier", 0.5).forGetter(c -> c.heatwaveMovementMultiplier)
+				Codec.INT.optionalFieldOf("sandstorm_buildup_tickrate", 40).forGetter(c -> c.sandstormBuildupTickRate),
+				Codec.INT.optionalFieldOf("sandstorm_max_stackable", 1).forGetter(c -> c.sandstormMaxStackable),
+				Codec.INT.optionalFieldOf("snowstorm_buildup_tickrate", 40).forGetter(c -> c.snowstormBuildupTickRate),
+				Codec.INT.optionalFieldOf("snowstorm_max_stackable", 1).forGetter(c -> c.snowstormMaxStackable)
 		).apply(instance, SurviveTheTideWeatherConfig::new);
 	});
 
@@ -39,7 +42,12 @@ public class SurviveTheTideWeatherConfig {
 
 	private final int heatwaveMinTime;
 	private final int heatwaveExtraRandTime;
-	private final double heatwaveMovementMultiplier;
+
+	private final int sandstormBuildupTickRate;
+	private final int sandstormMaxStackable;
+
+	private final int snowstormBuildupTickRate;
+	private final int snowstormMaxStackable;
 
 	public SurviveTheTideWeatherConfig(
 			Object2FloatMap<String> phaseToHeavyRainChance, Object2FloatMap<String> phaseToAcidRainChance, Object2FloatMap<String> phaseToHeatwaveChance,
@@ -47,7 +55,9 @@ public class SurviveTheTideWeatherConfig {
 			Object2FloatMap<String> phaseToWindSpeed,
 			final int rainHeavyMinTime, final int rainHeavyExtraRandTime,
 			final int rainAcidMinTime, final int rainAcidExtraRandTime,
-			int heatwaveMinTime, int heatwaveExtraRandTime, final double heatwaveMovementMultiplier
+			int heatwaveMinTime, int heatwaveExtraRandTime,
+			final int sandstormBuildupTickRate, final int sandstormMaxStackable,
+			final int snowstormBuildupTickRate, final int snowstormMaxStackable
 	) {
 		this.phaseToHeavyRainChance = phaseToHeavyRainChance;
 		this.phaseToAcidRainChance = phaseToAcidRainChance;
@@ -64,7 +74,11 @@ public class SurviveTheTideWeatherConfig {
 		this.heatwaveMinTime = heatwaveMinTime;
 		this.heatwaveExtraRandTime = heatwaveExtraRandTime;
 
-		this.heatwaveMovementMultiplier = heatwaveMovementMultiplier;
+		this.sandstormBuildupTickRate = sandstormBuildupTickRate;
+		this.sandstormMaxStackable = sandstormMaxStackable;
+
+		this.snowstormBuildupTickRate = snowstormBuildupTickRate;
+		this.snowstormMaxStackable = snowstormMaxStackable;
 	}
 
 	public double getRainHeavyChance(String phase) {
@@ -107,15 +121,27 @@ public class SurviveTheTideWeatherConfig {
 		return heatwaveExtraRandTime;
 	}
 
-	public double getHeatwaveMovementMultiplier() {
-		return heatwaveMovementMultiplier;
-	}
-
 	public int getRainAcidExtraRandTime() {
 		return rainAcidExtraRandTime;
 	}
 
 	public int getRainAcidMinTime() {
 		return rainAcidMinTime;
+	}
+
+	public int getSandstormBuildupTickRate() {
+		return sandstormBuildupTickRate;
+	}
+
+	public int getSandstormMaxStackable() {
+		return sandstormMaxStackable;
+	}
+
+	public int getSnowstormBuildupTickRate() {
+		return snowstormBuildupTickRate;
+	}
+
+	public int getSnowstormMaxStackable() {
+		return snowstormMaxStackable;
 	}
 }
