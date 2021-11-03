@@ -25,9 +25,9 @@ public final class BiodiversityBlitzTexts {
 			consumer.accept(BIODIVERSITY_BLITZ, "Biodiversity Blitz");
 			consumer.accept(WAVE_WARNING, "A wave is coming soon!");
 			consumer.accept(TRADING, "Trading");
-			consumer.accept(DEATH_DECREASE, "...and lost %s currency!");
+			consumer.accept(DEATH_DECREASE, "...and lost %s osa points!");
 			consumer.accept(DEATH_TITLE, "YOU DIED");
-			consumer.accept(CURRENCY_ADDITION, "You gained %s currency!");
+			consumer.accept(CURRENCY_ADDITION, "You gained %s osa points!");
 			consumer.accept(CAN_ONLY_PLACE_PLANTS, "You can only place plants you got from the shop!");
 			consumer.accept(PLANT_CANNOT_FIT, "This plant cannot fit here!");
 			consumer.accept(NOT_YOUR_PLOT, "This is not your plot, you cannot edit here!");
