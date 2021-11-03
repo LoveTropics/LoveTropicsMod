@@ -52,8 +52,10 @@ public final class AddWeatherBehavior implements IGameBehavior {
 	public void register(IGamePhase game, EventRegistrar events) {
 		weather = game.getState().getOrThrow(GameWeatherState.KEY);
 
-		events.listen(GamePlayerEvents.TICK, this::onTickPlayer);
+		events.listen(GamePhaseEvents.TICK, () -> weather.tick());
 		events.listen(GamePhaseEvents.STOP, reason -> weather.clear());
+
+		events.listen(GamePlayerEvents.TICK, this::onTickPlayer);
 	}
 
 	private void onTickPlayer(ServerPlayerEntity player) {

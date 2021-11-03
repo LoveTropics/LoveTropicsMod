@@ -12,7 +12,6 @@ import com.lovetropics.minigames.common.core.game.weather.WeatherEvent;
 import com.lovetropics.minigames.common.core.game.weather.WeatherEventType;
 import com.mojang.serialization.Codec;
 import net.minecraft.world.server.ServerWorld;
-import net.minecraft.world.storage.IServerWorldInfo;
 
 import java.util.Random;
 
@@ -86,8 +85,6 @@ public class SurviveTheTideWeatherControlBehavior implements IGameBehavior {
         if (phases == null) {
             return;
         }
-
-        weather.tick();
 
         GamePhase phase = phases.get();
 
