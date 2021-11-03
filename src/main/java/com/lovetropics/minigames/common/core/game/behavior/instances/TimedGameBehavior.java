@@ -6,6 +6,7 @@ import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameLogicEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
+import com.lovetropics.minigames.common.core.game.state.control.ControlCommand;
 import com.lovetropics.minigames.common.core.game.util.GameBossBar;
 import com.lovetropics.minigames.common.core.game.util.GlobalGameWidgets;
 import com.lovetropics.minigames.common.core.game.util.TemplatedText;
@@ -26,7 +27,7 @@ public final class TimedGameBehavior implements IGameBehavior {
 				Codec.LONG.optionalFieldOf("length", 20L * 60).forGetter(c -> c.length),
 				Codec.LONG.optionalFieldOf("close_length", 0L).forGetter(c -> c.closeTime - c.length),
 				TemplatedText.CODEC.optionalFieldOf("timer_bar").forGetter(c -> Optional.ofNullable(c.timerBarText)),
-				Codec.LONG.optionalFieldOf("countdown_seconds", 0L).forGetter(c -> c.countdownSeconds)
+				Codec.LONG.optionalFieldOf("countdown_seconds", -1L).forGetter(c -> c.countdownSeconds)
 		).apply(instance, TimedGameBehavior::new);
 	});
 
@@ -37,39 +38,56 @@ public final class TimedGameBehavior implements IGameBehavior {
 
 	private GameBossBar timerBar;
 
+	private long timeRemaining;
+	private long closeAtTime;
+	private boolean paused;
+
 	public TimedGameBehavior(long length, long closeTime, Optional<TemplatedText> timerBar, long countdownSeconds) {
 		this.length = length;
-		this.closeTime = length + closeTime;
+		this.closeTime = closeTime;
 		this.timerBarText = timerBar.orElse(null);
 		this.countdownSeconds = countdownSeconds;
 	}
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
-		events.listen(GamePhaseEvents.TICK, () -> onTick(game));
+		timeRemaining = length;
+
+		events.listen(GamePhaseEvents.TICK, () -> tick(game));
 
 		if (timerBarText != null) {
 			GlobalGameWidgets widgets = GlobalGameWidgets.registerTo(game, events);
 			timerBar = widgets.openBossBar(new StringTextComponent(""), BossInfo.Color.GREEN, BossInfo.Overlay.PROGRESS);
 		}
+
+		game.getControlCommands().add("pause", ControlCommand.forInitiator(source -> paused = true));
+		game.getControlCommands().add("unpause", ControlCommand.forInitiator(source -> paused = false));
 	}
 
-	private void onTick(IGamePhase game) {
+	private void tick(IGamePhase game) {
 		long ticks = game.ticks();
-		if (ticks >= closeTime) {
+		if (closeAtTime != 0 && ticks >= closeTime) {
 			game.requestStop(GameStopReason.finished());
 			return;
 		}
 
-		if (ticks == length) {
+		if (!paused && timeRemaining > 0) {
+			tickRunning(game, ticks);
+		}
+	}
+
+	private void tickRunning(IGamePhase game, long ticks) {
+		long ticksRemaining = --timeRemaining;
+		if (ticksRemaining == 0) {
 			game.invoker(GameLogicEvents.GAME_OVER).onGameOver();
+			closeAtTime = ticks + closeTime;
+			return;
 		}
 
-		if (ticks % 20 == 0 && timerBar != null) {
-			long ticksRemaining = Math.max(length - ticks, 0);
+		if (ticksRemaining % 20 == 0 && timerBar != null) {
 			long secondsRemaining = ticksRemaining / 20;
 
-			if (secondsRemaining < countdownSeconds) {
+			if (secondsRemaining <= countdownSeconds) {
 				playCountdownSound(game, secondsRemaining);
 			}
 
