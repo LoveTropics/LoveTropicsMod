@@ -15,6 +15,9 @@ public final class GameWeatherState implements IGameState {
 
 	private WeatherEvent event;
 
+	private int weatherCooldown = 0;
+	private int weatherCooldownBetweenStates = 220;
+
 	public GameWeatherState(WeatherController controller) {
 		this.controller = controller;
 	}
@@ -25,9 +28,11 @@ public final class GameWeatherState implements IGameState {
 	}
 
 	public void tick() {
+		if (weatherCooldown > 0) weatherCooldown--;
 		WeatherEvent event = this.event;
 		if (event != null && event.tick() == WeatherEvent.TickResult.STOP) {
 			this.clearEvent();
+			weatherCooldown = weatherCooldownBetweenStates;
 		}
 	}
 
@@ -60,5 +65,9 @@ public final class GameWeatherState implements IGameState {
 	@Nullable
 	public WeatherEventType getEventType() {
 		return event != null ? event.getType() : null;
+	}
+
+	public boolean canStartWeatherEvent() {
+		return weatherCooldown == 0;
 	}
 }

@@ -93,7 +93,7 @@ public class SurviveTheTideWeatherControlBehavior implements IGameBehavior {
 
         ServerWorld world = game.getWorld();
         if (world.getGameTime() % 20 == 0) {
-            if (weather.getEvent() == null) {
+            if (weather.getEvent() == null && weather.canStartWeatherEvent()) {
                 if (random.nextFloat() <= config.getRainHeavyChance(phase.key)) {
                     heavyRainfallStart(phase);
                 } else if (random.nextFloat() <= config.getRainAcidChance(phase.key)) {
