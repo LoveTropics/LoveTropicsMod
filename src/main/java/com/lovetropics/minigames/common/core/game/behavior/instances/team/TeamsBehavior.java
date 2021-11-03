@@ -16,7 +16,6 @@ import com.lovetropics.minigames.common.core.game.util.TeamAllocator;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.scoreboard.ScorePlayerTeam;
@@ -73,12 +72,10 @@ public final class TeamsBehavior implements IGameBehavior {
 
 		this.addTeamsToScoreboard(game);
 
-		Map<ServerPlayerEntity, GameTeamKey> assignedTeams = new Reference2ObjectOpenHashMap<>();
-		teams.getAllocations().allocate(game.getParticipants(), assignedTeams::put);
-
-		events.listen(GamePlayerEvents.ADD, player -> {
-			GameTeamKey team = assignedTeams.remove(player);
-			addPlayerToTeam(game, player, team);
+		events.listen(GamePhaseEvents.START, () -> {
+			teams.getAllocations().allocate(game.getParticipants(), (player, team) -> {
+				addPlayerToTeam(game, player, team);
+			});
 		});
 
 		events.listen(GamePhaseEvents.DESTROY, () -> onDestroy(game));
@@ -98,14 +95,21 @@ public final class TeamsBehavior implements IGameBehavior {
 
 		for (GameTeam team : teams) {
 			String teamId = createTeamId(team.key());
+			ScorePlayerTeam scoreboardTeam = getOrCreateScoreboardTeam(scoreboard, team, teamId);
+			scoreboardTeams.put(team.key(), scoreboardTeam);
+		}
+	}
 
-			ScorePlayerTeam scoreboardTeam = scoreboard.createTeam(teamId);
+	private ScorePlayerTeam getOrCreateScoreboardTeam(ServerScoreboard scoreboard, GameTeam team, String teamId) {
+		ScorePlayerTeam scoreboardTeam = scoreboard.getTeam(teamId);
+		if (scoreboardTeam == null) {
+			scoreboardTeam = scoreboard.createTeam(teamId);
 			scoreboardTeam.setDisplayName(team.config().name());
 			scoreboardTeam.setColor(team.config().formatting());
 			scoreboardTeam.setAllowFriendlyFire(friendlyFire);
-
-			scoreboardTeams.put(team.key(), scoreboardTeam);
 		}
+
+		return scoreboardTeam;
 	}
 
 	private String createTeamId(GameTeamKey team) {

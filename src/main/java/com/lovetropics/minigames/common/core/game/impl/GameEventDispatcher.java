@@ -231,14 +231,16 @@ public final class GameEventDispatcher {
 
 	@SubscribeEvent
 	public void onPlayerThrowItem(ItemTossEvent event) {
-		PlayerEntity player = event.getPlayer();
-		IGamePhase game = gameLookup.getGamePhaseFor(player);
+		IGamePhase game = gameLookup.getGamePhaseFor(event.getPlayer());
 		if (game != null) {
 			try {
+				ServerPlayerEntity player = (ServerPlayerEntity) event.getPlayer();
 				ItemEntity item = event.getEntityItem();
-				ActionResultType result = game.invoker(GamePlayerEvents.THROW_ITEM).onThrowItem((ServerPlayerEntity) player, item);
+				ActionResultType result = game.invoker(GamePlayerEvents.THROW_ITEM).onThrowItem(player, item);
 				if (result == ActionResultType.FAIL) {
 					event.setCanceled(true);
+					player.inventory.addItemStackToInventory(item.getItem());
+					player.sendContainerToPlayer(player.openContainer);
 				}
 			} catch (Exception e) {
 				LoveTropics.LOGGER.warn("Failed to dispatch player throw item event", e);

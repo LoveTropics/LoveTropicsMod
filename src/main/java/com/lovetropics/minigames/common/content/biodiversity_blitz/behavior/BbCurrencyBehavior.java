@@ -70,8 +70,6 @@ public final class BbCurrencyBehavior implements IGameBehavior {
 		events.listen(GamePlayerEvents.THROW_ITEM, (player, item) -> {
 			ItemStack stack = item.getItem();
 			if (stack.getItem() == this.item) {
-				player.inventory.addItemStackToInventory(stack);
-				player.sendContainerToPlayer(player.openContainer);
 				return ActionResultType.FAIL;
 			}
 			return ActionResultType.PASS;

@@ -68,6 +68,7 @@ public final class PlayerSnapshot {
 		player.clearActivePotions();
 		player.setGlowing(false);
 		player.setArrowCountInEntity(0);
+		player.fallDistance = 0.0F;
 
 		CompoundNBT foodTag = new CompoundNBT();
 		new FoodStats().write(foodTag);
@@ -110,5 +111,7 @@ public final class PlayerSnapshot {
 			Score score = scoreboard.getOrCreateScore(player.getScoreboardName(), entry.getKey());
 			score.setScorePoints(entry.getIntValue());
 		}
+
+		player.sendContainerToPlayer(player.openContainer);
 	}
 }
