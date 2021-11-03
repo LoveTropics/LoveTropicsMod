@@ -37,11 +37,11 @@ public final class BbMobSpawner {
 
     // TODO: data-drive, more entity types & getting harder as time goes on
     public static MobEntity selectEntityForWave(Random random, World world, Plot plot, int waveIndex) {
-        if (random.nextInt(8) == 0 && waveIndex > 4) {
+        if (random.nextInt(8) == 0 && waveIndex > 4 && plot.nextCurrencyIncrement >= 10) {
             return new BbCreeperEntity(EntityType.CREEPER, world, plot);
         }
 
-        if (random.nextInt(3) == 0 && waveIndex > 2) {
+        if (random.nextInt(3) == 0 && waveIndex > 2 && plot.nextCurrencyIncrement >= 5) {
             return new BbPillagerEntity(EntityType.PILLAGER, world, plot);
         }
 

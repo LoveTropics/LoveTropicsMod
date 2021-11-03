@@ -173,6 +173,13 @@ public final class BbWaveSpawnerBehavior implements IGameBehavior {
 			count++;
 		}
 
+		int currencyIncr = plot.nextCurrencyIncrement;
+		if (currencyIncr < 5) {
+			count = random.nextInt(2) + 1;
+		} else if (currencyIncr < 10) {
+			count = (int) MathHelper.lerp(currencyIncr / 10.0, 2, count);
+		}
+
 		Set<Entity> entities = BbMobSpawner.spawnWaveEntities(world, random, plot, count, waveIndex, BbMobSpawner::selectEntityForWave);
 		ServerBossInfo bossBar = this.createWaveBar(player, waveIndex, count, entities);
 
