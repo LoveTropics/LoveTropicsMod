@@ -11,6 +11,7 @@ import net.minecraft.entity.item.PaintingType;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.PacketBuffer;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.registry.Registry;
 import net.minecraftforge.registries.ForgeRegistries;
 
@@ -54,6 +55,10 @@ public final class DisguiseType {
 
 	@Nullable
 	public Entity createEntityFor(PlayerEntity player) {
+		if (shouldNeverCreate(this.type)) {
+			return null;
+		}
+
 		Entity entity = this.type.create(player.world);
 		if (entity == null) return null;
 
@@ -67,6 +72,21 @@ public final class DisguiseType {
 		}
 
 		return entity;
+	}
+
+	private boolean shouldNeverCreate(EntityType<?> type) {
+		ResourceLocation location = ForgeRegistries.ENTITIES.getKey(type);
+
+		if (location == null) {
+			return true;
+		}
+
+		// Instantly crashes- prevent disguising as poison blots
+		if (location.getNamespace().equals("tropicraft") && location.getPath().equals("poison_blot")) {
+			return true;
+		}
+
+		return false;
 	}
 
 	private void fixInvalidEntities(Entity entity) {
