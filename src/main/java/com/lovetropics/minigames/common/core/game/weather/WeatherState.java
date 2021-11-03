@@ -17,7 +17,7 @@ public final class WeatherState {
 		buffer.writeBoolean(this.heatwave);
 		buffer.writeBoolean(this.sandstorm != null);
 		if (this.sandstorm != null) {
-			this.snowstorm.encode(buffer);
+			this.sandstorm.encode(buffer);
 		}
 		buffer.writeBoolean(this.snowstorm != null);
 		if (this.snowstorm != null) {
