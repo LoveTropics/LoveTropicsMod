@@ -8,17 +8,16 @@ import com.lovetropics.minigames.common.core.game.player.PlayerRole;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
-// TODO: rename this is not very clear!
-public final class JoinAsRoleBehavior implements IGameBehavior {
-	public static final Codec<JoinAsRoleBehavior> CODEC = RecordCodecBuilder.create(instance -> {
+public final class JoinLateWithRoleBehavior implements IGameBehavior {
+	public static final Codec<JoinLateWithRoleBehavior> CODEC = RecordCodecBuilder.create(instance -> {
 		return instance.group(
 				PlayerRole.CODEC.fieldOf("role").forGetter(c -> c.role)
-		).apply(instance, JoinAsRoleBehavior::new);
+		).apply(instance, JoinLateWithRoleBehavior::new);
 	});
 
 	private final PlayerRole role;
 
-	public JoinAsRoleBehavior(PlayerRole role) {
+	public JoinLateWithRoleBehavior(PlayerRole role) {
 		this.role = role;
 	}
 

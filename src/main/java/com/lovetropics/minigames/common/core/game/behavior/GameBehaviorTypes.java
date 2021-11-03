@@ -102,7 +102,8 @@ public class GameBehaviorTypes {
 
 	public static final GameBehaviorEntry<SetupTelemetryBehavior> SETUP_TELEMETRY;
 	public static final GameBehaviorEntry<AssignPlayerRolesBehavior> ASSIGN_PLAYER_ROLES;
-	public static final GameBehaviorEntry<JoinAsRoleBehavior> JOIN_AS_ROLE;
+	public static final GameBehaviorEntry<JoinLateWithRoleBehavior> JOIN_LATE_WITH_ROLE;
+	public static final GameBehaviorEntry<DebugModeBehavior> DEBUG_MODE;
 
 	public static final GameBehaviorEntry<SetGameClientStateBehavior> SET_CLIENT_STATE;
 
@@ -177,7 +178,8 @@ public class GameBehaviorTypes {
 
 		SETUP_TELEMETRY = register("setup_telemetry", SetupTelemetryBehavior.CODEC);
 		ASSIGN_PLAYER_ROLES = register("assign_player_roles", AssignPlayerRolesBehavior.CODEC);
-		JOIN_AS_ROLE = register("join_as_role", JoinAsRoleBehavior.CODEC);
+		JOIN_LATE_WITH_ROLE = register("join_late_with_role", JoinLateWithRoleBehavior.CODEC);
+		DEBUG_MODE = register("debug_mode", DebugModeBehavior.CODEC);
 
 		SET_CLIENT_STATE = register("set_client_state", SetGameClientStateBehavior.CODEC);
 	}

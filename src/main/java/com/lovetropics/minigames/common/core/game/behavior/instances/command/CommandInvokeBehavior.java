@@ -3,6 +3,7 @@ package com.lovetropics.minigames.common.core.game.behavior.instances.command;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
+import com.lovetropics.minigames.common.core.game.state.DebugModeState;
 import com.lovetropics.minigames.common.core.game.state.control.ControlCommands;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
@@ -60,8 +61,11 @@ public abstract class CommandInvokeBehavior implements IGameBehavior {
 	}
 
 	private CommandSource createCommandSource(IGamePhase game) {
+		boolean debugMode = game.getState().getOrNull(DebugModeState.KEY) != null;
+		ICommandSource source = debugMode ? game.getServer() : ICommandSource.DUMMY;
+
 		String name = game.getLobby().getMetadata().name();
-		return new CommandSource(ICommandSource.DUMMY, Vector3d.ZERO, Vector2f.ZERO, game.getWorld(), 4, name, new StringTextComponent(name), game.getServer(), null);
+		return new CommandSource(source, Vector3d.ZERO, Vector2f.ZERO, game.getWorld(), 4, name, new StringTextComponent(name), game.getServer(), null);
 	}
 
 	protected void registerControls(IGamePhase game, ControlCommands commands) {

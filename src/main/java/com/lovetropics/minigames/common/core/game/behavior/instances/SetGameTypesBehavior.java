@@ -18,18 +18,18 @@ public class SetGameTypesBehavior implements IGameBehavior {
 		return instance.group(
 				MoreCodecs.GAME_TYPE.optionalFieldOf("participant", GameType.SURVIVAL).forGetter(c -> c.participantGameType),
 				MoreCodecs.GAME_TYPE.optionalFieldOf("spectator", GameType.SPECTATOR).forGetter(c -> c.spectatorGameType),
-				MoreCodecs.GAME_TYPE.optionalFieldOf("none", GameType.ADVENTURE).forGetter(c -> c.noneGameType)
+				MoreCodecs.GAME_TYPE.optionalFieldOf("all", GameType.ADVENTURE).forGetter(c -> c.allGameType)
 		).apply(instance, SetGameTypesBehavior::new);
 	});
 
 	private final GameType participantGameType;
 	private final GameType spectatorGameType;
-	private final GameType noneGameType;
+	private final GameType allGameType;
 
-	public SetGameTypesBehavior(GameType participantGameType, GameType spectatorGameType, GameType noneGameType) {
+	public SetGameTypesBehavior(GameType participantGameType, GameType spectatorGameType, GameType allGameType) {
 		this.participantGameType = participantGameType;
 		this.spectatorGameType = spectatorGameType;
-		this.noneGameType = noneGameType;
+		this.allGameType = allGameType;
 	}
 
 	@Override
@@ -39,7 +39,7 @@ public class SetGameTypesBehavior implements IGameBehavior {
 	}
 
 	private void applyRoleTo(ServerPlayerEntity player, @Nullable PlayerRole role) {
-		GameType gameType = noneGameType;
+		GameType gameType = allGameType;
 		if (role == PlayerRole.PARTICIPANT) {
 			gameType = participantGameType;
 		} else if (role == PlayerRole.SPECTATOR) {

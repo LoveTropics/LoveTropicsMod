@@ -108,6 +108,6 @@ public final class TimedGameBehavior implements IGameBehavior {
 		long seconds = secondsRemaining % 60;
 		String time = String.format("%02d:%02d", minutes, seconds);
 
-		return timerBarText.apply(new StringTextComponent(time).mergeStyle(TextFormatting.GRAY));
+		return timerBarText.apply(new StringTextComponent(time).mergeStyle(TextFormatting.AQUA));
 	}
 }
