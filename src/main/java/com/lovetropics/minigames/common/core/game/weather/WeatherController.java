@@ -1,7 +1,8 @@
 package com.lovetropics.minigames.common.core.game.weather;
 
-import com.lovetropics.minigames.common.content.survive_the_tide.SurviveTheTideWeatherConfig;
 import net.minecraft.entity.player.ServerPlayerEntity;
+
+import javax.annotation.Nullable;
 
 public interface WeatherController {
 	void onPlayerJoin(ServerPlayerEntity player);
@@ -14,9 +15,13 @@ public interface WeatherController {
 
 	void setHeatwave(boolean heatwave);
 
-	void setSandstorm(boolean sandstorm);
+	void setSandstorm(int buildupTickRate, int maxStackable);
 
-	void setSnowstorm(boolean snowstorm);
+	void clearSandstorm();
+
+	void setSnowstorm(int buildupTickRate, int maxStackable);
+
+	void clearSnowstorm();
 
 	float getRainAmount();
 
@@ -26,19 +31,25 @@ public interface WeatherController {
 
 	boolean isHeatwave();
 
-	boolean isSandstorm();
+	@Nullable
+	StormState getSandstorm();
 
-	boolean isSnowstorm();
+	@Nullable
+	StormState getSnowstorm();
+
+	default boolean isSandstorm() {
+		return getSandstorm() != null;
+	}
+
+	default boolean isSnowstorm() {
+		return getSnowstorm() != null;
+	}
 
 	default void reset() {
 		setRain(0.0F, RainType.NORMAL);
 		setWind(0.0F);
 		setHeatwave(false);
-		setSandstorm(false);
-		setSnowstorm(false);
+		clearSandstorm();
+		clearSnowstorm();
 	}
-
-	void setConfig(SurviveTheTideWeatherConfig config);
-
-	SurviveTheTideWeatherConfig getConfig();
 }

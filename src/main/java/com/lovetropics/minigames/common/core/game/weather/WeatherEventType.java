@@ -1,4 +1,4 @@
-package com.lovetropics.minigames.common.core.game.state.weather;
+package com.lovetropics.minigames.common.core.game.weather;
 
 import com.lovetropics.lib.codec.MoreCodecs;
 import com.mojang.serialization.Codec;

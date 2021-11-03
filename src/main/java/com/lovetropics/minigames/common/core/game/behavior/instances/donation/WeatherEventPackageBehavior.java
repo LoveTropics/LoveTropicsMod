@@ -5,9 +5,12 @@ import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePackageEvents;
 import com.lovetropics.minigames.common.core.game.state.weather.GameWeatherState;
-import com.lovetropics.minigames.common.core.game.state.weather.WeatherEventType;
+import com.lovetropics.minigames.common.core.game.weather.WeatherEvent;
+import com.lovetropics.minigames.common.core.game.weather.WeatherEventType;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+
+import javax.annotation.Nullable;
 
 public final class WeatherEventPackageBehavior implements IGameBehavior {
 	public static final Codec<WeatherEventPackageBehavior> CODEC = RecordCodecBuilder.create(instance -> {
@@ -32,8 +35,23 @@ public final class WeatherEventPackageBehavior implements IGameBehavior {
 		weather = game.getState().getOrThrow(GameWeatherState.KEY);
 
 		events.listen(GamePackageEvents.APPLY_PACKAGE, (player, sendingPlayer) -> {
-			weather.setEvent(this.type, this.ticks);
-			return true;
+			WeatherEvent event = this.tryCreateEvent(ticks);
+			if (event != null) {
+				weather.setEvent(event);
+				return true;
+			} else {
+				return false;
+			}
 		});
+	}
+
+	@Nullable
+	private WeatherEvent tryCreateEvent(long time) {
+		switch (this.type) {
+			case HEAVY_RAIN: return WeatherEvent.heavyRain(time);
+			case ACID_RAIN: return WeatherEvent.acidRain(time);
+			case HEATWAVE: return WeatherEvent.heatwave(time);
+			default: return null;
+		}
 	}
 }

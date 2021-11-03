@@ -8,7 +8,7 @@ import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.lovetropics.minigames.common.core.game.state.GameStateMap;
 import com.lovetropics.minigames.common.core.game.state.weather.GameWeatherState;
-import com.lovetropics.minigames.common.core.game.state.weather.WeatherEventType;
+import com.lovetropics.minigames.common.core.game.weather.WeatherEventType;
 import com.lovetropics.minigames.common.core.game.weather.WeatherController;
 import com.lovetropics.minigames.common.core.game.weather.WeatherControllerManager;
 import com.mojang.serialization.Codec;

@@ -8,7 +8,8 @@ import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents
 import com.lovetropics.minigames.common.core.game.state.GamePhase;
 import com.lovetropics.minigames.common.core.game.state.GamePhaseState;
 import com.lovetropics.minigames.common.core.game.state.weather.GameWeatherState;
-import com.lovetropics.minigames.common.core.game.state.weather.WeatherEventType;
+import com.lovetropics.minigames.common.core.game.weather.WeatherEvent;
+import com.lovetropics.minigames.common.core.game.weather.WeatherEventType;
 import com.mojang.serialization.Codec;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraft.world.storage.IServerWorldInfo;
@@ -79,8 +80,6 @@ public class SurviveTheTideWeatherControlBehavior implements IGameBehavior {
         events.listen(GamePhaseEvents.STOP, reason -> weather.clear());
 
         phases = game.getState().getOrNull(GamePhaseState.KEY);
-
-        weather.getController().setConfig(config);
     }
 
     private void tick(final IGamePhase game) {
@@ -132,7 +131,7 @@ public class SurviveTheTideWeatherControlBehavior implements IGameBehavior {
         if (phase.is("phase4")) {
             time /= 2;
         }
-        weather.setEvent(WeatherEventType.HEAVY_RAIN, time);
+        weather.setEvent(WeatherEvent.heavyRain(time));
     }
 
     private void acidRainStart(GamePhase phase) {
@@ -140,7 +139,7 @@ public class SurviveTheTideWeatherControlBehavior implements IGameBehavior {
         if (phase.is("phase4")) {
             time /= 2;
         }
-        weather.setEvent(WeatherEventType.ACID_RAIN, time);
+        weather.setEvent(WeatherEvent.acidRain(time));
     }
 
     private void heatwaveStart(GamePhase phase) {
@@ -148,7 +147,7 @@ public class SurviveTheTideWeatherControlBehavior implements IGameBehavior {
         if (phase.is("phase4")) {
             time /= 2;
         }
-        weather.setEvent(WeatherEventType.HEATWAVE, time);
+        weather.setEvent(WeatherEvent.heatwave(time));
     }
 
     private void sandstormStart(GamePhase phase) {
@@ -157,7 +156,7 @@ public class SurviveTheTideWeatherControlBehavior implements IGameBehavior {
         if (phase.is("phase4")) {
             time /= 2;
         }
-        weather.setEvent(WeatherEventType.SANDSTORM, time);
+        weather.setEvent(WeatherEvent.sandstorm(time, config.getSandstormBuildupTickRate(), config.getSandstormMaxStackable()));
     }
 
     private void snowstormStart(GamePhase phase) {
@@ -166,6 +165,6 @@ public class SurviveTheTideWeatherControlBehavior implements IGameBehavior {
         if (phase.is("phase4")) {
             time /= 2;
         }
-        weather.setEvent(WeatherEventType.SNOWSTORM, time);
+        weather.setEvent(WeatherEvent.snowstorm(time, config.getSnowstormBuildupTickRate(), config.getSnowstormMaxStackable()));
     }
 }

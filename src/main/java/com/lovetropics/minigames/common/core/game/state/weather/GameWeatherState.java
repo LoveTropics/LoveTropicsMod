@@ -2,8 +2,9 @@ package com.lovetropics.minigames.common.core.game.state.weather;
 
 import com.lovetropics.minigames.common.core.game.state.GameStateKey;
 import com.lovetropics.minigames.common.core.game.state.IGameState;
-import com.lovetropics.minigames.common.core.game.weather.RainType;
 import com.lovetropics.minigames.common.core.game.weather.WeatherController;
+import com.lovetropics.minigames.common.core.game.weather.WeatherEvent;
+import com.lovetropics.minigames.common.core.game.weather.WeatherEventType;
 
 import javax.annotation.Nullable;
 
@@ -25,41 +26,30 @@ public final class GameWeatherState implements IGameState {
 
 	public void tick() {
 		WeatherEvent event = this.event;
-		if (event != null) {
-			if (event.time-- <= 0) {
-				this.clearEvent();
-			}
+		if (event != null && event.tick() == WeatherEvent.TickResult.STOP) {
+			this.clearEvent();
 		}
-	}
-
-	public void setEvent(WeatherEventType event, long length) {
-		this.setEvent(new WeatherEvent(event, length));
 	}
 
 	public void setWind(float wind) {
 		this.controller.setWind(wind);
 	}
 
-	public void clearEvent() {
-		this.setEvent(null);
-	}
-
-	private void setEvent(@Nullable WeatherEvent event) {
-		this.event = event;
-
-		WeatherEventType type = event != null ? event.getType() : null;
-
-		if (type == WeatherEventType.HEAVY_RAIN) {
-			controller.setRain(1.0F, RainType.NORMAL);
-		} else if (type == WeatherEventType.ACID_RAIN) {
-			controller.setRain(1.0F, RainType.ACID);
-		} else {
-			controller.setRain(0.0F, controller.getRainType());
+	public void setEvent(@Nullable WeatherEvent event) {
+		WeatherEvent lastEvent = this.event;
+		if (lastEvent != null) {
+			lastEvent.remove(controller);
 		}
 
-		controller.setHeatwave(type == WeatherEventType.HEATWAVE);
-		controller.setSandstorm(type == WeatherEventType.SANDSTORM);
-		controller.setSnowstorm(type == WeatherEventType.SNOWSTORM);
+		this.event = event;
+
+		if (event != null) {
+			event.apply(controller);
+		}
+	}
+
+	public void clearEvent() {
+		this.setEvent(null);
 	}
 
 	@Nullable
@@ -70,9 +60,5 @@ public final class GameWeatherState implements IGameState {
 	@Nullable
 	public WeatherEventType getEventType() {
 		return event != null ? event.getType() : null;
-	}
-
-	public WeatherController getController() {
-		return controller;
 	}
 }
