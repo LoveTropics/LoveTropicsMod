@@ -4,11 +4,15 @@ import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
+import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.NBTDynamicOps;
+import net.minecraft.network.play.server.SChangeGameStatePacket;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.GameRules;
 
 import java.util.Map;
@@ -28,8 +32,12 @@ public final class SetGameRulesBehavior implements IGameBehavior {
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
+		MinecraftServer server = game.getServer();
 		GameRules gameRules = game.getWorld().getGameRules();
 		CompoundNBT rulesSnapshot = applyRules(gameRules);
+
+		events.listen(GamePlayerEvents.ADD, player -> sendRuleUpdatesTo(gameRules, player));
+		events.listen(GamePlayerEvents.REMOVE, player -> sendRuleUpdatesTo(server.getGameRules(), player));
 
 		events.listen(GamePhaseEvents.DESTROY, () -> {
 			resetRules(gameRules, rulesSnapshot);
@@ -51,5 +59,10 @@ public final class SetGameRulesBehavior implements IGameBehavior {
 
 	private void resetRules(GameRules gameRules, CompoundNBT snapshot) {
 		gameRules.decode(new Dynamic<>(NBTDynamicOps.INSTANCE, snapshot));
+	}
+
+	private void sendRuleUpdatesTo(GameRules gameRules, ServerPlayerEntity player) {
+		boolean immediateRespawn = gameRules.get(GameRules.DO_IMMEDIATE_RESPAWN).get();
+		player.connection.sendPacket(new SChangeGameStatePacket(SChangeGameStatePacket.SHOW_DEATH_SCREEN, immediateRespawn ? 1.0F : 0.0F));
 	}
 }
