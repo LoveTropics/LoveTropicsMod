@@ -19,6 +19,7 @@ import com.lovetropics.minigames.common.util.Scheduler;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.block.Blocks;
+import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.entity.passive.SheepEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.DyeColor;
@@ -83,6 +84,7 @@ public final class SetupTeamsBehavior implements IGameBehavior {
 	public void register(IGamePhase game, EventRegistrar events) {
 		events.listen(GamePlayerEvents.ADD, player -> this.onPlayerWaiting(game, player));
 		events.listen(GamePlayerEvents.USE_ITEM, this::onPlayerUseItem);
+		events.listen(GamePlayerEvents.THROW_ITEM, this::onPlayerThrowItem);
 	}
 
 	private void onPlayerWaiting(IGamePhase game, ServerPlayerEntity player) {
@@ -102,6 +104,15 @@ public final class SetupTeamsBehavior implements IGameBehavior {
 		if (team != null) {
 			onRequestJoinTeam(player, team);
 			return ActionResultType.SUCCESS;
+		}
+
+		return ActionResultType.PASS;
+	}
+
+	private ActionResultType onPlayerThrowItem(ServerPlayerEntity player, ItemEntity entity) {
+		GameTeam team = getJoinTeamFor(entity.getItem());
+		if (team != null) {
+			return ActionResultType.FAIL;
 		}
 
 		return ActionResultType.PASS;
