@@ -20,20 +20,24 @@ public final class GameResourcePackHandler implements ClientGameStateHandler<Res
 	@Override
 	public void accept(ResourcePackClientState state) {
 		String packName = state.getPackName();
-		this.updatePacks(enabledPacks -> {
-			if (!enabledPacks.contains(packName)) {
-				enabledPacks.add(packName);
-				return true;
-			} else {
-				return false;
-			}
-		});
+		if (this.packExists(packName)) {
+			this.updatePacks(enabledPacks -> {
+				if (!enabledPacks.contains(packName)) {
+					enabledPacks.add(packName);
+					return true;
+				} else {
+					return false;
+				}
+			});
+		}
 	}
 
 	@Override
 	public void disable(ResourcePackClientState state) {
 		String packName = state.getPackName();
-		this.updatePacks(enabledPacks -> enabledPacks.remove(packName));
+		if (this.packExists(packName)) {
+			this.updatePacks(enabledPacks -> enabledPacks.remove(packName));
+		}
 	}
 
 	private void updatePacks(Predicate<List<String>> apply) {
@@ -48,5 +52,9 @@ public final class GameResourcePackHandler implements ClientGameStateHandler<Res
 
 			CLIENT.scheduleResourcesRefresh();
 		}
+	}
+
+	private boolean packExists(String packName) {
+		return CLIENT.getResourcePackList().func_232617_b_(packName);
 	}
 }
