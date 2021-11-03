@@ -92,19 +92,23 @@ public final class BbBehavior implements IGameBehavior {
 		Plot plot = this.plots.getPlotFor(player);
 		BlockPos pos = blockRayTraceResult.getPos();
 
-		if (plot != null) {
-			// Check if farmland is being used and the user has a hoe TODO: can we make it not hardcoded?
-			if (world.getBlockState(pos).getBlock() == Blocks.FARMLAND && player.getHeldItem(hand).getItem() instanceof HoeItem) {
-				// If there is no plant above we can change to grass safely
-				if (!plot.plants.hasPlantAt(pos.up())) {
-					world.setBlockState(pos, Blocks.GRASS_BLOCK.getDefaultState());
-		            world.playSound(player, blockPos, SoundEvents.ITEM_HOE_TILL, SoundCategory.BLOCKS, 1.0F, 1.0F);
-					player.swingArm(hand);
-					return ActionResultType.SUCCESS;
-				}
-			}
+		if (plot != null && plot.bounds.contains(pos)) {
+			return this.onUseBlockInPlot(player, world, blockPos, hand, plot, pos);
 		} else {
 			return ActionResultType.FAIL;
+		}
+	}
+
+	private ActionResultType onUseBlockInPlot(ServerPlayerEntity player, ServerWorld world, BlockPos blockPos, Hand hand, Plot plot, BlockPos pos) {
+		// Check if farmland is being used and the user has a hoe TODO: can we make it not hardcoded?
+		if (world.getBlockState(pos).getBlock() == Blocks.FARMLAND && player.getHeldItem(hand).getItem() instanceof HoeItem) {
+			// If there is no plant above we can change to grass safely
+			if (!plot.plants.hasPlantAt(pos.up())) {
+				world.setBlockState(pos, Blocks.GRASS_BLOCK.getDefaultState());
+				world.playSound(player, blockPos, SoundEvents.ITEM_HOE_TILL, SoundCategory.BLOCKS, 1.0F, 1.0F);
+				player.swingArm(hand);
+				return ActionResultType.SUCCESS;
+			}
 		}
 
 		return ActionResultType.PASS;
