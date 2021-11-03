@@ -87,6 +87,8 @@ public class SurviveTheTideWeatherControlBehavior implements IGameBehavior {
             return;
         }
 
+        weather.tick();
+
         GamePhase phase = phases.get();
 
         ServerWorld world = game.getWorld();
