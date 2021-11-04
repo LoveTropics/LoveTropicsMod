@@ -2,13 +2,14 @@ package com.lovetropics.minigames.client.lobby;
 
 import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.client.lobby.state.ClientCurrentGame;
+import com.lovetropics.minigames.client.lobby.state.ClientGameDefinition;
 import com.lovetropics.minigames.client.lobby.state.ClientLobbyManager;
 import com.lovetropics.minigames.client.lobby.state.ClientLobbyState;
 import com.lovetropics.minigames.common.core.game.LobbyStatus;
 import com.lovetropics.minigames.common.core.game.player.PlayerRole;
 import com.mojang.blaze3d.matrix.MatrixStack;
-
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.AbstractGui;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.TextFormatting;
@@ -50,6 +51,8 @@ public class LobbyStateGui {
 
 		final int padding = 2;
 		final int lineHeight = fnt.FONT_HEIGHT + padding;
+
+		final int left = padding;
 		int y = padding;
 
 		for (ClientLobbyState lobby : ClientLobbyManager.getLobbies()) {
@@ -64,11 +67,24 @@ public class LobbyStateGui {
 				Minecraft.getInstance().getTextureManager().bindTexture(new ResourceLocation("minecraft:missingno"));
 			}
 			if (event.getType() == ElementType.TEXT) {
+				final int iconSize = 32;
+
+				int x = left;
+
+				if (currentGame != null) {
+					ClientGameDefinition definition = currentGame.definition();
+					if (definition.icon != null) {
+						Minecraft.getInstance().getTextureManager().bindTexture(definition.icon);
+						AbstractGui.blit(transform, x, y, 0, 0, 32, 32, 32, 32);
+						x += iconSize + padding * 2;
+					}
+				}
+
 				String line = TextFormatting.GRAY + "Lobby: " + TextFormatting.YELLOW + TextFormatting.BOLD + lobby.getName();
 				if (joinedRole != null) {
 					line += TextFormatting.GREEN + " [Joined]";
 				}
-				fnt.drawStringWithShadow(transform, line, padding, y, -1);
+				fnt.drawStringWithShadow(transform, line, x, y, -1);
 				y += lineHeight;
 
 				String playerCount = formatPlayerCount(lobby, currentGame);
@@ -77,7 +93,7 @@ public class LobbyStateGui {
 						+ status.color + status.description
 						+ TextFormatting.GRAY + " (" + playerCount + " players)";
 
-				fnt.drawStringWithShadow(transform, line, padding, y, -1);
+				fnt.drawStringWithShadow(transform, line, x, y, -1);
 				y += lineHeight;
 
 				line = TextFormatting.GRAY.toString();
@@ -90,7 +106,7 @@ public class LobbyStateGui {
 				} else {
 					line += TextFormatting.AQUA + "Leave [" + LobbyKeybinds.LEAVE.func_238171_j_().getString().toUpperCase() + "]";
 				}
-				fnt.drawStringWithShadow(transform, line, padding, y, -1);
+				fnt.drawStringWithShadow(transform, line, x, y, -1);
 				y += lineHeight + padding;
 			}
 		}
