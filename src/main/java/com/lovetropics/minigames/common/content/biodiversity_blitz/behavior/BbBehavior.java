@@ -117,8 +117,9 @@ public final class BbBehavior implements IGameBehavior {
 			// If there is no plant above we can change to grass safely
 			if (!plot.plants.hasPlantAt(pos.up())) {
 				world.setBlockState(pos, Blocks.GRASS_BLOCK.getDefaultState());
-				world.playSound(player, blockPos, SoundEvents.ITEM_HOE_TILL, SoundCategory.BLOCKS, 1.0F, 1.0F);
+				world.playSound(null, blockPos, SoundEvents.ITEM_HOE_TILL, SoundCategory.BLOCKS, 1.0F, 1.0F);
 				player.swingArm(hand);
+				player.getCooldownTracker().setCooldown(player.getHeldItem(hand).getItem(), 3);
 				return ActionResultType.SUCCESS;
 			}
 		}
