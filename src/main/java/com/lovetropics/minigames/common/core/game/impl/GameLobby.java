@@ -197,7 +197,7 @@ final class GameLobby implements IGameLobby {
 		players.remove(player);
 	}
 
-	void onPlayerRegister(ServerPlayerEntity player, @Nullable PlayerRole requestedRole) {
+	void onPlayerRegister(ServerPlayerEntity player) {
 		manager.addPlayerToLobby(player, this);
 
 		GamePhase phase = state.getPhase();
@@ -206,13 +206,15 @@ final class GameLobby implements IGameLobby {
 			phase.onPlayerJoin(player);
 		}
 
-		stateListener.onPlayerJoin(this, player, requestedRole);
+		PlayerRole role = players.getRegisteredRoleFor(player);
+		stateListener.onPlayerJoin(this, player, role);
 
 		management.onPlayersChanged();
 	}
 
-	void onPlayerChangeRegisteredRole(ServerPlayerEntity player, @Nullable PlayerRole requestedRole) {
-		stateListener.onPlayerChangeRole(this, player, requestedRole);
+	void onPlayerChangeRegisteredRole(ServerPlayerEntity player) {
+		PlayerRole role = players.getRegisteredRoleFor(player);
+		stateListener.onPlayerChangeRole(this, player, role);
 
 		management.onPlayersChanged();
 	}

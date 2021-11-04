@@ -60,7 +60,7 @@ public final class TimedGameBehavior implements IGameBehavior {
 
 		if (timerBarText != null) {
 			GlobalGameWidgets widgets = GlobalGameWidgets.registerTo(game, events);
-			timerBar = widgets.openBossBar(new StringTextComponent(""), BossInfo.Color.GREEN, BossInfo.Overlay.PROGRESS);
+			timerBar = widgets.openBossBar(new StringTextComponent(""), BossInfo.Color.GREEN, BossInfo.Overlay.NOTCHED_10);
 		}
 
 		game.getControlCommands().add("pause", ControlCommand.forInitiator(source -> this.state.setPaused(true)));
