@@ -54,6 +54,17 @@ public final class GameRegistrations implements PlayerSet {
 		}
 	}
 
+	public boolean set(UUID id, @Nullable PlayerRole requestedRole) {
+		if (players.contains(id)) {
+			if (requestedRole != null) {
+				return rolePreferences.put(id, requestedRole) != requestedRole;
+			} else {
+				return rolePreferences.remove(id) != null;
+			}
+		}
+		return false;
+	}
+
 	public boolean remove(UUID id) {
 		if (players.remove(id)) {
 			rolePreferences.remove(id);

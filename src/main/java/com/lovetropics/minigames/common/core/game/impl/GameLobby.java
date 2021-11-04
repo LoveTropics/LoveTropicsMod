@@ -197,7 +197,7 @@ final class GameLobby implements IGameLobby {
 		players.remove(player);
 	}
 
-	void onPlayerRegister(ServerPlayerEntity player) {
+	void onPlayerRegister(ServerPlayerEntity player, @Nullable PlayerRole requestedRole) {
 		manager.addPlayerToLobby(player, this);
 
 		GamePhase phase = state.getPhase();
@@ -206,8 +206,13 @@ final class GameLobby implements IGameLobby {
 			phase.onPlayerJoin(player);
 		}
 
-		PlayerRole role = players.getRegisteredRoleFor(player);
-		stateListener.onPlayerJoin(this, player, role);
+		stateListener.onPlayerJoin(this, player, requestedRole);
+
+		management.onPlayersChanged();
+	}
+
+	void onPlayerChangeRegisteredRole(ServerPlayerEntity player, @Nullable PlayerRole requestedRole) {
+		stateListener.onPlayerChangeRole(this, player, requestedRole);
 
 		management.onPlayersChanged();
 	}
@@ -319,7 +324,12 @@ final class GameLobby implements IGameLobby {
 
 	static final class NetworkUpdateListener implements LobbyStateListener {
 		@Override
-		public void onPlayerJoin(IGameLobby lobby, ServerPlayerEntity player, PlayerRole registeredRole) {
+		public void onPlayerJoin(IGameLobby lobby, ServerPlayerEntity player, @Nullable PlayerRole registeredRole) {
+			this.onPlayerChangeRole(lobby, player, registeredRole);
+		}
+
+		@Override
+		public void onPlayerChangeRole(IGameLobby lobby, ServerPlayerEntity player, @Nullable PlayerRole registeredRole) {
 			LoveTropicsNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), JoinedLobbyMessage.create(lobby, registeredRole));
 			lobby.getTrackingPlayers().sendPacket(LoveTropicsNetwork.CHANNEL, LobbyPlayersMessage.update(lobby));
 		}

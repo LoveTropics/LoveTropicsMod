@@ -31,10 +31,19 @@ final class LobbyPlayerManager implements IGameLobbyPlayers {
 		}
 
 		if (registrations.add(player.getUniqueID(), requestedRole)) {
-			lobby.onPlayerRegister(player);
+			lobby.onPlayerRegister(player, requestedRole);
 			return true;
 		}
 
+		return false;
+	}
+
+	@Override
+	public boolean changeRole(ServerPlayerEntity player, @Nullable PlayerRole requestedRole) {
+		if (registrations.set(player.getUniqueID(), requestedRole)) {
+			lobby.onPlayerChangeRegisteredRole(player, requestedRole);
+			return true;
+		}
 		return false;
 	}
 

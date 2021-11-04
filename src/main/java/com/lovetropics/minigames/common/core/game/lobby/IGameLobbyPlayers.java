@@ -12,6 +12,8 @@ public interface IGameLobbyPlayers extends PlayerSet {
 
 	boolean join(ServerPlayerEntity player, @Nullable PlayerRole requestedRole);
 
+	boolean changeRole(ServerPlayerEntity player, @Nullable PlayerRole requestedRole);
+
 	boolean remove(ServerPlayerEntity player);
 
 	@Nullable

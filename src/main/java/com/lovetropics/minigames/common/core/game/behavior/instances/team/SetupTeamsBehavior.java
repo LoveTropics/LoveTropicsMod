@@ -1,6 +1,5 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances.team;
 
-import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
@@ -15,24 +14,19 @@ import com.lovetropics.minigames.common.core.game.state.team.GameTeam;
 import com.lovetropics.minigames.common.core.game.state.team.GameTeamConfig;
 import com.lovetropics.minigames.common.core.game.state.team.GameTeamKey;
 import com.lovetropics.minigames.common.core.game.state.team.TeamState;
+import com.lovetropics.minigames.common.core.game.util.SelectorItems;
 import com.lovetropics.minigames.common.util.Scheduler;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.block.Blocks;
-import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.entity.passive.SheepEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.DyeColor;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.util.ActionResultType;
-import net.minecraft.util.Hand;
 import net.minecraft.util.IItemProvider;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
 
-import javax.annotation.Nullable;
 import java.util.List;
 import java.util.UUID;
 
@@ -53,11 +47,10 @@ public final class SetupTeamsBehavior implements IGameBehavior {
 		).apply(instance, SetupTeamsBehavior::new);
 	});
 
-	private static final String JOIN_TEAM_KEY = "join_team";
-
 	private final List<GameTeam> teams;
 
 	private TeamState teamState;
+	private SelectorItems<GameTeam> selectors;
 
 	public SetupTeamsBehavior(List<GameTeam> teams) {
 		this.teams = teams;
@@ -83,39 +76,44 @@ public final class SetupTeamsBehavior implements IGameBehavior {
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
 		events.listen(GamePlayerEvents.ADD, player -> this.onPlayerWaiting(game, player));
-		events.listen(GamePlayerEvents.USE_ITEM, this::onPlayerUseItem);
-		events.listen(GamePlayerEvents.THROW_ITEM, this::onPlayerThrowItem);
+
+		SelectorItems.Handlers<GameTeam> handlers = new SelectorItems.Handlers<GameTeam>() {
+			@Override
+			public void onPlayerSelected(ServerPlayerEntity player, GameTeam team) {
+				onRequestJoinTeam(player, team);
+			}
+
+			@Override
+			public String getIdFor(GameTeam team) {
+				return team.key().id();
+			}
+
+			@Override
+			public ITextComponent getNameFor(GameTeam team) {
+				return new StringTextComponent("Join ").appendSibling(team.config().name())
+						.mergeStyle(team.config().formatting());
+			}
+
+			@Override
+			public IItemProvider getItemFor(GameTeam team) {
+				return SheepEntity.WOOL_BY_COLOR.getOrDefault(team.config().dye(), Blocks.WHITE_WOOL);
+			}
+		};
+
+		selectors = new SelectorItems<>(handlers, this.teams.toArray(new GameTeam[0]));
+		selectors.applyTo(events);
 	}
 
 	private void onPlayerWaiting(IGamePhase game, ServerPlayerEntity player) {
 		PlayerRole registeredRole = game.getLobby().getPlayers().getRegisteredRoleFor(player);
 		if (registeredRole != PlayerRole.SPECTATOR && teamState.getPollingTeams().size() > 1) {
-			Scheduler.nextTick().run(server -> addTeamSelectorsTo(player));
+			player.sendStatusMessage(new StringTextComponent("This is a team-based game!").mergeStyle(TextFormatting.GOLD, TextFormatting.BOLD), false);
+			player.sendStatusMessage(new StringTextComponent("You can select a team preference by using the items in your inventory:").mergeStyle(TextFormatting.GRAY), false);
+
+			Scheduler.nextTick().run(server -> {
+				selectors.giveSelectorsTo(player);
+			});
 		}
-	}
-
-	private ActionResultType onPlayerUseItem(ServerPlayerEntity player, Hand hand) {
-		ItemStack heldStack = player.getHeldItem(hand);
-		if (heldStack.isEmpty()) {
-			return ActionResultType.PASS;
-		}
-
-		GameTeam team = getJoinTeamFor(heldStack);
-		if (team != null) {
-			onRequestJoinTeam(player, team);
-			return ActionResultType.SUCCESS;
-		}
-
-		return ActionResultType.PASS;
-	}
-
-	private ActionResultType onPlayerThrowItem(ServerPlayerEntity player, ItemEntity entity) {
-		GameTeam team = getJoinTeamFor(entity.getItem());
-		if (team != null) {
-			return ActionResultType.FAIL;
-		}
-
-		return ActionResultType.PASS;
 	}
 
 	private void onRequestJoinTeam(ServerPlayerEntity player, GameTeam team) {
@@ -127,39 +125,5 @@ public final class SetupTeamsBehavior implements IGameBehavior {
 						.appendSibling(teamName),
 				false
 		);
-	}
-
-	private void addTeamSelectorsTo(ServerPlayerEntity player) {
-		player.sendStatusMessage(new StringTextComponent("This is a team-based game!").mergeStyle(TextFormatting.GOLD, TextFormatting.BOLD), false);
-		player.sendStatusMessage(new StringTextComponent("You can select a team preference by using the items in your inventory:").mergeStyle(TextFormatting.GRAY), false);
-
-		for (GameTeam team : teamState.getPollingTeams()) {
-			IItemProvider wool = SheepEntity.WOOL_BY_COLOR.getOrDefault(team.config().dye(), Blocks.WHITE_WOOL);
-			player.addItemStackToInventory(this.createTeamSelector(wool, team));
-		}
-	}
-
-	@Nullable
-	private GameTeam getJoinTeamFor(ItemStack stack) {
-		CompoundNBT tag = stack.getTag();
-		if (tag == null) return null;
-
-		String joinTeam = tag.getString(JOIN_TEAM_KEY);
-		if (!Strings.isNullOrEmpty(joinTeam)) {
-			return teamState.getTeamByKey(joinTeam);
-		} else {
-			return null;
-		}
-	}
-
-	private ItemStack createTeamSelector(IItemProvider item, GameTeam team) {
-		ItemStack stack = new ItemStack(item);
-		stack.setDisplayName(new StringTextComponent("Join ").appendSibling(team.config().name())
-				.mergeStyle(TextFormatting.BOLD, team.config().formatting()));
-
-		CompoundNBT tag = stack.getOrCreateTag();
-		tag.putString(JOIN_TEAM_KEY, team.key().id());
-
-		return stack;
 	}
 }
