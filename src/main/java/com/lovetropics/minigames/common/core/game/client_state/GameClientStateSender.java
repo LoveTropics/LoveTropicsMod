@@ -50,6 +50,7 @@ public final class GameClientStateSender {
 		private final Set<GameClientStateType<?>> removeQueue = new ObjectOpenHashSet<>();
 
 		public <T extends GameClientState> void enqueueSet(T state) {
+			this.removeQueue.remove(state.getType());
 			this.setQueue.put(state.getType(), state);
 		}
 
