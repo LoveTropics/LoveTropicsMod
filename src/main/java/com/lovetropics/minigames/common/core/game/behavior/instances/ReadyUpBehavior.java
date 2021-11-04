@@ -8,6 +8,7 @@ import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.lovetropics.minigames.common.core.game.lobby.IGameLobbyPlayers;
 import com.lovetropics.minigames.common.core.game.player.PlayerRole;
+import com.lovetropics.minigames.common.core.game.state.TimedGameState;
 import com.lovetropics.minigames.common.core.game.util.SelectorItems;
 import com.mojang.serialization.Codec;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
@@ -28,24 +29,19 @@ import java.util.UUID;
 public final class ReadyUpBehavior implements IGameBehavior {
 	public static final Codec<ReadyUpBehavior> CODEC = Codec.unit(ReadyUpBehavior::new);
 
+	private static final long ALL_READY_START_TIME = 5 * 20;
+
 	private final Map<UUID, PlayerRole> requestedRoles = new Object2ObjectOpenHashMap<>();
 
 	private SelectorItems<PlayerRole> selectors;
-
-	// TODO: lower countdown when everyone has readied-up
+	private TimedGameState timedState;
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) throws GameException {
 		SelectorItems.Handlers<PlayerRole> handlers = new SelectorItems.Handlers<PlayerRole>() {
 			@Override
 			public void onPlayerSelected(ServerPlayerEntity player, PlayerRole role) {
-				requestedRoles.put(player.getUniqueID(), role);
-
-				if (role == PlayerRole.PARTICIPANT) {
-					player.sendStatusMessage(new StringTextComponent("You are queued to participate in the next game.").mergeStyle(TextFormatting.AQUA), true);
-				} else {
-					player.sendStatusMessage(new StringTextComponent("You will spectate the next game.").mergeStyle(TextFormatting.WHITE), true);
-				}
+				selectRole(game, player, role);
 			}
 
 			@Override
@@ -71,6 +67,8 @@ public final class ReadyUpBehavior implements IGameBehavior {
 		selectors = new SelectorItems<>(handlers, PlayerRole.values());
 		selectors.applyTo(events);
 
+		timedState = game.getState().getOrNull(TimedGameState.KEY);
+
 		events.listen(GamePlayerEvents.ADD, player -> {
 			player.sendStatusMessage(new StringTextComponent("Ready-up before the game!").mergeStyle(TextFormatting.GOLD, TextFormatting.BOLD), false);
 			player.sendStatusMessage(new StringTextComponent("Right-click with the relevant item in your inventory to be apart of the next game!").mergeStyle(TextFormatting.GRAY), false);
@@ -80,6 +78,28 @@ public final class ReadyUpBehavior implements IGameBehavior {
 		});
 
 		events.listen(GamePhaseEvents.STOP, reason -> updateRoleAssignments(game));
+	}
+
+	private void selectRole(IGamePhase game, ServerPlayerEntity player, PlayerRole role) {
+		requestedRoles.put(player.getUniqueID(), role);
+
+		if (requestedRoles.size() >= game.getAllPlayers().size()) {
+			onAllPlayersReady();
+		}
+
+		if (role == PlayerRole.PARTICIPANT) {
+			player.sendStatusMessage(new StringTextComponent("You are queued to participate in the next game.").mergeStyle(TextFormatting.AQUA), true);
+		} else {
+			player.sendStatusMessage(new StringTextComponent("You will spectate the next game.").mergeStyle(TextFormatting.WHITE), true);
+		}
+	}
+
+	private void onAllPlayersReady() {
+		TimedGameState timed = this.timedState;
+		if (timed != null) {
+			long ticksRemaining = Math.min(ALL_READY_START_TIME, timed.getTicksRemaining());
+			timed.setTicksRemaining(ticksRemaining);
+		}
 	}
 
 	private void updateRoleAssignments(IGamePhase game) {
