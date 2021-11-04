@@ -91,7 +91,7 @@ public final class TimedGameBehavior implements IGameBehavior {
 				playCountdownSound(game, secondsRemaining);
 			}
 
-			timerBar.setTitle(this.getTimeRemainingText(ticksRemaining));
+			timerBar.setTitle(this.getTimeRemainingText(game, ticksRemaining));
 			timerBar.setProgress((float) ticksRemaining / length);
 		}
 	}
@@ -101,13 +101,16 @@ public final class TimedGameBehavior implements IGameBehavior {
 		game.getAllPlayers().playSound(SoundEvents.ENTITY_ARROW_HIT_PLAYER, SoundCategory.MASTER, 0.8F, pitch);
 	}
 
-	private ITextComponent getTimeRemainingText(long ticksRemaining) {
+	private ITextComponent getTimeRemainingText(IGamePhase game, long ticksRemaining) {
 		long secondsRemaining = ticksRemaining / 20;
 
 		long minutes = secondsRemaining / 60;
 		long seconds = secondsRemaining % 60;
 		String time = String.format("%02d:%02d", minutes, seconds);
 
-		return timerBarText.apply(new StringTextComponent(time).mergeStyle(TextFormatting.AQUA));
+		ITextComponent timeText = new StringTextComponent(time).mergeStyle(TextFormatting.AQUA);
+		ITextComponent gameNameText = game.getDefinition().getName().deepCopy().mergeStyle(TextFormatting.AQUA);
+
+		return timerBarText.apply(timeText, gameNameText);
 	}
 }
