@@ -35,6 +35,12 @@ public interface IGameLookup {
 		if (entity instanceof PlayerEntity) {
 			return getGamePhaseFor((PlayerEntity) entity);
 		}
+
+		IGamePhase game = getGamePhaseAt(source.getWorld(), source.getPos());
+		if (game != null) {
+			return game;
+		}
+
 		return null;
 	}
 

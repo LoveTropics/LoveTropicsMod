@@ -14,7 +14,7 @@ public class FinishGameCommand {
 	public static void register(final CommandDispatcher<CommandSource> dispatcher) {
 		dispatcher.register(
 			literal("game")
-			.then(literal("finish").requires(s -> s.getEntity() == null)
+			.then(literal("finish")
 			.executes(c -> GameCommand.executeGameAction(() -> {
 				IGamePhase game = IGameManager.get().getGamePhaseFor(c.getSource());
 				if (game == null) {
