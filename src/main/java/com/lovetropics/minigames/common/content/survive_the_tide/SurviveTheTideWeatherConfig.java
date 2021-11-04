@@ -1,111 +1,90 @@
 package com.lovetropics.minigames.common.content.survive_the_tide;
 
 import com.lovetropics.lib.codec.MoreCodecs;
+import com.lovetropics.minigames.common.core.game.weather.WeatherEventType;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.Object2FloatMap;
 
+import java.util.Map;
+
 public class SurviveTheTideWeatherConfig {
 	public static final Codec<SurviveTheTideWeatherConfig> CODEC = RecordCodecBuilder.create(instance -> {
 		return instance.group(
-				MoreCodecs.object2Float(Codec.STRING).fieldOf("rain_heavy_chance").forGetter(c -> c.phaseToHeavyRainChance),
-				MoreCodecs.object2Float(Codec.STRING).fieldOf("rain_acid_chance").forGetter(c -> c.phaseToAcidRainChance),
-				MoreCodecs.object2Float(Codec.STRING).fieldOf("hail_chance").forGetter(c -> c.phaseToHailChance),
-				MoreCodecs.object2Float(Codec.STRING).fieldOf("heatwave_chance").forGetter(c -> c.phaseToHeatwaveChance),
-				MoreCodecs.object2Float(Codec.STRING).fieldOf("sandstorm_chance").forGetter(c -> c.phaseToSandstormChance),
-				MoreCodecs.object2Float(Codec.STRING).fieldOf("snowstorm_chance").forGetter(c -> c.phaseToSnowstormChance),
+				Codec.unboundedMap(WeatherEventType.CODEC, MoreCodecs.object2Float(Codec.STRING)).fieldOf("event_chances").forGetter(c -> c.eventChancesByPhase),
+				Codec.unboundedMap(WeatherEventType.CODEC, Timers.CODEC).fieldOf("event_timers").forGetter(c -> c.eventTimers),
 				MoreCodecs.object2Float(Codec.STRING).fieldOf("wind_speed").forGetter(c -> c.phaseToWindSpeed),
-				Codec.INT.optionalFieldOf("rain_heavy_min_time", 1200).forGetter(c -> c.rainHeavyMinTime),
-				Codec.INT.optionalFieldOf("rain_heavy_extra_rand_time", 1200).forGetter(c -> c.rainHeavyExtraRandTime),
-				Codec.INT.optionalFieldOf("rain_acid_min_time", 1200).forGetter(c -> c.rainAcidMinTime),
-				Codec.INT.optionalFieldOf("rain_acid_extra_rand_time", 1200).forGetter(c -> c.rainAcidExtraRandTime),
-				Codec.INT.optionalFieldOf("heatwave_min_time", 1200).forGetter(c -> c.heatwaveMinTime),
-				Codec.INT.optionalFieldOf("heatwave_extra_rand_time", 1200).forGetter(c -> c.heatwaveExtraRandTime),
 				Codec.INT.optionalFieldOf("sandstorm_buildup_tickrate", 40).forGetter(c -> c.sandstormBuildupTickRate),
 				Codec.INT.optionalFieldOf("sandstorm_max_stackable", 1).forGetter(c -> c.sandstormMaxStackable),
-				Codec.INT.optionalFieldOf("snowstorm_buildup_tickrate", 40).forGetter(c -> c.snowstormBuildupTickRate)
+				Codec.INT.optionalFieldOf("snowstorm_buildup_tickrate", 40).forGetter(c -> c.snowstormBuildupTickRate),
+				Codec.INT.optionalFieldOf("snowstorm_max_stackable", 1).forGetter(c -> c.snowstormMaxStackable)
 		).apply(instance, SurviveTheTideWeatherConfig::new);
 	});
 
-	private final Object2FloatMap<String> phaseToHeavyRainChance;
-	private final Object2FloatMap<String> phaseToAcidRainChance;
-	private final Object2FloatMap<String> phaseToHailChance;
-	private final Object2FloatMap<String> phaseToHeatwaveChance;
-	private final Object2FloatMap<String> phaseToSandstormChance;
-	private final Object2FloatMap<String> phaseToSnowstormChance;
+	private final Map<WeatherEventType, Object2FloatMap<String>> eventChancesByPhase;
+	private final Map<WeatherEventType, Timers> eventTimers;
+
 	private final Object2FloatMap<String> phaseToWindSpeed;
-
-	private final int rainHeavyMinTime;
-	private final int rainHeavyExtraRandTime;
-
-	private final int rainAcidMinTime;
-	private final int rainAcidExtraRandTime;
-
-	private final int heatwaveMinTime;
-	private final int heatwaveExtraRandTime;
 
 	private final int sandstormBuildupTickRate;
 	private final int sandstormMaxStackable;
 
 	private final int snowstormBuildupTickRate;
-	//private final int snowstormMaxStackable;
+	private final int snowstormMaxStackable;
 
 	public SurviveTheTideWeatherConfig(
-			Object2FloatMap<String> phaseToHeavyRainChance, Object2FloatMap<String> phaseToAcidRainChance, Object2FloatMap<String> phaseToHailChance,
-			Object2FloatMap<String> phaseToHeatwaveChance,
-			Object2FloatMap<String> phaseToSandstormChance, Object2FloatMap<String> phaseToSnowstormChance,
+			Map<WeatherEventType, Object2FloatMap<String>> eventChancesByPhase,
+			Map<WeatherEventType, Timers> eventTimers,
 			Object2FloatMap<String> phaseToWindSpeed,
-			final int rainHeavyMinTime, final int rainHeavyExtraRandTime,
-			final int rainAcidMinTime, final int rainAcidExtraRandTime,
-			int heatwaveMinTime, int heatwaveExtraRandTime,
 			final int sandstormBuildupTickRate, final int sandstormMaxStackable,
-			final int snowstormBuildupTickRate
+			final int snowstormBuildupTickRate, final int snowstormMaxStackable
 	) {
-		this.phaseToHeavyRainChance = phaseToHeavyRainChance;
-		this.phaseToAcidRainChance = phaseToAcidRainChance;
-		this.phaseToHailChance = phaseToHailChance;
-		this.phaseToHeatwaveChance = phaseToHeatwaveChance;
-		this.phaseToSandstormChance = phaseToSandstormChance;
-		this.phaseToSnowstormChance = phaseToSnowstormChance;
+		this.eventChancesByPhase = eventChancesByPhase;
+		this.eventTimers = eventTimers;
 		this.phaseToWindSpeed = phaseToWindSpeed;
-
-		this.rainHeavyMinTime = rainHeavyMinTime;
-		this.rainHeavyExtraRandTime = rainHeavyExtraRandTime;
-
-		this.rainAcidMinTime = rainAcidMinTime;
-		this.rainAcidExtraRandTime = rainAcidExtraRandTime;
-		this.heatwaveMinTime = heatwaveMinTime;
-		this.heatwaveExtraRandTime = heatwaveExtraRandTime;
 
 		this.sandstormBuildupTickRate = sandstormBuildupTickRate;
 		this.sandstormMaxStackable = sandstormMaxStackable;
 
 		this.snowstormBuildupTickRate = snowstormBuildupTickRate;
-		//this.snowstormMaxStackable = snowstormMaxStackable;
+		this.snowstormMaxStackable = snowstormMaxStackable;
+	}
+
+	private float getEventChance(WeatherEventType event, String phase) {
+		Object2FloatMap<String> chances = this.eventChancesByPhase.get(event);
+		if (chances != null) {
+			return chances.getOrDefault(phase, 0.0F);
+		} else {
+			return 0.0F;
+		}
+	}
+
+	private Timers getTimers(WeatherEventType event) {
+		return eventTimers.getOrDefault(event, Timers.DEFAULT);
 	}
 
 	public double getRainHeavyChance(String phase) {
-		return phaseToHeavyRainChance.getOrDefault(phase, 0.0F);
+		return getEventChance(WeatherEventType.HEATWAVE, phase);
 	}
 
 	public double getRainAcidChance(String phase) {
-		return phaseToAcidRainChance.getOrDefault(phase, 0.0F);
+		return getEventChance(WeatherEventType.ACID_RAIN, phase);
 	}
 
 	public double getHailChance(String phase) {
-		return phaseToHailChance.getOrDefault(phase, 0.0F);
+		return getEventChance(WeatherEventType.HAIL, phase);
 	}
 
 	public double getHeatwaveChance(String phase) {
-		return phaseToHeatwaveChance.getOrDefault(phase, 0.0F);
+		return getEventChance(WeatherEventType.HEATWAVE, phase);
 	}
 
 	public double getSandstormChance(String phase) {
-		return phaseToSandstormChance.getOrDefault(phase, 0.0F);
+		return getEventChance(WeatherEventType.SANDSTORM, phase);
 	}
 
 	public double getSnowstormChance(String phase) {
-		return phaseToSnowstormChance.getOrDefault(phase, 0.0F);
+		return getEventChance(WeatherEventType.SNOWSTORM, phase);
 	}
 
 	public float getWindSpeed(String phase) {
@@ -113,27 +92,27 @@ public class SurviveTheTideWeatherConfig {
 	}
 
 	public int getRainHeavyMinTime() {
-		return rainHeavyMinTime;
+		return getTimers(WeatherEventType.HEAVY_RAIN).minTime;
 	}
 
 	public int getRainHeavyExtraRandTime() {
-		return rainHeavyExtraRandTime;
+		return getTimers(WeatherEventType.HEAVY_RAIN).extraRandTime;
 	}
 
 	public int getHeatwaveMinTime() {
-		return heatwaveMinTime;
+		return getTimers(WeatherEventType.HEATWAVE).minTime;
 	}
 
 	public int getHeatwaveExtraRandTime() {
-		return heatwaveExtraRandTime;
-	}
-
-	public int getRainAcidExtraRandTime() {
-		return rainAcidExtraRandTime;
+		return getTimers(WeatherEventType.HEATWAVE).extraRandTime;
 	}
 
 	public int getRainAcidMinTime() {
-		return rainAcidMinTime;
+		return getTimers(WeatherEventType.ACID_RAIN).minTime;
+	}
+
+	public int getRainAcidExtraRandTime() {
+		return getTimers(WeatherEventType.ACID_RAIN).extraRandTime;
 	}
 
 	public int getSandstormBuildupTickRate() {
@@ -149,6 +128,25 @@ public class SurviveTheTideWeatherConfig {
 	}
 
 	public int getSnowstormMaxStackable() {
-		return sandstormMaxStackable;
+		return snowstormMaxStackable;
+	}
+
+	public static final class Timers {
+		public static final Timers DEFAULT = new Timers(1200, 1200);
+
+		public static final Codec<Timers> CODEC = RecordCodecBuilder.create(instance -> {
+			return instance.group(
+					Codec.INT.fieldOf("min_time").forGetter(c -> c.minTime),
+					Codec.INT.fieldOf("extra_rand_time").forGetter(c -> c.extraRandTime)
+			).apply(instance, Timers::new);
+		});
+
+		public final int minTime;
+		public final int extraRandTime;
+
+		public Timers(int minTime, int extraRandTime) {
+			this.minTime = minTime;
+			this.extraRandTime = extraRandTime;
+		}
 	}
 }
