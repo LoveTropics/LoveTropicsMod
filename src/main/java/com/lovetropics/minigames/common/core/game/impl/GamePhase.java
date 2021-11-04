@@ -153,8 +153,8 @@ public class GamePhase implements IGamePhase {
 
 	private void onSetPlayerRole(ServerPlayerEntity player, @Nullable PlayerRole role, @Nullable PlayerRole lastRole) {
 		try {
-			invoker(GamePlayerEvents.SET_ROLE).onSetRole(player, role, lastRole);
 			invoker(GamePlayerEvents.SPAWN).onSpawn(player, role);
+			invoker(GamePlayerEvents.SET_ROLE).onSetRole(player, role, lastRole);
 		} catch (Exception e) {
 			LoveTropics.LOGGER.warn("Failed to dispatch player set role event", e);
 		}
