@@ -231,7 +231,7 @@ public final class BbBehavior implements IGameBehavior {
 			int newCurrency = MathHelper.floor(oldCurrency * DEATH_DECREASE.getFloat(difficulty));
 
 			if (oldCurrency != newCurrency) {
-				currency.set(player, newCurrency);
+				currency.set(player, newCurrency, false);
 		
 	//			player.sendStatusMessage(BiodiversityBlitzTexts.deathDecrease(oldCurrency - newCurrency).mergeStyle(TextFormatting.RED), true);
 		        player.connection.sendPacket(new STitlePacket(STitlePacket.Type.SUBTITLE, BiodiversityBlitzTexts.deathDecrease(oldCurrency - newCurrency).mergeStyle(TextFormatting.RED, TextFormatting.ITALIC)));

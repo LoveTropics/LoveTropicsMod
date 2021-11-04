@@ -58,11 +58,11 @@ public final class CurrencyManager implements IGameState {
 		this.setTracked(player, value + amount);
 	}
 
-	public int set(ServerPlayerEntity player, int value) {
+	public int set(ServerPlayerEntity player, int value, boolean accumulate) {
 		int oldValue = this.get(player);
 		if (value > oldValue) {
 			int increment = value - oldValue;
-			return oldValue + add(player, increment);
+			return oldValue + add(player, increment, accumulate);
 		} else if (value < oldValue) {
 			int decrement = oldValue - value;
 			return oldValue - remove(player, decrement);
@@ -71,11 +71,14 @@ public final class CurrencyManager implements IGameState {
 		}
 	}
 
-	public int add(ServerPlayerEntity player, int amount) {
+	public int add(ServerPlayerEntity player, int amount, boolean accumulate) {
 		int added = this.addToInventory(player, amount);
 		this.incrementTracked(player, added);
 
-		this.accumulateCurrency(player, added);
+		// accumulate only when added by currency behavior!
+		if (accumulate) {
+			this.accumulateCurrency(player, added);
+		}
 
 		return added;
 	}

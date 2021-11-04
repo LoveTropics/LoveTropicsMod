@@ -64,7 +64,7 @@ public final class BbCurrencyBehavior implements IGameBehavior {
 		this.game = game;
 
 		events.listen(BbEvents.ASSIGN_PLOT, (player, plot) -> {
-			this.currency.set(player, this.initialCurrency);
+			this.currency.set(player, this.initialCurrency, false);
 		});
 
 		events.listen(GamePlayerEvents.THROW_ITEM, (player, item) -> {
@@ -98,7 +98,7 @@ public final class BbCurrencyBehavior implements IGameBehavior {
 	}
 
 	private void giveCurrency(ServerPlayerEntity player, Plot plot) {
-		int count = currency.add(player, plot.nextCurrencyIncrement);
+		int count = currency.add(player, plot.nextCurrencyIncrement, true);
 
 		player.sendStatusMessage(BiodiversityBlitzTexts.currencyAddition(count), true);
 
