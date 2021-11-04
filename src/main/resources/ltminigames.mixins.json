@@ -3,7 +3,7 @@
   "package": "com.lovetropics.minigames.mixin",
   "compatibilityLevel": "JAVA_8",
   "refmap": "ltminigames.refmap.json",
-  "mixins": ["EntityTypeMixin", "MinecraftServerMixin", "SimpleRegistryMixin"],
+  "mixins": ["DataFixesManagerMixin", "EntityTypeMixin", "MinecraftServerMixin", "SimpleRegistryMixin"],
   "client": ["client.BiomeColorsMixin", "client.HotbarOverride", "client.ScrollPanelMixin"],
   "injectors": {
     "defaultRequire": 1

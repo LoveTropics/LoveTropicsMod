@@ -19,6 +19,8 @@ public final class GameConfig implements IGameDefinition {
 	public final ITextComponent name;
 	@Nullable
 	public final ITextComponent subtitle;
+	@Nullable
+	public final ResourceLocation icon;
 	public final int minimumParticipants;
 	public final int maximumParticipants;
 	@Nullable
@@ -31,6 +33,7 @@ public final class GameConfig implements IGameDefinition {
 			String statisticsKey,
 			ITextComponent name,
 			@Nullable ITextComponent subtitle,
+			@Nullable ResourceLocation icon,
 			int minimumParticipants,
 			int maximumParticipants,
 			@Nullable GamePhaseConfig waiting,
@@ -41,6 +44,7 @@ public final class GameConfig implements IGameDefinition {
 		this.statisticsKey = statisticsKey;
 		this.name = name;
 		this.subtitle = subtitle;
+		this.icon = icon;
 		this.minimumParticipants = minimumParticipants;
 		this.maximumParticipants = maximumParticipants;
 		this.waiting = waiting;
@@ -56,16 +60,18 @@ public final class GameConfig implements IGameDefinition {
 					Codec.STRING.optionalFieldOf("statistics_key").forGetter(c -> Optional.of(c.statisticsKey)),
 					MoreCodecs.TEXT.fieldOf("name").forGetter(c -> c.name),
 					MoreCodecs.TEXT.optionalFieldOf("subtitle").forGetter(c -> Optional.ofNullable(c.subtitle)),
+					ResourceLocation.CODEC.optionalFieldOf("icon").forGetter(c -> Optional.ofNullable(c.icon)),
 					Codec.INT.optionalFieldOf("minimum_participants", 1).forGetter(c -> c.minimumParticipants),
 					Codec.INT.optionalFieldOf("maximum_participants", 100).forGetter(c -> c.maximumParticipants),
 					phaseCodec.codec().optionalFieldOf("waiting").forGetter(c -> Optional.ofNullable(c.waiting)),
 					phaseCodec.forGetter(c -> c.playing)
-			).apply(instance, (backendIdOpt, statisticsKeyOpt, name, subtitleOpt, minimumParticipants, maximumParticipants, waitingOpt, active) -> {
+			).apply(instance, (backendIdOpt, statisticsKeyOpt, name, subtitleOpt, iconOpt, minimumParticipants, maximumParticipants, waitingOpt, active) -> {
 				ResourceLocation backendId = backendIdOpt.orElse(id);
 				String telemetryKey = statisticsKeyOpt.orElse(id.getPath());
 				ITextComponent subtitle = subtitleOpt.orElse(null);
+				ResourceLocation icon = iconOpt.orElse(null);
 				GamePhaseConfig waiting = waitingOpt.orElse(null);
-				return new GameConfig(id, backendId, telemetryKey, name, subtitle, minimumParticipants, maximumParticipants, waiting, active);
+				return new GameConfig(id, backendId, telemetryKey, name, subtitle, icon, minimumParticipants, maximumParticipants, waiting, active);
 			});
 		});
 	}
@@ -94,6 +100,12 @@ public final class GameConfig implements IGameDefinition {
 	@Override
 	public ITextComponent getSubtitle() {
 		return subtitle;
+	}
+
+	@Nullable
+	@Override
+	public ResourceLocation getIcon() {
+		return icon;
 	}
 
 	@Override

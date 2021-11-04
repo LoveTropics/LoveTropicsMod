@@ -38,7 +38,14 @@ public interface IGameDefinition {
 	ITextComponent getName();
 
 	@Nullable
-	ITextComponent getSubtitle();
+	default ITextComponent getSubtitle() {
+		return null;
+	}
+
+	@Nullable
+	default ResourceLocation getIcon() {
+		return null;
+	}
 
 	/**
 	 * Will not let you start the minigame without at least this amount of
