@@ -26,6 +26,12 @@ public final class WeatherEvent {
 				.removes(controller -> controller.setRain(0.0F, RainType.ACID));
 	}
 
+	public static WeatherEvent hail(long time) {
+		return new WeatherEvent(WeatherEventType.HAIL, time)
+				.applies(controller -> controller.setRain(1.0F, RainType.HAIL))
+				.removes(controller -> controller.setRain(0.0F, RainType.HAIL));
+	}
+
 	public static WeatherEvent heatwave(long time) {
 		return new WeatherEvent(WeatherEventType.HEATWAVE, time)
 				.applies(controller -> controller.setHeatwave(true))

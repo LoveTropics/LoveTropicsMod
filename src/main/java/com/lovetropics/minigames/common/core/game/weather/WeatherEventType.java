@@ -6,6 +6,7 @@ import com.mojang.serialization.Codec;
 public enum WeatherEventType {
 	HEAVY_RAIN("heavy_rain"),
 	ACID_RAIN("acid_rain"),
+	HAIL("hail"),
 	HEATWAVE("heatwave"),
 	SANDSTORM("sandstorm"),
 	SNOWSTORM("snowstorm");

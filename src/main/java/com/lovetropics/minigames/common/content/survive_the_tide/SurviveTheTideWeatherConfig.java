@@ -10,6 +10,7 @@ public class SurviveTheTideWeatherConfig {
 		return instance.group(
 				MoreCodecs.object2Float(Codec.STRING).fieldOf("rain_heavy_chance").forGetter(c -> c.phaseToHeavyRainChance),
 				MoreCodecs.object2Float(Codec.STRING).fieldOf("rain_acid_chance").forGetter(c -> c.phaseToAcidRainChance),
+				MoreCodecs.object2Float(Codec.STRING).fieldOf("hail_chance").forGetter(c -> c.phaseToHailChance),
 				MoreCodecs.object2Float(Codec.STRING).fieldOf("heatwave_chance").forGetter(c -> c.phaseToHeatwaveChance),
 				MoreCodecs.object2Float(Codec.STRING).fieldOf("sandstorm_chance").forGetter(c -> c.phaseToSandstormChance),
 				MoreCodecs.object2Float(Codec.STRING).fieldOf("snowstorm_chance").forGetter(c -> c.phaseToSnowstormChance),
@@ -22,13 +23,13 @@ public class SurviveTheTideWeatherConfig {
 				Codec.INT.optionalFieldOf("heatwave_extra_rand_time", 1200).forGetter(c -> c.heatwaveExtraRandTime),
 				Codec.INT.optionalFieldOf("sandstorm_buildup_tickrate", 40).forGetter(c -> c.sandstormBuildupTickRate),
 				Codec.INT.optionalFieldOf("sandstorm_max_stackable", 1).forGetter(c -> c.sandstormMaxStackable),
-				Codec.INT.optionalFieldOf("snowstorm_buildup_tickrate", 40).forGetter(c -> c.snowstormBuildupTickRate),
-				Codec.INT.optionalFieldOf("snowstorm_max_stackable", 1).forGetter(c -> c.snowstormMaxStackable)
+				Codec.INT.optionalFieldOf("snowstorm_buildup_tickrate", 40).forGetter(c -> c.snowstormBuildupTickRate)
 		).apply(instance, SurviveTheTideWeatherConfig::new);
 	});
 
 	private final Object2FloatMap<String> phaseToHeavyRainChance;
 	private final Object2FloatMap<String> phaseToAcidRainChance;
+	private final Object2FloatMap<String> phaseToHailChance;
 	private final Object2FloatMap<String> phaseToHeatwaveChance;
 	private final Object2FloatMap<String> phaseToSandstormChance;
 	private final Object2FloatMap<String> phaseToSnowstormChance;
@@ -47,20 +48,22 @@ public class SurviveTheTideWeatherConfig {
 	private final int sandstormMaxStackable;
 
 	private final int snowstormBuildupTickRate;
-	private final int snowstormMaxStackable;
+	//private final int snowstormMaxStackable;
 
 	public SurviveTheTideWeatherConfig(
-			Object2FloatMap<String> phaseToHeavyRainChance, Object2FloatMap<String> phaseToAcidRainChance, Object2FloatMap<String> phaseToHeatwaveChance,
+			Object2FloatMap<String> phaseToHeavyRainChance, Object2FloatMap<String> phaseToAcidRainChance, Object2FloatMap<String> phaseToHailChance,
+			Object2FloatMap<String> phaseToHeatwaveChance,
 			Object2FloatMap<String> phaseToSandstormChance, Object2FloatMap<String> phaseToSnowstormChance,
 			Object2FloatMap<String> phaseToWindSpeed,
 			final int rainHeavyMinTime, final int rainHeavyExtraRandTime,
 			final int rainAcidMinTime, final int rainAcidExtraRandTime,
 			int heatwaveMinTime, int heatwaveExtraRandTime,
 			final int sandstormBuildupTickRate, final int sandstormMaxStackable,
-			final int snowstormBuildupTickRate, final int snowstormMaxStackable
+			final int snowstormBuildupTickRate
 	) {
 		this.phaseToHeavyRainChance = phaseToHeavyRainChance;
 		this.phaseToAcidRainChance = phaseToAcidRainChance;
+		this.phaseToHailChance = phaseToHailChance;
 		this.phaseToHeatwaveChance = phaseToHeatwaveChance;
 		this.phaseToSandstormChance = phaseToSandstormChance;
 		this.phaseToSnowstormChance = phaseToSnowstormChance;
@@ -78,7 +81,7 @@ public class SurviveTheTideWeatherConfig {
 		this.sandstormMaxStackable = sandstormMaxStackable;
 
 		this.snowstormBuildupTickRate = snowstormBuildupTickRate;
-		this.snowstormMaxStackable = snowstormMaxStackable;
+		//this.snowstormMaxStackable = snowstormMaxStackable;
 	}
 
 	public double getRainHeavyChance(String phase) {
@@ -87,6 +90,10 @@ public class SurviveTheTideWeatherConfig {
 
 	public double getRainAcidChance(String phase) {
 		return phaseToAcidRainChance.getOrDefault(phase, 0.0F);
+	}
+
+	public double getHailChance(String phase) {
+		return phaseToHailChance.getOrDefault(phase, 0.0F);
 	}
 
 	public double getHeatwaveChance(String phase) {
@@ -142,6 +149,6 @@ public class SurviveTheTideWeatherConfig {
 	}
 
 	public int getSnowstormMaxStackable() {
-		return snowstormMaxStackable;
+		return sandstormMaxStackable;
 	}
 }

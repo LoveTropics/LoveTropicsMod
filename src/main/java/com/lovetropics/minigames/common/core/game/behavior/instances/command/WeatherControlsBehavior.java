@@ -30,6 +30,9 @@ public class WeatherControlsBehavior implements IGameBehavior {
 		commands.add("start_acid_rain", ControlCommand.forAdmins(source -> controller.setRain(1.0F, RainType.ACID)));
 		commands.add("stop_acid_rain", ControlCommand.forAdmins(source -> controller.setRain(0.0F, RainType.ACID)));
 
+		commands.add("start_hail", ControlCommand.forAdmins(source -> controller.setRain(1.0F, RainType.HAIL)));
+		commands.add("stop_hail", ControlCommand.forAdmins(source -> controller.setRain(0.0F, RainType.HAIL)));
+
 		commands.add("start_wind", ControlCommand.forAdmins(source -> controller.setWind(0.5F)));
 		commands.add("stop_wind", ControlCommand.forAdmins(source -> controller.setWind(0.0F)));
 

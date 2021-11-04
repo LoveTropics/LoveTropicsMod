@@ -95,6 +95,8 @@ public class SurviveTheTideWeatherControlBehavior implements IGameBehavior {
                     heavyRainfallStart(phase);
                 } else if (random.nextFloat() <= config.getRainAcidChance(phase.key)) {
                     acidRainStart(phase);
+                } else if (random.nextFloat() <= config.getHailChance(phase.key)) {
+                    hailStart(phase);
                 } else if (random.nextFloat() <= config.getHeatwaveChance(phase.key)) {
                     heatwaveStart(phase);
                 } else if (random.nextFloat() <= config.getSandstormChance(phase.key)) {
@@ -128,6 +130,14 @@ public class SurviveTheTideWeatherControlBehavior implements IGameBehavior {
             time /= 2;
         }
         weather.setEvent(WeatherEvent.acidRain(time));
+    }
+
+    private void hailStart(GamePhase phase) {
+        int time = config.getRainHeavyMinTime() + random.nextInt(config.getRainHeavyExtraRandTime());
+        if (phase.is("phase4")) {
+            time /= 2;
+        }
+        weather.setEvent(WeatherEvent.hail(time));
     }
 
     private void heatwaveStart(GamePhase phase) {
