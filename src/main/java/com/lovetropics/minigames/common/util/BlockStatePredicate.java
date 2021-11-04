@@ -19,7 +19,7 @@ public interface BlockStatePredicate extends Predicate<BlockState> {
 	Codec<BlockStatePredicate> CODEC = new Codec<BlockStatePredicate>() {
 		@Override
 		public <T> DataResult<Pair<BlockStatePredicate, T>> decode(DynamicOps<T> ops, T input) {
-			DataResult<Pair<Any, T>> any = Any.CODEC.decode(ops, input);
+			DataResult<Pair<AnyOf, T>> any = AnyOf.CODEC.decode(ops, input);
 			if (any.result().isPresent()) {
 				return any.map(p -> p.mapFirst(Function.identity()));
 			}
@@ -37,6 +37,8 @@ public interface BlockStatePredicate extends Predicate<BlockState> {
 			return encodeUnchecked(predicate.getCodec(), predicate, ops, prefix);
 		}
 	};
+
+	BlockStatePredicate ANY = new Any();
 
 	@Override
 	boolean test(BlockState state);
@@ -99,13 +101,13 @@ public interface BlockStatePredicate extends Predicate<BlockState> {
 		}
 	}
 
-	final class Any implements BlockStatePredicate {
-		public static final Codec<Any> CODEC = MoreCodecs.listToArray(BlockStatePredicate.CODEC.listOf(), BlockStatePredicate[]::new)
-				.xmap(Any::new, c -> c.predicates);
+	final class AnyOf implements BlockStatePredicate {
+		public static final Codec<AnyOf> CODEC = MoreCodecs.listToArray(BlockStatePredicate.CODEC.listOf(), BlockStatePredicate[]::new)
+				.xmap(AnyOf::new, c -> c.predicates);
 
 		private final BlockStatePredicate[] predicates;
 
-		public Any(BlockStatePredicate[] predicates) {
+		public AnyOf(BlockStatePredicate[] predicates) {
 			this.predicates = predicates;
 		}
 
@@ -117,6 +119,20 @@ public interface BlockStatePredicate extends Predicate<BlockState> {
 				}
 			}
 			return false;
+		}
+
+		@Override
+		public Codec<? extends BlockStatePredicate> getCodec() {
+			return CODEC;
+		}
+	}
+
+	final class Any implements BlockStatePredicate {
+		public static final Codec<Any> CODEC = Codec.unit(Any::new);
+
+		@Override
+		public boolean test(BlockState state) {
+			return true;
 		}
 
 		@Override

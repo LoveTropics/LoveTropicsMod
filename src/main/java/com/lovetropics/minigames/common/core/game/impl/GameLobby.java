@@ -158,14 +158,14 @@ final class GameLobby implements IGameLobby {
 			onQueuePaused();
 		}
 
-		if (newPhase != null) {
-			manager.addGamePhaseToDimension(newPhase.getDimension(), newPhase);
-			result = newPhase.start();
-		}
-
 		if (oldPhase != null) {
 			oldPhase.destroy();
 			manager.removeGamePhaseFromDimension(oldPhase.getDimension(), oldPhase);
+		}
+
+		if (newPhase != null) {
+			manager.addGamePhaseToDimension(newPhase.getDimension(), newPhase);
+			result = newPhase.start();
 		}
 
 		stateListener.onGamePhaseChange(this);

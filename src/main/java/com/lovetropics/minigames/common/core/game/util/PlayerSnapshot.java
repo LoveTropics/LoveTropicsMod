@@ -45,6 +45,7 @@ public final class PlayerSnapshot {
 
 		this.playerData = new CompoundNBT();
 		player.writeAdditional(this.playerData);
+		this.playerData.remove("playerGameType");
 
 		ServerScoreboard scoreboard = player.getServerWorld().getScoreboard();
 		this.team = scoreboard.getPlayersTeam(player.getScoreboardName());
