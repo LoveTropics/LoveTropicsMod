@@ -279,9 +279,6 @@ final class GameLobby implements IGameLobby {
 			if (currentGame != null) {
 				onPlayerJoinGame(lobby, currentGame);
 			}
-
-			ITextComponent message = GameTexts.Status.playerJoined(lobby, player, registeredRole);
-			lobby.getTrackingPlayers().excluding(player).sendMessage(message);
 		}
 
 		@Override

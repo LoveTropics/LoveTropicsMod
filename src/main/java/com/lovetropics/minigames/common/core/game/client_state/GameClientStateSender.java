@@ -67,6 +67,9 @@ public final class GameClientStateSender {
 				for (GameClientStateType<?> type : removeQueue) {
 					this.sendRemove(type, player);
 				}
+
+				setQueue.clear();
+				removeQueue.clear();
 			}
 		}
 
