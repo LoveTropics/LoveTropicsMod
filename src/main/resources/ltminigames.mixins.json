@@ -11,6 +11,7 @@
   ],
   "client": [
     "client.BiomeColorsMixin",
+    "client.BossOverlayGuiMixin",
     "client.HotbarOverride",
     "client.PlayerTabOverlayGuiMixin",
     "client.ScrollPanelMixin"
