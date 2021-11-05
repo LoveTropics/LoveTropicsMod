@@ -116,7 +116,7 @@ public class DonationPackageData {
 			return (receiver != null ? receiver.getDisplayName().deepCopy() : new StringTextComponent("Everyone")).mergeStyle(TextFormatting.BLUE);
 		}
 
-		private IFormattableTextComponent getSenderName(String sender) {
+		private IFormattableTextComponent getSenderName(@Nullable String sender) {
 			return new StringTextComponent(sender != null ? sender : "an unknown donor").mergeStyle(TextFormatting.BLUE);
 		}
 	}

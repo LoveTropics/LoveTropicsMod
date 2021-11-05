@@ -21,7 +21,7 @@ public class PlayerTabOverlayGuiMixin {
 	@Inject(method = "func_238524_a_", at = @At("HEAD"), cancellable = true)
 	private void getDisplayName(NetworkPlayerInfo info, IFormattableTextComponent displayName, CallbackInfoReturnable<ITextComponent> ci) {
 		ClientLobbyState lobby = ClientLobbyManager.getJoined();
-		if (lobby != null) {
+		if (lobby != null && lobby.getCurrentGame() != null) {
 			UUID id = info.getGameProfile().getId();
 			if (lobby.getPlayers().contains(id)) {
 				if (info.getGameType() != GameType.SPECTATOR) {

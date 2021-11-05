@@ -94,9 +94,10 @@ public final class DonationPackageBehavior implements IGameBehavior {
 			return ActionResultType.FAIL;
 		}
 
-		if (applyPackage(game, receivingPlayer, gamePackage.getSendingPlayerName())) {
+		String sendingPlayerName = gamePackage.getSendingPlayerName();
+		if (applyPackage(game, receivingPlayer, sendingPlayerName)) {
 			sendPreamble.accept(game);
-			data.onReceive(game, receivingPlayer, gamePackage.getSendingPlayerName());
+			data.onReceive(game, receivingPlayer, sendingPlayerName);
 
 			return ActionResultType.SUCCESS;
 		} else {
@@ -108,9 +109,10 @@ public final class DonationPackageBehavior implements IGameBehavior {
 		final List<ServerPlayerEntity> players = Lists.newArrayList(game.getParticipants());
 		final ServerPlayerEntity randomPlayer = players.get(game.getWorld().getRandom().nextInt(players.size()));
 
-		if (applyPackage(game, randomPlayer, gamePackage.getSendingPlayerName())) {
+		String sendingPlayerName = gamePackage.getSendingPlayerName();
+		if (applyPackage(game, randomPlayer, sendingPlayerName)) {
 			sendPreamble.accept(game);
-			data.onReceive(game, randomPlayer, gamePackage.getSendingPlayerName());
+			data.onReceive(game, randomPlayer, sendingPlayerName);
 
 			return ActionResultType.SUCCESS;
 		} else {
@@ -119,9 +121,11 @@ public final class DonationPackageBehavior implements IGameBehavior {
 	}
 
 	private ActionResultType receiveAll(Consumer<IGamePhase> sendPreamble, IGamePhase game, GamePackage gamePackage) {
+		String sendingPlayerName = gamePackage.getSendingPlayerName();
+
 		boolean applied = false;
 		for (ServerPlayerEntity player : game.getParticipants()) {
-			applied |= applyPackage(game, player, gamePackage.getSendingPlayerName());
+			applied |= applyPackage(game, player, sendingPlayerName);
 		}
 
 		if (!applied) {
@@ -129,7 +133,7 @@ public final class DonationPackageBehavior implements IGameBehavior {
 		}
 
 		sendPreamble.accept(game);
-		data.onReceive(game, null, gamePackage.getSendingPlayerName());
+		data.onReceive(game, null, sendingPlayerName);
 
 		return ActionResultType.SUCCESS;
 	}
