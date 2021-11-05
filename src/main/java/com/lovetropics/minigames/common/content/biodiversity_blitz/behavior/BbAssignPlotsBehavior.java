@@ -80,9 +80,11 @@ public final class BbAssignPlotsBehavior implements IGameBehavior {
 			return;
 		}
 
-		Plot plot = this.freePlots.remove(this.freePlots.size() - 1);
-		plots.addPlayer(player, plot);
-
-		game.invoker(BbEvents.ASSIGN_PLOT).onAssignPlot(player, plot);
+		if (plots.getPlotFor(player) == null) {
+			Plot plot = this.freePlots.remove(this.freePlots.size() - 1);
+			plots.addPlayer(player, plot);
+	
+			game.invoker(BbEvents.ASSIGN_PLOT).onAssignPlot(player, plot);
+		}
 	}
 }
