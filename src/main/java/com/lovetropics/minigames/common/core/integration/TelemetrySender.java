@@ -40,11 +40,11 @@ public interface TelemetrySender {
 		return new TelemetrySender.Http(() -> "https://polling.lovetropics.com", telemetry.authToken::get);
 	}
 
-	default void post(final String endpoint, final JsonElement body) {
-		post(endpoint, GSON.toJson(body));
+	default boolean post(final String endpoint, final JsonElement body) {
+		return post(endpoint, GSON.toJson(body));
 	}
 
-	void post(final String endpoint, final String body);
+	boolean post(final String endpoint, final String body);
 
 	JsonElement get(final String endpoint);
 
@@ -60,9 +60,9 @@ public interface TelemetrySender {
 		}
 
 		@Override
-		public void post(String endpoint, String body) {
+		public boolean post(String endpoint, String body) {
 			if (this.isDisabled()) {
-				return;
+				return true;
 			}
 
 			try {
@@ -77,6 +77,7 @@ public interface TelemetrySender {
 				try {
 					String payload = IOUtils.toString(connection.getInputStream(), StandardCharsets.UTF_8);
 					LOGGER.debug("Received response from post to {}/{}: {}", url, endpoint, payload);
+					return true;
 				} catch (IOException e) {
 					String response = IOUtils.toString(connection.getErrorStream(), StandardCharsets.UTF_8);
 					LOGGER.error("Received unexpected response code ({}) from {}/{}: {}", code, url, endpoint, response);
@@ -84,6 +85,8 @@ public interface TelemetrySender {
 			} catch (Exception e) {
 				LOGGER.error("An exception occurred while trying to POST to {}/{}", url, endpoint, e);
 			}
+
+			return false;
 		}
 
 		@Override
@@ -133,14 +136,15 @@ public interface TelemetrySender {
 		}
 
 		@Override
-		public void post(String endpoint, JsonElement body) {
-			post(endpoint, GSON.toJson(body));
+		public boolean post(final String endpoint, final JsonElement body) {
+			return post(endpoint, GSON.toJson(body));
 		}
 
 		@Override
-		public void post(String endpoint, String body) {
+		public boolean post(String endpoint, String body) {
 			LOGGER.info("POST to {}", endpoint);
 			LOGGER.info(body);
+			return true;
 		}
 
 		@Override
@@ -151,7 +155,8 @@ public interface TelemetrySender {
 
 	final class Void implements TelemetrySender {
 		@Override
-		public void post(String endpoint, String body) {
+		public boolean post(String endpoint, String body) {
+			return true;
 		}
 
 		@Override

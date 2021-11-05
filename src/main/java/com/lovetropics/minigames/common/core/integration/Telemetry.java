@@ -19,9 +19,7 @@ import org.apache.logging.log4j.Logger;
 import javax.annotation.Nullable;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.*;
 import java.util.function.Supplier;
 
 @Mod.EventBusSubscriber(modid = Constants.MODID)
@@ -30,7 +28,10 @@ public final class Telemetry {
 
 	private static final Logger LOGGER = LogManager.getLogger(Telemetry.class);
 
-	private static final ExecutorService EXECUTOR = Executors.newSingleThreadExecutor(
+	private static final int RETRY_DELAY_SECONDS = 30;
+	private static final int MAX_RETRIES = 5;
+
+	private static final ScheduledExecutorService EXECUTOR = Executors.newSingleThreadScheduledExecutor(
 			new ThreadFactoryBuilder()
 					.setNameFormat("lt-telemetry")
 					.setDaemon(true)
@@ -107,6 +108,22 @@ public final class Telemetry {
 		GameInstanceTelemetry instance = new GameInstanceTelemetry(game, this);
 		this.liveInstance = instance;
 		return instance;
+	}
+
+	void postAndRetry(final String endpoint, final JsonElement body) {
+		postAndRetry(endpoint, body, 0);
+	}
+
+	private void postAndRetry(final String endpoint, final JsonElement body, final int depth) {
+		EXECUTOR.submit(() -> {
+			if (!sender.post(endpoint, body)) {
+				if (depth <= MAX_RETRIES) {
+					EXECUTOR.schedule(() -> {
+						postAndRetry(endpoint, body, depth + 1);
+					}, RETRY_DELAY_SECONDS, TimeUnit.SECONDS);
+				}
+			}
+		});
 	}
 
 	void post(final String endpoint, final JsonElement body) {
