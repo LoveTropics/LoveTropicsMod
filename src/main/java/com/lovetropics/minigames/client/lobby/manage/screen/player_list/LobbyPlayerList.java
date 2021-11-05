@@ -1,6 +1,5 @@
 package com.lovetropics.minigames.client.lobby.manage.screen.player_list;
 
-import com.google.common.collect.ImmutableList;
 import com.lovetropics.minigames.client.lobby.manage.state.ClientLobbyManageState;
 import com.lovetropics.minigames.client.lobby.manage.state.ClientLobbyPlayer;
 import com.lovetropics.minigames.client.screen.ClientPlayerInfo;
@@ -15,6 +14,9 @@ import net.minecraft.client.gui.IGuiEventListener;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextFormatting;
+
+import java.util.ArrayList;
+import java.util.List;
 
 // TODO: grid element utility
 public final class LobbyPlayerList extends AbstractGui implements IGuiEventListener {
@@ -81,10 +83,14 @@ public final class LobbyPlayerList extends AbstractGui implements IGuiEventListe
 
 			ITextComponent name = ClientPlayerInfo.getName(player.uuid());
 			if (name != null) {
-				ITextComponent role = GameTexts.Ui.roleDescription(player.registeredRole())
-						.mergeStyle(TextFormatting.GRAY);
+				List<ITextComponent> tooltip = new ArrayList<>(2);
+				tooltip.add(name);
 
-				ImmutableList<ITextComponent> tooltip = ImmutableList.of(name, role);
+				if (player.playingRole() != null) {
+					tooltip.add(GameTexts.Ui.roleDescription(player.playingRole())
+							.mergeStyle(TextFormatting.GRAY));
+				}
+
 				screen.func_243308_b(matrixStack, tooltip, mouseX, mouseY);
 			}
 		}

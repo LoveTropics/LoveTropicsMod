@@ -6,13 +6,10 @@ import com.lovetropics.minigames.client.lobby.state.message.JoinedLobbyMessage;
 import com.lovetropics.minigames.client.lobby.state.message.LeftLobbyMessage;
 import com.lovetropics.minigames.client.lobby.state.message.LobbyPlayersMessage;
 import com.lovetropics.minigames.client.lobby.state.message.LobbyUpdateMessage;
-import com.lovetropics.minigames.common.core.game.GameResult;
-import com.lovetropics.minigames.common.core.game.IGame;
-import com.lovetropics.minigames.common.core.game.IGamePhase;
-import com.lovetropics.minigames.common.core.game.PlayerIsolation;
+import com.lovetropics.minigames.common.core.game.*;
 import com.lovetropics.minigames.common.core.game.lobby.*;
 import com.lovetropics.minigames.common.core.game.player.PlayerIterable;
-import com.lovetropics.minigames.common.core.game.player.PlayerRole;
+import com.lovetropics.minigames.common.core.game.player.PlayerRoleSelections;
 import com.lovetropics.minigames.common.core.game.util.GameTexts;
 import com.lovetropics.minigames.common.core.network.LoveTropicsNetwork;
 import net.minecraft.command.CommandSource;
@@ -168,9 +165,29 @@ final class GameLobby implements IGameLobby {
 			result = newPhase.start();
 		}
 
+		GameInstance oldGame = oldPhase != null ? oldPhase.game : null;
+		GameInstance newGame = newPhase != null ? newPhase.game : null;
+		if (oldGame != newGame) {
+			onGameInstanceChange(oldGame, newGame);
+		}
+
 		stateListener.onGamePhaseChange(this);
 
 		return result;
+	}
+
+	private void onGameInstanceChange(GameInstance oldGame, GameInstance newGame) {
+		if (newGame != null) {
+			onGameInstanceStart(newGame);
+		}
+	}
+
+	private void onGameInstanceStart(GameInstance game) {
+		IGameDefinition definition = game.getDefinition();
+		if (definition.getWaitingPhase().isPresent()) {
+			PlayerRoleSelections roleSelections = players.getRoleSelections();
+			roleSelections.clearAndPromptAll(players);
+		}
 	}
 
 	void onQueueResume() {
@@ -206,15 +223,7 @@ final class GameLobby implements IGameLobby {
 			phase.onPlayerJoin(player);
 		}
 
-		PlayerRole role = players.getRegisteredRoleFor(player);
-		stateListener.onPlayerJoin(this, player, role);
-
-		management.onPlayersChanged();
-	}
-
-	void onPlayerChangeRegisteredRole(ServerPlayerEntity player) {
-		PlayerRole role = players.getRegisteredRoleFor(player);
-		stateListener.onPlayerChangeRole(this, player, role);
+		stateListener.onPlayerJoin(this, player);
 
 		management.onPlayersChanged();
 	}
@@ -271,10 +280,9 @@ final class GameLobby implements IGameLobby {
 		}
 	}
 
-	// TODO: reduce message clutter and use toasts where possible
 	static final class ChatNotifyListener implements LobbyStateListener {
 		@Override
-		public void onPlayerJoin(IGameLobby lobby, ServerPlayerEntity player, PlayerRole registeredRole) {
+		public void onPlayerJoin(IGameLobby lobby, ServerPlayerEntity player) {
 			IGame currentGame = lobby.getCurrentGame();
 			if (currentGame != null) {
 				onPlayerJoinGame(lobby, currentGame);
@@ -296,7 +304,7 @@ final class GameLobby implements IGameLobby {
 
 		private void onPlayerJoinGame(IGameLobby lobby, IGame currentGame) {
 			int minimumParticipants = currentGame.getDefinition().getMinimumParticipantCount();
-			if (lobby.getPlayers().getParticipantCount() == minimumParticipants) {
+			if (lobby.getPlayers().size() == minimumParticipants) {
 				ITextComponent enoughPlayers = GameTexts.Status.enoughPlayers();
 				lobby.getTrackingPlayers().sendMessage(enoughPlayers);
 			}
@@ -304,7 +312,7 @@ final class GameLobby implements IGameLobby {
 
 		private void onPlayerLeaveGame(IGameLobby lobby, IGame currentGame) {
 			int minimumParticipants = currentGame.getDefinition().getMinimumParticipantCount();
-			if (lobby.getPlayers().getParticipantCount() == minimumParticipants - 1) {
+			if (lobby.getPlayers().size() == minimumParticipants - 1) {
 				ITextComponent noLongerEnoughPlayers = GameTexts.Status.noLongerEnoughPlayers();
 				lobby.getTrackingPlayers().sendMessage(noLongerEnoughPlayers);
 			}
@@ -323,13 +331,8 @@ final class GameLobby implements IGameLobby {
 
 	static final class NetworkUpdateListener implements LobbyStateListener {
 		@Override
-		public void onPlayerJoin(IGameLobby lobby, ServerPlayerEntity player, @Nullable PlayerRole registeredRole) {
-			this.onPlayerChangeRole(lobby, player, registeredRole);
-		}
-
-		@Override
-		public void onPlayerChangeRole(IGameLobby lobby, ServerPlayerEntity player, @Nullable PlayerRole registeredRole) {
-			LoveTropicsNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), JoinedLobbyMessage.create(lobby, registeredRole));
+		public void onPlayerJoin(IGameLobby lobby, ServerPlayerEntity player) {
+			LoveTropicsNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), JoinedLobbyMessage.create(lobby));
 			lobby.getTrackingPlayers().sendPacket(LoveTropicsNetwork.CHANNEL, LobbyPlayersMessage.update(lobby));
 		}
 

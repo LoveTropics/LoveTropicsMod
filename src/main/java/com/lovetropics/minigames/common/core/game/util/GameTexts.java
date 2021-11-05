@@ -180,7 +180,7 @@ public final class GameTexts {
 
 			for (IGameLobby lobby : lobbies) {
 				ITextComponent lobbyName = lobbyName(lobby);
-				int players = lobby.getPlayers().getParticipantCount();
+				int players = lobby.getPlayers().size();
 				ITextComponent link = clickHere(lobby.getMetadata().joinCommand(role));
 
 				TranslationTextComponent entry = new TranslationTextComponent(Keys.LOBBY_SELECTOR_ENTRY, lobbyName, players, link);
