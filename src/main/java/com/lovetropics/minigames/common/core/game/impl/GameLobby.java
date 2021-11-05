@@ -107,7 +107,7 @@ final class GameLobby implements IGameLobby {
 			return true;
 		}
 
-		return state.getGame() != null && metadata.visibility().isPublic();
+		return metadata.visibility().isPublic();
 	}
 
 	void setName(String name) {
