@@ -43,7 +43,7 @@ public final class WeatherState {
 	}
 
 	public boolean hasWeather() {
-		return (this.isRaining() && this.isWindy())
+		return this.isRaining() || this.isWindy()
 				|| this.heatwave
 				|| this.sandstorm != null || this.snowstorm != null;
 	}
