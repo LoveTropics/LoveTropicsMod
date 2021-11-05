@@ -45,8 +45,7 @@ final class LobbyManagement implements ILobbyManagement {
 		if (canManage(player.getCommandSource())) {
 			ClientLobbyUpdate.Set initialize = ClientLobbyUpdate.Set.create()
 					.setName(lobby.getMetadata().name())
-					.initInstalledGames(ClientGameDefinition.collectInstalled())
-					.initQueue(lobby.getGameQueue())
+					.initialize(ClientGameDefinition.collectInstalled(), lobby.getGameQueue())
 					.setCurrentGame(lobby.state.getClientCurrentGame())
 					.setPlayersFrom(lobby)
 					.setControlState(lobby.getControls().asState())

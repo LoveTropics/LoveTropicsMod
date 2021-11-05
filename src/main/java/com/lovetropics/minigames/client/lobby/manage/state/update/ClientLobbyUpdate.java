@@ -45,19 +45,16 @@ public abstract class ClientLobbyUpdate extends PartialUpdate<ClientLobbyManagem
 			return this;
 		}
 
-		public Set initInstalledGames(List<ClientGameDefinition> installedGames) {
-			this.add(new InitInstalledGames(installedGames));
-			return this;
-		}
-
-		public Set initQueue(ILobbyGameQueue queue) {
+		public Set initialize(
+				List<ClientGameDefinition> installedGames,
+				ILobbyGameQueue queue
+		) {
 			ClientLobbyQueue clientQueue = new ClientLobbyQueue();
 			for (QueuedGame game : queue) {
 				clientQueue.add(game.networkId(), ClientLobbyQueuedGame.from(game));
 			}
 
-			this.add(new InitQueue(clientQueue));
-
+			this.add(new Initialize(installedGames, clientQueue));
 			return this;
 		}
 
@@ -110,8 +107,7 @@ public abstract class ClientLobbyUpdate extends PartialUpdate<ClientLobbyManagem
 	}
 
 	public enum Type implements AbstractType<ClientLobbyManagement.Session> {
-		INIT_INSTALLED_GAMES(InitInstalledGames::decode),
-		INIT_QUEUE(InitQueue::decode),
+		INITIALIZE(Initialize::decode),
 		SET_NAME(SetName::decode),
 		SET_CURRENT_GAME(SetCurrentGame::decode),
 		UPDATE_QUEUE(UpdateQueue::decode),
@@ -135,17 +131,19 @@ public abstract class ClientLobbyUpdate extends PartialUpdate<ClientLobbyManagem
 		super(type);
 	}
 
-	public static final class InitInstalledGames extends ClientLobbyUpdate {
+	public static final class Initialize extends ClientLobbyUpdate {
 		private final List<ClientGameDefinition> installedGames;
+		private final ClientLobbyQueue queue;
 
-		InitInstalledGames(List<ClientGameDefinition> installedGames) {
-			super(Type.INIT_INSTALLED_GAMES);
+		Initialize(List<ClientGameDefinition> installedGames, ClientLobbyQueue queue) {
+			super(Type.INITIALIZE);
 			this.installedGames = installedGames;
+			this.queue = queue;
 		}
 
 		@Override
 		public void applyTo(ClientLobbyManagement.Session session) {
-			session.handleInstalledGames(installedGames);
+			session.handleInitialize(installedGames, queue);
 		}
 
 		@Override
@@ -154,39 +152,20 @@ public abstract class ClientLobbyUpdate extends PartialUpdate<ClientLobbyManagem
 			for (ClientGameDefinition game : installedGames) {
 				game.encode(buffer);
 			}
+
+			queue.encode(buffer);
 		}
 
-		static InitInstalledGames decode(PacketBuffer buffer) {
+		static Initialize decode(PacketBuffer buffer) {
 			int installedSize = buffer.readVarInt();
 			List<ClientGameDefinition> installedGames = new ArrayList<>(installedSize);
 			for (int i = 0; i < installedSize; i++) {
 				installedGames.add(ClientGameDefinition.decode(buffer));
 			}
 
-			return new InitInstalledGames(installedGames);
-		}
-	}
+			ClientLobbyQueue queue = ClientLobbyQueue.decode(buffer);
 
-	public static final class InitQueue extends ClientLobbyUpdate {
-		private final ClientLobbyQueue queue;
-
-		InitQueue(ClientLobbyQueue queue) {
-			super(Type.INIT_QUEUE);
-			this.queue = queue;
-		}
-
-		@Override
-		public void applyTo(ClientLobbyManagement.Session session) {
-			session.handleQueue(queue);
-		}
-
-		@Override
-		protected void encode(PacketBuffer buffer) {
-			queue.encode(buffer);
-		}
-
-		static InitQueue decode(PacketBuffer buffer) {
-			return new InitQueue(ClientLobbyQueue.decode(buffer));
+			return new Initialize(installedGames, queue);
 		}
 	}
 
