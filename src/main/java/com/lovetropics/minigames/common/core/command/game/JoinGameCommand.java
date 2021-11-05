@@ -13,7 +13,9 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import net.minecraft.command.CommandSource;
+import net.minecraft.command.arguments.EntityArgument;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.Unit;
 
@@ -23,6 +25,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static net.minecraft.command.Commands.argument;
 import static net.minecraft.command.Commands.literal;
 
 public class JoinGameCommand {
@@ -33,6 +36,10 @@ public class JoinGameCommand {
 				.then(joinBuilder("register"))
 				.then(joinBuilder("join"))
 				.then(joinBuilder("play"))
+				.then(literal("force").requires(source -> source.hasPermissionLevel(4))
+					.then(argument("player", EntityArgument.players())
+					.executes(JoinGameCommand::forcePlayerJoin)
+				))
 		);
 		// @formatter:on
 	}
@@ -102,5 +109,17 @@ public class JoinGameCommand {
 
 			return GameResult.error(GameTexts.Commands.lobbySelector(lobbies, forcedRole));
 		}
+	}
+
+	private static int forcePlayerJoin(CommandContext<CommandSource> context) throws CommandSyntaxException {
+		ServerPlayerEntity player = EntityArgument.getPlayer(context, "player");
+		IGameLobby lobby = IGameManager.get().getLobbyFor(player);
+		if (lobby == null) {
+			throw new SimpleCommandExceptionType(GameTexts.Commands.notInLobby()).create();
+		}
+
+		lobby.getPlayers().forceRole(player, PlayerRole.PARTICIPANT);
+
+		return Command.SINGLE_SUCCESS;
 	}
 }
