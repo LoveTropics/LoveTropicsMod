@@ -1,14 +1,18 @@
 package com.lovetropics.minigames.client.lobby.state;
 
 import com.lovetropics.minigames.common.core.game.LobbyStatus;
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 
 import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.Set;
+import java.util.UUID;
 
 public class ClientLobbyState {
 	final int id;
 
 	String name;
-	int playerCount;
+	final Set<UUID> players = new ObjectOpenHashSet<>();
 
 	@Nullable
 	ClientCurrentGame currentGame;
@@ -22,8 +26,9 @@ public class ClientLobbyState {
 		this.currentGame = currentGame;
 	}
 
-	public void setPlayerCounts(int count) {
-		this.playerCount = count;
+	public void setPlayers(Collection<UUID> players) {
+		this.players.clear();
+		this.players.addAll(players);
 	}
 
 	public int getId() {
@@ -39,8 +44,12 @@ public class ClientLobbyState {
 		return currentGame;
 	}
 
+	public Set<UUID> getPlayers() {
+		return players;
+	}
+
 	public int getPlayerCount() {
-		return playerCount;
+		return players.size();
 	}
 
 	public LobbyStatus getStatus() {

@@ -43,12 +43,19 @@ public final class Scheduler {
 	}
 
 	private static void runTasks(MinecraftServer server) {
+		int lastTime = Scheduler.time;
 		int time = server.getTickCounter();
 		Scheduler.time = time;
 
-		Tick tick = TICKS.remove(time);
-		if (tick != null) {
-			tick.run(server);
+		if (TICKS.isEmpty()) {
+			return;
+		}
+
+		for (int i = lastTime + 1; i <= time; i++) {
+			Tick tick = TICKS.remove(i);
+			if (tick != null) {
+				tick.run(server);
+			}
 		}
 	}
 
