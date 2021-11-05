@@ -30,13 +30,11 @@ public final class SelectRoleMessage {
 	public void handle(Supplier<NetworkEvent.Context> ctx) {
 		ctx.get().enqueueWork(() -> {
 			ServerPlayerEntity player = ctx.get().getSender();
-			player.server.execute(() -> {
-				IGameLobby lobby = IGameManager.get().getLobbyByNetworkId(lobbyId);
-				if (lobby != null) {
-					PlayerRole role = play ? PlayerRole.PARTICIPANT : PlayerRole.SPECTATOR;
-					lobby.getPlayers().getRoleSelections().acceptResponse(player, role);
-				}
-			});
+			IGameLobby lobby = IGameManager.get().getLobbyByNetworkId(lobbyId);
+			if (lobby != null) {
+				PlayerRole role = play ? PlayerRole.PARTICIPANT : PlayerRole.SPECTATOR;
+				lobby.getPlayers().getRoleSelections().acceptResponse(player, role);
+			}
 		});
 		ctx.get().setPacketHandled(true);
 	}

@@ -20,6 +20,7 @@ import net.minecraft.util.Unit;
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static net.minecraft.command.Commands.literal;
@@ -69,7 +70,11 @@ public class JoinGameCommand {
 
 		IGameLobby lobby = lobbyResult.getOk();
 		IGameLobbyPlayers players = lobby.getPlayers();
-		CompletableFuture<GameResult<Unit>> joinFuture = GameResult.handleException("An unexpected error has occurred", players.join(player));
+
+		CompletableFuture<GameResult<Unit>> joinFuture = CompletableFuture.supplyAsync(() -> players.join(player), source.getServer())
+				.thenCompose(Function.identity());
+		joinFuture = GameResult.handleException("An unexpected error has occurred", joinFuture);
+
 		joinFuture.thenAcceptAsync(result -> {
 			if (result.isOk()) {
 				if (forcedRole != null) {
