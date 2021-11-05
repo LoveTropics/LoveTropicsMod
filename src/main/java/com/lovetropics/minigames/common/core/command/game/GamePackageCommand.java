@@ -48,7 +48,7 @@ public class GamePackageCommand {
 		if (game != null) {
 			String type = StringArgumentType.getString(ctx, "id");
 			GamePackage gamePackage = new GamePackage(type, "LoveTropics", target == null ? null : target.getUniqueID());
-			game.invoker(GamePackageEvents.RECEIVE_PACKAGE).onReceivePackage(gamePackage);
+			game.invoker(GamePackageEvents.RECEIVE_PACKAGE).onReceivePackage($ -> {}, gamePackage);
 		}
 		return Command.SINGLE_SUCCESS;
 	}
