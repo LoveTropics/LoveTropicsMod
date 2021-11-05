@@ -110,6 +110,7 @@ public final class TeamAllocator<T, V> {
 		List<V> players = new ArrayList<>(this.players);
 		Collections.shuffle(players);
 
+		// TODO: this algorithm needs another look at it
 		for (V player : players) {
 			T preference = this.teamPreferences.get(player);
 			T current = allocations.teamFor(player);
@@ -124,10 +125,11 @@ public final class TeamAllocator<T, V> {
 
 			// we can move without swapping if the other team is smaller than ours if it has not exceeded the max size
 			// we only care about keeping the teams balanced, so this is safe
-			if (preferencePlayers.size() < currentPlayers.size() && this.canTeamGrow(preference, preferencePlayers.size())) {
-				allocations.moveTeam(player, current, preference);
-			} else {
-				this.trySwapWithOtherPlayer(allocations, player, current, preference);
+			if (!this.trySwapWithOtherPlayer(allocations, player, current, preference)) {
+				// we couldn't swap with someone else, just move us over
+				if (preferencePlayers.size() < currentPlayers.size() && this.canTeamGrow(preference, preferencePlayers.size())) {
+					allocations.moveTeam(player, current, preference);
+				}
 			}
 		}
 	}
@@ -137,11 +139,14 @@ public final class TeamAllocator<T, V> {
 		return size < maxSize;
 	}
 
-	private void trySwapWithOtherPlayer(Allocations<T, V> allocations, V player, T from, T to) {
+	private boolean trySwapWithOtherPlayer(Allocations<T, V> allocations, V player, T from, T to) {
 		V swapWith = this.findSwapCandidate(from, to, allocations.playersIn(to));
 		if (swapWith != null) {
 			allocations.moveTeam(player, from, to);
 			allocations.moveTeam(swapWith, to, from);
+			return true;
+		} else {
+			return false;
 		}
 	}
 
