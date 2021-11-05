@@ -16,7 +16,6 @@ import com.lovetropics.minigames.common.core.game.behavior.instances.IndividualW
 import com.lovetropics.minigames.common.core.game.behavior.instances.JoinLateWithRoleBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.PhaseControllerBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.PositionPlayersBehavior;
-import com.lovetropics.minigames.common.core.game.behavior.instances.ReadyUpBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.ScheduledMessagesBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.SetGameClientStateBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.SetGameTypesBehavior;
