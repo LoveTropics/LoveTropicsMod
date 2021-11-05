@@ -66,7 +66,7 @@ public interface TelemetrySender {
 			}
 
 			try {
-				LOGGER.debug("Posting {} to {}/{}", body, url, endpoint);
+				LOGGER.debug("Posting {} to {}/{}", body, url.get(), endpoint);
 
 				HttpURLConnection connection = openAuthorizedConnection("POST", endpoint);
 				try (OutputStream output = connection.getOutputStream()) {
@@ -76,14 +76,14 @@ public interface TelemetrySender {
 				int code = connection.getResponseCode();
 				try {
 					String payload = IOUtils.toString(connection.getInputStream(), StandardCharsets.UTF_8);
-					LOGGER.debug("Received response from post to {}/{}: {}", url, endpoint, payload);
+					LOGGER.debug("Received response from post to {}/{}: {}", url.get(), endpoint, payload);
 					return true;
 				} catch (IOException e) {
 					String response = IOUtils.toString(connection.getErrorStream(), StandardCharsets.UTF_8);
-					LOGGER.error("Received unexpected response code ({}) from {}/{}: {}", code, url, endpoint, response);
+					LOGGER.error("Received unexpected response code ({}) from {}/{}: {}", code, url.get(), endpoint, response);
 				}
 			} catch (Exception e) {
-				LOGGER.error("An exception occurred while trying to POST to {}/{}", url, endpoint, e);
+				LOGGER.error("An exception occurred while trying to POST to {}/{}", url.get(), endpoint, e);
 			}
 
 			return false;
