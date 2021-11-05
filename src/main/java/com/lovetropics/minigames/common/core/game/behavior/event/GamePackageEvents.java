@@ -6,9 +6,8 @@ import com.lovetropics.minigames.common.core.integration.game_actions.GamePackag
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.ActionResultType;
 
-import java.util.function.Consumer;
-
 import javax.annotation.Nullable;
+import java.util.function.Consumer;
 
 public final class GamePackageEvents {
 	public static final GameEventType<ReceivePackage> RECEIVE_PACKAGE = GameEventType.create(ReceivePackage.class, listeners -> (sendPreamble, gamePackage) -> {
@@ -27,10 +26,18 @@ public final class GamePackageEvents {
 		}
 	});
 
-	public static final GameEventType<ApplyPackage> APPLY_PACKAGE = GameEventType.create(ApplyPackage.class, listeners -> (player, sendingPlayer) -> {
+	public static final GameEventType<ApplyPackageToPlayer> APPLY_PACKAGE_TO_PLAYER = GameEventType.create(ApplyPackageToPlayer.class, listeners -> (player, sendingPlayer) -> {
 		boolean applied = false;
-		for (ApplyPackage listener : listeners) {
+		for (ApplyPackageToPlayer listener : listeners) {
 			applied |= listener.applyPackage(player, sendingPlayer);
+		}
+		return applied;
+	});
+
+	public static final GameEventType<ApplyPackageGlobally> APPLY_PACKAGE_GLOBALLY = GameEventType.create(ApplyPackageGlobally.class, listeners -> sendingPlayer -> {
+		boolean applied = false;
+		for (ApplyPackageGlobally listener : listeners) {
+			applied |= listener.applyPackage(sendingPlayer);
 		}
 		return applied;
 	});
@@ -46,7 +53,11 @@ public final class GamePackageEvents {
 		void onReceivePollEvent(JsonObject object, String crud);
 	}
 
-	public interface ApplyPackage {
+	public interface ApplyPackageToPlayer {
 		boolean applyPackage(ServerPlayerEntity player, @Nullable String sendingPlayer);
+	}
+
+	public interface ApplyPackageGlobally {
+		boolean applyPackage(@Nullable String sendingPlayer);
 	}
 }

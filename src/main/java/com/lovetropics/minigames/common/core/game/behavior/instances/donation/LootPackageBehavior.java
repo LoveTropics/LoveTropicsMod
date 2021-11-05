@@ -30,7 +30,7 @@ public class LootPackageBehavior implements IGameBehavior {
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) throws GameException {
-		events.listen(GamePackageEvents.APPLY_PACKAGE, (player, sendingPlayer) -> addLootTableToInventory(player));
+		events.listen(GamePackageEvents.APPLY_PACKAGE_TO_PLAYER, (player, sendingPlayer) -> addLootTableToInventory(player));
 	}
 
 	private boolean addLootTableToInventory(final ServerPlayerEntity player) {

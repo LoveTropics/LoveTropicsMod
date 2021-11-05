@@ -61,7 +61,7 @@ public final class DonationPackageBehavior implements IGameBehavior {
 	public void register(IGamePhase game, EventRegistrar events) {
 		events.listen(GamePackageEvents.RECEIVE_PACKAGE, (sendPreamble, gamePackage) -> onGamePackageReceived(sendPreamble, game, gamePackage));
 
-		EventRegistrar receiveEventRegistrar = events.redirect(t -> t == GamePackageEvents.APPLY_PACKAGE, applyEvents);
+		EventRegistrar receiveEventRegistrar = events.redirect(t -> t == GamePackageEvents.APPLY_PACKAGE_TO_PLAYER || t == GamePackageEvents.APPLY_PACKAGE_GLOBALLY, applyEvents);
 		for (IGameBehavior behavior : receiveBehaviors) {
 			behavior.register(game, receiveEventRegistrar);
 		}
@@ -95,7 +95,7 @@ public final class DonationPackageBehavior implements IGameBehavior {
 		}
 
 		String sendingPlayerName = gamePackage.getSendingPlayerName();
-		if (applyPackage(game, receivingPlayer, sendingPlayerName)) {
+		if (applyPackageToPlayer(receivingPlayer, sendingPlayerName)) {
 			sendPreamble.accept(game);
 			data.onReceive(game, receivingPlayer, sendingPlayerName);
 
@@ -110,7 +110,7 @@ public final class DonationPackageBehavior implements IGameBehavior {
 		final ServerPlayerEntity randomPlayer = players.get(game.getWorld().getRandom().nextInt(players.size()));
 
 		String sendingPlayerName = gamePackage.getSendingPlayerName();
-		if (applyPackage(game, randomPlayer, sendingPlayerName)) {
+		if (applyPackageToPlayer(randomPlayer, sendingPlayerName)) {
 			sendPreamble.accept(game);
 			data.onReceive(game, randomPlayer, sendingPlayerName);
 
@@ -123,9 +123,9 @@ public final class DonationPackageBehavior implements IGameBehavior {
 	private ActionResultType receiveAll(Consumer<IGamePhase> sendPreamble, IGamePhase game, GamePackage gamePackage) {
 		String sendingPlayerName = gamePackage.getSendingPlayerName();
 
-		boolean applied = false;
+		boolean applied = applyPackageGlobally(sendingPlayerName);
 		for (ServerPlayerEntity player : game.getParticipants()) {
-			applied |= applyPackage(game, player, sendingPlayerName);
+			applied |= applyPackageToPlayer(player, sendingPlayerName);
 		}
 
 		if (!applied) {
@@ -138,7 +138,11 @@ public final class DonationPackageBehavior implements IGameBehavior {
 		return ActionResultType.SUCCESS;
 	}
 
-	private boolean applyPackage(IGamePhase game, final ServerPlayerEntity player, @Nullable final String sendingPlayer) {
-		return applyEvents.invoker(GamePackageEvents.APPLY_PACKAGE).applyPackage(player, sendingPlayer);
+	private boolean applyPackageToPlayer(final ServerPlayerEntity player, @Nullable final String sendingPlayer) {
+		return applyEvents.invoker(GamePackageEvents.APPLY_PACKAGE_TO_PLAYER).applyPackage(player, sendingPlayer);
+	}
+
+	private boolean applyPackageGlobally(@Nullable final String sendingPlayer) {
+		return applyEvents.invoker(GamePackageEvents.APPLY_PACKAGE_GLOBALLY).applyPackage(sendingPlayer);
 	}
 }

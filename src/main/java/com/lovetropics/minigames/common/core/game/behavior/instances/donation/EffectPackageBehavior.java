@@ -27,7 +27,7 @@ public class EffectPackageBehavior implements IGameBehavior {
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) throws GameException {
-		events.listen(GamePackageEvents.APPLY_PACKAGE, (player, sendingPlayer) -> {
+		events.listen(GamePackageEvents.APPLY_PACKAGE_TO_PLAYER, (player, sendingPlayer) -> {
 			for (EffectInstance effect : effects) {
 				player.addPotionEffect(new EffectInstance(effect));
 			}

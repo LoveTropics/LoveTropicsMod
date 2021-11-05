@@ -31,7 +31,7 @@ public final class ApplyDisguisePackageBehavior implements IGameBehavior {
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
-		events.listen(GamePackageEvents.APPLY_PACKAGE, (player, sendingPlayer) -> {
+		events.listen(GamePackageEvents.APPLY_PACKAGE_GLOBALLY, sendingPlayer -> {
 			if (this.finishTime == -1) {
 				this.apply(game);
 				this.finishTime = game.ticks() + this.durationTicks;

@@ -39,7 +39,7 @@ public class SpawnEntityAtPlayerPackageBehavior implements IGameBehavior {
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) throws GameException {
-		events.listen(GamePackageEvents.APPLY_PACKAGE, (player, sendingPlayer) -> {
+		events.listen(GamePackageEvents.APPLY_PACKAGE_TO_PLAYER, (player, sendingPlayer) -> {
 			Vector3d spawnPos = findSpawnPos(game, player);
 			if (spawnPos == null) {
 				spawnPos = player.getPositionVec();

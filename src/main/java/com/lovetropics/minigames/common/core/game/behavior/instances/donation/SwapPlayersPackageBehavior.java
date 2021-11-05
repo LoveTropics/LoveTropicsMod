@@ -30,7 +30,7 @@ public class SwapPlayersPackageBehavior implements IGameBehavior {
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
-		events.listen(GamePackageEvents.APPLY_PACKAGE, (player, sendingPlayer) -> {
+		events.listen(GamePackageEvents.APPLY_PACKAGE_GLOBALLY, sendingPlayer -> {
 			if (this.distanceThreshold == Double.MAX_VALUE) {
 				this.shufflePlayers(game);
 			} else {
