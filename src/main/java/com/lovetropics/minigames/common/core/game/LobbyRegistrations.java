@@ -16,19 +16,19 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-public final class GameRegistrations implements PlayerSet {
+public final class LobbyRegistrations implements PlayerSet {
 	private final MinecraftServer server;
 
 	private final Set<UUID> players = new ObjectOpenHashSet<>();
-	private final Map<UUID, PlayerRole> rolePreferences = new Object2ObjectOpenHashMap<>();
+	private final Map<UUID, PlayerRole> forcedRoles = new Object2ObjectOpenHashMap<>();
 
-	public GameRegistrations(MinecraftServer server) {
+	public LobbyRegistrations(MinecraftServer server) {
 		this.server = server;
 	}
 
 	public void clear() {
 		this.players.clear();
-		this.rolePreferences.clear();
+		this.forcedRoles.clear();
 	}
 
 	public TeamAllocator<PlayerRole, ServerPlayerEntity> createAllocator() {
@@ -36,42 +36,35 @@ public final class GameRegistrations implements PlayerSet {
 		allocator.setOverflowTeam(PlayerRole.SPECTATOR);
 
 		for (ServerPlayerEntity player : this) {
-			PlayerRole role = rolePreferences.get(player.getUniqueID());
+			PlayerRole role = forcedRoles.get(player.getUniqueID());
 			allocator.addPlayer(player, role);
 		}
 
 		return allocator;
 	}
 
-	public boolean add(UUID id, @Nullable PlayerRole requestedRole) {
-		if (players.add(id)) {
-			if (requestedRole != null) {
-				rolePreferences.put(id, requestedRole);
-			}
-			return true;
-		} else {
-			return false;
-		}
-	}
-
-	public boolean set(UUID id, @Nullable PlayerRole requestedRole) {
-		if (players.contains(id)) {
-			if (requestedRole != null) {
-				return rolePreferences.put(id, requestedRole) != requestedRole;
-			} else {
-				return rolePreferences.remove(id) != null;
-			}
-		}
-		return false;
+	public boolean add(UUID id) {
+		return players.add(id);
 	}
 
 	public boolean remove(UUID id) {
 		if (players.remove(id)) {
-			rolePreferences.remove(id);
+			forcedRoles.remove(id);
 			return true;
 		} else {
 			return false;
 		}
+	}
+
+	public boolean forceRole(UUID id, @Nullable PlayerRole role) {
+		if (players.contains(id)) {
+			if (role != null) {
+				return forcedRoles.put(id, role) != role;
+			} else {
+				return forcedRoles.remove(id) != null;
+			}
+		}
+		return false;
 	}
 
 	@Override
@@ -85,8 +78,8 @@ public final class GameRegistrations implements PlayerSet {
 	}
 
 	@Nullable
-	public PlayerRole getRoleFor(UUID id) {
-		return contains(id) ? rolePreferences.getOrDefault(id, PlayerRole.PARTICIPANT) : null;
+	public PlayerRole getForcedRoleFor(UUID id) {
+		return forcedRoles.get(id);
 	}
 
 	@Nullable

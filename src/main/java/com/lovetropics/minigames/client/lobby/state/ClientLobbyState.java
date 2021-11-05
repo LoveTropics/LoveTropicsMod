@@ -1,7 +1,6 @@
 package com.lovetropics.minigames.client.lobby.state;
 
 import com.lovetropics.minigames.common.core.game.LobbyStatus;
-import com.lovetropics.minigames.common.core.game.player.PlayerRole;
 
 import javax.annotation.Nullable;
 
@@ -9,14 +8,10 @@ public class ClientLobbyState {
 	final int id;
 
 	String name;
-	int participantCount;
-	int spectatorCount;
+	int playerCount;
 
 	@Nullable
 	ClientCurrentGame currentGame;
-
-	@Nullable
-	PlayerRole joinedRole;
 
 	ClientLobbyState(int id) {
 		this.id = id;
@@ -27,9 +22,8 @@ public class ClientLobbyState {
 		this.currentGame = currentGame;
 	}
 
-	public void setPlayerCounts(int participantCount, int spectatorCount) {
-		this.participantCount = participantCount;
-		this.spectatorCount = spectatorCount;
+	public void setPlayerCounts(int count) {
+		this.playerCount = count;
 	}
 
 	public int getId() {
@@ -45,25 +39,8 @@ public class ClientLobbyState {
 		return currentGame;
 	}
 
-	public int getParticipantCount() {
-		return participantCount;
-	}
-
-	public int getSpectatorCount() {
-		return spectatorCount;
-	}
-
-	public int getPlayerCount(PlayerRole role) {
-		return role == PlayerRole.PARTICIPANT ? participantCount : spectatorCount;
-	}
-
 	public int getPlayerCount() {
-		return participantCount + spectatorCount;
-	}
-
-	@Nullable
-	public PlayerRole getJoinedRole() {
-		return joinedRole;
+		return playerCount;
 	}
 
 	public LobbyStatus getStatus() {

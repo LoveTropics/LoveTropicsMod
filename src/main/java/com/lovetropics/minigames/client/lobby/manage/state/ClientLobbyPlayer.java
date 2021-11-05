@@ -6,40 +6,33 @@ import com.lovetropics.minigames.common.core.game.player.PlayerRole;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.network.PacketBuffer;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.UUID;
 
 public final class ClientLobbyPlayer {
 	private final UUID uuid;
 	@Nullable
-	private final PlayerRole registeredRole;
-	@Nullable
 	private final PlayerRole playingRole;
 
-	private ClientLobbyPlayer(UUID uuid, @Nullable PlayerRole registeredRole, @Nullable PlayerRole playingRole) {
+	private ClientLobbyPlayer(UUID uuid, @Nullable PlayerRole playingRole) {
 		this.uuid = uuid;
-		this.registeredRole = registeredRole;
 		this.playingRole = playingRole;
 	}
 
 	public static ClientLobbyPlayer from(IGameLobby lobby, ServerPlayerEntity player) {
 		IGamePhase currentPhase = lobby.getCurrentPhase();
 		PlayerRole playingRole = currentPhase != null ? currentPhase.getRoleFor(player) : null;
-		PlayerRole registeredRole = lobby.getPlayers().getRegisteredRoleFor(player);
-		return new ClientLobbyPlayer(player.getUniqueID(), registeredRole, playingRole);
+		return new ClientLobbyPlayer(player.getUniqueID(), playingRole);
 	}
 
 	public void encode(PacketBuffer buffer) {
 		buffer.writeUniqueId(this.uuid);
-		encodeRole(buffer, this.registeredRole);
 		encodeRole(buffer, this.playingRole);
 	}
 
 	public static ClientLobbyPlayer decode(PacketBuffer buffer) {
 		return new ClientLobbyPlayer(
 				buffer.readUniqueId(),
-				decodeRole(buffer),
 				decodeRole(buffer)
 		);
 	}
@@ -64,12 +57,6 @@ public final class ClientLobbyPlayer {
 
 	public UUID uuid() {
 		return this.uuid;
-	}
-
-	@Nonnull
-	public PlayerRole registeredRole() {
-		PlayerRole role = this.registeredRole;
-		return role != null ? role : PlayerRole.PARTICIPANT;
 	}
 
 	@Nullable

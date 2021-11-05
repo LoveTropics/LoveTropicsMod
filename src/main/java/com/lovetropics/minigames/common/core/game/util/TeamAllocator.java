@@ -48,6 +48,10 @@ public final class TeamAllocator<T, V> {
 		}
 	}
 
+	public boolean hasPreference(V player) {
+		return this.teamPreferences.containsKey(player);
+	}
+
 	public void allocate(BiConsumer<V, T> apply) {
 		Multimap<T, V> teamToPlayers = this.allocate();
 		teamToPlayers.forEach((team, player) -> apply.accept(player, team));

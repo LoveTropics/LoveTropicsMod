@@ -12,7 +12,7 @@ public class DataFixesManagerMixin {
 	/**
 	 * Makes DataFixerUpper lazy. Shh, don't tell.
 	 */
-	@ModifyArg(method = "createFixer", at = @At(value = "INVOKE", target = "Lcom/mojang/datafixers/DataFixerBuilder;build(Ljava/util/concurrent/Executor;)Lcom/mojang/datafixers/DataFixer;"))
+	@ModifyArg(method = "createFixer", at = @At(value = "INVOKE", target = "Lcom/mojang/datafixers/DataFixerBuilder;build(Ljava/util/concurrent/Executor;)Lcom/mojang/datafixers/DataFixer;", remap = false))
 	private static Executor replaceFixerOptimizationExecutor(Executor executor) {
 		return task -> {};
 	}

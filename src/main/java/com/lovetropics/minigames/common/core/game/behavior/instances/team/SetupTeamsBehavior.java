@@ -105,8 +105,8 @@ public final class SetupTeamsBehavior implements IGameBehavior {
 	}
 
 	private void onPlayerWaiting(IGamePhase game, ServerPlayerEntity player) {
-		PlayerRole registeredRole = game.getLobby().getPlayers().getRegisteredRoleFor(player);
-		if (registeredRole != PlayerRole.SPECTATOR && teamState.getPollingTeams().size() > 1) {
+		PlayerRole forcedRole = game.getLobby().getPlayers().getForcedRoleFor(player);
+		if (forcedRole != PlayerRole.SPECTATOR && teamState.getPollingTeams().size() > 1) {
 			player.sendStatusMessage(new StringTextComponent("This is a team-based game!").mergeStyle(TextFormatting.GOLD, TextFormatting.BOLD), false);
 			player.sendStatusMessage(new StringTextComponent("You can select a team preference by using the items in your inventory:").mergeStyle(TextFormatting.GRAY), false);
 

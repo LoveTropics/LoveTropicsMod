@@ -1,7 +1,6 @@
 package com.lovetropics.minigames.client.lobby.state;
 
 import com.lovetropics.minigames.Constants;
-import com.lovetropics.minigames.common.core.game.player.PlayerRole;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.minecraftforge.api.distmarker.Dist;
@@ -32,23 +31,17 @@ public final class ClientLobbyManager {
 		return Optional.ofNullable(LOBBIES.get(id));
 	}
 
-	public static void setJoined(int id, PlayerRole role) {
+	public static void setJoined(int id) {
 		clearJoined();
 
 		ClientLobbyState lobby = LOBBIES.get(id);
 		if (lobby != null) {
-			lobby.joinedRole = role;
 			ClientLobbyManager.joinedLobby = lobby;
 		}
 	}
 
 	public static void clearJoined() {
-		ClientLobbyState joinedLobby = ClientLobbyManager.joinedLobby;
 		ClientLobbyManager.joinedLobby = null;
-
-		if (joinedLobby != null) {
-			joinedLobby.joinedRole = null;
-		}
 	}
 
 	@Nullable

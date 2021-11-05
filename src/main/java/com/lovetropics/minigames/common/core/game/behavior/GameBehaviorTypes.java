@@ -72,7 +72,6 @@ public class GameBehaviorTypes {
 	public static final GameBehaviorEntry<SetDifficultyBehavior> SET_DIFFICULTY;
 	public static final GameBehaviorEntry<GameEndEffectsBehavior> GAME_END_EFFECTS;
 	public static final GameBehaviorEntry<TipsAndTricksBehavior> TIPS_AND_TRICKS;
-	public static final GameBehaviorEntry<ReadyUpBehavior> READY_UP;
 
 	public static final GameBehaviorEntry<BindObjectiveToStatisticBehavior> BIND_OBJECTIVE_TO_STATISTIC;
 	public static final GameBehaviorEntry<PlaceByStatisticBehavior> PLACE_BY_STATISTIC;
@@ -150,7 +149,6 @@ public class GameBehaviorTypes {
 		SET_DIFFICULTY = register("set_difficulty", SetDifficultyBehavior.CODEC);
 		GAME_END_EFFECTS = register("game_end_effects", GameEndEffectsBehavior.CODEC);
 		TIPS_AND_TRICKS = register("tips_and_tricks", TipsAndTricksBehavior.CODEC);
-		READY_UP = register("ready_up", ReadyUpBehavior.CODEC);
 
 		BIND_OBJECTIVE_TO_STATISTIC = register("bind_objective_to_statistic", BindObjectiveToStatisticBehavior.CODEC);
 		PLACE_BY_STATISTIC = register("place_by_statistic", PlaceByStatisticBehavior.CODEC);
