@@ -95,7 +95,10 @@ public final class DonationPackageBehavior implements IGameBehavior {
 		}
 
 		String sendingPlayerName = gamePackage.getSendingPlayerName();
-		if (applyPackageToPlayer(receivingPlayer, sendingPlayerName)) {
+		boolean applied = applyPackageGlobally(sendingPlayerName);
+		applied |= applyPackageToPlayer(receivingPlayer, sendingPlayerName);
+
+		if (applied) {
 			sendPreamble.accept(game);
 			data.onReceive(game, receivingPlayer, sendingPlayerName);
 
@@ -110,7 +113,11 @@ public final class DonationPackageBehavior implements IGameBehavior {
 		final ServerPlayerEntity randomPlayer = players.get(game.getWorld().getRandom().nextInt(players.size()));
 
 		String sendingPlayerName = gamePackage.getSendingPlayerName();
-		if (applyPackageToPlayer(randomPlayer, sendingPlayerName)) {
+
+		boolean applied = applyPackageGlobally(sendingPlayerName);
+		applied |= applyPackageToPlayer(randomPlayer, sendingPlayerName);
+
+		if (applied) {
 			sendPreamble.accept(game);
 			data.onReceive(game, randomPlayer, sendingPlayerName);
 
