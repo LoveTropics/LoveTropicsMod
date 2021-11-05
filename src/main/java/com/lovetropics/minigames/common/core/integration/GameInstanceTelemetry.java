@@ -7,6 +7,7 @@ import com.lovetropics.minigames.common.config.ConfigLT;
 import com.lovetropics.minigames.common.core.game.IGameDefinition;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameLogicEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePackageEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.lovetropics.minigames.common.core.game.state.GameStateKey;
@@ -56,6 +57,8 @@ public final class GameInstanceTelemetry implements IGameState {
 
 		events.listen(GamePlayerEvents.JOIN, (p) -> sendParticipantsList());
 		events.listen(GamePlayerEvents.LEAVE, (p) -> sendParticipantsList());
+		
+		events.listen(GameLogicEvents.PHASE_CHANGE, ($, $$) -> requestQueuedActions());
 	}
 
 	public void finish(GameStatistics statistics) {
@@ -111,6 +114,10 @@ public final class GameInstanceTelemetry implements IGameState {
 			participantsArray.add(PlayerKey.from(participant).serializeProfile());
 		}
 		return participantsArray;
+	}
+
+	private void requestQueuedActions() {
+		post("/minigame/pendingactions", new JsonObject());
 	}
 
 	private void post(String endpoint, JsonObject payload) {

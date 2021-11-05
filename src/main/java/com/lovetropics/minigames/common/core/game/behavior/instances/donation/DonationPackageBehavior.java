@@ -19,6 +19,7 @@ import org.apache.logging.log4j.Logger;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 public final class DonationPackageBehavior implements IGameBehavior {
 	public static final Codec<DonationPackageBehavior> CODEC = RecordCodecBuilder.create(instance -> {
@@ -58,7 +59,7 @@ public final class DonationPackageBehavior implements IGameBehavior {
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
-		events.listen(GamePackageEvents.RECEIVE_PACKAGE, gamePackage -> onGamePackageReceived(game, gamePackage));
+		events.listen(GamePackageEvents.RECEIVE_PACKAGE, (sendPreamble, gamePackage) -> onGamePackageReceived(sendPreamble, game, gamePackage));
 
 		EventRegistrar receiveEventRegistrar = events.redirect(t -> t == GamePackageEvents.APPLY_PACKAGE, applyEvents);
 		for (IGameBehavior behavior : receiveBehaviors) {
@@ -68,20 +69,20 @@ public final class DonationPackageBehavior implements IGameBehavior {
 		game.getState().get(GamePackageState.KEY).addPackageType(data.packageType);
 	}
 
-	private ActionResultType onGamePackageReceived(final IGamePhase game, final GamePackage gamePackage) {
+	private ActionResultType onGamePackageReceived(Consumer<IGamePhase> sendPreamble, final IGamePhase game, final GamePackage gamePackage) {
 		if (!gamePackage.getPackageType().equals(data.packageType)) {
 			return ActionResultType.PASS;
 		}
 
 		switch (data.playerSelect) {
-			case SPECIFIC: return receiveSpecific(game, gamePackage);
-			case RANDOM: return receiveRandom(game, gamePackage);
-			case ALL: return receiveAll(game, gamePackage);
+			case SPECIFIC: return receiveSpecific(sendPreamble, game, gamePackage);
+			case RANDOM: return receiveRandom(sendPreamble, game, gamePackage);
+			case ALL: return receiveAll(sendPreamble, game, gamePackage);
 			default: return ActionResultType.FAIL;
 		}
 	}
 
-	private ActionResultType receiveSpecific(IGamePhase game, GamePackage gamePackage) {
+	private ActionResultType receiveSpecific(Consumer<IGamePhase> sendPreamble, IGamePhase game, GamePackage gamePackage) {
 		if (gamePackage.getReceivingPlayer() == null) {
 			LOGGER.warn("Expected donation package to have a receiving player, but did not receive from backend!");
 			return ActionResultType.FAIL;
@@ -94,6 +95,7 @@ public final class DonationPackageBehavior implements IGameBehavior {
 		}
 
 		if (applyPackage(game, receivingPlayer, gamePackage.getSendingPlayerName())) {
+			sendPreamble.accept(game);
 			data.onReceive(game, receivingPlayer, gamePackage.getSendingPlayerName());
 
 			return ActionResultType.SUCCESS;
@@ -102,11 +104,12 @@ public final class DonationPackageBehavior implements IGameBehavior {
 		}
 	}
 
-	private ActionResultType receiveRandom(IGamePhase game, GamePackage gamePackage) {
+	private ActionResultType receiveRandom(Consumer<IGamePhase> sendPreamble, IGamePhase game, GamePackage gamePackage) {
 		final List<ServerPlayerEntity> players = Lists.newArrayList(game.getParticipants());
 		final ServerPlayerEntity randomPlayer = players.get(game.getWorld().getRandom().nextInt(players.size()));
 
 		if (applyPackage(game, randomPlayer, gamePackage.getSendingPlayerName())) {
+			sendPreamble.accept(game);
 			data.onReceive(game, randomPlayer, gamePackage.getSendingPlayerName());
 
 			return ActionResultType.SUCCESS;
@@ -115,7 +118,7 @@ public final class DonationPackageBehavior implements IGameBehavior {
 		}
 	}
 
-	private ActionResultType receiveAll(IGamePhase game, GamePackage gamePackage) {
+	private ActionResultType receiveAll(Consumer<IGamePhase> sendPreamble, IGamePhase game, GamePackage gamePackage) {
 		boolean applied = false;
 		for (ServerPlayerEntity player : game.getParticipants()) {
 			applied |= applyPackage(game, player, gamePackage.getSendingPlayerName());
@@ -125,6 +128,7 @@ public final class DonationPackageBehavior implements IGameBehavior {
 			return ActionResultType.FAIL;
 		}
 
+		sendPreamble.accept(game);
 		data.onReceive(game, null, gamePackage.getSendingPlayerName());
 
 		return ActionResultType.SUCCESS;

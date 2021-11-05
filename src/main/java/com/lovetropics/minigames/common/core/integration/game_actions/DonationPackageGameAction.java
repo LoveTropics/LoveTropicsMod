@@ -38,7 +38,7 @@ public class DonationPackageGameAction extends GameAction
 
     @Override
     public boolean resolve(IGamePhase game, MinecraftServer server) {
-        ActionResultType result = game.invoker(GamePackageEvents.RECEIVE_PACKAGE).onReceivePackage(gamePackage);
+        ActionResultType result = game.invoker(GamePackageEvents.RECEIVE_PACKAGE).onReceivePackage($ -> {}, gamePackage);
         return result == ActionResultType.SUCCESS;
     }
 }
