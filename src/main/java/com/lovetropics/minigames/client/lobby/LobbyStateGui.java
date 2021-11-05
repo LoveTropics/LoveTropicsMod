@@ -74,14 +74,14 @@ public class LobbyStateGui {
 		int left = PADDING;
 		int y = PADDING;
 
+		// Nothing to show if they are currently playing an active minigame
 		for (ClientLobbyState lobby : lobbies) {
-			// Nothing to show if they are currently playing an active minigame
-			ClientCurrentGame currentGame = lobby.getCurrentGame();
-			LobbyStatus status = lobby.getStatus();
+			if (lobby.getStatus() == LobbyStatus.PLAYING && lobby.getJoinedRole() != null) {
+				return;
+			}
+		}
 
-			PlayerRole joinedRole = lobby.getJoinedRole();
-			if (status == LobbyStatus.PLAYING && joinedRole != null) return;
-
+		for (ClientLobbyState lobby : lobbies) {
 			if (event.getType() == ElementType.HOTBAR) {
 				client.getTextureManager().bindTexture(new ResourceLocation("minecraft:missingno"));
 			}

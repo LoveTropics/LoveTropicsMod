@@ -28,6 +28,7 @@ public final class SurviveTheTide {
 			.register();
 
 	public static final ItemEntry<AcidRepellentUmbrellaItem> ACID_REPELLENT_UMBRELLA = REGISTRATE.item("acid_repellent_umbrella", AcidRepellentUmbrellaItem::new)
+			.model((ctx, prov) -> {})
 			.register();
 
 	public static final ItemEntry<PaddleItem> PADDLE = REGISTRATE.item("paddle", PaddleItem::new)
