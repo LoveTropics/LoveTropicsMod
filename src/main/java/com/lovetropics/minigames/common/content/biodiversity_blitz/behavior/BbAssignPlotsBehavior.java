@@ -57,7 +57,7 @@ public final class BbAssignPlotsBehavior implements IGameBehavior {
 
 		Collections.shuffle(this.freePlots);
 
-		events.listen(GamePlayerEvents.SPAWN, (player, role) -> {
+		events.listen(GamePlayerEvents.SET_ROLE, (player, role, lastRole) -> {
 			if (role == PlayerRole.PARTICIPANT) {
 				trySpawnParticipant(game, player);
 			}
