@@ -49,6 +49,7 @@ public final class AssignPlayerRolesBehavior implements IGameBehavior {
 	public void register(IGamePhase game, EventRegistrar events) {
 		Map<ServerPlayerEntity, PlayerRole> roles = new Reference2ObjectOpenHashMap<>();
 
+		// TODO: somehow if a player is in a lobby and then leaves they can get in such a state as to join late and be joined as a participant when clicking 'play'
 		events.listen(GamePhaseEvents.CREATE, () -> {
 			this.allocateRoles(game, roles::put);
 		});
@@ -59,6 +60,8 @@ public final class AssignPlayerRolesBehavior implements IGameBehavior {
 				game.setPlayerRole(player, role);
 			}
 		});
+
+		events.listen(GamePhaseEvents.START, roles::clear);
 	}
 
 	private void allocateRoles(IGamePhase game, BiConsumer<ServerPlayerEntity, PlayerRole> apply) {
