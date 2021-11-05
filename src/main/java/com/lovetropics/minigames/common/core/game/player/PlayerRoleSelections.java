@@ -75,4 +75,9 @@ public final class PlayerRoleSelections {
 	public boolean hasPending() {
 		return pendingResponses.isEmpty();
 	}
+
+	@Override
+	public String toString() {
+		return this.roles.toString();
+	}
 }
