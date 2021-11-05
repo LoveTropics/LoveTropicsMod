@@ -84,7 +84,7 @@ public class SurviveTheTideRulesetBehavior implements IGameBehavior {
 	}
 
 	private ActionResultType onPlayerHurt(ServerPlayerEntity player, DamageSource source, float amount) {
-		if (source.getTrueSource() instanceof ServerPlayerEntity && phases.is(this::isSafePhase)) {
+		if ((source.getTrueSource() instanceof ServerPlayerEntity || source.isProjectile()) && phases.is(this::isSafePhase)) {
 			return ActionResultType.FAIL;
 		}
 		return ActionResultType.PASS;
