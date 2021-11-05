@@ -10,6 +10,7 @@ import com.lovetropics.minigames.client.lobby.state.message.JoinedLobbyMessage;
 import com.lovetropics.minigames.client.lobby.state.message.LeftLobbyMessage;
 import com.lovetropics.minigames.client.lobby.state.message.LobbyPlayersMessage;
 import com.lovetropics.minigames.client.lobby.state.message.LobbyUpdateMessage;
+import com.lovetropics.minigames.client.particle_line.DrawParticleLineMessage;
 import com.lovetropics.minigames.client.toast.ShowNotificationToastMessage;
 import com.lovetropics.minigames.common.core.network.workspace.AddWorkspaceRegionMessage;
 import com.lovetropics.minigames.common.core.network.workspace.SetWorkspaceMessage;
@@ -102,6 +103,11 @@ public final class LoveTropicsNetwork {
 		CHANNEL.messageBuilder(SelectRoleMessage.class, 14, NetworkDirection.PLAY_TO_SERVER)
 				.encoder(SelectRoleMessage::encode).decoder(SelectRoleMessage::decode)
 				.consumer(SelectRoleMessage::handle)
+				.add();
+
+		CHANNEL.messageBuilder(DrawParticleLineMessage.class, 15, NetworkDirection.PLAY_TO_CLIENT)
+				.encoder(DrawParticleLineMessage::encode).decoder(DrawParticleLineMessage::decode)
+				.consumer(DrawParticleLineMessage::handle)
 				.add();
 	}
 }

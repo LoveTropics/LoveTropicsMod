@@ -1,5 +1,7 @@
 package com.lovetropics.minigames.common.core.command;
 
+import com.lovetropics.minigames.client.particle_line.DrawParticleLineMessage;
+import com.lovetropics.minigames.common.core.network.LoveTropicsNetwork;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.FloatArgumentType;
@@ -10,9 +12,8 @@ import net.minecraft.command.arguments.ParticleArgument;
 import net.minecraft.command.arguments.Vec3Argument;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.particles.IParticleData;
-import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.world.server.ServerWorld;
+import net.minecraftforge.fml.network.PacketDistributor;
 
 import static net.minecraft.command.Commands.argument;
 import static net.minecraft.command.Commands.literal;
@@ -34,7 +35,6 @@ public final class ParticleLineCommand {
 
 	private static int spawnLine(CommandContext<CommandSource> context) throws CommandSyntaxException {
 		CommandSource source = context.getSource();
-		ServerWorld world = source.getWorld();
 		ServerPlayerEntity player = source.asPlayer();
 
 		IParticleData particle = ParticleArgument.getParticle(context, "particle");
@@ -42,20 +42,7 @@ public final class ParticleLineCommand {
 		Vector3d to = Vec3Argument.getVec3(context, "to");
 		float spacing = FloatArgumentType.getFloat(context, "spacing");
 
-		Vector3d delta = to.subtract(from);
-		float length = (float) delta.length();
-
-		Vector3d direction = delta.scale(1.0 / length);
-
-		int count = MathHelper.ceil(length / spacing) + 1;
-
-		for (int i = 0; i < count; i++) {
-			float progress = (float) i / count;
-			float project = progress * length;
-			Vector3d point = from.add(direction.scale(project));
-
-			world.spawnParticle(player, particle, true, point.x, point.y, point.z, 1, 0.0, 0.0, 0.0, 0.0);
-		}
+		LoveTropicsNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new DrawParticleLineMessage(particle, from, to, spacing));
 
 		return Command.SINGLE_SUCCESS;
 	}
