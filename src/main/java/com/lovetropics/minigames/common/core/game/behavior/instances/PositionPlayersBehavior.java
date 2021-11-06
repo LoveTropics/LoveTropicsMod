@@ -16,6 +16,9 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.server.ServerWorld;
 
 import javax.annotation.Nullable;
+
+import org.apache.logging.log4j.LogManager;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -58,6 +61,7 @@ public class PositionPlayersBehavior implements IGameBehavior {
 		for (String key : participantSpawnKeys) {
 			participantSpawnRegions.addAll(regions.get(key));
 		}
+		LogManager.getLogger().info("FOUND " + participantSpawnRegions.size() + " PARTICIPANT SPAWN REGIONS");
 
 		for (String key : spectatorSpawnKeys) {
 			spectatorSpawnRegions.addAll(regions.get(key));
@@ -80,6 +84,7 @@ public class PositionPlayersBehavior implements IGameBehavior {
 	@Nullable
 	private BlockBox getSpawnRegionFor(PlayerRole role) {
 		if (role == PlayerRole.PARTICIPANT && !participantSpawnRegions.isEmpty()) {
+			LogManager.getLogger().info("USING REGION INDEX " + participantSpawnIndex);
 			return participantSpawnRegions.get(participantSpawnIndex++ % participantSpawnRegions.size());
 		} else if (role == PlayerRole.SPECTATOR && !spectatorSpawnRegions.isEmpty()) {
 			return spectatorSpawnRegions.get(spectatorSpawnIndex++ % spectatorSpawnRegions.size());
@@ -102,6 +107,7 @@ public class PositionPlayersBehavior implements IGameBehavior {
 				return pos;
 			}
 		}
+		LogManager.getLogger().info("USING FALLBACK SPAWN POS");
 		return box.getCenterBlock();
 	}
 }
