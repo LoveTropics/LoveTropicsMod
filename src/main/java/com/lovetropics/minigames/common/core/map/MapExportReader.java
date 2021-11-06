@@ -39,7 +39,9 @@ public final class MapExportReader implements Closeable {
 	}
 
 	public MapMetadata loadInto(Path dimensionRoot) throws IOException {
-		FileUtils.deleteDirectory(dimensionRoot.toFile());
+		if (Files.exists(dimensionRoot)) {
+			FileUtils.deleteDirectory(dimensionRoot.toFile());
+		}
 
 		Path regionRoot = dimensionRoot.resolve("region");
 		Files.createDirectories(regionRoot);
