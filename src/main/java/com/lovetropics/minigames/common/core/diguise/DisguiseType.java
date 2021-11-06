@@ -55,7 +55,7 @@ public final class DisguiseType {
 
 	@Nullable
 	public Entity createEntityFor(PlayerEntity player) {
-		if (shouldNeverCreate(this.type)) {
+		if (shouldNeverCreate(player, this.type)) {
 			return null;
 		}
 
@@ -74,7 +74,7 @@ public final class DisguiseType {
 		return entity;
 	}
 
-	private boolean shouldNeverCreate(EntityType<?> type) {
+	private boolean shouldNeverCreate(PlayerEntity player, EntityType<?> type) {
 		ResourceLocation location = ForgeRegistries.ENTITIES.getKey(type);
 
 		if (location == null) {
@@ -84,6 +84,17 @@ public final class DisguiseType {
 		// Instantly crashes- prevent disguising as poison blots
 		if (location.getNamespace().equals("tropicraft") && location.getPath().equals("poison_blot")) {
 			return true;
+		}
+
+		// Crashes when riding- prevent
+		Entity ridingEntity = player.getRidingEntity();
+		if (ridingEntity != null) {
+			EntityType<?> ridingType = ridingEntity.getType();
+			ResourceLocation ridingLocation = ForgeRegistries.ENTITIES.getKey(ridingType);
+
+			if (ridingLocation != null && ridingLocation.getNamespace().equals("tropicraft") && ridingLocation.getPath().equals("turtle")) {
+				return true;
+			}
 		}
 
 		return false;
