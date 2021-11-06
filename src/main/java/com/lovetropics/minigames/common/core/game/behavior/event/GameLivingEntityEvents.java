@@ -12,6 +12,7 @@ import net.minecraft.util.math.BlockPos;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
+import java.util.function.Consumer;
 
 public final class GameLivingEntityEvents {
 	public static final GameEventType<Tick> TICK = GameEventType.create(Tick.class, listeners -> entity -> {
@@ -59,6 +60,12 @@ public final class GameLivingEntityEvents {
 		}
 	});
 
+	public static final GameEventType<EnderTeleport> ENDER_TELEPORT = GameEventType.create(EnderTeleport.class, listeners -> (entity, x, y, z, damage, callback) -> {
+		for (EnderTeleport listener : listeners) {
+			listener.onEnderTeleport(entity, x, y, z, damage, callback);
+		}
+	});
+
 	private GameLivingEntityEvents() {
 	}
 
@@ -80,5 +87,9 @@ public final class GameLivingEntityEvents {
 
 	public interface Spawn {
 		void onSpawn(LivingEntity entity, SpawnReason reason, @Nullable ServerPlayerEntity player);
+	}
+
+	public interface EnderTeleport {
+		void onEnderTeleport(LivingEntity entity, double targetX, double targetY, double targetZ, float attackDamage, Consumer<Float> setDamage);
 	}
 }

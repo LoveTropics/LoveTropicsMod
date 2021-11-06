@@ -25,10 +25,7 @@ import net.minecraft.world.chunk.IChunk;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.event.entity.EntityMountEvent;
 import net.minecraftforge.event.entity.item.ItemTossEvent;
-import net.minecraftforge.event.entity.living.LivingDeathEvent;
-import net.minecraftforge.event.entity.living.LivingDropsEvent;
-import net.minecraftforge.event.entity.living.LivingEvent;
-import net.minecraftforge.event.entity.living.LivingHurtEvent;
+import net.minecraftforge.event.entity.living.*;
 import net.minecraftforge.event.entity.player.AttackEntityEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
@@ -225,6 +222,18 @@ public final class GameEventDispatcher {
 				}
 			} catch (Exception e) {
 				LoveTropics.LOGGER.warn("Failed to dispatch farmland trample event", e);
+			}
+		}
+	}
+
+	@SubscribeEvent
+	public void onEnderTeleport(EnderTeleportEvent event) {
+		IGamePhase game = gameLookup.getGamePhaseFor(event.getEntity());
+		if (game != null) {
+			try {
+				game.invoker(GameLivingEntityEvents.ENDER_TELEPORT).onEnderTeleport(event.getEntityLiving(), event.getTargetX(), event.getTargetY(), event.getTargetZ(), event.getAttackDamage(), event::setAttackDamage);
+			} catch (Exception e) {
+				LoveTropics.LOGGER.warn("Failed to dispatch ender teleport event", e);
 			}
 		}
 	}
