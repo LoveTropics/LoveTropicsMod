@@ -141,11 +141,11 @@ public final class BlockPartyBehavior implements IGameBehavior {
 
 				ITextComponent message;
 				if (winningPlayer != null) {
-					message = new StringTextComponent("⭐ ")
+					message = new StringTextComponent("\u2B50 ")
 							.appendSibling(winningPlayer.getDisplayName()).appendString(" won the game!")
 							.mergeStyle(TextFormatting.GREEN);
 				} else {
-					message = new StringTextComponent("⭐ Nobody won the game!")
+					message = new StringTextComponent("\u2B50 Nobody won the game!")
 							.mergeStyle(TextFormatting.RED);
 				}
 
@@ -174,6 +174,8 @@ public final class BlockPartyBehavior implements IGameBehavior {
 		Block target = floor.target;
 
 		ItemStack targetStack = new ItemStack(target);
+		targetStack.setCount(64);
+
 		ITextComponent name = new StringTextComponent("Stand on ")
 				.appendSibling(targetStack.getTextComponent())
 				.modifyStyle(style -> style.setBold(true).setItalic(false));
@@ -182,7 +184,7 @@ public final class BlockPartyBehavior implements IGameBehavior {
 		for (ServerPlayerEntity player : game.getParticipants()) {
 			player.inventory.clear();
 			for (int i = 0; i < 9; i++) {
-				player.inventory.addItemStackToInventory(targetStack);
+				player.inventory.addItemStackToInventory(targetStack.copy());
 			}
 		}
 
@@ -215,9 +217,19 @@ public final class BlockPartyBehavior implements IGameBehavior {
 		@Override
 		public State tick(IGamePhase game) {
 			long time = game.ticks();
+
+			if (time % 10 == 0) {
+				for (ServerPlayerEntity player : game.getAllPlayers()) {
+					long remainingTicks = breakAt - time;
+					ITextComponent message = new StringTextComponent("Break in " + (remainingTicks / 20) + " seconds").mergeStyle(TextFormatting.GOLD);
+					player.sendStatusMessage(message, true);
+				}
+			}
+
 			if (time > this.breakAt) {
 				return startInterval(round, floor);
 			}
+
 			return this;
 		}
 	}
@@ -287,8 +299,10 @@ public final class BlockPartyBehavior implements IGameBehavior {
 
 		void set(ServerWorld world, BlockBox box, int quadSize) {
 			for (BlockPos pos : box) {
-				int x = MathHelper.clamp((pos.getX() - box.min.getX()) / quadSize, 0, quadCountX);
-				int z = MathHelper.clamp((pos.getZ() - box.min.getZ()) / quadSize, 0, quadCountZ);
+				int localX = pos.getX() - box.min.getX();
+				int localZ = pos.getZ() - box.min.getZ();
+				int x = MathHelper.clamp(localX / quadSize, 0, quadCountX - 1);
+				int z = MathHelper.clamp(localZ / quadSize, 0, quadCountZ - 1);
 
 				Block quad = quads[x + z * quadCountX];
 				world.setBlockState(pos, quad.getDefaultState());
