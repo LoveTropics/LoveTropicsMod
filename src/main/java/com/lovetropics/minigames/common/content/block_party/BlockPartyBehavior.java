@@ -188,8 +188,9 @@ public final class BlockPartyBehavior implements IGameBehavior {
 			}
 		}
 
-		// TODO: time
-		return new CountingDown(round + 1, game.ticks() + maxTime, floor);
+		float lerp = (float) round / timeDecayRounds;
+		long duration = MathHelper.floor(MathHelper.lerp(lerp, maxTime, minTime));
+		return new CountingDown(round + 1, game.ticks() + duration, floor);
 	}
 
 	Interval startInterval(int round, Floor floor) {
