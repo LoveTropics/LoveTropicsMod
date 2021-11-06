@@ -6,6 +6,7 @@ import com.lovetropics.minigames.common.content.MinigameTexts;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.BiodiversityBlitzTexts;
 import com.lovetropics.minigames.common.content.block.LoveTropicsBlocks;
 import com.lovetropics.minigames.common.content.block.TrashType;
+import com.lovetropics.minigames.common.content.block_party.BlockParty;
 import com.lovetropics.minigames.common.content.build_competition.BuildCompetition;
 import com.lovetropics.minigames.common.content.hide_and_seek.HideAndSeek;
 import com.lovetropics.minigames.common.content.survive_the_tide.SurviveTheTide;
@@ -121,6 +122,7 @@ public class LoveTropics {
         HideAndSeek.init();
         SurviveTheTide.init();
         TrashDive.init();
+        BlockParty.init();
 
         LoveTropicsEntityOptions.register();
 
