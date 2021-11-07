@@ -95,8 +95,8 @@ public class ShootProjectilesAroundPlayerPackageBehavior implements IGameBehavio
 
 					entry.setValue(entry.getIntValue() - 1);
 					if (entry.getIntValue() <= 0) {
-						it.remove();
 						playerToDelayToSpawn.removeInt(entry.getKey());
+						it.remove();
 					}
 					FireballEntity fireball = createFireball(world, posSpawn, posTarget);
 					world.addEntity(fireball);
