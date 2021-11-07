@@ -6,12 +6,12 @@ import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameLogicEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
+import com.lovetropics.minigames.common.core.game.player.PlayerRole;
 import com.lovetropics.minigames.common.core.game.state.statistics.StatisticKey;
 import com.lovetropics.minigames.common.core.game.state.team.GameTeam;
 import com.lovetropics.minigames.common.core.game.state.team.GameTeamKey;
 import com.lovetropics.minigames.common.core.game.state.team.TeamState;
 import com.mojang.serialization.Codec;
-import net.minecraft.util.ActionResultType;
 import net.minecraft.util.text.ITextComponent;
 
 import javax.annotation.Nullable;
@@ -25,9 +25,9 @@ public class TeamWinTrigger implements IGameBehavior {
 	public void register(IGamePhase game, EventRegistrar events) throws GameException {
 		TeamState teamState = game.getState().getOrThrow(TeamState.KEY);
 
-		events.listen(GamePlayerEvents.DEATH, (player, damageSource) -> {
-			if (winTriggered) {
-				return ActionResultType.PASS;
+		events.listen(GamePlayerEvents.SET_ROLE, (player, role, lastRole) -> {
+			if (lastRole != PlayerRole.PARTICIPANT || winTriggered) {
+				return;
 			}
 
 			GameTeamKey playerTeam = teamState.getTeamForPlayer(player);
@@ -44,8 +44,6 @@ public class TeamWinTrigger implements IGameBehavior {
 					game.getStatistics().global().set(StatisticKey.WINNING_TEAM, finalTeam.key());
 				}
 			}
-
-			return ActionResultType.PASS;
 		});
 	}
 
