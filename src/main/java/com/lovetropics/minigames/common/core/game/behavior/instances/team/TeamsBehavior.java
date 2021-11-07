@@ -7,6 +7,7 @@ import com.lovetropics.minigames.common.core.game.behavior.config.ConfigList;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameTeamEvents;
 import com.lovetropics.minigames.common.core.game.player.PlayerRole;
 import com.lovetropics.minigames.common.core.game.state.statistics.StatisticKey;
 import com.lovetropics.minigames.common.core.game.state.team.GameTeam;
@@ -150,6 +151,8 @@ public final class TeamsBehavior implements IGameBehavior {
 		}
 
 		teams.addPlayerTo(player, teamKey);
+
+		game.invoker(GameTeamEvents.SET_GAME_TEAM).onSetGameTeam(player, teams, teamKey);
 
 		game.getStatistics().forPlayer(player).set(StatisticKey.TEAM, teamKey);
 

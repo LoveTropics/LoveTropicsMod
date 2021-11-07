@@ -5,6 +5,7 @@ import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameTeamEvents;
 import com.lovetropics.minigames.common.core.game.player.PlayerRole;
 import com.lovetropics.minigames.common.core.game.state.team.GameTeamKey;
 import com.lovetropics.minigames.common.core.game.state.team.TeamState;
@@ -48,6 +49,11 @@ public final class SetMaxHealthBehavior implements IGameBehavior {
 			}
 		});
 
+		events.listen(GameTeamEvents.SET_GAME_TEAM, (player, teams, team) -> {
+			removeFromPlayer(player);
+			applyToPlayer(game, player);
+		});
+
 		events.listen(GamePlayerEvents.LEAVE, this::removeFromPlayer);
 	}
 
@@ -72,7 +78,7 @@ public final class SetMaxHealthBehavior implements IGameBehavior {
 	private double getMaxHealthForPlayer(IGamePhase game, ServerPlayerEntity player) {
 		GameTeamKey team = getTeamOrNull(game, player);
 		if (team != null) {
-			return maxHealthByTeam.getOrDefault(team, 20.0);
+			return maxHealthByTeam.getOrDefault(team, maxHealth);
 		}
 		return maxHealth;
 	}
