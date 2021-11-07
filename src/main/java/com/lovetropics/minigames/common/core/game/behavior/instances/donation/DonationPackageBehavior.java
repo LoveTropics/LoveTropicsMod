@@ -131,7 +131,7 @@ public final class DonationPackageBehavior implements IGameBehavior {
 		String sendingPlayerName = gamePackage.getSendingPlayerName();
 
 		boolean applied = applyPackageGlobally(sendingPlayerName);
-		for (ServerPlayerEntity player : game.getParticipants()) {
+		for (ServerPlayerEntity player : Lists.newArrayList(game.getParticipants())) {
 			applied |= applyPackageToPlayer(player, sendingPlayerName);
 		}
 
