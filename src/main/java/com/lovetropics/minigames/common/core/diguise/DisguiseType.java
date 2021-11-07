@@ -9,10 +9,12 @@ import net.minecraft.entity.EntityType;
 import net.minecraft.entity.item.PaintingEntity;
 import net.minecraft.entity.item.PaintingType;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.registry.Registry;
+import net.minecraft.util.text.ITextComponent;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import javax.annotation.Nullable;
@@ -55,26 +57,26 @@ public final class DisguiseType {
 
 	@Nullable
 	public Entity createEntityFor(PlayerEntity player) {
-		if (shouldNeverCreate(this.type)) {
+		if (shouldNeverCreate(player, this.type)) {
 			return null;
 		}
 
 		Entity entity = this.type.create(player.world);
 		if (entity == null) return null;
 
-		entity.setCustomName(player.getDisplayName());
-		entity.setCustomNameVisible(true);
-
-		this.fixInvalidEntities(entity);
-
 		if (this.nbt != null) {
 			entity.read(this.nbt);
 		}
 
+		this.fixInvalidEntities(entity);
+
+		entity.setCustomName(player.getDisplayName());
+		entity.setCustomNameVisible(true);
+
 		return entity;
 	}
 
-	private boolean shouldNeverCreate(EntityType<?> type) {
+	private boolean shouldNeverCreate(PlayerEntity player, EntityType<?> type) {
 		ResourceLocation location = ForgeRegistries.ENTITIES.getKey(type);
 
 		if (location == null) {
@@ -84,6 +86,17 @@ public final class DisguiseType {
 		// Instantly crashes- prevent disguising as poison blots
 		if (location.getNamespace().equals("tropicraft") && location.getPath().equals("poison_blot")) {
 			return true;
+		}
+
+		// Crashes when riding- prevent
+		Entity ridingEntity = player.getRidingEntity();
+		if (ridingEntity != null) {
+			EntityType<?> ridingType = ridingEntity.getType();
+			ResourceLocation ridingLocation = ForgeRegistries.ENTITIES.getKey(ridingType);
+
+			if (ridingLocation != null && ridingLocation.getNamespace().equals("tropicraft") && ridingLocation.getPath().equals("turtle")) {
+				return true;
+			}
 		}
 
 		return false;
@@ -106,5 +119,12 @@ public final class DisguiseType {
 		CompoundNBT nbt = buffer.readCompoundTag();
 		boolean applyAttributes = buffer.readBoolean();
 		return DisguiseType.create(type, nbt, applyAttributes);
+	}
+
+	public void fixNbtFor(ServerPlayerEntity player) {
+		if (this.nbt != null) {
+			this.nbt.putString("CustomName", ITextComponent.Serializer.toJson(player.getDisplayName()));
+			this.nbt.putBoolean("CustomNameVisible", true);
+		}
 	}
 }

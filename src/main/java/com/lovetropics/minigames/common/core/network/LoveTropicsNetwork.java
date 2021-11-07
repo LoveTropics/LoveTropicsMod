@@ -4,10 +4,13 @@ import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.client.lobby.manage.ClientManageLobbyMessage;
 import com.lovetropics.minigames.client.lobby.manage.ServerManageLobbyMessage;
+import com.lovetropics.minigames.client.lobby.select_role.SelectRoleMessage;
+import com.lovetropics.minigames.client.lobby.select_role.SelectRolePromptMessage;
 import com.lovetropics.minigames.client.lobby.state.message.JoinedLobbyMessage;
 import com.lovetropics.minigames.client.lobby.state.message.LeftLobbyMessage;
 import com.lovetropics.minigames.client.lobby.state.message.LobbyPlayersMessage;
 import com.lovetropics.minigames.client.lobby.state.message.LobbyUpdateMessage;
+import com.lovetropics.minigames.client.particle_line.DrawParticleLineMessage;
 import com.lovetropics.minigames.client.toast.ShowNotificationToastMessage;
 import com.lovetropics.minigames.common.core.network.workspace.AddWorkspaceRegionMessage;
 import com.lovetropics.minigames.common.core.network.workspace.SetWorkspaceMessage;
@@ -90,6 +93,21 @@ public final class LoveTropicsNetwork {
 		CHANNEL.messageBuilder(SetGameClientStateMessage.class, 12, NetworkDirection.PLAY_TO_CLIENT)
 				.encoder(SetGameClientStateMessage::encode).decoder(SetGameClientStateMessage::decode)
 				.consumer(SetGameClientStateMessage::handle)
+				.add();
+
+		CHANNEL.messageBuilder(SelectRolePromptMessage.class, 13, NetworkDirection.PLAY_TO_CLIENT)
+				.encoder(SelectRolePromptMessage::encode).decoder(SelectRolePromptMessage::decode)
+				.consumer(SelectRolePromptMessage::handle)
+				.add();
+
+		CHANNEL.messageBuilder(SelectRoleMessage.class, 14, NetworkDirection.PLAY_TO_SERVER)
+				.encoder(SelectRoleMessage::encode).decoder(SelectRoleMessage::decode)
+				.consumer(SelectRoleMessage::handle)
+				.add();
+
+		CHANNEL.messageBuilder(DrawParticleLineMessage.class, 15, NetworkDirection.PLAY_TO_CLIENT)
+				.encoder(DrawParticleLineMessage::encode).decoder(DrawParticleLineMessage::decode)
+				.consumer(DrawParticleLineMessage::handle)
 				.add();
 	}
 }

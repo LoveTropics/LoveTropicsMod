@@ -83,10 +83,6 @@ public final class TrashCollectionBehavior implements IGameBehavior {
 
 		PlayerSet players = game.getParticipants();
 		players.addPotionEffect(new EffectInstance(Effects.NIGHT_VISION, Integer.MAX_VALUE, 1, false, false));
-
-		for (ServerPlayerEntity player : players) {
-			player.setItemStackToSlot(EquipmentSlotType.HEAD, new ItemStack(Items.TURTLE_HELMET));
-		}
 	}
 
 	private void onAddPlayer(IGamePhase game, ServerPlayerEntity player) {

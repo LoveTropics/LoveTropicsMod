@@ -64,9 +64,9 @@ public class ManageGameLobbyCommand {
 		}
 
 		IGameLobby lobby = result.getOk();
-		lobby.getPlayers().join(player, null);
-
-		lobby.getManagement().startManaging(player);
+		lobby.getPlayers().join(player).thenAcceptAsync($ -> {
+			lobby.getManagement().startManaging(player);
+		}, lobby.getServer());
 
 		return Command.SINGLE_SUCCESS;
 	}

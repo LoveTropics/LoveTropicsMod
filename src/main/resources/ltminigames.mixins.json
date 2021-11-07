@@ -3,8 +3,19 @@
   "package": "com.lovetropics.minigames.mixin",
   "compatibilityLevel": "JAVA_8",
   "refmap": "ltminigames.refmap.json",
-  "mixins": ["EntityTypeMixin", "MinecraftServerMixin", "SimpleRegistryMixin"],
-  "client": ["client.BiomeColorsMixin", "client.HotbarOverride", "client.ScrollPanelMixin"],
+  "mixins": [
+    "DataFixesManagerMixin",
+    "EntityTypeMixin",
+    "MinecraftServerMixin",
+    "SimpleRegistryMixin"
+  ],
+  "client": [
+    "client.BiomeColorsMixin",
+    "client.BossOverlayGuiMixin",
+    "client.HotbarOverride",
+    "client.PlayerTabOverlayGuiMixin",
+    "client.ScrollPanelMixin"
+  ],
   "injectors": {
     "defaultRequire": 1
   },

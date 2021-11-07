@@ -53,7 +53,7 @@ public final class GameInstanceTelemetry implements IGameState {
 		JsonObject payload = new JsonObject();
 		payload.add("initiator", initiator.serializeProfile());
 		payload.add("participants", serializeParticipantsArray());
-		post(ConfigLT.TELEMETRY.minigameStartEndpoint.get(), payload);
+		postImportant(ConfigLT.TELEMETRY.minigameStartEndpoint.get(), payload);
 
 		events.listen(GamePlayerEvents.JOIN, (p) -> sendParticipantsList());
 		events.listen(GamePlayerEvents.LEAVE, (p) -> sendParticipantsList());
@@ -67,13 +67,13 @@ public final class GameInstanceTelemetry implements IGameState {
 		payload.add("statistics", statistics.serialize());
 		payload.add("participants", serializeParticipantsArray());
 
-		post(ConfigLT.TELEMETRY.minigameEndEndpoint.get(), payload);
+		postImportant(ConfigLT.TELEMETRY.minigameEndEndpoint.get(), payload);
 
 		close();
 	}
 
 	public void cancel() {
-		post(ConfigLT.TELEMETRY.minigameCancelEndpoint.get(), new JsonObject());
+		postImportant(ConfigLT.TELEMETRY.minigameCancelEndpoint.get(), new JsonObject());
 		close();
 	}
 
@@ -82,7 +82,7 @@ public final class GameInstanceTelemetry implements IGameState {
 		object.addProperty("request", request.getId());
 		object.addProperty("uuid", action.uuid.toString());
 
-		telemetry.post(ConfigLT.TELEMETRY.actionResolvedEndpoint.get(), object);
+		telemetry.postAndRetry(ConfigLT.TELEMETRY.actionResolvedEndpoint.get(), object);
 	}
 
 	public void createPoll(String title, String duration, String... options) {
@@ -121,6 +121,14 @@ public final class GameInstanceTelemetry implements IGameState {
 	}
 
 	private void post(String endpoint, JsonObject payload) {
+		post(endpoint, payload, false);
+	}
+
+	private void postImportant(String endpoint, JsonObject payload) {
+		post(endpoint, payload, true);
+	}
+
+	private void post(String endpoint, JsonObject payload, boolean important) {
 		if (closed) {
 			return;
 		}
@@ -134,7 +142,11 @@ public final class GameInstanceTelemetry implements IGameState {
 		game.addProperty("name", definition.getName().getString());
 		payload.add("minigame", game);
 
-		telemetry.post(endpoint, payload);
+		if (important) {
+			telemetry.postAndRetry(endpoint, payload);
+		} else {
+			telemetry.post(endpoint, payload);
+		}
 	}
 
 	private void close() {

@@ -6,7 +6,6 @@ import com.lovetropics.minigames.client.lobby.state.ClientGameDefinition;
 import com.lovetropics.minigames.client.lobby.state.ClientLobbyManager;
 import com.lovetropics.minigames.client.lobby.state.ClientLobbyState;
 import com.lovetropics.minigames.common.core.game.LobbyStatus;
-import com.lovetropics.minigames.common.core.game.player.PlayerRole;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.AbstractGui;
@@ -40,9 +39,6 @@ public class LobbyStateGui {
 			if (LobbyKeybinds.JOIN.isPressed()) {
 				Minecraft.getInstance().player.sendChatMessage("/game join");
 			}
-			if (LobbyKeybinds.SPECTATE.isPressed()) {
-				Minecraft.getInstance().player.sendChatMessage("/game spectate");
-			}
 			if (LobbyKeybinds.LEAVE.isPressed()) {
 				Minecraft.getInstance().player.sendChatMessage("/game leave");
 			}
@@ -61,40 +57,41 @@ public class LobbyStateGui {
 			return;
 		}
 
-		Collection<ClientLobbyState> lobbies = ClientLobbyManager.getLobbies();
-		if (lobbies.isEmpty()) {
-			return;
-		}
-
-		MatrixStack transform = event.getMatrixStack();
 		Minecraft client = Minecraft.getInstance();
 
-		final int lineHeight = client.fontRenderer.FONT_HEIGHT + PADDING;
+		if (event.getType() == ElementType.HOTBAR) {
+			client.getTextureManager().bindTexture(new ResourceLocation("minecraft:missingno"));
+		}
 
-		int left = PADDING;
-		int y = PADDING;
+		if (event.getType() == ElementType.TEXT) {
+			ClientLobbyState joinedLobby = ClientLobbyManager.getJoined();
+			Collection<ClientLobbyState> lobbies = ClientLobbyManager.getLobbies();
+			if (lobbies.isEmpty()) return;
 
-		for (ClientLobbyState lobby : lobbies) {
-			// Nothing to show if they are currently playing an active minigame
-			ClientCurrentGame currentGame = lobby.getCurrentGame();
-			LobbyStatus status = lobby.getStatus();
+			renderLobbies(event, joinedLobby, lobbies);
+		}
+	}
 
-			PlayerRole joinedRole = lobby.getJoinedRole();
-			if (status == LobbyStatus.PLAYING && joinedRole != null) return;
+	private static void renderLobbies(RenderGameOverlayEvent event, ClientLobbyState joinedLobby, Collection<ClientLobbyState> lobbies) {
+		MatrixStack transform = event.getMatrixStack();
 
-			if (event.getType() == ElementType.HOTBAR) {
-				client.getTextureManager().bindTexture(new ResourceLocation("minecraft:missingno"));
+		if (joinedLobby != null) {
+			if (joinedLobby.getStatus() != LobbyStatus.PLAYING) {
+				render(transform, PADDING, PADDING, joinedLobby);
 			}
-			if (event.getType() == ElementType.TEXT) {
-				y = render(transform, PADDING, lineHeight, left, y, lobby);
+		} else {
+			int y = PADDING;
+			for (ClientLobbyState lobby : lobbies) {
+				y = render(transform, PADDING, y, lobby);
 			}
 		}
 	}
 
-	private static int render(MatrixStack transform, int padding, int lineHeight, int left, int top, ClientLobbyState lobby) {
+	private static int render(MatrixStack transform, int left, int top, ClientLobbyState lobby) {
 		Minecraft client = Minecraft.getInstance();
 
 		final int iconSize = 32;
+		final int lineHeight = client.fontRenderer.FONT_HEIGHT + PADDING;
 
 		int x = left;
 
@@ -102,22 +99,22 @@ public class LobbyStateGui {
 		if (icon != null) {
 			client.getTextureManager().bindTexture(icon);
 			AbstractGui.blit(transform, x, top, 0, 0, 32, 32, 32, 32);
-			x += iconSize + padding * 2;
+			x += iconSize + PADDING * 2;
 		}
 
 		if (shouldDisplayCompat(client, hasBossBar)) {
-			return renderCompactText(transform, padding, lineHeight, lobby, x, top);
+			return renderCompactText(transform, lineHeight, lobby, x, top);
 		} else {
-			return renderFullText(transform, padding, lineHeight, lobby, x, top);
+			return renderFullText(transform, lineHeight, lobby, x, top);
 		}
 	}
 
-	private static int renderFullText(MatrixStack transform, int padding, int lineHeight, ClientLobbyState lobby, int left, int top) {
+	private static int renderFullText(MatrixStack transform, int lineHeight, ClientLobbyState lobby, int left, int top) {
 		Minecraft client = Minecraft.getInstance();
 
 		LobbyStatus status = lobby.getStatus();
-		PlayerRole joinedRole = lobby.getJoinedRole();
 		ClientCurrentGame currentGame = lobby.getCurrentGame();
+		boolean joined = lobby == ClientLobbyManager.getJoined();
 
 		FontRenderer fnt = client.fontRenderer;
 
@@ -125,7 +122,7 @@ public class LobbyStateGui {
 		int y = top;
 
 		String line = TextFormatting.GRAY + (currentGame != null ? "Game: " : "Lobby: ") + getLobbyName(lobby);
-		if (joinedRole != null) {
+		if (joined) {
 			line += TextFormatting.GREEN + " [Joined]";
 		}
 
@@ -141,16 +138,17 @@ public class LobbyStateGui {
 		fnt.drawStringWithShadow(transform, line, x, y, -1);
 		y += lineHeight;
 
-		line = TextFormatting.GRAY + keyBindsText(joinedRole);
+		line = TextFormatting.GRAY + keyBindsText(joined);
 		fnt.drawStringWithShadow(transform, line, x, y, -1);
-		y += lineHeight + padding;
+		y += lineHeight + PADDING;
+
 		return y;
 	}
 
-	private static int renderCompactText(MatrixStack transform, int padding, int lineHeight, ClientLobbyState lobby, int left, int top) {
+	private static int renderCompactText(MatrixStack transform, int lineHeight, ClientLobbyState lobby, int left, int top) {
 		Minecraft client = Minecraft.getInstance();
 
-		PlayerRole joinedRole = lobby.getJoinedRole();
+		boolean joined = lobby == ClientLobbyManager.getJoined();
 		LobbyStatus status = lobby.getStatus();
 
 		FontRenderer fnt = client.fontRenderer;
@@ -170,10 +168,10 @@ public class LobbyStateGui {
 		fnt.drawStringWithShadow(transform, line, x, y, -1);
 		y += lineHeight;
 
-		line = keyBindsText(joinedRole);
+		line = keyBindsText(joined);
 
 		fnt.drawStringWithShadow(transform, line, x, y, -1);
-		y += lineHeight + padding;
+		y += lineHeight + PADDING;
 
 		return y;
 	}
@@ -201,10 +199,9 @@ public class LobbyStateGui {
 		return null;
 	}
 
-	private static String keyBindsText(PlayerRole joinedRole) {
-		if (joinedRole == null) {
-			return TextFormatting.AQUA + "Join [" + LobbyKeybinds.JOIN.func_238171_j_().getString().toUpperCase() + "]" + TextFormatting.GRAY + " or "
-					+ TextFormatting.AQUA + "Spectate [" + LobbyKeybinds.SPECTATE.func_238171_j_().getString().toUpperCase() + "]";
+	private static String keyBindsText(boolean joined) {
+		if (!joined) {
+			return TextFormatting.AQUA + "Join [" + LobbyKeybinds.JOIN.func_238171_j_().getString().toUpperCase() + "]" + TextFormatting.GRAY;
 		} else {
 			return TextFormatting.AQUA + "Leave [" + LobbyKeybinds.LEAVE.func_238171_j_().getString().toUpperCase() + "]";
 		}
@@ -223,9 +220,9 @@ public class LobbyStateGui {
 
 	private static String formatPlayerCount(ClientLobbyState lobby, ClientCurrentGame currentGame) {
 		if (currentGame != null) {
-			return lobby.getParticipantCount() + "/" + currentGame.definition().maximumParticipants;
+			return lobby.getPlayerCount() + "/" + currentGame.definition().maximumParticipants;
 		} else {
-			return String.valueOf(lobby.getParticipantCount());
+			return String.valueOf(lobby.getPlayerCount());
 		}
 	}
 }

@@ -49,7 +49,7 @@ public class SpawnEntityAtRegionsPackageBehavior implements IGameBehavior {
 			regionsToSpawnAt.addAll(regions.get(key));
 		}
 
-		events.listen(GamePackageEvents.APPLY_PACKAGE, (player, sendingPlayer) -> {
+		events.listen(GamePackageEvents.APPLY_PACKAGE_GLOBALLY, sendingPlayer -> {
 			if (regionsToSpawnAt.isEmpty()) {
 				return false;
 			}

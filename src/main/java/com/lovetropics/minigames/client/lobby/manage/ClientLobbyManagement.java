@@ -1,7 +1,10 @@
 package com.lovetropics.minigames.client.lobby.manage;
 
 import com.lovetropics.minigames.client.lobby.manage.screen.ManageLobbyScreen;
-import com.lovetropics.minigames.client.lobby.manage.state.*;
+import com.lovetropics.minigames.client.lobby.manage.state.ClientLobbyManageState;
+import com.lovetropics.minigames.client.lobby.manage.state.ClientLobbyPlayer;
+import com.lovetropics.minigames.client.lobby.manage.state.ClientLobbyQueue;
+import com.lovetropics.minigames.client.lobby.manage.state.ClientLobbyQueuedGame;
 import com.lovetropics.minigames.client.lobby.manage.state.update.ClientLobbyUpdate;
 import com.lovetropics.minigames.client.lobby.manage.state.update.ServerLobbyUpdate;
 import com.lovetropics.minigames.client.lobby.state.ClientCurrentGame;
@@ -24,14 +27,9 @@ public final class ClientLobbyManagement {
 		Session session = ClientLobbyManagement.session;
 		if (session == null || session.id != id) {
 			ClientLobbyManagement.session = session = new Session(id, new ClientLobbyManageState());
-			displayScreen(session);
 		}
 
 		updates.applyTo(session);
-	}
-
-	private static void displayScreen(Session session) {
-		Minecraft.getInstance().displayGuiScreen(session.screen);
 	}
 
 	public static final class Session {
@@ -117,14 +115,11 @@ public final class ClientLobbyManagement {
 			}
 		}
 
-		public void handleInstalledGames(List<ClientGameDefinition> installedGames) {
+		public void handleInitialize(List<ClientGameDefinition> installedGames, ClientLobbyQueue queue) {
 			lobby.setInstalledGames(installedGames);
-			screen.updateGameEntries();
-		}
-
-		public void handleQueue(ClientLobbyQueue queue) {
 			lobby.setQueue(queue);
-			screen.updateGameEntries();
+
+			Minecraft.getInstance().displayGuiScreen(screen);
 		}
 
 		public void handleName(String name) {

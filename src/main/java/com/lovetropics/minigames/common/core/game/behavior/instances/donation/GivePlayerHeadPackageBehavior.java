@@ -27,9 +27,9 @@ public final class GivePlayerHeadPackageBehavior implements IGameBehavior {
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
-		events.listen(GamePackageEvents.APPLY_PACKAGE, (player, sendingPlayer) -> {
+		events.listen(GamePackageEvents.APPLY_PACKAGE_TO_PLAYER, (player, sendingPlayer) -> {
 			if (sendingPlayer == null) {
-				sendingPlayer = "An Unknown Donor";
+				sendingPlayer = "LoveTropics";
 			}
 
 			ItemStack head = createHeadForSender(sendingPlayer);

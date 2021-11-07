@@ -1,24 +1,14 @@
 package com.lovetropics.minigames.common.core.game.lobby;
 
-import com.lovetropics.minigames.common.core.game.player.PlayerRole;
 import net.minecraft.entity.player.ServerPlayerEntity;
-
-import javax.annotation.Nullable;
 
 public interface LobbyStateListener {
 	static LobbyStateListener compose(LobbyStateListener... listeners) {
 		return new LobbyStateListener() {
 			@Override
-			public void onPlayerJoin(IGameLobby lobby, ServerPlayerEntity player, @Nullable PlayerRole registeredRole) {
+			public void onPlayerJoin(IGameLobby lobby, ServerPlayerEntity player) {
 				for (LobbyStateListener listener : listeners) {
-					listener.onPlayerJoin(lobby, player, registeredRole);
-				}
-			}
-
-			@Override
-			public void onPlayerChangeRole(IGameLobby lobby, ServerPlayerEntity player, @Nullable PlayerRole registeredRole) {
-				for (LobbyStateListener listener : listeners) {
-					listener.onPlayerChangeRole(lobby, player, registeredRole);
+					listener.onPlayerJoin(lobby, player);
 				}
 			}
 
@@ -80,10 +70,7 @@ public interface LobbyStateListener {
 		};
 	}
 
-	default void onPlayerJoin(IGameLobby lobby, ServerPlayerEntity player, @Nullable PlayerRole registeredRole) {
-	}
-
-	default void onPlayerChangeRole(IGameLobby lobby, ServerPlayerEntity player, @Nullable PlayerRole registeredRole) {
+	default void onPlayerJoin(IGameLobby lobby, ServerPlayerEntity player) {
 	}
 
 	default void onPlayerLeave(IGameLobby lobby, ServerPlayerEntity player) {

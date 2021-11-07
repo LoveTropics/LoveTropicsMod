@@ -43,6 +43,7 @@ public class GameBehaviorTypes {
 	public static final GameBehaviorEntry<ScheduledCommandsBehavior> SCHEDULED_COMMANDS;
 	public static final GameBehaviorEntry<SetGameTypesBehavior> SET_GAME_TYPES;
 	public static final GameBehaviorEntry<PhaseControllerBehavior> PHASE_CONTROLLER;
+	public static final GameBehaviorEntry<PermanentItemBehavior> PERMANENT_ITEM;
 	public static final GameBehaviorEntry<ScheduledMessagesBehavior> SCHEDULED_MESSAGES;
 	public static final GameBehaviorEntry<FireworksOnDeathBehavior> FIREWORKS_ON_DEATH;
 	public static final GameBehaviorEntry<BindControlsBehavior> BIND_CONTROLS;
@@ -67,12 +68,12 @@ public class GameBehaviorTypes {
 	public static final GameBehaviorEntry<IndividualWinTrigger> INDIVIDUAL_WIN_TRIGGER;
 	public static final GameBehaviorEntry<TeamWinTrigger> TEAM_WIN_TRIGGER;
 	public static final GameBehaviorEntry<EquipParticipantsBehavior> EQUIP_PARTICIPANTS;
+	public static final GameBehaviorEntry<ArmorParticipantsBehavior> ARMOR_PARTICIPANTS;
 	public static final GameBehaviorEntry<SetTimeSpeedBehavior> SET_TIME_SPEED;
 	public static final GameBehaviorEntry<SetDayTimeBehavior> SET_DAY_TIME;
 	public static final GameBehaviorEntry<SetDifficultyBehavior> SET_DIFFICULTY;
 	public static final GameBehaviorEntry<GameEndEffectsBehavior> GAME_END_EFFECTS;
 	public static final GameBehaviorEntry<TipsAndTricksBehavior> TIPS_AND_TRICKS;
-	public static final GameBehaviorEntry<ReadyUpBehavior> READY_UP;
 
 	public static final GameBehaviorEntry<BindObjectiveToStatisticBehavior> BIND_OBJECTIVE_TO_STATISTIC;
 	public static final GameBehaviorEntry<PlaceByStatisticBehavior> PLACE_BY_STATISTIC;
@@ -121,6 +122,7 @@ public class GameBehaviorTypes {
 		SCHEDULED_COMMANDS = register("scheduled_commands", ScheduledCommandsBehavior.CODEC);
 		SET_GAME_TYPES = register("set_game_types", SetGameTypesBehavior.CODEC);
 		PHASE_CONTROLLER = register("phase_controller", PhaseControllerBehavior.CODEC);
+		PERMANENT_ITEM = register("permanent_item", PermanentItemBehavior.CODEC);
 		SCHEDULED_MESSAGES = register("scheduled_messages", ScheduledMessagesBehavior.CODEC);
 		FIREWORKS_ON_DEATH = register("fireworks_on_death", FireworksOnDeathBehavior.CODEC);
 		BIND_CONTROLS = register("bind_controls", BindControlsBehavior.CODEC);
@@ -145,12 +147,12 @@ public class GameBehaviorTypes {
 		TEAM_WIN_TRIGGER = register("team_win_trigger", TeamWinTrigger.CODEC);
 		INDIVIDUAL_WIN_TRIGGER = register("individual_win_trigger", IndividualWinTrigger.CODEC);
 		EQUIP_PARTICIPANTS = register("equip_participants", EquipParticipantsBehavior.CODEC);
+		ARMOR_PARTICIPANTS = register("armor_participants", ArmorParticipantsBehavior.CODEC);
 		SET_TIME_SPEED = register("set_time_speed", SetTimeSpeedBehavior.CODEC);
 		SET_DAY_TIME = register("set_day_time", SetDayTimeBehavior.CODEC);
 		SET_DIFFICULTY = register("set_difficulty", SetDifficultyBehavior.CODEC);
 		GAME_END_EFFECTS = register("game_end_effects", GameEndEffectsBehavior.CODEC);
 		TIPS_AND_TRICKS = register("tips_and_tricks", TipsAndTricksBehavior.CODEC);
-		READY_UP = register("ready_up", ReadyUpBehavior.CODEC);
 
 		BIND_OBJECTIVE_TO_STATISTIC = register("bind_objective_to_statistic", BindObjectiveToStatisticBehavior.CODEC);
 		PLACE_BY_STATISTIC = register("place_by_statistic", PlaceByStatisticBehavior.CODEC);

@@ -3,54 +3,57 @@ package com.lovetropics.minigames.client.lobby.state.message;
 import com.lovetropics.minigames.client.lobby.state.ClientLobbyManager;
 import com.lovetropics.minigames.common.core.game.lobby.IGameLobby;
 import com.lovetropics.minigames.common.core.game.lobby.IGameLobbyPlayers;
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.network.PacketBuffer;
 import net.minecraftforge.fml.network.NetworkEvent;
 
+import java.util.Set;
+import java.util.UUID;
 import java.util.function.Supplier;
 
 public final class LobbyPlayersMessage {
 	private final int id;
-	private final int participantCount;
-	private final int spectatorCount;
+	private final Set<UUID> players;
 
-	private LobbyPlayersMessage(int id, int participantCount, int spectatorCount) {
+	private LobbyPlayersMessage(int id, Set<UUID> players) {
 		this.id = id;
-		this.participantCount = participantCount;
-		this.spectatorCount = spectatorCount;
+		this.players = players;
 	}
 
 	public static LobbyPlayersMessage update(IGameLobby lobby) {
 		IGameLobbyPlayers players = lobby.getPlayers();
-		int participantCount = players.getParticipantCount();
-		int spectatorCount = players.getSpectatorCount();
-		return new LobbyPlayersMessage(lobby.getMetadata().id().networkId(), participantCount, spectatorCount);
+		Set<UUID> playerIds = new ObjectOpenHashSet<>(players.size());
+		for (ServerPlayerEntity player : players) {
+			playerIds.add(player.getUniqueID());
+		}
+		return new LobbyPlayersMessage(lobby.getMetadata().id().networkId(), playerIds);
 	}
 
 	public void encode(PacketBuffer buffer) {
 		buffer.writeVarInt(id);
-		buffer.writeVarInt(participantCount);
-		buffer.writeVarInt(spectatorCount);
+		buffer.writeVarInt(players.size());
+		for (UUID player : players) {
+			buffer.writeUniqueId(player);
+		}
 	}
 
 	public static LobbyPlayersMessage decode(PacketBuffer buffer) {
 		int id = buffer.readVarInt();
-		int participantCount = buffer.readVarInt();
-		int spectatorCount = buffer.readVarInt();
-		return new LobbyPlayersMessage(id, participantCount, spectatorCount);
+		int playerCount = buffer.readVarInt();
+		Set<UUID> players = new ObjectOpenHashSet<>(playerCount);
+		for (int i = 0; i < playerCount; i++) {
+			players.add(buffer.readUniqueId());
+		}
+		return new LobbyPlayersMessage(id, players);
 	}
 
 	public void handle(Supplier<NetworkEvent.Context> ctx) {
 		ctx.get().enqueueWork(() -> {
 			ClientLobbyManager.get(id).ifPresent(state -> {
-				state.setPlayerCounts(participantCount, spectatorCount);
+				state.setPlayers(players);
 			});
 		});
 		ctx.get().setPacketHandled(true);
-	}
-
-	public enum Operation {
-		ADD,
-		REMOVE,
-		SET
 	}
 }

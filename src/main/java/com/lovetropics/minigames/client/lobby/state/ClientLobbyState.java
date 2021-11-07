@@ -1,22 +1,21 @@
 package com.lovetropics.minigames.client.lobby.state;
 
 import com.lovetropics.minigames.common.core.game.LobbyStatus;
-import com.lovetropics.minigames.common.core.game.player.PlayerRole;
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 
 import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.Set;
+import java.util.UUID;
 
 public class ClientLobbyState {
 	final int id;
 
 	String name;
-	int participantCount;
-	int spectatorCount;
+	final Set<UUID> players = new ObjectOpenHashSet<>();
 
 	@Nullable
 	ClientCurrentGame currentGame;
-
-	@Nullable
-	PlayerRole joinedRole;
 
 	ClientLobbyState(int id) {
 		this.id = id;
@@ -27,9 +26,9 @@ public class ClientLobbyState {
 		this.currentGame = currentGame;
 	}
 
-	public void setPlayerCounts(int participantCount, int spectatorCount) {
-		this.participantCount = participantCount;
-		this.spectatorCount = spectatorCount;
+	public void setPlayers(Collection<UUID> players) {
+		this.players.clear();
+		this.players.addAll(players);
 	}
 
 	public int getId() {
@@ -45,25 +44,12 @@ public class ClientLobbyState {
 		return currentGame;
 	}
 
-	public int getParticipantCount() {
-		return participantCount;
-	}
-
-	public int getSpectatorCount() {
-		return spectatorCount;
-	}
-
-	public int getPlayerCount(PlayerRole role) {
-		return role == PlayerRole.PARTICIPANT ? participantCount : spectatorCount;
+	public Set<UUID> getPlayers() {
+		return players;
 	}
 
 	public int getPlayerCount() {
-		return participantCount + spectatorCount;
-	}
-
-	@Nullable
-	public PlayerRole getJoinedRole() {
-		return joinedRole;
+		return players.size();
 	}
 
 	public LobbyStatus getStatus() {

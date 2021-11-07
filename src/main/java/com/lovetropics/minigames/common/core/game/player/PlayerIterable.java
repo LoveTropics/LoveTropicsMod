@@ -48,7 +48,7 @@ public interface PlayerIterable extends PlayerOps, Iterable<ServerPlayerEntity> 
 	@Override
 	default void addPotionEffect(EffectInstance effect) {
 		for (ServerPlayerEntity player : this) {
-			player.addPotionEffect(effect);
+			player.addPotionEffect(new EffectInstance(effect));
 		}
 	}
 

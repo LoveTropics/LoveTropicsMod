@@ -8,6 +8,8 @@ import net.minecraft.util.text.ITextComponent;
 
 import javax.annotation.Nullable;
 
+import org.apache.logging.log4j.LogManager;
+
 final class LobbyStateManager {
 	private final GameLobby lobby;
 	private LobbyState state = new LobbyState.Paused();
@@ -61,6 +63,7 @@ final class LobbyStateManager {
 	}
 
 	private LobbyState errored(LobbyState state, ITextComponent error) {
+		LogManager.getLogger().info(error.getUnformattedComponentText());
 		GamePhase phase = state.phase;
 		if (phase != null) {
 			IGameDefinition definition = phase.getDefinition();

@@ -6,6 +6,7 @@ import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameLivingEntityEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.lovetropics.minigames.common.core.game.state.GamePhase;
@@ -73,6 +74,12 @@ public class SurviveTheTideRulesetBehavior implements IGameBehavior {
 		events.listen(GamePlayerEvents.ATTACK, this::onPlayerAttackEntity);
 
 		events.listen(GamePhaseEvents.TICK, () -> tick(game));
+
+		events.listen(GameLivingEntityEvents.ENDER_TELEPORT, (entity, x, y, z, damage, callback) -> {
+			if (entity instanceof ServerPlayerEntity) {
+				callback.accept(0f); // Set ender pearl damage to 0
+			}
+		});
 	}
 
 	private ActionResultType onPlayerDeath(ServerPlayerEntity player, DamageSource damageSource) {
