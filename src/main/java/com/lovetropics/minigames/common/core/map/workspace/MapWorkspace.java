@@ -3,8 +3,8 @@ package com.lovetropics.minigames.common.core.map.workspace;
 import com.lovetropics.minigames.common.core.dimension.RuntimeDimensionHandle;
 import com.lovetropics.minigames.common.core.map.MapMetadata;
 import com.lovetropics.minigames.common.core.map.MapWorldSettings;
-import net.minecraft.util.RegistryKey;
-import net.minecraft.world.World;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.level.Level;
 
 import java.util.Optional;
 
@@ -31,7 +31,7 @@ public final class MapWorkspace {
 		return id;
 	}
 
-	public RegistryKey<World> getDimension() {
+	public ResourceKey<Level> getDimension() {
 		return dimensionHandle.asKey();
 	}
 

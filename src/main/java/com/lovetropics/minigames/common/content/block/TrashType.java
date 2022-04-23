@@ -3,11 +3,11 @@ package com.lovetropics.minigames.common.content.block;
 import com.lovetropics.minigames.common.content.block.TrashBlock.Attachment;
 import com.lovetropics.minigames.common.util.Util;
 import com.tterrag.registrate.util.nullness.NonNullSupplier;
-import net.minecraft.block.Block;
-import net.minecraft.util.Direction;
-import net.minecraft.util.Direction.Axis;
-import net.minecraft.util.Direction.AxisDirection;
-import net.minecraft.util.math.shapes.VoxelShape;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.core.Direction;
+import net.minecraft.core.Direction.Axis;
+import net.minecraft.core.Direction.AxisDirection;
+import net.minecraft.world.phys.shapes.VoxelShape;
 
 import javax.annotation.Nullable;
 import java.util.Locale;

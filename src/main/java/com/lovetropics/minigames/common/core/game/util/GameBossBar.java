@@ -1,21 +1,21 @@
 package com.lovetropics.minigames.common.core.game.util;
 
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.world.BossInfo;
-import net.minecraft.world.server.ServerBossInfo;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.BossEvent;
+import net.minecraft.server.level.ServerBossEvent;
 
 public final class GameBossBar implements GameWidget {
-	private final ServerBossInfo bar;
+	private final ServerBossEvent bar;
 
-	public GameBossBar(ITextComponent title, BossInfo.Color color, BossInfo.Overlay overlay) {
-		this.bar = new ServerBossInfo(title, color, overlay);
+	public GameBossBar(Component title, BossEvent.BossBarColor color, BossEvent.BossBarOverlay overlay) {
+		this.bar = new ServerBossEvent(title, color, overlay);
 		this.bar.setDarkenScreen(false);
 		this.bar.setCreateWorldFog(false);
 		this.bar.setPlayBossMusic(false);
 	}
 
-	public void setTitle(ITextComponent title) {
+	public void setTitle(Component title) {
 		this.bar.setName(title);
 	}
 
@@ -23,18 +23,18 @@ public final class GameBossBar implements GameWidget {
 		this.bar.setPercent(progress);
 	}
 
-	public void setStyle(BossInfo.Color color, BossInfo.Overlay overlay) {
+	public void setStyle(BossEvent.BossBarColor color, BossEvent.BossBarOverlay overlay) {
 		this.bar.setColor(color);
 		this.bar.setOverlay(overlay);
 	}
 
 	@Override
-	public void addPlayer(ServerPlayerEntity player) {
+	public void addPlayer(ServerPlayer player) {
 		this.bar.addPlayer(player);
 	}
 
 	@Override
-	public void removePlayer(ServerPlayerEntity player) {
+	public void removePlayer(ServerPlayer player) {
 		this.bar.removePlayer(player);
 	}
 

@@ -3,9 +3,9 @@ package com.lovetropics.minigames.common.content.biodiversity_blitz.plot.plant;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterators;
 import it.unimi.dsi.fastutil.longs.*;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.phys.Vec3;
 
 import javax.annotation.Nullable;
 import java.util.Iterator;
@@ -37,7 +37,7 @@ public interface PlantCoverage extends Iterable<BlockPos> {
 
 	BlockPos random(Random random);
 
-	AxisAlignedBB asBounds();
+	AABB asBounds();
 
 	BlockPos getOrigin();
 	
@@ -77,11 +77,11 @@ public interface PlantCoverage extends Iterable<BlockPos> {
 
 	final class Single implements PlantCoverage {
 		private final BlockPos block;
-		private final AxisAlignedBB bounds;
+		private final AABB bounds;
 
 		private Single(BlockPos block) {
 			this.block = block;
-			this.bounds = new AxisAlignedBB(block);
+			this.bounds = new AABB(block);
 		}
 
 		@Override
@@ -90,7 +90,7 @@ public interface PlantCoverage extends Iterable<BlockPos> {
 		}
 
 		@Override
-		public AxisAlignedBB asBounds() {
+		public AABB asBounds() {
 			return this.bounds;
 		}
 
@@ -113,15 +113,15 @@ public interface PlantCoverage extends Iterable<BlockPos> {
 	final class Set implements PlantCoverage {
 		private final LongList blocks;
 		private final BlockPos origin;
-		private final AxisAlignedBB bounds;
+		private final AABB bounds;
 
 		private Set(LongSet blocks, BlockPos origin) {
 			this.blocks = new LongArrayList(blocks);
 			this.origin = origin;
 
-			AxisAlignedBB bounds = null;
+			AABB bounds = null;
 			for (BlockPos pos : this) {
-				AxisAlignedBB blockBounds = new AxisAlignedBB(pos);
+				AABB blockBounds = new AABB(pos);
 				if (bounds == null) {
 					bounds = blockBounds;
 				} else {
@@ -138,7 +138,7 @@ public interface PlantCoverage extends Iterable<BlockPos> {
 		}
 
 		@Override
-		public AxisAlignedBB asBounds() {
+		public AABB asBounds() {
 			return this.bounds;
 		}
 
@@ -155,7 +155,7 @@ public interface PlantCoverage extends Iterable<BlockPos> {
 
 		@Override
 		public void add(BlockPos pos) {
-			if (this.bounds.contains(Vector3d.atCenterOf(pos))) {
+			if (this.bounds.contains(Vec3.atCenterOf(pos))) {
 				this.blocks.add(pos.asLong());
 			} else {
 				throw new IllegalArgumentException("Position not within bounds");
@@ -167,7 +167,7 @@ public interface PlantCoverage extends Iterable<BlockPos> {
 			LongIterator blockIterator = this.blocks.iterator();
 
 			return new Iterator<BlockPos>() {
-				private final BlockPos.Mutable mutablePos = new BlockPos.Mutable();
+				private final BlockPos.MutableBlockPos mutablePos = new BlockPos.MutableBlockPos();
 
 				@Override
 				public BlockPos next() {
@@ -186,7 +186,7 @@ public interface PlantCoverage extends Iterable<BlockPos> {
 	final class Or implements PlantCoverage {
 		private final PlantCoverage left;
 		private final PlantCoverage right;
-		private final AxisAlignedBB bounds;
+		private final AABB bounds;
 
 		Or(PlantCoverage left, PlantCoverage right) {
 			this.left = left;
@@ -205,7 +205,7 @@ public interface PlantCoverage extends Iterable<BlockPos> {
 		}
 
 		@Override
-		public AxisAlignedBB asBounds() {
+		public AABB asBounds() {
 			return this.bounds;
 		}
 

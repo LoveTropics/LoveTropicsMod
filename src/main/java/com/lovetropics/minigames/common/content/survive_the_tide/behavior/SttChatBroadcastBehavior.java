@@ -8,11 +8,11 @@ import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvent
 import com.lovetropics.minigames.common.core.game.player.PlayerSet;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.util.ActionResultType;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.TextFormatting;
-import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.network.chat.Component;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.TranslatableComponent;
 
 import java.util.Iterator;
 
@@ -35,19 +35,19 @@ public class SttChatBroadcastBehavior implements IGameBehavior {
 			PlayerSet participants = game.getParticipants();
 
 			if (participants.size() == 2) {
-				Iterator<ServerPlayerEntity> it = participants.iterator();
-				ServerPlayerEntity p1 = it.next();
-				ServerPlayerEntity p2 = it.next();
+				Iterator<ServerPlayer> it = participants.iterator();
+				ServerPlayer p1 = it.next();
+				ServerPlayer p2 = it.next();
 
 				if (p1 != null && p2 != null) {
-					ITextComponent p1text = p1.getDisplayName().copy().withStyle(TextFormatting.AQUA);
-					ITextComponent p2text = p2.getDisplayName().copy().withStyle(TextFormatting.AQUA);
+					Component p1text = p1.getDisplayName().copy().withStyle(ChatFormatting.AQUA);
+					Component p2text = p2.getDisplayName().copy().withStyle(ChatFormatting.AQUA);
 
-					game.getAllPlayers().sendMessage(new TranslationTextComponent(downToTwoTranslationKey, p1text, p2text).withStyle(TextFormatting.GOLD));
+					game.getAllPlayers().sendMessage(new TranslatableComponent(downToTwoTranslationKey, p1text, p2text).withStyle(ChatFormatting.GOLD));
 				}
 			}
 
-			return ActionResultType.PASS;
+			return InteractionResult.PASS;
 		});
 	}
 }

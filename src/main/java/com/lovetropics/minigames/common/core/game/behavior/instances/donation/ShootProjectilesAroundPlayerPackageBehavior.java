@@ -9,12 +9,12 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.entity.projectile.FireballEntity;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.world.server.ServerWorld;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.projectile.LargeFireball;
+import net.minecraft.core.BlockPos;
+import net.minecraft.util.Mth;
+import net.minecraft.server.level.ServerLevel;
 
 import java.util.Iterator;
 import java.util.Random;
@@ -40,8 +40,8 @@ public class ShootProjectilesAroundPlayerPackageBehavior implements IGameBehavio
 	private final int spawnRateBase;
 	private final int spawnRateRandom;
 	private final int explosionStrength;
-	private final Object2IntMap<ServerPlayerEntity> playerToAmountToSpawn = new Object2IntOpenHashMap<>();
-	private final Object2IntMap<ServerPlayerEntity> playerToDelayToSpawn = new Object2IntOpenHashMap<>();
+	private final Object2IntMap<ServerPlayer> playerToAmountToSpawn = new Object2IntOpenHashMap<>();
+	private final Object2IntMap<ServerPlayer> playerToDelayToSpawn = new Object2IntOpenHashMap<>();
 
 	public ShootProjectilesAroundPlayerPackageBehavior(/*final ResourceLocation entityId, */final int entityCount, final int spawnDistanceMax, final int spawnRangeY, final int spawnsPerTickBase, final int spawnsPerTickRandom, final int targetRandomness, final int explosionStrength) {
 		//this.entityId = entityId;
@@ -64,9 +64,9 @@ public class ShootProjectilesAroundPlayerPackageBehavior implements IGameBehavio
 	}
 
 	private void tick(IGamePhase game) {
-		Iterator<Object2IntMap.Entry<ServerPlayerEntity>> it = playerToAmountToSpawn.object2IntEntrySet().iterator();
+		Iterator<Object2IntMap.Entry<ServerPlayer>> it = playerToAmountToSpawn.object2IntEntrySet().iterator();
 		while (it.hasNext()) {
-			Object2IntMap.Entry<ServerPlayerEntity> entry = it.next();
+			Object2IntMap.Entry<ServerPlayer> entry = it.next();
 
 			if (!entry.getKey().isAlive()) {
 				it.remove();
@@ -81,7 +81,7 @@ public class ShootProjectilesAroundPlayerPackageBehavior implements IGameBehavio
 					cooldown--;
 					playerToDelayToSpawn.put(entry.getKey(), cooldown);
 				} else {
-					ServerWorld world = game.getWorld();
+					ServerLevel world = game.getWorld();
 					Random random = world.getRandom();
 
 					cooldown = spawnRateBase + random.nextInt(spawnRateRandom);
@@ -98,20 +98,20 @@ public class ShootProjectilesAroundPlayerPackageBehavior implements IGameBehavio
 						playerToDelayToSpawn.removeInt(entry.getKey());
 						it.remove();
 					}
-					FireballEntity fireball = createFireball(world, posSpawn, posTarget);
+					LargeFireball fireball = createFireball(world, posSpawn, posTarget);
 					world.addFreshEntity(fireball);
 				}
 			}
 		}
 	}
 
-	private FireballEntity createFireball(ServerWorld world, BlockPos spawn, BlockPos target) {
+	private LargeFireball createFireball(ServerLevel world, BlockPos spawn, BlockPos target) {
 		double deltaX = target.getX() - spawn.getX();
 		double deltaY = target.getY() - spawn.getY();
 		double deltaZ = target.getZ() - spawn.getZ();
-		double distance = MathHelper.sqrt(deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ);
+		double distance = Mth.sqrt(deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ);
 
-		FireballEntity fireball = new FireballEntity(EntityType.FIREBALL, world);
+		LargeFireball fireball = new LargeFireball(EntityType.FIREBALL, world);
 		fireball.moveTo(spawn.getX(), spawn.getY(), spawn.getZ(), fireball.yRot, fireball.xRot);
 		fireball.setPos(spawn.getX(), spawn.getY(), spawn.getZ());
 		fireball.xPower = deltaX / distance * 0.1;

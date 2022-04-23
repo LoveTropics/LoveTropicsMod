@@ -4,17 +4,17 @@ import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.client.screen.ClientPlayerInfo;
 import com.lovetropics.minigames.client.screen.PlayerFaces;
 import com.mojang.authlib.GameProfile;
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.client.MainWindow;
+import com.mojang.blaze3d.platform.Window;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.AbstractGui;
-import net.minecraft.client.util.InputMappings;
-import net.minecraft.client.world.ClientWorld;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.scoreboard.ScorePlayerTeam;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.text.TextFormatting;
+import net.minecraft.client.gui.GuiComponent;
+import com.mojang.blaze3d.platform.InputConstants;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.scores.PlayerTeam;
+import net.minecraft.util.Mth;
+import net.minecraft.ChatFormatting;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
@@ -58,7 +58,7 @@ public final class SpectatingUi {
 
 		double delta = event.getScrollDelta();
 
-		boolean zoom = InputMappings.isKeyDown(CLIENT.getWindow().getWindow(), GLFW.GLFW_KEY_LEFT_CONTROL);
+		boolean zoom = InputConstants.isKeyDown(CLIENT.getWindow().getWindow(), GLFW.GLFW_KEY_LEFT_CONTROL);
 		if (zoom) {
 			session.ui.onScrollZoom(delta);
 		} else {
@@ -67,7 +67,7 @@ public final class SpectatingUi {
 	}
 
 	private void onScrollZoom(double delta) {
-		session.targetZoom = MathHelper.clamp(session.targetZoom - delta * 0.05, 0.0, 1.0);
+		session.targetZoom = Mth.clamp(session.targetZoom - delta * 0.05, 0.0, 1.0);
 	}
 
 	private void onScrollSelection(double delta) {
@@ -79,7 +79,7 @@ public final class SpectatingUi {
 
 		int scrollAmount = (int) accumulatedScroll;
 		if (scrollAmount != 0) {
-			scrollSelection(-MathHelper.clamp(scrollAmount, -1, 1));
+			scrollSelection(-Mth.clamp(scrollAmount, -1, 1));
 		}
 	}
 
@@ -116,7 +116,7 @@ public final class SpectatingUi {
 
 	private void scrollSelection(int shift) {
 		int newIndex = highlightedEntryIndex + shift;
-		newIndex = MathHelper.clamp(newIndex, 0, entries.size() - 1);
+		newIndex = Mth.clamp(newIndex, 0, entries.size() - 1);
 
 		highlightedEntryIndex = newIndex;
 	}
@@ -138,12 +138,12 @@ public final class SpectatingUi {
 		}
 
 		if (event.getType() == RenderGameOverlayEvent.ElementType.ALL) {
-			MainWindow window = event.getWindow();
+			Window window = event.getWindow();
 			session.ui.renderChasePlayerList(event.getMatrixStack(), window);
 		}
 	}
 
-	private void renderChasePlayerList(MatrixStack transform, MainWindow window) {
+	private void renderChasePlayerList(PoseStack transform, Window window) {
 		RenderSystem.enableAlphaTest();
 		RenderSystem.enableBlend();
 		RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
@@ -176,10 +176,10 @@ public final class SpectatingUi {
 		}
 	}
 
-	void drawSelection(MatrixStack transform, int minX, int minY, int selectedEntryIndex, int color) {
+	void drawSelection(PoseStack transform, int minX, int minY, int selectedEntryIndex, int color) {
 		int selectionWidth = minX + entries.get(selectedEntryIndex).getWidth(session);
 		int selectionY = minY + selectedEntryIndex * ENTRY_SIZE;
-		AbstractGui.fill(transform, 0, selectionY - 1, selectionWidth + 1, selectionY + ENTRY_SIZE - 1, color);
+		GuiComponent.fill(transform, 0, selectionY - 1, selectionWidth + 1, selectionY + ENTRY_SIZE - 1, color);
 	}
 
 	void updatePlayers(List<UUID> players) {
@@ -219,11 +219,11 @@ public final class SpectatingUi {
 
 	List<Entry> createEntriesFor(List<UUID> players) {
 		List<Entry> entries = new ArrayList<>(players.size() + 1);
-		entries.add(new Entry(CLIENT.player.getUUID(), s -> "Free Camera", TextFormatting.RESET, SpectatingState.FREE_CAMERA));
+		entries.add(new Entry(CLIENT.player.getUUID(), s -> "Free Camera", ChatFormatting.RESET, SpectatingState.FREE_CAMERA));
 
 		List<UUID> sortedPlayers = new ArrayList<>(players);
 		sortedPlayers.sort(Comparator.comparing(player -> {
-			ScorePlayerTeam team = getTeamFor(player);
+			PlayerTeam team = getTeamFor(player);
 			return team != null ? team.getName() : "";
 		}));
 
@@ -233,8 +233,8 @@ public final class SpectatingUi {
 				return profile != null ? profile.getName() : "...";
 			};
 
-			ScorePlayerTeam team = getTeamFor(player);
-			TextFormatting color = team != null ? team.getColor() : TextFormatting.RESET;
+			PlayerTeam team = getTeamFor(player);
+			ChatFormatting color = team != null ? team.getColor() : ChatFormatting.RESET;
 
 			entries.add(new Entry(player, nameFunction, color, new SpectatingState.SelectedPlayer(player)));
 		}
@@ -243,13 +243,13 @@ public final class SpectatingUi {
 	}
 
 	@Nullable
-	private static ScorePlayerTeam getTeamFor(UUID playerId) {
-		ClientWorld world = CLIENT.level;
+	private static PlayerTeam getTeamFor(UUID playerId) {
+		ClientLevel world = CLIENT.level;
 		if (world == null) {
 			return null;
 		}
 
-		PlayerEntity player = world.getPlayerByUUID(playerId);
+		Player player = world.getPlayerByUUID(playerId);
 		if (player != null) {
 			return world.getScoreboard().getPlayersTeam(player.getScoreboardName());
 		} else {
@@ -266,7 +266,7 @@ public final class SpectatingUi {
 		Entry(
 				UUID playerIcon,
 				Function<SpectatingSession, String> name,
-				TextFormatting color,
+				ChatFormatting color,
 				SpectatingState selectionState
 		) {
 			this.playerIcon = playerIcon;
@@ -275,7 +275,7 @@ public final class SpectatingUi {
 			this.selectionState = selectionState;
 		}
 
-		void render(MatrixStack transform, SpectatingSession session, int x, int y) {
+		void render(PoseStack transform, SpectatingSession session, int x, int y) {
 			PlayerFaces.render(playerIcon, transform, x, y, 12);
 
 			String name = nameFunction.apply(session);

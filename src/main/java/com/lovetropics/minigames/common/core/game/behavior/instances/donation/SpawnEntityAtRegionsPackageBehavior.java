@@ -11,11 +11,11 @@ import com.lovetropics.minigames.common.core.map.MapRegions;
 import com.lovetropics.minigames.common.util.Util;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.entity.EntityType;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.registry.Registry;
-import net.minecraft.world.gen.Heightmap;
-import net.minecraft.world.server.ServerWorld;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Registry;
+import net.minecraft.world.level.levelgen.Heightmap;
+import net.minecraft.server.level.ServerLevel;
 
 import java.util.List;
 
@@ -54,10 +54,10 @@ public class SpawnEntityAtRegionsPackageBehavior implements IGameBehavior {
 				return false;
 			}
 
-			ServerWorld world = game.getWorld();
+			ServerLevel world = game.getWorld();
 			for (final BlockBox region : regionsToSpawnAt) {
 				for (int i = 0; i < entityCountPerRegion; i++) {
-					final BlockPos pos = world.getHeightmapPos(Heightmap.Type.WORLD_SURFACE, region.sample(world.getRandom()));
+					final BlockPos pos = world.getHeightmapPos(Heightmap.Types.WORLD_SURFACE, region.sample(world.getRandom()));
 					Util.spawnEntity(entityId, world, pos.getX(), pos.getY(), pos.getZ());
 				}
 			}

@@ -8,12 +8,12 @@ import com.lovetropics.minigames.common.core.game.behavior.event.GamePackageEven
 import com.lovetropics.minigames.common.util.Util;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.loot.LootContext;
-import net.minecraft.loot.LootParameterSets;
-import net.minecraft.loot.LootParameters;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
+import net.minecraft.resources.ResourceLocation;
 
 public class LootPackageBehavior implements IGameBehavior {
 	public static final Codec<LootPackageBehavior> CODEC = RecordCodecBuilder.create(instance -> {
@@ -33,13 +33,13 @@ public class LootPackageBehavior implements IGameBehavior {
 		events.listen(GamePackageEvents.APPLY_PACKAGE_TO_PLAYER, (player, sendingPlayer) -> addLootTableToInventory(player));
 	}
 
-	private boolean addLootTableToInventory(final ServerPlayerEntity player) {
+	private boolean addLootTableToInventory(final ServerPlayer player) {
 		LootContext context = (new LootContext.Builder(player.getLevel()))
-				.withParameter(LootParameters.THIS_ENTITY, player)
-				.withParameter(LootParameters.ORIGIN, player.position())
+				.withParameter(LootContextParams.THIS_ENTITY, player)
+				.withParameter(LootContextParams.ORIGIN, player.position())
 				.withRandom(player.getRandom())
 				.withLuck(player.getLuck())
-				.create(LootParameterSets.GIFT);
+				.create(LootContextParamSets.GIFT);
 
 		boolean changed = false;
 		for (ItemStack stack : player.server.getLootTables().get(lootTable).getRandomItems(context)) {

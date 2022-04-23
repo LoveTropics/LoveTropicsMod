@@ -3,12 +3,12 @@ package com.lovetropics.minigames.client.game.handler.spectate;
 import com.lovetropics.minigames.common.core.network.LoveTropicsNetwork;
 import com.lovetropics.minigames.common.core.network.SpectatePlayerAndTeleportMessage;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.entity.player.ClientPlayerEntity;
-import net.minecraft.client.renderer.ActiveRenderInfo;
-import net.minecraft.client.settings.PointOfView;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.client.Camera;
+import net.minecraft.client.CameraType;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.util.Mth;
 import net.minecraftforge.client.event.EntityViewRenderEvent;
 
 import java.util.UUID;
@@ -19,14 +19,14 @@ interface SpectatingState {
 
 	StateApplicator apply(Minecraft client, SpectatingSession session);
 
-	default SpectatingState tick(Minecraft client, SpectatingSession session, ClientPlayerEntity player) {
+	default SpectatingState tick(Minecraft client, SpectatingSession session, LocalPlayer player) {
 		return this;
 	}
 
-	default void renderTick(Minecraft client, SpectatingSession session, ClientPlayerEntity player) {
+	default void renderTick(Minecraft client, SpectatingSession session, LocalPlayer player) {
 	}
 
-	default void applyToCamera(Minecraft client, SpectatingSession session, ClientPlayerEntity player, ActiveRenderInfo camera, float partialTicks, EntityViewRenderEvent.CameraSetup event) {
+	default void applyToCamera(Minecraft client, SpectatingSession session, LocalPlayer player, Camera camera, float partialTicks, EntityViewRenderEvent.CameraSetup event) {
 	}
 
 	class FreeCamera implements SpectatingState {
@@ -36,7 +36,7 @@ interface SpectatingState {
 		@Override
 		public StateApplicator apply(Minecraft client, SpectatingSession session) {
 			client.options.smoothCamera = false;
-			client.options.setCameraType(PointOfView.FIRST_PERSON);
+			client.options.setCameraType(CameraType.FIRST_PERSON);
 
 			return new StateApplicator(
 					() -> LoveTropicsNetwork.CHANNEL.sendToServer(new SpectatePlayerAndTeleportMessage(client.player.getUUID())),
@@ -45,7 +45,7 @@ interface SpectatingState {
 		}
 
 		@Override
-		public SpectatingState tick(Minecraft client, SpectatingSession session, ClientPlayerEntity player) {
+		public SpectatingState tick(Minecraft client, SpectatingSession session, LocalPlayer player) {
 			// force player to maximum flying speed
 			player.abilities.setFlyingSpeed(0.2F);
 
@@ -73,10 +73,10 @@ interface SpectatingState {
 		}
 
 		@Override
-		public SpectatingState tick(Minecraft client, SpectatingSession session, ClientPlayerEntity player) {
+		public SpectatingState tick(Minecraft client, SpectatingSession session, LocalPlayer player) {
 			if (player.level.getGameTime() % 10 == 0) {
 				// we need to send position updates to the server or we won't properly track chunks
-				PlayerEntity spectatedPlayer = player.level.getPlayerByUUID(spectatedId);
+				Player spectatedPlayer = player.level.getPlayerByUUID(spectatedId);
 				if (spectatedPlayer != null) {
 					player.setPos(spectatedPlayer.getX(), spectatedPlayer.getY(), spectatedPlayer.getZ());
 				}
@@ -90,7 +90,7 @@ interface SpectatingState {
 		}
 
 		@Override
-		public void renderTick(Minecraft client, SpectatingSession session, ClientPlayerEntity player) {
+		public void renderTick(Minecraft client, SpectatingSession session, LocalPlayer player) {
 			Entity focusEntity = client.getCameraEntity();
 			focusEntity = focusEntity != null ? focusEntity : player;
 
@@ -98,10 +98,10 @@ interface SpectatingState {
 
 			if (!firstPerson) {
 				client.options.smoothCamera = true;
-				client.options.setCameraType(PointOfView.THIRD_PERSON_BACK);
+				client.options.setCameraType(CameraType.THIRD_PERSON_BACK);
 			} else {
 				client.options.smoothCamera = false;
-				client.options.setCameraType(PointOfView.FIRST_PERSON);
+				client.options.setCameraType(CameraType.FIRST_PERSON);
 
 				player.yRot = focusEntity.yRot;
 				player.xRot = focusEntity.xRot;
@@ -109,7 +109,7 @@ interface SpectatingState {
 		}
 
 		@Override
-		public void applyToCamera(Minecraft client, SpectatingSession session, ClientPlayerEntity player, ActiveRenderInfo camera, float partialTicks, EntityViewRenderEvent.CameraSetup event) {
+		public void applyToCamera(Minecraft client, SpectatingSession session, LocalPlayer player, Camera camera, float partialTicks, EntityViewRenderEvent.CameraSetup event) {
 			Entity focusEntity = client.getCameraEntity();
 			focusEntity = focusEntity != null ? focusEntity : player;
 
@@ -125,9 +125,9 @@ interface SpectatingState {
 				camera.setRotation(yaw, pitch);
 
 				camera.setPosition(
-						MathHelper.lerp(partialTicks, focusEntity.xo, focusEntity.getX()),
-						MathHelper.lerp(partialTicks, focusEntity.yo, focusEntity.getY()) + focusEntity.getEyeHeight(),
-						MathHelper.lerp(partialTicks, focusEntity.zo, focusEntity.getZ())
+						Mth.lerp(partialTicks, focusEntity.xo, focusEntity.getX()),
+						Mth.lerp(partialTicks, focusEntity.yo, focusEntity.getY()) + focusEntity.getEyeHeight(),
+						Mth.lerp(partialTicks, focusEntity.zo, focusEntity.getZ())
 				);
 
 				double distance = zoom * ClientSpectatingManager.MAX_CHASE_DISTANCE;

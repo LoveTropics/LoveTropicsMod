@@ -8,19 +8,19 @@ import com.lovetropics.minigames.client.screen.flex.Flex;
 import com.lovetropics.minigames.client.screen.flex.FlexSolver;
 import com.lovetropics.minigames.client.screen.flex.Layout;
 import com.lovetropics.minigames.common.core.game.util.GameTexts;
-import com.mojang.blaze3d.matrix.MatrixStack;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.widget.button.Button;
-import net.minecraft.util.text.IFormattableTextComponent;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.TextFormatting;
+import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.ChatFormatting;
 
 import javax.annotation.Nullable;
 
 public final class GameQueueList extends AbstractGameList {
-	private static final ITextComponent TITLE = GameTexts.Ui.gameQueue()
-			.withStyle(TextFormatting.UNDERLINE, TextFormatting.BOLD);
+	private static final Component TITLE = GameTexts.Ui.gameQueue()
+			.withStyle(ChatFormatting.UNDERLINE, ChatFormatting.BOLD);
 
 	private final ClientLobbyManageState lobby;
 
@@ -39,8 +39,8 @@ public final class GameQueueList extends AbstractGameList {
 		Flex cancel = root.child().size(20, 20).marginLeft(2);
 
 		FlexSolver.Results solve = new FlexSolver(footer.content()).apply(root);
-		this.enqueueButton = FlexUi.createButton(solve.layout(enqueue), new StringTextComponent("+"), this::enqueue);
-		this.removeButton = FlexUi.createButton(solve.layout(cancel), new StringTextComponent("-"), this::remove);
+		this.enqueueButton = FlexUi.createButton(solve.layout(enqueue), new TextComponent("+"), this::enqueue);
+		this.removeButton = FlexUi.createButton(solve.layout(cancel), new TextComponent("-"), this::remove);
 	}
 
 	@Override
@@ -78,11 +78,11 @@ public final class GameQueueList extends AbstractGameList {
 	}
 
 	private void applyRunningGame(ClientCurrentGame game, Entry entry) {
-		IFormattableTextComponent gameName = game.definition().name.copy().withStyle(TextFormatting.UNDERLINE);
-		entry.setTitle(new StringTextComponent("\u25B6 ").append(gameName));
+		MutableComponent gameName = game.definition().name.copy().withStyle(ChatFormatting.UNDERLINE);
+		entry.setTitle(new TextComponent("\u25B6 ").append(gameName));
 
 		if (game.error() != null) {
-			entry.setSubtitle(new StringTextComponent("\u26A0 ").append(game.error()));
+			entry.setSubtitle(new TextComponent("\u26A0 ").append(game.error()));
 
 			entry.setBackgroundColor(0xFF201010)
 					.setHoveredColor(0xFF402020)
@@ -97,8 +97,8 @@ public final class GameQueueList extends AbstractGameList {
 	}
 
 	private void applyInactiveGame(Entry entry) {
-		IFormattableTextComponent inactive = GameTexts.Ui.gameInactive().withStyle(TextFormatting.UNDERLINE);
-		entry.setTitle(new StringTextComponent("\u23F8 ").append(inactive));
+		MutableComponent inactive = GameTexts.Ui.gameInactive().withStyle(ChatFormatting.UNDERLINE);
+		entry.setTitle(new TextComponent("\u23F8 ").append(inactive));
 
 		entry.setBackgroundColor(0xFF202010)
 				.setHoveredColor(0xFF404020)
@@ -129,7 +129,7 @@ public final class GameQueueList extends AbstractGameList {
 	}
 
 	@Override
-	public void renderOverlays(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
+	public void renderOverlays(PoseStack matrixStack, int mouseX, int mouseY, float partialTicks) {
 		super.renderOverlays(matrixStack, mouseX, mouseY, partialTicks);
 		this.enqueueButton.render(matrixStack, mouseX, mouseY, partialTicks);
 		this.removeButton.render(matrixStack, mouseX, mouseY, partialTicks);

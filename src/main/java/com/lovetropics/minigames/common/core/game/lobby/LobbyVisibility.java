@@ -1,16 +1,16 @@
 package com.lovetropics.minigames.common.core.game.lobby;
 
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextComponent;
 
 public enum LobbyVisibility {
-	PUBLIC(new StringTextComponent("Public")),
-	PUBLIC_LIVE(new StringTextComponent("Public (Live)")),
-	PRIVATE(new StringTextComponent("Private"));
+	PUBLIC(new TextComponent("Public")),
+	PUBLIC_LIVE(new TextComponent("Public (Live)")),
+	PRIVATE(new TextComponent("Private"));
 
-	private final ITextComponent name;
+	private final Component name;
 
-	LobbyVisibility(ITextComponent name) {
+	LobbyVisibility(Component name) {
 		this.name = name;
 	}
 
@@ -26,7 +26,7 @@ public enum LobbyVisibility {
 		return this == PUBLIC_LIVE;
 	}
 
-	public ITextComponent getName() {
+	public Component getName() {
 		return name;
 	}
 }

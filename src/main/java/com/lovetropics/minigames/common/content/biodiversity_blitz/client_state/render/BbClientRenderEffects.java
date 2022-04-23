@@ -7,19 +7,19 @@ import com.lovetropics.minigames.common.content.biodiversity_blitz.BiodiversityB
 import com.lovetropics.minigames.common.content.biodiversity_blitz.client_state.ClientBbGlobalState;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.client_state.ClientBbSelfState;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.client_state.CurrencyTargetState;
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.renderer.IRenderTypeBuffer;
-import net.minecraft.client.renderer.ItemRenderer;
-import net.minecraft.client.renderer.entity.EntityRendererManager;
-import net.minecraft.client.renderer.model.ItemCameraTransforms;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.entity.ItemRenderer;
+import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
+import net.minecraft.client.renderer.block.model.ItemTransforms;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.text.TextFormatting;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.ChatFormatting;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.ForgeHooksClient;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
@@ -52,8 +52,8 @@ public final class BbClientRenderEffects {
 	}
 
 	private static void renderOverlay(RenderGameOverlayEvent event, ClientBbSelfState selfState, CurrencyTargetState currencyTarget) {
-		MatrixStack matrixStack = event.getMatrixStack();
-		FontRenderer font = CLIENT.font;
+		PoseStack matrixStack = event.getMatrixStack();
+		Font font = CLIENT.font;
 
 		final int left = PADDING;
 		final int top = PADDING;
@@ -65,7 +65,7 @@ public final class BbClientRenderEffects {
 
 		String currency = String.valueOf(selfState.getCurrency());
 		if (currencyTarget != null) {
-			currency = TextFormatting.GRAY + "Total: " + TextFormatting.WHITE + currency + TextFormatting.GRAY + "/" + currencyTarget.getValue();
+			currency = ChatFormatting.GRAY + "Total: " + ChatFormatting.WHITE + currency + ChatFormatting.GRAY + "/" + currencyTarget.getValue();
 		}
 
 		font.drawShadow(
@@ -78,18 +78,18 @@ public final class BbClientRenderEffects {
 
 		int increment = selfState.getNextIncrement();
 		boolean gainingCurrency = increment > 0;
-		TextFormatting incrementColor = gainingCurrency ? TextFormatting.AQUA : TextFormatting.RED;
+		ChatFormatting incrementColor = gainingCurrency ? ChatFormatting.AQUA : ChatFormatting.RED;
 
-		String nextCurrencyIncrement = incrementColor + "+" + increment + TextFormatting.GRAY + " next drop";
+		String nextCurrencyIncrement = incrementColor + "+" + increment + ChatFormatting.GRAY + " next drop";
 		font.drawShadow(matrixStack, nextCurrencyIncrement, x, y, 0xFFFFFFFF);
 		y += font.lineHeight;
 
 		if (!gainingCurrency) {
-			font.drawShadow(matrixStack, TextFormatting.GRAY + "You must be in your plot to receive osas!", x, y, 0xFFFFFFFF);
+			font.drawShadow(matrixStack, ChatFormatting.GRAY + "You must be in your plot to receive osas!", x, y, 0xFFFFFFFF);
 		}
 	}
 
-	private static void renderItem(MatrixStack matrixStack, ItemStack stack, int x, int y) {
+	private static void renderItem(PoseStack matrixStack, ItemStack stack, int x, int y) {
 		RenderSystem.pushMatrix();
 		RenderSystem.multMatrix(matrixStack.last().pose());
 		CLIENT.getItemRenderer().renderGuiItem(stack, x, y);
@@ -99,7 +99,7 @@ public final class BbClientRenderEffects {
 	@SubscribeEvent
 	public static void onRenderPlayerName(RenderNameplateEvent event) {
 		Entity entity = event.getEntity();
-		if (entity instanceof PlayerEntity) {
+		if (entity instanceof Player) {
 			ClientBbGlobalState globalState = ClientGameStateManager.getOrNull(BiodiversityBlitz.GLOBAL_STATE);
 			if (globalState != null && globalState.hasCurrencyFor(entity.getUUID())) {
 				int currency = globalState.getCurrencyFor(entity.getUUID());
@@ -109,7 +109,7 @@ public final class BbClientRenderEffects {
 	}
 
 	private static void renderPlayerCurrency(RenderNameplateEvent event, Entity entity, int currency) {
-		EntityRendererManager renderManager = event.getEntityRenderer().getDispatcher();
+		EntityRenderDispatcher renderManager = event.getEntityRenderer().getDispatcher();
 		double distance2 = renderManager.distanceToSqr(entity);
 		if (!ForgeHooksClient.isNameplateInRenderDistance(entity, distance2) || entity.isDiscrete()) {
 			return;
@@ -124,11 +124,11 @@ public final class BbClientRenderEffects {
 
 		String currencyText = String.valueOf(currency);
 
-		MatrixStack matrixStack = event.getMatrixStack();
-		IRenderTypeBuffer buffer = event.getRenderTypeBuffer();
+		PoseStack matrixStack = event.getMatrixStack();
+		MultiBufferSource buffer = event.getRenderTypeBuffer();
 		int packedLight = event.getPackedLight();
 
-		FontRenderer font = renderManager.getFont();
+		Font font = renderManager.getFont();
 		ItemRenderer items = CLIENT.getItemRenderer();
 
 		float left = -(font.width(currencyText) * textScale + itemSize) / 2.0F;
@@ -149,7 +149,7 @@ public final class BbClientRenderEffects {
 		matrixStack.pushPose();
 		matrixStack.translate(-left, 0.0F, 0.0F);
 		matrixStack.scale(-itemSize, itemSize, -itemSize);
-		items.renderStatic(CURRENCY_ITEM.get(), ItemCameraTransforms.TransformType.GUI, packedLight, OverlayTexture.NO_OVERLAY, matrixStack, buffer);
+		items.renderStatic(CURRENCY_ITEM.get(), ItemTransforms.TransformType.GUI, packedLight, OverlayTexture.NO_OVERLAY, matrixStack, buffer);
 		matrixStack.popPose();
 
 		matrixStack.popPose();

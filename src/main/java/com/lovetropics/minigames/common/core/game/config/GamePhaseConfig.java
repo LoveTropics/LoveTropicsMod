@@ -9,17 +9,17 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.world.phys.AABB;
 import net.minecraftforge.common.extensions.IForgeTileEntity;
 
 import java.util.List;
 
 public final class GamePhaseConfig implements IGamePhaseDefinition {
-	public final AxisAlignedBB area;
+	public final AABB area;
 	public final IGameMapProvider map;
 	public final List<BehaviorReference> behaviors;
 
-	public GamePhaseConfig(IGameMapProvider map, AxisAlignedBB area, List<BehaviorReference> behaviors) {
+	public GamePhaseConfig(IGameMapProvider map, AABB area, List<BehaviorReference> behaviors) {
 		this.map = map;
 		this.area = area;
 		this.behaviors = behaviors;
@@ -45,7 +45,7 @@ public final class GamePhaseConfig implements IGamePhaseDefinition {
 	}
 
 	@Override
-	public AxisAlignedBB getGameArea() {
+	public AABB getGameArea() {
 		return area;
 	}
 

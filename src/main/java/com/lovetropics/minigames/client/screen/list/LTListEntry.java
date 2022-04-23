@@ -1,11 +1,11 @@
 package com.lovetropics.minigames.client.screen.list;
 
 import com.lovetropics.minigames.client.screen.list.AbstractLTList.Reorder;
-import com.mojang.blaze3d.matrix.MatrixStack;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.widget.list.ExtendedList.AbstractListEntry;
+import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.components.ObjectSelectionList.Entry;
 
-public abstract class LTListEntry<T extends LTListEntry<T>> extends AbstractListEntry<T> {
+public abstract class LTListEntry<T extends LTListEntry<T>> extends Entry<T> {
 
 	protected final Screen screen;
 	protected final AbstractLTList<T> list;
@@ -18,7 +18,7 @@ public abstract class LTListEntry<T extends LTListEntry<T>> extends AbstractList
 		this.list = list;
 	}
 
-	public void renderTooltips(MatrixStack matrixStack, int width, int mouseX, int mouseY) {}
+	public void renderTooltips(PoseStack matrixStack, int width, int mouseX, int mouseY) {}
 
 	@SuppressWarnings("unchecked")
 	@Override

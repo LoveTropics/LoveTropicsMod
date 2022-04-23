@@ -12,11 +12,11 @@ import com.lovetropics.minigames.common.core.game.player.PlayerIterable;
 import com.lovetropics.minigames.common.core.game.player.PlayerRoleSelections;
 import com.lovetropics.minigames.common.core.game.util.GameTexts;
 import com.lovetropics.minigames.common.core.network.LoveTropicsNetwork;
-import net.minecraft.command.CommandSource;
-import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.Unit;
-import net.minecraft.util.text.ITextComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraftforge.fml.network.PacketDistributor;
 
 import javax.annotation.Nullable;
@@ -102,7 +102,7 @@ final class GameLobby implements IGameLobby {
 	}
 
 	@Override
-	public boolean isVisibleTo(CommandSource source) {
+	public boolean isVisibleTo(CommandSourceStack source) {
 		if (management.canManage(source)) {
 			return true;
 		}
@@ -191,30 +191,30 @@ final class GameLobby implements IGameLobby {
 	}
 
 	void onQueueResume() {
-		for (ServerPlayerEntity player : getPlayers()) {
+		for (ServerPlayer player : getPlayers()) {
 			onPlayerEnterGame(player);
 		}
 	}
 
 	void onQueuePaused() {
-		for (ServerPlayerEntity player : getPlayers()) {
+		for (ServerPlayer player : getPlayers()) {
 			onPlayerExitGame(player);
 		}
 
 		stateListener.onLobbyPaused(this);
 	}
 
-	void onPlayerLoggedIn(ServerPlayerEntity player) {
+	void onPlayerLoggedIn(ServerPlayer player) {
 		trackingPlayers.onPlayerLoggedIn(player);
 	}
 
-	void onPlayerLoggedOut(ServerPlayerEntity player) {
+	void onPlayerLoggedOut(ServerPlayer player) {
 		trackingPlayers.onPlayerLoggedOut(player);
 
 		players.remove(player);
 	}
 
-	void onPlayerRegister(ServerPlayerEntity player) {
+	void onPlayerRegister(ServerPlayer player) {
 		manager.addPlayerToLobby(player, this);
 
 		GamePhase phase = state.getPhase();
@@ -228,7 +228,7 @@ final class GameLobby implements IGameLobby {
 		management.onPlayersChanged();
 	}
 
-	void onPlayerLeave(ServerPlayerEntity player) {
+	void onPlayerLeave(ServerPlayer player) {
 		GamePhase phase = state.getPhase();
 		if (phase != null) {
 			phase.onPlayerLeave(player);
@@ -244,19 +244,19 @@ final class GameLobby implements IGameLobby {
 	}
 
 	// TODO: better abstract this logic?
-	void onPlayerEnterGame(ServerPlayerEntity player) {
+	void onPlayerEnterGame(ServerPlayer player) {
 		playerIsolation.accept(player);
 	}
 
-	void onPlayerExitGame(ServerPlayerEntity player) {
+	void onPlayerExitGame(ServerPlayer player) {
 		playerIsolation.restore(player);
 	}
 
-	void onPlayerStartTracking(ServerPlayerEntity player) {
+	void onPlayerStartTracking(ServerPlayer player) {
 		stateListener.onPlayerStartTracking(this, player);
 	}
 
-	void onPlayerStopTracking(ServerPlayerEntity player) {
+	void onPlayerStopTracking(ServerPlayer player) {
 		stateListener.onPlayerStopTracking(this, player);
 	}
 
@@ -269,7 +269,7 @@ final class GameLobby implements IGameLobby {
 			onStateChange(state.close());
 
 			LobbyPlayerManager players = getPlayers();
-			for (ServerPlayerEntity player : Lists.newArrayList(players)) {
+			for (ServerPlayer player : Lists.newArrayList(players)) {
 				players.remove(player);
 			}
 
@@ -282,7 +282,7 @@ final class GameLobby implements IGameLobby {
 
 	static final class ChatNotifyListener implements LobbyStateListener {
 		@Override
-		public void onPlayerJoin(IGameLobby lobby, ServerPlayerEntity player) {
+		public void onPlayerJoin(IGameLobby lobby, ServerPlayer player) {
 			IGame currentGame = lobby.getCurrentGame();
 			if (currentGame != null) {
 				onPlayerJoinGame(lobby, currentGame);
@@ -290,7 +290,7 @@ final class GameLobby implements IGameLobby {
 		}
 
 		@Override
-		public void onPlayerLeave(IGameLobby lobby, ServerPlayerEntity player) {
+		public void onPlayerLeave(IGameLobby lobby, ServerPlayer player) {
 			IGame currentGame = lobby.getCurrentGame();
 			if (currentGame != null) {
 				onPlayerLeaveGame(lobby, currentGame);
@@ -298,14 +298,14 @@ final class GameLobby implements IGameLobby {
 		}
 
 		@Override
-		public void onPlayerStartTracking(IGameLobby lobby, ServerPlayerEntity player) {
+		public void onPlayerStartTracking(IGameLobby lobby, ServerPlayer player) {
 			player.displayClientMessage(GameTexts.Status.lobbyOpened(lobby), false);
 		}
 
 		private void onPlayerJoinGame(IGameLobby lobby, IGame currentGame) {
 			int minimumParticipants = currentGame.getDefinition().getMinimumParticipantCount();
 			if (lobby.getPlayers().size() == minimumParticipants) {
-				ITextComponent enoughPlayers = GameTexts.Status.enoughPlayers();
+				Component enoughPlayers = GameTexts.Status.enoughPlayers();
 				lobby.getTrackingPlayers().sendMessage(enoughPlayers);
 			}
 		}
@@ -313,7 +313,7 @@ final class GameLobby implements IGameLobby {
 		private void onPlayerLeaveGame(IGameLobby lobby, IGame currentGame) {
 			int minimumParticipants = currentGame.getDefinition().getMinimumParticipantCount();
 			if (lobby.getPlayers().size() == minimumParticipants - 1) {
-				ITextComponent noLongerEnoughPlayers = GameTexts.Status.noLongerEnoughPlayers();
+				Component noLongerEnoughPlayers = GameTexts.Status.noLongerEnoughPlayers();
 				lobby.getTrackingPlayers().sendMessage(noLongerEnoughPlayers);
 			}
 		}
@@ -331,25 +331,25 @@ final class GameLobby implements IGameLobby {
 
 	static final class NetworkUpdateListener implements LobbyStateListener {
 		@Override
-		public void onPlayerJoin(IGameLobby lobby, ServerPlayerEntity player) {
+		public void onPlayerJoin(IGameLobby lobby, ServerPlayer player) {
 			LoveTropicsNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), JoinedLobbyMessage.create(lobby));
 			lobby.getTrackingPlayers().sendPacket(LoveTropicsNetwork.CHANNEL, LobbyPlayersMessage.update(lobby));
 		}
 
 		@Override
-		public void onPlayerLeave(IGameLobby lobby, ServerPlayerEntity player) {
+		public void onPlayerLeave(IGameLobby lobby, ServerPlayer player) {
 			LoveTropicsNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new LeftLobbyMessage());
 			lobby.getTrackingPlayers().sendPacket(LoveTropicsNetwork.CHANNEL, LobbyPlayersMessage.update(lobby));
 		}
 
 		@Override
-		public void onPlayerStartTracking(IGameLobby lobby, ServerPlayerEntity player) {
+		public void onPlayerStartTracking(IGameLobby lobby, ServerPlayer player) {
 			LoveTropicsNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), LobbyUpdateMessage.update(lobby));
 			LoveTropicsNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), LobbyPlayersMessage.update(lobby));
 		}
 
 		@Override
-		public void onPlayerStopTracking(IGameLobby lobby, ServerPlayerEntity player) {
+		public void onPlayerStopTracking(IGameLobby lobby, ServerPlayer player) {
 			LoveTropicsNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), LobbyUpdateMessage.remove(lobby));
 		}
 

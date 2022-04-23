@@ -2,14 +2,14 @@ package com.lovetropics.minigames.common.core.game.util;
 
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
-import net.minecraft.entity.item.ItemEntity;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.util.ActionResultType;
-import net.minecraft.util.Hand;
-import net.minecraft.util.IItemProvider;
-import net.minecraft.util.text.ITextComponent;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.level.ItemLike;
+import net.minecraft.network.chat.Component;
 
 import javax.annotation.Nullable;
 
@@ -29,40 +29,40 @@ public final class SelectorItems<V> {
 		events.listen(GamePlayerEvents.THROW_ITEM, this::onThrowItem);
 	}
 
-	public void giveSelectorsTo(ServerPlayerEntity player) {
+	public void giveSelectorsTo(ServerPlayer player) {
 		for (V value : this.values) {
-			IItemProvider item = handlers.getItemFor(value);
+			ItemLike item = handlers.getItemFor(value);
 			player.addItem(this.createSelectorItem(item, value));
 		}
 	}
 
-	private ActionResultType onUseItem(ServerPlayerEntity player, Hand hand) {
+	private InteractionResult onUseItem(ServerPlayer player, InteractionHand hand) {
 		ItemStack heldStack = player.getItemInHand(hand);
 		if (heldStack.isEmpty()) {
-			return ActionResultType.PASS;
+			return InteractionResult.PASS;
 		}
 
 		V value = getValueForSelector(heldStack);
 		if (value != null) {
 			this.handlers.onPlayerSelected(player, value);
-			return ActionResultType.SUCCESS;
+			return InteractionResult.SUCCESS;
 		}
 
-		return ActionResultType.PASS;
+		return InteractionResult.PASS;
 	}
 
-	private ActionResultType onThrowItem(ServerPlayerEntity player, ItemEntity entity) {
+	private InteractionResult onThrowItem(ServerPlayer player, ItemEntity entity) {
 		V value = getValueForSelector(entity.getItem());
 		if (value != null) {
-			return ActionResultType.FAIL;
+			return InteractionResult.FAIL;
 		}
 
-		return ActionResultType.PASS;
+		return InteractionResult.PASS;
 	}
 
 	@Nullable
 	private V getValueForSelector(ItemStack stack) {
-		CompoundNBT tag = stack.getTag();
+		CompoundTag tag = stack.getTag();
 		if (tag == null) return null;
 
 		String id = tag.getString(KEY);
@@ -75,23 +75,23 @@ public final class SelectorItems<V> {
 		return null;
 	}
 
-	private ItemStack createSelectorItem(IItemProvider item, V value) {
+	private ItemStack createSelectorItem(ItemLike item, V value) {
 		ItemStack stack = new ItemStack(item);
 		stack.setHoverName(this.handlers.getNameFor(value));
 
-		CompoundNBT tag = stack.getOrCreateTag();
+		CompoundTag tag = stack.getOrCreateTag();
 		tag.putString(KEY, this.handlers.getIdFor(value));
 
 		return stack;
 	}
 
 	public interface Handlers<V> {
-		void onPlayerSelected(ServerPlayerEntity player, V value);
+		void onPlayerSelected(ServerPlayer player, V value);
 
 		String getIdFor(V value);
 
-		ITextComponent getNameFor(V value);
+		Component getNameFor(V value);
 
-		IItemProvider getItemFor(V value);
+		ItemLike getItemFor(V value);
 	}
 }

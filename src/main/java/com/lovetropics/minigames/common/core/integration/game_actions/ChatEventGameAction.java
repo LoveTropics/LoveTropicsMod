@@ -6,9 +6,9 @@ import com.lovetropics.minigames.common.core.game.behavior.event.GamePackageEven
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.ActionResultType;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.TextFormatting;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.ChatFormatting;
 
 import java.time.LocalDateTime;
 import java.util.Comparator;
@@ -59,14 +59,14 @@ public class ChatEventGameAction extends GameAction {
 
         final int totalVotes = votes;
         Consumer<IGamePhase> preamble = g -> g.getAllPlayers().sendMessage(
-                new StringTextComponent(this.title).withStyle(TextFormatting.BOLD, TextFormatting.AQUA)
-                    .append(new StringTextComponent(
+                new TextComponent(this.title).withStyle(ChatFormatting.BOLD, ChatFormatting.AQUA)
+                    .append(new TextComponent(
                             " just completed! After " + totalVotes + " votes, chat decided on something to happen... Do you trust them to have been nice?"
-                    ).withStyle(TextFormatting.GRAY))
+                    ).withStyle(ChatFormatting.GRAY))
         );
 
-        ActionResultType result = game.invoker(GamePackageEvents.RECEIVE_PACKAGE).onReceivePackage(preamble, winnerPackage);
-        return result == ActionResultType.SUCCESS;
+        InteractionResult result = game.invoker(GamePackageEvents.RECEIVE_PACKAGE).onReceivePackage(preamble, winnerPackage);
+        return result == InteractionResult.SUCCESS;
     }
 
     public String getTitle() {

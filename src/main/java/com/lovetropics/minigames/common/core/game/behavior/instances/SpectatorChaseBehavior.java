@@ -10,7 +10,7 @@ import com.lovetropics.minigames.common.core.game.client_state.GameClientStateTy
 import com.lovetropics.minigames.common.core.game.client_state.instance.SpectatingClientState;
 import com.lovetropics.minigames.common.core.game.player.PlayerSet;
 import com.mojang.serialization.Codec;
-import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.server.level.ServerPlayer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,7 +26,7 @@ public final class SpectatorChaseBehavior implements IGameBehavior {
 		events.listen(GamePhaseEvents.DESTROY, () -> stop(game));
 	}
 
-	private void removePlayer(IGamePhase game, ServerPlayerEntity player) {
+	private void removePlayer(IGamePhase game, ServerPlayer player) {
 		GameClientState.removeFromPlayer(GameClientStateTypes.SPECTATING.get(), player);
 
 		this.sendSpectatingUpdate(game);
@@ -45,7 +45,7 @@ public final class SpectatorChaseBehavior implements IGameBehavior {
 		PlayerSet participants = game.getParticipants();
 
 		List<UUID> ids = new ArrayList<>(participants.size());
-		for (ServerPlayerEntity participant : participants) {
+		for (ServerPlayer participant : participants) {
 			ids.add(participant.getUUID());
 		}
 

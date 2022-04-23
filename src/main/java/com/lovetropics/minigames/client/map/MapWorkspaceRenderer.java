@@ -6,14 +6,14 @@ import com.lovetropics.minigames.common.core.map.workspace.ClientWorkspaceRegion
 import com.mojang.blaze3d.systems.RenderSystem;
 import it.unimi.dsi.fastutil.HashCommon;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.ActiveRenderInfo;
-import net.minecraft.client.renderer.BufferBuilder;
-import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.Camera;
+import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.Tesselator;
 import net.minecraft.client.renderer.debug.DebugRenderer;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.vector.Vector3d;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import net.minecraft.core.BlockPos;
+import net.minecraft.util.Mth;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -32,12 +32,12 @@ public final class MapWorkspaceRenderer {
 		}
 
 		Minecraft client = Minecraft.getInstance();
-		ActiveRenderInfo renderInfo = client.gameRenderer.getMainCamera();
+		Camera renderInfo = client.gameRenderer.getMainCamera();
 		if (!renderInfo.isInitialized()) {
 			return;
 		}
 
-		Vector3d view = renderInfo.getPosition();
+		Vec3 view = renderInfo.getPosition();
 
 		RenderSystem.pushMatrix();
 		RenderSystem.multMatrix(event.getMatrixStack().last().pose());
@@ -91,11 +91,11 @@ public final class MapWorkspaceRenderer {
 		}
 
 		for (ClientWorkspaceRegions.Entry entry : regions) {
-			Vector3d center = entry.region.getCenter();
+			Vec3 center = entry.region.getCenter();
 			BlockPos size = entry.region.getSize();
 
 			int minSize = Math.min(size.getX(), Math.min(size.getY(), size.getZ())) - 1;
-			float scale = MathHelper.clamp(minSize * 0.03125F, 0.03125F, 0.125F);
+			float scale = Mth.clamp(minSize * 0.03125F, 0.03125F, 0.125F);
 
 			DebugRenderer.renderFloatingText(entry.key, center.x, center.y, center.z, 0xFFFFFFFF, scale);
 		}
@@ -113,9 +113,9 @@ public final class MapWorkspaceRenderer {
 	}
 
 	private static void renderOutline(double minX, double minY, double minZ, double maxX, double maxY, double maxZ, float red, float green, float blue, float alpha) {
-		Tessellator tessellator = Tessellator.getInstance();
+		Tesselator tessellator = Tesselator.getInstance();
 		BufferBuilder builder = tessellator.getBuilder();
-		builder.begin(GL11.GL_LINES, DefaultVertexFormats.POSITION_COLOR);
+		builder.begin(GL11.GL_LINES, DefaultVertexFormat.POSITION_COLOR);
 
 		builder.vertex(minX, minY, minZ).color(red, green, blue, alpha).endVertex();
 		builder.vertex(maxX, minY, minZ).color(red, green, blue, alpha).endVertex();

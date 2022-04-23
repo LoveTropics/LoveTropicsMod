@@ -5,7 +5,7 @@ import com.lovetropics.minigames.common.core.game.client_state.GameClientStateTy
 import com.lovetropics.minigames.common.core.game.client_state.GameClientStateTypes;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.util.UUIDCodec;
+import net.minecraft.core.SerializableUUID;
 
 import java.util.List;
 import java.util.UUID;
@@ -13,7 +13,7 @@ import java.util.UUID;
 public final class SpectatingClientState implements GameClientState {
 	public static final Codec<SpectatingClientState> CODEC = RecordCodecBuilder.create(instance -> {
 		return instance.group(
-				UUIDCodec.CODEC.listOf().fieldOf("players").forGetter(c -> c.players)
+				SerializableUUID.CODEC.listOf().fieldOf("players").forGetter(c -> c.players)
 		).apply(instance, SpectatingClientState::new);
 	});
 

@@ -11,7 +11,7 @@ import com.lovetropics.minigames.common.core.game.player.PlayerSet;
 import com.lovetropics.minigames.common.core.game.state.statistics.PlayerKey;
 import com.lovetropics.minigames.common.core.game.state.statistics.StatisticKey;
 import com.mojang.serialization.Codec;
-import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.server.level.ServerPlayer;
 
 public class IndividualWinTrigger implements IGameBehavior {
 	public static final Codec<IndividualWinTrigger> CODEC = Codec.unit(IndividualWinTrigger::new);
@@ -25,7 +25,7 @@ public class IndividualWinTrigger implements IGameBehavior {
 
 			PlayerSet participants = game.getParticipants();
 			if (participants.size() == 1) {
-				ServerPlayerEntity winningPlayer = participants.iterator().next();
+				ServerPlayer winningPlayer = participants.iterator().next();
 
 				game.invoker(GameLogicEvents.WIN_TRIGGERED).onWinTriggered(winningPlayer.getDisplayName());
 				game.invoker(GameLogicEvents.GAME_OVER).onGameOver();

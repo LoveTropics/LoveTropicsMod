@@ -14,25 +14,31 @@ import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.LeverBlock;
-import net.minecraft.block.PistonHeadBlock;
-import net.minecraft.entity.MobEntity;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.network.play.server.SAnimateHandPacket;
-import net.minecraft.state.properties.AttachFace;
-import net.minecraft.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.LeverBlock;
+import net.minecraft.world.level.block.piston.PistonHeadBlock;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.network.protocol.game.ClientboundAnimatePacket;
+import net.minecraft.world.level.block.state.properties.AttachFace;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.util.*;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.BlockRayTraceResult;
-import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.world.server.ServerWorld;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraftforge.common.util.Constants;
 
 import java.util.List;
 import java.util.function.Predicate;
+
+import net.minecraft.core.Direction;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 
 public final class ScareTrapPlantBehavior implements IGameBehavior {
 	public static final Codec<ScareTrapPlantBehavior> CODEC = RecordCodecBuilder.create(instance -> instance.group(
@@ -40,7 +46,7 @@ public final class ScareTrapPlantBehavior implements IGameBehavior {
 			Codec.DOUBLE.fieldOf("scare_radius").forGetter(c -> c.scareRadius)
 	).apply(instance, ScareTrapPlantBehavior::new));
 
-	private static final Predicate<MobEntity> SCARE_PREDICATE = BbMobEntity.PREDICATE;
+	private static final Predicate<Mob> SCARE_PREDICATE = BbMobEntity.PREDICATE;
 
 	private final double triggerRadius;
 	private final double scareRadius;
@@ -67,7 +73,7 @@ public final class ScareTrapPlantBehavior implements IGameBehavior {
 		events.listen(GamePlayerEvents.USE_BLOCK, this::useBlock);
 	}
 
-	private PlantPlacement place(ServerPlayerEntity player, Plot plot, BlockPos pos) {
+	private PlantPlacement place(ServerPlayer player, Plot plot, BlockPos pos) {
 		return new PlantPlacement()
 				.covers(this.buildPlantCoverage(plot, pos))
 				.places((world, coverage) -> {
@@ -76,27 +82,27 @@ public final class ScareTrapPlantBehavior implements IGameBehavior {
 				});
 	}
 
-	private ActionResultType useBlock(ServerPlayerEntity player, ServerWorld world, BlockPos pos, Hand hand, BlockRayTraceResult traceResult) {
+	private InteractionResult useBlock(ServerPlayer player, ServerLevel world, BlockPos pos, InteractionHand hand, BlockHitResult traceResult) {
 		if (world.getBlockState(pos).is(Blocks.LEVER)) {
 			return this.useLever(player, pos);
 		}
 
-		return ActionResultType.PASS;
+		return InteractionResult.PASS;
 	}
 
-	private ActionResultType useLever(ServerPlayerEntity player, BlockPos pos) {
+	private InteractionResult useLever(ServerPlayer player, BlockPos pos) {
 		Plot plot = plots.getPlotFor(player);
 		if (plot != null && plot.bounds.contains(pos)) {
 			Plant plant = plot.plants.getPlantAt(pos);
 			if (plant != null && this.resetTrap(plot, plant)) {
-				return ActionResultType.SUCCESS;
+				return InteractionResult.SUCCESS;
 			}
 		}
 
-		return ActionResultType.FAIL;
+		return InteractionResult.FAIL;
 	}
 
-	private void tick(ServerPlayerEntity player, Plot plot, List<Plant> plants) {
+	private void tick(ServerPlayer player, Plot plot, List<Plant> plants) {
 		long ticks = game.ticks();
 		if (ticks % 10 != 0) return;
 
@@ -115,36 +121,36 @@ public final class ScareTrapPlantBehavior implements IGameBehavior {
 	private boolean tickTrap(Plot plot, Plant plant) {
 		// TODO: mobs should run around in panic after being scared
 
-		AxisAlignedBB bounds = plant.coverage().asBounds();
-		AxisAlignedBB triggerBounds = bounds.inflate(this.triggerRadius);
+		AABB bounds = plant.coverage().asBounds();
+		AABB triggerBounds = bounds.inflate(this.triggerRadius);
 
-		ServerWorld world = game.getWorld();
+		ServerLevel world = game.getWorld();
 
-		List<MobEntity> triggerEntities = world.getEntitiesOfClass(MobEntity.class, triggerBounds, SCARE_PREDICATE);
+		List<Mob> triggerEntities = world.getEntitiesOfClass(Mob.class, triggerBounds, SCARE_PREDICATE);
 		if (triggerEntities.isEmpty()) {
 			return false;
 		}
 
-		AxisAlignedBB scareBounds = bounds.inflate(this.scareRadius);
-		List<MobEntity> entities = world.getEntitiesOfClass(MobEntity.class, scareBounds, SCARE_PREDICATE);
+		AABB scareBounds = bounds.inflate(this.scareRadius);
+		List<Mob> entities = world.getEntitiesOfClass(Mob.class, scareBounds, SCARE_PREDICATE);
 		this.triggerTrap(plot, plant, entities);
 
 		return true;
 	}
 
-	private void triggerTrap(Plot plot, Plant plant, List<MobEntity> entities) {
+	private void triggerTrap(Plot plot, Plant plant, List<Mob> entities) {
 		BlockPos origin = plant.coverage().getOrigin();
-		Vector3d pushFrom = Vector3d.atCenterOf(origin);
+		Vec3 pushFrom = Vec3.atCenterOf(origin);
 
-		for (MobEntity entity : entities) {
+		for (Mob entity : entities) {
 			this.scareEntity(origin, pushFrom, entity);
 		}
 
 		this.extendTrap(plot, plant);
 	}
 
-	private void scareEntity(BlockPos pos, Vector3d pushFrom, MobEntity entity) {
-		Vector3d entityPos = entity.position();
+	private void scareEntity(BlockPos pos, Vec3 pushFrom, Mob entity) {
+		Vec3 entityPos = entity.position();
 
 		// Scaled so that closer values are higher, with a max of 5
 		double dist = 2.0 / (0.1 + entityPos.distanceTo(pushFrom));
@@ -156,7 +162,7 @@ public final class ScareTrapPlantBehavior implements IGameBehavior {
 		entity.push(dist * Math.cos(theta), 0.25, dist * Math.sin(theta));
 
 		// Prevent mobs from flying to the moon due to too much motion
-		Vector3d motion = entity.getDeltaMovement();
+		Vec3 motion = entity.getDeltaMovement();
 		entity.setDeltaMovement(Math.min(motion.x, 5), Math.min(motion.y, 0.25), Math.min(motion.z, 5));
 
 		if (entity instanceof BbMobEntity) {
@@ -164,7 +170,7 @@ public final class ScareTrapPlantBehavior implements IGameBehavior {
 		}
 
 		// Spawn critical hit particles around the entity
-		game.getAllPlayers().sendPacket(new SAnimateHandPacket(entity, 4));
+		game.getAllPlayers().sendPacket(new ClientboundAnimatePacket(entity, 4));
 	}
 
 	private void extendTrap(Plot plot, Plant plant) {
@@ -175,7 +181,7 @@ public final class ScareTrapPlantBehavior implements IGameBehavior {
 
 		BlockPos origin = plant.coverage().getOrigin();
 
-		game.getWorld().playSound(null, origin, SoundEvents.PISTON_EXTEND, SoundCategory.BLOCKS, 1.0F, 1.0F);
+		game.getWorld().playSound(null, origin, SoundEvents.PISTON_EXTEND, SoundSource.BLOCKS, 1.0F, 1.0F);
 
 		this.clearTrap(plant);
 		this.placeExtendedTrap(plot, origin);
@@ -189,7 +195,7 @@ public final class ScareTrapPlantBehavior implements IGameBehavior {
 
 		BlockPos origin = plant.coverage().getOrigin();
 
-		game.getWorld().playSound(null, origin, SoundEvents.PISTON_CONTRACT, SoundCategory.BLOCKS, 1.0F, 1.0F);
+		game.getWorld().playSound(null, origin, SoundEvents.PISTON_CONTRACT, SoundSource.BLOCKS, 1.0F, 1.0F);
 
 		this.clearTrap(plant);
 		this.placeReadyTrap(plot, origin);
@@ -198,14 +204,14 @@ public final class ScareTrapPlantBehavior implements IGameBehavior {
 	}
 
 	private void clearTrap(Plant plant) {
-		ServerWorld world = game.getWorld();
+		ServerLevel world = game.getWorld();
 		for (BlockPos pos : plant.coverage()) {
 			world.setBlock(pos, Blocks.AIR.defaultBlockState(), Constants.BlockFlags.DEFAULT | Constants.BlockFlags.UPDATE_NEIGHBORS);
 		}
 	}
 
 	private void placeExtendedTrap(Plot plot, BlockPos pos) {
-		ServerWorld world = game.getWorld();
+		ServerLevel world = game.getWorld();
 
 		world.setBlockAndUpdate(pos, Blocks.PISTON_HEAD.defaultBlockState().setValue(PistonHeadBlock.FACING, Direction.UP));
 		world.setBlockAndUpdate(pos.above(), Blocks.JACK_O_LANTERN.defaultBlockState().setValue(BlockStateProperties.HORIZONTAL_FACING, plot.forward));
@@ -217,7 +223,7 @@ public final class ScareTrapPlantBehavior implements IGameBehavior {
 	}
 
 	private void placeReadyTrap(Plot plot, BlockPos pos) {
-		ServerWorld world = game.getWorld();
+		ServerLevel world = game.getWorld();
 		world.setBlockAndUpdate(pos, Blocks.JACK_O_LANTERN.defaultBlockState().setValue(BlockStateProperties.HORIZONTAL_FACING, plot.forward));
 	}
 

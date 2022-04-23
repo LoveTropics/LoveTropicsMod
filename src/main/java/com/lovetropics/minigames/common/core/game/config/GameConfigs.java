@@ -9,8 +9,8 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.JsonOps;
-import net.minecraft.resources.IResource;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.server.packs.resources.Resource;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.event.AddReloadListenerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -44,7 +44,7 @@ public final class GameConfigs {
 
 				Collection<ResourceLocation> paths = resourceManager.listResources("games", file -> file.endsWith(".json"));
 				for (ResourceLocation path : paths) {
-					try (IResource resource = resourceManager.getResource(path)) {
+					try (Resource resource = resourceManager.getResource(path)) {
 						DataResult<GameConfig> result = loadConfig(ops, behaviorReader, path, resource);
 						result.result().ifPresent(config -> REGISTRY.register(config.id, config));
 
@@ -63,7 +63,7 @@ public final class GameConfigs {
 
 	private static DataResult<GameConfig> loadConfig(
 			DynamicOps<JsonElement> ops, BehaviorReferenceReader reader,
-			ResourceLocation path, IResource resource
+			ResourceLocation path, Resource resource
 	) throws IOException {
 		try (InputStream input = resource.getInputStream()) {
 			JsonElement json = PARSER.parse(new BufferedReader(new InputStreamReader(input)));

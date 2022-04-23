@@ -6,9 +6,9 @@ import com.mojang.brigadier.LiteralMessage;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.serialization.Codec;
-import net.minecraft.command.CommandSource;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.server.level.ServerPlayer;
 
 import javax.annotation.Nullable;
 
@@ -35,7 +35,7 @@ public final class ControlCommand {
 		return new ControlCommand(Scope.INITIATOR, handler);
 	}
 
-	public void invoke(CommandSource source, @Nullable PlayerKey initiator) throws CommandSyntaxException {
+	public void invoke(CommandSourceStack source, @Nullable PlayerKey initiator) throws CommandSyntaxException {
 		if (!canUse(source, initiator)) {
 			throw NO_PERMISSION.create();
 		}
@@ -43,32 +43,32 @@ public final class ControlCommand {
 		handler.run(source);
 	}
 
-	public boolean canUse(CommandSource source, @Nullable PlayerKey initiator) {
+	public boolean canUse(CommandSourceStack source, @Nullable PlayerKey initiator) {
 		return scope.testSource(source, initiator);
 	}
 
 	public enum Scope {
 		EVERYONE("everyone") {
 			@Override
-			public boolean testSource(CommandSource source, @Nullable PlayerKey initiator) {
+			public boolean testSource(CommandSourceStack source, @Nullable PlayerKey initiator) {
 				return true;
 			}
 		},
 		ADMINS("admins") {
 			@Override
-			public boolean testSource(CommandSource source, @Nullable PlayerKey initiator) {
+			public boolean testSource(CommandSourceStack source, @Nullable PlayerKey initiator) {
 				return source.hasPermission(2);
 			}
 		},
 		INITIATOR("initiator") {
 			@Override
-			public boolean testSource(CommandSource source, @Nullable PlayerKey initiator) {
+			public boolean testSource(CommandSourceStack source, @Nullable PlayerKey initiator) {
 				if (source.hasPermission(2)) {
 					return true;
 				}
 
 				Entity entity = source.getEntity();
-				if (entity instanceof ServerPlayerEntity) {
+				if (entity instanceof ServerPlayer) {
 					return initiator != null && initiator.matches(entity);
 				}
 
@@ -84,10 +84,10 @@ public final class ControlCommand {
 			this.key = key;
 		}
 
-		public abstract boolean testSource(CommandSource source, @Nullable PlayerKey initiator);
+		public abstract boolean testSource(CommandSourceStack source, @Nullable PlayerKey initiator);
 	}
 
 	public interface Handler {
-		void run(CommandSource source) throws CommandSyntaxException;
+		void run(CommandSourceStack source) throws CommandSyntaxException;
 	}
 }

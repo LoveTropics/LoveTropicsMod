@@ -6,9 +6,9 @@ import com.lovetropics.lib.codec.MoreCodecs;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.item.DyeColor;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.TextFormatting;
+import net.minecraft.world.item.DyeColor;
+import net.minecraft.network.chat.Component;
+import net.minecraft.ChatFormatting;
 
 import java.util.Collections;
 import java.util.List;
@@ -19,7 +19,7 @@ public class GameTeamConfig {
 		return instance.group(
 				MoreCodecs.TEXT.fieldOf("name").forGetter(GameTeamConfig::name),
 				inputOptionalFieldOf(MoreCodecs.DYE_COLOR, "dye", DyeColor.WHITE).forGetter(GameTeamConfig::dye),
-				inputOptionalFieldOf(MoreCodecs.FORMATTING, "text", TextFormatting.WHITE).forGetter(GameTeamConfig::formatting),
+				inputOptionalFieldOf(MoreCodecs.FORMATTING, "text", ChatFormatting.WHITE).forGetter(GameTeamConfig::formatting),
 				inputOptionalFieldOf(MoreCodecs.UUID_STRING.listOf(), "assign", Collections.emptyList()).forGetter(GameTeamConfig::assignedPlayers),
 				inputOptionalFieldOf(Codec.INT, "max_size", Integer.MAX_VALUE).forGetter(GameTeamConfig::maxSize)
 		).apply(instance, GameTeamConfig::new);
@@ -27,14 +27,14 @@ public class GameTeamConfig {
 
 	public static final Codec<GameTeamConfig> CODEC = MAP_CODEC.codec();
 
-	private final ITextComponent name;
+	private final Component name;
 	private final DyeColor dye;
-	private final TextFormatting formatting;
+	private final ChatFormatting formatting;
 
 	private final List<UUID> assignedPlayers;
 	private final int maxSize;
 
-	public GameTeamConfig(ITextComponent name, DyeColor dye, TextFormatting formatting, List<UUID> assignedPlayers, int maxSize) {
+	public GameTeamConfig(Component name, DyeColor dye, ChatFormatting formatting, List<UUID> assignedPlayers, int maxSize) {
 		this.name = name;
 		this.dye = dye;
 		this.formatting = formatting;
@@ -42,7 +42,7 @@ public class GameTeamConfig {
 		this.maxSize = maxSize;
 	}
 
-	public ITextComponent name() {
+	public Component name() {
 		return name;
 	}
 
@@ -50,7 +50,7 @@ public class GameTeamConfig {
 		return dye;
 	}
 
-	public TextFormatting formatting() {
+	public ChatFormatting formatting() {
 		return formatting;
 	}
 

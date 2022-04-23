@@ -2,8 +2,8 @@ package com.lovetropics.minigames.client.game.handler;
 
 import com.lovetropics.minigames.common.core.game.client_state.instance.ResourcePackClientState;
 import net.minecraft.client.Minecraft;
-import net.minecraft.resources.ResourcePackInfo;
-import net.minecraft.resources.ResourcePackList;
+import net.minecraft.server.packs.repository.Pack;
+import net.minecraft.server.packs.repository.PackRepository;
 
 import java.util.List;
 import java.util.function.Predicate;
@@ -41,10 +41,10 @@ public final class GameResourcePackHandler implements ClientGameStateHandler<Res
 	}
 
 	private void updatePacks(Predicate<List<String>> apply) {
-		ResourcePackList packList = CLIENT.getResourcePackRepository();
+		PackRepository packList = CLIENT.getResourcePackRepository();
 
 		List<String> enabledPacks = packList.getSelectedPacks().stream()
-				.map(ResourcePackInfo::getId)
+				.map(Pack::getId)
 				.collect(Collectors.toList());
 
 		if (apply.test(enabledPacks)) {

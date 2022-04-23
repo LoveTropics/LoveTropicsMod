@@ -1,12 +1,14 @@
 package com.lovetropics.minigames.common.content.biodiversity_blitz.item;
 
-import net.minecraft.block.Block;
-import net.minecraft.item.BlockNamedItem;
-import net.minecraft.item.Item;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.item.ItemNameBlockItem;
+import net.minecraft.world.item.Item;
 
 import java.util.Map;
 
-public final class UniqueBlockNamedItem extends BlockNamedItem {
+import net.minecraft.world.item.Item.Properties;
+
+public final class UniqueBlockNamedItem extends ItemNameBlockItem {
     public UniqueBlockNamedItem(Block blockIn, Properties properties) {
         super(blockIn, properties);
     }

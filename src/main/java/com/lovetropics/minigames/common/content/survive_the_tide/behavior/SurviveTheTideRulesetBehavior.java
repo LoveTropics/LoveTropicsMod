@@ -13,21 +13,21 @@ import com.lovetropics.minigames.common.core.game.state.GamePhase;
 import com.lovetropics.minigames.common.core.game.state.GamePhaseState;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.FenceBlock;
-import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.inventory.IInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.potion.EffectInstance;
-import net.minecraft.potion.Effects;
-import net.minecraft.util.ActionResultType;
-import net.minecraft.util.DamageSource;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.world.GameRules;
-import net.minecraft.world.server.ServerWorld;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.FenceBlock;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.Container;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.level.GameRules;
+import net.minecraft.server.level.ServerLevel;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -49,13 +49,13 @@ public class SurviveTheTideRulesetBehavior implements IGameBehavior {
 	private final String phaseToFreeParticipants;
 	private final List<String> phasesWithNoPVP;
 	private final boolean forceDropItemsOnDeath;
-	private final ITextComponent messageOnSetPlayersFree;
+	private final Component messageOnSetPlayersFree;
 
 	private boolean hasFreedParticipants = false;
 
 	private GamePhaseState phases;
 
-	public SurviveTheTideRulesetBehavior(final String spawnAreaKey, final String phaseToFreeParticipants, final List<String> phasesWithNoPVP, final boolean forceDropItemsOnDeath, final ITextComponent messageOnSetPlayersFree) {
+	public SurviveTheTideRulesetBehavior(final String spawnAreaKey, final String phaseToFreeParticipants, final List<String> phasesWithNoPVP, final boolean forceDropItemsOnDeath, final Component messageOnSetPlayersFree) {
 		this.spawnAreaKey = spawnAreaKey;
 		this.phaseToFreeParticipants = phaseToFreeParticipants;
 		this.phasesWithNoPVP = phasesWithNoPVP;
@@ -76,32 +76,32 @@ public class SurviveTheTideRulesetBehavior implements IGameBehavior {
 		events.listen(GamePhaseEvents.TICK, () -> tick(game));
 
 		events.listen(GameLivingEntityEvents.ENDER_TELEPORT, (entity, x, y, z, damage, callback) -> {
-			if (entity instanceof ServerPlayerEntity) {
+			if (entity instanceof ServerPlayer) {
 				callback.accept(0f); // Set ender pearl damage to 0
 			}
 		});
 	}
 
-	private ActionResultType onPlayerDeath(ServerPlayerEntity player, DamageSource damageSource) {
+	private InteractionResult onPlayerDeath(ServerPlayer player, DamageSource damageSource) {
 		if (forceDropItemsOnDeath && player.level.getGameRules().getBoolean(GameRules.RULE_KEEPINVENTORY)) {
 			destroyVanishingCursedItems(player.inventory);
 			player.inventory.dropAll();
 		}
-		return ActionResultType.PASS;
+		return InteractionResult.PASS;
 	}
 
-	private ActionResultType onPlayerHurt(ServerPlayerEntity player, DamageSource source, float amount) {
-		if ((source.getEntity() instanceof ServerPlayerEntity || source.isProjectile()) && phases.is(this::isSafePhase)) {
-			return ActionResultType.FAIL;
+	private InteractionResult onPlayerHurt(ServerPlayer player, DamageSource source, float amount) {
+		if ((source.getEntity() instanceof ServerPlayer || source.isProjectile()) && phases.is(this::isSafePhase)) {
+			return InteractionResult.FAIL;
 		}
-		return ActionResultType.PASS;
+		return InteractionResult.PASS;
 	}
 
-	private ActionResultType onPlayerAttackEntity(ServerPlayerEntity player, Entity target) {
-		if (target instanceof ServerPlayerEntity && phases.is(this::isSafePhase)) {
-			return ActionResultType.FAIL;
+	private InteractionResult onPlayerAttackEntity(ServerPlayer player, Entity target) {
+		if (target instanceof ServerPlayer && phases.is(this::isSafePhase)) {
+			return InteractionResult.FAIL;
 		}
-		return ActionResultType.PASS;
+		return InteractionResult.PASS;
 	}
 
 	private void tick(final IGamePhase game) {
@@ -115,7 +115,7 @@ public class SurviveTheTideRulesetBehavior implements IGameBehavior {
 		return phasesWithNoPVP.contains(phase.key);
 	}
 
-	private void destroyVanishingCursedItems(IInventory inventory) {
+	private void destroyVanishingCursedItems(Container inventory) {
 		for (int i = 0; i < inventory.getContainerSize(); ++i) {
 			ItemStack itemstack = inventory.getItem(i);
 			if (!itemstack.isEmpty() && EnchantmentHelper.hasVanishingCurse(itemstack)) {
@@ -126,7 +126,7 @@ public class SurviveTheTideRulesetBehavior implements IGameBehavior {
 
 	private void setParticipantsFree(final IGamePhase game) {
 		// Destroy all fences blocking players from getting out of spawn area for phase 0
-		ServerWorld world = game.getWorld();
+		ServerLevel world = game.getWorld();
 		if (spawnArea != null) {
 			for (BlockPos p : spawnArea) {
 				if (world.getBlockState(p).getBlock() instanceof FenceBlock) {
@@ -138,6 +138,6 @@ public class SurviveTheTideRulesetBehavior implements IGameBehavior {
 		game.getAllPlayers().sendMessage(messageOnSetPlayersFree);
 
 		// So players can drop down without fall damage
-		game.getParticipants().addPotionEffect(new EffectInstance(Effects.SLOW_FALLING, 20 * 20));
+		game.getParticipants().addPotionEffect(new MobEffectInstance(MobEffects.SLOW_FALLING, 20 * 20));
 	}
 }

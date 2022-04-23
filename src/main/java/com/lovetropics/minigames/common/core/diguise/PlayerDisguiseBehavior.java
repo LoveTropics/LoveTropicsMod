@@ -1,19 +1,25 @@
 package com.lovetropics.minigames.common.core.diguise;
 
 import com.lovetropics.minigames.Constants;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntitySize;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.Pose;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityDimensions;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Pose;
 import net.minecraft.entity.ai.attributes.*;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.registry.Registry;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.core.Registry;
 import net.minecraftforge.event.entity.EntityEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
 import javax.annotation.Nullable;
 import java.util.UUID;
+
+import net.minecraft.world.entity.ai.attributes.Attribute;
+import net.minecraft.world.entity.ai.attributes.AttributeInstance;
+import net.minecraft.world.entity.ai.attributes.AttributeMap;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 
 @Mod.EventBusSubscriber(modid = Constants.MODID)
 public final class PlayerDisguiseBehavior {
@@ -23,13 +29,13 @@ public final class PlayerDisguiseBehavior {
 	public static void onSetEntitySize(EntityEvent.Size event) {
 		Entity entity = event.getEntity();
 
-		if (entity instanceof PlayerEntity) {
-			PlayerEntity player = (PlayerEntity) entity;
+		if (entity instanceof Player) {
+			Player player = (Player) entity;
 			Entity disguise = PlayerDisguise.getDisguiseEntity(player);
 
 			if (disguise != null) {
 				Pose pose = event.getPose();
-				EntitySize size = disguise.getDimensions(pose);
+				EntityDimensions size = disguise.getDimensions(pose);
 
 				event.setNewSize(size);
 				event.setNewEyeHeight(disguise.getEyeHeightAccess(pose, size));
@@ -37,17 +43,17 @@ public final class PlayerDisguiseBehavior {
 		}
 	}
 
-	public static void applyAttributes(PlayerEntity player, LivingEntity disguise) {
-		AttributeModifierManager playerAttributes = player.getAttributes();
-		AttributeModifierManager disguiseAttributes = disguise.getAttributes();
+	public static void applyAttributes(Player player, LivingEntity disguise) {
+		AttributeMap playerAttributes = player.getAttributes();
+		AttributeMap disguiseAttributes = disguise.getAttributes();
 
 		for (Attribute attribute : Registry.ATTRIBUTE) {
 			if (!disguiseAttributes.hasAttribute(attribute) || !playerAttributes.hasAttribute(attribute)) {
 				continue;
 			}
 
-			ModifiableAttributeInstance playerInstance = playerAttributes.getInstance(attribute);
-			ModifiableAttributeInstance disguiseInstance = disguiseAttributes.getInstance(attribute);
+			AttributeInstance playerInstance = playerAttributes.getInstance(attribute);
+			AttributeInstance disguiseInstance = disguiseAttributes.getInstance(attribute);
 
 			AttributeModifier modifier = createModifier(playerInstance, disguiseInstance);
 			if (modifier != null) {
@@ -56,10 +62,10 @@ public final class PlayerDisguiseBehavior {
 		}
 	}
 
-	public static void clearAttributes(PlayerEntity player) {
-		AttributeModifierManager attributes = player.getAttributes();
+	public static void clearAttributes(Player player) {
+		AttributeMap attributes = player.getAttributes();
 		for (Attribute attribute : Registry.ATTRIBUTE) {
-			ModifiableAttributeInstance instance = attributes.getInstance(attribute);
+			AttributeInstance instance = attributes.getInstance(attribute);
 			if (instance != null) {
 				instance.removeModifier(ATTRIBUTE_MODIFIER_UUID);
 			}
@@ -67,7 +73,7 @@ public final class PlayerDisguiseBehavior {
 	}
 
 	@Nullable
-	private static AttributeModifier createModifier(ModifiableAttributeInstance player, ModifiableAttributeInstance disguise) {
+	private static AttributeModifier createModifier(AttributeInstance player, AttributeInstance disguise) {
 		double playerValue = player.getBaseValue();
 		double disguiseValue = disguise.getBaseValue();
 

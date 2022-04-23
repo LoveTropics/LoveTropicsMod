@@ -7,10 +7,10 @@ import com.lovetropics.minigames.common.core.game.behavior.event.GamePackageEven
 import com.lovetropics.minigames.common.util.Util;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.enchantment.Enchantments;
-import net.minecraft.inventory.EquipmentSlotType;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
+import net.minecraft.world.item.enchantment.Enchantments;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 
 public final class GivePlayerHeadPackageBehavior implements IGameBehavior {
 	public static final Codec<GivePlayerHeadPackageBehavior> CODEC = RecordCodecBuilder.create(instance -> {
@@ -35,7 +35,7 @@ public final class GivePlayerHeadPackageBehavior implements IGameBehavior {
 			ItemStack head = createHeadForSender(sendingPlayer);
 			if (forced) {
 				head.enchant(Enchantments.BINDING_CURSE, 1);
-				player.setItemSlot(EquipmentSlotType.HEAD, head);
+				player.setItemSlot(EquipmentSlot.HEAD, head);
 			} else {
 				Util.addItemStackToInventory(player, head);
 			}

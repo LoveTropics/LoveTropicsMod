@@ -9,9 +9,9 @@ import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.entity.MobEntity;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.world.server.ServerWorld;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.server.level.ServerLevel;
 
 import java.util.List;
 
@@ -32,7 +32,7 @@ public final class BarrierPlantBehavior implements IGameBehavior {
 			long ticks = game.ticks();
 			if (ticks % 10 != 0) return;
 
-			ServerWorld world = game.getWorld();
+			ServerLevel world = game.getWorld();
 
 			for (Plant plant : plants) {
 				PlantHealth health = plant.state(PlantHealth.KEY);
@@ -40,10 +40,10 @@ public final class BarrierPlantBehavior implements IGameBehavior {
 					continue;
 				}
 
-				AxisAlignedBB bounds = plant.coverage().asBounds();
-				AxisAlignedBB damageBounds = bounds.inflate(1.0, 5.0, 1.0);
+				AABB bounds = plant.coverage().asBounds();
+				AABB damageBounds = bounds.inflate(1.0, 5.0, 1.0);
 
-				List<MobEntity> entities = world.getEntitiesOfClass(MobEntity.class, damageBounds, BbMobEntity.PREDICATE);
+				List<Mob> entities = world.getEntitiesOfClass(Mob.class, damageBounds, BbMobEntity.PREDICATE);
 				if (!entities.isEmpty()) {
 					health.decrement(entities.size());
 				}

@@ -9,7 +9,7 @@ import com.lovetropics.minigames.common.core.game.behavior.event.GamePackageEven
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.server.level.ServerPlayer;
 
 public final class ApplyDisguisePackageBehavior implements IGameBehavior {
 	public static final Codec<ApplyDisguisePackageBehavior> CODEC = RecordCodecBuilder.create(instance -> {
@@ -44,13 +44,13 @@ public final class ApplyDisguisePackageBehavior implements IGameBehavior {
 	}
 
 	private void apply(IGamePhase game) {
-		for (ServerPlayerEntity player : game.getParticipants()) {
+		for (ServerPlayer player : game.getParticipants()) {
 			ServerPlayerDisguises.set(player, this.disguise);
 		}
 	}
 
 	private void disable(IGamePhase game) {
-		for (ServerPlayerEntity player : game.getParticipants()) {
+		for (ServerPlayer player : game.getParticipants()) {
 			ServerPlayerDisguises.clear(player, this.disguise);
 		}
 	}

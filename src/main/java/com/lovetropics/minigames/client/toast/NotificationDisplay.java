@@ -2,7 +2,7 @@ package com.lovetropics.minigames.client.toast;
 
 import com.lovetropics.lib.codec.MoreCodecs;
 import com.mojang.serialization.Codec;
-import net.minecraft.network.PacketBuffer;
+import net.minecraft.network.FriendlyByteBuf;
 
 public final class NotificationDisplay {
 	public final NotificationIcon icon;
@@ -17,14 +17,14 @@ public final class NotificationDisplay {
 		this.visibleTimeMs = visibleTimeMs;
 	}
 
-	public void encode(PacketBuffer buffer) {
+	public void encode(FriendlyByteBuf buffer) {
 		this.icon.encode(buffer);
 		buffer.writeByte(this.sentiment.ordinal() & 0xFF);
 		buffer.writeByte(this.color.ordinal() & 0xFF);
 		buffer.writeVarLong(this.visibleTimeMs);
 	}
 
-	public static NotificationDisplay decode(PacketBuffer buffer) {
+	public static NotificationDisplay decode(FriendlyByteBuf buffer) {
 		NotificationIcon icon = NotificationIcon.decode(buffer);
 		Sentiment sentiment = Sentiment.VALUES[buffer.readUnsignedByte() % Sentiment.VALUES.length];
 		Color color = Color.VALUES[buffer.readUnsignedByte() % Color.VALUES.length];

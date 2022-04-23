@@ -1,35 +1,35 @@
 package com.lovetropics.minigames.client.screen;
 
-import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.util.IReorderingProcessor;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.LanguageMap;
-import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.client.gui.Font;
+import net.minecraft.util.FormattedCharSequence;
+import net.minecraft.network.chat.Component;
+import net.minecraft.locale.Language;
+import net.minecraft.network.chat.TextComponent;
 
 public final class TrimmedText {
-	private final ITextComponent text;
+	private final Component text;
 
-	private IReorderingProcessor trimmedText;
+	private FormattedCharSequence trimmedText;
 	private int trimmedWidth = -1;
 
-	private TrimmedText(ITextComponent text) {
+	private TrimmedText(Component text) {
 		this.text = text;
 	}
 
-	public static TrimmedText of(ITextComponent text) {
+	public static TrimmedText of(Component text) {
 		return new TrimmedText(text);
 	}
 
 	public static TrimmedText of(String text) {
-		return new TrimmedText(new StringTextComponent(text));
+		return new TrimmedText(new TextComponent(text));
 	}
 
-	public ITextComponent text() {
+	public Component text() {
 		return this.text;
 	}
 
-	public IReorderingProcessor forWidth(FontRenderer font, int width) {
-		IReorderingProcessor trimmed = this.trimmedText;
+	public FormattedCharSequence forWidth(Font font, int width) {
+		FormattedCharSequence trimmed = this.trimmedText;
 		if (trimmed == null || width != this.trimmedWidth) {
 			this.trimmedText = trimmed = this.computeForWidth(font, width);
 			this.trimmedWidth = width;
@@ -37,11 +37,11 @@ public final class TrimmedText {
 		return trimmed;
 	}
 
-	public boolean isTrimmedForWidth(FontRenderer font, int width) {
+	public boolean isTrimmedForWidth(Font font, int width) {
 		return font.width(this.text) > width;
 	}
 
-	private IReorderingProcessor computeForWidth(FontRenderer font, int width) {
-		return LanguageMap.getInstance().getVisualOrder(font.substrByWidth(this.text, width));
+	private FormattedCharSequence computeForWidth(Font font, int width) {
+		return Language.getInstance().getVisualOrder(font.substrByWidth(this.text, width));
 	}
 }

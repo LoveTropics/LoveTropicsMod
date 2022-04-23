@@ -2,14 +2,14 @@ package com.lovetropics.minigames.common.content.survive_the_tide.item;
 
 import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.common.content.survive_the_tide.SurviveTheTide;
-import net.minecraft.client.util.ITooltipFlag;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.TextFormatting;
-import net.minecraft.world.World;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.ChatFormatting;
+import net.minecraft.world.level.Level;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.event.TickEvent;
@@ -19,6 +19,8 @@ import net.minecraftforge.fml.common.Mod;
 import javax.annotation.Nullable;
 import java.util.List;
 
+import net.minecraft.world.item.Item.Properties;
+
 @Mod.EventBusSubscriber(modid = Constants.MODID)
 public class AcidRepellentUmbrellaItem extends Item {
     public AcidRepellentUmbrellaItem(Properties properties) {
@@ -27,10 +29,10 @@ public class AcidRepellentUmbrellaItem extends Item {
 
     @Override
     @OnlyIn(Dist.CLIENT)
-    public void appendHoverText(ItemStack stack, @Nullable World world, List<ITextComponent> tooltip, ITooltipFlag flag) {
-        tooltip.add(new StringTextComponent("Prevents acid rain from harming you.").withStyle(TextFormatting.GOLD));
-        tooltip.add(new StringTextComponent(""));
-        tooltip.add(new StringTextComponent("Active when held in main hand or off-hand.").withStyle(TextFormatting.AQUA));
+    public void appendHoverText(ItemStack stack, @Nullable Level world, List<Component> tooltip, TooltipFlag flag) {
+        tooltip.add(new TextComponent("Prevents acid rain from harming you.").withStyle(ChatFormatting.GOLD));
+        tooltip.add(new TextComponent(""));
+        tooltip.add(new TextComponent("Active when held in main hand or off-hand.").withStyle(ChatFormatting.AQUA));
     }
 
     @SubscribeEvent
@@ -39,14 +41,14 @@ public class AcidRepellentUmbrellaItem extends Item {
             return;
         }
 
-        PlayerEntity player = event.player;
+        Player player = event.player;
         if (player.getDeltaMovement().y() < 0.0 && !player.abilities.flying && isHoldingItem(player, SurviveTheTide.ACID_REPELLENT_UMBRELLA.get())) {
             player.setDeltaMovement(player.getDeltaMovement().multiply(1.0, 0.8, 1.0));
             player.fallDistance = 0.0F;
         }
     }
 
-    private static boolean isHoldingItem(PlayerEntity player, Item item) {
+    private static boolean isHoldingItem(Player player, Item item) {
         return player.getMainHandItem().getItem() == item || player.getOffhandItem().getItem() == item;
     }
 }

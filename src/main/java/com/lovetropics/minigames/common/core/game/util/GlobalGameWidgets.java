@@ -4,9 +4,9 @@ import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.world.BossInfo;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.BossEvent;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,11 +29,11 @@ public final class GlobalGameWidgets {
 		return widgets;
 	}
 
-	public GameSidebar openSidebar(ITextComponent title) {
+	public GameSidebar openSidebar(Component title) {
 		return registerWidget(new GameSidebar(game.getServer(), title));
 	}
 
-	public GameBossBar openBossBar(ITextComponent title, BossInfo.Color color, BossInfo.Overlay overlay) {
+	public GameBossBar openBossBar(Component title, BossEvent.BossBarColor color, BossEvent.BossBarOverlay overlay) {
 		return registerWidget(new GameBossBar(title, color, overlay));
 	}
 
@@ -43,13 +43,13 @@ public final class GlobalGameWidgets {
 		return widget;
 	}
 
-	private void addPlayer(ServerPlayerEntity player) {
+	private void addPlayer(ServerPlayer player) {
 		for (GameWidget widget : widgets) {
 			widget.addPlayer(player);
 		}
 	}
 
-	private void removePlayer(ServerPlayerEntity player) {
+	private void removePlayer(ServerPlayer player) {
 		for (GameWidget widget : widgets) {
 			widget.removePlayer(player);
 		}

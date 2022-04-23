@@ -8,12 +8,12 @@ import com.lovetropics.minigames.common.core.game.behavior.event.GameLogicEvents
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.effect.LightningBoltEntity;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.world.World;
-import net.minecraft.world.gen.Heightmap;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LightningBolt;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.Mth;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.levelgen.Heightmap;
 
 public class SttWinLogicBehavior implements IGameBehavior {
 	public static final Codec<SttWinLogicBehavior> CODEC = RecordCodecBuilder.create(instance -> {
@@ -41,7 +41,7 @@ public class SttWinLogicBehavior implements IGameBehavior {
 		events.listen(GamePhaseEvents.TICK, () -> this.checkForGameEndCondition(game, game.getWorld()));
 	}
 
-	private void checkForGameEndCondition(final IGamePhase game, final World world) {
+	private void checkForGameEndCondition(final IGamePhase game, final Level world) {
 		if (this.minigameEnded) {
 			if (spawnLightningBoltsOnFinish) {
 				spawnLightningBoltsEverywhere(game, world);
@@ -49,18 +49,18 @@ public class SttWinLogicBehavior implements IGameBehavior {
 		}
 	}
 
-	private void spawnLightningBoltsEverywhere(IGamePhase game, final World world) {
+	private void spawnLightningBoltsEverywhere(IGamePhase game, final Level world) {
 		if (game.ticks() % lightningBoltSpawnTickRate == 0) {
-			for (ServerPlayerEntity player : game.getParticipants()) {
+			for (ServerPlayer player : game.getParticipants()) {
 				int xOffset = (7 + world.random.nextInt(5)) * (world.random.nextBoolean() ? 1 : -1);
 				int zOffset = (7 + world.random.nextInt(5)) * (world.random.nextBoolean() ? 1 : -1);
 
-				int posX = MathHelper.floor(player.getX()) + xOffset;
-				int posZ = MathHelper.floor(player.getZ()) + zOffset;
+				int posX = Mth.floor(player.getX()) + xOffset;
+				int posZ = Mth.floor(player.getZ()) + zOffset;
 
-				int posY = world.getHeight(Heightmap.Type.MOTION_BLOCKING, posX, posZ);
+				int posY = world.getHeight(Heightmap.Types.MOTION_BLOCKING, posX, posZ);
 
-				LightningBoltEntity lightning = new LightningBoltEntity(EntityType.LIGHTNING_BOLT, world);
+				LightningBolt lightning = new LightningBolt(EntityType.LIGHTNING_BOLT, world);
 				lightning.setPosAndOldPos(posX, posY, posZ);
 				lightning.setVisualOnly(true);
 

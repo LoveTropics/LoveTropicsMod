@@ -3,15 +3,15 @@ package com.lovetropics.minigames.common.core.game.player;
 import com.google.common.base.Predicate;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.Iterators;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.network.IPacket;
-import net.minecraft.network.NetworkManager;
-import net.minecraft.potion.EffectInstance;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.Connection;
+import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.management.PlayerList;
-import net.minecraft.util.SoundCategory;
-import net.minecraft.util.SoundEvent;
-import net.minecraft.util.text.ITextComponent;
+import net.minecraft.server.players.PlayerList;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.network.chat.Component;
 import net.minecraftforge.fml.network.PacketDistributor;
 import net.minecraftforge.fml.network.simple.SimpleChannel;
 
@@ -22,46 +22,46 @@ import java.util.UUID;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-public interface PlayerIterable extends PlayerOps, Iterable<ServerPlayerEntity> {
-	default PlayerIterable filter(Predicate<? super ServerPlayerEntity> predicate) {
+public interface PlayerIterable extends PlayerOps, Iterable<ServerPlayer> {
+	default PlayerIterable filter(Predicate<? super ServerPlayer> predicate) {
 		return () -> Iterators.filter(this.iterator(), predicate);
 	}
 
-	default PlayerIterable excluding(ServerPlayerEntity player) {
+	default PlayerIterable excluding(ServerPlayer player) {
 		return this.filter(target -> target != player);
 	}
 
 	@Override
-	Iterator<ServerPlayerEntity> iterator();
+	Iterator<ServerPlayer> iterator();
 
-	default Stream<ServerPlayerEntity> stream() {
+	default Stream<ServerPlayer> stream() {
 		return StreamSupport.stream(spliterator(), false);
 	}
 
 	@Override
-	default void sendMessage(ITextComponent message, boolean actionBar) {
-		for (ServerPlayerEntity player : this) {
+	default void sendMessage(Component message, boolean actionBar) {
+		for (ServerPlayer player : this) {
 			player.displayClientMessage(message, actionBar);
 		}
 	}
 
 	@Override
-	default void addPotionEffect(EffectInstance effect) {
-		for (ServerPlayerEntity player : this) {
-			player.addEffect(new EffectInstance(effect));
+	default void addPotionEffect(MobEffectInstance effect) {
+		for (ServerPlayer player : this) {
+			player.addEffect(new MobEffectInstance(effect));
 		}
 	}
 
 	@Override
-	default void playSound(SoundEvent sound, SoundCategory category, float volume, float pitch) {
-		for (ServerPlayerEntity player : this) {
+	default void playSound(SoundEvent sound, SoundSource category, float volume, float pitch) {
+		for (ServerPlayer player : this) {
 			player.playNotifySound(sound, category, volume, pitch);
 		}
 	}
 
 	@Override
-	default void sendPacket(IPacket<?> packet) {
-		for (ServerPlayerEntity player : this) {
+	default void sendPacket(Packet<?> packet) {
+		for (ServerPlayer player : this) {
 			player.connection.send(packet);
 		}
 	}
@@ -69,8 +69,8 @@ public interface PlayerIterable extends PlayerOps, Iterable<ServerPlayerEntity> 
 	@Override
 	default void sendPacket(SimpleChannel channel, Object message) {
 		PacketDistributor.PacketTarget target = PacketDistributor.NMLIST.with(() -> {
-			List<NetworkManager> networkManagers = new ArrayList<>();
-			for (ServerPlayerEntity player : this) {
+			List<Connection> networkManagers = new ArrayList<>();
+			for (ServerPlayer player : this) {
 				networkManagers.add(player.connection.connection);
 			}
 			return networkManagers;
@@ -79,18 +79,18 @@ public interface PlayerIterable extends PlayerOps, Iterable<ServerPlayerEntity> 
 		channel.send(target, message);
 	}
 
-	static Iterator<ServerPlayerEntity> resolvingIterator(MinecraftServer server, Iterator<UUID> ids) {
+	static Iterator<ServerPlayer> resolvingIterator(MinecraftServer server, Iterator<UUID> ids) {
 		PlayerList playerList = server.getPlayerList();
-		return new AbstractIterator<ServerPlayerEntity>() {
+		return new AbstractIterator<ServerPlayer>() {
 			@Override
-			protected ServerPlayerEntity computeNext() {
+			protected ServerPlayer computeNext() {
 				while (true) {
 					if (!ids.hasNext()) {
 						return endOfData();
 					}
 
 					UUID id = ids.next();
-					ServerPlayerEntity player = playerList.getPlayer(id);
+					ServerPlayer player = playerList.getPlayer(id);
 					if (player != null) {
 						return player;
 					}

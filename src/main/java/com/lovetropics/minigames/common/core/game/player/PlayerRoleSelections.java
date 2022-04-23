@@ -4,9 +4,9 @@ import com.lovetropics.minigames.client.lobby.select_role.SelectRolePromptMessag
 import com.lovetropics.minigames.common.core.game.lobby.GameLobbyId;
 import com.lovetropics.minigames.common.core.network.LoveTropicsNetwork;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.util.SoundCategory;
-import net.minecraft.util.SoundEvents;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraftforge.fml.network.PacketDistributor;
 
 import javax.annotation.Nonnull;
@@ -31,12 +31,12 @@ public final class PlayerRoleSelections {
 
 	public void clearAndPromptAll(PlayerSet players) {
 		this.clear();
-		for (ServerPlayerEntity player : players) {
+		for (ServerPlayer player : players) {
 			this.prompt(player);
 		}
 	}
 
-	public CompletableFuture<PlayerRole> prompt(ServerPlayerEntity player) {
+	public CompletableFuture<PlayerRole> prompt(ServerPlayer player) {
 		CompletableFuture<PlayerRole> future = this.pendingResponses.get(player.getUUID());
 		if (future == null) {
 			this.pendingResponses.put(player.getUUID(), future = new CompletableFuture<>());
@@ -51,16 +51,16 @@ public final class PlayerRoleSelections {
 		return future;
 	}
 
-	private void sendPromptTo(ServerPlayerEntity player) {
+	private void sendPromptTo(ServerPlayer player) {
 		LoveTropicsNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new SelectRolePromptMessage(lobbyId.networkId()));
-		player.playNotifySound(SoundEvents.ARROW_HIT_PLAYER, SoundCategory.MASTER, 1.0F, 1.0F);
+		player.playNotifySound(SoundEvents.ARROW_HIT_PLAYER, SoundSource.MASTER, 1.0F, 1.0F);
 	}
 
-	public void remove(ServerPlayerEntity player) {
+	public void remove(ServerPlayer player) {
 		this.roles.remove(player.getUUID());
 	}
 
-	public void acceptResponse(ServerPlayerEntity player, PlayerRole role) {
+	public void acceptResponse(ServerPlayer player, PlayerRole role) {
 		CompletableFuture<PlayerRole> future = this.pendingResponses.remove(player.getUUID());
 		if (future != null) {
 			future.complete(role);
@@ -68,7 +68,7 @@ public final class PlayerRoleSelections {
 	}
 
 	@Nonnull
-	public PlayerRole getSelectedRoleFor(ServerPlayerEntity player) {
+	public PlayerRole getSelectedRoleFor(ServerPlayer player) {
 		return roles.getOrDefault(player.getUUID(), PlayerRole.SPECTATOR);
 	}
 

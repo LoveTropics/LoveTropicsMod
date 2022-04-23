@@ -7,10 +7,10 @@ import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvent
 import com.lovetropics.minigames.common.core.game.state.statistics.GameStatistics;
 import com.lovetropics.minigames.common.core.game.state.statistics.StatisticKey;
 import com.mojang.serialization.Codec;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.util.ActionResultType;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionResult;
 
 public final class DamageTrackerBehavior implements IGameBehavior {
 	public static final Codec<DamageTrackerBehavior> CODEC = Codec.unit(DamageTrackerBehavior::new);
@@ -25,13 +25,13 @@ public final class DamageTrackerBehavior implements IGameBehavior {
 					.apply(total -> total + damageAmount);
 
 			Entity attacker = source.getEntity();
-			if (attacker instanceof ServerPlayerEntity) {
-				statistics.forPlayer((PlayerEntity) attacker)
+			if (attacker instanceof ServerPlayer) {
+				statistics.forPlayer((Player) attacker)
 						.withDefault(StatisticKey.DAMAGE_DEALT, () -> 0.0F)
 						.apply(total -> total + damageAmount);
 			}
 
-			return ActionResultType.PASS;
+			return InteractionResult.PASS;
 		});
 	}
 }

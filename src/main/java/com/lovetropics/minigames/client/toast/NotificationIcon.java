@@ -3,10 +3,10 @@ package com.lovetropics.minigames.client.toast;
 import com.lovetropics.lib.codec.MoreCodecs;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.item.ItemStack;
-import net.minecraft.network.PacketBuffer;
-import net.minecraft.potion.Effect;
-import net.minecraft.util.registry.Registry;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraft.core.Registry;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import javax.annotation.Nullable;
@@ -21,13 +21,13 @@ public final class NotificationIcon {
 	});
 
 	public final ItemStack item;
-	public final Effect effect;
+	public final MobEffect effect;
 
-	private NotificationIcon(Optional<ItemStack> item, Optional<Effect> effect) {
+	private NotificationIcon(Optional<ItemStack> item, Optional<MobEffect> effect) {
 		this(item.orElse(null), effect.orElse(null));
 	}
 
-	private NotificationIcon(@Nullable ItemStack item, @Nullable Effect effect) {
+	private NotificationIcon(@Nullable ItemStack item, @Nullable MobEffect effect) {
 		this.item = item;
 		this.effect = effect;
 	}
@@ -36,11 +36,11 @@ public final class NotificationIcon {
 		return new NotificationIcon(item, null);
 	}
 
-	public static NotificationIcon effect(Effect effect) {
+	public static NotificationIcon effect(MobEffect effect) {
 		return new NotificationIcon(null, effect);
 	}
 
-	public void encode(PacketBuffer buffer) {
+	public void encode(FriendlyByteBuf buffer) {
 		if (this.item != null) {
 			buffer.writeBoolean(true);
 			buffer.writeItem(this.item);
@@ -50,7 +50,7 @@ public final class NotificationIcon {
 		}
 	}
 
-	public static NotificationIcon decode(PacketBuffer buffer) {
+	public static NotificationIcon decode(FriendlyByteBuf buffer) {
 		if (buffer.readBoolean()) {
 			return NotificationIcon.item(buffer.readItem());
 		} else {

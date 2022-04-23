@@ -1,12 +1,12 @@
 package com.lovetropics.minigames.common.core.command;
 
 import com.mojang.brigadier.StringReader;
-import net.minecraft.command.arguments.EntityOptions;
-import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.commands.arguments.selector.options.EntitySelectorOptions;
+import net.minecraft.network.chat.TextComponent;
 
 public final class LoveTropicsEntityOptions {
 	public static void register() {
-		EntityOptions.register(
+		EntitySelectorOptions.register(
 				"current_world",
 				parser -> {
 					StringReader reader = parser.getReader();
@@ -16,7 +16,7 @@ public final class LoveTropicsEntityOptions {
 					}
 				},
 				parser -> true,
-				new StringTextComponent("Filters the search to only apply to the source world.")
+				new TextComponent("Filters the search to only apply to the source world.")
 		);
 	}
 }

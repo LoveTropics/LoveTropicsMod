@@ -3,12 +3,12 @@ package com.lovetropics.minigames.common.content.survive_the_tide.entity;
 import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.common.util.Util;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.MoverType;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.nbt.INBT;
-import net.minecraft.util.Direction;
-import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.MoverType;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.nbt.Tag;
+import net.minecraft.core.Direction;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import net.minecraftforge.common.util.LazyOptional;
@@ -25,21 +25,21 @@ public final class DriftwoodRider implements ICapabilityProvider {
 	public static final Capability.IStorage<DriftwoodRider> STORAGE = new Capability.IStorage<DriftwoodRider>() {
 		@Nullable
 		@Override
-		public INBT writeNBT(Capability<DriftwoodRider> capability, DriftwoodRider instance, Direction side) {
+		public Tag writeNBT(Capability<DriftwoodRider> capability, DriftwoodRider instance, Direction side) {
 			return null;
 		}
 
 		@Override
-		public void readNBT(Capability<DriftwoodRider> capability, DriftwoodRider instance, Direction side, INBT nbt) {
+		public void readNBT(Capability<DriftwoodRider> capability, DriftwoodRider instance, Direction side, Tag nbt) {
 		}
 	};
 
-	private final PlayerEntity player;
+	private final Player player;
 	private final LazyOptional<DriftwoodRider> instance = LazyOptional.of(() -> this);
 	private DriftwoodEntity ridingDriftwood;
 	private int ridingTime;
 
-	DriftwoodRider(PlayerEntity player) {
+	DriftwoodRider(Player player) {
 		this.player = player;
 	}
 
@@ -49,15 +49,15 @@ public final class DriftwoodRider implements ICapabilityProvider {
 			return;
 		}
 
-		PlayerEntity player = event.player;
+		Player player = event.player;
 		player.getCapability(LoveTropics.driftwoodRiderCap()).ifPresent(DriftwoodRider::tick);
 	}
 
 	@SubscribeEvent
 	public static void onAttachEntityCapabilities(AttachCapabilitiesEvent<Entity> event) {
 		Entity entity = event.getObject();
-		if (entity instanceof PlayerEntity) {
-			event.addCapability(Util.resource("driftwood_rider"), new DriftwoodRider((PlayerEntity) entity));
+		if (entity instanceof Player) {
+			event.addCapability(Util.resource("driftwood_rider"), new DriftwoodRider((Player) entity));
 		}
 	}
 
@@ -84,10 +84,10 @@ public final class DriftwoodRider implements ICapabilityProvider {
 			return;
 		}
 
-		Vector3d motion = player.getDeltaMovement();
+		Vec3 motion = player.getDeltaMovement();
 		boolean onGround = player.isOnGround();
 
-		player.move(MoverType.SELF, new Vector3d(deltaX, deltaY, deltaZ));
+		player.move(MoverType.SELF, new Vec3(deltaX, deltaY, deltaZ));
 
 		player.setDeltaMovement(motion);
 		player.setOnGround(onGround);

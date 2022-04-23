@@ -3,7 +3,7 @@ package com.lovetropics.minigames.client.map;
 import com.lovetropics.lib.BlockBox;
 import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.common.core.map.workspace.ClientWorkspaceRegions;
-import net.minecraft.world.IWorld;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -42,7 +42,7 @@ public final class ClientMapWorkspace {
 
 	@SubscribeEvent
 	public static void onChangeDimension(WorldEvent.Load event) {
-		IWorld world = event.getWorld();
+		LevelAccessor world = event.getWorld();
 		if (!world.isClientSide()) {
 			return;
 		}

@@ -17,15 +17,15 @@ import com.lovetropics.minigames.common.core.game.behavior.event.GameEventType;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.block.BlockState;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.fluid.FluidState;
-import net.minecraft.item.SwordItem;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.ActionResultType;
-import net.minecraft.util.Hand;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.server.ServerWorld;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.material.FluidState;
+import net.minecraft.world.item.SwordItem;
+import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraftforge.common.util.Constants;
 
 import java.util.Collections;
@@ -79,36 +79,36 @@ public final class PlantBehavior implements IGameBehavior {
 		}
 	}
 
-	private ActionResult<Plant> placePlant(ServerPlayerEntity player, Plot plot, BlockPos pos, PlantType plantType) {
+	private InteractionResultHolder<Plant> placePlant(ServerPlayer player, Plot plot, BlockPos pos, PlantType plantType) {
 		if (!this.plantType.equals(plantType)) {
-			return ActionResult.pass(null);
+			return InteractionResultHolder.pass(null);
 		}
 
 		PlantPlacement placement = plantEvents.invoker(BbPlantEvents.PLACE).placePlant(player, plot, pos);
-		if (placement == null) return ActionResult.pass(null);
+		if (placement == null) return InteractionResultHolder.pass(null);
 
 		Plant plant = plot.plants.addPlant(plantType, this.family, this.value, placement);
 		if (plant == null) {
-			return ActionResult.fail(null);
+			return InteractionResultHolder.fail(null);
 		}
 
 		if (placement.place(game.getWorld(), plant.coverage())) {
 			plantEvents.invoker(BbPlantEvents.ADD).onAddPlant(player, plot, plant);
 			game.invoker(BbEvents.PLANTS_CHANGED).onPlantsChanged(player, plot);
 
-			return ActionResult.success(plant);
+			return InteractionResultHolder.success(plant);
 		} else {
 			plot.plants.removePlant(plant);
-			return ActionResult.fail(null);
+			return InteractionResultHolder.fail(null);
 		}
 	}
 
-	private boolean breakPlant(ServerPlayerEntity player, Plot plot, Plant plant) {
+	private boolean breakPlant(ServerPlayer player, Plot plot, Plant plant) {
 		if (!this.plantType.equals(plant.type())) {
 			return false;
 		}
 
-		ServerWorld world = game.getWorld();
+		ServerLevel world = game.getWorld();
 		for (BlockPos plantPos : plant.coverage()) {
 			FluidState fluidState = world.getFluidState(plantPos);
 			world.setBlock(plantPos, fluidState.createLegacyBlock(), Constants.BlockFlags.BLOCK_UPDATE | Constants.BlockFlags.UPDATE_NEIGHBORS);
@@ -121,32 +121,32 @@ public final class PlantBehavior implements IGameBehavior {
 		return true;
 	}
 
-	private ActionResultType onBreakBlock(ServerPlayerEntity player, BlockPos pos, BlockState state, Hand hand) {
+	private InteractionResult onBreakBlock(ServerPlayer player, BlockPos pos, BlockState state, InteractionHand hand) {
 		Plot plot = plots.getPlotFor(player);
 		if (plot == null) {
-			return ActionResultType.PASS;
+			return InteractionResult.PASS;
 		}
 
 		if (player.getItemInHand(hand).getItem() instanceof SwordItem) {
-			return ActionResultType.FAIL;
+			return InteractionResult.FAIL;
 		}
 
 		Plant plant = plot.plants.getPlantAt(pos, this.plantType);
 		if (plant != null) {
 			return this.onBreakPlantBlock(player, pos, plot, plant);
 		} else {
-			return ActionResultType.PASS;
+			return InteractionResult.PASS;
 		}
 	}
 
-	private ActionResultType onBreakPlantBlock(ServerPlayerEntity player, BlockPos pos, Plot plot, Plant plant) {
+	private InteractionResult onBreakPlantBlock(ServerPlayer player, BlockPos pos, Plot plot, Plant plant) {
 		plantEvents.invoker(BbPlantEvents.BREAK).breakPlant(player, plot, plant, pos);
 		game.invoker(BbEvents.BREAK_PLANT).breakPlant(player, plot, plant);
 
-		return ActionResultType.FAIL;
+		return InteractionResult.FAIL;
 	}
 
-	private void onTickPlot(ServerPlayerEntity player, Plot plot) {
+	private void onTickPlot(ServerPlayer player, Plot plot) {
 		List<Plant> plants = plot.plants.getPlantsByType(this.plantType);
 		if (!plants.isEmpty()) {
 			this.plantEvents.invoker(BbPlantEvents.TICK).onTickPlants(player, plot, plants);

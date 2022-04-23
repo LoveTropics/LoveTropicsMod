@@ -14,9 +14,9 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
-import net.minecraft.network.play.server.STitlePacket;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.TextFormatting;
+import net.minecraft.network.protocol.game.ClientboundSetTitlesPacket;
+import net.minecraft.network.chat.Component;
+import net.minecraft.ChatFormatting;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
@@ -38,7 +38,7 @@ public final class GameEndEffectsBehavior implements IGameBehavior {
 	private boolean ended;
 	private long stopTime;
 
-	private ITextComponent winner;
+	private Component winner;
 
 	public GameEndEffectsBehavior(long stopDelay, Long2ObjectMap<TemplatedText> scheduledMessages, Optional<TemplatedText> title) {
 		this.stopDelay = stopDelay;
@@ -61,20 +61,20 @@ public final class GameEndEffectsBehavior implements IGameBehavior {
 		});
 	}
 
-	private void triggerEnd(IGamePhase game, ITextComponent winner) {
+	private void triggerEnd(IGamePhase game, Component winner) {
 		if (winner.getStyle().getColor() != null) {
 			this.winner = winner;
 		} else {
-			this.winner = winner.copy().withStyle(TextFormatting.AQUA);
+			this.winner = winner.copy().withStyle(ChatFormatting.AQUA);
 		}
 
 		this.ended = true;
 
 		if (this.title != null) {
-			ITextComponent title = this.title.apply(winner);
+			Component title = this.title.apply(winner);
 			PlayerSet players = game.getAllPlayers();
-			players.sendPacket(new STitlePacket(10, 3 * 20, 10));
-			players.sendPacket(new STitlePacket(STitlePacket.Type.SUBTITLE, title));
+			players.sendPacket(new ClientboundSetTitlesPacket(10, 3 * 20, 10));
+			players.sendPacket(new ClientboundSetTitlesPacket(ClientboundSetTitlesPacket.Type.SUBTITLE, title));
 		}
 	}
 

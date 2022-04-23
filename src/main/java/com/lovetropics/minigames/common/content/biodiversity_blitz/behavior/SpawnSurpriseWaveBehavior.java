@@ -11,9 +11,9 @@ import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePackageEvents;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.MobEntity;
-import net.minecraft.world.World;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.level.Level;
 
 import java.util.Random;
 
@@ -43,7 +43,7 @@ public class SpawnSurpriseWaveBehavior implements IGameBehavior {
         });
     }
 
-    private static MobEntity selectEntityForWave(Random random, World world, Plot plot, int waveIndex) {
+    private static Mob selectEntityForWave(Random random, Level world, Plot plot, int waveIndex) {
         return new BbCreeperEntity(EntityType.CREEPER, world, plot);
     }
 }

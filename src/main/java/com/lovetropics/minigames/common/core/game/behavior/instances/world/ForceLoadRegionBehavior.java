@@ -10,8 +10,8 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
-import net.minecraft.util.math.ChunkPos;
-import net.minecraft.world.server.ServerChunkProvider;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.server.level.ServerChunkCache;
 
 import java.util.Collection;
 
@@ -36,7 +36,7 @@ public final class ForceLoadRegionBehavior implements IGameBehavior {
 	}
 
 	private void onStop(IGamePhase game) {
-		ServerChunkProvider chunkProvider = game.getWorld().getChunkSource();
+		ServerChunkCache chunkProvider = game.getWorld().getChunkSource();
 
 		LongIterator iterator = acquiredChunks.iterator();
 		while (iterator.hasNext()) {
@@ -46,7 +46,7 @@ public final class ForceLoadRegionBehavior implements IGameBehavior {
 	}
 
 	private LongSet acquireChunks(IGamePhase game) {
-		ServerChunkProvider chunkProvider = game.getWorld().getChunkSource();
+		ServerChunkCache chunkProvider = game.getWorld().getChunkSource();
 
 		LongSet chunks = collectChunks(game);
 

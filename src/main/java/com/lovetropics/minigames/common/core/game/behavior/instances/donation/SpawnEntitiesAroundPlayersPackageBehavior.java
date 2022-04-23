@@ -10,11 +10,11 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.registry.Registry;
-import net.minecraft.world.server.ServerWorld;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Registry;
+import net.minecraft.server.level.ServerLevel;
 
 import java.util.Iterator;
 
@@ -37,7 +37,7 @@ public class SpawnEntitiesAroundPlayersPackageBehavior implements IGameBehavior
 	private final int spawnDistanceMax;
 	private final int spawnRangeY;
 	private final int spawnsPerTick;
-	private final Object2IntMap<ServerPlayerEntity> playerToAmountToSpawn = new Object2IntOpenHashMap<>();
+	private final Object2IntMap<ServerPlayer> playerToAmountToSpawn = new Object2IntOpenHashMap<>();
 
 	public SpawnEntitiesAroundPlayersPackageBehavior(final EntityType<?> entityId, final int entityCount, final int spawnDistanceMin, final int spawnDistanceMax, final int spawnRangeY, final int spawnsPerTick) {
 		this.entityId = entityId;
@@ -58,9 +58,9 @@ public class SpawnEntitiesAroundPlayersPackageBehavior implements IGameBehavior
 	}
 
 	private void tick(IGamePhase game) {
-		Iterator<Object2IntMap.Entry<ServerPlayerEntity>> it = playerToAmountToSpawn.object2IntEntrySet().iterator();
+		Iterator<Object2IntMap.Entry<ServerPlayer>> it = playerToAmountToSpawn.object2IntEntrySet().iterator();
 		while (it.hasNext()) {
-			Object2IntMap.Entry<ServerPlayerEntity> entry = it.next();
+			Object2IntMap.Entry<ServerPlayer> entry = it.next();
 
 			if (!entry.getKey().isAlive()) {
 				it.remove();
@@ -103,7 +103,7 @@ public class SpawnEntitiesAroundPlayersPackageBehavior implements IGameBehavior
 	 * - also checks that it isnt water under it
 	 */
 	public boolean isSpawnablePosition(final IGamePhase game, BlockPos pos) {
-		ServerWorld world = game.getWorld();
+		ServerLevel world = game.getWorld();
 		return !world.isEmptyBlock(pos.offset(0, -1, 0))
 				&& world.isEmptyBlock(pos.offset(0, 0, 0))
 				&& world.isEmptyBlock(pos.offset(0, 1, 0))

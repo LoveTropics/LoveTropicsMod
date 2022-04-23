@@ -9,10 +9,10 @@ import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.entity.MobEntity;
-import net.minecraft.potion.EffectInstance;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.world.server.ServerWorld;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.server.level.ServerLevel;
 
 import java.util.List;
 
@@ -22,10 +22,10 @@ public final class EffectAddingPlantBehavior implements IGameBehavior {
 			Codec.DOUBLE.fieldOf("radius").forGetter(c -> c.radius)
 	).apply(instance, EffectAddingPlantBehavior::new));
 
-	private final EffectInstance effect;
+	private final MobEffectInstance effect;
 	private final double radius;
 
-	public EffectAddingPlantBehavior(EffectInstance effect, double radius) {
+	public EffectAddingPlantBehavior(MobEffectInstance effect, double radius) {
 		this.effect = effect;
 		this.radius = radius;
 	}
@@ -41,14 +41,14 @@ public final class EffectAddingPlantBehavior implements IGameBehavior {
 				return;
 			}
 
-			ServerWorld world = game.getWorld();
+			ServerLevel world = game.getWorld();
 
 			for (Plant plant : plants) {
-				AxisAlignedBB applyBounds = plant.coverage().asBounds().inflate(this.radius);
+				AABB applyBounds = plant.coverage().asBounds().inflate(this.radius);
 
-				List<MobEntity> entities = world.getEntitiesOfClass(MobEntity.class, applyBounds, BbMobEntity.PREDICATE);
-				for (MobEntity entity : entities) {
-					entity.addEffect(new EffectInstance(this.effect));
+				List<Mob> entities = world.getEntitiesOfClass(Mob.class, applyBounds, BbMobEntity.PREDICATE);
+				for (Mob entity : entities) {
+					entity.addEffect(new MobEffectInstance(this.effect));
 				}
 			}
 		});

@@ -8,8 +8,8 @@ import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.block.Block;
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.item.ItemStack;
 
 public final class DropPlantItemBehavior implements IGameBehavior {
 	public static final Codec<DropPlantItemBehavior> CODEC = RecordCodecBuilder.create(instance -> instance.group(

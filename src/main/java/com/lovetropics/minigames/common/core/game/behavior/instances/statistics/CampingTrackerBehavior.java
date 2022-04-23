@@ -10,10 +10,10 @@ import com.lovetropics.minigames.common.core.game.state.statistics.StatisticKey;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.util.ActionResultType;
-import net.minecraft.util.DamageSource;
-import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.Map;
 import java.util.UUID;
@@ -60,10 +60,10 @@ public final class CampingTrackerBehavior implements IGameBehavior {
 	private void testForCamping(IGamePhase game, long time) {
 		GameStatistics statistics = game.getStatistics();
 
-		for (ServerPlayerEntity player : game.getParticipants()) {
+		for (ServerPlayer player : game.getParticipants()) {
 			CampingTracker tracker = getCampingTracker(player);
 
-			Vector3d currentPosition = player.position();
+			Vec3 currentPosition = player.position();
 			if (tracker.camping) {
 				int campingTime = tracker.trackCamping(currentPosition, time);
 				if (campingTime > 0) {
@@ -76,26 +76,26 @@ public final class CampingTrackerBehavior implements IGameBehavior {
 		}
 	}
 
-	private CampingTracker getCampingTracker(ServerPlayerEntity player) {
+	private CampingTracker getCampingTracker(ServerPlayer player) {
 		return campingTrackers.computeIfAbsent(player.getUUID(), i -> new CampingTracker());
 	}
 
-	private ActionResultType onPlayerDeath(ServerPlayerEntity player, DamageSource source) {
+	private InteractionResult onPlayerDeath(ServerPlayer player, DamageSource source) {
 		campingTrackers.remove(player.getUUID());
-		return ActionResultType.PASS;
+		return InteractionResult.PASS;
 	}
 
-	private void onPlayerLeave(ServerPlayerEntity player) {
+	private void onPlayerLeave(ServerPlayer player) {
 		campingTrackers.remove(player.getUUID());
 	}
 
 	class CampingTracker {
 		boolean camping;
 
-		Vector3d lastPosition;
+		Vec3 lastPosition;
 		long lastTrackTime;
 
-		void trackNotCamping(Vector3d currentPosition, long time) {
+		void trackNotCamping(Vec3 currentPosition, long time) {
 			if (lastPosition == null) {
 				lastPosition = currentPosition;
 				lastTrackTime = time;
@@ -113,7 +113,7 @@ public final class CampingTrackerBehavior implements IGameBehavior {
 			}
 		}
 
-		int trackCamping(Vector3d currentPosition, long time) {
+		int trackCamping(Vec3 currentPosition, long time) {
 			double movement = currentPosition.distanceTo(lastPosition);
 			if (movement > campMovementThreshold) {
 				camping = false;

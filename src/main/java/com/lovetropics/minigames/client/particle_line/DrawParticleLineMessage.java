@@ -1,28 +1,28 @@
 package com.lovetropics.minigames.client.particle_line;
 
-import net.minecraft.network.PacketBuffer;
-import net.minecraft.particles.IParticleData;
-import net.minecraft.particles.ParticleType;
-import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.core.particles.ParticleOptions;
+import net.minecraft.core.particles.ParticleType;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.fml.network.NetworkEvent;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.function.Supplier;
 
 public final class DrawParticleLineMessage {
-	private final IParticleData particle;
-	private final Vector3d from;
-	private final Vector3d to;
+	private final ParticleOptions particle;
+	private final Vec3 from;
+	private final Vec3 to;
 	private final float spacing;
 
-	public DrawParticleLineMessage(IParticleData particle, Vector3d from, Vector3d to, float spacing) {
+	public DrawParticleLineMessage(ParticleOptions particle, Vec3 from, Vec3 to, float spacing) {
 		this.particle = particle;
 		this.from = from;
 		this.to = to;
 		this.spacing = spacing;
 	}
 
-	public void encode(PacketBuffer buffer) {
+	public void encode(FriendlyByteBuf buffer) {
 		buffer.writeRegistryIdUnsafe(ForgeRegistries.PARTICLE_TYPES, particle.getType());
 		particle.writeToNetwork(buffer);
 
@@ -35,18 +35,18 @@ public final class DrawParticleLineMessage {
 		buffer.writeFloat(spacing);
 	}
 
-	public static DrawParticleLineMessage decode(PacketBuffer buffer) {
+	public static DrawParticleLineMessage decode(FriendlyByteBuf buffer) {
 		ParticleType<?> particleType = buffer.readRegistryIdUnsafe(ForgeRegistries.PARTICLE_TYPES);
-		IParticleData particle = readParticle(buffer, particleType);
+		ParticleOptions particle = readParticle(buffer, particleType);
 
-		Vector3d from = new Vector3d(buffer.readDouble(), buffer.readDouble(), buffer.readDouble());
-		Vector3d to = new Vector3d(buffer.readDouble(), buffer.readDouble(), buffer.readDouble());
+		Vec3 from = new Vec3(buffer.readDouble(), buffer.readDouble(), buffer.readDouble());
+		Vec3 to = new Vec3(buffer.readDouble(), buffer.readDouble(), buffer.readDouble());
 		float spacing = buffer.readFloat();
 
 		return new DrawParticleLineMessage(particle, from, to, spacing);
 	}
 
-	private static <T extends IParticleData> T readParticle(PacketBuffer buffer, ParticleType<T> particleType) {
+	private static <T extends ParticleOptions> T readParticle(FriendlyByteBuf buffer, ParticleType<T> particleType) {
 		return particleType.getDeserializer().fromNetwork(particleType, buffer);
 	}
 

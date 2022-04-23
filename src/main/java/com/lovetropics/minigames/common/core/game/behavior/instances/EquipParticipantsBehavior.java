@@ -8,7 +8,7 @@ import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvent
 import com.lovetropics.minigames.common.core.game.player.PlayerRole;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.item.ItemStack;
 
 public class EquipParticipantsBehavior implements IGameBehavior {
 	public static final Codec<EquipParticipantsBehavior> CODEC = RecordCodecBuilder.create(instance -> {

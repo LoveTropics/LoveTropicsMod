@@ -10,17 +10,17 @@ import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents
 import com.lovetropics.minigames.common.core.game.util.GameBossBar;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.particles.IParticleData;
-import net.minecraft.particles.ParticleTypes;
-import net.minecraft.potion.EffectInstance;
-import net.minecraft.potion.Effects;
-import net.minecraft.util.DamageSource;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.world.BossInfo;
-import net.minecraft.world.server.ServerWorld;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.core.particles.ParticleOptions;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.BossEvent;
+import net.minecraft.server.level.ServerLevel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,24 +41,24 @@ public class WorldBorderGameBehavior implements IGameBehavior {
 		).apply(instance, WorldBorderGameBehavior::new);
 	});
 
-	private final ITextComponent name;
+	private final Component name;
 	private final String worldBorderCenterKey;
-	private final ITextComponent collapseMessage;
+	private final Component collapseMessage;
 	private final long ticksUntilStart;
 	private final long delayUntilCollapse;
 	private final int particleRateDelay;
 	private final int particleHeight;
 	private final int damageRateDelay;
 	private final int damageAmount;
-	private final IParticleData borderParticle;
+	private final ParticleOptions borderParticle;
 
 	private BlockPos worldBorderCenter = BlockPos.ZERO;
 
 	private boolean borderCollapseMessageSent = false;
 	private final GameBossBar bossBar;
 
-	public WorldBorderGameBehavior(final ITextComponent name, final String worldBorderCenterKey, final ITextComponent collapseMessage, final long ticksUntilStart,
-								   final long delayUntilCollapse, final int particleRateDelay, final int particleHeight, final int damageRateDelay, final int damageAmount, final IParticleData borderParticle) {
+	public WorldBorderGameBehavior(final Component name, final String worldBorderCenterKey, final Component collapseMessage, final long ticksUntilStart,
+								   final long delayUntilCollapse, final int particleRateDelay, final int particleHeight, final int damageRateDelay, final int damageAmount, final ParticleOptions borderParticle) {
 		this.name = name;
 		this.worldBorderCenterKey = worldBorderCenterKey;
 		this.collapseMessage = collapseMessage;
@@ -70,7 +70,7 @@ public class WorldBorderGameBehavior implements IGameBehavior {
 		this.damageAmount = damageAmount;
 		this.borderParticle = borderParticle;
 
-		this.bossBar = new GameBossBar(name, BossInfo.Color.WHITE, BossInfo.Overlay.PROGRESS);
+		this.bossBar = new GameBossBar(name, BossEvent.BossBarColor.WHITE, BossEvent.BossBarOverlay.PROGRESS);
 	}
 
 	@Override
@@ -132,7 +132,7 @@ public class WorldBorderGameBehavior implements IGameBehavior {
 		//world.addParticle(borderParticle, );
 	}
 
-	private void tickParticles(float currentRadius, ServerWorld world) {
+	private void tickParticles(float currentRadius, ServerLevel world) {
 		float amountPerCircle = 4 * currentRadius;
 		float stepAmount = 360F / amountPerCircle;
 
@@ -158,12 +158,12 @@ public class WorldBorderGameBehavior implements IGameBehavior {
 	}
 
 	private void tickPlayerDamage(IGamePhase game, boolean isCollapsing, float currentRadius) {
-		for (ServerPlayerEntity player : game.getParticipants()) {
+		for (ServerPlayer player : game.getParticipants()) {
 			//ignore Y val, only do X Z dist compare
 			double distanceSq = player.distanceToSqr(worldBorderCenter.getX(), player.getY(), worldBorderCenter.getZ());
 			if (isCollapsing || !(currentRadius < 0.0 || distanceSq < currentRadius * currentRadius)) {
 				player.hurt(DamageSource.explosion((LivingEntity) null), damageAmount);
-				player.addEffect(new EffectInstance(Effects.CONFUSION, 40, 0));
+				player.addEffect(new MobEffectInstance(MobEffects.CONFUSION, 40, 0));
 			}
 
 			//add boss bar info to everyone in dim if not already registered for it

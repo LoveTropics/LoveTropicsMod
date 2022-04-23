@@ -1,13 +1,13 @@
 package com.lovetropics.minigames.common.content.biodiversity_blitz.entity;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.util.Direction;
-import net.minecraft.util.ReuseableStream;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.shapes.VoxelShape;
-import net.minecraft.util.math.shapes.VoxelShapes;
-import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.core.Direction;
+import net.minecraft.util.RewindableStream;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.phys.shapes.VoxelShape;
+import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.Spliterator;
 import java.util.Spliterators;
@@ -16,35 +16,35 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 public final class PlotWalls {
-	private final AxisAlignedBB bounds;
-	private final AxisAlignedBB[] faces;
+	private final AABB bounds;
+	private final AABB[] faces;
 	private final VoxelShape[] faceShapes;
 
-	public PlotWalls(AxisAlignedBB bounds) {
+	public PlotWalls(AABB bounds) {
 		this.bounds = bounds;
 
 		Direction[] directions = Direction.values();
-		this.faces = new AxisAlignedBB[directions.length];
+		this.faces = new AABB[directions.length];
 		this.faceShapes = new VoxelShape[directions.length];
 
 		for (Direction direction : directions) {
-			AxisAlignedBB plotFace = createWallBounds(bounds, direction);
+			AABB plotFace = createWallBounds(bounds, direction);
 
 			int index = direction.get3DDataValue();
 			this.faces[index] = plotFace;
-			this.faceShapes[index] = VoxelShapes.create(plotFace);
+			this.faceShapes[index] = Shapes.create(plotFace);
 		}
 	}
 
-	private AxisAlignedBB createWallBounds(AxisAlignedBB bounds, Direction direction) {
+	private AABB createWallBounds(AABB bounds, Direction direction) {
 		Direction.Axis axis = direction.getAxis();
 		double size = bounds.max(axis) - bounds.min(axis);
 
 		// offset to the edge in this direction
-		Vector3d offset = Vector3d.atLowerCornerOf(direction.getNormal()).scale(size);
+		Vec3 offset = Vec3.atLowerCornerOf(direction.getNormal()).scale(size);
 
 		// grow on every other axis to not create any holes
-		Vector3d grow = new Vector3d(
+		Vec3 grow = new Vec3(
 				axis != Direction.Axis.X ? bounds.getXsize() : 0.0,
 				axis != Direction.Axis.Y ? bounds.getYsize() : 0.0,
 				axis != Direction.Axis.Z ? bounds.getZsize() : 0.0
@@ -55,12 +55,12 @@ public final class PlotWalls {
 				.inflate(grow.x, grow.y, grow.z);
 	}
 
-	public Vector3d collide(AxisAlignedBB box, Vector3d offset) {
+	public Vec3 collide(AABB box, Vec3 offset) {
 		if (offset.lengthSqr() == 0.0) {
 			return offset;
 		}
 
-		AxisAlignedBB collidingBox = box.expandTowards(offset);
+		AABB collidingBox = box.expandTowards(offset);
 
 		// we're definitely not going to collide
 		if (!collidingBox.intersects(this.bounds)) {
@@ -68,15 +68,15 @@ public final class PlotWalls {
 		}
 
 		Stream<VoxelShape> collisions = this.collisions(collidingBox);
-		return Entity.collideBoundingBoxLegacy(offset, box, new ReuseableStream<>(collisions));
+		return Entity.collideBoundingBoxLegacy(offset, box, new RewindableStream<>(collisions));
 	}
 
-	public Stream<VoxelShape> collisions(AxisAlignedBB box) {
+	public Stream<VoxelShape> collisions(AABB box) {
 		CollisionSpliterator spliterator = new CollisionSpliterator(box, faces, faceShapes);
 		return StreamSupport.stream(spliterator, false);
 	}
 
-	public AxisAlignedBB getBounds() {
+	public AABB getBounds() {
 		return this.bounds;
 	}
 
@@ -89,13 +89,13 @@ public final class PlotWalls {
 	}
 
 	public static final class CollisionSpliterator extends Spliterators.AbstractSpliterator<VoxelShape> {
-		private final AxisAlignedBB box;
-		private final AxisAlignedBB[] faces;
+		private final AABB box;
+		private final AABB[] faces;
 		private final VoxelShape[] faceShapes;
 
 		private int faceIndex;
 
-		CollisionSpliterator(AxisAlignedBB box, AxisAlignedBB[] faces, VoxelShape[] faceShapes) {
+		CollisionSpliterator(AABB box, AABB[] faces, VoxelShape[] faceShapes) {
 			super(Long.MAX_VALUE, Spliterator.NONNULL | Spliterator.IMMUTABLE);
 			this.box = box;
 			this.faces = faces;
@@ -104,7 +104,7 @@ public final class PlotWalls {
 
 		@Override
 		public boolean tryAdvance(Consumer<? super VoxelShape> action) {
-			AxisAlignedBB[] faces = this.faces;
+			AABB[] faces = this.faces;
 			while (this.faceIndex < faces.length) {
 				int index = this.faceIndex++;
 				if (this.box.intersects(faces[index])) {

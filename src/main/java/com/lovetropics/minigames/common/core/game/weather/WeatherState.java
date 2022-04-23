@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.common.core.game.weather;
 
-import net.minecraft.network.PacketBuffer;
+import net.minecraft.network.FriendlyByteBuf;
 
 public final class WeatherState {
 	public float rainAmount;
@@ -10,7 +10,7 @@ public final class WeatherState {
 	public StormState sandstorm;
 	public StormState snowstorm;
 
-	public void serialize(PacketBuffer buffer) {
+	public void serialize(FriendlyByteBuf buffer) {
 		buffer.writeFloat(this.rainAmount);
 		buffer.writeByte(this.rainType.ordinal() & 0xFF);
 		buffer.writeFloat(this.windSpeed);
@@ -25,7 +25,7 @@ public final class WeatherState {
 		}
 	}
 
-	public void deserialize(PacketBuffer buffer) {
+	public void deserialize(FriendlyByteBuf buffer) {
 		this.rainAmount = buffer.readFloat();
 		this.rainType = RainType.VALUES[buffer.readUnsignedByte()];
 		this.windSpeed = buffer.readFloat();

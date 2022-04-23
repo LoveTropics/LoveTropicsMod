@@ -1,7 +1,7 @@
 package com.lovetropics.minigames.common.core.game;
 
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.text.ITextComponent;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.network.chat.Component;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
@@ -35,10 +35,10 @@ public interface IGameDefinition {
 		return getId().getPath();
 	}
 
-	ITextComponent getName();
+	Component getName();
 
 	@Nullable
-	default ITextComponent getSubtitle() {
+	default Component getSubtitle() {
 		return null;
 	}
 

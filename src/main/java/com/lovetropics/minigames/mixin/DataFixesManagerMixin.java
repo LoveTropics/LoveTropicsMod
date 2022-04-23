@@ -1,13 +1,13 @@
 package com.lovetropics.minigames.mixin;
 
-import net.minecraft.util.datafix.DataFixesManager;
+import net.minecraft.util.datafix.DataFixers;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
 
 import java.util.concurrent.Executor;
 
-@Mixin(DataFixesManager.class)
+@Mixin(DataFixers.class)
 public class DataFixesManagerMixin {
 	/**
 	 * Makes DataFixerUpper lazy. Shh, don't tell.

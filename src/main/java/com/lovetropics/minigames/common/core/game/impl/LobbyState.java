@@ -5,7 +5,7 @@ import com.lovetropics.minigames.client.lobby.state.ClientGameDefinition;
 import com.lovetropics.minigames.common.core.game.*;
 import com.lovetropics.minigames.common.core.game.lobby.LobbyControls;
 import com.lovetropics.minigames.common.core.game.lobby.QueuedGame;
-import net.minecraft.util.text.ITextComponent;
+import net.minecraft.network.chat.Component;
 
 import javax.annotation.Nullable;
 import java.util.concurrent.CompletableFuture;
@@ -50,9 +50,9 @@ abstract class LobbyState {
 	static final class Errored extends Paused {
 		final IGameDefinition game;
 		final GamePhaseType phaseType;
-		final ITextComponent error;
+		final Component error;
 
-		Errored(IGameDefinition game, GamePhaseType phaseType, ITextComponent error) {
+		Errored(IGameDefinition game, GamePhaseType phaseType, Component error) {
 			this.game = game;
 			this.phaseType = phaseType;
 			this.error = error;

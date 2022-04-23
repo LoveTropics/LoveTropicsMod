@@ -1,24 +1,24 @@
 
 package com.lovetropics.minigames.common.core.game.behavior.event;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.util.ActionResultType;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.InteractionResult;
 
 public final class GameEntityEvents {
 	public static final GameEventType<Mounted> MOUNTED = GameEventType.create(Mounted.class, listeners -> (entityMounting, entityBeingMounted) -> {
 		for (Mounted listener : listeners) {
-			ActionResultType result = listener.onEntityMounted(entityMounting, entityBeingMounted);
-			if (result != ActionResultType.PASS) {
+			InteractionResult result = listener.onEntityMounted(entityMounting, entityBeingMounted);
+			if (result != InteractionResult.PASS) {
 				return result;
 			}
 		}
-		return ActionResultType.PASS;
+		return InteractionResult.PASS;
 	});
 
 	private GameEntityEvents() {
 	}
 
 	public interface Mounted {
-		ActionResultType onEntityMounted(Entity entityMounting, Entity entityBeingMounted);
+		InteractionResult onEntityMounted(Entity entityMounting, Entity entityBeingMounted);
 	}
 }

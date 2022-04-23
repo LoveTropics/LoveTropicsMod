@@ -1,39 +1,39 @@
 package com.lovetropics.minigames.common.core.game;
 
 import com.lovetropics.minigames.common.core.game.lobby.IGameLobby;
-import net.minecraft.command.CommandSource;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.world.World;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.level.Level;
 
 import javax.annotation.Nullable;
 
 public interface IGameLookup {
 	@Nullable
-	IGameLobby getLobbyFor(PlayerEntity player);
+	IGameLobby getLobbyFor(Player player);
 
 	@Nullable
-	default IGameLobby getLobbyFor(CommandSource source) {
+	default IGameLobby getLobbyFor(CommandSourceStack source) {
 		Entity entity = source.getEntity();
-		if (entity instanceof PlayerEntity) {
-			return getLobbyFor((PlayerEntity) entity);
+		if (entity instanceof Player) {
+			return getLobbyFor((Player) entity);
 		}
 		return null;
 	}
 
 	@Nullable
-	IGamePhase getGamePhaseFor(PlayerEntity player);
+	IGamePhase getGamePhaseFor(Player player);
 
 	@Nullable
-	IGamePhase getGamePhaseAt(World world, Vector3d pos);
+	IGamePhase getGamePhaseAt(Level world, Vec3 pos);
 
 	@Nullable
-	default IGamePhase getGamePhaseFor(CommandSource source) {
+	default IGamePhase getGamePhaseFor(CommandSourceStack source) {
 		Entity entity = source.getEntity();
-		if (entity instanceof PlayerEntity) {
-			return getGamePhaseFor((PlayerEntity) entity);
+		if (entity instanceof Player) {
+			return getGamePhaseFor((Player) entity);
 		}
 
 		IGamePhase game = getGamePhaseAt(source.getLevel(), source.getPosition());
@@ -50,15 +50,15 @@ public interface IGameLookup {
 			return null;
 		}
 
-		if (entity instanceof PlayerEntity) {
-			return getGamePhaseFor((PlayerEntity) entity);
+		if (entity instanceof Player) {
+			return getGamePhaseFor((Player) entity);
 		} else {
 			return getGamePhaseAt(entity.level, entity.position());
 		}
 	}
 
 	@Nullable
-	default IGamePhase getGamePhaseAt(World world, BlockPos pos) {
-		return getGamePhaseAt(world, Vector3d.atCenterOf(pos));
+	default IGamePhase getGamePhaseAt(Level world, BlockPos pos) {
+		return getGamePhaseAt(world, Vec3.atCenterOf(pos));
 	}
 }

@@ -1,14 +1,14 @@
 package com.lovetropics.minigames.common.core.game.behavior.event;
 
-import net.minecraft.block.BlockState;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.SpawnReason;
-import net.minecraft.entity.item.ItemEntity;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.util.ActionResultType;
-import net.minecraft.util.DamageSource;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.core.BlockPos;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
@@ -23,35 +23,35 @@ public final class GameLivingEntityEvents {
 
 	public static final GameEventType<Death> DEATH = GameEventType.create(Death.class, listeners -> (entity, damageSource) -> {
 		for (Death listener : listeners) {
-			ActionResultType result = listener.onDeath(entity, damageSource);
-			if (result != ActionResultType.PASS) {
+			InteractionResult result = listener.onDeath(entity, damageSource);
+			if (result != InteractionResult.PASS) {
 				return result;
 			}
 		}
 
-		return ActionResultType.PASS;
+		return InteractionResult.PASS;
 	});
 
 	public static final GameEventType<MobDrop> MOB_DROP = GameEventType.create(MobDrop.class, listeners -> (entity, damageSource, drops) -> {
 		for (MobDrop listener : listeners) {
-			ActionResultType result = listener.onMobDrop(entity, damageSource, drops);
-			if (result != ActionResultType.PASS) {
+			InteractionResult result = listener.onMobDrop(entity, damageSource, drops);
+			if (result != InteractionResult.PASS) {
 				return result;
 			}
 		}
 
-		return ActionResultType.PASS;
+		return InteractionResult.PASS;
 	});
 
 	public static final GameEventType<FarmlandTrample> FARMLAND_TRAMPLE = GameEventType.create(FarmlandTrample.class, listeners -> (entity, pos, state) -> {
 		for (FarmlandTrample listener : listeners) {
-			ActionResultType result = listener.onFarmlandTrample(entity, pos, state);
-			if (result != ActionResultType.PASS) {
+			InteractionResult result = listener.onFarmlandTrample(entity, pos, state);
+			if (result != InteractionResult.PASS) {
 				return result;
 			}
 		}
 
-		return ActionResultType.PASS;
+		return InteractionResult.PASS;
 	});
 
 	public static final GameEventType<Spawn> SPAWNED = GameEventType.create(Spawn.class, listeners -> (entity, reason, player) -> {
@@ -74,19 +74,19 @@ public final class GameLivingEntityEvents {
 	}
 
 	public interface Death {
-		ActionResultType onDeath(LivingEntity entity, DamageSource damageSource);
+		InteractionResult onDeath(LivingEntity entity, DamageSource damageSource);
 	}
 
 	public interface MobDrop {
-		ActionResultType onMobDrop(LivingEntity entity, DamageSource damageSource, Collection<ItemEntity> drops);
+		InteractionResult onMobDrop(LivingEntity entity, DamageSource damageSource, Collection<ItemEntity> drops);
 	}
 
 	public interface FarmlandTrample {
-		ActionResultType onFarmlandTrample(Entity entity, BlockPos pos, BlockState state);
+		InteractionResult onFarmlandTrample(Entity entity, BlockPos pos, BlockState state);
 	}
 
 	public interface Spawn {
-		void onSpawn(LivingEntity entity, SpawnReason reason, @Nullable ServerPlayerEntity player);
+		void onSpawn(LivingEntity entity, MobSpawnType reason, @Nullable ServerPlayer player);
 	}
 
 	public interface EnderTeleport {

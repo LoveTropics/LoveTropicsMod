@@ -5,8 +5,8 @@ import com.lovetropics.minigames.common.core.game.GameResult;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.RegistryKey;
-import net.minecraft.world.World;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.level.Level;
 
 import java.util.Arrays;
 import java.util.List;
@@ -35,7 +35,7 @@ public final class RandomMapProvider implements IGameMapProvider {
 	}
 
 	@Override
-	public List<RegistryKey<World>> getPossibleDimensions() {
+	public List<ResourceKey<Level>> getPossibleDimensions() {
 		return Arrays.stream(mapProviders)
 				.map(IGameMapProvider::getPossibleDimensions)
 				.flatMap(List::stream)

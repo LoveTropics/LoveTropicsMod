@@ -1,17 +1,19 @@
 package com.lovetropics.minigames.common.content.survive_the_tide.item;
 
-import net.minecraft.client.util.ITooltipFlag;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.TextFormatting;
-import net.minecraft.world.World;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.ChatFormatting;
+import net.minecraft.world.level.Level;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
 import javax.annotation.Nullable;
 import java.util.List;
+
+import net.minecraft.world.item.Item.Properties;
 
 public class SuperSunscreenItem extends Item {
     public SuperSunscreenItem(Properties properties) {
@@ -20,9 +22,9 @@ public class SuperSunscreenItem extends Item {
 
     @Override
     @OnlyIn(Dist.CLIENT)
-    public void appendHoverText(ItemStack stack, @Nullable World world, List<ITextComponent> tooltip, ITooltipFlag flag) {
-        tooltip.add(new StringTextComponent("Prevents heatwaves from slowing you down.").withStyle(TextFormatting.GOLD));
-        tooltip.add(new StringTextComponent(""));
-        tooltip.add(new StringTextComponent("Active when held in main hand or off-hand.").withStyle(TextFormatting.AQUA));
+    public void appendHoverText(ItemStack stack, @Nullable Level world, List<Component> tooltip, TooltipFlag flag) {
+        tooltip.add(new TextComponent("Prevents heatwaves from slowing you down.").withStyle(ChatFormatting.GOLD));
+        tooltip.add(new TextComponent(""));
+        tooltip.add(new TextComponent("Active when held in main hand or off-hand.").withStyle(ChatFormatting.AQUA));
     }
 }

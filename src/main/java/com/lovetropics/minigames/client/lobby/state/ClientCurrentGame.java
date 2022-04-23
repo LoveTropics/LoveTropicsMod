@@ -2,8 +2,8 @@ package com.lovetropics.minigames.client.lobby.state;
 
 import com.lovetropics.minigames.common.core.game.GamePhaseType;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
-import net.minecraft.network.PacketBuffer;
-import net.minecraft.util.text.ITextComponent;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.chat.Component;
 
 import javax.annotation.Nullable;
 
@@ -11,9 +11,9 @@ public final class ClientCurrentGame {
 	private final ClientGameDefinition definition;
 	private final GamePhaseType phase;
 	@Nullable
-	private final ITextComponent error;
+	private final Component error;
 
-	private ClientCurrentGame(ClientGameDefinition definition, GamePhaseType phase, @Nullable ITextComponent error) {
+	private ClientCurrentGame(ClientGameDefinition definition, GamePhaseType phase, @Nullable Component error) {
 		this.definition = definition;
 		this.phase = phase;
 		this.error = error;
@@ -29,7 +29,7 @@ public final class ClientCurrentGame {
 		return ClientCurrentGame.create(definition, phaseType);
 	}
 
-	public ClientCurrentGame withError(ITextComponent error) {
+	public ClientCurrentGame withError(Component error) {
 		return new ClientCurrentGame(definition, phase, error);
 	}
 
@@ -42,11 +42,11 @@ public final class ClientCurrentGame {
 	}
 
 	@Nullable
-	public ITextComponent error() {
+	public Component error() {
 		return error;
 	}
 
-	public void encode(PacketBuffer buffer) {
+	public void encode(FriendlyByteBuf buffer) {
 		definition.encode(buffer);
 		buffer.writeEnum(phase);
 
@@ -56,10 +56,10 @@ public final class ClientCurrentGame {
 		}
 	}
 
-	public static ClientCurrentGame decode(PacketBuffer buffer) {
+	public static ClientCurrentGame decode(FriendlyByteBuf buffer) {
 		ClientGameDefinition definition = ClientGameDefinition.decode(buffer);
 		GamePhaseType phase = buffer.readEnum(GamePhaseType.class);
-		ITextComponent error = buffer.readBoolean() ? buffer.readComponent() : null;
+		Component error = buffer.readBoolean() ? buffer.readComponent() : null;
 		return new ClientCurrentGame(definition, phase, error);
 	}
 }

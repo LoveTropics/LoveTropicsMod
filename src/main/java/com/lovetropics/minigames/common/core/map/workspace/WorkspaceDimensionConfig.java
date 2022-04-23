@@ -5,10 +5,10 @@ import com.lovetropics.minigames.common.core.dimension.RuntimeDimensionConfig;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.world.Dimension;
-import net.minecraft.world.DimensionType;
-import net.minecraft.world.gen.ChunkGenerator;
-import net.minecraft.world.storage.IServerWorldInfo;
+import net.minecraft.world.level.dimension.LevelStem;
+import net.minecraft.world.level.dimension.DimensionType;
+import net.minecraft.world.level.chunk.ChunkGenerator;
+import net.minecraft.world.level.storage.ServerLevelData;
 
 import java.util.function.Supplier;
 
@@ -31,12 +31,12 @@ public final class WorkspaceDimensionConfig {
 		this.seed = seed;
 	}
 
-	public RuntimeDimensionConfig toRuntimeConfig(MinecraftServer server, IServerWorldInfo worldInfo) {
+	public RuntimeDimensionConfig toRuntimeConfig(MinecraftServer server, ServerLevelData worldInfo) {
 		Supplier<DimensionType> dimensionType = this.dimensionType;
 		if (dimensionType == null) {
 			dimensionType = DimensionUtils.overworld(server);
 		}
 
-		return new RuntimeDimensionConfig(new Dimension(dimensionType, this.generator), this.seed, worldInfo);
+		return new RuntimeDimensionConfig(new LevelStem(dimensionType, this.generator), this.seed, worldInfo);
 	}
 }

@@ -13,7 +13,7 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
-import net.minecraft.network.PacketBuffer;
+import net.minecraft.network.FriendlyByteBuf;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -21,6 +21,10 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.function.IntConsumer;
 import java.util.stream.Collectors;
+
+import com.lovetropics.minigames.common.util.PartialUpdate.AbstractSet;
+import com.lovetropics.minigames.common.util.PartialUpdate.AbstractType;
+import com.lovetropics.minigames.common.util.PartialUpdate.Family;
 
 public abstract class ClientLobbyUpdate extends PartialUpdate<ClientLobbyManagement.Session> {
 	public static final class Set extends AbstractSet<ClientLobbyManagement.Session> {
@@ -32,7 +36,7 @@ public abstract class ClientLobbyUpdate extends PartialUpdate<ClientLobbyManagem
 			return new Set();
 		}
 
-		public static Set decode(PacketBuffer buffer) {
+		public static Set decode(FriendlyByteBuf buffer) {
 			Set set = new Set();
 			set.decodeSelf(buffer);
 			return set;
@@ -113,14 +117,14 @@ public abstract class ClientLobbyUpdate extends PartialUpdate<ClientLobbyManagem
 		SET_CONTROLS_STATE(SetControlsState::decode),
 		SET_VISIBILITY(SetVisibility::decode);
 
-		private final Function<PacketBuffer, ClientLobbyUpdate> decode;
+		private final Function<FriendlyByteBuf, ClientLobbyUpdate> decode;
 
-		Type(Function<PacketBuffer, ClientLobbyUpdate> decode) {
+		Type(Function<FriendlyByteBuf, ClientLobbyUpdate> decode) {
 			this.decode = decode;
 		}
 
 		@Override
-		public ClientLobbyUpdate decode(PacketBuffer buffer) {
+		public ClientLobbyUpdate decode(FriendlyByteBuf buffer) {
 			return decode.apply(buffer);
 		}
 	}
@@ -145,7 +149,7 @@ public abstract class ClientLobbyUpdate extends PartialUpdate<ClientLobbyManagem
 		}
 
 		@Override
-		protected void encode(PacketBuffer buffer) {
+		protected void encode(FriendlyByteBuf buffer) {
 			buffer.writeVarInt(installedGames.size());
 			for (ClientGameDefinition game : installedGames) {
 				game.encode(buffer);
@@ -154,7 +158,7 @@ public abstract class ClientLobbyUpdate extends PartialUpdate<ClientLobbyManagem
 			queue.encode(buffer);
 		}
 
-		static Initialize decode(PacketBuffer buffer) {
+		static Initialize decode(FriendlyByteBuf buffer) {
 			int installedSize = buffer.readVarInt();
 			List<ClientGameDefinition> installedGames = new ArrayList<>(installedSize);
 			for (int i = 0; i < installedSize; i++) {
@@ -181,11 +185,11 @@ public abstract class ClientLobbyUpdate extends PartialUpdate<ClientLobbyManagem
 		}
 
 		@Override
-		protected void encode(PacketBuffer buffer) {
+		protected void encode(FriendlyByteBuf buffer) {
 			buffer.writeUtf(name, 200);
 		}
 
-		static SetName decode(PacketBuffer buffer) {
+		static SetName decode(FriendlyByteBuf buffer) {
 			return new SetName(buffer.readUtf(200));
 		}
 	}
@@ -205,14 +209,14 @@ public abstract class ClientLobbyUpdate extends PartialUpdate<ClientLobbyManagem
 		}
 
 		@Override
-		protected void encode(PacketBuffer buffer) {
+		protected void encode(FriendlyByteBuf buffer) {
 			buffer.writeBoolean(game != null);
 			if (game != null) {
 				game.encode(buffer);
 			}
 		}
 
-		static SetCurrentGame decode(PacketBuffer buffer) {
+		static SetCurrentGame decode(FriendlyByteBuf buffer) {
 			ClientCurrentGame game = buffer.readBoolean() ? ClientCurrentGame.decode(buffer) : null;
 			return new SetCurrentGame(game);
 		}
@@ -234,7 +238,7 @@ public abstract class ClientLobbyUpdate extends PartialUpdate<ClientLobbyManagem
 		}
 
 		@Override
-		protected void encode(PacketBuffer buffer) {
+		protected void encode(FriendlyByteBuf buffer) {
 			buffer.writeVarInt(queue.size());
 			queue.forEach((IntConsumer) buffer::writeVarInt);
 
@@ -245,7 +249,7 @@ public abstract class ClientLobbyUpdate extends PartialUpdate<ClientLobbyManagem
 			});
 		}
 
-		static UpdateQueue decode(PacketBuffer buffer) {
+		static UpdateQueue decode(FriendlyByteBuf buffer) {
 			int queueSize = buffer.readVarInt();
 			IntList queue = new IntArrayList(queueSize);
 			for (int i = 0; i < queueSize; i++) {
@@ -278,14 +282,14 @@ public abstract class ClientLobbyUpdate extends PartialUpdate<ClientLobbyManagem
 		}
 
 		@Override
-		protected void encode(PacketBuffer buffer) {
+		protected void encode(FriendlyByteBuf buffer) {
 			buffer.writeVarInt(players.size());
 			for (ClientLobbyPlayer player : players) {
 				player.encode(buffer);
 			}
 		}
 
-		static SetPlayers decode(PacketBuffer buffer) {
+		static SetPlayers decode(FriendlyByteBuf buffer) {
 			int size = buffer.readVarInt();
 			List<ClientLobbyPlayer> players = new ArrayList<>(size);
 			for (int i = 0; i < size; i++) {
@@ -309,11 +313,11 @@ public abstract class ClientLobbyUpdate extends PartialUpdate<ClientLobbyManagem
 		}
 
 		@Override
-		protected void encode(PacketBuffer buffer) {
+		protected void encode(FriendlyByteBuf buffer) {
 			state.encode(buffer);
 		}
 
-		static SetControlsState decode(PacketBuffer buffer) {
+		static SetControlsState decode(FriendlyByteBuf buffer) {
 			return new SetControlsState(LobbyControls.State.decode(buffer));
 		}
 	}
@@ -334,12 +338,12 @@ public abstract class ClientLobbyUpdate extends PartialUpdate<ClientLobbyManagem
 		}
 
 		@Override
-		protected void encode(PacketBuffer buffer) {
+		protected void encode(FriendlyByteBuf buffer) {
 			buffer.writeEnum(visibility);
 			buffer.writeBoolean(canFocusLive);
 		}
 
-		static SetVisibility decode(PacketBuffer buffer) {
+		static SetVisibility decode(FriendlyByteBuf buffer) {
 			return new SetVisibility(buffer.readEnum(LobbyVisibility.class), buffer.readBoolean());
 		}
 	}

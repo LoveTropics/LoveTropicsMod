@@ -1,8 +1,8 @@
 package com.lovetropics.minigames.common.content.biodiversity_blitz.plot.plant;
 
 import com.mojang.serialization.Codec;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.nbt.CompoundTag;
 
 public final class PlantItemType {
 	public static final Codec<PlantItemType> CODEC = Codec.STRING.xmap(PlantItemType::new, PlantItemType::id);
@@ -24,7 +24,7 @@ public final class PlantItemType {
 			return false;
 		}
 
-		CompoundNBT tag = item.getTag();
+		CompoundTag tag = item.getTag();
 		return tag != null && this.id.equals(tag.getString(ITEM_NBT_KEY));
 	}
 

@@ -4,7 +4,7 @@ import com.lovetropics.minigames.common.core.game.IGameDefinition;
 import com.lovetropics.minigames.common.core.game.lobby.ILobbyGameQueue;
 import com.lovetropics.minigames.common.core.game.lobby.QueuedGame;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.Mth;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -57,7 +57,7 @@ final class LobbyGameQueue implements ILobbyGameQueue {
 		if (index == -1 || index == newIndex) return false;
 
 		QueuedGame entry = entries.remove(index);
-		entries.add(MathHelper.clamp(newIndex, 0, entries.size()), entry);
+		entries.add(Mth.clamp(newIndex, 0, entries.size()), entry);
 
 		return true;
 	}

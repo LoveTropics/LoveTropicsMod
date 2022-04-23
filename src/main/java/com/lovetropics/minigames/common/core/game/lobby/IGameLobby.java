@@ -5,8 +5,8 @@ import com.lovetropics.minigames.common.core.game.IGame;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.player.PlayerIterable;
 import com.lovetropics.minigames.common.core.game.player.PlayerSet;
-import net.minecraft.command.CommandSource;
-import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.MinecraftServer;
 
 import javax.annotation.Nullable;
@@ -43,11 +43,11 @@ public interface IGameLobby {
 		return PlayerSet.ofServer(getServer()).filter(this::isVisibleTo);
 	}
 
-	default boolean isVisibleTo(CommandSource source) {
+	default boolean isVisibleTo(CommandSourceStack source) {
 		return getMetadata().visibility().isPublic();
 	}
 
-	default boolean isVisibleTo(ServerPlayerEntity player) {
+	default boolean isVisibleTo(ServerPlayer player) {
 		return this.isVisibleTo(player.createCommandSourceStack());
 	}
 }

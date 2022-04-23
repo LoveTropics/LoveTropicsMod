@@ -8,9 +8,9 @@ import com.lovetropics.minigames.common.core.game.player.PlayerRole;
 import com.lovetropics.minigames.common.core.game.util.TemplatedText;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.util.ActionResultType;
-import net.minecraft.util.text.ITextComponent;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.network.chat.Component;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
@@ -45,7 +45,7 @@ public final class ImmediateRespawnBehavior implements IGameBehavior {
 		events.listen(GamePlayerEvents.DEATH, (player, source) -> onPlayerDeath(game, player));
 	}
 
-	private ActionResultType onPlayerDeath(IGamePhase game, ServerPlayerEntity player) {
+	private InteractionResult onPlayerDeath(IGamePhase game, ServerPlayer player) {
 		player.inventory.dropAll();
 
 		PlayerRole playerRole = game.getRoleFor(player);
@@ -53,13 +53,13 @@ public final class ImmediateRespawnBehavior implements IGameBehavior {
 			this.respawnPlayer(game, player, playerRole);
 			this.sendDeathMessage(game, player);
 
-			return ActionResultType.FAIL;
+			return InteractionResult.FAIL;
 		}
 
-		return ActionResultType.PASS;
+		return InteractionResult.PASS;
 	}
 
-	private void respawnPlayer(IGamePhase game, ServerPlayerEntity player, PlayerRole playerRole) {
+	private void respawnPlayer(IGamePhase game, ServerPlayer player, PlayerRole playerRole) {
 		if (respawnAsRole != null) {
 			game.setPlayerRole(player, respawnAsRole);
 		} else {
@@ -69,9 +69,9 @@ public final class ImmediateRespawnBehavior implements IGameBehavior {
 		player.setHealth(20.0F);
 	}
 
-	private void sendDeathMessage(IGamePhase game, ServerPlayerEntity player) {
+	private void sendDeathMessage(IGamePhase game, ServerPlayer player) {
 		if (deathMessage != null) {
-			ITextComponent message = deathMessage.apply(player.getCombatTracker().getDeathMessage());
+			Component message = deathMessage.apply(player.getCombatTracker().getDeathMessage());
 			game.getAllPlayers().sendMessage(message);
 		}
 	}

@@ -7,11 +7,11 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import net.minecraft.client.gui.FocusableGui;
+import net.minecraft.client.gui.components.events.AbstractContainerEventHandler;
 import net.minecraftforge.client.gui.ScrollPanel;
 
 @Mixin(ScrollPanel.class)
-public abstract class ScrollPanelMixin extends FocusableGui {
+public abstract class ScrollPanelMixin extends AbstractContainerEventHandler {
 
 	@Shadow(remap = false)
 	private float scrollDistance;

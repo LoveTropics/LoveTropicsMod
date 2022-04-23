@@ -1,23 +1,25 @@
 package com.lovetropics.minigames.client.toast;
 
 import com.lovetropics.minigames.Constants;
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.AbstractGui;
-import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.gui.toasts.IToast;
-import net.minecraft.client.gui.toasts.ToastGui;
-import net.minecraft.client.renderer.ItemRenderer;
+import net.minecraft.client.gui.GuiComponent;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.components.toasts.Toast;
+import net.minecraft.client.gui.components.toasts.ToastComponent;
+import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.util.IReorderingProcessor;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.FormattedCharSequence;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.network.chat.Component;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public final class NotificationToast implements IToast {
+import net.minecraft.client.gui.components.toasts.Toast.Visibility;
+
+public final class NotificationToast implements Toast {
 	private static final ResourceLocation TEXTURE = new ResourceLocation(Constants.MODID, "textures/gui/toasts.png");
 
 	private static final int TEXTURE_WIDTH = 160;
@@ -32,16 +34,16 @@ public final class NotificationToast implements IToast {
 
 	private static final Minecraft CLIENT = Minecraft.getInstance();
 
-	private final List<IReorderingProcessor> lines;
+	private final List<FormattedCharSequence> lines;
 	private final NotificationDisplay display;
 
 	private final int width;
 	private final int height;
 
-	public NotificationToast(ITextComponent message, NotificationDisplay display) {
-		FontRenderer fontRenderer = CLIENT.font;
+	public NotificationToast(Component message, NotificationDisplay display) {
+		Font fontRenderer = CLIENT.font;
 
-		List<IReorderingProcessor> lines = new ArrayList<>(2);
+		List<FormattedCharSequence> lines = new ArrayList<>(2);
 		lines.addAll(fontRenderer.split(message, MAX_WIDTH));
 
 		int textWidth = Math.max(lines.stream().mapToInt(fontRenderer::width).max().orElse(MAX_WIDTH), MAX_WIDTH);
@@ -53,7 +55,7 @@ public final class NotificationToast implements IToast {
 	}
 
 	@Override
-	public Visibility render(MatrixStack matrixStack, ToastGui gui, long time) {
+	public Visibility render(PoseStack matrixStack, ToastComponent gui, long time) {
 		RenderSystem.color3f(1.0F, 1.0F, 1.0F);
 
 		CLIENT.getTextureManager().bind(TEXTURE);
@@ -62,10 +64,10 @@ public final class NotificationToast implements IToast {
 		this.drawText(matrixStack);
 		this.drawIcon(matrixStack);
 
-		return time >= this.display.visibleTimeMs ? IToast.Visibility.HIDE : IToast.Visibility.SHOW;
+		return time >= this.display.visibleTimeMs ? Toast.Visibility.HIDE : Toast.Visibility.SHOW;
 	}
 
-	private void drawBackground(MatrixStack matrixStack, ToastGui gui) {
+	private void drawBackground(PoseStack matrixStack, ToastComponent gui) {
 		int width = this.width;
 		if (width == TEXTURE_WIDTH) {
 			this.drawBackgroundRow(matrixStack, gui, 0, 0, width);
@@ -87,7 +89,7 @@ public final class NotificationToast implements IToast {
 		this.drawBackgroundRow(matrixStack, gui, width - TEXTURE_BORDER, TEXTURE_WIDTH - TEXTURE_BORDER, TEXTURE_BORDER);
 	}
 
-	private void drawBackgroundRow(MatrixStack matrixStack, ToastGui gui, int x, int u, int width) {
+	private void drawBackgroundRow(PoseStack matrixStack, ToastComponent gui, int x, int u, int width) {
 		int height = this.height;
 		int vOffset = this.display.getTextureOffset();
 
@@ -111,17 +113,17 @@ public final class NotificationToast implements IToast {
 		gui.blit(matrixStack, x, height - TEXTURE_BORDER, u, TEXTURE_HEIGHT - TEXTURE_BORDER + vOffset, width, TEXTURE_BORDER);
 	}
 
-	private void drawText(MatrixStack matrixStack) {
-		FontRenderer fontRenderer = CLIENT.font;
+	private void drawText(PoseStack matrixStack) {
+		Font fontRenderer = CLIENT.font;
 
-		List<IReorderingProcessor> lines = this.lines;
+		List<FormattedCharSequence> lines = this.lines;
 		for (int i = 0; i < lines.size(); i++) {
-			IReorderingProcessor line = lines.get(i);
+			FormattedCharSequence line = lines.get(i);
 			fontRenderer.draw(matrixStack, line, TEXT_LEFT, 7 + (i * 12), 0xFFFFFFFF);
 		}
 	}
 
-	private void drawIcon(MatrixStack matrixStack) {
+	private void drawIcon(PoseStack matrixStack) {
 		int y = (this.height - ICON_SIZE) / 2;
 
 		NotificationIcon icon = this.display.icon;
@@ -131,7 +133,7 @@ public final class NotificationToast implements IToast {
 		} else if (icon.effect != null) {
 			TextureAtlasSprite sprite = CLIENT.getMobEffectTextures().get(icon.effect);
 			CLIENT.getTextureManager().bind(sprite.atlas().location());
-			AbstractGui.blit(matrixStack, 5, y, 0, 18, 18, sprite);
+			GuiComponent.blit(matrixStack, 5, y, 0, 18, 18, sprite);
 		}
 	}
 

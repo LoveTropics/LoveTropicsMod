@@ -10,18 +10,24 @@ import com.lovetropics.minigames.common.core.network.LoveTropicsNetwork;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.network.play.server.SPlaySoundEffectPacket;
-import net.minecraft.util.SoundCategory;
-import net.minecraft.util.SoundEvent;
-import net.minecraft.util.SoundEvents;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.network.protocol.game.ClientboundSoundPacket;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.text.*;
 import net.minecraftforge.fml.network.PacketDistributor;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
+
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.TranslatableComponent;
 
 public class DonationPackageData {
 	public static final MapCodec<DonationPackageData> CODEC = RecordCodecBuilder.mapCodec(instance -> {
@@ -55,19 +61,19 @@ public class DonationPackageData {
 		return playerSelect;
 	}
 
-	public void onReceive(final IGamePhase game, @Nullable final ServerPlayerEntity receiver, @Nullable final String sender) {
+	public void onReceive(final IGamePhase game, @Nullable final ServerPlayer receiver, @Nullable final String sender) {
 		Notification notification = this.notification;
 		if (notification == null) return;
 
 		PlayerSet players = game.getAllPlayers();
 
-		ITextComponent targetedMessage = notification.createTargetedMessage(receiver, sender);
-		ITextComponent globalMessage = notification.createGlobalMessage(receiver);
+		Component targetedMessage = notification.createTargetedMessage(receiver, sender);
+		Component globalMessage = notification.createGlobalMessage(receiver);
 
-		for (ServerPlayerEntity player : players) {
+		for (ServerPlayer player : players) {
 			boolean targeted = player == receiver || receiver == null;
 			NotificationDisplay.Color color = targeted ? NotificationDisplay.Color.LIGHT : NotificationDisplay.Color.DARK;
-			ITextComponent message = targeted ? targetedMessage : globalMessage;
+			Component message = targeted ? targetedMessage : globalMessage;
 			long visibleTime = targeted ? 8000 : 6000;
 
 			NotificationDisplay display = new NotificationDisplay(notification.icon, notification.sentiment, color, visibleTime);
@@ -77,7 +83,7 @@ public class DonationPackageData {
 			);
 
 			if (targeted) {
-				player.connection.send(new SPlaySoundEffectPacket(notification.sound, SoundCategory.MASTER, player.getX(), player.getY(), player.getZ(), 0.2f, 1f));
+				player.connection.send(new ClientboundSoundPacket(notification.sound, SoundSource.MASTER, player.getX(), player.getY(), player.getZ(), 0.2f, 1f));
 			}
 		}
 	}
@@ -104,20 +110,20 @@ public class DonationPackageData {
 			this.sound = sound;
 		}
 
-		ITextComponent createTargetedMessage(@Nullable ServerPlayerEntity receiver, @Nullable String sender) {
+		Component createTargetedMessage(@Nullable ServerPlayer receiver, @Nullable String sender) {
 			return this.message.apply(this.getSenderName(sender), this.getReceiverName(receiver));
 		}
 
-		ITextComponent createGlobalMessage(@Nullable ServerPlayerEntity receiver) {
-			return new TranslationTextComponent("%s received a package!", this.getReceiverName(receiver));
+		Component createGlobalMessage(@Nullable ServerPlayer receiver) {
+			return new TranslatableComponent("%s received a package!", this.getReceiverName(receiver));
 		}
 
-		private IFormattableTextComponent getReceiverName(ServerPlayerEntity receiver) {
-			return (receiver != null ? receiver.getDisplayName().copy() : new StringTextComponent("Everyone")).withStyle(TextFormatting.BLUE);
+		private MutableComponent getReceiverName(ServerPlayer receiver) {
+			return (receiver != null ? receiver.getDisplayName().copy() : new TextComponent("Everyone")).withStyle(ChatFormatting.BLUE);
 		}
 
-		private IFormattableTextComponent getSenderName(@Nullable String sender) {
-			return new StringTextComponent(sender != null ? sender : "an unknown donor").withStyle(TextFormatting.BLUE);
+		private MutableComponent getSenderName(@Nullable String sender) {
+			return new TextComponent(sender != null ? sender : "an unknown donor").withStyle(ChatFormatting.BLUE);
 		}
 	}
 }

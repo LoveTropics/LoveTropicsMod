@@ -17,14 +17,14 @@ import com.lovetropics.minigames.common.core.game.state.GameStateMap;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.*;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.ActionResultType;
-import net.minecraft.util.SoundCategory;
-import net.minecraft.util.SoundEvents;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.registry.Registry;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.util.Mth;
+import net.minecraft.core.Registry;
 
 import java.util.stream.IntStream;
 
@@ -70,9 +70,9 @@ public final class BbCurrencyBehavior implements IGameBehavior {
 		events.listen(GamePlayerEvents.THROW_ITEM, (player, item) -> {
 			ItemStack stack = item.getItem();
 			if (stack.getItem() == this.item) {
-				return ActionResultType.FAIL;
+				return InteractionResult.FAIL;
 			}
-			return ActionResultType.PASS;
+			return InteractionResult.PASS;
 		});
 
 		events.listen(GamePhaseEvents.TICK, () -> this.currency.tickTracked());
@@ -80,7 +80,7 @@ public final class BbCurrencyBehavior implements IGameBehavior {
 		events.listen(BbEvents.TICK_PLOT, this::tickPlot);
 	}
 
-	private void tickPlot(ServerPlayerEntity player, Plot plot) {
+	private void tickPlot(ServerPlayer player, Plot plot) {
 		long ticks = this.game.ticks();
 
 		if (ticks % 20 == 0) {
@@ -97,19 +97,19 @@ public final class BbCurrencyBehavior implements IGameBehavior {
 		}
 	}
 
-	private void giveCurrency(ServerPlayerEntity player, Plot plot) {
+	private void giveCurrency(ServerPlayer player, Plot plot) {
 		int count = currency.add(player, plot.nextCurrencyIncrement, true);
 
 		player.displayClientMessage(BiodiversityBlitzTexts.currencyAddition(count), true);
 
 		if (count > 0) {
-			player.playNotifySound(SoundEvents.ARROW_HIT_PLAYER, SoundCategory.PLAYERS, 0.24F, 1.0F);
+			player.playNotifySound(SoundEvents.ARROW_HIT_PLAYER, SoundSource.PLAYERS, 0.24F, 1.0F);
 		}
 	}
 
-	private int computeNextCurrency(ServerPlayerEntity player, Plot plot) {
+	private int computeNextCurrency(ServerPlayer player, Plot plot) {
 		double value = this.computePlotValue(plot);
-		return MathHelper.floor(value);
+		return Mth.floor(value);
 	}
 
 	private double computePlotValue(Plot plot) {

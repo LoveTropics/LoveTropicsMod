@@ -14,7 +14,7 @@ import com.lovetropics.minigames.common.core.game.util.TeamAllocator;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
-import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.server.level.ServerPlayer;
 
 import java.util.Collections;
 import java.util.List;
@@ -51,7 +51,7 @@ public final class AssignPlayerRolesBehavior implements IGameBehavior {
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
-		Map<ServerPlayerEntity, PlayerRole> roles = new Reference2ObjectOpenHashMap<>();
+		Map<ServerPlayer, PlayerRole> roles = new Reference2ObjectOpenHashMap<>();
 
 		// TODO: somehow if a player is in a lobby and then leaves they can get in such a state as to join late and be joined as a participant when clicking 'play'
 		events.listen(GamePhaseEvents.CREATE, () -> {
@@ -69,9 +69,9 @@ public final class AssignPlayerRolesBehavior implements IGameBehavior {
 		events.listen(GamePhaseEvents.START, roles::clear);
 	}
 
-	private void allocateRoles(IGamePhase game, BiConsumer<ServerPlayerEntity, PlayerRole> apply) {
+	private void allocateRoles(IGamePhase game, BiConsumer<ServerPlayer, PlayerRole> apply) {
 		LOGGER.info("SELECTED ROLES: " + game.getLobby().getPlayers().getRoleSelections());
-		TeamAllocator<PlayerRole, ServerPlayerEntity> allocator = game.getLobby().getPlayers().createRoleAllocator();
+		TeamAllocator<PlayerRole, ServerPlayer> allocator = game.getLobby().getPlayers().createRoleAllocator();
 		allocator.setSizeForTeam(PlayerRole.PARTICIPANT, game.getDefinition().getMaximumParticipantCount());
 		LOGGER.info("TEAM SIZE: " + game.getDefinition().getMaximumParticipantCount());
 		this.applyForcedParticipants(game, allocator);
@@ -82,10 +82,10 @@ public final class AssignPlayerRolesBehavior implements IGameBehavior {
 		allocator.allocate(apply);
 	}
 
-	private void applyForcedParticipants(IGamePhase game, TeamAllocator<PlayerRole, ServerPlayerEntity> allocator) {
+	private void applyForcedParticipants(IGamePhase game, TeamAllocator<PlayerRole, ServerPlayer> allocator) {
 		LOGGER.info("FORCING PARTICIPANTS: " + this.forcedParticipants);
 		for (UUID uuid : this.forcedParticipants) {
-			ServerPlayerEntity player = game.getAllPlayers().getPlayerBy(uuid);
+			ServerPlayer player = game.getAllPlayers().getPlayerBy(uuid);
 			if (player != null) {
 				allocator.addPlayer(player, PlayerRole.PARTICIPANT);
 			}

@@ -1,8 +1,8 @@
 package com.lovetropics.minigames.client.game.handler.spectate;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.ActiveRenderInfo;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.client.Camera;
+import net.minecraft.util.Mth;
 import net.minecraftforge.client.event.EntityViewRenderEvent;
 
 import java.util.List;
@@ -48,14 +48,14 @@ class SpectatingSession {
 	}
 
 	double getZoom(float partialTicks) {
-		return MathHelper.lerp(partialTicks, prevZoom, zoom);
+		return Mth.lerp(partialTicks, prevZoom, zoom);
 	}
 
 	void renderTick() {
 		state.renderTick(CLIENT, this, CLIENT.player);
 	}
 
-	void applyToCamera(ActiveRenderInfo camera, float partialTicks, EntityViewRenderEvent.CameraSetup event) {
+	void applyToCamera(Camera camera, float partialTicks, EntityViewRenderEvent.CameraSetup event) {
 		state.applyToCamera(CLIENT, this, CLIENT.player, camera, partialTicks, event);
 	}
 

@@ -3,7 +3,7 @@ package com.lovetropics.minigames.client.lobby.state.message;
 import com.lovetropics.minigames.client.lobby.state.ClientCurrentGame;
 import com.lovetropics.minigames.client.lobby.state.ClientLobbyManager;
 import com.lovetropics.minigames.common.core.game.lobby.IGameLobby;
-import net.minecraft.network.PacketBuffer;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.fml.network.NetworkEvent;
 
 import javax.annotation.Nullable;
@@ -30,7 +30,7 @@ public class LobbyUpdateMessage {
 		return new LobbyUpdateMessage(lobby.getMetadata().id().networkId(), null);
 	}
 
-	public void encode(PacketBuffer buffer) {
+	public void encode(FriendlyByteBuf buffer) {
 		buffer.writeVarInt(id);
 
 		buffer.writeBoolean(update != null);
@@ -39,7 +39,7 @@ public class LobbyUpdateMessage {
 		}
 	}
 
-	public static LobbyUpdateMessage decode(PacketBuffer buffer) {
+	public static LobbyUpdateMessage decode(FriendlyByteBuf buffer) {
 		int id = buffer.readVarInt();
 		if (buffer.readBoolean()) {
 			Update update = Update.decode(buffer);
@@ -69,7 +69,7 @@ public class LobbyUpdateMessage {
 			this.currentGame = currentGame;
 		}
 
-		static Update decode(PacketBuffer buffer) {
+		static Update decode(FriendlyByteBuf buffer) {
 			String name = buffer.readUtf(200);
 
 			ClientCurrentGame currentGame = null;
@@ -80,7 +80,7 @@ public class LobbyUpdateMessage {
 			return new Update(name, currentGame);
 		}
 
-		void encode(PacketBuffer buffer) {
+		void encode(FriendlyByteBuf buffer) {
 			buffer.writeUtf(name, 200);
 
 			buffer.writeBoolean(currentGame != null);

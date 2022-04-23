@@ -7,7 +7,7 @@ import com.lovetropics.minigames.common.core.game.behavior.event.GameWorldEvents
 import com.lovetropics.minigames.common.util.BlockStatePredicate;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.world.server.ServerWorld;
+import net.minecraft.server.level.ServerLevel;
 
 public class DisableTntDestructionBehavior implements IGameBehavior {
 	public static final Codec<DisableTntDestructionBehavior> CODEC = RecordCodecBuilder.create(instance -> {
@@ -25,7 +25,7 @@ public class DisableTntDestructionBehavior implements IGameBehavior {
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
 		events.listen(GameWorldEvents.EXPLOSION_DETONATE, (explosion, affectedBlocks, affectedEntities) -> {
-			ServerWorld world = game.getWorld();
+			ServerLevel world = game.getWorld();
 			affectedBlocks.removeIf(pos -> blockPredicate.test(world.getBlockState(pos)));
 		});
 	}

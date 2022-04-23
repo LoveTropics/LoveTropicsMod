@@ -8,12 +8,12 @@ import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvent
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.nbt.NBTDynamicOps;
-import net.minecraft.network.play.server.SChangeGameStatePacket;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtOps;
+import net.minecraft.network.protocol.game.ClientboundGameEventPacket;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.world.GameRules;
+import net.minecraft.world.level.GameRules;
 
 import java.util.Map;
 
@@ -34,7 +34,7 @@ public final class SetGameRulesBehavior implements IGameBehavior {
 	public void register(IGamePhase game, EventRegistrar events) {
 		MinecraftServer server = game.getServer();
 		GameRules gameRules = game.getWorld().getGameRules();
-		CompoundNBT rulesSnapshot = applyRules(gameRules);
+		CompoundTag rulesSnapshot = applyRules(gameRules);
 
 		events.listen(GamePlayerEvents.ADD, player -> sendRuleUpdatesTo(gameRules, player));
 		events.listen(GamePlayerEvents.REMOVE, player -> sendRuleUpdatesTo(server.getGameRules(), player));
@@ -44,25 +44,25 @@ public final class SetGameRulesBehavior implements IGameBehavior {
 		});
 	}
 
-	private CompoundNBT applyRules(GameRules gameRules) {
-		CompoundNBT snapshot = gameRules.createTag();
+	private CompoundTag applyRules(GameRules gameRules) {
+		CompoundTag snapshot = gameRules.createTag();
 
-		CompoundNBT nbt = new CompoundNBT();
+		CompoundTag nbt = new CompoundTag();
 		for (Map.Entry<String, String> entry : this.rules.entrySet()) {
 			nbt.putString(entry.getKey(), entry.getValue());
 		}
 
-		gameRules.loadFromTag(new Dynamic<>(NBTDynamicOps.INSTANCE, nbt));
+		gameRules.loadFromTag(new Dynamic<>(NbtOps.INSTANCE, nbt));
 
 		return snapshot;
 	}
 
-	private void resetRules(GameRules gameRules, CompoundNBT snapshot) {
-		gameRules.loadFromTag(new Dynamic<>(NBTDynamicOps.INSTANCE, snapshot));
+	private void resetRules(GameRules gameRules, CompoundTag snapshot) {
+		gameRules.loadFromTag(new Dynamic<>(NbtOps.INSTANCE, snapshot));
 	}
 
-	private void sendRuleUpdatesTo(GameRules gameRules, ServerPlayerEntity player) {
+	private void sendRuleUpdatesTo(GameRules gameRules, ServerPlayer player) {
 		boolean immediateRespawn = gameRules.getRule(GameRules.RULE_DO_IMMEDIATE_RESPAWN).get();
-		player.connection.send(new SChangeGameStatePacket(SChangeGameStatePacket.IMMEDIATE_RESPAWN, immediateRespawn ? 1.0F : 0.0F));
+		player.connection.send(new ClientboundGameEventPacket(ClientboundGameEventPacket.IMMEDIATE_RESPAWN, immediateRespawn ? 1.0F : 0.0F));
 	}
 }

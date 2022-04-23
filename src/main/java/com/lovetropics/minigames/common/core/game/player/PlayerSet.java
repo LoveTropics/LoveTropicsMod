@@ -1,10 +1,10 @@
 package com.lovetropics.minigames.common.core.game.player;
 
 import com.lovetropics.minigames.common.core.game.state.statistics.PlayerKey;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.management.PlayerList;
+import net.minecraft.server.players.PlayerList;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
@@ -21,7 +21,7 @@ public interface PlayerSet extends PlayerIterable {
 
 		@Nullable
 		@Override
-		public ServerPlayerEntity getPlayerBy(UUID id) {
+		public ServerPlayer getPlayerBy(UUID id) {
 			return null;
 		}
 
@@ -36,7 +36,7 @@ public interface PlayerSet extends PlayerIterable {
 		}
 
 		@Override
-		public Iterator<ServerPlayerEntity> iterator() {
+		public Iterator<ServerPlayer> iterator() {
 			return Collections.emptyIterator();
 		}
 	};
@@ -54,7 +54,7 @@ public interface PlayerSet extends PlayerIterable {
 
 			@Nullable
 			@Override
-			public ServerPlayerEntity getPlayerBy(UUID id) {
+			public ServerPlayer getPlayerBy(UUID id) {
 				return players.getPlayer(id);
 			}
 
@@ -64,7 +64,7 @@ public interface PlayerSet extends PlayerIterable {
 			}
 
 			@Override
-			public Iterator<ServerPlayerEntity> iterator() {
+			public Iterator<ServerPlayer> iterator() {
 				return players.getPlayers().iterator();
 			}
 		};
@@ -79,7 +79,7 @@ public interface PlayerSet extends PlayerIterable {
 
 			@Nullable
 			@Override
-			public ServerPlayerEntity getPlayerBy(UUID id) {
+			public ServerPlayer getPlayerBy(UUID id) {
 				return this.contains(id) ? server.getPlayerList().getPlayer(id) : null;
 			}
 
@@ -89,7 +89,7 @@ public interface PlayerSet extends PlayerIterable {
 			}
 
 			@Override
-			public Iterator<ServerPlayerEntity> iterator() {
+			public Iterator<ServerPlayer> iterator() {
 				return PlayerIterable.resolvingIterator(server, players.iterator());
 			}
 		};
@@ -102,10 +102,10 @@ public interface PlayerSet extends PlayerIterable {
 	boolean contains(UUID id);
 
 	@Nullable
-	ServerPlayerEntity getPlayerBy(UUID id);
+	ServerPlayer getPlayerBy(UUID id);
 
 	@Nullable
-	default ServerPlayerEntity getPlayerBy(PlayerKey key) {
+	default ServerPlayer getPlayerBy(PlayerKey key) {
 		return getPlayerBy(key.getId());
 	}
 
@@ -116,5 +116,5 @@ public interface PlayerSet extends PlayerIterable {
 	}
 
 	@Override
-	Iterator<ServerPlayerEntity> iterator();
+	Iterator<ServerPlayer> iterator();
 }

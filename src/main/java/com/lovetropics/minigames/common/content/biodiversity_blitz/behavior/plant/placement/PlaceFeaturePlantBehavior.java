@@ -11,14 +11,14 @@ import com.lovetropics.minigames.common.util.world.DelegatingSeedReader;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.longs.*;
-import net.minecraft.block.BlockState;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.tags.BlockTags;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.ISeedReader;
-import net.minecraft.world.gen.ChunkGenerator;
-import net.minecraft.world.gen.feature.BaseTreeFeatureConfig;
-import net.minecraft.world.gen.feature.ConfiguredFeature;
-import net.minecraft.world.server.ServerWorld;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.WorldGenLevel;
+import net.minecraft.world.level.chunk.ChunkGenerator;
+import net.minecraft.world.level.levelgen.feature.configurations.TreeConfiguration;
+import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraftforge.common.util.Constants;
 
 import javax.annotation.Nullable;
@@ -42,7 +42,7 @@ public final class PlaceFeaturePlantBehavior implements IGameBehavior {
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
 		events.listen(BbPlantEvents.PLACE, (player, plot, pos) -> {
-			ServerWorld world = game.getWorld();
+			ServerLevel world = game.getWorld();
 			ConfiguredFeature<?, ?> tree = this.feature.get();
 			Long2ObjectMap<BlockState> changedBlocks = this.generateFeature(world, pos, tree);
 			if (changedBlocks != null) {
@@ -54,9 +54,9 @@ public final class PlaceFeaturePlantBehavior implements IGameBehavior {
 	}
 
 	@Nullable
-	private Long2ObjectMap<BlockState> generateFeature(ServerWorld world, BlockPos pos, ConfiguredFeature<?, ?> feature) {
-		if (feature.config instanceof BaseTreeFeatureConfig) {
-			((BaseTreeFeatureConfig) feature.config).setFromSapling();
+	private Long2ObjectMap<BlockState> generateFeature(ServerLevel world, BlockPos pos, ConfiguredFeature<?, ?> feature) {
+		if (feature.config instanceof TreeConfiguration) {
+			((TreeConfiguration) feature.config).setFromSapling();
 		}
 
 		BlockCapturingWorld capturingWorld = new BlockCapturingWorld(world, this.blocks);
@@ -96,7 +96,7 @@ public final class PlaceFeaturePlantBehavior implements IGameBehavior {
 		}
 
 		return placement.places((world, finalCoverage) -> {
-			BlockPos.Mutable pos = new BlockPos.Mutable();
+			BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
 			for (Long2ObjectMap.Entry<BlockState> entry : Long2ObjectMaps.fastIterable(blocks)) {
 				pos.set(entry.getLongKey());
 				if (finalCoverage.covers(pos)) {
@@ -118,7 +118,7 @@ public final class PlaceFeaturePlantBehavior implements IGameBehavior {
 
 		private final Predicate<BlockState> filter;
 
-		BlockCapturingWorld(ISeedReader parent, Predicate<BlockState> filter) {
+		BlockCapturingWorld(WorldGenLevel parent, Predicate<BlockState> filter) {
 			super(parent);
 			this.filter = filter;
 		}

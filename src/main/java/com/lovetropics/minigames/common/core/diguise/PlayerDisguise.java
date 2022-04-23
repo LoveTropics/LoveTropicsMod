@@ -3,10 +3,10 @@ package com.lovetropics.minigames.common.core.diguise;
 import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.common.util.Util;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.nbt.INBT;
-import net.minecraft.util.Direction;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.nbt.Tag;
+import net.minecraft.core.Direction;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import net.minecraftforge.common.util.LazyOptional;
@@ -22,46 +22,46 @@ public final class PlayerDisguise implements ICapabilityProvider {
 	public static final Capability.IStorage<PlayerDisguise> STORAGE = new Capability.IStorage<PlayerDisguise>() {
 		@Nullable
 		@Override
-		public INBT writeNBT(Capability<PlayerDisguise> capability, PlayerDisguise instance, Direction side) {
+		public Tag writeNBT(Capability<PlayerDisguise> capability, PlayerDisguise instance, Direction side) {
 			return null;
 		}
 
 		@Override
-		public void readNBT(Capability<PlayerDisguise> capability, PlayerDisguise instance, Direction side, INBT nbt) {
+		public void readNBT(Capability<PlayerDisguise> capability, PlayerDisguise instance, Direction side, Tag nbt) {
 		}
 	};
 
 	private final LazyOptional<PlayerDisguise> instance = LazyOptional.of(() -> this);
 
-	private final PlayerEntity player;
+	private final Player player;
 
 	private DisguiseType disguiseType;
 	private Entity disguiseEntity;
 
-	PlayerDisguise(PlayerEntity player) {
+	PlayerDisguise(Player player) {
 		this.player = player;
 	}
 
 	@SubscribeEvent
 	public static void onAttachEntityCapabilities(AttachCapabilitiesEvent<Entity> event) {
 		Entity entity = event.getObject();
-		if (entity instanceof PlayerEntity) {
-			event.addCapability(Util.resource("player_disguise"), new PlayerDisguise((PlayerEntity) entity));
+		if (entity instanceof Player) {
+			event.addCapability(Util.resource("player_disguise"), new PlayerDisguise((Player) entity));
 		}
 	}
 
-	public static LazyOptional<PlayerDisguise> get(PlayerEntity player) {
+	public static LazyOptional<PlayerDisguise> get(Player player) {
 		return player.getCapability(LoveTropics.playerDisguiseCap());
 	}
 
 	@Nullable
-	public static DisguiseType getDisguiseType(PlayerEntity player) {
+	public static DisguiseType getDisguiseType(Player player) {
 		PlayerDisguise disguise = get(player).orElse(null);
 		return disguise != null ? disguise.getDisguiseType() : null;
 	}
 
 	@Nullable
-	public static Entity getDisguiseEntity(PlayerEntity player) {
+	public static Entity getDisguiseEntity(Player player) {
 		PlayerDisguise disguise = get(player).orElse(null);
 		return disguise != null ? disguise.getDisguiseEntity() : null;
 	}

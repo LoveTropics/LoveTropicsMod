@@ -10,16 +10,16 @@ import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.mojang.serialization.Codec;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.DirectionalBlock;
-import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.DirectionalBlock;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.BlockTags;
-import net.minecraft.util.ActionResultType;
-import net.minecraft.util.Direction;
-import net.minecraft.util.Hand;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.core.Direction;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.core.BlockPos;
 import net.minecraftforge.fml.RegistryObject;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.apache.commons.lang3.tuple.Pair;
@@ -57,7 +57,7 @@ public class GrowCoconutsBehavior implements IGameBehavior {
 		events.listen(BbPlantEvents.BREAK, this::onPlantBreak);
 	}
 
-	private void tick(ServerPlayerEntity player, Plot plot, List<Plant> plants) {
+	private void tick(ServerPlayer player, Plot plot, List<Plant> plants) {
 		if (game.ticks() % interval == 0) {
 			for (Plant plant : plants) {
 				List<Pair<BlockPos, Direction>> candidates = candidatePositions.computeIfAbsent(plant, p -> p.functionalCoverage().stream()
@@ -89,16 +89,16 @@ public class GrowCoconutsBehavior implements IGameBehavior {
 	}
 
 	// TODO: manual handling of coverage is not a good solution! next year: change our approach to how we're handling dynamic coverages like this
-	private ActionResultType breakFromCoconut(ServerPlayerEntity player, BlockPos pos, BlockState state, Hand hand) {
+	private InteractionResult breakFromCoconut(ServerPlayer player, BlockPos pos, BlockState state, InteractionHand hand) {
 		if (state.getBlock() == COCONUT.get()) {
 			BlockPos trunkPos = pos.relative(state.getValue(DirectionalBlock.FACING));
-			game.invoker(GamePlayerEvents.BREAK_BLOCK).onBreakBlock(player, trunkPos, player.level.getBlockState(trunkPos), Hand.MAIN_HAND);
-			return ActionResultType.FAIL;
+			game.invoker(GamePlayerEvents.BREAK_BLOCK).onBreakBlock(player, trunkPos, player.level.getBlockState(trunkPos), InteractionHand.MAIN_HAND);
+			return InteractionResult.FAIL;
 		}
-		return ActionResultType.PASS;
+		return InteractionResult.PASS;
 	}
 
-	private void onPlantBreak(ServerPlayerEntity player, Plot plot, Plant plant, BlockPos pos) {
+	private void onPlantBreak(ServerPlayer player, Plot plot, Plant plant, BlockPos pos) {
 		List<Pair<BlockPos, Direction>> candidates = candidatePositions.get(plant);
 		if (candidates != null) {
 			candidates.forEach(p -> player.level.destroyBlock(p.getLeft(), false));

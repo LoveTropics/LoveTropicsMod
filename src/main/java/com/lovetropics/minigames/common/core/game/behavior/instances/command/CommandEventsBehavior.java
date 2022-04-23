@@ -4,8 +4,8 @@ import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.event.*;
 import com.lovetropics.minigames.common.core.game.player.PlayerRole;
 import com.mojang.serialization.Codec;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.util.ActionResultType;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionResult;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -46,15 +46,15 @@ public final class CommandEventsBehavior extends CommandInvokeMapBehavior {
 
 		events.listen(GamePlayerEvents.DAMAGE, (player, damageSource, amount) -> {
 			this.invoke("player_hurt", player);
-			return ActionResultType.PASS;
+			return InteractionResult.PASS;
 		});
 		events.listen(GamePlayerEvents.ATTACK, (player, target) -> {
 			this.invoke("player_attack", player);
-			return ActionResultType.PASS;
+			return InteractionResult.PASS;
 		});
 		events.listen(GamePlayerEvents.DEATH, (player, damageSource) -> {
 			this.invoke("player_death", player);
-			return ActionResultType.PASS;
+			return InteractionResult.PASS;
 		});
 
 		events.listen(GameLivingEntityEvents.TICK, entity -> this.invoke("entity_update", entity));
@@ -68,7 +68,7 @@ public final class CommandEventsBehavior extends CommandInvokeMapBehavior {
 		events.listen(GamePhaseEvents.TICK, () -> this.invoke("tick"));
 	}
 
-	private void onPlayerSetRole(ServerPlayerEntity player, @Nullable PlayerRole role, @Nullable PlayerRole lastRole) {
+	private void onPlayerSetRole(ServerPlayer player, @Nullable PlayerRole role, @Nullable PlayerRole lastRole) {
 		if (lastRole == PlayerRole.PARTICIPANT) {
 			this.invoke("player_stop_participate", player);
 		} else if (lastRole == PlayerRole.SPECTATOR) {

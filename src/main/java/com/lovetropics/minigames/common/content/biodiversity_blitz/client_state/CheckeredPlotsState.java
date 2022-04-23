@@ -7,7 +7,7 @@ import com.lovetropics.minigames.common.core.game.client_state.GameClientState;
 import com.lovetropics.minigames.common.core.game.client_state.GameClientStateType;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.core.BlockPos;
 
 public final class CheckeredPlotsState implements GameClientState {
 	public static final Codec<CheckeredPlotsState> CODEC = RecordCodecBuilder.create(instance -> {

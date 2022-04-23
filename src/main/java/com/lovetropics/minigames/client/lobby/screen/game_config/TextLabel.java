@@ -5,22 +5,22 @@ import com.lovetropics.minigames.client.screen.flex.Align;
 import com.lovetropics.minigames.client.screen.flex.Axis;
 import com.lovetropics.minigames.client.screen.flex.Box;
 import com.lovetropics.minigames.client.screen.flex.Layout;
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.gui.IRenderable;
-import net.minecraft.util.text.ITextComponent;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.components.Widget;
+import net.minecraft.network.chat.Component;
 
 import java.util.EnumMap;
 
-public class TextLabel implements IRenderable {
+public class TextLabel implements Widget {
 	private final Layout renderArea;
-	private final ITextComponent text;
-	private final FontRenderer fnt = Minecraft.getInstance().font;
+	private final Component text;
+	private final Font fnt = Minecraft.getInstance().font;
 
 	private final EnumMap<Axis, Align.Cross> alignment = new EnumMap<>(Axis.class);
 	
-	public TextLabel(LayoutTree ltree, int height, ITextComponent text, Align.Cross horizontalAlign, Align.Cross verticalAlign) {
+	public TextLabel(LayoutTree ltree, int height, Component text, Align.Cross horizontalAlign, Align.Cross verticalAlign) {
 		height = Math.max(height, fnt.lineHeight);
 		int width = ltree.head().content().width();
 		Box margin = new Box();
@@ -44,7 +44,7 @@ public class TextLabel implements IRenderable {
 	}
 
 	@Override
-	public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
+	public void render(PoseStack matrixStack, int mouseX, int mouseY, float partialTicks) {
 		this.renderArea.debugRender(matrixStack);
 		fnt.draw(matrixStack, text, renderArea.content().left(), renderArea.content().top(), -1);
 	}

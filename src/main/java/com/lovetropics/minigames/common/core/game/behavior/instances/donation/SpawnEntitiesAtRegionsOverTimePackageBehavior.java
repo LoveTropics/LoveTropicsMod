@@ -11,10 +11,10 @@ import com.lovetropics.minigames.common.core.map.MapRegions;
 import com.lovetropics.minigames.common.util.Util;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.entity.EntityType;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.registry.Registry;
-import net.minecraft.world.gen.Heightmap;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Registry;
+import net.minecraft.world.level.levelgen.Heightmap;
 
 import java.util.List;
 
@@ -80,7 +80,7 @@ public class SpawnEntitiesAtRegionsOverTimePackageBehavior implements IGameBehav
 
 			for (int i = 0; i < spawnsPerTick; i++) {
 				BlockBox region = regionsToSpawnAt.get(game.getWorld().getRandom().nextInt(regionsToSpawnAt.size()));
-				final BlockPos pos = game.getWorld().getHeightmapPos(Heightmap.Type.WORLD_SURFACE, region.sample(game.getWorld().getRandom()));
+				final BlockPos pos = game.getWorld().getHeightmapPos(Heightmap.Types.WORLD_SURFACE, region.sample(game.getWorld().getRandom()));
 
 				Util.spawnEntity(entityId, game.getWorld(), pos.getX(), pos.getY(), pos.getZ());
 				entityCountRemaining--;

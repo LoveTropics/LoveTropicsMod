@@ -3,8 +3,8 @@ package com.lovetropics.minigames.client.lobby.manage.state;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.lobby.IGameLobby;
 import com.lovetropics.minigames.common.core.game.player.PlayerRole;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.network.PacketBuffer;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.network.FriendlyByteBuf;
 
 import javax.annotation.Nullable;
 import java.util.UUID;
@@ -19,25 +19,25 @@ public final class ClientLobbyPlayer {
 		this.playingRole = playingRole;
 	}
 
-	public static ClientLobbyPlayer from(IGameLobby lobby, ServerPlayerEntity player) {
+	public static ClientLobbyPlayer from(IGameLobby lobby, ServerPlayer player) {
 		IGamePhase currentPhase = lobby.getCurrentPhase();
 		PlayerRole playingRole = currentPhase != null ? currentPhase.getRoleFor(player) : null;
 		return new ClientLobbyPlayer(player.getUUID(), playingRole);
 	}
 
-	public void encode(PacketBuffer buffer) {
+	public void encode(FriendlyByteBuf buffer) {
 		buffer.writeUUID(this.uuid);
 		encodeRole(buffer, this.playingRole);
 	}
 
-	public static ClientLobbyPlayer decode(PacketBuffer buffer) {
+	public static ClientLobbyPlayer decode(FriendlyByteBuf buffer) {
 		return new ClientLobbyPlayer(
 				buffer.readUUID(),
 				decodeRole(buffer)
 		);
 	}
 
-	private static void encodeRole(PacketBuffer buffer, @Nullable PlayerRole role) {
+	private static void encodeRole(FriendlyByteBuf buffer, @Nullable PlayerRole role) {
 		if (role != null) {
 			buffer.writeVarInt(role.ordinal() + 1);
 		} else {
@@ -46,7 +46,7 @@ public final class ClientLobbyPlayer {
 	}
 
 	@Nullable
-	private static PlayerRole decodeRole(PacketBuffer buffer) {
+	private static PlayerRole decodeRole(FriendlyByteBuf buffer) {
 		int ordinal = buffer.readVarInt() - 1;
 		if (ordinal >= 0 && ordinal < PlayerRole.ROLES.length) {
 			return PlayerRole.ROLES[ordinal];

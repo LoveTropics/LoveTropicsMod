@@ -11,7 +11,7 @@ import com.lovetropics.minigames.common.core.game.state.weather.GameWeatherState
 import com.lovetropics.minigames.common.core.game.weather.WeatherEvent;
 import com.lovetropics.minigames.common.core.game.weather.WeatherEventType;
 import com.mojang.serialization.Codec;
-import net.minecraft.world.server.ServerWorld;
+import net.minecraft.server.level.ServerLevel;
 
 import java.util.Random;
 
@@ -88,7 +88,7 @@ public class SurviveTheTideWeatherControlBehavior implements IGameBehavior {
 
         GamePhase phase = phases.get();
 
-        ServerWorld world = game.getWorld();
+        ServerLevel world = game.getWorld();
         if (world.getGameTime() % 20 == 0) {
             if (weather.getEvent() == null && weather.canStartWeatherEvent()) {
                 if (random.nextFloat() <= config.getRainHeavyChance(phase.key)) {

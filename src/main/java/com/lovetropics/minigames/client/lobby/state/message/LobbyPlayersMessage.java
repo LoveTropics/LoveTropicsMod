@@ -4,8 +4,8 @@ import com.lovetropics.minigames.client.lobby.state.ClientLobbyManager;
 import com.lovetropics.minigames.common.core.game.lobby.IGameLobby;
 import com.lovetropics.minigames.common.core.game.lobby.IGameLobbyPlayers;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.network.PacketBuffer;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.fml.network.NetworkEvent;
 
 import java.util.Set;
@@ -24,13 +24,13 @@ public final class LobbyPlayersMessage {
 	public static LobbyPlayersMessage update(IGameLobby lobby) {
 		IGameLobbyPlayers players = lobby.getPlayers();
 		Set<UUID> playerIds = new ObjectOpenHashSet<>(players.size());
-		for (ServerPlayerEntity player : players) {
+		for (ServerPlayer player : players) {
 			playerIds.add(player.getUUID());
 		}
 		return new LobbyPlayersMessage(lobby.getMetadata().id().networkId(), playerIds);
 	}
 
-	public void encode(PacketBuffer buffer) {
+	public void encode(FriendlyByteBuf buffer) {
 		buffer.writeVarInt(id);
 		buffer.writeVarInt(players.size());
 		for (UUID player : players) {
@@ -38,7 +38,7 @@ public final class LobbyPlayersMessage {
 		}
 	}
 
-	public static LobbyPlayersMessage decode(PacketBuffer buffer) {
+	public static LobbyPlayersMessage decode(FriendlyByteBuf buffer) {
 		int id = buffer.readVarInt();
 		int playerCount = buffer.readVarInt();
 		Set<UUID> players = new ObjectOpenHashSet<>(playerCount);

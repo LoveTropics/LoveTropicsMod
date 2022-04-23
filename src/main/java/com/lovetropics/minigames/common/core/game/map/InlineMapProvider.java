@@ -5,10 +5,10 @@ import com.lovetropics.minigames.common.core.game.GameResult;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.RegistryKey;
-import net.minecraft.util.registry.Registry;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.world.World;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.core.Registry;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.world.level.Level;
 
 import java.util.Collections;
 import java.util.List;
@@ -21,9 +21,9 @@ public final class InlineMapProvider implements IGameMapProvider {
 		).apply(instance, InlineMapProvider::new);
 	});
 
-	private final RegistryKey<World> dimension;
+	private final ResourceKey<Level> dimension;
 
-	public InlineMapProvider(RegistryKey<World> dimension) {
+	public InlineMapProvider(ResourceKey<Level> dimension) {
 		this.dimension = dimension;
 	}
 
@@ -33,14 +33,14 @@ public final class InlineMapProvider implements IGameMapProvider {
 	}
 
 	@Override
-	public List<RegistryKey<World>> getPossibleDimensions() {
+	public List<ResourceKey<Level>> getPossibleDimensions() {
 		return Collections.singletonList(dimension);
 	}
 
 	@Override
 	public CompletableFuture<GameResult<GameMap>> open(MinecraftServer server) {
 		if (server.getLevel(dimension) == null) {
-			return CompletableFuture.completedFuture(GameResult.error(new StringTextComponent("Missing dimension " + dimension)));
+			return CompletableFuture.completedFuture(GameResult.error(new TextComponent("Missing dimension " + dimension)));
 		}
 
 		GameMap map = new GameMap(null, dimension);

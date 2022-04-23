@@ -10,15 +10,15 @@ import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.block.Block;
-import net.minecraft.block.Blocks;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.SpawnReason;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.util.Direction;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.registry.Registry;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.core.Direction;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.core.Registry;
 
 import java.util.List;
 import java.util.function.Predicate;
@@ -54,7 +54,7 @@ public class FruitDropEntityBehavior implements IGameBehavior {
 		events.listen(BbPlantEvents.TICK, this::tick);
 	}
 
-	private void tick(ServerPlayerEntity player, Plot plot, List<Plant> plants) {
+	private void tick(ServerPlayer player, Plot plot, List<Plant> plants) {
 		if (game.ticks() % interval == 0) {
 			for (Plant plant : plants) {
 				updateCoconuts(player, plot, plant);
@@ -62,14 +62,14 @@ public class FruitDropEntityBehavior implements IGameBehavior {
 		}
 	}
 
-	private void updateCoconuts(ServerPlayerEntity player, Plot plot, Plant plant) {
+	private void updateCoconuts(ServerPlayer player, Plot plot, Plant plant) {
 		plant.functionalCoverage().stream()
 			.flatMap(bp -> IntStream.range(0, 4).mapToObj(Direction::from2DDataValue).map(bp::relative))
 			.filter(bp -> player.level.getBlockState(bp).getBlock() == fruit)
-			.filter(bp -> !player.level.getEntities(player, new AxisAlignedBB(bp).inflate(range - 1, 15, range - 1), (Predicate<? super Entity>) e -> (e instanceof BbMobEntity)).isEmpty())
+			.filter(bp -> !player.level.getEntities(player, new AABB(bp).inflate(range - 1, 15, range - 1), (Predicate<? super Entity>) e -> (e instanceof BbMobEntity)).isEmpty())
 			.forEach(bp -> {
 				player.level.setBlockAndUpdate(bp, Blocks.AIR.defaultBlockState());
-				player.level.addFreshEntity(entity.spawn(player.getLevel(), null, null, player, bp, SpawnReason.TRIGGERED, false, false));
+				player.level.addFreshEntity(entity.spawn(player.getLevel(), null, null, player, bp, MobSpawnType.TRIGGERED, false, false));
 			});
 	}
 }

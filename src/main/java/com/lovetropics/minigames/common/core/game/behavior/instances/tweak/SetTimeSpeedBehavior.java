@@ -8,7 +8,7 @@ import com.lovetropics.minigames.common.core.game.client_state.GameClientState;
 import com.lovetropics.minigames.common.core.game.client_state.instance.TimeInterpolationClientState;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.world.server.ServerWorld;
+import net.minecraft.server.level.ServerLevel;
 
 public final class SetTimeSpeedBehavior implements IGameBehavior {
 	public static final Codec<SetTimeSpeedBehavior> CODEC = RecordCodecBuilder.create(instance -> {
@@ -26,7 +26,7 @@ public final class SetTimeSpeedBehavior implements IGameBehavior {
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
 		events.listen(GamePhaseEvents.TICK, () -> {
-			ServerWorld world = game.getWorld();
+			ServerLevel world = game.getWorld();
 			world.setDayTime(world.getDayTime() + this.factor - 1);
 		});
 

@@ -2,8 +2,8 @@ package com.lovetropics.minigames.common.core.game.behavior.instances.command;
 
 import com.lovetropics.lib.codec.MoreCodecs;
 import com.mojang.serialization.Codec;
-import net.minecraft.command.CommandSource;
-import net.minecraft.entity.Entity;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.world.entity.Entity;
 
 import java.util.List;
 import java.util.Map;
@@ -25,7 +25,7 @@ public abstract class CommandInvokeMapBehavior extends CommandInvokeBehavior {
 		this.invoke(key, this.sourceForEntity(source));
 	}
 
-	public void invoke(String key, CommandSource source) {
+	public void invoke(String key, CommandSourceStack source) {
 		List<String> commands = this.commands.get(key);
 		if (commands == null || commands.isEmpty()) {
 			return;

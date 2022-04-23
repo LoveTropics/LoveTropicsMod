@@ -1,8 +1,8 @@
 package com.lovetropics.minigames.common.core.map;
 
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.nbt.CompressedStreamTools;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtIo;
+import net.minecraft.resources.ResourceLocation;
 
 import java.io.BufferedOutputStream;
 import java.io.Closeable;
@@ -47,11 +47,11 @@ public final class MapExportWriter implements Closeable {
 	}
 
 	public void writeMetadata(MapMetadata metadata) throws IOException {
-		CompoundNBT nbt = metadata.write(new CompoundNBT());
+		CompoundTag nbt = metadata.write(new CompoundTag());
 
 		Path path = fs.getPath("metadata.nbt");
 		try (DataOutputStream output = new DataOutputStream(new BufferedOutputStream(Files.newOutputStream(path)))) {
-			CompressedStreamTools.write(nbt, output);
+			NbtIo.write(nbt, output);
 		}
 	}
 

@@ -5,10 +5,9 @@ import com.lovetropics.minigames.client.lobby.state.ClientGameDefinition;
 import com.lovetropics.minigames.common.core.game.IGameDefinition;
 import com.lovetropics.minigames.common.core.game.lobby.IGameLobby;
 import com.lovetropics.minigames.common.core.game.player.PlayerRole;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.util.text.*;
-import net.minecraft.util.text.event.ClickEvent;
-import net.minecraft.util.text.event.HoverEvent;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.*;
+import net.minecraft.server.level.ServerPlayer;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
@@ -34,45 +33,45 @@ public final class GameTexts {
 		}
 	}
 
-	private static IFormattableTextComponent formatName(IFormattableTextComponent name) {
-		return name.withStyle(TextFormatting.ITALIC, TextFormatting.GREEN);
+	private static MutableComponent formatName(MutableComponent name) {
+		return name.withStyle(ChatFormatting.ITALIC, ChatFormatting.GREEN);
 	}
 
-	private static IFormattableTextComponent formatStatus(IFormattableTextComponent message) {
-		return message.withStyle(TextFormatting.GOLD);
+	private static MutableComponent formatStatus(MutableComponent message) {
+		return message.withStyle(ChatFormatting.GOLD);
 	}
 
-	private static IFormattableTextComponent formatPositive(IFormattableTextComponent message) {
-		return message.withStyle(TextFormatting.AQUA);
+	private static MutableComponent formatPositive(MutableComponent message) {
+		return message.withStyle(ChatFormatting.AQUA);
 	}
 
-	private static IFormattableTextComponent formatNegative(IFormattableTextComponent message) {
-		return message.withStyle(TextFormatting.RED);
+	private static MutableComponent formatNegative(MutableComponent message) {
+		return message.withStyle(ChatFormatting.RED);
 	}
 
-	private static IFormattableTextComponent formatLink(IFormattableTextComponent link, String command) {
+	private static MutableComponent formatLink(MutableComponent link, String command) {
 		Style style = Style.EMPTY
-				.setUnderlined(true).withColor(TextFormatting.BLUE)
+				.setUnderlined(true).withColor(ChatFormatting.BLUE)
 				.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, command))
-				.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new StringTextComponent(command)));
+				.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new TextComponent(command)));
 
 		return link.setStyle(style);
 	}
 
-	public static IFormattableTextComponent clickHere(String command) {
-		return formatLink(new TranslationTextComponent(Keys.CLICK_HERE), command);
+	public static MutableComponent clickHere(String command) {
+		return formatLink(new TranslatableComponent(Keys.CLICK_HERE), command);
 	}
 
-	public static IFormattableTextComponent lobbyName(IGameLobby lobby) {
-		return formatName(new StringTextComponent(lobby.getMetadata().name()));
+	public static MutableComponent lobbyName(IGameLobby lobby) {
+		return formatName(new TextComponent(lobby.getMetadata().name()));
 	}
 
-	public static IFormattableTextComponent gameName(IGameDefinition game) {
+	public static MutableComponent gameName(IGameDefinition game) {
 		return formatName(game.getName().copy());
 	}
 
-	public static IFormattableTextComponent playerName(ServerPlayerEntity player) {
-		return player.getDisplayName().copy().withStyle(TextFormatting.GREEN);
+	public static MutableComponent playerName(ServerPlayer player) {
+		return player.getDisplayName().copy().withStyle(ChatFormatting.GREEN);
 	}
 
 	public static final class Commands {
@@ -126,72 +125,72 @@ public final class GameTexts {
 			}
 		}
 
-		public static IFormattableTextComponent joinedLobby(IGameLobby lobby) {
-			return formatPositive(new TranslationTextComponent(Keys.JOINED_LOBBY, lobbyName(lobby)));
+		public static MutableComponent joinedLobby(IGameLobby lobby) {
+			return formatPositive(new TranslatableComponent(Keys.JOINED_LOBBY, lobbyName(lobby)));
 		}
 
-		public static IFormattableTextComponent leftLobby(IGameLobby lobby) {
-			return formatNegative(new TranslationTextComponent(Keys.LEFT_LOBBY, lobbyName(lobby)));
+		public static MutableComponent leftLobby(IGameLobby lobby) {
+			return formatNegative(new TranslatableComponent(Keys.LEFT_LOBBY, lobbyName(lobby)));
 		}
 
-		public static IFormattableTextComponent startedGame(IGameDefinition game) {
-			return formatPositive(new TranslationTextComponent(Keys.STARTED_GAME, gameName(game)));
+		public static MutableComponent startedGame(IGameDefinition game) {
+			return formatPositive(new TranslatableComponent(Keys.STARTED_GAME, gameName(game)));
 		}
 
-		public static IFormattableTextComponent stoppedGame(IGameDefinition game) {
-			return formatNegative(new TranslationTextComponent(Keys.STOPPED_GAME, gameName(game)));
+		public static MutableComponent stoppedGame(IGameDefinition game) {
+			return formatNegative(new TranslatableComponent(Keys.STOPPED_GAME, gameName(game)));
 		}
 
-		public static IFormattableTextComponent alreadyInLobby() {
-			return formatNegative(new TranslationTextComponent(Keys.ALREADY_IN_LOBBY));
+		public static MutableComponent alreadyInLobby() {
+			return formatNegative(new TranslatableComponent(Keys.ALREADY_IN_LOBBY));
 		}
 
-		public static IFormattableTextComponent noJoinableLobbies() {
-			return formatNegative(new TranslationTextComponent(Keys.NO_JOINABLE_LOBBIES));
+		public static MutableComponent noJoinableLobbies() {
+			return formatNegative(new TranslatableComponent(Keys.NO_JOINABLE_LOBBIES));
 		}
 
-		public static IFormattableTextComponent cannotStartLobby() {
-			return formatNegative(new TranslationTextComponent(Keys.CANNOT_START_LOBBY));
+		public static MutableComponent cannotStartLobby() {
+			return formatNegative(new TranslatableComponent(Keys.CANNOT_START_LOBBY));
 		}
 
-		public static IFormattableTextComponent notInLobby() {
-			return formatNegative(new TranslationTextComponent(Keys.NOT_IN_LOBBY));
+		public static MutableComponent notInLobby() {
+			return formatNegative(new TranslatableComponent(Keys.NOT_IN_LOBBY));
 		}
 
-		public static IFormattableTextComponent notInGame() {
-			return formatNegative(new TranslationTextComponent(Keys.NOT_IN_GAME));
+		public static MutableComponent notInGame() {
+			return formatNegative(new TranslatableComponent(Keys.NOT_IN_GAME));
 		}
 
-		public static IFormattableTextComponent gameAlreadyStopped() {
-			return formatNegative(new TranslationTextComponent(Keys.GAME_ALREADY_STOPPED));
+		public static MutableComponent gameAlreadyStopped() {
+			return formatNegative(new TranslatableComponent(Keys.GAME_ALREADY_STOPPED));
 		}
 
-		public static IFormattableTextComponent noManagePermission() {
-			return formatNegative(new TranslationTextComponent(Keys.NO_MANAGE_PERMISSION));
+		public static MutableComponent noManagePermission() {
+			return formatNegative(new TranslatableComponent(Keys.NO_MANAGE_PERMISSION));
 		}
 
-		public static IFormattableTextComponent gamesIntersect() {
-			return formatNegative(new TranslationTextComponent(Keys.GAMES_INTERSECT));
+		public static MutableComponent gamesIntersect() {
+			return formatNegative(new TranslatableComponent(Keys.GAMES_INTERSECT));
 		}
 
-		public static IFormattableTextComponent lobbySelector(Collection<? extends IGameLobby> lobbies, @Nullable PlayerRole role) {
-			IFormattableTextComponent selector = new TranslationTextComponent(Keys.LOBBY_SELECTOR_HEADER).append("\n")
-					.withStyle(TextFormatting.GOLD);
+		public static MutableComponent lobbySelector(Collection<? extends IGameLobby> lobbies, @Nullable PlayerRole role) {
+			MutableComponent selector = new TranslatableComponent(Keys.LOBBY_SELECTOR_HEADER).append("\n")
+					.withStyle(ChatFormatting.GOLD);
 
 			for (IGameLobby lobby : lobbies) {
-				ITextComponent lobbyName = lobbyName(lobby);
+				Component lobbyName = lobbyName(lobby);
 				int players = lobby.getPlayers().size();
-				ITextComponent link = clickHere(lobby.getMetadata().joinCommand(role));
+				Component link = clickHere(lobby.getMetadata().joinCommand(role));
 
-				TranslationTextComponent entry = new TranslationTextComponent(Keys.LOBBY_SELECTOR_ENTRY, lobbyName, players, link);
-				selector = selector.append(entry.withStyle(TextFormatting.GRAY)).append("\n");
+				TranslatableComponent entry = new TranslatableComponent(Keys.LOBBY_SELECTOR_ENTRY, lobbyName, players, link);
+				selector = selector.append(entry.withStyle(ChatFormatting.GRAY)).append("\n");
 			}
 
 			return selector;
 		}
 
-		public static IFormattableTextComponent cannotTeleportIntoGame() {
-			return formatNegative(new TranslationTextComponent(Keys.CANNOT_TELEPORT_INTO_GAME));
+		public static MutableComponent cannotTeleportIntoGame() {
+			return formatNegative(new TranslatableComponent(Keys.CANNOT_TELEPORT_INTO_GAME));
 		}
 	}
 
@@ -234,38 +233,38 @@ public final class GameTexts {
 			}
 		}
 
-		public static IFormattableTextComponent lobbyOpened(IGameLobby lobby) {
-			ITextComponent link = clickHere(lobby.getMetadata().joinCommand(null));
-			return formatStatus(new TranslationTextComponent(Keys.LOBBY_OPENED, lobbyName(lobby), link));
+		public static MutableComponent lobbyOpened(IGameLobby lobby) {
+			Component link = clickHere(lobby.getMetadata().joinCommand(null));
+			return formatStatus(new TranslatableComponent(Keys.LOBBY_OPENED, lobbyName(lobby), link));
 		}
 
-		public static IFormattableTextComponent playerJoined(IGameLobby lobby, ServerPlayerEntity player, @Nullable PlayerRole role) {
+		public static MutableComponent playerJoined(IGameLobby lobby, ServerPlayer player, @Nullable PlayerRole role) {
 			String message = role != PlayerRole.SPECTATOR ? Keys.PLAYER_JOINED : Keys.SPECTATOR_JOINED;
-			return formatPositive(new TranslationTextComponent(message, playerName(player), lobbyName(lobby)));
+			return formatPositive(new TranslatableComponent(message, playerName(player), lobbyName(lobby)));
 		}
 
-		public static IFormattableTextComponent lobbyPaused() {
-			return formatStatus(new TranslationTextComponent(Keys.LOBBY_PAUSED));
+		public static MutableComponent lobbyPaused() {
+			return formatStatus(new TranslatableComponent(Keys.LOBBY_PAUSED));
 		}
 
-		public static IFormattableTextComponent lobbyStopped() {
-			return formatStatus(new TranslationTextComponent(Keys.LOBBY_STOPPED));
+		public static MutableComponent lobbyStopped() {
+			return formatStatus(new TranslatableComponent(Keys.LOBBY_STOPPED));
 		}
 
-		public static IFormattableTextComponent enoughPlayers() {
-			return formatPositive(new TranslationTextComponent(Keys.ENOUGH_PLAYERS));
+		public static MutableComponent enoughPlayers() {
+			return formatPositive(new TranslatableComponent(Keys.ENOUGH_PLAYERS));
 		}
 
-		public static IFormattableTextComponent noLongerEnoughPlayers() {
-			return formatNegative(new TranslationTextComponent(Keys.NO_LONGER_ENOUGH_PLAYERS));
+		public static MutableComponent noLongerEnoughPlayers() {
+			return formatNegative(new TranslatableComponent(Keys.NO_LONGER_ENOUGH_PLAYERS));
 		}
 
-		public static IFormattableTextComponent leftGameDimension() {
-			return formatNegative(new TranslationTextComponent(Keys.LEFT_GAME_DIMENSION));
+		public static MutableComponent leftGameDimension() {
+			return formatNegative(new TranslatableComponent(Keys.LEFT_GAME_DIMENSION));
 		}
 
-		public static IFormattableTextComponent telemetryNotConnected() {
-			return formatNegative(new TranslationTextComponent(Keys.TELEMETRY_NOT_CONNECTED));
+		public static MutableComponent telemetryNotConnected() {
+			return formatNegative(new TranslatableComponent(Keys.TELEMETRY_NOT_CONNECTED));
 		}
 	}
 
@@ -314,57 +313,57 @@ public final class GameTexts {
 			}
 		}
 
-		public static IFormattableTextComponent manageGameLobby() {
-			return new TranslationTextComponent(Keys.MANAGE_GAME_LOBBY);
+		public static MutableComponent manageGameLobby() {
+			return new TranslatableComponent(Keys.MANAGE_GAME_LOBBY);
 		}
 
-		public static IFormattableTextComponent managingGame(ClientGameDefinition game) {
-			ITextComponent name = game.name.copy().withStyle(TextFormatting.RESET);
-			return new TranslationTextComponent(Keys.MANAGING_GAME, name).withStyle(TextFormatting.BOLD);
+		public static MutableComponent managingGame(ClientGameDefinition game) {
+			Component name = game.name.copy().withStyle(ChatFormatting.RESET);
+			return new TranslatableComponent(Keys.MANAGING_GAME, name).withStyle(ChatFormatting.BOLD);
 		}
 
-		public static IFormattableTextComponent lobbyName() {
-			return new TranslationTextComponent(Keys.LOBBY_NAME);
+		public static MutableComponent lobbyName() {
+			return new TranslatableComponent(Keys.LOBBY_NAME);
 		}
 
-		public static IFormattableTextComponent publish() {
-			return new TranslationTextComponent(Keys.PUBLISH);
+		public static MutableComponent publish() {
+			return new TranslatableComponent(Keys.PUBLISH);
 		}
 
-		public static IFormattableTextComponent focusLive() {
-			return new TranslationTextComponent(Keys.FOCUS_LIVE);
+		public static MutableComponent focusLive() {
+			return new TranslatableComponent(Keys.FOCUS_LIVE);
 		}
 
-		public static IFormattableTextComponent gameQueue() {
-			return new TranslationTextComponent(Keys.GAME_QUEUE);
+		public static MutableComponent gameQueue() {
+			return new TranslatableComponent(Keys.GAME_QUEUE);
 		}
 
-		public static IFormattableTextComponent installedGames() {
-			return new TranslationTextComponent(Keys.INSTALLED_GAMES);
+		public static MutableComponent installedGames() {
+			return new TranslatableComponent(Keys.INSTALLED_GAMES);
 		}
 
-		public static IFormattableTextComponent gameInactive() {
-			return new TranslationTextComponent(Keys.GAME_INACTIVE);
+		public static MutableComponent gameInactive() {
+			return new TranslatableComponent(Keys.GAME_INACTIVE);
 		}
 
-		public static IFormattableTextComponent playerRange(int min, int max) {
+		public static MutableComponent playerRange(int min, int max) {
 			if (min == max) {
-				return new TranslationTextComponent(Keys.GAME_PLAYER_COUNT, min);
+				return new TranslatableComponent(Keys.GAME_PLAYER_COUNT, min);
 			} else {
-				return new TranslationTextComponent(Keys.GAME_PLAYER_RANGE, min, max);
+				return new TranslatableComponent(Keys.GAME_PLAYER_RANGE, min, max);
 			}
 		}
 
-		public static IFormattableTextComponent roleDescription(PlayerRole role) {
-			return new TranslationTextComponent(role == PlayerRole.SPECTATOR ? Keys.SPECTATING : Keys.PARTICIPATING);
+		public static MutableComponent roleDescription(PlayerRole role) {
+			return new TranslatableComponent(role == PlayerRole.SPECTATOR ? Keys.SPECTATING : Keys.PARTICIPATING);
 		}
 
-		public static IFormattableTextComponent closeLobby() {
-			return new TranslationTextComponent(Keys.CLOSE_LOBBY);
+		public static MutableComponent closeLobby() {
+			return new TranslatableComponent(Keys.CLOSE_LOBBY);
 		}
 
-		public static IFormattableTextComponent selectPlayerRole() {
-			return new TranslationTextComponent(Keys.SELECT_PLAYER_ROLE);
+		public static MutableComponent selectPlayerRole() {
+			return new TranslatableComponent(Keys.SELECT_PLAYER_ROLE);
 		}
 	}
 }

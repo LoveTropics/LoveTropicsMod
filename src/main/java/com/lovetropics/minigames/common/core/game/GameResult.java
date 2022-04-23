@@ -1,8 +1,8 @@
 package com.lovetropics.minigames.common.core.game;
 
 import net.minecraft.util.Unit;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextComponent;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
@@ -11,9 +11,9 @@ public final class GameResult<T> {
 	private static final GameResult<Unit> OK_UNIT = GameResult.ok(Unit.INSTANCE);
 
 	private final T ok;
-	private final ITextComponent error;
+	private final Component error;
 
-	private GameResult(T ok, ITextComponent error) {
+	private GameResult(T ok, Component error) {
 		this.ok = ok;
 		this.error = error;
 	}
@@ -26,7 +26,7 @@ public final class GameResult<T> {
 		return OK_UNIT;
 	}
 
-	public static <T> GameResult<T> error(ITextComponent error) {
+	public static <T> GameResult<T> error(Component error) {
 		return new GameResult<>(null, error);
 	}
 
@@ -36,7 +36,7 @@ public final class GameResult<T> {
 
 	public static <T> GameResult<T> fromException(String message, Exception exception) {
 		exception.printStackTrace();
-		return GameResult.error(new StringTextComponent(message + ": " + exception.toString()));
+		return GameResult.error(new TextComponent(message + ": " + exception.toString()));
 	}
 
 	public static <T> CompletableFuture<GameResult<T>> handleException(String message, CompletableFuture<GameResult<T>> future) {
@@ -52,7 +52,7 @@ public final class GameResult<T> {
 		return ok;
 	}
 
-	public ITextComponent getError() {
+	public Component getError() {
 		return error;
 	}
 
@@ -96,7 +96,7 @@ public final class GameResult<T> {
 		}
 	}
 
-	public T orElseGet(Function<ITextComponent, T> orElse) {
+	public T orElseGet(Function<Component, T> orElse) {
 		if (isOk()) {
 			return ok;
 		} else {

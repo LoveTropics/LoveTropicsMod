@@ -20,18 +20,18 @@ import com.lovetropics.minigames.common.core.game.state.team.TeamState;
 import com.lovetropics.minigames.common.core.game.util.PlayerSnapshot;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.potion.EffectInstance;
-import net.minecraft.potion.Effects;
-import net.minecraft.util.ActionResultType;
-import net.minecraft.util.DamageSource;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.registry.Registry;
-import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Registry;
+import net.minecraft.network.chat.TextComponent;
 
 import java.util.List;
 import java.util.Random;
@@ -73,14 +73,14 @@ public final class HideAndSeekBehavior implements IGameBehavior {
 		teams = game.getState().getOrThrow(TeamState.KEY);
 
 		if (disguises.isEmpty()) {
-			throw new GameException(new StringTextComponent("No possible disguises!"));
+			throw new GameException(new TextComponent("No possible disguises!"));
 		}
 
 		hiders = teams.getTeamByKey("hiders");
 		seekers = teams.getTeamByKey("seekers");
 
 		if (hiders == null || seekers == null) {
-			throw new GameException(new StringTextComponent("Missing hiders or seekers team!"));
+			throw new GameException(new TextComponent("Missing hiders or seekers team!"));
 		}
 
 		spawnRegion = game.getMapRegions().getOrThrow(spawnRegionKey);
@@ -99,13 +99,13 @@ public final class HideAndSeekBehavior implements IGameBehavior {
 		PlayerSet seekers = teams.getPlayersForTeam(this.seekers.key());
 		PlayerSet hiders = teams.getPlayersForTeam(this.hiders.key());
 
-		seekers.addPotionEffect(new EffectInstance(Effects.MOVEMENT_SLOWDOWN, hideTicks, 255, true, false));
-		seekers.addPotionEffect(new EffectInstance(Effects.BLINDNESS, hideTicks, 255, true, false));
+		seekers.addPotionEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, hideTicks, 255, true, false));
+		seekers.addPotionEffect(new MobEffectInstance(MobEffects.BLINDNESS, hideTicks, 255, true, false));
 
-		seekers.sendMessage(new StringTextComponent("You will be let out to catch the hiders in " + initialHideSeconds + " seconds!"));
-		hiders.sendMessage(new StringTextComponent("You have " + initialHideSeconds + " seconds to hide from the seekers!"));
+		seekers.sendMessage(new TextComponent("You will be let out to catch the hiders in " + initialHideSeconds + " seconds!"));
+		hiders.sendMessage(new TextComponent("You have " + initialHideSeconds + " seconds to hide from the seekers!"));
 
-		for (ServerPlayerEntity player : game.getParticipants()) {
+		for (ServerPlayer player : game.getParticipants()) {
 			if (teams.isOnTeam(player, this.hiders.key())) {
 				setHider(player);
 			} else {
@@ -114,71 +114,71 @@ public final class HideAndSeekBehavior implements IGameBehavior {
 		}
 	}
 
-	private void onPlayerSetRole(ServerPlayerEntity player, PlayerRole role, PlayerRole lastRole) {
+	private void onPlayerSetRole(ServerPlayer player, PlayerRole role, PlayerRole lastRole) {
 		if (lastRole == PlayerRole.PARTICIPANT) {
 			this.removeParticipant(player);
 		}
 	}
 
-	private void spawnPlayer(ServerPlayerEntity player) {
+	private void spawnPlayer(ServerPlayer player) {
 		BlockPos spawnPos = spawnRegion.sample(player.getRandom());
 		DimensionUtils.teleportPlayerNoPortal(player, game.getDimension(), spawnPos);
 	}
 
-	private ActionResultType onPlayerAttack(ServerPlayerEntity player, Entity target) {
+	private InteractionResult onPlayerAttack(ServerPlayer player, Entity target) {
 		if (teams.isOnTeam(player, seekers.key()) && player.getMainHandItem().getItem() == HideAndSeek.NET.get()) {
-			if (target instanceof ServerPlayerEntity && teams.isOnTeam((ServerPlayerEntity) target, hiders.key())) {
-				return ActionResultType.PASS;
+			if (target instanceof ServerPlayer && teams.isOnTeam((ServerPlayer) target, hiders.key())) {
+				return InteractionResult.PASS;
 			}
 		}
-		return ActionResultType.FAIL;
+		return InteractionResult.FAIL;
 	}
 
-	private ActionResultType onPlayerDeath(ServerPlayerEntity player, DamageSource damageSource) {
+	private InteractionResult onPlayerDeath(ServerPlayer player, DamageSource damageSource) {
 		GameTeamKey team = teams.getTeamForPlayer(player);
 		if (team == hiders.key()) {
 			this.onHiderCaptured(player);
 		} else if (team == seekers.key()) {
 			this.onSeekerDied(player);
 		}
-		return ActionResultType.FAIL;
+		return InteractionResult.FAIL;
 	}
 
-	private void removeParticipant(ServerPlayerEntity player) {
+	private void removeParticipant(ServerPlayer player) {
 		if (teams.isOnTeam(player, hiders.key())) {
 			this.removeHider(player);
 		}
 	}
 
-	private void setHider(ServerPlayerEntity player) {
+	private void setHider(ServerPlayer player) {
 		DisguiseType disguise = nextDisguiseType(player.level.random);
 		ServerPlayerDisguises.set(player, disguise);
 	}
 
-	private void setSeeker(ServerPlayerEntity player) {
+	private void setSeeker(ServerPlayer player) {
 		PlayerSnapshot.clearPlayer(player);
 		player.inventory.add(new ItemStack(HideAndSeek.NET.get()));
 	}
 
 	private DisguiseType nextDisguiseType(Random random) {
 		DisguiseType type = disguises.get(random.nextInt(disguises.size()));
-		CompoundNBT nbt = type.nbt != null ? type.nbt.copy() : new CompoundNBT();
+		CompoundTag nbt = type.nbt != null ? type.nbt.copy() : new CompoundTag();
 		nbt.putBoolean("CustomNameVisible", false);
 		return DisguiseType.create(type.type, nbt, type.applyAttributes);
 	}
 
-	private void removeHider(ServerPlayerEntity player) {
+	private void removeHider(ServerPlayer player) {
 		PlayerDisguise.get(player).ifPresent(PlayerDisguise::clearDisguise);
 	}
 
-	private void onHiderCaptured(ServerPlayerEntity player) {
+	private void onHiderCaptured(ServerPlayer player) {
 		teams.addPlayerTo(player, seekers.key());
 
 		this.spawnPlayer(player);
 		this.setSeeker(player);
 	}
 
-	private void onSeekerDied(ServerPlayerEntity player) {
+	private void onSeekerDied(ServerPlayer player) {
 		this.spawnPlayer(player);
 	}
 

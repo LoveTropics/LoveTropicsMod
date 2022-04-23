@@ -1,17 +1,17 @@
 package com.lovetropics.minigames.common.content.biodiversity_blitz.entity.ai;
 
 import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.BbMobEntity;
-import net.minecraft.entity.MobEntity;
-import net.minecraft.pathfinding.GroundPathNavigator;
-import net.minecraft.pathfinding.PathFinder;
-import net.minecraft.pathfinding.PathNodeType;
-import net.minecraft.pathfinding.WalkNodeProcessor;
-import net.minecraft.world.IBlockReader;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.ai.navigation.GroundPathNavigation;
+import net.minecraft.world.level.pathfinder.PathFinder;
+import net.minecraft.world.level.pathfinder.BlockPathTypes;
+import net.minecraft.world.level.pathfinder.WalkNodeEvaluator;
+import net.minecraft.world.level.BlockGetter;
 
-public final class BbGroundNavigator extends GroundPathNavigator {
+public final class BbGroundNavigator extends GroundPathNavigation {
 	private final BbMobEntity mob;
 
-	public BbGroundNavigator(MobEntity mob) {
+	public BbGroundNavigator(Mob mob) {
 		super(mob, mob.level);
 		this.mob = (BbMobEntity) mob;
 	}
@@ -23,18 +23,18 @@ public final class BbGroundNavigator extends GroundPathNavigator {
 		return new PathFinder(this.nodeEvaluator, maxDepth);
 	}
 
-	final class NodeProcessor extends WalkNodeProcessor {
+	final class NodeProcessor extends WalkNodeEvaluator {
 		@Override
-		public PathNodeType getBlockPathType(IBlockReader world, int x, int y, int z) {
+		public BlockPathTypes getBlockPathType(BlockGetter world, int x, int y, int z) {
 			BbMobBrain brain = BbGroundNavigator.this.mob.getMobBrain();
 
 			if (!brain.getPlotWalls().getBounds().contains(x + 0.5, y + 0.5, z + 0.5)) {
-				return PathNodeType.BLOCKED;
+				return BlockPathTypes.BLOCKED;
 			}
 
-			PathNodeType nodeType = super.getBlockPathType(world, x, y, z);
+			BlockPathTypes nodeType = super.getBlockPathType(world, x, y, z);
 			if (nodeType.getMalus() >= 0.0F && brain.isScaredAt(x, y, z)) {
-				return PathNodeType.BLOCKED;
+				return BlockPathTypes.BLOCKED;
 			}
 
 			return nodeType;

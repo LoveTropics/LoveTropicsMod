@@ -4,10 +4,10 @@ import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.BbMobE
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.plant.Plant;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.plant.state.PlantHealth;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.plant.state.PlantNotPathfindable;
-import net.minecraft.entity.MobEntity;
-import net.minecraft.particles.ParticleTypes;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.server.ServerWorld;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
 
 import java.util.Random;
 
@@ -26,7 +26,7 @@ public class DestroyCropGoal extends MoveToBlockGoal {
     public void tick() {
         super.tick();
 
-        MobEntity mob = this.mob.asMob();
+        Mob mob = this.mob.asMob();
         double distance2 = mob.position().distanceToSqr(targetPos.getX() + 0.5, targetPos.getY() + 0.5, targetPos.getZ() + 0.5);
         if (distance2 <= getDistanceSq()) {
             this.ticksAtTarget--;
@@ -45,7 +45,7 @@ public class DestroyCropGoal extends MoveToBlockGoal {
         return 1.5 * 1.5;
     }
 
-    protected void tryDamagePlant(MobEntity mob) {
+    protected void tryDamagePlant(Mob mob) {
         Plant plant = this.mob.getPlot().plants.getPlantAt(this.targetPos);
         if (plant != null) {
             PlantHealth health = plant.state(PlantHealth.KEY);
@@ -59,14 +59,14 @@ public class DestroyCropGoal extends MoveToBlockGoal {
         }
     }
 
-    private void spawnDamageParticles(MobEntity mob, int damage) {
+    private void spawnDamageParticles(Mob mob, int damage) {
         Random random = mob.level.random;
         for (int i = 0; i < 2 + (damage / 2); ++i) {
             double dx = random.nextGaussian() * 0.02;
             double dy = random.nextGaussian() * 0.02;
             double dz = random.nextGaussian() * 0.02;
 
-            ((ServerWorld) mob.level).sendParticles(
+            ((ServerLevel) mob.level).sendParticles(
                     ParticleTypes.ANGRY_VILLAGER,
                     this.targetPos.getX() + 0.5,
                     this.targetPos.getY() + 0.5,

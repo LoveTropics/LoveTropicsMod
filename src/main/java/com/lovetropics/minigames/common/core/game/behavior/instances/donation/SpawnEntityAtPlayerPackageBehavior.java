@@ -8,13 +8,13 @@ import com.lovetropics.minigames.common.core.game.behavior.event.GamePackageEven
 import com.lovetropics.minigames.common.util.Util;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.util.DamageSource;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.util.registry.Registry;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.core.BlockPos;
+import net.minecraft.util.Mth;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.core.Registry;
 
 import javax.annotation.Nullable;
 
@@ -40,7 +40,7 @@ public class SpawnEntityAtPlayerPackageBehavior implements IGameBehavior {
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) throws GameException {
 		events.listen(GamePackageEvents.APPLY_PACKAGE_TO_PLAYER, (player, sendingPlayer) -> {
-			Vector3d spawnPos = findSpawnPos(game, player);
+			Vec3 spawnPos = findSpawnPos(game, player);
 			if (spawnPos == null) {
 				spawnPos = player.position();
 			}
@@ -55,16 +55,16 @@ public class SpawnEntityAtPlayerPackageBehavior implements IGameBehavior {
 	}
 
 	@Nullable
-	private Vector3d findSpawnPos(IGamePhase game, ServerPlayerEntity player) {
+	private Vec3 findSpawnPos(IGamePhase game, ServerPlayer player) {
 		for (int i = 0; i < 10; i++) {
 			double angle = player.getRandom().nextDouble() * 2 * Math.PI;
 			double x = player.getX() + Math.sin(angle) * distance;
 			double z = player.getZ() + Math.cos(angle) * distance;
-			int maxDistanceY = MathHelper.floor(distance);
+			int maxDistanceY = Mth.floor(distance);
 
 			BlockPos groundPos = Util.findGround(game.getWorld(), new BlockPos(x, player.getY(), z), maxDistanceY);
 			if (groundPos != null) {
-				return new Vector3d(x, groundPos.getY(), z);
+				return new Vec3(x, groundPos.getY(), z);
 			}
 		}
 

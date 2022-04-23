@@ -9,10 +9,10 @@ import com.lovetropics.minigames.common.core.game.state.statistics.PlayerKey;
 import com.lovetropics.minigames.common.core.game.state.statistics.StatisticKey;
 import com.lovetropics.minigames.common.core.game.state.statistics.StatisticsMap;
 import com.mojang.serialization.Codec;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.util.ActionResultType;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionResult;
 
 public final class KillsTrackerBehavior implements IGameBehavior {
 	public static final Codec<KillsTrackerBehavior> CODEC = Codec.unit(KillsTrackerBehavior::new);
@@ -24,8 +24,8 @@ public final class KillsTrackerBehavior implements IGameBehavior {
 			StatisticsMap playerStatistics = statistics.forPlayer(player);
 
 			Entity source = damageSource.getEntity();
-			if (source instanceof ServerPlayerEntity) {
-				PlayerEntity killerPlayer = (PlayerEntity) source;
+			if (source instanceof ServerPlayer) {
+				Player killerPlayer = (Player) source;
 
 				statistics.forPlayer(killerPlayer)
 						.withDefault(StatisticKey.KILLS, () -> 0)
@@ -34,7 +34,7 @@ public final class KillsTrackerBehavior implements IGameBehavior {
 				playerStatistics.set(StatisticKey.KILLED_BY, PlayerKey.from(killerPlayer));
 			}
 
-			return ActionResultType.PASS;
+			return InteractionResult.PASS;
 		});
 	}
 }

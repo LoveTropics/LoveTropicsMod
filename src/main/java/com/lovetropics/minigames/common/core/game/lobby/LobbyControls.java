@@ -1,7 +1,7 @@
 package com.lovetropics.minigames.common.core.game.lobby;
 
 import com.lovetropics.minigames.common.core.game.GameResult;
-import net.minecraft.network.PacketBuffer;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.util.Unit;
 
 import javax.annotation.Nullable;
@@ -75,11 +75,11 @@ public final class LobbyControls {
 			return (bits & type.mask()) != 0;
 		}
 
-		public void encode(PacketBuffer buffer) {
+		public void encode(FriendlyByteBuf buffer) {
 			buffer.writeByte(this.bits);
 		}
 
-		public static State decode(PacketBuffer buffer) {
+		public static State decode(FriendlyByteBuf buffer) {
 			return new State(buffer.readUnsignedByte());
 		}
 	}

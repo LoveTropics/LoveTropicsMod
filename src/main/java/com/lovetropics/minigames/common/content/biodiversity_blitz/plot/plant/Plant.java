@@ -1,10 +1,10 @@
 package com.lovetropics.minigames.common.content.biodiversity_blitz.plot.plant;
 
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.plant.state.PlantState;
-import net.minecraft.block.Block;
-import net.minecraft.particles.ParticleTypes;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.server.ServerWorld;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
 
 import javax.annotation.Nullable;
 import java.util.Random;
@@ -70,11 +70,11 @@ public final class Plant {
 		return state.get(key);
 	}
 
-	public void spawnPoof(ServerWorld world) {
+	public void spawnPoof(ServerLevel world) {
 		spawnPoof(world, 20, 0.15);
 	}
 
-	public void spawnPoof(ServerWorld world, int count, double speed) {
+	public void spawnPoof(ServerLevel world, int count, double speed) {
 		Random random = world.random;
 
 		for (BlockPos pos : this.coverage) {
@@ -87,7 +87,7 @@ public final class Plant {
 		}
 	}
 
-	public Stream<BlockPos> getBlockPositions(ServerWorld world, Block block) {
+	public Stream<BlockPos> getBlockPositions(ServerLevel world, Block block) {
 		return coverage().stream()
 				.peek(bp -> System.out.println(world.getBlockState(bp)))
 				.filter(bp -> world.getBlockState(bp).getBlock() == block);

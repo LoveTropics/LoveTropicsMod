@@ -2,7 +2,7 @@ package com.lovetropics.minigames.common.core.network;
 
 import com.lovetropics.minigames.client.ClientPlayerDisguises;
 import com.lovetropics.minigames.common.core.diguise.DisguiseType;
-import net.minecraft.network.PacketBuffer;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.fml.network.NetworkEvent;
 
 import javax.annotation.Nullable;
@@ -18,7 +18,7 @@ public class PlayerDisguiseMessage {
 		this.disguise = disguise;
 	}
 
-	public void encode(PacketBuffer buffer) {
+	public void encode(FriendlyByteBuf buffer) {
 		buffer.writeUUID(player);
 
 		buffer.writeBoolean(disguise != null);
@@ -27,7 +27,7 @@ public class PlayerDisguiseMessage {
 		}
 	}
 
-	public static PlayerDisguiseMessage decode(PacketBuffer buffer) {
+	public static PlayerDisguiseMessage decode(FriendlyByteBuf buffer) {
 		UUID player = buffer.readUUID();
 
 		DisguiseType disguise;

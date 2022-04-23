@@ -3,7 +3,7 @@ package com.lovetropics.minigames.common.util;
 import com.google.common.collect.Iterators;
 import it.unimi.dsi.fastutil.objects.Reference2IntMap;
 import it.unimi.dsi.fastutil.objects.Reference2IntOpenHashMap;
-import net.minecraft.network.PacketBuffer;
+import net.minecraft.network.FriendlyByteBuf;
 
 import javax.annotation.Nullable;
 import java.util.Iterator;
@@ -18,7 +18,7 @@ public abstract class PartialUpdate<A> {
 
 	public abstract void applyTo(A apply);
 
-	protected abstract void encode(PacketBuffer buffer);
+	protected abstract void encode(FriendlyByteBuf buffer);
 
 	public static final class Family<A> implements Iterable<AbstractType<A>> {
 		private final AbstractType<A>[] idToType;
@@ -56,7 +56,7 @@ public abstract class PartialUpdate<A> {
 	}
 
 	public interface AbstractType<A> {
-		PartialUpdate<A> decode(PacketBuffer buffer);
+		PartialUpdate<A> decode(FriendlyByteBuf buffer);
 	}
 
 	public static abstract class AbstractSet<A> implements Iterable<PartialUpdate<A>> {
@@ -78,7 +78,7 @@ public abstract class PartialUpdate<A> {
 			}
 		}
 
-		public void encode(PacketBuffer buffer) {
+		public void encode(FriendlyByteBuf buffer) {
 			buffer.writeVarInt(encodeMask());
 
 			for (PartialUpdate<A> update : updates) {
@@ -98,7 +98,7 @@ public abstract class PartialUpdate<A> {
 			return mask;
 		}
 
-		protected void decodeSelf(PacketBuffer buffer) {
+		protected void decodeSelf(FriendlyByteBuf buffer) {
 			int mask = buffer.readVarInt();
 			for (int id = 0; id < family.size(); id++) {
 				if ((mask & 1 << id) == 0) continue;

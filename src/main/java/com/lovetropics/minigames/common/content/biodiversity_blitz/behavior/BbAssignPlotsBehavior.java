@@ -16,7 +16,7 @@ import com.lovetropics.minigames.common.core.game.state.GameStateMap;
 import com.lovetropics.minigames.common.core.map.MapRegions;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.server.level.ServerPlayer;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -74,7 +74,7 @@ public final class BbAssignPlotsBehavior implements IGameBehavior {
 		GameClientState.applyGlobally(checkeredPlots, events);
 	}
 
-	private void trySpawnParticipant(IGamePhase game, ServerPlayerEntity player) {
+	private void trySpawnParticipant(IGamePhase game, ServerPlayer player) {
 		if (this.freePlots.isEmpty()) {
 			game.setPlayerRole(player, PlayerRole.SPECTATOR);
 			return;

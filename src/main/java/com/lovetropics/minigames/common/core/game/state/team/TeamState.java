@@ -10,9 +10,9 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMaps;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.MinecraftServer;
 
 import javax.annotation.Nullable;
@@ -55,7 +55,7 @@ public final class TeamState implements IGameState, Iterable<GameTeam> {
 		return allocations;
 	}
 
-	public void addPlayerTo(ServerPlayerEntity player, GameTeamKey team) {
+	public void addPlayerTo(ServerPlayer player, GameTeamKey team) {
 		removePlayer(player);
 
 		MutablePlayerSet players = getPlayersForTeamMutable(player.server, team);
@@ -63,7 +63,7 @@ public final class TeamState implements IGameState, Iterable<GameTeam> {
 	}
 
 	@Nullable
-	public GameTeamKey removePlayer(ServerPlayerEntity player) {
+	public GameTeamKey removePlayer(ServerPlayer player) {
 		for (Map.Entry<GameTeamKey, MutablePlayerSet> entry : Object2ObjectMaps.fastIterable(playersByKey)) {
 			if (entry.getValue().remove(player)) {
 				return entry.getKey();
@@ -89,7 +89,7 @@ public final class TeamState implements IGameState, Iterable<GameTeam> {
 	}
 
 	@Nullable
-	public GameTeamKey getTeamForPlayer(PlayerEntity player) {
+	public GameTeamKey getTeamForPlayer(Player player) {
 		for (Map.Entry<GameTeamKey, MutablePlayerSet> entry : Object2ObjectMaps.fastIterable(playersByKey)) {
 			if (entry.getValue().contains(player)) {
 				return entry.getKey();
@@ -98,7 +98,7 @@ public final class TeamState implements IGameState, Iterable<GameTeam> {
 		return null;
 	}
 
-	public boolean isOnTeam(PlayerEntity player, GameTeamKey team) {
+	public boolean isOnTeam(Player player, GameTeamKey team) {
 		MutablePlayerSet players = playersByKey.get(team);
 		return players != null && players.contains(player);
 	}
@@ -131,11 +131,11 @@ public final class TeamState implements IGameState, Iterable<GameTeam> {
 	}
 
 	public boolean areSameTeam(Entity source, Entity target) {
-		if (!(source instanceof PlayerEntity) || !(target instanceof PlayerEntity)) {
+		if (!(source instanceof Player) || !(target instanceof Player)) {
 			return false;
 		}
-		GameTeamKey sourceTeam = getTeamForPlayer((PlayerEntity) source);
-		GameTeamKey targetTeam = getTeamForPlayer((PlayerEntity) target);
+		GameTeamKey sourceTeam = getTeamForPlayer((Player) source);
+		GameTeamKey targetTeam = getTeamForPlayer((Player) target);
 		return Objects.equals(sourceTeam, targetTeam);
 	}
 
@@ -147,12 +147,12 @@ public final class TeamState implements IGameState, Iterable<GameTeam> {
 	public final class Allocations {
 		private final Map<UUID, GameTeamKey> preferences = new Object2ObjectOpenHashMap<>();
 
-		public void allocate(PlayerSet participants, BiConsumer<ServerPlayerEntity, GameTeamKey> apply) {
+		public void allocate(PlayerSet participants, BiConsumer<ServerPlayer, GameTeamKey> apply) {
 			// apply all direct team assignments first
 			for (GameTeam team : teams) {
 				List<UUID> assigned = team.config().assignedPlayers();
 				for (UUID playerId : assigned) {
-					ServerPlayerEntity player = participants.getPlayerBy(playerId);
+					ServerPlayer player = participants.getPlayerBy(playerId);
 					if (player != null) {
 						apply.accept(player, team.key());
 					}
@@ -160,9 +160,9 @@ public final class TeamState implements IGameState, Iterable<GameTeam> {
 			}
 
 			if (!pollingTeams.isEmpty()) {
-				TeamAllocator<GameTeamKey, ServerPlayerEntity> teamAllocator = createAllocator();
+				TeamAllocator<GameTeamKey, ServerPlayer> teamAllocator = createAllocator();
 
-				for (ServerPlayerEntity player : participants) {
+				for (ServerPlayer player : participants) {
 					UUID playerId = player.getUUID();
 					if (!assignedPlayers.contains(playerId)) {
 						teamAllocator.addPlayer(player, preferences.get(playerId));
@@ -173,9 +173,9 @@ public final class TeamState implements IGameState, Iterable<GameTeam> {
 			}
 		}
 
-		private TeamAllocator<GameTeamKey, ServerPlayerEntity> createAllocator() {
+		private TeamAllocator<GameTeamKey, ServerPlayer> createAllocator() {
 			List<GameTeamKey> pollingTeamKeys = pollingTeams.stream().map(GameTeam::key).collect(Collectors.toList());
-			TeamAllocator<GameTeamKey, ServerPlayerEntity> teamAllocator = new TeamAllocator<>(pollingTeamKeys);
+			TeamAllocator<GameTeamKey, ServerPlayer> teamAllocator = new TeamAllocator<>(pollingTeamKeys);
 
 			for (GameTeam team : pollingTeams) {
 				teamAllocator.setSizeForTeam(team.key(), team.config().maxSize());

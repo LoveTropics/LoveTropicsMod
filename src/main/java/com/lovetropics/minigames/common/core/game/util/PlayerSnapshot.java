@@ -6,17 +6,17 @@ import com.lovetropics.minigames.common.core.diguise.ServerPlayerDisguises;
 import com.lovetropics.minigames.common.core.dimension.DimensionUtils;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.scoreboard.Score;
-import net.minecraft.scoreboard.ScoreObjective;
-import net.minecraft.scoreboard.ScorePlayerTeam;
-import net.minecraft.scoreboard.ServerScoreboard;
-import net.minecraft.util.FoodStats;
-import net.minecraft.util.RegistryKey;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.GameType;
-import net.minecraft.world.World;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.scores.Score;
+import net.minecraft.world.scores.Objective;
+import net.minecraft.world.scores.PlayerTeam;
+import net.minecraft.server.ServerScoreboard;
+import net.minecraft.world.food.FoodData;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.GameType;
+import net.minecraft.world.level.Level;
 
 import java.util.ArrayList;
 import java.util.Map;
@@ -29,40 +29,40 @@ import java.util.Map;
  */
 public final class PlayerSnapshot {
 	private final GameType gameType;
-	private final RegistryKey<World> dimension;
+	private final ResourceKey<Level> dimension;
 	private final BlockPos pos;
-	private final CompoundNBT playerData;
+	private final CompoundTag playerData;
 
-	private final ScorePlayerTeam team;
-	private final Object2IntMap<ScoreObjective> objectives = new Object2IntOpenHashMap<>();
+	private final PlayerTeam team;
+	private final Object2IntMap<Objective> objectives = new Object2IntOpenHashMap<>();
 
 	private final DisguiseType disguise;
 
-	private PlayerSnapshot(ServerPlayerEntity player) {
+	private PlayerSnapshot(ServerPlayer player) {
 		this.gameType = player.gameMode.getGameModeForPlayer();
 		this.dimension = player.level.dimension();
 		this.pos = player.blockPosition();
 
-		this.playerData = new CompoundNBT();
+		this.playerData = new CompoundTag();
 		player.addAdditionalSaveData(this.playerData);
 		this.playerData.remove("playerGameType");
 
 		ServerScoreboard scoreboard = player.getLevel().getScoreboard();
 		this.team = scoreboard.getPlayersTeam(player.getScoreboardName());
-		for (Map.Entry<ScoreObjective, Score> entry : scoreboard.getPlayerScores(player.getScoreboardName()).entrySet()) {
+		for (Map.Entry<Objective, Score> entry : scoreboard.getPlayerScores(player.getScoreboardName()).entrySet()) {
 			this.objectives.put(entry.getKey(), entry.getValue().getScore());
 		}
 
 		this.disguise = PlayerDisguise.getDisguiseType(player);
 	}
 
-	public static PlayerSnapshot takeAndClear(ServerPlayerEntity player) {
+	public static PlayerSnapshot takeAndClear(ServerPlayer player) {
 		PlayerSnapshot snapshot = new PlayerSnapshot(player);
 		clearPlayer(player);
 		return snapshot;
 	}
 
-	public static void clearPlayer(ServerPlayerEntity player) {
+	public static void clearPlayer(ServerPlayer player) {
 		player.inventory.clearContent();
 		player.setHealth(player.getMaxHealth());
 
@@ -71,8 +71,8 @@ public final class PlayerSnapshot {
 		player.setArrowCount(0);
 		player.fallDistance = 0.0F;
 
-		CompoundNBT foodTag = new CompoundNBT();
-		new FoodStats().addAdditionalSaveData(foodTag);
+		CompoundTag foodTag = new CompoundTag();
+		new FoodData().addAdditionalSaveData(foodTag);
 		player.getFoodData().readAdditionalSaveData(foodTag);
 
 		ServerPlayerDisguises.clear(player);
@@ -80,8 +80,8 @@ public final class PlayerSnapshot {
 		ServerScoreboard scoreboard = player.getLevel().getScoreboard();
 		scoreboard.removePlayerFromTeam(player.getScoreboardName());
 
-		Map<ScoreObjective, Score> objectives = scoreboard.getPlayerScores(player.getScoreboardName());
-		for (ScoreObjective objective : new ArrayList<>(objectives.keySet())) {
+		Map<Objective, Score> objectives = scoreboard.getPlayerScores(player.getScoreboardName());
+		for (Objective objective : new ArrayList<>(objectives.keySet())) {
 			scoreboard.resetPlayerScore(player.getScoreboardName(), objective);
 		}
 	}
@@ -92,7 +92,7 @@ public final class PlayerSnapshot {
 	 *
 	 * @param player The player being reset.
 	 */
-	public void restore(ServerPlayerEntity player) {
+	public void restore(ServerPlayer player) {
 		clearPlayer(player);
 
 		player.readAdditionalSaveData(this.playerData);
@@ -108,7 +108,7 @@ public final class PlayerSnapshot {
 			scoreboard.addPlayerToTeam(player.getScoreboardName(), this.team);
 		}
 
-		for (Object2IntMap.Entry<ScoreObjective> entry : this.objectives.object2IntEntrySet()) {
+		for (Object2IntMap.Entry<Objective> entry : this.objectives.object2IntEntrySet()) {
 			Score score = scoreboard.getOrCreatePlayerScore(player.getScoreboardName(), entry.getKey());
 			score.setScore(entry.getIntValue());
 		}

@@ -2,26 +2,26 @@ package com.lovetropics.minigames.common.core.map;
 
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.Difficulty;
-import net.minecraft.world.GameRules;
-import net.minecraft.world.storage.DerivedWorldInfo;
-import net.minecraft.world.storage.IServerConfiguration;
-import net.minecraft.world.storage.IServerWorldInfo;
+import net.minecraft.world.level.GameRules;
+import net.minecraft.world.level.storage.DerivedLevelData;
+import net.minecraft.world.level.storage.WorldData;
+import net.minecraft.world.level.storage.ServerLevelData;
 
-public final class MapWorldInfo extends DerivedWorldInfo {
+public final class MapWorldInfo extends DerivedLevelData {
 	private final MapWorldSettings settings;
 
-	public MapWorldInfo(IServerConfiguration serverConfiguration, IServerWorldInfo overworld) {
+	public MapWorldInfo(WorldData serverConfiguration, ServerLevelData overworld) {
 		super(serverConfiguration, overworld);
 		this.settings = MapWorldSettings.createFrom(overworld);
 	}
 
-	public MapWorldInfo(IServerConfiguration serverConfiguration, IServerWorldInfo overworld, MapWorldSettings settings) {
+	public MapWorldInfo(WorldData serverConfiguration, ServerLevelData overworld, MapWorldSettings settings) {
 		super(serverConfiguration, overworld);
 		this.settings = settings;
 	}
 
 	public static MapWorldInfo create(MinecraftServer server, MapWorldSettings settings) {
-		return new MapWorldInfo(server.getWorldData(), (IServerWorldInfo) server.overworld().getLevelData(), settings);
+		return new MapWorldInfo(server.getWorldData(), (ServerLevelData) server.overworld().getLevelData(), settings);
 	}
 
 	@Override

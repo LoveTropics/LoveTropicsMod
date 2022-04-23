@@ -4,7 +4,7 @@ import com.lovetropics.minigames.client.lobby.state.ClientCurrentGame;
 import com.lovetropics.minigames.common.core.game.GamePhaseType;
 import com.lovetropics.minigames.common.core.game.IGameDefinition;
 import com.lovetropics.minigames.common.core.game.lobby.LobbyControls;
-import net.minecraft.util.text.ITextComponent;
+import net.minecraft.network.chat.Component;
 import org.apache.logging.log4j.LogManager;
 
 import javax.annotation.Nullable;
@@ -43,7 +43,7 @@ final class LobbyStateManager {
 		return this.trySetState(newState);
 	}
 
-	Change handleError(ITextComponent error) {
+	Change handleError(Component error) {
 		LobbyState state = errored(this.state, error);
 		return this.trySetState(state);
 	}
@@ -61,7 +61,7 @@ final class LobbyStateManager {
 		return new Change(oldState.phase, newState.phase);
 	}
 
-	private LobbyState errored(LobbyState state, ITextComponent error) {
+	private LobbyState errored(LobbyState state, Component error) {
 		LogManager.getLogger().info(error.getContents());
 		GamePhase phase = state.phase;
 		if (phase != null) {

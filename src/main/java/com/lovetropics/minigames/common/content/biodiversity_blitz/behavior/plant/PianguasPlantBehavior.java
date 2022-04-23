@@ -10,13 +10,13 @@ import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.BlockTags;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.server.ServerWorld;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraftforge.common.Tags;
 
 import java.util.List;
@@ -44,7 +44,7 @@ public final class PianguasPlantBehavior implements IGameBehavior {
         events.listen(BbPlantEvents.TICK, this::tickPlants);
     }
 
-    private void tickPlants(ServerPlayerEntity player, Plot plot, List<Plant> plants) {
+    private void tickPlants(ServerPlayer player, Plot plot, List<Plant> plants) {
         long ticks = this.game.ticks();
         Random random = this.game.getWorld().getRandom();
 
@@ -53,7 +53,7 @@ public final class PianguasPlantBehavior implements IGameBehavior {
             return;
         }
 
-        ServerWorld world = this.game.getWorld();
+        ServerLevel world = this.game.getWorld();
 
         for (Plant plant : plants) {
             int dx = random.nextInt(this.radius) - random.nextInt(this.radius);

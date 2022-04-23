@@ -1,33 +1,33 @@
 package com.lovetropics.minigames.common.core.game.lobby;
 
-import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.server.level.ServerPlayer;
 
 public interface LobbyStateListener {
 	static LobbyStateListener compose(LobbyStateListener... listeners) {
 		return new LobbyStateListener() {
 			@Override
-			public void onPlayerJoin(IGameLobby lobby, ServerPlayerEntity player) {
+			public void onPlayerJoin(IGameLobby lobby, ServerPlayer player) {
 				for (LobbyStateListener listener : listeners) {
 					listener.onPlayerJoin(lobby, player);
 				}
 			}
 
 			@Override
-			public void onPlayerLeave(IGameLobby lobby, ServerPlayerEntity player) {
+			public void onPlayerLeave(IGameLobby lobby, ServerPlayer player) {
 				for (LobbyStateListener listener : listeners) {
 					listener.onPlayerLeave(lobby, player);
 				}
 			}
 
 			@Override
-			public void onPlayerStartTracking(IGameLobby lobby, ServerPlayerEntity player) {
+			public void onPlayerStartTracking(IGameLobby lobby, ServerPlayer player) {
 				for (LobbyStateListener listener : listeners) {
 					listener.onPlayerStartTracking(lobby, player);
 				}
 			}
 
 			@Override
-			public void onPlayerStopTracking(IGameLobby lobby, ServerPlayerEntity player) {
+			public void onPlayerStopTracking(IGameLobby lobby, ServerPlayer player) {
 				for (LobbyStateListener listener : listeners) {
 					listener.onPlayerStopTracking(lobby, player);
 				}
@@ -70,16 +70,16 @@ public interface LobbyStateListener {
 		};
 	}
 
-	default void onPlayerJoin(IGameLobby lobby, ServerPlayerEntity player) {
+	default void onPlayerJoin(IGameLobby lobby, ServerPlayer player) {
 	}
 
-	default void onPlayerLeave(IGameLobby lobby, ServerPlayerEntity player) {
+	default void onPlayerLeave(IGameLobby lobby, ServerPlayer player) {
 	}
 
-	default void onPlayerStartTracking(IGameLobby lobby, ServerPlayerEntity player) {
+	default void onPlayerStartTracking(IGameLobby lobby, ServerPlayer player) {
 	}
 
-	default void onPlayerStopTracking(IGameLobby lobby, ServerPlayerEntity player) {
+	default void onPlayerStopTracking(IGameLobby lobby, ServerPlayer player) {
 	}
 
 	default void onLobbyStateChange(IGameLobby lobby) {

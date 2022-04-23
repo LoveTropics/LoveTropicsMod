@@ -1,11 +1,11 @@
 package com.lovetropics.minigames.common.core.game.behavior.event;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.util.ActionResultType;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.Explosion;
-import net.minecraft.world.World;
-import net.minecraft.world.chunk.IChunk;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Explosion;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.chunk.ChunkAccess;
 
 import java.util.List;
 
@@ -24,21 +24,21 @@ public final class GameWorldEvents {
 
 	public static final GameEventType<SaplingGrow> SAPLING_GROW = GameEventType.create(SaplingGrow.class, listeners -> (world, pos) -> {
 		for (SaplingGrow listener : listeners) {
-			ActionResultType result = listener.onSaplingGrow(world, pos);
+			InteractionResult result = listener.onSaplingGrow(world, pos);
 
-			if (result != ActionResultType.PASS) {
+			if (result != InteractionResult.PASS) {
 				return result;
 			}
 		}
 
-		return ActionResultType.PASS;
+		return InteractionResult.PASS;
 	});
 
 	private GameWorldEvents() {
 	}
 
 	public interface ChunkLoad {
-		void onChunkLoad(IChunk chunk);
+		void onChunkLoad(ChunkAccess chunk);
 	}
 
 	public interface ExplosionDetonate {
@@ -46,6 +46,6 @@ public final class GameWorldEvents {
 	}
 
 	public interface SaplingGrow {
-		ActionResultType onSaplingGrow(World world, BlockPos pos);
+		InteractionResult onSaplingGrow(Level world, BlockPos pos);
 	}
 }

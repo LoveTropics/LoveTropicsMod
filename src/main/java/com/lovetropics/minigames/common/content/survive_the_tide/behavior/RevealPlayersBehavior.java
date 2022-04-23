@@ -9,7 +9,7 @@ import com.lovetropics.minigames.common.core.game.player.PlayerSet;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
-import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.server.level.ServerPlayer;
 
 import java.util.Set;
 import java.util.UUID;
@@ -53,7 +53,7 @@ public class RevealPlayersBehavior implements IGameBehavior
 				curGlowOnTime--;
 				if (curGlowOnTime == 0) {
 					curGlowOffTime = glowOffTime;
-					for (ServerPlayerEntity player : players) {
+					for (ServerPlayer player : players) {
 						//prevent unsetting glow if something else was making them glow
 						if (!playerToWasGlowingAlready.contains(player.getUUID())) {
 							player.setGlowing(false);
@@ -66,7 +66,7 @@ public class RevealPlayersBehavior implements IGameBehavior
 				if (curGlowOffTime == 0) {
 					curGlowOnTime = glowOnTime;
 					playerToWasGlowingAlready.clear();
-					for (ServerPlayerEntity player : players) {
+					for (ServerPlayer player : players) {
 						if (player.isGlowing()) {
 							playerToWasGlowingAlready.add(player.getUUID());
 						}

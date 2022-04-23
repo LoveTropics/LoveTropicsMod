@@ -15,17 +15,17 @@ import com.lovetropics.minigames.common.core.game.state.statistics.PlayerKey;
 import com.lovetropics.minigames.common.core.game.util.GameTexts;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
-import net.minecraft.command.CommandSource;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.RegistryKey;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.Unit;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.world.World;
-import net.minecraft.world.server.ServerWorld;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.level.Level;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.EntityTravelToDimensionEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
@@ -51,12 +51,12 @@ public class MultiGameManager implements IGameManager {
 	private final List<GameLobby> lobbies = new ArrayList<>();
 
 	private final Map<UUID, GameLobby> lobbiesByPlayer = new Object2ObjectOpenHashMap<>();
-	private final Map<RegistryKey<World>, List<GamePhase>> gamesByDimension = new Reference2ObjectOpenHashMap<>();
+	private final Map<ResourceKey<Level>, List<GamePhase>> gamesByDimension = new Reference2ObjectOpenHashMap<>();
 
 	private GameLobby focusedLiveLobby;
 
 	@Override
-	public GameResult<IGameLobby> createGameLobby(String name, ServerPlayerEntity initiator) {
+	public GameResult<IGameLobby> createGameLobby(String name, ServerPlayer initiator) {
 		GameLobby currentLobby = lobbiesByPlayer.get(initiator.getUUID());
 		if (currentLobby != null) {
 			return GameResult.error(GameTexts.Commands.alreadyInLobby());
@@ -74,10 +74,10 @@ public class MultiGameManager implements IGameManager {
 
 	GameResult<Unit> canStartGamePhase(IGamePhaseDefinition definition) {
 		IGameMapProvider map = definition.getMap();
-		List<RegistryKey<World>> possibleDimensions = map.getPossibleDimensions();
-		AxisAlignedBB area = definition.getGameArea();
+		List<ResourceKey<Level>> possibleDimensions = map.getPossibleDimensions();
+		AABB area = definition.getGameArea();
 
-		for (RegistryKey<World> dimension : possibleDimensions) {
+		for (ResourceKey<Level> dimension : possibleDimensions) {
 			List<GamePhase> games = gamesByDimension.getOrDefault(dimension, Collections.emptyList());
 			for (GamePhase game : games) {
 				if (game.getPhaseDefinition().getGameArea().intersects(area)) {
@@ -91,7 +91,7 @@ public class MultiGameManager implements IGameManager {
 
 	@Nullable
 	@Override
-	public GameLobby getLobbyFor(PlayerEntity player) {
+	public GameLobby getLobbyFor(Player player) {
 		if (player.level.isClientSide) return null;
 
 		return lobbiesByPlayer.get(player.getUUID());
@@ -99,18 +99,18 @@ public class MultiGameManager implements IGameManager {
 
 	@Nullable
 	@Override
-	public IGamePhase getGamePhaseFor(PlayerEntity player) {
+	public IGamePhase getGamePhaseFor(Player player) {
 		GameLobby lobby = getLobbyFor(player);
 		return lobby != null ? lobby.getCurrentPhase() : null;
 	}
 
 	@Nullable
 	@Override
-	public IGamePhase getGamePhaseAt(World world, Vector3d pos) {
+	public IGamePhase getGamePhaseAt(Level world, Vec3 pos) {
 		return getGamePhaseForWorld(world, phase -> phase.getPhaseDefinition().getGameArea().contains(pos));
 	}
 
-	public List<GamePhase> getGamePhasesForWorld(World world) {
+	public List<GamePhase> getGamePhasesForWorld(Level world) {
 		if (world.isClientSide) {
 			return Collections.emptyList();
 		}
@@ -119,7 +119,7 @@ public class MultiGameManager implements IGameManager {
 	}
 
 	@Nullable
-	public GamePhase getGamePhaseForWorld(World world, Predicate<GamePhase> pred) {
+	public GamePhase getGamePhaseForWorld(Level world, Predicate<GamePhase> pred) {
 		return getGamePhasesForWorld(world).stream().filter(pred).findFirst().orElse(null);
 	}
 
@@ -156,17 +156,17 @@ public class MultiGameManager implements IGameManager {
 	}
 
 	@Override
-	public ControlCommandInvoker getControlInvoker(CommandSource source) {
+	public ControlCommandInvoker getControlInvoker(CommandSourceStack source) {
 		IGamePhase phase = getGamePhaseFor(source);
 		return phase != null ? phase.getControlInvoker() : ControlCommandInvoker.EMPTY;
 	}
 
-	void addGamePhaseToDimension(RegistryKey<World> dimension, GamePhase game) {
+	void addGamePhaseToDimension(ResourceKey<Level> dimension, GamePhase game) {
 		gamesByDimension.computeIfAbsent(dimension, k -> new ArrayList<>())
 				.add(game);
 	}
 
-	void removeGamePhaseFromDimension(RegistryKey<World> dimension, GamePhase game) {
+	void removeGamePhaseFromDimension(ResourceKey<Level> dimension, GamePhase game) {
 		List<GamePhase> games = gamesByDimension.get(dimension);
 		if (games == null) return;
 
@@ -175,11 +175,11 @@ public class MultiGameManager implements IGameManager {
 		}
 	}
 
-	void addPlayerToLobby(ServerPlayerEntity player, GameLobby lobby) {
+	void addPlayerToLobby(ServerPlayer player, GameLobby lobby) {
 		lobbiesByPlayer.put(player.getUUID(), lobby);
 	}
 
-	void removePlayerFromLobby(ServerPlayerEntity player, GameLobby lobby) {
+	void removePlayerFromLobby(ServerPlayer player, GameLobby lobby) {
 		lobbiesByPlayer.remove(player.getUUID(), lobby);
 	}
 
@@ -248,7 +248,7 @@ public class MultiGameManager implements IGameManager {
 
 	private static void onServerStoppingUngracefully(MinecraftServer server, List<GameLobby> lobbies) {
 		for (GameLobby lobby : lobbies) {
-			for (ServerPlayerEntity player : lobby.getPlayers()) {
+			for (ServerPlayer player : lobby.getPlayers()) {
 				lobby.playerIsolation.restore(player);
 			}
 		}
@@ -265,7 +265,7 @@ public class MultiGameManager implements IGameManager {
 
 	@SubscribeEvent
 	public static void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
-		ServerPlayerEntity player = (ServerPlayerEntity) event.getPlayer();
+		ServerPlayer player = (ServerPlayer) event.getPlayer();
 
 		for (GameLobby lobby : INSTANCE.lobbies) {
 			lobby.onPlayerLoggedIn(player);
@@ -281,7 +281,7 @@ public class MultiGameManager implements IGameManager {
 	 */
 	@SubscribeEvent
 	public static void onPlayerLoggedOut(PlayerEvent.PlayerLoggedOutEvent event) {
-		ServerPlayerEntity player = (ServerPlayerEntity) event.getPlayer();
+		ServerPlayer player = (ServerPlayer) event.getPlayer();
 		for (GameLobby lobby : INSTANCE.lobbies) {
 			lobby.onPlayerLoggedOut(player);
 		}
@@ -290,9 +290,9 @@ public class MultiGameManager implements IGameManager {
 	@SubscribeEvent
 	public static void onPlayerTryChangeDimension(EntityTravelToDimensionEvent event) {
 		Entity entity = event.getEntity();
-		if (entity instanceof ServerPlayerEntity) {
-			ServerPlayerEntity player = (ServerPlayerEntity) entity;
-			ServerWorld targetWorld = player.server.getLevel(event.getDimension());
+		if (entity instanceof ServerPlayer) {
+			ServerPlayer player = (ServerPlayer) entity;
+			ServerLevel targetWorld = player.server.getLevel(event.getDimension());
 			if (targetWorld == null) {
 				return;
 			}
@@ -313,14 +313,14 @@ public class MultiGameManager implements IGameManager {
 
 	@SubscribeEvent
 	public static void onPlayerChangedDimension(PlayerEvent.PlayerChangedDimensionEvent event) {
-		PlayerEntity player = event.getPlayer();
-		if (player instanceof ServerPlayerEntity) {
+		Player player = event.getPlayer();
+		if (player instanceof ServerPlayer) {
 			IGamePhase phase = INSTANCE.getGamePhaseFor(player);
 			if (phase == null) return;
 
-			RegistryKey<World> dimension = phase.getDimension();
+			ResourceKey<Level> dimension = phase.getDimension();
 			if (event.getFrom() == dimension && event.getTo() != dimension) {
-				if (phase.getLobby().getPlayers().remove((ServerPlayerEntity) player)) {
+				if (phase.getLobby().getPlayers().remove((ServerPlayer) player)) {
 					player.displayClientMessage(GameTexts.Status.leftGameDimension(), false);
 				}
 			}

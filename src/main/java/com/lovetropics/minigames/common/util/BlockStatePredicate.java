@@ -5,12 +5,12 @@ import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.tags.ITag;
-import net.minecraft.tags.TagCollectionManager;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.registry.Registry;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.tags.Tag;
+import net.minecraft.tags.SerializationTags;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.core.Registry;
 
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -75,18 +75,18 @@ public interface BlockStatePredicate extends Predicate<BlockState> {
 				string -> {
 					if (string.startsWith("#")) {
 						ResourceLocation id = new ResourceLocation(string.substring(1));
-						ITag<Block> tag = TagCollectionManager.getInstance().getBlocks().getTag(id);
+						Tag<Block> tag = SerializationTags.getInstance().getBlocks().getTag(id);
 						return tag != null ? DataResult.success(new MatchTag(tag)) : DataResult.error("no tag exists with id: '" + id + "'");
 					} else {
 						return DataResult.error("not in tag format: must start with #");
 					}
 				},
-				c -> "#" + TagCollectionManager.getInstance().getBlocks().getIdOrThrow(c.tag)
+				c -> "#" + SerializationTags.getInstance().getBlocks().getIdOrThrow(c.tag)
 		);
 
-		private final ITag<Block> tag;
+		private final Tag<Block> tag;
 
-		public MatchTag(ITag<Block> tag) {
+		public MatchTag(Tag<Block> tag) {
 			this.tag = tag;
 		}
 

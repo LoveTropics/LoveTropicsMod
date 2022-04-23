@@ -7,9 +7,9 @@ import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePackageEvents;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.Collections;
 import java.util.List;
@@ -41,35 +41,35 @@ public class SwapPlayersPackageBehavior implements IGameBehavior {
 	}
 
 	private void shufflePlayers(IGamePhase game) {
-		List<ServerPlayerEntity> players = Lists.newArrayList(game.getParticipants());
+		List<ServerPlayer> players = Lists.newArrayList(game.getParticipants());
 		Collections.shuffle(players);
 
-		List<Vector3d> playerPositions = players.stream()
+		List<Vec3> playerPositions = players.stream()
 				.map(Entity::position)
 				.collect(Collectors.toList());
 
 		for (int i = 0; i < players.size(); i++) {
-			final ServerPlayerEntity player = players.get(i);
-			final Vector3d teleportTo = playerPositions.get((i + 1) % playerPositions.size());
+			final ServerPlayer player = players.get(i);
+			final Vec3 teleportTo = playerPositions.get((i + 1) % playerPositions.size());
 			player.teleportTo(teleportTo.x, teleportTo.y, teleportTo.z);
 		}
 	}
 
 	private void swapNearbyPlayers(IGamePhase game) {
-		List<ServerPlayerEntity> players = Lists.newArrayList(game.getParticipants());
+		List<ServerPlayer> players = Lists.newArrayList(game.getParticipants());
 		Collections.shuffle(players);
 
-		List<Vector3d> playerPositions = players.stream()
+		List<Vec3> playerPositions = players.stream()
 				.map(Entity::position)
 				.collect(Collectors.toList());
 
 		double distanceThreshold2 = distanceThreshold * distanceThreshold;
 
-		for (ServerPlayerEntity player : players) {
-			Vector3d closestPos = null;
+		for (ServerPlayer player : players) {
+			Vec3 closestPos = null;
 			double closestDistance2 = Double.MAX_VALUE;
 
-			for (Vector3d otherPos : playerPositions) {
+			for (Vec3 otherPos : playerPositions) {
 				double distance2 = player.position().distanceToSqr(otherPos);
 				if (distance2 > 0.01 && distance2 < distanceThreshold2) {
 					if (distance2 < closestDistance2) {

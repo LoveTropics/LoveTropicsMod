@@ -11,13 +11,13 @@ import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.util.Util;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.entity.MobEntity;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.particles.ParticleTypes;
-import net.minecraft.util.DamageSource;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.world.server.ServerWorld;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.server.level.ServerLevel;
 
 import java.util.HashSet;
 import java.util.List;
@@ -42,7 +42,7 @@ public final class WateryPlantBehavior implements IGameBehavior {
         events.listen(BbPlantEvents.TICK, this::tickPlants);
     }
 
-    private void tickPlants(ServerPlayerEntity player, Plot plot, List<Plant> plants) {
+    private void tickPlants(ServerPlayer player, Plot plot, List<Plant> plants) {
         long ticks = this.game.ticks();
         Random random = this.game.getWorld().getRandom();
 
@@ -50,18 +50,18 @@ public final class WateryPlantBehavior implements IGameBehavior {
             return;
         }
 
-        ServerWorld world = this.game.getWorld();
-        Set<MobEntity> seen = new HashSet<>();
+        ServerLevel world = this.game.getWorld();
+        Set<Mob> seen = new HashSet<>();
 
         for (Plant plant : plants) {
-            AxisAlignedBB attackBounds = plant.coverage().asBounds().inflate(this.radius);
-            List<MobEntity> entities = world.getEntitiesOfClass(MobEntity.class, attackBounds, BbMobEntity.PREDICATE);
+            AABB attackBounds = plant.coverage().asBounds().inflate(this.radius);
+            List<Mob> entities = world.getEntitiesOfClass(Mob.class, attackBounds, BbMobEntity.PREDICATE);
 
             if (entities.isEmpty()) {
                 continue;
             }
 
-            for (MobEntity entity : entities) {
+            for (Mob entity : entities) {
                 // Don't attack the same entity multiple times
                 if (seen.contains(entity)) {
                     continue;
@@ -71,7 +71,7 @@ public final class WateryPlantBehavior implements IGameBehavior {
 
                 int waterCount = 2 + random.nextInt(3);
 
-                AxisAlignedBB aabb = entity.getBoundingBox();
+                AABB aabb = entity.getBoundingBox();
 
                 if (ticks % 15 == 0) {
                     // Extinguish fire
@@ -81,9 +81,9 @@ public final class WateryPlantBehavior implements IGameBehavior {
 
                     // Draw extra water as a line
 
-                    Vector3d positionVec = entity.position();
+                    Vec3 positionVec = entity.position();
                     // Needs to target the middle of the entity position vector
-                    Vector3d scaledVec = new Vector3d(positionVec.x, (aabb.minY + aabb.maxY) / 2.0, positionVec.z);
+                    Vec3 scaledVec = new Vec3(positionVec.x, (aabb.minY + aabb.maxY) / 2.0, positionVec.z);
 
                     Util.drawParticleBetween(ParticleTypes.FALLING_WATER, plant.coverage().asBounds().getCenter(), scaledVec, world, random, 20, 0.05, 0.1, 0.03, 0.02);
                 }
@@ -94,7 +94,7 @@ public final class WateryPlantBehavior implements IGameBehavior {
                 }
 
                 for (int i = 0; i < waterCount; i++) {
-                    Vector3d sample = random(aabb, world.random);
+                    Vec3 sample = random(aabb, world.random);
                     double d3 = random.nextGaussian() * 0.05;
                     double d1 = random.nextGaussian() * 0.1;
                     double d2 = random.nextGaussian() * 0.05;
@@ -104,8 +104,8 @@ public final class WateryPlantBehavior implements IGameBehavior {
         }
     }
 
-    private static Vector3d random(AxisAlignedBB aabb, Random random) {
-        return new Vector3d(
+    private static Vec3 random(AABB aabb, Random random) {
+        return new Vec3(
                 aabb.minX + random.nextDouble() * (aabb.maxX - aabb.minX),
                 aabb.minY + random.nextDouble() * (aabb.maxY - aabb.minY),
                 aabb.minZ + random.nextDouble() * (aabb.maxZ - aabb.minZ)

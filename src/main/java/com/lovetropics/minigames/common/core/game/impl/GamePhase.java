@@ -15,13 +15,13 @@ import com.lovetropics.minigames.common.core.game.state.statistics.StatisticKey;
 import com.lovetropics.minigames.common.core.game.util.GameTexts;
 import com.lovetropics.minigames.common.core.game.util.PlayerSnapshot;
 import com.lovetropics.minigames.common.core.map.MapRegions;
-import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.RegistryKey;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.Unit;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.world.World;
-import net.minecraft.world.server.ServerWorld;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.world.level.Level;
+import net.minecraft.server.level.ServerLevel;
 
 import javax.annotation.Nullable;
 import java.util.EnumMap;
@@ -90,7 +90,7 @@ public class GamePhase implements IGamePhase {
 		try {
 			invoker(GamePhaseEvents.CREATE).start();
 
-			for (ServerPlayerEntity player : getAllPlayers()) {
+			for (ServerPlayer player : getAllPlayers()) {
 				PlayerSnapshot.clearPlayer(player);
 				invoker(GamePlayerEvents.ADD).onAdd(player);
 				invoker(GamePlayerEvents.SPAWN).onSpawn(player, getRoleFor(player));
@@ -135,7 +135,7 @@ public class GamePhase implements IGamePhase {
 	}
 
 	@Override
-	public boolean setPlayerRole(ServerPlayerEntity player, @Nullable PlayerRole role) {
+	public boolean setPlayerRole(ServerPlayer player, @Nullable PlayerRole role) {
 		PlayerRole lastRole = getRoleFor(player);
 		if (role == lastRole) return false;
 
@@ -151,7 +151,7 @@ public class GamePhase implements IGamePhase {
 		return true;
 	}
 
-	private void onSetPlayerRole(ServerPlayerEntity player, @Nullable PlayerRole role, @Nullable PlayerRole lastRole) {
+	private void onSetPlayerRole(ServerPlayer player, @Nullable PlayerRole role, @Nullable PlayerRole lastRole) {
 		try {
 			invoker(GamePlayerEvents.SPAWN).onSpawn(player, role);
 			invoker(GamePlayerEvents.SET_ROLE).onSetRole(player, role, lastRole);
@@ -160,7 +160,7 @@ public class GamePhase implements IGamePhase {
 		}
 	}
 
-	void onPlayerJoin(ServerPlayerEntity player) {
+	void onPlayerJoin(ServerPlayer player) {
 		PlayerSnapshot.clearPlayer(player);
 
 		try {
@@ -173,7 +173,7 @@ public class GamePhase implements IGamePhase {
 		}
 	}
 
-	void onPlayerLeave(ServerPlayerEntity player) {
+	void onPlayerLeave(ServerPlayer player) {
 		for (PlayerRole role : PlayerRole.ROLES) {
 			roles.get(role).remove(player);
 		}
@@ -188,7 +188,7 @@ public class GamePhase implements IGamePhase {
 
 	public void cancelWithError(Exception exception) {
 		LoveTropics.LOGGER.warn("Game canceled due to exception", exception);
-		this.requestStop(GameStopReason.errored(new StringTextComponent("Game stopped due to exception: " + exception)));
+		this.requestStop(GameStopReason.errored(new TextComponent("Game stopped due to exception: " + exception)));
 	}
 
 	@Override
@@ -219,7 +219,7 @@ public class GamePhase implements IGamePhase {
 		requestStop(GameStopReason.canceled());
 
 		try {
-			for (ServerPlayerEntity player : getAllPlayers()) {
+			for (ServerPlayer player : getAllPlayers()) {
 				invoker(GamePlayerEvents.REMOVE).onRemove(player);
 			}
 
@@ -242,12 +242,12 @@ public class GamePhase implements IGamePhase {
 	}
 
 	@Override
-	public RegistryKey<World> getDimension() {
+	public ResourceKey<Level> getDimension() {
 		return map.getDimension();
 	}
 
 	@Override
-	public ServerWorld getWorld() {
+	public ServerLevel getWorld() {
 		return server.getLevel(map.getDimension());
 	}
 

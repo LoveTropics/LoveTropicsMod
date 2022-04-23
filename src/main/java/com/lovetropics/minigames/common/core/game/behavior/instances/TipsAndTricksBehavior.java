@@ -8,7 +8,7 @@ import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.util.text.ITextComponent;
+import net.minecraft.network.chat.Component;
 
 import java.util.*;
 
@@ -18,14 +18,14 @@ public final class TipsAndTricksBehavior implements IGameBehavior {
             Codec.INT.fieldOf("time_between_tips").forGetter(b -> b.timeBetweenTips)
     ).apply(instance, TipsAndTricksBehavior::new));
 
-    private final List<ITextComponent> texts;
+    private final List<Component> texts;
     private final int timeBetweenTips;
 
     // Mutable copy that is removed from as the game progresses
-    private List<ITextComponent> remainingTexts;
+    private List<Component> remainingTexts;
     private long startTime;
 
-    public TipsAndTricksBehavior(List<ITextComponent> texts, int timeBetweenTips) {
+    public TipsAndTricksBehavior(List<Component> texts, int timeBetweenTips) {
         this.texts = texts;
         this.timeBetweenTips = timeBetweenTips;
     }
@@ -43,7 +43,7 @@ public final class TipsAndTricksBehavior implements IGameBehavior {
         events.listen(GamePhaseEvents.TICK, () -> {
             if ((game.ticks() - this.startTime) % this.timeBetweenTips == 0) {
                 if (!this.remainingTexts.isEmpty()) {
-                    ITextComponent text = this.remainingTexts.remove(0);
+                    Component text = this.remainingTexts.remove(0);
                     game.getAllPlayers().sendMessage(text);
                 }
             }

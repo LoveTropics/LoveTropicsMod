@@ -3,7 +3,7 @@ package com.lovetropics.minigames.client.lobby.manage.state;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.Iterators;
 import it.unimi.dsi.fastutil.ints.*;
-import net.minecraft.network.PacketBuffer;
+import net.minecraft.network.FriendlyByteBuf;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -78,7 +78,7 @@ public final class ClientLobbyQueue implements Iterable<ClientLobbyQueuedGame> {
 		};
 	}
 
-	public void encode(PacketBuffer buffer) {
+	public void encode(FriendlyByteBuf buffer) {
 		buffer.writeVarInt(queue.size());
 
 		queue.forEach((IntConsumer) id -> {
@@ -88,7 +88,7 @@ public final class ClientLobbyQueue implements Iterable<ClientLobbyQueuedGame> {
 		});
 	}
 
-	public static ClientLobbyQueue decode(PacketBuffer buffer) {
+	public static ClientLobbyQueue decode(FriendlyByteBuf buffer) {
 		ClientLobbyQueue queue = new ClientLobbyQueue();
 
 		int queueSize = buffer.readVarInt();

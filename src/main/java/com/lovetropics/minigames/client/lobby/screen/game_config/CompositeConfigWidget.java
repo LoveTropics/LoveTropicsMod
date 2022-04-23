@@ -5,8 +5,8 @@ import com.lovetropics.minigames.client.screen.LayoutTree;
 import com.lovetropics.minigames.client.screen.flex.Box;
 import com.lovetropics.minigames.common.core.game.behavior.config.ConfigData;
 import com.lovetropics.minigames.common.core.game.behavior.config.ConfigData.CompositeConfigData;
-import com.mojang.blaze3d.matrix.MatrixStack;
-import net.minecraft.client.gui.IGuiEventListener;
+import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.gui.components.events.GuiEventListener;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,7 +31,7 @@ public class CompositeConfigWidget extends LayoutGui implements IConfigWidget {
 	}
 
 	@Override
-	public List<? extends IGuiEventListener> children() {
+	public List<? extends GuiEventListener> children() {
 		return children;
 	}
 
@@ -41,7 +41,7 @@ public class CompositeConfigWidget extends LayoutGui implements IConfigWidget {
 	}
 	
 	@Override
-	public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
+	public void render(PoseStack matrixStack, int mouseX, int mouseY, float partialTicks) {
 		super.render(matrixStack, mouseX, mouseY, partialTicks);
 		vLine(matrixStack, mainLayout.background().left(), mainLayout.background().top(), mainLayout.background().bottom(), -1);
 		for (IConfigWidget child : children) {

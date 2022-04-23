@@ -5,11 +5,11 @@ import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.plant.Pl
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.plant.PlantItemType;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.plant.PlantType;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameEventType;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.ActionResultType;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.core.BlockPos;
 
 public final class BbEvents {
 	public static final GameEventType<AssignPlot> ASSIGN_PLOT = GameEventType.create(AssignPlot.class, listeners -> (player, plot) -> {
@@ -26,12 +26,12 @@ public final class BbEvents {
 
 	public static final GameEventType<PlacePlant> PLACE_PLANT = GameEventType.create(PlacePlant.class, listeners -> (player, plot, pos, plantType) -> {
 		for (PlacePlant listener : listeners) {
-			ActionResult<Plant> result = listener.placePlant(player, plot, pos, plantType);
-			if (result.getResult() != ActionResultType.PASS) {
+			InteractionResultHolder<Plant> result = listener.placePlant(player, plot, pos, plantType);
+			if (result.getResult() != InteractionResult.PASS) {
 				return result;
 			}
 		}
-		return ActionResult.pass(null);
+		return InteractionResultHolder.pass(null);
 	});
 
 	public static final GameEventType<BreakPlant> BREAK_PLANT = GameEventType.create(BreakPlant.class, listeners -> (player, plot, plant) -> {
@@ -81,19 +81,19 @@ public final class BbEvents {
 	}
 
 	public interface AssignPlot {
-		void onAssignPlot(ServerPlayerEntity player, Plot plot);
+		void onAssignPlot(ServerPlayer player, Plot plot);
 	}
 
 	public interface TickPlot {
-		void onTickPlot(ServerPlayerEntity player, Plot plot);
+		void onTickPlot(ServerPlayer player, Plot plot);
 	}
 
 	public interface PlacePlant {
-		ActionResult<Plant> placePlant(ServerPlayerEntity player, Plot plot, BlockPos pos, PlantType plantType);
+		InteractionResultHolder<Plant> placePlant(ServerPlayer player, Plot plot, BlockPos pos, PlantType plantType);
 	}
 
 	public interface BreakPlant {
-		boolean breakPlant(ServerPlayerEntity player, Plot plot, Plant plant);
+		boolean breakPlant(ServerPlayer player, Plot plot, Plant plant);
 	}
 
 	public interface CreatePlantItem {
@@ -101,10 +101,10 @@ public final class BbEvents {
 	}
 
 	public interface PlantsChanged {
-		void onPlantsChanged(ServerPlayerEntity player, Plot plot);
+		void onPlantsChanged(ServerPlayer player, Plot plot);
 	}
 
 	public interface CurrencyChanged {
-		void onCurrencyChanged(ServerPlayerEntity player, int value, int lastValue);
+		void onCurrencyChanged(ServerPlayer player, int value, int lastValue);
 	}
 }

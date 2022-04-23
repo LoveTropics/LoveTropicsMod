@@ -10,12 +10,12 @@ import com.lovetropics.minigames.common.core.network.workspace.SetWorkspaceMessa
 import com.lovetropics.minigames.common.core.network.workspace.UpdateWorkspaceRegionMessage;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.nbt.ListNBT;
-import net.minecraft.network.PacketBuffer;
-import net.minecraft.util.RegistryKey;
-import net.minecraft.world.World;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.level.Level;
 import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.fml.network.PacketDistributor;
 
@@ -25,12 +25,12 @@ import java.util.Iterator;
 import java.util.Set;
 
 public final class WorkspaceRegions implements Iterable<WorkspaceRegions.Entry> {
-	private final RegistryKey<World> dimension;
+	private final ResourceKey<Level> dimension;
 	private final Int2ObjectMap<Entry> entries = new Int2ObjectOpenHashMap<>();
 	private int nextId;
 	private boolean hidden;
 
-	public WorkspaceRegions(RegistryKey<World> dimension) {
+	public WorkspaceRegions(ResourceKey<Level> dimension) {
 		this.dimension = dimension;
 	}
 
@@ -38,7 +38,7 @@ public final class WorkspaceRegions implements Iterable<WorkspaceRegions.Entry> 
 		return nextId++;
 	}
 
-	public void showHide(ServerPlayerEntity player) {
+	public void showHide(ServerPlayer player) {
 		if (hidden) {
 			sendPlayerMessage(new SetWorkspaceMessage(this), player);
 		} else {
@@ -47,7 +47,7 @@ public final class WorkspaceRegions implements Iterable<WorkspaceRegions.Entry> 
 		hidden = !hidden;
 	}
 
-	private <T> void sendPlayerMessage(T message, ServerPlayerEntity player) {
+	private <T> void sendPlayerMessage(T message, ServerPlayer player) {
 		LoveTropicsNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), message);
 	}
 
@@ -85,15 +85,15 @@ public final class WorkspaceRegions implements Iterable<WorkspaceRegions.Entry> 
 		return entries.isEmpty();
 	}
 
-	public CompoundNBT write(CompoundNBT root) {
+	public CompoundTag write(CompoundTag root) {
 		Multimap<String, Entry> byKey = groupedByKey();
 
 		for (String key : byKey.keySet()) {
 			Collection<Entry> entries = byKey.get(key);
 
-			ListNBT regionsList = new ListNBT();
+			ListTag regionsList = new ListTag();
 			for (Entry entry : entries) {
-				regionsList.add(entry.region.write(new CompoundNBT()));
+				regionsList.add(entry.region.write(new CompoundTag()));
 			}
 
 			root.put(key, regionsList);
@@ -102,11 +102,11 @@ public final class WorkspaceRegions implements Iterable<WorkspaceRegions.Entry> 
 		return root;
 	}
 
-	public void read(CompoundNBT root) {
+	public void read(CompoundTag root) {
 		this.entries.clear();
 
 		for (String key : root.getAllKeys()) {
-			ListNBT regionsList = root.getList(key, Constants.NBT.TAG_COMPOUND);
+			ListTag regionsList = root.getList(key, Constants.NBT.TAG_COMPOUND);
 			for (int i = 0; i < regionsList.size(); i++) {
 				BlockBox region = BlockBox.read(regionsList.getCompound(i));
 				this.add(key, region);
@@ -114,7 +114,7 @@ public final class WorkspaceRegions implements Iterable<WorkspaceRegions.Entry> 
 		}
 	}
 
-	public void write(PacketBuffer buffer) {
+	public void write(FriendlyByteBuf buffer) {
 		Multimap<String, Entry> byKey = groupedByKey();
 		Set<String> keys = byKey.keySet();
 

@@ -5,13 +5,13 @@ import com.google.common.collect.ImmutableSet;
 import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.common.core.map.workspace.ClientWorkspaceRegions;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.entity.player.ClientPlayerEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.Direction;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.BlockRayTraceResult;
-import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.core.Direction;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -30,7 +30,7 @@ public final class MapWorkspaceTracer {
 
 	@SubscribeEvent
 	public static void onClientTick(TickEvent.ClientTickEvent event) {
-		ClientPlayerEntity player = CLIENT.player;
+		LocalPlayer player = CLIENT.player;
 		if (event.phase == TickEvent.Phase.START || player == null) {
 			return;
 		}
@@ -41,20 +41,20 @@ public final class MapWorkspaceTracer {
 	}
 
 	@Nullable
-	public static RegionTraceTarget trace(PlayerEntity player) {
+	public static RegionTraceTarget trace(Player player) {
 		ClientWorkspaceRegions regions = ClientMapWorkspace.INSTANCE.getRegions();
 		if (regions.isEmpty()) {
 			return null;
 		}
 
-		Vector3d origin = player.getEyePosition(1.0F);
-		Vector3d target = origin.add(player.getLookAngle().scale(TRACE_RANGE));
+		Vec3 origin = player.getEyePosition(1.0F);
+		Vec3 target = origin.add(player.getLookAngle().scale(TRACE_RANGE));
 
-		AxisAlignedBB traceScope = new AxisAlignedBB(origin, target).inflate(1.0);
+		AABB traceScope = new AABB(origin, target).inflate(1.0);
 
 		ClientWorkspaceRegions.Entry closestEntry = null;
 		double closestDistance = Double.POSITIVE_INFINITY;
-		Vector3d closestPoint = null;
+		Vec3 closestPoint = null;
 		Direction closestSide = null;
 
 		for (ClientWorkspaceRegions.Entry entry : regions) {
@@ -62,10 +62,10 @@ public final class MapWorkspaceTracer {
 				continue;
 			}
 
-			AxisAlignedBB bounds = entry.region.asAabb();
-			BlockRayTraceResult traceResult = AxisAlignedBB.clip(ImmutableList.of(bounds), origin, target, BlockPos.ZERO);
+			AABB bounds = entry.region.asAabb();
+			BlockHitResult traceResult = AABB.clip(ImmutableList.of(bounds), origin, target, BlockPos.ZERO);
 			if (traceResult != null) {
-				Vector3d intersectPoint = traceResult.getLocation();
+				Vec3 intersectPoint = traceResult.getLocation();
 				double distance = intersectPoint.distanceTo(origin);
 				if (distance < closestDistance) {
 					closestEntry = entry;
@@ -83,7 +83,7 @@ public final class MapWorkspaceTracer {
 		}
 	}
 
-	public static boolean select(PlayerEntity player, @Nullable RegionTraceTarget target, Function<RegionTraceTarget, RegionEditOperator> operatorFactory) {
+	public static boolean select(Player player, @Nullable RegionTraceTarget target, Function<RegionTraceTarget, RegionEditOperator> operatorFactory) {
 		if (edit != null) {
 			if (edit.select(player, target)) {
 				edit = null;

@@ -4,7 +4,7 @@ import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.lovetropics.minigames.common.core.game.player.PlayerSet;
 import com.mojang.serialization.Codec;
-import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.server.level.ServerPlayer;
 
 public interface GameClientState {
 	Codec<GameClientState> CODEC = GameClientStateTypes.TYPE_CODEC.dispatch(
@@ -20,22 +20,22 @@ public interface GameClientState {
 		events.listen(GamePlayerEvents.REMOVE, player -> removeFromPlayer(state.getType(), player));
 	}
 
-	static void sendToPlayer(GameClientState state, ServerPlayerEntity player) {
+	static void sendToPlayer(GameClientState state, ServerPlayer player) {
 		GameClientStateSender.get().byPlayer(player).enqueueSet(state);
 	}
 
 	static void sendToPlayers(GameClientState state, PlayerSet players) {
-		for (ServerPlayerEntity player : players) {
+		for (ServerPlayer player : players) {
 			sendToPlayer(state, player);
 		}
 	}
 
-	static void removeFromPlayer(GameClientStateType<?> type, ServerPlayerEntity player) {
+	static void removeFromPlayer(GameClientStateType<?> type, ServerPlayer player) {
 		GameClientStateSender.get().byPlayer(player).enqueueRemove(type);
 	}
 
 	static void removeFromPlayers(GameClientStateType<?> type, PlayerSet players) {
-		for (ServerPlayerEntity player : players) {
+		for (ServerPlayer player : players) {
 			removeFromPlayer(type, player);
 		}
 	}

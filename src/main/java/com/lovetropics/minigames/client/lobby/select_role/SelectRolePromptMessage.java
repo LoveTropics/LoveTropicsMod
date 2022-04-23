@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.client.lobby.select_role;
 
-import net.minecraft.network.PacketBuffer;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.fml.network.NetworkEvent;
 
 import java.util.function.Supplier;
@@ -12,11 +12,11 @@ public final class SelectRolePromptMessage {
 		this.lobbyId = lobbyId;
 	}
 
-	public void encode(PacketBuffer buffer) {
+	public void encode(FriendlyByteBuf buffer) {
 		buffer.writeVarInt(this.lobbyId);
 	}
 
-	public static SelectRolePromptMessage decode(PacketBuffer buffer) {
+	public static SelectRolePromptMessage decode(FriendlyByteBuf buffer) {
 		return new SelectRolePromptMessage(buffer.readVarInt());
 	}
 

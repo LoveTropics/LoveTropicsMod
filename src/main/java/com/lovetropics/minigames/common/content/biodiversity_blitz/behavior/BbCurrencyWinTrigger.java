@@ -15,7 +15,7 @@ import com.lovetropics.minigames.common.core.game.state.statistics.PlayerKey;
 import com.lovetropics.minigames.common.core.game.state.statistics.StatisticKey;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.server.level.ServerPlayer;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -32,7 +32,7 @@ public final class BbCurrencyWinTrigger implements IGameBehavior {
 
 	private final int thresholdCurrency;
 
-	private final List<ServerPlayerEntity> winnerCandidates = new ArrayList<>();
+	private final List<ServerPlayer> winnerCandidates = new ArrayList<>();
 
 	public BbCurrencyWinTrigger(int thresholdCurrency) {
 		this.thresholdCurrency = thresholdCurrency;
@@ -53,9 +53,9 @@ public final class BbCurrencyWinTrigger implements IGameBehavior {
 		});
 
 		events.listen(GamePhaseEvents.TICK, () -> {
-			List<ServerPlayerEntity> players = this.winnerCandidates;
+			List<ServerPlayer> players = this.winnerCandidates;
 			if (!players.isEmpty()) {
-				ServerPlayerEntity player = this.selectWinningPlayer(plots, currency, players);
+				ServerPlayer player = this.selectWinningPlayer(plots, currency, players);
 				if (player != null) {
 					this.triggerWin(game, player);
 				}
@@ -64,8 +64,8 @@ public final class BbCurrencyWinTrigger implements IGameBehavior {
 	}
 
 	@Nullable
-	private ServerPlayerEntity selectWinningPlayer(PlotsState plots, CurrencyManager currency, Collection<ServerPlayerEntity> players) {
-		Comparator<ServerPlayerEntity> comparator = Comparator.comparingInt(currency::get)
+	private ServerPlayer selectWinningPlayer(PlotsState plots, CurrencyManager currency, Collection<ServerPlayer> players) {
+		Comparator<ServerPlayer> comparator = Comparator.comparingInt(currency::get)
 				.thenComparingInt(player -> {
 					Plot plot = plots.getPlotFor(player);
 					return plot != null ? plot.nextCurrencyIncrement : 0;
@@ -74,7 +74,7 @@ public final class BbCurrencyWinTrigger implements IGameBehavior {
 		return players.stream().max(comparator).orElse(null);
 	}
 
-	private void triggerWin(IGamePhase game, ServerPlayerEntity player) {
+	private void triggerWin(IGamePhase game, ServerPlayer player) {
 		game.invoker(GameLogicEvents.WIN_TRIGGERED).onWinTriggered(player.getDisplayName());
 
 		game.getStatistics().global().set(StatisticKey.WINNING_PLAYER, PlayerKey.from(player));

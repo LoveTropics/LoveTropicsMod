@@ -3,8 +3,8 @@ package com.lovetropics.minigames.client.lobby.select_role;
 import com.lovetropics.minigames.common.core.game.IGameManager;
 import com.lovetropics.minigames.common.core.game.lobby.IGameLobby;
 import com.lovetropics.minigames.common.core.game.player.PlayerRole;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.network.PacketBuffer;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.fml.network.NetworkEvent;
 
 import java.util.function.Supplier;
@@ -18,18 +18,18 @@ public final class SelectRoleMessage {
 		this.play = play;
 	}
 
-	public void encode(PacketBuffer buffer) {
+	public void encode(FriendlyByteBuf buffer) {
 		buffer.writeVarInt(this.lobbyId);
 		buffer.writeBoolean(this.play);
 	}
 
-	public static SelectRoleMessage decode(PacketBuffer buffer) {
+	public static SelectRoleMessage decode(FriendlyByteBuf buffer) {
 		return new SelectRoleMessage(buffer.readVarInt(), buffer.readBoolean());
 	}
 
 	public void handle(Supplier<NetworkEvent.Context> ctx) {
 		ctx.get().enqueueWork(() -> {
-			ServerPlayerEntity player = ctx.get().getSender();
+			ServerPlayer player = ctx.get().getSender();
 			IGameLobby lobby = IGameManager.get().getLobbyByNetworkId(lobbyId);
 			if (lobby != null) {
 				PlayerRole role = play ? PlayerRole.PARTICIPANT : PlayerRole.SPECTATOR;

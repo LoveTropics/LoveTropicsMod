@@ -5,9 +5,9 @@ import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.mojang.serialization.Codec;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.TNTBlock;
-import net.minecraft.util.ActionResultType;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.TntBlock;
+import net.minecraft.world.InteractionResult;
 
 public class TntAutoFuseBehavior implements IGameBehavior {
 	public static final Codec<TntAutoFuseBehavior> CODEC = Codec.unit(TntAutoFuseBehavior::new);
@@ -15,11 +15,11 @@ public class TntAutoFuseBehavior implements IGameBehavior {
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
 		events.listen(GamePlayerEvents.PLACE_BLOCK, (player, pos, placed, placedOn) -> {
-			if (placed.getBlock() instanceof TNTBlock) {
+			if (placed.getBlock() instanceof TntBlock) {
 				placed.getBlock().catchFire(placed, player.level, pos, null, null);
 				player.level.setBlock(pos, Blocks.AIR.defaultBlockState(), 11);
 			}
-			return ActionResultType.PASS;
+			return InteractionResult.PASS;
 		});
 	}
 }

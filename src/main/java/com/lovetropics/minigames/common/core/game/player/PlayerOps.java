@@ -1,28 +1,28 @@
 package com.lovetropics.minigames.common.core.game.player;
 
-import net.minecraft.network.IPacket;
-import net.minecraft.potion.EffectInstance;
-import net.minecraft.util.SoundCategory;
-import net.minecraft.util.SoundEvent;
-import net.minecraft.util.text.ITextComponent;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.network.chat.Component;
 import net.minecraftforge.fml.network.simple.SimpleChannel;
 
 public interface PlayerOps {
 	PlayerOps EMPTY = new PlayerOps() {
 		@Override
-		public void sendMessage(ITextComponent message, boolean actionBar) {
+		public void sendMessage(Component message, boolean actionBar) {
 		}
 
 		@Override
-		public void addPotionEffect(EffectInstance effect) {
+		public void addPotionEffect(MobEffectInstance effect) {
 		}
 
 		@Override
-		public void playSound(SoundEvent sound, SoundCategory category, float volume, float pitch) {
+		public void playSound(SoundEvent sound, SoundSource category, float volume, float pitch) {
 		}
 
 		@Override
-		public void sendPacket(IPacket<?> packet) {
+		public void sendPacket(Packet<?> packet) {
 		}
 
 		@Override
@@ -30,17 +30,17 @@ public interface PlayerOps {
 		}
 	};
 
-	default void sendMessage(ITextComponent message) {
+	default void sendMessage(Component message) {
 		this.sendMessage(message, false);
 	}
 
-	void sendMessage(ITextComponent message, boolean actionBar);
+	void sendMessage(Component message, boolean actionBar);
 
-	void addPotionEffect(EffectInstance effect);
+	void addPotionEffect(MobEffectInstance effect);
 
-	void playSound(SoundEvent sound, SoundCategory category, float volume, float pitch);
+	void playSound(SoundEvent sound, SoundSource category, float volume, float pitch);
 
-	void sendPacket(IPacket<?> packet);
+	void sendPacket(Packet<?> packet);
 
 	void sendPacket(SimpleChannel channel, Object message);
 }

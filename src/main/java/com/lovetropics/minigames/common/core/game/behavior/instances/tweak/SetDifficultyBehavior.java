@@ -9,7 +9,7 @@ import com.lovetropics.minigames.common.core.map.MapWorldInfo;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.world.Difficulty;
-import net.minecraft.world.server.ServerWorld;
+import net.minecraft.server.level.ServerLevel;
 
 public class SetDifficultyBehavior implements IGameBehavior {
 	public static final Codec<SetDifficultyBehavior> CODEC = RecordCodecBuilder.create(instance -> {
@@ -27,7 +27,7 @@ public class SetDifficultyBehavior implements IGameBehavior {
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
 		events.listen(GamePhaseEvents.START, () -> {
-			ServerWorld world = game.getWorld();
+			ServerLevel world = game.getWorld();
 			if (world.getLevelData() instanceof MapWorldInfo) {
 				MapWorldInfo worldInfo = (MapWorldInfo) world.getLevelData();
 				worldInfo.setDifficulty(difficulty);

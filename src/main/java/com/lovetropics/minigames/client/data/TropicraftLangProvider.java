@@ -2,13 +2,13 @@ package com.lovetropics.minigames.client.data;
 
 import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.common.util.Util;
-import net.minecraft.block.Block;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.data.DataGenerator;
-import net.minecraft.data.DirectoryCache;
-import net.minecraft.entity.EntityType;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemGroup;
-import net.minecraft.util.IItemProvider;
+import net.minecraft.data.HashCache;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.level.ItemLike;
 import net.minecraftforge.common.data.LanguageProvider;
 import net.minecraftforge.registries.IForgeRegistryEntry;
 
@@ -70,11 +70,11 @@ public class TropicraftLangProvider extends LanguageProvider {
         addTooltip(block, tooltip);
     }
     
-    private void addTooltip(Supplier<? extends IItemProvider> item, String tooltip) {
+    private void addTooltip(Supplier<? extends ItemLike> item, String tooltip) {
         add(item.get().asItem().getDescriptionId() + ".desc", tooltip);
     }
     
-    private void addTooltip(Supplier<? extends IItemProvider> item, List<String> tooltip) {
+    private void addTooltip(Supplier<? extends ItemLike> item, List<String> tooltip) {
         for (int i = 0; i < tooltip.size(); i++) {
             String key = item.get().asItem().getDescriptionId() + ".desc";
             if (i != 0) {
@@ -84,7 +84,7 @@ public class TropicraftLangProvider extends LanguageProvider {
         }
     }
     
-    private void add(ItemGroup group, String name) {
+    private void add(CreativeModeTab group, String name) {
         add("itemGroup." + group.getRecipeFolderName(), name);
     }
     
@@ -144,7 +144,7 @@ public class TropicraftLangProvider extends LanguageProvider {
     }
 
     @Override
-    public void run(DirectoryCache cache) throws IOException {
+    public void run(HashCache cache) throws IOException {
         super.run(cache);
         upsideDown.run(cache);
     }

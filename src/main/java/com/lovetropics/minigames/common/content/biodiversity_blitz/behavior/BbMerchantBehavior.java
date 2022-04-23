@@ -16,23 +16,23 @@ import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.MobEntity;
-import net.minecraft.entity.SpawnReason;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.MerchantOffer;
-import net.minecraft.item.MerchantOffers;
-import net.minecraft.util.ActionResultType;
-import net.minecraft.util.Direction;
-import net.minecraft.util.Hand;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.util.registry.Registry;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.world.server.ServerWorld;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.trading.MerchantOffer;
+import net.minecraft.world.item.trading.MerchantOffers;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.core.Direction;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.core.Registry;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.server.level.ServerLevel;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -45,21 +45,21 @@ public final class BbMerchantBehavior implements IGameBehavior {
 		return instance.group(
 				Codec.STRING.fieldOf("plot_region").forGetter(c -> c.plotRegion),
 				Registry.ENTITY_TYPE.fieldOf("entity").forGetter(c -> c.entity),
-				MoreCodecs.TEXT.optionalFieldOf("name", StringTextComponent.EMPTY).forGetter(c -> c.name),
+				MoreCodecs.TEXT.optionalFieldOf("name", TextComponent.EMPTY).forGetter(c -> c.name),
 				Offer.CODEC.listOf().fieldOf("offers").forGetter(c -> c.offers)
 		).apply(instance, BbMerchantBehavior::new);
 	});
 
 	private final String plotRegion;
 	private final EntityType<?> entity;
-	private final ITextComponent name;
+	private final Component name;
 	private final List<Offer> offers;
 
 	private final Set<UUID> merchants = new ObjectOpenHashSet<>();
 
 	private IGamePhase game;
 
-	public BbMerchantBehavior(String plotRegion, EntityType<?> entity, ITextComponent name, List<Offer> offers) {
+	public BbMerchantBehavior(String plotRegion, EntityType<?> entity, Component name, List<Offer> offers) {
 		this.plotRegion = plotRegion;
 		this.entity = entity;
 		this.name = name;
@@ -74,13 +74,13 @@ public final class BbMerchantBehavior implements IGameBehavior {
 		events.listen(GamePlayerEvents.INTERACT_ENTITY, this::interactWithEntity);
 	}
 
-	private void onAssignPlot(ServerPlayerEntity player, Plot plot) {
-		ServerWorld world = this.game.getWorld();
+	private void onAssignPlot(ServerPlayer player, Plot plot) {
+		ServerLevel world = this.game.getWorld();
 
 		BlockBox region = plot.regionByName(this.plotRegion);
 		if (region == null) return;
 
-		Vector3d center = region.getCenter();
+		Vec3 center = region.getCenter();
 
 		Entity merchant = this.createMerchant(world);
 		if (merchant == null) return;
@@ -94,9 +94,9 @@ public final class BbMerchantBehavior implements IGameBehavior {
 		world.getChunk(region.getCenterBlock());
 		world.addFreshEntity(merchant);
 
-		if (merchant instanceof MobEntity) {
-			MobEntity mob = (MobEntity) merchant;
-			mob.finalizeSpawn(world, world.getCurrentDifficultyAt(new BlockPos(center)), SpawnReason.MOB_SUMMONED, null, null);
+		if (merchant instanceof Mob) {
+			Mob mob = (Mob) merchant;
+			mob.finalizeSpawn(world, world.getCurrentDifficultyAt(new BlockPos(center)), MobSpawnType.MOB_SUMMONED, null, null);
 			mob.setNoAi(true);
 			mob.setBaby(false);
 			mob.setInvulnerable(true);
@@ -106,10 +106,10 @@ public final class BbMerchantBehavior implements IGameBehavior {
 	}
 
 	@Nullable
-	private Entity createMerchant(ServerWorld world) {
+	private Entity createMerchant(ServerLevel world) {
 		Entity merchant = this.entity.create(world);
 		if (merchant != null) {
-			if (this.name != StringTextComponent.EMPTY) {
+			if (this.name != TextComponent.EMPTY) {
 				merchant.setCustomName(this.name);
 				merchant.setCustomNameVisible(true);
 			}
@@ -120,7 +120,7 @@ public final class BbMerchantBehavior implements IGameBehavior {
 		return null;
 	}
 
-	private ActionResultType interactWithEntity(ServerPlayerEntity player, Entity target, Hand hand) {
+	private InteractionResult interactWithEntity(ServerPlayer player, Entity target, InteractionHand hand) {
 		if (this.merchants.contains(target.getUUID())) {
 			MerchantOffers builtOffers = new MerchantOffers();
 			for (Offer offer : this.offers) {
@@ -130,10 +130,10 @@ public final class BbMerchantBehavior implements IGameBehavior {
 			BbMerchant merchant = new BbMerchant(player, builtOffers);
 			merchant.openTradingScreen(player, BiodiversityBlitzTexts.trading(), 1);
 
-			return ActionResultType.SUCCESS;
+			return InteractionResult.SUCCESS;
 		}
 
-		return ActionResultType.PASS;
+		return InteractionResult.PASS;
 	}
 
 	public static final class Offer {

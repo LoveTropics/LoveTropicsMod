@@ -6,18 +6,18 @@ import com.lovetropics.minigames.common.core.map.workspace.ClientWorkspaceRegion
 import com.lovetropics.minigames.common.core.network.LoveTropicsNetwork;
 import com.lovetropics.minigames.common.core.network.workspace.UpdateWorkspaceRegionMessage;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.phys.Vec3;
 
 import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.Set;
 
 public interface RegionEditOperator {
-	void update(PlayerEntity player);
+	void update(Player player);
 
-	boolean select(PlayerEntity player, @Nullable RegionTraceTarget target);
+	boolean select(Player player, @Nullable RegionTraceTarget target);
 
 	default Set<ClientWorkspaceRegions.Entry> getSelectedRegions() {
 		return ImmutableSet.of();
@@ -33,12 +33,12 @@ public interface RegionEditOperator {
 		}
 
 		@Override
-		public void update(PlayerEntity player) {
+		public void update(Player player) {
 			target.entry.region = updateEditing(player, target);
 		}
 
 		@Override
-		public boolean select(PlayerEntity player, @Nullable RegionTraceTarget target) {
+		public boolean select(Player player, @Nullable RegionTraceTarget target) {
 			LoveTropicsNetwork.CHANNEL.sendToServer(new UpdateWorkspaceRegionMessage(this.target.entry.id, this.target.entry.region));
 			return true;
 		}
@@ -48,7 +48,7 @@ public interface RegionEditOperator {
 			return selected;
 		}
 
-		protected abstract BlockBox updateEditing(PlayerEntity player, RegionTraceTarget editTarget);
+		protected abstract BlockBox updateEditing(Player player, RegionTraceTarget editTarget);
 	}
 
 	final class Resize extends EditOne {
@@ -57,11 +57,11 @@ public interface RegionEditOperator {
 		}
 
 		@Override
-		protected BlockBox updateEditing(PlayerEntity player, RegionTraceTarget editTarget) {
-			Vector3d origin = player.getEyePosition(1.0F);
+		protected BlockBox updateEditing(Player player, RegionTraceTarget editTarget) {
+			Vec3 origin = player.getEyePosition(1.0F);
 
 			// TODO: not totally sure how to make this feel natural
-			Vector3d grabPoint = origin.add(player.getLookAngle().scale(target.distanceToSide));
+			Vec3 grabPoint = origin.add(player.getLookAngle().scale(target.distanceToSide));
 			BlockPos grabPos = new BlockPos(grabPoint);
 
 			BlockBox region = editTarget.entry.region;
@@ -79,7 +79,7 @@ public interface RegionEditOperator {
 	}
 
 	final class Move extends EditOne {
-		private final Vector3d offset;
+		private final Vec3 offset;
 
 		public Move(RegionTraceTarget target) {
 			super(target);
@@ -87,14 +87,14 @@ public interface RegionEditOperator {
 		}
 
 		@Override
-		protected BlockBox updateEditing(PlayerEntity player, RegionTraceTarget editTarget) {
-			Vector3d origin = player.getEyePosition(1.0F);
+		protected BlockBox updateEditing(Player player, RegionTraceTarget editTarget) {
+			Vec3 origin = player.getEyePosition(1.0F);
 
 			BlockBox region = editTarget.entry.region;
 
-			Vector3d grabPoint = region.getCenter().add(offset);
-			Vector3d targetPoint = origin.add(player.getLookAngle().scale(target.distanceToSide));
-			Vector3d offset = targetPoint.subtract(grabPoint);
+			Vec3 grabPoint = region.getCenter().add(offset);
+			Vec3 targetPoint = origin.add(player.getLookAngle().scale(target.distanceToSide));
+			Vec3 offset = targetPoint.subtract(grabPoint);
 
 			return region.offset(offset.x, offset.y, offset.z);
 		}
@@ -108,11 +108,11 @@ public interface RegionEditOperator {
 		}
 
 		@Override
-		public void update(PlayerEntity player) {
+		public void update(Player player) {
 		}
 
 		@Override
-		public boolean select(PlayerEntity player, @Nullable RegionTraceTarget target) {
+		public boolean select(Player player, @Nullable RegionTraceTarget target) {
 			if (target != null) {
 				selected.add(target.entry);
 			}

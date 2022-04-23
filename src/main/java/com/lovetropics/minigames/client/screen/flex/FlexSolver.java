@@ -1,7 +1,7 @@
 package com.lovetropics.minigames.client.screen.flex;
 
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.Mth;
 
 import javax.annotation.Nullable;
 import java.util.Map;
@@ -126,8 +126,8 @@ public final class FlexSolver {
 		int innerHeight = solve.innerHeight.resolve(minInnerHeight);
 
 		return new Box.Size(
-				MathHelper.clamp(innerWidth, minInnerWidth, maxInnerWidth),
-				MathHelper.clamp(innerHeight, minInnerHeight, maxInnerHeight)
+				Mth.clamp(innerWidth, minInnerWidth, maxInnerWidth),
+				Mth.clamp(innerHeight, minInnerHeight, maxInnerHeight)
 		);
 	}
 

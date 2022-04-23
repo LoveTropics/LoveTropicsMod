@@ -3,8 +3,8 @@ package com.lovetropics.minigames.common.core.game;
 import com.lovetropics.minigames.common.core.game.impl.MultiGameManager;
 import com.lovetropics.minigames.common.core.game.lobby.IGameLobby;
 import com.lovetropics.minigames.common.core.game.state.control.ControlCommandInvoker;
-import net.minecraft.command.CommandSource;
-import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.server.level.ServerPlayer;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
@@ -24,11 +24,11 @@ public interface IGameManager extends IGameLookup {
 		return MultiGameManager.INSTANCE;
 	}
 
-	GameResult<IGameLobby> createGameLobby(String name, ServerPlayerEntity initiator);
+	GameResult<IGameLobby> createGameLobby(String name, ServerPlayer initiator);
 
 	Collection<? extends IGameLobby> getAllLobbies();
 
-	default Stream<? extends IGameLobby> getVisibleLobbies(CommandSource source) {
+	default Stream<? extends IGameLobby> getVisibleLobbies(CommandSourceStack source) {
 		return getAllLobbies().stream()
 				.filter(lobby -> lobby.isVisibleTo(source));
 	}
@@ -39,5 +39,5 @@ public interface IGameManager extends IGameLookup {
 	@Nullable
 	IGameLobby getLobbyByCommandId(String id);
 
-	ControlCommandInvoker getControlInvoker(CommandSource source);
+	ControlCommandInvoker getControlInvoker(CommandSourceStack source);
 }

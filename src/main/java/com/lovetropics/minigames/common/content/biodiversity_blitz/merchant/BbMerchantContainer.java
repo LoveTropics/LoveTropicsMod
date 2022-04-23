@@ -1,19 +1,19 @@
 package com.lovetropics.minigames.common.content.biodiversity_blitz.merchant;
 
-import net.minecraft.entity.merchant.IMerchant;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.inventory.container.MerchantContainer;
-import net.minecraft.inventory.container.Slot;
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.item.trading.Merchant;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.inventory.MerchantMenu;
+import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.ItemStack;
 
-public final class BbMerchantContainer extends MerchantContainer {
-	public BbMerchantContainer(IMerchant merchant, int id, PlayerInventory playerInventory) {
+public final class BbMerchantContainer extends MerchantMenu {
+	public BbMerchantContainer(Merchant merchant, int id, Inventory playerInventory) {
 		super(id, playerInventory, merchant);
 	}
 
 	@Override
-	public ItemStack quickMoveStack(PlayerEntity player, int index) {
+	public ItemStack quickMoveStack(Player player, int index) {
 		// copied from MerchantContainer.transferStackInSlot removing a problematic cast
 
 		ItemStack resultStack = ItemStack.EMPTY;

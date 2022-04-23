@@ -7,10 +7,10 @@ import com.lovetropics.minigames.client.screen.flex.Layout;
 import com.lovetropics.minigames.common.core.game.behavior.config.ConfigData;
 import com.lovetropics.minigames.common.core.game.behavior.config.ConfigData.ListConfigData;
 import com.lovetropics.minigames.common.core.game.behavior.config.ConfigType;
-import com.mojang.blaze3d.matrix.MatrixStack;
-import net.minecraft.client.gui.IGuiEventListener;
-import net.minecraft.client.gui.IRenderable;
-import net.minecraft.util.text.StringTextComponent;
+import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.gui.components.events.GuiEventListener;
+import net.minecraft.client.gui.components.Widget;
+import net.minecraft.network.chat.TextComponent;
 import net.minecraftforge.fml.client.gui.widget.ExtendedButton;
 
 import java.util.ArrayList;
@@ -40,11 +40,11 @@ public class ListConfigWidget extends LayoutGui implements IConfigWidget {
 		}
 		int width = ltree.head().content().width();
 		btnLayout = ltree.definiteChild(10, 10, new Box(width - 10, 0, 0, 0), new Box()).pop();
-		this.children.add(new ExtendedButton(btnLayout.content().left(), btnLayout.content().top(), 10, 10, new StringTextComponent("+"), b -> addDefault()));
+		this.children.add(new ExtendedButton(btnLayout.content().left(), btnLayout.content().top(), 10, 10, new TextComponent("+"), b -> addDefault()));
 		this.mainLayout = ltree.pop();
 	}
 
-	private final List<IGuiEventListener> children = new ArrayList<>();
+	private final List<GuiEventListener> children = new ArrayList<>();
 	
 	public static ListConfigWidget from(GameConfig parent, LayoutTree ltree, ListConfigData data) {
 		return new ListConfigWidget(parent, ltree, data);
@@ -56,17 +56,17 @@ public class ListConfigWidget extends LayoutGui implements IConfigWidget {
 	}
 
 	@Override
-	public List<? extends IGuiEventListener> children() {
+	public List<? extends GuiEventListener> children() {
 		return children;
 	}
 
 	@Override
-	public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
+	public void render(PoseStack matrixStack, int mouseX, int mouseY, float partialTicks) {
 		super.render(matrixStack, mouseX, mouseY, partialTicks);
 		btnLayout.debugRender(matrixStack);
-		for (IGuiEventListener child : children) {
-			if (child instanceof IRenderable) {
-				((IRenderable)child).render(matrixStack, mouseX, mouseY, partialTicks);
+		for (GuiEventListener child : children) {
+			if (child instanceof Widget) {
+				((Widget)child).render(matrixStack, mouseX, mouseY, partialTicks);
 			}
 		}
 	}

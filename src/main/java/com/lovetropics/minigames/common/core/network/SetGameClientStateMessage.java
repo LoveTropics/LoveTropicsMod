@@ -6,10 +6,10 @@ import com.lovetropics.minigames.common.core.game.client_state.GameClientState;
 import com.lovetropics.minigames.common.core.game.client_state.GameClientStateType;
 import com.lovetropics.minigames.common.core.game.client_state.GameClientStateTypes;
 import com.mojang.serialization.DataResult;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.nbt.INBT;
-import net.minecraft.nbt.NBTDynamicOps;
-import net.minecraft.network.PacketBuffer;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.nbt.NbtOps;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.fml.network.NetworkEvent;
 
 import javax.annotation.Nullable;
@@ -33,36 +33,36 @@ public class SetGameClientStateMessage {
 		return new SetGameClientStateMessage(type, null);
 	}
 
-	public void encode(PacketBuffer buffer) {
+	public void encode(FriendlyByteBuf buffer) {
 		buffer.writeRegistryIdUnsafe(GameClientStateTypes.REGISTRY.get(), this.type);
 
-		CompoundNBT stateNbt = state != null ? tryEncodeUnchecked(type, state) : null;
+		CompoundTag stateNbt = state != null ? tryEncodeUnchecked(type, state) : null;
 		buffer.writeNbt(stateNbt);
 	}
 
-	public static SetGameClientStateMessage decode(PacketBuffer buffer) {
+	public static SetGameClientStateMessage decode(FriendlyByteBuf buffer) {
 		GameClientStateType<?> type = buffer.readRegistryIdUnsafe(GameClientStateTypes.REGISTRY.get());
-		CompoundNBT stateNbt = buffer.readNbt();
+		CompoundTag stateNbt = buffer.readNbt();
 		GameClientState state = stateNbt != null ? tryDecode(type, stateNbt) : null;
 		return new SetGameClientStateMessage(type, state);
 	}
 
 	@SuppressWarnings("unchecked")
 	@Nullable
-	private static <T extends GameClientState> CompoundNBT tryEncodeUnchecked(GameClientStateType<T> type, GameClientState state) {
-		DataResult<INBT> result = type.getCodec().encodeStart(NBTDynamicOps.INSTANCE, (T) state)
-				.flatMap(nbt -> nbt instanceof CompoundNBT ? DataResult.success(nbt) : DataResult.error("Encoded state was not a compound!"));
+	private static <T extends GameClientState> CompoundTag tryEncodeUnchecked(GameClientStateType<T> type, GameClientState state) {
+		DataResult<Tag> result = type.getCodec().encodeStart(NbtOps.INSTANCE, (T) state)
+				.flatMap(nbt -> nbt instanceof CompoundTag ? DataResult.success(nbt) : DataResult.error("Encoded state was not a compound!"));
 
 		result.error().ifPresent(error -> {
 			LoveTropics.LOGGER.warn("Failed to encode client state of type '{}': {}", type.getRegistryName(), error);
 		});
 
-		return (CompoundNBT) result.result().orElse(null);
+		return (CompoundTag) result.result().orElse(null);
 	}
 
 	@Nullable
-	private static <T extends GameClientState> T tryDecode(GameClientStateType<T> type, CompoundNBT nbt) {
-		DataResult<T> result = type.getCodec().parse(NBTDynamicOps.INSTANCE, nbt);
+	private static <T extends GameClientState> T tryDecode(GameClientStateType<T> type, CompoundTag nbt) {
+		DataResult<T> result = type.getCodec().parse(NbtOps.INSTANCE, nbt);
 		result.error().ifPresent(error -> {
 			LoveTropics.LOGGER.warn("Failed to decode client state of type '{}': {}", type.getRegistryName(), error);
 		});

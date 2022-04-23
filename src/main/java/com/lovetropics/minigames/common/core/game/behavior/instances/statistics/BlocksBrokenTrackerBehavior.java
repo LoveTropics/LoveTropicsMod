@@ -6,7 +6,7 @@ import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.lovetropics.minigames.common.core.game.state.statistics.StatisticKey;
 import com.mojang.serialization.Codec;
-import net.minecraft.util.ActionResultType;
+import net.minecraft.world.InteractionResult;
 
 public final class BlocksBrokenTrackerBehavior implements IGameBehavior {
 	public static final Codec<BlocksBrokenTrackerBehavior> CODEC = Codec.unit(BlocksBrokenTrackerBehavior::new);
@@ -16,7 +16,7 @@ public final class BlocksBrokenTrackerBehavior implements IGameBehavior {
 		events.listen(GamePlayerEvents.BREAK_BLOCK, (player, pos, state, hand) -> {
 			game.getStatistics().forPlayer(player)
 					.incrementInt(StatisticKey.BLOCKS_BROKEN, 1);
-			return ActionResultType.PASS;
+			return InteractionResult.PASS;
 		});
 	}
 }

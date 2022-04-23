@@ -2,10 +2,10 @@ package com.lovetropics.minigames.common.content.survive_the_tide;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.material.Material;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.material.Material;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
 
 import java.util.Random;
 
@@ -44,7 +44,7 @@ public class IcebergLine
         this.intervalZ = Math.round((float)diffZ / (float)count);
     }
 
-    public void generate(World world, int waterLevel) {
+    public void generate(Level world, int waterLevel) {
         for (int i = 1; i <= count; i++) {
             int offsetX = getRandOffset(this.distBetweenEach);
             int offsetZ = getRandOffset(this.distBetweenEach);
@@ -73,7 +73,7 @@ public class IcebergLine
         return rand.nextInt(radius) * (rand.nextBoolean() ? -1 : 1);
     }
 
-    private void setIceWithCheck(World world, BlockPos pos) {
+    private void setIceWithCheck(Level world, BlockPos pos) {
         if (world.getBlockState(pos).getMaterial() == Material.WATER) {
             world.setBlock(pos, Blocks.SNOW_BLOCK.defaultBlockState(), 2);
         }

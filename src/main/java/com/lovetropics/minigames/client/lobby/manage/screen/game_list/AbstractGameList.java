@@ -7,16 +7,18 @@ import com.lovetropics.minigames.client.screen.flex.Layout;
 import com.lovetropics.minigames.client.screen.list.AbstractLTList;
 import com.lovetropics.minigames.client.screen.list.LTListEntry;
 import com.lovetropics.minigames.common.core.game.util.GameTexts;
-import com.mojang.blaze3d.matrix.MatrixStack;
-import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.util.text.ITextComponent;
+import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.screens.Screen;
+import com.mojang.blaze3d.vertex.Tesselator;
+import net.minecraft.network.chat.Component;
+
+import com.lovetropics.minigames.client.screen.list.AbstractLTList.Reorder;
 
 public abstract class AbstractGameList extends AbstractLTList<AbstractGameList.Entry> {
-	private final ITextComponent title;
+	private final Component title;
 
-	public AbstractGameList(Screen screen, Layout layout, ITextComponent title) {
+	public AbstractGameList(Screen screen, Layout layout, Component title) {
 		super(screen, layout, Entry.HEIGHT);
 		this.setRenderHeader(true, this.minecraft.font.lineHeight + 4);
 		this.setLeftPos(layout.background().left());
@@ -31,7 +33,7 @@ public abstract class AbstractGameList extends AbstractLTList<AbstractGameList.E
 	}
 
 	@Override
-	protected void renderHeader(MatrixStack matrixStack, int x, int y, Tessellator tessellator) {
+	protected void renderHeader(PoseStack matrixStack, int x, int y, Tesselator tessellator) {
 		this.minecraft.font.draw(
 				matrixStack, this.title,
 				x + (this.width - this.minecraft.font.width(this.title)) / 2.0F,
@@ -65,9 +67,9 @@ public abstract class AbstractGameList extends AbstractLTList<AbstractGameList.E
 		}
 
 		public static Entry game(AbstractLTList<Entry> list, int id, ClientGameDefinition game) {
-			ITextComponent playerRange = GameTexts.Ui.playerRange(game.minimumParticipants, game.maximumParticipants);
+			Component playerRange = GameTexts.Ui.playerRange(game.minimumParticipants, game.maximumParticipants);
 
-			ITextComponent subtitle;
+			Component subtitle;
 			if (game.subtitle != null) {
 				subtitle = game.subtitle.copy().append(" | ").append(playerRange);
 			} else {
@@ -80,8 +82,8 @@ public abstract class AbstractGameList extends AbstractLTList<AbstractGameList.E
 		}
 		
 		@Override
-		public void render(MatrixStack matrixStack, int index, int top, int left, int width, int height, int mouseX, int mouseY, boolean hovered, float partialTicks) {
-			FontRenderer font = screen.getMinecraft().font;
+		public void render(PoseStack matrixStack, int index, int top, int left, int width, int height, int mouseX, int mouseY, boolean hovered, float partialTicks) {
+			Font font = screen.getMinecraft().font;
 			int fontHeight = font.lineHeight;
 		
 			boolean selected = ((AbstractGameList)list).isSelectedItem(index);
@@ -100,7 +102,7 @@ public abstract class AbstractGameList extends AbstractLTList<AbstractGameList.E
 		}
 
 		@Override
-		public void renderTooltips(MatrixStack matrixStack, int width, int mouseX, int mouseY) {
+		public void renderTooltips(PoseStack matrixStack, int width, int mouseX, int mouseY) {
 			super.renderTooltips(matrixStack, width, mouseX, mouseY);
 			TrimmedText subtitle = this.subtitle;
 			int maxTextWidth = getMaxTextWidth(width);
@@ -109,12 +111,12 @@ public abstract class AbstractGameList extends AbstractLTList<AbstractGameList.E
 			}
 		}
 
-		public Entry setTitle(ITextComponent title) {
+		public Entry setTitle(Component title) {
 			this.title = TrimmedText.of(title);
 			return this;
 		}
 
-		public Entry setSubtitle(ITextComponent subtitle) {
+		public Entry setSubtitle(Component subtitle) {
 			this.subtitle = TrimmedText.of(subtitle);
 			return this;
 		}
@@ -153,7 +155,7 @@ public abstract class AbstractGameList extends AbstractLTList<AbstractGameList.E
 			return width - 2 * PADDING;
 		}
 
-		void fillEntry(MatrixStack matrixStack, int left, int top, int width, int height, boolean hovered, boolean selected, boolean outline) {
+		void fillEntry(PoseStack matrixStack, int left, int top, int width, int height, boolean hovered, boolean selected, boolean outline) {
 			if (banner) {
 				top += 4;
 				height -= 8;
@@ -183,7 +185,7 @@ public abstract class AbstractGameList extends AbstractLTList<AbstractGameList.E
 			}
 		}
 
-		private void fillEntry(MatrixStack matrixStack, int left, int top, int width, int height, int color) {
+		private void fillEntry(PoseStack matrixStack, int left, int top, int width, int height, int color) {
 			AbstractGameList.fill(matrixStack, left, top, left + width, top + height, color);
 		}
 

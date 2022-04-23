@@ -8,7 +8,7 @@ import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePackageEvents;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.potion.EffectInstance;
+import net.minecraft.world.effect.MobEffectInstance;
 
 import java.util.List;
 
@@ -19,17 +19,17 @@ public class EffectPackageBehavior implements IGameBehavior {
 		).apply(instance, EffectPackageBehavior::new);
 	});
 
-	private final List<EffectInstance> effects;
+	private final List<MobEffectInstance> effects;
 
-	public EffectPackageBehavior(List<EffectInstance> effects) {
+	public EffectPackageBehavior(List<MobEffectInstance> effects) {
 		this.effects = effects;
 	}
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) throws GameException {
 		events.listen(GamePackageEvents.APPLY_PACKAGE_TO_PLAYER, (player, sendingPlayer) -> {
-			for (EffectInstance effect : effects) {
-				player.addEffect(new EffectInstance(effect));
+			for (MobEffectInstance effect : effects) {
+				player.addEffect(new MobEffectInstance(effect));
 			}
 			return true;
 		});

@@ -4,8 +4,8 @@ import com.lovetropics.minigames.client.lobby.manage.state.update.ServerLobbyUpd
 import com.lovetropics.minigames.common.core.game.IGameManager;
 import com.lovetropics.minigames.common.core.game.lobby.IGameLobby;
 import com.lovetropics.minigames.common.core.game.lobby.ILobbyManagement;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.network.PacketBuffer;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.fml.network.NetworkEvent;
 
 import javax.annotation.Nullable;
@@ -29,7 +29,7 @@ public final class ServerManageLobbyMessage {
 		return new ServerManageLobbyMessage(id, null);
 	}
 
-	public void encode(PacketBuffer buffer) {
+	public void encode(FriendlyByteBuf buffer) {
 		buffer.writeVarInt(id);
 		buffer.writeBoolean(updates != null);
 		if (updates != null) {
@@ -37,7 +37,7 @@ public final class ServerManageLobbyMessage {
 		}
 	}
 
-	public static ServerManageLobbyMessage decode(PacketBuffer buffer) {
+	public static ServerManageLobbyMessage decode(FriendlyByteBuf buffer) {
 		int id = buffer.readVarInt();
 		ServerLobbyUpdate.Set updates = buffer.readBoolean() ? ServerLobbyUpdate.Set.decode(buffer) : null;
 		return new ServerManageLobbyMessage(id, updates);
@@ -46,7 +46,7 @@ public final class ServerManageLobbyMessage {
 	public void handle(Supplier<NetworkEvent.Context> ctx) {
 		ctx.get().enqueueWork(() -> {
 			IGameLobby lobby = IGameManager.get().getLobbyByNetworkId(id);
-			ServerPlayerEntity player = ctx.get().getSender();
+			ServerPlayer player = ctx.get().getSender();
 			if (lobby == null || player == null) return;
 
 			ILobbyManagement management = lobby.getManagement();

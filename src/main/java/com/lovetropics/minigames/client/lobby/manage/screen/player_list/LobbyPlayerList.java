@@ -7,19 +7,19 @@ import com.lovetropics.minigames.client.screen.PlayerFaces;
 import com.lovetropics.minigames.client.screen.flex.Box;
 import com.lovetropics.minigames.client.screen.flex.Layout;
 import com.lovetropics.minigames.common.core.game.util.GameTexts;
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.client.gui.AbstractGui;
-import net.minecraft.client.gui.IGuiEventListener;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.TextFormatting;
+import net.minecraft.client.gui.GuiComponent;
+import net.minecraft.client.gui.components.events.GuiEventListener;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.network.chat.Component;
+import net.minecraft.ChatFormatting;
 
 import java.util.ArrayList;
 import java.util.List;
 
 // TODO: grid element utility
-public final class LobbyPlayerList extends AbstractGui implements IGuiEventListener {
+public final class LobbyPlayerList extends GuiComponent implements GuiEventListener {
 	private static final int FACE_SIZE = 16;
 	private static final int SPACING = 4;
 	private static final int HALF_SPACING = SPACING / 2;
@@ -51,7 +51,7 @@ public final class LobbyPlayerList extends AbstractGui implements IGuiEventListe
 		);
 	}
 
-	public void render(MatrixStack matrixStack, int mouseX, int mouseY) {
+	public void render(PoseStack matrixStack, int mouseX, int mouseY) {
 		// TODO: handling overflow with scrollbar
 
 		RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
@@ -65,7 +65,7 @@ public final class LobbyPlayerList extends AbstractGui implements IGuiEventListe
 		}
 	}
 
-	private void renderFace(MatrixStack matrixStack, int mouseX, int mouseY, ClientLobbyPlayer player, int x, int y) {
+	private void renderFace(PoseStack matrixStack, int mouseX, int mouseY, ClientLobbyPlayer player, int x, int y) {
 		boolean hovered = isFaceHovered(x, y, mouseX, mouseY);
 
 		fill(matrixStack,
@@ -76,19 +76,19 @@ public final class LobbyPlayerList extends AbstractGui implements IGuiEventListe
 		PlayerFaces.render(player.uuid(), matrixStack, x, y, FACE_SIZE);
 	}
 
-	public void renderTooltip(MatrixStack matrixStack, int mouseX, int mouseY) {
+	public void renderTooltip(PoseStack matrixStack, int mouseX, int mouseY) {
 		int index = this.hoveredFaceAt(mouseX, mouseY);
 		if (index != -1) {
 			ClientLobbyPlayer player = lobby.getPlayers().get(index);
 
-			ITextComponent name = ClientPlayerInfo.getName(player.uuid());
+			Component name = ClientPlayerInfo.getName(player.uuid());
 			if (name != null) {
-				List<ITextComponent> tooltip = new ArrayList<>(2);
+				List<Component> tooltip = new ArrayList<>(2);
 				tooltip.add(name);
 
 				if (player.playingRole() != null) {
 					tooltip.add(GameTexts.Ui.roleDescription(player.playingRole())
-							.withStyle(TextFormatting.GRAY));
+							.withStyle(ChatFormatting.GRAY));
 				}
 
 				screen.renderComponentTooltip(matrixStack, tooltip, mouseX, mouseY);

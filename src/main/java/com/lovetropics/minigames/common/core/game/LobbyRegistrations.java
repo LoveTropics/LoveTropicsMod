@@ -7,7 +7,7 @@ import com.lovetropics.minigames.common.core.game.player.PlayerSet;
 import com.lovetropics.minigames.common.core.game.util.TeamAllocator;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
-import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.MinecraftServer;
 
 import javax.annotation.Nullable;
@@ -31,11 +31,11 @@ public final class LobbyRegistrations implements PlayerSet {
 		this.forcedRoles.clear();
 	}
 
-	public TeamAllocator<PlayerRole, ServerPlayerEntity> createAllocator() {
-		TeamAllocator<PlayerRole, ServerPlayerEntity> allocator = new TeamAllocator<>(Lists.newArrayList(PlayerRole.ROLES));
+	public TeamAllocator<PlayerRole, ServerPlayer> createAllocator() {
+		TeamAllocator<PlayerRole, ServerPlayer> allocator = new TeamAllocator<>(Lists.newArrayList(PlayerRole.ROLES));
 		allocator.setOverflowTeam(PlayerRole.SPECTATOR);
 
-		for (ServerPlayerEntity player : this) {
+		for (ServerPlayer player : this) {
 			PlayerRole role = forcedRoles.get(player.getUUID());
 			allocator.addPlayer(player, role);
 		}
@@ -84,12 +84,12 @@ public final class LobbyRegistrations implements PlayerSet {
 
 	@Nullable
 	@Override
-	public ServerPlayerEntity getPlayerBy(UUID id) {
+	public ServerPlayer getPlayerBy(UUID id) {
 		return contains(id) ? server.getPlayerList().getPlayer(id) : null;
 	}
 
 	@Override
-	public Iterator<ServerPlayerEntity> iterator() {
+	public Iterator<ServerPlayer> iterator() {
 		return PlayerIterable.resolvingIterator(server, players.iterator());
 	}
 }

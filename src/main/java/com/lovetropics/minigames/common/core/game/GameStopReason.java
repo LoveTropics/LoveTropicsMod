@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.common.core.game;
 
-import net.minecraft.util.text.ITextComponent;
+import net.minecraft.network.chat.Component;
 
 import javax.annotation.Nullable;
 
@@ -10,9 +10,9 @@ public final class GameStopReason {
 
 	private final boolean finished;
 	@Nullable
-	private final ITextComponent error;
+	private final Component error;
 
-	private GameStopReason(boolean finished, @Nullable ITextComponent error) {
+	private GameStopReason(boolean finished, @Nullable Component error) {
 		this.finished = finished;
 		this.error = error;
 	}
@@ -25,7 +25,7 @@ public final class GameStopReason {
 		return CANCELED;
 	}
 
-	public static GameStopReason errored(ITextComponent error) {
+	public static GameStopReason errored(Component error) {
 		return new GameStopReason(false, error);
 	}
 
@@ -42,7 +42,7 @@ public final class GameStopReason {
 	}
 
 	@Nullable
-	public ITextComponent getError() {
+	public Component getError() {
 		return error;
 	}
 }

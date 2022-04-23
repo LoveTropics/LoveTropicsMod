@@ -15,15 +15,15 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrays;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.scoreboard.Score;
-import net.minecraft.scoreboard.ScoreCriteria;
-import net.minecraft.scoreboard.ScoreCriteria.RenderType;
-import net.minecraft.scoreboard.ScoreObjective;
-import net.minecraft.scoreboard.Scoreboard;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.scores.Score;
+import net.minecraft.world.scores.criteria.ObjectiveCriteria;
+import net.minecraft.world.scores.criteria.ObjectiveCriteria.RenderType;
+import net.minecraft.world.scores.Objective;
+import net.minecraft.world.scores.Scoreboard;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.management.PlayerList;
-import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.server.players.PlayerList;
+import net.minecraft.network.chat.TextComponent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -85,11 +85,11 @@ public class PollFinalistsBehavior implements IGameBehavior {
 		if (crud.equals("create")) {
 			LOGGER.info("New poll, resetting objective");
 			Scoreboard scoreboard = server.getScoreboard();
-			ScoreObjective objective = scoreboard.getOrCreateObjective(votesObjective);
+			Objective objective = scoreboard.getOrCreateObjective(votesObjective);
 			if (objective != null) {
 				scoreboard.removeObjective(objective);
 			}
-			scoreboard.addObjective(votesObjective, ScoreCriteria.DUMMY, new StringTextComponent("Votes"), RenderType.INTEGER);
+			scoreboard.addObjective(votesObjective, ObjectiveCriteria.DUMMY, new TextComponent("Votes"), RenderType.INTEGER);
 			return;
 		}
 		PollEvent event = new Gson().fromJson(object, PollEvent.class);
@@ -97,11 +97,11 @@ public class PollFinalistsBehavior implements IGameBehavior {
 			LOGGER.info("Poll ended, finding winner");
 			updateScores(server, event, true);
 			Scoreboard scoreboard = server.getScoreboard();
-			ScoreObjective objective = scoreboard.getOrCreateObjective(votesObjective);
+			Objective objective = scoreboard.getOrCreateObjective(votesObjective);
 			Collection<Score> scores = scoreboard.getPlayerScores(objective);
 			if (!scores.isEmpty()) {
 				String winner = Iterables.getLast(scores).getOwner();
-				for (ServerPlayerEntity player : server.getPlayerList().getPlayers()) {
+				for (ServerPlayer player : server.getPlayerList().getPlayers()) {
 					player.removeTag(finalistsTag);
 					if (player.getGameProfile().getName().equals(winner)) {
 						player.addTag(winnerTag);
@@ -121,10 +121,10 @@ public class PollFinalistsBehavior implements IGameBehavior {
 		for (Option option : event.options) {
 			votesByName.put(option.title, option.results);
 		}
-		List<ServerPlayerEntity> leaders = new ArrayList<>();
+		List<ServerPlayer> leaders = new ArrayList<>();
 		int leaderVotes = 0;
 
-		for (ServerPlayerEntity player : server.getPlayerList().getPlayers()) {
+		for (ServerPlayer player : server.getPlayerList().getPlayers()) {
 			String username = player.getGameProfile().getName();
 			int votes = votesByName.getInt(username);
 			if (votes >= 0) {
@@ -138,15 +138,15 @@ public class PollFinalistsBehavior implements IGameBehavior {
 					}
 				}
 				Scoreboard scoreboard = server.getScoreboard();
-				ScoreObjective objective = scoreboard.getOrCreateObjective(votesObjective);
+				Objective objective = scoreboard.getOrCreateObjective(votesObjective);
 				scoreboard.getOrCreatePlayerScore(username, objective).setScore(votes);
 			}
 		}
 		if (leaders.size() > 1) {
 			// Shhhhh
-			ServerPlayerEntity winner = leaders.get(RANDOM.nextInt(leaders.size()));
+			ServerPlayer winner = leaders.get(RANDOM.nextInt(leaders.size()));
 			Scoreboard scoreboard = server.getScoreboard();
-			ScoreObjective objective = scoreboard.getOrCreateObjective(votesObjective);
+			Objective objective = scoreboard.getOrCreateObjective(votesObjective);
 			scoreboard.getOrCreatePlayerScore(winner.getGameProfile().getName(), objective).increment();
 		}
 	}

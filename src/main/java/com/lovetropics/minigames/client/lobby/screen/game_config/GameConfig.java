@@ -13,12 +13,12 @@ import com.lovetropics.minigames.common.core.game.behavior.config.ConfigData;
 import com.lovetropics.minigames.common.core.game.behavior.config.ConfigData.CompositeConfigData;
 import com.lovetropics.minigames.common.core.game.behavior.config.ConfigData.ListConfigData;
 import com.lovetropics.minigames.common.core.game.behavior.config.ConfigData.SimpleConfigData;
-import com.mojang.blaze3d.matrix.MatrixStack;
-import net.minecraft.client.gui.IGuiEventListener;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.widget.button.Button;
-import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.util.text.StringTextComponent;
+import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.gui.components.events.GuiEventListener;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.components.Button;
+import com.mojang.blaze3d.vertex.Tesselator;
+import net.minecraft.network.chat.TextComponent;
 import net.minecraftforge.client.gui.ScrollPanel;
 
 import javax.annotation.Nullable;
@@ -38,7 +38,7 @@ public final class GameConfig extends ScrollPanel {
 	private final List<ClientBehaviorMap> configData = new ArrayList<>();
 	private final Multimap<GameBehaviorType<?>, BehaviorConfigUI> configMenus = LinkedHashMultimap.create();
 
-	private final List<IGuiEventListener> children = new ArrayList<>();
+	private final List<GuiEventListener> children = new ArrayList<>();
 
 	private final Button saveButton;
 
@@ -50,7 +50,7 @@ public final class GameConfig extends ScrollPanel {
 		this.handlers = handlers;
 		this.content = main;
 
-		children.add(this.saveButton = new Button(main.content().right() - 46, main.content().bottom() - 20, 40, 20, new StringTextComponent("Save"), $ -> handlers.saveConfigs()));
+		children.add(this.saveButton = new Button(main.content().right() - 46, main.content().bottom() - 20, 40, 20, new TextComponent("Save"), $ -> handlers.saveConfigs()));
 		this.saveButton.active = false;
 	}
 
@@ -91,7 +91,7 @@ public final class GameConfig extends ScrollPanel {
 	}
 
 	@Override
-	public List<? extends IGuiEventListener> children() {
+	public List<? extends GuiEventListener> children() {
 		return children;
 	}
 
@@ -117,7 +117,7 @@ public final class GameConfig extends ScrollPanel {
 	}
 
 	@Override
-	protected void drawPanel(MatrixStack mStack, int entryRight, int relativeY, Tessellator tess, int mouseX, int mouseY) {
+	protected void drawPanel(PoseStack mStack, int entryRight, int relativeY, Tesselator tess, int mouseX, int mouseY) {
 		this.mainLayout.debugRender(mStack);
 		mStack.pushPose();
 		mStack.translate(0, relativeY - this.top - this.border, 0);
@@ -128,11 +128,11 @@ public final class GameConfig extends ScrollPanel {
 	}
 
 	@Override
-	protected void drawGradientRect(MatrixStack mStack, int left, int top, int right, int bottom, int color1, int color2) {}
+	protected void drawGradientRect(PoseStack mStack, int left, int top, int right, int bottom, int color1, int color2) {}
 
 	@Override
-	public Optional<IGuiEventListener> getChildAt(double mouseX, double mouseY) {
-		Optional<IGuiEventListener> ret = super.getChildAt(mouseX, mouseY);
+	public Optional<GuiEventListener> getChildAt(double mouseX, double mouseY) {
+		Optional<GuiEventListener> ret = super.getChildAt(mouseX, mouseY);
 		if (!ret.isPresent() || ret.get() != saveButton) {
 			// Can't allow the save button to activate here, the mouse position is wrong for it
 			ret = super.getChildAt(mouseX, mouseY + this.scrollDistance).filter(g -> g != saveButton);

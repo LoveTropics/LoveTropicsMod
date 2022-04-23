@@ -1,12 +1,12 @@
 package com.lovetropics.minigames.common.core.dimension;
 
-import net.minecraft.util.math.ChunkPos;
-import net.minecraft.world.chunk.ChunkStatus;
-import net.minecraft.world.chunk.listener.IChunkStatusListener;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.chunk.ChunkStatus;
+import net.minecraft.server.level.progress.ChunkProgressListener;
 
 import javax.annotation.Nullable;
 
-public final class VoidChunkStatusListener implements IChunkStatusListener {
+public final class VoidChunkStatusListener implements ChunkProgressListener {
 	public static final VoidChunkStatusListener INSTANCE = new VoidChunkStatusListener();
 
 	private VoidChunkStatusListener() {

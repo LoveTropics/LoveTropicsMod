@@ -2,14 +2,14 @@ package com.lovetropics.minigames.common.core.game.weather;
 
 import com.lovetropics.minigames.Constants;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.RegistryKey;
-import net.minecraft.world.IServerWorld;
-import net.minecraft.world.IWorld;
-import net.minecraft.world.World;
-import net.minecraft.world.server.ServerWorld;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.level.ServerLevelAccessor;
+import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.Level;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.world.WorldEvent;
@@ -21,16 +21,16 @@ import java.util.function.Function;
 
 @Mod.EventBusSubscriber(modid = Constants.MODID)
 public final class WeatherControllerManager {
-	private static final Map<RegistryKey<World>, WeatherController> WEATHER_CONTROLLERS = new Reference2ObjectOpenHashMap<>();
+	private static final Map<ResourceKey<Level>, WeatherController> WEATHER_CONTROLLERS = new Reference2ObjectOpenHashMap<>();
 
-	private static Function<ServerWorld, WeatherController> factory = VanillaWeatherController::new;
+	private static Function<ServerLevel, WeatherController> factory = VanillaWeatherController::new;
 
-	public static void setFactory(Function<ServerWorld, WeatherController> factory) {
+	public static void setFactory(Function<ServerLevel, WeatherController> factory) {
 		WeatherControllerManager.factory = factory;
 	}
 
-	public static WeatherController forWorld(ServerWorld world) {
-		RegistryKey<World> dimension = world.dimension();
+	public static WeatherController forWorld(ServerLevel world) {
+		ResourceKey<Level> dimension = world.dimension();
 		WeatherController controller = WEATHER_CONTROLLERS.get(dimension);
 		if (controller == null) {
 			WEATHER_CONTROLLERS.put(dimension, controller = factory.apply(world));
@@ -48,22 +48,22 @@ public final class WeatherControllerManager {
 		joinPlayerToDimension(event.getPlayer(), event.getTo());
 	}
 
-	private static void joinPlayerToDimension(PlayerEntity player, RegistryKey<World> dimension) {
+	private static void joinPlayerToDimension(Player player, ResourceKey<Level> dimension) {
 		MinecraftServer server = player.getServer();
-		if (server == null || !(player instanceof ServerPlayerEntity)) {
+		if (server == null || !(player instanceof ServerPlayer)) {
 			return;
 		}
 
-		ServerWorld world = server.getLevel(dimension);
+		ServerLevel world = server.getLevel(dimension);
 		if (world != null) {
 			WeatherController controller = WeatherControllerManager.forWorld(world);
-			controller.onPlayerJoin((ServerPlayerEntity) player);
+			controller.onPlayerJoin((ServerPlayer) player);
 		}
 	}
 
 	@SubscribeEvent
 	public static void onWorldTick(TickEvent.WorldTickEvent event) {
-		World world = event.world;
+		Level world = event.world;
 		if (world.isClientSide || event.phase == TickEvent.Phase.END) {
 			return;
 		}
@@ -76,9 +76,9 @@ public final class WeatherControllerManager {
 
 	@SubscribeEvent
 	public static void onWorldUnload(WorldEvent.Unload event) {
-		IWorld world = event.getWorld();
-		if (world instanceof IServerWorld) {
-			WEATHER_CONTROLLERS.remove(((IServerWorld) world).getLevel().dimension());
+		LevelAccessor world = event.getWorld();
+		if (world instanceof ServerLevelAccessor) {
+			WEATHER_CONTROLLERS.remove(((ServerLevelAccessor) world).getLevel().dimension());
 		}
 	}
 }

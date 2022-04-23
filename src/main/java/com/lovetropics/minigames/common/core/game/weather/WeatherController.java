@@ -1,11 +1,11 @@
 package com.lovetropics.minigames.common.core.game.weather;
 
-import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.server.level.ServerPlayer;
 
 import javax.annotation.Nullable;
 
 public interface WeatherController {
-	void onPlayerJoin(ServerPlayerEntity player);
+	void onPlayerJoin(ServerPlayer player);
 
 	void tick();
 

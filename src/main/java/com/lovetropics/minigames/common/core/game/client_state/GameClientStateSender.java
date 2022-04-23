@@ -5,8 +5,8 @@ import com.lovetropics.minigames.common.core.network.LoveTropicsNetwork;
 import com.lovetropics.minigames.common.core.network.SetGameClientStateMessage;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -27,21 +27,21 @@ public final class GameClientStateSender {
 		return INSTANCE;
 	}
 
-	public Player byPlayer(ServerPlayerEntity player) {
+	public Player byPlayer(ServerPlayer player) {
 		return this.players.computeIfAbsent(player.getUUID(), id -> new Player());
 	}
 
 	@SubscribeEvent
 	public static void onPlayerTick(TickEvent.PlayerTickEvent event) {
-		if (event.phase == TickEvent.Phase.END && event.player instanceof ServerPlayerEntity) {
-			ServerPlayerEntity player = (ServerPlayerEntity) event.player;
+		if (event.phase == TickEvent.Phase.END && event.player instanceof ServerPlayer) {
+			ServerPlayer player = (ServerPlayer) event.player;
 			INSTANCE.byPlayer(player).tick(player);
 		}
 	}
 
 	@SubscribeEvent
 	public static void onPlayerLoggedOut(PlayerEvent.PlayerLoggedOutEvent event) {
-		PlayerEntity player = event.getPlayer();
+		Player player = event.getPlayer();
 		INSTANCE.players.remove(player.getUUID());
 	}
 
@@ -59,7 +59,7 @@ public final class GameClientStateSender {
 			this.removeQueue.add(type);
 		}
 
-		void tick(ServerPlayerEntity player) {
+		void tick(ServerPlayer player) {
 			if (!setQueue.isEmpty() || !removeQueue.isEmpty()) {
 				for (GameClientState state : setQueue.values()) {
 					this.sendSet(state, player);
@@ -74,11 +74,11 @@ public final class GameClientStateSender {
 			}
 		}
 
-		void sendSet(GameClientState state, ServerPlayerEntity player) {
+		void sendSet(GameClientState state, ServerPlayer player) {
 			LoveTropicsNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), SetGameClientStateMessage.set(state));
 		}
 
-		void sendRemove(GameClientStateType<?> type, ServerPlayerEntity player) {
+		void sendRemove(GameClientStateType<?> type, ServerPlayer player) {
 			LoveTropicsNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), SetGameClientStateMessage.remove(type));
 		}
 	}

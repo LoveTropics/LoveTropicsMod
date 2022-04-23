@@ -19,7 +19,7 @@ import com.lovetropics.minigames.common.core.integration.game_actions.GameAction
 import com.lovetropics.minigames.common.core.integration.game_actions.GameActionType;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.JsonOps;
-import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.MinecraftServer;
 
 import java.time.Instant;
@@ -110,7 +110,7 @@ public final class GameInstanceTelemetry implements IGameState {
 
 	private JsonArray serializeParticipantsArray() {
 		JsonArray participantsArray = new JsonArray();
-		for (ServerPlayerEntity participant : game.getParticipants()) {
+		for (ServerPlayer participant : game.getParticipants()) {
 			participantsArray.add(PlayerKey.from(participant).serializeProfile());
 		}
 		return participantsArray;

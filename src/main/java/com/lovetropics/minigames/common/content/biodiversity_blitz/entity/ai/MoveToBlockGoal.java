@@ -1,18 +1,18 @@
 package com.lovetropics.minigames.common.content.biodiversity_blitz.entity.ai;
 
-import net.minecraft.entity.MobEntity;
-import net.minecraft.entity.ai.goal.Goal;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.ai.goal.Goal;
+import net.minecraft.core.BlockPos;
 
 import javax.annotation.Nullable;
 import java.util.EnumSet;
 
 public abstract class MoveToBlockGoal extends Goal {
-    protected final MobEntity mob;
+    protected final Mob mob;
     // State
     protected BlockPos targetPos;
 
-    protected MoveToBlockGoal(MobEntity mob) {
+    protected MoveToBlockGoal(Mob mob) {
         this.mob = mob;
 
         this.setFlags(EnumSet.of(Goal.Flag.MOVE, Goal.Flag.JUMP));

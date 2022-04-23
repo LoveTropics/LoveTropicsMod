@@ -6,9 +6,9 @@ import com.lovetropics.lib.BlockBox;
 import com.lovetropics.lib.codec.MoreCodecs;
 import com.lovetropics.minigames.common.core.game.GameException;
 import com.mojang.serialization.Codec;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.nbt.ListNBT;
-import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.network.chat.TextComponent;
 import net.minecraftforge.common.util.Constants;
 
 import javax.annotation.Nonnull;
@@ -51,16 +51,16 @@ public final class MapRegions {
 	public BlockBox getOrThrow(String key) {
 		BlockBox box = this.getAny(key);
 		if (box == null) {
-			throw new GameException(new StringTextComponent("Missing expected region with key '" + key + "'"));
+			throw new GameException(new TextComponent("Missing expected region with key '" + key + "'"));
 		}
 		return box;
 	}
 
-	public CompoundNBT write(CompoundNBT root) {
+	public CompoundTag write(CompoundTag root) {
 		for (String key : regions.keySet()) {
-			ListNBT regionsList = new ListNBT();
+			ListTag regionsList = new ListTag();
 			for (BlockBox region : regions.get(key)) {
-				regionsList.add(region.write(new CompoundNBT()));
+				regionsList.add(region.write(new CompoundTag()));
 			}
 
 			root.put(key, regionsList);
@@ -69,11 +69,11 @@ public final class MapRegions {
 		return root;
 	}
 
-	public void read(CompoundNBT root) {
+	public void read(CompoundTag root) {
 		this.regions.clear();
 
 		for (String key : root.getAllKeys()) {
-			ListNBT regionsList = root.getList(key, Constants.NBT.TAG_COMPOUND);
+			ListTag regionsList = root.getList(key, Constants.NBT.TAG_COMPOUND);
 			for (int i = 0; i < regionsList.size(); i++) {
 				BlockBox region = BlockBox.read(regionsList.getCompound(i));
 				this.regions.put(key, region);

@@ -1,16 +1,16 @@
 package com.lovetropics.minigames.client.screen.list;
 
 import com.lovetropics.minigames.client.screen.flex.Layout;
-import com.mojang.blaze3d.matrix.MatrixStack;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.widget.list.ExtendedList;
-import net.minecraft.util.math.MathHelper;
+import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.components.ObjectSelectionList;
+import net.minecraft.util.Mth;
 import org.lwjgl.glfw.GLFW;
 
 import javax.annotation.Nullable;
 import java.util.List;
 
-public abstract class AbstractLTList<T extends LTListEntry<T>> extends ExtendedList<T> {
+public abstract class AbstractLTList<T extends LTListEntry<T>> extends ObjectSelectionList<T> {
 
 	private static final int SCROLL_WIDTH = 6;
 	public final Screen screen;
@@ -31,12 +31,12 @@ public abstract class AbstractLTList<T extends LTListEntry<T>> extends ExtendedL
 		this.screen = screen;
 	}
 
-	public void renderOverlays(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
+	public void renderOverlays(PoseStack matrixStack, int mouseX, int mouseY, float partialTicks) {
 		renderDragging(matrixStack, mouseX, mouseY, partialTicks);
 		renderTooltips(matrixStack, mouseX, mouseY);
 	}
 
-	protected void renderDragging(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
+	protected void renderDragging(PoseStack matrixStack, int mouseX, int mouseY, float partialTicks) {
 		T dragging = this.draggingEntry;
 		if (dragging != null) {
 			int index = children().indexOf(dragging);
@@ -45,7 +45,7 @@ public abstract class AbstractLTList<T extends LTListEntry<T>> extends ExtendedL
 		}
 	}
 
-	protected void renderTooltips(MatrixStack matrixStack, int mouseX, int mouseY) {
+	protected void renderTooltips(PoseStack matrixStack, int mouseX, int mouseY) {
 		if (!isMouseOver(mouseX, mouseY) || draggingEntry != null) {
 			return;
 		}
@@ -104,7 +104,7 @@ public abstract class AbstractLTList<T extends LTListEntry<T>> extends ExtendedL
 		if (this.draggingEntry != entry) {
 			this.startDragging(entry, mouseY);
 		} else {
-			int insertIndex = this.getDragInsertIndex(MathHelper.floor(mouseY));
+			int insertIndex = this.getDragInsertIndex(Mth.floor(mouseY));
 			this.tryReorderTo(entry, insertIndex);
 		}
 	}
@@ -113,7 +113,7 @@ public abstract class AbstractLTList<T extends LTListEntry<T>> extends ExtendedL
 		this.draggingEntry = entry;
 	
 		int index = this.children().indexOf(entry);
-		this.dragOffset = MathHelper.floor(this.getRowTop(index) - mouseY);
+		this.dragOffset = Mth.floor(this.getRowTop(index) - mouseY);
 	}
 
 	@Override
@@ -149,7 +149,7 @@ public abstract class AbstractLTList<T extends LTListEntry<T>> extends ExtendedL
 		int draggingY = mouseY + dragOffset;
 		int minY = this.y0 + this.headerHeight;
 		int maxY = this.y1 - this.itemHeight;
-		return MathHelper.clamp(draggingY, minY, maxY);
+		return Mth.clamp(draggingY, minY, maxY);
 	}
 
 	private int getDragInsertIndex(int mouseY) {
@@ -191,7 +191,7 @@ public abstract class AbstractLTList<T extends LTListEntry<T>> extends ExtendedL
 	}
 
 	@Override
-	protected void renderList(MatrixStack matrixStack, int x, int y, int mouseX, int mouseY, float partialTicks) {
+	protected void renderList(PoseStack matrixStack, int x, int y, int mouseX, int mouseY, float partialTicks) {
 		boolean listHovered = this.isMouseOver(mouseX, mouseY);
 	
 		int count = this.getItemCount();

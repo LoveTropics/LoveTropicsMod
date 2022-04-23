@@ -9,16 +9,16 @@ import com.lovetropics.minigames.common.core.map.*;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.resources.IResource;
+import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.RegistryKey;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.Util;
-import net.minecraft.util.registry.Registry;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.world.Dimension;
-import net.minecraft.world.DimensionType;
-import net.minecraft.world.World;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.Util;
+import net.minecraft.core.Registry;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.world.level.dimension.LevelStem;
+import net.minecraft.world.level.dimension.DimensionType;
+import net.minecraft.world.level.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -59,9 +59,9 @@ public class LoadMapProvider implements IGameMapProvider {
 	}
 
 	@Override
-	public List<RegistryKey<World>> getPossibleDimensions() {
+	public List<ResourceKey<Level>> getPossibleDimensions() {
 		if (dimension != null) {
-			return ImmutableList.of(RegistryKey.create(Registry.DIMENSION_REGISTRY, dimension));
+			return ImmutableList.of(ResourceKey.create(Registry.DIMENSION_REGISTRY, dimension));
 		} else {
 			return Collections.emptyList();
 		}
@@ -70,7 +70,7 @@ public class LoadMapProvider implements IGameMapProvider {
 	@Override
 	public CompletableFuture<GameResult<GameMap>> open(MinecraftServer server) {
 		Supplier<DimensionType> dimensionType = this.dimensionType != null ? this.dimensionType : () -> server.overworld().dimensionType();
-		Dimension dimension = new Dimension(dimensionType, new VoidChunkGenerator(server));
+		LevelStem dimension = new LevelStem(dimensionType, new VoidChunkGenerator(server));
 		MapWorldSettings worldSettings = new MapWorldSettings();
 
 		MapWorldInfo worldInfo = MapWorldInfo.create(server, worldSettings);
@@ -98,14 +98,14 @@ public class LoadMapProvider implements IGameMapProvider {
 		if (handle != null) {
 			return GameResult.ok(handle);
 		} else {
-			return GameResult.error(new StringTextComponent("Dimension already loaded in '" + this.dimension + "'"));
+			return GameResult.error(new TextComponent("Dimension already loaded in '" + this.dimension + "'"));
 		}
 	}
 
 	private GameResult<Pair<RuntimeDimensionHandle, MapMetadata>> loadMapInto(MinecraftServer server, MapWorldSettings mapWorldSettings, RuntimeDimensionHandle handle) {
 		ResourceLocation path = new ResourceLocation(loadFrom.getNamespace(), "maps/" + loadFrom.getPath() + ".zip");
 
-		try (IResource resource = server.getDataPackRegistries().getResourceManager().getResource(path)) {
+		try (Resource resource = server.getDataPackRegistries().getResourceManager().getResource(path)) {
 			try (MapExportReader reader = MapExportReader.open(resource.getInputStream())) {
 				MapMetadata metadata = reader.loadInto(server, handle.asKey());
 				mapWorldSettings.importFrom(metadata.settings);

@@ -11,14 +11,14 @@ import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.util.Util;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.entity.MobEntity;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.particles.ParticleTypes;
-import net.minecraft.util.DamageSource;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.world.server.ServerWorld;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.server.level.ServerLevel;
 
 import java.util.HashSet;
 import java.util.List;
@@ -43,7 +43,7 @@ public final class FlamingPlantBehavior implements IGameBehavior {
         events.listen(BbPlantEvents.TICK, this::tickPlants);
     }
 
-    private void tickPlants(ServerPlayerEntity player, Plot plot, List<Plant> plants) {
+    private void tickPlants(ServerPlayer player, Plot plot, List<Plant> plants) {
         long ticks = this.game.ticks();
         Random random = this.game.getWorld().getRandom();
 
@@ -51,17 +51,17 @@ public final class FlamingPlantBehavior implements IGameBehavior {
             return;
         }
 
-        ServerWorld world = this.game.getWorld();
+        ServerLevel world = this.game.getWorld();
 
-        Set<MobEntity> seen = new HashSet<>();
+        Set<Mob> seen = new HashSet<>();
 
         for (Plant plant : plants) {
-            AxisAlignedBB flameBounds = plant.coverage().asBounds().inflate(this.radius);
-            List<MobEntity> entities = world.getEntitiesOfClass(MobEntity.class, flameBounds, BbMobEntity.PREDICATE);
+            AABB flameBounds = plant.coverage().asBounds().inflate(this.radius);
+            List<Mob> entities = world.getEntitiesOfClass(Mob.class, flameBounds, BbMobEntity.PREDICATE);
 
             int count = random.nextInt(3);
             if (!entities.isEmpty()) {
-                for (MobEntity entity : entities) {
+                for (Mob entity : entities) {
                     if (!seen.contains(entity)) {
 
                         seen.add(entity);
@@ -81,11 +81,11 @@ public final class FlamingPlantBehavior implements IGameBehavior {
                             }
                         }
 
-                        AxisAlignedBB aabb = entity.getBoundingBox();
+                        AABB aabb = entity.getBoundingBox();
 
-                        Vector3d positionVec = entity.position();
+                        Vec3 positionVec = entity.position();
                         // Needs to target the middle of the entity position vector
-                        Vector3d scaledVec = new Vector3d(positionVec.x, (aabb.minY + aabb.maxY) / 2.0, positionVec.z);
+                        Vec3 scaledVec = new Vec3(positionVec.x, (aabb.minY + aabb.maxY) / 2.0, positionVec.z);
 
                         Util.drawParticleBetween(ParticleTypes.FLAME, plant.coverage().asBounds().getCenter(), scaledVec, world, random, 10, 0.01, 0.02, 0.001, 0.01);
                     }

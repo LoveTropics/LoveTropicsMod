@@ -11,9 +11,9 @@ import com.lovetropics.minigames.common.core.game.player.PlayerRole;
 import com.lovetropics.minigames.common.core.map.MapRegions;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.server.ServerWorld;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
 import org.apache.logging.log4j.LogManager;
 
 import javax.annotation.Nullable;
@@ -72,7 +72,7 @@ public class PositionPlayersBehavior implements IGameBehavior {
 		events.listen(GamePlayerEvents.SPAWN, (player, role) -> spawnPlayerAsRole(game, player, role));
 	}
 
-	private void spawnPlayerAsRole(IGamePhase game, ServerPlayerEntity player, @Nullable PlayerRole role) {
+	private void spawnPlayerAsRole(IGamePhase game, ServerPlayer player, @Nullable PlayerRole role) {
 		BlockBox region = getSpawnRegionFor(role);
 		if (region != null) {
 			teleportToRegion(game, player, region);
@@ -92,13 +92,13 @@ public class PositionPlayersBehavior implements IGameBehavior {
 		return null;
 	}
 
-	private void teleportToRegion(IGamePhase game, ServerPlayerEntity player, BlockBox region) {
+	private void teleportToRegion(IGamePhase game, ServerPlayer player, BlockBox region) {
 		BlockPos pos = tryFindEmptyPos(game, player.getRandom(), region);
 		DimensionUtils.teleportPlayerNoPortal(player, game.getDimension(), pos);
 	}
 
 	private BlockPos tryFindEmptyPos(IGamePhase game, Random random, BlockBox box) {
-		ServerWorld world = game.getWorld();
+		ServerLevel world = game.getWorld();
 		for (int i = 0; i < 20; i++) {
 			BlockPos pos = box.sample(random);
 			if (world.isEmptyBlock(pos)) {

@@ -3,8 +3,8 @@ package com.lovetropics.minigames.common.core.game.behavior.event;
 import com.google.gson.JsonObject;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.integration.game_actions.GamePackage;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.util.ActionResultType;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionResult;
 
 import java.util.function.Consumer;
 
@@ -14,12 +14,12 @@ import java.util.function.Consumer;
 public final class GamePackageEvents {
 	public static final GameEventType<ReceivePackage> RECEIVE_PACKAGE = GameEventType.create(ReceivePackage.class, listeners -> (sendPreamble, gamePackage) -> {
 		for (ReceivePackage listener : listeners) {
-			ActionResultType result = listener.onReceivePackage(sendPreamble, gamePackage);
-			if (result != ActionResultType.PASS) {
+			InteractionResult result = listener.onReceivePackage(sendPreamble, gamePackage);
+			if (result != InteractionResult.PASS) {
 				return result;
 			}
 		}
-		return ActionResultType.FAIL;
+		return InteractionResult.FAIL;
 	});
 
 	public static final GameEventType<ReceivePollEvent> RECEIVE_POLL_EVENT = GameEventType.create(ReceivePollEvent.class, listeners -> (object, crud) -> {
@@ -48,7 +48,7 @@ public final class GamePackageEvents {
 	}
 
 	public interface ReceivePackage {
-		ActionResultType onReceivePackage(Consumer<IGamePhase> sendPreamble, GamePackage gamePackage);
+		InteractionResult onReceivePackage(Consumer<IGamePhase> sendPreamble, GamePackage gamePackage);
 	}
 
 	public interface ReceivePollEvent {
@@ -56,7 +56,7 @@ public final class GamePackageEvents {
 	}
 
 	public interface ApplyPackageToPlayer {
-		boolean applyPackage(ServerPlayerEntity player, @Nullable String sendingPlayer);
+		boolean applyPackage(ServerPlayer player, @Nullable String sendingPlayer);
 	}
 
 	public interface ApplyPackageGlobally {

@@ -4,13 +4,13 @@ import com.lovetropics.minigames.client.screen.LayoutGui;
 import com.lovetropics.minigames.client.screen.LayoutTree;
 import com.lovetropics.minigames.client.screen.flex.Layout;
 import com.lovetropics.minigames.common.core.game.behavior.config.ConfigData.SimpleConfigData;
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.IGuiEventListener;
-import net.minecraft.client.gui.widget.TextFieldWidget;
-import net.minecraft.client.gui.widget.Widget;
-import net.minecraft.util.Util;
-import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.client.gui.components.events.GuiEventListener;
+import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.Util;
+import net.minecraft.network.chat.TextComponent;
 import org.apache.commons.lang3.math.NumberUtils;
 
 import java.util.Collections;
@@ -19,7 +19,7 @@ import java.util.List;
 public abstract class SimpleConfigWidget extends LayoutGui implements IConfigWidget {
 	
 	protected final SimpleConfigData config;
-	private Widget control;
+	private AbstractWidget control;
 	
 	public static SimpleConfigWidget from(LayoutTree ltree, SimpleConfigData data) {
 		switch (data.type()) {
@@ -44,17 +44,17 @@ public abstract class SimpleConfigWidget extends LayoutGui implements IConfigWid
 	}
 	
 	@Override
-	public List<? extends IGuiEventListener> children() {
+	public List<? extends GuiEventListener> children() {
 		return Collections.singletonList(control);
 	}
 	
 	@Override
-	public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
+	public void render(PoseStack matrixStack, int mouseX, int mouseY, float partialTicks) {
 		control.render(matrixStack, mouseX, mouseY, partialTicks);
 		super.render(matrixStack, mouseX, mouseY, partialTicks);
 	}
 	
-	protected abstract Widget createControl(Layout ltree);
+	protected abstract AbstractWidget createControl(Layout ltree);
 
 	@Override
 	public int getHeight() {
@@ -68,7 +68,7 @@ public abstract class SimpleConfigWidget extends LayoutGui implements IConfigWid
 		}
 		
 		@Override
-		protected Widget createControl(Layout mainLayout) {
+		protected AbstractWidget createControl(Layout mainLayout) {
 			// TODO communicate changes to config object
 			return new BooleanButton(mainLayout, (Boolean) this.config.value());
 		}
@@ -81,9 +81,9 @@ public abstract class SimpleConfigWidget extends LayoutGui implements IConfigWid
 		}
 
 		@Override
-		protected Widget createControl(Layout mainLayout) {
+		protected AbstractWidget createControl(Layout mainLayout) {
 			// TODO communicate changes to config object
-			return Util.make(new TextFieldWidget(Minecraft.getInstance().font, mainLayout.background().left(), mainLayout.background().top(), mainLayout.background().width(), mainLayout.background().height(), new StringTextComponent("")), w -> {
+			return Util.make(new EditBox(Minecraft.getInstance().font, mainLayout.background().left(), mainLayout.background().top(), mainLayout.background().width(), mainLayout.background().height(), new TextComponent("")), w -> {
 				w.setValue(config.value().toString());
 				w.setFilter(NumberUtils::isCreatable);
 			});
@@ -97,9 +97,9 @@ public abstract class SimpleConfigWidget extends LayoutGui implements IConfigWid
 		}
 		
 		@Override
-		protected Widget createControl(Layout mainLayout) {
+		protected AbstractWidget createControl(Layout mainLayout) {
 			// TODO communicate changes to config object
-			return Util.make(new TextFieldWidget(Minecraft.getInstance().font, mainLayout.background().left(), mainLayout.background().top(), mainLayout.background().width(), mainLayout.background().height(), new StringTextComponent("")), w -> {
+			return Util.make(new EditBox(Minecraft.getInstance().font, mainLayout.background().left(), mainLayout.background().top(), mainLayout.background().width(), mainLayout.background().height(), new TextComponent("")), w -> {
 				w.setValue(config.value().toString());
 			});
 		}
@@ -113,7 +113,7 @@ public abstract class SimpleConfigWidget extends LayoutGui implements IConfigWid
 		
 		@SuppressWarnings({ "unchecked", "rawtypes" })
 		@Override
-		protected Widget createControl(Layout mainLayout) {
+		protected AbstractWidget createControl(Layout mainLayout) {
 			// TODO communicate changes to config object
 			return createButton(mainLayout, (Enum) this.config.value());
 		}

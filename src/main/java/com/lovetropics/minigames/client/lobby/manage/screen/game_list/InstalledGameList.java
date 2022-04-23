@@ -7,20 +7,20 @@ import com.lovetropics.minigames.client.screen.flex.Flex;
 import com.lovetropics.minigames.client.screen.flex.FlexSolver;
 import com.lovetropics.minigames.client.screen.flex.Layout;
 import com.lovetropics.minigames.common.core.game.util.GameTexts;
-import com.mojang.blaze3d.matrix.MatrixStack;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.widget.button.Button;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.TextFormatting;
+import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.ChatFormatting;
 
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.function.IntConsumer;
 
 public final class InstalledGameList extends AbstractGameList {
-	private static final ITextComponent TITLE =  GameTexts.Ui.installedGames()
-			.withStyle(TextFormatting.UNDERLINE, TextFormatting.BOLD);
+	private static final Component TITLE =  GameTexts.Ui.installedGames()
+			.withStyle(ChatFormatting.UNDERLINE, ChatFormatting.BOLD);
 
 	private final ClientLobbyManageState lobby;
 	private final IntConsumer select;
@@ -38,8 +38,8 @@ public final class InstalledGameList extends AbstractGameList {
 		Flex cancel = root.child().size(20, 20).marginLeft(2);
 
 		FlexSolver.Results solve = new FlexSolver(footer.content()).apply(root);
-		this.enqueueButton = FlexUi.createButton(solve.layout(enqueue), new StringTextComponent("\u2714"), this::enqueue);
-		this.cancelButton = FlexUi.createButton(solve.layout(cancel), new StringTextComponent("\u274C"), this::cancel);
+		this.enqueueButton = FlexUi.createButton(solve.layout(enqueue), new TextComponent("\u2714"), this::enqueue);
+		this.cancelButton = FlexUi.createButton(solve.layout(cancel), new TextComponent("\u274C"), this::cancel);
 	}
 
 	@Override
@@ -65,7 +65,7 @@ public final class InstalledGameList extends AbstractGameList {
 	}
 
 	@Override
-	public void renderOverlays(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
+	public void renderOverlays(PoseStack matrixStack, int mouseX, int mouseY, float partialTicks) {
 		super.renderOverlays(matrixStack, mouseX, mouseY, partialTicks);
 		this.enqueueButton.render(matrixStack, mouseX, mouseY, partialTicks);
 		this.cancelButton.render(matrixStack, mouseX, mouseY, partialTicks);

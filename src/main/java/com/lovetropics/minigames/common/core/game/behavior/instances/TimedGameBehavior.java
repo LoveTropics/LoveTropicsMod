@@ -14,12 +14,12 @@ import com.lovetropics.minigames.common.core.game.util.GlobalGameWidgets;
 import com.lovetropics.minigames.common.core.game.util.TemplatedText;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.util.SoundCategory;
-import net.minecraft.util.SoundEvents;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.TextFormatting;
-import net.minecraft.world.BossInfo;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.ChatFormatting;
+import net.minecraft.world.BossEvent;
 
 import java.util.Optional;
 
@@ -60,7 +60,7 @@ public final class TimedGameBehavior implements IGameBehavior {
 
 		if (timerBarText != null) {
 			GlobalGameWidgets widgets = GlobalGameWidgets.registerTo(game, events);
-			timerBar = widgets.openBossBar(new StringTextComponent(""), BossInfo.Color.GREEN, BossInfo.Overlay.NOTCHED_10);
+			timerBar = widgets.openBossBar(new TextComponent(""), BossEvent.BossBarColor.GREEN, BossEvent.BossBarOverlay.NOTCHED_10);
 		}
 
 		game.getControlCommands().add("pause", ControlCommand.forInitiator(source -> this.state.setPaused(true)));
@@ -100,18 +100,18 @@ public final class TimedGameBehavior implements IGameBehavior {
 
 	private void playCountdownSound(IGamePhase game, long seconds) {
 		float pitch = seconds == 0 ? 1.5F : 1.0F;
-		game.getAllPlayers().playSound(SoundEvents.ARROW_HIT_PLAYER, SoundCategory.MASTER, 0.8F, pitch);
+		game.getAllPlayers().playSound(SoundEvents.ARROW_HIT_PLAYER, SoundSource.MASTER, 0.8F, pitch);
 	}
 
-	private ITextComponent getTimeRemainingText(IGamePhase game, long ticksRemaining) {
+	private Component getTimeRemainingText(IGamePhase game, long ticksRemaining) {
 		long secondsRemaining = ticksRemaining / 20;
 
 		long minutes = secondsRemaining / 60;
 		long seconds = secondsRemaining % 60;
 		String time = String.format("%02d:%02d", minutes, seconds);
 
-		ITextComponent timeText = new StringTextComponent(time).withStyle(TextFormatting.AQUA);
-		ITextComponent gameNameText = game.getDefinition().getName().copy().withStyle(TextFormatting.AQUA);
+		Component timeText = new TextComponent(time).withStyle(ChatFormatting.AQUA);
+		Component gameNameText = game.getDefinition().getName().copy().withStyle(ChatFormatting.AQUA);
 
 		return timerBarText.apply(timeText, gameNameText);
 	}

@@ -3,12 +3,12 @@ package com.lovetropics.minigames.common.core.map;
 import com.lovetropics.lib.codec.MoreCodecs;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.Dynamic;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.nbt.NBTDynamicOps;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.Difficulty;
-import net.minecraft.world.GameRules;
-import net.minecraft.world.storage.IServerWorldInfo;
+import net.minecraft.world.level.GameRules;
+import net.minecraft.world.level.storage.ServerLevelData;
 
 public final class MapWorldSettings {
 	public static final Codec<MapWorldSettings> CODEC = MoreCodecs.withNbtCompound(MapWorldSettings::write, MapWorldSettings::read, MapWorldSettings::new);
@@ -24,12 +24,12 @@ public final class MapWorldSettings {
 	public Difficulty difficulty = Difficulty.NORMAL;
 
 	public static MapWorldSettings createFromOverworld(MinecraftServer server) {
-		return createFrom((IServerWorldInfo) server.overworld().getLevelData());
+		return createFrom((ServerLevelData) server.overworld().getLevelData());
 	}
 
-	public static MapWorldSettings createFrom(IServerWorldInfo info) {
+	public static MapWorldSettings createFrom(ServerLevelData info) {
 		MapWorldSettings settings = new MapWorldSettings();
-		settings.gameRules.loadFromTag(new Dynamic<>(NBTDynamicOps.INSTANCE, info.getGameRules().createTag()));
+		settings.gameRules.loadFromTag(new Dynamic<>(NbtOps.INSTANCE, info.getGameRules().createTag()));
 		settings.timeOfDay = info.getDayTime();
 		settings.sunnyTime = info.getClearWeatherTime();
 		settings.raining = info.isRaining();
@@ -41,7 +41,7 @@ public final class MapWorldSettings {
 		return settings;
 	}
 
-	public CompoundNBT write(CompoundNBT root) {
+	public CompoundTag write(CompoundTag root) {
 		root.putLong("time_of_day", this.timeOfDay);
 		root.put("game_rules", this.gameRules.createTag());
 
@@ -56,9 +56,9 @@ public final class MapWorldSettings {
 		return root;
 	}
 
-	public void read(CompoundNBT root) {
+	public void read(CompoundTag root) {
 		this.timeOfDay = root.getLong("time_of_day");
-		this.gameRules.loadFromTag(new Dynamic<>(NBTDynamicOps.INSTANCE, root.getCompound("game_rules")));
+		this.gameRules.loadFromTag(new Dynamic<>(NbtOps.INSTANCE, root.getCompound("game_rules")));
 
 		this.sunnyTime = root.getInt("sunny_time");
 		this.raining = root.getBoolean("raining");
@@ -71,6 +71,6 @@ public final class MapWorldSettings {
 	}
 
 	public void importFrom(MapWorldSettings settings) {
-		read(settings.write(new CompoundNBT()));
+		read(settings.write(new CompoundTag()));
 	}
 }

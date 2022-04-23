@@ -1,38 +1,38 @@
 package com.lovetropics.minigames.common.content.biodiversity_blitz.merchant;
 
-import net.minecraft.entity.merchant.IMerchant;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.inventory.container.MerchantContainer;
-import net.minecraft.inventory.container.SimpleNamedContainerProvider;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.MerchantOffer;
-import net.minecraft.item.MerchantOffers;
-import net.minecraft.util.SoundEvent;
-import net.minecraft.util.SoundEvents;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.world.World;
+import net.minecraft.world.item.trading.Merchant;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.inventory.MerchantMenu;
+import net.minecraft.world.SimpleMenuProvider;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.trading.MerchantOffer;
+import net.minecraft.world.item.trading.MerchantOffers;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.level.Level;
 
 import javax.annotation.Nullable;
 import java.util.OptionalInt;
 
-public final class BbMerchant implements IMerchant {
-    private final PlayerEntity customer;
+public final class BbMerchant implements Merchant {
+    private final Player customer;
     private final MerchantOffers offers;
 
-    public BbMerchant(PlayerEntity player, MerchantOffers offers) {
+    public BbMerchant(Player player, MerchantOffers offers) {
         this.customer = player;
         this.offers = offers;
     }
 
     @Override
-    public void setTradingPlayer(@Nullable PlayerEntity player) {
+    public void setTradingPlayer(@Nullable Player player) {
 
     }
 
     @Nullable
     @Override
-    public PlayerEntity getTradingPlayer() {
+    public Player getTradingPlayer() {
         return this.customer;
     }
 
@@ -57,7 +57,7 @@ public final class BbMerchant implements IMerchant {
     }
 
     @Override
-    public World getLevel() {
+    public Level getLevel() {
         return this.customer.level;
     }
 
@@ -82,8 +82,8 @@ public final class BbMerchant implements IMerchant {
     }
 
     @Override
-    public void openTradingScreen(PlayerEntity player, ITextComponent displayName, int level) {
-        OptionalInt container = player.openMenu(new SimpleNamedContainerProvider(this::createContainer, displayName));
+    public void openTradingScreen(Player player, Component displayName, int level) {
+        OptionalInt container = player.openMenu(new SimpleMenuProvider(this::createContainer, displayName));
         if (container.isPresent()) {
             MerchantOffers offers = this.getOffers();
             if (!offers.isEmpty()) {
@@ -92,7 +92,7 @@ public final class BbMerchant implements IMerchant {
         }
     }
 
-    private MerchantContainer createContainer(int id, PlayerInventory playerInventory, PlayerEntity player) {
+    private MerchantMenu createContainer(int id, Inventory playerInventory, Player player) {
         return new BbMerchantContainer(this, id, playerInventory);
     }
 }

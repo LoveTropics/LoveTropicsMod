@@ -2,8 +2,8 @@ package com.lovetropics.minigames.common.core.game.map;
 
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.map.MapRegions;
-import net.minecraft.util.RegistryKey;
-import net.minecraft.world.World;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.level.Level;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
@@ -11,22 +11,22 @@ import java.util.function.Consumer;
 
 public final class GameMap {
 	private final @Nullable String name;
-	private final RegistryKey<World> dimension;
+	private final ResourceKey<Level> dimension;
 	private final MapRegions mapRegions;
 	private final Consumer<IGamePhase> close;
 
-	private GameMap(@Nullable String name, RegistryKey<World> dimension, MapRegions mapRegions, @Nullable Consumer<IGamePhase> close) {
+	private GameMap(@Nullable String name, ResourceKey<Level> dimension, MapRegions mapRegions, @Nullable Consumer<IGamePhase> close) {
 		this.name = name;
 		this.dimension = dimension;
 		this.mapRegions = mapRegions;
 		this.close = close;
 	}
 
-	public GameMap(@Nullable String name, RegistryKey<World> dimension, MapRegions mapRegions) {
+	public GameMap(@Nullable String name, ResourceKey<Level> dimension, MapRegions mapRegions) {
 		this(name, dimension, mapRegions, null);
 	}
 
-	public GameMap(@Nullable String name, RegistryKey<World> dimension) {
+	public GameMap(@Nullable String name, ResourceKey<Level> dimension) {
 		this(name, dimension, new MapRegions());
 	}
 
@@ -34,7 +34,7 @@ public final class GameMap {
 		return Optional.ofNullable(name);
 	}
 
-	public RegistryKey<World> getDimension() {
+	public ResourceKey<Level> getDimension() {
 		return dimension;
 	}
 

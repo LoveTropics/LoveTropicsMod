@@ -12,15 +12,15 @@ import com.lovetropics.minigames.common.core.game.behavior.event.GameWorldEvents
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.longs.*;
-import net.minecraft.block.Block;
-import net.minecraft.block.Blocks;
-import net.minecraft.resources.IResource;
-import net.minecraft.util.Direction;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.world.chunk.IChunk;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.server.packs.resources.Resource;
+import net.minecraft.core.Direction;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.world.level.chunk.ChunkAccess;
 
 import java.io.InputStream;
 import java.nio.ByteBuffer;
@@ -62,7 +62,7 @@ public final class PlaceTrashBehavior implements IGameBehavior {
 			}
 
 			Random random = chunk.getWorldForge().getRandom();
-			BlockPos.Mutable pos = new BlockPos.Mutable();
+			BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
 
 			LongListIterator iterator = positions.iterator();
 			while (iterator.hasNext()) {
@@ -80,7 +80,7 @@ public final class PlaceTrashBehavior implements IGameBehavior {
 
 	private Long2ObjectMap<LongList> loadTrashByChunk(IGamePhase game) {
 		LongBuffer candidatePositions;
-		try (IResource res = game.getServer().getDataPackRegistries().getResourceManager().getResource(positionData)) {
+		try (Resource res = game.getServer().getDataPackRegistries().getResourceManager().getResource(positionData)) {
 			InputStream in = res.getInputStream();
 			final byte[] data = new byte[8];
 			final ByteBuffer buf = ByteBuffer.allocate(in.available());
@@ -90,7 +90,7 @@ public final class PlaceTrashBehavior implements IGameBehavior {
 			}
 			candidatePositions.position(0);
 		} catch (Exception e) {
-			throw new GameException(new StringTextComponent("Unexpected error reading trash position data"), e);
+			throw new GameException(new TextComponent("Unexpected error reading trash position data"), e);
 		}
 
 		Long2ObjectMap<LongList> trashByChunk = new Long2ObjectOpenHashMap<>();
@@ -107,7 +107,7 @@ public final class PlaceTrashBehavior implements IGameBehavior {
 		return trashByChunk;
 	}
 
-	private void tryPlaceTrash(IChunk chunk, BlockPos pos, Random random) {
+	private void tryPlaceTrash(ChunkAccess chunk, BlockPos pos, Random random) {
 		if (chunk.getBlockState(pos).getBlock() == Blocks.WATER) {
 			TrashType trashType = trashTypes[random.nextInt(trashTypes.length)];
 			chunk.setBlockState(pos, LoveTropicsBlocks.TRASH.get(trashType).getDefaultState()

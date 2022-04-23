@@ -7,7 +7,7 @@ import com.google.gson.JsonSerializer;
 import com.lovetropics.minigames.common.core.game.state.GameStateKey;
 import com.lovetropics.minigames.common.core.game.state.IGameState;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.world.entity.player.Player;
 
 import java.util.Map;
 import java.util.Set;
@@ -28,7 +28,7 @@ public final class GameStatistics implements IGameState {
 		return byPlayer.computeIfAbsent(key, p -> new StatisticsMap());
 	}
 
-	public StatisticsMap forPlayer(PlayerEntity player) {
+	public StatisticsMap forPlayer(Player player) {
 		return forPlayer(PlayerKey.from(player));
 	}
 

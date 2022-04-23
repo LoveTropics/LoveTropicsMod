@@ -13,9 +13,9 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.Object2DoubleMap;
 import it.unimi.dsi.fastutil.objects.Object2DoubleOpenHashMap;
-import net.minecraft.entity.ai.attributes.AttributeModifier;
-import net.minecraft.entity.ai.attributes.Attributes;
-import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.server.level.ServerPlayer;
 
 import javax.annotation.Nullable;
 import java.util.UUID;
@@ -57,7 +57,7 @@ public final class SetMaxHealthBehavior implements IGameBehavior {
 		events.listen(GamePlayerEvents.LEAVE, this::removeFromPlayer);
 	}
 
-	private void applyToPlayer(IGamePhase game, ServerPlayerEntity player) {
+	private void applyToPlayer(IGamePhase game, ServerPlayer player) {
 		double maxHealth = getMaxHealthForPlayer(game, player);
 		if (maxHealth != 20.0) {
 			player.getAttribute(Attributes.MAX_HEALTH).addTransientModifier(
@@ -71,11 +71,11 @@ public final class SetMaxHealthBehavior implements IGameBehavior {
 		}
 	}
 
-	private void removeFromPlayer(ServerPlayerEntity player) {
+	private void removeFromPlayer(ServerPlayer player) {
 		player.getAttribute(Attributes.MAX_HEALTH).removeModifier(ATTRIBUTE_ID);
 	}
 
-	private double getMaxHealthForPlayer(IGamePhase game, ServerPlayerEntity player) {
+	private double getMaxHealthForPlayer(IGamePhase game, ServerPlayer player) {
 		GameTeamKey team = getTeamOrNull(game, player);
 		if (team != null) {
 			return maxHealthByTeam.getOrDefault(team, maxHealth);
@@ -84,7 +84,7 @@ public final class SetMaxHealthBehavior implements IGameBehavior {
 	}
 
 	@Nullable
-	private GameTeamKey getTeamOrNull(IGamePhase game, ServerPlayerEntity player) {
+	private GameTeamKey getTeamOrNull(IGamePhase game, ServerPlayer player) {
 		TeamState teamState = game.getState().getOrNull(TeamState.KEY);
 		if (teamState != null) {
 			return teamState.getTeamForPlayer(player);

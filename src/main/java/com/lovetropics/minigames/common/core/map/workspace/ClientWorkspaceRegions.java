@@ -3,7 +3,7 @@ package com.lovetropics.minigames.common.core.map.workspace;
 import com.lovetropics.lib.BlockBox;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
-import net.minecraft.network.PacketBuffer;
+import net.minecraft.network.FriendlyByteBuf;
 
 import javax.annotation.Nullable;
 import java.util.Iterator;
@@ -48,7 +48,7 @@ public class ClientWorkspaceRegions implements Iterable<ClientWorkspaceRegions.E
 		return entries.isEmpty();
 	}
 
-	public static ClientWorkspaceRegions read(PacketBuffer buffer) {
+	public static ClientWorkspaceRegions read(FriendlyByteBuf buffer) {
 		ClientWorkspaceRegions regions = new ClientWorkspaceRegions();
 
 		int keyCount = buffer.readVarInt();

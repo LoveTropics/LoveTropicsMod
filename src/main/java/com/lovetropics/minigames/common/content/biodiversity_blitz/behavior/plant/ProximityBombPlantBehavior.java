@@ -11,13 +11,13 @@ import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.entity.MobEntity;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.network.play.server.SExplosionPacket;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.Explosion;
-import net.minecraft.world.server.ServerWorld;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.network.protocol.game.ClientboundExplodePacket;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Explosion;
+import net.minecraft.server.level.ServerLevel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,12 +41,12 @@ public final class ProximityBombPlantBehavior implements IGameBehavior {
 				return;
 			}
 
-			ServerWorld world = game.getWorld();
+			ServerLevel world = game.getWorld();
 			List<Plant> removedPlants = new ArrayList<>();
 
 			for (Plant plant : plants) {
-				AxisAlignedBB detonateBounds = plant.coverage().asBounds().inflate(this.radius);
-				List<MobEntity> entities = world.getEntitiesOfClass(MobEntity.class, detonateBounds, BbMobEntity.PREDICATE);
+				AABB detonateBounds = plant.coverage().asBounds().inflate(this.radius);
+				List<Mob> entities = world.getEntitiesOfClass(Mob.class, detonateBounds, BbMobEntity.PREDICATE);
 
 				if (!entities.isEmpty()) {
 					removedPlants.add(plant);
@@ -62,7 +62,7 @@ public final class ProximityBombPlantBehavior implements IGameBehavior {
 	}
 
 	// Kaboom!
-	private static void explode(ServerWorld world, PlantCoverage coverage) {
+	private static void explode(ServerLevel world, PlantCoverage coverage) {
 		for (BlockPos pos : coverage) {
 			world.removeBlock(pos, true);
 
@@ -70,13 +70,13 @@ public final class ProximityBombPlantBehavior implements IGameBehavior {
 			double y = pos.getY() + 0.5;
 			double z = pos.getZ() + 0.5;
 
-			Explosion explosion = new FilteredExplosion(world, null, null, null, x, y, z, 4.0f, false, Explosion.Mode.BREAK, e -> e instanceof ServerPlayerEntity);
+			Explosion explosion = new FilteredExplosion(world, null, null, null, x, y, z, 4.0f, false, Explosion.BlockInteraction.BREAK, e -> e instanceof ServerPlayer);
 			explosion.explode();
 			explosion.finalizeExplosion(false);
 
-			for (ServerPlayerEntity player : world.players()) {
+			for (ServerPlayer player : world.players()) {
 				if (player.distanceToSqr(x, y, z) < 4096.0) {
-					player.connection.send(new SExplosionPacket(x, y, z, 4.0f, explosion.getToBlow(), explosion.getHitPlayers().get(player)));
+					player.connection.send(new ClientboundExplodePacket(x, y, z, 4.0f, explosion.getToBlow(), explosion.getHitPlayers().get(player)));
 				}
 			}
 		}

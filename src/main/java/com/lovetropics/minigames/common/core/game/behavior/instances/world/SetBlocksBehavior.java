@@ -14,13 +14,13 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongSet;
-import net.minecraft.advancements.criterion.BlockPredicate;
-import net.minecraft.block.BlockState;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.world.gen.blockstateprovider.BlockStateProvider;
-import net.minecraft.world.server.ServerWorld;
+import net.minecraft.advancements.critereon.BlockPredicate;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvider;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraftforge.common.util.Constants;
 
 import javax.annotation.Nullable;
@@ -78,7 +78,7 @@ public final class SetBlocksBehavior implements IGameBehavior {
 	private void registerTimed(IGamePhase game, EventRegistrar events) {
 		Collection<BlockBox> regions = this.regions;
 		if (regions == null) {
-			throw new GameException(new StringTextComponent("Regions not specified for block set behavior with a set time!"));
+			throw new GameException(new TextComponent("Regions not specified for block set behavior with a set time!"));
 		}
 
 		events.listen(GamePhaseEvents.TICK, () -> {
@@ -132,7 +132,7 @@ public final class SetBlocksBehavior implements IGameBehavior {
 	}
 
 	private void setInRegion(IGamePhase game, BlockBox region) {
-		ServerWorld world = game.getWorld();
+		ServerLevel world = game.getWorld();
 		BlockPredicate replace = this.replace;
 		BlockStateProvider set = this.set;
 		Random random = world.random;
@@ -153,7 +153,7 @@ public final class SetBlocksBehavior implements IGameBehavior {
 		}
 	}
 
-	private void loadRegionChunks(BlockBox region, ServerWorld world) {
+	private void loadRegionChunks(BlockBox region, ServerLevel world) {
 		LongSet chunks = region.asChunks();
 		LongIterator chunkIterator = chunks.iterator();
 		while (chunkIterator.hasNext()) {

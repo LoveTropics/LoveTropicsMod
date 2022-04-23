@@ -1,16 +1,16 @@
 package com.lovetropics.minigames.client.map;
 
 import com.lovetropics.minigames.common.core.map.workspace.ClientWorkspaceRegions;
-import net.minecraft.util.Direction;
-import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.core.Direction;
+import net.minecraft.world.phys.Vec3;
 
 public final class RegionTraceTarget {
 	public final ClientWorkspaceRegions.Entry entry;
 	public final Direction side;
-	public final Vector3d intersectPoint;
+	public final Vec3 intersectPoint;
 	public final double distanceToSide;
 
-	public RegionTraceTarget(ClientWorkspaceRegions.Entry entry, Direction side, Vector3d intersectPoint, double distanceToSide) {
+	public RegionTraceTarget(ClientWorkspaceRegions.Entry entry, Direction side, Vec3 intersectPoint, double distanceToSide) {
 		this.entry = entry;
 		this.side = side;
 		this.intersectPoint = intersectPoint;

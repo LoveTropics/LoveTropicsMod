@@ -2,9 +2,9 @@ package com.lovetropics.minigames.client.lobby.state;
 
 import com.lovetropics.minigames.common.core.game.IGameDefinition;
 import com.lovetropics.minigames.common.core.game.config.GameConfigs;
-import net.minecraft.network.PacketBuffer;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.text.ITextComponent;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.network.chat.Component;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -12,9 +12,9 @@ import java.util.stream.Collectors;
 
 public final class ClientGameDefinition {
 	public final ResourceLocation id;
-	public final ITextComponent name;
+	public final Component name;
 	@Nullable
-	public final ITextComponent subtitle;
+	public final Component subtitle;
 	@Nullable
 	public final ResourceLocation icon;
 	public final int minimumParticipants;
@@ -22,7 +22,7 @@ public final class ClientGameDefinition {
 
 	public ClientGameDefinition(
 			ResourceLocation id,
-			ITextComponent name, @Nullable ITextComponent subtitle,
+			Component name, @Nullable Component subtitle,
 			@Nullable ResourceLocation icon,
 			int minimumParticipants, int maximumParticipants
 	) {
@@ -51,17 +51,17 @@ public final class ClientGameDefinition {
 		);
 	}
 
-	public static ClientGameDefinition decode(PacketBuffer buffer) {
+	public static ClientGameDefinition decode(FriendlyByteBuf buffer) {
 		ResourceLocation id = buffer.readResourceLocation();
-		ITextComponent name = buffer.readComponent();
-		ITextComponent subtitle = buffer.readBoolean() ? buffer.readComponent() : null;
+		Component name = buffer.readComponent();
+		Component subtitle = buffer.readBoolean() ? buffer.readComponent() : null;
 		ResourceLocation icon = buffer.readBoolean() ? buffer.readResourceLocation() : null;
 		int minimumParticipants = buffer.readVarInt();
 		int maximumParticipants = buffer.readVarInt();
 		return new ClientGameDefinition(id, name, subtitle, icon, minimumParticipants, maximumParticipants);
 	}
 
-	public void encode(PacketBuffer buffer) {
+	public void encode(FriendlyByteBuf buffer) {
 		buffer.writeResourceLocation(this.id);
 		buffer.writeComponent(this.name);
 		buffer.writeBoolean(this.subtitle != null);

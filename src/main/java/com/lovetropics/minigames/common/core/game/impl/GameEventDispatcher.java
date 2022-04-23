@@ -8,21 +8,21 @@ import com.lovetropics.minigames.common.core.game.behavior.event.GameLivingEntit
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameWorldEvents;
 import com.lovetropics.minigames.common.util.Scheduler;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.item.ItemEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.network.play.server.SSetSlotPacket;
-import net.minecraft.util.ActionResultType;
-import net.minecraft.util.DamageSource;
-import net.minecraft.util.Hand;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.IServerWorld;
-import net.minecraft.world.World;
-import net.minecraft.world.chunk.IChunk;
-import net.minecraft.world.server.ServerWorld;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.network.protocol.game.ClientboundContainerSetSlotPacket;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.ServerLevelAccessor;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.chunk.ChunkAccess;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraftforge.event.entity.EntityMountEvent;
 import net.minecraftforge.event.entity.item.ItemTossEvent;
 import net.minecraftforge.event.entity.living.*;
@@ -46,9 +46,9 @@ public final class GameEventDispatcher {
 
 	@SubscribeEvent
 	public void onChunkLoad(ChunkEvent.Load event) {
-		if (event.getWorld() instanceof IServerWorld) {
-			ServerWorld world = ((IServerWorld) event.getWorld()).getLevel();
-			IChunk chunk = event.getChunk();
+		if (event.getWorld() instanceof ServerLevelAccessor) {
+			ServerLevel world = ((ServerLevelAccessor) event.getWorld()).getLevel();
+			ChunkAccess chunk = event.getChunk();
 			IGamePhase game = gameLookup.getGamePhaseAt(world, chunk.getPos().getWorldPosition());
 			if (game != null) {
 				Scheduler.nextTick().run(server -> {
@@ -61,16 +61,16 @@ public final class GameEventDispatcher {
 	@SubscribeEvent
 	public void onPlayerHurt(LivingHurtEvent event) {
 		Entity entity = event.getEntity();
-		if (entity instanceof ServerPlayerEntity) {
+		if (entity instanceof ServerPlayer) {
 			IGamePhase game = gameLookup.getGamePhaseFor(entity);
 			if (game != null) {
 				try {
-					ServerPlayerEntity player = (ServerPlayerEntity) entity;
+					ServerPlayer player = (ServerPlayer) entity;
 					DamageSource source = event.getSource();
 					float amount = event.getAmount();
 
-					ActionResultType result = game.invoker(GamePlayerEvents.DAMAGE).onDamage(player, source, amount);
-					if (result == ActionResultType.FAIL) {
+					InteractionResult result = game.invoker(GamePlayerEvents.DAMAGE).onDamage(player, source, amount);
+					if (result == InteractionResult.FAIL) {
 						event.setCanceled(true);
 						return;
 					}
@@ -90,10 +90,10 @@ public final class GameEventDispatcher {
 	public void onAttackEntity(AttackEntityEvent event) {
 		Entity target = event.getTarget();
 
-		PlayerEntity player = event.getPlayer();
+		Player player = event.getPlayer();
 		IGamePhase game = gameLookup.getGamePhaseFor(player);
 		if (game != null) {
-			if (this.dispatchAttackEvent(game, (ServerPlayerEntity) player, target)) {
+			if (this.dispatchAttackEvent(game, (ServerPlayer) player, target)) {
 				event.setCanceled(true);
 			}
 		}
@@ -106,8 +106,8 @@ public final class GameEventDispatcher {
 		IGamePhase game = gameLookup.getGamePhaseFor(target);
 		if (game != null) {
 			Entity indirectSource = getIndirectSource(event.getSource());
-			if (indirectSource instanceof ServerPlayerEntity) {
-				ServerPlayerEntity sourcePlayer = (ServerPlayerEntity) indirectSource;
+			if (indirectSource instanceof ServerPlayer) {
+				ServerPlayer sourcePlayer = (ServerPlayer) indirectSource;
 				if (this.dispatchAttackEvent(game, sourcePlayer, target)) {
 					event.setCanceled(true);
 				}
@@ -123,10 +123,10 @@ public final class GameEventDispatcher {
 		return null;
 	}
 
-	private boolean dispatchAttackEvent(IGamePhase game, ServerPlayerEntity player, Entity target) {
+	private boolean dispatchAttackEvent(IGamePhase game, ServerPlayer player, Entity target) {
 		try {
-			ActionResultType result = game.invoker(GamePlayerEvents.ATTACK).onAttack(player, target);
-			return result == ActionResultType.FAIL;
+			InteractionResult result = game.invoker(GamePlayerEvents.ATTACK).onAttack(player, target);
+			return result == InteractionResult.FAIL;
 		} catch (Exception e) {
 			LoveTropics.LOGGER.warn("Failed to dispatch player attack event", e);
 		}
@@ -138,9 +138,9 @@ public final class GameEventDispatcher {
 		LivingEntity entity = event.getEntityLiving();
 		IGamePhase game = gameLookup.getGamePhaseFor(entity);
 		if (game != null) {
-			if (entity instanceof ServerPlayerEntity && game.getParticipants().contains(entity)) {
+			if (entity instanceof ServerPlayer && game.getParticipants().contains(entity)) {
 				try {
-					game.invoker(GamePlayerEvents.TICK).tick((ServerPlayerEntity) entity);
+					game.invoker(GamePlayerEvents.TICK).tick((ServerPlayer) entity);
 				} catch (Exception e) {
 					LoveTropics.LOGGER.warn("Failed to dispatch player tick event", e);
 				}
@@ -160,10 +160,10 @@ public final class GameEventDispatcher {
 
 		IGamePhase game = gameLookup.getGamePhaseFor(entity);
 		if (game != null) {
-			if (entity instanceof ServerPlayerEntity) {
+			if (entity instanceof ServerPlayer) {
 				try {
-					ActionResultType result = game.invoker(GamePlayerEvents.DEATH).onDeath((ServerPlayerEntity) entity, event.getSource());
-					if (result == ActionResultType.FAIL) {
+					InteractionResult result = game.invoker(GamePlayerEvents.DEATH).onDeath((ServerPlayer) entity, event.getSource());
+					if (result == InteractionResult.FAIL) {
 						event.setCanceled(true);
 					}
 				} catch (Exception e) {
@@ -171,8 +171,8 @@ public final class GameEventDispatcher {
 				}
 			} else {
 				try {
-					ActionResultType result = game.invoker(GameLivingEntityEvents.DEATH).onDeath(entity, event.getSource());
-					if (result == ActionResultType.FAIL) {
+					InteractionResult result = game.invoker(GameLivingEntityEvents.DEATH).onDeath(entity, event.getSource());
+					if (result == InteractionResult.FAIL) {
 						event.setCanceled(true);
 					}
 				} catch (Exception e) {
@@ -189,8 +189,8 @@ public final class GameEventDispatcher {
 		IGamePhase game = gameLookup.getGamePhaseFor(entity);
 		if (game != null) {
 			try {
-				ActionResultType result = game.invoker(GameLivingEntityEvents.MOB_DROP).onMobDrop(entity, event.getSource(), event.getDrops());
-				if (result == ActionResultType.FAIL) {
+				InteractionResult result = game.invoker(GameLivingEntityEvents.MOB_DROP).onMobDrop(entity, event.getSource(), event.getDrops());
+				if (result == InteractionResult.FAIL) {
 					event.setCanceled(true);
 				}
 			} catch (Exception e) {
@@ -204,7 +204,7 @@ public final class GameEventDispatcher {
 		IGamePhase game = gameLookup.getGamePhaseFor(event.getPlayer());
 		if (game != null) {
 			try {
-				game.invoker(GamePlayerEvents.RESPAWN).onRespawn((ServerPlayerEntity) event.getPlayer());
+				game.invoker(GamePlayerEvents.RESPAWN).onRespawn((ServerPlayer) event.getPlayer());
 			} catch (Exception e) {
 				LoveTropics.LOGGER.warn("Failed to dispatch player respawn event", e);
 			}
@@ -216,8 +216,8 @@ public final class GameEventDispatcher {
 		IGamePhase game = gameLookup.getGamePhaseFor(event.getEntity());
 		if (game != null) {
 			try {
-				ActionResultType result = game.invoker(GameLivingEntityEvents.FARMLAND_TRAMPLE).onFarmlandTrample(event.getEntity(), event.getPos(), event.getState());
-				if (result == ActionResultType.FAIL) {
+				InteractionResult result = game.invoker(GameLivingEntityEvents.FARMLAND_TRAMPLE).onFarmlandTrample(event.getEntity(), event.getPos(), event.getState());
+				if (result == InteractionResult.FAIL) {
 					event.setCanceled(true);
 				}
 			} catch (Exception e) {
@@ -243,10 +243,10 @@ public final class GameEventDispatcher {
 		IGamePhase game = gameLookup.getGamePhaseFor(event.getPlayer());
 		if (game != null) {
 			try {
-				ServerPlayerEntity player = (ServerPlayerEntity) event.getPlayer();
+				ServerPlayer player = (ServerPlayer) event.getPlayer();
 				ItemEntity item = event.getEntityItem();
-				ActionResultType result = game.invoker(GamePlayerEvents.THROW_ITEM).onThrowItem(player, item);
-				if (result == ActionResultType.FAIL) {
+				InteractionResult result = game.invoker(GamePlayerEvents.THROW_ITEM).onThrowItem(player, item);
+				if (result == InteractionResult.FAIL) {
 					event.setCanceled(true);
 					player.inventory.add(item.getItem());
 					player.refreshContainer(player.containerMenu);
@@ -261,11 +261,11 @@ public final class GameEventDispatcher {
 	public void onPlayerInteractEntity(PlayerInteractEvent.EntityInteract event) {
 		IGamePhase game = gameLookup.getGamePhaseFor(event.getPlayer());
 		if (game != null) {
-			ServerPlayerEntity player = (ServerPlayerEntity) event.getPlayer();
+			ServerPlayer player = (ServerPlayer) event.getPlayer();
 
 			try {
-				ActionResultType result = game.invoker(GamePlayerEvents.INTERACT_ENTITY).onInteractEntity(player, event.getTarget(), event.getHand());
-				if (result != ActionResultType.PASS) {
+				InteractionResult result = game.invoker(GamePlayerEvents.INTERACT_ENTITY).onInteractEntity(player, event.getTarget(), event.getHand());
+				if (result != InteractionResult.PASS) {
 					event.setCancellationResult(result);
 					event.setCanceled(true);
 				}
@@ -279,7 +279,7 @@ public final class GameEventDispatcher {
 	public void onPlayerLeftClickBlock(PlayerInteractEvent.LeftClickBlock event) {
 		IGamePhase game = gameLookup.getGamePhaseFor(event.getPlayer());
 		if (game != null) {
-			ServerPlayerEntity player = (ServerPlayerEntity) event.getPlayer();
+			ServerPlayer player = (ServerPlayer) event.getPlayer();
 
 			try {
 				game.invoker(GamePlayerEvents.LEFT_CLICK_BLOCK).onLeftClickBlock(player, player.getLevel(), event.getPos());
@@ -293,11 +293,11 @@ public final class GameEventDispatcher {
 	public void onPlayerRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
 		IGamePhase game = gameLookup.getGamePhaseFor(event.getPlayer());
 		if (game != null) {
-			ServerPlayerEntity player = (ServerPlayerEntity) event.getPlayer();
+			ServerPlayer player = (ServerPlayer) event.getPlayer();
 
 			try {
-				ActionResultType result = game.invoker(GamePlayerEvents.USE_BLOCK).onUseBlock(player, player.getLevel(), event.getPos(), event.getHand(), event.getHitVec());
-				if (result != ActionResultType.PASS) {
+				InteractionResult result = game.invoker(GamePlayerEvents.USE_BLOCK).onUseBlock(player, player.getLevel(), event.getPos(), event.getHand(), event.getHitVec());
+				if (result != InteractionResult.PASS) {
 					event.setCanceled(true);
 					event.setCancellationResult(result);
 					this.resendPlayerHeldItem(player);
@@ -312,11 +312,11 @@ public final class GameEventDispatcher {
 	public void onPlayerRightClickItem(PlayerInteractEvent.RightClickItem event) {
 		IGamePhase game = gameLookup.getGamePhaseFor(event.getPlayer());
 		if (game != null) {
-			ServerPlayerEntity player = (ServerPlayerEntity) event.getPlayer();
+			ServerPlayer player = (ServerPlayer) event.getPlayer();
 
 			try {
-				ActionResultType result = game.invoker(GamePlayerEvents.USE_ITEM).onUseItem(player, event.getHand());
-				if (result != ActionResultType.PASS) {
+				InteractionResult result = game.invoker(GamePlayerEvents.USE_ITEM).onUseItem(player, event.getHand());
+				if (result != InteractionResult.PASS) {
 					event.setCancellationResult(result);
 					event.setCanceled(true);
 					this.resendPlayerHeldItem(player);
@@ -332,10 +332,10 @@ public final class GameEventDispatcher {
 		IGamePhase game = gameLookup.getGamePhaseFor(event.getPlayer());
 		if (game != null) {
 			try {
-				ServerPlayerEntity player = (ServerPlayerEntity) event.getPlayer();
-				Hand hand = player.getUsedItemHand();
-				ActionResultType result = game.invoker(GamePlayerEvents.BREAK_BLOCK).onBreakBlock(player, event.getPos(), event.getState(), hand);
-				if (result == ActionResultType.FAIL) {
+				ServerPlayer player = (ServerPlayer) event.getPlayer();
+				InteractionHand hand = player.getUsedItemHand();
+				InteractionResult result = game.invoker(GamePlayerEvents.BREAK_BLOCK).onBreakBlock(player, event.getPos(), event.getState(), hand);
+				if (result == InteractionResult.FAIL) {
 					event.setCanceled(true);
 				}
 			} catch (Exception e) {
@@ -347,11 +347,11 @@ public final class GameEventDispatcher {
 	@SubscribeEvent
 	public void onEntityPlaceBlock(BlockEvent.EntityPlaceEvent event) {
 		IGamePhase game = gameLookup.getGamePhaseFor(event.getEntity());
-		if (game != null && event.getEntity() instanceof ServerPlayerEntity) {
+		if (game != null && event.getEntity() instanceof ServerPlayer) {
 			try {
-				ServerPlayerEntity player = (ServerPlayerEntity) event.getEntity();
-				ActionResultType result = game.invoker(GamePlayerEvents.PLACE_BLOCK).onPlaceBlock(player, event.getPos(), event.getPlacedBlock(), event.getPlacedAgainst());
-				if (result == ActionResultType.FAIL) {
+				ServerPlayer player = (ServerPlayer) event.getEntity();
+				InteractionResult result = game.invoker(GamePlayerEvents.PLACE_BLOCK).onPlaceBlock(player, event.getPos(), event.getPlacedBlock(), event.getPlacedAgainst());
+				if (result == InteractionResult.FAIL) {
 					event.setCanceled(true);
 					this.resendPlayerHeldItem(player);
 				}
@@ -361,11 +361,11 @@ public final class GameEventDispatcher {
 		}
 	}
 
-	private void resendPlayerHeldItem(ServerPlayerEntity player) {
-		Hand hand = player.getUsedItemHand();
-		int handSlot = hand == Hand.MAIN_HAND ? player.inventory.selected : 40;
+	private void resendPlayerHeldItem(ServerPlayer player) {
+		InteractionHand hand = player.getUsedItemHand();
+		int handSlot = hand == InteractionHand.MAIN_HAND ? player.inventory.selected : 40;
 		ItemStack handItem = player.getItemInHand(hand);
-		player.connection.send(new SSetSlotPacket(-2, handSlot, handItem));
+		player.connection.send(new ClientboundContainerSetSlotPacket(-2, handSlot, handItem));
 	}
 
 	@SubscribeEvent
@@ -382,12 +382,12 @@ public final class GameEventDispatcher {
 
 	@SubscribeEvent
 	public void onTreeGrow(SaplingGrowTreeEvent event) {
-		IGamePhase game = gameLookup.getGamePhaseAt((World) event.getWorld(), event.getPos());
+		IGamePhase game = gameLookup.getGamePhaseAt((Level) event.getWorld(), event.getPos());
 		if (game != null) {
 			try {
-				ActionResultType result = game.invoker(GameWorldEvents.SAPLING_GROW).onSaplingGrow((World) event.getWorld(), event.getPos());
+				InteractionResult result = game.invoker(GameWorldEvents.SAPLING_GROW).onSaplingGrow((Level) event.getWorld(), event.getPos());
 
-				if (result == ActionResultType.FAIL) {
+				if (result == InteractionResult.FAIL) {
 					event.setCanceled(true);
 				}
 			} catch (Exception e) {
@@ -404,8 +404,8 @@ public final class GameEventDispatcher {
 		IGamePhase game = gameLookup.getGamePhaseFor(entityBeingMounted);
 		if (game != null) {
 			try {
-				ActionResultType result = game.invoker(GameEntityEvents.MOUNTED).onEntityMounted(entityMounting, entityBeingMounted);
-				if (result == ActionResultType.FAIL) {
+				InteractionResult result = game.invoker(GameEntityEvents.MOUNTED).onEntityMounted(entityMounting, entityBeingMounted);
+				if (result == InteractionResult.FAIL) {
 					event.setCanceled(true);
 				}
 			} catch (Exception e) {

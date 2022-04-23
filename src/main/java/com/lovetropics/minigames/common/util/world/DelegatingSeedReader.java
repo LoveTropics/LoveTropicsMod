@@ -1,36 +1,36 @@
 package com.lovetropics.minigames.common.util.world;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.fluid.Fluid;
-import net.minecraft.fluid.FluidState;
-import net.minecraft.particles.IParticleData;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.Direction;
-import net.minecraft.util.SoundCategory;
-import net.minecraft.util.SoundEvent;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.SectionPos;
-import net.minecraft.util.registry.DynamicRegistries;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.material.Fluid;
+import net.minecraft.world.level.material.FluidState;
+import net.minecraft.core.particles.ParticleOptions;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.core.Direction;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.SectionPos;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.world.DifficultyInstance;
-import net.minecraft.world.DimensionType;
-import net.minecraft.world.ISeedReader;
-import net.minecraft.world.ITickList;
-import net.minecraft.world.biome.Biome;
-import net.minecraft.world.biome.BiomeManager;
-import net.minecraft.world.border.WorldBorder;
-import net.minecraft.world.chunk.AbstractChunkProvider;
-import net.minecraft.world.chunk.ChunkStatus;
-import net.minecraft.world.chunk.IChunk;
-import net.minecraft.world.gen.Heightmap;
-import net.minecraft.world.gen.feature.structure.Structure;
-import net.minecraft.world.gen.feature.structure.StructureStart;
-import net.minecraft.world.lighting.WorldLightManager;
-import net.minecraft.world.server.ServerWorld;
-import net.minecraft.world.storage.IWorldInfo;
+import net.minecraft.world.level.dimension.DimensionType;
+import net.minecraft.world.level.WorldGenLevel;
+import net.minecraft.world.level.TickList;
+import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.biome.BiomeManager;
+import net.minecraft.world.level.border.WorldBorder;
+import net.minecraft.world.level.chunk.ChunkSource;
+import net.minecraft.world.level.chunk.ChunkStatus;
+import net.minecraft.world.level.chunk.ChunkAccess;
+import net.minecraft.world.level.levelgen.Heightmap;
+import net.minecraft.world.level.levelgen.feature.StructureFeature;
+import net.minecraft.world.level.levelgen.structure.StructureStart;
+import net.minecraft.world.level.lighting.LevelLightEngine;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.storage.LevelData;
 import net.minecraftforge.common.util.Constants;
 
 import javax.annotation.Nullable;
@@ -39,10 +39,10 @@ import java.util.Random;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-public abstract class DelegatingSeedReader implements ISeedReader {
-	protected final ISeedReader parent;
+public abstract class DelegatingSeedReader implements WorldGenLevel {
+	protected final WorldGenLevel parent;
 
-	protected DelegatingSeedReader(ISeedReader parent) {
+	protected DelegatingSeedReader(WorldGenLevel parent) {
 		this.parent = parent;
 	}
 
@@ -52,27 +52,27 @@ public abstract class DelegatingSeedReader implements ISeedReader {
 	}
 
 	@Override
-	public Stream<? extends StructureStart<?>> startsForFeature(SectionPos sectionPos, Structure<?> structure) {
+	public Stream<? extends StructureStart<?>> startsForFeature(SectionPos sectionPos, StructureFeature<?> structure) {
 		return this.parent.startsForFeature(sectionPos, structure);
 	}
 
 	@Override
-	public ServerWorld getLevel() {
+	public ServerLevel getLevel() {
 		return this.parent.getLevel();
 	}
 
 	@Override
-	public ITickList<Block> getBlockTicks() {
+	public TickList<Block> getBlockTicks() {
 		return this.parent.getBlockTicks();
 	}
 
 	@Override
-	public ITickList<Fluid> getLiquidTicks() {
+	public TickList<Fluid> getLiquidTicks() {
 		return this.parent.getLiquidTicks();
 	}
 
 	@Override
-	public IWorldInfo getLevelData() {
+	public LevelData getLevelData() {
 		return this.parent.getLevelData();
 	}
 
@@ -82,7 +82,7 @@ public abstract class DelegatingSeedReader implements ISeedReader {
 	}
 
 	@Override
-	public AbstractChunkProvider getChunkSource() {
+	public ChunkSource getChunkSource() {
 		return this.parent.getChunkSource();
 	}
 
@@ -92,22 +92,22 @@ public abstract class DelegatingSeedReader implements ISeedReader {
 	}
 
 	@Override
-	public void playSound(@Nullable PlayerEntity player, BlockPos pos, SoundEvent sound, SoundCategory category, float volume, float pitch) {
+	public void playSound(@Nullable Player player, BlockPos pos, SoundEvent sound, SoundSource category, float volume, float pitch) {
 		this.parent.playSound(player, pos, sound, category, volume, pitch);
 	}
 
 	@Override
-	public void addParticle(IParticleData particle, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed) {
+	public void addParticle(ParticleOptions particle, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed) {
 		this.parent.addParticle(particle, x, y, z, xSpeed, ySpeed, zSpeed);
 	}
 
 	@Override
-	public void levelEvent(@Nullable PlayerEntity player, int type, BlockPos pos, int data) {
+	public void levelEvent(@Nullable Player player, int type, BlockPos pos, int data) {
 		this.parent.levelEvent(player, type, pos, data);
 	}
 
 	@Override
-	public DynamicRegistries registryAccess() {
+	public RegistryAccess registryAccess() {
 		return this.parent.registryAccess();
 	}
 
@@ -117,7 +117,7 @@ public abstract class DelegatingSeedReader implements ISeedReader {
 	}
 
 	@Override
-	public WorldLightManager getLightEngine() {
+	public LevelLightEngine getLightEngine() {
 		return this.parent.getLightEngine();
 	}
 
@@ -128,7 +128,7 @@ public abstract class DelegatingSeedReader implements ISeedReader {
 
 	@Nullable
 	@Override
-	public TileEntity getBlockEntity(BlockPos pos) {
+	public BlockEntity getBlockEntity(BlockPos pos) {
 		return this.parent.getBlockEntity(pos);
 	}
 
@@ -143,28 +143,28 @@ public abstract class DelegatingSeedReader implements ISeedReader {
 	}
 
 	@Override
-	public List<Entity> getEntities(@Nullable Entity entity, AxisAlignedBB box, @Nullable Predicate<? super Entity> predicate) {
+	public List<Entity> getEntities(@Nullable Entity entity, AABB box, @Nullable Predicate<? super Entity> predicate) {
 		return this.parent.getEntities(entity, box, predicate);
 	}
 
 	@Override
-	public <T extends Entity> List<T> getEntitiesOfClass(Class<? extends T> clazz, AxisAlignedBB box, @Nullable Predicate<? super T> filter) {
+	public <T extends Entity> List<T> getEntitiesOfClass(Class<? extends T> clazz, AABB box, @Nullable Predicate<? super T> filter) {
 		return this.parent.getEntitiesOfClass(clazz, box, filter);
 	}
 
 	@Override
-	public List<? extends PlayerEntity> players() {
+	public List<? extends Player> players() {
 		return this.parent.players();
 	}
 
 	@Nullable
 	@Override
-	public IChunk getChunk(int x, int z, ChunkStatus requiredStatus, boolean create) {
+	public ChunkAccess getChunk(int x, int z, ChunkStatus requiredStatus, boolean create) {
 		return this.parent.getChunk(x, z, requiredStatus, create);
 	}
 
 	@Override
-	public int getHeight(Heightmap.Type type, int x, int z) {
+	public int getHeight(Heightmap.Types type, int x, int z) {
 		return this.parent.getHeight(type, x, z);
 	}
 

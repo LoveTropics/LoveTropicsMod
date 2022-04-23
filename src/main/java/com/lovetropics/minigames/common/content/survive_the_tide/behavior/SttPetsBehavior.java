@@ -11,17 +11,17 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ReferenceArrayList;
-import net.minecraft.entity.CreatureEntity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.SpawnReason;
-import net.minecraft.entity.ai.goal.Goal;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.pathfinding.Path;
-import net.minecraft.pathfinding.PathNavigator;
-import net.minecraft.util.ActionResultType;
-import net.minecraft.util.DamageSource;
-import net.minecraft.util.registry.Registry;
+import net.minecraft.world.entity.PathfinderMob;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.ai.goal.Goal;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.pathfinder.Path;
+import net.minecraft.world.entity.ai.navigation.PathNavigation;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.core.Registry;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -54,16 +54,16 @@ public final class SttPetsBehavior implements IGameBehavior {
 		events.listen(GamePhaseEvents.TICK, this::tick);
 
 		events.listen(GameLivingEntityEvents.SPAWNED, (entity, reason, player) -> {
-			if (reason == SpawnReason.SPAWN_EGG && player != null && entity instanceof CreatureEntity) {
-				this.onCreatureSpawnedFromEgg((CreatureEntity) entity, player);
+			if (reason == MobSpawnType.SPAWN_EGG && player != null && entity instanceof PathfinderMob) {
+				this.onCreatureSpawnedFromEgg((PathfinderMob) entity, player);
 			}
 		});
 
 		events.listen(GameLivingEntityEvents.DEATH, (entity, damageSource) -> {
-			if (entity instanceof CreatureEntity) {
-				this.onCreatureDeath((CreatureEntity) entity);
+			if (entity instanceof PathfinderMob) {
+				this.onCreatureDeath((PathfinderMob) entity);
 			}
-			return ActionResultType.PASS;
+			return InteractionResult.PASS;
 		});
 
 		events.listen(GamePlayerEvents.REMOVE, player -> {
@@ -81,7 +81,7 @@ public final class SttPetsBehavior implements IGameBehavior {
 		});
 	}
 
-	private void onCreatureSpawnedFromEgg(CreatureEntity entity, ServerPlayerEntity player) {
+	private void onCreatureSpawnedFromEgg(PathfinderMob entity, ServerPlayer player) {
 		PetConfig config = this.petTypes.get(entity.getType());
 		if (config != null) {
 			this.stopPetFromGettingSidetracked(entity);
@@ -90,12 +90,12 @@ public final class SttPetsBehavior implements IGameBehavior {
 		}
 	}
 
-	private void stopPetFromGettingSidetracked(CreatureEntity entity) {
+	private void stopPetFromGettingSidetracked(PathfinderMob entity) {
 		entity.goalSelector.disableControlFlag(Goal.Flag.MOVE);
 		entity.targetSelector.disableControlFlag(Goal.Flag.TARGET);
 	}
 
-	private void onCreatureDeath(CreatureEntity entity) {
+	private void onCreatureDeath(PathfinderMob entity) {
 		Pet pet = this.findPet(entity);
 		if (pet != null) {
 			this.removePet(pet);
@@ -103,7 +103,7 @@ public final class SttPetsBehavior implements IGameBehavior {
 	}
 
 	@Nullable
-	private Pet findPet(CreatureEntity entity) {
+	private Pet findPet(PathfinderMob entity) {
 		for (List<Pet> pets : this.petsByPlayer.values()) {
 			for (Pet pet : pets) {
 				if (pet.entity == entity) {
@@ -148,13 +148,13 @@ public final class SttPetsBehavior implements IGameBehavior {
 	static final class Pet {
 		private static final int ATTACK_COOLDOWN = 10;
 
-		final ServerPlayerEntity player;
-		final CreatureEntity entity;
+		final ServerPlayer player;
+		final PathfinderMob entity;
 		final PetConfig config;
 
 		private int attackCooldown;
 
-		Pet(ServerPlayerEntity player, CreatureEntity entity, PetConfig config) {
+		Pet(ServerPlayer player, PathfinderMob entity, PetConfig config) {
 			this.player = player;
 			this.entity = entity;
 			this.config = config;
@@ -227,7 +227,7 @@ public final class SttPetsBehavior implements IGameBehavior {
 
 			double distance2 = this.entity.distanceToSqr(this.player);
 			if (distance2 > FOLLOW_DISTANCE * FOLLOW_DISTANCE) {
-				PathNavigator navigator = this.entity.getNavigation();
+				PathNavigation navigator = this.entity.getNavigation();
 				Path path = navigator.createPath(this.player, 3);
 				if (path != null) {
 					navigator.moveTo(path, this.config.speed);

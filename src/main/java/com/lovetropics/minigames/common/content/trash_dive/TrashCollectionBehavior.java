@@ -15,20 +15,20 @@ import com.lovetropics.minigames.common.core.game.util.GameSidebar;
 import com.lovetropics.minigames.common.core.game.util.GlobalGameWidgets;
 import com.mojang.serialization.Codec;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.potion.EffectInstance;
-import net.minecraft.potion.Effects;
-import net.minecraft.util.ActionResultType;
-import net.minecraft.util.Hand;
-import net.minecraft.util.SoundCategory;
-import net.minecraft.util.SoundEvents;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.TextFormatting;
-import net.minecraft.world.server.ServerWorld;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.ChatFormatting;
+import net.minecraft.server.level.ServerLevel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -73,23 +73,23 @@ public final class TrashCollectionBehavior implements IGameBehavior {
 	}
 
 	private void onStart(IGamePhase game) {
-		ITextComponent sidebarTitle = new StringTextComponent("Trash Dive")
-				.withStyle(TextFormatting.BLUE, TextFormatting.BOLD);
+		Component sidebarTitle = new TextComponent("Trash Dive")
+				.withStyle(ChatFormatting.BLUE, ChatFormatting.BOLD);
 
 		sidebar = widgets.openSidebar(sidebarTitle);
 		sidebar.set(renderSidebar(game));
 
 		PlayerSet players = game.getParticipants();
-		players.addPotionEffect(new EffectInstance(Effects.NIGHT_VISION, Integer.MAX_VALUE, 1, false, false));
+		players.addPotionEffect(new MobEffectInstance(MobEffects.NIGHT_VISION, Integer.MAX_VALUE, 1, false, false));
 	}
 
-	private void onAddPlayer(IGamePhase game, ServerPlayerEntity player) {
+	private void onAddPlayer(IGamePhase game, ServerPlayer player) {
 		GameStatistics statistics = game.getStatistics();
 		statistics.forPlayer(player).set(StatisticKey.TRASH_COLLECTED, 0);
 	}
 
-	private void onPlayerLeftClickBlock(IGamePhase game, ServerPlayerEntity player, BlockPos pos) {
-		ServerWorld world = game.getWorld();
+	private void onPlayerLeftClickBlock(IGamePhase game, ServerPlayer player, BlockPos pos) {
+		ServerLevel world = game.getWorld();
 
 		BlockState state = world.getBlockState(pos);
 		if (!isTrash(state)) {
@@ -97,7 +97,7 @@ public final class TrashCollectionBehavior implements IGameBehavior {
 		}
 
 		world.removeBlock(pos, false);
-		player.playNotifySound(SoundEvents.EXPERIENCE_ORB_PICKUP, SoundCategory.PLAYERS, 1.0F, 1.0F);
+		player.playNotifySound(SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.PLAYERS, 1.0F, 1.0F);
 
 		GameStatistics statistics = game.getStatistics();
 		statistics.forPlayer(player)
@@ -109,8 +109,8 @@ public final class TrashCollectionBehavior implements IGameBehavior {
 		sidebar.set(renderSidebar(game));
 	}
 
-	private ActionResultType onPlayerBreakBlock(ServerPlayerEntity player, BlockPos pos, BlockState state, Hand hand) {
-		return isTrash(state) ? ActionResultType.PASS : ActionResultType.FAIL;
+	private InteractionResult onPlayerBreakBlock(ServerPlayer player, BlockPos pos, BlockState state, InteractionHand hand) {
+		return isTrash(state) ? InteractionResult.PASS : InteractionResult.FAIL;
 	}
 
 	private boolean isTrash(BlockState state) {
@@ -122,10 +122,10 @@ public final class TrashCollectionBehavior implements IGameBehavior {
 
 		gameOver = true;
 
-		ITextComponent finishMessage = new StringTextComponent("The game ended! Here are the results for this game:");
+		Component finishMessage = new TextComponent("The game ended! Here are the results for this game:");
 
 		PlayerSet players = game.getAllPlayers();
-		players.sendMessage(finishMessage.copy().withStyle(TextFormatting.GREEN));
+		players.sendMessage(finishMessage.copy().withStyle(ChatFormatting.GREEN));
 
 		GameStatistics statistics = game.getStatistics();
 
@@ -147,12 +147,12 @@ public final class TrashCollectionBehavior implements IGameBehavior {
 
 	private String[] renderSidebar(IGamePhase game) {
 		List<String> sidebar = new ArrayList<>(10);
-		sidebar.add(TextFormatting.GREEN + "Pick up trash! " + TextFormatting.GRAY + collectedTrash + " collected");
+		sidebar.add(ChatFormatting.GREEN + "Pick up trash! " + ChatFormatting.GRAY + collectedTrash + " collected");
 
 		PlayerPlacement.Score<Integer> placement = PlayerPlacement.fromMaxScore(game, StatisticKey.TRASH_COLLECTED);
 
 		sidebar.add("");
-		sidebar.add(TextFormatting.GREEN + "MVPs:");
+		sidebar.add(ChatFormatting.GREEN + "MVPs:");
 
 		placement.addToSidebar(sidebar, 5);
 

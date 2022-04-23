@@ -33,9 +33,9 @@ import com.lovetropics.minigames.common.util.registry.LoveTropicsRegistrate;
 import com.mojang.brigadier.CommandDispatcher;
 import com.tterrag.registrate.providers.ProviderType;
 import com.tterrag.registrate.util.NonNullLazyValue;
-import net.minecraft.command.CommandSource;
-import net.minecraft.item.ItemGroup;
-import net.minecraft.item.ItemStack;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -71,7 +71,7 @@ public class LoveTropics {
 
     public static final Logger LOGGER = LogManager.getLogger(Constants.MODID);
 
-    public static final ItemGroup LOVE_TROPICS_ITEM_GROUP = (new ItemGroup("love_tropics") {
+    public static final CreativeModeTab LOVE_TROPICS_ITEM_GROUP = (new CreativeModeTab("love_tropics") {
         @Override
         @OnlyIn(Dist.CLIENT)
         public ItemStack makeIcon() {
@@ -169,7 +169,7 @@ public class LoveTropics {
     }
 
     private void registerCommands(RegisterCommandsEvent event) {
-        CommandDispatcher<CommandSource> dispatcher = event.getDispatcher();
+        CommandDispatcher<CommandSourceStack> dispatcher = event.getDispatcher();
         JoinGameCommand.register(dispatcher);
         StartGameCommand.register(dispatcher);
         FinishGameCommand.register(dispatcher);

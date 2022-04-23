@@ -14,9 +14,9 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
-import net.minecraft.command.CommandSource;
-import net.minecraft.command.arguments.EntityArgument;
-import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.arguments.EntityArgument;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Unit;
 
 import javax.annotation.Nullable;
@@ -25,11 +25,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static net.minecraft.command.Commands.argument;
-import static net.minecraft.command.Commands.literal;
-
 public class JoinGameCommand {
-	public static void register(final CommandDispatcher<CommandSource> dispatcher) {
+	public static void register(final CommandDispatcher<CommandSourceStack> dispatcher) {
 		// @formatter:off
 		dispatcher.register(
 			literal("game")
@@ -44,7 +41,7 @@ public class JoinGameCommand {
 		// @formatter:on
 	}
 
-	private static LiteralArgumentBuilder<CommandSource> joinBuilder(String name) {
+	private static LiteralArgumentBuilder<CommandSourceStack> joinBuilder(String name) {
 		// @formatter:off
 		return literal(name)
 				.executes(ctx -> joinAsRole(ctx, null, null))
@@ -65,9 +62,9 @@ public class JoinGameCommand {
 		// @formatter:on
 	}
 
-	private static int joinAsRole(CommandContext<CommandSource> ctx, @Nullable IGameLobby givenLobby, @Nullable PlayerRole forcedRole) throws CommandSyntaxException {
-		CommandSource source = ctx.getSource();
-		ServerPlayerEntity player = source.getPlayerOrException();
+	private static int joinAsRole(CommandContext<CommandSourceStack> ctx, @Nullable IGameLobby givenLobby, @Nullable PlayerRole forcedRole) throws CommandSyntaxException {
+		CommandSourceStack source = ctx.getSource();
+		ServerPlayer player = source.getPlayerOrException();
 
 		GameResult<IGameLobby> lobbyResult = resolveLobby(source, givenLobby, forcedRole);
 		if (lobbyResult.isError()) {
@@ -96,7 +93,7 @@ public class JoinGameCommand {
 		return Command.SINGLE_SUCCESS;
 	}
 
-	private static GameResult<IGameLobby> resolveLobby(CommandSource source, @Nullable IGameLobby givenLobby, @Nullable PlayerRole forcedRole) {
+	private static GameResult<IGameLobby> resolveLobby(CommandSourceStack source, @Nullable IGameLobby givenLobby, @Nullable PlayerRole forcedRole) {
 		if (givenLobby != null) {
 			return GameResult.ok(givenLobby);
 		} else {
@@ -111,8 +108,8 @@ public class JoinGameCommand {
 		}
 	}
 
-	private static int forcePlayerJoin(CommandContext<CommandSource> context) throws CommandSyntaxException {
-		ServerPlayerEntity player = EntityArgument.getPlayer(context, "player");
+	private static int forcePlayerJoin(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+		ServerPlayer player = EntityArgument.getPlayer(context, "player");
 		IGameLobby lobby = IGameManager.get().getLobbyFor(player);
 		if (lobby == null) {
 			throw new SimpleCommandExceptionType(GameTexts.Commands.notInLobby()).create();

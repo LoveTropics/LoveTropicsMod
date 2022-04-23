@@ -13,13 +13,13 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.ActionResultType;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.server.ServerWorld;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraftforge.common.util.Constants;
 
 import java.util.ArrayList;
@@ -58,14 +58,14 @@ public final class GrowPlantBehavior implements IGameBehavior {
 		});
 	}
 
-	private void tryGrowPlant(IGamePhase game, ServerPlayerEntity player, Plot plot, Plant plant) {
-		ServerWorld world = game.getWorld();
+	private void tryGrowPlant(IGamePhase game, ServerPlayer player, Plot plot, Plant plant) {
+		ServerLevel world = game.getWorld();
 
 		PlantSnapshot snapshot = this.removeAndSnapshot(world, plot, plant);
 
 		BlockPos origin = plant.coverage().getOrigin();
-		ActionResult<Plant> result = game.invoker(BbEvents.PLACE_PLANT).placePlant(player, plot, origin, this.growInto);
-		if (result.getResult() != ActionResultType.SUCCESS) {
+		InteractionResultHolder<Plant> result = game.invoker(BbEvents.PLACE_PLANT).placePlant(player, plot, origin, this.growInto);
+		if (result.getResult() != InteractionResult.SUCCESS) {
 			this.restoreSnapshot(world, plot, snapshot);
 
 			GrowTime growTime = plant.state(GrowTime.KEY);
@@ -89,7 +89,7 @@ public final class GrowPlantBehavior implements IGameBehavior {
 		return result;
 	}
 
-	private PlantSnapshot removeAndSnapshot(ServerWorld world, Plot plot, Plant plant) {
+	private PlantSnapshot removeAndSnapshot(ServerLevel world, Plot plot, Plant plant) {
 		plot.plants.removePlant(plant);
 
 		Long2ObjectMap<BlockState> blocks = new Long2ObjectOpenHashMap<>();
@@ -101,7 +101,7 @@ public final class GrowPlantBehavior implements IGameBehavior {
 		return new PlantSnapshot(plant, blocks);
 	}
 
-	private void restoreSnapshot(ServerWorld world, Plot plot, PlantSnapshot snapshot) {
+	private void restoreSnapshot(ServerLevel world, Plot plot, PlantSnapshot snapshot) {
 		plot.plants.addPlant(snapshot.plant);
 
 		for (BlockPos pos : snapshot.plant.coverage()) {

@@ -3,29 +3,29 @@ package com.lovetropics.minigames.common.util;
 import com.google.common.collect.Lists;
 import com.lovetropics.lib.BlockBox;
 import com.lovetropics.minigames.Constants;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.material.Material;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.MobEntity;
-import net.minecraft.entity.ai.attributes.Attributes;
-import net.minecraft.entity.effect.LightningBoltEntity;
-import net.minecraft.entity.item.ItemEntity;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.particles.IParticleData;
-import net.minecraft.util.Direction;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.SoundCategory;
-import net.minecraft.util.SoundEvents;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.world.World;
-import net.minecraft.world.gen.Heightmap;
-import net.minecraft.world.server.ServerWorld;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.material.Material;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.LightningBolt;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.core.particles.ParticleOptions;
+import net.minecraft.core.Direction;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.core.BlockPos;
+import net.minecraft.util.Mth;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.levelgen.Heightmap;
+import net.minecraft.server.level.ServerLevel;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nullable;
@@ -50,10 +50,10 @@ public class Util {
         return false;
     }*/
 
-    public static boolean spawnEntity(EntityType<?> entityType, World world, double x, double y, double z) {
+    public static boolean spawnEntity(EntityType<?> entityType, Level world, double x, double y, double z) {
         if (entityType == EntityType.LIGHTNING_BOLT) {
-            LightningBoltEntity entity = EntityType.LIGHTNING_BOLT.create(world);
-            entity.moveTo(new Vector3d(x, y, z));
+            LightningBolt entity = EntityType.LIGHTNING_BOLT.create(world);
+            entity.moveTo(new Vec3(x, y, z));
             world.addFreshEntity(entity);
             return true;
         } else {
@@ -67,9 +67,9 @@ public class Util {
         }
     }
 
-    public static boolean addItemStackToInventory(final ServerPlayerEntity player, final ItemStack itemstack) {
+    public static boolean addItemStackToInventory(final ServerPlayer player, final ItemStack itemstack) {
         if (player.addItem(itemstack)) {
-            player.level.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.ITEM_PICKUP, SoundCategory.PLAYERS, 0.2F, ((player.getRandom().nextFloat() - player.getRandom().nextFloat()) * 0.7F + 1.0F) * 2.0F);
+            player.level.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.ITEM_PICKUP, SoundSource.PLAYERS, 0.2F, ((player.getRandom().nextFloat() - player.getRandom().nextFloat()) * 0.7F + 1.0F) * 2.0F);
             return true;
         } else {
             ItemEntity itementity = player.drop(itemstack, false);
@@ -82,11 +82,11 @@ public class Util {
         return false;
     }
 
-    public static boolean tryMoveToEntityLivingLongDist(MobEntity entSource, Entity entityTo, double moveSpeedAmp) {
+    public static boolean tryMoveToEntityLivingLongDist(Mob entSource, Entity entityTo, double moveSpeedAmp) {
         return tryMoveToXYZLongDist(entSource, entityTo.blockPosition(), moveSpeedAmp);
     }
 
-    public static boolean tryMoveToXYZLongDist(MobEntity ent, BlockPos pos, double moveSpeedAmp) {
+    public static boolean tryMoveToXYZLongDist(Mob ent, BlockPos pos, double moveSpeedAmp) {
         return tryMoveToXYZLongDist(ent, pos.getX(), pos.getY(), pos.getZ(), moveSpeedAmp);
     }
 
@@ -101,9 +101,9 @@ public class Util {
      * @param moveSpeedAmp
      * @return
      */
-    public static boolean tryMoveToXYZLongDist(MobEntity ent, int x, int y, int z, double moveSpeedAmp) {
+    public static boolean tryMoveToXYZLongDist(Mob ent, int x, int y, int z, double moveSpeedAmp) {
 
-        World world = ent.level;
+        Level world = ent.level;
 
         boolean success = false;
 
@@ -127,7 +127,7 @@ public class Util {
                 double d1;
                 d1 = y+0.5F - (ent.getY() + (double)ent.getEyeHeight());
 
-                double d3 = MathHelper.sqrt(d * d + d2 * d2);
+                double d3 = Mth.sqrt(d * d + d2 * d2);
                 float f2 = (float)((Math.atan2(d2, d) * 180D) / 3.1415927410125732D) - 90F;
                 float f3 = (float)(-((Math.atan2(d1, d3) * 180D) / 3.1415927410125732D));
                 float rotationPitch = -f3;//-ent.updateRotation(rotationPitch, f3, 180D);
@@ -191,14 +191,14 @@ public class Util {
         return success;
     }
 
-    public static BlockPos findBlock(MobEntity entity, int scanRange, BiPredicate<World, BlockPos> predicate) {
+    public static BlockPos findBlock(Mob entity, int scanRange, BiPredicate<Level, BlockPos> predicate) {
 
         int scanSize = scanRange;
         int scanSizeY = scanRange / 2;
         int adjustRangeY = 10;
 
         int tryX;
-        int tryY = MathHelper.floor(entity.getY()) - 1;
+        int tryY = Mth.floor(entity.getY()) - 1;
         int tryZ;
 
         for (int ii = 0; ii <= 10; ii++) {
@@ -210,9 +210,9 @@ public class Util {
                 scanSize = scanRange;
                 scanSizeY = scanRange / 2;
             }
-            tryX = MathHelper.floor(entity.getX()) + (entity.level.random.nextInt(scanSize)-scanSize/2);
+            tryX = Mth.floor(entity.getX()) + (entity.level.random.nextInt(scanSize)-scanSize/2);
             int i = tryY + entity.level.random.nextInt(scanSizeY)-(scanSizeY/2);
-            tryZ = MathHelper.floor(entity.getZ()) + entity.level.random.nextInt(scanSize)-scanSize/2;
+            tryZ = Mth.floor(entity.getZ()) + entity.level.random.nextInt(scanSize)-scanSize/2;
             BlockPos posTry = new BlockPos(tryX, tryY, tryZ);
 
             boolean foundBlock = false;
@@ -257,27 +257,27 @@ public class Util {
         return null;
     }
 
-    public static boolean isWater(World world, BlockPos pos) {
+    public static boolean isWater(Level world, BlockPos pos) {
         return world.getBlockState(pos).getMaterial() == Material.WATER;
     }
 
-    public static boolean isDeepWater(World world, BlockPos pos) {
+    public static boolean isDeepWater(Level world, BlockPos pos) {
         boolean clearAbove = world.isEmptyBlock(pos.above(1)) && world.isEmptyBlock(pos.above(2)) && world.isEmptyBlock(pos.above(3));
         boolean deep = world.getBlockState(pos).getMaterial() == Material.WATER && world.getBlockState(pos.below()).getMaterial() == Material.WATER;
         boolean notUnderground = false;
         if (deep) {
-            int height = world.getHeightmapPos(Heightmap.Type.MOTION_BLOCKING, pos).getY() - 1;
+            int height = world.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, pos).getY() - 1;
             notUnderground = height == pos.getY();
         }
 
         return deep && notUnderground && clearAbove;
     }
 
-    public static boolean isLand(World world, BlockPos pos) {
+    public static boolean isLand(Level world, BlockPos pos) {
         return world.getBlockState(pos).getMaterial().isSolid();
     }
 
-    public static boolean isFire(World world, BlockPos pos) {
+    public static boolean isFire(Level world, BlockPos pos) {
         return world.getBlockState(pos).getMaterial() == Material.FIRE;
     }
 
@@ -353,18 +353,18 @@ public class Util {
     }
 
     @Nullable
-    public static BlockPos findGround(World world, BlockPos origin, int maximumDistance) {
+    public static BlockPos findGround(Level world, BlockPos origin, int maximumDistance) {
         if (!isSolidGround(world, origin) && isSolidGround(world, origin.below())) {
             return origin;
         }
 
         // if this position is not free, scan upwards to find the ground
         if (isSolidGround(world, origin)) {
-            BlockPos.Mutable mutablePos = origin.mutable();
+            BlockPos.MutableBlockPos mutablePos = origin.mutable();
 
             for (int i = 0; i < maximumDistance; i++) {
                 mutablePos.move(Direction.UP);
-                if (World.isOutsideBuildHeight(mutablePos) || !isSolidGround(world, mutablePos)) {
+                if (Level.isOutsideBuildHeight(mutablePos) || !isSolidGround(world, mutablePos)) {
                     return mutablePos.immutable();
                 }
             }
@@ -372,11 +372,11 @@ public class Util {
 
         // if the position below us is not solid, scan downwards to find the ground
         if (!isSolidGround(world, origin.below())) {
-            BlockPos.Mutable mutablePos = origin.mutable();
+            BlockPos.MutableBlockPos mutablePos = origin.mutable();
 
             for (int i = 0; i < maximumDistance; i++) {
                 mutablePos.move(Direction.DOWN);
-                if (World.isOutsideBuildHeight(mutablePos)) {
+                if (Level.isOutsideBuildHeight(mutablePos)) {
                     return null;
                 }
 
@@ -389,13 +389,13 @@ public class Util {
         return null;
     }
 
-    private static boolean isSolidGround(World world, BlockPos pos) {
+    private static boolean isSolidGround(Level world, BlockPos pos) {
         return world.getBlockState(pos).getMaterial().isSolid();
     }
 
-    public static void drawParticleBetween(IParticleData data, Vector3d start, Vector3d end, ServerWorld world, Random random, int count, double xzScale, double yScale, double speedBase, double speedScale) {
+    public static void drawParticleBetween(ParticleOptions data, Vec3 start, Vec3 end, ServerLevel world, Random random, int count, double xzScale, double yScale, double speedBase, double speedScale) {
         for (int i = 0; i < count; i++) {
-            Vector3d sample = lerpVector(start, end, i / 20.0);
+            Vec3 sample = lerpVector(start, end, i / 20.0);
             double d3 = random.nextGaussian() * xzScale;
             double d1 = random.nextGaussian() * yScale;
             double d2 = random.nextGaussian() * xzScale;
@@ -403,8 +403,8 @@ public class Util {
         }
     }
 
-    public static Vector3d lerpVector(Vector3d start, Vector3d end, double d) {
-        return new Vector3d(MathHelper.lerp(d, start.x, end.x), MathHelper.lerp(d, start.y, end.y), MathHelper.lerp(d, start.z, end.z));
+    public static Vec3 lerpVector(Vec3 start, Vec3 end, double d) {
+        return new Vec3(Mth.lerp(d, start.x, end.x), Mth.lerp(d, start.y, end.y), Mth.lerp(d, start.z, end.z));
     }
 
     public static Direction getDirectionBetween(BlockBox from, BlockBox to) {

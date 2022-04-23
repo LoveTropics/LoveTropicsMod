@@ -6,8 +6,8 @@ import com.lovetropics.minigames.common.core.game.IGamePhaseDefinition;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.text.ITextComponent;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.network.chat.Component;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
@@ -16,9 +16,9 @@ public final class GameConfig implements IGameDefinition {
 	public final ResourceLocation id;
 	public final ResourceLocation backendId;
 	public final String statisticsKey;
-	public final ITextComponent name;
+	public final Component name;
 	@Nullable
-	public final ITextComponent subtitle;
+	public final Component subtitle;
 	@Nullable
 	public final ResourceLocation icon;
 	public final int minimumParticipants;
@@ -31,8 +31,8 @@ public final class GameConfig implements IGameDefinition {
 			ResourceLocation id,
 			ResourceLocation backendId,
 			String statisticsKey,
-			ITextComponent name,
-			@Nullable ITextComponent subtitle,
+			Component name,
+			@Nullable Component subtitle,
 			@Nullable ResourceLocation icon,
 			int minimumParticipants,
 			int maximumParticipants,
@@ -68,7 +68,7 @@ public final class GameConfig implements IGameDefinition {
 			).apply(instance, (backendIdOpt, statisticsKeyOpt, name, subtitleOpt, iconOpt, minimumParticipants, maximumParticipants, waitingOpt, active) -> {
 				ResourceLocation backendId = backendIdOpt.orElse(id);
 				String telemetryKey = statisticsKeyOpt.orElse(id.getPath());
-				ITextComponent subtitle = subtitleOpt.orElse(null);
+				Component subtitle = subtitleOpt.orElse(null);
 				ResourceLocation icon = iconOpt.orElse(null);
 				GamePhaseConfig waiting = waitingOpt.orElse(null);
 				return new GameConfig(id, backendId, telemetryKey, name, subtitle, icon, minimumParticipants, maximumParticipants, waiting, active);
@@ -92,13 +92,13 @@ public final class GameConfig implements IGameDefinition {
 	}
 
 	@Override
-	public ITextComponent getName() {
+	public Component getName() {
 		return name;
 	}
 
 	@Nullable
 	@Override
-	public ITextComponent getSubtitle() {
+	public Component getSubtitle() {
 		return subtitle;
 	}
 

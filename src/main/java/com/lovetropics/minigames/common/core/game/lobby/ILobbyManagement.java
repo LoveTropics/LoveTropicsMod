@@ -1,15 +1,15 @@
 package com.lovetropics.minigames.common.core.game.lobby;
 
 import com.lovetropics.minigames.common.core.game.IGameDefinition;
-import net.minecraft.command.CommandSource;
-import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.server.level.ServerPlayer;
 
 public interface ILobbyManagement {
-	boolean startManaging(ServerPlayerEntity player);
+	boolean startManaging(ServerPlayer player);
 
-	void stopManaging(ServerPlayerEntity player);
+	void stopManaging(ServerPlayer player);
 
-	boolean canManage(CommandSource source);
+	boolean canManage(CommandSourceStack source);
 
 	void setName(String name);
 

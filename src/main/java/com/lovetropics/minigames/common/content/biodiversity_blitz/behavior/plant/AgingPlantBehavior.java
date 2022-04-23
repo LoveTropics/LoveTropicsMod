@@ -5,9 +5,9 @@ import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.plant.Pl
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
-import net.minecraft.block.BlockState;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.server.ServerWorld;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraftforge.common.util.Constants;
 
 import java.util.Random;
@@ -27,7 +27,7 @@ public abstract class AgingPlantBehavior implements IGameBehavior {
                 return;
             }
 
-            ServerWorld world = game.getWorld();
+            ServerLevel world = game.getWorld();
 
             for (Plant plant : plants) {
                 for (BlockPos pos : plant.coverage()) {

@@ -3,13 +3,13 @@ package com.lovetropics.minigames.client.screen.flex;
 import java.util.Objects;
 
 import com.lovetropics.minigames.LoveTropics;
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.vertex.PoseStack;
 
-import net.minecraft.client.gui.AbstractGui;
+import net.minecraft.client.gui.GuiComponent;
 import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.fml.loading.FMLEnvironment;
 
-public final class Layout extends AbstractGui {
+public final class Layout extends GuiComponent {
 	private final Box content;
 	private final Box padding;
 	private final Box margin;
@@ -90,7 +90,7 @@ public final class Layout extends AbstractGui {
 	}
 
 	private static final boolean inDev = !FMLEnvironment.naming.equals("srg");
-	public void debugRender(MatrixStack mStack) {
+	public void debugRender(PoseStack mStack) {
 		if (!inDev) return;
 		vLine(mStack, margin().left(), margin().top(), margin().bottom() - 1, 0xFFF9CC9D);
 		vLine(mStack, margin().right() - 1, margin().top(), margin().bottom() - 1, 0xFFF9CC9D);

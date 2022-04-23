@@ -12,7 +12,7 @@ import com.lovetropics.minigames.common.core.game.state.team.GameTeam;
 import com.lovetropics.minigames.common.core.game.state.team.GameTeamKey;
 import com.lovetropics.minigames.common.core.game.state.team.TeamState;
 import com.mojang.serialization.Codec;
-import net.minecraft.util.text.ITextComponent;
+import net.minecraft.network.chat.Component;
 
 import javax.annotation.Nullable;
 
@@ -36,7 +36,7 @@ public class TeamWinTrigger implements IGameBehavior {
 				if (finalTeam != null) {
 					winTriggered = true;
 
-					ITextComponent winnerName = finalTeam.config().name().copy()
+					Component winnerName = finalTeam.config().name().copy()
 							.withStyle(finalTeam.config().formatting());
 					game.invoker(GameLogicEvents.WIN_TRIGGERED).onWinTriggered(winnerName);
 					game.invoker(GameLogicEvents.GAME_OVER).onGameOver();

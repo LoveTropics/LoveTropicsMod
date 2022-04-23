@@ -2,7 +2,7 @@ package com.lovetropics.minigames.common.core.game.impl;
 
 import com.lovetropics.minigames.common.core.game.player.MutablePlayerSet;
 import com.lovetropics.minigames.common.core.game.player.PlayerSet;
-import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.server.level.ServerPlayer;
 
 import javax.annotation.Nullable;
 import java.util.Iterator;
@@ -20,7 +20,7 @@ final class LobbyTrackingPlayers implements PlayerSet {
 	}
 
 	void rebuildTracking() {
-		for (ServerPlayerEntity player : PlayerSet.ofServer(this.lobby.getServer())) {
+		for (ServerPlayer player : PlayerSet.ofServer(this.lobby.getServer())) {
 			if (this.lobby.isVisibleTo(player)) {
 				this.startTracking(player);
 			} else {
@@ -29,23 +29,23 @@ final class LobbyTrackingPlayers implements PlayerSet {
 		}
 	}
 
-	void onPlayerLoggedIn(ServerPlayerEntity player) {
+	void onPlayerLoggedIn(ServerPlayer player) {
 		if (this.lobby.isVisibleTo(player)) {
 			this.startTracking(player);
 		}
 	}
 
-	void onPlayerLoggedOut(ServerPlayerEntity player) {
+	void onPlayerLoggedOut(ServerPlayer player) {
 		this.stopTracking(player);
 	}
 
-	private void startTracking(ServerPlayerEntity player) {
+	private void startTracking(ServerPlayer player) {
 		if (this.tracking.add(player)) {
 			this.lobby.onPlayerStartTracking(player);
 		}
 	}
 
-	private void stopTracking(ServerPlayerEntity player) {
+	private void stopTracking(ServerPlayer player) {
 		if (this.tracking.remove(player)) {
 			this.lobby.onPlayerStopTracking(player);
 		}
@@ -58,7 +58,7 @@ final class LobbyTrackingPlayers implements PlayerSet {
 
 	@Nullable
 	@Override
-	public ServerPlayerEntity getPlayerBy(UUID id) {
+	public ServerPlayer getPlayerBy(UUID id) {
 		return this.tracking.getPlayerBy(id);
 	}
 
@@ -68,7 +68,7 @@ final class LobbyTrackingPlayers implements PlayerSet {
 	}
 
 	@Override
-	public Iterator<ServerPlayerEntity> iterator() {
+	public Iterator<ServerPlayer> iterator() {
 		return this.tracking.iterator();
 	}
 }

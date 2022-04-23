@@ -9,9 +9,9 @@ import com.mojang.datafixers.util.Pair;
 import com.mojang.datafixers.util.Unit;
 import com.mojang.serialization.*;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
-import net.minecraft.resources.IResource;
-import net.minecraft.resources.IResourceManager;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.server.packs.resources.Resource;
+import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.resources.ResourceLocation;
 import org.apache.commons.lang3.mutable.MutableObject;
 
 import javax.annotation.Nullable;
@@ -28,10 +28,10 @@ import java.util.stream.Stream;
 public final class BehaviorReferenceReader implements Codec<List<BehaviorReference>> {
 	private static final JsonParser PARSER = new JsonParser();
 
-	private final IResourceManager resources;
+	private final ResourceManager resources;
 	private final Set<ResourceLocation> currentlyReading = new ObjectOpenHashSet<>();
 
-	public BehaviorReferenceReader(IResourceManager resources) {
+	public BehaviorReferenceReader(ResourceManager resources) {
 		this.resources = resources;
 	}
 
@@ -140,7 +140,7 @@ public final class BehaviorReferenceReader implements Codec<List<BehaviorReferen
 		BehaviorParameterReplacer<JsonElement> parameterReplacer = BehaviorParameterReplacer.from(new Dynamic<>(ops, input));
 
 		try (
-				IResource resource = resources.getResource(path);
+				Resource resource = resources.getResource(path);
 				InputStream stream = resource.getInputStream()
 		) {
 			JsonElement json = PARSER.parse(new BufferedReader(new InputStreamReader(stream)));

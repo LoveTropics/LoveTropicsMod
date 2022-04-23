@@ -5,16 +5,16 @@ import it.unimi.dsi.fastutil.chars.CharArrayList;
 import it.unimi.dsi.fastutil.chars.CharList;
 import it.unimi.dsi.fastutil.chars.CharOpenHashSet;
 import it.unimi.dsi.fastutil.chars.CharSet;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.network.play.server.SDisplayObjectivePacket;
-import net.minecraft.network.play.server.SScoreboardObjectivePacket;
-import net.minecraft.network.play.server.SUpdateScorePacket;
-import net.minecraft.scoreboard.ScoreCriteria;
-import net.minecraft.scoreboard.ScoreObjective;
-import net.minecraft.scoreboard.ServerScoreboard;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.network.protocol.game.ClientboundSetDisplayObjectivePacket;
+import net.minecraft.network.protocol.game.ClientboundSetObjectivePacket;
+import net.minecraft.network.protocol.game.ClientboundSetScorePacket;
+import net.minecraft.world.scores.criteria.ObjectiveCriteria;
+import net.minecraft.world.scores.Objective;
+import net.minecraft.server.ServerScoreboard;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.TextFormatting;
+import net.minecraft.network.chat.Component;
+import net.minecraft.ChatFormatting;
 
 import java.util.Arrays;
 
@@ -32,7 +32,7 @@ public final class GameSidebar implements GameWidget {
 
 	static {
 		CharSet vanillaFormattingCodes = new CharOpenHashSet();
-		for (TextFormatting formatting : TextFormatting.values()) {
+		for (ChatFormatting formatting : ChatFormatting.values()) {
 			vanillaFormattingCodes.add(formatting.toString().charAt(1));
 		}
 
@@ -48,11 +48,11 @@ public final class GameSidebar implements GameWidget {
 	}
 
 	private final MutablePlayerSet players;
-	private final ITextComponent title;
+	private final Component title;
 
 	private String[] display = new String[0];
 
-	public GameSidebar(MinecraftServer server, ITextComponent title) {
+	public GameSidebar(MinecraftServer server, Component title) {
 		this.players = new MutablePlayerSet(server);
 		this.title = title;
 	}
@@ -64,8 +64,8 @@ public final class GameSidebar implements GameWidget {
 
 		for (int i = 0; i < this.display.length; i++) {
 			if (i >= display.length || !this.display[i].equals(display[i])) {
-				this.players.sendPacket(new SUpdateScorePacket(
-						ServerScoreboard.Action.REMOVE, null,
+				this.players.sendPacket(new ClientboundSetScorePacket(
+						ServerScoreboard.Method.REMOVE, null,
 						makeLine(i, this.display[i]), -1
 				));
 			}
@@ -73,56 +73,56 @@ public final class GameSidebar implements GameWidget {
 
 		this.display = display;
 
-		for (ServerPlayerEntity player : this.players) {
+		for (ServerPlayer player : this.players) {
 			this.sendDisplay(player, display);
 		}
 	}
 
 	@Override
-	public void addPlayer(ServerPlayerEntity player) {
+	public void addPlayer(ServerPlayer player) {
 		this.players.add(player);
 
-		ScoreObjective objective = this.createDummyObjective();
+		Objective objective = this.createDummyObjective();
 
-		player.connection.send(new SScoreboardObjectivePacket(objective, ADD_OBJECTIVE));
-		player.connection.send(new SDisplayObjectivePacket(SIDEBAR_SLOT, objective));
+		player.connection.send(new ClientboundSetObjectivePacket(objective, ADD_OBJECTIVE));
+		player.connection.send(new ClientboundSetDisplayObjectivePacket(SIDEBAR_SLOT, objective));
 
 		this.sendDisplay(player, this.display);
 	}
 
 	@Override
-	public void removePlayer(ServerPlayerEntity player) {
+	public void removePlayer(ServerPlayer player) {
 		this.players.remove(player);
 		this.sendRemove(player);
 	}
 
-	private void sendRemove(ServerPlayerEntity player) {
-		ScoreObjective objective = this.createDummyObjective();
-		player.connection.send(new SScoreboardObjectivePacket(objective, REMOVE_OBJECTIVE));
+	private void sendRemove(ServerPlayer player) {
+		Objective objective = this.createDummyObjective();
+		player.connection.send(new ClientboundSetObjectivePacket(objective, REMOVE_OBJECTIVE));
 	}
 
-	private void sendDisplay(ServerPlayerEntity player, String[] display) {
+	private void sendDisplay(ServerPlayer player, String[] display) {
 		for (int i = 0; i < display.length; i++) {
 			int score = display.length - i;
-			player.connection.send(new SUpdateScorePacket(
-					ServerScoreboard.Action.CHANGE, OBJECTIVE_NAME,
+			player.connection.send(new ClientboundSetScorePacket(
+					ServerScoreboard.Method.CHANGE, OBJECTIVE_NAME,
 					makeLine(i, display[i]), score
 			));
 		}
 	}
 
-	private ScoreObjective createDummyObjective() {
-		return new ScoreObjective(
+	private Objective createDummyObjective() {
+		return new Objective(
 				null, OBJECTIVE_NAME,
-				ScoreCriteria.DUMMY,
+				ObjectiveCriteria.DUMMY,
 				this.title,
-				ScoreCriteria.RenderType.INTEGER
+				ObjectiveCriteria.RenderType.INTEGER
 		);
 	}
 
 	@Override
 	public void close() {
-		for (ServerPlayerEntity player : this.players) {
+		for (ServerPlayer player : this.players) {
 			this.sendRemove(player);
 		}
 		this.players.clear();

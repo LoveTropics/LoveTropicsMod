@@ -5,8 +5,8 @@ import com.lovetropics.minigames.client.screen.LayoutGui;
 import com.lovetropics.minigames.client.screen.LayoutTree;
 import com.lovetropics.minigames.common.core.game.behavior.config.BehaviorConfig;
 import com.lovetropics.minigames.common.core.game.behavior.config.ConfigData;
-import com.mojang.blaze3d.matrix.MatrixStack;
-import net.minecraft.client.gui.IGuiEventListener;
+import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.gui.components.events.GuiEventListener;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,7 +36,7 @@ public class BehaviorConfigList extends LayoutGui {
 	}
 	
 	@Override
-	public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
+	public void render(PoseStack matrixStack, int mouseX, int mouseY, float partialTicks) {
 		super.render(matrixStack, mouseX, mouseY, partialTicks);
 		for (ConfigDataUI child : children) {
 			child.render(matrixStack, mouseX, mouseY, partialTicks);
@@ -48,7 +48,7 @@ public class BehaviorConfigList extends LayoutGui {
 	}
 	
 	@Override
-	public List<? extends IGuiEventListener> children() {
+	public List<? extends GuiEventListener> children() {
 		return children;
 	}
 	

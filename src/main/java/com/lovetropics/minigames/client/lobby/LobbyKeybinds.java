@@ -1,8 +1,8 @@
 package com.lovetropics.minigames.client.lobby;
 
 import com.lovetropics.minigames.Constants;
-import net.minecraft.client.settings.KeyBinding;
-import net.minecraft.client.util.InputMappings;
+import net.minecraft.client.KeyMapping;
+import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.settings.KeyConflictContext;
 import net.minecraftforge.client.settings.KeyModifier;
@@ -21,13 +21,13 @@ import static org.lwjgl.glfw.GLFW.GLFW_KEY_L;
 @EventBusSubscriber(bus = Bus.MOD, value = Dist.CLIENT, modid = Constants.MODID)
 public class LobbyKeybinds {
 
-	private static final List<KeyBinding> ALL = new ArrayList<>();
+	private static final List<KeyMapping> ALL = new ArrayList<>();
 
-	public static final KeyBinding JOIN = makeMinigameKeybind("join", GLFW_KEY_J);
-	public static final KeyBinding LEAVE = makeMinigameKeybind("leave", GLFW_KEY_L);
+	public static final KeyMapping JOIN = makeMinigameKeybind("join", GLFW_KEY_J);
+	public static final KeyMapping LEAVE = makeMinigameKeybind("leave", GLFW_KEY_L);
 
-	private static final KeyBinding makeMinigameKeybind(String id, int key) {
-		KeyBinding ret = new KeyBinding("key." + Constants.MODID + "." + id, KeyConflictContext.IN_GAME, KeyModifier.CONTROL, InputMappings.Type.KEYSYM.getOrCreate(key), "key.categories." + Constants.MODID + ".lobby");
+	private static final KeyMapping makeMinigameKeybind(String id, int key) {
+		KeyMapping ret = new KeyMapping("key." + Constants.MODID + "." + id, KeyConflictContext.IN_GAME, KeyModifier.CONTROL, InputConstants.Type.KEYSYM.getOrCreate(key), "key.categories." + Constants.MODID + ".lobby");
 		ALL.add(ret);
 		return ret;
 	}

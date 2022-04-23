@@ -3,13 +3,13 @@ package com.lovetropics.minigames.mixin.client;
 import com.lovetropics.minigames.client.game.ClientGameStateManager;
 import com.lovetropics.minigames.common.core.game.client_state.GameClientStateTypes;
 import com.lovetropics.minigames.common.core.game.client_state.instance.ReplaceTexturesClientState;
-import net.minecraft.client.gui.overlay.BossOverlayGui;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.client.gui.components.BossHealthOverlay;
+import net.minecraft.resources.ResourceLocation;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
 
-@Mixin(BossOverlayGui.class)
+@Mixin(BossHealthOverlay.class)
 public class BossOverlayGuiMixin {
 	@ModifyArg(
 			method = "render",

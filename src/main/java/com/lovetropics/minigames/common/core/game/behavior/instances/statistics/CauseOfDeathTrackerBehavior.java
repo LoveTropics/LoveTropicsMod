@@ -9,9 +9,9 @@ import com.lovetropics.minigames.common.core.game.state.statistics.CauseOfDeath;
 import com.lovetropics.minigames.common.core.game.state.statistics.StatisticKey;
 import com.lovetropics.minigames.common.core.game.state.statistics.StatisticsMap;
 import com.mojang.serialization.Codec;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.util.ActionResultType;
-import net.minecraft.util.DamageSource;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.damagesource.DamageSource;
 
 public final class CauseOfDeathTrackerBehavior implements IGameBehavior {
 	public static final Codec<CauseOfDeathTrackerBehavior> CODEC = Codec.unit(CauseOfDeathTrackerBehavior::new);
@@ -22,7 +22,7 @@ public final class CauseOfDeathTrackerBehavior implements IGameBehavior {
 		events.listen(GamePlayerEvents.DEATH, (player, source) -> onPlayerDeath(game, player, source));
 	}
 
-	private void onPlayerSetRole(IGamePhase game, ServerPlayerEntity player, PlayerRole role, PlayerRole lastRole) {
+	private void onPlayerSetRole(IGamePhase game, ServerPlayer player, PlayerRole role, PlayerRole lastRole) {
 		if (role == PlayerRole.PARTICIPANT) {
 			game.getStatistics().forPlayer(player).set(StatisticKey.DEAD, false);
 		} else if (role == PlayerRole.SPECTATOR && lastRole == PlayerRole.PARTICIPANT) {
@@ -30,12 +30,12 @@ public final class CauseOfDeathTrackerBehavior implements IGameBehavior {
 		}
 	}
 
-	private ActionResultType onPlayerDeath(IGamePhase game, ServerPlayerEntity player, DamageSource source) {
+	private InteractionResult onPlayerDeath(IGamePhase game, ServerPlayer player, DamageSource source) {
 		StatisticsMap playerStatistics = game.getStatistics().forPlayer(player);
 
 		playerStatistics.set(StatisticKey.CAUSE_OF_DEATH, CauseOfDeath.from(source));
 		playerStatistics.set(StatisticKey.DEAD, true);
 
-		return ActionResultType.PASS;
+		return InteractionResult.PASS;
 	}
 }

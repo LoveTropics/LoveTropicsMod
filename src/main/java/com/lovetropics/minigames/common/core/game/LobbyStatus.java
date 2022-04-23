@@ -1,16 +1,16 @@
 package com.lovetropics.minigames.common.core.game;
 
-import net.minecraft.util.text.TextFormatting;
+import net.minecraft.ChatFormatting;
 
 public enum LobbyStatus {
-	WAITING("waiting", TextFormatting.GOLD),
-	PLAYING("in progress", TextFormatting.GREEN),
-	PAUSED("paused", TextFormatting.RED);
+	WAITING("waiting", ChatFormatting.GOLD),
+	PLAYING("in progress", ChatFormatting.GREEN),
+	PAUSED("paused", ChatFormatting.RED);
 
 	public final String description;
-	public final TextFormatting color;
+	public final ChatFormatting color;
 
-	LobbyStatus(String description, TextFormatting color) {
+	LobbyStatus(String description, ChatFormatting color) {
 		this.description = description;
 		this.color = color;
 	}

@@ -6,8 +6,8 @@ import com.lovetropics.minigames.common.core.game.client_state.GameClientStateTy
 import com.lovetropics.minigames.common.core.game.client_state.GameClientStateTypes;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.util.IStringSerializable;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.StringRepresentable;
+import net.minecraft.resources.ResourceLocation;
 
 import javax.annotation.Nullable;
 import java.util.Map;
@@ -35,7 +35,7 @@ public final class ReplaceTexturesClientState implements GameClientState {
 		return GameClientStateTypes.REPLACE_TEXTURES.get();
 	}
 
-	public enum TextureType implements IStringSerializable {
+	public enum TextureType implements StringRepresentable {
 		HOTBAR("hotbar"),
 		BOSS_BARS("boss_bars");
 

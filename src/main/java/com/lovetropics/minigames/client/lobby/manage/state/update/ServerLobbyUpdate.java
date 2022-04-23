@@ -10,10 +10,14 @@ import com.lovetropics.minigames.common.core.game.lobby.LobbyControls;
 import com.lovetropics.minigames.common.core.game.lobby.LobbyVisibility;
 import com.lovetropics.minigames.common.core.game.lobby.QueuedGame;
 import com.lovetropics.minigames.common.util.PartialUpdate;
-import net.minecraft.network.PacketBuffer;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.ResourceLocation;
 
 import java.util.function.Function;
+
+import com.lovetropics.minigames.common.util.PartialUpdate.AbstractSet;
+import com.lovetropics.minigames.common.util.PartialUpdate.AbstractType;
+import com.lovetropics.minigames.common.util.PartialUpdate.Family;
 
 public abstract class ServerLobbyUpdate extends PartialUpdate<ILobbyManagement> {
 	public static final class Set extends AbstractSet<ILobbyManagement> {
@@ -25,7 +29,7 @@ public abstract class ServerLobbyUpdate extends PartialUpdate<ILobbyManagement> 
 			return new Set();
 		}
 
-		public static Set decode(PacketBuffer buffer) {
+		public static Set decode(FriendlyByteBuf buffer) {
 			Set set = new Set();
 			set.decodeSelf(buffer);
 			return set;
@@ -86,14 +90,14 @@ public abstract class ServerLobbyUpdate extends PartialUpdate<ILobbyManagement> 
 		CLOSE(Close::decode),
 		CONFIGURE(Configure::decode);
 
-		private final Function<PacketBuffer, ServerLobbyUpdate> decode;
+		private final Function<FriendlyByteBuf, ServerLobbyUpdate> decode;
 
-		Type(Function<PacketBuffer, ServerLobbyUpdate> decode) {
+		Type(Function<FriendlyByteBuf, ServerLobbyUpdate> decode) {
 			this.decode = decode;
 		}
 
 		@Override
-		public ServerLobbyUpdate decode(PacketBuffer buffer) {
+		public ServerLobbyUpdate decode(FriendlyByteBuf buffer) {
 			return decode.apply(buffer);
 		}
 	}
@@ -116,11 +120,11 @@ public abstract class ServerLobbyUpdate extends PartialUpdate<ILobbyManagement> 
 		}
 
 		@Override
-		protected void encode(PacketBuffer buffer) {
+		protected void encode(FriendlyByteBuf buffer) {
 			buffer.writeUtf(name, 200);
 		}
 
-		static SetName decode(PacketBuffer buffer) {
+		static SetName decode(FriendlyByteBuf buffer) {
 			return new SetName(buffer.readUtf(200));
 		}
 	}
@@ -142,11 +146,11 @@ public abstract class ServerLobbyUpdate extends PartialUpdate<ILobbyManagement> 
 		}
 
 		@Override
-		protected void encode(PacketBuffer buffer) {
+		protected void encode(FriendlyByteBuf buffer) {
 			buffer.writeResourceLocation(definition);
 		}
 
-		static Enqueue decode(PacketBuffer buffer) {
+		static Enqueue decode(FriendlyByteBuf buffer) {
 			return new Enqueue(buffer.readResourceLocation());
 		}
 	}
@@ -165,11 +169,11 @@ public abstract class ServerLobbyUpdate extends PartialUpdate<ILobbyManagement> 
 		}
 
 		@Override
-		protected void encode(PacketBuffer buffer) {
+		protected void encode(FriendlyByteBuf buffer) {
 			buffer.writeVarInt(id);
 		}
 
-		static RemoveQueuedGame decode(PacketBuffer buffer) {
+		static RemoveQueuedGame decode(FriendlyByteBuf buffer) {
 			return new RemoveQueuedGame(buffer.readVarInt());
 		}
 	}
@@ -190,12 +194,12 @@ public abstract class ServerLobbyUpdate extends PartialUpdate<ILobbyManagement> 
 		}
 
 		@Override
-		protected void encode(PacketBuffer buffer) {
+		protected void encode(FriendlyByteBuf buffer) {
 			buffer.writeVarInt(id);
 			buffer.writeVarInt(newIndex);
 		}
 
-		static ReorderQueuedGame decode(PacketBuffer buffer) {
+		static ReorderQueuedGame decode(FriendlyByteBuf buffer) {
 			return new ReorderQueuedGame(buffer.readVarInt(), buffer.readVarInt());
 		}
 	}
@@ -214,11 +218,11 @@ public abstract class ServerLobbyUpdate extends PartialUpdate<ILobbyManagement> 
 		}
 
 		@Override
-		protected void encode(PacketBuffer buffer) {
+		protected void encode(FriendlyByteBuf buffer) {
 			buffer.writeByte(control.ordinal() & 0xFF);
 		}
 
-		static SelectControl decode(PacketBuffer buffer) {
+		static SelectControl decode(FriendlyByteBuf buffer) {
 			LobbyControls.Type[] types = LobbyControls.Type.values();
 			LobbyControls.Type control = types[buffer.readUnsignedByte() % types.length];
 			return new SelectControl(control);
@@ -239,11 +243,11 @@ public abstract class ServerLobbyUpdate extends PartialUpdate<ILobbyManagement> 
 		}
 
 		@Override
-		protected void encode(PacketBuffer buffer) {
+		protected void encode(FriendlyByteBuf buffer) {
 			buffer.writeEnum(visibility);
 		}
 
-		static SetVisibility decode(PacketBuffer buffer) {
+		static SetVisibility decode(FriendlyByteBuf buffer) {
 			return new SetVisibility(buffer.readEnum(LobbyVisibility.class));
 		}
 	}
@@ -259,10 +263,10 @@ public abstract class ServerLobbyUpdate extends PartialUpdate<ILobbyManagement> 
 		}
 
 		@Override
-		protected void encode(PacketBuffer buffer) {
+		protected void encode(FriendlyByteBuf buffer) {
 		}
 
-		static Close decode(PacketBuffer buffer) {
+		static Close decode(FriendlyByteBuf buffer) {
 			return new Close();
 		}
 	}
@@ -285,12 +289,12 @@ public abstract class ServerLobbyUpdate extends PartialUpdate<ILobbyManagement> 
 		}
 
 		@Override
-		protected void encode(PacketBuffer buffer) {
+		protected void encode(FriendlyByteBuf buffer) {
 			buffer.writeVarInt(id);
 			game.encode(buffer);
 		}
 
-		static Configure decode(PacketBuffer buffer) {
+		static Configure decode(FriendlyByteBuf buffer) {
 			return new Configure(buffer.readVarInt(), ClientLobbyQueuedGame.decode(buffer));
 		}
 	}

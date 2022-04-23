@@ -9,15 +9,15 @@ import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.advancements.criterion.BlockPredicate;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.util.Direction;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.world.gen.blockstateprovider.BlockStateProvider;
-import net.minecraft.world.server.ServerWorld;
+import net.minecraft.advancements.critereon.BlockPredicate;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.core.Direction;
+import net.minecraft.core.BlockPos;
+import net.minecraft.util.Mth;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvider;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraftforge.common.util.Constants;
 
 import javax.annotation.Nullable;
@@ -71,7 +71,7 @@ public final class SetExtendingBlocksBehavior implements IGameBehavior {
 		}
 
 		if (regions.isEmpty()) {
-			throw new GameException(new StringTextComponent("Regions not specified for extending block set behavior!"));
+			throw new GameException(new TextComponent("Regions not specified for extending block set behavior!"));
 		}
 
 		events.listen(GamePhaseEvents.TICK, () -> {
@@ -80,7 +80,7 @@ public final class SetExtendingBlocksBehavior implements IGameBehavior {
 				long time = gameTime - startTime;
 				long timeLength = endTime - startTime + 1;
 
-				float progress = MathHelper.clamp((float) time / timeLength, 0.0F, 1.0F);
+				float progress = Mth.clamp((float) time / timeLength, 0.0F, 1.0F);
 
 				for (BlockBox region : regions) {
 					this.tickExtendingInBox(game, region, progress);
@@ -93,7 +93,7 @@ public final class SetExtendingBlocksBehavior implements IGameBehavior {
 		// TODO: we should be not rewriting blocks that we already placed
 		BlockBox extendingBox = this.getExtendingBox(box, progress);
 
-		ServerWorld world = game.getWorld();
+		ServerLevel world = game.getWorld();
 		BlockPredicate replace = this.replace;
 		BlockStateProvider set = this.set;
 		Random random = world.random;
@@ -117,7 +117,7 @@ public final class SetExtendingBlocksBehavior implements IGameBehavior {
 		BlockPos size = box.getSize();
 
 		int totalLength = direction.getAxis().choose(size.getX(), size.getY(), size.getZ());
-		int currentLength = MathHelper.floor(totalLength * progress);
+		int currentLength = Mth.floor(totalLength * progress);
 
 		if (direction.getAxisDirection() == Direction.AxisDirection.POSITIVE) {
 			return box.withMax(box.min.relative(direction, currentLength));

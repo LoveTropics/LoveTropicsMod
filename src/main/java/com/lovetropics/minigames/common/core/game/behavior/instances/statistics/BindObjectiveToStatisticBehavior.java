@@ -8,10 +8,10 @@ import com.lovetropics.minigames.common.core.game.state.statistics.GameStatistic
 import com.lovetropics.minigames.common.core.game.state.statistics.StatisticKey;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.scoreboard.Score;
-import net.minecraft.scoreboard.ScoreObjective;
-import net.minecraft.scoreboard.ServerScoreboard;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.scores.Score;
+import net.minecraft.world.scores.Objective;
+import net.minecraft.server.ServerScoreboard;
 
 import java.util.Map;
 
@@ -37,7 +37,7 @@ public final class BindObjectiveToStatisticBehavior implements IGameBehavior {
 				StatisticKey<Integer> key = entry.getKey();
 				String objectiveKey = entry.getValue();
 
-				ScoreObjective objective = scoreboard.getOrCreateObjective(objectiveKey);
+				Objective objective = scoreboard.getOrCreateObjective(objectiveKey);
 				if (objective != null) {
 					applyFromObjective(game, key, objective);
 				}
@@ -45,12 +45,12 @@ public final class BindObjectiveToStatisticBehavior implements IGameBehavior {
 		});
 	}
 
-	private void applyFromObjective(IGamePhase game, StatisticKey<Integer> key, ScoreObjective objective) {
+	private void applyFromObjective(IGamePhase game, StatisticKey<Integer> key, Objective objective) {
 		GameStatistics statistics = game.getStatistics();
 		ServerScoreboard scoreboard = game.getServer().getScoreboard();
 
-		for (ServerPlayerEntity player : game.getAllPlayers()) {
-			Map<ScoreObjective, Score> objectives = scoreboard.getPlayerScores(player.getScoreboardName());
+		for (ServerPlayer player : game.getAllPlayers()) {
+			Map<Objective, Score> objectives = scoreboard.getPlayerScores(player.getScoreboardName());
 			Score score = objectives.get(objective);
 			if (score != null) {
 				statistics.forPlayer(player).set(key, score.getScore());

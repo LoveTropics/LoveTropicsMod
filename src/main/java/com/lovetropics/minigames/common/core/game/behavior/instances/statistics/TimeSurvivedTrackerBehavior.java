@@ -9,9 +9,9 @@ import com.lovetropics.minigames.common.core.game.state.statistics.GameStatistic
 import com.lovetropics.minigames.common.core.game.state.statistics.StatisticKey;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.util.ActionResultType;
-import net.minecraft.util.DamageSource;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.damagesource.DamageSource;
 
 public final class TimeSurvivedTrackerBehavior implements IGameBehavior {
 	public static final Codec<TimeSurvivedTrackerBehavior> CODEC = RecordCodecBuilder.create(instance -> {
@@ -42,18 +42,18 @@ public final class TimeSurvivedTrackerBehavior implements IGameBehavior {
 		GameStatistics statistics = game.getStatistics();
 
 		int secondsSurvived = getSecondsSurvived(game);
-		for (ServerPlayerEntity player : game.getParticipants()) {
+		for (ServerPlayer player : game.getParticipants()) {
 			statistics.forPlayer(player).set(StatisticKey.TIME_SURVIVED, secondsSurvived);
 		}
 
 		statistics.global().set(StatisticKey.TOTAL_TIME, secondsSurvived);
 	}
 
-	private ActionResultType onPlayerDeath(IGamePhase game, ServerPlayerEntity player, DamageSource source) {
+	private InteractionResult onPlayerDeath(IGamePhase game, ServerPlayer player, DamageSource source) {
 		GameStatistics statistics = game.getStatistics();
 		statistics.forPlayer(player).set(StatisticKey.TIME_SURVIVED, getSecondsSurvived(game));
 
-		return ActionResultType.PASS;
+		return InteractionResult.PASS;
 	}
 
 	private int getSecondsSurvived(IGamePhase game) {

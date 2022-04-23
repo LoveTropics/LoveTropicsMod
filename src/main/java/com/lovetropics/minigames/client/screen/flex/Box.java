@@ -2,7 +2,7 @@ package com.lovetropics.minigames.client.screen.flex;
 
 import java.util.Objects;
 
-import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.screens.Screen;
 
 public final class Box {
 

@@ -9,9 +9,9 @@ import com.lovetropics.minigames.common.core.game.state.statistics.PlayerKey;
 import com.lovetropics.minigames.common.core.game.state.statistics.PlayerPlacement;
 import com.lovetropics.minigames.common.core.game.state.statistics.StatisticKey;
 import com.mojang.serialization.Codec;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.util.ActionResultType;
-import net.minecraft.util.DamageSource;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.damagesource.DamageSource;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,15 +28,15 @@ public final class PlaceByDeathOrderBehavior implements IGameBehavior {
 		events.listen(GamePhaseEvents.FINISH, () -> onFinish(game));
 	}
 
-	private ActionResultType onPlayerDeath(ServerPlayerEntity player, DamageSource source) {
+	private InteractionResult onPlayerDeath(ServerPlayer player, DamageSource source) {
 		PlayerKey playerKey = PlayerKey.from(player);
 		if (!deathOrder.contains(playerKey)) {
 			deathOrder.add(playerKey);
 		}
-		return ActionResultType.PASS;
+		return InteractionResult.PASS;
 	}
 
-	private void onPlayerLeave(ServerPlayerEntity player) {
+	private void onPlayerLeave(ServerPlayer player) {
 		PlayerKey playerKey = PlayerKey.from(player);
 		if (!deathOrder.contains(playerKey)) {
 			deathOrder.add(playerKey);

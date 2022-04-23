@@ -1,20 +1,20 @@
 package com.lovetropics.minigames.common.core.game.weather;
 
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.world.server.ServerWorld;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.level.ServerLevel;
 
 import javax.annotation.Nullable;
 
 public final class VanillaWeatherController implements WeatherController {
-	private final ServerWorld world;
+	private final ServerLevel world;
 	private final WeatherState state = new WeatherState();
 
-	public VanillaWeatherController(ServerWorld world) {
+	public VanillaWeatherController(ServerLevel world) {
 		this.world = world;
 	}
 
 	@Override
-	public void onPlayerJoin(ServerPlayerEntity player) {
+	public void onPlayerJoin(ServerPlayer player) {
 	}
 
 	@Override

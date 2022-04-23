@@ -4,8 +4,8 @@ import com.lovetropics.lib.BlockBox;
 import com.lovetropics.minigames.client.map.ClientMapWorkspace;
 import com.lovetropics.minigames.common.core.map.workspace.MapWorkspace;
 import com.lovetropics.minigames.common.core.map.workspace.MapWorkspaceManager;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.network.PacketBuffer;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.fml.LogicalSide;
 import net.minecraftforge.fml.network.NetworkDirection;
 import net.minecraftforge.fml.network.NetworkEvent;
@@ -21,7 +21,7 @@ public class UpdateWorkspaceRegionMessage {
 		this.region = region;
 	}
 
-	public void encode(PacketBuffer buffer) {
+	public void encode(FriendlyByteBuf buffer) {
 		buffer.writeVarInt(id);
 		if (region != null) {
 			buffer.writeBoolean(true);
@@ -31,7 +31,7 @@ public class UpdateWorkspaceRegionMessage {
 		}
 	}
 
-	public static UpdateWorkspaceRegionMessage decode(PacketBuffer buffer) {
+	public static UpdateWorkspaceRegionMessage decode(FriendlyByteBuf buffer) {
 		int id = buffer.readVarInt();
 		BlockBox region = buffer.readBoolean() ? BlockBox.read(buffer) : null;
 		return new UpdateWorkspaceRegionMessage(id, region);
@@ -50,7 +50,7 @@ public class UpdateWorkspaceRegionMessage {
 	}
 
 	private void handleServer(NetworkEvent.Context ctx) {
-		ServerPlayerEntity sender = ctx.getSender();
+		ServerPlayer sender = ctx.getSender();
 		if (sender == null) {
 			return;
 		}

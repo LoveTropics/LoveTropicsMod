@@ -5,6 +5,12 @@ import net.minecraft.util.text.*;
 
 import java.util.function.BiConsumer;
 
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.TranslatableComponent;
+
 public final class BiodiversityBlitzTexts {
 	public static void collectTranslations(BiConsumer<String, String> consumer) {
 		Keys.collectTranslations(consumer);
@@ -38,37 +44,37 @@ public final class BiodiversityBlitzTexts {
 		}
 	}
 
-	public static IFormattableTextComponent waveWarning() {
-		return new TranslationTextComponent(Keys.WAVE_WARNING);
+	public static MutableComponent waveWarning() {
+		return new TranslatableComponent(Keys.WAVE_WARNING);
 	}
 
-	public static IFormattableTextComponent deathDecrease(int count) {
-		return new TranslationTextComponent(Keys.DEATH_DECREASE, count);
+	public static MutableComponent deathDecrease(int count) {
+		return new TranslatableComponent(Keys.DEATH_DECREASE, count);
 	}
 
-	public static IFormattableTextComponent currencyAddition(int amount) {
-		ITextComponent amountText = new StringTextComponent(String.valueOf(amount))
-				.withStyle(amount > 0 ? TextFormatting.AQUA : TextFormatting.RED);
-		return new TranslationTextComponent(Keys.CURRENCY_ADDITION, amountText);
+	public static MutableComponent currencyAddition(int amount) {
+		Component amountText = new TextComponent(String.valueOf(amount))
+				.withStyle(amount > 0 ? ChatFormatting.AQUA : ChatFormatting.RED);
+		return new TranslatableComponent(Keys.CURRENCY_ADDITION, amountText);
 	}
 
-	public static IFormattableTextComponent trading() {
-		return new TranslationTextComponent(Keys.TRADING);
+	public static MutableComponent trading() {
+		return new TranslatableComponent(Keys.TRADING);
 	}
 
-	public static IFormattableTextComponent canOnlyPlacePlants() {
-		return new TranslationTextComponent(Keys.CAN_ONLY_PLACE_PLANTS);
+	public static MutableComponent canOnlyPlacePlants() {
+		return new TranslatableComponent(Keys.CAN_ONLY_PLACE_PLANTS);
 	}
 
-	public static IFormattableTextComponent plantCannotFit() {
-		return new TranslationTextComponent(Keys.PLANT_CANNOT_FIT);
+	public static MutableComponent plantCannotFit() {
+		return new TranslatableComponent(Keys.PLANT_CANNOT_FIT);
 	}
 
-	public static IFormattableTextComponent notYourPlot() {
-		return new TranslationTextComponent(Keys.NOT_YOUR_PLOT);
+	public static MutableComponent notYourPlot() {
+		return new TranslatableComponent(Keys.NOT_YOUR_PLOT);
 	}
 
-	public static IFormattableTextComponent deathTitle() {
-		return new TranslationTextComponent(Keys.DEATH_TITLE);
+	public static MutableComponent deathTitle() {
+		return new TranslatableComponent(Keys.DEATH_TITLE);
 	}
 }

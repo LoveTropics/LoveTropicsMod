@@ -3,9 +3,9 @@ package com.lovetropics.minigames.common.content.biodiversity_blitz.plot;
 import com.lovetropics.minigames.common.core.game.state.GameStateKey;
 import com.lovetropics.minigames.common.core.game.state.IGameState;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.core.BlockPos;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -26,13 +26,13 @@ public final class PlotsState implements Iterable<Plot>, IGameState {
 		return null;
 	}
 
-	public void addPlayer(ServerPlayerEntity player, Plot plot) {
+	public void addPlayer(ServerPlayer player, Plot plot) {
 		this.plotsByPlayer.put(player.getUUID(), plot);
 		this.plots.add(plot);
 	}
 
 	@Nullable
-	public Plot removePlayer(ServerPlayerEntity player) {
+	public Plot removePlayer(ServerPlayer player) {
 		Plot plot = this.plotsByPlayer.remove(player.getUUID());
 		if (plot != null) {
 			this.plots.remove(plot);

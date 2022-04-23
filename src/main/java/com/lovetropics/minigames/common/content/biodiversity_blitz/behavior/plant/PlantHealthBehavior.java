@@ -11,10 +11,10 @@ import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.server.ServerWorld;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraftforge.common.util.Constants;
 
 import java.util.ArrayList;
@@ -44,7 +44,7 @@ public final class PlantHealthBehavior implements IGameBehavior {
 		});
 
 		events.listen(BbPlantEvents.TICK, (player, plot, plants) -> {
-			ServerWorld world = game.getWorld();
+			ServerLevel world = game.getWorld();
 
 			List<Plant> decayedPlants = new ArrayList<>();
 

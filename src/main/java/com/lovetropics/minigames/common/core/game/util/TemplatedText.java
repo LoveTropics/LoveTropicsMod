@@ -4,9 +4,9 @@ import com.lovetropics.lib.codec.MoreCodecs;
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.TextFormatting;
-import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.network.chat.Component;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.TranslatableComponent;
 
 import java.util.function.Function;
 
@@ -25,14 +25,14 @@ public final class TemplatedText {
 	);
 
 	private final String text;
-	private final TextFormatting style;
+	private final ChatFormatting style;
 
-	public TemplatedText(String text, TextFormatting style) {
+	public TemplatedText(String text, ChatFormatting style) {
 		this.text = text;
 		this.style = style;
 	}
 
-	public ITextComponent apply(Object... variables) {
-		return new TranslationTextComponent(text, variables).withStyle(this.style);
+	public Component apply(Object... variables) {
+		return new TranslatableComponent(text, variables).withStyle(this.style);
 	}
 }

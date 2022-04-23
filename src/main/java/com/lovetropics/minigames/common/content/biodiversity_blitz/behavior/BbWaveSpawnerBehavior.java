@@ -14,16 +14,16 @@ import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvent
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.Object2FloatMap;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.world.BossInfo;
-import net.minecraft.world.BossInfo.Color;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.Mth;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.world.BossEvent;
+import net.minecraft.world.BossEvent.BossBarColor;
 import net.minecraft.world.Difficulty;
-import net.minecraft.world.server.ServerBossInfo;
-import net.minecraft.world.server.ServerWorld;
+import net.minecraft.server.level.ServerBossEvent;
+import net.minecraft.server.level.ServerLevel;
 
 import java.util.*;
 
@@ -34,7 +34,7 @@ public final class BbWaveSpawnerBehavior implements IGameBehavior {
 				Codec.LONG.fieldOf("warn_seconds").forGetter(c -> c.warnTicks / 20),
 				SizeCurve.CODEC.fieldOf("size_curve").forGetter(c -> c.sizeCurve),
 				MoreCodecs.object2Float(MoreCodecs.DIFFICULTY).fieldOf("difficulty_factors").forGetter(c -> c.difficultyFactors),
-				MoreCodecs.TEXT.optionalFieldOf("first_message", StringTextComponent.EMPTY).forGetter(c -> c.firstMessage)
+				MoreCodecs.TEXT.optionalFieldOf("first_message", TextComponent.EMPTY).forGetter(c -> c.firstMessage)
 		).apply(instance, BbWaveSpawnerBehavior::new);
 	});
 
@@ -44,16 +44,16 @@ public final class BbWaveSpawnerBehavior implements IGameBehavior {
 
 	private final Object2FloatMap<Difficulty> difficultyFactors;
 	
-	private final ITextComponent firstMessage;
+	private final Component firstMessage;
 
 	private IGamePhase game;
 	private PlotsState plots;
 
 	private int sentWaves = 0;
 	private Map<UUID, List<WaveTracker>> waveTrackers = new HashMap<>();
-	private ServerBossInfo waveCharging;
+	private ServerBossEvent waveCharging;
 
-	public BbWaveSpawnerBehavior(long intervalSeconds, long warnSeconds, SizeCurve sizeCurve, Object2FloatMap<Difficulty> difficultyFactors, ITextComponent firstMessage) {
+	public BbWaveSpawnerBehavior(long intervalSeconds, long warnSeconds, SizeCurve sizeCurve, Object2FloatMap<Difficulty> difficultyFactors, Component firstMessage) {
 		this.intervalTicks = intervalSeconds * 20;
 		this.warnTicks = warnSeconds * 20;
 		this.sizeCurve = sizeCurve;
@@ -80,16 +80,16 @@ public final class BbWaveSpawnerBehavior implements IGameBehavior {
 			cleanupBossBar(waveCharging);
 		});
 
-		this.waveCharging = new ServerBossInfo(new StringTextComponent("Wave Incoming!"), Color.GREEN, BossInfo.Overlay.PROGRESS);
+		this.waveCharging = new ServerBossEvent(new TextComponent("Wave Incoming!"), BossBarColor.GREEN, BossEvent.BossBarOverlay.PROGRESS);
 		this.waveCharging.setPercent(0.0F);
 		this.waveCharging.setVisible(false);
 	}
 
-	private void addPlayer(ServerPlayerEntity player, Plot plot) {
+	private void addPlayer(ServerPlayer player, Plot plot) {
 		this.waveCharging.addPlayer(player);
 	}
 
-	private void removePlayer(ServerPlayerEntity player) {
+	private void removePlayer(ServerPlayer player) {
 		this.waveCharging.removePlayer(player);
 		List<WaveTracker> waves = this.waveTrackers.remove(player.getUUID());
 		if (waves != null) {
@@ -100,7 +100,7 @@ public final class BbWaveSpawnerBehavior implements IGameBehavior {
 	}
 
 	private void tick() {
-		ServerWorld world = game.getWorld();
+		ServerLevel world = game.getWorld();
 		Random random = world.getRandom();
 		long ticks = game.ticks();
 
@@ -117,7 +117,7 @@ public final class BbWaveSpawnerBehavior implements IGameBehavior {
 
 		if (timeTilNextWave == 0) {
 			this.waveCharging.setVisible(false);
-			for (ServerPlayerEntity player : game.getParticipants()) {
+			for (ServerPlayer player : game.getParticipants()) {
 				Plot plot = plots.getPlotFor(player);
 				if (plot == null) continue;
 
@@ -146,12 +146,12 @@ public final class BbWaveSpawnerBehavior implements IGameBehavior {
 		return wave.entities.isEmpty();
 	}
 
-	private void cleanupBossBar(ServerBossInfo bar) {
+	private void cleanupBossBar(ServerBossEvent bar) {
 		bar.removeAllPlayers();
 	}
 
-	private void spawnWave(ServerWorld world, Random random, ServerPlayerEntity player, Plot plot, int waveIndex) {
-		if (waveIndex == 0 && firstMessage != StringTextComponent.EMPTY) {
+	private void spawnWave(ServerLevel world, Random random, ServerPlayer player, Plot plot, int waveIndex) {
+		if (waveIndex == 0 && firstMessage != TextComponent.EMPTY) {
 			player.displayClientMessage(firstMessage, false);
 		}
 
@@ -159,7 +159,7 @@ public final class BbWaveSpawnerBehavior implements IGameBehavior {
 		float difficultyFactor = difficultyFactors.getFloat(difficulty);
 
 		double fractionalCount = sizeCurve.apply(waveIndex, difficultyFactor);
-		int count = MathHelper.floor(fractionalCount);
+		int count = Mth.floor(fractionalCount);
 		if (random.nextDouble() > fractionalCount - count) {
 			count++;
 		}
@@ -168,31 +168,31 @@ public final class BbWaveSpawnerBehavior implements IGameBehavior {
 		if (currencyIncr < 5) {
 			count = random.nextInt(2) + 1;
 		} else if (currencyIncr < 10) {
-			count = (int) MathHelper.lerp(currencyIncr / 10.0, 2, count);
+			count = (int) Mth.lerp(currencyIncr / 10.0, 2, count);
 		}
 
 		Set<Entity> entities = BbMobSpawner.spawnWaveEntities(world, random, plot, count, waveIndex, BbMobSpawner::selectEntityForWave);
-		ServerBossInfo bossBar = this.createWaveBar(player, waveIndex, count, entities);
+		ServerBossEvent bossBar = this.createWaveBar(player, waveIndex, count, entities);
 
 		WaveTracker wave = new WaveTracker(bossBar, entities);
 		waveTrackers.computeIfAbsent(player.getUUID(), $ -> new ArrayList<>()).add(wave);
 	}
 
-	private ServerBossInfo createWaveBar(ServerPlayerEntity player, int waveIndex, int count, Set<Entity> entities) {
-		ServerBossInfo bossBar = new ServerBossInfo(new StringTextComponent("Wave " + (waveIndex + 1)), Color.GREEN, BossInfo.Overlay.PROGRESS);
+	private ServerBossEvent createWaveBar(ServerPlayer player, int waveIndex, int count, Set<Entity> entities) {
+		ServerBossEvent bossBar = new ServerBossEvent(new TextComponent("Wave " + (waveIndex + 1)), BossBarColor.GREEN, BossEvent.BossBarOverlay.PROGRESS);
 		bossBar.setPercent((float) entities.size() / count);
-		bossBar.setColor(Color.GREEN);
+		bossBar.setColor(BossBarColor.GREEN);
 		bossBar.addPlayer(player);
 
 		return bossBar;
 	}
 
 	static final class WaveTracker {
-		final ServerBossInfo bar;
+		final ServerBossEvent bar;
 		final Set<Entity> entities;
 		final int waveSize;
 
-		WaveTracker(ServerBossInfo bar, Set<Entity> entities) {
+		WaveTracker(ServerBossEvent bar, Set<Entity> entities) {
 			this.bar = bar;
 			this.entities = entities;
 			this.waveSize = entities.size();

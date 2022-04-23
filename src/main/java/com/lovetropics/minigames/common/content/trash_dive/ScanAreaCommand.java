@@ -9,18 +9,18 @@ import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
-import net.minecraft.block.Block;
-import net.minecraft.block.Blocks;
-import net.minecraft.command.CommandSource;
-import net.minecraft.particles.ParticleTypes;
-import net.minecraft.util.Direction;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.TranslationTextComponent;
-import net.minecraft.world.chunk.Chunk;
-import net.minecraft.world.server.ServerWorld;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.core.Direction;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.world.level.chunk.LevelChunk;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraftforge.fml.RegistryObject;
 import net.minecraftforge.registries.ForgeRegistries;
 
@@ -34,20 +34,20 @@ import java.nio.file.StandardOpenOption;
 import java.util.*;
 
 import static net.minecraft.command.Commands.argument;
-import static net.minecraft.command.Commands.literal;
+import staticnet.minecraft.commands.Commandss.literal;
 
 public class ScanAreaCommand {
 
 	private static final RegistryObject<Block> PURIFIED_SAND = RegistryObject.of(new ResourceLocation("tropicraft", "purified_sand"), ForgeRegistries.BLOCKS);
 
 	private static final SimpleCommandExceptionType NO_WATER = new SimpleCommandExceptionType(
-			new TranslationTextComponent("commands.ltminigames.scan.nowater.fail"));
+			new TranslatableComponent("commands.ltminigames.scan.nowater.fail"));
 	private static final SimpleCommandExceptionType TOO_FAR = new SimpleCommandExceptionType(
-			new TranslationTextComponent("commands.ltminigames.scan.toofar.fail"));
+			new TranslatableComponent("commands.ltminigames.scan.toofar.fail"));
 	private static final DynamicCommandExceptionType WRITE_ERROR = new DynamicCommandExceptionType(ex -> 
-			new TranslationTextComponent("commands.ltminigames.scan.write.fail", ex));
+			new TranslatableComponent("commands.ltminigames.scan.write.fail", ex));
 
-	public static void register(final CommandDispatcher<CommandSource> dispatcher) {
+	public static void register(final CommandDispatcher<CommandSourceStack> dispatcher) {
 		dispatcher.register(literal("game")
 			.then(literal("scan").requires(s -> s.hasPermission(4))
 				.then(argument("name", StringArgumentType.word())
@@ -55,10 +55,10 @@ public class ScanAreaCommand {
 				.executes(ctx -> scanArea(ctx.getSource(), "scan_result"))));
 	}
 
-	private static int scanArea(CommandSource source, String fileName) throws CommandSyntaxException {
-		BlockPos.Mutable pos = new BlockPos(source.getPosition()).mutable();
+	private static int scanArea(CommandSourceStack source, String fileName) throws CommandSyntaxException {
+		BlockPos.MutableBlockPos pos = new BlockPos(source.getPosition()).mutable();
 
-		ServerWorld world = source.getLevel();
+		ServerLevel world = source.getLevel();
 		while (pos.getY() >= 0 && world.getBlockState(pos).getBlock() != Blocks.WATER) {
 			pos.move(Direction.DOWN);
 		}
@@ -77,7 +77,7 @@ public class ScanAreaCommand {
 		PURIFIED_SAND.ifPresent(edges::add);
 		final Direction[] dirs = new Direction[] { Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST };
 
-		Map<ChunkPos, Chunk> chunkCache = new HashMap<>();
+		Map<ChunkPos, LevelChunk> chunkCache = new HashMap<>();
 
 		while (!queue.isEmpty()) {
 			pos.set(queue.remove());
@@ -89,7 +89,7 @@ public class ScanAreaCommand {
 					if (pos.distSqr(source.getPosition(), true) > 400 * 400) {
 						throw TOO_FAR.create();
 					}
-					Chunk chunk = chunkCache.computeIfAbsent(new ChunkPos(pos), p -> world.getChunk(p.x, p.z));
+					LevelChunk chunk = chunkCache.computeIfAbsent(new ChunkPos(pos), p -> world.getChunk(p.x, p.z));
 					if (!edges.contains(chunk.getBlockState(pos).getBlock())) {
 						queue.add(pos.immutable());
 					}
@@ -98,7 +98,7 @@ public class ScanAreaCommand {
 			}
 		}
 
-		source.sendSuccess(new StringTextComponent("Found " + found.size() + " blocks"), true);
+		source.sendSuccess(new TextComponent("Found " + found.size() + " blocks"), true);
 
 		Path output = Paths.get("export", "scan_results", fileName + ".bin");
 
@@ -115,7 +115,7 @@ public class ScanAreaCommand {
 			throw WRITE_ERROR.create(e);
 		}
 
-		source.sendSuccess(new StringTextComponent("Wrote " + buf.capacity() + " bytes to " + output), true);
+		source.sendSuccess(new TextComponent("Wrote " + buf.capacity() + " bytes to " + output), true);
 
 		return Command.SINGLE_SUCCESS;
 	}

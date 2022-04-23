@@ -6,19 +6,19 @@ import com.lovetropics.minigames.common.core.network.PlayerDisguiseMessage;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import net.minecraft.command.CommandSource;
-import net.minecraft.command.Commands;
-import net.minecraft.command.arguments.EntitySummonArgument;
-import net.minecraft.command.arguments.NBTCompoundTagArgument;
-import net.minecraft.command.arguments.SuggestionProviders;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.registry.Registry;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
+import net.minecraft.commands.arguments.EntitySummonArgument;
+import net.minecraft.commands.arguments.CompoundTagArgument;
+import net.minecraft.commands.synchronization.SuggestionProviders;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.core.Registry;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -38,8 +38,8 @@ public final class ServerPlayerDisguises {
 					.then(Commands.argument("entity", EntitySummonArgument.id())
 						.suggests(SuggestionProviders.SUMMONABLE_ENTITIES)
 						.executes(context -> disguiseAs(context, null))
-							.then(Commands.argument("nbt", NBTCompoundTagArgument.compoundTag())
-								.executes(context -> disguiseAs(context, NBTCompoundTagArgument.getCompoundTag(context, "nbt")))
+							.then(Commands.argument("nbt", CompoundTagArgument.compoundTag())
+								.executes(context -> disguiseAs(context, CompoundTagArgument.getCompoundTag(context, "nbt")))
 							)
 					))
 				.then(Commands.literal("clear")
@@ -51,15 +51,15 @@ public final class ServerPlayerDisguises {
 
 	@SubscribeEvent
 	public static void onEntityTrack(PlayerEvent.StartTracking event) {
-		if (!(event.getPlayer() instanceof ServerPlayerEntity)) {
+		if (!(event.getPlayer() instanceof ServerPlayer)) {
 			return;
 		}
 
-		ServerPlayerEntity player = (ServerPlayerEntity) event.getPlayer();
+		ServerPlayer player = (ServerPlayer) event.getPlayer();
 		Entity tracked = event.getTarget();
 
-		if (tracked instanceof PlayerEntity) {
-			DisguiseType disguise = PlayerDisguise.getDisguiseType((PlayerEntity) tracked);
+		if (tracked instanceof Player) {
+			DisguiseType disguise = PlayerDisguise.getDisguiseType((Player) tracked);
 			if (disguise != null) {
 				LoveTropicsNetwork.CHANNEL.send(
 						PacketDistributor.PLAYER.with(() -> player),
@@ -75,20 +75,20 @@ public final class ServerPlayerDisguises {
 			return;
 		}
 
-		PlayerEntity newPlayer = event.getPlayer();
-		PlayerEntity oldPlayer = event.getOriginal();
-		if (newPlayer instanceof ServerPlayerEntity && oldPlayer instanceof ServerPlayerEntity) {
+		Player newPlayer = event.getPlayer();
+		Player oldPlayer = event.getOriginal();
+		if (newPlayer instanceof ServerPlayer && oldPlayer instanceof ServerPlayer) {
 			PlayerDisguise.get(oldPlayer).ifPresent(oldDisguise -> {
 				PlayerDisguise.get(newPlayer).ifPresent(newDisguise -> {
 					newDisguise.copyFrom(oldDisguise);
-					onSetDisguise((ServerPlayerEntity) newPlayer, newDisguise);
+					onSetDisguise((ServerPlayer) newPlayer, newDisguise);
 				});
 			});
 		}
 	}
 
-	private static int disguiseAs(CommandContext<CommandSource> context, @Nullable CompoundNBT nbt) throws CommandSyntaxException {
-		ServerPlayerEntity player = context.getSource().getPlayerOrException();
+	private static int disguiseAs(CommandContext<CommandSourceStack> context, @Nullable CompoundTag nbt) throws CommandSyntaxException {
+		ServerPlayer player = context.getSource().getPlayerOrException();
 		ResourceLocation entityId = EntitySummonArgument.getSummonableEntity(context, "entity");
 		EntityType<?> entityType = Registry.ENTITY_TYPE.get(entityId);
 
@@ -97,32 +97,32 @@ public final class ServerPlayerDisguises {
 		return Command.SINGLE_SUCCESS;
 	}
 
-	private static int clearDisguise(CommandContext<CommandSource> context) throws CommandSyntaxException {
-		ServerPlayerEntity player = context.getSource().getPlayerOrException();
+	private static int clearDisguise(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+		ServerPlayer player = context.getSource().getPlayerOrException();
 		ServerPlayerDisguises.set(player, null);
 
 		return Command.SINGLE_SUCCESS;
 	}
 
-	public static void set(ServerPlayerEntity player, @Nullable DisguiseType disguiseType) {
+	public static void set(ServerPlayer player, @Nullable DisguiseType disguiseType) {
 		PlayerDisguise.get(player).ifPresent(playerDisguise -> {
 			playerDisguise.setDisguise(disguiseType);
 			onSetDisguise(player, playerDisguise);
 		});
 	}
 
-	public static void clear(ServerPlayerEntity player) {
+	public static void clear(ServerPlayer player) {
 		set(player, null);
 	}
 
-	public static void clear(ServerPlayerEntity player, DisguiseType disguiseType) {
+	public static void clear(ServerPlayer player, DisguiseType disguiseType) {
 		PlayerDisguise.get(player).ifPresent(playerDisguise -> {
 			playerDisguise.clearDisguise(disguiseType);
 			onSetDisguise(player, playerDisguise);
 		});
 	}
 
-	private static void onSetDisguise(ServerPlayerEntity player, PlayerDisguise disguise) {
+	private static void onSetDisguise(ServerPlayer player, PlayerDisguise disguise) {
 		// TODO: temporary because we couldn't push a client update, don't need this at all- yeet it!
 		if (disguise.getDisguiseType() != null) {
 			disguise.getDisguiseType().fixNbtFor(player);

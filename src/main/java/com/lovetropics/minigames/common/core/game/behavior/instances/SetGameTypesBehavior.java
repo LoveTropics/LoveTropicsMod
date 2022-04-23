@@ -8,8 +8,8 @@ import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvent
 import com.lovetropics.minigames.common.core.game.player.PlayerRole;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.world.GameType;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.GameType;
 
 import javax.annotation.Nullable;
 
@@ -38,7 +38,7 @@ public class SetGameTypesBehavior implements IGameBehavior {
 		events.listen(GamePlayerEvents.SET_ROLE, (player, role, lastRole) -> applyRoleTo(player, role));
 	}
 
-	private void applyRoleTo(ServerPlayerEntity player, @Nullable PlayerRole role) {
+	private void applyRoleTo(ServerPlayer player, @Nullable PlayerRole role) {
 		GameType gameType = allGameType;
 		if (role == PlayerRole.PARTICIPANT) {
 			gameType = participantGameType;

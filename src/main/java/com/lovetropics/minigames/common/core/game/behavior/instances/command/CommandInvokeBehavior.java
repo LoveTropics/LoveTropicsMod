@@ -8,12 +8,12 @@ import com.lovetropics.minigames.common.core.game.state.control.ControlCommands;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.serialization.Codec;
-import net.minecraft.command.CommandSource;
-import net.minecraft.command.ICommandSource;
-import net.minecraft.entity.Entity;
-import net.minecraft.util.math.vector.Vector2f;
-import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.CommandSource;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.phys.Vec2;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.network.chat.TextComponent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -32,14 +32,14 @@ public abstract class CommandInvokeBehavior implements IGameBehavior {
 			Function.identity()
 	);
 
-	protected CommandDispatcher<CommandSource> dispatcher;
-	protected CommandSource source;
+	protected CommandDispatcher<CommandSourceStack> dispatcher;
+	protected CommandSourceStack source;
 
 	public void invokeCommand(String command) {
 		this.invokeCommand(command, this.source);
 	}
 
-	public void invokeCommand(String command, CommandSource source) {
+	public void invokeCommand(String command, CommandSourceStack source) {
 		try {
 			this.dispatcher.execute(command, source);
 		} catch (CommandSyntaxException e) {
@@ -47,7 +47,7 @@ public abstract class CommandInvokeBehavior implements IGameBehavior {
 		}
 	}
 
-	public CommandSource sourceForEntity(Entity entity) {
+	public CommandSourceStack sourceForEntity(Entity entity) {
 		return this.source.withEntity(entity).withPosition(entity.position());
 	}
 
@@ -60,12 +60,12 @@ public abstract class CommandInvokeBehavior implements IGameBehavior {
 		this.registerEvents(game, events);
 	}
 
-	private CommandSource createCommandSource(IGamePhase game) {
+	private CommandSourceStack createCommandSource(IGamePhase game) {
 		boolean debugMode = game.getState().getOrNull(DebugModeState.KEY) != null;
-		ICommandSource source = debugMode ? game.getServer() : ICommandSource.NULL;
+		CommandSource source = debugMode ? game.getServer() : CommandSource.NULL;
 
 		String name = game.getLobby().getMetadata().name();
-		return new CommandSource(source, Vector3d.ZERO, Vector2f.ZERO, game.getWorld(), 4, name, new StringTextComponent(name), game.getServer(), null);
+		return new CommandSourceStack(source, Vec3.ZERO, Vec2.ZERO, game.getWorld(), 4, name, new TextComponent(name), game.getServer(), null);
 	}
 
 	protected void registerControls(IGamePhase game, ControlCommands commands) {

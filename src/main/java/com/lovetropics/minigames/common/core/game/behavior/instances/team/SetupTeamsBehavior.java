@@ -18,14 +18,14 @@ import com.lovetropics.minigames.common.core.game.util.SelectorItems;
 import com.lovetropics.minigames.common.util.Scheduler;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.block.Blocks;
-import net.minecraft.entity.passive.SheepEntity;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.item.DyeColor;
-import net.minecraft.util.IItemProvider;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.TextFormatting;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.entity.animal.Sheep;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.DyeColor;
+import net.minecraft.world.level.ItemLike;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.ChatFormatting;
 
 import java.util.List;
 import java.util.UUID;
@@ -33,13 +33,13 @@ import java.util.UUID;
 public final class SetupTeamsBehavior implements IGameBehavior {
 	private static final GameTeam DEFAULT_TEAM = new GameTeam(
 			new GameTeamKey(""),
-			new GameTeamConfig(StringTextComponent.EMPTY, DyeColor.BLACK, TextFormatting.BLACK, ImmutableList.of(UUID.randomUUID()), 1)
+			new GameTeamConfig(TextComponent.EMPTY, DyeColor.BLACK, ChatFormatting.BLACK, ImmutableList.of(UUID.randomUUID()), 1)
 	);
 	private static final BehaviorConfig<List<GameTeam>> CFG_TEAMS = BehaviorConfig.fieldOf("teams", GameTeam.CODEC.listOf())
 			.defaultInstanceHint("", DEFAULT_TEAM, GameTeam.CODEC)
 			.listTypeHint("", ConfigType.COMPOSITE)
 			.enumHint("[].dye", s -> DyeColor.byName(s, null))
-			.enumHint("[].text", TextFormatting::getByName);
+			.enumHint("[].text", ChatFormatting::getByName);
 
 	public static final Codec<SetupTeamsBehavior> CODEC = RecordCodecBuilder.create(instance -> {
 		return instance.group(
@@ -79,7 +79,7 @@ public final class SetupTeamsBehavior implements IGameBehavior {
 
 		SelectorItems.Handlers<GameTeam> handlers = new SelectorItems.Handlers<GameTeam>() {
 			@Override
-			public void onPlayerSelected(ServerPlayerEntity player, GameTeam team) {
+			public void onPlayerSelected(ServerPlayer player, GameTeam team) {
 				onRequestJoinTeam(player, team);
 			}
 
@@ -89,14 +89,14 @@ public final class SetupTeamsBehavior implements IGameBehavior {
 			}
 
 			@Override
-			public ITextComponent getNameFor(GameTeam team) {
-				return new StringTextComponent("Join ").append(team.config().name())
+			public Component getNameFor(GameTeam team) {
+				return new TextComponent("Join ").append(team.config().name())
 						.withStyle(team.config().formatting());
 			}
 
 			@Override
-			public IItemProvider getItemFor(GameTeam team) {
-				return SheepEntity.ITEM_BY_DYE.getOrDefault(team.config().dye(), Blocks.WHITE_WOOL);
+			public ItemLike getItemFor(GameTeam team) {
+				return Sheep.ITEM_BY_DYE.getOrDefault(team.config().dye(), Blocks.WHITE_WOOL);
 			}
 		};
 
@@ -104,11 +104,11 @@ public final class SetupTeamsBehavior implements IGameBehavior {
 		selectors.applyTo(events);
 	}
 
-	private void onPlayerWaiting(IGamePhase game, ServerPlayerEntity player) {
+	private void onPlayerWaiting(IGamePhase game, ServerPlayer player) {
 		PlayerRole forcedRole = game.getLobby().getPlayers().getForcedRoleFor(player);
 		if (forcedRole != PlayerRole.SPECTATOR && teamState.getPollingTeams().size() > 1) {
-			player.displayClientMessage(new StringTextComponent("This is a team-based game!").withStyle(TextFormatting.GOLD, TextFormatting.BOLD), false);
-			player.displayClientMessage(new StringTextComponent("You can select a team preference by using the items in your inventory:").withStyle(TextFormatting.GRAY), false);
+			player.displayClientMessage(new TextComponent("This is a team-based game!").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD), false);
+			player.displayClientMessage(new TextComponent("You can select a team preference by using the items in your inventory:").withStyle(ChatFormatting.GRAY), false);
 
 			Scheduler.nextTick().run(server -> {
 				selectors.giveSelectorsTo(player);
@@ -116,12 +116,12 @@ public final class SetupTeamsBehavior implements IGameBehavior {
 		}
 	}
 
-	private void onRequestJoinTeam(ServerPlayerEntity player, GameTeam team) {
+	private void onRequestJoinTeam(ServerPlayer player, GameTeam team) {
 		teamState.getAllocations().setPlayerPreference(player.getUUID(), team.key());
 
-		ITextComponent teamName = team.config().name().copy().withStyle(team.config().formatting(), TextFormatting.BOLD);
+		Component teamName = team.config().name().copy().withStyle(team.config().formatting(), ChatFormatting.BOLD);
 		player.displayClientMessage(
-				new StringTextComponent("You have requested to join ").withStyle(TextFormatting.GRAY)
+				new TextComponent("You have requested to join ").withStyle(ChatFormatting.GRAY)
 						.append(teamName),
 				false
 		);

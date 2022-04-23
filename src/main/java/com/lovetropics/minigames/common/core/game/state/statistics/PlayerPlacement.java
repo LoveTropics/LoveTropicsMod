@@ -2,10 +2,10 @@ package com.lovetropics.minigames.common.core.game.state.statistics;
 
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.player.PlayerSet;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.util.text.IFormattableTextComponent;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.TextFormatting;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.ChatFormatting;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
@@ -19,7 +19,7 @@ public interface PlayerPlacement {
 		List<Placed<PlayerKey>> order = new ArrayList<>(participants.size() + deathOrder.size());
 
 		boolean anyFirst = false;
-		for (ServerPlayerEntity player : participants) {
+		for (ServerPlayer player : participants) {
 			order.add(Placed.at(1, PlayerKey.from(player)));
 			anyFirst = true;
 		}
@@ -106,8 +106,8 @@ public interface PlayerPlacement {
 					String prefix = head ? headPrefix : indentPrefix;
 					head = false;
 
-					players.sendMessage(new StringTextComponent(prefix).withStyle(TextFormatting.AQUA)
-							.append(new StringTextComponent(entry.value.getName()).withStyle(TextFormatting.GOLD))
+					players.sendMessage(new TextComponent(prefix).withStyle(ChatFormatting.AQUA)
+							.append(new TextComponent(entry.value.getName()).withStyle(ChatFormatting.GOLD))
 					);
 
 					i++;
@@ -120,7 +120,7 @@ public interface PlayerPlacement {
 			length = Math.min(order.size(), length);
 			for (int i = 0; i < length; i++) {
 				Placed<PlayerKey> entry = order.get(i);
-				sidebar.add(" - " + TextFormatting.AQUA + entry.value.getName());
+				sidebar.add(" - " + ChatFormatting.AQUA + entry.value.getName());
 			}
 		}
 	}
@@ -160,10 +160,10 @@ public interface PlayerPlacement {
 					String prefix = head ? headPrefix : indentPrefix;
 					head = false;
 
-					IFormattableTextComponent name = new StringTextComponent(prefix + entry.player.getName() + ": ");
-					IFormattableTextComponent score = new StringTextComponent(scoreKey.display(entry.score));
+					MutableComponent name = new TextComponent(prefix + entry.player.getName() + ": ");
+					MutableComponent score = new TextComponent(scoreKey.display(entry.score));
 
-					players.sendMessage(name.withStyle(TextFormatting.AQUA).append(score.withStyle(TextFormatting.GOLD)));
+					players.sendMessage(name.withStyle(ChatFormatting.AQUA).append(score.withStyle(ChatFormatting.GOLD)));
 
 					i++;
 				}
@@ -175,7 +175,7 @@ public interface PlayerPlacement {
 			length = Math.min(entries.size(), length);
 			for (int i = 0; i < length; i++) {
 				Entry<T> entry = entries.get(i);
-				sidebar.add(" - " + TextFormatting.AQUA + entry.player.getName() + ": " + TextFormatting.GOLD + scoreKey.display(entry.score));
+				sidebar.add(" - " + ChatFormatting.AQUA + entry.player.getName() + ": " + ChatFormatting.GOLD + scoreKey.display(entry.score));
 			}
 		}
 

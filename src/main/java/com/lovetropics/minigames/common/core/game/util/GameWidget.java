@@ -1,11 +1,11 @@
 package com.lovetropics.minigames.common.core.game.util;
 
-import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.server.level.ServerPlayer;
 
 public interface GameWidget extends AutoCloseable {
-	void addPlayer(ServerPlayerEntity player);
+	void addPlayer(ServerPlayer player);
 
-	void removePlayer(ServerPlayerEntity player);
+	void removePlayer(ServerPlayer player);
 
 	@Override
 	void close();

@@ -4,9 +4,9 @@ import com.lovetropics.minigames.common.core.game.behavior.config.BehaviorConfig
 import com.lovetropics.minigames.common.core.game.behavior.config.ConfigData;
 import com.lovetropics.minigames.common.core.game.behavior.config.ConfigDataOps;
 import com.lovetropics.minigames.common.core.game.behavior.config.ConfigList;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.nbt.NBTDynamicOps;
-import net.minecraft.network.PacketBuffer;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtOps;
+import net.minecraft.network.FriendlyByteBuf;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -28,22 +28,22 @@ public class ClientConfigList {
 				}, LinkedHashMap::new)));
 	}
 	
-	public static ClientConfigList decode(PacketBuffer buffer) {
+	public static ClientConfigList decode(FriendlyByteBuf buffer) {
 		Map<BehaviorConfig<?>, ConfigData> values = new LinkedHashMap<>();
 		int size = buffer.readVarInt();
 		for (int i = 0; i < size; i++) {
-			values.put(BehaviorConfig.TEMP_REGISTRY.get(buffer.readUtf(255)), NBTDynamicOps.INSTANCE.convertTo(ConfigDataOps.INSTANCE, buffer.readNbt().get("configs")));
+			values.put(BehaviorConfig.TEMP_REGISTRY.get(buffer.readUtf(255)), NbtOps.INSTANCE.convertTo(ConfigDataOps.INSTANCE, buffer.readNbt().get("configs")));
 		}
 		values.forEach((t, d) -> t.postProcess(d));
 		return new ClientConfigList(values);
 	}
 	
-	public void encode(PacketBuffer buffer) {
+	public void encode(FriendlyByteBuf buffer) {
 		buffer.writeVarInt(configs.size());
 		for (Map.Entry<BehaviorConfig<?>, ConfigData> e : configs.entrySet()) {
 			buffer.writeUtf(e.getKey().getName(), 255);
-			CompoundNBT tag = new CompoundNBT();
-			tag.put("configs", ConfigDataOps.INSTANCE.convertTo(NBTDynamicOps.INSTANCE, e.getValue()));
+			CompoundTag tag = new CompoundTag();
+			tag.put("configs", ConfigDataOps.INSTANCE.convertTo(NbtOps.INSTANCE, e.getValue()));
 			buffer.writeNbt(tag);
 		}
 	}

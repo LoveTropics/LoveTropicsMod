@@ -16,24 +16,24 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.longs.*;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.minecraft.block.*;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.network.IPacket;
-import net.minecraft.network.play.server.SSpawnParticlePacket;
-import net.minecraft.particles.ParticleTypes;
-import net.minecraft.state.properties.BlockStateProperties;
-import net.minecraft.util.DamageSource;
-import net.minecraft.util.Direction;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.world.World;
-import net.minecraft.world.chunk.Chunk;
-import net.minecraft.world.chunk.ChunkSection;
-import net.minecraft.world.gen.Heightmap;
-import net.minecraft.world.server.ServerChunkProvider;
-import net.minecraft.world.server.ServerWorld;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientboundLevelParticlesPacket;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.core.Direction;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.util.Mth;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.chunk.LevelChunk;
+import net.minecraft.world.level.chunk.LevelChunkSection;
+import net.minecraft.world.level.levelgen.Heightmap;
+import net.minecraft.server.level.ServerChunkCache;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.fml.RegistryObject;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -41,6 +41,12 @@ import org.apache.logging.log4j.LogManager;
 
 import javax.annotation.Nullable;
 import java.util.*;
+
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.CampfireBlock;
+import net.minecraft.world.level.block.SimpleWaterloggedBlock;
+import net.minecraft.world.level.block.state.BlockState;
 
 public class RisingTidesGameBehavior implements IGameBehavior {
 	public static final Codec<RisingTidesGameBehavior> CODEC = RecordCodecBuilder.create(instance -> {
@@ -167,29 +173,29 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 	}
 
 	private void spawnRisingTideParticles(IGamePhase game) {
-		ServerWorld world = game.getWorld();
+		ServerLevel world = game.getWorld();
 		Random random = world.random;
 
-		BlockPos.Mutable mutablePos = new BlockPos.Mutable();
+		BlockPos.MutableBlockPos mutablePos = new BlockPos.MutableBlockPos();
 
-		for (ServerPlayerEntity player : game.getParticipants()) {
+		for (ServerPlayer player : game.getParticipants()) {
 			// only attempt to spawn particles if the player is near the water surface
 			if (Math.abs(player.getY() - waterLevel) > 10) {
 				continue;
 			}
 
-			int particleX = MathHelper.floor(player.getX()) - random.nextInt(10) + random.nextInt(10);
-			int particleZ = MathHelper.floor(player.getZ()) - random.nextInt(10) + random.nextInt(10);
+			int particleX = Mth.floor(player.getX()) - random.nextInt(10) + random.nextInt(10);
+			int particleZ = Mth.floor(player.getZ()) - random.nextInt(10) + random.nextInt(10);
 			mutablePos.set(particleX, waterLevel, particleZ);
 
 			if (!world.isEmptyBlock(mutablePos) && world.isEmptyBlock(mutablePos.move(Direction.UP))) {
-				IPacket<?> packet = new SSpawnParticlePacket(ParticleTypes.SPLASH, true, particleX, waterLevel + 1, particleZ, 0.1F, 0.0F, 0.1F, 0.0F, 4);
+				Packet<?> packet = new ClientboundLevelParticlesPacket(ParticleTypes.SPLASH, true, particleX, waterLevel + 1, particleZ, 0.1F, 0.0F, 0.1F, 0.0F, 4);
 				player.connection.send(packet);
 			}
 		}
 	}
 
-	private void growIcebergs(final World world) {
+	private void growIcebergs(final Level world) {
 		for (IcebergLine line : icebergLines) {
 			line.generate(world, waterLevel);
 		}
@@ -212,8 +218,8 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 	}
 
 	private int processUpdates(IGamePhase game, LongIterator iterator, int maxToProcess) {
-		ServerWorld world = game.getWorld();
-		ServerChunkProvider chunkProvider = world.getChunkSource();
+		ServerLevel world = game.getWorld();
+		ServerChunkCache chunkProvider = world.getChunkSource();
 
 		long startTime = System.currentTimeMillis();
 		long updatedBlocks = 0;
@@ -226,7 +232,7 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 			int chunkZ = ChunkPos.getZ(chunkPos);
 
 			// we only want to apply updates to loaded chunks
-			Chunk chunk = chunkProvider.getChunkNow(chunkX, chunkZ);
+			LevelChunk chunk = chunkProvider.getChunkNow(chunkX, chunkZ);
 			if (chunk == null) {
 				continue;
 			}
@@ -308,9 +314,9 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 		int minDistance2 = Integer.MAX_VALUE;
 		int centerX = (x << 4) + 8;
 		int centerZ = (z << 4) + 8;
-		for (ServerPlayerEntity player : game.getAllPlayers()) {
-			int dx = MathHelper.floor(player.getX()) - centerX;
-			int dz = MathHelper.floor(player.getZ()) - centerZ;
+		for (ServerPlayer player : game.getAllPlayers()) {
+			int dx = Mth.floor(player.getX()) - centerX;
+			int dz = Mth.floor(player.getZ()) - centerZ;
 			int distance2 = dx * dx + dz * dz;
 			if (distance2 < minDistance2) {
 				minDistance2 = distance2;
@@ -320,7 +326,7 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 	}
 
 	// thicc boi
-	private long increaseTideForChunk(Chunk chunk) {
+	private long increaseTideForChunk(LevelChunk chunk) {
 		ChunkPos chunkPos = chunk.getPos();
 
 		int targetLevel = this.waterLevel;
@@ -333,14 +339,14 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 		}
 	}
 
-	private long increaseTideForChunk(Chunk chunk, int fromWaterLevel, int toWaterLevel) {
-		World world = chunk.getLevel();
-		ServerChunkProvider chunkProvider = (ServerChunkProvider) world.getChunkSource();
+	private long increaseTideForChunk(LevelChunk chunk, int fromWaterLevel, int toWaterLevel) {
+		Level world = chunk.getLevel();
+		ServerChunkCache chunkProvider = (ServerChunkCache) world.getChunkSource();
 
 		ChunkPos chunkPos = chunk.getPos();
 
-		Heightmap heightmapSurface = chunk.getOrCreateHeightmapUnprimed(Heightmap.Type.WORLD_SURFACE);
-		Heightmap heightmapMotionBlocking = chunk.getOrCreateHeightmapUnprimed(Heightmap.Type.MOTION_BLOCKING);
+		Heightmap heightmapSurface = chunk.getOrCreateHeightmapUnprimed(Heightmap.Types.WORLD_SURFACE);
+		Heightmap heightmapMotionBlocking = chunk.getOrCreateHeightmapUnprimed(Heightmap.Types.MOTION_BLOCKING);
 
 		int fromY = fromWaterLevel;
 		int toY = toWaterLevel;
@@ -364,7 +370,7 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 
 		// iterate through all the sections that need to be changed
 		for (int sectionY = fromSection; sectionY <= toSection; sectionY++) {
-			ChunkSection section = getOrCreateSection(chunk, sectionY);
+			LevelChunkSection section = getOrCreateSection(chunk, sectionY);
 			int minSectionY = sectionY << 4;
 			int maxSectionY = minSectionY + 15;
 
@@ -409,10 +415,10 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 		return updatedBlocks;
 	}
 
-	private static ChunkSection getOrCreateSection(Chunk chunk, int sectionY) {
-		ChunkSection section = chunk.getSections()[sectionY];
-		if (section == Chunk.EMPTY_SECTION) {
-			section = new ChunkSection(sectionY << 4);
+	private static LevelChunkSection getOrCreateSection(LevelChunk chunk, int sectionY) {
+		LevelChunkSection section = chunk.getSections()[sectionY];
+		if (section == LevelChunk.EMPTY_SECTION) {
+			section = new LevelChunkSection(sectionY << 4);
 			chunk.getSections()[sectionY] = section;
 		}
 
@@ -437,7 +443,7 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 			return Blocks.WATER.defaultBlockState();
 		}
 
-		if (block instanceof IWaterLoggable) {
+		if (block instanceof SimpleWaterloggedBlock) {
 			// If waterloggable, set the waterloggable property to true
 			state = state.setValue(BlockStateProperties.WATERLOGGED, true);
 			if (block == Blocks.CAMPFIRE) {

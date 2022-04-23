@@ -11,17 +11,17 @@ import com.lovetropics.minigames.common.util.Util;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.nbt.INBT;
-import net.minecraft.nbt.ListNBT;
-import net.minecraft.nbt.NBTDynamicOps;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.RegistryKey;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.registry.WorldGenSettingsExport;
-import net.minecraft.world.World;
-import net.minecraft.world.server.ServerWorld;
-import net.minecraft.world.storage.WorldSavedData;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.RegistryWriteOps;
+import net.minecraft.world.level.Level;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.saveddata.SavedData;
 import net.minecraftforge.common.util.Constants.NBT;
 
 import javax.annotation.Nullable;
@@ -29,7 +29,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
-public final class MapWorkspaceManager extends WorldSavedData {
+public final class MapWorkspaceManager extends SavedData {
 	private static final String ID = Constants.MODID + "_map_workspace_manager";
 
 	private final MinecraftServer server;
@@ -41,7 +41,7 @@ public final class MapWorkspaceManager extends WorldSavedData {
 	}
 
 	public static MapWorkspaceManager get(MinecraftServer server) {
-		ServerWorld overworld = server.overworld();
+		ServerLevel overworld = server.overworld();
 		return overworld.getDataStorage().computeIfAbsent(() -> new MapWorkspaceManager(server), ID);
 	}
 
@@ -79,7 +79,7 @@ public final class MapWorkspaceManager extends WorldSavedData {
 	}
 
 	@Nullable
-	public MapWorkspace getWorkspace(RegistryKey<World> dimension) {
+	public MapWorkspace getWorkspace(ResourceKey<Level> dimension) {
 		ResourceLocation name = dimension.location();
 		if (!name.getNamespace().equals(Constants.MODID)) {
 			return null;
@@ -95,15 +95,15 @@ public final class MapWorkspaceManager extends WorldSavedData {
 		return this.workspaces.containsKey(id);
 	}
 
-	public boolean isWorkspace(RegistryKey<World> dimension) {
+	public boolean isWorkspace(ResourceKey<Level> dimension) {
 		return getWorkspace(dimension) != null;
 	}
 
 	@Override
-	public CompoundNBT save(CompoundNBT root) {
-		ListNBT workspaceList = new ListNBT();
+	public CompoundTag save(CompoundTag root) {
+		ListTag workspaceList = new ListTag();
 
-		WorldGenSettingsExport<INBT> ops = WorldGenSettingsExport.create(NBTDynamicOps.INSTANCE, this.server.registryAccess());
+		RegistryWriteOps<Tag> ops = RegistryWriteOps.create(NbtOps.INSTANCE, this.server.registryAccess());
 
 		for (Map.Entry<String, MapWorkspace> entry : this.workspaces.entrySet()) {
 			MapWorkspaceData data = entry.getValue().intoData();
@@ -117,15 +117,15 @@ public final class MapWorkspaceManager extends WorldSavedData {
 	}
 
 	@Override
-	public void load(CompoundNBT root) {
+	public void load(CompoundTag root) {
 		this.workspaces.clear();
 
-		ListNBT workspaceList = root.getList("workspaces", NBT.TAG_COMPOUND);
+		ListTag workspaceList = root.getList("workspaces", NBT.TAG_COMPOUND);
 
-		DynamicOps<INBT> ops = DynamicRegistryReadingOps.create(this.server, NBTDynamicOps.INSTANCE);
+		DynamicOps<Tag> ops = DynamicRegistryReadingOps.create(this.server, NbtOps.INSTANCE);
 
 		for (int i = 0; i < workspaceList.size(); i++) {
-			CompoundNBT workspaceRoot = workspaceList.getCompound(i);
+			CompoundTag workspaceRoot = workspaceList.getCompound(i);
 
 			DataResult<MapWorkspaceData> result = MapWorkspaceData.CODEC.parse(ops, workspaceRoot);
 			result.result().ifPresent(workspaceData -> {

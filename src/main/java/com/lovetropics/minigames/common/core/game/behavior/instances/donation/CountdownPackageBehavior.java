@@ -10,12 +10,12 @@ import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents
 import com.lovetropics.minigames.common.core.game.util.TemplatedText;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.util.SoundCategory;
-import net.minecraft.util.SoundEvents;
-import net.minecraft.util.text.IFormattableTextComponent;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.TextFormatting;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.ChatFormatting;
 
 import javax.annotation.Nullable;
 import java.util.LinkedList;
@@ -87,23 +87,23 @@ public final class CountdownPackageBehavior implements IGameBehavior {
 		if (remainingTicks <= 0) {
 			return applyPackageGlobally(entry.sendingPlayer);
 		} else {
-			for (ServerPlayerEntity player : game.getAllPlayers()) {
+			for (ServerPlayer player : game.getAllPlayers()) {
 				this.tickCountdown(player, remainingTicks);
 			}
 			return false;
 		}
 	}
 
-	private void tickCountdown(ServerPlayerEntity player, long remainingTicks) {
+	private void tickCountdown(ServerPlayer player, long remainingTicks) {
 		if (remainingTicks % 20 == 0) {
 			long remainingSeconds = remainingTicks / 20;
-			IFormattableTextComponent timeText = new StringTextComponent(String.valueOf(remainingSeconds)).withStyle(TextFormatting.GOLD);
+			MutableComponent timeText = new TextComponent(String.valueOf(remainingSeconds)).withStyle(ChatFormatting.GOLD);
 			player.displayClientMessage(warning.apply(timeText), true);
-			player.playNotifySound(SoundEvents.ARROW_HIT_PLAYER, SoundCategory.MASTER, 0.8F, 1.0F);
+			player.playNotifySound(SoundEvents.ARROW_HIT_PLAYER, SoundSource.MASTER, 0.8F, 1.0F);
 		}
 	}
 
-	private boolean applyPackageToPlayer(ServerPlayerEntity player, @Nullable String sendingPlayer) {
+	private boolean applyPackageToPlayer(ServerPlayer player, @Nullable String sendingPlayer) {
 		return applyEvents.invoker(GamePackageEvents.APPLY_PACKAGE_TO_PLAYER).applyPackage(player, sendingPlayer);
 	}
 
@@ -124,11 +124,11 @@ public final class CountdownPackageBehavior implements IGameBehavior {
 
 	static final class PlayerQueueEntry {
 		final long time;
-		final ServerPlayerEntity player;
+		final ServerPlayer player;
 		@Nullable
 		final String sendingPlayer;
 
-		PlayerQueueEntry(long time, ServerPlayerEntity player, @Nullable String sendingPlayer) {
+		PlayerQueueEntry(long time, ServerPlayer player, @Nullable String sendingPlayer) {
 			this.time = time;
 			this.player = player;
 			this.sendingPlayer = sendingPlayer;

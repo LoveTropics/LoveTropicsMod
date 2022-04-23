@@ -1,8 +1,8 @@
 package com.lovetropics.minigames.common.core.game.player;
 
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.MinecraftServer;
 
 import javax.annotation.Nullable;
@@ -22,7 +22,7 @@ public final class MutablePlayerSet implements PlayerSet {
 		this.players.clear();
 	}
 
-	public boolean add(ServerPlayerEntity player) {
+	public boolean add(ServerPlayer player) {
 		return this.players.add(player.getUUID());
 	}
 
@@ -41,7 +41,7 @@ public final class MutablePlayerSet implements PlayerSet {
 
 	@Nullable
 	@Override
-	public ServerPlayerEntity getPlayerBy(UUID id) {
+	public ServerPlayer getPlayerBy(UUID id) {
 		return this.players.contains(id) ? this.server.getPlayerList().getPlayer(id) : null;
 	}
 
@@ -51,7 +51,7 @@ public final class MutablePlayerSet implements PlayerSet {
 	}
 
 	@Override
-	public Iterator<ServerPlayerEntity> iterator() {
+	public Iterator<ServerPlayer> iterator() {
 		return PlayerIterable.resolvingIterator(this.server, this.players.iterator());
 	}
 }

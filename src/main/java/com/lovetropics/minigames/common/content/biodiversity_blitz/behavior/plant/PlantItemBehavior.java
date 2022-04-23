@@ -14,15 +14,15 @@ import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.block.BlockState;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.ActionResultType;
-import net.minecraft.util.SoundCategory;
-import net.minecraft.util.SoundEvents;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.TextFormatting;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.core.BlockPos;
+import net.minecraft.ChatFormatting;
 
 public final class PlantItemBehavior implements IGameBehavior {
 	public static final Codec<PlantItemBehavior> CODEC = RecordCodecBuilder.create(instance -> instance.group(
@@ -53,28 +53,28 @@ public final class PlantItemBehavior implements IGameBehavior {
 		events.listen(BbEvents.CREATE_PLANT_ITEM, this::createPlantDrop);
 	}
 
-	private ActionResultType onPlaceBlock(ServerPlayerEntity player, BlockPos pos, BlockState placed, BlockState placedOn) {
+	private InteractionResult onPlaceBlock(ServerPlayer player, BlockPos pos, BlockState placed, BlockState placedOn) {
 		ItemStack heldItem = player.getMainHandItem();
 		if (!this.itemType.matches(heldItem)) {
-			return ActionResultType.PASS;
+			return InteractionResult.PASS;
 		}
 
 		Plot plot = plots.getPlotFor(player);
 		if (plot != null && plot.plantBounds.contains(pos)) {
 			if (plot.plants.getPlantAt(pos) != null) {
-				return ActionResultType.FAIL;
+				return InteractionResult.FAIL;
 			}
 
-			ActionResult<Plant> result = game.invoker(BbEvents.PLACE_PLANT).placePlant(player, plot, pos, this.places);
+			InteractionResultHolder<Plant> result = game.invoker(BbEvents.PLACE_PLANT).placePlant(player, plot, pos, this.places);
 			if (result.getObject() == null) {
-				player.displayClientMessage(BiodiversityBlitzTexts.plantCannotFit().withStyle(TextFormatting.RED), true);
-				player.playNotifySound(SoundEvents.EXPERIENCE_ORB_PICKUP, SoundCategory.PLAYERS, 1.0F, 1.0F);
+				player.displayClientMessage(BiodiversityBlitzTexts.plantCannotFit().withStyle(ChatFormatting.RED), true);
+				player.playNotifySound(SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.PLAYERS, 1.0F, 1.0F);
 			}
 
 			return result.getResult();
 		}
 
-		return ActionResultType.PASS;
+		return InteractionResult.PASS;
 	}
 
 	private ItemStack createPlantDrop(PlantItemType itemType) {

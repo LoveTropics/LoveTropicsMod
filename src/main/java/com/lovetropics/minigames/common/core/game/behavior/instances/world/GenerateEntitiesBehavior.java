@@ -3,14 +3,14 @@ package com.lovetropics.minigames.common.core.game.behavior.instances.world;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.SpawnReason;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
-import net.minecraft.util.registry.Registry;
-import net.minecraft.world.chunk.Chunk;
-import net.minecraft.world.gen.Heightmap;
-import net.minecraft.world.server.ServerWorld;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.core.Registry;
+import net.minecraft.world.level.chunk.LevelChunk;
+import net.minecraft.world.level.levelgen.Heightmap;
+import net.minecraft.server.level.ServerLevel;
 
 import java.util.Random;
 
@@ -34,7 +34,7 @@ public final class GenerateEntitiesBehavior extends ChunkGeneratingBehavior {
 	}
 
 	@Override
-	protected void generateChunk(IGamePhase game, ServerWorld world, Chunk chunk) {
+	protected void generateChunk(IGamePhase game, ServerLevel world, LevelChunk chunk) {
 		ChunkPos chunkPos = chunk.getPos();
 		int minX = chunkPos.getMinBlockX();
 		int minZ = chunkPos.getMinBlockZ();
@@ -46,8 +46,8 @@ public final class GenerateEntitiesBehavior extends ChunkGeneratingBehavior {
 			int x = minX + random.nextInt(16);
 			int z = minZ + random.nextInt(16);
 
-			BlockPos pos = world.getHeightmapPos(Heightmap.Type.MOTION_BLOCKING, new BlockPos(x, 0, z));
-			type.spawn(world, null, null, pos, SpawnReason.CHUNK_GENERATION, false, false);
+			BlockPos pos = world.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, new BlockPos(x, 0, z));
+			type.spawn(world, null, null, pos, MobSpawnType.CHUNK_GENERATION, false, false);
 		}
 	}
 }

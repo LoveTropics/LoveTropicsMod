@@ -1,7 +1,7 @@
 package com.lovetropics.minigames.common.content.biodiversity_blitz.plot.plant;
 
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.server.ServerWorld;
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
 
 import javax.annotation.Nullable;
 
@@ -39,7 +39,7 @@ public final class PlantPlacement {
 		return this.decorationCoverage;
 	}
 
-	public boolean place(ServerWorld world, PlantCoverage coverage) {
+	public boolean place(ServerLevel world, PlantCoverage coverage) {
 		if (this.place == null) {
 			return false;
 		}
@@ -47,6 +47,6 @@ public final class PlantPlacement {
 	}
 
 	public interface Place {
-		boolean place(ServerWorld world, PlantCoverage coverage);
+		boolean place(ServerLevel world, PlantCoverage coverage);
 	}
 }

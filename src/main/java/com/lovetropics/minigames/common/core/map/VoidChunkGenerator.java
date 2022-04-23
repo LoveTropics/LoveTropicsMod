@@ -4,36 +4,36 @@ import com.google.common.collect.ImmutableList;
 import com.lovetropics.minigames.common.util.Util;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.entity.EntityClassification;
-import net.minecraft.fluid.FluidState;
-import net.minecraft.fluid.Fluids;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.entity.MobCategory;
+import net.minecraft.world.level.material.FluidState;
+import net.minecraft.world.level.material.Fluids;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.RegistryKey;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
-import net.minecraft.util.registry.DynamicRegistries;
-import net.minecraft.util.registry.Registry;
-import net.minecraft.world.IBlockReader;
-import net.minecraft.world.ISeedReader;
-import net.minecraft.world.IWorld;
-import net.minecraft.world.biome.Biome;
-import net.minecraft.world.biome.BiomeManager;
-import net.minecraft.world.biome.Biomes;
-import net.minecraft.world.biome.MobSpawnInfo;
-import net.minecraft.world.biome.provider.SingleBiomeProvider;
-import net.minecraft.world.chunk.IChunk;
-import net.minecraft.world.gen.ChunkGenerator;
-import net.minecraft.world.gen.GenerationStage;
-import net.minecraft.world.gen.Heightmap;
-import net.minecraft.world.gen.WorldGenRegion;
-import net.minecraft.world.gen.feature.structure.Structure;
-import net.minecraft.world.gen.feature.structure.StructureManager;
-import net.minecraft.world.gen.feature.template.TemplateManager;
-import net.minecraft.world.gen.settings.DimensionStructuresSettings;
-import net.minecraft.world.server.ServerWorld;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.Registry;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.WorldGenLevel;
+import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.biome.BiomeManager;
+import net.minecraft.world.level.biome.Biomes;
+import net.minecraft.world.level.biome.MobSpawnSettings;
+import net.minecraft.world.level.biome.FixedBiomeSource;
+import net.minecraft.world.level.chunk.ChunkAccess;
+import net.minecraft.world.level.chunk.ChunkGenerator;
+import net.minecraft.world.level.levelgen.GenerationStep;
+import net.minecraft.world.level.levelgen.Heightmap;
+import net.minecraft.server.level.WorldGenRegion;
+import net.minecraft.world.level.levelgen.feature.StructureFeature;
+import net.minecraft.world.level.StructureFeatureManager;
+import net.minecraft.world.level.levelgen.structure.templatesystem.StructureManager;
+import net.minecraft.world.level.levelgen.StructureSettings;
+import net.minecraft.server.level.ServerLevel;
 
 import javax.annotation.Nullable;
 import java.util.Collections;
@@ -51,7 +51,7 @@ public final class VoidChunkGenerator extends ChunkGenerator {
 	private final Supplier<Biome> biome;
 
 	public VoidChunkGenerator(Supplier<Biome> biome) {
-		super(new SingleBiomeProvider(biome), new DimensionStructuresSettings(Optional.empty(), Collections.emptyMap()));
+		super(new FixedBiomeSource(biome), new StructureSettings(Optional.empty(), Collections.emptyMap()));
 		this.biome = biome;
 	}
 
@@ -63,7 +63,7 @@ public final class VoidChunkGenerator extends ChunkGenerator {
 		this(server.registryAccess().registryOrThrow(Registry.BIOME_REGISTRY));
 	}
 
-	public VoidChunkGenerator(Registry<Biome> biomeRegistry, RegistryKey<Biome> biome) {
+	public VoidChunkGenerator(Registry<Biome> biomeRegistry, ResourceKey<Biome> biome) {
 		this(() -> biomeRegistry.get(biome));
 	}
 
@@ -77,30 +77,30 @@ public final class VoidChunkGenerator extends ChunkGenerator {
 	}
 
 	@Override
-	public void applyCarvers(long seed, BiomeManager biomes, IChunk chunk, GenerationStage.Carving carving) {
+	public void applyCarvers(long seed, BiomeManager biomes, ChunkAccess chunk, GenerationStep.Carving carving) {
 	}
 
 	@Nullable
 	@Override
-	public BlockPos findNearestMapFeature(ServerWorld world, Structure<?> structure, BlockPos pos, int range, boolean undiscovered) {
+	public BlockPos findNearestMapFeature(ServerLevel world, StructureFeature<?> structure, BlockPos pos, int range, boolean undiscovered) {
 		return null;
 	}
 
 	@Override
-	public void applyBiomeDecoration(WorldGenRegion world, StructureManager strutures) {
+	public void applyBiomeDecoration(WorldGenRegion world, StructureFeatureManager strutures) {
 	}
 
 	@Override
-	public List<MobSpawnInfo.Spawners> getMobsAt(Biome biomes, StructureManager structures, EntityClassification entityClassification, BlockPos pos) {
+	public List<MobSpawnSettings.SpawnerData> getMobsAt(Biome biomes, StructureFeatureManager structures, MobCategory entityClassification, BlockPos pos) {
 		return ImmutableList.of();
 	}
 
 	@Override
-	public void createStructures(DynamicRegistries dynamicRegistries, StructureManager structures, IChunk chunk, TemplateManager templates, long seed) {
+	public void createStructures(RegistryAccess dynamicRegistries, StructureFeatureManager structures, ChunkAccess chunk, StructureManager templates, long seed) {
 	}
 
 	@Override
-	public void createReferences(ISeedReader world, StructureManager structures, IChunk chunk) {
+	public void createReferences(WorldGenLevel world, StructureFeatureManager structures, ChunkAccess chunk) {
 	}
 
 	@Override
@@ -114,24 +114,24 @@ public final class VoidChunkGenerator extends ChunkGenerator {
 	}
 
 	@Override
-	public void buildSurfaceAndBedrock(WorldGenRegion world, IChunk chunk) {
+	public void buildSurfaceAndBedrock(WorldGenRegion world, ChunkAccess chunk) {
 	}
 
 	@Override
-	public void fillFromNoise(IWorld world, StructureManager structures, IChunk chunk) {
+	public void fillFromNoise(LevelAccessor world, StructureFeatureManager structures, ChunkAccess chunk) {
 	}
 
 	@Override
-	public int getBaseHeight(int x, int z, Heightmap.Type heightmapType) {
+	public int getBaseHeight(int x, int z, Heightmap.Types heightmapType) {
 		return 0;
 	}
 
 	@Override
-	public IBlockReader getBaseColumn(int x, int z) {
+	public BlockGetter getBaseColumn(int x, int z) {
 		return VoidBlockReader.INSTANCE;
 	}
 
-	static final class VoidBlockReader implements IBlockReader {
+	static final class VoidBlockReader implements BlockGetter {
 		static final VoidBlockReader INSTANCE = new VoidBlockReader();
 
 		private static final BlockState VOID_BLOCK = Blocks.AIR.defaultBlockState();
@@ -142,7 +142,7 @@ public final class VoidChunkGenerator extends ChunkGenerator {
 
 		@Nullable
 		@Override
-		public TileEntity getBlockEntity(BlockPos pos) {
+		public BlockEntity getBlockEntity(BlockPos pos) {
 			return null;
 		}
 

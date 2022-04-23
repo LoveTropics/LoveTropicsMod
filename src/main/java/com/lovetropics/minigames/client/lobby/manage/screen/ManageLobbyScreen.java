@@ -14,16 +14,16 @@ import com.lovetropics.minigames.client.screen.flex.Layout;
 import com.lovetropics.minigames.common.core.game.lobby.LobbyControls;
 import com.lovetropics.minigames.common.core.game.lobby.LobbyVisibility;
 import com.lovetropics.minigames.common.core.game.util.GameTexts;
-import com.mojang.blaze3d.matrix.MatrixStack;
-import net.minecraft.client.gui.DialogTexts;
-import net.minecraft.client.gui.IGuiEventListener;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.widget.TextFieldWidget;
-import net.minecraft.client.gui.widget.button.Button;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.TextFormatting;
+import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.network.chat.CommonComponents;
+import net.minecraft.client.gui.components.events.GuiEventListener;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.util.Mth;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.ChatFormatting;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -33,7 +33,7 @@ public final class ManageLobbyScreen extends Screen {
 
 	private ManageLobbyLayout layout;
 
-	private TextFieldWidget nameField;
+	private EditBox nameField;
 	private Button publishButton;
 
 	private GameList gameList;
@@ -87,7 +87,7 @@ public final class ManageLobbyScreen extends Screen {
 				ClientLobbyQueue queue = lobby.getQueue();
 				int index = queue.indexById(queuedGameId);
 				if (index != -1) {
-					int newIndex = MathHelper.clamp(index + offset, 0, queue.size() - 1);
+					int newIndex = Mth.clamp(index + offset, 0, queue.size() - 1);
 					session.reorderQueuedGame(queuedGameId, newIndex);
 				}
 			}
@@ -115,20 +115,20 @@ public final class ManageLobbyScreen extends Screen {
 
 		playerList = addWidget(new LobbyPlayerList(this, lobby, layout.playerList));
 
-		playButton = addButton(FlexUi.createButton(layout.play, new StringTextComponent("\u25B6"), b -> {
+		playButton = addButton(FlexUi.createButton(layout.play, new TextComponent("\u25B6"), b -> {
 			session.selectControl(LobbyControls.Type.PLAY);
 		}));
-		skipButton = addButton(FlexUi.createButton(layout.skip, new StringTextComponent("\u23ED"), b -> {
+		skipButton = addButton(FlexUi.createButton(layout.skip, new TextComponent("\u23ED"), b -> {
 			session.selectControl(LobbyControls.Type.SKIP);
 		}));
 
-		ITextComponent closeLobby = GameTexts.Ui.closeLobby()
-				.withStyle(TextFormatting.RED, TextFormatting.UNDERLINE);
+		Component closeLobby = GameTexts.Ui.closeLobby()
+				.withStyle(ChatFormatting.RED, ChatFormatting.UNDERLINE);
 		closeButton = addButton(FlexUi.createButton(layout.close, closeLobby, b -> {
 			session.closeLobby();
 			onClose();
 		}));
-		addButton(FlexUi.createButton(layout.done, DialogTexts.GUI_DONE, b -> onClose()));
+		addButton(FlexUi.createButton(layout.done, CommonComponents.GUI_DONE, b -> onClose()));
 
 		updateGameEntries();
 		updatePublishState();
@@ -137,15 +137,15 @@ public final class ManageLobbyScreen extends Screen {
 
 	// TODO: custom text field instance
 	@Override
-	public void setFocused(@Nullable IGuiEventListener listener) {
-		IGuiEventListener lastListener = this.getFocused();
+	public void setFocused(@Nullable GuiEventListener listener) {
+		GuiEventListener lastListener = this.getFocused();
 		if (lastListener != null && lastListener != listener) {
 			this.onLoseFocus(lastListener);
 		}
 		super.setFocused(listener);
 	}
 
-	private void onLoseFocus(IGuiEventListener listener) {
+	private void onLoseFocus(GuiEventListener listener) {
 		if (listener == nameField) {
 			applyNameField();
 		}
@@ -206,7 +206,7 @@ public final class ManageLobbyScreen extends Screen {
 	}
 
 	@Override
-	public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
+	public void render(PoseStack matrixStack, int mouseX, int mouseY, float partialTicks) {
 		int fontHeight = font.lineHeight;
 
 		renderBackground(matrixStack, 0);
@@ -243,10 +243,10 @@ public final class ManageLobbyScreen extends Screen {
 		super.render(matrixStack, mouseX, mouseY, partialTicks);
 	}
 
-	private void renderSelectedGame(ClientLobbyQueuedGame game, MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
+	private void renderSelectedGame(ClientLobbyQueuedGame game, PoseStack matrixStack, int mouseX, int mouseY, float partialTicks) {
 		FlexUi.fill(layout.centerHeader, matrixStack, 0x80101010);
 
-		ITextComponent title = GameTexts.Ui.managingGame(game.definition());
+		Component title = GameTexts.Ui.managingGame(game.definition());
 
 		Box header = layout.centerHeader.content();
 		drawCenteredString(matrixStack, font, title, header.centerX(), header.centerY() - font.lineHeight / 2, 0xFFFFFF);

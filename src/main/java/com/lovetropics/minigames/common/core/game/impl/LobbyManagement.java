@@ -9,8 +9,8 @@ import com.lovetropics.minigames.common.core.game.lobby.*;
 import com.lovetropics.minigames.common.core.game.player.MutablePlayerSet;
 import com.lovetropics.minigames.common.core.network.LoveTropicsNetwork;
 import com.lovetropics.minigames.common.util.Scheduler;
-import net.minecraft.command.CommandSource;
-import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.fml.network.PacketDistributor;
 
 import java.util.function.UnaryOperator;
@@ -41,7 +41,7 @@ final class LobbyManagement implements ILobbyManagement {
 	}
 
 	@Override
-	public boolean startManaging(ServerPlayerEntity player) {
+	public boolean startManaging(ServerPlayer player) {
 		if (canManage(player.createCommandSourceStack())) {
 			ClientLobbyUpdate.Set initialize = ClientLobbyUpdate.Set.create()
 					.setName(lobby.getMetadata().name())
@@ -62,12 +62,12 @@ final class LobbyManagement implements ILobbyManagement {
 	}
 
 	@Override
-	public void stopManaging(ServerPlayerEntity player) {
+	public void stopManaging(ServerPlayer player) {
 		managingPlayers.remove(player);
 	}
 
 	@Override
-	public boolean canManage(CommandSource source) {
+	public boolean canManage(CommandSourceStack source) {
 		return source.hasPermission(2) || lobby.getMetadata().initiator().matches(source.getEntity());
 	}
 

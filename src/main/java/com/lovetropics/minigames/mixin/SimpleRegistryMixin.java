@@ -5,19 +5,19 @@ import com.lovetropics.minigames.common.core.dimension.RegistryEntryRemover;
 import com.mojang.serialization.Lifecycle;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.ObjectList;
-import net.minecraft.util.RegistryKey;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.registry.SimpleRegistry;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.core.MappedRegistry;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 
 import java.util.Map;
 
-@Mixin(SimpleRegistry.class)
+@Mixin(MappedRegistry.class)
 public class SimpleRegistryMixin<T> implements RegistryEntryRemover<T> {
     @Shadow @Final private BiMap<ResourceLocation, T> storage;
-    @Shadow @Final private BiMap<RegistryKey<T>, T> keyStorage;
+    @Shadow @Final private BiMap<ResourceKey<T>, T> keyStorage;
     @Shadow @Final private Object2IntMap<T> toId;
     @Shadow @Final private ObjectList<T> byId;
     @Shadow @Final private Map<T, Lifecycle> lifecycles;

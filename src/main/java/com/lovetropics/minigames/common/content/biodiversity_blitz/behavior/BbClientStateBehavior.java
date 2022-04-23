@@ -12,7 +12,7 @@ import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvent
 import com.lovetropics.minigames.common.core.game.client_state.GameClientState;
 import com.mojang.serialization.Codec;
 import it.unimi.dsi.fastutil.objects.*;
-import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.server.level.ServerPlayer;
 
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -49,18 +49,18 @@ public final class BbClientStateBehavior implements IGameBehavior {
 		});
 	}
 
-	private void addPlayer(ServerPlayerEntity player) {
+	private void addPlayer(ServerPlayer player) {
 		GameClientState.sendToPlayer(this.buildGlobalState(), player);
 	}
 
-	private void removePlayer(ServerPlayerEntity player) {
+	private void removePlayer(ServerPlayer player) {
 		this.trackedCurrency.remove(player.getUUID());
 
 		GameClientState.removeFromPlayer(BiodiversityBlitz.SELF_STATE.get(), player);
 		GameClientState.removeFromPlayer(BiodiversityBlitz.GLOBAL_STATE.get(), player);
 	}
 
-	private void updateState(ServerPlayerEntity player, Consumer<Currency> update) {
+	private void updateState(ServerPlayer player, Consumer<Currency> update) {
 		Currency currency = this.trackedCurrency.computeIfAbsent(player.getUUID(), uuid -> new Currency());
 		update.accept(currency);
 

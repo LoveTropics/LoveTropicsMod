@@ -3,8 +3,8 @@ package com.lovetropics.minigames.common.content.biodiversity_blitz.entity.ai;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.BbCreeperEntity;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.plant.Plant;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.plant.state.PlantHealth;
-import net.minecraft.entity.MobEntity;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.core.BlockPos;
 
 public class KaboomCropGoal extends DestroyCropGoal {
     private final BbCreeperEntity mob;
@@ -21,7 +21,7 @@ public class KaboomCropGoal extends DestroyCropGoal {
     }
 
     @Override
-    protected void tryDamagePlant(MobEntity mob) {
+    protected void tryDamagePlant(Mob mob) {
         // Tell creeper to explode
         this.mob.setSwellDir(1);
     }

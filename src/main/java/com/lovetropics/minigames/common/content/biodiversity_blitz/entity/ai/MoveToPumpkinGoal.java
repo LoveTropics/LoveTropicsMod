@@ -1,12 +1,12 @@
 package com.lovetropics.minigames.common.content.biodiversity_blitz.entity.ai;
 
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.entity.CreatureEntity;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.entity.PathfinderMob;
+import net.minecraft.core.BlockPos;
 
 public final class MoveToPumpkinGoal extends MoveToBlockGoal {
-    public MoveToPumpkinGoal(CreatureEntity creature) {
+    public MoveToPumpkinGoal(PathfinderMob creature) {
         super(creature);
     }
 

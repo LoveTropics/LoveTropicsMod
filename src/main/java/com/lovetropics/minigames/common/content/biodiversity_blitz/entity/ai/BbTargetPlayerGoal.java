@@ -1,17 +1,17 @@
 package com.lovetropics.minigames.common.content.biodiversity_blitz.entity.ai;
 
 import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.BbMobEntity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.ai.goal.NearestAttackableTargetGoal;
-import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
+import net.minecraft.world.entity.player.Player;
 
 import java.util.function.Predicate;
 
-public final class BbTargetPlayerGoal extends NearestAttackableTargetGoal<PlayerEntity> {
+public final class BbTargetPlayerGoal extends NearestAttackableTargetGoal<Player> {
 	private static final double TARGET_RANGE = 8.0;
 
 	public BbTargetPlayerGoal(BbMobEntity owner) {
-		super(owner.asMob(), PlayerEntity.class, 10, true, true, entityInPlot(owner));
+		super(owner.asMob(), Player.class, 10, true, true, entityInPlot(owner));
 	}
 
 	@Override

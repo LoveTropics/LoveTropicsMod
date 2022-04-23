@@ -3,19 +3,19 @@ package com.lovetropics.minigames.common.core.game.behavior.instances.world;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.ChestBlock;
-import net.minecraft.state.properties.BlockStateProperties;
-import net.minecraft.tileentity.ChestTileEntity;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.Direction;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.registry.Registry;
-import net.minecraft.world.chunk.Chunk;
-import net.minecraft.world.server.ServerWorld;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.ChestBlock;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.entity.ChestBlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.core.Direction;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Registry;
+import net.minecraft.world.level.chunk.LevelChunk;
+import net.minecraft.server.level.ServerLevel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,11 +35,11 @@ public class FillChestsByMarkerBehavior extends ChunkGeneratingBehavior {
 	}
 
 	@Override
-	protected void generateChunk(IGamePhase game, ServerWorld world, Chunk chunk) {
+	protected void generateChunk(IGamePhase game, ServerLevel world, LevelChunk chunk) {
 		List<BlockPos> chestPositions = new ArrayList<>();
 		for (BlockPos pos : chunk.getBlockEntitiesPos()) {
-			TileEntity entity = chunk.getBlockEntity(pos);
-			if (entity instanceof ChestTileEntity) {
+			BlockEntity entity = chunk.getBlockEntity(pos);
+			if (entity instanceof ChestBlockEntity) {
 				chestPositions.add(pos);
 			}
 		}
@@ -58,11 +58,11 @@ public class FillChestsByMarkerBehavior extends ChunkGeneratingBehavior {
 		}
 	}
 
-	private void setChest(ServerWorld world, BlockPos pos, ResourceLocation lootTable, Direction facing) {
+	private void setChest(ServerLevel world, BlockPos pos, ResourceLocation lootTable, Direction facing) {
 		world.setBlockAndUpdate(pos, Blocks.CHEST.defaultBlockState().setValue(ChestBlock.FACING, facing));
-		TileEntity chest = world.getBlockEntity(pos);
-		if (chest instanceof ChestTileEntity) {
-			((ChestTileEntity) chest).setLootTable(lootTable, world.random.nextLong());
+		BlockEntity chest = world.getBlockEntity(pos);
+		if (chest instanceof ChestBlockEntity) {
+			((ChestBlockEntity) chest).setLootTable(lootTable, world.random.nextLong());
 		}
 	}
 

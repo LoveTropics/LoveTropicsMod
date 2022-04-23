@@ -11,18 +11,18 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
-import net.minecraft.command.CommandSource;
-import net.minecraft.command.ISuggestionProvider;
-import net.minecraft.command.arguments.EntityArgument;
-import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.SharedSuggestionProvider;
+import net.minecraft.commands.arguments.EntityArgument;
+import net.minecraft.server.level.ServerPlayer;
 
 import java.util.concurrent.CompletableFuture;
 
-import static net.minecraft.command.Commands.argument;
-import static net.minecraft.command.Commands.literal;
+import static net.minecraft.commands.Commands.argument;
+import static net.minecraft.commands.Commands.literal;
 
 public class GamePackageCommand {
-	public static void register(final CommandDispatcher<CommandSource> dispatcher) {
+	public static void register(final CommandDispatcher<CommandSourceStack> dispatcher) {
 		dispatcher.register(
 			literal("game")
 			.then(literal("package").requires(s -> s.hasPermission(2))
@@ -34,16 +34,16 @@ public class GamePackageCommand {
 		);
 	}
 
-	private static CompletableFuture<Suggestions> suggestPackages(final CommandContext<CommandSource> ctx, final SuggestionsBuilder builder) {
+	private static CompletableFuture<Suggestions> suggestPackages(final CommandContext<CommandSourceStack> ctx, final SuggestionsBuilder builder) {
 		IGamePhase game = IGameManager.get().getGamePhaseFor(ctx.getSource());
 		if (game != null) {
 			GamePackageState packages = game.getState().get(GamePackageState.KEY);
-			return ISuggestionProvider.suggest(packages.stream(), builder);
+			return SharedSuggestionProvider.suggest(packages.stream(), builder);
 		}
 		return Suggestions.empty();
 	}
 
-	private static int spawnPackage(CommandContext<CommandSource> ctx, ServerPlayerEntity target) {
+	private static int spawnPackage(CommandContext<CommandSourceStack> ctx, ServerPlayer target) {
 		IGamePhase game = IGameManager.get().getGamePhaseFor(ctx.getSource());
 		if (game != null) {
 			String type = StringArgumentType.getString(ctx, "id");

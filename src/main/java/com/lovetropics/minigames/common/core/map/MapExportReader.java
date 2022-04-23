@@ -1,12 +1,12 @@
 package com.lovetropics.minigames.common.core.map;
 
-import net.minecraft.nbt.CompressedStreamTools;
-import net.minecraft.resources.IResource;
+import net.minecraft.nbt.NbtIo;
+import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.RegistryKey;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.world.World;
-import net.minecraft.world.storage.SaveFormat;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.LevelStorageSource;
 import org.apache.commons.io.FileUtils;
 
 import java.io.*;
@@ -24,7 +24,7 @@ public final class MapExportReader implements Closeable {
 
 	public static MapExportReader open(MinecraftServer server, ResourceLocation location) throws IOException {
 		ResourceLocation path = new ResourceLocation(location.getNamespace(), "maps/" + location.getPath() + ".zip");
-		IResource resource = server.getDataPackRegistries().getResourceManager().getResource(path);
+		Resource resource = server.getDataPackRegistries().getResourceManager().getResource(path);
 		return MapExportReader.open(resource.getInputStream());
 	}
 
@@ -32,8 +32,8 @@ public final class MapExportReader implements Closeable {
 		return new MapExportReader(new ZipInputStream(input));
 	}
 
-	public MapMetadata loadInto(MinecraftServer server, RegistryKey<World> dimension) throws IOException {
-		SaveFormat.LevelSave save = server.storageSource;
+	public MapMetadata loadInto(MinecraftServer server, ResourceKey<Level> dimension) throws IOException {
+		LevelStorageSource.LevelStorageAccess save = server.storageSource;
 		File dimensionDirectory = save.getDimensionPath(dimension);
 		return loadInto(dimensionDirectory.toPath());
 	}
@@ -56,7 +56,7 @@ public final class MapExportReader implements Closeable {
 
 			String name = entry.getName();
 			if (name.equals("metadata.nbt")) {
-				metadata = MapMetadata.read(CompressedStreamTools.read(new DataInputStream(input)));
+				metadata = MapMetadata.read(NbtIo.read(new DataInputStream(input)));
 			} else if (name.startsWith("world/")) {
 				Path targetPath = regionRoot.resolve(name.substring("world/".length()));
 				Files.copy(input, targetPath);

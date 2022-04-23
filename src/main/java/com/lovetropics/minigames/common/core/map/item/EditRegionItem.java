@@ -6,18 +6,20 @@ import com.lovetropics.minigames.client.map.RegionTraceTarget;
 import com.lovetropics.minigames.common.core.network.LoveTropicsNetwork;
 import com.lovetropics.minigames.common.core.network.workspace.UpdateWorkspaceRegionMessage;
 import net.minecraft.client.Minecraft;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Hand;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.TextFormatting;
-import net.minecraft.world.World;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.ChatFormatting;
+import net.minecraft.world.level.Level;
 
 import javax.annotation.Nullable;
+
+import net.minecraft.world.item.Item.Properties;
 
 public final class EditRegionItem extends Item {
 	private static Mode mode = Mode.RESIZE;
@@ -28,7 +30,7 @@ public final class EditRegionItem extends Item {
 	}
 
 	@Override
-	public ActionResult<ItemStack> use(World world, PlayerEntity player, Hand hand) {
+	public InteractionResultHolder<ItemStack> use(Level world, Player player, InteractionHand hand) {
 		ItemStack stack = player.getItemInHand(hand);
 
 		if (world.isClientSide && isClientPlayer(player)) {
@@ -38,17 +40,17 @@ public final class EditRegionItem extends Item {
 
 			if (traceResult != null && mode == Mode.REMOVE) {
 				LoveTropicsNetwork.CHANNEL.sendToServer(new UpdateWorkspaceRegionMessage(traceResult.entry.id, null));
-				return ActionResult.success(stack);
+				return InteractionResultHolder.success(stack);
 			}
 
 			if (MapWorkspaceTracer.select(player, traceResult, target -> mode.createEdit(target))) {
-				return ActionResult.success(stack);
+				return InteractionResultHolder.success(stack);
 			} else {
-				return ActionResult.pass(stack);
+				return InteractionResultHolder.pass(stack);
 			}
 		}
 
-		return ActionResult.pass(stack);
+		return InteractionResultHolder.pass(stack);
 	}
 
 	@Override
@@ -58,10 +60,10 @@ public final class EditRegionItem extends Item {
 
 			MapWorkspaceTracer.stopEditing();
 
-			if (entity instanceof PlayerEntity) {
-				PlayerEntity player = (PlayerEntity) entity;
-				ITextComponent message = new StringTextComponent("Changed mode to: ")
-						.append(new StringTextComponent(mode.key).withStyle(mode.color));
+			if (entity instanceof Player) {
+				Player player = (Player) entity;
+				Component message = new TextComponent("Changed mode to: ")
+						.append(new TextComponent(mode.key).withStyle(mode.color));
 				player.displayClientMessage(message, true);
 			}
 		}
@@ -74,18 +76,18 @@ public final class EditRegionItem extends Item {
 	}
 
 	enum Mode {
-		RESIZE("resize", TextFormatting.BLUE),
-		MOVE("move", TextFormatting.BLUE),
+		RESIZE("resize", ChatFormatting.BLUE),
+		MOVE("move", ChatFormatting.BLUE),
 		// TODO: Provide commands that can operate on selected regions
-		SELECT("select", TextFormatting.BLUE),
-		REMOVE("remove", TextFormatting.RED);
+		SELECT("select", ChatFormatting.BLUE),
+		REMOVE("remove", ChatFormatting.RED);
 
 		static final Mode[] MODES = values();
 
 		final String key;
-		final TextFormatting color;
+		final ChatFormatting color;
 
-		Mode(String key, TextFormatting color) {
+		Mode(String key, ChatFormatting color) {
 			this.key = key;
 			this.color = color;
 		}

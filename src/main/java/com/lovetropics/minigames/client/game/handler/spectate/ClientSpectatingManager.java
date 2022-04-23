@@ -4,7 +4,7 @@ import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.client.game.handler.ClientGameStateHandler;
 import com.lovetropics.minigames.common.core.game.client_state.instance.SpectatingClientState;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.SpectatorGui;
+import net.minecraft.client.gui.components.spectator.SpectatorGui;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.EntityViewRenderEvent;
 import net.minecraftforge.event.TickEvent;

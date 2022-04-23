@@ -1,7 +1,7 @@
 package com.lovetropics.minigames.client.lobby.manage.screen;
 
 import com.lovetropics.minigames.client.screen.flex.*;
-import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.screens.Screen;
 
 final class ManageLobbyLayout {
 	static final int PADDING = 8;

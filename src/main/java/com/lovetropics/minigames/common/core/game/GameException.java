@@ -1,21 +1,21 @@
 package com.lovetropics.minigames.common.core.game;
 
-import net.minecraft.util.text.ITextComponent;
+import net.minecraft.network.chat.Component;
 
 public class GameException extends RuntimeException {
-	private final ITextComponent message;
+	private final Component message;
 
-	public GameException(ITextComponent message) {
+	public GameException(Component message) {
 		super(message.getString());
 		this.message = message;
 	}
 
-	public GameException(ITextComponent message, Throwable cause) {
+	public GameException(Component message, Throwable cause) {
 		super(message.getString(), cause);
 		this.message = message;
 	}
 
-	public ITextComponent getTextMessage() {
+	public Component getTextMessage() {
 		return this.message;
 	}
 }

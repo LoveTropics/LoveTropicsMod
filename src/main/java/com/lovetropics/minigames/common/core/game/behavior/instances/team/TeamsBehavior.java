@@ -17,16 +17,16 @@ import com.lovetropics.minigames.common.core.game.util.TeamAllocator;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.scoreboard.ScorePlayerTeam;
-import net.minecraft.scoreboard.ServerScoreboard;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.scores.PlayerTeam;
+import net.minecraft.server.ServerScoreboard;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.ActionResultType;
-import net.minecraft.util.DamageSource;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.TextFormatting;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.ChatFormatting;
 import org.apache.commons.lang3.RandomStringUtils;
 
 import javax.annotation.Nullable;
@@ -43,7 +43,7 @@ public final class TeamsBehavior implements IGameBehavior {
 		).apply(instance, TeamsBehavior::new);
 	});
 
-	private final Map<GameTeamKey, ScorePlayerTeam> scoreboardTeams = new Object2ObjectOpenHashMap<>();
+	private final Map<GameTeamKey, PlayerTeam> scoreboardTeams = new Object2ObjectOpenHashMap<>();
 
 	private final boolean friendlyFire;
 	private final boolean staticTeamIds;
@@ -96,13 +96,13 @@ public final class TeamsBehavior implements IGameBehavior {
 
 		for (GameTeam team : teams) {
 			String teamId = createTeamId(team.key());
-			ScorePlayerTeam scoreboardTeam = getOrCreateScoreboardTeam(scoreboard, team, teamId);
+			PlayerTeam scoreboardTeam = getOrCreateScoreboardTeam(scoreboard, team, teamId);
 			scoreboardTeams.put(team.key(), scoreboardTeam);
 		}
 	}
 
-	private ScorePlayerTeam getOrCreateScoreboardTeam(ServerScoreboard scoreboard, GameTeam team, String teamId) {
-		ScorePlayerTeam scoreboardTeam = scoreboard.getPlayerTeam(teamId);
+	private PlayerTeam getOrCreateScoreboardTeam(ServerScoreboard scoreboard, GameTeam team, String teamId) {
+		PlayerTeam scoreboardTeam = scoreboard.getPlayerTeam(teamId);
 		if (scoreboardTeam == null) {
 			scoreboardTeam = scoreboard.addPlayerTeam(teamId);
 			scoreboardTeam.setDisplayName(team.config().name());
@@ -121,10 +121,10 @@ public final class TeamsBehavior implements IGameBehavior {
 		}
 	}
 
-	private void reassignPlayerRoles(IGamePhase game, TeamAllocator<PlayerRole, ServerPlayerEntity> allocator) {
+	private void reassignPlayerRoles(IGamePhase game, TeamAllocator<PlayerRole, ServerPlayer> allocator) {
 		// force all assigned players to be a participant
 		for (UUID uuid : teams.getAssignedPlayers()) {
-			ServerPlayerEntity player = game.getAllPlayers().getPlayerBy(uuid);
+			ServerPlayer player = game.getAllPlayers().getPlayerBy(uuid);
 			if (player != null) {
 				allocator.addPlayer(player, PlayerRole.PARTICIPANT);
 			}
@@ -133,18 +133,18 @@ public final class TeamsBehavior implements IGameBehavior {
 
 	private void onDestroy(IGamePhase game) {
 		ServerScoreboard scoreboard = game.getServer().getScoreboard();
-		for (ScorePlayerTeam team : scoreboardTeams.values()) {
+		for (PlayerTeam team : scoreboardTeams.values()) {
 			scoreboard.removePlayerTeam(team);
 		}
 	}
 
-	private void onPlayerSetRole(ServerPlayerEntity player, @Nullable PlayerRole role, @Nullable PlayerRole lastRole) {
+	private void onPlayerSetRole(ServerPlayer player, @Nullable PlayerRole role, @Nullable PlayerRole lastRole) {
 		if (lastRole == PlayerRole.PARTICIPANT && role != PlayerRole.PARTICIPANT) {
 			removePlayerFromTeams(player);
 		}
 	}
 
-	private void addPlayerToTeam(IGamePhase game, ServerPlayerEntity player, GameTeamKey teamKey) {
+	private void addPlayerToTeam(IGamePhase game, ServerPlayer player, GameTeamKey teamKey) {
 		GameTeam team = teams.getTeamByKey(teamKey);
 		if (team == null) {
 			return;
@@ -157,36 +157,36 @@ public final class TeamsBehavior implements IGameBehavior {
 		game.getStatistics().forPlayer(player).set(StatisticKey.TEAM, teamKey);
 
 		ServerScoreboard scoreboard = player.server.getScoreboard();
-		ScorePlayerTeam scoreboardTeam = scoreboardTeams.get(teamKey);
+		PlayerTeam scoreboardTeam = scoreboardTeams.get(teamKey);
 		scoreboard.addPlayerToTeam(player.getScoreboardName(), scoreboardTeam);
 
-		ITextComponent teamName = team.config().name().copy().append(" Team!")
-				.withStyle(TextFormatting.BOLD, team.config().formatting());
+		Component teamName = team.config().name().copy().append(" Team!")
+				.withStyle(ChatFormatting.BOLD, team.config().formatting());
 
 		player.displayClientMessage(
-				new StringTextComponent("You are on ").withStyle(TextFormatting.GRAY).append(teamName),
+				new TextComponent("You are on ").withStyle(ChatFormatting.GRAY).append(teamName),
 				false
 		);
 	}
 
-	private void removePlayerFromTeams(ServerPlayerEntity player) {
+	private void removePlayerFromTeams(ServerPlayer player) {
 		teams.removePlayer(player);
 
 		ServerScoreboard scoreboard = player.server.getScoreboard();
 		scoreboard.removePlayerFromTeam(player.getScoreboardName());
 	}
 
-	private ActionResultType onPlayerHurt(ServerPlayerEntity player, DamageSource source, float amount) {
+	private InteractionResult onPlayerHurt(ServerPlayer player, DamageSource source, float amount) {
 		if (!friendlyFire && teams.areSameTeam(source.getEntity(), player)) {
-			return ActionResultType.FAIL;
+			return InteractionResult.FAIL;
 		}
-		return ActionResultType.PASS;
+		return InteractionResult.PASS;
 	}
 
-	private ActionResultType onPlayerAttack(ServerPlayerEntity player, Entity target) {
+	private InteractionResult onPlayerAttack(ServerPlayer player, Entity target) {
 		if (!friendlyFire && teams.areSameTeam(player, target)) {
-			return ActionResultType.FAIL;
+			return InteractionResult.FAIL;
 		}
-		return ActionResultType.PASS;
+		return InteractionResult.PASS;
 	}
 }

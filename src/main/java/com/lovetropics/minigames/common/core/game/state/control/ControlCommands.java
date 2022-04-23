@@ -5,7 +5,7 @@ import com.lovetropics.minigames.common.core.game.state.GameStateKey;
 import com.lovetropics.minigames.common.core.game.state.IGameState;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import net.minecraft.command.CommandSource;
+import net.minecraft.commands.CommandSourceStack;
 
 import java.util.Map;
 import java.util.stream.Stream;
@@ -19,14 +19,14 @@ public final class ControlCommands implements IGameState {
 		this.commands.put(name, command);
 	}
 
-	public void invoke(GameLobbyMetadata lobby, String name, CommandSource source) throws CommandSyntaxException {
+	public void invoke(GameLobbyMetadata lobby, String name, CommandSourceStack source) throws CommandSyntaxException {
 		ControlCommand command = this.commands.get(name);
 		if (command != null) {
 			command.invoke(source, lobby.initiator());
 		}
 	}
 
-	public Stream<String> list(GameLobbyMetadata lobby, CommandSource source) {
+	public Stream<String> list(GameLobbyMetadata lobby, CommandSourceStack source) {
 		return this.commands.entrySet().stream()
 				.filter(entry -> entry.getValue().canUse(source, lobby.initiator()))
 				.map(Map.Entry::getKey);

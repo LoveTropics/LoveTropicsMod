@@ -7,12 +7,12 @@ import com.lovetropics.minigames.common.core.game.player.PlayerSet;
 import com.lovetropics.minigames.common.core.game.state.GameStateMap;
 import com.lovetropics.minigames.common.core.game.state.statistics.PlayerKey;
 import com.lovetropics.minigames.common.core.map.MapRegions;
-import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.RegistryKey;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.Unit;
-import net.minecraft.world.World;
-import net.minecraft.world.server.ServerWorld;
+import net.minecraft.world.level.Level;
+import net.minecraft.server.level.ServerLevel;
 
 import javax.annotation.Nullable;
 import java.util.UUID;
@@ -71,7 +71,7 @@ public interface IGamePhase extends IGame {
 	 * @param role the role to add the player to
 	 * @return whether the player was successfully added or if their role was changed
 	 */
-	boolean setPlayerRole(ServerPlayerEntity player, @Nullable PlayerRole role);
+	boolean setPlayerRole(ServerPlayer player, @Nullable PlayerRole role);
 
 	/**
 	 * @return The list of players within this game instance that belong to the given role
@@ -93,7 +93,7 @@ public interface IGamePhase extends IGame {
 	}
 
 	@Nullable
-	default PlayerRole getRoleFor(ServerPlayerEntity player) {
+	default PlayerRole getRoleFor(ServerPlayer player) {
 		for (PlayerRole role : PlayerRole.ROLES) {
 			if (getPlayersWithRole(role).contains(player)) {
 				return role;
@@ -105,12 +105,12 @@ public interface IGamePhase extends IGame {
 	/**
 	 * @return the world that this game takes place within
 	 */
-	ServerWorld getWorld();
+	ServerLevel getWorld();
 
 	/**
 	 * @return the dimension that this game takes places within
 	 */
-	default RegistryKey<World> getDimension() {
+	default ResourceKey<Level> getDimension() {
 		return getWorld().dimension();
 	}
 

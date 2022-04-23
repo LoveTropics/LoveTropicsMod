@@ -5,21 +5,21 @@ import com.google.common.collect.ImmutableList;
 import com.lovetropics.minigames.Constants;
 import com.mojang.serialization.Lifecycle;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
-import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.IProgressUpdate;
-import net.minecraft.util.RegistryKey;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.Util;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.registry.Registry;
-import net.minecraft.util.registry.SimpleRegistry;
-import net.minecraft.world.Dimension;
-import net.minecraft.world.World;
-import net.minecraft.world.biome.BiomeManager;
-import net.minecraft.world.gen.settings.DimensionGeneratorSettings;
-import net.minecraft.world.server.ServerWorld;
-import net.minecraft.world.storage.SaveFormat;
+import net.minecraft.util.ProgressListener;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.Util;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Registry;
+import net.minecraft.core.MappedRegistry;
+import net.minecraft.world.level.dimension.LevelStem;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.biome.BiomeManager;
+import net.minecraft.world.level.levelgen.WorldGenSettings;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.storage.LevelStorageSource;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.world.WorldEvent;
@@ -49,8 +49,8 @@ public final class RuntimeDimensions {
 
 	private final MinecraftServer server;
 
-	private final Set<ServerWorld> deletionQueue = new ReferenceOpenHashSet<>();
-	private final Set<RegistryKey<World>> temporaryDimensions = new ReferenceOpenHashSet<>();
+	private final Set<ServerLevel> deletionQueue = new ReferenceOpenHashSet<>();
+	private final Set<ResourceKey<Level>> temporaryDimensions = new ReferenceOpenHashSet<>();
 
 	private RuntimeDimensions(MinecraftServer server) {
 		this.server = server;
@@ -97,8 +97,8 @@ public final class RuntimeDimensions {
 	}
 
 	public RuntimeDimensionHandle getOrOpenPersistent(ResourceLocation key, Supplier<RuntimeDimensionConfig> config) {
-		RegistryKey<World> worldKey = RegistryKey.create(Registry.DIMENSION_REGISTRY, key);
-		ServerWorld world = this.server.getLevel(worldKey);
+		ResourceKey<Level> worldKey = ResourceKey.create(Registry.DIMENSION_REGISTRY, key);
+		ServerLevel world = this.server.getLevel(worldKey);
 		if (world != null) {
 			this.deletionQueue.remove(world);
 			return new RuntimeDimensionHandle(this, world);
@@ -114,7 +114,7 @@ public final class RuntimeDimensions {
 
 	@Nullable
 	public RuntimeDimensionHandle openTemporaryWithKey(ResourceLocation key, RuntimeDimensionConfig config) {
-		RegistryKey<World> worldKey = RegistryKey.create(Registry.DIMENSION_REGISTRY, key);
+		ResourceKey<Level> worldKey = ResourceKey.create(Registry.DIMENSION_REGISTRY, key);
 		if (this.server.getLevel(worldKey) == null) {
 			return this.openWorld(key, config, true);
 		} else {
@@ -123,12 +123,12 @@ public final class RuntimeDimensions {
 	}
 
 	RuntimeDimensionHandle openWorld(ResourceLocation key, RuntimeDimensionConfig config, boolean temporary) {
-		RegistryKey<World> worldKey = RegistryKey.create(Registry.DIMENSION_REGISTRY, key);
+		ResourceKey<Level> worldKey = ResourceKey.create(Registry.DIMENSION_REGISTRY, key);
 
-		SimpleRegistry<Dimension> dimensionsRegistry = getDimensionsRegistry(this.server);
-		dimensionsRegistry.register(RegistryKey.create(Registry.LEVEL_STEM_REGISTRY, key), config.dimension, Lifecycle.stable());
+		MappedRegistry<LevelStem> dimensionsRegistry = getDimensionsRegistry(this.server);
+		dimensionsRegistry.register(ResourceKey.create(Registry.LEVEL_STEM_REGISTRY, key), config.dimension, Lifecycle.stable());
 
-		ServerWorld world = new ServerWorld(
+		ServerLevel world = new ServerLevel(
 				this.server, Util.backgroundExecutor(), this.server.storageSource,
 				config.worldInfo,
 				worldKey,
@@ -141,7 +141,7 @@ public final class RuntimeDimensions {
 				false
 		) {
 			@Override
-			public void save(@Nullable IProgressUpdate progress, boolean flush, boolean skipSave) {
+			public void save(@Nullable ProgressListener progress, boolean flush, boolean skipSave) {
 				if (temporary) {
 					if (!flush && temporaryDimensions.contains(dimension())) {
 						super.save(progress, false, skipSave);
@@ -172,7 +172,7 @@ public final class RuntimeDimensions {
 		}
 	}
 
-	boolean tickDimensionDeletion(ServerWorld world) {
+	boolean tickDimensionDeletion(ServerLevel world) {
 		if (this.isWorldUnloaded(world)) {
 			this.deleteDimension(world);
 			return true;
@@ -183,9 +183,9 @@ public final class RuntimeDimensions {
 	}
 
 	private void stop() {
-		ArrayList<RegistryKey<World>> temporaryDimensions = new ArrayList<>(this.temporaryDimensions);
-		for (RegistryKey<World> dimension : temporaryDimensions) {
-			ServerWorld world = this.server.getLevel(dimension);
+		ArrayList<ResourceKey<Level>> temporaryDimensions = new ArrayList<>(this.temporaryDimensions);
+		for (ResourceKey<Level> dimension : temporaryDimensions) {
+			ServerLevel world = this.server.getLevel(dimension);
 			if (world != null) {
 				this.kickPlayersFrom(world);
 				this.deleteDimension(world);
@@ -193,33 +193,33 @@ public final class RuntimeDimensions {
 		}
 	}
 
-	void enqueueDeletion(ServerWorld world) {
+	void enqueueDeletion(ServerLevel world) {
 		CompletableFuture.runAsync(() -> {
 			this.deletionQueue.add(world);
 		}, this.server);
 	}
 
-	private void kickPlayersFrom(ServerWorld world) {
+	private void kickPlayersFrom(ServerLevel world) {
 		if (world.players().isEmpty()) {
 			return;
 		}
 
-		ServerWorld overworld = this.server.overworld();
+		ServerLevel overworld = this.server.overworld();
 		BlockPos spawnPos = overworld.getSharedSpawnPos();
 		float spawnAngle = overworld.getSharedSpawnAngle();
 
-		List<ServerPlayerEntity> players = new ArrayList<>(world.players());
-		for (ServerPlayerEntity player : players) {
+		List<ServerPlayer> players = new ArrayList<>(world.players());
+		for (ServerPlayer player : players) {
 			player.teleportTo(overworld, spawnPos.getX() + 0.5, spawnPos.getY(), spawnPos.getZ() + 0.5, spawnAngle, 0.0F);
 		}
 	}
 
-	private boolean isWorldUnloaded(ServerWorld world) {
+	private boolean isWorldUnloaded(ServerLevel world) {
 		return world.players().isEmpty() && world.getChunkSource().getLoadedChunksCount() <= 0;
 	}
 
-	private void deleteDimension(ServerWorld world) {
-		RegistryKey<World> dimensionKey = world.dimension();
+	private void deleteDimension(ServerLevel world) {
+		ResourceKey<Level> dimensionKey = world.dimension();
 
 		if (this.server.levels.remove(dimensionKey, world)) {
 			this.server.markWorldsDirty();
@@ -228,10 +228,10 @@ public final class RuntimeDimensions {
 
 			MinecraftForge.EVENT_BUS.post(new WorldEvent.Unload(world));
 
-			SimpleRegistry<Dimension> dimensionsRegistry = getDimensionsRegistry(this.server);
+			MappedRegistry<LevelStem> dimensionsRegistry = getDimensionsRegistry(this.server);
 			RegistryEntryRemover.remove(dimensionsRegistry, dimensionKey.location());
 
-			SaveFormat.LevelSave save = this.server.storageSource;
+			LevelStorageSource.LevelStorageAccess save = this.server.storageSource;
 			deleteWorldDirectory(save.getDimensionPath(dimensionKey));
 		}
 	}
@@ -250,8 +250,8 @@ public final class RuntimeDimensions {
 		}
 	}
 
-	private static SimpleRegistry<Dimension> getDimensionsRegistry(MinecraftServer server) {
-		DimensionGeneratorSettings generatorSettings = server.getWorldData().worldGenSettings();
+	private static MappedRegistry<LevelStem> getDimensionsRegistry(MinecraftServer server) {
+		WorldGenSettings generatorSettings = server.getWorldData().worldGenSettings();
 		return generatorSettings.dimensions();
 	}
 
@@ -260,7 +260,7 @@ public final class RuntimeDimensions {
 		return new ResourceLocation(Constants.MODID, "tmp_" + random);
 	}
 
-	public boolean isTemporaryDimension(RegistryKey<World> dimension) {
+	public boolean isTemporaryDimension(ResourceKey<Level> dimension) {
 		return this.temporaryDimensions.contains(dimension);
 	}
 }

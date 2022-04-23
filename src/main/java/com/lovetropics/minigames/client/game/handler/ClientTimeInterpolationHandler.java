@@ -5,7 +5,7 @@ import com.lovetropics.minigames.client.game.ClientGameStateManager;
 import com.lovetropics.minigames.common.core.game.client_state.GameClientStateTypes;
 import com.lovetropics.minigames.common.core.game.client_state.instance.TimeInterpolationClientState;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.world.ClientWorld;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -17,13 +17,13 @@ public final class ClientTimeInterpolationHandler {
 	public static void onClientTick(TickEvent.ClientTickEvent event) {
 		if (event.phase == TickEvent.Phase.START) return;
 
-		ClientWorld world = Minecraft.getInstance().level;
+		ClientLevel world = Minecraft.getInstance().level;
 		if (!isTimePaused() && world != null) {
 			handleTick(world);
 		}
 	}
 
-	private static void handleTick(ClientWorld world) {
+	private static void handleTick(ClientLevel world) {
 		TimeInterpolationClientState time = ClientGameStateManager.getOrNull(GameClientStateTypes.TIME_INTERPOLATION);
 		if (time != null) {
 			int speed = time.getSpeed();

@@ -6,12 +6,12 @@ import com.lovetropics.minigames.client.lobby.state.ClientGameDefinition;
 import com.lovetropics.minigames.client.lobby.state.ClientLobbyManager;
 import com.lovetropics.minigames.client.lobby.state.ClientLobbyState;
 import com.lovetropics.minigames.common.core.game.LobbyStatus;
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.AbstractGui;
-import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.text.TextFormatting;
+import net.minecraft.client.gui.GuiComponent;
+import net.minecraft.client.gui.Font;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.ChatFormatting;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent.ElementType;
@@ -73,7 +73,7 @@ public class LobbyStateGui {
 	}
 
 	private static void renderLobbies(RenderGameOverlayEvent event, ClientLobbyState joinedLobby, Collection<ClientLobbyState> lobbies) {
-		MatrixStack transform = event.getMatrixStack();
+		PoseStack transform = event.getMatrixStack();
 
 		if (joinedLobby != null) {
 			if (joinedLobby.getStatus() != LobbyStatus.PLAYING) {
@@ -87,7 +87,7 @@ public class LobbyStateGui {
 		}
 	}
 
-	private static int render(MatrixStack transform, int left, int top, ClientLobbyState lobby) {
+	private static int render(PoseStack transform, int left, int top, ClientLobbyState lobby) {
 		Minecraft client = Minecraft.getInstance();
 
 		final int iconSize = 32;
@@ -98,7 +98,7 @@ public class LobbyStateGui {
 		ResourceLocation icon = getIcon(lobby);
 		if (icon != null) {
 			client.getTextureManager().bind(icon);
-			AbstractGui.blit(transform, x, top, 0, 0, 32, 32, 32, 32);
+			GuiComponent.blit(transform, x, top, 0, 0, 32, 32, 32, 32);
 			x += iconSize + PADDING * 2;
 		}
 
@@ -109,21 +109,21 @@ public class LobbyStateGui {
 		}
 	}
 
-	private static int renderFullText(MatrixStack transform, int lineHeight, ClientLobbyState lobby, int left, int top) {
+	private static int renderFullText(PoseStack transform, int lineHeight, ClientLobbyState lobby, int left, int top) {
 		Minecraft client = Minecraft.getInstance();
 
 		LobbyStatus status = lobby.getStatus();
 		ClientCurrentGame currentGame = lobby.getCurrentGame();
 		boolean joined = lobby == ClientLobbyManager.getJoined();
 
-		FontRenderer fnt = client.font;
+		Font fnt = client.font;
 
 		int x = left;
 		int y = top;
 
-		String line = TextFormatting.GRAY + (currentGame != null ? "Game: " : "Lobby: ") + getLobbyName(lobby);
+		String line = ChatFormatting.GRAY + (currentGame != null ? "Game: " : "Lobby: ") + getLobbyName(lobby);
 		if (joined) {
-			line += TextFormatting.GREEN + " [Joined]";
+			line += ChatFormatting.GREEN + " [Joined]";
 		}
 
 		fnt.drawShadow(transform, line, x, y, -1);
@@ -131,27 +131,27 @@ public class LobbyStateGui {
 
 		String playerCount = formatPlayerCount(lobby, currentGame);
 
-		line = TextFormatting.GRAY + "..."
+		line = ChatFormatting.GRAY + "..."
 				+ status.color + status.description
-				+ TextFormatting.GRAY + " (" + playerCount + " players)";
+				+ ChatFormatting.GRAY + " (" + playerCount + " players)";
 
 		fnt.drawShadow(transform, line, x, y, -1);
 		y += lineHeight;
 
-		line = TextFormatting.GRAY + keyBindsText(joined);
+		line = ChatFormatting.GRAY + keyBindsText(joined);
 		fnt.drawShadow(transform, line, x, y, -1);
 		y += lineHeight + PADDING;
 
 		return y;
 	}
 
-	private static int renderCompactText(MatrixStack transform, int lineHeight, ClientLobbyState lobby, int left, int top) {
+	private static int renderCompactText(PoseStack transform, int lineHeight, ClientLobbyState lobby, int left, int top) {
 		Minecraft client = Minecraft.getInstance();
 
 		boolean joined = lobby == ClientLobbyManager.getJoined();
 		LobbyStatus status = lobby.getStatus();
 
-		FontRenderer fnt = client.font;
+		Font fnt = client.font;
 
 		int x = left;
 		int y = top;
@@ -161,9 +161,9 @@ public class LobbyStateGui {
 		fnt.drawShadow(transform, line, x, y, -1);
 		y += lineHeight;
 
-		line = TextFormatting.GRAY + "..." + lobby.getPlayerCount() + " "
+		line = ChatFormatting.GRAY + "..." + lobby.getPlayerCount() + " "
 				+ status.color + status.description
-				+ TextFormatting.GRAY;
+				+ ChatFormatting.GRAY;
 
 		fnt.drawShadow(transform, line, x, y, -1);
 		y += lineHeight;
@@ -180,9 +180,9 @@ public class LobbyStateGui {
 		ClientCurrentGame currentGame = lobby.getCurrentGame();
 		if (currentGame != null) {
 			String gameName = currentGame.definition().name.getString();
-			return TextFormatting.YELLOW.toString() + TextFormatting.BOLD + gameName;
+			return ChatFormatting.YELLOW.toString() + ChatFormatting.BOLD + gameName;
 		} else {
-			return TextFormatting.YELLOW.toString() + TextFormatting.BOLD + lobby.getName();
+			return ChatFormatting.YELLOW.toString() + ChatFormatting.BOLD + lobby.getName();
 		}
 	}
 
@@ -201,9 +201,9 @@ public class LobbyStateGui {
 
 	private static String keyBindsText(boolean joined) {
 		if (!joined) {
-			return TextFormatting.AQUA + "Join [" + LobbyKeybinds.JOIN.getTranslatedKeyMessage().getString().toUpperCase() + "]" + TextFormatting.GRAY;
+			return ChatFormatting.AQUA + "Join [" + LobbyKeybinds.JOIN.getTranslatedKeyMessage().getString().toUpperCase() + "]" + ChatFormatting.GRAY;
 		} else {
-			return TextFormatting.AQUA + "Leave [" + LobbyKeybinds.LEAVE.getTranslatedKeyMessage().getString().toUpperCase() + "]";
+			return ChatFormatting.AQUA + "Leave [" + LobbyKeybinds.LEAVE.getTranslatedKeyMessage().getString().toUpperCase() + "]";
 		}
 	}
 

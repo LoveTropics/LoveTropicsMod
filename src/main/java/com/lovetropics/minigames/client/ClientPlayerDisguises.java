@@ -4,14 +4,14 @@ import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.common.core.diguise.DisguiseType;
 import com.lovetropics.minigames.common.core.diguise.PlayerDisguise;
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.IRenderTypeBuffer;
+import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.EntityRenderer;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.util.Mth;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RenderPlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -25,7 +25,7 @@ public final class ClientPlayerDisguises {
 
 	@SubscribeEvent
 	public static void onRenderPlayer(RenderPlayerEvent.Pre event) {
-		PlayerEntity player = event.getPlayer();
+		Player player = event.getPlayer();
 		Entity disguise = PlayerDisguise.getDisguiseEntity(player);
 		if (disguise == null) return;
 
@@ -35,11 +35,11 @@ public final class ClientPlayerDisguises {
 				copyDisguiseState(disguise, player);
 
 				float partialTicks = event.getPartialRenderTick();
-				MatrixStack transform = event.getMatrixStack();
-				IRenderTypeBuffer buffers = event.getBuffers();
+				PoseStack transform = event.getMatrixStack();
+				MultiBufferSource buffers = event.getBuffers();
 				int packedLight = event.getLight();
 
-				float yaw = MathHelper.lerp(partialTicks, player.yRotO, player.yRot);
+				float yaw = Mth.lerp(partialTicks, player.yRotO, player.yRot);
 				renderer.render(disguise, yaw, partialTicks, transform, buffers, packedLight);
 			} catch (Exception e) {
 				PlayerDisguise.get(player).ifPresent(PlayerDisguise::clearDisguise);
@@ -50,7 +50,7 @@ public final class ClientPlayerDisguises {
 		}
 	}
 
-	private static void copyDisguiseState(Entity disguise, PlayerEntity player) {
+	private static void copyDisguiseState(Entity disguise, Player player) {
 		disguise.setPos(player.getX(), player.getY(), player.getZ());
 		disguise.xo = player.xo;
 		disguise.yo = player.yo;
@@ -92,7 +92,7 @@ public final class ClientPlayerDisguises {
 	}
 
 	public static void updateClientDisguise(UUID uuid, DisguiseType disguiseType) {
-		PlayerEntity player = Minecraft.getInstance().level.getPlayerByUUID(uuid);
+		Player player = Minecraft.getInstance().level.getPlayerByUUID(uuid);
 		if (player != null) {
 			PlayerDisguise.get(player).ifPresent(playerDisguise -> playerDisguise.setDisguise(disguiseType));
 		}

@@ -11,8 +11,8 @@ import com.lovetropics.minigames.common.core.game.state.GamePackageState;
 import com.lovetropics.minigames.common.core.integration.game_actions.GamePackage;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.util.ActionResultType;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionResult;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -69,29 +69,29 @@ public final class DonationPackageBehavior implements IGameBehavior {
 		game.getState().get(GamePackageState.KEY).addPackageType(data.packageType);
 	}
 
-	private ActionResultType onGamePackageReceived(Consumer<IGamePhase> sendPreamble, final IGamePhase game, final GamePackage gamePackage) {
+	private InteractionResult onGamePackageReceived(Consumer<IGamePhase> sendPreamble, final IGamePhase game, final GamePackage gamePackage) {
 		if (!gamePackage.getPackageType().equals(data.packageType)) {
-			return ActionResultType.PASS;
+			return InteractionResult.PASS;
 		}
 
 		switch (data.playerSelect) {
 			case SPECIFIC: return receiveSpecific(sendPreamble, game, gamePackage);
 			case RANDOM: return receiveRandom(sendPreamble, game, gamePackage);
 			case ALL: return receiveAll(sendPreamble, game, gamePackage);
-			default: return ActionResultType.FAIL;
+			default: return InteractionResult.FAIL;
 		}
 	}
 
-	private ActionResultType receiveSpecific(Consumer<IGamePhase> sendPreamble, IGamePhase game, GamePackage gamePackage) {
+	private InteractionResult receiveSpecific(Consumer<IGamePhase> sendPreamble, IGamePhase game, GamePackage gamePackage) {
 		if (gamePackage.getReceivingPlayer() == null) {
 			LOGGER.warn("Expected donation package to have a receiving player, but did not receive from backend!");
-			return ActionResultType.FAIL;
+			return InteractionResult.FAIL;
 		}
 
-		ServerPlayerEntity receivingPlayer = game.getParticipants().getPlayerBy(gamePackage.getReceivingPlayer());
+		ServerPlayer receivingPlayer = game.getParticipants().getPlayerBy(gamePackage.getReceivingPlayer());
 		if (receivingPlayer == null) {
 			// Player not on the server or in the game for some reason
-			return ActionResultType.FAIL;
+			return InteractionResult.FAIL;
 		}
 
 		String sendingPlayerName = gamePackage.getSendingPlayerName();
@@ -102,15 +102,15 @@ public final class DonationPackageBehavior implements IGameBehavior {
 			sendPreamble.accept(game);
 			data.onReceive(game, receivingPlayer, sendingPlayerName);
 
-			return ActionResultType.SUCCESS;
+			return InteractionResult.SUCCESS;
 		} else {
-			return ActionResultType.FAIL;
+			return InteractionResult.FAIL;
 		}
 	}
 
-	private ActionResultType receiveRandom(Consumer<IGamePhase> sendPreamble, IGamePhase game, GamePackage gamePackage) {
-		final List<ServerPlayerEntity> players = Lists.newArrayList(game.getParticipants());
-		final ServerPlayerEntity randomPlayer = players.get(game.getWorld().getRandom().nextInt(players.size()));
+	private InteractionResult receiveRandom(Consumer<IGamePhase> sendPreamble, IGamePhase game, GamePackage gamePackage) {
+		final List<ServerPlayer> players = Lists.newArrayList(game.getParticipants());
+		final ServerPlayer randomPlayer = players.get(game.getWorld().getRandom().nextInt(players.size()));
 
 		String sendingPlayerName = gamePackage.getSendingPlayerName();
 
@@ -121,31 +121,31 @@ public final class DonationPackageBehavior implements IGameBehavior {
 			sendPreamble.accept(game);
 			data.onReceive(game, randomPlayer, sendingPlayerName);
 
-			return ActionResultType.SUCCESS;
+			return InteractionResult.SUCCESS;
 		} else {
-			return ActionResultType.FAIL;
+			return InteractionResult.FAIL;
 		}
 	}
 
-	private ActionResultType receiveAll(Consumer<IGamePhase> sendPreamble, IGamePhase game, GamePackage gamePackage) {
+	private InteractionResult receiveAll(Consumer<IGamePhase> sendPreamble, IGamePhase game, GamePackage gamePackage) {
 		String sendingPlayerName = gamePackage.getSendingPlayerName();
 
 		boolean applied = applyPackageGlobally(sendingPlayerName);
-		for (ServerPlayerEntity player : Lists.newArrayList(game.getParticipants())) {
+		for (ServerPlayer player : Lists.newArrayList(game.getParticipants())) {
 			applied |= applyPackageToPlayer(player, sendingPlayerName);
 		}
 
 		if (!applied) {
-			return ActionResultType.FAIL;
+			return InteractionResult.FAIL;
 		}
 
 		sendPreamble.accept(game);
 		data.onReceive(game, null, sendingPlayerName);
 
-		return ActionResultType.SUCCESS;
+		return InteractionResult.SUCCESS;
 	}
 
-	private boolean applyPackageToPlayer(final ServerPlayerEntity player, @Nullable final String sendingPlayer) {
+	private boolean applyPackageToPlayer(final ServerPlayer player, @Nullable final String sendingPlayer) {
 		return applyEvents.invoker(GamePackageEvents.APPLY_PACKAGE_TO_PLAYER).applyPackage(player, sendingPlayer);
 	}
 

@@ -15,7 +15,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
-import net.minecraft.util.ActionResultType;
+import net.minecraft.world.InteractionResult;
 
 public final class BlockPackagesDuringPhaseBehavior implements IGameBehavior {
 	public static final Codec<BlockPackagesDuringPhaseBehavior> CODEC = RecordCodecBuilder.create(instance -> {
@@ -37,9 +37,9 @@ public final class BlockPackagesDuringPhaseBehavior implements IGameBehavior {
 		events.listen(GamePackageEvents.RECEIVE_PACKAGE, ($, gamePackage) -> {
 			GamePhase phase = phases.get();
 			if (this.blockedPhases.contains(phase.key)) {
-				return ActionResultType.FAIL;
+				return InteractionResult.FAIL;
 			} else {
-				return ActionResultType.PASS;
+				return InteractionResult.PASS;
 			}
 		});
 	}

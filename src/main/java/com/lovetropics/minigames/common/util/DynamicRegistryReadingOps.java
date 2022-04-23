@@ -5,13 +5,13 @@ import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.Decoder;
 import com.mojang.serialization.DynamicOps;
-import net.minecraft.resources.IResourceManager;
+import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.RegistryKey;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.registry.DynamicRegistries;
-import net.minecraft.util.registry.Registry;
-import net.minecraft.util.registry.WorldSettingsImport;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.Registry;
+import net.minecraft.resources.RegistryReadOps;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
@@ -22,26 +22,26 @@ import java.util.IdentityHashMap;
 import java.util.OptionalInt;
 
 public final class DynamicRegistryReadingOps {
-	private static final WorldSettingsImport.IResourceAccess VOID_RESOURCE_ACCESS = new WorldSettingsImport.IResourceAccess() {
+	private static final RegistryReadOps.ResourceAccess VOID_RESOURCE_ACCESS = new RegistryReadOps.ResourceAccess() {
 		@Override
-		public Collection<ResourceLocation> listResources(RegistryKey<? extends Registry<?>> registryKey) {
+		public Collection<ResourceLocation> listResources(ResourceKey<? extends Registry<?>> registryKey) {
 			return Collections.emptyList();
 		}
 
 		@Override
-		public <E> DataResult<Pair<E, OptionalInt>> parseElement(DynamicOps<JsonElement> ops, RegistryKey<? extends Registry<E>> registryKey, RegistryKey<E> objectKey, Decoder<E> decoder) {
+		public <E> DataResult<Pair<E, OptionalInt>> parseElement(DynamicOps<JsonElement> ops, ResourceKey<? extends Registry<E>> registryKey, ResourceKey<E> objectKey, Decoder<E> decoder) {
 			return DataResult.error("Not looking up registry resource: we are only considering already registered entries!");
 		}
 	};
 
 	public static <T> DynamicOps<T> create(MinecraftServer server, DynamicOps<T> ops) {
-		DynamicRegistries.Impl dynamicRegistries = (DynamicRegistries.Impl) server.registryAccess();
+		RegistryAccess.RegistryHolder dynamicRegistries = (RegistryAccess.RegistryHolder) server.registryAccess();
 		return Factory.create(ops, VOID_RESOURCE_ACCESS, dynamicRegistries);
 	}
 
-	public static <T> DynamicOps<T> create(IResourceManager resources, DynamicOps<T> ops) {
-		DynamicRegistries.Impl dynamicRegistries = new DynamicRegistries.Impl();
-		return Factory.create(ops, WorldSettingsImport.IResourceAccess.forResourceManager(resources), dynamicRegistries);
+	public static <T> DynamicOps<T> create(ResourceManager resources, DynamicOps<T> ops) {
+		RegistryAccess.RegistryHolder dynamicRegistries = new RegistryAccess.RegistryHolder();
+		return Factory.create(ops, RegistryReadOps.ResourceAccess.forResourceManager(resources), dynamicRegistries);
 	}
 
 	/**
@@ -54,7 +54,7 @@ public final class DynamicRegistryReadingOps {
 
 		static {
 			try {
-				Constructor<?> constructor = WorldSettingsImport.class.getDeclaredConstructor(DynamicOps.class, WorldSettingsImport.IResourceAccess.class, DynamicRegistries.Impl.class, IdentityHashMap.class);
+				Constructor<?> constructor = RegistryReadOps.class.getDeclaredConstructor(DynamicOps.class, RegistryReadOps.ResourceAccess.class, RegistryAccess.RegistryHolder.class, IdentityHashMap.class);
 				constructor.setAccessible(true);
 
 				HANDLE = MethodHandles.lookup().unreflectConstructor(constructor);
@@ -64,9 +64,9 @@ public final class DynamicRegistryReadingOps {
 		}
 
 		@SuppressWarnings("unchecked")
-		static <T> WorldSettingsImport<T> create(DynamicOps<T> ops, WorldSettingsImport.IResourceAccess resources, DynamicRegistries.Impl dynamicRegistries) {
+		static <T> RegistryReadOps<T> create(DynamicOps<T> ops, RegistryReadOps.ResourceAccess resources, RegistryAccess.RegistryHolder dynamicRegistries) {
 			try {
-				return (WorldSettingsImport<T>) HANDLE.invokeExact(ops, resources, dynamicRegistries, new IdentityHashMap<>());
+				return (RegistryReadOps<T>) HANDLE.invokeExact(ops, resources, dynamicRegistries, new IdentityHashMap<>());
 			} catch (Throwable e) {
 				throw new RuntimeException("Unable to create WorldSettingsImport instance", e);
 			}

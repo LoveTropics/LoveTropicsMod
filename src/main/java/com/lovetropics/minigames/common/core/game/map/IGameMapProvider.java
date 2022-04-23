@@ -8,15 +8,15 @@ import com.lovetropics.minigames.common.core.game.GameResult;
 import com.mojang.serialization.Codec;
 
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.RegistryKey;
-import net.minecraft.world.World;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.level.Level;
 
 public interface IGameMapProvider {
 	Codec<? extends IGameMapProvider> getCodec();
 
 	CompletableFuture<GameResult<GameMap>> open(MinecraftServer server);
 
-	default List<RegistryKey<World>> getPossibleDimensions() {
+	default List<ResourceKey<Level>> getPossibleDimensions() {
 		return Collections.emptyList();
 	}
 }

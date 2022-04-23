@@ -1,14 +1,14 @@
 package com.lovetropics.minigames.common.content.biodiversity_blitz.entity;
 
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.Plot;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.MobEntity;
-import net.minecraft.entity.SpawnReason;
-import net.minecraft.util.Direction;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
-import net.minecraft.world.server.ServerWorld;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.core.Direction;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
+import net.minecraft.server.level.ServerLevel;
 
 import java.util.Collections;
 import java.util.Random;
@@ -16,19 +16,19 @@ import java.util.Set;
 import java.util.WeakHashMap;
 
 public final class BbMobSpawner {
-    public static Set<Entity> spawnWaveEntities(ServerWorld world, Random random, Plot plot, int count, int waveIndex, WaveSelector waveSelector) {
+    public static Set<Entity> spawnWaveEntities(ServerLevel world, Random random, Plot plot, int count, int waveIndex, WaveSelector waveSelector) {
         Set<Entity> entities = Collections.newSetFromMap(new WeakHashMap<>());
         for (int i = 0; i < count; i++) {
             BlockPos pos = plot.mobSpawn.sample(random);
 
-            MobEntity entity = waveSelector.selectEntityForWave(random, world, plot, waveIndex);
+            Mob entity = waveSelector.selectEntityForWave(random, world, plot, waveIndex);
 
             Direction direction = plot.forward.getOpposite();
             entity.moveTo(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5, direction.toYRot(), 0);
 
             world.addFreshEntity(entity);
 
-            entity.finalizeSpawn(world, world.getCurrentDifficultyAt(pos), SpawnReason.MOB_SUMMONED, null, null);
+            entity.finalizeSpawn(world, world.getCurrentDifficultyAt(pos), MobSpawnType.MOB_SUMMONED, null, null);
             entities.add(entity);
         }
 
@@ -36,7 +36,7 @@ public final class BbMobSpawner {
     }
 
     // TODO: data-drive, more entity types & getting harder as time goes on
-    public static MobEntity selectEntityForWave(Random random, World world, Plot plot, int waveIndex) {
+    public static Mob selectEntityForWave(Random random, Level world, Plot plot, int waveIndex) {
         if (random.nextInt(8) == 0 && waveIndex > 4 && plot.nextCurrencyIncrement >= 10) {
             return new BbCreeperEntity(EntityType.CREEPER, world, plot);
         }
@@ -50,6 +50,6 @@ public final class BbMobSpawner {
 
     @FunctionalInterface
     public interface WaveSelector {
-        MobEntity selectEntityForWave(Random random, World world, Plot plot, int waveIndex);
+        Mob selectEntityForWave(Random random, Level world, Plot plot, int waveIndex);
     }
 }

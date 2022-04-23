@@ -5,11 +5,11 @@ import com.lovetropics.minigames.client.screen.LayoutTree;
 import com.lovetropics.minigames.client.screen.flex.Align;
 import com.lovetropics.minigames.client.screen.flex.Axis;
 import com.lovetropics.minigames.common.core.game.behavior.config.ConfigData;
-import com.mojang.blaze3d.matrix.MatrixStack;
-import net.minecraft.client.gui.IGuiEventListener;
-import net.minecraft.client.gui.INestedGuiEventHandler;
-import net.minecraft.client.gui.IRenderable;
-import net.minecraft.util.text.TranslationTextComponent;
+import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.gui.components.events.GuiEventListener;
+import net.minecraft.client.gui.components.events.ContainerEventHandler;
+import net.minecraft.client.gui.components.Widget;
+import net.minecraft.network.chat.TranslatableComponent;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,7 +21,7 @@ public class ConfigDataUI extends LayoutGui implements IConfigWidget {
 	private final ConfigData configs;
 	private final TextLabel label;
 	
-	private final List<INestedGuiEventHandler> children = new ArrayList<>();
+	private final List<ContainerEventHandler> children = new ArrayList<>();
 
 	public ConfigDataUI(GameConfig parent, LayoutTree ltree, String name, ConfigData configs) {
 		super();
@@ -30,14 +30,14 @@ public class ConfigDataUI extends LayoutGui implements IConfigWidget {
 		this.configs = configs;
 		
 
-		this.label = new TextLabel(ltree.child(1, Axis.X), 11, new TranslationTextComponent(name), Align.Cross.START, Align.Cross.START);
+		this.label = new TextLabel(ltree.child(1, Axis.X), 11, new TranslatableComponent(name), Align.Cross.START, Align.Cross.START);
 		IConfigWidget widget = parent.createWidget(ltree.child(1, Axis.X), configs);
 		children.add(widget);
 		this.mainLayout = ltree.pop();
 	}
 
 	@Override
-	public List<? extends IGuiEventListener> children() {
+	public List<? extends GuiEventListener> children() {
 		return children;
 	}
 	
@@ -47,12 +47,12 @@ public class ConfigDataUI extends LayoutGui implements IConfigWidget {
 	}
 
 	@Override
-	public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
+	public void render(PoseStack matrixStack, int mouseX, int mouseY, float partialTicks) {
 		super.render(matrixStack, mouseX, mouseY, partialTicks);
 		this.label.render(matrixStack, mouseX, mouseY, partialTicks);
-		for (INestedGuiEventHandler child : children) {
-			if (child instanceof IRenderable) {
-				((IRenderable)child).render(matrixStack, mouseX, mouseY, partialTicks);
+		for (ContainerEventHandler child : children) {
+			if (child instanceof Widget) {
+				((Widget)child).render(matrixStack, mouseX, mouseY, partialTicks);
 			}
 		}
 	}

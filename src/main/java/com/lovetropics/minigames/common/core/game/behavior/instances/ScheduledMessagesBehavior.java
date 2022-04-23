@@ -8,7 +8,7 @@ import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
-import net.minecraft.util.text.ITextComponent;
+import net.minecraft.network.chat.Component;
 
 public class ScheduledMessagesBehavior implements IGameBehavior {
 	public static final Codec<ScheduledMessagesBehavior> CODEC = RecordCodecBuilder.create(instance -> {
@@ -17,16 +17,16 @@ public class ScheduledMessagesBehavior implements IGameBehavior {
 		).apply(instance, ScheduledMessagesBehavior::new);
 	});
 
-	private final Long2ObjectMap<ITextComponent> scheduledMessages;
+	private final Long2ObjectMap<Component> scheduledMessages;
 
-	public ScheduledMessagesBehavior(final Long2ObjectMap<ITextComponent> scheduledMessages) {
+	public ScheduledMessagesBehavior(final Long2ObjectMap<Component> scheduledMessages) {
 		this.scheduledMessages = scheduledMessages;
 	}
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
 		events.listen(GamePhaseEvents.TICK, () -> {
-			ITextComponent message = scheduledMessages.remove(game.ticks());
+			Component message = scheduledMessages.remove(game.ticks());
 			if (message != null) {
 				game.getAllPlayers().sendMessage(message);
 			}

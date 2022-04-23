@@ -13,9 +13,9 @@ import com.lovetropics.minigames.common.util.registry.LoveTropicsRegistrate;
 import com.mojang.brigadier.CommandDispatcher;
 import com.tterrag.registrate.util.entry.ItemEntry;
 import com.tterrag.registrate.util.entry.RegistryEntry;
-import net.minecraft.command.CommandSource;
-import net.minecraft.entity.EntityClassification;
-import net.minecraft.entity.EntityType;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.world.entity.MobCategory;
+import net.minecraft.world.entity.EntityType;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -34,7 +34,7 @@ public final class SurviveTheTide {
 	public static final ItemEntry<PaddleItem> PADDLE = REGISTRATE.item("paddle", PaddleItem::new)
 			.register();
 
-	public static final RegistryEntry<EntityType<DriftwoodEntity>> DRIFTWOOD = REGISTRATE.entity("driftwood", DriftwoodEntity::new, EntityClassification.MISC)
+	public static final RegistryEntry<EntityType<DriftwoodEntity>> DRIFTWOOD = REGISTRATE.entity("driftwood", DriftwoodEntity::new, MobCategory.MISC)
 			.properties(properties -> properties.sized(2.0F, 1.0F).setShouldReceiveVelocityUpdates(true).setUpdateInterval(3))
 			.defaultLang()
 			.renderer(() -> DriftwoodRenderer::new)
@@ -71,7 +71,7 @@ public final class SurviveTheTide {
 
 	@SubscribeEvent
 	public static void onRegisterCommands(RegisterCommandsEvent event) {
-		CommandDispatcher<CommandSource> dispatcher = event.getDispatcher();
+		CommandDispatcher<CommandSourceStack> dispatcher = event.getDispatcher();
 		ResetIslandChestsCommand.register(dispatcher);
 	}
 }

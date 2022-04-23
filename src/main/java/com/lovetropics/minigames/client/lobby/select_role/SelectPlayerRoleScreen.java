@@ -4,28 +4,28 @@ import com.lovetropics.minigames.client.screen.FlexUi;
 import com.lovetropics.minigames.client.screen.flex.*;
 import com.lovetropics.minigames.common.core.game.util.GameTexts;
 import com.lovetropics.minigames.common.core.network.LoveTropicsNetwork;
-import com.mojang.blaze3d.matrix.MatrixStack;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.TextFormatting;
+import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.ChatFormatting;
 
 public final class SelectPlayerRoleScreen extends Screen {
-	private static final ITextComponent TITLE = GameTexts.Ui.selectPlayerRole()
-			.withStyle(TextFormatting.BOLD, TextFormatting.UNDERLINE);
+	private static final Component TITLE = GameTexts.Ui.selectPlayerRole()
+			.withStyle(ChatFormatting.BOLD, ChatFormatting.UNDERLINE);
 
 	// TODO: translate all the things
-	private static final ITextComponent[] TEXT = new ITextComponent[] {
-			new StringTextComponent("Welcome to the game lobby!"),
-			new StringTextComponent("Before the game, ")
-					.append(new StringTextComponent("please select to ")
-							.append(new StringTextComponent("play").withStyle(TextFormatting.AQUA))
+	private static final Component[] TEXT = new Component[] {
+			new TextComponent("Welcome to the game lobby!"),
+			new TextComponent("Before the game, ")
+					.append(new TextComponent("please select to ")
+							.append(new TextComponent("play").withStyle(ChatFormatting.AQUA))
 							.append(" or ")
-							.append(new StringTextComponent("spectate").withStyle(TextFormatting.AQUA))
-							.withStyle(TextFormatting.UNDERLINE)
+							.append(new TextComponent("spectate").withStyle(ChatFormatting.AQUA))
+							.withStyle(ChatFormatting.UNDERLINE)
 					)
 					.append("."),
-			new StringTextComponent("You will be prompted before each game in this lobby.").withStyle(TextFormatting.GRAY)
+			new TextComponent("You will be prompted before each game in this lobby.").withStyle(ChatFormatting.GRAY)
 	};
 
 	private static final int PADDING = 4;
@@ -46,11 +46,11 @@ public final class SelectPlayerRoleScreen extends Screen {
 
 		layout = new ScreenLayout(this);
 
-		this.addButton(FlexUi.createButton(layout.play, new StringTextComponent("Play"), b -> {
+		this.addButton(FlexUi.createButton(layout.play, new TextComponent("Play"), b -> {
 			this.acceptResponse(true);
 			this.onClose();
 		}));
-		this.addButton(FlexUi.createButton(layout.spectate, new StringTextComponent("Spectate"), b -> {
+		this.addButton(FlexUi.createButton(layout.spectate, new TextComponent("Spectate"), b -> {
 			this.acceptResponse(false);
 			this.onClose();
 		}));
@@ -70,7 +70,7 @@ public final class SelectPlayerRoleScreen extends Screen {
 	}
 
 	@Override
-	public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
+	public void render(PoseStack matrixStack, int mouseX, int mouseY, float partialTicks) {
 		this.renderBackground(matrixStack);
 
 		super.render(matrixStack, mouseX, mouseY, partialTicks);
@@ -78,13 +78,13 @@ public final class SelectPlayerRoleScreen extends Screen {
 		this.renderText(matrixStack);
 	}
 
-	private void renderText(MatrixStack matrixStack) {
+	private void renderText(PoseStack matrixStack) {
 		Box box = layout.text.content();
 
 		int lineHeight = font.lineHeight + PADDING;
 		int y = box.bottom() - lineHeight * TEXT.length;
 
-		for (ITextComponent line : TEXT) {
+		for (Component line : TEXT) {
 			int length = font.width(line);
 			int x = box.centerX() - length / 2;
 

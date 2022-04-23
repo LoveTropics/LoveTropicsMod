@@ -1,23 +1,23 @@
 package com.lovetropics.minigames.common.content.survive_the_tide.entity;
 
 import com.lovetropics.minigames.LoveTropics;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.MoverType;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.fluid.FluidState;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.network.IPacket;
-import net.minecraft.network.datasync.DataParameter;
-import net.minecraft.network.datasync.DataSerializers;
-import net.minecraft.network.datasync.EntityDataManager;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.MoverType;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.material.FluidState;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.tags.FluidTags;
-import net.minecraft.util.EntityPredicates;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.world.World;
+import net.minecraft.world.entity.EntitySelector;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.core.BlockPos;
+import net.minecraft.util.Mth;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.level.Level;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.util.Constants;
@@ -27,7 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public final class DriftwoodEntity extends Entity {
-	private static final DataParameter<Boolean> FLOATING = EntityDataManager.defineId(DriftwoodEntity.class, DataSerializers.BOOLEAN);
+	private static final EntityDataAccessor<Boolean> FLOATING = SynchedEntityData.defineId(DriftwoodEntity.class, EntityDataSerializers.BOOLEAN);
 
 	private static final float START_FLOAT_DEPTH = 0.5F;
 	private static final int FLOAT_TICKS = 20 * 60;
@@ -42,13 +42,13 @@ public final class DriftwoodEntity extends Entity {
 
 	private float floatDepth = START_FLOAT_DEPTH;
 
-	private Vector3d steerDirection;
+	private Vec3 steerDirection;
 	private float steerYaw;
 	private int steerTimer;
 
-	private final List<PlayerEntity> riders = new ArrayList<>();
+	private final List<Player> riders = new ArrayList<>();
 
-	public DriftwoodEntity(EntityType<?> type, World world) {
+	public DriftwoodEntity(EntityType<?> type, Level world) {
 		super(type, world);
 	}
 
@@ -85,7 +85,7 @@ public final class DriftwoodEntity extends Entity {
 	public boolean paddle(float direction) {
 		if (steerDirection == null) {
 			double directionRadians = Math.toRadians(direction);
-			steerDirection = new Vector3d(
+			steerDirection = new Vec3(
 					-Math.sin(directionRadians),
 					0.0,
 					Math.cos(directionRadians)
@@ -113,7 +113,7 @@ public final class DriftwoodEntity extends Entity {
 			riders.addAll(collectRiders());
 		}
 
-		for (PlayerEntity player : riders) {
+		for (Player player : riders) {
 			player.getCapability(LoveTropics.driftwoodRiderCap()).ifPresent(rider -> {
 				rider.setRiding(this);
 			});
@@ -131,7 +131,7 @@ public final class DriftwoodEntity extends Entity {
 		float floatHeight = getFloatHeight();
 
 		if (floatHeight != -1.0F) {
-			Vector3d motion = getDeltaMovement();
+			Vec3 motion = getDeltaMovement();
 
 			boolean atSurface = getY() >= floatHeight - 0.05;
 			if (atSurface) {
@@ -147,14 +147,14 @@ public final class DriftwoodEntity extends Entity {
 					motion = motion.add(steerDirection.x * 0.008, 0.0, steerDirection.z * 0.008);
 				}
 			} else {
-				motion = new Vector3d(motion.x, 0.1, motion.z);
+				motion = new Vec3(motion.x, 0.1, motion.z);
 			}
 
 			setDeltaMovement(motion.x * 0.95, motion.y, motion.z * 0.95);
 		} else {
 			double accelerationY = wasTouchingWater ? -0.01 : -0.08;
 
-			Vector3d motion = getDeltaMovement();
+			Vec3 motion = getDeltaMovement();
 			motion = motion.multiply(0.7, 0.7, 0.7);
 			motion = motion.add(0.0, accelerationY, 0.0);
 
@@ -178,7 +178,7 @@ public final class DriftwoodEntity extends Entity {
 		);
 
 		setRot(
-				(float) (yRot + MathHelper.wrapDegrees(lerpYaw - yRot) / lerpTicks),
+				(float) (yRot + Mth.wrapDegrees(lerpYaw - yRot) / lerpTicks),
 				(float) (xRot + (lerpPitch - xRot) / lerpTicks)
 		);
 	}
@@ -191,10 +191,10 @@ public final class DriftwoodEntity extends Entity {
 		}
 	}
 
-	private List<PlayerEntity> collectRiders() {
-		AxisAlignedBB bounds = getBoundingBox();
-		AxisAlignedBB ridingBounds = new AxisAlignedBB(bounds.minX, bounds.maxY, bounds.minZ, bounds.maxX, bounds.maxY + 0.2, bounds.maxZ);
-		return level.getEntities(EntityType.PLAYER, ridingBounds, EntityPredicates.NO_SPECTATORS);
+	private List<Player> collectRiders() {
+		AABB bounds = getBoundingBox();
+		AABB ridingBounds = new AABB(bounds.minX, bounds.maxY, bounds.minZ, bounds.maxX, bounds.maxY + 0.2, bounds.maxZ);
+		return level.getEntities(EntityType.PLAYER, ridingBounds, EntitySelector.NO_SPECTATORS);
 	}
 
 	private float getFloatHeight() {
@@ -209,10 +209,10 @@ public final class DriftwoodEntity extends Entity {
 	private float getWaterSurface() {
 		if (!wasTouchingWater) return -1.0F;
 
-		int minY = MathHelper.floor(getBoundingBox().minY - 0.5);
-		int maxY = MathHelper.ceil(getBoundingBox().maxY);
+		int minY = Mth.floor(getBoundingBox().minY - 0.5);
+		int maxY = Mth.ceil(getBoundingBox().maxY);
 
-		BlockPos.Mutable mutablePos = new BlockPos.Mutable();
+		BlockPos.MutableBlockPos mutablePos = new BlockPos.MutableBlockPos();
 		mutablePos.set(this.blockPosition());
 
 		float waterHeight = -1.0F;
@@ -258,19 +258,19 @@ public final class DriftwoodEntity extends Entity {
 	}
 
 	@Override
-	protected void readAdditionalSaveData(CompoundNBT compound) {
+	protected void readAdditionalSaveData(CompoundTag compound) {
 		if (compound.contains("float_depth", Constants.NBT.TAG_FLOAT)) {
 			setFloatDepth(compound.getFloat("float_depth"));
 		}
 	}
 
 	@Override
-	protected void addAdditionalSaveData(CompoundNBT compound) {
+	protected void addAdditionalSaveData(CompoundTag compound) {
 		compound.putFloat("float_depth", floatDepth);
 	}
 
 	@Override
-	public IPacket<?> getAddEntityPacket() {
+	public Packet<?> getAddEntityPacket() {
 		return NetworkHooks.getEntitySpawningPacket(this);
 	}
 }

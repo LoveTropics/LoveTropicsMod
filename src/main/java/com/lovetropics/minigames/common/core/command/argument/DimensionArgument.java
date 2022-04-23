@@ -4,42 +4,42 @@ import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
-import net.minecraft.command.CommandSource;
-import net.minecraft.command.Commands;
-import net.minecraft.command.ISuggestionProvider;
-import net.minecraft.command.arguments.ResourceLocationArgument;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.registry.SimpleRegistry;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.world.Dimension;
-import net.minecraft.world.gen.settings.DimensionGeneratorSettings;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
+import net.minecraft.commands.SharedSuggestionProvider;
+import net.minecraft.commands.arguments.ResourceLocationArgument;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.core.MappedRegistry;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.world.level.dimension.LevelStem;
+import net.minecraft.world.level.levelgen.WorldGenSettings;
 
 public final class DimensionArgument {
 	public static final DynamicCommandExceptionType DIMENSION_NOT_FOUND = new DynamicCommandExceptionType(arg ->
-			new StringTextComponent("Dimension does not exist with id: " + arg)
+			new TextComponent("Dimension does not exist with id: " + arg)
 	);
 
-    public static RequiredArgumentBuilder<CommandSource, ResourceLocation> argument(String name) {
+    public static RequiredArgumentBuilder<CommandSourceStack, ResourceLocation> argument(String name) {
         return Commands.argument(name, ResourceLocationArgument.id())
                 .suggests((context, builder) -> {
-                    CommandSource source = context.getSource();
-                    DimensionGeneratorSettings generatorSettings = source.getServer().getWorldData().worldGenSettings();
-                    SimpleRegistry<Dimension> dimensions = generatorSettings.dimensions();
-                    return ISuggestionProvider.suggestResource(
+                    CommandSourceStack source = context.getSource();
+                    WorldGenSettings generatorSettings = source.getServer().getWorldData().worldGenSettings();
+                    MappedRegistry<LevelStem> dimensions = generatorSettings.dimensions();
+                    return SharedSuggestionProvider.suggestResource(
                             dimensions.keySet().stream(),
                             builder
                     );
                 });
     }
 
-	public static Dimension get(CommandContext<CommandSource> context, String name) throws CommandSyntaxException {
+	public static LevelStem get(CommandContext<CommandSourceStack> context, String name) throws CommandSyntaxException {
 		ResourceLocation key = ResourceLocationArgument.getId(context, name);
 
-		CommandSource source = context.getSource();
-		DimensionGeneratorSettings generatorSettings = source.getServer().getWorldData().worldGenSettings();
-		SimpleRegistry<Dimension> dimensions = generatorSettings.dimensions();
+		CommandSourceStack source = context.getSource();
+		WorldGenSettings generatorSettings = source.getServer().getWorldData().worldGenSettings();
+		MappedRegistry<LevelStem> dimensions = generatorSettings.dimensions();
 
-		Dimension dimension = dimensions.get(key);
+		LevelStem dimension = dimensions.get(key);
 		if (dimension == null) {
 			throw DIMENSION_NOT_FOUND.create(key);
 		}
