@@ -3,10 +3,7 @@ package com.lovetropics.minigames.common.content.biodiversity_blitz.behavior;
 import com.lovetropics.lib.codec.MoreCodecs;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.BiodiversityBlitzTexts;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.event.BbEvents;
-import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.BbCreeperEntity;
-import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.BbHuskEntity;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.BbMobSpawner;
-import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.BbPillagerEntity;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.Plot;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.PlotsState;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
@@ -18,19 +15,13 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.Object2FloatMap;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.MobEntity;
-import net.minecraft.entity.SpawnReason;
 import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.util.Direction;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.world.BossInfo;
 import net.minecraft.world.BossInfo.Color;
 import net.minecraft.world.Difficulty;
-import net.minecraft.world.World;
 import net.minecraft.world.server.ServerBossInfo;
 import net.minecraft.world.server.ServerWorld;
 
@@ -100,7 +91,7 @@ public final class BbWaveSpawnerBehavior implements IGameBehavior {
 
 	private void removePlayer(ServerPlayerEntity player) {
 		this.waveCharging.removePlayer(player);
-		List<WaveTracker> waves = this.waveTrackers.remove(player.getUniqueID());
+		List<WaveTracker> waves = this.waveTrackers.remove(player.getUUID());
 		if (waves != null) {
 			for (WaveTracker wave : waves) {
 				wave.close();
@@ -161,7 +152,7 @@ public final class BbWaveSpawnerBehavior implements IGameBehavior {
 
 	private void spawnWave(ServerWorld world, Random random, ServerPlayerEntity player, Plot plot, int waveIndex) {
 		if (waveIndex == 0 && firstMessage != StringTextComponent.EMPTY) {
-			player.sendStatusMessage(firstMessage, false);
+			player.displayClientMessage(firstMessage, false);
 		}
 
 		Difficulty difficulty = world.getDifficulty();
@@ -184,7 +175,7 @@ public final class BbWaveSpawnerBehavior implements IGameBehavior {
 		ServerBossInfo bossBar = this.createWaveBar(player, waveIndex, count, entities);
 
 		WaveTracker wave = new WaveTracker(bossBar, entities);
-		waveTrackers.computeIfAbsent(player.getUniqueID(), $ -> new ArrayList<>()).add(wave);
+		waveTrackers.computeIfAbsent(player.getUUID(), $ -> new ArrayList<>()).add(wave);
 	}
 
 	private ServerBossInfo createWaveBar(ServerPlayerEntity player, int waveIndex, int count, Set<Entity> entities) {

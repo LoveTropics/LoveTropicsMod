@@ -32,15 +32,15 @@ public final class MapWorkspaceRenderer {
 		}
 
 		Minecraft client = Minecraft.getInstance();
-		ActiveRenderInfo renderInfo = client.gameRenderer.getActiveRenderInfo();
-		if (!renderInfo.isValid()) {
+		ActiveRenderInfo renderInfo = client.gameRenderer.getMainCamera();
+		if (!renderInfo.isInitialized()) {
 			return;
 		}
 
-		Vector3d view = renderInfo.getProjectedView();
+		Vector3d view = renderInfo.getPosition();
 
 		RenderSystem.pushMatrix();
-		RenderSystem.multMatrix(event.getMatrixStack().getLast().getMatrix());
+		RenderSystem.multMatrix(event.getMatrixStack().last().pose());
 
 		RenderSystem.disableTexture();
 		RenderSystem.enableBlend();
@@ -67,7 +67,7 @@ public final class MapWorkspaceRenderer {
 			float alpha = 0.3F;
 
 			if (selectedRegions.contains(entry)) {
-				double time = client.world.getGameTime() + event.getPartialTicks();
+				double time = client.level.getGameTime() + event.getPartialTicks();
 				float animation = (float) ((Math.sin(time * 0.1) + 1.0) / 2.0);
 
 				alpha = 0.4F + animation * 0.15F;
@@ -86,7 +86,7 @@ public final class MapWorkspaceRenderer {
 			double maxY = region.max.getY() + 1.0 - view.y;
 			double maxZ = region.max.getZ() + 1.0 - view.z;
 
-			DebugRenderer.renderBox(minX, minY, minZ, maxX, maxY, maxZ, red, green, blue, alpha);
+			DebugRenderer.renderFilledBox(minX, minY, minZ, maxX, maxY, maxZ, red, green, blue, alpha);
 			renderOutline(minX, minY, minZ, maxX, maxY, maxZ, outlineRed, outlineGreen, outlineBlue, 1.0F);
 		}
 
@@ -97,7 +97,7 @@ public final class MapWorkspaceRenderer {
 			int minSize = Math.min(size.getX(), Math.min(size.getY(), size.getZ())) - 1;
 			float scale = MathHelper.clamp(minSize * 0.03125F, 0.03125F, 0.125F);
 
-			DebugRenderer.renderText(entry.key, center.x, center.y, center.z, 0xFFFFFFFF, scale);
+			DebugRenderer.renderFloatingText(entry.key, center.x, center.y, center.z, 0xFFFFFFFF, scale);
 		}
 
 		RenderSystem.depthMask(true);
@@ -114,34 +114,34 @@ public final class MapWorkspaceRenderer {
 
 	private static void renderOutline(double minX, double minY, double minZ, double maxX, double maxY, double maxZ, float red, float green, float blue, float alpha) {
 		Tessellator tessellator = Tessellator.getInstance();
-		BufferBuilder builder = tessellator.getBuffer();
+		BufferBuilder builder = tessellator.getBuilder();
 		builder.begin(GL11.GL_LINES, DefaultVertexFormats.POSITION_COLOR);
 
-		builder.pos(minX, minY, minZ).color(red, green, blue, alpha).endVertex();
-		builder.pos(maxX, minY, minZ).color(red, green, blue, alpha).endVertex();
-		builder.pos(minX, minY, minZ).color(red, green, blue, alpha).endVertex();
-		builder.pos(minX, maxY, minZ).color(red, green, blue, alpha).endVertex();
-		builder.pos(minX, minY, minZ).color(red, green, blue, alpha).endVertex();
-		builder.pos(minX, minY, maxZ).color(red, green, blue, alpha).endVertex();
-		builder.pos(maxX, minY, minZ).color(red, green, blue, alpha).endVertex();
-		builder.pos(maxX, maxY, minZ).color(red, green, blue, alpha).endVertex();
-		builder.pos(maxX, maxY, minZ).color(red, green, blue, alpha).endVertex();
-		builder.pos(minX, maxY, minZ).color(red, green, blue, alpha).endVertex();
-		builder.pos(minX, maxY, minZ).color(red, green, blue, alpha).endVertex();
-		builder.pos(minX, maxY, maxZ).color(red, green, blue, alpha).endVertex();
-		builder.pos(minX, maxY, maxZ).color(red, green, blue, alpha).endVertex();
-		builder.pos(minX, minY, maxZ).color(red, green, blue, alpha).endVertex();
-		builder.pos(minX, minY, maxZ).color(red, green, blue, alpha).endVertex();
-		builder.pos(maxX, minY, maxZ).color(red, green, blue, alpha).endVertex();
-		builder.pos(maxX, minY, maxZ).color(red, green, blue, alpha).endVertex();
-		builder.pos(maxX, minY, minZ).color(red, green, blue, alpha).endVertex();
-		builder.pos(minX, maxY, maxZ).color(red, green, blue, alpha).endVertex();
-		builder.pos(maxX, maxY, maxZ).color(red, green, blue, alpha).endVertex();
-		builder.pos(maxX, minY, maxZ).color(red, green, blue, alpha).endVertex();
-		builder.pos(maxX, maxY, maxZ).color(red, green, blue, alpha).endVertex();
-		builder.pos(maxX, maxY, minZ).color(red, green, blue, alpha).endVertex();
-		builder.pos(maxX, maxY, maxZ).color(red, green, blue, alpha).endVertex();
+		builder.vertex(minX, minY, minZ).color(red, green, blue, alpha).endVertex();
+		builder.vertex(maxX, minY, minZ).color(red, green, blue, alpha).endVertex();
+		builder.vertex(minX, minY, minZ).color(red, green, blue, alpha).endVertex();
+		builder.vertex(minX, maxY, minZ).color(red, green, blue, alpha).endVertex();
+		builder.vertex(minX, minY, minZ).color(red, green, blue, alpha).endVertex();
+		builder.vertex(minX, minY, maxZ).color(red, green, blue, alpha).endVertex();
+		builder.vertex(maxX, minY, minZ).color(red, green, blue, alpha).endVertex();
+		builder.vertex(maxX, maxY, minZ).color(red, green, blue, alpha).endVertex();
+		builder.vertex(maxX, maxY, minZ).color(red, green, blue, alpha).endVertex();
+		builder.vertex(minX, maxY, minZ).color(red, green, blue, alpha).endVertex();
+		builder.vertex(minX, maxY, minZ).color(red, green, blue, alpha).endVertex();
+		builder.vertex(minX, maxY, maxZ).color(red, green, blue, alpha).endVertex();
+		builder.vertex(minX, maxY, maxZ).color(red, green, blue, alpha).endVertex();
+		builder.vertex(minX, minY, maxZ).color(red, green, blue, alpha).endVertex();
+		builder.vertex(minX, minY, maxZ).color(red, green, blue, alpha).endVertex();
+		builder.vertex(maxX, minY, maxZ).color(red, green, blue, alpha).endVertex();
+		builder.vertex(maxX, minY, maxZ).color(red, green, blue, alpha).endVertex();
+		builder.vertex(maxX, minY, minZ).color(red, green, blue, alpha).endVertex();
+		builder.vertex(minX, maxY, maxZ).color(red, green, blue, alpha).endVertex();
+		builder.vertex(maxX, maxY, maxZ).color(red, green, blue, alpha).endVertex();
+		builder.vertex(maxX, minY, maxZ).color(red, green, blue, alpha).endVertex();
+		builder.vertex(maxX, maxY, maxZ).color(red, green, blue, alpha).endVertex();
+		builder.vertex(maxX, maxY, minZ).color(red, green, blue, alpha).endVertex();
+		builder.vertex(maxX, maxY, maxZ).color(red, green, blue, alpha).endVertex();
 
-		tessellator.draw();
+		tessellator.end();
 	}
 }

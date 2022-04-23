@@ -19,7 +19,7 @@ public final class MapWorkspaceTracker {
 	public static void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
 		PlayerEntity player = event.getPlayer();
 		if (player instanceof ServerPlayerEntity) {
-			trySendWorkspace((ServerPlayerEntity) player, player.world.getDimensionKey());
+			trySendWorkspace((ServerPlayerEntity) player, player.level.dimension());
 		}
 	}
 
@@ -33,7 +33,7 @@ public final class MapWorkspaceTracker {
 	private static void trySendWorkspace(ServerPlayerEntity player, RegistryKey<World> dimension) {
 		if (dimension == null) return;
 
-		MinecraftServer server = player.world.getServer();
+		MinecraftServer server = player.level.getServer();
 		MapWorkspaceManager workspaceManager = MapWorkspaceManager.get(server);
 
 		MapWorkspace workspace = workspaceManager.getWorkspace(dimension);

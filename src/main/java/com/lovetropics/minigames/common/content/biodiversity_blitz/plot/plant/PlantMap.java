@@ -39,13 +39,13 @@ public final class PlantMap implements Iterable<Plant> {
 				.add(plant);
 
 		for (BlockPos pos : plant.functionalCoverage()) {
-			this.plantByPos.put(pos.toLong(), plant);
+			this.plantByPos.put(pos.asLong(), plant);
 		}
 
 		PlantCoverage decoration = plant.decorationCoverage();
 		if (decoration != null) {
 			for (BlockPos pos : decoration) {
-				this.plantByPos.put(pos.toLong(), plant);
+				this.plantByPos.put(pos.asLong(), plant);
 			}
 		}
 	}
@@ -53,7 +53,7 @@ public final class PlantMap implements Iterable<Plant> {
 	private PlantCoverage removeDecorationIntersection(PlantCoverage decoration) {
 		LongSet intersection = new LongOpenHashSet();
 		for (BlockPos pos : decoration) {
-			long posKey = pos.toLong();
+			long posKey = pos.asLong();
 			if (this.plantByPos.containsKey(posKey)) {
 				intersection.add(posKey);
 			}
@@ -74,13 +74,13 @@ public final class PlantMap implements Iterable<Plant> {
 			}
 
 			for (BlockPos pos : plant.functionalCoverage()) {
-				this.plantByPos.remove(pos.toLong(), plant);
+				this.plantByPos.remove(pos.asLong(), plant);
 			}
 
 			PlantCoverage decoration = plant.decorationCoverage();
 			if (decoration != null) {
 				for (BlockPos pos : decoration) {
-					this.plantByPos.remove(pos.toLong(), plant);
+					this.plantByPos.remove(pos.asLong(), plant);
 				}
 			}
 
@@ -97,7 +97,7 @@ public final class PlantMap implements Iterable<Plant> {
 
 	@Nullable
 	public Plant getPlantAt(BlockPos pos) {
-		return this.getPlantAt(pos.toLong());
+		return this.getPlantAt(pos.asLong());
 	}
 
 	@Nullable
@@ -111,12 +111,12 @@ public final class PlantMap implements Iterable<Plant> {
 	}
 
 	public boolean canAddPlantAt(BlockPos pos) {
-		return this.plantByPos.get(pos.toLong()) == null;
+		return this.plantByPos.get(pos.asLong()) == null;
 	}
 
 	public boolean canAddPlantAt(PlantCoverage coverage) {
 		for (BlockPos pos : coverage) {
-			Plant plant = this.plantByPos.get(pos.toLong());
+			Plant plant = this.plantByPos.get(pos.asLong());
 			if (plant != null) {
 				return false;
 			}

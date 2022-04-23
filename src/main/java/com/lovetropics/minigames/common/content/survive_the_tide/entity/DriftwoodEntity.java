@@ -27,7 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public final class DriftwoodEntity extends Entity {
-	private static final DataParameter<Boolean> FLOATING = EntityDataManager.createKey(DriftwoodEntity.class, DataSerializers.BOOLEAN);
+	private static final DataParameter<Boolean> FLOATING = EntityDataManager.defineId(DriftwoodEntity.class, DataSerializers.BOOLEAN);
 
 	private static final float START_FLOAT_DEPTH = 0.5F;
 	private static final int FLOAT_TICKS = 20 * 60;
@@ -53,33 +53,33 @@ public final class DriftwoodEntity extends Entity {
 	}
 
 	@Override
-	protected void registerData() {
-		this.dataManager.register(FLOATING, true);
+	protected void defineSynchedData() {
+		this.entityData.define(FLOATING, true);
 	}
 
 	@Override
-	protected boolean canTriggerWalking() {
+	protected boolean isMovementNoisy() {
 		return false;
 	}
 
 	@Override
-	public boolean canBePushed() {
+	public boolean isPushable() {
 		return true;
 	}
 
 	@Override
-	public boolean canBeCollidedWith() {
+	public boolean isPickable() {
 		return !this.removed;
 	}
 
 	@Override
-	public boolean func_241845_aY() {
+	public boolean canBeCollidedWith() {
 		return true;
 	}
 
 	@Override
-	public boolean canCollide(Entity entity) {
-		return (entity.func_241845_aY() || entity.canBePushed()) && !this.isRidingSameEntity(entity);
+	public boolean canCollideWith(Entity entity) {
+		return (entity.canBeCollidedWith() || entity.isPushable()) && !this.isPassengerOfSameVehicle(entity);
 	}
 
 	public boolean paddle(float direction) {
@@ -102,13 +102,13 @@ public final class DriftwoodEntity extends Entity {
 
 	@Override
 	public void tick() {
-		prevPosX = getPosX();
-		prevPosY = getPosY();
-		prevPosZ = getPosZ();
+		xo = getX();
+		yo = getY();
+		zo = getZ();
 
 		super.tick();
 
-		if (!riders.isEmpty() || ticksExisted % 10 == 0) {
+		if (!riders.isEmpty() || tickCount % 10 == 0) {
 			riders.clear();
 			riders.addAll(collectRiders());
 		}
@@ -119,7 +119,7 @@ public final class DriftwoodEntity extends Entity {
 			});
 		}
 
-		if (!world.isRemote) {
+		if (!level.isClientSide) {
 			tickSteering();
 			tickMovement();
 		} else {
@@ -131,11 +131,11 @@ public final class DriftwoodEntity extends Entity {
 		float floatHeight = getFloatHeight();
 
 		if (floatHeight != -1.0F) {
-			Vector3d motion = getMotion();
+			Vector3d motion = getDeltaMovement();
 
-			boolean atSurface = getPosY() >= floatHeight - 0.05;
+			boolean atSurface = getY() >= floatHeight - 0.05;
 			if (atSurface) {
-				setPosition(getPosX(), floatHeight, getPosZ());
+				setPos(getX(), floatHeight, getZ());
 
 				if (!riders.isEmpty()) {
 					floatDepth = Math.min(floatDepth + SINK_PER_TICK, 1.0F);
@@ -143,25 +143,25 @@ public final class DriftwoodEntity extends Entity {
 				}
 
 				if (steerDirection != null) {
-					rotationYaw += (steerYaw - rotationYaw) * 0.25;
+					yRot += (steerYaw - yRot) * 0.25;
 					motion = motion.add(steerDirection.x * 0.008, 0.0, steerDirection.z * 0.008);
 				}
 			} else {
 				motion = new Vector3d(motion.x, 0.1, motion.z);
 			}
 
-			setMotion(motion.x * 0.95, motion.y, motion.z * 0.95);
+			setDeltaMovement(motion.x * 0.95, motion.y, motion.z * 0.95);
 		} else {
-			double accelerationY = inWater ? -0.01 : -0.08;
+			double accelerationY = wasTouchingWater ? -0.01 : -0.08;
 
-			Vector3d motion = getMotion();
-			motion = motion.mul(0.7, 0.7, 0.7);
+			Vector3d motion = getDeltaMovement();
+			motion = motion.multiply(0.7, 0.7, 0.7);
 			motion = motion.add(0.0, accelerationY, 0.0);
 
-			setMotion(motion);
+			setDeltaMovement(motion);
 		}
 
-		move(MoverType.SELF, getMotion());
+		move(MoverType.SELF, getDeltaMovement());
 	}
 
 	private void tickLerp() {
@@ -171,15 +171,15 @@ public final class DriftwoodEntity extends Entity {
 
 		double lerpTicks = this.lerpTicks--;
 
-		setPosition(
-				getPosX() + (lerpX - getPosX()) / lerpTicks,
-				getPosY() + (lerpY - getPosY()) / lerpTicks,
-				getPosZ() + (lerpZ - getPosZ()) / lerpTicks
+		setPos(
+				getX() + (lerpX - getX()) / lerpTicks,
+				getY() + (lerpY - getY()) / lerpTicks,
+				getZ() + (lerpZ - getZ()) / lerpTicks
 		);
 
-		setRotation(
-				(float) (rotationYaw + MathHelper.wrapDegrees(lerpYaw - rotationYaw) / lerpTicks),
-				(float) (rotationPitch + (lerpPitch - rotationPitch) / lerpTicks)
+		setRot(
+				(float) (yRot + MathHelper.wrapDegrees(lerpYaw - yRot) / lerpTicks),
+				(float) (xRot + (lerpPitch - xRot) / lerpTicks)
 		);
 	}
 
@@ -194,7 +194,7 @@ public final class DriftwoodEntity extends Entity {
 	private List<PlayerEntity> collectRiders() {
 		AxisAlignedBB bounds = getBoundingBox();
 		AxisAlignedBB ridingBounds = new AxisAlignedBB(bounds.minX, bounds.maxY, bounds.minZ, bounds.maxX, bounds.maxY + 0.2, bounds.maxZ);
-		return world.getEntitiesWithinAABB(EntityType.PLAYER, ridingBounds, EntityPredicates.NOT_SPECTATING);
+		return level.getEntities(EntityType.PLAYER, ridingBounds, EntityPredicates.NO_SPECTATORS);
 	}
 
 	private float getFloatHeight() {
@@ -207,13 +207,13 @@ public final class DriftwoodEntity extends Entity {
 	}
 
 	private float getWaterSurface() {
-		if (!inWater) return -1.0F;
+		if (!wasTouchingWater) return -1.0F;
 
 		int minY = MathHelper.floor(getBoundingBox().minY - 0.5);
 		int maxY = MathHelper.ceil(getBoundingBox().maxY);
 
 		BlockPos.Mutable mutablePos = new BlockPos.Mutable();
-		mutablePos.setPos(this.getPosition());
+		mutablePos.set(this.blockPosition());
 
 		float waterHeight = -1.0F;
 
@@ -226,25 +226,25 @@ public final class DriftwoodEntity extends Entity {
 	}
 
 	private float getWaterSurfaceAt(BlockPos pos) {
-		FluidState fluid = world.getFluidState(pos);
-		if (fluid.isTagged(FluidTags.WATER)) {
-			return pos.getY() + fluid.getActualHeight(world, pos);
+		FluidState fluid = level.getFluidState(pos);
+		if (fluid.is(FluidTags.WATER)) {
+			return pos.getY() + fluid.getHeight(level, pos);
 		}
 		return -1.0F;
 	}
 
 	private void setFloatDepth(float floatDepth) {
 		this.floatDepth = floatDepth;
-		getDataManager().set(FLOATING, floatDepth < 1.0F);
+		getEntityData().set(FLOATING, floatDepth < 1.0F);
 	}
 
 	private boolean canFloat() {
-		return getDataManager().get(FLOATING);
+		return getEntityData().get(FLOATING);
 	}
 
 	@Override
 	@OnlyIn(Dist.CLIENT)
-	public void setPositionAndRotationDirect(double x, double y, double z, float yaw, float pitch, int lerpLength, boolean teleport) {
+	public void lerpTo(double x, double y, double z, float yaw, float pitch, int lerpLength, boolean teleport) {
 		lerpX = x;
 		lerpY = y;
 		lerpZ = z;
@@ -254,23 +254,23 @@ public final class DriftwoodEntity extends Entity {
 	}
 
 	@Override
-	public void applyEntityCollision(Entity entity) {
+	public void push(Entity entity) {
 	}
 
 	@Override
-	protected void readAdditional(CompoundNBT compound) {
+	protected void readAdditionalSaveData(CompoundNBT compound) {
 		if (compound.contains("float_depth", Constants.NBT.TAG_FLOAT)) {
 			setFloatDepth(compound.getFloat("float_depth"));
 		}
 	}
 
 	@Override
-	protected void writeAdditional(CompoundNBT compound) {
+	protected void addAdditionalSaveData(CompoundNBT compound) {
 		compound.putFloat("float_depth", floatDepth);
 	}
 
 	@Override
-	public IPacket<?> createSpawnPacket() {
+	public IPacket<?> getAddEntityPacket() {
 		return NetworkHooks.getEntitySpawningPacket(this);
 	}
 }

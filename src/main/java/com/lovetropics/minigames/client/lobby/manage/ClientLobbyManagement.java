@@ -119,7 +119,7 @@ public final class ClientLobbyManagement {
 			lobby.setInstalledGames(installedGames);
 			lobby.setQueue(queue);
 
-			Minecraft.getInstance().displayGuiScreen(screen);
+			Minecraft.getInstance().setScreen(screen);
 		}
 
 		public void handleName(String name) {

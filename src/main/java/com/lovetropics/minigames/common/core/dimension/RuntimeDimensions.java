@@ -97,8 +97,8 @@ public final class RuntimeDimensions {
 	}
 
 	public RuntimeDimensionHandle getOrOpenPersistent(ResourceLocation key, Supplier<RuntimeDimensionConfig> config) {
-		RegistryKey<World> worldKey = RegistryKey.getOrCreateKey(Registry.WORLD_KEY, key);
-		ServerWorld world = this.server.getWorld(worldKey);
+		RegistryKey<World> worldKey = RegistryKey.create(Registry.DIMENSION_REGISTRY, key);
+		ServerWorld world = this.server.getLevel(worldKey);
 		if (world != null) {
 			this.deletionQueue.remove(world);
 			return new RuntimeDimensionHandle(this, world);
@@ -114,8 +114,8 @@ public final class RuntimeDimensions {
 
 	@Nullable
 	public RuntimeDimensionHandle openTemporaryWithKey(ResourceLocation key, RuntimeDimensionConfig config) {
-		RegistryKey<World> worldKey = RegistryKey.getOrCreateKey(Registry.WORLD_KEY, key);
-		if (this.server.getWorld(worldKey) == null) {
+		RegistryKey<World> worldKey = RegistryKey.create(Registry.DIMENSION_REGISTRY, key);
+		if (this.server.getLevel(worldKey) == null) {
 			return this.openWorld(key, config, true);
 		} else {
 			return null;
@@ -123,27 +123,27 @@ public final class RuntimeDimensions {
 	}
 
 	RuntimeDimensionHandle openWorld(ResourceLocation key, RuntimeDimensionConfig config, boolean temporary) {
-		RegistryKey<World> worldKey = RegistryKey.getOrCreateKey(Registry.WORLD_KEY, key);
+		RegistryKey<World> worldKey = RegistryKey.create(Registry.DIMENSION_REGISTRY, key);
 
 		SimpleRegistry<Dimension> dimensionsRegistry = getDimensionsRegistry(this.server);
-		dimensionsRegistry.register(RegistryKey.getOrCreateKey(Registry.DIMENSION_KEY, key), config.dimension, Lifecycle.stable());
+		dimensionsRegistry.register(RegistryKey.create(Registry.LEVEL_STEM_REGISTRY, key), config.dimension, Lifecycle.stable());
 
 		ServerWorld world = new ServerWorld(
-				this.server, Util.getServerExecutor(), this.server.anvilConverterForAnvilFile,
+				this.server, Util.backgroundExecutor(), this.server.storageSource,
 				config.worldInfo,
 				worldKey,
-				config.dimension.getDimensionType(),
+				config.dimension.type(),
 				VoidChunkStatusListener.INSTANCE,
-				config.dimension.getChunkGenerator(),
+				config.dimension.generator(),
 				false,
-				BiomeManager.getHashedSeed(config.seed),
+				BiomeManager.obfuscateSeed(config.seed),
 				ImmutableList.of(),
 				false
 		) {
 			@Override
 			public void save(@Nullable IProgressUpdate progress, boolean flush, boolean skipSave) {
 				if (temporary) {
-					if (!flush && temporaryDimensions.contains(getDimensionKey())) {
+					if (!flush && temporaryDimensions.contains(dimension())) {
 						super.save(progress, false, skipSave);
 					}
 				} else {
@@ -152,7 +152,7 @@ public final class RuntimeDimensions {
 			}
 		};
 
-		this.server.worlds.put(worldKey, world);
+		this.server.levels.put(worldKey, world);
 		this.server.markWorldsDirty();
 
 		if (temporary) {
@@ -185,7 +185,7 @@ public final class RuntimeDimensions {
 	private void stop() {
 		ArrayList<RegistryKey<World>> temporaryDimensions = new ArrayList<>(this.temporaryDimensions);
 		for (RegistryKey<World> dimension : temporaryDimensions) {
-			ServerWorld world = this.server.getWorld(dimension);
+			ServerWorld world = this.server.getLevel(dimension);
 			if (world != null) {
 				this.kickPlayersFrom(world);
 				this.deleteDimension(world);
@@ -200,28 +200,28 @@ public final class RuntimeDimensions {
 	}
 
 	private void kickPlayersFrom(ServerWorld world) {
-		if (world.getPlayers().isEmpty()) {
+		if (world.players().isEmpty()) {
 			return;
 		}
 
-		ServerWorld overworld = this.server.func_241755_D_();
-		BlockPos spawnPos = overworld.getSpawnPoint();
-		float spawnAngle = overworld.getSpawnAngle();
+		ServerWorld overworld = this.server.overworld();
+		BlockPos spawnPos = overworld.getSharedSpawnPos();
+		float spawnAngle = overworld.getSharedSpawnAngle();
 
-		List<ServerPlayerEntity> players = new ArrayList<>(world.getPlayers());
+		List<ServerPlayerEntity> players = new ArrayList<>(world.players());
 		for (ServerPlayerEntity player : players) {
-			player.teleport(overworld, spawnPos.getX() + 0.5, spawnPos.getY(), spawnPos.getZ() + 0.5, spawnAngle, 0.0F);
+			player.teleportTo(overworld, spawnPos.getX() + 0.5, spawnPos.getY(), spawnPos.getZ() + 0.5, spawnAngle, 0.0F);
 		}
 	}
 
 	private boolean isWorldUnloaded(ServerWorld world) {
-		return world.getPlayers().isEmpty() && world.getChunkProvider().getLoadedChunkCount() <= 0;
+		return world.players().isEmpty() && world.getChunkSource().getLoadedChunksCount() <= 0;
 	}
 
 	private void deleteDimension(ServerWorld world) {
-		RegistryKey<World> dimensionKey = world.getDimensionKey();
+		RegistryKey<World> dimensionKey = world.dimension();
 
-		if (this.server.worlds.remove(dimensionKey, world)) {
+		if (this.server.levels.remove(dimensionKey, world)) {
 			this.server.markWorldsDirty();
 
 			this.temporaryDimensions.remove(dimensionKey);
@@ -229,10 +229,10 @@ public final class RuntimeDimensions {
 			MinecraftForge.EVENT_BUS.post(new WorldEvent.Unload(world));
 
 			SimpleRegistry<Dimension> dimensionsRegistry = getDimensionsRegistry(this.server);
-			RegistryEntryRemover.remove(dimensionsRegistry, dimensionKey.getLocation());
+			RegistryEntryRemover.remove(dimensionsRegistry, dimensionKey.location());
 
-			SaveFormat.LevelSave save = this.server.anvilConverterForAnvilFile;
-			deleteWorldDirectory(save.getDimensionFolder(dimensionKey));
+			SaveFormat.LevelSave save = this.server.storageSource;
+			deleteWorldDirectory(save.getDimensionPath(dimensionKey));
 		}
 	}
 
@@ -251,8 +251,8 @@ public final class RuntimeDimensions {
 	}
 
 	private static SimpleRegistry<Dimension> getDimensionsRegistry(MinecraftServer server) {
-		DimensionGeneratorSettings generatorSettings = server.getServerConfiguration().getDimensionGeneratorSettings();
-		return generatorSettings.func_236224_e_();
+		DimensionGeneratorSettings generatorSettings = server.getWorldData().worldGenSettings();
+		return generatorSettings.dimensions();
 	}
 
 	private static ResourceLocation generateTemporaryDimensionKey() {

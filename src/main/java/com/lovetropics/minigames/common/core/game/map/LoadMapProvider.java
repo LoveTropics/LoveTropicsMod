@@ -34,7 +34,7 @@ public class LoadMapProvider implements IGameMapProvider {
 		return instance.group(
 				Codec.STRING.optionalFieldOf("name").forGetter(c -> Optional.ofNullable(c.name)),
 				ResourceLocation.CODEC.fieldOf("load_from").forGetter(c -> c.loadFrom),
-				DimensionType.DIMENSION_TYPE_CODEC.optionalFieldOf("dimension_type").forGetter(c -> Optional.ofNullable(c.dimensionType)),
+				DimensionType.CODEC.optionalFieldOf("dimension_type").forGetter(c -> Optional.ofNullable(c.dimensionType)),
 				ResourceLocation.CODEC.optionalFieldOf("dimension").forGetter(c -> Optional.ofNullable(c.dimension))
 		).apply(instance, LoadMapProvider::new);
 	});
@@ -61,7 +61,7 @@ public class LoadMapProvider implements IGameMapProvider {
 	@Override
 	public List<RegistryKey<World>> getPossibleDimensions() {
 		if (dimension != null) {
-			return ImmutableList.of(RegistryKey.getOrCreateKey(Registry.WORLD_KEY, dimension));
+			return ImmutableList.of(RegistryKey.create(Registry.DIMENSION_REGISTRY, dimension));
 		} else {
 			return Collections.emptyList();
 		}
@@ -69,7 +69,7 @@ public class LoadMapProvider implements IGameMapProvider {
 
 	@Override
 	public CompletableFuture<GameResult<GameMap>> open(MinecraftServer server) {
-		Supplier<DimensionType> dimensionType = this.dimensionType != null ? this.dimensionType : () -> server.func_241755_D_().getDimensionType();
+		Supplier<DimensionType> dimensionType = this.dimensionType != null ? this.dimensionType : () -> server.overworld().dimensionType();
 		Dimension dimension = new Dimension(dimensionType, new VoidChunkGenerator(server));
 		MapWorldSettings worldSettings = new MapWorldSettings();
 
@@ -79,7 +79,7 @@ public class LoadMapProvider implements IGameMapProvider {
 		return CompletableFuture.supplyAsync(() -> this.openDimension(server, config), server)
 				.thenApplyAsync(result -> result.andThen(handle -> {
 					return this.loadMapInto(server, worldSettings, handle);
-				}), Util.getServerExecutor())
+				}), Util.backgroundExecutor())
 				.thenApplyAsync(result -> result.map(pair -> {
 					RuntimeDimensionHandle dimensionHandle = pair.getFirst();
 					MapMetadata metadata = pair.getSecond();

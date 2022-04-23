@@ -1,9 +1,9 @@
 package com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.plant;
 
-import com.lovetropics.minigames.common.content.biodiversity_blitz.explosion.FilteredExplosion;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.event.BbEvents;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.event.BbPlantEvents;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.BbMobEntity;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.explosion.FilteredExplosion;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.plant.Plant;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.plant.PlantCoverage;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
@@ -45,8 +45,8 @@ public final class ProximityBombPlantBehavior implements IGameBehavior {
 			List<Plant> removedPlants = new ArrayList<>();
 
 			for (Plant plant : plants) {
-				AxisAlignedBB detonateBounds = plant.coverage().asBounds().grow(this.radius);
-				List<MobEntity> entities = world.getEntitiesWithinAABB(MobEntity.class, detonateBounds, BbMobEntity.PREDICATE);
+				AxisAlignedBB detonateBounds = plant.coverage().asBounds().inflate(this.radius);
+				List<MobEntity> entities = world.getEntitiesOfClass(MobEntity.class, detonateBounds, BbMobEntity.PREDICATE);
 
 				if (!entities.isEmpty()) {
 					removedPlants.add(plant);
@@ -71,12 +71,12 @@ public final class ProximityBombPlantBehavior implements IGameBehavior {
 			double z = pos.getZ() + 0.5;
 
 			Explosion explosion = new FilteredExplosion(world, null, null, null, x, y, z, 4.0f, false, Explosion.Mode.BREAK, e -> e instanceof ServerPlayerEntity);
-			explosion.doExplosionA();
-			explosion.doExplosionB(false);
+			explosion.explode();
+			explosion.finalizeExplosion(false);
 
-			for (ServerPlayerEntity player : world.getPlayers()) {
-				if (player.getDistanceSq(x, y, z) < 4096.0) {
-					player.connection.sendPacket(new SExplosionPacket(x, y, z, 4.0f, explosion.getAffectedBlockPositions(), explosion.getPlayerKnockbackMap().get(player)));
+			for (ServerPlayerEntity player : world.players()) {
+				if (player.distanceToSqr(x, y, z) < 4096.0) {
+					player.connection.send(new SExplosionPacket(x, y, z, 4.0f, explosion.getToBlow(), explosion.getHitPlayers().get(player)));
 				}
 			}
 		}

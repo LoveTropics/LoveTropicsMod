@@ -20,7 +20,7 @@ public class NetItem extends Item {
 
     @Override
     @OnlyIn(Dist.CLIENT)
-    public void addInformation(ItemStack stack, @Nullable World world, List<ITextComponent> tooltip, ITooltipFlag flag) {
-        tooltip.add(new StringTextComponent("Attack hiding players with the net to capture them!").mergeStyle(TextFormatting.GOLD));
+    public void appendHoverText(ItemStack stack, @Nullable World world, List<ITextComponent> tooltip, ITooltipFlag flag) {
+        tooltip.add(new StringTextComponent("Attack hiding players with the net to capture them!").withStyle(TextFormatting.GOLD));
     }
 }

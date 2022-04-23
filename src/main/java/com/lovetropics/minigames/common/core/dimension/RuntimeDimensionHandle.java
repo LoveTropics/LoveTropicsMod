@@ -18,7 +18,7 @@ public final class RuntimeDimensionHandle {
 	}
 
 	public RegistryKey<World> asKey() {
-		return this.world.getDimensionKey();
+		return this.world.dimension();
 	}
 
 	public ServerWorld asWorld() {

@@ -95,8 +95,8 @@ public final class BlockPartyBehavior implements IGameBehavior {
 	}
 
 	private void spawnPlayer(ServerPlayerEntity player) {
-		BlockPos floorPos = floorRegion.sample(player.getRNG());
-		DimensionUtils.teleportPlayerNoPortal(player, game.getDimension(), floorPos.up());
+		BlockPos floorPos = floorRegion.sample(player.getRandom());
+		DimensionUtils.teleportPlayerNoPortal(player, game.getDimension(), floorPos.above());
 	}
 
 	private void tick() {
@@ -116,7 +116,7 @@ public final class BlockPartyBehavior implements IGameBehavior {
 
 		PlayerSet participants = game.getParticipants();
 		for (ServerPlayerEntity player : participants) {
-			double y = player.getPosY();
+			double y = player.getY();
 			if (y < 0 || y < floorRegion.min.getY() - 10) {
 				if (eliminated == null) {
 					eliminated = new ArrayList<>();
@@ -125,8 +125,8 @@ public final class BlockPartyBehavior implements IGameBehavior {
 				eliminated.add(player);
 
 				ITextComponent message = new StringTextComponent("\u2620 ")
-						.appendSibling(player.getDisplayName()).appendString(" was eliminated!")
-						.mergeStyle(TextFormatting.GRAY);
+						.append(player.getDisplayName()).append(" was eliminated!")
+						.withStyle(TextFormatting.GRAY);
 				game.getAllPlayers().sendMessage(message);
 			}
 		}
@@ -142,11 +142,11 @@ public final class BlockPartyBehavior implements IGameBehavior {
 				ITextComponent message;
 				if (winningPlayer != null) {
 					message = new StringTextComponent("\u2B50 ")
-							.appendSibling(winningPlayer.getDisplayName()).appendString(" won the game!")
-							.mergeStyle(TextFormatting.GREEN);
+							.append(winningPlayer.getDisplayName()).append(" won the game!")
+							.withStyle(TextFormatting.GREEN);
 				} else {
 					message = new StringTextComponent("\u2B50 Nobody won the game!")
-							.mergeStyle(TextFormatting.RED);
+							.withStyle(TextFormatting.RED);
 				}
 
 				state = new Ending(game.ticks() + 20 * 5);
@@ -168,7 +168,7 @@ public final class BlockPartyBehavior implements IGameBehavior {
 
 	CountingDown startCountingDown(int round) {
 		ServerWorld world = game.getWorld();
-		Floor floor = Floor.generate(world.rand, quadCountX, quadCountZ, blocks);
+		Floor floor = Floor.generate(world.random, quadCountX, quadCountZ, blocks);
 		floor.set(world, floorRegion, quadSize);
 
 		Block target = floor.target;
@@ -177,14 +177,14 @@ public final class BlockPartyBehavior implements IGameBehavior {
 		targetStack.setCount(64);
 
 		ITextComponent name = new StringTextComponent("Stand on ")
-				.appendSibling(targetStack.getTextComponent())
-				.modifyStyle(style -> style.setBold(true).setItalic(false));
-		targetStack.setDisplayName(name);
+				.append(targetStack.getDisplayName())
+				.withStyle(style -> style.withBold(true).withItalic(false));
+		targetStack.setHoverName(name);
 
 		for (ServerPlayerEntity player : game.getParticipants()) {
-			player.inventory.clear();
+			player.inventory.clearContent();
 			for (int i = 0; i < 9; i++) {
-				player.inventory.addItemStackToInventory(targetStack.copy());
+				player.inventory.add(targetStack.copy());
 			}
 		}
 
@@ -222,8 +222,8 @@ public final class BlockPartyBehavior implements IGameBehavior {
 			if (time % 10 == 0) {
 				for (ServerPlayerEntity player : game.getAllPlayers()) {
 					long remainingTicks = breakAt - time;
-					ITextComponent message = new StringTextComponent("Break in " + (remainingTicks / 20) + " seconds").mergeStyle(TextFormatting.GOLD);
-					player.sendStatusMessage(message, true);
+					ITextComponent message = new StringTextComponent("Break in " + (remainingTicks / 20) + " seconds").withStyle(TextFormatting.GOLD);
+					player.displayClientMessage(message, true);
 				}
 			}
 
@@ -306,15 +306,15 @@ public final class BlockPartyBehavior implements IGameBehavior {
 				int z = MathHelper.clamp(localZ / quadSize, 0, quadCountZ - 1);
 
 				Block quad = quads[x + z * quadCountX];
-				world.setBlockState(pos, quad.getDefaultState());
+				world.setBlockAndUpdate(pos, quad.defaultBlockState());
 			}
 		}
 
 		void removeNonTargets(ServerWorld world, BlockBox box) {
 			for (BlockPos pos : box) {
 				BlockState state = world.getBlockState(pos);
-				if (!state.getBlockState().matchesBlock(target)) {
-					world.setBlockState(pos, Blocks.AIR.getDefaultState());
+				if (!state.getBlockState().is(target)) {
+					world.setBlockAndUpdate(pos, Blocks.AIR.defaultBlockState());
 				}
 			}
 		}

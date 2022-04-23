@@ -18,19 +18,19 @@ import java.util.UUID;
 
 @Mixin(PlayerTabOverlayGui.class)
 public class PlayerTabOverlayGuiMixin {
-	@Inject(method = "func_238524_a_", at = @At("HEAD"), cancellable = true)
+	@Inject(method = "decorateName", at = @At("HEAD"), cancellable = true)
 	private void getDisplayName(NetworkPlayerInfo info, IFormattableTextComponent displayName, CallbackInfoReturnable<ITextComponent> ci) {
 		ClientLobbyState lobby = ClientLobbyManager.getJoined();
 		if (lobby != null && lobby.getCurrentGame() != null) {
-			UUID id = info.getGameProfile().getId();
+			UUID id = info.getProfile().getId();
 			if (lobby.getPlayers().contains(id)) {
-				if (info.getGameType() != GameType.SPECTATOR) {
-					ci.setReturnValue(new StringTextComponent("\uD83D\uDDE1 ").appendSibling(displayName));
+				if (info.getGameMode() != GameType.SPECTATOR) {
+					ci.setReturnValue(new StringTextComponent("\uD83D\uDDE1 ").append(displayName));
 				} else {
 					ci.setReturnValue(displayName);
 				}
 			} else {
-				ci.setReturnValue(displayName.mergeStyle(TextFormatting.DARK_GRAY));
+				ci.setReturnValue(displayName.withStyle(TextFormatting.DARK_GRAY));
 			}
 		}
 	}

@@ -16,12 +16,12 @@ public final class ShowNotificationToastMessage {
 	}
 
 	public void encode(PacketBuffer buffer) {
-		buffer.writeTextComponent(this.message);
+		buffer.writeComponent(this.message);
 		this.display.encode(buffer);
 	}
 
 	public static ShowNotificationToastMessage decode(PacketBuffer buffer) {
-		ITextComponent message = buffer.readTextComponent();
+		ITextComponent message = buffer.readComponent();
 		NotificationDisplay display = NotificationDisplay.decode(buffer);
 		return new ShowNotificationToastMessage(message, display);
 	}

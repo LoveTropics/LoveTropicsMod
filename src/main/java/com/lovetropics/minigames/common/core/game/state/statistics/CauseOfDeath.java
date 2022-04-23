@@ -22,17 +22,17 @@ public final class CauseOfDeath {
 	}
 
 	public static CauseOfDeath from(DamageSource damage) {
-		String type = damage.damageType;
+		String type = damage.msgId;
 		String typeName = getDamageTypeName(damage);
 
 		String source = null;
 		String sourceName = null;
 
-		Entity entitySource = damage.getTrueSource();
+		Entity entitySource = damage.getEntity();
 		if (entitySource != null) {
 			EntityType<?> sourceType = entitySource.getType();
 			source = EntityType.getKey(sourceType).toString();
-			sourceName = sourceType.getName().getString();
+			sourceName = sourceType.getDescription().getString();
 		}
 
 		return new CauseOfDeath(type, typeName, source, sourceName);

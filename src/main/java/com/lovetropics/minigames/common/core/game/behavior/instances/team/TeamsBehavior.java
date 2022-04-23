@@ -102,9 +102,9 @@ public final class TeamsBehavior implements IGameBehavior {
 	}
 
 	private ScorePlayerTeam getOrCreateScoreboardTeam(ServerScoreboard scoreboard, GameTeam team, String teamId) {
-		ScorePlayerTeam scoreboardTeam = scoreboard.getTeam(teamId);
+		ScorePlayerTeam scoreboardTeam = scoreboard.getPlayerTeam(teamId);
 		if (scoreboardTeam == null) {
-			scoreboardTeam = scoreboard.createTeam(teamId);
+			scoreboardTeam = scoreboard.addPlayerTeam(teamId);
 			scoreboardTeam.setDisplayName(team.config().name());
 			scoreboardTeam.setColor(team.config().formatting());
 			scoreboardTeam.setAllowFriendlyFire(friendlyFire);
@@ -134,7 +134,7 @@ public final class TeamsBehavior implements IGameBehavior {
 	private void onDestroy(IGamePhase game) {
 		ServerScoreboard scoreboard = game.getServer().getScoreboard();
 		for (ScorePlayerTeam team : scoreboardTeams.values()) {
-			scoreboard.removeTeam(team);
+			scoreboard.removePlayerTeam(team);
 		}
 	}
 
@@ -160,11 +160,11 @@ public final class TeamsBehavior implements IGameBehavior {
 		ScorePlayerTeam scoreboardTeam = scoreboardTeams.get(teamKey);
 		scoreboard.addPlayerToTeam(player.getScoreboardName(), scoreboardTeam);
 
-		ITextComponent teamName = team.config().name().deepCopy().appendString(" Team!")
-				.mergeStyle(TextFormatting.BOLD, team.config().formatting());
+		ITextComponent teamName = team.config().name().copy().append(" Team!")
+				.withStyle(TextFormatting.BOLD, team.config().formatting());
 
-		player.sendStatusMessage(
-				new StringTextComponent("You are on ").mergeStyle(TextFormatting.GRAY).appendSibling(teamName),
+		player.displayClientMessage(
+				new StringTextComponent("You are on ").withStyle(TextFormatting.GRAY).append(teamName),
 				false
 		);
 	}
@@ -173,11 +173,11 @@ public final class TeamsBehavior implements IGameBehavior {
 		teams.removePlayer(player);
 
 		ServerScoreboard scoreboard = player.server.getScoreboard();
-		scoreboard.removePlayerFromTeams(player.getScoreboardName());
+		scoreboard.removePlayerFromTeam(player.getScoreboardName());
 	}
 
 	private ActionResultType onPlayerHurt(ServerPlayerEntity player, DamageSource source, float amount) {
-		if (!friendlyFire && teams.areSameTeam(source.getTrueSource(), player)) {
+		if (!friendlyFire && teams.areSameTeam(source.getEntity(), player)) {
 			return ActionResultType.FAIL;
 		}
 		return ActionResultType.PASS;

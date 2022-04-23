@@ -36,7 +36,7 @@ public interface IGameLookup {
 			return getGamePhaseFor((PlayerEntity) entity);
 		}
 
-		IGamePhase game = getGamePhaseAt(source.getWorld(), source.getPos());
+		IGamePhase game = getGamePhaseAt(source.getLevel(), source.getPosition());
 		if (game != null) {
 			return game;
 		}
@@ -46,19 +46,19 @@ public interface IGameLookup {
 
 	@Nullable
 	default IGamePhase getGamePhaseFor(Entity entity) {
-		if (entity.world.isRemote) {
+		if (entity.level.isClientSide) {
 			return null;
 		}
 
 		if (entity instanceof PlayerEntity) {
 			return getGamePhaseFor((PlayerEntity) entity);
 		} else {
-			return getGamePhaseAt(entity.world, entity.getPositionVec());
+			return getGamePhaseAt(entity.level, entity.position());
 		}
 	}
 
 	@Nullable
 	default IGamePhase getGamePhaseAt(World world, BlockPos pos) {
-		return getGamePhaseAt(world, Vector3d.copyCentered(pos));
+		return getGamePhaseAt(world, Vector3d.atCenterOf(pos));
 	}
 }

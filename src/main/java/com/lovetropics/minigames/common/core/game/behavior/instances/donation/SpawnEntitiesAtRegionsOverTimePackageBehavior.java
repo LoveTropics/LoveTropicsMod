@@ -80,7 +80,7 @@ public class SpawnEntitiesAtRegionsOverTimePackageBehavior implements IGameBehav
 
 			for (int i = 0; i < spawnsPerTick; i++) {
 				BlockBox region = regionsToSpawnAt.get(game.getWorld().getRandom().nextInt(regionsToSpawnAt.size()));
-				final BlockPos pos = game.getWorld().getHeight(Heightmap.Type.WORLD_SURFACE, region.sample(game.getWorld().getRandom()));
+				final BlockPos pos = game.getWorld().getHeightmapPos(Heightmap.Type.WORLD_SURFACE, region.sample(game.getWorld().getRandom()));
 
 				Util.spawnEntity(entityId, game.getWorld(), pos.getX(), pos.getY(), pos.getZ());
 				entityCountRemaining--;

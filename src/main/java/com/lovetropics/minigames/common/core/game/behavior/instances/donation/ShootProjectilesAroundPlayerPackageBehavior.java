@@ -3,8 +3,8 @@ package com.lovetropics.minigames.common.core.game.behavior.instances.donation;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
-import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePackageEvents;
+import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
@@ -87,10 +87,10 @@ public class ShootProjectilesAroundPlayerPackageBehavior implements IGameBehavio
 					cooldown = spawnRateBase + random.nextInt(spawnRateRandom);
 					playerToDelayToSpawn.put(entry.getKey(), cooldown);
 
-					BlockPos posSpawn = entry.getKey().getPosition().add(random.nextInt(spawnDistanceMax * 2) - spawnDistanceMax, 20,
+					BlockPos posSpawn = entry.getKey().blockPosition().offset(random.nextInt(spawnDistanceMax * 2) - spawnDistanceMax, 20,
 							random.nextInt(spawnDistanceMax * 2) - spawnDistanceMax);
 
-					BlockPos posTarget = entry.getKey().getPosition().add(random.nextInt(targetRandomness * 2) - targetRandomness, 0,
+					BlockPos posTarget = entry.getKey().blockPosition().offset(random.nextInt(targetRandomness * 2) - targetRandomness, 0,
 							random.nextInt(targetRandomness * 2) - targetRandomness);
 
 					entry.setValue(entry.getIntValue() - 1);
@@ -99,7 +99,7 @@ public class ShootProjectilesAroundPlayerPackageBehavior implements IGameBehavio
 						it.remove();
 					}
 					FireballEntity fireball = createFireball(world, posSpawn, posTarget);
-					world.addEntity(fireball);
+					world.addFreshEntity(fireball);
 				}
 			}
 		}
@@ -112,11 +112,11 @@ public class ShootProjectilesAroundPlayerPackageBehavior implements IGameBehavio
 		double distance = MathHelper.sqrt(deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ);
 
 		FireballEntity fireball = new FireballEntity(EntityType.FIREBALL, world);
-		fireball.setLocationAndAngles(spawn.getX(), spawn.getY(), spawn.getZ(), fireball.rotationYaw, fireball.rotationPitch);
-		fireball.setPosition(spawn.getX(), spawn.getY(), spawn.getZ());
-		fireball.accelerationX = deltaX / distance * 0.1;
-		fireball.accelerationY = deltaY / distance * 0.1;
-		fireball.accelerationZ = deltaZ / distance * 0.1;
+		fireball.moveTo(spawn.getX(), spawn.getY(), spawn.getZ(), fireball.yRot, fireball.xRot);
+		fireball.setPos(spawn.getX(), spawn.getY(), spawn.getZ());
+		fireball.xPower = deltaX / distance * 0.1;
+		fireball.yPower = deltaY / distance * 0.1;
+		fireball.zPower = deltaZ / distance * 0.1;
 		fireball.explosionPower = explosionStrength;
 
 		return fireball;

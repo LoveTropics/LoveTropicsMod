@@ -45,13 +45,13 @@ public class SwapPlayersPackageBehavior implements IGameBehavior {
 		Collections.shuffle(players);
 
 		List<Vector3d> playerPositions = players.stream()
-				.map(Entity::getPositionVec)
+				.map(Entity::position)
 				.collect(Collectors.toList());
 
 		for (int i = 0; i < players.size(); i++) {
 			final ServerPlayerEntity player = players.get(i);
 			final Vector3d teleportTo = playerPositions.get((i + 1) % playerPositions.size());
-			player.setPositionAndUpdate(teleportTo.x, teleportTo.y, teleportTo.z);
+			player.teleportTo(teleportTo.x, teleportTo.y, teleportTo.z);
 		}
 	}
 
@@ -60,7 +60,7 @@ public class SwapPlayersPackageBehavior implements IGameBehavior {
 		Collections.shuffle(players);
 
 		List<Vector3d> playerPositions = players.stream()
-				.map(Entity::getPositionVec)
+				.map(Entity::position)
 				.collect(Collectors.toList());
 
 		double distanceThreshold2 = distanceThreshold * distanceThreshold;
@@ -70,7 +70,7 @@ public class SwapPlayersPackageBehavior implements IGameBehavior {
 			double closestDistance2 = Double.MAX_VALUE;
 
 			for (Vector3d otherPos : playerPositions) {
-				double distance2 = player.getPositionVec().squareDistanceTo(otherPos);
+				double distance2 = player.position().distanceToSqr(otherPos);
 				if (distance2 > 0.01 && distance2 < distanceThreshold2) {
 					if (distance2 < closestDistance2) {
 						closestPos = otherPos;
@@ -80,7 +80,7 @@ public class SwapPlayersPackageBehavior implements IGameBehavior {
 			}
 
 			if (closestPos != null) {
-				player.setPositionAndUpdate(closestPos.x, closestPos.y, closestPos.z);
+				player.teleportTo(closestPos.x, closestPos.y, closestPos.z);
 			}
 		}
 	}

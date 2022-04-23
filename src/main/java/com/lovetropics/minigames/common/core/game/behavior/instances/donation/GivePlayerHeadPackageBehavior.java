@@ -34,8 +34,8 @@ public final class GivePlayerHeadPackageBehavior implements IGameBehavior {
 
 			ItemStack head = createHeadForSender(sendingPlayer);
 			if (forced) {
-				head.addEnchantment(Enchantments.BINDING_CURSE, 1);
-				player.setItemStackToSlot(EquipmentSlotType.HEAD, head);
+				head.enchant(Enchantments.BINDING_CURSE, 1);
+				player.setItemSlot(EquipmentSlotType.HEAD, head);
 			} else {
 				Util.addItemStackToInventory(player, head);
 			}

@@ -105,7 +105,7 @@ public final class WorkspaceRegions implements Iterable<WorkspaceRegions.Entry> 
 	public void read(CompoundNBT root) {
 		this.entries.clear();
 
-		for (String key : root.keySet()) {
+		for (String key : root.getAllKeys()) {
 			ListNBT regionsList = root.getList(key, Constants.NBT.TAG_COMPOUND);
 			for (int i = 0; i < regionsList.size(); i++) {
 				BlockBox region = BlockBox.read(regionsList.getCompound(i));
@@ -121,7 +121,7 @@ public final class WorkspaceRegions implements Iterable<WorkspaceRegions.Entry> 
 		buffer.writeVarInt(keys.size());
 
 		for (String key : keys) {
-			buffer.writeString(key, 64);
+			buffer.writeUtf(key, 64);
 
 			Collection<Entry> entries = byKey.get(key);
 			buffer.writeVarInt(entries.size());

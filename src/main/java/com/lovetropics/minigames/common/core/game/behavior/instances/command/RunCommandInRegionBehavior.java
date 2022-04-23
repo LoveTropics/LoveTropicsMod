@@ -29,14 +29,14 @@ public final class RunCommandInRegionBehavior extends CommandInvokeMapBehavior {
 	@Override
 	protected void registerEvents(IGamePhase game, EventRegistrar events) {
 		events.listen(GamePlayerEvents.TICK, (player) -> {
-			if (player.ticksExisted % interval != 0) {
+			if (player.tickCount % interval != 0) {
 				return;
 			}
 
 			MapRegions regions = game.getMapRegions();
 			for (String regionKey : commands.keySet()) {
 				for (BlockBox region : regions.get(regionKey)) {
-					if (region.contains(player.getPosX(), player.getPosY(), player.getPosZ())) {
+					if (region.contains(player.getX(), player.getY(), player.getZ())) {
 						invoke(regionKey, sourceForEntity(player));
 					}
 				}

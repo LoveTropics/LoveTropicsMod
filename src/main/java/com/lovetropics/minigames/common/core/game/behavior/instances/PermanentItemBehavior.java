@@ -33,9 +33,9 @@ public class PermanentItemBehavior implements IGameBehavior {
 	public void register(IGamePhase game, EventRegistrar events) {
 		events.listen(GamePlayerEvents.TICK, player -> {
 			if (game.getParticipants().contains(player) && game.ticks() % interval == 0) {
-				int currentCount = player.inventory.count(item);
+				int currentCount = player.inventory.countItem(item);
 				if (currentCount < this.count) {
-					player.inventory.addItemStackToInventory(new ItemStack(item, this.count - currentCount));
+					player.inventory.add(new ItemStack(item, this.count - currentCount));
 				}
 			}
 		});

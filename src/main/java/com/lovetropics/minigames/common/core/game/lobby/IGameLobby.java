@@ -48,6 +48,6 @@ public interface IGameLobby {
 	}
 
 	default boolean isVisibleTo(ServerPlayerEntity player) {
-		return this.isVisibleTo(player.getCommandSource());
+		return this.isVisibleTo(player.createCommandSourceStack());
 	}
 }

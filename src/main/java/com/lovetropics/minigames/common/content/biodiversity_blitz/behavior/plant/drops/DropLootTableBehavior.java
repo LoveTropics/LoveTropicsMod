@@ -40,28 +40,28 @@ public final class DropLootTableBehavior implements IGameBehavior {
 				ServerWorld world = game.getWorld();
 
 				LootContext context = this.buildLootContext(player, pos);
-				for (ItemStack stack : lootTable.generate(context)) {
-					Block.spawnAsEntity(world, pos, stack);
+				for (ItemStack stack : lootTable.getRandomItems(context)) {
+					Block.popResource(world, pos, stack);
 				}
 			}
 		});
 	}
 
 	private LootContext buildLootContext(ServerPlayerEntity player, BlockPos pos) {
-		return new LootContext.Builder(player.getServerWorld())
+		return new LootContext.Builder(player.getLevel())
 				.withParameter(LootParameters.THIS_ENTITY, player)
-				.withParameter(LootParameters.ORIGIN, Vector3d.copyCentered(pos))
-				.withParameter(LootParameters.BLOCK_STATE, player.world.getBlockState(pos))
-				.withParameter(LootParameters.TOOL, player.getActiveItemStack())
-				.withRandom(player.getRNG())
+				.withParameter(LootParameters.ORIGIN, Vector3d.atCenterOf(pos))
+				.withParameter(LootParameters.BLOCK_STATE, player.level.getBlockState(pos))
+				.withParameter(LootParameters.TOOL, player.getUseItem())
+				.withRandom(player.getRandom())
 				.withLuck(player.getLuck())
-				.build(LootParameterSets.BLOCK);
+				.create(LootParameterSets.BLOCK);
 	}
 
 	@Nullable
 	private LootTable getLootTable(MinecraftServer server) {
 		if (this.lootTable != null) {
-			return server.getLootTableManager().getLootTableFromLocation(this.lootTable);
+			return server.getLootTables().get(this.lootTable);
 		} else {
 			return null;
 		}

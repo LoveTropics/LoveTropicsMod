@@ -20,7 +20,7 @@ import javax.annotation.Nullable;
 
 public final class GameQueueList extends AbstractGameList {
 	private static final ITextComponent TITLE = GameTexts.Ui.gameQueue()
-			.mergeStyle(TextFormatting.UNDERLINE, TextFormatting.BOLD);
+			.withStyle(TextFormatting.UNDERLINE, TextFormatting.BOLD);
 
 	private final ClientLobbyManageState lobby;
 
@@ -78,11 +78,11 @@ public final class GameQueueList extends AbstractGameList {
 	}
 
 	private void applyRunningGame(ClientCurrentGame game, Entry entry) {
-		IFormattableTextComponent gameName = game.definition().name.deepCopy().mergeStyle(TextFormatting.UNDERLINE);
-		entry.setTitle(new StringTextComponent("\u25B6 ").appendSibling(gameName));
+		IFormattableTextComponent gameName = game.definition().name.copy().withStyle(TextFormatting.UNDERLINE);
+		entry.setTitle(new StringTextComponent("\u25B6 ").append(gameName));
 
 		if (game.error() != null) {
-			entry.setSubtitle(new StringTextComponent("\u26A0 ").appendSibling(game.error()));
+			entry.setSubtitle(new StringTextComponent("\u26A0 ").append(game.error()));
 
 			entry.setBackgroundColor(0xFF201010)
 					.setHoveredColor(0xFF402020)
@@ -97,8 +97,8 @@ public final class GameQueueList extends AbstractGameList {
 	}
 
 	private void applyInactiveGame(Entry entry) {
-		IFormattableTextComponent inactive = GameTexts.Ui.gameInactive().mergeStyle(TextFormatting.UNDERLINE);
-		entry.setTitle(new StringTextComponent("\u23F8 ").appendSibling(inactive));
+		IFormattableTextComponent inactive = GameTexts.Ui.gameInactive().withStyle(TextFormatting.UNDERLINE);
+		entry.setTitle(new StringTextComponent("\u23F8 ").append(inactive));
 
 		entry.setBackgroundColor(0xFF202010)
 				.setHoveredColor(0xFF404020)

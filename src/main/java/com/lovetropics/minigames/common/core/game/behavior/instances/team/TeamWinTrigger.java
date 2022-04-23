@@ -36,8 +36,8 @@ public class TeamWinTrigger implements IGameBehavior {
 				if (finalTeam != null) {
 					winTriggered = true;
 
-					ITextComponent winnerName = finalTeam.config().name().deepCopy()
-							.mergeStyle(finalTeam.config().formatting());
+					ITextComponent winnerName = finalTeam.config().name().copy()
+							.withStyle(finalTeam.config().formatting());
 					game.invoker(GameLogicEvents.WIN_TRIGGERED).onWinTriggered(winnerName);
 					game.invoker(GameLogicEvents.GAME_OVER).onGameOver();
 

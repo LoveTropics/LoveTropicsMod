@@ -21,14 +21,14 @@ public final class ExtendedBossBarCommand {
 		// @formatter:off
 		dispatcher.register(
 			literal("bossbar")
-				.then(literal("players").requires(source -> source.hasPermissionLevel(2))
+				.then(literal("players").requires(source -> source.hasPermission(2))
 					.then(literal("add")
-					.then(argument("id", ResourceLocationArgument.resourceLocation()).suggests(BossBarCommand.SUGGESTIONS_PROVIDER)
+					.then(argument("id", ResourceLocationArgument.id()).suggests(BossBarCommand.SUGGEST_BOSS_BAR)
 					.then(argument("players", EntityArgument.players())
 						.executes(ExtendedBossBarCommand::addPlayers)
 					)))
 					.then(literal("remove")
-					.then(argument("id", ResourceLocationArgument.resourceLocation()).suggests(BossBarCommand.SUGGESTIONS_PROVIDER)
+					.then(argument("id", ResourceLocationArgument.id()).suggests(BossBarCommand.SUGGEST_BOSS_BAR)
 					.then(argument("players", EntityArgument.players())
 						.executes(ExtendedBossBarCommand::removePlayers)
 					)))
@@ -46,7 +46,7 @@ public final class ExtendedBossBarCommand {
 	}
 
 	private static int updatePlayers(CommandContext<CommandSource> context, PlayerUpdateFunction update) throws CommandSyntaxException {
-		CustomServerBossInfo bossBar = BossBarCommand.getBossbar(context);
+		CustomServerBossInfo bossBar = BossBarCommand.getBossBar(context);
 		Collection<ServerPlayerEntity> players = EntityArgument.getPlayers(context, "players");
 
 		for (ServerPlayerEntity player : players) {

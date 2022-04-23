@@ -35,7 +35,7 @@ public final class SurviveTheTide {
 			.register();
 
 	public static final RegistryEntry<EntityType<DriftwoodEntity>> DRIFTWOOD = REGISTRATE.entity("driftwood", DriftwoodEntity::new, EntityClassification.MISC)
-			.properties(properties -> properties.size(2.0F, 1.0F).setShouldReceiveVelocityUpdates(true).setUpdateInterval(3))
+			.properties(properties -> properties.sized(2.0F, 1.0F).setShouldReceiveVelocityUpdates(true).setUpdateInterval(3))
 			.defaultLang()
 			.renderer(() -> DriftwoodRenderer::new)
 			.register();

@@ -24,24 +24,24 @@ import java.util.OptionalInt;
 public final class DynamicRegistryReadingOps {
 	private static final WorldSettingsImport.IResourceAccess VOID_RESOURCE_ACCESS = new WorldSettingsImport.IResourceAccess() {
 		@Override
-		public Collection<ResourceLocation> getRegistryObjects(RegistryKey<? extends Registry<?>> registryKey) {
+		public Collection<ResourceLocation> listResources(RegistryKey<? extends Registry<?>> registryKey) {
 			return Collections.emptyList();
 		}
 
 		@Override
-		public <E> DataResult<Pair<E, OptionalInt>> decode(DynamicOps<JsonElement> ops, RegistryKey<? extends Registry<E>> registryKey, RegistryKey<E> objectKey, Decoder<E> decoder) {
+		public <E> DataResult<Pair<E, OptionalInt>> parseElement(DynamicOps<JsonElement> ops, RegistryKey<? extends Registry<E>> registryKey, RegistryKey<E> objectKey, Decoder<E> decoder) {
 			return DataResult.error("Not looking up registry resource: we are only considering already registered entries!");
 		}
 	};
 
 	public static <T> DynamicOps<T> create(MinecraftServer server, DynamicOps<T> ops) {
-		DynamicRegistries.Impl dynamicRegistries = (DynamicRegistries.Impl) server.getDynamicRegistries();
+		DynamicRegistries.Impl dynamicRegistries = (DynamicRegistries.Impl) server.registryAccess();
 		return Factory.create(ops, VOID_RESOURCE_ACCESS, dynamicRegistries);
 	}
 
 	public static <T> DynamicOps<T> create(IResourceManager resources, DynamicOps<T> ops) {
 		DynamicRegistries.Impl dynamicRegistries = new DynamicRegistries.Impl();
-		return Factory.create(ops, WorldSettingsImport.IResourceAccess.create(resources), dynamicRegistries);
+		return Factory.create(ops, WorldSettingsImport.IResourceAccess.forResourceManager(resources), dynamicRegistries);
 	}
 
 	/**

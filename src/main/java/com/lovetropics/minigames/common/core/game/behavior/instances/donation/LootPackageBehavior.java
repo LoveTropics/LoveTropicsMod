@@ -34,22 +34,22 @@ public class LootPackageBehavior implements IGameBehavior {
 	}
 
 	private boolean addLootTableToInventory(final ServerPlayerEntity player) {
-		LootContext context = (new LootContext.Builder(player.getServerWorld()))
+		LootContext context = (new LootContext.Builder(player.getLevel()))
 				.withParameter(LootParameters.THIS_ENTITY, player)
-				.withParameter(LootParameters.ORIGIN, player.getPositionVec())
-				.withRandom(player.getRNG())
+				.withParameter(LootParameters.ORIGIN, player.position())
+				.withRandom(player.getRandom())
 				.withLuck(player.getLuck())
-				.build(LootParameterSets.GIFT);
+				.create(LootParameterSets.GIFT);
 
 		boolean changed = false;
-		for (ItemStack stack : player.server.getLootTableManager().getLootTableFromLocation(lootTable).generate(context)) {
+		for (ItemStack stack : player.server.getLootTables().get(lootTable).getRandomItems(context)) {
 			if (Util.addItemStackToInventory(player, stack)) {
 				changed = true;
 			}
 		}
 
 		if (changed) {
-			player.container.detectAndSendChanges();
+			player.inventoryMenu.broadcastChanges();
 			return true;
 		} else {
 			return false;

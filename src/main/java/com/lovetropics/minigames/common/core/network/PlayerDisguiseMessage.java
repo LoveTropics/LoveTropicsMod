@@ -19,7 +19,7 @@ public class PlayerDisguiseMessage {
 	}
 
 	public void encode(PacketBuffer buffer) {
-		buffer.writeUniqueId(player);
+		buffer.writeUUID(player);
 
 		buffer.writeBoolean(disguise != null);
 		if (disguise != null) {
@@ -28,7 +28,7 @@ public class PlayerDisguiseMessage {
 	}
 
 	public static PlayerDisguiseMessage decode(PacketBuffer buffer) {
-		UUID player = buffer.readUniqueId();
+		UUID player = buffer.readUUID();
 
 		DisguiseType disguise;
 		if (buffer.readBoolean()) {

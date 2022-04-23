@@ -27,13 +27,13 @@ public final class PlotsState implements Iterable<Plot>, IGameState {
 	}
 
 	public void addPlayer(ServerPlayerEntity player, Plot plot) {
-		this.plotsByPlayer.put(player.getUniqueID(), plot);
+		this.plotsByPlayer.put(player.getUUID(), plot);
 		this.plots.add(plot);
 	}
 
 	@Nullable
 	public Plot removePlayer(ServerPlayerEntity player) {
-		Plot plot = this.plotsByPlayer.remove(player.getUniqueID());
+		Plot plot = this.plotsByPlayer.remove(player.getUUID());
 		if (plot != null) {
 			this.plots.remove(plot);
 			return plot;
@@ -44,7 +44,7 @@ public final class PlotsState implements Iterable<Plot>, IGameState {
 
 	@Nullable
 	public Plot getPlotFor(Entity entity) {
-		return this.plotsByPlayer.get(entity.getUniqueID());
+		return this.plotsByPlayer.get(entity.getUUID());
 	}
 
 	@Override

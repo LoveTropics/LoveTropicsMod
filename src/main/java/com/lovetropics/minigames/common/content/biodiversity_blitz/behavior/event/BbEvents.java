@@ -27,11 +27,11 @@ public final class BbEvents {
 	public static final GameEventType<PlacePlant> PLACE_PLANT = GameEventType.create(PlacePlant.class, listeners -> (player, plot, pos, plantType) -> {
 		for (PlacePlant listener : listeners) {
 			ActionResult<Plant> result = listener.placePlant(player, plot, pos, plantType);
-			if (result.getType() != ActionResultType.PASS) {
+			if (result.getResult() != ActionResultType.PASS) {
 				return result;
 			}
 		}
-		return ActionResult.resultPass(null);
+		return ActionResult.pass(null);
 	});
 
 	public static final GameEventType<BreakPlant> BREAK_PLANT = GameEventType.create(BreakPlant.class, listeners -> (player, plot, plant) -> {

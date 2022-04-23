@@ -15,7 +15,7 @@ public final class BbTargetPlayerGoal extends NearestAttackableTargetGoal<Player
 	}
 
 	@Override
-	protected double getTargetDistance() {
+	protected double getFollowDistance() {
 		return TARGET_RANGE;
 	}
 

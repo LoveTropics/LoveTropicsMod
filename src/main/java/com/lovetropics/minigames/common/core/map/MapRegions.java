@@ -72,7 +72,7 @@ public final class MapRegions {
 	public void read(CompoundNBT root) {
 		this.regions.clear();
 
-		for (String key : root.keySet()) {
+		for (String key : root.getAllKeys()) {
 			ListNBT regionsList = root.getList(key, Constants.NBT.TAG_COMPOUND);
 			for (int i = 0; i < regionsList.size(); i++) {
 				BlockBox region = BlockBox.read(regionsList.getCompound(i));

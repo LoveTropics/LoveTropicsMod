@@ -42,12 +42,12 @@ public class SpawnEntityAtPlayerPackageBehavior implements IGameBehavior {
 		events.listen(GamePackageEvents.APPLY_PACKAGE_TO_PLAYER, (player, sendingPlayer) -> {
 			Vector3d spawnPos = findSpawnPos(game, player);
 			if (spawnPos == null) {
-				spawnPos = player.getPositionVec();
+				spawnPos = player.position();
 			}
 
-			Util.spawnEntity(entityId, player.getServerWorld(), spawnPos.x, spawnPos.y, spawnPos.z);
+			Util.spawnEntity(entityId, player.getLevel(), spawnPos.x, spawnPos.y, spawnPos.z);
 			if (damagePlayerAmount > 0) {
-				player.attackEntityFrom(DamageSource.GENERIC, damagePlayerAmount);
+				player.hurt(DamageSource.GENERIC, damagePlayerAmount);
 			}
 
 			return true;
@@ -57,12 +57,12 @@ public class SpawnEntityAtPlayerPackageBehavior implements IGameBehavior {
 	@Nullable
 	private Vector3d findSpawnPos(IGamePhase game, ServerPlayerEntity player) {
 		for (int i = 0; i < 10; i++) {
-			double angle = player.getRNG().nextDouble() * 2 * Math.PI;
-			double x = player.getPosX() + Math.sin(angle) * distance;
-			double z = player.getPosZ() + Math.cos(angle) * distance;
+			double angle = player.getRandom().nextDouble() * 2 * Math.PI;
+			double x = player.getX() + Math.sin(angle) * distance;
+			double z = player.getZ() + Math.cos(angle) * distance;
 			int maxDistanceY = MathHelper.floor(distance);
 
-			BlockPos groundPos = Util.findGround(game.getWorld(), new BlockPos(x, player.getPosY(), z), maxDistanceY);
+			BlockPos groundPos = Util.findGround(game.getWorld(), new BlockPos(x, player.getY(), z), maxDistanceY);
 			if (groundPos != null) {
 				return new Vector3d(x, groundPos.getY(), z);
 			}

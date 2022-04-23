@@ -59,7 +59,7 @@ public final class MapCommand {
 		// @formatter:off
         dispatcher.register(
             literal("map")
-				.requires(source -> source.hasPermissionLevel(2))
+				.requires(source -> source.hasPermission(2))
                 .then(literal("open")
                     .then(argument("id", StringArgumentType.string())
 						.then(DimensionArgument.argument("dimension")
@@ -88,7 +88,7 @@ public final class MapCommand {
 					.executes(MapCommand::exportMap)
 				))
 				.then(literal("import")
-					.then(argument("location", ResourceLocationArgument.resourceLocation())
+					.then(argument("location", ResourceLocationArgument.id())
 							.then(DimensionArgument.argument("dimension")
 							.executes(context ->{
 								Dimension dimension = DimensionArgument.get(context, "dimension");
@@ -129,21 +129,21 @@ public final class MapCommand {
 			throw WORKSPACE_ALREADY_EXISTS.create(id);
 		}
 
-		long seed = server.func_241755_D_().getSeed();
-		WorkspaceDimensionConfig dimensionConfig = new WorkspaceDimensionConfig(dimension.getDimensionTypeSupplier(), dimension.getChunkGenerator(), seed);
+		long seed = server.overworld().getSeed();
+		WorkspaceDimensionConfig dimensionConfig = new WorkspaceDimensionConfig(dimension.typeSupplier(), dimension.generator(), seed);
 
 		workspaceManager.openWorkspace(id, dimensionConfig).thenAcceptAsync(workspace -> {
-			IFormattableTextComponent message = new StringTextComponent("Opened workspace with id '" + id + "'. ").mergeStyle(TextFormatting.AQUA);
+			IFormattableTextComponent message = new StringTextComponent("Opened workspace with id '" + id + "'. ").withStyle(TextFormatting.AQUA);
 			ITextComponent join = new StringTextComponent("Click here to join")
-					.modifyStyle(style -> {
+					.withStyle(style -> {
 						String command = "/map join " + id;
-						return style.setFormatting(TextFormatting.BLUE)
+						return style.withColor(TextFormatting.BLUE)
 								.setUnderlined(true)
-								.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, command))
-								.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new StringTextComponent(command)));
+								.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, command))
+								.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new StringTextComponent(command)));
 					});
 
-			source.sendFeedback(message.appendSibling(join), false);
+			source.sendSuccess(message.append(join), false);
 		}, server);
 
 		return Command.SINGLE_SUCCESS;
@@ -156,13 +156,13 @@ public final class MapCommand {
 		MapWorkspace workspace = MapWorkspaceArgument.get(context, "id");
 		workspaceManager.deleteWorkspace(workspace.getId());
 
-		source.sendFeedback(new StringTextComponent("Deleted workspace with id '" + workspace.getId() + "'. ").mergeStyle(TextFormatting.GOLD), false);
+		source.sendSuccess(new StringTextComponent("Deleted workspace with id '" + workspace.getId() + "'. ").withStyle(TextFormatting.GOLD), false);
 
 		return Command.SINGLE_SUCCESS;
 	}
 
 	private static int leaveMap(CommandContext<CommandSource> context) throws CommandSyntaxException {
-		ServerPlayerEntity player = context.getSource().asPlayer();
+		ServerPlayerEntity player = context.getSource().getPlayerOrException();
 
 		WorkspacePositionTracker.Position returnPosition = WorkspacePositionTracker.getReturnPositionFor(player);
 		if (returnPosition != null) {
@@ -175,7 +175,7 @@ public final class MapCommand {
 	}
 
 	private static int joinMap(CommandContext<CommandSource> context) throws CommandSyntaxException {
-		ServerPlayerEntity player = context.getSource().asPlayer();
+		ServerPlayerEntity player = context.getSource().getPlayerOrException();
 
 		MapWorkspace workspace = MapWorkspaceArgument.get(context, "id");
 
@@ -184,13 +184,13 @@ public final class MapCommand {
 			position.applyTo(player);
 		} else {
 			RegistryKey<World> dimension = workspace.getDimension();
-			ServerWorld world = context.getSource().getServer().getWorld(dimension);
-			DimensionUtils.teleportPlayerNoPortal(player, dimension, world.getSpawnPoint());
+			ServerWorld world = context.getSource().getServer().getLevel(dimension);
+			DimensionUtils.teleportPlayerNoPortal(player, dimension, world.getSharedSpawnPos());
 		}
 
-		if (player.abilities.allowFlying) {
-			player.abilities.isFlying = true;
-			player.sendPlayerAbilities();
+		if (player.abilities.mayfly) {
+			player.abilities.flying = true;
+			player.onUpdateAbilities();
 		}
 
 		return Command.SINGLE_SUCCESS;
@@ -200,8 +200,8 @@ public final class MapCommand {
 		MapWorkspace workspace = getCurrentWorkspace(context);
 
 		String key = StringArgumentType.getString(context, "key");
-		BlockPos min = BlockPosArgument.getBlockPos(context, "min");
-		BlockPos max = BlockPosArgument.getBlockPos(context, "max");
+		BlockPos min = BlockPosArgument.getOrLoadBlockPos(context, "min");
+		BlockPos max = BlockPosArgument.getOrLoadBlockPos(context, "max");
 
 		workspace.getRegions().add(key, BlockBox.of(min, max));
 
@@ -210,7 +210,7 @@ public final class MapCommand {
 
 	private static int addRegionHere(CommandContext<CommandSource> context) throws CommandSyntaxException {
 		MapWorkspace workspace = getCurrentWorkspace(context);
-		Vector3d pos = context.getSource().getPos();
+		Vector3d pos = context.getSource().getPosition();
 
 		String key = StringArgumentType.getString(context, "key");
 
@@ -222,7 +222,7 @@ public final class MapCommand {
 	private static int showHideRegions(CommandContext<CommandSource> context) throws CommandSyntaxException {
 		MapWorkspace workspace = getCurrentWorkspace(context);
 
-		workspace.getRegions().showHide(context.getSource().asPlayer());
+		workspace.getRegions().showHide(context.getSource().getPlayerOrException());
 
 		return Command.SINGLE_SUCCESS;
 	}
@@ -236,8 +236,8 @@ public final class MapCommand {
 		CompletableFuture<Void> saveAll = saveWorkspace(server, workspace);
 
 		saveAll.thenRunAsync(() -> {
-			SaveFormat.LevelSave save = server.anvilConverterForAnvilFile;
-			File dimensionDirectory = save.getDimensionFolder(workspace.getDimension());
+			SaveFormat.LevelSave save = server.storageSource;
+			File dimensionDirectory = save.getDimensionPath(workspace.getDimension());
 
 			ResourceLocation id = new ResourceLocation(Constants.MODID, workspace.getId());
 			Path exportPath = MapExportWriter.pathFor(id);
@@ -250,20 +250,20 @@ public final class MapCommand {
 					writer.writeMetadata(new MapMetadata(id, workspace.getWorldSettings(), regions));
 					writer.writeWorldData(dimensionDirectory.toPath());
 
-					source.sendFeedback(new StringTextComponent("Successfully exported map!"), false);
+					source.sendSuccess(new StringTextComponent("Successfully exported map!"), false);
 				}
 			} catch (Exception e) {
-				source.sendErrorMessage(new StringTextComponent("Failed to export map!"));
+				source.sendFailure(new StringTextComponent("Failed to export map!"));
 				LoveTropics.LOGGER.error("Failed to export map", e);
 			}
-		}, Util.getServerExecutor());
+		}, Util.backgroundExecutor());
 
 		return Command.SINGLE_SUCCESS;
 	}
 
 	private static CompletableFuture<Void> saveWorkspace(MinecraftServer server, MapWorkspace workspace) {
-		return server.runAsync(() -> {
-			ServerWorld workspaceWorld = server.getWorld(workspace.getDimension());
+		return server.submit(() -> {
+			ServerWorld workspaceWorld = server.getLevel(workspace.getDimension());
 			workspaceWorld.save(null, true, false);
 		});
 	}
@@ -272,8 +272,8 @@ public final class MapCommand {
 		CommandSource source = context.getSource();
 		MapWorkspaceManager workspaceManager = MapWorkspaceManager.get(source.getServer());
 
-		ServerPlayerEntity player = source.asPlayer();
-		MapWorkspace workspace = workspaceManager.getWorkspace(player.world.getDimensionKey());
+		ServerPlayerEntity player = source.getPlayerOrException();
+		MapWorkspace workspace = workspaceManager.getWorkspace(player.level.dimension());
 		if (workspace == null) {
 			throw NOT_IN_WORKSPACE.create();
 		}
@@ -282,7 +282,7 @@ public final class MapCommand {
 	}
 
 	private static int importMap(CommandContext<CommandSource> context, Dimension dimension) throws CommandSyntaxException {
-		ResourceLocation location = ResourceLocationArgument.getResourceLocation(context, "location");
+		ResourceLocation location = ResourceLocationArgument.getId(context, "location");
 		String id = location.getPath();
 
 		CommandSource source = context.getSource();
@@ -292,8 +292,8 @@ public final class MapCommand {
 			throw WORKSPACE_ALREADY_EXISTS.create(id);
 		}
 
-		long seed = source.getServer().func_241755_D_().getSeed();
-		WorkspaceDimensionConfig dimensionConfig = new WorkspaceDimensionConfig(dimension.getDimensionTypeSupplier(), dimension.getChunkGenerator(), seed);
+		long seed = source.getServer().overworld().getSeed();
+		WorkspaceDimensionConfig dimensionConfig = new WorkspaceDimensionConfig(dimension.typeSupplier(), dimension.generator(), seed);
 
 		workspaceManager.openWorkspace(id, dimensionConfig).thenAcceptAsync(workspace -> {
 			try {
@@ -303,13 +303,13 @@ public final class MapCommand {
 					MapMetadata metadata = reader.loadInto(server, workspace.getDimension());
 					workspace.importFrom(metadata);
 
-					source.sendFeedback(new StringTextComponent("Successfully imported workspace into '" + id + "'"), false);
+					source.sendSuccess(new StringTextComponent("Successfully imported workspace into '" + id + "'"), false);
 				}
 			} catch (IOException e) {
-				source.sendErrorMessage(new StringTextComponent("Failed to import workspace!"));
+				source.sendFailure(new StringTextComponent("Failed to import workspace!"));
 				e.printStackTrace();
 			}
-		}, Util.getServerExecutor());
+		}, Util.backgroundExecutor());
 
 		return Command.SINGLE_SUCCESS;
 	}

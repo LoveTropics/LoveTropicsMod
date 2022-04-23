@@ -6,14 +6,13 @@ import net.minecraft.item.Item;
 
 import java.util.Map;
 
-// Doesn't add items to the block<->item map so it doesn't replace existing blocks
 public final class UniqueBlockNamedItem extends BlockNamedItem {
     public UniqueBlockNamedItem(Block blockIn, Properties properties) {
         super(blockIn, properties);
     }
 
     @Override
-    public void addToBlockToItemMap(Map<Block, Item> blockToItemMap, Item itemIn) {
+    public void registerBlocks(Map<Block, Item> blockToItemMap, Item itemIn) {
 
     }
 

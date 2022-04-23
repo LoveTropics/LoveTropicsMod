@@ -1,22 +1,20 @@
 package com.lovetropics.minigames.client.lobby.screen.game_config;
 
-import java.util.Collections;
-import java.util.List;
-
-import org.apache.commons.lang3.math.NumberUtils;
-
 import com.lovetropics.minigames.client.screen.LayoutGui;
 import com.lovetropics.minigames.client.screen.LayoutTree;
 import com.lovetropics.minigames.client.screen.flex.Layout;
 import com.lovetropics.minigames.common.core.game.behavior.config.ConfigData.SimpleConfigData;
 import com.mojang.blaze3d.matrix.MatrixStack;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.IGuiEventListener;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.client.gui.widget.Widget;
 import net.minecraft.util.Util;
 import net.minecraft.util.text.StringTextComponent;
+import org.apache.commons.lang3.math.NumberUtils;
+
+import java.util.Collections;
+import java.util.List;
 
 public abstract class SimpleConfigWidget extends LayoutGui implements IConfigWidget {
 	
@@ -46,7 +44,7 @@ public abstract class SimpleConfigWidget extends LayoutGui implements IConfigWid
 	}
 	
 	@Override
-	public List<? extends IGuiEventListener> getEventListeners() {
+	public List<? extends IGuiEventListener> children() {
 		return Collections.singletonList(control);
 	}
 	
@@ -85,9 +83,9 @@ public abstract class SimpleConfigWidget extends LayoutGui implements IConfigWid
 		@Override
 		protected Widget createControl(Layout mainLayout) {
 			// TODO communicate changes to config object
-			return Util.make(new TextFieldWidget(Minecraft.getInstance().fontRenderer, mainLayout.background().left(), mainLayout.background().top(), mainLayout.background().width(), mainLayout.background().height(), new StringTextComponent("")), w -> {
-				w.setText(config.value().toString());
-				w.setValidator(NumberUtils::isCreatable);
+			return Util.make(new TextFieldWidget(Minecraft.getInstance().font, mainLayout.background().left(), mainLayout.background().top(), mainLayout.background().width(), mainLayout.background().height(), new StringTextComponent("")), w -> {
+				w.setValue(config.value().toString());
+				w.setFilter(NumberUtils::isCreatable);
 			});
 		}
 	}
@@ -101,8 +99,8 @@ public abstract class SimpleConfigWidget extends LayoutGui implements IConfigWid
 		@Override
 		protected Widget createControl(Layout mainLayout) {
 			// TODO communicate changes to config object
-			return Util.make(new TextFieldWidget(Minecraft.getInstance().fontRenderer, mainLayout.background().left(), mainLayout.background().top(), mainLayout.background().width(), mainLayout.background().height(), new StringTextComponent("")), w -> {
-				w.setText(config.value().toString());
+			return Util.make(new TextFieldWidget(Minecraft.getInstance().font, mainLayout.background().left(), mainLayout.background().top(), mainLayout.background().width(), mainLayout.background().height(), new StringTextComponent("")), w -> {
+				w.setValue(config.value().toString());
 			});
 		}
 	}

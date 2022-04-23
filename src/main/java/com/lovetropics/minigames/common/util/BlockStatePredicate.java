@@ -61,7 +61,7 @@ public interface BlockStatePredicate extends Predicate<BlockState> {
 
 		@Override
 		public boolean test(BlockState state) {
-			return state.getBlock().matchesBlock(this.block);
+			return state.getBlock().is(this.block);
 		}
 
 		@Override
@@ -75,13 +75,13 @@ public interface BlockStatePredicate extends Predicate<BlockState> {
 				string -> {
 					if (string.startsWith("#")) {
 						ResourceLocation id = new ResourceLocation(string.substring(1));
-						ITag<Block> tag = TagCollectionManager.getManager().getBlockTags().get(id);
+						ITag<Block> tag = TagCollectionManager.getInstance().getBlocks().getTag(id);
 						return tag != null ? DataResult.success(new MatchTag(tag)) : DataResult.error("no tag exists with id: '" + id + "'");
 					} else {
 						return DataResult.error("not in tag format: must start with #");
 					}
 				},
-				c -> "#" + TagCollectionManager.getManager().getBlockTags().getValidatedIdFromTag(c.tag)
+				c -> "#" + TagCollectionManager.getInstance().getBlocks().getIdOrThrow(c.tag)
 		);
 
 		private final ITag<Block> tag;
@@ -92,7 +92,7 @@ public interface BlockStatePredicate extends Predicate<BlockState> {
 
 		@Override
 		public boolean test(BlockState state) {
-			return state.isIn(this.tag);
+			return state.is(this.tag);
 		}
 
 		@Override

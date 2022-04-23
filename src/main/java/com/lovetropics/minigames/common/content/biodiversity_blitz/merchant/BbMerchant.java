@@ -26,13 +26,13 @@ public final class BbMerchant implements IMerchant {
     }
 
     @Override
-    public void setCustomer(@Nullable PlayerEntity player) {
+    public void setTradingPlayer(@Nullable PlayerEntity player) {
 
     }
 
     @Nullable
     @Override
-    public PlayerEntity getCustomer() {
+    public PlayerEntity getTradingPlayer() {
         return this.customer;
     }
 
@@ -42,52 +42,52 @@ public final class BbMerchant implements IMerchant {
     }
 
     @Override
-    public void setClientSideOffers(@Nullable MerchantOffers offers) {
+    public void overrideOffers(@Nullable MerchantOffers offers) {
 
     }
 
     @Override
-    public void onTrade(MerchantOffer offer) {
+    public void notifyTrade(MerchantOffer offer) {
 
     }
 
     @Override
-    public void verifySellingItem(ItemStack stack) {
+    public void notifyTradeUpdated(ItemStack stack) {
 
     }
 
     @Override
-    public World getWorld() {
-        return this.customer.world;
+    public World getLevel() {
+        return this.customer.level;
     }
 
     @Override
-    public int getXp() {
+    public int getVillagerXp() {
         return 0;
     }
 
     @Override
-    public void setXP(int xpIn) {
+    public void overrideXp(int xpIn) {
 
     }
 
     @Override
-    public boolean hasXPBar() {
+    public boolean showProgressBar() {
         return false;
     }
 
     @Override
-    public SoundEvent getYesSound() {
-        return SoundEvents.ENTITY_VILLAGER_YES;
+    public SoundEvent getNotifyTradeSound() {
+        return SoundEvents.VILLAGER_YES;
     }
 
     @Override
-    public void openMerchantContainer(PlayerEntity player, ITextComponent displayName, int level) {
-        OptionalInt container = player.openContainer(new SimpleNamedContainerProvider(this::createContainer, displayName));
+    public void openTradingScreen(PlayerEntity player, ITextComponent displayName, int level) {
+        OptionalInt container = player.openMenu(new SimpleNamedContainerProvider(this::createContainer, displayName));
         if (container.isPresent()) {
             MerchantOffers offers = this.getOffers();
             if (!offers.isEmpty()) {
-                player.openMerchantContainer(container.getAsInt(), offers, level, this.getXp(), this.hasXPBar(), this.canRestockTrades());
+                player.sendMerchantOffers(container.getAsInt(), offers, level, this.getVillagerXp(), this.showProgressBar(), this.canRestock());
             }
         }
     }

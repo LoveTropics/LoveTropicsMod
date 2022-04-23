@@ -1,16 +1,14 @@
 package com.lovetropics.minigames.common.content.biodiversity_blitz.plot.plant;
 
-import java.util.Random;
-import java.util.stream.Stream;
-
-import javax.annotation.Nullable;
-
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.plant.state.PlantState;
-
 import net.minecraft.block.Block;
 import net.minecraft.particles.ParticleTypes;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.server.ServerWorld;
+
+import javax.annotation.Nullable;
+import java.util.Random;
+import java.util.stream.Stream;
 
 public final class Plant {
 	private final PlantType type;
@@ -77,14 +75,14 @@ public final class Plant {
 	}
 
 	public void spawnPoof(ServerWorld world, int count, double speed) {
-		Random random = world.rand;
+		Random random = world.random;
 
 		for (BlockPos pos : this.coverage) {
 			for (int i = 0; i < count; i++) {
 				double vx = random.nextGaussian() * 0.02;
 				double vy = random.nextGaussian() * 0.02;
 				double vz = random.nextGaussian() * 0.02;
-				world.spawnParticle(ParticleTypes.POOF, pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5, 1, vx, vy, vz, speed);
+				world.sendParticles(ParticleTypes.POOF, pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5, 1, vx, vy, vz, speed);
 			}
 		}
 	}

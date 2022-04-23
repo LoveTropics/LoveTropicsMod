@@ -18,9 +18,9 @@ public final class BerriesPlantBehavior extends AgingPlantBehavior {
 
 	@Override
 	protected BlockState ageUp(Random random, BlockState state) {
-		int age = state.get(BlockStateProperties.AGE_0_3);
+		int age = state.getValue(BlockStateProperties.AGE_3);
 		if (age < 1 || age < 3 && random.nextInt(128) == 0) {
-			return state.with(BlockStateProperties.AGE_0_3, age + 1);
+			return state.setValue(BlockStateProperties.AGE_3, age + 1);
 		}
 
 		return state;

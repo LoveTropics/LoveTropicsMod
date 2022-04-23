@@ -16,8 +16,8 @@ public class TntAutoFuseBehavior implements IGameBehavior {
 	public void register(IGamePhase game, EventRegistrar events) {
 		events.listen(GamePlayerEvents.PLACE_BLOCK, (player, pos, placed, placedOn) -> {
 			if (placed.getBlock() instanceof TNTBlock) {
-				placed.getBlock().catchFire(placed, player.world, pos, null, null);
-				player.world.setBlockState(pos, Blocks.AIR.getDefaultState(), 11);
+				placed.getBlock().catchFire(placed, player.level, pos, null, null);
+				player.level.setBlock(pos, Blocks.AIR.defaultBlockState(), 11);
 			}
 			return ActionResultType.PASS;
 		});

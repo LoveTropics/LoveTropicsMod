@@ -22,7 +22,7 @@ public class StartGameCommand {
 	public static void register(final CommandDispatcher<CommandSource> dispatcher) {
 		dispatcher.register(
 			literal("game")
-			.then(literal("start").requires(s -> s.hasPermissionLevel(2))
+			.then(literal("start").requires(s -> s.hasPermission(2))
 			.executes(c -> {
 				IGameLobby lobby = IGameManager.get().getLobbyFor(c.getSource());
 				if (lobby == null) {
@@ -39,10 +39,10 @@ public class StartGameCommand {
 					if (result.isOk()) {
 						IGame game = lobby.getCurrentGame();
 						if (game != null) {
-							c.getSource().sendFeedback(GameTexts.Commands.startedGame(game.getDefinition()), false);
+							c.getSource().sendSuccess(GameTexts.Commands.startedGame(game.getDefinition()), false);
 						}
 					} else {
-						c.getSource().sendErrorMessage(result.getError());
+						c.getSource().sendFailure(result.getError());
 					}
 				});
 

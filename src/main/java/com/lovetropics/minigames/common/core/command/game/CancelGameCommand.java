@@ -20,7 +20,7 @@ public class CancelGameCommand {
 		// @formatter:off
 		dispatcher.register(
 			literal("game")
-				.then(literal("cancel").requires(s -> s.hasPermissionLevel(2))
+				.then(literal("cancel").requires(s -> s.hasPermission(2))
 					.executes(context -> cancel(context, false))
 					.then(literal("confirm")
 						.executes(context -> cancel(context, true))
@@ -39,7 +39,7 @@ public class CancelGameCommand {
 
 			if (!confirmed && shouldRequireConfirmation(ctx.getSource(), game)) {
 				ITextComponent message = new StringTextComponent("Please confirm that you would like to cancel this game! ")
-						.appendSibling(GameTexts.clickHere("/game cancel confirm"));
+						.append(GameTexts.clickHere("/game cancel confirm"));
 				return GameResult.error(message);
 			}
 

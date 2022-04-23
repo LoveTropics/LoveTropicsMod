@@ -67,7 +67,7 @@ public final class SttPetsBehavior implements IGameBehavior {
 		});
 
 		events.listen(GamePlayerEvents.REMOVE, player -> {
-			List<Pet> pets = this.petsByPlayer.remove(player.getUniqueID());
+			List<Pet> pets = this.petsByPlayer.remove(player.getUUID());
 			if (pets != null) {
 				pets.forEach(Pet::remove);
 			}
@@ -91,8 +91,8 @@ public final class SttPetsBehavior implements IGameBehavior {
 	}
 
 	private void stopPetFromGettingSidetracked(CreatureEntity entity) {
-		entity.goalSelector.disableFlag(Goal.Flag.MOVE);
-		entity.targetSelector.disableFlag(Goal.Flag.TARGET);
+		entity.goalSelector.disableControlFlag(Goal.Flag.MOVE);
+		entity.targetSelector.disableControlFlag(Goal.Flag.TARGET);
 	}
 
 	private void onCreatureDeath(CreatureEntity entity) {
@@ -115,16 +115,16 @@ public final class SttPetsBehavior implements IGameBehavior {
 	}
 
 	private void addPet(Pet pet) {
-		List<Pet> petsByPlayer = this.petsByPlayer.computeIfAbsent(pet.player.getUniqueID(), u -> new ReferenceArrayList<>());
+		List<Pet> petsByPlayer = this.petsByPlayer.computeIfAbsent(pet.player.getUUID(), u -> new ReferenceArrayList<>());
 		petsByPlayer.add(pet);
 	}
 
 	private void removePet(Pet pet) {
-		List<Pet> pets = this.petsByPlayer.get(pet.player.getUniqueID());
+		List<Pet> pets = this.petsByPlayer.get(pet.player.getUUID());
 		pets.remove(pet);
 
 		if (pets.isEmpty()) {
-			this.petsByPlayer.remove(pet.player.getUniqueID());
+			this.petsByPlayer.remove(pet.player.getUUID());
 		}
 	}
 
@@ -167,7 +167,7 @@ public final class SttPetsBehavior implements IGameBehavior {
 
 			this.tickTargetSelection();
 
-			LivingEntity target = this.entity.getAttackTarget();
+			LivingEntity target = this.entity.getTarget();
 			if (target != null) {
 				this.tickAttacking(target);
 			} else {
@@ -178,13 +178,13 @@ public final class SttPetsBehavior implements IGameBehavior {
 		}
 
 		private void tickTargetSelection() {
-			LivingEntity target = this.player.getRevengeTarget();
+			LivingEntity target = this.player.getLastHurtByMob();
 			if (target != null && !target.isAlive()) {
 				target = null;
 			}
 
-			if (this.entity.getAttackTarget() != target) {
-				this.entity.setAttackTarget(target);
+			if (this.entity.getTarget() != target) {
+				this.entity.setTarget(target);
 			}
 		}
 
@@ -193,8 +193,8 @@ public final class SttPetsBehavior implements IGameBehavior {
 				this.attackCooldown--;
 			}
 
-			double attackDistance = (this.entity.getWidth() + target.getWidth()) / 2.0 + 0.5;
-			if (this.entity.getDistanceSq(target) <= attackDistance * attackDistance) {
+			double attackDistance = (this.entity.getBbWidth() + target.getBbWidth()) / 2.0 + 0.5;
+			if (this.entity.distanceToSqr(target) <= attackDistance * attackDistance) {
 				this.tickAttackTarget(target);
 			} else {
 				this.tickMoveToTarget(target);
@@ -208,15 +208,15 @@ public final class SttPetsBehavior implements IGameBehavior {
 
 			this.attackCooldown = ATTACK_COOLDOWN;
 
-			DamageSource source = DamageSource.causeMobDamage(this.entity);
-			if (target.attackEntityFrom(source, this.config.attackDamage)) {
-				this.entity.setLastAttackedEntity(target);
+			DamageSource source = DamageSource.mobAttack(this.entity);
+			if (target.hurt(source, this.config.attackDamage)) {
+				this.entity.setLastHurtMob(target);
 			}
 		}
 
 		private void tickMoveToTarget(LivingEntity target) {
 			if (!this.isMovingTowards(target, 2.0)) {
-				this.entity.getNavigator().tryMoveToEntityLiving(target, this.config.speed);
+				this.entity.getNavigation().moveTo(target, this.config.speed);
 			}
 		}
 
@@ -225,23 +225,23 @@ public final class SttPetsBehavior implements IGameBehavior {
 				return;
 			}
 
-			double distance2 = this.entity.getDistanceSq(this.player);
+			double distance2 = this.entity.distanceToSqr(this.player);
 			if (distance2 > FOLLOW_DISTANCE * FOLLOW_DISTANCE) {
-				PathNavigator navigator = this.entity.getNavigator();
-				Path path = navigator.pathfind(this.player, 3);
+				PathNavigator navigator = this.entity.getNavigation();
+				Path path = navigator.createPath(this.player, 3);
 				if (path != null) {
-					navigator.setPath(path, this.config.speed);
+					navigator.moveTo(path, this.config.speed);
 				}
 			}
 		}
 
 		private boolean isMovingTowards(LivingEntity target, double threshold) {
-			Path path = this.entity.getNavigator().getPath();
-			return path != null && path.getTarget().withinDistance(target.getPositionVec(), threshold);
+			Path path = this.entity.getNavigation().getPath();
+			return path != null && path.getTarget().closerThan(target.position(), threshold);
 		}
 
 		void remove() {
-			this.entity.attackEntityFrom(DamageSource.OUT_OF_WORLD, Float.MAX_VALUE);
+			this.entity.hurt(DamageSource.OUT_OF_WORLD, Float.MAX_VALUE);
 		}
 	}
 }

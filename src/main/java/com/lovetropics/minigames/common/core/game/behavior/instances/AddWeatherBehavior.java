@@ -8,9 +8,9 @@ import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.lovetropics.minigames.common.core.game.state.GameStateMap;
 import com.lovetropics.minigames.common.core.game.state.weather.GameWeatherState;
-import com.lovetropics.minigames.common.core.game.weather.WeatherEventType;
 import com.lovetropics.minigames.common.core.game.weather.WeatherController;
 import com.lovetropics.minigames.common.core.game.weather.WeatherControllerManager;
+import com.lovetropics.minigames.common.core.game.weather.WeatherEventType;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.entity.player.ServerPlayerEntity;
@@ -83,25 +83,25 @@ public final class AddWeatherBehavior implements IGameBehavior {
 
 		Damage damage = config.damage;
 		if (damage != null) {
-			if (player.ticksExisted % damage.rate == 0) {
+			if (player.tickCount % damage.rate == 0) {
 				// TODO: damage source
-				player.attackEntityFrom(DamageSource.GENERIC, damage.amount);
+				player.hurt(DamageSource.GENERIC, damage.amount);
 			}
 		}
 
 		Potion potion = config.potion;
 		if (potion != null) {
-			if (player.ticksExisted % potion.rate == 0) {
-				player.addPotionEffect(new EffectInstance(potion.effect));
+			if (player.tickCount % potion.rate == 0) {
+				player.addEffect(new EffectInstance(potion.effect));
 			}
 		}
 	}
 
 	private static boolean isPlayerSheltered(ServerPlayerEntity player) {
-		int x = MathHelper.floor(player.getPosX());
-		int y = MathHelper.floor(player.getPosY() + player.getEyeHeight());
-		int z = MathHelper.floor(player.getPosZ());
-		return player.world.getHeight(Heightmap.Type.MOTION_BLOCKING, x, z) > y;
+		int x = MathHelper.floor(player.getX());
+		int y = MathHelper.floor(player.getY() + player.getEyeHeight());
+		int z = MathHelper.floor(player.getZ());
+		return player.level.getHeight(Heightmap.Type.MOTION_BLOCKING, x, z) > y;
 	}
 
 	public static final class EventEffects {
@@ -153,16 +153,16 @@ public final class AddWeatherBehavior implements IGameBehavior {
 		}
 
 		public boolean tryUse(ServerPlayerEntity player) {
-			ItemStack mainHand = player.getHeldItemMainhand();
-			ItemStack offhand = player.getHeldItemOffhand();
+			ItemStack mainHand = player.getMainHandItem();
+			ItemStack offhand = player.getOffhandItem();
 			if (mainHand.getItem() == item) {
-				if (player.ticksExisted % damageRate == 0) {
-					mainHand.damageItem(damageAmount, player, p -> p.sendBreakAnimation(Hand.MAIN_HAND));
+				if (player.tickCount % damageRate == 0) {
+					mainHand.hurtAndBreak(damageAmount, player, p -> p.broadcastBreakEvent(Hand.MAIN_HAND));
 				}
 				return true;
 			} else if (offhand.getItem() == item) {
-				if (player.ticksExisted % damageRate == 0) {
-					offhand.damageItem(damageAmount, player, p -> p.sendBreakAnimation(Hand.OFF_HAND));
+				if (player.tickCount % damageRate == 0) {
+					offhand.hurtAndBreak(damageAmount, player, p -> p.broadcastBreakEvent(Hand.OFF_HAND));
 				}
 				return true;
 			}

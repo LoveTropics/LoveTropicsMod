@@ -44,7 +44,7 @@ public final class Scheduler {
 
 	private static void runTasks(MinecraftServer server) {
 		int lastTime = Scheduler.time;
-		int time = server.getTickCounter();
+		int time = server.getTickCount();
 		Scheduler.time = time;
 
 		if (TICKS.isEmpty()) {

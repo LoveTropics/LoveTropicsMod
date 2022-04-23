@@ -61,11 +61,11 @@ public final class DisguiseType {
 			return null;
 		}
 
-		Entity entity = this.type.create(player.world);
+		Entity entity = this.type.create(player.level);
 		if (entity == null) return null;
 
 		if (this.nbt != null) {
-			entity.read(this.nbt);
+			entity.load(this.nbt);
 		}
 
 		this.fixInvalidEntities(entity);
@@ -89,7 +89,7 @@ public final class DisguiseType {
 		}
 
 		// Crashes when riding- prevent
-		Entity ridingEntity = player.getRidingEntity();
+		Entity ridingEntity = player.getVehicle();
 		if (ridingEntity != null) {
 			EntityType<?> ridingType = ridingEntity.getType();
 			ResourceLocation ridingLocation = ForgeRegistries.ENTITIES.getKey(ridingType);
@@ -104,19 +104,19 @@ public final class DisguiseType {
 
 	private void fixInvalidEntities(Entity entity) {
 		if (entity instanceof PaintingEntity) {
-			((PaintingEntity) entity).art = PaintingType.KEBAB;
+			((PaintingEntity) entity).motive = PaintingType.KEBAB;
 		}
 	}
 
 	public void encode(PacketBuffer buffer) {
 		buffer.writeRegistryIdUnsafe(ForgeRegistries.ENTITIES, this.type);
-		buffer.writeCompoundTag(this.nbt);
+		buffer.writeNbt(this.nbt);
 		buffer.writeBoolean(this.applyAttributes);
 	}
 
 	public static DisguiseType decode(PacketBuffer buffer) {
 		EntityType<?> type = buffer.readRegistryIdUnsafe(ForgeRegistries.ENTITIES);
-		CompoundNBT nbt = buffer.readCompoundTag();
+		CompoundNBT nbt = buffer.readNbt();
 		boolean applyAttributes = buffer.readBoolean();
 		return DisguiseType.create(type, nbt, applyAttributes);
 	}

@@ -95,7 +95,7 @@ public final class SetBlocksBehavior implements IGameBehavior {
 			Long2ObjectMap<List<BlockBox>> regionsByChunk = collectRegionsByChunk(regions);
 
 			events.listen(GameWorldEvents.CHUNK_LOAD, (chunk) -> {
-				List<BlockBox> regions = regionsByChunk.remove(chunk.getPos().asLong());
+				List<BlockBox> regions = regionsByChunk.remove(chunk.getPos().toLong());
 				if (regions == null) {
 					return;
 				}
@@ -135,7 +135,7 @@ public final class SetBlocksBehavior implements IGameBehavior {
 		ServerWorld world = game.getWorld();
 		BlockPredicate replace = this.replace;
 		BlockStateProvider set = this.set;
-		Random random = world.rand;
+		Random random = world.random;
 
 		this.loadRegionChunks(region, world);
 
@@ -146,9 +146,9 @@ public final class SetBlocksBehavior implements IGameBehavior {
 		}
 
 		for (BlockPos pos : region) {
-			if (replace == null || replace.test(world, pos)) {
-				BlockState state = set.getBlockState(random, pos);
-				world.setBlockState(pos, state, flags);
+			if (replace == null || replace.matches(world, pos)) {
+				BlockState state = set.getState(random, pos);
+				world.setBlock(pos, state, flags);
 			}
 		}
 	}

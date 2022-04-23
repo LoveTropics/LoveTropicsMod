@@ -6,6 +6,6 @@ import net.minecraft.util.text.ITextComponent;
 final class NotificationToasts {
 	static void display(ITextComponent message, NotificationDisplay display) {
 		Minecraft client = Minecraft.getInstance();
-		client.getToastGui().add(new NotificationToast(message, display));
+		client.getToasts().addToast(new NotificationToast(message, display));
 	}
 }

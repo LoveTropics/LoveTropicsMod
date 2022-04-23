@@ -48,9 +48,9 @@ public final class MapWorkspaceTracer {
 		}
 
 		Vector3d origin = player.getEyePosition(1.0F);
-		Vector3d target = origin.add(player.getLookVec().scale(TRACE_RANGE));
+		Vector3d target = origin.add(player.getLookAngle().scale(TRACE_RANGE));
 
-		AxisAlignedBB traceScope = new AxisAlignedBB(origin, target).grow(1.0);
+		AxisAlignedBB traceScope = new AxisAlignedBB(origin, target).inflate(1.0);
 
 		ClientWorkspaceRegions.Entry closestEntry = null;
 		double closestDistance = Double.POSITIVE_INFINITY;
@@ -63,15 +63,15 @@ public final class MapWorkspaceTracer {
 			}
 
 			AxisAlignedBB bounds = entry.region.asAabb();
-			BlockRayTraceResult traceResult = AxisAlignedBB.rayTrace(ImmutableList.of(bounds), origin, target, BlockPos.ZERO);
+			BlockRayTraceResult traceResult = AxisAlignedBB.clip(ImmutableList.of(bounds), origin, target, BlockPos.ZERO);
 			if (traceResult != null) {
-				Vector3d intersectPoint = traceResult.getHitVec();
+				Vector3d intersectPoint = traceResult.getLocation();
 				double distance = intersectPoint.distanceTo(origin);
 				if (distance < closestDistance) {
 					closestEntry = entry;
 					closestPoint = intersectPoint;
 					closestDistance = distance;
-					closestSide = traceResult.getFace();
+					closestSide = traceResult.getDirection();
 				}
 			}
 		}

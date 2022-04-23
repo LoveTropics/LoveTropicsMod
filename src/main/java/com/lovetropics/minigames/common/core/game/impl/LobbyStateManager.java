@@ -5,10 +5,9 @@ import com.lovetropics.minigames.common.core.game.GamePhaseType;
 import com.lovetropics.minigames.common.core.game.IGameDefinition;
 import com.lovetropics.minigames.common.core.game.lobby.LobbyControls;
 import net.minecraft.util.text.ITextComponent;
+import org.apache.logging.log4j.LogManager;
 
 import javax.annotation.Nullable;
-
-import org.apache.logging.log4j.LogManager;
 
 final class LobbyStateManager {
 	private final GameLobby lobby;
@@ -63,7 +62,7 @@ final class LobbyStateManager {
 	}
 
 	private LobbyState errored(LobbyState state, ITextComponent error) {
-		LogManager.getLogger().info(error.getUnformattedComponentText());
+		LogManager.getLogger().info(error.getContents());
 		GamePhase phase = state.phase;
 		if (phase != null) {
 			IGameDefinition definition = phase.getDefinition();

@@ -22,15 +22,15 @@ public final class AgingCropPlantBehavior extends AgingPlantBehavior {
 			return state;
 		}
 
-		if (state.hasProperty(BlockStateProperties.AGE_0_3)) {
-			int age = state.get(BlockStateProperties.AGE_0_3);
+		if (state.hasProperty(BlockStateProperties.AGE_3)) {
+			int age = state.getValue(BlockStateProperties.AGE_3);
 			if (age < 3) {
-				return state.with(BlockStateProperties.AGE_0_3, age + 1);
+				return state.setValue(BlockStateProperties.AGE_3, age + 1);
 			}
-		} else if (state.hasProperty(BlockStateProperties.AGE_0_7)) {
-			int age = state.get(BlockStateProperties.AGE_0_7);
+		} else if (state.hasProperty(BlockStateProperties.AGE_7)) {
+			int age = state.getValue(BlockStateProperties.AGE_7);
 			if (age < 7) {
-				return state.with(BlockStateProperties.AGE_0_7, age + 1);
+				return state.setValue(BlockStateProperties.AGE_7, age + 1);
 			}
 		}
 

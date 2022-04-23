@@ -13,38 +13,38 @@ public final class BbMerchantContainer extends MerchantContainer {
 	}
 
 	@Override
-	public ItemStack transferStackInSlot(PlayerEntity player, int index) {
+	public ItemStack quickMoveStack(PlayerEntity player, int index) {
 		// copied from MerchantContainer.transferStackInSlot removing a problematic cast
 
 		ItemStack resultStack = ItemStack.EMPTY;
-		Slot slot = this.inventorySlots.get(index);
+		Slot slot = this.slots.get(index);
 
-		if (slot != null && slot.getHasStack()) {
-			ItemStack slotStack = slot.getStack();
+		if (slot != null && slot.hasItem()) {
+			ItemStack slotStack = slot.getItem();
 			resultStack = slotStack.copy();
 
 			if (index == 2) {
-				if (!this.mergeItemStack(slotStack, 3, 39, true)) {
+				if (!this.moveItemStackTo(slotStack, 3, 39, true)) {
 					return ItemStack.EMPTY;
 				}
 
-				slot.onSlotChange(slotStack, resultStack);
+				slot.onQuickCraft(slotStack, resultStack);
 			} else if (index != 0 && index != 1) {
 				if (index >= 3 && index < 30) {
-					if (!this.mergeItemStack(slotStack, 30, 39, false)) {
+					if (!this.moveItemStackTo(slotStack, 30, 39, false)) {
 						return ItemStack.EMPTY;
 					}
-				} else if (index >= 30 && index < 39 && !this.mergeItemStack(slotStack, 3, 30, false)) {
+				} else if (index >= 30 && index < 39 && !this.moveItemStackTo(slotStack, 3, 30, false)) {
 					return ItemStack.EMPTY;
 				}
-			} else if (!this.mergeItemStack(slotStack, 3, 39, false)) {
+			} else if (!this.moveItemStackTo(slotStack, 3, 39, false)) {
 				return ItemStack.EMPTY;
 			}
 
 			if (slotStack.isEmpty()) {
-				slot.putStack(ItemStack.EMPTY);
+				slot.set(ItemStack.EMPTY);
 			} else {
-				slot.onSlotChanged();
+				slot.setChanged();
 			}
 
 			if (slotStack.getCount() == resultStack.getCount()) {

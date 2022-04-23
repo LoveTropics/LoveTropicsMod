@@ -15,27 +15,27 @@ public class ResetIslandChestsCommand {
 	public static void register(final CommandDispatcher<CommandSource> dispatcher) {
 		dispatcher.register(
 			literal("game")
-			.then(literal("resetIslandChests").requires(s -> s.hasPermissionLevel(4))
+			.then(literal("resetIslandChests").requires(s -> s.hasPermission(4))
 			.executes(c -> {
-				World world = c.getSource().getWorld();
+				World world = c.getSource().getLevel();
 
-				if (!world.getDimensionKey().getLocation().getNamespace().equals(Constants.MODID)) {
-					c.getSource().sendFeedback(new StringTextComponent("Must use this command in workspace dimension"), true);
+				if (!world.dimension().location().getNamespace().equals(Constants.MODID)) {
+					c.getSource().sendSuccess(new StringTextComponent("Must use this command in workspace dimension"), true);
 					return 0;
 				}
 
-				for (TileEntity te : world.loadedTileEntityList) {
+				for (TileEntity te : world.blockEntityList) {
 					if (te instanceof ChestTileEntity) {
 						ChestTileEntity cte = (ChestTileEntity)te;
-						cte.clear();
+						cte.clearContent();
 
 						CompoundNBT tag = new CompoundNBT();
-						cte.write(tag);
+						cte.save(tag);
 
 						tag.putString("LootTable", "lt20:stt1/chest");
 
-						cte.read(te.getBlockState(), tag);
-						cte.markDirty();
+						cte.load(te.getBlockState(), tag);
+						cte.setChanged();
 					}
 				}
 				return 1;

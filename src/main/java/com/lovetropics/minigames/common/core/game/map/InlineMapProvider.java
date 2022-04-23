@@ -17,7 +17,7 @@ import java.util.concurrent.CompletableFuture;
 public final class InlineMapProvider implements IGameMapProvider {
 	public static final Codec<InlineMapProvider> CODEC = RecordCodecBuilder.create(instance -> {
 		return instance.group(
-				MoreCodecs.registryKey(Registry.WORLD_KEY).fieldOf("dimension").forGetter(c -> c.dimension)
+				MoreCodecs.registryKey(Registry.DIMENSION_REGISTRY).fieldOf("dimension").forGetter(c -> c.dimension)
 		).apply(instance, InlineMapProvider::new);
 	});
 
@@ -39,7 +39,7 @@ public final class InlineMapProvider implements IGameMapProvider {
 
 	@Override
 	public CompletableFuture<GameResult<GameMap>> open(MinecraftServer server) {
-		if (server.getWorld(dimension) == null) {
+		if (server.getLevel(dimension) == null) {
 			return CompletableFuture.completedFuture(GameResult.error(new StringTextComponent("Missing dimension " + dimension)));
 		}
 

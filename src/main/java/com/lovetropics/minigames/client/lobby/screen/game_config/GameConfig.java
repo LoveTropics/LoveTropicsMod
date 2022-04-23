@@ -91,7 +91,7 @@ public final class GameConfig extends ScrollPanel {
 	}
 
 	@Override
-	public List<? extends IGuiEventListener> getEventListeners() {
+	public List<? extends IGuiEventListener> children() {
 		return children;
 	}
 
@@ -119,11 +119,11 @@ public final class GameConfig extends ScrollPanel {
 	@Override
 	protected void drawPanel(MatrixStack mStack, int entryRight, int relativeY, Tessellator tess, int mouseX, int mouseY) {
 		this.mainLayout.debugRender(mStack);
-		mStack.push();
+		mStack.pushPose();
 		mStack.translate(0, relativeY - this.top - this.border, 0);
 		this.content.debugRender(mStack);
 		configMenus.values().forEach(ui -> ui.render(mStack, mouseX, mouseY + (int) this.scrollDistance, 0));
-		mStack.pop();
+		mStack.popPose();
 		this.saveButton.render(mStack, mouseX, mouseY, mouseY);
 	}
 
@@ -131,11 +131,11 @@ public final class GameConfig extends ScrollPanel {
 	protected void drawGradientRect(MatrixStack mStack, int left, int top, int right, int bottom, int color1, int color2) {}
 
 	@Override
-	public Optional<IGuiEventListener> getEventListenerForPos(double mouseX, double mouseY) {
-		Optional<IGuiEventListener> ret = super.getEventListenerForPos(mouseX, mouseY);
+	public Optional<IGuiEventListener> getChildAt(double mouseX, double mouseY) {
+		Optional<IGuiEventListener> ret = super.getChildAt(mouseX, mouseY);
 		if (!ret.isPresent() || ret.get() != saveButton) {
 			// Can't allow the save button to activate here, the mouse position is wrong for it
-			ret = super.getEventListenerForPos(mouseX, mouseY + this.scrollDistance).filter(g -> g != saveButton);
+			ret = super.getChildAt(mouseX, mouseY + this.scrollDistance).filter(g -> g != saveButton);
 		}
 		return ret;
 	}

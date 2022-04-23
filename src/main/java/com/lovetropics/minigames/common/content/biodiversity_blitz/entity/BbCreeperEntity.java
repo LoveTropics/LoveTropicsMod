@@ -31,9 +31,9 @@ public class BbCreeperEntity extends CreeperEntity implements BbMobEntity {
         this.plot = plot;
 
         // Ignore sweet berry bushes and water
-        this.setPathPriority(PathNodeType.DANGER_OTHER, 0.0F);
-        this.setPathPriority(PathNodeType.DAMAGE_OTHER, 0.0F);
-        this.setPathPriority(PathNodeType.WATER, -1.0F);
+        this.setPathfindingMalus(PathNodeType.DANGER_OTHER, 0.0F);
+        this.setPathfindingMalus(PathNodeType.DAMAGE_OTHER, 0.0F);
+        this.setPathfindingMalus(PathNodeType.WATER, -1.0F);
     }
 
     @Override
@@ -45,19 +45,19 @@ public class BbCreeperEntity extends CreeperEntity implements BbMobEntity {
     }
 
     @Override
-    public void explode() {
-        if (!this.world.isRemote) {
-            double x = this.getPosX();
-            double y = this.getPosY();
-            double z = this.getPosZ();
+    public void explodeCreeper() {
+        if (!this.level.isClientSide) {
+            double x = this.getX();
+            double y = this.getY();
+            double z = this.getZ();
 
-            Explosion explosion = new PlantAffectingExplosion(this.world, null, null, null, x, y, z, 3.0f, false, Explosion.Mode.BREAK, e -> true, this.plot);
-            explosion.doExplosionA();
-            explosion.doExplosionB(false);
+            Explosion explosion = new PlantAffectingExplosion(this.level, null, null, null, x, y, z, 3.0f, false, Explosion.Mode.BREAK, e -> true, this.plot);
+            explosion.explode();
+            explosion.finalizeExplosion(false);
 
-            for (ServerPlayerEntity player : ((ServerWorld) this.world).getPlayers()) {
-                if (player.getDistanceSq(x, y, z) < 4096.0) {
-                    player.connection.sendPacket(new SExplosionPacket(x, y, z, 3.0f, explosion.getAffectedBlockPositions(), explosion.getPlayerKnockbackMap().get(player)));
+            for (ServerPlayerEntity player : ((ServerWorld) this.level).players()) {
+                if (player.distanceToSqr(x, y, z) < 4096.0) {
+                    player.connection.send(new SExplosionPacket(x, y, z, 3.0f, explosion.getToBlow(), explosion.getHitPlayers().get(player)));
                 }
             }
 
@@ -71,7 +71,7 @@ public class BbCreeperEntity extends CreeperEntity implements BbMobEntity {
     }
 
     @Override
-    protected PathNavigator createNavigator(World world) {
+    protected PathNavigator createNavigation(World world) {
         return new BbGroundNavigator(this);
     }
 

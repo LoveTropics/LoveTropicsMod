@@ -11,12 +11,10 @@ import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 /**
  * Chat-caused event
@@ -61,10 +59,10 @@ public class ChatEventGameAction extends GameAction {
 
         final int totalVotes = votes;
         Consumer<IGamePhase> preamble = g -> g.getAllPlayers().sendMessage(
-                new StringTextComponent(this.title).mergeStyle(TextFormatting.BOLD, TextFormatting.AQUA)
-                    .appendSibling(new StringTextComponent(
+                new StringTextComponent(this.title).withStyle(TextFormatting.BOLD, TextFormatting.AQUA)
+                    .append(new StringTextComponent(
                             " just completed! After " + totalVotes + " votes, chat decided on something to happen... Do you trust them to have been nice?"
-                    ).mergeStyle(TextFormatting.GRAY))
+                    ).withStyle(TextFormatting.GRAY))
         );
 
         ActionResultType result = game.invoker(GamePackageEvents.RECEIVE_PACKAGE).onReceivePackage(preamble, winnerPackage);

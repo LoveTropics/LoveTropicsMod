@@ -1,23 +1,17 @@
 package com.lovetropics.minigames.common.content.biodiversity_blitz.plot.plant;
 
+import com.google.common.base.Preconditions;
+import com.google.common.collect.Iterators;
+import it.unimi.dsi.fastutil.longs.*;
+import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.vector.Vector3d;
+
+import javax.annotation.Nullable;
 import java.util.Iterator;
 import java.util.Random;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
-
-import javax.annotation.Nullable;
-
-import com.google.common.base.Preconditions;
-import com.google.common.collect.Iterators;
-
-import it.unimi.dsi.fastutil.longs.LongArrayList;
-import it.unimi.dsi.fastutil.longs.LongIterator;
-import it.unimi.dsi.fastutil.longs.LongList;
-import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
-import it.unimi.dsi.fastutil.longs.LongSet;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.vector.Vector3d;
 
 public interface PlantCoverage extends Iterable<BlockPos> {
 	static PlantCoverage of(BlockPos block) {
@@ -26,8 +20,8 @@ public interface PlantCoverage extends Iterable<BlockPos> {
 
 	static PlantCoverage ofDouble(BlockPos block) {
 		LongSet blocks = new LongOpenHashSet(2);
-		blocks.add(block.toLong());
-		blocks.add(block.up().toLong());
+		blocks.add(block.asLong());
+		blocks.add(block.above().asLong());
 		return new Set(blocks, block);
 	}
 
@@ -73,8 +67,8 @@ public interface PlantCoverage extends Iterable<BlockPos> {
 	default PlantCoverage removeIntersection(LongSet intersection) {
 		LongSet blocks = new LongOpenHashSet();
 		for (BlockPos pos : this) {
-			if (!intersection.contains(pos.toLong())) {
-				blocks.add(pos.toLong());
+			if (!intersection.contains(pos.asLong())) {
+				blocks.add(pos.asLong());
 			}
 		}
 
@@ -131,7 +125,7 @@ public interface PlantCoverage extends Iterable<BlockPos> {
 				if (bounds == null) {
 					bounds = blockBounds;
 				} else {
-					bounds = bounds.union(blockBounds);
+					bounds = bounds.minmax(blockBounds);
 				}
 			}
 
@@ -140,7 +134,7 @@ public interface PlantCoverage extends Iterable<BlockPos> {
 
 		@Override
 		public boolean covers(BlockPos pos) {
-			return this.blocks.contains(pos.toLong());
+			return this.blocks.contains(pos.asLong());
 		}
 
 		@Override
@@ -156,13 +150,13 @@ public interface PlantCoverage extends Iterable<BlockPos> {
 		@Override
 		public BlockPos random(Random random) {
 			long pos = this.blocks.getLong(random.nextInt(blocks.size()));
-			return new BlockPos(BlockPos.unpackX(pos), BlockPos.unpackY(pos), BlockPos.unpackZ(pos));
+			return new BlockPos(BlockPos.getX(pos), BlockPos.getY(pos), BlockPos.getZ(pos));
 		}
 
 		@Override
 		public void add(BlockPos pos) {
-			if (this.bounds.contains(Vector3d.copyCentered(pos))) {
-				this.blocks.add(pos.toLong());
+			if (this.bounds.contains(Vector3d.atCenterOf(pos))) {
+				this.blocks.add(pos.asLong());
 			} else {
 				throw new IllegalArgumentException("Position not within bounds");
 			}
@@ -178,7 +172,7 @@ public interface PlantCoverage extends Iterable<BlockPos> {
 				@Override
 				public BlockPos next() {
 					long pos = blockIterator.nextLong();
-					return this.mutablePos.setPos(pos);
+					return this.mutablePos.set(pos);
 				}
 
 				@Override
@@ -197,7 +191,7 @@ public interface PlantCoverage extends Iterable<BlockPos> {
 		Or(PlantCoverage left, PlantCoverage right) {
 			this.left = left;
 			this.right = right;
-			this.bounds = left.asBounds().union(right.asBounds());
+			this.bounds = left.asBounds().minmax(right.asBounds());
 		}
 
 		@Override
@@ -231,7 +225,7 @@ public interface PlantCoverage extends Iterable<BlockPos> {
 		private BlockPos origin;
 
 		public Builder add(BlockPos pos) {
-			this.blocks.add(pos.toLong());
+			this.blocks.add(pos.asLong());
 			if (this.origin == null) {
 				this.origin = pos;
 			}
@@ -249,7 +243,7 @@ public interface PlantCoverage extends Iterable<BlockPos> {
 			}
 
 			if (this.blocks.size() == 1) {
-				return PlantCoverage.of(BlockPos.fromLong(blocks.iterator().nextLong()));
+				return PlantCoverage.of(BlockPos.of(blocks.iterator().nextLong()));
 			} else {
 				return PlantCoverage.of(this.blocks, this.origin);
 			}

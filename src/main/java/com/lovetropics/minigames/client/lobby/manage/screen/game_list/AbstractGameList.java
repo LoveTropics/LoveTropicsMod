@@ -18,12 +18,12 @@ public abstract class AbstractGameList extends AbstractLTList<AbstractGameList.E
 
 	public AbstractGameList(Screen screen, Layout layout, ITextComponent title) {
 		super(screen, layout, Entry.HEIGHT);
-		this.setRenderHeader(true, this.minecraft.fontRenderer.FONT_HEIGHT + 4);
+		this.setRenderHeader(true, this.minecraft.font.lineHeight + 4);
 		this.setLeftPos(layout.background().left());
 
 		// disable background
-		this.func_244605_b(false);
-		this.func_244606_c(false);
+		this.setRenderBackground(false);
+		this.setRenderTopAndBottom(false);
 
 		this.setRenderSelection(false);
 
@@ -32,9 +32,9 @@ public abstract class AbstractGameList extends AbstractLTList<AbstractGameList.E
 
 	@Override
 	protected void renderHeader(MatrixStack matrixStack, int x, int y, Tessellator tessellator) {
-		this.minecraft.fontRenderer.drawText(
+		this.minecraft.font.draw(
 				matrixStack, this.title,
-				x + (this.width - this.minecraft.fontRenderer.getStringPropertyWidth(this.title)) / 2.0F,
+				x + (this.width - this.minecraft.font.width(this.title)) / 2.0F,
 				Math.min(this.y0 + 3, y),
 				0xFFFFFF
 		);
@@ -69,7 +69,7 @@ public abstract class AbstractGameList extends AbstractLTList<AbstractGameList.E
 
 			ITextComponent subtitle;
 			if (game.subtitle != null) {
-				subtitle = game.subtitle.deepCopy().appendString(" | ").appendSibling(playerRange);
+				subtitle = game.subtitle.copy().append(" | ").append(playerRange);
 			} else {
 				subtitle = playerRange;
 			}
@@ -81,8 +81,8 @@ public abstract class AbstractGameList extends AbstractLTList<AbstractGameList.E
 		
 		@Override
 		public void render(MatrixStack matrixStack, int index, int top, int left, int width, int height, int mouseX, int mouseY, boolean hovered, float partialTicks) {
-			FontRenderer font = screen.getMinecraft().fontRenderer;
-			int fontHeight = font.FONT_HEIGHT;
+			FontRenderer font = screen.getMinecraft().font;
+			int fontHeight = font.lineHeight;
 		
 			boolean selected = ((AbstractGameList)list).isSelectedItem(index);
 			boolean outline = banner || selected;
@@ -92,10 +92,10 @@ public abstract class AbstractGameList extends AbstractLTList<AbstractGameList.E
 			int maxTextWidth = getMaxTextWidth(width);
 		
 			if (subtitle != null) {
-				font.func_238422_b_(matrixStack, title.forWidth(font, maxTextWidth), left + PADDING, top + PADDING + 1, 0xFFFFFF);
-				font.func_238422_b_(matrixStack, subtitle.forWidth(font, maxTextWidth), left + PADDING, top + height - PADDING - fontHeight, 0x555555);
+				font.draw(matrixStack, title.forWidth(font, maxTextWidth), left + PADDING, top + PADDING + 1, 0xFFFFFF);
+				font.draw(matrixStack, subtitle.forWidth(font, maxTextWidth), left + PADDING, top + height - PADDING - fontHeight, 0x555555);
 			} else {
-				font.func_238422_b_(matrixStack, title.forWidth(font, maxTextWidth), left + PADDING, top + (height - fontHeight) / 2, 0xFFFFFF);
+				font.draw(matrixStack, title.forWidth(font, maxTextWidth), left + PADDING, top + (height - fontHeight) / 2, 0xFFFFFF);
 			}
 		}
 
@@ -104,8 +104,8 @@ public abstract class AbstractGameList extends AbstractLTList<AbstractGameList.E
 			super.renderTooltips(matrixStack, width, mouseX, mouseY);
 			TrimmedText subtitle = this.subtitle;
 			int maxTextWidth = getMaxTextWidth(width);
-			if (subtitle != null && subtitle.isTrimmedForWidth(screen.getMinecraft().fontRenderer, maxTextWidth)) {
-				screen.func_243308_b(matrixStack, ImmutableList.of(subtitle.text()), mouseX, mouseY);
+			if (subtitle != null && subtitle.isTrimmedForWidth(screen.getMinecraft().font, maxTextWidth)) {
+				screen.renderComponentTooltip(matrixStack, ImmutableList.of(subtitle.text()), mouseX, mouseY);
 			}
 		}
 

@@ -24,7 +24,7 @@ public final class DrawParticleLineMessage {
 
 	public void encode(PacketBuffer buffer) {
 		buffer.writeRegistryIdUnsafe(ForgeRegistries.PARTICLE_TYPES, particle.getType());
-		particle.write(buffer);
+		particle.writeToNetwork(buffer);
 
 		buffer.writeDouble(from.x);
 		buffer.writeDouble(from.y);
@@ -47,7 +47,7 @@ public final class DrawParticleLineMessage {
 	}
 
 	private static <T extends IParticleData> T readParticle(PacketBuffer buffer, ParticleType<T> particleType) {
-		return particleType.getDeserializer().read(particleType, buffer);
+		return particleType.getDeserializer().fromNetwork(particleType, buffer);
 	}
 
 	public void handle(Supplier<NetworkEvent.Context> ctx) {

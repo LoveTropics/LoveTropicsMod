@@ -34,7 +34,7 @@ public class TrashBlock extends Block implements IWaterLoggable {
 		private static final Attachment[] VALUES = values();
 
 		@Override
-		public String getString() {
+		public String getSerializedName() {
 			return name().toLowerCase(Locale.ROOT);
 		}
 
@@ -52,43 +52,43 @@ public class TrashBlock extends Block implements IWaterLoggable {
     public TrashBlock(TrashType type, Properties properties) {
         super(properties);
         this.type = type;
-        setDefaultState(this.stateContainer.getBaseState().with(ATTACHMENT, Attachment.FLOOR).with(WATERLOGGED, false));
+        registerDefaultState(this.stateDefinition.any().setValue(ATTACHMENT, Attachment.FLOOR).setValue(WATERLOGGED, false));
     }
 
     @Override
-    protected void fillStateContainer(Builder<Block, BlockState> builder) {
-        super.fillStateContainer(builder);
+    protected void createBlockStateDefinition(Builder<Block, BlockState> builder) {
+        super.createBlockStateDefinition(builder);
         builder.add(FACING, ATTACHMENT, WATERLOGGED);
     }
 
     @Override
     public BlockState getStateForPlacement(BlockItemUseContext context) {
-        FluidState fluid = context.getWorld().getFluidState(context.getPos());
+        FluidState fluid = context.getLevel().getFluidState(context.getClickedPos());
         return super.getStateForPlacement(context)
-                .with(FACING, context.getPlacementHorizontalFacing())
-                .with(WATERLOGGED, fluid.isTagged(FluidTags.WATER) && fluid.getLevel() == 8);
+                .setValue(FACING, context.getHorizontalDirection())
+                .setValue(WATERLOGGED, fluid.is(FluidTags.WATER) && fluid.getAmount() == 8);
     }
 
     @Override
     @Deprecated
     public FluidState getFluidState(BlockState state) {
-        return state.get(WATERLOGGED) ? Fluids.WATER.getStillFluidState(false) : super.getFluidState(state);
+        return state.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(state);
     }
 
     @Override
     @Deprecated
-    public BlockState updatePostPlacement(BlockState stateIn, Direction facing, BlockState facingState, IWorld worldIn, BlockPos currentPos, BlockPos facingPos) {
-        if (stateIn.get(WATERLOGGED)) {
-            worldIn.getPendingFluidTicks().scheduleTick(currentPos, Fluids.WATER, Fluids.WATER.getTickRate(worldIn));
+    public BlockState updateShape(BlockState stateIn, Direction facing, BlockState facingState, IWorld worldIn, BlockPos currentPos, BlockPos facingPos) {
+        if (stateIn.getValue(WATERLOGGED)) {
+            worldIn.getLiquidTicks().scheduleTick(currentPos, Fluids.WATER, Fluids.WATER.getTickDelay(worldIn));
         }
 
-        return super.updatePostPlacement(stateIn, facing, facingState, worldIn, currentPos, facingPos);
+        return super.updateShape(stateIn, facing, facingState, worldIn, currentPos, facingPos);
     }
 
     @Override
     public VoxelShape getShape(BlockState state, IBlockReader worldIn, BlockPos pos, ISelectionContext context) {
     	Vector3d offset = state.getOffset(worldIn, pos);
-    	return type.getShape(state.get(FACING), state.get(ATTACHMENT)).withOffset(offset.x, offset.y, offset.z);
+    	return type.getShape(state.getValue(FACING), state.getValue(ATTACHMENT)).move(offset.x, offset.y, offset.z);
     }
 
     @Override

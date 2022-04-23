@@ -24,7 +24,7 @@ public final class DamageTrackerBehavior implements IGameBehavior {
 					.withDefault(StatisticKey.DAMAGE_TAKEN, () -> 0.0F)
 					.apply(total -> total + damageAmount);
 
-			Entity attacker = source.getTrueSource();
+			Entity attacker = source.getEntity();
 			if (attacker instanceof ServerPlayerEntity) {
 				statistics.forPlayer((PlayerEntity) attacker)
 						.withDefault(StatisticKey.DAMAGE_DEALT, () -> 0.0F)

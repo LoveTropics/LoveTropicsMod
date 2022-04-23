@@ -248,7 +248,7 @@ public class GamePhase implements IGamePhase {
 
 	@Override
 	public ServerWorld getWorld() {
-		return server.getWorld(map.getDimension());
+		return server.getLevel(map.getDimension());
 	}
 
 	@Override

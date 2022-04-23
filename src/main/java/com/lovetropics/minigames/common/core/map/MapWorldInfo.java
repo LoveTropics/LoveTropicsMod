@@ -21,7 +21,7 @@ public final class MapWorldInfo extends DerivedWorldInfo {
 	}
 
 	public static MapWorldInfo create(MinecraftServer server, MapWorldSettings settings) {
-		return new MapWorldInfo(server.getServerConfiguration(), (IServerWorldInfo) server.func_241755_D_().getWorldInfo(), settings);
+		return new MapWorldInfo(server.getWorldData(), (IServerWorldInfo) server.overworld().getLevelData(), settings);
 	}
 
 	@Override
@@ -89,7 +89,7 @@ public final class MapWorldInfo extends DerivedWorldInfo {
 	}
 
 	@Override
-	public GameRules getGameRulesInstance() {
+	public GameRules getGameRules() {
 		return this.settings.gameRules;
 	}
 

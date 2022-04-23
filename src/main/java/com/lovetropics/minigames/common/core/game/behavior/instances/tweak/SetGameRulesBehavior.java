@@ -45,24 +45,24 @@ public final class SetGameRulesBehavior implements IGameBehavior {
 	}
 
 	private CompoundNBT applyRules(GameRules gameRules) {
-		CompoundNBT snapshot = gameRules.write();
+		CompoundNBT snapshot = gameRules.createTag();
 
 		CompoundNBT nbt = new CompoundNBT();
 		for (Map.Entry<String, String> entry : this.rules.entrySet()) {
 			nbt.putString(entry.getKey(), entry.getValue());
 		}
 
-		gameRules.decode(new Dynamic<>(NBTDynamicOps.INSTANCE, nbt));
+		gameRules.loadFromTag(new Dynamic<>(NBTDynamicOps.INSTANCE, nbt));
 
 		return snapshot;
 	}
 
 	private void resetRules(GameRules gameRules, CompoundNBT snapshot) {
-		gameRules.decode(new Dynamic<>(NBTDynamicOps.INSTANCE, snapshot));
+		gameRules.loadFromTag(new Dynamic<>(NBTDynamicOps.INSTANCE, snapshot));
 	}
 
 	private void sendRuleUpdatesTo(GameRules gameRules, ServerPlayerEntity player) {
-		boolean immediateRespawn = gameRules.get(GameRules.DO_IMMEDIATE_RESPAWN).get();
-		player.connection.sendPacket(new SChangeGameStatePacket(SChangeGameStatePacket.SHOW_DEATH_SCREEN, immediateRespawn ? 1.0F : 0.0F));
+		boolean immediateRespawn = gameRules.getRule(GameRules.RULE_DO_IMMEDIATE_RESPAWN).get();
+		player.connection.send(new SChangeGameStatePacket(SChangeGameStatePacket.IMMEDIATE_RESPAWN, immediateRespawn ? 1.0F : 0.0F));
 	}
 }

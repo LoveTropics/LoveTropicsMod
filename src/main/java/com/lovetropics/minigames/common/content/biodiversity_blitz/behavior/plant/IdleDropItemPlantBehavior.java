@@ -52,11 +52,11 @@ public final class IdleDropItemPlantBehavior implements IGameBehavior {
         ServerWorld world = this.game.getWorld();
 
         for (Plant plant : plants) {
-            BlockPos.Mutable pos = plant.coverage().random(random).toMutable();
+            BlockPos.Mutable pos = plant.coverage().random(random).mutable();
 
             for (int i = 0; i < 8; i++) {
                 if (world.getBlockState(pos).isAir()) {
-                    world.addEntity(new ItemEntity(world, pos.getX(), pos.getY(), pos.getZ(), this.item.copy()));
+                    world.addFreshEntity(new ItemEntity(world, pos.getX(), pos.getY(), pos.getZ(), this.item.copy()));
                     break;
                 }
 

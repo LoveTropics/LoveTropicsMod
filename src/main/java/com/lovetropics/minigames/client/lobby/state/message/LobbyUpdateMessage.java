@@ -70,7 +70,7 @@ public class LobbyUpdateMessage {
 		}
 
 		static Update decode(PacketBuffer buffer) {
-			String name = buffer.readString(200);
+			String name = buffer.readUtf(200);
 
 			ClientCurrentGame currentGame = null;
 			if (buffer.readBoolean()) {
@@ -81,7 +81,7 @@ public class LobbyUpdateMessage {
 		}
 
 		void encode(PacketBuffer buffer) {
-			buffer.writeString(name, 200);
+			buffer.writeUtf(name, 200);
 
 			buffer.writeBoolean(currentGame != null);
 			if (currentGame != null) {

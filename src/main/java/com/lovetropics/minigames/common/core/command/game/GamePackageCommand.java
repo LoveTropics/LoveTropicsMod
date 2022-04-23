@@ -25,7 +25,7 @@ public class GamePackageCommand {
 	public static void register(final CommandDispatcher<CommandSource> dispatcher) {
 		dispatcher.register(
 			literal("game")
-			.then(literal("package").requires(s -> s.hasPermissionLevel(2))
+			.then(literal("package").requires(s -> s.hasPermission(2))
 				.then(argument("id", StringArgumentType.word())
 					.suggests(GamePackageCommand::suggestPackages)
 						.executes(ctx -> GamePackageCommand.spawnPackage(ctx, null))
@@ -47,7 +47,7 @@ public class GamePackageCommand {
 		IGamePhase game = IGameManager.get().getGamePhaseFor(ctx.getSource());
 		if (game != null) {
 			String type = StringArgumentType.getString(ctx, "id");
-			GamePackage gamePackage = new GamePackage(type, "LoveTropics", target == null ? null : target.getUniqueID());
+			GamePackage gamePackage = new GamePackage(type, "LoveTropics", target == null ? null : target.getUUID());
 			game.invoker(GamePackageEvents.RECEIVE_PACKAGE).onReceivePackage($ -> {}, gamePackage);
 		}
 		return Command.SINGLE_SUCCESS;

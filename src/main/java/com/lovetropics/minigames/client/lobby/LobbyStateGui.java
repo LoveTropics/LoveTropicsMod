@@ -36,11 +36,11 @@ public class LobbyStateGui {
 	@SubscribeEvent
 	public static void onKeyInput(ClientTickEvent event) {
 		if (event.phase == Phase.END) {
-			if (LobbyKeybinds.JOIN.isPressed()) {
-				Minecraft.getInstance().player.sendChatMessage("/game join");
+			if (LobbyKeybinds.JOIN.consumeClick()) {
+				Minecraft.getInstance().player.chat("/game join");
 			}
-			if (LobbyKeybinds.LEAVE.isPressed()) {
-				Minecraft.getInstance().player.sendChatMessage("/game leave");
+			if (LobbyKeybinds.LEAVE.consumeClick()) {
+				Minecraft.getInstance().player.chat("/game leave");
 			}
 		}
 	}
@@ -60,7 +60,7 @@ public class LobbyStateGui {
 		Minecraft client = Minecraft.getInstance();
 
 		if (event.getType() == ElementType.HOTBAR) {
-			client.getTextureManager().bindTexture(new ResourceLocation("minecraft:missingno"));
+			client.getTextureManager().bind(new ResourceLocation("minecraft:missingno"));
 		}
 
 		if (event.getType() == ElementType.TEXT) {
@@ -91,13 +91,13 @@ public class LobbyStateGui {
 		Minecraft client = Minecraft.getInstance();
 
 		final int iconSize = 32;
-		final int lineHeight = client.fontRenderer.FONT_HEIGHT + PADDING;
+		final int lineHeight = client.font.lineHeight + PADDING;
 
 		int x = left;
 
 		ResourceLocation icon = getIcon(lobby);
 		if (icon != null) {
-			client.getTextureManager().bindTexture(icon);
+			client.getTextureManager().bind(icon);
 			AbstractGui.blit(transform, x, top, 0, 0, 32, 32, 32, 32);
 			x += iconSize + PADDING * 2;
 		}
@@ -116,7 +116,7 @@ public class LobbyStateGui {
 		ClientCurrentGame currentGame = lobby.getCurrentGame();
 		boolean joined = lobby == ClientLobbyManager.getJoined();
 
-		FontRenderer fnt = client.fontRenderer;
+		FontRenderer fnt = client.font;
 
 		int x = left;
 		int y = top;
@@ -126,7 +126,7 @@ public class LobbyStateGui {
 			line += TextFormatting.GREEN + " [Joined]";
 		}
 
-		fnt.drawStringWithShadow(transform, line, x, y, -1);
+		fnt.drawShadow(transform, line, x, y, -1);
 		y += lineHeight;
 
 		String playerCount = formatPlayerCount(lobby, currentGame);
@@ -135,11 +135,11 @@ public class LobbyStateGui {
 				+ status.color + status.description
 				+ TextFormatting.GRAY + " (" + playerCount + " players)";
 
-		fnt.drawStringWithShadow(transform, line, x, y, -1);
+		fnt.drawShadow(transform, line, x, y, -1);
 		y += lineHeight;
 
 		line = TextFormatting.GRAY + keyBindsText(joined);
-		fnt.drawStringWithShadow(transform, line, x, y, -1);
+		fnt.drawShadow(transform, line, x, y, -1);
 		y += lineHeight + PADDING;
 
 		return y;
@@ -151,26 +151,26 @@ public class LobbyStateGui {
 		boolean joined = lobby == ClientLobbyManager.getJoined();
 		LobbyStatus status = lobby.getStatus();
 
-		FontRenderer fnt = client.fontRenderer;
+		FontRenderer fnt = client.font;
 
 		int x = left;
 		int y = top;
 
 		String line = getLobbyName(lobby);
 
-		fnt.drawStringWithShadow(transform, line, x, y, -1);
+		fnt.drawShadow(transform, line, x, y, -1);
 		y += lineHeight;
 
 		line = TextFormatting.GRAY + "..." + lobby.getPlayerCount() + " "
 				+ status.color + status.description
 				+ TextFormatting.GRAY;
 
-		fnt.drawStringWithShadow(transform, line, x, y, -1);
+		fnt.drawShadow(transform, line, x, y, -1);
 		y += lineHeight;
 
 		line = keyBindsText(joined);
 
-		fnt.drawStringWithShadow(transform, line, x, y, -1);
+		fnt.drawShadow(transform, line, x, y, -1);
 		y += lineHeight + PADDING;
 
 		return y;
@@ -201,15 +201,15 @@ public class LobbyStateGui {
 
 	private static String keyBindsText(boolean joined) {
 		if (!joined) {
-			return TextFormatting.AQUA + "Join [" + LobbyKeybinds.JOIN.func_238171_j_().getString().toUpperCase() + "]" + TextFormatting.GRAY;
+			return TextFormatting.AQUA + "Join [" + LobbyKeybinds.JOIN.getTranslatedKeyMessage().getString().toUpperCase() + "]" + TextFormatting.GRAY;
 		} else {
-			return TextFormatting.AQUA + "Leave [" + LobbyKeybinds.LEAVE.func_238171_j_().getString().toUpperCase() + "]";
+			return TextFormatting.AQUA + "Leave [" + LobbyKeybinds.LEAVE.getTranslatedKeyMessage().getString().toUpperCase() + "]";
 		}
 	}
 
 	private static boolean shouldDisplayCompat(Minecraft client, boolean bossBar) {
 		if (bossBar) {
-			int windowWidth = client.getMainWindow().getScaledWidth();
+			int windowWidth = client.getWindow().getGuiScaledWidth();
 
 			int leftSpace = (windowWidth - BOSS_BAR_WIDTH) / 2;
 			return leftSpace < COMPACT_THRESHOLD;

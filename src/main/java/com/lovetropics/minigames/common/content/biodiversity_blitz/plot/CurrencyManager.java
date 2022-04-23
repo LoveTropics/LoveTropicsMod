@@ -39,7 +39,7 @@ public final class CurrencyManager implements IGameState {
 
 	public void tickTracked() {
 		for (ServerPlayerEntity player : game.getParticipants()) {
-			if (player.ticksExisted % 5 == 0) {
+			if (player.tickCount % 5 == 0) {
 				int value = this.get(player);
 				this.setTracked(player, value);
 			}
@@ -47,14 +47,14 @@ public final class CurrencyManager implements IGameState {
 	}
 
 	private void setTracked(ServerPlayerEntity player, int value) {
-		int lastValue = this.trackedValues.put(player.getUniqueID(), value);
+		int lastValue = this.trackedValues.put(player.getUUID(), value);
 		if (lastValue != value) {
 			this.game.invoker(BbEvents.CURRENCY_CHANGED).onCurrencyChanged(player, value, lastValue);
 		}
 	}
 
 	private void incrementTracked(ServerPlayerEntity player, int amount) {
-		int value = this.trackedValues.getInt(player.getUniqueID());
+		int value = this.trackedValues.getInt(player.getUUID());
 		this.setTracked(player, value + amount);
 	}
 
@@ -84,7 +84,7 @@ public final class CurrencyManager implements IGameState {
 	}
 
 	private void accumulateCurrency(ServerPlayerEntity player, int added) {
-		int lastValue = this.accumulator.addTo(player.getUniqueID(), added);
+		int lastValue = this.accumulator.addTo(player.getUUID(), added);
 		int newValue = lastValue + added;
 
 		this.game.invoker(BbEvents.CURRENCY_ACCUMULATE).onCurrencyChanged(player, newValue, lastValue);
@@ -101,7 +101,7 @@ public final class CurrencyManager implements IGameState {
 
 	private int addToInventory(ServerPlayerEntity player, int amount) {
 		ItemStack stack = new ItemStack(item, amount);
-		player.inventory.addItemStackToInventory(stack);
+		player.inventory.add(stack);
 		sendInventoryUpdate(player);
 		return amount - stack.getCount();
 	}
@@ -109,13 +109,13 @@ public final class CurrencyManager implements IGameState {
 	private int removeFromInventory(ServerPlayerEntity player, int amount) {
 		int remaining = amount;
 
-		List<Slot> slots = player.openContainer.inventorySlots;
+		List<Slot> slots = player.containerMenu.slots;
 		for (Slot slot : slots) {
 			remaining -= this.removeFromSlot(slot, remaining);
 			if (remaining <= 0) break;
 		}
 
-		remaining -= ItemStackHelper.func_233535_a_(player.inventory.getItemStack(), itemPredicate, remaining, false);
+		remaining -= ItemStackHelper.clearOrCountMatchingItems(player.inventory.getCarried(), itemPredicate, remaining, false);
 
 		sendInventoryUpdate(player);
 
@@ -123,7 +123,7 @@ public final class CurrencyManager implements IGameState {
 	}
 
 	private int removeFromSlot(Slot slot, int amount) {
-		ItemStack stack = slot.getStack();
+		ItemStack stack = slot.getItem();
 		if (itemPredicate.test(stack)) {
 			int removed = Math.min(amount, stack.getCount());
 			stack.shrink(removed);
@@ -136,15 +136,15 @@ public final class CurrencyManager implements IGameState {
 	public int get(ServerPlayerEntity player) {
 		int count = 0;
 
-		List<Slot> slots = player.openContainer.inventorySlots;
+		List<Slot> slots = player.containerMenu.slots;
 		for (Slot slot : slots) {
-			ItemStack stack = slot.getStack();
+			ItemStack stack = slot.getItem();
 			if (itemPredicate.test(stack)) {
 				count += stack.getCount();
 			}
 		}
 
-		ItemStack stack = player.inventory.getItemStack();
+		ItemStack stack = player.inventory.getCarried();
 		if (itemPredicate.test(stack)) {
 			count += stack.getCount();
 		}
@@ -153,8 +153,8 @@ public final class CurrencyManager implements IGameState {
 	}
 
 	private static void sendInventoryUpdate(ServerPlayerEntity player) {
-		player.openContainer.detectAndSendChanges();
-		player.updateHeldItem();
+		player.containerMenu.broadcastChanges();
+		player.broadcastCarriedItem();
 	}
 
 	public void equalize() {

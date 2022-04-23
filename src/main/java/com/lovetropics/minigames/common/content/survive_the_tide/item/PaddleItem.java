@@ -26,30 +26,30 @@ public class PaddleItem extends Item {
 
 	@Override
 	@OnlyIn(Dist.CLIENT)
-	public void addInformation(ItemStack stack, @Nullable World world, List<ITextComponent> tooltip, ITooltipFlag flag) {
-		tooltip.add(new StringTextComponent("This might come in handy").mergeStyle(TextFormatting.AQUA));
+	public void appendHoverText(ItemStack stack, @Nullable World world, List<ITextComponent> tooltip, ITooltipFlag flag) {
+		tooltip.add(new StringTextComponent("This might come in handy").withStyle(TextFormatting.AQUA));
 	}
 
 	@Override
-	public ActionResult<ItemStack> onItemRightClick(World world, PlayerEntity player, Hand hand) {
-		ItemStack stack = player.getHeldItem(hand);
-		if (world.isRemote) {
-			return ActionResult.resultPass(stack);
+	public ActionResult<ItemStack> use(World world, PlayerEntity player, Hand hand) {
+		ItemStack stack = player.getItemInHand(hand);
+		if (world.isClientSide) {
+			return ActionResult.pass(stack);
 		}
 
 		DriftwoodRider rider = player.getCapability(LoveTropics.driftwoodRiderCap()).orElse(null);
 		if (rider != null) {
 			DriftwoodEntity driftwood = rider.getRiding();
 			if (driftwood != null) {
-				if (driftwood.paddle(player.rotationYaw)) {
+				if (driftwood.paddle(player.yRot)) {
 					player.swing(hand, true);
-					return ActionResult.resultSuccess(stack);
+					return ActionResult.success(stack);
 				} else {
-					return ActionResult.resultFail(stack);
+					return ActionResult.fail(stack);
 				}
 			}
 		}
 
-		return ActionResult.resultPass(stack);
+		return ActionResult.pass(stack);
 	}
 }

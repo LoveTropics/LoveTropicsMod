@@ -37,32 +37,32 @@ public class FillChestsByMarkerBehavior extends ChunkGeneratingBehavior {
 	@Override
 	protected void generateChunk(IGamePhase game, ServerWorld world, Chunk chunk) {
 		List<BlockPos> chestPositions = new ArrayList<>();
-		for (BlockPos pos : chunk.getTileEntitiesPos()) {
-			TileEntity entity = chunk.getTileEntity(pos);
+		for (BlockPos pos : chunk.getBlockEntitiesPos()) {
+			TileEntity entity = chunk.getBlockEntity(pos);
 			if (entity instanceof ChestTileEntity) {
 				chestPositions.add(pos);
 			}
 		}
 
 		for (BlockPos pos : chestPositions) {
-			BlockPos belowPos = pos.down();
+			BlockPos belowPos = pos.below();
 
 			BlockState belowState = world.getBlockState(belowPos);
 			ResourceLocation lootTable = getLootTableFor(belowState.getBlock());
 			if (lootTable != null) {
-				Direction facing = belowState.get(BlockStateProperties.HORIZONTAL_FACING);
+				Direction facing = belowState.getValue(BlockStateProperties.HORIZONTAL_FACING);
 				setChest(world, belowPos, lootTable, facing);
 
-				world.setBlockState(pos, Blocks.AIR.getDefaultState());
+				world.setBlockAndUpdate(pos, Blocks.AIR.defaultBlockState());
 			}
 		}
 	}
 
 	private void setChest(ServerWorld world, BlockPos pos, ResourceLocation lootTable, Direction facing) {
-		world.setBlockState(pos, Blocks.CHEST.getDefaultState().with(ChestBlock.FACING, facing));
-		TileEntity chest = world.getTileEntity(pos);
+		world.setBlockAndUpdate(pos, Blocks.CHEST.defaultBlockState().setValue(ChestBlock.FACING, facing));
+		TileEntity chest = world.getBlockEntity(pos);
 		if (chest instanceof ChestTileEntity) {
-			((ChestTileEntity) chest).setLootTable(lootTable, world.rand.nextLong());
+			((ChestTileEntity) chest).setLootTable(lootTable, world.random.nextLong());
 		}
 	}
 

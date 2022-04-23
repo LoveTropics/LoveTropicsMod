@@ -33,8 +33,8 @@ public final class MapExportReader implements Closeable {
 	}
 
 	public MapMetadata loadInto(MinecraftServer server, RegistryKey<World> dimension) throws IOException {
-		SaveFormat.LevelSave save = server.anvilConverterForAnvilFile;
-		File dimensionDirectory = save.getDimensionFolder(dimension);
+		SaveFormat.LevelSave save = server.storageSource;
+		File dimensionDirectory = save.getDimensionPath(dimension);
 		return loadInto(dimensionDirectory.toPath());
 	}
 

@@ -15,11 +15,11 @@ public abstract class MoveToBlockGoal extends Goal {
     protected MoveToBlockGoal(MobEntity mob) {
         this.mob = mob;
 
-        this.setMutexFlags(EnumSet.of(Goal.Flag.MOVE, Goal.Flag.JUMP));
+        this.setFlags(EnumSet.of(Goal.Flag.MOVE, Goal.Flag.JUMP));
     }
 
     @Override
-    public boolean shouldExecute() {
+    public boolean canUse() {
         BlockPos target = locateBlock(12, 2);
         if (target != null) {
             this.targetPos = target;
@@ -30,23 +30,23 @@ public abstract class MoveToBlockGoal extends Goal {
     }
 
     @Override
-    public void startExecuting() {
-        this.mob.getNavigator().tryMoveToXYZ(this.targetPos.getX(), this.targetPos.getY(), this.targetPos.getZ(), 1.0);
+    public void start() {
+        this.mob.getNavigation().moveTo(this.targetPos.getX(), this.targetPos.getY(), this.targetPos.getZ(), 1.0);
     }
 
     @Override
-    public boolean shouldContinueExecuting() {
+    public boolean canContinueToUse() {
         if (!shouldTargetBlock(this.targetPos)) {
             return false;
         }
 
-        return !this.mob.getNavigator().noPath();
+        return !this.mob.getNavigation().isDone();
     }
 
     @Nullable
     protected BlockPos locateBlock(int rangeX, int rangeY) {
-        BlockPos origin = this.mob.getPosition();
-        for (BlockPos pos : BlockPos.getProximitySortedBoxPositionsIterator(origin, rangeX, rangeY, rangeX)) {
+        BlockPos origin = this.mob.blockPosition();
+        for (BlockPos pos : BlockPos.withinManhattan(origin, rangeX, rangeY, rangeX)) {
             if (shouldTargetBlock(pos)) {
                 return pos;
             }

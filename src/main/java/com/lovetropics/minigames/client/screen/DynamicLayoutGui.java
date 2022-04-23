@@ -1,11 +1,9 @@
 package com.lovetropics.minigames.client.screen;
 
-import com.lovetropics.minigames.client.screen.flex.Box;
 import com.lovetropics.minigames.client.screen.flex.Flex;
 import com.lovetropics.minigames.client.screen.flex.FlexSolver;
 import com.lovetropics.minigames.client.screen.flex.Layout;
 import com.mojang.blaze3d.matrix.MatrixStack;
-
 import net.minecraft.client.gui.FocusableGui;
 import net.minecraft.client.gui.IGuiEventListener;
 import net.minecraft.client.gui.IRenderable;
@@ -31,7 +29,7 @@ public abstract class DynamicLayoutGui extends FocusableGui implements IRenderab
 	
 	public void bake(FlexSolver.Results solve) {
 		this.mainLayout = solve.layout(basis);
-		for (IGuiEventListener child : getEventListeners()) {
+		for (IGuiEventListener child : children()) {
 			if (child instanceof DynamicLayoutGui) {
 				((DynamicLayoutGui) child).bake(solve);
 			}

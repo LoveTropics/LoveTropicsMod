@@ -44,7 +44,7 @@ public final class Plot {
 		this.forward = forward;
 		this.spawnForward = spawnForward;
 
-		this.walls = new PlotWalls(this.bounds.asAabb().union(this.mobSpawn.asAabb()));
+		this.walls = new PlotWalls(this.bounds.asAabb().minmax(this.mobSpawn.asAabb()));
 	}
 
 	public static Plot create(Config config, RegionKeys regionKeys, MapRegions regions) {

@@ -12,20 +12,20 @@ import net.minecraft.util.text.TextFormatting;
 
 public final class SelectPlayerRoleScreen extends Screen {
 	private static final ITextComponent TITLE = GameTexts.Ui.selectPlayerRole()
-			.mergeStyle(TextFormatting.BOLD, TextFormatting.UNDERLINE);
+			.withStyle(TextFormatting.BOLD, TextFormatting.UNDERLINE);
 
 	// TODO: translate all the things
 	private static final ITextComponent[] TEXT = new ITextComponent[] {
 			new StringTextComponent("Welcome to the game lobby!"),
 			new StringTextComponent("Before the game, ")
-					.appendSibling(new StringTextComponent("please select to ")
-							.appendSibling(new StringTextComponent("play").mergeStyle(TextFormatting.AQUA))
-							.appendString(" or ")
-							.appendSibling(new StringTextComponent("spectate").mergeStyle(TextFormatting.AQUA))
-							.mergeStyle(TextFormatting.UNDERLINE)
+					.append(new StringTextComponent("please select to ")
+							.append(new StringTextComponent("play").withStyle(TextFormatting.AQUA))
+							.append(" or ")
+							.append(new StringTextComponent("spectate").withStyle(TextFormatting.AQUA))
+							.withStyle(TextFormatting.UNDERLINE)
 					)
-					.appendString("."),
-			new StringTextComponent("You will be prompted before each game in this lobby.").mergeStyle(TextFormatting.GRAY)
+					.append("."),
+			new StringTextComponent("You will be prompted before each game in this lobby.").withStyle(TextFormatting.GRAY)
 	};
 
 	private static final int PADDING = 4;
@@ -48,11 +48,11 @@ public final class SelectPlayerRoleScreen extends Screen {
 
 		this.addButton(FlexUi.createButton(layout.play, new StringTextComponent("Play"), b -> {
 			this.acceptResponse(true);
-			this.closeScreen();
+			this.onClose();
 		}));
 		this.addButton(FlexUi.createButton(layout.spectate, new StringTextComponent("Spectate"), b -> {
 			this.acceptResponse(false);
-			this.closeScreen();
+			this.onClose();
 		}));
 	}
 
@@ -64,8 +64,8 @@ public final class SelectPlayerRoleScreen extends Screen {
 	}
 
 	@Override
-	public void onClose() {
-		super.onClose();
+	public void removed() {
+		super.removed();
 		this.acceptResponse(false);
 	}
 
@@ -81,14 +81,14 @@ public final class SelectPlayerRoleScreen extends Screen {
 	private void renderText(MatrixStack matrixStack) {
 		Box box = layout.text.content();
 
-		int lineHeight = font.FONT_HEIGHT + PADDING;
+		int lineHeight = font.lineHeight + PADDING;
 		int y = box.bottom() - lineHeight * TEXT.length;
 
 		for (ITextComponent line : TEXT) {
-			int length = font.getStringPropertyWidth(line);
+			int length = font.width(line);
 			int x = box.centerX() - length / 2;
 
-			font.drawText(matrixStack, line, x, y, 0xFFFFFFFF);
+			font.draw(matrixStack, line, x, y, 0xFFFFFFFF);
 
 			y += lineHeight;
 		}

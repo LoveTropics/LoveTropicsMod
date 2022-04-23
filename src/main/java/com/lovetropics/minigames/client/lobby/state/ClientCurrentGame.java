@@ -48,18 +48,18 @@ public final class ClientCurrentGame {
 
 	public void encode(PacketBuffer buffer) {
 		definition.encode(buffer);
-		buffer.writeEnumValue(phase);
+		buffer.writeEnum(phase);
 
 		buffer.writeBoolean(error != null);
 		if (error != null) {
-			buffer.writeTextComponent(error);
+			buffer.writeComponent(error);
 		}
 	}
 
 	public static ClientCurrentGame decode(PacketBuffer buffer) {
 		ClientGameDefinition definition = ClientGameDefinition.decode(buffer);
-		GamePhaseType phase = buffer.readEnumValue(GamePhaseType.class);
-		ITextComponent error = buffer.readBoolean() ? buffer.readTextComponent() : null;
+		GamePhaseType phase = buffer.readEnum(GamePhaseType.class);
+		ITextComponent error = buffer.readBoolean() ? buffer.readComponent() : null;
 		return new ClientCurrentGame(definition, phase, error);
 	}
 }

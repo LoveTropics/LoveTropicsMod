@@ -49,18 +49,18 @@ public interface PlayerSet extends PlayerIterable {
 		return new PlayerSet() {
 			@Override
 			public boolean contains(UUID id) {
-				return players.getPlayerByUUID(id) != null;
+				return players.getPlayer(id) != null;
 			}
 
 			@Nullable
 			@Override
 			public ServerPlayerEntity getPlayerBy(UUID id) {
-				return players.getPlayerByUUID(id);
+				return players.getPlayer(id);
 			}
 
 			@Override
 			public int size() {
-				return players.getCurrentPlayerCount();
+				return players.getPlayerCount();
 			}
 
 			@Override
@@ -80,7 +80,7 @@ public interface PlayerSet extends PlayerIterable {
 			@Nullable
 			@Override
 			public ServerPlayerEntity getPlayerBy(UUID id) {
-				return this.contains(id) ? server.getPlayerList().getPlayerByUUID(id) : null;
+				return this.contains(id) ? server.getPlayerList().getPlayer(id) : null;
 			}
 
 			@Override
@@ -96,7 +96,7 @@ public interface PlayerSet extends PlayerIterable {
 	}
 
 	default boolean contains(Entity entity) {
-		return this.contains(entity.getUniqueID());
+		return this.contains(entity.getUUID());
 	}
 
 	boolean contains(UUID id);

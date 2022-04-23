@@ -17,7 +17,7 @@ public final class ClientTimeInterpolationHandler {
 	public static void onClientTick(TickEvent.ClientTickEvent event) {
 		if (event.phase == TickEvent.Phase.START) return;
 
-		ClientWorld world = Minecraft.getInstance().world;
+		ClientWorld world = Minecraft.getInstance().level;
 		if (!isTimePaused() && world != null) {
 			handleTick(world);
 		}
@@ -32,6 +32,6 @@ public final class ClientTimeInterpolationHandler {
 	}
 
 	private static boolean isTimePaused() {
-		return Minecraft.getInstance().isGamePaused() && Minecraft.getInstance().isSingleplayer();
+		return Minecraft.getInstance().isPaused() && Minecraft.getInstance().hasSingleplayerServer();
 	}
 }

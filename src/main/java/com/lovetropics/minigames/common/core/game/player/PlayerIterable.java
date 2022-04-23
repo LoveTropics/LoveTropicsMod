@@ -41,28 +41,28 @@ public interface PlayerIterable extends PlayerOps, Iterable<ServerPlayerEntity> 
 	@Override
 	default void sendMessage(ITextComponent message, boolean actionBar) {
 		for (ServerPlayerEntity player : this) {
-			player.sendStatusMessage(message, actionBar);
+			player.displayClientMessage(message, actionBar);
 		}
 	}
 
 	@Override
 	default void addPotionEffect(EffectInstance effect) {
 		for (ServerPlayerEntity player : this) {
-			player.addPotionEffect(new EffectInstance(effect));
+			player.addEffect(new EffectInstance(effect));
 		}
 	}
 
 	@Override
 	default void playSound(SoundEvent sound, SoundCategory category, float volume, float pitch) {
 		for (ServerPlayerEntity player : this) {
-			player.playSound(sound, category, volume, pitch);
+			player.playNotifySound(sound, category, volume, pitch);
 		}
 	}
 
 	@Override
 	default void sendPacket(IPacket<?> packet) {
 		for (ServerPlayerEntity player : this) {
-			player.connection.sendPacket(packet);
+			player.connection.send(packet);
 		}
 	}
 
@@ -71,7 +71,7 @@ public interface PlayerIterable extends PlayerOps, Iterable<ServerPlayerEntity> 
 		PacketDistributor.PacketTarget target = PacketDistributor.NMLIST.with(() -> {
 			List<NetworkManager> networkManagers = new ArrayList<>();
 			for (ServerPlayerEntity player : this) {
-				networkManagers.add(player.connection.netManager);
+				networkManagers.add(player.connection.connection);
 			}
 			return networkManagers;
 		});
@@ -90,7 +90,7 @@ public interface PlayerIterable extends PlayerOps, Iterable<ServerPlayerEntity> 
 					}
 
 					UUID id = ids.next();
-					ServerPlayerEntity player = playerList.getPlayerByUUID(id);
+					ServerPlayerEntity player = playerList.getPlayer(id);
 					if (player != null) {
 						return player;
 					}

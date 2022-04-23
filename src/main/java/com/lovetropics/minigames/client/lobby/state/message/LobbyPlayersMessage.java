@@ -25,7 +25,7 @@ public final class LobbyPlayersMessage {
 		IGameLobbyPlayers players = lobby.getPlayers();
 		Set<UUID> playerIds = new ObjectOpenHashSet<>(players.size());
 		for (ServerPlayerEntity player : players) {
-			playerIds.add(player.getUniqueID());
+			playerIds.add(player.getUUID());
 		}
 		return new LobbyPlayersMessage(lobby.getMetadata().id().networkId(), playerIds);
 	}
@@ -34,7 +34,7 @@ public final class LobbyPlayersMessage {
 		buffer.writeVarInt(id);
 		buffer.writeVarInt(players.size());
 		for (UUID player : players) {
-			buffer.writeUniqueId(player);
+			buffer.writeUUID(player);
 		}
 	}
 
@@ -43,7 +43,7 @@ public final class LobbyPlayersMessage {
 		int playerCount = buffer.readVarInt();
 		Set<UUID> players = new ObjectOpenHashSet<>(playerCount);
 		for (int i = 0; i < playerCount; i++) {
-			players.add(buffer.readUniqueId());
+			players.add(buffer.readUUID());
 		}
 		return new LobbyPlayersMessage(id, players);
 	}

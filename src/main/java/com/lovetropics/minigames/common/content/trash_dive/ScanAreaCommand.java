@@ -49,16 +49,16 @@ public class ScanAreaCommand {
 
 	public static void register(final CommandDispatcher<CommandSource> dispatcher) {
 		dispatcher.register(literal("game")
-			.then(literal("scan").requires(s -> s.hasPermissionLevel(4))
+			.then(literal("scan").requires(s -> s.hasPermission(4))
 				.then(argument("name", StringArgumentType.word())
 					.executes(ctx -> scanArea(ctx.getSource(), StringArgumentType.getString(ctx, "name"))))
 				.executes(ctx -> scanArea(ctx.getSource(), "scan_result"))));
 	}
 
 	private static int scanArea(CommandSource source, String fileName) throws CommandSyntaxException {
-		BlockPos.Mutable pos = new BlockPos(source.getPos()).toMutable();
+		BlockPos.Mutable pos = new BlockPos(source.getPosition()).mutable();
 
-		ServerWorld world = source.getWorld();
+		ServerWorld world = source.getLevel();
 		while (pos.getY() >= 0 && world.getBlockState(pos).getBlock() != Blocks.WATER) {
 			pos.move(Direction.DOWN);
 		}
@@ -70,8 +70,8 @@ public class ScanAreaCommand {
 		LongSet found = new LongOpenHashSet();
 
 		Deque<BlockPos> queue = new ArrayDeque<>(100);
-		queue.add(pos.toImmutable());
-		seen.add(pos.toLong());
+		queue.add(pos.immutable());
+		seen.add(pos.asLong());
 
 		final Set<Block> edges = Sets.newHashSet(Blocks.DIRT, Blocks.GRASS_BLOCK, Blocks.STONE, Blocks.SAND, Blocks.BROWN_STAINED_GLASS);
 		PURIFIED_SAND.ifPresent(edges::add);
@@ -80,25 +80,25 @@ public class ScanAreaCommand {
 		Map<ChunkPos, Chunk> chunkCache = new HashMap<>();
 
 		while (!queue.isEmpty()) {
-			pos.setPos(queue.remove());
-			found.add(pos.toLong());
-			world.spawnParticle(source.asPlayer(), ParticleTypes.END_ROD, true, pos.getX() + 0.5, source.getPos().getY() - 3, pos.getZ(), 1, 0, 0, 0, 0);
+			pos.set(queue.remove());
+			found.add(pos.asLong());
+			world.sendParticles(source.getPlayerOrException(), ParticleTypes.END_ROD, true, pos.getX() + 0.5, source.getPosition().y() - 3, pos.getZ(), 1, 0, 0, 0, 0);
 			for (Direction dir : dirs) {
 				pos.move(dir);
-				if (seen.add(pos.toLong())) {
-					if (pos.distanceSq(source.getPos(), true) > 400 * 400) {
+				if (seen.add(pos.asLong())) {
+					if (pos.distSqr(source.getPosition(), true) > 400 * 400) {
 						throw TOO_FAR.create();
 					}
 					Chunk chunk = chunkCache.computeIfAbsent(new ChunkPos(pos), p -> world.getChunk(p.x, p.z));
 					if (!edges.contains(chunk.getBlockState(pos).getBlock())) {
-						queue.add(pos.toImmutable());
+						queue.add(pos.immutable());
 					}
 				}
 				pos.move(dir.getOpposite());
 			}
 		}
 
-		source.sendFeedback(new StringTextComponent("Found " + found.size() + " blocks"), true);
+		source.sendSuccess(new StringTextComponent("Found " + found.size() + " blocks"), true);
 
 		Path output = Paths.get("export", "scan_results", fileName + ".bin");
 
@@ -115,7 +115,7 @@ public class ScanAreaCommand {
 			throw WRITE_ERROR.create(e);
 		}
 
-		source.sendFeedback(new StringTextComponent("Wrote " + buf.capacity() + " bytes to " + output), true);
+		source.sendSuccess(new StringTextComponent("Wrote " + buf.capacity() + " bytes to " + output), true);
 
 		return Command.SINGLE_SUCCESS;
 	}

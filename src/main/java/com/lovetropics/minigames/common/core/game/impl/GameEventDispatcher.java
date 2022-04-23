@@ -47,9 +47,9 @@ public final class GameEventDispatcher {
 	@SubscribeEvent
 	public void onChunkLoad(ChunkEvent.Load event) {
 		if (event.getWorld() instanceof IServerWorld) {
-			ServerWorld world = ((IServerWorld) event.getWorld()).getWorld();
+			ServerWorld world = ((IServerWorld) event.getWorld()).getLevel();
 			IChunk chunk = event.getChunk();
-			IGamePhase game = gameLookup.getGamePhaseAt(world, chunk.getPos().asBlockPos());
+			IGamePhase game = gameLookup.getGamePhaseAt(world, chunk.getPos().getWorldPosition());
 			if (game != null) {
 				Scheduler.nextTick().run(server -> {
 					game.invoker(GameWorldEvents.CHUNK_LOAD).onChunkLoad(chunk);
@@ -117,8 +117,8 @@ public final class GameEventDispatcher {
 
 	@Nullable
 	private Entity getIndirectSource(DamageSource source) {
-		if (source.getTrueSource() != source.getImmediateSource()) {
-			return source.getTrueSource();
+		if (source.getEntity() != source.getDirectEntity()) {
+			return source.getEntity();
 		}
 		return null;
 	}
@@ -248,8 +248,8 @@ public final class GameEventDispatcher {
 				ActionResultType result = game.invoker(GamePlayerEvents.THROW_ITEM).onThrowItem(player, item);
 				if (result == ActionResultType.FAIL) {
 					event.setCanceled(true);
-					player.inventory.addItemStackToInventory(item.getItem());
-					player.sendContainerToPlayer(player.openContainer);
+					player.inventory.add(item.getItem());
+					player.refreshContainer(player.containerMenu);
 				}
 			} catch (Exception e) {
 				LoveTropics.LOGGER.warn("Failed to dispatch player throw item event", e);
@@ -282,7 +282,7 @@ public final class GameEventDispatcher {
 			ServerPlayerEntity player = (ServerPlayerEntity) event.getPlayer();
 
 			try {
-				game.invoker(GamePlayerEvents.LEFT_CLICK_BLOCK).onLeftClickBlock(player, player.getServerWorld(), event.getPos());
+				game.invoker(GamePlayerEvents.LEFT_CLICK_BLOCK).onLeftClickBlock(player, player.getLevel(), event.getPos());
 			} catch (Exception e) {
 				LoveTropics.LOGGER.warn("Failed to dispatch player left click block event", e);
 			}
@@ -296,7 +296,7 @@ public final class GameEventDispatcher {
 			ServerPlayerEntity player = (ServerPlayerEntity) event.getPlayer();
 
 			try {
-				ActionResultType result = game.invoker(GamePlayerEvents.USE_BLOCK).onUseBlock(player, player.getServerWorld(), event.getPos(), event.getHand(), event.getHitVec());
+				ActionResultType result = game.invoker(GamePlayerEvents.USE_BLOCK).onUseBlock(player, player.getLevel(), event.getPos(), event.getHand(), event.getHitVec());
 				if (result != ActionResultType.PASS) {
 					event.setCanceled(true);
 					event.setCancellationResult(result);
@@ -333,7 +333,7 @@ public final class GameEventDispatcher {
 		if (game != null) {
 			try {
 				ServerPlayerEntity player = (ServerPlayerEntity) event.getPlayer();
-				Hand hand = player.getActiveHand();
+				Hand hand = player.getUsedItemHand();
 				ActionResultType result = game.invoker(GamePlayerEvents.BREAK_BLOCK).onBreakBlock(player, event.getPos(), event.getState(), hand);
 				if (result == ActionResultType.FAIL) {
 					event.setCanceled(true);
@@ -362,10 +362,10 @@ public final class GameEventDispatcher {
 	}
 
 	private void resendPlayerHeldItem(ServerPlayerEntity player) {
-		Hand hand = player.getActiveHand();
-		int handSlot = hand == Hand.MAIN_HAND ? player.inventory.currentItem : 40;
-		ItemStack handItem = player.getHeldItem(hand);
-		player.connection.sendPacket(new SSetSlotPacket(-2, handSlot, handItem));
+		Hand hand = player.getUsedItemHand();
+		int handSlot = hand == Hand.MAIN_HAND ? player.inventory.selected : 40;
+		ItemStack handItem = player.getItemInHand(hand);
+		player.connection.send(new SSetSlotPacket(-2, handSlot, handItem));
 	}
 
 	@SubscribeEvent

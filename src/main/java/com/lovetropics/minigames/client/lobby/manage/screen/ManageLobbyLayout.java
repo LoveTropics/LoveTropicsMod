@@ -37,7 +37,7 @@ final class ManageLobbyLayout {
 	final Layout[] marginals;
 
 	ManageLobbyLayout(Screen screen) {
-		int fontHeight = screen.getMinecraft().fontRenderer.FONT_HEIGHT;
+		int fontHeight = screen.getMinecraft().font.lineHeight;
 
 		Flex root = new Flex().column();
 

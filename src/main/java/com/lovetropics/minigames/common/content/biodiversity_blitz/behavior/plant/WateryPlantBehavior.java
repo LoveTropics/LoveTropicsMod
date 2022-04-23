@@ -54,8 +54,8 @@ public final class WateryPlantBehavior implements IGameBehavior {
         Set<MobEntity> seen = new HashSet<>();
 
         for (Plant plant : plants) {
-            AxisAlignedBB attackBounds = plant.coverage().asBounds().grow(this.radius);
-            List<MobEntity> entities = world.getEntitiesWithinAABB(MobEntity.class, attackBounds, BbMobEntity.PREDICATE);
+            AxisAlignedBB attackBounds = plant.coverage().asBounds().inflate(this.radius);
+            List<MobEntity> entities = world.getEntitiesOfClass(MobEntity.class, attackBounds, BbMobEntity.PREDICATE);
 
             if (entities.isEmpty()) {
                 continue;
@@ -75,13 +75,13 @@ public final class WateryPlantBehavior implements IGameBehavior {
 
                 if (ticks % 15 == 0) {
                     // Extinguish fire
-                    entity.forceFireTicks(0);
-                    entity.attackEntityFrom(DamageSource.MAGIC, 1 + random.nextInt(3));
+                    entity.setRemainingFireTicks(0);
+                    entity.hurt(DamageSource.MAGIC, 1 + random.nextInt(3));
                     waterCount += 5 + random.nextInt(8);
 
                     // Draw extra water as a line
 
-                    Vector3d positionVec = entity.getPositionVec();
+                    Vector3d positionVec = entity.position();
                     // Needs to target the middle of the entity position vector
                     Vector3d scaledVec = new Vector3d(positionVec.x, (aabb.minY + aabb.maxY) / 2.0, positionVec.z);
 
@@ -89,16 +89,16 @@ public final class WateryPlantBehavior implements IGameBehavior {
                 }
 
                 // Don't add particles to mobs that should be dead
-                if (entity.getShouldBeDead()) {
+                if (entity.isDeadOrDying()) {
                     continue;
                 }
 
                 for (int i = 0; i < waterCount; i++) {
-                    Vector3d sample = random(aabb, world.rand);
+                    Vector3d sample = random(aabb, world.random);
                     double d3 = random.nextGaussian() * 0.05;
                     double d1 = random.nextGaussian() * 0.1;
                     double d2 = random.nextGaussian() * 0.05;
-                    world.spawnParticle(ParticleTypes.FALLING_WATER, sample.x, sample.y, sample.z, 1 + random.nextInt(2), d3, d1, d2, 0.03 + random.nextDouble() * 0.02);
+                    world.sendParticles(ParticleTypes.FALLING_WATER, sample.x, sample.y, sample.z, 1 + random.nextInt(2), d3, d1, d2, 0.03 + random.nextDouble() * 0.02);
                 }
             }
         }

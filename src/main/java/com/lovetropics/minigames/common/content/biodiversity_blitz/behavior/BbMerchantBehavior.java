@@ -86,23 +86,23 @@ public final class BbMerchantBehavior implements IGameBehavior {
 		if (merchant == null) return;
 
 		Direction direction = Util.getDirectionBetween(region, plot.spawn);
-		float yaw = direction.getHorizontalAngle();
+		float yaw = direction.toYRot();
 
-		merchant.setLocationAndAngles(center.getX(), center.getY() - 0.5, center.getZ(), yaw, 0);
-		merchant.setRotationYawHead(yaw);
+		merchant.moveTo(center.x(), center.y() - 0.5, center.z(), yaw, 0);
+		merchant.setYHeadRot(yaw);
 
 		world.getChunk(region.getCenterBlock());
-		world.addEntity(merchant);
+		world.addFreshEntity(merchant);
 
 		if (merchant instanceof MobEntity) {
 			MobEntity mob = (MobEntity) merchant;
-			mob.onInitialSpawn(world, world.getDifficultyForLocation(new BlockPos(center)), SpawnReason.MOB_SUMMONED, null, null);
-			mob.setNoAI(true);
-			mob.setChild(false);
+			mob.finalizeSpawn(world, world.getCurrentDifficultyAt(new BlockPos(center)), SpawnReason.MOB_SUMMONED, null, null);
+			mob.setNoAi(true);
+			mob.setBaby(false);
 			mob.setInvulnerable(true);
 		}
 
-		merchants.add(merchant.getUniqueID());
+		merchants.add(merchant.getUUID());
 	}
 
 	@Nullable
@@ -121,14 +121,14 @@ public final class BbMerchantBehavior implements IGameBehavior {
 	}
 
 	private ActionResultType interactWithEntity(ServerPlayerEntity player, Entity target, Hand hand) {
-		if (this.merchants.contains(target.getUniqueID())) {
+		if (this.merchants.contains(target.getUUID())) {
 			MerchantOffers builtOffers = new MerchantOffers();
 			for (Offer offer : this.offers) {
 				builtOffers.add(offer.build(this.game));
 			}
 
 			BbMerchant merchant = new BbMerchant(player, builtOffers);
-			merchant.openMerchantContainer(player, BiodiversityBlitzTexts.trading(), 1);
+			merchant.openTradingScreen(player, BiodiversityBlitzTexts.trading(), 1);
 
 			return ActionResultType.SUCCESS;
 		}

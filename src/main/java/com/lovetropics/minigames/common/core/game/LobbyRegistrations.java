@@ -36,7 +36,7 @@ public final class LobbyRegistrations implements PlayerSet {
 		allocator.setOverflowTeam(PlayerRole.SPECTATOR);
 
 		for (ServerPlayerEntity player : this) {
-			PlayerRole role = forcedRoles.get(player.getUniqueID());
+			PlayerRole role = forcedRoles.get(player.getUUID());
 			allocator.addPlayer(player, role);
 		}
 
@@ -85,7 +85,7 @@ public final class LobbyRegistrations implements PlayerSet {
 	@Nullable
 	@Override
 	public ServerPlayerEntity getPlayerBy(UUID id) {
-		return contains(id) ? server.getPlayerList().getPlayerByUUID(id) : null;
+		return contains(id) ? server.getPlayerList().getPlayer(id) : null;
 	}
 
 	@Override

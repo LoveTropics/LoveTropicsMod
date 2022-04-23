@@ -106,8 +106,8 @@ public interface PlayerPlacement {
 					String prefix = head ? headPrefix : indentPrefix;
 					head = false;
 
-					players.sendMessage(new StringTextComponent(prefix).mergeStyle(TextFormatting.AQUA)
-							.appendSibling(new StringTextComponent(entry.value.getName()).mergeStyle(TextFormatting.GOLD))
+					players.sendMessage(new StringTextComponent(prefix).withStyle(TextFormatting.AQUA)
+							.append(new StringTextComponent(entry.value.getName()).withStyle(TextFormatting.GOLD))
 					);
 
 					i++;
@@ -163,7 +163,7 @@ public interface PlayerPlacement {
 					IFormattableTextComponent name = new StringTextComponent(prefix + entry.player.getName() + ": ");
 					IFormattableTextComponent score = new StringTextComponent(scoreKey.display(entry.score));
 
-					players.sendMessage(name.mergeStyle(TextFormatting.AQUA).appendSibling(score.mergeStyle(TextFormatting.GOLD)));
+					players.sendMessage(name.withStyle(TextFormatting.AQUA).append(score.withStyle(TextFormatting.GOLD)));
 
 					i++;
 				}

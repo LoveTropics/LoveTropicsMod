@@ -1,18 +1,17 @@
 package com.lovetropics.minigames.client.lobby.state;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
 import com.lovetropics.minigames.common.core.game.behavior.config.BehaviorConfig;
 import com.lovetropics.minigames.common.core.game.behavior.config.ConfigData;
 import com.lovetropics.minigames.common.core.game.behavior.config.ConfigDataOps;
 import com.lovetropics.minigames.common.core.game.behavior.config.ConfigList;
-
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.NBTDynamicOps;
 import net.minecraft.network.PacketBuffer;
+
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class ClientConfigList {
 	
@@ -33,7 +32,7 @@ public class ClientConfigList {
 		Map<BehaviorConfig<?>, ConfigData> values = new LinkedHashMap<>();
 		int size = buffer.readVarInt();
 		for (int i = 0; i < size; i++) {
-			values.put(BehaviorConfig.TEMP_REGISTRY.get(buffer.readString(255)), NBTDynamicOps.INSTANCE.convertTo(ConfigDataOps.INSTANCE, buffer.readCompoundTag().get("configs")));
+			values.put(BehaviorConfig.TEMP_REGISTRY.get(buffer.readUtf(255)), NBTDynamicOps.INSTANCE.convertTo(ConfigDataOps.INSTANCE, buffer.readNbt().get("configs")));
 		}
 		values.forEach((t, d) -> t.postProcess(d));
 		return new ClientConfigList(values);
@@ -42,10 +41,10 @@ public class ClientConfigList {
 	public void encode(PacketBuffer buffer) {
 		buffer.writeVarInt(configs.size());
 		for (Map.Entry<BehaviorConfig<?>, ConfigData> e : configs.entrySet()) {
-			buffer.writeString(e.getKey().getName(), 255);
+			buffer.writeUtf(e.getKey().getName(), 255);
 			CompoundNBT tag = new CompoundNBT();
 			tag.put("configs", ConfigDataOps.INSTANCE.convertTo(NBTDynamicOps.INSTANCE, e.getValue()));
-			buffer.writeCompoundTag(tag);
+			buffer.writeNbt(tag);
 		}
 	}
 

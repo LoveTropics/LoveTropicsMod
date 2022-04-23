@@ -56,7 +56,7 @@ public class UpdateWorkspaceRegionMessage {
 		}
 
 		MapWorkspaceManager workspaceManager = MapWorkspaceManager.get(sender.server);
-		MapWorkspace workspace = workspaceManager.getWorkspace(sender.world.getDimensionKey());
+		MapWorkspace workspace = workspaceManager.getWorkspace(sender.level.dimension());
 		if (workspace != null) {
 			workspace.getRegions().set(id, region);
 		}

@@ -2,9 +2,9 @@ package com.lovetropics.minigames.common.content.biodiversity_blitz.behavior;
 
 import com.lovetropics.lib.BlockBox;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.BiodiversityBlitzTexts;
-import com.lovetropics.minigames.common.content.biodiversity_blitz.explosion.FilteredExplosion;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.event.BbEvents;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.BbMobEntity;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.explosion.FilteredExplosion;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.explosion.PlantAffectingExplosion;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.CurrencyManager;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.Plot;
@@ -87,7 +87,7 @@ public final class BbBehavior implements IGameBehavior {
 				return ActionResultType.PASS;
 			}
 
-			if (!plot.walls.getBounds().contains(player.getPositionVec())) {
+			if (!plot.walls.getBounds().contains(player.position())) {
 				return ActionResultType.FAIL;
 			}
 
@@ -102,7 +102,7 @@ public final class BbBehavior implements IGameBehavior {
 
 	private ActionResultType onUseBlock(ServerPlayerEntity player, ServerWorld world, BlockPos blockPos, Hand hand, BlockRayTraceResult blockRayTraceResult) {
 		Plot plot = this.plots.getPlotFor(player);
-		BlockPos pos = blockRayTraceResult.getPos();
+		BlockPos pos = blockRayTraceResult.getBlockPos();
 
 		if (plot != null && plot.bounds.contains(pos)) {
 			return this.onUseBlockInPlot(player, world, blockPos, hand, plot, pos);
@@ -113,13 +113,13 @@ public final class BbBehavior implements IGameBehavior {
 
 	private ActionResultType onUseBlockInPlot(ServerPlayerEntity player, ServerWorld world, BlockPos blockPos, Hand hand, Plot plot, BlockPos pos) {
 		// Check if farmland is being used and the user has a hoe TODO: can we make it not hardcoded?
-		if (world.getBlockState(pos).getBlock() == Blocks.FARMLAND && player.getHeldItem(hand).getItem() instanceof HoeItem) {
+		if (world.getBlockState(pos).getBlock() == Blocks.FARMLAND && player.getItemInHand(hand).getItem() instanceof HoeItem) {
 			// If there is no plant above we can change to grass safely
-			if (!plot.plants.hasPlantAt(pos.up())) {
-				world.setBlockState(pos, Blocks.GRASS_BLOCK.getDefaultState());
-				world.playSound(null, blockPos, SoundEvents.ITEM_HOE_TILL, SoundCategory.BLOCKS, 1.0F, 1.0F);
-				player.swingArm(hand);
-				player.getCooldownTracker().setCooldown(player.getHeldItem(hand).getItem(), 3);
+			if (!plot.plants.hasPlantAt(pos.above())) {
+				world.setBlockAndUpdate(pos, Blocks.GRASS_BLOCK.defaultBlockState());
+				world.playSound(null, blockPos, SoundEvents.HOE_TILL, SoundCategory.BLOCKS, 1.0F, 1.0F);
+				player.swing(hand);
+				player.getCooldowns().addCooldown(player.getItemInHand(hand).getItem(), 3);
 				return ActionResultType.SUCCESS;
 			}
 		}
@@ -130,7 +130,7 @@ public final class BbBehavior implements IGameBehavior {
 	private ActionResultType onTrampleFarmland(Entity entity, BlockPos pos, BlockState state) {
 		Plot plot = this.plots.getPlotFor(entity);
 		if (plot != null && plot.bounds.contains(pos)) {
-			if (!plot.plants.hasPlantAt(pos.up())) {
+			if (!plot.plants.hasPlantAt(pos.above())) {
 				return ActionResultType.PASS;
 			}
 		}
@@ -145,12 +145,12 @@ public final class BbBehavior implements IGameBehavior {
 	}
 
 	private void spawnSpectator(ServerPlayerEntity player) {
-		Plot plot = plots.getRandomPlot(player.getRNG());
+		Plot plot = plots.getRandomPlot(player.getRandom());
 		if (plot != null) {
 			teleportToRegion(player, plot.plantBounds, plot.forward);
 		}
 
-		player.setGameType(GameType.SPECTATOR);
+		player.setGameMode(GameType.SPECTATOR);
 	}
 
 	private void onAssignPlot(ServerPlayerEntity player, Plot plot) {
@@ -173,7 +173,7 @@ public final class BbBehavior implements IGameBehavior {
 
 	private ActionResultType onAttack(ServerPlayerEntity player, Entity target) {
 		if (BbMobEntity.matches(target)) {
-			Plot plot = plots.getPlotAt(target.getPosition());
+			Plot plot = plots.getPlotAt(target.blockPosition());
 			if (plot != null && plot.walls.containsEntity(player)) {
 				return ActionResultType.PASS;
 			}
@@ -192,8 +192,8 @@ public final class BbBehavior implements IGameBehavior {
 	}
 
 	private ActionResultType onPlaceBlockInOwnPlot(ServerPlayerEntity player, BlockPos pos, BlockState placed, Plot plot) {
-		if (placed.matchesBlock(Blocks.FARMLAND)) {
-			player.world.setBlockState(pos, Blocks.FARMLAND.getDefaultState().with(FarmlandBlock.MOISTURE, 7));
+		if (placed.is(Blocks.FARMLAND)) {
+			player.level.setBlockAndUpdate(pos, Blocks.FARMLAND.defaultBlockState().setValue(FarmlandBlock.MOISTURE, 7));
 			return ActionResultType.PASS;
 		}
 
@@ -205,8 +205,8 @@ public final class BbBehavior implements IGameBehavior {
 	}
 
 	private void sendActionRejection(ServerPlayerEntity player, IFormattableTextComponent message) {
-		player.sendStatusMessage(message.mergeStyle(TextFormatting.RED), true);
-		player.getServerWorld().playSound(null, player.getPosition(), SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, SoundCategory.PLAYERS,  1.0F, 1.0F);
+		player.displayClientMessage(message.withStyle(TextFormatting.RED), true);
+		player.getLevel().playSound(null, player.blockPosition(), SoundEvents.EXPERIENCE_ORB_PICKUP, SoundCategory.PLAYERS,  1.0F, 1.0F);
 	}
 
 	private ActionResultType onPlayerDeath(ServerPlayerEntity player, DamageSource damageSource) {
@@ -217,8 +217,8 @@ public final class BbBehavior implements IGameBehavior {
 
 		teleportToRegion(player, plot.spawn, plot.spawnForward);
 		player.setHealth(20.0F);
-		if (player.getFoodStats().getFoodLevel() < 10) {
-			player.getFoodStats().addStats(2, 0.8f);
+		if (player.getFoodData().getFoodLevel() < 10) {
+			player.getFoodData().eat(2, 0.8f);
 		}
 
 		// TODO: this should really be in the currency behavior
@@ -234,16 +234,16 @@ public final class BbBehavior implements IGameBehavior {
 				currency.set(player, newCurrency, false);
 		
 	//			player.sendStatusMessage(BiodiversityBlitzTexts.deathDecrease(oldCurrency - newCurrency).mergeStyle(TextFormatting.RED), true);
-		        player.connection.sendPacket(new STitlePacket(STitlePacket.Type.SUBTITLE, BiodiversityBlitzTexts.deathDecrease(oldCurrency - newCurrency).mergeStyle(TextFormatting.RED, TextFormatting.ITALIC)));
+		        player.connection.send(new STitlePacket(STitlePacket.Type.SUBTITLE, BiodiversityBlitzTexts.deathDecrease(oldCurrency - newCurrency).withStyle(TextFormatting.RED, TextFormatting.ITALIC)));
 			}
 		}
 
-		player.playSound(SoundEvents.ENTITY_ARROW_HIT_PLAYER, SoundCategory.PLAYERS, 0.18F, 1.0F);
-		player.addPotionEffect(new EffectInstance(Effects.BLINDNESS, 80));
-		player.addPotionEffect(new EffectInstance(Effects.RESISTANCE, 255, 80));
+		player.playNotifySound(SoundEvents.ARROW_HIT_PLAYER, SoundCategory.PLAYERS, 0.18F, 1.0F);
+		player.addEffect(new EffectInstance(Effects.BLINDNESS, 80));
+		player.addEffect(new EffectInstance(Effects.DAMAGE_RESISTANCE, 255, 80));
 
-		player.connection.sendPacket(new STitlePacket(40, 20, 0));
-        player.connection.sendPacket(new STitlePacket(STitlePacket.Type.TITLE, BiodiversityBlitzTexts.deathTitle().mergeStyle(TextFormatting.RED)));
+		player.connection.send(new STitlePacket(40, 20, 0));
+        player.connection.send(new STitlePacket(STitlePacket.Type.TITLE, BiodiversityBlitzTexts.deathTitle().withStyle(TextFormatting.RED)));
 
 		return ActionResultType.FAIL;
 	}
@@ -258,9 +258,9 @@ public final class BbBehavior implements IGameBehavior {
 	}
 
 	private void teleportToRegion(ServerPlayerEntity player, BlockBox region, Direction direction) {
-		BlockPos pos = region.sample(player.getRNG());
+		BlockPos pos = region.sample(player.getRandom());
 
-		player.rotationYaw = direction.getHorizontalAngle();
+		player.yRot = direction.toYRot();
 		DimensionUtils.teleportPlayerNoPortal(player, game.getDimension(), pos);
 	}
 }

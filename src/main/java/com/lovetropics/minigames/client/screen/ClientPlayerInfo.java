@@ -17,15 +17,15 @@ public final class ClientPlayerInfo {
 	@Nullable
 	public static GameProfile getPlayerProfile(UUID uuid) {
 		NetworkPlayerInfo info = get(uuid);
-		return info != null ? info.getGameProfile() : null;
+		return info != null ? info.getProfile() : null;
 	}
 
 	@Nullable
 	public static ITextComponent getName(UUID uuid) {
 		NetworkPlayerInfo info = get(uuid);
 		if (info != null) {
-			ITextComponent displayName = info.getDisplayName();
-			return displayName != null ? displayName : new StringTextComponent(info.getGameProfile().getName());
+			ITextComponent displayName = info.getTabListDisplayName();
+			return displayName != null ? displayName : new StringTextComponent(info.getProfile().getName());
 		} else {
 			return null;
 		}
@@ -34,7 +34,7 @@ public final class ClientPlayerInfo {
 	@Nullable
 	public static ResourceLocation getSkin(UUID uuid) {
 		NetworkPlayerInfo info = get(uuid);
-		return info != null ? info.getLocationSkin() : null;
+		return info != null ? info.getSkinLocation() : null;
 	}
 
 	@Nullable

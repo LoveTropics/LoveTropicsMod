@@ -81,25 +81,25 @@ public final class PlantBehavior implements IGameBehavior {
 
 	private ActionResult<Plant> placePlant(ServerPlayerEntity player, Plot plot, BlockPos pos, PlantType plantType) {
 		if (!this.plantType.equals(plantType)) {
-			return ActionResult.resultPass(null);
+			return ActionResult.pass(null);
 		}
 
 		PlantPlacement placement = plantEvents.invoker(BbPlantEvents.PLACE).placePlant(player, plot, pos);
-		if (placement == null) return ActionResult.resultPass(null);
+		if (placement == null) return ActionResult.pass(null);
 
 		Plant plant = plot.plants.addPlant(plantType, this.family, this.value, placement);
 		if (plant == null) {
-			return ActionResult.resultFail(null);
+			return ActionResult.fail(null);
 		}
 
 		if (placement.place(game.getWorld(), plant.coverage())) {
 			plantEvents.invoker(BbPlantEvents.ADD).onAddPlant(player, plot, plant);
 			game.invoker(BbEvents.PLANTS_CHANGED).onPlantsChanged(player, plot);
 
-			return ActionResult.resultSuccess(plant);
+			return ActionResult.success(plant);
 		} else {
 			plot.plants.removePlant(plant);
-			return ActionResult.resultFail(null);
+			return ActionResult.fail(null);
 		}
 	}
 
@@ -111,7 +111,7 @@ public final class PlantBehavior implements IGameBehavior {
 		ServerWorld world = game.getWorld();
 		for (BlockPos plantPos : plant.coverage()) {
 			FluidState fluidState = world.getFluidState(plantPos);
-			world.setBlockState(plantPos, fluidState.getBlockState(), Constants.BlockFlags.BLOCK_UPDATE | Constants.BlockFlags.UPDATE_NEIGHBORS);
+			world.setBlock(plantPos, fluidState.createLegacyBlock(), Constants.BlockFlags.BLOCK_UPDATE | Constants.BlockFlags.UPDATE_NEIGHBORS);
 		}
 
 		plot.plants.removePlant(plant);
@@ -127,7 +127,7 @@ public final class PlantBehavior implements IGameBehavior {
 			return ActionResultType.PASS;
 		}
 
-		if (player.getHeldItem(hand).getItem() instanceof SwordItem) {
+		if (player.getItemInHand(hand).getItem() instanceof SwordItem) {
 			return ActionResultType.FAIL;
 		}
 

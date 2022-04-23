@@ -1,7 +1,6 @@
 package com.lovetropics.minigames.client.lobby.screen.game_config;
 
 import com.lovetropics.minigames.client.screen.flex.Layout;
-
 import net.minecraft.client.gui.widget.button.Button;
 import net.minecraft.util.text.StringTextComponent;
 
@@ -11,7 +10,7 @@ public class BooleanButton extends Button {
 
 	public BooleanButton(Layout layout, boolean def) {
 		super(layout.content().left(), layout.content().top(), layout.content().width(), layout.content().height(),
-				new StringTextComponent(Boolean.toString(def)), BooleanButton::toggle, EMPTY_TOOLTIP);
+				new StringTextComponent(Boolean.toString(def)), BooleanButton::toggle, NO_TOOLTIP);
 	}
 
 	private static void toggle(Button button) {

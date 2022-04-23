@@ -33,7 +33,7 @@ public class PlantAffectingExplosion extends FilteredExplosion {
 
         for (BlockPos pos : affectedBlocks) {
             Vector3d vec = new Vector3d(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5);
-            double distance = vec.squareDistanceTo(center);
+            double distance = vec.distanceToSqr(center);
             double damage = 160.0 / (distance + 1);
 
             Plant plant = this.plot.plants.getPlantAt(pos);

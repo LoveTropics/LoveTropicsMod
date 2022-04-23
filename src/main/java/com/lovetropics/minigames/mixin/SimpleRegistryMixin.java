@@ -16,34 +16,34 @@ import java.util.Map;
 
 @Mixin(SimpleRegistry.class)
 public class SimpleRegistryMixin<T> implements RegistryEntryRemover<T> {
-    @Shadow @Final private BiMap<ResourceLocation, T> registryObjects;
-    @Shadow @Final private BiMap<RegistryKey<T>, T> keyToObjectMap;
-    @Shadow @Final private Object2IntMap<T> entryIndexMap;
-    @Shadow @Final private ObjectList<T> entryList;
-    @Shadow @Final private Map<T, Lifecycle> objectToLifecycleMap;
-    @Shadow protected Object[] values;
+    @Shadow @Final private BiMap<ResourceLocation, T> storage;
+    @Shadow @Final private BiMap<RegistryKey<T>, T> keyStorage;
+    @Shadow @Final private Object2IntMap<T> toId;
+    @Shadow @Final private ObjectList<T> byId;
+    @Shadow @Final private Map<T, Lifecycle> lifecycles;
+    @Shadow protected Object[] randomCache;
 
     @Override
     public boolean remove(T entry) {
-        int rawId = this.entryIndexMap.removeInt(entry);
+        int rawId = this.toId.removeInt(entry);
         if (rawId == -1) {
             return false;
         }
 
-        this.keyToObjectMap.inverse().remove(entry);
-        this.registryObjects.inverse().remove(entry);
-        this.objectToLifecycleMap.remove(entry);
+        this.keyStorage.inverse().remove(entry);
+        this.storage.inverse().remove(entry);
+        this.lifecycles.remove(entry);
 
-        this.entryList.set(rawId, null);
+        this.byId.set(rawId, null);
 
-        this.values = null;
+        this.randomCache = null;
 
         return true;
     }
 
     @Override
     public boolean remove(ResourceLocation key) {
-        T entry = this.registryObjects.get(key);
+        T entry = this.storage.get(key);
         return entry != null && this.remove(entry);
     }
 }

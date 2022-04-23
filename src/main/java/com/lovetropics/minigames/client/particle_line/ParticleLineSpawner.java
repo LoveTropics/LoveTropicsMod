@@ -21,7 +21,7 @@ public final class ParticleLineSpawner {
 			float project = progress * length;
 			Vector3d point = from.add(direction.scale(project));
 
-			CLIENT.particles.addParticle(particle, point.x, point.y, point.z, 0.0, 0.0, 0.0);
+			CLIENT.particleEngine.createParticle(particle, point.x, point.y, point.z, 0.0, 0.0, 0.0);
 		}
 	}
 }

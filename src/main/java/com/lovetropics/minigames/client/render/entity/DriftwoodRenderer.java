@@ -27,18 +27,18 @@ public final class DriftwoodRenderer extends EntityRenderer<DriftwoodEntity> {
 	public void render(DriftwoodEntity entity, float entityYaw, float partialTicks, MatrixStack transform, IRenderTypeBuffer buffer, int light) {
 		super.render(entity, entityYaw, partialTicks, transform, buffer, light);
 
-		transform.push();
+		transform.pushPose();
 		transform.translate(0.0, -0.5, 0.0);
-		transform.rotate(Vector3f.YP.rotationDegrees(90.0F - entityYaw));
+		transform.mulPose(Vector3f.YP.rotationDegrees(90.0F - entityYaw));
 
-		IVertexBuilder builder = buffer.getBuffer(model.getRenderType(TEXTURE));
-		model.render(transform, builder, light, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 1.0F);
+		IVertexBuilder builder = buffer.getBuffer(model.renderType(TEXTURE));
+		model.renderToBuffer(transform, builder, light, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 1.0F);
 
-		transform.pop();
+		transform.popPose();
 	}
 
 	@Override
-	public ResourceLocation getEntityTexture(DriftwoodEntity entity) {
+	public ResourceLocation getTextureLocation(DriftwoodEntity entity) {
 		return TEXTURE;
 	}
 
@@ -46,22 +46,22 @@ public final class DriftwoodRenderer extends EntityRenderer<DriftwoodEntity> {
 		private final ModelRenderer box;
 
 		DriftwoodModel() {
-			textureWidth = 128;
-			textureHeight = 32;
+			texWidth = 128;
+			texHeight = 32;
 
 			box = new ModelRenderer(this);
-			box.setRotationPoint(0.0F, 24.0F, 0.0F);
-			box.setTextureOffset(0, 0);
+			box.setPos(0.0F, 24.0F, 0.0F);
+			box.texOffs(0, 0);
 			box.addBox(-16.0F, -16.0F, -8.0F, 32.0F, 16.0F, 16.0F, 0.0F, false);
 		}
 
 		@Override
-		public void render(MatrixStack transform, IVertexBuilder buffer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha) {
+		public void renderToBuffer(MatrixStack transform, IVertexBuilder buffer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha) {
 			box.render(transform, buffer, packedLight, packedOverlay);
 		}
 
 		@Override
-		public void setRotationAngles(Entity entity, float limbSwing, float limbSwingAmount, float age, float yaw, float pitch) {
+		public void setupAnim(Entity entity, float limbSwing, float limbSwingAmount, float age, float yaw, float pitch) {
 		}
 	}
 }

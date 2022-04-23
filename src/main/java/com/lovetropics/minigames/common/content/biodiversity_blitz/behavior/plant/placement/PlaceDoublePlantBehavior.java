@@ -28,7 +28,7 @@ public final class PlaceDoublePlantBehavior implements IGameBehavior {
 		events.listen(BbPlantEvents.PLACE, (player, plot, pos) -> new PlantPlacement()
 				.covers(PlantCoverage.ofDouble(pos))
 				.places((world, coverage) -> {
-					DoublePlantBlockPlacer.PLACER.place(world, pos, this.block, world.rand);
+					DoublePlantBlockPlacer.INSTANCE.place(world, pos, this.block, world.random);
 					return true;
 				}));
 	}

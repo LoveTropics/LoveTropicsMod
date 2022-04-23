@@ -60,7 +60,7 @@ public final class SetMaxHealthBehavior implements IGameBehavior {
 	private void applyToPlayer(IGamePhase game, ServerPlayerEntity player) {
 		double maxHealth = getMaxHealthForPlayer(game, player);
 		if (maxHealth != 20.0) {
-			player.getAttribute(Attributes.MAX_HEALTH).applyNonPersistentModifier(
+			player.getAttribute(Attributes.MAX_HEALTH).addTransientModifier(
 					new AttributeModifier(
 							ATTRIBUTE_ID,
 							ATTRIBUTE_NAME,

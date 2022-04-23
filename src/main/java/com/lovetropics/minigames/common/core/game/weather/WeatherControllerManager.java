@@ -30,7 +30,7 @@ public final class WeatherControllerManager {
 	}
 
 	public static WeatherController forWorld(ServerWorld world) {
-		RegistryKey<World> dimension = world.getDimensionKey();
+		RegistryKey<World> dimension = world.dimension();
 		WeatherController controller = WEATHER_CONTROLLERS.get(dimension);
 		if (controller == null) {
 			WEATHER_CONTROLLERS.put(dimension, controller = factory.apply(world));
@@ -40,7 +40,7 @@ public final class WeatherControllerManager {
 
 	@SubscribeEvent
 	public static void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
-		joinPlayerToDimension(event.getPlayer(), event.getPlayer().world.getDimensionKey());
+		joinPlayerToDimension(event.getPlayer(), event.getPlayer().level.dimension());
 	}
 
 	@SubscribeEvent
@@ -54,7 +54,7 @@ public final class WeatherControllerManager {
 			return;
 		}
 
-		ServerWorld world = server.getWorld(dimension);
+		ServerWorld world = server.getLevel(dimension);
 		if (world != null) {
 			WeatherController controller = WeatherControllerManager.forWorld(world);
 			controller.onPlayerJoin((ServerPlayerEntity) player);
@@ -64,11 +64,11 @@ public final class WeatherControllerManager {
 	@SubscribeEvent
 	public static void onWorldTick(TickEvent.WorldTickEvent event) {
 		World world = event.world;
-		if (world.isRemote || event.phase == TickEvent.Phase.END) {
+		if (world.isClientSide || event.phase == TickEvent.Phase.END) {
 			return;
 		}
 
-		WeatherController controller = WEATHER_CONTROLLERS.get(world.getDimensionKey());
+		WeatherController controller = WEATHER_CONTROLLERS.get(world.dimension());
 		if (controller != null) {
 			controller.tick();
 		}
@@ -78,7 +78,7 @@ public final class WeatherControllerManager {
 	public static void onWorldUnload(WorldEvent.Unload event) {
 		IWorld world = event.getWorld();
 		if (world instanceof IServerWorld) {
-			WEATHER_CONTROLLERS.remove(((IServerWorld) world).getWorld().getDimensionKey());
+			WEATHER_CONTROLLERS.remove(((IServerWorld) world).getLevel().dimension());
 		}
 	}
 }

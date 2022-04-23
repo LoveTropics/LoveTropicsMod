@@ -54,7 +54,7 @@ public final class PlantItemBehavior implements IGameBehavior {
 	}
 
 	private ActionResultType onPlaceBlock(ServerPlayerEntity player, BlockPos pos, BlockState placed, BlockState placedOn) {
-		ItemStack heldItem = player.getHeldItemMainhand();
+		ItemStack heldItem = player.getMainHandItem();
 		if (!this.itemType.matches(heldItem)) {
 			return ActionResultType.PASS;
 		}
@@ -66,12 +66,12 @@ public final class PlantItemBehavior implements IGameBehavior {
 			}
 
 			ActionResult<Plant> result = game.invoker(BbEvents.PLACE_PLANT).placePlant(player, plot, pos, this.places);
-			if (result.getResult() == null) {
-				player.sendStatusMessage(BiodiversityBlitzTexts.plantCannotFit().mergeStyle(TextFormatting.RED), true);
-				player.playSound(SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, SoundCategory.PLAYERS, 1.0F, 1.0F);
+			if (result.getObject() == null) {
+				player.displayClientMessage(BiodiversityBlitzTexts.plantCannotFit().withStyle(TextFormatting.RED), true);
+				player.playNotifySound(SoundEvents.EXPERIENCE_ORB_PICKUP, SoundCategory.PLAYERS, 1.0F, 1.0F);
 			}
 
-			return result.getType();
+			return result.getResult();
 		}
 
 		return ActionResultType.PASS;

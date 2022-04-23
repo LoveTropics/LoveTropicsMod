@@ -22,17 +22,17 @@ public final class ClientLobbyPlayer {
 	public static ClientLobbyPlayer from(IGameLobby lobby, ServerPlayerEntity player) {
 		IGamePhase currentPhase = lobby.getCurrentPhase();
 		PlayerRole playingRole = currentPhase != null ? currentPhase.getRoleFor(player) : null;
-		return new ClientLobbyPlayer(player.getUniqueID(), playingRole);
+		return new ClientLobbyPlayer(player.getUUID(), playingRole);
 	}
 
 	public void encode(PacketBuffer buffer) {
-		buffer.writeUniqueId(this.uuid);
+		buffer.writeUUID(this.uuid);
 		encodeRole(buffer, this.playingRole);
 	}
 
 	public static ClientLobbyPlayer decode(PacketBuffer buffer) {
 		return new ClientLobbyPlayer(
-				buffer.readUniqueId(),
+				buffer.readUUID(),
 				decodeRole(buffer)
 		);
 	}

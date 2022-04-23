@@ -36,17 +36,17 @@ public final class GenerateEntitiesBehavior extends ChunkGeneratingBehavior {
 	@Override
 	protected void generateChunk(IGamePhase game, ServerWorld world, Chunk chunk) {
 		ChunkPos chunkPos = chunk.getPos();
-		int minX = chunkPos.getXStart();
-		int minZ = chunkPos.getZStart();
+		int minX = chunkPos.getMinBlockX();
+		int minZ = chunkPos.getMinBlockZ();
 
-		Random random = world.rand;
+		Random random = world.random;
 
 		int count = random.nextInt(maxPerChunk - minPerChunk + 1) + minPerChunk;
 		for (int i = 0; i < count; i++) {
 			int x = minX + random.nextInt(16);
 			int z = minZ + random.nextInt(16);
 
-			BlockPos pos = world.getHeight(Heightmap.Type.MOTION_BLOCKING, new BlockPos(x, 0, z));
+			BlockPos pos = world.getHeightmapPos(Heightmap.Type.MOTION_BLOCKING, new BlockPos(x, 0, z));
 			type.spawn(world, null, null, pos, SpawnReason.CHUNK_GENERATION, false, false);
 		}
 	}

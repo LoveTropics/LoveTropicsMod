@@ -35,26 +35,26 @@ public final class GameTexts {
 	}
 
 	private static IFormattableTextComponent formatName(IFormattableTextComponent name) {
-		return name.mergeStyle(TextFormatting.ITALIC, TextFormatting.GREEN);
+		return name.withStyle(TextFormatting.ITALIC, TextFormatting.GREEN);
 	}
 
 	private static IFormattableTextComponent formatStatus(IFormattableTextComponent message) {
-		return message.mergeStyle(TextFormatting.GOLD);
+		return message.withStyle(TextFormatting.GOLD);
 	}
 
 	private static IFormattableTextComponent formatPositive(IFormattableTextComponent message) {
-		return message.mergeStyle(TextFormatting.AQUA);
+		return message.withStyle(TextFormatting.AQUA);
 	}
 
 	private static IFormattableTextComponent formatNegative(IFormattableTextComponent message) {
-		return message.mergeStyle(TextFormatting.RED);
+		return message.withStyle(TextFormatting.RED);
 	}
 
 	private static IFormattableTextComponent formatLink(IFormattableTextComponent link, String command) {
 		Style style = Style.EMPTY
-				.setUnderlined(true).setFormatting(TextFormatting.BLUE)
-				.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, command))
-				.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new StringTextComponent(command)));
+				.setUnderlined(true).withColor(TextFormatting.BLUE)
+				.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, command))
+				.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new StringTextComponent(command)));
 
 		return link.setStyle(style);
 	}
@@ -68,11 +68,11 @@ public final class GameTexts {
 	}
 
 	public static IFormattableTextComponent gameName(IGameDefinition game) {
-		return formatName(game.getName().deepCopy());
+		return formatName(game.getName().copy());
 	}
 
 	public static IFormattableTextComponent playerName(ServerPlayerEntity player) {
-		return player.getDisplayName().deepCopy().mergeStyle(TextFormatting.GREEN);
+		return player.getDisplayName().copy().withStyle(TextFormatting.GREEN);
 	}
 
 	public static final class Commands {
@@ -175,8 +175,8 @@ public final class GameTexts {
 		}
 
 		public static IFormattableTextComponent lobbySelector(Collection<? extends IGameLobby> lobbies, @Nullable PlayerRole role) {
-			IFormattableTextComponent selector = new TranslationTextComponent(Keys.LOBBY_SELECTOR_HEADER).appendString("\n")
-					.mergeStyle(TextFormatting.GOLD);
+			IFormattableTextComponent selector = new TranslationTextComponent(Keys.LOBBY_SELECTOR_HEADER).append("\n")
+					.withStyle(TextFormatting.GOLD);
 
 			for (IGameLobby lobby : lobbies) {
 				ITextComponent lobbyName = lobbyName(lobby);
@@ -184,7 +184,7 @@ public final class GameTexts {
 				ITextComponent link = clickHere(lobby.getMetadata().joinCommand(role));
 
 				TranslationTextComponent entry = new TranslationTextComponent(Keys.LOBBY_SELECTOR_ENTRY, lobbyName, players, link);
-				selector = selector.appendSibling(entry.mergeStyle(TextFormatting.GRAY)).appendString("\n");
+				selector = selector.append(entry.withStyle(TextFormatting.GRAY)).append("\n");
 			}
 
 			return selector;
@@ -319,8 +319,8 @@ public final class GameTexts {
 		}
 
 		public static IFormattableTextComponent managingGame(ClientGameDefinition game) {
-			ITextComponent name = game.name.deepCopy().mergeStyle(TextFormatting.RESET);
-			return new TranslationTextComponent(Keys.MANAGING_GAME, name).mergeStyle(TextFormatting.BOLD);
+			ITextComponent name = game.name.copy().withStyle(TextFormatting.RESET);
+			return new TranslationTextComponent(Keys.MANAGING_GAME, name).withStyle(TextFormatting.BOLD);
 		}
 
 		public static IFormattableTextComponent lobbyName() {

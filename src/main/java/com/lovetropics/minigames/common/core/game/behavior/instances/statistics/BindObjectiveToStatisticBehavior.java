@@ -37,7 +37,7 @@ public final class BindObjectiveToStatisticBehavior implements IGameBehavior {
 				StatisticKey<Integer> key = entry.getKey();
 				String objectiveKey = entry.getValue();
 
-				ScoreObjective objective = scoreboard.getObjective(objectiveKey);
+				ScoreObjective objective = scoreboard.getOrCreateObjective(objectiveKey);
 				if (objective != null) {
 					applyFromObjective(game, key, objective);
 				}
@@ -50,10 +50,10 @@ public final class BindObjectiveToStatisticBehavior implements IGameBehavior {
 		ServerScoreboard scoreboard = game.getServer().getScoreboard();
 
 		for (ServerPlayerEntity player : game.getAllPlayers()) {
-			Map<ScoreObjective, Score> objectives = scoreboard.getObjectivesForEntity(player.getScoreboardName());
+			Map<ScoreObjective, Score> objectives = scoreboard.getPlayerScores(player.getScoreboardName());
 			Score score = objectives.get(objective);
 			if (score != null) {
-				statistics.forPlayer(player).set(key, score.getScorePoints());
+				statistics.forPlayer(player).set(key, score.getScore());
 			}
 		}
 	}

@@ -85,7 +85,7 @@ public final class PlayerDisguise implements ICapabilityProvider {
 			this.disguiseEntity = null;
 		}
 
-		this.player.recalculateSize();
+		this.player.refreshDimensions();
 	}
 
 	@Nullable

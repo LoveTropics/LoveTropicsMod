@@ -74,7 +74,7 @@ public class LoveTropics {
     public static final ItemGroup LOVE_TROPICS_ITEM_GROUP = (new ItemGroup("love_tropics") {
         @Override
         @OnlyIn(Dist.CLIENT)
-        public ItemStack createIcon() {
+        public ItemStack makeIcon() {
             return new ItemStack(LoveTropicsBlocks.TRASH.get(TrashType.COLA).get());
         }
     });
@@ -145,7 +145,7 @@ public class LoveTropics {
     }
 
     public static LoveTropicsRegistrate registrate() {
-        return REGISTRATE.getValue();
+        return REGISTRATE.get();
     }
 
     @OnlyIn(Dist.CLIENT)

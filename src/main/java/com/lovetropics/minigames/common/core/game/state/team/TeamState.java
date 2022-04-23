@@ -163,7 +163,7 @@ public final class TeamState implements IGameState, Iterable<GameTeam> {
 				TeamAllocator<GameTeamKey, ServerPlayerEntity> teamAllocator = createAllocator();
 
 				for (ServerPlayerEntity player : participants) {
-					UUID playerId = player.getUniqueID();
+					UUID playerId = player.getUUID();
 					if (!assignedPlayers.contains(playerId)) {
 						teamAllocator.addPlayer(player, preferences.get(playerId));
 					}

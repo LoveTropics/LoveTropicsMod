@@ -20,7 +20,7 @@ import java.util.function.IntConsumer;
 
 public final class InstalledGameList extends AbstractGameList {
 	private static final ITextComponent TITLE =  GameTexts.Ui.installedGames()
-			.mergeStyle(TextFormatting.UNDERLINE, TextFormatting.BOLD);
+			.withStyle(TextFormatting.UNDERLINE, TextFormatting.BOLD);
 
 	private final ClientLobbyManageState lobby;
 	private final IntConsumer select;

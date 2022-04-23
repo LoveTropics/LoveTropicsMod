@@ -65,7 +65,7 @@ public final class GrowPlantBehavior implements IGameBehavior {
 
 		BlockPos origin = plant.coverage().getOrigin();
 		ActionResult<Plant> result = game.invoker(BbEvents.PLACE_PLANT).placePlant(player, plot, origin, this.growInto);
-		if (result.getType() != ActionResultType.SUCCESS) {
+		if (result.getResult() != ActionResultType.SUCCESS) {
 			this.restoreSnapshot(world, plot, snapshot);
 
 			GrowTime growTime = plant.state(GrowTime.KEY);
@@ -94,8 +94,8 @@ public final class GrowPlantBehavior implements IGameBehavior {
 
 		Long2ObjectMap<BlockState> blocks = new Long2ObjectOpenHashMap<>();
 		for (BlockPos pos : plant.coverage()) {
-			blocks.put(pos.toLong(), world.getBlockState(pos));
-			world.setBlockState(pos, Blocks.AIR.getDefaultState(), Constants.BlockFlags.BLOCK_UPDATE | Constants.BlockFlags.UPDATE_NEIGHBORS);
+			blocks.put(pos.asLong(), world.getBlockState(pos));
+			world.setBlock(pos, Blocks.AIR.defaultBlockState(), Constants.BlockFlags.BLOCK_UPDATE | Constants.BlockFlags.UPDATE_NEIGHBORS);
 		}
 
 		return new PlantSnapshot(plant, blocks);
@@ -105,9 +105,9 @@ public final class GrowPlantBehavior implements IGameBehavior {
 		plot.plants.addPlant(snapshot.plant);
 
 		for (BlockPos pos : snapshot.plant.coverage()) {
-			BlockState block = snapshot.blocks.get(pos.toLong());
+			BlockState block = snapshot.blocks.get(pos.asLong());
 			if (block != null) {
-				world.setBlockState(pos, block, Constants.BlockFlags.BLOCK_UPDATE | Constants.BlockFlags.UPDATE_NEIGHBORS);
+				world.setBlock(pos, block, Constants.BlockFlags.BLOCK_UPDATE | Constants.BlockFlags.UPDATE_NEIGHBORS);
 			}
 		}
 	}

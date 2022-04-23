@@ -32,14 +32,14 @@ public abstract class AgingPlantBehavior implements IGameBehavior {
             for (Plant plant : plants) {
                 for (BlockPos pos : plant.coverage()) {
                     BlockState state = world.getBlockState(pos);
-                    BlockState agedState = ageUp(world.rand, state);
+                    BlockState agedState = ageUp(world.random, state);
 
                     if (state != agedState) {
                         for (BlockPos plantPos : plant.coverage()) {
-                            world.playEvent(Constants.WorldEvents.BONEMEAL_PARTICLES, plantPos, 0);
+                            world.levelEvent(Constants.WorldEvents.BONEMEAL_PARTICLES, plantPos, 0);
                         }
 
-                        world.setBlockState(pos, agedState);
+                        world.setBlockAndUpdate(pos, agedState);
                     }
                 }
             }

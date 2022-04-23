@@ -52,38 +52,38 @@ public abstract class DelegatingSeedReader implements ISeedReader {
 	}
 
 	@Override
-	public Stream<? extends StructureStart<?>> func_241827_a(SectionPos sectionPos, Structure<?> structure) {
-		return this.parent.func_241827_a(sectionPos, structure);
+	public Stream<? extends StructureStart<?>> startsForFeature(SectionPos sectionPos, Structure<?> structure) {
+		return this.parent.startsForFeature(sectionPos, structure);
 	}
 
 	@Override
-	public ServerWorld getWorld() {
-		return this.parent.getWorld();
+	public ServerWorld getLevel() {
+		return this.parent.getLevel();
 	}
 
 	@Override
-	public ITickList<Block> getPendingBlockTicks() {
-		return this.parent.getPendingBlockTicks();
+	public ITickList<Block> getBlockTicks() {
+		return this.parent.getBlockTicks();
 	}
 
 	@Override
-	public ITickList<Fluid> getPendingFluidTicks() {
-		return this.parent.getPendingFluidTicks();
+	public ITickList<Fluid> getLiquidTicks() {
+		return this.parent.getLiquidTicks();
 	}
 
 	@Override
-	public IWorldInfo getWorldInfo() {
-		return this.parent.getWorldInfo();
+	public IWorldInfo getLevelData() {
+		return this.parent.getLevelData();
 	}
 
 	@Override
-	public DifficultyInstance getDifficultyForLocation(BlockPos pos) {
-		return this.parent.getDifficultyForLocation(pos);
+	public DifficultyInstance getCurrentDifficultyAt(BlockPos pos) {
+		return this.parent.getCurrentDifficultyAt(pos);
 	}
 
 	@Override
-	public AbstractChunkProvider getChunkProvider() {
-		return this.parent.getChunkProvider();
+	public AbstractChunkProvider getChunkSource() {
+		return this.parent.getChunkSource();
 	}
 
 	@Override
@@ -102,23 +102,23 @@ public abstract class DelegatingSeedReader implements ISeedReader {
 	}
 
 	@Override
-	public void playEvent(@Nullable PlayerEntity player, int type, BlockPos pos, int data) {
-		this.parent.playEvent(player, type, pos, data);
+	public void levelEvent(@Nullable PlayerEntity player, int type, BlockPos pos, int data) {
+		this.parent.levelEvent(player, type, pos, data);
 	}
 
 	@Override
-	public DynamicRegistries func_241828_r() {
-		return this.parent.func_241828_r();
+	public DynamicRegistries registryAccess() {
+		return this.parent.registryAccess();
 	}
 
 	@Override
-	public float func_230487_a_(Direction direction, boolean b) {
-		return this.parent.func_230487_a_(direction, b);
+	public float getShade(Direction direction, boolean b) {
+		return this.parent.getShade(direction, b);
 	}
 
 	@Override
-	public WorldLightManager getLightManager() {
-		return this.parent.getLightManager();
+	public WorldLightManager getLightEngine() {
+		return this.parent.getLightEngine();
 	}
 
 	@Override
@@ -128,8 +128,8 @@ public abstract class DelegatingSeedReader implements ISeedReader {
 
 	@Nullable
 	@Override
-	public TileEntity getTileEntity(BlockPos pos) {
-		return this.parent.getTileEntity(pos);
+	public TileEntity getBlockEntity(BlockPos pos) {
+		return this.parent.getBlockEntity(pos);
 	}
 
 	@Override
@@ -143,18 +143,18 @@ public abstract class DelegatingSeedReader implements ISeedReader {
 	}
 
 	@Override
-	public List<Entity> getEntitiesInAABBexcluding(@Nullable Entity entity, AxisAlignedBB box, @Nullable Predicate<? super Entity> predicate) {
-		return this.parent.getEntitiesInAABBexcluding(entity, box, predicate);
+	public List<Entity> getEntities(@Nullable Entity entity, AxisAlignedBB box, @Nullable Predicate<? super Entity> predicate) {
+		return this.parent.getEntities(entity, box, predicate);
 	}
 
 	@Override
-	public <T extends Entity> List<T> getEntitiesWithinAABB(Class<? extends T> clazz, AxisAlignedBB box, @Nullable Predicate<? super T> filter) {
-		return this.parent.getEntitiesWithinAABB(clazz, box, filter);
+	public <T extends Entity> List<T> getEntitiesOfClass(Class<? extends T> clazz, AxisAlignedBB box, @Nullable Predicate<? super T> filter) {
+		return this.parent.getEntitiesOfClass(clazz, box, filter);
 	}
 
 	@Override
-	public List<? extends PlayerEntity> getPlayers() {
-		return this.parent.getPlayers();
+	public List<? extends PlayerEntity> players() {
+		return this.parent.players();
 	}
 
 	@Nullable
@@ -169,8 +169,8 @@ public abstract class DelegatingSeedReader implements ISeedReader {
 	}
 
 	@Override
-	public int getSkylightSubtracted() {
-		return this.parent.getSkylightSubtracted();
+	public int getSkyDarken() {
+		return this.parent.getSkyDarken();
 	}
 
 	@Override
@@ -179,13 +179,13 @@ public abstract class DelegatingSeedReader implements ISeedReader {
 	}
 
 	@Override
-	public Biome getNoiseBiomeRaw(int x, int y, int z) {
-		return this.parent.getNoiseBiomeRaw(x, y, z);
+	public Biome getUncachedNoiseBiome(int x, int y, int z) {
+		return this.parent.getUncachedNoiseBiome(x, y, z);
 	}
 
 	@Override
-	public boolean isRemote() {
-		return this.parent.isRemote();
+	public boolean isClientSide() {
+		return this.parent.isClientSide();
 	}
 
 	@Override
@@ -194,20 +194,20 @@ public abstract class DelegatingSeedReader implements ISeedReader {
 	}
 
 	@Override
-	public DimensionType getDimensionType() {
-		return this.parent.getDimensionType();
+	public DimensionType dimensionType() {
+		return this.parent.dimensionType();
 	}
 
 	@Override
-	public boolean setBlockState(BlockPos pos, BlockState state, int flags, int recursionLeft) {
-		return this.parent.setBlockState(pos, state, flags, recursionLeft);
+	public boolean setBlock(BlockPos pos, BlockState state, int flags, int recursionLeft) {
+		return this.parent.setBlock(pos, state, flags, recursionLeft);
 	}
 
 	@Override
 	public boolean removeBlock(BlockPos pos, boolean isMoving) {
 		FluidState fluid = this.getFluidState(pos);
 		int flags = Constants.BlockFlags.DEFAULT | (isMoving ? Constants.BlockFlags.IS_MOVING : 0);
-		return this.setBlockState(pos, fluid.getBlockState(), flags);
+		return this.setBlock(pos, fluid.createLegacyBlock(), flags);
 	}
 
 	@Override
@@ -215,13 +215,13 @@ public abstract class DelegatingSeedReader implements ISeedReader {
 		BlockState block = this.getBlockState(pos);
 		if (!block.isAir(this, pos)) {
 			FluidState fluid = this.getFluidState(pos);
-			return this.setBlockState(pos, fluid.getBlockState(), Constants.BlockFlags.DEFAULT, recursionLeft);
+			return this.setBlock(pos, fluid.createLegacyBlock(), Constants.BlockFlags.DEFAULT, recursionLeft);
 		}
 		return false;
 	}
 
 	@Override
-	public boolean hasBlockState(BlockPos pos, Predicate<BlockState> predicate) {
+	public boolean isStateAtPosition(BlockPos pos, Predicate<BlockState> predicate) {
 		return predicate.test(this.getBlockState(pos));
 	}
 }

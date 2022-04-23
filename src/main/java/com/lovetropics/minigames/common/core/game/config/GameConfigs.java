@@ -42,7 +42,7 @@ public final class GameConfigs {
 
 				BehaviorReferenceReader behaviorReader = new BehaviorReferenceReader(resourceManager);
 
-				Collection<ResourceLocation> paths = resourceManager.getAllResourceLocations("games", file -> file.endsWith(".json"));
+				Collection<ResourceLocation> paths = resourceManager.listResources("games", file -> file.endsWith(".json"));
 				for (ResourceLocation path : paths) {
 					try (IResource resource = resourceManager.getResource(path)) {
 						DataResult<GameConfig> result = loadConfig(ops, behaviorReader, path, resource);
@@ -57,7 +57,7 @@ public final class GameConfigs {
 				}
 			}, backgroundExecutor);
 
-			return future.thenCompose(stage::markCompleteAwaitingOthers);
+			return future.thenCompose(stage::wait);
 		});
 	}
 

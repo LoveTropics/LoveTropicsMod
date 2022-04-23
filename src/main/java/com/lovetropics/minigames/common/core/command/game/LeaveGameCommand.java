@@ -25,7 +25,7 @@ public class LeaveGameCommand {
 			.executes(c -> GameCommand.executeGameAction(() -> {
 				CommandSource source = c.getSource();
 				IGameLobby lobby = IGameManager.get().getLobbyFor(source);
-				if (lobby != null && lobby.getPlayers().remove(source.asPlayer())) {
+				if (lobby != null && lobby.getPlayers().remove(source.getPlayerOrException())) {
 					return GameResult.ok(GameTexts.Commands.leftLobby(lobby));
 				}
 				return GameResult.error(GameTexts.Commands.notInLobby());

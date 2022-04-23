@@ -20,9 +20,9 @@ public final class GameConfigArgument {
 	);
 
     public static RequiredArgumentBuilder<CommandSource, ResourceLocation> argument(String name) {
-        return Commands.argument(name, ResourceLocationArgument.resourceLocation())
+        return Commands.argument(name, ResourceLocationArgument.id())
                 .suggests((context, builder) -> {
-                    return ISuggestionProvider.func_212476_a(
+                    return ISuggestionProvider.suggestResource(
 							GameConfigs.REGISTRY.stream().map(IGameDefinition::getId),
                             builder
                     );
@@ -30,7 +30,7 @@ public final class GameConfigArgument {
     }
 
 	public static GameConfig get(CommandContext<CommandSource> context, String name) throws CommandSyntaxException {
-		ResourceLocation id = ResourceLocationArgument.getResourceLocation(context, name);
+		ResourceLocation id = ResourceLocationArgument.getId(context, name);
 
 		GameConfig config = GameConfigs.REGISTRY.get(id);
 		if (config == null) {

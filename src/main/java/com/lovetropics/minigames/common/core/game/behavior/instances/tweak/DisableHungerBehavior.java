@@ -15,14 +15,14 @@ public final class DisableHungerBehavior implements IGameBehavior {
 
 	public DisableHungerBehavior() {
 		FoodStats foodStats = new FoodStats();
-		foodStats.write(this.foodStats);
+		foodStats.addAdditionalSaveData(this.foodStats);
 	}
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
 		events.listen(GamePlayerEvents.TICK, (player) -> {
-			if (player.ticksExisted % 20 == 0) {
-				player.getFoodStats().read(this.foodStats);
+			if (player.tickCount % 20 == 0) {
+				player.getFoodData().readAdditionalSaveData(this.foodStats);
 			}
 		});
 	}

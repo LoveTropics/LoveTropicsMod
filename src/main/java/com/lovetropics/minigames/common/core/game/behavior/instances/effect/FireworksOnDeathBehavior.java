@@ -16,8 +16,8 @@ public final class FireworksOnDeathBehavior implements IGameBehavior {
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
 		events.listen(GamePlayerEvents.DEATH, (player, damageSource) -> {
-			BlockPos fireworkPos = player.world.getHeight(Heightmap.Type.MOTION_BLOCKING, player.getPosition());
-			FireworkPalette.ISLAND_ROYALE.spawn(fireworkPos, player.world);
+			BlockPos fireworkPos = player.level.getHeightmapPos(Heightmap.Type.MOTION_BLOCKING, player.blockPosition());
+			FireworkPalette.ISLAND_ROYALE.spawn(fireworkPos, player.level);
 			return ActionResultType.PASS;
 		});
 	}

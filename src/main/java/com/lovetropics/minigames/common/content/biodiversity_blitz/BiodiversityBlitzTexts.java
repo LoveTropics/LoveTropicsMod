@@ -48,7 +48,7 @@ public final class BiodiversityBlitzTexts {
 
 	public static IFormattableTextComponent currencyAddition(int amount) {
 		ITextComponent amountText = new StringTextComponent(String.valueOf(amount))
-				.mergeStyle(amount > 0 ? TextFormatting.AQUA : TextFormatting.RED);
+				.withStyle(amount > 0 ? TextFormatting.AQUA : TextFormatting.RED);
 		return new TranslationTextComponent(Keys.CURRENCY_ADDITION, amountText);
 	}
 

@@ -25,18 +25,18 @@ public class BbHuskEntity extends HuskEntity implements BbMobEntity {
 		this.plot = plot;
 
 		// Ignore sweet berry bushes and water
-		this.setPathPriority(PathNodeType.DANGER_OTHER, 0.0F);
-		this.setPathPriority(PathNodeType.DAMAGE_OTHER, 0.0F);
-		this.setPathPriority(PathNodeType.WATER, -1.0F);
+		this.setPathfindingMalus(PathNodeType.DANGER_OTHER, 0.0F);
+		this.setPathfindingMalus(PathNodeType.DAMAGE_OTHER, 0.0F);
+		this.setPathfindingMalus(PathNodeType.WATER, -1.0F);
 	}
 
 	@Override
-	protected PathNavigator createNavigator(World world) {
+	protected PathNavigator createNavigation(World world) {
 		return new BbGroundNavigator(this);
 	}
 
 	@Override
-	protected void applyEntityAI() {
+	protected void addBehaviourGoals() {
 		this.goalSelector.addGoal(1, new MoveToPumpkinGoal(this));
 		this.goalSelector.addGoal(2, new ZombieAttackGoal(this, 1.0, false));
 		this.goalSelector.addGoal(3, new DestroyCropGoal(this));
@@ -51,8 +51,8 @@ public class BbHuskEntity extends HuskEntity implements BbMobEntity {
 
 	@Nullable
 	@Override
-	public ILivingEntityData onInitialSpawn(IServerWorld world, DifficultyInstance difficulty, SpawnReason reason, @Nullable ILivingEntityData spawnData, @Nullable CompoundNBT dataTag) {
-		this.setLeftHanded(this.rand.nextFloat() < 0.05F);
+	public ILivingEntityData finalizeSpawn(IServerWorld world, DifficultyInstance difficulty, SpawnReason reason, @Nullable ILivingEntityData spawnData, @Nullable CompoundNBT dataTag) {
+		this.setLeftHanded(this.random.nextFloat() < 0.05F);
 		return spawnData;
 	}
 

@@ -46,7 +46,7 @@ public final class SpectatorChaseBehavior implements IGameBehavior {
 
 		List<UUID> ids = new ArrayList<>(participants.size());
 		for (ServerPlayerEntity participant : participants) {
-			ids.add(participant.getUniqueID());
+			ids.add(participant.getUUID());
 		}
 
 		return new SpectatingClientState(ids);

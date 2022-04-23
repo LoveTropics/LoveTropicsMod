@@ -38,10 +38,10 @@ public final class TrimmedText {
 	}
 
 	public boolean isTrimmedForWidth(FontRenderer font, int width) {
-		return font.getStringPropertyWidth(this.text) > width;
+		return font.width(this.text) > width;
 	}
 
 	private IReorderingProcessor computeForWidth(FontRenderer font, int width) {
-		return LanguageMap.getInstance().func_241870_a(font.func_238417_a_(this.text, width));
+		return LanguageMap.getInstance().getVisualOrder(font.substrByWidth(this.text, width));
 	}
 }

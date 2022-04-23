@@ -28,32 +28,32 @@ public final class EditRegionItem extends Item {
 	}
 
 	@Override
-	public ActionResult<ItemStack> onItemRightClick(World world, PlayerEntity player, Hand hand) {
-		ItemStack stack = player.getHeldItem(hand);
+	public ActionResult<ItemStack> use(World world, PlayerEntity player, Hand hand) {
+		ItemStack stack = player.getItemInHand(hand);
 
-		if (world.isRemote && isClientPlayer(player)) {
+		if (world.isClientSide && isClientPlayer(player)) {
 			RegionTraceTarget traceResult = MapWorkspaceTracer.trace(player);
 
-			useTick = player.ticksExisted;
+			useTick = player.tickCount;
 
 			if (traceResult != null && mode == Mode.REMOVE) {
 				LoveTropicsNetwork.CHANNEL.sendToServer(new UpdateWorkspaceRegionMessage(traceResult.entry.id, null));
-				return ActionResult.resultSuccess(stack);
+				return ActionResult.success(stack);
 			}
 
 			if (MapWorkspaceTracer.select(player, traceResult, target -> mode.createEdit(target))) {
-				return ActionResult.resultSuccess(stack);
+				return ActionResult.success(stack);
 			} else {
-				return ActionResult.resultPass(stack);
+				return ActionResult.pass(stack);
 			}
 		}
 
-		return ActionResult.resultPass(stack);
+		return ActionResult.pass(stack);
 	}
 
 	@Override
 	public boolean onEntitySwing(ItemStack stack, LivingEntity entity) {
-		if (entity.world.isRemote && entity.ticksExisted != useTick && isClientPlayer(entity)) {
+		if (entity.level.isClientSide && entity.tickCount != useTick && isClientPlayer(entity)) {
 			mode = mode.getNext();
 
 			MapWorkspaceTracer.stopEditing();
@@ -61,8 +61,8 @@ public final class EditRegionItem extends Item {
 			if (entity instanceof PlayerEntity) {
 				PlayerEntity player = (PlayerEntity) entity;
 				ITextComponent message = new StringTextComponent("Changed mode to: ")
-						.appendSibling(new StringTextComponent(mode.key).mergeStyle(mode.color));
-				player.sendStatusMessage(message, true);
+						.append(new StringTextComponent(mode.key).withStyle(mode.color));
+				player.displayClientMessage(message, true);
 			}
 		}
 

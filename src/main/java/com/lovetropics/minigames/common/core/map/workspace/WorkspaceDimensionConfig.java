@@ -15,8 +15,8 @@ import java.util.function.Supplier;
 public final class WorkspaceDimensionConfig {
 	public static final Codec<WorkspaceDimensionConfig> CODEC = RecordCodecBuilder.create(instance -> {
 		return instance.group(
-				DimensionType.DIMENSION_TYPE_CODEC.fieldOf("dimension_type").forGetter(c -> c.dimensionType),
-				ChunkGenerator.field_235948_a_.fieldOf("generator").forGetter(c -> c.generator),
+				DimensionType.CODEC.fieldOf("dimension_type").forGetter(c -> c.dimensionType),
+				ChunkGenerator.CODEC.fieldOf("generator").forGetter(c -> c.generator),
 				Codec.LONG.fieldOf("seed").forGetter(c -> c.seed)
 		).apply(instance, WorkspaceDimensionConfig::new);
 	});

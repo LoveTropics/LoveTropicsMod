@@ -24,13 +24,13 @@ public class LoveTropicsBlocks {
 
     public static final Map<TrashType, BlockEntry<TrashBlock>> TRASH = Arrays.<TrashType>stream(TrashType.values())
             .collect(Collectors.toMap(Function.identity(), t -> REGISTRATE.block(t.getId(), p -> new TrashBlock(t, p))
-                    .properties(p -> Block.Properties.create(Material.PLANTS).doesNotBlockMovement())
-                    .addLayer(() -> RenderType::getCutout)
+                    .properties(p -> Block.Properties.of(Material.PLANT).noCollission())
+                    .addLayer(() -> RenderType::cutout)
                     .blockstate((ctx, prov) -> prov.getVariantBuilder(t.get()) // TODO make horizontalBlock etc support this case
                             .forAllStatesExcept(state -> ConfiguredModel.builder()
                                     .modelFile(prov.models().getExistingFile(prov.modLoc(t.getId())))
-                                    .rotationX(state.get(TrashBlock.ATTACHMENT) == Attachment.WALL ? 90 : state.get(TrashBlock.ATTACHMENT) == Attachment.FLOOR ? 0 : 180)
-                                    .rotationY(((int) state.get(BlockStateProperties.HORIZONTAL_FACING).getHorizontalAngle()) % 360)
+                                    .rotationX(state.getValue(TrashBlock.ATTACHMENT) == Attachment.WALL ? 90 : state.getValue(TrashBlock.ATTACHMENT) == Attachment.FLOOR ? 0 : 180)
+                                    .rotationY(((int) state.getValue(BlockStateProperties.HORIZONTAL_FACING).toYRot()) % 360)
                                     .build(), LadderBlock.WATERLOGGED))
                     .item()
                         .model((ctx, prov) -> prov.blockItem(t).transforms()

@@ -37,12 +37,12 @@ public final class PlayerRoleSelections {
 	}
 
 	public CompletableFuture<PlayerRole> prompt(ServerPlayerEntity player) {
-		CompletableFuture<PlayerRole> future = this.pendingResponses.get(player.getUniqueID());
+		CompletableFuture<PlayerRole> future = this.pendingResponses.get(player.getUUID());
 		if (future == null) {
-			this.pendingResponses.put(player.getUniqueID(), future = new CompletableFuture<>());
+			this.pendingResponses.put(player.getUUID(), future = new CompletableFuture<>());
 
 			future.thenAccept(role -> {
-				this.roles.put(player.getUniqueID(), role);
+				this.roles.put(player.getUUID(), role);
 			});
 		}
 
@@ -53,15 +53,15 @@ public final class PlayerRoleSelections {
 
 	private void sendPromptTo(ServerPlayerEntity player) {
 		LoveTropicsNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new SelectRolePromptMessage(lobbyId.networkId()));
-		player.playSound(SoundEvents.ENTITY_ARROW_HIT_PLAYER, SoundCategory.MASTER, 1.0F, 1.0F);
+		player.playNotifySound(SoundEvents.ARROW_HIT_PLAYER, SoundCategory.MASTER, 1.0F, 1.0F);
 	}
 
 	public void remove(ServerPlayerEntity player) {
-		this.roles.remove(player.getUniqueID());
+		this.roles.remove(player.getUUID());
 	}
 
 	public void acceptResponse(ServerPlayerEntity player, PlayerRole role) {
-		CompletableFuture<PlayerRole> future = this.pendingResponses.remove(player.getUniqueID());
+		CompletableFuture<PlayerRole> future = this.pendingResponses.remove(player.getUUID());
 		if (future != null) {
 			future.complete(role);
 		}
@@ -69,7 +69,7 @@ public final class PlayerRoleSelections {
 
 	@Nonnull
 	public PlayerRole getSelectedRoleFor(ServerPlayerEntity player) {
-		return roles.getOrDefault(player.getUniqueID(), PlayerRole.SPECTATOR);
+		return roles.getOrDefault(player.getUUID(), PlayerRole.SPECTATOR);
 	}
 
 	public boolean hasPending() {

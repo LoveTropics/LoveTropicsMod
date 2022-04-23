@@ -9,7 +9,7 @@ public enum PlacementOrder implements IStringSerializable {
 	MAX("max"),
 	MIN("min");
 
-	public static final Codec<PlacementOrder> CODEC = IStringSerializable.createEnumCodec(PlacementOrder::values, PlacementOrder::byKey);
+	public static final Codec<PlacementOrder> CODEC = IStringSerializable.fromEnum(PlacementOrder::values, PlacementOrder::byKey);
 
 	private final String key;
 
@@ -18,7 +18,7 @@ public enum PlacementOrder implements IStringSerializable {
 	}
 
 	@Override
-	public String getString() {
+	public String getSerializedName() {
 		return key;
 	}
 

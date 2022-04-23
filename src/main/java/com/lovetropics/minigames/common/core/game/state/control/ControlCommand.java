@@ -57,13 +57,13 @@ public final class ControlCommand {
 		ADMINS("admins") {
 			@Override
 			public boolean testSource(CommandSource source, @Nullable PlayerKey initiator) {
-				return source.hasPermissionLevel(2);
+				return source.hasPermission(2);
 			}
 		},
 		INITIATOR("initiator") {
 			@Override
 			public boolean testSource(CommandSource source, @Nullable PlayerKey initiator) {
-				if (source.hasPermissionLevel(2)) {
+				if (source.hasPermission(2)) {
 					return true;
 				}
 

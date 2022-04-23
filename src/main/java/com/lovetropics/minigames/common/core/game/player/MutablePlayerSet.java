@@ -23,7 +23,7 @@ public final class MutablePlayerSet implements PlayerSet {
 	}
 
 	public boolean add(ServerPlayerEntity player) {
-		return this.players.add(player.getUniqueID());
+		return this.players.add(player.getUUID());
 	}
 
 	public boolean remove(UUID id) {
@@ -31,7 +31,7 @@ public final class MutablePlayerSet implements PlayerSet {
 	}
 
 	public boolean remove(Entity entity) {
-		return this.remove(entity.getUniqueID());
+		return this.remove(entity.getUUID());
 	}
 
 	@Override
@@ -42,7 +42,7 @@ public final class MutablePlayerSet implements PlayerSet {
 	@Nullable
 	@Override
 	public ServerPlayerEntity getPlayerBy(UUID id) {
-		return this.players.contains(id) ? this.server.getPlayerList().getPlayerByUUID(id) : null;
+		return this.players.contains(id) ? this.server.getPlayerList().getPlayer(id) : null;
 	}
 
 	@Override

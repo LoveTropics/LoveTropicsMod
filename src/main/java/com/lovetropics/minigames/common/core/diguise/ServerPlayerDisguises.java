@@ -33,13 +33,13 @@ public final class ServerPlayerDisguises {
 	public static void onRegisterCommands(RegisterCommandsEvent event) {
 		// @formatter:off
 		event.getDispatcher().register(
-			Commands.literal("disguise").requires(source -> source.hasPermissionLevel(3))
+			Commands.literal("disguise").requires(source -> source.hasPermission(3))
 				.then(Commands.literal("as")
-					.then(Commands.argument("entity", EntitySummonArgument.entitySummon())
+					.then(Commands.argument("entity", EntitySummonArgument.id())
 						.suggests(SuggestionProviders.SUMMONABLE_ENTITIES)
 						.executes(context -> disguiseAs(context, null))
-							.then(Commands.argument("nbt", NBTCompoundTagArgument.nbt())
-								.executes(context -> disguiseAs(context, NBTCompoundTagArgument.getNbt(context, "nbt")))
+							.then(Commands.argument("nbt", NBTCompoundTagArgument.compoundTag())
+								.executes(context -> disguiseAs(context, NBTCompoundTagArgument.getCompoundTag(context, "nbt")))
 							)
 					))
 				.then(Commands.literal("clear")
@@ -63,7 +63,7 @@ public final class ServerPlayerDisguises {
 			if (disguise != null) {
 				LoveTropicsNetwork.CHANNEL.send(
 						PacketDistributor.PLAYER.with(() -> player),
-						new PlayerDisguiseMessage(tracked.getUniqueID(), disguise)
+						new PlayerDisguiseMessage(tracked.getUUID(), disguise)
 				);
 			}
 		}
@@ -88,9 +88,9 @@ public final class ServerPlayerDisguises {
 	}
 
 	private static int disguiseAs(CommandContext<CommandSource> context, @Nullable CompoundNBT nbt) throws CommandSyntaxException {
-		ServerPlayerEntity player = context.getSource().asPlayer();
-		ResourceLocation entityId = EntitySummonArgument.getEntityId(context, "entity");
-		EntityType<?> entityType = Registry.ENTITY_TYPE.getOrDefault(entityId);
+		ServerPlayerEntity player = context.getSource().getPlayerOrException();
+		ResourceLocation entityId = EntitySummonArgument.getSummonableEntity(context, "entity");
+		EntityType<?> entityType = Registry.ENTITY_TYPE.get(entityId);
 
 		ServerPlayerDisguises.set(player, DisguiseType.create(entityType, nbt));
 
@@ -98,7 +98,7 @@ public final class ServerPlayerDisguises {
 	}
 
 	private static int clearDisguise(CommandContext<CommandSource> context) throws CommandSyntaxException {
-		ServerPlayerEntity player = context.getSource().asPlayer();
+		ServerPlayerEntity player = context.getSource().getPlayerOrException();
 		ServerPlayerDisguises.set(player, null);
 
 		return Command.SINGLE_SUCCESS;
@@ -130,7 +130,7 @@ public final class ServerPlayerDisguises {
 
 		LoveTropicsNetwork.CHANNEL.send(
 				PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> player),
-				new PlayerDisguiseMessage(player.getUniqueID(), disguise.getDisguiseType())
+				new PlayerDisguiseMessage(player.getUUID(), disguise.getDisguiseType())
 		);
 
 		PlayerDisguiseBehavior.clearAttributes(player);

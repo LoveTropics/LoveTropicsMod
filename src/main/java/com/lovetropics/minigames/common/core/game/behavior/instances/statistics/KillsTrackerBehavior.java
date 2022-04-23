@@ -23,7 +23,7 @@ public final class KillsTrackerBehavior implements IGameBehavior {
 			GameStatistics statistics = game.getStatistics();
 			StatisticsMap playerStatistics = statistics.forPlayer(player);
 
-			Entity source = damageSource.getTrueSource();
+			Entity source = damageSource.getEntity();
 			if (source instanceof ServerPlayerEntity) {
 				PlayerEntity killerPlayer = (PlayerEntity) source;
 

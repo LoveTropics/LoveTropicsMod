@@ -48,12 +48,12 @@ public abstract class CommandInvokeBehavior implements IGameBehavior {
 	}
 
 	public CommandSource sourceForEntity(Entity entity) {
-		return this.source.withEntity(entity).withPos(entity.getPositionVec());
+		return this.source.withEntity(entity).withPosition(entity.position());
 	}
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
-		this.dispatcher = game.getServer().getCommandManager().getDispatcher();
+		this.dispatcher = game.getServer().getCommands().getDispatcher();
 		this.source = this.createCommandSource(game);
 
 		this.registerControls(game, game.getControlCommands());
@@ -62,7 +62,7 @@ public abstract class CommandInvokeBehavior implements IGameBehavior {
 
 	private CommandSource createCommandSource(IGamePhase game) {
 		boolean debugMode = game.getState().getOrNull(DebugModeState.KEY) != null;
-		ICommandSource source = debugMode ? game.getServer() : ICommandSource.DUMMY;
+		ICommandSource source = debugMode ? game.getServer() : ICommandSource.NULL;
 
 		String name = game.getLobby().getMetadata().name();
 		return new CommandSource(source, Vector3d.ZERO, Vector2f.ZERO, game.getWorld(), 4, name, new StringTextComponent(name), game.getServer(), null);

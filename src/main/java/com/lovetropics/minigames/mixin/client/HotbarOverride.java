@@ -16,7 +16,7 @@ public class HotbarOverride {
 			method = "renderHotbar",
 			at = @At(
 					value = "INVOKE",
-					target = "Lnet/minecraft/client/renderer/texture/TextureManager;bindTexture(Lnet/minecraft/util/ResourceLocation;)V"),
+					target = "Lnet/minecraft/client/renderer/texture/TextureManager;bind(Lnet/minecraft/util/ResourceLocation;)V"),
 			index = 0)
 	public ResourceLocation getHotbarTexture(ResourceLocation loc) {
 		ReplaceTexturesClientState textures = ClientGameStateManager.getOrNull(GameClientStateTypes.REPLACE_TEXTURES);

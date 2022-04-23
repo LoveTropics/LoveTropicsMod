@@ -1,24 +1,20 @@
 package com.lovetropics.minigames.client.lobby.screen.game_config;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.lovetropics.minigames.client.screen.LayoutGui;
 import com.lovetropics.minigames.client.screen.LayoutTree;
 import com.lovetropics.minigames.client.screen.flex.Box;
 import com.lovetropics.minigames.client.screen.flex.Layout;
 import com.lovetropics.minigames.common.core.game.behavior.config.ConfigData;
 import com.lovetropics.minigames.common.core.game.behavior.config.ConfigData.ListConfigData;
-import com.lovetropics.minigames.common.core.game.behavior.config.ConfigData.SimpleConfigData;
 import com.lovetropics.minigames.common.core.game.behavior.config.ConfigType;
 import com.mojang.blaze3d.matrix.MatrixStack;
-
 import net.minecraft.client.gui.IGuiEventListener;
-import net.minecraft.client.gui.INestedGuiEventHandler;
 import net.minecraft.client.gui.IRenderable;
-import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraftforge.fml.client.gui.widget.ExtendedButton;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class ListConfigWidget extends LayoutGui implements IConfigWidget {
 
@@ -60,7 +56,7 @@ public class ListConfigWidget extends LayoutGui implements IConfigWidget {
 	}
 
 	@Override
-	public List<? extends IGuiEventListener> getEventListeners() {
+	public List<? extends IGuiEventListener> children() {
 		return children;
 	}
 

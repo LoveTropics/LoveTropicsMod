@@ -46,7 +46,7 @@ public final class ImmediateRespawnBehavior implements IGameBehavior {
 	}
 
 	private ActionResultType onPlayerDeath(IGamePhase game, ServerPlayerEntity player) {
-		player.inventory.dropAllItems();
+		player.inventory.dropAll();
 
 		PlayerRole playerRole = game.getRoleFor(player);
 		if (this.role == null || this.role == playerRole) {

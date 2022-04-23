@@ -65,7 +65,7 @@ public final class GameEndEffectsBehavior implements IGameBehavior {
 		if (winner.getStyle().getColor() != null) {
 			this.winner = winner;
 		} else {
-			this.winner = winner.deepCopy().mergeStyle(TextFormatting.AQUA);
+			this.winner = winner.copy().withStyle(TextFormatting.AQUA);
 		}
 
 		this.ended = true;

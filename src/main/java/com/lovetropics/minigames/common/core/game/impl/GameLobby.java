@@ -299,7 +299,7 @@ final class GameLobby implements IGameLobby {
 
 		@Override
 		public void onPlayerStartTracking(IGameLobby lobby, ServerPlayerEntity player) {
-			player.sendStatusMessage(GameTexts.Status.lobbyOpened(lobby), false);
+			player.displayClientMessage(GameTexts.Status.lobbyOpened(lobby), false);
 		}
 
 		private void onPlayerJoinGame(IGameLobby lobby, IGame currentGame) {

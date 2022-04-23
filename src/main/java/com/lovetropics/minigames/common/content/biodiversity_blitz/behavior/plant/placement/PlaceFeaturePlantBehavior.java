@@ -27,7 +27,7 @@ import java.util.function.Supplier;
 
 public final class PlaceFeaturePlantBehavior implements IGameBehavior {
 	public static final Codec<PlaceFeaturePlantBehavior> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-			ConfiguredFeature.field_236264_b_.fieldOf("feature").forGetter(c -> c.feature),
+			ConfiguredFeature.CODEC.fieldOf("feature").forGetter(c -> c.feature),
 			BlockStatePredicate.CODEC.fieldOf("blocks").forGetter(c -> c.blocks)
 	).apply(instance, PlaceFeaturePlantBehavior::new));
 
@@ -56,13 +56,13 @@ public final class PlaceFeaturePlantBehavior implements IGameBehavior {
 	@Nullable
 	private Long2ObjectMap<BlockState> generateFeature(ServerWorld world, BlockPos pos, ConfiguredFeature<?, ?> feature) {
 		if (feature.config instanceof BaseTreeFeatureConfig) {
-			((BaseTreeFeatureConfig) feature.config).forcePlacement();
+			((BaseTreeFeatureConfig) feature.config).setFromSapling();
 		}
 
 		BlockCapturingWorld capturingWorld = new BlockCapturingWorld(world, this.blocks);
 
-		ChunkGenerator chunkGenerator = world.getChunkProvider().getChunkGenerator();
-		if (feature.generate(capturingWorld, chunkGenerator, world.rand, pos)) {
+		ChunkGenerator chunkGenerator = world.getChunkSource().getGenerator();
+		if (feature.place(capturingWorld, chunkGenerator, world.random, pos)) {
 			return capturingWorld.getCapturedBlocks();
 		} else {
 			return null;
@@ -98,10 +98,10 @@ public final class PlaceFeaturePlantBehavior implements IGameBehavior {
 		return placement.places((world, finalCoverage) -> {
 			BlockPos.Mutable pos = new BlockPos.Mutable();
 			for (Long2ObjectMap.Entry<BlockState> entry : Long2ObjectMaps.fastIterable(blocks)) {
-				pos.setPos(entry.getLongKey());
+				pos.set(entry.getLongKey());
 				if (finalCoverage.covers(pos)) {
 					BlockState state = entry.getValue();
-					world.setBlockState(pos, state, Constants.BlockFlags.DEFAULT | Constants.BlockFlags.UPDATE_NEIGHBORS);
+					world.setBlock(pos, state, Constants.BlockFlags.DEFAULT | Constants.BlockFlags.UPDATE_NEIGHBORS);
 				}
 			}
 			return true;
@@ -109,7 +109,7 @@ public final class PlaceFeaturePlantBehavior implements IGameBehavior {
 	}
 
 	private static boolean isDecorationBlock(BlockState state) {
-		return !state.isIn(BlockTags.LOGS);
+		return !state.is(BlockTags.LOGS);
 	}
 
 	static class BlockCapturingWorld extends DelegatingSeedReader {
@@ -128,13 +128,13 @@ public final class PlaceFeaturePlantBehavior implements IGameBehavior {
 		}
 
 		@Override
-		public boolean setBlockState(BlockPos pos, BlockState state, int flags, int recursionLeft) {
+		public boolean setBlock(BlockPos pos, BlockState state, int flags, int recursionLeft) {
 			BlockState oldState = this.getBlockState(pos);
 			if (oldState == state) {
 				return false;
 			}
 
-			long posKey = pos.toLong();
+			long posKey = pos.asLong();
 			if (!state.equals(super.getBlockState(pos))) {
 				simulatedBlocks.put(posKey, state);
 				if (filter.test(state)) {
@@ -152,7 +152,7 @@ public final class PlaceFeaturePlantBehavior implements IGameBehavior {
 
 		@Override
 		public BlockState getBlockState(BlockPos pos) {
-			BlockState changedBlock = simulatedBlocks.get(pos.toLong());
+			BlockState changedBlock = simulatedBlocks.get(pos.asLong());
 			if (changedBlock != null) {
 				return changedBlock;
 			} else {

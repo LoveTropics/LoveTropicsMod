@@ -93,6 +93,6 @@ public final class PlayerKey {
 	}
 
 	public boolean matches(Entity entity) {
-		return entity instanceof ServerPlayerEntity && entity.getUniqueID().equals(profile.getId());
+		return entity instanceof ServerPlayerEntity && entity.getUUID().equals(profile.getId());
 	}
 }

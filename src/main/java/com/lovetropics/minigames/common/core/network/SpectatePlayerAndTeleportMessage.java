@@ -16,11 +16,11 @@ public class SpectatePlayerAndTeleportMessage {
 	}
 
 	public void encode(PacketBuffer buffer) {
-		buffer.writeUniqueId(player);
+		buffer.writeUUID(player);
 	}
 
 	public static SpectatePlayerAndTeleportMessage decode(PacketBuffer buffer) {
-		UUID player = buffer.readUniqueId();
+		UUID player = buffer.readUUID();
 		return new SpectatePlayerAndTeleportMessage(player);
 	}
 
@@ -31,12 +31,12 @@ public class SpectatePlayerAndTeleportMessage {
 				return;
 			}
 
-			PlayerEntity target = sender.world.getPlayerByUuid(player);
+			PlayerEntity target = sender.level.getPlayerByUUID(player);
 			if (target != null) {
-				sender.teleport(sender.getServerWorld(), target.getPosX(), target.getPosY(), target.getPosZ(), target.rotationYaw, target.rotationPitch);
+				sender.teleportTo(sender.getLevel(), target.getX(), target.getY(), target.getZ(), target.yRot, target.xRot);
 			}
 
-			sender.setSpectatingEntity(target);
+			sender.setCamera(target);
 		});
 		ctx.get().setPacketHandled(true);
 	}

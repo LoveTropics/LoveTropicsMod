@@ -27,10 +27,10 @@ public class DestroyCropGoal extends MoveToBlockGoal {
         super.tick();
 
         MobEntity mob = this.mob.asMob();
-        double distance2 = mob.getPositionVec().squareDistanceTo(targetPos.getX() + 0.5, targetPos.getY() + 0.5, targetPos.getZ() + 0.5);
+        double distance2 = mob.position().distanceToSqr(targetPos.getX() + 0.5, targetPos.getY() + 0.5, targetPos.getZ() + 0.5);
         if (distance2 <= getDistanceSq()) {
             this.ticksAtTarget--;
-            if (mob.world.rand.nextInt(4) == 0) {
+            if (mob.level.random.nextInt(4) == 0) {
                 spawnDamageParticles(mob, 0);
             }
             
@@ -51,7 +51,7 @@ public class DestroyCropGoal extends MoveToBlockGoal {
             PlantHealth health = plant.state(PlantHealth.KEY);
 
             if (health != null) {
-                int damage = 3 + mob.world.rand.nextInt(6);
+                int damage = 3 + mob.level.random.nextInt(6);
                 health.decrement(damage);
 
                 this.spawnDamageParticles(mob, damage);
@@ -60,13 +60,13 @@ public class DestroyCropGoal extends MoveToBlockGoal {
     }
 
     private void spawnDamageParticles(MobEntity mob, int damage) {
-        Random random = mob.world.rand;
+        Random random = mob.level.random;
         for (int i = 0; i < 2 + (damage / 2); ++i) {
             double dx = random.nextGaussian() * 0.02;
             double dy = random.nextGaussian() * 0.02;
             double dz = random.nextGaussian() * 0.02;
 
-            ((ServerWorld) mob.world).spawnParticle(
+            ((ServerWorld) mob.level).sendParticles(
                     ParticleTypes.ANGRY_VILLAGER,
                     this.targetPos.getX() + 0.5,
                     this.targetPos.getY() + 0.5,

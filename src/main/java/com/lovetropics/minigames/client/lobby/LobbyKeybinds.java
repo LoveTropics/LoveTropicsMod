@@ -27,7 +27,7 @@ public class LobbyKeybinds {
 	public static final KeyBinding LEAVE = makeMinigameKeybind("leave", GLFW_KEY_L);
 
 	private static final KeyBinding makeMinigameKeybind(String id, int key) {
-		KeyBinding ret = new KeyBinding("key." + Constants.MODID + "." + id, KeyConflictContext.IN_GAME, KeyModifier.CONTROL, InputMappings.Type.KEYSYM.getOrMakeInput(key), "key.categories." + Constants.MODID + ".lobby");
+		KeyBinding ret = new KeyBinding("key." + Constants.MODID + "." + id, KeyConflictContext.IN_GAME, KeyModifier.CONTROL, InputMappings.Type.KEYSYM.getOrCreate(key), "key.categories." + Constants.MODID + ".lobby");
 		ALL.add(ret);
 		return ret;
 	}

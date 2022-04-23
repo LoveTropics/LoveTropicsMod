@@ -22,7 +22,7 @@ public final class ParticleLineCommand {
 	public static void register(CommandDispatcher<CommandSource> dispatcher) {
 		// @formatter:off
 		dispatcher.register(
-			literal("drawline").requires(source -> source.hasPermissionLevel(2))
+			literal("drawline").requires(source -> source.hasPermission(2))
 				.then(argument("particle", ParticleArgument.particle())
 				.then(argument("from", Vec3Argument.vec3())
 				.then(argument("to", Vec3Argument.vec3())
@@ -35,7 +35,7 @@ public final class ParticleLineCommand {
 
 	private static int spawnLine(CommandContext<CommandSource> context) throws CommandSyntaxException {
 		CommandSource source = context.getSource();
-		ServerPlayerEntity player = source.asPlayer();
+		ServerPlayerEntity player = source.getPlayerOrException();
 
 		IParticleData particle = ParticleArgument.getParticle(context, "particle");
 		Vector3d from = Vec3Argument.getVec3(context, "from");

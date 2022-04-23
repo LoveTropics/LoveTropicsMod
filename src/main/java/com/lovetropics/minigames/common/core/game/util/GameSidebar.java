@@ -84,8 +84,8 @@ public final class GameSidebar implements GameWidget {
 
 		ScoreObjective objective = this.createDummyObjective();
 
-		player.connection.sendPacket(new SScoreboardObjectivePacket(objective, ADD_OBJECTIVE));
-		player.connection.sendPacket(new SDisplayObjectivePacket(SIDEBAR_SLOT, objective));
+		player.connection.send(new SScoreboardObjectivePacket(objective, ADD_OBJECTIVE));
+		player.connection.send(new SDisplayObjectivePacket(SIDEBAR_SLOT, objective));
 
 		this.sendDisplay(player, this.display);
 	}
@@ -98,13 +98,13 @@ public final class GameSidebar implements GameWidget {
 
 	private void sendRemove(ServerPlayerEntity player) {
 		ScoreObjective objective = this.createDummyObjective();
-		player.connection.sendPacket(new SScoreboardObjectivePacket(objective, REMOVE_OBJECTIVE));
+		player.connection.send(new SScoreboardObjectivePacket(objective, REMOVE_OBJECTIVE));
 	}
 
 	private void sendDisplay(ServerPlayerEntity player, String[] display) {
 		for (int i = 0; i < display.length; i++) {
 			int score = display.length - i;
-			player.connection.sendPacket(new SUpdateScorePacket(
+			player.connection.send(new SUpdateScorePacket(
 					ServerScoreboard.Action.CHANGE, OBJECTIVE_NAME,
 					makeLine(i, display[i]), score
 			));

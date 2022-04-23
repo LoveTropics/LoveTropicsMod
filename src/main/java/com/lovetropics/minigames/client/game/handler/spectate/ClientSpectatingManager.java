@@ -49,7 +49,7 @@ public final class ClientSpectatingManager implements ClientGameStateHandler<Spe
 				session.tick();
 
 				// keep the vanilla spectator gui closed
-				SpectatorGui spectatorGui = CLIENT.ingameGUI.getSpectatorGui();
+				SpectatorGui spectatorGui = CLIENT.gui.getSpectatorGui();
 				spectatorGui.onSpectatorMenuClosed(null);
 			}
 		}

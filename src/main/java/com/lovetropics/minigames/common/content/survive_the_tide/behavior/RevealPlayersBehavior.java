@@ -2,10 +2,10 @@ package com.lovetropics.minigames.common.content.survive_the_tide.behavior;
 
 import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
-import com.lovetropics.minigames.common.core.game.player.PlayerSet;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
+import com.lovetropics.minigames.common.core.game.player.PlayerSet;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
@@ -55,7 +55,7 @@ public class RevealPlayersBehavior implements IGameBehavior
 					curGlowOffTime = glowOffTime;
 					for (ServerPlayerEntity player : players) {
 						//prevent unsetting glow if something else was making them glow
-						if (!playerToWasGlowingAlready.contains(player.getUniqueID())) {
+						if (!playerToWasGlowingAlready.contains(player.getUUID())) {
 							player.setGlowing(false);
 						}
 					}
@@ -68,7 +68,7 @@ public class RevealPlayersBehavior implements IGameBehavior
 					playerToWasGlowingAlready.clear();
 					for (ServerPlayerEntity player : players) {
 						if (player.isGlowing()) {
-							playerToWasGlowingAlready.add(player.getUniqueID());
+							playerToWasGlowingAlready.add(player.getUUID());
 						}
 						player.setGlowing(true);
 					}

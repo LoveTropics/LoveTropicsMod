@@ -39,7 +39,7 @@ public abstract class AbstractLTList<T extends LTListEntry<T>> extends ExtendedL
 	protected void renderDragging(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
 		T dragging = this.draggingEntry;
 		if (dragging != null) {
-			int index = getEventListeners().indexOf(dragging);
+			int index = children().indexOf(dragging);
 			int y = getDraggingY(mouseY);
 			dragging.render(matrixStack, index, y, getRowLeft(), getRowWidth(), itemHeight, mouseX, mouseY, false, partialTicks);
 		}
@@ -112,7 +112,7 @@ public abstract class AbstractLTList<T extends LTListEntry<T>> extends ExtendedL
 	private void startDragging(T entry, double mouseY) {
 		this.draggingEntry = entry;
 	
-		int index = this.getEventListeners().indexOf(entry);
+		int index = this.children().indexOf(entry);
 		this.dragOffset = MathHelper.floor(this.getRowTop(index) - mouseY);
 	}
 
@@ -134,7 +134,7 @@ public abstract class AbstractLTList<T extends LTListEntry<T>> extends ExtendedL
 			else if (keyCode == GLFW.GLFW_KEY_DOWN) offset = 1;
 
 			if (offset != 0) {
-				int index = getEventListeners().indexOf(selected);
+				int index = children().indexOf(selected);
 				if (tryReorderTo(selected, index + offset)) {
 					selected.reorder.onReorder(offset);
 					return true;
@@ -157,7 +157,7 @@ public abstract class AbstractLTList<T extends LTListEntry<T>> extends ExtendedL
 	}
 
 	private boolean tryReorderTo(T entry, int insertIndex) {
-		List<T> entries = getEventListeners();
+		List<T> entries = children();
 		int index = entries.indexOf(entry);
 		if (index == -1) return false;
 
@@ -174,7 +174,7 @@ public abstract class AbstractLTList<T extends LTListEntry<T>> extends ExtendedL
 
 	private void stopDragging(T dragging) {
 		int startIndex = dragging.dragStartIndex;
-		int index = this.getEventListeners().indexOf(dragging);
+		int index = this.children().indexOf(dragging);
 		if (startIndex != index && dragging.reorder != null) {
 			dragging.reorder.onReorder(index - startIndex);
 		}

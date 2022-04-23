@@ -37,12 +37,12 @@ public class SetGameClientStateMessage {
 		buffer.writeRegistryIdUnsafe(GameClientStateTypes.REGISTRY.get(), this.type);
 
 		CompoundNBT stateNbt = state != null ? tryEncodeUnchecked(type, state) : null;
-		buffer.writeCompoundTag(stateNbt);
+		buffer.writeNbt(stateNbt);
 	}
 
 	public static SetGameClientStateMessage decode(PacketBuffer buffer) {
 		GameClientStateType<?> type = buffer.readRegistryIdUnsafe(GameClientStateTypes.REGISTRY.get());
-		CompoundNBT stateNbt = buffer.readCompoundTag();
+		CompoundNBT stateNbt = buffer.readNbt();
 		GameClientState state = stateNbt != null ? tryDecode(type, stateNbt) : null;
 		return new SetGameClientStateMessage(type, state);
 	}

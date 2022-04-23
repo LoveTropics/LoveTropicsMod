@@ -1,11 +1,12 @@
 package com.lovetropics.minigames.common.content.trash_dive;
 
 import com.lovetropics.minigames.common.content.block.TrashType;
-import com.lovetropics.minigames.common.core.game.*;
+import com.lovetropics.minigames.common.core.game.GameException;
+import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
-import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameLogicEvents;
+import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.lovetropics.minigames.common.core.game.player.PlayerRole;
 import com.lovetropics.minigames.common.core.game.player.PlayerSet;
@@ -17,9 +18,6 @@ import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.inventory.EquipmentSlotType;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
 import net.minecraft.potion.EffectInstance;
 import net.minecraft.potion.Effects;
 import net.minecraft.util.ActionResultType;
@@ -76,7 +74,7 @@ public final class TrashCollectionBehavior implements IGameBehavior {
 
 	private void onStart(IGamePhase game) {
 		ITextComponent sidebarTitle = new StringTextComponent("Trash Dive")
-				.mergeStyle(TextFormatting.BLUE, TextFormatting.BOLD);
+				.withStyle(TextFormatting.BLUE, TextFormatting.BOLD);
 
 		sidebar = widgets.openSidebar(sidebarTitle);
 		sidebar.set(renderSidebar(game));
@@ -99,7 +97,7 @@ public final class TrashCollectionBehavior implements IGameBehavior {
 		}
 
 		world.removeBlock(pos, false);
-		player.playSound(SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, SoundCategory.PLAYERS, 1.0F, 1.0F);
+		player.playNotifySound(SoundEvents.EXPERIENCE_ORB_PICKUP, SoundCategory.PLAYERS, 1.0F, 1.0F);
 
 		GameStatistics statistics = game.getStatistics();
 		statistics.forPlayer(player)
@@ -127,7 +125,7 @@ public final class TrashCollectionBehavior implements IGameBehavior {
 		ITextComponent finishMessage = new StringTextComponent("The game ended! Here are the results for this game:");
 
 		PlayerSet players = game.getAllPlayers();
-		players.sendMessage(finishMessage.deepCopy().mergeStyle(TextFormatting.GREEN));
+		players.sendMessage(finishMessage.copy().withStyle(TextFormatting.GREEN));
 
 		GameStatistics statistics = game.getStatistics();
 

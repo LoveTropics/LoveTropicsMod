@@ -13,11 +13,11 @@ public final class VoidChunkStatusListener implements IChunkStatusListener {
 	}
 
 	@Override
-	public void start(ChunkPos spawnPos) {
+	public void updateSpawnPos(ChunkPos spawnPos) {
 	}
 
 	@Override
-	public void statusChanged(ChunkPos pos, @Nullable ChunkStatus newStatus) {
+	public void onStatusChange(ChunkPos pos, @Nullable ChunkStatus newStatus) {
 	}
 
 	@Override

@@ -99,7 +99,7 @@ public final class HideAndSeekBehavior implements IGameBehavior {
 		PlayerSet seekers = teams.getPlayersForTeam(this.seekers.key());
 		PlayerSet hiders = teams.getPlayersForTeam(this.hiders.key());
 
-		seekers.addPotionEffect(new EffectInstance(Effects.SLOWNESS, hideTicks, 255, true, false));
+		seekers.addPotionEffect(new EffectInstance(Effects.MOVEMENT_SLOWDOWN, hideTicks, 255, true, false));
 		seekers.addPotionEffect(new EffectInstance(Effects.BLINDNESS, hideTicks, 255, true, false));
 
 		seekers.sendMessage(new StringTextComponent("You will be let out to catch the hiders in " + initialHideSeconds + " seconds!"));
@@ -121,12 +121,12 @@ public final class HideAndSeekBehavior implements IGameBehavior {
 	}
 
 	private void spawnPlayer(ServerPlayerEntity player) {
-		BlockPos spawnPos = spawnRegion.sample(player.getRNG());
+		BlockPos spawnPos = spawnRegion.sample(player.getRandom());
 		DimensionUtils.teleportPlayerNoPortal(player, game.getDimension(), spawnPos);
 	}
 
 	private ActionResultType onPlayerAttack(ServerPlayerEntity player, Entity target) {
-		if (teams.isOnTeam(player, seekers.key()) && player.getHeldItemMainhand().getItem() == HideAndSeek.NET.get()) {
+		if (teams.isOnTeam(player, seekers.key()) && player.getMainHandItem().getItem() == HideAndSeek.NET.get()) {
 			if (target instanceof ServerPlayerEntity && teams.isOnTeam((ServerPlayerEntity) target, hiders.key())) {
 				return ActionResultType.PASS;
 			}
@@ -151,13 +151,13 @@ public final class HideAndSeekBehavior implements IGameBehavior {
 	}
 
 	private void setHider(ServerPlayerEntity player) {
-		DisguiseType disguise = nextDisguiseType(player.world.rand);
+		DisguiseType disguise = nextDisguiseType(player.level.random);
 		ServerPlayerDisguises.set(player, disguise);
 	}
 
 	private void setSeeker(ServerPlayerEntity player) {
 		PlayerSnapshot.clearPlayer(player);
-		player.inventory.addItemStackToInventory(new ItemStack(HideAndSeek.NET.get()));
+		player.inventory.add(new ItemStack(HideAndSeek.NET.get()));
 	}
 
 	private DisguiseType nextDisguiseType(Random random) {

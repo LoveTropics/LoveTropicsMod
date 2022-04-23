@@ -29,7 +29,7 @@ public final class ClientPlayerDisguises {
 		Entity disguise = PlayerDisguise.getDisguiseEntity(player);
 		if (disguise == null) return;
 
-		EntityRenderer<? super Entity> renderer = CLIENT.getRenderManager().getRenderer(disguise);
+		EntityRenderer<? super Entity> renderer = CLIENT.getEntityRenderDispatcher().getRenderer(disguise);
 		if (renderer != null) {
 			try {
 				copyDisguiseState(disguise, player);
@@ -39,7 +39,7 @@ public final class ClientPlayerDisguises {
 				IRenderTypeBuffer buffers = event.getBuffers();
 				int packedLight = event.getLight();
 
-				float yaw = MathHelper.lerp(partialTicks, player.prevRotationYaw, player.rotationYaw);
+				float yaw = MathHelper.lerp(partialTicks, player.yRotO, player.yRot);
 				renderer.render(disguise, yaw, partialTicks, transform, buffers, packedLight);
 			} catch (Exception e) {
 				PlayerDisguise.get(player).ifPresent(PlayerDisguise::clearDisguise);
@@ -51,17 +51,17 @@ public final class ClientPlayerDisguises {
 	}
 
 	private static void copyDisguiseState(Entity disguise, PlayerEntity player) {
-		disguise.setPosition(player.getPosX(), player.getPosY(), player.getPosZ());
-		disguise.prevPosX = player.prevPosX;
-		disguise.prevPosY = player.prevPosY;
-		disguise.prevPosZ = player.prevPosZ;
+		disguise.setPos(player.getX(), player.getY(), player.getZ());
+		disguise.xo = player.xo;
+		disguise.yo = player.yo;
+		disguise.zo = player.zo;
 
-		disguise.rotationYaw = player.rotationYaw;
-		disguise.prevRotationYaw = player.prevRotationYaw;
-		disguise.rotationPitch = player.rotationPitch;
-		disguise.prevRotationPitch = player.prevRotationPitch;
+		disguise.yRot = player.yRot;
+		disguise.yRotO = player.yRotO;
+		disguise.xRot = player.xRot;
+		disguise.xRotO = player.xRotO;
 
-		disguise.setSneaking(player.isSneaking());
+		disguise.setShiftKeyDown(player.isShiftKeyDown());
 		disguise.setPose(player.getPose());
 		disguise.setInvisible(player.isInvisible());
 		disguise.setSprinting(player.isSprinting());
@@ -69,30 +69,30 @@ public final class ClientPlayerDisguises {
 
 		if (disguise instanceof LivingEntity) {
 			LivingEntity livingDisguise = (LivingEntity) disguise;
-			livingDisguise.renderYawOffset = player.renderYawOffset;
-			livingDisguise.prevRenderYawOffset = player.prevRenderYawOffset;
+			livingDisguise.yBodyRot = player.yBodyRot;
+			livingDisguise.yBodyRotO = player.yBodyRotO;
 
-			livingDisguise.rotationYawHead = player.rotationYawHead;
-			livingDisguise.prevRotationYawHead = player.prevRotationYawHead;
+			livingDisguise.yHeadRot = player.yHeadRot;
+			livingDisguise.yHeadRotO = player.yHeadRotO;
 
-			livingDisguise.limbSwing = player.limbSwing;
-			livingDisguise.limbSwingAmount = player.limbSwingAmount;
-			livingDisguise.prevLimbSwingAmount = player.prevLimbSwingAmount;
+			livingDisguise.animationPosition = player.animationPosition;
+			livingDisguise.animationSpeed = player.animationSpeed;
+			livingDisguise.animationSpeedOld = player.animationSpeedOld;
 
-			livingDisguise.swingingHand = player.swingingHand;
-			livingDisguise.swingProgress = player.swingProgress;
-			livingDisguise.swingProgressInt = player.swingProgressInt;
-			livingDisguise.prevSwingProgress = player.prevSwingProgress;
-			livingDisguise.isSwingInProgress = player.isSwingInProgress;
+			livingDisguise.swingingArm = player.swingingArm;
+			livingDisguise.attackAnim = player.attackAnim;
+			livingDisguise.swingTime = player.swingTime;
+			livingDisguise.oAttackAnim = player.oAttackAnim;
+			livingDisguise.swinging = player.swinging;
 
 			livingDisguise.setOnGround(player.isOnGround());
 		}
 
-		disguise.ticksExisted = player.ticksExisted;
+		disguise.tickCount = player.tickCount;
 	}
 
 	public static void updateClientDisguise(UUID uuid, DisguiseType disguiseType) {
-		PlayerEntity player = Minecraft.getInstance().world.getPlayerByUuid(uuid);
+		PlayerEntity player = Minecraft.getInstance().level.getPlayerByUUID(uuid);
 		if (player != null) {
 			PlayerDisguise.get(player).ifPresent(playerDisguise -> playerDisguise.setDisguise(disguiseType));
 		}

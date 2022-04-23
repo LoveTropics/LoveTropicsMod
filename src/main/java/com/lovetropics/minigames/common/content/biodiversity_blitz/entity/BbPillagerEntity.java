@@ -30,13 +30,13 @@ public class BbPillagerEntity extends PillagerEntity implements BbMobEntity {
         this.plot = plot;
 
         // Ignore sweet berry bushes and water
-        this.setPathPriority(PathNodeType.DANGER_OTHER, 0.0F);
-        this.setPathPriority(PathNodeType.DAMAGE_OTHER, 0.0F);
-        this.setPathPriority(PathNodeType.WATER, -1.0F);
+        this.setPathfindingMalus(PathNodeType.DANGER_OTHER, 0.0F);
+        this.setPathfindingMalus(PathNodeType.DAMAGE_OTHER, 0.0F);
+        this.setPathfindingMalus(PathNodeType.WATER, -1.0F);
     }
 
     @Override
-    protected PathNavigator createNavigator(World world) {
+    protected PathNavigator createNavigation(World world) {
         return new BbGroundNavigator(this);
     }
 
@@ -53,12 +53,12 @@ public class BbPillagerEntity extends PillagerEntity implements BbMobEntity {
 
     @Nullable
     @Override
-    public ILivingEntityData onInitialSpawn(IServerWorld worldIn, DifficultyInstance difficultyIn, SpawnReason reason, @Nullable ILivingEntityData spawnDataIn, @Nullable CompoundNBT dataTag) {
-        ILivingEntityData data = super.onInitialSpawn(worldIn, difficultyIn, reason, spawnDataIn, dataTag);
-        this.setLeader(false); // Make sure that the pillagers aren't raid leaders
+    public ILivingEntityData finalizeSpawn(IServerWorld worldIn, DifficultyInstance difficultyIn, SpawnReason reason, @Nullable ILivingEntityData spawnDataIn, @Nullable CompoundNBT dataTag) {
+        ILivingEntityData data = super.finalizeSpawn(worldIn, difficultyIn, reason, spawnDataIn, dataTag);
+        this.setPatrolLeader(false); // Make sure that the pillagers aren't raid leaders
         this.setPatrolling(false);
         this.setCanJoinRaid(false);
-        this.setItemStackToSlot(EquipmentSlotType.HEAD, ItemStack.EMPTY.copy());
+        this.setItemSlot(EquipmentSlotType.HEAD, ItemStack.EMPTY.copy());
         this.setDropChance(EquipmentSlotType.HEAD, 0);
         return data;
     }

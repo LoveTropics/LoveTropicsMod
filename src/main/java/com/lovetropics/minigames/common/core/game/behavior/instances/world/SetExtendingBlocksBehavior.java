@@ -31,7 +31,7 @@ public final class SetExtendingBlocksBehavior implements IGameBehavior {
 		return instance.group(
 				MoreCodecs.BLOCK_PREDICATE.optionalFieldOf("replace").forGetter(c -> Optional.ofNullable(c.replace)),
 				MoreCodecs.BLOCK_STATE_PROVIDER.fieldOf("set").forGetter(c -> c.set),
-				MoreCodecs.stringVariants(Direction.values(), Direction::getName2).fieldOf("direction").forGetter(c -> c.direction),
+				MoreCodecs.stringVariants(Direction.values(), Direction::getName).fieldOf("direction").forGetter(c -> c.direction),
 				MoreCodecs.arrayOrUnit(Codec.STRING, String[]::new).optionalFieldOf("region", new String[0]).forGetter(c -> c.regionKeys),
 				Codec.LONG.fieldOf("start_time").forGetter(c -> c.startTime),
 				Codec.LONG.fieldOf("end_time").forGetter(c -> c.endTime),
@@ -96,7 +96,7 @@ public final class SetExtendingBlocksBehavior implements IGameBehavior {
 		ServerWorld world = game.getWorld();
 		BlockPredicate replace = this.replace;
 		BlockStateProvider set = this.set;
-		Random random = world.rand;
+		Random random = world.random;
 
 		int flags = Constants.BlockFlags.DEFAULT;
 		if (!notifyNeighbors) {
@@ -105,10 +105,10 @@ public final class SetExtendingBlocksBehavior implements IGameBehavior {
 		}
 
 		for (BlockPos pos : extendingBox) {
-			if (replace == null || replace.test(world, pos)) {
-				BlockState state = set.getBlockState(random, pos);
-				state = Block.getValidBlockForPosition(state, world, pos);
-				world.setBlockState(pos, state, flags);
+			if (replace == null || replace.matches(world, pos)) {
+				BlockState state = set.getState(random, pos);
+				state = Block.updateFromNeighbourShapes(state, world, pos);
+				world.setBlock(pos, state, flags);
 			}
 		}
 	}
@@ -116,13 +116,13 @@ public final class SetExtendingBlocksBehavior implements IGameBehavior {
 	private BlockBox getExtendingBox(BlockBox box, float progress) {
 		BlockPos size = box.getSize();
 
-		int totalLength = direction.getAxis().getCoordinate(size.getX(), size.getY(), size.getZ());
+		int totalLength = direction.getAxis().choose(size.getX(), size.getY(), size.getZ());
 		int currentLength = MathHelper.floor(totalLength * progress);
 
 		if (direction.getAxisDirection() == Direction.AxisDirection.POSITIVE) {
-			return box.withMax(box.min.offset(direction, currentLength));
+			return box.withMax(box.min.relative(direction, currentLength));
 		} else {
-			return box.withMin(box.max.offset(direction, currentLength));
+			return box.withMin(box.max.relative(direction, currentLength));
 		}
 	}
 }

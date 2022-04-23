@@ -12,7 +12,7 @@ public final class LoveTropicsEntityOptions {
 					StringReader reader = parser.getReader();
 					boolean enable = reader.readBoolean();
 					if (enable) {
-						parser.setCurrentWorldOnly();
+						parser.setWorldLimited();
 					}
 				},
 				parser -> true,

@@ -16,7 +16,7 @@ public final class NotificationIcon {
 	public static final Codec<NotificationIcon> CODEC = RecordCodecBuilder.create(instance -> {
 		return instance.group(
 				MoreCodecs.ITEM_STACK.optionalFieldOf("item").forGetter(c -> Optional.ofNullable(c.item)),
-				Registry.EFFECTS.optionalFieldOf("effect").forGetter(c -> Optional.ofNullable(c.effect))
+				Registry.MOB_EFFECT.optionalFieldOf("effect").forGetter(c -> Optional.ofNullable(c.effect))
 		).apply(instance, NotificationIcon::new);
 	});
 
@@ -43,7 +43,7 @@ public final class NotificationIcon {
 	public void encode(PacketBuffer buffer) {
 		if (this.item != null) {
 			buffer.writeBoolean(true);
-			buffer.writeItemStack(this.item);
+			buffer.writeItem(this.item);
 		} else {
 			buffer.writeBoolean(false);
 			buffer.writeRegistryIdUnsafe(ForgeRegistries.POTIONS, this.effect);
@@ -52,7 +52,7 @@ public final class NotificationIcon {
 
 	public static NotificationIcon decode(PacketBuffer buffer) {
 		if (buffer.readBoolean()) {
-			return NotificationIcon.item(buffer.readItemStack());
+			return NotificationIcon.item(buffer.readItem());
 		} else {
 			return NotificationIcon.effect(buffer.readRegistryIdUnsafe(ForgeRegistries.POTIONS));
 		}

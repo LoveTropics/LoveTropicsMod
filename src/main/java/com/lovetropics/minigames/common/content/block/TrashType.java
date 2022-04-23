@@ -1,18 +1,16 @@
 package com.lovetropics.minigames.common.content.block;
 
-import java.util.Locale;
-
-import javax.annotation.Nullable;
-
-import com.lovetropics.minigames.common.util.Util;
 import com.lovetropics.minigames.common.content.block.TrashBlock.Attachment;
+import com.lovetropics.minigames.common.util.Util;
 import com.tterrag.registrate.util.nullness.NonNullSupplier;
-
 import net.minecraft.block.Block;
 import net.minecraft.util.Direction;
 import net.minecraft.util.Direction.Axis;
 import net.minecraft.util.Direction.AxisDirection;
 import net.minecraft.util.math.shapes.VoxelShape;
+
+import javax.annotation.Nullable;
+import java.util.Locale;
 
 public enum TrashType implements NonNullSupplier<Block> {
 
@@ -48,7 +46,7 @@ public enum TrashType implements NonNullSupplier<Block> {
         this.h = h;
         float halfW = w / 2f;
         for (int i = 0; i < 6; i++) {
-        	Direction dir = Direction.byIndex(i);
+        	Direction dir = Direction.from3DDataValue(i);
         	float min = 8 - halfW;
         	float max = 8 + halfW;
         	final float minX, maxX, minY, maxY, minZ, maxZ;
@@ -87,7 +85,7 @@ public enum TrashType implements NonNullSupplier<Block> {
         			}
         		}
         	}
-            this.shape[i] = Block.makeCuboidShape(minX, minY, minZ, maxX, maxY, maxZ);
+            this.shape[i] = Block.box(minX, minY, minZ, maxX, maxY, maxZ);
         }
     }
     
@@ -104,7 +102,7 @@ public enum TrashType implements NonNullSupplier<Block> {
     }
 
     private VoxelShape getShape(Direction dir) {
-    	return shape[dir.getIndex()];
+    	return shape[dir.get3DDataValue()];
     }
     
     public String getId() {

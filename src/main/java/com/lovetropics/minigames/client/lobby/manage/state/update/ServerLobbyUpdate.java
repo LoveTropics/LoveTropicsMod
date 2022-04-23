@@ -1,7 +1,5 @@
 package com.lovetropics.minigames.client.lobby.manage.state.update;
 
-import java.util.function.Function;
-
 import com.lovetropics.minigames.client.lobby.manage.ServerManageLobbyMessage;
 import com.lovetropics.minigames.client.lobby.manage.state.ClientLobbyQueuedGame;
 import com.lovetropics.minigames.client.lobby.state.ClientGameDefinition;
@@ -12,16 +10,15 @@ import com.lovetropics.minigames.common.core.game.lobby.LobbyControls;
 import com.lovetropics.minigames.common.core.game.lobby.LobbyVisibility;
 import com.lovetropics.minigames.common.core.game.lobby.QueuedGame;
 import com.lovetropics.minigames.common.util.PartialUpdate;
-
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.ResourceLocation;
 
-public abstract class ServerLobbyUpdate extends PartialUpdate<ILobbyManagement> {
-	private static final Family<ILobbyManagement> FAMILY = Family.of(Type.values());
+import java.util.function.Function;
 
+public abstract class ServerLobbyUpdate extends PartialUpdate<ILobbyManagement> {
 	public static final class Set extends AbstractSet<ILobbyManagement> {
 		private Set() {
-			super(FAMILY);
+			super(Family.of(Type.values()));
 		}
 
 		public static Set create() {
@@ -120,11 +117,11 @@ public abstract class ServerLobbyUpdate extends PartialUpdate<ILobbyManagement> 
 
 		@Override
 		protected void encode(PacketBuffer buffer) {
-			buffer.writeString(name, 200);
+			buffer.writeUtf(name, 200);
 		}
 
 		static SetName decode(PacketBuffer buffer) {
-			return new SetName(buffer.readString(200));
+			return new SetName(buffer.readUtf(200));
 		}
 	}
 
@@ -243,11 +240,11 @@ public abstract class ServerLobbyUpdate extends PartialUpdate<ILobbyManagement> 
 
 		@Override
 		protected void encode(PacketBuffer buffer) {
-			buffer.writeEnumValue(visibility);
+			buffer.writeEnum(visibility);
 		}
 
 		static SetVisibility decode(PacketBuffer buffer) {
-			return new SetVisibility(buffer.readEnumValue(LobbyVisibility.class));
+			return new SetVisibility(buffer.readEnum(LobbyVisibility.class));
 		}
 	}
 

@@ -79,7 +79,7 @@ public final class WorkspacePositionTracker {
 		ServerPlayerEntity player = (ServerPlayerEntity) event.getEntity();
 		MinecraftServer server = player.server;
 
-		RegistryKey<World> from = player.world.getDimensionKey();
+		RegistryKey<World> from = player.level.dimension();
 
 		MapWorkspaceManager workspaceManager = MapWorkspaceManager.get(server);
 		MapWorkspace fromWorkspace = workspaceManager.getWorkspace(from);
@@ -125,16 +125,16 @@ public final class WorkspacePositionTracker {
 		}
 
 		public static Position copyFrom(ServerPlayerEntity entity) {
-			return new Position(entity.world.getDimensionKey(), entity.getPositionVec(), entity.rotationYaw, entity.rotationPitch);
+			return new Position(entity.level.dimension(), entity.position(), entity.yRot, entity.xRot);
 		}
 
 		public void applyTo(ServerPlayerEntity entity) {
-			ServerWorld world = entity.getServer().getWorld(dimension);
-			entity.teleport(world, pos.x, pos.y, pos.z, yaw, pitch);
+			ServerWorld world = entity.getServer().getLevel(dimension);
+			entity.teleportTo(world, pos.x, pos.y, pos.z, yaw, pitch);
 		}
 
 		public void write(CompoundNBT nbt) {
-			nbt.putString("dimension", dimension.getLocation().toString());
+			nbt.putString("dimension", dimension.location().toString());
 			nbt.putDouble("x", pos.x);
 			nbt.putDouble("y", pos.y);
 			nbt.putDouble("z", pos.z);
@@ -148,7 +148,7 @@ public final class WorkspacePositionTracker {
 				return null;
 			}
 
-			RegistryKey<World> dimension = RegistryKey.getOrCreateKey(Registry.WORLD_KEY, new ResourceLocation(nbt.getString("dimension")));
+			RegistryKey<World> dimension = RegistryKey.create(Registry.DIMENSION_REGISTRY, new ResourceLocation(nbt.getString("dimension")));
 			Vector3d pos = new Vector3d(nbt.getDouble("x"), nbt.getDouble("y"), nbt.getDouble("z"));
 			float yaw = nbt.getFloat("yaw");
 			float pitch = nbt.getFloat("pitch");

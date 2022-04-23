@@ -97,9 +97,9 @@ public final class CountdownPackageBehavior implements IGameBehavior {
 	private void tickCountdown(ServerPlayerEntity player, long remainingTicks) {
 		if (remainingTicks % 20 == 0) {
 			long remainingSeconds = remainingTicks / 20;
-			IFormattableTextComponent timeText = new StringTextComponent(String.valueOf(remainingSeconds)).mergeStyle(TextFormatting.GOLD);
-			player.sendStatusMessage(warning.apply(timeText), true);
-			player.playSound(SoundEvents.ENTITY_ARROW_HIT_PLAYER, SoundCategory.MASTER, 0.8F, 1.0F);
+			IFormattableTextComponent timeText = new StringTextComponent(String.valueOf(remainingSeconds)).withStyle(TextFormatting.GOLD);
+			player.displayClientMessage(warning.apply(timeText), true);
+			player.playNotifySound(SoundEvents.ARROW_HIT_PLAYER, SoundCategory.MASTER, 0.8F, 1.0F);
 		}
 	}
 

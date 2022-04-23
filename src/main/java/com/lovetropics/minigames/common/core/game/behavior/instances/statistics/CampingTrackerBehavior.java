@@ -63,7 +63,7 @@ public final class CampingTrackerBehavior implements IGameBehavior {
 		for (ServerPlayerEntity player : game.getParticipants()) {
 			CampingTracker tracker = getCampingTracker(player);
 
-			Vector3d currentPosition = player.getPositionVec();
+			Vector3d currentPosition = player.position();
 			if (tracker.camping) {
 				int campingTime = tracker.trackCamping(currentPosition, time);
 				if (campingTime > 0) {
@@ -77,16 +77,16 @@ public final class CampingTrackerBehavior implements IGameBehavior {
 	}
 
 	private CampingTracker getCampingTracker(ServerPlayerEntity player) {
-		return campingTrackers.computeIfAbsent(player.getUniqueID(), i -> new CampingTracker());
+		return campingTrackers.computeIfAbsent(player.getUUID(), i -> new CampingTracker());
 	}
 
 	private ActionResultType onPlayerDeath(ServerPlayerEntity player, DamageSource source) {
-		campingTrackers.remove(player.getUniqueID());
+		campingTrackers.remove(player.getUUID());
 		return ActionResultType.PASS;
 	}
 
 	private void onPlayerLeave(ServerPlayerEntity player) {
-		campingTrackers.remove(player.getUniqueID());
+		campingTrackers.remove(player.getUUID());
 	}
 
 	class CampingTracker {

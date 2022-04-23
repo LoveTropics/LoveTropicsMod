@@ -36,24 +36,24 @@ public final class ForceLoadRegionBehavior implements IGameBehavior {
 	}
 
 	private void onStop(IGamePhase game) {
-		ServerChunkProvider chunkProvider = game.getWorld().getChunkProvider();
+		ServerChunkProvider chunkProvider = game.getWorld().getChunkSource();
 
 		LongIterator iterator = acquiredChunks.iterator();
 		while (iterator.hasNext()) {
 			long chunkKey = iterator.nextLong();
-			chunkProvider.forceChunk(new ChunkPos(chunkKey), false);
+			chunkProvider.updateChunkForced(new ChunkPos(chunkKey), false);
 		}
 	}
 
 	private LongSet acquireChunks(IGamePhase game) {
-		ServerChunkProvider chunkProvider = game.getWorld().getChunkProvider();
+		ServerChunkProvider chunkProvider = game.getWorld().getChunkSource();
 
 		LongSet chunks = collectChunks(game);
 
 		LongIterator iterator = chunks.iterator();
 		while (iterator.hasNext()) {
 			long chunkKey = iterator.nextLong();
-			chunkProvider.forceChunk(new ChunkPos(chunkKey), true);
+			chunkProvider.updateChunkForced(new ChunkPos(chunkKey), true);
 		}
 
 		iterator = chunks.iterator();

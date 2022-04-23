@@ -24,11 +24,11 @@ public final class BbMobSpawner {
             MobEntity entity = waveSelector.selectEntityForWave(random, world, plot, waveIndex);
 
             Direction direction = plot.forward.getOpposite();
-            entity.setLocationAndAngles(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5, direction.getHorizontalAngle(), 0);
+            entity.moveTo(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5, direction.toYRot(), 0);
 
-            world.addEntity(entity);
+            world.addFreshEntity(entity);
 
-            entity.onInitialSpawn(world, world.getDifficultyForLocation(pos), SpawnReason.MOB_SUMMONED, null, null);
+            entity.finalizeSpawn(world, world.getCurrentDifficultyAt(pos), SpawnReason.MOB_SUMMONED, null, null);
             entities.add(entity);
         }
 

@@ -6,6 +6,6 @@ public final class ClientRoleSelection {
 	private static final Minecraft CLIENT = Minecraft.getInstance();
 
 	public static void openScreen(int lobbyId) {
-		CLIENT.displayGuiScreen(new SelectPlayerRoleScreen(lobbyId));
+		CLIENT.setScreen(new SelectPlayerRoleScreen(lobbyId));
 	}
 }

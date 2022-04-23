@@ -20,13 +20,13 @@ public class AddWorkspaceRegionMessage {
 
 	public void encode(PacketBuffer buffer) {
 		buffer.writeVarInt(id);
-		buffer.writeString(key, 64);
+		buffer.writeUtf(key, 64);
 		region.write(buffer);
 	}
 
 	public static AddWorkspaceRegionMessage decode(PacketBuffer buffer) {
 		int id = buffer.readVarInt();
-		String key = buffer.readString(64);
+		String key = buffer.readUtf(64);
 		BlockBox region = BlockBox.read(buffer);
 		return new AddWorkspaceRegionMessage(id, key, region);
 	}

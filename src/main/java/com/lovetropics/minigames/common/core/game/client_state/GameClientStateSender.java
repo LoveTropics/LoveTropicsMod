@@ -28,7 +28,7 @@ public final class GameClientStateSender {
 	}
 
 	public Player byPlayer(ServerPlayerEntity player) {
-		return this.players.computeIfAbsent(player.getUniqueID(), id -> new Player());
+		return this.players.computeIfAbsent(player.getUUID(), id -> new Player());
 	}
 
 	@SubscribeEvent
@@ -42,7 +42,7 @@ public final class GameClientStateSender {
 	@SubscribeEvent
 	public static void onPlayerLoggedOut(PlayerEvent.PlayerLoggedOutEvent event) {
 		PlayerEntity player = event.getPlayer();
-		INSTANCE.players.remove(player.getUniqueID());
+		INSTANCE.players.remove(player.getUUID());
 	}
 
 	public static final class Player {

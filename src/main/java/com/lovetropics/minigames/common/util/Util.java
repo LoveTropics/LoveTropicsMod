@@ -53,14 +53,14 @@ public class Util {
     public static boolean spawnEntity(EntityType<?> entityType, World world, double x, double y, double z) {
         if (entityType == EntityType.LIGHTNING_BOLT) {
             LightningBoltEntity entity = EntityType.LIGHTNING_BOLT.create(world);
-            entity.moveForced(new Vector3d(x, y, z));
-            world.addEntity(entity);
+            entity.moveTo(new Vector3d(x, y, z));
+            world.addFreshEntity(entity);
             return true;
         } else {
             final Entity entity = entityType.create(world);
             if (entity != null) {
-                entity.setPosition(x, y, z);
-                return world.addEntity(entity);
+                entity.setPos(x, y, z);
+                return world.addFreshEntity(entity);
             }
 
             return false;
@@ -68,14 +68,14 @@ public class Util {
     }
 
     public static boolean addItemStackToInventory(final ServerPlayerEntity player, final ItemStack itemstack) {
-        if (player.addItemStackToInventory(itemstack)) {
-            player.world.playSound(null, player.getPosX(), player.getPosY(), player.getPosZ(), SoundEvents.ENTITY_ITEM_PICKUP, SoundCategory.PLAYERS, 0.2F, ((player.getRNG().nextFloat() - player.getRNG().nextFloat()) * 0.7F + 1.0F) * 2.0F);
+        if (player.addItem(itemstack)) {
+            player.level.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.ITEM_PICKUP, SoundCategory.PLAYERS, 0.2F, ((player.getRandom().nextFloat() - player.getRandom().nextFloat()) * 0.7F + 1.0F) * 2.0F);
             return true;
         } else {
-            ItemEntity itementity = player.dropItem(itemstack, false);
+            ItemEntity itementity = player.drop(itemstack, false);
             if (itementity != null) {
-                itementity.setNoPickupDelay();
-                itementity.setOwnerId(player.getUniqueID());
+                itementity.setNoPickUpDelay();
+                itementity.setOwner(player.getUUID());
             }
         }
 
@@ -83,7 +83,7 @@ public class Util {
     }
 
     public static boolean tryMoveToEntityLivingLongDist(MobEntity entSource, Entity entityTo, double moveSpeedAmp) {
-        return tryMoveToXYZLongDist(entSource, entityTo.getPosition(), moveSpeedAmp);
+        return tryMoveToXYZLongDist(entSource, entityTo.blockPosition(), moveSpeedAmp);
     }
 
     public static boolean tryMoveToXYZLongDist(MobEntity ent, BlockPos pos, double moveSpeedAmp) {
@@ -103,11 +103,11 @@ public class Util {
      */
     public static boolean tryMoveToXYZLongDist(MobEntity ent, int x, int y, int z, double moveSpeedAmp) {
 
-        World world = ent.world;
+        World world = ent.level;
 
         boolean success = false;
 
-        if (ent.getNavigator().noPath()) {
+        if (ent.getNavigation().isDone()) {
 
             double distToPlayer = getDistance(ent, x, y, z);//ent.getDistanceToEntity(player);
 
@@ -115,17 +115,17 @@ public class Util {
 
             if (distToPlayer <= followDist) {
                 //boolean success = ent.getNavigator().tryMoveToEntityLiving(player, moveSpeedAmp);
-                success = ent.getNavigator().tryMoveToXYZ(x, y, z, moveSpeedAmp);
+                success = ent.getNavigation().moveTo(x, y, z, moveSpeedAmp);
                 //System.out.println("success? " + success + "- move to player: " + ent + " -> " + player);
             } else {
 		        /*int x = MathHelper.floor(player.posX);
 		        int y = MathHelper.floor(player.posY);
 		        int z = MathHelper.floor(player.posZ);*/
 
-                double d = x+0.5F - ent.getPosX();
-                double d2 = z+0.5F - ent.getPosZ();
+                double d = x+0.5F - ent.getX();
+                double d2 = z+0.5F - ent.getZ();
                 double d1;
-                d1 = y+0.5F - (ent.getPosY() + (double)ent.getEyeHeight());
+                d1 = y+0.5F - (ent.getY() + (double)ent.getEyeHeight());
 
                 double d3 = MathHelper.sqrt(d * d + d2 * d2);
                 float f2 = (float)((Math.atan2(d2, d) * 180D) / 3.1415927410125732D) - 90F;
@@ -135,27 +135,27 @@ public class Util {
 
                 LivingEntity center = ent;
 
-                Random rand = world.rand;
+                Random rand = world.random;
 
                 float randLook = rand.nextInt(90)-45;
                 //int height = 10;
                 double dist = (followDist * 0.75D) + rand.nextInt((int)followDist / 2);//rand.nextInt(26)+(queue.get(0).retryState * 6);
-                int gatherX = (int)Math.floor(center.getPosX() + ((double)(-Math.sin((rotationYaw+randLook) / 180.0F * 3.1415927F)/* * Math.cos(center.rotationPitch / 180.0F * 3.1415927F)*/) * dist));
-                int gatherY = (int)center.getPosY();//Math.floor(center.posY-0.5 + (double)(-MathHelper.sin(center.rotationPitch / 180.0F * 3.1415927F) * dist) - 0D); //center.posY - 0D;
-                int gatherZ = (int)Math.floor(center.getPosZ() + ((double)(Math.cos((rotationYaw+randLook) / 180.0F * 3.1415927F)/* * Math.cos(center.rotationPitch / 180.0F * 3.1415927F)*/) * dist));
+                int gatherX = (int)Math.floor(center.getX() + ((double)(-Math.sin((rotationYaw+randLook) / 180.0F * 3.1415927F)/* * Math.cos(center.rotationPitch / 180.0F * 3.1415927F)*/) * dist));
+                int gatherY = (int)center.getY();//Math.floor(center.posY-0.5 + (double)(-MathHelper.sin(center.rotationPitch / 180.0F * 3.1415927F) * dist) - 0D); //center.posY - 0D;
+                int gatherZ = (int)Math.floor(center.getZ() + ((double)(Math.cos((rotationYaw+randLook) / 180.0F * 3.1415927F)/* * Math.cos(center.rotationPitch / 180.0F * 3.1415927F)*/) * dist));
 
                 BlockPos pos = new BlockPos(gatherX, gatherY, gatherZ);
 
-                if (!world.isBlockLoaded(pos)) return false;
+                if (!world.hasChunkAt(pos)) return false;
 
                 BlockState state = world.getBlockState(pos);
                 Block block = state.getBlock();
                 int tries = 0;
-                if (!world.isAirBlock(pos)) {
+                if (!world.isEmptyBlock(pos)) {
                     //int offset = -5;
 
                     while (tries < 30) {
-                        if (world.isAirBlock(pos) && world.isAirBlock(pos.up())/* || !block.isSideSolid(block.getDefaultState(), world, new BlockPos(gatherX, gatherY, gatherZ), EnumFacing.UP)*/) {
+                        if (world.isEmptyBlock(pos) && world.isEmptyBlock(pos.above())/* || !block.isSideSolid(block.getDefaultState(), world, new BlockPos(gatherX, gatherY, gatherZ), EnumFacing.UP)*/) {
                             break;
                         }
                         gatherY += 1;//offset++;
@@ -167,7 +167,7 @@ public class Util {
                 } else {
                     //int offset = 0;
                     while (tries < 30) {
-                        if (!world.isAirBlock(pos) && (state.getMaterial().isSolid() || world.getBlockState(pos).getMaterial() == Material.WATER)) {
+                        if (!world.isEmptyBlock(pos) && (state.getMaterial().isSolid() || world.getBlockState(pos).getMaterial() == Material.WATER)) {
                             break;
                         }
                         gatherY -= 1;//offset++;
@@ -182,7 +182,7 @@ public class Util {
                     /*if (world.getBlockState(pos).getMaterial() == Material.WATER) {
                         gatherY--;
                     }*/
-                    success = ent.getNavigator().tryMoveToXYZ(gatherX, gatherY, gatherZ, moveSpeedAmp);
+                    success = ent.getNavigation().moveTo(gatherX, gatherY, gatherZ, moveSpeedAmp);
                     //System.out.println("pp success? " + success + "- move to player: " + ent + " -> " + player);
                 }
             }
@@ -198,7 +198,7 @@ public class Util {
         int adjustRangeY = 10;
 
         int tryX;
-        int tryY = MathHelper.floor(entity.getPosY()) - 1;
+        int tryY = MathHelper.floor(entity.getY()) - 1;
         int tryZ;
 
         for (int ii = 0; ii <= 10; ii++) {
@@ -210,18 +210,18 @@ public class Util {
                 scanSize = scanRange;
                 scanSizeY = scanRange / 2;
             }
-            tryX = MathHelper.floor(entity.getPosX()) + (entity.world.rand.nextInt(scanSize)-scanSize/2);
-            int i = tryY + entity.world.rand.nextInt(scanSizeY)-(scanSizeY/2);
-            tryZ = MathHelper.floor(entity.getPosZ()) + entity.world.rand.nextInt(scanSize)-scanSize/2;
+            tryX = MathHelper.floor(entity.getX()) + (entity.level.random.nextInt(scanSize)-scanSize/2);
+            int i = tryY + entity.level.random.nextInt(scanSizeY)-(scanSizeY/2);
+            tryZ = MathHelper.floor(entity.getZ()) + entity.level.random.nextInt(scanSize)-scanSize/2;
             BlockPos posTry = new BlockPos(tryX, tryY, tryZ);
 
             boolean foundBlock = false;
             int newY = i;
 
-            if (!entity.world.isAirBlock(posTry)) {
+            if (!entity.level.isEmptyBlock(posTry)) {
                 //scan up
                 int tryMax = adjustRangeY;
-                while (!entity.world.isAirBlock(posTry) && tryMax-- > 0) {
+                while (!entity.level.isEmptyBlock(posTry) && tryMax-- > 0) {
                     newY++;
                     posTry = new BlockPos(tryX, newY, tryZ);
                 }
@@ -231,20 +231,20 @@ public class Util {
                     foundWater = true;
                 }*/
 
-                if (entity.world.isAirBlock(posTry) && predicate.test(entity.world, posTry.add(0, -1, 0))) {
+                if (entity.level.isEmptyBlock(posTry) && predicate.test(entity.level, posTry.offset(0, -1, 0))) {
                     foundBlock = true;
                 }
             } else {
                 //scan down
                 int tryMax = adjustRangeY;
-                while (entity.world.isAirBlock(posTry) && tryMax-- > 0) {
+                while (entity.level.isEmptyBlock(posTry) && tryMax-- > 0) {
                     newY--;
                     posTry = new BlockPos(tryX, newY, tryZ);
                 }
                 /*if (!entity.world.isAirBlock(posTry) && entity.world.getBlockState(posTry.add(0, 1, 0)).getMaterial().isLiquid()) {
                     foundWater = true;
                 }*/
-                if (entity.world.isAirBlock(posTry.add(0, 1, 0)) && predicate.test(entity.world, posTry)) {
+                if (entity.level.isEmptyBlock(posTry.offset(0, 1, 0)) && predicate.test(entity.level, posTry)) {
                     foundBlock = true;
                 }
             }
@@ -262,11 +262,11 @@ public class Util {
     }
 
     public static boolean isDeepWater(World world, BlockPos pos) {
-        boolean clearAbove = world.isAirBlock(pos.up(1)) && world.isAirBlock(pos.up(2)) && world.isAirBlock(pos.up(3));
-        boolean deep = world.getBlockState(pos).getMaterial() == Material.WATER && world.getBlockState(pos.down()).getMaterial() == Material.WATER;
+        boolean clearAbove = world.isEmptyBlock(pos.above(1)) && world.isEmptyBlock(pos.above(2)) && world.isEmptyBlock(pos.above(3));
+        boolean deep = world.getBlockState(pos).getMaterial() == Material.WATER && world.getBlockState(pos.below()).getMaterial() == Material.WATER;
         boolean notUnderground = false;
         if (deep) {
-            int height = world.getHeight(Heightmap.Type.MOTION_BLOCKING, pos).getY() - 1;
+            int height = world.getHeightmapPos(Heightmap.Type.MOTION_BLOCKING, pos).getY() - 1;
             notUnderground = height == pos.getY();
         }
 
@@ -283,7 +283,7 @@ public class Util {
 
     public static double getDistance(Entity ent, double x, double y, double z)
     {
-    	return ent.getPositionVec().subtract(x, y, z).length();
+    	return ent.position().subtract(x, y, z).length();
     }
 
     public static Field findField(Class<?> clazz, String... fieldNames)
@@ -354,25 +354,25 @@ public class Util {
 
     @Nullable
     public static BlockPos findGround(World world, BlockPos origin, int maximumDistance) {
-        if (!isSolidGround(world, origin) && isSolidGround(world, origin.down())) {
+        if (!isSolidGround(world, origin) && isSolidGround(world, origin.below())) {
             return origin;
         }
 
         // if this position is not free, scan upwards to find the ground
         if (isSolidGround(world, origin)) {
-            BlockPos.Mutable mutablePos = origin.toMutable();
+            BlockPos.Mutable mutablePos = origin.mutable();
 
             for (int i = 0; i < maximumDistance; i++) {
                 mutablePos.move(Direction.UP);
                 if (World.isOutsideBuildHeight(mutablePos) || !isSolidGround(world, mutablePos)) {
-                    return mutablePos.toImmutable();
+                    return mutablePos.immutable();
                 }
             }
         }
 
         // if the position below us is not solid, scan downwards to find the ground
-        if (!isSolidGround(world, origin.down())) {
-            BlockPos.Mutable mutablePos = origin.toMutable();
+        if (!isSolidGround(world, origin.below())) {
+            BlockPos.Mutable mutablePos = origin.mutable();
 
             for (int i = 0; i < maximumDistance; i++) {
                 mutablePos.move(Direction.DOWN);
@@ -381,7 +381,7 @@ public class Util {
                 }
 
                 if (isSolidGround(world, mutablePos)) {
-                    return mutablePos.move(Direction.UP).toImmutable();
+                    return mutablePos.move(Direction.UP).immutable();
                 }
             }
         }
@@ -399,7 +399,7 @@ public class Util {
             double d3 = random.nextGaussian() * xzScale;
             double d1 = random.nextGaussian() * yScale;
             double d2 = random.nextGaussian() * xzScale;
-            world.spawnParticle(data, sample.x, sample.y, sample.z, 1 + random.nextInt(2), d3, d1, d2, speedBase + random.nextDouble() * speedScale);
+            world.sendParticles(data, sample.x, sample.y, sample.z, 1 + random.nextInt(2), d3, d1, d2, speedBase + random.nextDouble() * speedScale);
         }
     }
 

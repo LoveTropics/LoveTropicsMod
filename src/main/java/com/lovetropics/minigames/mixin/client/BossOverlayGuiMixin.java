@@ -12,10 +12,10 @@ import org.spongepowered.asm.mixin.injection.ModifyArg;
 @Mixin(BossOverlayGui.class)
 public class BossOverlayGuiMixin {
 	@ModifyArg(
-			method = "func_238484_a_",
+			method = "render",
 			at = @At(
 					value = "INVOKE",
-					target = "Lnet/minecraft/client/renderer/texture/TextureManager;bindTexture(Lnet/minecraft/util/ResourceLocation;)V"
+					target = "Lnet/minecraft/client/renderer/texture/TextureManager;bind(Lnet/minecraft/util/ResourceLocation;)V"
 			),
 			index = 0
 	)

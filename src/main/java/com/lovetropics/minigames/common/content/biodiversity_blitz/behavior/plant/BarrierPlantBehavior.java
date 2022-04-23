@@ -41,9 +41,9 @@ public final class BarrierPlantBehavior implements IGameBehavior {
 				}
 
 				AxisAlignedBB bounds = plant.coverage().asBounds();
-				AxisAlignedBB damageBounds = bounds.grow(1.0, 5.0, 1.0);
+				AxisAlignedBB damageBounds = bounds.inflate(1.0, 5.0, 1.0);
 
-				List<MobEntity> entities = world.getEntitiesWithinAABB(MobEntity.class, damageBounds, BbMobEntity.PREDICATE);
+				List<MobEntity> entities = world.getEntitiesOfClass(MobEntity.class, damageBounds, BbMobEntity.PREDICATE);
 				if (!entities.isEmpty()) {
 					health.decrement(entities.size());
 				}

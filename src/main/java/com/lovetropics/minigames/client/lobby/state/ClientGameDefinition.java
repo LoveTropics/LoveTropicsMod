@@ -53,8 +53,8 @@ public final class ClientGameDefinition {
 
 	public static ClientGameDefinition decode(PacketBuffer buffer) {
 		ResourceLocation id = buffer.readResourceLocation();
-		ITextComponent name = buffer.readTextComponent();
-		ITextComponent subtitle = buffer.readBoolean() ? buffer.readTextComponent() : null;
+		ITextComponent name = buffer.readComponent();
+		ITextComponent subtitle = buffer.readBoolean() ? buffer.readComponent() : null;
 		ResourceLocation icon = buffer.readBoolean() ? buffer.readResourceLocation() : null;
 		int minimumParticipants = buffer.readVarInt();
 		int maximumParticipants = buffer.readVarInt();
@@ -63,10 +63,10 @@ public final class ClientGameDefinition {
 
 	public void encode(PacketBuffer buffer) {
 		buffer.writeResourceLocation(this.id);
-		buffer.writeTextComponent(this.name);
+		buffer.writeComponent(this.name);
 		buffer.writeBoolean(this.subtitle != null);
 		if (this.subtitle != null) {
-			buffer.writeTextComponent(this.subtitle);
+			buffer.writeComponent(this.subtitle);
 		}
 		buffer.writeBoolean(this.icon != null);
 		if (this.icon != null) {

@@ -54,7 +54,7 @@ public class ClientWorkspaceRegions implements Iterable<ClientWorkspaceRegions.E
 		int keyCount = buffer.readVarInt();
 
 		for (int i = 0; i < keyCount; i++) {
-			String key = buffer.readString(64);
+			String key = buffer.readUtf(64);
 
 			int regionCount = buffer.readVarInt();
 			for (int j = 0; j < regionCount; j++) {

@@ -36,7 +36,7 @@ public class JoinGameCommand {
 				.then(joinBuilder("register"))
 				.then(joinBuilder("join"))
 				.then(joinBuilder("play"))
-				.then(literal("force").requires(source -> source.hasPermissionLevel(4))
+				.then(literal("force").requires(source -> source.hasPermission(4))
 					.then(argument("player", EntityArgument.players())
 					.executes(JoinGameCommand::forcePlayerJoin)
 				))
@@ -53,7 +53,7 @@ public class JoinGameCommand {
 						IGameLobby lobby = GameLobbyArgument.get(ctx, "lobby");
 						return joinAsRole(ctx, lobby, null);
 					})
-					.then(literal("as").requires(source -> source.hasPermissionLevel(2))
+					.then(literal("as").requires(source -> source.hasPermission(2))
 						.then(PlayerRoleArgument.argument("role")
 						.executes(ctx -> {
 							IGameLobby lobby = GameLobbyArgument.get(ctx, "lobby");
@@ -67,11 +67,11 @@ public class JoinGameCommand {
 
 	private static int joinAsRole(CommandContext<CommandSource> ctx, @Nullable IGameLobby givenLobby, @Nullable PlayerRole forcedRole) throws CommandSyntaxException {
 		CommandSource source = ctx.getSource();
-		ServerPlayerEntity player = source.asPlayer();
+		ServerPlayerEntity player = source.getPlayerOrException();
 
 		GameResult<IGameLobby> lobbyResult = resolveLobby(source, givenLobby, forcedRole);
 		if (lobbyResult.isError()) {
-			source.sendErrorMessage(lobbyResult.getError());
+			source.sendFailure(lobbyResult.getError());
 			return Command.SINGLE_SUCCESS;
 		}
 
@@ -87,9 +87,9 @@ public class JoinGameCommand {
 				if (forcedRole != null) {
 					players.forceRole(player, forcedRole);
 				}
-				source.sendFeedback(GameTexts.Commands.joinedLobby(lobby), false);
+				source.sendSuccess(GameTexts.Commands.joinedLobby(lobby), false);
 			} else {
-				source.sendErrorMessage(result.getError());
+				source.sendFailure(result.getError());
 			}
 		}, source.getServer());
 

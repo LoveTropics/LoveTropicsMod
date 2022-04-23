@@ -28,7 +28,7 @@ public class EquipParticipantsBehavior implements IGameBehavior {
 		events.listen(GamePlayerEvents.SET_ROLE, (player, role, lastRole) -> {
 			if (role == PlayerRole.PARTICIPANT) {
 				for (ItemStack item : equipment) {
-					player.addItemStackToInventory(item.copy());
+					player.addItem(item.copy());
 				}
 			}
 		});

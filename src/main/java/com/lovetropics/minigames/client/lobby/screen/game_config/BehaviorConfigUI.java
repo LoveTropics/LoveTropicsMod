@@ -1,7 +1,5 @@
 package com.lovetropics.minigames.client.lobby.screen.game_config;
 
-import java.util.List;
-
 import com.google.common.collect.Lists;
 import com.lovetropics.minigames.client.lobby.state.ClientConfigList;
 import com.lovetropics.minigames.client.screen.LayoutTree;
@@ -9,11 +7,12 @@ import com.lovetropics.minigames.client.screen.flex.Align;
 import com.lovetropics.minigames.client.screen.flex.Axis;
 import com.lovetropics.minigames.common.core.game.behavior.GameBehaviorType;
 import com.mojang.blaze3d.matrix.MatrixStack;
-
 import net.minecraft.client.gui.FocusableGui;
 import net.minecraft.client.gui.IGuiEventListener;
 import net.minecraft.client.gui.IRenderable;
 import net.minecraft.util.text.TranslationTextComponent;
+
+import java.util.List;
 
 public class BehaviorConfigUI extends FocusableGui implements IRenderable {
 	
@@ -34,7 +33,7 @@ public class BehaviorConfigUI extends FocusableGui implements IRenderable {
 	}
 
 	@Override
-	public List<? extends IGuiEventListener> getEventListeners() {
+	public List<? extends IGuiEventListener> children() {
 		return Lists.newArrayList(list);
 	}
 	

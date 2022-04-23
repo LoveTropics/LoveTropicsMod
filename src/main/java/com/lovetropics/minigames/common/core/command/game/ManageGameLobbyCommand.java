@@ -27,26 +27,26 @@ public class ManageGameLobbyCommand {
         dispatcher.register(
             literal("game")
                 .then(literal("create")
-						.requires(source -> source.hasPermissionLevel(2))
+						.requires(source -> source.hasPermission(2))
 						.executes(ManageGameLobbyCommand::createLobby)
                 )
 				.then(literal("manage")
-					.requires(source -> source.hasPermissionLevel(2))
+					.requires(source -> source.hasPermission(2))
 					.then(GameLobbyArgument.argument("lobby")
 					.executes(ManageGameLobbyCommand::manageLobby)
 				))
 				.then(literal("manage")
-					.requires(source -> source.hasPermissionLevel(2))
+					.requires(source -> source.hasPermission(2))
 					.executes(ManageGameLobbyCommand::manageCurrentLobby)
 				)
 				.then(literal("enqueue")
-					.requires(source -> source.hasPermissionLevel(2))
+					.requires(source -> source.hasPermission(2))
 					.then(GameLobbyArgument.argument("lobby")
 					.then(GameConfigArgument.argument("game")
 					.executes(ManageGameLobbyCommand::enqueueGame)
 				)))
 				.then(literal("close")
-					.requires(source -> source.hasPermissionLevel(2))
+					.requires(source -> source.hasPermission(2))
 					.then(GameLobbyArgument.argument("lobby")
 					.executes(ManageGameLobbyCommand::closeLobby)
 				))
@@ -55,7 +55,7 @@ public class ManageGameLobbyCommand {
 	}
 
 	private static int createLobby(CommandContext<CommandSource> context) throws CommandSyntaxException {
-		ServerPlayerEntity player = context.getSource().asPlayer();
+		ServerPlayerEntity player = context.getSource().getPlayerOrException();
 		String name = player.getScoreboardName() + "'s Lobby";
 
 		GameResult<IGameLobby> result = IGameManager.get().createGameLobby(name, player);
@@ -72,7 +72,7 @@ public class ManageGameLobbyCommand {
 	}
 
 	private static int manageCurrentLobby(CommandContext<CommandSource> context) throws CommandSyntaxException {
-		ServerPlayerEntity player = context.getSource().asPlayer();
+		ServerPlayerEntity player = context.getSource().getPlayerOrException();
 		IGameLobby lobby = IGameManager.get().getLobbyFor(player);
 		if (lobby == null) {
 			throw NOT_IN_LOBBY.create();
@@ -86,7 +86,7 @@ public class ManageGameLobbyCommand {
 	}
 
 	private static int manageLobby(CommandContext<CommandSource> context) throws CommandSyntaxException {
-		ServerPlayerEntity player = context.getSource().asPlayer();
+		ServerPlayerEntity player = context.getSource().getPlayerOrException();
 		IGameLobby lobby = GameLobbyArgument.get(context, "lobby");
 
 		if (!lobby.getManagement().startManaging(player)) {

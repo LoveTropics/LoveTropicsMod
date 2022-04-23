@@ -43,7 +43,7 @@ public final class ClientMapWorkspace {
 	@SubscribeEvent
 	public static void onChangeDimension(WorldEvent.Load event) {
 		IWorld world = event.getWorld();
-		if (!world.isRemote()) {
+		if (!world.isClientSide()) {
 			return;
 		}
 

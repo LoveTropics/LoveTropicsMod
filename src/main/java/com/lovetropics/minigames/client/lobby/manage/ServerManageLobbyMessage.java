@@ -51,7 +51,7 @@ public final class ServerManageLobbyMessage {
 
 			ILobbyManagement management = lobby.getManagement();
 			if (updates != null) {
-				if (management.canManage(player.getCommandSource())) {
+				if (management.canManage(player.createCommandSourceStack())) {
 					updates.applyTo(management);
 				}
 			} else {

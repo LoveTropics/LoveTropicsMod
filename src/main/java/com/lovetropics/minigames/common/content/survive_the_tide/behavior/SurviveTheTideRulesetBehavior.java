@@ -83,15 +83,15 @@ public class SurviveTheTideRulesetBehavior implements IGameBehavior {
 	}
 
 	private ActionResultType onPlayerDeath(ServerPlayerEntity player, DamageSource damageSource) {
-		if (forceDropItemsOnDeath && player.world.getGameRules().getBoolean(GameRules.KEEP_INVENTORY)) {
+		if (forceDropItemsOnDeath && player.level.getGameRules().getBoolean(GameRules.RULE_KEEPINVENTORY)) {
 			destroyVanishingCursedItems(player.inventory);
-			player.inventory.dropAllItems();
+			player.inventory.dropAll();
 		}
 		return ActionResultType.PASS;
 	}
 
 	private ActionResultType onPlayerHurt(ServerPlayerEntity player, DamageSource source, float amount) {
-		if ((source.getTrueSource() instanceof ServerPlayerEntity || source.isProjectile()) && phases.is(this::isSafePhase)) {
+		if ((source.getEntity() instanceof ServerPlayerEntity || source.isProjectile()) && phases.is(this::isSafePhase)) {
 			return ActionResultType.FAIL;
 		}
 		return ActionResultType.PASS;
@@ -116,10 +116,10 @@ public class SurviveTheTideRulesetBehavior implements IGameBehavior {
 	}
 
 	private void destroyVanishingCursedItems(IInventory inventory) {
-		for (int i = 0; i < inventory.getSizeInventory(); ++i) {
-			ItemStack itemstack = inventory.getStackInSlot(i);
+		for (int i = 0; i < inventory.getContainerSize(); ++i) {
+			ItemStack itemstack = inventory.getItem(i);
 			if (!itemstack.isEmpty() && EnchantmentHelper.hasVanishingCurse(itemstack)) {
-				inventory.removeStackFromSlot(i);
+				inventory.removeItemNoUpdate(i);
 			}
 		}
 	}
@@ -130,7 +130,7 @@ public class SurviveTheTideRulesetBehavior implements IGameBehavior {
 		if (spawnArea != null) {
 			for (BlockPos p : spawnArea) {
 				if (world.getBlockState(p).getBlock() instanceof FenceBlock) {
-					world.setBlockState(p, Blocks.AIR.getDefaultState(), 2);
+					world.setBlock(p, Blocks.AIR.defaultBlockState(), 2);
 				}
 			}
 		}

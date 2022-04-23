@@ -37,7 +37,7 @@ public class SpawnSurpriseWaveBehavior implements IGameBehavior {
         events.listen(GamePackageEvents.APPLY_PACKAGE_TO_PLAYER, (player, sendingPlayer) -> {
             Plot plot = this.plots.getPlotFor(player);
 
-            BbMobSpawner.spawnWaveEntities(player.getServerWorld(), player.getRNG(), plot, this.waveSize, 0, SpawnSurpriseWaveBehavior::selectEntityForWave);
+            BbMobSpawner.spawnWaveEntities(player.getLevel(), player.getRandom(), plot, this.waveSize, 0, SpawnSurpriseWaveBehavior::selectEntityForWave);
 
             return true;
         });

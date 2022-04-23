@@ -45,6 +45,6 @@ public class SetGameTypesBehavior implements IGameBehavior {
 		} else if (role == PlayerRole.SPECTATOR) {
 			gameType = spectatorGameType;
 		}
-		player.setGameType(gameType);
+		player.setGameMode(gameType);
 	}
 }

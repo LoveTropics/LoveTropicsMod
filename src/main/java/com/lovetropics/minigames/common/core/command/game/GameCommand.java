@@ -26,15 +26,15 @@ public class GameCommand {
             throw e;
         } catch (Exception e) {
             e.printStackTrace();
-            source.sendErrorMessage(new StringTextComponent(e.toString()));
+            source.sendFailure(new StringTextComponent(e.toString()));
             return 0;
         }
 
         if (result.isError()) {
-            source.sendErrorMessage(result.getError());
+            source.sendFailure(result.getError());
             return 0;
         } else {
-            source.sendFeedback(result.getOk(), false);
+            source.sendSuccess(result.getOk(), false);
         }
 
         return Command.SINGLE_SUCCESS;

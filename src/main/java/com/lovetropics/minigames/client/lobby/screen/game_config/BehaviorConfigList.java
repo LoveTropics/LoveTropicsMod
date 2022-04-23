@@ -1,17 +1,16 @@
 package com.lovetropics.minigames.client.lobby.screen.game_config;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
 import com.lovetropics.minigames.client.lobby.state.ClientConfigList;
 import com.lovetropics.minigames.client.screen.LayoutGui;
 import com.lovetropics.minigames.client.screen.LayoutTree;
 import com.lovetropics.minigames.common.core.game.behavior.config.BehaviorConfig;
 import com.lovetropics.minigames.common.core.game.behavior.config.ConfigData;
 import com.mojang.blaze3d.matrix.MatrixStack;
-
 import net.minecraft.client.gui.IGuiEventListener;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 public class BehaviorConfigList extends LayoutGui {
 
@@ -49,7 +48,7 @@ public class BehaviorConfigList extends LayoutGui {
 	}
 	
 	@Override
-	public List<? extends IGuiEventListener> getEventListeners() {
+	public List<? extends IGuiEventListener> children() {
 		return children;
 	}
 	

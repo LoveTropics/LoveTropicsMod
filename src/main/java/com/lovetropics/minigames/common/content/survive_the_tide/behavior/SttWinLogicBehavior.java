@@ -52,19 +52,19 @@ public class SttWinLogicBehavior implements IGameBehavior {
 	private void spawnLightningBoltsEverywhere(IGamePhase game, final World world) {
 		if (game.ticks() % lightningBoltSpawnTickRate == 0) {
 			for (ServerPlayerEntity player : game.getParticipants()) {
-				int xOffset = (7 + world.rand.nextInt(5)) * (world.rand.nextBoolean() ? 1 : -1);
-				int zOffset = (7 + world.rand.nextInt(5)) * (world.rand.nextBoolean() ? 1 : -1);
+				int xOffset = (7 + world.random.nextInt(5)) * (world.random.nextBoolean() ? 1 : -1);
+				int zOffset = (7 + world.random.nextInt(5)) * (world.random.nextBoolean() ? 1 : -1);
 
-				int posX = MathHelper.floor(player.getPosX()) + xOffset;
-				int posZ = MathHelper.floor(player.getPosZ()) + zOffset;
+				int posX = MathHelper.floor(player.getX()) + xOffset;
+				int posZ = MathHelper.floor(player.getZ()) + zOffset;
 
 				int posY = world.getHeight(Heightmap.Type.MOTION_BLOCKING, posX, posZ);
 
 				LightningBoltEntity lightning = new LightningBoltEntity(EntityType.LIGHTNING_BOLT, world);
-				lightning.forceSetPosition(posX, posY, posZ);
-				lightning.setEffectOnly(true);
+				lightning.setPosAndOldPos(posX, posY, posZ);
+				lightning.setVisualOnly(true);
 
-				world.addEntity(lightning);
+				world.addFreshEntity(lightning);
 			}
 		}
 	}

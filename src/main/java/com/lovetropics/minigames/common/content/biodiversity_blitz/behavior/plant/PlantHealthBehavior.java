@@ -57,7 +57,7 @@ public final class PlantHealthBehavior implements IGameBehavior {
 				if (health.isDead()) {
 					for (BlockPos pos : plant.coverage()) {
 						BlockState state = world.getBlockState(pos);
-						world.playEvent(Constants.WorldEvents.BREAK_BLOCK_EFFECTS, pos, Block.getStateId(state));
+						world.levelEvent(Constants.WorldEvents.BREAK_BLOCK_EFFECTS, pos, Block.getId(state));
 					}
 
 					decayedPlants.add(plant);

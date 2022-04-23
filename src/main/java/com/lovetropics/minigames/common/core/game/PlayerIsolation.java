@@ -12,15 +12,15 @@ public final class PlayerIsolation implements IGameState {
 	private final Map<UUID, PlayerSnapshot> playerSnapshots = new Object2ObjectOpenHashMap<>();
 
 	public void accept(ServerPlayerEntity player) {
-		if (!this.playerSnapshots.containsKey(player.getUniqueID())) {
+		if (!this.playerSnapshots.containsKey(player.getUUID())) {
 			PlayerSnapshot snapshot = PlayerSnapshot.takeAndClear(player);
-			this.playerSnapshots.put(player.getUniqueID(), snapshot);
+			this.playerSnapshots.put(player.getUUID(), snapshot);
 		}
 	}
 
 	public void restore(ServerPlayerEntity player) {
 		// try to restore the player to their old state
-		PlayerSnapshot snapshot = this.playerSnapshots.remove(player.getUniqueID());
+		PlayerSnapshot snapshot = this.playerSnapshots.remove(player.getUUID());
 		if (snapshot != null) {
 			snapshot.restore(player);
 		}

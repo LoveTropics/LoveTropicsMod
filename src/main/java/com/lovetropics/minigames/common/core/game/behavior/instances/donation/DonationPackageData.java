@@ -77,7 +77,7 @@ public class DonationPackageData {
 			);
 
 			if (targeted) {
-				player.connection.sendPacket(new SPlaySoundEffectPacket(notification.sound, SoundCategory.MASTER, player.getPosX(), player.getPosY(), player.getPosZ(), 0.2f, 1f));
+				player.connection.send(new SPlaySoundEffectPacket(notification.sound, SoundCategory.MASTER, player.getX(), player.getY(), player.getZ(), 0.2f, 1f));
 			}
 		}
 	}
@@ -88,7 +88,7 @@ public class DonationPackageData {
 					TemplatedText.CODEC.fieldOf("message").forGetter(c -> c.message),
 					NotificationIcon.CODEC.optionalFieldOf("icon", NotificationIcon.item(new ItemStack(Items.GRASS_BLOCK))).forGetter(c -> c.icon),
 					NotificationDisplay.Sentiment.CODEC.optionalFieldOf("sentiment", NotificationDisplay.Sentiment.NEUTRAL).forGetter(c -> c.sentiment),
-					SoundEvent.CODEC.optionalFieldOf("sound_on_receive", SoundEvents.ITEM_TOTEM_USE).forGetter(c -> c.sound)
+					SoundEvent.CODEC.optionalFieldOf("sound_on_receive", SoundEvents.TOTEM_USE).forGetter(c -> c.sound)
 			).apply(instance, Notification::new);
 		});
 
@@ -113,11 +113,11 @@ public class DonationPackageData {
 		}
 
 		private IFormattableTextComponent getReceiverName(ServerPlayerEntity receiver) {
-			return (receiver != null ? receiver.getDisplayName().deepCopy() : new StringTextComponent("Everyone")).mergeStyle(TextFormatting.BLUE);
+			return (receiver != null ? receiver.getDisplayName().copy() : new StringTextComponent("Everyone")).withStyle(TextFormatting.BLUE);
 		}
 
 		private IFormattableTextComponent getSenderName(@Nullable String sender) {
-			return new StringTextComponent(sender != null ? sender : "an unknown donor").mergeStyle(TextFormatting.BLUE);
+			return new StringTextComponent(sender != null ? sender : "an unknown donor").withStyle(TextFormatting.BLUE);
 		}
 	}
 }

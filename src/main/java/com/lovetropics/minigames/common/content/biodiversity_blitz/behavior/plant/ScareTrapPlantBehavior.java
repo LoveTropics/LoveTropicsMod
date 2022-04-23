@@ -77,7 +77,7 @@ public final class ScareTrapPlantBehavior implements IGameBehavior {
 	}
 
 	private ActionResultType useBlock(ServerPlayerEntity player, ServerWorld world, BlockPos pos, Hand hand, BlockRayTraceResult traceResult) {
-		if (world.getBlockState(pos).matchesBlock(Blocks.LEVER)) {
+		if (world.getBlockState(pos).is(Blocks.LEVER)) {
 			return this.useLever(player, pos);
 		}
 
@@ -116,17 +116,17 @@ public final class ScareTrapPlantBehavior implements IGameBehavior {
 		// TODO: mobs should run around in panic after being scared
 
 		AxisAlignedBB bounds = plant.coverage().asBounds();
-		AxisAlignedBB triggerBounds = bounds.grow(this.triggerRadius);
+		AxisAlignedBB triggerBounds = bounds.inflate(this.triggerRadius);
 
 		ServerWorld world = game.getWorld();
 
-		List<MobEntity> triggerEntities = world.getEntitiesWithinAABB(MobEntity.class, triggerBounds, SCARE_PREDICATE);
+		List<MobEntity> triggerEntities = world.getEntitiesOfClass(MobEntity.class, triggerBounds, SCARE_PREDICATE);
 		if (triggerEntities.isEmpty()) {
 			return false;
 		}
 
-		AxisAlignedBB scareBounds = bounds.grow(this.scareRadius);
-		List<MobEntity> entities = world.getEntitiesWithinAABB(MobEntity.class, scareBounds, SCARE_PREDICATE);
+		AxisAlignedBB scareBounds = bounds.inflate(this.scareRadius);
+		List<MobEntity> entities = world.getEntitiesOfClass(MobEntity.class, scareBounds, SCARE_PREDICATE);
 		this.triggerTrap(plot, plant, entities);
 
 		return true;
@@ -134,7 +134,7 @@ public final class ScareTrapPlantBehavior implements IGameBehavior {
 
 	private void triggerTrap(Plot plot, Plant plant, List<MobEntity> entities) {
 		BlockPos origin = plant.coverage().getOrigin();
-		Vector3d pushFrom = Vector3d.copyCentered(origin);
+		Vector3d pushFrom = Vector3d.atCenterOf(origin);
 
 		for (MobEntity entity : entities) {
 			this.scareEntity(origin, pushFrom, entity);
@@ -144,7 +144,7 @@ public final class ScareTrapPlantBehavior implements IGameBehavior {
 	}
 
 	private void scareEntity(BlockPos pos, Vector3d pushFrom, MobEntity entity) {
-		Vector3d entityPos = entity.getPositionVec();
+		Vector3d entityPos = entity.position();
 
 		// Scaled so that closer values are higher, with a max of 5
 		double dist = 2.0 / (0.1 + entityPos.distanceTo(pushFrom));
@@ -153,11 +153,11 @@ public final class ScareTrapPlantBehavior implements IGameBehavior {
 		double theta = Math.atan2(entityPos.z - pushFrom.z, entityPos.x - pushFrom.x);
 
 		// zoooooom
-		entity.addVelocity(dist * Math.cos(theta), 0.25, dist * Math.sin(theta));
+		entity.push(dist * Math.cos(theta), 0.25, dist * Math.sin(theta));
 
 		// Prevent mobs from flying to the moon due to too much motion
-		Vector3d motion = entity.getMotion();
-		entity.setMotion(Math.min(motion.x, 5), Math.min(motion.y, 0.25), Math.min(motion.z, 5));
+		Vector3d motion = entity.getDeltaMovement();
+		entity.setDeltaMovement(Math.min(motion.x, 5), Math.min(motion.y, 0.25), Math.min(motion.z, 5));
 
 		if (entity instanceof BbMobEntity) {
 			((BbMobEntity) entity).getMobBrain().addScarySource(pos);
@@ -175,7 +175,7 @@ public final class ScareTrapPlantBehavior implements IGameBehavior {
 
 		BlockPos origin = plant.coverage().getOrigin();
 
-		game.getWorld().playSound(null, origin, SoundEvents.BLOCK_PISTON_EXTEND, SoundCategory.BLOCKS, 1.0F, 1.0F);
+		game.getWorld().playSound(null, origin, SoundEvents.PISTON_EXTEND, SoundCategory.BLOCKS, 1.0F, 1.0F);
 
 		this.clearTrap(plant);
 		this.placeExtendedTrap(plot, origin);
@@ -189,7 +189,7 @@ public final class ScareTrapPlantBehavior implements IGameBehavior {
 
 		BlockPos origin = plant.coverage().getOrigin();
 
-		game.getWorld().playSound(null, origin, SoundEvents.BLOCK_PISTON_CONTRACT, SoundCategory.BLOCKS, 1.0F, 1.0F);
+		game.getWorld().playSound(null, origin, SoundEvents.PISTON_CONTRACT, SoundCategory.BLOCKS, 1.0F, 1.0F);
 
 		this.clearTrap(plant);
 		this.placeReadyTrap(plot, origin);
@@ -200,32 +200,32 @@ public final class ScareTrapPlantBehavior implements IGameBehavior {
 	private void clearTrap(Plant plant) {
 		ServerWorld world = game.getWorld();
 		for (BlockPos pos : plant.coverage()) {
-			world.setBlockState(pos, Blocks.AIR.getDefaultState(), Constants.BlockFlags.DEFAULT | Constants.BlockFlags.UPDATE_NEIGHBORS);
+			world.setBlock(pos, Blocks.AIR.defaultBlockState(), Constants.BlockFlags.DEFAULT | Constants.BlockFlags.UPDATE_NEIGHBORS);
 		}
 	}
 
 	private void placeExtendedTrap(Plot plot, BlockPos pos) {
 		ServerWorld world = game.getWorld();
 
-		world.setBlockState(pos, Blocks.PISTON_HEAD.getDefaultState().with(PistonHeadBlock.FACING, Direction.UP));
-		world.setBlockState(pos.up(), Blocks.JACK_O_LANTERN.getDefaultState().with(BlockStateProperties.HORIZONTAL_FACING, plot.forward));
+		world.setBlockAndUpdate(pos, Blocks.PISTON_HEAD.defaultBlockState().setValue(PistonHeadBlock.FACING, Direction.UP));
+		world.setBlockAndUpdate(pos.above(), Blocks.JACK_O_LANTERN.defaultBlockState().setValue(BlockStateProperties.HORIZONTAL_FACING, plot.forward));
 
-		BlockState lever = Blocks.LEVER.getDefaultState()
-				.with(LeverBlock.HORIZONTAL_FACING, plot.forward.getOpposite())
-				.with(LeverBlock.FACE, AttachFace.WALL);
-		world.setBlockState(pos.up().offset(plot.forward.getOpposite()), lever);
+		BlockState lever = Blocks.LEVER.defaultBlockState()
+				.setValue(LeverBlock.FACING, plot.forward.getOpposite())
+				.setValue(LeverBlock.FACE, AttachFace.WALL);
+		world.setBlockAndUpdate(pos.above().relative(plot.forward.getOpposite()), lever);
 	}
 
 	private void placeReadyTrap(Plot plot, BlockPos pos) {
 		ServerWorld world = game.getWorld();
-		world.setBlockState(pos, Blocks.JACK_O_LANTERN.getDefaultState().with(BlockStateProperties.HORIZONTAL_FACING, plot.forward));
+		world.setBlockAndUpdate(pos, Blocks.JACK_O_LANTERN.defaultBlockState().setValue(BlockStateProperties.HORIZONTAL_FACING, plot.forward));
 	}
 
 	private PlantCoverage buildPlantCoverage(Plot plot, BlockPos pos) {
 		// TODO: duplication
 		return new PlantCoverage.Builder()
-				.add(pos).add(pos.up())
-				.add(pos.up().offset(plot.forward.getOpposite()))
+				.add(pos).add(pos.above())
+				.add(pos.above().relative(plot.forward.getOpposite()))
 				.build();
 	}
 

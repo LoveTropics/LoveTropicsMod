@@ -39,18 +39,18 @@ public final class PlayerSnapshot {
 	private final DisguiseType disguise;
 
 	private PlayerSnapshot(ServerPlayerEntity player) {
-		this.gameType = player.interactionManager.getGameType();
-		this.dimension = player.world.getDimensionKey();
-		this.pos = player.getPosition();
+		this.gameType = player.gameMode.getGameModeForPlayer();
+		this.dimension = player.level.dimension();
+		this.pos = player.blockPosition();
 
 		this.playerData = new CompoundNBT();
-		player.writeAdditional(this.playerData);
+		player.addAdditionalSaveData(this.playerData);
 		this.playerData.remove("playerGameType");
 
-		ServerScoreboard scoreboard = player.getServerWorld().getScoreboard();
+		ServerScoreboard scoreboard = player.getLevel().getScoreboard();
 		this.team = scoreboard.getPlayersTeam(player.getScoreboardName());
-		for (Map.Entry<ScoreObjective, Score> entry : scoreboard.getObjectivesForEntity(player.getScoreboardName()).entrySet()) {
-			this.objectives.put(entry.getKey(), entry.getValue().getScorePoints());
+		for (Map.Entry<ScoreObjective, Score> entry : scoreboard.getPlayerScores(player.getScoreboardName()).entrySet()) {
+			this.objectives.put(entry.getKey(), entry.getValue().getScore());
 		}
 
 		this.disguise = PlayerDisguise.getDisguiseType(player);
@@ -63,26 +63,26 @@ public final class PlayerSnapshot {
 	}
 
 	public static void clearPlayer(ServerPlayerEntity player) {
-		player.inventory.clear();
+		player.inventory.clearContent();
 		player.setHealth(player.getMaxHealth());
 
-		player.clearActivePotions();
+		player.removeAllEffects();
 		player.setGlowing(false);
-		player.setArrowCountInEntity(0);
+		player.setArrowCount(0);
 		player.fallDistance = 0.0F;
 
 		CompoundNBT foodTag = new CompoundNBT();
-		new FoodStats().write(foodTag);
-		player.getFoodStats().read(foodTag);
+		new FoodStats().addAdditionalSaveData(foodTag);
+		player.getFoodData().readAdditionalSaveData(foodTag);
 
 		ServerPlayerDisguises.clear(player);
 
-		ServerScoreboard scoreboard = player.getServerWorld().getScoreboard();
-		scoreboard.removePlayerFromTeams(player.getScoreboardName());
+		ServerScoreboard scoreboard = player.getLevel().getScoreboard();
+		scoreboard.removePlayerFromTeam(player.getScoreboardName());
 
-		Map<ScoreObjective, Score> objectives = scoreboard.getObjectivesForEntity(player.getScoreboardName());
+		Map<ScoreObjective, Score> objectives = scoreboard.getPlayerScores(player.getScoreboardName());
 		for (ScoreObjective objective : new ArrayList<>(objectives.keySet())) {
-			scoreboard.removeObjectiveFromEntity(player.getScoreboardName(), objective);
+			scoreboard.resetPlayerScore(player.getScoreboardName(), objective);
 		}
 	}
 
@@ -95,24 +95,24 @@ public final class PlayerSnapshot {
 	public void restore(ServerPlayerEntity player) {
 		clearPlayer(player);
 
-		player.readAdditional(this.playerData);
-		player.setGameType(this.gameType);
+		player.readAdditionalSaveData(this.playerData);
+		player.setGameMode(this.gameType);
 
 		DimensionUtils.teleportPlayerNoPortal(player, this.dimension, this.pos);
 
 		PlayerDisguise.get(player).ifPresent(disguise -> disguise.setDisguise(this.disguise));
 
-		ServerScoreboard scoreboard = player.getServerWorld().getScoreboard();
+		ServerScoreboard scoreboard = player.getLevel().getScoreboard();
 
 		if (this.team != null) {
 			scoreboard.addPlayerToTeam(player.getScoreboardName(), this.team);
 		}
 
 		for (Object2IntMap.Entry<ScoreObjective> entry : this.objectives.object2IntEntrySet()) {
-			Score score = scoreboard.getOrCreateScore(player.getScoreboardName(), entry.getKey());
-			score.setScorePoints(entry.getIntValue());
+			Score score = scoreboard.getOrCreatePlayerScore(player.getScoreboardName(), entry.getKey());
+			score.setScore(entry.getIntValue());
 		}
 
-		player.sendContainerToPlayer(player.openContainer);
+		player.refreshContainer(player.containerMenu);
 	}
 }

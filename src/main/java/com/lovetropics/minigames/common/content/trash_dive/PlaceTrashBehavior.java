@@ -56,7 +56,7 @@ public final class PlaceTrashBehavior implements IGameBehavior {
 		Long2ObjectMap<LongList> trashByChunk = loadTrashByChunk(game);
 
 		events.listen(GameWorldEvents.CHUNK_LOAD, (chunk) -> {
-			LongList positions = trashByChunk.remove(chunk.getPos().asLong());
+			LongList positions = trashByChunk.remove(chunk.getPos().toLong());
 			if (positions == null) {
 				return;
 			}
@@ -66,7 +66,7 @@ public final class PlaceTrashBehavior implements IGameBehavior {
 
 			LongListIterator iterator = positions.iterator();
 			while (iterator.hasNext()) {
-				pos.setPos(iterator.nextLong());
+				pos.set(iterator.nextLong());
 
 				int count = random.nextInt(density);
 				for (int i = 0; i < count; i++) {
@@ -97,8 +97,8 @@ public final class PlaceTrashBehavior implements IGameBehavior {
 		while (candidatePositions.hasRemaining()) {
 			long candidatePos = candidatePositions.get();
 
-			int chunkX = BlockPos.unpackX(candidatePos) >> 4;
-			int chunkZ = BlockPos.unpackZ(candidatePos) >> 4;
+			int chunkX = BlockPos.getX(candidatePos) >> 4;
+			int chunkZ = BlockPos.getZ(candidatePos) >> 4;
 			long chunkKey = ChunkPos.asLong(chunkX, chunkZ);
 
 			trashByChunk.computeIfAbsent(chunkKey, l -> new LongArrayList()).add(candidatePos);
@@ -111,9 +111,9 @@ public final class PlaceTrashBehavior implements IGameBehavior {
 		if (chunk.getBlockState(pos).getBlock() == Blocks.WATER) {
 			TrashType trashType = trashTypes[random.nextInt(trashTypes.length)];
 			chunk.setBlockState(pos, LoveTropicsBlocks.TRASH.get(trashType).getDefaultState()
-							.with(TrashBlock.WATERLOGGED, true)
-							.with(TrashBlock.ATTACHMENT, Block.hasSolidSideOnTop(chunk, pos.down()) ? Attachment.FLOOR : Attachment.random(random))
-							.with(TrashBlock.FACING, Direction.byHorizontalIndex(random.nextInt(4))),
+							.setValue(TrashBlock.WATERLOGGED, true)
+							.setValue(TrashBlock.ATTACHMENT, Block.canSupportRigidBlock(chunk, pos.below()) ? Attachment.FLOOR : Attachment.random(random))
+							.setValue(TrashBlock.FACING, Direction.from2DDataValue(random.nextInt(4))),
 					false
 			);
 		}

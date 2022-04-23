@@ -61,7 +61,7 @@ public interface RegionEditOperator {
 			Vector3d origin = player.getEyePosition(1.0F);
 
 			// TODO: not totally sure how to make this feel natural
-			Vector3d grabPoint = origin.add(player.getLookVec().scale(target.distanceToSide));
+			Vector3d grabPoint = origin.add(player.getLookAngle().scale(target.distanceToSide));
 			BlockPos grabPos = new BlockPos(grabPoint);
 
 			BlockBox region = editTarget.entry.region;
@@ -93,7 +93,7 @@ public interface RegionEditOperator {
 			BlockBox region = editTarget.entry.region;
 
 			Vector3d grabPoint = region.getCenter().add(offset);
-			Vector3d targetPoint = origin.add(player.getLookVec().scale(target.distanceToSide));
+			Vector3d targetPoint = origin.add(player.getLookAngle().scale(target.distanceToSide));
 			Vector3d offset = targetPoint.subtract(grabPoint);
 
 			return region.offset(offset.x, offset.y, offset.z);

@@ -57,7 +57,7 @@ public class MultiGameManager implements IGameManager {
 
 	@Override
 	public GameResult<IGameLobby> createGameLobby(String name, ServerPlayerEntity initiator) {
-		GameLobby currentLobby = lobbiesByPlayer.get(initiator.getUniqueID());
+		GameLobby currentLobby = lobbiesByPlayer.get(initiator.getUUID());
 		if (currentLobby != null) {
 			return GameResult.error(GameTexts.Commands.alreadyInLobby());
 		}
@@ -92,9 +92,9 @@ public class MultiGameManager implements IGameManager {
 	@Nullable
 	@Override
 	public GameLobby getLobbyFor(PlayerEntity player) {
-		if (player.world.isRemote) return null;
+		if (player.level.isClientSide) return null;
 
-		return lobbiesByPlayer.get(player.getUniqueID());
+		return lobbiesByPlayer.get(player.getUUID());
 	}
 
 	@Nullable
@@ -111,11 +111,11 @@ public class MultiGameManager implements IGameManager {
 	}
 
 	public List<GamePhase> getGamePhasesForWorld(World world) {
-		if (world.isRemote) {
+		if (world.isClientSide) {
 			return Collections.emptyList();
 		}
 
-		return gamesByDimension.getOrDefault(world.getDimensionKey(), Collections.emptyList());
+		return gamesByDimension.getOrDefault(world.dimension(), Collections.emptyList());
 	}
 
 	@Nullable
@@ -176,11 +176,11 @@ public class MultiGameManager implements IGameManager {
 	}
 
 	void addPlayerToLobby(ServerPlayerEntity player, GameLobby lobby) {
-		lobbiesByPlayer.put(player.getUniqueID(), lobby);
+		lobbiesByPlayer.put(player.getUUID(), lobby);
 	}
 
 	void removePlayerFromLobby(ServerPlayerEntity player, GameLobby lobby) {
-		lobbiesByPlayer.remove(player.getUniqueID(), lobby);
+		lobbiesByPlayer.remove(player.getUUID(), lobby);
 	}
 
 	void removeLobby(GameLobby lobby) {
@@ -292,15 +292,15 @@ public class MultiGameManager implements IGameManager {
 		Entity entity = event.getEntity();
 		if (entity instanceof ServerPlayerEntity) {
 			ServerPlayerEntity player = (ServerPlayerEntity) entity;
-			ServerWorld targetWorld = player.server.getWorld(event.getDimension());
+			ServerWorld targetWorld = player.server.getLevel(event.getDimension());
 			if (targetWorld == null) {
 				return;
 			}
 
 			IGamePhase playerPhase = INSTANCE.getGamePhaseFor(player);
-			IGamePhase targetPhase = INSTANCE.getGamePhaseAt(targetWorld, player.getPosition());
+			IGamePhase targetPhase = INSTANCE.getGamePhaseAt(targetWorld, player.blockPosition());
 			if (!canTravelBetweenPhases(playerPhase, targetPhase)) {
-				player.sendStatusMessage(GameTexts.Commands.cannotTeleportIntoGame(), true);
+				player.displayClientMessage(GameTexts.Commands.cannotTeleportIntoGame(), true);
 
 				event.setCanceled(true);
 			}
@@ -321,7 +321,7 @@ public class MultiGameManager implements IGameManager {
 			RegistryKey<World> dimension = phase.getDimension();
 			if (event.getFrom() == dimension && event.getTo() != dimension) {
 				if (phase.getLobby().getPlayers().remove((ServerPlayerEntity) player)) {
-					player.sendStatusMessage(GameTexts.Status.leftGameDimension(), false);
+					player.displayClientMessage(GameTexts.Status.leftGameDimension(), false);
 				}
 			}
 		}

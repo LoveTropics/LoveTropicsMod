@@ -22,15 +22,15 @@ import java.util.List;
 @Mod.EventBusSubscriber(modid = Constants.MODID)
 public class AcidRepellentUmbrellaItem extends Item {
     public AcidRepellentUmbrellaItem(Properties properties) {
-        super(properties.maxDamage(180));
+        super(properties.durability(180));
     }
 
     @Override
     @OnlyIn(Dist.CLIENT)
-    public void addInformation(ItemStack stack, @Nullable World world, List<ITextComponent> tooltip, ITooltipFlag flag) {
-        tooltip.add(new StringTextComponent("Prevents acid rain from harming you.").mergeStyle(TextFormatting.GOLD));
+    public void appendHoverText(ItemStack stack, @Nullable World world, List<ITextComponent> tooltip, ITooltipFlag flag) {
+        tooltip.add(new StringTextComponent("Prevents acid rain from harming you.").withStyle(TextFormatting.GOLD));
         tooltip.add(new StringTextComponent(""));
-        tooltip.add(new StringTextComponent("Active when held in main hand or off-hand.").mergeStyle(TextFormatting.AQUA));
+        tooltip.add(new StringTextComponent("Active when held in main hand or off-hand.").withStyle(TextFormatting.AQUA));
     }
 
     @SubscribeEvent
@@ -40,13 +40,13 @@ public class AcidRepellentUmbrellaItem extends Item {
         }
 
         PlayerEntity player = event.player;
-        if (player.getMotion().getY() < 0.0 && !player.abilities.isFlying && isHoldingItem(player, SurviveTheTide.ACID_REPELLENT_UMBRELLA.get())) {
-            player.setMotion(player.getMotion().mul(1.0, 0.8, 1.0));
+        if (player.getDeltaMovement().y() < 0.0 && !player.abilities.flying && isHoldingItem(player, SurviveTheTide.ACID_REPELLENT_UMBRELLA.get())) {
+            player.setDeltaMovement(player.getDeltaMovement().multiply(1.0, 0.8, 1.0));
             player.fallDistance = 0.0F;
         }
     }
 
     private static boolean isHoldingItem(PlayerEntity player, Item item) {
-        return player.getHeldItemMainhand().getItem() == item || player.getHeldItemOffhand().getItem() == item;
+        return player.getMainHandItem().getItem() == item || player.getOffhandItem().getItem() == item;
     }
 }

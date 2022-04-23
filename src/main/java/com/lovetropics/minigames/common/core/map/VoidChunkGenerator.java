@@ -44,7 +44,7 @@ import java.util.function.Supplier;
 public final class VoidChunkGenerator extends ChunkGenerator {
 	public static final Codec<VoidChunkGenerator> CODEC = RecordCodecBuilder.create(instance -> {
 		return instance.group(
-				Biome.BIOME_CODEC.stable().fieldOf("biome").forGetter(g -> g.biome)
+				Biome.CODEC.stable().fieldOf("biome").forGetter(g -> g.biome)
 		).apply(instance, instance.stable(VoidChunkGenerator::new));
 	});
 
@@ -60,89 +60,89 @@ public final class VoidChunkGenerator extends ChunkGenerator {
 	}
 
 	public VoidChunkGenerator(MinecraftServer server) {
-		this(server.getDynamicRegistries().getRegistry(Registry.BIOME_KEY));
+		this(server.registryAccess().registryOrThrow(Registry.BIOME_REGISTRY));
 	}
 
 	public VoidChunkGenerator(Registry<Biome> biomeRegistry, RegistryKey<Biome> biome) {
-		this(() -> biomeRegistry.getValueForKey(biome));
+		this(() -> biomeRegistry.get(biome));
 	}
 
 	public static void register() {
-		Registry.register(Registry.CHUNK_GENERATOR_CODEC, Util.resource("void"), CODEC);
+		Registry.register(Registry.CHUNK_GENERATOR, Util.resource("void"), CODEC);
 	}
 
 	@Override
-	protected Codec<? extends ChunkGenerator> func_230347_a_() {
+	protected Codec<? extends ChunkGenerator> codec() {
 		return CODEC;
 	}
 
 	@Override
-	public void func_230350_a_(long seed, BiomeManager biomes, IChunk chunk, GenerationStage.Carving carving) {
+	public void applyCarvers(long seed, BiomeManager biomes, IChunk chunk, GenerationStage.Carving carving) {
 	}
 
 	@Nullable
 	@Override
-	public BlockPos func_235956_a_(ServerWorld world, Structure<?> structure, BlockPos pos, int range, boolean undiscovered) {
+	public BlockPos findNearestMapFeature(ServerWorld world, Structure<?> structure, BlockPos pos, int range, boolean undiscovered) {
 		return null;
 	}
 
 	@Override
-	public void func_230351_a_(WorldGenRegion world, StructureManager strutures) {
+	public void applyBiomeDecoration(WorldGenRegion world, StructureManager strutures) {
 	}
 
 	@Override
-	public List<MobSpawnInfo.Spawners> func_230353_a_(Biome biomes, StructureManager structures, EntityClassification entityClassification, BlockPos pos) {
+	public List<MobSpawnInfo.Spawners> getMobsAt(Biome biomes, StructureManager structures, EntityClassification entityClassification, BlockPos pos) {
 		return ImmutableList.of();
 	}
 
 	@Override
-	public void func_242707_a(DynamicRegistries dynamicRegistries, StructureManager structures, IChunk chunk, TemplateManager templates, long seed) {
+	public void createStructures(DynamicRegistries dynamicRegistries, StructureManager structures, IChunk chunk, TemplateManager templates, long seed) {
 	}
 
 	@Override
-	public void func_235953_a_(ISeedReader world, StructureManager structures, IChunk chunk) {
+	public void createReferences(ISeedReader world, StructureManager structures, IChunk chunk) {
 	}
 
 	@Override
-	public boolean func_235952_a_(ChunkPos pos) {
+	public boolean hasStronghold(ChunkPos pos) {
 		return false;
 	}
 
 	@Override
-	public ChunkGenerator func_230349_a_(long seed) {
+	public ChunkGenerator withSeed(long seed) {
 		return this;
 	}
 
 	@Override
-	public void generateSurface(WorldGenRegion world, IChunk chunk) {
+	public void buildSurfaceAndBedrock(WorldGenRegion world, IChunk chunk) {
 	}
 
 	@Override
-	public void func_230352_b_(IWorld world, StructureManager structures, IChunk chunk) {
+	public void fillFromNoise(IWorld world, StructureManager structures, IChunk chunk) {
 	}
 
 	@Override
-	public int getHeight(int x, int z, Heightmap.Type heightmapType) {
+	public int getBaseHeight(int x, int z, Heightmap.Type heightmapType) {
 		return 0;
 	}
 
 	@Override
-	public IBlockReader func_230348_a_(int x, int z) {
+	public IBlockReader getBaseColumn(int x, int z) {
 		return VoidBlockReader.INSTANCE;
 	}
 
 	static final class VoidBlockReader implements IBlockReader {
 		static final VoidBlockReader INSTANCE = new VoidBlockReader();
 
-		private static final BlockState VOID_BLOCK = Blocks.AIR.getDefaultState();
-		private static final FluidState VOID_FLUID = Fluids.EMPTY.getDefaultState();
+		private static final BlockState VOID_BLOCK = Blocks.AIR.defaultBlockState();
+		private static final FluidState VOID_FLUID = Fluids.EMPTY.defaultFluidState();
 
 		private VoidBlockReader() {
 		}
 
 		@Nullable
 		@Override
-		public TileEntity getTileEntity(BlockPos pos) {
+		public TileEntity getBlockEntity(BlockPos pos) {
 			return null;
 		}
 

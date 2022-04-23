@@ -14,11 +14,9 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.server.ServerWorld;
-
-import javax.annotation.Nullable;
-
 import org.apache.logging.log4j.LogManager;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -95,7 +93,7 @@ public class PositionPlayersBehavior implements IGameBehavior {
 	}
 
 	private void teleportToRegion(IGamePhase game, ServerPlayerEntity player, BlockBox region) {
-		BlockPos pos = tryFindEmptyPos(game, player.getRNG(), region);
+		BlockPos pos = tryFindEmptyPos(game, player.getRandom(), region);
 		DimensionUtils.teleportPlayerNoPortal(player, game.getDimension(), pos);
 	}
 
@@ -103,7 +101,7 @@ public class PositionPlayersBehavior implements IGameBehavior {
 		ServerWorld world = game.getWorld();
 		for (int i = 0; i < 20; i++) {
 			BlockPos pos = box.sample(random);
-			if (world.isAirBlock(pos)) {
+			if (world.isEmptyBlock(pos)) {
 				return pos;
 			}
 		}

@@ -61,16 +61,16 @@ public class GrowCoconutsBehavior implements IGameBehavior {
 		if (game.ticks() % interval == 0) {
 			for (Plant plant : plants) {
 				List<Pair<BlockPos, Direction>> candidates = candidatePositions.computeIfAbsent(plant, p -> p.functionalCoverage().stream()
-					.filter(bp -> player.world.getBlockState(bp).isIn(BlockTags.LOGS))
+					.filter(bp -> player.level.getBlockState(bp).is(BlockTags.LOGS))
 					.filter(bp -> IntStream.range(0, 4)
-							.mapToObj(Direction::byHorizontalIndex)
-							.allMatch(d -> player.world.getBlockState(bp.offset(d).up()).isIn(BlockTags.LEAVES)))
+							.mapToObj(Direction::from2DDataValue)
+							.allMatch(d -> player.level.getBlockState(bp.relative(d).above()).is(BlockTags.LEAVES)))
 					.flatMap(bp -> {
 						List<Pair<BlockPos, Direction>> ret = new ArrayList<>();
 						for (int i = 0; i < 4; i++) {
-							Direction dir = Direction.byHorizontalIndex(i);
-							BlockPos pos = bp.offset(dir);
-							if (player.world.isAirBlock(pos) || player.world.getBlockState(pos).getBlock() == COCONUT.get()) {
+							Direction dir = Direction.from2DDataValue(i);
+							BlockPos pos = bp.relative(dir);
+							if (player.level.isEmptyBlock(pos) || player.level.getBlockState(pos).getBlock() == COCONUT.get()) {
 								ret.add(Pair.of(pos, dir));
 							}
 						}
@@ -79,8 +79,8 @@ public class GrowCoconutsBehavior implements IGameBehavior {
 				
 				Collections.shuffle(candidates);
 				for (Pair<BlockPos, Direction> candidate : candidates) {
-					if (player.world.isAirBlock(candidate.getLeft())) {
-						player.world.setBlockState(candidate.getLeft(), COCONUT.get().getDefaultState().with(DirectionalBlock.FACING, candidate.getRight().getOpposite()));
+					if (player.level.isEmptyBlock(candidate.getLeft())) {
+						player.level.setBlockAndUpdate(candidate.getLeft(), COCONUT.get().defaultBlockState().setValue(DirectionalBlock.FACING, candidate.getRight().getOpposite()));
 						break;
 					}
 				}
@@ -91,8 +91,8 @@ public class GrowCoconutsBehavior implements IGameBehavior {
 	// TODO: manual handling of coverage is not a good solution! next year: change our approach to how we're handling dynamic coverages like this
 	private ActionResultType breakFromCoconut(ServerPlayerEntity player, BlockPos pos, BlockState state, Hand hand) {
 		if (state.getBlock() == COCONUT.get()) {
-			BlockPos trunkPos = pos.offset(state.get(DirectionalBlock.FACING));
-			game.invoker(GamePlayerEvents.BREAK_BLOCK).onBreakBlock(player, trunkPos, player.world.getBlockState(trunkPos), Hand.MAIN_HAND);
+			BlockPos trunkPos = pos.relative(state.getValue(DirectionalBlock.FACING));
+			game.invoker(GamePlayerEvents.BREAK_BLOCK).onBreakBlock(player, trunkPos, player.level.getBlockState(trunkPos), Hand.MAIN_HAND);
 			return ActionResultType.FAIL;
 		}
 		return ActionResultType.PASS;
@@ -101,7 +101,7 @@ public class GrowCoconutsBehavior implements IGameBehavior {
 	private void onPlantBreak(ServerPlayerEntity player, Plot plot, Plant plant, BlockPos pos) {
 		List<Pair<BlockPos, Direction>> candidates = candidatePositions.get(plant);
 		if (candidates != null) {
-			candidates.forEach(p -> player.world.destroyBlock(p.getLeft(), false));
+			candidates.forEach(p -> player.level.destroyBlock(p.getLeft(), false));
 		}
 	}
 }

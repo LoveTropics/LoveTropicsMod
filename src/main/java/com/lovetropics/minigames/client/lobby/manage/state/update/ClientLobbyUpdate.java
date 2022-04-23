@@ -2,10 +2,10 @@ package com.lovetropics.minigames.client.lobby.manage.state.update;
 
 import com.lovetropics.minigames.client.lobby.manage.ClientLobbyManagement;
 import com.lovetropics.minigames.client.lobby.manage.ClientManageLobbyMessage;
-import com.lovetropics.minigames.client.lobby.state.ClientCurrentGame;
 import com.lovetropics.minigames.client.lobby.manage.state.ClientLobbyPlayer;
 import com.lovetropics.minigames.client.lobby.manage.state.ClientLobbyQueue;
 import com.lovetropics.minigames.client.lobby.manage.state.ClientLobbyQueuedGame;
+import com.lovetropics.minigames.client.lobby.state.ClientCurrentGame;
 import com.lovetropics.minigames.client.lobby.state.ClientGameDefinition;
 import com.lovetropics.minigames.common.core.game.lobby.*;
 import com.lovetropics.minigames.common.util.PartialUpdate;
@@ -23,11 +23,9 @@ import java.util.function.IntConsumer;
 import java.util.stream.Collectors;
 
 public abstract class ClientLobbyUpdate extends PartialUpdate<ClientLobbyManagement.Session> {
-	private static final PartialUpdate.Family<ClientLobbyManagement.Session> FAMILY = Family.of(Type.values());
-
 	public static final class Set extends AbstractSet<ClientLobbyManagement.Session> {
 		private Set() {
-			super(FAMILY);
+			super(Family.of(Type.values()));
 		}
 
 		public static Set create() {
@@ -184,11 +182,11 @@ public abstract class ClientLobbyUpdate extends PartialUpdate<ClientLobbyManagem
 
 		@Override
 		protected void encode(PacketBuffer buffer) {
-			buffer.writeString(name, 200);
+			buffer.writeUtf(name, 200);
 		}
 
 		static SetName decode(PacketBuffer buffer) {
-			return new SetName(buffer.readString(200));
+			return new SetName(buffer.readUtf(200));
 		}
 	}
 
@@ -337,12 +335,12 @@ public abstract class ClientLobbyUpdate extends PartialUpdate<ClientLobbyManagem
 
 		@Override
 		protected void encode(PacketBuffer buffer) {
-			buffer.writeEnumValue(visibility);
+			buffer.writeEnum(visibility);
 			buffer.writeBoolean(canFocusLive);
 		}
 
 		static SetVisibility decode(PacketBuffer buffer) {
-			return new SetVisibility(buffer.readEnumValue(LobbyVisibility.class), buffer.readBoolean());
+			return new SetVisibility(buffer.readEnum(LobbyVisibility.class), buffer.readBoolean());
 		}
 	}
 }

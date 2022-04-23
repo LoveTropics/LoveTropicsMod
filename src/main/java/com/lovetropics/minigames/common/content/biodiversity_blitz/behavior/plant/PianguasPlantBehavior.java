@@ -59,10 +59,10 @@ public final class PianguasPlantBehavior implements IGameBehavior {
             int dx = random.nextInt(this.radius) - random.nextInt(this.radius);
             int dz = random.nextInt(this.radius) - random.nextInt(this.radius);
 
-            BlockPos check = plant.coverage().getOrigin().add(dx, -1, dz);
+            BlockPos check = plant.coverage().getOrigin().offset(dx, -1, dz);
 
-            if (world.getBlockState(check).isIn(MUD)) {
-                world.setBlockState(check, state);
+            if (world.getBlockState(check).is(MUD)) {
+                world.setBlockAndUpdate(check, state);
             }
         }
     }

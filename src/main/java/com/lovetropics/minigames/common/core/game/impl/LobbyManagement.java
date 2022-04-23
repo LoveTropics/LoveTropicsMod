@@ -1,8 +1,8 @@
 package com.lovetropics.minigames.common.core.game.impl;
 
 import com.lovetropics.minigames.client.lobby.manage.ClientManageLobbyMessage;
-import com.lovetropics.minigames.client.lobby.state.ClientCurrentGame;
 import com.lovetropics.minigames.client.lobby.manage.state.update.ClientLobbyUpdate;
+import com.lovetropics.minigames.client.lobby.state.ClientCurrentGame;
 import com.lovetropics.minigames.client.lobby.state.ClientGameDefinition;
 import com.lovetropics.minigames.common.core.game.IGameDefinition;
 import com.lovetropics.minigames.common.core.game.lobby.*;
@@ -42,7 +42,7 @@ final class LobbyManagement implements ILobbyManagement {
 
 	@Override
 	public boolean startManaging(ServerPlayerEntity player) {
-		if (canManage(player.getCommandSource())) {
+		if (canManage(player.createCommandSourceStack())) {
 			ClientLobbyUpdate.Set initialize = ClientLobbyUpdate.Set.create()
 					.setName(lobby.getMetadata().name())
 					.initialize(ClientGameDefinition.collectInstalled(), lobby.getGameQueue())
@@ -68,7 +68,7 @@ final class LobbyManagement implements ILobbyManagement {
 
 	@Override
 	public boolean canManage(CommandSource source) {
-		return source.hasPermissionLevel(2) || lobby.getMetadata().initiator().matches(source.getEntity());
+		return source.hasPermission(2) || lobby.getMetadata().initiator().matches(source.getEntity());
 	}
 
 	@Override

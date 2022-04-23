@@ -44,11 +44,11 @@ public final class EffectAddingPlantBehavior implements IGameBehavior {
 			ServerWorld world = game.getWorld();
 
 			for (Plant plant : plants) {
-				AxisAlignedBB applyBounds = plant.coverage().asBounds().grow(this.radius);
+				AxisAlignedBB applyBounds = plant.coverage().asBounds().inflate(this.radius);
 
-				List<MobEntity> entities = world.getEntitiesWithinAABB(MobEntity.class, applyBounds, BbMobEntity.PREDICATE);
+				List<MobEntity> entities = world.getEntitiesOfClass(MobEntity.class, applyBounds, BbMobEntity.PREDICATE);
 				for (MobEntity entity : entities) {
-					entity.addPotionEffect(new EffectInstance(this.effect));
+					entity.addEffect(new EffectInstance(this.effect));
 				}
 			}
 		});

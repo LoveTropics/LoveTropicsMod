@@ -33,6 +33,6 @@ public final class TemplatedText {
 	}
 
 	public ITextComponent apply(Object... variables) {
-		return new TranslationTextComponent(text, variables).mergeStyle(this.style);
+		return new TranslationTextComponent(text, variables).withStyle(this.style);
 	}
 }

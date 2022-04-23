@@ -143,8 +143,8 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 		// NOTE: DO NOT REMOVE THIS CHECK, CAUSES FISH TO DIE AND SPAWN ITEMS ON DEATH
 		// FISH WILL KEEP SPAWNING, DYING AND COMPLETELY SLOW THE SERVER TO A CRAWL
 		if (!entity.canBreatheUnderwater()) {
-			if (entity.getPosY() <= this.waterLevel + 1 && entity.isInWater() && entity.ticksExisted % 20 == 0) {
-				entity.attackEntityFrom(DamageSource.DROWN, 2.0F);
+			if (entity.getY() <= this.waterLevel + 1 && entity.isInWater() && entity.tickCount % 20 == 0) {
+				entity.hurt(DamageSource.DROWN, 2.0F);
 			}
 		}
 	}
@@ -168,23 +168,23 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 
 	private void spawnRisingTideParticles(IGamePhase game) {
 		ServerWorld world = game.getWorld();
-		Random random = world.rand;
+		Random random = world.random;
 
 		BlockPos.Mutable mutablePos = new BlockPos.Mutable();
 
 		for (ServerPlayerEntity player : game.getParticipants()) {
 			// only attempt to spawn particles if the player is near the water surface
-			if (Math.abs(player.getPosY() - waterLevel) > 10) {
+			if (Math.abs(player.getY() - waterLevel) > 10) {
 				continue;
 			}
 
-			int particleX = MathHelper.floor(player.getPosX()) - random.nextInt(10) + random.nextInt(10);
-			int particleZ = MathHelper.floor(player.getPosZ()) - random.nextInt(10) + random.nextInt(10);
-			mutablePos.setPos(particleX, waterLevel, particleZ);
+			int particleX = MathHelper.floor(player.getX()) - random.nextInt(10) + random.nextInt(10);
+			int particleZ = MathHelper.floor(player.getZ()) - random.nextInt(10) + random.nextInt(10);
+			mutablePos.set(particleX, waterLevel, particleZ);
 
-			if (!world.isAirBlock(mutablePos) && world.isAirBlock(mutablePos.move(Direction.UP))) {
+			if (!world.isEmptyBlock(mutablePos) && world.isEmptyBlock(mutablePos.move(Direction.UP))) {
 				IPacket<?> packet = new SSpawnParticlePacket(ParticleTypes.SPLASH, true, particleX, waterLevel + 1, particleZ, 0.1F, 0.0F, 0.1F, 0.0F, 4);
-				player.connection.sendPacket(packet);
+				player.connection.send(packet);
 			}
 		}
 	}
@@ -213,7 +213,7 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 
 	private int processUpdates(IGamePhase game, LongIterator iterator, int maxToProcess) {
 		ServerWorld world = game.getWorld();
-		ServerChunkProvider chunkProvider = world.getChunkProvider();
+		ServerChunkProvider chunkProvider = world.getChunkSource();
 
 		long startTime = System.currentTimeMillis();
 		long updatedBlocks = 0;
@@ -309,8 +309,8 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 		int centerX = (x << 4) + 8;
 		int centerZ = (z << 4) + 8;
 		for (ServerPlayerEntity player : game.getAllPlayers()) {
-			int dx = MathHelper.floor(player.getPosX()) - centerX;
-			int dz = MathHelper.floor(player.getPosZ()) - centerZ;
+			int dx = MathHelper.floor(player.getX()) - centerX;
+			int dz = MathHelper.floor(player.getZ()) - centerZ;
 			int distance2 = dx * dx + dz * dz;
 			if (distance2 < minDistance2) {
 				minDistance2 = distance2;
@@ -324,7 +324,7 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 		ChunkPos chunkPos = chunk.getPos();
 
 		int targetLevel = this.waterLevel;
-		int lastLevel = this.chunkWaterLevels.put(chunkPos.asLong(), targetLevel);
+		int lastLevel = this.chunkWaterLevels.put(chunkPos.toLong(), targetLevel);
 
 		if (targetLevel > lastLevel) {
 			return increaseTideForChunk(chunk, lastLevel, targetLevel);
@@ -334,27 +334,27 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 	}
 
 	private long increaseTideForChunk(Chunk chunk, int fromWaterLevel, int toWaterLevel) {
-		World world = chunk.getWorld();
-		ServerChunkProvider chunkProvider = (ServerChunkProvider) world.getChunkProvider();
+		World world = chunk.getLevel();
+		ServerChunkProvider chunkProvider = (ServerChunkProvider) world.getChunkSource();
 
 		ChunkPos chunkPos = chunk.getPos();
 
-		Heightmap heightmapSurface = chunk.getHeightmap(Heightmap.Type.WORLD_SURFACE);
-		Heightmap heightmapMotionBlocking = chunk.getHeightmap(Heightmap.Type.MOTION_BLOCKING);
+		Heightmap heightmapSurface = chunk.getOrCreateHeightmapUnprimed(Heightmap.Type.WORLD_SURFACE);
+		Heightmap heightmapMotionBlocking = chunk.getOrCreateHeightmapUnprimed(Heightmap.Type.MOTION_BLOCKING);
 
 		int fromY = fromWaterLevel;
 		int toY = toWaterLevel;
 
 		// this is the total area over which we need to increase the tide
 		BlockPos chunkMin = new BlockPos(
-				Math.max(tideArea.min.getX(), chunkPos.getXStart()),
+				Math.max(tideArea.min.getX(), chunkPos.getMinBlockX()),
 				fromY,
-				Math.max(tideArea.min.getZ(), chunkPos.getZStart())
+				Math.max(tideArea.min.getZ(), chunkPos.getMinBlockZ())
 		);
 		BlockPos chunkMax = new BlockPos(
-				Math.min(tideArea.max.getX(), chunkPos.getXEnd()),
+				Math.min(tideArea.max.getX(), chunkPos.getMaxBlockX()),
 				toY,
-				Math.min(tideArea.max.getZ(), chunkPos.getZEnd())
+				Math.min(tideArea.max.getZ(), chunkPos.getMaxBlockZ())
 		);
 
 		long updatedBlocks = 0;
@@ -372,7 +372,7 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 			BlockPos sectionMin = new BlockPos(chunkMin.getX(), Math.max(chunkMin.getY(), minSectionY), chunkMin.getZ());
 			BlockPos sectionMax = new BlockPos(chunkMax.getX(), Math.min(chunkMax.getY(), maxSectionY), chunkMax.getZ());
 
-			for (BlockPos worldPos : BlockPos.getAllInBoxMutable(sectionMin, sectionMax)) {
+			for (BlockPos worldPos : BlockPos.betweenClosed(sectionMin, sectionMax)) {
 				int localX = worldPos.getX() & 15;
 				int localY = worldPos.getY() & 15;
 				int localZ = worldPos.getZ() & 15;
@@ -385,7 +385,7 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 				if (existingBlock.getBlock() != Blocks.BAMBOO) {
 					section.setBlockState(localX, localY, localZ, newBlock);
 				} else {
-					world.setBlockState(worldPos, newBlock, Constants.BlockFlags.NO_RERENDER | Constants.BlockFlags.BLOCK_UPDATE);
+					world.setBlock(worldPos, newBlock, Constants.BlockFlags.NO_RERENDER | Constants.BlockFlags.BLOCK_UPDATE);
 				}
 
 				// Update heightmap
@@ -393,7 +393,7 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 				heightmapMotionBlocking.update(localX, localY, localZ, newBlock);
 
 				// Tell the client about the change
-				chunkProvider.markBlockChanged(worldPos);
+				chunkProvider.blockChanged(worldPos);
 				// FIXES LIGHTING AT THE COST OF PERFORMANCE - TODO ask fry?
 				// chunkProvider.getLightManager().checkBlock(realPos);
 
@@ -403,7 +403,7 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 
 		if (updatedBlocks > 0) {
 			// Make sure this chunk gets saved
-			chunk.markDirty();
+			chunk.markUnsaved();
 		}
 
 		return updatedBlocks;
@@ -432,27 +432,27 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 	private static BlockState mapBlockRisingWater(BlockState state) {
 		Block block = state.getBlock();
 
-		if (state.isAir() || !state.getMaterial().blocksMovement() || block == Blocks.BAMBOO || block.getRegistryName().toString().equals("weather2:sand_layer")) {
+		if (state.isAir() || !state.getMaterial().blocksMotion() || block == Blocks.BAMBOO || block.getRegistryName().toString().equals("weather2:sand_layer")) {
 			// If air or a replaceable block, just set to water
-			return Blocks.WATER.getDefaultState();
+			return Blocks.WATER.defaultBlockState();
 		}
 
 		if (block instanceof IWaterLoggable) {
 			// If waterloggable, set the waterloggable property to true
-			state = state.with(BlockStateProperties.WATERLOGGED, true);
+			state = state.setValue(BlockStateProperties.WATERLOGGED, true);
 			if (block == Blocks.CAMPFIRE) {
-				state = state.with(CampfireBlock.LIT, false);
+				state = state.setValue(CampfireBlock.LIT, false);
 			}
 			return state;
 		}
 
 		if (block == Blocks.BARRIER) {
-			return WATER_BARRIER.orElse(Blocks.BARRIER).getDefaultState();
+			return WATER_BARRIER.orElse(Blocks.BARRIER).defaultBlockState();
 		}
 
 		if (block == Blocks.BLACK_CONCRETE_POWDER) {
 			// adding to the amazing list of hardcoded replacements.. yes!
-			return Blocks.BLACK_CONCRETE.getDefaultState();
+			return Blocks.BLACK_CONCRETE.defaultBlockState();
 		}
 
 		return null;
@@ -461,7 +461,7 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 	@Nullable
 	private static BlockState mapBlockBelowWater(BlockState state) {
 		if (state.getBlock() == Blocks.GRASS_BLOCK || state.getBlock() == Blocks.GRASS_PATH) {
-			return Blocks.DIRT.getDefaultState();
+			return Blocks.DIRT.defaultBlockState();
 		}
 
 		return null;

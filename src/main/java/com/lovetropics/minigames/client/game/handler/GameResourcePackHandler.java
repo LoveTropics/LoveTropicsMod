@@ -41,20 +41,20 @@ public final class GameResourcePackHandler implements ClientGameStateHandler<Res
 	}
 
 	private void updatePacks(Predicate<List<String>> apply) {
-		ResourcePackList packList = CLIENT.getResourcePackList();
+		ResourcePackList packList = CLIENT.getResourcePackRepository();
 
-		List<String> enabledPacks = packList.getEnabledPacks().stream()
-				.map(ResourcePackInfo::getName)
+		List<String> enabledPacks = packList.getSelectedPacks().stream()
+				.map(ResourcePackInfo::getId)
 				.collect(Collectors.toList());
 
 		if (apply.test(enabledPacks)) {
-			packList.setEnabledPacks(enabledPacks);
+			packList.setSelected(enabledPacks);
 
-			CLIENT.scheduleResourcesRefresh();
+			CLIENT.delayTextureReload();
 		}
 	}
 
 	private boolean packExists(String packName) {
-		return CLIENT.getResourcePackList().func_232617_b_(packName);
+		return CLIENT.getResourcePackRepository().isAvailable(packName);
 	}
 }

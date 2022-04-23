@@ -20,12 +20,12 @@ public final class DimensionArgument {
 	);
 
     public static RequiredArgumentBuilder<CommandSource, ResourceLocation> argument(String name) {
-        return Commands.argument(name, ResourceLocationArgument.resourceLocation())
+        return Commands.argument(name, ResourceLocationArgument.id())
                 .suggests((context, builder) -> {
                     CommandSource source = context.getSource();
-                    DimensionGeneratorSettings generatorSettings = source.getServer().getServerConfiguration().getDimensionGeneratorSettings();
-                    SimpleRegistry<Dimension> dimensions = generatorSettings.func_236224_e_();
-                    return ISuggestionProvider.func_212476_a(
+                    DimensionGeneratorSettings generatorSettings = source.getServer().getWorldData().worldGenSettings();
+                    SimpleRegistry<Dimension> dimensions = generatorSettings.dimensions();
+                    return ISuggestionProvider.suggestResource(
                             dimensions.keySet().stream(),
                             builder
                     );
@@ -33,13 +33,13 @@ public final class DimensionArgument {
     }
 
 	public static Dimension get(CommandContext<CommandSource> context, String name) throws CommandSyntaxException {
-		ResourceLocation key = ResourceLocationArgument.getResourceLocation(context, name);
+		ResourceLocation key = ResourceLocationArgument.getId(context, name);
 
 		CommandSource source = context.getSource();
-		DimensionGeneratorSettings generatorSettings = source.getServer().getServerConfiguration().getDimensionGeneratorSettings();
-		SimpleRegistry<Dimension> dimensions = generatorSettings.func_236224_e_();
+		DimensionGeneratorSettings generatorSettings = source.getServer().getWorldData().worldGenSettings();
+		SimpleRegistry<Dimension> dimensions = generatorSettings.dimensions();
 
-		Dimension dimension = dimensions.getOrDefault(key);
+		Dimension dimension = dimensions.get(key);
 		if (dimension == null) {
 			throw DIMENSION_NOT_FOUND.create(key);
 		}

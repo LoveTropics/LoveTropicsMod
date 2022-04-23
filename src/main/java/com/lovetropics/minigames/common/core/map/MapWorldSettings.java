@@ -24,12 +24,12 @@ public final class MapWorldSettings {
 	public Difficulty difficulty = Difficulty.NORMAL;
 
 	public static MapWorldSettings createFromOverworld(MinecraftServer server) {
-		return createFrom((IServerWorldInfo) server.func_241755_D_().getWorldInfo());
+		return createFrom((IServerWorldInfo) server.overworld().getLevelData());
 	}
 
 	public static MapWorldSettings createFrom(IServerWorldInfo info) {
 		MapWorldSettings settings = new MapWorldSettings();
-		settings.gameRules.decode(new Dynamic<>(NBTDynamicOps.INSTANCE, info.getGameRulesInstance().write()));
+		settings.gameRules.loadFromTag(new Dynamic<>(NBTDynamicOps.INSTANCE, info.getGameRules().createTag()));
 		settings.timeOfDay = info.getDayTime();
 		settings.sunnyTime = info.getClearWeatherTime();
 		settings.raining = info.isRaining();
@@ -43,7 +43,7 @@ public final class MapWorldSettings {
 
 	public CompoundNBT write(CompoundNBT root) {
 		root.putLong("time_of_day", this.timeOfDay);
-		root.put("game_rules", this.gameRules.write());
+		root.put("game_rules", this.gameRules.createTag());
 
 		root.putInt("sunny_time", this.sunnyTime);
 		root.putBoolean("raining", this.raining);
@@ -51,14 +51,14 @@ public final class MapWorldSettings {
 		root.putBoolean("thundering", this.thundering);
 		root.putInt("thunder_time", this.thunderTime);
 
-		root.putString("difficulty", this.difficulty.getTranslationKey());
+		root.putString("difficulty", this.difficulty.getKey());
 
 		return root;
 	}
 
 	public void read(CompoundNBT root) {
 		this.timeOfDay = root.getLong("time_of_day");
-		this.gameRules.decode(new Dynamic<>(NBTDynamicOps.INSTANCE, root.getCompound("game_rules")));
+		this.gameRules.loadFromTag(new Dynamic<>(NBTDynamicOps.INSTANCE, root.getCompound("game_rules")));
 
 		this.sunnyTime = root.getInt("sunny_time");
 		this.raining = root.getBoolean("raining");

@@ -88,10 +88,10 @@ public final class LobbyPlayerList extends AbstractGui implements IGuiEventListe
 
 				if (player.playingRole() != null) {
 					tooltip.add(GameTexts.Ui.roleDescription(player.playingRole())
-							.mergeStyle(TextFormatting.GRAY));
+							.withStyle(TextFormatting.GRAY));
 				}
 
-				screen.func_243308_b(matrixStack, tooltip, mouseX, mouseY);
+				screen.renderComponentTooltip(matrixStack, tooltip, mouseX, mouseY);
 			}
 		}
 	}

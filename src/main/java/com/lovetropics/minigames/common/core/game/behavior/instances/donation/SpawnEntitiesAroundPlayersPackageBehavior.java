@@ -3,8 +3,8 @@ package com.lovetropics.minigames.common.core.game.behavior.instances.donation;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
-import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePackageEvents;
+import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.lovetropics.minigames.common.util.Util;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -66,7 +66,7 @@ public class SpawnEntitiesAroundPlayersPackageBehavior implements IGameBehavior
 				it.remove();
 			} else {
 
-				BlockPos pos = getSpawnableRandomPositionNear(game, entry.getKey().getPosition(), spawnDistanceMin, spawnDistanceMax, spawnsPerTick, spawnRangeY);
+				BlockPos pos = getSpawnableRandomPositionNear(game, entry.getKey().blockPosition(), spawnDistanceMin, spawnDistanceMax, spawnsPerTick, spawnRangeY);
 
 				if (pos != BlockPos.ZERO) {
 					entry.setValue(entry.getIntValue() - 1);
@@ -87,11 +87,11 @@ public class SpawnEntitiesAroundPlayersPackageBehavior implements IGameBehavior
 	 */
 	public BlockPos getSpawnableRandomPositionNear(final IGamePhase game, BlockPos pos, int minDist, int maxDist, int loopAttempts, int yRange) {
 		for (int i = 0; i < loopAttempts; i++) {
-			BlockPos posTry = pos.add(game.getWorld().getRandom().nextInt(maxDist * 2) - maxDist,
+			BlockPos posTry = pos.offset(game.getWorld().getRandom().nextInt(maxDist * 2) - maxDist,
 					game.getWorld().getRandom().nextInt(yRange * 2) - yRange,
 					game.getWorld().getRandom().nextInt(maxDist * 2) - maxDist);
 
-			if (pos.distanceSq(posTry) >= minDist * minDist && isSpawnablePosition(game, posTry)) {
+			if (pos.distSqr(posTry) >= minDist * minDist && isSpawnablePosition(game, posTry)) {
 				return posTry;
 			}
 		}
@@ -104,12 +104,12 @@ public class SpawnEntitiesAroundPlayersPackageBehavior implements IGameBehavior
 	 */
 	public boolean isSpawnablePosition(final IGamePhase game, BlockPos pos) {
 		ServerWorld world = game.getWorld();
-		return !world.isAirBlock(pos.add(0, -1, 0))
-				&& world.isAirBlock(pos.add(0, 0, 0))
-				&& world.isAirBlock(pos.add(0, 1, 0))
-				&& !world.getBlockState(pos.add(0, -1, 0)).getMaterial().isLiquid()
-				&& !world.getBlockState(pos.add(0, 0, 0)).getMaterial().isLiquid()
-				&& !world.getBlockState(pos.add(0, 1, 0)).getMaterial().isLiquid();
+		return !world.isEmptyBlock(pos.offset(0, -1, 0))
+				&& world.isEmptyBlock(pos.offset(0, 0, 0))
+				&& world.isEmptyBlock(pos.offset(0, 1, 0))
+				&& !world.getBlockState(pos.offset(0, -1, 0)).getMaterial().isLiquid()
+				&& !world.getBlockState(pos.offset(0, 0, 0)).getMaterial().isLiquid()
+				&& !world.getBlockState(pos.offset(0, 1, 0)).getMaterial().isLiquid();
 	}
 
 

@@ -85,7 +85,7 @@ public class PollFinalistsBehavior implements IGameBehavior {
 		if (crud.equals("create")) {
 			LOGGER.info("New poll, resetting objective");
 			Scoreboard scoreboard = server.getScoreboard();
-			ScoreObjective objective = scoreboard.getObjective(votesObjective);
+			ScoreObjective objective = scoreboard.getOrCreateObjective(votesObjective);
 			if (objective != null) {
 				scoreboard.removeObjective(objective);
 			}
@@ -97,10 +97,10 @@ public class PollFinalistsBehavior implements IGameBehavior {
 			LOGGER.info("Poll ended, finding winner");
 			updateScores(server, event, true);
 			Scoreboard scoreboard = server.getScoreboard();
-			ScoreObjective objective = scoreboard.getObjective(votesObjective);
-			Collection<Score> scores = scoreboard.getSortedScores(objective);
+			ScoreObjective objective = scoreboard.getOrCreateObjective(votesObjective);
+			Collection<Score> scores = scoreboard.getPlayerScores(objective);
 			if (!scores.isEmpty()) {
-				String winner = Iterables.getLast(scores).getPlayerName();
+				String winner = Iterables.getLast(scores).getOwner();
 				for (ServerPlayerEntity player : server.getPlayerList().getPlayers()) {
 					player.removeTag(finalistsTag);
 					if (player.getGameProfile().getName().equals(winner)) {
@@ -138,16 +138,16 @@ public class PollFinalistsBehavior implements IGameBehavior {
 					}
 				}
 				Scoreboard scoreboard = server.getScoreboard();
-				ScoreObjective objective = scoreboard.getObjective(votesObjective);
-				scoreboard.getOrCreateScore(username, objective).setScorePoints(votes);
+				ScoreObjective objective = scoreboard.getOrCreateObjective(votesObjective);
+				scoreboard.getOrCreatePlayerScore(username, objective).setScore(votes);
 			}
 		}
 		if (leaders.size() > 1) {
 			// Shhhhh
 			ServerPlayerEntity winner = leaders.get(RANDOM.nextInt(leaders.size()));
 			Scoreboard scoreboard = server.getScoreboard();
-			ScoreObjective objective = scoreboard.getObjective(votesObjective);
-			scoreboard.getOrCreateScore(winner.getGameProfile().getName(), objective).incrementScore();
+			ScoreObjective objective = scoreboard.getOrCreateObjective(votesObjective);
+			scoreboard.getOrCreatePlayerScore(winner.getGameProfile().getName(), objective).increment();
 		}
 	}
 

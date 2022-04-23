@@ -28,8 +28,8 @@ public class SetDifficultyBehavior implements IGameBehavior {
 	public void register(IGamePhase game, EventRegistrar events) {
 		events.listen(GamePhaseEvents.START, () -> {
 			ServerWorld world = game.getWorld();
-			if (world.getWorldInfo() instanceof MapWorldInfo) {
-				MapWorldInfo worldInfo = (MapWorldInfo) world.getWorldInfo();
+			if (world.getLevelData() instanceof MapWorldInfo) {
+				MapWorldInfo worldInfo = (MapWorldInfo) world.getLevelData();
 				worldInfo.setDifficulty(difficulty);
 			}
 		});

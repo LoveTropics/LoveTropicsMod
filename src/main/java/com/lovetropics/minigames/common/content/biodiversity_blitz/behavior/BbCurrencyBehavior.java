@@ -100,10 +100,10 @@ public final class BbCurrencyBehavior implements IGameBehavior {
 	private void giveCurrency(ServerPlayerEntity player, Plot plot) {
 		int count = currency.add(player, plot.nextCurrencyIncrement, true);
 
-		player.sendStatusMessage(BiodiversityBlitzTexts.currencyAddition(count), true);
+		player.displayClientMessage(BiodiversityBlitzTexts.currencyAddition(count), true);
 
 		if (count > 0) {
-			player.playSound(SoundEvents.ENTITY_ARROW_HIT_PLAYER, SoundCategory.PLAYERS, 0.24F, 1.0F);
+			player.playNotifySound(SoundEvents.ARROW_HIT_PLAYER, SoundCategory.PLAYERS, 0.24F, 1.0F);
 		}
 	}
 

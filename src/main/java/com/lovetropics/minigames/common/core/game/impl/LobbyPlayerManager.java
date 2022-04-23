@@ -41,13 +41,13 @@ final class LobbyPlayerManager implements IGameLobbyPlayers {
 
 	@Override
 	public CompletableFuture<GameResult<Unit>> join(ServerPlayerEntity player) {
-		if (lobby.manager.getLobbyFor(player) != null || registrations.contains(player.getUniqueID())) {
+		if (lobby.manager.getLobbyFor(player) != null || registrations.contains(player.getUUID())) {
 			return CompletableFuture.completedFuture(GameResult.error(GameTexts.Commands.alreadyInLobby()));
 		}
 
 		CompletableFuture<PlayerRole> future = roleSelections.prompt(player);
 		return future.thenApplyAsync(role -> {
-			if (registrations.add(player.getUniqueID())) {
+			if (registrations.add(player.getUUID())) {
 				lobby.onPlayerRegister(player);
 			} else {
 				return GameResult.error(GameTexts.Commands.alreadyInLobby());
@@ -58,7 +58,7 @@ final class LobbyPlayerManager implements IGameLobbyPlayers {
 
 	@Override
 	public boolean remove(ServerPlayerEntity player) {
-		if (registrations.remove(player.getUniqueID())) {
+		if (registrations.remove(player.getUUID())) {
 			lobby.onPlayerLeave(player);
 			roleSelections.remove(player);
 			return true;
@@ -68,13 +68,13 @@ final class LobbyPlayerManager implements IGameLobbyPlayers {
 
 	@Override
 	public boolean forceRole(ServerPlayerEntity player, @Nullable PlayerRole role) {
-		return registrations.forceRole(player.getUniqueID(), role);
+		return registrations.forceRole(player.getUUID(), role);
 	}
 
 	@Nullable
 	@Override
 	public PlayerRole getForcedRoleFor(ServerPlayerEntity player) {
-		return registrations.getForcedRoleFor(player.getUniqueID());
+		return registrations.getForcedRoleFor(player.getUUID());
 	}
 
 	@Override

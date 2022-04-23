@@ -39,12 +39,12 @@ public final class NotificationToast implements IToast {
 	private final int height;
 
 	public NotificationToast(ITextComponent message, NotificationDisplay display) {
-		FontRenderer fontRenderer = CLIENT.fontRenderer;
+		FontRenderer fontRenderer = CLIENT.font;
 
 		List<IReorderingProcessor> lines = new ArrayList<>(2);
-		lines.addAll(fontRenderer.trimStringToWidth(message, MAX_WIDTH));
+		lines.addAll(fontRenderer.split(message, MAX_WIDTH));
 
-		int textWidth = Math.max(lines.stream().mapToInt(fontRenderer::func_243245_a).max().orElse(MAX_WIDTH), MAX_WIDTH);
+		int textWidth = Math.max(lines.stream().mapToInt(fontRenderer::width).max().orElse(MAX_WIDTH), MAX_WIDTH);
 		this.width = TEXT_LEFT + textWidth + 4;
 		this.height = Math.max(lines.size() * LINE_HEIGHT + 8, 22);
 
@@ -53,10 +53,10 @@ public final class NotificationToast implements IToast {
 	}
 
 	@Override
-	public Visibility func_230444_a_(MatrixStack matrixStack, ToastGui gui, long time) {
+	public Visibility render(MatrixStack matrixStack, ToastGui gui, long time) {
 		RenderSystem.color3f(1.0F, 1.0F, 1.0F);
 
-		CLIENT.getTextureManager().bindTexture(TEXTURE);
+		CLIENT.getTextureManager().bind(TEXTURE);
 		this.drawBackground(matrixStack, gui);
 
 		this.drawText(matrixStack);
@@ -112,12 +112,12 @@ public final class NotificationToast implements IToast {
 	}
 
 	private void drawText(MatrixStack matrixStack) {
-		FontRenderer fontRenderer = CLIENT.fontRenderer;
+		FontRenderer fontRenderer = CLIENT.font;
 
 		List<IReorderingProcessor> lines = this.lines;
 		for (int i = 0; i < lines.size(); i++) {
 			IReorderingProcessor line = lines.get(i);
-			fontRenderer.func_238422_b_(matrixStack, line, TEXT_LEFT, 7 + (i * 12), 0xFFFFFFFF);
+			fontRenderer.draw(matrixStack, line, TEXT_LEFT, 7 + (i * 12), 0xFFFFFFFF);
 		}
 	}
 
@@ -127,21 +127,21 @@ public final class NotificationToast implements IToast {
 		NotificationIcon icon = this.display.icon;
 		if (icon.item != null) {
 			ItemRenderer itemRenderer = CLIENT.getItemRenderer();
-			itemRenderer.renderItemAndEffectIntoGuiWithoutEntity(icon.item, 6, y);
+			itemRenderer.renderAndDecorateFakeItem(icon.item, 6, y);
 		} else if (icon.effect != null) {
-			TextureAtlasSprite sprite = CLIENT.getPotionSpriteUploader().getSprite(icon.effect);
-			CLIENT.getTextureManager().bindTexture(sprite.getAtlasTexture().getTextureLocation());
+			TextureAtlasSprite sprite = CLIENT.getMobEffectTextures().get(icon.effect);
+			CLIENT.getTextureManager().bind(sprite.atlas().location());
 			AbstractGui.blit(matrixStack, 5, y, 0, 18, 18, sprite);
 		}
 	}
 
 	@Override
-	public int func_230445_a_() {
+	public int width() {
 		return this.width;
 	}
 
 	@Override
-	public int func_238540_d_() {
+	public int height() {
 		return this.height;
 	}
 }

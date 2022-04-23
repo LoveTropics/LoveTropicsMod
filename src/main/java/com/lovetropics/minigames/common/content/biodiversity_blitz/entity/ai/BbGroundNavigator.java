@@ -12,28 +12,28 @@ public final class BbGroundNavigator extends GroundPathNavigator {
 	private final BbMobEntity mob;
 
 	public BbGroundNavigator(MobEntity mob) {
-		super(mob, mob.world);
+		super(mob, mob.level);
 		this.mob = (BbMobEntity) mob;
 	}
 
 	@Override
-	protected PathFinder getPathFinder(int maxDepth) {
-		this.nodeProcessor = new NodeProcessor();
-		this.nodeProcessor.setCanEnterDoors(true);
-		return new PathFinder(this.nodeProcessor, maxDepth);
+	protected PathFinder createPathFinder(int maxDepth) {
+		this.nodeEvaluator = new NodeProcessor();
+		this.nodeEvaluator.setCanPassDoors(true);
+		return new PathFinder(this.nodeEvaluator, maxDepth);
 	}
 
 	final class NodeProcessor extends WalkNodeProcessor {
 		@Override
-		public PathNodeType getFloorNodeType(IBlockReader world, int x, int y, int z) {
-			BbMobBrain brain = mob.getMobBrain();
+		public PathNodeType getBlockPathType(IBlockReader world, int x, int y, int z) {
+			BbMobBrain brain = BbGroundNavigator.this.mob.getMobBrain();
 
 			if (!brain.getPlotWalls().getBounds().contains(x + 0.5, y + 0.5, z + 0.5)) {
 				return PathNodeType.BLOCKED;
 			}
 
-			PathNodeType nodeType = super.getFloorNodeType(world, x, y, z);
-			if (nodeType.getPriority() >= 0.0F && brain.isScaredAt(x, y, z)) {
+			PathNodeType nodeType = super.getBlockPathType(world, x, y, z);
+			if (nodeType.getMalus() >= 0.0F && brain.isScaredAt(x, y, z)) {
 				return PathNodeType.BLOCKED;
 			}
 

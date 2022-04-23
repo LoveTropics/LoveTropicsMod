@@ -32,12 +32,12 @@ public final class SelectorItems<V> {
 	public void giveSelectorsTo(ServerPlayerEntity player) {
 		for (V value : this.values) {
 			IItemProvider item = handlers.getItemFor(value);
-			player.addItemStackToInventory(this.createSelectorItem(item, value));
+			player.addItem(this.createSelectorItem(item, value));
 		}
 	}
 
 	private ActionResultType onUseItem(ServerPlayerEntity player, Hand hand) {
-		ItemStack heldStack = player.getHeldItem(hand);
+		ItemStack heldStack = player.getItemInHand(hand);
 		if (heldStack.isEmpty()) {
 			return ActionResultType.PASS;
 		}
@@ -77,7 +77,7 @@ public final class SelectorItems<V> {
 
 	private ItemStack createSelectorItem(IItemProvider item, V value) {
 		ItemStack stack = new ItemStack(item);
-		stack.setDisplayName(this.handlers.getNameFor(value));
+		stack.setHoverName(this.handlers.getNameFor(value));
 
 		CompoundNBT tag = stack.getOrCreateTag();
 		tag.putString(KEY, this.handlers.getIdFor(value));

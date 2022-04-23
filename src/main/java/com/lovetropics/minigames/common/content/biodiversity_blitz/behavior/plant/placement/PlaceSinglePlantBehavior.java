@@ -28,7 +28,7 @@ public final class PlaceSinglePlantBehavior implements IGameBehavior {
 		events.listen(BbPlantEvents.PLACE, (player, plot, pos) -> new PlantPlacement()
 				.covers(pos)
 				.places((world, coverage) -> {
-					world.setBlockState(pos, getPlaceBlock(plot));
+					world.setBlockAndUpdate(pos, getPlaceBlock(plot));
 					return true;
 				}));
 	}
@@ -36,7 +36,7 @@ public final class PlaceSinglePlantBehavior implements IGameBehavior {
 	private BlockState getPlaceBlock(Plot plot) {
 		BlockState block = this.block;
 		if (block.hasProperty(BlockStateProperties.HORIZONTAL_FACING)) {
-			block = block.with(BlockStateProperties.HORIZONTAL_FACING, plot.forward);
+			block = block.setValue(BlockStateProperties.HORIZONTAL_FACING, plot.forward);
 		}
 		return block;
 	}

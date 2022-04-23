@@ -54,14 +54,14 @@ public final class ManageLobbyScreen extends Screen {
 
 	@Override
 	protected void init() {
-		minecraft.keyboardListener.enableRepeatEvents(true);
+		minecraft.keyboardHandler.setSendRepeatsToGui(true);
 
 		layout = new ManageLobbyLayout(this);
 
 		ClientLobbyManageState lobby = session.lobby();
 
 		selectedGameId = -1;
-		gameList = addListener(new GameList(this, layout.gameList, layout.leftFooter, lobby, new GameList.Handlers() {
+		gameList = addWidget(new GameList(this, layout.gameList, layout.leftFooter, lobby, new GameList.Handlers() {
 			@Override
 			public void selectQueuedGame(int queuedGameId) {
 				if (queuedGameId == selectedGameId) return;
@@ -94,16 +94,16 @@ public final class ManageLobbyScreen extends Screen {
 		}));
 
 		// TODO actually save config data
-		gameConfig = addListener(new GameConfig(this, layout.edit, () -> {
+		gameConfig = addWidget(new GameConfig(this, layout.edit, () -> {
 			int selectedId = selectedGameId;
 			if (selectedId != -1) {
 				this.session.configure(selectedId);
 			}
 		}));
 
-		nameField = addListener(FlexUi.createTextField(layout.name, font, GameTexts.Ui.lobbyName()));
-		nameField.setMaxStringLength(200);
-		nameField.setText(lobby.getName());
+		nameField = addWidget(FlexUi.createTextField(layout.name, font, GameTexts.Ui.lobbyName()));
+		nameField.setMaxLength(200);
+		nameField.setValue(lobby.getName());
 
 		publishButton = addButton(FlexUi.createButton(layout.publish, GameTexts.Ui.publish(), button -> {
 			if (session.lobby().getVisibility().isPrivate()) {
@@ -113,7 +113,7 @@ public final class ManageLobbyScreen extends Screen {
 			}
 		}));
 
-		playerList = addListener(new LobbyPlayerList(this, lobby, layout.playerList));
+		playerList = addWidget(new LobbyPlayerList(this, lobby, layout.playerList));
 
 		playButton = addButton(FlexUi.createButton(layout.play, new StringTextComponent("\u25B6"), b -> {
 			session.selectControl(LobbyControls.Type.PLAY);
@@ -123,12 +123,12 @@ public final class ManageLobbyScreen extends Screen {
 		}));
 
 		ITextComponent closeLobby = GameTexts.Ui.closeLobby()
-				.mergeStyle(TextFormatting.RED, TextFormatting.UNDERLINE);
+				.withStyle(TextFormatting.RED, TextFormatting.UNDERLINE);
 		closeButton = addButton(FlexUi.createButton(layout.close, closeLobby, b -> {
 			session.closeLobby();
-			closeScreen();
+			onClose();
 		}));
-		addButton(FlexUi.createButton(layout.done, DialogTexts.GUI_DONE, b -> closeScreen()));
+		addButton(FlexUi.createButton(layout.done, DialogTexts.GUI_DONE, b -> onClose()));
 
 		updateGameEntries();
 		updatePublishState();
@@ -137,12 +137,12 @@ public final class ManageLobbyScreen extends Screen {
 
 	// TODO: custom text field instance
 	@Override
-	public void setListener(@Nullable IGuiEventListener listener) {
-		IGuiEventListener lastListener = this.getListener();
+	public void setFocused(@Nullable IGuiEventListener listener) {
+		IGuiEventListener lastListener = this.getFocused();
 		if (lastListener != null && lastListener != listener) {
 			this.onLoseFocus(lastListener);
 		}
-		super.setListener(listener);
+		super.setFocused(listener);
 	}
 
 	private void onLoseFocus(IGuiEventListener listener) {
@@ -160,7 +160,7 @@ public final class ManageLobbyScreen extends Screen {
 
 	public void updateNameField() {
 		ClientLobbyManageState lobby = session.lobby();
-		nameField.setText(lobby.getName());
+		nameField.setValue(lobby.getName());
 	}
 
 	public void updateControlsState() {
@@ -191,15 +191,15 @@ public final class ManageLobbyScreen extends Screen {
 	}
 
 	@Override
-	public void onClose() {
-		super.onClose();
+	public void removed() {
+		super.removed();
 
 		session.close();
 		applyNameField();
 	}
 
 	private void applyNameField() {
-		String name = nameField.getText();
+		String name = nameField.getValue();
 		if (!name.equals(session.lobby().getName())) {
 			session.setName(name);
 		}
@@ -207,7 +207,7 @@ public final class ManageLobbyScreen extends Screen {
 
 	@Override
 	public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
-		int fontHeight = font.FONT_HEIGHT;
+		int fontHeight = font.lineHeight;
 
 		renderBackground(matrixStack, 0);
 
@@ -249,7 +249,7 @@ public final class ManageLobbyScreen extends Screen {
 		ITextComponent title = GameTexts.Ui.managingGame(game.definition());
 
 		Box header = layout.centerHeader.content();
-		drawCenteredString(matrixStack, font, title, header.centerX(), header.centerY() - font.FONT_HEIGHT / 2, 0xFFFFFF);
+		drawCenteredString(matrixStack, font, title, header.centerX(), header.centerY() - font.lineHeight / 2, 0xFFFFFF);
 	}
 
 	@Override

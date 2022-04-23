@@ -30,7 +30,7 @@ public final class PlotWalls {
 		for (Direction direction : directions) {
 			AxisAlignedBB plotFace = createWallBounds(bounds, direction);
 
-			int index = direction.getIndex();
+			int index = direction.get3DDataValue();
 			this.faces[index] = plotFace;
 			this.faceShapes[index] = VoxelShapes.create(plotFace);
 		}
@@ -38,29 +38,29 @@ public final class PlotWalls {
 
 	private AxisAlignedBB createWallBounds(AxisAlignedBB bounds, Direction direction) {
 		Direction.Axis axis = direction.getAxis();
-		double size = bounds.getMax(axis) - bounds.getMin(axis);
+		double size = bounds.max(axis) - bounds.min(axis);
 
 		// offset to the edge in this direction
-		Vector3d offset = Vector3d.copy(direction.getDirectionVec()).scale(size);
+		Vector3d offset = Vector3d.atLowerCornerOf(direction.getNormal()).scale(size);
 
 		// grow on every other axis to not create any holes
 		Vector3d grow = new Vector3d(
-				axis != Direction.Axis.X ? bounds.getXSize() : 0.0,
-				axis != Direction.Axis.Y ? bounds.getYSize() : 0.0,
-				axis != Direction.Axis.Z ? bounds.getZSize() : 0.0
+				axis != Direction.Axis.X ? bounds.getXsize() : 0.0,
+				axis != Direction.Axis.Y ? bounds.getYsize() : 0.0,
+				axis != Direction.Axis.Z ? bounds.getZsize() : 0.0
 		);
 
 		return bounds
-				.offset(offset)
-				.grow(grow.x, grow.y, grow.z);
+				.move(offset)
+				.inflate(grow.x, grow.y, grow.z);
 	}
 
 	public Vector3d collide(AxisAlignedBB box, Vector3d offset) {
-		if (offset.lengthSquared() == 0.0) {
+		if (offset.lengthSqr() == 0.0) {
 			return offset;
 		}
 
-		AxisAlignedBB collidingBox = box.expand(offset);
+		AxisAlignedBB collidingBox = box.expandTowards(offset);
 
 		// we're definitely not going to collide
 		if (!collidingBox.intersects(this.bounds)) {
@@ -68,7 +68,7 @@ public final class PlotWalls {
 		}
 
 		Stream<VoxelShape> collisions = this.collisions(collidingBox);
-		return Entity.collideBoundingBox(offset, box, new ReuseableStream<>(collisions));
+		return Entity.collideBoundingBoxLegacy(offset, box, new ReuseableStream<>(collisions));
 	}
 
 	public Stream<VoxelShape> collisions(AxisAlignedBB box) {
@@ -81,7 +81,7 @@ public final class PlotWalls {
 	}
 
 	public boolean containsEntity(Entity entity) {
-		return this.bounds.contains(entity.getPositionVec());
+		return this.bounds.contains(entity.position());
 	}
 
 	public boolean containsBlock(BlockPos pos) {

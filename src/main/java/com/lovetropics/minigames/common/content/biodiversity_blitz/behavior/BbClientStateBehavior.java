@@ -54,14 +54,14 @@ public final class BbClientStateBehavior implements IGameBehavior {
 	}
 
 	private void removePlayer(ServerPlayerEntity player) {
-		this.trackedCurrency.remove(player.getUniqueID());
+		this.trackedCurrency.remove(player.getUUID());
 
 		GameClientState.removeFromPlayer(BiodiversityBlitz.SELF_STATE.get(), player);
 		GameClientState.removeFromPlayer(BiodiversityBlitz.GLOBAL_STATE.get(), player);
 	}
 
 	private void updateState(ServerPlayerEntity player, Consumer<Currency> update) {
-		Currency currency = this.trackedCurrency.computeIfAbsent(player.getUniqueID(), uuid -> new Currency());
+		Currency currency = this.trackedCurrency.computeIfAbsent(player.getUUID(), uuid -> new Currency());
 		update.accept(currency);
 
 		GameClientState.sendToPlayer(

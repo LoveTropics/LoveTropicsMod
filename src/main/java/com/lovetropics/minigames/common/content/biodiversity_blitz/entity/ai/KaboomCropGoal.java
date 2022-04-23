@@ -23,7 +23,7 @@ public class KaboomCropGoal extends DestroyCropGoal {
     @Override
     protected void tryDamagePlant(MobEntity mob) {
         // Tell creeper to explode
-        this.mob.setCreeperState(1);
+        this.mob.setSwellDir(1);
     }
 
     @Override

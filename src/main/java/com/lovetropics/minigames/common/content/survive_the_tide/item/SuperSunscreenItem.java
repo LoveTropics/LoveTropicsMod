@@ -15,14 +15,14 @@ import java.util.List;
 
 public class SuperSunscreenItem extends Item {
     public SuperSunscreenItem(Properties properties) {
-        super(properties.maxDamage(180));
+        super(properties.durability(180));
     }
 
     @Override
     @OnlyIn(Dist.CLIENT)
-    public void addInformation(ItemStack stack, @Nullable World world, List<ITextComponent> tooltip, ITooltipFlag flag) {
-        tooltip.add(new StringTextComponent("Prevents heatwaves from slowing you down.").mergeStyle(TextFormatting.GOLD));
+    public void appendHoverText(ItemStack stack, @Nullable World world, List<ITextComponent> tooltip, ITooltipFlag flag) {
+        tooltip.add(new StringTextComponent("Prevents heatwaves from slowing you down.").withStyle(TextFormatting.GOLD));
         tooltip.add(new StringTextComponent(""));
-        tooltip.add(new StringTextComponent("Active when held in main hand or off-hand.").mergeStyle(TextFormatting.AQUA));
+        tooltip.add(new StringTextComponent("Active when held in main hand or off-hand.").withStyle(TextFormatting.AQUA));
     }
 }

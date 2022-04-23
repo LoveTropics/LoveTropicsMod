@@ -30,7 +30,7 @@ public final class BbGivePlantsBehavior implements IGameBehavior {
 			for (PlantConfig plant : this.plants) {
 				ItemStack stack = plant.create(game);
 				if (!stack.isEmpty()) {
-					player.addItemStackToInventory(stack);
+					player.addItem(stack);
 				}
 			}
 		});

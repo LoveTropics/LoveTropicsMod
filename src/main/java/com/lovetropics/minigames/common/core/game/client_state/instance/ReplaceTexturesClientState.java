@@ -39,7 +39,7 @@ public final class ReplaceTexturesClientState implements GameClientState {
 		HOTBAR("hotbar"),
 		BOSS_BARS("boss_bars");
 
-		public static final Codec<TextureType> CODEC = MoreCodecs.stringVariants(values(), TextureType::getString);
+		public static final Codec<TextureType> CODEC = MoreCodecs.stringVariants(values(), TextureType::getSerializedName);
 
 		private final String key;
 
@@ -48,7 +48,7 @@ public final class ReplaceTexturesClientState implements GameClientState {
 		}
 
 		@Override
-		public String getString() {
+		public String getSerializedName() {
 			return key;
 		}
 	}

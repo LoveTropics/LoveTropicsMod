@@ -53,7 +53,7 @@ public final class BbClientRenderEffects {
 
 	private static void renderOverlay(RenderGameOverlayEvent event, ClientBbSelfState selfState, CurrencyTargetState currencyTarget) {
 		MatrixStack matrixStack = event.getMatrixStack();
-		FontRenderer font = CLIENT.fontRenderer;
+		FontRenderer font = CLIENT.font;
 
 		final int left = PADDING;
 		final int top = PADDING;
@@ -68,10 +68,10 @@ public final class BbClientRenderEffects {
 			currency = TextFormatting.GRAY + "Total: " + TextFormatting.WHITE + currency + TextFormatting.GRAY + "/" + currencyTarget.getValue();
 		}
 
-		font.drawStringWithShadow(
+		font.drawShadow(
 				matrixStack, currency,
 				x + ITEM_SIZE + PADDING,
-				y + (ITEM_SIZE - font.FONT_HEIGHT) / 2,
+				y + (ITEM_SIZE - font.lineHeight) / 2,
 				0xFFFFFFFF
 		);
 		y += ITEM_SIZE + PADDING;
@@ -81,18 +81,18 @@ public final class BbClientRenderEffects {
 		TextFormatting incrementColor = gainingCurrency ? TextFormatting.AQUA : TextFormatting.RED;
 
 		String nextCurrencyIncrement = incrementColor + "+" + increment + TextFormatting.GRAY + " next drop";
-		font.drawStringWithShadow(matrixStack, nextCurrencyIncrement, x, y, 0xFFFFFFFF);
-		y += font.FONT_HEIGHT;
+		font.drawShadow(matrixStack, nextCurrencyIncrement, x, y, 0xFFFFFFFF);
+		y += font.lineHeight;
 
 		if (!gainingCurrency) {
-			font.drawStringWithShadow(matrixStack, TextFormatting.GRAY + "You must be in your plot to receive osas!", x, y, 0xFFFFFFFF);
+			font.drawShadow(matrixStack, TextFormatting.GRAY + "You must be in your plot to receive osas!", x, y, 0xFFFFFFFF);
 		}
 	}
 
 	private static void renderItem(MatrixStack matrixStack, ItemStack stack, int x, int y) {
 		RenderSystem.pushMatrix();
-		RenderSystem.multMatrix(matrixStack.getLast().getMatrix());
-		CLIENT.getItemRenderer().renderItemIntoGUI(stack, x, y);
+		RenderSystem.multMatrix(matrixStack.last().pose());
+		CLIENT.getItemRenderer().renderGuiItem(stack, x, y);
 		RenderSystem.popMatrix();
 	}
 
@@ -101,21 +101,21 @@ public final class BbClientRenderEffects {
 		Entity entity = event.getEntity();
 		if (entity instanceof PlayerEntity) {
 			ClientBbGlobalState globalState = ClientGameStateManager.getOrNull(BiodiversityBlitz.GLOBAL_STATE);
-			if (globalState != null && globalState.hasCurrencyFor(entity.getUniqueID())) {
-				int currency = globalState.getCurrencyFor(entity.getUniqueID());
+			if (globalState != null && globalState.hasCurrencyFor(entity.getUUID())) {
+				int currency = globalState.getCurrencyFor(entity.getUUID());
 				renderPlayerCurrency(event, entity, currency);
 			}
 		}
 	}
 
 	private static void renderPlayerCurrency(RenderNameplateEvent event, Entity entity, int currency) {
-		EntityRendererManager renderManager = event.getEntityRenderer().getRenderManager();
-		double distance2 = renderManager.squareDistanceTo(entity);
+		EntityRendererManager renderManager = event.getEntityRenderer().getDispatcher();
+		double distance2 = renderManager.distanceToSqr(entity);
 		if (!ForgeHooksClient.isNameplateInRenderDistance(entity, distance2) || entity.isDiscrete()) {
 			return;
 		}
 
-		if (entity == CLIENT.renderViewEntity || !Minecraft.isGuiEnabled()) {
+		if (entity == CLIENT.cameraEntity || !Minecraft.renderNames()) {
 			return;
 		}
 
@@ -128,30 +128,30 @@ public final class BbClientRenderEffects {
 		IRenderTypeBuffer buffer = event.getRenderTypeBuffer();
 		int packedLight = event.getPackedLight();
 
-		FontRenderer font = renderManager.getFontRenderer();
+		FontRenderer font = renderManager.getFont();
 		ItemRenderer items = CLIENT.getItemRenderer();
 
-		float left = -(font.getStringWidth(currencyText) * textScale + itemSize) / 2.0F;
+		float left = -(font.width(currencyText) * textScale + itemSize) / 2.0F;
 
-		matrixStack.push();
-		matrixStack.translate(0.0, entity.getHeight() + 0.75, 0.0);
-		matrixStack.rotate(renderManager.getCameraOrientation());
+		matrixStack.pushPose();
+		matrixStack.translate(0.0, entity.getBbHeight() + 0.75, 0.0);
+		matrixStack.mulPose(renderManager.cameraOrientation());
 		matrixStack.scale(0.0625F * textScale, 0.0625F * textScale, 0.0625F * textScale);
 
-		matrixStack.push();
+		matrixStack.pushPose();
 		matrixStack.scale(-1.0F, -1.0F, 1.0F);
 
 		float textX = (left + itemSize) * textScale;
-		float textY = -font.FONT_HEIGHT / 2.0F;
-		font.drawString(matrixStack, currencyText, textX, textY, 0xFFFFFFFF);
-		matrixStack.pop();
+		float textY = -font.lineHeight / 2.0F;
+		font.draw(matrixStack, currencyText, textX, textY, 0xFFFFFFFF);
+		matrixStack.popPose();
 
-		matrixStack.push();
+		matrixStack.pushPose();
 		matrixStack.translate(-left, 0.0F, 0.0F);
 		matrixStack.scale(-itemSize, itemSize, -itemSize);
-		items.renderItem(CURRENCY_ITEM.get(), ItemCameraTransforms.TransformType.GUI, packedLight, OverlayTexture.NO_OVERLAY, matrixStack, buffer);
-		matrixStack.pop();
+		items.renderStatic(CURRENCY_ITEM.get(), ItemCameraTransforms.TransformType.GUI, packedLight, OverlayTexture.NO_OVERLAY, matrixStack, buffer);
+		matrixStack.popPose();
 
-		matrixStack.pop();
+		matrixStack.popPose();
 	}
 }

@@ -29,7 +29,7 @@ public final class PlayerDisguiseBehavior {
 
 			if (disguise != null) {
 				Pose pose = event.getPose();
-				EntitySize size = disguise.getSize(pose);
+				EntitySize size = disguise.getDimensions(pose);
 
 				event.setNewSize(size);
 				event.setNewEyeHeight(disguise.getEyeHeightAccess(pose, size));
@@ -38,28 +38,28 @@ public final class PlayerDisguiseBehavior {
 	}
 
 	public static void applyAttributes(PlayerEntity player, LivingEntity disguise) {
-		AttributeModifierManager playerAttributes = player.getAttributeManager();
-		AttributeModifierManager disguiseAttributes = disguise.getAttributeManager();
+		AttributeModifierManager playerAttributes = player.getAttributes();
+		AttributeModifierManager disguiseAttributes = disguise.getAttributes();
 
 		for (Attribute attribute : Registry.ATTRIBUTE) {
-			if (!disguiseAttributes.hasAttributeInstance(attribute) || !playerAttributes.hasAttributeInstance(attribute)) {
+			if (!disguiseAttributes.hasAttribute(attribute) || !playerAttributes.hasAttribute(attribute)) {
 				continue;
 			}
 
-			ModifiableAttributeInstance playerInstance = playerAttributes.createInstanceIfAbsent(attribute);
-			ModifiableAttributeInstance disguiseInstance = disguiseAttributes.createInstanceIfAbsent(attribute);
+			ModifiableAttributeInstance playerInstance = playerAttributes.getInstance(attribute);
+			ModifiableAttributeInstance disguiseInstance = disguiseAttributes.getInstance(attribute);
 
 			AttributeModifier modifier = createModifier(playerInstance, disguiseInstance);
 			if (modifier != null) {
-				playerInstance.applyNonPersistentModifier(modifier);
+				playerInstance.addTransientModifier(modifier);
 			}
 		}
 	}
 
 	public static void clearAttributes(PlayerEntity player) {
-		AttributeModifierManager attributes = player.getAttributeManager();
+		AttributeModifierManager attributes = player.getAttributes();
 		for (Attribute attribute : Registry.ATTRIBUTE) {
-			ModifiableAttributeInstance instance = attributes.createInstanceIfAbsent(attribute);
+			ModifiableAttributeInstance instance = attributes.getInstance(attribute);
 			if (instance != null) {
 				instance.removeModifier(ATTRIBUTE_MODIFIER_UUID);
 			}

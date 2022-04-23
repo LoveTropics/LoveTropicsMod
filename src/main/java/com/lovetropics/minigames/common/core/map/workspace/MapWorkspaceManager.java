@@ -41,8 +41,8 @@ public final class MapWorkspaceManager extends WorldSavedData {
 	}
 
 	public static MapWorkspaceManager get(MinecraftServer server) {
-		ServerWorld overworld = server.func_241755_D_();
-		return overworld.getSavedData().getOrCreate(() -> new MapWorkspaceManager(server), ID);
+		ServerWorld overworld = server.overworld();
+		return overworld.getDataStorage().computeIfAbsent(() -> new MapWorkspaceManager(server), ID);
 	}
 
 	public CompletableFuture<MapWorkspace> openWorkspace(String id, WorkspaceDimensionConfig dimensionConfig) {
@@ -80,7 +80,7 @@ public final class MapWorkspaceManager extends WorldSavedData {
 
 	@Nullable
 	public MapWorkspace getWorkspace(RegistryKey<World> dimension) {
-		ResourceLocation name = dimension.getLocation();
+		ResourceLocation name = dimension.location();
 		if (!name.getNamespace().equals(Constants.MODID)) {
 			return null;
 		}
@@ -100,10 +100,10 @@ public final class MapWorkspaceManager extends WorldSavedData {
 	}
 
 	@Override
-	public CompoundNBT write(CompoundNBT root) {
+	public CompoundNBT save(CompoundNBT root) {
 		ListNBT workspaceList = new ListNBT();
 
-		WorldGenSettingsExport<INBT> ops = WorldGenSettingsExport.create(NBTDynamicOps.INSTANCE, this.server.getDynamicRegistries());
+		WorldGenSettingsExport<INBT> ops = WorldGenSettingsExport.create(NBTDynamicOps.INSTANCE, this.server.registryAccess());
 
 		for (Map.Entry<String, MapWorkspace> entry : this.workspaces.entrySet()) {
 			MapWorkspaceData data = entry.getValue().intoData();
@@ -117,7 +117,7 @@ public final class MapWorkspaceManager extends WorldSavedData {
 	}
 
 	@Override
-	public void read(CompoundNBT root) {
+	public void load(CompoundNBT root) {
 		this.workspaces.clear();
 
 		ListNBT workspaceList = root.getList("workspaces", NBT.TAG_COMPOUND);

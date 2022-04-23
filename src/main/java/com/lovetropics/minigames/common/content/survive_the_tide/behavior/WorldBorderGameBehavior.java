@@ -143,12 +143,12 @@ public class WorldBorderGameBehavior implements IGameBehavior {
 
 		for (float step = 0; step <= 360; step += stepAmount) {
 			for (int yStep = yMin; yStep < particleHeight; yStep += yStepAmount) {
-				if (world.rand.nextInt(randSpawn/*yMax - yMin*/) == 0) {
+				if (world.random.nextInt(randSpawn/*yMax - yMin*/) == 0) {
 					float xVec = (float) -Math.sin(Math.toRadians(step)) * currentRadius;
 					float zVec = (float) Math.cos(Math.toRadians(step)) * currentRadius;
 					//world.addParticle(borderParticle, worldBorderCenter.getX() + xVec, worldBorderCenter.getY() + yStep, worldBorderCenter.getZ() + zVec, 0, 0, 0);
 					//IParticleData data = ForgeRegistries.PARTICLE_TYPES.getValue(new ResourceLocation("heart"));
-					world.spawnParticle(borderParticle, worldBorderCenter.getX() + xVec, worldBorderCenter.getY() + yStep, worldBorderCenter
+					world.sendParticles(borderParticle, worldBorderCenter.getX() + xVec, worldBorderCenter.getY() + yStep, worldBorderCenter
 							.getZ() + zVec, 1, 0, 0, 0, 1D);
 				}
 			}
@@ -160,10 +160,10 @@ public class WorldBorderGameBehavior implements IGameBehavior {
 	private void tickPlayerDamage(IGamePhase game, boolean isCollapsing, float currentRadius) {
 		for (ServerPlayerEntity player : game.getParticipants()) {
 			//ignore Y val, only do X Z dist compare
-			double distanceSq = player.getDistanceSq(worldBorderCenter.getX(), player.getPosY(), worldBorderCenter.getZ());
+			double distanceSq = player.distanceToSqr(worldBorderCenter.getX(), player.getY(), worldBorderCenter.getZ());
 			if (isCollapsing || !(currentRadius < 0.0 || distanceSq < currentRadius * currentRadius)) {
-				player.attackEntityFrom(DamageSource.causeExplosionDamage((LivingEntity) null), damageAmount);
-				player.addPotionEffect(new EffectInstance(Effects.NAUSEA, 40, 0));
+				player.hurt(DamageSource.explosion((LivingEntity) null), damageAmount);
+				player.addEffect(new EffectInstance(Effects.CONFUSION, 40, 0));
 			}
 
 			//add boss bar info to everyone in dim if not already registered for it

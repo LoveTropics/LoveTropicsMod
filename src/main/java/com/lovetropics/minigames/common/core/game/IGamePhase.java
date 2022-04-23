@@ -111,7 +111,7 @@ public interface IGamePhase extends IGame {
 	 * @return the dimension that this game takes places within
 	 */
 	default RegistryKey<World> getDimension() {
-		return getWorld().getDimensionKey();
+		return getWorld().dimension();
 	}
 
 	MapRegions getMapRegions();

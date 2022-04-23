@@ -56,8 +56,8 @@ public final class FlamingPlantBehavior implements IGameBehavior {
         Set<MobEntity> seen = new HashSet<>();
 
         for (Plant plant : plants) {
-            AxisAlignedBB flameBounds = plant.coverage().asBounds().grow(this.radius);
-            List<MobEntity> entities = world.getEntitiesWithinAABB(MobEntity.class, flameBounds, BbMobEntity.PREDICATE);
+            AxisAlignedBB flameBounds = plant.coverage().asBounds().inflate(this.radius);
+            List<MobEntity> entities = world.getEntitiesOfClass(MobEntity.class, flameBounds, BbMobEntity.PREDICATE);
 
             int count = random.nextInt(3);
             if (!entities.isEmpty()) {
@@ -67,23 +67,23 @@ public final class FlamingPlantBehavior implements IGameBehavior {
                         seen.add(entity);
 
                         // In plant
-                        if (entity.getPosition() == plant.coverage().getOrigin()) {
-                            entity.setFire(6);
+                        if (entity.blockPosition() == plant.coverage().getOrigin()) {
+                            entity.setSecondsOnFire(6);
 
                             if (random.nextInt(3) == 0) {
-                                entity.attackEntityFrom(DamageSource.IN_FIRE, 1 + random.nextInt(3));
+                                entity.hurt(DamageSource.IN_FIRE, 1 + random.nextInt(3));
                             }
                         } else {
-                            entity.setFire(3);
+                            entity.setSecondsOnFire(3);
 
                             if (random.nextInt(3) == 0) {
-                                entity.attackEntityFrom(DamageSource.IN_FIRE, 1 + random.nextInt(2));
+                                entity.hurt(DamageSource.IN_FIRE, 1 + random.nextInt(2));
                             }
                         }
 
                         AxisAlignedBB aabb = entity.getBoundingBox();
 
-                        Vector3d positionVec = entity.getPositionVec();
+                        Vector3d positionVec = entity.position();
                         // Needs to target the middle of the entity position vector
                         Vector3d scaledVec = new Vector3d(positionVec.x, (aabb.minY + aabb.maxY) / 2.0, positionVec.z);
 
@@ -103,7 +103,7 @@ public final class FlamingPlantBehavior implements IGameBehavior {
                     double d1 = random.nextGaussian() * 0.1;
                     double d2 = random.nextGaussian() * 0.02;
 
-                    world.spawnParticle(ParticleTypes.FLAME, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, 1 + random.nextInt(2), d3, d1, d2, 0.002 + random.nextDouble() * random.nextDouble() * 0.025);
+                    world.sendParticles(ParticleTypes.FLAME, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, 1 + random.nextInt(2), d3, d1, d2, 0.002 + random.nextDouble() * random.nextDouble() * 0.025);
                 }
             }
         }

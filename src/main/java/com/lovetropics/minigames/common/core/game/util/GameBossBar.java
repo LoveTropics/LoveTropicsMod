@@ -10,9 +10,9 @@ public final class GameBossBar implements GameWidget {
 
 	public GameBossBar(ITextComponent title, BossInfo.Color color, BossInfo.Overlay overlay) {
 		this.bar = new ServerBossInfo(title, color, overlay);
-		this.bar.setDarkenSky(false);
-		this.bar.setCreateFog(false);
-		this.bar.setPlayEndBossMusic(false);
+		this.bar.setDarkenScreen(false);
+		this.bar.setCreateWorldFog(false);
+		this.bar.setPlayBossMusic(false);
 	}
 
 	public void setTitle(ITextComponent title) {

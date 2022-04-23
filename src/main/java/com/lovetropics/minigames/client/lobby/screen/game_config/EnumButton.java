@@ -1,7 +1,6 @@
 package com.lovetropics.minigames.client.lobby.screen.game_config;
 
 import com.lovetropics.minigames.client.screen.flex.Layout;
-
 import net.minecraft.client.gui.widget.button.Button;
 import net.minecraft.util.text.StringTextComponent;
 
@@ -11,7 +10,7 @@ public class EnumButton<E extends Enum<E>> extends Button {
 
 	public EnumButton(Layout layout, E def) {
 		super(layout.content().left(), layout.content().top(), layout.content().width(), layout.content().height(),
-				new StringTextComponent(def.name()), EnumButton::toggle, EMPTY_TOOLTIP);
+				new StringTextComponent(def.name()), EnumButton::toggle, NO_TOOLTIP);
 		this.value = def;
 	}
 

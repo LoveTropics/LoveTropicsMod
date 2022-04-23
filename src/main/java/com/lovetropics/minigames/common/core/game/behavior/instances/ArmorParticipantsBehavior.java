@@ -8,7 +8,6 @@ import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvent
 import com.lovetropics.minigames.common.core.game.player.PlayerRole;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-
 import net.minecraft.inventory.EquipmentSlotType;
 import net.minecraft.item.ItemStack;
 
@@ -35,10 +34,10 @@ public class ArmorParticipantsBehavior implements IGameBehavior {
 	public void register(IGamePhase game, EventRegistrar events) {
 		events.listen(GamePlayerEvents.SET_ROLE, (player, role, lastRole) -> {
 			if (role == PlayerRole.PARTICIPANT) {
-				player.setItemStackToSlot(EquipmentSlotType.HEAD, head);
-				player.setItemStackToSlot(EquipmentSlotType.CHEST, chest);
-				player.setItemStackToSlot(EquipmentSlotType.LEGS, legs);
-				player.setItemStackToSlot(EquipmentSlotType.FEET, feet);
+				player.setItemSlot(EquipmentSlotType.HEAD, head);
+				player.setItemSlot(EquipmentSlotType.CHEST, chest);
+				player.setItemSlot(EquipmentSlotType.LEGS, legs);
+				player.setItemSlot(EquipmentSlotType.FEET, feet);
 			}
 		});
 	}

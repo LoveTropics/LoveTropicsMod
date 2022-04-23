@@ -58,7 +58,7 @@ public final class SpectatingUi {
 
 		double delta = event.getScrollDelta();
 
-		boolean zoom = InputMappings.isKeyDown(CLIENT.getMainWindow().getHandle(), GLFW.GLFW_KEY_LEFT_CONTROL);
+		boolean zoom = InputMappings.isKeyDown(CLIENT.getWindow().getWindow(), GLFW.GLFW_KEY_LEFT_CONTROL);
 		if (zoom) {
 			session.ui.onScrollZoom(delta);
 		} else {
@@ -150,7 +150,7 @@ public final class SpectatingUi {
 
 		int listHeight = entries.size() * ENTRY_SIZE;
 
-		int minY = (window.getScaledHeight() - listHeight) / 2;
+		int minY = (window.getGuiScaledHeight() - listHeight) / 2;
 
 		int x = ENTRY_PADDING;
 		int y = minY;
@@ -167,7 +167,7 @@ public final class SpectatingUi {
 		RenderSystem.enableTexture();
 
 		if (highlighting) {
-			CLIENT.fontRenderer.drawStringWithShadow(transform, "Click or press ENTER to select", x, minY - CLIENT.fontRenderer.FONT_HEIGHT - 2, 0xFFFFFFFF);
+			CLIENT.font.drawShadow(transform, "Click or press ENTER to select", x, minY - CLIENT.font.lineHeight - 2, 0xFFFFFFFF);
 		}
 
 		for (Entry entry : entries) {
@@ -219,7 +219,7 @@ public final class SpectatingUi {
 
 	List<Entry> createEntriesFor(List<UUID> players) {
 		List<Entry> entries = new ArrayList<>(players.size() + 1);
-		entries.add(new Entry(CLIENT.player.getUniqueID(), s -> "Free Camera", TextFormatting.RESET, SpectatingState.FREE_CAMERA));
+		entries.add(new Entry(CLIENT.player.getUUID(), s -> "Free Camera", TextFormatting.RESET, SpectatingState.FREE_CAMERA));
 
 		List<UUID> sortedPlayers = new ArrayList<>(players);
 		sortedPlayers.sort(Comparator.comparing(player -> {
@@ -244,12 +244,12 @@ public final class SpectatingUi {
 
 	@Nullable
 	private static ScorePlayerTeam getTeamFor(UUID playerId) {
-		ClientWorld world = CLIENT.world;
+		ClientWorld world = CLIENT.level;
 		if (world == null) {
 			return null;
 		}
 
-		PlayerEntity player = world.getPlayerByUuid(playerId);
+		PlayerEntity player = world.getPlayerByUUID(playerId);
 		if (player != null) {
 			return world.getScoreboard().getPlayersTeam(player.getScoreboardName());
 		} else {
@@ -279,12 +279,12 @@ public final class SpectatingUi {
 			PlayerFaces.render(playerIcon, transform, x, y, 12);
 
 			String name = nameFunction.apply(session);
-			CLIENT.fontRenderer.drawString(transform, name, x + ENTRY_SIZE, y + ENTRY_PADDING, color);
+			CLIENT.font.draw(transform, name, x + ENTRY_SIZE, y + ENTRY_PADDING, color);
 		}
 
 		int getWidth(SpectatingSession session) {
 			String name = nameFunction.apply(session);
-			return ENTRY_SIZE + CLIENT.fontRenderer.getStringWidth(name);
+			return ENTRY_SIZE + CLIENT.font.width(name);
 		}
 	}
 }

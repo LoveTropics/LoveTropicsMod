@@ -35,22 +35,22 @@ interface SpectatingState {
 
 		@Override
 		public StateApplicator apply(Minecraft client, SpectatingSession session) {
-			client.gameSettings.smoothCamera = false;
-			client.gameSettings.setPointOfView(PointOfView.FIRST_PERSON);
+			client.options.smoothCamera = false;
+			client.options.setCameraType(PointOfView.FIRST_PERSON);
 
 			return new StateApplicator(
-					() -> LoveTropicsNetwork.CHANNEL.sendToServer(new SpectatePlayerAndTeleportMessage(client.player.getUniqueID())),
-					() -> client.getRenderViewEntity() == client.player
+					() -> LoveTropicsNetwork.CHANNEL.sendToServer(new SpectatePlayerAndTeleportMessage(client.player.getUUID())),
+					() -> client.getCameraEntity() == client.player
 			);
 		}
 
 		@Override
 		public SpectatingState tick(Minecraft client, SpectatingSession session, ClientPlayerEntity player) {
 			// force player to maximum flying speed
-			player.abilities.setFlySpeed(0.2F);
+			player.abilities.setFlyingSpeed(0.2F);
 
-			if (client.getRenderViewEntity() != player) {
-				return new SelectedPlayer(client.getRenderViewEntity().getUniqueID());
+			if (client.getCameraEntity() != player) {
+				return new SelectedPlayer(client.getCameraEntity().getUUID());
 			}
 
 			return this;
@@ -68,21 +68,21 @@ interface SpectatingState {
 		public StateApplicator apply(Minecraft client, SpectatingSession session) {
 			return new StateApplicator(
 					() -> LoveTropicsNetwork.CHANNEL.sendToServer(new SpectatePlayerAndTeleportMessage(spectatedId)),
-					() -> spectatedId.equals(client.getRenderViewEntity().getUniqueID())
+					() -> spectatedId.equals(client.getCameraEntity().getUUID())
 			);
 		}
 
 		@Override
 		public SpectatingState tick(Minecraft client, SpectatingSession session, ClientPlayerEntity player) {
-			if (player.world.getGameTime() % 10 == 0) {
+			if (player.level.getGameTime() % 10 == 0) {
 				// we need to send position updates to the server or we won't properly track chunks
-				PlayerEntity spectatedPlayer = player.world.getPlayerByUuid(spectatedId);
+				PlayerEntity spectatedPlayer = player.level.getPlayerByUUID(spectatedId);
 				if (spectatedPlayer != null) {
-					player.setPosition(spectatedPlayer.getPosX(), spectatedPlayer.getPosY(), spectatedPlayer.getPosZ());
+					player.setPos(spectatedPlayer.getX(), spectatedPlayer.getY(), spectatedPlayer.getZ());
 				}
 			}
 
-			if (!spectatedId.equals(client.getRenderViewEntity().getUniqueID())) {
+			if (!spectatedId.equals(client.getCameraEntity().getUUID())) {
 				return SpectatingState.FREE_CAMERA;
 			}
 
@@ -91,47 +91,47 @@ interface SpectatingState {
 
 		@Override
 		public void renderTick(Minecraft client, SpectatingSession session, ClientPlayerEntity player) {
-			Entity focusEntity = client.getRenderViewEntity();
+			Entity focusEntity = client.getCameraEntity();
 			focusEntity = focusEntity != null ? focusEntity : player;
 
 			boolean firstPerson = session.zoom <= 1e-2;
 
 			if (!firstPerson) {
-				client.gameSettings.smoothCamera = true;
-				client.gameSettings.setPointOfView(PointOfView.THIRD_PERSON_BACK);
+				client.options.smoothCamera = true;
+				client.options.setCameraType(PointOfView.THIRD_PERSON_BACK);
 			} else {
-				client.gameSettings.smoothCamera = false;
-				client.gameSettings.setPointOfView(PointOfView.FIRST_PERSON);
+				client.options.smoothCamera = false;
+				client.options.setCameraType(PointOfView.FIRST_PERSON);
 
-				player.rotationYaw = focusEntity.rotationYaw;
-				player.rotationPitch = focusEntity.rotationPitch;
+				player.yRot = focusEntity.yRot;
+				player.xRot = focusEntity.xRot;
 			}
 		}
 
 		@Override
 		public void applyToCamera(Minecraft client, SpectatingSession session, ClientPlayerEntity player, ActiveRenderInfo camera, float partialTicks, EntityViewRenderEvent.CameraSetup event) {
-			Entity focusEntity = client.getRenderViewEntity();
+			Entity focusEntity = client.getCameraEntity();
 			focusEntity = focusEntity != null ? focusEntity : player;
 
 			double zoom = session.getZoom(partialTicks);
 			boolean firstPerson = zoom <= 1e-2;
 
 			if (!firstPerson) {
-				float yaw = player.getYaw(partialTicks);
-				float pitch = player.getPitch(partialTicks);
+				float yaw = player.getViewYRot(partialTicks);
+				float pitch = player.getViewXRot(partialTicks);
 
 				event.setYaw(yaw);
 				event.setPitch(pitch);
-				camera.setDirection(yaw, pitch);
+				camera.setRotation(yaw, pitch);
 
 				camera.setPosition(
-						MathHelper.lerp(partialTicks, focusEntity.prevPosX, focusEntity.getPosX()),
-						MathHelper.lerp(partialTicks, focusEntity.prevPosY, focusEntity.getPosY()) + focusEntity.getEyeHeight(),
-						MathHelper.lerp(partialTicks, focusEntity.prevPosZ, focusEntity.getPosZ())
+						MathHelper.lerp(partialTicks, focusEntity.xo, focusEntity.getX()),
+						MathHelper.lerp(partialTicks, focusEntity.yo, focusEntity.getY()) + focusEntity.getEyeHeight(),
+						MathHelper.lerp(partialTicks, focusEntity.zo, focusEntity.getZ())
 				);
 
 				double distance = zoom * ClientSpectatingManager.MAX_CHASE_DISTANCE;
-				camera.movePosition(-camera.calcCameraDistance(distance), 0.0, 0.0);
+				camera.move(-camera.getMaxZoom(distance), 0.0, 0.0);
 			}
 		}
 
@@ -162,7 +162,7 @@ interface SpectatingState {
 		}
 
 		boolean tryApply(Minecraft client) {
-			long time = client.world.getGameTime();
+			long time = client.level.getGameTime();
 			if (time - lastApplyTime >= APPLY_INTERVAL) {
 				apply.run();
 				lastApplyTime = time;

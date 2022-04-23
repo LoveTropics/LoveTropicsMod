@@ -71,10 +71,10 @@ public final class DriftwoodRider implements ICapabilityProvider {
 			this.ridingDriftwood = null;
 		}
 
-		if (player.isUser()) {
-			double deltaX = ridingDriftwood.getPosX() - ridingDriftwood.prevPosX;
-			double deltaZ = ridingDriftwood.getPosZ() - ridingDriftwood.prevPosZ;
-			double deltaY = Math.max(ridingDriftwood.getPosY() - ridingDriftwood.prevPosY, 0.0);
+		if (player.isLocalPlayer()) {
+			double deltaX = ridingDriftwood.getX() - ridingDriftwood.xo;
+			double deltaZ = ridingDriftwood.getZ() - ridingDriftwood.zo;
+			double deltaY = Math.max(ridingDriftwood.getY() - ridingDriftwood.yo, 0.0);
 			move(deltaX, deltaY, deltaZ);
 		}
 	}
@@ -84,12 +84,12 @@ public final class DriftwoodRider implements ICapabilityProvider {
 			return;
 		}
 
-		Vector3d motion = player.getMotion();
+		Vector3d motion = player.getDeltaMovement();
 		boolean onGround = player.isOnGround();
 
 		player.move(MoverType.SELF, new Vector3d(deltaX, deltaY, deltaZ));
 
-		player.setMotion(motion);
+		player.setDeltaMovement(motion);
 		player.setOnGround(onGround);
 	}
 
