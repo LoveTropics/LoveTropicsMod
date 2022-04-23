@@ -8,12 +8,13 @@ import com.lovetropics.minigames.common.core.game.behavior.event.GameLogicEvents
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.LightningBolt;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LightningBolt;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.levelgen.Heightmap;
+import net.minecraft.world.phys.Vec3;
 
 public class SttWinLogicBehavior implements IGameBehavior {
 	public static final Codec<SttWinLogicBehavior> CODEC = RecordCodecBuilder.create(instance -> {
@@ -60,8 +61,8 @@ public class SttWinLogicBehavior implements IGameBehavior {
 
 				int posY = world.getHeight(Heightmap.Types.MOTION_BLOCKING, posX, posZ);
 
-				LightningBolt lightning = new LightningBolt(EntityType.LIGHTNING_BOLT, world);
-				lightning.setPosAndOldPos(posX, posY, posZ);
+				LightningBolt lightning = EntityType.LIGHTNING_BOLT.create(world);
+				lightning.moveTo(new Vec3(posX + 0.5, posY, posZ + 0.5));
 				lightning.setVisualOnly(true);
 
 				world.addFreshEntity(lightning);

@@ -5,13 +5,13 @@ import com.lovetropics.minigames.common.core.network.LoveTropicsNetwork;
 import com.lovetropics.minigames.common.core.network.SetGameClientStateMessage;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.network.PacketDistributor;
+import net.minecraftforge.network.PacketDistributor;
 
 import java.util.Map;
 import java.util.Set;
@@ -21,14 +21,14 @@ import java.util.UUID;
 public final class GameClientStateSender {
 	private static final GameClientStateSender INSTANCE = new GameClientStateSender();
 
-	private final Map<UUID, Player> players = new Object2ObjectOpenHashMap<>();
+	private final Map<UUID, PlayerEntry> players = new Object2ObjectOpenHashMap<>();
 
 	public static GameClientStateSender get() {
 		return INSTANCE;
 	}
 
-	public Player byPlayer(ServerPlayer player) {
-		return this.players.computeIfAbsent(player.getUUID(), id -> new Player());
+	public PlayerEntry byPlayer(ServerPlayer player) {
+		return this.players.computeIfAbsent(player.getUUID(), id -> new PlayerEntry());
 	}
 
 	@SubscribeEvent
@@ -45,7 +45,7 @@ public final class GameClientStateSender {
 		INSTANCE.players.remove(player.getUUID());
 	}
 
-	public static final class Player {
+	public static final class PlayerEntry {
 		private final Map<GameClientStateType<?>, GameClientState> setQueue = new Object2ObjectOpenHashMap<>();
 		private final Set<GameClientStateType<?>> removeQueue = new ObjectOpenHashSet<>();
 

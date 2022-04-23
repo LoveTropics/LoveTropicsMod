@@ -4,13 +4,14 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import com.lovetropics.lib.codec.CodecRegistry;
 import com.lovetropics.minigames.Constants;
-import com.lovetropics.minigames.common.util.DynamicRegistryReadingOps;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.JsonOps;
-import net.minecraft.server.packs.resources.Resource;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.resources.Resource;
 import net.minecraftforge.event.AddReloadListenerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -38,7 +39,7 @@ public final class GameConfigs {
 			CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
 				REGISTRY.clear();
 
-				DynamicOps<JsonElement> ops = DynamicRegistryReadingOps.create(resourceManager, JsonOps.INSTANCE);
+				DynamicOps<JsonElement> ops = RegistryOps.createAndLoad(JsonOps.INSTANCE, RegistryAccess.builtinCopy(), resourceManager);
 
 				BehaviorReferenceReader behaviorReader = new BehaviorReferenceReader(resourceManager);
 

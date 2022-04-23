@@ -1,17 +1,16 @@
 package com.lovetropics.minigames.common.content.biodiversity_blitz.merchant;
 
-import net.minecraft.world.item.trading.Merchant;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.inventory.MerchantMenu;
-import net.minecraft.world.SimpleMenuProvider;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.trading.MerchantOffer;
-import net.minecraft.world.item.trading.MerchantOffers;
+import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.network.chat.Component;
-import net.minecraft.world.level.Level;
+import net.minecraft.world.SimpleMenuProvider;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.MerchantMenu;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.trading.Merchant;
+import net.minecraft.world.item.trading.MerchantOffer;
+import net.minecraft.world.item.trading.MerchantOffers;
 
 import javax.annotation.Nullable;
 import java.util.OptionalInt;
@@ -57,11 +56,6 @@ public final class BbMerchant implements Merchant {
     }
 
     @Override
-    public Level getLevel() {
-        return this.customer.level;
-    }
-
-    @Override
     public int getVillagerXp() {
         return 0;
     }
@@ -90,6 +84,11 @@ public final class BbMerchant implements Merchant {
                 player.sendMerchantOffers(container.getAsInt(), offers, level, this.getVillagerXp(), this.showProgressBar(), this.canRestock());
             }
         }
+    }
+
+    @Override
+    public boolean isClientSide() {
+        return customer.level.isClientSide();
     }
 
     private MerchantMenu createContainer(int id, Inventory playerInventory, Player player) {

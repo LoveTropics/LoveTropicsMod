@@ -16,23 +16,23 @@ import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobSpawnType;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.trading.MerchantOffer;
 import net.minecraft.world.item.trading.MerchantOffers;
-import net.minecraft.world.InteractionResult;
-import net.minecraft.core.Direction;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.core.BlockPos;
 import net.minecraft.world.phys.Vec3;
-import net.minecraft.core.Registry;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextComponent;
-import net.minecraft.server.level.ServerLevel;
+import net.minecraftforge.registries.ForgeRegistries;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -44,7 +44,7 @@ public final class BbMerchantBehavior implements IGameBehavior {
 	public static final Codec<BbMerchantBehavior> CODEC = RecordCodecBuilder.create(instance -> {
 		return instance.group(
 				Codec.STRING.fieldOf("plot_region").forGetter(c -> c.plotRegion),
-				Registry.ENTITY_TYPE.fieldOf("entity").forGetter(c -> c.entity),
+				ForgeRegistries.ENTITIES.getCodec().fieldOf("entity").forGetter(c -> c.entity),
 				MoreCodecs.TEXT.optionalFieldOf("name", TextComponent.EMPTY).forGetter(c -> c.name),
 				Offer.CODEC.listOf().fieldOf("offers").forGetter(c -> c.offers)
 		).apply(instance, BbMerchantBehavior::new);
@@ -80,7 +80,7 @@ public final class BbMerchantBehavior implements IGameBehavior {
 		BlockBox region = plot.regionByName(this.plotRegion);
 		if (region == null) return;
 
-		Vec3 center = region.getCenter();
+		Vec3 center = region.center();
 
 		Entity merchant = this.createMerchant(world);
 		if (merchant == null) return;
@@ -91,7 +91,7 @@ public final class BbMerchantBehavior implements IGameBehavior {
 		merchant.moveTo(center.x(), center.y() - 0.5, center.z(), yaw, 0);
 		merchant.setYHeadRot(yaw);
 
-		world.getChunk(region.getCenterBlock());
+		world.getChunk(region.centerBlock());
 		world.addFreshEntity(merchant);
 
 		if (merchant instanceof Mob) {

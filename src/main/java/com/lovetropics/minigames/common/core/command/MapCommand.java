@@ -18,35 +18,30 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
+import net.minecraft.ChatFormatting;
+import net.minecraft.Util;
 import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.commands.arguments.coordinates.BlockPosArgument;
 import net.minecraft.commands.arguments.ResourceLocationArgument;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.server.MinecraftServer;
+import net.minecraft.commands.arguments.coordinates.BlockPosArgument;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.*;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.Util;
-import net.minecraft.core.BlockPos;
-import net.minecraft.world.phys.Vec3;
-import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextComponent;
-import net.minecraft.ChatFormatting;
-import net.minecraft.network.chat.ClickEvent;
-import net.minecraft.network.chat.HoverEvent;
-import net.minecraft.world.level.dimension.LevelStem;
-import net.minecraft.world.level.Level;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.dimension.LevelStem;
 import net.minecraft.world.level.storage.LevelStorageSource;
+import net.minecraft.world.phys.Vec3;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.concurrent.CompletableFuture;
 
-import static net.minecraft.command.Commands.argument;
-import staticnet.minecraft.commands.Commandss.literal;
+import static net.minecraft.commands.Commands.argument;
+import static net.minecraft.commands.Commands.literal;
 
 public final class MapCommand {
 	private static final DynamicCommandExceptionType WORKSPACE_ALREADY_EXISTS = new DynamicCommandExceptionType(o -> {
@@ -130,7 +125,7 @@ public final class MapCommand {
 		}
 
 		long seed = server.overworld().getSeed();
-		WorkspaceDimensionConfig dimensionConfig = new WorkspaceDimensionConfig(dimension.typeSupplier(), dimension.generator(), seed);
+		WorkspaceDimensionConfig dimensionConfig = new WorkspaceDimensionConfig(dimension.typeHolder(), dimension.generator(), seed);
 
 		workspaceManager.openWorkspace(id, dimensionConfig).thenAcceptAsync(workspace -> {
 			MutableComponent message = new TextComponent("Opened workspace with id '" + id + "'. ").withStyle(ChatFormatting.AQUA);
@@ -188,8 +183,8 @@ public final class MapCommand {
 			DimensionUtils.teleportPlayerNoPortal(player, dimension, world.getSharedSpawnPos());
 		}
 
-		if (player.abilities.mayfly) {
-			player.abilities.flying = true;
+		if (player.getAbilities().mayfly) {
+			player.getAbilities().flying = true;
 			player.onUpdateAbilities();
 		}
 
@@ -200,8 +195,8 @@ public final class MapCommand {
 		MapWorkspace workspace = getCurrentWorkspace(context);
 
 		String key = StringArgumentType.getString(context, "key");
-		BlockPos min = BlockPosArgument.getOrLoadBlockPos(context, "min");
-		BlockPos max = BlockPosArgument.getOrLoadBlockPos(context, "max");
+		BlockPos min = BlockPosArgument.getSpawnablePos(context, "min");
+		BlockPos max = BlockPosArgument.getSpawnablePos(context, "max");
 
 		workspace.getRegions().add(key, BlockBox.of(min, max));
 
@@ -237,7 +232,7 @@ public final class MapCommand {
 
 		saveAll.thenRunAsync(() -> {
 			LevelStorageSource.LevelStorageAccess save = server.storageSource;
-			File dimensionDirectory = save.getDimensionPath(workspace.getDimension());
+			Path dimensionDirectory = save.getDimensionPath(workspace.getDimension());
 
 			ResourceLocation id = new ResourceLocation(Constants.MODID, workspace.getId());
 			Path exportPath = MapExportWriter.pathFor(id);
@@ -248,7 +243,7 @@ public final class MapCommand {
 				try (MapExportWriter writer = MapExportWriter.open(exportPath)) {
 					MapRegions regions = workspace.getRegions().compile();
 					writer.writeMetadata(new MapMetadata(id, workspace.getWorldSettings(), regions));
-					writer.writeWorldData(dimensionDirectory.toPath());
+					writer.writeWorldData(dimensionDirectory);
 
 					source.sendSuccess(new TextComponent("Successfully exported map!"), false);
 				}
@@ -293,7 +288,7 @@ public final class MapCommand {
 		}
 
 		long seed = source.getServer().overworld().getSeed();
-		WorkspaceDimensionConfig dimensionConfig = new WorkspaceDimensionConfig(dimension.typeSupplier(), dimension.generator(), seed);
+		WorkspaceDimensionConfig dimensionConfig = new WorkspaceDimensionConfig(dimension.typeHolder(), dimension.generator(), seed);
 
 		workspaceManager.openWorkspace(id, dimensionConfig).thenAcceptAsync(workspace -> {
 			try {

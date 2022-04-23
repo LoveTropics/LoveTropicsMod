@@ -1,6 +1,7 @@
 package com.lovetropics.minigames.common.content.survive_the_tide.entity;
 
 import com.lovetropics.minigames.LoveTropics;
+import net.minecraft.nbt.Tag;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MoverType;
@@ -20,8 +21,7 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.common.util.Constants;
-import net.minecraftforge.fml.network.NetworkHooks;
+import net.minecraftforge.network.NetworkHooks;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -58,8 +58,8 @@ public final class DriftwoodEntity extends Entity {
 	}
 
 	@Override
-	protected boolean isMovementNoisy() {
-		return false;
+	protected Entity.MovementEmission getMovementEmission() {
+		return Entity.MovementEmission.NONE;
 	}
 
 	@Override
@@ -69,7 +69,7 @@ public final class DriftwoodEntity extends Entity {
 
 	@Override
 	public boolean isPickable() {
-		return !this.removed;
+		return !this.isRemoved();
 	}
 
 	@Override
@@ -114,7 +114,7 @@ public final class DriftwoodEntity extends Entity {
 		}
 
 		for (Player player : riders) {
-			player.getCapability(LoveTropics.driftwoodRiderCap()).ifPresent(rider -> {
+			player.getCapability(LoveTropics.DRIFTWOOD_RIDER).ifPresent(rider -> {
 				rider.setRiding(this);
 			});
 		}
@@ -143,7 +143,7 @@ public final class DriftwoodEntity extends Entity {
 				}
 
 				if (steerDirection != null) {
-					yRot += (steerYaw - yRot) * 0.25;
+					setYRot(getYRot() + (steerYaw - getYRot()) * 0.25f);
 					motion = motion.add(steerDirection.x * 0.008, 0.0, steerDirection.z * 0.008);
 				}
 			} else {
@@ -178,8 +178,8 @@ public final class DriftwoodEntity extends Entity {
 		);
 
 		setRot(
-				(float) (yRot + Mth.wrapDegrees(lerpYaw - yRot) / lerpTicks),
-				(float) (xRot + (lerpPitch - xRot) / lerpTicks)
+				(float) (getYRot() + Mth.wrapDegrees(lerpYaw - getYRot()) / lerpTicks),
+				(float) (getXRot() + (lerpPitch - getXRot()) / lerpTicks)
 		);
 	}
 
@@ -259,7 +259,7 @@ public final class DriftwoodEntity extends Entity {
 
 	@Override
 	protected void readAdditionalSaveData(CompoundTag compound) {
-		if (compound.contains("float_depth", Constants.NBT.TAG_FLOAT)) {
+		if (compound.contains("float_depth", Tag.TAG_FLOAT)) {
 			setFloatDepth(compound.getFloat("float_depth"));
 		}
 	}

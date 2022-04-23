@@ -5,10 +5,12 @@ import com.lovetropics.minigames.client.screen.flex.Layout;
 import com.mojang.blaze3d.vertex.PoseStack;
 
 import net.minecraft.client.gui.components.events.GuiEventListener;
+import net.minecraft.client.gui.narration.NarratableEntry;
+import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.Screen;
 
 // TODO: name?
-public final class GameList implements GuiEventListener {
+public final class GameList implements GuiEventListener, NarratableEntry {
 	private final Screen screen;
 	private final Layout mainLayout;
 	private final Layout footerLayout;
@@ -131,6 +133,15 @@ public final class GameList implements GuiEventListener {
 	@Override
 	public boolean isMouseOver(double mouseX, double mouseY) {
 		return this.active.isMouseOver(mouseX, mouseY);
+	}
+
+	@Override
+	public NarrationPriority narrationPriority() {
+		return NarrationPriority.NONE;
+	}
+
+	@Override
+	public void updateNarration(final NarrationElementOutput output) {
 	}
 
 	public interface Handlers {

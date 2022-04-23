@@ -9,8 +9,9 @@ import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.DoublePlantBlock;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.levelgen.feature.blockplacers.DoublePlantPlacer;
 
 public final class PlaceDoublePlantBehavior implements IGameBehavior {
 	public static final Codec<PlaceDoublePlantBehavior> CODEC = RecordCodecBuilder.create(instance -> instance.group(
@@ -28,7 +29,7 @@ public final class PlaceDoublePlantBehavior implements IGameBehavior {
 		events.listen(BbPlantEvents.PLACE, (player, plot, pos) -> new PlantPlacement()
 				.covers(PlantCoverage.ofDouble(pos))
 				.places((world, coverage) -> {
-					DoublePlantPlacer.INSTANCE.place(world, pos, this.block, world.random);
+					DoublePlantBlock.placeAt(world, this.block, pos, Block.UPDATE_ALL);
 					return true;
 				}));
 	}

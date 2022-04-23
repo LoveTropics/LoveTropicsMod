@@ -2,16 +2,16 @@ package com.lovetropics.minigames.common.core.map.workspace;
 
 import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.common.core.dimension.RuntimeDimensions;
-import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.core.Registry;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.server.MinecraftServer;
+import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.phys.Vec3;
-import net.minecraft.core.Registry;
-import net.minecraft.world.level.Level;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraftforge.common.util.Constants.NBT;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.event.entity.EntityTravelToDimensionEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -48,7 +48,7 @@ public final class WorkspacePositionTracker {
 
 	private static CompoundTag getOrCreateWorkspaceTag(ServerPlayer player, MapWorkspace workspace) {
 		CompoundTag data = getOrCreateTag(player);
-		if (!data.contains(workspace.getId(), NBT.TAG_COMPOUND)) {
+		if (!data.contains(workspace.getId(), Tag.TAG_COMPOUND)) {
 			data.put(workspace.getId(), new CompoundTag());
 		}
 		return data.getCompound(workspace.getId());
@@ -56,7 +56,7 @@ public final class WorkspacePositionTracker {
 
 	private static CompoundTag getOrCreateReturnTag(ServerPlayer player) {
 		CompoundTag data = getOrCreateTag(player);
-		if (!data.contains(NBT_RETURN_KEY, NBT.TAG_COMPOUND)) {
+		if (!data.contains(NBT_RETURN_KEY, Tag.TAG_COMPOUND)) {
 			data.put(NBT_RETURN_KEY, new CompoundTag());
 		}
 		return data.getCompound(NBT_RETURN_KEY);
@@ -64,7 +64,7 @@ public final class WorkspacePositionTracker {
 
 	private static CompoundTag getOrCreateTag(ServerPlayer player) {
 		CompoundTag persistentData = player.getPersistentData();
-		if (!persistentData.contains(NBT_KEY, NBT.TAG_COMPOUND)) {
+		if (!persistentData.contains(NBT_KEY, Tag.TAG_COMPOUND)) {
 			persistentData.put(NBT_KEY, new CompoundTag());
 		}
 		return persistentData.getCompound(NBT_KEY);
@@ -105,27 +105,15 @@ public final class WorkspacePositionTracker {
 		ServerPlayer toPlayer = (ServerPlayer) event.getPlayer();
 
 		CompoundTag fromData = fromPlayer.getPersistentData();
-		if (fromData.contains(NBT_KEY, NBT.TAG_COMPOUND)) {
+		if (fromData.contains(NBT_KEY, Tag.TAG_COMPOUND)) {
 			CompoundTag fromTag = fromData.getCompound(NBT_KEY);
 			toPlayer.getPersistentData().put(NBT_KEY, fromTag.copy());
 		}
 	}
 
-	public static class Position {
-		public final ResourceKey<Level> dimension;
-		public final Vec3 pos;
-		public final float yaw;
-		public final float pitch;
-
-		Position(ResourceKey<Level> dimension, Vec3 pos, float yaw, float pitch) {
-			this.dimension = dimension;
-			this.pos = pos;
-			this.yaw = yaw;
-			this.pitch = pitch;
-		}
-
+	public record Position(ResourceKey<Level> dimension, Vec3 pos, float yaw, float pitch) {
 		public static Position copyFrom(ServerPlayer entity) {
-			return new Position(entity.level.dimension(), entity.position(), entity.yRot, entity.xRot);
+			return new Position(entity.level.dimension(), entity.position(), entity.getYRot(), entity.getXRot());
 		}
 
 		public void applyTo(ServerPlayer entity) {

@@ -69,7 +69,7 @@ public final class ClientSpectatingManager implements ClientGameStateHandler<Spe
 	public static void onPositionCamera(EntityViewRenderEvent.CameraSetup event) {
 		SpectatingSession session = INSTANCE.session;
 		if (session != null) {
-			session.applyToCamera(event.getInfo(), (float) event.getRenderPartialTicks(), event);
+			session.applyToCamera(event.getCamera(), (float) event.getPartialTicks(), event);
 		}
 	}
 }

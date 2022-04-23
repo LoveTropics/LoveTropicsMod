@@ -8,12 +8,11 @@ import com.lovetropics.minigames.client.screen.list.AbstractLTList;
 import com.lovetropics.minigames.client.screen.list.LTListEntry;
 import com.lovetropics.minigames.common.core.game.util.GameTexts;
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.Tesselator;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.screens.Screen;
-import com.mojang.blaze3d.vertex.Tesselator;
 import net.minecraft.network.chat.Component;
-
-import com.lovetropics.minigames.client.screen.list.AbstractLTList.Reorder;
+import net.minecraft.network.chat.TextComponent;
 
 public abstract class AbstractGameList extends AbstractLTList<AbstractGameList.Entry> {
 	private final Component title;
@@ -191,6 +190,11 @@ public abstract class AbstractGameList extends AbstractLTList<AbstractGameList.E
 
 		public int getId() {
 			return id;
+		}
+
+		@Override
+		public Component getNarration() {
+			return TextComponent.EMPTY;
 		}
 	}
 }

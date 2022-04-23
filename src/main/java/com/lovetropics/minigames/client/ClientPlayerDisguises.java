@@ -34,12 +34,12 @@ public final class ClientPlayerDisguises {
 			try {
 				copyDisguiseState(disguise, player);
 
-				float partialTicks = event.getPartialRenderTick();
-				PoseStack transform = event.getMatrixStack();
-				MultiBufferSource buffers = event.getBuffers();
-				int packedLight = event.getLight();
+				float partialTicks = event.getPartialTick();
+				PoseStack transform = event.getPoseStack();
+				MultiBufferSource buffers = event.getMultiBufferSource();
+				int packedLight = event.getPackedLight();
 
-				float yaw = Mth.lerp(partialTicks, player.yRotO, player.yRot);
+				float yaw = Mth.lerp(partialTicks, player.yRotO, player.getYRot());
 				renderer.render(disguise, yaw, partialTicks, transform, buffers, packedLight);
 			} catch (Exception e) {
 				PlayerDisguise.get(player).ifPresent(PlayerDisguise::clearDisguise);
@@ -56,9 +56,9 @@ public final class ClientPlayerDisguises {
 		disguise.yo = player.yo;
 		disguise.zo = player.zo;
 
-		disguise.yRot = player.yRot;
+		disguise.setYRot(player.getYRot());
 		disguise.yRotO = player.yRotO;
-		disguise.xRot = player.xRot;
+		disguise.setXRot(player.getXRot());
 		disguise.xRotO = player.xRotO;
 
 		disguise.setShiftKeyDown(player.isShiftKeyDown());

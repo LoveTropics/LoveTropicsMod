@@ -106,6 +106,6 @@ public class PositionPlayersBehavior implements IGameBehavior {
 			}
 		}
 		LogManager.getLogger().info("USING FALLBACK SPAWN POS");
-		return box.getCenterBlock();
+		return box.centerBlock();
 	}
 }

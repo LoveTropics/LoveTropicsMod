@@ -1,27 +1,30 @@
 package com.lovetropics.minigames.mixin;
 
-import com.google.common.collect.BiMap;
 import com.lovetropics.minigames.common.core.dimension.RegistryEntryRemover;
 import com.mojang.serialization.Lifecycle;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.ObjectList;
+import net.minecraft.core.Holder;
+import net.minecraft.core.MappedRegistry;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.core.MappedRegistry;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 
+import java.util.List;
 import java.util.Map;
 
 @Mixin(MappedRegistry.class)
 public class SimpleRegistryMixin<T> implements RegistryEntryRemover<T> {
-    @Shadow @Final private BiMap<ResourceLocation, T> storage;
-    @Shadow @Final private BiMap<ResourceKey<T>, T> keyStorage;
+    @Shadow @Final private ObjectList<Holder.Reference<T>> byId;
     @Shadow @Final private Object2IntMap<T> toId;
-    @Shadow @Final private ObjectList<T> byId;
+    @Shadow @Final private Map<ResourceLocation, Holder.Reference<T>> byLocation;
+    @Shadow @Final private Map<ResourceKey<T>, Holder.Reference<T>> byKey;
+    @Shadow @Final private Map<T, Holder.Reference<T>> byValue;
     @Shadow @Final private Map<T, Lifecycle> lifecycles;
-    @Shadow protected Object[] randomCache;
+    @Shadow private Map<T, Holder.Reference<T>> intrusiveHolderCache;
+    @Shadow private List<Holder.Reference<T>> holdersInOrder;
 
     @Override
     public boolean remove(T entry) {
@@ -30,20 +33,22 @@ public class SimpleRegistryMixin<T> implements RegistryEntryRemover<T> {
             return false;
         }
 
-        this.keyStorage.inverse().remove(entry);
-        this.storage.inverse().remove(entry);
+        final Holder.Reference<T> reference = this.byId.set(rawId, null);
+        final ResourceKey<T> key = reference.key();
+
+        this.byLocation.remove(key.location());
+        this.byKey.remove(key);
+        this.byValue.remove(entry);
         this.lifecycles.remove(entry);
-
-        this.byId.set(rawId, null);
-
-        this.randomCache = null;
+        this.intrusiveHolderCache.remove(entry);
+        this.holdersInOrder.set(rawId, null);
 
         return true;
     }
 
     @Override
     public boolean remove(ResourceLocation key) {
-        T entry = this.storage.get(key);
-        return entry != null && this.remove(entry);
+        Holder.Reference<T> entry = this.byLocation.get(key);
+        return entry != null && this.remove(entry.value());
     }
 }

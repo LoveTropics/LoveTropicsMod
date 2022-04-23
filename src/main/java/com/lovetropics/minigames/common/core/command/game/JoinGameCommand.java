@@ -25,6 +25,9 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static net.minecraft.commands.Commands.argument;
+import static net.minecraft.commands.Commands.literal;
+
 public class JoinGameCommand {
 	public static void register(final CommandDispatcher<CommandSourceStack> dispatcher) {
 		// @formatter:off

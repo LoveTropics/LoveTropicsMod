@@ -14,9 +14,10 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
-import net.minecraft.network.protocol.game.ClientboundSetTitlesPacket;
-import net.minecraft.network.chat.Component;
 import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.game.ClientboundSetSubtitleTextPacket;
+import net.minecraft.network.protocol.game.ClientboundSetTitlesAnimationPacket;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
@@ -73,8 +74,8 @@ public final class GameEndEffectsBehavior implements IGameBehavior {
 		if (this.title != null) {
 			Component title = this.title.apply(winner);
 			PlayerSet players = game.getAllPlayers();
-			players.sendPacket(new ClientboundSetTitlesPacket(10, 3 * 20, 10));
-			players.sendPacket(new ClientboundSetTitlesPacket(ClientboundSetTitlesPacket.Type.SUBTITLE, title));
+			players.sendPacket(new ClientboundSetTitlesAnimationPacket(10, 3 * 20, 10));
+			players.sendPacket(new ClientboundSetSubtitleTextPacket(title));
 		}
 	}
 

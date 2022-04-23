@@ -10,7 +10,7 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.phys.AABB;
-import net.minecraftforge.common.extensions.IForgeTileEntity;
+import net.minecraftforge.common.extensions.IForgeBlockEntity;
 
 import java.util.List;
 
@@ -33,7 +33,7 @@ public final class GamePhaseConfig implements IGamePhaseDefinition {
 		return RecordCodecBuilder.mapCodec(instance -> {
 			return instance.group(
 					GameMapProviders.CODEC.fieldOf("map").forGetter(c -> c.map),
-					MoreCodecs.AABB.optionalFieldOf("area", IForgeTileEntity.INFINITE_EXTENT_AABB).forGetter(c -> c.area),
+					MoreCodecs.AABB.optionalFieldOf("area", IForgeBlockEntity.INFINITE_EXTENT_AABB).forGetter(c -> c.area),
 					reader.fieldOf("behaviors").forGetter(c -> c.behaviors)
 			).apply(instance, GamePhaseConfig::new);
 		});

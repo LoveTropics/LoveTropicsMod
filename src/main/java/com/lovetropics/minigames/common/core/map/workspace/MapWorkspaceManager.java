@@ -6,23 +6,21 @@ import com.lovetropics.minigames.common.core.dimension.RuntimeDimensionHandle;
 import com.lovetropics.minigames.common.core.dimension.RuntimeDimensions;
 import com.lovetropics.minigames.common.core.map.MapWorldInfo;
 import com.lovetropics.minigames.common.core.map.MapWorldSettings;
-import com.lovetropics.minigames.common.util.DynamicRegistryReadingOps;
 import com.lovetropics.minigames.common.util.Util;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtOps;
-import net.minecraft.server.MinecraftServer;
+import net.minecraft.nbt.Tag;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.resources.RegistryWriteOps;
-import net.minecraft.world.level.Level;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.saveddata.SavedData;
-import net.minecraftforge.common.util.Constants.NBT;
 
 import javax.annotation.Nullable;
 import java.util.Map;
@@ -36,13 +34,12 @@ public final class MapWorkspaceManager extends SavedData {
 	private final Map<String, MapWorkspace> workspaces = new Object2ObjectOpenHashMap<>();
 
 	private MapWorkspaceManager(MinecraftServer server) {
-		super(ID);
 		this.server = server;
 	}
 
 	public static MapWorkspaceManager get(MinecraftServer server) {
 		ServerLevel overworld = server.overworld();
-		return overworld.getDataStorage().computeIfAbsent(() -> new MapWorkspaceManager(server), ID);
+		return overworld.getDataStorage().computeIfAbsent(tag -> MapWorkspaceManager.load(server, tag), () -> new MapWorkspaceManager(server), ID);
 	}
 
 	public CompletableFuture<MapWorkspace> openWorkspace(String id, WorkspaceDimensionConfig dimensionConfig) {
@@ -103,7 +100,7 @@ public final class MapWorkspaceManager extends SavedData {
 	public CompoundTag save(CompoundTag root) {
 		ListTag workspaceList = new ListTag();
 
-		RegistryWriteOps<Tag> ops = RegistryWriteOps.create(NbtOps.INSTANCE, this.server.registryAccess());
+		RegistryOps<Tag> ops = RegistryOps.create(NbtOps.INSTANCE, this.server.registryAccess());
 
 		for (Map.Entry<String, MapWorkspace> entry : this.workspaces.entrySet()) {
 			MapWorkspaceData data = entry.getValue().intoData();
@@ -116,28 +113,31 @@ public final class MapWorkspaceManager extends SavedData {
 		return root;
 	}
 
-	@Override
-	public void load(CompoundTag root) {
-		this.workspaces.clear();
+	private static MapWorkspaceManager load(MinecraftServer server, CompoundTag root) {
+		MapWorkspaceManager manager = new MapWorkspaceManager(server);
 
-		ListTag workspaceList = root.getList("workspaces", NBT.TAG_COMPOUND);
+		manager.workspaces.clear();
 
-		DynamicOps<Tag> ops = DynamicRegistryReadingOps.create(this.server, NbtOps.INSTANCE);
+		ListTag workspaceList = root.getList("workspaces", Tag.TAG_COMPOUND);
+
+		DynamicOps<Tag> ops = RegistryOps.create(NbtOps.INSTANCE, server.registryAccess());
 
 		for (int i = 0; i < workspaceList.size(); i++) {
 			CompoundTag workspaceRoot = workspaceList.getCompound(i);
 
 			DataResult<MapWorkspaceData> result = MapWorkspaceData.CODEC.parse(ops, workspaceRoot);
 			result.result().ifPresent(workspaceData -> {
-				RuntimeDimensionHandle dimensionHandle = getOrCreateDimension(workspaceData.id, workspaceData.dimension, workspaceData.worldSettings);
+				RuntimeDimensionHandle dimensionHandle = manager.getOrCreateDimension(workspaceData.id, workspaceData.dimension, workspaceData.worldSettings);
 				MapWorkspace workspace = workspaceData.create(server, dimensionHandle);
-				this.workspaces.put(workspaceData.id, workspace);
+				manager.workspaces.put(workspaceData.id, workspace);
 			});
 
 			result.error().ifPresent(error -> {
 				LoveTropics.LOGGER.warn("Failed to load map workspace: {}", error);
 			});
 		}
+
+		return manager;
 	}
 
 	@Override

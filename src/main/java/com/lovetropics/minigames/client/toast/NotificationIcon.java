@@ -3,10 +3,9 @@ package com.lovetropics.minigames.client.toast;
 import com.lovetropics.lib.codec.MoreCodecs;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.effect.MobEffect;
-import net.minecraft.core.Registry;
+import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import javax.annotation.Nullable;
@@ -16,7 +15,7 @@ public final class NotificationIcon {
 	public static final Codec<NotificationIcon> CODEC = RecordCodecBuilder.create(instance -> {
 		return instance.group(
 				MoreCodecs.ITEM_STACK.optionalFieldOf("item").forGetter(c -> Optional.ofNullable(c.item)),
-				Registry.MOB_EFFECT.optionalFieldOf("effect").forGetter(c -> Optional.ofNullable(c.effect))
+				ForgeRegistries.MOB_EFFECTS.getCodec().optionalFieldOf("effect").forGetter(c -> Optional.ofNullable(c.effect))
 		).apply(instance, NotificationIcon::new);
 	});
 
@@ -46,7 +45,7 @@ public final class NotificationIcon {
 			buffer.writeItem(this.item);
 		} else {
 			buffer.writeBoolean(false);
-			buffer.writeRegistryIdUnsafe(ForgeRegistries.POTIONS, this.effect);
+			buffer.writeRegistryIdUnsafe(ForgeRegistries.MOB_EFFECTS, this.effect);
 		}
 	}
 
@@ -54,7 +53,7 @@ public final class NotificationIcon {
 		if (buffer.readBoolean()) {
 			return NotificationIcon.item(buffer.readItem());
 		} else {
-			return NotificationIcon.effect(buffer.readRegistryIdUnsafe(ForgeRegistries.POTIONS));
+			return NotificationIcon.effect(buffer.readRegistryIdUnsafe(ForgeRegistries.MOB_EFFECTS));
 		}
 	}
 }

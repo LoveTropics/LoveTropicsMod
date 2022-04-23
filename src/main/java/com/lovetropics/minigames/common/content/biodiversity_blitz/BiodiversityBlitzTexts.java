@@ -1,15 +1,13 @@
 package com.lovetropics.minigames.common.content.biodiversity_blitz;
 
 import com.lovetropics.minigames.Constants;
-import net.minecraft.util.text.*;
-
-import java.util.function.BiConsumer;
-
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.TextComponent;
 import net.minecraft.network.chat.TranslatableComponent;
+
+import java.util.function.BiConsumer;
 
 public final class BiodiversityBlitzTexts {
 	public static void collectTranslations(BiConsumer<String, String> consumer) {

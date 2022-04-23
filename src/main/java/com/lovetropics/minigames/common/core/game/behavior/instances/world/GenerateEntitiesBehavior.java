@@ -3,21 +3,21 @@ package com.lovetropics.minigames.common.core.game.behavior.instances.world;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobSpawnType;
-import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.ChunkPos;
-import net.minecraft.core.Registry;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.levelgen.Heightmap;
-import net.minecraft.server.level.ServerLevel;
+import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.Random;
 
 public final class GenerateEntitiesBehavior extends ChunkGeneratingBehavior {
 	public static final Codec<GenerateEntitiesBehavior> CODEC = RecordCodecBuilder.create(instance -> {
 		return instance.group(
-				Registry.ENTITY_TYPE.fieldOf("entity").forGetter(c -> c.type),
+				ForgeRegistries.ENTITIES.getCodec().fieldOf("entity").forGetter(c -> c.type),
 				Codec.INT.optionalFieldOf("min_per_chunk", 0).forGetter(c -> c.minPerChunk),
 				Codec.INT.optionalFieldOf("max_per_chunk", 1).forGetter(c -> c.maxPerChunk)
 		).apply(instance, GenerateEntitiesBehavior::new);

@@ -10,14 +10,14 @@ import com.lovetropics.minigames.common.core.network.workspace.SetWorkspaceMessa
 import com.lovetropics.minigames.common.core.network.workspace.UpdateWorkspaceRegionMessage;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.common.util.Constants;
-import net.minecraftforge.fml.network.PacketDistributor;
+import net.minecraftforge.network.PacketDistributor;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
@@ -106,7 +106,7 @@ public final class WorkspaceRegions implements Iterable<WorkspaceRegions.Entry> 
 		this.entries.clear();
 
 		for (String key : root.getAllKeys()) {
-			ListTag regionsList = root.getList(key, Constants.NBT.TAG_COMPOUND);
+			ListTag regionsList = root.getList(key, Tag.TAG_COMPOUND);
 			for (int i = 0; i < regionsList.size(); i++) {
 				BlockBox region = BlockBox.read(regionsList.getCompound(i));
 				this.add(key, region);

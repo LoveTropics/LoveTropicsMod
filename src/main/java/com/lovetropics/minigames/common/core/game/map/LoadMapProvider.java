@@ -9,16 +9,17 @@ import com.lovetropics.minigames.common.core.map.*;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.server.packs.resources.Resource;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.Util;
+import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.network.chat.TextComponent;
-import net.minecraft.world.level.dimension.LevelStem;
-import net.minecraft.world.level.dimension.DimensionType;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.dimension.DimensionType;
+import net.minecraft.world.level.dimension.LevelStem;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -27,7 +28,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.Supplier;
 
 public class LoadMapProvider implements IGameMapProvider {
 	public static final Codec<LoadMapProvider> CODEC = RecordCodecBuilder.create(instance -> {
@@ -43,10 +43,10 @@ public class LoadMapProvider implements IGameMapProvider {
 
 	private final String name;
 	private final ResourceLocation loadFrom;
-	private final Supplier<DimensionType> dimensionType;
+	private final Holder<DimensionType> dimensionType;
 	private final ResourceLocation dimension;
 
-	public LoadMapProvider(final Optional<String> name, final ResourceLocation loadFrom, Optional<Supplier<DimensionType>> dimensionType, Optional<ResourceLocation> dimension) {
+	public LoadMapProvider(final Optional<String> name, final ResourceLocation loadFrom, Optional<Holder<DimensionType>> dimensionType, Optional<ResourceLocation> dimension) {
 		this.name = name.orElse(null);
 		this.loadFrom = loadFrom;
 		this.dimensionType = dimensionType.orElse(null);
@@ -69,7 +69,7 @@ public class LoadMapProvider implements IGameMapProvider {
 
 	@Override
 	public CompletableFuture<GameResult<GameMap>> open(MinecraftServer server) {
-		Supplier<DimensionType> dimensionType = this.dimensionType != null ? this.dimensionType : () -> server.overworld().dimensionType();
+		Holder<DimensionType> dimensionType = this.dimensionType != null ? this.dimensionType : server.overworld().dimensionTypeRegistration();
 		LevelStem dimension = new LevelStem(dimensionType, new VoidChunkGenerator(server));
 		MapWorldSettings worldSettings = new MapWorldSettings();
 
@@ -105,7 +105,7 @@ public class LoadMapProvider implements IGameMapProvider {
 	private GameResult<Pair<RuntimeDimensionHandle, MapMetadata>> loadMapInto(MinecraftServer server, MapWorldSettings mapWorldSettings, RuntimeDimensionHandle handle) {
 		ResourceLocation path = new ResourceLocation(loadFrom.getNamespace(), "maps/" + loadFrom.getPath() + ".zip");
 
-		try (Resource resource = server.getDataPackRegistries().getResourceManager().getResource(path)) {
+		try (Resource resource = server.getResourceManager().getResource(path)) {
 			try (MapExportReader reader = MapExportReader.open(resource.getInputStream())) {
 				MapMetadata metadata = reader.loadInto(server, handle.asKey());
 				mapWorldSettings.importFrom(metadata.settings);

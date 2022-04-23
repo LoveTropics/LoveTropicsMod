@@ -90,10 +90,11 @@ public final class BbClientRenderEffects {
 	}
 
 	private static void renderItem(PoseStack matrixStack, ItemStack stack, int x, int y) {
-		RenderSystem.pushMatrix();
-		RenderSystem.multMatrix(matrixStack.last().pose());
+		final PoseStack pose = RenderSystem.getModelViewStack();
+		pose.pushPose();
+		pose.mulPoseMatrix(matrixStack.last().pose());
 		CLIENT.getItemRenderer().renderGuiItem(stack, x, y);
-		RenderSystem.popMatrix();
+		pose.popPose();
 	}
 
 	@SubscribeEvent
@@ -109,8 +110,8 @@ public final class BbClientRenderEffects {
 	}
 
 	private static void renderPlayerCurrency(RenderNameplateEvent event, Entity entity, int currency) {
-		EntityRenderDispatcher renderManager = event.getEntityRenderer().getDispatcher();
-		double distance2 = renderManager.distanceToSqr(entity);
+		final EntityRenderDispatcher renderDispatcher = CLIENT.getEntityRenderDispatcher();
+		double distance2 = renderDispatcher.distanceToSqr(entity);
 		if (!ForgeHooksClient.isNameplateInRenderDistance(entity, distance2) || entity.isDiscrete()) {
 			return;
 		}
@@ -124,18 +125,18 @@ public final class BbClientRenderEffects {
 
 		String currencyText = String.valueOf(currency);
 
-		PoseStack matrixStack = event.getMatrixStack();
-		MultiBufferSource buffer = event.getRenderTypeBuffer();
+		PoseStack matrixStack = event.getPoseStack();
+		MultiBufferSource buffer = event.getMultiBufferSource();
 		int packedLight = event.getPackedLight();
 
-		Font font = renderManager.getFont();
+		Font font = event.getEntityRenderer().getFont();
 		ItemRenderer items = CLIENT.getItemRenderer();
 
 		float left = -(font.width(currencyText) * textScale + itemSize) / 2.0F;
 
 		matrixStack.pushPose();
 		matrixStack.translate(0.0, entity.getBbHeight() + 0.75, 0.0);
-		matrixStack.mulPose(renderManager.cameraOrientation());
+		matrixStack.mulPose(renderDispatcher.cameraOrientation());
 		matrixStack.scale(0.0625F * textScale, 0.0625F * textScale, 0.0625F * textScale);
 
 		matrixStack.pushPose();
@@ -149,7 +150,7 @@ public final class BbClientRenderEffects {
 		matrixStack.pushPose();
 		matrixStack.translate(-left, 0.0F, 0.0F);
 		matrixStack.scale(-itemSize, itemSize, -itemSize);
-		items.renderStatic(CURRENCY_ITEM.get(), ItemTransforms.TransformType.GUI, packedLight, OverlayTexture.NO_OVERLAY, matrixStack, buffer);
+		items.renderStatic(CURRENCY_ITEM.get(), ItemTransforms.TransformType.GUI, packedLight, OverlayTexture.NO_OVERLAY, matrixStack, buffer, 0);
 		matrixStack.popPose();
 
 		matrixStack.popPose();

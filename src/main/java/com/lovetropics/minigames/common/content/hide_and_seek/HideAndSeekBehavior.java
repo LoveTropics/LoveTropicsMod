@@ -20,18 +20,18 @@ import com.lovetropics.minigames.common.core.game.state.team.TeamState;
 import com.lovetropics.minigames.common.core.game.util.PlayerSnapshot;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.item.ItemStack;
+import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.world.effect.MobEffects;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Registry;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.item.ItemStack;
+import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.List;
 import java.util.Random;
@@ -157,7 +157,7 @@ public final class HideAndSeekBehavior implements IGameBehavior {
 
 	private void setSeeker(ServerPlayer player) {
 		PlayerSnapshot.clearPlayer(player);
-		player.inventory.add(new ItemStack(HideAndSeek.NET.get()));
+		player.getInventory().add(new ItemStack(HideAndSeek.NET.get()));
 	}
 
 	private DisguiseType nextDisguiseType(Random random) {
@@ -185,7 +185,7 @@ public final class HideAndSeekBehavior implements IGameBehavior {
 	public static final class Creature {
 		public static final Codec<Creature> CODEC = RecordCodecBuilder.create(instance -> {
 			return instance.group(
-					Registry.ENTITY_TYPE.fieldOf("entity").forGetter(c -> c.entity),
+					ForgeRegistries.ENTITIES.getCodec().fieldOf("entity").forGetter(c -> c.entity),
 					MoreCodecs.arrayOrUnit(Codec.STRING, String[]::new).fieldOf("region").forGetter(c -> c.regionKeys)
 			).apply(instance, Creature::new);
 		});

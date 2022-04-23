@@ -10,15 +10,14 @@ import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.advancements.critereon.BlockPredicate;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.core.Direction;
-import net.minecraft.core.BlockPos;
-import net.minecraft.util.Mth;
-import net.minecraft.network.chat.TextComponent;
 import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvider;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraftforge.common.util.Constants;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -98,10 +97,10 @@ public final class SetExtendingBlocksBehavior implements IGameBehavior {
 		BlockStateProvider set = this.set;
 		Random random = world.random;
 
-		int flags = Constants.BlockFlags.DEFAULT;
+		int flags = Block.UPDATE_ALL;
 		if (!notifyNeighbors) {
 			// the constant name is inverted
-			flags |= Constants.BlockFlags.UPDATE_NEIGHBORS;
+			flags |= Block.UPDATE_KNOWN_SHAPE;
 		}
 
 		for (BlockPos pos : extendingBox) {
@@ -114,15 +113,15 @@ public final class SetExtendingBlocksBehavior implements IGameBehavior {
 	}
 
 	private BlockBox getExtendingBox(BlockBox box, float progress) {
-		BlockPos size = box.getSize();
+		BlockPos size = box.size();
 
 		int totalLength = direction.getAxis().choose(size.getX(), size.getY(), size.getZ());
 		int currentLength = Mth.floor(totalLength * progress);
 
 		if (direction.getAxisDirection() == Direction.AxisDirection.POSITIVE) {
-			return box.withMax(box.min.relative(direction, currentLength));
+			return box.withMax(box.min().relative(direction, currentLength));
 		} else {
-			return box.withMin(box.max.relative(direction, currentLength));
+			return box.withMin(box.max().relative(direction, currentLength));
 		}
 	}
 }

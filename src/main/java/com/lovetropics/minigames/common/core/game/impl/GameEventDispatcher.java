@@ -11,6 +11,7 @@ import com.lovetropics.minigames.common.util.Scheduler;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
@@ -24,6 +25,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraftforge.event.entity.EntityMountEvent;
+import net.minecraftforge.event.entity.EntityTeleportEvent;
 import net.minecraftforge.event.entity.item.ItemTossEvent;
 import net.minecraftforge.event.entity.living.*;
 import net.minecraftforge.event.entity.player.AttackEntityEvent;
@@ -227,11 +229,11 @@ public final class GameEventDispatcher {
 	}
 
 	@SubscribeEvent
-	public void onEnderTeleport(EnderTeleportEvent event) {
+	public void onEnderTeleport(EntityTeleportEvent.EnderPearl event) {
 		IGamePhase game = gameLookup.getGamePhaseFor(event.getEntity());
 		if (game != null) {
 			try {
-				game.invoker(GameLivingEntityEvents.ENDER_TELEPORT).onEnderTeleport(event.getEntityLiving(), event.getTargetX(), event.getTargetY(), event.getTargetZ(), event.getAttackDamage(), event::setAttackDamage);
+				game.invoker(GameLivingEntityEvents.ENDER_PEARL_TELEPORT).onEnderPearlTeleport(event.getPlayer(), event.getTargetX(), event.getTargetY(), event.getTargetZ(), event.getAttackDamage(), event::setAttackDamage);
 			} catch (Exception e) {
 				LoveTropics.LOGGER.warn("Failed to dispatch ender teleport event", e);
 			}
@@ -248,8 +250,8 @@ public final class GameEventDispatcher {
 				InteractionResult result = game.invoker(GamePlayerEvents.THROW_ITEM).onThrowItem(player, item);
 				if (result == InteractionResult.FAIL) {
 					event.setCanceled(true);
-					player.inventory.add(item.getItem());
-					player.refreshContainer(player.containerMenu);
+					player.getInventory().add(item.getItem());
+					player.containerMenu.broadcastFullState();
 				}
 			} catch (Exception e) {
 				LoveTropics.LOGGER.warn("Failed to dispatch player throw item event", e);
@@ -363,9 +365,9 @@ public final class GameEventDispatcher {
 
 	private void resendPlayerHeldItem(ServerPlayer player) {
 		InteractionHand hand = player.getUsedItemHand();
-		int handSlot = hand == InteractionHand.MAIN_HAND ? player.inventory.selected : 40;
+		int handSlot = hand == InteractionHand.MAIN_HAND ? player.getInventory().selected : Inventory.SLOT_OFFHAND;
 		ItemStack handItem = player.getItemInHand(hand);
-		player.connection.send(new ClientboundContainerSetSlotPacket(-2, handSlot, handItem));
+		player.connection.send(new ClientboundContainerSetSlotPacket(ClientboundContainerSetSlotPacket.PLAYER_INVENTORY, 0, handSlot, handItem));
 	}
 
 	@SubscribeEvent

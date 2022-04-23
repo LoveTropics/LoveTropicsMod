@@ -2,13 +2,13 @@ package com.lovetropics.minigames.common.content.survive_the_tide.item;
 
 import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.common.content.survive_the_tide.SurviveTheTide;
-import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextComponent;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextComponent;
-import net.minecraft.ChatFormatting;
+import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -18,8 +18,6 @@ import net.minecraftforge.fml.common.Mod;
 
 import javax.annotation.Nullable;
 import java.util.List;
-
-import net.minecraft.world.item.Item.Properties;
 
 @Mod.EventBusSubscriber(modid = Constants.MODID)
 public class AcidRepellentUmbrellaItem extends Item {
@@ -42,7 +40,7 @@ public class AcidRepellentUmbrellaItem extends Item {
         }
 
         Player player = event.player;
-        if (player.getDeltaMovement().y() < 0.0 && !player.abilities.flying && isHoldingItem(player, SurviveTheTide.ACID_REPELLENT_UMBRELLA.get())) {
+        if (player.getDeltaMovement().y() < 0.0 && !player.getAbilities().flying && isHoldingItem(player, SurviveTheTide.ACID_REPELLENT_UMBRELLA.get())) {
             player.setDeltaMovement(player.getDeltaMovement().multiply(1.0, 0.8, 1.0));
             player.fallDistance = 0.0F;
         }

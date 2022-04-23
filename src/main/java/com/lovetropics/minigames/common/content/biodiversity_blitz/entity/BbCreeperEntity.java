@@ -61,7 +61,7 @@ public class BbCreeperEntity extends Creeper implements BbMobEntity {
                 }
             }
 
-            this.remove();
+            this.remove(RemovalReason.KILLED);
         }
     }
 

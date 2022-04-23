@@ -15,6 +15,7 @@ import com.lovetropics.minigames.common.core.game.behavior.config.ConfigData.Lis
 import com.lovetropics.minigames.common.core.game.behavior.config.ConfigData.SimpleConfigData;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.gui.components.events.GuiEventListener;
+import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.components.Button;
 import com.mojang.blaze3d.vertex.Tesselator;
@@ -52,6 +53,15 @@ public final class GameConfig extends ScrollPanel {
 
 		children.add(this.saveButton = new Button(main.content().right() - 46, main.content().bottom() - 20, 40, 20, new TextComponent("Save"), $ -> handlers.saveConfigs()));
 		this.saveButton.active = false;
+	}
+
+	@Override
+	public NarrationPriority narrationPriority() {
+		return NarrationPriority.NONE;
+	}
+
+	@Override
+	public void updateNarration(final NarrationElementOutput output) {
 	}
 
 	public interface Handlers {

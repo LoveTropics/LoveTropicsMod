@@ -3,11 +3,10 @@ package com.lovetropics.minigames.common.content.survive_the_tide.entity;
 import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.common.util.Util;
+import net.minecraft.core.Direction;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.nbt.Tag;
-import net.minecraft.core.Direction;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
@@ -22,18 +21,6 @@ import javax.annotation.Nullable;
 
 @Mod.EventBusSubscriber(modid = Constants.MODID)
 public final class DriftwoodRider implements ICapabilityProvider {
-	public static final Capability.IStorage<DriftwoodRider> STORAGE = new Capability.IStorage<DriftwoodRider>() {
-		@Nullable
-		@Override
-		public Tag writeNBT(Capability<DriftwoodRider> capability, DriftwoodRider instance, Direction side) {
-			return null;
-		}
-
-		@Override
-		public void readNBT(Capability<DriftwoodRider> capability, DriftwoodRider instance, Direction side, Tag nbt) {
-		}
-	};
-
 	private final Player player;
 	private final LazyOptional<DriftwoodRider> instance = LazyOptional.of(() -> this);
 	private DriftwoodEntity ridingDriftwood;
@@ -50,7 +37,7 @@ public final class DriftwoodRider implements ICapabilityProvider {
 		}
 
 		Player player = event.player;
-		player.getCapability(LoveTropics.driftwoodRiderCap()).ifPresent(DriftwoodRider::tick);
+		player.getCapability(LoveTropics.DRIFTWOOD_RIDER).ifPresent(DriftwoodRider::tick);
 	}
 
 	@SubscribeEvent
@@ -106,6 +93,6 @@ public final class DriftwoodRider implements ICapabilityProvider {
 	@Nonnull
 	@Override
 	public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> cap, @Nullable Direction side) {
-		return LoveTropics.driftwoodRiderCap().orEmpty(cap, instance);
+		return LoveTropics.DRIFTWOOD_RIDER.orEmpty(cap, instance);
 	}
 }

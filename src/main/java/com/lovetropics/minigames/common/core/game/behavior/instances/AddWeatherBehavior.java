@@ -14,14 +14,14 @@ import com.lovetropics.minigames.common.core.game.weather.WeatherEventType;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.Mth;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.util.Mth;
-import net.minecraft.core.Registry;
 import net.minecraft.world.level.levelgen.Heightmap;
+import net.minecraftforge.registries.ForgeRegistries;
 
 import javax.annotation.Nullable;
 import java.util.Map;
@@ -136,7 +136,7 @@ public final class AddWeatherBehavior implements IGameBehavior {
 	public static final class Repellent {
 		public static final Codec<Repellent> CODEC = RecordCodecBuilder.create(instance -> {
 			return instance.group(
-					Registry.ITEM.fieldOf("item").forGetter(c -> c.item),
+					ForgeRegistries.ITEMS.getCodec().fieldOf("item").forGetter(c -> c.item),
 					Codec.INT.fieldOf("rate").forGetter(c -> c.damageRate),
 					Codec.INT.fieldOf("amount").forGetter(c -> c.damageAmount)
 			).apply(instance, Repellent::new);

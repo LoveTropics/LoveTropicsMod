@@ -24,7 +24,7 @@ public final class MapExportReader implements Closeable {
 
 	public static MapExportReader open(MinecraftServer server, ResourceLocation location) throws IOException {
 		ResourceLocation path = new ResourceLocation(location.getNamespace(), "maps/" + location.getPath() + ".zip");
-		Resource resource = server.getDataPackRegistries().getResourceManager().getResource(path);
+		Resource resource = server.getResourceManager().getResource(path);
 		return MapExportReader.open(resource.getInputStream());
 	}
 
@@ -34,8 +34,7 @@ public final class MapExportReader implements Closeable {
 
 	public MapMetadata loadInto(MinecraftServer server, ResourceKey<Level> dimension) throws IOException {
 		LevelStorageSource.LevelStorageAccess save = server.storageSource;
-		File dimensionDirectory = save.getDimensionPath(dimension);
-		return loadInto(dimensionDirectory.toPath());
+		return loadInto(save.getDimensionPath(dimension));
 	}
 
 	public MapMetadata loadInto(Path dimensionRoot) throws IOException {

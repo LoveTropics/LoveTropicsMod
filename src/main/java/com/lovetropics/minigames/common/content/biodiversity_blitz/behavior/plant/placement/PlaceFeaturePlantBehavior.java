@@ -7,23 +7,22 @@ import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.util.BlockStatePredicate;
-import com.lovetropics.minigames.common.util.world.DelegatingSeedReader;
+import com.lovetropics.minigames.common.util.world.DelegatingWorldGenLevel;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.longs.*;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.tags.BlockTags;
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.level.WorldGenLevel;
-import net.minecraft.world.level.chunk.ChunkGenerator;
-import net.minecraft.world.level.levelgen.feature.configurations.TreeConfiguration;
-import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
+import net.minecraft.core.Holder;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraftforge.common.util.Constants;
+import net.minecraft.tags.BlockTags;
+import net.minecraft.world.level.WorldGenLevel;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.chunk.ChunkGenerator;
+import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
 
 import javax.annotation.Nullable;
 import java.util.function.Predicate;
-import java.util.function.Supplier;
 
 public final class PlaceFeaturePlantBehavior implements IGameBehavior {
 	public static final Codec<PlaceFeaturePlantBehavior> CODEC = RecordCodecBuilder.create(instance -> instance.group(
@@ -31,10 +30,10 @@ public final class PlaceFeaturePlantBehavior implements IGameBehavior {
 			BlockStatePredicate.CODEC.fieldOf("blocks").forGetter(c -> c.blocks)
 	).apply(instance, PlaceFeaturePlantBehavior::new));
 
-	private final Supplier<ConfiguredFeature<?, ?>> feature;
+	private final Holder<ConfiguredFeature<?, ?>> feature;
 	private final BlockStatePredicate blocks;
 
-	public PlaceFeaturePlantBehavior(Supplier<ConfiguredFeature<?, ?>> feature, BlockStatePredicate blocks) {
+	public PlaceFeaturePlantBehavior(Holder<ConfiguredFeature<?, ?>> feature, BlockStatePredicate blocks) {
 		this.feature = feature;
 		this.blocks = blocks;
 	}
@@ -43,7 +42,7 @@ public final class PlaceFeaturePlantBehavior implements IGameBehavior {
 	public void register(IGamePhase game, EventRegistrar events) {
 		events.listen(BbPlantEvents.PLACE, (player, plot, pos) -> {
 			ServerLevel world = game.getWorld();
-			ConfiguredFeature<?, ?> tree = this.feature.get();
+			ConfiguredFeature<?, ?> tree = this.feature.value();
 			Long2ObjectMap<BlockState> changedBlocks = this.generateFeature(world, pos, tree);
 			if (changedBlocks != null) {
 				return this.buildPlacement(pos, changedBlocks);
@@ -55,10 +54,6 @@ public final class PlaceFeaturePlantBehavior implements IGameBehavior {
 
 	@Nullable
 	private Long2ObjectMap<BlockState> generateFeature(ServerLevel world, BlockPos pos, ConfiguredFeature<?, ?> feature) {
-		if (feature.config instanceof TreeConfiguration) {
-			((TreeConfiguration) feature.config).setFromSapling();
-		}
-
 		BlockCapturingWorld capturingWorld = new BlockCapturingWorld(world, this.blocks);
 
 		ChunkGenerator chunkGenerator = world.getChunkSource().getGenerator();
@@ -101,7 +96,7 @@ public final class PlaceFeaturePlantBehavior implements IGameBehavior {
 				pos.set(entry.getLongKey());
 				if (finalCoverage.covers(pos)) {
 					BlockState state = entry.getValue();
-					world.setBlock(pos, state, Constants.BlockFlags.DEFAULT | Constants.BlockFlags.UPDATE_NEIGHBORS);
+					world.setBlock(pos, state, Block.UPDATE_ALL | Block.UPDATE_KNOWN_SHAPE);
 				}
 			}
 			return true;
@@ -112,7 +107,7 @@ public final class PlaceFeaturePlantBehavior implements IGameBehavior {
 		return !state.is(BlockTags.LOGS);
 	}
 
-	static class BlockCapturingWorld extends DelegatingSeedReader {
+	static class BlockCapturingWorld extends DelegatingWorldGenLevel {
 		private final Long2ObjectMap<BlockState> simulatedBlocks = new Long2ObjectOpenHashMap<>();
 		private final Long2ObjectMap<BlockState> capturedBlocks = new Long2ObjectOpenHashMap<>();
 

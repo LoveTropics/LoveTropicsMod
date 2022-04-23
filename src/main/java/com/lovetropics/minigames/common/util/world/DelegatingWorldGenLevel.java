@@ -1,48 +1,47 @@
 package com.lovetropics.minigames.common.util.world;
 
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.Holder;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.particles.ParticleOptions;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.material.Fluid;
-import net.minecraft.world.level.material.FluidState;
-import net.minecraft.core.particles.ParticleOptions;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.core.Direction;
-import net.minecraft.sounds.SoundSource;
-import net.minecraft.sounds.SoundEvent;
-import net.minecraft.world.phys.AABB;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.SectionPos;
-import net.minecraft.core.RegistryAccess;
-import net.minecraft.world.DifficultyInstance;
-import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.level.WorldGenLevel;
-import net.minecraft.world.level.TickList;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeManager;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.border.WorldBorder;
+import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.ChunkSource;
 import net.minecraft.world.level.chunk.ChunkStatus;
-import net.minecraft.world.level.chunk.ChunkAccess;
+import net.minecraft.world.level.dimension.DimensionType;
+import net.minecraft.world.level.entity.EntityTypeTest;
+import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.levelgen.Heightmap;
-import net.minecraft.world.level.levelgen.feature.StructureFeature;
-import net.minecraft.world.level.levelgen.structure.StructureStart;
 import net.minecraft.world.level.lighting.LevelLightEngine;
-import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.material.Fluid;
+import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.storage.LevelData;
-import net.minecraftforge.common.util.Constants;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.ticks.LevelTickAccess;
 
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Random;
 import java.util.function.Predicate;
-import java.util.stream.Stream;
 
-public abstract class DelegatingSeedReader implements WorldGenLevel {
+public class DelegatingWorldGenLevel implements WorldGenLevel {
 	protected final WorldGenLevel parent;
 
-	protected DelegatingSeedReader(WorldGenLevel parent) {
+	protected DelegatingWorldGenLevel(WorldGenLevel parent) {
 		this.parent = parent;
 	}
 
@@ -52,23 +51,23 @@ public abstract class DelegatingSeedReader implements WorldGenLevel {
 	}
 
 	@Override
-	public Stream<? extends StructureStart<?>> startsForFeature(SectionPos sectionPos, StructureFeature<?> structure) {
-		return this.parent.startsForFeature(sectionPos, structure);
-	}
-
-	@Override
 	public ServerLevel getLevel() {
 		return this.parent.getLevel();
 	}
 
 	@Override
-	public TickList<Block> getBlockTicks() {
+	public long nextSubTickCount() {
+		return this.parent.nextSubTickCount();
+	}
+
+	@Override
+	public LevelTickAccess<Block> getBlockTicks() {
 		return this.parent.getBlockTicks();
 	}
 
 	@Override
-	public TickList<Fluid> getLiquidTicks() {
-		return this.parent.getLiquidTicks();
+	public LevelTickAccess<Fluid> getFluidTicks() {
+		return this.parent.getFluidTicks();
 	}
 
 	@Override
@@ -79,6 +78,12 @@ public abstract class DelegatingSeedReader implements WorldGenLevel {
 	@Override
 	public DifficultyInstance getCurrentDifficultyAt(BlockPos pos) {
 		return this.parent.getCurrentDifficultyAt(pos);
+	}
+
+	@Nullable
+	@Override
+	public MinecraftServer getServer() {
+		return this.parent.getServer();
 	}
 
 	@Override
@@ -104,6 +109,11 @@ public abstract class DelegatingSeedReader implements WorldGenLevel {
 	@Override
 	public void levelEvent(@Nullable Player player, int type, BlockPos pos, int data) {
 		this.parent.levelEvent(player, type, pos, data);
+	}
+
+	@Override
+	public void gameEvent(@Nullable final Entity entity, final GameEvent event, final BlockPos pos) {
+		this.parent.gameEvent(entity, event, pos);
 	}
 
 	@Override
@@ -148,8 +158,8 @@ public abstract class DelegatingSeedReader implements WorldGenLevel {
 	}
 
 	@Override
-	public <T extends Entity> List<T> getEntitiesOfClass(Class<? extends T> clazz, AABB box, @Nullable Predicate<? super T> filter) {
-		return this.parent.getEntitiesOfClass(clazz, box, filter);
+	public <T extends Entity> List<T> getEntities(final EntityTypeTest<Entity, T> type, final AABB aabb, final Predicate<? super T> predicate) {
+		return this.parent.getEntities(type, aabb, predicate);
 	}
 
 	@Override
@@ -179,7 +189,7 @@ public abstract class DelegatingSeedReader implements WorldGenLevel {
 	}
 
 	@Override
-	public Biome getUncachedNoiseBiome(int x, int y, int z) {
+	public Holder<Biome> getUncachedNoiseBiome(final int x, final int y, final int z) {
 		return this.parent.getUncachedNoiseBiome(x, y, z);
 	}
 
@@ -206,16 +216,16 @@ public abstract class DelegatingSeedReader implements WorldGenLevel {
 	@Override
 	public boolean removeBlock(BlockPos pos, boolean isMoving) {
 		FluidState fluid = this.getFluidState(pos);
-		int flags = Constants.BlockFlags.DEFAULT | (isMoving ? Constants.BlockFlags.IS_MOVING : 0);
+		int flags = Block.UPDATE_ALL | (isMoving ? Block.UPDATE_MOVE_BY_PISTON : 0);
 		return this.setBlock(pos, fluid.createLegacyBlock(), flags);
 	}
 
 	@Override
 	public boolean destroyBlock(BlockPos pos, boolean dropBlock, @Nullable Entity entity, int recursionLeft) {
 		BlockState block = this.getBlockState(pos);
-		if (!block.isAir(this, pos)) {
+		if (!block.isAir()) {
 			FluidState fluid = this.getFluidState(pos);
-			return this.setBlock(pos, fluid.createLegacyBlock(), Constants.BlockFlags.DEFAULT, recursionLeft);
+			return this.setBlock(pos, fluid.createLegacyBlock(), Block.UPDATE_ALL, recursionLeft);
 		}
 		return false;
 	}
@@ -223,5 +233,10 @@ public abstract class DelegatingSeedReader implements WorldGenLevel {
 	@Override
 	public boolean isStateAtPosition(BlockPos pos, Predicate<BlockState> predicate) {
 		return predicate.test(this.getBlockState(pos));
+	}
+
+	@Override
+	public boolean isFluidAtPosition(final BlockPos pos, final Predicate<FluidState> predicate) {
+		return this.parent.isFluidAtPosition(pos, predicate);
 	}
 }

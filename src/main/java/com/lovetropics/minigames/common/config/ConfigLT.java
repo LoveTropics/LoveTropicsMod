@@ -2,13 +2,9 @@ package com.lovetropics.minigames.common.config;
 
 import com.google.common.base.Strings;
 import net.minecraftforge.common.ForgeConfigSpec;
-import net.minecraftforge.common.ForgeConfigSpec.BooleanValue;
-import net.minecraftforge.common.ForgeConfigSpec.Builder;
-import net.minecraftforge.common.ForgeConfigSpec.DoubleValue;
-import net.minecraftforge.common.ForgeConfigSpec.IntValue;
-import net.minecraftforge.common.ForgeConfigSpec.ConfigValue;
+import net.minecraftforge.common.ForgeConfigSpec.*;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
-import net.minecraftforge.fml.config.ModConfig;
+import net.minecraftforge.fml.event.config.ModConfigEvent;
 
 @EventBusSubscriber
 public class ConfigLT {
@@ -120,13 +116,13 @@ public class ConfigLT {
     public static final ForgeConfigSpec CLIENT_CONFIG = CLIENT_BUILDER.build();
     public static final ForgeConfigSpec SERVER_CONFIG = COMMON_BUILDER.build();
 
-    public static void onLoad(final ModConfig.Loading configEvent) {
+    public static void onLoad(final ModConfigEvent.Loading configEvent) {
     }
 
     /**
      * values used during runtime that require processing from disk
      */
-    public static void onFileChange(final ModConfig.Reloading configEvent) {
+    public static void onFileChange(final ModConfigEvent.Reloading configEvent) {
         //System.out.println("file changed!" + configEvent.toString());
     }
 }

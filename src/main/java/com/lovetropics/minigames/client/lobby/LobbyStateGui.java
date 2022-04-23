@@ -6,6 +6,7 @@ import com.lovetropics.minigames.client.lobby.state.ClientGameDefinition;
 import com.lovetropics.minigames.client.lobby.state.ClientLobbyManager;
 import com.lovetropics.minigames.client.lobby.state.ClientLobbyState;
 import com.lovetropics.minigames.common.core.game.LobbyStatus;
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiComponent;
@@ -53,14 +54,12 @@ public class LobbyStateGui {
 			hasBossBar = true;
 		}
 
-		if (event.getType() != ElementType.TEXT && event.getType() != ElementType.HOTBAR) {
+		if (event.getType() != ElementType.TEXT && event.getType() != ElementType.LAYER) {
 			return;
 		}
 
-		Minecraft client = Minecraft.getInstance();
-
-		if (event.getType() == ElementType.HOTBAR) {
-			client.getTextureManager().bind(new ResourceLocation("minecraft:missingno"));
+		if (event.getType() == ElementType.LAYER) {
+			RenderSystem.setShaderTexture(0, new ResourceLocation("minecraft:missingno"));
 		}
 
 		if (event.getType() == ElementType.TEXT) {
@@ -97,7 +96,7 @@ public class LobbyStateGui {
 
 		ResourceLocation icon = getIcon(lobby);
 		if (icon != null) {
-			client.getTextureManager().bind(icon);
+			RenderSystem.setShaderTexture(0, icon);
 			GuiComponent.blit(transform, x, top, 0, 0, 32, 32, 32, 32);
 			x += iconSize + PADDING * 2;
 		}

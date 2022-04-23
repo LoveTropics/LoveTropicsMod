@@ -144,9 +144,8 @@ public final class SpectatingUi {
 	}
 
 	private void renderChasePlayerList(PoseStack transform, Window window) {
-		RenderSystem.enableAlphaTest();
 		RenderSystem.enableBlend();
-		RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
+		RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
 
 		int listHeight = entries.size() * ENTRY_SIZE;
 

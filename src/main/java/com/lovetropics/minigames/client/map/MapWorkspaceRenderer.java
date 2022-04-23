@@ -4,28 +4,25 @@ import com.lovetropics.lib.BlockBox;
 import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.common.core.map.workspace.ClientWorkspaceRegions;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.*;
 import it.unimi.dsi.fastutil.HashCommon;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.Camera;
-import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.Tesselator;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.debug.DebugRenderer;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.RenderWorldLastEvent;
+import net.minecraftforge.client.event.RenderLevelLastEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import org.lwjgl.opengl.GL11;
 
 import java.util.Set;
 
 @Mod.EventBusSubscriber(modid = Constants.MODID, value = Dist.CLIENT)
 public final class MapWorkspaceRenderer {
 	@SubscribeEvent
-	public static void onRenderWorld(RenderWorldLastEvent event) {
+	public static void onRenderWorld(RenderLevelLastEvent event) {
 		ClientWorkspaceRegions regions = ClientMapWorkspace.INSTANCE.getRegions();
 		if (regions.isEmpty()) {
 			return;
@@ -39,13 +36,13 @@ public final class MapWorkspaceRenderer {
 
 		Vec3 view = renderInfo.getPosition();
 
-		RenderSystem.pushMatrix();
-		RenderSystem.multMatrix(event.getMatrixStack().last().pose());
+		final PoseStack modelViewStack = RenderSystem.getModelViewStack();
+		modelViewStack.mulPoseMatrix(event.getPoseStack().last().pose());
+		RenderSystem.applyModelViewMatrix();
 
 		RenderSystem.disableTexture();
 		RenderSystem.enableBlend();
 		RenderSystem.defaultBlendFunc();
-		RenderSystem.disableLighting();
 		RenderSystem.enableDepthTest();
 
 		RenderSystem.polygonOffset(-1.0F, -10.0F);
@@ -67,7 +64,7 @@ public final class MapWorkspaceRenderer {
 			float alpha = 0.3F;
 
 			if (selectedRegions.contains(entry)) {
-				double time = client.level.getGameTime() + event.getPartialTicks();
+				double time = client.level.getGameTime() + event.getPartialTick();
 				float animation = (float) ((Math.sin(time * 0.1) + 1.0) / 2.0);
 
 				alpha = 0.4F + animation * 0.15F;
@@ -79,20 +76,20 @@ public final class MapWorkspaceRenderer {
 			}
 
 			BlockBox region = entry.region;
-			double minX = region.min.getX() - view.x;
-			double minY = region.min.getY() - view.y;
-			double minZ = region.min.getZ() - view.z;
-			double maxX = region.max.getX() + 1.0 - view.x;
-			double maxY = region.max.getY() + 1.0 - view.y;
-			double maxZ = region.max.getZ() + 1.0 - view.z;
+			double minX = region.min().getX() - view.x;
+			double minY = region.min().getY() - view.y;
+			double minZ = region.min().getZ() - view.z;
+			double maxX = region.max().getX() + 1.0 - view.x;
+			double maxY = region.max().getY() + 1.0 - view.y;
+			double maxZ = region.max().getZ() + 1.0 - view.z;
 
 			DebugRenderer.renderFilledBox(minX, minY, minZ, maxX, maxY, maxZ, red, green, blue, alpha);
 			renderOutline(minX, minY, minZ, maxX, maxY, maxZ, outlineRed, outlineGreen, outlineBlue, 1.0F);
 		}
 
 		for (ClientWorkspaceRegions.Entry entry : regions) {
-			Vec3 center = entry.region.getCenter();
-			BlockPos size = entry.region.getSize();
+			Vec3 center = entry.region.center();
+			BlockPos size = entry.region.size();
 
 			int minSize = Math.min(size.getX(), Math.min(size.getY(), size.getZ())) - 1;
 			float scale = Mth.clamp(minSize * 0.03125F, 0.03125F, 0.125F);
@@ -105,7 +102,8 @@ public final class MapWorkspaceRenderer {
 		RenderSystem.polygonOffset(0.0F, 0.0F);
 		RenderSystem.disablePolygonOffset();
 
-		RenderSystem.popMatrix();
+		modelViewStack.popPose();
+		RenderSystem.applyModelViewMatrix();
 	}
 
 	private static int colorForKey(String key) {
@@ -115,7 +113,7 @@ public final class MapWorkspaceRenderer {
 	private static void renderOutline(double minX, double minY, double minZ, double maxX, double maxY, double maxZ, float red, float green, float blue, float alpha) {
 		Tesselator tessellator = Tesselator.getInstance();
 		BufferBuilder builder = tessellator.getBuilder();
-		builder.begin(GL11.GL_LINES, DefaultVertexFormat.POSITION_COLOR);
+		builder.begin(VertexFormat.Mode.LINES, DefaultVertexFormat.POSITION_COLOR);
 
 		builder.vertex(minX, minY, minZ).color(red, green, blue, alpha).endVertex();
 		builder.vertex(maxX, minY, minZ).color(red, green, blue, alpha).endVertex();

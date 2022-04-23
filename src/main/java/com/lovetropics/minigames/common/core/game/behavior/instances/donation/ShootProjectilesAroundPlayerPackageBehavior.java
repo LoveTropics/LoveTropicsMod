@@ -9,12 +9,16 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.projectile.LargeFireball;
 import net.minecraft.core.BlockPos;
-import net.minecraft.util.Mth;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.projectile.LargeFireball;
+import net.minecraft.world.level.Explosion;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.EntityHitResult;
+import net.minecraft.world.phys.HitResult;
+import net.minecraftforge.event.ForgeEventFactory;
 
 import java.util.Iterator;
 import java.util.Random;
@@ -109,15 +113,31 @@ public class ShootProjectilesAroundPlayerPackageBehavior implements IGameBehavio
 		double deltaX = target.getX() - spawn.getX();
 		double deltaY = target.getY() - spawn.getY();
 		double deltaZ = target.getZ() - spawn.getZ();
-		double distance = Mth.sqrt(deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ);
+		double distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ);
 
-		LargeFireball fireball = new LargeFireball(EntityType.FIREBALL, world);
-		fireball.moveTo(spawn.getX(), spawn.getY(), spawn.getZ(), fireball.yRot, fireball.xRot);
+		LargeFireball fireball = new LargeFireball(EntityType.FIREBALL, world) {
+			@Override
+			protected void onHit(final HitResult hitResult) {
+				HitResult.Type resultType = hitResult.getType();
+				switch (resultType) {
+					case ENTITY -> onHitEntity((EntityHitResult) hitResult);
+					case BLOCK -> onHitBlock((BlockHitResult) hitResult);
+				}
+
+				if (!level.isClientSide) {
+					final boolean mobGriefing = ForgeEventFactory.getMobGriefingEvent(level, getOwner());
+					final Explosion.BlockInteraction blockInteraction = mobGriefing ? Explosion.BlockInteraction.DESTROY : Explosion.BlockInteraction.NONE;
+					level.explode(null, getX(), getY(), getZ(), explosionStrength, mobGriefing, blockInteraction);
+					discard();
+				}
+			}
+		};
+
+		fireball.moveTo(spawn.getX(), spawn.getY(), spawn.getZ(), fireball.getYRot(), fireball.getXRot());
 		fireball.setPos(spawn.getX(), spawn.getY(), spawn.getZ());
 		fireball.xPower = deltaX / distance * 0.1;
 		fireball.yPower = deltaY / distance * 0.1;
 		fireball.zPower = deltaZ / distance * 0.1;
-		fireball.explosionPower = explosionStrength;
 
 		return fireball;
 	}

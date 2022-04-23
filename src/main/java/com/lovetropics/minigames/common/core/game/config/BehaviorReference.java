@@ -3,11 +3,11 @@ package com.lovetropics.minigames.common.core.game.config;
 import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.common.core.game.behavior.GameBehaviorType;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
-import com.lovetropics.minigames.common.util.DynamicRegistryReadingOps;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.server.MinecraftServer;
 
 import java.util.function.BiConsumer;
@@ -31,7 +31,7 @@ public final class BehaviorReference {
 	}
 
 	private static <T, B extends IGameBehavior> DataResult<B> parseWithDynamicRegistries(MinecraftServer server, Codec<B> codec, Dynamic<T> config) {
-		DynamicOps<T> ops = DynamicRegistryReadingOps.create(server, config.getOps());
+		DynamicOps<T> ops = RegistryOps.create(config.getOps(), server.registryAccess());
 		return codec.parse(ops, config.getValue());
 	}
 }

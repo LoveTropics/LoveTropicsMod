@@ -1,23 +1,21 @@
 package com.lovetropics.minigames.client.toast;
 
 import com.lovetropics.minigames.Constants;
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.client.gui.components.toasts.Toast;
 import net.minecraft.client.gui.components.toasts.ToastComponent;
 import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.util.FormattedCharSequence;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.FormattedCharSequence;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import net.minecraft.client.gui.components.toasts.Toast.Visibility;
 
 public final class NotificationToast implements Toast {
 	private static final ResourceLocation TEXTURE = new ResourceLocation(Constants.MODID, "textures/gui/toasts.png");
@@ -56,9 +54,8 @@ public final class NotificationToast implements Toast {
 
 	@Override
 	public Visibility render(PoseStack matrixStack, ToastComponent gui, long time) {
-		RenderSystem.color3f(1.0F, 1.0F, 1.0F);
-
-		CLIENT.getTextureManager().bind(TEXTURE);
+		RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+		RenderSystem.setShaderTexture(0, TEXTURE);
 		this.drawBackground(matrixStack, gui);
 
 		this.drawText(matrixStack);
@@ -132,7 +129,7 @@ public final class NotificationToast implements Toast {
 			itemRenderer.renderAndDecorateFakeItem(icon.item, 6, y);
 		} else if (icon.effect != null) {
 			TextureAtlasSprite sprite = CLIENT.getMobEffectTextures().get(icon.effect);
-			CLIENT.getTextureManager().bind(sprite.atlas().location());
+			RenderSystem.setShaderTexture(0, sprite.atlas().location());
 			GuiComponent.blit(matrixStack, 5, y, 0, 18, 18, sprite);
 		}
 	}

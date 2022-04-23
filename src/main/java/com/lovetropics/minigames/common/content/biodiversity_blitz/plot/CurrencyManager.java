@@ -101,7 +101,7 @@ public final class CurrencyManager implements IGameState {
 
 	private int addToInventory(ServerPlayer player, int amount) {
 		ItemStack stack = new ItemStack(item, amount);
-		player.inventory.add(stack);
+		player.getInventory().add(stack);
 		sendInventoryUpdate(player);
 		return amount - stack.getCount();
 	}
@@ -115,7 +115,7 @@ public final class CurrencyManager implements IGameState {
 			if (remaining <= 0) break;
 		}
 
-		remaining -= ContainerHelper.clearOrCountMatchingItems(player.inventory.getCarried(), itemPredicate, remaining, false);
+		remaining -= ContainerHelper.clearOrCountMatchingItems(player.containerMenu.getCarried(), itemPredicate, remaining, false);
 
 		sendInventoryUpdate(player);
 
@@ -144,7 +144,7 @@ public final class CurrencyManager implements IGameState {
 			}
 		}
 
-		ItemStack stack = player.inventory.getCarried();
+		ItemStack stack = player.containerMenu.getCarried();
 		if (itemPredicate.test(stack)) {
 			count += stack.getCount();
 		}
@@ -154,7 +154,6 @@ public final class CurrencyManager implements IGameState {
 
 	private static void sendInventoryUpdate(ServerPlayer player) {
 		player.containerMenu.broadcastChanges();
-		player.broadcastCarriedItem();
 	}
 
 	public void equalize() {

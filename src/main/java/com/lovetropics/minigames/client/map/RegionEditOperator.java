@@ -67,12 +67,12 @@ public interface RegionEditOperator {
 			BlockBox region = editTarget.entry.region;
 
 			switch (editTarget.side) {
-				case DOWN: return region.withMin(new BlockPos(region.min.getX(), grabPos.getY(), region.min.getZ()));
-				case UP: return region.withMax(new BlockPos(region.max.getX(), grabPos.getY(), region.max.getZ()));
-				case NORTH: return region.withMin(new BlockPos(region.min.getX(), region.min.getY(), grabPos.getZ()));
-				case SOUTH: return region.withMax(new BlockPos(region.max.getX(), region.max.getY(), grabPos.getZ()));
-				case WEST: return region.withMin(new BlockPos(grabPos.getX(), region.min.getY(), region.min.getZ()));
-				case EAST: return region.withMax(new BlockPos(grabPos.getX(), region.max.getY(), region.max.getZ()));
+				case DOWN: return region.withMin(new BlockPos(region.min().getX(), grabPos.getY(), region.min().getZ()));
+				case UP: return region.withMax(new BlockPos(region.max().getX(), grabPos.getY(), region.max().getZ()));
+				case NORTH: return region.withMin(new BlockPos(region.min().getX(), region.min().getY(), grabPos.getZ()));
+				case SOUTH: return region.withMax(new BlockPos(region.max().getX(), region.max().getY(), grabPos.getZ()));
+				case WEST: return region.withMin(new BlockPos(grabPos.getX(), region.min().getY(), region.min().getZ()));
+				case EAST: return region.withMax(new BlockPos(grabPos.getX(), region.max().getY(), region.max().getZ()));
 				default: throw new UnsupportedOperationException();
 			}
 		}
@@ -83,7 +83,7 @@ public interface RegionEditOperator {
 
 		public Move(RegionTraceTarget target) {
 			super(target);
-			this.offset = target.intersectPoint.subtract(target.entry.region.getCenter());
+			this.offset = target.intersectPoint.subtract(target.entry.region.center());
 		}
 
 		@Override
@@ -92,7 +92,7 @@ public interface RegionEditOperator {
 
 			BlockBox region = editTarget.entry.region;
 
-			Vec3 grabPoint = region.getCenter().add(offset);
+			Vec3 grabPoint = region.center().add(offset);
 			Vec3 targetPoint = origin.add(player.getLookAngle().scale(target.distanceToSide));
 			Vec3 offset = targetPoint.subtract(grabPoint);
 

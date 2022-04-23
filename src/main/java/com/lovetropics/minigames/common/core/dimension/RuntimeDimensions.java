@@ -5,36 +5,37 @@ import com.google.common.collect.ImmutableList;
 import com.lovetropics.minigames.Constants;
 import com.mojang.serialization.Lifecycle;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.ProgressListener;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Registry;
 import net.minecraft.core.MappedRegistry;
-import net.minecraft.world.level.dimension.LevelStem;
+import net.minecraft.core.Registry;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.ProgressListener;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.BiomeManager;
+import net.minecraft.world.level.dimension.LevelStem;
 import net.minecraft.world.level.levelgen.WorldGenSettings;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.storage.LevelStorageSource;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.server.ServerAboutToStartEvent;
+import net.minecraftforge.event.server.ServerStoppingEvent;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.event.server.FMLServerAboutToStartEvent;
-import net.minecraftforge.fml.event.server.FMLServerStoppingEvent;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import javax.annotation.Nullable;
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -57,7 +58,7 @@ public final class RuntimeDimensions {
 	}
 
 	@SubscribeEvent
-	public static void onServerAboutToStart(FMLServerAboutToStartEvent event) {
+	public static void onServerAboutToStart(ServerAboutToStartEvent event) {
 		instance = new RuntimeDimensions(event.getServer());
 	}
 
@@ -74,7 +75,7 @@ public final class RuntimeDimensions {
 	}
 
 	@SubscribeEvent
-	public static void onServerStopping(FMLServerStoppingEvent event) {
+	public static void onServerStopping(ServerStoppingEvent event) {
 		RuntimeDimensions.tryStop();
 	}
 
@@ -132,7 +133,7 @@ public final class RuntimeDimensions {
 				this.server, Util.backgroundExecutor(), this.server.storageSource,
 				config.worldInfo,
 				worldKey,
-				config.dimension.type(),
+				config.dimension.typeHolder(),
 				VoidChunkStatusListener.INSTANCE,
 				config.dimension.generator(),
 				false,
@@ -229,21 +230,24 @@ public final class RuntimeDimensions {
 			MinecraftForge.EVENT_BUS.post(new WorldEvent.Unload(world));
 
 			MappedRegistry<LevelStem> dimensionsRegistry = getDimensionsRegistry(this.server);
+
+			dimensionsRegistry.unfreeze();
 			RegistryEntryRemover.remove(dimensionsRegistry, dimensionKey.location());
+			dimensionsRegistry.freeze();
 
 			LevelStorageSource.LevelStorageAccess save = this.server.storageSource;
 			deleteWorldDirectory(save.getDimensionPath(dimensionKey));
 		}
 	}
 
-	private static void deleteWorldDirectory(File worldDirectory) {
-		if (worldDirectory.exists()) {
+	private static void deleteWorldDirectory(Path worldDirectory) {
+		if (Files.exists(worldDirectory)) {
 			try {
-				FileUtils.deleteDirectory(worldDirectory);
+				FileUtils.deleteDirectory(worldDirectory.toFile());
 			} catch (IOException e) {
 				LOGGER.warn("Failed to delete world directory", e);
 				try {
-					FileUtils.forceDeleteOnExit(worldDirectory);
+					FileUtils.forceDeleteOnExit(worldDirectory.toFile());
 				} catch (IOException ignored) {
 				}
 			}
@@ -252,7 +256,7 @@ public final class RuntimeDimensions {
 
 	private static MappedRegistry<LevelStem> getDimensionsRegistry(MinecraftServer server) {
 		WorldGenSettings generatorSettings = server.getWorldData().worldGenSettings();
-		return generatorSettings.dimensions();
+		return (MappedRegistry<LevelStem>) generatorSettings.dimensions();
 	}
 
 	private static ResourceLocation generateTemporaryDimensionKey() {

@@ -46,11 +46,11 @@ public final class SelectPlayerRoleScreen extends Screen {
 
 		layout = new ScreenLayout(this);
 
-		this.addButton(FlexUi.createButton(layout.play, new TextComponent("Play"), b -> {
+		this.addRenderableWidget(FlexUi.createButton(layout.play, new TextComponent("Play"), b -> {
 			this.acceptResponse(true);
 			this.onClose();
 		}));
-		this.addButton(FlexUi.createButton(layout.spectate, new TextComponent("Spectate"), b -> {
+		this.addRenderableWidget(FlexUi.createButton(layout.spectate, new TextComponent("Spectate"), b -> {
 			this.acceptResponse(false);
 			this.onClose();
 		}));

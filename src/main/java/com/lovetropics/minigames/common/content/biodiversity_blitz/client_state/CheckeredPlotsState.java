@@ -33,8 +33,8 @@ public final class CheckeredPlotsState implements GameClientState {
 		for (int i = 1; i < plots.length; i++) {
 			BlockBox plot = plots[i];
 			global = BlockBox.of(
-					BlockBox.min(global.min, plot.min),
-					BlockBox.max(global.max, plot.max)
+					BlockBox.min(global.min(), plot.min()),
+					BlockBox.max(global.max(), plot.max())
 			);
 		}
 

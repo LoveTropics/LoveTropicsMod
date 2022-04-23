@@ -1,70 +1,59 @@
 package com.lovetropics.minigames.common.core.map;
 
-import com.google.common.collect.ImmutableList;
 import com.lovetropics.minigames.common.util.Util;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.entity.MobCategory;
-import net.minecraft.world.level.material.FluidState;
-import net.minecraft.world.level.material.Fluids;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.level.ChunkPos;
-import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
-import net.minecraft.world.level.BlockGetter;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.WorldGenRegion;
+import net.minecraft.world.level.LevelHeightAccessor;
+import net.minecraft.world.level.NoiseColumn;
+import net.minecraft.world.level.StructureFeatureManager;
 import net.minecraft.world.level.WorldGenLevel;
-import net.minecraft.world.level.LevelAccessor;
-import net.minecraft.world.level.biome.Biome;
-import net.minecraft.world.level.biome.BiomeManager;
-import net.minecraft.world.level.biome.Biomes;
-import net.minecraft.world.level.biome.MobSpawnSettings;
-import net.minecraft.world.level.biome.FixedBiomeSource;
+import net.minecraft.world.level.biome.*;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.ChunkGenerator;
+import net.minecraft.world.level.dimension.DimensionDefaults;
 import net.minecraft.world.level.levelgen.GenerationStep;
 import net.minecraft.world.level.levelgen.Heightmap;
-import net.minecraft.server.level.WorldGenRegion;
-import net.minecraft.world.level.levelgen.feature.StructureFeature;
-import net.minecraft.world.level.StructureFeatureManager;
+import net.minecraft.world.level.levelgen.blending.Blender;
+import net.minecraft.world.level.levelgen.structure.StructureSet;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureManager;
-import net.minecraft.world.level.levelgen.StructureSettings;
-import net.minecraft.server.level.ServerLevel;
 
-import javax.annotation.Nullable;
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Supplier;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 
 public final class VoidChunkGenerator extends ChunkGenerator {
-	public static final Codec<VoidChunkGenerator> CODEC = RecordCodecBuilder.create(instance -> {
-		return instance.group(
-				Biome.CODEC.stable().fieldOf("biome").forGetter(g -> g.biome)
-		).apply(instance, instance.stable(VoidChunkGenerator::new));
-	});
+	public static final Codec<VoidChunkGenerator> CODEC = RecordCodecBuilder.create(i -> commonCodec(i).and(i.group(
+			Biome.CODEC.stable().fieldOf("biome").forGetter(g -> g.biome)
+	).t1()).apply(i, i.stable(VoidChunkGenerator::new)));
 
-	private final Supplier<Biome> biome;
+	private final Holder<Biome> biome;
 
-	public VoidChunkGenerator(Supplier<Biome> biome) {
-		super(new FixedBiomeSource(biome), new StructureSettings(Optional.empty(), Collections.emptyMap()));
+	public VoidChunkGenerator(final Registry<StructureSet> structureSets, final Holder<Biome> biome) {
+		super(structureSets, Optional.empty(), new FixedBiomeSource(biome));
 		this.biome = biome;
 	}
 
-	public VoidChunkGenerator(Registry<Biome> biomeRegistry) {
-		this(biomeRegistry, Biomes.THE_VOID);
+	public VoidChunkGenerator(Registry<StructureSet> structureSets, Registry<Biome> biomeRegistry) {
+		this(structureSets, biomeRegistry, Biomes.THE_VOID);
 	}
 
 	public VoidChunkGenerator(MinecraftServer server) {
-		this(server.registryAccess().registryOrThrow(Registry.BIOME_REGISTRY));
+		this(server.registryAccess().registryOrThrow(Registry.STRUCTURE_SET_REGISTRY), server.registryAccess().registryOrThrow(Registry.BIOME_REGISTRY));
 	}
 
-	public VoidChunkGenerator(Registry<Biome> biomeRegistry, ResourceKey<Biome> biome) {
-		this(() -> biomeRegistry.get(biome));
+	public VoidChunkGenerator(Registry<StructureSet> structureSets, Registry<Biome> biomeRegistry, ResourceKey<Biome> biome) {
+		this(structureSets, biomeRegistry.getOrCreateHolder(biome));
 	}
 
 	public static void register() {
@@ -77,25 +66,6 @@ public final class VoidChunkGenerator extends ChunkGenerator {
 	}
 
 	@Override
-	public void applyCarvers(long seed, BiomeManager biomes, ChunkAccess chunk, GenerationStep.Carving carving) {
-	}
-
-	@Nullable
-	@Override
-	public BlockPos findNearestMapFeature(ServerLevel world, StructureFeature<?> structure, BlockPos pos, int range, boolean undiscovered) {
-		return null;
-	}
-
-	@Override
-	public void applyBiomeDecoration(WorldGenRegion world, StructureFeatureManager strutures) {
-	}
-
-	@Override
-	public List<MobSpawnSettings.SpawnerData> getMobsAt(Biome biomes, StructureFeatureManager structures, MobCategory entityClassification, BlockPos pos) {
-		return ImmutableList.of();
-	}
-
-	@Override
 	public void createStructures(RegistryAccess dynamicRegistries, StructureFeatureManager structures, ChunkAccess chunk, StructureManager templates, long seed) {
 	}
 
@@ -104,8 +74,34 @@ public final class VoidChunkGenerator extends ChunkGenerator {
 	}
 
 	@Override
-	public boolean hasStronghold(ChunkPos pos) {
-		return false;
+	public CompletableFuture<ChunkAccess> fillFromNoise(final Executor executor, final Blender blender, final StructureFeatureManager structures, final ChunkAccess chunk) {
+		return CompletableFuture.completedFuture(chunk);
+	}
+
+	@Override
+	public int getSeaLevel() {
+		return 0;
+	}
+
+	@Override
+	public int getMinY() {
+		return 0;
+	}
+
+	@Override
+	public int getBaseHeight(final int x, final int z, final Heightmap.Types heightmap, final LevelHeightAccessor level) {
+		return 0;
+	}
+
+	@Override
+	public NoiseColumn getBaseColumn(final int x, final int z, final LevelHeightAccessor level) {
+		final BlockState[] blocks = new BlockState[level.getHeight()];
+		Arrays.fill(blocks, Blocks.AIR.defaultBlockState());
+		return new NoiseColumn(level.getMinBuildHeight(), blocks);
+	}
+
+	@Override
+	public void addDebugScreenInfo(final List<String> info, final BlockPos pos) {
 	}
 
 	@Override
@@ -114,46 +110,24 @@ public final class VoidChunkGenerator extends ChunkGenerator {
 	}
 
 	@Override
-	public void buildSurfaceAndBedrock(WorldGenRegion world, ChunkAccess chunk) {
+	public Climate.Sampler climateSampler() {
+		return Climate.empty();
 	}
 
 	@Override
-	public void fillFromNoise(LevelAccessor world, StructureFeatureManager structures, ChunkAccess chunk) {
+	public void applyCarvers(final WorldGenRegion region, final long seed, final BiomeManager biomes, final StructureFeatureManager structures, final ChunkAccess chunk, final GenerationStep.Carving step) {
 	}
 
 	@Override
-	public int getBaseHeight(int x, int z, Heightmap.Types heightmapType) {
-		return 0;
+	public void buildSurface(final WorldGenRegion region, final StructureFeatureManager structures, final ChunkAccess chunk) {
 	}
 
 	@Override
-	public BlockGetter getBaseColumn(int x, int z) {
-		return VoidBlockReader.INSTANCE;
+	public void spawnOriginalMobs(final WorldGenRegion region) {
 	}
 
-	static final class VoidBlockReader implements BlockGetter {
-		static final VoidBlockReader INSTANCE = new VoidBlockReader();
-
-		private static final BlockState VOID_BLOCK = Blocks.AIR.defaultBlockState();
-		private static final FluidState VOID_FLUID = Fluids.EMPTY.defaultFluidState();
-
-		private VoidBlockReader() {
-		}
-
-		@Nullable
-		@Override
-		public BlockEntity getBlockEntity(BlockPos pos) {
-			return null;
-		}
-
-		@Override
-		public BlockState getBlockState(BlockPos pos) {
-			return VOID_BLOCK;
-		}
-
-		@Override
-		public FluidState getFluidState(BlockPos pos) {
-			return VOID_FLUID;
-		}
+	@Override
+	public int getGenDepth() {
+		return DimensionDefaults.OVERWORLD_LEVEL_HEIGHT;
 	}
 }

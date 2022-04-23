@@ -3,7 +3,7 @@ package com.lovetropics.minigames.common.core.network.workspace;
 import com.lovetropics.lib.BlockBox;
 import com.lovetropics.minigames.client.map.ClientMapWorkspace;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraftforge.fml.network.NetworkEvent;
+import net.minecraftforge.network.NetworkEvent;
 
 import java.util.function.Supplier;
 

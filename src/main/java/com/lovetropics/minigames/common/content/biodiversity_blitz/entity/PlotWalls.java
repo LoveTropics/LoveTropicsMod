@@ -2,18 +2,14 @@ package com.lovetropics.minigames.common.content.biodiversity_blitz.entity;
 
 import net.minecraft.world.entity.Entity;
 import net.minecraft.core.Direction;
-import net.minecraft.util.RewindableStream;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.Spliterator;
-import java.util.Spliterators;
-import java.util.function.Consumer;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
+import java.util.ArrayList;
+import java.util.List;
 
 public final class PlotWalls {
 	private final AABB bounds;
@@ -67,13 +63,18 @@ public final class PlotWalls {
 			return offset;
 		}
 
-		Stream<VoxelShape> collisions = this.collisions(collidingBox);
-		return Entity.collideBoundingBoxLegacy(offset, box, new RewindableStream<>(collisions));
+		List<VoxelShape> collisions = this.collectCollisions(collidingBox);
+		return Entity.collideWithShapes(offset, box, collisions);
 	}
 
-	public Stream<VoxelShape> collisions(AABB box) {
-		CollisionSpliterator spliterator = new CollisionSpliterator(box, faces, faceShapes);
-		return StreamSupport.stream(spliterator, false);
+	public List<VoxelShape> collectCollisions(AABB box) {
+		final List<VoxelShape> collisions = new ArrayList<>();
+		for (int i = 0; i < faces.length; i++) {
+			if (box.intersects(faces[i])) {
+				collisions.add(faceShapes[i]);
+			}
+		}
+		return collisions;
 	}
 
 	public AABB getBounds() {
@@ -86,34 +87,5 @@ public final class PlotWalls {
 
 	public boolean containsBlock(BlockPos pos) {
 		return this.bounds.contains(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5);
-	}
-
-	public static final class CollisionSpliterator extends Spliterators.AbstractSpliterator<VoxelShape> {
-		private final AABB box;
-		private final AABB[] faces;
-		private final VoxelShape[] faceShapes;
-
-		private int faceIndex;
-
-		CollisionSpliterator(AABB box, AABB[] faces, VoxelShape[] faceShapes) {
-			super(Long.MAX_VALUE, Spliterator.NONNULL | Spliterator.IMMUTABLE);
-			this.box = box;
-			this.faces = faces;
-			this.faceShapes = faceShapes;
-		}
-
-		@Override
-		public boolean tryAdvance(Consumer<? super VoxelShape> action) {
-			AABB[] faces = this.faces;
-			while (this.faceIndex < faces.length) {
-				int index = this.faceIndex++;
-				if (this.box.intersects(faces[index])) {
-					action.accept(this.faceShapes[index]);
-					return true;
-				}
-			}
-
-			return false;
-		}
 	}
 }

@@ -47,7 +47,7 @@ interface SpectatingState {
 		@Override
 		public SpectatingState tick(Minecraft client, SpectatingSession session, LocalPlayer player) {
 			// force player to maximum flying speed
-			player.abilities.setFlyingSpeed(0.2F);
+			player.getAbilities().setFlyingSpeed(0.2F);
 
 			if (client.getCameraEntity() != player) {
 				return new SelectedPlayer(client.getCameraEntity().getUUID());
@@ -103,8 +103,8 @@ interface SpectatingState {
 				client.options.smoothCamera = false;
 				client.options.setCameraType(CameraType.FIRST_PERSON);
 
-				player.yRot = focusEntity.yRot;
-				player.xRot = focusEntity.xRot;
+				player.setYRot(focusEntity.getYRot());
+				player.setXRot(focusEntity.getXRot());
 			}
 		}
 

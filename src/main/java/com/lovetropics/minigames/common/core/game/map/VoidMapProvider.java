@@ -10,13 +10,13 @@ import com.lovetropics.minigames.common.core.map.MapWorldSettings;
 import com.lovetropics.minigames.common.core.map.VoidChunkGenerator;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.core.Holder;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.world.level.dimension.LevelStem;
 import net.minecraft.world.level.dimension.DimensionType;
+import net.minecraft.world.level.dimension.LevelStem;
 
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.Supplier;
 
 public class VoidMapProvider implements IGameMapProvider {
 	public static final Codec<VoidMapProvider> CODEC = RecordCodecBuilder.create(instance -> {
@@ -27,9 +27,9 @@ public class VoidMapProvider implements IGameMapProvider {
 	});
 
 	private final String name;
-	private final Supplier<DimensionType> dimensionType;
+	private final Holder<DimensionType> dimensionType;
 
-	public VoidMapProvider(final Optional<String> name, Optional<Supplier<DimensionType>> dimensionType) {
+	public VoidMapProvider(final Optional<String> name, Optional<Holder<DimensionType>> dimensionType) {
 		this.name = name.orElse(null);
 		this.dimensionType = dimensionType.orElse(null);
 	}
@@ -41,7 +41,7 @@ public class VoidMapProvider implements IGameMapProvider {
 
 	@Override
 	public CompletableFuture<GameResult<GameMap>> open(MinecraftServer server) {
-		Supplier<DimensionType> dimensionType = this.dimensionType != null ? this.dimensionType : () -> server.overworld().dimensionType();
+		Holder<DimensionType> dimensionType = this.dimensionType != null ? this.dimensionType : server.overworld().dimensionTypeRegistration();
 		LevelStem dimension = new LevelStem(dimensionType, new VoidChunkGenerator(server));
 
 		MapWorldInfo worldInfo = MapWorldInfo.create(server, new MapWorldSettings());

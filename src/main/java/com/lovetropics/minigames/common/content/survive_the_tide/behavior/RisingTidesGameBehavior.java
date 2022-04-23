@@ -15,51 +15,46 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.longs.*;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
-import net.minecraft.block.*;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundLevelParticlesPacket;
-import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.core.BlockPos;
-import net.minecraft.world.level.ChunkPos;
-import net.minecraft.util.Mth;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.chunk.LevelChunk;
-import net.minecraft.world.level.chunk.LevelChunkSection;
-import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.server.level.ServerChunkCache;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraftforge.common.util.Constants;
-import net.minecraftforge.fml.RegistryObject;
-import net.minecraftforge.registries.ForgeRegistries;
-import org.apache.logging.log4j.LogManager;
-
-import javax.annotation.Nullable;
-import java.util.*;
-
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.Mth;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.CampfireBlock;
 import net.minecraft.world.level.block.SimpleWaterloggedBlock;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.chunk.LevelChunk;
+import net.minecraft.world.level.chunk.LevelChunkSection;
+import net.minecraft.world.level.levelgen.Heightmap;
+import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraftforge.registries.RegistryObject;
+import org.apache.logging.log4j.LogManager;
+
+import javax.annotation.Nullable;
+import java.util.*;
 
 public class RisingTidesGameBehavior implements IGameBehavior {
-	public static final Codec<RisingTidesGameBehavior> CODEC = RecordCodecBuilder.create(instance -> {
-		return instance.group(
-				Codec.STRING.optionalFieldOf("tide_area_region", "tide_area").forGetter(c -> c.tideAreaKey),
-				Codec.STRING.optionalFieldOf("iceberg_lines_region", "iceberg_lines").forGetter(c -> c.icebergLinesKey),
-				Codec.unboundedMap(Codec.STRING, Codec.INT).fieldOf("water_levels").forGetter(c -> c.phaseToTideHeight),
-				Codec.STRING.listOf().fieldOf("phases_icebergs_grow").forGetter(c -> new ArrayList<>(c.phasesIcebergsGrow)),
-				Codec.INT.fieldOf("iceberg_growth_tick_rate").forGetter(c -> c.icebergGrowthTickRate)
-		).apply(instance, RisingTidesGameBehavior::new);
-	});
+	public static final Codec<RisingTidesGameBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+			Codec.STRING.optionalFieldOf("tide_area_region", "tide_area").forGetter(c -> c.tideAreaKey),
+			Codec.STRING.optionalFieldOf("iceberg_lines_region", "iceberg_lines").forGetter(c -> c.icebergLinesKey),
+			Codec.unboundedMap(Codec.STRING, Codec.INT).fieldOf("water_levels").forGetter(c -> c.phaseToTideHeight),
+			Codec.STRING.listOf().fieldOf("phases_icebergs_grow").forGetter(c -> new ArrayList<>(c.phasesIcebergsGrow)),
+			Codec.INT.fieldOf("iceberg_growth_tick_rate").forGetter(c -> c.icebergGrowthTickRate)
+	).apply(i, RisingTidesGameBehavior::new));
 
-	private static final RegistryObject<Block> WATER_BARRIER = RegistryObject.of(new ResourceLocation("ltextras", "water_barrier"), ForgeRegistries.BLOCKS);
+	private static final RegistryObject<Block> WATER_BARRIER = RegistryObject.create(new ResourceLocation("ltextras", "water_barrier"), ForgeRegistries.BLOCKS);
 
 	// the maximum time in milliseconds that we should spend updating the tide per tick
 	private static final int HIGH_PRIORITY_BUDGET_PER_TICK = 150;
@@ -99,18 +94,18 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 	public void register(IGamePhase game, EventRegistrar events) throws GameException {
 		tideArea = game.getMapRegions().getOrThrow(tideAreaKey);
 
-		minTideChunk = new ChunkPos(tideArea.min.getX() >> 4, tideArea.min.getZ() >> 4);
-		maxTideChunk = new ChunkPos(tideArea.max.getX() >> 4, tideArea.max.getZ() >> 4);
+		minTideChunk = new ChunkPos(tideArea.min().getX() >> 4, tideArea.min().getZ() >> 4);
+		maxTideChunk = new ChunkPos(tideArea.max().getX() >> 4, tideArea.max().getZ() >> 4);
 
 		Random random = new Random();
 
 		icebergLines.clear();
 		for (BlockBox icebergLine : game.getMapRegions().get(icebergLinesKey)) {
-			int startX = icebergLine.min.getX();
-			int startZ = icebergLine.min.getZ();
+			int startX = icebergLine.min().getX();
+			int startZ = icebergLine.min().getZ();
 
-			int endX = icebergLine.max.getX();
-			int endZ = icebergLine.max.getZ();
+			int endX = icebergLine.max().getX();
+			int endZ = icebergLine.max().getZ();
 
 			if (random.nextBoolean()) {
 				int swap = startX;
@@ -353,14 +348,14 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 
 		// this is the total area over which we need to increase the tide
 		BlockPos chunkMin = new BlockPos(
-				Math.max(tideArea.min.getX(), chunkPos.getMinBlockX()),
+				Math.max(tideArea.min().getX(), chunkPos.getMinBlockX()),
 				fromY,
-				Math.max(tideArea.min.getZ(), chunkPos.getMinBlockZ())
+				Math.max(tideArea.min().getZ(), chunkPos.getMinBlockZ())
 		);
 		BlockPos chunkMax = new BlockPos(
-				Math.min(tideArea.max.getX(), chunkPos.getMaxBlockX()),
+				Math.min(tideArea.max().getX(), chunkPos.getMaxBlockX()),
 				toY,
-				Math.min(tideArea.max.getZ(), chunkPos.getMaxBlockZ())
+				Math.min(tideArea.max().getZ(), chunkPos.getMaxBlockZ())
 		);
 
 		long updatedBlocks = 0;
@@ -370,7 +365,7 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 
 		// iterate through all the sections that need to be changed
 		for (int sectionY = fromSection; sectionY <= toSection; sectionY++) {
-			LevelChunkSection section = getOrCreateSection(chunk, sectionY);
+			LevelChunkSection section = chunk.getSection(sectionY);
 			int minSectionY = sectionY << 4;
 			int maxSectionY = minSectionY + 15;
 
@@ -391,7 +386,7 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 				if (existingBlock.getBlock() != Blocks.BAMBOO) {
 					section.setBlockState(localX, localY, localZ, newBlock);
 				} else {
-					world.setBlock(worldPos, newBlock, Constants.BlockFlags.NO_RERENDER | Constants.BlockFlags.BLOCK_UPDATE);
+					world.setBlock(worldPos, newBlock, Block.UPDATE_INVISIBLE | Block.UPDATE_CLIENTS);
 				}
 
 				// Update heightmap
@@ -409,20 +404,10 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 
 		if (updatedBlocks > 0) {
 			// Make sure this chunk gets saved
-			chunk.markUnsaved();
+			chunk.setUnsaved(true);
 		}
 
 		return updatedBlocks;
-	}
-
-	private static LevelChunkSection getOrCreateSection(LevelChunk chunk, int sectionY) {
-		LevelChunkSection section = chunk.getSections()[sectionY];
-		if (section == LevelChunk.EMPTY_SECTION) {
-			section = new LevelChunkSection(sectionY << 4);
-			chunk.getSections()[sectionY] = section;
-		}
-
-		return section;
 	}
 
 	@Nullable
@@ -466,7 +451,7 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 
 	@Nullable
 	private static BlockState mapBlockBelowWater(BlockState state) {
-		if (state.getBlock() == Blocks.GRASS_BLOCK || state.getBlock() == Blocks.GRASS_PATH) {
+		if (state.getBlock() == Blocks.GRASS_BLOCK || state.getBlock() == Blocks.DIRT_PATH) {
 			return Blocks.DIRT.defaultBlockState();
 		}
 

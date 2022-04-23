@@ -8,9 +8,9 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.commands.arguments.ResourceLocationArgument;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.core.MappedRegistry;
+import net.minecraft.core.Registry;
 import net.minecraft.network.chat.TextComponent;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.dimension.LevelStem;
 import net.minecraft.world.level.levelgen.WorldGenSettings;
 
@@ -24,7 +24,7 @@ public final class DimensionArgument {
                 .suggests((context, builder) -> {
                     CommandSourceStack source = context.getSource();
                     WorldGenSettings generatorSettings = source.getServer().getWorldData().worldGenSettings();
-                    MappedRegistry<LevelStem> dimensions = generatorSettings.dimensions();
+                    Registry<LevelStem> dimensions = generatorSettings.dimensions();
                     return SharedSuggestionProvider.suggestResource(
                             dimensions.keySet().stream(),
                             builder
@@ -37,7 +37,7 @@ public final class DimensionArgument {
 
 		CommandSourceStack source = context.getSource();
 		WorldGenSettings generatorSettings = source.getServer().getWorldData().worldGenSettings();
-		MappedRegistry<LevelStem> dimensions = generatorSettings.dimensions();
+		Registry<LevelStem> dimensions = generatorSettings.dimensions();
 
 		LevelStem dimension = dimensions.get(key);
 		if (dimension == null) {

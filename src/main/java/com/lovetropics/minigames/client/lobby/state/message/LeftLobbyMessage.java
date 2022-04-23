@@ -2,7 +2,7 @@ package com.lovetropics.minigames.client.lobby.state.message;
 
 import com.lovetropics.minigames.client.lobby.state.ClientLobbyManager;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraftforge.fml.network.NetworkEvent;
+import net.minecraftforge.network.NetworkEvent;
 
 import java.util.function.Supplier;
 

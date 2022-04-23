@@ -81,7 +81,7 @@ public final class BbWaveSpawnerBehavior implements IGameBehavior {
 		});
 
 		this.waveCharging = new ServerBossEvent(new TextComponent("Wave Incoming!"), BossBarColor.GREEN, BossEvent.BossBarOverlay.PROGRESS);
-		this.waveCharging.setPercent(0.0F);
+		this.waveCharging.setProgress(0.0F);
 		this.waveCharging.setVisible(false);
 	}
 
@@ -111,7 +111,7 @@ public final class BbWaveSpawnerBehavior implements IGameBehavior {
 		}
 
 		if (timeTilNextWave > intervalTicks - 40) {
-			this.waveCharging.setPercent(1.0F - (intervalTicks - timeTilNextWave) / 40.0F);
+			this.waveCharging.setProgress(1.0F - (intervalTicks - timeTilNextWave) / 40.0F);
 			this.waveCharging.setVisible(true);
 		}
 
@@ -141,7 +141,7 @@ public final class BbWaveSpawnerBehavior implements IGameBehavior {
 
 	private boolean tickWave(WaveTracker wave) {
 		if (wave.entities.removeIf(e -> !e.isAlive())) {
-			wave.bar.setPercent((float) wave.entities.size() / wave.waveSize);
+			wave.bar.setProgress((float) wave.entities.size() / wave.waveSize);
 		}
 		return wave.entities.isEmpty();
 	}
@@ -180,7 +180,7 @@ public final class BbWaveSpawnerBehavior implements IGameBehavior {
 
 	private ServerBossEvent createWaveBar(ServerPlayer player, int waveIndex, int count, Set<Entity> entities) {
 		ServerBossEvent bossBar = new ServerBossEvent(new TextComponent("Wave " + (waveIndex + 1)), BossBarColor.GREEN, BossEvent.BossBarOverlay.PROGRESS);
-		bossBar.setPercent((float) entities.size() / count);
+		bossBar.setProgress((float) entities.size() / count);
 		bossBar.setColor(BossBarColor.GREEN);
 		bossBar.addPlayer(player);
 

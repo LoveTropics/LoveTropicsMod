@@ -10,14 +10,10 @@ import com.lovetropics.minigames.common.content.survive_the_tide.item.PaddleItem
 import com.lovetropics.minigames.common.content.survive_the_tide.item.SuperSunscreenItem;
 import com.lovetropics.minigames.common.util.registry.GameBehaviorEntry;
 import com.lovetropics.minigames.common.util.registry.LoveTropicsRegistrate;
-import com.mojang.brigadier.CommandDispatcher;
 import com.tterrag.registrate.util.entry.ItemEntry;
 import com.tterrag.registrate.util.entry.RegistryEntry;
-import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.EntityType;
-import net.minecraftforge.event.RegisterCommandsEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraft.world.entity.MobCategory;
 import net.minecraftforge.fml.common.Mod;
 
 @Mod.EventBusSubscriber(modid = Constants.MODID)
@@ -67,11 +63,5 @@ public final class SurviveTheTide {
 			.register();
 
 	public static void init() {
-	}
-
-	@SubscribeEvent
-	public static void onRegisterCommands(RegisterCommandsEvent event) {
-		CommandDispatcher<CommandSourceStack> dispatcher = event.getDispatcher();
-		ResetIslandChestsCommand.register(dispatcher);
 	}
 }

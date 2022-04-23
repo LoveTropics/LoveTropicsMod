@@ -80,7 +80,7 @@ public final class PlaceTrashBehavior implements IGameBehavior {
 
 	private Long2ObjectMap<LongList> loadTrashByChunk(IGamePhase game) {
 		LongBuffer candidatePositions;
-		try (Resource res = game.getServer().getDataPackRegistries().getResourceManager().getResource(positionData)) {
+		try (Resource res = game.getServer().getResourceManager().getResource(positionData)) {
 			InputStream in = res.getInputStream();
 			final byte[] data = new byte[8];
 			final ByteBuffer buf = ByteBuffer.allocate(in.available());

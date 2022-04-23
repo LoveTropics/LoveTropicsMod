@@ -8,8 +8,8 @@ import com.lovetropics.minigames.common.core.game.GameException;
 import com.mojang.serialization.Codec;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.TextComponent;
-import net.minecraftforge.common.util.Constants;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -73,7 +73,7 @@ public final class MapRegions {
 		this.regions.clear();
 
 		for (String key : root.getAllKeys()) {
-			ListTag regionsList = root.getList(key, Constants.NBT.TAG_COMPOUND);
+			ListTag regionsList = root.getList(key, Tag.TAG_COMPOUND);
 			for (int i = 0; i < regionsList.size(); i++) {
 				BlockBox region = BlockBox.read(regionsList.getCompound(i));
 				this.regions.put(key, region);

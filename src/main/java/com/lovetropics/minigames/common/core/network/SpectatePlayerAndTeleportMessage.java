@@ -3,7 +3,7 @@ package com.lovetropics.minigames.common.core.network;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraftforge.fml.network.NetworkEvent;
+import net.minecraftforge.network.NetworkEvent;
 
 import java.util.UUID;
 import java.util.function.Supplier;
@@ -33,7 +33,7 @@ public class SpectatePlayerAndTeleportMessage {
 
 			Player target = sender.level.getPlayerByUUID(player);
 			if (target != null) {
-				sender.teleportTo(sender.getLevel(), target.getX(), target.getY(), target.getZ(), target.yRot, target.xRot);
+				sender.teleportTo(sender.getLevel(), target.getX(), target.getY(), target.getZ(), target.getYRot(), target.getXRot());
 			}
 
 			sender.setCamera(target);

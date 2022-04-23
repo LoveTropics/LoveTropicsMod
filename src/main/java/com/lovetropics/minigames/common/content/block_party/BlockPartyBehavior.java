@@ -14,18 +14,18 @@ import com.lovetropics.minigames.common.core.game.player.PlayerRole;
 import com.lovetropics.minigames.common.core.game.player.PlayerSet;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.item.ItemStack;
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
-import net.minecraft.util.Mth;
-import net.minecraft.core.Registry;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TextComponent;
-import net.minecraft.ChatFormatting;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.Mth;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraftforge.registries.ForgeRegistries;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -36,7 +36,7 @@ public final class BlockPartyBehavior implements IGameBehavior {
 	public static final Codec<BlockPartyBehavior> CODEC = RecordCodecBuilder.create(instance -> {
 		return instance.group(
 				Codec.STRING.fieldOf("floor").forGetter(c -> c.floorRegionKey),
-				MoreCodecs.arrayOrUnit(Registry.BLOCK, Block[]::new).fieldOf("blocks").forGetter(c -> c.blocks),
+				MoreCodecs.arrayOrUnit(ForgeRegistries.BLOCKS.getCodec(), Block[]::new).fieldOf("blocks").forGetter(c -> c.blocks),
 				Codec.INT.optionalFieldOf("quad_size", 3).forGetter(c -> c.quadSize),
 				Codec.LONG.optionalFieldOf("max_time", 20L * 5).forGetter(c -> c.maxTime),
 				Codec.LONG.optionalFieldOf("min_time", 20L * 2).forGetter(c -> c.minTime),
@@ -81,7 +81,7 @@ public final class BlockPartyBehavior implements IGameBehavior {
 		}
 
 		floorRegion = game.getMapRegions().getOrThrow(floorRegionKey);
-		BlockPos floorSize = floorRegion.getSize();
+		BlockPos floorSize = floorRegion.size();
 		quadCountX = floorSize.getX() / quadSize;
 		quadCountZ = floorSize.getZ() / quadSize;
 
@@ -117,7 +117,7 @@ public final class BlockPartyBehavior implements IGameBehavior {
 		PlayerSet participants = game.getParticipants();
 		for (ServerPlayer player : participants) {
 			double y = player.getY();
-			if (y < 0 || y < floorRegion.min.getY() - 10) {
+			if (y < 0 || y < floorRegion.min().getY() - 10) {
 				if (eliminated == null) {
 					eliminated = new ArrayList<>();
 				}
@@ -182,9 +182,9 @@ public final class BlockPartyBehavior implements IGameBehavior {
 		targetStack.setHoverName(name);
 
 		for (ServerPlayer player : game.getParticipants()) {
-			player.inventory.clearContent();
+			player.getInventory().clearContent();
 			for (int i = 0; i < 9; i++) {
-				player.inventory.add(targetStack.copy());
+				player.getInventory().add(targetStack.copy());
 			}
 		}
 
@@ -300,8 +300,8 @@ public final class BlockPartyBehavior implements IGameBehavior {
 
 		void set(ServerLevel world, BlockBox box, int quadSize) {
 			for (BlockPos pos : box) {
-				int localX = pos.getX() - box.min.getX();
-				int localZ = pos.getZ() - box.min.getZ();
+				int localX = pos.getX() - box.min().getX();
+				int localZ = pos.getZ() - box.min().getZ();
 				int x = Mth.clamp(localX / quadSize, 0, quadCountX - 1);
 				int z = Mth.clamp(localZ / quadSize, 0, quadCountZ - 1);
 
@@ -313,7 +313,7 @@ public final class BlockPartyBehavior implements IGameBehavior {
 		void removeNonTargets(ServerLevel world, BlockBox box) {
 			for (BlockPos pos : box) {
 				BlockState state = world.getBlockState(pos);
-				if (!state.getBlockState().is(target)) {
+				if (!state.is(target)) {
 					world.setBlockAndUpdate(pos, Blocks.AIR.defaultBlockState());
 				}
 			}

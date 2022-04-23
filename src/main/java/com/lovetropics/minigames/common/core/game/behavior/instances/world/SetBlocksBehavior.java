@@ -15,13 +15,13 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import net.minecraft.advancements.critereon.BlockPredicate;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.network.chat.TextComponent;
 import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvider;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraftforge.common.util.Constants;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -139,10 +139,10 @@ public final class SetBlocksBehavior implements IGameBehavior {
 
 		this.loadRegionChunks(region, world);
 
-		int flags = Constants.BlockFlags.DEFAULT;
+		int flags = Block.UPDATE_ALL;
 		if (!notifyNeighbors) {
 			// the constant name is inverted
-			flags |= Constants.BlockFlags.UPDATE_NEIGHBORS;
+			flags |= Block.UPDATE_KNOWN_SHAPE;
 		}
 
 		for (BlockPos pos : region) {

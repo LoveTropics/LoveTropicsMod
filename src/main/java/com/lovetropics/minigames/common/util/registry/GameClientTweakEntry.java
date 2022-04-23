@@ -5,7 +5,7 @@ import com.lovetropics.minigames.common.core.game.client_state.GameClientStateTy
 import com.mojang.serialization.Codec;
 import com.tterrag.registrate.AbstractRegistrate;
 import com.tterrag.registrate.util.entry.RegistryEntry;
-import net.minecraftforge.fml.RegistryObject;
+import net.minecraftforge.registries.RegistryObject;
 
 public final class GameClientTweakEntry<T extends GameClientState> extends RegistryEntry<GameClientStateType<T>> {
 	public GameClientTweakEntry(AbstractRegistrate<?> owner, RegistryObject<GameClientStateType<T>> delegate) {

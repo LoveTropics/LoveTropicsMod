@@ -20,7 +20,7 @@ public final class GameBossBar implements GameWidget {
 	}
 
 	public void setProgress(float progress) {
-		this.bar.setPercent(progress);
+		this.bar.setProgress(progress);
 	}
 
 	public void setStyle(BossEvent.BossBarColor color, BossEvent.BossBarOverlay overlay) {

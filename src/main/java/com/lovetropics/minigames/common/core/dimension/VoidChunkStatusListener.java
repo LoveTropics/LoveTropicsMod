@@ -21,6 +21,10 @@ public final class VoidChunkStatusListener implements ChunkProgressListener {
 	}
 
 	@Override
+	public void start() {
+	}
+
+	@Override
 	public void stop() {
 	}
 }

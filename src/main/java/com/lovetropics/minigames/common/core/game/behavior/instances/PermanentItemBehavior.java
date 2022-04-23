@@ -8,12 +8,12 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.core.Registry;
+import net.minecraftforge.registries.ForgeRegistries;
 
 public class PermanentItemBehavior implements IGameBehavior {
 	public static final Codec<PermanentItemBehavior> CODEC = RecordCodecBuilder.create(instance -> {
 		return instance.group(
-				Registry.ITEM.fieldOf("item").forGetter(c -> c.item),
+				ForgeRegistries.ITEMS.getCodec().fieldOf("item").forGetter(c -> c.item),
 				Codec.INT.fieldOf("count").forGetter(c -> c.count),
 				Codec.INT.optionalFieldOf("interval", 5).forGetter(c -> c.interval)
 		).apply(instance, PermanentItemBehavior::new);
@@ -33,9 +33,9 @@ public class PermanentItemBehavior implements IGameBehavior {
 	public void register(IGamePhase game, EventRegistrar events) {
 		events.listen(GamePlayerEvents.TICK, player -> {
 			if (game.getParticipants().contains(player) && game.ticks() % interval == 0) {
-				int currentCount = player.inventory.countItem(item);
+				int currentCount = player.getInventory().countItem(item);
 				if (currentCount < this.count) {
-					player.inventory.add(new ItemStack(item, this.count - currentCount));
+					player.getInventory().add(new ItemStack(item, this.count - currentCount));
 				}
 			}
 		});

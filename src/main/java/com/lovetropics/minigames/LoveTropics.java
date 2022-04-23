@@ -1,6 +1,5 @@
 package com.lovetropics.minigames;
 
-import com.google.common.base.Preconditions;
 import com.lovetropics.minigames.common.config.ConfigLT;
 import com.lovetropics.minigames.common.content.MinigameTexts;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.BiodiversityBlitzTexts;
@@ -32,35 +31,34 @@ import com.lovetropics.minigames.common.core.network.LoveTropicsNetwork;
 import com.lovetropics.minigames.common.util.registry.LoveTropicsRegistrate;
 import com.mojang.brigadier.CommandDispatcher;
 import com.tterrag.registrate.providers.ProviderType;
-import com.tterrag.registrate.util.NonNullLazyValue;
 import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.ForgeConfig;
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.CapabilityInject;
 import net.minecraftforge.common.capabilities.CapabilityManager;
+import net.minecraftforge.common.capabilities.CapabilityToken;
+import net.minecraftforge.common.util.NonNullLazy;
 import net.minecraftforge.event.RegisterCommandsEvent;
+import net.minecraftforge.event.server.ServerAboutToStartEvent;
+import net.minecraftforge.event.server.ServerStoppingEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.DistExecutor;
-import net.minecraftforge.fml.ExtensionPoint;
+import net.minecraftforge.fml.IExtensionPoint;
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
 import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.minecraftforge.fml.event.lifecycle.GatherDataEvent;
-import net.minecraftforge.fml.event.server.FMLServerAboutToStartEvent;
-import net.minecraftforge.fml.event.server.FMLServerStoppingEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import org.apache.commons.lang3.tuple.Pair;
+import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
+import net.minecraftforge.forge.event.lifecycle.GatherDataEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -79,19 +77,16 @@ public class LoveTropics {
         }
     });
 
-    private static final NonNullLazyValue<LoveTropicsRegistrate> REGISTRATE = new NonNullLazyValue<>(() ->
+    private static final NonNullLazy<LoveTropicsRegistrate> REGISTRATE = NonNullLazy.of(() ->
     	LoveTropicsRegistrate.create(Constants.MODID)
-    			  .itemGroup(() -> LOVE_TROPICS_ITEM_GROUP));
+    			  .creativeModeTab(() -> LOVE_TROPICS_ITEM_GROUP));
 
-    @CapabilityInject(DriftwoodRider.class)
-    private static Capability<DriftwoodRider> driftwoodRiderCap;
-
-    @CapabilityInject(PlayerDisguise.class)
-    private static Capability<PlayerDisguise> playerDisguiseCap;
+    public static final Capability<DriftwoodRider> DRIFTWOOD_RIDER = CapabilityManager.get(new CapabilityToken<>() {});
+    public static final Capability<PlayerDisguise> PLAYER_DISGUISE = CapabilityManager.get(new CapabilityToken<>() {});
 
     public LoveTropics() {
     	// Compatible with all versions that match the semver (excluding the qualifier e.g. "-beta+42")
-    	ModLoadingContext.get().registerExtensionPoint(ExtensionPoint.DISPLAYTEST, () -> Pair.of(LoveTropics::getCompatVersion, (s, v) -> LoveTropics.isCompatibleVersion(s)));
+    	ModLoadingContext.get().registerExtensionPoint(IExtensionPoint.DisplayTest.class, () -> new IExtensionPoint.DisplayTest(LoveTropics::getCompatVersion, (s, v) -> LoveTropics.isCompatibleVersion(s)));
 
         IEventBus modBus = FMLJavaModLoadingContext.get().getModEventBus();
 
@@ -151,21 +146,13 @@ public class LoveTropics {
     @OnlyIn(Dist.CLIENT)
     private void setupClient(final FMLClientSetupEvent event) {
         ForgeConfig.CLIENT.alwaysSetupTerrainOffThread.set(true);
-        ((ForgeConfigSpec)ObfuscationReflectionHelper.getPrivateValue(ForgeConfig.class, null, "clientSpec")).save();
+        ((ForgeConfigSpec) ObfuscationReflectionHelper.getPrivateValue(ForgeConfig.class, null, "clientSpec")).save();
     }
 
     private void setup(final FMLCommonSetupEvent event) {
         LoveTropicsNetwork.register();
 
         VoidChunkGenerator.register();
-
-        CapabilityManager.INSTANCE.register(DriftwoodRider.class, DriftwoodRider.STORAGE, () -> {
-            throw new UnsupportedOperationException();
-        });
-
-        CapabilityManager.INSTANCE.register(PlayerDisguise.class, PlayerDisguise.STORAGE, () -> {
-            throw new UnsupportedOperationException();
-        });
     }
 
     private void registerCommands(RegisterCommandsEvent event) {
@@ -183,11 +170,11 @@ public class LoveTropics {
         ParticleLineCommand.register(dispatcher);
     }
 
-    private void onServerAboutToStart(final FMLServerAboutToStartEvent event) {
+    private void onServerAboutToStart(final ServerAboutToStartEvent event) {
         Telemetry.INSTANCE.sendOpen();
     }
 
-    private void onServerStopping(final FMLServerStoppingEvent event) {
+    private void onServerStopping(final ServerStoppingEvent event) {
         Telemetry.INSTANCE.sendClose();
     }
 
@@ -199,14 +186,6 @@ public class LoveTropics {
             MinigameTexts.collectTranslations(prov::add);
             BiodiversityBlitzTexts.collectTranslations(prov::add);
         });
-    }
-
-    public static Capability<DriftwoodRider> driftwoodRiderCap() {
-        return Preconditions.checkNotNull(driftwoodRiderCap, "driftwood rider capability not initialized");
-    }
-
-    public static Capability<PlayerDisguise> playerDisguiseCap() {
-        return Preconditions.checkNotNull(playerDisguiseCap, "player disguise capability not initialized");
     }
 
     public static void onServerStoppingUnsafely(MinecraftServer server) {

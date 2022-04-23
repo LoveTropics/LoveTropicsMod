@@ -127,7 +127,7 @@ public class Util {
                 double d1;
                 d1 = y+0.5F - (ent.getY() + (double)ent.getEyeHeight());
 
-                double d3 = Mth.sqrt(d * d + d2 * d2);
+                double d3 = Math.sqrt(d * d + d2 * d2);
                 float f2 = (float)((Math.atan2(d2, d) * 180D) / 3.1415927410125732D) - 90F;
                 float f3 = (float)(-((Math.atan2(d1, d3) * 180D) / 3.1415927410125732D));
                 float rotationPitch = -f3;//-ent.updateRotation(rotationPitch, f3, 180D);
@@ -364,7 +364,7 @@ public class Util {
 
             for (int i = 0; i < maximumDistance; i++) {
                 mutablePos.move(Direction.UP);
-                if (Level.isOutsideBuildHeight(mutablePos) || !isSolidGround(world, mutablePos)) {
+                if (world.isOutsideBuildHeight(mutablePos) || !isSolidGround(world, mutablePos)) {
                     return mutablePos.immutable();
                 }
             }
@@ -376,7 +376,7 @@ public class Util {
 
             for (int i = 0; i < maximumDistance; i++) {
                 mutablePos.move(Direction.DOWN);
-                if (Level.isOutsideBuildHeight(mutablePos)) {
+                if (world.isOutsideBuildHeight(mutablePos)) {
                     return null;
                 }
 
@@ -408,8 +408,8 @@ public class Util {
     }
 
     public static Direction getDirectionBetween(BlockBox from, BlockBox to) {
-        BlockPos fromCenter = from.getCenterBlock();
-        BlockPos toCenter = to.getCenterBlock();
+        BlockPos fromCenter = from.centerBlock();
+        BlockPos toCenter = to.centerBlock();
         int dx = toCenter.getX() - fromCenter.getX();
         int dz = toCenter.getZ() - fromCenter.getZ();
         if (Math.abs(dx) > Math.abs(dz)) {

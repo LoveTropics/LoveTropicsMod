@@ -50,8 +50,8 @@ public final class Plot {
 	public static Plot create(Config config, RegionKeys regionKeys, MapRegions regions) {
 		BlockBox plantBounds = regionKeys.plot.getOrThrow(regions, config.key);
 		BlockBox bounds = BlockBox.of(
-				new BlockPos(plantBounds.min.getX(), 0, plantBounds.min.getZ()),
-				new BlockPos(plantBounds.max.getX(), 256, plantBounds.max.getZ())
+				new BlockPos(plantBounds.min().getX(), 0, plantBounds.min().getZ()),
+				new BlockPos(plantBounds.max().getX(), 256, plantBounds.max().getZ())
 		);
 		BlockBox spawn = regionKeys.spawn.getOrThrow(regions, config.key);
 		BlockBox shop = regionKeys.shop.getOrThrow(regions, config.key);

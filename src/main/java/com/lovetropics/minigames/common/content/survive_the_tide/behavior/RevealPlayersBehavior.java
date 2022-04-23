@@ -56,7 +56,7 @@ public class RevealPlayersBehavior implements IGameBehavior
 					for (ServerPlayer player : players) {
 						//prevent unsetting glow if something else was making them glow
 						if (!playerToWasGlowingAlready.contains(player.getUUID())) {
-							player.setGlowing(false);
+							player.setGlowingTag(false);
 						}
 					}
 				}
@@ -67,10 +67,10 @@ public class RevealPlayersBehavior implements IGameBehavior
 					curGlowOnTime = glowOnTime;
 					playerToWasGlowingAlready.clear();
 					for (ServerPlayer player : players) {
-						if (player.isGlowing()) {
+						if (player.isCurrentlyGlowing()) {
 							playerToWasGlowingAlready.add(player.getUUID());
 						}
-						player.setGlowing(true);
+						player.setGlowingTag(true);
 					}
 				}
 			}

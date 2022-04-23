@@ -105,7 +105,7 @@ public final class ManageLobbyScreen extends Screen {
 		nameField.setMaxLength(200);
 		nameField.setValue(lobby.getName());
 
-		publishButton = addButton(FlexUi.createButton(layout.publish, GameTexts.Ui.publish(), button -> {
+		publishButton = addRenderableWidget(FlexUi.createButton(layout.publish, GameTexts.Ui.publish(), button -> {
 			if (session.lobby().getVisibility().isPrivate()) {
 				session.publishLobby();
 			} else {
@@ -115,20 +115,20 @@ public final class ManageLobbyScreen extends Screen {
 
 		playerList = addWidget(new LobbyPlayerList(this, lobby, layout.playerList));
 
-		playButton = addButton(FlexUi.createButton(layout.play, new TextComponent("\u25B6"), b -> {
+		playButton = addRenderableWidget(FlexUi.createButton(layout.play, new TextComponent("\u25B6"), b -> {
 			session.selectControl(LobbyControls.Type.PLAY);
 		}));
-		skipButton = addButton(FlexUi.createButton(layout.skip, new TextComponent("\u23ED"), b -> {
+		skipButton = addRenderableWidget(FlexUi.createButton(layout.skip, new TextComponent("\u23ED"), b -> {
 			session.selectControl(LobbyControls.Type.SKIP);
 		}));
 
 		Component closeLobby = GameTexts.Ui.closeLobby()
 				.withStyle(ChatFormatting.RED, ChatFormatting.UNDERLINE);
-		closeButton = addButton(FlexUi.createButton(layout.close, closeLobby, b -> {
+		closeButton = addRenderableWidget(FlexUi.createButton(layout.close, closeLobby, b -> {
 			session.closeLobby();
 			onClose();
 		}));
-		addButton(FlexUi.createButton(layout.done, CommonComponents.GUI_DONE, b -> onClose()));
+		addRenderableWidget(FlexUi.createButton(layout.done, CommonComponents.GUI_DONE, b -> onClose()));
 
 		updateGameEntries();
 		updatePublishState();

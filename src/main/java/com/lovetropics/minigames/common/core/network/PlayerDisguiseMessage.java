@@ -3,7 +3,7 @@ package com.lovetropics.minigames.common.core.network;
 import com.lovetropics.minigames.client.ClientPlayerDisguises;
 import com.lovetropics.minigames.common.core.diguise.DisguiseType;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraftforge.fml.network.NetworkEvent;
+import net.minecraftforge.network.NetworkEvent;
 
 import javax.annotation.Nullable;
 import java.util.UUID;

@@ -11,17 +11,17 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ReferenceArrayList;
-import net.minecraft.world.entity.PathfinderMob;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.ai.goal.Goal;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.level.pathfinder.Path;
 import net.minecraft.world.entity.ai.navigation.PathNavigation;
-import net.minecraft.world.InteractionResult;
-import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.core.Registry;
+import net.minecraft.world.level.pathfinder.Path;
+import net.minecraftforge.registries.ForgeRegistries;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -31,7 +31,7 @@ import java.util.UUID;
 public final class SttPetsBehavior implements IGameBehavior {
 	public static final Codec<SttPetsBehavior> CODEC = RecordCodecBuilder.create(instance -> {
 		return instance.group(
-				Codec.unboundedMap(Registry.ENTITY_TYPE, PetConfig.CODEC).fieldOf("entities").forGetter(c -> c.petTypes)
+				Codec.unboundedMap(ForgeRegistries.ENTITIES.getCodec(), PetConfig.CODEC).fieldOf("entities").forGetter(c -> c.petTypes)
 		).apply(instance, SttPetsBehavior::new);
 	});
 
@@ -237,7 +237,7 @@ public final class SttPetsBehavior implements IGameBehavior {
 
 		private boolean isMovingTowards(LivingEntity target, double threshold) {
 			Path path = this.entity.getNavigation().getPath();
-			return path != null && path.getTarget().closerThan(target.position(), threshold);
+			return path != null && path.getTarget().closerToCenterThan(target.position(), threshold);
 		}
 
 		void remove() {

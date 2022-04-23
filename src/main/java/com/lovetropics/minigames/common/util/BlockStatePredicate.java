@@ -5,18 +5,17 @@ import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
+import net.minecraft.core.HolderSet;
+import net.minecraft.core.Registry;
+import net.minecraft.core.RegistryCodecs;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.tags.Tag;
-import net.minecraft.tags.SerializationTags;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.core.Registry;
 
 import java.util.function.Function;
 import java.util.function.Predicate;
 
 public interface BlockStatePredicate extends Predicate<BlockState> {
-	Codec<BlockStatePredicate> CODEC = new Codec<BlockStatePredicate>() {
+	Codec<BlockStatePredicate> CODEC = new Codec<>() {
 		@Override
 		public <T> DataResult<Pair<BlockStatePredicate, T>> decode(DynamicOps<T> ops, T input) {
 			DataResult<Pair<AnyOf, T>> any = AnyOf.CODEC.decode(ops, input);
@@ -24,12 +23,12 @@ public interface BlockStatePredicate extends Predicate<BlockState> {
 				return any.map(p -> p.mapFirst(Function.identity()));
 			}
 
-			DataResult<Pair<MatchTag, T>> tag = MatchTag.CODEC.decode(ops, input);
+			DataResult<Pair<MatchesBlocks, T>> tag = MatchesBlocks.CODEC.decode(ops, input);
 			if (tag.result().isPresent()) {
 				return tag.map(p -> p.mapFirst(Function.identity()));
 			}
 
-			return MatchBlock.CODEC.decode(ops, input).map(p -> p.mapFirst(Function.identity()));
+			return MatchesBlocks.CODEC.decode(ops, input).map(p -> p.mapFirst(Function.identity()));
 		}
 
 		@Override
@@ -50,49 +49,13 @@ public interface BlockStatePredicate extends Predicate<BlockState> {
 		return codec.encode((A) input, ops, prefix);
 	}
 
-	final class MatchBlock implements BlockStatePredicate {
-		public static final Codec<MatchBlock> CODEC = Registry.BLOCK.xmap(MatchBlock::new, c -> c.block);
-
-		private final Block block;
-
-		public MatchBlock(Block block) {
-			this.block = block;
-		}
+	record MatchesBlocks(HolderSet<Block> blocks) implements BlockStatePredicate {
+		public static final Codec<MatchesBlocks> CODEC = RegistryCodecs.homogeneousList(Registry.BLOCK_REGISTRY)
+				.xmap(MatchesBlocks::new, matchesBlocks -> matchesBlocks.blocks);
 
 		@Override
 		public boolean test(BlockState state) {
-			return state.getBlock().is(this.block);
-		}
-
-		@Override
-		public Codec<? extends BlockStatePredicate> getCodec() {
-			return CODEC;
-		}
-	}
-
-	final class MatchTag implements BlockStatePredicate {
-		public static final Codec<MatchTag> CODEC = Codec.STRING.comapFlatMap(
-				string -> {
-					if (string.startsWith("#")) {
-						ResourceLocation id = new ResourceLocation(string.substring(1));
-						Tag<Block> tag = SerializationTags.getInstance().getBlocks().getTag(id);
-						return tag != null ? DataResult.success(new MatchTag(tag)) : DataResult.error("no tag exists with id: '" + id + "'");
-					} else {
-						return DataResult.error("not in tag format: must start with #");
-					}
-				},
-				c -> "#" + SerializationTags.getInstance().getBlocks().getIdOrThrow(c.tag)
-		);
-
-		private final Tag<Block> tag;
-
-		public MatchTag(Tag<Block> tag) {
-			this.tag = tag;
-		}
-
-		@Override
-		public boolean test(BlockState state) {
-			return state.is(this.tag);
+			return state.is(this.blocks);
 		}
 
 		@Override

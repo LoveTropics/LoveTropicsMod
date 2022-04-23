@@ -10,15 +10,15 @@ import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
+import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobSpawnType;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.core.Direction;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.AABB;
-import net.minecraft.core.Registry;
+import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.List;
 import java.util.function.Predicate;
@@ -26,12 +26,11 @@ import java.util.stream.IntStream;
 
 public class FruitDropEntityBehavior implements IGameBehavior {
 	
-	@SuppressWarnings("deprecation")
 	public static final Codec<FruitDropEntityBehavior> CODEC = RecordCodecBuilder.create(instance -> instance.group(
 				Codec.INT.fieldOf("range").forGetter(o -> o.range),
 				Codec.INT.fieldOf("interval").forGetter(o -> o.interval),
-				Registry.BLOCK.fieldOf("fruit").forGetter(o -> o.fruit),
-				Registry.ENTITY_TYPE.fieldOf("entity").forGetter(o -> o.entity)
+				ForgeRegistries.BLOCKS.getCodec().fieldOf("fruit").forGetter(o -> o.fruit),
+				ForgeRegistries.ENTITIES.getCodec().fieldOf("entity").forGetter(o -> o.entity)
 			).apply(instance, FruitDropEntityBehavior::new));
 
 	private final int range;

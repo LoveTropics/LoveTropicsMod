@@ -11,6 +11,8 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.client.gui.components.events.GuiEventListener;
+import net.minecraft.client.gui.narration.NarratableEntry;
+import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.ChatFormatting;
@@ -19,7 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 // TODO: grid element utility
-public final class LobbyPlayerList extends GuiComponent implements GuiEventListener {
+public final class LobbyPlayerList extends GuiComponent implements GuiEventListener, NarratableEntry {
 	private static final int FACE_SIZE = 16;
 	private static final int SPACING = 4;
 	private static final int HALF_SPACING = SPACING / 2;
@@ -54,7 +56,7 @@ public final class LobbyPlayerList extends GuiComponent implements GuiEventListe
 	public void render(PoseStack matrixStack, int mouseX, int mouseY) {
 		// TODO: handling overflow with scrollbar
 
-		RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
+		RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
 
 		int i = 0;
 		for (ClientLobbyPlayer player : lobby.getPlayers()) {
@@ -133,5 +135,14 @@ public final class LobbyPlayerList extends GuiComponent implements GuiEventListe
 		} else {
 			return -1;
 		}
+	}
+
+	@Override
+	public NarrationPriority narrationPriority() {
+		return NarrationPriority.NONE;
+	}
+
+	@Override
+	public void updateNarration(final NarrationElementOutput output) {
 	}
 }

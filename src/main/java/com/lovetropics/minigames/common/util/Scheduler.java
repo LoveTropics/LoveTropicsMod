@@ -4,9 +4,8 @@ import com.lovetropics.minigames.Constants;
 import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.LogicalSide;
-import net.minecraftforge.fml.LogicalSidedProvider;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.server.ServerLifecycleHooks;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,7 +24,7 @@ public final class Scheduler {
 	@SubscribeEvent
 	public static void onTick(TickEvent.ServerTickEvent event) {
 		if (event.phase == TickEvent.Phase.END) {
-			MinecraftServer server = LogicalSidedProvider.INSTANCE.get(LogicalSide.SERVER);
+			final MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
 			Scheduler.runTasks(server);
 		}
 	}

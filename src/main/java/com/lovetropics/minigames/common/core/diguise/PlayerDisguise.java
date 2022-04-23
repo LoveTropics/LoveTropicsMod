@@ -3,10 +3,9 @@ package com.lovetropics.minigames.common.core.diguise;
 import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.common.util.Util;
+import net.minecraft.core.Direction;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.nbt.Tag;
-import net.minecraft.core.Direction;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import net.minecraftforge.common.util.LazyOptional;
@@ -19,18 +18,6 @@ import javax.annotation.Nullable;
 
 @Mod.EventBusSubscriber(modid = Constants.MODID)
 public final class PlayerDisguise implements ICapabilityProvider {
-	public static final Capability.IStorage<PlayerDisguise> STORAGE = new Capability.IStorage<PlayerDisguise>() {
-		@Nullable
-		@Override
-		public Tag writeNBT(Capability<PlayerDisguise> capability, PlayerDisguise instance, Direction side) {
-			return null;
-		}
-
-		@Override
-		public void readNBT(Capability<PlayerDisguise> capability, PlayerDisguise instance, Direction side, Tag nbt) {
-		}
-	};
-
 	private final LazyOptional<PlayerDisguise> instance = LazyOptional.of(() -> this);
 
 	private final Player player;
@@ -51,7 +38,7 @@ public final class PlayerDisguise implements ICapabilityProvider {
 	}
 
 	public static LazyOptional<PlayerDisguise> get(Player player) {
-		return player.getCapability(LoveTropics.playerDisguiseCap());
+		return player.getCapability(LoveTropics.PLAYER_DISGUISE);
 	}
 
 	@Nullable
@@ -101,7 +88,7 @@ public final class PlayerDisguise implements ICapabilityProvider {
 	@Nonnull
 	@Override
 	public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> cap, @Nullable Direction side) {
-		return LoveTropics.playerDisguiseCap().orEmpty(cap, instance);
+		return LoveTropics.PLAYER_DISGUISE.orEmpty(cap, instance);
 	}
 
 	public void copyFrom(PlayerDisguise from) {

@@ -1,13 +1,10 @@
 package com.lovetropics.minigames.client.screen.flex;
 
-import java.util.Objects;
-
-import com.lovetropics.minigames.LoveTropics;
 import com.mojang.blaze3d.vertex.PoseStack;
-
 import net.minecraft.client.gui.GuiComponent;
-import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.fml.loading.FMLEnvironment;
+
+import java.util.Objects;
 
 public final class Layout extends GuiComponent {
 	private final Box content;

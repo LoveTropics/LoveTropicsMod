@@ -1,7 +1,7 @@
 package com.lovetropics.minigames.client.lobby.select_role;
 
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraftforge.fml.network.NetworkEvent;
+import net.minecraftforge.network.NetworkEvent;
 
 import java.util.function.Supplier;
 

@@ -6,7 +6,7 @@ import com.lovetropics.minigames.common.core.game.lobby.IGameLobbyPlayers;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraftforge.fml.network.NetworkEvent;
+import net.minecraftforge.network.NetworkEvent;
 
 import java.util.Set;
 import java.util.UUID;

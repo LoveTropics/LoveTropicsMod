@@ -75,17 +75,15 @@ public class SurviveTheTideRulesetBehavior implements IGameBehavior {
 
 		events.listen(GamePhaseEvents.TICK, () -> tick(game));
 
-		events.listen(GameLivingEntityEvents.ENDER_TELEPORT, (entity, x, y, z, damage, callback) -> {
-			if (entity instanceof ServerPlayer) {
-				callback.accept(0f); // Set ender pearl damage to 0
-			}
+		events.listen(GameLivingEntityEvents.ENDER_PEARL_TELEPORT, (player, x, y, z, damage, callback) -> {
+			callback.accept(0f); // Set ender pearl damage to 0
 		});
 	}
 
 	private InteractionResult onPlayerDeath(ServerPlayer player, DamageSource damageSource) {
 		if (forceDropItemsOnDeath && player.level.getGameRules().getBoolean(GameRules.RULE_KEEPINVENTORY)) {
-			destroyVanishingCursedItems(player.inventory);
-			player.inventory.dropAll();
+			destroyVanishingCursedItems(player.getInventory());
+			player.getInventory().dropAll();
 		}
 		return InteractionResult.PASS;
 	}

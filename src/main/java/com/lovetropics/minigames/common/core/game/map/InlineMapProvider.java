@@ -1,13 +1,12 @@
 package com.lovetropics.minigames.common.core.game.map;
 
-import com.lovetropics.lib.codec.MoreCodecs;
 import com.lovetropics.minigames.common.core.game.GameResult;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.core.Registry;
 import net.minecraft.network.chat.TextComponent;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.Level;
 
 import java.util.Collections;
@@ -15,11 +14,9 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 public final class InlineMapProvider implements IGameMapProvider {
-	public static final Codec<InlineMapProvider> CODEC = RecordCodecBuilder.create(instance -> {
-		return instance.group(
-				MoreCodecs.registryKey(Registry.DIMENSION_REGISTRY).fieldOf("dimension").forGetter(c -> c.dimension)
-		).apply(instance, InlineMapProvider::new);
-	});
+	public static final Codec<InlineMapProvider> CODEC = RecordCodecBuilder.create(i -> i.group(
+			ResourceKey.codec(Registry.DIMENSION_REGISTRY).fieldOf("dimension").forGetter(c -> c.dimension)
+	).apply(i, InlineMapProvider::new));
 
 	private final ResourceKey<Level> dimension;
 

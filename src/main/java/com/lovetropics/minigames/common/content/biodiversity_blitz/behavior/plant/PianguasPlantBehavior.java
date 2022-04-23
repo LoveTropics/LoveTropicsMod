@@ -10,14 +10,14 @@ import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Registry;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.tags.BlockTags;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.core.BlockPos;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraftforge.common.Tags;
 
 import java.util.List;
 import java.util.Random;
@@ -27,7 +27,7 @@ public final class PianguasPlantBehavior implements IGameBehavior {
             Codec.INT.fieldOf("radius").forGetter(b -> b.radius),
             MoreCodecs.BLOCK_STATE.fieldOf("block").forGetter(c -> c.state)
     ).apply(instance, PianguasPlantBehavior::new));
-    private static final Tags.IOptionalNamedTag<Block> MUD = BlockTags.createOptional(new ResourceLocation("tropicraft", "mud"));
+    private static final TagKey<Block> MUD = TagKey.create(Registry.BLOCK_REGISTRY, new ResourceLocation("tropicraft", "mud"));
     private final int radius;
     private final BlockState state;
 

@@ -63,11 +63,11 @@ public final class PlayerSnapshot {
 	}
 
 	public static void clearPlayer(ServerPlayer player) {
-		player.inventory.clearContent();
+		player.getInventory().clearContent();
 		player.setHealth(player.getMaxHealth());
 
 		player.removeAllEffects();
-		player.setGlowing(false);
+		player.setGlowingTag(false);
 		player.setArrowCount(0);
 		player.fallDistance = 0.0F;
 
@@ -113,6 +113,6 @@ public final class PlayerSnapshot {
 			score.setScore(entry.getIntValue());
 		}
 
-		player.refreshContainer(player.containerMenu);
+		player.containerMenu.broadcastFullState();
 	}
 }
