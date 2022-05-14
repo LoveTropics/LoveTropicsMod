@@ -38,8 +38,7 @@ minecraft {
             workingDirectory project.file('run')
             arg "-mixin.config=ltminigames.mixins.json"
 
-            property 'forge.logging.markers', 'REGISTRIES'
-            property 'forge.logging.console.level', 'debug'
+            property 'forge.logging.console.level', 'info'
 
             mods {
                 ltminigames {
@@ -54,8 +53,7 @@ minecraft {
             workingDirectory project.file('run')
             arg "-mixin.config=ltminigames.mixins.json"
 
-            property 'forge.logging.markers', 'REGISTRIES'
-            property 'forge.logging.console.level', 'debug'
+            property 'forge.logging.console.level', 'info'
 
             mods {
                 ltminigames {
@@ -72,8 +70,7 @@ minecraft {
 
             environment 'target', 'fmluserdevdata'
 
-            property 'forge.logging.markers', 'REGISTRIES'
-            property 'forge.logging.console.level', 'debug'
+            property 'forge.logging.console.level', 'info'
 
             mods {
                 ltminigames {
@@ -92,14 +89,8 @@ sourceSets.main.resources {
     srcDir 'src/generated/resources'
 }
 
-repositories {
-    mavenLocal()
-}
-
 configurations {
     shade
-    shadelib
-    implementation.extendsFrom shadelib
 }
 
 repositories {
@@ -108,15 +99,15 @@ repositories {
     }
     mavenLocal()
     flatDir {
-       dirs 'libs/'
-   }
+        dirs 'libs/'
+    }
 }
 
 dependencies {
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
     
     // Utilize tropicraft worldgen code
-    implementation fg.deobf('net.tropicraft:Tropicraft:9.1.0-alpha+custom')
+//    implementation fg.deobf('net.tropicraft:Tropicraft:9.1.0-alpha+custom')
     
     // Shaded deps
     def registrate = "com.tterrag.registrate:Registrate:MC${minecraft_version}-${registrate_version}"
@@ -128,7 +119,9 @@ dependencies {
     shade ltlib
 
     // Annotation Processors
-    annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
+    if (System.getProperty("idea.sync.active") != "true") {
+        annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
+    }
 }
 
 mixin {
@@ -136,7 +129,7 @@ mixin {
 }
 
 shadowJar {
-    configurations = [project.configurations.shade, project.configurations.shadelib]
+    configurations = [project.configurations.shade]
     relocate 'com.tterrag.registrate', 'com.lovetropics.minigames.repack.registrate'
     relocate 'com.lovetropics.lib', 'com.lovetropics.minigames.repack.ltlib'
     classifier = ''
@@ -182,14 +175,6 @@ publishing {
     repositories {
         if (project.hasProperty('mavendir')) {
             maven { url mavendir }
-        }
-    }
-}
-
-if (System.getProperty("idea.sync.active") == "true") {
-    afterEvaluate {
-        tasks.withType(JavaCompile).all {
-            it.options.annotationProcessorPath = files()
         }
     }
 }
