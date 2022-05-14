@@ -53,7 +53,7 @@ public final class DriftwoodRenderer extends EntityRenderer<DriftwoodEntity> {
 		return TEXTURE;
 	}
 
-	@Mod.EventBusSubscriber(modid = Constants.MODID, value = Dist.CLIENT)
+	@Mod.EventBusSubscriber(modid = Constants.MODID, value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.MOD)
 	public static final class DriftwoodModel extends EntityModel<Entity> {
 		public static final ModelLayerLocation LAYER = new ModelLayerLocation(new ResourceLocation(Constants.MODID, "driftwood"), "main");
 
