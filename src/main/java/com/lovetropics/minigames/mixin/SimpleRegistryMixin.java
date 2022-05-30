@@ -40,8 +40,12 @@ public class SimpleRegistryMixin<T> implements RegistryEntryRemover<T> {
         this.byKey.remove(key);
         this.byValue.remove(entry);
         this.lifecycles.remove(entry);
-        this.intrusiveHolderCache.remove(entry);
-        this.holdersInOrder.set(rawId, null);
+        if (this.intrusiveHolderCache != null) {
+            this.intrusiveHolderCache.remove(entry);
+        }
+        if (this.holdersInOrder != null) {
+            this.holdersInOrder.set(rawId, null);
+        }
 
         return true;
     }
