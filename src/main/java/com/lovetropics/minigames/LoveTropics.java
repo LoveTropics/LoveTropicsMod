@@ -9,6 +9,7 @@ import com.lovetropics.minigames.common.content.block_party.BlockParty;
 import com.lovetropics.minigames.common.content.build_competition.BuildCompetition;
 import com.lovetropics.minigames.common.content.hide_and_seek.HideAndSeek;
 import com.lovetropics.minigames.common.content.survive_the_tide.SurviveTheTide;
+import com.lovetropics.minigames.common.content.survive_the_tide.biome.SurviveTheTideBiomes;
 import com.lovetropics.minigames.common.content.survive_the_tide.entity.DriftwoodRider;
 import com.lovetropics.minigames.common.content.trash_dive.TrashDive;
 import com.lovetropics.minigames.common.core.command.ExtendedBossBarCommand;
@@ -118,6 +119,8 @@ public class LoveTropics {
         SurviveTheTide.init();
         TrashDive.init();
         BlockParty.init();
+
+        SurviveTheTideBiomes.REGISTER.register(modBus);
 
         LoveTropicsEntityOptions.register();
 
