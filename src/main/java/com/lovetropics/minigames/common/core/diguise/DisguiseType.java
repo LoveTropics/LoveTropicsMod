@@ -6,9 +6,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.decoration.Motive;
@@ -118,12 +116,5 @@ public final class DisguiseType {
 		CompoundTag nbt = buffer.readNbt();
 		boolean applyAttributes = buffer.readBoolean();
 		return DisguiseType.create(type, nbt, applyAttributes);
-	}
-
-	public void fixNbtFor(ServerPlayer player) {
-		if (this.nbt != null) {
-			this.nbt.putString("CustomName", Component.Serializer.toJson(player.getDisplayName()));
-			this.nbt.putBoolean("CustomNameVisible", true);
-		}
 	}
 }

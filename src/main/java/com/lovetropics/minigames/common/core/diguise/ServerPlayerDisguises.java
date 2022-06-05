@@ -123,11 +123,6 @@ public final class ServerPlayerDisguises {
 	}
 
 	private static void onSetDisguise(ServerPlayer player, PlayerDisguise disguise) {
-		// TODO: temporary because we couldn't push a client update, don't need this at all- yeet it!
-		if (disguise.getDisguiseType() != null) {
-			disguise.getDisguiseType().fixNbtFor(player);
-		}
-
 		LoveTropicsNetwork.CHANNEL.send(
 				PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> player),
 				new PlayerDisguiseMessage(player.getUUID(), disguise.getDisguiseType())
