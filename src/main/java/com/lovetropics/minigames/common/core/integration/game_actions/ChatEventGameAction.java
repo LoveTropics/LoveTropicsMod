@@ -20,15 +20,13 @@ import java.util.function.Consumer;
  * Chat-caused event
  */
 public class ChatEventGameAction extends GameAction {
-    public static final Codec<ChatEventGameAction> CODEC = RecordCodecBuilder.create(instance -> {
-        return instance.group(
-                MoreCodecs.UUID_STRING.fieldOf("uuid").forGetter(c -> c.uuid),
-                Codec.STRING.fieldOf("chat_event_type").forGetter(c -> c.resultType),
-                TIME_CODEC.fieldOf("trigger_time").forGetter(c -> c.triggerTime),
-                Codec.STRING.fieldOf("title").forGetter(c -> c.title),
-                MoreCodecs.sorted(PollEntry.CODEC.listOf(), Comparator.comparingInt(PollEntry::getResults).reversed()).fieldOf("options").forGetter(c -> c.entries)
-        ).apply(instance, ChatEventGameAction::new);
-    });
+    public static final Codec<ChatEventGameAction> CODEC = RecordCodecBuilder.create(i -> i.group(
+            MoreCodecs.UUID_STRING.fieldOf("uuid").forGetter(c -> c.uuid),
+            Codec.STRING.fieldOf("chat_event_type").forGetter(c -> c.resultType),
+            TIME_CODEC.fieldOf("trigger_time").forGetter(c -> c.triggerTime),
+            Codec.STRING.fieldOf("title").forGetter(c -> c.title),
+            MoreCodecs.sorted(PollEntry.CODEC.listOf(), Comparator.comparingInt(PollEntry::getResults).reversed()).fieldOf("options").forGetter(c -> c.entries)
+    ).apply(i, ChatEventGameAction::new));
 
     private final String resultType;
     private final String title;

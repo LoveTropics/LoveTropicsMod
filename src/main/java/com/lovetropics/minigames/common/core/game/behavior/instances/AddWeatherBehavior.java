@@ -28,11 +28,9 @@ import java.util.Map;
 import java.util.Optional;
 
 public final class AddWeatherBehavior implements IGameBehavior {
-	public static final Codec<AddWeatherBehavior> CODEC = RecordCodecBuilder.create(instance -> {
-		return instance.group(
-				Codec.unboundedMap(WeatherEventType.CODEC, EventEffects.CODEC).fieldOf("event_effects").forGetter(c -> c.eventEffects)
-		).apply(instance, AddWeatherBehavior::new);
-	});
+	public static final Codec<AddWeatherBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+			Codec.unboundedMap(WeatherEventType.CODEC, EventEffects.CODEC).fieldOf("event_effects").forGetter(c -> c.eventEffects)
+	).apply(i, AddWeatherBehavior::new));
 
 	private final Map<WeatherEventType, EventEffects> eventEffects;
 

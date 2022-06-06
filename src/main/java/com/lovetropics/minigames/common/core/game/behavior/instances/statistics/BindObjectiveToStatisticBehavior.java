@@ -15,18 +15,10 @@ import net.minecraft.server.ServerScoreboard;
 
 import java.util.Map;
 
-public final class BindObjectiveToStatisticBehavior implements IGameBehavior {
-	public static final Codec<BindObjectiveToStatisticBehavior> CODEC = RecordCodecBuilder.create(instance -> {
-		return instance.group(
-				Codec.unboundedMap(StatisticKey.codecFor(Integer.class), Codec.STRING).fieldOf("objectives").forGetter(c -> c.statisticToObjective)
-		).apply(instance, BindObjectiveToStatisticBehavior::new);
-	});
-
-	private final Map<StatisticKey<Integer>, String> statisticToObjective;
-
-	public BindObjectiveToStatisticBehavior(Map<StatisticKey<Integer>, String> statisticToObjective) {
-		this.statisticToObjective = statisticToObjective;
-	}
+public record BindObjectiveToStatisticBehavior(Map<StatisticKey<Integer>, String> statisticToObjective) implements IGameBehavior {
+	public static final Codec<BindObjectiveToStatisticBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+			Codec.unboundedMap(StatisticKey.codecFor(Integer.class), Codec.STRING).fieldOf("objectives").forGetter(c -> c.statisticToObjective)
+	).apply(i, BindObjectiveToStatisticBehavior::new));
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {

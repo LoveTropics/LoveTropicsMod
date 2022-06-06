@@ -14,29 +14,17 @@ import net.minecraftforge.common.extensions.IForgeBlockEntity;
 
 import java.util.List;
 
-public final class GamePhaseConfig implements IGamePhaseDefinition {
-	public final AABB area;
-	public final IGameMapProvider map;
-	public final List<BehaviorReference> behaviors;
-
-	public GamePhaseConfig(IGameMapProvider map, AABB area, List<BehaviorReference> behaviors) {
-		this.map = map;
-		this.area = area;
-		this.behaviors = behaviors;
-	}
-
+public record GamePhaseConfig(IGameMapProvider map, AABB area, List<BehaviorReference> behaviors) implements IGamePhaseDefinition {
 	public static Codec<GamePhaseConfig> codec(BehaviorReferenceReader reader) {
 		return mapCodec(reader).codec();
 	}
 
 	public static MapCodec<GamePhaseConfig> mapCodec(BehaviorReferenceReader reader) {
-		return RecordCodecBuilder.mapCodec(instance -> {
-			return instance.group(
-					GameMapProviders.CODEC.fieldOf("map").forGetter(c -> c.map),
-					MoreCodecs.AABB.optionalFieldOf("area", IForgeBlockEntity.INFINITE_EXTENT_AABB).forGetter(c -> c.area),
-					reader.fieldOf("behaviors").forGetter(c -> c.behaviors)
-			).apply(instance, GamePhaseConfig::new);
-		});
+		return RecordCodecBuilder.mapCodec(i -> i.group(
+				GameMapProviders.CODEC.fieldOf("map").forGetter(c -> c.map),
+				MoreCodecs.AABB.optionalFieldOf("area", IForgeBlockEntity.INFINITE_EXTENT_AABB).forGetter(c -> c.area),
+				reader.fieldOf("behaviors").forGetter(c -> c.behaviors)
+		).apply(i, GamePhaseConfig::new));
 	}
 
 	@Override

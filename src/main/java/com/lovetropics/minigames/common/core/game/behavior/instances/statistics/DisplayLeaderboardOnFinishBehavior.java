@@ -12,24 +12,12 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.network.chat.TextComponent;
 
-public final class DisplayLeaderboardOnFinishBehavior<T extends Comparable<T>> implements IGameBehavior {
-	public static final Codec<DisplayLeaderboardOnFinishBehavior<?>> CODEC = RecordCodecBuilder.create(instance -> {
-		return instance.group(
-				StatisticKey.CODEC.fieldOf("statistic").forGetter(c -> c.statistic),
-				PlacementOrder.CODEC.optionalFieldOf("order", PlacementOrder.MAX).forGetter(c -> c.order),
-				Codec.INT.optionalFieldOf("length", 5).forGetter(c -> c.length)
-		).apply(instance, DisplayLeaderboardOnFinishBehavior::createUnchecked);
-	});
-
-	private final StatisticKey<T> statistic;
-	private final PlacementOrder order;
-	private final int length;
-
-	public DisplayLeaderboardOnFinishBehavior(StatisticKey<T> statistic, PlacementOrder order, int length) {
-		this.statistic = statistic;
-		this.order = order;
-		this.length = length;
-	}
+public record DisplayLeaderboardOnFinishBehavior<T extends Comparable<T>>(StatisticKey<T> statistic, PlacementOrder order, int length) implements IGameBehavior {
+	public static final Codec<DisplayLeaderboardOnFinishBehavior<?>> CODEC = RecordCodecBuilder.create(i -> i.group(
+			StatisticKey.CODEC.fieldOf("statistic").forGetter(c -> c.statistic),
+			PlacementOrder.CODEC.optionalFieldOf("order", PlacementOrder.MAX).forGetter(c -> c.order),
+			Codec.INT.optionalFieldOf("length", 5).forGetter(c -> c.length)
+	).apply(i, DisplayLeaderboardOnFinishBehavior::createUnchecked));
 
 	@SuppressWarnings("unchecked")
 	private static <T extends Comparable<T>> DisplayLeaderboardOnFinishBehavior<T> createUnchecked(StatisticKey<?> statistic, PlacementOrder order, int length) {

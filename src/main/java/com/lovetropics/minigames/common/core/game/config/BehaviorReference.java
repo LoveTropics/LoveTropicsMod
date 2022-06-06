@@ -12,15 +12,7 @@ import net.minecraft.server.MinecraftServer;
 
 import java.util.function.BiConsumer;
 
-public final class BehaviorReference {
-	private final GameBehaviorType<?> type;
-	private final Dynamic<?> config;
-
-	public BehaviorReference(GameBehaviorType<?> type, Dynamic<?> config) {
-		this.type = type;
-		this.config = config;
-	}
-
+public record BehaviorReference(GameBehaviorType<?> type, Dynamic<?> config) {
 	public void addTo(MinecraftServer server, BiConsumer<GameBehaviorType<?>, IGameBehavior> add) {
 		DataResult<? extends IGameBehavior> result = parseWithDynamicRegistries(server, type.codec, config);
 		result.result().ifPresent(behavior -> add.accept(type, behavior));

@@ -20,24 +20,14 @@ import net.minecraft.server.level.ServerPlayer;
 import javax.annotation.Nullable;
 import java.util.UUID;
 
-public final class SetMaxHealthBehavior implements IGameBehavior {
-	public static final Codec<SetMaxHealthBehavior> CODEC = RecordCodecBuilder.create(instance -> {
-		return instance.group(
-				Codec.DOUBLE.optionalFieldOf("max_health", 20.0).forGetter(c -> c.maxHealth),
-				MoreCodecs.object2Double(GameTeamKey.CODEC).fieldOf("max_health_by_team").orElseGet(Object2DoubleOpenHashMap::new).forGetter(c -> c.maxHealthByTeam)
-		).apply(instance, SetMaxHealthBehavior::new);
-	});
+public record SetMaxHealthBehavior(double maxHealth, Object2DoubleMap<GameTeamKey> maxHealthByTeam) implements IGameBehavior {
+	public static final Codec<SetMaxHealthBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+			Codec.DOUBLE.optionalFieldOf("max_health", 20.0).forGetter(c -> c.maxHealth),
+			MoreCodecs.object2Double(GameTeamKey.CODEC).fieldOf("max_health_by_team").orElseGet(Object2DoubleOpenHashMap::new).forGetter(c -> c.maxHealthByTeam)
+	).apply(i, SetMaxHealthBehavior::new));
 
 	private static final UUID ATTRIBUTE_ID = UUID.fromString("3e226aa5-fbcd-495e-af62-9af714b204b6");
 	private static final String ATTRIBUTE_NAME = "minigame_max_health";
-
-	private final double maxHealth;
-	private final Object2DoubleMap<GameTeamKey> maxHealthByTeam;
-
-	public SetMaxHealthBehavior(double maxHealth, Object2DoubleMap<GameTeamKey> maxHealthByTeam) {
-		this.maxHealth = maxHealth;
-		this.maxHealthByTeam = maxHealthByTeam;
-	}
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {

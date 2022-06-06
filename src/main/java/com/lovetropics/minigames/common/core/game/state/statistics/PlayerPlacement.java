@@ -88,7 +88,7 @@ public interface PlayerPlacement {
 			statistics.clear(placementKey);
 
 			for (Placed<PlayerKey> placed : order) {
-				statistics.forPlayer(placed.value).set(placementKey, placed.placement);
+				statistics.forPlayer(placed.value()).set(placementKey, placed.placement());
 			}
 		}
 
@@ -102,12 +102,12 @@ public interface PlayerPlacement {
 				String indentPrefix = StringUtils.repeat(' ', headPrefix.length());
 
 				boolean head = true;
-				while (i < order.size() && (entry = order.get(i)).placement == place) {
+				while (i < order.size() && (entry = order.get(i)).placement() == place) {
 					String prefix = head ? headPrefix : indentPrefix;
 					head = false;
 
 					players.sendMessage(new TextComponent(prefix).withStyle(ChatFormatting.AQUA)
-							.append(new TextComponent(entry.value.getName()).withStyle(ChatFormatting.GOLD))
+							.append(new TextComponent(entry.value().name()).withStyle(ChatFormatting.GOLD))
 					);
 
 					i++;
@@ -120,7 +120,7 @@ public interface PlayerPlacement {
 			length = Math.min(order.size(), length);
 			for (int i = 0; i < length; i++) {
 				Placed<PlayerKey> entry = order.get(i);
-				sidebar.add(" - " + ChatFormatting.AQUA + entry.value.getName());
+				sidebar.add(" - " + ChatFormatting.AQUA + entry.value().name());
 			}
 		}
 	}
@@ -160,7 +160,7 @@ public interface PlayerPlacement {
 					String prefix = head ? headPrefix : indentPrefix;
 					head = false;
 
-					MutableComponent name = new TextComponent(prefix + entry.player.getName() + ": ");
+					MutableComponent name = new TextComponent(prefix + entry.player.name() + ": ");
 					MutableComponent score = new TextComponent(scoreKey.display(entry.score));
 
 					players.sendMessage(name.withStyle(ChatFormatting.AQUA).append(score.withStyle(ChatFormatting.GOLD)));
@@ -175,7 +175,7 @@ public interface PlayerPlacement {
 			length = Math.min(entries.size(), length);
 			for (int i = 0; i < length; i++) {
 				Entry<T> entry = entries.get(i);
-				sidebar.add(" - " + ChatFormatting.AQUA + entry.player.getName() + ": " + ChatFormatting.GOLD + scoreKey.display(entry.score));
+				sidebar.add(" - " + ChatFormatting.AQUA + entry.player.name() + ": " + ChatFormatting.GOLD + scoreKey.display(entry.score));
 			}
 		}
 

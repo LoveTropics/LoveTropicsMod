@@ -9,15 +9,7 @@ import javax.annotation.Nullable;
 import java.util.UUID;
 import java.util.function.Supplier;
 
-public class PlayerDisguiseMessage {
-	private final UUID player;
-	private final DisguiseType disguise;
-
-	public PlayerDisguiseMessage(UUID player, @Nullable DisguiseType disguise) {
-		this.player = player;
-		this.disguise = disguise;
-	}
-
+public record PlayerDisguiseMessage(UUID player, @Nullable DisguiseType disguise) {
 	public void encode(FriendlyByteBuf buffer) {
 		buffer.writeUUID(player);
 

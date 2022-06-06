@@ -48,10 +48,10 @@ public final class WorkspacePositionTracker {
 
 	private static CompoundTag getOrCreateWorkspaceTag(ServerPlayer player, MapWorkspace workspace) {
 		CompoundTag data = getOrCreateTag(player);
-		if (!data.contains(workspace.getId(), Tag.TAG_COMPOUND)) {
-			data.put(workspace.getId(), new CompoundTag());
+		if (!data.contains(workspace.id(), Tag.TAG_COMPOUND)) {
+			data.put(workspace.id(), new CompoundTag());
 		}
-		return data.getCompound(workspace.getId());
+		return data.getCompound(workspace.id());
 	}
 
 	private static CompoundTag getOrCreateReturnTag(ServerPlayer player) {

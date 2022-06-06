@@ -24,19 +24,11 @@ import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
 import javax.annotation.Nullable;
 import java.util.function.Predicate;
 
-public final class PlaceFeaturePlantBehavior implements IGameBehavior {
-	public static final Codec<PlaceFeaturePlantBehavior> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+public record PlaceFeaturePlantBehavior(Holder<ConfiguredFeature<?, ?>> feature, BlockStatePredicate blocks) implements IGameBehavior {
+	public static final Codec<PlaceFeaturePlantBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
 			ConfiguredFeature.CODEC.fieldOf("feature").forGetter(c -> c.feature),
 			BlockStatePredicate.CODEC.fieldOf("blocks").forGetter(c -> c.blocks)
-	).apply(instance, PlaceFeaturePlantBehavior::new));
-
-	private final Holder<ConfiguredFeature<?, ?>> feature;
-	private final BlockStatePredicate blocks;
-
-	public PlaceFeaturePlantBehavior(Holder<ConfiguredFeature<?, ?>> feature, BlockStatePredicate blocks) {
-		this.feature = feature;
-		this.blocks = blocks;
-	}
+	).apply(i, PlaceFeaturePlantBehavior::new));
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {

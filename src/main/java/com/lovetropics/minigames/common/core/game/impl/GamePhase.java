@@ -83,7 +83,10 @@ public class GamePhase implements IGamePhase {
 			return GameResult.error(e.getTextMessage());
 		}
 
-		map.getName().ifPresent(mapName -> getStatistics().global().set(StatisticKey.MAP, mapName));
+		final String mapName = map.name();
+		if (mapName != null) {
+			getStatistics().global().set(StatisticKey.MAP, mapName);
+		}
 
 		startTime = getWorld().getGameTime();
 
@@ -238,17 +241,17 @@ public class GamePhase implements IGamePhase {
 
 	@Override
 	public MapRegions getMapRegions() {
-		return map.getRegions();
+		return map.mapRegions();
 	}
 
 	@Override
 	public ResourceKey<Level> getDimension() {
-		return map.getDimension();
+		return map.dimension();
 	}
 
 	@Override
 	public ServerLevel getWorld() {
-		return server.getLevel(map.getDimension());
+		return server.getLevel(map.dimension());
 	}
 
 	@Override

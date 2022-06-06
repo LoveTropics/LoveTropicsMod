@@ -7,12 +7,10 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 public final class ScheduledCommandsBehavior extends CommandInvokeBehavior {
-	public static final Codec<ScheduledCommandsBehavior> CODEC = RecordCodecBuilder.create(instance -> {
-		return instance.group(
-				COMMAND_CODEC.fieldOf("run").forGetter(c -> c.command),
-				Codec.LONG.fieldOf("time").forGetter(c -> c.time)
-		).apply(instance, ScheduledCommandsBehavior::new);
-	});
+	public static final Codec<ScheduledCommandsBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+			COMMAND_CODEC.fieldOf("run").forGetter(c -> c.command),
+			Codec.LONG.fieldOf("time").forGetter(c -> c.time)
+	).apply(i, ScheduledCommandsBehavior::new));
 
 	private final String command;
 	private final long time;

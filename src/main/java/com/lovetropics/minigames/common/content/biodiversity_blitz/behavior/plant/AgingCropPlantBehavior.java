@@ -8,9 +8,9 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import java.util.Random;
 
 public final class AgingCropPlantBehavior extends AgingPlantBehavior {
-	public static final Codec<AgingCropPlantBehavior> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+	public static final Codec<AgingCropPlantBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
 			Codec.INT.fieldOf("interval").forGetter(c -> c.interval)
-	).apply(instance, AgingCropPlantBehavior::new));
+	).apply(i, AgingCropPlantBehavior::new));
 
 	public AgingCropPlantBehavior(int interval) {
 		super(interval);

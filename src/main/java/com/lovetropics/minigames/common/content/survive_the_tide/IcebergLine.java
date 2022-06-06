@@ -11,13 +11,11 @@ import java.util.Random;
 
 public class IcebergLine
 {
-    public static final Codec<IcebergLine> CODEC = RecordCodecBuilder.create(instance -> {
-        return instance.group(
-                BlockPos.CODEC.fieldOf("posA").forGetter(c -> c.start),
-                BlockPos.CODEC.fieldOf("posB").forGetter(c -> c.end),
-                Codec.INT.optionalFieldOf("distanceBetweenEach", 10).forGetter(c -> c.distBetweenEach)
-        ).apply(instance, IcebergLine::new);
-    });
+    public static final Codec<IcebergLine> CODEC = RecordCodecBuilder.create(i -> i.group(
+            BlockPos.CODEC.fieldOf("posA").forGetter(c -> c.start),
+            BlockPos.CODEC.fieldOf("posB").forGetter(c -> c.end),
+            Codec.INT.optionalFieldOf("distanceBetweenEach", 10).forGetter(c -> c.distBetweenEach)
+    ).apply(i, IcebergLine::new));
 
     private final BlockPos start, end;
 

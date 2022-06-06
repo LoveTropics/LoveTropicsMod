@@ -63,9 +63,9 @@ public final class BbClientRenderEffects {
 
 		renderItem(matrixStack, CURRENCY_ITEM.get(), x, y);
 
-		String currency = String.valueOf(selfState.getCurrency());
+		String currency = String.valueOf(selfState.currency());
 		if (currencyTarget != null) {
-			currency = ChatFormatting.GRAY + "Total: " + ChatFormatting.WHITE + currency + ChatFormatting.GRAY + "/" + currencyTarget.getValue();
+			currency = ChatFormatting.GRAY + "Total: " + ChatFormatting.WHITE + currency + ChatFormatting.GRAY + "/" + currencyTarget.value();
 		}
 
 		font.drawShadow(
@@ -76,7 +76,7 @@ public final class BbClientRenderEffects {
 		);
 		y += ITEM_SIZE + PADDING;
 
-		int increment = selfState.getNextIncrement();
+		int increment = selfState.nextIncrement();
 		boolean gainingCurrency = increment > 0;
 		ChatFormatting incrementColor = gainingCurrency ? ChatFormatting.AQUA : ChatFormatting.RED;
 

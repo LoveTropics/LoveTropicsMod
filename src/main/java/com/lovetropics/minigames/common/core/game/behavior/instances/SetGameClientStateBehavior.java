@@ -7,18 +7,10 @@ import com.lovetropics.minigames.common.core.game.client_state.GameClientState;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
-public final class SetGameClientStateBehavior implements IGameBehavior {
-	public static final Codec<SetGameClientStateBehavior> CODEC = RecordCodecBuilder.create(instance -> {
-		return instance.group(
-				GameClientState.CODEC.fieldOf("state").forGetter(c -> c.state)
-		).apply(instance, SetGameClientStateBehavior::new);
-	});
-
-	private final GameClientState state;
-
-	public SetGameClientStateBehavior(GameClientState state) {
-		this.state = state;
-	}
+public record SetGameClientStateBehavior(GameClientState state) implements IGameBehavior {
+	public static final Codec<SetGameClientStateBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+			GameClientState.CODEC.fieldOf("state").forGetter(c -> c.state)
+	).apply(i, SetGameClientStateBehavior::new));
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {

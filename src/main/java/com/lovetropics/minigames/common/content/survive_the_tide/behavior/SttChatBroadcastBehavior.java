@@ -16,18 +16,10 @@ import net.minecraft.network.chat.TranslatableComponent;
 
 import java.util.Iterator;
 
-public class SttChatBroadcastBehavior implements IGameBehavior {
-	public static final Codec<SttChatBroadcastBehavior> CODEC = RecordCodecBuilder.create(instance -> {
-		return instance.group(
-				Codec.STRING.fieldOf("down_to_two_translation_key").forGetter(c -> c.downToTwoTranslationKey)
-		).apply(instance, SttChatBroadcastBehavior::new);
-	});
-
-	private final String downToTwoTranslationKey;
-
-	public SttChatBroadcastBehavior(String downToTwoTranslationKey) {
-		this.downToTwoTranslationKey = downToTwoTranslationKey;
-	}
+public record SttChatBroadcastBehavior(String downToTwoTranslationKey) implements IGameBehavior {
+	public static final Codec<SttChatBroadcastBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+			Codec.STRING.fieldOf("down_to_two_translation_key").forGetter(c -> c.downToTwoTranslationKey)
+	).apply(i, SttChatBroadcastBehavior::new));
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) throws GameException {

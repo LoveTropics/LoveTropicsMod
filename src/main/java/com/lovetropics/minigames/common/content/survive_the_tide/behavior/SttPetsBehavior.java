@@ -29,11 +29,9 @@ import java.util.Map;
 import java.util.UUID;
 
 public final class SttPetsBehavior implements IGameBehavior {
-	public static final Codec<SttPetsBehavior> CODEC = RecordCodecBuilder.create(instance -> {
-		return instance.group(
-				Codec.unboundedMap(ForgeRegistries.ENTITIES.getCodec(), PetConfig.CODEC).fieldOf("entities").forGetter(c -> c.petTypes)
-		).apply(instance, SttPetsBehavior::new);
-	});
+	public static final Codec<SttPetsBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+			Codec.unboundedMap(ForgeRegistries.ENTITIES.getCodec(), PetConfig.CODEC).fieldOf("entities").forGetter(c -> c.petTypes)
+	).apply(i, SttPetsBehavior::new));
 
 	private static final double FOLLOW_DISTANCE = 5.0;
 

@@ -26,20 +26,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class WorldBorderGameBehavior implements IGameBehavior {
-	public static final Codec<WorldBorderGameBehavior> CODEC = RecordCodecBuilder.create(instance -> {
-		return instance.group(
-				MoreCodecs.TEXT.fieldOf("name").forGetter(c -> c.name),
-				Codec.STRING.fieldOf("world_border_center").forGetter(c -> c.worldBorderCenterKey),
-				MoreCodecs.TEXT.fieldOf("collapse_message").forGetter(c -> c.collapseMessage),
-				Codec.LONG.fieldOf("ticks_until_start").forGetter(c -> c.ticksUntilStart),
-				Codec.LONG.fieldOf("delay_until_collapse").forGetter(c -> c.delayUntilCollapse),
-				Codec.INT.fieldOf("particle_rate_delay").forGetter(c -> c.particleRateDelay),
-				Codec.INT.fieldOf("particle_height").forGetter(c -> c.particleHeight),
-				Codec.INT.fieldOf("damage_rate_delay").forGetter(c -> c.damageRateDelay),
-				Codec.INT.fieldOf("damage_amount").forGetter(c -> c.damageAmount),
-				ParticleTypes.CODEC.optionalFieldOf("border_particle", ParticleTypes.EXPLOSION).forGetter(c -> c.borderParticle)
-		).apply(instance, WorldBorderGameBehavior::new);
-	});
+	public static final Codec<WorldBorderGameBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+			MoreCodecs.TEXT.fieldOf("name").forGetter(c -> c.name),
+			Codec.STRING.fieldOf("world_border_center").forGetter(c -> c.worldBorderCenterKey),
+			MoreCodecs.TEXT.fieldOf("collapse_message").forGetter(c -> c.collapseMessage),
+			Codec.LONG.fieldOf("ticks_until_start").forGetter(c -> c.ticksUntilStart),
+			Codec.LONG.fieldOf("delay_until_collapse").forGetter(c -> c.delayUntilCollapse),
+			Codec.INT.fieldOf("particle_rate_delay").forGetter(c -> c.particleRateDelay),
+			Codec.INT.fieldOf("particle_height").forGetter(c -> c.particleHeight),
+			Codec.INT.fieldOf("damage_rate_delay").forGetter(c -> c.damageRateDelay),
+			Codec.INT.fieldOf("damage_amount").forGetter(c -> c.damageAmount),
+			ParticleTypes.CODEC.optionalFieldOf("border_particle", ParticleTypes.EXPLOSION).forGetter(c -> c.borderParticle)
+	).apply(i, WorldBorderGameBehavior::new));
 
 	private final Component name;
 	private final String worldBorderCenterKey;

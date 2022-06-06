@@ -61,8 +61,8 @@ public final class CommandEventsBehavior extends CommandInvokeMapBehavior {
 
 		events.listen(GameLogicEvents.GAME_OVER, () -> this.invoke("game_over"));
 		events.listen(GameLogicEvents.PHASE_CHANGE, (phase, lastPhase) -> {
-			this.invoke("phase_finish/" + lastPhase.key);
-			this.invoke("phase_start/" + phase.key);
+			this.invoke("phase_finish/" + lastPhase.key());
+			this.invoke("phase_start/" + phase.key());
 		});
 
 		events.listen(GamePhaseEvents.TICK, () -> this.invoke("tick"));

@@ -12,13 +12,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-final class BehaviorParameterReplacer<T> {
-	private final Dynamic<?> source;
-
-	private BehaviorParameterReplacer(Dynamic<?> source) {
-		this.source = source;
-	}
-
+record BehaviorParameterReplacer<T>(Dynamic<?> source) {
 	public static <T> BehaviorParameterReplacer<T> from(Dynamic<?> source) {
 		return new BehaviorParameterReplacer<>(source);
 	}
@@ -47,12 +41,9 @@ final class BehaviorParameterReplacer<T> {
 			return this.replaceInMap(target, map.get());
 		}
 
-		Optional<Stream<Dynamic<T>>> stream = target.asStreamOpt().result();
-		if (stream.isPresent()) {
-			return this.replaceInStream(target, stream.get());
-		}
-
-		return null;
+		return target.asStreamOpt().result()
+				.map(stream -> this.replaceInStream(target, stream))
+				.orElse(null);
 	}
 
 	@Nullable

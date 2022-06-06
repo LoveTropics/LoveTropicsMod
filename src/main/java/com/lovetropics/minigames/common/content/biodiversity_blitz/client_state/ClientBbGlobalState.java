@@ -11,18 +11,10 @@ import java.util.Map;
 import java.util.UUID;
 
 // TODO: consolidate all state types by using PartialUpdate system
-public final class ClientBbGlobalState implements GameClientState {
-	public static final Codec<ClientBbGlobalState> CODEC = RecordCodecBuilder.create(instance -> {
-		return instance.group(
-				Codec.unboundedMap(MoreCodecs.UUID_STRING, Codec.INT).fieldOf("currency").forGetter(c -> c.currency)
-		).apply(instance, ClientBbGlobalState::new);
-	});
-
-	private final Map<UUID, Integer> currency;
-
-	public ClientBbGlobalState(Map<UUID, Integer> currency) {
-		this.currency = currency;
-	}
+public record ClientBbGlobalState(Map<UUID, Integer> currency) implements GameClientState {
+	public static final Codec<ClientBbGlobalState> CODEC = RecordCodecBuilder.create(i -> i.group(
+			Codec.unboundedMap(MoreCodecs.UUID_STRING, Codec.INT).fieldOf("currency").forGetter(c -> c.currency)
+	).apply(i, ClientBbGlobalState::new));
 
 	@Override
 	public GameClientStateType<?> getType() {

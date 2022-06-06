@@ -15,7 +15,10 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
 
+import javax.annotation.Nullable;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 import static net.minecraft.commands.Commands.argument;
@@ -43,11 +46,11 @@ public class GamePackageCommand {
 		return Suggestions.empty();
 	}
 
-	private static int spawnPackage(CommandContext<CommandSourceStack> ctx, ServerPlayer target) {
+	private static int spawnPackage(CommandContext<CommandSourceStack> ctx, @Nullable ServerPlayer target) {
 		IGamePhase game = IGameManager.get().getGamePhaseFor(ctx.getSource());
 		if (game != null) {
 			String type = StringArgumentType.getString(ctx, "id");
-			GamePackage gamePackage = new GamePackage(type, "LoveTropics", target == null ? null : target.getUUID());
+			GamePackage gamePackage = new GamePackage(type, "LoveTropics", Optional.ofNullable(target).map(Entity::getUUID));
 			game.invoker(GamePackageEvents.RECEIVE_PACKAGE).onReceivePackage($ -> {}, gamePackage);
 		}
 		return Command.SINGLE_SUCCESS;

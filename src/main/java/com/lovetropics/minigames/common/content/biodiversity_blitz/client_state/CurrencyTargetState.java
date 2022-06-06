@@ -6,22 +6,10 @@ import com.lovetropics.minigames.common.core.game.client_state.GameClientStateTy
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
-public final class CurrencyTargetState implements GameClientState {
-	public static final Codec<CurrencyTargetState> CODEC = RecordCodecBuilder.create(instance -> {
-		return instance.group(
-				Codec.INT.fieldOf("value").forGetter(c -> c.value)
-		).apply(instance, CurrencyTargetState::new);
-	});
-
-	private final int value;
-
-	public CurrencyTargetState(int value) {
-		this.value = value;
-	}
-
-	public int getValue() {
-		return value;
-	}
+public record CurrencyTargetState(int value) implements GameClientState {
+	public static final Codec<CurrencyTargetState> CODEC = RecordCodecBuilder.create(i -> i.group(
+			Codec.INT.fieldOf("value").forGetter(c -> c.value)
+	).apply(i, CurrencyTargetState::new));
 
 	@Override
 	public GameClientStateType<?> getType() {

@@ -22,13 +22,11 @@ import java.util.List;
 import java.util.Random;
 
 public class PositionPlayersBehavior implements IGameBehavior {
-	public static final Codec<PositionPlayersBehavior> CODEC = RecordCodecBuilder.create(instance -> {
-		return instance.group(
-				MoreCodecs.arrayOrUnit(Codec.STRING, String[]::new).optionalFieldOf("participants", new String[0]).forGetter(c -> c.participantSpawnKeys),
-				MoreCodecs.arrayOrUnit(Codec.STRING, String[]::new).optionalFieldOf("spectators", new String[0]).forGetter(c -> c.spectatorSpawnKeys),
-				MoreCodecs.arrayOrUnit(Codec.STRING, String[]::new).optionalFieldOf("all", new String[0]).forGetter(c -> c.allSpawnKeys)
-		).apply(instance, PositionPlayersBehavior::new);
-	});
+	public static final Codec<PositionPlayersBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+			MoreCodecs.arrayOrUnit(Codec.STRING, String[]::new).optionalFieldOf("participants", new String[0]).forGetter(c -> c.participantSpawnKeys),
+			MoreCodecs.arrayOrUnit(Codec.STRING, String[]::new).optionalFieldOf("spectators", new String[0]).forGetter(c -> c.spectatorSpawnKeys),
+			MoreCodecs.arrayOrUnit(Codec.STRING, String[]::new).optionalFieldOf("all", new String[0]).forGetter(c -> c.allSpawnKeys)
+	).apply(i, PositionPlayersBehavior::new));
 
 	private final String[] participantSpawnKeys;
 	private final String[] spectatorSpawnKeys;

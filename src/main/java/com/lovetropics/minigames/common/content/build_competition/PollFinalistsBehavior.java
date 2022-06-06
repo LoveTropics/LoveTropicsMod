@@ -32,30 +32,15 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Random;
 
-public class PollFinalistsBehavior implements IGameBehavior {
-
-	public static final Codec<PollFinalistsBehavior> CODEC = RecordCodecBuilder.create(instance -> {
-		return instance.group(
-				Codec.STRING.optionalFieldOf("finalists_tag", "finalist").forGetter(c -> c.finalistsTag),
-				Codec.STRING.optionalFieldOf("winner_tag", "winner").forGetter(c -> c.winnerTag),
-				Codec.STRING.optionalFieldOf("votes_objective", "votes").forGetter(c -> c.votesObjective),
-				Codec.STRING.optionalFieldOf("poll_duration", "5m").forGetter(c -> c.pollDuration)
-		).apply(instance, PollFinalistsBehavior::new);
-	});
+public record PollFinalistsBehavior(String finalistsTag, String winnerTag, String votesObjective, String pollDuration) implements IGameBehavior {
+	public static final Codec<PollFinalistsBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+			Codec.STRING.optionalFieldOf("finalists_tag", "finalist").forGetter(c -> c.finalistsTag),
+			Codec.STRING.optionalFieldOf("winner_tag", "winner").forGetter(c -> c.winnerTag),
+			Codec.STRING.optionalFieldOf("votes_objective", "votes").forGetter(c -> c.votesObjective),
+			Codec.STRING.optionalFieldOf("poll_duration", "5m").forGetter(c -> c.pollDuration)
+	).apply(i, PollFinalistsBehavior::new));
 
 	private static final Logger LOGGER = LogManager.getLogger();
-
-	private final String finalistsTag;
-	private final String winnerTag;
-	private final String votesObjective;
-	private final String pollDuration;
-
-	public PollFinalistsBehavior(String finalistsTag, String winnerTag, String votesObjective, String pollDuration) {
-		this.finalistsTag = finalistsTag;
-		this.winnerTag = winnerTag;
-		this.votesObjective = votesObjective;
-		this.pollDuration = pollDuration;
-	}
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) throws GameException {

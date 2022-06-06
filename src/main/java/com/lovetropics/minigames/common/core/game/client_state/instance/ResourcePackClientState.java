@@ -6,22 +6,10 @@ import com.lovetropics.minigames.common.core.game.client_state.GameClientStateTy
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
-public final class ResourcePackClientState implements GameClientState {
-	public static final Codec<ResourcePackClientState> CODEC = RecordCodecBuilder.create(instance -> {
-		return instance.group(
-				Codec.STRING.fieldOf("pack_name").forGetter(c -> c.packName)
-		).apply(instance, ResourcePackClientState::new);
-	});
-
-	private final String packName;
-
-	public ResourcePackClientState(String packName) {
-		this.packName = packName;
-	}
-
-	public String getPackName() {
-		return packName;
-	}
+public record ResourcePackClientState(String packName) implements GameClientState {
+	public static final Codec<ResourcePackClientState> CODEC = RecordCodecBuilder.create(i -> i.group(
+			Codec.STRING.fieldOf("pack_name").forGetter(c -> c.packName)
+	).apply(i, ResourcePackClientState::new));
 
 	@Override
 	public GameClientStateType<?> getType() {

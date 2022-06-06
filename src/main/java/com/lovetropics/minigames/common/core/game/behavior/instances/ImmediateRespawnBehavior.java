@@ -12,33 +12,15 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.network.chat.Component;
 
-import javax.annotation.Nullable;
 import java.util.Optional;
 
-public final class ImmediateRespawnBehavior implements IGameBehavior {
-	public static final Codec<ImmediateRespawnBehavior> CODEC = RecordCodecBuilder.create(instance -> {
-		return instance.group(
-				PlayerRole.CODEC.optionalFieldOf("role").forGetter(c -> Optional.ofNullable(c.role)),
-				PlayerRole.CODEC.optionalFieldOf("respawn_as").forGetter(c -> Optional.ofNullable(c.respawnAsRole)),
-				TemplatedText.CODEC.optionalFieldOf("death_message").forGetter(c -> Optional.ofNullable(c.deathMessage)),
-				Codec.BOOL.optionalFieldOf("drop_inventory", false).forGetter(c -> c.dropInventory)
-		).apply(instance, ImmediateRespawnBehavior::new);
-	});
-
-	@Nullable
-	private final PlayerRole role;
-	@Nullable
-	private final PlayerRole respawnAsRole;
-	@Nullable
-	private final TemplatedText deathMessage;
-	private final boolean dropInventory;
-
-	public ImmediateRespawnBehavior(Optional<PlayerRole> role, Optional<PlayerRole> respawnAsRole, Optional<TemplatedText> deathMessage, boolean dropInventory) {
-		this.role = role.orElse(null);
-		this.respawnAsRole = respawnAsRole.orElse(null);
-		this.deathMessage = deathMessage.orElse(null);
-		this.dropInventory = dropInventory;
-	}
+public record ImmediateRespawnBehavior(Optional<PlayerRole> role, Optional<PlayerRole> respawnAsRole, Optional<TemplatedText> deathMessage, boolean dropInventory) implements IGameBehavior {
+	public static final Codec<ImmediateRespawnBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+			PlayerRole.CODEC.optionalFieldOf("role").forGetter(c -> c.role),
+			PlayerRole.CODEC.optionalFieldOf("respawn_as").forGetter(c -> c.respawnAsRole),
+			TemplatedText.CODEC.optionalFieldOf("death_message").forGetter(c -> c.deathMessage),
+			Codec.BOOL.optionalFieldOf("drop_inventory", false).forGetter(c -> c.dropInventory)
+	).apply(i, ImmediateRespawnBehavior::new));
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
@@ -49,7 +31,7 @@ public final class ImmediateRespawnBehavior implements IGameBehavior {
 		player.getInventory().dropAll();
 
 		PlayerRole playerRole = game.getRoleFor(player);
-		if (this.role == null || this.role == playerRole) {
+		if (this.role.isEmpty() || this.role.get() == playerRole) {
 			this.respawnPlayer(game, player, playerRole);
 			this.sendDeathMessage(game, player);
 
@@ -60,8 +42,8 @@ public final class ImmediateRespawnBehavior implements IGameBehavior {
 	}
 
 	private void respawnPlayer(IGamePhase game, ServerPlayer player, PlayerRole playerRole) {
-		if (respawnAsRole != null) {
-			game.setPlayerRole(player, respawnAsRole);
+		if (respawnAsRole.isPresent()) {
+			game.setPlayerRole(player, respawnAsRole.get());
 		} else {
 			game.invoker(GamePlayerEvents.SPAWN).onSpawn(player, playerRole);
 		}
@@ -70,8 +52,8 @@ public final class ImmediateRespawnBehavior implements IGameBehavior {
 	}
 
 	private void sendDeathMessage(IGamePhase game, ServerPlayer player) {
-		if (deathMessage != null) {
-			Component message = deathMessage.apply(player.getCombatTracker().getDeathMessage());
+		if (deathMessage.isPresent()) {
+			Component message = deathMessage.get().apply(player.getCombatTracker().getDeathMessage());
 			game.getAllPlayers().sendMessage(message);
 		}
 	}

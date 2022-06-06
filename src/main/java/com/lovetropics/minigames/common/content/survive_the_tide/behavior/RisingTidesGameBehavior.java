@@ -128,7 +128,7 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 
 		events.listen(GamePhaseEvents.START, () -> {
 			lastPhase = phases.get();
-			waterLevel = phaseToTideHeight.get(phases.get().key);
+			waterLevel = phaseToTideHeight.get(phases.get().key());
 			chunkWaterLevels.defaultReturnValue(waterLevel);
 		});
 
@@ -152,11 +152,11 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 
 	private void tick(IGamePhase game) {
 		GamePhase currentPhase = phases.get();
-		int prevWaterLevel = phaseToTideHeight.get(lastPhase.key);
+		int prevWaterLevel = phaseToTideHeight.get(lastPhase.key());
 
 		tickWaterLevel(game, currentPhase, prevWaterLevel);
 
-		if (phasesIcebergsGrow.contains(currentPhase.key) && game.ticks() % icebergGrowthTickRate == 0) {
+		if (phasesIcebergsGrow.contains(currentPhase.key()) && game.ticks() % icebergGrowthTickRate == 0) {
 			growIcebergs(game.getWorld());
 		}
 
@@ -246,12 +246,12 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 	}
 
 	private void tickWaterLevel(final IGamePhase game, final GamePhase phase, final int prevWaterLevel) {
-		final int targetWaterLevel = phaseToTideHeight.get(phase.key);
+		final int targetWaterLevel = phaseToTideHeight.get(phase.key());
 
 		int waterChangeInterval = this.calculateWaterChangeInterval(
 				targetWaterLevel,
 				prevWaterLevel,
-				phase.lengthInTicks
+				phase.lengthInTicks()
 		);
 
 		if (waterLevel < targetWaterLevel && game.ticks() % waterChangeInterval == 0) {

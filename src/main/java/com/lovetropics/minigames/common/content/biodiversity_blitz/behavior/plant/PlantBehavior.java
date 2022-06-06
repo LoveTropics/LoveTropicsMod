@@ -32,12 +32,12 @@ import java.util.Collections;
 import java.util.List;
 
 public final class PlantBehavior implements IGameBehavior {
-	public static final Codec<PlantBehavior> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+	public static final Codec<PlantBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
 			PlantType.CODEC.fieldOf("id").forGetter(c -> c.plantType),
 			MoreCodecs.stringVariants(PlantFamily.values(), PlantFamily::friendlyName).fieldOf("family").forGetter(c -> c.family),
 			Codec.DOUBLE.optionalFieldOf("value", 0.0).forGetter(c -> c.value),
 			IGameBehavior.CODEC.listOf().optionalFieldOf("behaviors", Collections.emptyList()).forGetter(c -> c.behaviors)
-	).apply(instance, PlantBehavior::new));
+	).apply(i, PlantBehavior::new));
 
 	private final PlantType plantType;
 	private final PlantFamily family;

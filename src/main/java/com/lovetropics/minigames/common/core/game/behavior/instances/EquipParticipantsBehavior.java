@@ -10,18 +10,10 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.world.item.ItemStack;
 
-public class EquipParticipantsBehavior implements IGameBehavior {
-	public static final Codec<EquipParticipantsBehavior> CODEC = RecordCodecBuilder.create(instance -> {
-		return instance.group(
-				MoreCodecs.arrayOrUnit(MoreCodecs.ITEM_STACK, ItemStack[]::new).fieldOf("equipment").forGetter(c -> c.equipment)
-		).apply(instance, EquipParticipantsBehavior::new);
-	});
-
-	private final ItemStack[] equipment;
-
-	public EquipParticipantsBehavior(ItemStack[] equipment) {
-		this.equipment = equipment;
-	}
+public record EquipParticipantsBehavior(ItemStack[] equipment) implements IGameBehavior {
+	public static final Codec<EquipParticipantsBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+			MoreCodecs.arrayOrUnit(MoreCodecs.ITEM_STACK, ItemStack[]::new).fieldOf("equipment").forGetter(c -> c.equipment)
+	).apply(i, EquipParticipantsBehavior::new));
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {

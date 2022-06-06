@@ -25,21 +25,11 @@ import net.minecraft.world.level.block.state.BlockState;
 import java.util.ArrayList;
 import java.util.List;
 
-public final class GrowPlantBehavior implements IGameBehavior {
-	public static final Codec<GrowPlantBehavior> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+public record GrowPlantBehavior(int time, PlantType growInto) implements IGameBehavior {
+	public static final Codec<GrowPlantBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
 			Codec.INT.fieldOf("time").forGetter(c -> c.time),
 			PlantType.CODEC.fieldOf("grow_into").forGetter(c -> c.growInto)
-	).apply(instance, GrowPlantBehavior::new));
-
-	private final int time;
-	private final PlantType growInto;
-
-	private final List<Plant> growPlants = new ArrayList<>();
-
-	public GrowPlantBehavior(int time, PlantType growInto) {
-		this.time = time;
-		this.growInto = growInto;
-	}
+	).apply(i, GrowPlantBehavior::new));
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
@@ -76,9 +66,7 @@ public final class GrowPlantBehavior implements IGameBehavior {
 	}
 
 	private List<Plant> collectPlantsToGrow(List<Plant> plants, long ticks) {
-		List<Plant> result = this.growPlants;
-		result.clear();
-
+		List<Plant> result = new ArrayList<>();
 		for (Plant plant : plants) {
 			GrowTime growTime = plant.state(GrowTime.KEY);
 			if (growTime != null && ticks >= growTime.next) {
@@ -122,13 +110,6 @@ public final class GrowPlantBehavior implements IGameBehavior {
 		}
 	}
 
-	static final class PlantSnapshot {
-		final Plant plant;
-		final Long2ObjectMap<BlockState> blocks;
-
-		PlantSnapshot(Plant plant, Long2ObjectMap<BlockState> blocks) {
-			this.plant = plant;
-			this.blocks = blocks;
-		}
+	record PlantSnapshot(Plant plant, Long2ObjectMap<BlockState> blocks) {
 	}
 }

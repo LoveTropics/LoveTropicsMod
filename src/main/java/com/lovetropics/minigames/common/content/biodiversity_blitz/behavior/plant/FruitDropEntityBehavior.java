@@ -26,12 +26,12 @@ import java.util.stream.IntStream;
 
 public class FruitDropEntityBehavior implements IGameBehavior {
 	
-	public static final Codec<FruitDropEntityBehavior> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+	public static final Codec<FruitDropEntityBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
 				Codec.INT.fieldOf("range").forGetter(o -> o.range),
 				Codec.INT.fieldOf("interval").forGetter(o -> o.interval),
 				ForgeRegistries.BLOCKS.getCodec().fieldOf("fruit").forGetter(o -> o.fruit),
 				ForgeRegistries.ENTITIES.getCodec().fieldOf("entity").forGetter(o -> o.entity)
-			).apply(instance, FruitDropEntityBehavior::new));
+			).apply(i, FruitDropEntityBehavior::new));
 
 	private final int range;
 	private final int interval;

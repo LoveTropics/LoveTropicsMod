@@ -13,12 +13,10 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import javax.annotation.Nullable;
 
 public final class WeatherEventPackageBehavior implements IGameBehavior {
-	public static final Codec<WeatherEventPackageBehavior> CODEC = RecordCodecBuilder.create(instance -> {
-		return instance.group(
-				WeatherEventType.CODEC.fieldOf("event").forGetter(c -> c.type),
-				Codec.LONG.fieldOf("seconds").forGetter(c -> c.ticks / 20)
-		).apply(instance, WeatherEventPackageBehavior::new);
-	});
+	public static final Codec<WeatherEventPackageBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+			WeatherEventType.CODEC.fieldOf("event").forGetter(c -> c.type),
+			Codec.LONG.fieldOf("seconds").forGetter(c -> c.ticks / 20)
+	).apply(i, WeatherEventPackageBehavior::new));
 
 	public final WeatherEventType type;
 	public final long ticks;

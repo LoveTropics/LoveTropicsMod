@@ -24,17 +24,15 @@ import java.util.Iterator;
 import java.util.Random;
 
 public class ShootProjectilesAroundPlayerPackageBehavior implements IGameBehavior {
-	public static final Codec<ShootProjectilesAroundPlayerPackageBehavior> CODEC = RecordCodecBuilder.create(instance -> {
-		return instance.group(
-				Codec.INT.optionalFieldOf("entity_count_per_player", 10).forGetter(c -> c.entityCountPerPlayer),
-				Codec.INT.optionalFieldOf("spawn_distance_max", 40).forGetter(c -> c.spawnDistanceMax),
-				Codec.INT.optionalFieldOf("target_randomness", 10).forGetter(c -> c.targetRandomness),
-				Codec.INT.optionalFieldOf("spawn_height", 20).forGetter(c -> c.spawnRangeY),
-				Codec.INT.optionalFieldOf("spawn_rate_base", 20).forGetter(c -> c.spawnRateBase),
-				Codec.INT.optionalFieldOf("spawn_rate_random", 20).forGetter(c -> c.spawnRateRandom),
-				Codec.INT.optionalFieldOf("explosion_strength", 2).forGetter(c -> c.explosionStrength)
-		).apply(instance, ShootProjectilesAroundPlayerPackageBehavior::new);
-	});
+	public static final Codec<ShootProjectilesAroundPlayerPackageBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+			Codec.INT.optionalFieldOf("entity_count_per_player", 10).forGetter(c -> c.entityCountPerPlayer),
+			Codec.INT.optionalFieldOf("spawn_distance_max", 40).forGetter(c -> c.spawnDistanceMax),
+			Codec.INT.optionalFieldOf("target_randomness", 10).forGetter(c -> c.targetRandomness),
+			Codec.INT.optionalFieldOf("spawn_height", 20).forGetter(c -> c.spawnRangeY),
+			Codec.INT.optionalFieldOf("spawn_rate_base", 20).forGetter(c -> c.spawnRateBase),
+			Codec.INT.optionalFieldOf("spawn_rate_random", 20).forGetter(c -> c.spawnRateRandom),
+			Codec.INT.optionalFieldOf("explosion_strength", 2).forGetter(c -> c.explosionStrength)
+	).apply(i, ShootProjectilesAroundPlayerPackageBehavior::new));
 
 	//private final ResourceLocation entityId;
 	private final int entityCountPerPlayer;

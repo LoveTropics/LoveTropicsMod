@@ -17,18 +17,10 @@ import net.minecraft.world.level.GameRules;
 
 import java.util.Map;
 
-public final class SetGameRulesBehavior implements IGameBehavior {
-	public static final Codec<SetGameRulesBehavior> CODEC = RecordCodecBuilder.create(instance -> {
-		return instance.group(
-				Codec.unboundedMap(Codec.STRING, Codec.STRING).fieldOf("rules").forGetter(c -> c.rules)
-		).apply(instance, SetGameRulesBehavior::new);
-	});
-
-	private final Map<String, String> rules;
-
-	public SetGameRulesBehavior(Map<String, String> rules) {
-		this.rules = rules;
-	}
+public record SetGameRulesBehavior(Map<String, String> rules) implements IGameBehavior {
+	public static final Codec<SetGameRulesBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+			Codec.unboundedMap(Codec.STRING, Codec.STRING).fieldOf("rules").forGetter(c -> c.rules)
+	).apply(i, SetGameRulesBehavior::new));
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {

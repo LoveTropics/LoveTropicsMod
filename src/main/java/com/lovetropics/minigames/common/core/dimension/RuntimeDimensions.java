@@ -127,17 +127,17 @@ public final class RuntimeDimensions {
 		ResourceKey<Level> worldKey = ResourceKey.create(Registry.DIMENSION_REGISTRY, key);
 
 		MappedRegistry<LevelStem> dimensionsRegistry = getDimensionsRegistry(this.server);
-		dimensionsRegistry.register(ResourceKey.create(Registry.LEVEL_STEM_REGISTRY, key), config.dimension, Lifecycle.stable());
+		dimensionsRegistry.register(ResourceKey.create(Registry.LEVEL_STEM_REGISTRY, key), config.dimension(), Lifecycle.stable());
 
 		ServerLevel world = new ServerLevel(
 				this.server, Util.backgroundExecutor(), this.server.storageSource,
-				config.worldInfo,
+				config.worldInfo(),
 				worldKey,
-				config.dimension.typeHolder(),
+				config.dimension().typeHolder(),
 				VoidChunkStatusListener.INSTANCE,
-				config.dimension.generator(),
+				config.dimension().generator(),
 				false,
-				BiomeManager.obfuscateSeed(config.seed),
+				BiomeManager.obfuscateSeed(config.seed()),
 				ImmutableList.of(),
 				false
 		) {

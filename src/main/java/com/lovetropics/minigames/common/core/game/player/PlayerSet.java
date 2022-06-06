@@ -106,7 +106,7 @@ public interface PlayerSet extends PlayerIterable {
 
 	@Nullable
 	default ServerPlayer getPlayerBy(PlayerKey key) {
-		return getPlayerBy(key.getId());
+		return getPlayerBy(key.id());
 	}
 
 	int size();

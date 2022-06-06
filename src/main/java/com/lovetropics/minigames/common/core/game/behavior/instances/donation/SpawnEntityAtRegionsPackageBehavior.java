@@ -20,13 +20,11 @@ import net.minecraftforge.registries.ForgeRegistries;
 import java.util.List;
 
 public class SpawnEntityAtRegionsPackageBehavior implements IGameBehavior {
-	public static final Codec<SpawnEntityAtRegionsPackageBehavior> CODEC = RecordCodecBuilder.create(instance -> {
-		return instance.group(
-				Codec.STRING.listOf().fieldOf("regions_to_spawn_at").forGetter(c -> c.regionsToSpawnAtKeys),
-				ForgeRegistries.ENTITIES.getCodec().fieldOf("entity_id").forGetter(c -> c.entityId),
-				Codec.INT.optionalFieldOf("entity_count_per_region", 1).forGetter(c -> c.entityCountPerRegion)
-		).apply(instance, SpawnEntityAtRegionsPackageBehavior::new);
-	});
+	public static final Codec<SpawnEntityAtRegionsPackageBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+			Codec.STRING.listOf().fieldOf("regions_to_spawn_at").forGetter(c -> c.regionsToSpawnAtKeys),
+			ForgeRegistries.ENTITIES.getCodec().fieldOf("entity_id").forGetter(c -> c.entityId),
+			Codec.INT.optionalFieldOf("entity_count_per_region", 1).forGetter(c -> c.entityCountPerRegion)
+	).apply(i, SpawnEntityAtRegionsPackageBehavior::new));
 
 	private final List<String> regionsToSpawnAtKeys;
 	private final EntityType<?> entityId;

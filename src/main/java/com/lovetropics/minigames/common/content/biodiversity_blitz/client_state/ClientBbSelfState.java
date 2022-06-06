@@ -6,32 +6,14 @@ import com.lovetropics.minigames.common.core.game.client_state.GameClientStateTy
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
-public final class ClientBbSelfState implements GameClientState {
-	public static final Codec<ClientBbSelfState> CODEC = RecordCodecBuilder.create(instance -> {
-		return instance.group(
-				Codec.INT.fieldOf("currency").forGetter(c -> c.currency),
-				Codec.INT.fieldOf("next_increment").forGetter(c -> c.nextIncrement)
-		).apply(instance, ClientBbSelfState::new);
-	});
-
-	private final int currency;
-	private final int nextIncrement;
-
-	public ClientBbSelfState(int currency, int nextIncrement) {
-		this.currency = currency;
-		this.nextIncrement = nextIncrement;
-	}
+public record ClientBbSelfState(int currency, int nextIncrement) implements GameClientState {
+	public static final Codec<ClientBbSelfState> CODEC = RecordCodecBuilder.create(i -> i.group(
+			Codec.INT.fieldOf("currency").forGetter(c -> c.currency),
+			Codec.INT.fieldOf("next_increment").forGetter(c -> c.nextIncrement)
+	).apply(i, ClientBbSelfState::new));
 
 	@Override
 	public GameClientStateType<?> getType() {
 		return BiodiversityBlitz.SELF_STATE.get();
-	}
-
-	public int getCurrency() {
-		return currency;
-	}
-
-	public int getNextIncrement() {
-		return nextIncrement;
 	}
 }

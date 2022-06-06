@@ -15,6 +15,8 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 import net.minecraft.server.level.ServerPlayer;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.Collections;
 import java.util.List;
@@ -22,25 +24,14 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.function.BiConsumer;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
-public final class AssignPlayerRolesBehavior implements IGameBehavior {
+public record AssignPlayerRolesBehavior(List<UUID> forcedParticipants) implements IGameBehavior {
 	private static final Logger LOGGER = LogManager.getLogger(AssignPlayerRolesBehavior.class);
 	private static final BehaviorConfig<List<UUID>> CFG_FORCED_PARTICIPANTS = BehaviorConfig.fieldOf("forced_participants", MoreCodecs.UUID_STRING.listOf())
 			.listTypeHint("", ConfigType.STRING);
 
-	public static final Codec<AssignPlayerRolesBehavior> CODEC = RecordCodecBuilder.create(instance -> {
-		return instance.group(
-				CFG_FORCED_PARTICIPANTS.orElse(Collections.emptyList()).forGetter(c -> c.forcedParticipants)
-		).apply(instance, AssignPlayerRolesBehavior::new);
-	});
-
-	private final List<UUID> forcedParticipants;
-
-	public AssignPlayerRolesBehavior(List<UUID> forcedParticipants) {
-		this.forcedParticipants = forcedParticipants;
-	}
+	public static final Codec<AssignPlayerRolesBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+			CFG_FORCED_PARTICIPANTS.orElse(Collections.emptyList()).forGetter(c -> c.forcedParticipants)
+	).apply(i, AssignPlayerRolesBehavior::new));
 
 	@Override
 	public ConfigList getConfigurables() {
@@ -78,7 +69,7 @@ public final class AssignPlayerRolesBehavior implements IGameBehavior {
 
 		game.invoker(GamePlayerEvents.ALLOCATE_ROLES).onAllocateRoles(allocator);
 		LOGGER.info("SELECTED ROLES: " + game.getLobby().getPlayers().getRoleSelections());
-		
+
 		allocator.allocate(apply);
 	}
 

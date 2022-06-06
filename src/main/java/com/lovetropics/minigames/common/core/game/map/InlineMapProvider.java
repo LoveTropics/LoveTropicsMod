@@ -13,16 +13,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-public final class InlineMapProvider implements IGameMapProvider {
+public record InlineMapProvider(ResourceKey<Level> dimension) implements IGameMapProvider {
 	public static final Codec<InlineMapProvider> CODEC = RecordCodecBuilder.create(i -> i.group(
 			ResourceKey.codec(Registry.DIMENSION_REGISTRY).fieldOf("dimension").forGetter(c -> c.dimension)
 	).apply(i, InlineMapProvider::new));
-
-	private final ResourceKey<Level> dimension;
-
-	public InlineMapProvider(ResourceKey<Level> dimension) {
-		this.dimension = dimension;
-	}
 
 	@Override
 	public Codec<? extends IGameMapProvider> getCodec() {

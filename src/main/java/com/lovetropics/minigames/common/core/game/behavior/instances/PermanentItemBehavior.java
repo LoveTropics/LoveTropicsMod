@@ -10,24 +10,12 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.registries.ForgeRegistries;
 
-public class PermanentItemBehavior implements IGameBehavior {
-	public static final Codec<PermanentItemBehavior> CODEC = RecordCodecBuilder.create(instance -> {
-		return instance.group(
-				ForgeRegistries.ITEMS.getCodec().fieldOf("item").forGetter(c -> c.item),
-				Codec.INT.fieldOf("count").forGetter(c -> c.count),
-				Codec.INT.optionalFieldOf("interval", 5).forGetter(c -> c.interval)
-		).apply(instance, PermanentItemBehavior::new);
-	});
-
-	private final Item item;
-	private final int count;
-	private final int interval;
-
-	public PermanentItemBehavior(Item item, int count, int interval) {
-		this.item = item;
-		this.count = count;
-		this.interval = interval;
-	}
+public record PermanentItemBehavior(Item item, int count, int interval) implements IGameBehavior {
+	public static final Codec<PermanentItemBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+			ForgeRegistries.ITEMS.getCodec().fieldOf("item").forGetter(c -> c.item),
+			Codec.INT.fieldOf("count").forGetter(c -> c.count),
+			Codec.INT.optionalFieldOf("interval", 5).forGetter(c -> c.interval)
+	).apply(i, PermanentItemBehavior::new));
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {

@@ -9,18 +9,10 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.server.level.ServerLevel;
 
-public class DisableTntDestructionBehavior implements IGameBehavior {
-	public static final Codec<DisableTntDestructionBehavior> CODEC = RecordCodecBuilder.create(instance -> {
-		return instance.group(
-				BlockStatePredicate.CODEC.optionalFieldOf("block_predicate", BlockStatePredicate.ANY).forGetter(c -> c.blockPredicate)
-		).apply(instance, DisableTntDestructionBehavior::new);
-	});
-
-	private final BlockStatePredicate blockPredicate;
-
-	public DisableTntDestructionBehavior(BlockStatePredicate blockPredicate) {
-		this.blockPredicate = blockPredicate;
-	}
+public record DisableTntDestructionBehavior(BlockStatePredicate blockPredicate) implements IGameBehavior {
+	public static final Codec<DisableTntDestructionBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+			BlockStatePredicate.CODEC.optionalFieldOf("block_predicate", BlockStatePredicate.ANY).forGetter(c -> c.blockPredicate)
+	).apply(i, DisableTntDestructionBehavior::new));
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {

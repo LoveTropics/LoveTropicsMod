@@ -12,16 +12,10 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 
-public final class PlaceSinglePlantBehavior implements IGameBehavior {
-	public static final Codec<PlaceSinglePlantBehavior> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+public record PlaceSinglePlantBehavior(BlockState block) implements IGameBehavior {
+	public static final Codec<PlaceSinglePlantBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
 			MoreCodecs.BLOCK_STATE.fieldOf("block").forGetter(c -> c.block)
-	).apply(instance, PlaceSinglePlantBehavior::new));
-
-	private final BlockState block;
-
-	public PlaceSinglePlantBehavior(BlockState block) {
-		this.block = block;
-	}
+	).apply(i, PlaceSinglePlantBehavior::new));
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {

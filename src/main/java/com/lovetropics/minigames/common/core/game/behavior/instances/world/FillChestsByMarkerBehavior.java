@@ -22,11 +22,9 @@ import java.util.List;
 import java.util.Map;
 
 public class FillChestsByMarkerBehavior extends ChunkGeneratingBehavior {
-	public static final Codec<FillChestsByMarkerBehavior> CODEC = RecordCodecBuilder.create(instance -> {
-		return instance.group(
-				Codec.unboundedMap(ForgeRegistries.BLOCKS.getCodec(), ResourceLocation.CODEC).fieldOf("loot_tables").forGetter(c -> c.lootTableByMarker)
-		).apply(instance, FillChestsByMarkerBehavior::new);
-	});
+	public static final Codec<FillChestsByMarkerBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+			Codec.unboundedMap(ForgeRegistries.BLOCKS.getCodec(), ResourceLocation.CODEC).fieldOf("loot_tables").forGetter(c -> c.lootTableByMarker)
+	).apply(i, FillChestsByMarkerBehavior::new));
 
 	private final Map<Block, ResourceLocation> lootTableByMarker;
 

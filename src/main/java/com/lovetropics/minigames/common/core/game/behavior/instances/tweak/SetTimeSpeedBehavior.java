@@ -10,18 +10,10 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.server.level.ServerLevel;
 
-public final class SetTimeSpeedBehavior implements IGameBehavior {
-	public static final Codec<SetTimeSpeedBehavior> CODEC = RecordCodecBuilder.create(instance -> {
-		return instance.group(
-				Codec.INT.fieldOf("factor").forGetter(c -> c.factor)
-		).apply(instance, SetTimeSpeedBehavior::new);
-	});
-
-	private final int factor;
-
-	public SetTimeSpeedBehavior(int factor) {
-		this.factor = factor;
-	}
+public record SetTimeSpeedBehavior(int factor) implements IGameBehavior {
+	public static final Codec<SetTimeSpeedBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+			Codec.INT.fieldOf("factor").forGetter(c -> c.factor)
+	).apply(i, SetTimeSpeedBehavior::new));
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {

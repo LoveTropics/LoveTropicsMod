@@ -22,12 +22,10 @@ import java.util.List;
 import java.util.function.Consumer;
 
 public final class DonationPackageBehavior implements IGameBehavior {
-	public static final Codec<DonationPackageBehavior> CODEC = RecordCodecBuilder.create(instance -> {
-		return instance.group(
-				DonationPackageData.CODEC.forGetter(c -> c.data),
-				IGameBehavior.CODEC.listOf().fieldOf("receive_behaviors").orElseGet(ArrayList::new).forGetter(c -> c.receiveBehaviors)
-		).apply(instance, DonationPackageBehavior::new);
-	});
+	public static final Codec<DonationPackageBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+			DonationPackageData.CODEC.forGetter(c -> c.data),
+			IGameBehavior.CODEC.listOf().fieldOf("receive_behaviors").orElseGet(ArrayList::new).forGetter(c -> c.receiveBehaviors)
+	).apply(i, DonationPackageBehavior::new));
 
 	private static final Logger LOGGER = LogManager.getLogger(DonationPackageBehavior.class);
 
@@ -54,7 +52,7 @@ public final class DonationPackageBehavior implements IGameBehavior {
 	}
 
 	public String getPackageType() {
-		return data.getPackageType();
+		return data.packageType();
 	}
 
 	@Override
@@ -66,35 +64,34 @@ public final class DonationPackageBehavior implements IGameBehavior {
 			behavior.register(game, receiveEventRegistrar);
 		}
 
-		game.getState().get(GamePackageState.KEY).addPackageType(data.packageType);
+		game.getState().get(GamePackageState.KEY).addPackageType(data.packageType());
 	}
 
 	private InteractionResult onGamePackageReceived(Consumer<IGamePhase> sendPreamble, final IGamePhase game, final GamePackage gamePackage) {
-		if (!gamePackage.getPackageType().equals(data.packageType)) {
+		if (!gamePackage.packageType().equals(data.packageType())) {
 			return InteractionResult.PASS;
 		}
 
-		switch (data.playerSelect) {
-			case SPECIFIC: return receiveSpecific(sendPreamble, game, gamePackage);
-			case RANDOM: return receiveRandom(sendPreamble, game, gamePackage);
-			case ALL: return receiveAll(sendPreamble, game, gamePackage);
-			default: return InteractionResult.FAIL;
-		}
+		return switch (data.playerSelect()) {
+			case SPECIFIC -> receiveSpecific(sendPreamble, game, gamePackage);
+			case RANDOM -> receiveRandom(sendPreamble, game, gamePackage);
+			case ALL -> receiveAll(sendPreamble, game, gamePackage);
+		};
 	}
 
 	private InteractionResult receiveSpecific(Consumer<IGamePhase> sendPreamble, IGamePhase game, GamePackage gamePackage) {
-		if (gamePackage.getReceivingPlayer() == null) {
+		if (gamePackage.receivingPlayer().isEmpty()) {
 			LOGGER.warn("Expected donation package to have a receiving player, but did not receive from backend!");
 			return InteractionResult.FAIL;
 		}
 
-		ServerPlayer receivingPlayer = game.getParticipants().getPlayerBy(gamePackage.getReceivingPlayer());
+		ServerPlayer receivingPlayer = game.getParticipants().getPlayerBy(gamePackage.receivingPlayer().get());
 		if (receivingPlayer == null) {
 			// Player not on the server or in the game for some reason
 			return InteractionResult.FAIL;
 		}
 
-		String sendingPlayerName = gamePackage.getSendingPlayerName();
+		String sendingPlayerName = gamePackage.sendingPlayerName();
 		boolean applied = applyPackageGlobally(sendingPlayerName);
 		applied |= applyPackageToPlayer(receivingPlayer, sendingPlayerName);
 
@@ -112,7 +109,7 @@ public final class DonationPackageBehavior implements IGameBehavior {
 		final List<ServerPlayer> players = Lists.newArrayList(game.getParticipants());
 		final ServerPlayer randomPlayer = players.get(game.getWorld().getRandom().nextInt(players.size()));
 
-		String sendingPlayerName = gamePackage.getSendingPlayerName();
+		String sendingPlayerName = gamePackage.sendingPlayerName();
 
 		boolean applied = applyPackageGlobally(sendingPlayerName);
 		applied |= applyPackageToPlayer(randomPlayer, sendingPlayerName);
@@ -128,7 +125,7 @@ public final class DonationPackageBehavior implements IGameBehavior {
 	}
 
 	private InteractionResult receiveAll(Consumer<IGamePhase> sendPreamble, IGamePhase game, GamePackage gamePackage) {
-		String sendingPlayerName = gamePackage.getSendingPlayerName();
+		String sendingPlayerName = gamePackage.sendingPlayerName();
 
 		boolean applied = applyPackageGlobally(sendingPlayerName);
 		for (ServerPlayer player : Lists.newArrayList(game.getParticipants())) {

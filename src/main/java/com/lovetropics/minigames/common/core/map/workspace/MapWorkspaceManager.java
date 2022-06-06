@@ -64,7 +64,7 @@ public final class MapWorkspaceManager extends SavedData {
 	public boolean deleteWorkspace(String id) {
 		MapWorkspace workspace = this.workspaces.remove(id);
 		if (workspace != null) {
-			workspace.getHandle().delete();
+			workspace.dimensionHandle().delete();
 			return true;
 		}
 		return false;
@@ -127,9 +127,9 @@ public final class MapWorkspaceManager extends SavedData {
 
 			DataResult<MapWorkspaceData> result = MapWorkspaceData.CODEC.parse(ops, workspaceRoot);
 			result.result().ifPresent(workspaceData -> {
-				RuntimeDimensionHandle dimensionHandle = manager.getOrCreateDimension(workspaceData.id, workspaceData.dimension, workspaceData.worldSettings);
-				MapWorkspace workspace = workspaceData.create(server, dimensionHandle);
-				manager.workspaces.put(workspaceData.id, workspace);
+				RuntimeDimensionHandle dimensionHandle = manager.getOrCreateDimension(workspaceData.id(), workspaceData.dimension(), workspaceData.worldSettings());
+				MapWorkspace workspace = workspaceData.create(dimensionHandle);
+				manager.workspaces.put(workspaceData.id(), workspace);
 			});
 
 			result.error().ifPresent(error -> {

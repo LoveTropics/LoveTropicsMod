@@ -27,44 +27,23 @@ import net.minecraftforge.network.PacketDistributor;
 import javax.annotation.Nullable;
 import java.util.Optional;
 
-public class DonationPackageData {
-	public static final MapCodec<DonationPackageData> CODEC = RecordCodecBuilder.mapCodec(instance -> {
-		return instance.group(
-				Codec.STRING.fieldOf("package_type").forGetter(c -> c.packageType),
-				Notification.CODEC.optionalFieldOf("notification").forGetter(c -> Optional.ofNullable(c.notification)),
-				DonationPackageBehavior.PlayerSelect.CODEC.optionalFieldOf("player_select", DonationPackageBehavior.PlayerSelect.RANDOM).forGetter(c -> c.playerSelect)
-		).apply(instance, DonationPackageData::new);
-	});
-
-	protected final String packageType;
-	protected final Notification notification;
-	protected final DonationPackageBehavior.PlayerSelect playerSelect;
-
-	public DonationPackageData(final String packageType, final Optional<Notification> notification, final DonationPackageBehavior.PlayerSelect playerSelect) {
-		this.packageType = packageType;
-		this.notification = notification.orElse(null);
-		this.playerSelect = playerSelect;
-	}
-
-	public String getPackageType() {
-		return packageType;
-	}
-
-	@Nullable
-	public Notification getNotification() {
-		return notification;
-	}
-
-	public DonationPackageBehavior.PlayerSelect getPlayerSelect() {
-		return playerSelect;
-	}
+public record DonationPackageData(
+		String packageType,
+		Optional<Notification> notification,
+		DonationPackageBehavior.PlayerSelect playerSelect
+) {
+	public static final MapCodec<DonationPackageData> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
+			Codec.STRING.fieldOf("package_type").forGetter(c -> c.packageType),
+			Notification.CODEC.optionalFieldOf("notification").forGetter(c -> c.notification),
+			DonationPackageBehavior.PlayerSelect.CODEC.optionalFieldOf("player_select", DonationPackageBehavior.PlayerSelect.RANDOM).forGetter(c -> c.playerSelect)
+	).apply(i, DonationPackageData::new));
 
 	public void onReceive(final IGamePhase game, @Nullable final ServerPlayer receiver, @Nullable final String sender) {
-		Notification notification = this.notification;
-		if (notification == null) return;
+		if (notification.isEmpty()) return;
 
 		PlayerSet players = game.getAllPlayers();
 
+		final Notification notification = this.notification.get();
 		Component targetedMessage = notification.createTargetedMessage(receiver, sender);
 		Component globalMessage = notification.createGlobalMessage(receiver);
 
@@ -74,46 +53,41 @@ public class DonationPackageData {
 			Component message = targeted ? targetedMessage : globalMessage;
 			long visibleTime = targeted ? 8000 : 6000;
 
-			NotificationDisplay display = new NotificationDisplay(notification.icon, notification.sentiment, color, visibleTime);
+			NotificationDisplay display = notification.createDisplay(color, visibleTime);
 			LoveTropicsNetwork.CHANNEL.send(
 					PacketDistributor.PLAYER.with(() -> player),
 					new ShowNotificationToastMessage(message, display)
 			);
 
 			if (targeted) {
-				player.connection.send(new ClientboundSoundPacket(notification.sound, SoundSource.MASTER, player.getX(), player.getY(), player.getZ(), 0.2f, 1f));
+				player.connection.send(new ClientboundSoundPacket(notification.sound(), SoundSource.MASTER, player.getX(), player.getY(), player.getZ(), 0.2f, 1f));
 			}
 		}
 	}
 
-	public static final class Notification {
-		public static final Codec<Notification> CODEC = RecordCodecBuilder.create(instance -> {
-			return instance.group(
-					TemplatedText.CODEC.fieldOf("message").forGetter(c -> c.message),
-					NotificationIcon.CODEC.optionalFieldOf("icon", NotificationIcon.item(new ItemStack(Items.GRASS_BLOCK))).forGetter(c -> c.icon),
-					NotificationDisplay.Sentiment.CODEC.optionalFieldOf("sentiment", NotificationDisplay.Sentiment.NEUTRAL).forGetter(c -> c.sentiment),
-					SoundEvent.CODEC.optionalFieldOf("sound_on_receive", SoundEvents.TOTEM_USE).forGetter(c -> c.sound)
-			).apply(instance, Notification::new);
-		});
+	public record Notification(
+			TemplatedText message,
+			NotificationIcon icon,
+			NotificationDisplay.Sentiment sentiment,
+			SoundEvent sound
+	) {
+		public static final Codec<Notification> CODEC = RecordCodecBuilder.create(i -> i.group(
+				TemplatedText.CODEC.fieldOf("message").forGetter(c -> c.message),
+				NotificationIcon.CODEC.optionalFieldOf("icon", NotificationIcon.item(new ItemStack(Items.GRASS_BLOCK))).forGetter(c -> c.icon),
+				NotificationDisplay.Sentiment.CODEC.optionalFieldOf("sentiment", NotificationDisplay.Sentiment.NEUTRAL).forGetter(c -> c.sentiment),
+				SoundEvent.CODEC.optionalFieldOf("sound_on_receive", SoundEvents.TOTEM_USE).forGetter(c -> c.sound)
+		).apply(i, Notification::new));
 
-		public final TemplatedText message;
-		public final NotificationIcon icon;
-		public final NotificationDisplay.Sentiment sentiment;
-		public final SoundEvent sound;
-
-		public Notification(TemplatedText message, NotificationIcon icon, NotificationDisplay.Sentiment sentiment, SoundEvent sound) {
-			this.message = message;
-			this.icon = icon;
-			this.sentiment = sentiment;
-			this.sound = sound;
-		}
-
-		Component createTargetedMessage(@Nullable ServerPlayer receiver, @Nullable String sender) {
+		public Component createTargetedMessage(@Nullable ServerPlayer receiver, @Nullable String sender) {
 			return this.message.apply(this.getSenderName(sender), this.getReceiverName(receiver));
 		}
 
-		Component createGlobalMessage(@Nullable ServerPlayer receiver) {
+		public Component createGlobalMessage(@Nullable ServerPlayer receiver) {
 			return new TranslatableComponent("%s received a package!", this.getReceiverName(receiver));
+		}
+
+		public NotificationDisplay createDisplay(final NotificationDisplay.Color color, final long visibleTime) {
+			return new NotificationDisplay(icon, sentiment, color, visibleTime);
 		}
 
 		private MutableComponent getReceiverName(ServerPlayer receiver) {

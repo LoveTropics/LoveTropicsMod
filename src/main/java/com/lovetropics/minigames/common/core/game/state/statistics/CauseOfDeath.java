@@ -8,19 +8,7 @@ import net.minecraft.world.damagesource.EntityDamageSource;
 
 import javax.annotation.Nullable;
 
-public final class CauseOfDeath {
-	public final String type;
-	public final String typeName;
-	public final String source;
-	public final String sourceName;
-
-	public CauseOfDeath(String type, String typeName, @Nullable String source, @Nullable String sourceName) {
-		this.type = type;
-		this.typeName = typeName;
-		this.source = source;
-		this.sourceName = sourceName;
-	}
-
+public record CauseOfDeath(String type, String typeName, @Nullable String source, @Nullable String sourceName) {
 	public static CauseOfDeath from(DamageSource damage) {
 		String type = damage.msgId;
 		String typeName = getDamageTypeName(damage);

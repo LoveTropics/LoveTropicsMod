@@ -24,14 +24,12 @@ import net.minecraft.world.BossEvent;
 import java.util.Optional;
 
 public final class TimedGameBehavior implements IGameBehavior {
-	public static final Codec<TimedGameBehavior> CODEC = RecordCodecBuilder.create(instance -> {
-		return instance.group(
-				Codec.LONG.optionalFieldOf("length", 20L * 60).forGetter(c -> c.length),
-				Codec.LONG.optionalFieldOf("close_length", 0L).forGetter(c -> c.closeTime - c.length),
-				TemplatedText.CODEC.optionalFieldOf("timer_bar").forGetter(c -> Optional.ofNullable(c.timerBarText)),
-				Codec.LONG.optionalFieldOf("countdown_seconds", -1L).forGetter(c -> c.countdownSeconds)
-		).apply(instance, TimedGameBehavior::new);
-	});
+	public static final Codec<TimedGameBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+			Codec.LONG.optionalFieldOf("length", 20L * 60).forGetter(c -> c.length),
+			Codec.LONG.optionalFieldOf("close_length", 0L).forGetter(c -> c.closeTime - c.length),
+			TemplatedText.CODEC.optionalFieldOf("timer_bar").forGetter(c -> Optional.ofNullable(c.timerBarText)),
+			Codec.LONG.optionalFieldOf("countdown_seconds", -1L).forGetter(c -> c.countdownSeconds)
+	).apply(i, TimedGameBehavior::new));
 
 	private final long length;
 	private final long closeTime;

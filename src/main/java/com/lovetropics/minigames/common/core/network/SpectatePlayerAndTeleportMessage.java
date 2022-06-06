@@ -8,13 +8,7 @@ import net.minecraftforge.network.NetworkEvent;
 import java.util.UUID;
 import java.util.function.Supplier;
 
-public class SpectatePlayerAndTeleportMessage {
-	private final UUID player;
-
-	public SpectatePlayerAndTeleportMessage(UUID player) {
-		this.player = player;
-	}
-
+public record SpectatePlayerAndTeleportMessage(UUID player) {
 	public void encode(FriendlyByteBuf buffer) {
 		buffer.writeUUID(player);
 	}

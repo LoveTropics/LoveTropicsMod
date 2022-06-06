@@ -3,17 +3,7 @@ package com.lovetropics.minigames.common.core.map;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 
-public final class MapMetadata {
-	public final ResourceLocation id;
-	public final MapWorldSettings settings;
-	public final MapRegions regions;
-
-	public MapMetadata(ResourceLocation id, MapWorldSettings settings, MapRegions regions) {
-		this.id = id;
-		this.settings = settings;
-		this.regions = regions;
-	}
-
+public record MapMetadata(ResourceLocation id, MapWorldSettings settings, MapRegions regions) {
 	public CompoundTag write(CompoundTag root) {
 		root.putString("id", this.id.toString());
 		root.put("settings", this.settings.write(new CompoundTag()));

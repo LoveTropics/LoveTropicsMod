@@ -15,14 +15,10 @@ public final class StatisticDisplays {
 
 	// from: https://stackoverflow.com/a/6810409/4871468
 	private static String ordinal(int value) {
-		switch (value % 100) {
-			case 11:
-			case 12:
-			case 13:
-				return value + "th";
-			default:
-				return value + ORDINAL_SUFFIXES[value % 10];
-		}
+		return switch (value % 100) {
+			case 11, 12, 13 -> value + "th";
+			default -> value + ORDINAL_SUFFIXES[value % 10];
+		};
 	}
 
 	public static <T> Function<T, String> unit(String unit) {
@@ -43,6 +39,6 @@ public final class StatisticDisplays {
 	}
 
 	public static Function<PlayerKey, String> playerName() {
-		return PlayerKey::getName;
+		return PlayerKey::name;
 	}
 }

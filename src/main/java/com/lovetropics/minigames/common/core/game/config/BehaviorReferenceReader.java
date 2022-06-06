@@ -26,8 +26,6 @@ import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 public final class BehaviorReferenceReader implements Codec<List<BehaviorReference>> {
-	private static final JsonParser PARSER = new JsonParser();
-
 	private final ResourceManager resources;
 	private final Set<ResourceLocation> currentlyReading = new ObjectOpenHashSet<>();
 
@@ -58,45 +56,45 @@ public final class BehaviorReferenceReader implements Codec<List<BehaviorReferen
 		});
 	}
 
-	private <T> void decodeEntry(DynamicOps<T> ops, T input, Consumer<DataResult<BehaviorReference>> yield) {
+	private <T> void decodeEntry(DynamicOps<T> ops, T input, Consumer<DataResult<BehaviorReference>> consumer) {
 		Optional<MapLike<T>> mapInput = ops.getMap(input).result();
 		if (mapInput.isPresent()) {
-			this.decodeMap(ops, input, mapInput.get(), yield);
+			this.decodeMap(ops, input, mapInput.get(), consumer);
 			return;
 		}
 
 		Optional<String> stringInput = Codec.STRING.parse(ops, input).result();
 		if (stringInput.isPresent()) {
-			this.decodeReference(ops, stringInput.get(), ops.emptyMap(), yield);
+			this.decodeReference(ops, stringInput.get(), ops.emptyMap(), consumer);
 			return;
 		}
 
-		yield.accept(DataResult.error("Behavior reference must be either a map or a string!"));
+		consumer.accept(DataResult.error("Behavior reference must be either a map or a string!"));
 	}
 
-	private <T> void decodeMap(DynamicOps<T> ops, T input, MapLike<T> mapInput, Consumer<DataResult<BehaviorReference>> yield) {
+	private <T> void decodeMap(DynamicOps<T> ops, T input, MapLike<T> mapInput, Consumer<DataResult<BehaviorReference>> consumer) {
 		DataResult<String> typeResult = Codec.STRING.fieldOf("type").decode(ops, mapInput);
 
 		typeResult.result().ifPresent(idString -> {
-			this.decodeReference(ops, idString, input, yield);
+			this.decodeReference(ops, idString, input, consumer);
 		});
 
 		typeResult.error().ifPresent(error -> {
-			yield.accept(DataResult.error(error.message()));
+			consumer.accept(DataResult.error(error.message()));
 		});
 	}
 
-	private <T> void decodeReference(DynamicOps<T> ops, String idString, T input, Consumer<DataResult<BehaviorReference>> yield) {
+	private <T> void decodeReference(DynamicOps<T> ops, String idString, T input, Consumer<DataResult<BehaviorReference>> consumer) {
 		ResourceLocation id = new ResourceLocation(idString);
 		if (!this.currentlyReading.add(id)) {
-			yield.accept(DataResult.error("Tried to recursively add behavior of " + id));
+			consumer.accept(DataResult.error("Tried to recursively add behavior of " + id));
 			return;
 		}
 
 		try {
 			DataResult<BehaviorReference> staticResult = this.tryDecodeStatic(id, ops, input);
 			if (staticResult != null) {
-				yield.accept(staticResult);
+				consumer.accept(staticResult);
 				return;
 			}
 
@@ -104,18 +102,18 @@ public final class BehaviorReferenceReader implements Codec<List<BehaviorReferen
 			if (setResult != null) {
 				setResult.result().ifPresent(references -> {
 					for (BehaviorReference reference : references) {
-						yield.accept(DataResult.success(reference));
+						consumer.accept(DataResult.success(reference));
 					}
 				});
 
 				setResult.error().ifPresent(error -> {
-					yield.accept(DataResult.error(error.message()));
+					consumer.accept(DataResult.error(error.message()));
 				});
 
 				return;
 			}
 
-			yield.accept(DataResult.error("Invalid reference to behavior: " + id));
+			consumer.accept(DataResult.error("Invalid reference to behavior: " + id));
 		} finally {
 			this.currentlyReading.remove(id);
 		}
@@ -143,7 +141,7 @@ public final class BehaviorReferenceReader implements Codec<List<BehaviorReferen
 				Resource resource = resources.getResource(path);
 				InputStream stream = resource.getInputStream()
 		) {
-			JsonElement json = PARSER.parse(new BufferedReader(new InputStreamReader(stream)));
+			JsonElement json = JsonParser.parseReader(new BufferedReader(new InputStreamReader(stream)));
 			Dynamic<JsonElement> data = new Dynamic<>(JsonOps.INSTANCE, json);
 
 			data = parameterReplacer.apply(data);

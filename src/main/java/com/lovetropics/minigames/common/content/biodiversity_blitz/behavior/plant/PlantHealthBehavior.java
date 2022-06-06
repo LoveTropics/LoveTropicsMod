@@ -20,19 +20,11 @@ import net.minecraft.world.level.block.state.BlockState;
 import java.util.ArrayList;
 import java.util.List;
 
-public final class PlantHealthBehavior implements IGameBehavior {
-	public static final Codec<PlantHealthBehavior> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+public record PlantHealthBehavior(int health, boolean notPathfindable) implements IGameBehavior {
+	public static final Codec<PlantHealthBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
 			Codec.INT.fieldOf("health").forGetter(b -> b.health),
 			Codec.BOOL.optionalFieldOf("not_pathfindable", false).forGetter(b -> b.notPathfindable)
-	).apply(instance, PlantHealthBehavior::new));
-
-	private final int health;
-	private final boolean notPathfindable;
-
-	public PlantHealthBehavior(int health, boolean notPathfindable) {
-		this.health = health;
-		this.notPathfindable = notPathfindable;
-	}
+	).apply(i, PlantHealthBehavior::new));
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) throws GameException {

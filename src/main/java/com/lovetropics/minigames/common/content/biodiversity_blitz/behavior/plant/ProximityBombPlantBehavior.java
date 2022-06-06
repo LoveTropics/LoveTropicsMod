@@ -22,16 +22,10 @@ import net.minecraft.server.level.ServerLevel;
 import java.util.ArrayList;
 import java.util.List;
 
-public final class ProximityBombPlantBehavior implements IGameBehavior {
-	public static final Codec<ProximityBombPlantBehavior> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+public record ProximityBombPlantBehavior(double radius) implements IGameBehavior {
+	public static final Codec<ProximityBombPlantBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
 			Codec.DOUBLE.fieldOf("radius").forGetter(c -> c.radius)
-	).apply(instance, ProximityBombPlantBehavior::new));
-
-	private final double radius;
-
-	public ProximityBombPlantBehavior(double radius) {
-		this.radius = radius;
-	}
+	).apply(i, ProximityBombPlantBehavior::new));
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {

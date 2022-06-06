@@ -25,11 +25,11 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.ChatFormatting;
 
 public final class PlantItemBehavior implements IGameBehavior {
-	public static final Codec<PlantItemBehavior> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+	public static final Codec<PlantItemBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
 			PlantItemType.CODEC.fieldOf("id").forGetter(c -> c.itemType),
 			PlantType.CODEC.fieldOf("places").forGetter(c -> c.places),
 			MoreCodecs.ITEM_STACK.fieldOf("item").forGetter(c -> c.item)
-	).apply(instance, PlantItemBehavior::new));
+	).apply(i, PlantItemBehavior::new));
 
 	private final PlantItemType itemType;
 	private final PlantType places;

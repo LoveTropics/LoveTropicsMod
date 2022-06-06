@@ -12,18 +12,10 @@ import net.minecraft.world.effect.MobEffectInstance;
 
 import java.util.List;
 
-public class EffectPackageBehavior implements IGameBehavior {
-	public static final Codec<EffectPackageBehavior> CODEC = RecordCodecBuilder.create(instance -> {
-		return instance.group(
-				MoreCodecs.EFFECT_INSTANCE.listOf().fieldOf("effects").forGetter(c -> c.effects)
-		).apply(instance, EffectPackageBehavior::new);
-	});
-
-	private final List<MobEffectInstance> effects;
-
-	public EffectPackageBehavior(List<MobEffectInstance> effects) {
-		this.effects = effects;
-	}
+public record EffectPackageBehavior(List<MobEffectInstance> effects) implements IGameBehavior {
+	public static final Codec<EffectPackageBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+			MoreCodecs.EFFECT_INSTANCE.listOf().fieldOf("effects").forGetter(c -> c.effects)
+	).apply(i, EffectPackageBehavior::new));
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) throws GameException {

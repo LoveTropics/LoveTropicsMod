@@ -18,21 +18,11 @@ import net.minecraft.world.level.dimension.LevelStem;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
-public class VoidMapProvider implements IGameMapProvider {
-	public static final Codec<VoidMapProvider> CODEC = RecordCodecBuilder.create(instance -> {
-		return instance.group(
-				Codec.STRING.optionalFieldOf("name").forGetter(c -> Optional.ofNullable(c.name)),
-				DimensionType.CODEC.optionalFieldOf("dimension").forGetter(c -> Optional.ofNullable(c.dimensionType))
-		).apply(instance, VoidMapProvider::new);
-	});
-
-	private final String name;
-	private final Holder<DimensionType> dimensionType;
-
-	public VoidMapProvider(final Optional<String> name, Optional<Holder<DimensionType>> dimensionType) {
-		this.name = name.orElse(null);
-		this.dimensionType = dimensionType.orElse(null);
-	}
+public record VoidMapProvider(Optional<String> name, Optional<Holder<DimensionType>> dimensionType) implements IGameMapProvider {
+	public static final Codec<VoidMapProvider> CODEC = RecordCodecBuilder.create(i -> i.group(
+			Codec.STRING.optionalFieldOf("name").forGetter(c -> c.name),
+			DimensionType.CODEC.optionalFieldOf("dimension").forGetter(c -> c.dimensionType)
+	).apply(i, VoidMapProvider::new));
 
 	@Override
 	public Codec<? extends IGameMapProvider> getCodec() {
@@ -41,7 +31,7 @@ public class VoidMapProvider implements IGameMapProvider {
 
 	@Override
 	public CompletableFuture<GameResult<GameMap>> open(MinecraftServer server) {
-		Holder<DimensionType> dimensionType = this.dimensionType != null ? this.dimensionType : server.overworld().dimensionTypeRegistration();
+		Holder<DimensionType> dimensionType = this.dimensionType.orElse(server.overworld().dimensionTypeRegistration());
 		LevelStem dimension = new LevelStem(dimensionType, new VoidChunkGenerator(server));
 
 		MapWorldInfo worldInfo = MapWorldInfo.create(server, new MapWorldSettings());
@@ -50,7 +40,7 @@ public class VoidMapProvider implements IGameMapProvider {
 		return CompletableFuture.supplyAsync(() -> {
 			RuntimeDimensionHandle dimensionHandle = RuntimeDimensions.get(server).openTemporary(config);
 
-			GameMap map = new GameMap(name, dimensionHandle.asKey(), new MapRegions())
+			GameMap map = new GameMap(name.orElse(null), dimensionHandle.asKey(), new MapRegions())
 					.onClose(game -> dimensionHandle.delete());
 
 			return GameResult.ok(map);

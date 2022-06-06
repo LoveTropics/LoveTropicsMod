@@ -10,11 +10,9 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 
 public final class CheckeredPlotsState implements GameClientState {
-	public static final Codec<CheckeredPlotsState> CODEC = RecordCodecBuilder.create(instance -> {
-		return instance.group(
-				MoreCodecs.arrayOrUnit(BlockBox.CODEC, BlockBox[]::new).fieldOf("plots").forGetter(c -> c.plots)
-		).apply(instance, CheckeredPlotsState::new);
-	});
+	public static final Codec<CheckeredPlotsState> CODEC = RecordCodecBuilder.create(i -> i.group(
+			MoreCodecs.arrayOrUnit(BlockBox.CODEC, BlockBox[]::new).fieldOf("plots").forGetter(c -> c.plots)
+	).apply(i, CheckeredPlotsState::new));
 
 	private final BlockBox[] plots;
 	private final BlockBox global;

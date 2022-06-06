@@ -15,18 +15,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class SwapPlayersPackageBehavior implements IGameBehavior {
-	public static final Codec<SwapPlayersPackageBehavior> CODEC = RecordCodecBuilder.create(instance -> {
-		return instance.group(
-				Codec.DOUBLE.optionalFieldOf("distance_threshold", Double.MAX_VALUE).forGetter(c -> c.distanceThreshold)
-		).apply(instance, SwapPlayersPackageBehavior::new);
-	});
-
-	private final double distanceThreshold;
-
-	public SwapPlayersPackageBehavior(double distanceThreshold) {
-		this.distanceThreshold = distanceThreshold;
-	}
+public record SwapPlayersPackageBehavior(double distanceThreshold) implements IGameBehavior {
+	public static final Codec<SwapPlayersPackageBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+			Codec.DOUBLE.optionalFieldOf("distance_threshold", Double.MAX_VALUE).forGetter(c -> c.distanceThreshold)
+	).apply(i, SwapPlayersPackageBehavior::new));
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {

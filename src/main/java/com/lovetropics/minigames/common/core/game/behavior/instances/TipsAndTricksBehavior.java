@@ -13,10 +13,10 @@ import net.minecraft.network.chat.Component;
 import java.util.*;
 
 public final class TipsAndTricksBehavior implements IGameBehavior {
-    public static final Codec<TipsAndTricksBehavior> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+    public static final Codec<TipsAndTricksBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
             MoreCodecs.TEXT.listOf().fieldOf("texts").forGetter(b -> b.texts),
             Codec.INT.fieldOf("time_between_tips").forGetter(b -> b.timeBetweenTips)
-    ).apply(instance, TipsAndTricksBehavior::new));
+    ).apply(i, TipsAndTricksBehavior::new));
 
     private final List<Component> texts;
     private final int timeBetweenTips;

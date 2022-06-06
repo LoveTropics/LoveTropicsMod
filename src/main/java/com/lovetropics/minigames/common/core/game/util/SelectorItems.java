@@ -13,16 +13,8 @@ import net.minecraft.network.chat.Component;
 
 import javax.annotation.Nullable;
 
-public final class SelectorItems<V> {
+public record SelectorItems<V>(Handlers<V> handlers, V[] values) {
 	private static final String KEY = "selector_key";
-
-	private final Handlers<V> handlers;
-	private final V[] values;
-
-	public SelectorItems(Handlers<V> handlers, V[] values) {
-		this.handlers = handlers;
-		this.values = values;
-	}
 
 	public void applyTo(EventRegistrar events) {
 		events.listen(GamePlayerEvents.USE_ITEM, this::onUseItem);

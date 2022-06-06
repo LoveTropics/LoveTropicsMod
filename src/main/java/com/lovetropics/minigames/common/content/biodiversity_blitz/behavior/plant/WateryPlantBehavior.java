@@ -25,9 +25,9 @@ import java.util.Random;
 import java.util.Set;
 
 public final class WateryPlantBehavior implements IGameBehavior {
-    public static final Codec<WateryPlantBehavior> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+    public static final Codec<WateryPlantBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
             Codec.INT.fieldOf("radius").forGetter(b -> b.radius)
-    ).apply(instance, WateryPlantBehavior::new));
+    ).apply(i, WateryPlantBehavior::new));
     private final int radius;
 
     private IGamePhase game;

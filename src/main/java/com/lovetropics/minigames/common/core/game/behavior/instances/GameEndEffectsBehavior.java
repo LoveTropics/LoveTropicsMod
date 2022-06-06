@@ -23,13 +23,11 @@ import javax.annotation.Nullable;
 import java.util.Optional;
 
 public final class GameEndEffectsBehavior implements IGameBehavior {
-	public static final Codec<GameEndEffectsBehavior> CODEC = RecordCodecBuilder.create(instance -> {
-		return instance.group(
-				Codec.LONG.fieldOf("stop_delay").forGetter(c -> c.stopDelay),
-				MoreCodecs.long2Object(TemplatedText.CODEC).optionalFieldOf("scheduled_messages", new Long2ObjectOpenHashMap<>()).forGetter(c -> c.scheduledMessages),
-				TemplatedText.CODEC.optionalFieldOf("title").forGetter(c -> Optional.ofNullable(c.title))
-		).apply(instance, GameEndEffectsBehavior::new);
-	});
+	public static final Codec<GameEndEffectsBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+			Codec.LONG.fieldOf("stop_delay").forGetter(c -> c.stopDelay),
+			MoreCodecs.long2Object(TemplatedText.CODEC).optionalFieldOf("scheduled_messages", new Long2ObjectOpenHashMap<>()).forGetter(c -> c.scheduledMessages),
+			TemplatedText.CODEC.optionalFieldOf("title").forGetter(c -> Optional.ofNullable(c.title))
+	).apply(i, GameEndEffectsBehavior::new));
 
 	private final long stopDelay;
 	private final Long2ObjectMap<TemplatedText> scheduledMessages;

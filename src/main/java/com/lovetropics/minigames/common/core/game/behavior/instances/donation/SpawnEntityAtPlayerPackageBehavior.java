@@ -18,24 +18,12 @@ import net.minecraftforge.registries.ForgeRegistries;
 
 import javax.annotation.Nullable;
 
-public class SpawnEntityAtPlayerPackageBehavior implements IGameBehavior {
-	public static final Codec<SpawnEntityAtPlayerPackageBehavior> CODEC = RecordCodecBuilder.create(instance -> {
-		return instance.group(
-				ForgeRegistries.ENTITIES.getCodec().fieldOf("entity_id").forGetter(c -> c.entityId),
-				Codec.INT.optionalFieldOf("damage_player_amount", 0).forGetter(c -> c.damagePlayerAmount),
-				Codec.DOUBLE.optionalFieldOf("distance", 0.0).forGetter(c -> c.distance)
-		).apply(instance, SpawnEntityAtPlayerPackageBehavior::new);
-	});
-
-	private final EntityType<?> entityId;
-	private final int damagePlayerAmount;
-	private final double distance;
-
-	public SpawnEntityAtPlayerPackageBehavior(final EntityType<?> entityId, final int damagePlayerAmount, double distance) {
-		this.entityId = entityId;
-		this.damagePlayerAmount = damagePlayerAmount;
-		this.distance = distance;
-	}
+public record SpawnEntityAtPlayerPackageBehavior(EntityType<?> entityId, int damagePlayerAmount, double distance) implements IGameBehavior {
+	public static final Codec<SpawnEntityAtPlayerPackageBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+			ForgeRegistries.ENTITIES.getCodec().fieldOf("entity_id").forGetter(c -> c.entityId),
+			Codec.INT.optionalFieldOf("damage_player_amount", 0).forGetter(c -> c.damagePlayerAmount),
+			Codec.DOUBLE.optionalFieldOf("distance", 0.0).forGetter(c -> c.distance)
+	).apply(i, SpawnEntityAtPlayerPackageBehavior::new));
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) throws GameException {

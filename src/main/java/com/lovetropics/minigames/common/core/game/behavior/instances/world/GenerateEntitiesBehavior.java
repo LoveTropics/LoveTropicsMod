@@ -15,13 +15,11 @@ import net.minecraftforge.registries.ForgeRegistries;
 import java.util.Random;
 
 public final class GenerateEntitiesBehavior extends ChunkGeneratingBehavior {
-	public static final Codec<GenerateEntitiesBehavior> CODEC = RecordCodecBuilder.create(instance -> {
-		return instance.group(
-				ForgeRegistries.ENTITIES.getCodec().fieldOf("entity").forGetter(c -> c.type),
-				Codec.INT.optionalFieldOf("min_per_chunk", 0).forGetter(c -> c.minPerChunk),
-				Codec.INT.optionalFieldOf("max_per_chunk", 1).forGetter(c -> c.maxPerChunk)
-		).apply(instance, GenerateEntitiesBehavior::new);
-	});
+	public static final Codec<GenerateEntitiesBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+			ForgeRegistries.ENTITIES.getCodec().fieldOf("entity").forGetter(c -> c.type),
+			Codec.INT.optionalFieldOf("min_per_chunk", 0).forGetter(c -> c.minPerChunk),
+			Codec.INT.optionalFieldOf("max_per_chunk", 1).forGetter(c -> c.maxPerChunk)
+	).apply(i, GenerateEntitiesBehavior::new));
 
 	private final EntityType<?> type;
 	private final int minPerChunk;

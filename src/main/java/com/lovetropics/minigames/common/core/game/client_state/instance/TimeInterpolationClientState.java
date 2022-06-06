@@ -6,22 +6,10 @@ import com.lovetropics.minigames.common.core.game.client_state.GameClientStateTy
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
-public final class TimeInterpolationClientState implements GameClientState {
-	public static final Codec<TimeInterpolationClientState> CODEC = RecordCodecBuilder.create(instance -> {
-		return instance.group(
-				Codec.INT.fieldOf("speed").forGetter(c -> c.speed)
-		).apply(instance, TimeInterpolationClientState::new);
-	});
-
-	private final int speed;
-
-	public TimeInterpolationClientState(int speed) {
-		this.speed = speed;
-	}
-
-	public int getSpeed() {
-		return speed;
-	}
+public record TimeInterpolationClientState(int speed) implements GameClientState {
+	public static final Codec<TimeInterpolationClientState> CODEC = RecordCodecBuilder.create(i -> i.group(
+			Codec.INT.fieldOf("speed").forGetter(c -> c.speed)
+	).apply(i, TimeInterpolationClientState::new));
 
 	@Override
 	public GameClientStateType<?> getType() {

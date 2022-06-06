@@ -10,22 +10,10 @@ import net.minecraft.core.SerializableUUID;
 import java.util.List;
 import java.util.UUID;
 
-public final class SpectatingClientState implements GameClientState {
-	public static final Codec<SpectatingClientState> CODEC = RecordCodecBuilder.create(instance -> {
-		return instance.group(
-				SerializableUUID.CODEC.listOf().fieldOf("players").forGetter(c -> c.players)
-		).apply(instance, SpectatingClientState::new);
-	});
-
-	private final List<UUID> players;
-
-	public SpectatingClientState(List<UUID> players) {
-		this.players = players;
-	}
-
-	public List<UUID> getPlayers() {
-		return players;
-	}
+public record SpectatingClientState(List<UUID> players) implements GameClientState {
+	public static final Codec<SpectatingClientState> CODEC = RecordCodecBuilder.create(i -> i.group(
+			SerializableUUID.CODEC.listOf().fieldOf("players").forGetter(c -> c.players)
+	).apply(i, SpectatingClientState::new));
 
 	@Override
 	public GameClientStateType<?> getType() {

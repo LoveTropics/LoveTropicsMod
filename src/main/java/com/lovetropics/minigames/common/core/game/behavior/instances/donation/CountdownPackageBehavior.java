@@ -21,13 +21,11 @@ import javax.annotation.Nullable;
 import java.util.LinkedList;
 
 public final class CountdownPackageBehavior implements IGameBehavior {
-	public static final Codec<CountdownPackageBehavior> CODEC = RecordCodecBuilder.create(instance -> {
-		return instance.group(
-				Codec.LONG.fieldOf("countdown").forGetter(c -> c.countdown / 20),
-				TemplatedText.CODEC.fieldOf("warning").forGetter(c -> c.warning),
-				MoreCodecs.arrayOrUnit(IGameBehavior.CODEC, IGameBehavior[]::new).fieldOf("behaviors").forGetter(c -> c.behaviors)
-		).apply(instance, CountdownPackageBehavior::new);
-	});
+	public static final Codec<CountdownPackageBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+			Codec.LONG.fieldOf("countdown").forGetter(c -> c.countdown / 20),
+			TemplatedText.CODEC.fieldOf("warning").forGetter(c -> c.warning),
+			MoreCodecs.arrayOrUnit(IGameBehavior.CODEC, IGameBehavior[]::new).fieldOf("behaviors").forGetter(c -> c.behaviors)
+	).apply(i, CountdownPackageBehavior::new));
 
 	private final long countdown;
 	private final TemplatedText warning;

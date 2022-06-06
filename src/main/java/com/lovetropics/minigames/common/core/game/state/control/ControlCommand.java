@@ -12,16 +12,8 @@ import net.minecraft.server.level.ServerPlayer;
 
 import javax.annotation.Nullable;
 
-public final class ControlCommand {
+public record ControlCommand(Scope scope, Handler handler) {
 	private static final SimpleCommandExceptionType NO_PERMISSION = new SimpleCommandExceptionType(new LiteralMessage("You do not have permission to use this command!"));
-
-	private final Scope scope;
-	private final Handler handler;
-
-	public ControlCommand(Scope scope, Handler handler) {
-		this.scope = scope;
-		this.handler = handler;
-	}
 
 	public static ControlCommand forEveryone(Handler handler) {
 		return new ControlCommand(Scope.EVERYONE, handler);

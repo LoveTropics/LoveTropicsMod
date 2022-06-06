@@ -149,9 +149,9 @@ public final class MapCommand {
 		MapWorkspaceManager workspaceManager = MapWorkspaceManager.get(source.getServer());
 
 		MapWorkspace workspace = MapWorkspaceArgument.get(context, "id");
-		workspaceManager.deleteWorkspace(workspace.getId());
+		workspaceManager.deleteWorkspace(workspace.id());
 
-		source.sendSuccess(new TextComponent("Deleted workspace with id '" + workspace.getId() + "'. ").withStyle(ChatFormatting.GOLD), false);
+		source.sendSuccess(new TextComponent("Deleted workspace with id '" + workspace.id() + "'. ").withStyle(ChatFormatting.GOLD), false);
 
 		return Command.SINGLE_SUCCESS;
 	}
@@ -178,7 +178,7 @@ public final class MapCommand {
 		if (position != null) {
 			position.applyTo(player);
 		} else {
-			ResourceKey<Level> dimension = workspace.getDimension();
+			ResourceKey<Level> dimension = workspace.dimensionKey();
 			ServerLevel world = context.getSource().getServer().getLevel(dimension);
 			DimensionUtils.teleportPlayerNoPortal(player, dimension, world.getSharedSpawnPos());
 		}
@@ -198,7 +198,7 @@ public final class MapCommand {
 		BlockPos min = BlockPosArgument.getSpawnablePos(context, "min");
 		BlockPos max = BlockPosArgument.getSpawnablePos(context, "max");
 
-		workspace.getRegions().add(key, BlockBox.of(min, max));
+		workspace.regions().add(key, BlockBox.of(min, max));
 
 		return Command.SINGLE_SUCCESS;
 	}
@@ -209,15 +209,14 @@ public final class MapCommand {
 
 		String key = StringArgumentType.getString(context, "key");
 
-		workspace.getRegions().add(key, BlockBox.of(new BlockPos(pos)));
+		workspace.regions().add(key, BlockBox.of(new BlockPos(pos)));
 
 		return Command.SINGLE_SUCCESS;
 	}
 
 	private static int showHideRegions(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
 		MapWorkspace workspace = getCurrentWorkspace(context);
-
-		workspace.getRegions().showHide(context.getSource().getPlayerOrException());
+		workspace.regions().showHide(context.getSource().getPlayerOrException());
 
 		return Command.SINGLE_SUCCESS;
 	}
@@ -232,17 +231,17 @@ public final class MapCommand {
 
 		saveAll.thenRunAsync(() -> {
 			LevelStorageSource.LevelStorageAccess save = server.storageSource;
-			Path dimensionDirectory = save.getDimensionPath(workspace.getDimension());
+			Path dimensionDirectory = save.getDimensionPath(workspace.dimensionKey());
 
-			ResourceLocation id = new ResourceLocation(Constants.MODID, workspace.getId());
+			ResourceLocation id = new ResourceLocation(Constants.MODID, workspace.id());
 			Path exportPath = MapExportWriter.pathFor(id);
 
 			try {
 				Files.createDirectories(exportPath.getParent());
 
 				try (MapExportWriter writer = MapExportWriter.open(exportPath)) {
-					MapRegions regions = workspace.getRegions().compile();
-					writer.writeMetadata(new MapMetadata(id, workspace.getWorldSettings(), regions));
+					MapRegions regions = workspace.regions().compile();
+					writer.writeMetadata(new MapMetadata(id, workspace.worldSettings(), regions));
 					writer.writeWorldData(dimensionDirectory);
 
 					source.sendSuccess(new TextComponent("Successfully exported map!"), false);
@@ -258,7 +257,7 @@ public final class MapCommand {
 
 	private static CompletableFuture<Void> saveWorkspace(MinecraftServer server, MapWorkspace workspace) {
 		return server.submit(() -> {
-			ServerLevel workspaceWorld = server.getLevel(workspace.getDimension());
+			ServerLevel workspaceWorld = server.getLevel(workspace.dimensionKey());
 			workspaceWorld.save(null, true, false);
 		});
 	}
@@ -295,7 +294,7 @@ public final class MapCommand {
 				MinecraftServer server = source.getServer();
 
 				try (MapExportReader reader = MapExportReader.open(server, location)) {
-					MapMetadata metadata = reader.loadInto(server, workspace.getDimension());
+					MapMetadata metadata = reader.loadInto(server, workspace.dimensionKey());
 					workspace.importFrom(metadata);
 
 					source.sendSuccess(new TextComponent("Successfully imported workspace into '" + id + "'"), false);

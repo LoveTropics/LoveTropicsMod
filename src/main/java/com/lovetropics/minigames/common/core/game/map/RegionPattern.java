@@ -7,14 +7,8 @@ import com.mojang.serialization.Codec;
 import javax.annotation.Nullable;
 import java.util.Collection;
 
-public final class RegionPattern {
+public record RegionPattern(String pattern) {
 	public static final Codec<RegionPattern> CODEC = Codec.STRING.xmap(RegionPattern::new, p -> p.pattern);
-
-	private final String pattern;
-
-	public RegionPattern(String pattern) {
-		this.pattern = pattern;
-	}
 
 	public Collection<BlockBox> get(MapRegions regions, Object... args) {
 		return regions.get(this.resolveKey(args));

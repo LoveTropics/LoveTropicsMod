@@ -11,24 +11,13 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
 
-public class ArmorParticipantsBehavior implements IGameBehavior {
-	public static final Codec<ArmorParticipantsBehavior> CODEC = RecordCodecBuilder.create(instance -> {
-		return instance.group(
-				MoreCodecs.ITEM_STACK.optionalFieldOf("head", ItemStack.EMPTY).forGetter(c -> c.head),
-				MoreCodecs.ITEM_STACK.optionalFieldOf("chest", ItemStack.EMPTY).forGetter(c -> c.chest),
-				MoreCodecs.ITEM_STACK.optionalFieldOf("legs", ItemStack.EMPTY).forGetter(c -> c.legs),
-				MoreCodecs.ITEM_STACK.optionalFieldOf("feet", ItemStack.EMPTY).forGetter(c -> c.feet)
-		).apply(instance, ArmorParticipantsBehavior::new);
-	});
-
-	private final ItemStack head, chest, legs, feet;
-
-	public ArmorParticipantsBehavior(ItemStack head, ItemStack chest, ItemStack legs, ItemStack feet) {
-		this.head = head;
-		this.chest = chest;
-		this.legs = legs;
-		this.feet = feet;
-	}
+public record ArmorParticipantsBehavior(ItemStack head, ItemStack chest, ItemStack legs, ItemStack feet) implements IGameBehavior {
+	public static final Codec<ArmorParticipantsBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+			MoreCodecs.ITEM_STACK.optionalFieldOf("head", ItemStack.EMPTY).forGetter(c -> c.head),
+			MoreCodecs.ITEM_STACK.optionalFieldOf("chest", ItemStack.EMPTY).forGetter(c -> c.chest),
+			MoreCodecs.ITEM_STACK.optionalFieldOf("legs", ItemStack.EMPTY).forGetter(c -> c.legs),
+			MoreCodecs.ITEM_STACK.optionalFieldOf("feet", ItemStack.EMPTY).forGetter(c -> c.feet)
+	).apply(i, ArmorParticipantsBehavior::new));
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {

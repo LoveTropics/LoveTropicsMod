@@ -10,27 +10,17 @@ import net.minecraft.network.chat.TranslatableComponent;
 
 import java.util.function.Function;
 
-public final class TemplatedText {
+public record TemplatedText(String text, ChatFormatting style) {
 	private static final Codec<TemplatedText> INLINE_CODEC = Codec.STRING.xmap(s -> new TemplatedText(s, null), t -> t.text);
-	private static final Codec<TemplatedText> STYLED_CODEC = RecordCodecBuilder.create(instance -> {
-		return instance.group(
-				Codec.STRING.fieldOf("text").forGetter(c -> c.text),
-				MoreCodecs.FORMATTING.fieldOf("color").forGetter(c -> c.style)
-		).apply(instance, TemplatedText::new);
-	});
+	private static final Codec<TemplatedText> STYLED_CODEC = RecordCodecBuilder.create(i -> i.group(
+			Codec.STRING.fieldOf("text").forGetter(c -> c.text),
+			MoreCodecs.FORMATTING.fieldOf("color").forGetter(c -> c.style)
+	).apply(i, TemplatedText::new));
 
 	public static final Codec<TemplatedText> CODEC = Codec.either(INLINE_CODEC, STYLED_CODEC).xmap(
 			either -> either.map(Function.identity(), Function.identity()),
 			text -> text.style != null ? Either.right(text) : Either.left(text)
 	);
-
-	private final String text;
-	private final ChatFormatting style;
-
-	public TemplatedText(String text, ChatFormatting style) {
-		this.text = text;
-		this.style = style;
-	}
 
 	public Component apply(Object... variables) {
 		return new TranslatableComponent(text, variables).withStyle(this.style);

@@ -12,11 +12,9 @@ import java.util.List;
 import java.util.Map;
 
 public final class BindControlsBehavior extends CommandInvokeMapBehavior {
-	public static final Codec<BindControlsBehavior> CODEC = RecordCodecBuilder.create(instance -> {
-		return instance.group(
-			Codec.unboundedMap(ControlCommand.Scope.CODEC, COMMANDS_CODEC).fieldOf("controls").forGetter(c -> c.scopedCommands)
-		).apply(instance, BindControlsBehavior::create);
-	});
+	public static final Codec<BindControlsBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+		Codec.unboundedMap(ControlCommand.Scope.CODEC, COMMANDS_CODEC).fieldOf("controls").forGetter(c -> c.scopedCommands)
+	).apply(i, BindControlsBehavior::create));
 
 	private final Map<ControlCommand.Scope, Map<String, List<String>>> scopedCommands;
 

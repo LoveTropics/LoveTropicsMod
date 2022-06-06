@@ -14,11 +14,9 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 
 public final class TimeSurvivedTrackerBehavior implements IGameBehavior {
-	public static final Codec<TimeSurvivedTrackerBehavior> CODEC = RecordCodecBuilder.create(instance -> {
-		return instance.group(
-				TriggerAfterConfig.CODEC.optionalFieldOf("trigger", TriggerAfterConfig.EMPTY).forGetter(c -> c.trigger)
-		).apply(instance, TimeSurvivedTrackerBehavior::new);
-	});
+	public static final Codec<TimeSurvivedTrackerBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+			TriggerAfterConfig.CODEC.optionalFieldOf("trigger", TriggerAfterConfig.EMPTY).forGetter(c -> c.trigger)
+	).apply(i, TimeSurvivedTrackerBehavior::new));
 
 	private final TriggerAfterConfig trigger;
 

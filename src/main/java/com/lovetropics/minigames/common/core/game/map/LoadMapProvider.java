@@ -29,29 +29,20 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
-public class LoadMapProvider implements IGameMapProvider {
-	public static final Codec<LoadMapProvider> CODEC = RecordCodecBuilder.create(instance -> {
-		return instance.group(
-				Codec.STRING.optionalFieldOf("name").forGetter(c -> Optional.ofNullable(c.name)),
-				ResourceLocation.CODEC.fieldOf("load_from").forGetter(c -> c.loadFrom),
-				DimensionType.CODEC.optionalFieldOf("dimension_type").forGetter(c -> Optional.ofNullable(c.dimensionType)),
-				ResourceLocation.CODEC.optionalFieldOf("dimension").forGetter(c -> Optional.ofNullable(c.dimension))
-		).apply(instance, LoadMapProvider::new);
-	});
+public record LoadMapProvider(
+		Optional<String> name,
+		ResourceLocation loadFrom,
+		Optional<Holder<DimensionType>> dimensionType,
+		Optional<ResourceLocation> dimension
+) implements IGameMapProvider {
+	public static final Codec<LoadMapProvider> CODEC = RecordCodecBuilder.create(i -> i.group(
+			Codec.STRING.optionalFieldOf("name").forGetter(c -> c.name),
+			ResourceLocation.CODEC.fieldOf("load_from").forGetter(c -> c.loadFrom),
+			DimensionType.CODEC.optionalFieldOf("dimension_type").forGetter(c -> c.dimensionType),
+			ResourceLocation.CODEC.optionalFieldOf("dimension").forGetter(c -> c.dimension)
+	).apply(i, LoadMapProvider::new));
 
 	private static final Logger LOGGER = LogManager.getLogger(LoadMapProvider.class);
-
-	private final String name;
-	private final ResourceLocation loadFrom;
-	private final Holder<DimensionType> dimensionType;
-	private final ResourceLocation dimension;
-
-	public LoadMapProvider(final Optional<String> name, final ResourceLocation loadFrom, Optional<Holder<DimensionType>> dimensionType, Optional<ResourceLocation> dimension) {
-		this.name = name.orElse(null);
-		this.loadFrom = loadFrom;
-		this.dimensionType = dimensionType.orElse(null);
-		this.dimension = dimension.orElse(null);
-	}
 
 	@Override
 	public Codec<? extends IGameMapProvider> getCodec() {
@@ -60,8 +51,8 @@ public class LoadMapProvider implements IGameMapProvider {
 
 	@Override
 	public List<ResourceKey<Level>> getPossibleDimensions() {
-		if (dimension != null) {
-			return ImmutableList.of(ResourceKey.create(Registry.DIMENSION_REGISTRY, dimension));
+		if (dimension.isPresent()) {
+			return ImmutableList.of(ResourceKey.create(Registry.DIMENSION_REGISTRY, dimension.get()));
 		} else {
 			return Collections.emptyList();
 		}
@@ -69,7 +60,7 @@ public class LoadMapProvider implements IGameMapProvider {
 
 	@Override
 	public CompletableFuture<GameResult<GameMap>> open(MinecraftServer server) {
-		Holder<DimensionType> dimensionType = this.dimensionType != null ? this.dimensionType : server.overworld().dimensionTypeRegistration();
+		Holder<DimensionType> dimensionType = this.dimensionType.orElse(server.overworld().dimensionTypeRegistration());
 		LevelStem dimension = new LevelStem(dimensionType, new VoidChunkGenerator(server));
 		MapWorldSettings worldSettings = new MapWorldSettings();
 
@@ -83,22 +74,22 @@ public class LoadMapProvider implements IGameMapProvider {
 				.thenApplyAsync(result -> result.map(pair -> {
 					RuntimeDimensionHandle dimensionHandle = pair.getFirst();
 					MapMetadata metadata = pair.getSecond();
-					return new GameMap(name, dimensionHandle.asKey(), metadata.regions)
+					return new GameMap(name.orElse(null), dimensionHandle.asKey(), metadata.regions())
 							.onClose(game -> dimensionHandle.delete());
 				}), server);
 	}
 
 	private GameResult<RuntimeDimensionHandle> openDimension(MinecraftServer server, RuntimeDimensionConfig config) {
 		RuntimeDimensions dimensions = RuntimeDimensions.get(server);
-		if (this.dimension == null) {
+		if (this.dimension.isEmpty()) {
 			return GameResult.ok(dimensions.openTemporary(config));
 		}
 
-		RuntimeDimensionHandle handle = dimensions.openTemporaryWithKey(this.dimension, config);
+		RuntimeDimensionHandle handle = dimensions.openTemporaryWithKey(this.dimension.get(), config);
 		if (handle != null) {
 			return GameResult.ok(handle);
 		} else {
-			return GameResult.error(new TextComponent("Dimension already loaded in '" + this.dimension + "'"));
+			return GameResult.error(new TextComponent("Dimension already loaded in '" + this.dimension.get() + "'"));
 		}
 	}
 
@@ -108,7 +99,7 @@ public class LoadMapProvider implements IGameMapProvider {
 		try (Resource resource = server.getResourceManager().getResource(path)) {
 			try (MapExportReader reader = MapExportReader.open(resource.getInputStream())) {
 				MapMetadata metadata = reader.loadInto(server, handle.asKey());
-				mapWorldSettings.importFrom(metadata.settings);
+				mapWorldSettings.importFrom(metadata.settings());
 				return GameResult.ok(Pair.of(handle, metadata));
 			}
 		} catch (IOException e) {

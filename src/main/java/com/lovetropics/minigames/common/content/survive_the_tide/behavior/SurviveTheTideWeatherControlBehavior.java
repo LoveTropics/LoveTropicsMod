@@ -91,26 +91,26 @@ public class SurviveTheTideWeatherControlBehavior implements IGameBehavior {
         ServerLevel world = game.getWorld();
         if (world.getGameTime() % 20 == 0) {
             if (weather.getEvent() == null && weather.canStartWeatherEvent()) {
-                if (random.nextFloat() <= config.getRainHeavyChance(phase.key)) {
+                if (random.nextFloat() <= config.getRainHeavyChance(phase.key())) {
                     heavyRainfallStart(phase);
-                } else if (random.nextFloat() <= config.getRainAcidChance(phase.key)) {
+                } else if (random.nextFloat() <= config.getRainAcidChance(phase.key())) {
                     acidRainStart(phase);
-                } else if (random.nextFloat() <= config.getHailChance(phase.key)) {
+                } else if (random.nextFloat() <= config.getHailChance(phase.key())) {
                     hailStart(phase);
-                } else if (random.nextFloat() <= config.getHeatwaveChance(phase.key)) {
+                } else if (random.nextFloat() <= config.getHeatwaveChance(phase.key())) {
                     heatwaveStart(phase);
-                } else if (random.nextFloat() <= config.getSandstormChance(phase.key)) {
+                } else if (random.nextFloat() <= config.getSandstormChance(phase.key())) {
                     sandstormStart(phase);
-                } else if (random.nextFloat() <= config.getSnowstormChance(phase.key)) {
+                } else if (random.nextFloat() <= config.getSnowstormChance(phase.key())) {
                     snowstormStart(phase);
                 }
             }
 
-            weather.setWind(config.getWindSpeed(phase.key));
+            weather.setWind(config.getWindSpeed(phase.key()));
             if (weather.getEventType() == WeatherEventType.SNOWSTORM || weather.getEventType() == WeatherEventType.SANDSTORM) {
                 weather.setWind(0.7F);
             } else {
-                weather.setWind(config.getWindSpeed(phase.key));
+                weather.setWind(config.getWindSpeed(phase.key()));
             }
         }
     }

@@ -11,16 +11,10 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.item.ItemStack;
 
-public final class DropPlantItemBehavior implements IGameBehavior {
-	public static final Codec<DropPlantItemBehavior> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+public record DropPlantItemBehavior(PlantItemType plant) implements IGameBehavior {
+	public static final Codec<DropPlantItemBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
 			PlantItemType.CODEC.fieldOf("plant").forGetter(c -> c.plant)
-	).apply(instance, DropPlantItemBehavior::new));
-
-	private final PlantItemType plant;
-
-	public DropPlantItemBehavior(PlantItemType plant) {
-		this.plant = plant;
-	}
+	).apply(i, DropPlantItemBehavior::new));
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {

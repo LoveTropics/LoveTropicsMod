@@ -11,18 +11,10 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.world.Difficulty;
 import net.minecraft.server.level.ServerLevel;
 
-public class SetDifficultyBehavior implements IGameBehavior {
-	public static final Codec<SetDifficultyBehavior> CODEC = RecordCodecBuilder.create(instance -> {
-		return instance.group(
-				MoreCodecs.DIFFICULTY.fieldOf("difficulty").forGetter(c -> c.difficulty)
-		).apply(instance, SetDifficultyBehavior::new);
-	});
-
-	private final Difficulty difficulty;
-
-	public SetDifficultyBehavior(Difficulty difficulty) {
-		this.difficulty = difficulty;
-	}
+public record SetDifficultyBehavior(Difficulty difficulty) implements IGameBehavior {
+	public static final Codec<SetDifficultyBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+			MoreCodecs.DIFFICULTY.fieldOf("difficulty").forGetter(c -> c.difficulty)
+	).apply(i, SetDifficultyBehavior::new));
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {

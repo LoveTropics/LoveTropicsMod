@@ -15,18 +15,10 @@ import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.resources.ResourceLocation;
 
-public class LootPackageBehavior implements IGameBehavior {
-	public static final Codec<LootPackageBehavior> CODEC = RecordCodecBuilder.create(instance -> {
-		return instance.group(
-				ResourceLocation.CODEC.fieldOf("loot_table").forGetter(c -> c.lootTable)
-		).apply(instance, LootPackageBehavior::new);
-	});
-
-	private final ResourceLocation lootTable;
-
-	public LootPackageBehavior(ResourceLocation lootTable) {
-		this.lootTable = lootTable;
-	}
+public record LootPackageBehavior(ResourceLocation lootTable) implements IGameBehavior {
+	public static final Codec<LootPackageBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+			ResourceLocation.CODEC.fieldOf("loot_table").forGetter(c -> c.lootTable)
+	).apply(i, LootPackageBehavior::new));
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) throws GameException {

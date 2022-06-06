@@ -21,10 +21,10 @@ import java.util.List;
 import java.util.Random;
 
 public final class IdleDropItemPlantBehavior implements IGameBehavior {
-    public static final Codec<IdleDropItemPlantBehavior> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+    public static final Codec<IdleDropItemPlantBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
             MoreCodecs.ITEM_STACK.fieldOf("item").forGetter(b -> b.item),
             Codec.INT.fieldOf("interval").forGetter(b -> b.interval)
-    ).apply(instance, IdleDropItemPlantBehavior::new));
+    ).apply(i, IdleDropItemPlantBehavior::new));
     private final ItemStack item;
     private final int interval;
 

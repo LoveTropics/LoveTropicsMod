@@ -21,16 +21,10 @@ import net.minecraft.server.level.ServerLevel;
 
 import javax.annotation.Nullable;
 
-public final class DropLootTableBehavior implements IGameBehavior {
-	public static final Codec<DropLootTableBehavior> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+public record DropLootTableBehavior(ResourceLocation lootTable) implements IGameBehavior {
+	public static final Codec<DropLootTableBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
 			ResourceLocation.CODEC.fieldOf("loot_table").forGetter(c -> c.lootTable)
-	).apply(instance, DropLootTableBehavior::new));
-
-	private final ResourceLocation lootTable;
-
-	public DropLootTableBehavior(ResourceLocation lootTable) {
-		this.lootTable = lootTable;
-	}
+	).apply(i, DropLootTableBehavior::new));
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {

@@ -16,12 +16,10 @@ import java.util.Iterator;
 import java.util.List;
 
 public class PhaseControllerBehavior implements IGameBehavior {
-	public static final Codec<PhaseControllerBehavior> CODEC = RecordCodecBuilder.create(instance -> {
-		return instance.group(
-				MoreCodecs.validate(GamePhase.CODEC.listOf(), phases -> !phases.isEmpty(), "must give at least one phase")
-						.fieldOf("phases").forGetter(c -> c.phases)
-		).apply(instance, PhaseControllerBehavior::new);
-	});
+	public static final Codec<PhaseControllerBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+			MoreCodecs.validate(GamePhase.CODEC.listOf(), phases -> !phases.isEmpty(), "must give at least one phase")
+					.fieldOf("phases").forGetter(c -> c.phases)
+	).apply(i, PhaseControllerBehavior::new));
 
 	private GamePhaseState phaseState;
 
@@ -40,7 +38,7 @@ public class PhaseControllerBehavior implements IGameBehavior {
 
 			GamePhase nextPhase = phaseIterator.next();
 			phaseState.set(nextPhase);
-			currentPhaseTicks = nextPhase.lengthInTicks;
+			currentPhaseTicks = nextPhase.lengthInTicks();
 
 			if (lastPhase != nextPhase) {
 				game.invoker(GameLogicEvents.PHASE_CHANGE).onPhaseChange(nextPhase, lastPhase);

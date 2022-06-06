@@ -12,12 +12,10 @@ import java.util.List;
 import java.util.Map;
 
 public final class RunCommandInRegionBehavior extends CommandInvokeMapBehavior {
-	public static final Codec<RunCommandInRegionBehavior> CODEC = RecordCodecBuilder.create(instance -> {
-		return instance.group(
-				COMMANDS_CODEC.fieldOf("regions").forGetter(c -> c.commands),
-				Codec.INT.optionalFieldOf("interval", 20).forGetter(c -> c.interval)
-		).apply(instance, RunCommandInRegionBehavior::new);
-	});
+	public static final Codec<RunCommandInRegionBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+			COMMANDS_CODEC.fieldOf("regions").forGetter(c -> c.commands),
+			Codec.INT.optionalFieldOf("interval", 20).forGetter(c -> c.interval)
+	).apply(i, RunCommandInRegionBehavior::new));
 
 	private final int interval;
 

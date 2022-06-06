@@ -16,19 +16,11 @@ import net.minecraft.server.level.ServerLevel;
 
 import java.util.List;
 
-public final class EffectAddingPlantBehavior implements IGameBehavior {
-	public static final Codec<EffectAddingPlantBehavior> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+public record EffectAddingPlantBehavior(MobEffectInstance effect, double radius) implements IGameBehavior {
+	public static final Codec<EffectAddingPlantBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
 			MoreCodecs.EFFECT_INSTANCE.fieldOf("effect").forGetter(c -> c.effect),
 			Codec.DOUBLE.fieldOf("radius").forGetter(c -> c.radius)
-	).apply(instance, EffectAddingPlantBehavior::new));
-
-	private final MobEffectInstance effect;
-	private final double radius;
-
-	public EffectAddingPlantBehavior(MobEffectInstance effect, double radius) {
-		this.effect = effect;
-		this.radius = radius;
-	}
+	).apply(i, EffectAddingPlantBehavior::new));
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {

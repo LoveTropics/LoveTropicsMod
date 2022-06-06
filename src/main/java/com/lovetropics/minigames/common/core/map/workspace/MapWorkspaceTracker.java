@@ -39,7 +39,7 @@ public final class MapWorkspaceTracker {
 		MapWorkspace workspace = workspaceManager.getWorkspace(dimension);
 
 		if (workspace != null) {
-			SetWorkspaceMessage message = new SetWorkspaceMessage(workspace.getRegions());
+			SetWorkspaceMessage message = new SetWorkspaceMessage(workspace.regions());
 			LoveTropicsNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), message);
 		}
 	}

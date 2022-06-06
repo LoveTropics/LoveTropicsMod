@@ -31,8 +31,6 @@ public final class GameConfigs {
 
 	public static final CodecRegistry<ResourceLocation, GameConfig> REGISTRY = CodecRegistry.resourceLocationKeys();
 
-	private static final JsonParser PARSER = new JsonParser();
-
 	@SubscribeEvent
 	public static void addReloadListener(AddReloadListenerEvent event) {
 		event.addListener((stage, resourceManager, preparationsProfiler, reloadProfiler, backgroundExecutor, gameExecutor) -> {
@@ -67,7 +65,7 @@ public final class GameConfigs {
 			ResourceLocation path, Resource resource
 	) throws IOException {
 		try (InputStream input = resource.getInputStream()) {
-			JsonElement json = PARSER.parse(new BufferedReader(new InputStreamReader(input)));
+			JsonElement json = JsonParser.parseReader(new BufferedReader(new InputStreamReader(input)));
 			Codec<GameConfig> codec = GameConfig.codec(reader, getIdFromPath(path));
 			return codec.parse(ops, json);
 		}

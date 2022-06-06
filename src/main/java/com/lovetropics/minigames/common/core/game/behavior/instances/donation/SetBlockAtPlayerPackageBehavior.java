@@ -12,18 +12,10 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvider;
 
-public final class SetBlockAtPlayerPackageBehavior implements IGameBehavior {
-	public static final Codec<SetBlockAtPlayerPackageBehavior> CODEC = RecordCodecBuilder.create(instance -> {
-		return instance.group(
-				MoreCodecs.BLOCK_STATE_PROVIDER.fieldOf("block").forGetter(c -> c.block)
-		).apply(instance, SetBlockAtPlayerPackageBehavior::new);
-	});
-
-	private final BlockStateProvider block;
-
-	public SetBlockAtPlayerPackageBehavior(BlockStateProvider block) {
-		this.block = block;
-	}
+public record SetBlockAtPlayerPackageBehavior(BlockStateProvider block) implements IGameBehavior {
+	public static final Codec<SetBlockAtPlayerPackageBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+			MoreCodecs.BLOCK_STATE_PROVIDER.fieldOf("block").forGetter(c -> c.block)
+	).apply(i, SetBlockAtPlayerPackageBehavior::new));
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) throws GameException {

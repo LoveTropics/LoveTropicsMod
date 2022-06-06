@@ -8,18 +8,10 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.world.InteractionResult;
 
-public final class CancelPlayerDamageBehavior implements IGameBehavior {
-	public static final Codec<CancelPlayerDamageBehavior> CODEC = RecordCodecBuilder.create(instance -> {
-		return instance.group(
-				Codec.BOOL.optionalFieldOf("knockback", false).forGetter(c -> c.knockback)
-		).apply(instance, CancelPlayerDamageBehavior::new);
-	});
-
-	private final boolean knockback;
-
-	public CancelPlayerDamageBehavior(boolean knockback) {
-		this.knockback = knockback;
-	}
+public record CancelPlayerDamageBehavior(boolean knockback) implements IGameBehavior {
+	public static final Codec<CancelPlayerDamageBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+			Codec.BOOL.optionalFieldOf("knockback", false).forGetter(c -> c.knockback)
+	).apply(i, CancelPlayerDamageBehavior::new));
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {

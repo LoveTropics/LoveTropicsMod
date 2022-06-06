@@ -12,18 +12,10 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
-public final class GivePlayerHeadPackageBehavior implements IGameBehavior {
-	public static final Codec<GivePlayerHeadPackageBehavior> CODEC = RecordCodecBuilder.create(instance -> {
-		return instance.group(
-				Codec.BOOL.optionalFieldOf("forced", false).forGetter(c -> c.forced)
-		).apply(instance, GivePlayerHeadPackageBehavior::new);
-	});
-
-	private final boolean forced;
-
-	public GivePlayerHeadPackageBehavior(boolean forced) {
-		this.forced = forced;
-	}
+public record GivePlayerHeadPackageBehavior(boolean forced) implements IGameBehavior {
+	public static final Codec<GivePlayerHeadPackageBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+			Codec.BOOL.optionalFieldOf("forced", false).forGetter(c -> c.forced)
+	).apply(i, GivePlayerHeadPackageBehavior::new));
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {

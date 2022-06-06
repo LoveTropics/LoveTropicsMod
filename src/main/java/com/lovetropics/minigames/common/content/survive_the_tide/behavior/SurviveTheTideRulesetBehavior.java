@@ -33,15 +33,13 @@ import javax.annotation.Nullable;
 import java.util.List;
 
 public class SurviveTheTideRulesetBehavior implements IGameBehavior {
-	public static final Codec<SurviveTheTideRulesetBehavior> CODEC = RecordCodecBuilder.create(instance -> {
-		return instance.group(
-				Codec.STRING.optionalFieldOf("spawn_area_region", "spawn_area").forGetter(c -> c.spawnAreaKey),
-				Codec.STRING.fieldOf("phase_to_free_participants").forGetter(c -> c.phaseToFreeParticipants),
-				Codec.STRING.listOf().fieldOf("phases_with_no_pvp").forGetter(c -> c.phasesWithNoPVP),
-				Codec.BOOL.optionalFieldOf("force_drop_items_on_death", true).forGetter(c -> c.forceDropItemsOnDeath),
-				MoreCodecs.TEXT.fieldOf("message_on_set_players_free").forGetter(c -> c.messageOnSetPlayersFree)
-		).apply(instance, SurviveTheTideRulesetBehavior::new);
-	});
+	public static final Codec<SurviveTheTideRulesetBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+			Codec.STRING.optionalFieldOf("spawn_area_region", "spawn_area").forGetter(c -> c.spawnAreaKey),
+			Codec.STRING.fieldOf("phase_to_free_participants").forGetter(c -> c.phaseToFreeParticipants),
+			Codec.STRING.listOf().fieldOf("phases_with_no_pvp").forGetter(c -> c.phasesWithNoPVP),
+			Codec.BOOL.optionalFieldOf("force_drop_items_on_death", true).forGetter(c -> c.forceDropItemsOnDeath),
+			MoreCodecs.TEXT.fieldOf("message_on_set_players_free").forGetter(c -> c.messageOnSetPlayersFree)
+	).apply(i, SurviveTheTideRulesetBehavior::new));
 
 	private final String spawnAreaKey;
 	@Nullable
@@ -110,7 +108,7 @@ public class SurviveTheTideRulesetBehavior implements IGameBehavior {
 	}
 
 	public boolean isSafePhase(GamePhase phase) {
-		return phasesWithNoPVP.contains(phase.key);
+		return phasesWithNoPVP.contains(phase.key());
 	}
 
 	private void destroyVanishingCursedItems(Container inventory) {

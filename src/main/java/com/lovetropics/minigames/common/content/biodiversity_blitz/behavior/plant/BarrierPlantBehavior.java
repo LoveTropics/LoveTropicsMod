@@ -15,16 +15,10 @@ import net.minecraft.server.level.ServerLevel;
 
 import java.util.List;
 
-public final class BarrierPlantBehavior implements IGameBehavior {
-	public static final Codec<BarrierPlantBehavior> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+public record BarrierPlantBehavior(double radius) implements IGameBehavior {
+	public static final Codec<BarrierPlantBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
 			Codec.DOUBLE.fieldOf("radius").forGetter(c -> c.radius)
-	).apply(instance, BarrierPlantBehavior::new));
-
-	private final double radius;
-
-	public BarrierPlantBehavior(double radius) {
-		this.radius = radius;
-	}
+	).apply(i, BarrierPlantBehavior::new));
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {

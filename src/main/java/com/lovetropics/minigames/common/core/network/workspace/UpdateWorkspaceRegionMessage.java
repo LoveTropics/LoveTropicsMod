@@ -12,15 +12,7 @@ import net.minecraftforge.network.NetworkEvent;
 
 import java.util.function.Supplier;
 
-public class UpdateWorkspaceRegionMessage {
-	private final int id;
-	private final BlockBox region;
-
-	public UpdateWorkspaceRegionMessage(int id, BlockBox region) {
-		this.id = id;
-		this.region = region;
-	}
-
+public record UpdateWorkspaceRegionMessage(int id, BlockBox region) {
 	public void encode(FriendlyByteBuf buffer) {
 		buffer.writeVarInt(id);
 		if (region != null) {
@@ -58,7 +50,7 @@ public class UpdateWorkspaceRegionMessage {
 		MapWorkspaceManager workspaceManager = MapWorkspaceManager.get(sender.server);
 		MapWorkspace workspace = workspaceManager.getWorkspace(sender.level.dimension());
 		if (workspace != null) {
-			workspace.getRegions().set(id, region);
+			workspace.regions().set(id, region);
 		}
 	}
 

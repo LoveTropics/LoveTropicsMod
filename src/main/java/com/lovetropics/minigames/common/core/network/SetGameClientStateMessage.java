@@ -15,16 +15,7 @@ import net.minecraftforge.network.NetworkEvent;
 import javax.annotation.Nullable;
 import java.util.function.Supplier;
 
-public class SetGameClientStateMessage {
-	private final GameClientStateType<?> type;
-	@Nullable
-	private final GameClientState state;
-
-	private SetGameClientStateMessage(GameClientStateType<?> type, @Nullable GameClientState state) {
-		this.type = type;
-		this.state = state;
-	}
-
+public record SetGameClientStateMessage(GameClientStateType<?> type, @Nullable GameClientState state) {
 	public static <T extends GameClientState> SetGameClientStateMessage set(T state) {
 		return new SetGameClientStateMessage(state.getType(), state);
 	}

@@ -23,10 +23,10 @@ import java.util.Collections;
 import java.util.List;
 
 public final class BbAssignPlotsBehavior implements IGameBehavior {
-	public static final Codec<BbAssignPlotsBehavior> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+	public static final Codec<BbAssignPlotsBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
 			Plot.RegionKeys.CODEC.fieldOf("regions").forGetter(c -> c.regionKeys),
 			MoreCodecs.arrayOrUnit(Plot.Config.CODEC, Plot.Config[]::new).fieldOf("plots").forGetter(c -> c.plotKeys)
-	).apply(instance, BbAssignPlotsBehavior::new));
+	).apply(i, BbAssignPlotsBehavior::new));
 
 	private final Plot.RegionKeys regionKeys;
 

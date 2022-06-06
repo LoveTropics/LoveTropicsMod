@@ -26,9 +26,9 @@ import java.util.Random;
 import java.util.Set;
 
 public final class FlamingPlantBehavior implements IGameBehavior {
-    public static final Codec<FlamingPlantBehavior> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+    public static final Codec<FlamingPlantBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
             Codec.INT.fieldOf("radius").forGetter(b -> b.radius)
-    ).apply(instance, FlamingPlantBehavior::new));
+    ).apply(i, FlamingPlantBehavior::new));
     private final int radius;
 
     private IGamePhase game;

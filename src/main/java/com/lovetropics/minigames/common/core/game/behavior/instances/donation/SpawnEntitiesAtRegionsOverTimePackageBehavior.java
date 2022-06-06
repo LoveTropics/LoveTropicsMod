@@ -23,14 +23,12 @@ import java.util.List;
  */
 
 public class SpawnEntitiesAtRegionsOverTimePackageBehavior implements IGameBehavior {
-	public static final Codec<SpawnEntitiesAtRegionsOverTimePackageBehavior> CODEC = RecordCodecBuilder.create(instance -> {
-		return instance.group(
-				Codec.STRING.listOf().fieldOf("regions_to_spawn_at").forGetter(c -> c.regionsToSpawnAtKeys),
-				ForgeRegistries.ENTITIES.getCodec().fieldOf("entity_id").forGetter(c -> c.entityId),
-				Codec.INT.optionalFieldOf("entity_count", 1).forGetter(c -> c.entityCount),
-				Codec.INT.optionalFieldOf("ticks_to_spawn_for", 1).forGetter(c -> c.ticksToSpawnFor)
-		).apply(instance, SpawnEntitiesAtRegionsOverTimePackageBehavior::new);
-	});
+	public static final Codec<SpawnEntitiesAtRegionsOverTimePackageBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+			Codec.STRING.listOf().fieldOf("regions_to_spawn_at").forGetter(c -> c.regionsToSpawnAtKeys),
+			ForgeRegistries.ENTITIES.getCodec().fieldOf("entity_id").forGetter(c -> c.entityId),
+			Codec.INT.optionalFieldOf("entity_count", 1).forGetter(c -> c.entityCount),
+			Codec.INT.optionalFieldOf("ticks_to_spawn_for", 1).forGetter(c -> c.ticksToSpawnFor)
+	).apply(i, SpawnEntitiesAtRegionsOverTimePackageBehavior::new));
 
 	private final List<String> regionsToSpawnAtKeys;
 	private final EntityType<?> entityId;

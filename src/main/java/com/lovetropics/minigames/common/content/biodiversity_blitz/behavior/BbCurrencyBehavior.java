@@ -29,14 +29,12 @@ import net.minecraftforge.registries.ForgeRegistries;
 import java.util.stream.IntStream;
 
 public final class BbCurrencyBehavior implements IGameBehavior {
-	public static final Codec<BbCurrencyBehavior> CODEC = RecordCodecBuilder.create(instance -> {
-		return instance.group(
-				ForgeRegistries.ITEMS.getCodec().fieldOf("item").forGetter(c -> c.item),
-				Codec.INT.fieldOf("initial_currency").forGetter(c -> c.initialCurrency),
-				DropCalculation.CODEC.fieldOf("drop_calculation").forGetter(c -> c.dropCalculation),
-				Codec.LONG.fieldOf("drop_interval").forGetter(c -> c.dropInterval)
-		).apply(instance, BbCurrencyBehavior::new);
-	});
+	public static final Codec<BbCurrencyBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+			ForgeRegistries.ITEMS.getCodec().fieldOf("item").forGetter(c -> c.item),
+			Codec.INT.fieldOf("initial_currency").forGetter(c -> c.initialCurrency),
+			DropCalculation.CODEC.fieldOf("drop_calculation").forGetter(c -> c.dropCalculation),
+			Codec.LONG.fieldOf("drop_interval").forGetter(c -> c.dropInterval)
+	).apply(i, BbCurrencyBehavior::new));
 
 	private final Item item;
 	private final int initialCurrency;

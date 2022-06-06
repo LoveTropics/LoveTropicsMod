@@ -27,29 +27,15 @@ import java.nio.ByteBuffer;
 import java.nio.LongBuffer;
 import java.util.Random;
 
-public final class PlaceTrashBehavior implements IGameBehavior {
-	public static final Codec<PlaceTrashBehavior> CODEC = RecordCodecBuilder.create(instance -> {
-		return instance.group(
-				ResourceLocation.CODEC.fieldOf("positionData").forGetter(c -> c.positionData),
-				Codec.INT.optionalFieldOf("centerY", 75).forGetter(c -> c.centerY),
-				Codec.INT.optionalFieldOf("range", 50).forGetter(c -> c.range),
-				Codec.INT.optionalFieldOf("density", 4).forGetter(c -> c.density)
-		).apply(instance, PlaceTrashBehavior::new);
-	});
+public record PlaceTrashBehavior(ResourceLocation positionData, int centerY, int range, int density) implements IGameBehavior {
+	public static final Codec<PlaceTrashBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+			ResourceLocation.CODEC.fieldOf("positionData").forGetter(c -> c.positionData),
+			Codec.INT.optionalFieldOf("centerY", 75).forGetter(c -> c.centerY),
+			Codec.INT.optionalFieldOf("range", 50).forGetter(c -> c.range),
+			Codec.INT.optionalFieldOf("density", 4).forGetter(c -> c.density)
+	).apply(i, PlaceTrashBehavior::new));
 
-	private final TrashType[] trashTypes = TrashType.values();
-
-	private final ResourceLocation positionData;
-	private final int centerY;
-	private final int range;
-	private final int density;
-
-	public PlaceTrashBehavior(ResourceLocation positionData, int centerY, int range, int density) {
-		this.positionData = positionData;
-		this.centerY = centerY;
-		this.range = range;
-		this.density = density;
-	}
+	private static final TrashType[] TRASH_TYPES = TrashType.values();
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) throws GameException {
@@ -109,7 +95,7 @@ public final class PlaceTrashBehavior implements IGameBehavior {
 
 	private void tryPlaceTrash(ChunkAccess chunk, BlockPos pos, Random random) {
 		if (chunk.getBlockState(pos).getBlock() == Blocks.WATER) {
-			TrashType trashType = trashTypes[random.nextInt(trashTypes.length)];
+			TrashType trashType = TRASH_TYPES[random.nextInt(TRASH_TYPES.length)];
 			chunk.setBlockState(pos, LoveTropicsBlocks.TRASH.get(trashType).getDefaultState()
 							.setValue(TrashBlock.WATERLOGGED, true)
 							.setValue(TrashBlock.ATTACHMENT, Block.canSupportRigidBlock(chunk, pos.below()) ? Attachment.FLOOR : Attachment.random(random))

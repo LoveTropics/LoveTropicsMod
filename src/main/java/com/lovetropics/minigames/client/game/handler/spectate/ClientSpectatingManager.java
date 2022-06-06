@@ -25,9 +25,9 @@ public final class ClientSpectatingManager implements ClientGameStateHandler<Spe
 	public void accept(SpectatingClientState state) {
 		SpectatingSession session = this.session;
 		if (session == null) {
-			this.session = new SpectatingSession(state.getPlayers());
+			this.session = new SpectatingSession(state.players());
 		} else {
-			session.updatePlayers(state.getPlayers());
+			session.updatePlayers(state.players());
 		}
 	}
 

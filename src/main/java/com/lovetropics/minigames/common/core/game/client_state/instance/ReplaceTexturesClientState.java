@@ -12,18 +12,10 @@ import net.minecraft.resources.ResourceLocation;
 import javax.annotation.Nullable;
 import java.util.Map;
 
-public final class ReplaceTexturesClientState implements GameClientState {
-	public static final Codec<ReplaceTexturesClientState> CODEC = RecordCodecBuilder.create(instance -> {
-		return instance.group(
-				Codec.unboundedMap(TextureType.CODEC, ResourceLocation.CODEC).fieldOf("textures").forGetter(c -> c.textures)
-		).apply(instance, ReplaceTexturesClientState::new);
-	});
-
-	private final Map<TextureType, ResourceLocation> textures;
-
-	public ReplaceTexturesClientState(Map<TextureType, ResourceLocation> textures) {
-		this.textures = textures;
-	}
+public record ReplaceTexturesClientState(Map<TextureType, ResourceLocation> textures) implements GameClientState {
+	public static final Codec<ReplaceTexturesClientState> CODEC = RecordCodecBuilder.create(i -> i.group(
+			Codec.unboundedMap(TextureType.CODEC, ResourceLocation.CODEC).fieldOf("textures").forGetter(c -> c.textures)
+	).apply(i, ReplaceTexturesClientState::new));
 
 	@Nullable
 	public ResourceLocation getTexture(TextureType type) {

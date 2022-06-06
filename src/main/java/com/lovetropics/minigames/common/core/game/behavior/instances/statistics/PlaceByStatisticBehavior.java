@@ -10,21 +10,11 @@ import com.lovetropics.minigames.common.core.game.state.statistics.StatisticKey;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
-public final class PlaceByStatisticBehavior implements IGameBehavior {
-	public static final Codec<PlaceByStatisticBehavior> CODEC = RecordCodecBuilder.create(instance -> {
-		return instance.group(
-				StatisticKey.codecFor(Integer.class).fieldOf("statistic").forGetter(c -> c.statistic),
-				PlacementOrder.CODEC.optionalFieldOf("order", PlacementOrder.MAX).forGetter(c -> c.order)
-		).apply(instance, PlaceByStatisticBehavior::new);
-	});
-
-	private final StatisticKey<Integer> statistic;
-	private final PlacementOrder order;
-
-	public PlaceByStatisticBehavior(StatisticKey<Integer> statistic, PlacementOrder order) {
-		this.statistic = statistic;
-		this.order = order;
-	}
+public record PlaceByStatisticBehavior(StatisticKey<Integer> statistic, PlacementOrder order) implements IGameBehavior {
+	public static final Codec<PlaceByStatisticBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+			StatisticKey.codecFor(Integer.class).fieldOf("statistic").forGetter(c -> c.statistic),
+			PlacementOrder.CODEC.optionalFieldOf("order", PlacementOrder.MAX).forGetter(c -> c.order)
+	).apply(i, PlaceByStatisticBehavior::new));
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {

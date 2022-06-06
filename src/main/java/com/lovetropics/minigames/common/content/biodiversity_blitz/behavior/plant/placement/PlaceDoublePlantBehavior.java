@@ -13,16 +13,10 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.DoublePlantBlock;
 import net.minecraft.world.level.block.state.BlockState;
 
-public final class PlaceDoublePlantBehavior implements IGameBehavior {
-	public static final Codec<PlaceDoublePlantBehavior> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+public record PlaceDoublePlantBehavior(BlockState block) implements IGameBehavior {
+	public static final Codec<PlaceDoublePlantBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
 			MoreCodecs.BLOCK_STATE.fieldOf("block").forGetter(c -> c.block)
-	).apply(instance, PlaceDoublePlantBehavior::new));
-
-	private final BlockState block;
-
-	public PlaceDoublePlantBehavior(BlockState block) {
-		this.block = block;
-	}
+	).apply(i, PlaceDoublePlantBehavior::new));
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {

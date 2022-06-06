@@ -14,20 +14,12 @@ import java.util.Random;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
-public final class RandomMapProvider implements IGameMapProvider {
-	public static final Codec<RandomMapProvider> CODEC = RecordCodecBuilder.create(instance -> {
-		return instance.group(
-				MoreCodecs.arrayOrUnit(GameMapProviders.CODEC, IGameMapProvider[]::new).fieldOf("pool").forGetter(c -> c.mapProviders)
-		).apply(instance, RandomMapProvider::new);
-	});
+public record RandomMapProvider(IGameMapProvider[] mapProviders) implements IGameMapProvider {
+	public static final Codec<RandomMapProvider> CODEC = RecordCodecBuilder.create(i -> i.group(
+			MoreCodecs.arrayOrUnit(GameMapProviders.CODEC, IGameMapProvider[]::new).fieldOf("pool").forGetter(c -> c.mapProviders)
+	).apply(i, RandomMapProvider::new));
 
 	private static final Random RANDOM = new Random();
-
-	private final IGameMapProvider[] mapProviders;
-
-	public RandomMapProvider(IGameMapProvider[] mapProviders) {
-		this.mapProviders = mapProviders;
-	}
 
 	@Override
 	public Codec<? extends IGameMapProvider> getCodec() {

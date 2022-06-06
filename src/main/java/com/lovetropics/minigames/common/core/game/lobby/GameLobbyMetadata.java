@@ -5,43 +5,9 @@ import com.lovetropics.minigames.common.core.game.state.statistics.PlayerKey;
 
 import javax.annotation.Nullable;
 
-public final class GameLobbyMetadata {
-	private final GameLobbyId id;
-	private final PlayerKey initiator;
-	private final String name;
-	private final String commandId;
-	private final LobbyVisibility visibility;
-
+public record GameLobbyMetadata(GameLobbyId id, PlayerKey initiator, String name, String commandId, LobbyVisibility visibility) {
 	public GameLobbyMetadata(GameLobbyId id, PlayerKey initiator, String name, String commandId) {
 		this(id, initiator, name, commandId, LobbyVisibility.PRIVATE);
-	}
-
-	private GameLobbyMetadata(GameLobbyId id, PlayerKey initiator, String name, String commandId, LobbyVisibility visibility) {
-		this.id = id;
-		this.initiator = initiator;
-		this.name = name;
-		this.commandId = commandId;
-		this.visibility = visibility;
-	}
-
-	public GameLobbyId id() {
-		return this.id;
-	}
-
-	public PlayerKey initiator() {
-		return this.initiator;
-	}
-
-	public String name() {
-		return this.name;
-	}
-
-	public String commandId() {
-		return this.commandId;
-	}
-
-	public LobbyVisibility visibility() {
-		return this.visibility;
 	}
 
 	public String joinCommand(@Nullable PlayerRole role) {

@@ -35,11 +35,11 @@ public final class PlayerKey {
 		return new PlayerKey(player.getGameProfile());
 	}
 
-	public UUID getId() {
+	public UUID id() {
 		return profile.getId();
 	}
 
-	public String getName() {
+	public String name() {
 		return profile.getName();
 	}
 

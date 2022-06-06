@@ -38,14 +38,12 @@ import java.util.Random;
 
 // TODO: clean up and split up
 public final class HideAndSeekBehavior implements IGameBehavior {
-	public static final Codec<HideAndSeekBehavior> CODEC = RecordCodecBuilder.create(instance -> {
-		return instance.group(
-				Codec.STRING.fieldOf("spawn").forGetter(c -> c.spawnRegionKey),
-				Codec.INT.fieldOf("initial_hide_seconds").forGetter(c -> c.initialHideSeconds),
-				DisguiseType.CODEC.listOf().fieldOf("disguises").forGetter(c -> c.disguises),
-				Creature.CODEC.listOf().fieldOf("creatures").forGetter(c -> c.creatures)
-		).apply(instance, HideAndSeekBehavior::new);
-	});
+	public static final Codec<HideAndSeekBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+			Codec.STRING.fieldOf("spawn").forGetter(c -> c.spawnRegionKey),
+			Codec.INT.fieldOf("initial_hide_seconds").forGetter(c -> c.initialHideSeconds),
+			DisguiseType.CODEC.listOf().fieldOf("disguises").forGetter(c -> c.disguises),
+			Creature.CODEC.listOf().fieldOf("creatures").forGetter(c -> c.creatures)
+	).apply(i, HideAndSeekBehavior::new));
 
 	private final String spawnRegionKey;
 	private final int initialHideSeconds;

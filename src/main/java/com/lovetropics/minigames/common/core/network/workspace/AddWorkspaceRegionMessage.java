@@ -7,17 +7,7 @@ import net.minecraftforge.network.NetworkEvent;
 
 import java.util.function.Supplier;
 
-public class AddWorkspaceRegionMessage {
-	private final int id;
-	private final String key;
-	private final BlockBox region;
-
-	public AddWorkspaceRegionMessage(int id, String key, BlockBox region) {
-		this.id = id;
-		this.key = key;
-		this.region = region;
-	}
-
+public record AddWorkspaceRegionMessage(int id, String key, BlockBox region) {
 	public void encode(FriendlyByteBuf buffer) {
 		buffer.writeVarInt(id);
 		buffer.writeUtf(key, 64);

@@ -16,13 +16,11 @@ import java.util.UUID;
  */
 public class DonationPackageGameAction extends GameAction
 {
-    public static final Codec<DonationPackageGameAction> CODEC = RecordCodecBuilder.create(instance -> {
-        return instance.group(
-                MoreCodecs.UUID_STRING.fieldOf("uuid").forGetter(c -> c.uuid),
-                TIME_CODEC.fieldOf("trigger_time").forGetter(c -> c.triggerTime),
-                GamePackage.MAP_CODEC.forGetter(c -> c.gamePackage)
-        ).apply(instance, DonationPackageGameAction::new);
-    });
+    public static final Codec<DonationPackageGameAction> CODEC = RecordCodecBuilder.create(i -> i.group(
+            MoreCodecs.UUID_STRING.fieldOf("uuid").forGetter(c -> c.uuid),
+            TIME_CODEC.fieldOf("trigger_time").forGetter(c -> c.triggerTime),
+            GamePackage.MAP_CODEC.forGetter(c -> c.gamePackage)
+    ).apply(i, DonationPackageGameAction::new));
 
     private final GamePackage gamePackage;
 

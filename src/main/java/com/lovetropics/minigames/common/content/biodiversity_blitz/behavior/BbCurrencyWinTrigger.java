@@ -24,11 +24,9 @@ import java.util.Comparator;
 import java.util.List;
 
 public final class BbCurrencyWinTrigger implements IGameBehavior {
-	public static final Codec<BbCurrencyWinTrigger> CODEC = RecordCodecBuilder.create(instance -> {
-		return instance.group(
-				Codec.INT.fieldOf("threshold_currency").forGetter(c -> c.thresholdCurrency)
-		).apply(instance, BbCurrencyWinTrigger::new);
-	});
+	public static final Codec<BbCurrencyWinTrigger> CODEC = RecordCodecBuilder.create(i -> i.group(
+			Codec.INT.fieldOf("threshold_currency").forGetter(c -> c.thresholdCurrency)
+	).apply(i, BbCurrencyWinTrigger::new));
 
 	private final int thresholdCurrency;
 

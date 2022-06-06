@@ -19,13 +19,11 @@ import java.util.Map;
 import java.util.UUID;
 
 public final class CampingTrackerBehavior implements IGameBehavior {
-	public static final Codec<CampingTrackerBehavior> CODEC = RecordCodecBuilder.create(instance -> {
-		return instance.group(
-				TriggerAfterConfig.CODEC.optionalFieldOf("trigger", TriggerAfterConfig.EMPTY).forGetter(c -> c.trigger),
-				Codec.LONG.optionalFieldOf("camp_time_threshold", 20L * 8).forGetter(c -> c.campTimeThreshold),
-				Codec.DOUBLE.optionalFieldOf("camp_movement_threshold", 8.0).forGetter(c -> c.campMovementThreshold)
-		).apply(instance, CampingTrackerBehavior::new);
-	});
+	public static final Codec<CampingTrackerBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+			TriggerAfterConfig.CODEC.optionalFieldOf("trigger", TriggerAfterConfig.EMPTY).forGetter(c -> c.trigger),
+			Codec.LONG.optionalFieldOf("camp_time_threshold", 20L * 8).forGetter(c -> c.campTimeThreshold),
+			Codec.DOUBLE.optionalFieldOf("camp_movement_threshold", 8.0).forGetter(c -> c.campMovementThreshold)
+	).apply(i, CampingTrackerBehavior::new));
 
 	private static final long CAMP_TEST_INTERVAL = 20;
 

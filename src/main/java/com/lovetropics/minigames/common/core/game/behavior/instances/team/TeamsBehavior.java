@@ -36,12 +36,10 @@ import java.util.UUID;
 public final class TeamsBehavior implements IGameBehavior {
 	private static final BehaviorConfig<Boolean> CFG_FRIENDLY_FIRE = BehaviorConfig.fieldOf("friendly_fire", Codec.BOOL);
 
-	public static final Codec<TeamsBehavior> CODEC = RecordCodecBuilder.create(instance -> {
-		return instance.group(
-				CFG_FRIENDLY_FIRE.orElse(false).forGetter(c -> c.friendlyFire),
-				Codec.BOOL.optionalFieldOf("static_team_ids", false).forGetter(c -> c.staticTeamIds)
-		).apply(instance, TeamsBehavior::new);
-	});
+	public static final Codec<TeamsBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+			CFG_FRIENDLY_FIRE.orElse(false).forGetter(c -> c.friendlyFire),
+			Codec.BOOL.optionalFieldOf("static_team_ids", false).forGetter(c -> c.staticTeamIds)
+	).apply(i, TeamsBehavior::new));
 
 	private final Map<GameTeamKey, PlayerTeam> scoreboardTeams = new Object2ObjectOpenHashMap<>();
 

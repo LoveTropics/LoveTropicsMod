@@ -11,18 +11,10 @@ import net.minecraft.world.item.ItemStack;
 
 import java.util.List;
 
-public final class BbGivePlantsBehavior implements IGameBehavior {
-	public static final Codec<BbGivePlantsBehavior> CODEC = RecordCodecBuilder.create(instance -> {
-		return instance.group(
-				PlantConfig.CODEC.listOf().fieldOf("plants").forGetter(c -> c.plants)
-		).apply(instance, BbGivePlantsBehavior::new);
-	});
-
-	private final List<PlantConfig> plants;
-
-	public BbGivePlantsBehavior(List<PlantConfig> plants) {
-		this.plants = plants;
-	}
+public record BbGivePlantsBehavior(List<PlantConfig> plants) implements IGameBehavior {
+	public static final Codec<BbGivePlantsBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+			PlantConfig.CODEC.listOf().fieldOf("plants").forGetter(c -> c.plants)
+	).apply(i, BbGivePlantsBehavior::new));
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
@@ -36,21 +28,11 @@ public final class BbGivePlantsBehavior implements IGameBehavior {
 		});
 	}
 
-	static final class PlantConfig {
-		public static final Codec<PlantConfig> CODEC = RecordCodecBuilder.create(instance -> {
-			return instance.group(
-					PlantItemType.CODEC.fieldOf("item").forGetter(c -> c.item),
-					Codec.INT.optionalFieldOf("count", 1).forGetter(c -> c.count)
-			).apply(instance, PlantConfig::new);
-		});
-
-		final PlantItemType item;
-		final int count;
-
-		PlantConfig(PlantItemType item, int count) {
-			this.item = item;
-			this.count = count;
-		}
+	record PlantConfig(PlantItemType item, int count) {
+		public static final Codec<PlantConfig> CODEC = RecordCodecBuilder.create(i -> i.group(
+				PlantItemType.CODEC.fieldOf("item").forGetter(c -> c.item),
+				Codec.INT.optionalFieldOf("count", 1).forGetter(c -> c.count)
+		).apply(i, PlantConfig::new));
 
 		ItemStack create(IGamePhase game) {
 			ItemStack stack = game.invoker(BbEvents.CREATE_PLANT_ITEM).createPlantItem(item);

@@ -16,11 +16,9 @@ import net.minecraft.server.level.ServerChunkCache;
 import java.util.Collection;
 
 public final class ForceLoadRegionBehavior implements IGameBehavior {
-	public static final Codec<ForceLoadRegionBehavior> CODEC = RecordCodecBuilder.create(instance -> {
-		return instance.group(
-				Codec.STRING.fieldOf("region").forGetter(c -> c.regionKey)
-		).apply(instance, ForceLoadRegionBehavior::new);
-	});
+	public static final Codec<ForceLoadRegionBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+			Codec.STRING.fieldOf("region").forGetter(c -> c.regionKey)
+	).apply(i, ForceLoadRegionBehavior::new));
 
 	private final String regionKey;
 	private LongSet acquiredChunks;

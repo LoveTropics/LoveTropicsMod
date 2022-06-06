@@ -13,24 +13,12 @@ import net.minecraft.world.level.GameType;
 
 import javax.annotation.Nullable;
 
-public class SetGameTypesBehavior implements IGameBehavior {
-	public static final Codec<SetGameTypesBehavior> CODEC = RecordCodecBuilder.create(instance -> {
-		return instance.group(
-				MoreCodecs.GAME_TYPE.optionalFieldOf("participant", GameType.SURVIVAL).forGetter(c -> c.participantGameType),
-				MoreCodecs.GAME_TYPE.optionalFieldOf("spectator", GameType.SPECTATOR).forGetter(c -> c.spectatorGameType),
-				MoreCodecs.GAME_TYPE.optionalFieldOf("all", GameType.ADVENTURE).forGetter(c -> c.allGameType)
-		).apply(instance, SetGameTypesBehavior::new);
-	});
-
-	private final GameType participantGameType;
-	private final GameType spectatorGameType;
-	private final GameType allGameType;
-
-	public SetGameTypesBehavior(GameType participantGameType, GameType spectatorGameType, GameType allGameType) {
-		this.participantGameType = participantGameType;
-		this.spectatorGameType = spectatorGameType;
-		this.allGameType = allGameType;
-	}
+public record SetGameTypesBehavior(GameType participantGameType, GameType spectatorGameType, GameType allGameType) implements IGameBehavior {
+	public static final Codec<SetGameTypesBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+			MoreCodecs.GAME_TYPE.optionalFieldOf("participant", GameType.SURVIVAL).forGetter(c -> c.participantGameType),
+			MoreCodecs.GAME_TYPE.optionalFieldOf("spectator", GameType.SPECTATOR).forGetter(c -> c.spectatorGameType),
+			MoreCodecs.GAME_TYPE.optionalFieldOf("all", GameType.ADVENTURE).forGetter(c -> c.allGameType)
+	).apply(i, SetGameTypesBehavior::new));
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {

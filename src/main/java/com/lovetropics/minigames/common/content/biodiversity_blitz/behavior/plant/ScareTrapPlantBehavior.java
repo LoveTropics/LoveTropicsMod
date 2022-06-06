@@ -39,10 +39,10 @@ import java.util.List;
 import java.util.function.Predicate;
 
 public final class ScareTrapPlantBehavior implements IGameBehavior {
-	public static final Codec<ScareTrapPlantBehavior> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+	public static final Codec<ScareTrapPlantBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
 			Codec.DOUBLE.fieldOf("trigger_radius").forGetter(c -> c.triggerRadius),
 			Codec.DOUBLE.fieldOf("scare_radius").forGetter(c -> c.scareRadius)
-	).apply(instance, ScareTrapPlantBehavior::new));
+	).apply(i, ScareTrapPlantBehavior::new));
 
 	private static final Predicate<Mob> SCARE_PREDICATE = BbMobEntity.PREDICATE;
 

@@ -12,12 +12,10 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.server.level.ServerPlayer;
 
 public final class ApplyDisguisePackageBehavior implements IGameBehavior {
-	public static final Codec<ApplyDisguisePackageBehavior> CODEC = RecordCodecBuilder.create(instance -> {
-		return instance.group(
-				DisguiseType.CODEC.fieldOf("disguise").forGetter(c -> c.disguise),
-				Codec.INT.fieldOf("seconds").forGetter(c -> c.durationTicks / 20)
-		).apply(instance, ApplyDisguisePackageBehavior::new);
-	});
+	public static final Codec<ApplyDisguisePackageBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+			DisguiseType.CODEC.fieldOf("disguise").forGetter(c -> c.disguise),
+			Codec.INT.fieldOf("seconds").forGetter(c -> c.durationTicks / 20)
+	).apply(i, ApplyDisguisePackageBehavior::new));
 
 	private final DisguiseType disguise;
 	private final int durationTicks;

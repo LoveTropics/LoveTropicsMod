@@ -41,11 +41,9 @@ public final class SetupTeamsBehavior implements IGameBehavior {
 			.enumHint("[].dye", s -> DyeColor.byName(s, null))
 			.enumHint("[].text", ChatFormatting::getByName);
 
-	public static final Codec<SetupTeamsBehavior> CODEC = RecordCodecBuilder.create(instance -> {
-		return instance.group(
-				CFG_TEAMS.forGetter(c -> c.teams)
-		).apply(instance, SetupTeamsBehavior::new);
-	});
+	public static final Codec<SetupTeamsBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+			CFG_TEAMS.forGetter(c -> c.teams)
+	).apply(i, SetupTeamsBehavior::new));
 
 	private final List<GameTeam> teams;
 

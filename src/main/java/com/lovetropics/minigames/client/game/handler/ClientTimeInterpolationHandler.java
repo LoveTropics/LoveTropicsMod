@@ -26,7 +26,7 @@ public final class ClientTimeInterpolationHandler {
 	private static void handleTick(ClientLevel world) {
 		TimeInterpolationClientState time = ClientGameStateManager.getOrNull(GameClientStateTypes.TIME_INTERPOLATION);
 		if (time != null) {
-			int speed = time.getSpeed();
+			int speed = time.speed();
 			world.setDayTime(world.getDayTime() + speed - 1);
 		}
 	}

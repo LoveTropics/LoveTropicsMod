@@ -16,13 +16,11 @@ import java.util.UUID;
 
 public class RevealPlayersBehavior implements IGameBehavior
 {
-	public static final Codec<RevealPlayersBehavior> CODEC = RecordCodecBuilder.create(instance -> {
-		return instance.group(
-				Codec.INT.optionalFieldOf("players_left_required", 2).forGetter(c -> c.playersLeftRequired),
-				Codec.INT.optionalFieldOf("glow_on_time", 20).forGetter(c -> c.glowOnTime),
-				Codec.INT.optionalFieldOf("glow_off_time", 80).forGetter(c -> c.glowOffTime)
-		).apply(instance, RevealPlayersBehavior::new);
-	});
+	public static final Codec<RevealPlayersBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+			Codec.INT.optionalFieldOf("players_left_required", 2).forGetter(c -> c.playersLeftRequired),
+			Codec.INT.optionalFieldOf("glow_on_time", 20).forGetter(c -> c.glowOnTime),
+			Codec.INT.optionalFieldOf("glow_off_time", 80).forGetter(c -> c.glowOffTime)
+	).apply(i, RevealPlayersBehavior::new));
 
 	private final int playersLeftRequired;
 	private final int glowOnTime;

@@ -33,17 +33,15 @@ import java.util.List;
 import java.util.Random;
 
 public final class BlockPartyBehavior implements IGameBehavior {
-	public static final Codec<BlockPartyBehavior> CODEC = RecordCodecBuilder.create(instance -> {
-		return instance.group(
-				Codec.STRING.fieldOf("floor").forGetter(c -> c.floorRegionKey),
-				MoreCodecs.arrayOrUnit(ForgeRegistries.BLOCKS.getCodec(), Block[]::new).fieldOf("blocks").forGetter(c -> c.blocks),
-				Codec.INT.optionalFieldOf("quad_size", 3).forGetter(c -> c.quadSize),
-				Codec.LONG.optionalFieldOf("max_time", 20L * 5).forGetter(c -> c.maxTime),
-				Codec.LONG.optionalFieldOf("min_time", 20L * 2).forGetter(c -> c.minTime),
-				Codec.INT.optionalFieldOf("time_decay_rounds", 5).forGetter(c -> c.timeDecayRounds),
-				Codec.LONG.optionalFieldOf("interval", 20L * 3).forGetter(c -> c.interval)
-		).apply(instance, BlockPartyBehavior::new);
-	});
+	public static final Codec<BlockPartyBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+			Codec.STRING.fieldOf("floor").forGetter(c -> c.floorRegionKey),
+			MoreCodecs.arrayOrUnit(ForgeRegistries.BLOCKS.getCodec(), Block[]::new).fieldOf("blocks").forGetter(c -> c.blocks),
+			Codec.INT.optionalFieldOf("quad_size", 3).forGetter(c -> c.quadSize),
+			Codec.LONG.optionalFieldOf("max_time", 20L * 5).forGetter(c -> c.maxTime),
+			Codec.LONG.optionalFieldOf("min_time", 20L * 2).forGetter(c -> c.minTime),
+			Codec.INT.optionalFieldOf("time_decay_rounds", 5).forGetter(c -> c.timeDecayRounds),
+			Codec.LONG.optionalFieldOf("interval", 20L * 3).forGetter(c -> c.interval)
+	).apply(i, BlockPartyBehavior::new));
 
 	private final String floorRegionKey;
 	private final Block[] blocks;

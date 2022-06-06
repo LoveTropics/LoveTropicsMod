@@ -23,10 +23,10 @@ import java.util.List;
 import java.util.Random;
 
 public final class PianguasPlantBehavior implements IGameBehavior {
-    public static final Codec<PianguasPlantBehavior> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+    public static final Codec<PianguasPlantBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
             Codec.INT.fieldOf("radius").forGetter(b -> b.radius),
             MoreCodecs.BLOCK_STATE.fieldOf("block").forGetter(c -> c.state)
-    ).apply(instance, PianguasPlantBehavior::new));
+    ).apply(i, PianguasPlantBehavior::new));
     private static final TagKey<Block> MUD = TagKey.create(Registry.BLOCK_REGISTRY, new ResourceLocation("tropicraft", "mud"));
     private final int radius;
     private final BlockState state;
