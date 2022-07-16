@@ -114,6 +114,8 @@ public final class BbMerchantBehavior implements IGameBehavior {
 				merchant.setCustomNameVisible(true);
 			}
 
+			merchant.setSilent(true);
+
 			return merchant;
 		}
 
