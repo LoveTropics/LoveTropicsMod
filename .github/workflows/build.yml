@@ -1,31 +1,36 @@
-name: Love Tropics Build
+name: Java CI with Gradle
+
 on: [push]
 jobs:
+
   jdk17:
-    name: OpenJDK 17
     runs-on: ubuntu-latest
+
     steps:
-    - name: Pull repository
-      uses: actions/checkout@v1
-    - name: Setup build environment
-      id: init
-      run: |
-        echo "##[set-output name=sha8;]$(echo ${GITHUB_SHA:0:8})"
-        echo "##[set-output name=pwd;]$(pwd)"
-        sed -i "/mod_version/s/\$/+${GITHUB_SHA:0:8}/" gradle.properties
-        cat gradle.properties
-    - name: Set up JDK 17
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Setup JDK 17
       uses: actions/setup-java@v2
       with:
         java-version: '17'
         distribution: 'temurin'
+
     - name: Build with Gradle
-      run: ./gradlew build
-    - name: Prepare jarfile
-      run: |
-        mv ./build/libs/*/*.jar ./LoveTropics-${GITHUB_SHA:0:8}.jar
-    - name: Upload jarfile
+      uses: gradle/gradle-build-action@v2
+      with:
+        arguments: build
+
+    - name: Locate built JARfile
+      id: jar
+      run: echo "##[set-output name=jarfile;]$(find build/libs/ -name "*.jar" -not -name "*slim*" -not -name "*source*")"
+
+    - name: Set Artifact name
+      id: jarname
+      run: echo "##[set-output name=jarname;]$(find build/libs/ -name "*.jar" -not -name "*slim*" -not -name "*source*" | sed 's:.*/::')"
+
+    - name: Upload artifact
       uses: actions/upload-artifact@v2.2.3
       with:
-        name: LoveTropics-${{ steps.init.outputs.sha8 }}
-        path: ${{ steps.init.outputs.pwd }}/LoveTropics-${{ steps.init.outputs.sha8 }}.jar
+          name: ${{ steps.jarname.outputs.jarname }}
+          path: ${{ steps.jar.outputs.jarfile }}
