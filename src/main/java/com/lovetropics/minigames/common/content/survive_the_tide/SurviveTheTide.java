@@ -28,6 +28,7 @@ public final class SurviveTheTide {
 			.register();
 
 	public static final ItemEntry<PaddleItem> PADDLE = REGISTRATE.item("paddle", PaddleItem::new)
+			.model((ctx, prov) -> {})
 			.register();
 
 	public static final RegistryEntry<EntityType<DriftwoodEntity>> DRIFTWOOD = REGISTRATE.entity("driftwood", DriftwoodEntity::new, MobCategory.MISC)
