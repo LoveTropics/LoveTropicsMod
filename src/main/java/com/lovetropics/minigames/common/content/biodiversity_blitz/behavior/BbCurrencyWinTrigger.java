@@ -55,6 +55,13 @@ public final class BbCurrencyWinTrigger implements IGameBehavior {
 			if (!players.isEmpty()) {
 				ServerPlayer player = this.selectWinningPlayer(plots, currency, players);
 				if (player != null) {
+					// Teleport all players to winning player's plot
+					for (ServerPlayer otherPlayer : game.getAllPlayers()) {
+						if (otherPlayer != player) {
+							otherPlayer.teleportTo(player.getX(), player.getY() + 0.5, player.getZ());
+						}
+					}
+
 					this.triggerWin(game, player);
 				}
 			}
