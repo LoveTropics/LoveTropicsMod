@@ -95,5 +95,6 @@
   "ltminigames.ui.managing_game": "Managing Game: %s",
   "ltminigames.ui.participating": "Participating",
   "ltminigames.ui.publish": "Publish",
+  "ltminigames.ui.select_player_role": "Select Player Role",
   "ltminigames.ui.spectating": "Spectating"
 }
