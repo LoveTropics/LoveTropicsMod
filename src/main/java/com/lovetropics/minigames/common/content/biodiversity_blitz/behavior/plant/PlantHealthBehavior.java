@@ -45,6 +45,7 @@ public record PlantHealthBehavior(int health, boolean notPathfindable) implement
 				if (health == null) {
 					continue;
 				}
+				// TODO: show block breaking effect as a function of health
 
 				if (health.isDead()) {
 					for (BlockPos pos : plant.coverage()) {

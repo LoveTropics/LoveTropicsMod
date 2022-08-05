@@ -9,9 +9,14 @@ import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.LevelEvent;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.List;
 
@@ -40,6 +45,10 @@ public record BarrierPlantBehavior(double radius) implements IGameBehavior {
 				List<Mob> entities = world.getEntitiesOfClass(Mob.class, damageBounds, BbMobEntity.PREDICATE);
 				if (!entities.isEmpty()) {
 					health.decrement(entities.size());
+
+					BlockPos pos = new BlockPos(plant.coverage().asBounds().getCenter());
+					BlockState state = world.getBlockState(pos);
+					world.levelEvent(null, LevelEvent.PARTICLES_DESTROY_BLOCK, pos, Block.getId(state));
 				}
 			}
 		});
