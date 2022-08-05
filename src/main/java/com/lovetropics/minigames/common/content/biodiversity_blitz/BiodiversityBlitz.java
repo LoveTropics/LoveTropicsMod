@@ -114,6 +114,10 @@ public final class BiodiversityBlitz {
 			.behavior(WateryPlantBehavior.CODEC)
 			.register();
 
+	public static final GameBehaviorEntry<LightningPlantBehavior> LIGHTNING_PLANT = REGISTRATE.object("lightning_plant")
+			.behavior(LightningPlantBehavior.CODEC)
+			.register();
+
 	public static final GameBehaviorEntry<IdleDropItemPlantBehavior> IDLE_DROP_ITEM = REGISTRATE.object("idle_drop_item")
 			.behavior(IdleDropItemPlantBehavior.CODEC)
 			.register();

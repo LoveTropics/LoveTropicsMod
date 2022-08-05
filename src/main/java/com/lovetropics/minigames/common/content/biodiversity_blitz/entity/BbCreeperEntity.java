@@ -55,9 +55,10 @@ public class BbCreeperEntity extends Creeper implements BbMobEntity {
             explosion.explode();
             explosion.finalizeExplosion(false);
 
+            float factor = this.isPowered() ? 2.0F : 1.0F;
             for (ServerPlayer player : ((ServerLevel) this.level).players()) {
                 if (player.distanceToSqr(x, y, z) < 4096.0) {
-                    player.connection.send(new ClientboundExplodePacket(x, y, z, 3.0f, explosion.getToBlow(), explosion.getHitPlayers().get(player)));
+                    player.connection.send(new ClientboundExplodePacket(x, y, z, 3.0f * factor, explosion.getToBlow(), explosion.getHitPlayers().get(player)));
                 }
             }
 

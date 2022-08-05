@@ -12,7 +12,7 @@ import net.minecraft.server.level.ServerLevel;
 import java.util.Random;
 
 public class DestroyCropGoal extends MoveToBlockGoal {
-    private static final int DAMAGE_INTERVAL = 35;
+    private static final int DAMAGE_INTERVAL = 25;
 
     private final BbMobEntity mob;
     private int ticksAtTarget = DAMAGE_INTERVAL;
@@ -38,6 +38,8 @@ public class DestroyCropGoal extends MoveToBlockGoal {
                 this.ticksAtTarget = DAMAGE_INTERVAL;
                 this.tryDamagePlant(mob);
             }
+        } else {
+            this.ticksAtTarget = DAMAGE_INTERVAL;
         }
     }
 
