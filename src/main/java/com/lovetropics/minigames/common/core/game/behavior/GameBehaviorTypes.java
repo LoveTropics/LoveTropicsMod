@@ -104,6 +104,7 @@ public class GameBehaviorTypes {
 	public static final GameBehaviorEntry<WeatherEventAction> WEATHER_EVENT;
 	public static final GameBehaviorEntry<CountdownAction> COUNTDOWN_ACTION;
 	public static final GameBehaviorEntry<SpawnFireworksAction> SPAWN_FIREWORKS;
+	public static final GameBehaviorEntry<RunCommandsAction> RUN_COMMANDS;
 
 	public static final GameBehaviorEntry<SetupTelemetryBehavior> SETUP_TELEMETRY;
 	public static final GameBehaviorEntry<AssignPlayerRolesBehavior> ASSIGN_PLAYER_ROLES;
@@ -185,6 +186,7 @@ public class GameBehaviorTypes {
 		WEATHER_EVENT = register("weather_event", WeatherEventAction.CODEC);
 		COUNTDOWN_ACTION = register("countdown_action", CountdownAction.CODEC);
 		SPAWN_FIREWORKS = register("spawn_fireworks", SpawnFireworksAction.CODEC);
+		RUN_COMMANDS = register("run_commands", RunCommandsAction.CODEC);
 
 		SETUP_TELEMETRY = register("setup_telemetry", SetupTelemetryBehavior.CODEC);
 		ASSIGN_PLAYER_ROLES = register("assign_player_roles", AssignPlayerRolesBehavior.CODEC);
