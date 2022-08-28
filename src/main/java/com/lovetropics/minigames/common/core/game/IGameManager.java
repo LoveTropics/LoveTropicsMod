@@ -8,6 +8,7 @@ import net.minecraft.server.level.ServerPlayer;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
+import java.util.UUID;
 import java.util.stream.Stream;
 
 /**
@@ -37,7 +38,7 @@ public interface IGameManager extends IGameLookup {
 	IGameLobby getLobbyByNetworkId(int id);
 
 	@Nullable
-	IGameLobby getLobbyByCommandId(String id);
+	IGameLobby getLobbyById(UUID id);
 
 	ControlCommandInvoker getControlInvoker(CommandSourceStack source);
 }

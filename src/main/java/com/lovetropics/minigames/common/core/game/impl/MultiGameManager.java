@@ -46,8 +46,6 @@ import java.util.function.Predicate;
 public class MultiGameManager implements IGameManager {
 	public static final MultiGameManager INSTANCE = new MultiGameManager();
 
-	private final LobbyCommandIdManager commandIds = new LobbyCommandIdManager();
-
 	private final List<GameLobby> lobbies = new ArrayList<>();
 
 	private final Map<UUID, GameLobby> lobbiesByPlayer = new Object2ObjectOpenHashMap<>();
@@ -63,8 +61,7 @@ public class MultiGameManager implements IGameManager {
 		}
 
 		GameLobbyId id = GameLobbyId.next();
-		String commandId = commandIds.acquire(name);
-		GameLobbyMetadata metadata = new GameLobbyMetadata(id, PlayerKey.from(initiator), name, commandId);
+		GameLobbyMetadata metadata = new GameLobbyMetadata(id, PlayerKey.from(initiator), name);
 
 		GameLobby lobby = new GameLobby(this, initiator.server, metadata);
 		lobbies.add(lobby);
@@ -146,9 +143,9 @@ public class MultiGameManager implements IGameManager {
 
 	@Nullable
 	@Override
-	public GameLobby getLobbyByCommandId(String id) {
+	public GameLobby getLobbyById(UUID id) {
 		for (GameLobby lobby : lobbies) {
-			if (lobby.getMetadata().commandId().equals(id)) {
+			if (lobby.getMetadata().id().uuid().equals(id)) {
 				return lobby;
 			}
 		}
@@ -184,20 +181,11 @@ public class MultiGameManager implements IGameManager {
 	}
 
 	void removeLobby(GameLobby lobby) {
-		if (lobbies.remove(lobby)) {
-			commandIds.release(lobby.getMetadata().commandId());
-		}
+		lobbies.remove(lobby);
 
 		if (focusedLiveLobby == lobby) {
 			setFocusedLiveLobby(null);
 		}
-	}
-
-	GameLobbyMetadata renameLobby(GameLobbyMetadata metadata, String name) {
-		commandIds.release(metadata.commandId());
-
-		String commandId = commandIds.acquire(name);
-		return metadata.withName(name, commandId);
 	}
 
 	GameLobbyMetadata setVisibility(GameLobby lobby, LobbyVisibility visibility) {

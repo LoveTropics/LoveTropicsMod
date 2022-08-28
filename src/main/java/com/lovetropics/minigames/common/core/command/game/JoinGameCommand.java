@@ -15,6 +15,7 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Unit;
@@ -36,7 +37,7 @@ public class JoinGameCommand {
 				.then(joinBuilder("register"))
 				.then(joinBuilder("join"))
 				.then(joinBuilder("play"))
-				.then(literal("force").requires(source -> source.hasPermission(4))
+				.then(literal("force").requires(source -> source.hasPermission(Commands.LEVEL_OWNERS))
 					.then(argument("player", EntityArgument.players())
 					.executes(JoinGameCommand::forcePlayerJoin)
 				))
@@ -53,7 +54,7 @@ public class JoinGameCommand {
 						IGameLobby lobby = GameLobbyArgument.get(ctx, "lobby");
 						return joinAsRole(ctx, lobby, null);
 					})
-					.then(literal("as").requires(source -> source.hasPermission(2))
+					.then(literal("as").requires(source -> source.hasPermission(Commands.LEVEL_GAMEMASTERS))
 						.then(PlayerRoleArgument.argument("role")
 						.executes(ctx -> {
 							IGameLobby lobby = GameLobbyArgument.get(ctx, "lobby");

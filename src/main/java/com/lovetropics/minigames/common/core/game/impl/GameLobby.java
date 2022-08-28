@@ -111,7 +111,7 @@ final class GameLobby implements IGameLobby {
 	}
 
 	void setName(String name) {
-		metadata = manager.renameLobby(metadata, name);
+		metadata = metadata.withName(name);
 		stateListener.onLobbyNameChange(this);
 	}
 
