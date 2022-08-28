@@ -1,10 +1,10 @@
-package com.lovetropics.minigames.common.core.game.behavior.instances.donation;
+package com.lovetropics.minigames.common.core.game.behavior.instances.action;
 
 import com.google.common.collect.Lists;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
-import com.lovetropics.minigames.common.core.game.behavior.event.GamePackageEvents;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameActionEvents;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.world.entity.Entity;
@@ -15,16 +15,16 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public record SwapPlayersPackageBehavior(double distanceThreshold) implements IGameBehavior {
-	public static final Codec<SwapPlayersPackageBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+public record SwapPlayersAction(double distanceThreshold) implements IGameBehavior {
+	public static final Codec<SwapPlayersAction> CODEC = RecordCodecBuilder.create(i -> i.group(
 			Codec.DOUBLE.optionalFieldOf("distance_threshold", Double.MAX_VALUE).forGetter(c -> c.distanceThreshold)
-	).apply(i, SwapPlayersPackageBehavior::new));
+	).apply(i, SwapPlayersAction::new));
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
-		events.listen(GamePackageEvents.APPLY_PACKAGE_GLOBALLY, sendingPlayer -> {
+		events.listen(GameActionEvents.APPLY, (context, targets) -> {
 			if (this.distanceThreshold == Double.MAX_VALUE) {
-				this.shufflePlayers(game);
+				this.shufflePlayers(game, targets);
 			} else {
 				this.swapNearbyPlayers(game);
 			}
@@ -32,8 +32,8 @@ public record SwapPlayersPackageBehavior(double distanceThreshold) implements IG
 		});
 	}
 
-	private void shufflePlayers(IGamePhase game) {
-		List<ServerPlayer> players = Lists.newArrayList(game.getParticipants());
+	private void shufflePlayers(IGamePhase game, Iterable<ServerPlayer> targets) {
+		List<ServerPlayer> players = Lists.newArrayList(targets);
 		Collections.shuffle(players);
 
 		List<Vec3> playerPositions = players.stream()

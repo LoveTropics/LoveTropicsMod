@@ -1,9 +1,9 @@
-package com.lovetropics.minigames.common.core.game.behavior.instances.donation;
+package com.lovetropics.minigames.common.core.game.behavior.instances.action;
 
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
-import com.lovetropics.minigames.common.core.game.behavior.event.GamePackageEvents;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameActionEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.lovetropics.minigames.common.util.Util;
 import com.mojang.serialization.Codec;
@@ -18,16 +18,16 @@ import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.Iterator;
 
-public class SpawnEntitiesAroundPlayersPackageBehavior implements IGameBehavior
+public class SpawnEntitiesAroundPlayersAction implements IGameBehavior
 {
-	public static final Codec<SpawnEntitiesAroundPlayersPackageBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+	public static final Codec<SpawnEntitiesAroundPlayersAction> CODEC = RecordCodecBuilder.create(i -> i.group(
 			ForgeRegistries.ENTITIES.getCodec().fieldOf("entity_id").forGetter(c -> c.entityId),
 			Codec.INT.optionalFieldOf("entity_count_per_player", 1).forGetter(c -> c.entityCountPerPlayer),
 			Codec.INT.optionalFieldOf("spawn_distance_min", 10).forGetter(c -> c.spawnDistanceMin),
 			Codec.INT.optionalFieldOf("spawn_distance_max", 20).forGetter(c -> c.spawnDistanceMax),
 			Codec.INT.optionalFieldOf("spawn_range_y", 10).forGetter(c -> c.spawnRangeY),
 			Codec.INT.optionalFieldOf("spawn_try_rate", 10).forGetter(c -> c.spawnsPerTick)
-	).apply(i, SpawnEntitiesAroundPlayersPackageBehavior::new));
+	).apply(i, SpawnEntitiesAroundPlayersAction::new));
 
 	private final EntityType<?> entityId;
 	private final int entityCountPerPlayer;
@@ -37,7 +37,7 @@ public class SpawnEntitiesAroundPlayersPackageBehavior implements IGameBehavior
 	private final int spawnsPerTick;
 	private final Object2IntMap<ServerPlayer> playerToAmountToSpawn = new Object2IntOpenHashMap<>();
 
-	public SpawnEntitiesAroundPlayersPackageBehavior(final EntityType<?> entityId, final int entityCount, final int spawnDistanceMin, final int spawnDistanceMax, final int spawnRangeY, final int spawnsPerTick) {
+	public SpawnEntitiesAroundPlayersAction(final EntityType<?> entityId, final int entityCount, final int spawnDistanceMin, final int spawnDistanceMax, final int spawnRangeY, final int spawnsPerTick) {
 		this.entityId = entityId;
 		this.entityCountPerPlayer = entityCount;
 		this.spawnDistanceMin = spawnDistanceMin;
@@ -48,7 +48,7 @@ public class SpawnEntitiesAroundPlayersPackageBehavior implements IGameBehavior
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
-		events.listen(GamePackageEvents.APPLY_PACKAGE_TO_PLAYER, (player, sendingPlayer) -> {
+		events.listen(GameActionEvents.APPLY_TO_PLAYER, (context, player) -> {
 			playerToAmountToSpawn.put(player, entityCountPerPlayer);
 			return true;
 		});

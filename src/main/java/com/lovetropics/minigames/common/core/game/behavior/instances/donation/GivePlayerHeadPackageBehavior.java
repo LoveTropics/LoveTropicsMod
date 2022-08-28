@@ -2,8 +2,9 @@ package com.lovetropics.minigames.common.core.game.behavior.instances.donation;
 
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
+import com.lovetropics.minigames.common.core.game.behavior.action.GameActionParameter;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
-import com.lovetropics.minigames.common.core.game.behavior.event.GamePackageEvents;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameActionEvents;
 import com.lovetropics.minigames.common.util.Util;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -19,10 +20,8 @@ public record GivePlayerHeadPackageBehavior(boolean forced) implements IGameBeha
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
-		events.listen(GamePackageEvents.APPLY_PACKAGE_TO_PLAYER, (player, sendingPlayer) -> {
-			if (sendingPlayer == null) {
-				sendingPlayer = "LoveTropics";
-			}
+		events.listen(GameActionEvents.APPLY_TO_PLAYER, (context, player) -> {
+			String sendingPlayer = context.get(GameActionParameter.PACKAGE_SENDER).orElse("LoveTropics");
 
 			ItemStack head = createHeadForSender(sendingPlayer);
 			if (forced) {

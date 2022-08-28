@@ -1,9 +1,9 @@
-package com.lovetropics.minigames.common.core.game.behavior.instances.donation;
+package com.lovetropics.minigames.common.core.game.behavior.instances.action;
 
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
-import com.lovetropics.minigames.common.core.game.behavior.event.GamePackageEvents;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameActionEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -23,8 +23,8 @@ import net.minecraftforge.event.ForgeEventFactory;
 import java.util.Iterator;
 import java.util.Random;
 
-public class ShootProjectilesAroundPlayerPackageBehavior implements IGameBehavior {
-	public static final Codec<ShootProjectilesAroundPlayerPackageBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+public class ShootProjectilesAroundPlayerAction implements IGameBehavior {
+	public static final Codec<ShootProjectilesAroundPlayerAction> CODEC = RecordCodecBuilder.create(i -> i.group(
 			Codec.INT.optionalFieldOf("entity_count_per_player", 10).forGetter(c -> c.entityCountPerPlayer),
 			Codec.INT.optionalFieldOf("spawn_distance_max", 40).forGetter(c -> c.spawnDistanceMax),
 			Codec.INT.optionalFieldOf("target_randomness", 10).forGetter(c -> c.targetRandomness),
@@ -32,7 +32,7 @@ public class ShootProjectilesAroundPlayerPackageBehavior implements IGameBehavio
 			Codec.INT.optionalFieldOf("spawn_rate_base", 20).forGetter(c -> c.spawnRateBase),
 			Codec.INT.optionalFieldOf("spawn_rate_random", 20).forGetter(c -> c.spawnRateRandom),
 			Codec.INT.optionalFieldOf("explosion_strength", 2).forGetter(c -> c.explosionStrength)
-	).apply(i, ShootProjectilesAroundPlayerPackageBehavior::new));
+	).apply(i, ShootProjectilesAroundPlayerAction::new));
 
 	//private final ResourceLocation entityId;
 	private final int entityCountPerPlayer;
@@ -45,7 +45,7 @@ public class ShootProjectilesAroundPlayerPackageBehavior implements IGameBehavio
 	private final Object2IntMap<ServerPlayer> playerToAmountToSpawn = new Object2IntOpenHashMap<>();
 	private final Object2IntMap<ServerPlayer> playerToDelayToSpawn = new Object2IntOpenHashMap<>();
 
-	public ShootProjectilesAroundPlayerPackageBehavior(/*final ResourceLocation entityId, */final int entityCount, final int spawnDistanceMax, final int spawnRangeY, final int spawnsPerTickBase, final int spawnsPerTickRandom, final int targetRandomness, final int explosionStrength) {
+	public ShootProjectilesAroundPlayerAction(/*final ResourceLocation entityId, */final int entityCount, final int spawnDistanceMax, final int spawnRangeY, final int spawnsPerTickBase, final int spawnsPerTickRandom, final int targetRandomness, final int explosionStrength) {
 		//this.entityId = entityId;
 		this.entityCountPerPlayer = entityCount;
 		this.spawnDistanceMax = spawnDistanceMax;
@@ -58,7 +58,7 @@ public class ShootProjectilesAroundPlayerPackageBehavior implements IGameBehavio
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
-		events.listen(GamePackageEvents.APPLY_PACKAGE_TO_PLAYER, (player, sendingPlayer) -> {
+		events.listen(GameActionEvents.APPLY_TO_PLAYER, (context, player) -> {
 			playerToAmountToSpawn.put(player, entityCountPerPlayer);
 			return true;
 		});

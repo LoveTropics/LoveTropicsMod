@@ -1,4 +1,4 @@
-package com.lovetropics.minigames.common.core.game.behavior.instances.donation;
+package com.lovetropics.minigames.common.core.game.behavior.instances.action;
 
 import com.google.common.collect.Lists;
 import com.lovetropics.lib.BlockBox;
@@ -6,7 +6,7 @@ import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
-import com.lovetropics.minigames.common.core.game.behavior.event.GamePackageEvents;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameActionEvents;
 import com.lovetropics.minigames.common.core.map.MapRegions;
 import com.lovetropics.minigames.common.util.Util;
 import com.mojang.serialization.Codec;
@@ -19,12 +19,12 @@ import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.List;
 
-public class SpawnEntityAtRegionsPackageBehavior implements IGameBehavior {
-	public static final Codec<SpawnEntityAtRegionsPackageBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+public class SpawnEntityAtRegionsAction implements IGameBehavior {
+	public static final Codec<SpawnEntityAtRegionsAction> CODEC = RecordCodecBuilder.create(i -> i.group(
 			Codec.STRING.listOf().fieldOf("regions_to_spawn_at").forGetter(c -> c.regionsToSpawnAtKeys),
 			ForgeRegistries.ENTITIES.getCodec().fieldOf("entity_id").forGetter(c -> c.entityId),
 			Codec.INT.optionalFieldOf("entity_count_per_region", 1).forGetter(c -> c.entityCountPerRegion)
-	).apply(i, SpawnEntityAtRegionsPackageBehavior::new));
+	).apply(i, SpawnEntityAtRegionsAction::new));
 
 	private final List<String> regionsToSpawnAtKeys;
 	private final EntityType<?> entityId;
@@ -32,7 +32,7 @@ public class SpawnEntityAtRegionsPackageBehavior implements IGameBehavior {
 
 	private final List<BlockBox> regionsToSpawnAt = Lists.newArrayList();
 
-	public SpawnEntityAtRegionsPackageBehavior(final List<String> regionsToSpawnAtKeys, final EntityType<?> entityId, final int entityCountPerRegion) {
+	public SpawnEntityAtRegionsAction(final List<String> regionsToSpawnAtKeys, final EntityType<?> entityId, final int entityCountPerRegion) {
 		this.regionsToSpawnAtKeys = regionsToSpawnAtKeys;
 		this.entityId = entityId;
 		this.entityCountPerRegion = entityCountPerRegion;
@@ -47,7 +47,7 @@ public class SpawnEntityAtRegionsPackageBehavior implements IGameBehavior {
 			regionsToSpawnAt.addAll(regions.get(key));
 		}
 
-		events.listen(GamePackageEvents.APPLY_PACKAGE_GLOBALLY, sendingPlayer -> {
+		events.listen(GameActionEvents.APPLY, (context, targets) -> {
 			if (regionsToSpawnAt.isEmpty()) {
 				return false;
 			}
