@@ -63,6 +63,7 @@ public final class PlayerSnapshot {
 	}
 
 	public static void clearPlayer(ServerPlayer player) {
+		player.stopRiding();
 		player.getInventory().clearContent();
 		player.setHealth(player.getMaxHealth());
 
