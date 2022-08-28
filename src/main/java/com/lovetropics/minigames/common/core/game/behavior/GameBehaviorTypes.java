@@ -40,10 +40,10 @@ public class GameBehaviorTypes {
 	public static final GameBehaviorEntry<PositionPlayersBehavior> POSITION_PLAYERS;
 	public static final GameBehaviorEntry<TimedGameBehavior> TIMED;
 	public static final GameBehaviorEntry<ImmediateRespawnBehavior> IMMEDIATE_RESPAWN;
-	public static final GameBehaviorEntry<CommandEventsBehavior> COMMANDS;
 	public static final GameBehaviorEntry<SetGameTypesBehavior> SET_GAME_TYPES;
 	public static final GameBehaviorEntry<PhaseControllerBehavior> PHASE_CONTROLLER;
 	public static final GameBehaviorEntry<PermanentItemBehavior> PERMANENT_ITEM;
+	public static final GameBehaviorEntry<GeneralEventsTrigger> EVENTS;
 	public static final GameBehaviorEntry<OnDeathTrigger> ON_DEATH;
 	public static final GameBehaviorEntry<WhileInRegionTrigger> WHILE_IN_REGION;
 	public static final GameBehaviorEntry<ScheduledActionsTrigger> SCHEDULED_ACTIONS;
@@ -121,7 +121,6 @@ public class GameBehaviorTypes {
 		POSITION_PLAYERS = register("position_players", PositionPlayersBehavior.CODEC);
 		TIMED = register("timed", TimedGameBehavior.CODEC);
 		IMMEDIATE_RESPAWN = register("immediate_respawn", ImmediateRespawnBehavior.CODEC);
-		COMMANDS = register("commands", CommandEventsBehavior.CODEC);
 		SET_GAME_TYPES = register("set_game_types", SetGameTypesBehavior.CODEC);
 		PHASE_CONTROLLER = register("phase_controller", PhaseControllerBehavior.CODEC);
 		PERMANENT_ITEM = register("permanent_item", PermanentItemBehavior.CODEC);
@@ -164,6 +163,7 @@ public class GameBehaviorTypes {
 
 		DISPLAY_LEADERBOARD_ON_FINISH = register("display_leaderboard_on_finish", DisplayLeaderboardOnFinishBehavior.CODEC);
 
+		EVENTS = register("events", GeneralEventsTrigger.CODEC);
 		ON_DEATH = register("on_death", OnDeathTrigger.CODEC);
 		WHILE_IN_REGION = register("while_in_region", WhileInRegionTrigger.CODEC);
 		SCHEDULED_ACTIONS = register("scheduled_actions", ScheduledActionsTrigger.CODEC);
