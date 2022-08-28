@@ -14,6 +14,7 @@
     "client.BossOverlayGuiMixin",
     "client.HotbarOverride",
     "client.PlayerTabOverlayGuiMixin",
+    "client.PoseStackAccessor",
     "client.ScrollPanelMixin"
   ],
   "injectors": {

@@ -31,11 +31,13 @@ public final class ClientPlayerDisguises {
 
 		EntityRenderer<? super Entity> renderer = CLIENT.getEntityRenderDispatcher().getRenderer(disguise);
 		if (renderer != null) {
+			PoseStack transform = event.getPoseStack();
+			int capturedTransformState = PoseStackCapture.get(transform);
+
 			try {
 				copyDisguiseState(disguise, player);
 
 				float partialTicks = event.getPartialTick();
-				PoseStack transform = event.getPoseStack();
 				MultiBufferSource buffers = event.getMultiBufferSource();
 				int packedLight = event.getPackedLight();
 
@@ -44,6 +46,7 @@ public final class ClientPlayerDisguises {
 			} catch (Exception e) {
 				PlayerDisguise.get(player).ifPresent(PlayerDisguise::clearDisguise);
 				LoveTropics.LOGGER.error("Failed to render player disguise", e);
+				PoseStackCapture.restore(transform, capturedTransformState);
 			}
 
 			event.setCanceled(true);

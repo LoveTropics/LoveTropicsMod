@@ -54,10 +54,6 @@ public final class DisguiseType {
 
 	@Nullable
 	public Entity createEntityFor(Player player) {
-		if (shouldNeverCreate(player, this.type)) {
-			return null;
-		}
-
 		Entity entity = this.type.create(player.level);
 		if (entity == null) return null;
 
@@ -73,33 +69,9 @@ public final class DisguiseType {
 		return entity;
 	}
 
-	private boolean shouldNeverCreate(Player player, EntityType<?> type) {
-		ResourceLocation location = ForgeRegistries.ENTITIES.getKey(type);
-
-		if (location == null) {
-			return true;
-		}
-
-		// Instantly crashes- prevent disguising as poison blots
-		if (location.getNamespace().equals("tropicraft") && location.getPath().equals("poison_blot")) {
-			return true;
-		}
-
-		// Crashes when riding- prevent
-		Entity ridingEntity = player.getVehicle();
-		if (ridingEntity != null) {
-			EntityType<?> ridingType = ridingEntity.getType();
-			ResourceLocation ridingLocation = ForgeRegistries.ENTITIES.getKey(ridingType);
-
-			if (ridingLocation != null && ridingLocation.getNamespace().equals("tropicraft") && ridingLocation.getPath().equals("turtle")) {
-				return true;
-			}
-		}
-
-		return false;
-	}
-
 	private void fixInvalidEntities(Entity entity) {
+		entity.stopRiding();
+
 		if (entity instanceof Painting) {
 			((Painting) entity).motive = Motive.KEBAB;
 		}
