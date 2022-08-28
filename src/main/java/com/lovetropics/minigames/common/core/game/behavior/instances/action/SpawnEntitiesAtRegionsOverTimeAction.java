@@ -1,17 +1,19 @@
-package com.lovetropics.minigames.common.core.game.behavior.instances.donation;
+package com.lovetropics.minigames.common.core.game.behavior.instances.action;
 
 import com.google.common.collect.Lists;
 import com.lovetropics.lib.BlockBox;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
+import com.lovetropics.minigames.common.core.game.behavior.action.GameActionContext;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
-import com.lovetropics.minigames.common.core.game.behavior.event.GamePackageEvents;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameActionEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.lovetropics.minigames.common.core.map.MapRegions;
 import com.lovetropics.minigames.common.util.Util;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -22,13 +24,13 @@ import java.util.List;
  * Spawns an amount of entities over a set amount of ticks, spread randomly across all the given regions
  */
 
-public class SpawnEntitiesAtRegionsOverTimePackageBehavior implements IGameBehavior {
-	public static final Codec<SpawnEntitiesAtRegionsOverTimePackageBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+public class SpawnEntitiesAtRegionsOverTimeAction implements IGameBehavior {
+	public static final Codec<SpawnEntitiesAtRegionsOverTimeAction> CODEC = RecordCodecBuilder.create(i -> i.group(
 			Codec.STRING.listOf().fieldOf("regions_to_spawn_at").forGetter(c -> c.regionsToSpawnAtKeys),
 			ForgeRegistries.ENTITIES.getCodec().fieldOf("entity_id").forGetter(c -> c.entityId),
 			Codec.INT.optionalFieldOf("entity_count", 1).forGetter(c -> c.entityCount),
 			Codec.INT.optionalFieldOf("ticks_to_spawn_for", 1).forGetter(c -> c.ticksToSpawnFor)
-	).apply(i, SpawnEntitiesAtRegionsOverTimePackageBehavior::new));
+	).apply(i, SpawnEntitiesAtRegionsOverTimeAction::new));
 
 	private final List<String> regionsToSpawnAtKeys;
 	private final EntityType<?> entityId;
@@ -41,7 +43,7 @@ public class SpawnEntitiesAtRegionsOverTimePackageBehavior implements IGameBehav
 
 	private final List<BlockBox> regionsToSpawnAt = Lists.newArrayList();
 
-	public SpawnEntitiesAtRegionsOverTimePackageBehavior(final List<String> regionsToSpawnAtKeys, final EntityType<?> entityId, final int entityCount, final int ticksToSpawnFor) {
+	public SpawnEntitiesAtRegionsOverTimeAction(final List<String> regionsToSpawnAtKeys, final EntityType<?> entityId, final int entityCount, final int ticksToSpawnFor) {
 		this.regionsToSpawnAtKeys = regionsToSpawnAtKeys;
 		this.entityId = entityId;
 		this.entityCount = entityCount;
@@ -57,11 +59,11 @@ public class SpawnEntitiesAtRegionsOverTimePackageBehavior implements IGameBehav
 			regionsToSpawnAt.addAll(regions.get(key));
 		}
 
-		events.listen(GamePackageEvents.APPLY_PACKAGE_GLOBALLY, this::applyPackage);
+		events.listen(GameActionEvents.APPLY, this::applyPackage);
 		events.listen(GamePhaseEvents.TICK, () -> tick(game));
 	}
 
-	private boolean applyPackage(String senderPlayerName) {
+	private boolean applyPackage(GameActionContext context, Iterable<ServerPlayer> targets) {
 		ticksRemaining += ticksToSpawnFor;
 		entityCountRemaining += entityCount;
 		return true;

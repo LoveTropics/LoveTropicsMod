@@ -8,7 +8,7 @@ import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
-import com.lovetropics.minigames.common.core.game.behavior.event.GamePackageEvents;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameActionEvents;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.world.entity.EntityType;
@@ -34,7 +34,7 @@ public class SpawnSurpriseWaveBehavior implements IGameBehavior {
         this.game = game;
         this.plots = game.getState().getOrThrow(PlotsState.KEY);
 
-        events.listen(GamePackageEvents.APPLY_PACKAGE_TO_PLAYER, (player, sendingPlayer) -> {
+        events.listen(GameActionEvents.APPLY_TO_PLAYER, (context, player) -> {
             Plot plot = this.plots.getPlotFor(player);
 
             BbMobSpawner.spawnWaveEntities(player.getLevel(), player.getRandom(), plot, this.waveSize, 0, SpawnSurpriseWaveBehavior::selectEntityForWave);
