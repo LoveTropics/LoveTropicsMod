@@ -45,6 +45,7 @@ public class GameBehaviorTypes {
 	public static final GameBehaviorEntry<PhaseControllerBehavior> PHASE_CONTROLLER;
 	public static final GameBehaviorEntry<PermanentItemBehavior> PERMANENT_ITEM;
 	public static final GameBehaviorEntry<OnDeathTrigger> ON_DEATH;
+	public static final GameBehaviorEntry<WhileInRegionTrigger> WHILE_IN_REGION;
 	public static final GameBehaviorEntry<ScheduledActionsTrigger> SCHEDULED_ACTIONS;
 	public static final GameBehaviorEntry<BindControlsBehavior> BIND_CONTROLS;
 	public static final GameBehaviorEntry<CancelPlayerDamageBehavior> CANCEL_PLAYER_DAMAGE;
@@ -60,7 +61,6 @@ public class GameBehaviorTypes {
 	public static final GameBehaviorEntry<GenerateEntitiesBehavior> GENERATE_ENTITIES;
 	public static final GameBehaviorEntry<AddWeatherBehavior> ADD_WEATHER;
 	public static final GameBehaviorEntry<WeatherControlsBehavior> WEATHER_CONTROLS;
-	public static final GameBehaviorEntry<RunCommandInRegionBehavior> RUN_COMMAND_IN_REGION;
 	public static final GameBehaviorEntry<TntAutoFuseBehavior> TNT_AUTO_FUSE;
 	public static final GameBehaviorEntry<DisableHungerBehavior> DISABLE_HUNGER;
 	public static final GameBehaviorEntry<DisableTntDestructionBehavior> DISABLE_TNT_BLOCK_DESTRUCTION;
@@ -138,7 +138,6 @@ public class GameBehaviorTypes {
 		GENERATE_ENTITIES = register("generate_entities", GenerateEntitiesBehavior.CODEC);
 		ADD_WEATHER = register("add_weather", AddWeatherBehavior.CODEC);
 		WEATHER_CONTROLS = register("weather_controls", WeatherControlsBehavior.CODEC);
-		RUN_COMMAND_IN_REGION = register("run_command_in_region", RunCommandInRegionBehavior.CODEC);
 		TNT_AUTO_FUSE = register("tnt_auto_fuse", TntAutoFuseBehavior.CODEC);
 		DISABLE_HUNGER = register("disable_hunger", DisableHungerBehavior.CODEC);
 		DISABLE_TNT_BLOCK_DESTRUCTION = register("disable_tnt_block_destruction", DisableTntDestructionBehavior.CODEC);
@@ -166,6 +165,7 @@ public class GameBehaviorTypes {
 		DISPLAY_LEADERBOARD_ON_FINISH = register("display_leaderboard_on_finish", DisplayLeaderboardOnFinishBehavior.CODEC);
 
 		ON_DEATH = register("on_death", OnDeathTrigger.CODEC);
+		WHILE_IN_REGION = register("while_in_region", WhileInRegionTrigger.CODEC);
 		SCHEDULED_ACTIONS = register("scheduled_actions", ScheduledActionsTrigger.CODEC);
 
 		DONATION_PACKAGE = register("donation_package", DonationPackageBehavior.CODEC);
