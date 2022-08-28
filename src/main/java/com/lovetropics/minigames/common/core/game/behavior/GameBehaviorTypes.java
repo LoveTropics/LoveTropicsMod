@@ -7,6 +7,7 @@ import com.lovetropics.minigames.common.core.game.behavior.instances.*;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.*;
 import com.lovetropics.minigames.common.core.game.behavior.instances.command.*;
 import com.lovetropics.minigames.common.core.game.behavior.instances.donation.*;
+import com.lovetropics.minigames.common.core.game.behavior.instances.trigger.*;
 import com.lovetropics.minigames.common.core.game.behavior.instances.statistics.*;
 import com.lovetropics.minigames.common.core.game.behavior.instances.team.SetupTeamsBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.team.TeamWinTrigger;
@@ -45,7 +46,7 @@ public class GameBehaviorTypes {
 	public static final GameBehaviorEntry<PhaseControllerBehavior> PHASE_CONTROLLER;
 	public static final GameBehaviorEntry<PermanentItemBehavior> PERMANENT_ITEM;
 	public static final GameBehaviorEntry<ScheduledMessagesBehavior> SCHEDULED_MESSAGES;
-	public static final GameBehaviorEntry<FireworksOnDeathBehavior> FIREWORKS_ON_DEATH;
+	public static final GameBehaviorEntry<OnDeathTrigger> ON_DEATH;
 	public static final GameBehaviorEntry<BindControlsBehavior> BIND_CONTROLS;
 	public static final GameBehaviorEntry<CancelPlayerDamageBehavior> CANCEL_PLAYER_DAMAGE;
 	public static final GameBehaviorEntry<SetGameRulesBehavior> SET_GAME_RULES;
@@ -102,6 +103,7 @@ public class GameBehaviorTypes {
 	public static final GameBehaviorEntry<BlockPackagesDuringPhaseBehavior> BLOCK_PACKAGES_DURING_PHASE;
 	public static final GameBehaviorEntry<WeatherEventAction> WEATHER_EVENT;
 	public static final GameBehaviorEntry<CountdownAction> COUNTDOWN_ACTION;
+	public static final GameBehaviorEntry<SpawnFireworksAction> SPAWN_FIREWORKS;
 
 	public static final GameBehaviorEntry<SetupTelemetryBehavior> SETUP_TELEMETRY;
 	public static final GameBehaviorEntry<AssignPlayerRolesBehavior> ASSIGN_PLAYER_ROLES;
@@ -124,7 +126,6 @@ public class GameBehaviorTypes {
 		PHASE_CONTROLLER = register("phase_controller", PhaseControllerBehavior.CODEC);
 		PERMANENT_ITEM = register("permanent_item", PermanentItemBehavior.CODEC);
 		SCHEDULED_MESSAGES = register("scheduled_messages", ScheduledMessagesBehavior.CODEC);
-		FIREWORKS_ON_DEATH = register("fireworks_on_death", FireworksOnDeathBehavior.CODEC);
 		BIND_CONTROLS = register("bind_controls", BindControlsBehavior.CODEC);
 		CANCEL_PLAYER_DAMAGE = register("cancel_player_damage", CancelPlayerDamageBehavior.CODEC);
 		SET_GAME_RULES = register("set_game_rules", SetGameRulesBehavior.CODEC);
@@ -166,6 +167,8 @@ public class GameBehaviorTypes {
 
 		DISPLAY_LEADERBOARD_ON_FINISH = register("display_leaderboard_on_finish", DisplayLeaderboardOnFinishBehavior.CODEC);
 
+		ON_DEATH = register("on_death", OnDeathTrigger.CODEC);
+
 		DONATION_PACKAGE = register("donation_package", DonationPackageBehavior.CODEC);
 		GIVE_LOOT = register("give_loot", GiveLootAction.CODEC);
 		GIVE_EFFECT = register("give_effect", GiveEffectAction.CODEC);
@@ -181,6 +184,7 @@ public class GameBehaviorTypes {
 		BLOCK_PACKAGES_DURING_PHASE = register("block_packages_during_phase", BlockPackagesDuringPhaseBehavior.CODEC);
 		WEATHER_EVENT = register("weather_event", WeatherEventAction.CODEC);
 		COUNTDOWN_ACTION = register("countdown_action", CountdownAction.CODEC);
+		SPAWN_FIREWORKS = register("spawn_fireworks", SpawnFireworksAction.CODEC);
 
 		SETUP_TELEMETRY = register("setup_telemetry", SetupTelemetryBehavior.CODEC);
 		ASSIGN_PLAYER_ROLES = register("assign_player_roles", AssignPlayerRolesBehavior.CODEC);
