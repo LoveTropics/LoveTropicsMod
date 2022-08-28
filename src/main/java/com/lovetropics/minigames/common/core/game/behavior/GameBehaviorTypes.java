@@ -41,12 +41,11 @@ public class GameBehaviorTypes {
 	public static final GameBehaviorEntry<TimedGameBehavior> TIMED;
 	public static final GameBehaviorEntry<ImmediateRespawnBehavior> IMMEDIATE_RESPAWN;
 	public static final GameBehaviorEntry<CommandEventsBehavior> COMMANDS;
-	public static final GameBehaviorEntry<ScheduledCommandsBehavior> SCHEDULED_COMMANDS;
 	public static final GameBehaviorEntry<SetGameTypesBehavior> SET_GAME_TYPES;
 	public static final GameBehaviorEntry<PhaseControllerBehavior> PHASE_CONTROLLER;
 	public static final GameBehaviorEntry<PermanentItemBehavior> PERMANENT_ITEM;
-	public static final GameBehaviorEntry<ScheduledMessagesBehavior> SCHEDULED_MESSAGES;
 	public static final GameBehaviorEntry<OnDeathTrigger> ON_DEATH;
+	public static final GameBehaviorEntry<ScheduledActionsTrigger> SCHEDULED_ACTIONS;
 	public static final GameBehaviorEntry<BindControlsBehavior> BIND_CONTROLS;
 	public static final GameBehaviorEntry<CancelPlayerDamageBehavior> CANCEL_PLAYER_DAMAGE;
 	public static final GameBehaviorEntry<SetGameRulesBehavior> SET_GAME_RULES;
@@ -105,6 +104,7 @@ public class GameBehaviorTypes {
 	public static final GameBehaviorEntry<CountdownAction> COUNTDOWN_ACTION;
 	public static final GameBehaviorEntry<SpawnFireworksAction> SPAWN_FIREWORKS;
 	public static final GameBehaviorEntry<RunCommandsAction> RUN_COMMANDS;
+	public static final GameBehaviorEntry<SendMessageAction> SEND_MESSAGE;
 
 	public static final GameBehaviorEntry<SetupTelemetryBehavior> SETUP_TELEMETRY;
 	public static final GameBehaviorEntry<AssignPlayerRolesBehavior> ASSIGN_PLAYER_ROLES;
@@ -122,11 +122,9 @@ public class GameBehaviorTypes {
 		TIMED = register("timed", TimedGameBehavior.CODEC);
 		IMMEDIATE_RESPAWN = register("immediate_respawn", ImmediateRespawnBehavior.CODEC);
 		COMMANDS = register("commands", CommandEventsBehavior.CODEC);
-		SCHEDULED_COMMANDS = register("scheduled_commands", ScheduledCommandsBehavior.CODEC);
 		SET_GAME_TYPES = register("set_game_types", SetGameTypesBehavior.CODEC);
 		PHASE_CONTROLLER = register("phase_controller", PhaseControllerBehavior.CODEC);
 		PERMANENT_ITEM = register("permanent_item", PermanentItemBehavior.CODEC);
-		SCHEDULED_MESSAGES = register("scheduled_messages", ScheduledMessagesBehavior.CODEC);
 		BIND_CONTROLS = register("bind_controls", BindControlsBehavior.CODEC);
 		CANCEL_PLAYER_DAMAGE = register("cancel_player_damage", CancelPlayerDamageBehavior.CODEC);
 		SET_GAME_RULES = register("set_game_rules", SetGameRulesBehavior.CODEC);
@@ -169,6 +167,7 @@ public class GameBehaviorTypes {
 		DISPLAY_LEADERBOARD_ON_FINISH = register("display_leaderboard_on_finish", DisplayLeaderboardOnFinishBehavior.CODEC);
 
 		ON_DEATH = register("on_death", OnDeathTrigger.CODEC);
+		SCHEDULED_ACTIONS = register("scheduled_actions", ScheduledActionsTrigger.CODEC);
 
 		DONATION_PACKAGE = register("donation_package", DonationPackageBehavior.CODEC);
 		GIVE_LOOT = register("give_loot", GiveLootAction.CODEC);
@@ -187,6 +186,7 @@ public class GameBehaviorTypes {
 		COUNTDOWN_ACTION = register("countdown_action", CountdownAction.CODEC);
 		SPAWN_FIREWORKS = register("spawn_fireworks", SpawnFireworksAction.CODEC);
 		RUN_COMMANDS = register("run_commands", RunCommandsAction.CODEC);
+		SEND_MESSAGE = register("send_message", SendMessageAction.CODEC);
 
 		SETUP_TELEMETRY = register("setup_telemetry", SetupTelemetryBehavior.CODEC);
 		ASSIGN_PLAYER_ROLES = register("assign_player_roles", AssignPlayerRolesBehavior.CODEC);
