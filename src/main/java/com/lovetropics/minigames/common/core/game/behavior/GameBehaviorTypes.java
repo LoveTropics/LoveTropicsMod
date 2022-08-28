@@ -55,7 +55,7 @@ public class GameBehaviorTypes {
 	public static final GameBehaviorEntry<ForceLoadRegionBehavior> FORCE_LOAD_REGION;
 	public static final GameBehaviorEntry<SetBlocksBehavior> SET_BLOCKS;
 	public static final GameBehaviorEntry<SetExtendingBlocksBehavior> SET_EXTENDING_BLOCKS;
-	public static final GameBehaviorEntry<EliminatePlayerControlBehavior> ELIMINATE_PLAYER_CONTROL;
+	public static final GameBehaviorEntry<EliminatePlayerAction> ELIMINATE_PLAYER;
 	public static final GameBehaviorEntry<FillChestsByMarkerBehavior> FILL_CHESTS_BY_MARKER;
 	public static final GameBehaviorEntry<GenerateEntitiesBehavior> GENERATE_ENTITIES;
 	public static final GameBehaviorEntry<AddWeatherBehavior> ADD_WEATHER;
@@ -134,7 +134,6 @@ public class GameBehaviorTypes {
 		FORCE_LOAD_REGION = register("force_load_region", ForceLoadRegionBehavior.CODEC);
 		SET_BLOCKS = register("set_blocks", SetBlocksBehavior.CODEC);
 		SET_EXTENDING_BLOCKS = register("set_extending_blocks", SetExtendingBlocksBehavior.CODEC);
-		ELIMINATE_PLAYER_CONTROL = register("eliminate_player_control", EliminatePlayerControlBehavior.CODEC);
 		FILL_CHESTS_BY_MARKER = register("fill_chests_by_marker", FillChestsByMarkerBehavior.CODEC);
 		GENERATE_ENTITIES = register("generate_entities", GenerateEntitiesBehavior.CODEC);
 		ADD_WEATHER = register("add_weather", AddWeatherBehavior.CODEC);
@@ -187,6 +186,7 @@ public class GameBehaviorTypes {
 		SPAWN_FIREWORKS = register("spawn_fireworks", SpawnFireworksAction.CODEC);
 		RUN_COMMANDS = register("run_commands", RunCommandsAction.CODEC);
 		SEND_MESSAGE = register("send_message", SendMessageAction.CODEC);
+		ELIMINATE_PLAYER = register("eliminate_player", EliminatePlayerAction.CODEC);
 
 		SETUP_TELEMETRY = register("setup_telemetry", SetupTelemetryBehavior.CODEC);
 		ASSIGN_PLAYER_ROLES = register("assign_player_roles", AssignPlayerRolesBehavior.CODEC);
