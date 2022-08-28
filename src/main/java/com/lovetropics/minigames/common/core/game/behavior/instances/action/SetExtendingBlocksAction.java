@@ -1,4 +1,4 @@
-package com.lovetropics.minigames.common.core.game.behavior.instances.world;
+package com.lovetropics.minigames.common.core.game.behavior.instances.action;
 
 import com.lovetropics.lib.BlockBox;
 import com.lovetropics.lib.codec.MoreCodecs;
@@ -6,6 +6,7 @@ import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameActionEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -25,38 +26,37 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Random;
 
-public final class SetExtendingBlocksBehavior implements IGameBehavior {
-	public static final Codec<SetExtendingBlocksBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+public final class SetExtendingBlocksAction implements IGameBehavior {
+	public static final Codec<SetExtendingBlocksAction> CODEC = RecordCodecBuilder.create(i -> i.group(
 			MoreCodecs.BLOCK_PREDICATE.optionalFieldOf("replace").forGetter(c -> Optional.ofNullable(c.replace)),
 			MoreCodecs.BLOCK_STATE_PROVIDER.fieldOf("set").forGetter(c -> c.set),
 			MoreCodecs.stringVariants(Direction.values(), Direction::getName).fieldOf("direction").forGetter(c -> c.direction),
 			MoreCodecs.arrayOrUnit(Codec.STRING, String[]::new).optionalFieldOf("region", new String[0]).forGetter(c -> c.regionKeys),
-			Codec.LONG.fieldOf("start_time").forGetter(c -> c.startTime),
-			Codec.LONG.fieldOf("end_time").forGetter(c -> c.endTime),
+			Codec.LONG.fieldOf("duration").forGetter(c -> c.duration),
 			Codec.BOOL.optionalFieldOf("notify_neighbors", true).forGetter(c -> c.notifyNeighbors)
-	).apply(i, SetExtendingBlocksBehavior::new));
+	).apply(i, SetExtendingBlocksAction::new));
 
 	private final @Nullable BlockPredicate replace;
 	private final BlockStateProvider set;
 	private final Direction direction;
 
 	private final String[] regionKeys;
-	private final long startTime;
-	private final long endTime;
+	private final long duration;
 
 	private final boolean notifyNeighbors;
 
-	private SetExtendingBlocksBehavior(Optional<BlockPredicate> replace, BlockStateProvider set, Direction direction, String[] regionKeys, long startTime, long endTime, boolean notifyNeighbors) {
-		this(replace.orElse(null), set, direction, regionKeys, startTime, endTime, notifyNeighbors);
+	private long startTime = -1;
+
+	private SetExtendingBlocksAction(Optional<BlockPredicate> replace, BlockStateProvider set, Direction direction, String[] regionKeys, long duration, boolean notifyNeighbors) {
+		this(replace.orElse(null), set, direction, regionKeys, duration, notifyNeighbors);
 	}
 
-	public SetExtendingBlocksBehavior(BlockPredicate replace, BlockStateProvider set, Direction direction, String[] regionKeys, long startTime, long endTime, boolean notifyNeighbors) {
+	public SetExtendingBlocksAction(BlockPredicate replace, BlockStateProvider set, Direction direction, String[] regionKeys, long duration, boolean notifyNeighbors) {
 		this.replace = replace;
 		this.set = set;
 		this.direction = direction;
 		this.regionKeys = regionKeys;
-		this.startTime = startTime;
-		this.endTime = endTime;
+		this.duration = duration;
 		this.notifyNeighbors = notifyNeighbors;
 	}
 
@@ -71,8 +71,18 @@ public final class SetExtendingBlocksBehavior implements IGameBehavior {
 			throw new GameException(new TextComponent("Regions not specified for extending block set behavior!"));
 		}
 
+		events.listen(GameActionEvents.APPLY, (context, targets) -> {
+			startTime = game.ticks();
+			return true;
+		});
+
 		events.listen(GamePhaseEvents.TICK, () -> {
+			if (startTime == -1) {
+				return;
+			}
+
 			long gameTime = game.ticks();
+			long endTime = startTime + duration;
 			if (gameTime >= startTime && gameTime < endTime) {
 				long time = gameTime - startTime;
 				long timeLength = endTime - startTime + 1;

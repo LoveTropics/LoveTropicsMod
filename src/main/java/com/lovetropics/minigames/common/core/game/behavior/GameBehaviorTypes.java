@@ -54,8 +54,6 @@ public class GameBehaviorTypes {
 	public static final GameBehaviorEntry<TeamsBehavior> TEAMS;
 	public static final GameBehaviorEntry<SpectatorChaseBehavior> SPECTATOR_CHASE;
 	public static final GameBehaviorEntry<ForceLoadRegionBehavior> FORCE_LOAD_REGION;
-	public static final GameBehaviorEntry<SetBlocksBehavior> SET_BLOCKS;
-	public static final GameBehaviorEntry<SetExtendingBlocksBehavior> SET_EXTENDING_BLOCKS;
 	public static final GameBehaviorEntry<EliminatePlayerAction> ELIMINATE_PLAYER;
 	public static final GameBehaviorEntry<FillChestsByMarkerBehavior> FILL_CHESTS_BY_MARKER;
 	public static final GameBehaviorEntry<GenerateEntitiesBehavior> GENERATE_ENTITIES;
@@ -95,6 +93,8 @@ public class GameBehaviorTypes {
 	public static final GameBehaviorEntry<SpawnEntityAtRegionsAction> SPAWN_ENTITY_AT_REGIONS;
 	public static final GameBehaviorEntry<SpawnEntitiesAroundPlayersAction> SPAWN_ENTITIES_AROUND_PLAYERS;
 	public static final GameBehaviorEntry<SpawnEntitiesAtRegionsOverTimeAction> SPAWN_ENTITIES_AT_REGIONS_OVER_TIME;
+	public static final GameBehaviorEntry<SetBlocksAction> SET_BLOCKS;
+	public static final GameBehaviorEntry<SetExtendingBlocksAction> SET_EXTENDING_BLOCKS;
 	public static final GameBehaviorEntry<SetBlockAtPlayerAction> SET_BLOCK_AT_PLAYER;
 	public static final GameBehaviorEntry<GivePlayerHeadPackageBehavior> GIVE_PLAYER_HEAD_PACKAGE;
 	public static final GameBehaviorEntry<ShootProjectilesAroundPlayerAction> SHOOT_PROJECTILES_AT_PLAYER;
@@ -131,8 +131,6 @@ public class GameBehaviorTypes {
 		TEAMS = register("teams", TeamsBehavior.CODEC);
 		SPECTATOR_CHASE = register("spectator_chase", SpectatorChaseBehavior.CODEC);
 		FORCE_LOAD_REGION = register("force_load_region", ForceLoadRegionBehavior.CODEC);
-		SET_BLOCKS = register("set_blocks", SetBlocksBehavior.CODEC);
-		SET_EXTENDING_BLOCKS = register("set_extending_blocks", SetExtendingBlocksBehavior.CODEC);
 		FILL_CHESTS_BY_MARKER = register("fill_chests_by_marker", FillChestsByMarkerBehavior.CODEC);
 		GENERATE_ENTITIES = register("generate_entities", GenerateEntitiesBehavior.CODEC);
 		ADD_WEATHER = register("add_weather", AddWeatherBehavior.CODEC);
@@ -176,6 +174,8 @@ public class GameBehaviorTypes {
 		SPAWN_ENTITY_AT_REGIONS = register("spawn_entity_at_regions", SpawnEntityAtRegionsAction.CODEC);
 		SPAWN_ENTITIES_AROUND_PLAYERS = register("spawn_entities_around_players", SpawnEntitiesAroundPlayersAction.CODEC);
 		SPAWN_ENTITIES_AT_REGIONS_OVER_TIME = register("spawn_entities_at_regions_over_time", SpawnEntitiesAtRegionsOverTimeAction.CODEC);
+		SET_BLOCKS = register("set_blocks", SetBlocksAction.CODEC);
+		SET_EXTENDING_BLOCKS = register("set_extending_blocks", SetExtendingBlocksAction.CODEC);
 		SET_BLOCK_AT_PLAYER = register("set_block_at_player", SetBlockAtPlayerAction.CODEC);
 		GIVE_PLAYER_HEAD_PACKAGE = register("give_player_head_package", GivePlayerHeadPackageBehavior.CODEC);
 		SHOOT_PROJECTILES_AT_PLAYER = register("shoot_projectiles_at_player", ShootProjectilesAroundPlayerAction.CODEC);
