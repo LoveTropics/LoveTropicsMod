@@ -32,6 +32,8 @@ public final class BbCurrencyWinTrigger implements IGameBehavior {
 
 	private final List<ServerPlayer> winnerCandidates = new ArrayList<>();
 
+	private boolean gameOver;
+
 	public BbCurrencyWinTrigger(int thresholdCurrency) {
 		this.thresholdCurrency = thresholdCurrency;
 	}
@@ -52,7 +54,7 @@ public final class BbCurrencyWinTrigger implements IGameBehavior {
 
 		events.listen(GamePhaseEvents.TICK, () -> {
 			List<ServerPlayer> players = this.winnerCandidates;
-			if (!players.isEmpty()) {
+			if (!gameOver && !players.isEmpty()) {
 				ServerPlayer player = this.selectWinningPlayer(plots, currency, players);
 				if (player != null) {
 					// Teleport all players to winning player's plot
@@ -84,5 +86,7 @@ public final class BbCurrencyWinTrigger implements IGameBehavior {
 
 		game.getStatistics().global().set(StatisticKey.WINNING_PLAYER, PlayerKey.from(player));
 		game.invoker(GameLogicEvents.GAME_OVER).onGameOver();
+
+		gameOver = true;
 	}
 }
