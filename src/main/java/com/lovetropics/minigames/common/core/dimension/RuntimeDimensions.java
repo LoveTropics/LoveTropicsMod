@@ -127,7 +127,9 @@ public final class RuntimeDimensions {
 		ResourceKey<Level> worldKey = ResourceKey.create(Registry.DIMENSION_REGISTRY, key);
 
 		MappedRegistry<LevelStem> dimensionsRegistry = getDimensionsRegistry(this.server);
+		dimensionsRegistry.unfreeze();
 		dimensionsRegistry.register(ResourceKey.create(Registry.LEVEL_STEM_REGISTRY, key), config.dimension(), Lifecycle.stable());
+		dimensionsRegistry.freeze();
 
 		ServerLevel world = new ServerLevel(
 				this.server, Util.backgroundExecutor(), this.server.storageSource,
