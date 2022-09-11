@@ -37,6 +37,7 @@ public final class MapWorkspaceRenderer {
 		Vec3 view = renderInfo.getPosition();
 
 		final PoseStack modelViewStack = RenderSystem.getModelViewStack();
+		modelViewStack.pushPose();
 		modelViewStack.mulPoseMatrix(event.getPoseStack().last().pose());
 		RenderSystem.applyModelViewMatrix();
 
