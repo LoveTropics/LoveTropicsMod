@@ -1,5 +1,6 @@
 package com.lovetropics.minigames.common.content.survive_the_tide.biome;
 
+import com.lovetropics.minigames.Constants;
 import net.minecraft.core.Registry;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeGenerationSettings;
@@ -7,7 +8,6 @@ import net.minecraft.world.level.biome.BiomeSpecialEffects;
 import net.minecraft.world.level.biome.MobSpawnSettings;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.RegistryObject;
-import net.tropicraft.Constants;
 
 public final class SurviveTheTideBiomes {
     public static final DeferredRegister<Biome> REGISTER = DeferredRegister.create(Registry.BIOME_REGISTRY, Constants.MODID);
