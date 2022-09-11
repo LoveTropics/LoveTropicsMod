@@ -10,6 +10,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.Direction;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.LevelHeightAccessor;
 
 import javax.annotation.Nullable;
 
@@ -47,11 +48,11 @@ public final class Plot {
 		this.walls = new PlotWalls(this.bounds.asAabb().minmax(this.mobSpawn.asAabb()));
 	}
 
-	public static Plot create(Config config, RegionKeys regionKeys, MapRegions regions) {
+	public static Plot create(LevelHeightAccessor level, Config config, RegionKeys regionKeys, MapRegions regions) {
 		BlockBox plantBounds = regionKeys.plot.getOrThrow(regions, config.key);
 		BlockBox bounds = BlockBox.of(
-				new BlockPos(plantBounds.min().getX(), 0, plantBounds.min().getZ()),
-				new BlockPos(plantBounds.max().getX(), 256, plantBounds.max().getZ())
+				new BlockPos(plantBounds.min().getX(), level.getMinBuildHeight(), plantBounds.min().getZ()),
+				new BlockPos(plantBounds.max().getX(), level.getMaxBuildHeight(), plantBounds.max().getZ())
 		);
 		BlockBox spawn = regionKeys.spawn.getOrThrow(regions, config.key);
 		BlockBox shop = regionKeys.shop.getOrThrow(regions, config.key);

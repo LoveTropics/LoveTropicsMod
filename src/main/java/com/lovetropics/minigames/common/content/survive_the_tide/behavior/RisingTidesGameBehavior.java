@@ -17,6 +17,7 @@ import it.unimi.dsi.fastutil.longs.*;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.SectionPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundLevelParticlesPacket;
@@ -100,6 +101,8 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 		Random random = new Random();
 
 		icebergLines.clear();
+
+		ServerLevel level = game.getWorld();
 		for (BlockBox icebergLine : game.getMapRegions().get(icebergLinesKey)) {
 			int startX = icebergLine.min().getX();
 			int startZ = icebergLine.min().getZ();
@@ -119,8 +122,8 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 				endZ = swap;
 			}
 
-			BlockPos start = new BlockPos(startX, 0, startZ);
-			BlockPos end = new BlockPos(endX, 0, endZ);
+			BlockPos start = new BlockPos(startX, level.getMinBuildHeight(), startZ);
+			BlockPos end = new BlockPos(endX, level.getMinBuildHeight(), endZ);
 			icebergLines.add(new IcebergLine(start, end, 10));
 		}
 
@@ -360,23 +363,23 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 
 		long updatedBlocks = 0;
 
-		int fromSection = fromY >> 4;
-		int toSection = toY >> 4;
+		int fromSection = SectionPos.blockToSectionCoord(fromY);
+		int toSection = SectionPos.blockToSectionCoord(toY);
 
 		// iterate through all the sections that need to be changed
 		for (int sectionY = fromSection; sectionY <= toSection; sectionY++) {
 			LevelChunkSection section = chunk.getSection(sectionY);
-			int minSectionY = sectionY << 4;
-			int maxSectionY = minSectionY + 15;
+			int minSectionY = SectionPos.sectionToBlockCoord(sectionY);
+			int maxSectionY = minSectionY + SectionPos.SECTION_SIZE - 1;
 
 			// Calculate start/end within the current section
 			BlockPos sectionMin = new BlockPos(chunkMin.getX(), Math.max(chunkMin.getY(), minSectionY), chunkMin.getZ());
 			BlockPos sectionMax = new BlockPos(chunkMax.getX(), Math.min(chunkMax.getY(), maxSectionY), chunkMax.getZ());
 
 			for (BlockPos worldPos : BlockPos.betweenClosed(sectionMin, sectionMax)) {
-				int localX = worldPos.getX() & 15;
-				int localY = worldPos.getY() & 15;
-				int localZ = worldPos.getZ() & 15;
+				int localX = SectionPos.sectionRelative(worldPos.getX());
+				int localY = SectionPos.sectionRelative(worldPos.getY());
+				int localZ = SectionPos.sectionRelative(worldPos.getZ());
 
 				BlockState existingBlock = section.getBlockState(localX, localY, localZ);
 

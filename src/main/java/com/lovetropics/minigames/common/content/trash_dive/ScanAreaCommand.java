@@ -59,10 +59,10 @@ public class ScanAreaCommand {
 		BlockPos.MutableBlockPos pos = new BlockPos(source.getPosition()).mutable();
 
 		ServerLevel world = source.getLevel();
-		while (pos.getY() >= 0 && world.getBlockState(pos).getBlock() != Blocks.WATER) {
+		while (pos.getY() >= world.getMinBuildHeight() && world.getBlockState(pos).getBlock() != Blocks.WATER) {
 			pos.move(Direction.DOWN);
 		}
-		if (pos.getY() < 0) {
+		if (pos.getY() < world.getMinBuildHeight()) {
 			throw NO_WATER.create();
 		}
 

@@ -90,7 +90,7 @@ public final class VoidChunkGenerator extends ChunkGenerator {
 
 	@Override
 	public int getBaseHeight(final int x, final int z, final Heightmap.Types heightmap, final LevelHeightAccessor level) {
-		return 0;
+		return level.getMinBuildHeight();
 	}
 
 	@Override

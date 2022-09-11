@@ -115,7 +115,7 @@ public final class BlockPartyBehavior implements IGameBehavior {
 		PlayerSet participants = game.getParticipants();
 		for (ServerPlayer player : participants) {
 			double y = player.getY();
-			if (y < 0 || y < floorRegion.min().getY() - 10) {
+			if (y < player.level.getMinBuildHeight() || y < floorRegion.min().getY() - 10) {
 				if (eliminated == null) {
 					eliminated = new ArrayList<>();
 				}
