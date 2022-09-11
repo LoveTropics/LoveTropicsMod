@@ -95,7 +95,7 @@ public final class VoidChunkGenerator extends ChunkGenerator {
 
 	@Override
 	public NoiseColumn getBaseColumn(final int x, final int z, final LevelHeightAccessor level) {
-		final BlockState[] blocks = new BlockState[level.getHeight()];
+		final BlockState[] blocks = new BlockState[level.getMaxBuildHeight()];
 		Arrays.fill(blocks, Blocks.AIR.defaultBlockState());
 		return new NoiseColumn(level.getMinBuildHeight(), blocks);
 	}
