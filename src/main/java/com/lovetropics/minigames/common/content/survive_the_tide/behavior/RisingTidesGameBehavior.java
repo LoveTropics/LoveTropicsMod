@@ -95,8 +95,8 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 	public void register(IGamePhase game, EventRegistrar events) throws GameException {
 		tideArea = game.getMapRegions().getOrThrow(tideAreaKey);
 
-		minTideChunk = new ChunkPos(tideArea.min().getX() >> 4, tideArea.min().getZ() >> 4);
-		maxTideChunk = new ChunkPos(tideArea.max().getX() >> 4, tideArea.max().getZ() >> 4);
+		minTideChunk = new ChunkPos(SectionPos.blockToSectionCoord(tideArea.min().getX()), SectionPos.blockToSectionCoord(tideArea.min().getZ()));
+		maxTideChunk = new ChunkPos(SectionPos.blockToSectionCoord(tideArea.max().getX()), SectionPos.blockToSectionCoord(tideArea.max().getZ()));
 
 		Random random = new Random();
 
@@ -310,8 +310,8 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 
 	private int getChunkDistance2(IGamePhase game, int x, int z) {
 		int minDistance2 = Integer.MAX_VALUE;
-		int centerX = (x << 4) + 8;
-		int centerZ = (z << 4) + 8;
+		int centerX = SectionPos.sectionToBlockCoord(x) + SectionPos.SECTION_HALF_SIZE;
+		int centerZ = SectionPos.sectionToBlockCoord(z) + SectionPos.SECTION_HALF_SIZE;
 		for (ServerPlayer player : game.getAllPlayers()) {
 			int dx = Mth.floor(player.getX()) - centerX;
 			int dz = Mth.floor(player.getZ()) - centerZ;

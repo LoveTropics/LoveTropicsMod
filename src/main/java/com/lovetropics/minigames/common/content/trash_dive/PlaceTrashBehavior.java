@@ -12,6 +12,7 @@ import com.lovetropics.minigames.common.core.game.behavior.event.GameWorldEvents
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.longs.*;
+import net.minecraft.core.SectionPos;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.server.packs.resources.Resource;
@@ -83,9 +84,8 @@ public record PlaceTrashBehavior(ResourceLocation positionData, int centerY, int
 		while (candidatePositions.hasRemaining()) {
 			long candidatePos = candidatePositions.get();
 
-			int chunkX = BlockPos.getX(candidatePos) >> 4;
-			int chunkZ = BlockPos.getZ(candidatePos) >> 4;
-			long chunkKey = ChunkPos.asLong(chunkX, chunkZ);
+			long sectionKey = SectionPos.blockToSection(candidatePos);
+			long chunkKey = ChunkPos.asLong(SectionPos.x(sectionKey), SectionPos.z(sectionKey));
 
 			trashByChunk.computeIfAbsent(chunkKey, l -> new LongArrayList()).add(candidatePos);
 		}
