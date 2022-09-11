@@ -162,7 +162,7 @@ public final class HideAndSeekBehavior implements IGameBehavior {
 		DisguiseType type = disguises.get(random.nextInt(disguises.size()));
 		CompoundTag nbt = type.nbt != null ? type.nbt.copy() : new CompoundTag();
 		nbt.putBoolean("CustomNameVisible", false);
-		return DisguiseType.create(type.type, nbt, type.applyAttributes);
+		return DisguiseType.create(type.type, 1.0f, nbt, type.applyAttributes);
 	}
 
 	private void removeHider(ServerPlayer player) {

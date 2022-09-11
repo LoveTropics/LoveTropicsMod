@@ -23,16 +23,18 @@ public final class PlayerDisguiseBehavior {
 	public static void onSetEntitySize(EntityEvent.Size event) {
 		Entity entity = event.getEntity();
 
-		if (entity instanceof Player) {
-			Player player = (Player) entity;
-			Entity disguise = PlayerDisguise.getDisguiseEntity(player);
-
+		if (entity instanceof Player player) {
+			PlayerDisguise disguise = PlayerDisguise.get(player).orElse(null);
 			if (disguise != null) {
-				Pose pose = event.getPose();
-				EntityDimensions size = disguise.getDimensions(pose);
+				DisguiseType disguiseType = disguise.getDisguiseType();
+				Entity disguiseEntity = disguise.getDisguiseEntity();
+				if (disguiseType != null && disguiseEntity != null) {
+					Pose pose = event.getPose();
+					EntityDimensions size = disguiseEntity.getDimensions(pose);
 
-				event.setNewSize(size);
-				event.setNewEyeHeight(disguise.getEyeHeightAccess(pose, size));
+					event.setNewSize(size.scale(disguiseType.scale));
+					event.setNewEyeHeight(disguiseEntity.getEyeHeightAccess(pose, size) * disguiseType.scale);
+				}
 			}
 		}
 	}

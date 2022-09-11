@@ -9,7 +9,6 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntitySummonArgument;
-import net.minecraft.commands.arguments.CompoundTagArgument;
 import net.minecraft.commands.synchronization.SuggestionProviders;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -27,6 +26,10 @@ import net.minecraftforge.network.PacketDistributor;
 
 import javax.annotation.Nullable;
 
+import static com.mojang.brigadier.arguments.FloatArgumentType.*;
+import static com.mojang.brigadier.arguments.FloatArgumentType.getFloat;
+import static net.minecraft.commands.arguments.CompoundTagArgument.*;
+
 @Mod.EventBusSubscriber(modid = Constants.MODID)
 public final class ServerPlayerDisguises {
 	@SubscribeEvent
@@ -37,9 +40,12 @@ public final class ServerPlayerDisguises {
 				.then(Commands.literal("as")
 					.then(Commands.argument("entity", EntitySummonArgument.id())
 						.suggests(SuggestionProviders.SUMMONABLE_ENTITIES)
-						.executes(context -> disguiseAs(context, null))
-							.then(Commands.argument("nbt", CompoundTagArgument.compoundTag())
-								.executes(context -> disguiseAs(context, CompoundTagArgument.getCompoundTag(context, "nbt")))
+						.executes(context -> disguiseAs(context, 1.0f, null))
+							.then(Commands.argument("scale", floatArg(0.1f, 20.0f))
+								.executes(context -> disguiseAs(context, getFloat(context, "scale"), null))
+								.then(Commands.argument("nbt", compoundTag())
+									.executes(context -> disguiseAs(context, getFloat(context, "scale"), getCompoundTag(context, "nbt")))
+								)
 							)
 					))
 				.then(Commands.literal("clear")
@@ -51,15 +57,12 @@ public final class ServerPlayerDisguises {
 
 	@SubscribeEvent
 	public static void onEntityTrack(PlayerEvent.StartTracking event) {
-		if (!(event.getPlayer() instanceof ServerPlayer)) {
+		if (!(event.getPlayer() instanceof ServerPlayer player)) {
 			return;
 		}
 
-		ServerPlayer player = (ServerPlayer) event.getPlayer();
-		Entity tracked = event.getTarget();
-
-		if (tracked instanceof Player) {
-			DisguiseType disguise = PlayerDisguise.getDisguiseType((Player) tracked);
+		if (event.getTarget() instanceof Player tracked) {
+			DisguiseType disguise = PlayerDisguise.getDisguiseType(tracked);
 			if (disguise != null) {
 				LoveTropicsNetwork.CHANNEL.send(
 						PacketDistributor.PLAYER.with(() -> player),
@@ -87,12 +90,12 @@ public final class ServerPlayerDisguises {
 		}
 	}
 
-	private static int disguiseAs(CommandContext<CommandSourceStack> context, @Nullable CompoundTag nbt) throws CommandSyntaxException {
+	private static int disguiseAs(CommandContext<CommandSourceStack> context, float scale, @Nullable CompoundTag nbt) throws CommandSyntaxException {
 		ServerPlayer player = context.getSource().getPlayerOrException();
 		ResourceLocation entityId = EntitySummonArgument.getSummonableEntity(context, "entity");
 		EntityType<?> entityType = Registry.ENTITY_TYPE.get(entityId);
 
-		ServerPlayerDisguises.set(player, DisguiseType.create(entityType, nbt));
+		ServerPlayerDisguises.set(player, DisguiseType.create(entityType, scale, nbt));
 
 		return Command.SINGLE_SUCCESS;
 	}
