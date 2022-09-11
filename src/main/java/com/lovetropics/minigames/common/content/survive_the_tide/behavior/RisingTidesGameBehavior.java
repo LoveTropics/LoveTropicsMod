@@ -368,7 +368,7 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 
 		// iterate through all the sections that need to be changed
 		for (int sectionY = fromSection; sectionY <= toSection; sectionY++) {
-			LevelChunkSection section = chunk.getSection(sectionY);
+			LevelChunkSection section = chunk.getSection(world.getSectionIndexFromSectionY(sectionY));
 			int minSectionY = SectionPos.sectionToBlockCoord(sectionY);
 			int maxSectionY = minSectionY + SectionPos.SECTION_SIZE - 1;
 
