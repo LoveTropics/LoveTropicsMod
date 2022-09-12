@@ -6,7 +6,7 @@ import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.lovetropics.minigames.common.core.game.state.control.ControlCommand;
 import com.lovetropics.minigames.common.core.game.state.control.ControlCommands;
-import com.lovetropics.minigames.common.core.game.weather.RainType;
+import com.lovetropics.minigames.common.core.game.weather.PrecipitationType;
 import com.lovetropics.minigames.common.core.game.weather.WeatherController;
 import com.lovetropics.minigames.common.core.game.weather.WeatherControllerManager;
 import com.mojang.serialization.Codec;
@@ -24,14 +24,14 @@ public class WeatherControlsBehavior implements IGameBehavior {
 		commands.add("start_heatwave", ControlCommand.forAdmins(source -> controller.setHeatwave(true)));
 		commands.add("stop_heatwave", ControlCommand.forAdmins(source -> controller.setHeatwave(false)));
 
-		commands.add("start_rain", ControlCommand.forAdmins(source -> controller.setRain(1.0F, RainType.NORMAL)));
-		commands.add("stop_rain", ControlCommand.forAdmins(source -> controller.setRain(0.0F, RainType.NORMAL)));
+		commands.add("start_rain", ControlCommand.forAdmins(source -> controller.setRain(1.0F, PrecipitationType.NORMAL)));
+		commands.add("stop_rain", ControlCommand.forAdmins(source -> controller.setRain(0.0F, PrecipitationType.NORMAL)));
 
-		commands.add("start_acid_rain", ControlCommand.forAdmins(source -> controller.setRain(1.0F, RainType.ACID)));
-		commands.add("stop_acid_rain", ControlCommand.forAdmins(source -> controller.setRain(0.0F, RainType.ACID)));
+		commands.add("start_acid_rain", ControlCommand.forAdmins(source -> controller.setRain(1.0F, PrecipitationType.ACID)));
+		commands.add("stop_acid_rain", ControlCommand.forAdmins(source -> controller.setRain(0.0F, PrecipitationType.ACID)));
 
-		commands.add("start_hail", ControlCommand.forAdmins(source -> controller.setRain(1.0F, RainType.HAIL)));
-		commands.add("stop_hail", ControlCommand.forAdmins(source -> controller.setRain(0.0F, RainType.HAIL)));
+		commands.add("start_hail", ControlCommand.forAdmins(source -> controller.setRain(1.0F, PrecipitationType.HAIL)));
+		commands.add("stop_hail", ControlCommand.forAdmins(source -> controller.setRain(0.0F, PrecipitationType.HAIL)));
 
 		commands.add("start_wind", ControlCommand.forAdmins(source -> controller.setWind(0.5F)));
 		commands.add("stop_wind", ControlCommand.forAdmins(source -> controller.setWind(0.0F)));
