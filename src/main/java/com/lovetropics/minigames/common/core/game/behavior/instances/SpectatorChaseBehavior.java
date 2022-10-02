@@ -37,7 +37,7 @@ public final class SpectatorChaseBehavior implements IGameBehavior {
 			.append(new TextComponent("spectator").withStyle(ChatFormatting.BOLD))
 			.append("!\n\n")
 			.append("Scroll or use the arrow keys to select players.\n")
-			.append("Hold ").append(LEFT_CONTROL.copy().withStyle(ChatFormatting.UNDERLINE)).append(" and scroll to zoom.\n");
+			.append("Hold ").append(LEFT_CONTROL.copy().withStyle(ChatFormatting.UNDERLINE)).append(" and scroll to zoom.");
 
 	private static final NotificationDisplay SPECTATING_NOTIFICATION_STYLE = new NotificationDisplay(
 			NotificationIcon.item(new ItemStack(Items.ENDER_EYE)),
