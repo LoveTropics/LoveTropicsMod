@@ -82,10 +82,12 @@ public final class SpectatorChaseBehavior implements IGameBehavior {
 	private SpectatingClientState buildSpectatingState(IGamePhase game) {
 		PlayerSet participants = game.getParticipants();
 
-        Comparator<ServerPlayer> comparator = Comparator.comparing((ServerPlayer player) -> {
-                    Team team = player.getTeam();
-                    return team != null ? team.getName() : "";
-                })
+        Comparator<ServerPlayer> comparator = Comparator
+				.comparing(ServerPlayer::getScoreboardName)
+				.thenComparing((ServerPlayer player) -> {
+					Team team = player.getTeam();
+					return team != null ? team.getName() : "";
+				})
 				.thenComparing(StreamHosts::isHost, Booleans.trueFirst());
 
 		List<UUID> ids = participants.stream()
