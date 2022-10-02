@@ -8,9 +8,12 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.platform.Window;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiComponent;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextComponent;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.scores.PlayerTeam;
 import net.minecraft.util.Mth;
@@ -33,8 +36,15 @@ import java.util.function.Supplier;
 public final class SpectatingUi {
 	private static final Minecraft CLIENT = Minecraft.getInstance();
 
+	private static final Component FREE_CAMERA_TEXT = new TextComponent("Free Camera").withStyle(ChatFormatting.ITALIC);
+	private static final Component SELECT_PROMPT_TEXT = new TextComponent(" [Click to select]").withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC);
+
+	private static final int FACE_SIZE = 16;
 	private static final int ENTRY_PADDING = 2;
-	private static final int ENTRY_SIZE = 12 + ENTRY_PADDING;
+	private static final int ENTRY_WIDTH = FACE_SIZE + ENTRY_PADDING * 2;
+	private static final int ENTRY_TAG_HEIGHT = 2;
+	private static final int ENTRY_HEIGHT = ENTRY_WIDTH + ENTRY_TAG_HEIGHT;
+	private static final int HIGHLIGHTED_ENTRY_HEIGHT = ENTRY_HEIGHT + ENTRY_TAG_HEIGHT;
 
 	private final SpectatingSession session;
 	private List<Entry> entries;
@@ -147,38 +157,16 @@ public final class SpectatingUi {
 		RenderSystem.enableBlend();
 		RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
 
-		int listHeight = entries.size() * ENTRY_SIZE;
+		int listWidth = entries.size() * ENTRY_WIDTH;
 
-		int minY = (window.getGuiScaledHeight() - listHeight) / 2;
-
-		int x = ENTRY_PADDING;
-		int y = minY;
-
-		RenderSystem.disableTexture();
-
-		drawSelection(transform, x, minY, selectedEntryIndex, 0x80000000);
-
-		boolean highlighting = highlightedEntryIndex != selectedEntryIndex;
-		if (highlighting) {
-			drawSelection(transform, x, minY, highlightedEntryIndex, 0xA0A0A0A0);
+		int bottom = window.getGuiScaledHeight();
+		int x = (window.getGuiScaledWidth() - listWidth) / 2;
+		for (int i = 0; i < entries.size(); i++) {
+			boolean selected = i == selectedEntryIndex;
+			boolean highlighted = i == highlightedEntryIndex;
+			entries.get(i).render(transform, x, bottom, selected, highlighted);
+			x += ENTRY_WIDTH;
 		}
-
-		RenderSystem.enableTexture();
-
-		if (highlighting) {
-			CLIENT.font.drawShadow(transform, "Click or press ENTER to select", x, minY - CLIENT.font.lineHeight - 2, 0xFFFFFFFF);
-		}
-
-		for (Entry entry : entries) {
-			entry.render(transform, x, y);
-			y += ENTRY_SIZE;
-		}
-	}
-
-	void drawSelection(PoseStack transform, int minX, int minY, int selectedEntryIndex, int color) {
-		int selectionWidth = minX + entries.get(selectedEntryIndex).getWidth();
-		int selectionY = minY + selectedEntryIndex * ENTRY_SIZE;
-		GuiComponent.fill(transform, 0, selectionY - 1, selectionWidth + 1, selectionY + ENTRY_SIZE - 1, color);
 	}
 
 	void updatePlayers(List<UUID> players) {
@@ -218,7 +206,7 @@ public final class SpectatingUi {
 
 	List<Entry> createEntriesFor(List<UUID> players) {
 		List<Entry> entries = new ArrayList<>(players.size() + 1);
-		entries.add(new Entry(CLIENT.player.getUUID(), () -> "Free Camera", ChatFormatting.RESET, SpectatingState.FREE_CAMERA));
+		entries.add(new Entry(CLIENT.player.getUUID(), () -> FREE_CAMERA_TEXT, ChatFormatting.RESET, SpectatingState.FREE_CAMERA));
 
 		List<UUID> sortedPlayers = new ArrayList<>(players);
 		sortedPlayers.sort(Comparator.comparing(player -> {
@@ -227,9 +215,9 @@ public final class SpectatingUi {
 		}));
 
 		for (UUID player : players) {
-			Supplier<String> name = () -> {
+			Supplier<Component> name = () -> {
 				GameProfile profile = ClientPlayerInfo.getPlayerProfile(player);
-				return profile != null ? profile.getName() : "...";
+				return profile != null ? new TextComponent(profile.getName()) : new TextComponent("...");
 			};
 
 			PlayerTeam team = getTeamFor(player);
@@ -256,16 +244,40 @@ public final class SpectatingUi {
 		}
 	}
 
-	record Entry(UUID playerIcon, Supplier<String> nameSupplier, ChatFormatting color, SpectatingState selectionState) {
-		void render(PoseStack transform, int x, int y) {
-			PlayerFaces.render(playerIcon, transform, x, y, 12);
+	record Entry(UUID playerIcon, Supplier<Component> nameSupplier, ChatFormatting tagColor, SpectatingState selectionState) {
+		private static final int SELECTED_OUTLINE_COLOR = 0xffffffff;
+		private static final int HIGHLIGHTED_OUTLINE_COLOR = 0xa0000000;
+		private static final int TAB_COLOR = 0xff404040;
 
-			int color = this.color.getColor() != null ? this.color.getColor() | (0xFF << 24) : 0xFFFFFFFF;
-			CLIENT.font.draw(transform, nameSupplier.get(), x + ENTRY_SIZE, y + ENTRY_PADDING, color);
+		void render(PoseStack transform, int left, int screenBottom, boolean selected, boolean highlighted) {
+			int top = screenBottom - (highlighted ? HIGHLIGHTED_ENTRY_HEIGHT : ENTRY_HEIGHT);
+			int bottom = top + ENTRY_HEIGHT;
+			int right = left + ENTRY_WIDTH;
+
+			if (highlighted || selected) {
+				GuiComponent.fill(transform, left, top, right, bottom, selected ? SELECTED_OUTLINE_COLOR : HIGHLIGHTED_OUTLINE_COLOR);
+			}
+
+			int color = tagColor.getColor() != null ? tagColor.getColor() | 0xff000000 : 0xffa0a0a0;
+			GuiComponent.fill(transform, left, bottom - ENTRY_TAG_HEIGHT, right, bottom, color);
+			GuiComponent.fill(transform, left, bottom, right, screenBottom, TAB_COLOR);
+
+			PlayerFaces.render(playerIcon, transform, left + ENTRY_PADDING, top + ENTRY_PADDING, FACE_SIZE);
+
+			if (highlighted) {
+				renderName(transform, left, top, selected);
+			}
 		}
 
-		int getWidth() {
-			return ENTRY_SIZE + CLIENT.font.width(nameSupplier.get());
+		private void renderName(PoseStack transform, int left, int top, boolean selected) {
+			Font font = CLIENT.font;
+			Component name = nameSupplier.get();
+			if (!selected) {
+				name = name.copy().append(SELECT_PROMPT_TEXT);
+			}
+
+			int nameLeft = left + (ENTRY_WIDTH - font.width(name)) / 2;
+			font.drawShadow(transform, name, nameLeft, top - font.lineHeight - 1, 0xffffffff);
 		}
 	}
 }
