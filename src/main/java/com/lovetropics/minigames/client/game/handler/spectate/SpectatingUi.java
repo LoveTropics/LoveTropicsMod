@@ -46,11 +46,15 @@ public final class SpectatingUi {
 	private static final int ENTRY_HEIGHT = ENTRY_WIDTH + ENTRY_TAG_HEIGHT;
 	private static final int HIGHLIGHTED_ENTRY_HEIGHT = ENTRY_HEIGHT + ENTRY_TAG_HEIGHT;
 
+	private static final int MAX_ENTRIES_ON_SCREEN = 16;
+
 	private final SpectatingSession session;
 	private List<Entry> entries;
 
 	private int selectedEntryIndex;
 	private int highlightedEntryIndex;
+
+	private int scrollViewIndex;
 
 	private double accumulatedScroll;
 
@@ -129,6 +133,7 @@ public final class SpectatingUi {
 		newIndex = Mth.clamp(newIndex, 0, entries.size() - 1);
 
 		highlightedEntryIndex = newIndex;
+		scrollTo(newIndex);
 	}
 
 	private void selectEntry(int index) {
@@ -138,6 +143,31 @@ public final class SpectatingUi {
 
 		selectedEntryIndex = index;
 		highlightedEntryIndex = index;
+		scrollTo(index);
+	}
+
+	private void scrollTo(int index) {
+		int scrollViewStart = scrollViewStart();
+		int scrollViewEnd = scrollViewEnd();
+		if (index < scrollViewStart) {
+			scrollViewIndex += index - scrollViewStart;
+		} else if (index > scrollViewEnd) {
+			scrollViewIndex += index - scrollViewEnd;
+		}
+	}
+
+	private int scrollViewStart() {
+		return scrollViewIndex;
+	}
+
+	private int scrollViewEnd() {
+		return scrollViewIndex + scrollViewSize() - 1;
+	}
+
+	private int scrollViewSize() {
+		int padding = ENTRY_WIDTH * 4;
+		int availableWidth = CLIENT.getWindow().getGuiScaledWidth() - padding;
+		return Mth.clamp(availableWidth / ENTRY_WIDTH, 1, MAX_ENTRIES_ON_SCREEN);
 	}
 
 	@SubscribeEvent
@@ -157,11 +187,24 @@ public final class SpectatingUi {
 		RenderSystem.enableBlend();
 		RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
 
-		int listWidth = entries.size() * ENTRY_WIDTH;
-
+		int viewStart = scrollViewStart();
+		int viewEnd = scrollViewEnd();
+		int width = Math.min(entries.size(), scrollViewSize()) * ENTRY_WIDTH;
+		int left = (window.getGuiScaledWidth() - width) / 2;
+		int right = left + width;
 		int bottom = window.getGuiScaledHeight();
-		int x = (window.getGuiScaledWidth() - listWidth) / 2;
-		for (int i = 0; i < entries.size(); i++) {
+
+		Font font = CLIENT.font;
+		int textY = bottom - (ENTRY_HEIGHT + font.lineHeight) / 2;
+		if (viewStart > 0) {
+			font.drawShadow(transform, "<", left - font.width("<") - 2, textY, 0xffffffff);
+		}
+		if (viewEnd < entries.size() - 1) {
+			font.drawShadow(transform, ">", right + 2, textY, 0xffffffff);
+		}
+
+		int x = left;
+		for (int i = viewStart; i <= viewEnd && i < entries.size(); i++) {
 			boolean selected = i == selectedEntryIndex;
 			boolean highlighted = i == highlightedEntryIndex;
 			entries.get(i).render(transform, x, bottom, selected, highlighted);
