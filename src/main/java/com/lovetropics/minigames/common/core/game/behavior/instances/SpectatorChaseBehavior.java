@@ -34,13 +34,11 @@ import java.util.UUID;
 public final class SpectatorChaseBehavior implements IGameBehavior {
 	public static final Codec<SpectatorChaseBehavior> CODEC = Codec.unit(SpectatorChaseBehavior::new);
 
-	private static final Component LEFT_CONTROL = InputConstants.Type.KEYSYM.getOrCreate(InputConstants.KEY_LCONTROL).getDisplayName();
-
 	private static final Component SPECTATING_NOTIFICATION_MESSAGE = new TextComponent("You are a ")
 			.append(new TextComponent("spectator").withStyle(ChatFormatting.BOLD))
 			.append("!\n\n")
 			.append("Scroll or use the arrow keys to select players.\n")
-			.append("Hold ").append(LEFT_CONTROL.copy().withStyle(ChatFormatting.UNDERLINE)).append(" and scroll to zoom.");
+			.append("Hold ").append(new TextComponent("Left Control").withStyle(ChatFormatting.UNDERLINE)).append(" and scroll to zoom.");
 
 	private static final NotificationDisplay SPECTATING_NOTIFICATION_STYLE = new NotificationDisplay(
 			NotificationIcon.item(new ItemStack(Items.ENDER_EYE)),
