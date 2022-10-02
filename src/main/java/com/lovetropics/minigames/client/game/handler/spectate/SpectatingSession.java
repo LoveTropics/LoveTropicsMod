@@ -61,7 +61,8 @@ class SpectatingSession {
 
 	void applyState(SpectatingState state) {
 		this.state = state;
-		this.stateApplicator = state.apply(CLIENT, this);
+		SpectatingState.StateApplicator applicator = state.apply(CLIENT, this);
+		this.stateApplicator = applicator.isApplied() ? null : applicator;
 	}
 
 	void updatePlayers(List<UUID> players) {

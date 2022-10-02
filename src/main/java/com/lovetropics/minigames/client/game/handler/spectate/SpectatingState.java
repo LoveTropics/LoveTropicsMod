@@ -2,6 +2,7 @@ package com.lovetropics.minigames.client.game.handler.spectate;
 
 import com.lovetropics.minigames.common.core.network.LoveTropicsNetwork;
 import com.lovetropics.minigames.common.core.network.SpectatePlayerAndTeleportMessage;
+import net.minecraft.SharedConstants;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.Camera;
@@ -149,7 +150,7 @@ interface SpectatingState {
 	}
 
 	final class StateApplicator {
-		private static final long APPLY_INTERVAL = 20;
+		private static final long APPLY_INTERVAL_TICKS = SharedConstants.TICKS_PER_SECOND;
 
 		final Runnable apply;
 		final BooleanSupplier condition;
@@ -163,11 +164,15 @@ interface SpectatingState {
 
 		boolean tryApply(Minecraft client) {
 			long time = client.level.getGameTime();
-			if (time - lastApplyTime >= APPLY_INTERVAL) {
+			if (time - lastApplyTime >= APPLY_INTERVAL_TICKS) {
 				apply.run();
 				lastApplyTime = time;
 			}
 
+			return condition.getAsBoolean();
+		}
+
+		boolean isApplied() {
 			return condition.getAsBoolean();
 		}
 	}
