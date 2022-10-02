@@ -27,7 +27,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
-import java.util.function.Function;
+import java.util.function.Supplier;
 
 @Mod.EventBusSubscriber(modid = Constants.MODID, value = Dist.CLIENT)
 public final class SpectatingUi {
@@ -170,13 +170,13 @@ public final class SpectatingUi {
 		}
 
 		for (Entry entry : entries) {
-			entry.render(transform, session, x, y);
+			entry.render(transform, x, y);
 			y += ENTRY_SIZE;
 		}
 	}
 
 	void drawSelection(PoseStack transform, int minX, int minY, int selectedEntryIndex, int color) {
-		int selectionWidth = minX + entries.get(selectedEntryIndex).getWidth(session);
+		int selectionWidth = minX + entries.get(selectedEntryIndex).getWidth();
 		int selectionY = minY + selectedEntryIndex * ENTRY_SIZE;
 		GuiComponent.fill(transform, 0, selectionY - 1, selectionWidth + 1, selectionY + ENTRY_SIZE - 1, color);
 	}
@@ -218,7 +218,7 @@ public final class SpectatingUi {
 
 	List<Entry> createEntriesFor(List<UUID> players) {
 		List<Entry> entries = new ArrayList<>(players.size() + 1);
-		entries.add(new Entry(CLIENT.player.getUUID(), s -> "Free Camera", ChatFormatting.RESET, SpectatingState.FREE_CAMERA));
+		entries.add(new Entry(CLIENT.player.getUUID(), () -> "Free Camera", ChatFormatting.RESET, SpectatingState.FREE_CAMERA));
 
 		List<UUID> sortedPlayers = new ArrayList<>(players);
 		sortedPlayers.sort(Comparator.comparing(player -> {
@@ -227,7 +227,7 @@ public final class SpectatingUi {
 		}));
 
 		for (UUID player : players) {
-			Function<SpectatingSession, String> nameFunction = s -> {
+			Supplier<String> name = () -> {
 				GameProfile profile = ClientPlayerInfo.getPlayerProfile(player);
 				return profile != null ? profile.getName() : "...";
 			};
@@ -235,7 +235,7 @@ public final class SpectatingUi {
 			PlayerTeam team = getTeamFor(player);
 			ChatFormatting color = team != null ? team.getColor() : ChatFormatting.RESET;
 
-			entries.add(new Entry(player, nameFunction, color, new SpectatingState.SelectedPlayer(player)));
+			entries.add(new Entry(player, name, color, new SpectatingState.SelectedPlayer(player)));
 		}
 
 		return entries;
@@ -258,32 +258,30 @@ public final class SpectatingUi {
 
 	static class Entry {
 		final UUID playerIcon;
-		final Function<SpectatingSession, String> nameFunction;
+		final Supplier<String> name;
 		final int color;
 		final SpectatingState selectionState;
 
 		Entry(
 				UUID playerIcon,
-				Function<SpectatingSession, String> name,
+				Supplier<String> name,
 				ChatFormatting color,
 				SpectatingState selectionState
 		) {
 			this.playerIcon = playerIcon;
-			this.nameFunction = name;
+			this.name = name;
 			this.color = color.getColor() != null ? color.getColor() | (0xFF << 24) : 0xFFFFFFFF;
 			this.selectionState = selectionState;
 		}
 
-		void render(PoseStack transform, SpectatingSession session, int x, int y) {
+		void render(PoseStack transform, int x, int y) {
 			PlayerFaces.render(playerIcon, transform, x, y, 12);
 
-			String name = nameFunction.apply(session);
-			CLIENT.font.draw(transform, name, x + ENTRY_SIZE, y + ENTRY_PADDING, color);
+			CLIENT.font.draw(transform, name.get(), x + ENTRY_SIZE, y + ENTRY_PADDING, color);
 		}
 
-		int getWidth(SpectatingSession session) {
-			String name = nameFunction.apply(session);
-			return ENTRY_SIZE + CLIENT.font.width(name);
+		int getWidth() {
+			return ENTRY_SIZE + CLIENT.font.width(name.get());
 		}
 	}
 }
