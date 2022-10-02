@@ -102,11 +102,11 @@ public final class SpectatingUi {
 
 		int key = event.getKey();
 
-		if (key == GLFW.GLFW_KEY_DOWN) {
-			session.ui.scrollSelection(1);
-		} else if (key == GLFW.GLFW_KEY_UP) {
+		if (key == GLFW.GLFW_KEY_LEFT) {
 			session.ui.scrollSelection(-1);
-		} else if (key == GLFW.GLFW_KEY_RIGHT || key == GLFW.GLFW_KEY_ENTER || key == GLFW.GLFW_KEY_KP_ENTER) {
+		} else if (key == GLFW.GLFW_KEY_RIGHT) {
+			session.ui.scrollSelection(1);
+		} else if (key == GLFW.GLFW_KEY_UP || key == GLFW.GLFW_KEY_ENTER || key == GLFW.GLFW_KEY_KP_ENTER) {
 			session.ui.selectEntry(session.ui.highlightedEntryIndex);
 		}
 	}
