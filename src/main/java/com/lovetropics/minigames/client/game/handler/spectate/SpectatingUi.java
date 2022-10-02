@@ -251,12 +251,6 @@ public final class SpectatingUi {
 		List<Entry> entries = new ArrayList<>(players.size() + 1);
 		entries.add(new Entry(CLIENT.player.getUUID(), () -> FREE_CAMERA_TEXT, ChatFormatting.RESET, SpectatingState.FREE_CAMERA));
 
-		List<UUID> sortedPlayers = new ArrayList<>(players);
-		sortedPlayers.sort(Comparator.comparing(player -> {
-			PlayerTeam team = getTeamFor(player);
-			return team != null ? team.getName() : "";
-		}));
-
 		for (UUID player : players) {
 			Supplier<Component> name = () -> {
 				GameProfile profile = ClientPlayerInfo.getPlayerProfile(player);

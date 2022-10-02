@@ -22,9 +22,10 @@ import net.minecraft.network.chat.TextComponent;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.scores.Team;
 import net.minecraftforge.network.PacketDistributor;
 
-import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 
@@ -79,11 +80,15 @@ public final class SpectatorChaseBehavior implements IGameBehavior {
 	private SpectatingClientState buildSpectatingState(IGamePhase game) {
 		PlayerSet participants = game.getParticipants();
 
-		List<UUID> ids = new ArrayList<>(participants.size());
-		for (ServerPlayer participant : participants) {
-			ids.add(participant.getUUID());
-		}
+        Comparator<ServerPlayer> comparator = Comparator.comparing((ServerPlayer player) -> {
+                    Team team = player.getTeam();
+                    return team != null ? team.getName() : "";
+                });
 
+		List<UUID> ids = participants.stream()
+				.sorted(comparator)
+				.map(ServerPlayer::getUUID)
+				.toList();
 		return new SpectatingClientState(ids);
 	}
 }
