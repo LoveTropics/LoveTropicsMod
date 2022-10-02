@@ -72,7 +72,7 @@ public final class SpectatingUi {
 
 		double delta = event.getScrollDelta();
 
-		boolean zoom = InputConstants.isKeyDown(CLIENT.getWindow().getWindow(), GLFW.GLFW_KEY_LEFT_CONTROL);
+		boolean zoom = InputConstants.isKeyDown(CLIENT.getWindow().getWindow(), InputConstants.KEY_LCONTROL);
 		if (zoom) {
 			session.ui.onScrollZoom(delta);
 		} else {

@@ -116,7 +116,7 @@ public final class NotificationToast implements Toast {
 		List<FormattedCharSequence> lines = this.lines;
 		for (int i = 0; i < lines.size(); i++) {
 			FormattedCharSequence line = lines.get(i);
-			fontRenderer.draw(matrixStack, line, TEXT_LEFT, 7 + (i * 12), 0xFFFFFFFF);
+			fontRenderer.draw(matrixStack, line, TEXT_LEFT, 7 + (i * 12), display.color == NotificationDisplay.Color.LIGHT ? 0xFF000000 : 0xFFFFFFFF);
 		}
 	}
 
