@@ -1,5 +1,6 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances;
 
+import com.google.common.primitives.Booleans;
 import com.lovetropics.minigames.client.toast.NotificationDisplay;
 import com.lovetropics.minigames.client.toast.NotificationIcon;
 import com.lovetropics.minigames.client.toast.ShowNotificationToastMessage;
@@ -14,6 +15,7 @@ import com.lovetropics.minigames.common.core.game.client_state.instance.Spectati
 import com.lovetropics.minigames.common.core.game.player.PlayerRole;
 import com.lovetropics.minigames.common.core.game.player.PlayerSet;
 import com.lovetropics.minigames.common.core.network.LoveTropicsNetwork;
+import com.lovetropics.minigames.common.role.StreamHosts;
 import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.serialization.Codec;
 import net.minecraft.ChatFormatting;
@@ -83,7 +85,8 @@ public final class SpectatorChaseBehavior implements IGameBehavior {
         Comparator<ServerPlayer> comparator = Comparator.comparing((ServerPlayer player) -> {
                     Team team = player.getTeam();
                     return team != null ? team.getName() : "";
-                });
+                })
+				.thenComparing(StreamHosts::isHost, Booleans.trueFirst());
 
 		List<UUID> ids = participants.stream()
 				.sorted(comparator)
