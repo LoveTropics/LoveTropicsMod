@@ -7,6 +7,7 @@ import com.lovetropics.minigames.common.core.game.player.PlayerRole;
 import com.lovetropics.minigames.common.core.game.player.PlayerRoleSelections;
 import com.lovetropics.minigames.common.core.game.util.GameTexts;
 import com.lovetropics.minigames.common.core.game.util.TeamAllocator;
+import com.lovetropics.minigames.common.role.StreamHosts;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Unit;
 
@@ -30,8 +31,12 @@ final class LobbyPlayerManager implements IGameLobbyPlayers {
 	public TeamAllocator<PlayerRole, ServerPlayer> createRoleAllocator() {
 		TeamAllocator<PlayerRole, ServerPlayer> allocator = registrations.createAllocator();
 		for (ServerPlayer player : registrations) {
+			if (allocator.hasPreference(player)) {
+				continue;
+			}
+
 			PlayerRole role = roleSelections.getSelectedRoleFor(player);
-			if (role != PlayerRole.PARTICIPANT && !allocator.hasPreference(player)) {
+			if (StreamHosts.isHost(player) || role != PlayerRole.PARTICIPANT) {
 				allocator.addPlayer(player, role);
 			}
 		}
