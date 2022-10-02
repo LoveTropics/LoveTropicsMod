@@ -29,6 +29,7 @@ import com.lovetropics.minigames.common.core.integration.Telemetry;
 import com.lovetropics.minigames.common.core.map.VoidChunkGenerator;
 import com.lovetropics.minigames.common.core.map.item.MapWorkspaceItems;
 import com.lovetropics.minigames.common.core.network.LoveTropicsNetwork;
+import com.lovetropics.minigames.common.role.StreamHosts;
 import com.lovetropics.minigames.common.util.registry.LoveTropicsRegistrate;
 import com.mojang.brigadier.CommandDispatcher;
 import com.tterrag.registrate.providers.ProviderType;
@@ -113,6 +114,7 @@ public class LoveTropics {
 
         GameBehaviorTypes.init(modBus);
         GameClientStateTypes.init(modBus);
+        StreamHosts.init();
 
         BuildCompetition.init();
         HideAndSeek.init();
