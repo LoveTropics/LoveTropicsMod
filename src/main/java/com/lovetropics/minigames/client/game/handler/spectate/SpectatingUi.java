@@ -256,32 +256,16 @@ public final class SpectatingUi {
 		}
 	}
 
-	static class Entry {
-		final UUID playerIcon;
-		final Supplier<String> name;
-		final int color;
-		final SpectatingState selectionState;
-
-		Entry(
-				UUID playerIcon,
-				Supplier<String> name,
-				ChatFormatting color,
-				SpectatingState selectionState
-		) {
-			this.playerIcon = playerIcon;
-			this.name = name;
-			this.color = color.getColor() != null ? color.getColor() | (0xFF << 24) : 0xFFFFFFFF;
-			this.selectionState = selectionState;
-		}
-
+	record Entry(UUID playerIcon, Supplier<String> nameSupplier, ChatFormatting color, SpectatingState selectionState) {
 		void render(PoseStack transform, int x, int y) {
 			PlayerFaces.render(playerIcon, transform, x, y, 12);
 
-			CLIENT.font.draw(transform, name.get(), x + ENTRY_SIZE, y + ENTRY_PADDING, color);
+			int color = this.color.getColor() != null ? this.color.getColor() | (0xFF << 24) : 0xFFFFFFFF;
+			CLIENT.font.draw(transform, nameSupplier.get(), x + ENTRY_SIZE, y + ENTRY_PADDING, color);
 		}
 
 		int getWidth() {
-			return ENTRY_SIZE + CLIENT.font.width(name.get());
+			return ENTRY_SIZE + CLIENT.font.width(nameSupplier.get());
 		}
 	}
 }
