@@ -8,18 +8,25 @@ public final class GamePhaseState implements IGameState {
 
 	// TODO: avoid stringly-typed phases?
 	private GamePhase phase;
+	private float progress;
 
-	public GamePhaseState(GamePhase phase) {
+	public GamePhaseState(GamePhase phase, float progress) {
 		this.phase = phase;
+		this.progress = progress;
 	}
 
-	public void set(@Nonnull GamePhase phase) {
+	public void set(@Nonnull GamePhase phase, float progress) {
 		this.phase = phase;
+		this.progress = progress;
 	}
 
 	@Nonnull
 	public GamePhase get() {
 		return phase;
+	}
+
+	public float progress() {
+		return progress;
 	}
 
 	public boolean is(String phase) {

@@ -25,7 +25,7 @@ public class PhaseControllerBehavior implements IGameBehavior {
 
 	private final List<GamePhase> phases;
 	private Iterator<GamePhase> phaseIterator;
-	private int currentPhaseTicks;
+	private double phaseProgress;
 	private boolean hasFinishedPhases = false;
 
 	public PhaseControllerBehavior(final List<GamePhase> phases) {
@@ -37,8 +37,8 @@ public class PhaseControllerBehavior implements IGameBehavior {
 			GamePhase lastPhase = phaseState.get();
 
 			GamePhase nextPhase = phaseIterator.next();
-			phaseState.set(nextPhase);
-			currentPhaseTicks = nextPhase.lengthInTicks();
+			phaseState.set(nextPhase, 0.0f);
+			phaseProgress = 0;
 
 			if (lastPhase != nextPhase) {
 				game.invoker(GameLogicEvents.PHASE_CHANGE).onPhaseChange(nextPhase, lastPhase);
@@ -52,7 +52,7 @@ public class PhaseControllerBehavior implements IGameBehavior {
 
 	@Override
 	public void registerState(IGamePhase game, GameStateMap state) {
-		phaseState = state.register(GamePhaseState.KEY, new GamePhaseState(phases.get(0)));
+		phaseState = state.register(GamePhaseState.KEY, new GamePhaseState(phases.get(0), game.ticks()));
 	}
 
 	@Override
@@ -64,10 +64,17 @@ public class PhaseControllerBehavior implements IGameBehavior {
 		});
 
 		events.listen(GamePhaseEvents.TICK, () -> {
-			if (!hasFinishedPhases && currentPhaseTicks-- < 0) {
+			if (hasFinishedPhases) {
+				return;
+			}
+			GamePhase phase = phaseState.get();
+			phaseProgress += 1.0 / phase.lengthInTicks();
+			if (phaseProgress > 1.0) {
 				if (!nextPhase(game)) {
 					hasFinishedPhases = true;
 				}
+			} else {
+				phaseState.set(phase, (float) phaseProgress);
 			}
 		});
 	}

@@ -157,7 +157,7 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 		GamePhase currentPhase = phases.get();
 		int prevWaterLevel = phaseToTideHeight.get(lastPhase.key());
 
-		tickWaterLevel(game, currentPhase, prevWaterLevel);
+		tickWaterLevel(game, currentPhase, phases.progress(), prevWaterLevel);
 
 		if (phasesIcebergsGrow.contains(currentPhase.key()) && game.ticks() % icebergGrowthTickRate == 0) {
 			growIcebergs(game.getWorld());
@@ -195,11 +195,6 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 		for (IcebergLine line : icebergLines) {
 			line.generate(world, waterLevel);
 		}
-	}
-
-	private int calculateWaterChangeInterval(int targetLevel, int prevLevel, int phaseLength) {
-		int waterLevelDiff = prevLevel - targetLevel;
-		return Math.max(phaseLength / Math.max(1, Math.abs(waterLevelDiff)), 1);
 	}
 
 	private void processRisingTideQueue(IGamePhase game) {
@@ -246,16 +241,11 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 		return count;
 	}
 
-	private void tickWaterLevel(final IGamePhase game, final GamePhase phase, final int prevWaterLevel) {
-		final int targetWaterLevel = phaseToTideHeight.get(phase.key());
+	private void tickWaterLevel(final IGamePhase game, final GamePhase phase, float phaseProgress, final int prevWaterLevel) {
+		final int phaseWaterLevel = phaseToTideHeight.get(phase.key());
+		final int targetWaterLevel = Mth.floor(Mth.lerp(phaseProgress, prevWaterLevel, phaseWaterLevel));
 
-		int waterChangeInterval = this.calculateWaterChangeInterval(
-				targetWaterLevel,
-				prevWaterLevel,
-				phase.lengthInTicks()
-		);
-
-		if (waterLevel < targetWaterLevel && game.ticks() % waterChangeInterval == 0) {
+		if (waterLevel < targetWaterLevel) {
 			waterLevel++;
 
 			long[] chunks = collectSortedChunks(game);
