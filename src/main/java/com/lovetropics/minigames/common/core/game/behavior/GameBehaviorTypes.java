@@ -106,6 +106,7 @@ public class GameBehaviorTypes {
 	public static final GameBehaviorEntry<RunCommandsAction> RUN_COMMANDS;
 	public static final GameBehaviorEntry<SendMessageAction> SEND_MESSAGE;
 	public static final GameBehaviorEntry<ShowTitleAction> SHOW_TITLE;
+	public static final GameBehaviorEntry<PlaySoundAction> PLAY_SOUND;
 
 	public static final GameBehaviorEntry<SetupTelemetryBehavior> SETUP_TELEMETRY;
 	public static final GameBehaviorEntry<AssignPlayerRolesBehavior> ASSIGN_PLAYER_ROLES;
@@ -189,6 +190,7 @@ public class GameBehaviorTypes {
 		SEND_MESSAGE = register("send_message", SendMessageAction.CODEC);
 		ELIMINATE_PLAYER = register("eliminate_player", EliminatePlayerAction.CODEC);
 		SHOW_TITLE = register("show_title", ShowTitleAction.CODEC);
+		PLAY_SOUND = register("play_sound", PlaySoundAction.CODEC);
 
 		SETUP_TELEMETRY = register("setup_telemetry", SetupTelemetryBehavior.CODEC);
 		ASSIGN_PLAYER_ROLES = register("assign_player_roles", AssignPlayerRolesBehavior.CODEC);
