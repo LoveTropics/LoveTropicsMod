@@ -4,20 +4,20 @@ import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.client.screen.ClientPlayerInfo;
 import com.lovetropics.minigames.client.screen.PlayerFaces;
 import com.mojang.authlib.GameProfile;
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.platform.Window;
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiComponent;
-import com.mojang.blaze3d.platform.InputConstants;
-import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.multiplayer.ClientPacketListener;
+import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TextComponent;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.scores.PlayerTeam;
 import net.minecraft.util.Mth;
-import net.minecraft.ChatFormatting;
+import net.minecraft.world.scores.PlayerTeam;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
@@ -27,7 +27,6 @@ import org.lwjgl.glfw.GLFW;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Supplier;
@@ -268,17 +267,12 @@ public final class SpectatingUi {
 
 	@Nullable
 	private static PlayerTeam getTeamFor(UUID playerId) {
-		ClientLevel world = CLIENT.level;
-		if (world == null) {
-			return null;
+		ClientPacketListener connection = CLIENT.getConnection();
+		if (connection != null) {
+			PlayerInfo player = connection.getPlayerInfo(playerId);
+			return player != null ? player.getTeam() : null;
 		}
-
-		Player player = world.getPlayerByUUID(playerId);
-		if (player != null) {
-			return world.getScoreboard().getPlayersTeam(player.getScoreboardName());
-		} else {
-			return null;
-		}
+		return null;
 	}
 
 	record Entry(UUID playerIcon, Supplier<Component> nameSupplier, ChatFormatting tagColor, SpectatingState selectionState) {
