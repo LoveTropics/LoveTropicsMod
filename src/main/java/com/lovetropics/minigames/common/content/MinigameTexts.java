@@ -45,7 +45,8 @@ public final class MinigameTexts {
 		};
 
 		static final String SURVIVE_THE_TIDE_PVP_DISABLED = key("survive_the_tide_pvp_disabled");
-		static final String SURVIVE_THE_TIDE_PVP_ENABLED = key("survive_the_tide_pvp_enabled");
+		static final String SURVIVE_THE_TIDE_PVP_ENABLED_TITLE = key("survive_the_tide_pvp_enabled.title");
+		static final String SURVIVE_THE_TIDE_PVP_ENABLED_SUBTITLE = key("survive_the_tide_pvp_enabled.subtitle");
 		static final String SURVIVE_THE_TIDE_DOWN_TO_TWO = key("survive_the_tide_down_to_two");
 
 		static void collectTranslations(BiConsumer<String, String> consumer) {
@@ -81,7 +82,8 @@ public final class MinigameTexts {
 			consumer.accept(SURVIVE_THE_TIDE_FINISH[3], "\nWhat would you do different next time? Together, we could stop this from becoming our future.");
 
 			consumer.accept(SURVIVE_THE_TIDE_PVP_DISABLED, "NOTE: PvP is disabled for %s minutes! Go fetch resources before time runs out.");
-			consumer.accept(SURVIVE_THE_TIDE_PVP_ENABLED, "WARNING: PVP HAS BEEN ENABLED! Beware of other players...");
+			consumer.accept(SURVIVE_THE_TIDE_PVP_ENABLED_TITLE, "PVP HAS BEEN ENABLED!");
+			consumer.accept(SURVIVE_THE_TIDE_PVP_ENABLED_SUBTITLE, "Beware of other players...");
 
 			consumer.accept(SURVIVE_THE_TIDE_DOWN_TO_TWO, "IT'S DOWN TO TWO PLAYERS! %s and %s are now head to head - who will triumph above these rising tides?");
 		}
