@@ -4,6 +4,7 @@
   "compatibilityLevel": "JAVA_17",
   "refmap": "ltminigames.refmap.json",
   "mixins": [
+    "ChunkHeightAndBiomeFixMixin",
     "DataFixesManagerMixin",
     "EntityTypeMixin",
     "MinecraftServerMixin",
