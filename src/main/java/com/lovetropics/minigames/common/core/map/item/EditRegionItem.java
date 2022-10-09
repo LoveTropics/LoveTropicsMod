@@ -39,7 +39,7 @@ public final class EditRegionItem extends Item {
 			useTick = player.tickCount;
 
 			if (traceResult != null && mode == Mode.REMOVE) {
-				LoveTropicsNetwork.CHANNEL.sendToServer(new UpdateWorkspaceRegionMessage(traceResult.entry.id, null));
+				LoveTropicsNetwork.CHANNEL.sendToServer(new UpdateWorkspaceRegionMessage(traceResult.entry().id, null));
 				return InteractionResultHolder.success(stack);
 			}
 

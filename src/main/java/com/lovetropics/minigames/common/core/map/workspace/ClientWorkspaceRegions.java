@@ -87,8 +87,7 @@ public class ClientWorkspaceRegions implements Iterable<ClientWorkspaceRegions.E
 		public boolean equals(Object o) {
 			if (this == o) return true;
 
-			if (o instanceof Entry) {
-				Entry entry = (Entry) o;
+			if (o instanceof Entry entry) {
 				return id == entry.id;
 			}
 

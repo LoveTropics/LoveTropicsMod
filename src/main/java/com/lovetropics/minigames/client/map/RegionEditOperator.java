@@ -29,17 +29,17 @@ public interface RegionEditOperator {
 
 		protected EditOne(RegionTraceTarget target) {
 			this.target = target;
-			this.selected = Collections.singleton(target.entry);
+			this.selected = Collections.singleton(target.entry());
 		}
 
 		@Override
 		public void update(Player player) {
-			target.entry.region = updateEditing(player, target);
+			target.entry().region = updateEditing(player, target);
 		}
 
 		@Override
 		public boolean select(Player player, @Nullable RegionTraceTarget target) {
-			LoveTropicsNetwork.CHANNEL.sendToServer(new UpdateWorkspaceRegionMessage(this.target.entry.id, this.target.entry.region));
+			LoveTropicsNetwork.CHANNEL.sendToServer(new UpdateWorkspaceRegionMessage(this.target.entry().id, this.target.entry().region));
 			return true;
 		}
 
@@ -61,20 +61,19 @@ public interface RegionEditOperator {
 			Vec3 origin = player.getEyePosition(1.0F);
 
 			// TODO: not totally sure how to make this feel natural
-			Vec3 grabPoint = origin.add(player.getLookAngle().scale(target.distanceToSide));
+			Vec3 grabPoint = origin.add(player.getLookAngle().scale(target.distanceToSide()));
 			BlockPos grabPos = new BlockPos(grabPoint);
 
-			BlockBox region = editTarget.entry.region;
+			BlockBox region = editTarget.entry().region;
 
-			switch (editTarget.side) {
-				case DOWN: return region.withMin(new BlockPos(region.min().getX(), grabPos.getY(), region.min().getZ()));
-				case UP: return region.withMax(new BlockPos(region.max().getX(), grabPos.getY(), region.max().getZ()));
-				case NORTH: return region.withMin(new BlockPos(region.min().getX(), region.min().getY(), grabPos.getZ()));
-				case SOUTH: return region.withMax(new BlockPos(region.max().getX(), region.max().getY(), grabPos.getZ()));
-				case WEST: return region.withMin(new BlockPos(grabPos.getX(), region.min().getY(), region.min().getZ()));
-				case EAST: return region.withMax(new BlockPos(grabPos.getX(), region.max().getY(), region.max().getZ()));
-				default: throw new UnsupportedOperationException();
-			}
+			return switch (editTarget.side()) {
+				case DOWN -> region.withMin(new BlockPos(region.min().getX(), grabPos.getY(), region.min().getZ()));
+				case UP -> region.withMax(new BlockPos(region.max().getX(), grabPos.getY(), region.max().getZ()));
+				case NORTH -> region.withMin(new BlockPos(region.min().getX(), region.min().getY(), grabPos.getZ()));
+				case SOUTH -> region.withMax(new BlockPos(region.max().getX(), region.max().getY(), grabPos.getZ()));
+				case WEST -> region.withMin(new BlockPos(grabPos.getX(), region.min().getY(), region.min().getZ()));
+				case EAST -> region.withMax(new BlockPos(grabPos.getX(), region.max().getY(), region.max().getZ()));
+			};
 		}
 	}
 
@@ -83,17 +82,17 @@ public interface RegionEditOperator {
 
 		public Move(RegionTraceTarget target) {
 			super(target);
-			this.offset = target.intersectPoint.subtract(target.entry.region.center());
+			this.offset = target.intersectPoint().subtract(target.entry().region.center());
 		}
 
 		@Override
 		protected BlockBox updateEditing(Player player, RegionTraceTarget editTarget) {
 			Vec3 origin = player.getEyePosition(1.0F);
 
-			BlockBox region = editTarget.entry.region;
+			BlockBox region = editTarget.entry().region;
 
 			Vec3 grabPoint = region.center().add(offset);
-			Vec3 targetPoint = origin.add(player.getLookAngle().scale(target.distanceToSide));
+			Vec3 targetPoint = origin.add(player.getLookAngle().scale(target.distanceToSide()));
 			Vec3 offset = targetPoint.subtract(grabPoint);
 
 			return region.offset(offset.x, offset.y, offset.z);
@@ -104,7 +103,7 @@ public interface RegionEditOperator {
 		private final Set<ClientWorkspaceRegions.Entry> selected = new ObjectOpenHashSet<>();
 
 		public Select(RegionTraceTarget target) {
-			selected.add(target.entry);
+			selected.add(target.entry());
 		}
 
 		@Override
@@ -114,7 +113,7 @@ public interface RegionEditOperator {
 		@Override
 		public boolean select(Player player, @Nullable RegionTraceTarget target) {
 			if (target != null) {
-				selected.add(target.entry);
+				selected.add(target.entry());
 			}
 			return false;
 		}
