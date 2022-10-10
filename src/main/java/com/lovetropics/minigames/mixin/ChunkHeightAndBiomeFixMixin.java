@@ -11,7 +11,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 // Let's pretend to be the overworld.
 @Mixin(ChunkHeightAndBiomeFix.class)
 public class ChunkHeightAndBiomeFixMixin {
-    @Redirect(method = "lambda$makeRule$10", at = @At(value = "INVOKE", target = "Ljava/lang/String;equals(Ljava/lang/Object;)Z"))
+    @Redirect(method = "lambda$makeRule$10", remap = false, at = @At(value = "INVOKE", target = "Ljava/lang/String;equals(Ljava/lang/Object;)Z"))
     private boolean shouldUpgradeHeight(String overworld, Object dimension) {
         if (((String) dimension).startsWith(Constants.MODID + ":")) {
             return true;
