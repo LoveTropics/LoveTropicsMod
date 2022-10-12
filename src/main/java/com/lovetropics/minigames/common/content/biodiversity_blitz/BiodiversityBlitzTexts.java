@@ -27,7 +27,7 @@ public final class BiodiversityBlitzTexts {
 
 		static void collectTranslations(BiConsumer<String, String> consumer) {
 			consumer.accept(BIODIVERSITY_BLITZ, "Biodiversity Blitz");
-			consumer.accept(WAVE_WARNING, "A wave is coming soon!");
+			consumer.accept(WAVE_WARNING, "A wave is coming soon! Make sure your plant defenses are ready!");
 			consumer.accept(TRADING, "Trading");
 			consumer.accept(DEATH_DECREASE, "...and lost %s osa points!");
 			consumer.accept(DEATH_TITLE, "YOU DIED");
