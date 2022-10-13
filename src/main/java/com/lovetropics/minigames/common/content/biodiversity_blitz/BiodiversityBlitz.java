@@ -18,11 +18,21 @@ import com.lovetropics.minigames.common.util.registry.GameBehaviorEntry;
 import com.lovetropics.minigames.common.util.registry.GameClientTweakEntry;
 import com.lovetropics.minigames.common.util.registry.LoveTropicsRegistrate;
 import com.tterrag.registrate.util.entry.ItemEntry;
+import net.minecraft.ChatFormatting;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.network.chat.*;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.item.Item;
 import net.minecraftforge.event.RegisterCommandsEvent;
+import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Mod.EventBusSubscriber(modid = Constants.MODID)
 public final class BiodiversityBlitz {
@@ -197,5 +207,56 @@ public final class BiodiversityBlitz {
 	@SubscribeEvent
 	public static void onRegisterCommands(RegisterCommandsEvent event) {
 
+	}
+
+
+	private static final Style LORE_STYLE = Style.EMPTY.withColor(ChatFormatting.GOLD).withItalic(true);
+
+	@SubscribeEvent
+	public static void onItemTooltip(ItemTooltipEvent event) {
+		ItemStack stack = event.getItemStack();
+		List<Component> list = event.getToolTip();
+
+		// Used to pop the advanced tooltip off the stack and add it back at the end
+		List<Component> removedComponents = null;
+
+		CompoundTag rootTag = stack.getTag();
+		if (rootTag != null && rootTag.contains("display", 10)) {
+			CompoundTag display = rootTag.getCompound("display");
+
+			if (display.getTagType("ShiftLore") == 9) {
+				if (event.getFlags().isAdvanced()) {
+					removedComponents = new ArrayList<>();
+					removedComponents.add(list.remove(list.size() - 1));
+					removedComponents.add(list.remove(list.size() - 1));
+				}
+
+				// Supposed to be used to create a buffer space, but it doesn't seem to work?
+//				list.add(new TextComponent(""));
+
+				if (Screen.hasShiftDown()) {
+					ListTag listtag = display.getList("ShiftLore", 8);
+
+					for (int i = 0; i < listtag.size(); ++i) {
+						String s = listtag.getString(i);
+
+						try {
+							MutableComponent mutablecomponent1 = Component.Serializer.fromJson(s);
+							if (mutablecomponent1 != null) {
+								list.add(ComponentUtils.mergeStyles(mutablecomponent1, LORE_STYLE));
+							}
+						} catch (Exception exception) {
+							display.remove("ShiftLore");
+						}
+					}
+				} else {
+					list.add(new TextComponent("Press Shift for more information").withStyle(ChatFormatting.GOLD));
+				}
+			}
+		}
+
+		if (removedComponents != null) {
+			list.addAll(removedComponents);
+		}
 	}
 }
