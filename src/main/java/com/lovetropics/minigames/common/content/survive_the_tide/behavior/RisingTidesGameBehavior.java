@@ -165,9 +165,7 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 
 		processRisingTideQueue(game);
 
-		if (game.ticks() % 10 == 0) {
-			spawnRisingTideParticles(game);
-		}
+		spawnRisingTideParticles(game);
 	}
 
 	private void spawnRisingTideParticles(IGamePhase game) {
@@ -178,12 +176,12 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 
 		for (ServerPlayer player : game.getParticipants()) {
 			// only attempt to spawn particles if the player is near the water surface
-			if (Math.abs(player.getY() - waterLevel) > 10) {
+			if (Math.abs(player.getY() - waterLevel) > 5) {
 				continue;
 			}
 
-			int particleX = Mth.floor(player.getX()) - random.nextInt(10) + random.nextInt(10);
-			int particleZ = Mth.floor(player.getZ()) - random.nextInt(10) + random.nextInt(10);
+			int particleX = Mth.floor(player.getX()) - random.nextInt(5) + random.nextInt(5);
+			int particleZ = Mth.floor(player.getZ()) - random.nextInt(5) + random.nextInt(5);
 			mutablePos.set(particleX, waterLevel, particleZ);
 
 			if (!world.isEmptyBlock(mutablePos) && world.isEmptyBlock(mutablePos.move(Direction.UP))) {
