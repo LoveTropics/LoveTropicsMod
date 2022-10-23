@@ -82,7 +82,7 @@ public final class MinigameTexts {
 			consumer.accept(SURVIVE_THE_TIDE_FINISH[3], "\nWhat would you do different next time? Together, we could stop this from becoming our future.");
 
 			consumer.accept(SURVIVE_THE_TIDE_PVP_DISABLED, "NOTE: PvP is disabled for %s minutes! Go fetch resources before time runs out.");
-			consumer.accept(SURVIVE_THE_TIDE_PVP_ENABLED_TITLE, "PVP HAS BEEN ENABLED!");
+			consumer.accept(SURVIVE_THE_TIDE_PVP_ENABLED_TITLE, "PVP IS ENABLED!");
 			consumer.accept(SURVIVE_THE_TIDE_PVP_ENABLED_SUBTITLE, "Beware of other players...");
 
 			consumer.accept(SURVIVE_THE_TIDE_DOWN_TO_TWO, "IT'S DOWN TO TWO PLAYERS! %s and %s are now head to head - who will triumph above these rising tides?");
