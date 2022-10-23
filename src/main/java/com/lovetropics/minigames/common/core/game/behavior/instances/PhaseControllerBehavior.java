@@ -62,7 +62,9 @@ public class PhaseControllerBehavior implements IGameBehavior {
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
-		initialPlayerCount = game.getParticipants().size();
+		events.listen(GamePhaseEvents.START, () -> {
+			initialPlayerCount = game.getParticipants().size();
+		});
 
 		events.listen(GamePhaseEvents.TICK, () -> {
 			if (hasFinishedPhases) {
