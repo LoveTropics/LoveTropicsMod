@@ -71,8 +71,8 @@ public class PhaseControllerBehavior implements IGameBehavior {
 			PhaseDefinition phase = phases.get(phaseIndex);
 
 			boolean advancing = phase.advanceConditions().test(game, initialPlayerCount);
-			float speedFactor = advancing ? phase.advanceSpeedFactor() : 0.0f;
-			phaseProgress += (1.0 / phase.length()) * speedFactor;
+			double speedFactor = advancing ? phase.advanceSpeedFactor() : 1.0;
+			phaseProgress += speedFactor / phase.length();
 
 			if (phaseProgress > 1.0) {
 				if (!nextPhase(game)) {
