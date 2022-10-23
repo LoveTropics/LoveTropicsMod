@@ -50,7 +50,7 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 	public static final Codec<RisingTidesGameBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
 			Codec.STRING.optionalFieldOf("tide_area_region", "tide_area").forGetter(c -> c.tideAreaKey),
 			Codec.STRING.optionalFieldOf("iceberg_lines_region", "iceberg_lines").forGetter(c -> c.icebergLinesKey),
-			Codec.unboundedMap(Codec.STRING, Codec.INT).fieldOf("water_levels").forGetter(c -> c.phaseToTideHeight),
+			Codec.unboundedMap(GamePhase.CODEC, Codec.INT).fieldOf("water_levels").forGetter(c -> c.phaseToTideHeight),
 			Codec.STRING.listOf().fieldOf("phases_icebergs_grow").forGetter(c -> new ArrayList<>(c.phasesIcebergsGrow)),
 			Codec.INT.fieldOf("iceberg_growth_tick_rate").forGetter(c -> c.icebergGrowthTickRate)
 	).apply(i, RisingTidesGameBehavior::new));
@@ -65,7 +65,7 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 
 	private final String tideAreaKey;
 	private final String icebergLinesKey;
-	private final Map<String, Integer> phaseToTideHeight;
+	private final Map<GamePhase, Integer> phaseToTideHeight;
 	private final Set<String> phasesIcebergsGrow;
 	private final int icebergGrowthTickRate;
 	private int waterLevel;
@@ -83,7 +83,7 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 	private GamePhaseState phases;
 	private GamePhase lastPhase;
 
-	public RisingTidesGameBehavior(String tideAreaKey, String icebergLinesKey, final Map<String, Integer> phaseToTideHeight, final List<String> phasesIcebergsGrow, final int icebergGrowthTickRate) {
+	public RisingTidesGameBehavior(String tideAreaKey, String icebergLinesKey, final Map<GamePhase, Integer> phaseToTideHeight, final List<String> phasesIcebergsGrow, final int icebergGrowthTickRate) {
 		this.tideAreaKey = tideAreaKey;
 		this.icebergLinesKey = icebergLinesKey;
 		this.phaseToTideHeight = phaseToTideHeight;
@@ -131,7 +131,7 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 
 		events.listen(GamePhaseEvents.START, () -> {
 			lastPhase = phases.get();
-			waterLevel = phaseToTideHeight.get(phases.get().key());
+			waterLevel = phaseToTideHeight.get(phases.get());
 			chunkWaterLevels.defaultReturnValue(waterLevel);
 		});
 
@@ -155,7 +155,7 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 
 	private void tick(IGamePhase game) {
 		GamePhase currentPhase = phases.get();
-		int prevWaterLevel = phaseToTideHeight.get(lastPhase.key());
+		int prevWaterLevel = phaseToTideHeight.get(lastPhase);
 
 		tickWaterLevel(game, currentPhase, phases.progress(), prevWaterLevel);
 
@@ -242,7 +242,7 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 	}
 
 	private void tickWaterLevel(final IGamePhase game, final GamePhase phase, float phaseProgress, final int prevWaterLevel) {
-		final int phaseWaterLevel = phaseToTideHeight.get(phase.key());
+		final int phaseWaterLevel = phaseToTideHeight.get(phase);
 		final int targetWaterLevel = Mth.floor(Mth.lerp(phaseProgress, prevWaterLevel, phaseWaterLevel));
 
 		if (waterLevel < targetWaterLevel) {
