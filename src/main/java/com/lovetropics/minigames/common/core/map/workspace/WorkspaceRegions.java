@@ -39,12 +39,15 @@ public final class WorkspaceRegions implements Iterable<WorkspaceRegions.Entry> 
 	}
 
 	public void showHide(ServerPlayer player) {
-		if (hidden) {
-			sendPlayerMessage(new SetWorkspaceMessage(this), player);
-		} else {
-			sendPlayerMessage(SetWorkspaceMessage.hidden(), player);
-		}
 		hidden = !hidden;
+		sendPlayerMessage(createSetWorkspaceMessage(), player);
+	}
+
+	public SetWorkspaceMessage createSetWorkspaceMessage() {
+		if (hidden) {
+			return SetWorkspaceMessage.hidden();
+		}
+		return new SetWorkspaceMessage(this);
 	}
 
 	private <T> void sendPlayerMessage(T message, ServerPlayer player) {
