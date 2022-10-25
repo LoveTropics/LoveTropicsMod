@@ -9,8 +9,11 @@ import com.lovetropics.minigames.common.core.game.behavior.event.GameLogicEvents
 import com.lovetropics.minigames.common.core.game.state.GameStateMap;
 import com.lovetropics.minigames.common.core.game.state.GamePhase;
 import com.lovetropics.minigames.common.core.game.state.GamePhaseState;
+import com.lovetropics.minigames.common.util.LinearSpline;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import it.unimi.dsi.fastutil.floats.Float2FloatFunction;
 import net.minecraft.util.Mth;
 
 import java.util.List;
@@ -18,19 +21,28 @@ import java.util.List;
 public class PhaseControllerBehavior implements IGameBehavior {
 	public static final Codec<PhaseControllerBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
 			MoreCodecs.validate(PhaseDefinition.CODEC.listOf(), phases -> !phases.isEmpty(), "must give at least one phase")
-					.fieldOf("phases").forGetter(c -> c.phases)
+					.fieldOf("phases").forGetter(c -> c.phases),
+			Codec.INT.optionalFieldOf("max_time_step", 1).forGetter(b -> b.maxTimeStep),
+			PlayerConstraint.CODEC.listOf().optionalFieldOf("time_by_player_count", List.of()).forGetter(b -> b.playerConstraints)
 	).apply(i, PhaseControllerBehavior::new));
 
 	private GamePhaseState phaseState;
-	private int initialPlayerCount;
 
 	private final List<PhaseDefinition> phases;
+	private final int maxTimeStep;
+	private final List<PlayerConstraint> playerConstraints;
+
+	private Float2FloatFunction playerCountToTime = key -> 0.0f;
+	private int currentTime;
+
 	private int phaseIndex;
-	private double phaseProgress;
+	private int phaseStartTime;
 	private boolean hasFinishedPhases = false;
 
-	public PhaseControllerBehavior(final List<PhaseDefinition> phases) {
+	public PhaseControllerBehavior(final List<PhaseDefinition> phases, int maxTimeStep, List<PlayerConstraint> playerConstraints) {
 		this.phases = phases;
+		this.maxTimeStep = maxTimeStep;
+		this.playerConstraints = playerConstraints;
 	}
 
 	private boolean nextPhase(final IGamePhase game) {
@@ -47,7 +59,7 @@ public class PhaseControllerBehavior implements IGameBehavior {
 		phaseIndex = index;
 
 		phaseState.set(nextPhase.phase(), 0.0f);
-		phaseProgress = 0;
+		phaseStartTime = currentTime;
 
 		if (lastPhase != nextPhase) {
 			game.invoker(GameLogicEvents.PHASE_CHANGE).onPhaseChange(nextPhase.phase(), lastPhase.phase());
@@ -63,7 +75,8 @@ public class PhaseControllerBehavior implements IGameBehavior {
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
 		events.listen(GamePhaseEvents.START, () -> {
-			initialPlayerCount = game.getParticipants().size();
+			currentTime = 0;
+			playerCountToTime = resolvePlayerConstraints(playerConstraints, game.getParticipants().size());
 		});
 
 		events.listen(GamePhaseEvents.TICK, () -> {
@@ -72,44 +85,74 @@ public class PhaseControllerBehavior implements IGameBehavior {
 			}
 			PhaseDefinition phase = phases.get(phaseIndex);
 
-			boolean advancing = phase.advanceConditions().test(game, initialPlayerCount);
-			double speedFactor = advancing ? phase.advanceSpeedFactor() : 1.0;
-			phaseProgress += speedFactor / phase.length();
-
-			if (phaseProgress > 1.0) {
+			int currentTime = tickTime(game);
+			int phaseTime = currentTime - phaseStartTime;
+			if (phaseTime > phase.length()) {
 				if (!nextPhase(game)) {
 					hasFinishedPhases = true;
 				}
 			} else {
-				phaseState.set(phase.phase(), (float) phaseProgress);
+				phaseState.set(phase.phase(), (float) phaseTime / phase.length());
 			}
 		});
 	}
 
-	private record PhaseDefinition(GamePhase phase, int length, float advanceSpeedFactor, AdvanceConditions advanceConditions) {
+	private int tickTime(IGamePhase game) {
+		int playerCount = game.getParticipants().size();
+		int targetTimeByPlayerCount = Mth.ceil(playerCountToTime.get(playerCount));
+		if (targetTimeByPlayerCount > currentTime) {
+			int step = Math.min(targetTimeByPlayerCount - currentTime, maxTimeStep);
+			currentTime += step;
+			return currentTime;
+		} else {
+			return ++currentTime;
+		}
+	}
+
+	private static Float2FloatFunction resolvePlayerConstraints(List<PlayerConstraint> constraints, int initialPlayerCount) {
+		LinearSpline.Builder spline = LinearSpline.builder();
+		for (PlayerConstraint constraint : constraints) {
+			spline.point(constraint.count().resolve(initialPlayerCount), constraint.time());
+		}
+		return spline.build();
+	}
+
+	private record PhaseDefinition(GamePhase phase, int length) {
 		public static final Codec<PhaseDefinition> CODEC = RecordCodecBuilder.create(i -> i.group(
 				GamePhase.CODEC.fieldOf("key").forGetter(PhaseDefinition::phase),
-				Codec.INT.fieldOf("length_in_ticks").forGetter(PhaseDefinition::length),
-				Codec.FLOAT.optionalFieldOf("advance_speed_factor", 4.0f).forGetter(PhaseDefinition::advanceSpeedFactor),
-				AdvanceConditions.CODEC.optionalFieldOf("advance_conditions", AdvanceConditions.DEFAULT).forGetter(PhaseDefinition::advanceConditions)
+				Codec.INT.fieldOf("length_in_ticks").forGetter(PhaseDefinition::length)
 		).apply(i, PhaseDefinition::new));
 	}
 
-	private record AdvanceConditions(
-			float belowPlayerPercentage,
-			int belowPlayerCount
-	) {
-		public static final Codec<AdvanceConditions> CODEC = RecordCodecBuilder.create(i -> i.group(
-				Codec.FLOAT.optionalFieldOf("below_player_percentage", -1.0f).forGetter(AdvanceConditions::belowPlayerPercentage),
-				Codec.INT.optionalFieldOf("below_player_count", -1).forGetter(AdvanceConditions::belowPlayerCount)
-		).apply(i, AdvanceConditions::new));
+	private record PlayerConstraint(PlayerCount count, int time) {
+		public static final Codec<PlayerConstraint> CODEC = RecordCodecBuilder.create(i -> i.group(
+				PlayerCount.CODEC.forGetter(PlayerConstraint::count),
+				Codec.INT.fieldOf("time").forGetter(PlayerConstraint::time)
+		).apply(i, PlayerConstraint::new));
+	}
 
-		public static final AdvanceConditions DEFAULT = new AdvanceConditions(-1.0f, -1);
+	private record PlayerCount(float percentage, int left, int killed) {
+		private static final float NO_PERCENTAGE = -1.0f;
+		private static final int NO_COUNT = -1;
 
-		public boolean test(IGamePhase game, int initialPlayerCount) {
-			int playerCount = game.getParticipants().size();
-			float playerPercentage = (float) playerCount / initialPlayerCount;
-			return playerPercentage <= belowPlayerPercentage || playerCount <= belowPlayerCount;
+		public static final MapCodec<PlayerCount> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
+				Codec.FLOAT.optionalFieldOf("percentage", NO_PERCENTAGE).forGetter(PlayerCount::percentage),
+				Codec.INT.optionalFieldOf("left", NO_COUNT).forGetter(PlayerCount::left),
+				Codec.INT.optionalFieldOf("killed", NO_COUNT).forGetter(PlayerCount::killed)
+		).apply(i, PlayerCount::new));
+
+		public int resolve(int initialCount) {
+			int value = initialCount;
+			if (percentage != NO_PERCENTAGE) {
+				value = Math.min(value, Math.round(percentage * initialCount));
+			}
+			if (left != NO_COUNT) {
+				value = Math.min(value, left);
+			}
+			if (killed != NO_COUNT) {
+				value = Math.min(value, initialCount - killed);
+			}
+			return value;
 		}
 	}
 }
