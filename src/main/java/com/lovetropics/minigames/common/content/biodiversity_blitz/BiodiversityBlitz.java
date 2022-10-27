@@ -202,6 +202,7 @@ public final class BiodiversityBlitz {
 			.register();
 
 	public static final ItemEntry<Item> OSA_POINT = REGISTRATE.item("osa_point", Item::new)
+			.lang("Biodiversity Point")
 			.register();
 
 	@SubscribeEvent
