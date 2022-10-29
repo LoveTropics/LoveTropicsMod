@@ -79,20 +79,6 @@ public class SurviveTheTideWeatherControlBehavior implements IGameBehavior {
 
     private static final Component TITLE = new TextComponent("WEATHER REPORT: \n").withStyle(ChatFormatting.BOLD);
 
-    private static final NotificationDisplay RAIN_NOTIFICATION_STYLE = createNotificationStyle(SurviveTheTide.ACID_REPELLENT_UMBRELLA);
-    private static final NotificationDisplay HEAT_WAVE_NOTIFICATION_STYLE = createNotificationStyle(SurviveTheTide.SUPER_SUNSCREEN);
-    private static final NotificationDisplay SANDSTORM_NOTIFICATION_STYLE = createNotificationStyle(() -> Blocks.SAND);
-    private static final NotificationDisplay SNOWSTORM_NOTIFICATION_STYLE = createNotificationStyle(() -> Blocks.SNOW_BLOCK);
-
-    private static NotificationDisplay createNotificationStyle(final Supplier<? extends ItemLike> item) {
-        return new NotificationDisplay(
-                NotificationIcon.item(new ItemStack(item.get())),
-                NotificationDisplay.Sentiment.NEGATIVE,
-                NotificationDisplay.Color.DARK,
-                5 * 1000
-        );
-    }
-
     protected GamePhaseState phases;
     protected GameWeatherState weather;
 
@@ -160,9 +146,12 @@ public class SurviveTheTideWeatherControlBehavior implements IGameBehavior {
         }
         weather.setEvent(WeatherEvent.acidRain(time));
 
-        broadcastToast(game, new TextComponent("Acid Rain is falling!\n")
-                .append("Find shelter, or make sure to carry an ")
-                .append(umbrellaName()), RAIN_NOTIFICATION_STYLE);
+        broadcastToast(game,
+                new TextComponent("Acid Rain is falling!\n")
+                        .append("Find shelter, or make sure to carry an ")
+                        .append(umbrellaName()),
+                createNotificationStyle(SurviveTheTide.ACID_REPELLENT_UMBRELLA)
+        );
     }
 
     private void hailStart(IGamePhase game, GamePhase phase) {
@@ -172,9 +161,12 @@ public class SurviveTheTideWeatherControlBehavior implements IGameBehavior {
         }
         weather.setEvent(WeatherEvent.hail(time));
 
-        broadcastToast(game, new TextComponent("Hail is falling!\n")
-                .append("Find shelter, or make sure to carry an ")
-                .append(umbrellaName()), RAIN_NOTIFICATION_STYLE);
+        broadcastToast(game,
+                new TextComponent("Hail is falling!\n")
+                        .append("Find shelter, or make sure to carry an ")
+                        .append(umbrellaName()),
+                createNotificationStyle(SurviveTheTide.ACID_REPELLENT_UMBRELLA)
+        );
     }
 
     private void heatwaveStart(IGamePhase game, GamePhase phase) {
@@ -184,9 +176,12 @@ public class SurviveTheTideWeatherControlBehavior implements IGameBehavior {
         }
         weather.setEvent(WeatherEvent.heatwave(time));
 
-        broadcastToast(game, new TextComponent("A Heat Wave is passing!\n")
-                .append("Stay inside, or make sure to equip")
-                .append(sunscreenName()), HEAT_WAVE_NOTIFICATION_STYLE);
+        broadcastToast(game,
+                new TextComponent("A Heat Wave is passing!\n")
+                        .append("Stay inside, or make sure to equip")
+                        .append(sunscreenName()),
+                createNotificationStyle(SurviveTheTide.SUPER_SUNSCREEN)
+        );
     }
 
     private void sandstormStart(IGamePhase game, GamePhase phase) {
@@ -197,8 +192,11 @@ public class SurviveTheTideWeatherControlBehavior implements IGameBehavior {
         }
         weather.setEvent(WeatherEvent.sandstorm(time, config.getSandstormBuildupTickRate(), config.getSandstormMaxStackable()));
 
-        broadcastToast(game, new TextComponent("A Sandstorm is passing!\n")
-                .append("Find shelter!"), SANDSTORM_NOTIFICATION_STYLE);
+        broadcastToast(game,
+                new TextComponent("A Sandstorm is passing!\n")
+                        .append("Find shelter!"),
+                createNotificationStyle(() -> Blocks.SAND)
+        );
     }
 
     private void snowstormStart(IGamePhase game, GamePhase phase) {
@@ -209,8 +207,11 @@ public class SurviveTheTideWeatherControlBehavior implements IGameBehavior {
         }
         weather.setEvent(WeatherEvent.snowstorm(time, config.getSnowstormBuildupTickRate(), config.getSnowstormMaxStackable()));
 
-        broadcastToast(game, new TextComponent("A Snowstorm is passing!\n")
-                .append("Find shelter!"), SNOWSTORM_NOTIFICATION_STYLE);
+        broadcastToast(game,
+                new TextComponent("A Snowstorm is passing!\n")
+                        .append("Find shelter!"),
+                createNotificationStyle(() -> Blocks.SNOW_BLOCK)
+        );
     }
 
     private static void broadcastToast(IGamePhase game, Component message, NotificationDisplay style) {
@@ -225,4 +226,14 @@ public class SurviveTheTideWeatherControlBehavior implements IGameBehavior {
     private static Component sunscreenName() {
         return new TranslatableComponent(SurviveTheTide.SUPER_SUNSCREEN.get().getDescriptionId());
     }
+
+    private static NotificationDisplay createNotificationStyle(final Supplier<? extends ItemLike> item) {
+        return new NotificationDisplay(
+                NotificationIcon.item(new ItemStack(item.get())),
+                NotificationDisplay.Sentiment.NEGATIVE,
+                NotificationDisplay.Color.DARK,
+                5 * 1000
+        );
+    }
+
 }
