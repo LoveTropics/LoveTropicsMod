@@ -12,8 +12,10 @@ import com.lovetropics.minigames.common.core.game.state.control.ControlCommand;
 import com.lovetropics.minigames.common.core.game.util.GameBossBar;
 import com.lovetropics.minigames.common.core.game.util.GlobalGameWidgets;
 import com.lovetropics.minigames.common.core.game.util.TemplatedText;
+import com.lovetropics.minigames.common.util.Util;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.SharedConstants;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.network.chat.Component;
@@ -102,13 +104,9 @@ public final class TimedGameBehavior implements IGameBehavior {
 	}
 
 	private Component getTimeRemainingText(IGamePhase game, long ticksRemaining) {
-		long secondsRemaining = ticksRemaining / 20;
+		long secondsRemaining = ticksRemaining / SharedConstants.TICKS_PER_SECOND;
 
-		long minutes = secondsRemaining / 60;
-		long seconds = secondsRemaining % 60;
-		String time = String.format("%02d:%02d", minutes, seconds);
-
-		Component timeText = new TextComponent(time).withStyle(ChatFormatting.AQUA);
+		Component timeText = new TextComponent(Util.formatMinutesSeconds(secondsRemaining)).withStyle(ChatFormatting.AQUA);
 		Component gameNameText = game.getDefinition().getName().copy().withStyle(ChatFormatting.AQUA);
 
 		return timerBarText.apply(timeText, gameNameText);
