@@ -75,7 +75,7 @@ public record DonationPackageData(
 				TemplatedText.CODEC.fieldOf("message").forGetter(c -> c.message),
 				NotificationIcon.CODEC.optionalFieldOf("icon", NotificationIcon.item(new ItemStack(Items.GRASS_BLOCK))).forGetter(c -> c.icon),
 				NotificationDisplay.Sentiment.CODEC.optionalFieldOf("sentiment", NotificationDisplay.Sentiment.NEUTRAL).forGetter(c -> c.sentiment),
-				SoundEvent.CODEC.optionalFieldOf("sound_on_receive", SoundEvents.TOTEM_USE).forGetter(c -> c.sound)
+				SoundEvent.CODEC.optionalFieldOf("sound", SoundEvents.TOTEM_USE).forGetter(c -> c.sound)
 		).apply(i, Notification::new));
 
 		public Component createTargetedMessage(@Nullable ServerPlayer receiver, @Nullable String sender) {
