@@ -53,6 +53,7 @@ import net.minecraft.world.phys.BlockHitResult;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 // TODO: needs to be split up & data-driven more!
@@ -145,13 +146,18 @@ public final class BbBehavior implements IGameBehavior {
 		sidebar.add("" + ChatFormatting.AQUA +  "Player " + ChatFormatting.GOLD + "points " + ChatFormatting.LIGHT_PURPLE + "(+ per drop)");
 		sidebar.add("");
 
-		for (ServerPlayer player : game.getParticipants()) {
+		List<ServerPlayer> list = new ArrayList<>();
+		game.getParticipants().forEach(list::add);
+
+		list.sort(Comparator.comparingInt(c -> this.game.getStatistics().forPlayer(c).getOr(StatisticKey.POINTS, 0)).reversed());
+
+		for (ServerPlayer player : list) {
 			int points = 0;
 			int increment = 0;
 			// Get points for player
 			Plot plot = plots.getPlotFor(player);
 			StatisticsMap stats = this.game.getStatistics().forPlayer(player);
-			if (stats != null && plot != null) {
+			if (plot != null) {
 				points = stats.getOr(StatisticKey.POINTS, 0);
 				increment = plot.nextCurrencyIncrement;
 			}
