@@ -185,7 +185,7 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 			mutablePos.set(particleX, waterLevel, particleZ);
 
 			if (!world.isEmptyBlock(mutablePos) && world.isEmptyBlock(mutablePos.move(Direction.UP))) {
-				Packet<?> packet = new ClientboundLevelParticlesPacket(ParticleTypes.SPLASH, true, particleX, waterLevel + 1, particleZ, 0.1F, 0.0F, 0.1F, 0.0F, 4);
+				Packet<?> packet = new ClientboundLevelParticlesPacket(ParticleTypes.SPLASH, false, particleX, waterLevel + 1, particleZ, 0.1F, 0.0F, 0.1F, 0.0F, 4);
 				player.connection.send(packet);
 			}
 		}
