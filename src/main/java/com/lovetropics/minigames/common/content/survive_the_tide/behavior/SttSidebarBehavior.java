@@ -88,6 +88,7 @@ public class SttSidebarBehavior implements IGameBehavior {
 			case "phase2", "phase3" -> ChatFormatting.RED + "The tide is rising!";
 			case "phase4" -> ChatFormatting.AQUA + "Icebergs are forming! " + percent;
 			case "phase5" -> ChatFormatting.RED + "Explosive border closing! " + percent;
+			default -> "";
 		};
 	}
 
