@@ -1,5 +1,6 @@
 package com.lovetropics.minigames.common.core.map;
 
+import net.minecraft.Util;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.resources.ResourceLocation;
@@ -8,17 +9,13 @@ import java.io.BufferedOutputStream;
 import java.io.Closeable;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.nio.file.FileSystem;
-import java.nio.file.FileSystems;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.HashMap;
 import java.util.Map;
 
 public final class MapExportWriter implements Closeable {
@@ -30,16 +27,7 @@ public final class MapExportWriter implements Closeable {
 
 	public static MapExportWriter open(Path path) throws IOException {
 		Files.deleteIfExists(path);
-
-		Map<String, String> env = new HashMap<>();
-		env.put("create", "true");
-
-		try {
-			URI uri = new URI("jar:file", path.toUri().getPath(), null);
-			return new MapExportWriter(FileSystems.newFileSystem(uri, env, null));
-		} catch (URISyntaxException e) {
-			throw new IOException(e);
-		}
+		return new MapExportWriter(Util.ZIP_FILE_SYSTEM_PROVIDER.newFileSystem(path, Map.of("create", "true")));
 	}
 
 	public static Path pathFor(ResourceLocation id) {
@@ -56,13 +44,15 @@ public final class MapExportWriter implements Closeable {
 	}
 
 	public void writeWorldData(Path sourceRoot) throws IOException {
-		Path sourceRegionRoot = sourceRoot.resolve("region");
-		Path targetWorldRoot = fs.getPath("world");
+		copyDirectory(sourceRoot.resolve("region"), fs.getPath("world"));
+		copyDirectory(sourceRoot.resolve("entities"), fs.getPath("entities"));
+	}
 
-		Files.walkFileTree(sourceRegionRoot, new SimpleFileVisitor<Path>() {
+	private static void copyDirectory(Path sourceRoot, Path targetRoot) throws IOException {
+		Files.walkFileTree(sourceRoot, new SimpleFileVisitor<>() {
 			@Override
 			public FileVisitResult visitFile(Path source, BasicFileAttributes attrs) throws IOException {
-				Path target = targetWorldRoot.resolve(sourceRegionRoot.relativize(source).toString());
+				Path target = targetRoot.resolve(sourceRoot.relativize(source).toString());
 				Files.createDirectories(target.getParent());
 				Files.copy(source, target);
 				return FileVisitResult.CONTINUE;

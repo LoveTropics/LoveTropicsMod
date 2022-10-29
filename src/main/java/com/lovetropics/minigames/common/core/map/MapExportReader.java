@@ -43,6 +43,7 @@ public final class MapExportReader implements Closeable {
 		}
 
 		Path regionRoot = dimensionRoot.resolve("region");
+		Path entitiesRoot = dimensionRoot.resolve("entities");
 		Files.createDirectories(regionRoot);
 
 		MapMetadata metadata = null;
@@ -58,6 +59,9 @@ public final class MapExportReader implements Closeable {
 				metadata = MapMetadata.read(NbtIo.read(new DataInputStream(input)));
 			} else if (name.startsWith("world/")) {
 				Path targetPath = regionRoot.resolve(name.substring("world/".length()));
+				Files.copy(input, targetPath);
+			} else if (name.startsWith("entities")) {
+				Path targetPath = entitiesRoot.resolve(name.substring("entities/".length()));
 				Files.copy(input, targetPath);
 			}
 		}
