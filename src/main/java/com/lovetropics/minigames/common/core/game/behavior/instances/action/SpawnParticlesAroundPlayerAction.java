@@ -37,7 +37,7 @@ public record SpawnParticlesAroundPlayerAction(ParticleOptions[] particles, IntP
 				double y = bounds.minY + random.nextDouble() * bounds.getYsize();
 				double z = bounds.minZ + random.nextDouble() * bounds.getZsize();
 
-				ParticleOptions particle = particles[random.nextInt(count)];
+				ParticleOptions particle = particles[random.nextInt(particles.length)];
 				int repeats = this.repeats.sample(random);
 
 				player.connection.send(new ClientboundLevelParticlesPacket(particle, false, x, y, z, 0.1f, 0.1f, 0.1f, 0.0f, repeats));
