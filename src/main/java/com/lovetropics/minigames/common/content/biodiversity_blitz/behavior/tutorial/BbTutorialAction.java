@@ -97,7 +97,7 @@ public class BbTutorialAction implements IGameBehavior {
             ticks = breakBlocks(game, target, playerPlot, sample, ticks, cw, actions);
 
             actions.put(ticks, () -> {
-                target.sendMessage(new TextComponent("Tutorial done!"), ChatType.SYSTEM, Util.NIL_UUID);
+//                target.sendMessage(new TextComponent("Tutorial done!"), ChatType.SYSTEM, Util.NIL_UUID);
                 game.getState().getOrThrow(TutorialState.KEY).finishTutorial();
             });
 

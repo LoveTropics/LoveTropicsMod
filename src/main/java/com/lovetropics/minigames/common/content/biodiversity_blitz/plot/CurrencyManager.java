@@ -87,10 +87,10 @@ public final class CurrencyManager implements IGameState {
 		int lastValue = this.accumulator.addTo(player.getUUID(), added);
 		int newValue = lastValue + added;
 
-		this.game.invoker(BbEvents.CURRENCY_ACCUMULATE).onCurrencyChanged(player, newValue, lastValue);
-
 		this.game.getStatistics().forPlayer(player)
 				.set(StatisticKey.POINTS, newValue);
+
+		this.game.invoker(BbEvents.CURRENCY_ACCUMULATE).onCurrencyChanged(player, newValue, lastValue);
 	}
 
 	public int remove(ServerPlayer player, int amount) {

@@ -64,13 +64,13 @@ public record ProximityBombPlantBehavior(double radius) implements IGameBehavior
 			double y = pos.getY() + 0.5;
 			double z = pos.getZ() + 0.5;
 
-			Explosion explosion = new FilteredExplosion(world, null, null, null, x, y, z, 4.0f, false, Explosion.BlockInteraction.BREAK, e -> e instanceof ServerPlayer);
+			Explosion explosion = new FilteredExplosion(world, null, null, null, x, y, z, 2.0f, false, Explosion.BlockInteraction.BREAK, e -> e instanceof ServerPlayer);
 			explosion.explode();
 			explosion.finalizeExplosion(false);
 
 			for (ServerPlayer player : world.players()) {
 				if (player.distanceToSqr(x, y, z) < 4096.0) {
-					player.connection.send(new ClientboundExplodePacket(x, y, z, 4.0f, explosion.getToBlow(), explosion.getHitPlayers().get(player)));
+					player.connection.send(new ClientboundExplodePacket(x, y, z, 2.0f, explosion.getToBlow(), explosion.getHitPlayers().get(player)));
 				}
 			}
 		}

@@ -45,7 +45,7 @@ public class DestroyCropGoal extends MoveToBlockGoal {
     }
 
     protected double getDistanceSq(BlockState state) {
-        return state.getMaterial().isSolid() ? 1.5 * 1.5 : 0.5 * 0.5;
+        return 1.75 * 1.75;
     }
 
     protected void tryDamagePlant(Mob mob) {

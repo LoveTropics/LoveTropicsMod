@@ -45,7 +45,9 @@ public record PlantHealthBehavior(int health, boolean notPathfindable) implement
 				if (health == null) {
 					continue;
 				}
-				// TODO: show block breaking effect as a function of health
+
+				// TODO: this doesn't work because the level renderer only tracks 1 destroy progress per player
+				player.getLevel().destroyBlockProgress(player.getId(), plant.coverage().getOrigin(), (int)(health.healthPercent() * 10.0F) - 1);
 
 				if (health.isDead()) {
 					for (BlockPos pos : plant.coverage()) {

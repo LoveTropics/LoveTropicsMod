@@ -15,6 +15,8 @@ import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.*;
 import com.lovetropics.minigames.common.core.game.player.PlayerRole;
+import com.lovetropics.minigames.common.core.game.state.statistics.StatisticKey;
+import com.lovetropics.minigames.common.core.game.state.statistics.StatisticsMap;
 import com.lovetropics.minigames.common.core.game.util.GameSidebar;
 import com.lovetropics.minigames.common.core.game.util.GlobalGameWidgets;
 import com.mojang.serialization.Codec;
@@ -148,13 +150,10 @@ public final class BbBehavior implements IGameBehavior {
 			int increment = 0;
 			// Get points for player
 			Plot plot = plots.getPlotFor(player);
-			if (currency != null && plot != null) {
-				points = currency.get(player);
+			StatisticsMap stats = this.game.getStatistics().forPlayer(player);
+			if (stats != null && plot != null) {
+				points = stats.getOr(StatisticKey.POINTS, 0);
 				increment = plot.nextCurrencyIncrement;
-			}
-
-			if (points == 0 && increment == 0) {
-				continue;
 			}
 
 			sidebar.add("" + ChatFormatting.AQUA + player.getGameProfile().getName() + ": " + ChatFormatting.GOLD + points + " " + ChatFormatting.LIGHT_PURPLE + "(+ " + increment + ")");

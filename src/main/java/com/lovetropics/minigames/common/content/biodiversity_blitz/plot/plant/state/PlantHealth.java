@@ -4,9 +4,11 @@ public final class PlantHealth {
 	public static final PlantState.Key<PlantHealth> KEY = PlantState.Key.create();
 
 	private int health;
+	private final int maxHealth;
 
 	public PlantHealth(int health) {
 		this.health = health;
+		this.maxHealth = health;
 	}
 
 	public void decrement(int amount) {
@@ -19,5 +21,9 @@ public final class PlantHealth {
 
 	public int health() {
 		return this.health;
+	}
+
+	public float healthPercent() {
+		return this.health / (float) this.maxHealth;
 	}
 }
