@@ -9,6 +9,7 @@ import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.plan
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.plant.placement.PlaceDoublePlantBehavior;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.plant.placement.PlaceFeaturePlantBehavior;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.plant.placement.PlaceSinglePlantBehavior;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.tutorial.BbTutorialAction;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.client_state.CheckeredPlotsState;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.client_state.ClientBbGlobalState;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.client_state.ClientBbSelfState;
@@ -170,6 +171,10 @@ public final class BiodiversityBlitz {
 
 	public static final GameBehaviorEntry<EqualizeCurrencyBehavior> EQUALIZE_CURRENCY = REGISTRATE.object("equaize_currency")
 			.behavior(EqualizeCurrencyBehavior.CODEC)
+			.register();
+
+	public static final GameBehaviorEntry<BbTutorialAction> BB_TUTORIAL = REGISTRATE.object("bb_tutorial")
+			.behavior(BbTutorialAction.CODEC)
 			.register();
 
 	// Client State

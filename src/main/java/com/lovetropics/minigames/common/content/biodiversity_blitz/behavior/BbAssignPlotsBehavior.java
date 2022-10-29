@@ -3,6 +3,7 @@ package com.lovetropics.minigames.common.content.biodiversity_blitz.behavior;
 import com.lovetropics.lib.BlockBox;
 import com.lovetropics.lib.codec.MoreCodecs;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.event.BbEvents;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.tutorial.BbTutorialState;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.client_state.CheckeredPlotsState;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.Plot;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.PlotsState;
@@ -43,6 +44,8 @@ public final class BbAssignPlotsBehavior implements IGameBehavior {
 	@Override
 	public void registerState(IGamePhase game, GameStateMap state) {
 		plots = state.register(PlotsState.KEY, new PlotsState());
+		// TODO: find a better place for this
+		state.register(BbTutorialState.KEY, new BbTutorialState());
 	}
 
 	@Override

@@ -3,6 +3,7 @@ package com.lovetropics.minigames.common.content.biodiversity_blitz.behavior;
 import com.lovetropics.lib.BlockBox;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.BiodiversityBlitzTexts;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.event.BbEvents;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.tutorial.BbTutorialState;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.BbMobEntity;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.explosion.FilteredExplosion;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.explosion.PlantAffectingExplosion;
@@ -62,12 +63,14 @@ public final class BbBehavior implements IGameBehavior {
 
 	private IGamePhase game;
 	private PlotsState plots;
+	private BbTutorialState tutorial;
 	private CurrencyManager currency;
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
 		this.game = game;
 		this.plots = game.getState().getOrThrow(PlotsState.KEY);
+		this.tutorial = game.getState().getOrThrow(BbTutorialState.KEY);
 		this.currency = game.getState().getOrNull(CurrencyManager.KEY);
 
 		events.listen(GamePlayerEvents.ADD, player -> setupPlayerAsRole(player, null));
@@ -109,6 +112,10 @@ public final class BbBehavior implements IGameBehavior {
 	}
 
 	private InteractionResult onUseBlock(ServerPlayer player, ServerLevel world, BlockPos blockPos, InteractionHand hand, BlockHitResult blockRayTraceResult) {
+		if (!tutorial.isTutorialFinished()) {
+			return InteractionResult.FAIL;
+		}
+
 		Plot plot = this.plots.getPlotFor(player);
 		BlockPos pos = blockRayTraceResult.getBlockPos();
 
@@ -180,6 +187,10 @@ public final class BbBehavior implements IGameBehavior {
 	}
 
 	private InteractionResult onAttack(ServerPlayer player, Entity target) {
+		if (!tutorial.isTutorialFinished()) {
+			return InteractionResult.FAIL;
+		}
+
 		if (BbMobEntity.matches(target)) {
 			Plot plot = plots.getPlotAt(target.blockPosition());
 			if (plot != null && plot.walls.containsEntity(player)) {
@@ -190,6 +201,10 @@ public final class BbBehavior implements IGameBehavior {
 	}
 
 	private InteractionResult onPlaceBlock(ServerPlayer player, BlockPos pos, BlockState placed, BlockState placedOn) {
+		if (!tutorial.isTutorialFinished()) {
+			return InteractionResult.FAIL;
+		}
+
 		Plot plot = plots.getPlotFor(player);
 		if (plot != null && plot.bounds.contains(pos)) {
 			return this.onPlaceBlockInOwnPlot(player, pos, placed, plot);

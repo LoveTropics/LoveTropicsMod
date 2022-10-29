@@ -3,6 +3,7 @@ package com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.pla
 import com.lovetropics.lib.codec.MoreCodecs;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.BiodiversityBlitzTexts;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.event.BbEvents;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.tutorial.BbTutorialState;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.Plot;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.PlotsState;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.plant.Plant;
@@ -37,6 +38,7 @@ public final class PlantItemBehavior implements IGameBehavior {
 
 	private IGamePhase game;
 	private PlotsState plots;
+	private BbTutorialState tutorial;
 
 	public PlantItemBehavior(PlantItemType itemType, PlantType places, ItemStack item) {
 		this.itemType = itemType;
@@ -48,12 +50,17 @@ public final class PlantItemBehavior implements IGameBehavior {
 	public void register(IGamePhase game, EventRegistrar events) {
 		this.game = game;
 		this.plots = game.getState().getOrThrow(PlotsState.KEY);
+		this.tutorial = game.getState().getOrThrow(BbTutorialState.KEY);
 
 		events.listen(GamePlayerEvents.PLACE_BLOCK, this::onPlaceBlock);
 		events.listen(BbEvents.CREATE_PLANT_ITEM, this::createPlantDrop);
 	}
 
 	private InteractionResult onPlaceBlock(ServerPlayer player, BlockPos pos, BlockState placed, BlockState placedOn) {
+		if (!tutorial.isTutorialFinished()) {
+			return InteractionResult.PASS;
+		}
+
 		ItemStack heldItem = player.getMainHandItem();
 		if (!this.itemType.matches(heldItem)) {
 			return InteractionResult.PASS;
