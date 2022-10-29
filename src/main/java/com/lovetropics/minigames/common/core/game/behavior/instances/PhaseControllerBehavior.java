@@ -85,7 +85,7 @@ public class PhaseControllerBehavior implements IGameBehavior {
 			}
 			PhaseDefinition phase = phases.get(phaseIndex);
 
-			int currentTime = tickTime(game);
+			int currentTime = tickTime(game, phase);
 			int phaseTime = currentTime - phaseStartTime;
 			if (phaseTime > phase.length()) {
 				if (!nextPhase(game)) {
@@ -97,8 +97,12 @@ public class PhaseControllerBehavior implements IGameBehavior {
 		});
 	}
 
-	private int tickTime(IGamePhase game) {
+	private int tickTime(IGamePhase game, PhaseDefinition phase) {
 		int playerCount = game.getParticipants().size();
+		if (phase.fixed()) {
+			return ++currentTime;
+		}
+
 		int targetTimeByPlayerCount = Mth.ceil(playerCountToTime.get(playerCount));
 		if (targetTimeByPlayerCount > currentTime) {
 			int step = Math.min(targetTimeByPlayerCount - currentTime, maxTimeStep);
@@ -117,10 +121,11 @@ public class PhaseControllerBehavior implements IGameBehavior {
 		return spline.build();
 	}
 
-	private record PhaseDefinition(GamePhase phase, int length) {
+	private record PhaseDefinition(GamePhase phase, int length, boolean fixed) {
 		public static final Codec<PhaseDefinition> CODEC = RecordCodecBuilder.create(i -> i.group(
 				GamePhase.CODEC.fieldOf("key").forGetter(PhaseDefinition::phase),
-				Codec.INT.fieldOf("length_in_ticks").forGetter(PhaseDefinition::length)
+				Codec.INT.fieldOf("length_in_ticks").forGetter(PhaseDefinition::length),
+				Codec.BOOL.optionalFieldOf("fixed", false).forGetter(PhaseDefinition::fixed)
 		).apply(i, PhaseDefinition::new));
 	}
 
@@ -144,7 +149,7 @@ public class PhaseControllerBehavior implements IGameBehavior {
 		public int resolve(int initialCount) {
 			int value = initialCount;
 			if (percentage != NO_PERCENTAGE) {
-				value = Math.min(value, Math.round(percentage * initialCount));
+				value = Math.min(value, Mth.floor(percentage * initialCount));
 			}
 			if (left != NO_COUNT) {
 				value = Math.min(value, left);

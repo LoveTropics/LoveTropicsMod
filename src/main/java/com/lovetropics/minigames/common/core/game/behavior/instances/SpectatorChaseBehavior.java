@@ -81,7 +81,7 @@ public final class SpectatorChaseBehavior implements IGameBehavior {
 		PlayerSet participants = game.getParticipants();
 
         Comparator<ServerPlayer> comparator = Comparator
-				.comparing(ServerPlayer::getScoreboardName)
+				.comparing(ServerPlayer::getScoreboardName, String::compareToIgnoreCase)
 				.thenComparing((ServerPlayer player) -> {
 					Team team = player.getTeam();
 					return team != null ? team.getName() : "";

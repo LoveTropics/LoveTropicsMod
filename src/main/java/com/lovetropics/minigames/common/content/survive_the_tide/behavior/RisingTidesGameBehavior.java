@@ -106,25 +106,19 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 		for (BlockBox icebergLine : game.getMapRegions().get(icebergLinesKey)) {
 			int startX = icebergLine.min().getX();
 			int startZ = icebergLine.min().getZ();
-
 			int endX = icebergLine.max().getX();
 			int endZ = icebergLine.max().getZ();
 
-			if (random.nextBoolean()) {
-				int swap = startX;
-				startX = endX;
-				endX = swap;
-			}
-
-			if (random.nextBoolean()) {
-				int swap = startZ;
-				startZ = endZ;
-				endZ = swap;
-			}
-
-			BlockPos start = new BlockPos(startX, level.getMinBuildHeight(), startZ);
-			BlockPos end = new BlockPos(endX, level.getMinBuildHeight(), endZ);
-			icebergLines.add(new IcebergLine(start, end, 10));
+			icebergLines.add(new IcebergLine(
+					new BlockPos(startX, level.getMinBuildHeight(), startZ),
+					new BlockPos(endX, level.getMinBuildHeight(), endZ),
+					10
+			));
+			icebergLines.add(new IcebergLine(
+					new BlockPos(endX, level.getMinBuildHeight(), startZ),
+					new BlockPos(startX, level.getMinBuildHeight(), endZ),
+					10
+			));
 		}
 
 		phases = game.getState().getOrThrow(GamePhaseState.KEY);
@@ -185,7 +179,7 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 			mutablePos.set(particleX, waterLevel, particleZ);
 
 			if (!world.isEmptyBlock(mutablePos) && world.isEmptyBlock(mutablePos.move(Direction.UP))) {
-				Packet<?> packet = new ClientboundLevelParticlesPacket(ParticleTypes.SPLASH, true, particleX, waterLevel + 1, particleZ, 0.1F, 0.0F, 0.1F, 0.0F, 4);
+				Packet<?> packet = new ClientboundLevelParticlesPacket(ParticleTypes.SPLASH, false, particleX, waterLevel + 1, particleZ, 0.1F, 0.0F, 0.1F, 0.0F, 4);
 				player.connection.send(packet);
 			}
 		}
