@@ -150,7 +150,7 @@ public final class BbBehavior implements IGameBehavior {
 		List<ServerPlayer> list = new ArrayList<>();
 		game.getParticipants().forEach(list::add);
 
-		list.sort(Comparator.comparingInt(c -> this.game.getStatistics().forPlayer((PlayerKey) c).getOr(StatisticKey.POINTS, 0)).reversed());
+		list.sort(Comparator.comparingInt(c -> this.game.getStatistics().forPlayer((ServerPlayer) c).getOr(StatisticKey.POINTS, 0)).reversed());
 
 		for (ServerPlayer player : list) {
 			int points = 0;
