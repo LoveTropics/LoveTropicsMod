@@ -9,27 +9,24 @@ import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.lovetropics.minigames.common.core.game.state.GamePhase;
 import com.lovetropics.minigames.common.core.game.state.GamePhaseState;
-import com.lovetropics.minigames.common.core.game.util.GameBossBar;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
-import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.core.BlockPos;
-import net.minecraft.network.chat.Component;
-import net.minecraft.world.BossEvent;
-import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.LivingEntity;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class WorldBorderGameBehavior implements IGameBehavior {
 	public static final Codec<WorldBorderGameBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
-			MoreCodecs.TEXT.fieldOf("name").forGetter(c -> c.name),
 			Codec.STRING.fieldOf("world_border_center").forGetter(c -> c.worldBorderCenterKey),
 			MoreCodecs.TEXT.fieldOf("collapse_message").forGetter(c -> c.collapseMessage),
 			GamePhase.CODEC.fieldOf("phase").forGetter(c -> c.phase),
@@ -40,7 +37,6 @@ public class WorldBorderGameBehavior implements IGameBehavior {
 			ParticleTypes.CODEC.optionalFieldOf("border_particle", ParticleTypes.EXPLOSION).forGetter(c -> c.borderParticle)
 	).apply(i, WorldBorderGameBehavior::new));
 
-	private final Component name;
 	private final String worldBorderCenterKey;
 	private final Component collapseMessage;
 	private final GamePhase phase;
@@ -53,13 +49,11 @@ public class WorldBorderGameBehavior implements IGameBehavior {
 	private BlockPos worldBorderCenter = BlockPos.ZERO;
 
 	private boolean borderCollapseMessageSent = false;
-	private final GameBossBar bossBar;
 
 	private GamePhaseState phases;
 
-	public WorldBorderGameBehavior(final Component name, final String worldBorderCenterKey, final Component collapseMessage, final GamePhase phase,
+	public WorldBorderGameBehavior(final String worldBorderCenterKey, final Component collapseMessage, final GamePhase phase,
 								   final int particleRateDelay, final int particleHeight, final int damageRateDelay, final int damageAmount, final ParticleOptions borderParticle) {
-		this.name = name;
 		this.worldBorderCenterKey = worldBorderCenterKey;
 		this.collapseMessage = collapseMessage;
 		this.phase = phase;
@@ -68,8 +62,6 @@ public class WorldBorderGameBehavior implements IGameBehavior {
 		this.damageRateDelay = damageRateDelay;
 		this.damageAmount = damageAmount;
 		this.borderParticle = borderParticle;
-
-		this.bossBar = new GameBossBar(name, BossEvent.BossBarColor.WHITE, BossEvent.BossBarOverlay.PROGRESS);
 	}
 
 	@Override
@@ -91,7 +83,6 @@ public class WorldBorderGameBehavior implements IGameBehavior {
 
 	private void onFinish() {
 		borderCollapseMessageSent = false;
-		bossBar.close();
 	}
 
 	// TODO: Clean up this mess
@@ -109,8 +100,6 @@ public class WorldBorderGameBehavior implements IGameBehavior {
 
 		boolean isCollapsing = phaseProgress >= 1.0f;
 		float borderPercent = Math.max(1.0f - phaseProgress, 0.01f);
-
-		bossBar.setProgress(borderPercent);
 
 		float maxRadius = 210;
 		float currentRadius = maxRadius * borderPercent;
@@ -162,9 +151,6 @@ public class WorldBorderGameBehavior implements IGameBehavior {
 				player.hurt(DamageSource.explosion((LivingEntity) null), damageAmount);
 				player.addEffect(new MobEffectInstance(MobEffects.CONFUSION, 40, 0));
 			}
-
-			//add boss bar info to everyone in dim if not already registered for it
-			bossBar.addPlayer(player);
 		}
 	}
 }
