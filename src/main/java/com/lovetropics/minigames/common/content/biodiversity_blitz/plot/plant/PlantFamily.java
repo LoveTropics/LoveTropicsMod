@@ -1,15 +1,20 @@
 package com.lovetropics.minigames.common.content.biodiversity_blitz.plot.plant;
 
 import java.util.Arrays;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.google.common.collect.ImmutableSet;
+import com.lovetropics.lib.codec.MoreCodecs;
+import com.mojang.serialization.Codec;
 
 public enum PlantFamily {
     CROP("crop", true, 8),
     PLANT("plant", true, 6),
     SAPLING("sapling", false, 0),
     TREE("tree", true, 2);
+
+    public static final Codec<PlantFamily> CODEC = MoreCodecs.stringVariants(PlantFamily.values(), PlantFamily::friendlyName);
 
     public static final ImmutableSet<PlantFamily> BIODIVERSITY_VALUES = ImmutableSet.copyOf(Arrays.stream(values())
     		.filter(f -> f.countsForBiodiversity)

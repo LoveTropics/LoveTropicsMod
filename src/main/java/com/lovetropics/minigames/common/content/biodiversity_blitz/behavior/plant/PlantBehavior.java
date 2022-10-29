@@ -1,6 +1,5 @@
 package com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.plant;
 
-import com.lovetropics.lib.codec.MoreCodecs;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.event.BbEvents;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.event.BbPlantEvents;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.Plot;
@@ -34,7 +33,7 @@ import java.util.List;
 public final class PlantBehavior implements IGameBehavior {
 	public static final Codec<PlantBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
 			PlantType.CODEC.fieldOf("id").forGetter(c -> c.plantType),
-			MoreCodecs.stringVariants(PlantFamily.values(), PlantFamily::friendlyName).fieldOf("family").forGetter(c -> c.family),
+			PlantFamily.CODEC.fieldOf("family").forGetter(c -> c.family),
 			Codec.DOUBLE.optionalFieldOf("value", 0.0).forGetter(c -> c.value),
 			IGameBehavior.CODEC.listOf().optionalFieldOf("behaviors", Collections.emptyList()).forGetter(c -> c.behaviors)
 	).apply(i, PlantBehavior::new));
