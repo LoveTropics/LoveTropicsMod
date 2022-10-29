@@ -144,7 +144,7 @@ public class PhaseControllerBehavior implements IGameBehavior {
 		public int resolve(int initialCount) {
 			int value = initialCount;
 			if (percentage != NO_PERCENTAGE) {
-				value = Math.min(value, Math.round(percentage * initialCount));
+				value = Math.min(value, Mth.floor(percentage * initialCount));
 			}
 			if (left != NO_COUNT) {
 				value = Math.min(value, left);
