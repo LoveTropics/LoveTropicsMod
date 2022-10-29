@@ -36,7 +36,7 @@ public final class SpectatorChaseBehavior implements IGameBehavior {
 
 	private static final Component SPECTATING_NOTIFICATION_MESSAGE = new TextComponent("You are a ")
 			.append(new TextComponent("spectator").withStyle(ChatFormatting.BOLD))
-			.append("!\n\n")
+			.append("!\n")
 			.append("Scroll or use the arrow keys to select players.\n")
 			.append("Hold ").append(new TextComponent("Left Control").withStyle(ChatFormatting.UNDERLINE)).append(" and scroll to zoom.");
 
