@@ -28,6 +28,8 @@ public class SttSidebarBehavior implements IGameBehavior {
 	private GamePhaseState phases;
 	private GameWeatherState weather;
 
+	private int initialPlayerCount;
+
 	private long lastUpdateTime;
 	private boolean dirty;
 
@@ -40,7 +42,8 @@ public class SttSidebarBehavior implements IGameBehavior {
 		weather = game.getState().getOrNull(GameWeatherState.KEY);
 
 		events.listen(GamePhaseEvents.START, () -> {
-			sidebar = widgets.openSidebar(game.getDefinition().getName());
+			sidebar = widgets.openSidebar(game.getDefinition().getName().copy().withStyle(ChatFormatting.YELLOW, ChatFormatting.BOLD));
+			initialPlayerCount = game.getParticipants().size();
 		});
 
 		events.listen(GamePlayerEvents.SET_ROLE, (player, role, lastRole) -> dirty = true);
@@ -82,17 +85,17 @@ public class SttSidebarBehavior implements IGameBehavior {
 
 	private String phaseState() {
 		GamePhase phase = phases.get();
-		String percent = ChatFormatting.GRAY + "(" + Math.round(phases.progress() * 100f) + "%)";
 		return switch (phase.key()) {
 			case "phase0", "phase1" -> ChatFormatting.YELLOW + "PVP disabled";
 			case "phase2", "phase3" -> ChatFormatting.RED + "The tide is rising!";
-			case "phase4" -> ChatFormatting.AQUA + "Icebergs are forming! " + percent;
-			case "phase5" -> ChatFormatting.RED + "Explosive border closing! " + percent;
+			case "phase4" -> ChatFormatting.AQUA + "Icebergs are forming!" ;
+			case "phase5" -> ChatFormatting.RED + "Explosive border closing!";
 			default -> "";
 		};
 	}
 
 	private String playersState() {
-		return ChatFormatting.GRAY.toString() + game.getParticipants().size() + " remaining";
+		int playerCount = game.getParticipants().size();
+		return ChatFormatting.GRAY.toString() + playerCount + "/" + initialPlayerCount + " players";
 	}
 }
