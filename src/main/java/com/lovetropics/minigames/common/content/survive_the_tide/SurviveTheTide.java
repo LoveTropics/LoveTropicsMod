@@ -58,7 +58,9 @@ public final class SurviveTheTide {
 	public static final GameBehaviorEntry<SurviveTheTideWeatherControlBehavior> WEATHER_CONTROL = REGISTRATE.object("stt_weather_control")
 			.behavior(SurviveTheTideWeatherControlBehavior.CODEC)
 			.register();
-
+	public static final GameBehaviorEntry<SttSidebarBehavior> SURVIVE_THE_TIDE_SIDEBAR = REGISTRATE.object("survive_the_tide_sidebar")
+			.behavior(SttSidebarBehavior.CODEC)
+			.register();
 	public static final GameBehaviorEntry<SttPetsBehavior> PETS = REGISTRATE.object("survive_the_tide_pets")
 			.behavior(SttPetsBehavior.CODEC)
 			.register();

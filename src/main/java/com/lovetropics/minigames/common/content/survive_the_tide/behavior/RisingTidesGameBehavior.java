@@ -98,8 +98,6 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 		minTideChunk = new ChunkPos(SectionPos.blockToSectionCoord(tideArea.min().getX()), SectionPos.blockToSectionCoord(tideArea.min().getZ()));
 		maxTideChunk = new ChunkPos(SectionPos.blockToSectionCoord(tideArea.max().getX()), SectionPos.blockToSectionCoord(tideArea.max().getZ()));
 
-		Random random = new Random();
-
 		icebergLines.clear();
 
 		ServerLevel level = game.getWorld();
