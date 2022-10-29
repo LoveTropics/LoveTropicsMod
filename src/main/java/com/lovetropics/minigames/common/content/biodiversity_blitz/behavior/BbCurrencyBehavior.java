@@ -91,8 +91,9 @@ public final class BbCurrencyBehavior implements IGameBehavior {
 		if (ticks % 20 == 0) {
 			int nextCurrencyIncrement = this.computeNextCurrency(player, plot);
 			if (plot.nextCurrencyIncrement != nextCurrencyIncrement) {
-				game.invoker(BbEvents.CURRENCY_INCREMENT_CHANGED).onCurrencyChanged(player, nextCurrencyIncrement, plot.nextCurrencyIncrement);
 				plot.nextCurrencyIncrement = nextCurrencyIncrement;
+				
+				game.invoker(BbEvents.CURRENCY_INCREMENT_CHANGED).onCurrencyChanged(player, nextCurrencyIncrement, plot.nextCurrencyIncrement);
 			}
 		}
 
