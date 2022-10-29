@@ -24,7 +24,7 @@ import java.util.function.Consumer;
 public final class DonationPackageBehavior implements IGameBehavior {
 	public static final Codec<DonationPackageBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
 			DonationPackageData.CODEC.forGetter(c -> c.data),
-			GameActionList.CODEC.optionalFieldOf("receive_actions", GameActionList.EMPTY).forGetter(c -> c.receiveActions)
+			MoreCodecs.strictOptionalFieldOf(GameActionList.CODEC, "receive_actions", GameActionList.EMPTY).forGetter(c -> c.receiveActions)
 	).apply(i, DonationPackageBehavior::new));
 
 	private static final Logger LOGGER = LogManager.getLogger(DonationPackageBehavior.class);
