@@ -8,6 +8,7 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.Random;
 
@@ -28,7 +29,7 @@ public class DestroyCropGoal extends MoveToBlockGoal {
 
         Mob mob = this.mob.asMob();
         double distance2 = mob.position().distanceToSqr(targetPos.getX() + 0.5, targetPos.getY() + 0.5, targetPos.getZ() + 0.5);
-        if (distance2 <= getDistanceSq()) {
+        if (distance2 <= getDistanceSq(mob.level.getBlockState(targetPos))) {
             this.ticksAtTarget--;
             if (mob.level.random.nextInt(4) == 0) {
                 spawnDamageParticles(mob, 0);
@@ -43,8 +44,8 @@ public class DestroyCropGoal extends MoveToBlockGoal {
         }
     }
 
-    protected double getDistanceSq() {
-        return 1.5 * 1.5;
+    protected double getDistanceSq(BlockState state) {
+        return state.getMaterial().isSolid() ? 1.5 * 1.5 : 0.5 * 0.5;
     }
 
     protected void tryDamagePlant(Mob mob) {

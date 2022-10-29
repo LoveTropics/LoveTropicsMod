@@ -85,7 +85,7 @@ public final class BbClientRenderEffects {
 		y += font.lineHeight;
 
 		if (!gainingCurrency) {
-			font.drawShadow(matrixStack, ChatFormatting.GRAY + "You must be in your plot to receive osas!", x, y, 0xFFFFFFFF);
+			font.drawShadow(matrixStack, ChatFormatting.GRAY + "You must be in your plot to receive points!", x, y, 0xFFFFFFFF);
 		}
 	}
 

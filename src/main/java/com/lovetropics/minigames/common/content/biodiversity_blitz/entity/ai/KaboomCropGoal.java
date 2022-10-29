@@ -5,6 +5,7 @@ import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.plant.Pl
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.plant.state.PlantHealth;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.block.state.BlockState;
 
 public class KaboomCropGoal extends DestroyCropGoal {
     private final BbCreeperEntity mob;
@@ -15,7 +16,7 @@ public class KaboomCropGoal extends DestroyCropGoal {
     }
 
     @Override
-    protected double getDistanceSq() {
+    protected double getDistanceSq(BlockState state) {
         // Longer reach distance
         return 2 * 2;
     }

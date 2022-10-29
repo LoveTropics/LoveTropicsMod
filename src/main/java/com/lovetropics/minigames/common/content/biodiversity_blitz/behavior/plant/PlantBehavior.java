@@ -3,7 +3,7 @@ package com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.pla
 import com.lovetropics.lib.codec.MoreCodecs;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.event.BbEvents;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.event.BbPlantEvents;
-import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.tutorial.BbTutorialState;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.tutorial.TutorialState;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.Plot;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.PlotsState;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.plant.Plant;
@@ -49,7 +49,7 @@ public final class PlantBehavior implements IGameBehavior {
 
 	private IGamePhase game;
 	private PlotsState plots;
-	private BbTutorialState tutorial;
+	private TutorialState tutorial;
 
 	public PlantBehavior(PlantType plantType, PlantFamily family, double value, List<IGameBehavior> behaviors) {
 		this.plantType = plantType;
@@ -67,7 +67,7 @@ public final class PlantBehavior implements IGameBehavior {
 	public void register(IGamePhase game, EventRegistrar events) {
 		this.game = game;
 		this.plots = game.getState().getOrThrow(PlotsState.KEY);
-		this.tutorial = game.getState().getOrThrow(BbTutorialState.KEY);
+		this.tutorial = game.getState().getOrThrow(TutorialState.KEY);
 
 		events.listen(BbEvents.PLACE_PLANT, this::placePlant);
 		events.listen(BbEvents.BREAK_PLANT, this::breakPlant);

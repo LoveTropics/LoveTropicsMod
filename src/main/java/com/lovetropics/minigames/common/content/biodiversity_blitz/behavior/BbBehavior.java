@@ -3,7 +3,7 @@ package com.lovetropics.minigames.common.content.biodiversity_blitz.behavior;
 import com.lovetropics.lib.BlockBox;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.BiodiversityBlitzTexts;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.event.BbEvents;
-import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.tutorial.BbTutorialState;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.tutorial.TutorialState;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.BbMobEntity;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.explosion.FilteredExplosion;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.explosion.PlantAffectingExplosion;
@@ -15,13 +15,17 @@ import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.*;
 import com.lovetropics.minigames.common.core.game.player.PlayerRole;
+import com.lovetropics.minigames.common.core.game.util.GameSidebar;
+import com.lovetropics.minigames.common.core.game.util.GlobalGameWidgets;
 import com.mojang.serialization.Codec;
 import it.unimi.dsi.fastutil.objects.Object2FloatMap;
 import it.unimi.dsi.fastutil.objects.Object2FloatOpenHashMap;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.TextComponent;
 import net.minecraft.network.protocol.game.ClientboundSetSubtitleTextPacket;
 import net.minecraft.network.protocol.game.ClientboundSetTitleTextPacket;
 import net.minecraft.network.protocol.game.ClientboundSetTitlesAnimationPacket;
@@ -46,6 +50,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.List;
 
 // TODO: needs to be split up & data-driven more!
@@ -63,15 +68,18 @@ public final class BbBehavior implements IGameBehavior {
 
 	private IGamePhase game;
 	private PlotsState plots;
-	private BbTutorialState tutorial;
+	private TutorialState tutorial;
 	private CurrencyManager currency;
+	private GameSidebar sidebar;
+	private GlobalGameWidgets widgets;
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
 		this.game = game;
 		this.plots = game.getState().getOrThrow(PlotsState.KEY);
-		this.tutorial = game.getState().getOrThrow(BbTutorialState.KEY);
+		this.tutorial = game.getState().getOrThrow(TutorialState.KEY);
 		this.currency = game.getState().getOrNull(CurrencyManager.KEY);
+		this.widgets = GlobalGameWidgets.registerTo(game, events);
 
 		events.listen(GamePlayerEvents.ADD, player -> setupPlayerAsRole(player, null));
 		events.listen(GamePlayerEvents.SPAWN, this::setupPlayerAsRole);
@@ -109,6 +117,50 @@ public final class BbBehavior implements IGameBehavior {
 		events.listen(GamePlayerEvents.BREAK_BLOCK, (player, pos, state, hand) -> InteractionResult.FAIL);
 
 		events.listen(GamePlayerEvents.USE_BLOCK, this::onUseBlock);
+
+		events.listen(GamePhaseEvents.START, () -> {
+			Component sidebarTitle = new TextComponent("Biodiversity Blitz")
+					.withStyle(ChatFormatting.GREEN, ChatFormatting.BOLD);
+
+			sidebar = widgets.openSidebar(sidebarTitle);
+			sidebar.set(collectScoreboard(game));
+		});
+
+		// TODO: this applies for every player in the game!
+		events.listen(BbEvents.CURRENCY_ACCUMULATE, (player, value, lastValue) -> {
+			// Change scoreboard only when player's currency changes
+			sidebar.set(collectScoreboard(game));
+		});
+
+		events.listen(BbEvents.CURRENCY_INCREMENT_CHANGED, (player, value, lastValue) -> {
+			// Change scoreboard only when player's currency changes
+			sidebar.set(collectScoreboard(game));
+		});
+	}
+
+	private String[] collectScoreboard(IGamePhase game) {
+		List<String> sidebar = new ArrayList<>(10);
+		sidebar.add("" + ChatFormatting.AQUA +  "Player " + ChatFormatting.GOLD + "points " + ChatFormatting.LIGHT_PURPLE + "(+ per drop)");
+		sidebar.add("");
+
+		for (ServerPlayer player : game.getParticipants()) {
+			int points = 0;
+			int increment = 0;
+			// Get points for player
+			Plot plot = plots.getPlotFor(player);
+			if (currency != null && plot != null) {
+				points = currency.get(player);
+				increment = plot.nextCurrencyIncrement;
+			}
+
+			if (points == 0 && increment == 0) {
+				continue;
+			}
+
+			sidebar.add("" + ChatFormatting.AQUA + player.getGameProfile().getName() + ": " + ChatFormatting.GOLD + points + " " + ChatFormatting.LIGHT_PURPLE + "(+ " + increment + ")");
+		}
+
+		return sidebar.toArray(new String[0]);
 	}
 
 	private InteractionResult onUseBlock(ServerPlayer player, ServerLevel world, BlockPos blockPos, InteractionHand hand, BlockHitResult blockRayTraceResult) {
@@ -143,6 +195,10 @@ public final class BbBehavior implements IGameBehavior {
 	}
 
 	private InteractionResult onTrampleFarmland(Entity entity, BlockPos pos, BlockState state) {
+		if (!tutorial.isTutorialFinished()) {
+			return InteractionResult.FAIL;
+		}
+
 		Plot plot = this.plots.getPlotFor(entity);
 		if (plot != null && plot.bounds.contains(pos)) {
 			if (!plot.plants.hasPlantAt(pos.above())) {

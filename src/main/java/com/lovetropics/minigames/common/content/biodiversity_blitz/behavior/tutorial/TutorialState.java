@@ -4,8 +4,8 @@ import com.lovetropics.minigames.common.core.game.state.GameStateKey;
 import com.lovetropics.minigames.common.core.game.state.IGameState;
 
 // Players shouldn't be able to modify plots until the tutorial is done
-public class BbTutorialState implements IGameState {
-    public static final GameStateKey<BbTutorialState> KEY = GameStateKey.create("BioBlitz Tutorial Data");
+public class TutorialState implements IGameState {
+    public static final GameStateKey<TutorialState> KEY = GameStateKey.create("BioBlitz Tutorial Data");
 
     private boolean tutorialFinished = false;
 

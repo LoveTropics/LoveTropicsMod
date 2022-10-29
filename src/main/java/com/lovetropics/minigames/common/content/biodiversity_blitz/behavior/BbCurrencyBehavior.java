@@ -2,7 +2,7 @@ package com.lovetropics.minigames.common.content.biodiversity_blitz.behavior;
 
 import com.lovetropics.minigames.common.content.biodiversity_blitz.BiodiversityBlitzTexts;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.event.BbEvents;
-import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.tutorial.BbTutorialState;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.tutorial.TutorialState;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.CurrencyManager;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.Plot;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.plant.Plant;
@@ -45,7 +45,7 @@ public final class BbCurrencyBehavior implements IGameBehavior {
 
 	private IGamePhase game;
 	private CurrencyManager currency;
-	private BbTutorialState tutorial;
+	private TutorialState tutorial;
 
 	public BbCurrencyBehavior(Item item, int initialCurrency, DropCalculation dropCalculation, long dropInterval) {
 		this.initialCurrency = initialCurrency;
@@ -62,7 +62,7 @@ public final class BbCurrencyBehavior implements IGameBehavior {
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) throws GameException {
 		this.game = game;
-		this.tutorial = game.getState().getOrThrow(BbTutorialState.KEY);
+		this.tutorial = game.getState().getOrThrow(TutorialState.KEY);
 
 		events.listen(BbEvents.ASSIGN_PLOT, (player, plot) -> {
 			this.currency.set(player, this.initialCurrency, false);
