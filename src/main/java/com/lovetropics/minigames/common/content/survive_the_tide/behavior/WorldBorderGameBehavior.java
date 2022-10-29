@@ -7,6 +7,8 @@ import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
+import com.lovetropics.minigames.common.core.game.state.GamePhase;
+import com.lovetropics.minigames.common.core.game.state.GamePhaseState;
 import com.lovetropics.minigames.common.core.game.util.GameBossBar;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -30,8 +32,7 @@ public class WorldBorderGameBehavior implements IGameBehavior {
 			MoreCodecs.TEXT.fieldOf("name").forGetter(c -> c.name),
 			Codec.STRING.fieldOf("world_border_center").forGetter(c -> c.worldBorderCenterKey),
 			MoreCodecs.TEXT.fieldOf("collapse_message").forGetter(c -> c.collapseMessage),
-			Codec.LONG.fieldOf("ticks_until_start").forGetter(c -> c.ticksUntilStart),
-			Codec.LONG.fieldOf("delay_until_collapse").forGetter(c -> c.delayUntilCollapse),
+			GamePhase.CODEC.fieldOf("phase").forGetter(c -> c.phase),
 			Codec.INT.fieldOf("particle_rate_delay").forGetter(c -> c.particleRateDelay),
 			Codec.INT.fieldOf("particle_height").forGetter(c -> c.particleHeight),
 			Codec.INT.fieldOf("damage_rate_delay").forGetter(c -> c.damageRateDelay),
@@ -42,8 +43,7 @@ public class WorldBorderGameBehavior implements IGameBehavior {
 	private final Component name;
 	private final String worldBorderCenterKey;
 	private final Component collapseMessage;
-	private final long ticksUntilStart;
-	private final long delayUntilCollapse;
+	private final GamePhase phase;
 	private final int particleRateDelay;
 	private final int particleHeight;
 	private final int damageRateDelay;
@@ -55,13 +55,14 @@ public class WorldBorderGameBehavior implements IGameBehavior {
 	private boolean borderCollapseMessageSent = false;
 	private final GameBossBar bossBar;
 
-	public WorldBorderGameBehavior(final Component name, final String worldBorderCenterKey, final Component collapseMessage, final long ticksUntilStart,
-								   final long delayUntilCollapse, final int particleRateDelay, final int particleHeight, final int damageRateDelay, final int damageAmount, final ParticleOptions borderParticle) {
+	private GamePhaseState phases;
+
+	public WorldBorderGameBehavior(final Component name, final String worldBorderCenterKey, final Component collapseMessage, final GamePhase phase,
+								   final int particleRateDelay, final int particleHeight, final int damageRateDelay, final int damageAmount, final ParticleOptions borderParticle) {
 		this.name = name;
 		this.worldBorderCenterKey = worldBorderCenterKey;
 		this.collapseMessage = collapseMessage;
-		this.ticksUntilStart = ticksUntilStart;
-		this.delayUntilCollapse = delayUntilCollapse;
+		this.phase = phase;
 		this.particleRateDelay = particleRateDelay;
 		this.particleHeight = particleHeight;
 		this.damageRateDelay = damageRateDelay;
@@ -73,6 +74,8 @@ public class WorldBorderGameBehavior implements IGameBehavior {
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) throws GameException {
+		phases = game.getState().getOrThrow(GamePhaseState.KEY);
+
 		List<BlockBox> regions = new ArrayList<>(game.getMapRegions().get(worldBorderCenterKey));
 
 		if (!regions.isEmpty()) {
@@ -93,23 +96,19 @@ public class WorldBorderGameBehavior implements IGameBehavior {
 
 	// TODO: Clean up this mess
 	private void tickWorldBorder(final IGamePhase game) {
-		if (game.ticks() < ticksUntilStart) {
+		if (!phases.is(phase)) {
 			return;
 		}
+
+		float phaseProgress = phases.progress();
 
 		if (!borderCollapseMessageSent) {
 			borderCollapseMessageSent = true;
 			game.getAllPlayers().sendMessage(collapseMessage);
 		}
 
-		long ticksSinceStart = game.ticks() - ticksUntilStart;
-
-		boolean isCollapsing = game.ticks() >= ticksUntilStart + delayUntilCollapse;
-		float borderPercent = 0.01F;
-		if (!isCollapsing) {
-			borderPercent = 1F - ((float) (ticksSinceStart + 1) / (float) delayUntilCollapse);
-			borderPercent = Math.max(borderPercent, 0.01F);
-		}
+		boolean isCollapsing = phaseProgress >= 1.0f;
+		float borderPercent = Math.max(1.0f - phaseProgress, 0.01f);
 
 		bossBar.setProgress(borderPercent);
 

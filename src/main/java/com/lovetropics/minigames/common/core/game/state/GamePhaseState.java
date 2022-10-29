@@ -29,8 +29,8 @@ public final class GamePhaseState implements IGameState {
 		return progress;
 	}
 
-	public boolean is(String phase) {
-		return this.phase.is(phase);
+	public boolean is(GamePhase phase) {
+		return this.phase.equals(phase);
 	}
 
 	public boolean is(Predicate<GamePhase> predicate) {
