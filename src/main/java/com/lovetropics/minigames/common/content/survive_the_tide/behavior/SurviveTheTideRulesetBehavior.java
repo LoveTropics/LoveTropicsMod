@@ -13,6 +13,7 @@ import com.lovetropics.minigames.common.core.game.state.GamePhase;
 import com.lovetropics.minigames.common.core.game.state.GamePhaseState;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.SharedConstants;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.FenceBlock;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
@@ -134,6 +135,6 @@ public class SurviveTheTideRulesetBehavior implements IGameBehavior {
 		game.getAllPlayers().sendMessage(messageOnSetPlayersFree);
 
 		// So players can drop down without fall damage
-		game.getParticipants().addPotionEffect(new MobEffectInstance(MobEffects.SLOW_FALLING, 20 * 20));
+		game.getParticipants().addPotionEffect(new MobEffectInstance(MobEffects.SLOW_FALLING, SharedConstants.TICKS_PER_SECOND * 10));
 	}
 }
