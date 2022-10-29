@@ -1,5 +1,6 @@
 package com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.plant;
 
+import com.lovetropics.lib.codec.MoreCodecs;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.event.BbEvents;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.event.BbPlantEvents;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.Plot;
@@ -35,7 +36,7 @@ public final class PlantBehavior implements IGameBehavior {
 			PlantType.CODEC.fieldOf("id").forGetter(c -> c.plantType),
 			PlantFamily.CODEC.fieldOf("family").forGetter(c -> c.family),
 			Codec.DOUBLE.optionalFieldOf("value", 0.0).forGetter(c -> c.value),
-			IGameBehavior.CODEC.listOf().optionalFieldOf("behaviors", Collections.emptyList()).forGetter(c -> c.behaviors)
+			MoreCodecs.strictOptionalFieldOf(IGameBehavior.CODEC.listOf(), "behaviors", Collections.emptyList()).forGetter(c -> c.behaviors)
 	).apply(i, PlantBehavior::new));
 
 	private final PlantType plantType;
