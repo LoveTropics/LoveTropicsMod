@@ -35,12 +35,12 @@ public final class ClientLobbyManagement {
 	public static final class Session {
 		final int id;
 		final ClientLobbyManageState lobby;
-		final ManageLobbyScreen screen;
+		@Nullable
+		ManageLobbyScreen screen;
 
 		Session(int id, ClientLobbyManageState lobby) {
 			this.id = id;
 			this.lobby = lobby;
-			this.screen = new ManageLobbyScreen(this);
 		}
 
 		public int id() {
@@ -119,22 +119,31 @@ public final class ClientLobbyManagement {
 			lobby.setInstalledGames(installedGames);
 			lobby.setQueue(queue);
 
+			if (screen == null) {
+				screen = new ManageLobbyScreen(this);
+			}
 			Minecraft.getInstance().setScreen(screen);
 		}
 
 		public void handleName(String name) {
 			lobby.setName(name);
-			screen.updateNameField();
+			if (screen != null) {
+				screen.updateNameField();
+			}
 		}
 
 		public void handleCurrentGame(@Nullable ClientCurrentGame game) {
 			lobby.setCurrentGame(game);
-			screen.updateGameEntries();
+			if (screen != null) {
+				screen.updateGameEntries();
+			}
 		}
 
 		public void handleQueueUpdate(IntList queue, Int2ObjectMap<ClientLobbyQueuedGame> updated) {
 			lobby.updateQueue(queue, updated);
-			screen.updateGameEntries();
+			if (screen != null) {
+				screen.updateGameEntries();
+			}
 		}
 
 		public void handlePlayers(List<ClientLobbyPlayer> players) {
@@ -143,12 +152,16 @@ public final class ClientLobbyManagement {
 
 		public void handleControlsState(LobbyControls.State state) {
 			lobby.setControlsState(state);
-			screen.updateControlsState();
+			if (screen != null) {
+				screen.updateControlsState();
+			}
 		}
 
 		public void handleVisibility(LobbyVisibility visibility, boolean canFocusLive) {
 			lobby.setVisibility(visibility, canFocusLive);
-			screen.updatePublishState();
+			if (screen != null) {
+				screen.updatePublishState();
+			}
 		}
 	}
 }
