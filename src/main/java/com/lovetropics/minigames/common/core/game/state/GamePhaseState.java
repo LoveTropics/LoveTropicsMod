@@ -1,13 +1,18 @@
 package com.lovetropics.minigames.common.core.game.state;
 
+import net.minecraft.util.Mth;
+
 import javax.annotation.Nonnull;
 import java.util.function.Predicate;
 
 public final class GamePhaseState implements IGameState {
 	public static final GameStateKey<GamePhaseState> KEY = GameStateKey.create("Game Phases");
 
+	public static final int NO_TIME_ESTIMATE = -1;
+
 	// TODO: avoid stringly-typed phases?
 	private GamePhase phase;
+	private int phaseLength = NO_TIME_ESTIMATE;
 	private float progress;
 
 	public GamePhaseState(GamePhase phase, float progress) {
@@ -15,8 +20,17 @@ public final class GamePhaseState implements IGameState {
 		this.progress = progress;
 	}
 
-	public void set(@Nonnull GamePhase phase, float progress) {
+	public void set(@Nonnull GamePhase phase, int length) {
 		this.phase = phase;
+		this.phaseLength = length;
+		this.progress = 0.0f;
+	}
+
+	public void set(@Nonnull GamePhase phase) {
+		set(phase, NO_TIME_ESTIMATE);
+	}
+
+	public void update(float progress) {
 		this.progress = progress;
 	}
 
@@ -27,6 +41,13 @@ public final class GamePhaseState implements IGameState {
 
 	public float progress() {
 		return progress;
+	}
+
+	public int ticksLeft() {
+		if (phaseLength == NO_TIME_ESTIMATE) {
+			return NO_TIME_ESTIMATE;
+		}
+		return Mth.floor((1.0f - progress) * phaseLength);
 	}
 
 	public boolean is(GamePhase phase) {

@@ -58,7 +58,11 @@ public class PhaseControllerBehavior implements IGameBehavior {
 		PhaseDefinition nextPhase = phases.get(index);
 		phaseIndex = index;
 
-		phaseState.set(nextPhase.phase(), 0.0f);
+		if (nextPhase.fixed()) {
+			phaseState.set(nextPhase.phase(), nextPhase.length());
+		} else {
+			phaseState.set(nextPhase.phase());
+		}
 		phaseStartTime = currentTime;
 
 		if (lastPhase != nextPhase) {
@@ -92,7 +96,7 @@ public class PhaseControllerBehavior implements IGameBehavior {
 					hasFinishedPhases = true;
 				}
 			} else {
-				phaseState.set(phase.phase(), (float) phaseTime / phase.length());
+				phaseState.update((float) phaseTime / phase.length());
 			}
 		});
 	}
