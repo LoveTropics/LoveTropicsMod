@@ -15,6 +15,7 @@ import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.*;
 import com.lovetropics.minigames.common.core.game.player.PlayerRole;
+import com.lovetropics.minigames.common.core.game.state.statistics.PlayerKey;
 import com.lovetropics.minigames.common.core.game.state.statistics.StatisticKey;
 import com.lovetropics.minigames.common.core.game.state.statistics.StatisticsMap;
 import com.lovetropics.minigames.common.core.game.util.GameSidebar;
@@ -149,7 +150,7 @@ public final class BbBehavior implements IGameBehavior {
 		List<ServerPlayer> list = new ArrayList<>();
 		game.getParticipants().forEach(list::add);
 
-		list.sort(Comparator.comparingInt(c -> this.game.getStatistics().forPlayer(c).getOr(StatisticKey.POINTS, 0)).reversed());
+		list.sort(Comparator.comparingInt(c -> this.game.getStatistics().forPlayer((PlayerKey) c).getOr(StatisticKey.POINTS, 0)).reversed());
 
 		for (ServerPlayer player : list) {
 			int points = 0;
