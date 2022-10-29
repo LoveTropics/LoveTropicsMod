@@ -16,6 +16,8 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.Reference2ObjectMap;
+import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -47,7 +49,7 @@ public class BbTutorialAction implements IGameBehavior {
     private final PlantType grass;
     private final PlantType wheat;
 
-    private Long2ObjectMap<Runnable> actions;
+    private Reference2ObjectMap<ServerPlayer, Long2ObjectMap<Runnable>> tutorialActions;
 
     public BbTutorialAction(PlantType diffusa, PlantType grass, PlantType wheat) {
         this.diffusa = diffusa;
@@ -58,8 +60,12 @@ public class BbTutorialAction implements IGameBehavior {
     @Override
     public void register(IGamePhase game, EventRegistrar events) throws GameException {
         PlotsState plots = game.getState().getOrThrow(PlotsState.KEY);
-        actions = new Long2ObjectOpenHashMap<>();
+        tutorialActions = new Reference2ObjectOpenHashMap<>();
+
         events.listen(GameActionEvents.APPLY_TO_PLAYER, (context, target) -> {
+
+            Long2ObjectMap<Runnable> actions = new Long2ObjectOpenHashMap<>();
+            tutorialActions.put(target, actions);
 
             Plot playerPlot = plots.getPlotFor(target);
             BlockPos sample = playerPlot.plantBounds.centerBlock();
@@ -68,7 +74,7 @@ public class BbTutorialAction implements IGameBehavior {
 
             Direction cw = playerPlot.forward.getClockWise();
 
-            ticks = placeBlocks(game, target, playerPlot, sample, ticks, cw);
+            ticks = placeBlocks(game, target, playerPlot, sample, ticks, cw, actions);
 
             ticks += 40;
 
@@ -88,7 +94,7 @@ public class BbTutorialAction implements IGameBehavior {
 
             ticks += 240;
 
-            ticks = breakBlocks(game, target, playerPlot, sample, ticks, cw);
+            ticks = breakBlocks(game, target, playerPlot, sample, ticks, cw, actions);
 
             actions.put(ticks, () -> {
                 target.sendMessage(new TextComponent("Tutorial done!"), ChatType.SYSTEM, Util.NIL_UUID);
@@ -99,14 +105,16 @@ public class BbTutorialAction implements IGameBehavior {
         });
 
         events.listen(GamePhaseEvents.TICK, () -> {
-            Runnable run = actions.remove(game.ticks());
-            if (run != null) {
-                run.run();
+            for (Long2ObjectMap<Runnable> actions : tutorialActions.values()) {
+                Runnable run = actions.remove(game.ticks());
+                if (run != null) {
+                    run.run();
+                }
             }
         });
     }
 
-    private long placeBlocks(IGamePhase game, ServerPlayer target, Plot playerPlot, BlockPos sample, long ticks, Direction cw) {
+    private long placeBlocks(IGamePhase game, ServerPlayer target, Plot playerPlot, BlockPos sample, long ticks, Direction cw, Long2ObjectMap<Runnable> actions) {
         // Place diffusa
         for (int i = 0; i < 3; i++) {
             BlockPos pos = sample.relative(playerPlot.forward, 6).relative(cw, i * 2 - 2);
@@ -173,7 +181,7 @@ public class BbTutorialAction implements IGameBehavior {
         return ticks;
     }
 
-    private long breakBlocks(IGamePhase game, ServerPlayer target, Plot playerPlot, BlockPos sample, long ticks, Direction cw) {
+    private long breakBlocks(IGamePhase game, ServerPlayer target, Plot playerPlot, BlockPos sample, long ticks, Direction cw, Long2ObjectMap<Runnable> actions) {
         // Remove wheat
 
         for (int i = 0; i < 12; i++) {
@@ -259,6 +267,9 @@ public class BbTutorialAction implements IGameBehavior {
     public record BreakPlant(IGamePhase game, ServerPlayer target, Plot playerPlot, BlockPos sample, PlantType type, SoundEvent sound) implements Runnable {
         public void run() {
             Plant plant = playerPlot.plants.getPlantAt(sample);
+            if (plant == null) {
+                return;
+            }
 
             boolean placed = game.invoker(BbEvents.BREAK_PLANT).breakPlant(target, playerPlot, plant);
             if (placed) {
