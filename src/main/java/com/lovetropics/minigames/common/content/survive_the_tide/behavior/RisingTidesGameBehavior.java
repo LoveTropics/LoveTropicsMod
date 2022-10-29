@@ -106,25 +106,19 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 		for (BlockBox icebergLine : game.getMapRegions().get(icebergLinesKey)) {
 			int startX = icebergLine.min().getX();
 			int startZ = icebergLine.min().getZ();
-
 			int endX = icebergLine.max().getX();
 			int endZ = icebergLine.max().getZ();
 
-			if (random.nextBoolean()) {
-				int swap = startX;
-				startX = endX;
-				endX = swap;
-			}
-
-			if (random.nextBoolean()) {
-				int swap = startZ;
-				startZ = endZ;
-				endZ = swap;
-			}
-
-			BlockPos start = new BlockPos(startX, level.getMinBuildHeight(), startZ);
-			BlockPos end = new BlockPos(endX, level.getMinBuildHeight(), endZ);
-			icebergLines.add(new IcebergLine(start, end, 10));
+			icebergLines.add(new IcebergLine(
+					new BlockPos(startX, level.getMinBuildHeight(), startZ),
+					new BlockPos(endX, level.getMinBuildHeight(), endZ),
+					10
+			));
+			icebergLines.add(new IcebergLine(
+					new BlockPos(endX, level.getMinBuildHeight(), startZ),
+					new BlockPos(startX, level.getMinBuildHeight(), endZ),
+					10
+			));
 		}
 
 		phases = game.getState().getOrThrow(GamePhaseState.KEY);
