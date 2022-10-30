@@ -6,6 +6,8 @@ import net.minecraft.world.BossEvent;
 import net.minecraft.server.level.ServerBossEvent;
 
 public final class GameBossBar implements GameWidget {
+	private static final float UPDATE_PROGRESS_THRESHOLD = 0.025f;
+
 	private final ServerBossEvent bar;
 
 	public GameBossBar(Component title, BossEvent.BossBarColor color, BossEvent.BossBarOverlay overlay) {
@@ -20,7 +22,9 @@ public final class GameBossBar implements GameWidget {
 	}
 
 	public void setProgress(float progress) {
-		this.bar.setProgress(progress);
+		if (Math.abs(progress - bar.getProgress()) > UPDATE_PROGRESS_THRESHOLD) {
+			this.bar.setProgress(progress);
+		}
 	}
 
 	public void setStyle(BossEvent.BossBarColor color, BossEvent.BossBarOverlay overlay) {
