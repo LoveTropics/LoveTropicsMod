@@ -4,19 +4,7 @@ import com.lovetropics.lib.codec.MoreCodecs;
 import com.mojang.serialization.Codec;
 import net.minecraft.network.FriendlyByteBuf;
 
-public final class NotificationDisplay {
-	public final NotificationIcon icon;
-	public final Sentiment sentiment;
-	public final Color color;
-	public final long visibleTimeMs;
-
-	public NotificationDisplay(NotificationIcon icon, Sentiment sentiment, Color color, long visibleTimeMs) {
-		this.icon = icon;
-		this.sentiment = sentiment;
-		this.color = color;
-		this.visibleTimeMs = visibleTimeMs;
-	}
-
+public record NotificationDisplay(NotificationIcon icon, Sentiment sentiment, Color color, long visibleTimeMs) {
 	public void encode(FriendlyByteBuf buffer) {
 		this.icon.encode(buffer);
 		buffer.writeByte(this.sentiment.ordinal() & 0xFF);
@@ -32,7 +20,7 @@ public final class NotificationDisplay {
 		return new NotificationDisplay(icon, sentiment, color, timeMs);
 	}
 
-	public int getTextureOffset() {
+	public int textureOffset() {
 		return this.sentiment.offset + this.color.offset;
 	}
 

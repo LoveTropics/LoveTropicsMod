@@ -61,7 +61,7 @@ public final class NotificationToast implements Toast {
 		this.drawText(matrixStack);
 		this.drawIcon(matrixStack);
 
-		return time >= this.display.visibleTimeMs ? Toast.Visibility.HIDE : Toast.Visibility.SHOW;
+		return time >= this.display.visibleTimeMs() ? Toast.Visibility.HIDE : Toast.Visibility.SHOW;
 	}
 
 	private void drawBackground(PoseStack matrixStack, ToastComponent gui) {
@@ -88,7 +88,7 @@ public final class NotificationToast implements Toast {
 
 	private void drawBackgroundRow(PoseStack matrixStack, ToastComponent gui, int x, int u, int width) {
 		int height = this.height;
-		int vOffset = this.display.getTextureOffset();
+		int vOffset = this.display.textureOffset();
 
 		if (height == TEXTURE_HEIGHT) {
 			gui.blit(matrixStack, x, 0, u, vOffset, width, height);
@@ -116,14 +116,14 @@ public final class NotificationToast implements Toast {
 		List<FormattedCharSequence> lines = this.lines;
 		for (int i = 0; i < lines.size(); i++) {
 			FormattedCharSequence line = lines.get(i);
-			fontRenderer.draw(matrixStack, line, TEXT_LEFT, 7 + (i * 12), display.color == NotificationDisplay.Color.LIGHT ? 0xFF000000 : 0xFFFFFFFF);
+			fontRenderer.draw(matrixStack, line, TEXT_LEFT, 7 + (i * 12), display.color() == NotificationDisplay.Color.LIGHT ? 0xFF000000 : 0xFFFFFFFF);
 		}
 	}
 
 	private void drawIcon(PoseStack matrixStack) {
 		int y = (this.height - ICON_SIZE) / 2;
 
-		NotificationIcon icon = this.display.icon;
+		NotificationIcon icon = this.display.icon();
 		if (icon.item != null) {
 			ItemRenderer itemRenderer = CLIENT.getItemRenderer();
 			itemRenderer.renderAndDecorateFakeItem(icon.item, 6, y);
