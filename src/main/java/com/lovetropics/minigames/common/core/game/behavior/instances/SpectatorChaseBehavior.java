@@ -1,7 +1,7 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances;
 
 import com.google.common.primitives.Booleans;
-import com.lovetropics.minigames.client.toast.NotificationDisplay;
+import com.lovetropics.minigames.client.toast.NotificationStyle;
 import com.lovetropics.minigames.client.toast.NotificationIcon;
 import com.lovetropics.minigames.client.toast.ShowNotificationToastMessage;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
@@ -16,7 +16,6 @@ import com.lovetropics.minigames.common.core.game.player.PlayerRole;
 import com.lovetropics.minigames.common.core.game.player.PlayerSet;
 import com.lovetropics.minigames.common.core.network.LoveTropicsNetwork;
 import com.lovetropics.minigames.common.role.StreamHosts;
-import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.serialization.Codec;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
@@ -40,10 +39,10 @@ public final class SpectatorChaseBehavior implements IGameBehavior {
 			.append("Scroll or use the arrow keys to select players.\n")
 			.append("Hold ").append(new TextComponent("Left Control").withStyle(ChatFormatting.UNDERLINE)).append(" and scroll to zoom.");
 
-	private static final NotificationDisplay SPECTATING_NOTIFICATION_STYLE = new NotificationDisplay(
+	private static final NotificationStyle SPECTATING_NOTIFICATION_STYLE = new NotificationStyle(
 			NotificationIcon.item(new ItemStack(Items.ENDER_EYE)),
-			NotificationDisplay.Sentiment.NEUTRAL,
-			NotificationDisplay.Color.LIGHT,
+			NotificationStyle.Sentiment.NEUTRAL,
+			NotificationStyle.Color.LIGHT,
 			10 * 1000
 	);
 

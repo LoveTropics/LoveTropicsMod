@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.common.content.survive_the_tide.behavior;
 
-import com.lovetropics.minigames.client.toast.NotificationDisplay;
+import com.lovetropics.minigames.client.toast.NotificationStyle;
 import com.lovetropics.minigames.client.toast.NotificationIcon;
 import com.lovetropics.minigames.client.toast.ShowNotificationToastMessage;
 import com.lovetropics.minigames.common.content.survive_the_tide.SurviveTheTide;
@@ -216,7 +216,7 @@ public class SurviveTheTideWeatherControlBehavior implements IGameBehavior {
         );
     }
 
-    private static void broadcastNotification(IGamePhase game, Component message, NotificationDisplay style) {
+    private static void broadcastNotification(IGamePhase game, Component message, NotificationStyle style) {
         ShowNotificationToastMessage packet = new ShowNotificationToastMessage(TITLE.copy().append(message), style);
         game.getAllPlayers().sendPacket(LoveTropicsNetwork.CHANNEL, packet);
         game.getParticipants().playSound(SoundEvents.VILLAGER_NO, SoundSource.MASTER, 1.0f, 1.0f);
@@ -230,11 +230,11 @@ public class SurviveTheTideWeatherControlBehavior implements IGameBehavior {
         return new TranslatableComponent(SurviveTheTide.SUPER_SUNSCREEN.get().getDescriptionId());
     }
 
-    private static NotificationDisplay createNotificationStyle(final Supplier<? extends ItemLike> item) {
-        return new NotificationDisplay(
+    private static NotificationStyle createNotificationStyle(final Supplier<? extends ItemLike> item) {
+        return new NotificationStyle(
                 NotificationIcon.item(new ItemStack(item.get())),
-                NotificationDisplay.Sentiment.NEGATIVE,
-                NotificationDisplay.Color.DARK,
+                NotificationStyle.Sentiment.NEGATIVE,
+                NotificationStyle.Color.DARK,
                 5 * 1000
         );
     }
