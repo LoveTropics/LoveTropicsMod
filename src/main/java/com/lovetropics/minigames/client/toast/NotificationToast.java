@@ -46,7 +46,7 @@ public final class NotificationToast implements Toast {
 
 		int textWidth = Math.max(lines.stream().mapToInt(fontRenderer::width).max().orElse(MAX_WIDTH), MAX_WIDTH);
 		this.width = TEXT_LEFT + textWidth + 4;
-		this.height = Math.max(lines.size() * LINE_HEIGHT + 8, 22);
+		this.height = Math.max(lines.size() * LINE_HEIGHT + 8, 26);
 
 		this.lines = lines;
 		this.style = style;
