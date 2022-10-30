@@ -12,6 +12,7 @@ import com.lovetropics.minigames.common.content.survive_the_tide.SurviveTheTide;
 import com.lovetropics.minigames.common.content.survive_the_tide.biome.SurviveTheTideBiomes;
 import com.lovetropics.minigames.common.content.survive_the_tide.entity.DriftwoodRider;
 import com.lovetropics.minigames.common.content.trash_dive.TrashDive;
+import com.lovetropics.minigames.common.content.turtle_race.TurtleRace;
 import com.lovetropics.minigames.common.core.command.ExtendedBossBarCommand;
 import com.lovetropics.minigames.common.core.command.LoveTropicsEntityOptions;
 import com.lovetropics.minigames.common.core.command.MapCommand;
@@ -121,6 +122,7 @@ public class LoveTropics {
         SurviveTheTide.init();
         TrashDive.init();
         BlockParty.init();
+        TurtleRace.init();
 
         SurviveTheTideBiomes.REGISTER.register(modBus);
 
