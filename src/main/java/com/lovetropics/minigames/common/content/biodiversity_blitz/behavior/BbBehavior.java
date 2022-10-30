@@ -144,7 +144,7 @@ public final class BbBehavior implements IGameBehavior {
 
 	private String[] collectScoreboard(IGamePhase game) {
 		List<String> sidebar = new ArrayList<>(10);
-		sidebar.add("" + ChatFormatting.AQUA +  "Player " + ChatFormatting.GOLD + "points " + ChatFormatting.LIGHT_PURPLE + "(+ per drop)");
+		sidebar.add("" + ChatFormatting.AQUA +  "Player " + ChatFormatting.GOLD + "points (+ per drop)");
 		sidebar.add("");
 
 		List<ServerPlayer> list = new ArrayList<>();
@@ -163,7 +163,7 @@ public final class BbBehavior implements IGameBehavior {
 				increment = plot.nextCurrencyIncrement;
 			}
 
-			sidebar.add("" + ChatFormatting.AQUA + player.getGameProfile().getName() + ": " + ChatFormatting.GOLD + points + " " + ChatFormatting.LIGHT_PURPLE + "(+ " + increment + ")");
+			sidebar.add("" + ChatFormatting.AQUA + player.getGameProfile().getName() + ": " + ChatFormatting.GOLD + points + " (+ " + increment + ")");
 		}
 
 		return sidebar.toArray(new String[0]);
