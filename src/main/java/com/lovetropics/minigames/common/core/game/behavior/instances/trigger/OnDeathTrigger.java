@@ -17,7 +17,7 @@ public record OnDeathTrigger(GameActionList actions) implements IGameBehavior {
 		actions.register(game, events);
 
 		events.listen(GamePlayerEvents.DEATH, (player, damageSource) -> {
-			actions.apply(GameActionContext.EMPTY, player);
+			actions.apply(game, GameActionContext.EMPTY, player);
 			return InteractionResult.PASS;
 		});
 	}

@@ -83,7 +83,7 @@ public final class DonationPackageBehavior implements IGameBehavior {
 		}
 
 		GameActionContext context = actionContext(gamePackage);
-		if (receiveActions.apply(context, receivingPlayer)) {
+		if (receiveActions.apply(game, context, receivingPlayer)) {
 			sendPreamble.accept(game);
 			data.onReceive(game, receivingPlayer, gamePackage.sendingPlayerName());
 
@@ -98,7 +98,7 @@ public final class DonationPackageBehavior implements IGameBehavior {
 		final ServerPlayer randomPlayer = players.get(game.getWorld().getRandom().nextInt(players.size()));
 
 		GameActionContext context = actionContext(gamePackage);
-		if (receiveActions.apply(context, randomPlayer)) {
+		if (receiveActions.apply(game, context, randomPlayer)) {
 			sendPreamble.accept(game);
 			data.onReceive(game, randomPlayer, gamePackage.sendingPlayerName());
 
@@ -110,7 +110,7 @@ public final class DonationPackageBehavior implements IGameBehavior {
 
 	private InteractionResult receiveAll(Consumer<IGamePhase> sendPreamble, IGamePhase game, GamePackage gamePackage) {
 		GameActionContext context = actionContext(gamePackage);
-		if (!receiveActions.apply(context, game.getParticipants())) {
+		if (!receiveActions.apply(game, context, game.getParticipants())) {
 			return InteractionResult.FAIL;
 		}
 

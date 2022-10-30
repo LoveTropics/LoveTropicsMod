@@ -25,7 +25,7 @@ public record PhaseChangeTrigger(Map<GamePhase, GameActionList> phases) implemen
 		events.listen(GameLogicEvents.PHASE_CHANGE, (phase, lastPhase) -> {
 			GameActionList actions = phases.get(phase);
 			if (actions != null) {
-				actions.apply(GameActionContext.EMPTY, game.getAllPlayers());
+				actions.apply(game, GameActionContext.EMPTY, game.getAllPlayers());
 			}
 		});
 	}

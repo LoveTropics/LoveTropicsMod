@@ -26,7 +26,7 @@ public record ScheduledActionsTrigger(Long2ObjectMap<GameActionList> scheduledAc
 		events.listen(GamePhaseEvents.TICK, () -> {
 			GameActionList actions = scheduledActions.remove(game.ticks());
 			if (actions != null) {
-				actions.apply(GameActionContext.EMPTY, game.getParticipants());
+				actions.apply(game, GameActionContext.EMPTY, game.getParticipants());
 			}
 		});
 	}
