@@ -21,6 +21,8 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TextComponent;
 import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.Blocks;
@@ -146,7 +148,7 @@ public class SurviveTheTideWeatherControlBehavior implements IGameBehavior {
         }
         weather.setEvent(WeatherEvent.acidRain(time));
 
-        broadcastToast(game,
+        broadcastNotification(game,
                 new TextComponent("Acid Rain is falling!\n")
                         .append("Find shelter, or make sure to carry an ")
                         .append(umbrellaName()),
@@ -161,7 +163,7 @@ public class SurviveTheTideWeatherControlBehavior implements IGameBehavior {
         }
         weather.setEvent(WeatherEvent.hail(time));
 
-        broadcastToast(game,
+        broadcastNotification(game,
                 new TextComponent("Hail is falling!\n")
                         .append("Find shelter, or make sure to carry an ")
                         .append(umbrellaName()),
@@ -176,7 +178,7 @@ public class SurviveTheTideWeatherControlBehavior implements IGameBehavior {
         }
         weather.setEvent(WeatherEvent.heatwave(time));
 
-        broadcastToast(game,
+        broadcastNotification(game,
                 new TextComponent("A Heat Wave is passing!\n")
                         .append("Stay inside, or make sure to equip")
                         .append(sunscreenName()),
@@ -192,7 +194,7 @@ public class SurviveTheTideWeatherControlBehavior implements IGameBehavior {
         }
         weather.setEvent(WeatherEvent.sandstorm(time, config.getSandstormBuildupTickRate(), config.getSandstormMaxStackable()));
 
-        broadcastToast(game,
+        broadcastNotification(game,
                 new TextComponent("A Sandstorm is passing!\n")
                         .append("Find shelter!"),
                 createNotificationStyle(() -> Blocks.SAND)
@@ -207,16 +209,17 @@ public class SurviveTheTideWeatherControlBehavior implements IGameBehavior {
         }
         weather.setEvent(WeatherEvent.snowstorm(time, config.getSnowstormBuildupTickRate(), config.getSnowstormMaxStackable()));
 
-        broadcastToast(game,
+        broadcastNotification(game,
                 new TextComponent("A Snowstorm is passing!\n")
                         .append("Find shelter!"),
                 createNotificationStyle(() -> Blocks.SNOW_BLOCK)
         );
     }
 
-    private static void broadcastToast(IGamePhase game, Component message, NotificationDisplay style) {
+    private static void broadcastNotification(IGamePhase game, Component message, NotificationDisplay style) {
         ShowNotificationToastMessage packet = new ShowNotificationToastMessage(TITLE.copy().append(message), style);
         game.getAllPlayers().sendPacket(LoveTropicsNetwork.CHANNEL, packet);
+        game.getParticipants().playSound(SoundEvents.VILLAGER_NO, SoundSource.MASTER, 1.0f, 1.0f);
     }
 
     private static Component umbrellaName() {
@@ -235,5 +238,4 @@ public class SurviveTheTideWeatherControlBehavior implements IGameBehavior {
                 5 * 1000
         );
     }
-
 }
