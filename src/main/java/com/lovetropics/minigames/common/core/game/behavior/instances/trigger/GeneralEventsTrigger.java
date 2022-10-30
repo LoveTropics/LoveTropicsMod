@@ -17,9 +17,8 @@ import java.util.Map;
 
 // TODO: split up into separate trigger types
 public record GeneralEventsTrigger(Map<String, GameActionList> eventActions) implements IGameBehavior {
-	public static final Codec<GeneralEventsTrigger> CODEC = RecordCodecBuilder.create(i -> i.group(
-			Codec.unboundedMap(Codec.STRING, GameActionList.CODEC).fieldOf("actions").forGetter(GeneralEventsTrigger::eventActions)
-	).apply(i, GeneralEventsTrigger::new));
+	public static final Codec<GeneralEventsTrigger> CODEC = Codec.unboundedMap(Codec.STRING, GameActionList.CODEC)
+			.xmap(GeneralEventsTrigger::new, b -> b.eventActions);
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) throws GameException {

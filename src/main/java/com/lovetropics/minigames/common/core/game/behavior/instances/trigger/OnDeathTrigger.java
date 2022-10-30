@@ -7,13 +7,10 @@ import com.lovetropics.minigames.common.core.game.behavior.action.GameActionList
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.world.InteractionResult;
 
 public record OnDeathTrigger(GameActionList actions) implements IGameBehavior {
-	public static final Codec<OnDeathTrigger> CODEC = RecordCodecBuilder.create(i -> i.group(
-		GameActionList.CODEC.fieldOf("actions").forGetter(OnDeathTrigger::actions)
-	).apply(i, OnDeathTrigger::new));
+	public static final Codec<OnDeathTrigger> CODEC = GameActionList.CODEC.xmap(OnDeathTrigger::new, OnDeathTrigger::actions);
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {

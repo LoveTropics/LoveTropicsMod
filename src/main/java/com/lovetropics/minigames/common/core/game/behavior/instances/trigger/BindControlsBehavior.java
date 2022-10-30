@@ -15,9 +15,8 @@ import net.minecraft.world.entity.Entity;
 import java.util.Map;
 
 public record BindControlsBehavior(Map<ControlCommand.Scope, Map<String, GameActionList>> scopedActions) implements IGameBehavior {
-	public static final Codec<BindControlsBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
-			Codec.unboundedMap(ControlCommand.Scope.CODEC, Codec.unboundedMap(Codec.STRING, GameActionList.CODEC)).fieldOf("actions").forGetter(BindControlsBehavior::scopedActions)
-	).apply(i, BindControlsBehavior::new));
+	public static final Codec<BindControlsBehavior> CODEC = Codec.unboundedMap(ControlCommand.Scope.CODEC, Codec.unboundedMap(Codec.STRING, GameActionList.CODEC))
+			.xmap(BindControlsBehavior::new, b -> b.scopedActions);
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) throws GameException {

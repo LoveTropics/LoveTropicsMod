@@ -23,7 +23,7 @@ public final class CountdownAction implements IGameBehavior {
 	public static final Codec<CountdownAction> CODEC = RecordCodecBuilder.create(i -> i.group(
 			Codec.LONG.fieldOf("countdown").forGetter(c -> c.countdown / 20),
 			TemplatedText.CODEC.fieldOf("warning").forGetter(c -> c.warning),
-			GameActionList.CODEC.fieldOf("actions").forGetter(c -> c.actions)
+			GameActionList.MAP_CODEC.forGetter(c -> c.actions)
 	).apply(i, CountdownAction::new));
 
 	private final long countdown;
