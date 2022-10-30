@@ -10,6 +10,8 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.protocol.game.ClientboundSetPassengersPacket;
+import net.minecraft.server.level.ServerChunkCache;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
@@ -70,6 +72,9 @@ public record TurtleRiderBehavior(EntityType<?> entityType, CompoundTag entityTa
 		}
 
 		player.startRiding(turtle, true);
+
+		ServerChunkCache chunkSource = player.getLevel().getChunkSource();
+		chunkSource.chunkMap.broadcast(turtle, new ClientboundSetPassengersPacket(turtle));
 	}
 
 	@Nullable
