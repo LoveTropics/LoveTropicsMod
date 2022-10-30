@@ -47,6 +47,7 @@ public class GameBehaviorTypes {
 	public static final GameBehaviorEntry<OnDeathTrigger> ON_DEATH;
 	public static final GameBehaviorEntry<WhileInRegionTrigger> WHILE_IN_REGION;
 	public static final GameBehaviorEntry<ScheduledActionsTrigger> SCHEDULED_ACTIONS;
+	public static final GameBehaviorEntry<PhaseChangeTrigger> PHASE_CHANGE;
 	public static final GameBehaviorEntry<BindControlsBehavior> BIND_CONTROLS;
 	public static final GameBehaviorEntry<CancelPlayerDamageBehavior> CANCEL_PLAYER_DAMAGE;
 	public static final GameBehaviorEntry<SetGameRulesBehavior> SET_GAME_RULES;
@@ -171,6 +172,7 @@ public class GameBehaviorTypes {
 		ON_DEATH = register("on_death", OnDeathTrigger.CODEC);
 		WHILE_IN_REGION = register("while_in_region", WhileInRegionTrigger.CODEC);
 		SCHEDULED_ACTIONS = register("scheduled_actions", ScheduledActionsTrigger.CODEC);
+		PHASE_CHANGE = register("phase_change", PhaseChangeTrigger.CODEC);
 
 		DONATION_PACKAGE = register("donation_package", DonationPackageBehavior.CODEC);
 		GIVE_LOOT = register("give_loot", GiveLootAction.CODEC);
