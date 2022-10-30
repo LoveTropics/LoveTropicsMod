@@ -217,7 +217,7 @@ public class SurviveTheTideWeatherControlBehavior implements IGameBehavior {
     }
 
     private static void broadcastNotification(IGamePhase game, Component message, NotificationStyle style) {
-        ShowNotificationToastMessage packet = new ShowNotificationToastMessage(TITLE.copy().append(message), style);
+        ShowNotificationToastMessage packet = new ShowNotificationToastMessage(new TextComponent("").append(TITLE).append(message), style);
         game.getAllPlayers().sendPacket(LoveTropicsNetwork.CHANNEL, packet);
         game.getParticipants().playSound(SoundEvents.VILLAGER_NO, SoundSource.MASTER, 1.0f, 1.0f);
     }
