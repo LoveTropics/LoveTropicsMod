@@ -2,9 +2,18 @@ package com.lovetropics.minigames.client.toast;
 
 import com.lovetropics.lib.codec.MoreCodecs;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.network.FriendlyByteBuf;
 
 public record NotificationStyle(NotificationIcon icon, Sentiment sentiment, Color color, long visibleTimeMs) {
+	public static final MapCodec<NotificationStyle> MAP_CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
+			NotificationIcon.CODEC.fieldOf("icon").forGetter(NotificationStyle::icon),
+			Sentiment.CODEC.optionalFieldOf("sentiment", Sentiment.NEUTRAL).forGetter(NotificationStyle::sentiment),
+			Color.CODEC.optionalFieldOf("color", Color.LIGHT).forGetter(NotificationStyle::color),
+			Codec.LONG.optionalFieldOf("visible_time_ms", 5 * 1000L).forGetter(NotificationStyle::visibleTimeMs)
+	).apply(i, NotificationStyle::new));
+
 	public void encode(FriendlyByteBuf buffer) {
 		this.icon.encode(buffer);
 		buffer.writeByte(this.sentiment.ordinal() & 0xFF);
@@ -25,14 +34,17 @@ public record NotificationStyle(NotificationIcon icon, Sentiment sentiment, Colo
 	}
 
 	public enum Color {
-		DARK(0),
-		LIGHT(32);
+		DARK("dark", 0),
+		LIGHT("light", 32);
 
 		public static final Color[] VALUES = values();
+		public static final Codec<Color> CODEC = MoreCodecs.stringVariants(VALUES, c -> c.name);
 
+		private final String name;
 		public final int offset;
 
-		Color(int offset) {
+		Color(String name, int offset) {
+			this.name = name;
 			this.offset = offset;
 		}
 	}
