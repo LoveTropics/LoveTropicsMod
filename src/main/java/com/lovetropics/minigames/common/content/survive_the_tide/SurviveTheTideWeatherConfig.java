@@ -64,7 +64,7 @@ public class SurviveTheTideWeatherConfig {
 	}
 
 	public double getRainHeavyChance(String phase) {
-		return getEventChance(WeatherEventType.HEATWAVE, phase);
+		return getEventChance(WeatherEventType.HEAVY_RAIN, phase);
 	}
 
 	public double getRainAcidChance(String phase) {
