@@ -69,6 +69,7 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 	private final Set<String> phasesIcebergsGrow;
 	private final int icebergGrowthTickRate;
 	private int waterLevel;
+	private int maxWaterLevel;
 
 	private BlockBox tideArea;
 	private final List<IcebergLine> icebergLines = new ArrayList<>();
@@ -125,6 +126,8 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 			lastPhase = phases.get();
 			waterLevel = phaseToTideHeight.get(phases.get());
 			chunkWaterLevels.defaultReturnValue(waterLevel);
+
+			maxWaterLevel = phaseToTideHeight.values().stream().mapToInt(v -> v).max().orElse(waterLevel);
 		});
 
 		events.listen(GameLivingEntityEvents.TICK, this::onLivingEntityUpdate);
@@ -161,8 +164,15 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 	}
 
 	private void spawnRisingTideParticles(IGamePhase game) {
+		if (waterLevel >= maxWaterLevel) {
+			return;
+		}
+
 		ServerLevel world = game.getWorld();
 		Random random = world.random;
+		if (random.nextInt(3) != 0) {
+			return;
+		}
 
 		BlockPos.MutableBlockPos mutablePos = new BlockPos.MutableBlockPos();
 
