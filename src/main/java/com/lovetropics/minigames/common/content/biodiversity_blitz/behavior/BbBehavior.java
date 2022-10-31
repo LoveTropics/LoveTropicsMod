@@ -15,6 +15,7 @@ import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.*;
 import com.lovetropics.minigames.common.core.game.player.PlayerRole;
+import com.lovetropics.minigames.common.core.game.state.statistics.PlayerKey;
 import com.lovetropics.minigames.common.core.game.state.statistics.StatisticKey;
 import com.lovetropics.minigames.common.core.game.state.statistics.StatisticsMap;
 import com.lovetropics.minigames.common.core.game.util.GameSidebar;
@@ -53,6 +54,7 @@ import net.minecraft.world.phys.BlockHitResult;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 // TODO: needs to be split up & data-driven more!
@@ -142,21 +144,26 @@ public final class BbBehavior implements IGameBehavior {
 
 	private String[] collectScoreboard(IGamePhase game) {
 		List<String> sidebar = new ArrayList<>(10);
-		sidebar.add("" + ChatFormatting.AQUA +  "Player " + ChatFormatting.GOLD + "points " + ChatFormatting.LIGHT_PURPLE + "(+ per drop)");
+		sidebar.add("" + ChatFormatting.AQUA +  "Player " + ChatFormatting.GOLD + "points (+ per drop)");
 		sidebar.add("");
 
-		for (ServerPlayer player : game.getParticipants()) {
+		List<ServerPlayer> list = new ArrayList<>();
+		game.getParticipants().forEach(list::add);
+
+		list.sort(Comparator.comparingInt(c -> this.game.getStatistics().forPlayer((ServerPlayer) c).getOr(StatisticKey.POINTS, 0)).reversed());
+
+		for (ServerPlayer player : list) {
 			int points = 0;
 			int increment = 0;
 			// Get points for player
 			Plot plot = plots.getPlotFor(player);
 			StatisticsMap stats = this.game.getStatistics().forPlayer(player);
-			if (stats != null && plot != null) {
+			if (plot != null) {
 				points = stats.getOr(StatisticKey.POINTS, 0);
 				increment = plot.nextCurrencyIncrement;
 			}
 
-			sidebar.add("" + ChatFormatting.AQUA + player.getGameProfile().getName() + ": " + ChatFormatting.GOLD + points + " " + ChatFormatting.LIGHT_PURPLE + "(+ " + increment + ")");
+			sidebar.add("" + ChatFormatting.AQUA + player.getGameProfile().getName() + ": " + ChatFormatting.GOLD + points + " (+ " + increment + ")");
 		}
 
 		return sidebar.toArray(new String[0]);

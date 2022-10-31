@@ -418,4 +418,10 @@ public class Util {
             return dz > 0 ? Direction.SOUTH : Direction.NORTH;
         }
     }
+
+    public static String formatMinutesSeconds(long totalSeconds) {
+        long minutesPart = totalSeconds / 60;
+        long secondsPart = totalSeconds % 60;
+        return String.format("%02d:%02d", minutesPart, secondsPart);
+    }
 }

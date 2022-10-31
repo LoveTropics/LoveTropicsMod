@@ -1,24 +1,30 @@
 package com.lovetropics.minigames.common.core.game.behavior;
 
-import java.util.Map;
-
-import com.lovetropics.minigames.client.lobby.state.ClientConfigList;
 import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
-import com.lovetropics.minigames.common.core.game.behavior.config.BehaviorConfig;
-import com.lovetropics.minigames.common.core.game.behavior.config.ConfigData;
 import com.lovetropics.minigames.common.core.game.behavior.config.ConfigList;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.state.GameStateMap;
+import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
+import com.mojang.serialization.DynamicOps;
 
 public interface IGameBehavior {
-	Codec<IGameBehavior> CODEC = GameBehaviorTypes.TYPE_CODEC.partialDispatch(
-			"type",
-			behavior -> DataResult.error("Encoding unsupported"), // very sad.
-			type -> DataResult.success(type.codec)
-	);
+	Codec<IGameBehavior> CODEC = new Codec<>() {
+		@Override
+		public <T> DataResult<Pair<IGameBehavior, T>> decode(DynamicOps<T> ops, T input) {
+			return ops.get(input, "type")
+					.flatMap(type -> GameBehaviorTypes.TYPE_CODEC.parse(ops, type))
+					.flatMap(type -> type.codec.decode(ops, ops.remove(input, "type")))
+					.map(pair -> pair.mapFirst(b -> b));
+		}
+
+		@Override
+		public <T> DataResult<T> encode(IGameBehavior input, DynamicOps<T> ops, T prefix) {
+			return DataResult.error("Encoding unsupported");
+		}
+	};
 
 	default ConfigList getConfigurables() {
 		return ConfigList.empty();

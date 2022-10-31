@@ -63,7 +63,7 @@ public class SpawnEntitiesAtRegionsOverTimeAction implements IGameBehavior {
 		events.listen(GamePhaseEvents.TICK, () -> tick(game));
 	}
 
-	private boolean applyPackage(GameActionContext context, Iterable<ServerPlayer> targets) {
+	private boolean applyPackage(GameActionContext context, Iterable<ServerPlayer> sources) {
 		ticksRemaining += ticksToSpawnFor;
 		entityCountRemaining += entityCount;
 		return true;

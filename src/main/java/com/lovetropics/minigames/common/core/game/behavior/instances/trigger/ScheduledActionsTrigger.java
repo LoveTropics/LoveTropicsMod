@@ -12,8 +12,11 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 
-public record ScheduledActionsTrigger(Long2ObjectMap<GameActionList> scheduledActions) implements IGameBehavior {
+import java.util.List;
+
+public record ScheduledActionsTrigger(GameActionList.Target target, Long2ObjectMap<GameActionList> scheduledActions) implements IGameBehavior {
 	public static final Codec<ScheduledActionsTrigger> CODEC = RecordCodecBuilder.create(i -> i.group(
+			GameActionList.Target.CODEC.optionalFieldOf("target", GameActionList.Target.NONE).forGetter(ScheduledActionsTrigger::target),
 			MoreCodecs.long2Object(GameActionList.CODEC).fieldOf("actions").forGetter(ScheduledActionsTrigger::scheduledActions)
 	).apply(i, ScheduledActionsTrigger::new));
 
@@ -26,7 +29,7 @@ public record ScheduledActionsTrigger(Long2ObjectMap<GameActionList> scheduledAc
 		events.listen(GamePhaseEvents.TICK, () -> {
 			GameActionList actions = scheduledActions.remove(game.ticks());
 			if (actions != null) {
-				actions.apply(GameActionContext.EMPTY, game.getParticipants());
+				actions.apply(game, GameActionContext.EMPTY, target.resolve(game, List.of()));
 			}
 		});
 	}

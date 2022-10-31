@@ -60,7 +60,7 @@ public final class SetBlocksAction implements IGameBehavior {
 			throw new GameException(new TextComponent("Regions not specified for block set behavior with a set time!"));
 		}
 
-		events.listen(GameActionEvents.APPLY, (context, targets) -> {
+		events.listen(GameActionEvents.APPLY, (context, sources) -> {
 			for (BlockBox region : regions) {
 				setInRegion(game, region);
 			}

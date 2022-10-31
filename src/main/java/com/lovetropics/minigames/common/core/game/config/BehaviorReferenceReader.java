@@ -76,7 +76,7 @@ public final class BehaviorReferenceReader implements Codec<List<BehaviorReferen
 		DataResult<String> typeResult = Codec.STRING.fieldOf("type").decode(ops, mapInput);
 
 		typeResult.result().ifPresent(idString -> {
-			this.decodeReference(ops, idString, input, consumer);
+			this.decodeReference(ops, idString, ops.remove(input, "type"), consumer);
 		});
 
 		typeResult.error().ifPresent(error -> {

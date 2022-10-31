@@ -71,7 +71,7 @@ public final class SetExtendingBlocksAction implements IGameBehavior {
 			throw new GameException(new TextComponent("Regions not specified for extending block set behavior!"));
 		}
 
-		events.listen(GameActionEvents.APPLY, (context, targets) -> {
+		events.listen(GameActionEvents.APPLY, (context, sources) -> {
 			startTime = game.ticks();
 			return true;
 		});

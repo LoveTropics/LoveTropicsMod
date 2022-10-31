@@ -266,8 +266,7 @@ public final class MapCommand {
 		CommandSourceStack source = context.getSource();
 		MapWorkspaceManager workspaceManager = MapWorkspaceManager.get(source.getServer());
 
-		ServerPlayer player = source.getPlayerOrException();
-		MapWorkspace workspace = workspaceManager.getWorkspace(player.level.dimension());
+		MapWorkspace workspace = workspaceManager.getWorkspace(source.getLevel().dimension());
 		if (workspace == null) {
 			throw NOT_IN_WORKSPACE.create();
 		}

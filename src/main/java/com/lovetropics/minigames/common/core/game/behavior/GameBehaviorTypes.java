@@ -47,6 +47,7 @@ public class GameBehaviorTypes {
 	public static final GameBehaviorEntry<OnDeathTrigger> ON_DEATH;
 	public static final GameBehaviorEntry<WhileInRegionTrigger> WHILE_IN_REGION;
 	public static final GameBehaviorEntry<ScheduledActionsTrigger> SCHEDULED_ACTIONS;
+	public static final GameBehaviorEntry<PhaseChangeTrigger> PHASE_CHANGE;
 	public static final GameBehaviorEntry<BindControlsBehavior> BIND_CONTROLS;
 	public static final GameBehaviorEntry<CancelPlayerDamageBehavior> CANCEL_PLAYER_DAMAGE;
 	public static final GameBehaviorEntry<SetGameRulesBehavior> SET_GAME_RULES;
@@ -72,6 +73,7 @@ public class GameBehaviorTypes {
 	public static final GameBehaviorEntry<SetDifficultyBehavior> SET_DIFFICULTY;
 	public static final GameBehaviorEntry<GameEndEffectsBehavior> GAME_END_EFFECTS;
 	public static final GameBehaviorEntry<TipsAndTricksBehavior> TIPS_AND_TRICKS;
+	public static final GameBehaviorEntry<PhaseProgressBarBehavior> PHASE_PROGRESS_BAR;
 
 	public static final GameBehaviorEntry<BindObjectiveToStatisticBehavior> BIND_OBJECTIVE_TO_STATISTIC;
 	public static final GameBehaviorEntry<PlaceByStatisticBehavior> PLACE_BY_STATISTIC;
@@ -108,6 +110,7 @@ public class GameBehaviorTypes {
 	public static final GameBehaviorEntry<ShowTitleAction> SHOW_TITLE;
 	public static final GameBehaviorEntry<PlaySoundAction> PLAY_SOUND;
 	public static final GameBehaviorEntry<SpawnParticlesAroundPlayerAction> SPAWN_PARTICLES_AROUND_PLAYER;
+	public static final GameBehaviorEntry<NotificationToastAction> NOTIFICATION_TOAST;
 
 	public static final GameBehaviorEntry<SetupTelemetryBehavior> SETUP_TELEMETRY;
 	public static final GameBehaviorEntry<AssignPlayerRolesBehavior> ASSIGN_PLAYER_ROLES;
@@ -151,6 +154,7 @@ public class GameBehaviorTypes {
 		SET_DIFFICULTY = register("set_difficulty", SetDifficultyBehavior.CODEC);
 		GAME_END_EFFECTS = register("game_end_effects", GameEndEffectsBehavior.CODEC);
 		TIPS_AND_TRICKS = register("tips_and_tricks", TipsAndTricksBehavior.CODEC);
+		PHASE_PROGRESS_BAR = register("phase_progress_bar", PhaseProgressBarBehavior.CODEC);
 
 		BIND_OBJECTIVE_TO_STATISTIC = register("bind_objective_to_statistic", BindObjectiveToStatisticBehavior.CODEC);
 		PLACE_BY_STATISTIC = register("place_by_statistic", PlaceByStatisticBehavior.CODEC);
@@ -168,6 +172,7 @@ public class GameBehaviorTypes {
 		ON_DEATH = register("on_death", OnDeathTrigger.CODEC);
 		WHILE_IN_REGION = register("while_in_region", WhileInRegionTrigger.CODEC);
 		SCHEDULED_ACTIONS = register("scheduled_actions", ScheduledActionsTrigger.CODEC);
+		PHASE_CHANGE = register("phase_change", PhaseChangeTrigger.CODEC);
 
 		DONATION_PACKAGE = register("donation_package", DonationPackageBehavior.CODEC);
 		GIVE_LOOT = register("give_loot", GiveLootAction.CODEC);
@@ -193,6 +198,7 @@ public class GameBehaviorTypes {
 		SHOW_TITLE = register("show_title", ShowTitleAction.CODEC);
 		PLAY_SOUND = register("play_sound", PlaySoundAction.CODEC);
 		SPAWN_PARTICLES_AROUND_PLAYER = register("spawn_particles_around_player", SpawnParticlesAroundPlayerAction.CODEC);
+		NOTIFICATION_TOAST = register("notification_toast", NotificationToastAction.CODEC);
 
 		SETUP_TELEMETRY = register("setup_telemetry", SetupTelemetryBehavior.CODEC);
 		ASSIGN_PLAYER_ROLES = register("assign_player_roles", AssignPlayerRolesBehavior.CODEC);

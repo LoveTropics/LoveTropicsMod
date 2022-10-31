@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances.donation;
 
-import com.lovetropics.minigames.client.toast.NotificationDisplay;
+import com.lovetropics.minigames.client.toast.NotificationStyle;
 import com.lovetropics.minigames.client.toast.NotificationIcon;
 import com.lovetropics.minigames.client.toast.ShowNotificationToastMessage;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
@@ -49,14 +49,14 @@ public record DonationPackageData(
 
 		for (ServerPlayer player : players) {
 			boolean targeted = player == receiver || receiver == null;
-			NotificationDisplay.Color color = targeted ? NotificationDisplay.Color.LIGHT : NotificationDisplay.Color.DARK;
+			NotificationStyle.Color color = targeted ? NotificationStyle.Color.LIGHT : NotificationStyle.Color.DARK;
 			Component message = targeted ? targetedMessage : globalMessage;
 			long visibleTime = targeted ? 8000 : 6000;
 
-			NotificationDisplay display = notification.createDisplay(color, visibleTime);
+			NotificationStyle style = notification.createStyle(color, visibleTime);
 			LoveTropicsNetwork.CHANNEL.send(
 					PacketDistributor.PLAYER.with(() -> player),
-					new ShowNotificationToastMessage(message, display)
+					new ShowNotificationToastMessage(message, style)
 			);
 
 			if (targeted) {
@@ -68,13 +68,13 @@ public record DonationPackageData(
 	public record Notification(
 			TemplatedText message,
 			NotificationIcon icon,
-			NotificationDisplay.Sentiment sentiment,
+			NotificationStyle.Sentiment sentiment,
 			SoundEvent sound
 	) {
 		public static final Codec<Notification> CODEC = RecordCodecBuilder.create(i -> i.group(
 				TemplatedText.CODEC.fieldOf("message").forGetter(c -> c.message),
 				NotificationIcon.CODEC.optionalFieldOf("icon", NotificationIcon.item(new ItemStack(Items.GRASS_BLOCK))).forGetter(c -> c.icon),
-				NotificationDisplay.Sentiment.CODEC.optionalFieldOf("sentiment", NotificationDisplay.Sentiment.NEUTRAL).forGetter(c -> c.sentiment),
+				NotificationStyle.Sentiment.CODEC.optionalFieldOf("sentiment", NotificationStyle.Sentiment.NEUTRAL).forGetter(c -> c.sentiment),
 				SoundEvent.CODEC.optionalFieldOf("sound", SoundEvents.TOTEM_USE).forGetter(c -> c.sound)
 		).apply(i, Notification::new));
 
@@ -86,8 +86,8 @@ public record DonationPackageData(
 			return new TranslatableComponent("%s received a package!", this.getReceiverName(receiver));
 		}
 
-		public NotificationDisplay createDisplay(final NotificationDisplay.Color color, final long visibleTime) {
-			return new NotificationDisplay(icon, sentiment, color, visibleTime);
+		public NotificationStyle createStyle(final NotificationStyle.Color color, final long visibleTime) {
+			return new NotificationStyle(icon, sentiment, color, visibleTime);
 		}
 
 		private MutableComponent getReceiverName(ServerPlayer receiver) {

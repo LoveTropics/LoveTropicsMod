@@ -8,27 +8,27 @@ import java.util.function.Supplier;
 
 public final class ShowNotificationToastMessage {
 	private final Component message;
-	private final NotificationDisplay display;
+	private final NotificationStyle style;
 
-	public ShowNotificationToastMessage(Component message, NotificationDisplay display) {
+	public ShowNotificationToastMessage(Component message, NotificationStyle style) {
 		this.message = message;
-		this.display = display;
+		this.style = style;
 	}
 
 	public void encode(FriendlyByteBuf buffer) {
 		buffer.writeComponent(this.message);
-		this.display.encode(buffer);
+		this.style.encode(buffer);
 	}
 
 	public static ShowNotificationToastMessage decode(FriendlyByteBuf buffer) {
 		Component message = buffer.readComponent();
-		NotificationDisplay display = NotificationDisplay.decode(buffer);
-		return new ShowNotificationToastMessage(message, display);
+		NotificationStyle style = NotificationStyle.decode(buffer);
+		return new ShowNotificationToastMessage(message, style);
 	}
 
 	public void handle(Supplier<NetworkEvent.Context> ctx) {
 		ctx.get().enqueueWork(() -> {
-			NotificationToasts.display(this.message, this.display);
+			NotificationToasts.display(this.message, this.style);
 		});
 		ctx.get().setPacketHandled(true);
 	}

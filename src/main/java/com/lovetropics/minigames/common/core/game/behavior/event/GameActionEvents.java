@@ -4,10 +4,10 @@ import com.lovetropics.minigames.common.core.game.behavior.action.GameActionCont
 import net.minecraft.server.level.ServerPlayer;
 
 public final class GameActionEvents {
-    public static final GameEventType<Apply> APPLY = GameEventType.create(Apply.class, listeners -> (context, targets) -> {
+    public static final GameEventType<Apply> APPLY = GameEventType.create(Apply.class, listeners -> (context, sources) -> {
         boolean applied = false;
         for (Apply listener : listeners) {
-            applied |= listener.apply(context, targets);
+            applied |= listener.apply(context, sources);
         }
         return applied;
     });
@@ -32,6 +32,6 @@ public final class GameActionEvents {
     }
 
     public interface Apply {
-        boolean apply(GameActionContext context, Iterable<ServerPlayer> targets);
+        boolean apply(GameActionContext context, Iterable<ServerPlayer> sources);
     }
 }

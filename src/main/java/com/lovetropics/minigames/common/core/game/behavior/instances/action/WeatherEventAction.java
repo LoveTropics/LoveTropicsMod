@@ -32,7 +32,7 @@ public final class WeatherEventAction implements IGameBehavior {
 	public void register(IGamePhase game, EventRegistrar events) {
 		weather = game.getState().getOrThrow(GameWeatherState.KEY);
 
-		events.listen(GameActionEvents.APPLY, (context, targets) -> {
+		events.listen(GameActionEvents.APPLY, (context, sources) -> {
 			WeatherEvent event = this.tryCreateEvent(ticks);
 			if (event != null) {
 				weather.setEvent(event);

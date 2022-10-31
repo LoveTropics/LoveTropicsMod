@@ -44,7 +44,7 @@ public record RunCommandsAction(List<String> globalCommands, List<String> player
         CommandDispatcher<CommandSourceStack> dispatcher = game.getServer().getCommands().getDispatcher();
         CommandSourceStack source = createCommandSource(game);
 
-        events.listen(GameActionEvents.APPLY, (context, targets) -> executeCommands(dispatcher, source, globalCommands));
+        events.listen(GameActionEvents.APPLY, (context, sources) -> executeCommands(dispatcher, source, globalCommands));
 
         events.listen(GameActionEvents.APPLY_TO_PLAYER, (context, target) -> {
             CommandSourceStack targetSource = source.withEntity(target).withPosition(target.position());

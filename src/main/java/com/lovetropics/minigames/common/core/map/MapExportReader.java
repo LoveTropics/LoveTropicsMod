@@ -45,6 +45,7 @@ public final class MapExportReader implements Closeable {
 		Path regionRoot = dimensionRoot.resolve("region");
 		Path entitiesRoot = dimensionRoot.resolve("entities");
 		Files.createDirectories(regionRoot);
+		Files.createDirectories(entitiesRoot);
 
 		MapMetadata metadata = null;
 
