@@ -1,6 +1,7 @@
 package com.lovetropics.minigames.common.content.turtle_race;
 
 import com.lovetropics.lib.BlockBox;
+import com.lovetropics.lib.entity.FireworkPalette;
 import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
@@ -21,6 +22,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TextComponent;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.BossEvent;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -103,6 +105,8 @@ public class RaceTrackBehavior implements IGameBehavior {
 	private void onPlayerMove(ServerPlayer player, PlayerState state, Vec3 position, Vec3 lastPosition) {
 		if (state.trackedPosition >= 0.9f && finishBox.clip(lastPosition, position).isPresent()) {
 			state.nextLap();
+			player.playSound(SoundEvents.ARROW_HIT_PLAYER, 1.0f, 1.0f);
+			FireworkPalette.ISLAND_ROYALE.spawn(player.blockPosition(), player.level);
 		}
 
 		RaceTrackPath.Point point = path.closestPointAt(player.getBlockX(), player.getBlockZ(), state.trackedPosition);
