@@ -117,30 +117,36 @@ public class RaceTrackBehavior implements IGameBehavior {
 	}
 
 	private String[] buildSidebar() {
-		record Entry(String name, int lap, float position) {
+		class Leaderboard {
+			private final List<String> lines = new ArrayList<>(MAX_LEADERBOARD_SIZE);
+
+			public void add(ServerPlayer player, String detail) {
+				if (lines.size() < MAX_LEADERBOARD_SIZE) {
+					String name = player.getGameProfile().getName();
+					String index = (lines.size() + 1) + ". ";
+					lines.add(ChatFormatting.GRAY + index + ChatFormatting.GOLD + name + " " + detail);
+				}
+			}
+
+			public String[] build() {
+				return lines.toArray(String[]::new);
+			}
 		}
 
-		List<Entry> leaderboard = game.getParticipants().stream()
-				.map(player -> {
-					PlayerState state = states.get(player.getUUID());
-					if (state != null) {
-						return new Entry(player.getGameProfile().getName(), state.lap, state.trackedPosition);
+		Leaderboard leaderboard = new Leaderboard();
+
+		states.entrySet().stream()
+				.sorted(Map.Entry.comparingByValue(Comparator.<PlayerState>comparingInt(e -> e.lap).thenComparingDouble(s -> s.trackedPosition).reversed()))
+				.forEach(entry -> {
+					ServerPlayer player = game.getParticipants().getPlayerBy(entry.getKey());
+					PlayerState state = entry.getValue();
+					if (player != null) {
+						int percent = Math.round(state.trackedPosition / path.length() * 100.0f);
+						leaderboard.add(player, ChatFormatting.GRAY + "(" + percent + "%)");
 					}
-					return null;
-				})
-				.filter(Objects::nonNull)
-				.sorted(Comparator.comparingInt(Entry::lap).thenComparingDouble(Entry::position).reversed())
-				.limit(MAX_LEADERBOARD_SIZE)
-				.toList();
+				});
 
-		String[] lines = new String[leaderboard.size()];
-		for (int i = 0; i < leaderboard.size(); i++) {
-			Entry entry = leaderboard.get(i);
-			int percent = Math.round(entry.position() / path.length() * 100.0f);
-			lines[i] = ChatFormatting.GRAY.toString() + (i + 1) + ". " + ChatFormatting.GOLD + entry.name() + ChatFormatting.GRAY + " (" + percent + "%)";
-		}
-
-		return lines;
+		return leaderboard.build();
 	}
 
 	private static class PlayerState implements AutoCloseable {
