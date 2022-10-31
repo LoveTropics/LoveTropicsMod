@@ -65,7 +65,7 @@ public final class SpectatingUi {
 	@SubscribeEvent
 	public static void onMouseScroll(InputEvent.MouseScrollEvent event) {
 		SpectatingSession session = ClientSpectatingManager.INSTANCE.session;
-		if (session == null) {
+		if (session == null || CLIENT.screen != null) {
 			return;
 		}
 
@@ -99,7 +99,7 @@ public final class SpectatingUi {
 	@SubscribeEvent
 	public static void onKeyInput(InputEvent.KeyInputEvent event) {
 		SpectatingSession session = ClientSpectatingManager.INSTANCE.session;
-		if (session == null || event.getAction() == GLFW.GLFW_RELEASE) {
+		if (session == null || CLIENT.screen != null || event.getAction() == GLFW.GLFW_RELEASE) {
 			return;
 		}
 
@@ -117,7 +117,7 @@ public final class SpectatingUi {
 	@SubscribeEvent
 	public static void onMouseInput(InputEvent.MouseInputEvent event) {
 		SpectatingSession session = ClientSpectatingManager.INSTANCE.session;
-		if (session == null || event.getAction() == GLFW.GLFW_RELEASE) {
+		if (session == null || CLIENT.screen != null || event.getAction() == GLFW.GLFW_RELEASE) {
 			return;
 		}
 
