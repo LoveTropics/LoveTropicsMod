@@ -15,6 +15,7 @@ import com.lovetropics.minigames.common.core.game.util.GameBossBar;
 import com.lovetropics.minigames.common.core.game.util.GameSidebar;
 import com.lovetropics.minigames.common.core.game.util.GlobalGameWidgets;
 import com.lovetropics.minigames.common.core.map.MapRegions;
+import com.lovetropics.minigames.common.util.Util;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
@@ -36,35 +37,42 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+// TODO: Can this behaviour be split up at all?
 public class RaceTrackBehavior implements IGameBehavior {
 	public static final Codec<RaceTrackBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
 			PathData.CODEC.fieldOf("path").forGetter(b -> b.pathData),
 			Codec.STRING.optionalFieldOf("finish_region", "finish").forGetter(b -> b.finishRegion),
 			Codec.INT.optionalFieldOf("lap_count", 3).forGetter(b -> b.lapCount),
-			Codec.INT.optionalFieldOf("winner_count", 3).forGetter(b -> b.winnerCount)
+			Codec.INT.optionalFieldOf("winner_count", 3).forGetter(b -> b.winnerCount),
+			Codec.LONG.optionalFieldOf("start_time", 0L).forGetter(b -> b.startTime)
 	).apply(i, RaceTrackBehavior::new));
 
 	private static final int SIDEBAR_UPDATE_INTERVAL = SharedConstants.TICKS_PER_SECOND;
 	private static final int MAX_LEADERBOARD_SIZE = 5;
 
+	private static final Component UNKNOWN_PLAYER_NAME = new TextComponent("Unknown");
+
 	private final PathData pathData;
 	private final String finishRegion;
 	private final int lapCount;
 	private final int winnerCount;
+	// TODO: Should be a phase / other kind of trigger
+	private final long startTime;
 
 	private final Map<UUID, PlayerState> states = new Object2ObjectOpenHashMap<>();
-	private final List<UUID> finishedPlayers = new ArrayList<>();
+	private final List<FinishEntry> finishedPlayers = new ArrayList<>();
 
 	private IGamePhase game;
 
 	private RaceTrackPath path;
 	private AABB finishBox;
 
-	public RaceTrackBehavior(PathData pathData, String finishRegion, int lapCount, int winnerCount) {
+	public RaceTrackBehavior(PathData pathData, String finishRegion, int lapCount, int winnerCount, long startTime) {
 		this.pathData = pathData;
 		this.finishRegion = finishRegion;
 		this.lapCount = lapCount;
 		this.winnerCount = winnerCount;
+		this.startTime = startTime;
 	}
 
 	@Override
@@ -113,8 +121,11 @@ public class RaceTrackBehavior implements IGameBehavior {
 	}
 
 	private void triggerWin(IGamePhase game) {
-		ServerPlayer winner = game.getAllPlayers().getPlayerBy(finishedPlayers.get(0));
-		Component winnerName = winner != null ? winner.getDisplayName() : new TextComponent("Unknown");
+		Component winnerName = UNKNOWN_PLAYER_NAME;
+		if (!finishedPlayers.isEmpty()) {
+			winnerName = new TextComponent(finishedPlayers.get(0).name());
+		}
+
 		game.invoker(GameLogicEvents.WIN_TRIGGERED).onWinTriggered(winnerName);
 
 		// TODO: Teleport winners to podium
@@ -145,8 +156,7 @@ public class RaceTrackBehavior implements IGameBehavior {
 	}
 
 	private void onPlayerFinish(IGamePhase game, ServerPlayer player, PlayerState state) {
-		// TODO: Track player times
-		finishedPlayers.add(player.getUUID());
+		finishedPlayers.add(new FinishEntry(player.getGameProfile().getName(), player.getUUID(), game.ticks() - startTime));
 		game.setPlayerRole(player, PlayerRole.SPECTATOR);
 
 		states.remove(player.getUUID(), state);
@@ -162,11 +172,10 @@ public class RaceTrackBehavior implements IGameBehavior {
 		class Leaderboard {
 			private final List<String> lines = new ArrayList<>(MAX_LEADERBOARD_SIZE);
 
-			public void add(ServerPlayer player, String detail) {
+			public void add(String player, String detail) {
 				if (lines.size() < MAX_LEADERBOARD_SIZE) {
-					String name = player.getGameProfile().getName();
 					String index = (lines.size() + 1) + ". ";
-					lines.add(ChatFormatting.GRAY + index + ChatFormatting.GOLD + name + " " + detail);
+					lines.add(ChatFormatting.GRAY + index + ChatFormatting.GOLD + player + " " + detail);
 				}
 			}
 
@@ -177,11 +186,9 @@ public class RaceTrackBehavior implements IGameBehavior {
 
 		Leaderboard leaderboard = new Leaderboard();
 
-		for (UUID id : finishedPlayers) {
-			ServerPlayer player = game.getParticipants().getPlayerBy(id);
-			if (player != null) {
-				leaderboard.add(player, ChatFormatting.GREEN + "\u2714");
-			}
+		for (FinishEntry entry : finishedPlayers) {
+			long seconds = entry.time() / SharedConstants.TICKS_PER_SECOND;
+			leaderboard.add(entry.name(), ChatFormatting.GREEN + Util.formatMinutesSeconds(seconds) + " \u2714");
 		}
 
 		states.entrySet().stream()
@@ -191,11 +198,14 @@ public class RaceTrackBehavior implements IGameBehavior {
 					PlayerState state = entry.getValue();
 					if (player != null) {
 						int percent = Math.round(state.trackedPosition / path.length() * 100.0f);
-						leaderboard.add(player, ChatFormatting.GRAY + "(" + percent + "%)");
+						leaderboard.add(player.getGameProfile().getName(), ChatFormatting.GRAY + "(" + percent + "%)");
 					}
 				});
 
 		return leaderboard.build();
+	}
+
+	private record FinishEntry(String name, UUID id, long time) {
 	}
 
 	private static class PlayerState implements AutoCloseable {
