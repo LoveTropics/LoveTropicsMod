@@ -33,30 +33,43 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
-public record RaceTrackBehavior(PathData path, String finishRegion) implements IGameBehavior {
+public class RaceTrackBehavior implements IGameBehavior {
 	public static final Codec<RaceTrackBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
-			PathData.CODEC.fieldOf("path").forGetter(RaceTrackBehavior::path),
-			Codec.STRING.optionalFieldOf("finish_region", "finish").forGetter(RaceTrackBehavior::finishRegion)
+			PathData.CODEC.fieldOf("path").forGetter(b -> b.pathData),
+			Codec.STRING.optionalFieldOf("finish_region", "finish").forGetter(b -> b.finishRegion)
 	).apply(i, RaceTrackBehavior::new));
 
 	private static final int SIDEBAR_UPDATE_INTERVAL = SharedConstants.TICKS_PER_SECOND;
 	private static final int MAX_LEADERBOARD_SIZE = 5;
 
+	private final PathData pathData;
+	private final String finishRegion;
+
+	private final Map<UUID, PlayerState> states = new Object2ObjectOpenHashMap<>();
+
+	private IGamePhase game;
+
+	private RaceTrackPath path;
+	private AABB finishBox;
+
+	public RaceTrackBehavior(PathData pathData, String finishRegion) {
+		this.pathData = pathData;
+		this.finishRegion = finishRegion;
+	}
+
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) throws GameException {
-		Component gameName = game.getDefinition().getName().copy().withStyle(ChatFormatting.AQUA);
-		RaceTrackPath path = this.path.compile(game.getMapRegions());
+		this.game = game;
+		path = pathData.compile(game.getMapRegions());
 
-		AABB finishBox = game.getMapRegions().getOrThrow(finishRegion).asAabb();
+		finishBox = game.getMapRegions().getOrThrow(finishRegion).asAabb();
 
 		GlobalGameWidgets widgets = GlobalGameWidgets.registerTo(game, events);
-		GameSidebar sidebar = widgets.openSidebar(gameName);
+		GameSidebar sidebar = widgets.openSidebar(game.getDefinition().getName().copy().withStyle(ChatFormatting.AQUA));
 
-		Map<UUID, PlayerState> states = new Object2ObjectOpenHashMap<>();
-
-		events.listen(GamePlayerEvents.SET_ROLE, (player, role, lastRole) -> {
+		events.listen(GamePlayerEvents.SPAWN, (player, role) -> {
 			if (role == PlayerRole.PARTICIPANT) {
-				states.put(player.getUUID(), new PlayerState());
+				states.put(player.getUUID(), new PlayerState(player.position(), game.ticks()));
 			}
 		});
 
@@ -66,17 +79,10 @@ public record RaceTrackBehavior(PathData path, String finishRegion) implements I
 				return;
 			}
 
-			Vec3 lastPosition = state.tracker.tryUpdate(player.position(), game.ticks());
+			Vec3 position = player.position();
+			Vec3 lastPosition = state.tracker.tryUpdate(position, game.ticks());
 			if (lastPosition != null) {
-				if (state.trackedPosition >= 0.9f && finishBox.clip(lastPosition, player.position()).isPresent()) {
-					state.nextLap();
-				}
-
-				RaceTrackPath.Point point = path.closestPointAt(player.getBlockX(), player.getBlockZ(), state.trackedPosition);
-				state.trackPosition(point.position());
-
-				Component title = new TextComponent("Lap #" + (state.lap + 1)).withStyle(ChatFormatting.AQUA);
-				state.updateBar(player, title, path.length());
+				onPlayerMove(player, state, position, lastPosition);
 			}
 		});
 
@@ -89,12 +95,24 @@ public record RaceTrackBehavior(PathData path, String finishRegion) implements I
 
 		events.listen(GamePhaseEvents.TICK, () -> {
 			if (game.ticks() % SIDEBAR_UPDATE_INTERVAL == 0) {
-				sidebar.set(buildSidebar(game, states, path.length()));
+				sidebar.set(buildSidebar());
 			}
 		});
 	}
 
-	private static String[] buildSidebar(IGamePhase game, Map<UUID, PlayerState> states, float length) {
+	private void onPlayerMove(ServerPlayer player, PlayerState state, Vec3 position, Vec3 lastPosition) {
+		if (state.trackedPosition >= 0.9f && finishBox.clip(lastPosition, position).isPresent()) {
+			state.nextLap();
+		}
+
+		RaceTrackPath.Point point = path.closestPointAt(player.getBlockX(), player.getBlockZ(), state.trackedPosition);
+		state.trackPosition(point.position());
+
+		Component title = new TextComponent("Lap #" + (state.lap + 1)).withStyle(ChatFormatting.AQUA);
+		state.updateBar(player, title, path.length());
+	}
+
+	private String[] buildSidebar() {
 		record Entry(String name, int lap, float position) {
 		}
 
@@ -114,7 +132,7 @@ public record RaceTrackBehavior(PathData path, String finishRegion) implements I
 		String[] lines = new String[leaderboard.size()];
 		for (int i = 0; i < leaderboard.size(); i++) {
 			Entry entry = leaderboard.get(i);
-			int percent = Math.round(entry.position() / length * 100.0f);
+			int percent = Math.round(entry.position() / path.length() * 100.0f);
 			lines[i] = ChatFormatting.GRAY.toString() + (i + 1) + ". " + ChatFormatting.GOLD + entry.name() + ChatFormatting.GRAY + " (" + percent + "%)";
 		}
 
@@ -127,7 +145,12 @@ public record RaceTrackBehavior(PathData path, String finishRegion) implements I
 
 		private int lap;
 		private float trackedPosition;
-		private final Tracker tracker = new Tracker();
+
+		private final Tracker tracker;
+
+		private PlayerState(Vec3 position, long time) {
+			tracker = new Tracker(position, time);
+		}
 
 		public int nextLap() {
 			trackedPosition = 0.0f;
@@ -162,9 +185,13 @@ public record RaceTrackBehavior(PathData path, String finishRegion) implements I
 		private static final long MIN_TRACK_INTERVAL = SharedConstants.TICKS_PER_SECOND / 2;
 		private static final int TRACK_MOVE_THRESHOLD = 3;
 
-		@Nullable
 		private Vec3 trackedPosition;
 		private long trackedTime;
+
+		public Tracker(Vec3 position, long time) {
+			trackedPosition = position;
+			trackedTime = time;
+		}
 
 		@Nullable
 		public Vec3 tryUpdate(Vec3 position, long time) {
@@ -178,9 +205,6 @@ public record RaceTrackBehavior(PathData path, String finishRegion) implements I
 		}
 
 		private boolean canUpdate(Vec3 position, long time) {
-			if (trackedPosition == null) {
-				return true;
-			}
 			if (time - trackedTime >= MIN_TRACK_INTERVAL) {
 				return !position.closerThan(trackedPosition, TRACK_MOVE_THRESHOLD);
 			}
