@@ -1,11 +1,13 @@
 package com.lovetropics.minigames.common.content.turtle_race;
 
+import com.google.common.collect.Lists;
 import com.lovetropics.lib.BlockBox;
 import com.lovetropics.lib.entity.FireworkPalette;
 import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameLogicEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.lovetropics.minigames.common.core.game.player.PlayerRole;
@@ -32,13 +34,14 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.UUID;
 
 public class RaceTrackBehavior implements IGameBehavior {
 	public static final Codec<RaceTrackBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
 			PathData.CODEC.fieldOf("path").forGetter(b -> b.pathData),
-			Codec.STRING.optionalFieldOf("finish_region", "finish").forGetter(b -> b.finishRegion)
+			Codec.STRING.optionalFieldOf("finish_region", "finish").forGetter(b -> b.finishRegion),
+			Codec.INT.optionalFieldOf("lap_count", 3).forGetter(b -> b.lapCount),
+			Codec.INT.optionalFieldOf("winner_count", 3).forGetter(b -> b.winnerCount)
 	).apply(i, RaceTrackBehavior::new));
 
 	private static final int SIDEBAR_UPDATE_INTERVAL = SharedConstants.TICKS_PER_SECOND;
@@ -46,17 +49,22 @@ public class RaceTrackBehavior implements IGameBehavior {
 
 	private final PathData pathData;
 	private final String finishRegion;
+	private final int lapCount;
+	private final int winnerCount;
 
 	private final Map<UUID, PlayerState> states = new Object2ObjectOpenHashMap<>();
+	private final List<UUID> finishedPlayers = new ArrayList<>();
 
 	private IGamePhase game;
 
 	private RaceTrackPath path;
 	private AABB finishBox;
 
-	public RaceTrackBehavior(PathData pathData, String finishRegion) {
+	public RaceTrackBehavior(PathData pathData, String finishRegion, int lapCount, int winnerCount) {
 		this.pathData = pathData;
 		this.finishRegion = finishRegion;
+		this.lapCount = lapCount;
+		this.winnerCount = winnerCount;
 	}
 
 	@Override
@@ -83,17 +91,12 @@ public class RaceTrackBehavior implements IGameBehavior {
 
 			Vec3 position = player.position();
 			Vec3 lastPosition = state.tracker.tryUpdate(position, game.ticks());
-			if (lastPosition != null) {
-				onPlayerMove(player, state, position, lastPosition);
+			if (lastPosition != null && onPlayerMove(player, state, position, lastPosition)) {
+				onPlayerFinish(game, player, state);
 			}
 		});
 
-		events.listen(GamePlayerEvents.REMOVE, player -> {
-			PlayerState state = states.remove(player.getUUID());
-			if (state != null) {
-				state.close();
-			}
-		});
+		events.listen(GamePlayerEvents.REMOVE, this::clearPlayerState);
 
 		events.listen(GamePhaseEvents.TICK, () -> {
 			if (game.ticks() % SIDEBAR_UPDATE_INTERVAL == 0) {
@@ -102,18 +105,57 @@ public class RaceTrackBehavior implements IGameBehavior {
 		});
 	}
 
-	private void onPlayerMove(ServerPlayer player, PlayerState state, Vec3 position, Vec3 lastPosition) {
+	private void clearPlayerState(ServerPlayer player) {
+		PlayerState state = states.remove(player.getUUID());
+		if (state != null) {
+			state.close();
+		}
+	}
+
+	private void triggerWin(IGamePhase game) {
+		ServerPlayer winner = game.getAllPlayers().getPlayerBy(finishedPlayers.get(0));
+		Component winnerName = winner != null ? winner.getDisplayName() : new TextComponent("Unknown");
+		game.invoker(GameLogicEvents.WIN_TRIGGERED).onWinTriggered(winnerName);
+
+		// TODO: Teleport winners to podium
+		for (ServerPlayer player : Lists.newArrayList(game.getParticipants())) {
+			game.setPlayerRole(player, PlayerRole.SPECTATOR);
+			clearPlayerState(player);
+		}
+	}
+
+	private boolean onPlayerMove(ServerPlayer player, PlayerState state, Vec3 position, Vec3 lastPosition) {
 		if (state.trackedPosition >= 0.9f && finishBox.clip(lastPosition, position).isPresent()) {
-			state.nextLap();
 			player.playSound(SoundEvents.ARROW_HIT_PLAYER, 1.0f, 1.0f);
 			FireworkPalette.ISLAND_ROYALE.spawn(player.blockPosition(), player.level);
+
+			int lap = state.nextLap();
+			if (lap >= lapCount) {
+				return true;
+			}
 		}
 
 		RaceTrackPath.Point point = path.closestPointAt(player.getBlockX(), player.getBlockZ(), state.trackedPosition);
 		state.trackPosition(point.position());
 
-		Component title = new TextComponent("Lap #" + (state.lap + 1)).withStyle(ChatFormatting.AQUA);
+		Component title = new TextComponent("Lap #" + (state.lap + 1) + " of " + lapCount).withStyle(ChatFormatting.AQUA);
 		state.updateBar(player, title, path.length());
+
+		return false;
+	}
+
+	private void onPlayerFinish(IGamePhase game, ServerPlayer player, PlayerState state) {
+		// TODO: Track player times
+		finishedPlayers.add(player.getUUID());
+		game.setPlayerRole(player, PlayerRole.SPECTATOR);
+
+		states.remove(player.getUUID(), state);
+		state.close();
+
+		// TODO: Start a countdown instead of immediate end
+		if (game.getParticipants().isEmpty() || finishedPlayers.size() >= winnerCount) {
+			triggerWin(game);
+		}
 	}
 
 	private String[] buildSidebar() {
@@ -134,6 +176,13 @@ public class RaceTrackBehavior implements IGameBehavior {
 		}
 
 		Leaderboard leaderboard = new Leaderboard();
+
+		for (UUID id : finishedPlayers) {
+			ServerPlayer player = game.getParticipants().getPlayerBy(id);
+			if (player != null) {
+				leaderboard.add(player, ChatFormatting.GREEN + "\u2714");
+			}
+		}
 
 		states.entrySet().stream()
 				.sorted(Map.Entry.comparingByValue(Comparator.<PlayerState>comparingInt(e -> e.lap).thenComparingDouble(s -> s.trackedPosition).reversed()))
