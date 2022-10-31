@@ -13,8 +13,9 @@ import java.util.function.UnaryOperator;
 public final class StatisticsMap {
 	private final Map<StatisticKey<?>, Object> values = new Reference2ObjectOpenHashMap<>();
 
-	public <T> void set(StatisticKey<T> key, T value) {
+	public <T> StatisticsMap set(StatisticKey<T> key, T value) {
 		values.put(key, value);
+		return this;
 	}
 
 	@Nullable

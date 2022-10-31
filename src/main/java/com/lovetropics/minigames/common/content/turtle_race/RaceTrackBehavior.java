@@ -11,6 +11,8 @@ import com.lovetropics.minigames.common.core.game.behavior.event.GameLogicEvents
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.lovetropics.minigames.common.core.game.player.PlayerRole;
+import com.lovetropics.minigames.common.core.game.state.statistics.PlayerKey;
+import com.lovetropics.minigames.common.core.game.state.statistics.StatisticKey;
 import com.lovetropics.minigames.common.core.game.util.GameBossBar;
 import com.lovetropics.minigames.common.core.game.util.GameSidebar;
 import com.lovetropics.minigames.common.core.game.util.GlobalGameWidgets;
@@ -123,7 +125,9 @@ public class RaceTrackBehavior implements IGameBehavior {
 	private void triggerWin(IGamePhase game) {
 		Component winnerName = UNKNOWN_PLAYER_NAME;
 		if (!finishedPlayers.isEmpty()) {
-			winnerName = new TextComponent(finishedPlayers.get(0).name());
+			FinishEntry winner = finishedPlayers.get(0);
+			game.getStatistics().global().set(StatisticKey.WINNING_PLAYER, winner.player());
+			winnerName = new TextComponent(winner.name());
 		}
 
 		game.invoker(GameLogicEvents.WIN_TRIGGERED).onWinTriggered(winnerName);
@@ -156,7 +160,13 @@ public class RaceTrackBehavior implements IGameBehavior {
 	}
 
 	private void onPlayerFinish(IGamePhase game, ServerPlayer player, PlayerState state) {
-		finishedPlayers.add(new FinishEntry(player.getGameProfile().getName(), player.getUUID(), game.ticks() - startTime));
+		long time = game.ticks() - startTime;
+		int placement = finishedPlayers.size();
+		game.getStatistics().forPlayer(player)
+				.set(StatisticKey.PLACEMENT, placement)
+				.set(StatisticKey.TOTAL_TIME, (int) time);
+
+		finishedPlayers.add(new FinishEntry(player.getGameProfile().getName(), PlayerKey.from(player), time));
 		game.setPlayerRole(player, PlayerRole.SPECTATOR);
 
 		states.remove(player.getUUID(), state);
@@ -205,7 +215,7 @@ public class RaceTrackBehavior implements IGameBehavior {
 		return leaderboard.build();
 	}
 
-	private record FinishEntry(String name, UUID id, long time) {
+	private record FinishEntry(String name, PlayerKey player, long time) {
 	}
 
 	private static class PlayerState implements AutoCloseable {
