@@ -82,28 +82,29 @@ public class RaceTrackPath {
 		private final List<Segment> segments = new ArrayList<>();
 		@Nullable
 		private Point lastPoint;
+		private float length;
 
-		public Builder addPoint(int x, int z, float position) {
-			Point point = new Point(x, z, position);
+		public Builder addPoint(int x, int z) {
+			Point point = new Point(x, z, length);
 			if (lastPoint != null) {
-				addSegment(lastPoint, point);
+				length += addSegment(lastPoint, point);
 			}
 			lastPoint = point;
 			return this;
 		}
 
-		private void addSegment(Point start, Point end) {
+		private float addSegment(Point start, Point end) {
 			int deltaX = end.x() - start.x();
 			int deltaZ = end.z() - start.z();
 			int lengthSq = start.distanceToSq(end);
 			segments.add(new Segment(start, end, deltaX, deltaZ, lengthSq));
+			return Mth.sqrt(lengthSq);
 		}
 
 		public RaceTrackPath build() {
 			if (lastPoint == null || segments.isEmpty()) {
 				throw new IllegalStateException("Must have at least one track segment");
 			}
-			float length = lastPoint.position();
 			return new RaceTrackPath(segments.toArray(Segment[]::new), length);
 		}
 	}

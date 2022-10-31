@@ -143,24 +143,8 @@ public record RaceTrackBehavior(PathData path) implements IGameBehavior {
 			RaceTrackPath.Builder path = RaceTrackPath.builder();
 
 			List<BlockPos> positions = collectPositions(regions);
-			if (positions.isEmpty()) {
-				throw new GameException(new TextComponent("No track path points found"));
-			}
-
-			BlockPos start = positions.get(0);
-			path.addPoint(start.getX(), start.getZ(), 0.0f);
-
-			float position = 0.0f;
-			for (int i = 1; i < positions.size(); i++) {
-				BlockPos lastPoint = positions.get(i - 1);
-				BlockPos point = positions.get(i);
-
-				int deltaX = point.getX() - lastPoint.getX();
-				int deltaZ = point.getZ() - lastPoint.getZ();
-				float length = Mth.sqrt(deltaX * deltaX + deltaZ * deltaZ);
-				position += length;
-
-				path.addPoint(point.getX(), point.getZ(), position);
+			for (BlockPos point : positions) {
+				path.addPoint(point.getX(), point.getZ());
 			}
 
 			return path.build();
