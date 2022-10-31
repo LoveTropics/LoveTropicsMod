@@ -20,13 +20,15 @@ public class RaceTrackPath {
 		return new Builder();
 	}
 
-	public Point closestPointAt(int x, int z) {
+	// TODO: This is super inefficient. We can optimize it, but it's a bit of work.
+	public Point closestPointAt(int x, int z, float lastPosition) {
 		int closestDistanceSq = Integer.MAX_VALUE;
 		Point closestPoint = null;
 
 		for (Segment segment : segments) {
 			Point point = segment.closestPointAt(x, z);
-			int distanceSq = point.distanceToSq(x, z);
+			int positionBias = (int) Mth.abs(point.position() - lastPosition);
+			int distanceSq = point.distanceToSq(x, z) + positionBias;
 			if (distanceSq < closestDistanceSq) {
 				closestDistanceSq = distanceSq;
 				closestPoint = point;

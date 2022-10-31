@@ -16,9 +16,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.SharedConstants;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextComponent;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.util.Mth;
 import net.minecraft.world.BossEvent;
 
 import javax.annotation.Nullable;
@@ -54,9 +52,9 @@ public record RaceTrackBehavior(PathData path) implements IGameBehavior {
 			int x = player.getBlockX();
 			int z = player.getBlockZ();
 			if (state.tracker.tryUpdate(x, z, game.ticks())) {
-				RaceTrackPath.Point point = path.closestPointAt(x, z);
-				state.trackProgress(point.position() / path.length());
-				state.updateBar(player, gameName);
+				RaceTrackPath.Point point = path.closestPointAt(x, z, state.trackedPosition);
+				state.trackPosition(point.position());
+				state.updateBar(player, gameName, path.length());
 			}
 		});
 
@@ -72,23 +70,23 @@ public record RaceTrackBehavior(PathData path) implements IGameBehavior {
 		@Nullable
 		private GameBossBar bar;
 
-		private float trackedProgress;
+		private float trackedPosition;
 		private final Tracker tracker = new Tracker();
 
-		public void trackProgress(float progress) {
-			if (progress > trackedProgress) {
-				trackedProgress = progress;
+		public void trackPosition(float position) {
+			if (position > trackedPosition) {
+				trackedPosition = position;
 			}
 		}
 
-		public void updateBar(ServerPlayer player, Component text) {
+		public void updateBar(ServerPlayer player, Component text, float pathLength) {
 			if (bar == null) {
 				bar = new GameBossBar(text, BossEvent.BossBarColor.GREEN, BossEvent.BossBarOverlay.PROGRESS);
 				bar.addPlayer(player);
 			} else {
 				bar.setTitle(text);
 			}
-			bar.setProgress(trackedProgress);
+			bar.setProgress(trackedPosition / pathLength);
 		}
 
 		@Override
