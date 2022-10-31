@@ -6,7 +6,7 @@ import net.minecraft.world.BossEvent;
 import net.minecraft.server.level.ServerBossEvent;
 
 public final class GameBossBar implements GameWidget {
-	private static final float UPDATE_PROGRESS_THRESHOLD = 0.025f;
+	private static final float UPDATE_PROGRESS_THRESHOLD = 0.001f;
 
 	private final ServerBossEvent bar;
 

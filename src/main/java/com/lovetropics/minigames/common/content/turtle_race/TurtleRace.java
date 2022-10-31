@@ -32,6 +32,10 @@ public final class TurtleRace {
 			.behavior(TurtleRiderBehavior.CODEC)
 			.register();
 
+	public static final GameBehaviorEntry<RaceTrackBehavior> RACE_TRACK = REGISTRATE.object("race_track")
+			.behavior(RaceTrackBehavior.CODEC)
+			.register();
+
 	public static void init() {
 	}
 }
