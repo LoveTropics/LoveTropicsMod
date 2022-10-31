@@ -37,6 +37,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -268,5 +269,16 @@ public final class RuntimeDimensions {
 
 	public boolean isTemporaryDimension(ResourceKey<Level> dimension) {
 		return this.temporaryDimensions.contains(dimension);
+	}
+
+	public RuntimeDimensionHandle handleForTemporaryDimension(ResourceKey<Level> dimension) {
+		if (!this.isTemporaryDimension(dimension)) {
+			throw new IllegalArgumentException("must be a temporary dimension");
+		}
+		return new RuntimeDimensionHandle(this, this.server.getLevel(dimension));
+	}
+
+	public Collection<ResourceKey<Level>> getTemporaryDimensions() {
+		return this.temporaryDimensions;
 	}
 }
