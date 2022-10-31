@@ -5,9 +5,12 @@ import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
+import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.lovetropics.minigames.common.core.game.player.PlayerRole;
 import com.lovetropics.minigames.common.core.game.util.GameBossBar;
+import com.lovetropics.minigames.common.core.game.util.GameSidebar;
+import com.lovetropics.minigames.common.core.game.util.GlobalGameWidgets;
 import com.lovetropics.minigames.common.core.map.MapRegions;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -21,8 +24,11 @@ import net.minecraft.world.BossEvent;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 
 public record RaceTrackBehavior(PathData path) implements IGameBehavior {
@@ -30,10 +36,16 @@ public record RaceTrackBehavior(PathData path) implements IGameBehavior {
 			PathData.CODEC.fieldOf("path").forGetter(RaceTrackBehavior::path)
 	).apply(i, RaceTrackBehavior::new));
 
+	private static final int SIDEBAR_UPDATE_INTERVAL = SharedConstants.TICKS_PER_SECOND;
+	private static final int MAX_LEADERBOARD_SIZE = 5;
+
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) throws GameException {
 		Component gameName = game.getDefinition().getName().copy().withStyle(ChatFormatting.AQUA);
 		RaceTrackPath path = this.path.compile(game.getMapRegions());
+
+		GlobalGameWidgets widgets = GlobalGameWidgets.registerTo(game, events);
+		GameSidebar sidebar = widgets.openSidebar(gameName);
 
 		Map<UUID, PlayerState> states = new Object2ObjectOpenHashMap<>();
 
@@ -64,6 +76,39 @@ public record RaceTrackBehavior(PathData path) implements IGameBehavior {
 				state.close();
 			}
 		});
+
+		events.listen(GamePhaseEvents.TICK, () -> {
+			if (game.ticks() % SIDEBAR_UPDATE_INTERVAL == 0) {
+				sidebar.set(buildSidebar(game, states, path.length()));
+			}
+		});
+	}
+
+	private static String[] buildSidebar(IGamePhase game, Map<UUID, PlayerState> states, float length) {
+		record Entry(String name, float position) {
+		}
+
+		List<Entry> leaderboard = game.getParticipants().stream()
+				.map(player -> {
+					PlayerState state = states.get(player.getUUID());
+					if (state != null) {
+						return new Entry(player.getGameProfile().getName(), state.trackedPosition);
+					}
+					return null;
+				})
+				.filter(Objects::nonNull)
+				.sorted(Comparator.comparingDouble(Entry::position).reversed())
+				.limit(MAX_LEADERBOARD_SIZE)
+				.toList();
+
+		String[] lines = new String[leaderboard.size()];
+		for (int i = 0; i < leaderboard.size(); i++) {
+			Entry entry = leaderboard.get(i);
+			int percent = Math.round(entry.position() / length * 100.0f);
+			lines[i] = ChatFormatting.GRAY.toString() + (i + 1) + ". " + ChatFormatting.GOLD + entry.name() + ChatFormatting.GRAY + " (" + percent + "%)";
+		}
+
+		return lines;
 	}
 
 	private static class PlayerState implements AutoCloseable {
