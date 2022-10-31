@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.Objects;
 
 public class RaceTrackPath {
+	private static final float LAST_POSITION_BIAS = 0.1f;
+
 	private final Segment[] segments;
 	private final float length;
 
@@ -27,7 +29,7 @@ public class RaceTrackPath {
 
 		for (Segment segment : segments) {
 			Point point = segment.closestPointAt(x, z);
-			int positionBias = (int) Mth.abs(point.position() - lastPosition);
+			int positionBias = (int) Mth.abs((point.position() - lastPosition) * LAST_POSITION_BIAS);
 			int distanceSq = point.distanceToSq(x, z) + positionBias;
 			if (distanceSq < closestDistanceSq) {
 				closestDistanceSq = distanceSq;
