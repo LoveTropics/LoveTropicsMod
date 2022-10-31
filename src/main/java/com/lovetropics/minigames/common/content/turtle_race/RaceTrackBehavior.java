@@ -19,21 +19,24 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.SharedConstants;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextComponent;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.BossEvent;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
-public record RaceTrackBehavior(PathData path) implements IGameBehavior {
+public record RaceTrackBehavior(PathData path, String finishRegion) implements IGameBehavior {
 	public static final Codec<RaceTrackBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
-			PathData.CODEC.fieldOf("path").forGetter(RaceTrackBehavior::path)
+			PathData.CODEC.fieldOf("path").forGetter(RaceTrackBehavior::path),
+			Codec.STRING.optionalFieldOf("finish_region", "finish").forGetter(RaceTrackBehavior::finishRegion)
 	).apply(i, RaceTrackBehavior::new));
 
 	private static final int SIDEBAR_UPDATE_INTERVAL = SharedConstants.TICKS_PER_SECOND;
@@ -43,6 +46,8 @@ public record RaceTrackBehavior(PathData path) implements IGameBehavior {
 	public void register(IGamePhase game, EventRegistrar events) throws GameException {
 		Component gameName = game.getDefinition().getName().copy().withStyle(ChatFormatting.AQUA);
 		RaceTrackPath path = this.path.compile(game.getMapRegions());
+
+		AABB finishBox = game.getMapRegions().getOrThrow(finishRegion).asAabb();
 
 		GlobalGameWidgets widgets = GlobalGameWidgets.registerTo(game, events);
 		GameSidebar sidebar = widgets.openSidebar(gameName);
@@ -61,12 +66,17 @@ public record RaceTrackBehavior(PathData path) implements IGameBehavior {
 				return;
 			}
 
-			int x = player.getBlockX();
-			int z = player.getBlockZ();
-			if (state.tracker.tryUpdate(x, z, game.ticks())) {
-				RaceTrackPath.Point point = path.closestPointAt(x, z, state.trackedPosition);
+			Vec3 lastPosition = state.tracker.tryUpdate(player.position(), game.ticks());
+			if (lastPosition != null) {
+				if (state.trackedPosition >= 0.9f && finishBox.clip(lastPosition, player.position()).isPresent()) {
+					state.nextLap();
+				}
+
+				RaceTrackPath.Point point = path.closestPointAt(player.getBlockX(), player.getBlockZ(), state.trackedPosition);
 				state.trackPosition(point.position());
-				state.updateBar(player, gameName, path.length());
+
+				Component title = new TextComponent("Lap #" + (state.lap + 1)).withStyle(ChatFormatting.AQUA);
+				state.updateBar(player, title, path.length());
 			}
 		});
 
@@ -85,19 +95,19 @@ public record RaceTrackBehavior(PathData path) implements IGameBehavior {
 	}
 
 	private static String[] buildSidebar(IGamePhase game, Map<UUID, PlayerState> states, float length) {
-		record Entry(String name, float position) {
+		record Entry(String name, int lap, float position) {
 		}
 
 		List<Entry> leaderboard = game.getParticipants().stream()
 				.map(player -> {
 					PlayerState state = states.get(player.getUUID());
 					if (state != null) {
-						return new Entry(player.getGameProfile().getName(), state.trackedPosition);
+						return new Entry(player.getGameProfile().getName(), state.lap, state.trackedPosition);
 					}
 					return null;
 				})
 				.filter(Objects::nonNull)
-				.sorted(Comparator.comparingDouble(Entry::position).reversed())
+				.sorted(Comparator.comparingInt(Entry::lap).thenComparingDouble(Entry::position).reversed())
 				.limit(MAX_LEADERBOARD_SIZE)
 				.toList();
 
@@ -115,8 +125,14 @@ public record RaceTrackBehavior(PathData path) implements IGameBehavior {
 		@Nullable
 		private GameBossBar bar;
 
+		private int lap;
 		private float trackedPosition;
 		private final Tracker tracker = new Tracker();
+
+		public int nextLap() {
+			trackedPosition = 0.0f;
+			return ++lap;
+		}
 
 		public void trackPosition(float position) {
 			if (position > trackedPosition) {
@@ -143,33 +159,30 @@ public record RaceTrackBehavior(PathData path) implements IGameBehavior {
 	}
 
 	private static class Tracker {
-		private static final long TRACK_INTERVAL = SharedConstants.TICKS_PER_SECOND;
-		private static final int TRACK_MOVE_THRESHOLD = 5;
+		private static final long MIN_TRACK_INTERVAL = SharedConstants.TICKS_PER_SECOND / 2;
+		private static final int TRACK_MOVE_THRESHOLD = 3;
 
-		private int trackedX;
-		private int trackedZ;
+		@Nullable
+		private Vec3 trackedPosition;
 		private long trackedTime;
-		private boolean tracked;
 
-		public boolean tryUpdate(int x, int z, long time) {
-			if (canUpdate(x, z, time)) {
-				trackedX = x;
-				trackedZ = z;
+		@Nullable
+		public Vec3 tryUpdate(Vec3 position, long time) {
+			if (canUpdate(position, time)) {
+				Vec3 lastPosition = trackedPosition;
+				trackedPosition = position;
 				trackedTime = time;
-				tracked = true;
-				return true;
+				return lastPosition;
 			}
-			return false;
+			return null;
 		}
 
-		private boolean canUpdate(int x, int z, long time) {
-			if (!tracked) {
+		private boolean canUpdate(Vec3 position, long time) {
+			if (trackedPosition == null) {
 				return true;
 			}
-			if (time - trackedTime >= TRACK_INTERVAL) {
-				int deltaX = x - trackedX;
-				int deltaZ = z - trackedZ;
-				return Math.abs(deltaX) + Math.abs(deltaZ) > TRACK_MOVE_THRESHOLD;
+			if (time - trackedTime >= MIN_TRACK_INTERVAL) {
+				return !position.closerThan(trackedPosition, TRACK_MOVE_THRESHOLD);
 			}
 			return false;
 		}
