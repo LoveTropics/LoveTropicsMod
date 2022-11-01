@@ -20,7 +20,10 @@ public record BlockPackagesDuringPhaseBehavior(List<String> blockedPhases) imple
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
-		GamePhaseState phases = game.getState().getOrThrow(GamePhaseState.KEY);
+		GamePhaseState phases = game.getState().getOrNull(GamePhaseState.KEY);
+		if (phases == null) {
+			return;
+		}
 
 		events.listen(GamePackageEvents.RECEIVE_PACKAGE, ($, gamePackage) -> {
 			GamePhase phase = phases.get();
