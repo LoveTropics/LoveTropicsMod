@@ -100,12 +100,12 @@ public class RaceTrackBehavior implements IGameBehavior {
 		});
 
 		events.listen(GamePlayerEvents.TICK, player -> {
+			long gameTime = game.ticks();
 			PlayerState state = states.get(player.getUUID());
-			if (state == null) {
+			if (state == null || gameTime < startTime) {
 				return;
 			}
 
-			long gameTime = game.ticks();
 			Vec3 position = player.position();
 			Vec3 lastPosition = state.tracker.tryUpdate(position, gameTime);
 			if (lastPosition != null && onPlayerMove(player, state, position, lastPosition)) {
