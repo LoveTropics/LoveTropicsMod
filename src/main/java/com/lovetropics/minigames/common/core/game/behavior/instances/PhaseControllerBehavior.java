@@ -151,15 +151,15 @@ public class PhaseControllerBehavior implements IGameBehavior {
 		).apply(i, PlayerCount::new));
 
 		public int resolve(int initialCount) {
-			int value = initialCount;
+			int value = 0;
 			if (percentage != NO_PERCENTAGE) {
-				value = Math.min(value, Mth.floor(percentage * initialCount));
+				value = Math.max(value, Mth.floor(percentage * initialCount));
 			}
 			if (left != NO_COUNT) {
-				value = Math.min(value, left);
+				value = Math.max(value, left);
 			}
 			if (killed != NO_COUNT) {
-				value = Math.min(value, initialCount - killed);
+				value = Math.max(value, initialCount - killed);
 			}
 			return value;
 		}
