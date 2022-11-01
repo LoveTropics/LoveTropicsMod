@@ -31,6 +31,7 @@ import net.minecraft.network.protocol.game.ClientboundSetTitleTextPacket;
 import net.minecraft.network.protocol.game.ClientboundSetTitlesAnimationPacket;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.BossEvent;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -160,10 +161,20 @@ public class RaceTrackBehavior implements IGameBehavior {
 	private boolean onPlayerMove(ServerPlayer player, PlayerState state, Vec3 position, Vec3 lastPosition) {
 		// TODO: Not a great way to detect this
 		if (state.trackedPosition >= 0.9f * path.length() && finishBox.clip(lastPosition, position).isPresent()) {
-			player.playSound(SoundEvents.ARROW_HIT_PLAYER, 1.0f, 1.0f);
 			FireworkPalette.DYE_COLORS.spawn(player.blockPosition(), player.level);
 
-			int lap = state.nextLap();
+			long lapTime = game.ticks() - state.lapStartTime;
+			game.getAllPlayers().sendMessage(new TextComponent("")
+					.append(new TextComponent("\u2714 ").withStyle(ChatFormatting.GREEN))
+					.append(player.getDisplayName())
+					.append(" finished lap #" + (state.lap + 1) + " in ")
+					.append(new TextComponent(Util.formatMinutesSeconds(lapTime)).withStyle(ChatFormatting.GOLD))
+					.append("!")
+					.withStyle(ChatFormatting.AQUA)
+			);
+			game.getAllPlayers().playSound(SoundEvents.ARROW_HIT_PLAYER, SoundSource.PLAYERS, 1.0f, 1.0f);
+
+			int lap = state.nextLap(game.ticks());
 			if (lap >= lapCount) {
 				return true;
 			}
@@ -230,7 +241,7 @@ public class RaceTrackBehavior implements IGameBehavior {
 					PlayerState state = entry.getValue();
 					if (player != null) {
 						int percent = Math.round(state.trackedPosition / path.length() * 100.0f);
-						leaderboard.add(player.getGameProfile().getName(), ChatFormatting.GRAY + "(" + percent + "%)");
+						leaderboard.add(player.getGameProfile().getName(), ChatFormatting.GRAY + "(Lap #" + (state.lap + 1) + "; " + percent + "%)");
 					}
 				});
 
@@ -246,6 +257,7 @@ public class RaceTrackBehavior implements IGameBehavior {
 
 		private int lap;
 		private float trackedPosition;
+		private long lapStartTime;
 
 		private long lastMovedTime;
 
@@ -253,10 +265,12 @@ public class RaceTrackBehavior implements IGameBehavior {
 
 		private PlayerState(Vec3 position, long time) {
 			tracker = new Tracker(position, time);
+			lapStartTime = time;
 		}
 
-		public int nextLap() {
+		public int nextLap(long time) {
 			trackedPosition = 0.0f;
+			lapStartTime = time;
 			return ++lap;
 		}
 
