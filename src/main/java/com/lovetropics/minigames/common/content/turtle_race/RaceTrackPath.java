@@ -1,6 +1,7 @@
 package com.lovetropics.minigames.common.content.turtle_race;
 
 import net.minecraft.util.Mth;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -116,23 +117,34 @@ public class RaceTrackPath {
 		}
 
 		private float addSegment(Point start, Point end) {
+			Segment segment = createSegment(start, end);
+			segments.add(segment);
+			return Mth.sqrt(segment.lengthSq());
+		}
+
+		private static Segment createSegment(Point start, Point end) {
 			int deltaX = end.x() - start.x();
 			int deltaZ = end.z() - start.z();
 			int lengthSq = start.distanceToSq(end);
-			segments.add(new Segment(start, end, deltaX, deltaZ, lengthSq));
-			return Mth.sqrt(lengthSq);
+			return new Segment(start, end, deltaX, deltaZ, lengthSq);
 		}
 
 		public RaceTrackPath build() {
 			if (lastPoint == null || segments.isEmpty()) {
 				throw new IllegalStateException("Must have at least one track segment");
 			}
-			Segment[] segments = this.segments.toArray(Segment[]::new);
-			float[] positions = new float[segments.length];
-			for (int i = 0; i < segments.length; i++) {
-				positions[i] = segments[i].start().position();
+
+			Point startPoint = segments.get(0).start();
+
+			Segment[] loopedSegments = segments.toArray(new Segment[segments.size() + 1]);
+			loopedSegments[loopedSegments.length - 1] = createSegment(lastPoint, startPoint);
+
+			float[] positions = new float[loopedSegments.length];
+			for (int i = 0; i < loopedSegments.length; i++) {
+				positions[i] = loopedSegments[i].start().position();
 			}
-			return new RaceTrackPath(segments, positions, length);
+
+			return new RaceTrackPath(loopedSegments, positions, length);
 		}
 	}
 }
