@@ -100,7 +100,7 @@ public class RaceTrackBehavior implements IGameBehavior {
 
 		events.listen(GamePlayerEvents.SPAWN, (player, role) -> {
 			if (role == PlayerRole.PARTICIPANT) {
-				states.put(player.getUUID(), new PlayerState(player.position(), game.ticks()));
+				states.put(player.getUUID(), new PlayerState(player.position(), startTime));
 			}
 		});
 
