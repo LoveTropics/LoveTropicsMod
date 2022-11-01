@@ -1,6 +1,5 @@
 package com.lovetropics.minigames.common.content.turtle_race;
 
-import com.google.common.collect.Lists;
 import com.lovetropics.lib.BlockBox;
 import com.lovetropics.lib.entity.FireworkPalette;
 import com.lovetropics.minigames.common.core.game.GameException;
@@ -161,21 +160,7 @@ public class RaceTrackBehavior implements IGameBehavior {
 	private boolean onPlayerMove(ServerPlayer player, PlayerState state, Vec3 position, Vec3 lastPosition) {
 		// TODO: Not a great way to detect this
 		if (state.trackedPosition >= 0.9f * path.length() && finishBox.clip(lastPosition, position).isPresent()) {
-			FireworkPalette.DYE_COLORS.spawn(player.blockPosition(), player.level);
-
-			long lapTime = game.ticks() - state.lapStartTime;
-			game.getAllPlayers().sendMessage(new TextComponent("")
-					.append(new TextComponent("\u2714 ").withStyle(ChatFormatting.GREEN))
-					.append(player.getDisplayName())
-					.append(" finished lap #" + (state.lap + 1) + " in ")
-					.append(new TextComponent(Util.formatMinutesSeconds(lapTime)).withStyle(ChatFormatting.GOLD))
-					.append("!")
-					.withStyle(ChatFormatting.AQUA)
-			);
-			game.getAllPlayers().playSound(SoundEvents.ARROW_HIT_PLAYER, SoundSource.PLAYERS, 1.0f, 1.0f);
-
-			int lap = state.nextLap(game.ticks());
-			if (lap >= lapCount) {
+			if (onPlayerFinishLap(player, state)) {
 				return true;
 			}
 		}
@@ -190,6 +175,23 @@ public class RaceTrackBehavior implements IGameBehavior {
 		state.updateBar(player, title, path.length());
 
 		return false;
+	}
+
+	private boolean onPlayerFinishLap(ServerPlayer player, PlayerState state) {
+		FireworkPalette.DYE_COLORS.spawn(player.blockPosition(), player.level);
+
+		long lapTime = game.ticks() - state.lapStartTime;
+		game.getAllPlayers().sendMessage(new TextComponent("")
+				.append(new TextComponent("\u2714 ").withStyle(ChatFormatting.GREEN))
+				.append(player.getDisplayName())
+				.append(" finished lap #" + (state.lap + 1) + " in ")
+				.append(new TextComponent(Util.formatMinutesSeconds(lapTime)).withStyle(ChatFormatting.GOLD))
+				.append("!")
+				.withStyle(ChatFormatting.AQUA)
+		);
+		game.getAllPlayers().playSound(SoundEvents.ARROW_HIT_PLAYER, SoundSource.PLAYERS, 1.0f, 1.0f);
+
+		return state.nextLap(game.ticks()) >= lapCount;
 	}
 
 	private void onPlayerFinish(IGamePhase game, ServerPlayer player, PlayerState state) {
