@@ -105,7 +105,7 @@ public final class GameEndEffectsBehavior implements IGameBehavior {
 		game.getAllPlayers().forEach(players::add);
 
 		for (ServerPlayer player : players) {
-			game.setPlayerRole(player, PlayerRole.PARTICIPANT);
+			game.setPlayerRole(player, null);
 		}
 
 		for (PlayerKey playerKey : statistics.getPlayers()) {

@@ -5,6 +5,7 @@ import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
+import com.lovetropics.minigames.common.core.game.player.PlayerRole;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -47,7 +48,13 @@ public record TurtleRiderBehavior(EntityType<?> entityType, CompoundTag entityTa
 			turtles.put(player.getUUID(), entity);
 		});
 
-		events.listen(GamePlayerEvents.REMOVE, player -> turtles.remove(player.getUUID()));
+		events.listen(GamePlayerEvents.SET_ROLE, (player, role, lastRole) -> {
+			if (lastRole == PlayerRole.PARTICIPANT) {
+				removeTurtle(turtles, player);
+			}
+		});
+
+		events.listen(GamePlayerEvents.REMOVE, player -> removeTurtle(turtles, player));
 
 		events.listen(GamePlayerEvents.TICK, player -> {
 			Entity turtle = turtles.get(player.getUUID());
@@ -59,6 +66,15 @@ public record TurtleRiderBehavior(EntityType<?> entityType, CompoundTag entityTa
 				fixTurtle(turtles, player, turtle);
 			}
 		});
+	}
+
+	private static void removeTurtle(Map<UUID, Entity> turtles, ServerPlayer player) {
+		player.stopRiding();
+
+		Entity turtle = turtles.remove(player.getUUID());
+		if (turtle != null) {
+			turtle.kill();
+		}
 	}
 
 	private void fixTurtle(Map<UUID, Entity> turtles, ServerPlayer player, Entity turtle) {
