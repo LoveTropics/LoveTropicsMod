@@ -24,7 +24,6 @@ public final class GameSidebarRenderer {
 
 	private static final int PADDING = 2;
 	private static final int MARGIN = 1;
-	private static final int TITLE_PADDING = 1;
 
 	@SubscribeEvent
 	public static void renderGameOverlay(RenderGameOverlayEvent event) {

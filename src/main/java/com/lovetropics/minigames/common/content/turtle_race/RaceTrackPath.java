@@ -135,16 +135,16 @@ public class RaceTrackPath {
 			}
 
 			Point startPoint = segments.get(0).start();
+			addPoint(startPoint.x(), startPoint.z());
 
-			Segment[] loopedSegments = segments.toArray(new Segment[segments.size() + 1]);
-			loopedSegments[loopedSegments.length - 1] = createSegment(lastPoint, startPoint);
+			Segment[] segments = this.segments.toArray(Segment[]::new);
 
-			float[] positions = new float[loopedSegments.length];
-			for (int i = 0; i < loopedSegments.length; i++) {
-				positions[i] = loopedSegments[i].start().position();
+			float[] positions = new float[segments.length];
+			for (int i = 0; i < segments.length; i++) {
+				positions[i] = segments[i].start().position();
 			}
 
-			return new RaceTrackPath(loopedSegments, positions, length);
+			return new RaceTrackPath(segments, positions, length);
 		}
 	}
 }
