@@ -52,11 +52,15 @@ public class RaceTrackBehavior implements IGameBehavior {
 			Codec.LONG.optionalFieldOf("start_time", 0L).forGetter(b -> b.startTime)
 	).apply(i, RaceTrackBehavior::new));
 
+	private static final long NO_FINISH_TIME = -1;
+
 	private static final int SIDEBAR_UPDATE_INTERVAL = SharedConstants.TICKS_PER_SECOND;
 	private static final int MAX_LEADERBOARD_SIZE = 5;
 
 	private static final int STUCK_WARNING_THRESHOLD = SharedConstants.TICKS_PER_SECOND * 5;
 	private static final int STUCK_WARNING_REPEAT_INTERVAL = SharedConstants.TICKS_PER_SECOND / 2;
+
+	private static final int GAME_FINISH_SECONDS = 30;
 
 	private static final Component UNKNOWN_PLAYER_NAME = new TextComponent("Unknown");
 
@@ -66,6 +70,7 @@ public class RaceTrackBehavior implements IGameBehavior {
 	private final int winnerCount;
 	// TODO: Should be a phase / other kind of trigger
 	private final long startTime;
+	private long finishTime = NO_FINISH_TIME;
 
 	private final Map<UUID, PlayerState> states = new Object2ObjectOpenHashMap<>();
 	private final List<FinishEntry> finishedPlayers = new ArrayList<>();
@@ -126,6 +131,10 @@ public class RaceTrackBehavior implements IGameBehavior {
 			if (game.ticks() % SIDEBAR_UPDATE_INTERVAL == 0) {
 				sidebar.set(buildSidebar());
 			}
+
+			if (finishTime != NO_FINISH_TIME && game.ticks() >= finishTime) {
+				triggerWin(game);
+			}
 		});
 	}
 
@@ -155,6 +164,8 @@ public class RaceTrackBehavior implements IGameBehavior {
 		for (ServerPlayer player : game.getParticipants()) {
 			clearPlayerState(player);
 		}
+
+		finishTime = NO_FINISH_TIME;
 	}
 
 	private boolean onPlayerMove(ServerPlayer player, PlayerState state, Vec3 position, Vec3 lastPosition) {
@@ -207,9 +218,15 @@ public class RaceTrackBehavior implements IGameBehavior {
 		states.remove(player.getUUID(), state);
 		state.close();
 
-		// TODO: Start a countdown instead of immediate end
-		if (game.getParticipants().isEmpty() || finishedPlayers.size() >= winnerCount) {
+		if (game.getParticipants().isEmpty()) {
 			triggerWin(game);
+		} else if (finishedPlayers.size() >= winnerCount) {
+			finishTime = game.ticks() + GAME_FINISH_SECONDS * SharedConstants.TICKS_PER_SECOND;
+			game.getAllPlayers().sendMessage(new TextComponent("The game will finish in ")
+					.append(new TextComponent(String.valueOf(GAME_FINISH_SECONDS)).withStyle(ChatFormatting.GOLD))
+					.append(" seconds!")
+					.withStyle(ChatFormatting.AQUA)
+			);
 		}
 	}
 
