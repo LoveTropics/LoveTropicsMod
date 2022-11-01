@@ -180,7 +180,7 @@ public class SurviveTheTideWeatherControlBehavior implements IGameBehavior {
 
         broadcastNotification(game,
                 new TextComponent("A Heat Wave is passing!\n")
-                        .append("Stay inside, or make sure to equip")
+                        .append("Stay inside, or make sure to equip ")
                         .append(sunscreenName()),
                 createNotificationStyle(SurviveTheTide.SUPER_SUNSCREEN)
         );
