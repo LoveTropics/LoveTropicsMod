@@ -58,17 +58,15 @@ public class ConfigLT {
         public final ConfigValue<String> minigamePlayerUpdateEndpoint;
         public final ConfigValue<String> actionResolvedEndpoint;
         public final ConfigValue<String> pendingActionsEndpoint;
-        public final IntValue port;
         public final ConfigValue<String> authToken;
         public final ConfigValue<String> webSocketUrl;
-        public final IntValue webSocketPort;
 
         private CategoryTelemetry() {
             COMMON_BUILDER.comment("Used for the LoveTropics charity drive.").push("techStack");
 
             baseUrl = COMMON_BUILDER
                     .comment("Base URL to use ")
-                    .define("baseUrl", "http://localhost");
+                    .define("baseUrl", "https://localhost:443");
             worldLoadEndpoint = COMMON_BUILDER
                     .comment("Endpoint used when the server starts to reset minigame state")
                     .define("worldLoadEndpoint", "minigame/worldloaded");
@@ -90,18 +88,12 @@ public class ConfigLT {
             actionResolvedEndpoint = COMMON_BUILDER
                     .comment("Endpoint used to notify the backend an action was received and resolved")
                     .define("actionResolvedEndpoint", "minigame/actionresolved");
-            port = COMMON_BUILDER
-                    .comment("Port number to use when POSTing data")
-                    .defineInRange("port", 0, 0, 99999);
             authToken = COMMON_BUILDER
                     .comment("Auth token used to authenticate with the tech stack")
                     .define("authToken", "");
-            webSocketPort = COMMON_BUILDER
-                    .comment("Port number for the tech stack web socket")
-                    .defineInRange("webSocketPort", 0, 0, 99999);
             webSocketUrl = COMMON_BUILDER
                     .comment("URL the web socket is running on")
-                    .define("webSocketUrl", "localhost");
+                    .define("webSocketUrl", "wss://localhost:443/ws");
             pendingActionsEndpoint = COMMON_BUILDER
                     .comment("URL to receive any care/sabotage packages or chat events that were triggered but never acknowledged by the mod (maybe due to a premature shutdown)")
                     .define("pendingActionsEndpoint", "minigame/pendingactions");

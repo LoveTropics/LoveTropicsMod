@@ -53,9 +53,7 @@ public final class Telemetry {
 			ConfigLT.CategoryTelemetry telemetry = ConfigLT.TELEMETRY;
 			if (telemetry.isEnabled()) {
 				try {
-					int configPort = telemetry.webSocketPort.get();
-					String port = configPort == 0 ? ":443" : ":" + configPort;
-					return new URI("wss://" + telemetry.webSocketUrl.get() + port + "/ws");
+					return new URI(telemetry.webSocketUrl.get());
 				} catch (URISyntaxException e) {
 					LOGGER.warn("Malformed URI", e);
 				}

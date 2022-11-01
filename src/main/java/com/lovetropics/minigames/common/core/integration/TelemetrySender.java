@@ -24,15 +24,7 @@ public interface TelemetrySender {
 
 	static TelemetrySender open() {
 		ConfigLT.CategoryTelemetry telemetry = ConfigLT.TELEMETRY;
-		return new Http(() -> {
-			StringBuilder url = new StringBuilder();
-			url.append(telemetry.baseUrl.get());
-			if (telemetry.port.get() > 0) {
-				url.append(':');
-				url.append(telemetry.port.get());
-			}
-			return url.toString();
-		}, telemetry.authToken::get);
+		return new Http(telemetry.baseUrl::get, telemetry.authToken::get);
 	}
 
 	static TelemetrySender openPoll() {
