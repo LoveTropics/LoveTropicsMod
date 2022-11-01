@@ -11,6 +11,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
+import net.minecraft.util.random.SimpleWeightedRandomList;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.ChestBlock;
@@ -20,22 +21,24 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraftforge.registries.ForgeRegistries;
 
+import java.util.Random;
+
 public class FillChestsByMarkerBehavior extends ChunkGeneratingBehavior {
 	public static final Codec<FillChestsByMarkerBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
 			ForgeRegistries.BLOCKS.getCodec().fieldOf("marker").forGetter(c -> c.marker),
-			ResourceLocation.CODEC.fieldOf("loot_table").forGetter(c -> c.lootTable),
+			SimpleWeightedRandomList.wrappedCodec(ResourceLocation.CODEC).fieldOf("loot_tables").forGetter(c -> c.lootTables),
 			Codec.FLOAT.optionalFieldOf("percentage", 1.0f).forGetter(c -> c.percentage),
 			Codec.INT.optionalFieldOf("max_per_chunk", Integer.MAX_VALUE).forGetter(c -> c.maxPerChunk)
 	).apply(i, FillChestsByMarkerBehavior::new));
 
 	private final Block marker;
-	private final ResourceLocation lootTable;
+	private final SimpleWeightedRandomList<ResourceLocation> lootTables;
 	private final float percentage;
 	private final int maxPerChunk;
 
-	public FillChestsByMarkerBehavior(Block marker, ResourceLocation lootTable, float percentage, int maxPerChunk) {
+	public FillChestsByMarkerBehavior(Block marker, SimpleWeightedRandomList<ResourceLocation> lootTables, float percentage, int maxPerChunk) {
 		this.marker = marker;
-		this.lootTable = lootTable;
+		this.lootTables = lootTables;
 		this.percentage = percentage;
 		this.maxPerChunk = maxPerChunk;
 	}
@@ -47,7 +50,8 @@ public class FillChestsByMarkerBehavior extends ChunkGeneratingBehavior {
 			return;
 		}
 
-		ObjectLists.shuffle(chestPositions, world.random);
+		Random random = world.random;
+		ObjectLists.shuffle(chestPositions, random);
 
 		if (percentage < 1.0f) {
 			int index = Mth.ceil(chestPositions.size() * percentage);
@@ -62,7 +66,9 @@ public class FillChestsByMarkerBehavior extends ChunkGeneratingBehavior {
 			BlockPos belowPos = pos.below();
 			BlockState belowState = world.getBlockState(belowPos);
 			Direction facing = belowState.getValue(BlockStateProperties.HORIZONTAL_FACING);
-			setChest(world, belowPos, lootTable, facing);
+			lootTables.getRandomValue(random).ifPresent(lootTable -> {
+				setChest(world, belowPos, lootTable, facing);
+			});
 
 			world.setBlockAndUpdate(pos, Blocks.AIR.defaultBlockState());
 		}
