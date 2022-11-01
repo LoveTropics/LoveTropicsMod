@@ -111,6 +111,7 @@ public class GameBehaviorTypes {
 	public static final GameBehaviorEntry<PlaySoundAction> PLAY_SOUND;
 	public static final GameBehaviorEntry<SpawnParticlesAroundPlayerAction> SPAWN_PARTICLES_AROUND_PLAYER;
 	public static final GameBehaviorEntry<NotificationToastAction> NOTIFICATION_TOAST;
+	public static final GameBehaviorEntry<TransformPlayerTornadoAction> TRANSFORM_PLAYER_TORNADO;
 
 	public static final GameBehaviorEntry<SetupTelemetryBehavior> SETUP_TELEMETRY;
 	public static final GameBehaviorEntry<AssignPlayerRolesBehavior> ASSIGN_PLAYER_ROLES;
@@ -199,6 +200,7 @@ public class GameBehaviorTypes {
 		PLAY_SOUND = register("play_sound", PlaySoundAction.CODEC);
 		SPAWN_PARTICLES_AROUND_PLAYER = register("spawn_particles_around_player", SpawnParticlesAroundPlayerAction.CODEC);
 		NOTIFICATION_TOAST = register("notification_toast", NotificationToastAction.CODEC);
+		TRANSFORM_PLAYER_TORNADO = register("transform_player_tornado", TransformPlayerTornadoAction.CODEC);
 
 		SETUP_TELEMETRY = register("setup_telemetry", SetupTelemetryBehavior.CODEC);
 		ASSIGN_PLAYER_ROLES = register("assign_player_roles", AssignPlayerRolesBehavior.CODEC);
