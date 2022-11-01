@@ -20,22 +20,22 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraftforge.registries.ForgeRegistries;
 
-import javax.annotation.Nullable;
-import java.util.Map;
-
 public class FillChestsByMarkerBehavior extends ChunkGeneratingBehavior {
 	public static final Codec<FillChestsByMarkerBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
-			Codec.unboundedMap(ForgeRegistries.BLOCKS.getCodec(), ResourceLocation.CODEC).fieldOf("loot_tables").forGetter(c -> c.lootTableByMarker),
+			ForgeRegistries.BLOCKS.getCodec().fieldOf("marker").forGetter(c -> c.marker),
+			ResourceLocation.CODEC.fieldOf("loot_table").forGetter(c -> c.lootTable),
 			Codec.FLOAT.optionalFieldOf("percentage", 1.0f).forGetter(c -> c.percentage),
 			Codec.INT.optionalFieldOf("max_per_chunk", Integer.MAX_VALUE).forGetter(c -> c.maxPerChunk)
 	).apply(i, FillChestsByMarkerBehavior::new));
 
-	private final Map<Block, ResourceLocation> lootTableByMarker;
+	private final Block marker;
+	private final ResourceLocation lootTable;
 	private final float percentage;
 	private final int maxPerChunk;
 
-	public FillChestsByMarkerBehavior(Map<Block, ResourceLocation> lootTableByMarker, float percentage, int maxPerChunk) {
-		this.lootTableByMarker = lootTableByMarker;
+	public FillChestsByMarkerBehavior(Block marker, ResourceLocation lootTable, float percentage, int maxPerChunk) {
+		this.marker = marker;
+		this.lootTable = lootTable;
 		this.percentage = percentage;
 		this.maxPerChunk = maxPerChunk;
 	}
@@ -60,15 +60,11 @@ public class FillChestsByMarkerBehavior extends ChunkGeneratingBehavior {
 
 		for (BlockPos pos : chestPositions) {
 			BlockPos belowPos = pos.below();
-
 			BlockState belowState = world.getBlockState(belowPos);
-			ResourceLocation lootTable = getLootTableFor(belowState.getBlock());
-			if (lootTable != null) {
-				Direction facing = belowState.getValue(BlockStateProperties.HORIZONTAL_FACING);
-				setChest(world, belowPos, lootTable, facing);
+			Direction facing = belowState.getValue(BlockStateProperties.HORIZONTAL_FACING);
+			setChest(world, belowPos, lootTable, facing);
 
-				world.setBlockAndUpdate(pos, Blocks.AIR.defaultBlockState());
-			}
+			world.setBlockAndUpdate(pos, Blocks.AIR.defaultBlockState());
 		}
 	}
 
@@ -80,11 +76,13 @@ public class FillChestsByMarkerBehavior extends ChunkGeneratingBehavior {
 		}
 	}
 
-	private static ObjectList<BlockPos> collectChestPositions(LevelChunk chunk) {
+	private ObjectList<BlockPos> collectChestPositions(LevelChunk chunk) {
 		ObjectList<BlockPos> chestPositions = new ObjectArrayList<>();
 		for (BlockPos pos : chunk.getBlockEntitiesPos()) {
 			if (chunk.getBlockEntity(pos) instanceof ChestBlockEntity) {
-				chestPositions.add(pos);
+				if (chunk.getBlockState(pos.below()).is(marker)) {
+					chestPositions.add(pos);
+				}
 			}
 		}
 		return chestPositions;
@@ -95,10 +93,5 @@ public class FillChestsByMarkerBehavior extends ChunkGeneratingBehavior {
 		if (world.getBlockEntity(pos) instanceof ChestBlockEntity chest) {
 			chest.setLootTable(lootTable, world.random.nextLong());
 		}
-	}
-
-	@Nullable
-	private ResourceLocation getLootTableFor(Block block) {
-		return this.lootTableByMarker.get(block);
 	}
 }
