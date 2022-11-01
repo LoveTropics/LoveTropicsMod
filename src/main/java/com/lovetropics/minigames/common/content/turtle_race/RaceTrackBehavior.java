@@ -230,19 +230,22 @@ public class RaceTrackBehavior implements IGameBehavior {
 		}
 	}
 
-	private String[] buildSidebar() {
+	private Component[] buildSidebar() {
 		class Leaderboard {
-			private final List<String> lines = new ArrayList<>(MAX_LEADERBOARD_SIZE);
+			private final List<Component> lines = new ArrayList<>(MAX_LEADERBOARD_SIZE);
 
-			public void add(String player, String detail) {
+			public void add(String player, Component detail) {
 				if (lines.size() < MAX_LEADERBOARD_SIZE) {
-					String index = (lines.size() + 1) + ". ";
-					lines.add(ChatFormatting.GRAY + index + ChatFormatting.GOLD + player + " " + detail);
+					lines.add(new TextComponent((lines.size() + 1) + ". ").withStyle(ChatFormatting.GRAY)
+							.append(new TextComponent(player).withStyle(ChatFormatting.GOLD))
+							.append(" ")
+							.append(detail)
+					);
 				}
 			}
 
-			public String[] build() {
-				return lines.toArray(String[]::new);
+			public Component[] build() {
+				return lines.toArray(Component[]::new);
 			}
 		}
 
@@ -250,7 +253,7 @@ public class RaceTrackBehavior implements IGameBehavior {
 
 		for (FinishEntry entry : finishedPlayers) {
 			long seconds = entry.time() / SharedConstants.TICKS_PER_SECOND;
-			leaderboard.add(entry.name(), ChatFormatting.GREEN + Util.formatMinutesSeconds(seconds) + " \u2714");
+			leaderboard.add(entry.name(), new TextComponent(Util.formatMinutesSeconds(seconds) + " \u2714").withStyle(ChatFormatting.GREEN));
 		}
 
 		states.entrySet().stream()
@@ -260,7 +263,7 @@ public class RaceTrackBehavior implements IGameBehavior {
 					PlayerState state = entry.getValue();
 					if (player != null) {
 						int percent = Math.round(state.trackedPosition / path.length() * 100.0f);
-						leaderboard.add(player.getGameProfile().getName(), ChatFormatting.GRAY + "(Lap #" + (state.lap + 1) + "; " + percent + "%)");
+						leaderboard.add(player.getGameProfile().getName(), new TextComponent("(Lap #" + (state.lap + 1) + "; " + percent + "%)").withStyle(ChatFormatting.GRAY));
 					}
 				});
 

@@ -145,17 +145,18 @@ public final class TrashCollectionBehavior implements IGameBehavior {
 		placement.sendTo(players, 5);
 	}
 
-	private String[] renderSidebar(IGamePhase game) {
-		List<String> sidebar = new ArrayList<>(10);
-		sidebar.add(ChatFormatting.GREEN + "Pick up trash! " + ChatFormatting.GRAY + collectedTrash + " collected");
+	private Component[] renderSidebar(IGamePhase game) {
+		List<Component> sidebar = new ArrayList<>(10);
+		sidebar.add(new TextComponent("Pick up trash! ").withStyle(ChatFormatting.GREEN)
+				.append(new TextComponent(collectedTrash + " collected").withStyle(ChatFormatting.GRAY)));
 
 		PlayerPlacement.Score<Integer> placement = PlayerPlacement.fromMaxScore(game, StatisticKey.TRASH_COLLECTED);
 
-		sidebar.add("");
-		sidebar.add(ChatFormatting.GREEN + "MVPs:");
+		sidebar.add(TextComponent.EMPTY);
+		sidebar.add(new TextComponent("MVPs:").withStyle(ChatFormatting.GREEN));
 
 		placement.addToSidebar(sidebar, 5);
 
-		return sidebar.toArray(new String[0]);
+		return sidebar.toArray(new Component[0]);
 	}
 }

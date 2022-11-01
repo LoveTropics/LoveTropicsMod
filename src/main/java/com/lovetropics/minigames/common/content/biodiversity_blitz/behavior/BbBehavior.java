@@ -142,10 +142,10 @@ public final class BbBehavior implements IGameBehavior {
 		});
 	}
 
-	private String[] collectScoreboard(IGamePhase game) {
-		List<String> sidebar = new ArrayList<>(10);
-		sidebar.add("" + ChatFormatting.AQUA +  "Player " + ChatFormatting.GOLD + "points (+ per drop)");
-		sidebar.add("");
+	private Component[] collectScoreboard(IGamePhase game) {
+		List<Component> sidebar = new ArrayList<>(10);
+		sidebar.add(new TextComponent("Player ").withStyle(ChatFormatting.AQUA).append(new TextComponent("points (+ per drop)").withStyle(ChatFormatting.GOLD)));
+		sidebar.add(TextComponent.EMPTY);
 
 		List<ServerPlayer> list = new ArrayList<>();
 		game.getParticipants().forEach(list::add);
@@ -163,10 +163,11 @@ public final class BbBehavior implements IGameBehavior {
 				increment = plot.nextCurrencyIncrement;
 			}
 
-			sidebar.add("" + ChatFormatting.AQUA + player.getGameProfile().getName() + ": " + ChatFormatting.GOLD + points + " (+ " + increment + ")");
+			sidebar.add(new TextComponent(player.getGameProfile().getName() + ": ").withStyle(ChatFormatting.AQUA)
+					.append(new TextComponent(points + " (+ " + increment + ")").withStyle(ChatFormatting.GOLD)));
 		}
 
-		return sidebar.toArray(new String[0]);
+		return sidebar.toArray(new Component[0]);
 	}
 
 	private InteractionResult onUseBlock(ServerPlayer player, ServerLevel world, BlockPos blockPos, InteractionHand hand, BlockHitResult blockRayTraceResult) {

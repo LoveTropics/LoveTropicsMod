@@ -2,6 +2,7 @@ package com.lovetropics.minigames.common.core.game.state.statistics;
 
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.player.PlayerSet;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.TextComponent;
@@ -71,7 +72,7 @@ public interface PlayerPlacement {
 
 	void sendTo(PlayerSet players, int length);
 
-	void addToSidebar(List<String> sidebar, int length);
+	void addToSidebar(List<Component> sidebar, int length);
 
 	final class Order implements PlayerPlacement {
 		private final IGamePhase game;
@@ -116,11 +117,12 @@ public interface PlayerPlacement {
 		}
 
 		@Override
-		public void addToSidebar(List<String> sidebar, int length) {
+		public void addToSidebar(List<Component> sidebar, int length) {
 			length = Math.min(order.size(), length);
 			for (int i = 0; i < length; i++) {
 				Placed<PlayerKey> entry = order.get(i);
-				sidebar.add(" - " + ChatFormatting.AQUA + entry.value().name());
+				Component name = new TextComponent(entry.value().name()).withStyle(ChatFormatting.AQUA);
+				sidebar.add(new TextComponent(" - ").append(name));
 			}
 		}
 	}
@@ -171,11 +173,13 @@ public interface PlayerPlacement {
 		}
 
 		@Override
-		public void addToSidebar(List<String> sidebar, int length) {
+		public void addToSidebar(List<Component> sidebar, int length) {
 			length = Math.min(entries.size(), length);
 			for (int i = 0; i < length; i++) {
 				Entry<T> entry = entries.get(i);
-				sidebar.add(" - " + ChatFormatting.AQUA + entry.player.name() + ": " + ChatFormatting.GOLD + scoreKey.display(entry.score));
+				Component name = new TextComponent(entry.player.name() + ": ").withStyle(ChatFormatting.AQUA);
+				Component score = new TextComponent(scoreKey.display(entry.score)).withStyle(ChatFormatting.GOLD);
+				sidebar.add(new TextComponent(" - ").append(name).append(score));
 			}
 		}
 

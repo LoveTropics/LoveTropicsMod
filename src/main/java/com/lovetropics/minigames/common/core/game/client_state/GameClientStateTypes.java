@@ -6,6 +6,7 @@ import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.common.core.game.client_state.instance.HealthTagClientState;
 import com.lovetropics.minigames.common.core.game.client_state.instance.ReplaceTexturesClientState;
 import com.lovetropics.minigames.common.core.game.client_state.instance.ResourcePackClientState;
+import com.lovetropics.minigames.common.core.game.client_state.instance.SidebarClientState;
 import com.lovetropics.minigames.common.core.game.client_state.instance.SpectatingClientState;
 import com.lovetropics.minigames.common.core.game.client_state.instance.TimeInterpolationClientState;
 import com.lovetropics.minigames.common.util.registry.GameClientTweakEntry;
@@ -34,6 +35,7 @@ public final class GameClientStateTypes {
 	public static final GameClientTweakEntry<SpectatingClientState> SPECTATING = register("spectating", SpectatingClientState.CODEC);
 	public static final GameClientTweakEntry<ResourcePackClientState> RESOURCE_PACK = register("resource_pack", ResourcePackClientState.CODEC);
 	public static final GameClientTweakEntry<HealthTagClientState> HEALTH_TAG = register("health_tag", HealthTagClientState.CODEC);
+	public static final GameClientTweakEntry<SidebarClientState> SIDEBAR = register("sidebar", SidebarClientState.CODEC);
 
 	public static <T extends GameClientState> GameClientTweakEntry<T> register(final String name, final Codec<T> codec) {
 		return REGISTRATE.object(name)

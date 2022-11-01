@@ -16,6 +16,8 @@ import com.lovetropics.minigames.common.core.game.weather.WeatherEventType;
 import com.mojang.serialization.Codec;
 import net.minecraft.ChatFormatting;
 import net.minecraft.SharedConstants;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextComponent;
 
 // TODO: make it generic and data-driven
 public class SttSidebarBehavior implements IGameBehavior {
@@ -58,44 +60,44 @@ public class SttSidebarBehavior implements IGameBehavior {
 		});
 	}
 
-	private String[] buildSidebar() {
-		return new String[] {
-				"Weather: " + weatherName(),
+	private Component[] buildSidebar() {
+		return new Component[] {
+				new TextComponent("Weather: ").append(weatherName()),
 				phaseState(),
-				"",
+				TextComponent.EMPTY,
 				playersState()
 		};
 	}
 
-	private String weatherName() {
+	private Component weatherName() {
 		WeatherEventType type = weather.getEventType();
 		if (type == null) {
-			return "Clear";
+			return new TextComponent("Clear");
 		}
 
 		return switch (type) {
-			case HEAVY_RAIN -> ChatFormatting.BLUE + "Heavy Rain";
-			case ACID_RAIN -> ChatFormatting.GREEN + "Acid Rain";
-			case HAIL -> ChatFormatting.BLUE + "Hail";
-			case HEATWAVE -> ChatFormatting.YELLOW + "Heat Wave";
-			case SANDSTORM -> ChatFormatting.YELLOW + "Sandstorm";
-			case SNOWSTORM -> ChatFormatting.WHITE + "Snowstorm";
+			case HEAVY_RAIN -> new TextComponent("Heavy Rain").withStyle(ChatFormatting.BLUE);
+			case ACID_RAIN -> new TextComponent("Acid Rain").withStyle(ChatFormatting.GREEN);
+			case HAIL -> new TextComponent("Hail").withStyle(ChatFormatting.BLUE);
+			case HEATWAVE -> new TextComponent("Heat Wave").withStyle(ChatFormatting.YELLOW);
+			case SANDSTORM -> new TextComponent("Sandstorm").withStyle(ChatFormatting.YELLOW);
+			case SNOWSTORM -> new TextComponent("Snowstorm").withStyle(ChatFormatting.WHITE);
 		};
 	}
 
-	private String phaseState() {
+	private Component phaseState() {
 		GamePhase phase = phases.get();
 		return switch (phase.key()) {
-			case "phase0", "phase1" -> ChatFormatting.YELLOW + "PVP disabled";
-			case "phase2", "phase3" -> ChatFormatting.RED + "The tide is rising!";
-			case "phase4" -> ChatFormatting.AQUA + "Icebergs are forming!" ;
-			case "phase5" -> ChatFormatting.RED + "Explosive border closing!";
-			default -> "";
+			case "phase0", "phase1" -> new TextComponent("PVP disabled").withStyle(ChatFormatting.YELLOW);
+			case "phase2", "phase3" -> new TextComponent("The tide is rising!").withStyle(ChatFormatting.RED);
+			case "phase4" -> new TextComponent("Icebergs are forming!" ).withStyle(ChatFormatting.AQUA);
+			case "phase5" -> new TextComponent("Explosive border closing!").withStyle(ChatFormatting.RED);
+			default -> TextComponent.EMPTY;
 		};
 	}
 
-	private String playersState() {
+	private Component playersState() {
 		int playerCount = game.getParticipants().size();
-		return ChatFormatting.GRAY.toString() + playerCount + "/" + initialPlayerCount + " players";
+		return new TextComponent(playerCount + "/" + initialPlayerCount + " players").withStyle(ChatFormatting.GRAY);
 	}
 }
