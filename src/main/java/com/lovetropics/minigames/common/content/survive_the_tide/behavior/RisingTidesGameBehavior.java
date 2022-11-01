@@ -52,7 +52,7 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 			Codec.STRING.optionalFieldOf("iceberg_lines_region", "iceberg_lines").forGetter(c -> c.icebergLinesKey),
 			Codec.unboundedMap(GamePhase.CODEC, Codec.INT).fieldOf("water_levels").forGetter(c -> c.phaseToTideHeight),
 			Codec.STRING.listOf().fieldOf("phases_icebergs_grow").forGetter(c -> new ArrayList<>(c.phasesIcebergsGrow)),
-			Codec.INT.fieldOf("iceberg_growth_tick_rate").forGetter(c -> c.icebergGrowthTickRate)
+			Codec.INT.fieldOf("iceberg_growth_steps").forGetter(c -> c.maxIcebergGrowthSteps)
 	).apply(i, RisingTidesGameBehavior::new));
 
 	private static final RegistryObject<Block> WATER_BARRIER = RegistryObject.create(new ResourceLocation("ltextras", "water_barrier"), ForgeRegistries.BLOCKS);
@@ -67,12 +67,13 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 	private final String icebergLinesKey;
 	private final Map<GamePhase, Integer> phaseToTideHeight;
 	private final Set<String> phasesIcebergsGrow;
-	private final int icebergGrowthTickRate;
+	private final int maxIcebergGrowthSteps;
 	private int waterLevel;
 	private int maxWaterLevel;
 
 	private BlockBox tideArea;
 	private final List<IcebergLine> icebergLines = new ArrayList<>();
+	private int icebergGrowthSteps;
 
 	private ChunkPos minTideChunk;
 	private ChunkPos maxTideChunk;
@@ -84,12 +85,12 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 	private GamePhaseState phases;
 	private GamePhase lastPhase;
 
-	public RisingTidesGameBehavior(String tideAreaKey, String icebergLinesKey, final Map<GamePhase, Integer> phaseToTideHeight, final List<String> phasesIcebergsGrow, final int icebergGrowthTickRate) {
+	public RisingTidesGameBehavior(String tideAreaKey, String icebergLinesKey, final Map<GamePhase, Integer> phaseToTideHeight, final List<String> phasesIcebergsGrow, final int maxIcebergGrowthSteps) {
 		this.tideAreaKey = tideAreaKey;
 		this.icebergLinesKey = icebergLinesKey;
 		this.phaseToTideHeight = phaseToTideHeight;
 		this.phasesIcebergsGrow = new ObjectOpenHashSet<>(phasesIcebergsGrow);
-		this.icebergGrowthTickRate = icebergGrowthTickRate;
+		this.maxIcebergGrowthSteps = maxIcebergGrowthSteps;
 	}
 
 	@Override
@@ -154,8 +155,12 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 
 		tickWaterLevel(game, currentPhase, phases.progress(), prevWaterLevel);
 
-		if (phasesIcebergsGrow.contains(currentPhase.key()) && game.ticks() % icebergGrowthTickRate == 0) {
-			growIcebergs(game.getWorld());
+		if (phasesIcebergsGrow.contains(currentPhase.key())) {
+			int targetSteps = Math.round(phases.progress() * maxIcebergGrowthSteps);
+			if (icebergGrowthSteps < targetSteps) {
+				growIcebergs(game.getWorld());
+				icebergGrowthSteps++;
+			}
 		}
 
 		processRisingTideQueue(game);
