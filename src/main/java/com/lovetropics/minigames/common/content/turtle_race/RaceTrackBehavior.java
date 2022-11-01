@@ -185,12 +185,12 @@ public class RaceTrackBehavior implements IGameBehavior {
 
 	private void onPlayerFinish(IGamePhase game, ServerPlayer player, PlayerState state) {
 		long time = game.ticks() - startTime;
-		int placement = finishedPlayers.size();
+		finishedPlayers.add(new FinishEntry(player.getGameProfile().getName(), PlayerKey.from(player), time));
+
 		game.getStatistics().forPlayer(player)
-				.set(StatisticKey.PLACEMENT, placement)
+				.set(StatisticKey.PLACEMENT, finishedPlayers.size())
 				.set(StatisticKey.TOTAL_TIME, (int) time);
 
-		finishedPlayers.add(new FinishEntry(player.getGameProfile().getName(), PlayerKey.from(player), time));
 		game.setPlayerRole(player, PlayerRole.SPECTATOR);
 
 		states.remove(player.getUUID(), state);
