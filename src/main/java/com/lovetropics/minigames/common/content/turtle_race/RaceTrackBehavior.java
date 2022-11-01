@@ -196,7 +196,7 @@ public class RaceTrackBehavior implements IGameBehavior {
 				.append(new TextComponent("\u2714 ").withStyle(ChatFormatting.GREEN))
 				.append(player.getDisplayName())
 				.append(" finished lap #" + (state.lap + 1) + " in ")
-				.append(new TextComponent(Util.formatMinutesSeconds(lapTime)).withStyle(ChatFormatting.GOLD))
+				.append(new TextComponent(Util.formatMinutesSeconds(lapTime / SharedConstants.TICKS_PER_SECOND)).withStyle(ChatFormatting.GOLD))
 				.append("!")
 				.withStyle(ChatFormatting.AQUA)
 		);
