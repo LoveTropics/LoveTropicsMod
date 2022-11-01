@@ -100,6 +100,7 @@ public final class PlayerSnapshot {
 		player.setGameMode(this.gameType);
 
 		DimensionUtils.teleportPlayerNoPortal(player, this.dimension, this.pos);
+		player.onUpdateAbilities();
 
 		PlayerDisguise.get(player).ifPresent(disguise -> disguise.setDisguise(this.disguise));
 
