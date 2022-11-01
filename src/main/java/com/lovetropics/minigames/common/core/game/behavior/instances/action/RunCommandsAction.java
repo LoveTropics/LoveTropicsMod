@@ -1,5 +1,6 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances.action;
 
+import com.lovetropics.lib.codec.MoreCodecs;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
@@ -35,8 +36,8 @@ public record RunCommandsAction(List<String> globalCommands, List<String> player
     );
 
     public static final Codec<RunCommandsAction> CODEC = RecordCodecBuilder.create(i -> i.group(
-            COMMAND_CODEC.listOf().optionalFieldOf("global", List.of()).forGetter(RunCommandsAction::globalCommands),
-            COMMAND_CODEC.listOf().optionalFieldOf("player", List.of()).forGetter(RunCommandsAction::playerCommands)
+            MoreCodecs.strictOptionalFieldOf(MoreCodecs.listOrUnit(COMMAND_CODEC), "global", List.of()).forGetter(RunCommandsAction::globalCommands),
+            MoreCodecs.strictOptionalFieldOf(MoreCodecs.listOrUnit(COMMAND_CODEC), "player", List.of()).forGetter(RunCommandsAction::playerCommands)
     ).apply(i, RunCommandsAction::new));
 
     @Override
