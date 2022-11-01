@@ -160,7 +160,8 @@ public class RaceTrackBehavior implements IGameBehavior {
 	}
 
 	private boolean onPlayerMove(ServerPlayer player, PlayerState state, Vec3 position, Vec3 lastPosition) {
-		if (state.trackedPosition >= 0.9f && finishBox.clip(lastPosition, position).isPresent()) {
+		// TODO: Not a great way to detect this
+		if (state.trackedPosition >= 0.9f * path.length() && finishBox.clip(lastPosition, position).isPresent()) {
 			player.playSound(SoundEvents.ARROW_HIT_PLAYER, 1.0f, 1.0f);
 			FireworkPalette.DYE_COLORS.spawn(player.blockPosition(), player.level);
 
