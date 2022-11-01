@@ -152,9 +152,7 @@ public class RaceTrackBehavior implements IGameBehavior {
 
 		game.invoker(GameLogicEvents.WIN_TRIGGERED).onWinTriggered(winnerName);
 
-		// TODO: Teleport winners to podium
-		for (ServerPlayer player : Lists.newArrayList(game.getParticipants())) {
-			game.setPlayerRole(player, PlayerRole.SPECTATOR);
+		for (ServerPlayer player : game.getParticipants()) {
 			clearPlayerState(player);
 		}
 	}
