@@ -287,6 +287,7 @@ public class RaceTrackBehavior implements IGameBehavior {
 
 		private PlayerState(Vec3 position, long time) {
 			tracker = new Tracker(position, time);
+			lastMovedTime = time;
 			lapStartTime = time;
 		}
 
