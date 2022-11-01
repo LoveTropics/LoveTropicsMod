@@ -26,6 +26,9 @@ import net.minecraft.SharedConstants;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.protocol.game.ClientboundSetSubtitleTextPacket;
+import net.minecraft.network.protocol.game.ClientboundSetTitleTextPacket;
+import net.minecraft.network.protocol.game.ClientboundSetTitlesAnimationPacket;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.BossEvent;
@@ -51,6 +54,9 @@ public class RaceTrackBehavior implements IGameBehavior {
 
 	private static final int SIDEBAR_UPDATE_INTERVAL = SharedConstants.TICKS_PER_SECOND;
 	private static final int MAX_LEADERBOARD_SIZE = 5;
+
+	private static final int STUCK_WARNING_THRESHOLD = SharedConstants.TICKS_PER_SECOND * 5;
+	private static final int STUCK_WARNING_REPEAT_INTERVAL = SharedConstants.TICKS_PER_SECOND / 2;
 
 	private static final Component UNKNOWN_PLAYER_NAME = new TextComponent("Unknown");
 
@@ -99,10 +105,18 @@ public class RaceTrackBehavior implements IGameBehavior {
 				return;
 			}
 
+			long gameTime = game.ticks();
 			Vec3 position = player.position();
-			Vec3 lastPosition = state.tracker.tryUpdate(position, game.ticks());
+			Vec3 lastPosition = state.tracker.tryUpdate(position, gameTime);
 			if (lastPosition != null && onPlayerMove(player, state, position, lastPosition)) {
 				onPlayerFinish(game, player, state);
+			}
+
+			if (gameTime % STUCK_WARNING_REPEAT_INTERVAL == 0) {
+				long stuckTime = gameTime - state.lastMovedTime;
+				if (stuckTime > STUCK_WARNING_THRESHOLD) {
+					showStuckWarning(player);
+				}
 			}
 		});
 
@@ -113,6 +127,12 @@ public class RaceTrackBehavior implements IGameBehavior {
 				sidebar.set(buildSidebar());
 			}
 		});
+	}
+
+	private void showStuckWarning(ServerPlayer player) {
+		player.connection.send(new ClientboundSetTitlesAnimationPacket(0, STUCK_WARNING_REPEAT_INTERVAL * 2, 10));
+		player.connection.send(new ClientboundSetTitleTextPacket(new TextComponent("Warning!").withStyle(ChatFormatting.RED)));
+		player.connection.send(new ClientboundSetSubtitleTextPacket(new TextComponent("You are going the wrong way!").withStyle(ChatFormatting.GOLD)));
 	}
 
 	private void clearPlayerState(ServerPlayer player) {
@@ -142,7 +162,7 @@ public class RaceTrackBehavior implements IGameBehavior {
 	private boolean onPlayerMove(ServerPlayer player, PlayerState state, Vec3 position, Vec3 lastPosition) {
 		if (state.trackedPosition >= 0.9f && finishBox.clip(lastPosition, position).isPresent()) {
 			player.playSound(SoundEvents.ARROW_HIT_PLAYER, 1.0f, 1.0f);
-			FireworkPalette.ISLAND_ROYALE.spawn(player.blockPosition(), player.level);
+			FireworkPalette.DYE_COLORS.spawn(player.blockPosition(), player.level);
 
 			int lap = state.nextLap();
 			if (lap >= lapCount) {
@@ -154,7 +174,7 @@ public class RaceTrackBehavior implements IGameBehavior {
 		double movedDistance = delta.horizontalDistance();
 
 		RaceTrackPath.Point point = path.nextPointAt(player.getBlockX(), player.getBlockZ(), state.trackedPosition, (float) (movedDistance * 2.0f));
-		state.trackPosition(point.position());
+		state.trackPosition(point.position(), game.ticks());
 
 		Component title = new TextComponent("Lap #" + (state.lap + 1) + " of " + lapCount).withStyle(ChatFormatting.AQUA);
 		state.updateBar(player, title, path.length());
@@ -228,6 +248,8 @@ public class RaceTrackBehavior implements IGameBehavior {
 		private int lap;
 		private float trackedPosition;
 
+		private long lastMovedTime;
+
 		private final Tracker tracker;
 
 		private PlayerState(Vec3 position, long time) {
@@ -239,10 +261,11 @@ public class RaceTrackBehavior implements IGameBehavior {
 			return ++lap;
 		}
 
-		public void trackPosition(float position) {
+		public void trackPosition(float position, long time) {
 			if (position > trackedPosition) {
-				trackedPosition = position;
+				lastMovedTime = time;
 			}
+			trackedPosition = position;
 		}
 
 		public void updateBar(ServerPlayer player, Component text, float pathLength) {
