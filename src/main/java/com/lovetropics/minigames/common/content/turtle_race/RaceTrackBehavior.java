@@ -150,7 +150,10 @@ public class RaceTrackBehavior implements IGameBehavior {
 			}
 		}
 
-		RaceTrackPath.Point point = path.closestPointAt(player.getBlockX(), player.getBlockZ(), state.trackedPosition);
+		Vec3 delta = position.subtract(lastPosition);
+		double movedDistance = delta.horizontalDistance();
+
+		RaceTrackPath.Point point = path.nextPointAt(player.getBlockX(), player.getBlockZ(), state.trackedPosition, (float) (movedDistance * 2.0f));
 		state.trackPosition(point.position());
 
 		Component title = new TextComponent("Lap #" + (state.lap + 1) + " of " + lapCount).withStyle(ChatFormatting.AQUA);

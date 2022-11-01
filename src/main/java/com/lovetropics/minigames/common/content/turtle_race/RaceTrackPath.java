@@ -4,17 +4,18 @@ import net.minecraft.util.Mth;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
 public class RaceTrackPath {
-	private static final float LAST_POSITION_BIAS = 0.1f;
-
 	private final Segment[] segments;
+	private final float[] positions;
 	private final float length;
 
-	private RaceTrackPath(Segment[] segments, float length) {
+	private RaceTrackPath(Segment[] segments, float[] positions, float length) {
 		this.segments = segments;
+		this.positions = positions;
 		this.length = length;
 	}
 
@@ -22,15 +23,22 @@ public class RaceTrackPath {
 		return new Builder();
 	}
 
-	// TODO: This is super inefficient. We can optimize it, but it's a bit of work.
-	public Point closestPointAt(int x, int z, float lastPosition) {
+	public Point nextPointAt(int x, int z, float position, float delta) {
 		int closestDistanceSq = Integer.MAX_VALUE;
 		Point closestPoint = null;
 
-		for (Segment segment : segments) {
+		float minPosition = position - delta;
+		float maxPosition = position + delta;
+
+		int startIndex = findSegment(minPosition);
+		for (int i = startIndex; i < segments.length; i++) {
+			Segment segment = segments[i];
+			if (segment.start().position() > maxPosition) {
+				break;
+			}
+
 			Point point = segment.closestPointAt(x, z);
-			int positionBias = (int) Mth.abs((point.position() - lastPosition) * LAST_POSITION_BIAS);
-			int distanceSq = point.distanceToSq(x, z) + positionBias;
+			int distanceSq = point.distanceToSq(x, z);
 			if (distanceSq < closestDistanceSq) {
 				closestDistanceSq = distanceSq;
 				closestPoint = point;
@@ -38,6 +46,16 @@ public class RaceTrackPath {
 		}
 
 		return Objects.requireNonNull(closestPoint);
+	}
+
+	private int findSegment(float position) {
+		int index = Arrays.binarySearch(positions, position);
+		if (index >= 0) {
+			return index;
+		}
+
+		int insertIndex = -index - 1;
+		return Math.max(insertIndex - 1, 0);
 	}
 
 	public float length() {
@@ -109,7 +127,12 @@ public class RaceTrackPath {
 			if (lastPoint == null || segments.isEmpty()) {
 				throw new IllegalStateException("Must have at least one track segment");
 			}
-			return new RaceTrackPath(segments.toArray(Segment[]::new), length);
+			Segment[] segments = this.segments.toArray(Segment[]::new);
+			float[] positions = new float[segments.length];
+			for (int i = 0; i < segments.length; i++) {
+				positions[i] = segments[i].start().position();
+			}
+			return new RaceTrackPath(segments, positions, length);
 		}
 	}
 }
