@@ -20,7 +20,7 @@ public record PlaySoundAction(SoundEvent sound, float volume, float pitch) imple
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
 		events.listen(GameActionEvents.APPLY_TO_PLAYER, (context, target) -> {
-			target.playNotifySound(sound, SoundSource.MASTER, volume, pitch);
+			target.playNotifySound(sound, SoundSource.AMBIENT, volume, pitch);
 			return true;
 		});
 	}
