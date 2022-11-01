@@ -5,6 +5,7 @@ import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
+import com.lovetropics.minigames.common.core.game.player.PlayerRole;
 import com.lovetropics.minigames.common.core.game.player.PlayerSet;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -23,7 +24,11 @@ public record SttChatBroadcastBehavior(String downToTwoTranslationKey) implement
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) throws GameException {
-		events.listen(GamePlayerEvents.DEATH, (player, damageSource) -> {
+		events.listen(GamePlayerEvents.SET_ROLE, (player, role, lastRole) -> {
+			if (lastRole != PlayerRole.PARTICIPANT) {
+				return;
+			}
+
 			PlayerSet participants = game.getParticipants();
 
 			if (participants.size() == 2) {
@@ -38,8 +43,6 @@ public record SttChatBroadcastBehavior(String downToTwoTranslationKey) implement
 					game.getAllPlayers().sendMessage(new TranslatableComponent(downToTwoTranslationKey, p1text, p2text).withStyle(ChatFormatting.GOLD));
 				}
 			}
-
-			return InteractionResult.PASS;
 		});
 	}
 }
