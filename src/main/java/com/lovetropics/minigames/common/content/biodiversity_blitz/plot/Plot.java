@@ -2,6 +2,7 @@ package com.lovetropics.minigames.common.content.biodiversity_blitz.plot;
 
 import com.lovetropics.lib.BlockBox;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.PlotWalls;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.PlotWaveState;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.plant.PlantMap;
 import com.lovetropics.minigames.common.core.game.map.RegionPattern;
 import com.lovetropics.minigames.common.core.map.MapRegions;
@@ -29,6 +30,7 @@ public final class Plot {
 	public final PlotWalls walls;
 
 	public int nextCurrencyIncrement;
+	public final PlotWaveState waveState = new PlotWaveState();
 
 	private Plot(
 			BlockBox bounds, BlockBox plantBounds,

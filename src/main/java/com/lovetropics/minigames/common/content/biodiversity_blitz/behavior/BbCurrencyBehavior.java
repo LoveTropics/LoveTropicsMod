@@ -178,12 +178,12 @@ public final class BbCurrencyBehavior implements IGameBehavior {
 
 			for (Plant plant : plants) {
 				// Increment plant type
-				numberOfPlants.computeIfAbsent(plant.family(), f -> new Object2IntOpenHashMap<>())
-						.addTo(plant.type(), 1);
 
-				// Negative value marks plants that shouldn't count towards biodiversity
-
+				// Negative or zero value marks plants that shouldn't count towards biodiversity
 				if (plant.value() > 0.0) {
+					numberOfPlants.computeIfAbsent(plant.family(), f -> new Object2IntOpenHashMap<>())
+							.addTo(plant.type(), 1);
+
 					valueByType.put(plant.type(), plant.value());
 				}
 			}

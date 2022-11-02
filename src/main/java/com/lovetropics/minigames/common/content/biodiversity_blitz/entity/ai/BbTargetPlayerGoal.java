@@ -8,7 +8,7 @@ import net.minecraft.world.entity.player.Player;
 import java.util.function.Predicate;
 
 public final class BbTargetPlayerGoal extends NearestAttackableTargetGoal<Player> {
-	private static final double TARGET_RANGE = 8.0;
+	private static final double TARGET_RANGE = 7.0;
 
 	public BbTargetPlayerGoal(BbMobEntity owner) {
 		super(owner.asMob(), Player.class, 10, true, true, entityInPlot(owner));

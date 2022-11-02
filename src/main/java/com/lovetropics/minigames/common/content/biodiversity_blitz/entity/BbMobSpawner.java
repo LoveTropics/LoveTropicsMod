@@ -18,18 +18,30 @@ import java.util.WeakHashMap;
 public final class BbMobSpawner {
     public static Set<Entity> spawnWaveEntities(ServerLevel world, Random random, Plot plot, int count, int waveIndex, WaveSelector waveSelector) {
         Set<Entity> entities = Collections.newSetFromMap(new WeakHashMap<>());
+        PlotWaveState waveState = plot.waveState;
+
+        waveState.didForcedCreeperSpawn = false;
         for (int i = 0; i < count; i++) {
-            BlockPos pos = plot.mobSpawn.sample(random);
 
             Mob entity = waveSelector.selectEntityForWave(random, world, plot, waveIndex);
 
+            entities.add(entity);
+        }
+
+        waveState.didCreeperSpawnLastWave = false;
+
+        for (Entity entity : entities) {
+            if (entity instanceof BbCreeperEntity) {
+                waveState.didCreeperSpawnLastWave = true;
+            }
+
+            BlockPos pos = plot.mobSpawn.sample(random);
             Direction direction = plot.forward.getOpposite();
             entity.moveTo(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5, direction.toYRot(), 0);
 
             world.addFreshEntity(entity);
 
-            entity.finalizeSpawn(world, world.getCurrentDifficultyAt(pos), MobSpawnType.MOB_SUMMONED, null, null);
-            entities.add(entity);
+            ((Mob)entity).finalizeSpawn(world, world.getCurrentDifficultyAt(pos), MobSpawnType.MOB_SUMMONED, null, null);
         }
 
         return entities;
@@ -37,7 +49,14 @@ public final class BbMobSpawner {
 
     // TODO: data-drive, more entity types & getting harder as time goes on
     public static Mob selectEntityForWave(Random random, Level world, Plot plot, int waveIndex) {
-        if (random.nextInt(8) == 0 && waveIndex > 4 && plot.nextCurrencyIncrement >= 10) {
+        PlotWaveState waveState = plot.waveState;
+        if (!waveState.didForcedCreeperSpawn && plot.nextCurrencyIncrement >= 14 && !waveState.didCreeperSpawnLastWave) {
+            waveState.didForcedCreeperSpawn = true;
+
+            return new BbCreeperEntity(EntityType.CREEPER, world, plot);
+        }
+
+        if (random.nextInt(7) == 0 && waveIndex > 4 && plot.nextCurrencyIncrement >= 10 && !waveState.didCreeperSpawnLastWave) {
             return new BbCreeperEntity(EntityType.CREEPER, world, plot);
         }
 
