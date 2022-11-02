@@ -25,7 +25,7 @@ public record BlockPackagesDuringPhaseBehavior(List<ProgressionPeriod> blockedPe
 			return;
 		}
 
-		events.listen(GamePackageEvents.RECEIVE_PACKAGE, ($, gamePackage) -> {
+		events.listen(GamePackageEvents.RECEIVE_PACKAGE, gamePackage -> {
 			if (progression.is(blockedPeriods)) {
 				return InteractionResult.FAIL;
 			}

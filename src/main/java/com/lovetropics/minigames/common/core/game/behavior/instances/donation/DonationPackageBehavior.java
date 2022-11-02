@@ -51,26 +51,26 @@ public final class DonationPackageBehavior implements IGameBehavior {
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
-		events.listen(GamePackageEvents.RECEIVE_PACKAGE, (sendPreamble, gamePackage) -> onGamePackageReceived(sendPreamble, game, gamePackage));
+		events.listen(GamePackageEvents.RECEIVE_PACKAGE, gamePackage -> onGamePackageReceived(game, gamePackage));
 
 		receiveActions.register(game, events);
 
 		game.getState().get(GamePackageState.KEY).addPackageType(data.packageType());
 	}
 
-	private InteractionResult onGamePackageReceived(Consumer<IGamePhase> sendPreamble, final IGamePhase game, final GamePackage gamePackage) {
+	private InteractionResult onGamePackageReceived(final IGamePhase game, final GamePackage gamePackage) {
 		if (!gamePackage.packageType().equals(data.packageType())) {
 			return InteractionResult.PASS;
 		}
 
 		return switch (data.playerSelect()) {
-			case SPECIFIC -> receiveSpecific(sendPreamble, game, gamePackage);
-			case RANDOM -> receiveRandom(sendPreamble, game, gamePackage);
-			case ALL -> receiveAll(sendPreamble, game, gamePackage);
+			case SPECIFIC -> receiveSpecific(game, gamePackage);
+			case RANDOM -> receiveRandom(game, gamePackage);
+			case ALL -> receiveAll(game, gamePackage);
 		};
 	}
 
-	private InteractionResult receiveSpecific(Consumer<IGamePhase> sendPreamble, IGamePhase game, GamePackage gamePackage) {
+	private InteractionResult receiveSpecific(IGamePhase game, GamePackage gamePackage) {
 		if (gamePackage.receivingPlayer().isEmpty()) {
 			LOGGER.warn("Expected donation package to have a receiving player, but did not receive from backend!");
 			return InteractionResult.FAIL;
@@ -84,7 +84,6 @@ public final class DonationPackageBehavior implements IGameBehavior {
 
 		GameActionContext context = actionContext(gamePackage);
 		if (receiveActions.apply(game, context, receivingPlayer)) {
-			sendPreamble.accept(game);
 			data.onReceive(game, receivingPlayer, gamePackage.sendingPlayerName());
 
 			return InteractionResult.SUCCESS;
@@ -93,13 +92,12 @@ public final class DonationPackageBehavior implements IGameBehavior {
 		}
 	}
 
-	private InteractionResult receiveRandom(Consumer<IGamePhase> sendPreamble, IGamePhase game, GamePackage gamePackage) {
+	private InteractionResult receiveRandom(IGamePhase game, GamePackage gamePackage) {
 		final List<ServerPlayer> players = Lists.newArrayList(game.getParticipants());
 		final ServerPlayer randomPlayer = players.get(game.getWorld().getRandom().nextInt(players.size()));
 
 		GameActionContext context = actionContext(gamePackage);
 		if (receiveActions.apply(game, context, randomPlayer)) {
-			sendPreamble.accept(game);
 			data.onReceive(game, randomPlayer, gamePackage.sendingPlayerName());
 
 			return InteractionResult.SUCCESS;
@@ -108,13 +106,12 @@ public final class DonationPackageBehavior implements IGameBehavior {
 		}
 	}
 
-	private InteractionResult receiveAll(Consumer<IGamePhase> sendPreamble, IGamePhase game, GamePackage gamePackage) {
+	private InteractionResult receiveAll(IGamePhase game, GamePackage gamePackage) {
 		GameActionContext context = actionContext(gamePackage);
 		if (!receiveActions.apply(game, context, game.getParticipants())) {
 			return InteractionResult.FAIL;
 		}
 
-		sendPreamble.accept(game);
 		data.onReceive(game, null, gamePackage.sendingPlayerName());
 
 		return InteractionResult.SUCCESS;

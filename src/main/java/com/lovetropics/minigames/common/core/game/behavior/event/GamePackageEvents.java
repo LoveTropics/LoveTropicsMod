@@ -1,20 +1,13 @@
 package com.lovetropics.minigames.common.core.game.behavior.event;
 
 import com.google.gson.JsonObject;
-import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.integration.game_actions.GamePackage;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
 
-import java.util.function.Consumer;
-
-import javax.annotation.Nullable;
-import java.util.function.Consumer;
-
 public final class GamePackageEvents {
-	public static final GameEventType<ReceivePackage> RECEIVE_PACKAGE = GameEventType.create(ReceivePackage.class, listeners -> (sendPreamble, gamePackage) -> {
+	public static final GameEventType<ReceivePackage> RECEIVE_PACKAGE = GameEventType.create(ReceivePackage.class, listeners -> (gamePackage) -> {
 		for (ReceivePackage listener : listeners) {
-			InteractionResult result = listener.onReceivePackage(sendPreamble, gamePackage);
+			InteractionResult result = listener.onReceivePackage(gamePackage);
 			if (result != InteractionResult.PASS) {
 				return result;
 			}
@@ -32,7 +25,7 @@ public final class GamePackageEvents {
 	}
 
 	public interface ReceivePackage {
-		InteractionResult onReceivePackage(Consumer<IGamePhase> sendPreamble, GamePackage gamePackage);
+		InteractionResult onReceivePackage(GamePackage gamePackage);
 	}
 
 	public interface ReceivePollEvent {

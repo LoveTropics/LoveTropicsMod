@@ -18,7 +18,7 @@ public record ChatEventGameAction(String trigger) implements GameAction {
     public boolean resolve(IGamePhase game, MinecraftServer server) {
         GamePackage triggeredPackage = new GamePackage(trigger, null, null);
 
-        InteractionResult result = game.invoker(GamePackageEvents.RECEIVE_PACKAGE).onReceivePackage($ -> {}, triggeredPackage);
+        InteractionResult result = game.invoker(GamePackageEvents.RECEIVE_PACKAGE).onReceivePackage(triggeredPackage);
         return result == InteractionResult.SUCCESS;
     }
 }

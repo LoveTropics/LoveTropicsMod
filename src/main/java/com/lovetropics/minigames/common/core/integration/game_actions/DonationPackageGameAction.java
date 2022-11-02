@@ -15,7 +15,7 @@ public record DonationPackageGameAction(GamePackage gamePackage) implements Game
 
     @Override
     public boolean resolve(IGamePhase game, MinecraftServer server) {
-        InteractionResult result = game.invoker(GamePackageEvents.RECEIVE_PACKAGE).onReceivePackage($ -> {}, gamePackage);
+        InteractionResult result = game.invoker(GamePackageEvents.RECEIVE_PACKAGE).onReceivePackage(gamePackage);
         return result == InteractionResult.SUCCESS;
     }
 }
