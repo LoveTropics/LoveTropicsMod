@@ -113,6 +113,7 @@ public class GameBehaviorTypes {
 	public static final GameBehaviorEntry<NotificationToastAction> NOTIFICATION_TOAST;
 	public static final GameBehaviorEntry<TransformPlayerTornadoAction> TRANSFORM_PLAYER_TORNADO;
 	public static final GameBehaviorEntry<ChestDropAction> CHEST_DROP;
+	public static final GameBehaviorEntry<DamagePlayerAction> DAMAGE_PLAYER;
 
 	public static final GameBehaviorEntry<SetupTelemetryBehavior> SETUP_TELEMETRY;
 	public static final GameBehaviorEntry<AssignPlayerRolesBehavior> ASSIGN_PLAYER_ROLES;
@@ -203,6 +204,7 @@ public class GameBehaviorTypes {
 		NOTIFICATION_TOAST = register("notification_toast", NotificationToastAction.CODEC);
 		TRANSFORM_PLAYER_TORNADO = register("transform_player_tornado", TransformPlayerTornadoAction.CODEC);
 		CHEST_DROP = register("chest_drop", ChestDropAction.CODEC);
+		DAMAGE_PLAYER = register("damage_player", DamagePlayerAction.CODEC);
 
 		SETUP_TELEMETRY = register("setup_telemetry", SetupTelemetryBehavior.CODEC);
 		ASSIGN_PLAYER_ROLES = register("assign_player_roles", AssignPlayerRolesBehavior.CODEC);
