@@ -7,6 +7,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import javax.annotation.Nullable;
+import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.Queue;
@@ -52,7 +53,7 @@ public final class GameActionHandler {
 
 	static class ActionsQueue {
 		private final GameActionType requestType;
-		private final Queue<GameActionRequest> queue = new PriorityBlockingQueue<>();
+		private final Queue<GameActionRequest> queue = new PriorityBlockingQueue<>(1, Comparator.comparing(GameActionRequest::triggerTime));
 		private int nextPollTick;
 
 		ActionsQueue(GameActionType requestType) {
