@@ -44,7 +44,6 @@ public final class MinigameTexts {
 				key("survive_the_tide_finish4")
 		};
 
-		static final String SURVIVE_THE_TIDE_PVP_DISABLED = key("survive_the_tide_pvp_disabled");
 		static final String SURVIVE_THE_TIDE_PVP_ENABLED_TITLE = key("survive_the_tide_pvp_enabled.title");
 		static final String SURVIVE_THE_TIDE_PVP_ENABLED_SUBTITLE = key("survive_the_tide_pvp_enabled.subtitle");
 		static final String SURVIVE_THE_TIDE_DOWN_TO_TWO = key("survive_the_tide_down_to_two");
@@ -81,7 +80,6 @@ public final class MinigameTexts {
 			consumer.accept(SURVIVE_THE_TIDE_FINISH[2], "\nThe lone survivor of this island, %s, has won - but at what cost? The world is not what it once was, and they must survive in this new apocalyptic land.");
 			consumer.accept(SURVIVE_THE_TIDE_FINISH[3], "\nWhat would you do different next time? Together, we could stop this from becoming our future.");
 
-			consumer.accept(SURVIVE_THE_TIDE_PVP_DISABLED, "NOTE: PvP is disabled for %s minutes! Go fetch resources before time runs out.");
 			consumer.accept(SURVIVE_THE_TIDE_PVP_ENABLED_TITLE, "PVP IS ENABLED!");
 			consumer.accept(SURVIVE_THE_TIDE_PVP_ENABLED_SUBTITLE, "Beware of other players...");
 
