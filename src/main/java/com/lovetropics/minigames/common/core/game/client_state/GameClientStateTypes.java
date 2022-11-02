@@ -3,6 +3,7 @@ package com.lovetropics.minigames.common.core.game.client_state;
 import com.lovetropics.lib.codec.MoreCodecs;
 import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.LoveTropics;
+import com.lovetropics.minigames.common.core.game.client_state.instance.BeaconClientState;
 import com.lovetropics.minigames.common.core.game.client_state.instance.HealthTagClientState;
 import com.lovetropics.minigames.common.core.game.client_state.instance.ReplaceTexturesClientState;
 import com.lovetropics.minigames.common.core.game.client_state.instance.ResourcePackClientState;
@@ -36,6 +37,7 @@ public final class GameClientStateTypes {
 	public static final GameClientTweakEntry<ResourcePackClientState> RESOURCE_PACK = register("resource_pack", ResourcePackClientState.CODEC);
 	public static final GameClientTweakEntry<HealthTagClientState> HEALTH_TAG = register("health_tag", HealthTagClientState.CODEC);
 	public static final GameClientTweakEntry<SidebarClientState> SIDEBAR = register("sidebar", SidebarClientState.CODEC);
+	public static final GameClientTweakEntry<BeaconClientState> BEACON = register("beacon", BeaconClientState.CODEC);
 
 	public static <T extends GameClientState> GameClientTweakEntry<T> register(final String name, final Codec<T> codec) {
 		return REGISTRATE.object(name)
