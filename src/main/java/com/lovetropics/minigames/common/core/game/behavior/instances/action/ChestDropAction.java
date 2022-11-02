@@ -42,7 +42,7 @@ public record ChestDropAction(String region, SimpleWeightedRandomList<ResourceLo
 			Codec.FLOAT.optionalFieldOf("glow_radius", 8.0f).forGetter(ChestDropAction::glowRadius)
 	).apply(i, ChestDropAction::new));
 
-	private static final int GLOWING_EFFECT_DURATION = SharedConstants.TICKS_PER_SECOND * 2;
+	private static final int GLOWING_EFFECT_DURATION = SharedConstants.TICKS_PER_SECOND * 15;
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
@@ -81,7 +81,7 @@ public record ChestDropAction(String region, SimpleWeightedRandomList<ResourceLo
 					beacons.remove(drop.pos());
 					placeChest(level, random, drop);
 					return true;
-				} else if (game.ticks() % (GLOWING_EFFECT_DURATION / 2) == 0) {
+				} else if (game.ticks() % SharedConstants.TICKS_PER_SECOND == 0) {
 					applyGlowingEffectAround(game, drop);
 				}
 				return false;
