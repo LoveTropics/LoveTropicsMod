@@ -2,6 +2,7 @@ package com.lovetropics.minigames.common.core.integration.game_actions;
 
 import com.lovetropics.minigames.common.config.ConfigLT;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -13,12 +14,13 @@ public enum GameActionType {
 	public static final GameActionType[] VALUES = values();
 
 	private final String id;
-	private final Codec<? extends GameAction> codec;
+	private final Codec<GameActionRequest> codec;
 	private final Supplier<Integer> pollingIntervalSeconds;
 
-	GameActionType(final String id, final Codec<? extends GameAction> codec, final Supplier<Integer> pollingIntervalTicks) {
+	@SuppressWarnings("unchecked")
+	GameActionType(final String id, final MapCodec<? extends GameAction> codec, final Supplier<Integer> pollingIntervalTicks) {
 		this.id = id;
-		this.codec = codec;
+		this.codec = GameActionRequest.codec(this, (MapCodec<GameAction>) codec);
 		this.pollingIntervalSeconds = pollingIntervalTicks;
 	}
 
@@ -26,7 +28,7 @@ public enum GameActionType {
 		return id;
 	}
 
-	public Codec<? extends GameAction> getCodec() {
+	public Codec<GameActionRequest> getCodec() {
 		return codec;
 	}
 

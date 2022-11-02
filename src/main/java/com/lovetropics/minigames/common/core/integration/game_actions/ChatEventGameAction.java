@@ -4,6 +4,7 @@ import com.lovetropics.lib.codec.MoreCodecs;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePackageEvents;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.InteractionResult;
@@ -19,27 +20,12 @@ import java.util.function.Consumer;
 /**
  * Chat-caused event
  */
-public class ChatEventGameAction extends GameAction {
-    public static final Codec<ChatEventGameAction> CODEC = RecordCodecBuilder.create(i -> i.group(
-            MoreCodecs.UUID_STRING.fieldOf("uuid").forGetter(c -> c.uuid),
+public record ChatEventGameAction(String resultType, String title, List<PollEntry> entries) implements GameAction {
+    public static final MapCodec<ChatEventGameAction> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
             Codec.STRING.fieldOf("chat_event_type").forGetter(c -> c.resultType),
-            TIME_CODEC.fieldOf("trigger_time").forGetter(c -> c.triggerTime),
             Codec.STRING.fieldOf("title").forGetter(c -> c.title),
-            MoreCodecs.sorted(PollEntry.CODEC.listOf(), Comparator.comparingInt(PollEntry::getResults).reversed()).fieldOf("options").forGetter(c -> c.entries)
+            MoreCodecs.sorted(PollEntry.CODEC.listOf(), Comparator.comparingInt(PollEntry::results).reversed()).fieldOf("options").forGetter(c -> c.entries)
     ).apply(i, ChatEventGameAction::new));
-
-    private final String resultType;
-    private final String title;
-    private final List<PollEntry> entries;
-
-    // UUID is not human readable
-    // resultType is readable, ex: loot_package
-    public ChatEventGameAction(UUID uuid, String resultType, LocalDateTime triggerTime, final String title, final List<PollEntry> entries) {
-        super(uuid, triggerTime);
-        this.resultType = resultType;
-        this.title = title;
-        this.entries = entries;
-    }
 
     @Override
     public boolean resolve(IGamePhase game, MinecraftServer server) {
@@ -67,52 +53,16 @@ public class ChatEventGameAction extends GameAction {
         return result == InteractionResult.SUCCESS;
     }
 
-    public String getTitle() {
-        return title;
-    }
-
-    public String getResultType() {
-        return resultType;
-    }
-
-    public List<PollEntry> getEntries() {
-        return entries;
-    }
-
-    public PollEntry getWinner() {
+    public PollEntry winner() {
         return entries.get(0);
     }
 
-    public static class PollEntry {
-        public static final Codec<PollEntry> CODEC = RecordCodecBuilder.create(instance -> {
-            return instance.group(
-                    Codec.STRING.fieldOf("key").forGetter(c -> c.key),
-                    Codec.STRING.fieldOf("title").forGetter(c -> c.packageType),
-                    Codec.INT.fieldOf("results").forGetter(c -> c.results)
-            ).apply(instance, PollEntry::new);
-        });
-
-        private final String key;
-        private final String packageType;
-        private final int results;
-
-        public PollEntry(final String key, String packageType, final int results) {
-            this.key = key;
-            this.packageType = packageType;
-            this.results = results;
-        }
-
-        public String getKey() {
-            return key;
-        }
-
-        public String getPackageType() {
-            return packageType;
-        }
-
-        public int getResults() {
-            return results;
-        }
+    public record PollEntry(String key, String packageType, int results) {
+        public static final Codec<PollEntry> CODEC = RecordCodecBuilder.create(i -> i.group(
+                Codec.STRING.fieldOf("key").forGetter(c -> c.key),
+                Codec.STRING.fieldOf("title").forGetter(c -> c.packageType),
+                Codec.INT.fieldOf("results").forGetter(c -> c.results)
+        ).apply(i, PollEntry::new));
 
         public GamePackage asPackage() {
             return new GamePackage(packageType, null, null);

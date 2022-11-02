@@ -7,7 +7,6 @@ import com.lovetropics.minigames.common.config.ConfigLT;
 import com.lovetropics.minigames.common.core.game.IGameDefinition;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
-import com.lovetropics.minigames.common.core.game.behavior.event.GameLogicEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePackageEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
@@ -15,13 +14,13 @@ import com.lovetropics.minigames.common.core.game.state.GameStateKey;
 import com.lovetropics.minigames.common.core.game.state.IGameState;
 import com.lovetropics.minigames.common.core.game.state.statistics.GameStatistics;
 import com.lovetropics.minigames.common.core.game.state.statistics.PlayerKey;
-import com.lovetropics.minigames.common.core.integration.game_actions.GameAction;
 import com.lovetropics.minigames.common.core.integration.game_actions.GameActionHandler;
+import com.lovetropics.minigames.common.core.integration.game_actions.GameActionRequest;
 import com.lovetropics.minigames.common.core.integration.game_actions.GameActionType;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.JsonOps;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerPlayer;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -78,10 +77,10 @@ public final class GameInstanceTelemetry implements IGameState {
 		close();
 	}
 
-	public void acknowledgeActionDelivery(final GameActionType request, final GameAction action) {
+	public void acknowledgeActionDelivery(final GameActionRequest request) {
 		final JsonObject object = new JsonObject();
-		object.addProperty("request", request.getId());
-		object.addProperty("uuid", action.uuid.toString());
+		object.addProperty("request", request.type().getId());
+		object.addProperty("uuid", request.uuid().toString());
 
 		telemetry.postAndRetry(ConfigLT.TELEMETRY.actionResolvedEndpoint.get(), object);
 	}
@@ -165,9 +164,9 @@ public final class GameInstanceTelemetry implements IGameState {
 		} else if ("create".equals(crud)) {
 			GameActionType.getFromId(type).ifPresent(actionType -> {
 				JsonObject payload = object.getAsJsonObject("payload");
-				DataResult<? extends GameAction> parseResult = actionType.getCodec().parse(JsonOps.INSTANCE, payload);
+				DataResult<GameActionRequest> parseResult = actionType.getCodec().parse(JsonOps.INSTANCE, payload);
 
-				parseResult.result().ifPresent(action -> actions.enqueue(actionType, action));
+				parseResult.result().ifPresent(actions::enqueue);
 
 				parseResult.error().ifPresent(error -> {
 					LoveTropics.LOGGER.warn("Received invalid game action of type {}: {}", type, error);

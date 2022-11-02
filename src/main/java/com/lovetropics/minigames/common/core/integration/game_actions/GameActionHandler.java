@@ -25,15 +25,15 @@ public final class GameActionHandler {
 	}
 
 	public void pollGameActions(final MinecraftServer server, final int tick) {
-		for (final Map.Entry<GameActionType, ActionsQueue> entry : queues.entrySet()) {
-			final GameActionType request = entry.getKey();
-			final ActionsQueue polling = entry.getValue();
-
-			GameAction action = polling.tryPoll(tick);
+		for (ActionsQueue queue : queues.values()) {
+			GameActionRequest request = queue.tryPoll(tick);
+			if (request == null) {
+				continue;
+			}
 			try {
-				if (action != null && action.resolve(game, server)) {
+				if (request.action().resolve(game, server)) {
 					// If we resolved the action, send acknowledgement to the backend
-					telemetry.acknowledgeActionDelivery(request, action);
+					telemetry.acknowledgeActionDelivery(request);
 				}
 			} catch (Exception e) {
 				LOGGER.error("Failed to resolve game action", e);
@@ -41,9 +41,9 @@ public final class GameActionHandler {
 		}
 	}
 
-	public void enqueue(final GameActionType requestType, final GameAction action) {
-		ActionsQueue queue = getQueueFor(requestType);
-		queue.offer(action);
+	public void enqueue(final GameActionRequest request) {
+		ActionsQueue queue = getQueueFor(request.type());
+		queue.offer(request);
 	}
 
 	private ActionsQueue getQueueFor(GameActionType requestType) {
@@ -52,7 +52,7 @@ public final class GameActionHandler {
 
 	static class ActionsQueue {
 		private final GameActionType requestType;
-		private final Queue<GameAction> queue = new PriorityBlockingQueue<>();
+		private final Queue<GameActionRequest> queue = new PriorityBlockingQueue<>();
 		private int nextPollTick;
 
 		ActionsQueue(GameActionType requestType) {
@@ -60,7 +60,7 @@ public final class GameActionHandler {
 		}
 
 		@Nullable
-		public GameAction tryPoll(int tick) {
+		public GameActionRequest tryPoll(int tick) {
 			if (!queue.isEmpty() && tick >= nextPollTick) {
 				nextPollTick = tick + requestType.getPollingIntervalTicks();
 				return queue.poll();
@@ -69,9 +69,9 @@ public final class GameActionHandler {
 			return null;
 		}
 
-		public void offer(GameAction action) {
-			if (!queue.contains(action)) {
-				queue.offer(action);
+		public void offer(GameActionRequest request) {
+			if (!queue.contains(request)) {
+				queue.offer(request);
 			}
 		}
 	}
