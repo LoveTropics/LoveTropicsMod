@@ -62,10 +62,6 @@ public record GeneralEventsTrigger(Map<String, GameActionList> eventActions) imp
 		});
 
 		events.listen(GameLogicEvents.GAME_OVER, () -> this.invoke(game, "game_over"));
-		events.listen(GameLogicEvents.PHASE_CHANGE, (phase, lastPhase) -> {
-			this.invoke(game, "phase_finish/" + lastPhase.key());
-			this.invoke(game, "phase_start/" + phase.key());
-		});
 
 		events.listen(GamePhaseEvents.TICK, () -> this.invoke(game, "tick"));
 	}

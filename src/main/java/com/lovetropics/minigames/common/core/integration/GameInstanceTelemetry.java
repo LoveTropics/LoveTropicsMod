@@ -9,6 +9,7 @@ import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameLogicEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePackageEvents;
+import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.lovetropics.minigames.common.core.game.state.GameStateKey;
 import com.lovetropics.minigames.common.core.game.state.IGameState;
@@ -58,7 +59,7 @@ public final class GameInstanceTelemetry implements IGameState {
 		events.listen(GamePlayerEvents.JOIN, (p) -> sendParticipantsList());
 		events.listen(GamePlayerEvents.LEAVE, (p) -> sendParticipantsList());
 		
-		events.listen(GameLogicEvents.PHASE_CHANGE, ($, $$) -> requestQueuedActions());
+		events.listen(GamePhaseEvents.START, this::requestQueuedActions);
 	}
 
 	public void finish(GameStatistics statistics) {

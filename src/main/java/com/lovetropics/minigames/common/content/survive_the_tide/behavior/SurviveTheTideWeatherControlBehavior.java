@@ -9,8 +9,8 @@ import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
-import com.lovetropics.minigames.common.core.game.state.GamePhase;
-import com.lovetropics.minigames.common.core.game.state.GamePhaseState;
+import com.lovetropics.minigames.common.core.game.state.ProgressionPoint;
+import com.lovetropics.minigames.common.core.game.state.GameProgressionState;
 import com.lovetropics.minigames.common.core.game.state.weather.GameWeatherState;
 import com.lovetropics.minigames.common.core.game.weather.WeatherEvent;
 import com.lovetropics.minigames.common.core.game.weather.WeatherEventType;
@@ -81,7 +81,7 @@ public class SurviveTheTideWeatherControlBehavior implements IGameBehavior {
 
     private static final Component TITLE = new TextComponent("WEATHER REPORT: \n").withStyle(ChatFormatting.BOLD);
 
-    protected GamePhaseState phases;
+    protected GameProgressionState progression;
     protected GameWeatherState weather;
 
     public SurviveTheTideWeatherControlBehavior(final SurviveTheTideWeatherConfig config) {
@@ -95,55 +95,53 @@ public class SurviveTheTideWeatherControlBehavior implements IGameBehavior {
         events.listen(GamePhaseEvents.TICK, () -> tick(game));
         events.listen(GamePhaseEvents.STOP, reason -> weather.clear());
 
-        phases = game.getState().getOrNull(GamePhaseState.KEY);
+        progression = game.getState().getOrNull(GameProgressionState.KEY);
     }
 
     private void tick(final IGamePhase game) {
-        if (phases == null) {
+        if (progression == null) {
             return;
         }
-
-        GamePhase phase = phases.get();
 
         ServerLevel world = game.getWorld();
         if (world.getGameTime() % 20 == 0) {
             if (weather.getEvent() == null && weather.canStartWeatherEvent()) {
-                if (random.nextFloat() <= config.getRainHeavyChance(phase.key())) {
-                    heavyRainfallStart(phase);
-                } else if (random.nextFloat() <= config.getRainAcidChance(phase.key())) {
-                    acidRainStart(game, phase);
-                } else if (random.nextFloat() <= config.getHailChance(phase.key())) {
-                    hailStart(game, phase);
-                } else if (random.nextFloat() <= config.getHeatwaveChance(phase.key())) {
-                    heatwaveStart(game, phase);
-                } else if (random.nextFloat() <= config.getSandstormChance(phase.key())) {
-                    sandstormStart(game, phase);
-                } else if (random.nextFloat() <= config.getSnowstormChance(phase.key())) {
-                    snowstormStart(game, phase);
+                if (random.nextFloat() <= config.getRainHeavyChance(progression)) {
+                    heavyRainfallStart(progression);
+                } else if (random.nextFloat() <= config.getRainAcidChance(progression)) {
+                    acidRainStart(game, progression);
+                } else if (random.nextFloat() <= config.getHailChance(progression)) {
+                    hailStart(game, progression);
+                } else if (random.nextFloat() <= config.getHeatwaveChance(progression)) {
+                    heatwaveStart(game, progression);
+                } else if (random.nextFloat() <= config.getSandstormChance(progression)) {
+                    sandstormStart(game, progression);
+                } else if (random.nextFloat() <= config.getSnowstormChance(progression)) {
+                    snowstormStart(game, progression);
                 }
             }
 
-            weather.setWind(config.getWindSpeed(phase.key()));
+            weather.setWind(config.getWindSpeed(progression));
             if (weather.getEventType() == WeatherEventType.SNOWSTORM || weather.getEventType() == WeatherEventType.SANDSTORM) {
                 weather.setWind(0.7F);
             } else {
-                weather.setWind(config.getWindSpeed(phase.key()));
+                weather.setWind(config.getWindSpeed(progression));
             }
         }
     }
 
     // TODO phase names
-    private void heavyRainfallStart(GamePhase phase) {
+    private void heavyRainfallStart(GameProgressionState progression) {
         int time = config.getRainHeavyMinTime() + random.nextInt(config.getRainHeavyExtraRandTime());
-        if (phase.is("phase4")) {
+        if (config.halveEventTime(progression)) {
             time /= 2;
         }
         weather.setEvent(WeatherEvent.heavyRain(time));
     }
 
-    private void acidRainStart(IGamePhase game, GamePhase phase) {
+    private void acidRainStart(IGamePhase game, GameProgressionState progression) {
         int time = config.getRainAcidMinTime() + random.nextInt(config.getRainAcidExtraRandTime());
-        if (phase.is("phase4")) {
+        if (config.halveEventTime(progression)) {
             time /= 2;
         }
         weather.setEvent(WeatherEvent.acidRain(time));
@@ -156,9 +154,9 @@ public class SurviveTheTideWeatherControlBehavior implements IGameBehavior {
         );
     }
 
-    private void hailStart(IGamePhase game, GamePhase phase) {
+    private void hailStart(IGamePhase game, GameProgressionState progression) {
         int time = config.getRainHeavyMinTime() + random.nextInt(config.getRainHeavyExtraRandTime());
-        if (phase.is("phase4")) {
+        if (config.halveEventTime(progression)) {
             time /= 2;
         }
         weather.setEvent(WeatherEvent.hail(time));
@@ -171,9 +169,9 @@ public class SurviveTheTideWeatherControlBehavior implements IGameBehavior {
         );
     }
 
-    private void heatwaveStart(IGamePhase game, GamePhase phase) {
+    private void heatwaveStart(IGamePhase game, GameProgressionState progression) {
         int time = config.getHeatwaveMinTime() + random.nextInt(config.getHeatwaveExtraRandTime());
-        if (phase.is("phase4")) {
+        if (config.halveEventTime(progression)) {
             time /= 2;
         }
         weather.setEvent(WeatherEvent.heatwave(time));
@@ -186,10 +184,10 @@ public class SurviveTheTideWeatherControlBehavior implements IGameBehavior {
         );
     }
 
-    private void sandstormStart(IGamePhase game, GamePhase phase) {
+    private void sandstormStart(IGamePhase game, GameProgressionState progression) {
         //TODO: more config
         int time = config.getHeatwaveMinTime() + random.nextInt(config.getHeatwaveExtraRandTime());
-        if (phase.is("phase4")) {
+        if (config.halveEventTime(progression)) {
             time /= 2;
         }
         weather.setEvent(WeatherEvent.sandstorm(time, config.getSandstormBuildupTickRate(), config.getSandstormMaxStackable()));
@@ -201,10 +199,10 @@ public class SurviveTheTideWeatherControlBehavior implements IGameBehavior {
         );
     }
 
-    private void snowstormStart(IGamePhase game, GamePhase phase) {
+    private void snowstormStart(IGamePhase game, GameProgressionState progression) {
         //TODO: more config
         int time = config.getHeatwaveMinTime() + random.nextInt(config.getHeatwaveExtraRandTime());
-        if (phase.is("phase4")) {
+        if (config.halveEventTime(progression)) {
             time /= 2;
         }
         weather.setEvent(WeatherEvent.snowstorm(time, config.getSnowstormBuildupTickRate(), config.getSnowstormMaxStackable()));

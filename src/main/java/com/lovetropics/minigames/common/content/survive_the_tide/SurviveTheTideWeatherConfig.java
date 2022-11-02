@@ -1,19 +1,24 @@
 package com.lovetropics.minigames.common.content.survive_the_tide;
 
 import com.lovetropics.lib.codec.MoreCodecs;
+import com.lovetropics.minigames.common.core.game.state.GameProgressionState;
+import com.lovetropics.minigames.common.core.game.state.ProgressionPeriod;
+import com.lovetropics.minigames.common.core.game.state.ProgressionPoint;
 import com.lovetropics.minigames.common.core.game.weather.WeatherEventType;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.Object2FloatMap;
+import it.unimi.dsi.fastutil.objects.Object2FloatMaps;
 
 import java.util.Map;
 
 public class SurviveTheTideWeatherConfig {
 	public static final Codec<SurviveTheTideWeatherConfig> CODEC = RecordCodecBuilder.create(instance -> {
 		return instance.group(
-				Codec.unboundedMap(WeatherEventType.CODEC, MoreCodecs.object2Float(Codec.STRING)).fieldOf("event_chances").forGetter(c -> c.eventChancesByPhase),
+				Codec.unboundedMap(WeatherEventType.CODEC, MoreCodecs.object2Float(ProgressionPoint.CODEC)).fieldOf("event_chances").forGetter(c -> c.eventChancesByTime),
 				Codec.unboundedMap(WeatherEventType.CODEC, Timers.CODEC).fieldOf("event_timers").forGetter(c -> c.eventTimers),
-				MoreCodecs.object2Float(Codec.STRING).fieldOf("wind_speed").forGetter(c -> c.phaseToWindSpeed),
+				MoreCodecs.object2Float(ProgressionPoint.CODEC).fieldOf("wind_speed").forGetter(c -> c.windSpeedByTime),
+				ProgressionPeriod.CODEC.fieldOf("halve_event_time").forGetter(c -> c.halveEventTime),
 				Codec.INT.optionalFieldOf("sandstorm_buildup_tickrate", 40).forGetter(c -> c.sandstormBuildupTickRate),
 				Codec.INT.optionalFieldOf("sandstorm_max_stackable", 1).forGetter(c -> c.sandstormMaxStackable),
 				Codec.INT.optionalFieldOf("snowstorm_buildup_tickrate", 40).forGetter(c -> c.snowstormBuildupTickRate),
@@ -21,10 +26,12 @@ public class SurviveTheTideWeatherConfig {
 		).apply(instance, SurviveTheTideWeatherConfig::new);
 	});
 
-	private final Map<WeatherEventType, Object2FloatMap<String>> eventChancesByPhase;
+	private final Map<WeatherEventType, Object2FloatMap<ProgressionPoint>> eventChancesByTime;
 	private final Map<WeatherEventType, Timers> eventTimers;
 
-	private final Object2FloatMap<String> phaseToWindSpeed;
+	private final Object2FloatMap<ProgressionPoint> windSpeedByTime;
+
+	private final ProgressionPeriod halveEventTime;
 
 	private final int sandstormBuildupTickRate;
 	private final int sandstormMaxStackable;
@@ -33,15 +40,17 @@ public class SurviveTheTideWeatherConfig {
 	private final int snowstormMaxStackable;
 
 	public SurviveTheTideWeatherConfig(
-			Map<WeatherEventType, Object2FloatMap<String>> eventChancesByPhase,
+			Map<WeatherEventType, Object2FloatMap<ProgressionPoint>> eventChancesByTime,
 			Map<WeatherEventType, Timers> eventTimers,
-			Object2FloatMap<String> phaseToWindSpeed,
+			Object2FloatMap<ProgressionPoint> windSpeedByTime,
+			ProgressionPeriod halveEventTime,
 			final int sandstormBuildupTickRate, final int sandstormMaxStackable,
 			final int snowstormBuildupTickRate, final int snowstormMaxStackable
 	) {
-		this.eventChancesByPhase = eventChancesByPhase;
+		this.eventChancesByTime = eventChancesByTime;
 		this.eventTimers = eventTimers;
-		this.phaseToWindSpeed = phaseToWindSpeed;
+		this.windSpeedByTime = windSpeedByTime;
+		this.halveEventTime = halveEventTime;
 
 		this.sandstormBuildupTickRate = sandstormBuildupTickRate;
 		this.sandstormMaxStackable = sandstormMaxStackable;
@@ -50,45 +59,58 @@ public class SurviveTheTideWeatherConfig {
 		this.snowstormMaxStackable = snowstormMaxStackable;
 	}
 
-	private float getEventChance(WeatherEventType event, String phase) {
-		Object2FloatMap<String> chances = this.eventChancesByPhase.get(event);
-		if (chances != null) {
-			return chances.getOrDefault(phase, 0.0F);
-		} else {
-			return 0.0F;
+	private float getEventChance(WeatherEventType event, GameProgressionState progression) {
+		Object2FloatMap<ProgressionPoint> chances = this.eventChancesByTime.get(event);
+		if (chances == null) {
+			return 0.0f;
 		}
+		return findValue(progression, chances);
+	}
+
+	// TODO: Terribly inefficient
+	private static float findValue(GameProgressionState progression, Object2FloatMap<ProgressionPoint> values) {
+		int lastTime = 0;
+		float lastChance = 0.0f;
+		for (Object2FloatMap.Entry<ProgressionPoint> entry : Object2FloatMaps.fastIterable(values)) {
+			int time = entry.getKey().resolve(progression);
+			if (time > lastTime && progression.time() >= time) {
+				lastTime = time;
+				lastChance = entry.getFloatValue();
+			}
+		}
+		return lastChance;
 	}
 
 	private Timers getTimers(WeatherEventType event) {
 		return eventTimers.getOrDefault(event, Timers.DEFAULT);
 	}
 
-	public double getRainHeavyChance(String phase) {
-		return getEventChance(WeatherEventType.HEAVY_RAIN, phase);
+	public float getRainHeavyChance(GameProgressionState progression) {
+		return getEventChance(WeatherEventType.HEAVY_RAIN, progression);
 	}
 
-	public double getRainAcidChance(String phase) {
-		return getEventChance(WeatherEventType.ACID_RAIN, phase);
+	public float getRainAcidChance(GameProgressionState progression) {
+		return getEventChance(WeatherEventType.ACID_RAIN, progression);
 	}
 
-	public double getHailChance(String phase) {
-		return getEventChance(WeatherEventType.HAIL, phase);
+	public float getHailChance(GameProgressionState progression) {
+		return getEventChance(WeatherEventType.HAIL, progression);
 	}
 
-	public double getHeatwaveChance(String phase) {
-		return getEventChance(WeatherEventType.HEATWAVE, phase);
+	public float getHeatwaveChance(GameProgressionState progression) {
+		return getEventChance(WeatherEventType.HEATWAVE, progression);
 	}
 
-	public double getSandstormChance(String phase) {
-		return getEventChance(WeatherEventType.SANDSTORM, phase);
+	public float getSandstormChance(GameProgressionState progression) {
+		return getEventChance(WeatherEventType.SANDSTORM, progression);
 	}
 
-	public double getSnowstormChance(String phase) {
-		return getEventChance(WeatherEventType.SNOWSTORM, phase);
+	public float getSnowstormChance(GameProgressionState progression) {
+		return getEventChance(WeatherEventType.SNOWSTORM, progression);
 	}
 
-	public float getWindSpeed(String phase) {
-		return phaseToWindSpeed.getOrDefault(phase, 0.0F);
+	public float getWindSpeed(GameProgressionState progression) {
+		return findValue(progression, windSpeedByTime);
 	}
 
 	public int getRainHeavyMinTime() {
@@ -129,6 +151,11 @@ public class SurviveTheTideWeatherConfig {
 
 	public int getSnowstormMaxStackable() {
 		return snowstormMaxStackable;
+	}
+
+	// TODO: This is not a good way to do things at all
+	public boolean halveEventTime(GameProgressionState progression) {
+		return progression.is(halveEventTime);
 	}
 
 	public static final class Timers {

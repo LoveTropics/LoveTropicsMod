@@ -7,8 +7,9 @@ import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
-import com.lovetropics.minigames.common.core.game.state.GamePhase;
-import com.lovetropics.minigames.common.core.game.state.GamePhaseState;
+import com.lovetropics.minigames.common.core.game.state.ProgressionPeriod;
+import com.lovetropics.minigames.common.core.game.state.ProgressionPoint;
+import com.lovetropics.minigames.common.core.game.state.GameProgressionState;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
@@ -29,7 +30,7 @@ public class WorldBorderGameBehavior implements IGameBehavior {
 	public static final Codec<WorldBorderGameBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
 			Codec.STRING.fieldOf("world_border_center").forGetter(c -> c.worldBorderCenterKey),
 			MoreCodecs.TEXT.fieldOf("collapse_message").forGetter(c -> c.collapseMessage),
-			GamePhase.CODEC.fieldOf("phase").forGetter(c -> c.phase),
+			ProgressionPeriod.CODEC.fieldOf("period").forGetter(c -> c.period),
 			Codec.INT.fieldOf("particle_rate_delay").forGetter(c -> c.particleRateDelay),
 			Codec.INT.fieldOf("particle_height").forGetter(c -> c.particleHeight),
 			Codec.INT.fieldOf("damage_rate_delay").forGetter(c -> c.damageRateDelay),
@@ -39,7 +40,7 @@ public class WorldBorderGameBehavior implements IGameBehavior {
 
 	private final String worldBorderCenterKey;
 	private final Component collapseMessage;
-	private final GamePhase phase;
+	private final ProgressionPeriod period;
 	private final int particleRateDelay;
 	private final int particleHeight;
 	private final int damageRateDelay;
@@ -50,13 +51,13 @@ public class WorldBorderGameBehavior implements IGameBehavior {
 
 	private boolean borderCollapseMessageSent = false;
 
-	private GamePhaseState phases;
+	private GameProgressionState phases;
 
-	public WorldBorderGameBehavior(final String worldBorderCenterKey, final Component collapseMessage, final GamePhase phase,
+	public WorldBorderGameBehavior(final String worldBorderCenterKey, final Component collapseMessage, final ProgressionPeriod period,
 								   final int particleRateDelay, final int particleHeight, final int damageRateDelay, final int damageAmount, final ParticleOptions borderParticle) {
 		this.worldBorderCenterKey = worldBorderCenterKey;
 		this.collapseMessage = collapseMessage;
-		this.phase = phase;
+		this.period = period;
 		this.particleRateDelay = particleRateDelay;
 		this.particleHeight = particleHeight;
 		this.damageRateDelay = damageRateDelay;
@@ -66,7 +67,7 @@ public class WorldBorderGameBehavior implements IGameBehavior {
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) throws GameException {
-		phases = game.getState().getOrThrow(GamePhaseState.KEY);
+		phases = game.getState().getOrThrow(GameProgressionState.KEY);
 
 		List<BlockBox> regions = new ArrayList<>(game.getMapRegions().get(worldBorderCenterKey));
 
@@ -87,11 +88,10 @@ public class WorldBorderGameBehavior implements IGameBehavior {
 
 	// TODO: Clean up this mess
 	private void tickWorldBorder(final IGamePhase game) {
-		if (!phases.is(phase)) {
+		float phaseProgress = phases.progressIn(period);
+		if (phaseProgress <= 0.0f) {
 			return;
 		}
-
-		float phaseProgress = phases.progress();
 
 		if (!borderCollapseMessageSent) {
 			borderCollapseMessageSent = true;

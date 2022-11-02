@@ -7,14 +7,14 @@ import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameLivingEntityEvents;
-import com.lovetropics.minigames.common.core.game.behavior.event.GameLogicEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
-import com.lovetropics.minigames.common.core.game.state.GamePhase;
-import com.lovetropics.minigames.common.core.game.state.GamePhaseState;
+import com.lovetropics.minigames.common.core.game.state.ProgressionPeriod;
+import com.lovetropics.minigames.common.core.game.state.GameProgressionState;
+import com.lovetropics.minigames.common.core.game.state.ProgressionSpline;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import it.unimi.dsi.fastutil.floats.Float2FloatFunction;
 import it.unimi.dsi.fastutil.longs.*;
-import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.SectionPos;
@@ -50,8 +50,8 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 	public static final Codec<RisingTidesGameBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
 			Codec.STRING.optionalFieldOf("tide_area_region", "tide_area").forGetter(c -> c.tideAreaKey),
 			Codec.STRING.optionalFieldOf("iceberg_lines_region", "iceberg_lines").forGetter(c -> c.icebergLinesKey),
-			Codec.unboundedMap(GamePhase.CODEC, Codec.INT).fieldOf("water_levels").forGetter(c -> c.phaseToTideHeight),
-			Codec.STRING.listOf().fieldOf("phases_icebergs_grow").forGetter(c -> new ArrayList<>(c.phasesIcebergsGrow)),
+			ProgressionSpline.CODEC.fieldOf("water_levels").forGetter(c -> c.waterLevels),
+			ProgressionPeriod.CODEC.fieldOf("iceberg_growth_period").forGetter(c -> c.icebergGrowthPeriod),
 			Codec.INT.fieldOf("iceberg_growth_steps").forGetter(c -> c.maxIcebergGrowthSteps)
 	).apply(i, RisingTidesGameBehavior::new));
 
@@ -65,15 +65,15 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 
 	private final String tideAreaKey;
 	private final String icebergLinesKey;
-	private final Map<GamePhase, Integer> phaseToTideHeight;
-	private final Set<String> phasesIcebergsGrow;
+	private final ProgressionSpline waterLevels;
+	private final ProgressionPeriod icebergGrowthPeriod;
 	private final int maxIcebergGrowthSteps;
 	private int waterLevel;
-	private int maxWaterLevel;
 
 	private BlockBox tideArea;
 	private final List<IcebergLine> icebergLines = new ArrayList<>();
 	private int icebergGrowthSteps;
+	private Float2FloatFunction waterLevelByTime = time -> 0.0f;
 
 	private ChunkPos minTideChunk;
 	private ChunkPos maxTideChunk;
@@ -82,14 +82,13 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 	private final LongSet lowPriorityUpdates = new LongLinkedOpenHashSet();
 	private final Long2IntMap chunkWaterLevels = new Long2IntOpenHashMap();
 
-	private GamePhaseState phases;
-	private GamePhase lastPhase;
+	private GameProgressionState progression;
 
-	public RisingTidesGameBehavior(String tideAreaKey, String icebergLinesKey, final Map<GamePhase, Integer> phaseToTideHeight, final List<String> phasesIcebergsGrow, final int maxIcebergGrowthSteps) {
+	public RisingTidesGameBehavior(String tideAreaKey, String icebergLinesKey, final ProgressionSpline waterLevels, final ProgressionPeriod icebergGrowthPeriod, final int maxIcebergGrowthSteps) {
 		this.tideAreaKey = tideAreaKey;
 		this.icebergLinesKey = icebergLinesKey;
-		this.phaseToTideHeight = phaseToTideHeight;
-		this.phasesIcebergsGrow = new ObjectOpenHashSet<>(phasesIcebergsGrow);
+		this.waterLevels = waterLevels;
+		this.icebergGrowthPeriod = icebergGrowthPeriod;
 		this.maxIcebergGrowthSteps = maxIcebergGrowthSteps;
 	}
 
@@ -121,22 +120,17 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 			));
 		}
 
-		phases = game.getState().getOrThrow(GamePhaseState.KEY);
+		progression = game.getState().getOrThrow(GameProgressionState.KEY);
+
+		waterLevelByTime = waterLevels.resolve(progression);
 
 		events.listen(GamePhaseEvents.START, () -> {
-			lastPhase = phases.get();
-			waterLevel = phaseToTideHeight.get(phases.get());
+			waterLevel = Mth.floor(waterLevelByTime.get(progression.time()));
 			chunkWaterLevels.defaultReturnValue(waterLevel);
-
-			maxWaterLevel = phaseToTideHeight.values().stream().mapToInt(v -> v).max().orElse(waterLevel);
 		});
 
 		events.listen(GameLivingEntityEvents.TICK, this::onLivingEntityUpdate);
 		events.listen(GamePhaseEvents.TICK, () -> tick(game));
-
-		events.listen(GameLogicEvents.PHASE_CHANGE, (phase, lastPhase) -> {
-			this.lastPhase = lastPhase;
-		});
 	}
 
 	private void onLivingEntityUpdate(LivingEntity entity) {
@@ -150,13 +144,11 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 	}
 
 	private void tick(IGamePhase game) {
-		GamePhase currentPhase = phases.get();
-		int prevWaterLevel = phaseToTideHeight.get(lastPhase);
+		tickWaterLevel(game);
 
-		tickWaterLevel(game, currentPhase, phases.progress(), prevWaterLevel);
-
-		if (phasesIcebergsGrow.contains(currentPhase.key())) {
-			int targetSteps = Math.round(phases.progress() * maxIcebergGrowthSteps);
+		float icebergsProgress = progression.progressIn(icebergGrowthPeriod);
+		if (icebergsProgress > 0.0f) {
+			int targetSteps = Math.round(icebergsProgress * maxIcebergGrowthSteps);
 			if (icebergGrowthSteps < targetSteps) {
 				growIcebergs(game.getWorld());
 				icebergGrowthSteps++;
@@ -169,10 +161,6 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 	}
 
 	private void spawnRisingTideParticles(IGamePhase game) {
-		if (waterLevel >= maxWaterLevel) {
-			return;
-		}
-
 		ServerLevel world = game.getWorld();
 		Random random = world.random;
 		if (random.nextInt(3) != 0) {
@@ -248,9 +236,8 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 		return count;
 	}
 
-	private void tickWaterLevel(final IGamePhase game, final GamePhase phase, float phaseProgress, final int prevWaterLevel) {
-		final int phaseWaterLevel = phaseToTideHeight.get(phase);
-		final int targetWaterLevel = Mth.floor(Mth.lerp(phaseProgress, prevWaterLevel, phaseWaterLevel));
+	private void tickWaterLevel(final IGamePhase game) {
+		int targetWaterLevel = Mth.floor(waterLevelByTime.get(progression.time()));
 
 		if (waterLevel < targetWaterLevel) {
 			waterLevel++;

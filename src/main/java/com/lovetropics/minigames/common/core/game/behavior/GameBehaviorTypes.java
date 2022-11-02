@@ -41,7 +41,7 @@ public class GameBehaviorTypes {
 	public static final GameBehaviorEntry<TimedGameBehavior> TIMED;
 	public static final GameBehaviorEntry<ImmediateRespawnBehavior> IMMEDIATE_RESPAWN;
 	public static final GameBehaviorEntry<SetGameTypesBehavior> SET_GAME_TYPES;
-	public static final GameBehaviorEntry<PhaseControllerBehavior> PHASE_CONTROLLER;
+	public static final GameBehaviorEntry<GameProgressionBehavior> PROGRESSION;
 	public static final GameBehaviorEntry<PermanentItemBehavior> PERMANENT_ITEM;
 	public static final GameBehaviorEntry<GeneralEventsTrigger> EVENTS;
 	public static final GameBehaviorEntry<OnDeathTrigger> ON_DEATH;
@@ -73,7 +73,7 @@ public class GameBehaviorTypes {
 	public static final GameBehaviorEntry<SetDifficultyBehavior> SET_DIFFICULTY;
 	public static final GameBehaviorEntry<GameEndEffectsBehavior> GAME_END_EFFECTS;
 	public static final GameBehaviorEntry<TipsAndTricksBehavior> TIPS_AND_TRICKS;
-	public static final GameBehaviorEntry<PhaseProgressBarBehavior> PHASE_PROGRESS_BAR;
+	public static final GameBehaviorEntry<ProgressBarBehavior> PHASE_PROGRESS_BAR;
 
 	public static final GameBehaviorEntry<BindObjectiveToStatisticBehavior> BIND_OBJECTIVE_TO_STATISTIC;
 	public static final GameBehaviorEntry<PlaceByStatisticBehavior> PLACE_BY_STATISTIC;
@@ -129,7 +129,7 @@ public class GameBehaviorTypes {
 		TIMED = register("timed", TimedGameBehavior.CODEC);
 		IMMEDIATE_RESPAWN = register("immediate_respawn", ImmediateRespawnBehavior.CODEC);
 		SET_GAME_TYPES = register("set_game_types", SetGameTypesBehavior.CODEC);
-		PHASE_CONTROLLER = register("phase_controller", PhaseControllerBehavior.CODEC);
+		PROGRESSION = register("progression", GameProgressionBehavior.CODEC);
 		PERMANENT_ITEM = register("permanent_item", PermanentItemBehavior.CODEC);
 		BIND_CONTROLS = register("bind_controls", BindControlsBehavior.CODEC);
 		CANCEL_PLAYER_DAMAGE = register("cancel_player_damage", CancelPlayerDamageBehavior.CODEC);
@@ -155,7 +155,7 @@ public class GameBehaviorTypes {
 		SET_DIFFICULTY = register("set_difficulty", SetDifficultyBehavior.CODEC);
 		GAME_END_EFFECTS = register("game_end_effects", GameEndEffectsBehavior.CODEC);
 		TIPS_AND_TRICKS = register("tips_and_tricks", TipsAndTricksBehavior.CODEC);
-		PHASE_PROGRESS_BAR = register("phase_progress_bar", PhaseProgressBarBehavior.CODEC);
+		PHASE_PROGRESS_BAR = register("phase_progress_bar", ProgressBarBehavior.CODEC);
 
 		BIND_OBJECTIVE_TO_STATISTIC = register("bind_objective_to_statistic", BindObjectiveToStatisticBehavior.CODEC);
 		PLACE_BY_STATISTIC = register("place_by_statistic", PlaceByStatisticBehavior.CODEC);

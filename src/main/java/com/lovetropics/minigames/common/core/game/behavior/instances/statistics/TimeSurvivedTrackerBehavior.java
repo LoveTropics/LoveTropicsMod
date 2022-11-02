@@ -28,7 +28,7 @@ public final class TimeSurvivedTrackerBehavior implements IGameBehavior {
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
-		trigger.awaitThen(events, () -> {
+		trigger.awaitThen(game, events, () -> {
 			startTime = game.ticks();
 
 			events.listen(GamePhaseEvents.FINISH, () -> onFinish(game));

@@ -6,26 +6,39 @@ import com.lovetropics.minigames.common.core.game.behavior.action.GameActionCont
 import com.lovetropics.minigames.common.core.game.behavior.action.GameActionList;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameLogicEvents;
-import com.lovetropics.minigames.common.core.game.state.GamePhase;
+import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
+import com.lovetropics.minigames.common.core.game.state.GameProgressionState;
+import com.lovetropics.minigames.common.core.game.state.ProgressionPoint;
+import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
-public record PhaseChangeTrigger(Map<GamePhase, GameActionList> phases) implements IGameBehavior {
-	public static final Codec<PhaseChangeTrigger> CODEC = Codec.unboundedMap(GamePhase.CODEC, GameActionList.CODEC)
+public record PhaseChangeTrigger(Map<ProgressionPoint, GameActionList> phases) implements IGameBehavior {
+	public static final Codec<PhaseChangeTrigger> CODEC = Codec.unboundedMap(ProgressionPoint.CODEC, GameActionList.CODEC)
 			.xmap(PhaseChangeTrigger::new, PhaseChangeTrigger::phases);
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
+		GameProgressionState progression = game.getState().getOrThrow(GameProgressionState.KEY);
+
 		for (GameActionList actions : phases.values()) {
 			actions.register(game, events);
 		}
 
-		events.listen(GameLogicEvents.PHASE_CHANGE, (phase, lastPhase) -> {
-			GameActionList actions = phases.get(phase);
-			if (actions != null) {
-				actions.apply(game, GameActionContext.EMPTY);
+		List<Map.Entry<ProgressionPoint, GameActionList>> remaining = new ArrayList<>(phases.entrySet());
+
+		events.listen(GamePhaseEvents.TICK, () -> {
+			Iterator<Map.Entry<ProgressionPoint, GameActionList>> iterator = remaining.iterator();
+			while (iterator.hasNext()) {
+				Map.Entry<ProgressionPoint, GameActionList> entry = iterator.next();
+				if (progression.isAfter(entry.getKey())) {
+					entry.getValue().apply(game, GameActionContext.EMPTY);
+					iterator.remove();
+				}
 			}
 		});
 	}

@@ -1,6 +1,5 @@
 package com.lovetropics.minigames.common.core.game.behavior.event;
 
-import com.lovetropics.minigames.common.core.game.state.GamePhase;
 import net.minecraft.network.chat.Component;
 
 public final class GameLogicEvents {
@@ -16,12 +15,6 @@ public final class GameLogicEvents {
 		}
 	});
 
-	public static final GameEventType<PhaseChange> PHASE_CHANGE = GameEventType.create(PhaseChange.class, listeners -> (phase, lastPhase) -> {
-		for (PhaseChange listener : listeners) {
-			listener.onPhaseChange(phase, lastPhase);
-		}
-	});
-
 	private GameLogicEvents() {
 	}
 
@@ -31,9 +24,5 @@ public final class GameLogicEvents {
 
 	public interface GameOver {
 		void onGameOver();
-	}
-
-	public interface PhaseChange {
-		void onPhaseChange(GamePhase phase, GamePhase lastPhase);
 	}
 }

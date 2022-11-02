@@ -9,8 +9,9 @@ import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameLivingEntityEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
-import com.lovetropics.minigames.common.core.game.state.GamePhase;
-import com.lovetropics.minigames.common.core.game.state.GamePhaseState;
+import com.lovetropics.minigames.common.core.game.state.ProgressionPeriod;
+import com.lovetropics.minigames.common.core.game.state.ProgressionPoint;
+import com.lovetropics.minigames.common.core.game.state.GameProgressionState;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.SharedConstants;
@@ -31,13 +32,12 @@ import net.minecraft.world.level.GameRules;
 import net.minecraft.server.level.ServerLevel;
 
 import javax.annotation.Nullable;
-import java.util.List;
 
 public class SurviveTheTideRulesetBehavior implements IGameBehavior {
 	public static final Codec<SurviveTheTideRulesetBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
 			Codec.STRING.optionalFieldOf("spawn_area_region", "spawn_area").forGetter(c -> c.spawnAreaKey),
-			GamePhase.CODEC.fieldOf("phase_to_free_participants").forGetter(c -> c.phaseToFreeParticipants),
-			Codec.STRING.listOf().fieldOf("phases_with_no_pvp").forGetter(c -> c.phasesWithNoPVP),
+			ProgressionPoint.CODEC.fieldOf("free_participants_at").forGetter(c -> c.freeParticipantsAt),
+			ProgressionPeriod.CODEC.fieldOf("safe_period").forGetter(c -> c.safePeriod),
 			Codec.BOOL.optionalFieldOf("force_drop_items_on_death", true).forGetter(c -> c.forceDropItemsOnDeath),
 			MoreCodecs.TEXT.fieldOf("message_on_set_players_free").forGetter(c -> c.messageOnSetPlayersFree)
 	).apply(i, SurviveTheTideRulesetBehavior::new));
@@ -45,26 +45,26 @@ public class SurviveTheTideRulesetBehavior implements IGameBehavior {
 	private final String spawnAreaKey;
 	@Nullable
 	private BlockBox spawnArea;
-	private final GamePhase phaseToFreeParticipants;
-	private final List<String> phasesWithNoPVP;
+	private final ProgressionPoint freeParticipantsAt;
+	private final ProgressionPeriod safePeriod;
 	private final boolean forceDropItemsOnDeath;
 	private final Component messageOnSetPlayersFree;
 
 	private boolean hasFreedParticipants = false;
 
-	private GamePhaseState phases;
+	private GameProgressionState progression;
 
-	public SurviveTheTideRulesetBehavior(final String spawnAreaKey, final GamePhase phaseToFreeParticipants, final List<String> phasesWithNoPVP, final boolean forceDropItemsOnDeath, final Component messageOnSetPlayersFree) {
+	public SurviveTheTideRulesetBehavior(final String spawnAreaKey, final ProgressionPoint freeParticipantsAt, final ProgressionPeriod safePeriod, final boolean forceDropItemsOnDeath, final Component messageOnSetPlayersFree) {
 		this.spawnAreaKey = spawnAreaKey;
-		this.phaseToFreeParticipants = phaseToFreeParticipants;
-		this.phasesWithNoPVP = phasesWithNoPVP;
+		this.freeParticipantsAt = freeParticipantsAt;
+		this.safePeriod = safePeriod;
 		this.forceDropItemsOnDeath = forceDropItemsOnDeath;
 		this.messageOnSetPlayersFree = messageOnSetPlayersFree;
 	}
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) throws GameException {
-		phases = game.getState().getOrThrow(GamePhaseState.KEY);
+		progression = game.getState().getOrThrow(GameProgressionState.KEY);
 
 		spawnArea = game.getMapRegions().getAny(spawnAreaKey);
 
@@ -88,28 +88,24 @@ public class SurviveTheTideRulesetBehavior implements IGameBehavior {
 	}
 
 	private InteractionResult onPlayerHurt(ServerPlayer player, DamageSource source, float amount) {
-		if ((source.getEntity() instanceof ServerPlayer || source.isProjectile()) && phases.is(this::isSafePhase)) {
+		if ((source.getEntity() instanceof ServerPlayer || source.isProjectile()) && progression.is(safePeriod)) {
 			return InteractionResult.FAIL;
 		}
 		return InteractionResult.PASS;
 	}
 
 	private InteractionResult onPlayerAttackEntity(ServerPlayer player, Entity target) {
-		if (target instanceof ServerPlayer && phases.is(this::isSafePhase)) {
+		if (target instanceof ServerPlayer && progression.is(safePeriod)) {
 			return InteractionResult.FAIL;
 		}
 		return InteractionResult.PASS;
 	}
 
 	private void tick(final IGamePhase game) {
-		if (!hasFreedParticipants && phases.is(phaseToFreeParticipants)) {
+		if (!hasFreedParticipants && progression.isAfter(freeParticipantsAt)) {
 			hasFreedParticipants = true;
 			setParticipantsFree(game);
 		}
-	}
-
-	public boolean isSafePhase(GamePhase phase) {
-		return phasesWithNoPVP.contains(phase.key());
 	}
 
 	private void destroyVanishingCursedItems(Container inventory) {
