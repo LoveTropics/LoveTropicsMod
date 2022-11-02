@@ -51,7 +51,7 @@ public class RaceTrackBehavior implements IGameBehavior {
 			PathData.CODEC.fieldOf("path").forGetter(b -> b.pathData),
 			Codec.STRING.optionalFieldOf("finish_region", "finish").forGetter(b -> b.finishRegion),
 			Codec.unboundedMap(Codec.STRING, GameActionList.CODEC).optionalFieldOf("checkpoint_regions", Map.of()).forGetter(b -> b.checkpointRegions),
-			Codec.INT.optionalFieldOf("lap_count", 3).forGetter(b -> b.lapCount),
+			Codec.INT.optionalFieldOf("lap_count", 1).forGetter(b -> b.lapCount),
 			Codec.INT.optionalFieldOf("winner_count", 3).forGetter(b -> b.winnerCount),
 			Codec.LONG.optionalFieldOf("start_time", 0L).forGetter(b -> b.startTime)
 	).apply(i, RaceTrackBehavior::new));
@@ -98,7 +98,7 @@ public class RaceTrackBehavior implements IGameBehavior {
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) throws GameException {
 		this.game = game;
-		path = pathData.compile(game.getMapRegions());
+		path = pathData.compile(game.getMapRegions(), lapCount > 1);
 
 		registerCheckpoints(game, events);
 
@@ -227,7 +227,12 @@ public class RaceTrackBehavior implements IGameBehavior {
 		RaceTrackPath.Point point = path.nextPointAt(player.getBlockX(), player.getBlockZ(), state.trackedPosition, (float) (movedDistance * 2.0f));
 		state.trackPosition(point.position(), game.ticks());
 
-		Component title = new TextComponent("Lap #" + (state.lap + 1) + " of " + lapCount).withStyle(ChatFormatting.AQUA);
+		Component title;
+		if (lapCount > 1) {
+			title = new TextComponent("Lap #" + (state.lap + 1) + " of " + lapCount).withStyle(ChatFormatting.AQUA);
+		} else {
+			title = game.getDefinition().getName().copy().withStyle(ChatFormatting.AQUA);
+		}
 		state.updateBar(player, title, path.length());
 
 		return false;
@@ -240,7 +245,7 @@ public class RaceTrackBehavior implements IGameBehavior {
 		game.getAllPlayers().sendMessage(new TextComponent("")
 				.append(new TextComponent("\u2714 ").withStyle(ChatFormatting.GREEN))
 				.append(player.getDisplayName())
-				.append(" finished lap #" + (state.lap + 1) + " in ")
+				.append(lapCount > 1 ? " finished lap #" + (state.lap + 1) + " in " : " finished in ")
 				.append(new TextComponent(Util.formatMinutesSeconds(lapTime / SharedConstants.TICKS_PER_SECOND)).withStyle(ChatFormatting.GOLD))
 				.append("!")
 				.withStyle(ChatFormatting.AQUA)
@@ -308,7 +313,12 @@ public class RaceTrackBehavior implements IGameBehavior {
 					PlayerState state = entry.getValue();
 					if (player != null) {
 						int percent = Math.round(state.trackedPosition / path.length() * 100.0f);
-						leaderboard.add(player.getGameProfile().getName(), new TextComponent("(Lap #" + (state.lap + 1) + "; " + percent + "%)").withStyle(ChatFormatting.GRAY));
+						String playerName = player.getGameProfile().getName();
+						if (lapCount > 1) {
+							leaderboard.add(playerName, new TextComponent("(Lap #" + (state.lap + 1) + "; " + percent + "%)").withStyle(ChatFormatting.GRAY));
+						} else {
+							leaderboard.add(playerName, new TextComponent("(" + percent + "%)").withStyle(ChatFormatting.GRAY));
+						}
 					}
 				});
 
@@ -416,7 +426,7 @@ public class RaceTrackBehavior implements IGameBehavior {
 				Codec.STRING.fieldOf("prefix").forGetter(PathData::prefix)
 		).apply(i, PathData::new));
 
-		public RaceTrackPath compile(MapRegions regions) {
+		public RaceTrackPath compile(MapRegions regions, boolean loop) {
 			RaceTrackPath.Builder path = RaceTrackPath.builder();
 
 			List<BlockPos> positions = collectPositions(regions);
@@ -424,7 +434,9 @@ public class RaceTrackBehavior implements IGameBehavior {
 				path.addPoint(point.getX(), point.getZ());
 			}
 
-			path.loop();
+			if (loop) {
+				path.loop();
+			}
 
 			return path.build();
 		}
