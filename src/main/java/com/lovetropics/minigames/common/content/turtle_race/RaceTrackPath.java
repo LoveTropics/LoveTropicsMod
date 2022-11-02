@@ -143,16 +143,20 @@ public class RaceTrackPath {
 			return new Segment(start, end, deltaX, deltaZ, lengthSq);
 		}
 
+		public Builder loop() {
+			if (segments.isEmpty()) {
+				throw new IllegalStateException("Must have at least one track segment");
+			}
+			Point startPoint = segments.get(0).start();
+			return addPoint(startPoint.x(), startPoint.z());
+		}
+
 		public RaceTrackPath build() {
 			if (lastPoint == null || segments.isEmpty()) {
 				throw new IllegalStateException("Must have at least one track segment");
 			}
 
-			Point startPoint = segments.get(0).start();
-			addPoint(startPoint.x(), startPoint.z());
-
 			Segment[] segments = this.segments.toArray(Segment[]::new);
-
 			float[] positions = new float[segments.length];
 			for (int i = 0; i < segments.length; i++) {
 				positions[i] = segments[i].start().position();

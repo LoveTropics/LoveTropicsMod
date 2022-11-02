@@ -424,6 +424,8 @@ public class RaceTrackBehavior implements IGameBehavior {
 				path.addPoint(point.getX(), point.getZ());
 			}
 
+			path.loop();
+
 			return path.build();
 		}
 
