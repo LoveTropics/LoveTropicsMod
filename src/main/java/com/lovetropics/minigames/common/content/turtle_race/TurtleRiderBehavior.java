@@ -39,6 +39,9 @@ public record TurtleRiderBehavior(EntityType<?> entityType, CompoundTag entityTa
 		Map<UUID, Entity> turtles = new Object2ObjectOpenHashMap<>();
 
 		events.listen(GamePlayerEvents.SPAWN, (player, role) -> {
+			if (role != PlayerRole.PARTICIPANT) {
+				return;
+			}
 			Entity entity = spawnTurtle(player);
 			if (entity == null) {
 				LOGGER.error("Failed to spawn turtle entity of type: {}", entityType);
