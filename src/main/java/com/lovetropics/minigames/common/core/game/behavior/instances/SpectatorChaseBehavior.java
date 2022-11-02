@@ -54,6 +54,8 @@ public final class SpectatorChaseBehavior implements IGameBehavior {
 						PacketDistributor.PLAYER.with(() -> player),
 						new ShowNotificationToastMessage(SPECTATING_NOTIFICATION_MESSAGE, SPECTATING_NOTIFICATION_STYLE)
 				);
+			} else if (lastRole == PlayerRole.SPECTATOR) {
+				removeSpectator(player);
 			}
 			sendSpectatingUpdate(game);
 		});
@@ -62,7 +64,7 @@ public final class SpectatorChaseBehavior implements IGameBehavior {
 	}
 
 	private void removePlayer(IGamePhase game, ServerPlayer player) {
-		GameClientState.removeFromPlayer(GameClientStateTypes.SPECTATING.get(), player);
+		removeSpectator(player);
 
 		this.sendSpectatingUpdate(game);
 	}
@@ -70,6 +72,10 @@ public final class SpectatorChaseBehavior implements IGameBehavior {
 	private void sendSpectatingUpdate(IGamePhase game) {
 		SpectatingClientState spectating = this.buildSpectatingState(game);
 		GameClientState.sendToPlayers(spectating, game.getSpectators());
+	}
+
+	private void removeSpectator(ServerPlayer player) {
+		GameClientState.removeFromPlayer(GameClientStateTypes.SPECTATING.get(), player);
 	}
 
 	private void stop(IGamePhase game) {
