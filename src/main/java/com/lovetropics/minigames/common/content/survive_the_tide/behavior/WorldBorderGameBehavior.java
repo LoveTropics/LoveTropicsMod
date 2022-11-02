@@ -29,7 +29,6 @@ import java.util.List;
 public class WorldBorderGameBehavior implements IGameBehavior {
 	public static final Codec<WorldBorderGameBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
 			Codec.STRING.fieldOf("world_border_center").forGetter(c -> c.worldBorderCenterKey),
-			MoreCodecs.TEXT.fieldOf("collapse_message").forGetter(c -> c.collapseMessage),
 			ProgressionPeriod.CODEC.fieldOf("period").forGetter(c -> c.period),
 			Codec.INT.fieldOf("particle_rate_delay").forGetter(c -> c.particleRateDelay),
 			Codec.INT.fieldOf("particle_height").forGetter(c -> c.particleHeight),
@@ -39,7 +38,6 @@ public class WorldBorderGameBehavior implements IGameBehavior {
 	).apply(i, WorldBorderGameBehavior::new));
 
 	private final String worldBorderCenterKey;
-	private final Component collapseMessage;
 	private final ProgressionPeriod period;
 	private final int particleRateDelay;
 	private final int particleHeight;
@@ -49,14 +47,11 @@ public class WorldBorderGameBehavior implements IGameBehavior {
 
 	private BlockPos worldBorderCenter = BlockPos.ZERO;
 
-	private boolean borderCollapseMessageSent = false;
-
 	private GameProgressionState phases;
 
-	public WorldBorderGameBehavior(final String worldBorderCenterKey, final Component collapseMessage, final ProgressionPeriod period,
+	public WorldBorderGameBehavior(final String worldBorderCenterKey, final ProgressionPeriod period,
 								   final int particleRateDelay, final int particleHeight, final int damageRateDelay, final int damageAmount, final ParticleOptions borderParticle) {
 		this.worldBorderCenterKey = worldBorderCenterKey;
-		this.collapseMessage = collapseMessage;
 		this.period = period;
 		this.particleRateDelay = particleRateDelay;
 		this.particleHeight = particleHeight;
@@ -78,12 +73,7 @@ public class WorldBorderGameBehavior implements IGameBehavior {
 			worldBorderCenter = BlockPos.ZERO;
 		}
 
-		events.listen(GamePhaseEvents.STOP, r -> onFinish());
 		events.listen(GamePhaseEvents.TICK, () -> tickWorldBorder(game));
-	}
-
-	private void onFinish() {
-		borderCollapseMessageSent = false;
 	}
 
 	// TODO: Clean up this mess
@@ -91,11 +81,6 @@ public class WorldBorderGameBehavior implements IGameBehavior {
 		float phaseProgress = phases.progressIn(period);
 		if (phaseProgress <= 0.0f) {
 			return;
-		}
-
-		if (!borderCollapseMessageSent) {
-			borderCollapseMessageSent = true;
-			game.getAllPlayers().sendMessage(collapseMessage);
 		}
 
 		boolean isCollapsing = phaseProgress >= 1.0f;
