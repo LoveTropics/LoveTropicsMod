@@ -78,6 +78,11 @@ public final class SelectPlayerRoleScreen extends Screen {
 		this.renderText(matrixStack);
 	}
 
+	@Override
+	public boolean shouldCloseOnEsc() {
+		return false;
+	}
+
 	private void renderText(PoseStack matrixStack) {
 		Box box = layout.text.content();
 
