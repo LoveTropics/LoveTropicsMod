@@ -5,6 +5,8 @@ import com.lovetropics.lib.entity.FireworkPalette;
 import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
+import com.lovetropics.minigames.common.core.game.behavior.action.GameActionContext;
+import com.lovetropics.minigames.common.core.game.behavior.action.GameActionList;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameLogicEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
@@ -37,6 +39,7 @@ import net.minecraft.world.phys.Vec3;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -47,6 +50,7 @@ public class RaceTrackBehavior implements IGameBehavior {
 	public static final Codec<RaceTrackBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
 			PathData.CODEC.fieldOf("path").forGetter(b -> b.pathData),
 			Codec.STRING.optionalFieldOf("finish_region", "finish").forGetter(b -> b.finishRegion),
+			Codec.unboundedMap(Codec.STRING, GameActionList.CODEC).optionalFieldOf("checkpoint_regions", Map.of()).forGetter(b -> b.checkpointRegions),
 			Codec.INT.optionalFieldOf("lap_count", 3).forGetter(b -> b.lapCount),
 			Codec.INT.optionalFieldOf("winner_count", 3).forGetter(b -> b.winnerCount),
 			Codec.LONG.optionalFieldOf("start_time", 0L).forGetter(b -> b.startTime)
@@ -66,6 +70,7 @@ public class RaceTrackBehavior implements IGameBehavior {
 
 	private final PathData pathData;
 	private final String finishRegion;
+	private final Map<String, GameActionList> checkpointRegions;
 	private final int lapCount;
 	private final int winnerCount;
 	// TODO: Should be a phase / other kind of trigger
@@ -78,11 +83,13 @@ public class RaceTrackBehavior implements IGameBehavior {
 	private IGamePhase game;
 
 	private RaceTrackPath path;
-	private AABB finishBox;
 
-	public RaceTrackBehavior(PathData pathData, String finishRegion, int lapCount, int winnerCount, long startTime) {
+	private final List<Checkpoint> checkpoints = new ArrayList<>();
+
+	public RaceTrackBehavior(PathData pathData, String finishRegion, Map<String, GameActionList> checkpointRegions, int lapCount, int winnerCount, long startTime) {
 		this.pathData = pathData;
 		this.finishRegion = finishRegion;
+		this.checkpointRegions = checkpointRegions;
 		this.lapCount = lapCount;
 		this.winnerCount = winnerCount;
 		this.startTime = startTime;
@@ -93,7 +100,7 @@ public class RaceTrackBehavior implements IGameBehavior {
 		this.game = game;
 		path = pathData.compile(game.getMapRegions());
 
-		finishBox = game.getMapRegions().getOrThrow(finishRegion).asAabb();
+		registerCheckpoints(game, events);
 
 		GlobalGameWidgets widgets = GlobalGameWidgets.registerTo(game, events);
 		GameSidebar sidebar = widgets.openSidebar(game.getDefinition().getName().copy().withStyle(ChatFormatting.AQUA));
@@ -138,6 +145,43 @@ public class RaceTrackBehavior implements IGameBehavior {
 		});
 	}
 
+	private void registerCheckpoints(IGamePhase game, EventRegistrar events) {
+		BlockBox finishBox = game.getMapRegions().getOrThrow(finishRegion);
+		// TODO: Hacky
+		registerCheckpoint(finishBox, 0.9f * path.length(), path.length(), this::onPlayerFinishLap);
+
+		for (Map.Entry<String, GameActionList> entry : checkpointRegions.entrySet()) {
+			Collection<BlockBox> regions = game.getMapRegions().get(entry.getKey());
+			if (regions.isEmpty()) {
+				continue;
+			}
+
+			GameActionList actions = entry.getValue();
+			actions.register(game, events);
+
+			for (BlockBox region : regions) {
+				registerCheckpoint(region, (player, state) -> {
+					actions.apply(game, GameActionContext.EMPTY, player);
+					return false;
+				});
+			}
+		}
+	}
+
+	private void registerCheckpoint(BlockBox box, Checkpoint.Handler handler) {
+		BlockPos center = box.centerBlock();
+		RaceTrackPath.Point point = path.closestPointAt(center.getX(), center.getZ());
+		float size = (float) Math.max(box.size().getX(), Math.max(box.size().getY(), box.size().getZ()));
+		float minPosition = point.position() - size * 2.0f;
+		float maxPosition = point.position() + size * 2.0f;
+
+		registerCheckpoint(box, minPosition, maxPosition, handler);
+	}
+
+	private void registerCheckpoint(BlockBox box, float minPosition, float maxPosition, Checkpoint.Handler handler) {
+		checkpoints.add(new Checkpoint(box.asAabb(), minPosition, maxPosition, handler));
+	}
+
 	private void showStuckWarning(ServerPlayer player) {
 		player.connection.send(new ClientboundSetTitlesAnimationPacket(0, STUCK_WARNING_REPEAT_INTERVAL * 2, 10));
 		player.connection.send(new ClientboundSetTitleTextPacket(new TextComponent("Warning!").withStyle(ChatFormatting.RED)));
@@ -169,10 +213,11 @@ public class RaceTrackBehavior implements IGameBehavior {
 	}
 
 	private boolean onPlayerMove(ServerPlayer player, PlayerState state, Vec3 position, Vec3 lastPosition) {
-		// TODO: Not a great way to detect this
-		if (state.trackedPosition >= 0.9f * path.length() && finishBox.clip(lastPosition, position).isPresent()) {
-			if (onPlayerFinishLap(player, state)) {
-				return true;
+		for (Checkpoint checkpoint : checkpoints) {
+			if (checkpoint.test(lastPosition, position, state.trackedPosition)) {
+				if (checkpoint.handler.apply(player, state)) {
+					return true;
+				}
 			}
 		}
 
@@ -268,6 +313,17 @@ public class RaceTrackBehavior implements IGameBehavior {
 				});
 
 		return leaderboard.build();
+	}
+
+	private record Checkpoint(AABB box, float minPosition, float maxPosition, Handler handler) {
+		public boolean test(Vec3 lastPosition, Vec3 position, float trackedPosition) {
+			return trackedPosition >= minPosition && trackedPosition <= maxPosition
+					&& box.clip(lastPosition, position).isPresent();
+		}
+
+		public interface Handler {
+			boolean apply(ServerPlayer player, PlayerState state);
+		}
 	}
 
 	private record FinishEntry(String name, PlayerKey player, long time) {

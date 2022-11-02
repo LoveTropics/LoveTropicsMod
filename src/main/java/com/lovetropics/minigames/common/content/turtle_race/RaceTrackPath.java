@@ -49,6 +49,20 @@ public class RaceTrackPath {
 		return Objects.requireNonNull(closestPoint);
 	}
 
+	public Point closestPointAt(int x, int z) {
+		int closestDistanceSq = Integer.MAX_VALUE;
+		Point closestPoint = null;
+		for (Segment segment : segments) {
+			Point point = segment.closestPointAt(x, z);
+			int distanceSq = point.distanceToSq(x, z);
+			if (distanceSq < closestDistanceSq) {
+				closestDistanceSq = distanceSq;
+				closestPoint = point;
+			}
+		}
+		return Objects.requireNonNull(closestPoint);
+	}
+
 	private int findSegment(float position) {
 		int index = Arrays.binarySearch(positions, position);
 		if (index >= 0) {
