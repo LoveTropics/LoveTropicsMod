@@ -77,6 +77,9 @@ public final class SpectatingUi {
 		} else {
 			session.ui.onScrollSelection(delta);
 		}
+
+		// Prevent adjusting the spectator fly speed
+		event.setCanceled(true);
 	}
 
 	private void onScrollZoom(double delta) {
