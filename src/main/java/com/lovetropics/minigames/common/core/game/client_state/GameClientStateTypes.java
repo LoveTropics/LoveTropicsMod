@@ -13,6 +13,9 @@ import com.lovetropics.minigames.common.core.game.client_state.instance.TimeInte
 import com.lovetropics.minigames.common.util.registry.GameClientTweakEntry;
 import com.lovetropics.minigames.common.util.registry.LoveTropicsRegistrate;
 import com.mojang.serialization.Codec;
+import net.minecraft.core.Registry;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.IForgeRegistry;
@@ -21,9 +24,11 @@ import net.minecraftforge.registries.RegistryBuilder;
 import java.util.function.Supplier;
 
 public final class GameClientStateTypes {
-	public static final DeferredRegister<GameClientStateType<?>> REGISTER = DeferredRegister.create(GameClientStateType.type(), Constants.MODID);
+	public static final ResourceKey<Registry<GameClientStateType<?>>> REGISTRY_KEY = ResourceKey.createRegistryKey(new ResourceLocation(Constants.MODID, "game_client_state"));
 
-	public static final Supplier<IForgeRegistry<GameClientStateType<?>>> REGISTRY = REGISTER.makeRegistry("game_client_state", () -> {
+	public static final DeferredRegister<GameClientStateType<?>> REGISTER = DeferredRegister.create(REGISTRY_KEY, Constants.MODID);
+
+	public static final Supplier<IForgeRegistry<GameClientStateType<?>>> REGISTRY = REGISTER.makeRegistry(GameClientStateType.type(), () -> {
 		return new RegistryBuilder<GameClientStateType<?>>().disableSaving();
 	});
 

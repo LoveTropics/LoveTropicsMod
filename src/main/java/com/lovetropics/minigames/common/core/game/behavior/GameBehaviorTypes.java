@@ -17,6 +17,9 @@ import com.lovetropics.minigames.common.core.game.behavior.instances.world.*;
 import com.lovetropics.minigames.common.util.registry.GameBehaviorEntry;
 import com.lovetropics.minigames.common.util.registry.LoveTropicsRegistrate;
 import com.mojang.serialization.Codec;
+import net.minecraft.core.Registry;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.IForgeRegistry;
@@ -25,9 +28,10 @@ import net.minecraftforge.registries.RegistryBuilder;
 import java.util.function.Supplier;
 
 public class GameBehaviorTypes {
-	public static final DeferredRegister<GameBehaviorType<?>> REGISTER = DeferredRegister.create(GameBehaviorType.type(), Constants.MODID);
+	public static final ResourceKey<Registry<GameBehaviorType<?>>> REGISTRY_KEY = ResourceKey.createRegistryKey(new ResourceLocation(Constants.MODID, "minigame_behaviours"));
+	public static final DeferredRegister<GameBehaviorType<?>> REGISTER = DeferredRegister.create(REGISTRY_KEY, Constants.MODID);
 
-	public static final Supplier<IForgeRegistry<GameBehaviorType<?>>> REGISTRY = REGISTER.makeRegistry("minigame_behaviours", () -> {
+	public static final Supplier<IForgeRegistry<GameBehaviorType<?>>> REGISTRY = REGISTER.makeRegistry(GameBehaviorType.type(), () -> {
 		return new RegistryBuilder<GameBehaviorType<?>>()
 				.disableSync()
 				.disableSaving();
