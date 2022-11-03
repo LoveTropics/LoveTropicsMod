@@ -22,6 +22,8 @@ public class ConfigLT {
 
         public final BooleanValue UseCrouch;
 
+        public final IntValue donationDelay;
+
         public final IntValue donationPackageDelay;
 
         public final IntValue chatEventDelay;
@@ -34,6 +36,10 @@ public class ConfigLT {
 
             UseCrouch = CLIENT_BUILDER.comment("Enable crawling anywhere by pressing the sprint key while holding down the sneak key")
                     .define("UseCrawl", true);
+
+            donationDelay = COMMON_BUILDER
+                    .comment("Delay (in seconds) between donation events")
+                    .defineInRange("donationDelay", 2, 0, 99999);
 
             donationPackageDelay = COMMON_BUILDER
                 .comment("Delay (in seconds) between care packages")

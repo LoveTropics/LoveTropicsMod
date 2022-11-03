@@ -1,6 +1,7 @@
 package com.lovetropics.minigames.common.core.game.behavior.event;
 
 import com.google.gson.JsonObject;
+import com.lovetropics.minigames.common.core.integration.game_actions.Donation;
 import com.lovetropics.minigames.common.core.integration.game_actions.GamePackage;
 import net.minecraft.world.InteractionResult;
 
@@ -21,6 +22,12 @@ public final class GamePackageEvents {
 		}
 	});
 
+	public static final GameEventType<ReceiveDonation> RECEIVE_DONATION = GameEventType.create(ReceiveDonation.class, listeners -> donation -> {
+		for (ReceiveDonation listener : listeners) {
+			listener.onReceiveDonation(donation);
+		}
+	});
+
 	private GamePackageEvents() {
 	}
 
@@ -30,5 +37,9 @@ public final class GamePackageEvents {
 
 	public interface ReceivePollEvent {
 		void onReceivePollEvent(JsonObject object, String crud);
+	}
+
+	public interface ReceiveDonation {
+		void onReceiveDonation(Donation donation);
 	}
 }
