@@ -23,8 +23,10 @@ public record DonationThresholdBehavior(double threshold, GameActionList actions
 		actions.register(game, events);
 
 		events.listen(GamePackageEvents.RECEIVE_DONATION, donation -> {
-			GameActionContext context = actionContext(donation);
-			actions.apply(game, context);
+			if (donation.amount() >= threshold) {
+				GameActionContext context = actionContext(donation);
+				actions.apply(game, context);
+			}
 		});
 	}
 
