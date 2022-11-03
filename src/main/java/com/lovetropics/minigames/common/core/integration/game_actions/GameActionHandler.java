@@ -2,8 +2,9 @@ package com.lovetropics.minigames.common.core.integration.game_actions;
 
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.integration.GameInstanceTelemetry;
+import com.mojang.logging.LogUtils;
 import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -16,7 +17,7 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.PriorityBlockingQueue;
 
 public final class GameActionHandler {
-	private static final Logger LOGGER = LogManager.getLogger(GameActionHandler.class);
+	private static final Logger LOGGER = LogUtils.getLogger();
 
 	private final IGamePhase game;
 	private final GameInstanceTelemetry telemetry;
@@ -44,6 +45,7 @@ public final class GameActionHandler {
 	public void enqueue(final GameActionRequest request) {
 		ActionsQueue queue = getQueueFor(request.type());
 		queue.offer(request);
+		LOGGER.debug("Enqueued incoming game action request: {}", request);
 	}
 
 	private ActionsQueue getQueueFor(GameActionType requestType) {
@@ -79,6 +81,7 @@ public final class GameActionHandler {
 			try {
 				GameActionRequest request;
 				while ((request = queue.poll()) != null) {
+					LOGGER.debug("Trying to resolve incoming game action request: {}", request);
 					if (request.action().resolve(game, game.getServer())) {
 						return request;
 					} else {

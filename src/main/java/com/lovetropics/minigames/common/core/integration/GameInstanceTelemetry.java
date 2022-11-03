@@ -23,6 +23,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 
 import java.time.Instant;
+import java.util.Optional;
 import java.util.UUID;
 
 public final class GameInstanceTelemetry implements IGameState {
@@ -162,16 +163,16 @@ public final class GameInstanceTelemetry implements IGameState {
 		if ("poll".equals(type)) {
 			game.invoker(GamePackageEvents.RECEIVE_POLL_EVENT).onReceivePollEvent(object, crud);
 		} else if ("create".equals(crud)) {
-			GameActionType.getFromId(type).ifPresent(actionType -> {
+			Optional<GameActionType> actionType = GameActionType.getFromId(type);
+			if (actionType.isPresent()) {
 				JsonObject payload = object.getAsJsonObject("payload");
-				DataResult<GameActionRequest> parseResult = actionType.getCodec().parse(JsonOps.INSTANCE, payload);
+				DataResult<GameActionRequest> parseResult = actionType.get().getCodec().parse(JsonOps.INSTANCE, payload);
 
 				parseResult.result().ifPresent(actions::enqueue);
-
-				parseResult.error().ifPresent(error -> {
-					LoveTropics.LOGGER.warn("Received invalid game action of type {}: {}", type, error);
-				});
-			});
+				parseResult.error().ifPresent(error -> LoveTropics.LOGGER.warn("Received invalid game action of type {}: {}", type, error));
+			} else {
+				LoveTropics.LOGGER.debug("Received create event with unrecognised action type: {}", type);
+			}
 		}
 	}
 }

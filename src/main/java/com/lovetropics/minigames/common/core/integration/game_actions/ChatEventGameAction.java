@@ -2,13 +2,17 @@ package com.lovetropics.minigames.common.core.integration.game_actions;
 
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePackageEvents;
+import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.InteractionResult;
+import org.slf4j.Logger;
 
 public record ChatEventGameAction(String trigger) implements GameAction {
+    private static final Logger LOGGER = LogUtils.getLogger();
+
     public static final MapCodec<ChatEventGameAction> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
             Codec.STRING.fieldOf("trigger").forGetter(ChatEventGameAction::trigger)
     ).apply(i, ChatEventGameAction::new));
@@ -19,6 +23,12 @@ public record ChatEventGameAction(String trigger) implements GameAction {
         GamePackage triggeredPackage = new GamePackage(trigger, null, null);
 
         InteractionResult result = game.invoker(GamePackageEvents.RECEIVE_PACKAGE).onReceivePackage(triggeredPackage);
+        switch (result) {
+            case SUCCESS -> LOGGER.debug("Incoming chat event was successfully processed by behavior: {}", triggeredPackage);
+            case PASS -> LOGGER.debug("Incoming chat event was not handled by behavior: {}", triggeredPackage);
+            case FAIL -> LOGGER.debug("Incoming chat event was rejected by behavior: {}", triggeredPackage);
+        };
+
         return result == InteractionResult.SUCCESS;
     }
 }

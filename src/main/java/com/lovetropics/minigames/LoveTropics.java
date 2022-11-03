@@ -30,6 +30,7 @@ import com.lovetropics.minigames.common.core.network.LoveTropicsNetwork;
 import com.lovetropics.minigames.common.role.StreamHosts;
 import com.lovetropics.minigames.common.util.registry.LoveTropicsRegistrate;
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.logging.LogUtils;
 import com.tterrag.registrate.providers.ProviderType;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.server.MinecraftServer;
@@ -59,15 +60,14 @@ import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
 import net.minecraftforge.forge.event.lifecycle.GatherDataEvent;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
 
 import java.util.regex.Pattern;
 
 @Mod(Constants.MODID)
 public class LoveTropics {
 
-    public static final Logger LOGGER = LogManager.getLogger(Constants.MODID);
+    public static final Logger LOGGER = LogUtils.getLogger();
 
     public static final CreativeModeTab LOVE_TROPICS_ITEM_GROUP = (new CreativeModeTab("love_tropics") {
         @Override
