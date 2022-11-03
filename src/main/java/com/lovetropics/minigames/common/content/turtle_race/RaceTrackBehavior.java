@@ -121,7 +121,7 @@ public class RaceTrackBehavior implements IGameBehavior {
 			Vec3 position = player.position();
 			Vec3 lastPosition = state.tracker.tryUpdate(position, gameTime);
 			if (lastPosition != null && onPlayerMove(player, state, position, lastPosition)) {
-				onPlayerFinish(game, player, state);
+				onPlayerFinish(game, player);
 			}
 
 			if (gameTime % STUCK_WARNING_REPEAT_INTERVAL == 0) {
@@ -255,7 +255,7 @@ public class RaceTrackBehavior implements IGameBehavior {
 		return state.nextLap(game.ticks()) >= lapCount;
 	}
 
-	private void onPlayerFinish(IGamePhase game, ServerPlayer player, PlayerState state) {
+	private void onPlayerFinish(IGamePhase game, ServerPlayer player) {
 		long time = game.ticks() - startTime;
 		finishedPlayers.add(new FinishEntry(player.getGameProfile().getName(), PlayerKey.from(player), time));
 
@@ -264,9 +264,7 @@ public class RaceTrackBehavior implements IGameBehavior {
 				.set(StatisticKey.TOTAL_TIME, (int) time);
 
 		game.setPlayerRole(player, PlayerRole.SPECTATOR);
-
-		states.remove(player.getUUID(), state);
-		state.close();
+		clearPlayerState(player);
 
 		if (game.getParticipants().isEmpty()) {
 			triggerWin(game);

@@ -10,7 +10,6 @@ import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameLogicEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.lovetropics.minigames.common.core.game.player.MutablePlayerSet;
-import com.lovetropics.minigames.common.core.game.player.PlayerRole;
 import com.lovetropics.minigames.common.core.game.player.PlayerSet;
 import com.lovetropics.minigames.common.core.game.state.statistics.GameStatistics;
 import com.lovetropics.minigames.common.core.game.state.statistics.PlayerKey;
@@ -24,10 +23,12 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.protocol.game.ClientboundClearTitlesPacket;
 import net.minecraft.network.protocol.game.ClientboundSetSubtitleTextPacket;
+import net.minecraft.network.protocol.game.ClientboundSetTitleTextPacket;
 import net.minecraft.network.protocol.game.ClientboundSetTitlesAnimationPacket;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.level.GameType;
 import net.minecraft.world.phys.Vec3;
 import org.slf4j.Logger;
 
@@ -90,7 +91,9 @@ public final class GameEndEffectsBehavior implements IGameBehavior {
 		if (this.title != null) {
 			Component title = this.title.apply(winner);
 			PlayerSet players = game.getAllPlayers();
+			players.sendPacket(new ClientboundClearTitlesPacket(true));
 			players.sendPacket(new ClientboundSetTitlesAnimationPacket(10, 3 * 20, 10));
+			players.sendPacket(new ClientboundSetTitleTextPacket(new TextComponent(" ")));
 			players.sendPacket(new ClientboundSetSubtitleTextPacket(title));
 		}
 

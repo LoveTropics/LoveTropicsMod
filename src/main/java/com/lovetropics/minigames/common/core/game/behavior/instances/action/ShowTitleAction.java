@@ -9,6 +9,8 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.SharedConstants;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.protocol.game.ClientboundClearTitlesPacket;
 import net.minecraft.network.protocol.game.ClientboundSetActionBarTextPacket;
 import net.minecraft.network.protocol.game.ClientboundSetSubtitleTextPacket;
 import net.minecraft.network.protocol.game.ClientboundSetTitleTextPacket;
@@ -26,11 +28,14 @@ public record ShowTitleAction(Optional<Component> title, Optional<Component> sub
 			Codec.INT.optionalFieldOf("fade_out", SharedConstants.TICKS_PER_SECOND / 4).forGetter(ShowTitleAction::fadeOut)
 	).apply(i, ShowTitleAction::new));
 
+	private static final Component EMPTY_TITLE = new TextComponent(" ");
+
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
 		events.listen(GameActionEvents.APPLY_TO_PLAYER, (context, target) -> {
+			target.connection.send(new ClientboundClearTitlesPacket(true));
 			target.connection.send(new ClientboundSetTitlesAnimationPacket(fadeIn, stay, fadeOut));
-			title.ifPresent(title -> target.connection.send(new ClientboundSetTitleTextPacket(title)));
+			target.connection.send(new ClientboundSetTitleTextPacket(title.orElse(EMPTY_TITLE)));
 			subtitle.ifPresent(subtitle -> target.connection.send(new ClientboundSetSubtitleTextPacket(subtitle)));
 			actionBar.ifPresent(actionBar -> target.connection.send(new ClientboundSetActionBarTextPacket(actionBar)));
 			return true;
