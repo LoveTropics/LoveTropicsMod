@@ -105,6 +105,7 @@ public class GameBehaviorTypes {
 	public static final GameBehaviorEntry<BlockPackagesDuringPhaseBehavior> BLOCK_PACKAGES_DURING_PHASE;
 	public static final GameBehaviorEntry<WeatherEventAction> WEATHER_EVENT;
 	public static final GameBehaviorEntry<CountdownAction> COUNTDOWN_ACTION;
+	public static final GameBehaviorEntry<TargetPlayerAction> TARGET_PLAYER;
 	public static final GameBehaviorEntry<SpawnFireworksAction> SPAWN_FIREWORKS;
 	public static final GameBehaviorEntry<RunCommandsAction> RUN_COMMANDS;
 	public static final GameBehaviorEntry<SendMessageAction> SEND_MESSAGE;
@@ -196,6 +197,7 @@ public class GameBehaviorTypes {
 		BLOCK_PACKAGES_DURING_PHASE = register("block_packages_during_phase", BlockPackagesDuringPhaseBehavior.CODEC);
 		WEATHER_EVENT = register("weather_event", WeatherEventAction.CODEC);
 		COUNTDOWN_ACTION = register("countdown_action", CountdownAction.CODEC);
+		TARGET_PLAYER = register("target_player", TargetPlayerAction.CODEC);
 		SPAWN_FIREWORKS = register("spawn_fireworks", SpawnFireworksAction.CODEC);
 		RUN_COMMANDS = register("run_commands", RunCommandsAction.CODEC);
 		SEND_MESSAGE = register("send_message", SendMessageAction.CODEC);
