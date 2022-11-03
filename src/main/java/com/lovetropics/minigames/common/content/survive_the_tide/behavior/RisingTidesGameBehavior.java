@@ -207,9 +207,6 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 		ServerLevel world = game.getWorld();
 		ServerChunkCache chunkProvider = world.getChunkSource();
 
-		long startTime = System.currentTimeMillis();
-		long updatedBlocks = 0;
-
 		int count = 0;
 
 		while (count < maxToProcess && iterator.hasNext()) {
@@ -224,13 +221,8 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 			}
 
 			iterator.remove();
-			updatedBlocks += increaseTideForChunk(chunk);
+			increaseTideForChunk(chunk);
 			count++;
-		}
-
-		if (updatedBlocks > 0) {
-			long endTime = System.currentTimeMillis();
-			LogManager.getLogger().debug("Updated {} blocks in {}ms", updatedBlocks, endTime - startTime);
 		}
 
 		return count;
