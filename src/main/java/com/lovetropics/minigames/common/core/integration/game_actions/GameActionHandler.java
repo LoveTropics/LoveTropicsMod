@@ -2,16 +2,14 @@ package com.lovetropics.minigames.common.core.integration.game_actions;
 
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.integration.GameInstanceTelemetry;
-import net.minecraft.server.MinecraftServer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import javax.annotation.Nullable;
-import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.Queue;
-import java.util.concurrent.PriorityBlockingQueue;
+import java.util.concurrent.ConcurrentLinkedDeque;
 
 public final class GameActionHandler {
 	private static final Logger LOGGER = LogManager.getLogger(GameActionHandler.class);
@@ -25,14 +23,11 @@ public final class GameActionHandler {
 		this.game = game;
 	}
 
-	public void pollGameActions(final MinecraftServer server, final int tick) {
+	public void pollGameActions(final int tick) {
 		for (ActionsQueue queue : queues.values()) {
-			GameActionRequest request = queue.tryPoll(tick);
-			if (request == null) {
-				continue;
-			}
 			try {
-				if (request.action().resolve(game, server)) {
+				GameActionRequest request = queue.tryHandle(game, tick);
+				if (request != null) {
 					// If we resolved the action, send acknowledgement to the backend
 					telemetry.acknowledgeActionDelivery(request);
 				}
@@ -53,7 +48,7 @@ public final class GameActionHandler {
 
 	static class ActionsQueue {
 		private final GameActionType requestType;
-		private final Queue<GameActionRequest> queue = new PriorityBlockingQueue<>(1, Comparator.comparing(GameActionRequest::triggerTime));
+		private final Queue<GameActionRequest> queue = new ConcurrentLinkedDeque<>();
 		private int nextPollTick;
 
 		ActionsQueue(GameActionType requestType) {
@@ -61,12 +56,18 @@ public final class GameActionHandler {
 		}
 
 		@Nullable
-		public GameActionRequest tryPoll(int tick) {
-			if (!queue.isEmpty() && tick >= nextPollTick) {
+		public GameActionRequest tryHandle(IGamePhase game, int tick) {
+			if (tick >= nextPollTick) {
+				GameActionRequest request = queue.poll();
 				nextPollTick = tick + requestType.getPollingIntervalTicks();
-				return queue.poll();
+				if (request != null) {
+					if (request.action().resolve(game, game.getServer())) {
+						return request;
+					} else {
+						queue.offer(request);
+					}
+				}
 			}
-
 			return null;
 		}
 

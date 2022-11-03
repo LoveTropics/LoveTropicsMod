@@ -19,4 +19,14 @@ public record GameActionRequest(GameActionType type, UUID uuid, LocalDateTime tr
 				codec.forGetter(GameActionRequest::action)
 		).apply(i, (uuid, triggerTime, action) -> new GameActionRequest(type, uuid, triggerTime, action)));
 	}
+
+	@Override
+	public boolean equals(Object obj) {
+		return obj instanceof GameActionRequest request && uuid.equals(request.uuid());
+	}
+
+	@Override
+	public int hashCode() {
+		return uuid.hashCode();
+	}
 }

@@ -155,7 +155,7 @@ public final class GameInstanceTelemetry implements IGameState {
 	}
 
 	void tick(MinecraftServer server) {
-		actions.pollGameActions(server, server.getTickCount());
+		actions.pollGameActions(server.getTickCount());
 	}
 
 	void handlePayload(JsonObject object, String type, String crud) {
