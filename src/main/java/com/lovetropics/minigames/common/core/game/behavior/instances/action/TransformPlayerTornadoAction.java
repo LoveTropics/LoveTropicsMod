@@ -17,9 +17,10 @@ import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraftforge.fml.InterModComms;
 
-public record TransformPlayerTornadoAction(int timeTicks) implements IGameBehavior {
+public record TransformPlayerTornadoAction(int timeTicks, boolean baby) implements IGameBehavior {
 	public static final Codec<TransformPlayerTornadoAction> CODEC = RecordCodecBuilder.create(i -> i.group(
-			Codec.INT.fieldOf("time_ticks").forGetter(c -> c.timeTicks)
+			Codec.INT.fieldOf("time_ticks").forGetter(c -> c.timeTicks),
+			Codec.BOOL.fieldOf("baby").forGetter(c -> c.baby)
 	).apply(i, TransformPlayerTornadoAction::new));
 
 	@Override
@@ -32,7 +33,8 @@ public record TransformPlayerTornadoAction(int timeTicks) implements IGameBehavi
 		InterModComms.sendTo("weather2", "player_tornado", () -> {
 			CompoundTag tag = new CompoundTag();
 			tag.putString("uuid", player.getUUID().toString());
-			tag.putInt("time_ticks", 800);
+			tag.putInt("time_ticks", timeTicks);
+			tag.putBoolean("baby", baby);
 			tag.putString("dimension", player.getLevel().dimension().location().toString());
 			return tag;
 		});
