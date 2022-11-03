@@ -6,10 +6,12 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import javax.annotation.Nullable;
+import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.concurrent.PriorityBlockingQueue;
 
 public final class GameActionHandler {
 	private static final Logger LOGGER = LogManager.getLogger(GameActionHandler.class);
@@ -48,7 +50,8 @@ public final class GameActionHandler {
 
 	static class ActionsQueue {
 		private final GameActionType requestType;
-		private final Queue<GameActionRequest> queue = new ConcurrentLinkedDeque<>();
+		private final Queue<GameActionRequest> queue = new PriorityBlockingQueue<>(1, Comparator.comparing(GameActionRequest::triggerTime));
+		private final Queue<GameActionRequest> deferredQueue = new ConcurrentLinkedDeque<>();
 		private int nextPollTick;
 
 		ActionsQueue(GameActionType requestType) {
@@ -61,14 +64,23 @@ public final class GameActionHandler {
 				GameActionRequest request = queue.poll();
 				nextPollTick = tick + requestType.getPollingIntervalTicks();
 				if (request != null) {
-					if (request.action().resolve(game, game.getServer())) {
-						return request;
-					} else {
-						queue.offer(request);
-					}
+					return tryHandleRequest(game, request) ? request : null;
+				}
+				request = deferredQueue.poll();
+				if (request != null) {
+					return tryHandleRequest(game, request) ? request : null;
 				}
 			}
 			return null;
+		}
+
+		private boolean tryHandleRequest(IGamePhase game, GameActionRequest request) {
+			if (request.action().resolve(game, game.getServer())) {
+				return true;
+			} else {
+				deferredQueue.offer(request);
+				return false;
+			}
 		}
 
 		public void offer(GameActionRequest request) {
