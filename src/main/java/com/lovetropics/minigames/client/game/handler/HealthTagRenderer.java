@@ -22,7 +22,7 @@ public final class HealthTagRenderer  {
 
 	@SubscribeEvent
 	public static void onRenderPlayerName(RenderNameplateEvent event) {
-		if (event.getEntity() instanceof Player player && !player.getAbilities().invulnerable) {
+		if (event.getEntity() instanceof Player player && !player.isCreative() && !player.isSpectator()) {
 			if (player == CLIENT.cameraEntity || !Minecraft.renderNames()) {
 				return;
 			}
