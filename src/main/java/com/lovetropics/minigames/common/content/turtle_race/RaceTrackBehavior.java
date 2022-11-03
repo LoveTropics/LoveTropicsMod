@@ -224,7 +224,7 @@ public class RaceTrackBehavior implements IGameBehavior {
 		Vec3 delta = position.subtract(lastPosition);
 		double movedDistance = delta.horizontalDistance();
 
-		RaceTrackPath.Point point = path.nextPointAt(player.getBlockX(), player.getBlockZ(), state.trackedPosition, (float) (movedDistance * 2.0f));
+		RaceTrackPath.Point point = path.nextPointAt(player.getBlockX(), player.getBlockZ(), state.trackedPosition, (float) (movedDistance * 8.0f));
 		state.trackPosition(point.position(), game.ticks());
 
 		Component title;
