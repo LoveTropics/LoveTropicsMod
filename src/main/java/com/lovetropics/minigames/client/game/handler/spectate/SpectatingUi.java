@@ -8,6 +8,9 @@ import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
+
+import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -15,6 +18,7 @@ import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextColor;
 import net.minecraft.network.chat.TextComponent;
 import net.minecraft.util.Mth;
 import net.minecraft.world.scores.PlayerTeam;
@@ -49,6 +53,7 @@ public final class SpectatingUi {
 
 	private final SpectatingSession session;
 	private List<Entry> entries;
+	private Object2ObjectMap<UUID, PlayerEvent> events;
 
 	private int selectedEntryIndex;
 	private int highlightedEntryIndex;
@@ -60,6 +65,7 @@ public final class SpectatingUi {
 	SpectatingUi(SpectatingSession session) {
 		this.session = session;
 		this.entries = createEntriesFor(session.players);
+		this.events = new Object2ObjectOpenHashMap<>();
 	}
 
 	@SubscribeEvent
@@ -209,9 +215,14 @@ public final class SpectatingUi {
 		for (int i = viewStart; i <= viewEnd && i < entries.size(); i++) {
 			boolean selected = i == selectedEntryIndex;
 			boolean highlighted = i == highlightedEntryIndex;
-			entries.get(i).render(transform, x, bottom, selected, highlighted);
+			Entry entry = entries.get(i);
+			entry.render(transform, x, bottom, selected, highlighted, events.get(entry.playerIcon));
 			x += ENTRY_WIDTH;
 		}
+	}
+
+	public void onPlayerActivity(UUID player, TextColor style) {
+		events.put(player, new PlayerEvent(System.currentTimeMillis(), style));
 	}
 
 	void updatePlayers(List<UUID> players) {
@@ -227,6 +238,8 @@ public final class SpectatingUi {
 
 		int newHighlightedEntry = getSelectedEntryIndex(highlightedEntry.selectionState);
 		highlightedEntryIndex = newHighlightedEntry != -1 ? newHighlightedEntry : selectedEntryIndex;
+
+		updateEventsMap(players);
 	}
 
 	void updateState(SpectatingState state) {
@@ -268,6 +281,16 @@ public final class SpectatingUi {
 		return entries;
 	}
 
+	void updateEventsMap(List<UUID> players) {
+		Object2ObjectMap<UUID, PlayerEvent> events = new Object2ObjectOpenHashMap();
+		for (var entry : this.events.entrySet()) {
+			if (players.contains(entry.getKey())) {
+				events.put(entry.getKey(), entry.getValue());
+			}
+		}
+		this.events = events;
+	}
+
 	@Nullable
 	private static PlayerTeam getTeamFor(UUID playerId) {
 		ClientPacketListener connection = CLIENT.getConnection();
@@ -283,7 +306,7 @@ public final class SpectatingUi {
 		private static final int HIGHLIGHTED_OUTLINE_COLOR = 0xa0000000;
 		private static final int TAB_COLOR = 0xff404040;
 
-		void render(PoseStack transform, int left, int screenBottom, boolean selected, boolean highlighted) {
+		void render(PoseStack transform, int left, int screenBottom, boolean selected, boolean highlighted, @Nullable PlayerEvent lastEvent) {
 			int top = screenBottom - (highlighted ? HIGHLIGHTED_ENTRY_HEIGHT : ENTRY_HEIGHT);
 			int bottom = top + ENTRY_HEIGHT;
 			int right = left + ENTRY_WIDTH;
@@ -297,6 +320,14 @@ public final class SpectatingUi {
 			GuiComponent.fill(transform, left, bottom, right, screenBottom, TAB_COLOR);
 
 			PlayerFaces.render(playerIcon, transform, left + ENTRY_PADDING, top + ENTRY_PADDING, FACE_SIZE);
+
+			long now = System.currentTimeMillis();
+			if (lastEvent != null && (now - lastEvent.time) <= 500) {
+				double fade = Mth.lerp((now - lastEvent.time) / 500.0d, .75d, 0d);
+				int fadeAlpha = (int) (fade * 255);
+				int colour = lastEvent.style.getValue() | (fadeAlpha << 24);
+				GuiComponent.fill(transform, left + ENTRY_PADDING, top + ENTRY_PADDING, right - ENTRY_PADDING, top + ENTRY_PADDING + FACE_SIZE, colour);
+			}
 
 			if (highlighted) {
 				renderName(transform, left, top, selected);
@@ -313,5 +344,8 @@ public final class SpectatingUi {
 			int nameLeft = left + (ENTRY_WIDTH - font.width(name)) / 2;
 			font.drawShadow(transform, name, nameLeft, top - font.lineHeight - 1, 0xffffffff);
 		}
+	}
+
+	record PlayerEvent(long time, TextColor style) {
 	}
 }

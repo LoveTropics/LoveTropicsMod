@@ -112,5 +112,10 @@ public final class LoveTropicsNetwork {
 				.encoder(DrawParticleLineMessage::encode).decoder(DrawParticleLineMessage::decode)
 				.consumer(DrawParticleLineMessage::handle)
 				.add();
+
+		CHANNEL.messageBuilder(SpectatorPlayerActivityMessage.class, 16, NetworkDirection.PLAY_TO_CLIENT)
+				.encoder(SpectatorPlayerActivityMessage::encode).decoder(SpectatorPlayerActivityMessage::decode)
+				.consumer(SpectatorPlayerActivityMessage::handle)
+				.add();
 	}
 }

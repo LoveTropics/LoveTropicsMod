@@ -45,6 +45,7 @@ public class GameBehaviorTypes {
 	public static final GameBehaviorEntry<PermanentItemBehavior> PERMANENT_ITEM;
 	public static final GameBehaviorEntry<GeneralEventsTrigger> EVENTS;
 	public static final GameBehaviorEntry<OnDeathTrigger> ON_DEATH;
+	public static final GameBehaviorEntry<OnDamageTrigger> ON_DAMAGE;
 	public static final GameBehaviorEntry<WhileInRegionTrigger> WHILE_IN_REGION;
 	public static final GameBehaviorEntry<ScheduledActionsTrigger> SCHEDULED_ACTIONS;
 	public static final GameBehaviorEntry<PhaseChangeTrigger> PHASE_CHANGE;
@@ -116,6 +117,7 @@ public class GameBehaviorTypes {
 	public static final GameBehaviorEntry<TransformPlayerTornadoAction> TRANSFORM_PLAYER_TORNADO;
 	public static final GameBehaviorEntry<ChestDropAction> CHEST_DROP;
 	public static final GameBehaviorEntry<DamagePlayerAction> DAMAGE_PLAYER;
+	public static final GameBehaviorEntry<SpectatorActivityAction> SPECTATOR_ACTIVITY;
 
 	public static final GameBehaviorEntry<SetupTelemetryBehavior> SETUP_TELEMETRY;
 	public static final GameBehaviorEntry<AssignPlayerRolesBehavior> ASSIGN_PLAYER_ROLES;
@@ -175,6 +177,7 @@ public class GameBehaviorTypes {
 
 		EVENTS = register("events", GeneralEventsTrigger.CODEC);
 		ON_DEATH = register("on_death", OnDeathTrigger.CODEC);
+		ON_DAMAGE = register("on_damage", OnDamageTrigger.CODEC);
 		WHILE_IN_REGION = register("while_in_region", WhileInRegionTrigger.CODEC);
 		SCHEDULED_ACTIONS = register("scheduled_actions", ScheduledActionsTrigger.CODEC);
 		PHASE_CHANGE = register("phase_change", PhaseChangeTrigger.CODEC);
@@ -209,6 +212,7 @@ public class GameBehaviorTypes {
 		TRANSFORM_PLAYER_TORNADO = register("transform_player_tornado", TransformPlayerTornadoAction.CODEC);
 		CHEST_DROP = register("chest_drop", ChestDropAction.CODEC);
 		DAMAGE_PLAYER = register("damage_player", DamagePlayerAction.CODEC);
+		SPECTATOR_ACTIVITY = register("spectator_activity", SpectatorActivityAction.CODEC);
 
 		SETUP_TELEMETRY = register("setup_telemetry", SetupTelemetryBehavior.CODEC);
 		ASSIGN_PLAYER_ROLES = register("assign_player_roles", AssignPlayerRolesBehavior.CODEC);
