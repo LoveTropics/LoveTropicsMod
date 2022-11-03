@@ -75,21 +75,21 @@ public final class SpectatingUi {
 			return;
 		}
 
-		if (InputConstants.isKeyDown(CLIENT.getWindow().getWindow(), InputConstants.KEY_LSHIFT) && InputConstants.isKeyDown(CLIENT.getWindow().getWindow(), InputConstants.KEY_LCONTROL)) {
-			return;
-		}
-
 		double delta = event.getScrollDelta();
-
-		boolean zoom = InputConstants.isKeyDown(CLIENT.getWindow().getWindow(), InputConstants.KEY_LCONTROL);
-		if (zoom) {
-			session.ui.onScrollZoom(delta);
-		} else {
-			session.ui.onScrollSelection(delta);
-		}
 
 		// Prevent adjusting the spectator fly speed
 		event.setCanceled(true);
+
+		if (!InputConstants.isKeyDown(CLIENT.getWindow().getWindow(), InputConstants.KEY_LCONTROL)) {
+			session.ui.onScrollSelection(delta);
+		} else {
+			if (session.state.allowsZoom()) {
+				session.ui.onScrollZoom(delta);
+			} else {
+				// Allow changing the fly speed
+				event.setCanceled(false);
+			}
+		}
 	}
 
 	private void onScrollZoom(double delta) {

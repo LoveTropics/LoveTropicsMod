@@ -30,6 +30,8 @@ interface SpectatingState {
 	default void applyToCamera(Minecraft client, SpectatingSession session, LocalPlayer player, Camera camera, float partialTicks, EntityViewRenderEvent.CameraSetup event) {
 	}
 
+	boolean allowsZoom();
+
 	class FreeCamera implements SpectatingState {
 		FreeCamera() {
 		}
@@ -55,6 +57,11 @@ interface SpectatingState {
 			}
 
 			return this;
+		}
+
+		@Override
+		public boolean allowsZoom() {
+			return false;
 		}
 	}
 
@@ -134,6 +141,11 @@ interface SpectatingState {
 				double distance = zoom * ClientSpectatingManager.MAX_CHASE_DISTANCE;
 				camera.move(-camera.getMaxZoom(distance), 0.0, 0.0);
 			}
+		}
+
+		@Override
+		public boolean allowsZoom() {
+			return true;
 		}
 
 		@Override
