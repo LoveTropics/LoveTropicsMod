@@ -6,8 +6,10 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.EnumMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedDeque;
@@ -60,26 +62,32 @@ public final class GameActionHandler {
 
 		@Nullable
 		public GameActionRequest tryHandle(IGamePhase game, int tick) {
-			if (tick >= nextPollTick) {
-				GameActionRequest request = queue.poll();
-				nextPollTick = tick + requestType.getPollingIntervalTicks();
-				if (request != null) {
-					return tryHandleRequest(game, request) ? request : null;
-				}
-				request = deferredQueue.poll();
-				if (request != null) {
-					return tryHandleRequest(game, request) ? request : null;
-				}
+			if (queue.isEmpty() && deferredQueue.isEmpty() || tick < nextPollTick) {
+				return null;
 			}
-			return null;
+			nextPollTick = tick + requestType.getPollingIntervalTicks();
+			GameActionRequest handledRequest = tryHandleQueue(game, queue);
+			if (handledRequest != null) {
+				return handledRequest;
+			}
+			return tryHandleQueue(game, deferredQueue);
 		}
 
-		private boolean tryHandleRequest(IGamePhase game, GameActionRequest request) {
-			if (request.action().resolve(game, game.getServer())) {
-				return true;
-			} else {
-				deferredQueue.offer(request);
-				return false;
+		@Nullable
+		private GameActionRequest tryHandleQueue(IGamePhase game, Queue<GameActionRequest> queue) {
+			List<GameActionRequest> unhandledRequests = new ArrayList<>();
+			try {
+				GameActionRequest request;
+				while ((request = queue.poll()) != null) {
+					if (request.action().resolve(game, game.getServer())) {
+						return request;
+					} else {
+						unhandledRequests.add(request);
+					}
+				}
+				return null;
+			} finally {
+				deferredQueue.addAll(unhandledRequests);
 			}
 		}
 
