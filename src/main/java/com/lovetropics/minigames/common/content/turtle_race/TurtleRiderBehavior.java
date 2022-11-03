@@ -9,6 +9,7 @@ import com.lovetropics.minigames.common.core.game.player.PlayerRole;
 import com.lovetropics.minigames.common.util.EntityTemplate;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.network.protocol.game.ClientboundSetPassengersPacket;
 import net.minecraft.server.level.ServerChunkCache;
@@ -20,10 +21,12 @@ import org.slf4j.Logger;
 import java.util.Map;
 import java.util.UUID;
 
-public record TurtleRiderBehavior(EntityTemplate template) implements IGameBehavior {
+public record TurtleRiderBehavior(EntityTemplate turtle) implements IGameBehavior {
 	private static final Logger LOGGER = LogUtils.getLogger();
 
-	public static final Codec<TurtleRiderBehavior> CODEC = EntityTemplate.CODEC.xmap(TurtleRiderBehavior::new, TurtleRiderBehavior::template);
+	public static final Codec<TurtleRiderBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+			EntityTemplate.CODEC.fieldOf("turtle").forGetter(TurtleRiderBehavior::turtle)
+	).apply(i, TurtleRiderBehavior::new));
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) throws GameException {
@@ -35,7 +38,7 @@ public record TurtleRiderBehavior(EntityTemplate template) implements IGameBehav
 			}
 			Entity entity = spawnTurtle(player);
 			if (entity == null) {
-				LOGGER.error("Failed to spawn turtle entity of type: {}", template.type());
+				LOGGER.error("Failed to spawn turtle entity of type: {}", turtle.type());
 				return;
 			}
 			player.startRiding(entity);
@@ -89,6 +92,6 @@ public record TurtleRiderBehavior(EntityTemplate template) implements IGameBehav
 
 	@Nullable
 	private Entity spawnTurtle(ServerPlayer player) {
-		return template.spawn(player.getLevel(), player.getX(), player.getY(), player.getZ(), player.getYRot(), player.getXRot());
+		return turtle.spawn(player.getLevel(), player.getX(), player.getY(), player.getZ(), player.getYRot(), player.getXRot());
 	}
 }

@@ -13,7 +13,7 @@ import org.jetbrains.annotations.Nullable;
 
 public record EntityTemplate(EntityType<?> type, CompoundTag tag) {
 	public static final Codec<EntityTemplate> CODEC = RecordCodecBuilder.create(i -> i.group(
-			ForgeRegistries.ENTITIES.getCodec().fieldOf("entity").forGetter(EntityTemplate::type),
+			ForgeRegistries.ENTITIES.getCodec().fieldOf("type").forGetter(EntityTemplate::type),
 			CompoundTag.CODEC.optionalFieldOf("tag", new CompoundTag()).forGetter(EntityTemplate::tag)
 	).apply(i, EntityTemplate::new));
 
