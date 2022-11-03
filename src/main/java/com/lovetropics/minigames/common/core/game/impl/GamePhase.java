@@ -102,7 +102,6 @@ public class GamePhase implements IGamePhase {
 			for (ServerPlayer player : shuffledPlayers) {
 				PlayerSnapshot.clearPlayer(player);
 				invoker(GamePlayerEvents.ADD).onAdd(player);
-				invoker(GamePlayerEvents.SPAWN).onSpawn(player, getRoleFor(player));
 			}
 
 			invoker(GamePhaseEvents.START).start();
