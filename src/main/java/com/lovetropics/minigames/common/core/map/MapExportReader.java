@@ -38,14 +38,10 @@ public final class MapExportReader implements Closeable {
 	}
 
 	public MapMetadata loadInto(Path dimensionRoot) throws IOException {
-		if (Files.exists(dimensionRoot)) {
-			FileUtils.deleteDirectory(dimensionRoot.toFile());
-		}
-
 		Path regionRoot = dimensionRoot.resolve("region");
 		Path entitiesRoot = dimensionRoot.resolve("entities");
-		Files.createDirectories(regionRoot);
-		Files.createDirectories(entitiesRoot);
+		createClearDirectories(regionRoot);
+		createClearDirectories(entitiesRoot);
 
 		MapMetadata metadata = null;
 
@@ -72,6 +68,13 @@ public final class MapExportReader implements Closeable {
 		}
 
 		return metadata;
+	}
+
+	private static void createClearDirectories(Path path) throws IOException {
+		if (Files.exists(path)) {
+			FileUtils.deleteDirectory(path.toFile());
+		}
+		Files.createDirectories(path);
 	}
 
 	@Override
