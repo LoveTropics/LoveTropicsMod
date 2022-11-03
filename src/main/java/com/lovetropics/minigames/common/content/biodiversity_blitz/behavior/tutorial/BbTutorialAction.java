@@ -63,11 +63,14 @@ public class BbTutorialAction implements IGameBehavior {
         tutorialActions = new Reference2ObjectOpenHashMap<>();
 
         events.listen(GameActionEvents.APPLY_TO_PLAYER, (context, target) -> {
+            Plot playerPlot = plots.getPlotFor(target);
+            if (playerPlot == null) {
+                return false;
+            }
 
             Long2ObjectMap<Runnable> actions = new Long2ObjectOpenHashMap<>();
             tutorialActions.put(target, actions);
 
-            Plot playerPlot = plots.getPlotFor(target);
             BlockPos sample = playerPlot.plantBounds.centerBlock();
 
             long ticks = game.ticks() + 4;
