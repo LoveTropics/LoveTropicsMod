@@ -55,8 +55,6 @@ public final class DropLootTableBehavior implements IGameBehavior {
 		events.listen(GamePlayerEvents.USE_BLOCK, (player, world, blockPos, hand, blockRayTraceResult) -> {
 			BlockPos pos = blockRayTraceResult.getBlockPos();
 
-//			System.out.println("1");
-
 			Plot plot = game.getState().getOrThrow(PlotsState.KEY).getPlotFor(player);
 			if (plot == null || !plot.bounds.contains(pos)) {
 				return InteractionResult.PASS;
