@@ -204,6 +204,7 @@ public class RaceTrackBehavior implements IGameBehavior {
 		}
 
 		game.invoker(GameLogicEvents.WIN_TRIGGERED).onWinTriggered(winnerName);
+		game.invoker(GameLogicEvents.GAME_OVER).onGameOver();
 
 		for (ServerPlayer player : game.getParticipants()) {
 			clearPlayerState(player);
