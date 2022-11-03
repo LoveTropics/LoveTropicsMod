@@ -88,6 +88,7 @@ public class GameBehaviorTypes {
 	public static final GameBehaviorEntry<DisplayLeaderboardOnFinishBehavior<?>> DISPLAY_LEADERBOARD_ON_FINISH;
 
 	public static final GameBehaviorEntry<DonationPackageBehavior> DONATION_PACKAGE;
+	public static final GameBehaviorEntry<DonationThresholdBehavior> DONATION_THRESHOLD;
 	public static final GameBehaviorEntry<GiveLootAction> GIVE_LOOT;
 	public static final GameBehaviorEntry<GiveEffectAction> GIVE_EFFECT;
 	public static final GameBehaviorEntry<SwapPlayersAction> SWAP_PLAYERS;
@@ -178,6 +179,7 @@ public class GameBehaviorTypes {
 		PHASE_CHANGE = register("phase_change", PhaseChangeTrigger.CODEC);
 
 		DONATION_PACKAGE = register("donation_package", DonationPackageBehavior.CODEC);
+		DONATION_THRESHOLD = register("donation_threshold", DonationThresholdBehavior.CODEC);
 		GIVE_LOOT = register("give_loot", GiveLootAction.CODEC);
 		GIVE_EFFECT = register("give_effect", GiveEffectAction.CODEC);
 		SWAP_PLAYERS = register("swap_players", SwapPlayersAction.CODEC);
