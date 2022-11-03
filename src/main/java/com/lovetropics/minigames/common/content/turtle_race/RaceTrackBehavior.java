@@ -270,7 +270,7 @@ public class RaceTrackBehavior implements IGameBehavior {
 
 		if (game.getParticipants().isEmpty()) {
 			triggerWin(game);
-		} else if (finishedPlayers.size() >= winnerCount) {
+		} else if (finishedPlayers.size() == winnerCount) {
 			finishTime = game.ticks() + GAME_FINISH_SECONDS * SharedConstants.TICKS_PER_SECOND;
 			game.getAllPlayers().sendMessage(new TextComponent("The game will finish in ")
 					.append(new TextComponent(String.valueOf(GAME_FINISH_SECONDS)).withStyle(ChatFormatting.GOLD))
