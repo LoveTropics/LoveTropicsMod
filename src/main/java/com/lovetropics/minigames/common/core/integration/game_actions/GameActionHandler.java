@@ -3,7 +3,6 @@ package com.lovetropics.minigames.common.core.integration.game_actions;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.integration.GameInstanceTelemetry;
 import com.mojang.logging.LogUtils;
-import org.apache.logging.log4j.LogManager;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -54,7 +53,7 @@ public final class GameActionHandler {
 
 	static class ActionsQueue {
 		private final GameActionType requestType;
-		private final Queue<GameActionRequest> queue = new PriorityBlockingQueue<>(1, Comparator.comparing(GameActionRequest::triggerTime));
+		private final Queue<GameActionRequest> queue = new PriorityBlockingQueue<>(1, Comparator.comparing(GameActionRequest::time));
 		private final Queue<GameActionRequest> deferredQueue = new ConcurrentLinkedDeque<>();
 		private int nextPollTick;
 
