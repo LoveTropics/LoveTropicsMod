@@ -3,6 +3,7 @@ package com.lovetropics.minigames.common.content.biodiversity_blitz.behavior;
 import com.lovetropics.lib.BlockBox;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.BiodiversityBlitzTexts;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.event.BbEvents;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.event.BbPlantEvents;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.tutorial.TutorialState;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.BbMobEntity;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.explosion.FilteredExplosion;
@@ -10,6 +11,7 @@ import com.lovetropics.minigames.common.content.biodiversity_blitz.explosion.Pla
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.CurrencyManager;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.Plot;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.PlotsState;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.plant.Plant;
 import com.lovetropics.minigames.common.core.dimension.DimensionUtils;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
@@ -50,6 +52,7 @@ import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.FarmBlock;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.phys.BlockHitResult;
 
 import javax.annotation.Nullable;
@@ -186,8 +189,10 @@ public final class BbBehavior implements IGameBehavior {
 	}
 
 	private InteractionResult onUseBlockInPlot(ServerPlayer player, ServerLevel world, BlockPos blockPos, InteractionHand hand, Plot plot, BlockPos pos) {
+		BlockState state = world.getBlockState(pos);
+
 		// Check if farmland is being used and the user has a hoe TODO: can we make it not hardcoded?
-		if (world.getBlockState(pos).getBlock() == Blocks.FARMLAND && player.getItemInHand(hand).getItem() instanceof HoeItem) {
+		if (state.getBlock() == Blocks.FARMLAND && player.getItemInHand(hand).getItem() instanceof HoeItem) {
 			// If there is no plant above we can change to grass safely
 			if (!plot.plants.hasPlantAt(pos.above())) {
 				world.setBlockAndUpdate(pos, Blocks.GRASS_BLOCK.defaultBlockState());

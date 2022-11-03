@@ -49,7 +49,7 @@ public final class PianguasPlantBehavior implements IGameBehavior {
         Random random = this.game.getWorld().getRandom();
 
         // TODO: rebalance
-        if (ticks % 300 != 0) {
+        if (ticks % 300 != 0 || random.nextInt(4) != 0) {
             return;
         }
 
