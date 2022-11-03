@@ -118,11 +118,11 @@ dependencies {
     implementation fg.deobf('net.tropicraft:Tropicraft:9.3.0-beta+custom')
 
     jarJar(implementation(fg.deobf("com.tterrag.registrate:Registrate:MC${minecraft_version}-${registrate_version}"))) {
-        jarJar.ranged(it, "[MC1.19-1.1.5,MC1.20)")
+        jarJar.ranged(it, "[MC${minecraft_version}-${registrate_version},MC1.20)")
     }
 
     jarJar(implementation(fg.deobf("com.lovetropics.lib:LTLib:${ltlib_version}"))) {
-        jarJar.ranged(it, "[1.2,1.3)")
+        jarJar.ranged(it, "[${ltlib_version},1.3)")
     }
 
     // Annotation Processors
