@@ -75,6 +75,10 @@ public final class SpectatingUi {
 			return;
 		}
 
+		if (InputConstants.isKeyDown(CLIENT.getWindow().getWindow(), InputConstants.KEY_LSHIFT) && InputConstants.isKeyDown(CLIENT.getWindow().getWindow(), InputConstants.KEY_LCONTROL)) {
+			return;
+		}
+
 		double delta = event.getScrollDelta();
 
 		boolean zoom = InputConstants.isKeyDown(CLIENT.getWindow().getWindow(), InputConstants.KEY_LCONTROL);
