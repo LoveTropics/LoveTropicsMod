@@ -4,12 +4,14 @@ import com.lovetropics.lib.codec.MoreCodecs;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameLogicEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePackageEvents;
 import com.lovetropics.minigames.common.core.game.state.GameProgressionState;
 import com.lovetropics.minigames.common.core.game.state.ProgressionPeriod;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.world.InteractionResult;
+import org.apache.commons.lang3.mutable.MutableBoolean;
 
 import java.util.List;
 
@@ -25,8 +27,11 @@ public record BlockPackagesDuringPhaseBehavior(List<ProgressionPeriod> blockedPe
 			return;
 		}
 
+		MutableBoolean gameOver = new MutableBoolean();
+		events.listen(GameLogicEvents.GAME_OVER, gameOver::setTrue);
+
 		events.listen(GamePackageEvents.RECEIVE_PACKAGE, gamePackage -> {
-			if (progression.is(blockedPeriods)) {
+			if (progression.is(blockedPeriods) || gameOver.isTrue()) {
 				return InteractionResult.FAIL;
 			}
 			return InteractionResult.PASS;
