@@ -1,27 +1,26 @@
 package com.lovetropics.minigames.common.content.survive_the_tide.behavior;
 
 import com.lovetropics.lib.BlockBox;
-import com.lovetropics.lib.codec.MoreCodecs;
 import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
-import com.lovetropics.minigames.common.core.game.state.ProgressionPeriod;
-import com.lovetropics.minigames.common.core.game.state.ProgressionPoint;
+import com.lovetropics.minigames.common.core.game.state.BeaconState;
 import com.lovetropics.minigames.common.core.game.state.GameProgressionState;
+import com.lovetropics.minigames.common.core.game.state.ProgressionPeriod;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.level.levelgen.Heightmap;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -48,6 +47,8 @@ public class WorldBorderGameBehavior implements IGameBehavior {
 	private BlockPos worldBorderCenter = BlockPos.ZERO;
 
 	private GameProgressionState phases;
+
+	private boolean addedBeacon;
 
 	public WorldBorderGameBehavior(final String worldBorderCenterKey, final ProgressionPeriod period,
 								   final int particleRateDelay, final int particleHeight, final int damageRateDelay, final int damageAmount, final ParticleOptions borderParticle) {
@@ -81,6 +82,13 @@ public class WorldBorderGameBehavior implements IGameBehavior {
 		float phaseProgress = phases.progressIn(period);
 		if (phaseProgress <= 0.0f) {
 			return;
+		}
+
+		if (!addedBeacon) {
+			BeaconState beacons = game.getState().get(BeaconState.KEY);
+			beacons.add(game.getWorld().getHeightmapPos(Heightmap.Types.WORLD_SURFACE, worldBorderCenter));
+			beacons.sendTo(game.getAllPlayers());
+			addedBeacon = true;
 		}
 
 		boolean isCollapsing = phaseProgress >= 1.0f;
