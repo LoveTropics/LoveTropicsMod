@@ -1,5 +1,6 @@
 package com.lovetropics.minigames.common.core.game.impl;
 
+import com.google.common.collect.Lists;
 import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.common.core.game.*;
 import com.lovetropics.minigames.common.core.game.behavior.BehaviorMap;
@@ -15,16 +16,18 @@ import com.lovetropics.minigames.common.core.game.state.statistics.StatisticKey;
 import com.lovetropics.minigames.common.core.game.util.GameTexts;
 import com.lovetropics.minigames.common.core.game.util.PlayerSnapshot;
 import com.lovetropics.minigames.common.core.map.MapRegions;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.util.Unit;
 import net.minecraft.network.chat.TextComponent;
-import net.minecraft.world.level.Level;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.Unit;
+import net.minecraft.world.level.Level;
 
 import javax.annotation.Nullable;
+import java.util.Collections;
 import java.util.EnumMap;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 public class GamePhase implements IGamePhase {
@@ -93,7 +96,10 @@ public class GamePhase implements IGamePhase {
 		try {
 			invoker(GamePhaseEvents.CREATE).start();
 
-			for (ServerPlayer player : getAllPlayers()) {
+			List<ServerPlayer> shuffledPlayers = Lists.newArrayList(getAllPlayers());
+			Collections.shuffle(shuffledPlayers);
+
+			for (ServerPlayer player : shuffledPlayers) {
 				PlayerSnapshot.clearPlayer(player);
 				invoker(GamePlayerEvents.ADD).onAdd(player);
 				invoker(GamePlayerEvents.SPAWN).onSpawn(player, getRoleFor(player));
