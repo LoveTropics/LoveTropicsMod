@@ -9,14 +9,12 @@ import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameActionEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.lovetropics.minigames.common.core.map.MapRegions;
-import com.lovetropics.minigames.common.util.Util;
+import com.lovetropics.minigames.common.util.EntityTemplate;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.levelgen.Heightmap;
-import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.List;
 
@@ -27,13 +25,13 @@ import java.util.List;
 public class SpawnEntitiesAtRegionsOverTimeAction implements IGameBehavior {
 	public static final Codec<SpawnEntitiesAtRegionsOverTimeAction> CODEC = RecordCodecBuilder.create(i -> i.group(
 			Codec.STRING.listOf().fieldOf("regions_to_spawn_at").forGetter(c -> c.regionsToSpawnAtKeys),
-			ForgeRegistries.ENTITIES.getCodec().fieldOf("entity_id").forGetter(c -> c.entityId),
+			EntityTemplate.CODEC.fieldOf("entity").forGetter(c -> c.entity),
 			Codec.INT.optionalFieldOf("entity_count", 1).forGetter(c -> c.entityCount),
 			Codec.INT.optionalFieldOf("ticks_to_spawn_for", 1).forGetter(c -> c.ticksToSpawnFor)
 	).apply(i, SpawnEntitiesAtRegionsOverTimeAction::new));
 
 	private final List<String> regionsToSpawnAtKeys;
-	private final EntityType<?> entityId;
+	private final EntityTemplate entity;
 	private final int entityCount;
 	private final int ticksToSpawnFor;
 
@@ -43,9 +41,9 @@ public class SpawnEntitiesAtRegionsOverTimeAction implements IGameBehavior {
 
 	private final List<BlockBox> regionsToSpawnAt = Lists.newArrayList();
 
-	public SpawnEntitiesAtRegionsOverTimeAction(final List<String> regionsToSpawnAtKeys, final EntityType<?> entityId, final int entityCount, final int ticksToSpawnFor) {
+	public SpawnEntitiesAtRegionsOverTimeAction(final List<String> regionsToSpawnAtKeys, final EntityTemplate entity, final int entityCount, final int ticksToSpawnFor) {
 		this.regionsToSpawnAtKeys = regionsToSpawnAtKeys;
-		this.entityId = entityId;
+		this.entity = entity;
 		this.entityCount = entityCount;
 		this.ticksToSpawnFor = ticksToSpawnFor;
 	}
@@ -82,7 +80,7 @@ public class SpawnEntitiesAtRegionsOverTimeAction implements IGameBehavior {
 				BlockBox region = regionsToSpawnAt.get(game.getWorld().getRandom().nextInt(regionsToSpawnAt.size()));
 				final BlockPos pos = game.getWorld().getHeightmapPos(Heightmap.Types.WORLD_SURFACE, region.sample(game.getWorld().getRandom()));
 
-				Util.spawnEntity(entityId, game.getWorld(), pos.getX(), pos.getY(), pos.getZ());
+				entity.spawn(game.getWorld(), pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5, 0.0f, 0.0f);
 				entityCountRemaining--;
 			}
 

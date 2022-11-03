@@ -5,6 +5,7 @@ import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameActionEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
+import com.lovetropics.minigames.common.util.EntityTemplate;
 import com.lovetropics.minigames.common.util.Util;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -21,7 +22,7 @@ import java.util.Iterator;
 public class SpawnEntitiesAroundPlayersAction implements IGameBehavior
 {
 	public static final Codec<SpawnEntitiesAroundPlayersAction> CODEC = RecordCodecBuilder.create(i -> i.group(
-			ForgeRegistries.ENTITIES.getCodec().fieldOf("entity_id").forGetter(c -> c.entityId),
+			EntityTemplate.CODEC.fieldOf("entity").forGetter(c -> c.entity),
 			Codec.INT.optionalFieldOf("entity_count_per_player", 1).forGetter(c -> c.entityCountPerPlayer),
 			Codec.INT.optionalFieldOf("spawn_distance_min", 10).forGetter(c -> c.spawnDistanceMin),
 			Codec.INT.optionalFieldOf("spawn_distance_max", 20).forGetter(c -> c.spawnDistanceMax),
@@ -29,7 +30,7 @@ public class SpawnEntitiesAroundPlayersAction implements IGameBehavior
 			Codec.INT.optionalFieldOf("spawn_try_rate", 10).forGetter(c -> c.spawnsPerTick)
 	).apply(i, SpawnEntitiesAroundPlayersAction::new));
 
-	private final EntityType<?> entityId;
+	private final EntityTemplate entity;
 	private final int entityCountPerPlayer;
 	private final int spawnDistanceMin;
 	private final int spawnDistanceMax;
@@ -37,8 +38,8 @@ public class SpawnEntitiesAroundPlayersAction implements IGameBehavior
 	private final int spawnsPerTick;
 	private final Object2IntMap<ServerPlayer> playerToAmountToSpawn = new Object2IntOpenHashMap<>();
 
-	public SpawnEntitiesAroundPlayersAction(final EntityType<?> entityId, final int entityCount, final int spawnDistanceMin, final int spawnDistanceMax, final int spawnRangeY, final int spawnsPerTick) {
-		this.entityId = entityId;
+	public SpawnEntitiesAroundPlayersAction(final EntityTemplate entity, final int entityCount, final int spawnDistanceMin, final int spawnDistanceMax, final int spawnRangeY, final int spawnsPerTick) {
+		this.entity = entity;
 		this.entityCountPerPlayer = entityCount;
 		this.spawnDistanceMin = spawnDistanceMin;
 		this.spawnDistanceMax = spawnDistanceMax;
@@ -71,7 +72,8 @@ public class SpawnEntitiesAroundPlayersAction implements IGameBehavior
 					if (entry.getIntValue() <= 0) {
 						it.remove();
 					}
-					Util.spawnEntity(entityId, game.getWorld(), pos.getX(), pos.getY(), pos.getZ());
+
+					entity.spawn(game.getWorld(), pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5, 0.0f, 0.0f);
 				}
 
 			}
