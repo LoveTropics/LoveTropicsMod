@@ -51,8 +51,7 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 			Codec.STRING.optionalFieldOf("iceberg_lines_region", "iceberg_lines").forGetter(c -> c.icebergLinesKey),
 			ProgressionSpline.CODEC.fieldOf("water_levels").forGetter(c -> c.waterLevels),
 			ProgressionPeriod.CODEC.fieldOf("iceberg_growth_period").forGetter(c -> c.icebergGrowthPeriod),
-			Codec.INT.fieldOf("iceberg_growth_steps").forGetter(c -> c.maxIcebergGrowthSteps),
-			Codec.INT.optionalFieldOf("damage_depth", 0).forGetter(c -> c.damageDepth)
+			Codec.INT.fieldOf("iceberg_growth_steps").forGetter(c -> c.maxIcebergGrowthSteps)
 	).apply(i, RisingTidesGameBehavior::new));
 
 	private static final RegistryObject<Block> WATER_BARRIER = RegistryObject.create(new ResourceLocation("ltextras", "water_barrier"), ForgeRegistries.BLOCKS);
@@ -68,7 +67,6 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 	private final ProgressionSpline waterLevels;
 	private final ProgressionPeriod icebergGrowthPeriod;
 	private final int maxIcebergGrowthSteps;
-	private final int damageDepth;
 	private int waterLevel;
 
 	private BlockBox tideArea;
@@ -85,13 +83,12 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 
 	private GameProgressionState progression;
 
-	public RisingTidesGameBehavior(String tideAreaKey, String icebergLinesKey, final ProgressionSpline waterLevels, final ProgressionPeriod icebergGrowthPeriod, final int maxIcebergGrowthSteps, int damageDepth) {
+	public RisingTidesGameBehavior(String tideAreaKey, String icebergLinesKey, final ProgressionSpline waterLevels, final ProgressionPeriod icebergGrowthPeriod, final int maxIcebergGrowthSteps) {
 		this.tideAreaKey = tideAreaKey;
 		this.icebergLinesKey = icebergLinesKey;
 		this.waterLevels = waterLevels;
 		this.icebergGrowthPeriod = icebergGrowthPeriod;
 		this.maxIcebergGrowthSteps = maxIcebergGrowthSteps;
-		this.damageDepth = damageDepth;
 	}
 
 	@Override
@@ -139,8 +136,8 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 		// NOTE: DO NOT REMOVE THIS CHECK, CAUSES FISH TO DIE AND SPAWN ITEMS ON DEATH
 		// FISH WILL KEEP SPAWNING, DYING AND COMPLETELY SLOW THE SERVER TO A CRAWL
 		if (!entity.canBreatheUnderwater()) {
-			if (entity.getY() <= this.waterLevel + 1 - damageDepth && entity.isInWater() && entity.tickCount % 40 == 0) {
-				entity.hurt(DamageSource.DROWN, 4.0F);
+			if (entity.getY() <= this.waterLevel + 1 && entity.isInWater() && entity.tickCount % 40 == 0) {
+				entity.hurt(DamageSource.DROWN, 2.0F);
 			}
 		}
 	}
