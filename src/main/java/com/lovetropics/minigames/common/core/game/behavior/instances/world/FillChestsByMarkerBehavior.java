@@ -75,11 +75,10 @@ public class FillChestsByMarkerBehavior extends ChunkGeneratingBehavior {
 				BlockPos belowPos = pos.below();
 				BlockState belowState = world.getBlockState(belowPos);
 				Direction facing = belowState.getValue(BlockStateProperties.HORIZONTAL_FACING);
+				world.setBlockAndUpdate(pos, Blocks.AIR.defaultBlockState());
 				lootTables.getRandomValue(random).ifPresent(lootTable -> {
 					setChest(world, belowPos, lootTable, facing);
 				});
-
-				world.setBlockAndUpdate(pos, Blocks.AIR.defaultBlockState());
 			}
 		}
 	}
@@ -121,5 +120,6 @@ public class FillChestsByMarkerBehavior extends ChunkGeneratingBehavior {
 		if (world.getBlockEntity(pos) instanceof ChestBlockEntity chest) {
 			chest.setLootTable(lootTable, world.random.nextLong());
 		}
+		world.getChunkSource().getLightEngine().checkBlock(pos);
 	}
 }
