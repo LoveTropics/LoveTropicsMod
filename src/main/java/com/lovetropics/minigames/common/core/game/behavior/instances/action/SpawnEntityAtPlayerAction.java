@@ -5,6 +5,7 @@ import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameActionEvents;
+import com.lovetropics.minigames.common.util.EntityTemplate;
 import com.lovetropics.minigames.common.util.Util;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -12,15 +13,13 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.registries.ForgeRegistries;
 
 import javax.annotation.Nullable;
 
-public record SpawnEntityAtPlayerAction(EntityType<?> entityId, int damagePlayerAmount, double distance) implements IGameBehavior {
+public record SpawnEntityAtPlayerAction(EntityTemplate entity, int damagePlayerAmount, double distance) implements IGameBehavior {
 	public static final Codec<SpawnEntityAtPlayerAction> CODEC = RecordCodecBuilder.create(i -> i.group(
-			ForgeRegistries.ENTITIES.getCodec().fieldOf("entity_id").forGetter(c -> c.entityId),
+			EntityTemplate.CODEC.fieldOf("entity").forGetter(c -> c.entity),
 			Codec.INT.optionalFieldOf("damage_player_amount", 0).forGetter(c -> c.damagePlayerAmount),
 			Codec.DOUBLE.optionalFieldOf("distance", 0.0).forGetter(c -> c.distance)
 	).apply(i, SpawnEntityAtPlayerAction::new));
@@ -33,7 +32,7 @@ public record SpawnEntityAtPlayerAction(EntityType<?> entityId, int damagePlayer
 				spawnPos = player.position();
 			}
 
-			Util.spawnEntity(entityId, player.getLevel(), spawnPos.x, spawnPos.y, spawnPos.z);
+			entity.spawn(player.getLevel(), spawnPos.x, spawnPos.y, spawnPos.z, 0.0f, 0.0f);
 			if (damagePlayerAmount > 0) {
 				player.hurt(DamageSource.GENERIC, damagePlayerAmount);
 			}

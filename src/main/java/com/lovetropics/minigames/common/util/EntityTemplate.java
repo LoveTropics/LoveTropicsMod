@@ -6,8 +6,10 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LightningBolt;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.jetbrains.annotations.Nullable;
 
@@ -19,6 +21,10 @@ public record EntityTemplate(EntityType<?> type, CompoundTag tag) {
 
 	@Nullable
 	public Entity spawn(ServerLevel level, double x, double y, double z, float yRot, float xRot) {
+		if (type == EntityType.LIGHTNING_BOLT) {
+			return spawnLightningBolt(level, x, y, z);
+		}
+
 		CompoundTag tag = this.tag.copy();
 		tag.putString("id", type.getRegistryName().toString());
 
@@ -34,6 +40,17 @@ public record EntityTemplate(EntityType<?> type, CompoundTag tag) {
 			return level.tryAddFreshEntityWithPassengers(entity) ? entity : null;
 		}
 
+		return null;
+	}
+
+	@Nullable
+	private static LightningBolt spawnLightningBolt(ServerLevel level, double x, double y, double z) {
+		LightningBolt entity = EntityType.LIGHTNING_BOLT.create(level);
+		if (entity != null) {
+			entity.moveTo(new Vec3(x, y, z));
+			level.addFreshEntity(entity);
+			return entity;
+		}
 		return null;
 	}
 }
