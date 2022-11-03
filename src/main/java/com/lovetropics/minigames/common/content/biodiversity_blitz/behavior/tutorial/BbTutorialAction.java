@@ -126,32 +126,36 @@ public class BbTutorialAction implements IGameBehavior {
         }
 
         // First wall of grass
-        for (int i = 0; i < 12; i++) {
+        for (int i = -1; i < 13; i++) {
             BlockPos pos = sample.relative(playerPlot.forward, 8).relative(cw, i - 5);
-            actions.put(ticks, new SetPlant(game, target, playerPlot, pos, this.grass, SoundEvents.GRASS_STEP));
-            ticks += 5;
+            if (playerPlot.plantBounds.contains(pos)) {
+                actions.put(ticks, new SetPlant(game, target, playerPlot, pos, this.grass, SoundEvents.GRASS_STEP));
+                ticks += 5;
+            }
         }
 
         // Second wall of grass
-        for (int i = 0; i < 12; i++) {
+        for (int i = -1; i < 13; i++) {
             BlockPos pos = sample.relative(playerPlot.forward, 9).relative(cw, i - 5);
-            actions.put(ticks, new SetPlant(game, target, playerPlot, pos, this.grass, SoundEvents.GRASS_STEP));
-            ticks += 5;
+            if (playerPlot.plantBounds.contains(pos)) {
+                actions.put(ticks, new SetPlant(game, target, playerPlot, pos, this.grass, SoundEvents.GRASS_STEP));
+                ticks += 5;
+            }
         }
 
         // Farmland row
-        for (int i = 0; i < 12; i++) {
+        for (int i = -1; i < 13; i++) {
             BlockPos pos = sample.relative(playerPlot.forward, -5).relative(cw, i - 5);
-            if (target.level.getBlockState(pos.below()).getBlock() == Blocks.GRASS_BLOCK) {
+            if (playerPlot.plantBounds.contains(pos) && target.level.getBlockState(pos.below()).getBlock() == Blocks.GRASS_BLOCK) {
                 actions.put(ticks, new SetFarmland(target, pos.below()));
                 ticks += 5;
             }
         }
 
         // Farmland row
-        for (int i = 0; i < 12; i++) {
+        for (int i = -1; i < 13; i++) {
             BlockPos pos = sample.relative(playerPlot.forward, -4).relative(cw, i - 5);
-            if (target.level.getBlockState(pos.below()).getBlock() == Blocks.GRASS_BLOCK) {
+            if (playerPlot.plantBounds.contains(pos) && target.level.getBlockState(pos.below()).getBlock() == Blocks.GRASS_BLOCK) {
                 actions.put(ticks, new SetFarmland(target, pos.below()));
                 ticks += 5;
             }
@@ -159,10 +163,10 @@ public class BbTutorialAction implements IGameBehavior {
 
         // Add wheat
 
-        for (int i = 0; i < 12; i++) {
+        for (int i = -1; i < 13; i++) {
             BlockPos pos = sample.relative(playerPlot.forward, -5).relative(cw, i - 5);
 
-            if (isNotGrass(target, pos)) {
+            if (!playerPlot.plantBounds.contains(pos) || isNotGrass(target, pos)) {
                 continue;
             }
 
@@ -170,10 +174,10 @@ public class BbTutorialAction implements IGameBehavior {
             ticks += 5;
         }
 
-        for (int i = 0; i < 12; i++) {
+        for (int i = -1; i < 13; i++) {
             BlockPos pos = sample.relative(playerPlot.forward, -4).relative(cw, i - 5);
 
-            if (isNotGrass(target, pos)) {
+            if (!playerPlot.plantBounds.contains(pos) || isNotGrass(target, pos)) {
                 continue;
             }
 
@@ -187,10 +191,10 @@ public class BbTutorialAction implements IGameBehavior {
     private long breakBlocks(IGamePhase game, ServerPlayer target, Plot playerPlot, BlockPos sample, long ticks, Direction cw, Long2ObjectMap<Runnable> actions) {
         // Remove wheat
 
-        for (int i = 0; i < 12; i++) {
+        for (int i = -1; i < 13; i++) {
             BlockPos pos = sample.relative(playerPlot.forward, -4).relative(cw, i - 5);
 
-            if (isNotGrass(target, pos)) {
+            if (!playerPlot.plantBounds.contains(pos) || isNotGrass(target, pos)) {
                 continue;
             }
 
@@ -198,10 +202,10 @@ public class BbTutorialAction implements IGameBehavior {
             ticks += 3;
         }
 
-        for (int i = 0; i < 12; i++) {
+        for (int i = -1; i < 13; i++) {
             BlockPos pos = sample.relative(playerPlot.forward, -5).relative(cw, i - 5);
 
-            if (isNotGrass(target, pos)) {
+            if (!playerPlot.plantBounds.contains(pos) || isNotGrass(target, pos)) {
                 continue;
             }
 
@@ -210,36 +214,40 @@ public class BbTutorialAction implements IGameBehavior {
         }
 
         // Farmland row
-        for (int i = 0; i < 12; i++) {
+        for (int i = -1; i < 13; i++) {
             BlockPos pos = sample.relative(playerPlot.forward, -4).relative(cw, i - 5);
             // how does this work??? there's farmland here!! but removing this breaks it?!?!
-            if (target.level.getBlockState(pos.below()).getBlock() == Blocks.GRASS_BLOCK) {
+            if (playerPlot.plantBounds.contains(pos) && target.level.getBlockState(pos.below()).getBlock() == Blocks.GRASS_BLOCK) {
                 actions.put(ticks, new SetGrass(target, pos.below()));
                 ticks += 3;
             }
         }
 
         // Farmland row
-        for (int i = 0; i < 12; i++) {
+        for (int i = -1; i < 13; i++) {
             BlockPos pos = sample.relative(playerPlot.forward, -5).relative(cw, i - 5);
-            if (target.level.getBlockState(pos.below()).getBlock() == Blocks.GRASS_BLOCK) {
+            if (playerPlot.plantBounds.contains(pos) && target.level.getBlockState(pos.below()).getBlock() == Blocks.GRASS_BLOCK) {
                 actions.put(ticks, new SetGrass(target, pos.below()));
                 ticks += 3;
             }
         }
 
         // Second wall of grass
-        for (int i = 0; i < 12; i++) {
+        for (int i = -1; i < 13; i++) {
             BlockPos pos = sample.relative(playerPlot.forward, 9).relative(cw, i - 5);
-            actions.put(ticks, new BreakPlant(game, target, playerPlot, pos, this.grass, SoundEvents.GRASS_STEP));
-            ticks += 3;
+            if (playerPlot.plantBounds.contains(pos)) {
+                actions.put(ticks, new BreakPlant(game, target, playerPlot, pos, this.grass, SoundEvents.GRASS_STEP));
+                ticks += 3;
+            }
         }
 
         // First wall of grass
-        for (int i = 0; i < 12; i++) {
+        for (int i = -1; i < 13; i++) {
             BlockPos pos = sample.relative(playerPlot.forward, 8).relative(cw, i - 5);
-            actions.put(ticks, new BreakPlant(game, target, playerPlot, pos, this.grass, SoundEvents.GRASS_STEP));
-            ticks += 3;
+            if (playerPlot.plantBounds.contains(pos)) {
+                actions.put(ticks, new BreakPlant(game, target, playerPlot, pos, this.grass, SoundEvents.GRASS_STEP));
+                ticks += 3;
+            }
         }
 
         // Place diffusa
