@@ -59,7 +59,7 @@ public class RaceTrackBehavior implements IGameBehavior {
 	private static final long NO_FINISH_TIME = -1;
 
 	private static final int SIDEBAR_UPDATE_INTERVAL = SharedConstants.TICKS_PER_SECOND;
-	private static final int MAX_LEADERBOARD_SIZE = 5;
+	private static final int MAX_LEADERBOARD_SIZE = 10;
 
 	private static final int STUCK_WARNING_THRESHOLD = SharedConstants.TICKS_PER_SECOND * 5;
 	private static final int STUCK_WARNING_REPEAT_INTERVAL = SharedConstants.TICKS_PER_SECOND / 2;
