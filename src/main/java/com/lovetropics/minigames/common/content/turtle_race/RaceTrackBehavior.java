@@ -16,7 +16,6 @@ import com.lovetropics.minigames.common.core.game.state.statistics.PlayerKey;
 import com.lovetropics.minigames.common.core.game.state.statistics.StatisticKey;
 import com.lovetropics.minigames.common.core.game.util.GameBossBar;
 import com.lovetropics.minigames.common.core.game.util.GameSidebar;
-import com.lovetropics.minigames.common.core.game.util.GlobalGameWidgets;
 import com.lovetropics.minigames.common.core.map.MapRegions;
 import com.lovetropics.minigames.common.util.Util;
 import com.mojang.serialization.Codec;
@@ -59,7 +58,7 @@ public class RaceTrackBehavior implements IGameBehavior {
 	private static final long NO_FINISH_TIME = -1;
 
 	private static final int SIDEBAR_UPDATE_INTERVAL = SharedConstants.TICKS_PER_SECOND;
-	private static final int MAX_LEADERBOARD_SIZE = 10;
+	private static final int MAX_LEADERBOARD_SIZE = 7;
 
 	private static final int STUCK_WARNING_THRESHOLD = SharedConstants.TICKS_PER_SECOND * 5;
 	private static final int STUCK_WARNING_REPEAT_INTERVAL = SharedConstants.TICKS_PER_SECOND / 2;
@@ -102,8 +101,7 @@ public class RaceTrackBehavior implements IGameBehavior {
 
 		registerCheckpoints(game, events);
 
-		GlobalGameWidgets widgets = GlobalGameWidgets.registerTo(game, events);
-		GameSidebar sidebar = widgets.openSidebar(game.getDefinition().getName().copy().withStyle(ChatFormatting.AQUA));
+		Component sidebarTitle = game.getDefinition().getName().copy().withStyle(ChatFormatting.AQUA);
 
 		events.listen(GamePlayerEvents.SPAWN, (player, role) -> {
 			if (role == PlayerRole.PARTICIPANT) {
@@ -113,8 +111,16 @@ public class RaceTrackBehavior implements IGameBehavior {
 
 		events.listen(GamePlayerEvents.TICK, player -> {
 			long gameTime = game.ticks();
+			if (gameTime < startTime) {
+				return;
+			}
+
 			PlayerState state = states.get(player.getUUID());
-			if (state == null || gameTime < startTime) {
+			if (game.ticks() % SIDEBAR_UPDATE_INTERVAL == 0) {
+				state.updateSidebar(player, sidebarTitle, buildSidebar(player));
+			}
+
+			if (state == null) {
 				return;
 			}
 
@@ -135,10 +141,6 @@ public class RaceTrackBehavior implements IGameBehavior {
 		events.listen(GamePlayerEvents.REMOVE, this::clearPlayerState);
 
 		events.listen(GamePhaseEvents.TICK, () -> {
-			if (game.ticks() % SIDEBAR_UPDATE_INTERVAL == 0) {
-				sidebar.set(buildSidebar());
-			}
-
 			if (finishTime != NO_FINISH_TIME && game.ticks() >= finishTime) {
 				triggerWin(game);
 			}
@@ -279,14 +281,16 @@ public class RaceTrackBehavior implements IGameBehavior {
 		}
 	}
 
-	private Component[] buildSidebar() {
+	private Component[] buildSidebar(ServerPlayer player) {
 		class Leaderboard {
 			private final List<Component> lines = new ArrayList<>(MAX_LEADERBOARD_SIZE);
+			private int index;
 
-			public void add(String player, Component detail) {
-				if (lines.size() < MAX_LEADERBOARD_SIZE) {
-					lines.add(new TextComponent((lines.size() + 1) + ". ").withStyle(ChatFormatting.GRAY)
-							.append(new TextComponent(player).withStyle(ChatFormatting.GOLD))
+			public void add(String player, Component detail, boolean self) {
+				int index = ++this.index;
+				if (lines.size() < MAX_LEADERBOARD_SIZE || self) {
+					lines.add(new TextComponent(index + ". ").withStyle(ChatFormatting.GRAY)
+							.append(new TextComponent(player).withStyle(self ? ChatFormatting.AQUA : ChatFormatting.GOLD))
 							.append(" ")
 							.append(detail)
 					);
@@ -302,21 +306,22 @@ public class RaceTrackBehavior implements IGameBehavior {
 
 		for (FinishEntry entry : finishedPlayers) {
 			long seconds = entry.time() / SharedConstants.TICKS_PER_SECOND;
-			leaderboard.add(entry.name(), new TextComponent(Util.formatMinutesSeconds(seconds) + " \u2714").withStyle(ChatFormatting.GREEN));
+			leaderboard.add(entry.name(), new TextComponent(Util.formatMinutesSeconds(seconds) + " \u2714").withStyle(ChatFormatting.GREEN), entry.player().matches(player));
 		}
 
 		states.entrySet().stream()
 				.sorted(Map.Entry.comparingByValue(Comparator.<PlayerState>comparingInt(e -> e.lap).thenComparingDouble(s -> s.trackedPosition).reversed()))
 				.forEach(entry -> {
-					ServerPlayer player = game.getParticipants().getPlayerBy(entry.getKey());
+					ServerPlayer otherPlayer = game.getParticipants().getPlayerBy(entry.getKey());
 					PlayerState state = entry.getValue();
-					if (player != null) {
+					if (otherPlayer != null) {
 						int percent = Math.round(state.trackedPosition / path.length() * 100.0f);
-						String playerName = player.getGameProfile().getName();
+						String playerName = otherPlayer.getGameProfile().getName();
+						boolean self = player.getUUID().equals(otherPlayer.getUUID());
 						if (lapCount > 1) {
-							leaderboard.add(playerName, new TextComponent("(Lap #" + (state.lap + 1) + "; " + percent + "%)").withStyle(ChatFormatting.GRAY));
+							leaderboard.add(playerName, new TextComponent("(Lap #" + (state.lap + 1) + "; " + percent + "%)").withStyle(ChatFormatting.GRAY), self);
 						} else {
-							leaderboard.add(playerName, new TextComponent("(" + percent + "%)").withStyle(ChatFormatting.GRAY));
+							leaderboard.add(playerName, new TextComponent("(" + percent + "%)").withStyle(ChatFormatting.GRAY), self);
 						}
 					}
 				});
@@ -341,6 +346,8 @@ public class RaceTrackBehavior implements IGameBehavior {
 	private static class PlayerState implements AutoCloseable {
 		@Nullable
 		private GameBossBar bar;
+		@Nullable
+		private GameSidebar sidebar;
 
 		private int lap;
 		private float trackedPosition;
@@ -379,10 +386,21 @@ public class RaceTrackBehavior implements IGameBehavior {
 			bar.setProgress(trackedPosition / pathLength);
 		}
 
+		public void updateSidebar(ServerPlayer player, Component title, Component[] lines) {
+			if (sidebar == null) {
+				sidebar = new GameSidebar(player.server, title);
+				sidebar.addPlayer(player);
+			}
+			sidebar.set(lines);
+		}
+
 		@Override
 		public void close() {
 			if (bar != null) {
 				bar.close();
+			}
+			if (sidebar != null) {
+				sidebar.close();
 			}
 		}
 	}
