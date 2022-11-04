@@ -155,7 +155,15 @@ public final class BbBehavior implements IGameBehavior {
 
 		list.sort(Comparator.comparingInt(c -> this.game.getStatistics().forPlayer((ServerPlayer) c).getOr(StatisticKey.POINTS, 0)).reversed());
 
+		int added = 0;
 		for (ServerPlayer player : list) {
+			// Limit leaderboard to 8 players- otherwise it gets too chaotic
+			if (added >= 8) {
+				sidebar.add(new TextComponent("... and more!").withStyle(ChatFormatting.AQUA));
+				break;
+			}
+
+			added++;
 			int points = 0;
 			int increment = 0;
 			// Get points for player
