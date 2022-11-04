@@ -1,7 +1,10 @@
 package com.lovetropics.minigames.common.core.game.util;
 
 import com.lovetropics.lib.codec.MoreCodecs;
+import com.lovetropics.minigames.common.core.game.behavior.action.GameActionContext;
+import com.lovetropics.minigames.common.core.game.behavior.action.GameActionParameter;
 import com.mojang.serialization.Codec;
+import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.MutableComponent;
@@ -18,6 +21,14 @@ public record TemplatedText(Component template) {
 	public static final Codec<TemplatedText> CODEC = MoreCodecs.TEXT.xmap(TemplatedText::new, TemplatedText::template);
 
 	private static final Pattern PATTERN = Pattern.compile("%([a-zA-Z0-9_]+)%");
+
+	public Component apply(GameActionContext context) {
+		Map<String, Component> values = new Object2ObjectArrayMap<>();
+		context.get(GameActionParameter.PACKAGE_SENDER).ifPresent(name -> values.put("sender", new TextComponent(name)));
+		context.get(GameActionParameter.KILLER).ifPresent(player -> values.put("killer", player.getDisplayName()));
+		context.get(GameActionParameter.KILLED).ifPresent(player -> values.put("killed", player.getDisplayName()));
+		return apply(values);
+	}
 
 	public Component apply(Map<String, Component> values) {
 		if (values.isEmpty()) {

@@ -4,6 +4,7 @@ import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.action.GameActionContext;
 import com.lovetropics.minigames.common.core.game.behavior.action.GameActionList;
+import com.lovetropics.minigames.common.core.game.behavior.action.GameActionParameter;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.mojang.serialization.Codec;
@@ -19,7 +20,11 @@ public record OnKillTrigger(GameActionList actions) implements IGameBehavior {
 
 		events.listen(GamePlayerEvents.DEATH, (player, damageSource) -> {
 			if (damageSource.getEntity() instanceof ServerPlayer killer) {
-				actions.apply(game, GameActionContext.EMPTY, killer);
+				GameActionContext context = GameActionContext.builder()
+						.set(GameActionParameter.KILLED, player)
+						.set(GameActionParameter.KILLER, killer)
+						.build();
+				actions.apply(game, context, killer);
 			}
 			return InteractionResult.PASS;
 		});

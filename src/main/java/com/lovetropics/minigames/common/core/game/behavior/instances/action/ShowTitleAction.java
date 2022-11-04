@@ -1,10 +1,10 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances.action;
 
-import com.lovetropics.lib.codec.MoreCodecs;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameActionEvents;
+import com.lovetropics.minigames.common.core.game.util.TemplatedText;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.SharedConstants;
@@ -18,11 +18,11 @@ import net.minecraft.network.protocol.game.ClientboundSetTitlesAnimationPacket;
 
 import java.util.Optional;
 
-public record ShowTitleAction(Optional<Component> title, Optional<Component> subtitle, Optional<Component> actionBar, int fadeIn, int stay, int fadeOut) implements IGameBehavior {
+public record ShowTitleAction(Optional<TemplatedText> title, Optional<TemplatedText> subtitle, Optional<TemplatedText> actionBar, int fadeIn, int stay, int fadeOut) implements IGameBehavior {
 	public static final Codec<ShowTitleAction> CODEC = RecordCodecBuilder.create(i -> i.group(
-			MoreCodecs.TEXT.optionalFieldOf("title").forGetter(ShowTitleAction::title),
-			MoreCodecs.TEXT.optionalFieldOf("subtitle").forGetter(ShowTitleAction::subtitle),
-			MoreCodecs.TEXT.optionalFieldOf("action_bar").forGetter(ShowTitleAction::actionBar),
+			TemplatedText.CODEC.optionalFieldOf("title").forGetter(ShowTitleAction::title),
+			TemplatedText.CODEC.optionalFieldOf("subtitle").forGetter(ShowTitleAction::subtitle),
+			TemplatedText.CODEC.optionalFieldOf("action_bar").forGetter(ShowTitleAction::actionBar),
 			Codec.INT.optionalFieldOf("fade_in", SharedConstants.TICKS_PER_SECOND / 4).forGetter(ShowTitleAction::fadeIn),
 			Codec.INT.optionalFieldOf("stay", SharedConstants.TICKS_PER_SECOND * 2).forGetter(ShowTitleAction::stay),
 			Codec.INT.optionalFieldOf("fade_out", SharedConstants.TICKS_PER_SECOND / 4).forGetter(ShowTitleAction::fadeOut)
@@ -35,9 +35,9 @@ public record ShowTitleAction(Optional<Component> title, Optional<Component> sub
 		events.listen(GameActionEvents.APPLY_TO_PLAYER, (context, target) -> {
 			target.connection.send(new ClientboundClearTitlesPacket(true));
 			target.connection.send(new ClientboundSetTitlesAnimationPacket(fadeIn, stay, fadeOut));
-			target.connection.send(new ClientboundSetTitleTextPacket(title.orElse(EMPTY_TITLE)));
-			subtitle.ifPresent(subtitle -> target.connection.send(new ClientboundSetSubtitleTextPacket(subtitle)));
-			actionBar.ifPresent(actionBar -> target.connection.send(new ClientboundSetActionBarTextPacket(actionBar)));
+			target.connection.send(new ClientboundSetTitleTextPacket(title.map(title -> title.apply(context)).orElse(EMPTY_TITLE)));
+			subtitle.ifPresent(subtitle -> target.connection.send(new ClientboundSetSubtitleTextPacket(subtitle.apply(context))));
+			actionBar.ifPresent(actionBar -> target.connection.send(new ClientboundSetActionBarTextPacket(actionBar.apply(context))));
 			return true;
 		});
 	}
