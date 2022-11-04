@@ -38,7 +38,7 @@ public class GameActionList {
 					}
 			);
 
-	public static final Codec<GameActionList> CODEC = ExtraCodecs.xor(MAP_CODEC.codec(), SIMPLE_CODEC)
+	public static final Codec<GameActionList> CODEC = Codec.either(SIMPLE_CODEC, MAP_CODEC.codec())
 			.xmap(either -> either.map(Function.identity(), Function.identity()), Either::right);
 
 	private final List<IGameBehavior> behaviors;
