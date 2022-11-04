@@ -27,6 +27,9 @@ public record ScalePlayerDamageBehavior(float factor, float hostFactor) implemen
 				factor = hostFactor;
 			}
 			float newAmount = amount * factor;
+			if (StreamHosts.isHost(player) && newAmount >= player.getMaxHealth() / 2.0f && newAmount <= player.getMaxHealth()) {
+				newAmount = Math.min(player.getHealth() - 1.0f, newAmount);
+			}
 			return Math.max(1.0f, newAmount);
 		});
 	}
