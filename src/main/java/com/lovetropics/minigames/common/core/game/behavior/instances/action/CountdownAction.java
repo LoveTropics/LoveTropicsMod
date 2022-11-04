@@ -18,6 +18,7 @@ import net.minecraft.network.chat.TextComponent;
 import net.minecraft.ChatFormatting;
 
 import java.util.LinkedList;
+import java.util.Map;
 
 public final class CountdownAction implements IGameBehavior {
 	public static final Codec<CountdownAction> CODEC = RecordCodecBuilder.create(i -> i.group(
@@ -70,7 +71,7 @@ public final class CountdownAction implements IGameBehavior {
 		if (remainingTicks % 20 == 0) {
 			long remainingSeconds = remainingTicks / 20;
 			MutableComponent timeText = new TextComponent(String.valueOf(remainingSeconds)).withStyle(ChatFormatting.GOLD);
-			player.displayClientMessage(warning.apply(timeText), true);
+			player.displayClientMessage(warning.apply(Map.of("time", timeText)), true);
 			player.playNotifySound(SoundEvents.ARROW_HIT_PLAYER, SoundSource.MASTER, 0.8F, 1.0F);
 		}
 	}

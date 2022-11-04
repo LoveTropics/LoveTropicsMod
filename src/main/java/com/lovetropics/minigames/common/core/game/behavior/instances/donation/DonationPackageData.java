@@ -25,6 +25,7 @@ import net.minecraft.world.item.Items;
 import net.minecraftforge.network.PacketDistributor;
 
 import javax.annotation.Nullable;
+import java.util.Map;
 import java.util.Optional;
 
 public record DonationPackageData(
@@ -79,7 +80,7 @@ public record DonationPackageData(
 		).apply(i, Notification::new));
 
 		public Component createTargetedMessage(@Nullable ServerPlayer receiver, @Nullable String sender) {
-			return this.message.apply(this.getSenderName(sender), this.getReceiverName(receiver));
+			return this.message.apply(Map.of("sender", this.getSenderName(sender), "receiver", this.getReceiverName(receiver)));
 		}
 
 		public Component createGlobalMessage(@Nullable ServerPlayer receiver) {

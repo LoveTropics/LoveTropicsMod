@@ -34,6 +34,7 @@ import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public final class GameEndEffectsBehavior implements IGameBehavior {
@@ -89,7 +90,7 @@ public final class GameEndEffectsBehavior implements IGameBehavior {
 		this.ended = true;
 
 		if (this.title != null) {
-			Component title = this.title.apply(winner);
+			Component title = this.title.apply(Map.of("winner", winner));
 			PlayerSet players = game.getAllPlayers();
 			players.sendPacket(new ClientboundClearTitlesPacket(true));
 			players.sendPacket(new ClientboundSetTitlesAnimationPacket(10, 3 * 20, 10));
@@ -159,7 +160,7 @@ public final class GameEndEffectsBehavior implements IGameBehavior {
 	private void sendScheduledMessages(IGamePhase game, long stopTime) {
 		TemplatedText message = this.scheduledMessages.remove(stopTime);
 		if (message != null) {
-			game.getAllPlayers().sendMessage(message.apply(winner));
+			game.getAllPlayers().sendMessage(message.apply(Map.of("winner", winner)));
 		}
 	}
 

@@ -12,6 +12,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.network.chat.Component;
 
+import java.util.Map;
 import java.util.Optional;
 
 public record ImmediateRespawnBehavior(Optional<PlayerRole> role, Optional<PlayerRole> respawnAsRole, Optional<TemplatedText> deathMessage, boolean dropInventory) implements IGameBehavior {
@@ -53,7 +54,7 @@ public record ImmediateRespawnBehavior(Optional<PlayerRole> role, Optional<Playe
 
 	private void sendDeathMessage(IGamePhase game, ServerPlayer player) {
 		if (deathMessage.isPresent()) {
-			Component message = deathMessage.get().apply(player.getCombatTracker().getDeathMessage());
+			Component message = deathMessage.get().apply(Map.of("message", player.getCombatTracker().getDeathMessage()));
 			game.getAllPlayers().sendMessage(message);
 		}
 	}

@@ -23,6 +23,7 @@ import net.minecraft.network.chat.TextComponent;
 import net.minecraft.ChatFormatting;
 import net.minecraft.world.BossEvent;
 
+import java.util.Map;
 import java.util.Optional;
 
 public final class TimedGameBehavior implements IGameBehavior {
@@ -109,6 +110,6 @@ public final class TimedGameBehavior implements IGameBehavior {
 		Component timeText = new TextComponent(Util.formatMinutesSeconds(secondsRemaining)).withStyle(ChatFormatting.AQUA);
 		Component gameNameText = game.getDefinition().getName().copy().withStyle(ChatFormatting.AQUA);
 
-		return timerBarText.apply(timeText, gameNameText);
+		return timerBarText.apply(Map.of("time", timeText, "game", gameNameText));
 	}
 }
