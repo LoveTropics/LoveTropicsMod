@@ -1,6 +1,7 @@
 package com.lovetropics.minigames.common.content.survive_the_tide.behavior;
 
 import com.lovetropics.lib.BlockBox;
+import com.lovetropics.lib.codec.MoreCodecs;
 import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
@@ -35,7 +36,7 @@ public class WorldBorderGameBehavior implements IGameBehavior {
 			Codec.INT.fieldOf("particle_height").forGetter(c -> c.particleHeight),
 			Codec.INT.fieldOf("damage_rate_delay").forGetter(c -> c.damageRateDelay),
 			Codec.INT.fieldOf("damage_amount").forGetter(c -> c.damageAmount),
-			ParticleType.CODEC.fieldOf("border_particle").forGetter(c -> c.borderParticle)
+			MoreCodecs.listOrUnit(ParticleType.CODEC).fieldOf("border_particles").forGetter(c -> c.borderParticles)
 	).apply(i, WorldBorderGameBehavior::new));
 
 	private final String worldBorderCenterKey;
@@ -43,7 +44,7 @@ public class WorldBorderGameBehavior implements IGameBehavior {
 	private final int particleHeight;
 	private final int damageRateDelay;
 	private final int damageAmount;
-	private final ParticleType borderParticle;
+	private final List<ParticleType> borderParticles;
 
 	private BlockPos worldBorderCenter = BlockPos.ZERO;
 
@@ -52,13 +53,13 @@ public class WorldBorderGameBehavior implements IGameBehavior {
 	private boolean addedBeacon;
 
 	public WorldBorderGameBehavior(final String worldBorderCenterKey, final ProgressionPeriod period,
-								   final int particleHeight, final int damageRateDelay, final int damageAmount, final ParticleType borderParticle) {
+								   final int particleHeight, final int damageRateDelay, final int damageAmount, final List<ParticleType> borderParticles) {
 		this.worldBorderCenterKey = worldBorderCenterKey;
 		this.period = period;
 		this.particleHeight = particleHeight;
 		this.damageRateDelay = damageRateDelay;
 		this.damageAmount = damageAmount;
-		this.borderParticle = borderParticle;
+		this.borderParticles = borderParticles;
 	}
 
 	@Override
@@ -99,9 +100,10 @@ public class WorldBorderGameBehavior implements IGameBehavior {
 		float maxRadius = 210;
 		float currentRadius = maxRadius * borderPercent;
 
-		ParticleType particle = borderParticle;
-		if (game.ticks() % particle.rate == 0) {
-			tickParticles(particle, currentRadius, game.getWorld());
+		for (ParticleType particle : borderParticles) {
+			if (game.ticks() % particle.rate == 0) {
+				tickParticles(particle, currentRadius, game.getWorld());
+			}
 		}
 
 		if (game.ticks() % damageRateDelay == 0) {
@@ -128,7 +130,7 @@ public class WorldBorderGameBehavior implements IGameBehavior {
 					float zVec = (float) Math.cos(Math.toRadians(step)) * currentRadius;
 					//world.addParticle(borderParticle, worldBorderCenter.getX() + xVec, worldBorderCenter.getY() + yStep, worldBorderCenter.getZ() + zVec, 0, 0, 0);
 					//IParticleData data = ForgeRegistries.PARTICLE_TYPES.getValue(new ResourceLocation("heart"));
-					world.sendParticles(borderParticle.particle, worldBorderCenter.getX() + xVec, worldBorderCenter.getY() + yStep, worldBorderCenter
+					world.sendParticles(particle.particle, worldBorderCenter.getX() + xVec, worldBorderCenter.getY() + yStep, worldBorderCenter
 							.getZ() + zVec, 1, 0, 0, 0, 1D);
 				}
 			}
