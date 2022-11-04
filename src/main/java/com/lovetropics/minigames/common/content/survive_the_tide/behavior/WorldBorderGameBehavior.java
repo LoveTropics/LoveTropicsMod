@@ -32,20 +32,18 @@ public class WorldBorderGameBehavior implements IGameBehavior {
 	public static final Codec<WorldBorderGameBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
 			Codec.STRING.fieldOf("world_border_center").forGetter(c -> c.worldBorderCenterKey),
 			ProgressionPeriod.CODEC.fieldOf("period").forGetter(c -> c.period),
-			Codec.INT.fieldOf("particle_rate_delay").forGetter(c -> c.particleRateDelay),
 			Codec.INT.fieldOf("particle_height").forGetter(c -> c.particleHeight),
 			Codec.INT.fieldOf("damage_rate_delay").forGetter(c -> c.damageRateDelay),
 			Codec.INT.fieldOf("damage_amount").forGetter(c -> c.damageAmount),
-			ParticleTypes.CODEC.optionalFieldOf("border_particle", ParticleTypes.EXPLOSION).forGetter(c -> c.borderParticle)
+			ParticleType.CODEC.fieldOf("border_particle").forGetter(c -> c.borderParticle)
 	).apply(i, WorldBorderGameBehavior::new));
 
 	private final String worldBorderCenterKey;
 	private final ProgressionPeriod period;
-	private final int particleRateDelay;
 	private final int particleHeight;
 	private final int damageRateDelay;
 	private final int damageAmount;
-	private final ParticleOptions borderParticle;
+	private final ParticleType borderParticle;
 
 	private BlockPos worldBorderCenter = BlockPos.ZERO;
 
@@ -54,10 +52,9 @@ public class WorldBorderGameBehavior implements IGameBehavior {
 	private boolean addedBeacon;
 
 	public WorldBorderGameBehavior(final String worldBorderCenterKey, final ProgressionPeriod period,
-								   final int particleRateDelay, final int particleHeight, final int damageRateDelay, final int damageAmount, final ParticleOptions borderParticle) {
+								   final int particleHeight, final int damageRateDelay, final int damageAmount, final ParticleType borderParticle) {
 		this.worldBorderCenterKey = worldBorderCenterKey;
 		this.period = period;
-		this.particleRateDelay = particleRateDelay;
 		this.particleHeight = particleHeight;
 		this.damageRateDelay = damageRateDelay;
 		this.damageAmount = damageAmount;
@@ -102,8 +99,9 @@ public class WorldBorderGameBehavior implements IGameBehavior {
 		float maxRadius = 210;
 		float currentRadius = maxRadius * borderPercent;
 
-		if (game.ticks() % particleRateDelay == 0) {
-			tickParticles(currentRadius, game.getWorld());
+		ParticleType particle = borderParticle;
+		if (game.ticks() % particle.rate == 0) {
+			tickParticles(particle, currentRadius, game.getWorld());
 		}
 
 		if (game.ticks() % damageRateDelay == 0) {
@@ -116,23 +114,21 @@ public class WorldBorderGameBehavior implements IGameBehavior {
 		//world.addParticle(borderParticle, );
 	}
 
-	private void tickParticles(float currentRadius, ServerLevel world) {
-		float amountPerCircle = 4 * currentRadius;
+	private void tickParticles(ParticleType particle, float currentRadius, ServerLevel world) {
+		float amountPerCircle = particle.density * currentRadius;
 		float stepAmount = 360F / amountPerCircle;
 
 		int yMin = -10;
 		int yStepAmount = 5;
 
-		int randSpawn = 30;
-
 		for (float step = 0; step <= 360; step += stepAmount) {
 			for (int yStep = yMin; yStep < particleHeight; yStep += yStepAmount) {
-				if (world.random.nextInt(randSpawn/*yMax - yMin*/) == 0) {
+				if (world.random.nextInt(particle.chance/*yMax - yMin*/) == 0) {
 					float xVec = (float) -Math.sin(Math.toRadians(step)) * currentRadius;
 					float zVec = (float) Math.cos(Math.toRadians(step)) * currentRadius;
 					//world.addParticle(borderParticle, worldBorderCenter.getX() + xVec, worldBorderCenter.getY() + yStep, worldBorderCenter.getZ() + zVec, 0, 0, 0);
 					//IParticleData data = ForgeRegistries.PARTICLE_TYPES.getValue(new ResourceLocation("heart"));
-					world.sendParticles(borderParticle, worldBorderCenter.getX() + xVec, worldBorderCenter.getY() + yStep, worldBorderCenter
+					world.sendParticles(borderParticle.particle, worldBorderCenter.getX() + xVec, worldBorderCenter.getY() + yStep, worldBorderCenter
 							.getZ() + zVec, 1, 0, 0, 0, 1D);
 				}
 			}
@@ -150,5 +146,14 @@ public class WorldBorderGameBehavior implements IGameBehavior {
 				player.addEffect(new MobEffectInstance(MobEffects.CONFUSION, 40, 0));
 			}
 		}
+	}
+
+	public record ParticleType(ParticleOptions particle, int rate, int chance, float density) {
+		public static final Codec<ParticleType> CODEC = RecordCodecBuilder.create(i -> i.group(
+				ParticleTypes.CODEC.fieldOf("particle").forGetter(ParticleType::particle),
+				Codec.INT.fieldOf("rate").forGetter(ParticleType::rate),
+				Codec.INT.fieldOf("chance").forGetter(ParticleType::chance),
+				Codec.FLOAT.fieldOf("density").forGetter(ParticleType::density)
+		).apply(i, ParticleType::new));
 	}
 }
