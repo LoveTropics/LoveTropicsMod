@@ -62,27 +62,37 @@ public final class GameEventDispatcher {
 
 	@SubscribeEvent
 	public void onPlayerHurt(LivingHurtEvent event) {
-		Entity entity = event.getEntity();
-		if (entity instanceof ServerPlayer) {
-			IGamePhase game = gameLookup.getGamePhaseFor(entity);
+		if (event.getEntity() instanceof ServerPlayer player) {
+			IGamePhase game = gameLookup.getGamePhaseFor(player);
 			if (game != null) {
 				try {
-					ServerPlayer player = (ServerPlayer) entity;
 					DamageSource source = event.getSource();
 					float amount = event.getAmount();
-
 					InteractionResult result = game.invoker(GamePlayerEvents.DAMAGE).onDamage(player, source, amount);
 					if (result == InteractionResult.FAIL) {
 						event.setCanceled(true);
-						return;
 					}
+				} catch (Exception e) {
+					LoveTropics.LOGGER.warn("Failed to dispatch player hurt event", e);
+				}
+			}
+		}
+	}
 
+	@SubscribeEvent
+	public void onPlayerDamage(LivingDamageEvent event) {
+		if (event.getEntity() instanceof ServerPlayer player) {
+			IGamePhase game = gameLookup.getGamePhaseFor(player);
+			if (game != null) {
+				try {
+					DamageSource source = event.getSource();
+					float amount = event.getAmount();
 					float newAmount = game.invoker(GamePlayerEvents.DAMAGE_AMOUNT).getDamageAmount(player, source, amount, amount);
 					if (newAmount != amount) {
 						event.setAmount(newAmount);
 					}
 				} catch (Exception e) {
-					LoveTropics.LOGGER.warn("Failed to dispatch player hurt event", e);
+					LoveTropics.LOGGER.warn("Failed to dispatch player damage amount event", e);
 				}
 			}
 		}
