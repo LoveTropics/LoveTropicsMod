@@ -56,6 +56,7 @@ public class GameBehaviorTypes {
 	public static final GameBehaviorEntry<OnKillTrigger> ON_KILL = register("on_kill", OnKillTrigger.CODEC);
 	public static final GameBehaviorEntry<BindControlsBehavior> BIND_CONTROLS = register("bind_controls", BindControlsBehavior.CODEC);
 	public static final GameBehaviorEntry<CancelPlayerDamageBehavior> CANCEL_PLAYER_DAMAGE = register("cancel_player_damage", CancelPlayerDamageBehavior.CODEC);
+	public static final GameBehaviorEntry<ScalePlayerDamageBehavior> SCALE_PLAYER_DAMAGE = register("scale_player_damage", ScalePlayerDamageBehavior.CODEC);
 	public static final GameBehaviorEntry<SetGameRulesBehavior> SET_GAME_RULES = register("set_game_rules", SetGameRulesBehavior.CODEC);
 	public static final GameBehaviorEntry<SetupTeamsBehavior> SETUP_TEAMS = register("setup_teams", SetupTeamsBehavior.CODEC);
 	public static final GameBehaviorEntry<TeamsBehavior> TEAMS = register("teams", TeamsBehavior.CODEC);
