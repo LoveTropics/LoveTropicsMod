@@ -36,7 +36,7 @@ public final class ServerPlayerDisguises {
 	public static void onRegisterCommands(RegisterCommandsEvent event) {
 		// @formatter:off
 		event.getDispatcher().register(
-			Commands.literal("disguise").requires(source -> source.hasPermission(3))
+			Commands.literal("disguise").requires(source -> source.hasPermission(2))
 				.then(Commands.literal("as")
 					.then(Commands.argument("entity", EntitySummonArgument.id())
 						.suggests(SuggestionProviders.SUMMONABLE_ENTITIES)
