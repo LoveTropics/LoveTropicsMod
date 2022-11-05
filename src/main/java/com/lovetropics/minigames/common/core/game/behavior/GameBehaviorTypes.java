@@ -121,6 +121,7 @@ public class GameBehaviorTypes {
 	public static final GameBehaviorEntry<SpawnParticlesAroundPlayerAction> SPAWN_PARTICLES_AROUND_PLAYER = register("spawn_particles_around_player", SpawnParticlesAroundPlayerAction.CODEC);
 	public static final GameBehaviorEntry<NotificationToastAction> NOTIFICATION_TOAST = register("notification_toast", NotificationToastAction.CODEC);
 	public static final GameBehaviorEntry<TransformPlayerTornadoAction> TRANSFORM_PLAYER_TORNADO = register("transform_player_tornado", TransformPlayerTornadoAction.CODEC);
+	public static final GameBehaviorEntry<SpawnTornadoAction> SPAWN_TORNADO = register("spawn_tornado", SpawnTornadoAction.CODEC);
 	public static final GameBehaviorEntry<ChestDropAction> CHEST_DROP = register("chest_drop", ChestDropAction.CODEC);
 	public static final GameBehaviorEntry<DamagePlayerAction> DAMAGE_PLAYER = register("damage_player", DamagePlayerAction.CODEC);
 	public static final GameBehaviorEntry<SpectatorActivityAction> SPECTATOR_ACTIVITY = register("spectator_activity", SpectatorActivityAction.CODEC);
