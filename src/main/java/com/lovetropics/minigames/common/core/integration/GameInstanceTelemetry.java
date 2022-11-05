@@ -165,7 +165,8 @@ public final class GameInstanceTelemetry implements IGameState {
 		} else if ("create".equals(crud)) {
 			Optional<GameActionType> actionType = GameActionType.getFromId(type);
 			if (actionType.isPresent()) {
-				JsonObject payload = object.getAsJsonObject("payload");
+				// TODO: Fallback because format is inconsistent
+				JsonObject payload = object.has("payload") ? object.getAsJsonObject("payload") : object;
 				DataResult<GameActionRequest> parseResult = actionType.get().getCodec().parse(JsonOps.INSTANCE, payload);
 
 				parseResult.result().ifPresent(actions::enqueue);
