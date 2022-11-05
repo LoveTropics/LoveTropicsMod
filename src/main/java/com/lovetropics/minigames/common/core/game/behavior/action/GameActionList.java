@@ -1,5 +1,6 @@
 package com.lovetropics.minigames.common.core.game.behavior.action;
 
+import com.google.common.collect.Lists;
 import com.lovetropics.lib.codec.MoreCodecs;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
@@ -12,7 +13,6 @@ import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.StringRepresentable;
 
 import java.util.Arrays;
@@ -85,13 +85,14 @@ public class GameActionList {
 			this.name = name;
 		}
 
-		public Iterable<ServerPlayer> resolve(IGamePhase game, Iterable<ServerPlayer> sources) {
+		public List<ServerPlayer> resolve(IGamePhase game, Iterable<ServerPlayer> sources) {
+			// Copy the lists because we might otherwise get concurrent modification from whatever the actions do!
 			return switch (this) {
 				case NONE -> List.of();
-				case SOURCE -> sources;
-				case PARTICIPANTS -> game.getParticipants();
-				case SPECTATORS -> game.getSpectators();
-				case ALL -> game.getAllPlayers();
+				case SOURCE -> Lists.newArrayList(sources);
+				case PARTICIPANTS -> Lists.newArrayList(game.getParticipants());
+				case SPECTATORS -> Lists.newArrayList(game.getSpectators());
+				case ALL -> Lists.newArrayList(game.getAllPlayers());
 			};
 		}
 
