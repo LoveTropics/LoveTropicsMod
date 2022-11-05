@@ -66,7 +66,9 @@ public final class DisguiseType {
 
 		this.fixInvalidEntities(entity);
 
-		entity.setCustomName(player.getDisplayName());
+		if (!entity.hasCustomName()) {
+			entity.setCustomName(player.getDisplayName());
+		}
 		entity.setCustomNameVisible(true);
 
 		return entity;
