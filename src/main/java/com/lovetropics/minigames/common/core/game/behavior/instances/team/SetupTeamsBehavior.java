@@ -67,8 +67,8 @@ public final class SetupTeamsBehavior implements IGameBehavior {
 	}
 
 	@Override
-	public void registerState(IGamePhase game, GameStateMap state) {
-		teamState = state.register(TeamState.KEY, new TeamState(this.teams));
+	public void registerState(IGamePhase game, GameStateMap phaseState, GameStateMap instanceState) {
+		teamState = instanceState.register(TeamState.KEY, new TeamState(this.teams));
 	}
 
 	@Override

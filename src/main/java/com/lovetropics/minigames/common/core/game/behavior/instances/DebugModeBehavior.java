@@ -11,8 +11,8 @@ public final class DebugModeBehavior implements IGameBehavior {
 	public static final Codec<DebugModeBehavior> CODEC = Codec.unit(DebugModeBehavior::new);
 
 	@Override
-	public void registerState(IGamePhase game, GameStateMap state) {
-		state.register(DebugModeState.KEY, new DebugModeState());
+	public void registerState(IGamePhase game, GameStateMap phaseState, GameStateMap instanceState) {
+		phaseState.register(DebugModeState.KEY, new DebugModeState());
 	}
 
 	@Override

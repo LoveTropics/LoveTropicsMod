@@ -44,8 +44,8 @@ public class GameProgressionBehavior implements IGameBehavior {
 	}
 
 	@Override
-	public void registerState(IGamePhase game, GameStateMap state) {
-		progressionState = state.register(GameProgressionState.KEY, new GameProgressionState());
+	public void registerState(IGamePhase game, GameStateMap phaseState, GameStateMap instanceState) {
+		progressionState = phaseState.register(GameProgressionState.KEY, new GameProgressionState());
 		namedPoints.forEach((name, value) -> progressionState.addNamedPoint(name, value));
 	}
 

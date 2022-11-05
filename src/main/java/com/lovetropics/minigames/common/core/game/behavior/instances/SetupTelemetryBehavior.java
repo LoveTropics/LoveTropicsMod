@@ -22,13 +22,13 @@ public final class SetupTelemetryBehavior implements IGameBehavior {
 
 	// TODO: we could potentially have state entries & the IGamePhase come through the constructor with codec hacks
 	@Override
-	public void registerState(IGamePhase game, GameStateMap state) {
+	public void registerState(IGamePhase game, GameStateMap phaseState, GameStateMap instanceState) {
 		if (game.getLobby().getMetadata().visibility().isFocusedLive()) {
 			if (!Telemetry.INSTANCE.isConnected()) {
 				throw new GameException(GameTexts.Status.telemetryNotConnected());
 			}
 
-			telemetry = state.register(GameInstanceTelemetry.KEY, Telemetry.INSTANCE.openGame(game));
+			telemetry = instanceState.register(GameInstanceTelemetry.KEY, Telemetry.INSTANCE.openGame(game));
 		}
 	}
 

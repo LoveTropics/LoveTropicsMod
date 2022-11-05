@@ -41,9 +41,9 @@ public final class AddWeatherBehavior implements IGameBehavior {
 	}
 
 	@Override
-	public void registerState(IGamePhase game, GameStateMap state) {
+	public void registerState(IGamePhase game, GameStateMap phaseState, GameStateMap instanceState) {
 		WeatherController controller = WeatherControllerManager.forWorld(game.getWorld());
-		weather = state.register(GameWeatherState.KEY, new GameWeatherState(controller));
+		weather = phaseState.register(GameWeatherState.KEY, new GameWeatherState(controller));
 	}
 
 	@Override

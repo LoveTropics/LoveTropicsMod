@@ -51,8 +51,8 @@ public final class TimedGameBehavior implements IGameBehavior {
 	}
 
 	@Override
-	public void registerState(IGamePhase game, GameStateMap state) {
-		this.state = state.register(TimedGameState.KEY, new TimedGameState(length, closeTime));
+	public void registerState(IGamePhase game, GameStateMap phaseState, GameStateMap instanceState) {
+		this.state = phaseState.register(TimedGameState.KEY, new TimedGameState(length, closeTime));
 	}
 
 	@Override

@@ -42,10 +42,10 @@ public final class BbAssignPlotsBehavior implements IGameBehavior {
 	}
 
 	@Override
-	public void registerState(IGamePhase game, GameStateMap state) {
-		plots = state.register(PlotsState.KEY, new PlotsState());
+	public void registerState(IGamePhase game, GameStateMap phaseState, GameStateMap instanceState) {
+		plots = phaseState.register(PlotsState.KEY, new PlotsState());
 		// TODO: find a better place for this
-		state.register(TutorialState.KEY, new TutorialState());
+		phaseState.register(TutorialState.KEY, new TutorialState());
 	}
 
 	@Override

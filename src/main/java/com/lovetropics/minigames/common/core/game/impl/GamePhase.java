@@ -83,7 +83,7 @@ public class GamePhase implements IGamePhase {
 
 	GameResult<Unit> start() {
 		try {
-			behaviors.registerTo(this, game.stateMap, events);
+			behaviors.registerTo(this, events);
 		} catch (GameException e) {
 			return GameResult.error(e.getTextMessage());
 		}

@@ -55,8 +55,8 @@ public final class BbCurrencyBehavior implements IGameBehavior {
 	}
 
 	@Override
-	public void registerState(IGamePhase game, GameStateMap state) {
-		this.currency = state.register(CurrencyManager.KEY, new CurrencyManager(game, this.item));
+	public void registerState(IGamePhase game, GameStateMap phaseState, GameStateMap instanceState) {
+		this.currency = phaseState.register(CurrencyManager.KEY, new CurrencyManager(game, this.item));
 	}
 
 	@Override

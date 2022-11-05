@@ -40,9 +40,9 @@ public final class BehaviorMap implements Iterable<IGameBehavior> {
 		return new BehaviorMap(behaviors);
 	}
 
-	public void registerTo(GamePhase phase, GameStateMap state, GameEventListeners events) {
+	public void registerTo(GamePhase phase, GameEventListeners events) {
 		for (IGameBehavior behavior : this) {
-			behavior.registerState(phase, state);
+			behavior.registerState(phase, phase.getState(), phase.getInstanceState());
 		}
 
 		for (IGameBehavior behavior : this) {
