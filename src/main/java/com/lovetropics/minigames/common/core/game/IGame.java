@@ -8,6 +8,7 @@ import com.lovetropics.minigames.common.core.game.state.control.ControlCommandIn
 import com.lovetropics.minigames.common.core.game.state.control.ControlCommands;
 import com.lovetropics.minigames.common.core.game.state.statistics.GameStatistics;
 import com.lovetropics.minigames.common.core.game.state.statistics.PlayerKey;
+import com.lovetropics.minigames.common.core.integration.GameInstanceTelemetry;
 import net.minecraft.server.MinecraftServer;
 
 import java.util.UUID;
@@ -31,14 +32,18 @@ public interface IGame {
 
 	IGameDefinition getDefinition();
 
-	GameStateMap getState();
+	GameStateMap getInstanceState();
 
 	default GameStatistics getStatistics() {
-		return getState().get(GameStatistics.KEY);
+		return getInstanceState().get(GameStatistics.KEY);
 	}
 
 	default ControlCommands getControlCommands() {
-		return getState().get(ControlCommands.KEY);
+		return getInstanceState().get(ControlCommands.KEY);
+	}
+
+	default GameInstanceTelemetry getTelemetryOrThrow() {
+		return getInstanceState().getOrThrow(GameInstanceTelemetry.KEY);
 	}
 
 	default ControlCommandInvoker getControlInvoker() {

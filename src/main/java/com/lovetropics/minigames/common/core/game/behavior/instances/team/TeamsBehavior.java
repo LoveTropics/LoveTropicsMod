@@ -67,7 +67,7 @@ public final class TeamsBehavior implements IGameBehavior {
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
-		teams = game.getState().getOrThrow(TeamState.KEY);
+		teams = game.getInstanceState().getOrThrow(TeamState.KEY);
 
 		this.addTeamsToScoreboard(game);
 

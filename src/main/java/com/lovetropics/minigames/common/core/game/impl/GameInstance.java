@@ -39,7 +39,7 @@ final class GameInstance implements IGame {
 	}
 
 	@Override
-	public GameStateMap getState() {
+	public GameStateMap getInstanceState() {
 		return stateMap;
 	}
 }

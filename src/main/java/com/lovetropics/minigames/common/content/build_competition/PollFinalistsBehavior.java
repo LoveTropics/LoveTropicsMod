@@ -44,8 +44,7 @@ public record PollFinalistsBehavior(String finalistsTag, String winnerTag, Strin
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) throws GameException {
-		GameInstanceTelemetry telemetry = game.getState().getOrThrow(GameInstanceTelemetry.KEY);
-
+		GameInstanceTelemetry telemetry = game.getTelemetryOrThrow();
 		game.getControlCommands().add("start_runoff", ControlCommand.forAdmins(source -> {
 			try {
 				PlayerList players = source.getServer().getPlayerList();

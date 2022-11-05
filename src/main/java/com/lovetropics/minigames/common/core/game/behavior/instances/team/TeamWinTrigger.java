@@ -23,7 +23,7 @@ public class TeamWinTrigger implements IGameBehavior {
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) throws GameException {
-		TeamState teamState = game.getState().getOrThrow(TeamState.KEY);
+		TeamState teamState = game.getInstanceState().getOrThrow(TeamState.KEY);
 
 		events.listen(GamePlayerEvents.SET_ROLE, (player, role, lastRole) -> {
 			if (lastRole != PlayerRole.PARTICIPANT || winTriggered) {

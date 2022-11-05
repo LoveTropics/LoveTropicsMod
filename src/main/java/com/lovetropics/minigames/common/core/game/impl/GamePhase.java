@@ -12,6 +12,7 @@ import com.lovetropics.minigames.common.core.game.map.GameMap;
 import com.lovetropics.minigames.common.core.game.player.MutablePlayerSet;
 import com.lovetropics.minigames.common.core.game.player.PlayerRole;
 import com.lovetropics.minigames.common.core.game.player.PlayerSet;
+import com.lovetropics.minigames.common.core.game.state.GameStateMap;
 import com.lovetropics.minigames.common.core.game.state.statistics.StatisticKey;
 import com.lovetropics.minigames.common.core.game.util.GameTexts;
 import com.lovetropics.minigames.common.core.game.util.PlayerSnapshot;
@@ -38,6 +39,7 @@ public class GamePhase implements IGamePhase {
 
 	final GameMap map;
 	final BehaviorMap behaviors;
+	final GameStateMap phaseState = new GameStateMap();
 
 	final EnumMap<PlayerRole, MutablePlayerSet> roles = new EnumMap<>(PlayerRole.class);
 
@@ -128,6 +130,11 @@ public class GamePhase implements IGamePhase {
 	@Override
 	public IGame getGame() {
 		return game;
+	}
+
+	@Override
+	public GameStateMap getState() {
+		return phaseState;
 	}
 
 	@Override

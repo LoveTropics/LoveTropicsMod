@@ -51,9 +51,11 @@ public interface IGamePhase extends IGame {
 	}
 
 	@Override
-	default GameStateMap getState() {
-		return getGame().getState();
+	default GameStateMap getInstanceState() {
+		return getGame().getInstanceState();
 	}
+
+	GameStateMap getState();
 
 	GamePhaseType getPhaseType();
 

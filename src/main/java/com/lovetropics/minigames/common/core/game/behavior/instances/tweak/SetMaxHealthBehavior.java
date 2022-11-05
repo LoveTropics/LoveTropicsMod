@@ -75,7 +75,7 @@ public record SetMaxHealthBehavior(double maxHealth, Object2DoubleMap<GameTeamKe
 
 	@Nullable
 	private GameTeamKey getTeamOrNull(IGamePhase game, ServerPlayer player) {
-		TeamState teamState = game.getState().getOrNull(TeamState.KEY);
+		TeamState teamState = game.getInstanceState().getOrNull(TeamState.KEY);
 		if (teamState != null) {
 			return teamState.getTeamForPlayer(player);
 		} else {
