@@ -44,7 +44,7 @@ public final class CountdownAction implements IGameBehavior {
 		actions.register(game, events);
 
 		events.listen(GameActionEvents.APPLY, (context, sources) -> {
-			queue.add(new QueueEntry(countdown, context, sources));
+			queue.add(new QueueEntry(game.ticks() + countdown, context, sources));
 			return true;
 		});
 
