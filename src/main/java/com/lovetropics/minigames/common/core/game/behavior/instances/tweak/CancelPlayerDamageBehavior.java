@@ -7,6 +7,7 @@ import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvent
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
 
 public record CancelPlayerDamageBehavior(boolean knockback) implements IGameBehavior {
 	public static final Codec<CancelPlayerDamageBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
@@ -18,6 +19,7 @@ public record CancelPlayerDamageBehavior(boolean knockback) implements IGameBeha
 		if (this.knockback) {
 			events.listen(GamePlayerEvents.DAMAGE_AMOUNT, (player, damageSource, amount, originalAmount) -> 0.0F);
 		} else {
+			events.listen(GamePlayerEvents.ATTACK, (player, target) -> target instanceof Player ? InteractionResult.FAIL : InteractionResult.PASS);
 			events.listen(GamePlayerEvents.DAMAGE, (player, damageSource, amount) -> InteractionResult.FAIL);
 		}
 	}
