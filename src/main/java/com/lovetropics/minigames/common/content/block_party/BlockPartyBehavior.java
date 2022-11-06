@@ -12,6 +12,8 @@ import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.lovetropics.minigames.common.core.game.player.PlayerRole;
 import com.lovetropics.minigames.common.core.game.player.PlayerSet;
+import com.lovetropics.minigames.common.core.game.state.statistics.PlayerKey;
+import com.lovetropics.minigames.common.core.game.state.statistics.StatisticKey;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.ChatFormatting;
@@ -142,6 +144,7 @@ public final class BlockPartyBehavior implements IGameBehavior {
 					message = new TextComponent("\u2B50 ")
 							.append(winningPlayer.getDisplayName()).append(" won the game!")
 							.withStyle(ChatFormatting.GREEN);
+					game.getStatistics().global().set(StatisticKey.WINNING_PLAYER, PlayerKey.from(winningPlayer));
 				} else {
 					message = new TextComponent("\u2B50 Nobody won the game!")
 							.withStyle(ChatFormatting.RED);

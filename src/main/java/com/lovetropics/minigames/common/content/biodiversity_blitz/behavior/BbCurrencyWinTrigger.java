@@ -82,9 +82,9 @@ public final class BbCurrencyWinTrigger implements IGameBehavior {
 	}
 
 	private void triggerWin(IGamePhase game, ServerPlayer player) {
-		game.invoker(GameLogicEvents.WIN_TRIGGERED).onWinTriggered(player.getDisplayName());
-
 		game.getStatistics().global().set(StatisticKey.WINNING_PLAYER, PlayerKey.from(player));
+
+		game.invoker(GameLogicEvents.WIN_TRIGGERED).onWinTriggered(player.getDisplayName());
 		game.invoker(GameLogicEvents.GAME_OVER).onGameOver();
 
 		gameOver = true;
