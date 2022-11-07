@@ -169,7 +169,7 @@ public final class BiodiversityBlitz {
 			.behavior(SpawnSurpriseWaveBehavior.CODEC)
 			.register();
 
-	public static final GameBehaviorEntry<EqualizeCurrencyBehavior> EQUALIZE_CURRENCY = REGISTRATE.object("equaize_currency")
+	public static final GameBehaviorEntry<EqualizeCurrencyBehavior> EQUALIZE_CURRENCY = REGISTRATE.object("equalize_currency")
 			.behavior(EqualizeCurrencyBehavior.CODEC)
 			.register();
 
