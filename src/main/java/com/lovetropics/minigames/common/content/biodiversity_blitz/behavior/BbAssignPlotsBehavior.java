@@ -26,19 +26,23 @@ import java.util.List;
 public final class BbAssignPlotsBehavior implements IGameBehavior {
 	public static final Codec<BbAssignPlotsBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
 			Plot.RegionKeys.CODEC.fieldOf("regions").forGetter(c -> c.regionKeys),
-			MoreCodecs.arrayOrUnit(Plot.Config.CODEC, Plot.Config[]::new).fieldOf("plots").forGetter(c -> c.plotKeys)
+			MoreCodecs.arrayOrUnit(Plot.Config.CODEC, Plot.Config[]::new).fieldOf("plots").forGetter(c -> c.plotKeys),
+			Codec.BOOL.fieldOf("teams_mode").orElse(false).forGetter(c -> c.teamsMode)
 	).apply(i, BbAssignPlotsBehavior::new));
 
 	private final Plot.RegionKeys regionKeys;
 
 	private final Plot.Config[] plotKeys;
+	private final boolean teamsMode;
 	private final List<Plot> freePlots = new ArrayList<>();
+	private int usedPlotIdx;
 
 	private PlotsState plots;
 
-	public BbAssignPlotsBehavior(Plot.RegionKeys regionKeys, Plot.Config[] plotKeys) {
+	public BbAssignPlotsBehavior(Plot.RegionKeys regionKeys, Plot.Config[] plotKeys, boolean teamsMode) {
 		this.regionKeys = regionKeys;
 		this.plotKeys = plotKeys;
+		this.teamsMode = teamsMode;
 	}
 
 	@Override
@@ -80,6 +84,18 @@ public final class BbAssignPlotsBehavior implements IGameBehavior {
 	private void trySpawnParticipant(IGamePhase game, ServerPlayer player) {
 		if (this.freePlots.isEmpty()) {
 			game.setPlayerRole(player, PlayerRole.SPECTATOR);
+			return;
+		}
+
+		if (teamsMode) {
+			// Simple, temporary round robin style player assignment
+			// TODO- proper teams selection
+			usedPlotIdx = (usedPlotIdx + 1) % freePlots.size();
+
+			Plot plot = this.freePlots.get(usedPlotIdx);
+			plots.addPlayer(player, plot);
+
+			game.invoker(BbEvents.ASSIGN_PLOT).onAssignPlot(player, plot);
 			return;
 		}
 

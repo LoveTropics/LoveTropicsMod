@@ -6,6 +6,7 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.core.BlockPos;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -13,7 +14,7 @@ import java.util.*;
 public final class PlotsState implements Iterable<Plot>, IGameState {
 	public static final GameStateKey<PlotsState> KEY = GameStateKey.create("Biodiversity Blitz Plots");
 
-	private final List<Plot> plots = new ArrayList<>();
+	private final Set<Plot> plots = new HashSet<>();
 	private final Map<UUID, Plot> plotsByPlayer = new Object2ObjectOpenHashMap<>();
 
 	@Nullable
@@ -35,6 +36,7 @@ public final class PlotsState implements Iterable<Plot>, IGameState {
 	public Plot removePlayer(ServerPlayer player) {
 		Plot plot = this.plotsByPlayer.remove(player.getUUID());
 		if (plot != null) {
+			// FIXME: if plot is still visible to other players, don't remove it!
 			this.plots.remove(plot);
 			return plot;
 		} else {
@@ -48,6 +50,7 @@ public final class PlotsState implements Iterable<Plot>, IGameState {
 	}
 
 	@Override
+	@NotNull
 	public Iterator<Plot> iterator() {
 		return this.plots.iterator();
 	}
@@ -58,6 +61,8 @@ public final class PlotsState implements Iterable<Plot>, IGameState {
 			return null;
 		}
 
-		return this.plots.get(random.nextInt(this.plots.size()));
+		List<Plot> plots = new ArrayList<>(this.plots);
+
+		return plots.get(random.nextInt(plots.size()));
 	}
 }

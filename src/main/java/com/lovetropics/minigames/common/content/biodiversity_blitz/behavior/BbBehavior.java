@@ -65,18 +65,9 @@ import java.util.List;
 public final class BbBehavior implements IGameBehavior {
 	public static final Codec<BbBehavior> CODEC = Codec.unit(BbBehavior::new);
 
-	private static final Object2FloatMap<Difficulty> DEATH_DECREASE = new Object2FloatOpenHashMap<>();
-
-	static {
-		DEATH_DECREASE.put(Difficulty.EASY, 0.9f);
-		DEATH_DECREASE.put(Difficulty.NORMAL, 0.8F);
-		DEATH_DECREASE.put(Difficulty.HARD, 0.5F);
-	}
-
 	private IGamePhase game;
 	private PlotsState plots;
 	private TutorialState tutorial;
-	private CurrencyManager currency;
 	private GameSidebar sidebar;
 	private GlobalGameWidgets widgets;
 
@@ -85,7 +76,6 @@ public final class BbBehavior implements IGameBehavior {
 		this.game = game;
 		this.plots = game.getState().getOrThrow(PlotsState.KEY);
 		this.tutorial = game.getState().getOrThrow(TutorialState.KEY);
-		this.currency = game.getState().getOrNull(CurrencyManager.KEY);
 		this.widgets = GlobalGameWidgets.registerTo(game, events);
 
 		events.listen(GamePlayerEvents.ADD, player -> setupPlayerAsRole(player, null));
@@ -311,30 +301,13 @@ public final class BbBehavior implements IGameBehavior {
 	private InteractionResult onPlayerDeath(ServerPlayer player, DamageSource damageSource) {
 		Plot plot = plots.getPlotFor(player);
 		if (plot == null) {
-			return InteractionResult.PASS;
+			return InteractionResult.FAIL;
 		}
 
 		teleportToRegion(player, plot.spawn, plot.spawnForward);
 		player.setHealth(20.0F);
 		if (player.getFoodData().getFoodLevel() < 10) {
 			player.getFoodData().eat(2, 0.8f);
-		}
-
-		// TODO: this should really be in the currency behavior
-		if (currency != null) {
-			// Resets all currency from the player's inventory and adds a new stack with 80% of the amount.
-			// A better way of just removing 20% of the existing stacks could be done but this was chosen for the time being to save time
-			Difficulty difficulty = game.getWorld().getDifficulty();
-
-			int oldCurrency = currency.get(player);
-			int newCurrency = Mth.floor(oldCurrency * DEATH_DECREASE.getFloat(difficulty));
-
-			if (oldCurrency != newCurrency) {
-				currency.set(player, newCurrency, false);
-		
-	//			player.sendStatusMessage(BiodiversityBlitzTexts.deathDecrease(oldCurrency - newCurrency).mergeStyle(TextFormatting.RED), true);
-		        player.connection.send(new ClientboundSetSubtitleTextPacket(BiodiversityBlitzTexts.deathDecrease(oldCurrency - newCurrency).withStyle(ChatFormatting.RED, ChatFormatting.ITALIC)));
-			}
 		}
 
 		player.playNotifySound(SoundEvents.ARROW_HIT_PLAYER, SoundSource.PLAYERS, 0.18F, 1.0F);
@@ -344,7 +317,7 @@ public final class BbBehavior implements IGameBehavior {
 		player.connection.send(new ClientboundSetTitlesAnimationPacket(40, 20, 0));
         player.connection.send(new ClientboundSetTitleTextPacket(BiodiversityBlitzTexts.deathTitle().withStyle(ChatFormatting.RED)));
 
-		return InteractionResult.FAIL;
+		return InteractionResult.PASS;
 	}
 
 	private void tick(IGamePhase game) {

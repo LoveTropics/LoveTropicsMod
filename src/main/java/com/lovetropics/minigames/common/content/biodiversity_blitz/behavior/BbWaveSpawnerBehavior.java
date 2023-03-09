@@ -50,7 +50,7 @@ public final class BbWaveSpawnerBehavior implements IGameBehavior {
 	private PlotsState plots;
 
 	private int sentWaves = 0;
-	private Map<UUID, List<WaveTracker>> waveTrackers = new HashMap<>();
+	private final Map<UUID, List<WaveTracker>> waveTrackers = new HashMap<>();
 	private ServerBossEvent waveCharging;
 
 	public BbWaveSpawnerBehavior(long intervalSeconds, long warnSeconds, SizeCurve sizeCurve, Object2FloatMap<Difficulty> difficultyFactors, Component firstMessage) {

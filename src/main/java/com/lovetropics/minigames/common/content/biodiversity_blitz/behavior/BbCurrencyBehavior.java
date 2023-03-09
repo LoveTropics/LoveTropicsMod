@@ -18,11 +18,15 @@ import com.lovetropics.minigames.common.core.game.state.GameStateMap;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.*;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.protocol.game.ClientboundSetSubtitleTextPacket;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
+import net.minecraft.world.Difficulty;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -30,6 +34,15 @@ import net.minecraftforge.registries.ForgeRegistries;
 import java.util.stream.IntStream;
 
 public final class BbCurrencyBehavior implements IGameBehavior {
+	// TODO: configurable?
+	private static final Object2FloatMap<Difficulty> DEATH_DECREASE = new Object2FloatOpenHashMap<>();
+
+	static {
+		DEATH_DECREASE.put(Difficulty.EASY, 0.9f);
+		DEATH_DECREASE.put(Difficulty.NORMAL, 0.8F);
+		DEATH_DECREASE.put(Difficulty.HARD, 0.5F);
+	}
+
 	public static final Codec<BbCurrencyBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
 			ForgeRegistries.ITEMS.getCodec().fieldOf("item").forGetter(c -> c.item),
 			Codec.INT.fieldOf("initial_currency").forGetter(c -> c.initialCurrency),
@@ -79,6 +92,7 @@ public final class BbCurrencyBehavior implements IGameBehavior {
 		events.listen(GamePhaseEvents.TICK, () -> this.currency.tickTracked());
 
 		events.listen(BbEvents.TICK_PLOT, this::tickPlot);
+		events.listen(GamePlayerEvents.DEATH, this::onPlayerDeath);
 	}
 
 	private void tickPlot(ServerPlayer player, Plot plot) {
@@ -129,6 +143,24 @@ public final class BbCurrencyBehavior implements IGameBehavior {
 		}
 
 		return dropCalculation.applyGlobal(value);
+	}
+
+	private InteractionResult onPlayerDeath(ServerPlayer player, DamageSource damageSource) {
+		// Resets all currency from the player's inventory and adds a new stack with 80% of the amount.
+		// A better way of just removing 20% of the existing stacks could be done but this was chosen for the time being to save time
+		Difficulty difficulty = game.getWorld().getDifficulty();
+
+		int oldCurrency = currency.get(player);
+		int newCurrency = Mth.floor(oldCurrency * DEATH_DECREASE.getFloat(difficulty));
+
+		if (oldCurrency != newCurrency) {
+			currency.set(player, newCurrency, false);
+
+//			player.sendStatusMessage(BiodiversityBlitzTexts.deathDecrease(oldCurrency - newCurrency).mergeStyle(TextFormatting.RED), true);
+			player.connection.send(new ClientboundSetSubtitleTextPacket(BiodiversityBlitzTexts.deathDecrease(oldCurrency - newCurrency).withStyle(ChatFormatting.RED, ChatFormatting.ITALIC)));
+		}
+
+		return InteractionResult.PASS;
 	}
 
 	private static final class DropCalculation {
