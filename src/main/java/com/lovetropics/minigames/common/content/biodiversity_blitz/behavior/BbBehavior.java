@@ -136,6 +136,7 @@ public final class BbBehavior implements IGameBehavior {
 	}
 
 	private Component[] collectScoreboard(IGamePhase game) {
+		// FIXME: does not work with teams!
 		List<Component> sidebar = new ArrayList<>(10);
 		sidebar.add(new TextComponent("Player ").withStyle(ChatFormatting.AQUA).append(new TextComponent("points (+ per drop)").withStyle(ChatFormatting.GOLD)));
 		sidebar.add(TextComponent.EMPTY);

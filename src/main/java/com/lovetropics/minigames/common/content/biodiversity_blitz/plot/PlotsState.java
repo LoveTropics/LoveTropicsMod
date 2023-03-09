@@ -28,6 +28,8 @@ public final class PlotsState implements Iterable<Plot>, IGameState {
 	}
 
 	public void addPlayer(ServerPlayer player, Plot plot) {
+		assert (plot != null) : "Plot must never be null";
+
 		this.plotsByPlayer.put(player.getUUID(), plot);
 		this.plots.add(plot);
 	}
@@ -36,8 +38,10 @@ public final class PlotsState implements Iterable<Plot>, IGameState {
 	public Plot removePlayer(ServerPlayer player) {
 		Plot plot = this.plotsByPlayer.remove(player.getUUID());
 		if (plot != null) {
-			// FIXME: if plot is still visible to other players, don't remove it!
-			this.plots.remove(plot);
+			if (!this.plotsByPlayer.containsValue(plot)) {
+				this.plots.remove(plot);
+			}
+
 			return plot;
 		} else {
 			return null;

@@ -1,5 +1,7 @@
 package com.lovetropics.minigames.common.content.biodiversity_blitz.behavior;
 
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
 import com.lovetropics.lib.codec.MoreCodecs;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.BiodiversityBlitzTexts;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.event.BbEvents;
@@ -117,11 +119,17 @@ public final class BbWaveSpawnerBehavior implements IGameBehavior {
 
 		if (timeTilNextWave == 0) {
 			this.waveCharging.setVisible(false);
+			// nit: can we reuse a data structure here, ideally from plots state?
+			Multimap<Plot, ServerPlayer> spawns = HashMultimap.create();
 			for (ServerPlayer player : game.getParticipants()) {
 				Plot plot = plots.getPlotFor(player);
 				if (plot == null) continue;
 
-				this.spawnWave(world, random, player, plot, sentWaves);
+				spawns.put(plot, player);
+			}
+
+			for (Map.Entry<Plot, Collection<ServerPlayer>> e : spawns.asMap().entrySet()) {
+				this.spawnWave(world, random, e.getValue(), e.getKey(), sentWaves);
 			}
 
 			this.sentWaves++;
@@ -150,9 +158,9 @@ public final class BbWaveSpawnerBehavior implements IGameBehavior {
 		bar.removeAllPlayers();
 	}
 
-	private void spawnWave(ServerLevel world, Random random, ServerPlayer player, Plot plot, int waveIndex) {
+	private void spawnWave(ServerLevel world, Random random, Collection<ServerPlayer> players, Plot plot, int waveIndex) {
 		if (waveIndex == 0 && firstMessage != TextComponent.EMPTY) {
-			player.displayClientMessage(firstMessage, false);
+			players.forEach(p -> p.displayClientMessage(firstMessage, false));
 		}
 
 		Difficulty difficulty = world.getDifficulty();
@@ -172,10 +180,12 @@ public final class BbWaveSpawnerBehavior implements IGameBehavior {
 		}
 
 		Set<Entity> entities = BbMobSpawner.spawnWaveEntities(world, random, plot, count, waveIndex, BbMobSpawner::selectEntityForWave);
-		ServerBossEvent bossBar = this.createWaveBar(player, waveIndex, count, entities);
+		for (ServerPlayer player : players) {
+			ServerBossEvent bossBar = this.createWaveBar(player, waveIndex, count, entities);
 
-		WaveTracker wave = new WaveTracker(bossBar, entities);
-		waveTrackers.computeIfAbsent(player.getUUID(), $ -> new ArrayList<>()).add(wave);
+			WaveTracker wave = new WaveTracker(bossBar, entities);
+			waveTrackers.computeIfAbsent(player.getUUID(), $ -> new ArrayList<>()).add(wave);
+		}
 	}
 
 	private ServerBossEvent createWaveBar(ServerPlayer player, int waveIndex, int count, Set<Entity> entities) {

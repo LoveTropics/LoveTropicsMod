@@ -22,7 +22,6 @@ public class SpawnSurpriseWaveBehavior implements IGameBehavior {
             Codec.INT.fieldOf("wave_size").forGetter(b -> b.waveSize)
     ).apply(instance, SpawnSurpriseWaveBehavior::new));
     private final int waveSize;
-    private IGamePhase game;
     private PlotsState plots;
 
     public SpawnSurpriseWaveBehavior(int waveSize) {
@@ -31,10 +30,10 @@ public class SpawnSurpriseWaveBehavior implements IGameBehavior {
 
     @Override
     public void register(IGamePhase game, EventRegistrar events) throws GameException {
-        this.game = game;
         this.plots = game.getState().getOrThrow(PlotsState.KEY);
 
         events.listen(GameActionEvents.APPLY_TO_PLAYER, (context, player) -> {
+            // FIXME: this will spawn a wave for every player associated to the plot. probably not ideal.
             Plot plot = this.plots.getPlotFor(player);
 
             BbMobSpawner.spawnWaveEntities(player.getLevel(), player.getRandom(), plot, this.waveSize, 0, SpawnSurpriseWaveBehavior::selectEntityForWave);
