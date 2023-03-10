@@ -23,7 +23,7 @@ public final class PlantHealth {
 		return this.health;
 	}
 
-	public float healthPercent() {
-		return this.health / (float) this.maxHealth;
+	public double healthPercent() {
+		return this.health / (double) this.maxHealth;
 	}
 }

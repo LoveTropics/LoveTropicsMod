@@ -36,6 +36,7 @@ public final class BbWaveSpawnerBehavior implements IGameBehavior {
 				Codec.LONG.fieldOf("interval_seconds").forGetter(c -> c.intervalTicks / 20),
 				Codec.LONG.fieldOf("warn_seconds").forGetter(c -> c.warnTicks / 20),
 				SizeCurve.CODEC.fieldOf("size_curve").forGetter(c -> c.sizeCurve),
+				Codec.BOOL.fieldOf("size_curve_always").orElse(false).forGetter(c -> c.sizeCurveAlways),
 				MoreCodecs.object2Float(MoreCodecs.DIFFICULTY).fieldOf("difficulty_factors").forGetter(c -> c.difficultyFactors),
 				MoreCodecs.TEXT.optionalFieldOf("first_message", TextComponent.EMPTY).forGetter(c -> c.firstMessage)
 		).apply(instance, BbWaveSpawnerBehavior::new);
@@ -44,6 +45,7 @@ public final class BbWaveSpawnerBehavior implements IGameBehavior {
 	private final long intervalTicks;
 	private final long warnTicks;
 	private final SizeCurve sizeCurve;
+	private final boolean sizeCurveAlways;
 
 	private final Object2FloatMap<Difficulty> difficultyFactors;
 	
@@ -56,10 +58,11 @@ public final class BbWaveSpawnerBehavior implements IGameBehavior {
 	private final Map<UUID, List<WaveTracker>> waveTrackers = new HashMap<>();
 	private ServerBossEvent waveCharging;
 
-	public BbWaveSpawnerBehavior(long intervalSeconds, long warnSeconds, SizeCurve sizeCurve, Object2FloatMap<Difficulty> difficultyFactors, Component firstMessage) {
+	public BbWaveSpawnerBehavior(long intervalSeconds, long warnSeconds, SizeCurve sizeCurve, boolean sizeCurveAlways, Object2FloatMap<Difficulty> difficultyFactors, Component firstMessage) {
 		this.intervalTicks = intervalSeconds * 20;
 		this.warnTicks = warnSeconds * 20;
 		this.sizeCurve = sizeCurve;
+		this.sizeCurveAlways = sizeCurveAlways;
 
 		this.difficultyFactors = difficultyFactors;
 		this.difficultyFactors.defaultReturnValue(1.0F);
@@ -165,11 +168,13 @@ public final class BbWaveSpawnerBehavior implements IGameBehavior {
 			count++;
 		}
 
-		int currencyIncr = plot.nextCurrencyIncrement;
-		if (currencyIncr < 5) {
-			count = random.nextInt(2) + 1;
-		} else if (currencyIncr < 10) {
-			count = (int) Mth.lerp(currencyIncr / 10.0, 2, count);
+		if (!sizeCurveAlways) {
+			int currencyIncr = plot.nextCurrencyIncrement;
+			if (currencyIncr < 5) {
+				count = random.nextInt(2) + 1;
+			} else if (currencyIncr < 10) {
+				count = (int) Mth.lerp(currencyIncr / 10.0, 2, count);
+			}
 		}
 
 		Set<Entity> entities = BbMobSpawner.spawnWaveEntities(world, random, plot, count, waveIndex, BbMobSpawner::selectEntityForWave);
@@ -228,12 +233,13 @@ public final class BbWaveSpawnerBehavior implements IGameBehavior {
 			this.scale = scale;
 		}
 
+		// Desmos:
 		double apply(int index, float difficulty) {
 			double lower = this.lower * difficulty;
 			double range = this.upper - lower;
 			double base = this.base * difficulty;
 			double scale = this.scale;
-			return lower + range * (1.0 - Math.pow(base, -index * scale / range));
+			return lower + range * (1.0 - Math.pow(base, (-index * scale) / range));
 		}
 	}
 }

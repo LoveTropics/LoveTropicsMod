@@ -50,7 +50,7 @@ public final class BbMobSpawner {
     // TODO: data-drive, more entity types & getting harder as time goes on
     public static Mob selectEntityForWave(Random random, Level world, Plot plot, int waveIndex) {
         PlotWaveState waveState = plot.waveState;
-        if (!waveState.didForcedCreeperSpawn && plot.nextCurrencyIncrement >= 14 && !waveState.didCreeperSpawnLastWave) {
+        if (!waveState.didForcedCreeperSpawn && plot.nextCurrencyIncrement >= 14) {
             waveState.didForcedCreeperSpawn = true;
 
             return new BbCreeperEntity(EntityType.CREEPER, world, plot);

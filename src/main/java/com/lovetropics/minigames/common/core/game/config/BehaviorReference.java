@@ -18,7 +18,9 @@ public record BehaviorReference(GameBehaviorType<?> type, Dynamic<?> config) {
 		result.result().ifPresent(behavior -> add.accept(type, behavior));
 
 		result.error().ifPresent(error -> {
-			LoveTropics.LOGGER.warn("Failed to parse behavior declaration of type {}: {}", type.getRegistryName(), error);
+			LoveTropics.LOGGER.error("Failed to parse behavior declaration of type {}: {}", type.getRegistryName(), error);
+
+			throw new RuntimeException("Could not fully parse behavior declaration of type " + type.getRegistryName());
 		});
 	}
 

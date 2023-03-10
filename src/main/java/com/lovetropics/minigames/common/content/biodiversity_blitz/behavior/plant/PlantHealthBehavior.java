@@ -12,13 +12,16 @@ import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.protocol.game.ClientboundBlockDestructionPacket;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.LevelEvent;
 import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 
 public record PlantHealthBehavior(int health, boolean notPathfindable) implements IGameBehavior {
 	public static final Codec<PlantHealthBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
@@ -39,6 +42,8 @@ public record PlantHealthBehavior(int health, boolean notPathfindable) implement
 			ServerLevel world = game.getWorld();
 
 			List<Plant> decayedPlants = new ArrayList<>();
+			long ticks = game.ticks();
+			boolean update = ticks % 20 == 0;
 
 			for (Plant plant : plants) {
 				PlantHealth health = plant.state(PlantHealth.KEY);
@@ -46,8 +51,9 @@ public record PlantHealthBehavior(int health, boolean notPathfindable) implement
 					continue;
 				}
 
-				// TODO: this doesn't work because the level renderer only tracks 1 destroy progress per player
-//				player.getLevel().destroyBlockProgress(player.getId(), plant.coverage().getOrigin(), (int)(health.healthPercent() * 10.0F) - 1);
+				if (update) {
+					destroyBlockProgress(game.getWorld(), ThreadLocalRandom.current().nextInt(), plant.coverage().getOrigin(), (int) ((1 - health.healthPercent()) * 10.0) - 1);
+				}
 
 				if (health.isDead()) {
 					for (BlockPos pos : plant.coverage()) {
@@ -61,5 +67,19 @@ public record PlantHealthBehavior(int health, boolean notPathfindable) implement
 
 			decayedPlants.forEach(plant -> game.invoker(BbEvents.BREAK_PLANT).breakPlant(players.iterator().next(), plot, plant));
 		});
+	}
+
+	private static void destroyBlockProgress(ServerLevel level, int id, BlockPos pos, int amt) {
+		for(ServerPlayer serverplayer : level.getServer().getPlayerList().getPlayers()) {
+			if (serverplayer != null && serverplayer.level == level) {
+				double d0 = (double)pos.getX() - serverplayer.getX();
+				double d1 = (double)pos.getY() - serverplayer.getY();
+				double d2 = (double)pos.getZ() - serverplayer.getZ();
+				if (d0 * d0 + d1 * d1 + d2 * d2 < 1024.0D) {
+					serverplayer.connection.send(new ClientboundBlockDestructionPacket(id, pos, amt));
+				}
+			}
+		}
+
 	}
 }
