@@ -109,6 +109,12 @@ public final class BbBehavior implements IGameBehavior {
 				return InteractionResult.FAIL;
 			}
 
+			// Don't damage players from sweet berry bushes or wither roses
+			// TODO: reduce slowdown from bush
+			if (damageSource == DamageSource.SWEET_BERRY_BUSH || damageSource == DamageSource.WITHER) {
+				return InteractionResult.FAIL;
+			}
+
 			return InteractionResult.PASS;
 		});
 

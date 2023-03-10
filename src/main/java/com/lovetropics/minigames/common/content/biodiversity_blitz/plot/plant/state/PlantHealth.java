@@ -15,6 +15,10 @@ public final class PlantHealth {
 		this.health = Math.max(0, this.health - amount);
 	}
 
+	public void increment(int amount) {
+		this.health = Math.min(this.maxHealth, this.health + amount);
+	}
+
 	public boolean isDead() {
 		return this.health <= 0;
 	}

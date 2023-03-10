@@ -21,6 +21,7 @@ import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
 public record PlantHealthBehavior(int health, boolean notPathfindable) implements IGameBehavior {
@@ -62,6 +63,8 @@ public record PlantHealthBehavior(int health, boolean notPathfindable) implement
 					}
 
 					decayedPlants.add(plant);
+				} else if (update) {
+					health.increment(2);
 				}
 			}
 
