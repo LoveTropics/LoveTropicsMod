@@ -37,13 +37,13 @@ public record GrowPlantBehavior(int time, PlantType growInto) implements IGameBe
 			plant.state().put(GrowTime.KEY, new GrowTime(game.ticks() + this.time));
 		});
 
-		events.listen(BbPlantEvents.TICK, (player, plot, plants) -> {
+		events.listen(BbPlantEvents.TICK, (players, plot, plants) -> {
 			long ticks = game.ticks();
 			if (ticks % 20 != 0) return;
 
 			List<Plant> growPlants = this.collectPlantsToGrow(plants, ticks);
 			for (Plant plant : growPlants) {
-				this.tryGrowPlant(game, player, plot, plant);
+				this.tryGrowPlant(game, players.iterator().next(), plot, plant);
 			}
 		});
 	}

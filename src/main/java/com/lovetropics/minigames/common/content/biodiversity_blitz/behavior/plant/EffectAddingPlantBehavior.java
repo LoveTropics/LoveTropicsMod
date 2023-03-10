@@ -27,7 +27,7 @@ public record EffectAddingPlantBehavior(MobEffectInstance effect, double radius)
 		int effectDuration = this.effect.getDuration();
 		int applyTime = Math.max(effectDuration - 5, 1);
 
-		events.listen(BbPlantEvents.TICK, (player, plot, plants) -> {
+		events.listen(BbPlantEvents.TICK, (players, plot, plants) -> {
 			long ticks = game.ticks();
 			if (ticks % applyTime != 0) {
 				return;

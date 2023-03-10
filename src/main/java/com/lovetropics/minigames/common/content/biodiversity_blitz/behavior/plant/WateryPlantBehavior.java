@@ -19,10 +19,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.server.level.ServerLevel;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 
 public final class WateryPlantBehavior implements IGameBehavior {
     public static final Codec<WateryPlantBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
@@ -42,7 +39,7 @@ public final class WateryPlantBehavior implements IGameBehavior {
         events.listen(BbPlantEvents.TICK, this::tickPlants);
     }
 
-    private void tickPlants(ServerPlayer player, Plot plot, List<Plant> plants) {
+    private void tickPlants(Collection<ServerPlayer> players, Plot plot, List<Plant> plants) {
         long ticks = this.game.ticks();
         Random random = this.game.getWorld().getRandom();
 

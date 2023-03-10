@@ -8,6 +8,7 @@ import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.even
 import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.BbMobSpawner;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.Plot;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.PlotsState;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.util.BbUtils;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
@@ -119,16 +120,8 @@ public final class BbWaveSpawnerBehavior implements IGameBehavior {
 
 		if (timeTilNextWave == 0) {
 			this.waveCharging.setVisible(false);
-			// nit: can we reuse a data structure here, ideally from plots state?
-			Multimap<Plot, ServerPlayer> spawns = HashMultimap.create();
-			for (ServerPlayer player : game.getParticipants()) {
-				Plot plot = plots.getPlotFor(player);
-				if (plot == null) continue;
 
-				spawns.put(plot, player);
-			}
-
-			for (Map.Entry<Plot, Collection<ServerPlayer>> e : spawns.asMap().entrySet()) {
+			for (Map.Entry<Plot, Collection<ServerPlayer>> e : BbUtils.reassociate(plots, game.getParticipants()).asMap().entrySet()) {
 				this.spawnWave(world, random, e.getValue(), e.getKey(), sentWaves);
 			}
 

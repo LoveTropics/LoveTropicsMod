@@ -37,6 +37,9 @@ import net.minecraft.world.level.block.FarmBlock;
 import net.minecraft.world.level.block.LevelEvent;
 import net.minecraft.world.level.block.state.BlockState;
 
+import java.util.HashSet;
+import java.util.Set;
+
 // TODO: this is extremely hardcoded for now, need to split up!
 public class BbTutorialAction implements IGameBehavior {
     public static final Codec<BbTutorialAction> CODEC = RecordCodecBuilder.create(i -> i.group(
@@ -50,6 +53,7 @@ public class BbTutorialAction implements IGameBehavior {
     private final PlantType wheat;
 
     private Reference2ObjectMap<ServerPlayer, Long2ObjectMap<Runnable>> tutorialActions;
+    private Set<Plot> tutorialPlots;
 
     public BbTutorialAction(PlantType diffusa, PlantType grass, PlantType wheat) {
         this.diffusa = diffusa;
@@ -61,10 +65,17 @@ public class BbTutorialAction implements IGameBehavior {
     public void register(IGamePhase game, EventRegistrar events) throws GameException {
         PlotsState plots = game.getState().getOrThrow(PlotsState.KEY);
         tutorialActions = new Reference2ObjectOpenHashMap<>();
+        tutorialPlots = new HashSet<>();
 
+        // TODO: make an "apply to plot" event
         events.listen(GameActionEvents.APPLY_TO_PLAYER, (context, target) -> {
             Plot playerPlot = plots.getPlotFor(target);
             if (playerPlot == null) {
+                return false;
+            }
+
+            // Don't run the same tutorial twice per plot
+            if (!tutorialPlots.add(playerPlot)) {
                 return false;
             }
 

@@ -5,11 +5,14 @@ import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.plant.Pl
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.plant.PlantItemType;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.plant.PlantType;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameEventType;
+import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.core.BlockPos;
+
+import java.util.Collection;
 
 public final class BbEvents {
 	public static final GameEventType<AssignPlot> ASSIGN_PLOT = GameEventType.create(AssignPlot.class, listeners -> (player, plot) -> {
@@ -77,6 +80,16 @@ public final class BbEvents {
 		}
 	});
 
+	public static final GameEventType<GamePlayerEvents.Death> BB_DEATH = GameEventType.create(GamePlayerEvents.Death.class, listeners -> (player, damageSource) -> {
+		for (GamePlayerEvents.Death listener : listeners) {
+			InteractionResult result = listener.onDeath(player, damageSource);
+			if (result != InteractionResult.PASS) {
+				return result;
+			}
+		}
+		return InteractionResult.PASS;
+	});
+
 	private BbEvents() {
 	}
 
@@ -85,7 +98,7 @@ public final class BbEvents {
 	}
 
 	public interface TickPlot {
-		void onTickPlot(ServerPlayer player, Plot plot);
+		void onTickPlot(Collection<ServerPlayer> player, Plot plot);
 	}
 
 	public interface PlacePlant {

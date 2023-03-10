@@ -35,6 +35,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.function.Predicate;
 
@@ -100,7 +101,7 @@ public final class ScareTrapPlantBehavior implements IGameBehavior {
 		return InteractionResult.FAIL;
 	}
 
-	private void tick(ServerPlayer player, Plot plot, List<Plant> plants) {
+	private void tick(Collection<ServerPlayer> players, Plot plot, List<Plant> plants) {
 		long ticks = game.ticks();
 		if (ticks % 10 != 0) return;
 

@@ -22,10 +22,7 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 
 public final class LightningPlantBehavior implements IGameBehavior {
     public static final Codec<LightningPlantBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
@@ -45,7 +42,7 @@ public final class LightningPlantBehavior implements IGameBehavior {
         events.listen(BbPlantEvents.TICK, this::tickPlants);
     }
 
-    private void tickPlants(ServerPlayer player, Plot plot, List<Plant> plants) {
+    private void tickPlants(Collection<ServerPlayer> players, Plot plot, List<Plant> plants) {
         long ticks = this.game.ticks();
         Random random = this.game.getWorld().getRandom();
 

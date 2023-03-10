@@ -1,5 +1,6 @@
 package com.lovetropics.minigames.common.content.biodiversity_blitz.behavior;
 
+import com.google.common.collect.Multimap;
 import com.lovetropics.lib.BlockBox;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.BiodiversityBlitzTexts;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.event.BbEvents;
@@ -12,6 +13,7 @@ import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.Currency
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.Plot;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.PlotsState;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.plant.Plant;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.util.BbUtils;
 import com.lovetropics.minigames.common.core.dimension.DimensionUtils;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
@@ -302,7 +304,7 @@ public final class BbBehavior implements IGameBehavior {
 	private InteractionResult onPlayerDeath(ServerPlayer player, DamageSource damageSource) {
 		Plot plot = plots.getPlotFor(player);
 		if (plot == null) {
-			return InteractionResult.FAIL;
+			return InteractionResult.PASS;
 		}
 
 		teleportToRegion(player, plot.spawn, plot.spawnForward);
@@ -311,6 +313,10 @@ public final class BbBehavior implements IGameBehavior {
 			player.getFoodData().eat(2, 0.8f);
 		}
 
+		// We need to encapsulate the currency behavior's death event.
+		// Using the standard event system means it'll never be called due to us needing to fail the event, so we duplicate it.
+		game.invoker(BbEvents.BB_DEATH).onDeath(player, damageSource);
+
 		player.playNotifySound(SoundEvents.ARROW_HIT_PLAYER, SoundSource.PLAYERS, 0.18F, 1.0F);
 		player.addEffect(new MobEffectInstance(MobEffects.BLINDNESS, 80));
 		player.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 255, 80));
@@ -318,15 +324,14 @@ public final class BbBehavior implements IGameBehavior {
 		player.connection.send(new ClientboundSetTitlesAnimationPacket(40, 20, 0));
         player.connection.send(new ClientboundSetTitleTextPacket(BiodiversityBlitzTexts.deathTitle().withStyle(ChatFormatting.RED)));
 
-		return InteractionResult.PASS;
+		return InteractionResult.FAIL;
 	}
 
 	private void tick(IGamePhase game) {
-		for (ServerPlayer player : game.getParticipants()) {
-			Plot plot = plots.getPlotFor(player);
-			if (plot != null) {
-				game.invoker(BbEvents.TICK_PLOT).onTickPlot(player, plot);
-			}
+		Multimap<Plot, ServerPlayer> plots = BbUtils.reassociate(this.plots, game.getParticipants());
+
+		for (Plot plot : plots.keySet()) {
+			game.invoker(BbEvents.TICK_PLOT).onTickPlot(plots.get(plot), plot);
 		}
 	}
 

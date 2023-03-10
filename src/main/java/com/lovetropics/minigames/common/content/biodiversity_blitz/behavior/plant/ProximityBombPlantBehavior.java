@@ -29,7 +29,7 @@ public record ProximityBombPlantBehavior(double radius) implements IGameBehavior
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
-		events.listen(BbPlantEvents.TICK, (player, plot, plants) -> {
+		events.listen(BbPlantEvents.TICK, (players, plot, plants) -> {
 			long ticks = game.ticks();
 			if (ticks % 5 != 0) {
 				return;
@@ -50,7 +50,7 @@ public record ProximityBombPlantBehavior(double radius) implements IGameBehavior
 			}
 
 			for (Plant plant : removedPlants) {
-				game.invoker(BbEvents.BREAK_PLANT).breakPlant(player, plot, plant);
+				game.invoker(BbEvents.BREAK_PLANT).breakPlant(players.iterator().next(), plot, plant);
 			}
 		});
 	}

@@ -31,6 +31,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.registries.ForgeRegistries;
 
+import java.util.Collection;
 import java.util.stream.IntStream;
 
 public final class BbCurrencyBehavior implements IGameBehavior {
@@ -92,28 +93,30 @@ public final class BbCurrencyBehavior implements IGameBehavior {
 		events.listen(GamePhaseEvents.TICK, () -> this.currency.tickTracked());
 
 		events.listen(BbEvents.TICK_PLOT, this::tickPlot);
-		events.listen(GamePlayerEvents.DEATH, this::onPlayerDeath);
+		events.listen(BbEvents.BB_DEATH, this::onPlayerDeath);
 	}
 
-	private void tickPlot(ServerPlayer player, Plot plot) {
+	private void tickPlot(Collection<ServerPlayer> players, Plot plot) {
 		if (!this.tutorial.isTutorialFinished()) {
 			return;
 		}
 
 		long ticks = this.game.ticks();
 
-		if (ticks % 20 == 0) {
-			int nextCurrencyIncrement = this.computeNextCurrency(player, plot);
-			if (plot.nextCurrencyIncrement != nextCurrencyIncrement) {
-				plot.nextCurrencyIncrement = nextCurrencyIncrement;
-				
-				game.invoker(BbEvents.CURRENCY_INCREMENT_CHANGED).onCurrencyChanged(player, nextCurrencyIncrement, plot.nextCurrencyIncrement);
-			}
-		}
+		for (ServerPlayer player : players) {
+			if (ticks % 20 == 0) {
+				int nextCurrencyIncrement = this.computeNextCurrency(player, plot);
+				if (plot.nextCurrencyIncrement != nextCurrencyIncrement) {
+					plot.nextCurrencyIncrement = nextCurrencyIncrement;
 
-		long intervalTicks = this.dropInterval * 20;
-		if (ticks % intervalTicks == 0) {
-			this.giveCurrency(player, plot);
+					game.invoker(BbEvents.CURRENCY_INCREMENT_CHANGED).onCurrencyChanged(player, nextCurrencyIncrement, plot.nextCurrencyIncrement);
+				}
+			}
+
+			long intervalTicks = this.dropInterval * 20;
+			if (ticks % intervalTicks == 0) {
+				this.giveCurrency(player, plot);
+			}
 		}
 	}
 

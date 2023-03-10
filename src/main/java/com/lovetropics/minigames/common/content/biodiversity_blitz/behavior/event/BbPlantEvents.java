@@ -8,6 +8,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.core.BlockPos;
 
 import javax.annotation.Nullable;
+import java.util.Collection;
 import java.util.List;
 
 public final class BbPlantEvents {
@@ -47,7 +48,7 @@ public final class BbPlantEvents {
 	}
 
 	public interface Tick {
-		void onTickPlants(ServerPlayer player, Plot plot, List<Plant> plants);
+		void onTickPlants(Collection<ServerPlayer> players, Plot plot, List<Plant> plants);
 	}
 
 	public interface Place {

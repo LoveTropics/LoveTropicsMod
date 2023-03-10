@@ -17,6 +17,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Random;
 
@@ -41,7 +42,7 @@ public final class IdleDropItemPlantBehavior implements IGameBehavior {
         events.listen(BbPlantEvents.TICK, this::tickPlants);
     }
 
-    private void tickPlants(ServerPlayer player, Plot plot, List<Plant> plants) {
+    private void tickPlants(Collection<ServerPlayer> players, Plot plot, List<Plant> plants) {
         long ticks = this.game.ticks();
         Random random = this.game.getWorld().getRandom();
 

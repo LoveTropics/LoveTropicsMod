@@ -20,10 +20,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.server.level.ServerLevel;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 
 public final class FlamingPlantBehavior implements IGameBehavior {
     public static final Codec<FlamingPlantBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
@@ -43,7 +40,7 @@ public final class FlamingPlantBehavior implements IGameBehavior {
         events.listen(BbPlantEvents.TICK, this::tickPlants);
     }
 
-    private void tickPlants(ServerPlayer player, Plot plot, List<Plant> plants) {
+    private void tickPlants(Collection<ServerPlayer> player, Plot plot, List<Plant> plants) {
         long ticks = this.game.ticks();
         Random random = this.game.getWorld().getRandom();
 

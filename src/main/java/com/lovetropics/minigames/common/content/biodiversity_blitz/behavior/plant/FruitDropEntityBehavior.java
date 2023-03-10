@@ -20,6 +20,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.AABB;
 import net.minecraftforge.registries.ForgeRegistries;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.IntStream;
@@ -53,15 +54,17 @@ public class FruitDropEntityBehavior implements IGameBehavior {
 		events.listen(BbPlantEvents.TICK, this::tick);
 	}
 
-	private void tick(ServerPlayer player, Plot plot, List<Plant> plants) {
+	private void tick(Collection<ServerPlayer> players, Plot plot, List<Plant> plants) {
 		if (game.ticks() % interval == 0) {
 			for (Plant plant : plants) {
-				updateCoconuts(player, plot, plant);
+				updateCoconuts(players, plot, plant);
 			}
 		}
 	}
 
-	private void updateCoconuts(ServerPlayer player, Plot plot, Plant plant) {
+	private void updateCoconuts(Collection<ServerPlayer> players, Plot plot, Plant plant) {
+		ServerPlayer player = players.iterator().next();
+
 		plant.functionalCoverage().stream()
 			.flatMap(bp -> IntStream.range(0, 4).mapToObj(Direction::from2DDataValue).map(bp::relative))
 			.filter(bp -> player.level.getBlockState(bp).getBlock() == fruit)

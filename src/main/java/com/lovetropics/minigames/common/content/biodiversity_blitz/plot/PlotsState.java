@@ -1,5 +1,6 @@
 package com.lovetropics.minigames.common.content.biodiversity_blitz.plot;
 
+import com.google.common.base.Preconditions;
 import com.lovetropics.minigames.common.core.game.state.GameStateKey;
 import com.lovetropics.minigames.common.core.game.state.IGameState;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
@@ -28,7 +29,7 @@ public final class PlotsState implements Iterable<Plot>, IGameState {
 	}
 
 	public void addPlayer(ServerPlayer player, Plot plot) {
-		assert (plot != null) : "Plot must never be null";
+		Preconditions.checkArgument(plot != null, "Plot must never be null");
 
 		this.plotsByPlayer.put(player.getUUID(), plot);
 		this.plots.add(plot);

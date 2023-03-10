@@ -35,7 +35,7 @@ public record PlantHealthBehavior(int health, boolean notPathfindable) implement
 			}
 		});
 
-		events.listen(BbPlantEvents.TICK, (player, plot, plants) -> {
+		events.listen(BbPlantEvents.TICK, (players, plot, plants) -> {
 			ServerLevel world = game.getWorld();
 
 			List<Plant> decayedPlants = new ArrayList<>();
@@ -59,7 +59,7 @@ public record PlantHealthBehavior(int health, boolean notPathfindable) implement
 				}
 			}
 
-			decayedPlants.forEach(plant -> game.invoker(BbEvents.BREAK_PLANT).breakPlant(player, plot, plant));
+			decayedPlants.forEach(plant -> game.invoker(BbEvents.BREAK_PLANT).breakPlant(players.iterator().next(), plot, plant));
 		});
 	}
 }

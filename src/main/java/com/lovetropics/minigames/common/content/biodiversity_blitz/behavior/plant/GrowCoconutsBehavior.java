@@ -24,10 +24,7 @@ import net.minecraftforge.registries.RegistryObject;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.apache.commons.lang3.tuple.Pair;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.WeakHashMap;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -57,7 +54,8 @@ public class GrowCoconutsBehavior implements IGameBehavior {
 		events.listen(BbPlantEvents.BREAK, this::onPlantBreak);
 	}
 
-	private void tick(ServerPlayer player, Plot plot, List<Plant> plants) {
+	private void tick(Collection<ServerPlayer> players, Plot plot, List<Plant> plants) {
+		ServerPlayer player = players.iterator().next();
 		if (game.ticks() % interval == 0) {
 			for (Plant plant : plants) {
 				List<Pair<BlockPos, Direction>> candidates = candidatePositions.computeIfAbsent(plant, p -> p.functionalCoverage().stream()

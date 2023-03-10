@@ -1,5 +1,6 @@
 package com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.plant;
 
+import com.google.common.base.Preconditions;
 import com.lovetropics.lib.codec.MoreCodecs;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.event.BbEvents;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.event.BbPlantEvents;
@@ -29,6 +30,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.FluidState;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -156,10 +158,12 @@ public final class PlantBehavior implements IGameBehavior {
 		return InteractionResult.FAIL;
 	}
 
-	private void onTickPlot(ServerPlayer player, Plot plot) {
+	private void onTickPlot(Collection<ServerPlayer> players, Plot plot) {
+		Preconditions.checkArgument(players.size() > 0, "We must always get at least one plot");
+
 		List<Plant> plants = plot.plants.getPlantsByType(this.plantType);
 		if (!plants.isEmpty()) {
-			this.plantEvents.invoker(BbPlantEvents.TICK).onTickPlants(player, plot, plants);
+			this.plantEvents.invoker(BbPlantEvents.TICK).onTickPlants(players, plot, plants);
 		}
 	}
 }
