@@ -1,5 +1,6 @@
 package com.lovetropics.minigames.common.content.biodiversity_blitz.entity.ai;
 
+import net.minecraft.core.Registry;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.core.BlockPos;
@@ -36,7 +37,7 @@ public abstract class MoveToBlockGoal extends Goal {
 
     @Override
     public boolean canContinueToUse() {
-        if (!shouldTargetBlock(this.targetPos)) {
+        if (getBlockPriority(this.targetPos) > 0) {
             return false;
         }
 
@@ -45,14 +46,26 @@ public abstract class MoveToBlockGoal extends Goal {
 
     @Nullable
     protected BlockPos locateBlock(int rangeX, int rangeY) {
+        BlockPos maxPrioLoc = null;
+        int maxPrio = 0;
         BlockPos origin = this.mob.blockPosition();
         for (BlockPos pos : BlockPos.withinManhattan(origin, rangeX, rangeY, rangeX)) {
-            if (shouldTargetBlock(pos)) {
-                return pos;
+            pos = pos.immutable();
+            int prio = getBlockPriority(pos);
+            if (prio > maxPrio) {
+                // If the found block has a higher priority, let's unconditionally go to it.
+                maxPrio = prio;
+                maxPrioLoc = pos;
+            } else if (prio == maxPrio && maxPrioLoc != null && maxPrioLoc.distSqr(origin) > pos.distSqr(origin)) {
+                // Same priority, but closer? Let's play fair and go to the closer one first.
+                maxPrioLoc = pos;
             }
         }
-        return null;
+
+        return maxPrioLoc;
     }
 
-    protected abstract boolean shouldTargetBlock(BlockPos pos);
+    // 0: Do not target this block
+    // Anything higher will set the target to the current block, based on the current priority
+    protected abstract int getBlockPriority(BlockPos pos);
 }

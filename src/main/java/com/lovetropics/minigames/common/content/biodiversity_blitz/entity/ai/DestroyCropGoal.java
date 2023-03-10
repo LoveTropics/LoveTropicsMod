@@ -82,12 +82,26 @@ public class DestroyCropGoal extends MoveToBlockGoal {
     }
 
     @Override
-    protected boolean shouldTargetBlock(BlockPos pos) {
-        return this.isPlantBreakable(pos);
+    protected int getBlockPriority(BlockPos pos) {
+        return this.getPlantPriority(pos);
     }
 
-    protected boolean isPlantBreakable(BlockPos pos) {
+    protected int getPlantPriority(BlockPos pos) {
         Plant plant = this.mob.getPlot().plants.getPlantAt(pos);
-        return plant != null && plant.state(PlantHealth.KEY) != null && plant.state(PlantNotPathfindable.KEY) == null;
+        if (plant != null) {
+            if (plant.state(PlantHealth.KEY) != null) {
+                // We want to prioritize plants that are pathfindable.
+                // This ensures that if by chance a player has a plot that's 100% grass + berry bushes,
+                // the mobs will still get to them.
+
+                if (plant.state(PlantNotPathfindable.KEY) == null) {
+                    return 2;
+                } else {
+                    return 1;
+                }
+            }
+        }
+
+        return 0;
     }
 }

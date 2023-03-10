@@ -11,8 +11,8 @@ public final class MoveToPumpkinGoal extends MoveToBlockGoal {
     }
 
     @Override
-    protected boolean shouldTargetBlock(BlockPos pos) {
+    protected int getBlockPriority(BlockPos pos) {
         BlockState state = mob.level.getBlockState(pos);
-        return state.getBlock() == Blocks.PUMPKIN || state.getBlock() == Blocks.CARVED_PUMPKIN;
+        return (state.getBlock() == Blocks.PUMPKIN || state.getBlock() == Blocks.CARVED_PUMPKIN) ? 100 : 0;
     }
 }
