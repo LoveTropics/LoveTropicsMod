@@ -63,6 +63,7 @@ public final class BbClientStateBehavior implements IGameBehavior {
 	private void updateState(ServerPlayer player, Consumer<Currency> update) {
 		Currency currency = this.trackedCurrency.computeIfAbsent(player.getUUID(), uuid -> new Currency());
 		update.accept(currency);
+		System.out.println(player.getDisplayName().toString() + " / " + currency);
 
 		GameClientState.sendToPlayer(
 				new ClientBbSelfState(currency.value, currency.nextIncrement),
@@ -84,5 +85,10 @@ public final class BbClientStateBehavior implements IGameBehavior {
 	static final class Currency {
 		int value;
 		int nextIncrement;
+
+		@Override
+		public String toString() {
+			return "$(" + value + ", +" + nextIncrement + ")";
+		}
 	}
 }

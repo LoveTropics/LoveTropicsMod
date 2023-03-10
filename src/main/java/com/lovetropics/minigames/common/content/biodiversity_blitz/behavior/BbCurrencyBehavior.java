@@ -103,16 +103,19 @@ public final class BbCurrencyBehavior implements IGameBehavior {
 
 		long ticks = this.game.ticks();
 
-		for (ServerPlayer player : players) {
+
 			if (ticks % 20 == 0) {
-				int nextCurrencyIncrement = this.computeNextCurrency(player, plot);
+				int nextCurrencyIncrement = this.computeNextCurrency(plot);
 				if (plot.nextCurrencyIncrement != nextCurrencyIncrement) {
 					plot.nextCurrencyIncrement = nextCurrencyIncrement;
 
-					game.invoker(BbEvents.CURRENCY_INCREMENT_CHANGED).onCurrencyChanged(player, nextCurrencyIncrement, plot.nextCurrencyIncrement);
+					for (ServerPlayer player : players) {
+						game.invoker(BbEvents.CURRENCY_INCREMENT_CHANGED).onCurrencyChanged(player, nextCurrencyIncrement, plot.nextCurrencyIncrement);
+					}
 				}
 			}
 
+		for (ServerPlayer player : players) {
 			long intervalTicks = this.dropInterval * 20;
 			if (ticks % intervalTicks == 0) {
 				this.giveCurrency(player, plot);
@@ -130,7 +133,7 @@ public final class BbCurrencyBehavior implements IGameBehavior {
 		}
 	}
 
-	private int computeNextCurrency(ServerPlayer player, Plot plot) {
+	private int computeNextCurrency(Plot plot) {
 		double value = this.computePlotValue(plot);
 		return Mth.floor(value);
 	}
