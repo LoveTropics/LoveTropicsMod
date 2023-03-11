@@ -45,20 +45,23 @@ public class BbTutorialAction implements IGameBehavior {
     public static final Codec<BbTutorialAction> CODEC = RecordCodecBuilder.create(i -> i.group(
             PlantType.CODEC.fieldOf("diffusa").forGetter(c -> c.diffusa),
             PlantType.CODEC.fieldOf("grass").forGetter(c -> c.grass),
-            PlantType.CODEC.fieldOf("wheat").forGetter(c -> c.wheat)
+            PlantType.CODEC.fieldOf("wheat").forGetter(c -> c.wheat),
+            Codec.BOOL.fieldOf("run_tutorial").orElse(true).forGetter(c -> c.runTutorial)
     ).apply(i, BbTutorialAction::new));
 
     private final PlantType diffusa;
     private final PlantType grass;
     private final PlantType wheat;
+    private final boolean runTutorial;
 
     private Reference2ObjectMap<ServerPlayer, Long2ObjectMap<Runnable>> tutorialActions;
     private Set<Plot> tutorialPlots;
 
-    public BbTutorialAction(PlantType diffusa, PlantType grass, PlantType wheat) {
+    public BbTutorialAction(PlantType diffusa, PlantType grass, PlantType wheat, boolean runTutorial) {
         this.diffusa = diffusa;
         this.grass = grass;
         this.wheat = wheat;
+        this.runTutorial = runTutorial;
     }
 
     @Override
@@ -81,10 +84,16 @@ public class BbTutorialAction implements IGameBehavior {
 
             Long2ObjectMap<Runnable> actions = new Long2ObjectOpenHashMap<>();
             tutorialActions.put(target, actions);
+            long ticks = game.ticks() + 4;
+
+            if (!runTutorial) {
+                actions.put(ticks + 4, () -> {
+                    game.getState().getOrThrow(TutorialState.KEY).finishTutorial();
+                });
+                return true;
+            }
 
             BlockPos sample = playerPlot.plantBounds.centerBlock();
-
-            long ticks = game.ticks() + 4;
 
             Direction cw = playerPlot.forward.getClockWise();
 

@@ -233,7 +233,7 @@ public final class BbWaveSpawnerBehavior implements IGameBehavior {
 			this.scale = scale;
 		}
 
-		// Desmos:
+		// Desmos: https://www.desmos.com/calculator/ya880ablya
 		double apply(int index, float difficulty) {
 			double lower = this.lower * difficulty;
 			double range = this.upper - lower;

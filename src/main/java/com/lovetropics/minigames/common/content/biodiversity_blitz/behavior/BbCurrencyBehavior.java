@@ -193,7 +193,7 @@ public final class BbCurrencyBehavior implements IGameBehavior {
 		}
 
 		public double applyGlobal(double value) {
-			return bound - bound * Math.pow(base, -value / bound);
+			return bound - (bound * Math.pow(base, -value / bound));
 		}
 	}
 

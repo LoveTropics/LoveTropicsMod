@@ -54,7 +54,7 @@ public class DestroyCropGoal extends MoveToBlockGoal {
             PlantHealth health = plant.state(PlantHealth.KEY);
 
             if (health != null) {
-                int damage = 3 + mob.level.random.nextInt(6);
+                int damage = this.mob.meleeDamage(mob.level.getRandom());
                 health.decrement(damage);
 
                 this.spawnDamageParticles(mob, damage);

@@ -5,6 +5,7 @@ import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.Plot;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.Mob;
 
+import java.util.Random;
 import java.util.function.Predicate;
 
 public interface BbMobEntity {
@@ -19,4 +20,8 @@ public interface BbMobEntity {
 	Mob asMob();
 
 	Plot getPlot();
+
+	default int meleeDamage(Random random) {
+		return 4 + random.nextInt(5);
+	}
 }

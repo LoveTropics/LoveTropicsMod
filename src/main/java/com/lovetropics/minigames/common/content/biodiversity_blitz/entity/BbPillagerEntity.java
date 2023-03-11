@@ -18,6 +18,7 @@ import net.minecraft.world.level.pathfinder.BlockPathTypes;
 import net.minecraft.world.phys.Vec3;
 
 import javax.annotation.Nullable;
+import java.util.Random;
 
 public class BbPillagerEntity extends Pillager implements BbMobEntity {
     private final BbMobBrain mobBrain;
@@ -80,5 +81,10 @@ public class BbPillagerEntity extends Pillager implements BbMobEntity {
     @Override
     public Plot getPlot() {
         return this.plot;
+    }
+
+    @Override
+    public int meleeDamage(Random random) {
+        return 2 + BbMobEntity.super.meleeDamage(random);
     }
 }
