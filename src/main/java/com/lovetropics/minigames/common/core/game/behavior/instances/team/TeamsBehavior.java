@@ -25,7 +25,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraft.ChatFormatting;
 import org.apache.commons.lang3.RandomStringUtils;
 
@@ -162,7 +162,7 @@ public final class TeamsBehavior implements IGameBehavior {
 				.withStyle(ChatFormatting.BOLD, team.config().formatting());
 
 		player.displayClientMessage(
-				new TextComponent("You are on ").withStyle(ChatFormatting.GRAY).append(teamName),
+				Component.literal("You are on ").withStyle(ChatFormatting.GRAY).append(teamName),
 				false
 		);
 	}

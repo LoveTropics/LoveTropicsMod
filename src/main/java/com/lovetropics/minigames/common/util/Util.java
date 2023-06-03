@@ -3,6 +3,7 @@ package com.lovetropics.minigames.common.util;
 import com.google.common.collect.Lists;
 import com.lovetropics.lib.BlockBox;
 import com.lovetropics.minigames.Constants;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Material;
@@ -135,7 +136,7 @@ public class Util {
 
                 LivingEntity center = ent;
 
-                Random rand = world.random;
+                RandomSource rand = world.random;
 
                 float randLook = rand.nextInt(90)-45;
                 //int height = 10;
@@ -393,7 +394,7 @@ public class Util {
         return world.getBlockState(pos).getMaterial().isSolid();
     }
 
-    public static void drawParticleBetween(ParticleOptions data, Vec3 start, Vec3 end, ServerLevel world, Random random, int count, double xzScale, double yScale, double speedBase, double speedScale) {
+    public static void drawParticleBetween(ParticleOptions data, Vec3 start, Vec3 end, ServerLevel world, RandomSource random, int count, double xzScale, double yScale, double speedBase, double speedScale) {
         for (int i = 0; i < count; i++) {
             Vec3 sample = lerpVector(start, end, i / 20.0);
             double d3 = random.nextGaussian() * xzScale;

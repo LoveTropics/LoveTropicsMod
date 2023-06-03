@@ -10,7 +10,7 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
 
 import static net.minecraft.commands.Commands.literal;
@@ -38,7 +38,7 @@ public class CancelGameCommand {
 			}
 
 			if (!confirmed && shouldRequireConfirmation(ctx.getSource(), game)) {
-				MutableComponent message = new TextComponent("Please confirm that you would like to cancel this game! ")
+				MutableComponent message = Component.literal("Please confirm that you would like to cancel this game! ")
 						.append(GameTexts.clickHere("/game cancel confirm"));
 				return GameResult.error(message);
 			}

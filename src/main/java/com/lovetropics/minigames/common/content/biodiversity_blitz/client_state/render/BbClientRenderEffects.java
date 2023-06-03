@@ -22,8 +22,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.ChatFormatting;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.ForgeHooksClient;
-import net.minecraftforge.client.event.RenderGameOverlayEvent;
-import net.minecraftforge.client.event.RenderNameplateEvent;
+import net.minecraftforge.client.event.RenderNameTagEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
@@ -98,7 +97,7 @@ public final class BbClientRenderEffects {
 	}
 
 	@SubscribeEvent
-	public static void onRenderPlayerName(RenderNameplateEvent event) {
+	public static void onRenderPlayerName(RenderNameTagEvent event) {
 		Entity entity = event.getEntity();
 		if (entity instanceof Player) {
 			ClientBbGlobalState globalState = ClientGameStateManager.getOrNull(BiodiversityBlitz.GLOBAL_STATE);
@@ -109,7 +108,7 @@ public final class BbClientRenderEffects {
 		}
 	}
 
-	private static void renderPlayerCurrency(RenderNameplateEvent event, Entity entity, int currency) {
+	private static void renderPlayerCurrency(RenderNameTagEvent event, Entity entity, int currency) {
 		final EntityRenderDispatcher renderDispatcher = CLIENT.getEntityRenderDispatcher();
 		double distance2 = renderDispatcher.distanceToSqr(entity);
 		if (!ForgeHooksClient.isNameplateInRenderDistance(entity, distance2) || entity.isDiscrete()) {

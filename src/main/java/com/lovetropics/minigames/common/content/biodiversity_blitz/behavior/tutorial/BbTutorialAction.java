@@ -22,7 +22,7 @@ import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.ChatType;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
@@ -120,7 +120,7 @@ public class BbTutorialAction implements IGameBehavior {
             ticks = breakBlocks(game, target, playerPlot, sample, ticks, cw, actions);
 
             actions.put(ticks, () -> {
-//                target.sendMessage(new TextComponent("Tutorial done!"), ChatType.SYSTEM, Util.NIL_UUID);
+//                target.sendMessage(Component.literal("Tutorial done!"), ChatType.SYSTEM, Util.NIL_UUID);
                 game.getState().getOrThrow(TutorialState.KEY).finishTutorial();
             });
 

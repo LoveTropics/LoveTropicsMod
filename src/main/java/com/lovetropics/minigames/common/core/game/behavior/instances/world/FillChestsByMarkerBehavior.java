@@ -14,6 +14,7 @@ import net.minecraft.core.SectionPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
+import net.minecraft.util.RandomSource;
 import net.minecraft.util.random.SimpleWeightedRandomList;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -58,8 +59,8 @@ public class FillChestsByMarkerBehavior extends ChunkGeneratingBehavior {
 			return;
 		}
 
-		Random random = world.random;
-		ObjectLists.shuffle(chestPositions, random);
+		RandomSource random = world.random;
+		ObjectLists.shuffle(chestPositions, new Random(random.nextLong()));
 
 		if (percentage < 1.0f) {
 			int index = Mth.ceil(chestPositions.size() * percentage);

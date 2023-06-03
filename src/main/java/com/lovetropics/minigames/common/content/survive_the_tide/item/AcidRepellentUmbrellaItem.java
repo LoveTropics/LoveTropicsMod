@@ -4,7 +4,7 @@ import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.common.content.survive_the_tide.SurviveTheTide;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -28,9 +28,9 @@ public class AcidRepellentUmbrellaItem extends Item {
     @Override
     @OnlyIn(Dist.CLIENT)
     public void appendHoverText(ItemStack stack, @Nullable Level world, List<Component> tooltip, TooltipFlag flag) {
-        tooltip.add(new TextComponent("Prevents acid rain from harming you.").withStyle(ChatFormatting.GOLD));
-        tooltip.add(new TextComponent(""));
-        tooltip.add(new TextComponent("Active when held in main hand or off-hand.").withStyle(ChatFormatting.AQUA));
+        tooltip.add(Component.literal("Prevents acid rain from harming you.").withStyle(ChatFormatting.GOLD));
+        tooltip.add(Component.literal(""));
+        tooltip.add(Component.literal("Active when held in main hand or off-hand.").withStyle(ChatFormatting.AQUA));
     }
 
     @SubscribeEvent

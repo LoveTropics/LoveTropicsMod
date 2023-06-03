@@ -10,7 +10,7 @@ import com.lovetropics.minigames.common.core.game.state.statistics.PlayerPlaceme
 import com.lovetropics.minigames.common.core.game.state.statistics.StatisticKey;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.Component;
 
 public record DisplayLeaderboardOnFinishBehavior<T extends Comparable<T>>(StatisticKey<T> statistic, PlacementOrder order, int length) implements IGameBehavior {
 	public static final Codec<DisplayLeaderboardOnFinishBehavior<?>> CODEC = RecordCodecBuilder.create(i -> i.group(
@@ -35,7 +35,7 @@ public record DisplayLeaderboardOnFinishBehavior<T extends Comparable<T>>(Statis
 			}
 
 			PlayerSet players = game.getAllPlayers();
-			players.sendMessage(new TextComponent("The game is over! Here are the results:"));
+			players.sendMessage(Component.literal("The game is over! Here are the results:"));
 			placement.sendTo(players, length);
 		});
 	}

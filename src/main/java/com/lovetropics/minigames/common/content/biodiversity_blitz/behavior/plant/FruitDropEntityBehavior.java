@@ -31,7 +31,7 @@ public class FruitDropEntityBehavior implements IGameBehavior {
 				Codec.INT.fieldOf("range").forGetter(o -> o.range),
 				Codec.INT.fieldOf("interval").forGetter(o -> o.interval),
 				ForgeRegistries.BLOCKS.getCodec().fieldOf("fruit").forGetter(o -> o.fruit),
-				ForgeRegistries.ENTITIES.getCodec().fieldOf("entity").forGetter(o -> o.entity)
+				ForgeRegistries.ENTITY_TYPES.getCodec().fieldOf("entity").forGetter(o -> o.entity)
 			).apply(i, FruitDropEntityBehavior::new));
 
 	private final int range;

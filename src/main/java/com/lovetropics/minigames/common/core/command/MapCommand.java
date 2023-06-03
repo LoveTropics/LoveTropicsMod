@@ -45,10 +45,10 @@ import static net.minecraft.commands.Commands.literal;
 
 public final class MapCommand {
 	private static final DynamicCommandExceptionType WORKSPACE_ALREADY_EXISTS = new DynamicCommandExceptionType(o -> {
-		return new TextComponent("Workspace already exists with id '" + o + "'");
+		return Component.literal("Workspace already exists with id '" + o + "'");
 	});
 
-	private static final SimpleCommandExceptionType NOT_IN_WORKSPACE = new SimpleCommandExceptionType(new TextComponent("You are not in a workspace!"));
+	private static final SimpleCommandExceptionType NOT_IN_WORKSPACE = new SimpleCommandExceptionType(Component.literal("You are not in a workspace!"));
 
 	public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
 		// @formatter:off
@@ -128,14 +128,14 @@ public final class MapCommand {
 		WorkspaceDimensionConfig dimensionConfig = new WorkspaceDimensionConfig(dimension.typeHolder(), dimension.generator(), seed);
 
 		workspaceManager.openWorkspace(id, dimensionConfig).thenAcceptAsync(workspace -> {
-			MutableComponent message = new TextComponent("Opened workspace with id '" + id + "'. ").withStyle(ChatFormatting.AQUA);
-			Component join = new TextComponent("Click here to join")
+			MutableComponent message = Component.literal("Opened workspace with id '" + id + "'. ").withStyle(ChatFormatting.AQUA);
+			Component join = Component.literal("Click here to join")
 					.withStyle(style -> {
 						String command = "/map join " + id;
 						return style.withColor(ChatFormatting.BLUE)
 								.setUnderlined(true)
 								.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, command))
-								.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new TextComponent(command)));
+								.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal(command)));
 					});
 
 			source.sendSuccess(message.append(join), false);
@@ -151,7 +151,7 @@ public final class MapCommand {
 		MapWorkspace workspace = MapWorkspaceArgument.get(context, "id");
 		workspaceManager.deleteWorkspace(workspace.id());
 
-		source.sendSuccess(new TextComponent("Deleted workspace with id '" + workspace.id() + "'. ").withStyle(ChatFormatting.GOLD), false);
+		source.sendSuccess(Component.literal("Deleted workspace with id '" + workspace.id() + "'. ").withStyle(ChatFormatting.GOLD), false);
 
 		return Command.SINGLE_SUCCESS;
 	}
@@ -244,10 +244,10 @@ public final class MapCommand {
 					writer.writeMetadata(new MapMetadata(id, workspace.worldSettings(), regions));
 					writer.writeWorldData(dimensionDirectory);
 
-					source.sendSuccess(new TextComponent("Successfully exported map!"), false);
+					source.sendSuccess(Component.literal("Successfully exported map!"), false);
 				}
 			} catch (Exception e) {
-				source.sendFailure(new TextComponent("Failed to export map!"));
+				source.sendFailure(Component.literal("Failed to export map!"));
 				LoveTropics.LOGGER.error("Failed to export map", e);
 			}
 		}, Util.backgroundExecutor());
@@ -296,10 +296,10 @@ public final class MapCommand {
 					MapMetadata metadata = reader.loadInto(server, workspace.dimensionKey());
 					workspace.importFrom(metadata);
 
-					source.sendSuccess(new TextComponent("Successfully imported workspace into '" + id + "'"), false);
+					source.sendSuccess(Component.literal("Successfully imported workspace into '" + id + "'"), false);
 				}
 			} catch (IOException e) {
-				source.sendFailure(new TextComponent("Failed to import workspace!"));
+				source.sendFailure(Component.literal("Failed to import workspace!"));
 				e.printStackTrace();
 			}
 		}, Util.backgroundExecutor());

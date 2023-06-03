@@ -10,13 +10,13 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.commands.arguments.UuidArgument;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.Component;
 
 import java.util.UUID;
 
 public final class GameLobbyArgument {
 	public static final DynamicCommandExceptionType GAME_LOBBY_NOT_FOUND = new DynamicCommandExceptionType(arg ->
-			new TextComponent("Could not find lobby with name: " + arg)
+			Component.literal("Could not find lobby with name: " + arg)
 	);
 
 	public static RequiredArgumentBuilder<CommandSourceStack, UUID> argument(String name) {

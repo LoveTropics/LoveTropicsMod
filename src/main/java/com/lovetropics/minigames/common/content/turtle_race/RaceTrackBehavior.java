@@ -25,7 +25,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.SharedConstants;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundSetSubtitleTextPacket;
 import net.minecraft.network.protocol.game.ClientboundSetTitleTextPacket;
 import net.minecraft.network.protocol.game.ClientboundSetTitlesAnimationPacket;
@@ -65,7 +65,7 @@ public class RaceTrackBehavior implements IGameBehavior {
 
 	private static final int GAME_FINISH_SECONDS = 30;
 
-	private static final Component UNKNOWN_PLAYER_NAME = new TextComponent("Unknown");
+	private static final Component UNKNOWN_PLAYER_NAME = Component.literal("Unknown");
 
 	private final PathData pathData;
 	private final String finishRegion;
@@ -186,8 +186,8 @@ public class RaceTrackBehavior implements IGameBehavior {
 
 	private void showStuckWarning(ServerPlayer player) {
 		player.connection.send(new ClientboundSetTitlesAnimationPacket(0, STUCK_WARNING_REPEAT_INTERVAL * 2, 10));
-		player.connection.send(new ClientboundSetTitleTextPacket(new TextComponent("Warning!").withStyle(ChatFormatting.RED)));
-		player.connection.send(new ClientboundSetSubtitleTextPacket(new TextComponent("You are going the wrong way!").withStyle(ChatFormatting.GOLD)));
+		player.connection.send(new ClientboundSetTitleTextPacket(Component.literal("Warning!").withStyle(ChatFormatting.RED)));
+		player.connection.send(new ClientboundSetSubtitleTextPacket(Component.literal("You are going the wrong way!").withStyle(ChatFormatting.GOLD)));
 	}
 
 	private void clearPlayerState(ServerPlayer player) {
@@ -202,7 +202,7 @@ public class RaceTrackBehavior implements IGameBehavior {
 		if (!finishedPlayers.isEmpty()) {
 			FinishEntry winner = finishedPlayers.get(0);
 			game.getStatistics().global().set(StatisticKey.WINNING_PLAYER, winner.player());
-			winnerName = new TextComponent(winner.name());
+			winnerName = Component.literal(winner.name());
 		}
 
 		game.invoker(GameLogicEvents.WIN_TRIGGERED).onWinTriggered(winnerName);
@@ -232,7 +232,7 @@ public class RaceTrackBehavior implements IGameBehavior {
 
 		Component title;
 		if (lapCount > 1) {
-			title = new TextComponent("Lap #" + (state.lap + 1) + " of " + lapCount).withStyle(ChatFormatting.AQUA);
+			title = Component.literal("Lap #" + (state.lap + 1) + " of " + lapCount).withStyle(ChatFormatting.AQUA);
 		} else {
 			title = game.getDefinition().getName().copy().withStyle(ChatFormatting.AQUA);
 		}
@@ -245,11 +245,11 @@ public class RaceTrackBehavior implements IGameBehavior {
 		FireworkPalette.DYE_COLORS.spawn(player.blockPosition(), player.level);
 
 		long lapTime = game.ticks() - state.lapStartTime;
-		game.getAllPlayers().sendMessage(new TextComponent("")
-				.append(new TextComponent("\u2714 ").withStyle(ChatFormatting.GREEN))
+		game.getAllPlayers().sendMessage(Component.literal("")
+				.append(Component.literal("\u2714 ").withStyle(ChatFormatting.GREEN))
 				.append(player.getDisplayName())
 				.append(lapCount > 1 ? " finished lap #" + (state.lap + 1) + " in " : " finished in ")
-				.append(new TextComponent(Util.formatMinutesSeconds(lapTime / SharedConstants.TICKS_PER_SECOND)).withStyle(ChatFormatting.GOLD))
+				.append(Component.literal(Util.formatMinutesSeconds(lapTime / SharedConstants.TICKS_PER_SECOND)).withStyle(ChatFormatting.GOLD))
 				.append("!")
 				.withStyle(ChatFormatting.AQUA)
 		);
@@ -273,8 +273,8 @@ public class RaceTrackBehavior implements IGameBehavior {
 			triggerWin(game);
 		} else if (finishedPlayers.size() == winnerCount) {
 			finishTime = game.ticks() + GAME_FINISH_SECONDS * SharedConstants.TICKS_PER_SECOND;
-			game.getAllPlayers().sendMessage(new TextComponent("The game will finish in ")
-					.append(new TextComponent(String.valueOf(GAME_FINISH_SECONDS)).withStyle(ChatFormatting.GOLD))
+			game.getAllPlayers().sendMessage(Component.literal("The game will finish in ")
+					.append(Component.literal(String.valueOf(GAME_FINISH_SECONDS)).withStyle(ChatFormatting.GOLD))
 					.append(" seconds!")
 					.withStyle(ChatFormatting.AQUA)
 			);
@@ -289,8 +289,8 @@ public class RaceTrackBehavior implements IGameBehavior {
 			public void add(String player, Component detail, boolean self) {
 				int index = ++this.index;
 				if (lines.size() < MAX_LEADERBOARD_SIZE || self) {
-					lines.add(new TextComponent(index + ". ").withStyle(ChatFormatting.GRAY)
-							.append(new TextComponent(player).withStyle(self ? ChatFormatting.AQUA : ChatFormatting.GOLD))
+					lines.add(Component.literal(index + ". ").withStyle(ChatFormatting.GRAY)
+							.append(Component.literal(player).withStyle(self ? ChatFormatting.AQUA : ChatFormatting.GOLD))
 							.append(" ")
 							.append(detail)
 					);
@@ -306,7 +306,7 @@ public class RaceTrackBehavior implements IGameBehavior {
 
 		for (FinishEntry entry : finishedPlayers) {
 			long seconds = entry.time() / SharedConstants.TICKS_PER_SECOND;
-			leaderboard.add(entry.name(), new TextComponent(Util.formatMinutesSeconds(seconds) + " \u2714").withStyle(ChatFormatting.GREEN), entry.player().matches(player));
+			leaderboard.add(entry.name(), Component.literal(Util.formatMinutesSeconds(seconds) + " \u2714").withStyle(ChatFormatting.GREEN), entry.player().matches(player));
 		}
 
 		states.entrySet().stream()
@@ -319,9 +319,9 @@ public class RaceTrackBehavior implements IGameBehavior {
 						String playerName = otherPlayer.getGameProfile().getName();
 						boolean self = player.getUUID().equals(otherPlayer.getUUID());
 						if (lapCount > 1) {
-							leaderboard.add(playerName, new TextComponent("(Lap #" + (state.lap + 1) + "; " + percent + "%)").withStyle(ChatFormatting.GRAY), self);
+							leaderboard.add(playerName, Component.literal("(Lap #" + (state.lap + 1) + "; " + percent + "%)").withStyle(ChatFormatting.GRAY), self);
 						} else {
-							leaderboard.add(playerName, new TextComponent("(" + percent + "%)").withStyle(ChatFormatting.GRAY), self);
+							leaderboard.add(playerName, Component.literal("(" + percent + "%)").withStyle(ChatFormatting.GRAY), self);
 						}
 					}
 				});

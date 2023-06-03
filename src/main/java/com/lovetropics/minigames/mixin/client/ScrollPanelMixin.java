@@ -1,5 +1,6 @@
 package com.lovetropics.minigames.mixin.client;
 
+import net.minecraftforge.client.gui.widget.ScrollPanel;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -8,7 +9,6 @@ import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import net.minecraft.client.gui.components.events.AbstractContainerEventHandler;
-import net.minecraftforge.client.gui.ScrollPanel;
 
 @Mixin(ScrollPanel.class)
 public abstract class ScrollPanelMixin extends AbstractContainerEventHandler {

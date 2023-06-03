@@ -91,8 +91,9 @@ public class TrashBlock extends Block implements SimpleWaterloggedBlock {
     	return type.getShape(state.getValue(FACING), state.getValue(ATTACHMENT)).move(offset.x, offset.y, offset.z);
     }
 
-    @Override
-    public Block.OffsetType getOffsetType() {
-        return Block.OffsetType.XZ;
-    }
+    // TODO: properties
+//    @Override
+//    public Block.OffsetType getOffsetType() {
+//        return Block.OffsetType.XZ;
+//    }
 }

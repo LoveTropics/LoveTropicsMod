@@ -4,8 +4,8 @@ import com.lovetropics.minigames.Constants;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.TextComponent;
-import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.Component;
 
 import java.util.function.BiConsumer;
 
@@ -45,36 +45,36 @@ public final class BiodiversityBlitzTexts {
 	}
 
 	public static MutableComponent waveWarning() {
-		return new TranslatableComponent(Keys.WAVE_WARNING);
+		return Component.translatable(Keys.WAVE_WARNING);
 	}
 
 	public static MutableComponent deathDecrease(int count) {
-		return new TranslatableComponent(Keys.DEATH_DECREASE, count);
+		return Component.translatable(Keys.DEATH_DECREASE, count);
 	}
 
 	public static MutableComponent currencyAddition(int amount) {
-		Component amountText = new TextComponent(String.valueOf(amount))
+		Component amountText = Component.literal(String.valueOf(amount))
 				.withStyle(amount > 0 ? ChatFormatting.AQUA : ChatFormatting.RED);
-		return new TranslatableComponent(Keys.CURRENCY_ADDITION, amountText);
+		return Component.translatable(Keys.CURRENCY_ADDITION, amountText);
 	}
 
 	public static MutableComponent trading() {
-		return new TranslatableComponent(Keys.TRADING);
+		return Component.translatable(Keys.TRADING);
 	}
 
 	public static MutableComponent canOnlyPlacePlants() {
-		return new TranslatableComponent(Keys.CAN_ONLY_PLACE_PLANTS);
+		return Component.translatable(Keys.CAN_ONLY_PLACE_PLANTS);
 	}
 
 	public static MutableComponent plantCannotFit() {
-		return new TranslatableComponent(Keys.PLANT_CANNOT_FIT);
+		return Component.translatable(Keys.PLANT_CANNOT_FIT);
 	}
 
 	public static MutableComponent notYourPlot() {
-		return new TranslatableComponent(Keys.NOT_YOUR_PLOT);
+		return Component.translatable(Keys.NOT_YOUR_PLOT);
 	}
 
 	public static MutableComponent deathTitle() {
-		return new TranslatableComponent(Keys.DEATH_TITLE);
+		return Component.translatable(Keys.DEATH_TITLE);
 	}
 }

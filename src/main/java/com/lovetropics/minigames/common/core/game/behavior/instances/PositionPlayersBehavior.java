@@ -14,6 +14,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.RandomSource;
 import org.apache.logging.log4j.LogManager;
 
 import javax.annotation.Nullable;
@@ -95,10 +96,10 @@ public class PositionPlayersBehavior implements IGameBehavior {
 		DimensionUtils.teleportPlayerNoPortal(player, game.getDimension(), pos);
 	}
 
-	private BlockPos tryFindEmptyPos(IGamePhase game, Random random, BlockBox box) {
+	private BlockPos tryFindEmptyPos(IGamePhase game, RandomSource random, BlockBox box) {
 		ServerLevel world = game.getWorld();
 		for (int i = 0; i < 20; i++) {
-			BlockPos pos = box.sample(random);
+			BlockPos pos = box.sample(new Random(random.nextLong()));
 			if (world.isEmptyBlock(pos)) {
 				return pos;
 			}

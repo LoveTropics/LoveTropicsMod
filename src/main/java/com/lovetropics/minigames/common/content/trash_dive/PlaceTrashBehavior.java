@@ -20,7 +20,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.ChunkPos;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.chunk.ChunkAccess;
 
 import java.io.InputStream;
@@ -77,7 +77,7 @@ public record PlaceTrashBehavior(ResourceLocation positionData, int centerY, int
 			}
 			candidatePositions.position(0);
 		} catch (Exception e) {
-			throw new GameException(new TextComponent("Unexpected error reading trash position data"), e);
+			throw new GameException(Component.literal("Unexpected error reading trash position data"), e);
 		}
 
 		Long2ObjectMap<LongList> trashByChunk = new Long2ObjectOpenHashMap<>();

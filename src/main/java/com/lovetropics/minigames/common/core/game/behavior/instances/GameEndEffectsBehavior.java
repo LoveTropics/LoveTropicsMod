@@ -23,7 +23,7 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundClearTitlesPacket;
 import net.minecraft.network.protocol.game.ClientboundSetSubtitleTextPacket;
 import net.minecraft.network.protocol.game.ClientboundSetTitleTextPacket;
@@ -94,7 +94,7 @@ public final class GameEndEffectsBehavior implements IGameBehavior {
 			PlayerSet players = game.getAllPlayers();
 			players.sendPacket(new ClientboundClearTitlesPacket(true));
 			players.sendPacket(new ClientboundSetTitlesAnimationPacket(10, 3 * 20, 10));
-			players.sendPacket(new ClientboundSetTitleTextPacket(new TextComponent(" ")));
+			players.sendPacket(new ClientboundSetTitleTextPacket(Component.literal(" ")));
 			players.sendPacket(new ClientboundSetSubtitleTextPacket(title));
 		}
 

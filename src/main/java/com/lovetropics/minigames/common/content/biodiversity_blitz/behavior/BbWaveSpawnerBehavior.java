@@ -17,11 +17,12 @@ import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvent
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.Object2FloatMap;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.BossEvent;
 import net.minecraft.world.BossEvent.BossBarColor;
 import net.minecraft.world.Difficulty;
@@ -38,7 +39,7 @@ public final class BbWaveSpawnerBehavior implements IGameBehavior {
 				SizeCurve.CODEC.fieldOf("size_curve").forGetter(c -> c.sizeCurve),
 				Codec.BOOL.fieldOf("size_curve_always").orElse(false).forGetter(c -> c.sizeCurveAlways),
 				MoreCodecs.object2Float(MoreCodecs.DIFFICULTY).fieldOf("difficulty_factors").forGetter(c -> c.difficultyFactors),
-				MoreCodecs.TEXT.optionalFieldOf("first_message", TextComponent.EMPTY).forGetter(c -> c.firstMessage)
+				MoreCodecs.TEXT.optionalFieldOf("first_message", Component.empty()).forGetter(c -> c.firstMessage)
 		).apply(instance, BbWaveSpawnerBehavior::new);
 	});
 
@@ -86,7 +87,7 @@ public final class BbWaveSpawnerBehavior implements IGameBehavior {
 			cleanupBossBar(waveCharging);
 		});
 
-		this.waveCharging = new ServerBossEvent(new TextComponent("Wave Incoming!"), BossBarColor.GREEN, BossEvent.BossBarOverlay.PROGRESS);
+		this.waveCharging = new ServerBossEvent(Component.literal("Wave Incoming!"), BossBarColor.GREEN, BossEvent.BossBarOverlay.PROGRESS);
 		this.waveCharging.setProgress(0.0F);
 		this.waveCharging.setVisible(false);
 	}
@@ -107,7 +108,7 @@ public final class BbWaveSpawnerBehavior implements IGameBehavior {
 
 	private void tick() {
 		ServerLevel world = game.getWorld();
-		Random random = world.getRandom();
+		RandomSource random = world.getRandom();
 		long ticks = game.ticks();
 
 		long timeTilNextWave = ticks % intervalTicks;
@@ -154,8 +155,8 @@ public final class BbWaveSpawnerBehavior implements IGameBehavior {
 		bar.removeAllPlayers();
 	}
 
-	private void spawnWave(ServerLevel world, Random random, Collection<ServerPlayer> players, Plot plot, int waveIndex) {
-		if (waveIndex == 0 && firstMessage != TextComponent.EMPTY) {
+	private void spawnWave(ServerLevel world, RandomSource random, Collection<ServerPlayer> players, Plot plot, int waveIndex) {
+		if (waveIndex == 0 && !Objects.equals(firstMessage, Component.empty())) {
 			players.forEach(p -> p.displayClientMessage(firstMessage, false));
 		}
 
@@ -187,7 +188,7 @@ public final class BbWaveSpawnerBehavior implements IGameBehavior {
 	}
 
 	private ServerBossEvent createWaveBar(ServerPlayer player, int waveIndex, int count, Set<Entity> entities) {
-		ServerBossEvent bossBar = new ServerBossEvent(new TextComponent("Wave " + (waveIndex + 1)), BossBarColor.GREEN, BossEvent.BossBarOverlay.PROGRESS);
+		ServerBossEvent bossBar = new ServerBossEvent(Component.literal("Wave " + (waveIndex + 1)), BossBarColor.GREEN, BossEvent.BossBarOverlay.PROGRESS);
 		bossBar.setProgress((float) entities.size() / count);
 		bossBar.setColor(BossBarColor.GREEN);
 		bossBar.addPlayer(player);

@@ -238,7 +238,7 @@ public final class BiodiversityBlitz {
 				}
 
 				// Supposed to be used to create a buffer space, but it doesn't seem to work?
-//				list.add(new TextComponent(""));
+//				list.add(Component.literal(""));
 
 				if (Screen.hasShiftDown()) {
 					ListTag listtag = display.getList("ShiftLore", 8);
@@ -256,7 +256,7 @@ public final class BiodiversityBlitz {
 						}
 					}
 				} else {
-					list.add(new TextComponent("Press Shift for more information").withStyle(ChatFormatting.GOLD));
+					list.add(Component.literal("Press Shift for more information").withStyle(ChatFormatting.GOLD));
 				}
 			}
 		}

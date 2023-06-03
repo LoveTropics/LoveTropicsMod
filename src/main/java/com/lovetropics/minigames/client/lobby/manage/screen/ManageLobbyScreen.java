@@ -22,7 +22,7 @@ import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.util.Mth;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraft.ChatFormatting;
 
 import javax.annotation.Nullable;
@@ -115,10 +115,10 @@ public final class ManageLobbyScreen extends Screen {
 
 		playerList = addWidget(new LobbyPlayerList(this, lobby, layout.playerList));
 
-		playButton = addRenderableWidget(FlexUi.createButton(layout.play, new TextComponent("\u25B6"), b -> {
+		playButton = addRenderableWidget(FlexUi.createButton(layout.play, Component.literal("\u25B6"), b -> {
 			session.selectControl(LobbyControls.Type.PLAY);
 		}));
-		skipButton = addRenderableWidget(FlexUi.createButton(layout.skip, new TextComponent("\u23ED"), b -> {
+		skipButton = addRenderableWidget(FlexUi.createButton(layout.skip, Component.literal("\u23ED"), b -> {
 			session.selectControl(LobbyControls.Type.SKIP);
 		}));
 

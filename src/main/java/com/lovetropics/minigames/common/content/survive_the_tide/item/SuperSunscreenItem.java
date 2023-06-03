@@ -4,7 +4,7 @@ import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraft.ChatFormatting;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.api.distmarker.Dist;
@@ -23,8 +23,8 @@ public class SuperSunscreenItem extends Item {
     @Override
     @OnlyIn(Dist.CLIENT)
     public void appendHoverText(ItemStack stack, @Nullable Level world, List<Component> tooltip, TooltipFlag flag) {
-        tooltip.add(new TextComponent("Prevents heatwaves from slowing you down.").withStyle(ChatFormatting.GOLD));
-        tooltip.add(new TextComponent(""));
-        tooltip.add(new TextComponent("Active when held in main hand or off-hand.").withStyle(ChatFormatting.AQUA));
+        tooltip.add(Component.literal("Prevents heatwaves from slowing you down.").withStyle(ChatFormatting.GOLD));
+        tooltip.add(Component.literal(""));
+        tooltip.add(Component.literal("Active when held in main hand or off-hand.").withStyle(ChatFormatting.AQUA));
     }
 }

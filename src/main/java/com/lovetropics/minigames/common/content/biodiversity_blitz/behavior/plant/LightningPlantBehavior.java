@@ -15,6 +15,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LightningBolt;
@@ -44,7 +45,7 @@ public final class LightningPlantBehavior implements IGameBehavior {
 
     private void tickPlants(Collection<ServerPlayer> players, Plot plot, List<Plant> plants) {
         long ticks = this.game.ticks();
-        Random random = this.game.getWorld().getRandom();
+        RandomSource random = this.game.getWorld().getRandom();
 
         if (ticks % 160 != 0) {
             return;

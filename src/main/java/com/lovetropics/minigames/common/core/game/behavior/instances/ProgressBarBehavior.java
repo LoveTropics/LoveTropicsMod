@@ -15,7 +15,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.ChatFormatting;
 import net.minecraft.SharedConstants;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.world.BossEvent;
 
@@ -91,7 +91,7 @@ public class ProgressBarBehavior implements IGameBehavior {
 
 		int endTime = entry.period.end().resolve(progression);
 		int secondsLeft = Mth.positiveCeilDiv(endTime - progression.time(), SharedConstants.TICKS_PER_SECOND);
-		return entry.text.copy().append(new TextComponent(" (" + Util.formatMinutesSeconds(secondsLeft) + " left)").withStyle(ChatFormatting.GRAY));
+		return entry.text.copy().append(Component.literal(" (" + Util.formatMinutesSeconds(secondsLeft) + " left)").withStyle(ChatFormatting.GRAY));
 	}
 
 	private record Entry(ProgressionPeriod period, Component text, BossEvent.BossBarColor color, boolean reversed, boolean includeTime) {

@@ -4,7 +4,7 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.network.chat.Component;
 import net.minecraft.locale.Language;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.Component;
 
 public final class TrimmedText {
 	private final Component text;
@@ -21,7 +21,7 @@ public final class TrimmedText {
 	}
 
 	public static TrimmedText of(String text) {
-		return new TrimmedText(new TextComponent(text));
+		return new TrimmedText(Component.literal(text));
 	}
 
 	public Component text() {

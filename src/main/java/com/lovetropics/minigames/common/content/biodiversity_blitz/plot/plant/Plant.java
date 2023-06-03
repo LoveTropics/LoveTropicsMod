@@ -1,6 +1,7 @@
 package com.lovetropics.minigames.common.content.biodiversity_blitz.plot.plant;
 
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.plant.state.PlantState;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.BlockPos;
@@ -75,7 +76,7 @@ public final class Plant {
 	}
 
 	public void spawnPoof(ServerLevel world, int count, double speed) {
-		Random random = world.random;
+		RandomSource random = world.random;
 
 		for (BlockPos pos : this.coverage) {
 			for (int i = 0; i < count; i++) {

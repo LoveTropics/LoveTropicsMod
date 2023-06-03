@@ -6,7 +6,7 @@ import net.minecraft.client.gui.components.PlayerTabOverlay;
 import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraft.ChatFormatting;
 import net.minecraft.world.level.GameType;
 import org.spongepowered.asm.mixin.Mixin;
@@ -25,7 +25,7 @@ public class PlayerTabOverlayGuiMixin {
 			UUID id = info.getProfile().getId();
 			if (lobby.getPlayers().contains(id)) {
 				if (info.getGameMode() != GameType.SPECTATOR) {
-					ci.setReturnValue(new TextComponent("\uD83D\uDDE1 ").append(displayName));
+					ci.setReturnValue(Component.literal("\uD83D\uDDE1 ").append(displayName));
 				} else {
 					ci.setReturnValue(displayName);
 				}

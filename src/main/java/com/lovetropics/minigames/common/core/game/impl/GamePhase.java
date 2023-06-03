@@ -17,7 +17,7 @@ import com.lovetropics.minigames.common.core.game.state.statistics.StatisticKey;
 import com.lovetropics.minigames.common.core.game.util.GameTexts;
 import com.lovetropics.minigames.common.core.game.util.PlayerSnapshot;
 import com.lovetropics.minigames.common.core.map.MapRegions;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -206,7 +206,7 @@ public class GamePhase implements IGamePhase {
 
 	public void cancelWithError(Exception exception) {
 		LoveTropics.LOGGER.warn("Game canceled due to exception", exception);
-		this.requestStop(GameStopReason.errored(new TextComponent("Game stopped due to exception: " + exception)));
+		this.requestStop(GameStopReason.errored(Component.literal("Game stopped due to exception: " + exception)));
 	}
 
 	@Override

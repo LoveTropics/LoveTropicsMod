@@ -13,7 +13,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.network.chat.Component;
 import net.minecraft.ChatFormatting;
-import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.network.chat.Component;
 
 import java.util.Iterator;
 
@@ -40,7 +40,7 @@ public record SttChatBroadcastBehavior(String downToTwoTranslationKey) implement
 					Component p1text = p1.getDisplayName().copy().withStyle(ChatFormatting.AQUA);
 					Component p2text = p2.getDisplayName().copy().withStyle(ChatFormatting.AQUA);
 
-					game.getAllPlayers().sendMessage(new TranslatableComponent(downToTwoTranslationKey, p1text, p2text).withStyle(ChatFormatting.GOLD));
+					game.getAllPlayers().sendMessage(Component.translatable(downToTwoTranslationKey, p1text, p2text).withStyle(ChatFormatting.GOLD));
 				}
 			}
 		});

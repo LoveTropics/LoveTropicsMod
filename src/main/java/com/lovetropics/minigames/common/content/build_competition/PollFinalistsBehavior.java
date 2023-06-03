@@ -23,7 +23,7 @@ import net.minecraft.world.scores.Objective;
 import net.minecraft.world.scores.Scoreboard;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.players.PlayerList;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.Component;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -73,7 +73,7 @@ public record PollFinalistsBehavior(String finalistsTag, String winnerTag, Strin
 			if (objective != null) {
 				scoreboard.removeObjective(objective);
 			}
-			scoreboard.addObjective(votesObjective, ObjectiveCriteria.DUMMY, new TextComponent("Votes"), RenderType.INTEGER);
+			scoreboard.addObjective(votesObjective, ObjectiveCriteria.DUMMY, Component.literal("Votes"), RenderType.INTEGER);
 			return;
 		}
 		PollEvent event = new Gson().fromJson(object, PollEvent.class);

@@ -19,7 +19,7 @@ import com.lovetropics.minigames.common.role.StreamHosts;
 import com.mojang.serialization.Codec;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -33,11 +33,11 @@ import java.util.UUID;
 public final class SpectatorChaseBehavior implements IGameBehavior {
 	public static final Codec<SpectatorChaseBehavior> CODEC = Codec.unit(SpectatorChaseBehavior::new);
 
-	private static final Component SPECTATING_NOTIFICATION_MESSAGE = new TextComponent("You are a ")
-			.append(new TextComponent("spectator").withStyle(ChatFormatting.BOLD))
+	private static final Component SPECTATING_NOTIFICATION_MESSAGE = Component.literal("You are a ")
+			.append(Component.literal("spectator").withStyle(ChatFormatting.BOLD))
 			.append("!\n")
 			.append("Scroll or use the arrow keys to select players.\n")
-			.append("Hold ").append(new TextComponent("Left Control").withStyle(ChatFormatting.UNDERLINE)).append(" and scroll to zoom.");
+			.append("Hold ").append(Component.literal("Left Control").withStyle(ChatFormatting.UNDERLINE)).append(" and scroll to zoom.");
 
 	private static final NotificationStyle SPECTATING_NOTIFICATION_STYLE = new NotificationStyle(
 			NotificationIcon.item(new ItemStack(Items.ENDER_EYE)),

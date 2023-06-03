@@ -32,7 +32,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundSetSubtitleTextPacket;
 import net.minecraft.network.protocol.game.ClientboundSetTitleTextPacket;
 import net.minecraft.network.protocol.game.ClientboundSetTitlesAnimationPacket;
@@ -61,6 +61,7 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Random;
 
 // TODO: needs to be split up & data-driven more!
 
@@ -124,7 +125,7 @@ public final class BbBehavior implements IGameBehavior {
 		events.listen(GamePlayerEvents.USE_BLOCK, this::onUseBlock);
 
 		events.listen(GamePhaseEvents.START, () -> {
-			Component sidebarTitle = new TextComponent("Biodiversity Blitz")
+			Component sidebarTitle = Component.literal("Biodiversity Blitz")
 					.withStyle(ChatFormatting.GREEN, ChatFormatting.BOLD);
 
 			sidebar = widgets.openSidebar(sidebarTitle);
@@ -146,8 +147,8 @@ public final class BbBehavior implements IGameBehavior {
 	private Component[] collectScoreboard(IGamePhase game) {
 		// FIXME: does not work with teams!
 		List<Component> sidebar = new ArrayList<>(10);
-		sidebar.add(new TextComponent("Player ").withStyle(ChatFormatting.AQUA).append(new TextComponent("points (+ per drop)").withStyle(ChatFormatting.GOLD)));
-		sidebar.add(TextComponent.EMPTY);
+		sidebar.add(Component.literal("Player ").withStyle(ChatFormatting.AQUA).append(Component.literal("points (+ per drop)").withStyle(ChatFormatting.GOLD)));
+		sidebar.add(Component.empty());
 
 		List<ServerPlayer> list = new ArrayList<>();
 		game.getParticipants().forEach(list::add);
@@ -158,7 +159,7 @@ public final class BbBehavior implements IGameBehavior {
 		for (ServerPlayer player : list) {
 			// Limit leaderboard to 8 players- otherwise it gets too chaotic
 			if (added >= 8) {
-				sidebar.add(new TextComponent("... and more!").withStyle(ChatFormatting.AQUA));
+				sidebar.add(Component.literal("... and more!").withStyle(ChatFormatting.AQUA));
 				break;
 			}
 
@@ -173,8 +174,8 @@ public final class BbBehavior implements IGameBehavior {
 				increment = plot.nextCurrencyIncrement;
 			}
 
-			sidebar.add(new TextComponent(player.getGameProfile().getName() + ": ").withStyle(ChatFormatting.AQUA)
-					.append(new TextComponent(points + " (+ " + increment + ")").withStyle(ChatFormatting.GOLD)));
+			sidebar.add(Component.literal(player.getGameProfile().getName() + ": ").withStyle(ChatFormatting.AQUA)
+					.append(Component.literal(points + " (+ " + increment + ")").withStyle(ChatFormatting.GOLD)));
 		}
 
 		return sidebar.toArray(new Component[0]);
@@ -342,7 +343,7 @@ public final class BbBehavior implements IGameBehavior {
 	}
 
 	private void teleportToRegion(ServerPlayer player, BlockBox region, Direction direction) {
-		BlockPos pos = region.sample(player.getRandom());
+		BlockPos pos = region.sample(new Random(player.getRandom().nextLong()));
 
 		player.setYRot(direction.toYRot());
 		DimensionUtils.teleportPlayerNoPortal(player, game.getDimension(), pos);

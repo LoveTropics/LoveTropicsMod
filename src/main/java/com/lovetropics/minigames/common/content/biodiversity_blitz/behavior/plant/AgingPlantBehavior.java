@@ -7,6 +7,7 @@ import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.LevelEvent;
 import net.minecraft.world.level.block.state.BlockState;
 
@@ -46,5 +47,5 @@ public abstract class AgingPlantBehavior implements IGameBehavior {
         });
     }
 
-    protected abstract BlockState ageUp(Random random, BlockState state);
+    protected abstract BlockState ageUp(RandomSource random, BlockState state);
 }

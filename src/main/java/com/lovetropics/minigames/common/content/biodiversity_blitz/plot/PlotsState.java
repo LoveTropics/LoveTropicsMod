@@ -4,6 +4,7 @@ import com.google.common.base.Preconditions;
 import com.lovetropics.minigames.common.core.game.state.GameStateKey;
 import com.lovetropics.minigames.common.core.game.state.IGameState;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.core.BlockPos;
@@ -61,7 +62,7 @@ public final class PlotsState implements Iterable<Plot>, IGameState {
 	}
 
 	@Nullable
-	public Plot getRandomPlot(Random random) {
+	public Plot getRandomPlot(RandomSource random) {
 		if (this.plots.isEmpty()) {
 			return null;
 		}

@@ -13,7 +13,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.commands.CommandSource;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import org.apache.logging.log4j.LogManager;
@@ -73,6 +73,6 @@ public record RunCommandsAction(List<String> globalCommands, List<String> player
         CommandSource source = debugMode ? game.getServer() : CommandSource.NULL;
 
         String name = game.getLobby().getMetadata().name();
-        return new CommandSourceStack(source, Vec3.ZERO, Vec2.ZERO, game.getWorld(), Commands.LEVEL_OWNERS, name, new TextComponent(name), game.getServer(), null);
+        return new CommandSourceStack(source, Vec3.ZERO, Vec2.ZERO, game.getWorld(), Commands.LEVEL_OWNERS, name, Component.literal(name), game.getServer(), null);
     }
 }

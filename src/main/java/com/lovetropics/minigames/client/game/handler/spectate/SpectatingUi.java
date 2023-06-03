@@ -19,12 +19,13 @@ import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TextColor;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.world.scores.PlayerTeam;
 import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.client.event.CustomizeGuiOverlayEvent;
 import net.minecraftforge.client.event.InputEvent;
-import net.minecraftforge.client.event.RenderGameOverlayEvent;
+import net.minecraftforge.client.event.RenderGuiOverlayEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.lwjgl.glfw.GLFW;
@@ -39,8 +40,8 @@ import java.util.function.Supplier;
 public final class SpectatingUi {
 	private static final Minecraft CLIENT = Minecraft.getInstance();
 
-	private static final Component FREE_CAMERA_TEXT = new TextComponent("Free Camera").withStyle(ChatFormatting.ITALIC);
-	private static final Component SELECT_PROMPT_TEXT = new TextComponent(" [Click to select]").withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC);
+	private static final Component FREE_CAMERA_TEXT = Component.literal("Free Camera").withStyle(ChatFormatting.ITALIC);
+	private static final Component SELECT_PROMPT_TEXT = Component.literal(" [Click to select]").withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC);
 
 	private static final int FACE_SIZE = 16;
 	private static final int ENTRY_PADDING = 2;
@@ -69,7 +70,7 @@ public final class SpectatingUi {
 	}
 
 	@SubscribeEvent
-	public static void onMouseScroll(InputEvent.MouseScrollEvent event) {
+	public static void onMouseScroll(InputEvent.MouseScrollingEvent event) {
 		SpectatingSession session = ClientSpectatingManager.INSTANCE.session;
 		if (session == null || CLIENT.screen != null) {
 			return;
@@ -110,7 +111,7 @@ public final class SpectatingUi {
 	}
 
 	@SubscribeEvent
-	public static void onKeyInput(InputEvent.KeyInputEvent event) {
+	public static void onKeyInput(InputEvent.Key event) {
 		SpectatingSession session = ClientSpectatingManager.INSTANCE.session;
 		if (session == null || CLIENT.screen != null || event.getAction() == GLFW.GLFW_RELEASE) {
 			return;
@@ -128,7 +129,7 @@ public final class SpectatingUi {
 	}
 
 	@SubscribeEvent
-	public static void onMouseInput(InputEvent.MouseInputEvent event) {
+	public static void onMouseInput(InputEvent.MouseButton event) {
 		SpectatingSession session = ClientSpectatingManager.INSTANCE.session;
 		if (session == null || CLIENT.screen != null || event.getAction() == GLFW.GLFW_RELEASE) {
 			return;
@@ -183,16 +184,14 @@ public final class SpectatingUi {
 	}
 
 	@SubscribeEvent
-	public static void onRenderOverlay(RenderGameOverlayEvent.Post event) {
+	public static void onRenderOverlay(CustomizeGuiOverlayEvent event) {
 		SpectatingSession session = ClientSpectatingManager.INSTANCE.session;
 		if (session == null) {
 			return;
 		}
 
-		if (event.getType() == RenderGameOverlayEvent.ElementType.ALL) {
-			Window window = event.getWindow();
-			session.ui.renderChasePlayerList(event.getMatrixStack(), window);
-		}
+		Window window = event.getWindow();
+		session.ui.renderChasePlayerList(event.getPoseStack(), window);
 	}
 
 	private void renderChasePlayerList(PoseStack transform, Window window) {
@@ -273,7 +272,7 @@ public final class SpectatingUi {
 		for (UUID player : players) {
 			Supplier<Component> name = () -> {
 				GameProfile profile = ClientPlayerInfo.getPlayerProfile(player);
-				return profile != null ? new TextComponent(profile.getName()) : new TextComponent("...");
+				return profile != null ? Component.literal(profile.getName()) : Component.literal("...");
 			};
 
 			PlayerTeam team = getTeamFor(player);

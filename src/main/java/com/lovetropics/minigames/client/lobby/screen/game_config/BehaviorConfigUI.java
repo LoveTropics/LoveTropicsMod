@@ -10,7 +10,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.gui.components.events.AbstractContainerEventHandler;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.components.Widget;
-import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.network.chat.Component;
 
 import java.util.List;
 
@@ -27,7 +27,7 @@ public class BehaviorConfigUI extends AbstractContainerEventHandler implements W
 		this.behavior = behavior;
 		this.configs = configs;
 		
-		this.title = new TextLabel(ltree.child(1, Axis.X), 10, new TranslatableComponent(behavior.getRegistryName().toString()), Align.Cross.CENTER, Align.Cross.START);
+		this.title = new TextLabel(ltree.child(1, Axis.X), 10, Component.translatable(behavior.getRegistryName().toString()), Align.Cross.CENTER, Align.Cross.START);
 		this.list = new BehaviorConfigList(parent, ltree.child(), configs);
 		ltree.pop(); // This UI doesn't have a layout, but we still need to pop our layout from the tree
 	}

@@ -12,11 +12,11 @@ import net.minecraft.commands.Commands;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.commands.arguments.ResourceLocationArgument;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.Component;
 
 public final class GameConfigArgument {
 	public static final DynamicCommandExceptionType GAME_CONFIG_NOT_FOUND = new DynamicCommandExceptionType(arg ->
-			new TextComponent("Game config does not exist with id: " + arg)
+			Component.literal("Game config does not exist with id: " + arg)
 	);
 
     public static RequiredArgumentBuilder<CommandSourceStack, ResourceLocation> argument(String name) {

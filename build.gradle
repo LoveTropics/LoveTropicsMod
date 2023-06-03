@@ -115,9 +115,9 @@ dependencies {
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
     
     // Utilize tropicraft worldgen code
-    implementation fg.deobf('net.tropicraft:Tropicraft:9.3.0-beta+custom')
+//    runtimeOnly fg.deobf('net.tropicraft:Tropicraft:9.3.0-beta+custom')
 
-    jarJar(implementation(fg.deobf("com.tterrag.registrate:Registrate:MC${minecraft_version}-${registrate_version}"))) {
+    jarJar(implementation(fg.deobf("com.tterrag.registrate:Registrate:MC1.19-${registrate_version}"))) {
         jarJar.ranged(it, "[MC${minecraft_version}-${registrate_version},MC1.20)")
     }
 

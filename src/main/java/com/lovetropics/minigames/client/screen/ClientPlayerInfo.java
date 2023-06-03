@@ -6,7 +6,7 @@ import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.Component;
 
 import javax.annotation.Nullable;
 import java.util.UUID;
@@ -25,7 +25,7 @@ public final class ClientPlayerInfo {
 		PlayerInfo info = get(uuid);
 		if (info != null) {
 			Component displayName = info.getTabListDisplayName();
-			return displayName != null ? displayName : new TextComponent(info.getProfile().getName());
+			return displayName != null ? displayName : Component.literal(info.getProfile().getName());
 		} else {
 			return null;
 		}

@@ -26,7 +26,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraft.ChatFormatting;
 import net.minecraft.server.level.ServerLevel;
 
@@ -73,7 +73,7 @@ public final class TrashCollectionBehavior implements IGameBehavior {
 	}
 
 	private void onStart(IGamePhase game) {
-		Component sidebarTitle = new TextComponent("Trash Dive")
+		Component sidebarTitle = Component.literal("Trash Dive")
 				.withStyle(ChatFormatting.BLUE, ChatFormatting.BOLD);
 
 		sidebar = widgets.openSidebar(sidebarTitle);
@@ -122,7 +122,7 @@ public final class TrashCollectionBehavior implements IGameBehavior {
 
 		gameOver = true;
 
-		Component finishMessage = new TextComponent("The game ended! Here are the results for this game:");
+		Component finishMessage = Component.literal("The game ended! Here are the results for this game:");
 
 		PlayerSet players = game.getAllPlayers();
 		players.sendMessage(finishMessage.copy().withStyle(ChatFormatting.GREEN));
@@ -147,13 +147,13 @@ public final class TrashCollectionBehavior implements IGameBehavior {
 
 	private Component[] renderSidebar(IGamePhase game) {
 		List<Component> sidebar = new ArrayList<>(10);
-		sidebar.add(new TextComponent("Pick up trash! ").withStyle(ChatFormatting.GREEN)
-				.append(new TextComponent(collectedTrash + " collected").withStyle(ChatFormatting.GRAY)));
+		sidebar.add(Component.literal("Pick up trash! ").withStyle(ChatFormatting.GREEN)
+				.append(Component.literal(collectedTrash + " collected").withStyle(ChatFormatting.GRAY)));
 
 		PlayerPlacement.Score<Integer> placement = PlayerPlacement.fromMaxScore(game, StatisticKey.TRASH_COLLECTED);
 
 		sidebar.add(TextComponent.EMPTY);
-		sidebar.add(new TextComponent("MVPs:").withStyle(ChatFormatting.GREEN));
+		sidebar.add(Component.literal("MVPs:").withStyle(ChatFormatting.GREEN));
 
 		placement.addToSidebar(sidebar, 5);
 

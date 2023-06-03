@@ -3,7 +3,7 @@ package com.lovetropics.minigames.client.game.handler.spectate;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Camera;
 import net.minecraft.util.Mth;
-import net.minecraftforge.client.event.EntityViewRenderEvent;
+import net.minecraftforge.client.event.ViewportEvent;
 
 import java.util.List;
 import java.util.UUID;
@@ -55,7 +55,7 @@ class SpectatingSession {
 		state.renderTick(CLIENT, this, CLIENT.player);
 	}
 
-	void applyToCamera(Camera camera, float partialTicks, EntityViewRenderEvent.CameraSetup event) {
+	void applyToCamera(Camera camera, float partialTicks, ViewportEvent.ComputeCameraAngles event) {
 		state.applyToCamera(CLIENT, this, CLIENT.player, camera, partialTicks, event);
 	}
 

@@ -13,7 +13,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraft.ChatFormatting;
 import net.minecraft.world.level.Level;
 
@@ -62,8 +62,8 @@ public final class EditRegionItem extends Item {
 
 			if (entity instanceof Player) {
 				Player player = (Player) entity;
-				Component message = new TextComponent("Changed mode to: ")
-						.append(new TextComponent(mode.key).withStyle(mode.color));
+				Component message = Component.literal("Changed mode to: ")
+						.append(Component.literal(mode.key).withStyle(mode.color));
 				player.displayClientMessage(message, true);
 			}
 		}

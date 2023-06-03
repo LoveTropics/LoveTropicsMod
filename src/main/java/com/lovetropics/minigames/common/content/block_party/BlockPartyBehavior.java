@@ -19,7 +19,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
@@ -77,7 +77,7 @@ public final class BlockPartyBehavior implements IGameBehavior {
 		this.game = game;
 
 		if (blocks.length == 0) {
-			throw new GameException(new TextComponent("No blocks defined!"));
+			throw new GameException(Component.literal("No blocks defined!"));
 		}
 
 		floorRegion = game.getMapRegions().getOrThrow(floorRegionKey);
@@ -95,7 +95,7 @@ public final class BlockPartyBehavior implements IGameBehavior {
 	}
 
 	private void spawnPlayer(ServerPlayer player) {
-		BlockPos floorPos = floorRegion.sample(player.getRandom());
+		BlockPos floorPos = floorRegion.sample(new Random(player.getRandom().nextLong()));
 		DimensionUtils.teleportPlayerNoPortal(player, game.getDimension(), floorPos.above());
 	}
 
@@ -124,7 +124,7 @@ public final class BlockPartyBehavior implements IGameBehavior {
 
 				eliminated.add(player);
 
-				Component message = new TextComponent("\u2620 ")
+				Component message = Component.literal("\u2620 ")
 						.append(player.getDisplayName()).append(" was eliminated!")
 						.withStyle(ChatFormatting.GRAY);
 				game.getAllPlayers().sendMessage(message);
@@ -141,12 +141,12 @@ public final class BlockPartyBehavior implements IGameBehavior {
 
 				Component message;
 				if (winningPlayer != null) {
-					message = new TextComponent("\u2B50 ")
+					message = Component.literal("\u2B50 ")
 							.append(winningPlayer.getDisplayName()).append(" won the game!")
 							.withStyle(ChatFormatting.GREEN);
 					game.getStatistics().global().set(StatisticKey.WINNING_PLAYER, PlayerKey.from(winningPlayer));
 				} else {
-					message = new TextComponent("\u2B50 Nobody won the game!")
+					message = Component.literal("\u2B50 Nobody won the game!")
 							.withStyle(ChatFormatting.RED);
 				}
 
@@ -169,7 +169,7 @@ public final class BlockPartyBehavior implements IGameBehavior {
 
 	CountingDown startCountingDown(int round) {
 		ServerLevel world = game.getWorld();
-		Floor floor = Floor.generate(world.random, quadCountX, quadCountZ, blocks);
+		Floor floor = Floor.generate(new Random(world.random.nextLong()), quadCountX, quadCountZ, blocks);
 		floor.set(world, floorRegion, quadSize);
 
 		Block target = floor.target;
@@ -177,7 +177,7 @@ public final class BlockPartyBehavior implements IGameBehavior {
 		ItemStack targetStack = new ItemStack(target);
 		targetStack.setCount(64);
 
-		Component name = new TextComponent("Stand on ")
+		Component name = Component.literal("Stand on ")
 				.append(targetStack.getDisplayName())
 				.withStyle(style -> style.withBold(true).withItalic(false));
 		targetStack.setHoverName(name);
@@ -223,7 +223,7 @@ public final class BlockPartyBehavior implements IGameBehavior {
 			if (time % 10 == 0) {
 				for (ServerPlayer player : game.getAllPlayers()) {
 					long remainingTicks = breakAt - time;
-					Component message = new TextComponent("Break in " + (remainingTicks / 20) + " seconds").withStyle(ChatFormatting.GOLD);
+					Component message = Component.literal("Break in " + (remainingTicks / 20) + " seconds").withStyle(ChatFormatting.GOLD);
 					player.displayClientMessage(message, true);
 				}
 			}

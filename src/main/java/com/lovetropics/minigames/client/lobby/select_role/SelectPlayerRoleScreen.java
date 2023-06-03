@@ -7,7 +7,7 @@ import com.lovetropics.minigames.common.core.network.LoveTropicsNetwork;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraft.ChatFormatting;
 
 public final class SelectPlayerRoleScreen extends Screen {
@@ -16,16 +16,16 @@ public final class SelectPlayerRoleScreen extends Screen {
 
 	// TODO: translate all the things
 	private static final Component[] TEXT = new Component[] {
-			new TextComponent("Welcome to the game lobby!"),
-			new TextComponent("Before the game, ")
-					.append(new TextComponent("please select to ")
-							.append(new TextComponent("play").withStyle(ChatFormatting.AQUA))
+			Component.literal("Welcome to the game lobby!"),
+			Component.literal("Before the game, ")
+					.append(Component.literal("please select to ")
+							.append(Component.literal("play").withStyle(ChatFormatting.AQUA))
 							.append(" or ")
-							.append(new TextComponent("spectate").withStyle(ChatFormatting.AQUA))
+							.append(Component.literal("spectate").withStyle(ChatFormatting.AQUA))
 							.withStyle(ChatFormatting.UNDERLINE)
 					)
 					.append("."),
-			new TextComponent("You will be prompted before each game in this lobby.").withStyle(ChatFormatting.GRAY)
+			Component.literal("You will be prompted before each game in this lobby.").withStyle(ChatFormatting.GRAY)
 	};
 
 	private static final int PADDING = 4;
@@ -46,11 +46,11 @@ public final class SelectPlayerRoleScreen extends Screen {
 
 		layout = new ScreenLayout(this);
 
-		this.addRenderableWidget(FlexUi.createButton(layout.play, new TextComponent("Play"), b -> {
+		this.addRenderableWidget(FlexUi.createButton(layout.play, Component.literal("Play"), b -> {
 			this.acceptResponse(true);
 			this.onClose();
 		}));
-		this.addRenderableWidget(FlexUi.createButton(layout.spectate, new TextComponent("Spectate"), b -> {
+		this.addRenderableWidget(FlexUi.createButton(layout.spectate, Component.literal("Spectate"), b -> {
 			this.acceptResponse(false);
 			this.onClose();
 		}));

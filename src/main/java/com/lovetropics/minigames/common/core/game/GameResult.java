@@ -2,7 +2,7 @@ package com.lovetropics.minigames.common.core.game;
 
 import net.minecraft.util.Unit;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.Component;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
@@ -36,7 +36,7 @@ public final class GameResult<T> {
 
 	public static <T> GameResult<T> fromException(String message, Exception exception) {
 		exception.printStackTrace();
-		return GameResult.error(new TextComponent(message + ": " + exception.toString()));
+		return GameResult.error(Component.literal(message + ": " + exception.toString()));
 	}
 
 	public static <T> CompletableFuture<GameResult<T>> handleException(String message, CompletableFuture<GameResult<T>> future) {

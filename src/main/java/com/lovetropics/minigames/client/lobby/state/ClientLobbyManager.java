@@ -19,7 +19,7 @@ public final class ClientLobbyManager {
 	private static ClientLobbyState joinedLobby;
 
 	@SubscribeEvent
-	public static void onClientDisconnect(ClientPlayerNetworkEvent.LoggedOutEvent event) {
+	public static void onClientDisconnect(ClientPlayerNetworkEvent.LoggingOut event) {
 		clear();
 	}
 

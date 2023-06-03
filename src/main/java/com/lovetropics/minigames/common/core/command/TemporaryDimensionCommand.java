@@ -9,7 +9,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.arguments.DimensionArgument;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 
@@ -18,10 +18,10 @@ import static net.minecraft.commands.Commands.literal;
 
 public class TemporaryDimensionCommand {
     private static final DynamicCommandExceptionType NOT_TEMPORARY_DIMENSION = new DynamicCommandExceptionType(o ->
-        new TextComponent("Not a temporary dimension: '" + o + "'"));
+        Component.literal("Not a temporary dimension: '" + o + "'"));
 
     private static final DynamicCommandExceptionType DIMENSION_HAS_PLAYERS = new DynamicCommandExceptionType(o ->
-            new TextComponent("'" + o + "' contains players, use '/temporary-dimension close " + o + " force' to close anyway."));
+            Component.literal("'" + o + "' contains players, use '/temporary-dimension close " + o + " force' to close anyway."));
 
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         // @formatter:off
@@ -44,13 +44,13 @@ public class TemporaryDimensionCommand {
         RuntimeDimensions runtimeDimensions = RuntimeDimensions.get(server);
 
         if (runtimeDimensions.getTemporaryDimensions().isEmpty()) {
-            ctx.getSource().sendSuccess(new TextComponent("No temporary dimensions open!"), false);
+            ctx.getSource().sendSuccess(Component.literal("No temporary dimensions open!"), false);
         }
 
         for (var dimension : runtimeDimensions.getTemporaryDimensions()) {
              ServerLevel world = server.getLevel(dimension);
              if (world == null) continue;
-             ctx.getSource().sendSuccess(new TextComponent(dimension.location() + ": " + world.players().size() + " players"), false);
+             ctx.getSource().sendSuccess(Component.literal(dimension.location() + ": " + world.players().size() + " players"), false);
         }
 
         return Command.SINGLE_SUCCESS;
@@ -73,7 +73,7 @@ public class TemporaryDimensionCommand {
         RuntimeDimensionHandle handle = runtimeDimensions.handleForTemporaryDimension(level.dimension());
         handle.delete();
 
-        ctx.getSource().sendSuccess(new TextComponent("Closed '" + level.dimension().location() + "'"), false);
+        ctx.getSource().sendSuccess(Component.literal("Closed '" + level.dimension().location() + "'"), false);
 
         return Command.SINGLE_SUCCESS;
     }

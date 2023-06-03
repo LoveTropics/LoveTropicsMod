@@ -5,6 +5,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.level.ChunkPos;
@@ -16,7 +17,7 @@ import java.util.Random;
 
 public final class GenerateEntitiesBehavior extends ChunkGeneratingBehavior {
 	public static final Codec<GenerateEntitiesBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
-			ForgeRegistries.ENTITIES.getCodec().fieldOf("entity").forGetter(c -> c.type),
+			ForgeRegistries.ENTITY_TYPES.getCodec().fieldOf("entity").forGetter(c -> c.type),
 			Codec.INT.optionalFieldOf("min_per_chunk", 0).forGetter(c -> c.minPerChunk),
 			Codec.INT.optionalFieldOf("max_per_chunk", 1).forGetter(c -> c.maxPerChunk)
 	).apply(i, GenerateEntitiesBehavior::new));
@@ -37,7 +38,7 @@ public final class GenerateEntitiesBehavior extends ChunkGeneratingBehavior {
 		int minX = chunkPos.getMinBlockX();
 		int minZ = chunkPos.getMinBlockZ();
 
-		Random random = world.random;
+		RandomSource random = world.random;
 
 		int count = random.nextInt(maxPerChunk - minPerChunk + 1) + minPerChunk;
 		for (int i = 0; i < count; i++) {

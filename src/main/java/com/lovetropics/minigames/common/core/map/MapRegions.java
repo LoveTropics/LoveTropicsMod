@@ -9,7 +9,7 @@ import com.mojang.serialization.Codec;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.Component;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -51,7 +51,7 @@ public final class MapRegions {
 	public BlockBox getOrThrow(String key) {
 		BlockBox box = this.getAny(key);
 		if (box == null) {
-			throw new GameException(new TextComponent("Missing expected region with key '" + key + "'"));
+			throw new GameException(Component.literal("Missing expected region with key '" + key + "'"));
 		}
 		return box;
 	}

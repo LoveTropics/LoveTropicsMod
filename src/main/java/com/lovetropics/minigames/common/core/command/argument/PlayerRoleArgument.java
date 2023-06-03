@@ -9,11 +9,11 @@ import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.SharedSuggestionProvider;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.Component;
 
 public final class PlayerRoleArgument {
 	private static final DynamicCommandExceptionType ROLE_NOT_VALID = new DynamicCommandExceptionType(key -> {
-		return new TextComponent("'" + key + "' is not a valid role");
+		return Component.literal("'" + key + "' is not a valid role");
 	});
 
     public static RequiredArgumentBuilder<CommandSourceStack, String> argument(String name) {

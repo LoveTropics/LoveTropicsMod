@@ -13,8 +13,8 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.TextComponent;
-import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundSoundPacket;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
@@ -84,7 +84,7 @@ public record DonationPackageData(
 		}
 
 		public Component createGlobalMessage(@Nullable ServerPlayer receiver) {
-			return new TranslatableComponent("%s received a package!", this.getReceiverName(receiver));
+			return Component.translatable("%s received a package!", this.getReceiverName(receiver));
 		}
 
 		public NotificationStyle createStyle(final NotificationStyle.Color color, final long visibleTime) {
@@ -92,11 +92,11 @@ public record DonationPackageData(
 		}
 
 		private MutableComponent getReceiverName(ServerPlayer receiver) {
-			return (receiver != null ? receiver.getDisplayName().copy() : new TextComponent("Everyone")).withStyle(ChatFormatting.BLUE);
+			return (receiver != null ? receiver.getDisplayName().copy() : Component.literal("Everyone")).withStyle(ChatFormatting.BLUE);
 		}
 
 		private MutableComponent getSenderName(@Nullable String sender) {
-			return new TextComponent(sender != null ? sender : "an unknown donor").withStyle(ChatFormatting.BLUE);
+			return Component.literal(sender != null ? sender : "an unknown donor").withStyle(ChatFormatting.BLUE);
 		}
 	}
 }

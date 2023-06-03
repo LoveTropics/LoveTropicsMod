@@ -3,6 +3,7 @@ package com.lovetropics.minigames.common.content.biodiversity_blitz.plot.plant;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterators;
 import it.unimi.dsi.fastutil.longs.*;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.phys.Vec3;
@@ -35,7 +36,7 @@ public interface PlantCoverage extends Iterable<BlockPos> {
 
 	boolean covers(BlockPos pos);
 
-	BlockPos random(Random random);
+	BlockPos random(RandomSource random);
 
 	AABB asBounds();
 
@@ -100,7 +101,7 @@ public interface PlantCoverage extends Iterable<BlockPos> {
 		}
 
 		@Override
-		public BlockPos random(Random random) {
+		public BlockPos random(RandomSource random) {
 			return this.block;
 		}
 
@@ -148,7 +149,7 @@ public interface PlantCoverage extends Iterable<BlockPos> {
 		}
 
 		@Override
-		public BlockPos random(Random random) {
+		public BlockPos random(RandomSource random) {
 			long pos = this.blocks.getLong(random.nextInt(blocks.size()));
 			return new BlockPos(BlockPos.getX(pos), BlockPos.getY(pos), BlockPos.getZ(pos));
 		}
@@ -200,7 +201,7 @@ public interface PlantCoverage extends Iterable<BlockPos> {
 		}
 
 		@Override
-		public BlockPos random(Random random) {
+		public BlockPos random(RandomSource random) {
 			return random.nextBoolean() ? this.left.random(random) : this.right.random(random);
 		}
 

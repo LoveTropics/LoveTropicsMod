@@ -2,6 +2,7 @@ package com.lovetropics.minigames.common.content.biodiversity_blitz.entity;
 
 import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.ai.BbMobBrain;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.Plot;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.Mob;
 
@@ -21,7 +22,7 @@ public interface BbMobEntity {
 
 	Plot getPlot();
 
-	default int meleeDamage(Random random) {
+	default int meleeDamage(RandomSource random) {
 		return 4 + random.nextInt(5);
 	}
 }

@@ -17,7 +17,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.ChatFormatting;
 import net.minecraft.SharedConstants;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.Component;
 
 // TODO: make it generic and data-driven
 public class SttSidebarBehavior implements IGameBehavior {
@@ -78,9 +78,9 @@ public class SttSidebarBehavior implements IGameBehavior {
 
 	private Component[] buildSidebar() {
 		return new Component[]{
-				new TextComponent("Weather: ").append(weatherName()),
+				Component.literal("Weather: ").append(weatherName()),
 				phaseState(),
-				TextComponent.EMPTY,
+				Component.empty(),
 				playersState()
 		};
 	}
@@ -88,34 +88,34 @@ public class SttSidebarBehavior implements IGameBehavior {
 	private Component weatherName() {
 		WeatherEventType type = weather.getEventType();
 		if (type == null) {
-			return new TextComponent("Clear");
+			return Component.literal("Clear");
 		}
 
 		return switch (type) {
-			case HEAVY_RAIN -> new TextComponent("Heavy Rain").withStyle(ChatFormatting.BLUE);
-			case ACID_RAIN -> new TextComponent("Acid Rain").withStyle(ChatFormatting.GREEN);
-			case HAIL -> new TextComponent("Hail").withStyle(ChatFormatting.BLUE);
-			case HEATWAVE -> new TextComponent("Heat Wave").withStyle(ChatFormatting.YELLOW);
-			case SANDSTORM -> new TextComponent("Sandstorm").withStyle(ChatFormatting.YELLOW);
-			case SNOWSTORM -> new TextComponent("Snowstorm").withStyle(ChatFormatting.WHITE);
+			case HEAVY_RAIN -> Component.literal("Heavy Rain").withStyle(ChatFormatting.BLUE);
+			case ACID_RAIN -> Component.literal("Acid Rain").withStyle(ChatFormatting.GREEN);
+			case HAIL -> Component.literal("Hail").withStyle(ChatFormatting.BLUE);
+			case HEATWAVE -> Component.literal("Heat Wave").withStyle(ChatFormatting.YELLOW);
+			case SANDSTORM -> Component.literal("Sandstorm").withStyle(ChatFormatting.YELLOW);
+			case SNOWSTORM -> Component.literal("Snowstorm").withStyle(ChatFormatting.WHITE);
 		};
 	}
 
 	private Component phaseState() {
 		if (progression.is(safePeriod)) {
-			return new TextComponent("PVP disabled").withStyle(ChatFormatting.YELLOW);
+			return Component.literal("PVP disabled").withStyle(ChatFormatting.YELLOW);
 		} else if (progression.is(tideRisingPeriod)) {
-			return new TextComponent("The tide is rising!").withStyle(ChatFormatting.RED);
+			return Component.literal("The tide is rising!").withStyle(ChatFormatting.RED);
 		} else if (progression.is(icebergGrowthPeriod)) {
-			return new TextComponent("Icebergs are forming!").withStyle(ChatFormatting.AQUA);
+			return Component.literal("Icebergs are forming!").withStyle(ChatFormatting.AQUA);
 		} else if (progression.is(explosiveStormPeriod)) {
-			return new TextComponent("Explosive storm closing!").withStyle(ChatFormatting.RED);
+			return Component.literal("Explosive storm closing!").withStyle(ChatFormatting.RED);
 		}
-		return TextComponent.EMPTY;
+		return Component.empty();
 	}
 
 	private Component playersState() {
 		int playerCount = game.getParticipants().size();
-		return new TextComponent(playerCount + "/" + initialPlayerCount + " players").withStyle(ChatFormatting.GRAY);
+		return Component.literal(playerCount + "/" + initialPlayerCount + " players").withStyle(ChatFormatting.GRAY);
 	}
 }

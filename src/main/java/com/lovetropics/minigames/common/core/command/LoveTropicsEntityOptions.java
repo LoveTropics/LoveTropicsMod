@@ -2,7 +2,7 @@ package com.lovetropics.minigames.common.core.command;
 
 import com.mojang.brigadier.StringReader;
 import net.minecraft.commands.arguments.selector.options.EntitySelectorOptions;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.Component;
 
 public final class LoveTropicsEntityOptions {
 	public static void register() {
@@ -16,7 +16,7 @@ public final class LoveTropicsEntityOptions {
 					}
 				},
 				parser -> true,
-				new TextComponent("Filters the search to only apply to the source world.")
+				Component.literal("Filters the search to only apply to the source world.")
 		);
 	}
 }

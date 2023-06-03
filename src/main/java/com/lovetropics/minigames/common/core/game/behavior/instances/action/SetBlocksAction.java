@@ -16,7 +16,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.ChunkPos;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvider;
 import net.minecraft.server.level.ServerLevel;
 
@@ -57,7 +57,7 @@ public final class SetBlocksAction implements IGameBehavior {
 		}
 
 		if (regions.isEmpty()) {
-			throw new GameException(new TextComponent("Regions not specified for block set behavior with a set time!"));
+			throw new GameException(Component.literal("Regions not specified for block set behavior with a set time!"));
 		}
 
 		events.listen(GameActionEvents.APPLY, (context, sources) -> {

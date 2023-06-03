@@ -9,7 +9,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.components.events.ContainerEventHandler;
 import net.minecraft.client.gui.components.Widget;
-import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.network.chat.Component;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,7 +30,7 @@ public class ConfigDataUI extends LayoutGui implements IConfigWidget {
 		this.configs = configs;
 		
 
-		this.label = new TextLabel(ltree.child(1, Axis.X), 11, new TranslatableComponent(name), Align.Cross.START, Align.Cross.START);
+		this.label = new TextLabel(ltree.child(1, Axis.X), 11, Component.translatable(name), Align.Cross.START, Align.Cross.START);
 		IConfigWidget widget = parent.createWidget(ltree.child(1, Axis.X), configs);
 		children.add(widget);
 		this.mainLayout = ltree.pop();

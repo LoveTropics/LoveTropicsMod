@@ -9,7 +9,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.spectator.SpectatorGui;
 import net.minecraft.network.chat.TextColor;
 import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.EntityViewRenderEvent;
+import net.minecraftforge.client.event.ViewportEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -73,10 +73,10 @@ public final class ClientSpectatingManager implements ClientGameStateHandler<Spe
 	}
 
 	@SubscribeEvent
-	public static void onPositionCamera(EntityViewRenderEvent.CameraSetup event) {
+	public static void onPositionCamera(ViewportEvent.ComputeCameraAngles event) {
 		SpectatingSession session = INSTANCE.session;
 		if (session != null) {
-			session.applyToCamera(event.getCamera(), (float) event.getPartialTicks(), event);
+			session.applyToCamera(event.getCamera(), (float) event.getPartialTick(), event);
 		}
 	}
 }

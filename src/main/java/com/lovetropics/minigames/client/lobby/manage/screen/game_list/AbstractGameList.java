@@ -12,7 +12,7 @@ import com.mojang.blaze3d.vertex.Tesselator;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.Component;
 
 public abstract class AbstractGameList extends AbstractLTList<AbstractGameList.Entry> {
 	private final Component title;
@@ -194,7 +194,7 @@ public abstract class AbstractGameList extends AbstractLTList<AbstractGameList.E
 
 		@Override
 		public Component getNarration() {
-			return TextComponent.EMPTY;
+			return Component.empty();
 		}
 	}
 }

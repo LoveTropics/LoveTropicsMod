@@ -11,7 +11,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraft.ChatFormatting;
 
 import javax.annotation.Nullable;
@@ -38,8 +38,8 @@ public final class InstalledGameList extends AbstractGameList {
 		Flex cancel = root.child().size(20, 20).marginLeft(2);
 
 		FlexSolver.Results solve = new FlexSolver(footer.content()).apply(root);
-		this.enqueueButton = FlexUi.createButton(solve.layout(enqueue), new TextComponent("\u2714"), this::enqueue);
-		this.cancelButton = FlexUi.createButton(solve.layout(cancel), new TextComponent("\u274C"), this::cancel);
+		this.enqueueButton = FlexUi.createButton(solve.layout(enqueue), Component.literal("\u2714"), this::enqueue);
+		this.cancelButton = FlexUi.createButton(solve.layout(cancel), Component.literal("\u274C"), this::cancel);
 	}
 
 	@Override

@@ -16,6 +16,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.TagKey;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 
@@ -47,7 +48,7 @@ public final class PianguasPlantBehavior implements IGameBehavior {
 
     private void tickPlants(Collection<ServerPlayer> players, Plot plot, List<Plant> plants) {
         long ticks = this.game.ticks();
-        Random random = this.game.getWorld().getRandom();
+        RandomSource random = this.game.getWorld().getRandom();
 
         // TODO: rebalance
         if (ticks % 300 != 0 || random.nextInt(4) != 0) {

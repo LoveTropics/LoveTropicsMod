@@ -22,8 +22,9 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -71,14 +72,14 @@ public final class HideAndSeekBehavior implements IGameBehavior {
 		teams = game.getState().getOrThrow(TeamState.KEY);
 
 		if (disguises.isEmpty()) {
-			throw new GameException(new TextComponent("No possible disguises!"));
+			throw new GameException(Component.literal("No possible disguises!"));
 		}
 
 		hiders = teams.getTeamByKey("hiders");
 		seekers = teams.getTeamByKey("seekers");
 
 		if (hiders == null || seekers == null) {
-			throw new GameException(new TextComponent("Missing hiders or seekers team!"));
+			throw new GameException(Component.literal("Missing hiders or seekers team!"));
 		}
 
 		spawnRegion = game.getMapRegions().getOrThrow(spawnRegionKey);
@@ -100,8 +101,8 @@ public final class HideAndSeekBehavior implements IGameBehavior {
 		seekers.addPotionEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, hideTicks, 255, true, false));
 		seekers.addPotionEffect(new MobEffectInstance(MobEffects.BLINDNESS, hideTicks, 255, true, false));
 
-		seekers.sendMessage(new TextComponent("You will be let out to catch the hiders in " + initialHideSeconds + " seconds!"));
-		hiders.sendMessage(new TextComponent("You have " + initialHideSeconds + " seconds to hide from the seekers!"));
+		seekers.sendMessage(Component.literal("You will be let out to catch the hiders in " + initialHideSeconds + " seconds!"));
+		hiders.sendMessage(Component.literal("You have " + initialHideSeconds + " seconds to hide from the seekers!"));
 
 		for (ServerPlayer player : game.getParticipants()) {
 			if (teams.isOnTeam(player, this.hiders.key())) {
@@ -119,7 +120,7 @@ public final class HideAndSeekBehavior implements IGameBehavior {
 	}
 
 	private void spawnPlayer(ServerPlayer player) {
-		BlockPos spawnPos = spawnRegion.sample(player.getRandom());
+		BlockPos spawnPos = spawnRegion.sample(new Random(player.getRandom().nextLong()));
 		DimensionUtils.teleportPlayerNoPortal(player, game.getDimension(), spawnPos);
 	}
 
@@ -149,7 +150,7 @@ public final class HideAndSeekBehavior implements IGameBehavior {
 	}
 
 	private void setHider(ServerPlayer player) {
-		DisguiseType disguise = nextDisguiseType(player.level.random);
+		DisguiseType disguise = nextDisguiseType(player.getRandom());
 		ServerPlayerDisguises.set(player, disguise);
 	}
 
@@ -158,7 +159,7 @@ public final class HideAndSeekBehavior implements IGameBehavior {
 		player.getInventory().add(new ItemStack(HideAndSeek.NET.get()));
 	}
 
-	private DisguiseType nextDisguiseType(Random random) {
+	private DisguiseType nextDisguiseType(RandomSource random) {
 		DisguiseType type = disguises.get(random.nextInt(disguises.size()));
 		CompoundTag nbt = type.nbt != null ? type.nbt.copy() : new CompoundTag();
 		nbt.putBoolean("CustomNameVisible", false);
@@ -183,7 +184,7 @@ public final class HideAndSeekBehavior implements IGameBehavior {
 	public static final class Creature {
 		public static final Codec<Creature> CODEC = RecordCodecBuilder.create(instance -> {
 			return instance.group(
-					ForgeRegistries.ENTITIES.getCodec().fieldOf("entity").forGetter(c -> c.entity),
+					ForgeRegistries.ENTITY_TYPES.getCodec().fieldOf("entity").forGetter(c -> c.entity),
 					MoreCodecs.arrayOrUnit(Codec.STRING, String[]::new).fieldOf("region").forGetter(c -> c.regionKeys)
 			).apply(instance, Creature::new);
 		});

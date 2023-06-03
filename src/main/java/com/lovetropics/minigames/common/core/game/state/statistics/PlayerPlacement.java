@@ -5,7 +5,7 @@ import com.lovetropics.minigames.common.core.game.player.PlayerSet;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraft.ChatFormatting;
 import org.apache.commons.lang3.StringUtils;
 
@@ -107,8 +107,8 @@ public interface PlayerPlacement {
 					String prefix = head ? headPrefix : indentPrefix;
 					head = false;
 
-					players.sendMessage(new TextComponent(prefix).withStyle(ChatFormatting.AQUA)
-							.append(new TextComponent(entry.value().name()).withStyle(ChatFormatting.GOLD))
+					players.sendMessage(Component.literal(prefix).withStyle(ChatFormatting.AQUA)
+							.append(Component.literal(entry.value().name()).withStyle(ChatFormatting.GOLD))
 					);
 
 					i++;
@@ -121,8 +121,8 @@ public interface PlayerPlacement {
 			length = Math.min(order.size(), length);
 			for (int i = 0; i < length; i++) {
 				Placed<PlayerKey> entry = order.get(i);
-				Component name = new TextComponent(entry.value().name()).withStyle(ChatFormatting.AQUA);
-				sidebar.add(new TextComponent(" - ").append(name));
+				Component name = Component.literal(entry.value().name()).withStyle(ChatFormatting.AQUA);
+				sidebar.add(Component.literal(" - ").append(name));
 			}
 		}
 	}
@@ -162,8 +162,8 @@ public interface PlayerPlacement {
 					String prefix = head ? headPrefix : indentPrefix;
 					head = false;
 
-					MutableComponent name = new TextComponent(prefix + entry.player.name() + ": ");
-					MutableComponent score = new TextComponent(scoreKey.display(entry.score));
+					MutableComponent name = Component.literal(prefix + entry.player.name() + ": ");
+					MutableComponent score = Component.literal(scoreKey.display(entry.score));
 
 					players.sendMessage(name.withStyle(ChatFormatting.AQUA).append(score.withStyle(ChatFormatting.GOLD)));
 
@@ -177,9 +177,9 @@ public interface PlayerPlacement {
 			length = Math.min(entries.size(), length);
 			for (int i = 0; i < length; i++) {
 				Entry<T> entry = entries.get(i);
-				Component name = new TextComponent(entry.player.name() + ": ").withStyle(ChatFormatting.AQUA);
-				Component score = new TextComponent(scoreKey.display(entry.score)).withStyle(ChatFormatting.GOLD);
-				sidebar.add(new TextComponent(" - ").append(name).append(score));
+				Component name = Component.literal(entry.player.name() + ": ").withStyle(ChatFormatting.AQUA);
+				Component score = Component.literal(scoreKey.display(entry.score)).withStyle(ChatFormatting.GOLD);
+				sidebar.add(Component.literal(" - ").append(name).append(score));
 			}
 		}
 

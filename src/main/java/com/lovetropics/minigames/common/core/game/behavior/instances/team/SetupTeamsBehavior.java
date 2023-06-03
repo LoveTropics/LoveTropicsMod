@@ -24,7 +24,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraft.ChatFormatting;
 
 import java.util.List;
@@ -88,7 +88,7 @@ public final class SetupTeamsBehavior implements IGameBehavior {
 
 			@Override
 			public Component getNameFor(GameTeam team) {
-				return new TextComponent("Join ").append(team.config().name())
+				return Component.literal("Join ").append(team.config().name())
 						.withStyle(team.config().formatting());
 			}
 
@@ -105,8 +105,8 @@ public final class SetupTeamsBehavior implements IGameBehavior {
 	private void onPlayerWaiting(IGamePhase game, ServerPlayer player) {
 		PlayerRole forcedRole = game.getLobby().getPlayers().getForcedRoleFor(player);
 		if (forcedRole != PlayerRole.SPECTATOR && teamState.getPollingTeams().size() > 1) {
-			player.displayClientMessage(new TextComponent("This is a team-based game!").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD), false);
-			player.displayClientMessage(new TextComponent("You can select a team preference by using the items in your inventory:").withStyle(ChatFormatting.GRAY), false);
+			player.displayClientMessage(Component.literal("This is a team-based game!").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD), false);
+			player.displayClientMessage(Component.literal("You can select a team preference by using the items in your inventory:").withStyle(ChatFormatting.GRAY), false);
 
 			Scheduler.nextTick().run(server -> {
 				selectors.giveSelectorsTo(player);
@@ -119,7 +119,7 @@ public final class SetupTeamsBehavior implements IGameBehavior {
 
 		Component teamName = team.config().name().copy().withStyle(team.config().formatting(), ChatFormatting.BOLD);
 		player.displayClientMessage(
-				new TextComponent("You have requested to join ").withStyle(ChatFormatting.GRAY)
+				Component.literal("You have requested to join ").withStyle(ChatFormatting.GRAY)
 						.append(teamName),
 				false
 		);

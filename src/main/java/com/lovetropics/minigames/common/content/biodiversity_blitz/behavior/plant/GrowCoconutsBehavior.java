@@ -34,7 +34,7 @@ public class GrowCoconutsBehavior implements IGameBehavior {
 			.xmap(GrowCoconutsBehavior::new, b -> b.interval)
 			.codec();
 
-	private static final RegistryObject<Block> COCONUT = RegistryObject.of(new ResourceLocation("tropicraft", "coconut"), ForgeRegistries.BLOCKS);
+	private static final RegistryObject<Block> COCONUT = RegistryObject.create(new ResourceLocation("tropicraft", "coconut"), ForgeRegistries.BLOCKS);
 	private final int interval;
 	private final WeakHashMap<Plant, List<Pair<BlockPos, Direction>>> candidatePositions = new WeakHashMap<>();
 	

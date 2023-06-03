@@ -5,7 +5,7 @@ import com.lovetropics.minigames.common.content.survive_the_tide.entity.Driftwoo
 import com.lovetropics.minigames.common.content.survive_the_tide.entity.DriftwoodRider;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.player.Player;
@@ -27,7 +27,7 @@ public class PaddleItem extends Item {
 	@Override
 	@OnlyIn(Dist.CLIENT)
 	public void appendHoverText(ItemStack stack, @Nullable Level world, List<Component> tooltip, TooltipFlag flag) {
-		tooltip.add(new TextComponent("This might come in handy").withStyle(ChatFormatting.AQUA));
+		tooltip.add(Component.literal("This might come in handy").withStyle(ChatFormatting.AQUA));
 	}
 
 	@Override

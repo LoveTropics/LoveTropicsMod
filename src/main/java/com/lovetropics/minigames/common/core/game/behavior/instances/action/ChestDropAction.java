@@ -18,7 +18,7 @@ import net.minecraft.SharedConstants;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -51,7 +51,7 @@ public record ChestDropAction(String region, SimpleWeightedRandomList<ResourceLo
 	public void register(IGamePhase game, EventRegistrar events) {
 		List<BlockBox> regions = List.copyOf(game.getMapRegions().get(region));
 		if (regions.isEmpty()) {
-			throw new GameException(new TextComponent("No regions with key '" + region + "' to spawn chest drops"));
+			throw new GameException(Component.literal("No regions with key '" + region + "' to spawn chest drops"));
 		}
 
 		ServerLevel level = game.getWorld();

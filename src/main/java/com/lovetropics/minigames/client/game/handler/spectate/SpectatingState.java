@@ -10,7 +10,7 @@ import net.minecraft.client.CameraType;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.util.Mth;
-import net.minecraftforge.client.event.EntityViewRenderEvent;
+import net.minecraftforge.client.event.ViewportEvent;
 
 import java.util.UUID;
 import java.util.function.BooleanSupplier;
@@ -27,7 +27,7 @@ interface SpectatingState {
 	default void renderTick(Minecraft client, SpectatingSession session, LocalPlayer player) {
 	}
 
-	default void applyToCamera(Minecraft client, SpectatingSession session, LocalPlayer player, Camera camera, float partialTicks, EntityViewRenderEvent.CameraSetup event) {
+	default void applyToCamera(Minecraft client, SpectatingSession session, LocalPlayer player, Camera camera, float partialTicks, ViewportEvent.ComputeCameraAngles event) {
 	}
 
 	boolean allowsZoom();
@@ -117,7 +117,7 @@ interface SpectatingState {
 		}
 
 		@Override
-		public void applyToCamera(Minecraft client, SpectatingSession session, LocalPlayer player, Camera camera, float partialTicks, EntityViewRenderEvent.CameraSetup event) {
+		public void applyToCamera(Minecraft client, SpectatingSession session, LocalPlayer player, Camera camera, float partialTicks, ViewportEvent.ComputeCameraAngles event) {
 			Entity focusEntity = client.getCameraEntity();
 			focusEntity = focusEntity != null ? focusEntity : player;
 

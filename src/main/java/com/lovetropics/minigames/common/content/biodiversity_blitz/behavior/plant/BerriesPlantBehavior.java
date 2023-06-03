@@ -2,6 +2,7 @@ package com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.pla
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 
@@ -17,7 +18,7 @@ public final class BerriesPlantBehavior extends AgingPlantBehavior {
 	}
 
 	@Override
-	protected BlockState ageUp(Random random, BlockState state) {
+	protected BlockState ageUp(RandomSource random, BlockState state) {
 		int age = state.getValue(BlockStateProperties.AGE_3);
 		if (age < 1 || age < 3 && random.nextInt(24) == 0) {
 			return state.setValue(BlockStateProperties.AGE_3, age + 1);

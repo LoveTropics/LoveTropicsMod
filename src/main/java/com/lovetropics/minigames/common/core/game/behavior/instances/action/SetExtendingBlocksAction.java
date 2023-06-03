@@ -13,7 +13,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.advancements.critereon.BlockPredicate;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.Block;
@@ -68,7 +68,7 @@ public final class SetExtendingBlocksAction implements IGameBehavior {
 		}
 
 		if (regions.isEmpty()) {
-			throw new GameException(new TextComponent("Regions not specified for extending block set behavior!"));
+			throw new GameException(Component.literal("Regions not specified for extending block set behavior!"));
 		}
 
 		events.listen(GameActionEvents.APPLY, (context, sources) -> {

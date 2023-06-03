@@ -10,11 +10,11 @@ import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.SharedSuggestionProvider;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.Component;
 
 public final class MapWorkspaceArgument {
 	private static final DynamicCommandExceptionType WORKSPACE_DOES_NOT_EXIST = new DynamicCommandExceptionType(id -> {
-		return new TextComponent("Workspace does not exist with id '" + id + "'");
+		return Component.literal("Workspace does not exist with id '" + id + "'");
 	});
 
 	public static RequiredArgumentBuilder<CommandSourceStack, String> argument(String name) {

@@ -18,8 +18,6 @@ import com.lovetropics.minigames.common.core.network.LoveTropicsNetwork;
 import com.mojang.serialization.Codec;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextComponent;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -79,7 +77,7 @@ public class SurviveTheTideWeatherControlBehavior implements IGameBehavior {
      * - consider design to factor in worn items to negate player effects
      */
 
-    private static final Component TITLE = new TextComponent("WEATHER REPORT: \n").withStyle(ChatFormatting.BOLD);
+    private static final Component TITLE = Component.literal("WEATHER REPORT: \n").withStyle(ChatFormatting.BOLD);
 
     protected GameProgressionState progression;
     protected GameWeatherState weather;
@@ -147,7 +145,7 @@ public class SurviveTheTideWeatherControlBehavior implements IGameBehavior {
         weather.setEvent(WeatherEvent.acidRain(time));
 
         broadcastNotification(game,
-                new TextComponent("Acid Rain is falling!\n")
+                Component.literal("Acid Rain is falling!\n")
                         .append("Find shelter, or make sure to carry an ")
                         .append(umbrellaName()),
                 createNotificationStyle(SurviveTheTide.ACID_REPELLENT_UMBRELLA)
@@ -162,7 +160,7 @@ public class SurviveTheTideWeatherControlBehavior implements IGameBehavior {
         weather.setEvent(WeatherEvent.hail(time));
 
         broadcastNotification(game,
-                new TextComponent("Hail is falling!\n")
+                Component.literal("Hail is falling!\n")
                         .append("Find shelter, or make sure to carry an ")
                         .append(umbrellaName()),
                 createNotificationStyle(SurviveTheTide.ACID_REPELLENT_UMBRELLA)
@@ -177,7 +175,7 @@ public class SurviveTheTideWeatherControlBehavior implements IGameBehavior {
         weather.setEvent(WeatherEvent.heatwave(time));
 
         broadcastNotification(game,
-                new TextComponent("A Heat Wave is passing!\n")
+                Component.literal("A Heat Wave is passing!\n")
                         .append("Stay inside, or make sure to equip ")
                         .append(sunscreenName()),
                 createNotificationStyle(SurviveTheTide.SUPER_SUNSCREEN)
@@ -193,7 +191,7 @@ public class SurviveTheTideWeatherControlBehavior implements IGameBehavior {
         weather.setEvent(WeatherEvent.sandstorm(time, config.getSandstormBuildupTickRate(), config.getSandstormMaxStackable()));
 
         broadcastNotification(game,
-                new TextComponent("A Sandstorm is passing!\n")
+                Component.literal("A Sandstorm is passing!\n")
                         .append("Find shelter!"),
                 createNotificationStyle(() -> Blocks.SAND)
         );
@@ -208,24 +206,24 @@ public class SurviveTheTideWeatherControlBehavior implements IGameBehavior {
         weather.setEvent(WeatherEvent.snowstorm(time, config.getSnowstormBuildupTickRate(), config.getSnowstormMaxStackable()));
 
         broadcastNotification(game,
-                new TextComponent("A Snowstorm is passing!\n")
+                Component.literal("A Snowstorm is passing!\n")
                         .append("Find shelter!"),
                 createNotificationStyle(() -> Blocks.SNOW_BLOCK)
         );
     }
 
     private static void broadcastNotification(IGamePhase game, Component message, NotificationStyle style) {
-        ShowNotificationToastMessage packet = new ShowNotificationToastMessage(new TextComponent("").append(TITLE).append(message), style);
+        ShowNotificationToastMessage packet = new ShowNotificationToastMessage(Component.literal("").append(TITLE).append(message), style);
         game.getAllPlayers().sendPacket(LoveTropicsNetwork.CHANNEL, packet);
         game.getParticipants().playSound(SoundEvents.VILLAGER_NO, SoundSource.MASTER, 1.0f, 1.0f);
     }
 
     private static Component umbrellaName() {
-        return new TranslatableComponent(SurviveTheTide.ACID_REPELLENT_UMBRELLA.get().getDescriptionId());
+        return Component.translatable(SurviveTheTide.ACID_REPELLENT_UMBRELLA.get().getDescriptionId());
     }
 
     private static Component sunscreenName() {
-        return new TranslatableComponent(SurviveTheTide.SUPER_SUNSCREEN.get().getDescriptionId());
+        return Component.translatable(SurviveTheTide.SUPER_SUNSCREEN.get().getDescriptionId());
     }
 
     private static NotificationStyle createNotificationStyle(final Supplier<? extends ItemLike> item) {

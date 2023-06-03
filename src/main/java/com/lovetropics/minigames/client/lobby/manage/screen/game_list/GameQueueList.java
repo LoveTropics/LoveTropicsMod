@@ -13,7 +13,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraft.ChatFormatting;
 
 import javax.annotation.Nullable;
@@ -39,8 +39,8 @@ public final class GameQueueList extends AbstractGameList {
 		Flex cancel = root.child().size(20, 20).marginLeft(2);
 
 		FlexSolver.Results solve = new FlexSolver(footer.content()).apply(root);
-		this.enqueueButton = FlexUi.createButton(solve.layout(enqueue), new TextComponent("+"), this::enqueue);
-		this.removeButton = FlexUi.createButton(solve.layout(cancel), new TextComponent("-"), this::remove);
+		this.enqueueButton = FlexUi.createButton(solve.layout(enqueue), Component.literal("+"), this::enqueue);
+		this.removeButton = FlexUi.createButton(solve.layout(cancel), Component.literal("-"), this::remove);
 	}
 
 	@Override
@@ -79,10 +79,10 @@ public final class GameQueueList extends AbstractGameList {
 
 	private void applyRunningGame(ClientCurrentGame game, Entry entry) {
 		MutableComponent gameName = game.definition().name.copy().withStyle(ChatFormatting.UNDERLINE);
-		entry.setTitle(new TextComponent("\u25B6 ").append(gameName));
+		entry.setTitle(Component.literal("\u25B6 ").append(gameName));
 
 		if (game.error() != null) {
-			entry.setSubtitle(new TextComponent("\u26A0 ").append(game.error()));
+			entry.setSubtitle(Component.literal("\u26A0 ").append(game.error()));
 
 			entry.setBackgroundColor(0xFF201010)
 					.setHoveredColor(0xFF402020)
@@ -98,7 +98,7 @@ public final class GameQueueList extends AbstractGameList {
 
 	private void applyInactiveGame(Entry entry) {
 		MutableComponent inactive = GameTexts.Ui.gameInactive().withStyle(ChatFormatting.UNDERLINE);
-		entry.setTitle(new TextComponent("\u23F8 ").append(inactive));
+		entry.setTitle(Component.literal("\u23F8 ").append(inactive));
 
 		entry.setBackgroundColor(0xFF202010)
 				.setHoveredColor(0xFF404020)

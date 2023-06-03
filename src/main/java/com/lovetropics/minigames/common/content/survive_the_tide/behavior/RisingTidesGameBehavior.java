@@ -26,6 +26,7 @@ import net.minecraft.server.level.ServerChunkCache;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.ChunkPos;
@@ -161,7 +162,7 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 
 	private void spawnRisingTideParticles(IGamePhase game) {
 		ServerLevel world = game.getWorld();
-		Random random = world.random;
+		RandomSource random = world.random;
 		if (random.nextInt(3) != 0) {
 			return;
 		}

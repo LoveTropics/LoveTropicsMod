@@ -19,8 +19,8 @@ import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.components.Button;
 import com.mojang.blaze3d.vertex.Tesselator;
-import net.minecraft.network.chat.TextComponent;
-import net.minecraftforge.client.gui.ScrollPanel;
+import net.minecraft.network.chat.Component;
+import net.minecraftforge.client.gui.widget.ScrollPanel;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -51,7 +51,7 @@ public final class GameConfig extends ScrollPanel {
 		this.handlers = handlers;
 		this.content = main;
 
-		children.add(this.saveButton = new Button(main.content().right() - 46, main.content().bottom() - 20, 40, 20, new TextComponent("Save"), $ -> handlers.saveConfigs()));
+		children.add(this.saveButton = new Button(main.content().right() - 46, main.content().bottom() - 20, 40, 20, Component.literal("Save"), $ -> handlers.saveConfigs()));
 		this.saveButton.active = false;
 	}
 

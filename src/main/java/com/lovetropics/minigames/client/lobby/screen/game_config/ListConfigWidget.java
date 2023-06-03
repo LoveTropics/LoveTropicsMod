@@ -10,7 +10,7 @@ import com.lovetropics.minigames.common.core.game.behavior.config.ConfigType;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.gui.components.Widget;
 import net.minecraft.client.gui.components.events.GuiEventListener;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraftforge.client.gui.widget.ExtendedButton;
 
 import java.util.ArrayList;
@@ -40,7 +40,7 @@ public class ListConfigWidget extends LayoutGui implements IConfigWidget {
 		}
 		int width = ltree.head().content().width();
 		btnLayout = ltree.definiteChild(10, 10, new Box(width - 10, 0, 0, 0), new Box()).pop();
-		this.children.add(new ExtendedButton(btnLayout.content().left(), btnLayout.content().top(), 10, 10, new TextComponent("+"), b -> addDefault()));
+		this.children.add(new ExtendedButton(btnLayout.content().left(), btnLayout.content().top(), 10, 10, Component.literal("+"), b -> addDefault()));
 		this.mainLayout = ltree.pop();
 	}
 

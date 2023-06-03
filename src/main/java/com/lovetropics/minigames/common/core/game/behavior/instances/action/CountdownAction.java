@@ -14,7 +14,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraft.ChatFormatting;
 
 import java.util.LinkedList;
@@ -70,7 +70,7 @@ public final class CountdownAction implements IGameBehavior {
 	private void tickCountdown(ServerPlayer player, long remainingTicks) {
 		if (remainingTicks % 20 == 0) {
 			long remainingSeconds = remainingTicks / 20;
-			MutableComponent timeText = new TextComponent(String.valueOf(remainingSeconds)).withStyle(ChatFormatting.GOLD);
+			MutableComponent timeText = Component.literal(String.valueOf(remainingSeconds)).withStyle(ChatFormatting.GOLD);
 			player.displayClientMessage(warning.apply(Map.of("time", timeText)), true);
 			player.playNotifySound(SoundEvents.ARROW_HIT_PLAYER, SoundSource.MASTER, 0.8F, 1.0F);
 		}

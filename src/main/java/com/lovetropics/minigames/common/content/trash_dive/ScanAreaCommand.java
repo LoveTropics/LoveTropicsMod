@@ -13,8 +13,8 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.network.chat.TextComponent;
-import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.ChunkPos;
@@ -41,11 +41,11 @@ public class ScanAreaCommand {
 	private static final RegistryObject<Block> PURIFIED_SAND = RegistryObject.of(new ResourceLocation("tropicraft", "purified_sand"), ForgeRegistries.BLOCKS);
 
 	private static final SimpleCommandExceptionType NO_WATER = new SimpleCommandExceptionType(
-			new TranslatableComponent("commands.ltminigames.scan.nowater.fail"));
+			Component.translatable("commands.ltminigames.scan.nowater.fail"));
 	private static final SimpleCommandExceptionType TOO_FAR = new SimpleCommandExceptionType(
-			new TranslatableComponent("commands.ltminigames.scan.toofar.fail"));
+			Component.translatable("commands.ltminigames.scan.toofar.fail"));
 	private static final DynamicCommandExceptionType WRITE_ERROR = new DynamicCommandExceptionType(ex -> 
-			new TranslatableComponent("commands.ltminigames.scan.write.fail", ex));
+			Component.translatable("commands.ltminigames.scan.write.fail", ex));
 
 	public static void register(final CommandDispatcher<CommandSourceStack> dispatcher) {
 		dispatcher.register(literal("game")
@@ -98,7 +98,7 @@ public class ScanAreaCommand {
 			}
 		}
 
-		source.sendSuccess(new TextComponent("Found " + found.size() + " blocks"), true);
+		source.sendSuccess(Component.literal("Found " + found.size() + " blocks"), true);
 
 		Path output = Paths.get("export", "scan_results", fileName + ".bin");
 
@@ -115,7 +115,7 @@ public class ScanAreaCommand {
 			throw WRITE_ERROR.create(e);
 		}
 
-		source.sendSuccess(new TextComponent("Wrote " + buf.capacity() + " bytes to " + output), true);
+		source.sendSuccess(Component.literal("Wrote " + buf.capacity() + " bytes to " + output), true);
 
 		return Command.SINGLE_SUCCESS;
 	}

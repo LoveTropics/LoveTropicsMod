@@ -10,7 +10,7 @@ import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.Util;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.Component;
 import org.apache.commons.lang3.math.NumberUtils;
 
 import java.util.Collections;
@@ -83,7 +83,7 @@ public abstract class SimpleConfigWidget extends LayoutGui implements IConfigWid
 		@Override
 		protected AbstractWidget createControl(Layout mainLayout) {
 			// TODO communicate changes to config object
-			return Util.make(new EditBox(Minecraft.getInstance().font, mainLayout.background().left(), mainLayout.background().top(), mainLayout.background().width(), mainLayout.background().height(), new TextComponent("")), w -> {
+			return Util.make(new EditBox(Minecraft.getInstance().font, mainLayout.background().left(), mainLayout.background().top(), mainLayout.background().width(), mainLayout.background().height(), Component.literal("")), w -> {
 				w.setValue(config.value().toString());
 				w.setFilter(NumberUtils::isCreatable);
 			});
@@ -99,7 +99,7 @@ public abstract class SimpleConfigWidget extends LayoutGui implements IConfigWid
 		@Override
 		protected AbstractWidget createControl(Layout mainLayout) {
 			// TODO communicate changes to config object
-			return Util.make(new EditBox(Minecraft.getInstance().font, mainLayout.background().left(), mainLayout.background().top(), mainLayout.background().width(), mainLayout.background().height(), new TextComponent("")), w -> {
+			return Util.make(new EditBox(Minecraft.getInstance().font, mainLayout.background().left(), mainLayout.background().top(), mainLayout.background().width(), mainLayout.background().height(), Component.literal("")), w -> {
 				w.setValue(config.value().toString());
 			});
 		}

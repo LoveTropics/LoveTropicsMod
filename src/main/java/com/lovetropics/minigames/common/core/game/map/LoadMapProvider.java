@@ -12,7 +12,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.Util;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
@@ -89,7 +89,7 @@ public record LoadMapProvider(
 		if (handle != null) {
 			return GameResult.ok(handle);
 		} else {
-			return GameResult.error(new TextComponent("Dimension already loaded in '" + this.dimension.get() + "'"));
+			return GameResult.error(Component.literal("Dimension already loaded in '" + this.dimension.get() + "'"));
 		}
 	}
 

@@ -19,7 +19,7 @@ import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
@@ -36,6 +36,7 @@ import net.minecraftforge.registries.ForgeRegistries;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
@@ -44,8 +45,8 @@ public final class BbMerchantBehavior implements IGameBehavior {
 	public static final Codec<BbMerchantBehavior> CODEC = RecordCodecBuilder.create(instance -> {
 		return instance.group(
 				Codec.STRING.fieldOf("plot_region").forGetter(c -> c.plotRegion),
-				ForgeRegistries.ENTITIES.getCodec().fieldOf("entity").forGetter(c -> c.entity),
-				MoreCodecs.TEXT.optionalFieldOf("name", TextComponent.EMPTY).forGetter(c -> c.name),
+				ForgeRegistries.ENTITY_TYPES.getCodec().fieldOf("entity").forGetter(c -> c.entity),
+				MoreCodecs.TEXT.optionalFieldOf("name", Component.empty()).forGetter(c -> c.name),
 				Offer.CODEC.listOf().fieldOf("offers").forGetter(c -> c.offers)
 		).apply(instance, BbMerchantBehavior::new);
 	});
@@ -109,7 +110,7 @@ public final class BbMerchantBehavior implements IGameBehavior {
 	private Entity createMerchant(ServerLevel world) {
 		Entity merchant = this.entity.create(world);
 		if (merchant != null) {
-			if (this.name != TextComponent.EMPTY) {
+			if (!Objects.equals(this.name, Component.empty())) {
 				merchant.setCustomName(this.name);
 				merchant.setCustomNameVisible(true);
 			}

@@ -2,7 +2,7 @@ package com.lovetropics.minigames.common.core.game.state;
 
 import com.lovetropics.minigames.common.core.game.GameException;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.Component;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -39,7 +39,7 @@ public final class GameStateMap {
 	public <T extends IGameState> T getOrThrow(GameStateKey<T> key) {
 		T state = this.getOrNull(key);
 		if (state == null) {
-			throw new GameException(new TextComponent("Missing expected game state of key: " + key.getName()));
+			throw new GameException(Component.literal("Missing expected game state of key: " + key.getName()));
 		}
 		return state;
 	}

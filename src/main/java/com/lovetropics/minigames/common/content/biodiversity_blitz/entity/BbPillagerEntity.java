@@ -3,6 +3,7 @@ package com.lovetropics.minigames.common.content.biodiversity_blitz.entity;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.ai.*;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.Plot;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
@@ -84,7 +85,7 @@ public class BbPillagerEntity extends Pillager implements BbMobEntity {
     }
 
     @Override
-    public int meleeDamage(Random random) {
+    public int meleeDamage(RandomSource random) {
         return 2 + BbMobEntity.super.meleeDamage(random);
     }
 }

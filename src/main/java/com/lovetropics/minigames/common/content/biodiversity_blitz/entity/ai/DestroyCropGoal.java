@@ -4,6 +4,7 @@ import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.BbMobE
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.plant.Plant;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.plant.state.PlantHealth;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.plant.state.PlantNotPathfindable;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.BlockPos;
@@ -63,7 +64,7 @@ public class DestroyCropGoal extends MoveToBlockGoal {
     }
 
     private void spawnDamageParticles(Mob mob, int damage) {
-        Random random = mob.level.random;
+        RandomSource random = mob.level.random;
         for (int i = 0; i < 2 + (damage / 2); ++i) {
             double dx = random.nextGaussian() * 0.02;
             double dy = random.nextGaussian() * 0.02;

@@ -2,6 +2,7 @@ package com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.pla
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 
@@ -16,7 +17,7 @@ public final class AgingCropPlantBehavior extends AgingPlantBehavior {
 		super(interval);
 	}
 
-	protected BlockState ageUp(Random random, BlockState state) {
+	protected BlockState ageUp(RandomSource random, BlockState state) {
 		// Skip 50% of crops this tick
 		if (random.nextInt(2) == 0) {
 			return state;

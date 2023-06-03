@@ -51,7 +51,7 @@ public final class ClientGameStateManager {
 	}
 
 	@SubscribeEvent
-	public static void onPlayerLoggedOut(ClientPlayerNetworkEvent.LoggedOutEvent event) {
+	public static void onPlayerLoggedOut(ClientPlayerNetworkEvent.LoggingOut event) {
 		ClientGameStateManager.clearState();
 	}
 

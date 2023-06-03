@@ -10,6 +10,7 @@ import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
@@ -44,7 +45,7 @@ public final class IdleDropItemPlantBehavior implements IGameBehavior {
 
     private void tickPlants(Collection<ServerPlayer> players, Plot plot, List<Plant> plants) {
         long ticks = this.game.ticks();
-        Random random = this.game.getWorld().getRandom();
+        RandomSource random = this.game.getWorld().getRandom();
 
         if (ticks % this.interval != 0) {
             return;

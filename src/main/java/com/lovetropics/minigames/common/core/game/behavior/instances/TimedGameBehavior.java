@@ -19,7 +19,7 @@ import net.minecraft.SharedConstants;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraft.ChatFormatting;
 import net.minecraft.world.BossEvent;
 
@@ -61,7 +61,7 @@ public final class TimedGameBehavior implements IGameBehavior {
 
 		if (timerBarText != null) {
 			GlobalGameWidgets widgets = GlobalGameWidgets.registerTo(game, events);
-			timerBar = widgets.openBossBar(new TextComponent(""), BossEvent.BossBarColor.GREEN, BossEvent.BossBarOverlay.NOTCHED_10);
+			timerBar = widgets.openBossBar(Component.literal(""), BossEvent.BossBarColor.GREEN, BossEvent.BossBarOverlay.NOTCHED_10);
 		}
 
 		game.getControlCommands().add("pause", ControlCommand.forInitiator(source -> this.state.setPaused(true)));
@@ -107,7 +107,7 @@ public final class TimedGameBehavior implements IGameBehavior {
 	private Component getTimeRemainingText(IGamePhase game, long ticksRemaining) {
 		long secondsRemaining = ticksRemaining / SharedConstants.TICKS_PER_SECOND;
 
-		Component timeText = new TextComponent(Util.formatMinutesSeconds(secondsRemaining)).withStyle(ChatFormatting.AQUA);
+		Component timeText = Component.literal(Util.formatMinutesSeconds(secondsRemaining)).withStyle(ChatFormatting.AQUA);
 		Component gameNameText = game.getDefinition().getName().copy().withStyle(ChatFormatting.AQUA);
 
 		return timerBarText.apply(Map.of("time", timeText, "game", gameNameText));

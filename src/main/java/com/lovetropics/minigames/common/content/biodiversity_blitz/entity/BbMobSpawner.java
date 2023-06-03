@@ -1,6 +1,7 @@
 package com.lovetropics.minigames.common.content.biodiversity_blitz.entity;
 
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.Plot;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
@@ -16,7 +17,7 @@ import java.util.Set;
 import java.util.WeakHashMap;
 
 public final class BbMobSpawner {
-    public static Set<Entity> spawnWaveEntities(ServerLevel world, Random random, Plot plot, int count, int waveIndex, WaveSelector waveSelector) {
+    public static Set<Entity> spawnWaveEntities(ServerLevel world, RandomSource random, Plot plot, int count, int waveIndex, WaveSelector waveSelector) {
         Set<Entity> entities = Collections.newSetFromMap(new WeakHashMap<>());
         PlotWaveState waveState = plot.waveState;
 
@@ -35,7 +36,7 @@ public final class BbMobSpawner {
                 waveState.didCreeperSpawnLastWave = true;
             }
 
-            BlockPos pos = plot.mobSpawn.sample(random);
+            BlockPos pos = plot.mobSpawn.sample(new Random(random.nextLong()));
             Direction direction = plot.forward.getOpposite();
             entity.moveTo(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5, direction.toYRot(), 0);
 
@@ -48,7 +49,7 @@ public final class BbMobSpawner {
     }
 
     // TODO: data-drive, more entity types & getting harder as time goes on
-    public static Mob selectEntityForWave(Random random, Level world, Plot plot, int waveIndex) {
+    public static Mob selectEntityForWave(RandomSource random, Level world, Plot plot, int waveIndex) {
         PlotWaveState waveState = plot.waveState;
         if (!waveState.didForcedCreeperSpawn && plot.nextCurrencyIncrement >= 14) {
             waveState.didForcedCreeperSpawn = true;
@@ -69,6 +70,6 @@ public final class BbMobSpawner {
 
     @FunctionalInterface
     public interface WaveSelector {
-        Mob selectEntityForWave(Random random, Level world, Plot plot, int waveIndex);
+        Mob selectEntityForWave(RandomSource random, Level world, Plot plot, int waveIndex);
     }
 }

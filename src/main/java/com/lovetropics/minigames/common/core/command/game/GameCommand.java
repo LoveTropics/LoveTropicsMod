@@ -5,7 +5,7 @@ import com.mojang.brigadier.Command;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.Component;
 
 /**
  * Helper class for minigame commands.
@@ -26,7 +26,7 @@ public class GameCommand {
             throw e;
         } catch (Exception e) {
             e.printStackTrace();
-            source.sendFailure(new TextComponent(e.toString()));
+            source.sendFailure(Component.literal(e.toString()));
             return 0;
         }
 

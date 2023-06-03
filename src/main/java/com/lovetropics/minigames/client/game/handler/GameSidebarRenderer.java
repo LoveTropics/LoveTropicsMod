@@ -12,7 +12,7 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.network.chat.Component;
 import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.RenderGameOverlayEvent;
+import net.minecraftforge.client.event.CustomizeGuiOverlayEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
@@ -26,18 +26,14 @@ public final class GameSidebarRenderer {
 	private static final int MARGIN = 1;
 
 	@SubscribeEvent
-	public static void renderGameOverlay(RenderGameOverlayEvent event) {
-		if (event.getType() != RenderGameOverlayEvent.ElementType.TEXT) {
-			return;
-		}
-
+	public static void renderGameOverlay(CustomizeGuiOverlayEvent.DebugText event) {
 		SidebarClientState sidebar = ClientGameStateManager.getOrNull(GameClientStateTypes.SIDEBAR);
 		if (sidebar != null) {
 			renderSidebar(event, sidebar);
 		}
 	}
 
-	private static void renderSidebar(RenderGameOverlayEvent event, SidebarClientState sidebar) {
+	private static void renderSidebar(CustomizeGuiOverlayEvent.DebugText event, SidebarClientState sidebar) {
 		Component title = sidebar.title();
 		List<Component> lines = sidebar.lines();
 
@@ -58,7 +54,7 @@ public final class GameSidebarRenderer {
 		int top = (screenHeight - height) / 2;
 		int bottom = top + height;
 
-		PoseStack poseStack = event.getMatrixStack();
+		PoseStack poseStack = event.getPoseStack();
 
 		int headerBottom = top + font.lineHeight + PADDING;
 		GuiComponent.fill(poseStack, left, top, right, headerBottom, options.getBackgroundColor(0.4f));

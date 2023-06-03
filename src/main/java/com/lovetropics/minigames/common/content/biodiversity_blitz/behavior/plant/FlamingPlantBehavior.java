@@ -11,6 +11,7 @@ import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.util.Util;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.core.particles.ParticleTypes;
@@ -42,7 +43,7 @@ public final class FlamingPlantBehavior implements IGameBehavior {
 
     private void tickPlants(Collection<ServerPlayer> player, Plot plot, List<Plant> plants) {
         long ticks = this.game.ticks();
-        Random random = this.game.getWorld().getRandom();
+        RandomSource random = this.game.getWorld().getRandom();
 
         if (ticks % 10 != 0) {
             return;

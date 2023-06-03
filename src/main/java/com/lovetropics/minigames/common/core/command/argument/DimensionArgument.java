@@ -9,14 +9,14 @@ import net.minecraft.commands.Commands;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.commands.arguments.ResourceLocationArgument;
 import net.minecraft.core.Registry;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.dimension.LevelStem;
 import net.minecraft.world.level.levelgen.WorldGenSettings;
 
 public final class DimensionArgument {
 	public static final DynamicCommandExceptionType DIMENSION_NOT_FOUND = new DynamicCommandExceptionType(arg ->
-			new TextComponent("Dimension does not exist with id: " + arg)
+			Component.literal("Dimension does not exist with id: " + arg)
 	);
 
     public static RequiredArgumentBuilder<CommandSourceStack, ResourceLocation> argument(String name) {

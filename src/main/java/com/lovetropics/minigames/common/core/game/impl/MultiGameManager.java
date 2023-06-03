@@ -253,7 +253,7 @@ public class MultiGameManager implements IGameManager {
 
 	@SubscribeEvent
 	public static void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
-		ServerPlayer player = (ServerPlayer) event.getPlayer();
+		ServerPlayer player = (ServerPlayer) event.getEntity();
 
 		for (GameLobby lobby : INSTANCE.lobbies) {
 			lobby.onPlayerLoggedIn(player);
@@ -269,7 +269,7 @@ public class MultiGameManager implements IGameManager {
 	 */
 	@SubscribeEvent
 	public static void onPlayerLoggedOut(PlayerEvent.PlayerLoggedOutEvent event) {
-		ServerPlayer player = (ServerPlayer) event.getPlayer();
+		ServerPlayer player = (ServerPlayer) event.getEntity();
 		for (GameLobby lobby : INSTANCE.lobbies) {
 			lobby.onPlayerLoggedOut(player);
 		}
@@ -301,7 +301,7 @@ public class MultiGameManager implements IGameManager {
 
 	@SubscribeEvent
 	public static void onPlayerChangedDimension(PlayerEvent.PlayerChangedDimensionEvent event) {
-		Player player = event.getPlayer();
+		Player player = event.getEntity();
 		if (player instanceof ServerPlayer) {
 			IGamePhase phase = INSTANCE.getGamePhaseFor(player);
 			if (phase == null) return;
