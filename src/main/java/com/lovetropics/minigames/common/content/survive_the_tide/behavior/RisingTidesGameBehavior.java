@@ -379,8 +379,7 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 
 				// Tell the client about the change
 				chunkProvider.blockChanged(worldPos);
-				// FIXES LIGHTING AT THE COST OF PERFORMANCE - TODO ask fry?
-				// chunkProvider.getLightManager().checkBlock(realPos);
+				chunkProvider.getLightEngine().checkBlock(worldPos);
 
 				updatedBlocks++;
 			}
