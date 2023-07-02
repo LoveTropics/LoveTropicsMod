@@ -1,7 +1,7 @@
 package com.lovetropics.minigames.common.core.integration.game_actions;
 
 import com.lovetropics.minigames.common.core.game.IGamePhase;
-import com.lovetropics.minigames.common.core.integration.GameInstanceTelemetry;
+import com.lovetropics.minigames.common.core.integration.GameInstanceIntegrations;
 import com.mojang.logging.LogUtils;
 import org.slf4j.Logger;
 
@@ -19,11 +19,11 @@ public final class GameActionHandler {
 	private static final Logger LOGGER = LogUtils.getLogger();
 
 	private final IGamePhase game;
-	private final GameInstanceTelemetry telemetry;
+	private final GameInstanceIntegrations integrations;
 	private final Map<GameActionType, ActionsQueue> queues = new EnumMap<>(GameActionType.class);
 
-	public GameActionHandler(IGamePhase game, GameInstanceTelemetry telemetry) {
-		this.telemetry = telemetry;
+	public GameActionHandler(IGamePhase game, GameInstanceIntegrations integrations) {
+		this.integrations = integrations;
 		this.game = game;
 	}
 
@@ -33,7 +33,7 @@ public final class GameActionHandler {
 				GameActionRequest request = queue.tryHandle(game, tick);
 				if (request != null) {
 					// If we resolved the action, send acknowledgement to the backend
-					telemetry.acknowledgeActionDelivery(request);
+					integrations.acknowledgeActionDelivery(request);
 				}
 			} catch (Exception e) {
 				LOGGER.error("Failed to resolve game action", e);

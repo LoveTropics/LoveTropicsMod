@@ -9,41 +9,41 @@ import com.lovetropics.minigames.common.core.game.behavior.event.GameLogicEvents
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.lovetropics.minigames.common.core.game.state.GameStateMap;
 import com.lovetropics.minigames.common.core.game.util.GameTexts;
-import com.lovetropics.minigames.common.core.integration.GameInstanceTelemetry;
-import com.lovetropics.minigames.common.core.integration.Telemetry;
+import com.lovetropics.minigames.common.core.integration.BackendIntegrations;
+import com.lovetropics.minigames.common.core.integration.GameInstanceIntegrations;
 import com.mojang.serialization.Codec;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public final class SetupTelemetryBehavior implements IGameBehavior {
-	public static final Codec<SetupTelemetryBehavior> CODEC = Codec.unit(SetupTelemetryBehavior::new);
+public final class SetupIntegrationsBehavior implements IGameBehavior {
+	public static final Codec<SetupIntegrationsBehavior> CODEC = Codec.unit(SetupIntegrationsBehavior::new);
 
-	private GameInstanceTelemetry telemetry;
+	private GameInstanceIntegrations integrations;
 
 	// TODO: we could potentially have state entries & the IGamePhase come through the constructor with codec hacks
 	@Override
 	public void registerState(IGamePhase game, GameStateMap phaseState, GameStateMap instanceState) {
 		if (game.getLobby().getMetadata().visibility().isFocusedLive()) {
-			if (!Telemetry.get().isConnected()) {
-				throw new GameException(GameTexts.Status.telemetryNotConnected());
+			if (!BackendIntegrations.get().isConnected()) {
+				throw new GameException(GameTexts.Status.integrationsNotConnected());
 			}
 
-			telemetry = instanceState.register(GameInstanceTelemetry.KEY, Telemetry.get().openGame(game));
+			integrations = instanceState.register(GameInstanceIntegrations.KEY, BackendIntegrations.get().openGame(game));
 		}
 	}
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
-		if (telemetry == null) {
+		if (integrations == null) {
 			return;
 		}
 
-		events.listen(GamePhaseEvents.START, () -> telemetry.start(events));
+		events.listen(GamePhaseEvents.START, () -> integrations.start(events));
 
 		AtomicBoolean finished = new AtomicBoolean();
 		events.listen(GameLogicEvents.GAME_OVER, () -> {
 			if (finished.compareAndSet(false, true)) {
-				telemetry.finish(game.getStatistics());
+				integrations.finish(game.getStatistics());
 			}
 		});
 
@@ -52,9 +52,9 @@ public final class SetupTelemetryBehavior implements IGameBehavior {
 				return;
 			}
 			if (reason == GameStopReason.finished()) {
-				telemetry.finish(game.getStatistics());
+				integrations.finish(game.getStatistics());
 			} else {
-				telemetry.cancel();
+				integrations.cancel();
 			}
 		});
 	}

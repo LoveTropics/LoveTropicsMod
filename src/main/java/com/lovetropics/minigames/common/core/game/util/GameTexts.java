@@ -213,7 +213,7 @@ public final class GameTexts {
 			static final String LOBBY_PAUSED = key("lobby_paused");
 			static final String LOBBY_STOPPED = key("lobby_stopped");
 
-			static final String TELEMETRY_NOT_CONNECTED = key("telemetry_warning");
+			static final String INTEGRATIONS_NOT_CONNECTED = key("integrations_not_connected");
 
 			static void collectTranslations(BiConsumer<String, String> consumer) {
 				consumer.accept(LOBBY_OPENED, "%s has opened for registration! %s to get a chance to play!");
@@ -229,7 +229,7 @@ public final class GameTexts {
 				consumer.accept(LOBBY_PAUSED, "Your current lobby has paused! You have been teleported to your last location.");
 				consumer.accept(LOBBY_STOPPED, "Your current lobby has stopped! You have been teleported to your last location.");
 
-				consumer.accept(TELEMETRY_NOT_CONNECTED, "Telemetry socket is not connected!");
+				consumer.accept(INTEGRATIONS_NOT_CONNECTED, "Integrations socket is not connected!");
 			}
 
 			static String key(String key) {
@@ -267,8 +267,8 @@ public final class GameTexts {
 			return formatNegative(Component.translatable(Keys.LEFT_GAME_DIMENSION));
 		}
 
-		public static MutableComponent telemetryNotConnected() {
-			return formatNegative(Component.translatable(Keys.TELEMETRY_NOT_CONNECTED));
+		public static MutableComponent integrationsNotConnected() {
+			return formatNegative(Component.translatable(Keys.INTEGRATIONS_NOT_CONNECTED));
 		}
 	}
 

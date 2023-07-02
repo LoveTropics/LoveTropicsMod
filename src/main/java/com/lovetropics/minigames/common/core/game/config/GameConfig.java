@@ -66,11 +66,11 @@ public final class GameConfig implements IGameDefinition {
 				phaseCodec.forGetter(c -> c.playing)
 		).apply(i, (backendIdOpt, statisticsKeyOpt, name, subtitleOpt, iconOpt, minimumParticipants, maximumParticipants, waitingOpt, active) -> {
 			ResourceLocation backendId = backendIdOpt.orElse(id);
-			String telemetryKey = statisticsKeyOpt.orElse(id.getPath());
+			String statisticsKey = statisticsKeyOpt.orElse(id.getPath());
 			Component subtitle = subtitleOpt.orElse(null);
 			ResourceLocation icon = iconOpt.orElse(null);
 			GamePhaseConfig waiting = waitingOpt.orElse(null);
-			return new GameConfig(id, backendId, telemetryKey, name, subtitle, icon, minimumParticipants, maximumParticipants, waiting, active);
+			return new GameConfig(id, backendId, statisticsKey, name, subtitle, icon, minimumParticipants, maximumParticipants, waiting, active);
 		}));
 	}
 

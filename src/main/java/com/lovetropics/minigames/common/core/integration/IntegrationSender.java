@@ -24,7 +24,7 @@ import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.util.function.Supplier;
 
-public interface TelemetrySender {
+public interface IntegrationSender {
 	Logger LOGGER = LogUtils.getLogger();
 
 	Gson GSON = new GsonBuilder()
@@ -32,14 +32,14 @@ public interface TelemetrySender {
 			.registerTypeAdapter(PlayerKey.class, PlayerKey.PROFILE_SERIALIZER)
 			.create();
 
-	static TelemetrySender open() {
-		ConfigLT.CategoryTelemetry telemetry = ConfigLT.TELEMETRY;
-		return new Http(telemetry.baseUrl::get, telemetry.authToken::get);
+	static IntegrationSender open() {
+		ConfigLT.CategoryIntegrations integrations = ConfigLT.INTEGRATIONS;
+		return new Http(integrations.baseUrl::get, integrations.authToken::get);
 	}
 
-	static TelemetrySender openPoll() {
-		ConfigLT.CategoryTelemetry telemetry = ConfigLT.TELEMETRY;
-		return new TelemetrySender.Http(() -> "https://polling.lovetropics.com", telemetry.authToken::get);
+	static IntegrationSender openPoll() {
+		ConfigLT.CategoryIntegrations integrations = ConfigLT.INTEGRATIONS;
+		return new IntegrationSender.Http(() -> "https://polling.lovetropics.com", integrations.authToken::get);
 	}
 
 	default boolean post(final String endpoint, final JsonElement body) {
@@ -50,7 +50,7 @@ public interface TelemetrySender {
 
 	JsonElement get(final String endpoint);
 
-	final class Http implements TelemetrySender {
+	final class Http implements IntegrationSender {
 		private static final HttpClient CLIENT = HttpClient.newBuilder().executor(Util.ioPool()).build();
 
 		private final Supplier<String> url;
@@ -123,7 +123,7 @@ public interface TelemetrySender {
 		}
 	}
 
-	final class Log implements TelemetrySender {
+	final class Log implements IntegrationSender {
 		public static final Log INSTANCE = new Log();
 
 		private static final Gson GSON = new GsonBuilder()
@@ -153,7 +153,7 @@ public interface TelemetrySender {
 		}
 	}
 
-	final class Void implements TelemetrySender {
+	final class Void implements IntegrationSender {
 		@Override
 		public boolean post(String endpoint, String body) {
 			return true;

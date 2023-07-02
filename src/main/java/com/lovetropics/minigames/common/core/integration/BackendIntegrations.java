@@ -27,34 +27,34 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
 @Mod.EventBusSubscriber(modid = Constants.MODID)
-public final class Telemetry {
-	private static final Supplier<Telemetry> INSTANCE = Suppliers.memoize(Telemetry::new);
+public final class BackendIntegrations {
+	private static final Supplier<BackendIntegrations> INSTANCE = Suppliers.memoize(BackendIntegrations::new);
 
-	private static final Logger LOGGER = LogManager.getLogger(Telemetry.class);
+	private static final Logger LOGGER = LogManager.getLogger(BackendIntegrations.class);
 
 	private static final int RETRY_DELAY_SECONDS = 30;
 	private static final int MAX_RETRIES = 5;
 
 	private static final ScheduledExecutorService EXECUTOR = Executors.newSingleThreadScheduledExecutor(
 			new ThreadFactoryBuilder()
-					.setNameFormat("lt-telemetry")
+					.setNameFormat("lt-integrations")
 					.setDaemon(true)
 					.build()
 	);
 
-	private final TelemetrySender sender = TelemetrySender.open();
-	private final TelemetrySender pollSender = TelemetrySender.openPoll();
+	private final IntegrationSender sender = IntegrationSender.open();
+	private final IntegrationSender pollSender = IntegrationSender.openPoll();
 
 	private final BackendProxy proxy;
 
-	private GameInstanceTelemetry liveInstance;
+	private GameInstanceIntegrations liveInstance;
 
-	private Telemetry() {
+	private BackendIntegrations() {
 		Supplier<URI> address = () -> {
-			ConfigLT.CategoryTelemetry telemetry = ConfigLT.TELEMETRY;
-			if (telemetry.isEnabled()) {
+			ConfigLT.CategoryIntegrations integrations = ConfigLT.INTEGRATIONS;
+			if (integrations.isEnabled()) {
 				try {
-					return new URI(telemetry.webSocketUrl.get());
+					return new URI(integrations.webSocketUrl.get());
 				} catch (URISyntaxException e) {
 					LOGGER.warn("Malformed URI", e);
 				}
@@ -75,17 +75,17 @@ public final class Telemetry {
 
 			@Override
 			public void acceptError(Throwable cause) {
-				LOGGER.error("Telemetry websocket closed with error", cause);
+				LOGGER.error("Integrations websocket closed with error", cause);
 			}
 
 			@Override
 			public void acceptClosed(int code, @Nullable String reason) {
-				LOGGER.error("Telemetry websocket closed with code: {} and reason: {}", code, reason);
+				LOGGER.error("Integrations websocket closed with code: {} and reason: {}", code, reason);
 			}
 		});
 	}
 
-	public static Telemetry get() {
+	public static BackendIntegrations get() {
 		return INSTANCE.get();
 	}
 
@@ -104,14 +104,14 @@ public final class Telemetry {
 	private void tick(MinecraftServer server) {
 		proxy.tick();
 
-		GameInstanceTelemetry instance = this.liveInstance;
+		GameInstanceIntegrations instance = this.liveInstance;
 		if (instance != null) {
 			instance.tick(server);
 		}
 	}
 
-	public GameInstanceTelemetry openGame(IGamePhase game) {
-		GameInstanceTelemetry instance = new GameInstanceTelemetry(game, this);
+	public GameInstanceIntegrations openGame(IGamePhase game) {
+		GameInstanceIntegrations instance = new GameInstanceIntegrations(game, this);
 		this.liveInstance = instance;
 		return instance;
 	}
@@ -162,7 +162,7 @@ public final class Telemetry {
 	}
 
 	private void handlePayload(JsonObject object, String type, String crud) {
-		GameInstanceTelemetry liveInstance = this.liveInstance;
+		GameInstanceIntegrations liveInstance = this.liveInstance;
 
 		// we can ignore the payload because we will request it again when a minigame starts
 		if (liveInstance == null) return;
@@ -174,17 +174,17 @@ public final class Telemetry {
 		return proxy.isConnected();
 	}
 
-	void closeInstance(GameInstanceTelemetry instance) {
+	void closeInstance(GameInstanceIntegrations instance) {
 		if (liveInstance == instance) {
 			liveInstance = null;
 		}
 	}
 
 	public void sendOpen() {
-		post(ConfigLT.TELEMETRY.worldLoadEndpoint.get(), "");
+		post(ConfigLT.INTEGRATIONS.worldLoadEndpoint.get(), "");
 	}
 
 	public void sendClose() {
-		post(ConfigLT.TELEMETRY.worldUnloadEndpoint.get(), "");
+		post(ConfigLT.INTEGRATIONS.worldUnloadEndpoint.get(), "");
 	}
 }

@@ -14,7 +14,7 @@ public class ConfigLT {
     private static final Builder COMMON_BUILDER = new Builder();
 
     public static final CategoryGeneral GENERAL = new CategoryGeneral();
-    public static final CategoryTelemetry TELEMETRY = new CategoryTelemetry();
+    public static final CategoryIntegrations INTEGRATIONS = new CategoryIntegrations();
 
     public static final class CategoryGeneral {
 
@@ -53,7 +53,7 @@ public class ConfigLT {
         }
     }
 
-    public static final class CategoryTelemetry {
+    public static final class CategoryIntegrations {
 
         public final ConfigValue<String> baseUrl;
         public final ConfigValue<String> worldLoadEndpoint;
@@ -67,7 +67,7 @@ public class ConfigLT {
         public final ConfigValue<String> authToken;
         public final ConfigValue<String> webSocketUrl;
 
-        private CategoryTelemetry() {
+        private CategoryIntegrations() {
             COMMON_BUILDER.comment("Used for the LoveTropics charity drive.").push("techStack");
 
             baseUrl = COMMON_BUILDER

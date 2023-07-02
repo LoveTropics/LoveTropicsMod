@@ -34,7 +34,7 @@ import com.lovetropics.minigames.common.core.game.client_state.GameClientStateTy
 import com.lovetropics.minigames.common.core.game.impl.GameEventDispatcher;
 import com.lovetropics.minigames.common.core.game.impl.MultiGameManager;
 import com.lovetropics.minigames.common.core.game.util.GameTexts;
-import com.lovetropics.minigames.common.core.integration.Telemetry;
+import com.lovetropics.minigames.common.core.integration.BackendIntegrations;
 import com.lovetropics.minigames.common.core.map.VoidChunkGenerator;
 import com.lovetropics.minigames.common.core.map.item.MapWorkspaceItems;
 import com.lovetropics.minigames.common.core.network.LoveTropicsNetwork;
@@ -192,11 +192,11 @@ public class LoveTropics {
     }
 
     private void onServerAboutToStart(final ServerAboutToStartEvent event) {
-        Telemetry.get().sendOpen();
+        BackendIntegrations.get().sendOpen();
     }
 
     private void onServerStopping(final ServerStoppingEvent event) {
-        Telemetry.get().sendClose();
+        BackendIntegrations.get().sendClose();
     }
 
     public static void onServerStoppingUnsafely(MinecraftServer server) {

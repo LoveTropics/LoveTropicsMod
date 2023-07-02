@@ -9,7 +9,7 @@ import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePackageEvents;
 import com.lovetropics.minigames.common.core.game.state.control.ControlCommand;
-import com.lovetropics.minigames.common.core.integration.GameInstanceTelemetry;
+import com.lovetropics.minigames.common.core.integration.GameInstanceIntegrations;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
@@ -44,7 +44,7 @@ public record PollFinalistsBehavior(String finalistsTag, String winnerTag, Strin
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) throws GameException {
-		GameInstanceTelemetry telemetry = game.getTelemetryOrThrow();
+		GameInstanceIntegrations integrations = game.getIntegrationsOrThrow();
 		game.getControlCommands().add("start_runoff", ControlCommand.forAdmins(source -> {
 			try {
 				PlayerList players = source.getServer().getPlayerList();
@@ -54,7 +54,7 @@ public record PollFinalistsBehavior(String finalistsTag, String winnerTag, Strin
 						.map(p -> p.getGameProfile().getName())
 						.toArray(String[]::new);
 				ObjectArrays.shuffle(finalists, RANDOM);
-				telemetry.createPoll("Choose the best build!", pollDuration, finalists);
+				integrations.createPoll("Choose the best build!", pollDuration, finalists);
 			} catch (Exception e) {
 				LOGGER.error("Failed to start runoff:", e);
 			}

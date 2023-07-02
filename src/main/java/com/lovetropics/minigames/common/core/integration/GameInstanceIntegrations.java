@@ -26,11 +26,11 @@ import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 
-public final class GameInstanceTelemetry implements IGameState {
-	public static final GameStateKey<GameInstanceTelemetry> KEY = GameStateKey.create("Game Telemetry");
+public final class GameInstanceIntegrations implements IGameState {
+	public static final GameStateKey<GameInstanceIntegrations> KEY = GameStateKey.create("Game Integrations");
 
 	private final IGamePhase game;
-	private final Telemetry telemetry;
+	private final BackendIntegrations integrations;
 
 	private final PlayerKey initiator;
 
@@ -38,9 +38,9 @@ public final class GameInstanceTelemetry implements IGameState {
 
 	private boolean closed;
 
-	public GameInstanceTelemetry(IGamePhase game, Telemetry telemetry) {
+	public GameInstanceIntegrations(IGamePhase game, BackendIntegrations integrations) {
 		this.game = game;
-		this.telemetry = telemetry;
+		this.integrations = integrations;
 		this.initiator = game.getInitiator();
 
 		this.actions = new GameActionHandler(this.game, this);
@@ -54,7 +54,7 @@ public final class GameInstanceTelemetry implements IGameState {
 		JsonObject payload = new JsonObject();
 		payload.add("initiator", initiator.serializeProfile());
 		payload.add("participants", serializeParticipantsArray());
-		postImportant(ConfigLT.TELEMETRY.minigameStartEndpoint.get(), payload);
+		postImportant(ConfigLT.INTEGRATIONS.minigameStartEndpoint.get(), payload);
 
 		events.listen(GamePlayerEvents.JOIN, (p) -> sendParticipantsList());
 		events.listen(GamePlayerEvents.LEAVE, (p) -> sendParticipantsList());
@@ -68,13 +68,13 @@ public final class GameInstanceTelemetry implements IGameState {
 		payload.add("statistics", statistics.serialize());
 		payload.add("participants", serializeParticipantsArray());
 
-		postImportant(ConfigLT.TELEMETRY.minigameEndEndpoint.get(), payload);
+		postImportant(ConfigLT.INTEGRATIONS.minigameEndEndpoint.get(), payload);
 
 		close();
 	}
 
 	public void cancel() {
-		postImportant(ConfigLT.TELEMETRY.minigameCancelEndpoint.get(), new JsonObject());
+		postImportant(ConfigLT.INTEGRATIONS.minigameCancelEndpoint.get(), new JsonObject());
 		close();
 	}
 
@@ -83,7 +83,7 @@ public final class GameInstanceTelemetry implements IGameState {
 		object.addProperty("request", request.type().getId());
 		object.addProperty("uuid", request.uuid().toString());
 
-		telemetry.postAndRetry(ConfigLT.TELEMETRY.actionResolvedEndpoint.get(), object);
+		integrations.postAndRetry(ConfigLT.INTEGRATIONS.actionResolvedEndpoint.get(), object);
 	}
 
 	public void createPoll(String title, String duration, String... options) {
@@ -99,14 +99,14 @@ public final class GameInstanceTelemetry implements IGameState {
 			array.add(option);
 		}
 		object.add("options", array);
-		telemetry.postPolling("polls/add", object);
+		integrations.postPolling("polls/add", object);
 	}
 
 	private void sendParticipantsList() {
 		JsonObject payload = new JsonObject();
 		payload.add("participants", serializeParticipantsArray());
 
-		post(ConfigLT.TELEMETRY.minigamePlayerUpdateEndpoint.get(), payload);
+		post(ConfigLT.INTEGRATIONS.minigamePlayerUpdateEndpoint.get(), payload);
 	}
 
 	private JsonArray serializeParticipantsArray() {
@@ -144,15 +144,15 @@ public final class GameInstanceTelemetry implements IGameState {
 		payload.add("minigame", game);
 
 		if (important) {
-			telemetry.postAndRetry(endpoint, payload);
+			integrations.postAndRetry(endpoint, payload);
 		} else {
-			telemetry.post(endpoint, payload);
+			integrations.post(endpoint, payload);
 		}
 	}
 
 	private void close() {
 		closed = true;
-		telemetry.closeInstance(this);
+		integrations.closeInstance(this);
 	}
 
 	void tick(MinecraftServer server) {

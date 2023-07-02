@@ -17,7 +17,7 @@ import com.lovetropics.minigames.common.core.game.behavior.instances.PositionPla
 import com.lovetropics.minigames.common.core.game.behavior.instances.ProgressBarBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.SetGameClientStateBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.SetGameTypesBehavior;
-import com.lovetropics.minigames.common.core.game.behavior.instances.SetupTelemetryBehavior;
+import com.lovetropics.minigames.common.core.game.behavior.instances.SetupIntegrationsBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.SpectatorChaseBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.TimedGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.TipsAndTricksBehavior;
@@ -199,7 +199,7 @@ public class GameBehaviorTypes {
 	public static final GameBehaviorEntry<DamagePlayerAction> DAMAGE_PLAYER = register("damage_player", DamagePlayerAction.CODEC);
 	public static final GameBehaviorEntry<SpectatorActivityAction> SPECTATOR_ACTIVITY = register("spectator_activity", SpectatorActivityAction.CODEC);
 
-	public static final GameBehaviorEntry<SetupTelemetryBehavior> SETUP_TELEMETRY = register("setup_telemetry", SetupTelemetryBehavior.CODEC);
+	public static final GameBehaviorEntry<SetupIntegrationsBehavior> SETUP_INTEGRATIONS = register("setup_integrations", SetupIntegrationsBehavior.CODEC);
 	public static final GameBehaviorEntry<AssignPlayerRolesBehavior> ASSIGN_PLAYER_ROLES = register("assign_player_roles", AssignPlayerRolesBehavior.CODEC);
 	public static final GameBehaviorEntry<JoinLateWithRoleBehavior> JOIN_LATE_WITH_ROLE = register("join_late_with_role", JoinLateWithRoleBehavior.CODEC);
 	public static final GameBehaviorEntry<DebugModeBehavior> DEBUG_MODE = register("debug_mode", DebugModeBehavior.CODEC);

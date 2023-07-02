@@ -29,7 +29,7 @@ public interface IGameDefinition {
 	 * An identifier for telemetry usage, so that variants of games can share
 	 * statistics. Defaults to the ID if not set in the JSON.
 	 *
-	 * @return The telemetry key for this minigame.
+	 * @return The statistics key for this minigame.
 	 */
 	default String getStatisticsKey() {
 		return getId().getPath();
