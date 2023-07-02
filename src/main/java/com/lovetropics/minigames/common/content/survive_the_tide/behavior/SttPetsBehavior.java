@@ -206,7 +206,7 @@ public final class SttPetsBehavior implements IGameBehavior {
 
 			this.attackCooldown = ATTACK_COOLDOWN;
 
-			DamageSource source = DamageSource.mobAttack(this.entity);
+			DamageSource source = target.damageSources().mobAttack(this.entity);
 			if (target.hurt(source, this.config.attackDamage)) {
 				this.entity.setLastHurtMob(target);
 			}
@@ -239,7 +239,7 @@ public final class SttPetsBehavior implements IGameBehavior {
 		}
 
 		void remove() {
-			this.entity.hurt(DamageSource.OUT_OF_WORLD, Float.MAX_VALUE);
+			this.entity.hurt(entity.damageSources().fellOutOfWorld(), Float.MAX_VALUE);
 		}
 	}
 }

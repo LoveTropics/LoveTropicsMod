@@ -20,6 +20,7 @@ import com.lovetropics.minigames.common.core.game.state.team.TeamState;
 import com.lovetropics.minigames.common.core.game.util.PlayerSnapshot;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -35,7 +36,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.List;
-import java.util.Random;
 
 // TODO: clean up and split up
 public final class HideAndSeekBehavior implements IGameBehavior {
@@ -120,7 +120,7 @@ public final class HideAndSeekBehavior implements IGameBehavior {
 	}
 
 	private void spawnPlayer(ServerPlayer player) {
-		BlockPos spawnPos = spawnRegion.sample(new Random(player.getRandom().nextLong()));
+		BlockPos spawnPos = spawnRegion.sample(player.getRandom());
 		DimensionUtils.teleportPlayerNoPortal(player, game.getDimension(), spawnPos);
 	}
 
@@ -150,7 +150,7 @@ public final class HideAndSeekBehavior implements IGameBehavior {
 	}
 
 	private void setHider(ServerPlayer player) {
-		DisguiseType disguise = nextDisguiseType(player.getRandom());
+		DisguiseType disguise = nextDisguiseType(player.level().random);
 		ServerPlayerDisguises.set(player, disguise);
 	}
 
@@ -160,7 +160,7 @@ public final class HideAndSeekBehavior implements IGameBehavior {
 	}
 
 	private DisguiseType nextDisguiseType(RandomSource random) {
-		DisguiseType type = disguises.get(random.nextInt(disguises.size()));
+		DisguiseType type = Util.getRandom(disguises, random);
 		CompoundTag nbt = type.nbt != null ? type.nbt.copy() : new CompoundTag();
 		nbt.putBoolean("CustomNameVisible", false);
 		return DisguiseType.create(type.type, 1.0f, nbt, type.applyAttributes);
@@ -181,20 +181,10 @@ public final class HideAndSeekBehavior implements IGameBehavior {
 		this.spawnPlayer(player);
 	}
 
-	public static final class Creature {
-		public static final Codec<Creature> CODEC = RecordCodecBuilder.create(instance -> {
-			return instance.group(
-					ForgeRegistries.ENTITY_TYPES.getCodec().fieldOf("entity").forGetter(c -> c.entity),
-					MoreCodecs.arrayOrUnit(Codec.STRING, String[]::new).fieldOf("region").forGetter(c -> c.regionKeys)
-			).apply(instance, Creature::new);
-		});
-
-		final EntityType<?> entity;
-		final String[] regionKeys;
-
-		Creature(EntityType<?> entity, String[] regionKeys) {
-			this.entity = entity;
-			this.regionKeys = regionKeys;
-		}
+	public record Creature(EntityType<?> entity, String[] regionKeys) {
+		public static final Codec<Creature> CODEC = RecordCodecBuilder.create(i -> i.group(
+				ForgeRegistries.ENTITY_TYPES.getCodec().fieldOf("entity").forGetter(c -> c.entity),
+				MoreCodecs.arrayOrUnit(Codec.STRING, String[]::new).fieldOf("region").forGetter(c -> c.regionKeys)
+		).apply(i, Creature::new));
 	}
 }

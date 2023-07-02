@@ -13,23 +13,26 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.item.ItemStack;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+import java.util.function.Consumer;
+
 @Mixin(EntityType.class)
 public class EntityTypeMixin<T extends Entity> {
 	@Inject(
-			method = "spawn(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/nbt/CompoundTag;Lnet/minecraft/network/chat/Component;Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/entity/MobSpawnType;ZZ)Lnet/minecraft/world/entity/Entity;",
+			method = "spawn(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/entity/MobSpawnType;ZZ)Lnet/minecraft/world/entity/Entity;",
 			at = @At(value = "RETURN")
 	)
-	private void spawnEntity(ServerLevel world, CompoundTag nbt, Component customName, Player player, BlockPos pos, MobSpawnType reason, boolean p_220342_7_, boolean p_220342_8_, CallbackInfoReturnable<T> ci) {
+	private void spawnEntity(ServerLevel level, ItemStack stack, Player player, BlockPos pos, MobSpawnType spawnType, boolean shouldOffsetY, boolean shouldOffsetYMore, CallbackInfoReturnable<T> ci) {
 		T entity = ci.getReturnValue();
 		if (entity instanceof LivingEntity) {
 			IGamePhase game = IGameManager.get().getGamePhaseFor(entity);
 			if (game != null) {
-				game.invoker(GameLivingEntityEvents.SPAWNED).onSpawn((LivingEntity) entity, reason, (ServerPlayer) player);
+				game.invoker(GameLivingEntityEvents.SPAWNED).onSpawn((LivingEntity) entity, spawnType, (ServerPlayer) player);
 			}
 		}
 	}

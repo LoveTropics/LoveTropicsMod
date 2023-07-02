@@ -7,25 +7,27 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiComponent;
-import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.ForgeHooksClient;
-import net.minecraftforge.client.event.RenderNameplateEvent;
+import net.minecraftforge.client.event.RenderNameTagEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
 @Mod.EventBusSubscriber(modid = Constants.MODID, value = Dist.CLIENT)
 public final class HealthTagRenderer  {
 	private static final Minecraft CLIENT = Minecraft.getInstance();
+	private static final ResourceLocation GUI_ICONS_TEXTURE = new ResourceLocation("textures/gui/icons.png");
 
 	@SubscribeEvent
-	public static void onRenderPlayerName(RenderNameplateEvent event) {
+	public static void onRenderPlayerName(RenderNameTagEvent event) {
 		if (event.getEntity() instanceof Player player && !player.isCreative() && !player.isSpectator()) {
 			if (player == CLIENT.cameraEntity || !Minecraft.renderNames()) {
 				return;
 			}
+
 
 			double distanceSq = CLIENT.getEntityRenderDispatcher().distanceToSqr(player);
 			if (!ForgeHooksClient.isNameplateInRenderDistance(player, distanceSq) || player.isDiscrete()) {
@@ -52,21 +54,23 @@ public final class HealthTagRenderer  {
 		poseStack.mulPose(CLIENT.getEntityRenderDispatcher().cameraOrientation());
 		poseStack.scale(-textScale / 16.0f, -textScale / 16.0f, textScale / 16.0f);
 
+		final GuiGraphics graphics = new GuiGraphics(CLIENT, CLIENT.renderBuffers().bufferSource());
+		graphics.pose().mulPoseMatrix(poseStack.last().pose());
+
 		float textX = (left + iconSize) * textScale;
 		float textY = -font.lineHeight / 2.0F;
-		font.draw(poseStack, healthText, textX, textY, 0xFFFFFFFF);
+		graphics.drawString(font, healthText, textX, textY, 0xFFFFFFFF, false);
 
-		RenderSystem.enableTexture();
 		RenderSystem.enableDepthTest();
 
 		poseStack.pushPose();
 		poseStack.translate(left - 4.5f, -4.5F, 0.0F);
-		RenderSystem.setShaderTexture(0, GuiComponent.GUI_ICONS_LOCATION);
-		RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
-		GuiComponent.blit(poseStack, 0, 0, 16, 0, 9, 9, 256, 256);
-		GuiComponent.blit(poseStack, 0, 0, 52, 0, 9, 9, 256, 256);
+		graphics.blit(GUI_ICONS_TEXTURE, 0, 0, 16, 0, 9, 9, 256, 256);
+		graphics.blit(GUI_ICONS_TEXTURE, 0, 0, 52, 0, 9, 9, 256, 256);
 		poseStack.popPose();
 
 		poseStack.popPose();
+
+		graphics.flush();
 	}
 }

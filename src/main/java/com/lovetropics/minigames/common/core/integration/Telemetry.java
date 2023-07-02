@@ -1,5 +1,6 @@
 package com.lovetropics.minigames.common.core.integration;
 
+import com.google.common.base.Suppliers;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -27,7 +28,7 @@ import java.util.function.Supplier;
 
 @Mod.EventBusSubscriber(modid = Constants.MODID)
 public final class Telemetry {
-	public static final Telemetry INSTANCE = new Telemetry();
+	private static final Supplier<Telemetry> INSTANCE = Suppliers.memoize(Telemetry::new);
 
 	private static final Logger LOGGER = LogManager.getLogger(Telemetry.class);
 
@@ -84,6 +85,10 @@ public final class Telemetry {
 		});
 	}
 
+	public static Telemetry get() {
+		return INSTANCE.get();
+	}
+
 	@SubscribeEvent
 	public static void tick(TickEvent.ServerTickEvent event) {
 		final MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
@@ -92,7 +97,7 @@ public final class Telemetry {
 		}
 
 		if (event.phase == TickEvent.Phase.END) {
-			Telemetry.INSTANCE.tick(server);
+			get().tick(server);
 		}
 	}
 

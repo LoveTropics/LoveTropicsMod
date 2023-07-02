@@ -18,11 +18,8 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
-import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.network.chat.ChatType;
-import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
@@ -105,14 +102,14 @@ public class BbTutorialAction implements IGameBehavior {
             actions.put(ticks, () -> {
                 BlockPos pos = sample.relative(playerPlot.forward, 12);
 
-                Mob entity = new BbTutorialHuskEntity(EntityType.HUSK, target.level, playerPlot);
+                Mob entity = new BbTutorialHuskEntity(EntityType.HUSK, target.level(), playerPlot);
 
                 Direction direction = playerPlot.forward.getOpposite();
                 entity.moveTo(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5, direction.toYRot(), 0);
 
-                target.level.addFreshEntity(entity);
+                target.level().addFreshEntity(entity);
 
-                entity.finalizeSpawn(target.getLevel(), target.level.getCurrentDifficultyAt(pos), MobSpawnType.MOB_SUMMONED, null, null);
+                entity.finalizeSpawn(target.serverLevel(), target.level().getCurrentDifficultyAt(pos), MobSpawnType.MOB_SUMMONED, null, null);
             });
 
             ticks += 240;
@@ -166,7 +163,7 @@ public class BbTutorialAction implements IGameBehavior {
         // Farmland row
         for (int i = -1; i < 13; i++) {
             BlockPos pos = sample.relative(playerPlot.forward, -5).relative(cw, i - 5);
-            if (playerPlot.plantBounds.contains(pos) && target.level.getBlockState(pos.below()).getBlock() == Blocks.GRASS_BLOCK) {
+            if (playerPlot.plantBounds.contains(pos) && target.level().getBlockState(pos.below()).getBlock() == Blocks.GRASS_BLOCK) {
                 actions.put(ticks, new SetFarmland(target, pos.below()));
                 ticks += 5;
             }
@@ -175,7 +172,7 @@ public class BbTutorialAction implements IGameBehavior {
         // Farmland row
         for (int i = -1; i < 13; i++) {
             BlockPos pos = sample.relative(playerPlot.forward, -4).relative(cw, i - 5);
-            if (playerPlot.plantBounds.contains(pos) && target.level.getBlockState(pos.below()).getBlock() == Blocks.GRASS_BLOCK) {
+            if (playerPlot.plantBounds.contains(pos) && target.level().getBlockState(pos.below()).getBlock() == Blocks.GRASS_BLOCK) {
                 actions.put(ticks, new SetFarmland(target, pos.below()));
                 ticks += 5;
             }
@@ -237,7 +234,7 @@ public class BbTutorialAction implements IGameBehavior {
         for (int i = -1; i < 13; i++) {
             BlockPos pos = sample.relative(playerPlot.forward, -4).relative(cw, i - 5);
             // how does this work??? there's farmland here!! but removing this breaks it?!?!
-            if (playerPlot.plantBounds.contains(pos) && target.level.getBlockState(pos.below()).getBlock() == Blocks.GRASS_BLOCK) {
+            if (playerPlot.plantBounds.contains(pos) && target.level().getBlockState(pos.below()).getBlock() == Blocks.GRASS_BLOCK) {
                 actions.put(ticks, new SetGrass(target, pos.below()));
                 ticks += 3;
             }
@@ -246,7 +243,7 @@ public class BbTutorialAction implements IGameBehavior {
         // Farmland row
         for (int i = -1; i < 13; i++) {
             BlockPos pos = sample.relative(playerPlot.forward, -5).relative(cw, i - 5);
-            if (playerPlot.plantBounds.contains(pos) && target.level.getBlockState(pos.below()).getBlock() == Blocks.GRASS_BLOCK) {
+            if (playerPlot.plantBounds.contains(pos) && target.level().getBlockState(pos.below()).getBlock() == Blocks.GRASS_BLOCK) {
                 actions.put(ticks, new SetGrass(target, pos.below()));
                 ticks += 3;
             }
@@ -281,21 +278,23 @@ public class BbTutorialAction implements IGameBehavior {
     }
 
     private boolean isNotGrass(ServerPlayer target, BlockPos pos) {
-        BlockState grass = target.level.getBlockState(pos.below());
+        BlockState grass = target.level().getBlockState(pos.below());
         return !grass.is(BlockTags.DIRT) && !grass.is(Blocks.FARMLAND);
     }
 
     public record SetPlant(IGamePhase game, ServerPlayer target, Plot playerPlot, BlockPos sample, PlantType type, SoundEvent sound) implements Runnable {
+        @Override
         public void run() {
             Plant plant = game.invoker(BbEvents.PLACE_PLANT).placePlant(target, playerPlot, sample, type).getObject();
             if (plant != null) {
-                target.level.levelEvent(null, LevelEvent.PARTICLES_DESTROY_BLOCK, sample, Block.getId(target.level.getBlockState(plant.coverage().getOrigin())));
-                target.level.playSound(null, sample, sound, SoundSource.BLOCKS, 0.4F, 1.0F);
+                target.level().levelEvent(null, LevelEvent.PARTICLES_DESTROY_BLOCK, sample, Block.getId(target.level().getBlockState(plant.coverage().getOrigin())));
+                target.level().playSound(null, sample, sound, SoundSource.BLOCKS, 0.4F, 1.0F);
             }
         }
     }
 
     public record BreakPlant(IGamePhase game, ServerPlayer target, Plot playerPlot, BlockPos sample, PlantType type, SoundEvent sound) implements Runnable {
+        @Override
         public void run() {
             Plant plant = playerPlot.plants.getPlantAt(sample);
             if (plant == null) {
@@ -304,23 +303,25 @@ public class BbTutorialAction implements IGameBehavior {
 
             boolean placed = game.invoker(BbEvents.BREAK_PLANT).breakPlant(target, playerPlot, plant);
             if (placed) {
-                target.level.levelEvent(null, LevelEvent.PARTICLES_DESTROY_BLOCK, sample, Block.getId(target.level.getBlockState(plant.coverage().getOrigin())));
-                target.level.playSound(null, sample, sound, SoundSource.BLOCKS, 0.4F, 1.0F);
+                target.level().levelEvent(null, LevelEvent.PARTICLES_DESTROY_BLOCK, sample, Block.getId(target.level().getBlockState(plant.coverage().getOrigin())));
+                target.level().playSound(null, sample, sound, SoundSource.BLOCKS, 0.4F, 1.0F);
             }
         }
     }
 
     public record SetFarmland(ServerPlayer target, BlockPos pos) implements Runnable {
+        @Override
         public void run() {
-            target.level.setBlock(pos, Blocks.FARMLAND.defaultBlockState().setValue(FarmBlock.MOISTURE, 7), 3);
-            target.level.playSound(null, pos, SoundEvents.HOE_TILL, SoundSource.BLOCKS, 1.0F, 1.0F);
+            target.level().setBlock(pos, Blocks.FARMLAND.defaultBlockState().setValue(FarmBlock.MOISTURE, 7), 3);
+            target.level().playSound(null, pos, SoundEvents.HOE_TILL, SoundSource.BLOCKS, 1.0F, 1.0F);
         }
     }
 
     public record SetGrass(ServerPlayer target, BlockPos pos) implements Runnable {
+        @Override
         public void run() {
-            target.level.setBlock(pos, Blocks.GRASS_BLOCK.defaultBlockState(), 3);
-            target.level.playSound(null, pos, SoundEvents.HOE_TILL, SoundSource.BLOCKS, 1.0F, 1.0F);
+            target.level().setBlock(pos, Blocks.GRASS_BLOCK.defaultBlockState(), 3);
+            target.level().playSound(null, pos, SoundEvents.HOE_TILL, SoundSource.BLOCKS, 1.0F, 1.0F);
         }
     }
 }

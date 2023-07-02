@@ -1,9 +1,9 @@
 package com.lovetropics.minigames.common.content.biodiversity_blitz.entity.ai;
 
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.entity.PathfinderMob;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
 
 public final class MoveToPumpkinGoal extends MoveToBlockGoal {
     public MoveToPumpkinGoal(PathfinderMob creature) {
@@ -12,7 +12,7 @@ public final class MoveToPumpkinGoal extends MoveToBlockGoal {
 
     @Override
     protected int getBlockPriority(BlockPos pos) {
-        BlockState state = mob.level.getBlockState(pos);
-        return (state.getBlock() == Blocks.PUMPKIN || state.getBlock() == Blocks.CARVED_PUMPKIN) ? 100 : 0;
+        BlockState state = mob.level().getBlockState(pos);
+        return state.is(Blocks.PUMPKIN) || state.is(Blocks.CARVED_PUMPKIN) ? 100 : 0;
     }
 }

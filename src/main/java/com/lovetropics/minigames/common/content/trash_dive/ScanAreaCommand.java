@@ -14,7 +14,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.ChunkPos;
@@ -31,14 +30,17 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.util.*;
+import java.util.ArrayDeque;
+import java.util.Deque;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 import static net.minecraft.commands.Commands.argument;
 import static net.minecraft.commands.Commands.literal;
 
 public class ScanAreaCommand {
-
-	private static final RegistryObject<Block> PURIFIED_SAND = RegistryObject.of(new ResourceLocation("tropicraft", "purified_sand"), ForgeRegistries.BLOCKS);
+	private static final RegistryObject<Block> PURIFIED_SAND = RegistryObject.create(new ResourceLocation("tropicraft", "purified_sand"), ForgeRegistries.BLOCKS);
 
 	private static final SimpleCommandExceptionType NO_WATER = new SimpleCommandExceptionType(
 			Component.translatable("commands.ltminigames.scan.nowater.fail"));
@@ -56,7 +58,7 @@ public class ScanAreaCommand {
 	}
 
 	private static int scanArea(CommandSourceStack source, String fileName) throws CommandSyntaxException {
-		BlockPos.MutableBlockPos pos = new BlockPos(source.getPosition()).mutable();
+		BlockPos.MutableBlockPos pos = BlockPos.containing(source.getPosition()).mutable();
 
 		ServerLevel world = source.getLevel();
 		while (pos.getY() >= world.getMinBuildHeight() && world.getBlockState(pos).getBlock() != Blocks.WATER) {
@@ -98,7 +100,7 @@ public class ScanAreaCommand {
 			}
 		}
 
-		source.sendSuccess(Component.literal("Found " + found.size() + " blocks"), true);
+		source.sendSuccess(() -> Component.literal("Found " + found.size() + " blocks"), true);
 
 		Path output = Paths.get("export", "scan_results", fileName + ".bin");
 
@@ -115,7 +117,7 @@ public class ScanAreaCommand {
 			throw WRITE_ERROR.create(e);
 		}
 
-		source.sendSuccess(Component.literal("Wrote " + buf.capacity() + " bytes to " + output), true);
+		source.sendSuccess(() -> Component.literal("Wrote " + buf.capacity() + " bytes to " + output), true);
 
 		return Command.SINGLE_SUCCESS;
 	}

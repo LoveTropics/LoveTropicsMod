@@ -6,8 +6,6 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 
-import java.util.Random;
-
 public final class BerriesPlantBehavior extends AgingPlantBehavior {
 	public static final Codec<BerriesPlantBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
 			Codec.INT.fieldOf("interval").forGetter(c -> c.interval)

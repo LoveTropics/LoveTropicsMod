@@ -24,11 +24,11 @@ public final class SetupTelemetryBehavior implements IGameBehavior {
 	@Override
 	public void registerState(IGamePhase game, GameStateMap phaseState, GameStateMap instanceState) {
 		if (game.getLobby().getMetadata().visibility().isFocusedLive()) {
-			if (!Telemetry.INSTANCE.isConnected()) {
+			if (!Telemetry.get().isConnected()) {
 				throw new GameException(GameTexts.Status.telemetryNotConnected());
 			}
 
-			telemetry = instanceState.register(GameInstanceTelemetry.KEY, Telemetry.INSTANCE.openGame(game));
+			telemetry = instanceState.register(GameInstanceTelemetry.KEY, Telemetry.get().openGame(game));
 		}
 	}
 

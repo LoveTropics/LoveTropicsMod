@@ -46,9 +46,6 @@ public class SetWorkspaceMessage {
 	}
 
 	public void handle(Supplier<NetworkEvent.Context> ctx) {
-		ctx.get().enqueueWork(() -> {
-			ClientMapWorkspace.INSTANCE.setRegions(client);
-		});
-		ctx.get().setPacketHandled(true);
+		ClientMapWorkspace.INSTANCE.setRegions(client);
 	}
 }

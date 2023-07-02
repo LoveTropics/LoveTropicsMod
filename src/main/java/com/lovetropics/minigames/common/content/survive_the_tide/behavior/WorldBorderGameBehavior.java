@@ -20,10 +20,8 @@ import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.levelgen.Heightmap;
 
 import java.util.ArrayList;
@@ -144,7 +142,7 @@ public class WorldBorderGameBehavior implements IGameBehavior {
 			//ignore Y val, only do X Z dist compare
 			double distanceSq = player.distanceToSqr(worldBorderCenter.getX(), player.getY(), worldBorderCenter.getZ());
 			if (isCollapsing || !(currentRadius < 0.0 || distanceSq < currentRadius * currentRadius)) {
-				player.hurt(DamageSource.explosion((LivingEntity) null), damageAmount);
+				player.hurt(player.damageSources().explosion(null, null), damageAmount);
 				player.addEffect(new MobEffectInstance(MobEffects.CONFUSION, 40, 0));
 			}
 		}

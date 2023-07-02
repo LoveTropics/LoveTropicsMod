@@ -2,30 +2,25 @@ package com.lovetropics.minigames.client.game.handler.spectate;
 
 import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.client.screen.ClientPlayerInfo;
-import com.lovetropics.minigames.client.screen.PlayerFaces;
 import com.mojang.authlib.GameProfile;
 import com.mojang.blaze3d.platform.InputConstants;
-import com.mojang.blaze3d.platform.Window;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
-
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiComponent;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.PlayerFaceRenderer;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextColor;
-import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.scores.PlayerTeam;
 import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.CustomizeGuiOverlayEvent;
 import net.minecraftforge.client.event.InputEvent;
-import net.minecraftforge.client.event.RenderGuiOverlayEvent;
+import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
+import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.lwjgl.glfw.GLFW;
@@ -184,34 +179,30 @@ public final class SpectatingUi {
 	}
 
 	@SubscribeEvent
-	public static void onRenderOverlay(CustomizeGuiOverlayEvent event) {
-		SpectatingSession session = ClientSpectatingManager.INSTANCE.session;
-		if (session == null) {
-			return;
-		}
-
-		Window window = event.getWindow();
-		session.ui.renderChasePlayerList(event.getPoseStack(), window);
+	public static void registerOverlayRenderer(RegisterGuiOverlaysEvent event) {
+		event.registerBelow(VanillaGuiOverlay.DEBUG_TEXT.id(), "minigame_spectator", (gui, graphics, partialTick, screenWidth, screenHeight) -> {
+			SpectatingSession session = ClientSpectatingManager.INSTANCE.session;
+			if (session != null) {
+				session.ui.renderChasePlayerList(graphics);
+			}
+		});
 	}
 
-	private void renderChasePlayerList(PoseStack transform, Window window) {
-		RenderSystem.enableBlend();
-		RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-
+	private void renderChasePlayerList(GuiGraphics graphics) {
 		int viewStart = scrollViewStart();
 		int viewEnd = scrollViewEnd();
 		int width = Math.min(entries.size(), scrollViewSize()) * ENTRY_WIDTH;
-		int left = (window.getGuiScaledWidth() - width) / 2;
+		int left = (graphics.guiWidth() - width) / 2;
 		int right = left + width;
-		int bottom = window.getGuiScaledHeight();
+		int bottom = graphics.guiHeight();
 
 		Font font = CLIENT.font;
 		int textY = bottom - (ENTRY_HEIGHT + font.lineHeight) / 2;
 		if (viewStart > 0) {
-			font.drawShadow(transform, "<", left - font.width("<") - 2, textY, 0xffffffff);
+			graphics.drawString(font, "<", left - font.width("<") - 2, textY, 0xffffffff);
 		}
 		if (viewEnd < entries.size() - 1) {
-			font.drawShadow(transform, ">", right + 2, textY, 0xffffffff);
+			graphics.drawString(font, ">", right + 2, textY, 0xffffffff);
 		}
 
 		int x = left;
@@ -219,13 +210,13 @@ public final class SpectatingUi {
 			boolean selected = i == selectedEntryIndex;
 			boolean highlighted = i == highlightedEntryIndex;
 			Entry entry = entries.get(i);
-			entry.render(transform, x, bottom, selected, highlighted, events.get(entry.playerIcon));
+			entry.render(graphics, x, bottom, selected, highlighted, events.get(entry.playerIcon));
 			x += ENTRY_WIDTH;
 		}
 	}
 
-	public void onPlayerActivity(UUID player, TextColor style) {
-		events.put(player, new PlayerEvent(System.currentTimeMillis(), style));
+	public void onPlayerActivity(UUID player, int color) {
+		events.put(player, new PlayerEvent(System.currentTimeMillis(), color));
 	}
 
 	void updatePlayers(List<UUID> players) {
@@ -309,35 +300,36 @@ public final class SpectatingUi {
 		private static final int HIGHLIGHTED_OUTLINE_COLOR = 0xa0000000;
 		private static final int TAB_COLOR = 0xff404040;
 
-		void render(PoseStack transform, int left, int screenBottom, boolean selected, boolean highlighted, @Nullable PlayerEvent lastEvent) {
+		void render(GuiGraphics graphics, int left, int screenBottom, boolean selected, boolean highlighted, @Nullable PlayerEvent lastEvent) {
 			int top = screenBottom - (highlighted ? HIGHLIGHTED_ENTRY_HEIGHT : ENTRY_HEIGHT);
 			int bottom = top + ENTRY_HEIGHT;
 			int right = left + ENTRY_WIDTH;
 
 			if (highlighted || selected) {
-				GuiComponent.fill(transform, left, top, right, bottom, selected ? SELECTED_OUTLINE_COLOR : HIGHLIGHTED_OUTLINE_COLOR);
+				graphics.fill(left, top, right, bottom, selected ? SELECTED_OUTLINE_COLOR : HIGHLIGHTED_OUTLINE_COLOR);
 			}
 
 			int color = tagColor.getColor() != null ? tagColor.getColor() | 0xff000000 : 0xffa0a0a0;
-			GuiComponent.fill(transform, left, bottom - ENTRY_TAG_HEIGHT, right, bottom, color);
-			GuiComponent.fill(transform, left, bottom, right, screenBottom, TAB_COLOR);
+			graphics.fill(left, bottom - ENTRY_TAG_HEIGHT, right, bottom, color);
+			graphics.fill(left, bottom, right, screenBottom, TAB_COLOR);
 
-			PlayerFaces.render(playerIcon, transform, left + ENTRY_PADDING, top + ENTRY_PADDING, FACE_SIZE);
+			ResourceLocation skin = ClientPlayerInfo.getSkin(playerIcon);
+			PlayerFaceRenderer.draw(graphics, skin, left + ENTRY_PADDING, top + ENTRY_PADDING, FACE_SIZE);
 
 			long now = System.currentTimeMillis();
 			if (lastEvent != null && (now - lastEvent.time) <= 500) {
 				double fade = Mth.lerp((now - lastEvent.time) / 500.0d, .75d, 0d);
 				int fadeAlpha = (int) (fade * 255);
-				int colour = lastEvent.style.getValue() | (fadeAlpha << 24);
-				GuiComponent.fill(transform, left + ENTRY_PADDING, top + ENTRY_PADDING, right - ENTRY_PADDING, top + ENTRY_PADDING + FACE_SIZE, colour);
+				int colour = lastEvent.color | (fadeAlpha << 24);
+				graphics.fill(left + ENTRY_PADDING, top + ENTRY_PADDING, right - ENTRY_PADDING, top + ENTRY_PADDING + FACE_SIZE, colour);
 			}
 
 			if (highlighted) {
-				renderName(transform, left, top, selected);
+				renderName(graphics, left, top, selected);
 			}
 		}
 
-		private void renderName(PoseStack transform, int left, int top, boolean selected) {
+		private void renderName(GuiGraphics graphics, int left, int top, boolean selected) {
 			Font font = CLIENT.font;
 			Component name = nameSupplier.get();
 			if (!selected) {
@@ -345,10 +337,10 @@ public final class SpectatingUi {
 			}
 
 			int nameLeft = left + (ENTRY_WIDTH - font.width(name)) / 2;
-			font.drawShadow(transform, name, nameLeft, top - font.lineHeight - 1, 0xffffffff);
+			graphics.drawString(font, name, nameLeft, top - font.lineHeight - 1, 0xffffffff);
 		}
 	}
 
-	record PlayerEvent(long time, TextColor style) {
+	record PlayerEvent(long time, int color) {
 	}
 }

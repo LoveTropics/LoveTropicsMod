@@ -1,6 +1,5 @@
 package com.lovetropics.minigames.client.toast;
 
-import net.minecraft.client.GameNarrator;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 

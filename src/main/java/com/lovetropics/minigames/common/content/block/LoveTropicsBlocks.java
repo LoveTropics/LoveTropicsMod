@@ -4,13 +4,14 @@ import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.common.content.block.TrashBlock.Attachment;
 import com.lovetropics.minigames.common.util.registry.LoveTropicsRegistrate;
 import com.tterrag.registrate.util.entry.BlockEntry;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.LadderBlock;
-import net.minecraft.world.level.material.Material;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.world.item.ItemDisplayContext;
+import net.minecraft.world.level.block.LadderBlock;
+import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.material.MapColor;
+import net.minecraft.world.level.material.PushReaction;
 import net.minecraftforge.client.model.generators.ConfiguredModel;
-import net.minecraftforge.client.model.generators.ModelBuilder.Perspective;
 
 import java.util.Arrays;
 import java.util.EnumMap;
@@ -24,7 +25,7 @@ public class LoveTropicsBlocks {
 
     public static final Map<TrashType, BlockEntry<TrashBlock>> TRASH = Arrays.<TrashType>stream(TrashType.values())
             .collect(Collectors.toMap(Function.identity(), t -> REGISTRATE.block(t.getId(), p -> new TrashBlock(t, p))
-                    .properties(p -> Block.Properties.of(Material.PLANT).noCollission())
+                    .properties(p -> p.mapColor(MapColor.PLANT).pushReaction(PushReaction.DESTROY).noCollission().offsetType(BlockBehaviour.OffsetType.XZ))
                     .addLayer(() -> RenderType::cutout)
                     .blockstate((ctx, prov) -> prov.getVariantBuilder(t.get()) // TODO make horizontalBlock etc support this case
                             .forAllStatesExcept(state -> ConfiguredModel.builder()
@@ -34,26 +35,26 @@ public class LoveTropicsBlocks {
                                     .build(), LadderBlock.WATERLOGGED))
                     .item()
                         .model((ctx, prov) -> prov.blockItem(t).transforms()
-                                .transform(Perspective.GUI)
+                                .transform(ItemDisplayContext.GUI)
                                     .rotation(30, 225, 0)
                                     .translation(0, t.getModelYOffset(), 0)
                                     .scale(t.getModelScale(0.625f))
                                     .end()
-                                .transform(Perspective.GROUND)
+                                .transform(ItemDisplayContext.GROUND)
                                     .translation(0, t.getModelYOffset(), 0)
                                     .scale(t.getModelScale(0.5f))
                                     .end()
-                                .transform(Perspective.FIRSTPERSON_RIGHT)
+                                .transform(ItemDisplayContext.FIRST_PERSON_RIGHT_HAND)
                                     .rotation(0, 45, 0)
                                     .translation(0, t.getModelYOffset(), 0)
                                     .scale(t.getModelScale(0.4f))
                                     .end()
-                                .transform(Perspective.FIRSTPERSON_LEFT)
+                                .transform(ItemDisplayContext.FIRST_PERSON_LEFT_HAND)
                                     .rotation(0, 255, 0)
                                     .translation(0, t.getModelYOffset(), 0)
                                     .scale(t.getModelScale(0.4f))
                                     .end()
-                                .transform(Perspective.THIRDPERSON_RIGHT)
+                                .transform(ItemDisplayContext.THIRD_PERSON_RIGHT_HAND)
                                     .rotation(75, 45, 0)
                                     .translation(0, 2.5f, t.getModelYOffset())
                                     .scale(t.getModelScale(0.375f))

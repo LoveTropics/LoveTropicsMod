@@ -23,7 +23,7 @@ public class SimpleRegistryMixin<T> implements RegistryEntryRemover<T> {
     @Shadow @Final private Map<ResourceKey<T>, Holder.Reference<T>> byKey;
     @Shadow @Final private Map<T, Holder.Reference<T>> byValue;
     @Shadow @Final private Map<T, Lifecycle> lifecycles;
-    @Shadow private Map<T, Holder.Reference<T>> intrusiveHolderCache;
+    @Shadow protected Map<T, Holder.Reference<T>> unregisteredIntrusiveHolders;
     @Shadow private List<Holder.Reference<T>> holdersInOrder;
 
     @Override
@@ -40,8 +40,8 @@ public class SimpleRegistryMixin<T> implements RegistryEntryRemover<T> {
         this.byKey.remove(key);
         this.byValue.remove(entry);
         this.lifecycles.remove(entry);
-        if (this.intrusiveHolderCache != null) {
-            this.intrusiveHolderCache.remove(entry);
+        if (this.unregisteredIntrusiveHolders != null) {
+            this.unregisteredIntrusiveHolders.remove(entry);
         }
         if (this.holdersInOrder != null) {
             this.holdersInOrder.set(rawId, null);

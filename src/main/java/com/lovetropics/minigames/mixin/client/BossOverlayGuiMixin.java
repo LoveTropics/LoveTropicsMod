@@ -12,12 +12,12 @@ import org.spongepowered.asm.mixin.injection.ModifyArg;
 @Mixin(BossHealthOverlay.class)
 public class BossOverlayGuiMixin {
 	@ModifyArg(
-			method = "render",
+			method = "drawBar(Lnet/minecraft/client/gui/GuiGraphics;IILnet/minecraft/world/BossEvent;II)V",
 			at = @At(
 					value = "INVOKE",
-					target = "Lcom/mojang/blaze3d/systems/RenderSystem;setShaderTexture(ILnet/minecraft/resources/ResourceLocation;)V"
+					target = "Lnet/minecraft/client/gui/GuiGraphics;blit(Lnet/minecraft/resources/ResourceLocation;IIIIII)V"
 			),
-			index = 1
+			index = 0
 	)
 	public ResourceLocation getBossBarTexture(ResourceLocation loc) {
 		ReplaceTexturesClientState textures = ClientGameStateManager.getOrNull(GameClientStateTypes.REPLACE_TEXTURES);

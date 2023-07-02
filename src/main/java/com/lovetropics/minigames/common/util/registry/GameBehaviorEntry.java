@@ -13,6 +13,6 @@ public final class GameBehaviorEntry<T extends IGameBehavior> extends RegistryEn
 	}
 
 	public Codec<T> getCodec() {
-		return get().codec;
+		return get().codec();
 	}
 }

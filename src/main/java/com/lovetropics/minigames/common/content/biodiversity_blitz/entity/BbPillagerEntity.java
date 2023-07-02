@@ -1,11 +1,20 @@
 package com.lovetropics.minigames.common.content.biodiversity_blitz.entity;
 
-import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.ai.*;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.ai.BbGroundNavigator;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.ai.BbMobBrain;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.ai.BbTargetPlayerGoal;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.ai.DestroyCropGoal;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.ai.MoveToPumpkinGoal;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.Plot;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.DifficultyInstance;
-import net.minecraft.world.entity.*;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.MoverType;
+import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
 import net.minecraft.world.entity.ai.goal.RangedCrossbowAttackGoal;
 import net.minecraft.world.entity.ai.navigation.PathNavigation;
@@ -19,7 +28,6 @@ import net.minecraft.world.level.pathfinder.BlockPathTypes;
 import net.minecraft.world.phys.Vec3;
 
 import javax.annotation.Nullable;
-import java.util.Random;
 
 public class BbPillagerEntity extends Pillager implements BbMobEntity {
     private final BbMobBrain mobBrain;

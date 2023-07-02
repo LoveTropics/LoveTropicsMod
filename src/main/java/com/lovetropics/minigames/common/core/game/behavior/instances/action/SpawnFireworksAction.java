@@ -15,8 +15,8 @@ public final class SpawnFireworksAction implements IGameBehavior {
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
 		events.listen(GameActionEvents.APPLY_TO_PLAYER, (context, player) -> {
-			BlockPos fireworkPos = player.level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, player.blockPosition());
-			FireworkPalette.DYE_COLORS.spawn(fireworkPos, player.level);
+			BlockPos fireworkPos = player.level().getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, player.blockPosition());
+			FireworkPalette.DYE_COLORS.spawn(fireworkPos, player.level());
 			return true;
 		});
 	}

@@ -1,7 +1,7 @@
 package com.lovetropics.minigames.common.content.survive_the_tide.behavior;
 
-import com.lovetropics.minigames.client.toast.NotificationStyle;
 import com.lovetropics.minigames.client.toast.NotificationIcon;
+import com.lovetropics.minigames.client.toast.NotificationStyle;
 import com.lovetropics.minigames.client.toast.ShowNotificationToastMessage;
 import com.lovetropics.minigames.common.content.survive_the_tide.SurviveTheTide;
 import com.lovetropics.minigames.common.content.survive_the_tide.SurviveTheTideWeatherConfig;
@@ -9,7 +9,6 @@ import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
-import com.lovetropics.minigames.common.core.game.state.ProgressionPoint;
 import com.lovetropics.minigames.common.core.game.state.GameProgressionState;
 import com.lovetropics.minigames.common.core.game.state.weather.GameWeatherState;
 import com.lovetropics.minigames.common.core.game.weather.WeatherEvent;
@@ -21,11 +20,11 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.Blocks;
 
-import java.util.Random;
 import java.util.function.Supplier;
 
 public class SurviveTheTideWeatherControlBehavior implements IGameBehavior {
@@ -33,7 +32,7 @@ public class SurviveTheTideWeatherControlBehavior implements IGameBehavior {
 
     private final SurviveTheTideWeatherConfig config;
 
-    private final Random random = new Random();
+    private final RandomSource random = RandomSource.create();
 
     /*
      * instantiate in IslandRoyaleMinigameDefinition

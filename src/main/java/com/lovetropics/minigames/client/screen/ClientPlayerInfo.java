@@ -4,9 +4,9 @@ import com.mojang.authlib.GameProfile;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.multiplayer.PlayerInfo;
+import net.minecraft.client.resources.DefaultPlayerSkin;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.Component;
 
 import javax.annotation.Nullable;
 import java.util.UUID;
@@ -31,10 +31,9 @@ public final class ClientPlayerInfo {
 		}
 	}
 
-	@Nullable
 	public static ResourceLocation getSkin(UUID uuid) {
 		PlayerInfo info = get(uuid);
-		return info != null ? info.getSkinLocation() : null;
+		return info != null ? info.getSkinLocation() : DefaultPlayerSkin.getDefaultSkin(uuid);
 	}
 
 	@Nullable

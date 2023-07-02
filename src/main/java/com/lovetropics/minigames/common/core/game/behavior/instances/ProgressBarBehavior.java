@@ -15,7 +15,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.ChatFormatting;
 import net.minecraft.SharedConstants;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.Component;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.Mth;
 import net.minecraft.world.BossEvent;
 
@@ -99,7 +99,7 @@ public class ProgressBarBehavior implements IGameBehavior {
 
 		public static final Codec<Entry> CODEC = RecordCodecBuilder.create(i -> i.group(
 				ProgressionPeriod.CODEC.fieldOf("period").forGetter(Entry::period),
-				MoreCodecs.TEXT.fieldOf("text").forGetter(Entry::text),
+				ExtraCodecs.COMPONENT.fieldOf("text").forGetter(Entry::text),
 				BOSS_BAR_COLOR_CODEC.optionalFieldOf("color", BossEvent.BossBarColor.WHITE).forGetter(Entry::color),
 				Codec.BOOL.optionalFieldOf("reversed", false).forGetter(Entry::reversed),
 				Codec.BOOL.optionalFieldOf("include_time", false).forGetter(Entry::includeTime)

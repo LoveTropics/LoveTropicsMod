@@ -12,7 +12,6 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
-import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.phys.Vec3;
 
 import javax.annotation.Nullable;
@@ -32,9 +31,9 @@ public record SpawnEntityAtPlayerAction(EntityTemplate entity, int damagePlayerA
 				spawnPos = player.position();
 			}
 
-			entity.spawn(player.getLevel(), spawnPos.x, spawnPos.y, spawnPos.z, 0.0f, 0.0f);
+			entity.spawn(player.serverLevel(), spawnPos.x, spawnPos.y, spawnPos.z, 0.0f, 0.0f);
 			if (damagePlayerAmount > 0) {
-				player.hurt(DamageSource.GENERIC, damagePlayerAmount);
+				player.hurt(player.damageSources().generic(), damagePlayerAmount);
 			}
 
 			return true;
@@ -49,7 +48,7 @@ public record SpawnEntityAtPlayerAction(EntityTemplate entity, int damagePlayerA
 			double z = player.getZ() + Math.cos(angle) * distance;
 			int maxDistanceY = Mth.floor(distance);
 
-			BlockPos groundPos = Util.findGround(game.getWorld(), new BlockPos(x, player.getY(), z), maxDistanceY);
+			BlockPos groundPos = Util.findGround(game.getWorld(), BlockPos.containing(x, player.getY(), z), maxDistanceY);
 			if (groundPos != null) {
 				return new Vec3(x, groundPos.getY(), z);
 			}

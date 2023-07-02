@@ -17,12 +17,13 @@ import com.lovetropics.minigames.common.core.game.state.statistics.StatisticKey;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.ChatFormatting;
+import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -32,7 +33,6 @@ import net.minecraftforge.registries.ForgeRegistries;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 public final class BlockPartyBehavior implements IGameBehavior {
 	public static final Codec<BlockPartyBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
@@ -95,7 +95,7 @@ public final class BlockPartyBehavior implements IGameBehavior {
 	}
 
 	private void spawnPlayer(ServerPlayer player) {
-		BlockPos floorPos = floorRegion.sample(new Random(player.getRandom().nextLong()));
+		BlockPos floorPos = floorRegion.sample(player.getRandom());
 		DimensionUtils.teleportPlayerNoPortal(player, game.getDimension(), floorPos.above());
 	}
 
@@ -117,7 +117,7 @@ public final class BlockPartyBehavior implements IGameBehavior {
 		PlayerSet participants = game.getParticipants();
 		for (ServerPlayer player : participants) {
 			double y = player.getY();
-			if (y < player.level.getMinBuildHeight() || y < floorRegion.min().getY() - 10) {
+			if (y < player.level().getMinBuildHeight() || y < floorRegion.min().getY() - 10) {
 				if (eliminated == null) {
 					eliminated = new ArrayList<>();
 				}
@@ -169,7 +169,7 @@ public final class BlockPartyBehavior implements IGameBehavior {
 
 	CountingDown startCountingDown(int round) {
 		ServerLevel world = game.getWorld();
-		Floor floor = Floor.generate(new Random(world.random.nextLong()), quadCountX, quadCountZ, blocks);
+		Floor floor = Floor.generate(world.random, quadCountX, quadCountZ, blocks);
 		floor.set(world, floorRegion, quadSize);
 
 		Block target = floor.target;
@@ -285,7 +285,7 @@ public final class BlockPartyBehavior implements IGameBehavior {
 			this.target = target;
 		}
 
-		static Floor generate(Random random, int quadCountX, int quadCountZ, Block[] blocks) {
+		static Floor generate(RandomSource random, int quadCountX, int quadCountZ, Block[] blocks) {
 			Block[] quads = new Block[quadCountX * quadCountZ];
 
 			for (int z = 0; z < quadCountZ; z++) {
@@ -294,8 +294,7 @@ public final class BlockPartyBehavior implements IGameBehavior {
 				}
 			}
 
-			Block target = quads[random.nextInt(quads.length)];
-
+			Block target = Util.getRandom(quads, random);
 			return new Floor(quads, quadCountX, quadCountZ, target);
 		}
 

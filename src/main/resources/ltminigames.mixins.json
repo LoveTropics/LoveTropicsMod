@@ -5,19 +5,18 @@
   "refmap": "ltminigames.refmap.json",
   "mixins": [
     "ChunkStorageMixin",
-    "DataFixesManagerMixin",
     "EntityTypeMixin",
     "MinecraftServerMixin",
     "PlayerMixin",
-    "SimpleRegistryMixin"
+    "SimpleRegistryMixin",
+    "TagManagerAccessor"
   ],
   "client": [
     "client.BiomeColorsMixin",
     "client.BossOverlayGuiMixin",
     "client.HotbarOverride",
     "client.PlayerTabOverlayGuiMixin",
-    "client.PoseStackAccessor",
-    "client.ScrollPanelMixin"
+    "client.PoseStackAccessor"
   ],
   "injectors": {
     "defaultRequire": 1

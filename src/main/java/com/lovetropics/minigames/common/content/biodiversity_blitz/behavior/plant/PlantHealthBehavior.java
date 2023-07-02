@@ -18,10 +18,10 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.LevelEvent;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
 public record PlantHealthBehavior(int health, boolean notPathfindable) implements IGameBehavior {
@@ -73,16 +73,11 @@ public record PlantHealthBehavior(int health, boolean notPathfindable) implement
 	}
 
 	private static void destroyBlockProgress(ServerLevel level, int id, BlockPos pos, int amt) {
-		for(ServerPlayer serverplayer : level.getServer().getPlayerList().getPlayers()) {
-			if (serverplayer != null && serverplayer.level == level) {
-				double d0 = (double)pos.getX() - serverplayer.getX();
-				double d1 = (double)pos.getY() - serverplayer.getY();
-				double d2 = (double)pos.getZ() - serverplayer.getZ();
-				if (d0 * d0 + d1 * d1 + d2 * d2 < 1024.0D) {
-					serverplayer.connection.send(new ClientboundBlockDestructionPacket(id, pos, amt));
-				}
+		Vec3 centerPos = Vec3.atCenterOf(pos);
+		for (ServerPlayer player : level.players()) {
+			if (player.distanceToSqr(centerPos) < 1024.0) {
+				player.connection.send(new ClientboundBlockDestructionPacket(id, pos, amt));
 			}
 		}
-
 	}
 }

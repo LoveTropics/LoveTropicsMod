@@ -1,7 +1,5 @@
 package com.lovetropics.minigames.common.content.biodiversity_blitz.behavior;
 
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Multimap;
 import com.lovetropics.lib.codec.MoreCodecs;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.BiodiversityBlitzTexts;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.event.BbEvents;
@@ -17,31 +15,37 @@ import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvent
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.Object2FloatMap;
-import net.minecraft.util.RandomSource;
-import net.minecraft.world.entity.Entity;
+import net.minecraft.network.chat.CommonComponents;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerBossEvent;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.Mth;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.Component;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.BossEvent;
 import net.minecraft.world.BossEvent.BossBarColor;
 import net.minecraft.world.Difficulty;
-import net.minecraft.server.level.ServerBossEvent;
-import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.Entity;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 
 public final class BbWaveSpawnerBehavior implements IGameBehavior {
-	public static final Codec<BbWaveSpawnerBehavior> CODEC = RecordCodecBuilder.create(instance -> {
-		return instance.group(
-				Codec.LONG.fieldOf("interval_seconds").forGetter(c -> c.intervalTicks / 20),
-				Codec.LONG.fieldOf("warn_seconds").forGetter(c -> c.warnTicks / 20),
-				SizeCurve.CODEC.fieldOf("size_curve").forGetter(c -> c.sizeCurve),
-				Codec.BOOL.fieldOf("size_curve_always").orElse(false).forGetter(c -> c.sizeCurveAlways),
-				MoreCodecs.object2Float(MoreCodecs.DIFFICULTY).fieldOf("difficulty_factors").forGetter(c -> c.difficultyFactors),
-				MoreCodecs.TEXT.optionalFieldOf("first_message", Component.empty()).forGetter(c -> c.firstMessage)
-		).apply(instance, BbWaveSpawnerBehavior::new);
-	});
+	public static final Codec<BbWaveSpawnerBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+			Codec.LONG.fieldOf("interval_seconds").forGetter(c -> c.intervalTicks / 20),
+			Codec.LONG.fieldOf("warn_seconds").forGetter(c -> c.warnTicks / 20),
+			SizeCurve.CODEC.fieldOf("size_curve").forGetter(c -> c.sizeCurve),
+			Codec.BOOL.fieldOf("size_curve_always").orElse(false).forGetter(c -> c.sizeCurveAlways),
+			MoreCodecs.object2Float(Difficulty.CODEC).fieldOf("difficulty_factors").forGetter(c -> c.difficultyFactors),
+			ExtraCodecs.COMPONENT.optionalFieldOf("first_message", CommonComponents.EMPTY).forGetter(c -> c.firstMessage)
+	).apply(i, BbWaveSpawnerBehavior::new));
 
 	private final long intervalTicks;
 	private final long warnTicks;
@@ -156,7 +160,7 @@ public final class BbWaveSpawnerBehavior implements IGameBehavior {
 	}
 
 	private void spawnWave(ServerLevel world, RandomSource random, Collection<ServerPlayer> players, Plot plot, int waveIndex) {
-		if (waveIndex == 0 && !Objects.equals(firstMessage, Component.empty())) {
+		if (waveIndex == 0 && firstMessage != CommonComponents.EMPTY) {
 			players.forEach(p -> p.displayClientMessage(firstMessage, false));
 		}
 

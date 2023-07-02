@@ -7,11 +7,16 @@ import com.lovetropics.minigames.common.core.game.behavior.GameBehaviorType;
 import com.lovetropics.minigames.common.core.game.behavior.GameBehaviorTypes;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.datafixers.util.Unit;
-import com.mojang.serialization.*;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
+import com.mojang.serialization.Dynamic;
+import com.mojang.serialization.DynamicOps;
+import com.mojang.serialization.JsonOps;
+import com.mojang.serialization.MapLike;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
-import net.minecraft.resources.ResourceLocation;
 import org.apache.commons.lang3.mutable.MutableObject;
 
 import javax.annotation.Nullable;
@@ -69,7 +74,7 @@ public final class BehaviorReferenceReader implements Codec<List<BehaviorReferen
 			return;
 		}
 
-		consumer.accept(DataResult.error("Behavior reference must be either a map or a string!"));
+		consumer.accept(DataResult.error(() -> "Behavior reference must be either a map or a string!"));
 	}
 
 	private <T> void decodeMap(DynamicOps<T> ops, T input, MapLike<T> mapInput, Consumer<DataResult<BehaviorReference>> consumer) {
@@ -79,15 +84,13 @@ public final class BehaviorReferenceReader implements Codec<List<BehaviorReferen
 			this.decodeReference(ops, idString, ops.remove(input, "type"), consumer);
 		});
 
-		typeResult.error().ifPresent(error -> {
-			consumer.accept(DataResult.error(error.message()));
-		});
+		typeResult.error().ifPresent(error -> consumer.accept(DataResult.error(error::message)));
 	}
 
 	private <T> void decodeReference(DynamicOps<T> ops, String idString, T input, Consumer<DataResult<BehaviorReference>> consumer) {
 		ResourceLocation id = new ResourceLocation(idString);
 		if (!this.currentlyReading.add(id)) {
-			consumer.accept(DataResult.error("Tried to recursively add behavior of " + id));
+			consumer.accept(DataResult.error(() -> "Tried to recursively add behavior of " + id));
 			return;
 		}
 
@@ -107,13 +110,13 @@ public final class BehaviorReferenceReader implements Codec<List<BehaviorReferen
 				});
 
 				setResult.error().ifPresent(error -> {
-					consumer.accept(DataResult.error(error.message()));
+					consumer.accept(DataResult.error(error::message));
 				});
 
 				return;
 			}
 
-			consumer.accept(DataResult.error("Invalid reference to behavior: " + id));
+			consumer.accept(DataResult.error(() -> "Invalid reference to behavior: " + id));
 		} finally {
 			this.currentlyReading.remove(id);
 		}
@@ -128,19 +131,18 @@ public final class BehaviorReferenceReader implements Codec<List<BehaviorReferen
 		return null;
 	}
 
+	// TODO: Actually list these rather than doing Resource lookups. Replacing these BehaviorReferences with Holders (and converting these into a dynamic registry) will probably cover this.
 	@Nullable
 	private <T> DataResult<List<BehaviorReference>> tryDecodeSet(ResourceLocation id, DynamicOps<T> ops, T input) {
 		ResourceLocation path = new ResourceLocation(id.getNamespace(), "behaviors/" + id.getPath() + ".json");
-		if (!resources.hasResource(path)) {
+		Optional<Resource> resource = resources.getResource(path);
+		if (resource.isEmpty()) {
 			return null;
 		}
 
 		BehaviorParameterReplacer<JsonElement> parameterReplacer = BehaviorParameterReplacer.from(new Dynamic<>(ops, input));
 
-		try (
-				Resource resource = resources.getResource(path);
-				InputStream stream = resource.getInputStream()
-		) {
+		try (InputStream stream = resource.get().open()) {
 			JsonElement json = JsonParser.parseReader(new BufferedReader(new InputStreamReader(stream)));
 			Dynamic<JsonElement> data = new Dynamic<>(JsonOps.INSTANCE, json);
 
@@ -148,12 +150,12 @@ public final class BehaviorReferenceReader implements Codec<List<BehaviorReferen
 
 			return this.parse(data);
 		} catch (IOException e) {
-			return DataResult.error("Failed to load behavior set at " + path);
+			return DataResult.error(() -> "Failed to load behavior set at " + path);
 		}
 	}
 
 	@Override
 	public <T> DataResult<T> encode(List<BehaviorReference> input, DynamicOps<T> ops, T prefix) {
-		return DataResult.error("Encoding unsupported");
+		return DataResult.error(() -> "Encoding unsupported");
 	}
 }

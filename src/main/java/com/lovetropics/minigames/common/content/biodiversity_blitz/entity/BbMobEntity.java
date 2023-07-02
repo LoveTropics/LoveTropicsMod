@@ -6,7 +6,6 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.Mob;
 
-import java.util.Random;
 import java.util.function.Predicate;
 
 public interface BbMobEntity {

@@ -15,7 +15,7 @@ import org.jetbrains.annotations.Nullable;
 
 public record EntityTemplate(EntityType<?> type, CompoundTag tag) {
 	public static final Codec<EntityTemplate> CODEC = RecordCodecBuilder.create(i -> i.group(
-			ForgeRegistries.ENTITIES.getCodec().fieldOf("type").forGetter(EntityTemplate::type),
+			ForgeRegistries.ENTITY_TYPES.getCodec().fieldOf("type").forGetter(EntityTemplate::type),
 			CompoundTag.CODEC.optionalFieldOf("tag", new CompoundTag()).forGetter(EntityTemplate::tag)
 	).apply(i, EntityTemplate::new));
 
@@ -26,7 +26,7 @@ public record EntityTemplate(EntityType<?> type, CompoundTag tag) {
 		}
 
 		CompoundTag tag = this.tag.copy();
-		tag.putString("id", type.getRegistryName().toString());
+		tag.putString("id", EntityType.getKey(type).toString());
 
 		Entity entity = EntityType.loadEntityRecursive(tag, level, e -> {
 			e.moveTo(x, y, z, yRot, xRot);

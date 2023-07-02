@@ -67,11 +67,14 @@ public class FruitDropEntityBehavior implements IGameBehavior {
 
 		plant.functionalCoverage().stream()
 			.flatMap(bp -> IntStream.range(0, 4).mapToObj(Direction::from2DDataValue).map(bp::relative))
-			.filter(bp -> player.level.getBlockState(bp).getBlock() == fruit)
-			.filter(bp -> !player.level.getEntities(player, new AABB(bp).inflate(range - 1, 15, range - 1), (Predicate<? super Entity>) e -> (e instanceof BbMobEntity)).isEmpty())
+			.filter(bp -> player.level().getBlockState(bp).getBlock() == fruit)
+			.filter(bp -> !player.level().getEntities(player, new AABB(bp).inflate(range - 1, 15, range - 1), (Predicate<? super Entity>) e -> (e instanceof BbMobEntity)).isEmpty())
 			.forEach(bp -> {
-				player.level.setBlockAndUpdate(bp, Blocks.AIR.defaultBlockState());
-				player.level.addFreshEntity(entity.spawn(player.getLevel(), null, null, player, bp, MobSpawnType.TRIGGERED, false, false));
+				player.level().setBlockAndUpdate(bp, Blocks.AIR.defaultBlockState());
+				Entity spawnedEntity = entity.spawn(player.serverLevel(), null, player, bp, MobSpawnType.TRIGGERED, false, false);
+				if (spawnedEntity != null) {
+					player.level().addFreshEntity(spawnedEntity);
+				}
 			});
 	}
 }

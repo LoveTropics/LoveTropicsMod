@@ -39,7 +39,7 @@ public class StartGameCommand {
 										if (result.isOk()) {
 											IGame game = lobby.getCurrentGame();
 											if (game != null) {
-												c.getSource().sendSuccess(GameTexts.Commands.startedGame(game.getDefinition()), false);
+												c.getSource().sendSuccess(() -> GameTexts.Commands.startedGame(game.getDefinition()), false);
 											}
 										} else {
 											c.getSource().sendFailure(result.getError());

@@ -3,16 +3,16 @@ package com.lovetropics.minigames.common.content.biodiversity_blitz.entity.ai;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.BbMobEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.navigation.GroundPathNavigation;
-import net.minecraft.world.level.pathfinder.PathFinder;
-import net.minecraft.world.level.pathfinder.BlockPathTypes;
-import net.minecraft.world.level.pathfinder.WalkNodeEvaluator;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.pathfinder.BlockPathTypes;
+import net.minecraft.world.level.pathfinder.PathFinder;
+import net.minecraft.world.level.pathfinder.WalkNodeEvaluator;
 
 public final class BbGroundNavigator extends GroundPathNavigation {
 	private final BbMobEntity mob;
 
 	public BbGroundNavigator(Mob mob) {
-		super(mob, mob.level);
+		super(mob, mob.level());
 		this.mob = (BbMobEntity) mob;
 	}
 

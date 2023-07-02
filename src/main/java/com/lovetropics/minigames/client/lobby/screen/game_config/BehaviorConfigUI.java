@@ -6,19 +6,21 @@ import com.lovetropics.minigames.client.screen.LayoutTree;
 import com.lovetropics.minigames.client.screen.flex.Align;
 import com.lovetropics.minigames.client.screen.flex.Axis;
 import com.lovetropics.minigames.common.core.game.behavior.GameBehaviorType;
-import com.mojang.blaze3d.vertex.PoseStack;
+import com.lovetropics.minigames.common.core.game.behavior.GameBehaviorTypes;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.components.events.AbstractContainerEventHandler;
 import net.minecraft.client.gui.components.events.GuiEventListener;
-import net.minecraft.client.gui.components.Widget;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 
 import java.util.List;
 
-public class BehaviorConfigUI extends AbstractContainerEventHandler implements Widget {
-	
+public class BehaviorConfigUI extends AbstractContainerEventHandler implements Renderable {
+
 	private final GameBehaviorType<?> behavior;
 	private final ClientConfigList configs;
-	
+
 	private final TextLabel title;
 	private final BehaviorConfigList list;
 
@@ -26,8 +28,9 @@ public class BehaviorConfigUI extends AbstractContainerEventHandler implements W
 		super();
 		this.behavior = behavior;
 		this.configs = configs;
-		
-		this.title = new TextLabel(ltree.child(1, Axis.X), 10, Component.translatable(behavior.getRegistryName().toString()), Align.Cross.CENTER, Align.Cross.START);
+
+		ResourceLocation behaviorKey = GameBehaviorTypes.REGISTRY.get().getKey(behavior);
+		this.title = new TextLabel(ltree.child(1, Axis.X), 10, Component.literal(behaviorKey.toString()), Align.Cross.CENTER, Align.Cross.START);
 		this.list = new BehaviorConfigList(parent, ltree.child(), configs);
 		ltree.pop(); // This UI doesn't have a layout, but we still need to pop our layout from the tree
 	}
@@ -36,11 +39,11 @@ public class BehaviorConfigUI extends AbstractContainerEventHandler implements W
 	public List<? extends GuiEventListener> children() {
 		return Lists.newArrayList(list);
 	}
-	
+
 	@Override
-	public void render(PoseStack matrixStack, int mouseX, int mouseY, float partialTicks) {
-		title.render(matrixStack, mouseX, mouseY, partialTicks);
-		list.render(matrixStack, mouseX, mouseY, partialTicks);
+	public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
+		title.render(graphics, mouseX, mouseY, partialTicks);
+		list.render(graphics, mouseX, mouseY, partialTicks);
 	}
 
 	public int getHeight() {

@@ -12,16 +12,19 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import net.minecraft.advancements.critereon.BlockPredicate;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.core.BlockPos;
-import net.minecraft.world.level.ChunkPos;
-import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvider;
-import net.minecraft.server.level.ServerLevel;
 
 import javax.annotation.Nullable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 public final class SetBlocksAction implements IGameBehavior {
 	public static final Codec<SetBlocksAction> CODEC = RecordCodecBuilder.create(i -> i.group(
@@ -72,7 +75,7 @@ public final class SetBlocksAction implements IGameBehavior {
 		ServerLevel world = game.getWorld();
 		BlockPredicate replace = this.replace;
 		BlockStateProvider set = this.set;
-		Random random = world.random;
+		RandomSource random = world.random;
 
 		this.loadRegionChunks(region, world);
 

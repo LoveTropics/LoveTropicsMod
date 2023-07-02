@@ -4,8 +4,6 @@ import com.lovetropics.minigames.Constants;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.Component;
 
 import java.util.function.BiConsumer;
 
@@ -14,17 +12,17 @@ public final class BiodiversityBlitzTexts {
 		Keys.collectTranslations(consumer);
 	}
 
-	static final class Keys {
-		static final String BIODIVERSITY_BLITZ = Constants.MODID + ".minigame.biodiversity_blitz";
-		static final String BIODIVERSITY_BLITZ_TEAMS = Constants.MODID + ".minigame.biodiversity_blitz_teams";
-		static final String WAVE_WARNING = key("wave_warning");
-		static final String DEATH_DECREASE = key("death_decrease");
-		static final String DEATH_TITLE = key("death_title");
-		static final String CURRENCY_ADDITION = key("currency_addition");
-		static final String TRADING = key("trading");
-		static final String CAN_ONLY_PLACE_PLANTS = key("can_only_place_plants");
-		static final String PLANT_CANNOT_FIT = key("plant_cannot_fit");
-		static final String NOT_YOUR_PLOT = key("not_your_plot");
+	private static final class Keys {
+		private static final String BIODIVERSITY_BLITZ = Constants.MODID + ".minigame.biodiversity_blitz";
+		private static final String BIODIVERSITY_BLITZ_TEAMS = Constants.MODID + ".minigame.biodiversity_blitz_teams";
+		private static final String WAVE_WARNING = key("wave_warning");
+		private static final String DEATH_DECREASE = key("death_decrease");
+		private static final String DEATH_TITLE = key("death_title");
+		private static final String CURRENCY_ADDITION = key("currency_addition");
+		private static final String TRADING = key("trading");
+		private static final String CAN_ONLY_PLACE_PLANTS = key("can_only_place_plants");
+		private static final String PLANT_CANNOT_FIT = key("plant_cannot_fit");
+		private static final String NOT_YOUR_PLOT = key("not_your_plot");
 
 		static void collectTranslations(BiConsumer<String, String> consumer) {
 			consumer.accept(BIODIVERSITY_BLITZ, "Biodiversity Blitz");

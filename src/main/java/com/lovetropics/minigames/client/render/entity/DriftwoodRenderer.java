@@ -4,7 +4,7 @@ import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.common.content.survive_the_tide.entity.DriftwoodEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.math.Vector3f;
+import com.mojang.math.Axis;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.model.geom.ModelPart;
@@ -35,17 +35,17 @@ public final class DriftwoodRenderer extends EntityRenderer<DriftwoodEntity> {
 	}
 
 	@Override
-	public void render(DriftwoodEntity entity, float entityYaw, float partialTicks, PoseStack transform, MultiBufferSource buffer, int light) {
-		super.render(entity, entityYaw, partialTicks, transform, buffer, light);
+	public void render(DriftwoodEntity entity, float entityYaw, float partialTicks, PoseStack poseStack, MultiBufferSource buffer, int light) {
+		super.render(entity, entityYaw, partialTicks, poseStack, buffer, light);
 
-		transform.pushPose();
-		transform.translate(0.0, -0.5, 0.0);
-		transform.mulPose(Vector3f.YP.rotationDegrees(90.0F - entityYaw));
+		poseStack.pushPose();
+		poseStack.translate(0.0, -0.5, 0.0);
+		poseStack.mulPose(Axis.YP.rotationDegrees(90.0F - entityYaw));
 
 		VertexConsumer builder = buffer.getBuffer(model.renderType(TEXTURE));
-		model.renderToBuffer(transform, builder, light, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 1.0F);
+		model.renderToBuffer(poseStack, builder, light, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 1.0F);
 
-		transform.popPose();
+		poseStack.popPose();
 	}
 
 	@Override

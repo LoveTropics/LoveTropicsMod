@@ -22,6 +22,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.RandomSource;
 import net.minecraft.util.random.SimpleWeightedRandomList;
 import net.minecraft.util.valueproviders.IntProvider;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -34,7 +35,6 @@ import net.minecraft.world.level.levelgen.Heightmap;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 public record ChestDropAction(String region, SimpleWeightedRandomList<ResourceLocation> lootTables, int delay, IntProvider count, float glowRadius) implements IGameBehavior {
 	public static final Codec<ChestDropAction> CODEC = RecordCodecBuilder.create(i -> i.group(
@@ -55,7 +55,7 @@ public record ChestDropAction(String region, SimpleWeightedRandomList<ResourceLo
 		}
 
 		ServerLevel level = game.getWorld();
-		Random random = level.random;
+		RandomSource random = level.random;
 		BeaconState beacons = game.getState().get(BeaconState.KEY);
 
 		List<DelayedDrop> delayedDrops = new ArrayList<>();
@@ -106,7 +106,7 @@ public record ChestDropAction(String region, SimpleWeightedRandomList<ResourceLo
 		}
 	}
 
-	private void placeChest(ServerLevel level, Random random, DelayedDrop drop) {
+	private void placeChest(ServerLevel level, RandomSource random, DelayedDrop drop) {
 		Direction direction = Direction.Plane.HORIZONTAL.getRandomDirection(random);
 		level.setBlock(drop.pos(), Blocks.CHEST.defaultBlockState().setValue(ChestBlock.FACING, direction), Block.UPDATE_ALL);
 

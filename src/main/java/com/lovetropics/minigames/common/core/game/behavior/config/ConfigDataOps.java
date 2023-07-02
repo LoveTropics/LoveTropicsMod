@@ -1,17 +1,5 @@
 package com.lovetropics.minigames.common.core.game.behavior.config;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
-import java.util.function.UnaryOperator;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import javax.annotation.Nullable;
-
 import com.google.common.collect.Lists;
 import com.lovetropics.minigames.common.core.game.behavior.config.ConfigData.CompositeConfigData;
 import com.lovetropics.minigames.common.core.game.behavior.config.ConfigData.ListConfigData;
@@ -23,6 +11,16 @@ import com.mojang.serialization.Lifecycle;
 import com.mojang.serialization.ListBuilder;
 import com.mojang.serialization.MapLike;
 import com.mojang.serialization.RecordBuilder;
+
+import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+import java.util.function.UnaryOperator;
+import java.util.stream.Stream;
 
 public class ConfigDataOps implements DynamicOps<ConfigData> {
     public static final ConfigDataOps INSTANCE = new ConfigDataOps();
@@ -43,21 +41,14 @@ public class ConfigDataOps implements DynamicOps<ConfigData> {
             return convertList(outOps, input);
         }
         final SimpleConfigData primitive = (SimpleConfigData) input;
-        switch (primitive.type()) {
-        case STRING:
-			return outOps.createString(primitive.value().toString());
-        case NUMBER:
-			return outOps.createNumeric((Number) primitive.value());
-		case BOOLEAN:
-			return outOps.createBoolean((Boolean) primitive.value());
-		case ENUM:
-			return outOps.createString(((Enum<?>) primitive.value()).name());
-		case LIST:
-		case COMPOSITE:
-			throw new IllegalStateException("Cannot serialize list/composite config as a primitive");
-		default:
-			throw new IllegalArgumentException("Unknown config type: " + primitive.type());
-        }
+        return switch (primitive.type()) {
+            case STRING -> outOps.createString(primitive.value().toString());
+            case NUMBER -> outOps.createNumeric((Number) primitive.value());
+            case BOOLEAN -> outOps.createBoolean((Boolean) primitive.value());
+            case ENUM -> outOps.createString(((Enum<?>) primitive.value()).name());
+            case LIST, COMPOSITE -> throw new IllegalStateException("Cannot serialize list/composite config as a primitive");
+            default -> throw new IllegalArgumentException("Unknown config type: " + primitive.type());
+        };
     }
 
     @Override
@@ -65,7 +56,7 @@ public class ConfigDataOps implements DynamicOps<ConfigData> {
         if (input.type() == ConfigType.NUMBER) {
         	return DataResult.success((Number) input.value());
         }
-        return DataResult.error("Not a number: " + input.value());
+        return DataResult.error(() -> "Not a number: " + input.value());
     }
 
     @Override
@@ -93,7 +84,7 @@ public class ConfigDataOps implements DynamicOps<ConfigData> {
         if (input.type() == ConfigType.BOOLEAN) {
         	return DataResult.success((Boolean) input.value());
         }
-        return DataResult.error("Not a boolean: " + input.value());
+        return DataResult.error(() -> "Not a boolean: " + input.value());
     }
 
     @Override
@@ -108,7 +99,7 @@ public class ConfigDataOps implements DynamicOps<ConfigData> {
 		if (input.type() == ConfigType.STRING) {
 			return DataResult.success((String) input.value());
 		}
-		return DataResult.error("Not a string: " + input.value());
+		return DataResult.error(() -> "Not a string: " + input.value());
     }
 
     @Override
@@ -121,10 +112,10 @@ public class ConfigDataOps implements DynamicOps<ConfigData> {
     @Override
     public DataResult<ConfigData> mergeToList(final ConfigData list, final ConfigData value) {
         if (list.type() != ConfigType.LIST && list != empty()) {
-            return DataResult.error("mergeToList called with not a list: " + list, list);
+            return DataResult.error(() -> "mergeToList called with not a list: " + list, list);
         }
         if (((ListConfigData)list).componentType() != value.type()) {
-        	return DataResult.error("mergeToList called with value that is invalid for given list: " + value, list);
+        	return DataResult.error(() -> "mergeToList called with value that is invalid for given list: " + value, list);
         }
 
         final ListConfigData result = new ListConfigData(((ListConfigData)list).componentType());
@@ -138,10 +129,10 @@ public class ConfigDataOps implements DynamicOps<ConfigData> {
     @Override
     public DataResult<ConfigData> mergeToList(final ConfigData list, final List<ConfigData> values) {
         if (list.type() != ConfigType.LIST && list != empty()) {
-            return DataResult.error("mergeToList called with not a list: " + list, list);
+            return DataResult.error(() -> "mergeToList called with not a list: " + list, list);
         }
         if (values.stream().map(ConfigData::type).allMatch(((ListConfigData)list).componentType()::equals)) {
-        	return DataResult.error("mergeToList called with value that is invalid for given list: " + values, list);
+        	return DataResult.error(() -> "mergeToList called with value that is invalid for given list: " + values, list);
         }
 
         final ListConfigData result = new ListConfigData(((ListConfigData)list).componentType());
@@ -155,10 +146,10 @@ public class ConfigDataOps implements DynamicOps<ConfigData> {
     @Override
     public DataResult<ConfigData> mergeToMap(final ConfigData map, final ConfigData key, final ConfigData value) {
         if (map.type() != ConfigType.COMPOSITE && map != empty()) {
-            return DataResult.error("mergeToMap called with not a map: " + map, map);
+            return DataResult.error(() -> "mergeToMap called with not a map: " + map, map);
         }
         if (key.type() != ConfigType.STRING) {
-            return DataResult.error("key is not a string: " + key, map);
+            return DataResult.error(() -> "key is not a string: " + key, map);
         }
 
         final CompositeConfigData output = new CompositeConfigData();
@@ -173,7 +164,7 @@ public class ConfigDataOps implements DynamicOps<ConfigData> {
     @Override
     public DataResult<ConfigData> mergeToMap(final ConfigData map, final MapLike<ConfigData> values) {
         if (map.type() != ConfigType.COMPOSITE && map != empty()) {
-            return DataResult.error("mergeToMap called with not a map: " + map, map);
+            return DataResult.error(() -> "mergeToMap called with not a map: " + map, map);
         }
 
         final CompositeConfigData output = new CompositeConfigData();
@@ -193,7 +184,7 @@ public class ConfigDataOps implements DynamicOps<ConfigData> {
         });
 
         if (!missed.isEmpty()) {
-            return DataResult.error("some keys are not strings: " + missed, output);
+            return DataResult.error(() -> "some keys are not strings: " + missed, output);
         }
 
         return DataResult.success(output);
@@ -202,7 +193,7 @@ public class ConfigDataOps implements DynamicOps<ConfigData> {
     @Override
     public DataResult<Stream<Pair<ConfigData, ConfigData>>> getMapValues(final ConfigData input) {
         if (input.type() != ConfigType.COMPOSITE) {
-            return DataResult.error("Not a composite config: " + input);
+            return DataResult.error(() -> "Not a composite config: " + input);
         }
         return DataResult.success(((CompositeConfigData)input).value().entrySet().stream().map(entry -> Pair.of(new SimpleConfigData(ConfigType.STRING, entry.getKey()), entry.getValue())));
     }
@@ -210,7 +201,7 @@ public class ConfigDataOps implements DynamicOps<ConfigData> {
     @Override
     public DataResult<Consumer<BiConsumer<ConfigData, ConfigData>>> getMapEntries(final ConfigData input) {
         if (input.type() != ConfigType.COMPOSITE) {
-            return DataResult.error("Not a composite config: " + input);
+            return DataResult.error(() -> "Not a composite config: " + input);
         }
         return DataResult.success(c -> {
             for (final Map.Entry<String, ConfigData> entry : ((CompositeConfigData)input).value().entrySet()) {
@@ -222,7 +213,7 @@ public class ConfigDataOps implements DynamicOps<ConfigData> {
     @Override
     public DataResult<MapLike<ConfigData>> getMap(final ConfigData input) {
         if (input.type() != ConfigType.COMPOSITE) {
-            return DataResult.error("Not a composite config: " + input);
+            return DataResult.error(() -> "Not a composite config: " + input);
         }
         final CompositeConfigData composite = (CompositeConfigData) input;
         return DataResult.success(new MapLike<ConfigData>() {
@@ -269,7 +260,7 @@ public class ConfigDataOps implements DynamicOps<ConfigData> {
             	}	
             }));
         }
-        return DataResult.error("Not a list config: " + input);
+        return DataResult.error(() -> "Not a list config: " + input);
     }
 
     @Override
@@ -286,12 +277,12 @@ public class ConfigDataOps implements DynamicOps<ConfigData> {
                 }
             });
         }
-        return DataResult.error("Not a list config: " + input);
+        return DataResult.error(() -> "Not a list config: " + input);
     }
 
     @Override
     public ConfigData createList(final Stream<ConfigData> input) {
-    	List<ConfigData> list = input.collect(Collectors.toList());
+    	List<ConfigData> list = input.toList();
     	if (list.stream().map(ConfigData::type).distinct().count() > 1) {
     		throw new IllegalArgumentException("List config cannot contain heterogenous values: " + input);
     	}
@@ -370,14 +361,14 @@ public class ConfigDataOps implements DynamicOps<ConfigData> {
             		return DataResult.success(b);
             	}
                 if (prefix.type() != ConfigType.LIST) {
-                    return DataResult.error("Cannot append a list to not a list: " + prefix, prefix);
+                    return DataResult.error(() -> "Cannot append a list to not a list: " + prefix, prefix);
                 }
                 ListConfigData prefixList = (ListConfigData) prefix;
                 if (prefixList == ListConfigData.EMPTY) {
                 	return DataResult.success(b);
                 }
                 if (prefixList.componentType() != b.componentType() && b != ListConfigData.EMPTY) {
-                	return DataResult.error("Cannot combine lists of different component types: " + prefixList.componentType(), prefix);
+                	return DataResult.error(() -> "Cannot combine lists of different component types: " + prefixList.componentType(), prefix);
                 }
 
                 final ListConfigData res = new ListConfigData(prefixList.componentType());
@@ -434,7 +425,7 @@ public class ConfigDataOps implements DynamicOps<ConfigData> {
                 }
                 return DataResult.success(result);
             }
-            return DataResult.error("mergeToMap called with not a map: " + prefix, prefix);
+            return DataResult.error(() -> "mergeToMap called with not a map: " + prefix, prefix);
         }
     }
 }

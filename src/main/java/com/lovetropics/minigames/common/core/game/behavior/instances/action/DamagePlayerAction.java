@@ -7,7 +7,6 @@ import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameActionEvents;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.world.damagesource.DamageSource;
 
 public record DamagePlayerAction(float amount) implements IGameBehavior {
 	public static final Codec<DamagePlayerAction> CODEC = RecordCodecBuilder.create(i -> i.group(
@@ -18,7 +17,7 @@ public record DamagePlayerAction(float amount) implements IGameBehavior {
 	public void register(IGamePhase game, EventRegistrar events) throws GameException {
 		events.listen(GameActionEvents.APPLY_TO_PLAYER, (context, player) -> {
 			// TODO: Support other damage sources
-			player.hurt(DamageSource.GENERIC, amount);
+			player.hurt(player.damageSources().generic(), amount);
 			return true;
 		});
 	}

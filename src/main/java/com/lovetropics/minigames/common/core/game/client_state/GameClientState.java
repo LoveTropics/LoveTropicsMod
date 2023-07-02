@@ -10,7 +10,7 @@ public interface GameClientState {
 	Codec<GameClientState> CODEC = GameClientStateTypes.TYPE_CODEC.dispatch(
 			"type",
 			GameClientState::getType,
-			GameClientStateType::getCodec
+			GameClientStateType::codec
 	);
 
 	GameClientStateType<?> getType();

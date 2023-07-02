@@ -11,13 +11,13 @@ import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.world.entity.Mob;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.network.protocol.game.ClientboundExplodePacket;
-import net.minecraft.world.phys.AABB;
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.level.Explosion;
+import net.minecraft.network.protocol.game.ClientboundExplodePacket;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.level.Explosion;
+import net.minecraft.world.phys.AABB;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -64,7 +64,7 @@ public record ProximityBombPlantBehavior(double radius) implements IGameBehavior
 			double y = pos.getY() + 0.5;
 			double z = pos.getZ() + 0.5;
 
-			Explosion explosion = new FilteredExplosion(world, null, null, null, x, y, z, 2.0f, false, Explosion.BlockInteraction.BREAK, e -> e instanceof ServerPlayer);
+			Explosion explosion = new FilteredExplosion(world, null, null, null, x, y, z, 2.0f, false, Explosion.BlockInteraction.DESTROY, e -> e instanceof ServerPlayer);
 			explosion.explode();
 			explosion.finalizeExplosion(false);
 

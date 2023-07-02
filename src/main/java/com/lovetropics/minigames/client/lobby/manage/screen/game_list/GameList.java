@@ -2,12 +2,14 @@ package com.lovetropics.minigames.client.lobby.manage.screen.game_list;
 
 import com.lovetropics.minigames.client.lobby.manage.state.ClientLobbyManageState;
 import com.lovetropics.minigames.client.screen.flex.Layout;
-import com.mojang.blaze3d.vertex.PoseStack;
-
+import net.minecraft.client.gui.ComponentPath;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.client.gui.navigation.FocusNavigationEvent;
 import net.minecraft.client.gui.screens.Screen;
+import org.jetbrains.annotations.Nullable;
 
 // TODO: name?
 public final class GameList implements GuiEventListener, NarratableEntry {
@@ -77,12 +79,12 @@ public final class GameList implements GuiEventListener, NarratableEntry {
 		this.active.updateEntries();
 	}
 
-	public void render(PoseStack matrixStack, int mouseX, int mouseY, float partialTicks) {
-		this.active.render(matrixStack, mouseX, mouseY, partialTicks);
+	public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
+		this.active.render(graphics, mouseX, mouseY, partialTicks);
 	}
 
-	public void renderOverlays(PoseStack matrixStack, int mouseX, int mouseY, float partialTicks) {
-		this.active.renderOverlays(matrixStack, mouseX, mouseY, partialTicks);
+	public void renderOverlays(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
+		this.active.renderOverlays(graphics, mouseX, mouseY, partialTicks);
 	}
 
 	@Override
@@ -125,9 +127,10 @@ public final class GameList implements GuiEventListener, NarratableEntry {
 		return this.active.charTyped(codePoint, modifiers);
 	}
 
+	@Nullable
 	@Override
-	public boolean changeFocus(boolean focus) {
-		return this.active.changeFocus(focus);
+	public ComponentPath nextFocusPath(FocusNavigationEvent event) {
+		return this.active.nextFocusPath(event);
 	}
 
 	@Override
@@ -136,12 +139,23 @@ public final class GameList implements GuiEventListener, NarratableEntry {
 	}
 
 	@Override
+	public void setFocused(boolean focused) {
+		this.active.setFocused(focused);
+	}
+
+	@Override
+	public boolean isFocused() {
+		return this.active.isFocused();
+	}
+
+	@Override
 	public NarrationPriority narrationPriority() {
-		return NarrationPriority.NONE;
+		return this.active.narrationPriority();
 	}
 
 	@Override
 	public void updateNarration(final NarrationElementOutput output) {
+		this.active.updateNarration(output);
 	}
 
 	public interface Handlers {

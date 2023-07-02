@@ -1,6 +1,5 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances;
 
-import com.lovetropics.lib.codec.MoreCodecs;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
@@ -15,9 +14,9 @@ import javax.annotation.Nullable;
 
 public record SetGameTypesBehavior(GameType participantGameType, GameType spectatorGameType, GameType allGameType) implements IGameBehavior {
 	public static final Codec<SetGameTypesBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
-			MoreCodecs.GAME_TYPE.optionalFieldOf("participant", GameType.SURVIVAL).forGetter(c -> c.participantGameType),
-			MoreCodecs.GAME_TYPE.optionalFieldOf("spectator", GameType.SPECTATOR).forGetter(c -> c.spectatorGameType),
-			MoreCodecs.GAME_TYPE.optionalFieldOf("all", GameType.ADVENTURE).forGetter(c -> c.allGameType)
+			GameType.CODEC.optionalFieldOf("participant", GameType.SURVIVAL).forGetter(c -> c.participantGameType),
+			GameType.CODEC.optionalFieldOf("spectator", GameType.SPECTATOR).forGetter(c -> c.spectatorGameType),
+			GameType.CODEC.optionalFieldOf("all", GameType.ADVENTURE).forGetter(c -> c.allGameType)
 	).apply(i, SetGameTypesBehavior::new));
 
 	@Override

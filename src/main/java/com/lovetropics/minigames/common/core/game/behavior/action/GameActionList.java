@@ -32,7 +32,7 @@ public class GameActionList {
 					behaviors -> new GameActionList(behaviors, Target.SOURCE),
 					list -> {
 						if (list.target != Target.SOURCE) {
-							return DataResult.error("Cannot encode simple action list with target: " + list.target.getSerializedName());
+							return DataResult.error(() -> "Cannot encode simple action list with target: " + list.target.getSerializedName());
 						}
 						return DataResult.success(list.behaviors);
 					}

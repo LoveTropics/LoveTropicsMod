@@ -18,14 +18,14 @@ import com.lovetropics.minigames.common.core.game.util.SelectorItems;
 import com.lovetropics.minigames.common.util.Scheduler;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.entity.animal.Sheep;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.CommonComponents;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.animal.Sheep;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.ItemLike;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.Component;
-import net.minecraft.ChatFormatting;
+import net.minecraft.world.level.block.Blocks;
 
 import java.util.List;
 import java.util.UUID;
@@ -33,7 +33,7 @@ import java.util.UUID;
 public final class SetupTeamsBehavior implements IGameBehavior {
 	private static final GameTeam DEFAULT_TEAM = new GameTeam(
 			new GameTeamKey(""),
-			new GameTeamConfig(TextComponent.EMPTY, DyeColor.BLACK, ChatFormatting.BLACK, ImmutableList.of(UUID.randomUUID()), 1)
+			new GameTeamConfig(CommonComponents.EMPTY, DyeColor.BLACK, ChatFormatting.BLACK, ImmutableList.of(UUID.randomUUID()), 1)
 	);
 	private static final BehaviorConfig<List<GameTeam>> CFG_TEAMS = BehaviorConfig.fieldOf("teams", GameTeam.CODEC.listOf())
 			.defaultInstanceHint("", DEFAULT_TEAM, GameTeam.CODEC)

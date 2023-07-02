@@ -6,7 +6,6 @@ import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameActionEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.lovetropics.minigames.common.util.EntityTemplate;
-import com.lovetropics.minigames.common.util.Util;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
@@ -14,8 +13,6 @@ import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.EntityType;
-import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.Iterator;
 
@@ -107,9 +104,9 @@ public class SpawnEntitiesAroundPlayersAction implements IGameBehavior
 		return !world.isEmptyBlock(pos.offset(0, -1, 0))
 				&& world.isEmptyBlock(pos.offset(0, 0, 0))
 				&& world.isEmptyBlock(pos.offset(0, 1, 0))
-				&& !world.getBlockState(pos.offset(0, -1, 0)).getMaterial().isLiquid()
-				&& !world.getBlockState(pos.offset(0, 0, 0)).getMaterial().isLiquid()
-				&& !world.getBlockState(pos.offset(0, 1, 0)).getMaterial().isLiquid();
+				&& !world.getBlockState(pos.offset(0, -1, 0)).liquid()
+				&& !world.getBlockState(pos.offset(0, 0, 0)).liquid()
+				&& !world.getBlockState(pos.offset(0, 1, 0)).liquid();
 	}
 
 

@@ -86,12 +86,12 @@ public record TurtleRiderBehavior(EntityTemplate turtle) implements IGameBehavio
 
 		player.startRiding(turtle, true);
 
-		ServerChunkCache chunkSource = player.getLevel().getChunkSource();
+		ServerChunkCache chunkSource = player.serverLevel().getChunkSource();
 		chunkSource.chunkMap.broadcast(turtle, new ClientboundSetPassengersPacket(turtle));
 	}
 
 	@Nullable
 	private Entity spawnTurtle(ServerPlayer player) {
-		return turtle.spawn(player.getLevel(), player.getX(), player.getY(), player.getZ(), player.getYRot(), player.getXRot());
+		return turtle.spawn(player.serverLevel(), player.getX(), player.getY(), player.getZ(), player.getYRot(), player.getXRot());
 	}
 }

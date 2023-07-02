@@ -88,7 +88,7 @@ public class JoinGameCommand {
 				if (forcedRole != null) {
 					players.forceRole(player, forcedRole);
 				}
-				source.sendSuccess(GameTexts.Commands.joinedLobby(lobby), false);
+				source.sendSuccess(() -> GameTexts.Commands.joinedLobby(lobby), false);
 			} else {
 				source.sendFailure(result.getError());
 			}

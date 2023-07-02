@@ -1,6 +1,5 @@
 package com.lovetropics.minigames.common.core.game.util;
 
-import com.lovetropics.lib.codec.MoreCodecs;
 import com.lovetropics.minigames.common.core.game.behavior.action.GameActionContext;
 import com.lovetropics.minigames.common.core.game.behavior.action.GameActionParameter;
 import com.mojang.serialization.Codec;
@@ -9,7 +8,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
-import net.minecraft.network.chat.Component;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.Unit;
 
 import java.util.Map;
@@ -18,7 +17,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public record TemplatedText(Component template) {
-	public static final Codec<TemplatedText> CODEC = MoreCodecs.TEXT.xmap(TemplatedText::new, TemplatedText::template);
+	public static final Codec<TemplatedText> CODEC = ExtraCodecs.COMPONENT.xmap(TemplatedText::new, TemplatedText::template);
 
 	private static final Pattern PATTERN = Pattern.compile("%([a-zA-Z0-9_]+)%");
 
@@ -35,6 +34,7 @@ public record TemplatedText(Component template) {
 			return template;
 		}
 
+		// TODO: Precompute this
 		MutableComponent result = Component.literal("");
 		template.visit((FormattedText.StyledContentConsumer<Unit>) (style, text) -> {
 			Matcher matcher = PATTERN.matcher(text);

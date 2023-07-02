@@ -42,7 +42,7 @@ public class BbSkeletonEntity extends Skeleton implements BbMobEntity {
         // Setup bow goal
 
         // TODO: is this the right spot for this?
-        populateDefaultEquipmentSlots(this.random, new DifficultyInstance(Difficulty.NORMAL, 0, 0, 0));
+        populateDefaultEquipmentSlots(random, new DifficultyInstance(Difficulty.NORMAL, 0, 0, 0));
         reassessWeaponGoal();
     }
 

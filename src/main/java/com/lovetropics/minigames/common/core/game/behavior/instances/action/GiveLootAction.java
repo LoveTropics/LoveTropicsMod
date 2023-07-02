@@ -8,12 +8,12 @@ import com.lovetropics.minigames.common.core.game.behavior.event.GameActionEvent
 import com.lovetropics.minigames.common.util.Util;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
-import net.minecraft.resources.ResourceLocation;
 
 public record GiveLootAction(ResourceLocation lootTable) implements IGameBehavior {
 	public static final Codec<GiveLootAction> CODEC = RecordCodecBuilder.create(i -> i.group(
@@ -26,15 +26,14 @@ public record GiveLootAction(ResourceLocation lootTable) implements IGameBehavio
 	}
 
 	private boolean addLootTableToInventory(final ServerPlayer player) {
-		LootContext context = (new LootContext.Builder(player.getLevel()))
+		LootParams params = new LootParams.Builder(player.serverLevel())
 				.withParameter(LootContextParams.THIS_ENTITY, player)
 				.withParameter(LootContextParams.ORIGIN, player.position())
-				.withRandom(player.getRandom())
 				.withLuck(player.getLuck())
 				.create(LootContextParamSets.GIFT);
 
 		boolean changed = false;
-		for (ItemStack stack : player.server.getLootTables().get(lootTable).getRandomItems(context)) {
+		for (ItemStack stack : player.server.getLootData().getLootTable(lootTable).getRandomItems(params)) {
 			if (Util.addItemStackToInventory(player, stack)) {
 				changed = true;
 			}

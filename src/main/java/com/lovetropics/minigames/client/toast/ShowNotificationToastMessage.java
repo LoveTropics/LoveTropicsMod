@@ -6,15 +6,7 @@ import net.minecraftforge.network.NetworkEvent;
 
 import java.util.function.Supplier;
 
-public final class ShowNotificationToastMessage {
-	private final Component message;
-	private final NotificationStyle style;
-
-	public ShowNotificationToastMessage(Component message, NotificationStyle style) {
-		this.message = message;
-		this.style = style;
-	}
-
+public record ShowNotificationToastMessage(Component message, NotificationStyle style) {
 	public void encode(FriendlyByteBuf buffer) {
 		buffer.writeComponent(this.message);
 		this.style.encode(buffer);
@@ -27,9 +19,6 @@ public final class ShowNotificationToastMessage {
 	}
 
 	public void handle(Supplier<NetworkEvent.Context> ctx) {
-		ctx.get().enqueueWork(() -> {
-			NotificationToasts.display(this.message, this.style);
-		});
-		ctx.get().setPacketHandled(true);
+		NotificationToasts.display(this.message, this.style);
 	}
 }

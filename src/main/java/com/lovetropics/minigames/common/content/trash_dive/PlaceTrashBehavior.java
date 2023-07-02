@@ -11,22 +11,28 @@ import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameWorldEvents;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import it.unimi.dsi.fastutil.longs.*;
+import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
+import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.longs.LongArrayList;
+import it.unimi.dsi.fastutil.longs.LongList;
+import it.unimi.dsi.fastutil.longs.LongListIterator;
+import net.minecraft.Util;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.SectionPos;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.resources.Resource;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.server.packs.resources.Resource;
-import net.minecraft.core.Direction;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.core.BlockPos;
-import net.minecraft.world.level.ChunkPos;
-import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.chunk.ChunkAccess;
 
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.LongBuffer;
-import java.util.Random;
+import java.util.Optional;
 
 public record PlaceTrashBehavior(ResourceLocation positionData, int centerY, int range, int density) implements IGameBehavior {
 	public static final Codec<PlaceTrashBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
@@ -48,7 +54,7 @@ public record PlaceTrashBehavior(ResourceLocation positionData, int centerY, int
 				return;
 			}
 
-			Random random = chunk.getWorldForge().getRandom();
+			RandomSource random = chunk.getWorldForge().getRandom();
 			BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
 
 			LongListIterator iterator = positions.iterator();
@@ -66,9 +72,13 @@ public record PlaceTrashBehavior(ResourceLocation positionData, int centerY, int
 	}
 
 	private Long2ObjectMap<LongList> loadTrashByChunk(IGamePhase game) {
+		Optional<Resource> resource = game.getServer().getResourceManager().getResource(positionData);
+		if (resource.isEmpty()) {
+			throw new GameException(Component.literal("Missing trash position data"));
+		}
+
 		LongBuffer candidatePositions;
-		try (Resource res = game.getServer().getResourceManager().getResource(positionData)) {
-			InputStream in = res.getInputStream();
+		try (InputStream in = resource.get().open()) {
 			final byte[] data = new byte[8];
 			final ByteBuffer buf = ByteBuffer.allocate(in.available());
 			candidatePositions = buf.asLongBuffer();
@@ -93,9 +103,9 @@ public record PlaceTrashBehavior(ResourceLocation positionData, int centerY, int
 		return trashByChunk;
 	}
 
-	private void tryPlaceTrash(ChunkAccess chunk, BlockPos pos, Random random) {
+	private void tryPlaceTrash(ChunkAccess chunk, BlockPos pos, RandomSource random) {
 		if (chunk.getBlockState(pos).getBlock() == Blocks.WATER) {
-			TrashType trashType = TRASH_TYPES[random.nextInt(TRASH_TYPES.length)];
+			TrashType trashType = Util.getRandom(TRASH_TYPES, random);
 			chunk.setBlockState(pos, LoveTropicsBlocks.TRASH.get(trashType).getDefaultState()
 							.setValue(TrashBlock.WATERLOGGED, true)
 							.setValue(TrashBlock.ATTACHMENT, Block.canSupportRigidBlock(chunk, pos.below()) ? Attachment.FLOOR : Attachment.random(random))

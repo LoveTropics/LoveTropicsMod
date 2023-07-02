@@ -44,13 +44,13 @@ public class TemporaryDimensionCommand {
         RuntimeDimensions runtimeDimensions = RuntimeDimensions.get(server);
 
         if (runtimeDimensions.getTemporaryDimensions().isEmpty()) {
-            ctx.getSource().sendSuccess(Component.literal("No temporary dimensions open!"), false);
+            ctx.getSource().sendSuccess(() -> Component.literal("No temporary dimensions open!"), false);
         }
 
         for (var dimension : runtimeDimensions.getTemporaryDimensions()) {
              ServerLevel world = server.getLevel(dimension);
              if (world == null) continue;
-             ctx.getSource().sendSuccess(Component.literal(dimension.location() + ": " + world.players().size() + " players"), false);
+             ctx.getSource().sendSuccess(() -> Component.literal(dimension.location() + ": " + world.players().size() + " players"), false);
         }
 
         return Command.SINGLE_SUCCESS;
@@ -73,7 +73,7 @@ public class TemporaryDimensionCommand {
         RuntimeDimensionHandle handle = runtimeDimensions.handleForTemporaryDimension(level.dimension());
         handle.delete();
 
-        ctx.getSource().sendSuccess(Component.literal("Closed '" + level.dimension().location() + "'"), false);
+        ctx.getSource().sendSuccess(() -> Component.literal("Closed '" + level.dimension().location() + "'"), false);
 
         return Command.SINGLE_SUCCESS;
     }

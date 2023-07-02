@@ -6,7 +6,11 @@ import com.lovetropics.minigames.common.core.game.IGameDefinition;
 import com.lovetropics.minigames.common.core.game.lobby.IGameLobby;
 import com.lovetropics.minigames.common.core.game.player.PlayerRole;
 import net.minecraft.ChatFormatting;
-import net.minecraft.network.chat.*;
+import net.minecraft.network.chat.ClickEvent;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.HoverEvent;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.Style;
 import net.minecraft.server.level.ServerPlayer;
 
 import javax.annotation.Nullable;
@@ -51,7 +55,7 @@ public final class GameTexts {
 
 	private static MutableComponent formatLink(MutableComponent link, String command) {
 		Style style = Style.EMPTY
-				.setUnderlined(true).withColor(ChatFormatting.BLUE)
+				.withUnderlined(true).withColor(ChatFormatting.BLUE)
 				.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, command))
 				.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal(command)));
 
@@ -182,7 +186,7 @@ public final class GameTexts {
 				int players = lobby.getPlayers().size();
 				Component link = clickHere(lobby.getMetadata().joinCommand(role));
 
-				TranslatableComponent entry = Component.translatable(Keys.LOBBY_SELECTOR_ENTRY, lobbyName, players, link);
+				MutableComponent entry = Component.translatable(Keys.LOBBY_SELECTOR_ENTRY, lobbyName, players, link);
 				selector = selector.append(entry.withStyle(ChatFormatting.GRAY)).append("\n");
 			}
 

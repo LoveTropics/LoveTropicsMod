@@ -1,18 +1,17 @@
 package com.lovetropics.minigames.client.game.handler.spectate;
 
-import java.util.UUID;
-
 import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.client.game.handler.ClientGameStateHandler;
 import com.lovetropics.minigames.common.core.game.client_state.instance.SpectatingClientState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.spectator.SpectatorGui;
-import net.minecraft.network.chat.TextColor;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.ViewportEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+
+import java.util.UUID;
 
 @Mod.EventBusSubscriber(modid = Constants.MODID, value = Dist.CLIENT)
 public final class ClientSpectatingManager implements ClientGameStateHandler<SpectatingClientState> {
@@ -44,8 +43,8 @@ public final class ClientSpectatingManager implements ClientGameStateHandler<Spe
 		}
 	}
 
-	public void onPlayerActivity(UUID player, TextColor style) {
-		session.ui.onPlayerActivity(player, style);
+	public void onPlayerActivity(UUID player, int color) {
+		session.ui.onPlayerActivity(player, color);
 	}
 
 	@SubscribeEvent

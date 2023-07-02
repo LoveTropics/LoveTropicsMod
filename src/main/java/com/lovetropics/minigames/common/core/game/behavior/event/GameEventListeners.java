@@ -18,6 +18,7 @@ public final class GameEventListeners implements EventRegistrar {
 		this.rebuildInvoker(type);
 	}
 
+	@Override
 	public <T> void unlisten(GameEventType<T> type, T listener) {
 		List<Object> listeners = this.listeners.get(type);
 		if (listeners != null && listeners.remove(listener)) {

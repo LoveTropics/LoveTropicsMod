@@ -4,14 +4,20 @@ import com.google.common.base.Preconditions;
 import com.lovetropics.minigames.common.core.game.state.GameStateKey;
 import com.lovetropics.minigames.common.core.game.state.IGameState;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import net.minecraft.Util;
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.core.BlockPos;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
-import java.util.*;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 
 public final class PlotsState implements Iterable<Plot>, IGameState {
 	public static final GameStateKey<PlotsState> KEY = GameStateKey.create("Biodiversity Blitz Plots");
@@ -63,12 +69,10 @@ public final class PlotsState implements Iterable<Plot>, IGameState {
 
 	@Nullable
 	public Plot getRandomPlot(RandomSource random) {
-		if (this.plots.isEmpty()) {
+		if (plots.isEmpty()) {
 			return null;
 		}
-
-		List<Plot> plots = new ArrayList<>(this.plots);
-
-		return plots.get(random.nextInt(plots.size()));
+		List<Plot> plots = List.copyOf(this.plots);
+		return Util.getRandom(plots, random);
 	}
 }

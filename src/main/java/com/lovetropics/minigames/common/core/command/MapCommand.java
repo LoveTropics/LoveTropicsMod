@@ -6,7 +6,11 @@ import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.common.core.command.argument.DimensionArgument;
 import com.lovetropics.minigames.common.core.command.argument.MapWorkspaceArgument;
 import com.lovetropics.minigames.common.core.dimension.DimensionUtils;
-import com.lovetropics.minigames.common.core.map.*;
+import com.lovetropics.minigames.common.core.map.MapExportReader;
+import com.lovetropics.minigames.common.core.map.MapExportWriter;
+import com.lovetropics.minigames.common.core.map.MapMetadata;
+import com.lovetropics.minigames.common.core.map.MapRegions;
+import com.lovetropics.minigames.common.core.map.VoidChunkGenerator;
 import com.lovetropics.minigames.common.core.map.workspace.MapWorkspace;
 import com.lovetropics.minigames.common.core.map.workspace.MapWorkspaceManager;
 import com.lovetropics.minigames.common.core.map.workspace.WorkspaceDimensionConfig;
@@ -24,7 +28,10 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.arguments.ResourceLocationArgument;
 import net.minecraft.commands.arguments.coordinates.BlockPosArgument;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.chat.*;
+import net.minecraft.network.chat.ClickEvent;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.HoverEvent;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
@@ -125,20 +132,21 @@ public final class MapCommand {
 		}
 
 		long seed = server.overworld().getSeed();
-		WorkspaceDimensionConfig dimensionConfig = new WorkspaceDimensionConfig(dimension.typeHolder(), dimension.generator(), seed);
+		WorkspaceDimensionConfig dimensionConfig = new WorkspaceDimensionConfig(dimension.type(), dimension.generator(), seed);
 
 		workspaceManager.openWorkspace(id, dimensionConfig).thenAcceptAsync(workspace -> {
-			MutableComponent message = Component.literal("Opened workspace with id '" + id + "'. ").withStyle(ChatFormatting.AQUA);
-			Component join = Component.literal("Click here to join")
-					.withStyle(style -> {
-						String command = "/map join " + id;
-						return style.withColor(ChatFormatting.BLUE)
-								.setUnderlined(true)
-								.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, command))
-								.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal(command)));
-					});
-
-			source.sendSuccess(message.append(join), false);
+			source.sendSuccess(() -> {
+				MutableComponent message = Component.literal("Opened workspace with id '" + id + "'. ").withStyle(ChatFormatting.AQUA);
+				Component join = Component.literal("Click here to join")
+						.withStyle(style -> {
+							String command = "/map join " + id;
+							return style.withColor(ChatFormatting.BLUE)
+									.withUnderlined(true)
+									.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, command))
+									.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal(command)));
+						});
+				return message.append(join);
+			}, false);
 		}, server);
 
 		return Command.SINGLE_SUCCESS;
@@ -151,7 +159,7 @@ public final class MapCommand {
 		MapWorkspace workspace = MapWorkspaceArgument.get(context, "id");
 		workspaceManager.deleteWorkspace(workspace.id());
 
-		source.sendSuccess(Component.literal("Deleted workspace with id '" + workspace.id() + "'. ").withStyle(ChatFormatting.GOLD), false);
+		source.sendSuccess(() -> Component.literal("Deleted workspace with id '" + workspace.id() + "'. ").withStyle(ChatFormatting.GOLD), false);
 
 		return Command.SINGLE_SUCCESS;
 	}
@@ -209,7 +217,7 @@ public final class MapCommand {
 
 		String key = StringArgumentType.getString(context, "key");
 
-		workspace.regions().add(key, BlockBox.of(new BlockPos(pos)));
+		workspace.regions().add(key, BlockBox.of(BlockPos.containing(pos)));
 
 		return Command.SINGLE_SUCCESS;
 	}
@@ -244,7 +252,7 @@ public final class MapCommand {
 					writer.writeMetadata(new MapMetadata(id, workspace.worldSettings(), regions));
 					writer.writeWorldData(dimensionDirectory);
 
-					source.sendSuccess(Component.literal("Successfully exported map!"), false);
+					source.sendSuccess(() -> Component.literal("Successfully exported map!"), false);
 				}
 			} catch (Exception e) {
 				source.sendFailure(Component.literal("Failed to export map!"));
@@ -286,7 +294,7 @@ public final class MapCommand {
 		}
 
 		long seed = source.getServer().overworld().getSeed();
-		WorkspaceDimensionConfig dimensionConfig = new WorkspaceDimensionConfig(dimension.typeHolder(), dimension.generator(), seed);
+		WorkspaceDimensionConfig dimensionConfig = new WorkspaceDimensionConfig(dimension.type(), dimension.generator(), seed);
 
 		workspaceManager.openWorkspace(id, dimensionConfig).thenAcceptAsync(workspace -> {
 			try {
@@ -296,7 +304,7 @@ public final class MapCommand {
 					MapMetadata metadata = reader.loadInto(server, workspace.dimensionKey());
 					workspace.importFrom(metadata);
 
-					source.sendSuccess(Component.literal("Successfully imported workspace into '" + id + "'"), false);
+					source.sendSuccess(() -> Component.literal("Successfully imported workspace into '" + id + "'"), false);
 				}
 			} catch (IOException e) {
 				source.sendFailure(Component.literal("Failed to import workspace!"));

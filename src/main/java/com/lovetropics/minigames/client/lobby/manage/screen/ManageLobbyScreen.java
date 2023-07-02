@@ -14,16 +14,16 @@ import com.lovetropics.minigames.client.screen.flex.Layout;
 import com.lovetropics.minigames.common.core.game.lobby.LobbyControls;
 import com.lovetropics.minigames.common.core.game.lobby.LobbyVisibility;
 import com.lovetropics.minigames.common.core.game.util.GameTexts;
-import com.mojang.blaze3d.vertex.PoseStack;
-import net.minecraft.network.chat.CommonComponents;
+import net.minecraft.ChatFormatting;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.gui.components.EditBox;
-import net.minecraft.client.gui.components.Button;
+import net.minecraft.network.chat.CommonComponents;
+import net.minecraft.network.chat.Component;
+import net.minecraft.util.CommonColors;
 import net.minecraft.util.Mth;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.Component;
-import net.minecraft.ChatFormatting;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -54,8 +54,6 @@ public final class ManageLobbyScreen extends Screen {
 
 	@Override
 	protected void init() {
-		minecraft.keyboardHandler.setSendRepeatsToGui(true);
-
 		layout = new ManageLobbyLayout(this);
 
 		ClientLobbyManageState lobby = session.lobby();
@@ -206,50 +204,50 @@ public final class ManageLobbyScreen extends Screen {
 	}
 
 	@Override
-	public void render(PoseStack matrixStack, int mouseX, int mouseY, float partialTicks) {
+	public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
 		int fontHeight = font.lineHeight;
 
-		renderBackground(matrixStack, 0);
+		renderBackground(graphics);
 
-		FlexUi.fill(layout.leftColumn, matrixStack, 0x80101010);
-		FlexUi.fill(layout.rightColumn, matrixStack, 0x80101010);
+		FlexUi.fill(layout.leftColumn, graphics, 0x80101010);
+		FlexUi.fill(layout.rightColumn, graphics, 0x80101010);
 
-		gameList.render(matrixStack, mouseX, mouseY, partialTicks);
-		gameConfig.render(matrixStack, mouseX, mouseY, partialTicks);
+		gameList.render(graphics, mouseX, mouseY, partialTicks);
+		gameConfig.render(graphics, mouseX, mouseY, partialTicks);
 
 		for (Layout marginal : layout.marginals) {
-			FlexUi.fill(marginal, matrixStack, 0xFF101010);
+			FlexUi.fill(marginal, graphics, 0xFF101010);
 		}
 
-		gameList.renderOverlays(matrixStack, mouseX, mouseY, partialTicks);
+		gameList.renderOverlays(graphics, mouseX, mouseY, partialTicks);
 
 		// TODO: make this name rendering better
-		drawString(matrixStack, font, nameField.getMessage(), nameField.x, nameField.y - fontHeight - 2, 0xFFFFFF);
-		nameField.render(matrixStack, mouseX, mouseY, partialTicks);
+		graphics.drawString(font, nameField.getMessage(), nameField.getX(), nameField.getY() - fontHeight - 2, CommonColors.WHITE);
+		nameField.render(graphics, mouseX, mouseY, partialTicks);
 
-		playerList.render(matrixStack, mouseX, mouseY);
+		playerList.render(graphics, mouseX, mouseY);
 
 		Box header = layout.header.content();
-		drawCenteredString(matrixStack, font, title, header.centerX(), header.centerY(), 0xFFFFFF);
+		graphics.drawCenteredString(font, title, header.centerX(), header.centerY(), CommonColors.WHITE);
 
 		ClientLobbyQueue queue = session.lobby().getQueue();
 		ClientLobbyQueuedGame selectedEntry = queue.byId(selectedGameId);
 		if (selectedEntry != null) {
-			renderSelectedGame(selectedEntry, matrixStack, mouseX, mouseY, partialTicks);
+			renderSelectedGame(selectedEntry, graphics, mouseX, mouseY, partialTicks);
 		}
 
-		playerList.renderTooltip(matrixStack, mouseX, mouseY);
+		playerList.renderTooltip(graphics, mouseX, mouseY);
 
-		super.render(matrixStack, mouseX, mouseY, partialTicks);
+		super.render(graphics, mouseX, mouseY, partialTicks);
 	}
 
-	private void renderSelectedGame(ClientLobbyQueuedGame game, PoseStack matrixStack, int mouseX, int mouseY, float partialTicks) {
-		FlexUi.fill(layout.centerHeader, matrixStack, 0x80101010);
+	private void renderSelectedGame(ClientLobbyQueuedGame game, GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
+		FlexUi.fill(layout.centerHeader, graphics, 0x80101010);
 
 		Component title = GameTexts.Ui.managingGame(game.definition());
 
 		Box header = layout.centerHeader.content();
-		drawCenteredString(matrixStack, font, title, header.centerX(), header.centerY() - font.lineHeight / 2, 0xFFFFFF);
+		graphics.drawCenteredString(font, title, header.centerX(), header.centerY() - font.lineHeight / 2, CommonColors.WHITE);
 	}
 
 	@Override

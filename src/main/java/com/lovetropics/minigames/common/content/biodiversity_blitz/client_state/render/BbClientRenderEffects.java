@@ -8,21 +8,24 @@ import com.lovetropics.minigames.common.content.biodiversity_blitz.client_state.
 import com.lovetropics.minigames.common.content.biodiversity_blitz.client_state.ClientBbSelfState;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.client_state.CurrencyTargetState;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.systems.RenderSystem;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
-import net.minecraft.client.renderer.block.model.ItemTransforms;
+import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.util.CommonColors;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.ChatFormatting;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.ForgeHooksClient;
+import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
 import net.minecraftforge.client.event.RenderNameTagEvent;
+import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
@@ -38,20 +41,17 @@ public final class BbClientRenderEffects {
 	private static final int ITEM_SIZE = 16;
 
 	@SubscribeEvent
-	public static void renderGameOverlay(RenderGameOverlayEvent event) {
-		if (event.getType() != RenderGameOverlayEvent.ElementType.TEXT) {
-			return;
-		}
-
-		ClientBbSelfState selfState = ClientGameStateManager.getOrNull(BiodiversityBlitz.SELF_STATE);
-		if (selfState != null) {
-			CurrencyTargetState currencyTarget = ClientGameStateManager.getOrNull(BiodiversityBlitz.CURRENCY_TARGET);
-			renderOverlay(event, selfState, currencyTarget);
-		}
+	public static void registerOverlays(RegisterGuiOverlaysEvent event) {
+		event.registerBelow(VanillaGuiOverlay.DEBUG_TEXT.id(), "biodiversity_blitz", (gui, graphics, partialTick, screenWidth, screenHeight) -> {
+			ClientBbSelfState selfState = ClientGameStateManager.getOrNull(BiodiversityBlitz.SELF_STATE);
+			if (selfState != null) {
+				CurrencyTargetState currencyTarget = ClientGameStateManager.getOrNull(BiodiversityBlitz.CURRENCY_TARGET);
+				renderOverlay(graphics, selfState, currencyTarget);
+			}
+		});
 	}
 
-	private static void renderOverlay(RenderGameOverlayEvent event, ClientBbSelfState selfState, CurrencyTargetState currencyTarget) {
-		PoseStack matrixStack = event.getMatrixStack();
+	private static void renderOverlay(GuiGraphics graphics, ClientBbSelfState selfState, CurrencyTargetState currencyTarget) {
 		Font font = CLIENT.font;
 
 		final int left = PADDING;
@@ -60,18 +60,18 @@ public final class BbClientRenderEffects {
 		int x = left;
 		int y = top;
 
-		renderItem(matrixStack, CURRENCY_ITEM.get(), x, y);
+		graphics.renderItem(CURRENCY_ITEM.get(), x, y);
 
 		String currency = String.valueOf(selfState.currency());
 		if (currencyTarget != null) {
 			currency = ChatFormatting.GRAY + "Total: " + ChatFormatting.WHITE + currency + ChatFormatting.GRAY + "/" + currencyTarget.value();
 		}
 
-		font.drawShadow(
-				matrixStack, currency,
+		graphics.drawString(
+				font, currency,
 				x + ITEM_SIZE + PADDING,
 				y + (ITEM_SIZE - font.lineHeight) / 2,
-				0xFFFFFFFF
+				CommonColors.WHITE
 		);
 		y += ITEM_SIZE + PADDING;
 
@@ -80,20 +80,12 @@ public final class BbClientRenderEffects {
 		ChatFormatting incrementColor = gainingCurrency ? ChatFormatting.AQUA : ChatFormatting.RED;
 
 		String nextCurrencyIncrement = incrementColor + "+" + increment + ChatFormatting.GRAY + " next drop";
-		font.drawShadow(matrixStack, nextCurrencyIncrement, x, y, 0xFFFFFFFF);
+		graphics.drawString(font, nextCurrencyIncrement, x, y, CommonColors.WHITE);
 		y += font.lineHeight;
 
 		if (!gainingCurrency) {
-			font.drawShadow(matrixStack, ChatFormatting.GRAY + "You must be in your plot to receive points!", x, y, 0xFFFFFFFF);
+			graphics.drawString(font, ChatFormatting.GRAY + "You must be in your plot to receive points!", x, y, CommonColors.WHITE);
 		}
-	}
-
-	private static void renderItem(PoseStack matrixStack, ItemStack stack, int x, int y) {
-		final PoseStack pose = RenderSystem.getModelViewStack();
-		pose.pushPose();
-		pose.mulPoseMatrix(matrixStack.last().pose());
-		CLIENT.getItemRenderer().renderGuiItem(stack, x, y);
-		pose.popPose();
 	}
 
 	@SubscribeEvent
@@ -124,7 +116,7 @@ public final class BbClientRenderEffects {
 
 		String currencyText = String.valueOf(currency);
 
-		PoseStack matrixStack = event.getPoseStack();
+		PoseStack poseStack = event.getPoseStack();
 		MultiBufferSource buffer = event.getMultiBufferSource();
 		int packedLight = event.getPackedLight();
 
@@ -133,25 +125,25 @@ public final class BbClientRenderEffects {
 
 		float left = -(font.width(currencyText) * textScale + itemSize) / 2.0F;
 
-		matrixStack.pushPose();
-		matrixStack.translate(0.0, entity.getBbHeight() + 0.75, 0.0);
-		matrixStack.mulPose(renderDispatcher.cameraOrientation());
-		matrixStack.scale(0.0625F * textScale, 0.0625F * textScale, 0.0625F * textScale);
+		poseStack.pushPose();
+		poseStack.translate(0.0, entity.getBbHeight() + 0.75, 0.0);
+		poseStack.mulPose(renderDispatcher.cameraOrientation());
+		poseStack.scale(0.0625F * textScale, 0.0625F * textScale, 0.0625F * textScale);
 
-		matrixStack.pushPose();
-		matrixStack.scale(-1.0F, -1.0F, 1.0F);
+		poseStack.pushPose();
+		poseStack.scale(-1.0F, -1.0F, 1.0F);
 
 		float textX = (left + itemSize) * textScale;
 		float textY = -font.lineHeight / 2.0F;
-		font.draw(matrixStack, currencyText, textX, textY, 0xFFFFFFFF);
-		matrixStack.popPose();
+		font.drawInBatch(currencyText, textX, textY, CommonColors.WHITE, false, poseStack.last().pose(), buffer, Font.DisplayMode.NORMAL, 0, packedLight);
+		poseStack.popPose();
 
-		matrixStack.pushPose();
-		matrixStack.translate(-left, 0.0F, 0.0F);
-		matrixStack.scale(-itemSize, itemSize, -itemSize);
-		items.renderStatic(CURRENCY_ITEM.get(), ItemTransforms.TransformType.GUI, packedLight, OverlayTexture.NO_OVERLAY, matrixStack, buffer, 0);
-		matrixStack.popPose();
+		poseStack.pushPose();
+		poseStack.translate(-left, 0.0F, 0.0F);
+		poseStack.scale(-itemSize, itemSize, -itemSize);
+		items.renderStatic(CURRENCY_ITEM.get(), ItemDisplayContext.GUI, packedLight, OverlayTexture.NO_OVERLAY, poseStack, buffer, CLIENT.level, 0);
+		poseStack.popPose();
 
-		matrixStack.popPose();
+		poseStack.popPose();
 	}
 }

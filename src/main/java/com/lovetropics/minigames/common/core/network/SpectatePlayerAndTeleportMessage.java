@@ -1,8 +1,8 @@
 package com.lovetropics.minigames.common.core.network;
 
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.network.NetworkEvent;
 
 import java.util.UUID;
@@ -19,19 +19,16 @@ public record SpectatePlayerAndTeleportMessage(UUID player) {
 	}
 
 	public void handle(Supplier<NetworkEvent.Context> ctx) {
-		ctx.get().enqueueWork(() -> {
-			ServerPlayer sender = ctx.get().getSender();
-			if (sender == null || !sender.isSpectator()) {
-				return;
-			}
+		ServerPlayer sender = ctx.get().getSender();
+		if (sender == null || !sender.isSpectator()) {
+			return;
+		}
 
-			Player target = sender.level.getPlayerByUUID(player);
-			if (target != null) {
-				sender.teleportTo(sender.getLevel(), target.getX(), target.getY(), target.getZ(), target.getYRot(), target.getXRot());
-			}
+		Player target = sender.level().getPlayerByUUID(player);
+		if (target != null) {
+			sender.teleportTo(sender.serverLevel(), target.getX(), target.getY(), target.getZ(), target.getYRot(), target.getXRot());
+		}
 
-			sender.setCamera(target);
-		});
-		ctx.get().setPacketHandled(true);
+		sender.setCamera(target);
 	}
 }

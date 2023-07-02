@@ -15,7 +15,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.RenderLevelLastEvent;
+import net.minecraftforge.client.event.RenderLevelStageEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
@@ -27,7 +27,11 @@ public final class GameBeaconRenderer {
 	private static final float[] COLOR = DyeColor.WHITE.getTextureDiffuseColors();
 
 	@SubscribeEvent
-	public static void onRenderLevel(RenderLevelLastEvent event) {
+	public static void onRenderLevel(RenderLevelStageEvent event) {
+		if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_LEVEL) {
+			return;
+		}
+
 		BeaconClientState state = ClientGameStateManager.getOrNull(GameClientStateTypes.BEACON);
 		if (state == null || state.positions().isEmpty()) {
 			return;

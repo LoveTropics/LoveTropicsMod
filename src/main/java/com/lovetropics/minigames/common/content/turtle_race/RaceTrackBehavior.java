@@ -25,7 +25,6 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.SharedConstants;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundSetSubtitleTextPacket;
 import net.minecraft.network.protocol.game.ClientboundSetTitleTextPacket;
 import net.minecraft.network.protocol.game.ClientboundSetTitlesAnimationPacket;
@@ -242,7 +241,7 @@ public class RaceTrackBehavior implements IGameBehavior {
 	}
 
 	private boolean onPlayerFinishLap(ServerPlayer player, PlayerState state) {
-		FireworkPalette.DYE_COLORS.spawn(player.blockPosition(), player.level);
+		FireworkPalette.DYE_COLORS.spawn(player.blockPosition(), player.level());
 
 		long lapTime = game.ticks() - state.lapStartTime;
 		game.getAllPlayers().sendMessage(Component.literal("")

@@ -1,17 +1,21 @@
 package com.lovetropics.minigames.common.core.map;
 
 import net.minecraft.nbt.NbtIo;
-import net.minecraft.server.packs.resources.Resource;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.LevelStorageSource;
 import org.apache.commons.io.FileUtils;
 
-import java.io.*;
+import java.io.Closeable;
+import java.io.DataInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Optional;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -24,8 +28,11 @@ public final class MapExportReader implements Closeable {
 
 	public static MapExportReader open(MinecraftServer server, ResourceLocation location) throws IOException {
 		ResourceLocation path = new ResourceLocation(location.getNamespace(), "maps/" + location.getPath() + ".zip");
-		Resource resource = server.getResourceManager().getResource(path);
-		return MapExportReader.open(resource.getInputStream());
+		Optional<Resource> resource = server.getResourceManager().getResource(path);
+		if (resource.isEmpty()) {
+			throw new IOException("Map at " + location + " did not exist");
+		}
+		return MapExportReader.open(resource.get().open());
 	}
 
 	public static MapExportReader open(InputStream input) {

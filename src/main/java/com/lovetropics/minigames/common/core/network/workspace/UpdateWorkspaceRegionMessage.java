@@ -4,8 +4,8 @@ import com.lovetropics.lib.BlockBox;
 import com.lovetropics.minigames.client.map.ClientMapWorkspace;
 import com.lovetropics.minigames.common.core.map.workspace.MapWorkspace;
 import com.lovetropics.minigames.common.core.map.workspace.MapWorkspaceManager;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.fml.LogicalSide;
 import net.minecraftforge.network.NetworkDirection;
 import net.minecraftforge.network.NetworkEvent;
@@ -30,15 +30,12 @@ public record UpdateWorkspaceRegionMessage(int id, BlockBox region) {
 	}
 
 	public void handle(Supplier<NetworkEvent.Context> ctx) {
-		ctx.get().enqueueWork(() -> {
-			NetworkDirection direction = ctx.get().getDirection();
-			if (direction.getReceptionSide() == LogicalSide.SERVER) {
-				handleServer(ctx.get());
-			} else {
-				handleClient();
-			}
-		});
-		ctx.get().setPacketHandled(true);
+		NetworkDirection direction = ctx.get().getDirection();
+		if (direction.getReceptionSide() == LogicalSide.SERVER) {
+			handleServer(ctx.get());
+		} else {
+			handleClient();
+		}
 	}
 
 	private void handleServer(NetworkEvent.Context ctx) {
@@ -48,7 +45,7 @@ public record UpdateWorkspaceRegionMessage(int id, BlockBox region) {
 		}
 
 		MapWorkspaceManager workspaceManager = MapWorkspaceManager.get(sender.server);
-		MapWorkspace workspace = workspaceManager.getWorkspace(sender.level.dimension());
+		MapWorkspace workspace = workspaceManager.getWorkspace(sender.level().dimension());
 		if (workspace != null) {
 			workspace.regions().set(id, region);
 		}

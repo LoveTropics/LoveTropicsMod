@@ -1,7 +1,7 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances.donation;
 
-import com.lovetropics.minigames.client.toast.NotificationStyle;
 import com.lovetropics.minigames.client.toast.NotificationIcon;
+import com.lovetropics.minigames.client.toast.NotificationStyle;
 import com.lovetropics.minigames.client.toast.ShowNotificationToastMessage;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.player.PlayerSet;
@@ -11,10 +11,9 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundSoundPacket;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
@@ -61,7 +60,8 @@ public record DonationPackageData(
 			);
 
 			if (targeted) {
-				player.connection.send(new ClientboundSoundPacket(notification.sound(), SoundSource.MASTER, player.getX(), player.getY(), player.getZ(), 0.2f, 1f));
+				long seed = player.getRandom().nextLong();
+				player.connection.send(new ClientboundSoundPacket(notification.sound(), SoundSource.MASTER, player.getX(), player.getY(), player.getZ(), 0.2f, 1f, seed));
 			}
 		}
 	}
@@ -70,13 +70,13 @@ public record DonationPackageData(
 			TemplatedText message,
 			NotificationIcon icon,
 			NotificationStyle.Sentiment sentiment,
-			SoundEvent sound
+			Holder<SoundEvent> sound
 	) {
 		public static final Codec<Notification> CODEC = RecordCodecBuilder.create(i -> i.group(
 				TemplatedText.CODEC.fieldOf("message").forGetter(c -> c.message),
 				NotificationIcon.CODEC.optionalFieldOf("icon", NotificationIcon.item(new ItemStack(Items.GRASS_BLOCK))).forGetter(c -> c.icon),
 				NotificationStyle.Sentiment.CODEC.optionalFieldOf("sentiment", NotificationStyle.Sentiment.NEUTRAL).forGetter(c -> c.sentiment),
-				SoundEvent.CODEC.optionalFieldOf("sound", SoundEvents.TOTEM_USE).forGetter(c -> c.sound)
+				SoundEvent.CODEC.optionalFieldOf("sound", Holder.direct(SoundEvents.TOTEM_USE)).forGetter(c -> c.sound)
 		).apply(i, Notification::new));
 
 		public Component createTargetedMessage(@Nullable ServerPlayer receiver, @Nullable String sender) {

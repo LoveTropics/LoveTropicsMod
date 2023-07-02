@@ -1,36 +1,13 @@
 package com.lovetropics.minigames.client.screen.flex;
 
-import com.mojang.blaze3d.vertex.PoseStack;
-import net.minecraft.client.gui.GuiComponent;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraftforge.fml.loading.FMLEnvironment;
 
 import java.util.Objects;
 
-public final class Layout extends GuiComponent {
-	private final Box content;
-	private final Box padding;
-	private final Box margin;
-
-	public Layout(Box content, Box padding, Box margin) {
-		this.content = content;
-		this.padding = padding;
-		this.margin = margin;
-	}
-
-	public Box content() {
-		return this.content;
-	}
-
-	public Box padding() {
-		return this.padding;
-	}
-
-	public Box margin() {
-		return this.margin;
-	}
-
+public record Layout(Box content, Box padding, Box margin) {
 	public Box background() {
-		return this.padding;
+		return padding;
 	}
 
 	public Layout clip(Box bounds) {
@@ -69,11 +46,6 @@ public final class Layout extends GuiComponent {
 	}
 
 	@Override
-	public int hashCode() {
-		return Objects.hash(content, margin, padding);
-	}
-
-	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
 			return true;
@@ -87,21 +59,22 @@ public final class Layout extends GuiComponent {
 	}
 
 	private static final boolean inDev = !FMLEnvironment.naming.equals("srg");
-	public void debugRender(PoseStack mStack) {
+
+	public void debugRender(GuiGraphics graphics) {
 		if (!inDev) return;
-		vLine(mStack, margin().left(), margin().top(), margin().bottom() - 1, 0xFFF9CC9D);
-		vLine(mStack, margin().right() - 1, margin().top(), margin().bottom() - 1, 0xFFF9CC9D);
-		hLine(mStack, margin().left(), margin().right() - 1, margin().top(), 0xFFF9CC9D);
-		hLine(mStack, margin().left(), margin().right() - 1, margin().bottom() - 1, 0xFFF9CC9D);
-		
-		vLine(mStack, padding().left(), padding().top(), padding().bottom() - 1, 0xFFC3D08B);
-		vLine(mStack, padding().right() - 1, padding().top(), padding().bottom() - 1, 0xFFC3D08B);
-		hLine(mStack, padding().left(), padding().right() - 1, padding().top(), 0xFFC3D08B);
-		hLine(mStack, padding().left(), padding().right() - 1, padding().bottom() - 1, 0xFFC3D08B);
-		
-		vLine(mStack, content().left(), content().top(), content().bottom() - 1, 0xFF8CB6C0);
-		vLine(mStack, content().right() - 1, content().top(), content().bottom() - 1, 0xFF8CB6C0);
-		hLine(mStack, content().left(), content().right() - 1, content().top(), 0xFF8CB6C0);
-		hLine(mStack, content().left(), content().right() - 1, content().bottom() - 1, 0xFF8CB6C0);
+		graphics.vLine(margin().left(), margin().top(), margin().bottom() - 1, 0xFFF9CC9D);
+		graphics.vLine(margin().right() - 1, margin().top(), margin().bottom() - 1, 0xFFF9CC9D);
+		graphics.hLine(margin().left(), margin().right() - 1, margin().top(), 0xFFF9CC9D);
+		graphics.hLine(margin().left(), margin().right() - 1, margin().bottom() - 1, 0xFFF9CC9D);
+
+		graphics.vLine(padding().left(), padding().top(), padding().bottom() - 1, 0xFFC3D08B);
+		graphics.vLine(padding().right() - 1, padding().top(), padding().bottom() - 1, 0xFFC3D08B);
+		graphics.hLine(padding().left(), padding().right() - 1, padding().top(), 0xFFC3D08B);
+		graphics.hLine(padding().left(), padding().right() - 1, padding().bottom() - 1, 0xFFC3D08B);
+
+		graphics.vLine(content().left(), content().top(), content().bottom() - 1, 0xFF8CB6C0);
+		graphics.vLine(content().right() - 1, content().top(), content().bottom() - 1, 0xFF8CB6C0);
+		graphics.hLine(content().left(), content().right() - 1, content().top(), 0xFF8CB6C0);
+		graphics.hLine(content().left(), content().right() - 1, content().bottom() - 1, 0xFF8CB6C0);
 	}
 }

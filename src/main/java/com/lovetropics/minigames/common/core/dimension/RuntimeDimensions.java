@@ -1,14 +1,13 @@
 package com.lovetropics.minigames.common.core.dimension;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableList;
 import com.lovetropics.minigames.Constants;
 import com.mojang.serialization.Lifecycle;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.MappedRegistry;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
@@ -18,13 +17,12 @@ import net.minecraft.util.ProgressListener;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.BiomeManager;
 import net.minecraft.world.level.dimension.LevelStem;
-import net.minecraft.world.level.levelgen.WorldGenSettings;
 import net.minecraft.world.level.storage.LevelStorageSource;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.level.LevelEvent;
 import net.minecraftforge.event.server.ServerAboutToStartEvent;
 import net.minecraftforge.event.server.ServerStoppingEvent;
-import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.apache.commons.io.FileUtils;
@@ -99,50 +97,50 @@ public final class RuntimeDimensions {
 	}
 
 	public RuntimeDimensionHandle getOrOpenPersistent(ResourceLocation key, Supplier<RuntimeDimensionConfig> config) {
-		ResourceKey<Level> worldKey = ResourceKey.create(Registry.DIMENSION_REGISTRY, key);
+		ResourceKey<Level> worldKey = ResourceKey.create(Registries.DIMENSION, key);
 		ServerLevel world = this.server.getLevel(worldKey);
 		if (world != null) {
 			this.deletionQueue.remove(world);
 			return new RuntimeDimensionHandle(this, world);
 		}
 
-		return this.openWorld(key, config.get(), false);
+		return this.openLevel(key, config.get(), false);
 	}
 
 	public RuntimeDimensionHandle openTemporary(RuntimeDimensionConfig config) {
 		ResourceLocation key = generateTemporaryDimensionKey();
-		return this.openWorld(key, config, true);
+		return this.openLevel(key, config, true);
 	}
 
 	@Nullable
 	public RuntimeDimensionHandle openTemporaryWithKey(ResourceLocation key, RuntimeDimensionConfig config) {
-		ResourceKey<Level> worldKey = ResourceKey.create(Registry.DIMENSION_REGISTRY, key);
+		ResourceKey<Level> worldKey = ResourceKey.create(Registries.DIMENSION, key);
 		if (this.server.getLevel(worldKey) == null) {
-			return this.openWorld(key, config, true);
+			return this.openLevel(key, config, true);
 		} else {
 			return null;
 		}
 	}
 
-	RuntimeDimensionHandle openWorld(ResourceLocation key, RuntimeDimensionConfig config, boolean temporary) {
-		ResourceKey<Level> worldKey = ResourceKey.create(Registry.DIMENSION_REGISTRY, key);
+	private RuntimeDimensionHandle openLevel(ResourceLocation key, RuntimeDimensionConfig config, boolean temporary) {
+		ResourceKey<Level> levelKey = ResourceKey.create(Registries.DIMENSION, key);
 
-		MappedRegistry<LevelStem> dimensionsRegistry = getDimensionsRegistry(this.server);
+		MappedRegistry<LevelStem> dimensionsRegistry = getLevelStemRegistry(this.server);
 		dimensionsRegistry.unfreeze();
-		dimensionsRegistry.register(ResourceKey.create(Registry.LEVEL_STEM_REGISTRY, key), config.dimension(), Lifecycle.stable());
+		dimensionsRegistry.register(ResourceKey.create(Registries.LEVEL_STEM, key), config.dimension(), Lifecycle.stable());
 		dimensionsRegistry.freeze();
 
-		ServerLevel world = new ServerLevel(
+		ServerLevel level = new ServerLevel(
 				this.server, Util.backgroundExecutor(), this.server.storageSource,
 				config.worldInfo(),
-				worldKey,
-				config.dimension().typeHolder(),
+				levelKey,
+				config.dimension(),
 				VoidChunkStatusListener.INSTANCE,
-				config.dimension().generator(),
 				false,
 				BiomeManager.obfuscateSeed(config.seed()),
-				ImmutableList.of(),
-				false
+				List.of(),
+				false,
+				server.overworld().getRandomSequences()
 		) {
 			@Override
 			public void save(@Nullable ProgressListener progress, boolean flush, boolean skipSave) {
@@ -156,18 +154,18 @@ public final class RuntimeDimensions {
 			}
 		};
 
-		this.server.levels.put(worldKey, world);
+		this.server.levels.put(levelKey, level);
 		this.server.markWorldsDirty();
 
 		if (temporary) {
-			this.temporaryDimensions.add(worldKey);
+			this.temporaryDimensions.add(levelKey);
 		}
 
-		MinecraftForge.EVENT_BUS.post(new WorldEvent.Load(world));
+		MinecraftForge.EVENT_BUS.post(new LevelEvent.Load(level));
 
-		world.tick(() -> true);
+		level.tick(() -> true);
 
-		return new RuntimeDimensionHandle(this, world);
+		return new RuntimeDimensionHandle(this, level);
 	}
 
 	void tick() {
@@ -222,24 +220,32 @@ public final class RuntimeDimensions {
 		return world.players().isEmpty() && world.getChunkSource().getLoadedChunksCount() <= 0;
 	}
 
-	private void deleteDimension(ServerLevel world) {
-		ResourceKey<Level> dimensionKey = world.dimension();
+	private void deleteDimension(ServerLevel level) {
+		ResourceKey<Level> dimensionKey = level.dimension();
 
-		if (this.server.levels.remove(dimensionKey, world)) {
+		if (this.server.levels.remove(dimensionKey, level)) {
 			this.server.markWorldsDirty();
 
 			this.temporaryDimensions.remove(dimensionKey);
 
-			MinecraftForge.EVENT_BUS.post(new WorldEvent.Unload(world));
+			MinecraftForge.EVENT_BUS.post(new LevelEvent.Unload(level));
 
-			MappedRegistry<LevelStem> dimensionsRegistry = getDimensionsRegistry(this.server);
+			MappedRegistry<LevelStem> dimensionsRegistry = getLevelStemRegistry(this.server);
 
 			dimensionsRegistry.unfreeze();
 			RegistryEntryRemover.remove(dimensionsRegistry, dimensionKey.location());
 			dimensionsRegistry.freeze();
 
 			LevelStorageSource.LevelStorageAccess save = this.server.storageSource;
-			deleteWorldDirectory(save.getDimensionPath(dimensionKey));
+			Path dimensionPath = save.getDimensionPath(dimensionKey);
+			Util.ioPool().submit(() -> {
+				try {
+					level.close();
+				} catch (IOException e) {
+					LOGGER.error("Failed to close runtime level", e);
+				}
+				deleteWorldDirectory(dimensionPath);
+			});
 		}
 	}
 
@@ -257,9 +263,8 @@ public final class RuntimeDimensions {
 		}
 	}
 
-	private static MappedRegistry<LevelStem> getDimensionsRegistry(MinecraftServer server) {
-		WorldGenSettings generatorSettings = server.getWorldData().worldGenSettings();
-		return (MappedRegistry<LevelStem>) generatorSettings.dimensions();
+	private static MappedRegistry<LevelStem> getLevelStemRegistry(MinecraftServer server) {
+		return (MappedRegistry<LevelStem>) server.registryAccess().registryOrThrow(Registries.LEVEL_STEM);
 	}
 
 	private static ResourceLocation generateTemporaryDimensionKey() {

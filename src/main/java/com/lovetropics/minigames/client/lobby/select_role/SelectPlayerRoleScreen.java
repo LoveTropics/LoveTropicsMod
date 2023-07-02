@@ -1,14 +1,18 @@
 package com.lovetropics.minigames.client.lobby.select_role;
 
 import com.lovetropics.minigames.client.screen.FlexUi;
-import com.lovetropics.minigames.client.screen.flex.*;
+import com.lovetropics.minigames.client.screen.flex.Align;
+import com.lovetropics.minigames.client.screen.flex.Box;
+import com.lovetropics.minigames.client.screen.flex.Flex;
+import com.lovetropics.minigames.client.screen.flex.FlexSolver;
+import com.lovetropics.minigames.client.screen.flex.Layout;
 import com.lovetropics.minigames.common.core.game.util.GameTexts;
 import com.lovetropics.minigames.common.core.network.LoveTropicsNetwork;
-import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.ChatFormatting;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.Component;
-import net.minecraft.ChatFormatting;
+import net.minecraft.util.CommonColors;
 
 public final class SelectPlayerRoleScreen extends Screen {
 	private static final Component TITLE = GameTexts.Ui.selectPlayerRole()
@@ -70,12 +74,12 @@ public final class SelectPlayerRoleScreen extends Screen {
 	}
 
 	@Override
-	public void render(PoseStack matrixStack, int mouseX, int mouseY, float partialTicks) {
-		this.renderBackground(matrixStack);
+	public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
+		this.renderBackground(graphics);
 
-		super.render(matrixStack, mouseX, mouseY, partialTicks);
+		super.render(graphics, mouseX, mouseY, partialTicks);
 
-		this.renderText(matrixStack);
+		this.renderText(graphics);
 	}
 
 	@Override
@@ -83,18 +87,14 @@ public final class SelectPlayerRoleScreen extends Screen {
 		return false;
 	}
 
-	private void renderText(PoseStack matrixStack) {
+	private void renderText(GuiGraphics graphics) {
 		Box box = layout.text.content();
 
 		int lineHeight = font.lineHeight + PADDING;
 		int y = box.bottom() - lineHeight * TEXT.length;
 
 		for (Component line : TEXT) {
-			int length = font.width(line);
-			int x = box.centerX() - length / 2;
-
-			font.draw(matrixStack, line, x, y, 0xFFFFFFFF);
-
+			graphics.drawCenteredString(font, line, box.centerX(), y, CommonColors.WHITE);
 			y += lineHeight;
 		}
 	}

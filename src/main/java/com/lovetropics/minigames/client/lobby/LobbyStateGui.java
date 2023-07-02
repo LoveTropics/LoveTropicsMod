@@ -6,16 +6,17 @@ import com.lovetropics.minigames.client.lobby.state.ClientGameDefinition;
 import com.lovetropics.minigames.client.lobby.state.ClientLobbyManager;
 import com.lovetropics.minigames.client.lobby.state.ClientLobbyState;
 import com.lovetropics.minigames.common.core.game.LobbyStatus;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiComponent;
-import net.minecraft.client.gui.Font;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.CommonColors;
 import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.RenderGameOverlayEvent;
-import net.minecraftforge.client.event.RenderGameOverlayEvent.ElementType;
+import net.minecraftforge.client.event.CustomizeGuiOverlayEvent;
+import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
+import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
 import net.minecraftforge.event.TickEvent.ClientTickEvent;
 import net.minecraftforge.event.TickEvent.Phase;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -37,56 +38,47 @@ public class LobbyStateGui {
 	@SubscribeEvent
 	public static void onKeyInput(ClientTickEvent event) {
 		if (event.phase == Phase.END) {
+			LocalPlayer player = Minecraft.getInstance().player;
 			if (LobbyKeybinds.JOIN.consumeClick()) {
-				Minecraft.getInstance().player.chat("/game join");
+				player.connection.sendUnsignedCommand("game join");
 			}
 			if (LobbyKeybinds.LEAVE.consumeClick()) {
-				Minecraft.getInstance().player.chat("/game leave");
+				player.connection.sendUnsignedCommand("game leave");
 			}
 		}
 	}
 
 	@SubscribeEvent
-	public static void renderGameOverlay(RenderGameOverlayEvent event) {
-		if (event.getType() == ElementType.ALL) {
-			hasBossBar = false;
-		} else if (event.getType() == ElementType.BOSSINFO) {
-			hasBossBar = true;
-		}
-
-		if (event.getType() != ElementType.TEXT && event.getType() != ElementType.LAYER) {
-			return;
-		}
-
-		if (event.getType() == ElementType.LAYER) {
-			RenderSystem.setShaderTexture(0, new ResourceLocation("minecraft:missingno"));
-		}
-
-		if (event.getType() == ElementType.TEXT) {
-			ClientLobbyState joinedLobby = ClientLobbyManager.getJoined();
-			Collection<ClientLobbyState> lobbies = ClientLobbyManager.getLobbies();
-			if (lobbies.isEmpty()) return;
-
-			renderLobbies(event, joinedLobby, lobbies);
-		}
+	public static void onRenderBossBar(CustomizeGuiOverlayEvent.BossEventProgress event) {
+		hasBossBar = true;
 	}
 
-	private static void renderLobbies(RenderGameOverlayEvent event, ClientLobbyState joinedLobby, Collection<ClientLobbyState> lobbies) {
-		PoseStack transform = event.getMatrixStack();
+	@SubscribeEvent
+	public static void registerGameOverlays(RegisterGuiOverlaysEvent event) {
+		event.registerBelow(VanillaGuiOverlay.DEBUG_TEXT.id(), "minigame_lobby", (gui, graphics, partialTick, screenWidth, screenHeight) -> {
+			ClientLobbyState joinedLobby = ClientLobbyManager.getJoined();
+			Collection<ClientLobbyState> lobbies = ClientLobbyManager.getLobbies();
+			if (!lobbies.isEmpty())  {
+				renderLobbies(graphics, joinedLobby, lobbies, hasBossBar);
+			}
+			hasBossBar = false;
+		});
+	}
 
+	private static void renderLobbies(GuiGraphics graphics, ClientLobbyState joinedLobby, Collection<ClientLobbyState> lobbies, boolean hasBossBar) {
 		if (joinedLobby != null) {
 			if (joinedLobby.getStatus() != LobbyStatus.PLAYING) {
-				render(transform, PADDING, PADDING, joinedLobby);
+				render(graphics, PADDING, PADDING, joinedLobby, hasBossBar);
 			}
 		} else {
 			int y = PADDING;
 			for (ClientLobbyState lobby : lobbies) {
-				y = render(transform, PADDING, y, lobby);
+				y = render(graphics, PADDING, y, lobby, hasBossBar);
 			}
 		}
 	}
 
-	private static int render(PoseStack transform, int left, int top, ClientLobbyState lobby) {
+	private static int render(GuiGraphics graphics, int left, int top, ClientLobbyState lobby, boolean hasBossBar) {
 		Minecraft client = Minecraft.getInstance();
 
 		final int iconSize = 32;
@@ -96,19 +88,18 @@ public class LobbyStateGui {
 
 		ResourceLocation icon = getIcon(lobby);
 		if (icon != null) {
-			RenderSystem.setShaderTexture(0, icon);
-			GuiComponent.blit(transform, x, top, 0, 0, 32, 32, 32, 32);
+			graphics.blit(icon, x, top, 0, 0, 32, 32, 32, 32);
 			x += iconSize + PADDING * 2;
 		}
 
-		if (shouldDisplayCompat(client, hasBossBar)) {
-			return renderCompactText(transform, lineHeight, lobby, x, top);
+		if (shouldDisplayCompact(client, hasBossBar)) {
+			return renderCompactText(graphics, lineHeight, lobby, x, top);
 		} else {
-			return renderFullText(transform, lineHeight, lobby, x, top);
+			return renderFullText(graphics, lineHeight, lobby, x, top);
 		}
 	}
 
-	private static int renderFullText(PoseStack transform, int lineHeight, ClientLobbyState lobby, int left, int top) {
+	private static int renderFullText(GuiGraphics graphics, int lineHeight, ClientLobbyState lobby, int left, int top) {
 		Minecraft client = Minecraft.getInstance();
 
 		LobbyStatus status = lobby.getStatus();
@@ -125,7 +116,7 @@ public class LobbyStateGui {
 			line += ChatFormatting.GREEN + " [Joined]";
 		}
 
-		fnt.drawShadow(transform, line, x, y, -1);
+		graphics.drawString(fnt, line, x, y, CommonColors.WHITE);
 		y += lineHeight;
 
 		String playerCount = formatPlayerCount(lobby, currentGame);
@@ -134,17 +125,17 @@ public class LobbyStateGui {
 				+ status.color + status.description
 				+ ChatFormatting.GRAY + " (" + playerCount + " players)";
 
-		fnt.drawShadow(transform, line, x, y, -1);
+		graphics.drawString(fnt, line, x, y, CommonColors.WHITE);
 		y += lineHeight;
 
 		line = ChatFormatting.GRAY + keyBindsText(joined);
-		fnt.drawShadow(transform, line, x, y, -1);
+		graphics.drawString(fnt, line, x, y, CommonColors.WHITE);
 		y += lineHeight + PADDING;
 
 		return y;
 	}
 
-	private static int renderCompactText(PoseStack transform, int lineHeight, ClientLobbyState lobby, int left, int top) {
+	private static int renderCompactText(GuiGraphics graphics, int lineHeight, ClientLobbyState lobby, int left, int top) {
 		Minecraft client = Minecraft.getInstance();
 
 		boolean joined = lobby == ClientLobbyManager.getJoined();
@@ -157,19 +148,19 @@ public class LobbyStateGui {
 
 		String line = getLobbyName(lobby);
 
-		fnt.drawShadow(transform, line, x, y, -1);
+		graphics.drawString(fnt, line, x, y, CommonColors.WHITE);
 		y += lineHeight;
 
 		line = ChatFormatting.GRAY + "..." + lobby.getPlayerCount() + " "
 				+ status.color + status.description
 				+ ChatFormatting.GRAY;
 
-		fnt.drawShadow(transform, line, x, y, -1);
+		graphics.drawString(fnt, line, x, y, CommonColors.WHITE);
 		y += lineHeight;
 
 		line = keyBindsText(joined);
 
-		fnt.drawShadow(transform, line, x, y, -1);
+		graphics.drawString(fnt, line, x, y, CommonColors.WHITE);
 		y += lineHeight + PADDING;
 
 		return y;
@@ -206,7 +197,7 @@ public class LobbyStateGui {
 		}
 	}
 
-	private static boolean shouldDisplayCompat(Minecraft client, boolean bossBar) {
+	private static boolean shouldDisplayCompact(Minecraft client, boolean bossBar) {
 		if (bossBar) {
 			int windowWidth = client.getWindow().getGuiScaledWidth();
 

@@ -8,13 +8,12 @@ import com.lovetropics.minigames.client.screen.flex.Flex;
 import com.lovetropics.minigames.client.screen.flex.FlexSolver;
 import com.lovetropics.minigames.client.screen.flex.Layout;
 import com.lovetropics.minigames.common.core.game.util.GameTexts;
-import com.mojang.blaze3d.vertex.PoseStack;
-import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.gui.components.Button;
-import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.Component;
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 
 import javax.annotation.Nullable;
 
@@ -129,10 +128,10 @@ public final class GameQueueList extends AbstractGameList {
 	}
 
 	@Override
-	public void renderOverlays(PoseStack matrixStack, int mouseX, int mouseY, float partialTicks) {
-		super.renderOverlays(matrixStack, mouseX, mouseY, partialTicks);
-		this.enqueueButton.render(matrixStack, mouseX, mouseY, partialTicks);
-		this.removeButton.render(matrixStack, mouseX, mouseY, partialTicks);
+	public void renderOverlays(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
+		super.renderOverlays(graphics, mouseX, mouseY, partialTicks);
+		this.enqueueButton.render(graphics, mouseX, mouseY, partialTicks);
+		this.removeButton.render(graphics, mouseX, mouseY, partialTicks);
 	}
 
 	@Override

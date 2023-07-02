@@ -22,9 +22,6 @@ public record AddWorkspaceRegionMessage(int id, String key, BlockBox region) {
 	}
 
 	public void handle(Supplier<NetworkEvent.Context> ctx) {
-		ctx.get().enqueueWork(() -> {
-			ClientMapWorkspace.INSTANCE.addRegion(id, key, region);
-		});
-		ctx.get().setPacketHandled(true);
+		ClientMapWorkspace.INSTANCE.addRegion(id, key, region);
 	}
 }

@@ -1,14 +1,13 @@
 package com.lovetropics.minigames.common.content.biodiversity_blitz.plot.plant;
 
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.plant.state.PlantState;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.core.BlockPos;
-import net.minecraft.server.level.ServerLevel;
 
 import javax.annotation.Nullable;
-import java.util.Random;
 import java.util.stream.Stream;
 
 public final class Plant {

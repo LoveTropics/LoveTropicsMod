@@ -5,7 +5,7 @@ import com.lovetropics.minigames.client.screen.LayoutGui;
 import com.lovetropics.minigames.client.screen.LayoutTree;
 import com.lovetropics.minigames.common.core.game.behavior.config.BehaviorConfig;
 import com.lovetropics.minigames.common.core.game.behavior.config.ConfigData;
-import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 
 import java.util.ArrayList;
@@ -36,10 +36,10 @@ public class BehaviorConfigList extends LayoutGui {
 	}
 	
 	@Override
-	public void render(PoseStack matrixStack, int mouseX, int mouseY, float partialTicks) {
-		super.render(matrixStack, mouseX, mouseY, partialTicks);
+	public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
+		super.render(graphics, mouseX, mouseY, partialTicks);
 		for (ConfigDataUI child : children) {
-			child.render(matrixStack, mouseX, mouseY, partialTicks);
+			child.render(graphics, mouseX, mouseY, partialTicks);
 		}
 	}
 

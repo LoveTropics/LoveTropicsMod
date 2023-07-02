@@ -21,12 +21,10 @@ public final class GameLobbyArgument {
 
 	public static RequiredArgumentBuilder<CommandSourceStack, UUID> argument(String name) {
 		return Commands.argument(name, UuidArgument.uuid())
-				.suggests((context, builder) -> {
-					return SharedSuggestionProvider.suggest(
-							IGameManager.get().getVisibleLobbies(context.getSource()).map(lobby -> lobby.getMetadata().id().uuid().toString()),
-							builder
-					);
-				});
+				.suggests((context, builder) -> SharedSuggestionProvider.suggest(
+						IGameManager.get().getVisibleLobbies(context.getSource()).map(lobby -> lobby.getMetadata().id().uuid().toString()),
+						builder
+				));
 	}
 
 	public static IGameLobby get(CommandContext<CommandSourceStack> context, String name) throws CommandSyntaxException {

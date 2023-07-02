@@ -1,7 +1,7 @@
 package com.lovetropics.minigames.client.game.handler.spectate;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.Camera;
+import net.minecraft.client.Minecraft;
 import net.minecraft.util.Mth;
 import net.minecraftforge.client.event.ViewportEvent;
 

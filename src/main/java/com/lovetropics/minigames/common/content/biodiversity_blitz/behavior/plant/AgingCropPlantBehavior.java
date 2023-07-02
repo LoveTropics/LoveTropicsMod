@@ -6,8 +6,6 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 
-import java.util.Random;
-
 public final class AgingCropPlantBehavior extends AgingPlantBehavior {
 	public static final Codec<AgingCropPlantBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
 			Codec.INT.fieldOf("interval").forGetter(c -> c.interval)
@@ -17,6 +15,7 @@ public final class AgingCropPlantBehavior extends AgingPlantBehavior {
 		super(interval);
 	}
 
+	@Override
 	protected BlockState ageUp(RandomSource random, BlockState state) {
 		// Skip 50% of crops this tick
 		if (random.nextInt(2) == 0) {

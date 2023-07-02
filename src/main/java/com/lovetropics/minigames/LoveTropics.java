@@ -1,5 +1,6 @@
 package com.lovetropics.minigames;
 
+import com.lovetropics.minigames.client.lobby.LobbyKeybinds;
 import com.lovetropics.minigames.common.config.ConfigLT;
 import com.lovetropics.minigames.common.content.MinigameTexts;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.BiodiversityBlitzTexts;
@@ -9,12 +10,22 @@ import com.lovetropics.minigames.common.content.block_party.BlockParty;
 import com.lovetropics.minigames.common.content.build_competition.BuildCompetition;
 import com.lovetropics.minigames.common.content.hide_and_seek.HideAndSeek;
 import com.lovetropics.minigames.common.content.survive_the_tide.SurviveTheTide;
-import com.lovetropics.minigames.common.content.survive_the_tide.biome.SurviveTheTideBiomes;
 import com.lovetropics.minigames.common.content.survive_the_tide.entity.DriftwoodRider;
 import com.lovetropics.minigames.common.content.trash_dive.TrashDive;
 import com.lovetropics.minigames.common.content.turtle_race.TurtleRace;
-import com.lovetropics.minigames.common.core.command.*;
-import com.lovetropics.minigames.common.core.command.game.*;
+import com.lovetropics.minigames.common.core.command.ExtendedBossBarCommand;
+import com.lovetropics.minigames.common.core.command.LoveTropicsEntityOptions;
+import com.lovetropics.minigames.common.core.command.MapCommand;
+import com.lovetropics.minigames.common.core.command.ParticleLineCommand;
+import com.lovetropics.minigames.common.core.command.TemporaryDimensionCommand;
+import com.lovetropics.minigames.common.core.command.game.CancelGameCommand;
+import com.lovetropics.minigames.common.core.command.game.FinishGameCommand;
+import com.lovetropics.minigames.common.core.command.game.GameControlCommand;
+import com.lovetropics.minigames.common.core.command.game.GamePackageCommand;
+import com.lovetropics.minigames.common.core.command.game.JoinGameCommand;
+import com.lovetropics.minigames.common.core.command.game.LeaveGameCommand;
+import com.lovetropics.minigames.common.core.command.game.ManageGameLobbyCommand;
+import com.lovetropics.minigames.common.core.command.game.StartGameCommand;
 import com.lovetropics.minigames.common.core.diguise.PlayerDisguise;
 import com.lovetropics.minigames.common.core.dimension.RuntimeDimensions;
 import com.lovetropics.minigames.common.core.game.IGameManager;
@@ -33,9 +44,11 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.logging.LogUtils;
 import com.tterrag.registrate.providers.ProviderType;
 import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.item.CreativeModeTab;
-import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.ForgeConfig;
@@ -59,7 +72,6 @@ import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
-import net.minecraftforge.forge.event.lifecycle.GatherDataEvent;
 import org.slf4j.Logger;
 
 import java.util.regex.Pattern;
@@ -69,17 +81,9 @@ public class LoveTropics {
 
     public static final Logger LOGGER = LogUtils.getLogger();
 
-    public static final CreativeModeTab LOVE_TROPICS_ITEM_GROUP = (new CreativeModeTab("love_tropics") {
-        @Override
-        @OnlyIn(Dist.CLIENT)
-        public ItemStack makeIcon() {
-            return new ItemStack(LoveTropicsBlocks.TRASH.get(TrashType.COLA).get());
-        }
-    });
+    private static final ResourceLocation TAB_ID = new ResourceLocation(Constants.MODID, "ltminigames");
 
-    private static final NonNullLazy<LoveTropicsRegistrate> REGISTRATE = NonNullLazy.of(() ->
-    	LoveTropicsRegistrate.create(Constants.MODID)
-    			  .creativeModeTab(() -> LOVE_TROPICS_ITEM_GROUP));
+    private static final NonNullLazy<LoveTropicsRegistrate> REGISTRATE = NonNullLazy.of(() -> LoveTropicsRegistrate.create(Constants.MODID).defaultCreativeTab(ResourceKey.create(Registries.CREATIVE_MODE_TAB, TAB_ID)));
 
     public static final Capability<DriftwoodRider> DRIFTWOOD_RIDER = CapabilityManager.get(new CapabilityToken<>() {});
     public static final Capability<PlayerDisguise> PLAYER_DISGUISE = CapabilityManager.get(new CapabilityToken<>() {});
@@ -92,7 +96,6 @@ public class LoveTropics {
 
         // General mod setup
         modBus.addListener(this::setup);
-        modBus.addListener(this::gatherData);
 
         DistExecutor.runWhenOn(Dist.CLIENT, () -> () -> {
             // Client setup
@@ -106,9 +109,22 @@ public class LoveTropics {
         modBus.addListener(ConfigLT::onLoad);
         modBus.addListener(ConfigLT::onFileChange);
 
+        registrate()
+                .addDataGenerator(ProviderType.LANG, prov -> {
+                    GameTexts.collectTranslations(prov::add);
+                    MinigameTexts.collectTranslations(prov::add);
+                    BiodiversityBlitzTexts.collectTranslations(prov::add);
+                })
+                .generic(TAB_ID.getPath(), Registries.CREATIVE_MODE_TAB, () -> CreativeModeTab.builder()
+                        .title(registrate().addLang("itemGroup", TAB_ID, "LTMinigames"))
+                        .icon(() -> LoveTropicsBlocks.TRASH.get(TrashType.COLA).asStack())
+                        .build()
+                ).build();
+
         // Registry objects
         LoveTropicsBlocks.init();
         MapWorkspaceItems.init();
+        LobbyKeybinds.init();
 
         GameBehaviorTypes.init(modBus);
         GameClientStateTypes.init(modBus);
@@ -121,7 +137,7 @@ public class LoveTropics {
         BlockParty.init();
         TurtleRace.init();
 
-        SurviveTheTideBiomes.REGISTER.register(modBus);
+        SoundRegistry.REGISTER.register(modBus);
 
         LoveTropicsEntityOptions.register();
 
@@ -172,25 +188,15 @@ public class LoveTropics {
         GamePackageCommand.register(dispatcher);
         ManageGameLobbyCommand.register(dispatcher);
         ExtendedBossBarCommand.register(dispatcher);
-        ParticleLineCommand.register(dispatcher);
+        ParticleLineCommand.register(event.getBuildContext(), dispatcher);
     }
 
     private void onServerAboutToStart(final ServerAboutToStartEvent event) {
-        Telemetry.INSTANCE.sendOpen();
+        Telemetry.get().sendOpen();
     }
 
     private void onServerStopping(final ServerStoppingEvent event) {
-        Telemetry.INSTANCE.sendClose();
-    }
-
-    private void gatherData(GatherDataEvent event) {
-        registrate().addDataGenerator(ProviderType.LANG, prov -> {
-            prov.add(LoveTropics.LOVE_TROPICS_ITEM_GROUP, "Love Tropics");
-
-            GameTexts.collectTranslations(prov::add);
-            MinigameTexts.collectTranslations(prov::add);
-            BiodiversityBlitzTexts.collectTranslations(prov::add);
-        });
+        Telemetry.get().sendClose();
     }
 
     public static void onServerStoppingUnsafely(MinecraftServer server) {

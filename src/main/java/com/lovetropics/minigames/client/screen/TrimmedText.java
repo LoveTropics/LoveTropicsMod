@@ -1,10 +1,9 @@
 package com.lovetropics.minigames.client.screen;
 
 import net.minecraft.client.gui.Font;
-import net.minecraft.util.FormattedCharSequence;
-import net.minecraft.network.chat.Component;
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.FormattedCharSequence;
 
 public final class TrimmedText {
 	private final Component text;

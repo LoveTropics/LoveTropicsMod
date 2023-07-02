@@ -12,28 +12,16 @@ import java.util.function.Supplier;
 public record PlayerDisguiseMessage(UUID player, @Nullable DisguiseType disguise) {
 	public void encode(FriendlyByteBuf buffer) {
 		buffer.writeUUID(player);
-
-		buffer.writeBoolean(disguise != null);
-		if (disguise != null) {
-			disguise.encode(buffer);
-		}
+		buffer.writeNullable(disguise, (b, d) -> d.encode(b));
 	}
 
 	public static PlayerDisguiseMessage decode(FriendlyByteBuf buffer) {
 		UUID player = buffer.readUUID();
-
-		DisguiseType disguise;
-		if (buffer.readBoolean()) {
-			disguise = DisguiseType.decode(buffer);
-		} else {
-			disguise = null;
-		}
-
+		DisguiseType disguise = buffer.readNullable(DisguiseType::decode);
 		return new PlayerDisguiseMessage(player, disguise);
 	}
 
 	public void handle(Supplier<NetworkEvent.Context> ctx) {
-		ctx.get().enqueueWork(() -> ClientPlayerDisguises.updateClientDisguise(player, disguise));
-		ctx.get().setPacketHandled(true);
+		ClientPlayerDisguises.updateClientDisguise(player, disguise);
 	}
 }

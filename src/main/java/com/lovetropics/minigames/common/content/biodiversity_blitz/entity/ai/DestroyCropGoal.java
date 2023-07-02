@@ -4,14 +4,12 @@ import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.BbMobE
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.plant.Plant;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.plant.state.PlantHealth;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.plant.state.PlantNotPathfindable;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.core.BlockPos;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.state.BlockState;
-
-import java.util.Random;
 
 public class DestroyCropGoal extends MoveToBlockGoal {
     private static final int DAMAGE_INTERVAL = 25;
@@ -30,9 +28,9 @@ public class DestroyCropGoal extends MoveToBlockGoal {
 
         Mob mob = this.mob.asMob();
         double distance2 = mob.position().distanceToSqr(targetPos.getX() + 0.5, targetPos.getY() + 0.5, targetPos.getZ() + 0.5);
-        if (distance2 <= getDistanceSq(mob.level.getBlockState(targetPos))) {
+        if (distance2 <= getDistanceSq(mob.level().getBlockState(targetPos))) {
             this.ticksAtTarget--;
-            if (mob.level.random.nextInt(4) == 0) {
+            if (mob.level().random.nextInt(4) == 0) {
                 spawnDamageParticles(mob, 0);
             }
             
@@ -55,7 +53,7 @@ public class DestroyCropGoal extends MoveToBlockGoal {
             PlantHealth health = plant.state(PlantHealth.KEY);
 
             if (health != null) {
-                int damage = this.mob.meleeDamage(mob.level.getRandom());
+                int damage = this.mob.meleeDamage(mob.level().getRandom());
                 health.decrement(damage);
 
                 this.spawnDamageParticles(mob, damage);
@@ -64,13 +62,13 @@ public class DestroyCropGoal extends MoveToBlockGoal {
     }
 
     private void spawnDamageParticles(Mob mob, int damage) {
-        RandomSource random = mob.level.random;
+        RandomSource random = mob.level().random;
         for (int i = 0; i < 2 + (damage / 2); ++i) {
             double dx = random.nextGaussian() * 0.02;
             double dy = random.nextGaussian() * 0.02;
             double dz = random.nextGaussian() * 0.02;
 
-            ((ServerLevel) mob.level).sendParticles(
+            ((ServerLevel) mob.level()).sendParticles(
                     ParticleTypes.ANGRY_VILLAGER,
                     this.targetPos.getX() + 0.5,
                     this.targetPos.getY() + 0.5,

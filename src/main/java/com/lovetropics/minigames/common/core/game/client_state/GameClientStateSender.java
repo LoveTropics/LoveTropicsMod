@@ -41,7 +41,7 @@ public final class GameClientStateSender {
 
 	@SubscribeEvent
 	public static void onPlayerLoggedOut(PlayerEvent.PlayerLoggedOutEvent event) {
-		Player player = event.getPlayer();
+		Player player = event.getEntity();
 		INSTANCE.players.remove(player.getUUID());
 	}
 

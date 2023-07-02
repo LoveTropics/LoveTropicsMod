@@ -12,7 +12,7 @@ import java.util.UUID;
 
 public record SpectatingClientState(List<UUID> players) implements GameClientState {
 	public static final Codec<SpectatingClientState> CODEC = RecordCodecBuilder.create(i -> i.group(
-			UUIDUtil.CODEC.listOf().fieldOf("players").forGetter(c -> c.players)
+			UUIDUtil.STRING_CODEC.listOf().fieldOf("players").forGetter(c -> c.players)
 	).apply(i, SpectatingClientState::new));
 
 	@Override

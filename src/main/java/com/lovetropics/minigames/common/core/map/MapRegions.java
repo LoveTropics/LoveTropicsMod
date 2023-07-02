@@ -3,7 +3,6 @@ package com.lovetropics.minigames.common.core.map;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.lovetropics.lib.BlockBox;
-import com.lovetropics.lib.codec.MoreCodecs;
 import com.lovetropics.minigames.common.core.game.GameException;
 import com.mojang.serialization.Codec;
 import net.minecraft.nbt.CompoundTag;
@@ -17,7 +16,14 @@ import java.util.Collection;
 import java.util.Set;
 
 public final class MapRegions {
-	public static final Codec<MapRegions> CODEC = MoreCodecs.withNbtCompound(MapRegions::write, MapRegions::read, MapRegions::new);
+	public static final Codec<MapRegions> CODEC = CompoundTag.CODEC.xmap(
+			tag -> {
+				MapRegions regions = new MapRegions();
+				regions.read(tag);
+				return regions;
+			},
+			regions -> regions.write(new CompoundTag())
+	);
 
 	private final Multimap<String, BlockBox> regions = HashMultimap.create();
 

@@ -1,17 +1,20 @@
 package com.lovetropics.minigames.common.core.game.map;
 
-import com.google.common.collect.ImmutableList;
 import com.lovetropics.minigames.common.core.dimension.RuntimeDimensionConfig;
 import com.lovetropics.minigames.common.core.dimension.RuntimeDimensionHandle;
 import com.lovetropics.minigames.common.core.dimension.RuntimeDimensions;
 import com.lovetropics.minigames.common.core.game.GameResult;
-import com.lovetropics.minigames.common.core.map.*;
+import com.lovetropics.minigames.common.core.map.MapExportReader;
+import com.lovetropics.minigames.common.core.map.MapMetadata;
+import com.lovetropics.minigames.common.core.map.MapWorldInfo;
+import com.lovetropics.minigames.common.core.map.MapWorldSettings;
+import com.lovetropics.minigames.common.core.map.VoidChunkGenerator;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.Util;
 import net.minecraft.core.Holder;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
@@ -24,7 +27,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -51,11 +53,7 @@ public record LoadMapProvider(
 
 	@Override
 	public List<ResourceKey<Level>> getPossibleDimensions() {
-		if (dimension.isPresent()) {
-			return ImmutableList.of(ResourceKey.create(Registry.DIMENSION_REGISTRY, dimension.get()));
-		} else {
-			return Collections.emptyList();
-		}
+		return dimension.map(location -> List.of(ResourceKey.create(Registries.DIMENSION, location))).orElseGet(List::of);
 	}
 
 	@Override
@@ -96,8 +94,13 @@ public record LoadMapProvider(
 	private GameResult<Pair<RuntimeDimensionHandle, MapMetadata>> loadMapInto(MinecraftServer server, MapWorldSettings mapWorldSettings, RuntimeDimensionHandle handle) {
 		ResourceLocation path = new ResourceLocation(loadFrom.getNamespace(), "maps/" + loadFrom.getPath() + ".zip");
 
-		try (Resource resource = server.getResourceManager().getResource(path)) {
-			try (MapExportReader reader = MapExportReader.open(resource.getInputStream())) {
+		Optional<Resource> resource = server.getResourceManager().getResource(path);
+		if (resource.isEmpty()) {
+			return GameResult.error(Component.literal("No map exists at '" + path + "'"));
+		}
+
+		try {
+			try (MapExportReader reader = MapExportReader.open(resource.get().open())) {
 				MapMetadata metadata = reader.loadInto(server, handle.asKey());
 				mapWorldSettings.importFrom(metadata.settings());
 				return GameResult.ok(Pair.of(handle, metadata));

@@ -16,7 +16,6 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -83,7 +82,7 @@ public final class AddWeatherBehavior implements IGameBehavior {
 		if (damage != null) {
 			if (player.tickCount % damage.rate == 0) {
 				// TODO: damage source
-				player.hurt(DamageSource.GENERIC, damage.amount);
+				player.hurt(player.damageSources().generic(), damage.amount);
 			}
 		}
 
@@ -99,19 +98,15 @@ public final class AddWeatherBehavior implements IGameBehavior {
 		int x = Mth.floor(player.getX());
 		int y = Mth.floor(player.getY() + player.getEyeHeight());
 		int z = Mth.floor(player.getZ());
-		return player.level.getHeight(Heightmap.Types.MOTION_BLOCKING, x, z) > y;
+		return player.level().getHeight(Heightmap.Types.MOTION_BLOCKING, x, z) > y;
 	}
 
 	public static final class EventEffects {
-		public static final Codec<EventEffects> CODEC = RecordCodecBuilder.create(instance -> {
-			return instance.group(
-					Repellent.CODEC.optionalFieldOf("repellent").forGetter(c -> Optional.ofNullable(c.repellent)),
-					Damage.CODEC.optionalFieldOf("damage").forGetter(c -> Optional.ofNullable(c.damage)),
-					Potion.CODEC.optionalFieldOf("potion").forGetter(c -> Optional.ofNullable(c.potion))
-			).apply(instance, (repellent, damage, potion) -> {
-				return new EventEffects(repellent.orElse(null), damage.orElse(null), potion.orElse(null));
-			});
-		});
+		public static final Codec<EventEffects> CODEC = RecordCodecBuilder.create(i -> i.group(
+				Repellent.CODEC.optionalFieldOf("repellent").forGetter(c -> Optional.ofNullable(c.repellent)),
+				Damage.CODEC.optionalFieldOf("damage").forGetter(c -> Optional.ofNullable(c.damage)),
+				Potion.CODEC.optionalFieldOf("potion").forGetter(c -> Optional.ofNullable(c.potion))
+		).apply(i, (repellent, damage, potion) -> new EventEffects(repellent.orElse(null), damage.orElse(null), potion.orElse(null))));
 
 		@Nullable
 		private final Repellent repellent;
@@ -132,13 +127,11 @@ public final class AddWeatherBehavior implements IGameBehavior {
 	}
 
 	public static final class Repellent {
-		public static final Codec<Repellent> CODEC = RecordCodecBuilder.create(instance -> {
-			return instance.group(
-					ForgeRegistries.ITEMS.getCodec().fieldOf("item").forGetter(c -> c.item),
-					Codec.INT.fieldOf("rate").forGetter(c -> c.damageRate),
-					Codec.INT.fieldOf("amount").forGetter(c -> c.damageAmount)
-			).apply(instance, Repellent::new);
-		});
+		public static final Codec<Repellent> CODEC = RecordCodecBuilder.create(i -> i.group(
+				ForgeRegistries.ITEMS.getCodec().fieldOf("item").forGetter(c -> c.item),
+				Codec.INT.fieldOf("rate").forGetter(c -> c.damageRate),
+				Codec.INT.fieldOf("amount").forGetter(c -> c.damageAmount)
+		).apply(i, Repellent::new));
 
 		private final Item item;
 		private final int damageRate;

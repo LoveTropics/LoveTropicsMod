@@ -1,24 +1,18 @@
-buildscript {
-    repositories {
-        maven { url = 'https://maven.minecraftforge.net' }
-        maven { url = 'https://repo.spongepowered.org/maven' }
-        mavenCentral()
-    }
-    dependencies {
-        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '5.1.+', changing: true
-        classpath 'org.spongepowered:mixingradle:0.7-SNAPSHOT'
-    }
+plugins {
+    id 'eclipse'
+    id 'idea'
+    id 'maven-publish'
+    id 'net.minecraftforge.gradle' version '[6.0,6.2)'
+    id 'org.parchmentmc.librarian.forgegradle' version '1.+'
+    id 'org.spongepowered.mixin' version '0.7+'
 }
-
-apply plugin: 'net.minecraftforge.gradle'
-apply plugin: 'eclipse'
-apply plugin: 'maven-publish'
-apply plugin: 'org.spongepowered.mixin'
 
 jarJar.enable()
 
 group = 'com.lovetropics.minigames'
-archivesBaseName = 'LTMinigames'
+base {
+    archivesName = 'LTMinigames'
+}
 
 ext.buildnumber = 0
 project.buildnumber = System.getenv('BUILD_NUMBER') ?: 'custom'
@@ -36,14 +30,15 @@ if (System.getenv('GHA_RELEASE_WORKFLOW')) {
 java.toolchain.languageVersion = JavaLanguageVersion.of(17)
 
 minecraft {
-    mappings channel: 'official', version: minecraft_version
+    mappings channel: 'parchment', version: parchment_version
     
     accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg')
 
     runs {
         client {
             taskName 'ltminigames_client'
-            
+            copyIdeResources = true
+
             workingDirectory project.file('run')
             arg "-mixin.config=ltminigames.mixins.json"
             jvmArg '-Dmixin.env.disableRefMap=true'
@@ -59,7 +54,8 @@ minecraft {
 
         server {
             taskName 'ltminigames_server'
-        
+            copyIdeResources = true
+
             workingDirectory project.file('run')
             arg "-mixin.config=ltminigames.mixins.json"
             jvmArg '-Dmixin.env.disableRefMap=true'
@@ -75,7 +71,8 @@ minecraft {
         
         data {
             taskName 'ltminigames_data'
-        
+            copyIdeResources = true
+
             workingDirectory project.file('run')
             arg "-mixin.config=ltminigames.mixins.json"
             jvmArg '-Dmixin.env.disableRefMap=true'
@@ -102,27 +99,23 @@ sourceSets.main.resources {
 }
 
 repositories {
-    maven { // Registrate
-        url "https://maven.tterrag.com/"
-    }
+    maven { url = "https://maven.tterrag.com/" }
+    maven { url = "https://api.modrinth.com/maven" }
     mavenLocal()
-    flatDir {
-        dirs 'libs/'
-    }
 }
 
 dependencies {
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
-    
-    // Utilize tropicraft worldgen code
-//    runtimeOnly fg.deobf('net.tropicraft:Tropicraft:9.3.0-beta+custom')
 
-    jarJar(implementation(fg.deobf("com.tterrag.registrate:Registrate:MC1.19-${registrate_version}"))) {
-        jarJar.ranged(it, "[MC${minecraft_version}-${registrate_version},MC1.20)")
+    runtimeOnly fg.deobf('maven.modrinth:tropicraft:9.6.1-1.20.1')
+
+    // TODO: HACK - We get Registrate at runtime through JarJar from Tropicraft. We should rather prefer to depend on the slim jar.
+    jarJar(compileOnly(fg.deobf("com.tterrag.registrate:Registrate:$registrate_version"))) {
+        jarJar.ranged(it, "[$registrate_version,MC1.21)")
     }
 
-    jarJar(implementation(fg.deobf("com.lovetropics.lib:LTLib:${ltlib_version}"))) {
-        jarJar.ranged(it, "[1.2,1.3)")
+    jarJar(implementation(fg.deobf("com.lovetropics.lib:LTLib:$ltlib_version"))) {
+        jarJar.ranged(it, "[1.3,1.4)")
     }
 
     // Annotation Processors
@@ -146,7 +139,7 @@ mixin {
 }
 
 tasks.jarJar.configure {
-    classifier ''
+    archiveClassifier = ''
     finalizedBy('reobfJarJar')
 }
 
@@ -155,14 +148,14 @@ reobf {
 }
 
 jar {
-    classifier = 'slim'
+    archiveClassifier = 'slim'
     manifest {
         attributes([
             "Specification-Title": "ltminigames",
             "Specification-Vendor": "lovetropics",
-            "Specification-Version": "1", // We are version 1 of ourselves
+            "Specification-Version": "1",
             "Implementation-Title": project.name,
-            "Implementation-Version": "${version}",
+            "Implementation-Version": archiveVersion,
             "Implementation-Vendor" :"lovetropics",
             "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ"),
             "MixinConfigs": "ltminigames.mixins.json"
@@ -171,8 +164,22 @@ jar {
 }
 
 task sourceJar(type: Jar, dependsOn: classes) {
-    classifier = 'sources'
+    archiveClassifier = 'sources'
     from sourceSets.main.java
+}
+
+def resourceTargets = ['META-INF/mods.toml', 'pack.mcmeta']
+def replaceProperties = [
+        mod_version: mod_version,
+]
+
+processResources {
+    inputs.properties replaceProperties
+    replaceProperties.put 'project', project
+
+    filesMatching(resourceTargets) {
+        expand replaceProperties
+    }
 }
 
 publishing {

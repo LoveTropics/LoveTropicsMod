@@ -3,13 +3,13 @@ package com.lovetropics.minigames.client.game.handler.spectate;
 import com.lovetropics.minigames.common.core.network.LoveTropicsNetwork;
 import com.lovetropics.minigames.common.core.network.SpectatePlayerAndTeleportMessage;
 import net.minecraft.SharedConstants;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.Camera;
 import net.minecraft.client.CameraType;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.util.Mth;
 import net.minecraftforge.client.event.ViewportEvent;
 
 import java.util.UUID;
@@ -82,9 +82,9 @@ interface SpectatingState {
 
 		@Override
 		public SpectatingState tick(Minecraft client, SpectatingSession session, LocalPlayer player) {
-			if (player.level.getGameTime() % 10 == 0) {
+			if (player.level().getGameTime() % (SharedConstants.TICKS_PER_SECOND / 2) == 0) {
 				// we need to send position updates to the server or we won't properly track chunks
-				Player spectatedPlayer = player.level.getPlayerByUUID(spectatedId);
+				Player spectatedPlayer = player.level().getPlayerByUUID(spectatedId);
 				if (spectatedPlayer != null) {
 					player.setPos(spectatedPlayer.getX(), spectatedPlayer.getY(), spectatedPlayer.getZ());
 				}

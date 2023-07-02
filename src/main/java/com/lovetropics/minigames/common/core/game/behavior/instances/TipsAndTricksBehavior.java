@@ -1,6 +1,5 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances;
 
-import com.lovetropics.lib.codec.MoreCodecs;
 import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
@@ -9,12 +8,15 @@ import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.ExtraCodecs;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 public final class TipsAndTricksBehavior implements IGameBehavior {
     public static final Codec<TipsAndTricksBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
-            MoreCodecs.TEXT.listOf().fieldOf("texts").forGetter(b -> b.texts),
+            ExtraCodecs.COMPONENT.listOf().fieldOf("texts").forGetter(b -> b.texts),
             Codec.INT.fieldOf("time_between_tips").forGetter(b -> b.timeBetweenTips)
     ).apply(i, TipsAndTricksBehavior::new));
 

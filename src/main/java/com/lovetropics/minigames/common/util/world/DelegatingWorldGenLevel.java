@@ -13,6 +13,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeManager;
@@ -37,7 +38,6 @@ import net.minecraft.world.ticks.LevelTickAccess;
 
 import javax.annotation.Nullable;
 import java.util.List;
-import java.util.Random;
 import java.util.function.Predicate;
 
 public class DelegatingWorldGenLevel implements WorldGenLevel {
@@ -114,8 +114,8 @@ public class DelegatingWorldGenLevel implements WorldGenLevel {
 	}
 
 	@Override
-	public void gameEvent(GameEvent p_220404_, Vec3 p_220405_, GameEvent.Context p_220406_) {
-		this.parent.gameEvent(p_220404_, p_220405_, p_220406_);
+	public void gameEvent(GameEvent event, Vec3 position, GameEvent.Context context) {
+		this.parent.gameEvent(event, position, context);
 	}
 
 	@Override
@@ -126,6 +126,11 @@ public class DelegatingWorldGenLevel implements WorldGenLevel {
 	@Override
 	public RegistryAccess registryAccess() {
 		return this.parent.registryAccess();
+	}
+
+	@Override
+	public FeatureFlagSet enabledFeatures() {
+		return this.parent.enabledFeatures();
 	}
 
 	@Override

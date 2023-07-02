@@ -8,16 +8,16 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
-import net.minecraft.commands.arguments.EntitySummonArgument;
+import net.minecraft.commands.arguments.ResourceArgument;
 import net.minecraft.commands.synchronization.SuggestionProviders;
+import net.minecraft.core.Holder;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.core.Registry;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -26,9 +26,10 @@ import net.minecraftforge.network.PacketDistributor;
 
 import javax.annotation.Nullable;
 
-import static com.mojang.brigadier.arguments.FloatArgumentType.*;
+import static com.mojang.brigadier.arguments.FloatArgumentType.floatArg;
 import static com.mojang.brigadier.arguments.FloatArgumentType.getFloat;
-import static net.minecraft.commands.arguments.CompoundTagArgument.*;
+import static net.minecraft.commands.arguments.CompoundTagArgument.compoundTag;
+import static net.minecraft.commands.arguments.CompoundTagArgument.getCompoundTag;
 
 @Mod.EventBusSubscriber(modid = Constants.MODID)
 public final class ServerPlayerDisguises {
@@ -36,9 +37,9 @@ public final class ServerPlayerDisguises {
 	public static void onRegisterCommands(RegisterCommandsEvent event) {
 		// @formatter:off
 		event.getDispatcher().register(
-			Commands.literal("disguise").requires(source -> source.hasPermission(2))
+			Commands.literal("disguise").requires(source -> source.hasPermission(Commands.LEVEL_GAMEMASTERS))
 				.then(Commands.literal("as")
-					.then(Commands.argument("entity", EntitySummonArgument.id())
+					.then(Commands.argument("entity", ResourceArgument.resource(event.getBuildContext(), Registries.ENTITY_TYPE))
 						.suggests(SuggestionProviders.SUMMONABLE_ENTITIES)
 						.executes(context -> disguiseAs(context, 1.0f, null))
 							.then(Commands.argument("scale", floatArg(0.1f, 20.0f))
@@ -57,7 +58,7 @@ public final class ServerPlayerDisguises {
 
 	@SubscribeEvent
 	public static void onEntityTrack(PlayerEvent.StartTracking event) {
-		if (!(event.getPlayer() instanceof ServerPlayer player)) {
+		if (!(event.getEntity() instanceof ServerPlayer player)) {
 			return;
 		}
 
@@ -78,7 +79,7 @@ public final class ServerPlayerDisguises {
 			return;
 		}
 
-		Player newPlayer = event.getPlayer();
+		Player newPlayer = event.getEntity();
 		Player oldPlayer = event.getOriginal();
 		if (newPlayer instanceof ServerPlayer && oldPlayer instanceof ServerPlayer) {
 			PlayerDisguise.get(oldPlayer).ifPresent(oldDisguise -> {
@@ -92,10 +93,9 @@ public final class ServerPlayerDisguises {
 
 	private static int disguiseAs(CommandContext<CommandSourceStack> context, float scale, @Nullable CompoundTag nbt) throws CommandSyntaxException {
 		ServerPlayer player = context.getSource().getPlayerOrException();
-		ResourceLocation entityId = EntitySummonArgument.getSummonableEntity(context, "entity");
-		EntityType<?> entityType = Registry.ENTITY_TYPE.get(entityId);
+		Holder.Reference<EntityType<?>> entityType = ResourceArgument.getSummonableEntityType(context, "entity");
 
-		ServerPlayerDisguises.set(player, DisguiseType.create(entityType, scale, nbt));
+		ServerPlayerDisguises.set(player, DisguiseType.create(entityType.value(), scale, nbt));
 
 		return Command.SINGLE_SUCCESS;
 	}

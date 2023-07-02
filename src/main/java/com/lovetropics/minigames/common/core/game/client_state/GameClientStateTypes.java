@@ -1,6 +1,5 @@
 package com.lovetropics.minigames.common.core.game.client_state;
 
-import com.lovetropics.lib.codec.MoreCodecs;
 import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.common.core.game.client_state.instance.BeaconClientState;
@@ -16,6 +15,7 @@ import com.mojang.serialization.Codec;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.IForgeRegistry;
@@ -28,13 +28,11 @@ public final class GameClientStateTypes {
 
 	public static final DeferredRegister<GameClientStateType<?>> REGISTER = DeferredRegister.create(REGISTRY_KEY, Constants.MODID);
 
-	public static final Supplier<IForgeRegistry<GameClientStateType<?>>> REGISTRY = REGISTER.makeRegistry(GameClientStateType.type(), () -> {
-		return new RegistryBuilder<GameClientStateType<?>>().disableSaving();
-	});
+	public static final Supplier<IForgeRegistry<GameClientStateType<?>>> REGISTRY = REGISTER.makeRegistry(() -> new RegistryBuilder<GameClientStateType<?>>().disableSaving());
 
 	private static final LoveTropicsRegistrate REGISTRATE = LoveTropics.registrate();
 
-	public static final Codec<GameClientStateType<?>> TYPE_CODEC = MoreCodecs.ofForgeRegistry(REGISTRY);
+	public static final Codec<GameClientStateType<?>> TYPE_CODEC = ExtraCodecs.lazyInitializedCodec(() -> REGISTRY.get().getCodec());
 
 	public static final GameClientTweakEntry<ReplaceTexturesClientState> REPLACE_TEXTURES = register("replace_textures", ReplaceTexturesClientState.CODEC);
 	public static final GameClientTweakEntry<TimeInterpolationClientState> TIME_INTERPOLATION = register("time_interpolation", TimeInterpolationClientState.CODEC);

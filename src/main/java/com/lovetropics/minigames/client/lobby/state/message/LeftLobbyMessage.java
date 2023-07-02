@@ -6,10 +6,7 @@ import net.minecraftforge.network.NetworkEvent;
 
 import java.util.function.Supplier;
 
-public class LeftLobbyMessage {
-	public LeftLobbyMessage() {
-	}
-
+public record LeftLobbyMessage() {
 	public void encode(FriendlyByteBuf buffer) {
 	}
 
@@ -18,7 +15,6 @@ public class LeftLobbyMessage {
 	}
 
 	public void handle(Supplier<NetworkEvent.Context> ctx) {
-		ctx.get().enqueueWork(ClientLobbyManager::clearJoined);
-		ctx.get().setPacketHandled(true);
+		ClientLobbyManager.clearJoined();
 	}
 }

@@ -7,7 +7,7 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectList;
-import it.unimi.dsi.fastutil.objects.ObjectLists;
+import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.SectionPos;
@@ -27,7 +27,6 @@ import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Random;
 
 public class FillChestsByMarkerBehavior extends ChunkGeneratingBehavior {
 	public static final Codec<FillChestsByMarkerBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
@@ -54,13 +53,13 @@ public class FillChestsByMarkerBehavior extends ChunkGeneratingBehavior {
 
 	@Override
 	protected void generateChunk(IGamePhase game, ServerLevel world, LevelChunk chunk) {
-		ObjectList<BlockPos> chestPositions = collectChestPositions(chunk);
+		ObjectArrayList<BlockPos> chestPositions = collectChestPositions(chunk);
 		if (chestPositions.isEmpty()) {
 			return;
 		}
 
 		RandomSource random = world.random;
-		ObjectLists.shuffle(chestPositions, new Random(random.nextLong()));
+		Util.shuffle(chestPositions, random);
 
 		if (percentage < 1.0f) {
 			int index = Mth.ceil(chestPositions.size() * percentage);
@@ -104,8 +103,8 @@ public class FillChestsByMarkerBehavior extends ChunkGeneratingBehavior {
 		}
 	}
 
-	private ObjectList<BlockPos> collectChestPositions(LevelChunk chunk) {
-		ObjectList<BlockPos> chestPositions = new ObjectArrayList<>();
+	private ObjectArrayList<BlockPos> collectChestPositions(LevelChunk chunk) {
+		ObjectArrayList<BlockPos> chestPositions = new ObjectArrayList<>();
 		for (BlockPos pos : chunk.getBlockEntitiesPos()) {
 			if (chunk.getBlockEntity(pos) instanceof ChestBlockEntity) {
 				if (chunk.getBlockState(pos.below()).is(marker)) {

@@ -3,12 +3,12 @@ package com.lovetropics.minigames.client.screen;
 import com.lovetropics.minigames.client.screen.flex.Flex;
 import com.lovetropics.minigames.client.screen.flex.FlexSolver;
 import com.lovetropics.minigames.client.screen.flex.Layout;
-import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.components.events.AbstractContainerEventHandler;
 import net.minecraft.client.gui.components.events.GuiEventListener;
-import net.minecraft.client.gui.components.Widget;
 
-public abstract class DynamicLayoutGui extends AbstractContainerEventHandler implements Widget {
+public abstract class DynamicLayoutGui extends AbstractContainerEventHandler implements Renderable {
 	
 	private final Flex basis;
 	protected Layout mainLayout;
@@ -18,8 +18,8 @@ public abstract class DynamicLayoutGui extends AbstractContainerEventHandler imp
 	}
 
 	@Override
-	public void render(PoseStack matrixStack, int mouseX, int mouseY, float partialTicks) {
-		this.mainLayout.debugRender(matrixStack);
+	public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
+		this.mainLayout.debugRender(graphics);
 	}
 
 	@Override

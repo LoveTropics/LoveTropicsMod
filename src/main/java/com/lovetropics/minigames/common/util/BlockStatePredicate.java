@@ -6,8 +6,8 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
 import net.minecraft.core.HolderSet;
-import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryCodecs;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 
@@ -50,7 +50,7 @@ public interface BlockStatePredicate extends Predicate<BlockState> {
 	}
 
 	record MatchesBlocks(HolderSet<Block> blocks) implements BlockStatePredicate {
-		public static final Codec<MatchesBlocks> CODEC = RegistryCodecs.homogeneousList(Registry.BLOCK_REGISTRY)
+		public static final Codec<MatchesBlocks> CODEC = RegistryCodecs.homogeneousList(Registries.BLOCK)
 				.xmap(MatchesBlocks::new, matchesBlocks -> matchesBlocks.blocks);
 
 		@Override

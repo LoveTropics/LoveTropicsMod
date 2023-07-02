@@ -11,14 +11,18 @@ import org.spongepowered.asm.mixin.injection.ModifyArg;
 
 @Mixin(Gui.class)
 public class HotbarOverride {
+	private static final ResourceLocation WIDGETS_LOCATION = new ResourceLocation("textures/gui/widgets.png");
 
 	@ModifyArg(
 			method = "renderHotbar",
 			at = @At(
 					value = "INVOKE",
-					target = "Lcom/mojang/blaze3d/systems/RenderSystem;setShaderTexture(ILnet/minecraft/resources/ResourceLocation;)V"),
-			index = 1)
+					target = "Lnet/minecraft/client/gui/GuiGraphics;blit(Lnet/minecraft/resources/ResourceLocation;IIIIII)V"),
+			index = 0)
 	public ResourceLocation getHotbarTexture(ResourceLocation loc) {
+		if (!loc.equals(WIDGETS_LOCATION)) {
+			return loc;
+		}
 		ReplaceTexturesClientState textures = ClientGameStateManager.getOrNull(GameClientStateTypes.REPLACE_TEXTURES);
 		if (textures != null) {
 			ResourceLocation hotbar = textures.getTexture(ReplaceTexturesClientState.TextureType.HOTBAR);

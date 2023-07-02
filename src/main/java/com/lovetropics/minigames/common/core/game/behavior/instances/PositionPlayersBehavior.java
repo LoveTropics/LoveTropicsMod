@@ -11,16 +11,15 @@ import com.lovetropics.minigames.common.core.game.player.PlayerRole;
 import com.lovetropics.minigames.common.core.map.MapRegions;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
 import org.apache.logging.log4j.LogManager;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 public class PositionPlayersBehavior implements IGameBehavior {
 	public static final Codec<PositionPlayersBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
@@ -99,7 +98,7 @@ public class PositionPlayersBehavior implements IGameBehavior {
 	private BlockPos tryFindEmptyPos(IGamePhase game, RandomSource random, BlockBox box) {
 		ServerLevel world = game.getWorld();
 		for (int i = 0; i < 20; i++) {
-			BlockPos pos = box.sample(new Random(random.nextLong()));
+			BlockPos pos = box.sample(random);
 			if (world.isEmptyBlock(pos)) {
 				return pos;
 			}

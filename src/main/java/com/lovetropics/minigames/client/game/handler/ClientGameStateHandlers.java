@@ -45,7 +45,7 @@ public final class ClientGameStateHandlers {
 	@SuppressWarnings("unchecked")
 	@Nullable
 	public static <T extends GameClientState> ClientGameStateHandler<T> get(T state) {
-		ResourceLocation id = state.getType().getRegistryName();
+		ResourceLocation id = GameClientStateTypes.REGISTRY.get().getKey(state.getType());
 		if (id != null) {
 			return (ClientGameStateHandler<T>) REGISTRY.get(id);
 		} else {

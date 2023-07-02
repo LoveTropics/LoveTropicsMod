@@ -1,24 +1,25 @@
 package com.lovetropics.minigames.common.content.survive_the_tide.entity;
 
 import com.lovetropics.minigames.LoveTropics;
-import net.minecraft.nbt.Tag;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.MoverType;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.material.FluidState;
+import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.tags.FluidTags;
-import net.minecraft.world.entity.EntitySelector;
-import net.minecraft.world.phys.AABB;
-import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
-import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntitySelector;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.MoverType;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.material.FluidState;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.network.NetworkHooks;
@@ -119,7 +120,7 @@ public final class DriftwoodEntity extends Entity {
 			});
 		}
 
-		if (!level.isClientSide) {
+		if (!level().isClientSide) {
 			tickSteering();
 			tickMovement();
 		} else {
@@ -194,7 +195,7 @@ public final class DriftwoodEntity extends Entity {
 	private List<Player> collectRiders() {
 		AABB bounds = getBoundingBox();
 		AABB ridingBounds = new AABB(bounds.minX, bounds.maxY, bounds.minZ, bounds.maxX, bounds.maxY + 0.2, bounds.maxZ);
-		return level.getEntities(EntityType.PLAYER, ridingBounds, EntitySelector.NO_SPECTATORS);
+		return level().getEntities(EntityType.PLAYER, ridingBounds, EntitySelector.NO_SPECTATORS);
 	}
 
 	private float getFloatHeight() {
@@ -226,9 +227,9 @@ public final class DriftwoodEntity extends Entity {
 	}
 
 	private float getWaterSurfaceAt(BlockPos pos) {
-		FluidState fluid = level.getFluidState(pos);
+		FluidState fluid = level().getFluidState(pos);
 		if (fluid.is(FluidTags.WATER)) {
-			return pos.getY() + fluid.getHeight(level, pos);
+			return pos.getY() + fluid.getHeight(level(), pos);
 		}
 		return -1.0F;
 	}
@@ -270,7 +271,7 @@ public final class DriftwoodEntity extends Entity {
 	}
 
 	@Override
-	public Packet<?> getAddEntityPacket() {
+	public Packet<ClientGamePacketListener> getAddEntityPacket() {
 		return NetworkHooks.getEntitySpawningPacket(this);
 	}
 }

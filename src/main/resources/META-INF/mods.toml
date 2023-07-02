@@ -5,7 +5,7 @@ license="ARR"
 
 [[mods]]
 modId="ltminigames"
-version="${file.jarVersion}"
+version="$mod_version"
 displayName="LTMinigames" #mandatory
 displayURL="https://lovetropics.com"
 #logoFile="examplemod.png" #optional

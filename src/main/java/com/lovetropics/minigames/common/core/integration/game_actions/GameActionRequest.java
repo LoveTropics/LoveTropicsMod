@@ -4,6 +4,7 @@ import com.lovetropics.lib.codec.MoreCodecs;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.core.UUIDUtil;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -14,7 +15,7 @@ public record GameActionRequest(GameActionType type, UUID uuid, LocalDateTime ti
 
 	public static Codec<GameActionRequest> codec(GameActionType type, MapCodec<GameAction> codec) {
 		return RecordCodecBuilder.create(i -> i.group(
-				MoreCodecs.UUID_STRING.fieldOf("uuid").forGetter(GameActionRequest::uuid),
+				UUIDUtil.STRING_CODEC.fieldOf("uuid").forGetter(GameActionRequest::uuid),
 				TIME_CODEC.fieldOf(type.getTimeFieldName()).forGetter(GameActionRequest::time),
 				codec.forGetter(GameActionRequest::action)
 		).apply(i, (uuid, triggerTime, action) -> new GameActionRequest(type, uuid, triggerTime, action)));

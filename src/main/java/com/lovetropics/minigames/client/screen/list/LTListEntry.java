@@ -1,9 +1,9 @@
 package com.lovetropics.minigames.client.screen.list;
 
 import com.lovetropics.minigames.client.screen.list.AbstractLTList.Reorder;
-import com.mojang.blaze3d.vertex.PoseStack;
-import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.ObjectSelectionList.Entry;
+import net.minecraft.client.gui.screens.Screen;
 
 public abstract class LTListEntry<T extends LTListEntry<T>> extends Entry<T> {
 
@@ -18,7 +18,7 @@ public abstract class LTListEntry<T extends LTListEntry<T>> extends Entry<T> {
 		this.list = list;
 	}
 
-	public void renderTooltips(PoseStack matrixStack, int width, int mouseX, int mouseY) {}
+	public void renderTooltips(GuiGraphics graphics, int width, int mouseX, int mouseY) {}
 
 	@SuppressWarnings("unchecked")
 	@Override

@@ -1,11 +1,11 @@
 package com.lovetropics.minigames.common.content.biodiversity_blitz.client_state;
 
-import com.lovetropics.lib.codec.MoreCodecs;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.BiodiversityBlitz;
 import com.lovetropics.minigames.common.core.game.client_state.GameClientState;
 import com.lovetropics.minigames.common.core.game.client_state.GameClientStateType;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.core.UUIDUtil;
 
 import java.util.Map;
 import java.util.UUID;
@@ -13,7 +13,7 @@ import java.util.UUID;
 // TODO: consolidate all state types by using PartialUpdate system
 public record ClientBbGlobalState(Map<UUID, Integer> currency) implements GameClientState {
 	public static final Codec<ClientBbGlobalState> CODEC = RecordCodecBuilder.create(i -> i.group(
-			Codec.unboundedMap(MoreCodecs.UUID_STRING, Codec.INT).fieldOf("currency").forGetter(c -> c.currency)
+			Codec.unboundedMap(UUIDUtil.STRING_CODEC, Codec.INT).fieldOf("currency").forGetter(c -> c.currency)
 	).apply(i, ClientBbGlobalState::new));
 
 	@Override

@@ -4,7 +4,6 @@ import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.common.content.survive_the_tide.SurviveTheTide;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;

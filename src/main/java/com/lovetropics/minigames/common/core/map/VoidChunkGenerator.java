@@ -7,57 +7,62 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.WorldGenRegion;
 import net.minecraft.world.level.LevelHeightAccessor;
 import net.minecraft.world.level.NoiseColumn;
-import net.minecraft.world.level.StructureFeatureManager;
+import net.minecraft.world.level.StructureManager;
 import net.minecraft.world.level.WorldGenLevel;
-import net.minecraft.world.level.biome.*;
+import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.biome.BiomeManager;
+import net.minecraft.world.level.biome.Biomes;
+import net.minecraft.world.level.biome.FixedBiomeSource;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.ChunkGenerator;
+import net.minecraft.world.level.chunk.ChunkGeneratorStructureState;
 import net.minecraft.world.level.dimension.DimensionDefaults;
 import net.minecraft.world.level.levelgen.GenerationStep;
 import net.minecraft.world.level.levelgen.Heightmap;
+import net.minecraft.world.level.levelgen.RandomState;
 import net.minecraft.world.level.levelgen.blending.Blender;
-import net.minecraft.world.level.levelgen.structure.StructureSet;
-import net.minecraft.world.level.levelgen.structure.templatesystem.StructureManager;
+import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
 public final class VoidChunkGenerator extends ChunkGenerator {
-	public static final Codec<VoidChunkGenerator> CODEC = RecordCodecBuilder.create(i -> commonCodec(i).and(i.group(
+	public static final Codec<VoidChunkGenerator> CODEC = RecordCodecBuilder.create(i -> i.group(
 			Biome.CODEC.stable().fieldOf("biome").forGetter(g -> g.biome)
-	).t1()).apply(i, i.stable(VoidChunkGenerator::new)));
+	).apply(i, i.stable(VoidChunkGenerator::new)));
 
 	private final Holder<Biome> biome;
 
-	public VoidChunkGenerator(final Registry<StructureSet> structureSets, final Holder<Biome> biome) {
-		super(structureSets, Optional.empty(), new FixedBiomeSource(biome));
+	public VoidChunkGenerator(final Holder<Biome> biome) {
+		super(new FixedBiomeSource(biome));
 		this.biome = biome;
 	}
 
-	public VoidChunkGenerator(Registry<StructureSet> structureSets, Registry<Biome> biomeRegistry) {
-		this(structureSets, biomeRegistry, Biomes.THE_VOID);
+	public VoidChunkGenerator(Registry<Biome> biomeRegistry) {
+		this(biomeRegistry, Biomes.THE_VOID);
 	}
 
 	public VoidChunkGenerator(MinecraftServer server) {
-		this(server.registryAccess().registryOrThrow(Registry.STRUCTURE_SET_REGISTRY), server.registryAccess().registryOrThrow(Registry.BIOME_REGISTRY));
+		this(server.registryAccess().registryOrThrow(Registries.BIOME));
 	}
 
-	public VoidChunkGenerator(Registry<StructureSet> structureSets, Registry<Biome> biomeRegistry, ResourceKey<Biome> biome) {
-		this(structureSets, biomeRegistry.getOrCreateHolder(biome));
+	public VoidChunkGenerator(Registry<Biome> biomeRegistry, ResourceKey<Biome> biome) {
+		this(biomeRegistry.getHolderOrThrow(biome));
 	}
 
 	public static void register() {
-		Registry.register(Registry.CHUNK_GENERATOR, Util.resource("void"), CODEC);
+		Registry.register(BuiltInRegistries.CHUNK_GENERATOR, Util.resource("void"), CODEC);
 	}
 
 	@Override
@@ -66,15 +71,15 @@ public final class VoidChunkGenerator extends ChunkGenerator {
 	}
 
 	@Override
-	public void createStructures(RegistryAccess dynamicRegistries, StructureFeatureManager structures, ChunkAccess chunk, StructureManager templates, long seed) {
+	public void createStructures(RegistryAccess registries, ChunkGeneratorStructureState structureState, StructureManager structureManager, ChunkAccess chunk, StructureTemplateManager structureTemplateManager) {
 	}
 
 	@Override
-	public void createReferences(WorldGenLevel world, StructureFeatureManager structures, ChunkAccess chunk) {
+	public void createReferences(WorldGenLevel world, StructureManager structures, ChunkAccess chunk) {
 	}
 
 	@Override
-	public CompletableFuture<ChunkAccess> fillFromNoise(final Executor executor, final Blender blender, final StructureFeatureManager structures, final ChunkAccess chunk) {
+	public CompletableFuture<ChunkAccess> fillFromNoise(final Executor executor, final Blender blender, final RandomState randomState, final StructureManager structures, final ChunkAccess chunk) {
 		return CompletableFuture.completedFuture(chunk);
 	}
 
@@ -89,37 +94,27 @@ public final class VoidChunkGenerator extends ChunkGenerator {
 	}
 
 	@Override
-	public int getBaseHeight(final int x, final int z, final Heightmap.Types heightmap, final LevelHeightAccessor level) {
+	public int getBaseHeight(final int x, final int z, final Heightmap.Types heightmap, final LevelHeightAccessor level, final RandomState randomState) {
 		return level.getMinBuildHeight();
 	}
 
 	@Override
-	public NoiseColumn getBaseColumn(final int x, final int z, final LevelHeightAccessor level) {
+	public NoiseColumn getBaseColumn(final int x, final int z, final LevelHeightAccessor level, final RandomState randomState) {
 		final BlockState[] blocks = new BlockState[level.getHeight()];
 		Arrays.fill(blocks, Blocks.AIR.defaultBlockState());
 		return new NoiseColumn(level.getMinBuildHeight(), blocks);
 	}
 
 	@Override
-	public void addDebugScreenInfo(final List<String> info, final BlockPos pos) {
+	public void addDebugScreenInfo(final List<String> info, final RandomState randomState, final BlockPos pos) {
 	}
 
 	@Override
-	public ChunkGenerator withSeed(long seed) {
-		return this;
+	public void applyCarvers(final WorldGenRegion region, final long seed, final RandomState randomState, final BiomeManager biomes, final StructureManager structures, final ChunkAccess chunk, final GenerationStep.Carving step) {
 	}
 
 	@Override
-	public Climate.Sampler climateSampler() {
-		return Climate.empty();
-	}
-
-	@Override
-	public void applyCarvers(final WorldGenRegion region, final long seed, final BiomeManager biomes, final StructureFeatureManager structures, final ChunkAccess chunk, final GenerationStep.Carving step) {
-	}
-
-	@Override
-	public void buildSurface(final WorldGenRegion region, final StructureFeatureManager structures, final ChunkAccess chunk) {
+	public void buildSurface(final WorldGenRegion region, final StructureManager structures, final RandomState randomState, final ChunkAccess chunk) {
 	}
 
 	@Override

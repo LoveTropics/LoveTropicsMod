@@ -2,24 +2,18 @@ package com.lovetropics.minigames;
 
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
-import net.minecraftforge.event.RegistryEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.registries.ObjectHolder;
+import net.minecraftforge.registries.DeferredRegister;
+import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraftforge.registries.RegistryObject;
 
-@ObjectHolder(Constants.MODID)
-@Mod.EventBusSubscriber(modid = Constants.MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
 public class SoundRegistry {
+	public static final DeferredRegister<SoundEvent> REGISTER = DeferredRegister.create(ForgeRegistries.SOUND_EVENTS, Constants.MODID);
 
-    @SubscribeEvent
-    public static void register(RegistryEvent.Register<SoundEvent> evt){
-        ResourceLocation swapPlayers = new ResourceLocation(Constants.MODID, "swap_players");
-        evt.getRegistry().register(new SoundEvent(swapPlayers).setRegistryName(swapPlayers));
+	public static final RegistryObject<SoundEvent> SWAP_PLAYERS = register("swap_players");
+	public static final RegistryObject<SoundEvent> PACKAGE_RECEIVE = register("package_receive");
+	public static final RegistryObject<SoundEvent> SABOTAGE_RECEIVE = register("sabotage_receive");
 
-        ResourceLocation packageReceive = new ResourceLocation(Constants.MODID, "package_receive");
-        evt.getRegistry().register(new SoundEvent(packageReceive).setRegistryName(packageReceive));
-
-        ResourceLocation sabotageReceive = new ResourceLocation(Constants.MODID, "sabotage_receive");
-        evt.getRegistry().register(new SoundEvent(sabotageReceive).setRegistryName(sabotageReceive));
-    }
+	private static RegistryObject<SoundEvent> register(String name) {
+		return REGISTER.register(name, () -> SoundEvent.createVariableRangeEvent(new ResourceLocation(Constants.MODID, name)));
+	}
 }

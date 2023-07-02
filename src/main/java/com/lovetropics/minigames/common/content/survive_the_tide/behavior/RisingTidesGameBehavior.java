@@ -8,13 +8,19 @@ import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameLivingEntityEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
-import com.lovetropics.minigames.common.core.game.state.ProgressionPeriod;
 import com.lovetropics.minigames.common.core.game.state.GameProgressionState;
+import com.lovetropics.minigames.common.core.game.state.ProgressionPeriod;
 import com.lovetropics.minigames.common.core.game.state.ProgressionSpline;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.floats.Float2FloatFunction;
-import it.unimi.dsi.fastutil.longs.*;
+import it.unimi.dsi.fastutil.longs.Long2IntMap;
+import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
+import it.unimi.dsi.fastutil.longs.LongArrays;
+import it.unimi.dsi.fastutil.longs.LongComparator;
+import it.unimi.dsi.fastutil.longs.LongIterator;
+import it.unimi.dsi.fastutil.longs.LongLinkedOpenHashSet;
+import it.unimi.dsi.fastutil.longs.LongSet;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.SectionPos;
@@ -27,7 +33,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
@@ -44,7 +49,8 @@ import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 
 import javax.annotation.Nullable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class RisingTidesGameBehavior implements IGameBehavior {
 	public static final Codec<RisingTidesGameBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
@@ -56,6 +62,7 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 	).apply(i, RisingTidesGameBehavior::new));
 
 	private static final RegistryObject<Block> WATER_BARRIER = RegistryObject.create(new ResourceLocation("ltextras", "water_barrier"), ForgeRegistries.BLOCKS);
+	private static final RegistryObject<Block> SAND_LAYER = RegistryObject.create(new ResourceLocation("weather2", "sand_layer"), ForgeRegistries.BLOCKS);
 
 	// the maximum time in milliseconds that we should spend updating the tide per tick
 	private static final int HIGH_PRIORITY_BUDGET_PER_TICK = 150;
@@ -138,7 +145,7 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 		// FISH WILL KEEP SPAWNING, DYING AND COMPLETELY SLOW THE SERVER TO A CRAWL
 		if (!entity.canBreatheUnderwater()) {
 			if (entity.getY() <= this.waterLevel + 1 && entity.isInWater() && entity.tickCount % 40 == 0) {
-				entity.hurt(DamageSource.DROWN, 2.0F);
+				entity.hurt(entity.damageSources().drown(), 2.0F);
 			}
 		}
 	}
@@ -400,7 +407,7 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 	private static BlockState mapBlockRisingWater(BlockState state) {
 		Block block = state.getBlock();
 
-		if (state.isAir() || !state.getMaterial().blocksMotion() || block == Blocks.BAMBOO || block.getRegistryName().toString().equals("weather2:sand_layer")) {
+		if (state.isAir() || !state.blocksMotion() || block == Blocks.BAMBOO || is(state, SAND_LAYER)) {
 			// If air or a replaceable block, just set to water
 			return Blocks.WATER.defaultBlockState();
 		}
@@ -424,6 +431,10 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 		}
 
 		return null;
+	}
+
+	private static boolean is(BlockState state, RegistryObject<Block> block) {
+		return block.isPresent() && block.get() == state.getBlock();
 	}
 
 	@Nullable

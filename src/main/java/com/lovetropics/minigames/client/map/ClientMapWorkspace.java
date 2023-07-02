@@ -5,7 +5,7 @@ import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.common.core.map.workspace.ClientWorkspaceRegions;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.event.world.WorldEvent;
+import net.minecraftforge.event.level.LevelEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
@@ -41,12 +41,10 @@ public final class ClientMapWorkspace {
 	}
 
 	@SubscribeEvent
-	public static void onChangeDimension(WorldEvent.Load event) {
-		LevelAccessor world = event.getWorld();
-		if (!world.isClientSide()) {
-			return;
+	public static void onChangeDimension(LevelEvent.Load event) {
+		LevelAccessor level = event.getLevel();
+		if (level.isClientSide()) {
+			INSTANCE.reset();
 		}
-
-		INSTANCE.reset();
 	}
 }

@@ -1,8 +1,10 @@
 package com.lovetropics.minigames.common.content.block;
 
+import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.tags.FluidTags;
+import net.minecraft.util.RandomSource;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
@@ -21,7 +23,6 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 import java.util.Locale;
-import java.util.Random;
 
 public class TrashBlock extends Block implements SimpleWaterloggedBlock {
 
@@ -38,8 +39,8 @@ public class TrashBlock extends Block implements SimpleWaterloggedBlock {
 			return name().toLowerCase(Locale.ROOT);
 		}
 
-		public static Attachment random(Random rand) {
-			return VALUES[rand.nextInt(VALUES.length)];
+		public static Attachment random(RandomSource rand) {
+			return Util.getRandom(VALUES, rand);
 		}
 	}
 
@@ -90,10 +91,4 @@ public class TrashBlock extends Block implements SimpleWaterloggedBlock {
     	Vec3 offset = state.getOffset(worldIn, pos);
     	return type.getShape(state.getValue(FACING), state.getValue(ATTACHMENT)).move(offset.x, offset.y, offset.z);
     }
-
-    // TODO: properties
-//    @Override
-//    public Block.OffsetType getOffsetType() {
-//        return Block.OffsetType.XZ;
-//    }
 }

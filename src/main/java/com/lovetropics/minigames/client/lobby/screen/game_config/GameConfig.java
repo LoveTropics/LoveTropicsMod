@@ -13,12 +13,12 @@ import com.lovetropics.minigames.common.core.game.behavior.config.ConfigData;
 import com.lovetropics.minigames.common.core.game.behavior.config.ConfigData.CompositeConfigData;
 import com.lovetropics.minigames.common.core.game.behavior.config.ConfigData.ListConfigData;
 import com.lovetropics.minigames.common.core.game.behavior.config.ConfigData.SimpleConfigData;
-import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.Tesselator;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.gui.components.Button;
-import com.mojang.blaze3d.vertex.Tesselator;
 import net.minecraft.network.chat.Component;
 import net.minecraftforge.client.gui.widget.ScrollPanel;
 
@@ -51,7 +51,8 @@ public final class GameConfig extends ScrollPanel {
 		this.handlers = handlers;
 		this.content = main;
 
-		children.add(this.saveButton = new Button(main.content().right() - 46, main.content().bottom() - 20, 40, 20, Component.literal("Save"), $ -> handlers.saveConfigs()));
+		children.add(this.saveButton = Button.builder(Component.literal("Save"), $ -> handlers.saveConfigs())
+				.bounds(main.content().right() - 46, main.content().bottom() - 20, 40, 20).build());
 		this.saveButton.active = false;
 	}
 
@@ -127,23 +128,23 @@ public final class GameConfig extends ScrollPanel {
 	}
 
 	@Override
-	protected void drawPanel(PoseStack mStack, int entryRight, int relativeY, Tesselator tess, int mouseX, int mouseY) {
-		this.mainLayout.debugRender(mStack);
-		mStack.pushPose();
-		mStack.translate(0, relativeY - this.top - this.border, 0);
-		this.content.debugRender(mStack);
-		configMenus.values().forEach(ui -> ui.render(mStack, mouseX, mouseY + (int) this.scrollDistance, 0));
-		mStack.popPose();
-		this.saveButton.render(mStack, mouseX, mouseY, mouseY);
+	protected void drawPanel(GuiGraphics graphics, int entryRight, int relativeY, Tesselator tess, int mouseX, int mouseY) {
+		this.mainLayout.debugRender(graphics);
+		graphics.pose().pushPose();
+		graphics.pose().translate(0, relativeY - this.top - this.border, 0);
+		this.content.debugRender(graphics);
+		configMenus.values().forEach(ui -> ui.render(graphics, mouseX, mouseY + (int) this.scrollDistance, 0));
+		graphics.pose().popPose();
+		this.saveButton.render(graphics, mouseX, mouseY, mouseY);
 	}
 
 	@Override
-	protected void drawGradientRect(PoseStack mStack, int left, int top, int right, int bottom, int color1, int color2) {}
+	protected void drawGradientRect(GuiGraphics graphics, int left, int top, int right, int bottom, int color1, int color2) {}
 
 	@Override
 	public Optional<GuiEventListener> getChildAt(double mouseX, double mouseY) {
 		Optional<GuiEventListener> ret = super.getChildAt(mouseX, mouseY);
-		if (!ret.isPresent() || ret.get() != saveButton) {
+		if (ret.isEmpty() || ret.get() != saveButton) {
 			// Can't allow the save button to activate here, the mouse position is wrong for it
 			ret = super.getChildAt(mouseX, mouseY + this.scrollDistance).filter(g -> g != saveButton);
 		}

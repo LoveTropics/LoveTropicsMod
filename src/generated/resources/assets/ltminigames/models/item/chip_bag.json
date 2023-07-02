@@ -1,33 +1,21 @@
 {
   "parent": "ltminigames:block/chip_bag",
   "display": {
-    "gui": {
+    "firstperson_lefthand": {
       "rotation": [
-        30,
-        225,
+        0,
+        255,
         0
+      ],
+      "scale": [
+        0.45000002,
+        0.45000002,
+        0.45000002
       ],
       "translation": [
         0,
         5,
         0
-      ],
-      "scale": [
-        0.703125,
-        0.703125,
-        0.703125
-      ]
-    },
-    "ground": {
-      "translation": [
-        0,
-        5,
-        0
-      ],
-      "scale": [
-        0.5625,
-        0.5625,
-        0.5625
       ]
     },
     "firstperson_righthand": {
@@ -36,32 +24,44 @@
         45,
         0
       ],
-      "translation": [
-        0,
-        5,
-        0
-      ],
       "scale": [
         0.45000002,
         0.45000002,
         0.45000002
+      ],
+      "translation": [
+        0,
+        5,
+        0
       ]
     },
-    "firstperson_lefthand": {
-      "rotation": [
-        0,
-        255,
-        0
+    "ground": {
+      "scale": [
+        0.5625,
+        0.5625,
+        0.5625
       ],
       "translation": [
         0,
         5,
         0
+      ]
+    },
+    "gui": {
+      "rotation": [
+        30,
+        225,
+        0
       ],
       "scale": [
-        0.45000002,
-        0.45000002,
-        0.45000002
+        0.703125,
+        0.703125,
+        0.703125
+      ],
+      "translation": [
+        0,
+        5,
+        0
       ]
     },
     "thirdperson_righthand": {
@@ -70,15 +70,15 @@
         45,
         0
       ],
-      "translation": [
-        0,
-        2.5,
-        5
-      ],
       "scale": [
         0.421875,
         0.421875,
         0.421875
+      ],
+      "translation": [
+        0,
+        2.5,
+        5
       ]
     }
   }

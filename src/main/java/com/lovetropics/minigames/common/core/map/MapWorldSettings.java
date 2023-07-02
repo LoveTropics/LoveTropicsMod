@@ -1,6 +1,5 @@
 package com.lovetropics.minigames.common.core.map;
 
-import com.lovetropics.lib.codec.MoreCodecs;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.Dynamic;
 import net.minecraft.nbt.CompoundTag;
@@ -11,7 +10,14 @@ import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.storage.ServerLevelData;
 
 public final class MapWorldSettings {
-	public static final Codec<MapWorldSettings> CODEC = MoreCodecs.withNbtCompound(MapWorldSettings::write, MapWorldSettings::read, MapWorldSettings::new);
+	public static final Codec<MapWorldSettings> CODEC = CompoundTag.CODEC.xmap(
+			tag -> {
+				MapWorldSettings settings = new MapWorldSettings();
+				settings.read(tag);
+				return settings;
+			},
+			settings -> settings.write(new CompoundTag())
+	);
 
 	public final GameRules gameRules = new GameRules();
 	public long timeOfDay;

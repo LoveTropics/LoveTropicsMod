@@ -11,11 +11,10 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.protocol.game.ClientboundLevelParticlesPacket;
+import net.minecraft.util.RandomSource;
 import net.minecraft.util.valueproviders.ConstantInt;
 import net.minecraft.util.valueproviders.IntProvider;
 import net.minecraft.world.phys.AABB;
-
-import java.util.Random;
 
 public record SpawnParticlesAroundPlayerAction(ParticleOptions[] particles, IntProvider count, IntProvider repeats, double radius) implements IGameBehavior {
 	public static final Codec<SpawnParticlesAroundPlayerAction> CODEC = RecordCodecBuilder.create(i -> i.group(
@@ -28,7 +27,7 @@ public record SpawnParticlesAroundPlayerAction(ParticleOptions[] particles, IntP
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) throws GameException {
 		events.listen(GameActionEvents.APPLY_TO_PLAYER, (context, player) -> {
-			Random random = player.level.random;
+			RandomSource random = player.level().random;
 
 			int count = this.count.sample(random);
 			AABB bounds = player.getBoundingBox().inflate(radius);

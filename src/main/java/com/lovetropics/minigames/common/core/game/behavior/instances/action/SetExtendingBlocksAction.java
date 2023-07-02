@@ -16,6 +16,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvider;
@@ -24,7 +25,6 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.Random;
 
 public final class SetExtendingBlocksAction implements IGameBehavior {
 	public static final Codec<SetExtendingBlocksAction> CODEC = RecordCodecBuilder.create(i -> i.group(
@@ -103,7 +103,7 @@ public final class SetExtendingBlocksAction implements IGameBehavior {
 		ServerLevel world = game.getWorld();
 		BlockPredicate replace = this.replace;
 		BlockStateProvider set = this.set;
-		Random random = world.random;
+		RandomSource random = world.random;
 
 		int flags = Block.UPDATE_ALL;
 		if (!notifyNeighbors) {

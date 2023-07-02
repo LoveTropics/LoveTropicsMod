@@ -1,14 +1,11 @@
 package com.lovetropics.minigames.client.toast;
 
 import com.lovetropics.minigames.Constants;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiComponent;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.toasts.Toast;
 import net.minecraft.client.gui.components.toasts.ToastComponent;
-import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -53,84 +50,32 @@ public final class NotificationToast implements Toast {
 	}
 
 	@Override
-	public Visibility render(PoseStack matrixStack, ToastComponent gui, long time) {
-		RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-		RenderSystem.setShaderTexture(0, TEXTURE);
-		this.drawBackground(matrixStack, gui);
+	public Visibility render(GuiGraphics graphics, ToastComponent gui, long time) {
+		graphics.blitNineSliced(TEXTURE, 0, 0, width, height, TEXTURE_BORDER, TEXTURE_WIDTH, TEXTURE_HEIGHT, 0, style.textureOffset());
 
-		this.drawText(matrixStack);
-		this.drawIcon(matrixStack);
+		this.drawText(graphics);
+		this.drawIcon(graphics);
 
 		return time >= this.style.visibleTimeMs() ? Toast.Visibility.HIDE : Toast.Visibility.SHOW;
 	}
 
-	private void drawBackground(PoseStack matrixStack, ToastComponent gui) {
-		int width = this.width;
-		if (width == TEXTURE_WIDTH) {
-			this.drawBackgroundRow(matrixStack, gui, 0, 0, width);
-			return;
-		}
-
-		this.drawBackgroundRow(matrixStack, gui, 0, 0, TEXTURE_BORDER);
-
-		int maxRowWidth = TEXTURE_WIDTH - TEXTURE_BORDER * 2;
-		int maxRowX = width - TEXTURE_BORDER;
-
-		int x = TEXTURE_BORDER;
-		while (x < maxRowX) {
-			int rowWidth = Math.min(maxRowWidth, maxRowX - x);
-			this.drawBackgroundRow(matrixStack, gui, x, TEXTURE_BORDER, rowWidth);
-			x += rowWidth;
-		}
-
-		this.drawBackgroundRow(matrixStack, gui, width - TEXTURE_BORDER, TEXTURE_WIDTH - TEXTURE_BORDER, TEXTURE_BORDER);
-	}
-
-	private void drawBackgroundRow(PoseStack matrixStack, ToastComponent gui, int x, int u, int width) {
-		int height = this.height;
-		int vOffset = this.style.textureOffset();
-
-		if (height == TEXTURE_HEIGHT) {
-			gui.blit(matrixStack, x, 0, u, vOffset, width, height);
-			return;
-		}
-
-		gui.blit(matrixStack, x, 0, u, vOffset, width, TEXTURE_BORDER);
-
-		int maxRowHeight = TEXTURE_HEIGHT - TEXTURE_BORDER * 2;
-		int maxRowY = height - TEXTURE_BORDER;
-
-		int y = TEXTURE_BORDER;
-		while (y < maxRowY) {
-			int rowHeight = Math.min(maxRowHeight, maxRowY - y);
-			gui.blit(matrixStack, x, y, u, TEXTURE_BORDER + vOffset, width, rowHeight);
-			y += rowHeight;
-		}
-
-		gui.blit(matrixStack, x, height - TEXTURE_BORDER, u, TEXTURE_HEIGHT - TEXTURE_BORDER + vOffset, width, TEXTURE_BORDER);
-	}
-
-	private void drawText(PoseStack matrixStack) {
-		Font fontRenderer = CLIENT.font;
-
+	private void drawText(GuiGraphics graphics) {
 		List<FormattedCharSequence> lines = this.lines;
 		for (int i = 0; i < lines.size(); i++) {
 			FormattedCharSequence line = lines.get(i);
-			fontRenderer.draw(matrixStack, line, TEXT_LEFT, 7 + (i * 12), style.color() == NotificationStyle.Color.LIGHT ? 0xFF000000 : 0xFFFFFFFF);
+			graphics.drawString(CLIENT.font, line, TEXT_LEFT, 7 + (i * 12), style.color() == NotificationStyle.Color.LIGHT ? 0xFF000000 : 0xFFFFFFFF, false);
 		}
 	}
 
-	private void drawIcon(PoseStack matrixStack) {
+	private void drawIcon(GuiGraphics graphics) {
 		int y = (this.height - ICON_SIZE) / 2;
 
 		NotificationIcon icon = this.style.icon();
 		if (icon.item != null) {
-			ItemRenderer itemRenderer = CLIENT.getItemRenderer();
-			itemRenderer.renderAndDecorateFakeItem(icon.item, 6, y);
+			graphics.renderFakeItem(icon.item, 6, y);
 		} else if (icon.effect != null) {
 			TextureAtlasSprite sprite = CLIENT.getMobEffectTextures().get(icon.effect);
-			RenderSystem.setShaderTexture(0, sprite.atlas().location());
-			GuiComponent.blit(matrixStack, 5, y, 0, 18, 18, sprite);
+			graphics.blit(5, y, 0, 18, 18, sprite);
 		}
 	}
 

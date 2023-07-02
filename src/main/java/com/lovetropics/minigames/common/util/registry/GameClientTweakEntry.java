@@ -13,6 +13,6 @@ public final class GameClientTweakEntry<T extends GameClientState> extends Regis
 	}
 
 	public Codec<T> getCodec() {
-		return get().getCodec();
+		return get().codec();
 	}
 }

@@ -6,8 +6,9 @@ import com.lovetropics.minigames.common.core.map.workspace.ClientWorkspaceRegion
 import com.lovetropics.minigames.common.core.network.LoveTropicsNetwork;
 import com.lovetropics.minigames.common.core.network.workspace.UpdateWorkspaceRegionMessage;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.core.BlockPos;
+import net.minecraft.util.Mth;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
 
 import javax.annotation.Nullable;
@@ -62,7 +63,7 @@ public interface RegionEditOperator {
 
 			// TODO: not totally sure how to make this feel natural
 			Vec3 grabPoint = origin.add(player.getLookAngle().scale(target.distanceToSide()));
-			BlockPos grabPos = new BlockPos(grabPoint);
+			BlockPos grabPos = BlockPos.containing(grabPoint);
 
 			BlockBox region = editTarget.entry().region;
 
@@ -95,7 +96,7 @@ public interface RegionEditOperator {
 			Vec3 targetPoint = origin.add(player.getLookAngle().scale(target.distanceToSide()));
 			Vec3 offset = targetPoint.subtract(grabPoint);
 
-			return region.offset(offset.x, offset.y, offset.z);
+			return region.offset(Mth.floor(offset.x), Mth.floor(offset.y), Mth.floor(offset.z));
 		}
 	}
 

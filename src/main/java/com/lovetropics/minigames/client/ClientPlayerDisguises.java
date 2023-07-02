@@ -2,7 +2,6 @@ package com.lovetropics.minigames.client;
 
 import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.LoveTropics;
-import com.lovetropics.minigames.client.game.handler.spectate.ClientSpectatingManager;
 import com.lovetropics.minigames.common.core.diguise.DisguiseType;
 import com.lovetropics.minigames.common.core.diguise.PlayerDisguise;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -10,15 +9,15 @@ import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.EntityRenderer;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.WalkAnimationState;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.EntityViewRenderEvent;
 import net.minecraftforge.client.event.RenderPlayerEvent;
-import net.minecraftforge.eventbus.api.EventPriority;
+import net.minecraftforge.client.event.ViewportEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
@@ -30,8 +29,8 @@ public final class ClientPlayerDisguises {
 
     @SubscribeEvent
     public static void onRenderPlayer(RenderPlayerEvent.Pre event) {
-        Player player = event.getPlayer();
-        DisguiseType disguiseType = PlayerDisguise.getDisguiseType(event.getPlayer());
+        Player player = event.getEntity();
+        DisguiseType disguiseType = PlayerDisguise.getDisguiseType(event.getEntity());
         Entity disguiseEntity = PlayerDisguise.getDisguiseEntity(player);
         if (disguiseType == null || disguiseEntity == null) return;
 
@@ -90,9 +89,7 @@ public final class ClientPlayerDisguises {
             livingDisguise.yHeadRot = player.yHeadRot;
             livingDisguise.yHeadRotO = player.yHeadRotO;
 
-            livingDisguise.animationPosition = player.animationPosition;
-            livingDisguise.animationSpeed = player.animationSpeed;
-            livingDisguise.animationSpeedOld = player.animationSpeedOld;
+            copyWalkAnimation(player.walkAnimation, livingDisguise.walkAnimation);
 
             livingDisguise.swingingArm = player.swingingArm;
             livingDisguise.attackAnim = player.attackAnim;
@@ -100,10 +97,16 @@ public final class ClientPlayerDisguises {
             livingDisguise.oAttackAnim = player.oAttackAnim;
             livingDisguise.swinging = player.swinging;
 
-            livingDisguise.setOnGround(player.isOnGround());
+            livingDisguise.setOnGround(player.onGround());
         }
 
         disguise.tickCount = player.tickCount;
+    }
+
+    private static void copyWalkAnimation(WalkAnimationState from, WalkAnimationState to) {
+        to.update(from.position() - to.position() - from.speed(), 1.0f);
+        to.setSpeed(from.speed(0.0f));
+        to.update(from.speed(), 1.0f);
     }
 
     public static void updateClientDisguise(UUID uuid, DisguiseType disguiseType) {
@@ -114,7 +117,7 @@ public final class ClientPlayerDisguises {
     }
 
     @SubscribeEvent
-    public static void onPositionCamera(EntityViewRenderEvent.CameraSetup event) {
+    public static void onPositionCamera(ViewportEvent.ComputeCameraAngles event) {
         Camera camera = event.getCamera();
         if (!camera.isDetached()) {
             return;
@@ -126,7 +129,7 @@ public final class ClientPlayerDisguises {
                 return;
             }
 
-            Vec3 eyePosition = player.getEyePosition((float) event.getPartialTicks());
+            Vec3 eyePosition = player.getEyePosition((float) event.getPartialTick());
             camera.setPosition(eyePosition.x, eyePosition.y, eyePosition.z);
             camera.move(-camera.getMaxZoom(4.0 * disguiseType.scale), 0.0, 0.0);
         }

@@ -2,11 +2,14 @@ package com.lovetropics.minigames.common.core.map.workspace;
 
 import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.common.core.dimension.RuntimeDimensions;
-import net.minecraft.core.Registry;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.Util;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -25,41 +28,25 @@ public final class WorkspacePositionTracker {
 	private static final String NBT_RETURN_KEY = "return";
 
 	public static void setPositionFor(ServerPlayer player, MapWorkspace workspace, Position position) {
-		CompoundTag workspaceTag = getOrCreateWorkspaceTag(player, workspace);
-		position.write(workspaceTag);
+		CompoundTag data = getOrCreateTag(player);
+		data.put(workspace.id(), position.write());
 	}
 
 	@Nullable
 	public static Position getPositionFor(ServerPlayer player, MapWorkspace workspace) {
-		CompoundTag workspaceTag = getOrCreateWorkspaceTag(player, workspace);
-		return Position.read(workspaceTag);
+		CompoundTag data = getOrCreateTag(player);
+		return Position.read(data.getCompound(workspace.id()));
 	}
 
 	public static void setReturnPositionFor(ServerPlayer player, Position position) {
-		CompoundTag workspaceTag = getOrCreateReturnTag(player);
-		position.write(workspaceTag);
+		CompoundTag data = getOrCreateTag(player);
+		data.put(NBT_RETURN_KEY, position.write());
 	}
 
 	@Nullable
 	public static Position getReturnPositionFor(ServerPlayer player) {
-		CompoundTag workspaceTag = getOrCreateReturnTag(player);
-		return Position.read(workspaceTag);
-	}
-
-	private static CompoundTag getOrCreateWorkspaceTag(ServerPlayer player, MapWorkspace workspace) {
 		CompoundTag data = getOrCreateTag(player);
-		if (!data.contains(workspace.id(), Tag.TAG_COMPOUND)) {
-			data.put(workspace.id(), new CompoundTag());
-		}
-		return data.getCompound(workspace.id());
-	}
-
-	private static CompoundTag getOrCreateReturnTag(ServerPlayer player) {
-		CompoundTag data = getOrCreateTag(player);
-		if (!data.contains(NBT_RETURN_KEY, Tag.TAG_COMPOUND)) {
-			data.put(NBT_RETURN_KEY, new CompoundTag());
-		}
-		return data.getCompound(NBT_RETURN_KEY);
+		return Position.read(data.getCompound(NBT_RETURN_KEY));
 	}
 
 	private static CompoundTag getOrCreateTag(ServerPlayer player) {
@@ -72,14 +59,13 @@ public final class WorkspacePositionTracker {
 
 	@SubscribeEvent
 	public static void onPlayerChangeDimension(EntityTravelToDimensionEvent event) {
-		if (!(event.getEntity() instanceof ServerPlayer)) {
+		if (!(event.getEntity() instanceof ServerPlayer player)) {
 			return;
 		}
 
-		ServerPlayer player = (ServerPlayer) event.getEntity();
 		MinecraftServer server = player.server;
 
-		ResourceKey<Level> from = player.level.dimension();
+		ResourceKey<Level> from = player.level().dimension();
 
 		MapWorkspaceManager workspaceManager = MapWorkspaceManager.get(server);
 		MapWorkspace fromWorkspace = workspaceManager.getWorkspace(from);
@@ -102,7 +88,7 @@ public final class WorkspacePositionTracker {
 	@SubscribeEvent
 	public static void onPlayerClone(PlayerEvent.Clone event) {
 		ServerPlayer fromPlayer = (ServerPlayer) event.getOriginal();
-		ServerPlayer toPlayer = (ServerPlayer) event.getPlayer();
+		ServerPlayer toPlayer = (ServerPlayer) event.getEntity();
 
 		CompoundTag fromData = fromPlayer.getPersistentData();
 		if (fromData.contains(NBT_KEY, Tag.TAG_COMPOUND)) {
@@ -112,36 +98,29 @@ public final class WorkspacePositionTracker {
 	}
 
 	public record Position(ResourceKey<Level> dimension, Vec3 pos, float yaw, float pitch) {
+		public static final Codec<Position> CODEC = RecordCodecBuilder.create(i -> i.group(
+				ResourceKey.codec(Registries.DIMENSION).fieldOf("dimension").forGetter(Position::dimension),
+				Vec3.CODEC.fieldOf("position").forGetter(Position::pos),
+				Codec.FLOAT.fieldOf("yaw").forGetter(Position::yaw),
+				Codec.FLOAT.fieldOf("pitch").forGetter(Position::pitch)
+		).apply(i, Position::new));
+
 		public static Position copyFrom(ServerPlayer entity) {
-			return new Position(entity.level.dimension(), entity.position(), entity.getYRot(), entity.getXRot());
+			return new Position(entity.level().dimension(), entity.position(), entity.getYRot(), entity.getXRot());
 		}
 
 		public void applyTo(ServerPlayer entity) {
-			ServerLevel world = entity.getServer().getLevel(dimension);
-			entity.teleportTo(world, pos.x, pos.y, pos.z, yaw, pitch);
+			ServerLevel level = entity.getServer().getLevel(dimension);
+			entity.teleportTo(level, pos.x, pos.y, pos.z, yaw, pitch);
 		}
 
-		public void write(CompoundTag nbt) {
-			nbt.putString("dimension", dimension.location().toString());
-			nbt.putDouble("x", pos.x);
-			nbt.putDouble("y", pos.y);
-			nbt.putDouble("z", pos.z);
-			nbt.putFloat("yaw", yaw);
-			nbt.putFloat("pitch", pitch);
+		public Tag write() {
+			return Util.getOrThrow(CODEC.encodeStart(NbtOps.INSTANCE, this), IllegalStateException::new);
 		}
 
 		@Nullable
 		public static Position read(CompoundTag nbt) {
-			if (!nbt.contains("dimension")) {
-				return null;
-			}
-
-			ResourceKey<Level> dimension = ResourceKey.create(Registry.DIMENSION_REGISTRY, new ResourceLocation(nbt.getString("dimension")));
-			Vec3 pos = new Vec3(nbt.getDouble("x"), nbt.getDouble("y"), nbt.getDouble("z"));
-			float yaw = nbt.getFloat("yaw");
-			float pitch = nbt.getFloat("pitch");
-
-			return new Position(dimension, pos, yaw, pitch);
+			return CODEC.parse(NbtOps.INSTANCE, nbt).result().orElse(null);
 		}
 	}
 }

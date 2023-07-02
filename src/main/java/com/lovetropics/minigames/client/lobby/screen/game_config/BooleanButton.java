@@ -5,12 +5,10 @@ import net.minecraft.client.gui.components.Button;
 import net.minecraft.network.chat.Component;
 
 public class BooleanButton extends Button {
-
 	private boolean value;
 
 	public BooleanButton(Layout layout, boolean def) {
-		super(layout.content().left(), layout.content().top(), layout.content().width(), layout.content().height(),
-				Component.literal(Boolean.toString(def)), BooleanButton::toggle, NO_TOOLTIP);
+		super(layout.content().left(), layout.content().top(), layout.content().width(), layout.content().height(), Component.literal(Boolean.toString(def)), BooleanButton::toggle, DEFAULT_NARRATION);
 	}
 
 	private static void toggle(Button button) {

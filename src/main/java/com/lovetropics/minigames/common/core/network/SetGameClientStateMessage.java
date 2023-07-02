@@ -7,8 +7,8 @@ import com.lovetropics.minigames.common.core.game.client_state.GameClientStateTy
 import com.lovetropics.minigames.common.core.game.client_state.GameClientStateTypes;
 import com.mojang.serialization.DataResult;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.nbt.NbtOps;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.network.NetworkEvent;
 
@@ -41,11 +41,11 @@ public record SetGameClientStateMessage(GameClientStateType<?> type, @Nullable G
 	@SuppressWarnings("unchecked")
 	@Nullable
 	private static <T extends GameClientState> CompoundTag tryEncodeUnchecked(GameClientStateType<T> type, GameClientState state) {
-		DataResult<Tag> result = type.getCodec().encodeStart(NbtOps.INSTANCE, (T) state)
-				.flatMap(nbt -> nbt instanceof CompoundTag ? DataResult.success(nbt) : DataResult.error("Encoded state was not a compound!"));
+		DataResult<Tag> result = type.codec().encodeStart(NbtOps.INSTANCE, (T) state)
+				.flatMap(nbt -> nbt instanceof CompoundTag ? DataResult.success(nbt) : DataResult.error(() -> "Encoded state was not a compound!"));
 
 		result.error().ifPresent(error -> {
-			LoveTropics.LOGGER.warn("Failed to encode client state of type '{}': {}", type.getRegistryName(), error);
+			LoveTropics.LOGGER.warn("Failed to encode client state of type '{}': {}", GameClientStateTypes.REGISTRY.get().getKey(type), error);
 		});
 
 		return (CompoundTag) result.result().orElse(null);
@@ -53,22 +53,19 @@ public record SetGameClientStateMessage(GameClientStateType<?> type, @Nullable G
 
 	@Nullable
 	private static <T extends GameClientState> T tryDecode(GameClientStateType<T> type, CompoundTag nbt) {
-		DataResult<T> result = type.getCodec().parse(NbtOps.INSTANCE, nbt);
+		DataResult<T> result = type.codec().parse(NbtOps.INSTANCE, nbt);
 		result.error().ifPresent(error -> {
-			LoveTropics.LOGGER.warn("Failed to decode client state of type '{}': {}", type.getRegistryName(), error);
+			LoveTropics.LOGGER.warn("Failed to decode client state of type '{}': {}", GameClientStateTypes.REGISTRY.get().getKey(type), error);
 		});
 
 		return result.result().orElse(null);
 	}
 
 	public void handle(Supplier<NetworkEvent.Context> ctx) {
-		ctx.get().enqueueWork(() -> {
-			if (state != null) {
-				ClientGameStateManager.set(state);
-			} else {
-				ClientGameStateManager.remove(type);
-			}
-		});
-		ctx.get().setPacketHandled(true);
+		if (state != null) {
+			ClientGameStateManager.set(state);
+		} else {
+			ClientGameStateManager.remove(type);
+		}
 	}
 }

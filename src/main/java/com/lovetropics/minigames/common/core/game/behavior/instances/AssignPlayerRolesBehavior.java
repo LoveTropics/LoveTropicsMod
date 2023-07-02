@@ -1,6 +1,5 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances;
 
-import com.lovetropics.lib.codec.MoreCodecs;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.config.BehaviorConfig;
@@ -14,6 +13,7 @@ import com.lovetropics.minigames.common.core.game.util.TeamAllocator;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
+import net.minecraft.core.UUIDUtil;
 import net.minecraft.server.level.ServerPlayer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -26,7 +26,7 @@ import java.util.function.BiConsumer;
 
 public record AssignPlayerRolesBehavior(List<UUID> forcedParticipants) implements IGameBehavior {
 	private static final Logger LOGGER = LogManager.getLogger(AssignPlayerRolesBehavior.class);
-	private static final BehaviorConfig<List<UUID>> CFG_FORCED_PARTICIPANTS = BehaviorConfig.fieldOf("forced_participants", MoreCodecs.UUID_STRING.listOf())
+	private static final BehaviorConfig<List<UUID>> CFG_FORCED_PARTICIPANTS = BehaviorConfig.fieldOf("forced_participants", UUIDUtil.STRING_CODEC.listOf())
 			.listTypeHint("", ConfigType.STRING);
 
 	public static final Codec<AssignPlayerRolesBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(

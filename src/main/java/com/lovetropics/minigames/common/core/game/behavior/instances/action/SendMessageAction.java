@@ -7,8 +7,6 @@ import com.lovetropics.minigames.common.core.game.behavior.event.GameActionEvent
 import com.lovetropics.minigames.common.core.game.util.TemplatedText;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.Util;
-import net.minecraft.network.chat.ChatType;
 
 public record SendMessageAction(TemplatedText message) implements IGameBehavior {
 	public static final Codec<SendMessageAction> CODEC = RecordCodecBuilder.create(i -> i.group(
@@ -18,7 +16,7 @@ public record SendMessageAction(TemplatedText message) implements IGameBehavior 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
 		events.listen(GameActionEvents.APPLY_TO_PLAYER, (context, target) -> {
-			target.sendMessage(message.apply(context), ChatType.SYSTEM, Util.NIL_UUID);
+			target.sendSystemMessage(message.apply(context), false);
 			return true;
 		});
 	}

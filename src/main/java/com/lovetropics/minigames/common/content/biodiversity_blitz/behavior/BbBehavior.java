@@ -4,47 +4,44 @@ import com.google.common.collect.Multimap;
 import com.lovetropics.lib.BlockBox;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.BiodiversityBlitzTexts;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.event.BbEvents;
-import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.event.BbPlantEvents;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.tutorial.TutorialState;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.BbMobEntity;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.explosion.FilteredExplosion;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.explosion.PlantAffectingExplosion;
-import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.CurrencyManager;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.Plot;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.PlotsState;
-import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.plant.Plant;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.util.BbUtils;
 import com.lovetropics.minigames.common.core.dimension.DimensionUtils;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
-import com.lovetropics.minigames.common.core.game.behavior.event.*;
+import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameEntityEvents;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameLivingEntityEvents;
+import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
+import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameWorldEvents;
 import com.lovetropics.minigames.common.core.game.player.PlayerRole;
-import com.lovetropics.minigames.common.core.game.state.statistics.PlayerKey;
 import com.lovetropics.minigames.common.core.game.state.statistics.StatisticKey;
 import com.lovetropics.minigames.common.core.game.state.statistics.StatisticsMap;
 import com.lovetropics.minigames.common.core.game.util.GameSidebar;
 import com.lovetropics.minigames.common.core.game.util.GlobalGameWidgets;
 import com.mojang.serialization.Codec;
-import it.unimi.dsi.fastutil.objects.Object2FloatMap;
-import it.unimi.dsi.fastutil.objects.Object2FloatOpenHashMap;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.protocol.game.ClientboundSetSubtitleTextPacket;
 import net.minecraft.network.protocol.game.ClientboundSetTitleTextPacket;
 import net.minecraft.network.protocol.game.ClientboundSetTitlesAnimationPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.util.Mth;
-import net.minecraft.world.Difficulty;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
@@ -54,14 +51,12 @@ import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.FarmBlock;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.phys.BlockHitResult;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Random;
 
 // TODO: needs to be split up & data-driven more!
 
@@ -112,7 +107,7 @@ public final class BbBehavior implements IGameBehavior {
 
 			// Don't damage players from sweet berry bushes or wither roses
 			// TODO: reduce slowdown from bush
-			if (damageSource == DamageSource.SWEET_BERRY_BUSH || damageSource == DamageSource.WITHER) {
+			if (damageSource.is(DamageTypes.SWEET_BERRY_BUSH) || damageSource.is(DamageTypes.WITHER)) {
 				return InteractionResult.FAIL;
 			}
 
@@ -148,7 +143,7 @@ public final class BbBehavior implements IGameBehavior {
 		// FIXME: does not work with teams!
 		List<Component> sidebar = new ArrayList<>(10);
 		sidebar.add(Component.literal("Player ").withStyle(ChatFormatting.AQUA).append(Component.literal("points (+ per drop)").withStyle(ChatFormatting.GOLD)));
-		sidebar.add(Component.empty());
+		sidebar.add(CommonComponents.EMPTY);
 
 		List<ServerPlayer> list = new ArrayList<>();
 		game.getParticipants().forEach(list::add);
@@ -292,7 +287,7 @@ public final class BbBehavior implements IGameBehavior {
 
 	private InteractionResult onPlaceBlockInOwnPlot(ServerPlayer player, BlockPos pos, BlockState placed, Plot plot) {
 		if (placed.is(Blocks.FARMLAND)) {
-			player.level.setBlockAndUpdate(pos, Blocks.FARMLAND.defaultBlockState().setValue(FarmBlock.MOISTURE, 7));
+			player.level().setBlockAndUpdate(pos, Blocks.FARMLAND.defaultBlockState().setValue(FarmBlock.MOISTURE, 7));
 			return InteractionResult.PASS;
 		}
 
@@ -305,7 +300,7 @@ public final class BbBehavior implements IGameBehavior {
 
 	private void sendActionRejection(ServerPlayer player, MutableComponent message) {
 		player.displayClientMessage(message.withStyle(ChatFormatting.RED), true);
-		player.getLevel().playSound(null, player.blockPosition(), SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.PLAYERS,  1.0F, 1.0F);
+		player.level().playSound(null, player.blockPosition(), SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.PLAYERS,  1.0F, 1.0F);
 	}
 
 	private InteractionResult onPlayerDeath(ServerPlayer player, DamageSource damageSource) {
@@ -343,7 +338,7 @@ public final class BbBehavior implements IGameBehavior {
 	}
 
 	private void teleportToRegion(ServerPlayer player, BlockBox region, Direction direction) {
-		BlockPos pos = region.sample(new Random(player.getRandom().nextLong()));
+		BlockPos pos = region.sample(player.getRandom());
 
 		player.setYRot(direction.toYRot());
 		DimensionUtils.teleportPlayerNoPortal(player, game.getDimension(), pos);

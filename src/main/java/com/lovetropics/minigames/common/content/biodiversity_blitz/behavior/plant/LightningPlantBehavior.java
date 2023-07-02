@@ -8,27 +8,29 @@ import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
-import com.lovetropics.minigames.common.util.Util;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.SharedConstants;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LightningBolt;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
 
 public final class LightningPlantBehavior implements IGameBehavior {
     public static final Codec<LightningPlantBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
             Codec.INT.fieldOf("radius").forGetter(b -> b.radius)
     ).apply(i, LightningPlantBehavior::new));
+
+    private static final int INTERVAL_TICKS = SharedConstants.TICKS_PER_SECOND * 8;
+
     private final int radius;
 
     private IGamePhase game;
@@ -47,7 +49,7 @@ public final class LightningPlantBehavior implements IGameBehavior {
         long ticks = this.game.ticks();
         RandomSource random = this.game.getWorld().getRandom();
 
-        if (ticks % 160 != 0) {
+        if (ticks % INTERVAL_TICKS != 0) {
             return;
         }
 

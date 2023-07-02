@@ -10,7 +10,7 @@ public class EnumButton<E extends Enum<E>> extends Button {
 
 	public EnumButton(Layout layout, E def) {
 		super(layout.content().left(), layout.content().top(), layout.content().width(), layout.content().height(),
-				Component.literal(def.name()), EnumButton::toggle, NO_TOOLTIP);
+				Component.literal(def.name()), EnumButton::toggle, DEFAULT_NARRATION);
 		this.value = def;
 	}
 

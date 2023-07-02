@@ -11,6 +11,7 @@ import com.lovetropics.minigames.common.core.game.state.ProgressionPeriod;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.Container;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
@@ -49,7 +50,7 @@ public class SurviveTheTideRulesetBehavior implements IGameBehavior {
 	}
 
 	private InteractionResult onPlayerDeath(ServerPlayer player, DamageSource damageSource) {
-		if (forceDropItemsOnDeath && player.level.getGameRules().getBoolean(GameRules.RULE_KEEPINVENTORY)) {
+		if (forceDropItemsOnDeath && player.level().getGameRules().getBoolean(GameRules.RULE_KEEPINVENTORY)) {
 			destroyVanishingCursedItems(player.getInventory());
 			player.getInventory().dropAll();
 		}
@@ -57,7 +58,7 @@ public class SurviveTheTideRulesetBehavior implements IGameBehavior {
 	}
 
 	private InteractionResult onPlayerHurt(ServerPlayer player, DamageSource source, float amount) {
-		if ((source.getEntity() instanceof ServerPlayer || source.isProjectile()) && progression.is(safePeriod)) {
+		if ((source.getEntity() instanceof ServerPlayer || source.is(DamageTypeTags.IS_PROJECTILE)) && progression.is(safePeriod)) {
 			return InteractionResult.FAIL;
 		}
 		return InteractionResult.PASS;

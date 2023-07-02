@@ -72,7 +72,7 @@ public final class DriftwoodRider implements ICapabilityProvider {
 		}
 
 		Vec3 motion = player.getDeltaMovement();
-		boolean onGround = player.isOnGround();
+		boolean onGround = player.onGround();
 
 		player.move(MoverType.SELF, new Vec3(deltaX, deltaY, deltaZ));
 

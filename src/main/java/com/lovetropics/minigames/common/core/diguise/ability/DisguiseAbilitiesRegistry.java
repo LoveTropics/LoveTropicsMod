@@ -2,10 +2,10 @@ package com.lovetropics.minigames.common.core.diguise.ability;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
-import net.minecraft.world.entity.EntityType;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.registries.RegistryObject;
+import net.minecraft.world.entity.EntityType;
 import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraftforge.registries.RegistryObject;
 
 import java.util.Collection;
 
@@ -32,10 +32,10 @@ public final class DisguiseAbilitiesRegistry {
 	}
 
 	private static RegistryObject<EntityType<?>> entityObject(ResourceLocation entityType) {
-		return RegistryObject.of(entityType, ForgeRegistries.ENTITIES);
+		return RegistryObject.create(entityType, ForgeRegistries.ENTITY_TYPES);
 	}
 
 	private static RegistryObject<EntityType<?>> entityObject(EntityType<?> entityType) {
-		return RegistryObject.of(entityType.getRegistryName(), ForgeRegistries.ENTITIES);
+		return RegistryObject.create(EntityType.getKey(entityType), ForgeRegistries.ENTITY_TYPES);
 	}
 }

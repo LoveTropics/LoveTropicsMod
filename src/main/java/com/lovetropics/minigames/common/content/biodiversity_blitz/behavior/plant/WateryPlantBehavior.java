@@ -11,16 +11,18 @@ import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.util.Util;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import net.minecraft.server.level.ServerLevel;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 public final class WateryPlantBehavior implements IGameBehavior {
     public static final Codec<WateryPlantBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
@@ -74,7 +76,7 @@ public final class WateryPlantBehavior implements IGameBehavior {
                 if (ticks % 15 == 0) {
                     // Extinguish fire
                     entity.setRemainingFireTicks(0);
-                    entity.hurt(DamageSource.MAGIC, 1 + random.nextInt(3));
+                    entity.hurt(entity.damageSources().magic(), 1 + random.nextInt(3));
                     waterCount += 5 + random.nextInt(8);
 
                     // Draw extra water as a line

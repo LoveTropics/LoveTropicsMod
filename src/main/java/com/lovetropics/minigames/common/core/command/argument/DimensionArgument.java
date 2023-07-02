@@ -9,10 +9,10 @@ import net.minecraft.commands.Commands;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.commands.arguments.ResourceLocationArgument;
 import net.minecraft.core.Registry;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.dimension.LevelStem;
-import net.minecraft.world.level.levelgen.WorldGenSettings;
 
 public final class DimensionArgument {
 	public static final DynamicCommandExceptionType DIMENSION_NOT_FOUND = new DynamicCommandExceptionType(arg ->
@@ -23,8 +23,7 @@ public final class DimensionArgument {
         return Commands.argument(name, ResourceLocationArgument.id())
                 .suggests((context, builder) -> {
                     CommandSourceStack source = context.getSource();
-                    WorldGenSettings generatorSettings = source.getServer().getWorldData().worldGenSettings();
-                    Registry<LevelStem> dimensions = generatorSettings.dimensions();
+                    Registry<LevelStem> dimensions = source.getServer().registryAccess().registryOrThrow(Registries.LEVEL_STEM);
                     return SharedSuggestionProvider.suggestResource(
                             dimensions.keySet().stream(),
                             builder
@@ -36,8 +35,7 @@ public final class DimensionArgument {
 		ResourceLocation key = ResourceLocationArgument.getId(context, name);
 
 		CommandSourceStack source = context.getSource();
-		WorldGenSettings generatorSettings = source.getServer().getWorldData().worldGenSettings();
-		Registry<LevelStem> dimensions = generatorSettings.dimensions();
+		Registry<LevelStem> dimensions = source.getServer().registryAccess().registryOrThrow(Registries.LEVEL_STEM);
 
 		LevelStem dimension = dimensions.get(key);
 		if (dimension == null) {

@@ -1,8 +1,7 @@
 package com.lovetropics.minigames.common.core.game;
 
+import net.minecraft.network.chat.Component;
 import net.minecraft.util.Unit;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.Component;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;

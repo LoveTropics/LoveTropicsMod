@@ -1,38 +1,18 @@
 {
   "variants": {
-    "attachment=floor,facing=north": {
+    "attachment=ceiling,facing=east": {
       "model": "ltminigames:block/chip_bag",
-      "y": 180
-    },
-    "attachment=wall,facing=north": {
-      "model": "ltminigames:block/chip_bag",
-      "x": 90,
-      "y": 180
+      "x": 180,
+      "y": 270
     },
     "attachment=ceiling,facing=north": {
       "model": "ltminigames:block/chip_bag",
       "x": 180,
       "y": 180
     },
-    "attachment=floor,facing=south": {
-      "model": "ltminigames:block/chip_bag"
-    },
-    "attachment=wall,facing=south": {
-      "model": "ltminigames:block/chip_bag",
-      "x": 90
-    },
     "attachment=ceiling,facing=south": {
       "model": "ltminigames:block/chip_bag",
       "x": 180
-    },
-    "attachment=floor,facing=west": {
-      "model": "ltminigames:block/chip_bag",
-      "y": 90
-    },
-    "attachment=wall,facing=west": {
-      "model": "ltminigames:block/chip_bag",
-      "x": 90,
-      "y": 90
     },
     "attachment=ceiling,facing=west": {
       "model": "ltminigames:block/chip_bag",
@@ -43,15 +23,35 @@
       "model": "ltminigames:block/chip_bag",
       "y": 270
     },
+    "attachment=floor,facing=north": {
+      "model": "ltminigames:block/chip_bag",
+      "y": 180
+    },
+    "attachment=floor,facing=south": {
+      "model": "ltminigames:block/chip_bag"
+    },
+    "attachment=floor,facing=west": {
+      "model": "ltminigames:block/chip_bag",
+      "y": 90
+    },
     "attachment=wall,facing=east": {
       "model": "ltminigames:block/chip_bag",
       "x": 90,
       "y": 270
     },
-    "attachment=ceiling,facing=east": {
+    "attachment=wall,facing=north": {
       "model": "ltminigames:block/chip_bag",
-      "x": 180,
-      "y": 270
+      "x": 90,
+      "y": 180
+    },
+    "attachment=wall,facing=south": {
+      "model": "ltminigames:block/chip_bag",
+      "x": 90
+    },
+    "attachment=wall,facing=west": {
+      "model": "ltminigames:block/chip_bag",
+      "x": 90,
+      "y": 90
     }
   }
 }

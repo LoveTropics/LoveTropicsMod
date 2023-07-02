@@ -34,7 +34,12 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
 import javax.annotation.Nullable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import java.util.function.Predicate;
 
 /**
@@ -89,7 +94,7 @@ public class MultiGameManager implements IGameManager {
 	@Nullable
 	@Override
 	public GameLobby getLobbyFor(Player player) {
-		if (player.level.isClientSide) return null;
+		if (player.level().isClientSide) return null;
 
 		return lobbiesByPlayer.get(player.getUUID());
 	}
@@ -103,21 +108,21 @@ public class MultiGameManager implements IGameManager {
 
 	@Nullable
 	@Override
-	public IGamePhase getGamePhaseAt(Level world, Vec3 pos) {
-		return getGamePhaseForWorld(world, phase -> phase.getPhaseDefinition().getGameArea().contains(pos));
+	public IGamePhase getGamePhaseAt(Level level, Vec3 pos) {
+		return getGamePhaseForWorld(level, phase -> phase.getPhaseDefinition().getGameArea().contains(pos));
 	}
 
-	public List<GamePhase> getGamePhasesForWorld(Level world) {
-		if (world.isClientSide) {
+	public List<GamePhase> getGamePhasesForWorld(Level level) {
+		if (level.isClientSide) {
 			return Collections.emptyList();
 		}
 
-		return gamesByDimension.getOrDefault(world.dimension(), Collections.emptyList());
+		return gamesByDimension.getOrDefault(level.dimension(), Collections.emptyList());
 	}
 
 	@Nullable
-	public GamePhase getGamePhaseForWorld(Level world, Predicate<GamePhase> pred) {
-		return getGamePhasesForWorld(world).stream().filter(pred).findFirst().orElse(null);
+	public GamePhase getGamePhaseForWorld(Level level, Predicate<GamePhase> pred) {
+		return getGamePhasesForWorld(level).stream().filter(pred).findFirst().orElse(null);
 	}
 
 	@Nullable
@@ -301,14 +306,13 @@ public class MultiGameManager implements IGameManager {
 
 	@SubscribeEvent
 	public static void onPlayerChangedDimension(PlayerEvent.PlayerChangedDimensionEvent event) {
-		Player player = event.getEntity();
-		if (player instanceof ServerPlayer) {
+		if (event.getEntity() instanceof ServerPlayer player) {
 			IGamePhase phase = INSTANCE.getGamePhaseFor(player);
 			if (phase == null) return;
 
 			ResourceKey<Level> dimension = phase.getDimension();
 			if (event.getFrom() == dimension && event.getTo() != dimension) {
-				if (phase.getLobby().getPlayers().remove((ServerPlayer) player)) {
+				if (phase.getLobby().getPlayers().remove(player)) {
 					player.displayClientMessage(GameTexts.Status.leftGameDimension(), false);
 				}
 			}

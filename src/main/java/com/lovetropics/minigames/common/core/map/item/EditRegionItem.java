@@ -5,21 +5,18 @@ import com.lovetropics.minigames.client.map.RegionEditOperator;
 import com.lovetropics.minigames.client.map.RegionTraceTarget;
 import com.lovetropics.minigames.common.core.network.LoveTropicsNetwork;
 import com.lovetropics.minigames.common.core.network.workspace.UpdateWorkspaceRegionMessage;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.InteractionResultHolder;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.Component;
-import net.minecraft.ChatFormatting;
 import net.minecraft.world.level.Level;
 
 import javax.annotation.Nullable;
-
-import net.minecraft.world.item.Item.Properties;
 
 public final class EditRegionItem extends Item {
 	private static Mode mode = Mode.RESIZE;
@@ -55,7 +52,7 @@ public final class EditRegionItem extends Item {
 
 	@Override
 	public boolean onEntitySwing(ItemStack stack, LivingEntity entity) {
-		if (entity.level.isClientSide && entity.tickCount != useTick && isClientPlayer(entity)) {
+		if (entity.level().isClientSide && entity.tickCount != useTick && isClientPlayer(entity)) {
 			mode = mode.getNext();
 
 			MapWorkspaceTracer.stopEditing();

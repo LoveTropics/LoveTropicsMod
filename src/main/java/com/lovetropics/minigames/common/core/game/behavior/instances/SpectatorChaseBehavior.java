@@ -1,8 +1,8 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances;
 
 import com.google.common.primitives.Booleans;
-import com.lovetropics.minigames.client.toast.NotificationStyle;
 import com.lovetropics.minigames.client.toast.NotificationIcon;
+import com.lovetropics.minigames.client.toast.NotificationStyle;
 import com.lovetropics.minigames.client.toast.ShowNotificationToastMessage;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
@@ -18,7 +18,6 @@ import com.lovetropics.minigames.common.core.network.LoveTropicsNetwork;
 import com.lovetropics.minigames.common.role.StreamHosts;
 import com.mojang.serialization.Codec;
 import net.minecraft.ChatFormatting;
-import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;

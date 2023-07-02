@@ -10,21 +10,25 @@ import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.mojang.serialization.Codec;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.DirectionalBlock;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.BlockTags;
-import net.minecraft.world.InteractionResult;
-import net.minecraft.core.Direction;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.core.BlockPos;
-import net.minecraftforge.registries.RegistryObject;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.DirectionalBlock;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraftforge.registries.RegistryObject;
 import org.apache.commons.lang3.tuple.Pair;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.WeakHashMap;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -59,16 +63,16 @@ public class GrowCoconutsBehavior implements IGameBehavior {
 		if (game.ticks() % interval == 0) {
 			for (Plant plant : plants) {
 				List<Pair<BlockPos, Direction>> candidates = candidatePositions.computeIfAbsent(plant, p -> p.functionalCoverage().stream()
-					.filter(bp -> player.level.getBlockState(bp).is(BlockTags.LOGS))
+					.filter(bp -> player.level().getBlockState(bp).is(BlockTags.LOGS))
 					.filter(bp -> IntStream.range(0, 4)
 							.mapToObj(Direction::from2DDataValue)
-							.allMatch(d -> player.level.getBlockState(bp.relative(d).above()).is(BlockTags.LEAVES)))
+							.allMatch(d -> player.level().getBlockState(bp.relative(d).above()).is(BlockTags.LEAVES)))
 					.flatMap(bp -> {
 						List<Pair<BlockPos, Direction>> ret = new ArrayList<>();
 						for (int i = 0; i < 4; i++) {
 							Direction dir = Direction.from2DDataValue(i);
 							BlockPos pos = bp.relative(dir);
-							if (player.level.isEmptyBlock(pos) || player.level.getBlockState(pos).getBlock() == COCONUT.get()) {
+							if (player.level().isEmptyBlock(pos) || player.level().getBlockState(pos).getBlock() == COCONUT.get()) {
 								ret.add(Pair.of(pos, dir));
 							}
 						}
@@ -77,8 +81,8 @@ public class GrowCoconutsBehavior implements IGameBehavior {
 				
 				Collections.shuffle(candidates);
 				for (Pair<BlockPos, Direction> candidate : candidates) {
-					if (player.level.isEmptyBlock(candidate.getLeft())) {
-						player.level.setBlockAndUpdate(candidate.getLeft(), COCONUT.get().defaultBlockState().setValue(DirectionalBlock.FACING, candidate.getRight().getOpposite()));
+					if (player.level().isEmptyBlock(candidate.getLeft())) {
+						player.level().setBlockAndUpdate(candidate.getLeft(), COCONUT.get().defaultBlockState().setValue(DirectionalBlock.FACING, candidate.getRight().getOpposite()));
 						break;
 					}
 				}
@@ -90,7 +94,7 @@ public class GrowCoconutsBehavior implements IGameBehavior {
 	private InteractionResult breakFromCoconut(ServerPlayer player, BlockPos pos, BlockState state, InteractionHand hand) {
 		if (state.getBlock() == COCONUT.get()) {
 			BlockPos trunkPos = pos.relative(state.getValue(DirectionalBlock.FACING));
-			game.invoker(GamePlayerEvents.BREAK_BLOCK).onBreakBlock(player, trunkPos, player.level.getBlockState(trunkPos), InteractionHand.MAIN_HAND);
+			game.invoker(GamePlayerEvents.BREAK_BLOCK).onBreakBlock(player, trunkPos, player.level().getBlockState(trunkPos), InteractionHand.MAIN_HAND);
 			return InteractionResult.FAIL;
 		}
 		return InteractionResult.PASS;
@@ -99,7 +103,7 @@ public class GrowCoconutsBehavior implements IGameBehavior {
 	private void onPlantBreak(ServerPlayer player, Plot plot, Plant plant, BlockPos pos) {
 		List<Pair<BlockPos, Direction>> candidates = candidatePositions.get(plant);
 		if (candidates != null) {
-			candidates.forEach(p -> player.level.destroyBlock(p.getLeft(), false));
+			candidates.forEach(p -> player.level().destroyBlock(p.getLeft(), false));
 		}
 	}
 }

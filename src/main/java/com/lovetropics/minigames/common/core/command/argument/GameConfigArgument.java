@@ -11,8 +11,8 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.commands.arguments.ResourceLocationArgument;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 
 public final class GameConfigArgument {
 	public static final DynamicCommandExceptionType GAME_CONFIG_NOT_FOUND = new DynamicCommandExceptionType(arg ->
@@ -21,12 +21,10 @@ public final class GameConfigArgument {
 
     public static RequiredArgumentBuilder<CommandSourceStack, ResourceLocation> argument(String name) {
         return Commands.argument(name, ResourceLocationArgument.id())
-                .suggests((context, builder) -> {
-                    return SharedSuggestionProvider.suggestResource(
-							GameConfigs.REGISTRY.stream().map(IGameDefinition::getId),
-                            builder
-                    );
-                });
+                .suggests((context, builder) -> SharedSuggestionProvider.suggestResource(
+						GameConfigs.REGISTRY.stream().map(IGameDefinition::getId),
+						builder
+				));
     }
 
 	public static GameConfig get(CommandContext<CommandSourceStack> context, String name) throws CommandSyntaxException {

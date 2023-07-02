@@ -7,8 +7,8 @@ import com.lovetropics.minigames.client.screen.flex.Layout;
 import com.lovetropics.minigames.common.core.game.behavior.config.ConfigData;
 import com.lovetropics.minigames.common.core.game.behavior.config.ConfigData.ListConfigData;
 import com.lovetropics.minigames.common.core.game.behavior.config.ConfigType;
-import com.mojang.blaze3d.vertex.PoseStack;
-import net.minecraft.client.gui.components.Widget;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.network.chat.Component;
 import net.minecraftforge.client.gui.widget.ExtendedButton;
@@ -61,12 +61,12 @@ public class ListConfigWidget extends LayoutGui implements IConfigWidget {
 	}
 
 	@Override
-	public void render(PoseStack matrixStack, int mouseX, int mouseY, float partialTicks) {
-		super.render(matrixStack, mouseX, mouseY, partialTicks);
-		btnLayout.debugRender(matrixStack);
+	public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
+		super.render(graphics, mouseX, mouseY, partialTicks);
+		btnLayout.debugRender(graphics);
 		for (GuiEventListener child : children) {
-			if (child instanceof Widget) {
-				((Widget)child).render(matrixStack, mouseX, mouseY, partialTicks);
+			if (child instanceof Renderable renderable) {
+				renderable.render(graphics, mouseX, mouseY, partialTicks);
 			}
 		}
 	}

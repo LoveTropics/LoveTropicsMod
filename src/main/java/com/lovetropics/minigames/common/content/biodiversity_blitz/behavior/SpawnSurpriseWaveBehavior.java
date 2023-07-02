@@ -16,8 +16,6 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.level.Level;
 
-import java.util.Random;
-
 public class SpawnSurpriseWaveBehavior implements IGameBehavior {
     public static final Codec<SpawnSurpriseWaveBehavior> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             Codec.INT.fieldOf("wave_size").forGetter(b -> b.waveSize)
@@ -37,13 +35,13 @@ public class SpawnSurpriseWaveBehavior implements IGameBehavior {
             // FIXME: this will spawn a wave for every player associated to the plot. probably not ideal.
             Plot plot = this.plots.getPlotFor(player);
 
-            BbMobSpawner.spawnWaveEntities(player.getLevel(), player.getRandom(), plot, this.waveSize, 0, SpawnSurpriseWaveBehavior::selectEntityForWave);
+            BbMobSpawner.spawnWaveEntities(player.serverLevel(), player.getRandom(), plot, this.waveSize, 0, SpawnSurpriseWaveBehavior::selectEntityForWave);
 
             return true;
         });
     }
 
-    private static Mob selectEntityForWave(RandomSource random, Level world, Plot plot, int waveIndex) {
-        return new BbCreeperEntity(EntityType.CREEPER, world, plot);
+    private static Mob selectEntityForWave(RandomSource random, Level level, Plot plot, int waveIndex) {
+        return new BbCreeperEntity(EntityType.CREEPER, level, plot);
     }
 }

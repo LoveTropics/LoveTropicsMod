@@ -5,13 +5,7 @@ import net.minecraftforge.network.NetworkEvent;
 
 import java.util.function.Supplier;
 
-public final class SelectRolePromptMessage {
-	private final int lobbyId;
-
-	public SelectRolePromptMessage(int lobbyId) {
-		this.lobbyId = lobbyId;
-	}
-
+public record SelectRolePromptMessage(int lobbyId) {
 	public void encode(FriendlyByteBuf buffer) {
 		buffer.writeVarInt(this.lobbyId);
 	}
@@ -21,9 +15,6 @@ public final class SelectRolePromptMessage {
 	}
 
 	public void handle(Supplier<NetworkEvent.Context> ctx) {
-		ctx.get().enqueueWork(() -> {
-			ClientRoleSelection.openScreen(lobbyId);
-		});
-		ctx.get().setPacketHandled(true);
+		ClientRoleSelection.openScreen(lobbyId);
 	}
 }

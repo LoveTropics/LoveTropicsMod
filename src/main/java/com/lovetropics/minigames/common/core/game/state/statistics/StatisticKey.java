@@ -178,7 +178,7 @@ public final class StatisticKey<T> {
 					if (key.type.equals(type)) {
 						return DataResult.success((StatisticKey<T>) key);
 					} else {
-						return DataResult.error("Mismatched type on key: got " + key.type + " but expected " + type);
+						return DataResult.error(() -> "Mismatched type on key: got " + key.type + " but expected " + type);
 					}
 				},
 				key -> key

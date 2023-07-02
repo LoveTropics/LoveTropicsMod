@@ -9,16 +9,7 @@ import net.minecraftforge.network.NetworkEvent;
 import javax.annotation.Nullable;
 import java.util.function.Supplier;
 
-public class LobbyUpdateMessage {
-	private final int id;
-	@Nullable
-	private final Update update;
-
-	private LobbyUpdateMessage(int id, @Nullable Update update) {
-		this.id = id;
-		this.update = update;
-	}
-
+public record LobbyUpdateMessage(int id, @Nullable Update update) {
 	public static LobbyUpdateMessage update(IGameLobby lobby) {
 		int id = lobby.getMetadata().id().networkId();
 		String name = lobby.getMetadata().name();
@@ -32,61 +23,35 @@ public class LobbyUpdateMessage {
 
 	public void encode(FriendlyByteBuf buffer) {
 		buffer.writeVarInt(id);
-
-		buffer.writeBoolean(update != null);
-		if (update != null) {
-			update.encode(buffer);
-		}
+		buffer.writeNullable(update, (b, u) -> u.encode(b));
 	}
 
 	public static LobbyUpdateMessage decode(FriendlyByteBuf buffer) {
 		int id = buffer.readVarInt();
-		if (buffer.readBoolean()) {
-			Update update = Update.decode(buffer);
-			return new LobbyUpdateMessage(id, update);
-		}
-		return new LobbyUpdateMessage(id, null);
+		Update update = buffer.readNullable(Update::decode);
+		return new LobbyUpdateMessage(id, update);
 	}
 
 	public void handle(Supplier<NetworkEvent.Context> ctx) {
-		ctx.get().enqueueWork(() -> {
-			if (update != null) {
-				ClientLobbyManager.addOrUpdate(id, update.name, update.currentGame);
-			} else {
-				ClientLobbyManager.remove(id);
-			}
-		});
-		ctx.get().setPacketHandled(true);
+		if (update != null) {
+			ClientLobbyManager.addOrUpdate(id, update.name, update.currentGame);
+		} else {
+			ClientLobbyManager.remove(id);
+		}
 	}
 
-	static final class Update {
-		final String name;
-		@Nullable
-		final ClientCurrentGame currentGame;
+	private record Update(String name, @Nullable ClientCurrentGame currentGame) {
+		private static final int MAX_NAME_LENGTH = 200;
 
-		Update(String name, @Nullable ClientCurrentGame currentGame) {
-			this.name = name;
-			this.currentGame = currentGame;
-		}
-
-		static Update decode(FriendlyByteBuf buffer) {
-			String name = buffer.readUtf(200);
-
-			ClientCurrentGame currentGame = null;
-			if (buffer.readBoolean()) {
-				currentGame = ClientCurrentGame.decode(buffer);
-			}
-
+		private static Update decode(FriendlyByteBuf buffer) {
+			String name = buffer.readUtf(MAX_NAME_LENGTH);
+			ClientCurrentGame currentGame = buffer.readNullable(ClientCurrentGame::decode);
 			return new Update(name, currentGame);
 		}
 
-		void encode(FriendlyByteBuf buffer) {
-			buffer.writeUtf(name, 200);
-
-			buffer.writeBoolean(currentGame != null);
-			if (currentGame != null) {
-				currentGame.encode(buffer);
-			}
+		private void encode(FriendlyByteBuf buffer) {
+			buffer.writeUtf(name, MAX_NAME_LENGTH);
+			buffer.writeNullable(currentGame, (b, g) -> g.encode(b));
 		}
 	}
 }

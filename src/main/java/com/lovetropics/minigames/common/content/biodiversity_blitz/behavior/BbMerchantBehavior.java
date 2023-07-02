@@ -18,10 +18,11 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
@@ -36,20 +37,17 @@ import net.minecraftforge.registries.ForgeRegistries;
 
 import javax.annotation.Nullable;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
 
 public final class BbMerchantBehavior implements IGameBehavior {
-	public static final Codec<BbMerchantBehavior> CODEC = RecordCodecBuilder.create(instance -> {
-		return instance.group(
-				Codec.STRING.fieldOf("plot_region").forGetter(c -> c.plotRegion),
-				ForgeRegistries.ENTITY_TYPES.getCodec().fieldOf("entity").forGetter(c -> c.entity),
-				MoreCodecs.TEXT.optionalFieldOf("name", Component.empty()).forGetter(c -> c.name),
-				Offer.CODEC.listOf().fieldOf("offers").forGetter(c -> c.offers)
-		).apply(instance, BbMerchantBehavior::new);
-	});
+	public static final Codec<BbMerchantBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+			Codec.STRING.fieldOf("plot_region").forGetter(c -> c.plotRegion),
+			ForgeRegistries.ENTITY_TYPES.getCodec().fieldOf("entity").forGetter(c -> c.entity),
+			ExtraCodecs.COMPONENT.optionalFieldOf("name", CommonComponents.EMPTY).forGetter(c -> c.name),
+			Offer.CODEC.listOf().fieldOf("offers").forGetter(c -> c.offers)
+	).apply(i, BbMerchantBehavior::new));
 
 	private final String plotRegion;
 	private final EntityType<?> entity;
@@ -95,9 +93,8 @@ public final class BbMerchantBehavior implements IGameBehavior {
 		world.getChunk(region.centerBlock());
 		world.addFreshEntity(merchant);
 
-		if (merchant instanceof Mob) {
-			Mob mob = (Mob) merchant;
-			mob.finalizeSpawn(world, world.getCurrentDifficultyAt(new BlockPos(center)), MobSpawnType.MOB_SUMMONED, null, null);
+		if (merchant instanceof Mob mob) {
+			mob.finalizeSpawn(world, world.getCurrentDifficultyAt(BlockPos.containing(center)), MobSpawnType.MOB_SUMMONED, null, null);
 			mob.setNoAi(true);
 			mob.setBaby(false);
 			mob.setInvulnerable(true);
@@ -110,7 +107,7 @@ public final class BbMerchantBehavior implements IGameBehavior {
 	private Entity createMerchant(ServerLevel world) {
 		Entity merchant = this.entity.create(world);
 		if (merchant != null) {
-			if (!Objects.equals(this.name, Component.empty())) {
+			if (this.name != CommonComponents.EMPTY) {
 				merchant.setCustomName(this.name);
 				merchant.setCustomNameVisible(true);
 			}
@@ -165,11 +162,9 @@ public final class BbMerchantBehavior implements IGameBehavior {
 
 	public static final class Output {
 		private static final Codec<Output> ITEM_CODEC = MoreCodecs.ITEM_STACK.xmap(Output::item, output -> output.item);
-		private static final Codec<Output> PLANT_CODEC = RecordCodecBuilder.create(instance -> {
-			return instance.group(
-					PlantItemType.CODEC.fieldOf("plant").forGetter(c -> c.plant)
-			).apply(instance, Output::plant);
-		});
+		private static final Codec<Output> PLANT_CODEC = RecordCodecBuilder.create(i -> i.group(
+				PlantItemType.CODEC.fieldOf("plant").forGetter(c -> c.plant)
+		).apply(i, Output::plant));
 
 		public static final Codec<Output> CODEC = Codec.either(ITEM_CODEC, PLANT_CODEC)
 				.xmap(

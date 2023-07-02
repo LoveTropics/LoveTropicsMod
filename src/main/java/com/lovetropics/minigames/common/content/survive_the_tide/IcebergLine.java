@@ -2,10 +2,11 @@ package com.lovetropics.minigames.common.content.survive_the_tide;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.material.Material;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.material.Fluids;
 
 import java.util.Random;
 
@@ -72,8 +73,8 @@ public class IcebergLine
     }
 
     private void setIceWithCheck(Level world, BlockPos pos) {
-        if (world.getBlockState(pos).getMaterial() == Material.WATER) {
-            world.setBlock(pos, Blocks.SNOW_BLOCK.defaultBlockState(), 2);
+        if (world.getFluidState(pos).is(Fluids.WATER)) {
+            world.setBlock(pos, Blocks.SNOW_BLOCK.defaultBlockState(), Block.UPDATE_CLIENTS);
         }
     }
 }

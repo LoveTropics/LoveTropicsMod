@@ -1,12 +1,11 @@
 package com.lovetropics.minigames.client.screen;
 
 import com.lovetropics.minigames.client.screen.flex.Layout;
-import com.mojang.blaze3d.vertex.PoseStack;
-
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.components.events.AbstractContainerEventHandler;
-import net.minecraft.client.gui.components.Widget;
 
-public abstract class LayoutGui extends AbstractContainerEventHandler implements Widget {
+public abstract class LayoutGui extends AbstractContainerEventHandler implements Renderable {
 	
 	protected Layout mainLayout;
 	
@@ -24,7 +23,7 @@ public abstract class LayoutGui extends AbstractContainerEventHandler implements
 	}
 
 	@Override
-	public void render(PoseStack matrixStack, int mouseX, int mouseY, float partialTicks) {
-		this.mainLayout.debugRender(matrixStack);
+	public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
+		this.mainLayout.debugRender(graphics);
 	}
 }

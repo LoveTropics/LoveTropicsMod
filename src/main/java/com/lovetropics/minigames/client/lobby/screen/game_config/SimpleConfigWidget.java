@@ -4,12 +4,13 @@ import com.lovetropics.minigames.client.screen.LayoutGui;
 import com.lovetropics.minigames.client.screen.LayoutTree;
 import com.lovetropics.minigames.client.screen.flex.Layout;
 import com.lovetropics.minigames.common.core.game.behavior.config.ConfigData.SimpleConfigData;
-import com.mojang.blaze3d.vertex.PoseStack;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.components.events.GuiEventListener;
-import net.minecraft.client.gui.components.EditBox;
-import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.Util;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.gui.components.events.GuiEventListener;
+import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import org.apache.commons.lang3.math.NumberUtils;
 
@@ -22,18 +23,13 @@ public abstract class SimpleConfigWidget extends LayoutGui implements IConfigWid
 	private AbstractWidget control;
 	
 	public static SimpleConfigWidget from(LayoutTree ltree, SimpleConfigData data) {
-		switch (data.type()) {
-		case BOOLEAN:
-			return new BooleanConfigWidget(ltree, data);
-		case NUMBER:
-			return new NumericConfigWidget(ltree, data);
-		case STRING:
-			return new StringConfigWidget(ltree, data);
-		case ENUM:
-			return new EnumConfigWidget(ltree, data);
-		default:
-			throw new IllegalArgumentException("Invalid config type " + data.type() + " for simple config widget");	
-		}
+		return switch (data.type()) {
+			case BOOLEAN -> new BooleanConfigWidget(ltree, data);
+			case NUMBER -> new NumericConfigWidget(ltree, data);
+			case STRING -> new StringConfigWidget(ltree, data);
+			case ENUM -> new EnumConfigWidget(ltree, data);
+			default -> throw new IllegalArgumentException("Invalid config type " + data.type() + " for simple config widget");
+		};
 	}
 	
 	protected SimpleConfigWidget(LayoutTree ltree, SimpleConfigData config) {
@@ -49,9 +45,9 @@ public abstract class SimpleConfigWidget extends LayoutGui implements IConfigWid
 	}
 	
 	@Override
-	public void render(PoseStack matrixStack, int mouseX, int mouseY, float partialTicks) {
-		control.render(matrixStack, mouseX, mouseY, partialTicks);
-		super.render(matrixStack, mouseX, mouseY, partialTicks);
+	public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
+		control.render(graphics, mouseX, mouseY, partialTicks);
+		super.render(graphics, mouseX, mouseY, partialTicks);
 	}
 	
 	protected abstract AbstractWidget createControl(Layout ltree);
@@ -99,7 +95,7 @@ public abstract class SimpleConfigWidget extends LayoutGui implements IConfigWid
 		@Override
 		protected AbstractWidget createControl(Layout mainLayout) {
 			// TODO communicate changes to config object
-			return Util.make(new EditBox(Minecraft.getInstance().font, mainLayout.background().left(), mainLayout.background().top(), mainLayout.background().width(), mainLayout.background().height(), Component.literal("")), w -> {
+			return Util.make(new EditBox(Minecraft.getInstance().font, mainLayout.background().left(), mainLayout.background().top(), mainLayout.background().width(), mainLayout.background().height(), CommonComponents.EMPTY), w -> {
 				w.setValue(config.value().toString());
 			});
 		}

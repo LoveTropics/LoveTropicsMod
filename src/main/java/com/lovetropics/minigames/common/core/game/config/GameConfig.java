@@ -1,13 +1,13 @@
 package com.lovetropics.minigames.common.core.game.config;
 
-import com.lovetropics.lib.codec.MoreCodecs;
 import com.lovetropics.minigames.common.core.game.IGameDefinition;
 import com.lovetropics.minigames.common.core.game.IGamePhaseDefinition;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.ExtraCodecs;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
@@ -54,26 +54,24 @@ public final class GameConfig implements IGameDefinition {
 	public static Codec<GameConfig> codec(BehaviorReferenceReader reader, ResourceLocation id) {
 		MapCodec<GamePhaseConfig> phaseCodec = GamePhaseConfig.mapCodec(reader);
 
-		return RecordCodecBuilder.create(instance -> {
-			return instance.group(
-					ResourceLocation.CODEC.optionalFieldOf("backend_id").forGetter(c -> Optional.of(c.backendId)),
-					Codec.STRING.optionalFieldOf("statistics_key").forGetter(c -> Optional.of(c.statisticsKey)),
-					MoreCodecs.TEXT.fieldOf("name").forGetter(c -> c.name),
-					MoreCodecs.TEXT.optionalFieldOf("subtitle").forGetter(c -> Optional.ofNullable(c.subtitle)),
-					ResourceLocation.CODEC.optionalFieldOf("icon").forGetter(c -> Optional.ofNullable(c.icon)),
-					Codec.INT.optionalFieldOf("minimum_participants", 1).forGetter(c -> c.minimumParticipants),
-					Codec.INT.optionalFieldOf("maximum_participants", 100).forGetter(c -> c.maximumParticipants),
-					phaseCodec.codec().optionalFieldOf("waiting").forGetter(c -> Optional.ofNullable(c.waiting)),
-					phaseCodec.forGetter(c -> c.playing)
-			).apply(instance, (backendIdOpt, statisticsKeyOpt, name, subtitleOpt, iconOpt, minimumParticipants, maximumParticipants, waitingOpt, active) -> {
-				ResourceLocation backendId = backendIdOpt.orElse(id);
-				String telemetryKey = statisticsKeyOpt.orElse(id.getPath());
-				Component subtitle = subtitleOpt.orElse(null);
-				ResourceLocation icon = iconOpt.orElse(null);
-				GamePhaseConfig waiting = waitingOpt.orElse(null);
-				return new GameConfig(id, backendId, telemetryKey, name, subtitle, icon, minimumParticipants, maximumParticipants, waiting, active);
-			});
-		});
+		return RecordCodecBuilder.create(i -> i.group(
+				ResourceLocation.CODEC.optionalFieldOf("backend_id").forGetter(c -> Optional.of(c.backendId)),
+				Codec.STRING.optionalFieldOf("statistics_key").forGetter(c -> Optional.of(c.statisticsKey)),
+				ExtraCodecs.COMPONENT.fieldOf("name").forGetter(c -> c.name),
+				ExtraCodecs.COMPONENT.optionalFieldOf("subtitle").forGetter(c -> Optional.ofNullable(c.subtitle)),
+				ResourceLocation.CODEC.optionalFieldOf("icon").forGetter(c -> Optional.ofNullable(c.icon)),
+				Codec.INT.optionalFieldOf("minimum_participants", 1).forGetter(c -> c.minimumParticipants),
+				Codec.INT.optionalFieldOf("maximum_participants", 100).forGetter(c -> c.maximumParticipants),
+				phaseCodec.codec().optionalFieldOf("waiting").forGetter(c -> Optional.ofNullable(c.waiting)),
+				phaseCodec.forGetter(c -> c.playing)
+		).apply(i, (backendIdOpt, statisticsKeyOpt, name, subtitleOpt, iconOpt, minimumParticipants, maximumParticipants, waitingOpt, active) -> {
+			ResourceLocation backendId = backendIdOpt.orElse(id);
+			String telemetryKey = statisticsKeyOpt.orElse(id.getPath());
+			Component subtitle = subtitleOpt.orElse(null);
+			ResourceLocation icon = iconOpt.orElse(null);
+			GamePhaseConfig waiting = waitingOpt.orElse(null);
+			return new GameConfig(id, backendId, telemetryKey, name, subtitle, icon, minimumParticipants, maximumParticipants, waiting, active);
+		}));
 	}
 
 	@Override

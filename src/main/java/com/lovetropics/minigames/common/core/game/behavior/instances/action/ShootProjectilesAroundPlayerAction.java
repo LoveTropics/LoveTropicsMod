@@ -12,16 +12,16 @@ import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.projectile.LargeFireball;
-import net.minecraft.world.level.Explosion;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraftforge.event.ForgeEventFactory;
 
 import java.util.Iterator;
-import java.util.Random;
 
 public class ShootProjectilesAroundPlayerAction implements IGameBehavior {
 	public static final Codec<ShootProjectilesAroundPlayerAction> CODEC = RecordCodecBuilder.create(i -> i.group(
@@ -84,7 +84,7 @@ public class ShootProjectilesAroundPlayerAction implements IGameBehavior {
 					playerToDelayToSpawn.put(entry.getKey(), cooldown);
 				} else {
 					ServerLevel world = game.getWorld();
-					Random random = world.getRandom();
+					RandomSource random = world.getRandom();
 
 					cooldown = spawnRateBase + random.nextInt(spawnRateRandom);
 					playerToDelayToSpawn.put(entry.getKey(), cooldown);
@@ -122,10 +122,9 @@ public class ShootProjectilesAroundPlayerAction implements IGameBehavior {
 					case BLOCK -> onHitBlock((BlockHitResult) hitResult);
 				}
 
-				if (!level.isClientSide) {
-					final boolean mobGriefing = ForgeEventFactory.getMobGriefingEvent(level, getOwner());
-					final Explosion.BlockInteraction blockInteraction = mobGriefing ? Explosion.BlockInteraction.DESTROY : Explosion.BlockInteraction.NONE;
-					level.explode(null, getX(), getY(), getZ(), explosionStrength, mobGriefing, blockInteraction);
+				if (!level().isClientSide) {
+					final boolean mobGriefing = ForgeEventFactory.getMobGriefingEvent(level(), getOwner());
+					level().explode(null, getX(), getY(), getZ(), explosionStrength, mobGriefing, Level.ExplosionInteraction.MOB);
 					discard();
 				}
 			}

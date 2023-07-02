@@ -5,15 +5,16 @@ import com.lovetropics.minigames.client.screen.flex.Align;
 import com.lovetropics.minigames.client.screen.flex.Axis;
 import com.lovetropics.minigames.client.screen.flex.Box;
 import com.lovetropics.minigames.client.screen.flex.Layout;
-import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.components.Widget;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.CommonColors;
 
 import java.util.EnumMap;
 
-public class TextLabel implements Widget {
+public class TextLabel implements Renderable {
 	private final Layout renderArea;
 	private final Component text;
 	private final Font fnt = Minecraft.getInstance().font;
@@ -44,8 +45,8 @@ public class TextLabel implements Widget {
 	}
 
 	@Override
-	public void render(PoseStack matrixStack, int mouseX, int mouseY, float partialTicks) {
-		this.renderArea.debugRender(matrixStack);
-		fnt.draw(matrixStack, text, renderArea.content().left(), renderArea.content().top(), -1);
+	public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
+		this.renderArea.debugRender(graphics);
+		graphics.drawString(fnt, text, renderArea.content().left(), renderArea.content().top(), CommonColors.WHITE);
 	}
 }

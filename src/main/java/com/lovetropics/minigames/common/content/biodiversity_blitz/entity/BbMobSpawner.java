@@ -1,18 +1,17 @@
 package com.lovetropics.minigames.common.content.biodiversity_blitz.entity;
 
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.Plot;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobSpawnType;
-import net.minecraft.core.Direction;
-import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
-import net.minecraft.server.level.ServerLevel;
 
 import java.util.Collections;
-import java.util.Random;
 import java.util.Set;
 import java.util.WeakHashMap;
 
@@ -36,7 +35,7 @@ public final class BbMobSpawner {
                 waveState.didCreeperSpawnLastWave = true;
             }
 
-            BlockPos pos = plot.mobSpawn.sample(new Random(random.nextLong()));
+            BlockPos pos = plot.mobSpawn.sample(random);
             Direction direction = plot.forward.getOpposite();
             entity.moveTo(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5, direction.toYRot(), 0);
 

@@ -1,12 +1,16 @@
 package com.lovetropics.minigames.common.core.diguise;
 
 import com.lovetropics.minigames.Constants;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Pose;
-import net.minecraft.world.entity.ai.attributes.*;
+import net.minecraft.world.entity.ai.attributes.Attribute;
+import net.minecraft.world.entity.ai.attributes.AttributeInstance;
+import net.minecraft.world.entity.ai.attributes.AttributeMap;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.event.entity.EntityEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -43,7 +47,7 @@ public final class PlayerDisguiseBehavior {
 		AttributeMap playerAttributes = player.getAttributes();
 		AttributeMap disguiseAttributes = disguise.getAttributes();
 
-		for (Attribute attribute : Registry.ATTRIBUTE) {
+		for (Attribute attribute : BuiltInRegistries.ATTRIBUTE) {
 			if (!disguiseAttributes.hasAttribute(attribute) || !playerAttributes.hasAttribute(attribute)) {
 				continue;
 			}
@@ -60,7 +64,7 @@ public final class PlayerDisguiseBehavior {
 
 	public static void clearAttributes(Player player) {
 		AttributeMap attributes = player.getAttributes();
-		for (Attribute attribute : Registry.ATTRIBUTE) {
+		for (Attribute attribute : BuiltInRegistries.ATTRIBUTE) {
 			AttributeInstance instance = attributes.getInstance(attribute);
 			if (instance != null) {
 				instance.removeModifier(ATTRIBUTE_MODIFIER_UUID);

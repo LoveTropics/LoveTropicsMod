@@ -8,12 +8,11 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraftforge.registries.ForgeRegistries;
-
-import java.util.Random;
 
 public final class GenerateEntitiesBehavior extends ChunkGeneratingBehavior {
 	public static final Codec<GenerateEntitiesBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
@@ -46,7 +45,7 @@ public final class GenerateEntitiesBehavior extends ChunkGeneratingBehavior {
 			int z = minZ + random.nextInt(16);
 
 			BlockPos pos = world.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, new BlockPos(x, 0, z));
-			type.spawn(world, null, null, pos, MobSpawnType.CHUNK_GENERATION, false, false);
+			type.spawn(world, null, (Player) null, pos, MobSpawnType.CHUNK_GENERATION, false, false);
 		}
 	}
 }

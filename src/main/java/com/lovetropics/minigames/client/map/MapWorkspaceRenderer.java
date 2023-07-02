@@ -3,17 +3,19 @@ package com.lovetropics.minigames.client.map;
 import com.lovetropics.lib.BlockBox;
 import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.common.core.map.workspace.ClientWorkspaceRegions;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.*;
+import com.mojang.blaze3d.vertex.PoseStack;
 import it.unimi.dsi.fastutil.HashCommon;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.LevelRenderer;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.debug.DebugRenderer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.RenderLevelLastEvent;
+import net.minecraftforge.client.event.RenderLevelStageEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
@@ -22,7 +24,11 @@ import java.util.Set;
 @Mod.EventBusSubscriber(modid = Constants.MODID, value = Dist.CLIENT)
 public final class MapWorkspaceRenderer {
 	@SubscribeEvent
-	public static void onRenderWorld(RenderLevelLastEvent event) {
+	public static void onRenderLevel(RenderLevelStageEvent event) {
+		if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_LEVEL) {
+			return;
+		}
+
 		ClientWorkspaceRegions regions = ClientMapWorkspace.INSTANCE.getRegions();
 		if (regions.isEmpty()) {
 			return;
@@ -36,20 +42,8 @@ public final class MapWorkspaceRenderer {
 
 		Vec3 view = renderInfo.getPosition();
 
-		final PoseStack modelViewStack = RenderSystem.getModelViewStack();
-		modelViewStack.pushPose();
-		modelViewStack.mulPoseMatrix(event.getPoseStack().last().pose());
-		RenderSystem.applyModelViewMatrix();
-
-		RenderSystem.disableTexture();
-		RenderSystem.enableBlend();
-		RenderSystem.defaultBlendFunc();
-		RenderSystem.enableDepthTest();
-
-		RenderSystem.polygonOffset(-1.0F, -10.0F);
-		RenderSystem.enablePolygonOffset();
-
-		RenderSystem.depthMask(false);
+		PoseStack poseStack = event.getPoseStack();
+		MultiBufferSource.BufferSource bufferSource = client.renderBuffers().bufferSource();
 
 		Set<ClientWorkspaceRegions.Entry> selectedRegions = MapWorkspaceTracer.getSelectedRegions();
 
@@ -84,8 +78,8 @@ public final class MapWorkspaceRenderer {
 			double maxY = region.max().getY() + 1.0 - view.y;
 			double maxZ = region.max().getZ() + 1.0 - view.z;
 
-			DebugRenderer.renderFilledBox(minX, minY, minZ, maxX, maxY, maxZ, red, green, blue, alpha);
-			renderOutline(minX, minY, minZ, maxX, maxY, maxZ, outlineRed, outlineGreen, outlineBlue, 1.0F);
+			DebugRenderer.renderFilledBox(poseStack, bufferSource, minX, minY, minZ, maxX, maxY, maxZ, red, green, blue, alpha);
+			LevelRenderer.renderLineBox(poseStack, bufferSource.getBuffer(RenderType.lines()), minX, minY, minZ, maxX, maxY, maxZ, outlineRed, outlineGreen, outlineBlue, 1.0F);
 		}
 
 		for (ClientWorkspaceRegions.Entry entry : regions) {
@@ -95,52 +89,11 @@ public final class MapWorkspaceRenderer {
 			int minSize = Math.min(size.getX(), Math.min(size.getY(), size.getZ())) - 1;
 			float scale = Mth.clamp(minSize * 0.03125F, 0.03125F, 0.125F);
 
-			DebugRenderer.renderFloatingText(entry.key, center.x, center.y, center.z, 0xFFFFFFFF, scale);
+			DebugRenderer.renderFloatingText(poseStack, bufferSource, entry.key, center.x, center.y, center.z, 0xFFFFFFFF, scale);
 		}
-
-		RenderSystem.depthMask(true);
-
-		RenderSystem.polygonOffset(0.0F, 0.0F);
-		RenderSystem.disablePolygonOffset();
-
-		modelViewStack.popPose();
-		RenderSystem.applyModelViewMatrix();
 	}
 
 	private static int colorForKey(String key) {
 		return HashCommon.mix(key.hashCode()) & 0xFFFFFF;
-	}
-
-	private static void renderOutline(double minX, double minY, double minZ, double maxX, double maxY, double maxZ, float red, float green, float blue, float alpha) {
-		Tesselator tessellator = Tesselator.getInstance();
-		BufferBuilder builder = tessellator.getBuilder();
-		builder.begin(VertexFormat.Mode.LINES, DefaultVertexFormat.POSITION_COLOR);
-
-		builder.vertex(minX, minY, minZ).color(red, green, blue, alpha).endVertex();
-		builder.vertex(maxX, minY, minZ).color(red, green, blue, alpha).endVertex();
-		builder.vertex(minX, minY, minZ).color(red, green, blue, alpha).endVertex();
-		builder.vertex(minX, maxY, minZ).color(red, green, blue, alpha).endVertex();
-		builder.vertex(minX, minY, minZ).color(red, green, blue, alpha).endVertex();
-		builder.vertex(minX, minY, maxZ).color(red, green, blue, alpha).endVertex();
-		builder.vertex(maxX, minY, minZ).color(red, green, blue, alpha).endVertex();
-		builder.vertex(maxX, maxY, minZ).color(red, green, blue, alpha).endVertex();
-		builder.vertex(maxX, maxY, minZ).color(red, green, blue, alpha).endVertex();
-		builder.vertex(minX, maxY, minZ).color(red, green, blue, alpha).endVertex();
-		builder.vertex(minX, maxY, minZ).color(red, green, blue, alpha).endVertex();
-		builder.vertex(minX, maxY, maxZ).color(red, green, blue, alpha).endVertex();
-		builder.vertex(minX, maxY, maxZ).color(red, green, blue, alpha).endVertex();
-		builder.vertex(minX, minY, maxZ).color(red, green, blue, alpha).endVertex();
-		builder.vertex(minX, minY, maxZ).color(red, green, blue, alpha).endVertex();
-		builder.vertex(maxX, minY, maxZ).color(red, green, blue, alpha).endVertex();
-		builder.vertex(maxX, minY, maxZ).color(red, green, blue, alpha).endVertex();
-		builder.vertex(maxX, minY, minZ).color(red, green, blue, alpha).endVertex();
-		builder.vertex(minX, maxY, maxZ).color(red, green, blue, alpha).endVertex();
-		builder.vertex(maxX, maxY, maxZ).color(red, green, blue, alpha).endVertex();
-		builder.vertex(maxX, minY, maxZ).color(red, green, blue, alpha).endVertex();
-		builder.vertex(maxX, maxY, maxZ).color(red, green, blue, alpha).endVertex();
-		builder.vertex(maxX, maxY, minZ).color(red, green, blue, alpha).endVertex();
-		builder.vertex(maxX, maxY, maxZ).color(red, green, blue, alpha).endVertex();
-
-		tessellator.end();
 	}
 }

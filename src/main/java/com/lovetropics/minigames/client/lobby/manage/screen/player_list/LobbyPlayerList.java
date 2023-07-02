@@ -3,25 +3,23 @@ package com.lovetropics.minigames.client.lobby.manage.screen.player_list;
 import com.lovetropics.minigames.client.lobby.manage.state.ClientLobbyManageState;
 import com.lovetropics.minigames.client.lobby.manage.state.ClientLobbyPlayer;
 import com.lovetropics.minigames.client.screen.ClientPlayerInfo;
-import com.lovetropics.minigames.client.screen.PlayerFaces;
 import com.lovetropics.minigames.client.screen.flex.Box;
 import com.lovetropics.minigames.client.screen.flex.Layout;
 import com.lovetropics.minigames.common.core.game.util.GameTexts;
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.client.gui.GuiComponent;
+import net.minecraft.ChatFormatting;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.PlayerFaceRenderer;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
-import net.minecraft.ChatFormatting;
 
 import java.util.ArrayList;
 import java.util.List;
 
 // TODO: grid element utility
-public final class LobbyPlayerList extends GuiComponent implements GuiEventListener, NarratableEntry {
+public final class LobbyPlayerList implements GuiEventListener, NarratableEntry {
 	private static final int FACE_SIZE = 16;
 	private static final int SPACING = 4;
 	private static final int HALF_SPACING = SPACING / 2;
@@ -53,32 +51,29 @@ public final class LobbyPlayerList extends GuiComponent implements GuiEventListe
 		);
 	}
 
-	public void render(PoseStack matrixStack, int mouseX, int mouseY) {
+	public void render(GuiGraphics graphics, int mouseX, int mouseY) {
 		// TODO: handling overflow with scrollbar
-
-		RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-
 		int i = 0;
 		for (ClientLobbyPlayer player : lobby.getPlayers()) {
 			int x = this.faceX(i % rows);
 			int y = this.faceY(i / rows);
-			this.renderFace(matrixStack, mouseX, mouseY, player, x, y);
+			this.renderFace(graphics, mouseX, mouseY, player, x, y);
 			i++;
 		}
 	}
 
-	private void renderFace(PoseStack matrixStack, int mouseX, int mouseY, ClientLobbyPlayer player, int x, int y) {
+	private void renderFace(GuiGraphics graphics, int mouseX, int mouseY, ClientLobbyPlayer player, int x, int y) {
 		boolean hovered = isFaceHovered(x, y, mouseX, mouseY);
 
-		fill(matrixStack,
+		graphics.fill(
 				x - 1, y - 1,
 				x + FACE_SIZE + 1, y + FACE_SIZE + 1,
 				hovered ? 0xFFF0F0F0 : 0xFF000000
 		);
-		PlayerFaces.render(player.uuid(), matrixStack, x, y, FACE_SIZE);
+		PlayerFaceRenderer.draw(graphics, ClientPlayerInfo.getSkin(player.uuid()), x, y, FACE_SIZE);
 	}
 
-	public void renderTooltip(PoseStack matrixStack, int mouseX, int mouseY) {
+	public void renderTooltip(GuiGraphics graphics, int mouseX, int mouseY) {
 		int index = this.hoveredFaceAt(mouseX, mouseY);
 		if (index != -1) {
 			ClientLobbyPlayer player = lobby.getPlayers().get(index);
@@ -93,7 +88,7 @@ public final class LobbyPlayerList extends GuiComponent implements GuiEventListe
 							.withStyle(ChatFormatting.GRAY));
 				}
 
-				screen.renderComponentTooltip(matrixStack, tooltip, mouseX, mouseY);
+				graphics.renderComponentTooltip(screen.getMinecraft().font, tooltip, mouseX, mouseY);
 			}
 		}
 	}
@@ -144,5 +139,14 @@ public final class LobbyPlayerList extends GuiComponent implements GuiEventListe
 
 	@Override
 	public void updateNarration(final NarrationElementOutput output) {
+	}
+
+	@Override
+	public void setFocused(boolean pFocused) {
+	}
+
+	@Override
+	public boolean isFocused() {
+		return false;
 	}
 }

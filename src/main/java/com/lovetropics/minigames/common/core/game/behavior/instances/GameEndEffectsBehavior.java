@@ -23,7 +23,6 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundClearTitlesPacket;
 import net.minecraft.network.protocol.game.ClientboundSetSubtitleTextPacket;
 import net.minecraft.network.protocol.game.ClientboundSetTitleTextPacket;
@@ -144,7 +143,7 @@ public final class GameEndEffectsBehavior implements IGameBehavior {
 
 	private static void teleportToRegion(ServerPlayer player, BlockBox region) {
 		Vec3 pos = region.center();
-		player.teleportTo(player.getLevel(), pos.x(), pos.y(), pos.z(), 0.0f, 0.0f);
+		player.teleportTo(player.serverLevel(), pos.x(), pos.y(), pos.z(), 0.0f, 0.0f);
 	}
 
 	private void tickEnded(IGamePhase game) {

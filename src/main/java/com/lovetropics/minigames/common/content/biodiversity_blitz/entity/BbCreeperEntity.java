@@ -5,21 +5,21 @@ import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.ai.BbM
 import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.ai.KaboomCropGoal;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.explosion.PlantAffectingExplosion;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.Plot;
+import net.minecraft.network.protocol.game.ClientboundExplodePacket;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MoverType;
-import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
 import net.minecraft.world.entity.ai.goal.FloatGoal;
+import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
 import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
-import net.minecraft.world.entity.monster.Creeper;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.network.protocol.game.ClientboundExplodePacket;
 import net.minecraft.world.entity.ai.navigation.PathNavigation;
-import net.minecraft.world.level.pathfinder.BlockPathTypes;
-import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.entity.monster.Creeper;
 import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.Level;
-import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.pathfinder.BlockPathTypes;
+import net.minecraft.world.phys.Vec3;
 
 public class BbCreeperEntity extends Creeper implements BbMobEntity {
     private final BbMobBrain mobBrain;
@@ -46,17 +46,17 @@ public class BbCreeperEntity extends Creeper implements BbMobEntity {
 
     @Override
     public void explodeCreeper() {
-        if (!this.level.isClientSide) {
+        if (!this.level().isClientSide) {
             double x = this.getX();
             double y = this.getY();
             double z = this.getZ();
 
-            Explosion explosion = new PlantAffectingExplosion(this.level, null, null, null, x, y, z, 2.5f, false, Explosion.BlockInteraction.BREAK, e -> true, this.plot);
+            Explosion explosion = new PlantAffectingExplosion(this.level(), null, null, null, x, y, z, 2.5f, false, Explosion.BlockInteraction.DESTROY, e -> true, this.plot);
             explosion.explode();
             explosion.finalizeExplosion(false);
 
             float factor = this.isPowered() ? 2.0F : 1.0F;
-            for (ServerPlayer player : ((ServerLevel) this.level).players()) {
+            for (ServerPlayer player : ((ServerLevel) this.level()).players()) {
                 if (player.distanceToSqr(x, y, z) < 4096.0) {
                     player.connection.send(new ClientboundExplodePacket(x, y, z, 2.5f * factor, explosion.getToBlow(), explosion.getHitPlayers().get(player)));
                 }

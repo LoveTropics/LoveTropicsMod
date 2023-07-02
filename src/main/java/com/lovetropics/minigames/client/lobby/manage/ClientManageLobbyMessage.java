@@ -6,15 +6,7 @@ import net.minecraftforge.network.NetworkEvent;
 
 import java.util.function.Supplier;
 
-public final class ClientManageLobbyMessage {
-	private final int id;
-	private final ClientLobbyUpdate.Set updates;
-
-	public ClientManageLobbyMessage(int id, ClientLobbyUpdate.Set updates) {
-		this.id = id;
-		this.updates = updates;
-	}
-
+public record ClientManageLobbyMessage(int id, ClientLobbyUpdate.Set updates) {
 	public void encode(FriendlyByteBuf buffer) {
 		buffer.writeVarInt(id);
 		updates.encode(buffer);
@@ -27,9 +19,6 @@ public final class ClientManageLobbyMessage {
 	}
 
 	public void handle(Supplier<NetworkEvent.Context> ctx) {
-		ctx.get().enqueueWork(() -> {
-			ClientLobbyManagement.update(id, updates);
-		});
-		ctx.get().setPacketHandled(true);
+		ClientLobbyManagement.update(id, updates);
 	}
 }

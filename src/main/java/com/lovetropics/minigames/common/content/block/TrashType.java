@@ -1,15 +1,13 @@
 package com.lovetropics.minigames.common.content.block;
 
 import com.lovetropics.minigames.common.content.block.TrashBlock.Attachment;
-import com.lovetropics.minigames.common.util.Util;
 import com.tterrag.registrate.util.nullness.NonNullSupplier;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Direction.Axis;
 import net.minecraft.core.Direction.AxisDirection;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
-import javax.annotation.Nullable;
 import java.util.Locale;
 
 public enum TrashType implements NonNullSupplier<Block> {
@@ -24,7 +22,6 @@ public enum TrashType implements NonNullSupplier<Block> {
     STRAW(8, 1),
     ;
     
-    private final String name;
     private final int w, h;
     private final VoxelShape[] shape = new VoxelShape[6];
 
@@ -37,11 +34,6 @@ public enum TrashType implements NonNullSupplier<Block> {
     }
 
     private TrashType(int w, int h) {
-        this(null, w, h);
-    }
-    
-    private TrashType(@Nullable String name, int w, int h) {
-        this.name = name == null ? Util.toEnglishName(name()) : name;
         this.w = w;
         this.h = h;
         float halfW = w / 2f;
@@ -112,9 +104,5 @@ public enum TrashType implements NonNullSupplier<Block> {
     @Override
     public Block get() {
         return LoveTropicsBlocks.TRASH.get(this).get();
-    }
-
-    public String getEnglishName() {
-        return name;
     }
 }

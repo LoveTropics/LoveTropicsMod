@@ -5,7 +5,6 @@ import com.lovetropics.minigames.common.content.survive_the_tide.entity.Driftwoo
 import com.lovetropics.minigames.common.content.survive_the_tide.entity.DriftwoodRider;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.player.Player;

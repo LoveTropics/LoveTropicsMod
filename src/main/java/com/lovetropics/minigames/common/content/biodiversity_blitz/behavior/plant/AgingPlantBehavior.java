@@ -11,8 +11,6 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.LevelEvent;
 import net.minecraft.world.level.block.state.BlockState;
 
-import java.util.Random;
-
 public abstract class AgingPlantBehavior implements IGameBehavior {
     protected final int interval;
 

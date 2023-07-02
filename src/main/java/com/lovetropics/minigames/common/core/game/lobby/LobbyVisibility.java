@@ -1,7 +1,6 @@
 package com.lovetropics.minigames.common.core.game.lobby;
 
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.Component;
 
 public enum LobbyVisibility {
 	PUBLIC(Component.literal("Public")),

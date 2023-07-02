@@ -4,23 +4,15 @@ import com.lovetropics.minigames.client.lobby.state.ClientLobbyManager;
 import com.lovetropics.minigames.common.core.game.lobby.IGameLobby;
 import com.lovetropics.minigames.common.core.game.lobby.IGameLobbyPlayers;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.network.NetworkEvent;
 
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Supplier;
 
-public final class LobbyPlayersMessage {
-	private final int id;
-	private final Set<UUID> players;
-
-	private LobbyPlayersMessage(int id, Set<UUID> players) {
-		this.id = id;
-		this.players = players;
-	}
-
+public record LobbyPlayersMessage(int id, Set<UUID> players) {
 	public static LobbyPlayersMessage update(IGameLobby lobby) {
 		IGameLobbyPlayers players = lobby.getPlayers();
 		Set<UUID> playerIds = new ObjectOpenHashSet<>(players.size());
@@ -32,28 +24,16 @@ public final class LobbyPlayersMessage {
 
 	public void encode(FriendlyByteBuf buffer) {
 		buffer.writeVarInt(id);
-		buffer.writeVarInt(players.size());
-		for (UUID player : players) {
-			buffer.writeUUID(player);
-		}
+		buffer.writeCollection(players, FriendlyByteBuf::writeUUID);
 	}
 
 	public static LobbyPlayersMessage decode(FriendlyByteBuf buffer) {
 		int id = buffer.readVarInt();
-		int playerCount = buffer.readVarInt();
-		Set<UUID> players = new ObjectOpenHashSet<>(playerCount);
-		for (int i = 0; i < playerCount; i++) {
-			players.add(buffer.readUUID());
-		}
+		ObjectOpenHashSet<UUID> players = buffer.readCollection(ObjectOpenHashSet::new, FriendlyByteBuf::readUUID);
 		return new LobbyPlayersMessage(id, players);
 	}
 
 	public void handle(Supplier<NetworkEvent.Context> ctx) {
-		ctx.get().enqueueWork(() -> {
-			ClientLobbyManager.get(id).ifPresent(state -> {
-				state.setPlayers(players);
-			});
-		});
-		ctx.get().setPacketHandled(true);
+		ClientLobbyManager.get(id).ifPresent(state -> state.setPlayers(players));
 	}
 }

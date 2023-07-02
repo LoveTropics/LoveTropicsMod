@@ -3,10 +3,10 @@ package com.lovetropics.minigames.common.core.map.workspace;
 import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.common.core.network.LoveTropicsNetwork;
 import com.lovetropics.minigames.common.core.network.workspace.SetWorkspaceMessage;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -17,15 +17,14 @@ import net.minecraftforge.network.PacketDistributor;
 public final class MapWorkspaceTracker {
 	@SubscribeEvent
 	public static void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
-		Player player = event.getPlayer();
-		if (player instanceof ServerPlayer) {
-			trySendWorkspace((ServerPlayer) player, player.level.dimension());
+		if (event.getEntity() instanceof ServerPlayer player) {
+			trySendWorkspace(player, player.level().dimension());
 		}
 	}
 
 	@SubscribeEvent
 	public static void onChangeDimension(PlayerEvent.PlayerChangedDimensionEvent event) {
-		Player player = event.getPlayer();
+		Player player = event.getEntity();
 		ResourceKey<Level> dimension = event.getTo();
 		trySendWorkspace((ServerPlayer) player, dimension);
 	}
@@ -33,7 +32,7 @@ public final class MapWorkspaceTracker {
 	private static void trySendWorkspace(ServerPlayer player, ResourceKey<Level> dimension) {
 		if (dimension == null) return;
 
-		MinecraftServer server = player.level.getServer();
+		MinecraftServer server = player.level().getServer();
 		MapWorkspaceManager workspaceManager = MapWorkspaceManager.get(server);
 
 		MapWorkspace workspace = workspaceManager.getWorkspace(dimension);

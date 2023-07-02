@@ -1,27 +1,15 @@
 package com.lovetropics.minigames.client.particle_line;
 
-import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleType;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.network.NetworkEvent;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.function.Supplier;
 
-public final class DrawParticleLineMessage {
-	private final ParticleOptions particle;
-	private final Vec3 from;
-	private final Vec3 to;
-	private final float spacing;
-
-	public DrawParticleLineMessage(ParticleOptions particle, Vec3 from, Vec3 to, float spacing) {
-		this.particle = particle;
-		this.from = from;
-		this.to = to;
-		this.spacing = spacing;
-	}
-
+public record DrawParticleLineMessage(ParticleOptions particle, Vec3 from, Vec3 to, float spacing) {
 	public void encode(FriendlyByteBuf buffer) {
 		buffer.writeRegistryIdUnsafe(ForgeRegistries.PARTICLE_TYPES, particle.getType());
 		particle.writeToNetwork(buffer);
@@ -51,9 +39,6 @@ public final class DrawParticleLineMessage {
 	}
 
 	public void handle(Supplier<NetworkEvent.Context> ctx) {
-		ctx.get().enqueueWork(() -> {
-			ParticleLineSpawner.spawnParticleLine(particle, from, to, spacing);
-		});
-		ctx.get().setPacketHandled(true);
+		ParticleLineSpawner.spawnParticleLine(particle, from, to, spacing);
 	}
 }

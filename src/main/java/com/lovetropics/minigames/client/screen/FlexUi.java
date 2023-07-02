@@ -2,25 +2,26 @@ package com.lovetropics.minigames.client.screen;
 
 import com.lovetropics.minigames.client.screen.flex.Box;
 import com.lovetropics.minigames.client.screen.flex.Layout;
-import com.mojang.blaze3d.vertex.PoseStack;
-import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.network.chat.Component;
 
 public final class FlexUi {
-	public static void fill(Layout layout, PoseStack matrixStack, int color) {
-		fill(layout.background(), matrixStack, color);
+	public static void fill(Layout layout, GuiGraphics graphics, int color) {
+		fill(layout.background(), graphics, color);
 	}
 
-	public static void fill(Box box, PoseStack matrixStack, int color) {
-		GuiComponent.fill(matrixStack, box.left(), box.top(), box.right(), box.bottom(), color);
+	public static void fill(Box box, GuiGraphics graphics, int color) {
+		graphics.fill(box.left(), box.top(), box.right(), box.bottom(), color);
 	}
 
 	public static Button createButton(Layout layout, Component title, Button.OnPress action) {
 		Box background = layout.background();
-		return new Button(background.left(), background.top(), background.width(), background.height(), title, action);
+		return Button.builder(title, action)
+				.bounds(background.left(), background.top(), background.width(), background.height())
+				.build();
 	}
 
 	public static EditBox createTextField(Layout layout, Font font, Component title) {

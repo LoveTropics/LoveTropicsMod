@@ -16,7 +16,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.ChatFormatting;
 import net.minecraft.SharedConstants;
-import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 
 // TODO: make it generic and data-driven
@@ -80,7 +80,7 @@ public class SttSidebarBehavior implements IGameBehavior {
 		return new Component[]{
 				Component.literal("Weather: ").append(weatherName()),
 				phaseState(),
-				Component.empty(),
+				CommonComponents.EMPTY,
 				playersState()
 		};
 	}
@@ -111,7 +111,7 @@ public class SttSidebarBehavior implements IGameBehavior {
 		} else if (progression.is(explosiveStormPeriod)) {
 			return Component.literal("Explosive storm closing!").withStyle(ChatFormatting.RED);
 		}
-		return Component.empty();
+		return CommonComponents.EMPTY;
 	}
 
 	private Component playersState() {

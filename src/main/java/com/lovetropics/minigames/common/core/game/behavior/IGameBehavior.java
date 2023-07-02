@@ -16,13 +16,13 @@ public interface IGameBehavior {
 		public <T> DataResult<Pair<IGameBehavior, T>> decode(DynamicOps<T> ops, T input) {
 			return ops.get(input, "type")
 					.flatMap(type -> GameBehaviorTypes.TYPE_CODEC.parse(ops, type))
-					.flatMap(type -> type.codec.decode(ops, ops.remove(input, "type")))
+					.flatMap(type -> type.codec().decode(ops, ops.remove(input, "type")))
 					.map(pair -> pair.mapFirst(b -> b));
 		}
 
 		@Override
 		public <T> DataResult<T> encode(IGameBehavior input, DynamicOps<T> ops, T prefix) {
-			return DataResult.error("Encoding unsupported");
+			return DataResult.error(() -> "Encoding unsupported");
 		}
 	};
 

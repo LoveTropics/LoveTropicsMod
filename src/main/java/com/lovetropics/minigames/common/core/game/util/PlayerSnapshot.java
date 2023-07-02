@@ -6,17 +6,17 @@ import com.lovetropics.minigames.common.core.diguise.ServerPlayerDisguises;
 import com.lovetropics.minigames.common.core.dimension.DimensionUtils;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.world.scores.Score;
-import net.minecraft.world.scores.Objective;
-import net.minecraft.world.scores.PlayerTeam;
-import net.minecraft.server.ServerScoreboard;
-import net.minecraft.world.food.FoodData;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.ServerScoreboard;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.food.FoodData;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.scores.Objective;
+import net.minecraft.world.scores.PlayerTeam;
+import net.minecraft.world.scores.Score;
 
 import java.util.ArrayList;
 import java.util.Map;
@@ -40,14 +40,14 @@ public final class PlayerSnapshot {
 
 	private PlayerSnapshot(ServerPlayer player) {
 		this.gameType = player.gameMode.getGameModeForPlayer();
-		this.dimension = player.level.dimension();
+		this.dimension = player.level().dimension();
 		this.pos = player.blockPosition();
 
 		this.playerData = new CompoundTag();
 		player.addAdditionalSaveData(this.playerData);
 		this.playerData.remove("playerGameType");
 
-		ServerScoreboard scoreboard = player.getLevel().getScoreboard();
+		ServerScoreboard scoreboard = player.serverLevel().getScoreboard();
 		this.team = scoreboard.getPlayersTeam(player.getScoreboardName());
 		for (Map.Entry<Objective, Score> entry : scoreboard.getPlayerScores(player.getScoreboardName()).entrySet()) {
 			this.objectives.put(entry.getKey(), entry.getValue().getScore());
@@ -78,7 +78,7 @@ public final class PlayerSnapshot {
 
 		ServerPlayerDisguises.clear(player);
 
-		ServerScoreboard scoreboard = player.getLevel().getScoreboard();
+		ServerScoreboard scoreboard = player.serverLevel().getScoreboard();
 		scoreboard.removePlayerFromTeam(player.getScoreboardName());
 
 		Map<Objective, Score> objectives = scoreboard.getPlayerScores(player.getScoreboardName());
@@ -104,7 +104,7 @@ public final class PlayerSnapshot {
 
 		PlayerDisguise.get(player).ifPresent(disguise -> disguise.setDisguise(this.disguise));
 
-		ServerScoreboard scoreboard = player.getLevel().getScoreboard();
+		ServerScoreboard scoreboard = player.serverLevel().getScoreboard();
 
 		if (this.team != null) {
 			scoreboard.addPlayerToTeam(player.getScoreboardName(), this.team);

@@ -88,7 +88,7 @@ public final class BbMerchant implements Merchant {
 
     @Override
     public boolean isClientSide() {
-        return customer.level.isClientSide();
+        return customer.level().isClientSide();
     }
 
     private MerchantMenu createContainer(int id, Inventory playerInventory, Player player) {
