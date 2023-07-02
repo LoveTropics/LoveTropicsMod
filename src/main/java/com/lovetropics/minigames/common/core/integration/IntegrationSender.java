@@ -4,19 +4,12 @@ import com.google.common.base.Strings;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import com.lovetropics.minigames.common.config.ConfigLT;
-import com.lovetropics.minigames.common.core.game.state.statistics.GameStatistics;
-import com.lovetropics.minigames.common.core.game.state.statistics.PlayerKey;
 import com.mojang.logging.LogUtils;
 import net.minecraft.Util;
 import org.apache.http.HttpHeaders;
 import org.slf4j.Logger;
 
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -27,10 +20,8 @@ import java.util.function.Supplier;
 public interface IntegrationSender {
 	Logger LOGGER = LogUtils.getLogger();
 
-	Gson GSON = new GsonBuilder()
-			.registerTypeAdapter(GameStatistics.class, GameStatistics.SERIALIZER)
-			.registerTypeAdapter(PlayerKey.class, PlayerKey.PROFILE_SERIALIZER)
-			.create();
+	IntegrationSender NULL = (endpoint, body) -> true;
+	IntegrationSender LOGGING = new Log();
 
 	static IntegrationSender open() {
 		ConfigLT.CategoryIntegrations integrations = ConfigLT.INTEGRATIONS;
@@ -43,12 +34,10 @@ public interface IntegrationSender {
 	}
 
 	default boolean post(final String endpoint, final JsonElement body) {
-		return post(endpoint, GSON.toJson(body));
+		return post(endpoint, new Gson().toJson(body));
 	}
 
 	boolean post(final String endpoint, final String body);
-
-	JsonElement get(final String endpoint);
 
 	final class Http implements IntegrationSender {
 		private static final HttpClient CLIENT = HttpClient.newBuilder().executor(Util.ioPool()).build();
@@ -90,27 +79,6 @@ public interface IntegrationSender {
 			return false;
 		}
 
-		@Override
-		public JsonElement get(String endpoint) {
-			if (this.isDisabled()) {
-				return new JsonObject();
-			}
-
-			try {
-				HttpResponse<InputStream> response = CLIENT.send(
-						request(endpoint).GET().build(),
-						HttpResponse.BodyHandlers.ofInputStream()
-				);
-				try (BufferedReader reader = new BufferedReader(new InputStreamReader(response.body(), StandardCharsets.UTF_8))) {
-					return JsonParser.parseReader(reader);
-				}
-			} catch (Exception e) {
-				LOGGER.error("An exception occurred while trying to GET from {}", endpoint, e);
-			}
-
-			return new JsonObject();
-		}
-
 		private HttpRequest.Builder request(String endpoint) {
 			return HttpRequest.newBuilder(URI.create(url.get() + "/" + endpoint))
 					.header(HttpHeaders.USER_AGENT, "LTMinigames 1.0 (lovetropics.org)")
@@ -124,13 +92,7 @@ public interface IntegrationSender {
 	}
 
 	final class Log implements IntegrationSender {
-		public static final Log INSTANCE = new Log();
-
-		private static final Gson GSON = new GsonBuilder()
-				.registerTypeAdapter(GameStatistics.class, GameStatistics.SERIALIZER)
-				.registerTypeAdapter(PlayerKey.class, PlayerKey.PROFILE_SERIALIZER)
-				.setPrettyPrinting()
-				.create();
+		private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
 		private Log() {
 		}
@@ -142,26 +104,8 @@ public interface IntegrationSender {
 
 		@Override
 		public boolean post(String endpoint, String body) {
-			LOGGER.info("POST to {}", endpoint);
-			LOGGER.info(body);
+			LOGGER.info("POST to {}\n: {}", endpoint, body);
 			return true;
-		}
-
-		@Override
-		public JsonElement get(String endpoint) {
-			return new JsonObject();
-		}
-	}
-
-	final class Void implements IntegrationSender {
-		@Override
-		public boolean post(String endpoint, String body) {
-			return true;
-		}
-
-		@Override
-		public JsonElement get(String endpoint) {
-			return new JsonObject();
 		}
 	}
 }

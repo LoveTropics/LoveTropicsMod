@@ -144,10 +144,6 @@ public final class BackendIntegrations {
 		EXECUTOR.submit(() -> pollSender.post(endpoint, body));
 	}
 
-	CompletableFuture<JsonElement> get(final String endpoint) {
-		return CompletableFuture.supplyAsync(() -> sender.get(endpoint), EXECUTOR);
-	}
-
 	private void handlePayload(JsonObject object) {
 		LOGGER.debug("Receive payload over websocket: {}", object);
 
