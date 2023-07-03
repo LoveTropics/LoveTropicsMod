@@ -17,6 +17,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
 import javax.annotation.Nullable;
+import java.util.Objects;
 import java.util.UUID;
 
 @Mod.EventBusSubscriber(modid = Constants.MODID)
@@ -25,21 +26,21 @@ public final class PlayerDisguiseBehavior {
 
 	@SubscribeEvent
 	public static void onSetEntitySize(EntityEvent.Size event) {
-		Entity entity = event.getEntity();
-
-		if (entity instanceof Player player) {
-			PlayerDisguise disguise = PlayerDisguise.get(player).orElse(null);
-			if (disguise != null) {
-				DisguiseType disguiseType = disguise.getDisguiseType();
-				Entity disguiseEntity = disguise.getDisguiseEntity();
-				if (disguiseType != null && disguiseEntity != null) {
-					Pose pose = event.getPose();
-					EntityDimensions size = disguiseEntity.getDimensions(pose);
-
-					event.setNewSize(size.scale(disguiseType.scale()));
-					event.setNewEyeHeight(disguiseEntity.getEyeHeightAccess(pose, size) * disguiseType.scale());
-				}
+		if (event.getEntity() instanceof Player player) {
+			PlayerDisguise disguise = PlayerDisguise.get(player);
+			DisguiseType type = disguise.type();
+			if (type == null) {
+				return;
 			}
+
+			Entity entity = Objects.requireNonNullElse(disguise.entity(), player);
+			float scale = type.scale();
+
+			Pose pose = event.getPose();
+			EntityDimensions dimensions = entity.getDimensions(pose);
+			float eyeHeight = entity.getEyeHeightAccess(pose, dimensions);
+			event.setNewSize(dimensions.scale(scale));
+			event.setNewEyeHeight(eyeHeight * scale);
 		}
 	}
 

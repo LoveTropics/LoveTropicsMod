@@ -145,7 +145,7 @@ public final class HideAndSeekBehavior implements IGameBehavior {
 
 	private void removeParticipant(ServerPlayer player) {
 		if (teams.isOnTeam(player, hiders.key())) {
-			this.removeHider(player);
+			PlayerDisguise.get(player).clear();
 		}
 	}
 
@@ -164,10 +164,6 @@ public final class HideAndSeekBehavior implements IGameBehavior {
 		CompoundTag nbt = type.nbt() != null ? type.nbt().copy() : new CompoundTag();
 		nbt.putBoolean("CustomNameVisible", false);
 		return new DisguiseType(type.type(), 1.0f, nbt, type.applyAttributes());
-	}
-
-	private void removeHider(ServerPlayer player) {
-		PlayerDisguise.get(player).ifPresent(PlayerDisguise::clearDisguise);
 	}
 
 	private void onHiderCaptured(ServerPlayer player) {

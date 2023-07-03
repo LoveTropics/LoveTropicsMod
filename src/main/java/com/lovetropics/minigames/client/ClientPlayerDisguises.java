@@ -8,6 +8,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
@@ -30,8 +31,9 @@ public final class ClientPlayerDisguises {
     @SubscribeEvent
     public static void onRenderPlayer(RenderPlayerEvent.Pre event) {
         Player player = event.getEntity();
-        DisguiseType disguiseType = PlayerDisguise.getDisguiseType(event.getEntity());
-        Entity disguiseEntity = PlayerDisguise.getDisguiseEntity(player);
+        PlayerDisguise disguise = PlayerDisguise.get(event.getEntity());
+        DisguiseType disguiseType = disguise.type();
+        Entity disguiseEntity = disguise.entity();
         if (disguiseType == null || disguiseEntity == null) return;
 
         EntityRenderer<? super Entity> renderer = CLIENT.getEntityRenderDispatcher().getRenderer(disguiseEntity);
@@ -56,7 +58,7 @@ public final class ClientPlayerDisguises {
 
                 transform.popPose();
             } catch (Exception e) {
-                PlayerDisguise.get(player).ifPresent(PlayerDisguise::clearDisguise);
+                PlayerDisguise.get(player).clear();
                 LoveTropics.LOGGER.error("Failed to render player disguise", e);
                 PoseStackCapture.restore(transform, capturedTransformState);
             }
@@ -112,7 +114,7 @@ public final class ClientPlayerDisguises {
     public static void updateClientDisguise(UUID uuid, DisguiseType disguiseType) {
         Player player = Minecraft.getInstance().level.getPlayerByUUID(uuid);
         if (player != null) {
-            PlayerDisguise.get(player).ifPresent(playerDisguise -> playerDisguise.setDisguise(disguiseType));
+            PlayerDisguise.get(player).set(disguiseType);
         }
     }
 
@@ -124,14 +126,14 @@ public final class ClientPlayerDisguises {
         }
 
         if (Minecraft.getInstance().cameraEntity instanceof Player player) {
-            DisguiseType disguiseType = PlayerDisguise.getDisguiseType(player);
-            if (disguiseType == null || disguiseType.scale() == 1.0f) {
+            PlayerDisguise disguise = PlayerDisguise.get(player);
+            if (disguise.type() == null || disguise.type().scale() == 1.0f) {
                 return;
             }
 
             Vec3 eyePosition = player.getEyePosition((float) event.getPartialTick());
             camera.setPosition(eyePosition.x, eyePosition.y, eyePosition.z);
-            camera.move(-camera.getMaxZoom(4.0 * disguiseType.scale()), 0.0, 0.0);
+            camera.move(-camera.getMaxZoom(4.0 * disguise.type().scale()), 0.0, 0.0);
         }
     }
 }

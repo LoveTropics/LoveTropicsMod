@@ -53,7 +53,7 @@ public final class PlayerSnapshot {
 			this.objectives.put(entry.getKey(), entry.getValue().getScore());
 		}
 
-		this.disguise = PlayerDisguise.getDisguiseType(player);
+		this.disguise = PlayerDisguise.get(player).type();
 	}
 
 	public static PlayerSnapshot takeAndClear(ServerPlayer player) {
@@ -102,7 +102,7 @@ public final class PlayerSnapshot {
 		DimensionUtils.teleportPlayerNoPortal(player, this.dimension, this.pos);
 		player.onUpdateAbilities();
 
-		PlayerDisguise.get(player).ifPresent(disguise -> disguise.setDisguise(this.disguise));
+		PlayerDisguise.get(player).set(disguise);
 
 		ServerScoreboard scoreboard = player.serverLevel().getScoreboard();
 

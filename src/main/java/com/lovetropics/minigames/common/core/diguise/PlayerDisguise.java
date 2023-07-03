@@ -22,67 +22,54 @@ public final class PlayerDisguise implements ICapabilityProvider {
 
 	private final Player player;
 
-	private DisguiseType disguiseType;
-	private Entity disguiseEntity;
+	@Nullable
+	private DisguiseType type;
+	@Nullable
+	private Entity entity;
 
-	PlayerDisguise(Player player) {
+	private PlayerDisguise(Player player) {
 		this.player = player;
 	}
 
 	@SubscribeEvent
 	public static void onAttachEntityCapabilities(AttachCapabilitiesEvent<Entity> event) {
-		Entity entity = event.getObject();
-		if (entity instanceof Player) {
-			event.addCapability(Util.resource("player_disguise"), new PlayerDisguise((Player) entity));
+		if (event.getObject() instanceof Player player) {
+			event.addCapability(Util.resource("player_disguise"), new PlayerDisguise(player));
 		}
 	}
 
-	public static LazyOptional<PlayerDisguise> get(Player player) {
-		return player.getCapability(LoveTropics.PLAYER_DISGUISE);
+	public static PlayerDisguise get(Player player) {
+		return player.getCapability(LoveTropics.PLAYER_DISGUISE).orElseThrow(IllegalStateException::new);
 	}
 
-	@Nullable
-	public static DisguiseType getDisguiseType(Player player) {
-		PlayerDisguise disguise = get(player).orElse(null);
-		return disguise != null ? disguise.getDisguiseType() : null;
+	public boolean isDisguised() {
+		return type != null;
 	}
 
-	@Nullable
-	public static Entity getDisguiseEntity(Player player) {
-		PlayerDisguise disguise = get(player).orElse(null);
-		return disguise != null ? disguise.getDisguiseEntity() : null;
+	public void clear() {
+		set(null);
 	}
 
-	public void clearDisguise() {
-		this.setDisguise(null);
-	}
-
-	public void clearDisguise(DisguiseType disguise) {
-		if (this.disguiseType == disguise) {
-			this.clearDisguise();
+	public void clear(DisguiseType disguise) {
+		if (this.type == disguise) {
+			clear();
 		}
 	}
 
-	public void setDisguise(@Nullable DisguiseType disguise) {
-		if (disguise != null) {
-			this.disguiseType = disguise;
-			this.disguiseEntity = disguise.createEntityFor(this.player);
-		} else {
-			this.disguiseType = null;
-			this.disguiseEntity = null;
-		}
-
-		this.player.refreshDimensions();
+	public void set(@Nullable DisguiseType type) {
+		this.type = type;
+		entity = type != null ? type.createEntityFor(player) : null;
+		player.refreshDimensions();
 	}
 
 	@Nullable
-	public DisguiseType getDisguiseType() {
-		return disguiseType;
+	public DisguiseType type() {
+		return type;
 	}
 
 	@Nullable
-	public Entity getDisguiseEntity() {
-		return this.disguiseEntity;
+	public Entity entity() {
+		return entity;
 	}
 
 	@Nonnull
@@ -92,6 +79,6 @@ public final class PlayerDisguise implements ICapabilityProvider {
 	}
 
 	public void copyFrom(PlayerDisguise from) {
-		this.setDisguise(from.getDisguiseType());
+		set(from.type());
 	}
 }

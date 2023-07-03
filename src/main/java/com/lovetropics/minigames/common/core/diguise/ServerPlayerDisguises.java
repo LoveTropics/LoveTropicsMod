@@ -14,7 +14,6 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -25,6 +24,7 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.network.PacketDistributor;
 
 import javax.annotation.Nullable;
+import java.util.function.Consumer;
 
 import static com.mojang.brigadier.arguments.FloatArgumentType.floatArg;
 import static com.mojang.brigadier.arguments.FloatArgumentType.getFloat;
@@ -63,11 +63,12 @@ public final class ServerPlayerDisguises {
 		}
 
 		if (event.getTarget() instanceof Player tracked) {
-			DisguiseType disguise = PlayerDisguise.getDisguiseType(tracked);
-			if (disguise != null) {
+			PlayerDisguise disguise = PlayerDisguise.get(tracked);
+			DisguiseType type = disguise.type();
+			if (type != null) {
 				LoveTropicsNetwork.CHANNEL.send(
 						PacketDistributor.PLAYER.with(() -> player),
-						new PlayerDisguiseMessage(tracked.getUUID(), disguise)
+						new PlayerDisguiseMessage(tracked.getUUID(), type)
 				);
 			}
 		}
@@ -79,24 +80,16 @@ public final class ServerPlayerDisguises {
 			return;
 		}
 
-		Player newPlayer = event.getEntity();
-		Player oldPlayer = event.getOriginal();
-		if (newPlayer instanceof ServerPlayer && oldPlayer instanceof ServerPlayer) {
-			PlayerDisguise.get(oldPlayer).ifPresent(oldDisguise -> {
-				PlayerDisguise.get(newPlayer).ifPresent(newDisguise -> {
-					newDisguise.copyFrom(oldDisguise);
-					onSetDisguise((ServerPlayer) newPlayer, newDisguise);
-				});
-			});
+		if (event.getEntity() instanceof ServerPlayer newPlayer && event.getOriginal() instanceof ServerPlayer oldPlayer) {
+			PlayerDisguise newDisguise = PlayerDisguise.get(newPlayer);
+			newDisguise.copyFrom(PlayerDisguise.get(oldPlayer));
+			onSetDisguise(newPlayer);
 		}
 	}
 
 	private static int disguiseAs(CommandContext<CommandSourceStack> context, float scale, @Nullable CompoundTag nbt) throws CommandSyntaxException {
-		ServerPlayer player = context.getSource().getPlayerOrException();
 		Holder.Reference<EntityType<?>> entityType = ResourceArgument.getSummonableEntityType(context, "entity");
-
-		ServerPlayerDisguises.set(player, new DisguiseType(entityType.value(), scale, nbt));
-
+		set(context.getSource().getPlayerOrException(), new DisguiseType(entityType.value(), scale, nbt));
 		return Command.SINGLE_SUCCESS;
 	}
 
@@ -107,37 +100,37 @@ public final class ServerPlayerDisguises {
 		return Command.SINGLE_SUCCESS;
 	}
 
-	public static void set(ServerPlayer player, @Nullable DisguiseType disguiseType) {
-		PlayerDisguise.get(player).ifPresent(playerDisguise -> {
-			playerDisguise.setDisguise(disguiseType);
-			onSetDisguise(player, playerDisguise);
-		});
+	public static void set(ServerPlayer player, DisguiseType type) {
+		PlayerDisguise.get(player).set(type);
+		onSetDisguise(player);
+	}
+
+	public static void update(ServerPlayer player, Consumer<PlayerDisguise> consumer) {
+		consumer.accept(PlayerDisguise.get(player));
+		onSetDisguise(player);
 	}
 
 	public static void clear(ServerPlayer player) {
-		set(player, null);
+		update(player, PlayerDisguise::clear);
 	}
 
-	public static void clear(ServerPlayer player, DisguiseType disguiseType) {
-		PlayerDisguise.get(player).ifPresent(playerDisguise -> {
-			playerDisguise.clearDisguise(disguiseType);
-			onSetDisguise(player, playerDisguise);
-		});
+	public static void clear(ServerPlayer player, DisguiseType type) {
+		update(player, disguise -> disguise.clear(type));
 	}
 
-	private static void onSetDisguise(ServerPlayer player, PlayerDisguise disguise) {
+	private static void onSetDisguise(ServerPlayer player) {
+		PlayerDisguise disguise = PlayerDisguise.get(player);
 		LoveTropicsNetwork.CHANNEL.send(
 				PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> player),
-				new PlayerDisguiseMessage(player.getUUID(), disguise.getDisguiseType())
+				new PlayerDisguiseMessage(player.getUUID(), disguise.type())
 		);
 
 		PlayerDisguiseBehavior.clearAttributes(player);
 
-		DisguiseType disguiseType = disguise.getDisguiseType();
+		DisguiseType disguiseType = disguise.type();
 		if (disguiseType != null && disguiseType.applyAttributes()) {
-			Entity entity = disguise.getDisguiseEntity();
-			if (entity instanceof LivingEntity) {
-				PlayerDisguiseBehavior.applyAttributes(player, (LivingEntity) entity);
+			if (disguise.entity() instanceof LivingEntity living) {
+				PlayerDisguiseBehavior.applyAttributes(player, living);
 			}
 		}
 	}
