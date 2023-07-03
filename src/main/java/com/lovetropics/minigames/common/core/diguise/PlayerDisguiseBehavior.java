@@ -28,13 +28,12 @@ public final class PlayerDisguiseBehavior {
 	public static void onSetEntitySize(EntityEvent.Size event) {
 		if (event.getEntity() instanceof Player player) {
 			PlayerDisguise disguise = PlayerDisguise.get(player);
-			DisguiseType type = disguise.type();
-			if (type == null) {
+			if (!disguise.isDisguised()) {
 				return;
 			}
 
 			Entity entity = Objects.requireNonNullElse(disguise.entity(), player);
-			float scale = type.scale();
+			float scale = disguise.type().scale();
 
 			Pose pose = event.getPose();
 			EntityDimensions dimensions = entity.getDimensions(pose);

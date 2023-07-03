@@ -160,10 +160,14 @@ public final class HideAndSeekBehavior implements IGameBehavior {
 	}
 
 	private DisguiseType nextDisguiseType(RandomSource random) {
-		DisguiseType type = Util.getRandom(disguises, random);
-		CompoundTag nbt = type.nbt() != null ? type.nbt().copy() : new CompoundTag();
+		DisguiseType disguise = Util.getRandom(disguises, random);
+		DisguiseType.EntityConfig entity = disguise.entity();
+		if (entity == null) {
+			return disguise;
+		}
+		CompoundTag nbt = entity.nbt() != null ? entity.nbt().copy() : new CompoundTag();
 		nbt.putBoolean("CustomNameVisible", false);
-		return new DisguiseType(type.type(), 1.0f, nbt, type.applyAttributes());
+		return disguise.withEntity(entity.withNbt(nbt));
 	}
 
 	private void onHiderCaptured(ServerPlayer player) {

@@ -5,6 +5,7 @@ import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.common.util.Util;
 import net.minecraft.core.Direction;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
@@ -22,8 +23,7 @@ public final class PlayerDisguise implements ICapabilityProvider {
 
 	private final Player player;
 
-	@Nullable
-	private DisguiseType type;
+	private DisguiseType disguise = DisguiseType.DEFAULT;
 	@Nullable
 	private Entity entity;
 
@@ -43,28 +43,28 @@ public final class PlayerDisguise implements ICapabilityProvider {
 	}
 
 	public boolean isDisguised() {
-		return type != null;
+		return !type().isDefault();
 	}
 
 	public void clear() {
-		set(null);
+		set(DisguiseType.DEFAULT);
 	}
 
 	public void clear(DisguiseType disguise) {
-		if (this.type == disguise) {
-			clear();
-		}
+		set(this.disguise.clear(disguise));
 	}
 
-	public void set(@Nullable DisguiseType type) {
-		this.type = type;
-		entity = type != null ? type.createEntityFor(player) : null;
+	public void set(DisguiseType disguise) {
+		if (this.disguise.equals(disguise)) {
+			return;
+		}
+		this.disguise = disguise;
+		entity = disguise.createEntityFor(player);
 		player.refreshDimensions();
 	}
 
-	@Nullable
 	public DisguiseType type() {
-		return type;
+		return disguise;
 	}
 
 	@Nullable
@@ -80,5 +80,14 @@ public final class PlayerDisguise implements ICapabilityProvider {
 
 	public void copyFrom(PlayerDisguise from) {
 		set(from.type());
+	}
+
+	public float getEffectiveScale() {
+		if (entity != null) {
+			float entityScale = entity.getBbHeight() / EntityType.PLAYER.getHeight();
+			return disguise.scale() * entityScale;
+		} else {
+			return disguise.scale();
+		}
 	}
 }

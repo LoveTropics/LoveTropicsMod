@@ -25,6 +25,7 @@ import net.minecraftforge.network.PacketDistributor;
 
 import javax.annotation.Nullable;
 import java.util.function.Consumer;
+import java.util.function.UnaryOperator;
 
 import static com.mojang.brigadier.arguments.FloatArgumentType.floatArg;
 import static com.mojang.brigadier.arguments.FloatArgumentType.getFloat;
@@ -41,14 +42,17 @@ public final class ServerPlayerDisguises {
 				.then(Commands.literal("as")
 					.then(Commands.argument("entity", ResourceArgument.resource(event.getBuildContext(), Registries.ENTITY_TYPE))
 						.suggests(SuggestionProviders.SUMMONABLE_ENTITIES)
-						.executes(context -> disguiseAs(context, 1.0f, null))
-							.then(Commands.argument("scale", floatArg(0.1f, 20.0f))
-								.executes(context -> disguiseAs(context, getFloat(context, "scale"), null))
-								.then(Commands.argument("nbt", compoundTag())
-									.executes(context -> disguiseAs(context, getFloat(context, "scale"), getCompoundTag(context, "nbt")))
-								)
+						.executes(context -> disguiseAsEntity(context, ResourceArgument.getSummonableEntityType(context, "entity"), null))
+							.then(Commands.argument("nbt", compoundTag())
+								.executes(context -> disguiseAsEntity(context, ResourceArgument.getSummonableEntityType(context, "entity"), getCompoundTag(context, "nbt")))
 							)
-					))
+					)
+				)
+				.then(Commands.literal("scale")
+					.then(Commands.argument("scale", floatArg(0.1f, 20.0f))
+						.executes(context -> disguiseScale(context, getFloat(context, "scale")))
+					)
+				)
 				.then(Commands.literal("clear")
 					.executes(ServerPlayerDisguises::clearDisguise)
 				)
@@ -64,11 +68,10 @@ public final class ServerPlayerDisguises {
 
 		if (event.getTarget() instanceof Player tracked) {
 			PlayerDisguise disguise = PlayerDisguise.get(tracked);
-			DisguiseType type = disguise.type();
-			if (type != null) {
+			if (disguise.isDisguised()) {
 				LoveTropicsNetwork.CHANNEL.send(
 						PacketDistributor.PLAYER.with(() -> player),
-						new PlayerDisguiseMessage(tracked.getUUID(), type)
+						new PlayerDisguiseMessage(tracked.getUUID(), disguise.type())
 				);
 			}
 		}
@@ -87,15 +90,21 @@ public final class ServerPlayerDisguises {
 		}
 	}
 
-	private static int disguiseAs(CommandContext<CommandSourceStack> context, float scale, @Nullable CompoundTag nbt) throws CommandSyntaxException {
-		Holder.Reference<EntityType<?>> entityType = ResourceArgument.getSummonableEntityType(context, "entity");
-		set(context.getSource().getPlayerOrException(), new DisguiseType(entityType.value(), scale, nbt));
+	private static int disguiseAsEntity(CommandContext<CommandSourceStack> context, Holder.Reference<EntityType<?>> entity, @Nullable CompoundTag nbt) throws CommandSyntaxException {
+		updateType(context.getSource().getPlayerOrException(),
+				type -> type.withEntity(new DisguiseType.EntityConfig(entity.value(), nbt, false))
+		);
+		return Command.SINGLE_SUCCESS;
+	}
+
+	private static int disguiseScale(CommandContext<CommandSourceStack> context, float scale) throws CommandSyntaxException {
+		updateType(context.getSource().getPlayerOrException(), d -> d.withScale(scale));
 		return Command.SINGLE_SUCCESS;
 	}
 
 	private static int clearDisguise(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
 		ServerPlayer player = context.getSource().getPlayerOrException();
-		ServerPlayerDisguises.set(player, null);
+		ServerPlayerDisguises.set(player, DisguiseType.DEFAULT);
 
 		return Command.SINGLE_SUCCESS;
 	}
@@ -108,6 +117,10 @@ public final class ServerPlayerDisguises {
 	public static void update(ServerPlayer player, Consumer<PlayerDisguise> consumer) {
 		consumer.accept(PlayerDisguise.get(player));
 		onSetDisguise(player);
+	}
+
+	public static void updateType(ServerPlayer player, UnaryOperator<DisguiseType> operator) {
+		update(player, disguise -> disguise.set(operator.apply(disguise.type())));
 	}
 
 	public static void clear(ServerPlayer player) {
@@ -128,7 +141,7 @@ public final class ServerPlayerDisguises {
 		PlayerDisguiseBehavior.clearAttributes(player);
 
 		DisguiseType disguiseType = disguise.type();
-		if (disguiseType != null && disguiseType.applyAttributes()) {
+		if (disguiseType.entity() != null && disguiseType.entity().applyAttributes()) {
 			if (disguise.entity() instanceof LivingEntity living) {
 				PlayerDisguiseBehavior.applyAttributes(player, living);
 			}

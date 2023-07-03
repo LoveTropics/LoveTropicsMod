@@ -29,17 +29,19 @@ public final class ClientPlayerDisguises {
     private static final Minecraft CLIENT = Minecraft.getInstance();
 
     @SubscribeEvent
-    public static void onRenderPlayer(RenderPlayerEvent.Pre event) {
+    public static void onRenderPlayerPre(RenderPlayerEvent.Pre event) {
         Player player = event.getEntity();
-        PlayerDisguise disguise = PlayerDisguise.get(event.getEntity());
-        DisguiseType disguiseType = disguise.type();
-        Entity disguiseEntity = disguise.entity();
-        if (disguiseType == null || disguiseEntity == null) return;
+        DisguiseType disguiseType = PlayerDisguise.get(player).type();
+        if (disguiseType.isDefault()) {
+            return;
+        }
 
-        EntityRenderer<? super Entity> renderer = CLIENT.getEntityRenderDispatcher().getRenderer(disguiseEntity);
-        if (renderer != null) {
-            PoseStack transform = event.getPoseStack();
-            int capturedTransformState = PoseStackCapture.get(transform);
+        Entity disguiseEntity = PlayerDisguise.get(player).entity();
+        EntityRenderDispatcher dispatcher = CLIENT.getEntityRenderDispatcher();
+        PoseStack poseStack = event.getPoseStack();
+
+        if (disguiseEntity != null) {
+            int capturedTransformState = PoseStackCapture.get(poseStack);
 
             try {
                 copyDisguiseState(disguiseEntity, player);
@@ -48,22 +50,44 @@ public final class ClientPlayerDisguises {
                 MultiBufferSource buffers = event.getMultiBufferSource();
                 int packedLight = event.getPackedLight();
 
-                transform.pushPose();
+                poseStack.pushPose();
                 if (disguiseType.scale() != 1.0f) {
-                    transform.scale(disguiseType.scale(), disguiseType.scale(), disguiseType.scale());
+                    poseStack.scale(disguiseType.scale(), disguiseType.scale(), disguiseType.scale());
                 }
 
                 float yaw = Mth.lerp(partialTicks, player.yRotO, player.getYRot());
-                renderer.render(disguiseEntity, yaw, partialTicks, transform, buffers, packedLight);
+                EntityRenderer<? super Entity> renderer = dispatcher.getRenderer(disguiseEntity);
+                if (renderer != null) {
+                    renderer.render(disguiseEntity, yaw, partialTicks, poseStack, buffers, packedLight);
+                }
 
-                transform.popPose();
+                poseStack.popPose();
             } catch (Exception e) {
                 PlayerDisguise.get(player).clear();
                 LoveTropics.LOGGER.error("Failed to render player disguise", e);
-                PoseStackCapture.restore(transform, capturedTransformState);
+                PoseStackCapture.restore(poseStack, capturedTransformState);
             }
 
             event.setCanceled(true);
+        } else {
+            poseStack.pushPose();
+            if (disguiseType.scale() != 1.0f) {
+                poseStack.scale(disguiseType.scale(), disguiseType.scale(), disguiseType.scale());
+            }
+        }
+    }
+
+    @SubscribeEvent
+    public static void onRenderPlayerPost(RenderPlayerEvent.Post event) {
+        Player player = event.getEntity();
+        DisguiseType disguiseType = PlayerDisguise.get(player).type();
+        if (disguiseType.isDefault()) {
+            return;
+        }
+
+        PoseStack poseStack = event.getPoseStack();
+        if (disguiseType.entity() == null) {
+            poseStack.popPose();
         }
     }
 
@@ -125,15 +149,16 @@ public final class ClientPlayerDisguises {
             return;
         }
 
-        if (Minecraft.getInstance().cameraEntity instanceof Player player) {
+        if (camera.getEntity() instanceof Player player) {
             PlayerDisguise disguise = PlayerDisguise.get(player);
-            if (disguise.type() == null || disguise.type().scale() == 1.0f) {
+            float scale = Math.max(disguise.getEffectiveScale(), 0.5f);
+            if (scale == 1.0f) {
                 return;
             }
 
             Vec3 eyePosition = player.getEyePosition((float) event.getPartialTick());
             camera.setPosition(eyePosition.x, eyePosition.y, eyePosition.z);
-            camera.move(-camera.getMaxZoom(4.0 * disguise.type().scale()), 0.0, 0.0);
+            camera.move(-camera.getMaxZoom(4.0 * scale), 0.0, 0.0);
         }
     }
 }
