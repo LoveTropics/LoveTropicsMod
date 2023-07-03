@@ -36,8 +36,8 @@ public final class PlayerDisguiseBehavior {
 					Pose pose = event.getPose();
 					EntityDimensions size = disguiseEntity.getDimensions(pose);
 
-					event.setNewSize(size.scale(disguiseType.scale));
-					event.setNewEyeHeight(disguiseEntity.getEyeHeightAccess(pose, size) * disguiseType.scale);
+					event.setNewSize(size.scale(disguiseType.scale()));
+					event.setNewEyeHeight(disguiseEntity.getEyeHeightAccess(pose, size) * disguiseType.scale());
 				}
 			}
 		}

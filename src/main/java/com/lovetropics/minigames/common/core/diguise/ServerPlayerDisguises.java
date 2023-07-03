@@ -95,7 +95,7 @@ public final class ServerPlayerDisguises {
 		ServerPlayer player = context.getSource().getPlayerOrException();
 		Holder.Reference<EntityType<?>> entityType = ResourceArgument.getSummonableEntityType(context, "entity");
 
-		ServerPlayerDisguises.set(player, DisguiseType.create(entityType.value(), scale, nbt));
+		ServerPlayerDisguises.set(player, new DisguiseType(entityType.value(), scale, nbt));
 
 		return Command.SINGLE_SUCCESS;
 	}
@@ -134,7 +134,7 @@ public final class ServerPlayerDisguises {
 		PlayerDisguiseBehavior.clearAttributes(player);
 
 		DisguiseType disguiseType = disguise.getDisguiseType();
-		if (disguiseType != null && disguiseType.applyAttributes) {
+		if (disguiseType != null && disguiseType.applyAttributes()) {
 			Entity entity = disguise.getDisguiseEntity();
 			if (entity instanceof LivingEntity) {
 				PlayerDisguiseBehavior.applyAttributes(player, (LivingEntity) entity);

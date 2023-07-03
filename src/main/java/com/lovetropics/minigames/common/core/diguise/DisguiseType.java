@@ -14,40 +14,24 @@ import net.minecraftforge.registries.ForgeRegistries;
 import javax.annotation.Nullable;
 import java.util.Optional;
 
-public final class DisguiseType {
+public record DisguiseType(EntityType<?> type, float scale, CompoundTag nbt, boolean applyAttributes, DisguiseAbilities abilities) {
 	public static final Codec<DisguiseType> CODEC = RecordCodecBuilder.create(i -> i.group(
 			ForgeRegistries.ENTITY_TYPES.getCodec().fieldOf("entity").forGetter(c -> c.type),
 			Codec.FLOAT.optionalFieldOf("scale", 1.0f).forGetter(c -> c.scale),
 			CompoundTag.CODEC.optionalFieldOf("tag").forGetter(c -> Optional.ofNullable(c.nbt)),
 			Codec.BOOL.optionalFieldOf("apply_attributes", true).forGetter(c -> c.applyAttributes)
-	).apply(i, DisguiseType::create));
+	).apply(i, DisguiseType::new));
 
-	public final EntityType<?> type;
-
-	public final float scale;
-	public final CompoundTag nbt;
-	public final boolean applyAttributes;
-	public final DisguiseAbilities abilities;
-
-	private DisguiseType(EntityType<?> type, float scale, @Nullable CompoundTag nbt, boolean applyAttributes, DisguiseAbilities abilities) {
-		this.type = type;
-		this.scale = scale;
-		this.nbt = nbt;
-		this.applyAttributes = applyAttributes;
-		this.abilities = abilities;
+	public DisguiseType(EntityType<?> type, float scale, @Nullable CompoundTag nbt, boolean applyAttributes) {
+		this(type, scale, nbt, applyAttributes, DisguiseAbilitiesRegistry.create(type));
 	}
 
-	public static DisguiseType create(EntityType<?> type, float scale, @Nullable CompoundTag nbt, boolean applyAttributes) {
-		DisguiseAbilities abilities = DisguiseAbilitiesRegistry.create(type);
-		return new DisguiseType(type, scale, nbt, applyAttributes, abilities);
+	public DisguiseType(EntityType<?> type, float scale, @Nullable CompoundTag nbt) {
+		this(type, scale, nbt, true);
 	}
 
-	public static DisguiseType create(EntityType<?> type, float scale, @Nullable CompoundTag nbt) {
-		return create(type, scale, nbt, true);
-	}
-
-	private static DisguiseType create(EntityType<?> type, float scale, Optional<CompoundTag> nbt, Boolean applyAttributes) {
-		return create(type, scale, nbt.orElse(null), applyAttributes);
+	private DisguiseType(EntityType<?> type, float scale, Optional<CompoundTag> nbt, Boolean applyAttributes) {
+		this(type, scale, nbt.orElse(null), applyAttributes);
 	}
 
 	@Nullable
@@ -85,6 +69,6 @@ public final class DisguiseType {
         float scale = buffer.readFloat();
 		CompoundTag nbt = buffer.readNbt();
 		boolean applyAttributes = buffer.readBoolean();
-		return DisguiseType.create(type, scale, nbt, applyAttributes);
+		return new DisguiseType(type, scale, nbt, applyAttributes);
 	}
 }

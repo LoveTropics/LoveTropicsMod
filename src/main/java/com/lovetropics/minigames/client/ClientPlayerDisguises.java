@@ -47,8 +47,8 @@ public final class ClientPlayerDisguises {
                 int packedLight = event.getPackedLight();
 
                 transform.pushPose();
-                if (disguiseType.scale != 1.0f) {
-                    transform.scale(disguiseType.scale, disguiseType.scale, disguiseType.scale);
+                if (disguiseType.scale() != 1.0f) {
+                    transform.scale(disguiseType.scale(), disguiseType.scale(), disguiseType.scale());
                 }
 
                 float yaw = Mth.lerp(partialTicks, player.yRotO, player.getYRot());
@@ -125,13 +125,13 @@ public final class ClientPlayerDisguises {
 
         if (Minecraft.getInstance().cameraEntity instanceof Player player) {
             DisguiseType disguiseType = PlayerDisguise.getDisguiseType(player);
-            if (disguiseType == null || disguiseType.scale == 1.0f) {
+            if (disguiseType == null || disguiseType.scale() == 1.0f) {
                 return;
             }
 
             Vec3 eyePosition = player.getEyePosition((float) event.getPartialTick());
             camera.setPosition(eyePosition.x, eyePosition.y, eyePosition.z);
-            camera.move(-camera.getMaxZoom(4.0 * disguiseType.scale), 0.0, 0.0);
+            camera.move(-camera.getMaxZoom(4.0 * disguiseType.scale()), 0.0, 0.0);
         }
     }
 }
