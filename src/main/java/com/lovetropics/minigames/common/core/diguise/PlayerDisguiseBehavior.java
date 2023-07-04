@@ -27,8 +27,8 @@ public final class PlayerDisguiseBehavior {
 	@SubscribeEvent
 	public static void onSetEntitySize(EntityEvent.Size event) {
 		if (event.getEntity() instanceof Player player) {
-			PlayerDisguise disguise = PlayerDisguise.get(player);
-			if (!disguise.isDisguised()) {
+			PlayerDisguise disguise = PlayerDisguise.getOrNull(player);
+			if (disguise == null || !disguise.isDisguised()) {
 				return;
 			}
 
