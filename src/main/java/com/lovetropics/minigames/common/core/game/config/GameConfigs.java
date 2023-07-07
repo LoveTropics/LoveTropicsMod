@@ -43,9 +43,7 @@ public final class GameConfigs {
 			CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
 				REGISTRY.clear();
 
-				RegistryAccess registryAccess = getRegistryAccess(event.getServerResources());
-				DynamicOps<JsonElement> ops = RegistryOps.create(JsonOps.INSTANCE, registryAccess);
-
+				DynamicOps<JsonElement> ops = RegistryOps.create(JsonOps.INSTANCE, event.getRegistryAccess());
 				BehaviorReferenceReader behaviorReader = new BehaviorReferenceReader(resourceManager);
 
 				FILE_TO_ID_CONVERTER.listMatchingResources(resourceManager).forEach((path, resource) -> {
@@ -64,16 +62,6 @@ public final class GameConfigs {
 
 			return future.thenCompose(stage::wait);
 		});
-	}
-
-	// TODO: This is a terrible hack. PR to Forge to expose this through the event?
-	private static RegistryAccess getRegistryAccess(ReloadableServerResources serverResources) {
-		for (PreparableReloadListener listener : serverResources.listeners()) {
-			if (listener instanceof TagManagerAccessor tagManager) {
-				return tagManager.ltminigames$getRegistryAccess();
-			}
-		}
-		throw new IllegalStateException("Could not unpack RegistryAcess from ReloadableServerResources");
 	}
 
 	private static DataResult<GameConfig> loadConfig(
