@@ -124,7 +124,6 @@ public class LoveTropics {
         // Registry objects
         LoveTropicsBlocks.init();
         MapWorkspaceItems.init();
-        LobbyKeybinds.init();
 
         GameBehaviorTypes.init(modBus);
         GameClientStateTypes.init(modBus);
@@ -165,6 +164,7 @@ public class LoveTropics {
 
     @OnlyIn(Dist.CLIENT)
     private void setupClient(final FMLClientSetupEvent event) {
+        LobbyKeybinds.init();
         ForgeConfig.CLIENT.alwaysSetupTerrainOffThread.set(true);
         ((ForgeConfigSpec) ObfuscationReflectionHelper.getPrivateValue(ForgeConfig.class, null, "clientSpec")).save();
     }
