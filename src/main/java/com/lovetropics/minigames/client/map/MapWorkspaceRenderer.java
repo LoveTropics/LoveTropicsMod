@@ -25,7 +25,7 @@ import java.util.Set;
 public final class MapWorkspaceRenderer {
 	@SubscribeEvent
 	public static void onRenderLevel(RenderLevelStageEvent event) {
-		if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_LEVEL) {
+		if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_WEATHER) {
 			return;
 		}
 
@@ -35,12 +35,12 @@ public final class MapWorkspaceRenderer {
 		}
 
 		Minecraft client = Minecraft.getInstance();
-		Camera renderInfo = client.gameRenderer.getMainCamera();
-		if (!renderInfo.isInitialized()) {
+		Camera camera = client.gameRenderer.getMainCamera();
+		if (!camera.isInitialized()) {
 			return;
 		}
 
-		Vec3 view = renderInfo.getPosition();
+		Vec3 view = camera.getPosition();
 
 		PoseStack poseStack = event.getPoseStack();
 		MultiBufferSource.BufferSource bufferSource = client.renderBuffers().bufferSource();

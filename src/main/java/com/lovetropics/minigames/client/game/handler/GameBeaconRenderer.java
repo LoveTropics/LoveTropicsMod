@@ -28,7 +28,7 @@ public final class GameBeaconRenderer {
 
 	@SubscribeEvent
 	public static void onRenderLevel(RenderLevelStageEvent event) {
-		if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_LEVEL) {
+		if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_WEATHER) {
 			return;
 		}
 
