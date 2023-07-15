@@ -1,7 +1,6 @@
 package com.lovetropics.minigames.common.content.build_competition;
 
 import com.google.common.collect.Iterables;
-import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
@@ -12,14 +11,18 @@ import com.lovetropics.minigames.common.core.game.state.control.ControlCommand;
 import com.lovetropics.minigames.common.core.integration.Crud;
 import com.lovetropics.minigames.common.core.integration.GameInstanceIntegrations;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
+import com.mojang.serialization.JsonOps;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
-import it.unimi.dsi.fastutil.objects.ObjectArrays;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import net.minecraft.Util;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.players.PlayerList;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.scores.Objective;
 import net.minecraft.world.scores.Score;
 import net.minecraft.world.scores.Scoreboard;
@@ -31,7 +34,7 @@ import org.apache.logging.log4j.Logger;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Random;
+import java.util.Optional;
 
 public record PollFinalistsBehavior(String finalistsTag, String winnerTag, String votesObjective, String pollDuration) implements IGameBehavior {
 	public static final Codec<PollFinalistsBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
@@ -50,12 +53,12 @@ public record PollFinalistsBehavior(String finalistsTag, String winnerTag, Strin
 			try {
 				PlayerList players = source.getServer().getPlayerList();
 				players.getPlayers().forEach(p -> p.removeTag(winnerTag));
-				String[] finalists = players.getPlayers().stream()
+				ObjectArrayList<String> finalists = players.getPlayers().stream()
 						.filter(p -> p.getTags().contains(finalistsTag))
 						.map(p -> p.getGameProfile().getName())
-						.toArray(String[]::new);
-				ObjectArrays.shuffle(finalists, RANDOM);
-				integrations.createPoll("Choose the best build!", pollDuration, finalists);
+						.collect(ObjectArrayList.toList());
+				Util.shuffle(finalists, RANDOM);
+				integrations.createPoll("Choose the best build!", pollDuration, finalists.toArray(String[]::new));
 			} catch (Exception e) {
 				LOGGER.error("Failed to start runoff:", e);
 			}
@@ -66,39 +69,40 @@ public record PollFinalistsBehavior(String finalistsTag, String winnerTag, Strin
 
 	private void handlePollEvent(IGamePhase game, JsonObject object, Crud crud) {
 		MinecraftServer server = game.getServer();
-
-		if (crud == Crud.CREATE) {
-			LOGGER.info("New poll, resetting objective");
-			Scoreboard scoreboard = server.getScoreboard();
-			Objective objective = scoreboard.getOrCreateObjective(votesObjective);
-			if (objective != null) {
-				scoreboard.removeObjective(objective);
+		Optional<PollEvent> poll = PollEvent.CODEC.parse(JsonOps.INSTANCE, object).resultOrPartial(LOGGER::error);
+		switch (crud) {
+			case CREATE -> {
+				LOGGER.info("New poll, resetting objective");
+				Scoreboard scoreboard = server.getScoreboard();
+				Objective objective = scoreboard.getOrCreateObjective(votesObjective);
+				if (objective != null) {
+					scoreboard.removeObjective(objective);
+				}
+				scoreboard.addObjective(votesObjective, ObjectiveCriteria.DUMMY, Component.literal("Votes"), RenderType.INTEGER);
 			}
-			scoreboard.addObjective(votesObjective, ObjectiveCriteria.DUMMY, Component.literal("Votes"), RenderType.INTEGER);
-			return;
-		}
-		PollEvent event = new Gson().fromJson(object, PollEvent.class);
-		if (crud == Crud.DELETE) {
-			LOGGER.info("Poll ended, finding winner");
-			updateScores(server, event, true);
-			Scoreboard scoreboard = server.getScoreboard();
-			Objective objective = scoreboard.getOrCreateObjective(votesObjective);
-			Collection<Score> scores = scoreboard.getPlayerScores(objective);
-			if (!scores.isEmpty()) {
-				String winner = Iterables.getLast(scores).getOwner();
-				for (ServerPlayer player : server.getPlayerList().getPlayers()) {
-					player.removeTag(finalistsTag);
-					if (player.getGameProfile().getName().equals(winner)) {
-						player.addTag(winnerTag);
+			case UPDATE -> {
+				poll.ifPresent(event -> updateScores(server, event, false));
+			}
+			case DELETE -> {
+				LOGGER.info("Poll ended, finding winner");
+				poll.ifPresent(event -> updateScores(server, event, true));
+				Scoreboard scoreboard = server.getScoreboard();
+				Objective objective = scoreboard.getOrCreateObjective(votesObjective);
+				Collection<Score> scores = scoreboard.getPlayerScores(objective);
+				if (!scores.isEmpty()) {
+					String winner = Iterables.getLast(scores).getOwner();
+					for (ServerPlayer player : server.getPlayerList().getPlayers()) {
+						player.removeTag(finalistsTag);
+						if (player.getGameProfile().getName().equals(winner)) {
+							player.addTag(winnerTag);
+						}
 					}
 				}
 			}
-		} else {
-			updateScores(server, event, false);
 		}
 	}
 
-	private static final Random RANDOM = new Random();
+	private static final RandomSource RANDOM = RandomSource.create();
 
 	private void updateScores(MinecraftServer server, PollEvent event, boolean forceWinner) {
 		Object2IntMap<String> votesByName = new Object2IntArrayMap<>();
@@ -129,23 +133,30 @@ public record PollFinalistsBehavior(String finalistsTag, String winnerTag, Strin
 		}
 		if (leaders.size() > 1) {
 			// Shhhhh
-			ServerPlayer winner = leaders.get(RANDOM.nextInt(leaders.size()));
+			ServerPlayer winner = Util.getRandom(leaders, RANDOM);
 			Scoreboard scoreboard = server.getScoreboard();
 			Objective objective = scoreboard.getOrCreateObjective(votesObjective);
 			scoreboard.getOrCreatePlayerScore(winner.getGameProfile().getName(), objective).increment();
 		}
 	}
 
-	public static class PollEvent {
-
-		int id;
-		List<Option> options;
+	public record PollEvent(int id, List<Option> options) {
+		public static final Codec<PollEvent> CODEC = RecordCodecBuilder.create(i -> i.group(
+				Codec.INT.fieldOf("id").forGetter(PollEvent::id),
+				Option.CODEC.listOf().fieldOf("options").forGetter(PollEvent::options)
+		).apply(i, PollEvent::new));
 	}
 
-	public static class Option {
+	public record Option(char key, String title, int results) {
+		private static final Codec<Character> CHARACTER_CODEC = Codec.STRING.comapFlatMap(
+				s -> s.length() == 1 ? DataResult.success(s.charAt(0)) : DataResult.error(() -> "Expected single character, got " + s.length()),
+				String::valueOf
+		);
 
-		char key;
-		String title;
-		int results;
+		public static final Codec<Option> CODEC = RecordCodecBuilder.create(i -> i.group(
+				CHARACTER_CODEC.fieldOf("key").forGetter(Option::key),
+				Codec.STRING.fieldOf("title").forGetter(Option::title),
+				Codec.INT.fieldOf("results").forGetter(Option::results)
+		).apply(i, Option::new));
 	}
 }
