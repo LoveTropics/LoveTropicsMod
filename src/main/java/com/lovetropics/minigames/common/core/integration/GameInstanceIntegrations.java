@@ -99,7 +99,7 @@ public final class GameInstanceIntegrations implements IGameState {
 			array.add(option);
 		}
 		object.add("options", array);
-		integrations.postPolling("polls/add", object);
+		integrations.postPolling(ConfigLT.INTEGRATIONS.addPollEndpoint.get(), object);
 	}
 
 	private void sendParticipantsList() {
@@ -118,7 +118,7 @@ public final class GameInstanceIntegrations implements IGameState {
 	}
 
 	private void requestQueuedActions() {
-		post("/minigame/pendingactions", new JsonObject());
+		post(ConfigLT.INTEGRATIONS.pendingActionsEndpoint.get(), new JsonObject());
 	}
 
 	private void post(String endpoint, JsonObject payload) {

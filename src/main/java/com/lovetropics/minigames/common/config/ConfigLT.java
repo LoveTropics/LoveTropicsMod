@@ -66,6 +66,7 @@ public class ConfigLT {
         public final ConfigValue<String> pendingActionsEndpoint;
         public final ConfigValue<String> authToken;
         public final ConfigValue<String> webSocketUrl;
+        public final ConfigValue<String> addPollEndpoint;
 
         private CategoryIntegrations() {
             COMMON_BUILDER.comment("Used for the LoveTropics charity drive.").push("techStack");
@@ -103,6 +104,8 @@ public class ConfigLT {
             pendingActionsEndpoint = COMMON_BUILDER
                     .comment("URL to receive any care/sabotage packages or chat events that were triggered but never acknowledged by the mod (maybe due to a premature shutdown)")
                     .define("pendingActionsEndpoint", "minigame/pendingactions");
+            addPollEndpoint = COMMON_BUILDER
+                    .define("addPollEndpoint", "polls/add");
             COMMON_BUILDER.pop();
         }
 
