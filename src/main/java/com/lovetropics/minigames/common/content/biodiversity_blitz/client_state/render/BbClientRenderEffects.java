@@ -40,7 +40,6 @@ public final class BbClientRenderEffects {
 	private static final Supplier<ItemStack> CURRENCY_ITEM = Suppliers.memoize(() -> new ItemStack(BiodiversityBlitz.OSA_POINT.get()));
 	private static final int ITEM_SIZE = 16;
 
-	@SubscribeEvent
 	public static void registerOverlays(RegisterGuiOverlaysEvent event) {
 		event.registerBelow(VanillaGuiOverlay.DEBUG_TEXT.id(), "biodiversity_blitz", (gui, graphics, partialTick, screenWidth, screenHeight) -> {
 			ClientBbSelfState selfState = ClientGameStateManager.getOrNull(BiodiversityBlitz.SELF_STATE);

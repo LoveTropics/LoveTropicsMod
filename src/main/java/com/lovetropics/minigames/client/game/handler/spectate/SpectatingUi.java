@@ -178,8 +178,7 @@ public final class SpectatingUi {
 		return Mth.clamp(availableWidth / ENTRY_WIDTH, 1, MAX_ENTRIES_ON_SCREEN);
 	}
 
-	@SubscribeEvent
-	public static void registerOverlayRenderer(RegisterGuiOverlaysEvent event) {
+	public static void registerOverlays(RegisterGuiOverlaysEvent event) {
 		event.registerBelow(VanillaGuiOverlay.DEBUG_TEXT.id(), "minigame_spectator", (gui, graphics, partialTick, screenWidth, screenHeight) -> {
 			SpectatingSession session = ClientSpectatingManager.INSTANCE.session;
 			if (session != null) {

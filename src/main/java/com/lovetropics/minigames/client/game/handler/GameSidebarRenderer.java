@@ -26,7 +26,6 @@ public final class GameSidebarRenderer {
 	private static final int PADDING = 2;
 	private static final int MARGIN = 1;
 
-	@SubscribeEvent
 	public static void registerOverlays(RegisterGuiOverlaysEvent event) {
 		event.registerBelow(VanillaGuiOverlay.DEBUG_TEXT.id(), "minigame_sidebar", (gui, graphics, partialTick, screenWidth, screenHeight) -> {
 			SidebarClientState sidebar = ClientGameStateManager.getOrNull(GameClientStateTypes.SIDEBAR);

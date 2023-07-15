@@ -1,9 +1,13 @@
 package com.lovetropics.minigames;
 
+import com.lovetropics.minigames.client.game.handler.GameSidebarRenderer;
+import com.lovetropics.minigames.client.game.handler.spectate.SpectatingUi;
 import com.lovetropics.minigames.client.lobby.LobbyKeybinds;
+import com.lovetropics.minigames.client.lobby.LobbyStateGui;
 import com.lovetropics.minigames.common.config.ConfigLT;
 import com.lovetropics.minigames.common.content.MinigameTexts;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.BiodiversityBlitzTexts;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.client_state.render.BbClientRenderEffects;
 import com.lovetropics.minigames.common.content.block.LoveTropicsBlocks;
 import com.lovetropics.minigames.common.content.block.TrashType;
 import com.lovetropics.minigames.common.content.block_party.BlockParty;
@@ -51,6 +55,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
 import net.minecraftforge.common.ForgeConfig;
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.common.MinecraftForge;
@@ -145,6 +150,13 @@ public class LoveTropics {
 
         GameEventDispatcher eventDispatcher = new GameEventDispatcher(IGameManager.get());
         MinecraftForge.EVENT_BUS.register(eventDispatcher);
+
+        modBus.addListener((RegisterGuiOverlaysEvent event) -> {
+            LobbyStateGui.registerOverlays(event);
+            GameSidebarRenderer.registerOverlays(event);
+            SpectatingUi.registerOverlays(event);
+            BbClientRenderEffects.registerOverlays(event);
+        });
     }
 
     private static final Pattern QUALIFIER = Pattern.compile("-\\w+\\+\\d+");

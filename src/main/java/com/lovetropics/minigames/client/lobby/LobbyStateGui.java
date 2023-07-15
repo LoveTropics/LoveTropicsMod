@@ -53,8 +53,7 @@ public class LobbyStateGui {
 		hasBossBar = true;
 	}
 
-	@SubscribeEvent
-	public static void registerGameOverlays(RegisterGuiOverlaysEvent event) {
+	public static void registerOverlays(RegisterGuiOverlaysEvent event) {
 		event.registerBelow(VanillaGuiOverlay.DEBUG_TEXT.id(), "minigame_lobby", (gui, graphics, partialTick, screenWidth, screenHeight) -> {
 			ClientLobbyState joinedLobby = ClientLobbyManager.getJoined();
 			Collection<ClientLobbyState> lobbies = ClientLobbyManager.getLobbies();
