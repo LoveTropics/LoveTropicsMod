@@ -159,10 +159,10 @@ public final class GameInstanceIntegrations implements IGameState {
 		actions.pollGameActions(server.getTickCount());
 	}
 
-	void handlePayload(JsonObject object, String type, String crud) {
+	void handlePayload(JsonObject object, String type, Crud crud) {
 		if ("poll".equals(type)) {
 			game.invoker(GamePackageEvents.RECEIVE_POLL_EVENT).onReceivePollEvent(object, crud);
-		} else if ("create".equals(crud)) {
+		} else if (crud == Crud.CREATE) {
 			Optional<GameActionType> actionType = GameActionType.getFromId(type);
 			if (actionType.isPresent()) {
 				// TODO: Fallback because format is inconsistent

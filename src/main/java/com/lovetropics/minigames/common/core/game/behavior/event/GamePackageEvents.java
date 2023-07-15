@@ -1,6 +1,7 @@
 package com.lovetropics.minigames.common.core.game.behavior.event;
 
 import com.google.gson.JsonObject;
+import com.lovetropics.minigames.common.core.integration.Crud;
 import com.lovetropics.minigames.common.core.integration.game_actions.Donation;
 import com.lovetropics.minigames.common.core.integration.game_actions.GamePackage;
 import net.minecraft.world.InteractionResult;
@@ -36,7 +37,7 @@ public final class GamePackageEvents {
 	}
 
 	public interface ReceivePollEvent {
-		void onReceivePollEvent(JsonObject object, String crud);
+		void onReceivePollEvent(JsonObject object, Crud crud);
 	}
 
 	public interface ReceiveDonation {

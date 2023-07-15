@@ -9,6 +9,7 @@ import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePackageEvents;
 import com.lovetropics.minigames.common.core.game.state.control.ControlCommand;
+import com.lovetropics.minigames.common.core.integration.Crud;
 import com.lovetropics.minigames.common.core.integration.GameInstanceIntegrations;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -63,10 +64,10 @@ public record PollFinalistsBehavior(String finalistsTag, String winnerTag, Strin
 		events.listen(GamePackageEvents.RECEIVE_POLL_EVENT, (object, crud) -> handlePollEvent(game, object, crud));
 	}
 
-	private void handlePollEvent(IGamePhase game, JsonObject object, String crud) {
+	private void handlePollEvent(IGamePhase game, JsonObject object, Crud crud) {
 		MinecraftServer server = game.getServer();
 
-		if (crud.equals("create")) {
+		if (crud == Crud.CREATE) {
 			LOGGER.info("New poll, resetting objective");
 			Scoreboard scoreboard = server.getScoreboard();
 			Objective objective = scoreboard.getOrCreateObjective(votesObjective);
@@ -77,7 +78,7 @@ public record PollFinalistsBehavior(String finalistsTag, String winnerTag, Strin
 			return;
 		}
 		PollEvent event = new Gson().fromJson(object, PollEvent.class);
-		if (crud.equals("delete")) {
+		if (crud == Crud.DELETE) {
 			LOGGER.info("Poll ended, finding winner");
 			updateScores(server, event, true);
 			Scoreboard scoreboard = server.getScoreboard();

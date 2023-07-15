@@ -149,7 +149,11 @@ public final class BackendIntegrations {
 
 		try {
 			final String type = object.get("type").getAsString();
-			final String crud = object.get("crud").getAsString();
+			final Crud crud = Crud.parse(object.get("crud"));
+			if (crud == null) {
+				LOGGER.error("Encountered unrecognized crud: '{}'", object.get("crud"));
+				return;
+			}
 
 			handlePayload(object.getAsJsonObject("payload"), type, crud);
 		} catch (Exception e) {
@@ -157,7 +161,7 @@ public final class BackendIntegrations {
 		}
 	}
 
-	private void handlePayload(JsonObject object, String type, String crud) {
+	private void handlePayload(JsonObject object, String type, Crud crud) {
 		GameInstanceIntegrations liveInstance = this.liveInstance;
 
 		// we can ignore the payload because we will request it again when a minigame starts
