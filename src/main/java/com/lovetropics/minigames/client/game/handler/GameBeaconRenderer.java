@@ -4,6 +4,7 @@ import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.client.game.ClientGameStateManager;
 import com.lovetropics.minigames.common.core.game.client_state.GameClientStateTypes;
 import com.lovetropics.minigames.common.core.game.client_state.instance.BeaconClientState;
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
 import net.minecraft.client.Camera;
@@ -47,6 +48,11 @@ public final class GameBeaconRenderer {
 
 		MultiBufferSource.BufferSource bufferSource = MultiBufferSource.immediate(Tesselator.getInstance().getBuilder());
 
+		PoseStack modelViewStack = RenderSystem.getModelViewStack();
+		modelViewStack.pushPose();
+		modelViewStack.setIdentity();
+		RenderSystem.applyModelViewMatrix();
+
 		Vec3 cameraPosition = camera.getPosition();
 		PoseStack poseStack = event.getPoseStack();
 
@@ -61,5 +67,8 @@ public final class GameBeaconRenderer {
 		}
 
 		bufferSource.endBatch();
+
+		modelViewStack.popPose();
+		RenderSystem.applyModelViewMatrix();
 	}
 }

@@ -3,6 +3,7 @@ package com.lovetropics.minigames.client.map;
 import com.lovetropics.lib.BlockBox;
 import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.common.core.map.workspace.ClientWorkspaceRegions;
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import it.unimi.dsi.fastutil.HashCommon;
 import net.minecraft.client.Camera;
@@ -41,6 +42,11 @@ public final class MapWorkspaceRenderer {
 		}
 
 		Vec3 view = camera.getPosition();
+
+		PoseStack modelViewStack = RenderSystem.getModelViewStack();
+		modelViewStack.pushPose();
+		modelViewStack.setIdentity();
+		RenderSystem.applyModelViewMatrix();
 
 		PoseStack poseStack = event.getPoseStack();
 		MultiBufferSource.BufferSource bufferSource = client.renderBuffers().bufferSource();
@@ -91,6 +97,11 @@ public final class MapWorkspaceRenderer {
 
 			DebugRenderer.renderFloatingText(poseStack, bufferSource, entry.key, center.x, center.y, center.z, 0xFFFFFFFF, scale);
 		}
+
+		bufferSource.endLastBatch();
+
+		modelViewStack.popPose();
+		RenderSystem.applyModelViewMatrix();
 	}
 
 	private static int colorForKey(String key) {
