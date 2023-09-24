@@ -2,6 +2,7 @@ package com.lovetropics.minigames.common.util.registry;
 
 import com.lovetropics.minigames.common.core.game.client_state.GameClientState;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
+import com.lovetropics.minigames.common.core.game.predicate.entity.EntityPredicate;
 import com.mojang.serialization.Codec;
 import com.tterrag.registrate.AbstractRegistrate;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
@@ -25,6 +26,18 @@ public final class LoveTropicsRegistrate extends AbstractRegistrate<LoveTropicsR
 
 	public <T extends IGameBehavior, P> GameBehaviorBuilder<T, P> behavior(P parent, String name, Codec<T> codec) {
 		return entry(name, callback -> new GameBehaviorBuilder<>(this, parent, name, callback, codec));
+	}
+
+	public <T extends EntityPredicate> EntityPredicateBuilder<T, LoveTropicsRegistrate> entityPredicate(Codec<T> codec) {
+		return entityPredicate(this, currentName(), codec);
+	}
+
+	public <T extends EntityPredicate> EntityPredicateBuilder<T, LoveTropicsRegistrate> entityPredicate(String name, Codec<T> codec) {
+		return entityPredicate(this, name, codec);
+	}
+
+	public <T extends EntityPredicate, P> EntityPredicateBuilder<T, P> entityPredicate(P parent, String name, Codec<T> codec) {
+		return entry(name, callback -> new EntityPredicateBuilder<>(this, parent, name, callback, codec));
 	}
 
 	public <T extends GameClientState> GameClientTweakBuilder<T, LoveTropicsRegistrate> clientState(Codec<T> codec) {

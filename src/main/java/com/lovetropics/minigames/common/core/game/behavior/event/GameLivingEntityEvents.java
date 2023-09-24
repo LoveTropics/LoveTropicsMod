@@ -8,6 +8,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.block.state.BlockState;
 
 import javax.annotation.Nullable;
@@ -66,6 +67,13 @@ public final class GameLivingEntityEvents {
 		}
 	});
 
+	public static final GameEventType<ModifyExplosionKnockback> MODIFY_EXPLOSION_KNOCKBACK = GameEventType.create(ModifyExplosionKnockback.class, listeners -> (entity, explosion, knockback, initialKnockback) -> {
+		for (final ModifyExplosionKnockback listener : listeners) {
+			knockback = listener.getKnockback(entity, explosion, knockback, initialKnockback);
+		}
+		return knockback;
+	});
+
 	private GameLivingEntityEvents() {
 	}
 
@@ -91,5 +99,9 @@ public final class GameLivingEntityEvents {
 
 	public interface EnderTeleport {
 		void onEnderPearlTeleport(ServerPlayer player, double targetX, double targetY, double targetZ, float attackDamage, Consumer<Float> setDamage);
+	}
+
+	public interface ModifyExplosionKnockback {
+		double getKnockback(LivingEntity entity, Explosion explosion, double knockback, double initialKnockback);
 	}
 }

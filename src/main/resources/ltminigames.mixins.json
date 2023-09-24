@@ -9,7 +9,8 @@
     "MinecraftServerMixin",
     "PlayerMixin",
     "SimpleRegistryMixin",
-    "TagManagerAccessor"
+    "TagManagerAccessor",
+    "ExplosionMixin"
   ],
   "client": [
     "client.BiomeColorsMixin",
