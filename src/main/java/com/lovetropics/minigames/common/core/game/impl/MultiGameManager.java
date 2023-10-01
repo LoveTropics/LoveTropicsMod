@@ -17,7 +17,6 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Unit;
@@ -229,21 +228,6 @@ public class MultiGameManager implements IGameManager {
 		List<GameLobby> lobbies = new ArrayList<>(INSTANCE.lobbies);
 		for (GameLobby lobby : lobbies) {
 			lobby.close();
-		}
-	}
-
-	public static void onServerStoppingUnsafely(MinecraftServer server) {
-		List<GameLobby> lobbies = INSTANCE.lobbies;
-		if (!lobbies.isEmpty()) {
-			onServerStoppingUngracefully(server, lobbies);
-		}
-	}
-
-	private static void onServerStoppingUngracefully(MinecraftServer server, List<GameLobby> lobbies) {
-		for (GameLobby lobby : lobbies) {
-			for (ServerPlayer player : lobby.getPlayers()) {
-				lobby.playerIsolation.restore(player);
-			}
 		}
 	}
 

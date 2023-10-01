@@ -6,11 +6,13 @@
   "mixins": [
     "ChunkStorageMixin",
     "EntityTypeMixin",
+    "ExplosionMixin",
     "MinecraftServerMixin",
+    "PlayerListAccessor",
+    "PlayerListMixin",
     "PlayerMixin",
     "SimpleRegistryMixin",
-    "TagManagerAccessor",
-    "ExplosionMixin"
+    "TagManagerAccessor"
   ],
   "client": [
     "client.BiomeColorsMixin",

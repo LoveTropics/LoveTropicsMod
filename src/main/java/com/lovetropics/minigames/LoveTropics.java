@@ -214,7 +214,6 @@ public class LoveTropics {
     }
 
     public static void onServerStoppingUnsafely(MinecraftServer server) {
-        MultiGameManager.onServerStoppingUnsafely(server);
         RuntimeDimensions.onServerStoppingUnsafely(server);
     }
 }

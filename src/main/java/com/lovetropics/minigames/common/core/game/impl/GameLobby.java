@@ -38,8 +38,6 @@ final class GameLobby implements IGameLobby {
 			new ChatNotifyListener()
 	);
 
-	final PlayerIsolation playerIsolation = new PlayerIsolation();
-
 	private boolean closed;
 
 	GameLobby(MultiGameManager manager, MinecraftServer server, GameLobbyMetadata metadata) {
@@ -245,11 +243,11 @@ final class GameLobby implements IGameLobby {
 
 	// TODO: better abstract this logic?
 	void onPlayerEnterGame(ServerPlayer player) {
-		playerIsolation.accept(player);
+		PlayerIsolation.INSTANCE.accept(player);
 	}
 
 	void onPlayerExitGame(ServerPlayer player) {
-		playerIsolation.restore(player);
+		PlayerIsolation.INSTANCE.restore(player);
 	}
 
 	void onPlayerStartTracking(ServerPlayer player) {
