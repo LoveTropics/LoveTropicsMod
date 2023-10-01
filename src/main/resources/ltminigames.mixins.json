@@ -8,7 +8,6 @@
     "EntityTypeMixin",
     "ExplosionMixin",
     "MinecraftServerMixin",
-    "PlayerListAccessor",
     "PlayerListMixin",
     "PlayerMixin",
     "SimpleRegistryMixin",

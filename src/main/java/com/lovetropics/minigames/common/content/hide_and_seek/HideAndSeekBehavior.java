@@ -8,6 +8,7 @@ import com.lovetropics.minigames.common.core.diguise.ServerPlayerDisguises;
 import com.lovetropics.minigames.common.core.dimension.DimensionUtils;
 import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
+import com.lovetropics.minigames.common.core.game.PlayerListAccess;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
@@ -17,7 +18,6 @@ import com.lovetropics.minigames.common.core.game.player.PlayerSet;
 import com.lovetropics.minigames.common.core.game.state.team.GameTeam;
 import com.lovetropics.minigames.common.core.game.state.team.GameTeamKey;
 import com.lovetropics.minigames.common.core.game.state.team.TeamState;
-import com.lovetropics.minigames.common.core.game.util.PlayerSnapshot;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.Util;
@@ -155,7 +155,8 @@ public final class HideAndSeekBehavior implements IGameBehavior {
 	}
 
 	private void setSeeker(ServerPlayer player) {
-		PlayerSnapshot.clearPlayer(player);
+		player.getInventory().clearContent();
+		ServerPlayerDisguises.clear(player);
 		player.getInventory().add(new ItemStack(HideAndSeek.NET.get()));
 	}
 

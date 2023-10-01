@@ -9,6 +9,7 @@ import com.lovetropics.minigames.common.core.game.GameStopReason;
 import com.lovetropics.minigames.common.core.game.IGame;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.IGamePhaseDefinition;
+import com.lovetropics.minigames.common.core.game.PlayerIsolation;
 import com.lovetropics.minigames.common.core.game.behavior.BehaviorMap;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameEventType;
@@ -21,7 +22,6 @@ import com.lovetropics.minigames.common.core.game.player.PlayerSet;
 import com.lovetropics.minigames.common.core.game.state.GameStateMap;
 import com.lovetropics.minigames.common.core.game.state.statistics.StatisticKey;
 import com.lovetropics.minigames.common.core.game.util.GameTexts;
-import com.lovetropics.minigames.common.core.game.util.PlayerSnapshot;
 import com.lovetropics.minigames.common.core.map.MapRegions;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
@@ -108,7 +108,7 @@ public class GamePhase implements IGamePhase {
 			Collections.shuffle(shuffledPlayers);
 
 			for (ServerPlayer player : shuffledPlayers) {
-				PlayerSnapshot.clearPlayer(player);
+				PlayerIsolation.INSTANCE.isolateAndClear(player);
 				invoker(GamePlayerEvents.ADD).onAdd(player);
 				if (getRoleFor(player) == null) {
 					invoker(GamePlayerEvents.SPAWN).onSpawn(player, null);
@@ -185,8 +185,6 @@ public class GamePhase implements IGamePhase {
 	}
 
 	void onPlayerJoin(ServerPlayer player) {
-		PlayerSnapshot.clearPlayer(player);
-
 		try {
 			invoker(GamePlayerEvents.ADD).onAdd(player);
 			invoker(GamePlayerEvents.JOIN).onAdd(player);

@@ -243,7 +243,7 @@ final class GameLobby implements IGameLobby {
 
 	// TODO: better abstract this logic?
 	void onPlayerEnterGame(ServerPlayer player) {
-		PlayerIsolation.INSTANCE.accept(player);
+		PlayerIsolation.INSTANCE.isolateAndClear(player);
 	}
 
 	void onPlayerExitGame(ServerPlayer player) {
