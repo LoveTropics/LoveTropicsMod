@@ -65,6 +65,7 @@ import com.lovetropics.minigames.common.core.game.behavior.instances.statistics.
 import com.lovetropics.minigames.common.core.game.behavior.instances.statistics.PlaceByStatisticBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.statistics.TimeSurvivedTrackerBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.team.SetupTeamsBehavior;
+import com.lovetropics.minigames.common.core.game.behavior.instances.team.SyncTeamsBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.team.TeamWinTrigger;
 import com.lovetropics.minigames.common.core.game.behavior.instances.team.TeamsBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.trigger.BindControlsBehavior;
@@ -150,6 +151,7 @@ public class GameBehaviorTypes {
 	public static final GameBehaviorEntry<SetMaxHealthBehavior> SET_MAX_HEALTH = register("set_max_health", SetMaxHealthBehavior.CODEC);
 	public static final GameBehaviorEntry<IndividualWinTrigger> INDIVIDUAL_WIN_TRIGGER = register("individual_win_trigger", IndividualWinTrigger.CODEC);
 	public static final GameBehaviorEntry<TeamWinTrigger> TEAM_WIN_TRIGGER = register("team_win_trigger", TeamWinTrigger.CODEC);
+	public static final GameBehaviorEntry<SyncTeamsBehavior> SYNC_TEAMS = register("sync_teams", SyncTeamsBehavior.CODEC);
 	public static final GameBehaviorEntry<EquipParticipantsBehavior> EQUIP_PARTICIPANTS = register("equip_participants", EquipParticipantsBehavior.CODEC);
 	public static final GameBehaviorEntry<ArmorParticipantsBehavior> ARMOR_PARTICIPANTS = register("armor_participants", ArmorParticipantsBehavior.CODEC);
 	public static final GameBehaviorEntry<SetTimeSpeedBehavior> SET_TIME_SPEED = register("set_time_speed", SetTimeSpeedBehavior.CODEC);

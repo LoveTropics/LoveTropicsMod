@@ -4,11 +4,13 @@ import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.common.core.game.client_state.instance.BeaconClientState;
 import com.lovetropics.minigames.common.core.game.client_state.instance.FogClientState;
+import com.lovetropics.minigames.common.core.game.client_state.instance.GlowTeamMembersState;
 import com.lovetropics.minigames.common.core.game.client_state.instance.HealthTagClientState;
 import com.lovetropics.minigames.common.core.game.client_state.instance.ReplaceTexturesClientState;
 import com.lovetropics.minigames.common.core.game.client_state.instance.ResourcePackClientState;
 import com.lovetropics.minigames.common.core.game.client_state.instance.SidebarClientState;
 import com.lovetropics.minigames.common.core.game.client_state.instance.SpectatingClientState;
+import com.lovetropics.minigames.common.core.game.client_state.instance.TeamMembersClientState;
 import com.lovetropics.minigames.common.core.game.client_state.instance.TimeInterpolationClientState;
 import com.lovetropics.minigames.common.util.registry.GameClientTweakEntry;
 import com.lovetropics.minigames.common.util.registry.LoveTropicsRegistrate;
@@ -43,6 +45,8 @@ public final class GameClientStateTypes {
 	public static final GameClientTweakEntry<SidebarClientState> SIDEBAR = register("sidebar", SidebarClientState.CODEC);
 	public static final GameClientTweakEntry<BeaconClientState> BEACON = register("beacon", BeaconClientState.CODEC);
 	public static final GameClientTweakEntry<FogClientState> FOG = register("fog", FogClientState.CODEC);
+	public static final GameClientTweakEntry<TeamMembersClientState> TEAM_MEMBERS = register("team_members", TeamMembersClientState.CODEC);
+	public static final GameClientTweakEntry<GlowTeamMembersState> GLOW_TEAM_MEMBERS = register("glow_team_members", Codec.unit(GlowTeamMembersState.INSTANCE));
 
 	public static <T extends GameClientState> GameClientTweakEntry<T> register(final String name, final Codec<T> codec) {
 		return REGISTRATE.object(name)

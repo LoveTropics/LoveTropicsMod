@@ -18,7 +18,8 @@
     "client.BossOverlayGuiMixin",
     "client.HotbarOverride",
     "client.PlayerTabOverlayGuiMixin",
-    "client.PoseStackAccessor"
+    "client.PoseStackAccessor",
+    "client.MinecraftMixin"
   ],
   "injectors": {
     "defaultRequire": 1

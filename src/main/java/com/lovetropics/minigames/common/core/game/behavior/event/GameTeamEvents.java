@@ -11,10 +11,20 @@ public final class GameTeamEvents {
 		}
 	});
 
+	public static final GameEventType<RemoveFromTeam> REMOVE_FROM_TEAM = GameEventType.create(RemoveFromTeam.class, listeners -> (player, teams, team) -> {
+		for (RemoveFromTeam listener : listeners) {
+			listener.onRemoveFromTeam(player, teams, team);
+		}
+	});
+
 	private GameTeamEvents() {
 	}
 
 	public interface SetGameTeam {
 		void onSetGameTeam(ServerPlayer player, TeamState teams, GameTeamKey team);
+	}
+
+	public interface RemoveFromTeam {
+		void onRemoveFromTeam(ServerPlayer player, TeamState teams, GameTeamKey team);
 	}
 }
