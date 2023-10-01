@@ -23,6 +23,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import javax.annotation.Nullable;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -63,6 +64,8 @@ public abstract class PlayerListMixin implements PlayerListAccess {
 		player.save(tag);
 		tag.remove("UUID");
 		tag.remove("Pos");
+		tag.put("ForgeData", new CompoundTag());
+
 		return tag;
 	}
 
