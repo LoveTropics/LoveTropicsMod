@@ -22,6 +22,7 @@ public final class BiodiversityBlitzTexts {
 		private static final String TRADING = key("trading");
 		private static final String CAN_ONLY_PLACE_PLANTS = key("can_only_place_plants");
 		private static final String PLANT_CANNOT_FIT = key("plant_cannot_fit");
+		private static final String PLANT_CANNOT_BE_PLACED_IN_BIOME = key("plant_cannot_be_placed_in_biome");
 		private static final String NOT_YOUR_PLOT = key("not_your_plot");
 
 		static void collectTranslations(BiConsumer<String, String> consumer) {
@@ -34,6 +35,7 @@ public final class BiodiversityBlitzTexts {
 			consumer.accept(CURRENCY_ADDITION, "You gained %s biodiversity points!");
 			consumer.accept(CAN_ONLY_PLACE_PLANTS, "You can only place plants you got from the shop!");
 			consumer.accept(PLANT_CANNOT_FIT, "This plant cannot fit here!");
+			consumer.accept(PLANT_CANNOT_BE_PLACED_IN_BIOME, "This plant cannot be placed in this biome!");
 			consumer.accept(NOT_YOUR_PLOT, "This is not your plot, you cannot edit here!");
 		}
 
@@ -66,6 +68,10 @@ public final class BiodiversityBlitzTexts {
 
 	public static MutableComponent plantCannotFit() {
 		return Component.translatable(Keys.PLANT_CANNOT_FIT);
+	}
+
+	public static MutableComponent plantCannotBePlacedInBiome() {
+		return Component.translatable(Keys.PLANT_CANNOT_BE_PLACED_IN_BIOME);
 	}
 
 	public static MutableComponent notYourPlot() {

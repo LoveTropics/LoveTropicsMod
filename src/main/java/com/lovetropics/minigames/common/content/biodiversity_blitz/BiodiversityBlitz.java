@@ -25,6 +25,7 @@ import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.plan
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.plant.LightningPlantBehavior;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.plant.PianguasPlantBehavior;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.plant.PlantBehavior;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.plant.PlantBiomeCheckBehavior;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.plant.PlantHealthBehavior;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.plant.PlantItemBehavior;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.plant.ProximityBombPlantBehavior;
@@ -92,6 +93,10 @@ public final class BiodiversityBlitz {
 
 	public static final GameBehaviorEntry<PlantItemBehavior> PLANT_ITEM = REGISTRATE.object("biodiversity_blitz_plant_item")
 			.behavior(PlantItemBehavior.CODEC)
+			.register();
+
+	public static final GameBehaviorEntry<PlantBiomeCheckBehavior> PLANT_BIOME_CHECK = REGISTRATE.object("plant_biome_check")
+			.behavior(PlantBiomeCheckBehavior.CODEC)
 			.register();
 
 	public static final GameBehaviorEntry<PlaceSinglePlantBehavior> PLACE_SINGLE_PLANT = REGISTRATE.object("place_single_plant")

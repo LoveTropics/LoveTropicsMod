@@ -41,6 +41,7 @@
   "ltminigames.minigame.biodiversity_blitz.death_decrease": "...and lost %s biodiversity points!",
   "ltminigames.minigame.biodiversity_blitz.death_title": "YOU DIED",
   "ltminigames.minigame.biodiversity_blitz.not_your_plot": "This is not your plot, you cannot edit here!",
+  "ltminigames.minigame.biodiversity_blitz.plant_cannot_be_placed_in_biome": "This plant cannot be placed in this biome!",
   "ltminigames.minigame.biodiversity_blitz.plant_cannot_fit": "This plant cannot fit here!",
   "ltminigames.minigame.biodiversity_blitz.trading": "Trading",
   "ltminigames.minigame.biodiversity_blitz.wave_warning": "A wave is coming soon! Make sure your plant defenses are ready!",
