@@ -5,6 +5,7 @@ import com.lovetropics.lib.BlockBox;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.BiodiversityBlitzTexts;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.event.BbEvents;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.tutorial.TutorialState;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.client_state.ClientMobSpawnState;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.BbMobEntity;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.explosion.FilteredExplosion;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.explosion.PlantAffectingExplosion;
@@ -20,6 +21,7 @@ import com.lovetropics.minigames.common.core.game.behavior.event.GameLivingEntit
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameWorldEvents;
+import com.lovetropics.minigames.common.core.game.client_state.GameClientState;
 import com.lovetropics.minigames.common.core.game.player.PlayerRole;
 import com.lovetropics.minigames.common.core.game.state.statistics.StatisticKey;
 import com.lovetropics.minigames.common.core.game.state.statistics.StatisticsMap;
@@ -240,6 +242,7 @@ public final class BbBehavior implements IGameBehavior {
 	}
 
 	private void onAssignPlot(ServerPlayer player, Plot plot) {
+		GameClientState.sendToPlayer(new ClientMobSpawnState(plot.mobSpawn), player);
 		teleportToRegion(player, plot.spawn, plot.spawnForward);
 	}
 

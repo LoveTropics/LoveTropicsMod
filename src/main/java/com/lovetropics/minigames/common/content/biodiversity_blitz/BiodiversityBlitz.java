@@ -41,6 +41,7 @@ import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.tuto
 import com.lovetropics.minigames.common.content.biodiversity_blitz.client_state.CheckeredPlotsState;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.client_state.ClientBbGlobalState;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.client_state.ClientBbSelfState;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.client_state.ClientMobSpawnState;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.client_state.CurrencyTargetState;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.item.UniqueBlockNamedItem;
 import com.lovetropics.minigames.common.util.registry.GameBehaviorEntry;
@@ -232,6 +233,10 @@ public final class BiodiversityBlitz {
 
 	public static final GameClientTweakEntry<ClientBbGlobalState> GLOBAL_STATE = REGISTRATE.object("biodiversity_blitz_global_state")
 			.clientState(ClientBbGlobalState.CODEC)
+			.register();
+
+	public static final GameClientTweakEntry<ClientMobSpawnState> MOB_SPAWN = REGISTRATE.object("mob_spawn")
+			.clientState(ClientMobSpawnState.CODEC)
 			.register();
 
 	// Items
