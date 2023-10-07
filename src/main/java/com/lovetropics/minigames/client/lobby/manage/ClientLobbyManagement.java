@@ -1,5 +1,7 @@
 package com.lovetropics.minigames.client.lobby.manage;
 
+import com.lovetropics.minigames.Constants;
+import com.lovetropics.minigames.client.lobby.LobbyKeybinds;
 import com.lovetropics.minigames.client.lobby.manage.screen.ManageLobbyScreen;
 import com.lovetropics.minigames.client.lobby.manage.state.ClientLobbyManageState;
 import com.lovetropics.minigames.client.lobby.manage.state.ClientLobbyPlayer;
@@ -9,17 +11,24 @@ import com.lovetropics.minigames.client.lobby.manage.state.update.ClientLobbyUpd
 import com.lovetropics.minigames.client.lobby.manage.state.update.ServerLobbyUpdate;
 import com.lovetropics.minigames.client.lobby.state.ClientCurrentGame;
 import com.lovetropics.minigames.client.lobby.state.ClientGameDefinition;
+import com.lovetropics.minigames.client.lobby.state.ClientLobbyManager;
 import com.lovetropics.minigames.common.core.game.lobby.LobbyControls;
 import com.lovetropics.minigames.common.core.game.lobby.LobbyVisibility;
 import com.lovetropics.minigames.common.core.network.LoveTropicsNetwork;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.IntList;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
 
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.function.UnaryOperator;
 
+@Mod.EventBusSubscriber(modid = Constants.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)
 public final class ClientLobbyManagement {
 	private static Session session;
 
@@ -30,6 +39,20 @@ public final class ClientLobbyManagement {
 		}
 
 		updates.applyTo(session);
+	}
+
+	@SubscribeEvent
+	public static void onKeyInput(TickEvent.ClientTickEvent event) {
+		if (event.phase == TickEvent.Phase.END) {
+			if (LobbyKeybinds.MANAGE.consumeClick()) {
+				LocalPlayer player = Minecraft.getInstance().player;
+				if (ClientLobbyManager.getJoined() != null) {
+					player.connection.sendUnsignedCommand("game manage");
+				} else {
+					player.connection.sendUnsignedCommand("game create");
+				}
+			}
+		}
 	}
 
 	public static final class Session {

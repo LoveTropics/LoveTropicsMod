@@ -7,13 +7,14 @@ import net.minecraftforge.client.settings.KeyConflictContext;
 import net.minecraftforge.client.settings.KeyModifier;
 
 public class LobbyKeybinds {
-	public static final KeyMapping JOIN = create("join", InputConstants.KEY_J);
-	public static final KeyMapping LEAVE = create("leave", InputConstants.KEY_L);
+	public static final KeyMapping JOIN = create("join", InputConstants.KEY_J, KeyModifier.CONTROL);
+	public static final KeyMapping LEAVE = create("leave", InputConstants.KEY_L, KeyModifier.CONTROL);
+	public static final KeyMapping MANAGE = create("manage", InputConstants.KEY_G, KeyModifier.CONTROL);
 
 	public static void init() {
 	}
 
-	private static KeyMapping create(String id, int key) {
-		return new KeyMapping("key." + Constants.MODID + "." + id, KeyConflictContext.IN_GAME, KeyModifier.CONTROL, InputConstants.Type.KEYSYM.getOrCreate(key), "key.categories." + Constants.MODID + ".lobby");
+	private static KeyMapping create(String id, int key, KeyModifier modifier) {
+		return new KeyMapping("key." + Constants.MODID + "." + id, KeyConflictContext.IN_GAME, modifier, InputConstants.Type.KEYSYM.getOrCreate(key), "key.categories." + Constants.MODID + ".lobby");
 	}
 }
