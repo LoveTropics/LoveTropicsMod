@@ -5,7 +5,9 @@ import com.lovetropics.minigames.client.lobby.state.ClientGameDefinition;
 import com.lovetropics.minigames.common.core.game.*;
 import com.lovetropics.minigames.common.core.game.lobby.LobbyControls;
 import com.lovetropics.minigames.common.core.game.lobby.QueuedGame;
+import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.MinecraftServer;
 
 import javax.annotation.Nullable;
 import java.util.concurrent.CompletableFuture;
@@ -117,6 +119,10 @@ abstract class LobbyState {
 		}
 
 		private CompletableFuture<GameResult<LobbyState>> createWaiting(GameInstance game, IGamePhaseDefinition definition, IGamePhaseDefinition playing) {
+			if (game.server.isSingleplayer()) {
+				return createPlaying(game, playing);
+			}
+
 			return GamePhase.create(game, definition, GamePhaseType.WAITING)
 					.thenApply(result -> result.map(waiting -> {
 						Supplier<LobbyState> start = () -> {
