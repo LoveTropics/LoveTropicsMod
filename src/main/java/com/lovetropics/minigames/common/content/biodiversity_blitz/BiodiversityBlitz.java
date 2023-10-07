@@ -9,6 +9,7 @@ import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.BbCu
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.BbCurrencyWinTrigger;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.BbGivePlantsBehavior;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.BbMerchantBehavior;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.BbSendMobsToEnemyItemBehavior;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.BbWaveSpawnerBehavior;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.EqualizeCurrencyBehavior;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.RemoveFromBlockBehavior;
@@ -85,6 +86,10 @@ public final class BiodiversityBlitz {
 
 	public static final GameBehaviorEntry<BbWaveSpawnerBehavior> WAVE_SPAWNER = REGISTRATE.object("biodiversity_blitz_wave_spawner")
 			.behavior(BbWaveSpawnerBehavior.CODEC)
+			.register();
+
+	public static final GameBehaviorEntry<BbSendMobsToEnemyItemBehavior> SEND_MOBS_TO_ENEMY = REGISTRATE.object("biodiversity_blitz_send_mobs_to_enemy")
+			.behavior(BbSendMobsToEnemyItemBehavior.CODEC)
 			.register();
 
 	public static final GameBehaviorEntry<PlantBehavior> PLANT = REGISTRATE.object("biodiversity_blitz_plant")

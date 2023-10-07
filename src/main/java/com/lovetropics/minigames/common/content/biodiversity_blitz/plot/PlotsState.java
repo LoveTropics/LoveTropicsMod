@@ -1,6 +1,8 @@
 package com.lovetropics.minigames.common.content.biodiversity_blitz.plot;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Multimaps;
+import com.google.common.collect.SetMultimap;
 import com.lovetropics.minigames.common.core.game.state.GameStateKey;
 import com.lovetropics.minigames.common.core.game.state.IGameState;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
@@ -12,6 +14,7 @@ import net.minecraft.world.entity.Entity;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -24,6 +27,7 @@ public final class PlotsState implements Iterable<Plot>, IGameState {
 
 	private final Set<Plot> plots = new HashSet<>();
 	private final Map<UUID, Plot> plotsByPlayer = new Object2ObjectOpenHashMap<>();
+	private final SetMultimap<Plot, UUID> plotToPlayers = Multimaps.newSetMultimap(new HashMap<>(), HashSet::new);
 
 	@Nullable
 	public Plot getPlotAt(BlockPos pos) {
@@ -40,6 +44,7 @@ public final class PlotsState implements Iterable<Plot>, IGameState {
 
 		this.plotsByPlayer.put(player.getUUID(), plot);
 		this.plots.add(plot);
+		this.plotToPlayers.put(plot, player.getUUID());
 	}
 
 	@Nullable
@@ -48,6 +53,7 @@ public final class PlotsState implements Iterable<Plot>, IGameState {
 		if (plot != null) {
 			if (!this.plotsByPlayer.containsValue(plot)) {
 				this.plots.remove(plot);
+				this.plotToPlayers.remove(plot, player.getUUID());
 			}
 
 			return plot;
@@ -59,6 +65,10 @@ public final class PlotsState implements Iterable<Plot>, IGameState {
 	@Nullable
 	public Plot getPlotFor(Entity entity) {
 		return this.plotsByPlayer.get(entity.getUUID());
+	}
+
+	public Set<UUID> getPlayersInPlot(Plot plot) {
+		return plotToPlayers.get(plot);
 	}
 
 	@Override

@@ -35,7 +35,7 @@ public class SpawnSurpriseWaveBehavior implements IGameBehavior {
             // FIXME: this will spawn a wave for every player associated to the plot. probably not ideal.
             Plot plot = this.plots.getPlotFor(player);
 
-            BbMobSpawner.spawnWaveEntities(player.serverLevel(), player.getRandom(), plot, this.waveSize, 0, SpawnSurpriseWaveBehavior::selectEntityForWave);
+            BbMobSpawner.spawnWaveEntities(player.serverLevel(), player.getRandom(), plot, this.waveSize, 0, SpawnSurpriseWaveBehavior::selectEntityForWave, (entities, random, world, plot1, waveIndex) -> {});
 
             return true;
         });

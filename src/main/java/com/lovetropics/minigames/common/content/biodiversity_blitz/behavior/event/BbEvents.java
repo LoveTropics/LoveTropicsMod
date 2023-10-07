@@ -7,12 +7,17 @@ import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.plant.Pl
 import com.lovetropics.minigames.common.core.game.behavior.event.GameEventType;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
 
 import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 
 public final class BbEvents {
 	public static final GameEventType<AssignPlot> ASSIGN_PLOT = GameEventType.create(AssignPlot.class, listeners -> (player, plot) -> {
@@ -90,6 +95,12 @@ public final class BbEvents {
 		return InteractionResult.PASS;
 	});
 
+	public static final GameEventType<ModifyWaveMobs> MODIFY_WAVE_MODS = GameEventType.create(ModifyWaveMobs.class, listeners -> (entities, random, world, plot, waveIndex) -> {
+		for (final ModifyWaveMobs listener : listeners) {
+			listener.modifyWave(entities, random, world, plot, waveIndex);
+		}
+	});
+
 	private BbEvents() {
 	}
 
@@ -119,5 +130,9 @@ public final class BbEvents {
 
 	public interface CurrencyChanged {
 		void onCurrencyChanged(ServerPlayer player, int value, int lastValue);
+	}
+
+	public interface ModifyWaveMobs {
+		void modifyWave(Set<Entity> entities, RandomSource random, Level world, Plot plot, int waveIndex);
 	}
 }

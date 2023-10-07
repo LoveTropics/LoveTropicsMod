@@ -1,9 +1,11 @@
 package com.lovetropics.minigames.common.content.biodiversity_blitz;
 
 import com.lovetropics.minigames.Constants;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.BbMobSpawner;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.contents.TranslatableContents;
 
 import java.util.function.BiConsumer;
 
@@ -37,6 +39,10 @@ public final class BiodiversityBlitzTexts {
 			consumer.accept(PLANT_CANNOT_FIT, "This plant cannot fit here!");
 			consumer.accept(PLANT_CANNOT_BE_PLACED_IN_BIOME, "This plant cannot be placed in this biome!");
 			consumer.accept(NOT_YOUR_PLOT, "This is not your plot, you cannot edit here!");
+
+			consumer.accept(((TranslatableContents) BbMobSpawner.BbEntityTypes.CREEPER.getName().getContents()).getKey(), "Creeper");
+			consumer.accept(((TranslatableContents) BbMobSpawner.BbEntityTypes.HUSK.getName().getContents()).getKey(), "Husk");
+			consumer.accept(((TranslatableContents) BbMobSpawner.BbEntityTypes.PILLAGER.getName().getContents()).getKey(), "Pillager");
 		}
 
 		static String key(String key) {

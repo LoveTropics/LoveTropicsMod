@@ -10,6 +10,7 @@ import com.lovetropics.minigames.common.content.biodiversity_blitz.util.BbUtils;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.mojang.serialization.Codec;
@@ -44,7 +45,8 @@ public final class BbWaveSpawnerBehavior implements IGameBehavior {
 			SizeCurve.CODEC.fieldOf("size_curve").forGetter(c -> c.sizeCurve),
 			Codec.BOOL.fieldOf("size_curve_always").orElse(false).forGetter(c -> c.sizeCurveAlways),
 			MoreCodecs.object2Float(Difficulty.CODEC).fieldOf("difficulty_factors").forGetter(c -> c.difficultyFactors),
-			ExtraCodecs.COMPONENT.optionalFieldOf("first_message", CommonComponents.EMPTY).forGetter(c -> c.firstMessage)
+			ExtraCodecs.COMPONENT.optionalFieldOf("first_message", CommonComponents.EMPTY).forGetter(c -> c.firstMessage),
+			IGameBehavior.CODEC.listOf().optionalFieldOf("children", List.of()).forGetter(c -> c.children)
 	).apply(i, BbWaveSpawnerBehavior::new));
 
 	private final long intervalTicks;
@@ -55,21 +57,24 @@ public final class BbWaveSpawnerBehavior implements IGameBehavior {
 	private final Object2FloatMap<Difficulty> difficultyFactors;
 	
 	private final Component firstMessage;
+	private final List<IGameBehavior> children;
 
 	private IGamePhase game;
+	private GameEventListeners listeners;
 	private PlotsState plots;
 
 	private int sentWaves = 0;
 	private final Map<UUID, List<WaveTracker>> waveTrackers = new HashMap<>();
 	private ServerBossEvent waveCharging;
 
-	public BbWaveSpawnerBehavior(long intervalSeconds, long warnSeconds, SizeCurve sizeCurve, boolean sizeCurveAlways, Object2FloatMap<Difficulty> difficultyFactors, Component firstMessage) {
+	public BbWaveSpawnerBehavior(long intervalSeconds, long warnSeconds, SizeCurve sizeCurve, boolean sizeCurveAlways, Object2FloatMap<Difficulty> difficultyFactors, Component firstMessage, List<IGameBehavior> children) {
 		this.intervalTicks = intervalSeconds * 20;
 		this.warnTicks = warnSeconds * 20;
 		this.sizeCurve = sizeCurve;
 		this.sizeCurveAlways = sizeCurveAlways;
 
 		this.difficultyFactors = difficultyFactors;
+		this.children = children;
 		this.difficultyFactors.defaultReturnValue(1.0F);
 		
 		this.firstMessage = firstMessage;
@@ -90,6 +95,10 @@ public final class BbWaveSpawnerBehavior implements IGameBehavior {
 					.forEach(WaveTracker::close);
 			cleanupBossBar(waveCharging);
 		});
+
+		this.listeners = new GameEventListeners();
+		final var cl = events.redirect(e -> e == BbEvents.MODIFY_WAVE_MODS, listeners);
+		children.forEach(child -> child.register(game, cl));
 
 		this.waveCharging = new ServerBossEvent(Component.literal("Wave Incoming!"), BossBarColor.GREEN, BossEvent.BossBarOverlay.PROGRESS);
 		this.waveCharging.setProgress(0.0F);
@@ -182,7 +191,7 @@ public final class BbWaveSpawnerBehavior implements IGameBehavior {
 			}
 		}
 
-		Set<Entity> entities = BbMobSpawner.spawnWaveEntities(world, random, plot, count, waveIndex, BbMobSpawner::selectEntityForWave);
+		Set<Entity> entities = BbMobSpawner.spawnWaveEntities(world, random, plot, count, waveIndex, BbMobSpawner::selectEntityForWave, listeners.invoker(BbEvents.MODIFY_WAVE_MODS));
 		for (ServerPlayer player : players) {
 			ServerBossEvent bossBar = this.createWaveBar(player, waveIndex, count, entities);
 
