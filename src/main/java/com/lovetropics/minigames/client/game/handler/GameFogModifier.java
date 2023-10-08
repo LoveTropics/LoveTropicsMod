@@ -41,6 +41,9 @@ public class GameFogModifier {
                 event.setFogShape(FogShape.SPHERE);
             }
         });
-        state.fogShape().ifPresent(shape -> event.setFogShape(shape.fogShape));
+        state.fogShape().ifPresent(shape -> event.setFogShape(switch (shape) {
+            case SPHERE -> FogShape.SPHERE;
+            case CYLINDER -> FogShape.CYLINDER;
+        }));
     }
 }

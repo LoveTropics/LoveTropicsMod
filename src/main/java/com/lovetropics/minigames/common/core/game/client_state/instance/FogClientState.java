@@ -3,10 +3,8 @@ package com.lovetropics.minigames.common.core.game.client_state.instance;
 import com.lovetropics.minigames.common.core.game.client_state.GameClientState;
 import com.lovetropics.minigames.common.core.game.client_state.GameClientStateType;
 import com.lovetropics.minigames.common.core.game.client_state.GameClientStateTypes;
-import com.mojang.blaze3d.shaders.FogShape;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.client.renderer.FogRenderer;
 import net.minecraft.util.StringRepresentable;
 
 import java.util.Locale;
@@ -27,14 +25,8 @@ public record FogClientState(float red, float green, float blue, Optional<FogTyp
     }
 
     public enum FogType implements StringRepresentable {
-        TERRAIN(FogRenderer.FogMode.FOG_TERRAIN),
-        SKY(FogRenderer.FogMode.FOG_SKY);
-
-        public final FogRenderer.FogMode fogMode;
-
-        FogType(FogRenderer.FogMode fogMode) {
-            this.fogMode = fogMode;
-        }
+        TERRAIN,
+        SKY;
 
         @Override
         public String getSerializedName() {
@@ -43,14 +35,8 @@ public record FogClientState(float red, float green, float blue, Optional<FogTyp
     }
 
     public enum FogShape implements StringRepresentable {
-        SPHERE(com.mojang.blaze3d.shaders.FogShape.SPHERE),
-        CYLINDER(com.mojang.blaze3d.shaders.FogShape.CYLINDER);
-
-        public final com.mojang.blaze3d.shaders.FogShape fogShape;
-
-        FogShape(com.mojang.blaze3d.shaders.FogShape fogShape) {
-            this.fogShape = fogShape;
-        }
+        SPHERE,
+        CYLINDER;
 
         @Override
         public String getSerializedName() {
