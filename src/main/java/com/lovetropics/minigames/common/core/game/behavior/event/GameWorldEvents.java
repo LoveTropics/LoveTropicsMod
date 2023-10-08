@@ -1,5 +1,6 @@
 package com.lovetropics.minigames.common.core.game.behavior.event;
 
+import com.lovetropics.minigames.common.core.game.weather.WeatherEvent;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.core.BlockPos;
@@ -7,6 +8,7 @@ import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.chunk.ChunkAccess;
 
+import javax.annotation.Nullable;
 import java.util.List;
 
 public final class GameWorldEvents {
@@ -34,6 +36,12 @@ public final class GameWorldEvents {
 		return InteractionResult.PASS;
 	});
 
+	public static final GameEventType<SetWeather> SET_WEATHER = GameEventType.create(SetWeather.class, listeners -> (lastEvent, event) -> {
+		for (SetWeather listener : listeners) {
+			listener.onSetWeather(lastEvent, event);
+		}
+	});
+
 	private GameWorldEvents() {
 	}
 
@@ -47,5 +55,9 @@ public final class GameWorldEvents {
 
 	public interface SaplingGrow {
 		InteractionResult onSaplingGrow(Level world, BlockPos pos);
+	}
+
+	public interface SetWeather {
+		void onSetWeather(@Nullable WeatherEvent lastEvent, @Nullable WeatherEvent event);
 	}
 }

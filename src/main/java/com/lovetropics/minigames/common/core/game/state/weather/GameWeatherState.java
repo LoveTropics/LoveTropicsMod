@@ -1,10 +1,12 @@
 package com.lovetropics.minigames.common.core.game.state.weather;
 
+import com.lovetropics.minigames.common.core.game.behavior.event.GameWorldEvents;
 import com.lovetropics.minigames.common.core.game.state.GameStateKey;
 import com.lovetropics.minigames.common.core.game.state.IGameState;
 import com.lovetropics.minigames.common.core.game.weather.WeatherController;
 import com.lovetropics.minigames.common.core.game.weather.WeatherEvent;
 import com.lovetropics.minigames.common.core.game.weather.WeatherEventType;
+import net.minecraft.SharedConstants;
 
 import javax.annotation.Nullable;
 
@@ -12,14 +14,16 @@ public final class GameWeatherState implements IGameState {
 	public static final GameStateKey<GameWeatherState> KEY = GameStateKey.create("Weather State");
 
 	private final WeatherController controller;
+	private final GameWorldEvents.SetWeather weatherListener;
 
 	private WeatherEvent event;
 
 	private int weatherCooldown = 0;
-	private int weatherCooldownBetweenStates = 220;
+	private int weatherCooldownBetweenStates = 11 * SharedConstants.TICKS_PER_SECOND;
 
-	public GameWeatherState(WeatherController controller) {
+	public GameWeatherState(WeatherController controller, GameWorldEvents.SetWeather weatherListener) {
 		this.controller = controller;
+		this.weatherListener = weatherListener;
 	}
 
 	public void clear() {
@@ -47,10 +51,11 @@ public final class GameWeatherState implements IGameState {
 		}
 
 		this.event = event;
-
 		if (event != null) {
 			event.apply(controller);
 		}
+
+		weatherListener.onSetWeather(lastEvent, event);
 	}
 
 	public void clearEvent() {

@@ -6,6 +6,7 @@ import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameWorldEvents;
 import com.lovetropics.minigames.common.core.game.state.GameStateMap;
 import com.lovetropics.minigames.common.core.game.state.weather.GameWeatherState;
 import com.lovetropics.minigames.common.core.game.weather.WeatherController;
@@ -42,7 +43,8 @@ public final class AddWeatherBehavior implements IGameBehavior {
 	@Override
 	public void registerState(IGamePhase game, GameStateMap phaseState, GameStateMap instanceState) {
 		WeatherController controller = WeatherControllerManager.forWorld(game.getWorld());
-		weather = phaseState.register(GameWeatherState.KEY, new GameWeatherState(controller));
+		GameWorldEvents.SetWeather weatherListener = (lastEvent, event) -> game.invoker(GameWorldEvents.SET_WEATHER).onSetWeather(lastEvent, event);
+		weather = phaseState.register(GameWeatherState.KEY, new GameWeatherState(controller, weatherListener));
 	}
 
 	@Override
