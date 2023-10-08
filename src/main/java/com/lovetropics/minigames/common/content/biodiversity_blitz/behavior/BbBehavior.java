@@ -281,6 +281,12 @@ public final class BbBehavior implements IGameBehavior {
 
 		Plot plot = plots.getPlotFor(player);
 		if (plot != null && plot.bounds.contains(pos)) {
+			// Don't let players place plants inside mob spawns
+			if (plot.mobSpawn.contains(pos)) {
+				this.sendActionRejection(player, BiodiversityBlitzTexts.plantCannotFit());
+				return InteractionResult.FAIL;
+			}
+
 			return this.onPlaceBlockInOwnPlot(player, pos, placed, plot);
 		} else {
 			this.sendActionRejection(player, BiodiversityBlitzTexts.notYourPlot());

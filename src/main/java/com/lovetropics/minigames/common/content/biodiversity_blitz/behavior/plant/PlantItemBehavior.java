@@ -72,6 +72,11 @@ public final class PlantItemBehavior implements IGameBehavior {
 				return InteractionResult.FAIL;
 			}
 
+			// Don't let players place plants inside mob spawns
+			if (plot.mobSpawn.contains(pos)) {
+				return InteractionResult.FAIL;
+			}
+
 			InteractionResultHolder<Plant> result = game.invoker(BbEvents.PLACE_PLANT).placePlant(player, plot, pos, this.places);
 			if (result.getObject() == null) {
 				if (result.getResult() == InteractionResult.FAIL) {
