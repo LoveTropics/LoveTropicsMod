@@ -1,35 +1,30 @@
 package com.lovetropics.minigames.common.content.survive_the_tide;
 
-import com.lovetropics.lib.codec.MoreCodecs;
+import com.lovetropics.minigames.common.core.game.state.DiscreteProgressionMap;
 import com.lovetropics.minigames.common.core.game.state.GameProgressionState;
 import com.lovetropics.minigames.common.core.game.state.ProgressionPeriod;
-import com.lovetropics.minigames.common.core.game.state.ProgressionPoint;
 import com.lovetropics.minigames.common.core.game.weather.WeatherEventType;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import it.unimi.dsi.fastutil.objects.Object2FloatMap;
-import it.unimi.dsi.fastutil.objects.Object2FloatMaps;
 
 import java.util.Map;
 
 public class SurviveTheTideWeatherConfig {
-	public static final Codec<SurviveTheTideWeatherConfig> CODEC = RecordCodecBuilder.create(instance -> {
-		return instance.group(
-				Codec.unboundedMap(WeatherEventType.CODEC, MoreCodecs.object2Float(ProgressionPoint.CODEC)).fieldOf("event_chances").forGetter(c -> c.eventChancesByTime),
-				Codec.unboundedMap(WeatherEventType.CODEC, Timers.CODEC).fieldOf("event_timers").forGetter(c -> c.eventTimers),
-				MoreCodecs.object2Float(ProgressionPoint.CODEC).fieldOf("wind_speed").forGetter(c -> c.windSpeedByTime),
-				ProgressionPeriod.CODEC.fieldOf("halve_event_time").forGetter(c -> c.halveEventTime),
-				Codec.INT.optionalFieldOf("sandstorm_buildup_tickrate", 40).forGetter(c -> c.sandstormBuildupTickRate),
-				Codec.INT.optionalFieldOf("sandstorm_max_stackable", 1).forGetter(c -> c.sandstormMaxStackable),
-				Codec.INT.optionalFieldOf("snowstorm_buildup_tickrate", 40).forGetter(c -> c.snowstormBuildupTickRate),
-				Codec.INT.optionalFieldOf("snowstorm_max_stackable", 1).forGetter(c -> c.snowstormMaxStackable)
-		).apply(instance, SurviveTheTideWeatherConfig::new);
-	});
+	public static final Codec<SurviveTheTideWeatherConfig> CODEC = RecordCodecBuilder.create(i -> i.group(
+			Codec.unboundedMap(WeatherEventType.CODEC, DiscreteProgressionMap.codec(Codec.FLOAT)).fieldOf("event_chances").forGetter(c -> c.eventChancesByTime),
+			Codec.unboundedMap(WeatherEventType.CODEC, Timers.CODEC).fieldOf("event_timers").forGetter(c -> c.eventTimers),
+			DiscreteProgressionMap.codec(Codec.FLOAT).fieldOf("wind_speed").forGetter(c -> c.windSpeedByTime),
+			ProgressionPeriod.CODEC.fieldOf("halve_event_time").forGetter(c -> c.halveEventTime),
+			Codec.INT.optionalFieldOf("sandstorm_buildup_tickrate", 40).forGetter(c -> c.sandstormBuildupTickRate),
+			Codec.INT.optionalFieldOf("sandstorm_max_stackable", 1).forGetter(c -> c.sandstormMaxStackable),
+			Codec.INT.optionalFieldOf("snowstorm_buildup_tickrate", 40).forGetter(c -> c.snowstormBuildupTickRate),
+			Codec.INT.optionalFieldOf("snowstorm_max_stackable", 1).forGetter(c -> c.snowstormMaxStackable)
+	).apply(i, SurviveTheTideWeatherConfig::new));
 
-	private final Map<WeatherEventType, Object2FloatMap<ProgressionPoint>> eventChancesByTime;
+	private final Map<WeatherEventType, DiscreteProgressionMap<Float>> eventChancesByTime;
 	private final Map<WeatherEventType, Timers> eventTimers;
 
-	private final Object2FloatMap<ProgressionPoint> windSpeedByTime;
+	private final DiscreteProgressionMap<Float> windSpeedByTime;
 
 	private final ProgressionPeriod halveEventTime;
 
@@ -40,9 +35,9 @@ public class SurviveTheTideWeatherConfig {
 	private final int snowstormMaxStackable;
 
 	public SurviveTheTideWeatherConfig(
-			Map<WeatherEventType, Object2FloatMap<ProgressionPoint>> eventChancesByTime,
+			Map<WeatherEventType, DiscreteProgressionMap<Float>> eventChancesByTime,
 			Map<WeatherEventType, Timers> eventTimers,
-			Object2FloatMap<ProgressionPoint> windSpeedByTime,
+			DiscreteProgressionMap<Float> windSpeedByTime,
 			ProgressionPeriod halveEventTime,
 			final int sandstormBuildupTickRate, final int sandstormMaxStackable,
 			final int snowstormBuildupTickRate, final int snowstormMaxStackable
@@ -60,25 +55,11 @@ public class SurviveTheTideWeatherConfig {
 	}
 
 	private float getEventChance(WeatherEventType event, GameProgressionState progression) {
-		Object2FloatMap<ProgressionPoint> chances = this.eventChancesByTime.get(event);
+		DiscreteProgressionMap<Float> chances = this.eventChancesByTime.get(event);
 		if (chances == null) {
 			return 0.0f;
 		}
-		return findValue(progression, chances);
-	}
-
-	// TODO: Terribly inefficient
-	private static float findValue(GameProgressionState progression, Object2FloatMap<ProgressionPoint> values) {
-		int lastTime = 0;
-		float lastChance = 0.0f;
-		for (Object2FloatMap.Entry<ProgressionPoint> entry : Object2FloatMaps.fastIterable(values)) {
-			int time = entry.getKey().resolve(progression);
-			if (time > lastTime && progression.time() >= time) {
-				lastTime = time;
-				lastChance = entry.getFloatValue();
-			}
-		}
-		return lastChance;
+		return chances.getOrDefault(progression, 0.0f);
 	}
 
 	private Timers getTimers(WeatherEventType event) {
@@ -110,7 +91,7 @@ public class SurviveTheTideWeatherConfig {
 	}
 
 	public float getWindSpeed(GameProgressionState progression) {
-		return findValue(progression, windSpeedByTime);
+		return windSpeedByTime.getOrDefault(progression, 0.0f);
 	}
 
 	public int getRainHeavyMinTime() {
@@ -158,22 +139,12 @@ public class SurviveTheTideWeatherConfig {
 		return progression.is(halveEventTime);
 	}
 
-	public static final class Timers {
+	public record Timers(int minTime, int extraRandTime) {
 		public static final Timers DEFAULT = new Timers(1200, 1200);
 
-		public static final Codec<Timers> CODEC = RecordCodecBuilder.create(instance -> {
-			return instance.group(
-					Codec.INT.fieldOf("min_time").forGetter(c -> c.minTime),
-					Codec.INT.fieldOf("extra_rand_time").forGetter(c -> c.extraRandTime)
-			).apply(instance, Timers::new);
-		});
-
-		public final int minTime;
-		public final int extraRandTime;
-
-		public Timers(int minTime, int extraRandTime) {
-			this.minTime = minTime;
-			this.extraRandTime = extraRandTime;
-		}
+		public static final Codec<Timers> CODEC = RecordCodecBuilder.create(i -> i.group(
+				Codec.INT.fieldOf("min_time").forGetter(c -> c.minTime),
+				Codec.INT.fieldOf("extra_rand_time").forGetter(c -> c.extraRandTime)
+		).apply(i, Timers::new));
 	}
 }
