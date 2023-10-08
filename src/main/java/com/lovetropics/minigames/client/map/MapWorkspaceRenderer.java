@@ -95,7 +95,7 @@ public final class MapWorkspaceRenderer {
 			int minSize = Math.min(size.getX(), Math.min(size.getY(), size.getZ())) - 1;
 			float scale = Mth.clamp(minSize * 0.03125F, 0.03125F, 0.125F);
 
-			DebugRenderer.renderFloatingText(poseStack, bufferSource, entry.key, center.x, center.y, center.z, 0xFFFFFFFF, scale);
+			DebugRenderer.renderFloatingText(poseStack, bufferSource, entry.key, center.x, center.y, center.z, 0xFFFFFFFF, scale, true, 0.0F, true);
 		}
 
 		bufferSource.endLastBatch();
