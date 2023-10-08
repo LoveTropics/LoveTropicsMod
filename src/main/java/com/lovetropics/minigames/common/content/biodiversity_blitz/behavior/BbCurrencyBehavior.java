@@ -3,6 +3,7 @@ package com.lovetropics.minigames.common.content.biodiversity_blitz.behavior;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.BiodiversityBlitzTexts;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.event.BbEvents;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.tutorial.TutorialState;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.client_state.CurrencyItemState;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.CurrencyManager;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.Plot;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.plant.Plant;
@@ -14,6 +15,7 @@ import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
+import com.lovetropics.minigames.common.core.game.client_state.GameClientState;
 import com.lovetropics.minigames.common.core.game.state.GameStateMap;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -77,6 +79,8 @@ public final class BbCurrencyBehavior implements IGameBehavior {
 	public void register(IGamePhase game, EventRegistrar events) throws GameException {
 		this.game = game;
 		this.tutorial = game.getState().getOrThrow(TutorialState.KEY);
+
+		GameClientState.applyGlobally(new CurrencyItemState(this.item.getDefaultInstance()), events);
 
 		events.listen(BbEvents.ASSIGN_PLOT, (player, plot) -> {
 			this.currency.set(player, this.initialCurrency, false);

@@ -1,6 +1,5 @@
 package com.lovetropics.minigames.common.content.biodiversity_blitz.client_state.render;
 
-import com.google.common.base.Suppliers;
 import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.client.game.ClientGameStateManager;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.BiodiversityBlitz;
@@ -36,8 +35,6 @@ public final class BbClientRenderEffects {
 	private static final Minecraft CLIENT = Minecraft.getInstance();
 	private static final int PADDING = 2;
 
-	// TODO: hardcoded
-	private static final Supplier<ItemStack> CURRENCY_ITEM = Suppliers.memoize(() -> new ItemStack(BiodiversityBlitz.OSA_POINT.get()));
 	private static final int ITEM_SIZE = 16;
 
 	public static void registerOverlays(RegisterGuiOverlaysEvent event) {
@@ -59,7 +56,7 @@ public final class BbClientRenderEffects {
 		int x = left;
 		int y = top;
 
-		graphics.renderItem(CURRENCY_ITEM.get(), x, y);
+		graphics.renderItem(ClientGameStateManager.getOrNull(BiodiversityBlitz.CURRENCY_ITEM).item(), x, y);
 
 		String currency = String.valueOf(selfState.currency());
 		if (currencyTarget != null) {
@@ -140,7 +137,7 @@ public final class BbClientRenderEffects {
 		poseStack.pushPose();
 		poseStack.translate(-left, 0.0F, 0.0F);
 		poseStack.scale(-itemSize, itemSize, -itemSize);
-		items.renderStatic(CURRENCY_ITEM.get(), ItemDisplayContext.GUI, packedLight, OverlayTexture.NO_OVERLAY, poseStack, buffer, CLIENT.level, 0);
+		items.renderStatic(ClientGameStateManager.getOrNull(BiodiversityBlitz.CURRENCY_ITEM).item(), ItemDisplayContext.GUI, packedLight, OverlayTexture.NO_OVERLAY, poseStack, buffer, CLIENT.level, 0);
 		poseStack.popPose();
 
 		poseStack.popPose();
