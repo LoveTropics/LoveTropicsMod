@@ -109,7 +109,7 @@ public record DisguiseType(@Nullable EntityConfig entity, float scale) {
 		public static final Codec<EntityConfig> CODEC = RecordCodecBuilder.create(i -> i.group(
 				ForgeRegistries.ENTITY_TYPES.getCodec().fieldOf("type").forGetter(c -> c.type),
 				CompoundTag.CODEC.optionalFieldOf("tag").forGetter(c -> Optional.ofNullable(c.nbt)),
-				Codec.BOOL.optionalFieldOf("apply_attributes", true).forGetter(c -> c.applyAttributes)
+				Codec.BOOL.optionalFieldOf("apply_attributes", false).forGetter(c -> c.applyAttributes)
 		).apply(i, EntityConfig::new));
 
 		private EntityConfig(EntityType<?> type, Optional<CompoundTag> nbt, boolean applyAttributes) {
