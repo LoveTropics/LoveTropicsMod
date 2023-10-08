@@ -10,6 +10,8 @@
   "entity.ltminigames.driftwood": "Driftwood",
   "item.ltminigames.acid_repellent_umbrella": "Acid Repellent Umbrella",
   "item.ltminigames.carrot_seeds": "Carrot Seeds",
+  "item.ltminigames.disguise": "Disguise",
+  "item.ltminigames.disguise.entity": "%s Disguise",
   "item.ltminigames.edit_region": "Edit Region",
   "item.ltminigames.net": "Net",
   "item.ltminigames.osa_point": "Biodiversity Point",

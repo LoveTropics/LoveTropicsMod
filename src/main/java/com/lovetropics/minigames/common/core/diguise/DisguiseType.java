@@ -7,6 +7,7 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import javax.annotation.Nullable;
@@ -27,13 +28,28 @@ public record DisguiseType(@Nullable EntityConfig entity, float scale) {
 
 	@Nullable
 	public Entity createEntityFor(Player player) {
+		Entity entity = createEntity(player.level());
+		if (entity == null) {
+			return null;
+		}
+
+		if (!entity.hasCustomName()) {
+			entity.setCustomName(player.getDisplayName());
+		}
+		entity.setCustomNameVisible(true);
+
+		return entity;
+	}
+
+	@Nullable
+	public Entity createEntity(Level level) {
 		if (entity == null) {
 			return null;
 		}
 
 		EntityType<?> type = entity.type();
 		CompoundTag nbt = entity.nbt();
-		Entity entity = type.create(player.level());
+		Entity entity = type.create(level);
 		if (entity == null) {
 			return null;
 		}
@@ -43,12 +59,6 @@ public record DisguiseType(@Nullable EntityConfig entity, float scale) {
 		}
 
 		fixInvalidEntity(entity);
-
-		if (!entity.hasCustomName()) {
-			entity.setCustomName(player.getDisplayName());
-		}
-		entity.setCustomNameVisible(true);
-
 		return entity;
 	}
 

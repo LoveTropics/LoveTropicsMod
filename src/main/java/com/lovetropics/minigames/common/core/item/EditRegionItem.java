@@ -1,4 +1,4 @@
-package com.lovetropics.minigames.common.core.map.item;
+package com.lovetropics.minigames.common.core.item;
 
 import com.lovetropics.minigames.client.map.MapWorkspaceTracer;
 import com.lovetropics.minigames.client.map.RegionEditOperator;

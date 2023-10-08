@@ -36,12 +36,11 @@ import com.lovetropics.minigames.common.core.game.IGameManager;
 import com.lovetropics.minigames.common.core.game.behavior.GameBehaviorTypes;
 import com.lovetropics.minigames.common.core.game.client_state.GameClientStateTypes;
 import com.lovetropics.minigames.common.core.game.impl.GameEventDispatcher;
-import com.lovetropics.minigames.common.core.game.impl.MultiGameManager;
 import com.lovetropics.minigames.common.core.game.predicate.entity.EntityPredicates;
 import com.lovetropics.minigames.common.core.game.util.GameTexts;
 import com.lovetropics.minigames.common.core.integration.BackendIntegrations;
 import com.lovetropics.minigames.common.core.map.VoidChunkGenerator;
-import com.lovetropics.minigames.common.core.map.item.MapWorkspaceItems;
+import com.lovetropics.minigames.common.core.item.MinigameItems;
 import com.lovetropics.minigames.common.core.network.LoveTropicsNetwork;
 import com.lovetropics.minigames.common.role.StreamHosts;
 import com.lovetropics.minigames.common.util.registry.LoveTropicsRegistrate;
@@ -88,6 +87,7 @@ public class LoveTropics {
     public static final Logger LOGGER = LogUtils.getLogger();
 
     private static final ResourceLocation TAB_ID = new ResourceLocation(Constants.MODID, "ltminigames");
+    public static final ResourceKey<CreativeModeTab> TAB_KEY = ResourceKey.create(Registries.CREATIVE_MODE_TAB, TAB_ID);
 
     private static final NonNullLazy<LoveTropicsRegistrate> REGISTRATE = NonNullLazy.of(() -> LoveTropicsRegistrate.create(Constants.MODID).defaultCreativeTab(ResourceKey.create(Registries.CREATIVE_MODE_TAB, TAB_ID)));
 
@@ -129,7 +129,7 @@ public class LoveTropics {
 
         // Registry objects
         LoveTropicsBlocks.init();
-        MapWorkspaceItems.init();
+        MinigameItems.init();
 
         GameBehaviorTypes.init(modBus);
         EntityPredicates.init(modBus);
