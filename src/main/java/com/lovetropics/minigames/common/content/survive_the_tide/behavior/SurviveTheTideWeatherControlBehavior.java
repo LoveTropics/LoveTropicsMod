@@ -102,13 +102,6 @@ public class SurviveTheTideWeatherControlBehavior implements IGameBehavior {
                     snowstormStart(progression);
                 }
             }
-
-            weather.setWind(config.getWindSpeed(progression));
-            if (weather.getEventType() == WeatherEventType.SNOWSTORM || weather.getEventType() == WeatherEventType.SANDSTORM) {
-                weather.setWind(0.7F);
-            } else {
-                weather.setWind(config.getWindSpeed(progression));
-            }
         }
     }
 

@@ -13,7 +13,6 @@ public class SurviveTheTideWeatherConfig {
 	public static final Codec<SurviveTheTideWeatherConfig> CODEC = RecordCodecBuilder.create(i -> i.group(
 			Codec.unboundedMap(WeatherEventType.CODEC, DiscreteProgressionMap.codec(Codec.FLOAT)).fieldOf("event_chances").forGetter(c -> c.eventChancesByTime),
 			Codec.unboundedMap(WeatherEventType.CODEC, Timers.CODEC).fieldOf("event_timers").forGetter(c -> c.eventTimers),
-			DiscreteProgressionMap.codec(Codec.FLOAT).fieldOf("wind_speed").forGetter(c -> c.windSpeedByTime),
 			ProgressionPeriod.CODEC.fieldOf("halve_event_time").forGetter(c -> c.halveEventTime),
 			Codec.INT.optionalFieldOf("sandstorm_buildup_tickrate", 40).forGetter(c -> c.sandstormBuildupTickRate),
 			Codec.INT.optionalFieldOf("sandstorm_max_stackable", 1).forGetter(c -> c.sandstormMaxStackable),
@@ -23,8 +22,6 @@ public class SurviveTheTideWeatherConfig {
 
 	private final Map<WeatherEventType, DiscreteProgressionMap<Float>> eventChancesByTime;
 	private final Map<WeatherEventType, Timers> eventTimers;
-
-	private final DiscreteProgressionMap<Float> windSpeedByTime;
 
 	private final ProgressionPeriod halveEventTime;
 
@@ -37,14 +34,12 @@ public class SurviveTheTideWeatherConfig {
 	public SurviveTheTideWeatherConfig(
 			Map<WeatherEventType, DiscreteProgressionMap<Float>> eventChancesByTime,
 			Map<WeatherEventType, Timers> eventTimers,
-			DiscreteProgressionMap<Float> windSpeedByTime,
 			ProgressionPeriod halveEventTime,
 			final int sandstormBuildupTickRate, final int sandstormMaxStackable,
 			final int snowstormBuildupTickRate, final int snowstormMaxStackable
 	) {
 		this.eventChancesByTime = eventChancesByTime;
 		this.eventTimers = eventTimers;
-		this.windSpeedByTime = windSpeedByTime;
 		this.halveEventTime = halveEventTime;
 
 		this.sandstormBuildupTickRate = sandstormBuildupTickRate;
@@ -88,10 +83,6 @@ public class SurviveTheTideWeatherConfig {
 
 	public float getSnowstormChance(GameProgressionState progression) {
 		return getEventChance(WeatherEventType.SNOWSTORM, progression);
-	}
-
-	public float getWindSpeed(GameProgressionState progression) {
-		return windSpeedByTime.getOrDefault(progression, 0.0f);
 	}
 
 	public int getRainHeavyMinTime() {
