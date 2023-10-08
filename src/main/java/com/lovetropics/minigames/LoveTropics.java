@@ -14,6 +14,7 @@ import com.lovetropics.minigames.common.content.block_party.BlockParty;
 import com.lovetropics.minigames.common.content.block_party.BlockPartyTexts;
 import com.lovetropics.minigames.common.content.build_competition.BuildCompetition;
 import com.lovetropics.minigames.common.content.hide_and_seek.HideAndSeek;
+import com.lovetropics.minigames.common.content.spleef.Spleef;
 import com.lovetropics.minigames.common.content.qottott.Qottott;
 import com.lovetropics.minigames.common.content.qottott.QottottTexts;
 import com.lovetropics.minigames.common.content.survive_the_tide.SurviveTheTide;
@@ -163,6 +164,7 @@ public class LoveTropics {
         BlockParty.init();
         TurtleRace.init();
         Qottott.init();
+        Spleef.init();
 
         SoundRegistry.REGISTER.register(modBus);
 
