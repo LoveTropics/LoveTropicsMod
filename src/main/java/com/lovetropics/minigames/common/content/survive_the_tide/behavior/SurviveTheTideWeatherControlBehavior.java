@@ -1,9 +1,5 @@
 package com.lovetropics.minigames.common.content.survive_the_tide.behavior;
 
-import com.lovetropics.minigames.client.toast.NotificationIcon;
-import com.lovetropics.minigames.client.toast.NotificationStyle;
-import com.lovetropics.minigames.client.toast.ShowNotificationToastMessage;
-import com.lovetropics.minigames.common.content.survive_the_tide.SurviveTheTide;
 import com.lovetropics.minigames.common.content.survive_the_tide.SurviveTheTideWeatherConfig;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
@@ -13,20 +9,10 @@ import com.lovetropics.minigames.common.core.game.state.GameProgressionState;
 import com.lovetropics.minigames.common.core.game.state.weather.GameWeatherState;
 import com.lovetropics.minigames.common.core.game.weather.WeatherEvent;
 import com.lovetropics.minigames.common.core.game.weather.WeatherEventType;
-import com.lovetropics.minigames.common.core.network.LoveTropicsNetwork;
 import com.mojang.serialization.Codec;
-import net.minecraft.ChatFormatting;
 import net.minecraft.SharedConstants;
-import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.ItemLike;
-import net.minecraft.world.level.block.Blocks;
-
-import java.util.function.Supplier;
 
 public class SurviveTheTideWeatherControlBehavior implements IGameBehavior {
     public static final Codec<SurviveTheTideWeatherControlBehavior> CODEC = SurviveTheTideWeatherConfig.CODEC.xmap(SurviveTheTideWeatherControlBehavior::new, b -> b.config);
@@ -77,8 +63,6 @@ public class SurviveTheTideWeatherControlBehavior implements IGameBehavior {
      * - consider design to factor in worn items to negate player effects
      */
 
-    private static final Component TITLE = Component.literal("WEATHER REPORT: \n").withStyle(ChatFormatting.BOLD);
-
     protected GameProgressionState progression;
     protected GameWeatherState weather;
 
@@ -107,15 +91,15 @@ public class SurviveTheTideWeatherControlBehavior implements IGameBehavior {
                 if (random.nextFloat() <= config.getRainHeavyChance(progression)) {
                     heavyRainfallStart(progression);
                 } else if (random.nextFloat() <= config.getRainAcidChance(progression)) {
-                    acidRainStart(game, progression);
+                    acidRainStart(progression);
                 } else if (random.nextFloat() <= config.getHailChance(progression)) {
-                    hailStart(game, progression);
+                    hailStart(progression);
                 } else if (random.nextFloat() <= config.getHeatwaveChance(progression)) {
-                    heatwaveStart(game, progression);
+                    heatwaveStart(progression);
                 } else if (random.nextFloat() <= config.getSandstormChance(progression)) {
-                    sandstormStart(game, progression);
+                    sandstormStart(progression);
                 } else if (random.nextFloat() <= config.getSnowstormChance(progression)) {
-                    snowstormStart(game, progression);
+                    snowstormStart(progression);
                 }
             }
 
@@ -137,101 +121,45 @@ public class SurviveTheTideWeatherControlBehavior implements IGameBehavior {
         weather.setEvent(WeatherEvent.heavyRain(time));
     }
 
-    private void acidRainStart(IGamePhase game, GameProgressionState progression) {
+    private void acidRainStart(GameProgressionState progression) {
         int time = config.getRainAcidMinTime() + random.nextInt(config.getRainAcidExtraRandTime());
         if (config.halveEventTime(progression)) {
             time /= 2;
         }
         weather.setEvent(WeatherEvent.acidRain(time));
-
-        broadcastNotification(game,
-                Component.literal("Acid Rain is falling!\n")
-                        .append("Find shelter, or make sure to carry an ")
-                        .append(umbrellaName()),
-                createNotificationStyle(SurviveTheTide.ACID_REPELLENT_UMBRELLA)
-        );
     }
 
-    private void hailStart(IGamePhase game, GameProgressionState progression) {
+    private void hailStart(GameProgressionState progression) {
         int time = config.getRainHeavyMinTime() + random.nextInt(config.getRainHeavyExtraRandTime());
         if (config.halveEventTime(progression)) {
             time /= 2;
         }
         weather.setEvent(WeatherEvent.hail(time));
-
-        broadcastNotification(game,
-                Component.literal("Hail is falling!\n")
-                        .append("Find shelter, or make sure to carry an ")
-                        .append(umbrellaName()),
-                createNotificationStyle(SurviveTheTide.ACID_REPELLENT_UMBRELLA)
-        );
     }
 
-    private void heatwaveStart(IGamePhase game, GameProgressionState progression) {
+    private void heatwaveStart(GameProgressionState progression) {
         int time = config.getHeatwaveMinTime() + random.nextInt(config.getHeatwaveExtraRandTime());
         if (config.halveEventTime(progression)) {
             time /= 2;
         }
         weather.setEvent(WeatherEvent.heatwave(time));
-
-        broadcastNotification(game,
-                Component.literal("A Heat Wave is passing!\n")
-                        .append("Stay inside, or make sure to equip ")
-                        .append(sunscreenName()),
-                createNotificationStyle(SurviveTheTide.SUPER_SUNSCREEN)
-        );
     }
 
-    private void sandstormStart(IGamePhase game, GameProgressionState progression) {
+    private void sandstormStart(GameProgressionState progression) {
         //TODO: more config
         int time = config.getHeatwaveMinTime() + random.nextInt(config.getHeatwaveExtraRandTime());
         if (config.halveEventTime(progression)) {
             time /= 2;
         }
         weather.setEvent(WeatherEvent.sandstorm(time, config.getSandstormBuildupTickRate(), config.getSandstormMaxStackable()));
-
-        broadcastNotification(game,
-                Component.literal("A Sandstorm is passing!\n")
-                        .append("Find shelter!"),
-                createNotificationStyle(() -> Blocks.SAND)
-        );
     }
 
-    private void snowstormStart(IGamePhase game, GameProgressionState progression) {
+    private void snowstormStart(GameProgressionState progression) {
         //TODO: more config
         int time = config.getHeatwaveMinTime() + random.nextInt(config.getHeatwaveExtraRandTime());
         if (config.halveEventTime(progression)) {
             time /= 2;
         }
         weather.setEvent(WeatherEvent.snowstorm(time, config.getSnowstormBuildupTickRate(), config.getSnowstormMaxStackable()));
-
-        broadcastNotification(game,
-                Component.literal("A Snowstorm is passing!\n")
-                        .append("Find shelter!"),
-                createNotificationStyle(() -> Blocks.SNOW_BLOCK)
-        );
-    }
-
-    private static void broadcastNotification(IGamePhase game, Component message, NotificationStyle style) {
-        ShowNotificationToastMessage packet = new ShowNotificationToastMessage(Component.literal("").append(TITLE).append(message), style);
-        game.getAllPlayers().sendPacket(LoveTropicsNetwork.CHANNEL, packet);
-        game.getParticipants().playSound(SoundEvents.VILLAGER_NO, SoundSource.MASTER, 1.0f, 1.0f);
-    }
-
-    private static Component umbrellaName() {
-        return Component.translatable(SurviveTheTide.ACID_REPELLENT_UMBRELLA.get().getDescriptionId());
-    }
-
-    private static Component sunscreenName() {
-        return Component.translatable(SurviveTheTide.SUPER_SUNSCREEN.get().getDescriptionId());
-    }
-
-    private static NotificationStyle createNotificationStyle(final Supplier<? extends ItemLike> item) {
-        return new NotificationStyle(
-                NotificationIcon.item(new ItemStack(item.get())),
-                NotificationStyle.Sentiment.NEGATIVE,
-                NotificationStyle.Color.DARK,
-                5 * 1000
-        );
     }
 }
