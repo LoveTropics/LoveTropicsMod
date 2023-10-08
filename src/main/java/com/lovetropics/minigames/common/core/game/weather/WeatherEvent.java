@@ -1,5 +1,6 @@
 package com.lovetropics.minigames.common.core.game.weather;
 
+import javax.annotation.Nullable;
 import java.util.function.Consumer;
 
 public final class WeatherEvent {
@@ -12,6 +13,18 @@ public final class WeatherEvent {
 	private WeatherEvent(WeatherEventType type, long time) {
 		this.type = type;
 		this.time = time;
+	}
+
+	// TODO: System to define weather events in data, including parameters
+	@Nullable
+	public static WeatherEvent createGeneric(WeatherEventType type, long time) {
+		return switch (type) {
+			case HEATWAVE -> heatwave(time);
+			case ACID_RAIN -> acidRain(time);
+			case HEAVY_RAIN -> heavyRain(time);
+			case HAIL -> hail(time);
+			default -> null;
+		};
 	}
 
 	public static WeatherEvent heavyRain(long time) {

@@ -75,7 +75,6 @@ public class SurviveTheTideWeatherControlBehavior implements IGameBehavior {
         weather = game.getState().getOrThrow(GameWeatherState.KEY);
 
         events.listen(GamePhaseEvents.TICK, () -> tick(game));
-        events.listen(GamePhaseEvents.STOP, reason -> weather.clear());
 
         progression = game.getState().getOrNull(GameProgressionState.KEY);
     }
