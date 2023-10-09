@@ -128,7 +128,7 @@ public class GameBehaviorTypes {
 	public static final GameBehaviorEntry<OnDeathTrigger> ON_DEATH = register("on_death", OnDeathTrigger.CODEC);
 	public static final GameBehaviorEntry<OnDamageTrigger> ON_DAMAGE = register("on_damage", OnDamageTrigger.CODEC);
 	public static final GameBehaviorEntry<WhileInRegionTrigger> WHILE_IN_REGION = register("while_in_region", WhileInRegionTrigger.CODEC);
-	public static final GameBehaviorEntry<ScheduledActionsTrigger> SCHEDULED_ACTIONS = register("scheduled_actions", ScheduledActionsTrigger.CODEC);
+	public static final GameBehaviorEntry<ScheduledActionsTrigger<?, ?>> SCHEDULED_ACTIONS = register("scheduled_actions", ScheduledActionsTrigger.CODEC);
 	public static final GameBehaviorEntry<PhaseChangeTrigger> PHASE_CHANGE = register("phase_change", PhaseChangeTrigger.CODEC);
 	public static final GameBehaviorEntry<OnKillTrigger> ON_KILL = register("on_kill", OnKillTrigger.CODEC);
 	public static final GameBehaviorEntry<BindControlsBehavior> BIND_CONTROLS = register("bind_controls", BindControlsBehavior.CODEC);

@@ -60,7 +60,7 @@ public record ChestDropAction(String region, SimpleWeightedRandomList<ResourceLo
 
 		List<DelayedDrop> delayedDrops = new ArrayList<>();
 
-		events.listen(GameActionEvents.APPLY, (context, sources) -> {
+		events.listen(GameActionEvents.APPLY, (context) -> {
 			int count = this.count.sample(random);
 			for (int i = 0; i < count; i++) {
 				BlockBox region = Util.getRandom(regions, random);

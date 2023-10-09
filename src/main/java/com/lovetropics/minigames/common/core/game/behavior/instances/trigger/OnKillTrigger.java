@@ -24,7 +24,7 @@ public record OnKillTrigger(GameActionList actions) implements IGameBehavior {
 						.set(GameActionParameter.KILLED, player)
 						.set(GameActionParameter.KILLER, killer)
 						.build();
-				actions.apply(game, context, killer);
+				actions.applyPlayer(game, context, killer);
 			}
 			return InteractionResult.PASS;
 		});

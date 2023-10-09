@@ -43,7 +43,7 @@ public final class CountdownAction implements IGameBehavior {
 	public void register(IGamePhase game, EventRegistrar events) {
 		actions.register(game, events);
 
-		events.listen(GameActionEvents.APPLY, (context, sources) -> {
+		events.listen(GameActionEvents.APPLY_TO_PLAYERS, (context, sources) -> {
 			queue.add(new QueueEntry(game.ticks() + countdown, context, sources));
 			return true;
 		});
@@ -58,7 +58,7 @@ public final class CountdownAction implements IGameBehavior {
 	private boolean tickQueuedAction(IGamePhase game, QueueEntry entry) {
 		long remainingTicks = entry.time() - game.ticks();
 		if (remainingTicks <= 0) {
-			return actions.apply(game, entry.context(), entry.sources());
+			return actions.applyPlayer(game, entry.context(), entry.sources());
 		} else {
 			for (ServerPlayer player : game.getAllPlayers()) {
 				this.tickCountdown(player, remainingTicks);

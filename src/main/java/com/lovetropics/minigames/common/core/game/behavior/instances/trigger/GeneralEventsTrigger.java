@@ -83,14 +83,14 @@ public record GeneralEventsTrigger(Map<String, GameActionList> eventActions) imp
 	private void invoke(IGamePhase game, String event) {
 		GameActionList actions = eventActions.get(event);
 		if (actions != null) {
-			actions.apply(game, GameActionContext.EMPTY);
+			actions.applyPlayer(game, GameActionContext.EMPTY);
 		}
 	}
 
 	private void invoke(IGamePhase game, String event, ServerPlayer player) {
 		GameActionList actions = eventActions.get(event);
 		if (actions != null) {
-			actions.apply(game, GameActionContext.EMPTY, player);
+			actions.applyPlayer(game, GameActionContext.EMPTY, player);
 		}
 	}
 }

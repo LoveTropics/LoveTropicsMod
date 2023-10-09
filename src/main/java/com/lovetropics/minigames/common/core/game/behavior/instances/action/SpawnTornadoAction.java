@@ -8,7 +8,6 @@ import com.lovetropics.minigames.common.core.game.behavior.event.GameActionEvent
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.fml.InterModComms;
 
 public record SpawnTornadoAction(boolean sharknado) implements IGameBehavior {
@@ -18,7 +17,7 @@ public record SpawnTornadoAction(boolean sharknado) implements IGameBehavior {
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) throws GameException {
-		events.listen(GameActionEvents.APPLY, (context, sources) -> spawnTornado(game));
+		events.listen(GameActionEvents.APPLY, (context) -> spawnTornado(game));
 	}
 
 	private boolean spawnTornado(IGamePhase game) {

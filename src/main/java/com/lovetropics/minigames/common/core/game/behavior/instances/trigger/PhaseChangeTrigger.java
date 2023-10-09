@@ -5,11 +5,9 @@ import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.action.GameActionContext;
 import com.lovetropics.minigames.common.core.game.behavior.action.GameActionList;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
-import com.lovetropics.minigames.common.core.game.behavior.event.GameLogicEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.lovetropics.minigames.common.core.game.state.GameProgressionState;
 import com.lovetropics.minigames.common.core.game.state.ProgressionPoint;
-import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 
 import java.util.ArrayList;
@@ -36,7 +34,7 @@ public record PhaseChangeTrigger(Map<ProgressionPoint, GameActionList> phases) i
 			while (iterator.hasNext()) {
 				Map.Entry<ProgressionPoint, GameActionList> entry = iterator.next();
 				if (progression.isAfter(entry.getKey())) {
-					entry.getValue().apply(game, GameActionContext.EMPTY);
+					entry.getValue().applyPlayer(game, GameActionContext.EMPTY);
 					iterator.remove();
 				}
 			}

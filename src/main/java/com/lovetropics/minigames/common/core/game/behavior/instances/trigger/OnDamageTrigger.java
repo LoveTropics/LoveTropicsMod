@@ -19,7 +19,7 @@ public record OnDamageTrigger(GameActionList actions) implements IGameBehavior {
         actions.register(game, events);
 
         events.listen(GamePlayerEvents.DAMAGE, (player, damageSource, amount) -> {
-            actions.apply(game, GameActionContext.EMPTY, player);
+            actions.applyPlayer(game, GameActionContext.EMPTY, player);
             return InteractionResult.PASS;
         });
     }

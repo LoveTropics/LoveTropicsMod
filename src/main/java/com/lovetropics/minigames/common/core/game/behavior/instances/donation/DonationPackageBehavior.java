@@ -19,7 +19,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.List;
-import java.util.function.Consumer;
 
 public final class DonationPackageBehavior implements IGameBehavior {
 	public static final Codec<DonationPackageBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
@@ -83,7 +82,7 @@ public final class DonationPackageBehavior implements IGameBehavior {
 		}
 
 		GameActionContext context = actionContext(gamePackage);
-		if (receiveActions.apply(game, context, receivingPlayer)) {
+		if (receiveActions.applyPlayer(game, context, receivingPlayer)) {
 			data.onReceive(game, receivingPlayer, gamePackage.sendingPlayerName());
 
 			return InteractionResult.SUCCESS;
@@ -97,7 +96,7 @@ public final class DonationPackageBehavior implements IGameBehavior {
 		final ServerPlayer randomPlayer = players.get(game.getWorld().getRandom().nextInt(players.size()));
 
 		GameActionContext context = actionContext(gamePackage);
-		if (receiveActions.apply(game, context, randomPlayer)) {
+		if (receiveActions.applyPlayer(game, context, randomPlayer)) {
 			data.onReceive(game, randomPlayer, gamePackage.sendingPlayerName());
 
 			return InteractionResult.SUCCESS;
@@ -108,7 +107,7 @@ public final class DonationPackageBehavior implements IGameBehavior {
 
 	private InteractionResult receiveAll(IGamePhase game, GamePackage gamePackage) {
 		GameActionContext context = actionContext(gamePackage);
-		if (!receiveActions.apply(game, context, game.getParticipants())) {
+		if (!receiveActions.applyPlayer(game, context, game.getParticipants())) {
 			return InteractionResult.FAIL;
 		}
 

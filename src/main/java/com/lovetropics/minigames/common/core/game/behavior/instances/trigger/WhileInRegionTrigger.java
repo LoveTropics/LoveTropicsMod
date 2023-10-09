@@ -34,7 +34,7 @@ public record WhileInRegionTrigger(Map<String, GameActionList> regionActions, in
 			for (Map.Entry<String, GameActionList> entry : regionActions.entrySet()) {
 				if (isPlayerInRegion(game, player, entry.getKey())) {
 					GameActionList actions = entry.getValue();
-					actions.apply(game, GameActionContext.EMPTY, player);
+					actions.applyPlayer(game, GameActionContext.EMPTY, player);
 				}
 			}
 		});

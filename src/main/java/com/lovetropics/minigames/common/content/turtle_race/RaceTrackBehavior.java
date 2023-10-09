@@ -162,7 +162,7 @@ public class RaceTrackBehavior implements IGameBehavior {
 
 			for (BlockBox region : regions) {
 				registerCheckpoint(region, (player, state) -> {
-					actions.apply(game, GameActionContext.EMPTY, player);
+					actions.applyPlayer(game, GameActionContext.EMPTY, player);
 					return false;
 				});
 			}

@@ -33,7 +33,7 @@ public class WeatherChangeTrigger implements IGameBehavior {
 			if (event != null) {
 				GameActionList actions = eventActions.get(event.getType());
 				if (actions != null) {
-					actions.apply(game, GameActionContext.EMPTY);
+					actions.applyPlayer(game, GameActionContext.EMPTY);
 				}
 			}
 		});

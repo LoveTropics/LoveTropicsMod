@@ -22,7 +22,7 @@ public record SwapPlayersAction(double distanceThreshold) implements IGameBehavi
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
-		events.listen(GameActionEvents.APPLY, (context, sources) -> {
+		events.listen(GameActionEvents.APPLY, (context) -> {
 			if (this.distanceThreshold == Double.MAX_VALUE) {
 				this.shufflePlayers(game);
 			} else {

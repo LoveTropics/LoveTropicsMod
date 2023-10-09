@@ -23,12 +23,12 @@ public record TargetPlayerAction(UUID id, GameActionList actions) implements IGa
 	public void register(IGamePhase game, EventRegistrar events) {
 		actions.register(game, events);
 
-		events.listen(GameActionEvents.APPLY, (context, sources) -> {
+		events.listen(GameActionEvents.APPLY, (context) -> {
 			ServerPlayer player = game.getAllPlayers().getPlayerBy(id);
 			if (player == null) {
 				return false;
 			}
-			return actions.apply(game, context, List.of(player));
+			return actions.applyPlayer(game, context, List.of(player));
 		});
 	}
 }

@@ -8,7 +8,6 @@ import com.lovetropics.minigames.common.core.game.behavior.action.GameActionList
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.state.control.ControlCommand;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 
@@ -26,9 +25,9 @@ public record BindControlsBehavior(Map<ControlCommand.Scope, Map<String, GameAct
 			game.getControlCommands().add(control, new ControlCommand(scope, source -> {
 				Entity entity = source.getEntity();
 				if (entity instanceof ServerPlayer player) {
-					actions.apply(game, GameActionContext.EMPTY, player);
+					actions.applyPlayer(game, GameActionContext.EMPTY, player);
 				} else {
-					actions.apply(game, GameActionContext.EMPTY);
+					actions.applyPlayer(game, GameActionContext.EMPTY);
 				}
 			}));
 		}));
