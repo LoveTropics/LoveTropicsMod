@@ -4,9 +4,11 @@ import com.google.common.collect.Lists;
 import com.lovetropics.lib.codec.MoreCodecs;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
+import com.lovetropics.minigames.common.core.game.behavior.action.ActionTargetTypes;
 import com.lovetropics.minigames.common.core.game.behavior.action.GameActionContext;
 import com.lovetropics.minigames.common.core.game.behavior.action.GameActionParameter;
 import com.lovetropics.minigames.common.core.game.behavior.action.GameActionList;
+import com.lovetropics.minigames.common.core.game.behavior.action.PlayerActionTarget;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePackageEvents;
 import com.lovetropics.minigames.common.core.game.state.GamePackageState;
@@ -23,12 +25,12 @@ import java.util.List;
 public final class DonationPackageBehavior implements IGameBehavior {
 	public static final Codec<DonationPackageBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
 			DonationPackageData.CODEC.forGetter(c -> c.data),
-			MoreCodecs.strictOptionalFieldOf(GameActionList.CODEC, "receive_actions", GameActionList.EMPTY).forGetter(c -> c.receiveActions)
+			MoreCodecs.strictOptionalFieldOf(GameActionList.mandateType(ActionTargetTypes.PLAYER), "receive_actions", GameActionList.EMPTY).forGetter(c -> c.receiveActions)
 	).apply(i, DonationPackageBehavior::new));
 
 	private static final Logger LOGGER = LogManager.getLogger(DonationPackageBehavior.class);
 
-	public DonationPackageBehavior(DonationPackageData data, GameActionList receiveActions) {
+	public DonationPackageBehavior(DonationPackageData data, GameActionList<ServerPlayer, PlayerActionTarget> receiveActions) {
 		this.data = data;
 		this.receiveActions = receiveActions;
 	}
@@ -46,7 +48,7 @@ public final class DonationPackageBehavior implements IGameBehavior {
 	}
 
 	private final DonationPackageData data;
-	private final GameActionList receiveActions;
+	private final GameActionList<ServerPlayer, PlayerActionTarget> receiveActions;
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {

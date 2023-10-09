@@ -41,6 +41,16 @@ public class GameActionList<T, A extends ActionTarget<T>> {
             .xmap(either -> either.map(Function.identity(), Function.identity()), Either::right);
     public static final Codec<GameActionList<?, ?>> TYPE_SAFE_CODEC = (Codec<GameActionList<?,?>>) (Object) CODEC;
 
+    public static <T, A extends ActionTarget<T>> Codec<GameActionList<T, A>> mandateType(Supplier<Codec<A>> type) {
+        final Function<GameActionList<?, ?>, DataResult<GameActionList<T, A>>> function = gameActionList -> {
+            if (gameActionList.target.type() != type.get()) {
+                return DataResult.error(() -> "Action list target must be of type: " + ActionTargetTypes.REGISTRY.get().getKey(type.get()));
+            }
+            return DataResult.success((GameActionList<T, A>) gameActionList);
+        };
+        return TYPE_SAFE_CODEC.flatXmap(function, function);
+    }
+
     private final List<IGameBehavior> behaviors;
     public final A target;
 

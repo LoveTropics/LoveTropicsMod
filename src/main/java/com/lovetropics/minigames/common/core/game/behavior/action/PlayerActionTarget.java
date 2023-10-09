@@ -3,12 +3,14 @@ package com.lovetropics.minigames.common.core.game.behavior.action;
 import com.google.common.collect.Lists;
 import com.lovetropics.lib.codec.MoreCodecs;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
+import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameActionEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.StringRepresentable;
+import org.apache.commons.lang3.function.ToBooleanBiFunction;
 
 import java.util.List;
 
@@ -25,11 +27,16 @@ public record PlayerActionTarget(Target target) implements ActionTarget<ServerPl
 
     @Override
     public boolean apply(IGamePhase game, GameEventListeners listeners, GameActionContext actionContext, Iterable<ServerPlayer> sources) {
-        boolean result = listeners.invoker(GameActionEvents.APPLY_TO_PLAYERS).apply(actionContext, sources);
+        boolean result = false;
         for (ServerPlayer target : target.resolve(game, sources)) {
             result |= listeners.invoker(GameActionEvents.APPLY_TO_PLAYER).apply(actionContext, target);
         }
         return result;
+    }
+
+    @Override
+    public void listenAndCaptureSource(EventRegistrar listeners, ToBooleanBiFunction<GameActionContext, Iterable<ServerPlayer>> listener) {
+        listeners.listen(GameActionEvents.APPLY_TO_PLAYER, (context, target1) -> listener.applyAsBoolean(context, List.of(target1)));
     }
 
     @Override

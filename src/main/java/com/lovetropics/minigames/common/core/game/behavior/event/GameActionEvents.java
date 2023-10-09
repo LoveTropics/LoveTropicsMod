@@ -13,14 +13,6 @@ public final class GameActionEvents {
         return applied;
     });
 
-    public static final GameEventType<ApplyToPlayers> APPLY_TO_PLAYERS = GameEventType.create(ApplyToPlayers.class, listeners -> (context, sources) -> {
-        boolean applied = false;
-        for (ApplyToPlayers listener : listeners) {
-            applied |= listener.apply(context, sources);
-        }
-        return applied;
-    });
-
     public static final GameEventType<ApplyToPlayer> APPLY_TO_PLAYER = GameEventType.create(ApplyToPlayer.class, listeners -> (context, target) -> {
         boolean applied = false;
         for (ApplyToPlayer listener : listeners) {
@@ -41,7 +33,7 @@ public final class GameActionEvents {
     }
 
     public static boolean matches(GameEventType<?> type) {
-        return type == APPLY || type == APPLY_TO_PLAYERS || type == APPLY_TO_PLOT || type == APPLY_TO_PLAYER;
+        return type == APPLY || type == APPLY_TO_PLOT || type == APPLY_TO_PLAYER;
     }
 
     public interface Apply {
@@ -50,10 +42,6 @@ public final class GameActionEvents {
 
     public interface ApplyToPlayer {
         boolean apply(GameActionContext context, ServerPlayer target);
-    }
-
-    public interface ApplyToPlayers {
-        boolean apply(GameActionContext context, Iterable<ServerPlayer> sources);
     }
 
     public interface ApplyToPlot {

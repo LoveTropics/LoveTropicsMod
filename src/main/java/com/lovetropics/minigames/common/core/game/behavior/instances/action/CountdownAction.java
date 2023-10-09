@@ -2,8 +2,10 @@ package com.lovetropics.minigames.common.core.game.behavior.instances.action;
 
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
+import com.lovetropics.minigames.common.core.game.behavior.action.ActionTarget;
 import com.lovetropics.minigames.common.core.game.behavior.action.GameActionContext;
 import com.lovetropics.minigames.common.core.game.behavior.action.GameActionList;
+import com.lovetropics.minigames.common.core.game.behavior.action.NoneActionTarget;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameActionEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
@@ -18,35 +20,36 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 public final class CountdownAction implements IGameBehavior {
 	public static final Codec<CountdownAction> CODEC = RecordCodecBuilder.create(i -> i.group(
 			Codec.LONG.fieldOf("countdown").forGetter(c -> c.countdown / 20),
 			TemplatedText.CODEC.fieldOf("warning").forGetter(c -> c.warning),
-			GameActionList.MAP_CODEC.forGetter(c -> c.actions)
+			GameActionList.MAP_CODEC.forGetter(c -> c.actions),
+			ActionTarget.CODEC.optionalFieldOf("target", NoneActionTarget.INSTANCE).forGetter(c -> c.target)
 	).apply(i, CountdownAction::new));
 
 	private final long countdown;
 	private final TemplatedText warning;
 	private final GameActionList actions;
+	private final ActionTarget<?> target;
 
 	private final LinkedList<QueueEntry> queue = new LinkedList<>();
 
-	public CountdownAction(long countdown, TemplatedText warning, GameActionList actions) {
+	public CountdownAction(long countdown, TemplatedText warning, GameActionList actions, ActionTarget<?> target) {
 		this.countdown = countdown * 20;
 		this.warning = warning;
 		this.actions = actions;
+		this.target = target;
 	}
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
 		actions.register(game, events);
 
-		events.listen(GameActionEvents.APPLY_TO_PLAYERS, (context, sources) -> {
-			queue.add(new QueueEntry(game.ticks() + countdown, context, sources));
-			return true;
-		});
+		target.listenAndCaptureSource(events, (context, objects) -> queue.add(new QueueEntry(game.ticks() + countdown, context, (Iterable)objects)));
 
 		events.listen(GamePhaseEvents.TICK, () -> {
 			if (!queue.isEmpty()) {
@@ -58,7 +61,11 @@ public final class CountdownAction implements IGameBehavior {
 	private boolean tickQueuedAction(IGamePhase game, QueueEntry entry) {
 		long remainingTicks = entry.time() - game.ticks();
 		if (remainingTicks <= 0) {
-			return actions.applyPlayer(game, entry.context(), entry.sources());
+			if (actions.target.type() == target.type()) {
+				return actions.applyIf(target::type, game, entry.context, entry.sources);
+			}
+
+			return actions.apply(game, entry.context);
 		} else {
 			for (ServerPlayer player : game.getAllPlayers()) {
 				this.tickCountdown(player, remainingTicks);
@@ -76,6 +83,6 @@ public final class CountdownAction implements IGameBehavior {
 		}
 	}
 
-	private record QueueEntry(long time, GameActionContext context, Iterable<ServerPlayer> sources) {
+	private record QueueEntry(long time, GameActionContext context, Iterable<Object> sources) {
 	}
 }

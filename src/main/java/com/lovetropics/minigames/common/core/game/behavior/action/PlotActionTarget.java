@@ -5,12 +5,13 @@ import com.lovetropics.lib.codec.MoreCodecs;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.Plot;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.PlotsState;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
+import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameActionEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.StringRepresentable;
+import org.apache.commons.lang3.function.ToBooleanBiFunction;
 
 import java.util.List;
 
@@ -31,6 +32,11 @@ public record PlotActionTarget(Target target) implements ActionTarget<Plot> {
             result |= listeners.invoker(GameActionEvents.APPLY_TO_PLOT).apply(actionContext, target);
         }
         return result;
+    }
+
+    @Override
+    public void listenAndCaptureSource(EventRegistrar listeners, ToBooleanBiFunction<GameActionContext, Iterable<Plot>> listener) {
+        listeners.listen(GameActionEvents.APPLY_TO_PLOT, (context, plot) -> listener.applyAsBoolean(context, List.of(plot)));
     }
 
     @Override
