@@ -45,6 +45,8 @@ public final class ManageLobbyScreen extends Screen {
 	private Button playButton;
 	private Button skipButton;
 
+	private Button restartButton;
+
 	private int selectedGameId = -1;
 
 	public ManageLobbyScreen(ClientLobbyManagement.Session session) {
@@ -119,6 +121,9 @@ public final class ManageLobbyScreen extends Screen {
 		skipButton = addRenderableWidget(FlexUi.createButton(layout.skip, Component.literal("\u23ED"), b -> {
 			session.selectControl(LobbyControls.Type.SKIP);
 		}));
+		restartButton = addRenderableWidget(FlexUi.createButton(layout.restart, Component.literal("\u27F3"), b -> {
+			session.selectControl(LobbyControls.Type.RESTART);
+		}));
 
 		Component closeLobby = GameTexts.Ui.closeLobby()
 				.withStyle(ChatFormatting.RED, ChatFormatting.UNDERLINE);
@@ -166,6 +171,7 @@ public final class ManageLobbyScreen extends Screen {
 		LobbyControls.State controls = lobby.getControlsState();
 		playButton.active = controls.enabled(LobbyControls.Type.PLAY);
 		skipButton.active = controls.enabled(LobbyControls.Type.SKIP);
+		restartButton.active = controls.enabled(LobbyControls.Type.RESTART);
 	}
 
 	public void updatePublishState() {

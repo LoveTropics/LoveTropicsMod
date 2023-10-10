@@ -106,6 +106,10 @@ final class LobbyManagement implements ILobbyManagement {
 	@Override
 	public void selectControl(LobbyControls.Type type) {
 		LobbyControls.Action action = lobby.getControls().get(type);
+		if(type == LobbyControls.Type.RESTART) {
+			var queuedGame = lobby.gameQueue.enqueue(lobby.state.getGame().getDefinition());
+			this.reorderQueuedGame(queuedGame.networkId(), 0);
+		}
 		if (action != null) {
 			Scheduler.nextTick().run(server -> {
 				// TODO: handle result

@@ -23,6 +23,8 @@ final class ManageLobbyLayout {
 	final Layout play;
 	final Layout skip;
 
+	final Layout restart;
+
 	final Layout rightColumn;
 	final Layout rightFooter;
 
@@ -79,6 +81,7 @@ final class ManageLobbyLayout {
 
 		Flex play = controls.child().size(20, 20).margin(2, 0);
 		Flex stop = controls.child().size(20, 20).margin(2, 0);
+		Flex restart = controls.child().size(20, 20).margin(2, 0);
 
 		Flex rightColumn = body.child().column()
 				.size(0.25F, 1.0F, Flex.Unit.PERCENT)
@@ -127,6 +130,7 @@ final class ManageLobbyLayout {
 
 		this.play = solve.layout(play);
 		this.skip = solve.layout(stop);
+		this.restart = solve.layout(restart);
 
 		this.rightColumn = solve.layout(rightColumn);
 		this.rightFooter = solve.layout(rightFooter);

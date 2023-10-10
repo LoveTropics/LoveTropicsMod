@@ -138,6 +138,7 @@ abstract class LobbyState {
 		Playing(GamePhase phase) {
 			super(phase);
 			this.controls.add(LobbyControls.Type.SKIP, () -> phase.requestStop(GameStopReason.canceled()));
+			this.controls.add(LobbyControls.Type.RESTART, () -> phase.requestStop(GameStopReason.canceled()));
 		}
 
 		@Nullable
@@ -169,6 +170,11 @@ abstract class LobbyState {
 
 			this.controls.add(LobbyControls.Type.PLAY, () -> phase.requestStop(GameStopReason.finished()));
 			this.controls.add(LobbyControls.Type.SKIP, () -> phase.requestStop(GameStopReason.canceled()));
+			// TODO stuffs
+			this.controls.add(LobbyControls.Type.RESTART, () -> {
+				// TODO queue another game up
+				return phase.requestStop(GameStopReason.canceled());
+			});
 		}
 
 		@Override
