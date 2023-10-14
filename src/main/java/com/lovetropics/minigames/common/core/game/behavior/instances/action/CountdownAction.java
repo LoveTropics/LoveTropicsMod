@@ -33,12 +33,12 @@ public final class CountdownAction implements IGameBehavior {
 
 	private final long countdown;
 	private final TemplatedText warning;
-	private final GameActionList actions;
+	private final GameActionList<?> actions;
 	private final ActionTarget<?> target;
 
 	private final LinkedList<QueueEntry> queue = new LinkedList<>();
 
-	public CountdownAction(long countdown, TemplatedText warning, GameActionList actions, ActionTarget<?> target) {
+	public CountdownAction(long countdown, TemplatedText warning, GameActionList<?> actions, ActionTarget<?> target) {
 		this.countdown = countdown * 20;
 		this.warning = warning;
 		this.actions = actions;
@@ -62,7 +62,7 @@ public final class CountdownAction implements IGameBehavior {
 		long remainingTicks = entry.time() - game.ticks();
 		if (remainingTicks <= 0) {
 			if (actions.target.type() == target.type()) {
-				return actions.applyIf(target::type, game, entry.context, entry.sources);
+				return actions.applyIf((java.util.function.Supplier) target::type, game, entry.context, entry.sources);
 			}
 
 			return actions.apply(game, entry.context);

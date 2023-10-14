@@ -2,6 +2,10 @@ package com.lovetropics.minigames.common.core.game.behavior;
 
 import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.LoveTropics;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.Plot;
+import com.lovetropics.minigames.common.core.game.behavior.action.ApplyToBehavior;
+import com.lovetropics.minigames.common.core.game.behavior.action.PlayerActionTarget;
+import com.lovetropics.minigames.common.core.game.behavior.action.PlotActionTarget;
 import com.lovetropics.minigames.common.core.game.behavior.instances.AddWeatherBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.ArmorParticipantsBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.AssignPlayerRolesBehavior;
@@ -98,6 +102,7 @@ import com.mojang.serialization.Codec;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
@@ -128,7 +133,7 @@ public class GameBehaviorTypes {
 	public static final GameBehaviorEntry<OnDeathTrigger> ON_DEATH = register("on_death", OnDeathTrigger.CODEC);
 	public static final GameBehaviorEntry<OnDamageTrigger> ON_DAMAGE = register("on_damage", OnDamageTrigger.CODEC);
 	public static final GameBehaviorEntry<WhileInRegionTrigger> WHILE_IN_REGION = register("while_in_region", WhileInRegionTrigger.CODEC);
-	public static final GameBehaviorEntry<ScheduledActionsTrigger<?, ?>> SCHEDULED_ACTIONS = register("scheduled_actions", ScheduledActionsTrigger.CODEC);
+	public static final GameBehaviorEntry<ScheduledActionsTrigger> SCHEDULED_ACTIONS = register("scheduled_actions", ScheduledActionsTrigger.CODEC);
 	public static final GameBehaviorEntry<PhaseChangeTrigger> PHASE_CHANGE = register("phase_change", PhaseChangeTrigger.CODEC);
 	public static final GameBehaviorEntry<OnKillTrigger> ON_KILL = register("on_kill", OnKillTrigger.CODEC);
 	public static final GameBehaviorEntry<BindControlsBehavior> BIND_CONTROLS = register("bind_controls", BindControlsBehavior.CODEC);
@@ -213,6 +218,9 @@ public class GameBehaviorTypes {
 	public static final GameBehaviorEntry<DebugModeBehavior> DEBUG_MODE = register("debug_mode", DebugModeBehavior.CODEC);
 
 	public static final GameBehaviorEntry<SetGameClientStateBehavior> SET_CLIENT_STATE = register("set_client_state", SetGameClientStateBehavior.CODEC);
+
+	public static final GameBehaviorEntry<ApplyToBehavior<Plot, PlotActionTarget>> APPLY_TO_PLOT = register("apply_to_plot", ApplyToBehavior.PLOT_CODEC);
+	public static final GameBehaviorEntry<ApplyToBehavior<ServerPlayer, PlayerActionTarget>> APPLY_TO_PLAYER = register("apply_to_player", ApplyToBehavior.PLAYER_CODEC);
 
 	public static <T extends IGameBehavior> GameBehaviorEntry<T> register(final String name, final Codec<T> codec) {
 		return REGISTRATE.object(name).behavior(codec).register();

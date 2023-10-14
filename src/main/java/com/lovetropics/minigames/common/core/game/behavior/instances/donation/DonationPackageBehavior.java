@@ -8,7 +8,6 @@ import com.lovetropics.minigames.common.core.game.behavior.action.ActionTargetTy
 import com.lovetropics.minigames.common.core.game.behavior.action.GameActionContext;
 import com.lovetropics.minigames.common.core.game.behavior.action.GameActionParameter;
 import com.lovetropics.minigames.common.core.game.behavior.action.GameActionList;
-import com.lovetropics.minigames.common.core.game.behavior.action.PlayerActionTarget;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePackageEvents;
 import com.lovetropics.minigames.common.core.game.state.GamePackageState;
@@ -30,7 +29,7 @@ public final class DonationPackageBehavior implements IGameBehavior {
 
 	private static final Logger LOGGER = LogManager.getLogger(DonationPackageBehavior.class);
 
-	public DonationPackageBehavior(DonationPackageData data, GameActionList<ServerPlayer, PlayerActionTarget> receiveActions) {
+	public DonationPackageBehavior(DonationPackageData data, GameActionList<ServerPlayer> receiveActions) {
 		this.data = data;
 		this.receiveActions = receiveActions;
 	}
@@ -48,7 +47,7 @@ public final class DonationPackageBehavior implements IGameBehavior {
 	}
 
 	private final DonationPackageData data;
-	private final GameActionList<ServerPlayer, PlayerActionTarget> receiveActions;
+	private final GameActionList<ServerPlayer> receiveActions;
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
@@ -84,7 +83,7 @@ public final class DonationPackageBehavior implements IGameBehavior {
 		}
 
 		GameActionContext context = actionContext(gamePackage);
-		if (receiveActions.applyPlayer(game, context, receivingPlayer)) {
+		if (receiveActions.apply(game, context, receivingPlayer)) {
 			data.onReceive(game, receivingPlayer, gamePackage.sendingPlayerName());
 
 			return InteractionResult.SUCCESS;
@@ -98,7 +97,7 @@ public final class DonationPackageBehavior implements IGameBehavior {
 		final ServerPlayer randomPlayer = players.get(game.getWorld().getRandom().nextInt(players.size()));
 
 		GameActionContext context = actionContext(gamePackage);
-		if (receiveActions.applyPlayer(game, context, randomPlayer)) {
+		if (receiveActions.apply(game, context, randomPlayer)) {
 			data.onReceive(game, randomPlayer, gamePackage.sendingPlayerName());
 
 			return InteractionResult.SUCCESS;
@@ -109,7 +108,7 @@ public final class DonationPackageBehavior implements IGameBehavior {
 
 	private InteractionResult receiveAll(IGamePhase game, GamePackage gamePackage) {
 		GameActionContext context = actionContext(gamePackage);
-		if (!receiveActions.applyPlayer(game, context, game.getParticipants())) {
+		if (!receiveActions.apply(game, context, game.getParticipants())) {
 			return InteractionResult.FAIL;
 		}
 

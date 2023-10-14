@@ -3,6 +3,7 @@ package com.lovetropics.minigames.common.core.game.behavior.instances.trigger;
 import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
+import com.lovetropics.minigames.common.core.game.behavior.action.ActionTargetTypes;
 import com.lovetropics.minigames.common.core.game.behavior.action.GameActionContext;
 import com.lovetropics.minigames.common.core.game.behavior.action.GameActionList;
 import com.lovetropics.minigames.common.core.game.behavior.event.*;
@@ -15,13 +16,13 @@ import javax.annotation.Nullable;
 import java.util.Map;
 
 // TODO: split up into separate trigger types
-public record GeneralEventsTrigger(Map<String, GameActionList> eventActions) implements IGameBehavior {
-	public static final Codec<GeneralEventsTrigger> CODEC = Codec.unboundedMap(Codec.STRING, GameActionList.CODEC)
+public record GeneralEventsTrigger(Map<String, GameActionList<ServerPlayer>> eventActions) implements IGameBehavior {
+	public static final Codec<GeneralEventsTrigger> CODEC = Codec.unboundedMap(Codec.STRING, GameActionList.PLAYER)
 			.xmap(GeneralEventsTrigger::new, b -> b.eventActions);
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) throws GameException {
-		for (GameActionList actions : eventActions.values()) {
+		for (var actions : eventActions.values()) {
 			actions.register(game, events);
 		}
 
@@ -81,16 +82,16 @@ public record GeneralEventsTrigger(Map<String, GameActionList> eventActions) imp
 	}
 
 	private void invoke(IGamePhase game, String event) {
-		GameActionList actions = eventActions.get(event);
+		var actions = eventActions.get(event);
 		if (actions != null) {
-			actions.applyPlayer(game, GameActionContext.EMPTY);
+			actions.apply(game, GameActionContext.EMPTY);
 		}
 	}
 
 	private void invoke(IGamePhase game, String event, ServerPlayer player) {
-		GameActionList actions = eventActions.get(event);
+		var actions = eventActions.get(event);
 		if (actions != null) {
-			actions.applyPlayer(game, GameActionContext.EMPTY, player);
+			actions.apply(game, GameActionContext.EMPTY, player);
 		}
 	}
 }

@@ -14,15 +14,15 @@ import net.minecraft.server.level.ServerPlayer;
 
 import java.util.Map;
 
-public record WhileInRegionTrigger(Map<String, GameActionList> regionActions, int interval) implements IGameBehavior {
+public record WhileInRegionTrigger(Map<String, GameActionList<ServerPlayer>> regionActions, int interval) implements IGameBehavior {
 	public static final Codec<WhileInRegionTrigger> CODEC = RecordCodecBuilder.create(i -> i.group(
-			Codec.unboundedMap(Codec.STRING, GameActionList.CODEC).fieldOf("regions").forGetter(WhileInRegionTrigger::regionActions),
+			Codec.unboundedMap(Codec.STRING, GameActionList.PLAYER).fieldOf("regions").forGetter(WhileInRegionTrigger::regionActions),
 			Codec.INT.optionalFieldOf("interval", 20).forGetter(WhileInRegionTrigger::interval)
 	).apply(i, WhileInRegionTrigger::new));
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) throws GameException {
-		for (GameActionList actions : regionActions.values()) {
+		for (GameActionList<ServerPlayer> actions : regionActions.values()) {
 			actions.register(game, events);
 		}
 
@@ -31,10 +31,10 @@ public record WhileInRegionTrigger(Map<String, GameActionList> regionActions, in
 				return;
 			}
 
-			for (Map.Entry<String, GameActionList> entry : regionActions.entrySet()) {
+			for (var entry : regionActions.entrySet()) {
 				if (isPlayerInRegion(game, player, entry.getKey())) {
-					GameActionList actions = entry.getValue();
-					actions.applyPlayer(game, GameActionContext.EMPTY, player);
+					GameActionList<ServerPlayer> actions = entry.getValue();
+					actions.apply(game, GameActionContext.EMPTY, player);
 				}
 			}
 		});

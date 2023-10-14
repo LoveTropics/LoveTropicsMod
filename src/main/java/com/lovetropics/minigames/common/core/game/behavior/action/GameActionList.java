@@ -12,21 +12,22 @@ import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.ExtraCodecs;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-public class GameActionList<T, A extends ActionTarget<T>> {
-    public static final GameActionList<ServerPlayer, PlayerActionTarget> EMPTY = new GameActionList<>(List.of(), PlayerActionTarget.SOURCE);
+public class GameActionList<T> {
+    public static final GameActionList<ServerPlayer> EMPTY = new GameActionList<>(List.of(), PlayerActionTarget.SOURCE);
 
-    public static final MapCodec<GameActionList<?, ?>> MAP_CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
+    public static final MapCodec<GameActionList<?>> MAP_CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
             MoreCodecs.listOrUnit(IGameBehavior.CODEC).fieldOf("actions").forGetter(list -> list.behaviors),
             ActionTarget.FALLBACK_PLAYER.optionalFieldOf("target", PlayerActionTarget.SOURCE).forGetter(list -> list.target)
     ).apply(i, GameActionList::new));
 
-    private static final Codec<GameActionList<?, ?>> SIMPLE_CODEC = MoreCodecs.listOrUnit(IGameBehavior.CODEC)
+    private static final Codec<GameActionList<?>> SIMPLE_CODEC = MoreCodecs.listOrUnit(IGameBehavior.CODEC)
             .flatComapMap(
                     behaviors -> new GameActionList<>(behaviors, PlayerActionTarget.SOURCE),
                     list -> {
@@ -37,26 +38,50 @@ public class GameActionList<T, A extends ActionTarget<T>> {
                     }
             );
 
-    public static final Codec<GameActionList> CODEC = Codec.either(SIMPLE_CODEC, MAP_CODEC.codec())
+    public static final Codec<GameActionList<?>> TYPE_SAFE_CODEC = Codec.either(SIMPLE_CODEC, MAP_CODEC.codec())
             .xmap(either -> either.map(Function.identity(), Function.identity()), Either::right);
-    public static final Codec<GameActionList<?, ?>> TYPE_SAFE_CODEC = (Codec<GameActionList<?,?>>) (Object) CODEC;
 
-    public static <T, A extends ActionTarget<T>> Codec<GameActionList<T, A>> mandateType(Supplier<Codec<A>> type) {
-        final Function<GameActionList<?, ?>, DataResult<GameActionList<T, A>>> function = gameActionList -> {
+    public static final Codec<GameActionList<ServerPlayer>> PLAYER = mandateType(ActionTargetTypes.PLAYER);
+    public static final Codec<GameActionList<Void>> VOID = mandateTypeDefaultingTarget(ActionTargetTypes.NONE, NoneActionTarget.INSTANCE);
+
+    public static <T, A extends ActionTarget<T>> Codec<GameActionList<T>> mandateType(Supplier<Codec<A>> type) {
+        final Function<GameActionList<?>, DataResult<GameActionList<T>>> function = gameActionList -> {
             if (gameActionList.target.type() != type.get()) {
                 return DataResult.error(() -> "Action list target must be of type: " + ActionTargetTypes.REGISTRY.get().getKey(type.get()));
             }
-            return DataResult.success((GameActionList<T, A>) gameActionList);
+            return DataResult.success((GameActionList<T>) gameActionList);
         };
         return TYPE_SAFE_CODEC.flatXmap(function, function);
     }
 
+    public static <T, A extends ActionTarget<T>> MapCodec<GameActionList<T>> mandateTypeDefaultingTargetMap(Supplier<Codec<A>> type, A target) {
+        return RecordCodecBuilder.mapCodec(i -> i.group(
+                MoreCodecs.listOrUnit(IGameBehavior.CODEC).fieldOf("actions").forGetter(list -> list.behaviors),
+                ExtraCodecs.lazyInitializedCodec(type).optionalFieldOf("target", target).forGetter(list -> (A) list.target)
+        ).apply(i, GameActionList::new));
+    }
+
+    public static <T, A extends ActionTarget<T>> Codec<GameActionList<T>> mandateTypeDefaultingTarget(Supplier<Codec<A>> type, A target) {
+        var simpleCodec = MoreCodecs.listOrUnit(IGameBehavior.CODEC)
+                .flatComapMap(
+                        behaviors -> new GameActionList<>(behaviors, target),
+                        list -> {
+                            if (!target.equals(list.target)) {
+                                return DataResult.error(() -> "Cannot encode simple action list with target: " + list.target);
+                            }
+                            return DataResult.success(list.behaviors);
+                        }
+                );
+        return Codec.either(simpleCodec, mandateTypeDefaultingTargetMap(type, target).codec())
+                .xmap(either -> either.map(Function.identity(), Function.identity()), Either::right);
+    }
+
     private final List<IGameBehavior> behaviors;
-    public final A target;
+    public final ActionTarget<T> target;
 
     private final GameEventListeners listeners = new GameEventListeners();
 
-    public GameActionList(List<IGameBehavior> behaviors, A target) {
+    public GameActionList(List<IGameBehavior> behaviors, ActionTarget<T> target) {
         this.behaviors = behaviors;
         this.target = target;
     }
@@ -65,14 +90,6 @@ public class GameActionList<T, A extends ActionTarget<T>> {
         for (IGameBehavior behavior : behaviors) {
             behavior.register(game, events.redirect(GameActionEvents::matches, listeners));
         }
-    }
-
-    public boolean applyPlayer(IGamePhase game, GameActionContext context, ServerPlayer... sources) {
-        return applyPlayer(game, context, Arrays.asList(sources));
-    }
-
-    public boolean applyPlayer(IGamePhase game, GameActionContext context, Iterable<ServerPlayer> sources) {
-        return this.applyIf(ActionTargetTypes.PLAYER, game, context, sources);
     }
 
     public <T1, A1 extends ActionTarget<T1>> boolean applyIf(Supplier<Codec<A1>> type, IGamePhase phase, GameActionContext context, Iterable<T1> sources) {
@@ -84,6 +101,10 @@ public class GameActionList<T, A extends ActionTarget<T>> {
 
     public boolean apply(IGamePhase phase, GameActionContext context) {
         return apply(phase, context, target.resolve(phase, List.of()));
+    }
+
+    public boolean apply(IGamePhase phase, GameActionContext context, T... sources) {
+        return apply(phase, context, Arrays.asList(sources));
     }
 
     public boolean apply(IGamePhase phase, GameActionContext context, Iterable<T> sources) {

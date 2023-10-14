@@ -13,8 +13,8 @@ import net.minecraft.world.entity.Entity;
 
 import java.util.Map;
 
-public record BindControlsBehavior(Map<ControlCommand.Scope, Map<String, GameActionList>> scopedActions) implements IGameBehavior {
-	public static final Codec<BindControlsBehavior> CODEC = Codec.unboundedMap(ControlCommand.Scope.CODEC, Codec.unboundedMap(Codec.STRING, GameActionList.CODEC))
+public record BindControlsBehavior(Map<ControlCommand.Scope, Map<String, GameActionList<ServerPlayer>>> scopedActions) implements IGameBehavior {
+	public static final Codec<BindControlsBehavior> CODEC = Codec.unboundedMap(ControlCommand.Scope.CODEC, Codec.unboundedMap(Codec.STRING, GameActionList.PLAYER))
 			.xmap(BindControlsBehavior::new, b -> b.scopedActions);
 
 	@Override
@@ -25,9 +25,9 @@ public record BindControlsBehavior(Map<ControlCommand.Scope, Map<String, GameAct
 			game.getControlCommands().add(control, new ControlCommand(scope, source -> {
 				Entity entity = source.getEntity();
 				if (entity instanceof ServerPlayer player) {
-					actions.applyPlayer(game, GameActionContext.EMPTY, player);
+					actions.apply(game, GameActionContext.EMPTY, player);
 				} else {
-					actions.applyPlayer(game, GameActionContext.EMPTY);
+					actions.apply(game, GameActionContext.EMPTY);
 				}
 			}));
 		}));
