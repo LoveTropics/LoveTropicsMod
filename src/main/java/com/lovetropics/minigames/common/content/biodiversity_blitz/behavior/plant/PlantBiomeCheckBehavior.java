@@ -21,15 +21,14 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.level.biome.Biome;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-public record PlantBiomeCheckBehavior(HolderSet<Biome> biomes, boolean whitelist, List<IGameBehavior> behaviors) implements IGameBehavior {
+public record PlantBiomeCheckBehavior(HolderSet<Biome> biomes, boolean whitelist, IGameBehavior behaviors) implements IGameBehavior {
     public static final Codec<PlantBiomeCheckBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
             Biome.LIST_CODEC.fieldOf("biomes").forGetter(PlantBiomeCheckBehavior::biomes),
             Codec.BOOL.optionalFieldOf("whitelist", true).forGetter(PlantBiomeCheckBehavior::whitelist),
-            MoreCodecs.strictOptionalFieldOf(IGameBehavior.CODEC.listOf(), "behaviors", Collections.emptyList()).forGetter(PlantBiomeCheckBehavior::behaviors)
+            MoreCodecs.strictOptionalFieldOf(IGameBehavior.CODEC, "behaviors", IGameBehavior.EMPTY).forGetter(PlantBiomeCheckBehavior::behaviors)
     ).apply(i, PlantBiomeCheckBehavior::new));
 
     private static final Set<GameEventType<?>> WRAPPED_EVENTS = Set.of(BbPlantEvents.TICK, BbPlantEvents.PLACE, BbPlantEvents.BREAK);
@@ -38,10 +37,7 @@ public record PlantBiomeCheckBehavior(HolderSet<Biome> biomes, boolean whitelist
     public void register(IGamePhase game, EventRegistrar events) throws GameException {
         final GameEventListeners checkedListeners = new GameEventListeners();
 
-        final EventRegistrar wrapper = events.redirect(WRAPPED_EVENTS::contains, checkedListeners);
-        for (IGameBehavior behavior : behaviors) {
-            behavior.register(game, wrapper);
-        }
+        behaviors.register(game, events.redirect(WRAPPED_EVENTS::contains, checkedListeners));
 
         events.listen(BbPlantEvents.TICK, (players, plot, plants) -> {
             final List<Plant> actualPlants = new ArrayList<>(plants);

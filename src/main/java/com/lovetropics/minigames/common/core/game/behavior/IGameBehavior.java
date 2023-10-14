@@ -15,6 +15,7 @@ import com.mojang.serialization.DynamicOps;
 import net.minecraft.resources.ResourceLocation;
 
 import javax.annotation.Nullable;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -64,6 +65,8 @@ public interface IGameBehavior {
 			return DataResult.error(() -> "Encoding unsupported");
 		}
 	};
+
+	IGameBehavior EMPTY = new CompositeBehavior(List.of());
 
 	@Nullable
 	default ConfigList getConfigurables() {

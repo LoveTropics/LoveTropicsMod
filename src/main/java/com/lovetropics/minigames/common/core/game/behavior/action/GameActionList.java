@@ -20,10 +20,10 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class GameActionList<T> {
-    public static final GameActionList<ServerPlayer> EMPTY = new GameActionList<>(List.of(), PlayerActionTarget.SOURCE);
+    public static final GameActionList<ServerPlayer> EMPTY = new GameActionList<>(IGameBehavior.EMPTY, PlayerActionTarget.SOURCE);
 
     public static final MapCodec<GameActionList<?>> MAP_CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
-            MoreCodecs.listOrUnit(IGameBehavior.CODEC).fieldOf("actions").forGetter(list -> list.behaviors),
+            IGameBehavior.CODEC.fieldOf("actions").forGetter(list -> list.behavior),
             ActionTarget.FALLBACK_PLAYER.optionalFieldOf("target", PlayerActionTarget.SOURCE).forGetter(list -> list.target)
     ).apply(i, GameActionList::new));
 
@@ -31,38 +31,37 @@ public class GameActionList<T> {
     public static final Codec<GameActionList<ServerPlayer>> PLAYER = codec(ActionTargetTypes.PLAYER, PlayerActionTarget.SOURCE);
     public static final Codec<GameActionList<Void>> VOID = codec(ActionTargetTypes.NONE, NoneActionTarget.INSTANCE);
 
-
     public static <T, A extends ActionTarget<T>> MapCodec<GameActionList<T>> mapCodec(Supplier<Codec<A>> type, A target) {
         return RecordCodecBuilder.mapCodec(i -> i.group(
-                MoreCodecs.listOrUnit(IGameBehavior.CODEC).fieldOf("actions").forGetter(list -> list.behaviors),
+                IGameBehavior.CODEC.fieldOf("actions").forGetter(list -> list.behavior),
                 ExtraCodecs.lazyInitializedCodec(type).optionalFieldOf("target", target).forGetter(list -> (A) list.target)
         ).apply(i, GameActionList::new));
     }
 
     public static <T, A extends ActionTarget<T>> Codec<GameActionList<T>> codec(Supplier<Codec<A>> type, A target) {
-        var simpleCodec = MoreCodecs.listOrUnit(IGameBehavior.CODEC)
-                .flatComapMap(
-                        behaviors -> new GameActionList<>(behaviors, target),
-                        list -> {
-                            if (!target.equals(list.target)) {
-                                return DataResult.error(() -> "Cannot encode simple action list with target: " + list.target);
-                            }
-                            return DataResult.success(list.behaviors);
-                        }
-                );
+        var simpleCodec = IGameBehavior.CODEC.flatComapMap(
+                behavior -> new GameActionList<>(behavior, target),
+                list -> {
+                    if (!target.equals(list.target)) {
+                        return DataResult.error(() -> "Cannot encode simple action list with target: " + list.target);
+                    }
+                    return DataResult.success(list.behavior);
+                }
+        );
+
         return Codec.either(simpleCodec, mapCodec(type, target).codec())
                 .xmap(either -> either.map(Function.identity(), Function.identity()), Either::right);
     }
 
-    private final List<IGameBehavior> behaviors;
+    private final IGameBehavior behavior;
     public final ActionTarget<T> target;
 
     private final GameEventListeners listeners = new GameEventListeners();
 
     private boolean registered;
 
-    public GameActionList(List<IGameBehavior> behaviors, ActionTarget<T> target) {
-        this.behaviors = behaviors;
+    public GameActionList(IGameBehavior behavior, ActionTarget<T> target) {
+        this.behavior = behavior;
         this.target = target;
     }
 
@@ -70,9 +69,7 @@ public class GameActionList<T> {
         if (registered) {
             throw new IllegalStateException("GameActionList has already been registered");
         }
-        for (IGameBehavior behavior : behaviors) {
-            behavior.register(game, events.redirect(GameActionEvents::matches, listeners));
-        }
+        behavior.register(game, events.redirect(GameActionEvents::matches, listeners));
         registered = true;
     }
 

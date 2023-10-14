@@ -31,7 +31,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.FluidState;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 public final class PlantBehavior implements IGameBehavior {
@@ -39,13 +38,13 @@ public final class PlantBehavior implements IGameBehavior {
 			PlantType.CODEC.fieldOf("id").forGetter(c -> c.plantType),
 			PlantFamily.CODEC.fieldOf("family").forGetter(c -> c.family),
 			Codec.DOUBLE.optionalFieldOf("value", 0.0).forGetter(c -> c.value),
-			MoreCodecs.strictOptionalFieldOf(IGameBehavior.CODEC.listOf(), "behaviors", Collections.emptyList()).forGetter(c -> c.behaviors)
+			MoreCodecs.strictOptionalFieldOf(IGameBehavior.CODEC, "behaviors", IGameBehavior.EMPTY).forGetter(c -> c.behavior)
 	).apply(i, PlantBehavior::new));
 
 	private final PlantType plantType;
 	private final PlantFamily family;
 	private final double value;
-	private final List<IGameBehavior> behaviors;
+	private final IGameBehavior behavior;
 
 	private final GameEventListeners plantEvents = new GameEventListeners();
 
@@ -53,9 +52,9 @@ public final class PlantBehavior implements IGameBehavior {
 	private PlotsState plots;
 	private TutorialState tutorial;
 
-	public PlantBehavior(PlantType plantType, PlantFamily family, double value, List<IGameBehavior> behaviors) {
+	public PlantBehavior(PlantType plantType, PlantFamily family, double value, IGameBehavior behavior) {
 		this.plantType = plantType;
-		this.behaviors = behaviors;
+		this.behavior = behavior;
 		this.family = family;
 		this.value = value;
 	}
@@ -79,9 +78,7 @@ public final class PlantBehavior implements IGameBehavior {
 		events.listen(BbEvents.TICK_PLOT, this::onTickPlot);
 
 		EventRegistrar plantEvents = events.redirect(PlantBehavior::shouldPlantBehaviorHandle, this.plantEvents);
-		for (IGameBehavior behavior : this.behaviors) {
-			behavior.register(game, plantEvents);
-		}
+		behavior.register(game, plantEvents);
 	}
 
 	private InteractionResultHolder<Plant> placePlant(ServerPlayer player, Plot plot, BlockPos pos, PlantType plantType) {
