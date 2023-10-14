@@ -4,12 +4,8 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import com.lovetropics.lib.codec.CodecRegistry;
 import com.lovetropics.minigames.Constants;
-import com.lovetropics.minigames.common.core.game.GameException;
-import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.GameBehaviorType;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
-import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
-import com.lovetropics.minigames.common.core.game.state.GameStateMap;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
@@ -127,35 +123,19 @@ public final class GameConfigs {
 		}
 	}
 
-	private static Codec<CustomBehavior> createCustomBehaviorCodec(final Dynamic<?> template) {
+	private static Codec<IGameBehavior> createCustomBehaviorCodec(final Dynamic<?> template) {
 		return new Codec<>() {
 			@Override
-			public <T> DataResult<T> encode(CustomBehavior input, DynamicOps<T> ops, T prefix) {
+			public <T> DataResult<T> encode(IGameBehavior input, DynamicOps<T> ops, T prefix) {
 				return DataResult.error(() -> "Encoding unsupported");
 			}
 
 			@Override
-			public <T> DataResult<Pair<CustomBehavior, T>> decode(DynamicOps<T> ops, T input) {
+			public <T> DataResult<Pair<IGameBehavior, T>> decode(DynamicOps<T> ops, T input) {
 				BehaviorParameters parameters = new BehaviorParameters(new Dynamic<>(ops, input));
-				Dynamic<?> data = parameters.substitute(template);
-				return IGameBehavior.LIST_CODEC.parse(data).map(behaviors -> Pair.of(new CustomBehavior(behaviors), input));
+				return IGameBehavior.CODEC.decode(parameters.substitute(template))
+						.map(pair -> pair.mapSecond(o -> input));
 			}
 		};
-	}
-
-	private record CustomBehavior(List<IGameBehavior> behaviors) implements IGameBehavior {
-		@Override
-		public void register(IGamePhase game, EventRegistrar events) throws GameException {
-			for (IGameBehavior behavior : behaviors) {
-				behavior.register(game, events);
-			}
-		}
-
-		@Override
-		public void registerState(IGamePhase game, GameStateMap phaseState, GameStateMap instanceState) {
-			for (IGameBehavior behavior : behaviors) {
-				behavior.registerState(game, phaseState, instanceState);
-			}
-		}
 	}
 }

@@ -4,18 +4,17 @@ import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.config.ConfigList;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
+import com.lovetropics.minigames.common.core.game.behavior.instances.CompositeBehavior;
 import com.lovetropics.minigames.common.core.game.config.GameConfigs;
 import com.lovetropics.minigames.common.core.game.state.GameStateMap;
 import com.mojang.datafixers.util.Either;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
-import com.mojang.serialization.Decoder;
 import com.mojang.serialization.DynamicOps;
 import net.minecraft.resources.ResourceLocation;
 
 import javax.annotation.Nullable;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -24,7 +23,7 @@ import java.util.function.Function;
 public interface IGameBehavior {
 	Codec<? extends GameBehaviorType<?>> TYPE_CODEC = Codec.either(GameBehaviorTypes.TYPE_CODEC, GameConfigs.CUSTOM_BEHAVIORS)
 			.xmap(e -> e.map(Function.identity(), Function.identity()), Either::left);
-	Codec<IGameBehavior> CODEC = new Codec<>() {
+	Codec<IGameBehavior> SIMPLE_CODEC = new Codec<>() {
 		@Override
 		public <T> DataResult<Pair<IGameBehavior, T>> decode(DynamicOps<T> ops, T input) {
 			Optional<String> string = ops.getStringValue(input).result();
@@ -49,22 +48,19 @@ public interface IGameBehavior {
 	};
 
 	// Using custom codec for better error reporting
-	Codec<List<IGameBehavior>> LIST_CODEC = new Codec<>() {
-		private final Decoder<List<IGameBehavior>> listDecoder = CODEC.listOf();
-		private final Decoder<List<IGameBehavior>> singleDecoder = CODEC.map(List::of);
-
+	Codec<IGameBehavior> CODEC = new Codec<>() {
 		@Override
-		public <T> DataResult<Pair<List<IGameBehavior>, T>> decode(DynamicOps<T> ops, T input) {
+		public <T> DataResult<Pair<IGameBehavior, T>> decode(DynamicOps<T> ops, T input) {
 			DataResult<Consumer<Consumer<T>>> list = ops.getList(input);
 			if (list.result().isPresent()) {
-				return listDecoder.decode(ops, input);
+				return CompositeBehavior.CODEC.decode(ops, input).map(p -> p.mapFirst(b -> b));
 			} else {
-				return singleDecoder.decode(ops, input);
+				return SIMPLE_CODEC.decode(ops, input);
 			}
 		}
 
 		@Override
-		public <T> DataResult<T> encode(List<IGameBehavior> input, DynamicOps<T> ops, T prefix) {
+		public <T> DataResult<T> encode(IGameBehavior input, DynamicOps<T> ops, T prefix) {
 			return DataResult.error(() -> "Encoding unsupported");
 		}
 	};

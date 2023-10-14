@@ -5,6 +5,7 @@ import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.common.core.game.behavior.instances.AddWeatherBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.ArmorParticipantsBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.AssignPlayerRolesBehavior;
+import com.lovetropics.minigames.common.core.game.behavior.instances.CompositeBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.DebugModeBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.EquipParticipantsBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.GameEndEffectsBehavior;
@@ -118,6 +119,7 @@ public class GameBehaviorTypes {
 
 	public static final Codec<GameBehaviorType<?>> TYPE_CODEC = ExtraCodecs.lazyInitializedCodec(() -> REGISTRY.get().getCodec());
 
+	public static final GameBehaviorEntry<CompositeBehavior> COMPOSITE = register("composite", CompositeBehavior.CODEC);
 	public static final GameBehaviorEntry<PositionPlayersBehavior> POSITION_PLAYERS = register("position_players", PositionPlayersBehavior.CODEC);
 	public static final GameBehaviorEntry<TimedGameBehavior> TIMED = register("timed", TimedGameBehavior.CODEC);
 	public static final GameBehaviorEntry<ImmediateRespawnBehavior> IMMEDIATE_RESPAWN = register("immediate_respawn", ImmediateRespawnBehavior.CODEC);
