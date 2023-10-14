@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.common.core.game;
 
-import com.lovetropics.minigames.common.core.game.behavior.BehaviorMap;
+import com.lovetropics.minigames.common.core.game.behavior.BehaviorList;
 import com.lovetropics.minigames.common.core.game.map.IGameMapProvider;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -13,5 +13,5 @@ public interface IGamePhaseDefinition {
 		return BlockEntity.INFINITE_EXTENT_AABB;
 	}
 
-	BehaviorMap createBehaviors(MinecraftServer server);
+	BehaviorList createBehaviors(MinecraftServer server);
 }

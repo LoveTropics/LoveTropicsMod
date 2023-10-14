@@ -9,6 +9,10 @@ import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
+import net.minecraft.resources.ResourceLocation;
+
+import javax.annotation.Nullable;
+import java.util.Map;
 
 public interface IGameBehavior {
 	Codec<IGameBehavior> CODEC = new Codec<>() {
@@ -26,11 +30,12 @@ public interface IGameBehavior {
 		}
 	};
 
+	@Nullable
 	default ConfigList getConfigurables() {
-		return ConfigList.empty();
+		return null;
 	}
 
-	default IGameBehavior configure(ConfigList configs) {
+	default IGameBehavior configure(Map<ResourceLocation, ConfigList> configs) {
 		return this;
 	}
 

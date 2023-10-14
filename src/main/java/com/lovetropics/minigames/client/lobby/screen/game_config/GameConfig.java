@@ -3,12 +3,11 @@ package com.lovetropics.minigames.client.lobby.screen.game_config;
 import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Multimap;
 import com.lovetropics.minigames.client.lobby.manage.state.ClientLobbyQueuedGame;
-import com.lovetropics.minigames.client.lobby.state.ClientBehaviorMap;
+import com.lovetropics.minigames.client.lobby.state.ClientBehaviorList;
 import com.lovetropics.minigames.client.lobby.state.ClientConfigList;
 import com.lovetropics.minigames.client.screen.LayoutTree;
 import com.lovetropics.minigames.client.screen.flex.Box;
 import com.lovetropics.minigames.client.screen.flex.Layout;
-import com.lovetropics.minigames.common.core.game.behavior.GameBehaviorType;
 import com.lovetropics.minigames.common.core.game.behavior.config.ConfigData;
 import com.lovetropics.minigames.common.core.game.behavior.config.ConfigData.CompositeConfigData;
 import com.lovetropics.minigames.common.core.game.behavior.config.ConfigData.ListConfigData;
@@ -20,12 +19,12 @@ import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.client.gui.widget.ScrollPanel;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.Optional;
 
 public final class GameConfig extends ScrollPanel {
@@ -36,8 +35,8 @@ public final class GameConfig extends ScrollPanel {
 	private final Handlers handlers;
 	
 	private ClientLobbyQueuedGame configuring;
-	private final List<ClientBehaviorMap> configData = new ArrayList<>();
-	private final Multimap<GameBehaviorType<?>, BehaviorConfigUI> configMenus = LinkedHashMultimap.create();
+	private final List<ClientBehaviorList> configData = new ArrayList<>();
+	private final Multimap<ResourceLocation, BehaviorConfigUI> configMenus = LinkedHashMultimap.create();
 
 	private final List<GuiEventListener> children = new ArrayList<>();
 
@@ -89,11 +88,11 @@ public final class GameConfig extends ScrollPanel {
 		this.configMenus.clear();
 		LayoutTree ltree = new LayoutTree(this.mainLayout.unboundedY());
 		ltree.child(new Box(0, 0, 6, 0), new Box()); // Add margin where the scroll bar is
-		for (ClientBehaviorMap configSet : configData) {
-			for (Entry<GameBehaviorType<?>, ClientConfigList> e : configSet.behaviors.entries()) {
-				if (!e.getValue().configs.isEmpty()) {
-					BehaviorConfigUI menu = new BehaviorConfigUI(this, ltree.child(0, 3), e.getKey(), e.getValue());
-					this.configMenus.put(e.getKey(), menu);
+		for (ClientBehaviorList configSet : configData) {
+			for (ClientConfigList behavior : configSet.behaviors()) {
+				if (!behavior.configs().isEmpty()) {
+					BehaviorConfigUI menu = new BehaviorConfigUI(this, ltree.child(0, 3), behavior);
+					this.configMenus.put(behavior.id(), menu);
 					children.add(menu);
 				}
 			}

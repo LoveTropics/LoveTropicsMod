@@ -2,7 +2,7 @@ package com.lovetropics.minigames.common.core.game.config;
 
 import com.lovetropics.lib.codec.MoreCodecs;
 import com.lovetropics.minigames.common.core.game.IGamePhaseDefinition;
-import com.lovetropics.minigames.common.core.game.behavior.BehaviorMap;
+import com.lovetropics.minigames.common.core.game.behavior.BehaviorList;
 import com.lovetropics.minigames.common.core.game.map.GameMapProviders;
 import com.lovetropics.minigames.common.core.game.map.IGameMapProvider;
 import com.mojang.serialization.Codec;
@@ -38,7 +38,7 @@ public record GamePhaseConfig(IGameMapProvider map, AABB area, List<BehaviorRefe
 	}
 
 	@Override
-	public BehaviorMap createBehaviors(MinecraftServer server) {
-		return BehaviorMap.create(server, behaviors);
+	public BehaviorList createBehaviors(MinecraftServer server) {
+		return BehaviorList.create(server, behaviors);
 	}
 }

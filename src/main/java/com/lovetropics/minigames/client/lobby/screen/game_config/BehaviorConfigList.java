@@ -26,7 +26,7 @@ public class BehaviorConfigList extends LayoutGui {
 	}
 
 	public void updateEntries(GameConfig parent, LayoutTree ltree) {
-		Map<BehaviorConfig<?>, ConfigData> configs = configList.configs;
+		Map<BehaviorConfig<?>, ConfigData> configs = configList.configs();
 
 		for (Map.Entry<BehaviorConfig<?>, ConfigData> e : configs.entrySet()) {
 			ConfigDataUI listEntry = new ConfigDataUI(parent, ltree.child(0, 3), e.getKey().getName(), e.getValue());

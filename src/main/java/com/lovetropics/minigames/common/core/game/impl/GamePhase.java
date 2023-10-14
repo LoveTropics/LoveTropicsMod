@@ -10,7 +10,7 @@ import com.lovetropics.minigames.common.core.game.IGame;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.IGamePhaseDefinition;
 import com.lovetropics.minigames.common.core.game.PlayerIsolation;
-import com.lovetropics.minigames.common.core.game.behavior.BehaviorMap;
+import com.lovetropics.minigames.common.core.game.behavior.BehaviorList;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameEventType;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
@@ -44,7 +44,7 @@ public class GamePhase implements IGamePhase {
 	final GamePhaseType phaseType;
 
 	final GameMap map;
-	final BehaviorMap behaviors;
+	final BehaviorList behaviors;
 	final GameStateMap phaseState = new GameStateMap();
 
 	final EnumMap<PlayerRole, MutablePlayerSet> roles = new EnumMap<>(PlayerRole.class);
@@ -55,7 +55,7 @@ public class GamePhase implements IGamePhase {
 	GameStopReason stopped;
 	boolean destroyed;
 
-	private GamePhase(GameInstance game, IGamePhaseDefinition definition, GamePhaseType phaseType, GameMap map, BehaviorMap behaviors) {
+	private GamePhase(GameInstance game, IGamePhaseDefinition definition, GamePhaseType phaseType, GameMap map, BehaviorList behaviors) {
 		this.game = game;
 		this.server = game.getServer();
 		this.definition = definition;
@@ -80,7 +80,7 @@ public class GamePhase implements IGamePhase {
 
 		CompletableFuture<GameResult<GamePhase>> future = definition.getMap().open(server)
 				.thenApplyAsync(r -> r.map(map -> {
-					BehaviorMap behaviors = definition.createBehaviors(server);
+					BehaviorList behaviors = definition.createBehaviors(server);
 					return new GamePhase(game, definition, phaseType, map, behaviors);
 				}), server);
 

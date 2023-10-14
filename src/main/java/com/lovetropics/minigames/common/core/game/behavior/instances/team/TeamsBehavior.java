@@ -1,5 +1,6 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances.team;
 
+import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.config.BehaviorConfig;
@@ -19,6 +20,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.ServerScoreboard;
 import net.minecraft.server.level.ServerPlayer;
@@ -33,6 +35,7 @@ import java.util.Map;
 import java.util.UUID;
 
 public final class TeamsBehavior implements IGameBehavior {
+	private static final ResourceLocation CONFIG_ID = new ResourceLocation(Constants.MODID, "teams");
 	private static final BehaviorConfig<Boolean> CFG_FRIENDLY_FIRE = BehaviorConfig.fieldOf("friendly_fire", Codec.BOOL);
 
 	public static final Codec<TeamsBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
@@ -54,14 +57,14 @@ public final class TeamsBehavior implements IGameBehavior {
 
 	@Override
 	public ConfigList getConfigurables() {
-		return ConfigList.builder()
+		return ConfigList.builder(CONFIG_ID)
 				.with(CFG_FRIENDLY_FIRE, friendlyFire)
 				.build();
 	}
 
 	@Override
-	public IGameBehavior configure(ConfigList configs) {
-		return new TeamsBehavior(CFG_FRIENDLY_FIRE.getValue(configs), staticTeamIds);
+	public IGameBehavior configure(Map<ResourceLocation, ConfigList> configs) {
+		return new TeamsBehavior(CFG_FRIENDLY_FIRE.getValue(configs.get(CONFIG_ID)), staticTeamIds);
 	}
 
 	@Override

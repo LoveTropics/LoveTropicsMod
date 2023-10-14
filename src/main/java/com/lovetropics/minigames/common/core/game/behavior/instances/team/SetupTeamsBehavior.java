@@ -1,6 +1,7 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances.team;
 
 import com.google.common.collect.ImmutableList;
+import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.config.BehaviorConfig;
@@ -21,6 +22,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.animal.Sheep;
 import net.minecraft.world.item.DyeColor;
@@ -28,9 +30,11 @@ import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.Blocks;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 public final class SetupTeamsBehavior implements IGameBehavior {
+	private static final ResourceLocation CONFIG_ID = new ResourceLocation(Constants.MODID, "team_list");
 	private static final GameTeam DEFAULT_TEAM = new GameTeam(
 			new GameTeamKey(""),
 			new GameTeamConfig(CommonComponents.EMPTY, DyeColor.BLACK, ChatFormatting.BLACK, ImmutableList.of(UUID.randomUUID()), 1)
@@ -56,14 +60,14 @@ public final class SetupTeamsBehavior implements IGameBehavior {
 
 	@Override
 	public ConfigList getConfigurables() {
-		return ConfigList.builder()
+		return ConfigList.builder(CONFIG_ID)
 				.with(CFG_TEAMS, this.teams)
 				.build();
 	}
 
 	@Override
-	public IGameBehavior configure(ConfigList configs) {
-		return new SetupTeamsBehavior(CFG_TEAMS.getValue(configs));
+	public IGameBehavior configure(Map<ResourceLocation, ConfigList> configs) {
+		return new SetupTeamsBehavior(CFG_TEAMS.getValue(configs.get(CONFIG_ID)));
 	}
 
 	@Override

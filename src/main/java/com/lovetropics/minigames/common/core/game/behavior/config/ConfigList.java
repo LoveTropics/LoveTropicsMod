@@ -2,14 +2,16 @@ package com.lovetropics.minigames.common.core.game.behavior.config;
 
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.DataResult;
+import net.minecraft.resources.ResourceLocation;
 
 import java.util.*;
 
 public class ConfigList {
-
+	private final ResourceLocation id;
 	private final Map<BehaviorConfig<?>, ConfigData> configs;
 
-	public ConfigList(Map<BehaviorConfig<?>, ConfigData> configs) {
+	public ConfigList(ResourceLocation id, Map<BehaviorConfig<?>, ConfigData> configs) {
+		this.id = id;
 		this.configs = configs;
 	}
 
@@ -27,24 +29,23 @@ public class ConfigList {
 	
 	@Override
 	public String toString() {
-		return "ConfigList" + Objects.toString(configs);
+		return "ConfigList" + id + ":" + configs;
 	}
 
-	private static final ConfigList empty = new ConfigList(Collections.emptyMap());
-
-	public static ConfigList empty() {
-		return empty;
+	public static Builder builder(ResourceLocation id) {
+		return new Builder(id);
 	}
 
-	public static Builder builder() {
-		return new Builder();
+	public ResourceLocation id() {
+		return id;
 	}
 
 	public static class Builder {
-
+		private final ResourceLocation id;
 		private final Map<BehaviorConfig<?>, ConfigData> configs = new LinkedHashMap<>();
 
-		Builder() {
+		Builder(ResourceLocation id) {
+			this.id = id;
 		}
 
 		public <T> Builder with(BehaviorConfig<T> key, T defVal) {
@@ -54,7 +55,7 @@ public class ConfigList {
 		}
 
 		public ConfigList build() {
-			return new ConfigList(configs);
+			return new ConfigList(id, configs);
 		}
 	}
 }

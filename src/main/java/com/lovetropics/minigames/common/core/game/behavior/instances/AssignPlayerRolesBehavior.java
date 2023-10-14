@@ -14,6 +14,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 import net.minecraft.core.UUIDUtil;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -26,6 +27,7 @@ import java.util.function.BiConsumer;
 
 public record AssignPlayerRolesBehavior(List<UUID> forcedParticipants) implements IGameBehavior {
 	private static final Logger LOGGER = LogManager.getLogger(AssignPlayerRolesBehavior.class);
+	private static final ResourceLocation CONFIG_ID = new ResourceLocation("assign_roles");
 	private static final BehaviorConfig<List<UUID>> CFG_FORCED_PARTICIPANTS = BehaviorConfig.fieldOf("forced_participants", UUIDUtil.STRING_CODEC.listOf())
 			.listTypeHint("", ConfigType.STRING);
 
@@ -35,7 +37,7 @@ public record AssignPlayerRolesBehavior(List<UUID> forcedParticipants) implement
 
 	@Override
 	public ConfigList getConfigurables() {
-		return ConfigList.builder()
+		return ConfigList.builder(CONFIG_ID)
 				.with(CFG_FORCED_PARTICIPANTS, this.forcedParticipants)
 				.build();
 	}
