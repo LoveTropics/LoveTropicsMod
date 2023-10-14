@@ -199,7 +199,7 @@ public class GameBehaviorTypes {
 	public static final GameBehaviorEntry<ApplyGlobalDisguiseAction> APPLY_GLOBAL_DISGUISE = register("apply_global_disguise", ApplyGlobalDisguiseAction.CODEC);
 	public static final GameBehaviorEntry<BlockPackagesDuringPhaseBehavior> BLOCK_PACKAGES_DURING_PHASE = register("block_packages_during_phase", BlockPackagesDuringPhaseBehavior.CODEC);
 	public static final GameBehaviorEntry<WeatherEventAction> WEATHER_EVENT = register("weather_event", WeatherEventAction.CODEC);
-	public static final GameBehaviorEntry<CountdownAction> COUNTDOWN_ACTION = register("countdown_action", CountdownAction.CODEC);
+	public static final GameBehaviorEntry<CountdownAction<?>> COUNTDOWN_ACTION = register("countdown_action", CountdownAction.CODEC);
 	public static final GameBehaviorEntry<TargetPlayerAction> TARGET_PLAYER = register("target_player", TargetPlayerAction.CODEC);
 	public static final GameBehaviorEntry<SpawnFireworksAction> SPAWN_FIREWORKS = register("spawn_fireworks", SpawnFireworksAction.CODEC);
 	public static final GameBehaviorEntry<RunCommandsAction> RUN_COMMANDS = register("run_commands", RunCommandsAction.CODEC);
