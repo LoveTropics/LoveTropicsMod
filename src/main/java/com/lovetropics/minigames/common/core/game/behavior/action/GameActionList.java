@@ -59,15 +59,21 @@ public class GameActionList<T> {
 
     private final GameEventListeners listeners = new GameEventListeners();
 
+    private boolean registered;
+
     public GameActionList(List<IGameBehavior> behaviors, ActionTarget<T> target) {
         this.behaviors = behaviors;
         this.target = target;
     }
 
     public void register(IGamePhase game, EventRegistrar events) {
+        if (registered) {
+            throw new IllegalStateException("GameActionList has already been registered");
+        }
         for (IGameBehavior behavior : behaviors) {
             behavior.register(game, events.redirect(GameActionEvents::matches, listeners));
         }
+        registered = true;
     }
 
     public <T1> boolean applyIf(Supplier<Codec<? extends ActionTarget<T1>>> type, IGamePhase phase, GameActionContext context, Iterable<T1> sources) {
@@ -86,6 +92,9 @@ public class GameActionList<T> {
     }
 
     public boolean apply(IGamePhase phase, GameActionContext context, Iterable<T> sources) {
+        if (!registered) {
+            throw new IllegalStateException("Cannot dispatch action, GameActionList has not been registered");
+        }
         return listeners.invoker(GameActionEvents.APPLY).apply(context) | target.apply(phase, listeners, context, sources);
     }
 
