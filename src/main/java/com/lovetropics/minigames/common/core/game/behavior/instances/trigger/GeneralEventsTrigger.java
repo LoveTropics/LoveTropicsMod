@@ -3,10 +3,12 @@ package com.lovetropics.minigames.common.core.game.behavior.instances.trigger;
 import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
-import com.lovetropics.minigames.common.core.game.behavior.action.ActionTargetTypes;
 import com.lovetropics.minigames.common.core.game.behavior.action.GameActionContext;
 import com.lovetropics.minigames.common.core.game.behavior.action.GameActionList;
-import com.lovetropics.minigames.common.core.game.behavior.event.*;
+import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameLogicEvents;
+import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
+import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.lovetropics.minigames.common.core.game.player.PlayerRole;
 import com.mojang.serialization.Codec;
 import net.minecraft.server.level.ServerPlayer;
@@ -30,14 +32,6 @@ public record GeneralEventsTrigger(Map<String, GameActionList<ServerPlayer>> eve
 
 		events.listen(GamePhaseEvents.START, () -> this.invoke(game, "start"));
 		events.listen(GamePhaseEvents.TICK, () -> this.invoke(game, "update"));
-		events.listen(GamePhaseEvents.STOP, reason -> {
-			this.invoke(game, "stop");
-			if (reason.isFinished()) {
-				this.invoke(game, "finish");
-			} else {
-				this.invoke(game, "canceled");
-			}
-		});
 
 		events.listen(GamePlayerEvents.JOIN, player -> this.invoke(game, "player_join", player));
 		events.listen(GamePlayerEvents.LEAVE, player -> this.invoke(game, "player_leave", player));

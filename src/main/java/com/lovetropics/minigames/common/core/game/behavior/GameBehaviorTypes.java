@@ -81,6 +81,7 @@ import com.lovetropics.minigames.common.core.game.behavior.instances.trigger.Pha
 import com.lovetropics.minigames.common.core.game.behavior.instances.trigger.ScheduledActionsTrigger;
 import com.lovetropics.minigames.common.core.game.behavior.instances.trigger.WeatherChangeTrigger;
 import com.lovetropics.minigames.common.core.game.behavior.instances.trigger.WhileInRegionTrigger;
+import com.lovetropics.minigames.common.core.game.behavior.instances.trigger.phase.StopGameTrigger;
 import com.lovetropics.minigames.common.core.game.behavior.instances.tweak.CancelPlayerDamageBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.tweak.DisableHungerBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.tweak.DisableTntDestructionBehavior;
@@ -130,6 +131,7 @@ public class GameBehaviorTypes {
 	public static final GameBehaviorEntry<GameProgressionBehavior> PROGRESSION = register("progression", GameProgressionBehavior.CODEC);
 	public static final GameBehaviorEntry<PermanentItemBehavior> PERMANENT_ITEM = register("permanent_item", PermanentItemBehavior.CODEC);
 	public static final GameBehaviorEntry<GeneralEventsTrigger> EVENTS = register("events", GeneralEventsTrigger.CODEC);
+	public static final GameBehaviorEntry<StopGameTrigger> STOP_GAME = register("phase_triggers/stop", StopGameTrigger.CODEC);
 	public static final GameBehaviorEntry<OnDeathTrigger> ON_DEATH = register("on_death", OnDeathTrigger.CODEC);
 	public static final GameBehaviorEntry<OnDamageTrigger> ON_DAMAGE = register("on_damage", OnDamageTrigger.CODEC);
 	public static final GameBehaviorEntry<WhileInRegionTrigger> WHILE_IN_REGION = register("while_in_region", WhileInRegionTrigger.CODEC);
