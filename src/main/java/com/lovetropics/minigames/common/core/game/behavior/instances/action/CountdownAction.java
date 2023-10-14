@@ -23,8 +23,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-public final class CountdownAction implements IGameBehavior {
-	public static final Codec<CountdownAction> CODEC = RecordCodecBuilder.create(i -> i.group(
+public final class CountdownAction<T> implements IGameBehavior {
+	public static final Codec<CountdownAction<?>> CODEC = RecordCodecBuilder.create(i -> i.group(
 			Codec.LONG.fieldOf("countdown").forGetter(c -> c.countdown / 20),
 			TemplatedText.CODEC.fieldOf("warning").forGetter(c -> c.warning),
 			GameActionList.MAP_CODEC.forGetter(c -> c.actions),
@@ -34,11 +34,11 @@ public final class CountdownAction implements IGameBehavior {
 	private final long countdown;
 	private final TemplatedText warning;
 	private final GameActionList<?> actions;
-	private final ActionTarget<?> target;
+	private final ActionTarget<T> target;
 
-	private final LinkedList<QueueEntry> queue = new LinkedList<>();
+	private final LinkedList<QueueEntry<T>> queue = new LinkedList<>();
 
-	public CountdownAction(long countdown, TemplatedText warning, GameActionList<?> actions, ActionTarget<?> target) {
+	public CountdownAction(long countdown, TemplatedText warning, GameActionList<?> actions, ActionTarget<T> target) {
 		this.countdown = countdown * 20;
 		this.warning = warning;
 		this.actions = actions;
@@ -49,7 +49,7 @@ public final class CountdownAction implements IGameBehavior {
 	public void register(IGamePhase game, EventRegistrar events) {
 		actions.register(game, events);
 
-		target.listenAndCaptureSource(events, (context, objects) -> queue.add(new QueueEntry(game.ticks() + countdown, context, (Iterable)objects)));
+		target.listenAndCaptureSource(events, (context, objects) -> queue.add(new QueueEntry<>(game.ticks() + countdown, context, objects)));
 
 		events.listen(GamePhaseEvents.TICK, () -> {
 			if (!queue.isEmpty()) {
@@ -58,11 +58,11 @@ public final class CountdownAction implements IGameBehavior {
 		});
 	}
 
-	private boolean tickQueuedAction(IGamePhase game, QueueEntry entry) {
+	private boolean tickQueuedAction(IGamePhase game, QueueEntry<T> entry) {
 		long remainingTicks = entry.time() - game.ticks();
 		if (remainingTicks <= 0) {
 			if (actions.target.type() == target.type()) {
-				return actions.applyIf((java.util.function.Supplier) target::type, game, entry.context, entry.sources);
+				return actions.applyIf(target::type, game, entry.context, entry.sources);
 			}
 
 			return actions.apply(game, entry.context);
@@ -83,6 +83,6 @@ public final class CountdownAction implements IGameBehavior {
 		}
 	}
 
-	private record QueueEntry(long time, GameActionContext context, Iterable<Object> sources) {
+	private record QueueEntry<T>(long time, GameActionContext context, Iterable<T> sources) {
 	}
 }

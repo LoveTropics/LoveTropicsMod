@@ -27,41 +27,19 @@ public class GameActionList<T> {
             ActionTarget.FALLBACK_PLAYER.optionalFieldOf("target", PlayerActionTarget.SOURCE).forGetter(list -> list.target)
     ).apply(i, GameActionList::new));
 
-    private static final Codec<GameActionList<?>> SIMPLE_CODEC = MoreCodecs.listOrUnit(IGameBehavior.CODEC)
-            .flatComapMap(
-                    behaviors -> new GameActionList<>(behaviors, PlayerActionTarget.SOURCE),
-                    list -> {
-                        if (!(list.target instanceof PlayerActionTarget tg) || tg.target() != PlayerActionTarget.Target.SOURCE) {
-                            return DataResult.error(() -> "Cannot encode simple action list with target: " + list.target);
-                        }
-                        return DataResult.success(list.behaviors);
-                    }
-            );
 
-    public static final Codec<GameActionList<?>> TYPE_SAFE_CODEC = Codec.either(SIMPLE_CODEC, MAP_CODEC.codec())
-            .xmap(either -> either.map(Function.identity(), Function.identity()), Either::right);
+    public static final Codec<GameActionList<ServerPlayer>> PLAYER = codec(ActionTargetTypes.PLAYER, PlayerActionTarget.SOURCE);
+    public static final Codec<GameActionList<Void>> VOID = codec(ActionTargetTypes.NONE, NoneActionTarget.INSTANCE);
 
-    public static final Codec<GameActionList<ServerPlayer>> PLAYER = mandateType(ActionTargetTypes.PLAYER);
-    public static final Codec<GameActionList<Void>> VOID = mandateTypeDefaultingTarget(ActionTargetTypes.NONE, NoneActionTarget.INSTANCE);
 
-    public static <T, A extends ActionTarget<T>> Codec<GameActionList<T>> mandateType(Supplier<Codec<A>> type) {
-        final Function<GameActionList<?>, DataResult<GameActionList<T>>> function = gameActionList -> {
-            if (gameActionList.target.type() != type.get()) {
-                return DataResult.error(() -> "Action list target must be of type: " + ActionTargetTypes.REGISTRY.get().getKey(type.get()));
-            }
-            return DataResult.success((GameActionList<T>) gameActionList);
-        };
-        return TYPE_SAFE_CODEC.flatXmap(function, function);
-    }
-
-    public static <T, A extends ActionTarget<T>> MapCodec<GameActionList<T>> mandateTypeDefaultingTargetMap(Supplier<Codec<A>> type, A target) {
+    public static <T, A extends ActionTarget<T>> MapCodec<GameActionList<T>> mapCodec(Supplier<Codec<A>> type, A target) {
         return RecordCodecBuilder.mapCodec(i -> i.group(
                 MoreCodecs.listOrUnit(IGameBehavior.CODEC).fieldOf("actions").forGetter(list -> list.behaviors),
                 ExtraCodecs.lazyInitializedCodec(type).optionalFieldOf("target", target).forGetter(list -> (A) list.target)
         ).apply(i, GameActionList::new));
     }
 
-    public static <T, A extends ActionTarget<T>> Codec<GameActionList<T>> mandateTypeDefaultingTarget(Supplier<Codec<A>> type, A target) {
+    public static <T, A extends ActionTarget<T>> Codec<GameActionList<T>> codec(Supplier<Codec<A>> type, A target) {
         var simpleCodec = MoreCodecs.listOrUnit(IGameBehavior.CODEC)
                 .flatComapMap(
                         behaviors -> new GameActionList<>(behaviors, target),
@@ -72,7 +50,7 @@ public class GameActionList<T> {
                             return DataResult.success(list.behaviors);
                         }
                 );
-        return Codec.either(simpleCodec, mandateTypeDefaultingTargetMap(type, target).codec())
+        return Codec.either(simpleCodec, mapCodec(type, target).codec())
                 .xmap(either -> either.map(Function.identity(), Function.identity()), Either::right);
     }
 
@@ -92,9 +70,9 @@ public class GameActionList<T> {
         }
     }
 
-    public <T1, A1 extends ActionTarget<T1>> boolean applyIf(Supplier<Codec<A1>> type, IGamePhase phase, GameActionContext context, Iterable<T1> sources) {
+    public <T1> boolean applyIf(Supplier<Codec<? extends ActionTarget<T1>>> type, IGamePhase phase, GameActionContext context, Iterable<T1> sources) {
         if (type.get() == target.type()) {
-            return apply(phase, context, (Iterable) sources);
+            return apply(phase, context, (Iterable<T>) sources);
         }
         return false;
     }

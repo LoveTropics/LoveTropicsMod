@@ -18,7 +18,7 @@ import java.util.UUID;
 public record TargetPlayerAction(UUID id, GameActionList<ServerPlayer> actions) implements IGameBehavior {
 	public static final Codec<TargetPlayerAction> CODEC = RecordCodecBuilder.create(i -> i.group(
 			UUIDUtil.STRING_CODEC.fieldOf("id").forGetter(TargetPlayerAction::id),
-			GameActionList.mandateTypeDefaultingTargetMap(ActionTargetTypes.PLAYER, PlayerActionTarget.SOURCE).forGetter(TargetPlayerAction::actions)
+			GameActionList.mapCodec(ActionTargetTypes.PLAYER, PlayerActionTarget.SOURCE).forGetter(TargetPlayerAction::actions)
 	).apply(i, TargetPlayerAction::new));
 
 	@Override
