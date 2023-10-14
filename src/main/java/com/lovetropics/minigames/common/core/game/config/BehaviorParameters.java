@@ -12,15 +12,14 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-record BehaviorParameters<T>(Dynamic<?> source) {
-	@Nonnull
-	public Dynamic<T> substitute(Dynamic<T> target) {
+record BehaviorParameters(Dynamic<?> source) {
+	public <T> Dynamic<T> substitute(Dynamic<T> target) {
 		Dynamic<T> result = trySubstituteInAny(target);
 		return Objects.requireNonNullElse(result, target);
 	}
 
 	@Nullable
-	private Dynamic<T> trySubstituteInAny(Dynamic<T> target) {
+	private <T> Dynamic<T> trySubstituteInAny(Dynamic<T> target) {
 		Optional<String> string = target.asString().result();
 		if (string.isPresent()) {
 			String[] parameterRef = parseParameterRef(string.get());
@@ -42,7 +41,7 @@ record BehaviorParameters<T>(Dynamic<?> source) {
 	}
 
 	@Nullable
-	private Dynamic<T> substituteInMap(Dynamic<T> target, Map<Dynamic<T>, Dynamic<T>> targetMap) {
+	private <T> Dynamic<T> substituteInMap(Dynamic<T> target, Map<Dynamic<T>, Dynamic<T>> targetMap) {
 		Dynamic<T> result = null;
 
 		for (Map.Entry<Dynamic<T>, Dynamic<T>> entry : targetMap.entrySet()) {
@@ -62,7 +61,7 @@ record BehaviorParameters<T>(Dynamic<?> source) {
 	}
 
 	@Nullable
-	private Dynamic<T> substituteInList(Dynamic<T> target, Stream<Dynamic<T>> targetStream) {
+	private <T> Dynamic<T> substituteInList(Dynamic<T> target, Stream<Dynamic<T>> targetStream) {
 		MutableBoolean substituted = new MutableBoolean();
 
 		List<T> replacedList = targetStream.map(element -> {

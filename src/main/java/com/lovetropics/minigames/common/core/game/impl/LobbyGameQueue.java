@@ -26,7 +26,7 @@ final class LobbyGameQueue implements ILobbyGameQueue {
 
 	@Override
 	public QueuedGame enqueue(IGameDefinition game) {
-		QueuedGame entry = QueuedGame.create(this.server, game);
+		QueuedGame entry = QueuedGame.create(game);
 		entries.add(entry);
 		return entry;
 	}

@@ -1,14 +1,11 @@
 package com.lovetropics.minigames.common.core.game.behavior;
 
-import com.google.common.collect.ImmutableList;
 import com.lovetropics.minigames.client.lobby.state.ClientBehaviorList;
 import com.lovetropics.minigames.client.lobby.state.ClientConfigList;
 import com.lovetropics.minigames.common.core.game.behavior.config.ConfigList;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
-import com.lovetropics.minigames.common.core.game.config.BehaviorReference;
 import com.lovetropics.minigames.common.core.game.impl.GamePhase;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.MinecraftServer;
 
 import java.util.Iterator;
 import java.util.List;
@@ -22,16 +19,8 @@ public final class BehaviorList implements Iterable<IGameBehavior> {
 
 	private final List<IGameBehavior> behaviors;
 
-	BehaviorList(List<IGameBehavior> behaviors) {
-		this.behaviors = behaviors;
-	}
-
-	public static BehaviorList create(MinecraftServer server, List<BehaviorReference> references) {
-		ImmutableList.Builder<IGameBehavior> behaviors = ImmutableList.builderWithExpectedSize(references.size());
-		for (BehaviorReference reference : references) {
-			reference.addTo(server, (type, behavior) -> behaviors.add(behavior));
-		}
-		return new BehaviorList(behaviors.build());
+	public BehaviorList(List<IGameBehavior> behaviors) {
+		this.behaviors = List.copyOf(behaviors);
 	}
 
 	public void registerTo(GamePhase phase, GameEventListeners events) {

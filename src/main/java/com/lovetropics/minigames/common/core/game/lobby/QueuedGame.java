@@ -2,8 +2,8 @@ package com.lovetropics.minigames.common.core.game.lobby;
 
 import com.lovetropics.minigames.client.lobby.state.ClientBehaviorList;
 import com.lovetropics.minigames.common.core.game.IGameDefinition;
+import com.lovetropics.minigames.common.core.game.IGamePhaseDefinition;
 import com.lovetropics.minigames.common.core.game.behavior.BehaviorList;
-import net.minecraft.server.MinecraftServer;
 
 import javax.annotation.Nullable;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -18,9 +18,9 @@ public record QueuedGame(int networkId, IGameDefinition definition, BehaviorList
 		this.waitingBehaviors = waitingBehaviors;
 	}
 
-	public static QueuedGame create(MinecraftServer server, IGameDefinition game) {
-		BehaviorList playingBehaviors = game.getPlayingPhase().createBehaviors(server);
-		BehaviorList waitingBehaviors = game.getWaitingPhase().map(ph -> ph.createBehaviors(server)).orElse(BehaviorList.EMPTY);
+	public static QueuedGame create(IGameDefinition game) {
+		BehaviorList playingBehaviors = game.getPlayingPhase().getBehaviors();
+		BehaviorList waitingBehaviors = game.getWaitingPhase().map(IGamePhaseDefinition::getBehaviors).orElse(BehaviorList.EMPTY);
 		return new QueuedGame(NEXT_NETWORK_ID.getAndIncrement(), game, playingBehaviors, waitingBehaviors);
 	}
 

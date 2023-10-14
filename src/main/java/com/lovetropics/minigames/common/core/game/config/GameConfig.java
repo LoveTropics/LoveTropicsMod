@@ -51,9 +51,7 @@ public final class GameConfig implements IGameDefinition {
 		this.playing = playing;
 	}
 
-	public static Codec<GameConfig> codec(BehaviorReferenceReader reader, ResourceLocation id) {
-		MapCodec<GamePhaseConfig> phaseCodec = GamePhaseConfig.mapCodec(reader);
-
+	public static Codec<GameConfig> codec(ResourceLocation id) {
 		return RecordCodecBuilder.create(i -> i.group(
 				ResourceLocation.CODEC.optionalFieldOf("backend_id").forGetter(c -> Optional.of(c.backendId)),
 				Codec.STRING.optionalFieldOf("statistics_key").forGetter(c -> Optional.of(c.statisticsKey)),
@@ -62,8 +60,8 @@ public final class GameConfig implements IGameDefinition {
 				ResourceLocation.CODEC.optionalFieldOf("icon").forGetter(c -> Optional.ofNullable(c.icon)),
 				Codec.INT.optionalFieldOf("minimum_participants", 1).forGetter(c -> c.minimumParticipants),
 				Codec.INT.optionalFieldOf("maximum_participants", 100).forGetter(c -> c.maximumParticipants),
-				phaseCodec.codec().optionalFieldOf("waiting").forGetter(c -> Optional.ofNullable(c.waiting)),
-				phaseCodec.forGetter(c -> c.playing)
+				GamePhaseConfig.CODEC.optionalFieldOf("waiting").forGetter(c -> Optional.ofNullable(c.waiting)),
+				GamePhaseConfig.MAP_CODEC.forGetter(c -> c.playing)
 		).apply(i, (backendIdOpt, statisticsKeyOpt, name, subtitleOpt, iconOpt, minimumParticipants, maximumParticipants, waitingOpt, active) -> {
 			ResourceLocation backendId = backendIdOpt.orElse(id);
 			String statisticsKey = statisticsKeyOpt.orElse(id.getPath());
