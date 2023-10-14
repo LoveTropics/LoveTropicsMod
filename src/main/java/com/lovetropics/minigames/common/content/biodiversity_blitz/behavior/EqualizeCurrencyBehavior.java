@@ -15,7 +15,7 @@ public class EqualizeCurrencyBehavior implements IGameBehavior {
     public void register(IGamePhase game, EventRegistrar events) throws GameException {
         CurrencyManager currency = game.getState().getOrThrow(CurrencyManager.KEY);
 
-        events.listen(GameActionEvents.APPLY, (context, sources) -> {
+        events.listen(GameActionEvents.APPLY, (context) -> {
             currency.equalize();
             return true;
         });

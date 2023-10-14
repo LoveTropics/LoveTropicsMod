@@ -34,6 +34,7 @@ import com.lovetropics.minigames.common.core.diguise.PlayerDisguise;
 import com.lovetropics.minigames.common.core.dimension.RuntimeDimensions;
 import com.lovetropics.minigames.common.core.game.IGameManager;
 import com.lovetropics.minigames.common.core.game.behavior.GameBehaviorTypes;
+import com.lovetropics.minigames.common.core.game.behavior.action.ActionTargetTypes;
 import com.lovetropics.minigames.common.core.game.client_state.GameClientStateTypes;
 import com.lovetropics.minigames.common.core.game.impl.GameEventDispatcher;
 import com.lovetropics.minigames.common.core.game.predicate.entity.EntityPredicates;
@@ -132,6 +133,7 @@ public class LoveTropics {
         MinigameItems.init();
 
         GameBehaviorTypes.init(modBus);
+        ActionTargetTypes.init(modBus);
         EntityPredicates.init(modBus);
         GameClientStateTypes.init(modBus);
         StreamHosts.init();

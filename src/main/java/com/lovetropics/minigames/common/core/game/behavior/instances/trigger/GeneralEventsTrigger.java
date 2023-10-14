@@ -5,7 +5,10 @@ import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.action.GameActionContext;
 import com.lovetropics.minigames.common.core.game.behavior.action.GameActionList;
-import com.lovetropics.minigames.common.core.game.behavior.event.*;
+import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameLogicEvents;
+import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
+import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.lovetropics.minigames.common.core.game.player.PlayerRole;
 import com.mojang.serialization.Codec;
 import net.minecraft.server.level.ServerPlayer;
@@ -15,13 +18,13 @@ import javax.annotation.Nullable;
 import java.util.Map;
 
 // TODO: split up into separate trigger types
-public record GeneralEventsTrigger(Map<String, GameActionList> eventActions) implements IGameBehavior {
-	public static final Codec<GeneralEventsTrigger> CODEC = Codec.unboundedMap(Codec.STRING, GameActionList.CODEC)
+public record GeneralEventsTrigger(Map<String, GameActionList<ServerPlayer>> eventActions) implements IGameBehavior {
+	public static final Codec<GeneralEventsTrigger> CODEC = Codec.unboundedMap(Codec.STRING, GameActionList.PLAYER)
 			.xmap(GeneralEventsTrigger::new, b -> b.eventActions);
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) throws GameException {
-		for (GameActionList actions : eventActions.values()) {
+		for (var actions : eventActions.values()) {
 			actions.register(game, events);
 		}
 
@@ -29,14 +32,6 @@ public record GeneralEventsTrigger(Map<String, GameActionList> eventActions) imp
 
 		events.listen(GamePhaseEvents.START, () -> this.invoke(game, "start"));
 		events.listen(GamePhaseEvents.TICK, () -> this.invoke(game, "update"));
-		events.listen(GamePhaseEvents.STOP, reason -> {
-			this.invoke(game, "stop");
-			if (reason.isFinished()) {
-				this.invoke(game, "finish");
-			} else {
-				this.invoke(game, "canceled");
-			}
-		});
 
 		events.listen(GamePlayerEvents.JOIN, player -> this.invoke(game, "player_join", player));
 		events.listen(GamePlayerEvents.LEAVE, player -> this.invoke(game, "player_leave", player));
@@ -81,14 +76,14 @@ public record GeneralEventsTrigger(Map<String, GameActionList> eventActions) imp
 	}
 
 	private void invoke(IGamePhase game, String event) {
-		GameActionList actions = eventActions.get(event);
+		var actions = eventActions.get(event);
 		if (actions != null) {
 			actions.apply(game, GameActionContext.EMPTY);
 		}
 	}
 
 	private void invoke(IGamePhase game, String event, ServerPlayer player) {
-		GameActionList actions = eventActions.get(event);
+		var actions = eventActions.get(event);
 		if (actions != null) {
 			actions.apply(game, GameActionContext.EMPTY, player);
 		}

@@ -11,8 +11,8 @@ import com.mojang.serialization.Codec;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
 
-public record OnKillTrigger(GameActionList actions) implements IGameBehavior {
-	public static final Codec<OnKillTrigger> CODEC = GameActionList.CODEC.xmap(OnKillTrigger::new, OnKillTrigger::actions);
+public record OnKillTrigger(GameActionList<ServerPlayer> actions) implements IGameBehavior {
+	public static final Codec<OnKillTrigger> CODEC = GameActionList.PLAYER.xmap(OnKillTrigger::new, OnKillTrigger::actions);
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {

@@ -12,26 +12,20 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 import java.util.Map;
 
-public class WeatherChangeTrigger implements IGameBehavior {
+public record WeatherChangeTrigger(Map<WeatherEventType, GameActionList<Void>> eventActions) implements IGameBehavior {
 	public static final Codec<WeatherChangeTrigger> CODEC = RecordCodecBuilder.create(i -> i.group(
-			Codec.unboundedMap(WeatherEventType.CODEC, GameActionList.CODEC).fieldOf("events").forGetter(c -> c.eventActions)
+			Codec.unboundedMap(WeatherEventType.CODEC, GameActionList.VOID).fieldOf("events").forGetter(c -> c.eventActions)
 	).apply(i, WeatherChangeTrigger::new));
-
-	private final Map<WeatherEventType, GameActionList> eventActions;
-
-	public WeatherChangeTrigger(Map<WeatherEventType, GameActionList> eventActions) {
-		this.eventActions = eventActions;
-	}
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
-		for (GameActionList actions : eventActions.values()) {
+		for (GameActionList<Void> actions : eventActions.values()) {
 			actions.register(game, events);
 		}
 
 		events.listen(GameWorldEvents.SET_WEATHER, (lastEvent, event) -> {
 			if (event != null) {
-				GameActionList actions = eventActions.get(event.getType());
+				GameActionList<Void> actions = eventActions.get(event.getType());
 				if (actions != null) {
 					actions.apply(game, GameActionContext.EMPTY);
 				}

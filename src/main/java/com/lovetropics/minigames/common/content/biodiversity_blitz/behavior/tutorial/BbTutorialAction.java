@@ -12,6 +12,7 @@ import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameActionEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
+import com.mojang.authlib.GameProfile;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
@@ -33,9 +34,11 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.FarmBlock;
 import net.minecraft.world.level.block.LevelEvent;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraftforge.common.util.FakePlayerFactory;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 
 // TODO: this is extremely hardcoded for now, need to split up!
 public class BbTutorialAction implements IGameBehavior {
@@ -63,22 +66,17 @@ public class BbTutorialAction implements IGameBehavior {
 
     @Override
     public void register(IGamePhase game, EventRegistrar events) throws GameException {
-        PlotsState plots = game.getState().getOrThrow(PlotsState.KEY);
         tutorialActions = new Reference2ObjectOpenHashMap<>();
         tutorialPlots = new HashSet<>();
 
-        // TODO: make an "apply to plot" event
-        events.listen(GameActionEvents.APPLY_TO_PLAYER, (context, target) -> {
-            Plot playerPlot = plots.getPlotFor(target);
-            if (playerPlot == null) {
-                return false;
-            }
-
+        events.listen(GameActionEvents.APPLY_TO_PLOT, (context, playerPlot) -> {
             // Don't run the same tutorial twice per plot
             if (!tutorialPlots.add(playerPlot)) {
                 return false;
             }
 
+            final GameProfile playerProfile = new GameProfile(UUID.randomUUID(), "PlotFakePlayer");
+            final ServerPlayer target = FakePlayerFactory.get(game.getWorld(), playerProfile);
             Long2ObjectMap<Runnable> actions = new Long2ObjectOpenHashMap<>();
             tutorialActions.put(target, actions);
             long ticks = game.ticks() + 4;
@@ -102,14 +100,14 @@ public class BbTutorialAction implements IGameBehavior {
             actions.put(ticks, () -> {
                 BlockPos pos = sample.relative(playerPlot.forward, 12);
 
-                Mob entity = new BbTutorialHuskEntity(EntityType.HUSK, target.level(), playerPlot);
+                Mob entity = new BbTutorialHuskEntity(EntityType.HUSK, game.getWorld(), playerPlot);
 
                 Direction direction = playerPlot.forward.getOpposite();
                 entity.moveTo(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5, direction.toYRot(), 0);
 
-                target.level().addFreshEntity(entity);
+                game.getWorld().addFreshEntity(entity);
 
-                entity.finalizeSpawn(target.serverLevel(), target.level().getCurrentDifficultyAt(pos), MobSpawnType.MOB_SUMMONED, null, null);
+                entity.finalizeSpawn(game.getWorld(), game.getWorld().getCurrentDifficultyAt(pos), MobSpawnType.MOB_SUMMONED, null, null);
             });
 
             ticks += 240;
@@ -163,7 +161,7 @@ public class BbTutorialAction implements IGameBehavior {
         // Farmland row
         for (int i = -1; i < 13; i++) {
             BlockPos pos = sample.relative(playerPlot.forward, -5).relative(cw, i - 5);
-            if (playerPlot.plantBounds.contains(pos) && target.level().getBlockState(pos.below()).getBlock() == Blocks.GRASS_BLOCK) {
+            if (playerPlot.plantBounds.contains(pos) && game.getWorld().getBlockState(pos.below()).getBlock() == Blocks.GRASS_BLOCK) {
                 actions.put(ticks, new SetFarmland(target, pos.below()));
                 ticks += 5;
             }
@@ -172,7 +170,7 @@ public class BbTutorialAction implements IGameBehavior {
         // Farmland row
         for (int i = -1; i < 13; i++) {
             BlockPos pos = sample.relative(playerPlot.forward, -4).relative(cw, i - 5);
-            if (playerPlot.plantBounds.contains(pos) && target.level().getBlockState(pos.below()).getBlock() == Blocks.GRASS_BLOCK) {
+            if (playerPlot.plantBounds.contains(pos) && game.getWorld().getBlockState(pos.below()).getBlock() == Blocks.GRASS_BLOCK) {
                 actions.put(ticks, new SetFarmland(target, pos.below()));
                 ticks += 5;
             }
@@ -234,7 +232,7 @@ public class BbTutorialAction implements IGameBehavior {
         for (int i = -1; i < 13; i++) {
             BlockPos pos = sample.relative(playerPlot.forward, -4).relative(cw, i - 5);
             // how does this work??? there's farmland here!! but removing this breaks it?!?!
-            if (playerPlot.plantBounds.contains(pos) && target.level().getBlockState(pos.below()).getBlock() == Blocks.GRASS_BLOCK) {
+            if (playerPlot.plantBounds.contains(pos) && game.getWorld().getBlockState(pos.below()).getBlock() == Blocks.GRASS_BLOCK) {
                 actions.put(ticks, new SetGrass(target, pos.below()));
                 ticks += 3;
             }
@@ -243,7 +241,7 @@ public class BbTutorialAction implements IGameBehavior {
         // Farmland row
         for (int i = -1; i < 13; i++) {
             BlockPos pos = sample.relative(playerPlot.forward, -5).relative(cw, i - 5);
-            if (playerPlot.plantBounds.contains(pos) && target.level().getBlockState(pos.below()).getBlock() == Blocks.GRASS_BLOCK) {
+            if (playerPlot.plantBounds.contains(pos) && game.getWorld().getBlockState(pos.below()).getBlock() == Blocks.GRASS_BLOCK) {
                 actions.put(ticks, new SetGrass(target, pos.below()));
                 ticks += 3;
             }
@@ -287,8 +285,8 @@ public class BbTutorialAction implements IGameBehavior {
         public void run() {
             Plant plant = game.invoker(BbEvents.PLACE_PLANT).placePlant(target, playerPlot, sample, type).getObject();
             if (plant != null) {
-                target.level().levelEvent(null, LevelEvent.PARTICLES_DESTROY_BLOCK, sample, Block.getId(target.level().getBlockState(plant.coverage().getOrigin())));
-                target.level().playSound(null, sample, sound, SoundSource.BLOCKS, 0.4F, 1.0F);
+                game.getWorld().levelEvent(null, LevelEvent.PARTICLES_DESTROY_BLOCK, sample, Block.getId(game.getWorld().getBlockState(plant.coverage().getOrigin())));
+                game.getWorld().playSound(null, sample, sound, SoundSource.BLOCKS, 0.4F, 1.0F);
             }
         }
     }
@@ -303,8 +301,8 @@ public class BbTutorialAction implements IGameBehavior {
 
             boolean placed = game.invoker(BbEvents.BREAK_PLANT).breakPlant(target, playerPlot, plant);
             if (placed) {
-                target.level().levelEvent(null, LevelEvent.PARTICLES_DESTROY_BLOCK, sample, Block.getId(target.level().getBlockState(plant.coverage().getOrigin())));
-                target.level().playSound(null, sample, sound, SoundSource.BLOCKS, 0.4F, 1.0F);
+                game.getWorld().levelEvent(null, LevelEvent.PARTICLES_DESTROY_BLOCK, sample, Block.getId(game.getWorld().getBlockState(plant.coverage().getOrigin())));
+                game.getWorld().playSound(null, sample, sound, SoundSource.BLOCKS, 0.4F, 1.0F);
             }
         }
     }

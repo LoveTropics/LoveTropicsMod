@@ -2,6 +2,10 @@ package com.lovetropics.minigames.common.core.game.behavior;
 
 import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.LoveTropics;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.Plot;
+import com.lovetropics.minigames.common.core.game.behavior.action.ApplyToBehavior;
+import com.lovetropics.minigames.common.core.game.behavior.action.PlayerActionTarget;
+import com.lovetropics.minigames.common.core.game.behavior.action.PlotActionTarget;
 import com.lovetropics.minigames.common.core.game.behavior.instances.AddWeatherBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.ArmorParticipantsBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.AssignPlayerRolesBehavior;
@@ -78,6 +82,7 @@ import com.lovetropics.minigames.common.core.game.behavior.instances.trigger.Pha
 import com.lovetropics.minigames.common.core.game.behavior.instances.trigger.ScheduledActionsTrigger;
 import com.lovetropics.minigames.common.core.game.behavior.instances.trigger.WeatherChangeTrigger;
 import com.lovetropics.minigames.common.core.game.behavior.instances.trigger.WhileInRegionTrigger;
+import com.lovetropics.minigames.common.core.game.behavior.instances.trigger.phase.StopGameTrigger;
 import com.lovetropics.minigames.common.core.game.behavior.instances.tweak.CancelPlayerDamageBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.tweak.DisableHungerBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.tweak.DisableTntDestructionBehavior;
@@ -99,6 +104,7 @@ import com.mojang.serialization.Codec;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
@@ -127,6 +133,7 @@ public class GameBehaviorTypes {
 	public static final GameBehaviorEntry<GameProgressionBehavior> PROGRESSION = register("progression", GameProgressionBehavior.CODEC);
 	public static final GameBehaviorEntry<PermanentItemBehavior> PERMANENT_ITEM = register("permanent_item", PermanentItemBehavior.CODEC);
 	public static final GameBehaviorEntry<GeneralEventsTrigger> EVENTS = register("events", GeneralEventsTrigger.CODEC);
+	public static final GameBehaviorEntry<StopGameTrigger> STOP_GAME = register("phase_triggers/stop", StopGameTrigger.CODEC);
 	public static final GameBehaviorEntry<OnDeathTrigger> ON_DEATH = register("on_death", OnDeathTrigger.CODEC);
 	public static final GameBehaviorEntry<OnDamageTrigger> ON_DAMAGE = register("on_damage", OnDamageTrigger.CODEC);
 	public static final GameBehaviorEntry<WhileInRegionTrigger> WHILE_IN_REGION = register("while_in_region", WhileInRegionTrigger.CODEC);
@@ -194,7 +201,7 @@ public class GameBehaviorTypes {
 	public static final GameBehaviorEntry<ApplyGlobalDisguiseAction> APPLY_GLOBAL_DISGUISE = register("apply_global_disguise", ApplyGlobalDisguiseAction.CODEC);
 	public static final GameBehaviorEntry<BlockPackagesDuringPhaseBehavior> BLOCK_PACKAGES_DURING_PHASE = register("block_packages_during_phase", BlockPackagesDuringPhaseBehavior.CODEC);
 	public static final GameBehaviorEntry<WeatherEventAction> WEATHER_EVENT = register("weather_event", WeatherEventAction.CODEC);
-	public static final GameBehaviorEntry<CountdownAction> COUNTDOWN_ACTION = register("countdown_action", CountdownAction.CODEC);
+	public static final GameBehaviorEntry<CountdownAction<?>> COUNTDOWN_ACTION = register("countdown_action", CountdownAction.CODEC);
 	public static final GameBehaviorEntry<TargetPlayerAction> TARGET_PLAYER = register("target_player", TargetPlayerAction.CODEC);
 	public static final GameBehaviorEntry<SpawnFireworksAction> SPAWN_FIREWORKS = register("spawn_fireworks", SpawnFireworksAction.CODEC);
 	public static final GameBehaviorEntry<RunCommandsAction> RUN_COMMANDS = register("run_commands", RunCommandsAction.CODEC);
@@ -215,6 +222,9 @@ public class GameBehaviorTypes {
 	public static final GameBehaviorEntry<DebugModeBehavior> DEBUG_MODE = register("debug_mode", DebugModeBehavior.CODEC);
 
 	public static final GameBehaviorEntry<SetGameClientStateBehavior> SET_CLIENT_STATE = register("set_client_state", SetGameClientStateBehavior.CODEC);
+
+	public static final GameBehaviorEntry<ApplyToBehavior<Plot, PlotActionTarget>> APPLY_TO_PLOT = register("apply_to_plot", ApplyToBehavior.PLOT_CODEC);
+	public static final GameBehaviorEntry<ApplyToBehavior<ServerPlayer, PlayerActionTarget>> APPLY_TO_PLAYER = register("apply_to_player", ApplyToBehavior.PLAYER_CODEC);
 
 	public static <T extends IGameBehavior> GameBehaviorEntry<T> register(final String name, final Codec<T> codec) {
 		return REGISTRATE.object(name).behavior(codec).register();

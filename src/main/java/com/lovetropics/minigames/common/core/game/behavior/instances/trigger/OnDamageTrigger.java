@@ -9,10 +9,11 @@ import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.mojang.serialization.Codec;
 
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
 
-public record OnDamageTrigger(GameActionList actions) implements IGameBehavior {
-    public static final Codec<OnDamageTrigger> CODEC = GameActionList.CODEC.xmap(OnDamageTrigger::new, OnDamageTrigger::actions);
+public record OnDamageTrigger(GameActionList<ServerPlayer> actions) implements IGameBehavior {
+    public static final Codec<OnDamageTrigger> CODEC = GameActionList.PLAYER.xmap(OnDamageTrigger::new, OnDamageTrigger::actions);
 
     @Override
     public void register(IGamePhase game, EventRegistrar events) throws GameException {

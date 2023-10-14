@@ -1,6 +1,5 @@
 package com.lovetropics.minigames.common.core.game.behavior.action;
 
-import com.google.common.collect.Lists;
 import com.lovetropics.lib.codec.MoreCodecs;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
@@ -13,92 +12,81 @@ import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.util.StringRepresentable;
+import net.minecraft.util.ExtraCodecs;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
-public class GameActionList {
-	public static final GameActionList EMPTY = new GameActionList(List.of(), Target.SOURCE);
+public class GameActionList<T> {
+    public static final GameActionList<ServerPlayer> EMPTY = new GameActionList<>(List.of(), PlayerActionTarget.SOURCE);
 
-	public static final MapCodec<GameActionList> MAP_CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
-			MoreCodecs.listOrUnit(IGameBehavior.CODEC).fieldOf("actions").forGetter(list -> list.behaviors),
-			Target.CODEC.optionalFieldOf("target", Target.SOURCE).forGetter(list -> list.target)
-	).apply(i, GameActionList::new));
+    public static final MapCodec<GameActionList<?>> MAP_CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
+            MoreCodecs.listOrUnit(IGameBehavior.CODEC).fieldOf("actions").forGetter(list -> list.behaviors),
+            ActionTarget.FALLBACK_PLAYER.optionalFieldOf("target", PlayerActionTarget.SOURCE).forGetter(list -> list.target)
+    ).apply(i, GameActionList::new));
 
-	private static final Codec<GameActionList> SIMPLE_CODEC = MoreCodecs.listOrUnit(IGameBehavior.CODEC)
-			.flatComapMap(
-					behaviors -> new GameActionList(behaviors, Target.SOURCE),
-					list -> {
-						if (list.target != Target.SOURCE) {
-							return DataResult.error(() -> "Cannot encode simple action list with target: " + list.target.getSerializedName());
-						}
-						return DataResult.success(list.behaviors);
-					}
-			);
 
-	public static final Codec<GameActionList> CODEC = Codec.either(SIMPLE_CODEC, MAP_CODEC.codec())
-			.xmap(either -> either.map(Function.identity(), Function.identity()), Either::right);
+    public static final Codec<GameActionList<ServerPlayer>> PLAYER = codec(ActionTargetTypes.PLAYER, PlayerActionTarget.SOURCE);
+    public static final Codec<GameActionList<Void>> VOID = codec(ActionTargetTypes.NONE, NoneActionTarget.INSTANCE);
 
-	private final List<IGameBehavior> behaviors;
-	private final Target target;
 
-	private final GameEventListeners listeners = new GameEventListeners();
+    public static <T, A extends ActionTarget<T>> MapCodec<GameActionList<T>> mapCodec(Supplier<Codec<A>> type, A target) {
+        return RecordCodecBuilder.mapCodec(i -> i.group(
+                MoreCodecs.listOrUnit(IGameBehavior.CODEC).fieldOf("actions").forGetter(list -> list.behaviors),
+                ExtraCodecs.lazyInitializedCodec(type).optionalFieldOf("target", target).forGetter(list -> (A) list.target)
+        ).apply(i, GameActionList::new));
+    }
 
-	public GameActionList(List<IGameBehavior> behaviors, Target target) {
-		this.behaviors = behaviors;
-		this.target = target;
-	}
+    public static <T, A extends ActionTarget<T>> Codec<GameActionList<T>> codec(Supplier<Codec<A>> type, A target) {
+        var simpleCodec = MoreCodecs.listOrUnit(IGameBehavior.CODEC)
+                .flatComapMap(
+                        behaviors -> new GameActionList<>(behaviors, target),
+                        list -> {
+                            if (!target.equals(list.target)) {
+                                return DataResult.error(() -> "Cannot encode simple action list with target: " + list.target);
+                            }
+                            return DataResult.success(list.behaviors);
+                        }
+                );
+        return Codec.either(simpleCodec, mapCodec(type, target).codec())
+                .xmap(either -> either.map(Function.identity(), Function.identity()), Either::right);
+    }
 
-	public void register(IGamePhase game, EventRegistrar events) {
-		for (IGameBehavior behavior : behaviors) {
-			behavior.register(game, events.redirect(GameActionEvents::matches, listeners));
-		}
-	}
+    private final List<IGameBehavior> behaviors;
+    public final ActionTarget<T> target;
 
-	public boolean apply(IGamePhase game, GameActionContext context, ServerPlayer... sources) {
-		return apply(game, context, Arrays.asList(sources));
-	}
+    private final GameEventListeners listeners = new GameEventListeners();
 
-	public boolean apply(IGamePhase game, GameActionContext context, Iterable<ServerPlayer> sources) {
-		boolean result = listeners.invoker(GameActionEvents.APPLY).apply(context, sources);
-		for (ServerPlayer target : target.resolve(game, sources)) {
-			result |= listeners.invoker(GameActionEvents.APPLY_TO_PLAYER).apply(context, target);
-		}
-		return result;
-	}
+    public GameActionList(List<IGameBehavior> behaviors, ActionTarget<T> target) {
+        this.behaviors = behaviors;
+        this.target = target;
+    }
 
-	public enum Target implements StringRepresentable {
-		NONE("none"),
-		SOURCE("source"),
-		PARTICIPANTS("participants"),
-		SPECTATORS("spectators"),
-		ALL("all"),
-		;
+    public void register(IGamePhase game, EventRegistrar events) {
+        for (IGameBehavior behavior : behaviors) {
+            behavior.register(game, events.redirect(GameActionEvents::matches, listeners));
+        }
+    }
 
-		public static final Codec<Target> CODEC = MoreCodecs.stringVariants(values(), Target::getSerializedName);
+    public <T1> boolean applyIf(Supplier<Codec<? extends ActionTarget<T1>>> type, IGamePhase phase, GameActionContext context, Iterable<T1> sources) {
+        if (type.get() == target.type()) {
+            return apply(phase, context, (Iterable<T>) sources);
+        }
+        return false;
+    }
 
-		private final String name;
+    public boolean apply(IGamePhase phase, GameActionContext context) {
+        return apply(phase, context, target.resolve(phase, List.of()));
+    }
 
-		Target(String name) {
-			this.name = name;
-		}
+    public boolean apply(IGamePhase phase, GameActionContext context, T... sources) {
+        return apply(phase, context, Arrays.asList(sources));
+    }
 
-		public List<ServerPlayer> resolve(IGamePhase game, Iterable<ServerPlayer> sources) {
-			// Copy the lists because we might otherwise get concurrent modification from whatever the actions do!
-			return switch (this) {
-				case NONE -> List.of();
-				case SOURCE -> Lists.newArrayList(sources);
-				case PARTICIPANTS -> Lists.newArrayList(game.getParticipants());
-				case SPECTATORS -> Lists.newArrayList(game.getSpectators());
-				case ALL -> Lists.newArrayList(game.getAllPlayers());
-			};
-		}
+    public boolean apply(IGamePhase phase, GameActionContext context, Iterable<T> sources) {
+        return listeners.invoker(GameActionEvents.APPLY).apply(context) | target.apply(phase, listeners, context, sources);
+    }
 
-		@Override
-		public String getSerializedName() {
-			return name;
-		}
-	}
 }
