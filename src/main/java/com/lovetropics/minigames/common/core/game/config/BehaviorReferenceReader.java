@@ -22,8 +22,6 @@ import org.apache.commons.lang3.mutable.MutableObject;
 import javax.annotation.Nullable;
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -101,7 +99,7 @@ public final class BehaviorReferenceReader implements Codec<List<BehaviorReferen
 				return;
 			}
 
-			DataResult<List<BehaviorReference>> setResult = this.tryDecodeSet(id, ops, input);
+			DataResult<List<BehaviorReference>> setResult = this.tryDecodeSet(id, new Dynamic<>(ops, input));
 			if (setResult != null) {
 				setResult.result().ifPresent(references -> {
 					for (BehaviorReference reference : references) {
@@ -133,21 +131,17 @@ public final class BehaviorReferenceReader implements Codec<List<BehaviorReferen
 
 	// TODO: Actually list these rather than doing Resource lookups. Replacing these BehaviorReferences with Holders (and converting these into a dynamic registry) will probably cover this.
 	@Nullable
-	private <T> DataResult<List<BehaviorReference>> tryDecodeSet(ResourceLocation id, DynamicOps<T> ops, T input) {
+	private <T> DataResult<List<BehaviorReference>> tryDecodeSet(ResourceLocation id, Dynamic<T> input) {
 		ResourceLocation path = new ResourceLocation(id.getNamespace(), "behaviors/" + id.getPath() + ".json");
 		Optional<Resource> resource = resources.getResource(path);
 		if (resource.isEmpty()) {
 			return null;
 		}
 
-		BehaviorParameterReplacer<JsonElement> parameterReplacer = BehaviorParameterReplacer.from(new Dynamic<>(ops, input));
+		BehaviorParameters<JsonElement> parameters = new BehaviorParameters<>(input);
 
-		try (InputStream stream = resource.get().open()) {
-			JsonElement json = JsonParser.parseReader(new BufferedReader(new InputStreamReader(stream)));
-			Dynamic<JsonElement> data = new Dynamic<>(JsonOps.INSTANCE, json);
-
-			data = parameterReplacer.apply(data);
-
+		try (BufferedReader reader = resource.get().openAsReader()) {
+			Dynamic<JsonElement> data = parameters.substitute(new Dynamic<>(JsonOps.INSTANCE, JsonParser.parseReader(reader)));
 			return this.parse(data);
 		} catch (IOException e) {
 			return DataResult.error(() -> "Failed to load behavior set at " + path);
