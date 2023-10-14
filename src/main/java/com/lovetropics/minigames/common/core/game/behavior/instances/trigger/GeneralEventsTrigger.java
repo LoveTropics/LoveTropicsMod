@@ -28,11 +28,6 @@ public record GeneralEventsTrigger(Map<String, GameActionList<ServerPlayer>> eve
 			actions.register(game, events);
 		}
 
-		this.invoke(game, "ready");
-
-		events.listen(GamePhaseEvents.START, () -> this.invoke(game, "start"));
-		events.listen(GamePhaseEvents.TICK, () -> this.invoke(game, "update"));
-
 		events.listen(GamePlayerEvents.JOIN, player -> this.invoke(game, "player_join", player));
 		events.listen(GamePlayerEvents.LEAVE, player -> this.invoke(game, "player_leave", player));
 		events.listen(GamePlayerEvents.ADD, player -> this.invoke(game, "player_add", player));
