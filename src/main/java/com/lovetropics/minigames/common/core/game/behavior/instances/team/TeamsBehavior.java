@@ -73,10 +73,21 @@ public final class TeamsBehavior implements IGameBehavior {
 
 		this.addTeamsToScoreboard(game);
 
+		events.listen(GamePhaseEvents.CREATE, () ->
+				teams.getAllocations().allocate(game.getParticipants(), (player, teamKey) -> {
+					GameTeam team = teams.getTeamByKey(teamKey);
+					if (team != null) {
+						teams.addPlayerTo(player, teamKey);
+					}
+				})
+		);
+
 		events.listen(GamePhaseEvents.START, () -> {
-			teams.getAllocations().allocate(game.getParticipants(), (player, team) -> {
-				addPlayerToTeam(game, player, team);
-			});
+			for (GameTeam team : teams) {
+				for (ServerPlayer player : teams.getPlayersForTeam(team.key())) {
+					applyTeamToPlayer(game, team, player);
+				}
+			}
 		});
 
 		events.listen(GamePhaseEvents.DESTROY, () -> onDestroy(game));
@@ -144,20 +155,13 @@ public final class TeamsBehavior implements IGameBehavior {
 		}
 	}
 
-	private void addPlayerToTeam(IGamePhase game, ServerPlayer player, GameTeamKey teamKey) {
-		GameTeam team = teams.getTeamByKey(teamKey);
-		if (team == null) {
-			return;
-		}
+	private void applyTeamToPlayer(IGamePhase game, GameTeam team, ServerPlayer player) {
+		game.invoker(GameTeamEvents.SET_GAME_TEAM).onSetGameTeam(player, teams, team.key());
 
-		teams.addPlayerTo(player, teamKey);
-
-		game.invoker(GameTeamEvents.SET_GAME_TEAM).onSetGameTeam(player, teams, teamKey);
-
-		game.getStatistics().forPlayer(player).set(StatisticKey.TEAM, teamKey);
+		game.getStatistics().forPlayer(player).set(StatisticKey.TEAM, team.key());
 
 		ServerScoreboard scoreboard = player.server.getScoreboard();
-		PlayerTeam scoreboardTeam = scoreboardTeams.get(teamKey);
+		PlayerTeam scoreboardTeam = scoreboardTeams.get(team.key());
 		scoreboard.addPlayerToTeam(player.getScoreboardName(), scoreboardTeam);
 
 		Component teamName = team.config().name().copy().append(" Team!")
