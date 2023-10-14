@@ -16,6 +16,7 @@ import com.mojang.serialization.DataResult;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.JsonOps;
+import net.minecraft.Util;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.FileToIdConverter;
 import net.minecraft.resources.RegistryOps;
@@ -27,14 +28,16 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
+import java.util.stream.Collectors;
 
 // TODO: Replace with a dynamic registry - currently blocked by not being able to /reload those
 @Mod.EventBusSubscriber(modid = Constants.MODID)
@@ -51,12 +54,7 @@ public final class GameConfigs {
 	public static void addReloadListener(AddReloadListenerEvent event) {
 		RegistryAccess registryAccess = event.getRegistryAccess();
 		event.addListener((stage, resourceManager, preparationsProfiler, reloadProfiler, backgroundExecutor, gameExecutor) ->
-				CompletableFuture.supplyAsync(() -> listBehaviors(resourceManager), backgroundExecutor)
-						.thenAccept(behaviors -> {
-							CUSTOM_BEHAVIORS.clear();
-							behaviors.forEach(CUSTOM_BEHAVIORS::register);
-						})
-						.thenApplyAsync(unused -> listConfigs(registryAccess, resourceManager), backgroundExecutor)
+				load(resourceManager, backgroundExecutor, gameExecutor, registryAccess)
 						.thenCompose(stage::wait)
 						.thenAcceptAsync(configs -> {
 							REGISTRY.clear();
@@ -67,22 +65,34 @@ public final class GameConfigs {
 		);
 	}
 
-	private static List<GameConfig> listConfigs(RegistryAccess registryAccess, ResourceManager resourceManager) {
-		List<GameConfig> configs = new ArrayList<>();
+	private static CompletableFuture<List<GameConfig>> load(ResourceManager resourceManager, Executor backgroundExecutor, Executor gameExecutor, RegistryAccess registryAccess) {
+		return CompletableFuture.supplyAsync(() -> listBehaviors(resourceManager, backgroundExecutor), backgroundExecutor)
+				.thenCompose(f -> f)
+				.thenAccept(behaviors -> {
+					CUSTOM_BEHAVIORS.clear();
+					behaviors.forEach(CUSTOM_BEHAVIORS::register);
+				})
+				.thenComposeAsync(unused -> listConfigs(registryAccess, resourceManager, backgroundExecutor), backgroundExecutor);
+	}
 
+	private static CompletableFuture<List<GameConfig>> listConfigs(RegistryAccess registryAccess, ResourceManager resourceManager, Executor executor) {
 		DynamicOps<JsonElement> ops = RegistryOps.create(JsonOps.INSTANCE, registryAccess);
+		List<CompletableFuture<GameConfig>> futures = GAME_LISTER.listMatchingResources(resourceManager).entrySet().stream()
+				.map(entry -> CompletableFuture.supplyAsync(() -> tryLoadConfig(ops, entry.getKey(), entry.getValue()), executor))
+				.toList();
+		return Util.sequence(futures).thenApply(configs -> configs.stream().filter(Objects::nonNull).toList());
+	}
 
-		GAME_LISTER.listMatchingResources(resourceManager).forEach((path, resource) -> {
-			try {
-				loadConfig(ops, path, resource)
-						.resultOrPartial(error -> LOGGER.error("Failed to load game config at {}: {}", path, error))
-						.ifPresent(configs::add);
-			} catch (Exception e) {
-				LOGGER.error("Failed to load game config at {}", path, e);
-			}
-		});
-
-		return configs;
+	@Nullable
+	private static GameConfig tryLoadConfig(DynamicOps<JsonElement> ops, ResourceLocation path, Resource resource) {
+		try {
+			return loadConfig(ops, path, resource)
+					.resultOrPartial(error -> LOGGER.error("Failed to load game config at {}: {}", path, error))
+					.orElse(null);
+		} catch (Exception e) {
+			LOGGER.error("Failed to load game config at {}", path, e);
+			return null;
+		}
 	}
 
 	private static DataResult<GameConfig> loadConfig(DynamicOps<JsonElement> ops, ResourceLocation path, Resource resource) throws IOException {
@@ -93,19 +103,28 @@ public final class GameConfigs {
 		}
 	}
 
-	private static Map<ResourceLocation, GameBehaviorType<?>> listBehaviors(ResourceManager resourceManager) {
-		Map<ResourceLocation, GameBehaviorType<?>> behaviors = new HashMap<>();
-		BEHAVIOR_LISTER.listMatchingResources(resourceManager).forEach((path, resource) -> {
-			try {
-				try (BufferedReader reader = resource.openAsReader()) {
-					Dynamic<JsonElement> template = new Dynamic<>(JsonOps.INSTANCE, JsonParser.parseReader(reader));
-					behaviors.put(BEHAVIOR_LISTER.fileToId(path), new GameBehaviorType<>(createCustomBehaviorCodec(template)));
-				}
-			} catch (Exception e) {
-				LOGGER.error("Failed to load custom behavior at {}", path, e);
+	private static CompletableFuture<Map<ResourceLocation, GameBehaviorType<?>>> listBehaviors(ResourceManager resourceManager, Executor executor) {
+		List<CompletableFuture<Map.Entry<ResourceLocation, GameBehaviorType<?>>>> futures = BEHAVIOR_LISTER.listMatchingResources(resourceManager).entrySet().stream()
+				.map(entry -> CompletableFuture.supplyAsync(() -> tryLoadBehavior(entry.getValue(), entry.getKey()), executor))
+				.toList();
+		return Util.sequence(futures).thenApply(behaviors -> behaviors.stream()
+				.filter(Objects::nonNull)
+				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue))
+		);
+	}
+
+	@Nullable
+	private static Map.Entry<ResourceLocation, GameBehaviorType<?>> tryLoadBehavior(Resource resource, ResourceLocation path) {
+		try {
+			try (BufferedReader reader = resource.openAsReader()) {
+				Dynamic<JsonElement> template = new Dynamic<>(JsonOps.INSTANCE, JsonParser.parseReader(reader));
+				ResourceLocation id = BEHAVIOR_LISTER.fileToId(path);
+				return Map.entry(id, new GameBehaviorType<>(createCustomBehaviorCodec(template)));
 			}
-		});
-		return behaviors;
+		} catch (Exception e) {
+			LOGGER.error("Failed to load custom behavior at {}", path, e);
+			return null;
+		}
 	}
 
 	private static Codec<CustomBehavior> createCustomBehaviorCodec(final Dynamic<?> template) {
