@@ -15,7 +15,7 @@ import net.minecraft.server.level.ServerLevel;
 
 public class SurviveTheTideWindController implements IGameBehavior {
 	public static final Codec<SurviveTheTideWindController> CODEC = RecordCodecBuilder.create(i -> i.group(
-			DiscreteProgressionMap.codec(Codec.FLOAT).fieldOf("wind_speed_by_time").forGetter(c -> c.windSpeedByTime)
+			DiscreteProgressionMap.codec(Codec.FLOAT).fieldOf("wind_speed").forGetter(c -> c.windSpeedByTime)
 	).apply(i, SurviveTheTideWindController::new));
 
 	private final DiscreteProgressionMap<Float> windSpeedByTime;
