@@ -66,15 +66,15 @@ public class PositionPlayersBehavior implements IGameBehavior {
 		fallbackSpawner = new CycledSpawner(regions, allSpawnKeys);
 		LOGGER.debug("FOUND " + participantSpawner.regions.size() + " PARTICIPANT SPAWN REGIONS");
 
-		if (splitByTeam) {
-			TeamState teams = game.getState().getOrThrow(TeamState.KEY);
+		TeamState teams = game.getState().getOrNull(TeamState.KEY);
+		if (splitByTeam && teams != null) {
 			events.listen(GamePhaseEvents.CREATE, () -> {
 				int participantCount = game.getParticipants().size();
 				teamSpawners = createTeamSpawners(teams, participantSpawner, participantCount);
 			});
 		}
 
-		events.listen(GamePlayerEvents.SPAWN, (player, role) -> spawnPlayerAsRole(game, player, role));
+		events.listen(GamePlayerEvents.SPAWN, (player, role) -> spawnPlayerAsRole(game, player, role, teams));
 	}
 
 	private Map<GameTeamKey, CycledSpawner> createTeamSpawners(TeamState teams, CycledSpawner spawns, int participantCount) {
@@ -92,8 +92,7 @@ public class PositionPlayersBehavior implements IGameBehavior {
 		return teamSpawners;
 	}
 
-	private void spawnPlayerAsRole(IGamePhase game, ServerPlayer player, @Nullable PlayerRole role) {
-		TeamState teams = game.getState().getOrNull(TeamState.KEY);
+	private void spawnPlayerAsRole(IGamePhase game, ServerPlayer player, @Nullable PlayerRole role, @Nullable TeamState teams) {
 		BlockBox region = getSpawnRegionFor(player, role, teams);
 		if (region != null) {
 			teleportToRegion(game, player, region);
