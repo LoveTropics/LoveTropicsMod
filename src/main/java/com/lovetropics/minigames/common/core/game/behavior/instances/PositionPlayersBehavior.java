@@ -6,8 +6,13 @@ import com.lovetropics.minigames.common.core.dimension.DimensionUtils;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
+import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.lovetropics.minigames.common.core.game.player.PlayerRole;
+import com.lovetropics.minigames.common.core.game.player.PlayerSet;
+import com.lovetropics.minigames.common.core.game.state.team.GameTeam;
+import com.lovetropics.minigames.common.core.game.state.team.GameTeamKey;
+import com.lovetropics.minigames.common.core.game.state.team.TeamState;
 import com.lovetropics.minigames.common.core.map.MapRegions;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
@@ -16,11 +21,14 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
-import org.apache.logging.log4j.LogManager;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class PositionPlayersBehavior implements IGameBehavior {
 	private static final Logger LOGGER = LogUtils.getLogger();
@@ -28,21 +36,25 @@ public class PositionPlayersBehavior implements IGameBehavior {
 	public static final Codec<PositionPlayersBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
 			MoreCodecs.arrayOrUnit(Codec.STRING, String[]::new).optionalFieldOf("participants", new String[0]).forGetter(c -> c.participantSpawnKeys),
 			MoreCodecs.arrayOrUnit(Codec.STRING, String[]::new).optionalFieldOf("spectators", new String[0]).forGetter(c -> c.spectatorSpawnKeys),
-			MoreCodecs.arrayOrUnit(Codec.STRING, String[]::new).fieldOf("all").forGetter(c -> c.allSpawnKeys)
+			MoreCodecs.arrayOrUnit(Codec.STRING, String[]::new).fieldOf("all").forGetter(c -> c.allSpawnKeys),
+			Codec.BOOL.optionalFieldOf("split_by_team", true).forGetter(c -> c.splitByTeam)
 	).apply(i, PositionPlayersBehavior::new));
 
 	private final String[] participantSpawnKeys;
 	private final String[] spectatorSpawnKeys;
 	private final String[] allSpawnKeys;
+	private final boolean splitByTeam;
 
 	private CycledSpawner participantSpawner = CycledSpawner.EMPTY;
 	private CycledSpawner spectatorSpawner = CycledSpawner.EMPTY;
 	private CycledSpawner fallbackSpawner = CycledSpawner.EMPTY;
+	private Map<GameTeamKey, CycledSpawner> teamSpawners = Map.of();
 
-	public PositionPlayersBehavior(String[] participantSpawnKeys, String[] spectatorSpawnKeys, String[] allSpawnKeys) {
+	public PositionPlayersBehavior(String[] participantSpawnKeys, String[] spectatorSpawnKeys, String[] allSpawnKeys, boolean splitByTeam) {
 		this.participantSpawnKeys = participantSpawnKeys;
 		this.spectatorSpawnKeys = spectatorSpawnKeys;
 		this.allSpawnKeys = allSpawnKeys;
+		this.splitByTeam = splitByTeam;
 	}
 
 	@Override
@@ -54,20 +66,44 @@ public class PositionPlayersBehavior implements IGameBehavior {
 		fallbackSpawner = new CycledSpawner(regions, allSpawnKeys);
 		LOGGER.debug("FOUND " + participantSpawner.regions.size() + " PARTICIPANT SPAWN REGIONS");
 
+		if (splitByTeam) {
+			TeamState teams = game.getState().getOrThrow(TeamState.KEY);
+			events.listen(GamePhaseEvents.CREATE, () -> {
+				int participantCount = game.getParticipants().size();
+				teamSpawners = createTeamSpawners(teams, participantSpawner, participantCount);
+			});
+		}
+
 		events.listen(GamePlayerEvents.SPAWN, (player, role) -> spawnPlayerAsRole(game, player, role));
 	}
 
+	private Map<GameTeamKey, CycledSpawner> createTeamSpawners(TeamState teams, CycledSpawner spawns, int participantCount) {
+		Map<GameTeamKey, CycledSpawner> teamSpawners = new HashMap<>();
+
+		int spawnCount = spawns.size();
+		int groupSize = Math.max(participantCount / spawnCount, 1);
+		for (GameTeam team : teams) {
+			PlayerSet teamPlayers = teams.getPlayersForTeam(team.key());
+			int teamSize = teamPlayers.size();
+			int teamGroupCount = Math.max(teamSize / groupSize, 1);
+			teamSpawners.put(team.key(), spawns.take(teamGroupCount));
+		}
+
+		return teamSpawners;
+	}
+
 	private void spawnPlayerAsRole(IGamePhase game, ServerPlayer player, @Nullable PlayerRole role) {
-		BlockBox region = getSpawnRegionFor(role);
+		TeamState teams = game.getState().getOrNull(TeamState.KEY);
+		BlockBox region = getSpawnRegionFor(player, role, teams);
 		if (region != null) {
 			teleportToRegion(game, player, region);
 		}
 	}
 
 	@Nullable
-	private BlockBox getSpawnRegionFor(PlayerRole role) {
+	private BlockBox getSpawnRegionFor(ServerPlayer player, PlayerRole role, @Nullable TeamState teams) {
 		if (role == PlayerRole.PARTICIPANT) {
-			BlockBox region = participantSpawner.next();
+			BlockBox region = getParticipantSpawnRegion(player, teams);
 			if (region != null) {
 				return region;
 			}
@@ -78,6 +114,18 @@ public class PositionPlayersBehavior implements IGameBehavior {
 			}
 		}
 		return fallbackSpawner.next();
+	}
+
+	@Nullable
+	private BlockBox getParticipantSpawnRegion(ServerPlayer player, TeamState teams) {
+		GameTeamKey team = teams != null ? teams.getTeamForPlayer(player) : null;
+		if (team != null) {
+			CycledSpawner teamSpawner = teamSpawners.get(team);
+			if (teamSpawner != null) {
+				return teamSpawner.next();
+			}
+		}
+		return participantSpawner.next();
 	}
 
 	private void teleportToRegion(IGamePhase game, ServerPlayer player, BlockBox region) {
@@ -104,7 +152,8 @@ public class PositionPlayersBehavior implements IGameBehavior {
 		private int index;
 
 		public CycledSpawner(List<BlockBox> regions) {
-			this.regions = regions;
+			this.regions = new ArrayList<>(regions);
+			Collections.shuffle(this.regions);
 		}
 		
 		public CycledSpawner(MapRegions regions, String... keys) {
@@ -117,6 +166,22 @@ public class PositionPlayersBehavior implements IGameBehavior {
 				return null;
 			}
 			return regions.get(index++ % regions.size());
+		}
+
+		public CycledSpawner take(int count) {
+			List<BlockBox> result = new ArrayList<>(count);
+			for (int i = 0; i < count; i++) {
+				BlockBox region = next();
+				if (region == null) {
+					break;
+				}
+				result.add(region);
+			}
+			return new CycledSpawner(result);
+		}
+
+		public int size() {
+			return regions.size();
 		}
 	}
 }

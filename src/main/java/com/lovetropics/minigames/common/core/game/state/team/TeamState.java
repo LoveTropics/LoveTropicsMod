@@ -144,6 +144,10 @@ public final class TeamState implements IGameState, Iterable<GameTeam> {
 		return teams.iterator();
 	}
 
+	public int size() {
+		return teams.size();
+	}
+
 	public final class Allocations {
 		private final Map<UUID, GameTeamKey> preferences = new Object2ObjectOpenHashMap<>();
 
