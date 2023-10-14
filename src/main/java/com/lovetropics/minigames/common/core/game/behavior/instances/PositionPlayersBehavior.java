@@ -9,6 +9,7 @@ import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.lovetropics.minigames.common.core.game.player.PlayerRole;
 import com.lovetropics.minigames.common.core.map.MapRegions;
+import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
@@ -16,29 +17,27 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
 import org.apache.logging.log4j.LogManager;
+import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
 import java.util.List;
 
 public class PositionPlayersBehavior implements IGameBehavior {
+	private static final Logger LOGGER = LogUtils.getLogger();
+
 	public static final Codec<PositionPlayersBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
 			MoreCodecs.arrayOrUnit(Codec.STRING, String[]::new).optionalFieldOf("participants", new String[0]).forGetter(c -> c.participantSpawnKeys),
 			MoreCodecs.arrayOrUnit(Codec.STRING, String[]::new).optionalFieldOf("spectators", new String[0]).forGetter(c -> c.spectatorSpawnKeys),
-			MoreCodecs.arrayOrUnit(Codec.STRING, String[]::new).optionalFieldOf("all", new String[0]).forGetter(c -> c.allSpawnKeys)
+			MoreCodecs.arrayOrUnit(Codec.STRING, String[]::new).fieldOf("all").forGetter(c -> c.allSpawnKeys)
 	).apply(i, PositionPlayersBehavior::new));
 
 	private final String[] participantSpawnKeys;
 	private final String[] spectatorSpawnKeys;
 	private final String[] allSpawnKeys;
 
-	private final List<BlockBox> participantSpawnRegions = new ArrayList<>();
-	private final List<BlockBox> spectatorSpawnRegions = new ArrayList<>();
-	private final List<BlockBox> allSpawnRegions = new ArrayList<>();
-
-	private int participantSpawnIndex;
-	private int spectatorSpawnIndex;
-	private int allSpawnIndex;
+	private CycledSpawner participantSpawner = CycledSpawner.EMPTY;
+	private CycledSpawner spectatorSpawner = CycledSpawner.EMPTY;
+	private CycledSpawner fallbackSpawner = CycledSpawner.EMPTY;
 
 	public PositionPlayersBehavior(String[] participantSpawnKeys, String[] spectatorSpawnKeys, String[] allSpawnKeys) {
 		this.participantSpawnKeys = participantSpawnKeys;
@@ -50,22 +49,10 @@ public class PositionPlayersBehavior implements IGameBehavior {
 	public void register(IGamePhase game, EventRegistrar events) {
 		MapRegions regions = game.getMapRegions();
 
-		participantSpawnRegions.clear();
-		spectatorSpawnRegions.clear();
-		allSpawnRegions.clear();
-
-		for (String key : participantSpawnKeys) {
-			participantSpawnRegions.addAll(regions.get(key));
-		}
-		LogManager.getLogger().info("FOUND " + participantSpawnRegions.size() + " PARTICIPANT SPAWN REGIONS");
-
-		for (String key : spectatorSpawnKeys) {
-			spectatorSpawnRegions.addAll(regions.get(key));
-		}
-
-		for (String key : allSpawnKeys) {
-			allSpawnRegions.addAll(regions.get(key));
-		}
+		participantSpawner = new CycledSpawner(regions, participantSpawnKeys);
+		spectatorSpawner = new CycledSpawner(regions, spectatorSpawnKeys);
+		fallbackSpawner = new CycledSpawner(regions, allSpawnKeys);
+		LOGGER.debug("FOUND " + participantSpawner.regions.size() + " PARTICIPANT SPAWN REGIONS");
 
 		events.listen(GamePlayerEvents.SPAWN, (player, role) -> spawnPlayerAsRole(game, player, role));
 	}
@@ -79,15 +66,18 @@ public class PositionPlayersBehavior implements IGameBehavior {
 
 	@Nullable
 	private BlockBox getSpawnRegionFor(PlayerRole role) {
-		if (role == PlayerRole.PARTICIPANT && !participantSpawnRegions.isEmpty()) {
-			LogManager.getLogger().info("USING REGION INDEX " + participantSpawnIndex);
-			return participantSpawnRegions.get(participantSpawnIndex++ % participantSpawnRegions.size());
-		} else if (role == PlayerRole.SPECTATOR && !spectatorSpawnRegions.isEmpty()) {
-			return spectatorSpawnRegions.get(spectatorSpawnIndex++ % spectatorSpawnRegions.size());
-		} else if (!allSpawnRegions.isEmpty()) {
-			return allSpawnRegions.get(allSpawnIndex++ % allSpawnRegions.size());
+		if (role == PlayerRole.PARTICIPANT) {
+			BlockBox region = participantSpawner.next();
+			if (region != null) {
+				return region;
+			}
+		} else if (role == PlayerRole.SPECTATOR) {
+			BlockBox region = spectatorSpawner.next();
+			if (region != null) {
+				return region;
+			}
 		}
-		return null;
+		return fallbackSpawner.next();
 	}
 
 	private void teleportToRegion(IGamePhase game, ServerPlayer player, BlockBox region) {
@@ -103,7 +93,30 @@ public class PositionPlayersBehavior implements IGameBehavior {
 				return pos;
 			}
 		}
-		LogManager.getLogger().info("USING FALLBACK SPAWN POS");
+		LOGGER.debug("USING FALLBACK SPAWN POS");
 		return box.centerBlock();
+	}
+
+	private static class CycledSpawner {
+		public static final CycledSpawner EMPTY = new CycledSpawner(List.of());
+
+		private final List<BlockBox> regions;
+		private int index;
+
+		public CycledSpawner(List<BlockBox> regions) {
+			this.regions = regions;
+		}
+		
+		public CycledSpawner(MapRegions regions, String... keys) {
+			this(regions.getAll(keys));
+		}
+
+		@Nullable
+		public BlockBox next() {
+			if (regions.isEmpty()) {
+				return null;
+			}
+			return regions.get(index++ % regions.size());
+		}
 	}
 }

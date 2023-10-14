@@ -12,7 +12,9 @@ import net.minecraft.network.chat.Component;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 
 public final class MapRegions {
@@ -51,6 +53,10 @@ public final class MapRegions {
 		} else {
 			return null;
 		}
+	}
+
+	public List<BlockBox> getAll(String... keys) {
+		return Arrays.stream(keys).flatMap(key -> get(key).stream()).toList();
 	}
 
 	@Nonnull
