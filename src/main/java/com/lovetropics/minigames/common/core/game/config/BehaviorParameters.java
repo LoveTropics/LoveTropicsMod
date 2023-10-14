@@ -26,7 +26,7 @@ record BehaviorParameters(Dynamic<?> source) {
 			if (parameterRef != null) {
 				return lookupParameter(source, target.getOps(), parameterRef);
 			} else {
-				return null;
+				return target;
 			}
 		}
 
@@ -37,22 +37,23 @@ record BehaviorParameters(Dynamic<?> source) {
 
 		return target.asStreamOpt().result()
 				.map(stream -> substituteInList(target, stream))
-				.orElse(null);
+				.orElse(target);
 	}
 
-	@Nullable
 	private <T> Dynamic<T> substituteInMap(Dynamic<T> target, Map<Dynamic<T>, Dynamic<T>> targetMap) {
-		Dynamic<T> result = null;
+		Dynamic<T> result = target;
 
 		for (Map.Entry<Dynamic<T>, Dynamic<T>> entry : targetMap.entrySet()) {
 			Optional<String> key = entry.getKey().asString().result();
 			if (key.isPresent()) {
-				Dynamic<T> substitutedValue = trySubstituteInAny(entry.getValue());
+				Dynamic<T> value = entry.getValue();
+				Dynamic<T> substitutedValue = trySubstituteInAny(value);
 				if (substitutedValue != null) {
-					if (result == null) {
-						result = target;
+					if (value != substitutedValue) {
+						result = result.set(key.get(), substitutedValue);
 					}
-					result = result.set(key.get(), substitutedValue);
+				} else {
+					result = result.remove(key.get());
 				}
 			}
 		}
@@ -60,25 +61,25 @@ record BehaviorParameters(Dynamic<?> source) {
 		return result;
 	}
 
-	@Nullable
 	private <T> Dynamic<T> substituteInList(Dynamic<T> target, Stream<Dynamic<T>> targetStream) {
 		MutableBoolean substituted = new MutableBoolean();
 
 		List<T> replacedList = targetStream.map(element -> {
 			Dynamic<T> substitutedElement = trySubstituteInAny(element);
 			if (substitutedElement != null) {
-				substituted.setTrue();
+				if (element != substitutedElement) {
+					substituted.setTrue();
+				}
 				return substitutedElement.getValue();
-			} else {
-				return element.getValue();
 			}
-		}).toList();
+			return null;
+		}).filter(Objects::nonNull).toList();
 
 		if (substituted.isTrue()) {
 			DynamicOps<T> ops = target.getOps();
 			return new Dynamic<>(ops, ops.createList(replacedList.stream()));
 		} else {
-			return null;
+			return target;
 		}
 	}
 
