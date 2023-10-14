@@ -36,7 +36,7 @@ public class PositionPlayersBehavior implements IGameBehavior {
 	public static final Codec<PositionPlayersBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
 			MoreCodecs.arrayOrUnit(Codec.STRING, String[]::new).optionalFieldOf("participants", new String[0]).forGetter(c -> c.participantSpawnKeys),
 			MoreCodecs.arrayOrUnit(Codec.STRING, String[]::new).optionalFieldOf("spectators", new String[0]).forGetter(c -> c.spectatorSpawnKeys),
-			MoreCodecs.arrayOrUnit(Codec.STRING, String[]::new).fieldOf("all").forGetter(c -> c.allSpawnKeys),
+			MoreCodecs.arrayOrUnit(Codec.STRING, String[]::new).optionalFieldOf("all", new String[0]).forGetter(c -> c.allSpawnKeys),
 			Codec.BOOL.optionalFieldOf("split_by_team", true).forGetter(c -> c.splitByTeam)
 	).apply(i, PositionPlayersBehavior::new));
 
