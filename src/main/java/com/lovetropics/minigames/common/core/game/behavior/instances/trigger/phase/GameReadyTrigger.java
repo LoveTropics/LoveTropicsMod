@@ -15,6 +15,7 @@ public record GameReadyTrigger(GameActionList<Void> actions) implements IGameBeh
     
     @Override
     public void register(IGamePhase game, EventRegistrar events) throws GameException {
+        actions.register(game, events);
         actions.apply(game, GameActionContext.EMPTY);
     }
 }

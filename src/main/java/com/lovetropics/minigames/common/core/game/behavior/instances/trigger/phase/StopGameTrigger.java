@@ -21,6 +21,10 @@ public record StopGameTrigger(GameActionList<Void> actions, Optional<GameActionL
 
     @Override
     public void register(IGamePhase game, EventRegistrar events) throws GameException {
+        actions.register(game, events);
+        finish.ifPresent(f -> f.register(game, events));
+        cancel.ifPresent(c -> c.register(game, events));
+
         events.listen(GamePhaseEvents.STOP, reason -> {
             actions.apply(game, GameActionContext.EMPTY);
             if (reason.isFinished()) {

@@ -15,6 +15,7 @@ public record GameTickTrigger(GameActionList<Void> actions) implements IGameBeha
     
     @Override
     public void register(IGamePhase game, EventRegistrar events) throws GameException {
+        actions.register(game, events);
         events.listen(GamePhaseEvents.TICK, () -> actions.apply(game, GameActionContext.EMPTY));
     }
 }
