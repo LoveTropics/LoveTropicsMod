@@ -80,7 +80,7 @@ public class GamePhase implements IGamePhase {
 
 		CompletableFuture<GameResult<GamePhase>> future = definition.getMap().open(server)
 				.thenApplyAsync(r -> r.map(map -> {
-					BehaviorList behaviors = definition.getBehaviors();
+					BehaviorList behaviors = definition.createBehaviors();
 					return new GamePhase(game, definition, phaseType, map, behaviors);
 				}), server);
 

@@ -23,6 +23,13 @@ public final class BehaviorList implements Iterable<IGameBehavior> {
 		this.behaviors = List.copyOf(behaviors);
 	}
 
+	public static BehaviorList instantiate(List<BehaviorTemplate> behaviors) {
+		return new BehaviorList(behaviors.stream()
+				.map(BehaviorTemplate::instantiate)
+				.toList()
+		);
+	}
+
 	public void registerTo(GamePhase phase, GameEventListeners events) {
 		for (IGameBehavior behavior : this) {
 			behavior.registerState(phase, phase.getState(), phase.getInstanceState());

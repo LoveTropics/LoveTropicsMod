@@ -12,5 +12,5 @@ public interface IGamePhaseDefinition {
 		return BlockEntity.INFINITE_EXTENT_AABB;
 	}
 
-	BehaviorList getBehaviors();
+	BehaviorList createBehaviors();
 }

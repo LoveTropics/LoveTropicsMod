@@ -19,8 +19,8 @@ public record QueuedGame(int networkId, IGameDefinition definition, BehaviorList
 	}
 
 	public static QueuedGame create(IGameDefinition game) {
-		BehaviorList playingBehaviors = game.getPlayingPhase().getBehaviors();
-		BehaviorList waitingBehaviors = game.getWaitingPhase().map(IGamePhaseDefinition::getBehaviors).orElse(BehaviorList.EMPTY);
+		BehaviorList playingBehaviors = game.getPlayingPhase().createBehaviors();
+		BehaviorList waitingBehaviors = game.getWaitingPhase().map(IGamePhaseDefinition::createBehaviors).orElse(BehaviorList.EMPTY);
 		return new QueuedGame(NEXT_NETWORK_ID.getAndIncrement(), game, playingBehaviors, waitingBehaviors);
 	}
 

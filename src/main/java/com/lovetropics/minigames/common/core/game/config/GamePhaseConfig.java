@@ -3,6 +3,7 @@ package com.lovetropics.minigames.common.core.game.config;
 import com.lovetropics.lib.codec.MoreCodecs;
 import com.lovetropics.minigames.common.core.game.IGamePhaseDefinition;
 import com.lovetropics.minigames.common.core.game.behavior.BehaviorList;
+import com.lovetropics.minigames.common.core.game.behavior.BehaviorTemplate;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.map.GameMapProviders;
 import com.lovetropics.minigames.common.core.game.map.IGameMapProvider;
@@ -14,11 +15,11 @@ import net.minecraftforge.common.extensions.IForgeBlockEntity;
 
 import java.util.List;
 
-public record GamePhaseConfig(IGameMapProvider map, AABB area, List<IGameBehavior> behaviors) implements IGamePhaseDefinition {
+public record GamePhaseConfig(IGameMapProvider map, AABB area, List<BehaviorTemplate> behaviors) implements IGamePhaseDefinition {
 	public static final MapCodec<GamePhaseConfig> MAP_CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			GameMapProviders.CODEC.fieldOf("map").forGetter(c -> c.map),
 			MoreCodecs.AABB.optionalFieldOf("area", IForgeBlockEntity.INFINITE_EXTENT_AABB).forGetter(c -> c.area),
-			IGameBehavior.CODEC.listOf().fieldOf("behaviors").forGetter(c -> c.behaviors)
+			BehaviorTemplate.CODEC.listOf().fieldOf("behaviors").forGetter(c -> c.behaviors)
 	).apply(i, GamePhaseConfig::new));
 	public static final Codec<GamePhaseConfig> CODEC = MAP_CODEC.codec();
 
@@ -33,7 +34,7 @@ public record GamePhaseConfig(IGameMapProvider map, AABB area, List<IGameBehavio
 	}
 
 	@Override
-	public BehaviorList getBehaviors() {
-		return new BehaviorList(behaviors);
+	public BehaviorList createBehaviors() {
+		return BehaviorList.instantiate(behaviors);
 	}
 }
