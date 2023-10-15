@@ -1,5 +1,6 @@
 package com.lovetropics.minigames.mixin;
 
+import com.lovetropics.minigames.common.core.diguise.PlayerDisguise;
 import com.lovetropics.minigames.common.core.game.PlayerIsolation;
 import com.lovetropics.minigames.common.core.game.PlayerListAccess;
 import com.mojang.authlib.GameProfile;
@@ -85,7 +86,13 @@ public abstract class PlayerListMixin implements PlayerListAccess {
 		ltminigames$clearAttributeModifiers(player);
 		player.removeAllEffects();
 		player.getTags().clear();
+		PlayerDisguise disguise = PlayerDisguise.getOrNull(player);
+		if (disguise != null) {
+			disguise.clear();
+		}
+		player.onRemovedFromWorld();
 		player.load(ltminigames$emptyPlayerTag);
+		player.onAddedToWorld();
 	}
 
 	@Override
