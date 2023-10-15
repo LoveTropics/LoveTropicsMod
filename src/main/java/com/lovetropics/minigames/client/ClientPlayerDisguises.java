@@ -17,6 +17,7 @@ import net.minecraft.world.entity.WalkAnimationState;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
 import net.minecraftforge.client.event.RenderPlayerEvent;
 import net.minecraftforge.client.event.ViewportEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -159,6 +160,15 @@ public final class ClientPlayerDisguises {
             Vec3 eyePosition = player.getEyePosition((float) event.getPartialTick());
             camera.setPosition(eyePosition.x, eyePosition.y, eyePosition.z);
             camera.move(-camera.getMaxZoom(4.0 * scale), 0.0, 0.0);
+        }
+    }
+
+    @SubscribeEvent
+    public static void onClientPlayerClone(ClientPlayerNetworkEvent.Clone event) {
+        PlayerDisguise oldDisguise = PlayerDisguise.getOrNull(event.getOldPlayer());
+        PlayerDisguise newDisguise = PlayerDisguise.getOrNull(event.getNewPlayer());
+        if (oldDisguise != null && newDisguise != null) {
+            newDisguise.copyFrom(oldDisguise);
         }
     }
 }
