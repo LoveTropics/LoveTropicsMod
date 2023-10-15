@@ -76,8 +76,9 @@ public final class PlayerIsolation {
 
 	public void isolateAndClear(final ServerPlayer player) {
 		final PlayerListAccess playerList = (PlayerListAccess) player.getServer().getPlayerList();
-		if (isolatedPlayers.add(player.getUUID())) {
+		if (!isolatedPlayers.contains(player.getUUID())) {
 			playerList.ltminigames$save(player);
+			isolatedPlayers.add(player.getUUID());
 		}
 		playerList.ltminigames$clear(player);
 		pendingIsolation.add(player.getUUID());
