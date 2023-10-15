@@ -2,6 +2,8 @@ package com.lovetropics.minigames.common.core.game.behavior.instances.trigger.ph
 
 import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
+import com.lovetropics.minigames.common.core.game.behavior.GameBehaviorType;
+import com.lovetropics.minigames.common.core.game.behavior.GameBehaviorTypes;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.action.GameActionContext;
 import com.lovetropics.minigames.common.core.game.behavior.action.GameActionList;
@@ -11,6 +13,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 import java.util.Optional;
+import java.util.function.Supplier;
 
 public record StopGameTrigger(GameActionList<Void> actions, Optional<GameActionList<Void>> finish, Optional<GameActionList<Void>> cancel) implements IGameBehavior {
     public static final Codec<StopGameTrigger> CODEC = RecordCodecBuilder.create(in -> in.group(
@@ -33,5 +36,10 @@ public record StopGameTrigger(GameActionList<Void> actions, Optional<GameActionL
                 cancel.ifPresent(c -> c.apply(game, GameActionContext.EMPTY));
             }
         });
+    }
+
+    @Override
+    public Supplier<? extends GameBehaviorType<?>> behaviorType() {
+        return GameBehaviorTypes.STOP_GAME;
     }
 }

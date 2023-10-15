@@ -1,6 +1,8 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances.command;
 
 import com.lovetropics.minigames.common.core.game.IGamePhase;
+import com.lovetropics.minigames.common.core.game.behavior.GameBehaviorType;
+import com.lovetropics.minigames.common.core.game.behavior.GameBehaviorTypes;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
@@ -10,6 +12,8 @@ import com.lovetropics.minigames.common.core.game.weather.PrecipitationType;
 import com.lovetropics.minigames.common.core.game.weather.WeatherController;
 import com.lovetropics.minigames.common.core.game.weather.WeatherControllerManager;
 import com.mojang.serialization.Codec;
+
+import java.util.function.Supplier;
 
 public class WeatherControlsBehavior implements IGameBehavior {
 	public static final Codec<WeatherControlsBehavior> CODEC = Codec.unit(WeatherControlsBehavior::new);
@@ -37,5 +41,10 @@ public class WeatherControlsBehavior implements IGameBehavior {
 		commands.add("stop_wind", ControlCommand.forAdmins(source -> controller.setWind(0.0F)));
 
 		events.listen(GamePhaseEvents.STOP, reason -> controller.reset());
+	}
+
+	@Override
+	public Supplier<? extends GameBehaviorType<?>> behaviorType() {
+		return GameBehaviorTypes.WEATHER_CONTROLS;
 	}
 }

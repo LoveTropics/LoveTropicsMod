@@ -20,6 +20,8 @@ public interface IGameLobbyPlayers extends PlayerSet {
 
 	boolean forceRole(ServerPlayer player, @Nullable PlayerRole role);
 
+	GameResult<Unit> join(ServerPlayer player, PlayerRole role);
+
 	@Nullable
 	PlayerRole getForcedRoleFor(ServerPlayer player);
 

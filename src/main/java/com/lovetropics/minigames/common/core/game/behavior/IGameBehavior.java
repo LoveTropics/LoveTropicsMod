@@ -6,13 +6,16 @@ import com.lovetropics.minigames.common.core.game.behavior.config.ConfigList;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.instances.CompositeBehavior;
 import com.lovetropics.minigames.common.core.game.config.GameConfigs;
+import com.lovetropics.minigames.common.core.game.datagen.DirectBehavior;
 import com.lovetropics.minigames.common.core.game.state.GameStateMap;
 import com.mojang.datafixers.util.Either;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
+import com.mojang.serialization.MapCodec;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.ExtraCodecs;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -20,10 +23,30 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 public interface IGameBehavior {
 	Codec<? extends GameBehaviorType<?>> TYPE_CODEC = Codec.either(GameBehaviorTypes.TYPE_CODEC, GameConfigs.CUSTOM_BEHAVIORS)
 			.xmap(e -> e.map(Function.identity(), Function.identity()), Either::left);
+	Codec<IGameBehavior> DISPATCHING = new Codec<>() {
+		private final Codec<IGameBehavior> dispatch = ExtraCodecs.lazyInitializedCodec(() -> GameBehaviorTypes.REGISTRY.get().getCodec())
+				.dispatch(be -> be.behaviorType().get(), GameBehaviorType::codec);
+		@Override
+		public <T> DataResult<Pair<IGameBehavior, T>> decode(DynamicOps<T> ops, T input) {
+			return dispatch.decode(ops, input);
+		}
+
+		@Override
+		public <T> DataResult<T> encode(IGameBehavior input, DynamicOps<T> ops, T prefix) {
+			if (input instanceof DirectBehavior direct) {
+				return DataResult.success(ops.createString(direct.key().toString()));
+			}
+			return dispatch.encode(input, ops, prefix);
+		}
+	};
+
+	Codec<List<IGameBehavior>> DISPATCHING_LIST = DISPATCHING.listOf();
+
 	Codec<IGameBehavior> SIMPLE_CODEC = new Codec<>() {
 		@Override
 		public <T> DataResult<Pair<IGameBehavior, T>> decode(DynamicOps<T> ops, T input) {
@@ -37,14 +60,22 @@ public interface IGameBehavior {
 		}
 
 		private static <T> DataResult<Pair<IGameBehavior, T>> parseTyped(DynamicOps<T> ops, T input, GameBehaviorType<?> type, T typeName) {
-			return type.codec().decode(ops, input)
-					.mapError(err -> "In behavior " + typeName + ": " + err)
+			final var initial = type.codec().decode(ops, input);
+			if (initial.error().isPresent() && !(type.codec() instanceof MapCodec.MapCodecCodec<?>)) {
+				final var value = ops.get(input, "value").result();
+				if (value.isPresent()) {
+					return type.codec().decode(ops, value.get())
+							.mapError(err -> "In behavior " + typeName + ": " + err)
+							.map(pair -> pair.mapFirst(b -> b));
+				}
+			}
+			return initial.mapError(err -> "In behavior " + typeName + ": " + err)
 					.map(pair -> pair.mapFirst(b -> b));
 		}
 
 		@Override
 		public <T> DataResult<T> encode(IGameBehavior input, DynamicOps<T> ops, T prefix) {
-			return DataResult.error(() -> "Encoding unsupported");
+			return DISPATCHING.encode(input, ops, prefix);
 		}
 	};
 
@@ -62,7 +93,11 @@ public interface IGameBehavior {
 
 		@Override
 		public <T> DataResult<T> encode(IGameBehavior input, DynamicOps<T> ops, T prefix) {
-			return DataResult.error(() -> "Encoding unsupported");
+			if (input instanceof CompositeBehavior compositeBehavior) {
+				return DISPATCHING_LIST.encode(compositeBehavior.behaviors(), ops, prefix);
+			} else {
+				return DISPATCHING.encode(input, ops, prefix);
+			}
 		}
 	};
 
@@ -92,4 +127,8 @@ public interface IGameBehavior {
 	 * @throws GameException if this behavior was not able to be initialized
 	 */
 	void register(IGamePhase game, EventRegistrar events) throws GameException;
+
+	default Supplier<? extends GameBehaviorType<?>> behaviorType() {
+		throw new UnsupportedOperationException("This behavior is not aware of its type: " + this);
+	}
 }

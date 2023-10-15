@@ -76,6 +76,17 @@ final class LobbyPlayerManager implements IGameLobbyPlayers {
 		return registrations.forceRole(player.getUUID(), role);
 	}
 
+	@Override
+	public GameResult<Unit> join(ServerPlayer player, PlayerRole role) {
+		if (registrations.add(player.getUUID())) {
+			this.roleSelections.setRole(player, role);
+			lobby.onPlayerRegister(player);
+			return GameResult.ok();
+		} else {
+			return GameResult.error(GameTexts.Commands.alreadyInLobby());
+		}
+	}
+
 	@Nullable
 	@Override
 	public PlayerRole getForcedRoleFor(ServerPlayer player) {

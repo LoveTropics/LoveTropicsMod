@@ -67,6 +67,10 @@ public final class PlayerRoleSelections {
 		}
 	}
 
+	public void setRole(ServerPlayer player, PlayerRole role) {
+		this.roles.put(player.getUUID(), role);
+	}
+
 	@Nonnull
 	public PlayerRole getSelectedRoleFor(ServerPlayer player) {
 		return roles.getOrDefault(player.getUUID(), PlayerRole.SPECTATOR);

@@ -29,6 +29,15 @@ if (System.getenv('GHA_RELEASE_WORKFLOW')) {
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(17)
 
+sourceSets.main.resources {
+    srcDir 'src/generated/resources'
+    exclude 'testing/**'
+}
+sourceSets.test.resources {
+    srcDir 'src/generated/resources'
+    include 'testing/**'
+}
+
 minecraft {
     mappings channel: 'parchment', version: parchment_version
     
@@ -43,6 +52,7 @@ minecraft {
             jvmArg '-Dmixin.env.disableRefMap=true'
 
             property 'forge.logging.console.level', 'info'
+            property 'forge.enabledGameTestNamespaces', 'ltminigames'
 
             mods {
                 ltminigames {
@@ -53,6 +63,12 @@ minecraft {
 
         client {
             taskName 'ltminigames_client'
+
+            mods {
+                ltminigames {
+                    source sourceSets.test
+                }
+            }
         }
 
         server {
@@ -65,14 +81,52 @@ minecraft {
             environment 'target', 'fmluserdevdata'
 
             args '--mod', 'ltminigames', '--all', '--output', '"' + rootProject.file('src/generated/resources/') + '"',
-                 '--existing', '"' + sourceSets.main.resources.srcDirs[0] + '"' 
-            
+                 '--existing', '"' + sourceSets.main.resources.srcDirs[0] + '"'
+
+            mods {
+                ltminigames {
+                    source sourceSets.test
+                }
+            }
+        }
+//
+//        gameTestData {
+//            parent data
+//            environment 'target', 'fmluserdevdata'
+//            environment 'gameTest', 'true'
+//            args '--existing', '"' + sourceSets.main.resources.srcDirs[1] + '"'
+//
+//            mods {
+//                ltminigames {
+//                    source sourceSets.test
+//                }
+//            }
+//        }
+
+        gameTestServer {
+            workingDirectory project.file('run')
+
+            mods {
+                ltminigames {
+                    source sourceSets.test
+                }
+            }
         }
     }
 }
 
-sourceSets.main.resources {
-    srcDir 'src/generated/resources'
+configurations {
+    modImpl
+    implementation.extendsFrom(modImpl)
+    testImplementation.extendsFrom(modImpl)
+
+    modRuntime
+    runtimeOnly.extendsFrom(modRuntime)
+    testRuntimeOnly.extendsFrom(modRuntime)
+
+    modCompile
+    compileOnly.extendsFrom(modCompile)
+    testCompileOnly.extendsFrom(modCompile)
 }
 
 repositories {
@@ -84,14 +138,14 @@ repositories {
 dependencies {
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
 
-    runtimeOnly fg.deobf('maven.modrinth:tropicraft:9.6.1-1.20.1')
+    modRuntime fg.deobf('maven.modrinth:tropicraft:9.6.1-1.20.1')
 
     // TODO: HACK - We get Registrate at runtime through JarJar from Tropicraft. We should rather prefer to depend on the slim jar.
-    jarJar(compileOnly(fg.deobf("com.tterrag.registrate:Registrate:$registrate_version"))) {
+    jarJar(modCompile(fg.deobf("com.tterrag.registrate:Registrate:$registrate_version"))) {
         jarJar.ranged(it, "[$registrate_version,MC1.21)")
     }
 
-    jarJar(implementation(fg.deobf("com.lovetropics.lib:LTLib:$ltlib_version")))
+    jarJar(modImpl(fg.deobf("com.lovetropics.lib:LTLib:$ltlib_version")))
 
     // Annotation Processors
     if (System.getProperty("idea.sync.active") != "true") {

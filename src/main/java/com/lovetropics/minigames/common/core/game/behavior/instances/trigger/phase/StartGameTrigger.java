@@ -2,12 +2,16 @@ package com.lovetropics.minigames.common.core.game.behavior.instances.trigger.ph
 
 import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
+import com.lovetropics.minigames.common.core.game.behavior.GameBehaviorType;
+import com.lovetropics.minigames.common.core.game.behavior.GameBehaviorTypes;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.action.GameActionContext;
 import com.lovetropics.minigames.common.core.game.behavior.action.GameActionList;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.mojang.serialization.Codec;
+
+import java.util.function.Supplier;
 
 public record StartGameTrigger(GameActionList<Void> actions) implements IGameBehavior {
     public static final Codec<StartGameTrigger> CODEC = GameActionList.VOID
@@ -17,5 +21,10 @@ public record StartGameTrigger(GameActionList<Void> actions) implements IGameBeh
     public void register(IGamePhase game, EventRegistrar events) throws GameException {
         actions.register(game, events);
         events.listen(GamePhaseEvents.START, () -> actions.apply(game, GameActionContext.EMPTY));
+    }
+
+    @Override
+    public Supplier<? extends GameBehaviorType<?>> behaviorType() {
+        return GameBehaviorTypes.START_GAME;
     }
 }
