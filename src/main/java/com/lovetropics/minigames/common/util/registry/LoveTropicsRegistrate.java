@@ -5,8 +5,6 @@ import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.predicate.entity.EntityPredicate;
 import com.mojang.serialization.Codec;
 import com.tterrag.registrate.AbstractRegistrate;
-import com.tterrag.registrate.providers.ProviderType;
-import com.tterrag.registrate.providers.RegistrateProvider;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 
 public final class LoveTropicsRegistrate extends AbstractRegistrate<LoveTropicsRegistrate> {
@@ -52,13 +50,5 @@ public final class LoveTropicsRegistrate extends AbstractRegistrate<LoveTropicsR
 
 	public <T extends GameClientState, P> GameClientTweakBuilder<T, P> clientState(P parent, String name, Codec<T> codec) {
 		return entry(name, callback -> new GameClientTweakBuilder<>(this, parent, name, callback, codec));
-	}
-
-	@Override
-	public <T extends RegistrateProvider> void genData(ProviderType<? extends T> type, T gen) {
-//		if (Boolean.parseBoolean(System.getenv("gameTest"))) {
-//			return;
-//		}
-		super.genData(type, gen);
 	}
 }
