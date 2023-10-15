@@ -39,7 +39,12 @@ public abstract class PlayerListMixin implements PlayerListAccess {
 	@Final
 	private Map<UUID, PlayerAdvancements> advancements;
 
-	@Shadow protected abstract void save(ServerPlayer pPlayer);
+	@Shadow
+	protected abstract void save(ServerPlayer player);
+
+	@Shadow
+	@Nullable
+	public abstract CompoundTag getSingleplayerData();
 
 	@Unique
 	@Nullable
@@ -86,6 +91,18 @@ public abstract class PlayerListMixin implements PlayerListAccess {
 	@Override
 	public void ltminigames$save(ServerPlayer player) {
 		save(player);
+
+		// We usually don't load the singleplayer player multiple times, so we need to overwrite this value with what we serialised
+		if (server.isSingleplayerOwner(player.getGameProfile())) {
+			CompoundTag loadedPlayerTag = server.getWorldData().getLoadedPlayerTag();
+			CompoundTag singleplayerData = getSingleplayerData();
+			if (loadedPlayerTag != null && singleplayerData != null) {
+				for (String key : List.copyOf(loadedPlayerTag.getAllKeys())) {
+					loadedPlayerTag.remove(key);
+				}
+				loadedPlayerTag.merge(singleplayerData);
+			}
+		}
 	}
 
 	@Unique
