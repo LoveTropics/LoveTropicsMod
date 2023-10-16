@@ -96,7 +96,7 @@ public class LTMinigamesGameTests {
                 if (gametest == null) continue;
                 String testName =  id.getPath() + "." + testMethod.getName();
                 String template = gametest.template().isBlank() ? "ltminigames:empty_3x3" : net.minecraftforge.gametest.ForgeGameTestHooks.getTemplateNamespace(testMethod) + ":" + (gametest.template().isEmpty() ? testName : gametest.template());
-                String batch = gametest.batch();
+                String batch = gametest.batch().isBlank() ? id.getPath() : gametest.batch();
                 Rotation rotation = StructureUtils.getRotationForRotationSteps(gametest.rotationSteps());
                 final var consumer = (Consumer<LTGameTestHelper>)turnMethodIntoConsumer(testMethod, test);
                 tests.add(new TestFunction(batch, testName, template, rotation, gametest.timeoutTicks(), gametest.setupTicks(), gametest.required(), gametest.requiredSuccesses(), gametest.attempts(), helper -> consumer.accept(new LTGameTestHelper(helper))));

@@ -36,6 +36,7 @@ sourceSets.main.resources {
 sourceSets.test.resources {
     srcDir 'src/generated/resources'
     include 'testing/**'
+    include 'data/ltminigames/structures/**'
 }
 
 minecraft {
@@ -89,22 +90,11 @@ minecraft {
                 }
             }
         }
-//
-//        gameTestData {
-//            parent data
-//            environment 'target', 'fmluserdevdata'
-//            environment 'gameTest', 'true'
-//            args '--existing', '"' + sourceSets.main.resources.srcDirs[1] + '"'
-//
-//            mods {
-//                ltminigames {
-//                    source sourceSets.test
-//                }
-//            }
-//        }
 
         gameTestServer {
-            workingDirectory project.file('run')
+            taskName 'ltminigames_gametestServer'
+
+            property 'forge.enableGameTest', 'true'
 
             mods {
                 ltminigames {
