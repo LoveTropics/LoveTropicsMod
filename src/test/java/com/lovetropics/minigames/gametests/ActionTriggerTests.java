@@ -17,6 +17,7 @@ import com.lovetropics.minigames.common.core.game.player.PlayerRole;
 import com.lovetropics.minigames.common.core.game.util.TemplatedText;
 import com.lovetropics.minigames.gametests.api.LTGameTestHelper;
 import com.lovetropics.minigames.gametests.api.MinigameTest;
+import com.lovetropics.minigames.gametests.api.RegisterMinigameTest;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.network.chat.Component;
@@ -26,7 +27,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageTypes;
-import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.item.ItemStack;
@@ -37,10 +37,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-public class ActionTests implements MinigameTest {
+@RegisterMinigameTest
+public class ActionTriggerTests implements MinigameTest {
     @Override
     public void generateGame(GameProvider.GameGenerator generator, BehaviorFactory behaviors, HolderLookup.Provider registries) {
-        generator.builder(gameId("start_trigger"))
+        generator.builder(gameId("start"))
                 .withPlayingPhase(new InlineMapProvider(Level.OVERWORLD), phaseBuilder -> phaseBuilder
                         .withBehavior(new StartGameTrigger(behaviors.applyToAllPlayers(
                                 NoneActionTarget.INSTANCE,
@@ -48,7 +49,7 @@ public class ActionTests implements MinigameTest {
                                 new PlaySoundAction(SoundEvents.ALLAY_HURT, 0.5f, 0.5f)
                         ))));
 
-        generator.builder(gameId("stop_trigger"))
+        generator.builder(gameId("stop"))
                 .withPlayingPhase(new InlineMapProvider(Level.OVERWORLD), phaseBuilder -> phaseBuilder
                         .withBehavior(new StopGameTrigger(behaviors.applyToAllPlayers(
                                 NoneActionTarget.INSTANCE,
@@ -92,7 +93,7 @@ public class ActionTests implements MinigameTest {
     public void testStartTrigger(final LTGameTestHelper helper) {
         final var player = helper.createFakePlayer(packet -> packet instanceof ClientboundSystemChatPacket || packet instanceof ClientboundSoundPacket);
         final var lobby = helper.createGame(player, PlayerRole.PARTICIPANT);
-        lobby.enqueue(gameId("start_trigger"));
+        lobby.enqueue(gameId("start"));
 
         helper.startSequence()
             .thenExecute(helper.startGame(lobby))
@@ -106,7 +107,7 @@ public class ActionTests implements MinigameTest {
     public void testStopTrigger(final LTGameTestHelper helper) {
         final var player = helper.createFakePlayer(packet -> false);
         final var lobby = helper.createGame(player, PlayerRole.PARTICIPANT);
-        lobby.enqueue(gameId("stop_trigger"));
+        lobby.enqueue(gameId("stop"));
 
         helper.startSequence()
             .thenExecute(helper.startGame(lobby))
@@ -118,6 +119,6 @@ public class ActionTests implements MinigameTest {
 
     @Override
     public ResourceLocation id() {
-        return new ResourceLocation("lttest:action_test");
+        return new ResourceLocation("lttest:action_trigger_test");
     }
 }

@@ -1,9 +1,11 @@
 package com.lovetropics.minigames.gametests.api;
 
+import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.common.core.game.datagen.BehaviorFactory;
 import com.lovetropics.minigames.common.core.game.datagen.BehaviorProvider;
 import com.lovetropics.minigames.common.core.game.datagen.GameProvider;
-import com.lovetropics.minigames.gametests.ActionTests;
+import com.lovetropics.minigames.gametests.ActionTriggerTests;
+import com.lovetropics.minigames.gametests.TweakTests;
 import net.minecraft.SharedConstants;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
@@ -25,11 +27,13 @@ import net.minecraftforge.event.AddPackFindersEvent;
 import net.minecraftforge.event.RegisterGameTestsEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.ModList;
+import net.minecraftforge.fml.ModLoader;
 import net.minecraftforge.fml.common.Mod;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -39,7 +43,7 @@ import java.util.stream.Stream;
 
 @Mod.EventBusSubscriber(modid = "ltminigames", bus = Mod.EventBusSubscriber.Bus.MOD)
 public class LTMinigamesGameTests {
-    public static final Map<ResourceLocation, MinigameTest> TESTS = Stream.of(new ActionTests())
+    public static final Map<ResourceLocation, MinigameTest> TESTS = Stream.of(new ActionTriggerTests(), new TweakTests())
             .collect(Collectors.toMap(MinigameTest::id, Function.identity()));
 
     @SubscribeEvent
@@ -88,12 +92,30 @@ public class LTMinigamesGameTests {
     public static List<TestFunction> generate() {
         final List<TestFunction> tests = new ArrayList<>();
 
-        for (var entry : TESTS.entrySet()) {
+        final var classes = ModList.get().getAllScanData().stream()
+                .flatMap(sc -> sc.getAnnotations().stream())
+                .filter(an -> an.annotationType().equals(RegisterMinigameTest.TYPE))
+                .map(an -> an.clazz().getInternalName())
+                .toList();
+
+        final var testMap = new HashMap<ResourceLocation, MinigameTest>();
+        try {
+            for (String cls : classes) {
+                final Class<?> clazz = Class.forName(cls.replace('/', '.'));
+                final MinigameTest test = (MinigameTest) clazz.getDeclaredConstructor().newInstance();
+                testMap.put(test.id(), test);
+            }
+        } catch (Exception ex) {
+            LoveTropics.LOGGER.error("Could not create minigame test: ", ex);
+        }
+
+        for (var entry : testMap.entrySet()) {
             var test = entry.getValue();
             var id = entry.getKey();
             for (Method testMethod : test.getClass().getDeclaredMethods()) {
                 GameTest gametest = testMethod.getAnnotation(GameTest.class);
                 if (gametest == null) continue;
+
                 String testName =  id.getPath() + "." + testMethod.getName();
                 String template = gametest.template().isBlank() ? "ltminigames:empty_3x3" : net.minecraftforge.gametest.ForgeGameTestHooks.getTemplateNamespace(testMethod) + ":" + (gametest.template().isEmpty() ? testName : gametest.template());
                 String batch = gametest.batch().isBlank() ? id.getPath() : gametest.batch();

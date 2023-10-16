@@ -27,10 +27,13 @@ public class BehaviorFactory {
     }
 
     public <T> GameActionList<T> applyToAllPlayers(ActionTarget<T> target, IGameBehavior... behaviors) {
-        return new GameActionList<>(
-                new ApplyToBehavior<>(new PlayerActionTarget(PlayerActionTarget.Target.ALL),
+        return new GameActionList<>(applyToAllPlayersBehavior(behaviors), target);
+    }
+
+    public <T> IGameBehavior applyToAllPlayersBehavior(IGameBehavior... behaviors) {
+        return new ApplyToBehavior<>(new PlayerActionTarget(PlayerActionTarget.Target.ALL),
                         new GameActionList<>(list(behaviors),
-                                new PlayerActionTarget(PlayerActionTarget.Target.SOURCE)), GameBehaviorTypes.APPLY_TO_PLAYER), target);
+                                new PlayerActionTarget(PlayerActionTarget.Target.SOURCE)), GameBehaviorTypes.APPLY_TO_PLAYER);
     }
 
     public <T> GameActionList<T> actions(ActionTarget<T> target, IGameBehavior behaviors) {

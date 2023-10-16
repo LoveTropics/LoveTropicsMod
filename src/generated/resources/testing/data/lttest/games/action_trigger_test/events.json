@@ -1,5 +1,5 @@
 {
-  "backend_id": "lttest:action_test/events",
+  "backend_id": "lttest:action_trigger_test/events",
   "behaviors": [
     {
       "type": "ltminigames:events",
@@ -25,7 +25,7 @@
   },
   "maximum_participants": 50,
   "name": {
-    "text": "lttest:action_test/events"
+    "text": "lttest:action_trigger_test/events"
   },
-  "statistics_key": "action_test/events"
+  "statistics_key": "action_trigger_test/events"
 }

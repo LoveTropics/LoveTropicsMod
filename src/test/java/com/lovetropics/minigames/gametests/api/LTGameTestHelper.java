@@ -717,4 +717,8 @@ public class LTGameTestHelper extends GameTestHelper {
     public void assertEntityHealth(LivingEntity entity, float health) {
         assertTrue(entity.getHealth() == health, () -> "Entity health did not match! Expected " + health + " but was " + entity.getHealth());
     }
+
+    public void assertEntityMaxHealth(LivingEntity entity, float health) {
+        assertTrue(entity.getMaxHealth() == health, () -> "Entity max health did not match! Expected " + health + " but was " + entity.getMaxHealth());
+    }
 }
