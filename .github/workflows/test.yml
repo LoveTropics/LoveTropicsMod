@@ -2,6 +2,12 @@ name: Run game tests
 
 on:
   push:
+  pull_request:
+    types:
+      - synchronize
+      - opened
+      - ready_for_review
+      - reopened
   schedule:
     - cron: 0 0 1 * *
 
