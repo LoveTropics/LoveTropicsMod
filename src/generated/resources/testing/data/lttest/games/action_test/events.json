@@ -1,0 +1,31 @@
+{
+  "backend_id": "lttest:action_test/events",
+  "behaviors": [
+    {
+      "type": "ltminigames:events",
+      "value": {
+        "player_hurt": {
+          "actions": {
+            "type": "ltminigames:give_effect",
+            "effects": [
+              {
+                "type": "minecraft:absorption",
+                "amplifier": 2,
+                "seconds": 1.15
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "map": {
+    "type": "ltminigames:inline",
+    "dimension": "minecraft:overworld"
+  },
+  "maximum_participants": 50,
+  "name": {
+    "text": "lttest:action_test/events"
+  },
+  "statistics_key": "action_test/events"
+}

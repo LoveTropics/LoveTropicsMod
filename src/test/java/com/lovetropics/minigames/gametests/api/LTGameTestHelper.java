@@ -639,8 +639,12 @@ public class LTGameTestHelper extends GameTestHelper {
         };
     }
 
+    public LTFakePlayer createFakePlayer() {
+        return createFakePlayer(p -> false);
+    }
+
     public LTFakePlayer createFakePlayer(Predicate<Packet<?>> packetFilter) {
-        return new LTFakePlayer(delegate.getLevel(), new GameProfile(UUID.randomUUID(), "test-mock-player")) {
+        return new LTFakePlayer() {
             {
                 connection = new ServerGamePacketListenerImpl(level().getServer(), new Connection(PacketFlow.CLIENTBOUND), this) {
                     @Override
@@ -650,34 +654,34 @@ public class LTGameTestHelper extends GameTestHelper {
                         }
                     }
                 };
-
-                info.addListener(new GameTestListener() {
-                    @Override
-                    public void testStructureLoaded(GameTestInfo pTestInfo) {
-
-                    }
-
-                    @Override
-                    public void testPassed(GameTestInfo pTestInfo) {
-                        exitWorld();
-                    }
-
-                    @Override
-                    public void testFailed(GameTestInfo pTestInfo) {
-                        exitWorld();
-                    }
-                });
             }
         };
     }
 
-    public static class LTFakePlayer extends FakePlayer {
+    public class LTFakePlayer extends FakePlayer {
         public final List<Packet<?>> receivedPackets = new ArrayList<>();
 
-        public LTFakePlayer(ServerLevel level, GameProfile name) {
-            super(level, name);
+        public LTFakePlayer() {
+            super(delegate.getLevel(), new GameProfile(UUID.randomUUID(), "test-mock-player"));
 
-            ObfuscationReflectionHelper.<Map<UUID, ServerPlayer>, PlayerList>getPrivateValue(PlayerList.class, level.getServer().getPlayerList(), "playersByUUID").put(getUUID(), this);
+            ObfuscationReflectionHelper.<Map<UUID, ServerPlayer>, PlayerList>getPrivateValue(PlayerList.class, level().getServer().getPlayerList(), "playersByUUID").put(getUUID(), this);
+
+            info.addListener(new GameTestListener() {
+                @Override
+                public void testStructureLoaded(GameTestInfo pTestInfo) {
+
+                }
+
+                @Override
+                public void testPassed(GameTestInfo pTestInfo) {
+                    exitWorld();
+                }
+
+                @Override
+                public void testFailed(GameTestInfo pTestInfo) {
+                    exitWorld();
+                }
+            });
         }
 
         public boolean isSpectator() {
@@ -700,9 +704,17 @@ public class LTGameTestHelper extends GameTestHelper {
         assertTrue(test.test(type.cast(pkt)), "Packet did not match!");
     }
 
+    public void assertNoPacketsReceived(LTFakePlayer player) {
+        assertTrue(player.receivedPackets.isEmpty(), "Player received at least a packet!");
+    }
+
     public void assertPlayerInventoryContainsAt(Player player, int index, ItemStack stack) {
         final ItemStack toCompare = player.getInventory().getItem(index);
         assertTrue(ItemStack.isSameItemSameTags(stack, toCompare), () -> "Items did not match: expected " + stack + ", but was " + toCompare);
         assertTrue(stack.getCount() == toCompare.getCount(), () -> "Stack count did not match: expected " + stack.getCount() + ", but was " + toCompare.getCount());
+    }
+
+    public void assertEntityHealth(LivingEntity entity, float health) {
+        assertTrue(entity.getHealth() == health, () -> "Entity health did not match! Expected " + health + " but was " + entity.getHealth());
     }
 }

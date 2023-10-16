@@ -33,6 +33,10 @@ public class BehaviorFactory {
                                 new PlayerActionTarget(PlayerActionTarget.Target.SOURCE)), GameBehaviorTypes.APPLY_TO_PLAYER), target);
     }
 
+    public <T> GameActionList<T> actions(ActionTarget<T> target, IGameBehavior behaviors) {
+        return new GameActionList<>(list(behaviors), target);
+    }
+
 
     public IGameBehavior list(IGameBehavior... behaviors) {
         return behaviors.length == 1 ? behaviors[0] : new CompositeBehavior(List.of(behaviors));

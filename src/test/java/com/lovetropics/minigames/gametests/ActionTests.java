@@ -2,9 +2,12 @@ package com.lovetropics.minigames.gametests;
 
 import com.lovetropics.minigames.common.core.game.GameStopReason;
 import com.lovetropics.minigames.common.core.game.behavior.action.NoneActionTarget;
+import com.lovetropics.minigames.common.core.game.behavior.action.PlayerActionTarget;
+import com.lovetropics.minigames.common.core.game.behavior.instances.action.GiveEffectAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.PlaySoundAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.RunCommandsAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.SendMessageAction;
+import com.lovetropics.minigames.common.core.game.behavior.instances.trigger.GeneralEventsTrigger;
 import com.lovetropics.minigames.common.core.game.behavior.instances.trigger.phase.StartGameTrigger;
 import com.lovetropics.minigames.common.core.game.behavior.instances.trigger.phase.StopGameTrigger;
 import com.lovetropics.minigames.common.core.game.datagen.BehaviorFactory;
@@ -21,17 +24,23 @@ import net.minecraft.network.protocol.game.ClientboundSoundPacket;
 import net.minecraft.network.protocol.game.ClientboundSystemChatPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.damagesource.DamageTypes;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public class ActionTests implements MinigameTest {
     @Override
     public void generateGame(GameProvider.GameGenerator generator, BehaviorFactory behaviors, HolderLookup.Provider registries) {
-        generator.builder(id().withSuffix("/start_trigger"))
+        generator.builder(gameId("start_trigger"))
                 .withPlayingPhase(new InlineMapProvider(Level.OVERWORLD), phaseBuilder -> phaseBuilder
                         .withBehavior(new StartGameTrigger(behaviors.applyToAllPlayers(
                                 NoneActionTarget.INSTANCE,
@@ -39,19 +48,51 @@ public class ActionTests implements MinigameTest {
                                 new PlaySoundAction(SoundEvents.ALLAY_HURT, 0.5f, 0.5f)
                         ))));
 
-        generator.builder(id().withSuffix("/stop_trigger"))
+        generator.builder(gameId("stop_trigger"))
                 .withPlayingPhase(new InlineMapProvider(Level.OVERWORLD), phaseBuilder -> phaseBuilder
                         .withBehavior(new StopGameTrigger(behaviors.applyToAllPlayers(
                                 NoneActionTarget.INSTANCE,
                                 new RunCommandsAction(List.of(), List.of("give @s minecraft:oak_planks 13"))
                         ), Optional.empty(), Optional.empty())));
+
+        generator.builder(gameId("events"))
+                .withPlayingPhase(new InlineMapProvider(Level.OVERWORLD), phaseBuilder -> phaseBuilder
+                        .withBehavior(new GeneralEventsTrigger(Map.of(
+                                "player_hurt", behaviors.actions(PlayerActionTarget.SOURCE, new GiveEffectAction(
+                                        List.of(new MobEffectInstance(MobEffects.ABSORPTION, 23, 2))
+                                ))
+                        ))));
+    }
+
+    @GameTest
+    public void testEventsTrigger(final LTGameTestHelper helper) {
+        final var player = helper.new LTFakePlayer() {
+            @Override
+            public boolean isInvulnerableTo(DamageSource source) {
+                return !source.is(DamageTypes.FELL_OUT_OF_WORLD);
+            }
+        };
+        player.tickCount = 1;
+        player.setAbsorptionAmount(0f);
+
+        final var lobby = helper.createGame(player, PlayerRole.PARTICIPANT);
+        lobby.enqueue(gameId("events"));
+
+        helper.startSequence()
+                .thenExecute(helper.startGame(lobby))
+                .thenIdle(5)
+                .thenExecute(() -> player.hurt(player.damageSources().fellOutOfWorld(), 1))
+                .thenIdle(5)
+                .thenExecute(() -> helper.assertTrue(player.getEffect(MobEffects.ABSORPTION) != null, "Effect could not be found on player!"))
+                .thenExecute(() -> helper.assertTrue(player.getEffect(MobEffects.ABSORPTION).getAmplifier() == 2 && player.getEffect(MobEffects.ABSORPTION).getDuration() == 23, "Effect was not as expected!"))
+                .thenSucceed();
     }
 
     @GameTest
     public void testStartTrigger(final LTGameTestHelper helper) {
         final var player = helper.createFakePlayer(packet -> packet instanceof ClientboundSystemChatPacket || packet instanceof ClientboundSoundPacket);
         final var lobby = helper.createGame(player, PlayerRole.PARTICIPANT);
-        lobby.enqueue(id().withSuffix("/start_trigger"));
+        lobby.enqueue(gameId("start_trigger"));
 
         helper.startSequence()
             .thenExecute(helper.startGame(lobby))
@@ -65,7 +106,7 @@ public class ActionTests implements MinigameTest {
     public void testStopTrigger(final LTGameTestHelper helper) {
         final var player = helper.createFakePlayer(packet -> false);
         final var lobby = helper.createGame(player, PlayerRole.PARTICIPANT);
-        lobby.enqueue(id().withSuffix("/stop_trigger"));
+        lobby.enqueue(gameId("stop_trigger"));
 
         helper.startSequence()
             .thenExecute(helper.startGame(lobby))

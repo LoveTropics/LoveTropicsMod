@@ -10,4 +10,8 @@ public interface MinigameTest {
     void generateGame(GameProvider.GameGenerator generator, BehaviorFactory behaviors, HolderLookup.Provider registries);
 
     ResourceLocation id();
+
+    default ResourceLocation gameId(String... path) {
+        return id().withSuffix("/" + String.join("/", path));
+    }
 }
