@@ -20,7 +20,9 @@ import java.util.Map;
 // TODO: split up into separate trigger types
 public record GeneralEventsTrigger(Map<String, GameActionList<ServerPlayer>> eventActions) implements IGameBehavior {
 	public static final Codec<GeneralEventsTrigger> CODEC = Codec.unboundedMap(Codec.STRING, GameActionList.PLAYER)
-			.xmap(GeneralEventsTrigger::new, b -> b.eventActions);
+			.xmap(GeneralEventsTrigger::new, b -> b.eventActions)
+			.fieldOf("events")
+			.codec();
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) throws GameException {

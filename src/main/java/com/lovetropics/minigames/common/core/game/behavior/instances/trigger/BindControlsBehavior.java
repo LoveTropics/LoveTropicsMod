@@ -15,7 +15,9 @@ import java.util.Map;
 
 public record BindControlsBehavior(Map<ControlCommand.Scope, Map<String, GameActionList<ServerPlayer>>> scopedActions) implements IGameBehavior {
 	public static final Codec<BindControlsBehavior> CODEC = Codec.unboundedMap(ControlCommand.Scope.CODEC, Codec.unboundedMap(Codec.STRING, GameActionList.PLAYER))
-			.xmap(BindControlsBehavior::new, b -> b.scopedActions);
+			.xmap(BindControlsBehavior::new, b -> b.scopedActions)
+			.fieldOf("scopes")
+			.codec();
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) throws GameException {

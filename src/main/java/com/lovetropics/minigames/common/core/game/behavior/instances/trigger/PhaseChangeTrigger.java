@@ -17,7 +17,9 @@ import java.util.Map;
 
 public record PhaseChangeTrigger(Map<ProgressionPoint, GameActionList<Void>> phases) implements IGameBehavior {
 	public static final Codec<PhaseChangeTrigger> CODEC = Codec.unboundedMap(ProgressionPoint.CODEC, GameActionList.VOID)
-			.xmap(PhaseChangeTrigger::new, PhaseChangeTrigger::phases);
+			.xmap(PhaseChangeTrigger::new, PhaseChangeTrigger::phases)
+			.fieldOf("phases")
+			.codec();
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
