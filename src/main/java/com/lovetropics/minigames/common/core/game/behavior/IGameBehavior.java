@@ -27,32 +27,12 @@ public interface IGameBehavior {
 	Codec<GameBehaviorType<?>> TYPE_CODEC = Codec.either(GameBehaviorTypes.TYPE_CODEC, GameConfigs.CUSTOM_BEHAVIORS)
 			.xmap(e -> e.map(Function.identity(), Function.identity()), Either::left);
 
-	MapCodec<IGameBehavior> MAP_CODEC = Codecs.dispatchMapWithTrace(
+	Codec<IGameBehavior> SIMPLE_CODEC = Codecs.dispatchWithInlineKey(
 			"type",
 			TYPE_CODEC,
 			behavior -> {throw new UnsupportedOperationException();},
 			type -> type.codec().codec()
 	);
-
-	Codec<IGameBehavior> SIMPLE_CODEC = new Codec<>() {
-		private final Codec<IGameBehavior> taggedCodec = MAP_CODEC.codec();
-
-		@Override
-		public <T> DataResult<Pair<IGameBehavior, T>> decode(DynamicOps<T> ops, T input) {
-			Optional<String> string = ops.getStringValue(input).result();
-			if (string.isPresent()) {
-				return TYPE_CODEC.parse(ops, input).flatMap(type -> type.codec().codec().decode(ops, ops.emptyMap())
-						.mapError(err -> "In behavior " + input + ": " + err)
-						.map(pair -> pair.mapFirst(b -> b)));
-			}
-			return taggedCodec.decode(ops, input);
-		}
-
-		@Override
-		public <T> DataResult<T> encode(IGameBehavior input, DynamicOps<T> ops, T prefix) {
-			return DataResult.error(() -> "Encoding unsupported");
-		}
-	};
 
 	// Using custom codec for better error reporting
 	Codec<IGameBehavior> CODEC = new Codec<>() {

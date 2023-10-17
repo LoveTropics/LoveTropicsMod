@@ -19,6 +19,27 @@ import java.util.stream.Stream;
 public class Codecs {
 	public static final Codec<HolderSet<Item>> ITEMS = RegistryCodecs.homogeneousList(Registries.ITEM);
 
+	public static <A, E> Codec<E> dispatchWithInlineKey(String typeKey, Codec<A> keyCodec, Function<? super E, ? extends A> type, Function<? super A, ? extends Codec<? extends E>> codec) {
+		Codec<E> delegate = dispatchMapWithTrace(typeKey, keyCodec, type, codec).codec();
+		return new Codec<>() {
+			@Override
+			public <T> DataResult<Pair<E, T>> decode(DynamicOps<T> ops, T input) {
+				DataResult<A> inlineKey = keyCodec.parse(ops, input);
+				if (inlineKey.result().isPresent()) {
+					return inlineKey.flatMap(key -> codec.apply(key).decode(ops, ops.emptyMap())
+							.mapError(err -> "In type " + input + ": " + err)
+							.map(pair -> pair.mapFirst(b -> b)));
+				}
+				return delegate.decode(ops, input);
+			}
+
+			@Override
+			public <T> DataResult<T> encode(E input, DynamicOps<T> ops, T prefix) {
+				return delegate.encode(input, ops, prefix);
+			}
+		};
+	}
+
 	public static <A, E> MapCodec<E> dispatchMapWithTrace(String typeKey, Codec<A> keyCodec, Function<? super E, ? extends A> type, Function<? super A, ? extends Codec<? extends E>> codec) {
 		KeyDispatchCodec<A, E> delegate = new KeyDispatchCodec<>(typeKey, keyCodec, type.andThen(DataResult::success), codec.andThen(DataResult::success));
 		return new MapCodec<>() {
