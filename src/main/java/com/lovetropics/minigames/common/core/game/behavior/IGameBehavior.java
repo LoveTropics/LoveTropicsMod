@@ -13,15 +13,14 @@ import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
-import com.mojang.serialization.MapCodec;
 import net.minecraft.resources.ResourceLocation;
 
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 public interface IGameBehavior {
 	Codec<GameBehaviorType<?>> TYPE_CODEC = Codec.either(GameBehaviorTypes.TYPE_CODEC, GameConfigs.CUSTOM_BEHAVIORS)
@@ -30,7 +29,7 @@ public interface IGameBehavior {
 	Codec<IGameBehavior> SIMPLE_CODEC = Codecs.dispatchWithInlineKey(
 			"type",
 			TYPE_CODEC,
-			behavior -> {throw new UnsupportedOperationException();},
+			behavior -> behavior.type().get(),
 			type -> type.codec().codec()
 	);
 
@@ -48,7 +47,11 @@ public interface IGameBehavior {
 
 		@Override
 		public <T> DataResult<T> encode(IGameBehavior input, DynamicOps<T> ops, T prefix) {
-			return DataResult.error(() -> "Encoding unsupported");
+			if (input instanceof CompositeBehavior composite) {
+				return CompositeBehavior.CODEC.encode(composite, ops, prefix);
+			} else {
+				return SIMPLE_CODEC.encode(input, ops, prefix);
+			}
 		}
 	};
 
@@ -78,4 +81,9 @@ public interface IGameBehavior {
 	 * @throws GameException if this behavior was not able to be initialized
 	 */
 	void register(IGamePhase game, EventRegistrar events) throws GameException;
+
+	// TODO: Implement everywhere
+	default Supplier<? extends GameBehaviorType<?>> type() {
+		throw new UnsupportedOperationException("This behavior is not aware of its type: " + this);
+	}
 }
