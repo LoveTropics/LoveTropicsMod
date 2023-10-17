@@ -1,17 +1,21 @@
 package com.lovetropics.minigames.common.util;
 
+import com.google.common.collect.Streams;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.MapLike;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -66,8 +70,21 @@ public class DynamicTemplate {
 		}
 	}
 
+	public <U> Dynamic<U> substitute(final Dynamic<U> parameters) {
+		final DynamicOps<U> ops = parameters.getOps();
+		final Optional<MapLike<U>> map = ops.getMap(parameters.getValue()).result();
+		if (map.isPresent()) {
+			return substitute(ops, map.get());
+		}
+		return substitute(ops, path -> null);
+	}
+
 	public <U> Dynamic<U> substitute(final DynamicOps<U> ops, final MapLike<U> parameters) {
-		final U result = node.substitute(ops, path -> resolveParameter(ops, parameters, path));
+		return substitute(ops, path -> resolveParameter(ops, parameters, path));
+	}
+
+	private <U> Dynamic<U> substitute(final DynamicOps<U> ops, final Function<ParameterPath, U> resolver) {
+		final U result = node.substitute(ops, resolver);
 		return new Dynamic<>(ops, Objects.requireNonNullElseGet(result, ops::emptyMap));
 	}
 
@@ -92,9 +109,46 @@ public class DynamicTemplate {
 		return parameters;
 	}
 
+	public <T> Dynamic<T> extract(final Dynamic<T> substituted) {
+		return new Dynamic<>(substituted.getOps(), extract(substituted.getOps(), substituted.getValue()));
+	}
+
+	public <T> T extract(final DynamicOps<T> ops, final T substituted) {
+		if (parameters.isEmpty()) {
+			return ops.emptyMap();
+		}
+
+		final Map<ParameterPath, T> values = new HashMap<>();
+		node.extract(ops, substituted, values::put);
+
+		T result = ops.emptyMap();
+		for (final Map.Entry<ParameterPath, T> entry : values.entrySet()) {
+			final ParameterPath path = entry.getKey();
+
+			T map = result;
+
+			final List<T> stack = new ArrayList<>(path.segments.length);
+			stack.add(map);
+			for (int i = 0; i < path.segments.length - 1; i++) {
+				map = ops.get(map, path.segments[i]).result().orElseGet(ops::emptyMap);
+				stack.add(map);
+			}
+
+			T value = entry.getValue();
+			for (int i = path.segments.length - 1; i >= 0; i--) {
+				value = ops.set(stack.get(i), path.segments[i], value);
+			}
+			result = value;
+		}
+
+		return result;
+	}
+
 	private sealed interface Node permits MapNode, ListNode, Substituted, Static {
 		@Nullable
 		<U> U substitute(DynamicOps<U> ops, Function<ParameterPath, U> resolver);
+
+		<U> void extract(DynamicOps<U> ops, U value, BiConsumer<ParameterPath, U> consumer);
 
 		Stream<ParameterPath> parameters();
 
@@ -121,6 +175,17 @@ public class DynamicTemplate {
 		}
 
 		@Override
+		public <U> void extract(final DynamicOps<U> ops, final U value, final BiConsumer<ParameterPath, U> consumer) {
+			ops.getMap(value).result().ifPresent(map -> map.entries().forEach(entry -> {
+				final T key = Dynamic.convert(ops, this.ops, entry.getFirst());
+				final Node node = nodes.get(key);
+				if (node != null) {
+					node.extract(ops, entry.getSecond(), consumer);
+				}
+			}));
+		}
+
+		@Override
 		public Stream<ParameterPath> parameters() {
 			return nodes.values().stream().flatMap(Node::parameters);
 		}
@@ -130,6 +195,14 @@ public class DynamicTemplate {
 		@Override
 		public <U> U substitute(final DynamicOps<U> ops, final Function<ParameterPath, U> resolver) {
 			return ops.createList(nodes.stream().map(node -> node.substitute(ops, resolver)).filter(Objects::nonNull));
+		}
+
+		@Override
+		public <U> void extract(final DynamicOps<U> ops, final U value, final BiConsumer<ParameterPath, U> consumer) {
+			ops.getStream(value).result().ifPresent(elements ->
+					Streams.zip(elements, nodes.stream(), Pair::of)
+							.forEach(pair -> pair.getSecond().extract(ops, pair.getFirst(), consumer))
+			);
 		}
 
 		@Override
@@ -146,6 +219,11 @@ public class DynamicTemplate {
 		}
 
 		@Override
+		public <U> void extract(final DynamicOps<U> ops, final U value, final BiConsumer<ParameterPath, U> consumer) {
+			consumer.accept(path, value);
+		}
+
+		@Override
 		public Stream<ParameterPath> parameters() {
 			return Stream.of(path);
 		}
@@ -155,6 +233,10 @@ public class DynamicTemplate {
 		@Override
 		public <U> U substitute(final DynamicOps<U> ops, final Function<ParameterPath, U> resolver) {
 			return dynamic.convert(ops).getValue();
+		}
+
+		@Override
+		public <U> void extract(final DynamicOps<U> ops, final U value, final BiConsumer<ParameterPath, U> consumer) {
 		}
 
 		@Override

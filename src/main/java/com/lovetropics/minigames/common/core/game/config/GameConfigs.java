@@ -26,6 +26,7 @@ import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraftforge.event.AddReloadListenerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import org.apache.commons.lang3.mutable.MutableObject;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.Nullable;
@@ -132,7 +133,18 @@ public final class GameConfigs {
 		return new MapCodec<>() {
 			@Override
 			public <T> RecordBuilder<T> encode(IGameBehavior input, DynamicOps<T> ops, RecordBuilder<T> prefix) {
-				return prefix.withErrorsFrom(DataResult.error(() -> "Encoding unsupported"));
+				final DataResult<T> substituted = IGameBehavior.CODEC.encodeStart(ops, input);
+				if (substituted.result().isEmpty()) {
+					return prefix.withErrorsFrom(substituted);
+				}
+				final T extracted = template.extract(ops, substituted.result().get());
+				final MutableObject<RecordBuilder<T>> builder = new MutableObject<>(prefix);
+				ops.getMap(extracted).result().ifPresent(map ->
+						map.entries().forEach(pair ->
+								builder.setValue(builder.getValue().add(pair.getFirst(), pair.getSecond()))
+						)
+				);
+				return builder.getValue();
 			}
 
 			@Override
