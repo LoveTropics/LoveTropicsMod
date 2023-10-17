@@ -6,6 +6,7 @@ import com.lovetropics.lib.codec.CodecRegistry;
 import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.common.core.game.behavior.GameBehaviorType;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
+import com.lovetropics.minigames.common.util.DynamicTemplate;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
@@ -119,7 +120,7 @@ public final class GameConfigs {
 			try (BufferedReader reader = resource.openAsReader()) {
 				Dynamic<JsonElement> template = new Dynamic<>(JsonOps.INSTANCE, JsonParser.parseReader(reader));
 				ResourceLocation id = BEHAVIOR_LISTER.fileToId(path);
-				return Map.entry(id, new GameBehaviorType<>(createCustomBehaviorCodec(template)));
+				return Map.entry(id, new GameBehaviorType<>(createCustomBehaviorCodec(DynamicTemplate.parse(template))));
 			}
 		} catch (Exception e) {
 			LOGGER.error("Failed to load custom behavior at {}", path, e);
@@ -127,7 +128,7 @@ public final class GameConfigs {
 		}
 	}
 
-	private static MapCodec<IGameBehavior> createCustomBehaviorCodec(final Dynamic<?> template) {
+	private static MapCodec<IGameBehavior> createCustomBehaviorCodec(final DynamicTemplate template) {
 		return new MapCodec<>() {
 			@Override
 			public <T> RecordBuilder<T> encode(IGameBehavior input, DynamicOps<T> ops, RecordBuilder<T> prefix) {
@@ -136,15 +137,13 @@ public final class GameConfigs {
 
 			@Override
 			public <T> DataResult<IGameBehavior> decode(DynamicOps<T> ops, MapLike<T> input) {
-				// TODO: Delegate to MapCodec rather than adapt normal Codec
-				BehaviorParameters parameters = new BehaviorParameters(new Dynamic<>(ops, ops.createMap(input.entries())));
-				return IGameBehavior.CODEC.decode(parameters.substitute(template)).map(Pair::getFirst);
+				Dynamic<T> substituted = template.substitute(ops, input);
+				return IGameBehavior.CODEC.decode(substituted).map(Pair::getFirst);
 			}
 
 			@Override
 			public <T> Stream<T> keys(DynamicOps<T> ops) {
-				// Unimplemented for compressed ops
-				return Stream.of();
+				return template.parameters().stream().map(path -> path.segments()[0]).distinct().map(ops::createString);
 			}
 		};
 	}
