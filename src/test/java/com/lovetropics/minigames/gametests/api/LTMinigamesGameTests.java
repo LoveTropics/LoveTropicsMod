@@ -1,11 +1,11 @@
 package com.lovetropics.minigames.gametests.api;
 
+import com.google.common.base.Suppliers;
+import com.lovetropics.lib.permission.PermissionsApi;
 import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.common.core.game.datagen.BehaviorFactory;
 import com.lovetropics.minigames.common.core.game.datagen.BehaviorProvider;
 import com.lovetropics.minigames.common.core.game.datagen.GameProvider;
-import com.lovetropics.minigames.gametests.ActionTriggerTests;
-import com.lovetropics.minigames.gametests.TweakTests;
 import net.minecraft.SharedConstants;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
@@ -27,7 +27,6 @@ import net.minecraftforge.event.AddPackFindersEvent;
 import net.minecraftforge.event.RegisterGameTestsEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.ModList;
-import net.minecraftforge.fml.ModLoader;
 import net.minecraftforge.fml.common.Mod;
 
 import java.lang.reflect.InvocationTargetException;
@@ -37,14 +36,35 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import java.util.function.Supplier;
 
 @Mod.EventBusSubscriber(modid = "ltminigames", bus = Mod.EventBusSubscriber.Bus.MOD)
 public class LTMinigamesGameTests {
-    public static final Map<ResourceLocation, MinigameTest> TESTS = Stream.of(new ActionTriggerTests(), new TweakTests())
-            .collect(Collectors.toMap(MinigameTest::id, Function.identity()));
+    public static final TestPermissionAPI PERMISSIONS = new TestPermissionAPI();
+    static {
+        PermissionsApi.setRoleLookup(PERMISSIONS);
+    }
+
+    private static final Supplier<Map<ResourceLocation, MinigameTest>> TESTS = Suppliers.memoize(() -> {
+        final var classes = ModList.get().getAllScanData().stream()
+                .flatMap(sc -> sc.getAnnotations().stream())
+                .filter(an -> an.annotationType().equals(RegisterMinigameTest.TYPE))
+                .map(an -> an.clazz().getInternalName())
+                .toList();
+
+        final var testMap = new HashMap<ResourceLocation, MinigameTest>();
+        try {
+            for (String cls : classes) {
+                final Class<?> clazz = Class.forName(cls.replace('/', '.'));
+                final MinigameTest test = (MinigameTest) clazz.getDeclaredConstructor().newInstance();
+                testMap.put(test.id(), test);
+            }
+        } catch (Exception ex) {
+            LoveTropics.LOGGER.error("Could not create minigame test: ", ex);
+        }
+
+        return testMap;
+    });
 
     @SubscribeEvent
     static void register(final RegisterGameTestsEvent event) throws NoSuchMethodException {
@@ -60,7 +80,7 @@ public class LTMinigamesGameTests {
                 .addProvider(event.includeServer(), new GameProvider(out, behaviors, event.getLookupProvider()) {
                     @Override
                     protected void generate(GameGenerator generator, HolderLookup.Provider holderProvider) {
-                        TESTS.forEach((key, test) -> test.generateGame(generator, behaviors, holderProvider));
+                        TESTS.get().forEach((key, test) -> test.generateGame(generator, behaviors, holderProvider));
                     }
                 });
 
@@ -92,24 +112,7 @@ public class LTMinigamesGameTests {
     public static List<TestFunction> generate() {
         final List<TestFunction> tests = new ArrayList<>();
 
-        final var classes = ModList.get().getAllScanData().stream()
-                .flatMap(sc -> sc.getAnnotations().stream())
-                .filter(an -> an.annotationType().equals(RegisterMinigameTest.TYPE))
-                .map(an -> an.clazz().getInternalName())
-                .toList();
-
-        final var testMap = new HashMap<ResourceLocation, MinigameTest>();
-        try {
-            for (String cls : classes) {
-                final Class<?> clazz = Class.forName(cls.replace('/', '.'));
-                final MinigameTest test = (MinigameTest) clazz.getDeclaredConstructor().newInstance();
-                testMap.put(test.id(), test);
-            }
-        } catch (Exception ex) {
-            LoveTropics.LOGGER.error("Could not create minigame test: ", ex);
-        }
-
-        for (var entry : testMap.entrySet()) {
+        for (var entry : TESTS.get().entrySet()) {
             var test = entry.getValue();
             var id = entry.getKey();
             for (Method testMethod : test.getClass().getDeclaredMethods()) {

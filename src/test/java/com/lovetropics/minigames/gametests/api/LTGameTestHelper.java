@@ -695,6 +695,10 @@ public class LTGameTestHelper extends GameTestHelper {
         public void exitWorld() {
             ObfuscationReflectionHelper.<Map<UUID, ServerPlayer>, PlayerList>getPrivateValue(PlayerList.class, level().getServer().getPlayerList(), "playersByUUID").remove(getUUID());
         }
+
+        public void setAttackStrengthTicker(int value) {
+            this.attackStrengthTicker = value;
+        }
     }
 
     public <T> void assertReceivedPacket(LTFakePlayer player, int index, Class<T> type, Predicate<T> test) {
@@ -720,5 +724,9 @@ public class LTGameTestHelper extends GameTestHelper {
 
     public void assertEntityMaxHealth(LivingEntity entity, float health) {
         assertTrue(entity.getMaxHealth() == health, () -> "Entity max health did not match! Expected " + health + " but was " + entity.getMaxHealth());
+    }
+
+    public TestPermissionAPI.Roles getRoles(Entity entity) {
+        return LTMinigamesGameTests.PERMISSIONS.byEntity(entity);
     }
 }
