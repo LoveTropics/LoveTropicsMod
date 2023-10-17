@@ -7,6 +7,7 @@ import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.instances.CompositeBehavior;
 import com.lovetropics.minigames.common.core.game.config.GameConfigs;
 import com.lovetropics.minigames.common.core.game.state.GameStateMap;
+import com.lovetropics.minigames.common.util.Codecs;
 import com.mojang.datafixers.util.Either;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
@@ -26,24 +27,25 @@ public interface IGameBehavior {
 	Codec<GameBehaviorType<?>> TYPE_CODEC = Codec.either(GameBehaviorTypes.TYPE_CODEC, GameConfigs.CUSTOM_BEHAVIORS)
 			.xmap(e -> e.map(Function.identity(), Function.identity()), Either::left);
 
-	MapCodec<IGameBehavior> MAP_CODEC = TYPE_CODEC.dispatchMap(behavior -> {throw new UnsupportedOperationException();}, type -> type.codec().codec());
+	MapCodec<IGameBehavior> MAP_CODEC = Codecs.dispatchMapWithTrace(
+			"type",
+			TYPE_CODEC,
+			behavior -> {throw new UnsupportedOperationException();},
+			type -> type.codec().codec()
+	);
 
 	Codec<IGameBehavior> SIMPLE_CODEC = new Codec<>() {
+		private final Codec<IGameBehavior> taggedCodec = MAP_CODEC.codec();
+
 		@Override
 		public <T> DataResult<Pair<IGameBehavior, T>> decode(DynamicOps<T> ops, T input) {
 			Optional<String> string = ops.getStringValue(input).result();
 			if (string.isPresent()) {
-				return TYPE_CODEC.parse(ops, input).flatMap(type -> parseTyped(ops, ops.emptyMap(), type, input));
+				return TYPE_CODEC.parse(ops, input).flatMap(type -> type.codec().codec().decode(ops, ops.emptyMap())
+						.mapError(err -> "In behavior " + input + ": " + err)
+						.map(pair -> pair.mapFirst(b -> b)));
 			}
-			return ops.get(input, "type")
-					.flatMap(typeName -> TYPE_CODEC.parse(ops, typeName).map(type -> Pair.of(type, typeName)))
-					.flatMap(type -> parseTyped(ops, ops.remove(input, "type"), type.getFirst(), type.getSecond()));
-		}
-
-		private static <T> DataResult<Pair<IGameBehavior, T>> parseTyped(DynamicOps<T> ops, T input, GameBehaviorType<?> type, T typeName) {
-			return type.codec().codec().decode(ops, input)
-					.mapError(err -> "In behavior " + typeName + ": " + err)
-					.map(pair -> pair.mapFirst(b -> b));
+			return taggedCodec.decode(ops, input);
 		}
 
 		@Override

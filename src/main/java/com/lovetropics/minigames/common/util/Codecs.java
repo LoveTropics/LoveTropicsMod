@@ -7,19 +7,41 @@ import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.MapLike;
 import com.mojang.serialization.RecordBuilder;
+import com.mojang.serialization.codecs.KeyDispatchCodec;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.RegistryCodecs;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.item.Item;
 
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 public class Codecs {
-    public static final Codec<HolderSet<Item>> ITEMS = RegistryCodecs.homogeneousList(Registries.ITEM);
+	public static final Codec<HolderSet<Item>> ITEMS = RegistryCodecs.homogeneousList(Registries.ITEM);
 
-    // For debugging
-    public static <A> Codec<A> hook(final Codec<A> codec) {
-        return new Codec<>() {
+	public static <A, E> MapCodec<E> dispatchMapWithTrace(String typeKey, Codec<A> keyCodec, Function<? super E, ? extends A> type, Function<? super A, ? extends Codec<? extends E>> codec) {
+		KeyDispatchCodec<A, E> delegate = new KeyDispatchCodec<>(typeKey, keyCodec, type.andThen(DataResult::success), codec.andThen(DataResult::success));
+		return new MapCodec<>() {
+			@Override
+			public <T> Stream<T> keys(DynamicOps<T> ops) {
+				return delegate.keys(ops);
+			}
+
+			@Override
+			public <T> DataResult<E> decode(DynamicOps<T> ops, MapLike<T> input) {
+				return delegate.decode(ops, input).mapError(err -> "In type: \"" + input.get(typeKey) + "\": " + err);
+			}
+
+			@Override
+			public <T> RecordBuilder<T> encode(E input, DynamicOps<T> ops, RecordBuilder<T> prefix) {
+				return delegate.encode(input, ops, prefix);
+			}
+		};
+	}
+
+	// For debugging
+	public static <A> Codec<A> hook(final Codec<A> codec) {
+		return new Codec<>() {
 			@Override
 			public <T> DataResult<Pair<A, T>> decode(DynamicOps<T> ops, T input) {
 				return codec.decode(ops, input);
@@ -30,5 +52,5 @@ public class Codecs {
 				return codec.encode(input, ops, prefix);
 			}
 		};
-    }
+	}
 }
