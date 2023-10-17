@@ -10,7 +10,7 @@ import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.lovetropics.minigames.common.core.game.player.PlayerRole;
 import com.lovetropics.minigames.common.core.game.util.TeamAllocator;
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 import net.minecraft.core.UUIDUtil;
@@ -31,7 +31,7 @@ public record AssignPlayerRolesBehavior(List<UUID> forcedParticipants) implement
 	private static final BehaviorConfig<List<UUID>> CFG_FORCED_PARTICIPANTS = BehaviorConfig.fieldOf("forced_participants", UUIDUtil.STRING_CODEC.listOf())
 			.listTypeHint("", ConfigType.STRING);
 
-	public static final Codec<AssignPlayerRolesBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+	public static final MapCodec<AssignPlayerRolesBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			CFG_FORCED_PARTICIPANTS.orElse(Collections.emptyList()).forGetter(c -> c.forcedParticipants)
 	).apply(i, AssignPlayerRolesBehavior::new));
 

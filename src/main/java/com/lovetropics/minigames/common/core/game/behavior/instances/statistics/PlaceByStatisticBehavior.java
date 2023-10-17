@@ -7,11 +7,11 @@ import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents
 import com.lovetropics.minigames.common.core.game.state.statistics.PlacementOrder;
 import com.lovetropics.minigames.common.core.game.state.statistics.PlayerPlacement;
 import com.lovetropics.minigames.common.core.game.state.statistics.StatisticKey;
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 public record PlaceByStatisticBehavior(StatisticKey<Integer> statistic, PlacementOrder order) implements IGameBehavior {
-	public static final Codec<PlaceByStatisticBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+	public static final MapCodec<PlaceByStatisticBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			StatisticKey.codecFor(Integer.class).fieldOf("statistic").forGetter(c -> c.statistic),
 			PlacementOrder.CODEC.optionalFieldOf("order", PlacementOrder.MAX).forGetter(c -> c.order)
 	).apply(i, PlaceByStatisticBehavior::new));

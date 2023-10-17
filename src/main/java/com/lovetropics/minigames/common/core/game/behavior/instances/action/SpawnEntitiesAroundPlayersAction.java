@@ -7,6 +7,7 @@ import com.lovetropics.minigames.common.core.game.behavior.event.GameActionEvent
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.lovetropics.minigames.common.util.EntityTemplate;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
@@ -16,9 +17,8 @@ import net.minecraft.server.level.ServerPlayer;
 
 import java.util.Iterator;
 
-public class SpawnEntitiesAroundPlayersAction implements IGameBehavior
-{
-	public static final Codec<SpawnEntitiesAroundPlayersAction> CODEC = RecordCodecBuilder.create(i -> i.group(
+public class SpawnEntitiesAroundPlayersAction implements IGameBehavior {
+	public static final MapCodec<SpawnEntitiesAroundPlayersAction> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			EntityTemplate.CODEC.fieldOf("entity").forGetter(c -> c.entity),
 			Codec.INT.optionalFieldOf("entity_count_per_player", 1).forGetter(c -> c.entityCountPerPlayer),
 			Codec.INT.optionalFieldOf("spawn_distance_min", 10).forGetter(c -> c.spawnDistanceMin),

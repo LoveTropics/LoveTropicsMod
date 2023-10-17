@@ -11,13 +11,13 @@ import com.lovetropics.minigames.common.core.game.state.statistics.StatisticKey;
 import com.lovetropics.minigames.common.core.game.state.team.GameTeam;
 import com.lovetropics.minigames.common.core.game.state.team.GameTeamKey;
 import com.lovetropics.minigames.common.core.game.state.team.TeamState;
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import net.minecraft.network.chat.Component;
 
 import javax.annotation.Nullable;
 
 public class TeamWinTrigger implements IGameBehavior {
-	public static final Codec<TeamWinTrigger> CODEC = Codec.unit(TeamWinTrigger::new);
+	public static final MapCodec<TeamWinTrigger> CODEC = MapCodec.unit(TeamWinTrigger::new);
 
 	private boolean winTriggered;
 

@@ -13,6 +13,7 @@ import com.lovetropics.minigames.common.core.game.client_state.GameClientState;
 import com.lovetropics.minigames.common.core.game.client_state.GameClientStateTypes;
 import com.lovetropics.minigames.common.core.game.state.BeaconState;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.SharedConstants;
 import net.minecraft.Util;
@@ -37,7 +38,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public record ChestDropAction(String region, SimpleWeightedRandomList<ResourceLocation> lootTables, int delay, IntProvider count, float glowRadius) implements IGameBehavior {
-	public static final Codec<ChestDropAction> CODEC = RecordCodecBuilder.create(i -> i.group(
+	public static final MapCodec<ChestDropAction> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			Codec.STRING.fieldOf("region").forGetter(ChestDropAction::region),
 			SimpleWeightedRandomList.wrappedCodec(ResourceLocation.CODEC).fieldOf("loot_tables").forGetter(c -> c.lootTables),
 			Codec.INT.fieldOf("delay").forGetter(ChestDropAction::delay),

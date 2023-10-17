@@ -16,6 +16,7 @@ import com.lovetropics.minigames.common.core.game.state.team.GameTeamKey;
 import com.lovetropics.minigames.common.core.game.state.team.TeamState;
 import com.lovetropics.minigames.common.core.game.util.TeamAllocator;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.ChatFormatting;
@@ -38,7 +39,7 @@ public final class TeamsBehavior implements IGameBehavior {
 	private static final ResourceLocation CONFIG_ID = new ResourceLocation(Constants.MODID, "teams");
 	private static final BehaviorConfig<Boolean> CFG_FRIENDLY_FIRE = BehaviorConfig.fieldOf("friendly_fire", Codec.BOOL);
 
-	public static final Codec<TeamsBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+	public static final MapCodec<TeamsBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			CFG_FRIENDLY_FIRE.orElse(false).forGetter(c -> c.friendlyFire),
 			Codec.BOOL.optionalFieldOf("static_team_ids", false).forGetter(c -> c.staticTeamIds)
 	).apply(i, TeamsBehavior::new));

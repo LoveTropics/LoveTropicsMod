@@ -8,12 +8,13 @@ import com.lovetropics.minigames.common.core.game.state.weather.GameWeatherState
 import com.lovetropics.minigames.common.core.game.weather.WeatherEvent;
 import com.lovetropics.minigames.common.core.game.weather.WeatherEventType;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 import javax.annotation.Nullable;
 
 public final class WeatherEventAction implements IGameBehavior {
-	public static final Codec<WeatherEventAction> CODEC = RecordCodecBuilder.create(i -> i.group(
+	public static final MapCodec<WeatherEventAction> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			WeatherEventType.CODEC.fieldOf("event").forGetter(c -> c.type),
 			Codec.LONG.fieldOf("seconds").forGetter(c -> c.ticks / 20)
 	).apply(i, WeatherEventAction::new));

@@ -14,6 +14,7 @@ import com.lovetropics.minigames.common.core.game.client_state.GameClientState;
 import com.lovetropics.minigames.common.core.game.state.statistics.PlayerKey;
 import com.lovetropics.minigames.common.core.game.state.statistics.StatisticKey;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.server.level.ServerPlayer;
 
@@ -24,7 +25,7 @@ import java.util.Comparator;
 import java.util.List;
 
 public final class BbCurrencyWinTrigger implements IGameBehavior {
-	public static final Codec<BbCurrencyWinTrigger> CODEC = RecordCodecBuilder.create(i -> i.group(
+	public static final MapCodec<BbCurrencyWinTrigger> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			Codec.INT.fieldOf("threshold_currency").forGetter(c -> c.thresholdCurrency)
 	).apply(i, BbCurrencyWinTrigger::new));
 

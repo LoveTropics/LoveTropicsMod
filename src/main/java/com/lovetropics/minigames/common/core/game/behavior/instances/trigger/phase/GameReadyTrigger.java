@@ -6,11 +6,10 @@ import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.action.GameActionContext;
 import com.lovetropics.minigames.common.core.game.behavior.action.GameActionList;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
-import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 
 public record GameReadyTrigger(GameActionList<Void> actions) implements IGameBehavior {
-    public static final Codec<GameReadyTrigger> CODEC = GameActionList.VOID
+    public static final MapCodec<GameReadyTrigger> CODEC = GameActionList.VOID_MAP_CODEC
             .xmap(GameReadyTrigger::new, GameReadyTrigger::actions);
     
     @Override

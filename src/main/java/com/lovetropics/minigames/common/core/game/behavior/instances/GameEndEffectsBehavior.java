@@ -18,6 +18,7 @@ import com.lovetropics.minigames.common.core.game.util.TemplatedText;
 import com.lovetropics.minigames.common.core.map.MapRegions;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
@@ -37,7 +38,7 @@ import java.util.Map;
 import java.util.Optional;
 
 public final class GameEndEffectsBehavior implements IGameBehavior {
-	public static final Codec<GameEndEffectsBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+	public static final MapCodec<GameEndEffectsBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			Codec.LONG.fieldOf("stop_delay").forGetter(c -> c.stopDelay),
 			MoreCodecs.long2Object(TemplatedText.CODEC).optionalFieldOf("scheduled_messages", new Long2ObjectOpenHashMap<>()).forGetter(c -> c.scheduledMessages),
 			TemplatedText.CODEC.optionalFieldOf("title").forGetter(c -> Optional.ofNullable(c.title)),

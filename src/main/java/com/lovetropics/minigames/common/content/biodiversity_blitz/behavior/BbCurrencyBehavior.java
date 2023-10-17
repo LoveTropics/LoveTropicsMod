@@ -18,8 +18,19 @@ import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvent
 import com.lovetropics.minigames.common.core.game.client_state.GameClientState;
 import com.lovetropics.minigames.common.core.game.state.GameStateMap;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import it.unimi.dsi.fastutil.objects.*;
+import it.unimi.dsi.fastutil.objects.Object2DoubleOpenHashMap;
+import it.unimi.dsi.fastutil.objects.Object2FloatMap;
+import it.unimi.dsi.fastutil.objects.Object2FloatOpenHashMap;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import it.unimi.dsi.fastutil.objects.Object2IntMaps;
+import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
+import it.unimi.dsi.fastutil.objects.Reference2DoubleMap;
+import it.unimi.dsi.fastutil.objects.Reference2DoubleOpenHashMap;
+import it.unimi.dsi.fastutil.objects.Reference2ObjectMap;
+import it.unimi.dsi.fastutil.objects.Reference2ObjectMaps;
+import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.protocol.game.ClientboundSetSubtitleTextPacket;
 import net.minecraft.server.level.ServerPlayer;
@@ -46,7 +57,7 @@ public final class BbCurrencyBehavior implements IGameBehavior {
 		DEATH_DECREASE.put(Difficulty.HARD, 0.5F);
 	}
 
-	public static final Codec<BbCurrencyBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+	public static final MapCodec<BbCurrencyBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			ForgeRegistries.ITEMS.getCodec().fieldOf("item").forGetter(c -> c.item),
 			Codec.INT.fieldOf("initial_currency").forGetter(c -> c.initialCurrency),
 			DropCalculation.CODEC.fieldOf("drop_calculation").forGetter(c -> c.dropCalculation),
@@ -108,16 +119,16 @@ public final class BbCurrencyBehavior implements IGameBehavior {
 		long ticks = this.game.ticks();
 
 
-			if (ticks % 20 == 0) {
-				int nextCurrencyIncrement = this.computeNextCurrency(plot);
-				if (plot.nextCurrencyIncrement != nextCurrencyIncrement) {
-					plot.nextCurrencyIncrement = nextCurrencyIncrement;
+		if (ticks % 20 == 0) {
+			int nextCurrencyIncrement = this.computeNextCurrency(plot);
+			if (plot.nextCurrencyIncrement != nextCurrencyIncrement) {
+				plot.nextCurrencyIncrement = nextCurrencyIncrement;
 
-					for (ServerPlayer player : players) {
-						game.invoker(BbEvents.CURRENCY_INCREMENT_CHANGED).onCurrencyChanged(player, nextCurrencyIncrement, plot.nextCurrencyIncrement);
-					}
+				for (ServerPlayer player : players) {
+					game.invoker(BbEvents.CURRENCY_INCREMENT_CHANGED).onCurrencyChanged(player, nextCurrencyIncrement, plot.nextCurrencyIncrement);
 				}
 			}
+		}
 
 		for (ServerPlayer player : players) {
 			long intervalTicks = this.dropInterval * 20;
@@ -174,7 +185,7 @@ public final class BbCurrencyBehavior implements IGameBehavior {
 	}
 
 	private static final class DropCalculation {
-		public static final Codec<DropCalculation> CODEC = RecordCodecBuilder.create(instance -> {
+		public static final MapCodec<DropCalculation> CODEC = RecordCodecBuilder.mapCodec(instance -> {
 			return instance.group(
 					Codec.DOUBLE.fieldOf("base").forGetter(c -> c.base),
 					Codec.DOUBLE.fieldOf("bound").forGetter(c -> c.bound),
@@ -235,7 +246,7 @@ public final class BbCurrencyBehavior implements IGameBehavior {
 			for (Reference2ObjectMap.Entry<PlantFamily, Object2IntOpenHashMap<PlantType>> entry : Reference2ObjectMaps.fastIterable(numberOfPlants)) {
 				// Total amount of plants in this family
 				int total = IntStream.of(entry.getValue().values().toIntArray()).sum();
-				
+
 				// Amount of plant types
 				int types = entry.getValue().size();
 

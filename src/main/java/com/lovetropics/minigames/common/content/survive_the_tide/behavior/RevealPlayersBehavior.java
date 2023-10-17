@@ -7,6 +7,7 @@ import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.lovetropics.minigames.common.core.game.player.PlayerSet;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.minecraft.server.level.ServerPlayer;
@@ -14,9 +15,8 @@ import net.minecraft.server.level.ServerPlayer;
 import java.util.Set;
 import java.util.UUID;
 
-public class RevealPlayersBehavior implements IGameBehavior
-{
-	public static final Codec<RevealPlayersBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+public class RevealPlayersBehavior implements IGameBehavior {
+	public static final MapCodec<RevealPlayersBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			Codec.INT.optionalFieldOf("players_left_required", 2).forGetter(c -> c.playersLeftRequired),
 			Codec.INT.optionalFieldOf("glow_on_time", 20).forGetter(c -> c.glowOnTime),
 			Codec.INT.optionalFieldOf("glow_off_time", 80).forGetter(c -> c.glowOffTime)

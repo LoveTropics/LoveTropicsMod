@@ -5,12 +5,13 @@ import com.lovetropics.minigames.common.core.game.state.GameProgressionState;
 import com.lovetropics.minigames.common.core.game.state.ProgressionPeriod;
 import com.lovetropics.minigames.common.core.game.weather.WeatherEventType;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 import java.util.Map;
 
 public class SurviveTheTideWeatherConfig {
-	public static final Codec<SurviveTheTideWeatherConfig> CODEC = RecordCodecBuilder.create(i -> i.group(
+	public static final MapCodec<SurviveTheTideWeatherConfig> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			Codec.unboundedMap(WeatherEventType.CODEC, DiscreteProgressionMap.codec(Codec.FLOAT)).fieldOf("event_chances").forGetter(c -> c.eventChancesByTime),
 			Codec.unboundedMap(WeatherEventType.CODEC, Timers.CODEC).fieldOf("event_timers").forGetter(c -> c.eventTimers),
 			ProgressionPeriod.CODEC.fieldOf("halve_event_time").forGetter(c -> c.halveEventTime),

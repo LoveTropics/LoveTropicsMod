@@ -5,7 +5,6 @@ import com.lovetropics.lib.entity.FireworkPalette;
 import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
-import com.lovetropics.minigames.common.core.game.behavior.action.ActionTargetTypes;
 import com.lovetropics.minigames.common.core.game.behavior.action.GameActionContext;
 import com.lovetropics.minigames.common.core.game.behavior.action.GameActionList;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
@@ -20,6 +19,7 @@ import com.lovetropics.minigames.common.core.game.util.GameSidebar;
 import com.lovetropics.minigames.common.core.map.MapRegions;
 import com.lovetropics.minigames.common.util.Util;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.ChatFormatting;
@@ -46,10 +46,10 @@ import java.util.UUID;
 
 // TODO: Can this behaviour be split up at all?
 public class RaceTrackBehavior implements IGameBehavior {
-	public static final Codec<RaceTrackBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+	public static final MapCodec<RaceTrackBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			PathData.CODEC.fieldOf("path").forGetter(b -> b.pathData),
 			Codec.STRING.optionalFieldOf("finish_region", "finish").forGetter(b -> b.finishRegion),
-			Codec.unboundedMap(Codec.STRING, GameActionList.PLAYER).optionalFieldOf("checkpoint_regions", Map.of()).forGetter(b -> b.checkpointRegions),
+			Codec.unboundedMap(Codec.STRING, GameActionList.PLAYER_CODEC).optionalFieldOf("checkpoint_regions", Map.of()).forGetter(b -> b.checkpointRegions),
 			Codec.INT.optionalFieldOf("lap_count", 1).forGetter(b -> b.lapCount),
 			Codec.INT.optionalFieldOf("winner_count", 3).forGetter(b -> b.winnerCount),
 			Codec.LONG.optionalFieldOf("start_time", 0L).forGetter(b -> b.startTime)
@@ -437,7 +437,7 @@ public class RaceTrackBehavior implements IGameBehavior {
 	}
 
 	private record PathData(int start, int end, String prefix) {
-		public static final Codec<PathData> CODEC = RecordCodecBuilder.create(i -> i.group(
+		public static final MapCodec<PathData> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 				Codec.INT.fieldOf("start").forGetter(PathData::start),
 				Codec.INT.fieldOf("end").forGetter(PathData::end),
 				Codec.STRING.fieldOf("prefix").forGetter(PathData::prefix)

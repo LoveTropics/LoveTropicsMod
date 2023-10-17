@@ -7,10 +7,10 @@ import com.lovetropics.minigames.common.core.game.behavior.action.GameActionCont
 import com.lovetropics.minigames.common.core.game.behavior.action.GameActionList;
 import com.lovetropics.minigames.common.core.game.behavior.action.NoneActionTarget;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
-import com.lovetropics.minigames.common.core.game.behavior.event.GameActionEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.lovetropics.minigames.common.core.game.util.TemplatedText;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
@@ -20,11 +20,10 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 
 public final class CountdownAction<T> implements IGameBehavior {
-	public static final Codec<CountdownAction<?>> CODEC = RecordCodecBuilder.create(i -> i.group(
+	public static final MapCodec<CountdownAction<?>> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			Codec.LONG.fieldOf("countdown").forGetter(c -> c.countdown / 20),
 			TemplatedText.CODEC.fieldOf("warning").forGetter(c -> c.warning),
 			GameActionList.MAP_CODEC.forGetter(c -> c.actions),

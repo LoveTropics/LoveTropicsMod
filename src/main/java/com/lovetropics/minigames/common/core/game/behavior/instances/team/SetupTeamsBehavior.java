@@ -17,7 +17,7 @@ import com.lovetropics.minigames.common.core.game.state.team.GameTeamKey;
 import com.lovetropics.minigames.common.core.game.state.team.TeamState;
 import com.lovetropics.minigames.common.core.game.util.SelectorItems;
 import com.lovetropics.minigames.common.util.Scheduler;
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.CommonComponents;
@@ -45,7 +45,7 @@ public final class SetupTeamsBehavior implements IGameBehavior {
 			.enumHint("[].dye", s -> DyeColor.byName(s, null))
 			.enumHint("[].text", ChatFormatting::getByName);
 
-	public static final Codec<SetupTeamsBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+	public static final MapCodec<SetupTeamsBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			CFG_TEAMS.forGetter(c -> c.teams)
 	).apply(i, SetupTeamsBehavior::new));
 

@@ -7,14 +7,14 @@ import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.plant.Pl
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.DoublePlantBlock;
 import net.minecraft.world.level.block.state.BlockState;
 
 public record PlaceDoublePlantBehavior(BlockState block) implements IGameBehavior {
-	public static final Codec<PlaceDoublePlantBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+	public static final MapCodec<PlaceDoublePlantBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			MoreCodecs.BLOCK_STATE.fieldOf("block").forGetter(c -> c.block)
 	).apply(i, PlaceDoublePlantBehavior::new));
 

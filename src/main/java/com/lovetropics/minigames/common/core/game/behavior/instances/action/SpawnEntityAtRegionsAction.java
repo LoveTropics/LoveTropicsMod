@@ -10,6 +10,7 @@ import com.lovetropics.minigames.common.core.game.behavior.event.GameActionEvent
 import com.lovetropics.minigames.common.core.map.MapRegions;
 import com.lovetropics.minigames.common.util.Util;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -20,7 +21,7 @@ import net.minecraftforge.registries.ForgeRegistries;
 import java.util.List;
 
 public class SpawnEntityAtRegionsAction implements IGameBehavior {
-	public static final Codec<SpawnEntityAtRegionsAction> CODEC = RecordCodecBuilder.create(i -> i.group(
+	public static final MapCodec<SpawnEntityAtRegionsAction> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			Codec.STRING.listOf().fieldOf("regions_to_spawn_at").forGetter(c -> c.regionsToSpawnAtKeys),
 			ForgeRegistries.ENTITY_TYPES.getCodec().fieldOf("entity_id").forGetter(c -> c.entityId),
 			Codec.INT.optionalFieldOf("entity_count_per_region", 1).forGetter(c -> c.entityCountPerRegion)

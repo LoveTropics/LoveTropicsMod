@@ -10,6 +10,7 @@ import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameWorldEvents;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
@@ -35,7 +36,7 @@ import java.nio.LongBuffer;
 import java.util.Optional;
 
 public record PlaceTrashBehavior(ResourceLocation positionData, int centerY, int range, int density) implements IGameBehavior {
-	public static final Codec<PlaceTrashBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+	public static final MapCodec<PlaceTrashBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			ResourceLocation.CODEC.fieldOf("positionData").forGetter(c -> c.positionData),
 			Codec.INT.optionalFieldOf("centerY", 75).forGetter(c -> c.centerY),
 			Codec.INT.optionalFieldOf("range", 50).forGetter(c -> c.range),

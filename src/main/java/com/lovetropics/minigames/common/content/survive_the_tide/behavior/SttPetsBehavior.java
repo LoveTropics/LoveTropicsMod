@@ -7,6 +7,7 @@ import com.lovetropics.minigames.common.core.game.behavior.event.GameLivingEntit
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
@@ -29,7 +30,7 @@ import java.util.Map;
 import java.util.UUID;
 
 public final class SttPetsBehavior implements IGameBehavior {
-	public static final Codec<SttPetsBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+	public static final MapCodec<SttPetsBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			Codec.unboundedMap(ForgeRegistries.ENTITY_TYPES.getCodec(), PetConfig.CODEC).fieldOf("entities").forGetter(c -> c.petTypes)
 	).apply(i, SttPetsBehavior::new));
 

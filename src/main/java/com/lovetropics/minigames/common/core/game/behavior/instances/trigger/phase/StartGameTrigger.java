@@ -7,10 +7,10 @@ import com.lovetropics.minigames.common.core.game.behavior.action.GameActionCont
 import com.lovetropics.minigames.common.core.game.behavior.action.GameActionList;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 
 public record StartGameTrigger(GameActionList<Void> actions) implements IGameBehavior {
-    public static final Codec<StartGameTrigger> CODEC = GameActionList.VOID
+    public static final MapCodec<StartGameTrigger> CODEC = GameActionList.VOID_MAP_CODEC
             .xmap(StartGameTrigger::new, StartGameTrigger::actions);
 
     @Override

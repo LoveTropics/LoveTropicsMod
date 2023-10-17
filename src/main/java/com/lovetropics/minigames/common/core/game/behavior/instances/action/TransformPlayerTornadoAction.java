@@ -6,13 +6,14 @@ import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameActionEvents;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.fml.InterModComms;
 
 public record TransformPlayerTornadoAction(int timeTicks, boolean baby) implements IGameBehavior {
-	public static final Codec<TransformPlayerTornadoAction> CODEC = RecordCodecBuilder.create(i -> i.group(
+	public static final MapCodec<TransformPlayerTornadoAction> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			Codec.INT.fieldOf("time_ticks").forGetter(c -> c.timeTicks),
 			Codec.BOOL.fieldOf("baby").forGetter(c -> c.baby)
 	).apply(i, TransformPlayerTornadoAction::new));

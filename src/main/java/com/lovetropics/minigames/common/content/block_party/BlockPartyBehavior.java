@@ -15,6 +15,7 @@ import com.lovetropics.minigames.common.core.game.player.PlayerSet;
 import com.lovetropics.minigames.common.core.game.state.statistics.PlayerKey;
 import com.lovetropics.minigames.common.core.game.state.statistics.StatisticKey;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
@@ -35,7 +36,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public final class BlockPartyBehavior implements IGameBehavior {
-	public static final Codec<BlockPartyBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+	public static final MapCodec<BlockPartyBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			Codec.STRING.fieldOf("floor").forGetter(c -> c.floorRegionKey),
 			MoreCodecs.arrayOrUnit(ForgeRegistries.BLOCKS.getCodec(), Block[]::new).fieldOf("blocks").forGetter(c -> c.blocks),
 			Codec.INT.optionalFieldOf("quad_size", 3).forGetter(c -> c.quadSize),

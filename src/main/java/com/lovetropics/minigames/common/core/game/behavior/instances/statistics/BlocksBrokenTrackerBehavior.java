@@ -5,11 +5,11 @@ import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.lovetropics.minigames.common.core.game.state.statistics.StatisticKey;
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import net.minecraft.world.InteractionResult;
 
 public final class BlocksBrokenTrackerBehavior implements IGameBehavior {
-	public static final Codec<BlocksBrokenTrackerBehavior> CODEC = Codec.unit(BlocksBrokenTrackerBehavior::new);
+	public static final MapCodec<BlocksBrokenTrackerBehavior> CODEC = MapCodec.unit(BlocksBrokenTrackerBehavior::new);
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {

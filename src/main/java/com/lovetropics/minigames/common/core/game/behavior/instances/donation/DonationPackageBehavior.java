@@ -4,15 +4,15 @@ import com.google.common.collect.Lists;
 import com.lovetropics.lib.codec.MoreCodecs;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
-import com.lovetropics.minigames.common.core.game.behavior.action.ActionTargetTypes;
 import com.lovetropics.minigames.common.core.game.behavior.action.GameActionContext;
-import com.lovetropics.minigames.common.core.game.behavior.action.GameActionParameter;
 import com.lovetropics.minigames.common.core.game.behavior.action.GameActionList;
+import com.lovetropics.minigames.common.core.game.behavior.action.GameActionParameter;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePackageEvents;
 import com.lovetropics.minigames.common.core.game.state.GamePackageState;
 import com.lovetropics.minigames.common.core.integration.game_actions.GamePackage;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
@@ -22,9 +22,9 @@ import org.apache.logging.log4j.Logger;
 import java.util.List;
 
 public final class DonationPackageBehavior implements IGameBehavior {
-	public static final Codec<DonationPackageBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+	public static final MapCodec<DonationPackageBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			DonationPackageData.CODEC.forGetter(c -> c.data),
-			MoreCodecs.strictOptionalFieldOf(GameActionList.PLAYER, "receive_actions", GameActionList.EMPTY).forGetter(c -> c.receiveActions)
+			MoreCodecs.strictOptionalFieldOf(GameActionList.PLAYER_CODEC, "receive_actions", GameActionList.EMPTY).forGetter(c -> c.receiveActions)
 	).apply(i, DonationPackageBehavior::new));
 
 	private static final Logger LOGGER = LogManager.getLogger(DonationPackageBehavior.class);

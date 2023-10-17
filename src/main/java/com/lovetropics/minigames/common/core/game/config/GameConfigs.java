@@ -12,6 +12,9 @@ import com.mojang.serialization.DataResult;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.JsonOps;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.MapLike;
+import com.mojang.serialization.RecordBuilder;
 import net.minecraft.Util;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.FileToIdConverter;
@@ -34,6 +37,7 @@ import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 // TODO: Replace with a dynamic registry - currently blocked by not being able to /reload those
 @Mod.EventBusSubscriber(modid = Constants.MODID)
@@ -50,7 +54,7 @@ public final class GameConfigs {
 	public static void addReloadListener(AddReloadListenerEvent event) {
 		RegistryAccess registryAccess = event.getRegistryAccess();
 		event.addListener((stage, resourceManager, preparationsProfiler, reloadProfiler, backgroundExecutor, gameExecutor) ->
-				load(resourceManager, backgroundExecutor, gameExecutor, registryAccess)
+				load(resourceManager, backgroundExecutor, registryAccess)
 						.thenCompose(stage::wait)
 						.thenAcceptAsync(configs -> {
 							REGISTRY.clear();
@@ -61,7 +65,7 @@ public final class GameConfigs {
 		);
 	}
 
-	private static CompletableFuture<List<GameConfig>> load(ResourceManager resourceManager, Executor backgroundExecutor, Executor gameExecutor, RegistryAccess registryAccess) {
+	private static CompletableFuture<List<GameConfig>> load(ResourceManager resourceManager, Executor backgroundExecutor, RegistryAccess registryAccess) {
 		return CompletableFuture.supplyAsync(() -> listBehaviors(resourceManager, backgroundExecutor), backgroundExecutor)
 				.thenCompose(f -> f)
 				.thenAccept(behaviors -> {
@@ -123,18 +127,24 @@ public final class GameConfigs {
 		}
 	}
 
-	private static Codec<IGameBehavior> createCustomBehaviorCodec(final Dynamic<?> template) {
-		return new Codec<>() {
+	private static MapCodec<IGameBehavior> createCustomBehaviorCodec(final Dynamic<?> template) {
+		return new MapCodec<>() {
 			@Override
-			public <T> DataResult<T> encode(IGameBehavior input, DynamicOps<T> ops, T prefix) {
-				return DataResult.error(() -> "Encoding unsupported");
+			public <T> RecordBuilder<T> encode(IGameBehavior input, DynamicOps<T> ops, RecordBuilder<T> prefix) {
+				return prefix.withErrorsFrom(DataResult.error(() -> "Encoding unsupported"));
 			}
 
 			@Override
-			public <T> DataResult<Pair<IGameBehavior, T>> decode(DynamicOps<T> ops, T input) {
-				BehaviorParameters parameters = new BehaviorParameters(new Dynamic<>(ops, input));
-				return IGameBehavior.CODEC.decode(parameters.substitute(template))
-						.map(pair -> pair.mapSecond(o -> input));
+			public <T> DataResult<IGameBehavior> decode(DynamicOps<T> ops, MapLike<T> input) {
+				// TODO: Delegate to MapCodec rather than adapt normal Codec
+				BehaviorParameters parameters = new BehaviorParameters(new Dynamic<>(ops, ops.createMap(input.entries())));
+				return IGameBehavior.CODEC.decode(parameters.substitute(template)).map(Pair::getFirst);
+			}
+
+			@Override
+			public <T> Stream<T> keys(DynamicOps<T> ops) {
+				// Unimplemented for compressed ops
+				return Stream.of();
 			}
 		};
 	}

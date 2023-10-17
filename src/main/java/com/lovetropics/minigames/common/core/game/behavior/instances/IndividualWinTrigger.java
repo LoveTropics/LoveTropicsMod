@@ -10,11 +10,11 @@ import com.lovetropics.minigames.common.core.game.player.PlayerRole;
 import com.lovetropics.minigames.common.core.game.player.PlayerSet;
 import com.lovetropics.minigames.common.core.game.state.statistics.PlayerKey;
 import com.lovetropics.minigames.common.core.game.state.statistics.StatisticKey;
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import net.minecraft.server.level.ServerPlayer;
 
 public class IndividualWinTrigger implements IGameBehavior {
-	public static final Codec<IndividualWinTrigger> CODEC = Codec.unit(IndividualWinTrigger::new);
+	public static final MapCodec<IndividualWinTrigger> CODEC = MapCodec.unit(IndividualWinTrigger::new);
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) throws GameException {

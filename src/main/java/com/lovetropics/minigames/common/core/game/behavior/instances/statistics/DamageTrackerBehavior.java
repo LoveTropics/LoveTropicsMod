@@ -6,14 +6,14 @@ import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.lovetropics.minigames.common.core.game.state.statistics.GameStatistics;
 import com.lovetropics.minigames.common.core.game.state.statistics.StatisticKey;
-import com.mojang.serialization.Codec;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.player.Player;
+import com.mojang.serialization.MapCodec;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
 
 public final class DamageTrackerBehavior implements IGameBehavior {
-	public static final Codec<DamageTrackerBehavior> CODEC = Codec.unit(DamageTrackerBehavior::new);
+	public static final MapCodec<DamageTrackerBehavior> CODEC = MapCodec.unit(DamageTrackerBehavior::new);
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {

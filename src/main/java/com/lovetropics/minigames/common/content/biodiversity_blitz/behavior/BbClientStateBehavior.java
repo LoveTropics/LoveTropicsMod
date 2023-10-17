@@ -10,15 +10,19 @@ import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.lovetropics.minigames.common.core.game.client_state.GameClientState;
-import com.mojang.serialization.Codec;
-import it.unimi.dsi.fastutil.objects.*;
+import com.mojang.serialization.MapCodec;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectMaps;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.server.level.ServerPlayer;
 
 import java.util.UUID;
 import java.util.function.Consumer;
 
 public final class BbClientStateBehavior implements IGameBehavior {
-	public static final Codec<BbClientStateBehavior> CODEC = Codec.unit(BbClientStateBehavior::new);
+	public static final MapCodec<BbClientStateBehavior> CODEC = MapCodec.unit(BbClientStateBehavior::new);
 
 	private static final int GLOBAL_UPDATE_INTERVAL = 20;
 

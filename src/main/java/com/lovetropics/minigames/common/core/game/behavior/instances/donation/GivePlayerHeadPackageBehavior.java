@@ -7,14 +7,15 @@ import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameActionEvents;
 import com.lovetropics.minigames.common.util.Util;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.enchantment.Enchantments;
 
 public record GivePlayerHeadPackageBehavior(boolean forced) implements IGameBehavior {
-	public static final Codec<GivePlayerHeadPackageBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+	public static final MapCodec<GivePlayerHeadPackageBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			Codec.BOOL.optionalFieldOf("forced", false).forGetter(c -> c.forced)
 	).apply(i, GivePlayerHeadPackageBehavior::new));
 

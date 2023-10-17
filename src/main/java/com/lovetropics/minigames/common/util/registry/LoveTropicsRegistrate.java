@@ -1,9 +1,10 @@
 package com.lovetropics.minigames.common.util.registry;
 
-import com.lovetropics.minigames.common.core.game.client_state.GameClientState;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
+import com.lovetropics.minigames.common.core.game.client_state.GameClientState;
 import com.lovetropics.minigames.common.core.game.predicate.entity.EntityPredicate;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.tterrag.registrate.AbstractRegistrate;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 
@@ -16,15 +17,15 @@ public final class LoveTropicsRegistrate extends AbstractRegistrate<LoveTropicsR
 		return new LoveTropicsRegistrate(modid).registerEventListeners(FMLJavaModLoadingContext.get().getModEventBus());
 	}
 
-	public <T extends IGameBehavior> GameBehaviorBuilder<T, LoveTropicsRegistrate> behavior(Codec<T> codec) {
+	public <T extends IGameBehavior> GameBehaviorBuilder<T, LoveTropicsRegistrate> behavior(MapCodec<T> codec) {
 		return behavior(this, codec);
 	}
 
-	public <T extends IGameBehavior, P> GameBehaviorBuilder<T, P> behavior(P parent, Codec<T> codec) {
+	public <T extends IGameBehavior, P> GameBehaviorBuilder<T, P> behavior(P parent, MapCodec<T> codec) {
 		return behavior(parent, currentName(), codec);
 	}
 
-	public <T extends IGameBehavior, P> GameBehaviorBuilder<T, P> behavior(P parent, String name, Codec<T> codec) {
+	public <T extends IGameBehavior, P> GameBehaviorBuilder<T, P> behavior(P parent, String name, MapCodec<T> codec) {
 		return entry(name, callback -> new GameBehaviorBuilder<>(this, parent, name, callback, codec));
 	}
 

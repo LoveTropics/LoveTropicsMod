@@ -8,7 +8,6 @@ import com.lovetropics.minigames.common.core.diguise.ServerPlayerDisguises;
 import com.lovetropics.minigames.common.core.dimension.DimensionUtils;
 import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
-import com.lovetropics.minigames.common.core.game.PlayerListAccess;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
@@ -19,6 +18,7 @@ import com.lovetropics.minigames.common.core.game.state.team.GameTeam;
 import com.lovetropics.minigames.common.core.game.state.team.GameTeamKey;
 import com.lovetropics.minigames.common.core.game.state.team.TeamState;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
@@ -39,7 +39,7 @@ import java.util.List;
 
 // TODO: clean up and split up
 public final class HideAndSeekBehavior implements IGameBehavior {
-	public static final Codec<HideAndSeekBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+	public static final MapCodec<HideAndSeekBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			Codec.STRING.fieldOf("spawn").forGetter(c -> c.spawnRegionKey),
 			Codec.INT.fieldOf("initial_hide_seconds").forGetter(c -> c.initialHideSeconds),
 			DisguiseType.CODEC.listOf().fieldOf("disguises").forGetter(c -> c.disguises),

@@ -8,14 +8,13 @@ import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents
 import com.lovetropics.minigames.common.core.game.state.GameProgressionState;
 import com.lovetropics.minigames.common.core.game.state.weather.GameWeatherState;
 import com.lovetropics.minigames.common.core.game.weather.WeatherEvent;
-import com.lovetropics.minigames.common.core.game.weather.WeatherEventType;
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import net.minecraft.SharedConstants;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 
 public class SurviveTheTideWeatherControlBehavior implements IGameBehavior {
-    public static final Codec<SurviveTheTideWeatherControlBehavior> CODEC = SurviveTheTideWeatherConfig.CODEC.xmap(SurviveTheTideWeatherControlBehavior::new, b -> b.config);
+    public static final MapCodec<SurviveTheTideWeatherControlBehavior> CODEC = SurviveTheTideWeatherConfig.CODEC.xmap(SurviveTheTideWeatherControlBehavior::new, b -> b.config);
 
     private final SurviveTheTideWeatherConfig config;
 

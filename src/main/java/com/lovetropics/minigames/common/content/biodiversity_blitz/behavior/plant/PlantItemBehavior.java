@@ -13,20 +13,20 @@ import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.InteractionResultHolder;
-import net.minecraft.world.InteractionResult;
-import net.minecraft.sounds.SoundSource;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.core.BlockPos;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.state.BlockState;
 
 public final class PlantItemBehavior implements IGameBehavior {
-	public static final Codec<PlantItemBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+	public static final MapCodec<PlantItemBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			PlantItemType.CODEC.fieldOf("id").forGetter(c -> c.itemType),
 			PlantType.CODEC.fieldOf("places").forGetter(c -> c.places),
 			MoreCodecs.ITEM_STACK.fieldOf("item").forGetter(c -> c.item)

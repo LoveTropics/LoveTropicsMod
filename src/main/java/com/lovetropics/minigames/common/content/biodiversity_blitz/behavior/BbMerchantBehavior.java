@@ -14,6 +14,7 @@ import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvent
 import com.lovetropics.minigames.common.util.Util;
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.minecraft.core.BlockPos;
@@ -42,7 +43,7 @@ import java.util.UUID;
 import java.util.function.Function;
 
 public final class BbMerchantBehavior implements IGameBehavior {
-	public static final Codec<BbMerchantBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+	public static final MapCodec<BbMerchantBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			Codec.STRING.fieldOf("plot_region").forGetter(c -> c.plotRegion),
 			ForgeRegistries.ENTITY_TYPES.getCodec().fieldOf("entity").forGetter(c -> c.entity),
 			ExtraCodecs.COMPONENT.optionalFieldOf("name", CommonComponents.EMPTY).forGetter(c -> c.name),

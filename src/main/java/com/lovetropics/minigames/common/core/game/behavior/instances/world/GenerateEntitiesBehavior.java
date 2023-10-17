@@ -2,6 +2,7 @@ package com.lovetropics.minigames.common.core.game.behavior.instances.world;
 
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -15,7 +16,7 @@ import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraftforge.registries.ForgeRegistries;
 
 public final class GenerateEntitiesBehavior extends ChunkGeneratingBehavior {
-	public static final Codec<GenerateEntitiesBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+	public static final MapCodec<GenerateEntitiesBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			ForgeRegistries.ENTITY_TYPES.getCodec().fieldOf("entity").forGetter(c -> c.type),
 			Codec.INT.optionalFieldOf("min_per_chunk", 0).forGetter(c -> c.minPerChunk),
 			Codec.INT.optionalFieldOf("max_per_chunk", 1).forGetter(c -> c.maxPerChunk)

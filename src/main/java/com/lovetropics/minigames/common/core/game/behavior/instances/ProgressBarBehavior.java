@@ -11,6 +11,7 @@ import com.lovetropics.minigames.common.core.game.util.GameBossBar;
 import com.lovetropics.minigames.common.core.game.util.GlobalGameWidgets;
 import com.lovetropics.minigames.common.util.Util;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.ChatFormatting;
 import net.minecraft.SharedConstants;
@@ -25,7 +26,7 @@ import java.util.List;
 public class ProgressBarBehavior implements IGameBehavior {
 	private static final int UPDATE_INTERVAL = SharedConstants.TICKS_PER_SECOND / 2;
 
-	public static final Codec<ProgressBarBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+	public static final MapCodec<ProgressBarBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			Entry.CODEC.listOf().fieldOf("entries").forGetter(b -> b.entries)
 	).apply(i, ProgressBarBehavior::new));
 

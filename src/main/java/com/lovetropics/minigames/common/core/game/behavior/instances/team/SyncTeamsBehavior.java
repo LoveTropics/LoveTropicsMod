@@ -13,12 +13,12 @@ import com.lovetropics.minigames.common.core.game.state.team.GameTeamKey;
 import com.lovetropics.minigames.common.core.game.state.team.TeamState;
 import com.lovetropics.minigames.common.core.network.LoveTropicsNetwork;
 import com.lovetropics.minigames.common.core.network.SetGameClientStateMessage;
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.network.PacketDistributor;
 
 public class SyncTeamsBehavior implements IGameBehavior {
-    public static final Codec<SyncTeamsBehavior> CODEC = Codec.unit(SyncTeamsBehavior::new);
+    public static final MapCodec<SyncTeamsBehavior> CODEC = MapCodec.unit(SyncTeamsBehavior::new);
 
     @Override
     public void register(IGamePhase game, EventRegistrar events) throws GameException {

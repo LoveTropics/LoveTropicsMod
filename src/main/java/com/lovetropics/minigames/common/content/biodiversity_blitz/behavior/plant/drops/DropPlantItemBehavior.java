@@ -6,13 +6,13 @@ import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.plant.Pl
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.Block;
 
 public record DropPlantItemBehavior(PlantItemType plant) implements IGameBehavior {
-	public static final Codec<DropPlantItemBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+	public static final MapCodec<DropPlantItemBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			PlantItemType.CODEC.fieldOf("plant").forGetter(c -> c.plant)
 	).apply(i, DropPlantItemBehavior::new));
 

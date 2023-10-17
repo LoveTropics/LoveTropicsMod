@@ -9,11 +9,12 @@ import com.lovetropics.minigames.common.core.game.state.statistics.PlacementOrde
 import com.lovetropics.minigames.common.core.game.state.statistics.PlayerPlacement;
 import com.lovetropics.minigames.common.core.game.state.statistics.StatisticKey;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.network.chat.Component;
 
 public record DisplayLeaderboardOnFinishBehavior<T extends Comparable<T>>(StatisticKey<T> statistic, PlacementOrder order, int length) implements IGameBehavior {
-	public static final Codec<DisplayLeaderboardOnFinishBehavior<?>> CODEC = RecordCodecBuilder.create(i -> i.group(
+	public static final MapCodec<DisplayLeaderboardOnFinishBehavior<?>> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			StatisticKey.CODEC.fieldOf("statistic").forGetter(c -> c.statistic),
 			PlacementOrder.CODEC.optionalFieldOf("order", PlacementOrder.MAX).forGetter(c -> c.order),
 			Codec.INT.optionalFieldOf("length", 5).forGetter(c -> c.length)

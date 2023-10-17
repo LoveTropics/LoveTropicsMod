@@ -5,12 +5,12 @@ import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameActionEvents;
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.levelgen.Heightmap;
 
 public final class SpawnFireworksAction implements IGameBehavior {
-	public static final Codec<SpawnFireworksAction> CODEC = Codec.unit(SpawnFireworksAction::new);
+	public static final MapCodec<SpawnFireworksAction> CODEC = MapCodec.unit(SpawnFireworksAction::new);
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {

@@ -13,6 +13,7 @@ import com.lovetropics.minigames.common.core.game.weather.WeatherController;
 import com.lovetropics.minigames.common.core.game.weather.WeatherControllerManager;
 import com.lovetropics.minigames.common.core.game.weather.WeatherEventType;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
@@ -28,7 +29,7 @@ import java.util.Map;
 import java.util.Optional;
 
 public final class AddWeatherBehavior implements IGameBehavior {
-	public static final Codec<AddWeatherBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+	public static final MapCodec<AddWeatherBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			Codec.unboundedMap(WeatherEventType.CODEC, EventEffects.CODEC).fieldOf("event_effects").forGetter(c -> c.eventEffects)
 	).apply(i, AddWeatherBehavior::new));
 

@@ -17,7 +17,7 @@ import com.lovetropics.minigames.common.core.game.state.statistics.StatisticKey;
 import com.lovetropics.minigames.common.core.game.state.statistics.StatisticsMap;
 import com.lovetropics.minigames.common.core.game.util.GameSidebar;
 import com.lovetropics.minigames.common.core.game.util.GlobalGameWidgets;
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
@@ -39,7 +39,7 @@ import java.util.List;
 import java.util.Set;
 
 public final class TrashCollectionBehavior implements IGameBehavior {
-	public static final Codec<TrashCollectionBehavior> CODEC = Codec.unit(TrashCollectionBehavior::new);
+	public static final MapCodec<TrashCollectionBehavior> CODEC = MapCodec.unit(TrashCollectionBehavior::new);
 
 	private final Set<Block> trashBlocks;
 

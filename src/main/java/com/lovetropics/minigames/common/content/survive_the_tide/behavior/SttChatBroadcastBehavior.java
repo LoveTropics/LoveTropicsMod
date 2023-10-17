@@ -8,6 +8,7 @@ import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvent
 import com.lovetropics.minigames.common.core.game.player.PlayerRole;
 import com.lovetropics.minigames.common.core.game.player.PlayerSet;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
@@ -16,7 +17,7 @@ import net.minecraft.server.level.ServerPlayer;
 import java.util.Iterator;
 
 public record SttChatBroadcastBehavior(String downToTwoTranslationKey) implements IGameBehavior {
-	public static final Codec<SttChatBroadcastBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+	public static final MapCodec<SttChatBroadcastBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			Codec.STRING.fieldOf("down_to_two_translation_key").forGetter(c -> c.downToTwoTranslationKey)
 	).apply(i, SttChatBroadcastBehavior::new));
 

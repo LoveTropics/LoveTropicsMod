@@ -2,7 +2,7 @@ package com.lovetropics.minigames.common.util.registry;
 
 import com.lovetropics.minigames.common.core.game.behavior.GameBehaviorType;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.tterrag.registrate.AbstractRegistrate;
 import com.tterrag.registrate.util.entry.RegistryEntry;
 import net.minecraftforge.registries.RegistryObject;
@@ -12,7 +12,7 @@ public final class GameBehaviorEntry<T extends IGameBehavior> extends RegistryEn
 		super(owner, delegate);
 	}
 
-	public Codec<T> getCodec() {
+	public MapCodec<T> getCodec() {
 		return get().codec();
 	}
 }

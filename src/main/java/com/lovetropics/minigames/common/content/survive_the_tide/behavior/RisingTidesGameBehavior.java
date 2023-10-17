@@ -12,6 +12,7 @@ import com.lovetropics.minigames.common.core.game.state.GameProgressionState;
 import com.lovetropics.minigames.common.core.game.state.ProgressionPeriod;
 import com.lovetropics.minigames.common.core.game.state.ProgressionSpline;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.floats.Float2FloatFunction;
 import it.unimi.dsi.fastutil.longs.Long2IntMap;
@@ -53,7 +54,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class RisingTidesGameBehavior implements IGameBehavior {
-	public static final Codec<RisingTidesGameBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+	public static final MapCodec<RisingTidesGameBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			Codec.STRING.optionalFieldOf("tide_area_region", "tide_area").forGetter(c -> c.tideAreaKey),
 			Codec.STRING.optionalFieldOf("iceberg_lines_region", "iceberg_lines").forGetter(c -> c.icebergLinesKey),
 			ProgressionSpline.CODEC.fieldOf("water_levels").forGetter(c -> c.waterLevels),

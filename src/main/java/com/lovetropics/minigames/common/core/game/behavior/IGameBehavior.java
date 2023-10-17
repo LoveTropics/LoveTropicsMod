@@ -12,6 +12,7 @@ import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
+import com.mojang.serialization.MapCodec;
 import net.minecraft.resources.ResourceLocation;
 
 import javax.annotation.Nullable;
@@ -22,8 +23,11 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 public interface IGameBehavior {
-	Codec<? extends GameBehaviorType<?>> TYPE_CODEC = Codec.either(GameBehaviorTypes.TYPE_CODEC, GameConfigs.CUSTOM_BEHAVIORS)
+	Codec<GameBehaviorType<?>> TYPE_CODEC = Codec.either(GameBehaviorTypes.TYPE_CODEC, GameConfigs.CUSTOM_BEHAVIORS)
 			.xmap(e -> e.map(Function.identity(), Function.identity()), Either::left);
+
+	MapCodec<IGameBehavior> MAP_CODEC = TYPE_CODEC.dispatchMap(behavior -> {throw new UnsupportedOperationException();}, type -> type.codec().codec());
+
 	Codec<IGameBehavior> SIMPLE_CODEC = new Codec<>() {
 		@Override
 		public <T> DataResult<Pair<IGameBehavior, T>> decode(DynamicOps<T> ops, T input) {
@@ -37,7 +41,7 @@ public interface IGameBehavior {
 		}
 
 		private static <T> DataResult<Pair<IGameBehavior, T>> parseTyped(DynamicOps<T> ops, T input, GameBehaviorType<?> type, T typeName) {
-			return type.codec().decode(ops, input)
+			return type.codec().codec().decode(ops, input)
 					.mapError(err -> "In behavior " + typeName + ": " + err)
 					.map(pair -> pair.mapFirst(b -> b));
 		}

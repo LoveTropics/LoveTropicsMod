@@ -7,12 +7,12 @@ import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameActionEvents;
 import com.lovetropics.minigames.common.core.network.LoveTropicsNetwork;
 import com.lovetropics.minigames.common.core.network.SpectatorPlayerActivityMessage;
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.network.chat.TextColor;
 
 public record SpectatorActivityAction(TextColor style) implements IGameBehavior {
-    public static final Codec<SpectatorActivityAction> CODEC = RecordCodecBuilder.create(i -> i.group(
+    public static final MapCodec<SpectatorActivityAction> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
             TextColor.CODEC.fieldOf("style").forGetter(SpectatorActivityAction::style)
     ).apply(i, SpectatorActivityAction::new));
 

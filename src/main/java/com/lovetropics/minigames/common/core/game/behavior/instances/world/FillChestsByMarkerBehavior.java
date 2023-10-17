@@ -2,6 +2,7 @@ package com.lovetropics.minigames.common.core.game.behavior.instances.world;
 
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
@@ -29,7 +30,7 @@ import java.util.Collection;
 import java.util.List;
 
 public class FillChestsByMarkerBehavior extends ChunkGeneratingBehavior {
-	public static final Codec<FillChestsByMarkerBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+	public static final MapCodec<FillChestsByMarkerBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			ForgeRegistries.BLOCKS.getCodec().fieldOf("marker").forGetter(c -> c.marker),
 			SimpleWeightedRandomList.wrappedCodec(ResourceLocation.CODEC).fieldOf("loot_tables").forGetter(c -> c.lootTables),
 			Codec.FLOAT.optionalFieldOf("percentage", 1.0f).forGetter(c -> c.percentage),

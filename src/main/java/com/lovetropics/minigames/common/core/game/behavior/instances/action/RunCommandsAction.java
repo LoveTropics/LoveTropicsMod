@@ -9,6 +9,7 @@ import com.lovetropics.minigames.common.core.game.state.DebugModeState;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.commands.CommandSource;
 import net.minecraft.commands.CommandSourceStack;
@@ -35,7 +36,7 @@ public record RunCommandsAction(List<String> globalCommands, List<String> player
             Function.identity()
     );
 
-    public static final Codec<RunCommandsAction> CODEC = RecordCodecBuilder.create(i -> i.group(
+    public static final MapCodec<RunCommandsAction> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
             MoreCodecs.strictOptionalFieldOf(MoreCodecs.listOrUnit(COMMAND_CODEC), "global", List.of()).forGetter(RunCommandsAction::globalCommands),
             MoreCodecs.strictOptionalFieldOf(MoreCodecs.listOrUnit(COMMAND_CODEC), "player", List.of()).forGetter(RunCommandsAction::playerCommands)
     ).apply(i, RunCommandsAction::new));

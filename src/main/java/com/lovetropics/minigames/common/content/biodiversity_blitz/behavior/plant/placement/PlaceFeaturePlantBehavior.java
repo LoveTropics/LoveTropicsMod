@@ -8,9 +8,13 @@ import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.util.BlockStatePredicate;
 import com.lovetropics.minigames.common.util.world.DelegatingWorldGenLevel;
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import it.unimi.dsi.fastutil.longs.*;
+import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
+import it.unimi.dsi.fastutil.longs.Long2ObjectMaps;
+import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+import it.unimi.dsi.fastutil.longs.LongSet;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.server.level.ServerLevel;
@@ -25,7 +29,7 @@ import javax.annotation.Nullable;
 import java.util.function.Predicate;
 
 public record PlaceFeaturePlantBehavior(Holder<ConfiguredFeature<?, ?>> feature, BlockStatePredicate blocks) implements IGameBehavior {
-	public static final Codec<PlaceFeaturePlantBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+	public static final MapCodec<PlaceFeaturePlantBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			ConfiguredFeature.CODEC.fieldOf("feature").forGetter(c -> c.feature),
 			BlockStatePredicate.CODEC.fieldOf("blocks").forGetter(c -> c.blocks)
 	).apply(i, PlaceFeaturePlantBehavior::new));

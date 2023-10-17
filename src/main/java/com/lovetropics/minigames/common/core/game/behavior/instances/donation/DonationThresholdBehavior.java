@@ -10,13 +10,14 @@ import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePackageEvents;
 import com.lovetropics.minigames.common.core.integration.game_actions.Donation;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.server.level.ServerPlayer;
 
 public record DonationThresholdBehavior(double threshold, GameActionList<ServerPlayer> actions) implements IGameBehavior {
-	public static final Codec<DonationThresholdBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+	public static final MapCodec<DonationThresholdBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			Codec.DOUBLE.fieldOf("threshold").forGetter(DonationThresholdBehavior::threshold),
-			GameActionList.PLAYER.fieldOf("actions").forGetter(DonationThresholdBehavior::actions)
+			GameActionList.PLAYER_CODEC.fieldOf("actions").forGetter(DonationThresholdBehavior::actions)
 	).apply(i, DonationThresholdBehavior::new));
 
 	@Override

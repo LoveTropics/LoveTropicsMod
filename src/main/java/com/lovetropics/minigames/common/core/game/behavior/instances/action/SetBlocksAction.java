@@ -8,6 +8,7 @@ import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameActionEvents;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongSet;
@@ -27,7 +28,7 @@ import java.util.List;
 import java.util.Optional;
 
 public final class SetBlocksAction implements IGameBehavior {
-	public static final Codec<SetBlocksAction> CODEC = RecordCodecBuilder.create(i -> i.group(
+	public static final MapCodec<SetBlocksAction> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			MoreCodecs.BLOCK_PREDICATE.optionalFieldOf("replace").forGetter(c -> Optional.ofNullable(c.replace)),
 			MoreCodecs.BLOCK_STATE_PROVIDER.fieldOf("set").forGetter(c -> c.set),
 			MoreCodecs.arrayOrUnit(Codec.STRING, String[]::new).optionalFieldOf("region", new String[0]).forGetter(c -> c.regionKeys),

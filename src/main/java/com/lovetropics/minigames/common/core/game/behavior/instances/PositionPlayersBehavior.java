@@ -16,6 +16,7 @@ import com.lovetropics.minigames.common.core.game.state.team.TeamState;
 import com.lovetropics.minigames.common.core.map.MapRegions;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -33,7 +34,7 @@ import java.util.Map;
 public class PositionPlayersBehavior implements IGameBehavior {
 	private static final Logger LOGGER = LogUtils.getLogger();
 
-	public static final Codec<PositionPlayersBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+	public static final MapCodec<PositionPlayersBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			MoreCodecs.arrayOrUnit(Codec.STRING, String[]::new).optionalFieldOf("participants", new String[0]).forGetter(c -> c.participantSpawnKeys),
 			MoreCodecs.arrayOrUnit(Codec.STRING, String[]::new).optionalFieldOf("spectators", new String[0]).forGetter(c -> c.spectatorSpawnKeys),
 			MoreCodecs.arrayOrUnit(Codec.STRING, String[]::new).optionalFieldOf("all", new String[0]).forGetter(c -> c.allSpawnKeys),
@@ -154,7 +155,7 @@ public class PositionPlayersBehavior implements IGameBehavior {
 			this.regions = new ArrayList<>(regions);
 			Collections.shuffle(this.regions);
 		}
-		
+
 		public CycledSpawner(MapRegions regions, String... keys) {
 			this(regions.getAll(keys));
 		}

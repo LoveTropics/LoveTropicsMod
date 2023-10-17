@@ -7,16 +7,17 @@ import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvent
 import com.lovetropics.minigames.common.core.game.player.PlayerRole;
 import com.lovetropics.minigames.common.core.game.util.TemplatedText;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.network.chat.Component;
 
 import java.util.Map;
 import java.util.Optional;
 
 public record ImmediateRespawnBehavior(Optional<PlayerRole> role, Optional<PlayerRole> respawnAsRole, Optional<TemplatedText> deathMessage, boolean dropInventory) implements IGameBehavior {
-	public static final Codec<ImmediateRespawnBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+	public static final MapCodec<ImmediateRespawnBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			PlayerRole.CODEC.optionalFieldOf("role").forGetter(c -> c.role),
 			PlayerRole.CODEC.optionalFieldOf("respawn_as").forGetter(c -> c.respawnAsRole),
 			TemplatedText.CODEC.optionalFieldOf("death_message").forGetter(c -> c.deathMessage),

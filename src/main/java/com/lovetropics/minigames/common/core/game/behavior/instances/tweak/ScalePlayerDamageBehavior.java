@@ -6,12 +6,13 @@ import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.lovetropics.minigames.common.role.StreamHosts;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 public record ScalePlayerDamageBehavior(float factor, float hostFactor) implements IGameBehavior {
 	private static final float NO_FACTOR = -1.0f;
 
-	public static final Codec<ScalePlayerDamageBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+	public static final MapCodec<ScalePlayerDamageBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			Codec.FLOAT.fieldOf("factor").forGetter(ScalePlayerDamageBehavior::factor),
 			Codec.FLOAT.optionalFieldOf("host_factor", NO_FACTOR).forGetter(ScalePlayerDamageBehavior::hostFactor) // TODO: Don't hardcode it
 	).apply(i, ScalePlayerDamageBehavior::new));

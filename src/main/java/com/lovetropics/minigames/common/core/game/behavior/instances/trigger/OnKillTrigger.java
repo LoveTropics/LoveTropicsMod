@@ -7,12 +7,12 @@ import com.lovetropics.minigames.common.core.game.behavior.action.GameActionList
 import com.lovetropics.minigames.common.core.game.behavior.action.GameActionParameter;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
 
 public record OnKillTrigger(GameActionList<ServerPlayer> actions) implements IGameBehavior {
-	public static final Codec<OnKillTrigger> CODEC = GameActionList.PLAYER.xmap(OnKillTrigger::new, OnKillTrigger::actions);
+	public static final MapCodec<OnKillTrigger> CODEC = GameActionList.PLAYER_MAP_CODEC.xmap(OnKillTrigger::new, OnKillTrigger::actions);
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {

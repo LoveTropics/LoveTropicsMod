@@ -6,14 +6,14 @@ import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameActionEvents;
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.world.effect.MobEffectInstance;
 
 import java.util.List;
 
 public record GiveEffectAction(List<MobEffectInstance> effects) implements IGameBehavior {
-	public static final Codec<GiveEffectAction> CODEC = RecordCodecBuilder.create(i -> i.group(
+	public static final MapCodec<GiveEffectAction> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			MoreCodecs.EFFECT_INSTANCE.listOf().fieldOf("effects").forGetter(c -> c.effects)
 	).apply(i, GiveEffectAction::new));
 

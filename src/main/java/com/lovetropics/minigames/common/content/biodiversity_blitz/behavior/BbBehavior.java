@@ -27,7 +27,7 @@ import com.lovetropics.minigames.common.core.game.state.statistics.StatisticKey;
 import com.lovetropics.minigames.common.core.game.state.statistics.StatisticsMap;
 import com.lovetropics.minigames.common.core.game.util.GameSidebar;
 import com.lovetropics.minigames.common.core.game.util.GlobalGameWidgets;
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -63,7 +63,7 @@ import java.util.List;
 // TODO: needs to be split up & data-driven more!
 
 public final class BbBehavior implements IGameBehavior {
-	public static final Codec<BbBehavior> CODEC = Codec.unit(BbBehavior::new);
+	public static final MapCodec<BbBehavior> CODEC = MapCodec.unit(BbBehavior::new);
 
 	private IGamePhase game;
 	private PlotsState plots;

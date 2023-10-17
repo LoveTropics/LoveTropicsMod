@@ -16,6 +16,7 @@ import com.lovetropics.minigames.common.core.game.player.PlayerRole;
 import com.lovetropics.minigames.common.core.game.state.GameStateMap;
 import com.lovetropics.minigames.common.core.map.MapRegions;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.server.level.ServerPlayer;
 
@@ -24,7 +25,7 @@ import java.util.Collections;
 import java.util.List;
 
 public final class BbAssignPlotsBehavior implements IGameBehavior {
-	public static final Codec<BbAssignPlotsBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+	public static final MapCodec<BbAssignPlotsBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			Plot.RegionKeys.CODEC.fieldOf("regions").forGetter(c -> c.regionKeys),
 			MoreCodecs.arrayOrUnit(Plot.Config.CODEC, Plot.Config[]::new).fieldOf("plots").forGetter(c -> c.plotKeys),
 			Codec.BOOL.fieldOf("teams_mode").orElse(false).forGetter(c -> c.teamsMode)

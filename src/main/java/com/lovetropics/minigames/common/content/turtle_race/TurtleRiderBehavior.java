@@ -8,7 +8,7 @@ import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvent
 import com.lovetropics.minigames.common.core.game.player.PlayerRole;
 import com.lovetropics.minigames.common.util.EntityTemplate;
 import com.mojang.logging.LogUtils;
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.network.protocol.game.ClientboundSetPassengersPacket;
@@ -24,7 +24,7 @@ import java.util.UUID;
 public record TurtleRiderBehavior(EntityTemplate turtle) implements IGameBehavior {
 	private static final Logger LOGGER = LogUtils.getLogger();
 
-	public static final Codec<TurtleRiderBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+	public static final MapCodec<TurtleRiderBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			EntityTemplate.CODEC.fieldOf("turtle").forGetter(TurtleRiderBehavior::turtle)
 	).apply(i, TurtleRiderBehavior::new));
 

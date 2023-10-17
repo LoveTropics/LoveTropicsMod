@@ -14,6 +14,7 @@ import com.lovetropics.minigames.common.core.game.util.GlobalGameWidgets;
 import com.lovetropics.minigames.common.core.game.util.TemplatedText;
 import com.lovetropics.minigames.common.util.Util;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.ChatFormatting;
 import net.minecraft.SharedConstants;
@@ -26,7 +27,7 @@ import java.util.Map;
 import java.util.Optional;
 
 public final class TimedGameBehavior implements IGameBehavior {
-	public static final Codec<TimedGameBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+	public static final MapCodec<TimedGameBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			Codec.LONG.optionalFieldOf("length", 20L * 60).forGetter(c -> c.length),
 			Codec.LONG.optionalFieldOf("close_length", 0L).forGetter(c -> c.closeTime - c.length),
 			TemplatedText.CODEC.optionalFieldOf("timer_bar").forGetter(c -> Optional.ofNullable(c.timerBarText)),

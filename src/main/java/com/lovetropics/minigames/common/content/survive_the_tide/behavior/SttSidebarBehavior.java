@@ -12,7 +12,7 @@ import com.lovetropics.minigames.common.core.game.state.weather.GameWeatherState
 import com.lovetropics.minigames.common.core.game.util.GameSidebar;
 import com.lovetropics.minigames.common.core.game.util.GlobalGameWidgets;
 import com.lovetropics.minigames.common.core.game.weather.WeatherEventType;
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.ChatFormatting;
 import net.minecraft.SharedConstants;
@@ -21,7 +21,7 @@ import net.minecraft.network.chat.Component;
 
 // TODO: make it generic and data-driven
 public class SttSidebarBehavior implements IGameBehavior {
-	public static final Codec<SttSidebarBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+	public static final MapCodec<SttSidebarBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			ProgressionPeriod.CODEC.fieldOf("safe_period").forGetter(b -> b.safePeriod),
 			ProgressionPeriod.CODEC.fieldOf("tide_rising_period").forGetter(b -> b.tideRisingPeriod),
 			ProgressionPeriod.CODEC.fieldOf("iceberg_growth_period").forGetter(b -> b.icebergGrowthPeriod),
