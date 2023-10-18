@@ -19,6 +19,7 @@ import net.minecraft.world.item.Item;
 
 import java.util.Map;
 import java.util.function.Function;
+import java.util.stream.Stream;
 
 public class Codecs {
     public static final Codec<HolderSet<Item>> ITEMS = RegistryCodecs.homogeneousList(Registries.ITEM);

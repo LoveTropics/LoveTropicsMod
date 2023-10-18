@@ -3,7 +3,7 @@
   "behaviors": [
     {
       "type": "ltminigames:events",
-      "value": {
+      "events": {
         "player_hurt": {
           "actions": {
             "type": "ltminigames:give_effect",

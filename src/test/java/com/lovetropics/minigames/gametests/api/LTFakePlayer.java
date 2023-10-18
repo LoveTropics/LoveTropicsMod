@@ -42,7 +42,8 @@ public class LTFakePlayer extends ServerPlayer implements LTGameTestFakePlayer {
     }
 
     void exitWorld() {
-        server.getPlayerList().remove(this);
+        disconnect();
+        connection.disconnect(Component.literal("Test finished"));
     }
 
     @Override
