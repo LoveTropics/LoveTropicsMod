@@ -1,5 +1,6 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances.tweak;
 
+import com.lovetropics.lib.codec.MoreCodecs;
 import com.lovetropics.lib.permission.PermissionsApi;
 import com.lovetropics.lib.permission.role.RoleOverrideReader;
 import com.lovetropics.lib.permission.role.RoleOverrideType;
@@ -10,7 +11,6 @@ import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.lovetropics.minigames.common.role.StreamHosts;
-import com.lovetropics.minigames.common.util.Codecs;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -21,7 +21,7 @@ import java.util.function.Supplier;
 
 public record ScalePlayerDamageBehavior(float factor, Map<RoleOverrideType<?>, RoleOverrideEntry<?>> roleFactors) implements IGameBehavior {
 
-	public static final Codec<Map<RoleOverrideType<?>, RoleOverrideEntry<?>>> OVERRIDE_ENTRY = Codecs.mapValueBasedOnKey(
+	public static final Codec<Map<RoleOverrideType<?>, RoleOverrideEntry<?>>> OVERRIDE_ENTRY = MoreCodecs.dispatchByMapKey(
 			RoleOverrideType.REGISTRY, RoleOverrideEntry::create
 	);
 
