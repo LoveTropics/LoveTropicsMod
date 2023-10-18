@@ -26,6 +26,8 @@ public class FakePlayerBuilder {
     Predicate<Player> canBeHarmedBy = player -> false;
     boolean shouldRegenerateNaturally = true;
 
+    boolean invulnerable;
+
     public FakePlayerBuilder packetFilter(Predicate<Packet<?>> packetPredicate) {
         this.packetPredicate = packetPredicate;
         return this;
@@ -55,6 +57,11 @@ public class FakePlayerBuilder {
         return this;
     }
 
+    public FakePlayerBuilder invulnerable(boolean invulnerable) {
+        this.invulnerable = invulnerable;
+        return this;
+    }
+
     public LTFakePlayer build() {
         final var player = new LTFakePlayer(helper.getLevel(), this, pl ->
                 pl.setPos(helper.absoluteVec(Vec3.atCenterOf(new Vec3i(0, 1, 0)))), "test-mock-player/" + helper.info.getTestName() + "/" + helper.playerCount.incrementAndGet());
@@ -74,6 +81,8 @@ public class FakePlayerBuilder {
                 player.exitWorld();
             }
         });
+        player.server.getConnection().getConnections().add(player.connection.connection);
+        player.getAbilities().invulnerable = invulnerable;
         return player;
     }
 }

@@ -79,7 +79,7 @@ public class ActionTriggerTests implements MinigameTest {
                 .thenExecute(() -> player.hurt(player.damageSources().fellOutOfWorld(), 1))
                 .thenIdle(5)
                 .thenExecute(() -> helper.assertTrue(player.getEffect(MobEffects.ABSORPTION) != null, "Effect could not be found on player!"))
-                .thenExecute(() -> helper.assertTrue(player.getEffect(MobEffects.ABSORPTION).getAmplifier() == 2 && player.getEffect(MobEffects.ABSORPTION).getDuration() == 23, "Effect was not as expected!"))
+                .thenExecute(() -> helper.assertTrue(player.getEffect(MobEffects.ABSORPTION).getAmplifier() == 2 && player.getEffect(MobEffects.ABSORPTION).getDuration() == 23 - 5, "Effect was not as expected!"))
                 .thenSucceed();
     }
 

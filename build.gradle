@@ -200,6 +200,10 @@ tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
 }
 
+tasks.named('downloadAssets').configure {
+    enabled = !System.getenv('CI')
+}
+
 mixin {
     add sourceSets.main, "ltminigames.refmap.json"
 }

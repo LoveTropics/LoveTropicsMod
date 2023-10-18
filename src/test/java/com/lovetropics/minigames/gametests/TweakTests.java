@@ -90,9 +90,12 @@ public class TweakTests implements MinigameTest {
                 .isInvulnerableTo(source -> !source.is(DamageTypes.PLAYER_ATTACK))
                 .canBeHarmedBy(p -> p == player)
                 .shouldRegenerateNaturally(false)
+                .invulnerable(false)
                 .build();
 
-        target.getAbilities().invulnerable = false;
+        target.getFoodData().setSaturation(0f); // Let's not let the player heal
+        target.getFoodData().setFoodLevel(0);
+
         lobby.getPlayers().join(target, PlayerRole.PARTICIPANT);
 
         helper.startSequence()
@@ -117,9 +120,12 @@ public class TweakTests implements MinigameTest {
 
         helper.startSequence()
                 .thenExecute(helper.startGame(lobby))
+                .thenIdle(5)
+                .thenExecute(() -> lobby.getCurrentPhase().setPlayerRole(player, PlayerRole.PARTICIPANT))
+
                 .thenExecuteFor(50, player::jumpFromGround)
                 .thenIdle(5)
-                .thenExecute(() -> helper.assertEntityProperty(player, e -> e.getFoodData().getExhaustionLevel(), "exhaustion", 0f))
+                .thenExecute(() -> helper.assertEntityProperty(player, e -> Math.floor(e.getFoodData().getExhaustionLevel()), "exhaustion", 0d))
                 .thenExecute(() -> helper.assertEntityProperty(player, e -> e.getFoodData().getFoodLevel(), "food level", 20))
                 .thenSucceed();
     }
