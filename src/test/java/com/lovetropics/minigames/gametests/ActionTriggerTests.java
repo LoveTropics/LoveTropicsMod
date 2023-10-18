@@ -1,13 +1,16 @@
 package com.lovetropics.minigames.gametests;
 
 import com.lovetropics.minigames.common.core.game.GameStopReason;
+import com.lovetropics.minigames.common.core.game.behavior.action.GameActionContext;
 import com.lovetropics.minigames.common.core.game.behavior.action.NoneActionTarget;
 import com.lovetropics.minigames.common.core.game.behavior.action.PlayerActionTarget;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameActionEvents;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.GiveEffectAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.PlaySoundAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.RunCommandsAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.SendMessageAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.trigger.GeneralEventsTrigger;
+import com.lovetropics.minigames.common.core.game.behavior.instances.trigger.ScheduledActionsTrigger;
 import com.lovetropics.minigames.common.core.game.behavior.instances.trigger.phase.StartGameTrigger;
 import com.lovetropics.minigames.common.core.game.behavior.instances.trigger.phase.StopGameTrigger;
 import com.lovetropics.minigames.common.core.game.datagen.BehaviorFactory;
@@ -18,6 +21,7 @@ import com.lovetropics.minigames.common.core.game.util.TemplatedText;
 import com.lovetropics.minigames.gametests.api.LTGameTestHelper;
 import com.lovetropics.minigames.gametests.api.MinigameTest;
 import com.lovetropics.minigames.gametests.api.RegisterMinigameTest;
+import it.unimi.dsi.fastutil.longs.Long2ObjectMaps;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.network.chat.Component;
@@ -44,9 +48,8 @@ public class ActionTriggerTests implements MinigameTest {
                 .withPlayingPhase(new InlineMapProvider(Level.OVERWORLD), phaseBuilder -> phaseBuilder
                         .withBehavior(new StartGameTrigger(behaviors.applyToAllPlayers(
                                 NoneActionTarget.INSTANCE,
-                                new SendMessageAction(new TemplatedText(Component.literal("hello world!"))),
-                                new PlaySoundAction(SoundEvents.ALLAY_HURT, 0.5f, 0.5f)
-                        ))));
+                                new SendMessageAction(new TemplatedText(Component.literal("hello world!")))
+                        )), new PlaySoundAction(SoundEvents.ALLAY_HURT, 0.5f, 0.5f)));
 
         generator.builder(gameId("stop"))
                 .withPlayingPhase(new InlineMapProvider(Level.OVERWORLD), phaseBuilder -> phaseBuilder
@@ -86,7 +89,7 @@ public class ActionTriggerTests implements MinigameTest {
     @GameTest
     public void testStartTrigger(final LTGameTestHelper helper) {
         final var player = helper.playerBuilder()
-                .packetFilter(packet -> packet instanceof ClientboundSystemChatPacket sc && sc.content().equals(Component.literal("hello world!")) || packet instanceof ClientboundSoundPacket)
+                .packetFilter(packet -> packet instanceof ClientboundSystemChatPacket sc && sc.content().equals(Component.literal("hello world!")) || packet instanceof ClientboundSoundPacket it && it.getSound().get() == SoundEvents.ALLAY_HURT)
                 .build();
         final var lobby = helper.createGame(player, PlayerRole.PARTICIPANT);
         lobby.enqueue(gameId("start"));
@@ -95,6 +98,7 @@ public class ActionTriggerTests implements MinigameTest {
             .thenExecute(helper.startGame(lobby))
             .thenIdle(20)
             .thenExecute(() -> helper.assertReceivedPacket(player, 0, ClientboundSystemChatPacket.class, it -> it.content().equals(Component.literal("hello world!"))))
+            .thenExecute(() -> lobby.getCurrentPhase().invoker(GameActionEvents.APPLY_TO_PLAYER).apply(GameActionContext.EMPTY, player))
             .thenExecute(() -> helper.assertReceivedPacket(player, 1, ClientboundSoundPacket.class, it -> it.getSound().get() == SoundEvents.ALLAY_HURT && it.getVolume() == 0.5f && it.getPitch() == 0.5f))
             .thenSucceed();
     }

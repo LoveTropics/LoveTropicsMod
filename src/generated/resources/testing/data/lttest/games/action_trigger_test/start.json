@@ -6,22 +6,20 @@
       "actions": {
         "type": "ltminigames:apply_to_player",
         "actions": {
-          "actions": [
-            {
-              "type": "ltminigames:send_message",
-              "message": {
-                "text": "hello world!"
-              }
-            },
-            {
-              "type": "ltminigames:play_sound",
-              "pitch": 0.5,
-              "sound": "minecraft:entity.allay.hurt",
-              "volume": 0.5
+          "actions": {
+            "type": "ltminigames:send_message",
+            "message": {
+              "text": "hello world!"
             }
-          ]
+          }
         }
       }
+    },
+    {
+      "type": "ltminigames:play_sound",
+      "pitch": 0.5,
+      "sound": "minecraft:entity.allay.hurt",
+      "volume": 0.5
     }
   ],
   "map": {
