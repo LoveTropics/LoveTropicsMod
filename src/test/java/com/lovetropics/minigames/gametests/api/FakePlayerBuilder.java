@@ -1,14 +1,20 @@
 package com.lovetropics.minigames.gametests.api;
 
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Vec3i;
 import net.minecraft.gametest.framework.GameTestInfo;
 import net.minecraft.gametest.framework.GameTestListener;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.GameType;
+import net.minecraft.world.phys.Vec3;
 
+import javax.annotation.ParametersAreNonnullByDefault;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
 
+@ParametersAreNonnullByDefault
 public class FakePlayerBuilder {
     private final LTGameTestHelper helper;
 
@@ -32,6 +38,10 @@ public class FakePlayerBuilder {
         return this;
     }
 
+    public FakePlayerBuilder isVulnerableTo(Predicate<DamageSource> isVulnerableTo) {
+        return isInvulnerableTo(Predicate.not(isVulnerableTo));
+    }
+
     public FakePlayerBuilder gameMode(GameType gameMode) {
         this.gameMode = gameMode;
         return this;
@@ -48,7 +58,8 @@ public class FakePlayerBuilder {
     }
 
     public LTFakePlayer build() {
-        final var player = new LTFakePlayer(helper.getLevel(), this);
+        final var player = new LTFakePlayer(helper.getLevel(), this, pl ->
+                pl.setPos(helper.absoluteVec(Vec3.atCenterOf(new Vec3i(0, 1, 0)))), "test-mock-player/" + helper.info.getTestName() + "/" + helper.playerCount.incrementAndGet());
         helper.info.addListener(new GameTestListener() {
             @Override
             public void testStructureLoaded(GameTestInfo pTestInfo) {

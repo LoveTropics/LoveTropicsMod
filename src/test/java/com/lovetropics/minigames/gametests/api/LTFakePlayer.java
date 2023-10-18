@@ -18,16 +18,18 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.Consumer;
 
 @ParametersAreNonnullByDefault
 public class LTFakePlayer extends ServerPlayer implements LTGameTestFakePlayer {
     public final List<Packet<?>> receivedPackets = new ArrayList<>();
     private final FakePlayerBuilder builder;
 
-    public LTFakePlayer(ServerLevel level, FakePlayerBuilder builder) {
-        super(level.getServer(), level, new GameProfile(UUID.randomUUID(), "test-mock-player"));
+    public LTFakePlayer(ServerLevel level, FakePlayerBuilder builder, Consumer<LTFakePlayer> before, String name) {
+        super(level.getServer(), level, new GameProfile(UUID.randomUUID(), name));
         this.builder = builder;
 
+        before.accept(this);
         level().getServer().getPlayerList().placeNewPlayer(new Connection(PacketFlow.CLIENTBOUND), this);
     }
 

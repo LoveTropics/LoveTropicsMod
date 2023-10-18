@@ -67,11 +67,8 @@ public class ActionTriggerTests implements MinigameTest {
     @GameTest
     public void testEventsTrigger(final LTGameTestHelper helper) {
         final var player = helper.playerBuilder()
-                .isInvulnerableTo(source -> !source.is(DamageTypes.FELL_OUT_OF_WORLD))
+                .isVulnerableTo(source -> source.is(DamageTypes.FELL_OUT_OF_WORLD))
                 .build();
-
-        player.tickCount = 1;
-        player.setAbsorptionAmount(0f);
 
         final var lobby = helper.createGame(player, PlayerRole.PARTICIPANT);
         lobby.enqueue(gameId("events"));

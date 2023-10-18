@@ -13,6 +13,7 @@
     "PlayerMixin",
     "SimpleRegistryMixin",
     "TagManagerAccessor",
+    "gametest.GameTestHelperAccess",
     "gametest.GameTestInfoAccess",
     "gametest.GTNetworkFiltersMixin",
     "gametest.GTPlayerListMixin",
