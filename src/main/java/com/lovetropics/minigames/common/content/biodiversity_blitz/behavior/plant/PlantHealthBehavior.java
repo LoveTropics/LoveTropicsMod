@@ -10,6 +10,7 @@ import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.protocol.game.ClientboundBlockDestructionPacket;
@@ -25,7 +26,7 @@ import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 public record PlantHealthBehavior(int health, boolean notPathfindable) implements IGameBehavior {
-	public static final Codec<PlantHealthBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+	public static final MapCodec<PlantHealthBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			Codec.INT.fieldOf("health").forGetter(b -> b.health),
 			Codec.BOOL.optionalFieldOf("not_pathfindable", false).forGetter(b -> b.notPathfindable)
 	).apply(i, PlantHealthBehavior::new));

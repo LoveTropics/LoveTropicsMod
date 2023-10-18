@@ -8,7 +8,7 @@ import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvent
 import com.lovetropics.minigames.common.core.game.state.statistics.PlayerKey;
 import com.lovetropics.minigames.common.core.game.state.statistics.PlayerPlacement;
 import com.lovetropics.minigames.common.core.game.state.statistics.StatisticKey;
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
@@ -17,7 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public final class PlaceByDeathOrderBehavior implements IGameBehavior {
-	public static final Codec<PlaceByDeathOrderBehavior> CODEC = Codec.unit(PlaceByDeathOrderBehavior::new);
+	public static final MapCodec<PlaceByDeathOrderBehavior> CODEC = MapCodec.unit(PlaceByDeathOrderBehavior::new);
 
 	private final List<PlayerKey> deathOrder = new ArrayList<>();
 

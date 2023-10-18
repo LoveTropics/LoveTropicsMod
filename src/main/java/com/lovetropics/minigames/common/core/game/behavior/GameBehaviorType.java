@@ -1,11 +1,11 @@
 package com.lovetropics.minigames.common.core.game.behavior;
 
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import net.minecraft.resources.ResourceLocation;
 
 import java.util.Objects;
 
-public record GameBehaviorType<T extends IGameBehavior>(Codec<T> codec) {
+public record GameBehaviorType<T extends IGameBehavior>(MapCodec<T> codec) {
 	@Override
 	public String toString() {
 		ResourceLocation key = GameBehaviorTypes.REGISTRY.get().getKey(this);

@@ -14,6 +14,7 @@ import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListen
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.Object2FloatMap;
 import net.minecraft.network.chat.CommonComponents;
@@ -39,7 +40,7 @@ import java.util.Set;
 import java.util.UUID;
 
 public final class BbWaveSpawnerBehavior implements IGameBehavior {
-	public static final Codec<BbWaveSpawnerBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+	public static final MapCodec<BbWaveSpawnerBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			Codec.LONG.fieldOf("interval_seconds").forGetter(c -> c.intervalTicks / 20),
 			Codec.LONG.fieldOf("warn_seconds").forGetter(c -> c.warnTicks / 20),
 			SizeCurve.CODEC.fieldOf("size_curve").forGetter(c -> c.sizeCurve),
@@ -226,7 +227,7 @@ public final class BbWaveSpawnerBehavior implements IGameBehavior {
 	}
 
 	static final class SizeCurve {
-		public static final Codec<SizeCurve> CODEC = RecordCodecBuilder.create(instance -> {
+		public static final MapCodec<SizeCurve> CODEC = RecordCodecBuilder.mapCodec(instance -> {
 			return instance.group(
 					Codec.DOUBLE.fieldOf("lower").forGetter(c -> c.lower),
 					Codec.DOUBLE.fieldOf("upper").forGetter(c -> c.upper),

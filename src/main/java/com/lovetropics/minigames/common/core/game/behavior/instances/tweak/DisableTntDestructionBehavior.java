@@ -5,12 +5,12 @@ import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameWorldEvents;
 import com.lovetropics.minigames.common.util.BlockStatePredicate;
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.server.level.ServerLevel;
 
 public record DisableTntDestructionBehavior(BlockStatePredicate blockPredicate) implements IGameBehavior {
-	public static final Codec<DisableTntDestructionBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+	public static final MapCodec<DisableTntDestructionBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			BlockStatePredicate.CODEC.optionalFieldOf("block_predicate", BlockStatePredicate.ANY).forGetter(c -> c.blockPredicate)
 	).apply(i, DisableTntDestructionBehavior::new));
 

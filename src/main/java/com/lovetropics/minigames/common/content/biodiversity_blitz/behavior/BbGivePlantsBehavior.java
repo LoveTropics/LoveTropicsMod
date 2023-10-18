@@ -6,13 +6,14 @@ import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.List;
 
 public record BbGivePlantsBehavior(List<PlantConfig> plants) implements IGameBehavior {
-	public static final Codec<BbGivePlantsBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+	public static final MapCodec<BbGivePlantsBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			PlantConfig.CODEC.listOf().fieldOf("plants").forGetter(c -> c.plants)
 	).apply(i, BbGivePlantsBehavior::new));
 

@@ -7,6 +7,7 @@ import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameActionEvents;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
@@ -17,7 +18,7 @@ import net.minecraft.util.valueproviders.IntProvider;
 import net.minecraft.world.phys.AABB;
 
 public record SpawnParticlesAroundPlayerAction(ParticleOptions[] particles, IntProvider count, IntProvider repeats, double radius) implements IGameBehavior {
-	public static final Codec<SpawnParticlesAroundPlayerAction> CODEC = RecordCodecBuilder.create(i -> i.group(
+	public static final MapCodec<SpawnParticlesAroundPlayerAction> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			MoreCodecs.arrayOrUnit(ParticleTypes.CODEC, ParticleOptions[]::new).fieldOf("particles").forGetter(c -> c.particles),
 			IntProvider.POSITIVE_CODEC.fieldOf("count").forGetter(c -> c.count),
 			IntProvider.POSITIVE_CODEC.optionalFieldOf("repeats", ConstantInt.of(1)).forGetter(c -> c.repeats),

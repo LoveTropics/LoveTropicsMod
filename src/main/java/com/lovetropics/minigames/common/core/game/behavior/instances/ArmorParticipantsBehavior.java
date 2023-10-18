@@ -6,13 +6,13 @@ import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.lovetropics.minigames.common.core.game.player.PlayerRole;
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
 
 public record ArmorParticipantsBehavior(ItemStack head, ItemStack chest, ItemStack legs, ItemStack feet) implements IGameBehavior {
-	public static final Codec<ArmorParticipantsBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+	public static final MapCodec<ArmorParticipantsBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			MoreCodecs.ITEM_STACK.optionalFieldOf("head", ItemStack.EMPTY).forGetter(c -> c.head),
 			MoreCodecs.ITEM_STACK.optionalFieldOf("chest", ItemStack.EMPTY).forGetter(c -> c.chest),
 			MoreCodecs.ITEM_STACK.optionalFieldOf("legs", ItemStack.EMPTY).forGetter(c -> c.legs),

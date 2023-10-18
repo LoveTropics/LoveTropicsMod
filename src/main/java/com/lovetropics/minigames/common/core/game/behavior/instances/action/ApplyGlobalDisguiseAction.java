@@ -8,11 +8,12 @@ import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameActionEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.server.level.ServerPlayer;
 
 public final class ApplyGlobalDisguiseAction implements IGameBehavior {
-	public static final Codec<ApplyGlobalDisguiseAction> CODEC = RecordCodecBuilder.create(i -> i.group(
+	public static final MapCodec<ApplyGlobalDisguiseAction> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			DisguiseType.CODEC.fieldOf("disguise").forGetter(c -> c.disguise),
 			Codec.INT.fieldOf("seconds").forGetter(c -> c.durationTicks / 20)
 	).apply(i, ApplyGlobalDisguiseAction::new));

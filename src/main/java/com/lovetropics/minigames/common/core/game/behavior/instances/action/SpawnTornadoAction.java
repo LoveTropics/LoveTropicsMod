@@ -6,12 +6,13 @@ import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameActionEvents;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraftforge.fml.InterModComms;
 
 public record SpawnTornadoAction(boolean sharknado) implements IGameBehavior {
-	public static final Codec<SpawnTornadoAction> CODEC = RecordCodecBuilder.create(i -> i.group(
+	public static final MapCodec<SpawnTornadoAction> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			Codec.BOOL.fieldOf("sharknado").forGetter(c -> c.sharknado)
 	).apply(i, SpawnTornadoAction::new));
 

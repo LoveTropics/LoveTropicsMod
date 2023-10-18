@@ -8,7 +8,7 @@ import com.lovetropics.minigames.common.core.game.behavior.event.GameLogicEvents
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePackageEvents;
 import com.lovetropics.minigames.common.core.game.state.GameProgressionState;
 import com.lovetropics.minigames.common.core.game.state.ProgressionPeriod;
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.world.InteractionResult;
 import org.apache.commons.lang3.mutable.MutableBoolean;
@@ -16,7 +16,7 @@ import org.apache.commons.lang3.mutable.MutableBoolean;
 import java.util.List;
 
 public record BlockPackagesDuringPhaseBehavior(List<ProgressionPeriod> blockedPeriods) implements IGameBehavior {
-	public static final Codec<BlockPackagesDuringPhaseBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+	public static final MapCodec<BlockPackagesDuringPhaseBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			MoreCodecs.listOrUnit(ProgressionPeriod.CODEC).fieldOf("block_periods").forGetter(BlockPackagesDuringPhaseBehavior::blockedPeriods)
 	).apply(i, BlockPackagesDuringPhaseBehavior::new));
 

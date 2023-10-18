@@ -8,21 +8,21 @@ import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.entity.item.ItemEntity;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.InteractionResult;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.BlockHitResult;
 
 // Removes pianguas from mud blocks
 public final class RemoveFromBlockBehavior implements IGameBehavior {
-    public static final Codec<RemoveFromBlockBehavior> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+    public static final MapCodec<RemoveFromBlockBehavior> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
             MoreCodecs.BLOCK_STATE.fieldOf("in").forGetter(b -> b.in),
             MoreCodecs.BLOCK_STATE.fieldOf("out").forGetter(b -> b.out),
             MoreCodecs.ITEM_STACK.fieldOf("drop").forGetter(b -> b.drop)

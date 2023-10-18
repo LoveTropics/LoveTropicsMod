@@ -11,12 +11,12 @@ import com.lovetropics.minigames.common.core.game.state.GameStateMap;
 import com.lovetropics.minigames.common.core.game.util.GameTexts;
 import com.lovetropics.minigames.common.core.integration.BackendIntegrations;
 import com.lovetropics.minigames.common.core.integration.GameInstanceIntegrations;
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public final class SetupIntegrationsBehavior implements IGameBehavior {
-	public static final Codec<SetupIntegrationsBehavior> CODEC = Codec.unit(SetupIntegrationsBehavior::new);
+	public static final MapCodec<SetupIntegrationsBehavior> CODEC = MapCodec.unit(SetupIntegrationsBehavior::new);
 
 	private GameInstanceIntegrations integrations;
 

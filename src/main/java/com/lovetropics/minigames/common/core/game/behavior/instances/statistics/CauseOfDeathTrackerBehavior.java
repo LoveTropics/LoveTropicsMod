@@ -8,13 +8,13 @@ import com.lovetropics.minigames.common.core.game.player.PlayerRole;
 import com.lovetropics.minigames.common.core.game.state.statistics.CauseOfDeath;
 import com.lovetropics.minigames.common.core.game.state.statistics.StatisticKey;
 import com.lovetropics.minigames.common.core.game.state.statistics.StatisticsMap;
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 
 public final class CauseOfDeathTrackerBehavior implements IGameBehavior {
-	public static final Codec<CauseOfDeathTrackerBehavior> CODEC = Codec.unit(CauseOfDeathTrackerBehavior::new);
+	public static final MapCodec<CauseOfDeathTrackerBehavior> CODEC = MapCodec.unit(CauseOfDeathTrackerBehavior::new);
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {

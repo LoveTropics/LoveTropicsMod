@@ -5,10 +5,10 @@ import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameActionEvents;
 import com.lovetropics.minigames.common.core.game.player.PlayerRole;
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 
 public final class EliminatePlayerAction implements IGameBehavior {
-	public static final Codec<EliminatePlayerAction> CODEC = Codec.unit(EliminatePlayerAction::new);
+	public static final MapCodec<EliminatePlayerAction> CODEC = MapCodec.unit(EliminatePlayerAction::new);
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {

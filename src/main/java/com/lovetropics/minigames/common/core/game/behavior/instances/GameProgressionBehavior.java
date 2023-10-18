@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.Map;
 
 public class GameProgressionBehavior implements IGameBehavior {
-	public static final Codec<GameProgressionBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+	public static final MapCodec<GameProgressionBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			Codec.unboundedMap(Codec.STRING, Codec.INT).optionalFieldOf("named_points", Map.of()).forGetter(b -> b.namedPoints),
 			Codec.INT.optionalFieldOf("max_time_step", 1).forGetter(b -> b.maxTimeStep),
 			MoreCodecs.listOrUnit(ProgressionPeriod.CODEC).optionalFieldOf("fixed_time_step", List.of()).forGetter(b -> b.fixedTimeStep),

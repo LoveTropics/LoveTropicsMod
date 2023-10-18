@@ -9,14 +9,15 @@ import com.lovetropics.minigames.common.core.game.behavior.action.GameActionList
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.server.level.ServerPlayer;
 
 import java.util.Map;
 
 public record WhileInRegionTrigger(Map<String, GameActionList<ServerPlayer>> regionActions, int interval) implements IGameBehavior {
-	public static final Codec<WhileInRegionTrigger> CODEC = RecordCodecBuilder.create(i -> i.group(
-			Codec.unboundedMap(Codec.STRING, GameActionList.PLAYER).fieldOf("regions").forGetter(WhileInRegionTrigger::regionActions),
+	public static final MapCodec<WhileInRegionTrigger> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
+			Codec.unboundedMap(Codec.STRING, GameActionList.PLAYER_CODEC).fieldOf("regions").forGetter(WhileInRegionTrigger::regionActions),
 			Codec.INT.optionalFieldOf("interval", 20).forGetter(WhileInRegionTrigger::interval)
 	).apply(i, WhileInRegionTrigger::new));
 

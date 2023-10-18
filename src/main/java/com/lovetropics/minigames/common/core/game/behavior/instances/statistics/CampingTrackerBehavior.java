@@ -8,6 +8,7 @@ import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvent
 import com.lovetropics.minigames.common.core.game.state.statistics.GameStatistics;
 import com.lovetropics.minigames.common.core.game.state.statistics.StatisticKey;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.server.level.ServerPlayer;
@@ -19,7 +20,7 @@ import java.util.Map;
 import java.util.UUID;
 
 public final class CampingTrackerBehavior implements IGameBehavior {
-	public static final Codec<CampingTrackerBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+	public static final MapCodec<CampingTrackerBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			TriggerAfterConfig.CODEC.optionalFieldOf("trigger", TriggerAfterConfig.EMPTY).forGetter(c -> c.trigger),
 			Codec.LONG.optionalFieldOf("camp_time_threshold", 20L * 8).forGetter(c -> c.campTimeThreshold),
 			Codec.DOUBLE.optionalFieldOf("camp_movement_threshold", 8.0).forGetter(c -> c.campMovementThreshold)

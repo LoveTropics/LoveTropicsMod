@@ -8,14 +8,14 @@ import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameActionEvents;
 import com.lovetropics.minigames.common.core.network.LoveTropicsNetwork;
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraftforge.network.PacketDistributor;
 
 public record NotificationToastAction(Component text, NotificationStyle style) implements IGameBehavior {
-	public static final Codec<NotificationToastAction> CODEC = RecordCodecBuilder.create(i -> i.group(
+	public static final MapCodec<NotificationToastAction> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			ExtraCodecs.COMPONENT.fieldOf("text").forGetter(NotificationToastAction::text),
 			NotificationStyle.MAP_CODEC.forGetter(NotificationToastAction::style)
 	).apply(i, NotificationToastAction::new));

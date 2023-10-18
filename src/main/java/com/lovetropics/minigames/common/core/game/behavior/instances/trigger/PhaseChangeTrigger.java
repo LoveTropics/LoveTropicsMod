@@ -9,15 +9,15 @@ import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents
 import com.lovetropics.minigames.common.core.game.state.GameProgressionState;
 import com.lovetropics.minigames.common.core.game.state.ProgressionPoint;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 
 import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 
 public record PhaseChangeTrigger(Map<ProgressionPoint, GameActionList<Void>> phases) implements IGameBehavior {
-	public static final Codec<PhaseChangeTrigger> CODEC = Codec.unboundedMap(ProgressionPoint.CODEC, GameActionList.VOID)
-			.xmap(PhaseChangeTrigger::new, PhaseChangeTrigger::phases);
+	public static final MapCodec<PhaseChangeTrigger> CODEC = Codec.unboundedMap(ProgressionPoint.CODEC, GameActionList.VOID_CODEC)
+			.xmap(PhaseChangeTrigger::new, PhaseChangeTrigger::phases)
+			.fieldOf("phases");
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {

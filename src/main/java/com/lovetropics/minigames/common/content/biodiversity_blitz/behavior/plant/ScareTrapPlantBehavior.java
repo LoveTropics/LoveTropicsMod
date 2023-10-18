@@ -13,6 +13,7 @@ import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -40,7 +41,7 @@ import java.util.List;
 import java.util.function.Predicate;
 
 public final class ScareTrapPlantBehavior implements IGameBehavior {
-	public static final Codec<ScareTrapPlantBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+	public static final MapCodec<ScareTrapPlantBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			Codec.DOUBLE.fieldOf("trigger_radius").forGetter(c -> c.triggerRadius),
 			Codec.DOUBLE.fieldOf("scare_radius").forGetter(c -> c.scareRadius)
 	).apply(i, ScareTrapPlantBehavior::new));

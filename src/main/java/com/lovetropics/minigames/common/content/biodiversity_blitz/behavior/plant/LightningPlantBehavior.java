@@ -9,6 +9,7 @@ import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.SharedConstants;
 import net.minecraft.core.BlockPos;
@@ -25,7 +26,7 @@ import java.util.Collection;
 import java.util.List;
 
 public final class LightningPlantBehavior implements IGameBehavior {
-    public static final Codec<LightningPlantBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+    public static final MapCodec<LightningPlantBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
             Codec.INT.fieldOf("radius").forGetter(b -> b.radius)
     ).apply(i, LightningPlantBehavior::new));
 

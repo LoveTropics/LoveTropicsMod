@@ -6,6 +6,7 @@ import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.ExtraCodecs;
@@ -15,7 +16,7 @@ import java.util.Collections;
 import java.util.List;
 
 public final class TipsAndTricksBehavior implements IGameBehavior {
-    public static final Codec<TipsAndTricksBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+    public static final MapCodec<TipsAndTricksBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
             ExtraCodecs.COMPONENT.listOf().fieldOf("texts").forGetter(b -> b.texts),
             Codec.INT.fieldOf("time_between_tips").forGetter(b -> b.timeBetweenTips)
     ).apply(i, TipsAndTricksBehavior::new));

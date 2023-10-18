@@ -6,6 +6,7 @@ import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameActionEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
@@ -24,7 +25,7 @@ import net.minecraftforge.event.ForgeEventFactory;
 import java.util.Iterator;
 
 public class ShootProjectilesAroundPlayerAction implements IGameBehavior {
-	public static final Codec<ShootProjectilesAroundPlayerAction> CODEC = RecordCodecBuilder.create(i -> i.group(
+	public static final MapCodec<ShootProjectilesAroundPlayerAction> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			Codec.INT.optionalFieldOf("entity_count_per_player", 10).forGetter(c -> c.entityCountPerPlayer),
 			Codec.INT.optionalFieldOf("spawn_distance_max", 40).forGetter(c -> c.spawnDistanceMax),
 			Codec.INT.optionalFieldOf("target_randomness", 10).forGetter(c -> c.targetRandomness),

@@ -9,12 +9,13 @@ import com.lovetropics.minigames.common.core.game.state.GameProgressionState;
 import com.lovetropics.minigames.common.core.game.state.weather.GameWeatherState;
 import com.lovetropics.minigames.common.core.game.weather.WeatherEventType;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.SharedConstants;
 import net.minecraft.server.level.ServerLevel;
 
 public class SurviveTheTideWindController implements IGameBehavior {
-	public static final Codec<SurviveTheTideWindController> CODEC = RecordCodecBuilder.create(i -> i.group(
+	public static final MapCodec<SurviveTheTideWindController> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			DiscreteProgressionMap.codec(Codec.FLOAT).fieldOf("wind_speed").forGetter(c -> c.windSpeedByTime)
 	).apply(i, SurviveTheTideWindController::new));
 

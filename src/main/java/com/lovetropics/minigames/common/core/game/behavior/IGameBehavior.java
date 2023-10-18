@@ -8,6 +8,7 @@ import com.lovetropics.minigames.common.core.game.behavior.instances.CompositeBe
 import com.lovetropics.minigames.common.core.game.config.GameConfigs;
 import com.lovetropics.minigames.common.core.game.datagen.DirectBehavior;
 import com.lovetropics.minigames.common.core.game.state.GameStateMap;
+import com.lovetropics.minigames.common.util.Codecs;
 import com.mojang.datafixers.util.Either;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
@@ -20,64 +21,20 @@ import net.minecraft.util.ExtraCodecs;
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
 public interface IGameBehavior {
-	Codec<? extends GameBehaviorType<?>> TYPE_CODEC = Codec.either(GameBehaviorTypes.TYPE_CODEC, GameConfigs.CUSTOM_BEHAVIORS)
+	Codec<GameBehaviorType<?>> TYPE_CODEC = Codec.either(GameBehaviorTypes.TYPE_CODEC, GameConfigs.CUSTOM_BEHAVIORS)
 			.xmap(e -> e.map(Function.identity(), Function.identity()), Either::left);
-	Codec<IGameBehavior> DISPATCHING = new Codec<>() {
-		private final Codec<IGameBehavior> dispatch = ExtraCodecs.lazyInitializedCodec(() -> GameBehaviorTypes.REGISTRY.get().getCodec())
-				.dispatch(be -> be.behaviorType().get(), GameBehaviorType::codec);
-		@Override
-		public <T> DataResult<Pair<IGameBehavior, T>> decode(DynamicOps<T> ops, T input) {
-			return dispatch.decode(ops, input);
-		}
 
-		@Override
-		public <T> DataResult<T> encode(IGameBehavior input, DynamicOps<T> ops, T prefix) {
-			if (input instanceof DirectBehavior direct) {
-				return DataResult.success(ops.createString(direct.key().toString()));
-			}
-			return dispatch.encode(input, ops, prefix);
-		}
-	};
-
-	Codec<List<IGameBehavior>> DISPATCHING_LIST = DISPATCHING.listOf();
-
-	Codec<IGameBehavior> SIMPLE_CODEC = new Codec<>() {
-		@Override
-		public <T> DataResult<Pair<IGameBehavior, T>> decode(DynamicOps<T> ops, T input) {
-			Optional<String> string = ops.getStringValue(input).result();
-			if (string.isPresent()) {
-				return TYPE_CODEC.parse(ops, input).flatMap(type -> parseTyped(ops, ops.emptyMap(), type, input));
-			}
-			return ops.get(input, "type")
-					.flatMap(typeName -> TYPE_CODEC.parse(ops, typeName).map(type -> Pair.of(type, typeName)))
-					.flatMap(type -> parseTyped(ops, ops.remove(input, "type"), type.getFirst(), type.getSecond()));
-		}
-
-		private static <T> DataResult<Pair<IGameBehavior, T>> parseTyped(DynamicOps<T> ops, T input, GameBehaviorType<?> type, T typeName) {
-			final var initial = type.codec().decode(ops, input);
-			if (initial.error().isPresent() && !(type.codec() instanceof MapCodec.MapCodecCodec<?>)) {
-				final var value = ops.get(input, "value").result();
-				if (value.isPresent()) {
-					return type.codec().decode(ops, value.get())
-							.mapError(err -> "In behavior " + typeName + ": " + err)
-							.map(pair -> pair.mapFirst(b -> b));
-				}
-			}
-			return initial.mapError(err -> "In behavior " + typeName + ": " + err)
-					.map(pair -> pair.mapFirst(b -> b));
-		}
-
-		@Override
-		public <T> DataResult<T> encode(IGameBehavior input, DynamicOps<T> ops, T prefix) {
-			return DISPATCHING.encode(input, ops, prefix);
-		}
-	};
+	Codec<IGameBehavior> SIMPLE_CODEC = Codecs.dispatchWithInlineKey(
+			"type",
+			TYPE_CODEC,
+			behavior -> behavior.behaviorType().get(),
+			type -> type.codec().codec()
+	);
 
 	// Using custom codec for better error reporting
 	Codec<IGameBehavior> CODEC = new Codec<>() {
@@ -93,10 +50,10 @@ public interface IGameBehavior {
 
 		@Override
 		public <T> DataResult<T> encode(IGameBehavior input, DynamicOps<T> ops, T prefix) {
-			if (input instanceof CompositeBehavior compositeBehavior) {
-				return DISPATCHING_LIST.encode(compositeBehavior.behaviors(), ops, prefix);
+			if (input instanceof CompositeBehavior composite) {
+				return CompositeBehavior.CODEC.encode(composite, ops, prefix);
 			} else {
-				return DISPATCHING.encode(input, ops, prefix);
+				return SIMPLE_CODEC.encode(input, ops, prefix);
 			}
 		}
 	};
@@ -128,6 +85,7 @@ public interface IGameBehavior {
 	 */
 	void register(IGamePhase game, EventRegistrar events) throws GameException;
 
+	// TODO: Implement everywhere
 	default Supplier<? extends GameBehaviorType<?>> behaviorType() {
 		throw new UnsupportedOperationException("This behavior is not aware of its type: " + this);
 	}

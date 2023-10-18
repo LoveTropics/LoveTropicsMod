@@ -7,13 +7,12 @@ import com.lovetropics.minigames.common.core.game.behavior.action.GameActionCont
 import com.lovetropics.minigames.common.core.game.behavior.action.GameActionList;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
-import com.mojang.serialization.Codec;
-
+import com.mojang.serialization.MapCodec;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
 
 public record OnDamageTrigger(GameActionList<ServerPlayer> actions) implements IGameBehavior {
-    public static final Codec<OnDamageTrigger> CODEC = GameActionList.PLAYER.xmap(OnDamageTrigger::new, OnDamageTrigger::actions);
+    public static final MapCodec<OnDamageTrigger> CODEC = GameActionList.PLAYER_MAP_CODEC.xmap(OnDamageTrigger::new, OnDamageTrigger::actions);
 
     @Override
     public void register(IGamePhase game, EventRegistrar events) throws GameException {

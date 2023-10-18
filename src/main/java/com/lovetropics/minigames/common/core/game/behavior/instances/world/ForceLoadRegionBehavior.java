@@ -6,17 +6,18 @@ import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
-import net.minecraft.world.level.ChunkPos;
 import net.minecraft.server.level.ServerChunkCache;
+import net.minecraft.world.level.ChunkPos;
 
 import java.util.Collection;
 
 public final class ForceLoadRegionBehavior implements IGameBehavior {
-	public static final Codec<ForceLoadRegionBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+	public static final MapCodec<ForceLoadRegionBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			Codec.STRING.fieldOf("region").forGetter(c -> c.regionKey)
 	).apply(i, ForceLoadRegionBehavior::new));
 

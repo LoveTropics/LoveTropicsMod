@@ -11,12 +11,12 @@ import com.lovetropics.minigames.common.core.game.state.control.ControlCommands;
 import com.lovetropics.minigames.common.core.game.weather.PrecipitationType;
 import com.lovetropics.minigames.common.core.game.weather.WeatherController;
 import com.lovetropics.minigames.common.core.game.weather.WeatherControllerManager;
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 
 import java.util.function.Supplier;
 
 public class WeatherControlsBehavior implements IGameBehavior {
-	public static final Codec<WeatherControlsBehavior> CODEC = Codec.unit(WeatherControlsBehavior::new);
+	public static final MapCodec<WeatherControlsBehavior> CODEC = MapCodec.unit(WeatherControlsBehavior::new);
 
 	private WeatherController controller;
 

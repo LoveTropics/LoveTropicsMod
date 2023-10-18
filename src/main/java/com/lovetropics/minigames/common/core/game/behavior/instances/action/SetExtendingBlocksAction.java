@@ -9,6 +9,7 @@ import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameActionEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.advancements.critereon.BlockPredicate;
 import net.minecraft.core.BlockPos;
@@ -27,7 +28,7 @@ import java.util.List;
 import java.util.Optional;
 
 public final class SetExtendingBlocksAction implements IGameBehavior {
-	public static final Codec<SetExtendingBlocksAction> CODEC = RecordCodecBuilder.create(i -> i.group(
+	public static final MapCodec<SetExtendingBlocksAction> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			MoreCodecs.BLOCK_PREDICATE.optionalFieldOf("replace").forGetter(c -> Optional.ofNullable(c.replace)),
 			MoreCodecs.BLOCK_STATE_PROVIDER.fieldOf("set").forGetter(c -> c.set),
 			MoreCodecs.stringVariants(Direction.values(), Direction::getName).fieldOf("direction").forGetter(c -> c.direction),

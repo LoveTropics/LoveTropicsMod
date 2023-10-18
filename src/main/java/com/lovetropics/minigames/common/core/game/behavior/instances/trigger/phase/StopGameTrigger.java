@@ -9,17 +9,17 @@ import com.lovetropics.minigames.common.core.game.behavior.action.GameActionCont
 import com.lovetropics.minigames.common.core.game.behavior.action.GameActionList;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 import java.util.Optional;
 import java.util.function.Supplier;
 
 public record StopGameTrigger(GameActionList<Void> actions, Optional<GameActionList<Void>> finish, Optional<GameActionList<Void>> cancel) implements IGameBehavior {
-    public static final Codec<StopGameTrigger> CODEC = RecordCodecBuilder.create(in -> in.group(
-            GameActionList.VOID.fieldOf("actions").forGetter(StopGameTrigger::actions),
-            GameActionList.VOID.optionalFieldOf("finish").forGetter(StopGameTrigger::finish),
-            GameActionList.VOID.optionalFieldOf("cancel").forGetter(StopGameTrigger::cancel)
+    public static final MapCodec<StopGameTrigger> CODEC = RecordCodecBuilder.mapCodec(in -> in.group(
+            GameActionList.VOID_CODEC.fieldOf("actions").forGetter(StopGameTrigger::actions),
+            GameActionList.VOID_CODEC.optionalFieldOf("finish").forGetter(StopGameTrigger::finish),
+            GameActionList.VOID_CODEC.optionalFieldOf("cancel").forGetter(StopGameTrigger::cancel)
     ).apply(in, StopGameTrigger::new));
 
     @Override

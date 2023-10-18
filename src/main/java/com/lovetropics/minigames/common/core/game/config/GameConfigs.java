@@ -6,12 +6,16 @@ import com.lovetropics.lib.codec.CodecRegistry;
 import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.common.core.game.behavior.GameBehaviorType;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
+import com.lovetropics.minigames.common.util.DynamicTemplate;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.JsonOps;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.MapLike;
+import com.mojang.serialization.RecordBuilder;
 import net.minecraft.Util;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.FileToIdConverter;
@@ -22,6 +26,7 @@ import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraftforge.event.AddReloadListenerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import org.apache.commons.lang3.mutable.MutableObject;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.Nullable;
@@ -34,6 +39,7 @@ import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 // TODO: Replace with a dynamic registry - currently blocked by not being able to /reload those
 @Mod.EventBusSubscriber(modid = Constants.MODID)
@@ -50,7 +56,7 @@ public final class GameConfigs {
 	public static void addReloadListener(AddReloadListenerEvent event) {
 		RegistryAccess registryAccess = event.getRegistryAccess();
 		event.addListener((stage, resourceManager, preparationsProfiler, reloadProfiler, backgroundExecutor, gameExecutor) ->
-				load(resourceManager, backgroundExecutor, gameExecutor, registryAccess)
+				load(resourceManager, backgroundExecutor, registryAccess)
 						.thenCompose(stage::wait)
 						.thenAcceptAsync(configs -> {
 							REGISTRY.clear();
@@ -61,7 +67,7 @@ public final class GameConfigs {
 		);
 	}
 
-	private static CompletableFuture<List<GameConfig>> load(ResourceManager resourceManager, Executor backgroundExecutor, Executor gameExecutor, RegistryAccess registryAccess) {
+	private static CompletableFuture<List<GameConfig>> load(ResourceManager resourceManager, Executor backgroundExecutor, RegistryAccess registryAccess) {
 		return CompletableFuture.supplyAsync(() -> listBehaviors(resourceManager, backgroundExecutor), backgroundExecutor)
 				.thenCompose(f -> f)
 				.thenAccept(behaviors -> {
@@ -115,7 +121,7 @@ public final class GameConfigs {
 			try (BufferedReader reader = resource.openAsReader()) {
 				Dynamic<JsonElement> template = new Dynamic<>(JsonOps.INSTANCE, JsonParser.parseReader(reader));
 				ResourceLocation id = BEHAVIOR_LISTER.fileToId(path);
-				return Map.entry(id, new GameBehaviorType<>(createCustomBehaviorCodec(template)));
+				return Map.entry(id, new GameBehaviorType<>(createCustomBehaviorCodec(DynamicTemplate.parse(template))));
 			}
 		} catch (Exception e) {
 			LOGGER.error("Failed to load custom behavior at {}", path, e);
@@ -123,18 +129,33 @@ public final class GameConfigs {
 		}
 	}
 
-	private static Codec<IGameBehavior> createCustomBehaviorCodec(final Dynamic<?> template) {
-		return new Codec<>() {
+	private static MapCodec<IGameBehavior> createCustomBehaviorCodec(final DynamicTemplate template) {
+		return new MapCodec<>() {
 			@Override
-			public <T> DataResult<T> encode(IGameBehavior input, DynamicOps<T> ops, T prefix) {
-				return DataResult.error(() -> "Encoding unsupported");
+			public <T> RecordBuilder<T> encode(IGameBehavior input, DynamicOps<T> ops, RecordBuilder<T> prefix) {
+				final DataResult<T> substituted = IGameBehavior.CODEC.encodeStart(ops, input);
+				if (substituted.result().isEmpty()) {
+					return prefix.withErrorsFrom(substituted);
+				}
+				final T extracted = template.extract(ops, substituted.result().get());
+				final MutableObject<RecordBuilder<T>> builder = new MutableObject<>(prefix);
+				ops.getMap(extracted).result().ifPresent(map ->
+						map.entries().forEach(pair ->
+								builder.setValue(builder.getValue().add(pair.getFirst(), pair.getSecond()))
+						)
+				);
+				return builder.getValue();
 			}
 
 			@Override
-			public <T> DataResult<Pair<IGameBehavior, T>> decode(DynamicOps<T> ops, T input) {
-				BehaviorParameters parameters = new BehaviorParameters(new Dynamic<>(ops, input));
-				return IGameBehavior.CODEC.decode(parameters.substitute(template))
-						.map(pair -> pair.mapSecond(o -> input));
+			public <T> DataResult<IGameBehavior> decode(DynamicOps<T> ops, MapLike<T> input) {
+				Dynamic<T> substituted = template.substitute(ops, input);
+				return IGameBehavior.CODEC.decode(substituted).map(Pair::getFirst);
+			}
+
+			@Override
+			public <T> Stream<T> keys(DynamicOps<T> ops) {
+				return template.parameters().stream().map(path -> path.segments()[0]).distinct().map(ops::createString);
 			}
 		};
 	}

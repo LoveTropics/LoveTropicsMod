@@ -7,14 +7,14 @@ import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.lovetropics.minigames.common.core.game.state.statistics.GameStatistics;
 import com.lovetropics.minigames.common.core.game.state.statistics.StatisticKey;
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 
 public final class TimeSurvivedTrackerBehavior implements IGameBehavior {
-	public static final Codec<TimeSurvivedTrackerBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+	public static final MapCodec<TimeSurvivedTrackerBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			TriggerAfterConfig.CODEC.optionalFieldOf("trigger", TriggerAfterConfig.EMPTY).forGetter(c -> c.trigger)
 	).apply(i, TimeSurvivedTrackerBehavior::new));
 

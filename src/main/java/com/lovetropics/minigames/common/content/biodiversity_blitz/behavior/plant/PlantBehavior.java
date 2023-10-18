@@ -18,6 +18,7 @@ import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListen
 import com.lovetropics.minigames.common.core.game.behavior.event.GameEventType;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -34,7 +35,7 @@ import java.util.Collection;
 import java.util.List;
 
 public final class PlantBehavior implements IGameBehavior {
-	public static final Codec<PlantBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+	public static final MapCodec<PlantBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			PlantType.CODEC.fieldOf("id").forGetter(c -> c.plantType),
 			PlantFamily.CODEC.fieldOf("family").forGetter(c -> c.family),
 			Codec.DOUBLE.optionalFieldOf("value", 0.0).forGetter(c -> c.value),

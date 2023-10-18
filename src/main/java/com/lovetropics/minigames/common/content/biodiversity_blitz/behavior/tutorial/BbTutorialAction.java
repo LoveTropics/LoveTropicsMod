@@ -3,7 +3,6 @@ package com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.tut
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.event.BbEvents;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.BbTutorialHuskEntity;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.Plot;
-import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.PlotsState;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.plant.Plant;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.plant.PlantType;
 import com.lovetropics.minigames.common.core.game.GameException;
@@ -14,6 +13,7 @@ import com.lovetropics.minigames.common.core.game.behavior.event.GameActionEvent
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.mojang.authlib.GameProfile;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
@@ -42,7 +42,7 @@ import java.util.UUID;
 
 // TODO: this is extremely hardcoded for now, need to split up!
 public class BbTutorialAction implements IGameBehavior {
-    public static final Codec<BbTutorialAction> CODEC = RecordCodecBuilder.create(i -> i.group(
+    public static final MapCodec<BbTutorialAction> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
             PlantType.CODEC.fieldOf("diffusa").forGetter(c -> c.diffusa),
             PlantType.CODEC.fieldOf("grass").forGetter(c -> c.grass),
             PlantType.CODEC.fieldOf("wheat").forGetter(c -> c.wheat),

@@ -1,6 +1,5 @@
 package com.lovetropics.minigames.common.core.game.behavior.action;
 
-import com.lovetropics.lib.codec.MoreCodecs;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
@@ -28,10 +27,12 @@ public class GameActionList<T> {
     ).apply(i, GameActionList::new));
 
 
-    public static final Codec<GameActionList<ServerPlayer>> PLAYER = codec(ActionTargetTypes.PLAYER, PlayerActionTarget.SOURCE);
-    public static final Codec<GameActionList<Void>> VOID = codec(ActionTargetTypes.NONE, NoneActionTarget.INSTANCE);
+    public static final MapCodec<GameActionList<ServerPlayer>> PLAYER_MAP_CODEC = mapCodec(ActionTargetTypes.PLAYER, PlayerActionTarget.SOURCE);
+	public static final MapCodec<GameActionList<Void>> VOID_MAP_CODEC = mapCodec(ActionTargetTypes.NONE, NoneActionTarget.INSTANCE);
+    public static final Codec<GameActionList<ServerPlayer>> PLAYER_CODEC = codec(ActionTargetTypes.PLAYER, PlayerActionTarget.SOURCE);
+    public static final Codec<GameActionList<Void>> VOID_CODEC = codec(ActionTargetTypes.NONE, NoneActionTarget.INSTANCE);
 
-    public static <T, A extends ActionTarget<T>> MapCodec<GameActionList<T>> mapCodec(Supplier<Codec<A>> type, A target) {
+	public static <T, A extends ActionTarget<T>> MapCodec<GameActionList<T>> mapCodec(Supplier<Codec<A>> type, A target) {
         return RecordCodecBuilder.mapCodec(i -> i.group(
                 IGameBehavior.CODEC.fieldOf("actions").forGetter(list -> list.behavior),
                 ExtraCodecs.lazyInitializedCodec(type).optionalFieldOf("target", target).forGetter(list -> (A) list.target)

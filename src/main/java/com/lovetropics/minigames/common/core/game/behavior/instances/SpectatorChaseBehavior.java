@@ -16,7 +16,7 @@ import com.lovetropics.minigames.common.core.game.player.PlayerRole;
 import com.lovetropics.minigames.common.core.game.player.PlayerSet;
 import com.lovetropics.minigames.common.core.network.LoveTropicsNetwork;
 import com.lovetropics.minigames.common.role.StreamHosts;
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
@@ -30,7 +30,7 @@ import java.util.List;
 import java.util.UUID;
 
 public final class SpectatorChaseBehavior implements IGameBehavior {
-	public static final Codec<SpectatorChaseBehavior> CODEC = Codec.unit(SpectatorChaseBehavior::new);
+	public static final MapCodec<SpectatorChaseBehavior> CODEC = MapCodec.unit(SpectatorChaseBehavior::new);
 
 	private static final Component SPECTATING_NOTIFICATION_MESSAGE = Component.literal("You are a ")
 			.append(Component.literal("spectator").withStyle(ChatFormatting.BOLD))

@@ -6,7 +6,7 @@ import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameActionEvents;
 import com.lovetropics.minigames.common.util.Util;
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
@@ -16,7 +16,7 @@ import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 
 public record GiveLootAction(ResourceLocation lootTable) implements IGameBehavior {
-	public static final Codec<GiveLootAction> CODEC = RecordCodecBuilder.create(i -> i.group(
+	public static final MapCodec<GiveLootAction> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			ResourceLocation.CODEC.fieldOf("loot_table").forGetter(c -> c.lootTable)
 	).apply(i, GiveLootAction::new));
 

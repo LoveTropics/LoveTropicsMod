@@ -10,6 +10,7 @@ import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.protocol.game.ClientboundExplodePacket;
@@ -23,7 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public record ProximityBombPlantBehavior(double radius) implements IGameBehavior {
-	public static final Codec<ProximityBombPlantBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+	public static final MapCodec<ProximityBombPlantBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			Codec.DOUBLE.fieldOf("radius").forGetter(c -> c.radius)
 	).apply(i, ProximityBombPlantBehavior::new));
 

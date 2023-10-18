@@ -10,6 +10,7 @@ import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.util.Util;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
@@ -26,7 +27,7 @@ import java.util.List;
 import java.util.Set;
 
 public final class FlamingPlantBehavior implements IGameBehavior {
-    public static final Codec<FlamingPlantBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+    public static final MapCodec<FlamingPlantBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
             Codec.INT.fieldOf("radius").forGetter(b -> b.radius)
     ).apply(i, FlamingPlantBehavior::new));
     private final int radius;
@@ -98,7 +99,7 @@ public final class FlamingPlantBehavior implements IGameBehavior {
             BlockPos pos = plant.coverage().getOrigin();
             if (random.nextInt(3) == 0) {
 
-                for(int i = 0; i < count; ++i) {
+                for (int i = 0; i < count; ++i) {
                     double d3 = random.nextGaussian() * 0.02;
                     double d1 = random.nextGaussian() * 0.1;
                     double d2 = random.nextGaussian() * 0.02;

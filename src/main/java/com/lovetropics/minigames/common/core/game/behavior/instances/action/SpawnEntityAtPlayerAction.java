@@ -8,6 +8,7 @@ import com.lovetropics.minigames.common.core.game.behavior.event.GameActionEvent
 import com.lovetropics.minigames.common.util.EntityTemplate;
 import com.lovetropics.minigames.common.util.Util;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
@@ -17,7 +18,7 @@ import net.minecraft.world.phys.Vec3;
 import javax.annotation.Nullable;
 
 public record SpawnEntityAtPlayerAction(EntityTemplate entity, int damagePlayerAmount, double distance) implements IGameBehavior {
-	public static final Codec<SpawnEntityAtPlayerAction> CODEC = RecordCodecBuilder.create(i -> i.group(
+	public static final MapCodec<SpawnEntityAtPlayerAction> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			EntityTemplate.CODEC.fieldOf("entity").forGetter(c -> c.entity),
 			Codec.INT.optionalFieldOf("damage_player_amount", 0).forGetter(c -> c.damagePlayerAmount),
 			Codec.DOUBLE.optionalFieldOf("distance", 0.0).forGetter(c -> c.distance)

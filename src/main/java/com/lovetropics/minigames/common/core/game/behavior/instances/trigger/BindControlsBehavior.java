@@ -8,14 +8,16 @@ import com.lovetropics.minigames.common.core.game.behavior.action.GameActionList
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.state.control.ControlCommand;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 
 import java.util.Map;
 
 public record BindControlsBehavior(Map<ControlCommand.Scope, Map<String, GameActionList<ServerPlayer>>> scopedActions) implements IGameBehavior {
-	public static final Codec<BindControlsBehavior> CODEC = Codec.unboundedMap(ControlCommand.Scope.CODEC, Codec.unboundedMap(Codec.STRING, GameActionList.PLAYER))
-			.xmap(BindControlsBehavior::new, b -> b.scopedActions);
+	public static final MapCodec<BindControlsBehavior> CODEC = Codec.unboundedMap(ControlCommand.Scope.CODEC, Codec.unboundedMap(Codec.STRING, GameActionList.PLAYER_CODEC))
+			.xmap(BindControlsBehavior::new, b -> b.scopedActions)
+			.fieldOf("scopes");
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) throws GameException {

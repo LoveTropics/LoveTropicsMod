@@ -10,6 +10,7 @@ import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
@@ -34,9 +35,8 @@ import java.util.stream.IntStream;
 
 public class GrowCoconutsBehavior implements IGameBehavior {
 
-	public static final Codec<GrowCoconutsBehavior> CODEC = Codec.INT.fieldOf("interval")
-			.xmap(GrowCoconutsBehavior::new, b -> b.interval)
-			.codec();
+	public static final MapCodec<GrowCoconutsBehavior> CODEC = Codec.INT.fieldOf("interval")
+			.xmap(GrowCoconutsBehavior::new, b -> b.interval);
 
 	private static final RegistryObject<Block> COCONUT = RegistryObject.create(new ResourceLocation("tropicraft", "coconut"), ForgeRegistries.BLOCKS);
 	private final int interval;

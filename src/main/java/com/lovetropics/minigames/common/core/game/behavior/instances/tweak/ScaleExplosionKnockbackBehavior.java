@@ -7,10 +7,11 @@ import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameLivingEntityEvents;
 import com.lovetropics.minigames.common.core.game.predicate.entity.EntityPredicate;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 public record ScaleExplosionKnockbackBehavior(float factor, EntityPredicate exploderPredicate) implements IGameBehavior {
-    public static final Codec<ScaleExplosionKnockbackBehavior> CODEC = RecordCodecBuilder.create(in -> in.group(
+    public static final MapCodec<ScaleExplosionKnockbackBehavior> CODEC = RecordCodecBuilder.mapCodec(in -> in.group(
             Codec.floatRange(0.0F, Float.MAX_VALUE).fieldOf("factor").forGetter(ScaleExplosionKnockbackBehavior::factor),
             EntityPredicate.CODEC_WITH_FALLBACK.fieldOf("exploder").forGetter(ScaleExplosionKnockbackBehavior::exploderPredicate)
     ).apply(in, ScaleExplosionKnockbackBehavior::new));

@@ -14,6 +14,7 @@ import com.lovetropics.minigames.common.core.game.state.BeaconState;
 import com.lovetropics.minigames.common.core.game.state.GameProgressionState;
 import com.lovetropics.minigames.common.core.game.state.ProgressionPeriod;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleOptions;
@@ -28,7 +29,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class WorldBorderGameBehavior implements IGameBehavior {
-	public static final Codec<WorldBorderGameBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+	public static final MapCodec<WorldBorderGameBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			Codec.STRING.fieldOf("world_border_center").forGetter(c -> c.worldBorderCenterKey),
 			ProgressionPeriod.CODEC.fieldOf("period").forGetter(c -> c.period),
 			Codec.INT.fieldOf("particle_height").forGetter(c -> c.particleHeight),

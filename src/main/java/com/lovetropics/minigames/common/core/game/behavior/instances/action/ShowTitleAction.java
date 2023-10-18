@@ -6,6 +6,7 @@ import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameActionEvents;
 import com.lovetropics.minigames.common.core.game.util.TemplatedText;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.SharedConstants;
 import net.minecraft.network.chat.Component;
@@ -18,7 +19,7 @@ import net.minecraft.network.protocol.game.ClientboundSetTitlesAnimationPacket;
 import java.util.Optional;
 
 public record ShowTitleAction(Optional<TemplatedText> title, Optional<TemplatedText> subtitle, Optional<TemplatedText> actionBar, int fadeIn, int stay, int fadeOut) implements IGameBehavior {
-	public static final Codec<ShowTitleAction> CODEC = RecordCodecBuilder.create(i -> i.group(
+	public static final MapCodec<ShowTitleAction> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			TemplatedText.CODEC.optionalFieldOf("title").forGetter(ShowTitleAction::title),
 			TemplatedText.CODEC.optionalFieldOf("subtitle").forGetter(ShowTitleAction::subtitle),
 			TemplatedText.CODEC.optionalFieldOf("action_bar").forGetter(ShowTitleAction::actionBar),

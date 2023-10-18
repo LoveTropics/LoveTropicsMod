@@ -1,13 +1,14 @@
 package com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.plant;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 
 public final class AgingCropPlantBehavior extends AgingPlantBehavior {
-	public static final Codec<AgingCropPlantBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+	public static final MapCodec<AgingCropPlantBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			Codec.INT.fieldOf("interval").forGetter(c -> c.interval)
 	).apply(i, AgingCropPlantBehavior::new));
 

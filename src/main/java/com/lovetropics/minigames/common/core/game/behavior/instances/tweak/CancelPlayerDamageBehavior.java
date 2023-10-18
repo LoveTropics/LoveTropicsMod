@@ -7,6 +7,7 @@ import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -14,7 +15,7 @@ import net.minecraft.world.entity.player.Player;
 import java.util.function.Supplier;
 
 public record CancelPlayerDamageBehavior(boolean knockback) implements IGameBehavior {
-	public static final Codec<CancelPlayerDamageBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+	public static final MapCodec<CancelPlayerDamageBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			Codec.BOOL.optionalFieldOf("knockback", false).forGetter(c -> c.knockback)
 	).apply(i, CancelPlayerDamageBehavior::new));
 

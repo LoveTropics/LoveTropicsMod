@@ -10,6 +10,7 @@ import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameActionEvents;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.EntityType;
@@ -17,7 +18,7 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.level.Level;
 
 public class SpawnSurpriseWaveBehavior implements IGameBehavior {
-    public static final Codec<SpawnSurpriseWaveBehavior> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+    public static final MapCodec<SpawnSurpriseWaveBehavior> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
             Codec.INT.fieldOf("wave_size").forGetter(b -> b.waveSize)
     ).apply(instance, SpawnSurpriseWaveBehavior::new));
     private final int waveSize;
@@ -35,7 +36,8 @@ public class SpawnSurpriseWaveBehavior implements IGameBehavior {
             // FIXME: this will spawn a wave for every player associated to the plot. probably not ideal.
             Plot plot = this.plots.getPlotFor(player);
 
-            BbMobSpawner.spawnWaveEntities(player.serverLevel(), player.getRandom(), plot, this.waveSize, 0, SpawnSurpriseWaveBehavior::selectEntityForWave, (entities, random, world, plot1, waveIndex) -> {});
+            BbMobSpawner.spawnWaveEntities(player.serverLevel(), player.getRandom(), plot, this.waveSize, 0, SpawnSurpriseWaveBehavior::selectEntityForWave, (entities, random, world, plot1, waveIndex) -> {
+            });
 
             return true;
         });

@@ -6,9 +6,10 @@ import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameActionEvents;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.Collections;
@@ -16,7 +17,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public record SwapPlayersAction(double distanceThreshold) implements IGameBehavior {
-	public static final Codec<SwapPlayersAction> CODEC = RecordCodecBuilder.create(i -> i.group(
+	public static final MapCodec<SwapPlayersAction> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			Codec.DOUBLE.optionalFieldOf("distance_threshold", Double.MAX_VALUE).forGetter(c -> c.distanceThreshold)
 	).apply(i, SwapPlayersAction::new));
 

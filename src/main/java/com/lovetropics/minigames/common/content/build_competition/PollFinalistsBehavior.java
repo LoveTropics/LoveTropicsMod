@@ -13,6 +13,7 @@ import com.lovetropics.minigames.common.core.integration.GameInstanceIntegration
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.JsonOps;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
@@ -37,7 +38,7 @@ import java.util.List;
 import java.util.Optional;
 
 public record PollFinalistsBehavior(String finalistsTag, String winnerTag, String votesObjective, String pollDuration) implements IGameBehavior {
-	public static final Codec<PollFinalistsBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+	public static final MapCodec<PollFinalistsBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			Codec.STRING.optionalFieldOf("finalists_tag", "finalist").forGetter(c -> c.finalistsTag),
 			Codec.STRING.optionalFieldOf("winner_tag", "winner").forGetter(c -> c.winnerTag),
 			Codec.STRING.optionalFieldOf("votes_objective", "votes").forGetter(c -> c.votesObjective),

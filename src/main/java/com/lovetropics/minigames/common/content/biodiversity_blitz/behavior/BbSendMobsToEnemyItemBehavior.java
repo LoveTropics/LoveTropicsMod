@@ -16,6 +16,7 @@ import com.lovetropics.minigames.common.util.Codecs;
 import com.lovetropics.minigames.common.util.StackData;
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.HolderSet;
 import net.minecraft.network.chat.Component;
@@ -37,9 +38,8 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 public final class BbSendMobsToEnemyItemBehavior implements IGameBehavior {
-    public static final Codec<BbSendMobsToEnemyItemBehavior> CODEC = Codecs.ITEMS.fieldOf("item")
-            .xmap(BbSendMobsToEnemyItemBehavior::new, b -> b.items)
-            .codec();
+    public static final MapCodec<BbSendMobsToEnemyItemBehavior> CODEC = Codecs.ITEMS.fieldOf("item")
+            .xmap(BbSendMobsToEnemyItemBehavior::new, b -> b.items);
 
     public static final StackData<Map<BbEntityTypes, Integer>> ENEMIES_TO_SEND = StackData.unboundedMap("bb_mobs_to_send_to_enemies", BbEntityTypes.CODEC, Codec.intRange(0, Integer.MAX_VALUE));
 

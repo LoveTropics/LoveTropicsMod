@@ -10,6 +10,7 @@ import com.lovetropics.minigames.common.core.game.behavior.event.GameActionEvent
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.Object2LongArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2LongMap;
@@ -22,7 +23,7 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import java.util.UUID;
 
 public record TurtleBoostBehavior(float amount, int duration) implements IGameBehavior {
-	public static final Codec<TurtleBoostBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+	public static final MapCodec<TurtleBoostBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			Codec.FLOAT.fieldOf("amount").forGetter(TurtleBoostBehavior::amount),
 			Codec.INT.fieldOf("duration").forGetter(TurtleBoostBehavior::duration)
 	).apply(i, TurtleBoostBehavior::new));

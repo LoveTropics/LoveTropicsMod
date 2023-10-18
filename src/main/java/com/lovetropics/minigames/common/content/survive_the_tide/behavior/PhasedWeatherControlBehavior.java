@@ -10,6 +10,7 @@ import com.lovetropics.minigames.common.core.game.state.weather.GameWeatherState
 import com.lovetropics.minigames.common.core.game.weather.WeatherEvent;
 import com.lovetropics.minigames.common.core.game.weather.WeatherEventType;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.SharedConstants;
 import net.minecraft.server.level.ServerLevel;
@@ -19,7 +20,7 @@ import java.util.List;
 import java.util.Objects;
 
 public class PhasedWeatherControlBehavior implements IGameBehavior {
-	public static final Codec<PhasedWeatherControlBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+	public static final MapCodec<PhasedWeatherControlBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			Period.CODEC.listOf().fieldOf("periods").forGetter(b -> b.periods)
 	).apply(i, PhasedWeatherControlBehavior::new));
 

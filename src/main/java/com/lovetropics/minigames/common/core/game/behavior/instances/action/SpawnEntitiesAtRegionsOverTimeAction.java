@@ -11,9 +11,9 @@ import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents
 import com.lovetropics.minigames.common.core.map.MapRegions;
 import com.lovetropics.minigames.common.util.EntityTemplate;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.levelgen.Heightmap;
 
 import java.util.List;
@@ -23,7 +23,7 @@ import java.util.List;
  */
 
 public class SpawnEntitiesAtRegionsOverTimeAction implements IGameBehavior {
-	public static final Codec<SpawnEntitiesAtRegionsOverTimeAction> CODEC = RecordCodecBuilder.create(i -> i.group(
+	public static final MapCodec<SpawnEntitiesAtRegionsOverTimeAction> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			Codec.STRING.listOf().fieldOf("regions_to_spawn_at").forGetter(c -> c.regionsToSpawnAtKeys),
 			EntityTemplate.CODEC.fieldOf("entity").forGetter(c -> c.entity),
 			Codec.INT.optionalFieldOf("entity_count", 1).forGetter(c -> c.entityCount),

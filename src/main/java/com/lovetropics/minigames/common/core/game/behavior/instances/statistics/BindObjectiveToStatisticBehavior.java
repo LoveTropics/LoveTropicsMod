@@ -7,16 +7,17 @@ import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents
 import com.lovetropics.minigames.common.core.game.state.statistics.GameStatistics;
 import com.lovetropics.minigames.common.core.game.state.statistics.StatisticKey;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.scores.Score;
-import net.minecraft.world.scores.Objective;
 import net.minecraft.server.ServerScoreboard;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.scores.Objective;
+import net.minecraft.world.scores.Score;
 
 import java.util.Map;
 
 public record BindObjectiveToStatisticBehavior(Map<StatisticKey<Integer>, String> statisticToObjective) implements IGameBehavior {
-	public static final Codec<BindObjectiveToStatisticBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+	public static final MapCodec<BindObjectiveToStatisticBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			Codec.unboundedMap(StatisticKey.codecFor(Integer.class), Codec.STRING).fieldOf("objectives").forGetter(c -> c.statisticToObjective)
 	).apply(i, BindObjectiveToStatisticBehavior::new));
 

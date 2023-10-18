@@ -10,6 +10,7 @@ import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.util.Util;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
@@ -25,7 +26,7 @@ import java.util.List;
 import java.util.Set;
 
 public final class WateryPlantBehavior implements IGameBehavior {
-    public static final Codec<WateryPlantBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+    public static final MapCodec<WateryPlantBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
             Codec.INT.fieldOf("radius").forGetter(b -> b.radius)
     ).apply(i, WateryPlantBehavior::new));
     private final int radius;

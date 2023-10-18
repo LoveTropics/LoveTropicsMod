@@ -25,7 +25,7 @@ public record ScalePlayerDamageBehavior(float factor, Map<RoleOverrideType<?>, R
 			RoleOverrideType.REGISTRY, RoleOverrideEntry::create
 	);
 
-	public static final Codec<ScalePlayerDamageBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+	public static final MapCodec<ScalePlayerDamageBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			Codec.FLOAT.fieldOf("factor").forGetter(ScalePlayerDamageBehavior::factor),
 			OVERRIDE_ENTRY.optionalFieldOf("role_factors", Map.of()).forGetter(ScalePlayerDamageBehavior::roleFactors)
 	).apply(i, ScalePlayerDamageBehavior::new));

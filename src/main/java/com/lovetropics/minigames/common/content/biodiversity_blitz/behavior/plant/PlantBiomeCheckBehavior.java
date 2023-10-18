@@ -12,6 +12,7 @@ import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameEventType;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
@@ -25,7 +26,7 @@ import java.util.List;
 import java.util.Set;
 
 public record PlantBiomeCheckBehavior(HolderSet<Biome> biomes, boolean whitelist, IGameBehavior behaviors) implements IGameBehavior {
-    public static final Codec<PlantBiomeCheckBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+    public static final MapCodec<PlantBiomeCheckBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
             Biome.LIST_CODEC.fieldOf("biomes").forGetter(PlantBiomeCheckBehavior::biomes),
             Codec.BOOL.optionalFieldOf("whitelist", true).forGetter(PlantBiomeCheckBehavior::whitelist),
             MoreCodecs.strictOptionalFieldOf(IGameBehavior.CODEC, "behaviors", IGameBehavior.EMPTY).forGetter(PlantBiomeCheckBehavior::behaviors)

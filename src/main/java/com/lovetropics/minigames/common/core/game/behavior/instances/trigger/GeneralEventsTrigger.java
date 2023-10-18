@@ -13,6 +13,7 @@ import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.lovetropics.minigames.common.core.game.player.PlayerRole;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
 
@@ -22,8 +23,9 @@ import java.util.function.Supplier;
 
 // TODO: split up into separate trigger types
 public record GeneralEventsTrigger(Map<String, GameActionList<ServerPlayer>> eventActions) implements IGameBehavior {
-	public static final Codec<GeneralEventsTrigger> CODEC = Codec.unboundedMap(Codec.STRING, GameActionList.PLAYER)
-			.xmap(GeneralEventsTrigger::new, b -> b.eventActions);
+	public static final MapCodec<GeneralEventsTrigger> CODEC = Codec.unboundedMap(Codec.STRING, GameActionList.PLAYER_CODEC)
+			.xmap(GeneralEventsTrigger::new, b -> b.eventActions)
+			.fieldOf("events");
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) throws GameException {

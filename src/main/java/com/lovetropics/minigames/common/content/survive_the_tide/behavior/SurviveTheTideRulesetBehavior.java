@@ -9,6 +9,7 @@ import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvent
 import com.lovetropics.minigames.common.core.game.state.GameProgressionState;
 import com.lovetropics.minigames.common.core.game.state.ProgressionPeriod;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.DamageTypeTags;
@@ -21,7 +22,7 @@ import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.GameRules;
 
 public class SurviveTheTideRulesetBehavior implements IGameBehavior {
-	public static final Codec<SurviveTheTideRulesetBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+	public static final MapCodec<SurviveTheTideRulesetBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			ProgressionPeriod.CODEC.fieldOf("safe_period").forGetter(c -> c.safePeriod),
 			Codec.BOOL.optionalFieldOf("force_drop_items_on_death", true).forGetter(c -> c.forceDropItemsOnDeath)
 	).apply(i, SurviveTheTideRulesetBehavior::new));

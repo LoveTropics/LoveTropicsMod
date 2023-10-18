@@ -7,7 +7,7 @@ import com.lovetropics.minigames.common.core.game.behavior.action.GameActionList
 import com.lovetropics.minigames.common.core.game.behavior.action.PlayerActionTarget;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameActionEvents;
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.server.level.ServerPlayer;
@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.UUID;
 
 public record TargetPlayerAction(UUID id, GameActionList<ServerPlayer> actions) implements IGameBehavior {
-	public static final Codec<TargetPlayerAction> CODEC = RecordCodecBuilder.create(i -> i.group(
+	public static final MapCodec<TargetPlayerAction> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			UUIDUtil.STRING_CODEC.fieldOf("id").forGetter(TargetPlayerAction::id),
 			GameActionList.mapCodec(ActionTargetTypes.PLAYER, PlayerActionTarget.SOURCE).forGetter(TargetPlayerAction::actions)
 	).apply(i, TargetPlayerAction::new));

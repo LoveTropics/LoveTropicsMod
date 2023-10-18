@@ -10,6 +10,7 @@ import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
@@ -26,7 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public record GrowPlantBehavior(int time, PlantType growInto) implements IGameBehavior {
-	public static final Codec<GrowPlantBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+	public static final MapCodec<GrowPlantBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			Codec.INT.fieldOf("time").forGetter(c -> c.time),
 			PlantType.CODEC.fieldOf("grow_into").forGetter(c -> c.growInto)
 	).apply(i, GrowPlantBehavior::new));

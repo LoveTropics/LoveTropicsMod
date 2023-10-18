@@ -8,13 +8,14 @@ import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameWorldEvents;
 import com.lovetropics.minigames.common.core.game.weather.WeatherEventType;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 import java.util.Map;
 
 public record WeatherChangeTrigger(Map<WeatherEventType, GameActionList<Void>> eventActions) implements IGameBehavior {
-	public static final Codec<WeatherChangeTrigger> CODEC = RecordCodecBuilder.create(i -> i.group(
-			Codec.unboundedMap(WeatherEventType.CODEC, GameActionList.VOID).fieldOf("events").forGetter(c -> c.eventActions)
+	public static final MapCodec<WeatherChangeTrigger> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
+			Codec.unboundedMap(WeatherEventType.CODEC, GameActionList.VOID_CODEC).fieldOf("events").forGetter(c -> c.eventActions)
 	).apply(i, WeatherChangeTrigger::new));
 
 	@Override

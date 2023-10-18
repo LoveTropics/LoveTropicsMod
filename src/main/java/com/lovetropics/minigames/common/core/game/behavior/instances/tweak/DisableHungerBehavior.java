@@ -4,12 +4,12 @@ import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.food.FoodData;
 
 public final class DisableHungerBehavior implements IGameBehavior {
-	public static final Codec<DisableHungerBehavior> CODEC = Codec.unit(DisableHungerBehavior::new);
+	public static final MapCodec<DisableHungerBehavior> CODEC = MapCodec.unit(DisableHungerBehavior::new);
 
 	private final CompoundTag foodStats = new CompoundTag();
 

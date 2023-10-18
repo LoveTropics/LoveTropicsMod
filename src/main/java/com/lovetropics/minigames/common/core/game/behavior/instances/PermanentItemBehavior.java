@@ -5,13 +5,14 @@ import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.registries.ForgeRegistries;
 
 public record PermanentItemBehavior(Item item, int count, int interval) implements IGameBehavior {
-	public static final Codec<PermanentItemBehavior> CODEC = RecordCodecBuilder.create(i -> i.group(
+	public static final MapCodec<PermanentItemBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			ForgeRegistries.ITEMS.getCodec().fieldOf("item").forGetter(c -> c.item),
 			Codec.INT.fieldOf("count").forGetter(c -> c.count),
 			Codec.INT.optionalFieldOf("interval", 5).forGetter(c -> c.interval)
