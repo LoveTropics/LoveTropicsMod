@@ -6,7 +6,9 @@ import com.lovetropics.minigames.common.core.game.IGameManager;
 import com.lovetropics.minigames.common.core.game.lobby.IGameLobby;
 import com.lovetropics.minigames.common.core.game.lobby.LobbyControls;
 import com.lovetropics.minigames.common.core.game.player.PlayerRole;
+import com.lovetropics.minigames.common.util.LTGameTestFakePlayer;
 import com.lovetropics.minigames.gametests.api.TestGameLobby;
+import com.lovetropics.minigames.mixin.gametest.GameTestInfoAccess;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.BlockPos;
@@ -18,12 +20,17 @@ import net.minecraft.gametest.framework.GameTestListener;
 import net.minecraft.gametest.framework.GameTestSequence;
 import net.minecraft.network.Connection;
 import net.minecraft.network.PacketSendListener;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketFlow;
+import net.minecraft.network.protocol.game.ServerboundClientInformationPacket;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.server.players.PlayerList;
+import net.minecraft.stats.Stat;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
@@ -43,6 +50,8 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
+import net.minecraftforge.server.ServerLifecycleHooks;
+import org.apache.logging.log4j.core.jmx.Server;
 
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -60,7 +69,7 @@ import java.util.function.Supplier;
 @MethodsReturnNonnullByDefault
 public class LTGameTestHelper extends GameTestHelper {
     private final GameTestHelper delegate;
-    private final GameTestInfo info;
+    final GameTestInfo info;
     public LTGameTestHelper(GameTestHelper helper) {
         super(null);
         this.delegate = helper;
@@ -608,7 +617,7 @@ public class LTGameTestHelper extends GameTestHelper {
         IGameLobby lobby = result.getOk();
         lobby.getPlayers().join(player, initiatorRole);
 
-        info.addListener(new GameTestListener() {
+        ((List<GameTestListener>) ((GameTestInfoAccess) info).getListeners()).add(0, new GameTestListener() {
             @Override
             public void testStructureLoaded(GameTestInfo pTestInfo) {
 
@@ -639,66 +648,12 @@ public class LTGameTestHelper extends GameTestHelper {
         };
     }
 
+    public FakePlayerBuilder playerBuilder() {
+        return new FakePlayerBuilder(this);
+    }
+
     public LTFakePlayer createFakePlayer() {
-        return createFakePlayer(p -> false);
-    }
-
-    public LTFakePlayer createFakePlayer(Predicate<Packet<?>> packetFilter) {
-        return new LTFakePlayer() {
-            {
-                connection = new ServerGamePacketListenerImpl(level().getServer(), new Connection(PacketFlow.CLIENTBOUND), this) {
-                    @Override
-                    public void send(Packet<?> pPacket, @org.jetbrains.annotations.Nullable PacketSendListener pListener) {
-                        if (packetFilter.test(pPacket)) {
-                            receivedPackets.add(pPacket);
-                        }
-                    }
-                };
-            }
-        };
-    }
-
-    public class LTFakePlayer extends FakePlayer {
-        public final List<Packet<?>> receivedPackets = new ArrayList<>();
-
-        public LTFakePlayer() {
-            super(delegate.getLevel(), new GameProfile(UUID.randomUUID(), "test-mock-player"));
-
-            ObfuscationReflectionHelper.<Map<UUID, ServerPlayer>, PlayerList>getPrivateValue(PlayerList.class, level().getServer().getPlayerList(), "playersByUUID").put(getUUID(), this);
-
-            info.addListener(new GameTestListener() {
-                @Override
-                public void testStructureLoaded(GameTestInfo pTestInfo) {
-
-                }
-
-                @Override
-                public void testPassed(GameTestInfo pTestInfo) {
-                    exitWorld();
-                }
-
-                @Override
-                public void testFailed(GameTestInfo pTestInfo) {
-                    exitWorld();
-                }
-            });
-        }
-
-        public boolean isSpectator() {
-            return false;
-        }
-
-        public boolean isCreative() {
-            return true;
-        }
-
-        public void exitWorld() {
-            ObfuscationReflectionHelper.<Map<UUID, ServerPlayer>, PlayerList>getPrivateValue(PlayerList.class, level().getServer().getPlayerList(), "playersByUUID").remove(getUUID());
-        }
-
-        public void setAttackStrengthTicker(int value) {
-            this.attackStrengthTicker = value;
-        }
+        return playerBuilder().build();
     }
 
     public <T> void assertReceivedPacket(LTFakePlayer player, int index, Class<T> type, Predicate<T> test) {

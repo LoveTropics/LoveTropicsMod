@@ -1,9 +1,6 @@
 package com.lovetropics.minigames.gametests;
 
-import com.lovetropics.lib.permission.PermissionsApi;
 import com.lovetropics.lib.permission.role.RoleOverrideType;
-import com.lovetropics.minigames.common.core.game.behavior.action.GameActionContext;
-import com.lovetropics.minigames.common.core.game.behavior.event.GameActionEvents;
 import com.lovetropics.minigames.common.core.game.behavior.instances.tweak.CancelPlayerDamageBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.tweak.ScalePlayerDamageBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.tweak.SetMaxHealthBehavior;
@@ -19,11 +16,9 @@ import it.unimi.dsi.fastutil.objects.Object2DoubleMaps;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.damagesource.DamageTypes;
+import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
 
 import java.util.Map;
 
@@ -73,9 +68,8 @@ public class TweakTests implements MinigameTest {
         final var target = helper.makeMockSurvivalPlayer();
         helper.startSequence()
                 .thenExecute(helper.startGame(lobby))
-                .thenIdle(5)
+                .thenIdle(60) // Wait for invulnerability to end
                 .thenExecute(() -> player.attack(target))
-                .thenIdle(5)
                 .thenExecute(() -> helper.assertEntityHealth(target, target.getMaxHealth()))
                 .thenSucceed();
     }
@@ -86,42 +80,24 @@ public class TweakTests implements MinigameTest {
         final var lobby = helper.createGame(player, PlayerRole.PARTICIPANT);
         lobby.enqueue(gameId("scale_damage"));
 
-        final var target = helper.new LTFakePlayer() {
-            @Override
-            public boolean isSpectator() {
-                return false;
-            }
+        final var target = helper.playerBuilder()
+                .gameMode(GameType.SURVIVAL)
+                .isInvulnerableTo(source -> !source.is(DamageTypes.PLAYER_ATTACK))
+                .canBeHarmedBy(p -> p == player)
+                .shouldRegenerateNaturally(false)
+                .build();
 
-            @Override
-            public boolean isCreative() {
-                return false;
-            }
-
-            @Override
-            public boolean isInvulnerableTo(DamageSource source) {
-                return false;
-            }
-
-            @Override
-            public boolean canHarmPlayer(Player player) {
-                return true;
-            }
-        };
-        ObfuscationReflectionHelper.setPrivateValue(ServerPlayer.class, target, 0, "spawnInvulnerableTime");
-
+        target.getAbilities().invulnerable = false;
         lobby.getPlayers().join(target, PlayerRole.PARTICIPANT);
 
         helper.startSequence()
                 .thenExecute(helper.startGame(lobby))
-                .thenIdle(5)
-                .thenExecute(() -> player.setAttackStrengthTicker(10))
+                .thenIdle(60) // Wait for spawn invulnerabulity to end
                 .thenExecute(() -> target.hurt(target.damageSources().playerAttack(player), 2))
                 .thenIdle(5)
                 .thenExecute(() -> helper.assertEntityHealth(target, 18))
-
+                .thenIdle(15) // Wait for invulnerable time to end
                 .thenExecute(() -> helper.getRoles(target).addRole("setTest", Map.of(IS_TEST_PLAYER, true)))
-                .thenExecute(() -> player.setAttackStrengthTicker(10))
-                .thenExecute(() -> target.invulnerableTime = 0) // Reset invulnerability
                 .thenExecute(() -> target.hurt(player.damageSources().playerAttack(player), 2))
                 .thenExecute(() -> helper.assertEntityHealth(target, 14))
                 .thenSucceed();

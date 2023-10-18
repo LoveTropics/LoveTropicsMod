@@ -25,7 +25,6 @@ import net.minecraft.network.protocol.game.ClientboundSoundPacket;
 import net.minecraft.network.protocol.game.ClientboundSystemChatPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
@@ -67,12 +66,10 @@ public class ActionTriggerTests implements MinigameTest {
 
     @GameTest
     public void testEventsTrigger(final LTGameTestHelper helper) {
-        final var player = helper.new LTFakePlayer() {
-            @Override
-            public boolean isInvulnerableTo(DamageSource source) {
-                return !source.is(DamageTypes.FELL_OUT_OF_WORLD);
-            }
-        };
+        final var player = helper.playerBuilder()
+                .isInvulnerableTo(source -> !source.is(DamageTypes.FELL_OUT_OF_WORLD))
+                .build();
+
         player.tickCount = 1;
         player.setAbsorptionAmount(0f);
 
@@ -91,7 +88,9 @@ public class ActionTriggerTests implements MinigameTest {
 
     @GameTest
     public void testStartTrigger(final LTGameTestHelper helper) {
-        final var player = helper.createFakePlayer(packet -> packet instanceof ClientboundSystemChatPacket || packet instanceof ClientboundSoundPacket);
+        final var player = helper.playerBuilder()
+                .packetFilter(packet -> packet instanceof ClientboundSystemChatPacket sc && sc.content().equals(Component.literal("hello world!")) || packet instanceof ClientboundSoundPacket)
+                .build();
         final var lobby = helper.createGame(player, PlayerRole.PARTICIPANT);
         lobby.enqueue(gameId("start"));
 
@@ -105,7 +104,7 @@ public class ActionTriggerTests implements MinigameTest {
 
     @GameTest
     public void testStopTrigger(final LTGameTestHelper helper) {
-        final var player = helper.createFakePlayer(packet -> false);
+        final var player = helper.createFakePlayer();
         final var lobby = helper.createGame(player, PlayerRole.PARTICIPANT);
         lobby.enqueue(gameId("stop"));
 

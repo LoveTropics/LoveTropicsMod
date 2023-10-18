@@ -3,6 +3,7 @@
   "package": "com.lovetropics.minigames.mixin",
   "compatibilityLevel": "JAVA_17",
   "refmap": "ltminigames.refmap.json",
+  "plugin": "com.lovetropics.minigames.mixin.LTMixinPlugin",
   "mixins": [
     "ChunkStorageMixin",
     "EntityTypeMixin",
@@ -11,15 +12,20 @@
     "PlayerListMixin",
     "PlayerMixin",
     "SimpleRegistryMixin",
-    "TagManagerAccessor"
+    "TagManagerAccessor",
+    "gametest.GameTestInfoAccess",
+    "gametest.GTNetworkFiltersMixin",
+    "gametest.GTPlayerListMixin",
+    "gametest.GTPlayerMixin",
+    "gametest.GTReportGameListenerMixin"
   ],
   "client": [
     "client.BiomeColorsMixin",
     "client.BossOverlayGuiMixin",
     "client.HotbarOverride",
+    "client.MinecraftMixin",
     "client.PlayerTabOverlayGuiMixin",
-    "client.PoseStackAccessor",
-    "client.MinecraftMixin"
+    "client.PoseStackAccessor"
   ],
   "injectors": {
     "defaultRequire": 1
