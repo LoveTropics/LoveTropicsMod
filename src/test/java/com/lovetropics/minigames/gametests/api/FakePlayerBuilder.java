@@ -1,6 +1,5 @@
 package com.lovetropics.minigames.gametests.api;
 
-import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
 import net.minecraft.gametest.framework.GameTestInfo;
 import net.minecraft.gametest.framework.GameTestListener;
@@ -11,7 +10,6 @@ import net.minecraft.world.level.GameType;
 import net.minecraft.world.phys.Vec3;
 
 import javax.annotation.ParametersAreNonnullByDefault;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
 
 @ParametersAreNonnullByDefault

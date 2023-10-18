@@ -2,6 +2,7 @@ package com.lovetropics.minigames.gametests;
 
 import com.lovetropics.lib.permission.role.RoleOverrideType;
 import com.lovetropics.minigames.common.core.game.behavior.instances.tweak.CancelPlayerDamageBehavior;
+import com.lovetropics.minigames.common.core.game.behavior.instances.tweak.DisableHungerBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.tweak.ScalePlayerDamageBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.tweak.SetMaxHealthBehavior;
 import com.lovetropics.minigames.common.core.game.datagen.BehaviorFactory;
@@ -42,6 +43,10 @@ public class TweakTests implements MinigameTest {
         generator.builder(gameId("scale_damage"))
                 .withPlayingPhase(new InlineMapProvider(Level.OVERWORLD), phaseBuilder -> phaseBuilder
                         .withBehavior(new ScalePlayerDamageBehavior(1f, Map.of(IS_TEST_PLAYER, new ScalePlayerDamageBehavior.RoleOverrideEntry<>(IS_TEST_PLAYER, true, 2f)))));
+
+        generator.builder(gameId("disable_hunger"))
+                .withPlayingPhase(new InlineMapProvider(Level.OVERWORLD), phaseBuilder -> phaseBuilder
+                        .withBehavior(new DisableHungerBehavior()));
     }
 
     @GameTest
@@ -100,6 +105,22 @@ public class TweakTests implements MinigameTest {
                 .thenExecute(() -> helper.getRoles(target).addRole("setTest", Map.of(IS_TEST_PLAYER, true)))
                 .thenExecute(() -> target.hurt(player.damageSources().playerAttack(player), 2))
                 .thenExecute(() -> helper.assertEntityHealth(target, 14))
+                .thenSucceed();
+    }
+
+    @GameTest(timeoutTicks = 200)
+    public void testDisableHunger(final LTGameTestHelper helper) {
+        final var player = helper.createFakePlayer();
+        player.setSprinting(true);
+        final var lobby = helper.createGame(player, PlayerRole.PARTICIPANT);
+        lobby.enqueue(gameId("disable_hunger"));
+
+        helper.startSequence()
+                .thenExecute(helper.startGame(lobby))
+                .thenExecuteFor(50, player::jumpFromGround)
+                .thenIdle(5)
+                .thenExecute(() -> helper.assertEntityProperty(player, e -> e.getFoodData().getExhaustionLevel(), "exhaustion", 0f))
+                .thenExecute(() -> helper.assertEntityProperty(player, e -> e.getFoodData().getFoodLevel(), "food level", 20))
                 .thenSucceed();
     }
 
