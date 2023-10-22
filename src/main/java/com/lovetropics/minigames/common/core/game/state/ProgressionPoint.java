@@ -4,6 +4,7 @@ import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
+import net.minecraft.SharedConstants;
 
 public interface ProgressionPoint {
 	Codec<ProgressionPoint> CODEC = new Codec<>() {
@@ -34,12 +35,12 @@ public interface ProgressionPoint {
 
 	Codec<? extends ProgressionPoint> codec();
 
-	record Direct(int value) implements ProgressionPoint {
-		public static final Codec<Direct> CODEC = Codec.INT.xmap(Direct::new, Direct::value);
+	record Direct(float value) implements ProgressionPoint {
+		public static final Codec<Direct> CODEC = Codec.FLOAT.xmap(Direct::new, Direct::value);
 
 		@Override
 		public int resolve(GameProgressionState progression) {
-			return value;
+			return Math.round(value * SharedConstants.TICKS_PER_SECOND);
 		}
 
 		@Override

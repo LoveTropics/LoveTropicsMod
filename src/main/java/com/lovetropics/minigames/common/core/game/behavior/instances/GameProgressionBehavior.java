@@ -14,6 +14,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.floats.Float2FloatFunction;
+import net.minecraft.SharedConstants;
 import net.minecraft.util.Mth;
 
 import java.util.List;
@@ -21,7 +22,7 @@ import java.util.Map;
 
 public class GameProgressionBehavior implements IGameBehavior {
 	public static final MapCodec<GameProgressionBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
-			Codec.unboundedMap(Codec.STRING, Codec.INT).optionalFieldOf("named_points", Map.of()).forGetter(b -> b.namedPoints),
+			Codec.unboundedMap(Codec.STRING, Codec.FLOAT).optionalFieldOf("named_points", Map.of()).forGetter(b -> b.namedPoints),
 			Codec.INT.optionalFieldOf("max_time_step", 1).forGetter(b -> b.maxTimeStep),
 			MoreCodecs.listOrUnit(ProgressionPeriod.CODEC).optionalFieldOf("fixed_time_step", List.of()).forGetter(b -> b.fixedTimeStep),
 			PlayerConstraint.CODEC.listOf().optionalFieldOf("time_by_player_count", List.of()).forGetter(b -> b.playerConstraints)
@@ -29,14 +30,14 @@ public class GameProgressionBehavior implements IGameBehavior {
 
 	private GameProgressionState progressionState;
 
-	private final Map<String, Integer> namedPoints;
+	private final Map<String, Float> namedPoints;
 	private final int maxTimeStep;
 	private final List<ProgressionPeriod> fixedTimeStep;
 	private final List<PlayerConstraint> playerConstraints;
 
 	private Float2FloatFunction playerCountToTime = key -> 0.0f;
 
-	public GameProgressionBehavior(Map<String, Integer> namedPoints, int maxTimeStep, List<ProgressionPeriod> fixedTimeStep, List<PlayerConstraint> playerConstraints) {
+	public GameProgressionBehavior(Map<String, Float> namedPoints, int maxTimeStep, List<ProgressionPeriod> fixedTimeStep, List<PlayerConstraint> playerConstraints) {
 		this.namedPoints = namedPoints;
 		this.maxTimeStep = maxTimeStep;
 		this.fixedTimeStep = fixedTimeStep;
@@ -46,7 +47,7 @@ public class GameProgressionBehavior implements IGameBehavior {
 	@Override
 	public void registerState(IGamePhase game, GameStateMap phaseState, GameStateMap instanceState) {
 		progressionState = phaseState.register(GameProgressionState.KEY, new GameProgressionState());
-		namedPoints.forEach((name, value) -> progressionState.addNamedPoint(name, value));
+		namedPoints.forEach((name, value) -> progressionState.addNamedPoint(name, Math.round(value * SharedConstants.TICKS_PER_SECOND)));
 	}
 
 	@Override
