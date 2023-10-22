@@ -15,23 +15,10 @@ import net.minecraft.network.chat.Component;
 public final class SelectPlayerRoleScreen extends Screen {
 	private static final Component TITLE = GameTexts.Ui.selectPlayerRole()
 			.withStyle(ChatFormatting.BOLD, ChatFormatting.UNDERLINE);
-
-	// TODO: translate all the things
-	private static final Component PLAY_TEXT = Component.literal("Play");
-	private static final Component SPECTATE_TEXT = Component.literal("Spectate");
-
-	private static final Component[] TEXT = new Component[] {
-			Component.literal("Welcome to the game lobby!"),
-			Component.literal("Before the game, ")
-					.append(Component.literal("please select to ")
-							.append(Component.literal("play").withStyle(ChatFormatting.AQUA))
-							.append(" or ")
-							.append(Component.literal("spectate").withStyle(ChatFormatting.AQUA))
-							.withStyle(ChatFormatting.UNDERLINE)
-					)
-					.append("."),
-			Component.literal("You will be prompted before each game in this lobby.").withStyle(ChatFormatting.GRAY)
-	};
+	private static final Component TEXT = GameTexts.Ui.selectRoleMessage(
+			GameTexts.Ui.selectPlay().withStyle(ChatFormatting.AQUA),
+			GameTexts.Ui.selectSpectate().withStyle(ChatFormatting.AQUA)
+	);
 
 	private static final int BUTTON_WIDTH = 100;
 	private static final int SPACING = 4;
@@ -56,17 +43,15 @@ public final class SelectPlayerRoleScreen extends Screen {
 		GridLayout.RowHelper helper = layout.createRowHelper(1);
 		layout.defaultCellSetting().alignHorizontallyCenter();
 
-		for (Component line : TEXT) {
-			helper.addChild(new MultiLineTextWidget(line, font).setCentered(true));
-		}
+		helper.addChild(new MultiLineTextWidget(TEXT, font).setCentered(true));
 
 		GridLayout buttons = helper.addChild(new GridLayout().spacing(SPACING), helper.newCellSettings().paddingTop(SPACING));
 		GridLayout.RowHelper buttonsHelper = buttons.createRowHelper(2);
-		buttonsHelper.addChild(Button.builder(PLAY_TEXT, b -> {
+		buttonsHelper.addChild(Button.builder(GameTexts.Ui.selectPlay(), b -> {
 			sendResponse(true);
 			onClose();
 		}).width(BUTTON_WIDTH).build());
-		buttonsHelper.addChild(Button.builder(SPECTATE_TEXT, b -> {
+		buttonsHelper.addChild(Button.builder(GameTexts.Ui.selectSpectate(), b -> {
 			sendResponse(false);
 			onClose();
 		}).width(BUTTON_WIDTH).build());

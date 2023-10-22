@@ -90,8 +90,10 @@
   "ltminigames.status.no_longer_enough_players": "There are no longer enough players to start game!",
   "ltminigames.status.player_joined": "%s has joined %s!",
   "ltminigames.status.spectator_joined": "%s has joined %s as a spectator!",
+  "ltminigames.ui.click_to_select": "%s [Click to Select]",
   "ltminigames.ui.close_lobby": "Close",
   "ltminigames.ui.focus_live": "Focus Live",
+  "ltminigames.ui.free_camera": "Free Camera",
   "ltminigames.ui.game_inactive": "Inactive",
   "ltminigames.ui.game_player_bounds": "%s-%s players",
   "ltminigames.ui.game_player_count": "%s players",
@@ -102,6 +104,10 @@
   "ltminigames.ui.managing_game": "Managing Game: %s",
   "ltminigames.ui.participating": "Participating",
   "ltminigames.ui.publish": "Publish",
+  "ltminigames.ui.select_play": "Play",
   "ltminigames.ui.select_player_role": "Select Player Role",
+  "ltminigames.ui.select_role_message": "Welcome to the game lobby!\nBefore the game, %s.\n\nYou will be prompted before each game in this lobby.",
+  "ltminigames.ui.select_role_message_important": "Please select to %s or %s",
+  "ltminigames.ui.select_spectate": "Spectate",
   "ltminigames.ui.spectating": "Spectating"
 }

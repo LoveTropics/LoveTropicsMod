@@ -90,8 +90,10 @@
   "ltminigames.status.no_longer_enough_players": "¡ǝɯɐb ʇɹɐʇs oʇ sɹǝʎɐןd ɥbnouǝ ɹǝbuoן ou ǝɹɐ ǝɹǝɥ⟘",
   "ltminigames.status.player_joined": "¡%s pǝuıoظ sɐɥ %s",
   "ltminigames.status.spectator_joined": "¡ɹoʇɐʇɔǝds ɐ sɐ %s pǝuıoظ sɐɥ %s",
+  "ltminigames.ui.click_to_select": "]ʇɔǝןǝS oʇ ʞɔıןƆ[ %s",
   "ltminigames.ui.close_lobby": "ǝsoןƆ",
   "ltminigames.ui.focus_live": "ǝʌıꞀ snɔoℲ",
+  "ltminigames.ui.free_camera": "ɐɹǝɯɐƆ ǝǝɹℲ",
   "ltminigames.ui.game_inactive": "ǝʌıʇɔɐuI",
   "ltminigames.ui.game_player_bounds": "sɹǝʎɐןd %s-%s",
   "ltminigames.ui.game_player_count": "sɹǝʎɐןd %s",
@@ -102,6 +104,10 @@
   "ltminigames.ui.managing_game": "%s :ǝɯɐ⅁ buıbɐuɐW",
   "ltminigames.ui.participating": "buıʇɐdıɔıʇɹɐԀ",
   "ltminigames.ui.publish": "ɥsıןqnԀ",
+  "ltminigames.ui.select_play": "ʎɐןԀ",
   "ltminigames.ui.select_player_role": "ǝןoᴚ ɹǝʎɐןԀ ʇɔǝןǝS",
+  "ltminigames.ui.select_role_message": "˙ʎqqoן sıɥʇ uı ǝɯɐb ɥɔɐǝ ǝɹoɟǝq pǝʇdɯoɹd ǝq ןןıʍ noʎ\n\n˙%s 'ǝɯɐb ǝɥʇ ǝɹoɟǝᗺ\n¡ʎqqoן ǝɯɐb ǝɥʇ oʇ ǝɯoɔןǝM",
+  "ltminigames.ui.select_role_message_important": "%s ɹo %s oʇ ʇɔǝןǝs ǝsɐǝןԀ",
+  "ltminigames.ui.select_spectate": "ǝʇɐʇɔǝdS",
   "ltminigames.ui.spectating": "buıʇɐʇɔǝdS"
 }

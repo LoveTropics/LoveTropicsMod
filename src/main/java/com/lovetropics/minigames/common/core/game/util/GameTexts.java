@@ -285,12 +285,19 @@ public final class GameTexts {
 			static final String CLOSE_LOBBY = key("close_lobby");
 
 			static final String SELECT_PLAYER_ROLE = key("select_player_role");
+			static final String SELECT_ROLE_MESSAGE = key("select_role_message");
+			static final String SELECT_ROLE_MESSAGE_IMPORTANT = key("select_role_message_important");
+			static final String SELECT_PLAY = key("select_play");
+			static final String SELECT_SPECTATE = key("select_spectate");
 
 			static final String GAME_PLAYER_COUNT = key("game_player_count");
 			static final String GAME_PLAYER_RANGE = key("game_player_bounds");
 
 			static final String PARTICIPATING = key("participating");
 			static final String SPECTATING = key("spectating");
+
+			static final String FREE_CAMERA = key("free_camera");
+			static final String CLICK_TO_SELECT = key("click_to_select");
 
 			static void collectTranslations(BiConsumer<String, String> consumer) {
 				consumer.accept(MANAGE_GAME_LOBBY, "Manage Game Lobby");
@@ -304,12 +311,19 @@ public final class GameTexts {
 				consumer.accept(CLOSE_LOBBY, "Close");
 
 				consumer.accept(SELECT_PLAYER_ROLE, "Select Player Role");
+				consumer.accept(SELECT_ROLE_MESSAGE, "Welcome to the game lobby!\nBefore the game, %s.\n\nYou will be prompted before each game in this lobby.");
+				consumer.accept(SELECT_ROLE_MESSAGE_IMPORTANT, "Please select to %s or %s");
+				consumer.accept(SELECT_PLAY, "Play");
+				consumer.accept(SELECT_SPECTATE, "Spectate");
 
 				consumer.accept(GAME_PLAYER_COUNT, "%s players");
 				consumer.accept(GAME_PLAYER_RANGE, "%s-%s players");
 
 				consumer.accept(PARTICIPATING, "Participating");
 				consumer.accept(SPECTATING, "Spectating");
+
+				consumer.accept(FREE_CAMERA, "Free Camera");
+				consumer.accept(CLICK_TO_SELECT, "%s [Click to Select]");
 			}
 
 			static String key(String key) {
@@ -368,6 +382,28 @@ public final class GameTexts {
 
 		public static MutableComponent selectPlayerRole() {
 			return Component.translatable(Keys.SELECT_PLAYER_ROLE);
+		}
+
+		public static MutableComponent selectRoleMessage(Component play, Component spectate) {
+			return Component.translatable(Keys.SELECT_ROLE_MESSAGE,
+					Component.translatable(Keys.SELECT_ROLE_MESSAGE_IMPORTANT, play, spectate).withStyle(ChatFormatting.UNDERLINE)
+			);
+		}
+
+		public static MutableComponent selectPlay() {
+			return Component.translatable(Keys.SELECT_PLAY);
+		}
+
+		public static MutableComponent selectSpectate() {
+			return Component.translatable(Keys.SELECT_SPECTATE);
+		}
+
+		public static MutableComponent freeCamera() {
+			return Component.translatable(Keys.FREE_CAMERA);
+		}
+
+		public static MutableComponent clickToSelect(Component name) {
+			return Component.translatable(Keys.CLICK_TO_SELECT, name);
 		}
 	}
 }

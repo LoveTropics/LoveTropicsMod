@@ -53,7 +53,7 @@ public abstract class AbstractGameList extends AbstractLTList<AbstractGameList.E
 		static final int PADDING = 4;
 
 		private final int id;
-		TrimmedText title = TrimmedText.of("");
+		TrimmedText title = TrimmedText.EMPTY;
 		TrimmedText subtitle = null;
 
 		private int backgroundColor = -1;

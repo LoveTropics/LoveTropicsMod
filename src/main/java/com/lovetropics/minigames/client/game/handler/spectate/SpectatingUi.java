@@ -2,6 +2,7 @@ package com.lovetropics.minigames.client.game.handler.spectate;
 
 import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.client.screen.ClientPlayerInfo;
+import com.lovetropics.minigames.common.core.game.util.GameTexts;
 import com.mojang.authlib.GameProfile;
 import com.mojang.blaze3d.platform.InputConstants;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
@@ -35,8 +36,7 @@ import java.util.function.Supplier;
 public final class SpectatingUi {
 	private static final Minecraft CLIENT = Minecraft.getInstance();
 
-	private static final Component FREE_CAMERA_TEXT = Component.literal("Free Camera").withStyle(ChatFormatting.ITALIC);
-	private static final Component SELECT_PROMPT_TEXT = Component.literal(" [Click to select]").withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC);
+	private static final Component FREE_CAMERA_TEXT = GameTexts.Ui.freeCamera().withStyle(ChatFormatting.ITALIC);
 
 	private static final int FACE_SIZE = 16;
 	private static final int ENTRY_PADDING = 2;
@@ -332,7 +332,7 @@ public final class SpectatingUi {
 			Font font = CLIENT.font;
 			Component name = nameSupplier.get();
 			if (!selected) {
-				name = name.copy().append(SELECT_PROMPT_TEXT);
+				name = GameTexts.Ui.clickToSelect(name.copy().withStyle(ChatFormatting.WHITE)).withStyle(ChatFormatting.GRAY);
 			}
 
 			int nameLeft = left + (ENTRY_WIDTH - font.width(name)) / 2;
