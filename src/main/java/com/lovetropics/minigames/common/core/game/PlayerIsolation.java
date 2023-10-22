@@ -25,6 +25,7 @@ import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
@@ -80,8 +81,10 @@ public final class PlayerIsolation {
 			playerList.ltminigames$save(player);
 			isolatedPlayers.add(player.getUUID());
 		}
+		final TransferableState transferableState = TransferableState.copyOf(player);
 		playerList.ltminigames$clear(player);
 		pendingIsolation.add(player.getUUID());
+		transferableState.restore(player);
 	}
 
 	public void restore(final ServerPlayer player) {
@@ -147,5 +150,19 @@ public final class PlayerIsolation {
 
 	public boolean isIsolated(final ServerPlayer player) {
 		return isolatedPlayers.contains(player.getUUID());
+	}
+
+	// State that can be transferred into isolation, but not back out
+	private record TransferableState(
+			// We use tags in the datapack to track whether a player is joining for the first time
+			List<String> tags
+	) {
+		public static TransferableState copyOf(final ServerPlayer player) {
+			return new TransferableState(List.copyOf(player.getTags()));
+		}
+
+		public void restore(final ServerPlayer player) {
+			tags.forEach(player::addTag);
+		}
 	}
 }
