@@ -20,7 +20,9 @@ public final class SurviveTheTideTexts {
 	public static final Component SUPER_SUNSCREEN_TOOLTIP = KEYS.add("super_sunscreen.tooltip", "Prevents heatwaves from slowing you down.\n\nActive when held in main or offhand.").withStyle(ChatFormatting.AQUA);
 
 	public static final Component BAR_PVP_DISABLED = KEYS.add("bar.pvp_disabled", "Grace Period: PVP Disabled");
+	public static final Component BAR_COLLECT_LOOT = KEYS.add("bar.collect_loot", "Collect Loot before the Tide Rises");
 	public static final Component BAR_TIDES_RISING = KEYS.add("bar.tides_rising", "Tides Rising");
+	public static final Component BAR_FLASH_FLOOD = KEYS.add("bar.flash_flood", "Flash Flood");
 	public static final Component BAR_FREEZING_OVER = KEYS.add("bar.freezing_over", "Freezing Over");
 	public static final Component BAR_EXPLOSIVE_STORM = KEYS.add("bar.explosive_storm", "Explosive Storm");
 
@@ -34,6 +36,7 @@ public final class SurviveTheTideTexts {
 	public static final Component HEAT_WAVE_TOAST = KEYS.add("toast.heat_wave", "WEATHER REPORT:\nA Heat Wave is passing!\nStay inside, or make sure to equip Super Sunscreen!");
 	public static final Component SANDSTORM_TOAST = KEYS.add("toast.sandstorm", "WEATHER REPORT:\nA Sandstorm is passing!\nFind shelter!");
 	public static final Component SNOWSTORM_TOAST = KEYS.add("toast.snowstorm", "WEATHER REPORT:\nA Snowstorm is passing!\nFind shelter!");
+	public static final Component FLASH_FLOOD_TOAST = KEYS.add("toast.flash_flood", "WEATHER REPORT:\nSeek higher ground! Heavy rains are falling!");
 
 	static  {
 		KEYS.add("eliminated", "☠ %message%. They are eliminated!");
