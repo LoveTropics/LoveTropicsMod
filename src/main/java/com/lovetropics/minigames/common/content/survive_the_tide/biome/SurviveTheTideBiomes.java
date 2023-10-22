@@ -22,6 +22,8 @@ import java.util.Set;
 public final class SurviveTheTideBiomes {
     public static final ResourceKey<Biome> SURVIVE_THE_TIDE_1 = createKey("survive_the_tide_1");
     public static final ResourceKey<Biome> SURVIVE_THE_TIDE_2 = createKey("survive_the_tide_2");
+    public static final ResourceKey<Biome> SURVIVE_THE_TIDE_4_RUSTY = createKey("survive_the_tide_4_rusty");
+    public static final ResourceKey<Biome> SURVIVE_THE_TIDE_4_GREEN = createKey("survive_the_tide_4_green");
 
     private static final RegistrySetBuilder REGISTRY_SET = new RegistrySetBuilder()
             .add(Registries.BIOME, SurviveTheTideBiomes::bootstrap);
@@ -33,16 +35,18 @@ public final class SurviveTheTideBiomes {
     }
 
     private static void bootstrap(final BootstapContext<Biome> context) {
-        context.register(SURVIVE_THE_TIDE_1, createSurviveTheTide(1.5f, 1.25f));
-        context.register(SURVIVE_THE_TIDE_2, createSurviveTheTide(2.0f, 0.0f));
+        context.register(SURVIVE_THE_TIDE_1, createSurviveTheTide(1.5f, 1.25f, 0x417251, 0x0F331B, 0xC0D8FF));
+        context.register(SURVIVE_THE_TIDE_2, createSurviveTheTide(2.0f, 0.0f, 0x417251, 0x0F331B, 0xC0D8FF));
+        context.register(SURVIVE_THE_TIDE_4_RUSTY, createSurviveTheTide(1.5f, 1.25f, 0x69422C, 0x464242, 0x464242));
+        context.register(SURVIVE_THE_TIDE_4_GREEN, createSurviveTheTide(1.5f, 1.25f, 0x4A422C, 0x464242, 0x464242));
     }
 
-    private static Biome createSurviveTheTide(final float temperature, final float downfall) {
+    private static Biome createSurviveTheTide(final float temperature, final float downfall, int waterColor, int skyColor, int fogColor) {
         final BiomeSpecialEffects.Builder effects = new BiomeSpecialEffects.Builder()
-                .fogColor(0xC0D8FF)
-                .skyColor(0x0F331B)
-                .waterColor(0x417251)
-                .waterFogColor(0x0F331B);
+                .fogColor(fogColor)
+                .skyColor(skyColor)
+                .waterColor(waterColor)
+                .waterFogColor(skyColor);
         return new Biome.BiomeBuilder()
                 .hasPrecipitation(true)
                 .temperature(temperature).downfall(downfall)
