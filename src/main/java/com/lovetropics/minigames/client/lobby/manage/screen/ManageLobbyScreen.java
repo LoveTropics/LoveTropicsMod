@@ -50,7 +50,7 @@ public final class ManageLobbyScreen extends Screen {
 	private int selectedGameId = -1;
 
 	public ManageLobbyScreen(ClientLobbyManagement.Session session) {
-		super(GameTexts.Ui.manageGameLobby());
+		super(GameTexts.Ui.MANAGE_GAME_LOBBY);
 		this.session = session;
 	}
 
@@ -101,11 +101,11 @@ public final class ManageLobbyScreen extends Screen {
 			}
 		}));
 
-		nameField = addWidget(FlexUi.createTextField(layout.name, font, GameTexts.Ui.lobbyName()));
+		nameField = addWidget(FlexUi.createTextField(layout.name, font, GameTexts.Ui.LOBBY_NAME));
 		nameField.setMaxLength(200);
 		nameField.setValue(lobby.getName());
 
-		publishButton = addRenderableWidget(FlexUi.createButton(layout.publish, GameTexts.Ui.publish(), button -> {
+		publishButton = addRenderableWidget(FlexUi.createButton(layout.publish, GameTexts.Ui.PUBLISH, button -> {
 			if (session.lobby().getVisibility().isPrivate()) {
 				session.publishLobby();
 			} else {
@@ -125,7 +125,7 @@ public final class ManageLobbyScreen extends Screen {
 			session.selectControl(LobbyControls.Type.RESTART);
 		}));
 
-		Component closeLobby = GameTexts.Ui.closeLobby()
+		Component closeLobby = GameTexts.Ui.CLOSE_LOBBY.copy()
 				.withStyle(ChatFormatting.RED, ChatFormatting.UNDERLINE);
 		closeButton = addRenderableWidget(FlexUi.createButton(layout.close, closeLobby, b -> {
 			session.closeLobby();
@@ -180,15 +180,15 @@ public final class ManageLobbyScreen extends Screen {
 		switch (visibility) {
 			case PRIVATE:
 			default:
-				publishButton.setMessage(GameTexts.Ui.publish());
+				publishButton.setMessage(GameTexts.Ui.PUBLISH);
 				publishButton.active = true;
 				break;
 			case PUBLIC:
-				publishButton.setMessage(GameTexts.Ui.focusLive());
+				publishButton.setMessage(GameTexts.Ui.FOCUS_LIVE);
 				publishButton.active = lobby.canFocusLive();
 				break;
 			case PUBLIC_LIVE:
-				publishButton.setMessage(GameTexts.Ui.focusLive());
+				publishButton.setMessage(GameTexts.Ui.FOCUS_LIVE);
 				publishButton.active = false;
 				break;
 		}

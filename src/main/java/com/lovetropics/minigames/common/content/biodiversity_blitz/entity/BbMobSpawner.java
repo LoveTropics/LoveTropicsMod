@@ -15,6 +15,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Collections;
 import java.util.Locale;
@@ -103,7 +104,11 @@ public final class BbMobSpawner {
         }
 
         public MutableComponent getName() {
-            return Component.translatable("ltminigames.bb_entities." + getSerializedName());
+            return Component.translatable(getTranslationKey());
+        }
+
+        public String getTranslationKey() {
+            return "ltminigames.bb_entities." + getSerializedName();
         }
 
         interface Creator<T extends Mob> {

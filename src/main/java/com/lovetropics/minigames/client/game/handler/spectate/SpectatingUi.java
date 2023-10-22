@@ -36,7 +36,7 @@ import java.util.function.Supplier;
 public final class SpectatingUi {
 	private static final Minecraft CLIENT = Minecraft.getInstance();
 
-	private static final Component FREE_CAMERA_TEXT = GameTexts.Ui.freeCamera().withStyle(ChatFormatting.ITALIC);
+	private static final Component FREE_CAMERA_TEXT = GameTexts.Ui.FREE_CAMERA.copy().withStyle(ChatFormatting.ITALIC);
 
 	private static final int FACE_SIZE = 16;
 	private static final int ENTRY_PADDING = 2;
@@ -332,7 +332,7 @@ public final class SpectatingUi {
 			Font font = CLIENT.font;
 			Component name = nameSupplier.get();
 			if (!selected) {
-				name = GameTexts.Ui.clickToSelect(name.copy().withStyle(ChatFormatting.WHITE)).withStyle(ChatFormatting.GRAY);
+				name = GameTexts.Ui.CLICK_TO_SELECT.apply(name.copy().withStyle(ChatFormatting.WHITE)).withStyle(ChatFormatting.GRAY);
 			}
 
 			int nameLeft = left + (ENTRY_WIDTH - font.width(name)) / 2;

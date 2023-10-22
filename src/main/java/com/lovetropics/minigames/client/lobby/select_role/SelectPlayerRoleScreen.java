@@ -13,11 +13,11 @@ import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 
 public final class SelectPlayerRoleScreen extends Screen {
-	private static final Component TITLE = GameTexts.Ui.selectPlayerRole()
+	private static final Component TITLE = GameTexts.Ui.SELECT_PLAYER_ROLE.copy()
 			.withStyle(ChatFormatting.BOLD, ChatFormatting.UNDERLINE);
 	private static final Component TEXT = GameTexts.Ui.selectRoleMessage(
-			GameTexts.Ui.selectPlay().withStyle(ChatFormatting.AQUA),
-			GameTexts.Ui.selectSpectate().withStyle(ChatFormatting.AQUA)
+			GameTexts.Ui.SELECT_PLAY.copy().withStyle(ChatFormatting.AQUA),
+			GameTexts.Ui.SELECT_SPECTATE.copy().withStyle(ChatFormatting.AQUA)
 	);
 
 	private static final int BUTTON_WIDTH = 100;
@@ -47,11 +47,11 @@ public final class SelectPlayerRoleScreen extends Screen {
 
 		GridLayout buttons = helper.addChild(new GridLayout().spacing(SPACING), helper.newCellSettings().paddingTop(SPACING));
 		GridLayout.RowHelper buttonsHelper = buttons.createRowHelper(2);
-		buttonsHelper.addChild(Button.builder(GameTexts.Ui.selectPlay(), b -> {
+		buttonsHelper.addChild(Button.builder(GameTexts.Ui.SELECT_PLAY, b -> {
 			sendResponse(true);
 			onClose();
 		}).width(BUTTON_WIDTH).build());
-		buttonsHelper.addChild(Button.builder(GameTexts.Ui.selectSpectate(), b -> {
+		buttonsHelper.addChild(Button.builder(GameTexts.Ui.SELECT_SPECTATE, b -> {
 			sendResponse(false);
 			onClose();
 		}).width(BUTTON_WIDTH).build());

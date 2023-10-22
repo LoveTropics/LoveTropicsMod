@@ -19,8 +19,8 @@ import net.minecraft.server.level.ServerPlayer;
 import static net.minecraft.commands.Commands.literal;
 
 public class ManageGameLobbyCommand {
-	private static final SimpleCommandExceptionType NO_MANAGE_PERMISSION = new SimpleCommandExceptionType(GameTexts.Commands.noManagePermission());
-	private static final SimpleCommandExceptionType NOT_IN_LOBBY = new SimpleCommandExceptionType(GameTexts.Commands.notInLobby());
+	private static final SimpleCommandExceptionType NO_MANAGE_PERMISSION = new SimpleCommandExceptionType(GameTexts.Commands.NO_MANAGE_PERMISSION);
+	private static final SimpleCommandExceptionType NOT_IN_LOBBY = new SimpleCommandExceptionType(GameTexts.Commands.NOT_IN_LOBBY);
 
 	public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
 		// @formatter:off

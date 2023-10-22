@@ -34,7 +34,7 @@ public class CancelGameCommand {
 		return GameCommand.executeGameAction(() -> {
 			IGamePhase game = IGameManager.get().getGamePhaseFor(ctx.getSource());
 			if (game == null) {
-				return GameResult.error(GameTexts.Commands.notInGame());
+				return GameResult.error(GameTexts.Commands.NOT_IN_GAME);
 			}
 
 			if (!confirmed && shouldRequireConfirmation(ctx.getSource(), game)) {

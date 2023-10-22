@@ -18,23 +18,15 @@ import java.util.Collection;
 import java.util.function.BiConsumer;
 
 public final class GameTexts {
+	private static final TranslationCollector KEYS = new TranslationCollector(Constants.MODID + ".");
+
+	public static final Component CLICK_HERE = KEYS.add("click_here", "Click here");
+
 	public static void collectTranslations(BiConsumer<String, String> consumer) {
-		Keys.collectTranslations(consumer);
-		Commands.Keys.collectTranslations(consumer);
-		Status.Keys.collectTranslations(consumer);
-		Ui.Keys.collectTranslations(consumer);
-	}
-
-	static final class Keys {
-		static final String CLICK_HERE = key("click_here");
-
-		static void collectTranslations(BiConsumer<String, String> consumer) {
-			consumer.accept(CLICK_HERE, "Click here");
-		}
-
-		static String key(String key) {
-			return Constants.MODID + "." + key;
-		}
+		KEYS.forEach(consumer);
+		Commands.KEYS.forEach(consumer);
+		Ui.KEYS.forEach(consumer);
+		Status.KEYS.forEach(consumer);
 	}
 
 	private static MutableComponent formatName(MutableComponent name) {
@@ -53,17 +45,17 @@ public final class GameTexts {
 		return message.withStyle(ChatFormatting.RED);
 	}
 
-	private static MutableComponent formatLink(MutableComponent link, String command) {
+	private static MutableComponent formatLink(Component link, String command) {
 		Style style = Style.EMPTY
 				.withUnderlined(true).withColor(ChatFormatting.BLUE)
 				.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, command))
 				.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal(command)));
 
-		return link.setStyle(style);
+		return link.copy().setStyle(style);
 	}
 
 	public static MutableComponent clickHere(String command) {
-		return formatLink(Component.translatable(Keys.CLICK_HERE), command);
+		return formatLink(CLICK_HERE, command);
 	}
 
 	public static MutableComponent lobbyName(IGameLobby lobby) {
@@ -79,106 +71,47 @@ public final class GameTexts {
 	}
 
 	public static final class Commands {
-		static final class Keys {
-			static final String JOINED_LOBBY = key("joined_lobby");
-			static final String LEFT_LOBBY = key("left_lobby");
+		private static final TranslationCollector KEYS = new TranslationCollector(Constants.MODID + ".command.");
 
-			static final String STARTED_GAME = key("started_game");
-			static final String STOPPED_GAME = key("stopped_game");
+		private static final TranslationCollector.Fun1 JOINED_LOBBY = KEYS.add1("joined_lobby", "You have joined %s!");
+		private static final TranslationCollector.Fun1 LEFT_LOBBY = KEYS.add1("left_lobby", "You have left %s!");
 
-			static final String ALREADY_IN_LOBBY = key("already_in_lobby");
-			static final String NO_JOINABLE_LOBBIES = key("no_joinable_lobbies");
-			static final String CANNOT_START_LOBBY = key("cannot_start");
-			static final String NOT_IN_LOBBY = key("not_in_lobby");
-			static final String NOT_IN_GAME = key("not_in_game");
-			static final String GAME_ALREADY_STOPPED = key("game_already_stopped");
-			static final String NO_MANAGE_PERMISSION = key("no_manage_permission");
+		private static final TranslationCollector.Fun1 STARTED_GAME = KEYS.add1("started_game", "You have started %s!");
+		private static final TranslationCollector.Fun1 STOPPED_GAME = KEYS.add1("stopped_game", "You have stopped %s!");
 
-			static final String GAMES_INTERSECT = key("games_intersect");
+		public static final Component ALREADY_IN_LOBBY = KEYS.add("already_in_lobby", "You have already joined a lobby!");
+		public static final Component NO_JOINABLE_LOBBIES = KEYS.add("no_joinable_lobbies", "There are no public lobbies to join!");
+		public static final Component CANNOT_START_LOBBY = KEYS.add("cannot_start", "There is no game to start in this lobby!");
+		public static final Component NOT_IN_LOBBY = KEYS.add("not_in_lobby", "You are not currently in any lobby!");
+		public static final Component NOT_IN_GAME = KEYS.add("not_in_game", "You are not currently in any game!");
+		public static final Component GAME_ALREADY_STOPPED = KEYS.add("game_already_stopped", "This game has already been stopped!");
+		public static final Component NO_MANAGE_PERMISSION = KEYS.add("no_manage_permission", "You do not have permission to manage this lobby!");
 
-			static final String LOBBY_SELECTOR_HEADER = key("lobby_selector_header");
-			static final String LOBBY_SELECTOR_ENTRY = key("lobby_selector_entry");
+		public static final Component GAMES_INTERSECT = KEYS.add("games_intersect", "The game cannot be started because it intersects with another active game!");
 
-			static final String CANNOT_TELEPORT_INTO_GAME = key("cannot_teleport_into_game");
+		private static final Component LOBBY_SELECTOR_HEADER = KEYS.add("lobby_selector_header", "There are multiple lobbies available to join! Select one from this list:");
+		private static final TranslationCollector.Fun3 LOBBY_SELECTOR_ENTRY = KEYS.add3("lobby_selector_entry", "- %s (%s players): %s to join");
 
-			static void collectTranslations(BiConsumer<String, String> consumer) {
-				consumer.accept(JOINED_LOBBY, "You have joined %s!");
-				consumer.accept(LEFT_LOBBY, "You have left %s!");
-
-				consumer.accept(STARTED_GAME, "You have started %s!");
-				consumer.accept(STOPPED_GAME, "You have stopped %s!");
-
-				consumer.accept(ALREADY_IN_LOBBY, "You have already joined a lobby!");
-				consumer.accept(NO_JOINABLE_LOBBIES, "There are no public lobbies to join!");
-				consumer.accept(CANNOT_START_LOBBY, "There is no game to start in this lobby!");
-				consumer.accept(NOT_IN_LOBBY, "You are not currently in any lobby!");
-				consumer.accept(NOT_IN_GAME, "You are not currently in any game!");
-				consumer.accept(GAME_ALREADY_STOPPED, "This game has already been stopped!");
-				consumer.accept(NO_MANAGE_PERMISSION, "You do not have permission to manage this lobby!");
-
-				consumer.accept(GAMES_INTERSECT, "The game cannot be started because it intersects with another active game!");
-
-				consumer.accept(LOBBY_SELECTOR_HEADER, "There are multiple lobbies available to join! Select one from this list:");
-				consumer.accept(LOBBY_SELECTOR_ENTRY, "- %s (%s players): %s to join");
-
-				consumer.accept(CANNOT_TELEPORT_INTO_GAME, "You cannot teleport into a game without being apart of it!");
-			}
-
-			static String key(String key) {
-				return Constants.MODID + ".command." + key;
-			}
-		}
+		private static final Component CANNOT_TELEPORT_INTO_GAME = KEYS.add("cannot_teleport_into_game", "You cannot teleport into a game without being apart of it!");
 
 		public static MutableComponent joinedLobby(IGameLobby lobby) {
-			return formatPositive(Component.translatable(Keys.JOINED_LOBBY, lobbyName(lobby)));
+			return formatPositive(JOINED_LOBBY.apply(lobbyName(lobby)));
 		}
 
 		public static MutableComponent leftLobby(IGameLobby lobby) {
-			return formatNegative(Component.translatable(Keys.LEFT_LOBBY, lobbyName(lobby)));
+			return formatNegative(LEFT_LOBBY.apply(lobbyName(lobby)));
 		}
 
 		public static MutableComponent startedGame(IGameDefinition game) {
-			return formatPositive(Component.translatable(Keys.STARTED_GAME, gameName(game)));
+			return formatPositive(STARTED_GAME.apply(gameName(game)));
 		}
 
 		public static MutableComponent stoppedGame(IGameDefinition game) {
-			return formatNegative(Component.translatable(Keys.STOPPED_GAME, gameName(game)));
-		}
-
-		public static MutableComponent alreadyInLobby() {
-			return formatNegative(Component.translatable(Keys.ALREADY_IN_LOBBY));
-		}
-
-		public static MutableComponent noJoinableLobbies() {
-			return formatNegative(Component.translatable(Keys.NO_JOINABLE_LOBBIES));
-		}
-
-		public static MutableComponent cannotStartLobby() {
-			return formatNegative(Component.translatable(Keys.CANNOT_START_LOBBY));
-		}
-
-		public static MutableComponent notInLobby() {
-			return formatNegative(Component.translatable(Keys.NOT_IN_LOBBY));
-		}
-
-		public static MutableComponent notInGame() {
-			return formatNegative(Component.translatable(Keys.NOT_IN_GAME));
-		}
-
-		public static MutableComponent gameAlreadyStopped() {
-			return formatNegative(Component.translatable(Keys.GAME_ALREADY_STOPPED));
-		}
-
-		public static MutableComponent noManagePermission() {
-			return formatNegative(Component.translatable(Keys.NO_MANAGE_PERMISSION));
-		}
-
-		public static MutableComponent gamesIntersect() {
-			return formatNegative(Component.translatable(Keys.GAMES_INTERSECT));
+			return formatNegative(STOPPED_GAME.apply(gameName(game)));
 		}
 
 		public static MutableComponent lobbySelector(Collection<? extends IGameLobby> lobbies, @Nullable PlayerRole role) {
-			MutableComponent selector = Component.translatable(Keys.LOBBY_SELECTOR_HEADER).append("\n")
+			MutableComponent selector = LOBBY_SELECTOR_HEADER.copy().append("\n")
 					.withStyle(ChatFormatting.GOLD);
 
 			for (IGameLobby lobby : lobbies) {
@@ -186,7 +119,7 @@ public final class GameTexts {
 				int players = lobby.getPlayers().size();
 				Component link = clickHere(lobby.getMetadata().joinCommand(role));
 
-				MutableComponent entry = Component.translatable(Keys.LOBBY_SELECTOR_ENTRY, lobbyName, players, link);
+				MutableComponent entry = LOBBY_SELECTOR_ENTRY.apply(lobbyName, players, link);
 				selector = selector.append(entry.withStyle(ChatFormatting.GRAY)).append("\n");
 			}
 
@@ -194,216 +127,112 @@ public final class GameTexts {
 		}
 
 		public static MutableComponent cannotTeleportIntoGame() {
-			return formatNegative(Component.translatable(Keys.CANNOT_TELEPORT_INTO_GAME));
+			return formatNegative(CANNOT_TELEPORT_INTO_GAME.copy());
 		}
 	}
 
 	public static final class Status {
-		static final class Keys {
-			static final String LOBBY_OPENED = key("lobby_opened");
+		private static final TranslationCollector KEYS = new TranslationCollector(Constants.MODID + ".status.");
 
-			static final String PLAYER_JOINED = key("player_joined");
-			static final String SPECTATOR_JOINED = key("spectator_joined");
+		private static final TranslationCollector.Fun2 LOBBY_OPENED = KEYS.add2("lobby_opened", "%s has opened for registration! %s to get a chance to play!");
 
-			static final String ENOUGH_PLAYERS = key("enough_players");
-			static final String NO_LONGER_ENOUGH_PLAYERS = key("no_longer_enough_players");
+		private static final TranslationCollector.Fun2 PLAYER_JOINED = KEYS.add2("player_joined", "%s has joined %s!");
+		private static final TranslationCollector.Fun2 SPECTATOR_JOINED = KEYS.add2("spectator_joined", "%s has joined %s as a spectator!");
 
-			static final String LEFT_GAME_DIMENSION = key("left_game_dimension");
+		private static final Component ENOUGH_PLAYERS = KEYS.add("enough_players", "There are now enough players to start the game!");
+		private static final Component NO_LONGER_ENOUGH_PLAYERS = KEYS.add("no_longer_enough_players", "There are no longer enough players to start game!");
 
-			static final String LOBBY_PAUSED = key("lobby_paused");
-			static final String LOBBY_STOPPED = key("lobby_stopped");
+		private static final Component LEFT_GAME_DIMENSION = KEYS.add("left_game_dimension", "You left the game dimension and have been removed from the lobby!");
 
-			static final String INTEGRATIONS_NOT_CONNECTED = key("integrations_not_connected");
+		private static final Component LOBBY_PAUSED = KEYS.add("lobby_paused", "Your current lobby has paused! You have been teleported to your last location.");
+		private static final Component LOBBY_STOPPED = KEYS.add("lobby_stopped", "Your current lobby has stopped! You have been teleported to your last location.");
 
-			static void collectTranslations(BiConsumer<String, String> consumer) {
-				consumer.accept(LOBBY_OPENED, "%s has opened for registration! %s to get a chance to play!");
-
-				consumer.accept(PLAYER_JOINED, "%s has joined %s!");
-				consumer.accept(SPECTATOR_JOINED, "%s has joined %s as a spectator!");
-
-				consumer.accept(ENOUGH_PLAYERS, "There are now enough players to start the game!");
-				consumer.accept(NO_LONGER_ENOUGH_PLAYERS, "There are no longer enough players to start game!");
-
-				consumer.accept(LEFT_GAME_DIMENSION, "You left the game dimension and have been removed from the lobby!");
-
-				consumer.accept(LOBBY_PAUSED, "Your current lobby has paused! You have been teleported to your last location.");
-				consumer.accept(LOBBY_STOPPED, "Your current lobby has stopped! You have been teleported to your last location.");
-
-				consumer.accept(INTEGRATIONS_NOT_CONNECTED, "Integrations socket is not connected!");
-			}
-
-			static String key(String key) {
-				return Constants.MODID + ".status." + key;
-			}
-		}
+		private static final Component INTEGRATIONS_NOT_CONNECTED = KEYS.add("integrations_not_connected", "Integrations socket is not connected!");
 
 		public static MutableComponent lobbyOpened(IGameLobby lobby) {
 			Component link = clickHere(lobby.getMetadata().joinCommand(null));
-			return formatStatus(Component.translatable(Keys.LOBBY_OPENED, lobbyName(lobby), link));
+			return formatStatus(LOBBY_OPENED.apply(lobbyName(lobby), link));
 		}
 
 		public static MutableComponent playerJoined(IGameLobby lobby, ServerPlayer player, @Nullable PlayerRole role) {
-			String message = role != PlayerRole.SPECTATOR ? Keys.PLAYER_JOINED : Keys.SPECTATOR_JOINED;
-			return formatPositive(Component.translatable(message, playerName(player), lobbyName(lobby)));
+			TranslationCollector.Fun2 message = role != PlayerRole.SPECTATOR ? PLAYER_JOINED : SPECTATOR_JOINED;
+			return formatPositive(message.apply(playerName(player), lobbyName(lobby)));
 		}
 
 		public static MutableComponent lobbyPaused() {
-			return formatStatus(Component.translatable(Keys.LOBBY_PAUSED));
+			return formatStatus(LOBBY_PAUSED.copy());
 		}
 
 		public static MutableComponent lobbyStopped() {
-			return formatStatus(Component.translatable(Keys.LOBBY_STOPPED));
+			return formatStatus(LOBBY_STOPPED.copy());
 		}
 
 		public static MutableComponent enoughPlayers() {
-			return formatPositive(Component.translatable(Keys.ENOUGH_PLAYERS));
+			return formatPositive(ENOUGH_PLAYERS.copy());
 		}
 
 		public static MutableComponent noLongerEnoughPlayers() {
-			return formatNegative(Component.translatable(Keys.NO_LONGER_ENOUGH_PLAYERS));
+			return formatNegative(NO_LONGER_ENOUGH_PLAYERS.copy());
 		}
 
 		public static MutableComponent leftGameDimension() {
-			return formatNegative(Component.translatable(Keys.LEFT_GAME_DIMENSION));
+			return formatNegative(LEFT_GAME_DIMENSION.copy());
 		}
 
 		public static MutableComponent integrationsNotConnected() {
-			return formatNegative(Component.translatable(Keys.INTEGRATIONS_NOT_CONNECTED));
+			return formatNegative(INTEGRATIONS_NOT_CONNECTED.copy());
 		}
 	}
 
 	public static final class Ui {
-		static final class Keys {
-			static final String MANAGE_GAME_LOBBY = key("manage_game_lobby");
-			static final String MANAGING_GAME = key("managing_game");
-			static final String LOBBY_NAME = key("lobby_name");
-			static final String PUBLISH = key("publish");
-			static final String FOCUS_LIVE = key("focus_live");
-			static final String GAME_QUEUE = key("game_queue");
-			static final String INSTALLED_GAMES = key("installed_games");
-			static final String GAME_INACTIVE = key("game_inactive");
-			static final String CLOSE_LOBBY = key("close_lobby");
+		private static final TranslationCollector KEYS = new TranslationCollector(Constants.MODID + ".ui.");
 
-			static final String SELECT_PLAYER_ROLE = key("select_player_role");
-			static final String SELECT_ROLE_MESSAGE = key("select_role_message");
-			static final String SELECT_ROLE_MESSAGE_IMPORTANT = key("select_role_message_important");
-			static final String SELECT_PLAY = key("select_play");
-			static final String SELECT_SPECTATE = key("select_spectate");
+		public static final Component MANAGE_GAME_LOBBY = KEYS.add("manage_game_lobby", "Manage Game Lobby");
+		private static final TranslationCollector.Fun1 MANAGING_GAME = KEYS.add1("managing_game", "Managing Game: %s");
+		public static final Component LOBBY_NAME = KEYS.add("lobby_name", "Lobby Name");
+		public static final Component PUBLISH = KEYS.add("publish", "Publish");
+		public static final Component FOCUS_LIVE = KEYS.add("focus_live", "Focus Live");
+		public static final Component GAME_QUEUE = KEYS.add("game_queue", "Game Queue");
+		public static final Component INSTALLED_GAMES = KEYS.add("installed_games", "Installed");
+		public static final Component GAME_INACTIVE = KEYS.add("game_inactive", "Inactive");
+		public static final Component CLOSE_LOBBY = KEYS.add("close_lobby", "Close");
 
-			static final String GAME_PLAYER_COUNT = key("game_player_count");
-			static final String GAME_PLAYER_RANGE = key("game_player_bounds");
+		public static final Component SELECT_PLAYER_ROLE = KEYS.add("select_player_role", "Select Player Role");
+		private static final TranslationCollector.Fun1 SELECT_ROLE_MESSAGE = KEYS.add1("select_role_message", "Welcome to the game lobby!\nBefore the game, %s.\n\nYou will be prompted before each game in this lobby.");
+		private static final TranslationCollector.Fun2 SELECT_ROLE_MESSAGE_IMPORTANT = KEYS.add2("select_role_message_important", "Please select to %s or %s");
+		public static final Component SELECT_PLAY = KEYS.add("select_play", "Play");
+		public static final Component SELECT_SPECTATE = KEYS.add("select_spectate", "Spectate");
 
-			static final String PARTICIPATING = key("participating");
-			static final String SPECTATING = key("spectating");
+		private static final TranslationCollector.Fun1 GAME_PLAYER_COUNT = KEYS.add1("game_player_count", "%s players");
+		private static final TranslationCollector.Fun2 GAME_PLAYER_RANGE = KEYS.add2("game_player_range", "%s-%s players");
 
-			static final String FREE_CAMERA = key("free_camera");
-			static final String CLICK_TO_SELECT = key("click_to_select");
+		public static final Component PARTICIPATING = KEYS.add("participating", "Participating");
+		public static final Component SPECTATING = KEYS.add("spectating", "Spectating");
 
-			static void collectTranslations(BiConsumer<String, String> consumer) {
-				consumer.accept(MANAGE_GAME_LOBBY, "Manage Game Lobby");
-				consumer.accept(MANAGING_GAME, "Managing Game: %s");
-				consumer.accept(LOBBY_NAME, "Lobby Name");
-				consumer.accept(PUBLISH, "Publish");
-				consumer.accept(FOCUS_LIVE, "Focus Live");
-				consumer.accept(GAME_QUEUE, "Game Queue");
-				consumer.accept(INSTALLED_GAMES, "Installed");
-				consumer.accept(GAME_INACTIVE, "Inactive");
-				consumer.accept(CLOSE_LOBBY, "Close");
-
-				consumer.accept(SELECT_PLAYER_ROLE, "Select Player Role");
-				consumer.accept(SELECT_ROLE_MESSAGE, "Welcome to the game lobby!\nBefore the game, %s.\n\nYou will be prompted before each game in this lobby.");
-				consumer.accept(SELECT_ROLE_MESSAGE_IMPORTANT, "Please select to %s or %s");
-				consumer.accept(SELECT_PLAY, "Play");
-				consumer.accept(SELECT_SPECTATE, "Spectate");
-
-				consumer.accept(GAME_PLAYER_COUNT, "%s players");
-				consumer.accept(GAME_PLAYER_RANGE, "%s-%s players");
-
-				consumer.accept(PARTICIPATING, "Participating");
-				consumer.accept(SPECTATING, "Spectating");
-
-				consumer.accept(FREE_CAMERA, "Free Camera");
-				consumer.accept(CLICK_TO_SELECT, "%s [Click to Select]");
-			}
-
-			static String key(String key) {
-				return Constants.MODID + ".ui." + key;
-			}
-		}
-
-		public static MutableComponent manageGameLobby() {
-			return Component.translatable(Keys.MANAGE_GAME_LOBBY);
-		}
+		public static final Component FREE_CAMERA = KEYS.add("free_camera", "Free Camera");
+		public static final TranslationCollector.Fun1 CLICK_TO_SELECT = KEYS.add1("click_to_select", "%s [Click to Select]");
 
 		public static MutableComponent managingGame(ClientGameDefinition game) {
 			Component name = game.name.copy().withStyle(ChatFormatting.RESET);
-			return Component.translatable(Keys.MANAGING_GAME, name).withStyle(ChatFormatting.BOLD);
-		}
-
-		public static MutableComponent lobbyName() {
-			return Component.translatable(Keys.LOBBY_NAME);
-		}
-
-		public static MutableComponent publish() {
-			return Component.translatable(Keys.PUBLISH);
-		}
-
-		public static MutableComponent focusLive() {
-			return Component.translatable(Keys.FOCUS_LIVE);
-		}
-
-		public static MutableComponent gameQueue() {
-			return Component.translatable(Keys.GAME_QUEUE);
-		}
-
-		public static MutableComponent installedGames() {
-			return Component.translatable(Keys.INSTALLED_GAMES);
-		}
-
-		public static MutableComponent gameInactive() {
-			return Component.translatable(Keys.GAME_INACTIVE);
+			return MANAGING_GAME.apply(name).withStyle(ChatFormatting.BOLD);
 		}
 
 		public static MutableComponent playerRange(int min, int max) {
 			if (min == max) {
-				return Component.translatable(Keys.GAME_PLAYER_COUNT, min);
+				return GAME_PLAYER_COUNT.apply(min);
 			} else {
-				return Component.translatable(Keys.GAME_PLAYER_RANGE, min, max);
+				return GAME_PLAYER_RANGE.apply(min, max);
 			}
 		}
 
-		public static MutableComponent roleDescription(PlayerRole role) {
-			return Component.translatable(role == PlayerRole.SPECTATOR ? Keys.SPECTATING : Keys.PARTICIPATING);
-		}
-
-		public static MutableComponent closeLobby() {
-			return Component.translatable(Keys.CLOSE_LOBBY);
-		}
-
-		public static MutableComponent selectPlayerRole() {
-			return Component.translatable(Keys.SELECT_PLAYER_ROLE);
+		public static Component roleDescription(PlayerRole role) {
+			return role == PlayerRole.SPECTATOR ? SPECTATING : PARTICIPATING;
 		}
 
 		public static MutableComponent selectRoleMessage(Component play, Component spectate) {
-			return Component.translatable(Keys.SELECT_ROLE_MESSAGE,
-					Component.translatable(Keys.SELECT_ROLE_MESSAGE_IMPORTANT, play, spectate).withStyle(ChatFormatting.UNDERLINE)
+			return SELECT_ROLE_MESSAGE.apply(
+					SELECT_ROLE_MESSAGE_IMPORTANT.apply(play, spectate).withStyle(ChatFormatting.UNDERLINE)
 			);
-		}
-
-		public static MutableComponent selectPlay() {
-			return Component.translatable(Keys.SELECT_PLAY);
-		}
-
-		public static MutableComponent selectSpectate() {
-			return Component.translatable(Keys.SELECT_SPECTATE);
-		}
-
-		public static MutableComponent freeCamera() {
-			return Component.translatable(Keys.FREE_CAMERA);
-		}
-
-		public static MutableComponent clickToSelect(Component name) {
-			return Component.translatable(Keys.CLICK_TO_SELECT, name);
 		}
 	}
 }

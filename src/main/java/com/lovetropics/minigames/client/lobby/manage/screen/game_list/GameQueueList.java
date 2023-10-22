@@ -18,7 +18,7 @@ import net.minecraft.network.chat.MutableComponent;
 import javax.annotation.Nullable;
 
 public final class GameQueueList extends AbstractGameList {
-	private static final Component TITLE = GameTexts.Ui.gameQueue()
+	private static final Component TITLE = GameTexts.Ui.GAME_QUEUE.copy()
 			.withStyle(ChatFormatting.UNDERLINE, ChatFormatting.BOLD);
 
 	private final ClientLobbyManageState lobby;
@@ -81,7 +81,7 @@ public final class GameQueueList extends AbstractGameList {
 		entry.setTitle(Component.literal("\u25B6 ").append(gameName));
 
 		if (game.error() != null) {
-			entry.setSubtitle(Component.literal("\u26A0 ").append(game.error()));
+			entry.setSubtitle(Component.literal("\u26A0 ").append(game.error().copy().withStyle(ChatFormatting.RED)));
 
 			entry.setBackgroundColor(0xFF201010)
 					.setHoveredColor(0xFF402020)
@@ -96,7 +96,7 @@ public final class GameQueueList extends AbstractGameList {
 	}
 
 	private void applyInactiveGame(Entry entry) {
-		MutableComponent inactive = GameTexts.Ui.gameInactive().withStyle(ChatFormatting.UNDERLINE);
+		MutableComponent inactive = GameTexts.Ui.GAME_INACTIVE.copy().withStyle(ChatFormatting.UNDERLINE);
 		entry.setTitle(Component.literal("\u23F8 ").append(inactive));
 
 		entry.setBackgroundColor(0xFF202010)

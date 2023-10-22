@@ -216,7 +216,7 @@ public class GamePhase implements IGamePhase {
 	@Override
 	public GameResult<Unit> requestStop(GameStopReason reason) {
 		if (stopped != null) {
-			return GameResult.error(GameTexts.Commands.gameAlreadyStopped());
+			return GameResult.error(GameTexts.Commands.GAME_ALREADY_STOPPED);
 		}
 
 		stopped = reason;

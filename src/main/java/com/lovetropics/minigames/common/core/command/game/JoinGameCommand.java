@@ -105,7 +105,7 @@ public class JoinGameCommand {
 			if (lobbies.size() == 1) {
 				return GameResult.ok(lobbies.get(0));
 			} else if (lobbies.isEmpty()) {
-				return GameResult.error(GameTexts.Commands.noJoinableLobbies());
+				return GameResult.error(GameTexts.Commands.NO_JOINABLE_LOBBIES);
 			}
 
 			return GameResult.error(GameTexts.Commands.lobbySelector(lobbies, forcedRole));
@@ -116,7 +116,7 @@ public class JoinGameCommand {
 		ServerPlayer player = EntityArgument.getPlayer(context, "player");
 		IGameLobby lobby = IGameManager.get().getLobbyFor(player);
 		if (lobby == null) {
-			throw new SimpleCommandExceptionType(GameTexts.Commands.notInLobby()).create();
+			throw new SimpleCommandExceptionType(GameTexts.Commands.NOT_IN_LOBBY).create();
 		}
 
 		lobby.getPlayers().forceRole(player, PlayerRole.PARTICIPANT);

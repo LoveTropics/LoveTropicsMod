@@ -128,7 +128,7 @@ public final class BbWaveSpawnerBehavior implements IGameBehavior {
 		long timeTilNextWave = ticks % intervalTicks;
 
 		if (timeTilNextWave == intervalTicks - warnTicks) {
-			game.getParticipants().sendMessage(BiodiversityBlitzTexts.waveWarning(), true);
+			game.getParticipants().sendMessage(BiodiversityBlitzTexts.WAVE_WARNING, true);
 		}
 
 		if (timeTilNextWave > intervalTicks - 40) {

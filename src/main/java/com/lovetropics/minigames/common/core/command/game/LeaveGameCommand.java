@@ -28,7 +28,7 @@ public class LeaveGameCommand {
 					if (lobby != null && lobby.getPlayers().remove(source.getPlayerOrException())) {
 						return GameResult.ok(GameTexts.Commands.leftLobby(lobby));
 					}
-					return GameResult.error(GameTexts.Commands.notInLobby());
+					return GameResult.error(GameTexts.Commands.NOT_IN_LOBBY);
 				}, c.getSource()));
 	}
 }

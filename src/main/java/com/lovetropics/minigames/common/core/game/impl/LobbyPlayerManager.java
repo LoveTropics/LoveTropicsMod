@@ -47,7 +47,7 @@ final class LobbyPlayerManager implements IGameLobbyPlayers {
 	@Override
 	public CompletableFuture<GameResult<Unit>> join(ServerPlayer player) {
 		if (lobby.manager.getLobbyFor(player) != null || registrations.contains(player.getUUID())) {
-			return CompletableFuture.completedFuture(GameResult.error(GameTexts.Commands.alreadyInLobby()));
+			return CompletableFuture.completedFuture(GameResult.error(GameTexts.Commands.ALREADY_IN_LOBBY));
 		}
 
 		CompletableFuture<PlayerRole> future = roleSelections.prompt(player);
@@ -55,7 +55,7 @@ final class LobbyPlayerManager implements IGameLobbyPlayers {
 			if (registrations.add(player.getUUID())) {
 				lobby.onPlayerRegister(player);
 			} else {
-				return GameResult.error(GameTexts.Commands.alreadyInLobby());
+				return GameResult.error(GameTexts.Commands.ALREADY_IN_LOBBY);
 			}
 			return GameResult.ok();
 		}, lobby.getServer());

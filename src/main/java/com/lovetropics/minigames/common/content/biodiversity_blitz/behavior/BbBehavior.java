@@ -283,13 +283,13 @@ public final class BbBehavior implements IGameBehavior {
 		if (plot != null && plot.bounds.contains(pos)) {
 			// Don't let players place plants inside mob spawns
 			if (plot.mobSpawn.contains(pos)) {
-				this.sendActionRejection(player, BiodiversityBlitzTexts.plantCannotFit());
+				this.sendActionRejection(player, BiodiversityBlitzTexts.PLANT_CANNOT_FIT);
 				return InteractionResult.FAIL;
 			}
 
 			return this.onPlaceBlockInOwnPlot(player, pos, placed, plot);
 		} else {
-			this.sendActionRejection(player, BiodiversityBlitzTexts.notYourPlot());
+			this.sendActionRejection(player, BiodiversityBlitzTexts.NOT_YOUR_PLOT);
 			return InteractionResult.FAIL;
 		}
 	}
@@ -301,14 +301,14 @@ public final class BbBehavior implements IGameBehavior {
 		}
 
 		if (plot.plantBounds.contains(pos)) {
-			this.sendActionRejection(player, BiodiversityBlitzTexts.canOnlyPlacePlants());
+			this.sendActionRejection(player, BiodiversityBlitzTexts.CAN_ONLY_PLACE_PLANTS);
 		}
 
 		return InteractionResult.FAIL;
 	}
 
-	private void sendActionRejection(ServerPlayer player, MutableComponent message) {
-		player.displayClientMessage(message.withStyle(ChatFormatting.RED), true);
+	private void sendActionRejection(ServerPlayer player, Component message) {
+		player.displayClientMessage(message.copy().withStyle(ChatFormatting.RED), true);
 		player.level().playSound(null, player.blockPosition(), SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.PLAYERS,  1.0F, 1.0F);
 	}
 
@@ -333,7 +333,7 @@ public final class BbBehavior implements IGameBehavior {
 		player.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 255, 80));
 
 		player.connection.send(new ClientboundSetTitlesAnimationPacket(40, 20, 0));
-        player.connection.send(new ClientboundSetTitleTextPacket(BiodiversityBlitzTexts.deathTitle().withStyle(ChatFormatting.RED)));
+		player.connection.send(new ClientboundSetTitleTextPacket(BiodiversityBlitzTexts.DEATH_TITLE.copy().withStyle(ChatFormatting.RED)));
 
 		return InteractionResult.FAIL;
 	}
