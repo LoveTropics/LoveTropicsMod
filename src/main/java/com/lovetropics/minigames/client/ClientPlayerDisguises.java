@@ -32,12 +32,13 @@ public final class ClientPlayerDisguises {
     @SubscribeEvent
     public static void onRenderPlayerPre(RenderPlayerEvent.Pre event) {
         Player player = event.getEntity();
-        DisguiseType disguiseType = PlayerDisguise.get(player).type();
-        if (disguiseType.isDefault()) {
+        PlayerDisguise disguise = PlayerDisguise.getOrNull(player);
+        if (disguise == null || !disguise.isDisguised()) {
             return;
         }
 
-        Entity disguiseEntity = PlayerDisguise.get(player).entity();
+        DisguiseType disguiseType = disguise.type();
+        Entity disguiseEntity = disguise.entity();
         EntityRenderDispatcher dispatcher = CLIENT.getEntityRenderDispatcher();
         PoseStack poseStack = event.getPoseStack();
 
@@ -64,7 +65,7 @@ public final class ClientPlayerDisguises {
 
                 poseStack.popPose();
             } catch (Exception e) {
-                PlayerDisguise.get(player).clear();
+                disguise.clear();
                 LoveTropics.LOGGER.error("Failed to render player disguise", e);
                 PoseStackCapture.restore(poseStack, capturedTransformState);
             }
@@ -81,14 +82,13 @@ public final class ClientPlayerDisguises {
     @SubscribeEvent
     public static void onRenderPlayerPost(RenderPlayerEvent.Post event) {
         Player player = event.getEntity();
-        DisguiseType disguiseType = PlayerDisguise.get(player).type();
-        if (disguiseType.isDefault()) {
+        PlayerDisguise disguise = PlayerDisguise.getOrNull(player);
+        if (disguise == null || !disguise.isDisguised()) {
             return;
         }
 
-        PoseStack poseStack = event.getPoseStack();
-        if (disguiseType.entity() == null) {
-            poseStack.popPose();
+        if (disguise.type().entity() == null) {
+            event.getPoseStack().popPose();
         }
     }
 
@@ -139,7 +139,10 @@ public final class ClientPlayerDisguises {
     public static void updateClientDisguise(UUID uuid, DisguiseType disguiseType) {
         Player player = Minecraft.getInstance().level.getPlayerByUUID(uuid);
         if (player != null) {
-            PlayerDisguise.get(player).set(disguiseType);
+            PlayerDisguise disguise = PlayerDisguise.getOrNull(player);
+            if (disguise != null) {
+                disguise.set(disguiseType);
+            }
         }
     }
 
@@ -151,7 +154,11 @@ public final class ClientPlayerDisguises {
         }
 
         if (camera.getEntity() instanceof Player player) {
-            PlayerDisguise disguise = PlayerDisguise.get(player);
+            PlayerDisguise disguise = PlayerDisguise.getOrNull(player);
+            if (disguise == null) {
+                return;
+            }
+
             float scale = Math.max(disguise.getEffectiveScale(), 0.5f);
             if (scale == 1.0f) {
                 return;

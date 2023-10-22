@@ -16,8 +16,8 @@ public abstract class PlayerMixin extends LivingEntity {
 
 	@Override
 	public boolean canBeCollidedWith() {
-		DisguiseType disguise = PlayerDisguise.get((Player) (Object) this).type();
-		if (disguise.entityType() == EntityType.FALLING_BLOCK) {
+		PlayerDisguise disguise = PlayerDisguise.getOrNull((Player) (Object) this);
+		if (disguise != null && disguise.type().entityType() == EntityType.FALLING_BLOCK) {
 			return true;
 		}
 		return super.canBeCollidedWith();

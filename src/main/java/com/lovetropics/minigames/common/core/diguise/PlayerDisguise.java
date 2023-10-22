@@ -38,10 +38,6 @@ public final class PlayerDisguise implements ICapabilityProvider {
 		}
 	}
 
-	public static PlayerDisguise get(Player player) {
-		return player.getCapability(LoveTropics.PLAYER_DISGUISE).orElseThrow(IllegalStateException::new);
-	}
-
 	@Nullable
 	public static PlayerDisguise getOrNull(Player player) {
 		return player.getCapability(LoveTropics.PLAYER_DISGUISE).orElse(null);

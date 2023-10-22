@@ -145,7 +145,10 @@ public final class HideAndSeekBehavior implements IGameBehavior {
 
 	private void removeParticipant(ServerPlayer player) {
 		if (teams.isOnTeam(player, hiders.key())) {
-			PlayerDisguise.get(player).clear();
+			PlayerDisguise disguise = PlayerDisguise.getOrNull(player);
+			if (disguise != null) {
+				disguise.clear();
+			}
 		}
 	}
 
