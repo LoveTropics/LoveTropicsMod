@@ -12,7 +12,6 @@ import com.lovetropics.minigames.common.core.game.player.PlayerRole;
 import com.lovetropics.minigames.common.core.game.util.TeamAllocator;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
@@ -21,7 +20,6 @@ import org.apache.logging.log4j.Logger;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import java.util.function.BiConsumer;
 
@@ -44,22 +42,10 @@ public record AssignPlayerRolesBehavior(List<UUID> forcedParticipants) implement
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
-		Map<ServerPlayer, PlayerRole> roles = new Reference2ObjectOpenHashMap<>();
-
 		// TODO: somehow if a player is in a lobby and then leaves they can get in such a state as to join late and be joined as a participant when clicking 'play'
-		events.listen(GamePhaseEvents.CREATE, () -> {
-			this.allocateRoles(game, roles::put);
-			LOGGER.info("AFTER ALLOCATION: " + roles);
-		});
-
-		events.listen(GamePlayerEvents.ADD, player -> {
-			PlayerRole role = roles.remove(player);
-			if (role != null) {
-				game.setPlayerRole(player, role);
-			}
-		});
-
-		events.listen(GamePhaseEvents.START, roles::clear);
+		events.listen(GamePhaseEvents.CREATE, () ->
+				allocateRoles(game, game::setPlayerRole)
+		);
 	}
 
 	private void allocateRoles(IGamePhase game, BiConsumer<ServerPlayer, PlayerRole> apply) {
