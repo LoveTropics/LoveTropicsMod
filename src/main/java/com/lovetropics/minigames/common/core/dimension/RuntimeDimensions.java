@@ -85,8 +85,8 @@ public final class RuntimeDimensions {
 	private static void tryStop() {
 		RuntimeDimensions instance = RuntimeDimensions.instance;
 		if (instance != null) {
-			RuntimeDimensions.instance = null;
 			instance.stop();
+			RuntimeDimensions.instance = null;
 		}
 	}
 
