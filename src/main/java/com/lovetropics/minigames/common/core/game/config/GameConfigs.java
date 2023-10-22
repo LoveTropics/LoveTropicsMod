@@ -88,9 +88,11 @@ public final class GameConfigs {
 	@Nullable
 	private static GameConfig tryLoadConfig(DynamicOps<JsonElement> ops, ResourceLocation path, Resource resource) {
 		try {
-			return loadConfig(ops, path, resource)
-					.resultOrPartial(error -> LOGGER.error("Failed to load game config at {}: {}", path, error))
-					.orElse(null);
+			DataResult<GameConfig> config = loadConfig(ops, path, resource);
+			if (config.error().isPresent()) {
+				LOGGER.error("Failed to load game config at {}: {}", path, config.error().get());
+			}
+			return config.result().orElse(null);
 		} catch (Exception e) {
 			LOGGER.error("Failed to load game config at {}", path, e);
 			return null;
