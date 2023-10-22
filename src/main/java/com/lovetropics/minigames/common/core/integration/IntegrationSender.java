@@ -8,6 +8,7 @@ import com.lovetropics.minigames.common.config.ConfigLT;
 import com.mojang.logging.LogUtils;
 import net.minecraft.Util;
 import org.apache.http.HttpHeaders;
+import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
 
 import java.net.URI;
@@ -66,7 +67,7 @@ public interface IntegrationSender {
 						HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8)
 				);
 
-				if (response.statusCode() == 200) {
+				if (response.statusCode() >= 200 && response.statusCode() < 300) {
 					LOGGER.debug("Received response from post to {}/{}: {}", url.get(), endpoint, response.body());
 					return true;
 				} else {
