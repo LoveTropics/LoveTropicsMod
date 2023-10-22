@@ -15,6 +15,7 @@ public final class MinigameTexts {
 	public static final Component SURVIVE_THE_TIDE_2_TEAMS = KEYS.add("survive_the_tide_2_teams", "Survive The Tide II (Teams)");
 	public static final Component SURVIVE_THE_TIDE_3 = KEYS.add("survive_the_tide_3", "Survive The Tide III");
 	public static final Component SURVIVE_THE_TIDE_3_TEAMS = KEYS.add("survive_the_tide_3_teams", "Survive The Tide III (Teams)");
+	public static final Component SURVIVE_THE_TIDE_4 = KEYS.add("survive_the_tide_4", "Survive The Tide IV");
 	public static final Component SIGNATURE_RUN = KEYS.add("signature_run", "Signature Run");
 	public static final Component TRASH_DIVE = KEYS.add("trash_dive", "Trash Dive");
 	public static final Component CONSERVATION_EXPLORATION = KEYS.add("conservation_exploration", "Conservation Exploration");
