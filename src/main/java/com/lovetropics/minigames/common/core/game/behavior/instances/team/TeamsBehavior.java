@@ -1,6 +1,7 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances.team;
 
 import com.lovetropics.minigames.Constants;
+import com.lovetropics.minigames.common.content.MinigameTexts;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.config.BehaviorConfig;
@@ -165,13 +166,10 @@ public final class TeamsBehavior implements IGameBehavior {
 		PlayerTeam scoreboardTeam = scoreboardTeams.get(team.key());
 		scoreboard.addPlayerToTeam(player.getScoreboardName(), scoreboardTeam);
 
-		Component teamName = team.config().name().copy().append(" Team!")
+		Component teamName = team.config().name().copy()
 				.withStyle(ChatFormatting.BOLD, team.config().formatting());
 
-		player.displayClientMessage(
-				Component.literal("You are on ").withStyle(ChatFormatting.GRAY).append(teamName),
-				false
-		);
+		player.displayClientMessage(MinigameTexts.ON_TEAM.apply(teamName), false);
 	}
 
 	private void removePlayerFromTeams(IGamePhase game, ServerPlayer player) {

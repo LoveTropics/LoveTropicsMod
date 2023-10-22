@@ -122,7 +122,7 @@ public final class BbBehavior implements IGameBehavior {
 		events.listen(GamePlayerEvents.USE_BLOCK, this::onUseBlock);
 
 		events.listen(GamePhaseEvents.START, () -> {
-			Component sidebarTitle = Component.literal("Biodiversity Blitz")
+			Component sidebarTitle = BiodiversityBlitzTexts.SIDEBAR_TITLE.copy()
 					.withStyle(ChatFormatting.GREEN, ChatFormatting.BOLD);
 
 			sidebar = widgets.openSidebar(sidebarTitle);
@@ -144,7 +144,7 @@ public final class BbBehavior implements IGameBehavior {
 	private Component[] collectScoreboard(IGamePhase game) {
 		// FIXME: does not work with teams!
 		List<Component> sidebar = new ArrayList<>(10);
-		sidebar.add(Component.literal("Player ").withStyle(ChatFormatting.AQUA).append(Component.literal("points (+ per drop)").withStyle(ChatFormatting.GOLD)));
+		sidebar.add(BiodiversityBlitzTexts.sidebarPlayerHeader());
 		sidebar.add(CommonComponents.EMPTY);
 
 		List<ServerPlayer> list = new ArrayList<>();
@@ -156,7 +156,7 @@ public final class BbBehavior implements IGameBehavior {
 		for (ServerPlayer player : list) {
 			// Limit leaderboard to 8 players- otherwise it gets too chaotic
 			if (added >= 8) {
-				sidebar.add(Component.literal("... and more!").withStyle(ChatFormatting.AQUA));
+				sidebar.add(BiodiversityBlitzTexts.SIDEBAR_AND_MORE.copy().withStyle(ChatFormatting.AQUA));
 				break;
 			}
 
@@ -171,8 +171,8 @@ public final class BbBehavior implements IGameBehavior {
 				increment = plot.nextCurrencyIncrement;
 			}
 
-			sidebar.add(Component.literal(player.getGameProfile().getName() + ": ").withStyle(ChatFormatting.AQUA)
-					.append(Component.literal(points + " (+ " + increment + ")").withStyle(ChatFormatting.GOLD)));
+			Component name = Component.literal(player.getGameProfile().getName());
+			sidebar.add(BiodiversityBlitzTexts.sidebarPlayer(name, points, increment));
 		}
 
 		return sidebar.toArray(new Component[0]);

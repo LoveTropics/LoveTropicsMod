@@ -65,8 +65,6 @@ public class RaceTrackBehavior implements IGameBehavior {
 
 	private static final int GAME_FINISH_SECONDS = 30;
 
-	private static final Component UNKNOWN_PLAYER_NAME = Component.literal("Unknown");
-
 	private final PathData pathData;
 	private final String finishRegion;
 	private final Map<String, GameActionList<ServerPlayer>> checkpointRegions;
@@ -186,8 +184,8 @@ public class RaceTrackBehavior implements IGameBehavior {
 
 	private void showStuckWarning(ServerPlayer player) {
 		player.connection.send(new ClientboundSetTitlesAnimationPacket(0, STUCK_WARNING_REPEAT_INTERVAL * 2, 10));
-		player.connection.send(new ClientboundSetTitleTextPacket(Component.literal("Warning!").withStyle(ChatFormatting.RED)));
-		player.connection.send(new ClientboundSetSubtitleTextPacket(Component.literal("You are going the wrong way!").withStyle(ChatFormatting.GOLD)));
+		player.connection.send(new ClientboundSetTitleTextPacket(TurtleRaceTexts.WARNING));
+		player.connection.send(new ClientboundSetSubtitleTextPacket(TurtleRaceTexts.WRONG_WAY));
 	}
 
 	private void clearPlayerState(ServerPlayer player) {
@@ -198,7 +196,7 @@ public class RaceTrackBehavior implements IGameBehavior {
 	}
 
 	private void triggerWin(IGamePhase game) {
-		Component winnerName = UNKNOWN_PLAYER_NAME;
+		Component winnerName = TurtleRaceTexts.UNKNOWN_PLAYER;
 		if (!finishedPlayers.isEmpty()) {
 			FinishEntry winner = finishedPlayers.get(0);
 			game.getStatistics().global().set(StatisticKey.WINNING_PLAYER, winner.player());
@@ -232,7 +230,7 @@ public class RaceTrackBehavior implements IGameBehavior {
 
 		Component title;
 		if (lapCount > 1) {
-			title = Component.literal("Lap #" + (state.lap + 1) + " of " + lapCount).withStyle(ChatFormatting.AQUA);
+			title = TurtleRaceTexts.LAP_COUNT.apply(state.lap + 1, lapCount);
 		} else {
 			title = game.getDefinition().getName().copy().withStyle(ChatFormatting.AQUA);
 		}
@@ -245,14 +243,12 @@ public class RaceTrackBehavior implements IGameBehavior {
 		FireworkPalette.DYE_COLORS.spawn(player.blockPosition(), player.level());
 
 		long lapTime = game.ticks() - state.lapStartTime;
-		game.getAllPlayers().sendMessage(Component.literal("")
-				.append(Component.literal("\u2714 ").withStyle(ChatFormatting.GREEN))
-				.append(player.getDisplayName())
-				.append(lapCount > 1 ? " finished lap #" + (state.lap + 1) + " in " : " finished in ")
-				.append(Component.literal(Util.formatMinutesSeconds(lapTime / SharedConstants.TICKS_PER_SECOND)).withStyle(ChatFormatting.GOLD))
-				.append("!")
-				.withStyle(ChatFormatting.AQUA)
-		);
+		long lapSeconds = lapTime / SharedConstants.TICKS_PER_SECOND;
+		if (lapCount > 1) {
+			game.getAllPlayers().sendMessage(TurtleRaceTexts.finishedLap(player.getDisplayName(), state.lap, lapSeconds));
+		} else {
+			game.getAllPlayers().sendMessage(TurtleRaceTexts.finished(player.getDisplayName(), lapSeconds));
+		}
 		game.getAllPlayers().playSound(SoundEvents.ARROW_HIT_PLAYER, SoundSource.PLAYERS, 1.0f, 1.0f);
 
 		return state.nextLap(game.ticks()) >= lapCount;
@@ -273,11 +269,7 @@ public class RaceTrackBehavior implements IGameBehavior {
 			triggerWin(game);
 		} else if (finishedPlayers.size() == winnerCount) {
 			finishTime = game.ticks() + GAME_FINISH_SECONDS * SharedConstants.TICKS_PER_SECOND;
-			game.getAllPlayers().sendMessage(Component.literal("The game will finish in ")
-					.append(Component.literal(String.valueOf(GAME_FINISH_SECONDS)).withStyle(ChatFormatting.GOLD))
-					.append(" seconds!")
-					.withStyle(ChatFormatting.AQUA)
-			);
+			game.getAllPlayers().sendMessage(TurtleRaceTexts.closing(GAME_FINISH_SECONDS));
 		}
 	}
 
@@ -306,7 +298,7 @@ public class RaceTrackBehavior implements IGameBehavior {
 
 		for (FinishEntry entry : finishedPlayers) {
 			long seconds = entry.time() / SharedConstants.TICKS_PER_SECOND;
-			leaderboard.add(entry.name(), Component.literal(Util.formatMinutesSeconds(seconds) + " \u2714").withStyle(ChatFormatting.GREEN), entry.player().matches(player));
+			leaderboard.add(entry.name(), Component.literal(Util.formatMinutesSeconds(seconds)).append(" ").append(TurtleRaceTexts.CHECKMARK).withStyle(ChatFormatting.GREEN), entry.player().matches(player));
 		}
 
 		states.entrySet().stream()
@@ -315,13 +307,13 @@ public class RaceTrackBehavior implements IGameBehavior {
 					ServerPlayer otherPlayer = game.getParticipants().getPlayerBy(entry.getKey());
 					PlayerState state = entry.getValue();
 					if (otherPlayer != null) {
-						int percent = Math.round(state.trackedPosition / path.length() * 100.0f);
+						float progress = state.trackedPosition / path.length();
 						String playerName = otherPlayer.getGameProfile().getName();
 						boolean self = player.getUUID().equals(otherPlayer.getUUID());
 						if (lapCount > 1) {
-							leaderboard.add(playerName, Component.literal("(Lap #" + (state.lap + 1) + "; " + percent + "%)").withStyle(ChatFormatting.GRAY), self);
+							leaderboard.add(playerName, TurtleRaceTexts.lapProgress(state.lap, progress), self);
 						} else {
-							leaderboard.add(playerName, Component.literal("(" + percent + "%)").withStyle(ChatFormatting.GRAY), self);
+							leaderboard.add(playerName, TurtleRaceTexts.progress(progress), self);
 						}
 					}
 				});

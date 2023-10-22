@@ -101,7 +101,7 @@ public final class BbWaveSpawnerBehavior implements IGameBehavior {
 		final var cl = events.redirect(e -> e == BbEvents.MODIFY_WAVE_MODS, listeners);
 		children.forEach(child -> child.register(game, cl));
 
-		this.waveCharging = new ServerBossEvent(Component.literal("Wave Incoming!"), BossBarColor.GREEN, BossEvent.BossBarOverlay.PROGRESS);
+		this.waveCharging = new ServerBossEvent(BiodiversityBlitzTexts.WAVE_WARNING, BossBarColor.GREEN, BossEvent.BossBarOverlay.PROGRESS);
 		this.waveCharging.setProgress(0.0F);
 		this.waveCharging.setVisible(false);
 	}
@@ -202,7 +202,7 @@ public final class BbWaveSpawnerBehavior implements IGameBehavior {
 	}
 
 	private ServerBossEvent createWaveBar(ServerPlayer player, int waveIndex, int count, Set<Entity> entities) {
-		ServerBossEvent bossBar = new ServerBossEvent(Component.literal("Wave " + (waveIndex + 1)), BossBarColor.GREEN, BossEvent.BossBarOverlay.PROGRESS);
+		ServerBossEvent bossBar = new ServerBossEvent(BiodiversityBlitzTexts.WAVE_NUMBER.apply(waveIndex + 1), BossBarColor.GREEN, BossEvent.BossBarOverlay.PROGRESS);
 		bossBar.setProgress((float) entities.size() / count);
 		bossBar.setColor(BossBarColor.GREEN);
 		bossBar.addPlayer(player);

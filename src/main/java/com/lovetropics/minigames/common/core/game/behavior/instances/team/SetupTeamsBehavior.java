@@ -2,6 +2,7 @@ package com.lovetropics.minigames.common.core.game.behavior.instances.team;
 
 import com.google.common.collect.ImmutableList;
 import com.lovetropics.minigames.Constants;
+import com.lovetropics.minigames.common.content.MinigameTexts;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.config.BehaviorConfig;
@@ -92,8 +93,7 @@ public final class SetupTeamsBehavior implements IGameBehavior {
 
 			@Override
 			public Component getNameFor(GameTeam team) {
-				return Component.literal("Join ").append(team.config().name())
-						.withStyle(team.config().formatting());
+				return MinigameTexts.JOIN_TEAM.apply(team.config().name()).withStyle(team.config().formatting());
 			}
 
 			@Override
@@ -109,8 +109,9 @@ public final class SetupTeamsBehavior implements IGameBehavior {
 	private void onPlayerWaiting(IGamePhase game, ServerPlayer player) {
 		PlayerRole forcedRole = game.getLobby().getPlayers().getForcedRoleFor(player);
 		if (forcedRole != PlayerRole.SPECTATOR && teamState.getPollingTeams().size() > 1) {
-			player.displayClientMessage(Component.literal("This is a team-based game!").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD), false);
-			player.displayClientMessage(Component.literal("You can select a team preference by using the items in your inventory:").withStyle(ChatFormatting.GRAY), false);
+			for (Component message : MinigameTexts.TEAMS_INTRO) {
+				player.displayClientMessage(message, false);
+			}
 
 			Scheduler.nextTick().run(server -> {
 				selectors.giveSelectorsTo(player);
@@ -122,10 +123,6 @@ public final class SetupTeamsBehavior implements IGameBehavior {
 		teamState.getAllocations().setPlayerPreference(player.getUUID(), team.key());
 
 		Component teamName = team.config().name().copy().withStyle(team.config().formatting(), ChatFormatting.BOLD);
-		player.displayClientMessage(
-				Component.literal("You have requested to join ").withStyle(ChatFormatting.GRAY)
-						.append(teamName),
-				false
-		);
+		player.displayClientMessage(MinigameTexts.JOINED_TEAM.apply(teamName), false);
 	}
 }

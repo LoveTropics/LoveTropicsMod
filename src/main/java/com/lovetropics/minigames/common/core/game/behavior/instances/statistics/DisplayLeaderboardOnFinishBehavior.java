@@ -1,5 +1,6 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances.statistics;
 
+import com.lovetropics.minigames.common.content.MinigameTexts;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
@@ -36,7 +37,7 @@ public record DisplayLeaderboardOnFinishBehavior<T extends Comparable<T>>(Statis
 			}
 
 			PlayerSet players = game.getAllPlayers();
-			players.sendMessage(Component.literal("The game is over! Here are the results:"));
+			players.sendMessage(MinigameTexts.RESULTS);
 			placement.sendTo(players, length);
 		});
 	}

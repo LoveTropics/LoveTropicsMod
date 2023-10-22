@@ -14,6 +14,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.PlayerFaceRenderer;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.multiplayer.PlayerInfo;
+import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
@@ -262,7 +263,7 @@ public final class SpectatingUi {
 		for (UUID player : players) {
 			Supplier<Component> name = () -> {
 				GameProfile profile = ClientPlayerInfo.getPlayerProfile(player);
-				return profile != null ? Component.literal(profile.getName()) : Component.literal("...");
+				return profile != null ? Component.literal(profile.getName()) : CommonComponents.ELLIPSIS;
 			};
 
 			PlayerTeam team = getTeamFor(player);

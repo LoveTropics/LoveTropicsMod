@@ -4,6 +4,7 @@ import com.google.common.primitives.Booleans;
 import com.lovetropics.minigames.client.toast.NotificationIcon;
 import com.lovetropics.minigames.client.toast.NotificationStyle;
 import com.lovetropics.minigames.client.toast.ShowNotificationToastMessage;
+import com.lovetropics.minigames.common.content.MinigameTexts;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
@@ -32,12 +33,6 @@ import java.util.UUID;
 public final class SpectatorChaseBehavior implements IGameBehavior {
 	public static final MapCodec<SpectatorChaseBehavior> CODEC = MapCodec.unit(SpectatorChaseBehavior::new);
 
-	private static final Component SPECTATING_NOTIFICATION_MESSAGE = Component.literal("You are a ")
-			.append(Component.literal("spectator").withStyle(ChatFormatting.BOLD))
-			.append("!\n")
-			.append("Scroll or use the arrow keys to select players.\n")
-			.append("Hold ").append(Component.literal("Left Control").withStyle(ChatFormatting.UNDERLINE)).append(" and scroll to zoom.");
-
 	private static final NotificationStyle SPECTATING_NOTIFICATION_STYLE = new NotificationStyle(
 			NotificationIcon.item(new ItemStack(Items.ENDER_EYE)),
 			NotificationStyle.Sentiment.NEUTRAL,
@@ -51,7 +46,7 @@ public final class SpectatorChaseBehavior implements IGameBehavior {
 			if (role == PlayerRole.SPECTATOR) {
 				LoveTropicsNetwork.CHANNEL.send(
 						PacketDistributor.PLAYER.with(() -> player),
-						new ShowNotificationToastMessage(SPECTATING_NOTIFICATION_MESSAGE, SPECTATING_NOTIFICATION_STYLE)
+						new ShowNotificationToastMessage(MinigameTexts.SPECTATING_NOTIFICATION, SPECTATING_NOTIFICATION_STYLE)
 				);
 			} else if (lastRole == PlayerRole.SPECTATOR) {
 				removeSpectator(player);

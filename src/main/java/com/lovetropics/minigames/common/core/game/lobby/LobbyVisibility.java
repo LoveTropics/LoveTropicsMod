@@ -1,11 +1,12 @@
 package com.lovetropics.minigames.common.core.game.lobby;
 
+import com.lovetropics.minigames.common.core.game.util.GameTexts;
 import net.minecraft.network.chat.Component;
 
 public enum LobbyVisibility {
-	PUBLIC(Component.literal("Public")),
-	PUBLIC_LIVE(Component.literal("Public (Live)")),
-	PRIVATE(Component.literal("Private"));
+	PUBLIC(GameTexts.Ui.LOBBY_PUBLIC),
+	PUBLIC_LIVE(GameTexts.Ui.LOBBY_PUBLIC_LIVE),
+	PRIVATE(GameTexts.Ui.LOBBY_PRIVATE);
 
 	private final Component name;
 

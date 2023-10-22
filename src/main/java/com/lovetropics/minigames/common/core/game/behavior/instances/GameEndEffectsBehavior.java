@@ -23,6 +23,8 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import net.minecraft.ChatFormatting;
+import net.minecraft.SharedConstants;
+import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundClearTitlesPacket;
 import net.minecraft.network.protocol.game.ClientboundSetSubtitleTextPacket;
@@ -93,8 +95,8 @@ public final class GameEndEffectsBehavior implements IGameBehavior {
 			Component title = this.title.apply(Map.of("winner", winner));
 			PlayerSet players = game.getAllPlayers();
 			players.sendPacket(new ClientboundClearTitlesPacket(true));
-			players.sendPacket(new ClientboundSetTitlesAnimationPacket(10, 3 * 20, 10));
-			players.sendPacket(new ClientboundSetTitleTextPacket(Component.literal(" ")));
+			players.sendPacket(new ClientboundSetTitlesAnimationPacket(SharedConstants.TICKS_PER_SECOND / 2, 3 * SharedConstants.TICKS_PER_SECOND, SharedConstants.TICKS_PER_SECOND / 2));
+			players.sendPacket(new ClientboundSetTitleTextPacket(CommonComponents.space()));
 			players.sendPacket(new ClientboundSetSubtitleTextPacket(title));
 		}
 

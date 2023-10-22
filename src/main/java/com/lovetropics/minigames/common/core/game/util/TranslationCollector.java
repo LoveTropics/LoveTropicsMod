@@ -1,6 +1,7 @@
 package com.lovetropics.minigames.common.core.game.util;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 
@@ -15,31 +16,37 @@ public class TranslationCollector {
 		this.prefix = prefix;
 	}
 
-	public Component add(String key, String value) {
-		put(key, value);
-		return Component.translatable(key);
+	public MutableComponent add(String key, String value) {
+		String fullKey = put(key, value);
+		return Component.translatable(fullKey);
 	}
 
 	public Fun1 add1(String key, String value) {
-		put(key, value);
-		return arg -> Component.translatable(key, arg);
+		String fullKey = put(key, value);
+		return arg -> Component.translatable(fullKey, arg);
 	}
 
 	public Fun2 add2(String key, String value) {
-		put(key, value);
-		return (a, b) -> Component.translatable(key, a, b);
+		String fullKey = put(key, value);
+		return (a, b) -> Component.translatable(fullKey, a, b);
 	}
 
 	public Fun3 add3(String key, String value) {
-		put(key, value);
-		return (a, b, c) -> Component.translatable(key, a, b, c);
+		String fullKey = put(key, value);
+		return (a, b, c) -> Component.translatable(fullKey, a, b, c);
 	}
 
-	private void put(String key, String value) {
-		key = prefix + key;
-		if (values.putIfAbsent(key, value) != null) {
-			throw new IllegalArgumentException("Duplicate translation for key: " + key);
+	public Fun4 add4(String key, String value) {
+		String fullKey = put(key, value);
+		return (a, b, c, d) -> Component.translatable(fullKey, a, b, c, d);
+	}
+
+	private String put(String key, String value) {
+		String fullKey = prefix + key;
+		if (values.putIfAbsent(fullKey, value) != null) {
+			throw new IllegalArgumentException("Duplicate translation for key: " + fullKey);
 		}
+		return fullKey;
 	}
 
 	public void forEach(BiConsumer<String, String> consumer) {
@@ -48,13 +55,33 @@ public class TranslationCollector {
 
 	public interface Fun1 {
 		MutableComponent apply(Object arg);
+
+		default Fun1 withStyle(final ChatFormatting color) {
+			return a -> apply(a).withStyle(color);
+		}
 	}
 
 	public interface Fun2 {
 		MutableComponent apply(Object a, Object b);
+
+		default Fun2 withStyle(final ChatFormatting color) {
+			return (a, b) -> apply(a, b).withStyle(color);
+		}
 	}
 
 	public interface Fun3 {
 		MutableComponent apply(Object a, Object b, Object c);
+
+		default Fun3 withStyle(final ChatFormatting color) {
+			return (a, b, c) -> apply(a, b, c).withStyle(color);
+		}
+	}
+
+	public interface Fun4 {
+		MutableComponent apply(Object a, Object b, Object c, Object d);
+
+		default Fun4 withStyle(final ChatFormatting color) {
+			return (a, b, c, d) -> apply(a, b, c, d).withStyle(color);
+		}
 	}
 }

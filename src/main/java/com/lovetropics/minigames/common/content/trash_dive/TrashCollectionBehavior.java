@@ -1,5 +1,6 @@
 package com.lovetropics.minigames.common.content.trash_dive;
 
+import com.lovetropics.minigames.common.content.MinigameTexts;
 import com.lovetropics.minigames.common.content.block.TrashType;
 import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
@@ -8,6 +9,7 @@ import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameLogicEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
+import com.lovetropics.minigames.common.core.game.client_state.instance.SidebarClientState;
 import com.lovetropics.minigames.common.core.game.player.PlayerRole;
 import com.lovetropics.minigames.common.core.game.player.PlayerSet;
 import com.lovetropics.minigames.common.core.game.state.statistics.GameStatistics;
@@ -77,10 +79,7 @@ public final class TrashCollectionBehavior implements IGameBehavior {
 	}
 
 	private void onStart(IGamePhase game) {
-		Component sidebarTitle = Component.literal("Trash Dive")
-				.withStyle(ChatFormatting.BLUE, ChatFormatting.BOLD);
-
-		sidebar = widgets.openSidebar(sidebarTitle);
+		sidebar = widgets.openSidebar(TrashDiveTexts.SIDEBAR_TITLE);
 		sidebar.set(renderSidebar(game));
 
 		PlayerSet players = game.getParticipants();
@@ -126,10 +125,8 @@ public final class TrashCollectionBehavior implements IGameBehavior {
 
 		gameOver = true;
 
-		Component finishMessage = Component.literal("The game ended! Here are the results for this game:");
-
 		PlayerSet players = game.getAllPlayers();
-		players.sendMessage(finishMessage.copy().withStyle(ChatFormatting.GREEN));
+		players.sendMessage(MinigameTexts.RESULTS);
 
 		GameStatistics statistics = game.getStatistics();
 
@@ -151,13 +148,13 @@ public final class TrashCollectionBehavior implements IGameBehavior {
 
 	private Component[] renderSidebar(IGamePhase game) {
 		List<Component> sidebar = new ArrayList<>(10);
-		sidebar.add(Component.literal("Pick up trash! ").withStyle(ChatFormatting.GREEN)
-				.append(Component.literal(collectedTrash + " collected").withStyle(ChatFormatting.GRAY)));
+		sidebar.add(TrashDiveTexts.SIDEBAR_INSTRUCTION);
+		sidebar.add(TrashDiveTexts.SIDEBAR_COLLECTED.apply(collectedTrash));
 
 		PlayerPlacement.Score<Integer> placement = PlayerPlacement.fromMaxScore(game, StatisticKey.TRASH_COLLECTED);
 
 		sidebar.add(CommonComponents.EMPTY);
-		sidebar.add(Component.literal("MVPs:").withStyle(ChatFormatting.GREEN));
+		sidebar.add(TrashDiveTexts.SIDEBAR_TOP_PLAYERS);
 
 		placement.addToSidebar(sidebar, 5);
 

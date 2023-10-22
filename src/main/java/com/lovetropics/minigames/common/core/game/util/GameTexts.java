@@ -212,6 +212,10 @@ public final class GameTexts {
 		public static final Component FREE_CAMERA = KEYS.add("free_camera", "Free Camera");
 		public static final TranslationCollector.Fun1 CLICK_TO_SELECT = KEYS.add1("click_to_select", "%s [Click to Select]");
 
+		public static final Component LOBBY_PUBLIC = KEYS.add("visibility.public", "Public");
+		public static final Component LOBBY_PUBLIC_LIVE = KEYS.add("visibility.public_live", "Public (Live)");
+		public static final Component LOBBY_PRIVATE = KEYS.add("visibility.private", "Private");
+
 		public static MutableComponent managingGame(ClientGameDefinition game) {
 			Component name = game.name.copy().withStyle(ChatFormatting.RESET);
 			return MANAGING_GAME.apply(name).withStyle(ChatFormatting.BOLD);
