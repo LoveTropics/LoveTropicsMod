@@ -72,7 +72,7 @@ public final class MinigameTexts {
 	public static final Component TEAM_SEEKERS = KEYS.add("teams.seekers", "Seekers");
 
 	public static final Component CLEAR_WEATHER = KEYS.add("weather.clear", "Clear");
-	public static final Component HEAVY_RAIN = KEYS.add("weather.heavy_rain", "Clear").withStyle(ChatFormatting.BLUE);
+	public static final Component HEAVY_RAIN = KEYS.add("weather.heavy_rain", "Heavy Rain").withStyle(ChatFormatting.BLUE);
 	public static final Component ACID_RAIN = KEYS.add("weather.acid_rain", "Acid Rain").withStyle(ChatFormatting.GREEN);
 	public static final Component HAIL = KEYS.add("weather.hail", "Hail").withStyle(ChatFormatting.BLUE);
 	public static final Component HEATWAVE = KEYS.add("weather.heatwave", "Heatwave").withStyle(ChatFormatting.YELLOW);
