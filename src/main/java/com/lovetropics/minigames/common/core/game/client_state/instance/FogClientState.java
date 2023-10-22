@@ -10,13 +10,15 @@ import net.minecraft.util.StringRepresentable;
 import java.util.Locale;
 import java.util.Optional;
 
-public record FogClientState(float red, float green, float blue, Optional<FogType> fogType, Optional<FogShape> fogShape) implements GameClientState {
+public record FogClientState(float red, float green, float blue, Optional<FogType> fogType, Optional<FogShape> fogShape, float nearDistance, float farDistance) implements GameClientState {
     public static final Codec<FogClientState> CODEC = RecordCodecBuilder.create(in -> in.group(
             Codec.floatRange(0.0f, 1.0f).fieldOf("red").forGetter(FogClientState::red),
             Codec.floatRange(0.0f, 1.0f).fieldOf("green").forGetter(FogClientState::green),
             Codec.floatRange(0.0f, 1.0f).fieldOf("blue").forGetter(FogClientState::blue),
             StringRepresentable.fromEnum(FogType::values).optionalFieldOf("fog_type").forGetter(FogClientState::fogType),
-            StringRepresentable.fromEnum(FogShape::values).optionalFieldOf("fog_shape").forGetter(FogClientState::fogShape)
+            StringRepresentable.fromEnum(FogShape::values).optionalFieldOf("fog_shape").forGetter(FogClientState::fogShape),
+            Codec.FLOAT.fieldOf("near_distance").forGetter(FogClientState::nearDistance),
+            Codec.FLOAT.fieldOf("far_distance").forGetter(FogClientState::farDistance)
     ).apply(in, FogClientState::new));
 
     @Override
