@@ -43,27 +43,7 @@ public record DisguiseType(@Nullable EntityConfig entity, float scale) {
 
 	@Nullable
 	public Entity createEntity(Level level) {
-		if (entity == null) {
-			return null;
-		}
-
-		EntityType<?> type = entity.type();
-		CompoundTag nbt = entity.nbt();
-		Entity entity = type.create(level);
-		if (entity == null) {
-			return null;
-		}
-
-		if (nbt != null) {
-			entity.load(nbt);
-		}
-
-		fixInvalidEntity(entity);
-		return entity;
-	}
-
-	private void fixInvalidEntity(Entity entity) {
-		entity.stopRiding();
+		return entity != null ? entity.createEntity(level) : null;
 	}
 
 	public void encode(FriendlyByteBuf buffer) {
@@ -131,6 +111,25 @@ public record DisguiseType(@Nullable EntityConfig entity, float scale) {
 			CompoundTag nbt = buffer.readNbt();
 			boolean applyAttributes = buffer.readBoolean();
 			return new EntityConfig(type, nbt, applyAttributes);
+		}
+
+		@Nullable
+		public Entity createEntity(Level level) {
+			Entity entity = type.create(level);
+			if (entity == null) {
+				return null;
+			}
+
+			if (nbt != null) {
+				entity.load(nbt);
+			}
+
+			fixInvalidEntity(entity);
+			return entity;
+		}
+
+		private void fixInvalidEntity(Entity entity) {
+			entity.stopRiding();
 		}
 	}
 }
