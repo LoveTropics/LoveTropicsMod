@@ -157,10 +157,11 @@ public class BigRedButtonBlockEntity extends BlockEntity {
 		).apply(i, Requirements::new));
 
 		public int resolve(int smallestTeamSize) {
-			return Math.max(
+			int preferredCount = Math.max(
 					Mth.floor(percent * smallestTeamSize),
 					count
 			);
+			return Math.min(preferredCount, smallestTeamSize);
 		}
 	}
 }
