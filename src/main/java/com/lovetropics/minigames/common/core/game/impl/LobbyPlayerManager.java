@@ -83,7 +83,7 @@ final class LobbyPlayerManager implements IGameLobbyPlayers {
 			lobby.onPlayerRegister(player);
 			return GameResult.ok();
 		} else {
-			return GameResult.error(GameTexts.Commands.alreadyInLobby());
+			return GameResult.error(GameTexts.Commands.ALREADY_IN_LOBBY);
 		}
 	}
 
