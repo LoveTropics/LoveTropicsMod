@@ -5,6 +5,7 @@ import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.JsonOps;
 import net.minecraft.MethodsReturnNonnullByDefault;
+import net.minecraft.Util;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataProvider;
@@ -41,10 +42,8 @@ public class BehaviorProvider implements DataProvider {
                         final var built = entry.getValue();
                         final var path = behProv.json(entry.getKey());
 
-                        Optional<JsonElement> optional = IGameBehavior.CODEC.encodeStart(regOps, built).resultOrPartial((p_255999_) -> {
-                            LOGGER.error("Couldn't serialize behavior {}: {}", path, p_255999_);
-                        });
-                        return optional.isPresent() ? DataProvider.saveStable(pOutput, optional.get(), path) : CompletableFuture.completedFuture(null);
+                        final JsonElement element = Util.getOrThrow(IGameBehavior.CODEC.encodeStart(regOps, built), ex -> new RuntimeException("Couldn't serialize behavior " + path + ": " + ex));
+                        return DataProvider.saveStable(pOutput, element, path);
                     })
                     .toArray(CompletableFuture[]::new));
         });

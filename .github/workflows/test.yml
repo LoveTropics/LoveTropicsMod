@@ -8,8 +8,6 @@ on:
       - opened
       - ready_for_review
       - reopened
-  schedule:
-    - cron: 0 0 1 * *
 
 jobs:
 
