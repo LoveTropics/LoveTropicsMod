@@ -11,12 +11,16 @@ import com.lovetropics.minigames.common.content.biodiversity_blitz.client_state.
 import com.lovetropics.minigames.common.content.block.LoveTropicsBlocks;
 import com.lovetropics.minigames.common.content.block.TrashType;
 import com.lovetropics.minigames.common.content.block_party.BlockParty;
+import com.lovetropics.minigames.common.content.block_party.BlockPartyTexts;
 import com.lovetropics.minigames.common.content.build_competition.BuildCompetition;
 import com.lovetropics.minigames.common.content.hide_and_seek.HideAndSeek;
 import com.lovetropics.minigames.common.content.survive_the_tide.SurviveTheTide;
+import com.lovetropics.minigames.common.content.survive_the_tide.SurviveTheTideTexts;
 import com.lovetropics.minigames.common.content.survive_the_tide.entity.DriftwoodRider;
 import com.lovetropics.minigames.common.content.trash_dive.TrashDive;
+import com.lovetropics.minigames.common.content.trash_dive.TrashDiveTexts;
 import com.lovetropics.minigames.common.content.turtle_race.TurtleRace;
+import com.lovetropics.minigames.common.content.turtle_race.TurtleRaceTexts;
 import com.lovetropics.minigames.common.core.command.ExtendedBossBarCommand;
 import com.lovetropics.minigames.common.core.command.LoveTropicsEntityOptions;
 import com.lovetropics.minigames.common.core.command.MapCommand;
@@ -80,6 +84,7 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
 import org.slf4j.Logger;
 
+import java.util.function.BiConsumer;
 import java.util.regex.Pattern;
 
 @Mod(Constants.MODID)
@@ -118,9 +123,14 @@ public class LoveTropics {
 
         registrate()
                 .addDataGenerator(ProviderType.LANG, prov -> {
-                    GameTexts.collectTranslations(prov::add);
-                    MinigameTexts.collectTranslations(prov::add);
-                    BiodiversityBlitzTexts.collectTranslations(prov::add);
+                    BiConsumer<String, String> consumer = prov::add;
+                    GameTexts.collectTranslations(consumer);
+                    MinigameTexts.KEYS.forEach(consumer);
+                    BiodiversityBlitzTexts.collectTranslations(consumer);
+                    BlockPartyTexts.KEYS.forEach(consumer);
+                    SurviveTheTideTexts.KEYS.forEach(consumer);
+                    TrashDiveTexts.KEYS.forEach(consumer);
+                    TurtleRaceTexts.KEYS.forEach(consumer);
                 })
                 .generic(TAB_ID.getPath(), Registries.CREATIVE_MODE_TAB, () -> CreativeModeTab.builder()
                         .title(registrate().addLang("itemGroup", TAB_ID, "LTMinigames"))

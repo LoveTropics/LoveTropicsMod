@@ -23,6 +23,7 @@ import com.lovetropics.minigames.common.core.game.state.GameStateMap;
 import com.lovetropics.minigames.common.core.game.state.statistics.StatisticKey;
 import com.lovetropics.minigames.common.core.game.util.GameTexts;
 import com.lovetropics.minigames.common.core.map.MapRegions;
+import it.unimi.dsi.fastutil.objects.ReferenceArraySet;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
@@ -35,6 +36,7 @@ import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
 public class GamePhase implements IGamePhase {
@@ -48,6 +50,7 @@ public class GamePhase implements IGamePhase {
 	final GameStateMap phaseState = new GameStateMap();
 
 	final EnumMap<PlayerRole, MutablePlayerSet> roles = new EnumMap<>(PlayerRole.class);
+	private final Set<ServerPlayer> addedPlayers = new ReferenceArraySet<>();
 
 	final GameEventListeners events = new GameEventListeners();
 
@@ -110,9 +113,8 @@ public class GamePhase implements IGamePhase {
 			for (ServerPlayer player : shuffledPlayers) {
 				PlayerIsolation.INSTANCE.isolateAndClear(player);
 				invoker(GamePlayerEvents.ADD).onAdd(player);
-				if (getRoleFor(player) == null) {
-					invoker(GamePlayerEvents.SPAWN).onSpawn(player, null);
-				}
+				addedPlayers.add(player);
+				onSetPlayerRole(player, getRoleFor(player), null);
 			}
 
 			invoker(GamePhaseEvents.START).start();
@@ -170,7 +172,10 @@ public class GamePhase implements IGamePhase {
 			roles.get(role).add(player);
 		}
 
-		onSetPlayerRole(player, role, lastRole);
+		// If we haven't added this player yet, just track state for now
+		if (addedPlayers.contains(player)) {
+			onSetPlayerRole(player, role, lastRole);
+		}
 
 		return true;
 	}
@@ -178,7 +183,9 @@ public class GamePhase implements IGamePhase {
 	private void onSetPlayerRole(ServerPlayer player, @Nullable PlayerRole role, @Nullable PlayerRole lastRole) {
 		try {
 			invoker(GamePlayerEvents.SPAWN).onSpawn(player, role);
-			invoker(GamePlayerEvents.SET_ROLE).onSetRole(player, role, lastRole);
+			if (role != lastRole) {
+				invoker(GamePlayerEvents.SET_ROLE).onSetRole(player, role, lastRole);
+			}
 		} catch (Exception e) {
 			LoveTropics.LOGGER.warn("Failed to dispatch player set role event", e);
 		}
@@ -187,6 +194,7 @@ public class GamePhase implements IGamePhase {
 	void onPlayerJoin(ServerPlayer player) {
 		try {
 			invoker(GamePlayerEvents.ADD).onAdd(player);
+			addedPlayers.add(player);
 			invoker(GamePlayerEvents.JOIN).onAdd(player);
 
 			invoker(GamePlayerEvents.SPAWN).onSpawn(player, null);
@@ -202,6 +210,7 @@ public class GamePhase implements IGamePhase {
 
 		try {
 			invoker(GamePlayerEvents.LEAVE).onRemove(player);
+			addedPlayers.remove(player);
 			invoker(GamePlayerEvents.REMOVE).onRemove(player);
 		} catch (Exception e) {
 			LoveTropics.LOGGER.warn("Failed to dispatch player leave event", e);
@@ -216,7 +225,7 @@ public class GamePhase implements IGamePhase {
 	@Override
 	public GameResult<Unit> requestStop(GameStopReason reason) {
 		if (stopped != null) {
-			return GameResult.error(GameTexts.Commands.gameAlreadyStopped());
+			return GameResult.error(GameTexts.Commands.GAME_ALREADY_STOPPED);
 		}
 
 		stopped = reason;
@@ -242,6 +251,7 @@ public class GamePhase implements IGamePhase {
 
 		try {
 			for (ServerPlayer player : getAllPlayers()) {
+				addedPlayers.remove(player);
 				invoker(GamePlayerEvents.REMOVE).onRemove(player);
 			}
 

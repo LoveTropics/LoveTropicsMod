@@ -18,7 +18,7 @@ public class FinishGameCommand {
 								.executes(c -> GameCommand.executeGameAction(() -> {
 									IGamePhase game = IGameManager.get().getGamePhaseFor(c.getSource());
 									if (game == null) {
-										return GameResult.error(GameTexts.Commands.notInGame());
+										return GameResult.error(GameTexts.Commands.NOT_IN_GAME);
 									}
 									return game.requestStop(GameStopReason.finished()).map($ -> {
 										return GameTexts.Commands.stoppedGame(game.getDefinition());

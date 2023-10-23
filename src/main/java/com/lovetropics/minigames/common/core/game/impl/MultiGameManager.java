@@ -61,7 +61,7 @@ public class MultiGameManager implements IGameManager {
 	public GameResult<IGameLobby> createGameLobby(String name, ServerPlayer initiator) {
 		GameLobby currentLobby = lobbiesByPlayer.get(initiator.getUUID());
 		if (currentLobby != null) {
-			return GameResult.error(GameTexts.Commands.alreadyInLobby());
+			return GameResult.error(GameTexts.Commands.ALREADY_IN_LOBBY);
 		}
 
 		GameLobbyId id = GameLobbyId.next();
@@ -82,7 +82,7 @@ public class MultiGameManager implements IGameManager {
 			List<GamePhase> games = gamesByDimension.getOrDefault(dimension, Collections.emptyList());
 			for (GamePhase game : games) {
 				if (game.getPhaseDefinition().getGameArea().intersects(area)) {
-					return GameResult.error(GameTexts.Commands.gamesIntersect());
+					return GameResult.error(GameTexts.Commands.GAMES_INTERSECT);
 				}
 			}
 		}

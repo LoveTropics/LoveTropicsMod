@@ -129,7 +129,7 @@ public final class BbMerchantBehavior implements IGameBehavior {
 			}
 
 			BbMerchant merchant = new BbMerchant(player, builtOffers);
-			merchant.openTradingScreen(player, BiodiversityBlitzTexts.trading(), 1);
+			merchant.openTradingScreen(player, BiodiversityBlitzTexts.TRADING, 1);
 
 			return InteractionResult.SUCCESS;
 		}

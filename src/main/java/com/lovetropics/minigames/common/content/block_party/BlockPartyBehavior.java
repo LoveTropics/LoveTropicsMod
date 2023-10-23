@@ -2,6 +2,7 @@ package com.lovetropics.minigames.common.content.block_party;
 
 import com.lovetropics.lib.BlockBox;
 import com.lovetropics.lib.codec.MoreCodecs;
+import com.lovetropics.minigames.common.content.MinigameTexts;
 import com.lovetropics.minigames.common.core.dimension.DimensionUtils;
 import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.GameStopReason;
@@ -18,6 +19,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.ChatFormatting;
+import net.minecraft.SharedConstants;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -142,13 +144,10 @@ public final class BlockPartyBehavior implements IGameBehavior {
 
 				Component message;
 				if (winningPlayer != null) {
-					message = Component.literal("\u2B50 ")
-							.append(winningPlayer.getDisplayName()).append(" won the game!")
-							.withStyle(ChatFormatting.GREEN);
+					message = MinigameTexts.PLAYER_WON.apply(winningPlayer.getDisplayName()).withStyle(ChatFormatting.GREEN);
 					game.getStatistics().global().set(StatisticKey.WINNING_PLAYER, PlayerKey.from(winningPlayer));
 				} else {
-					message = Component.literal("\u2B50 Nobody won the game!")
-							.withStyle(ChatFormatting.RED);
+					message = MinigameTexts.NOBODY_WON.copy().withStyle(ChatFormatting.RED);
 				}
 
 				state = new Ending(game.ticks() + 20 * 5);
@@ -178,8 +177,7 @@ public final class BlockPartyBehavior implements IGameBehavior {
 		ItemStack targetStack = new ItemStack(target);
 		targetStack.setCount(64);
 
-		Component name = Component.literal("Stand on ")
-				.append(targetStack.getDisplayName())
+		Component name = BlockPartyTexts.STAND_ON_BLOCK.apply(targetStack.getDisplayName())
 				.withStyle(style -> style.withBold(true).withItalic(false));
 		targetStack.setHoverName(name);
 
@@ -224,7 +222,7 @@ public final class BlockPartyBehavior implements IGameBehavior {
 			if (time % 10 == 0) {
 				for (ServerPlayer player : game.getAllPlayers()) {
 					long remainingTicks = breakAt - time;
-					Component message = Component.literal("Break in " + (remainingTicks / 20) + " seconds").withStyle(ChatFormatting.GOLD);
+					Component message = BlockPartyTexts.BREAK_IN_SECONDS.apply(remainingTicks / SharedConstants.TICKS_PER_SECOND).withStyle(ChatFormatting.GOLD);
 					player.displayClientMessage(message, true);
 				}
 			}

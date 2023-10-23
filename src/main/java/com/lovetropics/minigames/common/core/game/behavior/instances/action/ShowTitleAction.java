@@ -9,6 +9,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.SharedConstants;
+import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundClearTitlesPacket;
 import net.minecraft.network.protocol.game.ClientboundSetActionBarTextPacket;
@@ -28,7 +29,7 @@ public record ShowTitleAction(Optional<TemplatedText> title, Optional<TemplatedT
 			Codec.INT.optionalFieldOf("fade_out", SharedConstants.TICKS_PER_SECOND / 4).forGetter(ShowTitleAction::fadeOut)
 	).apply(i, ShowTitleAction::new));
 
-	private static final Component EMPTY_TITLE = Component.literal(" ");
+	private static final Component EMPTY_TITLE = CommonComponents.space();
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {

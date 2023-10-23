@@ -84,7 +84,7 @@ public final class LobbyPlayerList implements GuiEventListener, NarratableEntry 
 				tooltip.add(name);
 
 				if (player.playingRole() != null) {
-					tooltip.add(GameTexts.Ui.roleDescription(player.playingRole())
+					tooltip.add(GameTexts.Ui.roleDescription(player.playingRole()).copy()
 							.withStyle(ChatFormatting.GRAY));
 				}
 

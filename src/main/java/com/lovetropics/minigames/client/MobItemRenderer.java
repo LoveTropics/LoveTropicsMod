@@ -1,7 +1,6 @@
 package com.lovetropics.minigames.client;
 
 import com.lovetropics.minigames.common.core.diguise.DisguiseType;
-import com.lovetropics.minigames.common.core.item.DisguiseItem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
@@ -20,12 +19,15 @@ import javax.annotation.Nullable;
 import java.lang.ref.WeakReference;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
 
-public class DisguiseItemRenderer extends BlockEntityWithoutLevelRenderer {
+public class MobItemRenderer extends BlockEntityWithoutLevelRenderer {
 	private final EntityCache entityCache = new EntityCache();
+	private final Function<ItemStack, DisguiseType.EntityConfig> entityGetter;
 
-	public DisguiseItemRenderer(final BlockEntityRenderDispatcher dispatcher, final EntityModelSet modelSet) {
+	public MobItemRenderer(final BlockEntityRenderDispatcher dispatcher, final EntityModelSet modelSet, final Function<ItemStack, DisguiseType.EntityConfig> entityGetter) {
 		super(dispatcher, modelSet);
+		this.entityGetter = entityGetter;
 	}
 
 	@Override
@@ -33,12 +35,12 @@ public class DisguiseItemRenderer extends BlockEntityWithoutLevelRenderer {
 		final Minecraft minecraft = Minecraft.getInstance();
 		final ClientLevel level = minecraft.level;
 
-		final DisguiseType disguiseType = DisguiseItem.getDisguiseType(stack);
-		if (level == null || disguiseType == null) {
+		final DisguiseType.EntityConfig entityType = entityGetter.apply(stack);
+		if (level == null || entityType == null) {
 			return;
 		}
 
-		final Entity entity = entityCache.get(level, disguiseType);
+		final Entity entity = entityCache.get(level, entityType);
 		if (entity == null) {
 			return;
 		}
@@ -99,10 +101,10 @@ public class DisguiseItemRenderer extends BlockEntityWithoutLevelRenderer {
 	private static class EntityCache {
 		@Nullable
 		private WeakReference<ClientLevel> level;
-		private final Map<DisguiseType, Optional<Entity>> entities = new Object2ObjectOpenHashMap<>();
+		private final Map<DisguiseType.EntityConfig, Optional<Entity>> entities = new Object2ObjectOpenHashMap<>();
 
 		@Nullable
-		public Entity get(final ClientLevel level, final DisguiseType type) {
+		public Entity get(final ClientLevel level, final DisguiseType.EntityConfig type) {
 			if (this.level == null || this.level.get() != level) {
 				entities.clear();
 				this.level = new WeakReference<>(level);

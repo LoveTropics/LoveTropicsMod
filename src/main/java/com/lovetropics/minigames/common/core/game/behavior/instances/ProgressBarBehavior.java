@@ -1,6 +1,7 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances;
 
 import com.lovetropics.lib.codec.MoreCodecs;
+import com.lovetropics.minigames.common.content.MinigameTexts;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
@@ -92,7 +93,7 @@ public class ProgressBarBehavior implements IGameBehavior {
 
 		int endTime = entry.period.end().resolve(progression);
 		int secondsLeft = Mth.positiveCeilDiv(endTime - progression.time(), SharedConstants.TICKS_PER_SECOND);
-		return entry.text.copy().append(Component.literal(" (" + Util.formatMinutesSeconds(secondsLeft) + " left)").withStyle(ChatFormatting.GRAY));
+		return MinigameTexts.progressBarTime(entry.text, secondsLeft);
 	}
 
 	private record Entry(ProgressionPeriod period, Component text, BossEvent.BossBarColor color, boolean reversed, boolean includeTime) {

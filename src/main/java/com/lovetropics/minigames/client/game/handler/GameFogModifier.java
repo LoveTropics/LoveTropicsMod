@@ -18,9 +18,9 @@ public class GameFogModifier {
             return;
         }
 
-        event.setBlue(state.blue());
-        event.setGreen(state.green());
         event.setRed(state.red());
+        event.setGreen(state.green());
+        event.setBlue(state.blue());
     }
 
     @SubscribeEvent
@@ -30,14 +30,16 @@ public class GameFogModifier {
             return;
         }
 
+        event.setCanceled(true);
+
         state.fogType().ifPresent(type -> {
             if (type == FogClientState.FogType.SKY) {
                 event.setNearPlaneDistance(0.0f);
                 event.setFarPlaneDistance(event.getRenderer().getRenderDistance());
                 event.setFogShape(FogShape.CYLINDER);
             } else {
-                event.setNearPlaneDistance(event.getRenderer().getRenderDistance() * 0.05f);
-                event.setFarPlaneDistance(Math.min(event.getRenderer().getRenderDistance(), 192f) * .5f);
+                event.setNearPlaneDistance(state.nearDistance());
+                event.setFarPlaneDistance(Math.min(state.farDistance(), event.getFarPlaneDistance()));
                 event.setFogShape(FogShape.SPHERE);
             }
         });

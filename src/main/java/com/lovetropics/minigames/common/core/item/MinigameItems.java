@@ -39,5 +39,23 @@ public class MinigameItems {
             })
             .register();
 
+    public static final ItemEntry<MobHatItem> MOB_HAT = REGISTRATE.item("mob_hat", MobHatItem::new)
+            .properties(p -> p.stacksTo(1))
+            .model((ctx, prov) -> prov.getBuilder(ctx.getName()).parent(new ModelFile.UncheckedModelFile("builtin/entity")))
+            .addMiscData(ProviderType.LANG, prov -> {
+                String descriptionId = Util.makeDescriptionId("item", new ResourceLocation(Constants.MODID, "mob_hat"));
+                prov.add(descriptionId + ".entity", "%s Hat");
+            })
+            .tab(LoveTropics.TAB_KEY, modifier -> {
+                for (EntityType<?> entity : BuiltInRegistries.ENTITY_TYPE) {
+                    if (entity.getCategory() != MobCategory.MISC) {
+                        final ItemStack stack = new ItemStack(MinigameItems.MOB_HAT);
+                        MobHatItem.setEntityType(stack, new DisguiseType.EntityConfig(entity, null, false));
+                        modifier.accept(stack);
+                    }
+                }
+            })
+            .register();
+
     public static void init() {}
 }

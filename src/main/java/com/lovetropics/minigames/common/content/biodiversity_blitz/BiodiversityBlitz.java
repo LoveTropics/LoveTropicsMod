@@ -305,7 +305,7 @@ public final class BiodiversityBlitz {
 						}
 					}
 				} else {
-					list.add(Component.literal("Press Shift for more information").withStyle(ChatFormatting.GOLD));
+					list.add(BiodiversityBlitzTexts.SHIFT_FOR_MORE_INFORMATION.copy().withStyle(ChatFormatting.GOLD));
 				}
 			}
 		}

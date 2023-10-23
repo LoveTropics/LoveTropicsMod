@@ -18,6 +18,7 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.ChatFormatting;
 import net.minecraft.SharedConstants;
+import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -61,7 +62,7 @@ public final class TimedGameBehavior implements IGameBehavior {
 
 		if (timerBarText != null) {
 			GlobalGameWidgets widgets = GlobalGameWidgets.registerTo(game, events);
-			timerBar = widgets.openBossBar(Component.literal(""), BossEvent.BossBarColor.GREEN, BossEvent.BossBarOverlay.NOTCHED_10);
+			timerBar = widgets.openBossBar(CommonComponents.EMPTY, BossEvent.BossBarColor.GREEN, BossEvent.BossBarOverlay.NOTCHED_10);
 		}
 
 		game.getControlCommands().add("pause", ControlCommand.forInitiator(source -> this.state.setPaused(true)));

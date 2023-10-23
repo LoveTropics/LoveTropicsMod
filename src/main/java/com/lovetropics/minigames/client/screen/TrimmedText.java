@@ -2,10 +2,13 @@ package com.lovetropics.minigames.client.screen;
 
 import net.minecraft.client.gui.Font;
 import net.minecraft.locale.Language;
+import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.FormattedCharSequence;
 
 public final class TrimmedText {
+	public static final TrimmedText EMPTY = new TrimmedText(CommonComponents.EMPTY);
+
 	private final Component text;
 
 	private FormattedCharSequence trimmedText;
@@ -17,10 +20,6 @@ public final class TrimmedText {
 
 	public static TrimmedText of(Component text) {
 		return new TrimmedText(text);
-	}
-
-	public static TrimmedText of(String text) {
-		return new TrimmedText(Component.literal(text));
 	}
 
 	public Component text() {

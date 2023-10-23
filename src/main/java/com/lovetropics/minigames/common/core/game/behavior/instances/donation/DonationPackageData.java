@@ -3,6 +3,7 @@ package com.lovetropics.minigames.common.core.game.behavior.instances.donation;
 import com.lovetropics.minigames.client.toast.NotificationIcon;
 import com.lovetropics.minigames.client.toast.NotificationStyle;
 import com.lovetropics.minigames.client.toast.ShowNotificationToastMessage;
+import com.lovetropics.minigames.common.content.MinigameTexts;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.player.PlayerSet;
 import com.lovetropics.minigames.common.core.game.util.TemplatedText;
@@ -84,19 +85,25 @@ public record DonationPackageData(
 		}
 
 		public Component createGlobalMessage(@Nullable ServerPlayer receiver) {
-			return Component.translatable("%s received a package!", this.getReceiverName(receiver));
+			return MinigameTexts.PACKAGE_RECEIVED.apply(getReceiverName(receiver));
 		}
 
 		public NotificationStyle createStyle(final NotificationStyle.Color color, final long visibleTime) {
 			return new NotificationStyle(icon, sentiment, color, visibleTime);
 		}
 
-		private MutableComponent getReceiverName(ServerPlayer receiver) {
-			return (receiver != null ? receiver.getDisplayName().copy() : Component.literal("Everyone")).withStyle(ChatFormatting.BLUE);
+		private Component getReceiverName(@Nullable ServerPlayer receiver) {
+			if (receiver != null) {
+				return receiver.getDisplayName().copy().withStyle(ChatFormatting.BLUE);
+			}
+			return MinigameTexts.EVERYONE_RECEIVER;
 		}
 
-		private MutableComponent getSenderName(@Nullable String sender) {
-			return Component.literal(sender != null ? sender : "an unknown donor").withStyle(ChatFormatting.BLUE);
+		private Component getSenderName(@Nullable String sender) {
+			if (sender != null) {
+				return Component.literal(sender).withStyle(ChatFormatting.BLUE);
+			}
+			return MinigameTexts.UNKNOWN_DONOR;
 		}
 	}
 }

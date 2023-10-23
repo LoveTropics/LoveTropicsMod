@@ -1,6 +1,7 @@
 package com.lovetropics.minigames.common.content.survive_the_tide.item;
 
 import com.lovetropics.minigames.LoveTropics;
+import com.lovetropics.minigames.common.content.survive_the_tide.SurviveTheTideTexts;
 import com.lovetropics.minigames.common.content.survive_the_tide.entity.DriftwoodEntity;
 import com.lovetropics.minigames.common.content.survive_the_tide.entity.DriftwoodRider;
 import net.minecraft.ChatFormatting;
@@ -24,9 +25,8 @@ public class PaddleItem extends Item {
 	}
 
 	@Override
-	@OnlyIn(Dist.CLIENT)
 	public void appendHoverText(ItemStack stack, @Nullable Level world, List<Component> tooltip, TooltipFlag flag) {
-		tooltip.add(Component.literal("This might come in handy").withStyle(ChatFormatting.AQUA));
+		tooltip.add(SurviveTheTideTexts.PADDLE_TOOLTIP);
 	}
 
 	@Override

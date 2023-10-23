@@ -119,10 +119,6 @@ abstract class LobbyState {
 		}
 
 		private CompletableFuture<GameResult<LobbyState>> createWaiting(GameInstance game, IGamePhaseDefinition definition, IGamePhaseDefinition playing) {
-			if (game.server.isSingleplayer()) {
-				return createPlaying(game, playing);
-			}
-
 			return GamePhase.create(game, definition, GamePhaseType.WAITING)
 					.thenApply(result -> result.map(waiting -> {
 						Supplier<LobbyState> start = () -> {

@@ -67,8 +67,8 @@ public final class ServerPlayerDisguises {
 		}
 
 		if (event.getTarget() instanceof Player tracked) {
-			PlayerDisguise disguise = PlayerDisguise.get(tracked);
-			if (disguise.isDisguised()) {
+			PlayerDisguise disguise = PlayerDisguise.getOrNull(tracked);
+			if (disguise != null && disguise.isDisguised()) {
 				LoveTropicsNetwork.CHANNEL.send(
 						PacketDistributor.PLAYER.with(() -> player),
 						new PlayerDisguiseMessage(tracked.getUUID(), disguise.type())
@@ -84,9 +84,12 @@ public final class ServerPlayerDisguises {
 		}
 
 		if (event.getEntity() instanceof ServerPlayer newPlayer && event.getOriginal() instanceof ServerPlayer oldPlayer) {
-			PlayerDisguise newDisguise = PlayerDisguise.get(newPlayer);
-			newDisguise.copyFrom(PlayerDisguise.get(oldPlayer));
-			onSetDisguise(newPlayer);
+			PlayerDisguise newDisguise = PlayerDisguise.getOrNull(newPlayer);
+			PlayerDisguise oldDisguise = PlayerDisguise.getOrNull(oldPlayer);
+			if (newDisguise != null && oldDisguise != null) {
+				newDisguise.copyFrom(oldDisguise);
+				onSetDisguise(newPlayer);
+			}
 		}
 	}
 
@@ -110,13 +113,19 @@ public final class ServerPlayerDisguises {
 	}
 
 	public static void set(ServerPlayer player, DisguiseType type) {
-		PlayerDisguise.get(player).set(type);
-		onSetDisguise(player);
+		PlayerDisguise disguise = PlayerDisguise.getOrNull(player);
+		if (disguise != null) {
+			disguise.set(type);
+			onSetDisguise(player);
+		}
 	}
 
 	public static void update(ServerPlayer player, Consumer<PlayerDisguise> consumer) {
-		consumer.accept(PlayerDisguise.get(player));
-		onSetDisguise(player);
+		PlayerDisguise disguise = PlayerDisguise.getOrNull(player);
+		if (disguise != null) {
+			consumer.accept(disguise);
+			onSetDisguise(player);
+		}
 	}
 
 	public static void updateType(ServerPlayer player, UnaryOperator<DisguiseType> operator) {
@@ -132,7 +141,11 @@ public final class ServerPlayerDisguises {
 	}
 
 	private static void onSetDisguise(ServerPlayer player) {
-		PlayerDisguise disguise = PlayerDisguise.get(player);
+		PlayerDisguise disguise = PlayerDisguise.getOrNull(player);
+		if (disguise == null) {
+			return;
+		}
+
 		LoveTropicsNetwork.CHANNEL.send(
 				PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> player),
 				new PlayerDisguiseMessage(player.getUUID(), disguise.type())

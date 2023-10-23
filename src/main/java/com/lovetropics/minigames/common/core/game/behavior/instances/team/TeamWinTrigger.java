@@ -15,6 +15,7 @@ import com.mojang.serialization.MapCodec;
 import net.minecraft.network.chat.Component;
 
 import javax.annotation.Nullable;
+import java.util.Objects;
 
 public class TeamWinTrigger implements IGameBehavior {
 	public static final MapCodec<TeamWinTrigger> CODEC = MapCodec.unit(TeamWinTrigger::new);
@@ -33,16 +34,19 @@ public class TeamWinTrigger implements IGameBehavior {
 			GameTeamKey playerTeam = teamState.getTeamForPlayer(player);
 			if (teamState.getPlayersForTeam(playerTeam).isEmpty()) {
 				GameTeam finalTeam = getFinalTeam(teamState);
-				if (finalTeam != null) {
-					winTriggered = true;
-
-					Component winnerName = finalTeam.config().name().copy()
-							.withStyle(finalTeam.config().formatting());
-					game.invoker(GameLogicEvents.WIN_TRIGGERED).onWinTriggered(winnerName);
-					game.invoker(GameLogicEvents.GAME_OVER).onGameOver();
-
-					game.getStatistics().global().set(StatisticKey.WINNING_TEAM, finalTeam.key());
+				if (finalTeam == null) {
+					// How did we get here? If there are no other teams, the team who died last is probably the winner
+					finalTeam = Objects.requireNonNull(teamState.getTeamByKey(playerTeam));
 				}
+
+				winTriggered = true;
+
+				Component winnerName = finalTeam.config().name().copy()
+						.withStyle(finalTeam.config().formatting());
+				game.invoker(GameLogicEvents.WIN_TRIGGERED).onWinTriggered(winnerName);
+				game.invoker(GameLogicEvents.GAME_OVER).onGameOver();
+
+				game.getStatistics().global().set(StatisticKey.WINNING_TEAM, finalTeam.key());
 			}
 		});
 	}

@@ -2,6 +2,7 @@ package com.lovetropics.minigames.client.game.handler.spectate;
 
 import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.client.screen.ClientPlayerInfo;
+import com.lovetropics.minigames.common.core.game.util.GameTexts;
 import com.mojang.authlib.GameProfile;
 import com.mojang.blaze3d.platform.InputConstants;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
@@ -13,6 +14,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.PlayerFaceRenderer;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.multiplayer.PlayerInfo;
+import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
@@ -35,8 +37,7 @@ import java.util.function.Supplier;
 public final class SpectatingUi {
 	private static final Minecraft CLIENT = Minecraft.getInstance();
 
-	private static final Component FREE_CAMERA_TEXT = Component.literal("Free Camera").withStyle(ChatFormatting.ITALIC);
-	private static final Component SELECT_PROMPT_TEXT = Component.literal(" [Click to select]").withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC);
+	private static final Component FREE_CAMERA_TEXT = GameTexts.Ui.FREE_CAMERA.copy().withStyle(ChatFormatting.ITALIC);
 
 	private static final int FACE_SIZE = 16;
 	private static final int ENTRY_PADDING = 2;
@@ -262,7 +263,7 @@ public final class SpectatingUi {
 		for (UUID player : players) {
 			Supplier<Component> name = () -> {
 				GameProfile profile = ClientPlayerInfo.getPlayerProfile(player);
-				return profile != null ? Component.literal(profile.getName()) : Component.literal("...");
+				return profile != null ? Component.literal(profile.getName()) : CommonComponents.ELLIPSIS;
 			};
 
 			PlayerTeam team = getTeamFor(player);
@@ -332,7 +333,7 @@ public final class SpectatingUi {
 			Font font = CLIENT.font;
 			Component name = nameSupplier.get();
 			if (!selected) {
-				name = name.copy().append(SELECT_PROMPT_TEXT);
+				name = GameTexts.Ui.CLICK_TO_SELECT.apply(name.copy().withStyle(ChatFormatting.WHITE)).withStyle(ChatFormatting.GRAY);
 			}
 
 			int nameLeft = left + (ENTRY_WIDTH - font.width(name)) / 2;

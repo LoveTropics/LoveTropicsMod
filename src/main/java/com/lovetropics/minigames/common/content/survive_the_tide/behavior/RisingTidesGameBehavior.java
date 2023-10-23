@@ -52,14 +52,15 @@ import net.minecraftforge.registries.RegistryObject;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class RisingTidesGameBehavior implements IGameBehavior {
 	public static final MapCodec<RisingTidesGameBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			Codec.STRING.optionalFieldOf("tide_area_region", "tide_area").forGetter(c -> c.tideAreaKey),
 			Codec.STRING.optionalFieldOf("iceberg_lines_region", "iceberg_lines").forGetter(c -> c.icebergLinesKey),
 			ProgressionSpline.CODEC.fieldOf("water_levels").forGetter(c -> c.waterLevels),
-			ProgressionPeriod.CODEC.fieldOf("iceberg_growth_period").forGetter(c -> c.icebergGrowthPeriod),
-			Codec.INT.fieldOf("iceberg_growth_steps").forGetter(c -> c.maxIcebergGrowthSteps)
+			ProgressionPeriod.CODEC.optionalFieldOf("iceberg_growth_period").forGetter(c -> c.icebergGrowthPeriod),
+			Codec.INT.optionalFieldOf("iceberg_growth_steps", 0).forGetter(c -> c.maxIcebergGrowthSteps)
 	).apply(i, RisingTidesGameBehavior::new));
 
 	private static final RegistryObject<Block> WATER_BARRIER = RegistryObject.create(new ResourceLocation("ltextras", "water_barrier"), ForgeRegistries.BLOCKS);
@@ -74,7 +75,7 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 	private final String tideAreaKey;
 	private final String icebergLinesKey;
 	private final ProgressionSpline waterLevels;
-	private final ProgressionPeriod icebergGrowthPeriod;
+	private final Optional<ProgressionPeriod> icebergGrowthPeriod;
 	private final int maxIcebergGrowthSteps;
 	private int waterLevel;
 
@@ -92,7 +93,7 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 
 	private GameProgressionState progression;
 
-	public RisingTidesGameBehavior(String tideAreaKey, String icebergLinesKey, final ProgressionSpline waterLevels, final ProgressionPeriod icebergGrowthPeriod, final int maxIcebergGrowthSteps) {
+	public RisingTidesGameBehavior(String tideAreaKey, String icebergLinesKey, final ProgressionSpline waterLevels, final Optional<ProgressionPeriod> icebergGrowthPeriod, final int maxIcebergGrowthSteps) {
 		this.tideAreaKey = tideAreaKey;
 		this.icebergLinesKey = icebergLinesKey;
 		this.waterLevels = waterLevels;
@@ -154,14 +155,16 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 	private void tick(IGamePhase game) {
 		tickWaterLevel(game);
 
-		float icebergsProgress = progression.progressIn(icebergGrowthPeriod);
-		if (icebergsProgress > 0.0f) {
-			int targetSteps = Math.round(icebergsProgress * maxIcebergGrowthSteps);
-			if (icebergGrowthSteps < targetSteps) {
-				growIcebergs(game.getWorld());
-				icebergGrowthSteps++;
+		icebergGrowthPeriod.ifPresent(period -> {
+			float icebergsProgress = progression.progressIn(period);
+			if (icebergsProgress > 0.0f) {
+				int targetSteps = Math.round(icebergsProgress * maxIcebergGrowthSteps);
+				if (icebergGrowthSteps < targetSteps) {
+					growIcebergs(game.getWorld());
+					icebergGrowthSteps++;
+				}
 			}
-		}
+		});
 
 		processRisingTideQueue(game);
 

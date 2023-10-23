@@ -2,6 +2,7 @@ package com.lovetropics.minigames.common.content.biodiversity_blitz.behavior;
 
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.BiodiversityBlitzTexts;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.event.BbEvents;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.BbMobSpawner.BbEntityTypes;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.Plot;
@@ -114,7 +115,7 @@ public final class BbSendMobsToEnemyItemBehavior implements IGameBehavior {
         @SubscribeEvent
         static void appendTooltips(final RenderTooltipEvent.GatherComponents event) {
             ENEMIES_TO_SEND.getIfSuccessful(event.getItemStack()).ifPresent(entities -> entities.forEach((entity, count) ->
-                    event.getTooltipElements().add(Either.left(Component.literal(count.toString()).append("x ").append(entity.getName().withStyle(ChatFormatting.GOLD))))));
+                    event.getTooltipElements().add(Either.left(BiodiversityBlitzTexts.sendMobsTooltip(entity, count)))));
         }
     }
 }

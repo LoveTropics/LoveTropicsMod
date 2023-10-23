@@ -1,5 +1,7 @@
 package com.lovetropics.minigames.common.content.survive_the_tide.behavior;
 
+import com.lovetropics.minigames.common.content.MinigameTexts;
+import com.lovetropics.minigames.common.content.survive_the_tide.SurviveTheTideTexts;
 import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
@@ -78,7 +80,7 @@ public class SttSidebarBehavior implements IGameBehavior {
 
 	private Component[] buildSidebar() {
 		return new Component[]{
-				Component.literal("Weather: ").append(weatherName()),
+				SurviveTheTideTexts.SIDEBAR_WEATHER.apply(weatherName()),
 				phaseState(),
 				CommonComponents.EMPTY,
 				playersState()
@@ -87,35 +89,24 @@ public class SttSidebarBehavior implements IGameBehavior {
 
 	private Component weatherName() {
 		WeatherEventType type = weather.getEventType();
-		if (type == null) {
-			return Component.literal("Clear");
-		}
-
-		return switch (type) {
-			case HEAVY_RAIN -> Component.literal("Heavy Rain").withStyle(ChatFormatting.BLUE);
-			case ACID_RAIN -> Component.literal("Acid Rain").withStyle(ChatFormatting.GREEN);
-			case HAIL -> Component.literal("Hail").withStyle(ChatFormatting.BLUE);
-			case HEATWAVE -> Component.literal("Heat Wave").withStyle(ChatFormatting.YELLOW);
-			case SANDSTORM -> Component.literal("Sandstorm").withStyle(ChatFormatting.YELLOW);
-			case SNOWSTORM -> Component.literal("Snowstorm").withStyle(ChatFormatting.WHITE);
-		};
+		return type != null ? type.getName() : MinigameTexts.CLEAR_WEATHER;
 	}
 
 	private Component phaseState() {
 		if (progression.is(safePeriod)) {
-			return Component.literal("PVP disabled").withStyle(ChatFormatting.YELLOW);
+			return SurviveTheTideTexts.SIDEBAR_PVP_DISABLED;
 		} else if (progression.is(tideRisingPeriod)) {
-			return Component.literal("The tide is rising!").withStyle(ChatFormatting.RED);
+			return SurviveTheTideTexts.SIDEBAR_TIDE_RISING;
 		} else if (progression.is(icebergGrowthPeriod)) {
-			return Component.literal("Icebergs are forming!").withStyle(ChatFormatting.AQUA);
+			return SurviveTheTideTexts.SIDEBAR_ICEBERGS_FORMING;
 		} else if (progression.is(explosiveStormPeriod)) {
-			return Component.literal("Explosive storm closing!").withStyle(ChatFormatting.RED);
+			return SurviveTheTideTexts.SIDEBAR_EXPLOSIVE_STORM;
 		}
 		return CommonComponents.EMPTY;
 	}
 
 	private Component playersState() {
 		int playerCount = game.getParticipants().size();
-		return Component.literal(playerCount + "/" + initialPlayerCount + " players").withStyle(ChatFormatting.GRAY);
+		return SurviveTheTideTexts.SIDEBAR_PLAYER_COUNT.apply(playerCount, initialPlayerCount);
 	}
 }

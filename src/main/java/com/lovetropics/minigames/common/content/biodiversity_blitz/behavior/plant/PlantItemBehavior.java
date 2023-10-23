@@ -80,7 +80,7 @@ public final class PlantItemBehavior implements IGameBehavior {
 			InteractionResultHolder<Plant> result = game.invoker(BbEvents.PLACE_PLANT).placePlant(player, plot, pos, this.places);
 			if (result.getObject() == null) {
 				if (result.getResult() == InteractionResult.FAIL) {
-					player.displayClientMessage(BiodiversityBlitzTexts.plantCannotFit().withStyle(ChatFormatting.RED), true);
+					player.displayClientMessage(BiodiversityBlitzTexts.PLANT_CANNOT_FIT.copy().withStyle(ChatFormatting.RED), true);
 					player.playNotifySound(SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.PLAYERS, 1.0F, 1.0F);
 				}
 

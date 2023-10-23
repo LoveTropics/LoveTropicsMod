@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.function.IntConsumer;
 
 public final class InstalledGameList extends AbstractGameList {
-	private static final Component TITLE =  GameTexts.Ui.installedGames()
+	private static final Component TITLE = GameTexts.Ui.INSTALLED_GAMES.copy()
 			.withStyle(ChatFormatting.UNDERLINE, ChatFormatting.BOLD);
 
 	private final ClientLobbyManageState lobby;
