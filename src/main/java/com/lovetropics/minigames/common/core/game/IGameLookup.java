@@ -29,6 +29,9 @@ public interface IGameLookup {
 	IGamePhase getGamePhaseAt(Level level, Vec3 pos);
 
 	@Nullable
+	IGamePhase getGamePhaseInDimension(Level level);
+
+	@Nullable
 	default IGamePhase getGamePhaseFor(CommandSourceStack source) {
 		if (source.getEntity() instanceof Player player) {
 			return getGamePhaseFor(player);

@@ -111,6 +111,16 @@ public class MultiGameManager implements IGameManager {
 		return getGamePhaseForWorld(level, phase -> phase.getPhaseDefinition().getGameArea().contains(pos));
 	}
 
+	@Nullable
+	@Override
+	public IGamePhase getGamePhaseInDimension(Level level) {
+		List<GamePhase> games = gamesByDimension.get(level.dimension());
+		if (games != null && games.size() == 1) {
+			return games.get(0);
+		}
+		return null;
+	}
+
 	public List<GamePhase> getGamePhasesForWorld(Level level) {
 		if (level.isClientSide) {
 			return Collections.emptyList();

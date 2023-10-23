@@ -1,6 +1,5 @@
 package com.lovetropics.minigames.mixin;
 
-import com.lovetropics.minigames.common.core.diguise.DisguiseType;
 import com.lovetropics.minigames.common.core.diguise.PlayerDisguise;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
