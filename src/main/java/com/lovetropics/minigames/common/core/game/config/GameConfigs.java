@@ -7,6 +7,7 @@ import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.common.core.game.behavior.GameBehaviorType;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.util.DynamicTemplate;
+import com.lovetropics.minigames.common.util.registry.RegistryLoadingOps;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
@@ -19,7 +20,6 @@ import com.mojang.serialization.RecordBuilder;
 import net.minecraft.Util;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.FileToIdConverter;
-import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -78,7 +78,7 @@ public final class GameConfigs {
 	}
 
 	private static CompletableFuture<List<GameConfig>> listConfigs(RegistryAccess registryAccess, ResourceManager resourceManager, Executor executor) {
-		DynamicOps<JsonElement> ops = RegistryOps.create(JsonOps.INSTANCE, registryAccess);
+		DynamicOps<JsonElement> ops = RegistryLoadingOps.create(JsonOps.INSTANCE, registryAccess);
 		List<CompletableFuture<GameConfig>> futures = GAME_LISTER.listMatchingResources(resourceManager).entrySet().stream()
 				.map(entry -> CompletableFuture.supplyAsync(() -> tryLoadConfig(ops, entry.getKey(), entry.getValue()), executor))
 				.toList();
