@@ -32,7 +32,7 @@ public abstract class ServerPlayerMixin extends Player {
 		}
 	}
 
-	@Inject(method = "changeDimension", at = @At("HEAD"), cancellable = true)
+	@Inject(method = "changeDimension", at = @At("HEAD"), cancellable = true, remap = false)
 	private void onMoveWorld(ServerLevel targetLevel, ITeleporter teleporter, CallbackInfoReturnable<Entity> ci) {
 		if (level() != targetLevel && !tryTeleportTo(targetLevel)) {
 			ci.setReturnValue(this);
