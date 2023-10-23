@@ -6,6 +6,7 @@ import com.lovetropics.minigames.common.core.game.behavior.config.ConfigList;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.instances.CompositeBehavior;
 import com.lovetropics.minigames.common.core.game.config.GameConfigs;
+import com.lovetropics.minigames.common.core.game.datagen.DirectBehavior;
 import com.lovetropics.minigames.common.core.game.state.GameStateMap;
 import com.lovetropics.minigames.common.util.Codecs;
 import com.mojang.datafixers.util.Either;
@@ -13,7 +14,9 @@ import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
+import com.mojang.serialization.MapCodec;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.ExtraCodecs;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -29,7 +32,7 @@ public interface IGameBehavior {
 	Codec<IGameBehavior> SIMPLE_CODEC = Codecs.dispatchWithInlineKey(
 			"type",
 			TYPE_CODEC,
-			behavior -> behavior.type().get(),
+			behavior -> behavior.behaviorType().get(),
 			type -> type.codec().codec()
 	);
 
@@ -83,7 +86,7 @@ public interface IGameBehavior {
 	void register(IGamePhase game, EventRegistrar events) throws GameException;
 
 	// TODO: Implement everywhere
-	default Supplier<? extends GameBehaviorType<?>> type() {
+	default Supplier<? extends GameBehaviorType<?>> behaviorType() {
 		throw new UnsupportedOperationException("This behavior is not aware of its type: " + this);
 	}
 }

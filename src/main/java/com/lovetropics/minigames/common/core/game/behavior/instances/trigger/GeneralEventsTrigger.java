@@ -2,6 +2,8 @@ package com.lovetropics.minigames.common.core.game.behavior.instances.trigger;
 
 import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
+import com.lovetropics.minigames.common.core.game.behavior.GameBehaviorType;
+import com.lovetropics.minigames.common.core.game.behavior.GameBehaviorTypes;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.action.GameActionContext;
 import com.lovetropics.minigames.common.core.game.behavior.action.GameActionList;
@@ -17,6 +19,7 @@ import net.minecraft.world.InteractionResult;
 
 import javax.annotation.Nullable;
 import java.util.Map;
+import java.util.function.Supplier;
 
 // TODO: split up into separate trigger types
 public record GeneralEventsTrigger(Map<String, GameActionList<ServerPlayer>> eventActions) implements IGameBehavior {
@@ -84,5 +87,10 @@ public record GeneralEventsTrigger(Map<String, GameActionList<ServerPlayer>> eve
 		if (actions != null) {
 			actions.apply(game, GameActionContext.EMPTY, player);
 		}
+	}
+
+	@Override
+	public Supplier<? extends GameBehaviorType<?>> behaviorType() {
+		return GameBehaviorTypes.EVENTS;
 	}
 }

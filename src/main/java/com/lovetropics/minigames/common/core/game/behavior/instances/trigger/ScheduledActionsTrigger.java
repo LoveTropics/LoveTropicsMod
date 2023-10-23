@@ -3,6 +3,8 @@ package com.lovetropics.minigames.common.core.game.behavior.instances.trigger;
 import com.lovetropics.lib.codec.MoreCodecs;
 import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
+import com.lovetropics.minigames.common.core.game.behavior.GameBehaviorType;
+import com.lovetropics.minigames.common.core.game.behavior.GameBehaviorTypes;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.action.GameActionContext;
 import com.lovetropics.minigames.common.core.game.behavior.action.GameActionList;
@@ -15,6 +17,7 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import net.minecraft.server.level.ServerPlayer;
 
 import java.util.List;
+import java.util.function.Supplier;
 
 // TODO ideally this would use a void target.. but we have too many uses using a player
 public record ScheduledActionsTrigger(PlayerActionTarget target, Long2ObjectMap<GameActionList<ServerPlayer>> scheduledActions) implements IGameBehavior {
@@ -35,5 +38,10 @@ public record ScheduledActionsTrigger(PlayerActionTarget target, Long2ObjectMap<
 				actions.apply(game, GameActionContext.EMPTY, target.resolve(game, List.of()));
 			}
 		});
+	}
+
+	@Override
+	public Supplier<? extends GameBehaviorType<?>> behaviorType() {
+		return GameBehaviorTypes.SCHEDULED_ACTIONS;
 	}
 }

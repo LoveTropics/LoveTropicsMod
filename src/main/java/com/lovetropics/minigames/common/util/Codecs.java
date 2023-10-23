@@ -17,7 +17,7 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 
 public class Codecs {
-	public static final Codec<HolderSet<Item>> ITEMS = RegistryCodecs.homogeneousList(Registries.ITEM);
+    public static final Codec<HolderSet<Item>> ITEMS = RegistryCodecs.homogeneousList(Registries.ITEM);
 
 	public static <A, E> Codec<E> dispatchWithInlineKey(String typeKey, Codec<A> keyCodec, Function<? super E, ? extends A> type, Function<? super A, ? extends Codec<? extends E>> codec) {
 		Codec<E> delegate = dispatchMapWithTrace(typeKey, keyCodec, type, codec).codec();
@@ -61,6 +61,7 @@ public class Codecs {
 	}
 
 	// For debugging
+	@SuppressWarnings("unused")
 	public static <A> Codec<A> hook(final Codec<A> codec) {
 		return new Codec<>() {
 			@Override

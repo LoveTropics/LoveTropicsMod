@@ -2,6 +2,8 @@ package com.lovetropics.minigames.common.core.game.behavior.instances.action;
 
 import com.lovetropics.lib.codec.MoreCodecs;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
+import com.lovetropics.minigames.common.core.game.behavior.GameBehaviorType;
+import com.lovetropics.minigames.common.core.game.behavior.GameBehaviorTypes;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameActionEvents;
@@ -22,6 +24,7 @@ import org.apache.logging.log4j.Logger;
 
 import java.util.List;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 public record RunCommandsAction(List<String> globalCommands, List<String> playerCommands) implements IGameBehavior {
     private static final Logger LOGGER = LogManager.getLogger(RunCommandsAction.class);
@@ -75,5 +78,10 @@ public record RunCommandsAction(List<String> globalCommands, List<String> player
 
         String name = game.getLobby().getMetadata().name();
         return new CommandSourceStack(source, Vec3.ZERO, Vec2.ZERO, game.getWorld(), Commands.LEVEL_OWNERS, name, Component.literal(name), game.getServer(), null);
+    }
+
+    @Override
+    public Supplier<? extends GameBehaviorType<?>> behaviorType() {
+        return GameBehaviorTypes.RUN_COMMANDS;
     }
 }

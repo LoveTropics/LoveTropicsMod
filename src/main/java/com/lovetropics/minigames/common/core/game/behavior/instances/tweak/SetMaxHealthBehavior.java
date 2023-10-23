@@ -2,6 +2,8 @@ package com.lovetropics.minigames.common.core.game.behavior.instances.tweak;
 
 import com.lovetropics.lib.codec.MoreCodecs;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
+import com.lovetropics.minigames.common.core.game.behavior.GameBehaviorType;
+import com.lovetropics.minigames.common.core.game.behavior.GameBehaviorTypes;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
@@ -20,6 +22,7 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 
 import javax.annotation.Nullable;
 import java.util.UUID;
+import java.util.function.Supplier;
 
 public record SetMaxHealthBehavior(double maxHealth, Object2DoubleMap<GameTeamKey> maxHealthByTeam) implements IGameBehavior {
 	public static final MapCodec<SetMaxHealthBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
@@ -82,5 +85,10 @@ public record SetMaxHealthBehavior(double maxHealth, Object2DoubleMap<GameTeamKe
 		} else {
 			return null;
 		}
+	}
+
+	@Override
+	public Supplier<? extends GameBehaviorType<?>> behaviorType() {
+		return GameBehaviorTypes.SET_MAX_HEALTH;
 	}
 }
