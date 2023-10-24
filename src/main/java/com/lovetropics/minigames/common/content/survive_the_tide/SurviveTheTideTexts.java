@@ -84,6 +84,8 @@ public final class SurviveTheTideTexts {
 		KEYS.add("donation.player_tornado", "%sender% turned you into A TORNADO!");
 		KEYS.add("donation.player_tornado_baby", "%sender% turned you into a BABY TORNADO!");
 		KEYS.add("donation.sharknado", "%sender% has spawned a SHARKNADO!");
+		KEYS.add("donation.player_tornado.title", "You are A TORNADO!");
+		KEYS.add("donation.player_tornado_baby.title", "You are a BABY TORNADO!");
 
 		KEYS.add("event.lightning_storm_event", "Chat started a LIGHTNING STORM!");
 		KEYS.add("event.zombie_invasion_event", "Chat started a ZOMBIE INVASION!");
