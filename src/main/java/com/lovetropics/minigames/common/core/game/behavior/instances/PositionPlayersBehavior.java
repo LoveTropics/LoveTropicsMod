@@ -2,8 +2,8 @@ package com.lovetropics.minigames.common.core.game.behavior.instances;
 
 import com.lovetropics.lib.BlockBox;
 import com.lovetropics.lib.codec.MoreCodecs;
-import com.lovetropics.minigames.common.core.dimension.DimensionUtils;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
+import com.lovetropics.minigames.common.core.game.SpawnBuilder;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
@@ -20,7 +20,6 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
 import org.slf4j.Logger;
 
@@ -30,6 +29,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 public class PositionPlayersBehavior implements IGameBehavior {
 	private static final Logger LOGGER = LogUtils.getLogger();
@@ -75,7 +75,7 @@ public class PositionPlayersBehavior implements IGameBehavior {
 			});
 		}
 
-		events.listen(GamePlayerEvents.SPAWN, (player, role) -> spawnPlayerAsRole(game, player, role, teams));
+		events.listen(GamePlayerEvents.SPAWN, (playerId, spawn, role) -> spawnPlayerAsRole(game, playerId, spawn, role, teams));
 	}
 
 	private Map<GameTeamKey, CycledSpawner> createTeamSpawners(TeamState teams, CycledSpawner spawns, int participantCount) {
@@ -93,17 +93,18 @@ public class PositionPlayersBehavior implements IGameBehavior {
 		return teamSpawners;
 	}
 
-	private void spawnPlayerAsRole(IGamePhase game, ServerPlayer player, @Nullable PlayerRole role, @Nullable TeamState teams) {
-		BlockBox region = getSpawnRegionFor(player, role, teams);
+	private void spawnPlayerAsRole(IGamePhase game, UUID playerId, SpawnBuilder spawn, @Nullable PlayerRole role, @Nullable TeamState teams) {
+		BlockBox region = getSpawnRegionFor(playerId, role, teams);
 		if (region != null) {
-			teleportToRegion(game, player, region);
+			BlockPos pos = tryFindEmptyPos(game, game.getWorld().getRandom(), region);
+			spawn.teleportTo(game.getWorld(), pos);
 		}
 	}
 
 	@Nullable
-	private BlockBox getSpawnRegionFor(ServerPlayer player, PlayerRole role, @Nullable TeamState teams) {
+	private BlockBox getSpawnRegionFor(UUID playerId, PlayerRole role, @Nullable TeamState teams) {
 		if (role == PlayerRole.PARTICIPANT) {
-			BlockBox region = getParticipantSpawnRegion(player, teams);
+			BlockBox region = getParticipantSpawnRegion(playerId, teams);
 			if (region != null) {
 				return region;
 			}
@@ -117,8 +118,8 @@ public class PositionPlayersBehavior implements IGameBehavior {
 	}
 
 	@Nullable
-	private BlockBox getParticipantSpawnRegion(ServerPlayer player, TeamState teams) {
-		GameTeamKey team = teams != null ? teams.getTeamForPlayer(player) : null;
+	private BlockBox getParticipantSpawnRegion(UUID playerId, TeamState teams) {
+		GameTeamKey team = teams != null ? teams.getTeamForPlayer(playerId) : null;
 		if (team != null) {
 			CycledSpawner teamSpawner = teamSpawners.get(team);
 			if (teamSpawner != null) {
@@ -126,11 +127,6 @@ public class PositionPlayersBehavior implements IGameBehavior {
 			}
 		}
 		return participantSpawner.next();
-	}
-
-	private void teleportToRegion(IGamePhase game, ServerPlayer player, BlockBox region) {
-		BlockPos pos = tryFindEmptyPos(game, player.getRandom(), region);
-		DimensionUtils.teleportPlayerNoPortal(player, game.getDimension(), pos);
 	}
 
 	private BlockPos tryFindEmptyPos(IGamePhase game, RandomSource random, BlockBox box) {

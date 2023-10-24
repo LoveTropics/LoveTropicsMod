@@ -21,7 +21,6 @@ public record SetGameTypesBehavior(GameType participantGameType, GameType specta
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
-		events.listen(GamePlayerEvents.ADD, player -> applyRoleTo(player, null));
 		events.listen(GamePlayerEvents.SET_ROLE, (player, role, lastRole) -> applyRoleTo(player, role));
 	}
 

@@ -101,9 +101,9 @@ public class RaceTrackBehavior implements IGameBehavior {
 
 		Component sidebarTitle = game.getDefinition().getName().copy().withStyle(ChatFormatting.AQUA);
 
-		events.listen(GamePlayerEvents.SPAWN, (player, role) -> {
+		events.listen(GamePlayerEvents.SPAWN, (playerId, spawn, role) -> {
 			if (role == PlayerRole.PARTICIPANT) {
-				states.put(player.getUUID(), new PlayerState(player.position(), startTime));
+				states.put(playerId, new PlayerState(spawn.position(), startTime));
 			}
 		});
 

@@ -8,6 +8,7 @@ import com.lovetropics.minigames.common.core.diguise.ServerPlayerDisguises;
 import com.lovetropics.minigames.common.core.dimension.DimensionUtils;
 import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
+import com.lovetropics.minigames.common.core.game.SpawnBuilder;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
@@ -22,6 +23,7 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
@@ -86,7 +88,7 @@ public final class HideAndSeekBehavior implements IGameBehavior {
 
 		events.listen(GamePhaseEvents.START, this::start);
 
-		events.listen(GamePlayerEvents.SPAWN, (player, role) -> this.spawnPlayer(player));
+		events.listen(GamePlayerEvents.SPAWN, (playerId, spawn, role) -> this.spawnPlayer(spawn));
 		events.listen(GamePlayerEvents.SET_ROLE, this::onPlayerSetRole);
 		events.listen(GamePlayerEvents.ATTACK, this::onPlayerAttack);
 		events.listen(GamePlayerEvents.DEATH, this::onPlayerDeath);
@@ -119,9 +121,15 @@ public final class HideAndSeekBehavior implements IGameBehavior {
 		}
 	}
 
-	private void spawnPlayer(ServerPlayer player) {
+	private void respawnPlayer(ServerPlayer player) {
 		BlockPos spawnPos = spawnRegion.sample(player.getRandom());
-		DimensionUtils.teleportPlayerNoPortal(player, game.getDimension(), spawnPos);
+		player.teleportTo(spawnPos.getX(), spawnPos.getY(), spawnPos.getZ());
+	}
+
+	private void spawnPlayer(SpawnBuilder spawn) {
+		RandomSource random = game.getWorld().getRandom();
+		BlockPos spawnPos = spawnRegion.sample(random);
+		spawn.teleportTo(game.getWorld(), spawnPos, Direction.getRandom(random));
 	}
 
 	private InteractionResult onPlayerAttack(ServerPlayer player, Entity target) {
@@ -177,12 +185,12 @@ public final class HideAndSeekBehavior implements IGameBehavior {
 	private void onHiderCaptured(ServerPlayer player) {
 		teams.addPlayerTo(player, seekers.key());
 
-		this.spawnPlayer(player);
+		this.respawnPlayer(player);
 		this.setSeeker(player);
 	}
 
 	private void onSeekerDied(ServerPlayer player) {
-		this.spawnPlayer(player);
+		this.respawnPlayer(player);
 	}
 
 	public record Creature(EntityType<?> entity, String[] regionKeys) {

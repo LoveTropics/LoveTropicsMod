@@ -1,6 +1,5 @@
 package com.lovetropics.minigames.common.core.game;
 
-import com.lovetropics.minigames.Constants;
 import com.mojang.serialization.Dynamic;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.minecraft.nbt.CompoundTag;
@@ -9,141 +8,148 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.network.protocol.game.ClientboundChangeDifficultyPacket;
 import net.minecraft.network.protocol.game.ClientboundPlayerInfoUpdatePacket;
 import net.minecraft.network.protocol.game.ClientboundRespawnPacket;
+import net.minecraft.network.protocol.game.ClientboundSetDefaultSpawnPositionPacket;
 import net.minecraft.network.protocol.game.ClientboundSetHealthPacket;
+import net.minecraft.network.protocol.game.ServerboundClientInformationPacket;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.players.PlayerList;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.PlayerModelPart;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.BiomeManager;
 import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.level.storage.LevelData;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.entity.player.PlayerEvent;
-import net.minecraftforge.eventbus.api.EventPriority;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Consumer;
 
-@Mod.EventBusSubscriber(modid = Constants.MODID)
 public final class PlayerIsolation {
 	public static final PlayerIsolation INSTANCE = new PlayerIsolation();
 
 	private final Set<UUID> isolatedPlayers = new ObjectOpenHashSet<>();
-	private final Set<UUID> pendingIsolation = new ObjectOpenHashSet<>();
 
 	private PlayerIsolation() {
 	}
 
-	@SubscribeEvent(priority = EventPriority.LOWEST)
-	public static void onServerTick(final TickEvent.ServerTickEvent event) {
-		if (event.phase == TickEvent.Phase.END) {
-			INSTANCE.finishTick(event.getServer());
-		}
-	}
-
-	@SubscribeEvent
-	public static void onPlayerChangeDimension(final PlayerEvent.PlayerChangedDimensionEvent event) {
-		if (event.getEntity() instanceof final ServerPlayer player) {
-			INSTANCE.onPlayerChangeDimension(player);
-		}
-	}
-
-	private void finishTick(final MinecraftServer server) {
-		if (pendingIsolation.isEmpty()) {
-			return;
-		}
-		final PlayerList playerList = server.getPlayerList();
-		for (final UUID playerId : pendingIsolation) {
-			final ServerPlayer player = playerList.getPlayer(playerId);
-			if (player != null) {
-				reloadPlayer(player, player.serverLevel());
-			}
-		}
-		pendingIsolation.clear();
-	}
-
-	private void onPlayerChangeDimension(final ServerPlayer player) {
-		if (pendingIsolation.remove(player.getUUID())) {
-			final PlayerList playerList = player.getServer().getPlayerList();
-			playerList.broadcastAll(new ClientboundPlayerInfoUpdatePacket(ClientboundPlayerInfoUpdatePacket.Action.UPDATE_GAME_MODE, player));
-		}
-	}
-
-	public void isolateAndClear(final ServerPlayer player) {
+	public ServerPlayer teleportTo(final ServerPlayer player, final ServerLevel newLevel, final Vec3 position, final float yRot, final float xRot) {
 		final PlayerListAccess playerList = (PlayerListAccess) player.getServer().getPlayerList();
 		if (!isolatedPlayers.contains(player.getUUID())) {
 			playerList.ltminigames$save(player);
 			isolatedPlayers.add(player.getUUID());
 		}
 		final TransferableState transferableState = TransferableState.copyOf(player);
-		playerList.ltminigames$clear(player);
-		pendingIsolation.add(player.getUUID());
-		transferableState.restore(player);
+		return reloadPlayer(player, newPlayer -> {
+			newPlayer.setServerLevel(newLevel);
+			newPlayer.moveTo(position.x, position.y, position.z, yRot, xRot);
+			transferableState.restore(newPlayer);
+		});
 	}
 
-	public void restore(final ServerPlayer player) {
+	public ServerPlayer restore(final ServerPlayer player) {
 		if (isolatedPlayers.remove(player.getUUID())) {
-			pendingIsolation.remove(player.getUUID());
-			reloadPlayerFromDisk(player);
+			return reloadPlayerFromDisk(player);
 		}
+		return player;
 	}
 
-	private static void reloadPlayerFromDisk(final ServerPlayer player) {
-		final MinecraftServer server = player.getServer();
-		final PlayerList playerList = server.getPlayerList();
+	private static ServerPlayer reloadPlayerFromDisk(final ServerPlayer player) {
+		return reloadPlayer(player, newPlayer -> {
+			final MinecraftServer server = player.getServer();
+			final PlayerList playerList = server.getPlayerList();
+			final CompoundTag playerTag = playerList.load(newPlayer);
 
-		((PlayerListAccess) playerList).ltminigames$clear(player);
+			final ResourceKey<Level> dimensionKey = playerTag != null ? getPlayerDimension(playerTag) : Level.OVERWORLD;
+			final ServerLevel newLevel = Objects.requireNonNullElse(server.getLevel(dimensionKey), server.overworld());
+			newPlayer.setServerLevel(newLevel);
 
-		final CompoundTag playerTag = playerList.load(player);
-		final ResourceKey<Level> dimensionKey = playerTag != null ? getPlayerDimension(playerTag) : Level.OVERWORLD;
-
-		final ServerLevel newLevel = Objects.requireNonNullElse(server.getLevel(dimensionKey), server.overworld());
-		player.loadGameTypes(playerTag);
-
-		reloadPlayer(player, newLevel);
+			newPlayer.loadGameTypes(playerTag);
+		});
 	}
 
-	private static void reloadPlayer(final ServerPlayer player, final ServerLevel newLevel) {
-		final MinecraftServer server = player.getServer();
+	private static ServerPlayer reloadPlayer(final ServerPlayer oldPlayer, final Consumer<ServerPlayer> initializer) {
+		final MinecraftServer server = oldPlayer.getServer();
 		final PlayerList playerList = server.getPlayerList();
 
-		final ServerLevel oldLevel = player.serverLevel();
+		oldPlayer.unRide();
+		oldPlayer.serverLevel().removePlayerImmediately(oldPlayer, Entity.RemovalReason.DISCARDED);
+		((PlayerListAccess) playerList).ltminigames$remove(oldPlayer);
 
+		final ServerPlayer newPlayer = recreatePlayer(oldPlayer);
+		initializer.accept(newPlayer);
+		newPlayer.onUpdateAbilities();
+
+		final ServerLevel newLevel = newPlayer.serverLevel();
 		final LevelData levelData = newLevel.getLevelData();
-		player.connection.send(new ClientboundRespawnPacket(
+		newPlayer.connection.send(new ClientboundRespawnPacket(
 				newLevel.dimensionTypeId(),
 				newLevel.dimension(),
 				BiomeManager.obfuscateSeed(newLevel.getSeed()),
-				player.gameMode.getGameModeForPlayer(),
-				player.gameMode.getPreviousGameModeForPlayer(),
+				newPlayer.gameMode.getGameModeForPlayer(),
+				newPlayer.gameMode.getPreviousGameModeForPlayer(),
 				newLevel.isDebug(),
 				newLevel.isFlat(),
-				ClientboundRespawnPacket.KEEP_ALL_DATA,
-				player.getLastDeathLocation(),
-				player.getPortalCooldown()
+				(byte) 0,
+				newPlayer.getLastDeathLocation(),
+				newPlayer.getPortalCooldown()
 		));
-		player.connection.send(new ClientboundChangeDifficultyPacket(levelData.getDifficulty(), levelData.isDifficultyLocked()));
+		newPlayer.connection.teleport(newPlayer.getX(), newPlayer.getY(), newPlayer.getZ(), newPlayer.getYRot(), newPlayer.getXRot());
+		newPlayer.connection.send(new ClientboundSetDefaultSpawnPositionPacket(newLevel.getSharedSpawnPos(), newLevel.getSharedSpawnAngle()));
+		newPlayer.connection.send(new ClientboundChangeDifficultyPacket(levelData.getDifficulty(), levelData.isDifficultyLocked()));
 
-		oldLevel.removePlayerImmediately(player, Entity.RemovalReason.CHANGED_DIMENSION);
-		player.revive();
-		player.setServerLevel(newLevel);
-		newLevel.addDuringCommandTeleport(player);
+		newLevel.addRespawnedPlayer(newPlayer);
 
-		playerList.sendPlayerPermissionLevel(player);
-		player.connection.teleport(player.getX(), player.getY(), player.getZ(), player.getYRot(), player.getXRot());
-		playerList.sendLevelInfo(player, newLevel);
-		playerList.sendAllPlayerInfo(player);
+		playerList.sendPlayerPermissionLevel(newPlayer);
+		playerList.sendLevelInfo(newPlayer, newLevel);
+		playerList.sendAllPlayerInfo(newPlayer);
 
-		player.connection.send(new ClientboundSetHealthPacket(player.getHealth(), player.getFoodData().getFoodLevel(), player.getFoodData().getSaturationLevel()));
+		newPlayer.initInventoryMenu();
+		newPlayer.setHealth(newPlayer.getHealth());
+		newPlayer.connection.send(new ClientboundSetHealthPacket(newPlayer.getHealth(), newPlayer.getFoodData().getFoodLevel(), newPlayer.getFoodData().getSaturationLevel()));
 
-		playerList.broadcastAll(new ClientboundPlayerInfoUpdatePacket(ClientboundPlayerInfoUpdatePacket.Action.UPDATE_GAME_MODE, player));
+		((PlayerListAccess) playerList).ltminigames$add(newPlayer);
+
+		playerList.broadcastAll(new ClientboundPlayerInfoUpdatePacket(ClientboundPlayerInfoUpdatePacket.Action.UPDATE_GAME_MODE, newPlayer));
+
+		return newPlayer;
+	}
+
+	private static ServerPlayer recreatePlayer(final ServerPlayer oldPlayer) {
+		final ServerPlayer newPlayer = new ServerPlayer(oldPlayer.server, oldPlayer.serverLevel(), oldPlayer.getGameProfile());
+		newPlayer.connection = oldPlayer.connection;
+		newPlayer.connection.player = newPlayer;
+		newPlayer.setId(oldPlayer.getId());
+		if (oldPlayer.getChatSession() != null) {
+			newPlayer.setChatSession(oldPlayer.getChatSession());
+		}
+		restoreClientOptions(oldPlayer, newPlayer);
+
+		return newPlayer;
+	}
+
+	private static void restoreClientOptions(final ServerPlayer oldPlayer, final ServerPlayer newPlayer) {
+		int skinOptions = 0;
+		for (final PlayerModelPart part : PlayerModelPart.values()) {
+			if (oldPlayer.isModelPartShown(part)) {
+				skinOptions |= part.getMask();
+			}
+		}
+		newPlayer.updateOptions(new ServerboundClientInformationPacket(
+				oldPlayer.getLanguage(),
+				0,
+				oldPlayer.getChatVisibility(),
+				oldPlayer.canChatInColor(),
+				skinOptions,
+				oldPlayer.getMainArm(),
+				oldPlayer.isTextFilteringEnabled(),
+				oldPlayer.allowsListing()
+		));
 	}
 
 	private static ResourceKey<Level> getPlayerDimension(final CompoundTag playerTag) {

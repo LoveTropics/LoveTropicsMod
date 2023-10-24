@@ -1,6 +1,7 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances;
 
 import com.lovetropics.minigames.common.core.game.IGamePhase;
+import com.lovetropics.minigames.common.core.game.SpawnBuilder;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
@@ -47,7 +48,9 @@ public record ImmediateRespawnBehavior(Optional<PlayerRole> role, Optional<Playe
 		if (respawnAsRole.isPresent()) {
 			game.setPlayerRole(player, respawnAsRole.get());
 		} else {
-			game.invoker(GamePlayerEvents.SPAWN).onSpawn(player, playerRole);
+			SpawnBuilder spawn = new SpawnBuilder(player);
+			game.invoker(GamePlayerEvents.SPAWN).onSpawn(player.getUUID(), spawn, playerRole);
+			spawn.teleportAndApply(player);
 		}
 
 		player.setHealth(20.0F);

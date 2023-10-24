@@ -169,13 +169,4 @@ public final class ClientPlayerDisguises {
             camera.move(-camera.getMaxZoom(4.0 * scale), 0.0, 0.0);
         }
     }
-
-    @SubscribeEvent
-    public static void onClientPlayerClone(ClientPlayerNetworkEvent.Clone event) {
-        PlayerDisguise oldDisguise = PlayerDisguise.getOrNull(event.getOldPlayer());
-        PlayerDisguise newDisguise = PlayerDisguise.getOrNull(event.getNewPlayer());
-        if (oldDisguise != null && newDisguise != null) {
-            newDisguise.copyFrom(oldDisguise);
-        }
-    }
 }

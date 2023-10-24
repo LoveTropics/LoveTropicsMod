@@ -1,5 +1,6 @@
 package com.lovetropics.minigames.common.core.game.behavior.event;
 
+import com.lovetropics.minigames.common.core.game.SpawnBuilder;
 import com.lovetropics.minigames.common.core.game.player.PlayerRole;
 import com.lovetropics.minigames.common.core.game.util.TeamAllocator;
 import net.minecraft.world.level.block.state.BlockState;
@@ -14,6 +15,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.server.level.ServerLevel;
 
 import javax.annotation.Nullable;
+import java.util.UUID;
 
 public final class GamePlayerEvents {
 	public static final GameEventType<Add> ADD = GameEventType.create(Add.class, listeners -> (player) -> {
@@ -46,9 +48,9 @@ public final class GamePlayerEvents {
 		}
 	});
 
-	public static final GameEventType<Spawn> SPAWN = GameEventType.create(Spawn.class, listeners -> (player, role) -> {
+	public static final GameEventType<Spawn> SPAWN = GameEventType.create(Spawn.class, listeners -> (playerId, spawn, role) -> {
 		for (Spawn listener : listeners) {
-			listener.onSpawn(player, role);
+			listener.onSpawn(playerId, spawn, role);
 		}
 	});
 
@@ -189,7 +191,7 @@ public final class GamePlayerEvents {
 	}
 
 	public interface Spawn {
-		void onSpawn(ServerPlayer player, @Nullable PlayerRole role);
+		void onSpawn(UUID playerId, SpawnBuilder spawn, @Nullable PlayerRole role);
 	}
 
 	public interface Tick {

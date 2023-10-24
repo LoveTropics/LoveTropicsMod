@@ -90,8 +90,13 @@ public final class TeamState implements IGameState, Iterable<GameTeam> {
 
 	@Nullable
 	public GameTeamKey getTeamForPlayer(Player player) {
+		return getTeamForPlayer(player.getUUID());
+	}
+
+	@Nullable
+	public GameTeamKey getTeamForPlayer(UUID playerId) {
 		for (Map.Entry<GameTeamKey, MutablePlayerSet> entry : Object2ObjectMaps.fastIterable(playersByKey)) {
-			if (entry.getValue().contains(player)) {
+			if (entry.getValue().contains(playerId)) {
 				return entry.getKey();
 			}
 		}

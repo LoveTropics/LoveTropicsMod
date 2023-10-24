@@ -35,10 +35,10 @@ public abstract class PlayerListMixin implements PlayerListAccess {
 	private MinecraftServer server;
 	@Shadow
 	@Final
-	private Map<UUID, ServerStatsCounter> stats;
+	private List<ServerPlayer> players;
 	@Shadow
 	@Final
-	private Map<UUID, PlayerAdvancements> advancements;
+	private Map<UUID, ServerPlayer> playersByUUID;
 
 	@Shadow
 	protected abstract void save(ServerPlayer player);
@@ -47,53 +47,11 @@ public abstract class PlayerListMixin implements PlayerListAccess {
 	@Nullable
 	public abstract CompoundTag getSingleplayerData();
 
-	@Unique
-	@Nullable
-	private CompoundTag ltminigames$emptyPlayerTag;
-
 	@Inject(method = "save", at = @At("HEAD"), cancellable = true)
 	private void save(final ServerPlayer player, final CallbackInfo ci) {
 		if (PlayerIsolation.INSTANCE.isIsolated(player)) {
 			ci.cancel();
 		}
-	}
-
-	@Unique
-	private CompoundTag ltminigames$createEmptyPlayerTag() {
-		final GameProfile profile = new GameProfile(Util.NIL_UUID, "null");
-
-		final ServerPlayer player = new ServerPlayer(server, server.overworld(), profile);
-		stats.remove(Util.NIL_UUID);
-		advancements.remove(Util.NIL_UUID);
-
-		final CompoundTag tag = new CompoundTag();
-		player.save(tag);
-		tag.remove("UUID");
-		tag.remove("Pos");
-		tag.put("ForgeCaps", new CompoundTag());
-		tag.put("ForgeData", new CompoundTag());
-
-		return tag;
-	}
-
-	@Override
-	public void ltminigames$clear(final ServerPlayer player) {
-		if (ltminigames$emptyPlayerTag == null) {
-			ltminigames$emptyPlayerTag = ltminigames$createEmptyPlayerTag();
-		}
-
-		player.setCamera(player);
-		player.stopRiding();
-		ltminigames$clearAttributeModifiers(player);
-		player.removeAllEffects();
-		player.getTags().clear();
-		PlayerDisguise disguise = PlayerDisguise.getOrNull(player);
-		if (disguise != null) {
-			disguise.clear();
-		}
-		player.onRemovedFromWorld();
-		player.load(ltminigames$emptyPlayerTag);
-		player.onAddedToWorld();
 	}
 
 	@Override
@@ -113,16 +71,14 @@ public abstract class PlayerListMixin implements PlayerListAccess {
 		}
 	}
 
-	@Unique
-	private void ltminigames$clearAttributeModifiers(final ServerPlayer player) {
-		final AttributeMap attributes = player.getAttributes();
-		for (final Attribute attribute : BuiltInRegistries.ATTRIBUTE) {
-			if (attributes.hasAttribute(attribute)) {
-				final AttributeInstance instance = attributes.getInstance(attribute);
-				if (instance != null) {
-					instance.getModifiers().forEach(instance::removeModifier);
-				}
-			}
-		}
+	@Override
+	public void ltminigames$remove(final ServerPlayer player) {
+		players.remove(player);
+	}
+
+	@Override
+	public void ltminigames$add(final ServerPlayer player) {
+		players.add(player);
+		playersByUUID.put(player.getUUID(), player);
 	}
 }

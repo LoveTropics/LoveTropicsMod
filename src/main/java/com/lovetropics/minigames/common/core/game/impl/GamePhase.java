@@ -10,6 +10,7 @@ import com.lovetropics.minigames.common.core.game.IGame;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.IGamePhaseDefinition;
 import com.lovetropics.minigames.common.core.game.PlayerIsolation;
+import com.lovetropics.minigames.common.core.game.SpawnBuilder;
 import com.lovetropics.minigames.common.core.game.behavior.BehaviorList;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameEventType;
@@ -23,7 +24,7 @@ import com.lovetropics.minigames.common.core.game.state.GameStateMap;
 import com.lovetropics.minigames.common.core.game.state.statistics.StatisticKey;
 import com.lovetropics.minigames.common.core.game.util.GameTexts;
 import com.lovetropics.minigames.common.core.map.MapRegions;
-import it.unimi.dsi.fastutil.objects.ReferenceArraySet;
+import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
@@ -37,6 +38,7 @@ import java.util.Collections;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 public class GamePhase implements IGamePhase {
@@ -50,7 +52,7 @@ public class GamePhase implements IGamePhase {
 	final GameStateMap phaseState = new GameStateMap();
 
 	final EnumMap<PlayerRole, MutablePlayerSet> roles = new EnumMap<>(PlayerRole.class);
-	private final Set<ServerPlayer> addedPlayers = new ReferenceArraySet<>();
+	private final Set<UUID> addedPlayers = new ObjectArraySet<>();
 
 	final GameEventListeners events = new GameEventListeners();
 
@@ -111,10 +113,7 @@ public class GamePhase implements IGamePhase {
 			Collections.shuffle(shuffledPlayers);
 
 			for (ServerPlayer player : shuffledPlayers) {
-				PlayerIsolation.INSTANCE.isolateAndClear(player);
-				invoker(GamePlayerEvents.ADD).onAdd(player);
-				addedPlayers.add(player);
-				onSetPlayerRole(player, getRoleFor(player), null);
+				addAndSpawnPlayer(player, getRoleFor(player));
 			}
 
 			invoker(GamePhaseEvents.START).start();
@@ -123,6 +122,21 @@ public class GamePhase implements IGamePhase {
 		}
 
 		return GameResult.ok();
+	}
+
+	private ServerPlayer addAndSpawnPlayer(ServerPlayer player, PlayerRole role) {
+		SpawnBuilder spawn = new SpawnBuilder(player);
+		invoker(GamePlayerEvents.SPAWN).onSpawn(player.getUUID(), spawn, role);
+
+		ServerPlayer newPlayer = PlayerIsolation.INSTANCE.teleportTo(player, spawn.level(), spawn.position(), spawn.yRot(), spawn.xRot());
+		invoker(GamePlayerEvents.ADD).onAdd(newPlayer);
+		spawn.applyInitializers(newPlayer);
+
+		invoker(GamePlayerEvents.SET_ROLE).onSetRole(newPlayer, role, null);
+
+		addedPlayers.add(player.getUUID());
+
+		return newPlayer;
 	}
 
 	@Nullable
@@ -173,7 +187,7 @@ public class GamePhase implements IGamePhase {
 		}
 
 		// If we haven't added this player yet, just track state for now
-		if (addedPlayers.contains(player)) {
+		if (addedPlayers.contains(player.getUUID())) {
 			onSetPlayerRole(player, role, lastRole);
 		}
 
@@ -182,7 +196,9 @@ public class GamePhase implements IGamePhase {
 
 	private void onSetPlayerRole(ServerPlayer player, @Nullable PlayerRole role, @Nullable PlayerRole lastRole) {
 		try {
-			invoker(GamePlayerEvents.SPAWN).onSpawn(player, role);
+			SpawnBuilder spawn = new SpawnBuilder(player);
+			invoker(GamePlayerEvents.SPAWN).onSpawn(player.getUUID(), spawn, role);
+			spawn.teleportAndApply(player);
 			if (role != lastRole) {
 				invoker(GamePlayerEvents.SET_ROLE).onSetRole(player, role, lastRole);
 			}
@@ -193,28 +209,27 @@ public class GamePhase implements IGamePhase {
 
 	void onPlayerJoin(ServerPlayer player) {
 		try {
-			invoker(GamePlayerEvents.ADD).onAdd(player);
-			addedPlayers.add(player);
-			invoker(GamePlayerEvents.JOIN).onAdd(player);
-
-			invoker(GamePlayerEvents.SPAWN).onSpawn(player, null);
+			ServerPlayer newPlayer = addAndSpawnPlayer(player, null);
+			invoker(GamePlayerEvents.JOIN).onAdd(newPlayer);
 		} catch (Exception e) {
 			LoveTropics.LOGGER.warn("Failed to dispatch player join event", e);
 		}
 	}
 
-	void onPlayerLeave(ServerPlayer player) {
+	ServerPlayer onPlayerLeave(ServerPlayer player) {
 		for (PlayerRole role : PlayerRole.ROLES) {
 			roles.get(role).remove(player);
 		}
 
 		try {
+			addedPlayers.remove(player.getUUID());
 			invoker(GamePlayerEvents.LEAVE).onRemove(player);
-			addedPlayers.remove(player);
 			invoker(GamePlayerEvents.REMOVE).onRemove(player);
 		} catch (Exception e) {
 			LoveTropics.LOGGER.warn("Failed to dispatch player leave event", e);
 		}
+
+		return PlayerIsolation.INSTANCE.restore(player);
 	}
 
 	public void cancelWithError(Exception exception) {
@@ -251,7 +266,7 @@ public class GamePhase implements IGamePhase {
 
 		try {
 			for (ServerPlayer player : getAllPlayers()) {
-				addedPlayers.remove(player);
+				addedPlayers.remove(player.getUUID());
 				invoker(GamePlayerEvents.REMOVE).onRemove(player);
 			}
 

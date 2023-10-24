@@ -3,10 +3,10 @@ package com.lovetropics.minigames.common.content.block_party;
 import com.lovetropics.lib.BlockBox;
 import com.lovetropics.lib.codec.MoreCodecs;
 import com.lovetropics.minigames.common.content.MinigameTexts;
-import com.lovetropics.minigames.common.core.dimension.DimensionUtils;
 import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.GameStopReason;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
+import com.lovetropics.minigames.common.core.game.SpawnBuilder;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
@@ -92,14 +92,14 @@ public final class BlockPartyBehavior implements IGameBehavior {
 			state = startCountingDown(0);
 		});
 
-		events.listen(GamePlayerEvents.SPAWN, (player, role) -> this.spawnPlayer(player));
+		events.listen(GamePlayerEvents.SPAWN, (playerId, spawn, role) -> this.spawnPlayer(spawn));
 
 		events.listen(GamePhaseEvents.TICK, this::tick);
 	}
 
-	private void spawnPlayer(ServerPlayer player) {
-		BlockPos floorPos = floorRegion.sample(player.getRandom());
-		DimensionUtils.teleportPlayerNoPortal(player, game.getDimension(), floorPos.above());
+	private void spawnPlayer(SpawnBuilder spawn) {
+		BlockPos floorPos = floorRegion.sample(game.getWorld().getRandom());
+		spawn.teleportTo(game.getWorld(), floorPos.above());
 	}
 
 	private void tick() {

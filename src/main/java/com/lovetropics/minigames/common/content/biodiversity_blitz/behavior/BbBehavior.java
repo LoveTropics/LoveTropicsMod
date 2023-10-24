@@ -14,6 +14,7 @@ import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.PlotsSta
 import com.lovetropics.minigames.common.content.biodiversity_blitz.util.BbUtils;
 import com.lovetropics.minigames.common.core.dimension.DimensionUtils;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
+import com.lovetropics.minigames.common.core.game.SpawnBuilder;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameEntityEvents;
@@ -33,13 +34,13 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.protocol.game.ClientboundSetTitleTextPacket;
 import net.minecraft.network.protocol.game.ClientboundSetTitlesAnimationPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
@@ -59,6 +60,7 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.UUID;
 
 // TODO: needs to be split up & data-driven more!
 
@@ -78,7 +80,6 @@ public final class BbBehavior implements IGameBehavior {
 		this.tutorial = game.getState().getOrThrow(TutorialState.KEY);
 		this.widgets = GlobalGameWidgets.registerTo(game, events);
 
-		events.listen(GamePlayerEvents.ADD, player -> setupPlayerAsRole(player, null));
 		events.listen(GamePlayerEvents.SPAWN, this::setupPlayerAsRole);
 		events.listen(BbEvents.ASSIGN_PLOT, this::onAssignPlot);
 		events.listen(GamePhaseEvents.TICK, () -> tick(game));
@@ -226,19 +227,21 @@ public final class BbBehavior implements IGameBehavior {
 		return InteractionResult.FAIL;
 	}
 
-	private void setupPlayerAsRole(ServerPlayer player, @Nullable PlayerRole role) {
+	private void setupPlayerAsRole(UUID playerId, SpawnBuilder spawn, @Nullable PlayerRole role) {
 		if (role == PlayerRole.SPECTATOR) {
-			this.spawnSpectator(player);
+			this.spawnSpectator(spawn);
 		}
 	}
 
-	private void spawnSpectator(ServerPlayer player) {
-		Plot plot = plots.getRandomPlot(player.getRandom());
+	private void spawnSpectator(SpawnBuilder spawn) {
+		ServerLevel level = game.getWorld();
+		RandomSource random = level.getRandom();
+		Plot plot = plots.getRandomPlot(random);
 		if (plot != null) {
-			teleportToRegion(player, plot.plantBounds, plot.forward);
+			spawn.teleportTo(level, plot.plantBounds.sample(random), plot.forward);
 		}
 
-		player.setGameMode(GameType.SPECTATOR);
+		spawn.setGameMode(GameType.SPECTATOR);
 	}
 
 	private void onAssignPlot(ServerPlayer player, Plot plot) {

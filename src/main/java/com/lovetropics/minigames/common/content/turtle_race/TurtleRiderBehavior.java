@@ -32,17 +32,19 @@ public record TurtleRiderBehavior(EntityTemplate turtle) implements IGameBehavio
 	public void register(IGamePhase game, EventRegistrar events) throws GameException {
 		Map<UUID, Entity> turtles = new Object2ObjectOpenHashMap<>();
 
-		events.listen(GamePlayerEvents.SPAWN, (player, role) -> {
+		events.listen(GamePlayerEvents.SPAWN, (playerId, spawn, role) -> {
 			if (role != PlayerRole.PARTICIPANT) {
 				return;
 			}
-			Entity entity = spawnTurtle(player);
-			if (entity == null) {
-				LOGGER.error("Failed to spawn turtle entity of type: {}", turtle.type());
-				return;
-			}
-			player.startRiding(entity);
-			turtles.put(player.getUUID(), entity);
+			spawn.run(player -> {
+				Entity entity = spawnTurtle(player);
+				if (entity == null) {
+					LOGGER.error("Failed to spawn turtle entity of type: {}", turtle.type());
+					return;
+				}
+				player.startRiding(entity);
+				turtles.put(player.getUUID(), entity);
+			});
 		});
 
 		events.listen(GamePlayerEvents.SET_ROLE, (player, role, lastRole) -> {

@@ -147,9 +147,7 @@ final class GameLobby implements IGameLobby {
 	private GameResult<Unit> onGamePhaseChange(GamePhase oldPhase, GamePhase newPhase) {
 		GameResult<Unit> result = GameResult.ok();
 
-		if (newPhase != null && oldPhase == null) {
-			onQueueResume();
-		} else if (newPhase == null && oldPhase != null) {
+		if (newPhase == null && oldPhase != null) {
 			onQueuePaused();
 		}
 
@@ -188,12 +186,6 @@ final class GameLobby implements IGameLobby {
 		}
 	}
 
-	void onQueueResume() {
-		for (ServerPlayer player : getPlayers()) {
-			onPlayerEnterGame(player);
-		}
-	}
-
 	void onQueuePaused() {
 		for (ServerPlayer player : getPlayers()) {
 			onPlayerExitGame(player);
@@ -215,13 +207,12 @@ final class GameLobby implements IGameLobby {
 	void onPlayerRegister(ServerPlayer player) {
 		manager.addPlayerToLobby(player, this);
 
+		stateListener.onPlayerJoin(this, player);
+
 		GamePhase phase = state.getPhase();
 		if (phase != null) {
-			onPlayerEnterGame(player);
 			phase.onPlayerJoin(player);
 		}
-
-		stateListener.onPlayerJoin(this, player);
 
 		management.onPlayersChanged();
 	}
@@ -229,8 +220,7 @@ final class GameLobby implements IGameLobby {
 	void onPlayerLeave(ServerPlayer player) {
 		GamePhase phase = state.getPhase();
 		if (phase != null) {
-			phase.onPlayerLeave(player);
-			onPlayerExitGame(player);
+			player = phase.onPlayerLeave(player);
 		}
 
 		stateListener.onPlayerLeave(this, player);
@@ -242,10 +232,6 @@ final class GameLobby implements IGameLobby {
 	}
 
 	// TODO: better abstract this logic?
-	void onPlayerEnterGame(ServerPlayer player) {
-		PlayerIsolation.INSTANCE.isolateAndClear(player);
-	}
-
 	void onPlayerExitGame(ServerPlayer player) {
 		PlayerIsolation.INSTANCE.restore(player);
 	}
