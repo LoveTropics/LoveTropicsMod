@@ -70,6 +70,7 @@ public abstract class PlayerListMixin implements PlayerListAccess {
 		player.save(tag);
 		tag.remove("UUID");
 		tag.remove("Pos");
+		tag.put("ForgeCaps", new CompoundTag());
 		tag.put("ForgeData", new CompoundTag());
 
 		return tag;
