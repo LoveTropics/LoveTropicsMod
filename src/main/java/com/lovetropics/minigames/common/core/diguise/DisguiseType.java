@@ -28,17 +28,7 @@ public record DisguiseType(@Nullable EntityConfig entity, float scale) {
 
 	@Nullable
 	public Entity createEntityFor(Player player) {
-		Entity entity = createEntity(player.level());
-		if (entity == null) {
-			return null;
-		}
-
-		if (!entity.hasCustomName()) {
-			entity.setCustomName(player.getDisplayName());
-		}
-		entity.setCustomNameVisible(true);
-
-		return entity;
+		return createEntity(player.level());
 	}
 
 	@Nullable

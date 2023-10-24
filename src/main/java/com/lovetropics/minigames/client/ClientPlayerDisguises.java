@@ -7,6 +7,7 @@ import com.lovetropics.minigames.common.core.diguise.PlayerDisguise;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import net.minecraft.client.renderer.entity.EntityRenderer;
@@ -16,8 +17,8 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.WalkAnimationState;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.scores.Team;
 import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
 import net.minecraftforge.client.event.RenderPlayerEvent;
 import net.minecraftforge.client.event.ViewportEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -47,6 +48,7 @@ public final class ClientPlayerDisguises {
 
             try {
                 copyDisguiseState(disguiseEntity, player);
+                disguiseEntity.setCustomNameVisible(shouldShowName(dispatcher, player));
 
                 float partialTicks = event.getPartialTick();
                 MultiBufferSource buffers = event.getMultiBufferSource();
@@ -109,6 +111,8 @@ public final class ClientPlayerDisguises {
         disguise.setSprinting(player.isSprinting());
         disguise.setSwimming(player.isSwimming());
 
+        disguise.setCustomName(player.getDisplayName());
+
         if (disguise instanceof LivingEntity livingDisguise) {
             livingDisguise.yBodyRot = player.yBodyRot;
             livingDisguise.yBodyRotO = player.yBodyRotO;
@@ -128,6 +132,35 @@ public final class ClientPlayerDisguises {
         }
 
         disguise.tickCount = player.tickCount;
+    }
+
+    // TODO: Shameless code duplication
+    private static boolean shouldShowName(EntityRenderDispatcher entityRenderDispatcher, Player player) {
+        double distanceSq = entityRenderDispatcher.distanceToSqr(player);
+        float maximumDistance = player.isDiscrete() ? 32.0f : 64.0f;
+        if (distanceSq >= maximumDistance * maximumDistance) {
+            return false;
+        }
+
+        Minecraft minecraft = Minecraft.getInstance();
+        LocalPlayer localPlayer = minecraft.player;
+        boolean visible = !player.isInvisibleTo(localPlayer);
+        if (player != localPlayer) {
+            Team playerTeam = player.getTeam();
+            Team localPlayerTeam = localPlayer.getTeam();
+            if (playerTeam != null) {
+                return switch (playerTeam.getNameTagVisibility()) {
+                    case ALWAYS -> visible;
+                    case NEVER -> false;
+                    case HIDE_FOR_OTHER_TEAMS ->
+                            localPlayerTeam == null ? visible : playerTeam.isAlliedTo(localPlayerTeam) && (playerTeam.canSeeFriendlyInvisibles() || visible);
+                    case HIDE_FOR_OWN_TEAM ->
+                            localPlayerTeam == null ? visible : !playerTeam.isAlliedTo(localPlayerTeam) && visible;
+                };
+            }
+        }
+
+        return Minecraft.renderNames() && player != minecraft.getCameraEntity() && visible && !player.isVehicle();
     }
 
     private static void copyWalkAnimation(WalkAnimationState from, WalkAnimationState to) {
