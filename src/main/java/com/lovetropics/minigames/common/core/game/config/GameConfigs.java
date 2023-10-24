@@ -18,6 +18,7 @@ import com.mojang.serialization.MapLike;
 import com.mojang.serialization.RecordBuilder;
 import net.minecraft.Util;
 import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.FileToIdConverter;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
@@ -79,6 +80,8 @@ public final class GameConfigs {
 
 	private static CompletableFuture<List<GameConfig>> listConfigs(RegistryAccess registryAccess, ResourceManager resourceManager, Executor executor) {
 		DynamicOps<JsonElement> ops = RegistryOps.create(JsonOps.INSTANCE, registryAccess);
+		LOGGER.info("Block tags:");
+		registryAccess.registry(Registries.BLOCK).orElseThrow().getTagNames().forEach(blockTagKey -> LOGGER.info(blockTagKey.location()));
 		List<CompletableFuture<GameConfig>> futures = GAME_LISTER.listMatchingResources(resourceManager).entrySet().stream()
 				.map(entry -> CompletableFuture.supplyAsync(() -> tryLoadConfig(ops, entry.getKey(), entry.getValue()), executor))
 				.toList();
