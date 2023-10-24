@@ -20,7 +20,7 @@ public final class SurviveTheTideTexts {
 	public static final Component SUPER_SUNSCREEN_TOOLTIP = KEYS.add("super_sunscreen.tooltip", "Prevents heatwaves from slowing you down.\n\nActive when held in main or offhand.").withStyle(ChatFormatting.AQUA);
 
 	public static final Component BAR_PVP_DISABLED = KEYS.add("bar.pvp_disabled", "Grace Period: PVP Disabled");
-	public static final Component BAR_COLLECT_LOOT = KEYS.add("bar.collect_loot", "Collect Loot before the Tide Rises");
+	public static final Component BAR_COLLECT_LOOT = KEYS.add("bar.collect_loot", "Collect Loot Before the Tide Rises");
 	public static final Component BAR_TIDES_RISING = KEYS.add("bar.tides_rising", "Tides Rising");
 	public static final Component BAR_FLASH_FLOOD = KEYS.add("bar.flash_flood", "Flash Flood");
 	public static final Component BAR_FREEZING_OVER = KEYS.add("bar.freezing_over", "Freezing Over");
@@ -58,6 +58,11 @@ public final class SurviveTheTideTexts {
 		KEYS.add("zombie_invasion.subtitle", "Look out!");
 		KEYS.add("meteor_shower", "Meteor Shower!");
 		KEYS.add("meteor_shower.subtitle", "Look out!");
+
+		KEYS.add("stt4.intro1", "ATTENTION ALL REMAINING UN SCIENCE PERSONNEL");
+		KEYS.add("stt4.intro2", "The final evacuation shuttle is departing in 15 minutes");
+		KEYS.add("stt4.intro3", "Meteorological sensors indicate incoming hostile rainfall patterns.");
+		KEYS.add("stt4.intro4", "Seek higher ground.");
 
 		KEYS.add("donation.antidote_package", "%sender% sent you an ANTIDOTE PACKAGE!");
 		KEYS.add("donation.knockback_package", "%sender% sent you a KNOCKBACK PACKAGE! Use the Teeter Yeeter™ wisely.");
