@@ -29,6 +29,7 @@ import net.minecraft.network.protocol.game.ClientboundSoundPacket;
 import net.minecraft.network.protocol.game.ClientboundSystemChatPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
@@ -49,7 +50,7 @@ public class ActionTriggerTests implements MinigameTest {
                         .withBehavior(new StartGameTrigger(behaviors.applyToAllPlayers(
                                 NoneActionTarget.INSTANCE,
                                 new SendMessageAction(new TemplatedText(Component.literal("hello world!")))
-                        )), new PlaySoundAction(SoundEvents.ALLAY_HURT, 0.5f, 0.5f)));
+                        )), new PlaySoundAction(SoundEvents.ALLAY_HURT, 0.5f, 0.5f, SoundSource.AMBIENT)));
 
         generator.builder(gameId("stop"))
                 .withPlayingPhase(new InlineMapProvider(Level.OVERWORLD), phaseBuilder -> phaseBuilder
