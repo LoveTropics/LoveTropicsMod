@@ -1,5 +1,6 @@
 package com.lovetropics.minigames.common.core.game;
 
+import com.lovetropics.minigames.Constants;
 import com.mojang.serialization.Dynamic;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.minecraft.nbt.CompoundTag;
@@ -33,27 +34,27 @@ import java.util.function.Consumer;
 public final class PlayerIsolation {
 	public static final PlayerIsolation INSTANCE = new PlayerIsolation();
 
-	private final Set<UUID> isolatedPlayers = new ObjectOpenHashSet<>();
+	private static final String ISOLATED_TAG = Constants.MODID + ".isolated";
 
 	private PlayerIsolation() {
 	}
 
 	public ServerPlayer teleportTo(final ServerPlayer player, final ServerLevel newLevel, final Vec3 position, final float yRot, final float xRot) {
 		final PlayerListAccess playerList = (PlayerListAccess) player.getServer().getPlayerList();
-		if (!isolatedPlayers.contains(player.getUUID())) {
+		if (!isIsolated(player)) {
 			playerList.ltminigames$save(player);
-			isolatedPlayers.add(player.getUUID());
 		}
 		final TransferableState transferableState = TransferableState.copyOf(player);
 		return reloadPlayer(player, newPlayer -> {
 			newPlayer.setServerLevel(newLevel);
 			newPlayer.moveTo(position.x, position.y, position.z, yRot, xRot);
+			newPlayer.addTag(ISOLATED_TAG);
 			transferableState.restore(newPlayer);
 		});
 	}
 
 	public ServerPlayer restore(final ServerPlayer player) {
-		if (isolatedPlayers.remove(player.getUUID())) {
+		if (isIsolated(player)) {
 			return reloadPlayerFromDisk(player);
 		}
 		return player;
@@ -158,7 +159,7 @@ public final class PlayerIsolation {
 	}
 
 	public boolean isIsolated(final ServerPlayer player) {
-		return isolatedPlayers.contains(player.getUUID());
+		return player.getTags().contains(ISOLATED_TAG);
 	}
 
 	// State that can be transferred into isolation, but not back out

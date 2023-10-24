@@ -16,7 +16,7 @@ public interface IGameLobbyPlayers extends PlayerSet {
 
 	CompletableFuture<GameResult<Unit>> join(ServerPlayer player);
 
-	boolean remove(ServerPlayer player);
+	boolean remove(ServerPlayer player, boolean loggingOut);
 
 	boolean forceRole(ServerPlayer player, @Nullable PlayerRole role);
 

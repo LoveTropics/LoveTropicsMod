@@ -201,7 +201,7 @@ final class GameLobby implements IGameLobby {
 	void onPlayerLoggedOut(ServerPlayer player) {
 		trackingPlayers.onPlayerLoggedOut(player);
 
-		players.remove(player);
+		players.remove(player, true);
 	}
 
 	void onPlayerRegister(ServerPlayer player) {
@@ -217,10 +217,10 @@ final class GameLobby implements IGameLobby {
 		management.onPlayersChanged();
 	}
 
-	void onPlayerLeave(ServerPlayer player) {
+	void onPlayerLeave(ServerPlayer player, boolean loggingOut) {
 		GamePhase phase = state.getPhase();
 		if (phase != null) {
-			player = phase.onPlayerLeave(player);
+			player = phase.onPlayerLeave(player, loggingOut);
 		}
 
 		stateListener.onPlayerLeave(this, player);
@@ -244,7 +244,7 @@ final class GameLobby implements IGameLobby {
 		stateListener.onPlayerStopTracking(this, player);
 	}
 
-	void close() {
+	void close(boolean serverStopping) {
 		if (closed) return;
 		closed = true;
 
@@ -254,7 +254,7 @@ final class GameLobby implements IGameLobby {
 
 			LobbyPlayerManager players = getPlayers();
 			for (ServerPlayer player : Lists.newArrayList(players)) {
-				players.remove(player);
+				players.remove(player, serverStopping);
 			}
 
 			stateListener.onLobbyStop(this);

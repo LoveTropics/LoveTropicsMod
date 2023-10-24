@@ -216,7 +216,7 @@ public class GamePhase implements IGamePhase {
 		}
 	}
 
-	ServerPlayer onPlayerLeave(ServerPlayer player) {
+	ServerPlayer onPlayerLeave(ServerPlayer player, boolean loggingOut) {
 		for (PlayerRole role : PlayerRole.ROLES) {
 			roles.get(role).remove(player);
 		}
@@ -229,6 +229,10 @@ public class GamePhase implements IGamePhase {
 			LoveTropics.LOGGER.warn("Failed to dispatch player leave event", e);
 		}
 
+		// Don't try to restore the player if they're logging out, as we never save their in-game state anyway
+		if (loggingOut) {
+			return player;
+		}
 		return PlayerIsolation.INSTANCE.restore(player);
 	}
 

@@ -237,7 +237,7 @@ public class MultiGameManager implements IGameManager {
 	public static void onServerStopping(ServerStoppingEvent event) {
 		List<GameLobby> lobbies = new ArrayList<>(INSTANCE.lobbies);
 		for (GameLobby lobby : lobbies) {
-			lobby.close();
+			lobby.close(true);
 		}
 	}
 
@@ -306,7 +306,7 @@ public class MultiGameManager implements IGameManager {
 
 			ResourceKey<Level> dimension = phase.getDimension();
 			if (event.getFrom() == dimension && event.getTo() != dimension) {
-				if (phase.getLobby().getPlayers().remove(player)) {
+				if (phase.getLobby().getPlayers().remove(player, false)) {
 					player.displayClientMessage(GameTexts.Status.leftGameDimension(), false);
 				}
 			}

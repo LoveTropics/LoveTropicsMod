@@ -126,7 +126,7 @@ final class LobbyManagement implements ILobbyManagement {
 
 	@Override
 	public void close() {
-		lobby.close();
+		lobby.close(false);
 	}
 
 	void onFocusedLiveLobbyChanged() {

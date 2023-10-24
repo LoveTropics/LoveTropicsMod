@@ -62,9 +62,9 @@ final class LobbyPlayerManager implements IGameLobbyPlayers {
 	}
 
 	@Override
-	public boolean remove(ServerPlayer player) {
+	public boolean remove(ServerPlayer player, boolean loggingOut) {
 		if (registrations.remove(player.getUUID())) {
-			lobby.onPlayerLeave(player);
+			lobby.onPlayerLeave(player, loggingOut);
 			roleSelections.remove(player);
 			return true;
 		}
