@@ -21,6 +21,7 @@
     "gametest.GTReportGameListenerMixin"
   ],
   "client": [
+    "client.IntegratedPlayerListMixin",
     "client.BiomeColorsMixin",
     "client.BossOverlayGuiMixin",
     "client.HotbarOverride",
