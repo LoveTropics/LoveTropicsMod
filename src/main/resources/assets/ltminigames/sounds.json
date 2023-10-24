@@ -1,5 +1,38 @@
 {
-	"swap_players": { "category": "master", "sounds": [ "ltminigames:swap_players" ] },
-	"package_receive": { "category": "master", "sounds": [ "ltminigames:package_receive" ] },
-	"sabotage_receive": { "category": "master", "sounds": [ "ltminigames:sabotage_receive" ] }
+  "swap_players": {
+    "category": "master",
+    "sounds": [
+      "ltminigames:swap_players"
+    ]
+  },
+  "package_receive": {
+    "category": "master",
+    "sounds": [
+      "ltminigames:package_receive"
+    ]
+  },
+  "sabotage_receive": {
+    "category": "master",
+    "sounds": [
+      "ltminigames:sabotage_receive"
+    ]
+  },
+  "stt4.acid_flash_flooding_imminent": {
+    "category": "voice",
+    "sounds": [
+      "ltminigames:stt4/acid_flash_flooding_imminent"
+    ]
+  },
+  "stt4.flash_flooding_imminent": {
+    "category": "voice",
+    "sounds": [
+      "ltminigames:stt4/flash_flooding_imminent"
+    ]
+  },
+  "stt4.last_shuttle_departing": {
+    "category": "voice",
+    "sounds": [
+      "ltminigames:stt4/last_shuttle_departing"
+    ]
+  }
 }
