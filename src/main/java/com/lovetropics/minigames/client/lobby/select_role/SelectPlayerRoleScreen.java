@@ -47,7 +47,7 @@ public final class SelectPlayerRoleScreen extends Screen {
 
 		GridLayout buttons = helper.addChild(new GridLayout().spacing(SPACING), helper.newCellSettings().paddingTop(SPACING));
 		GridLayout.RowHelper buttonsHelper = buttons.createRowHelper(2);
-		buttonsHelper.addChild(Button.builder(GameTexts.Ui.SELECT_PLAY, b -> {
+		Button playButton = buttonsHelper.addChild(Button.builder(GameTexts.Ui.SELECT_PLAY, b -> {
 			sendResponse(true);
 			onClose();
 		}).width(BUTTON_WIDTH).build());
@@ -58,6 +58,8 @@ public final class SelectPlayerRoleScreen extends Screen {
 
 		layout.visitWidgets(this::addRenderableWidget);
 		repositionElements();
+
+		setInitialFocus(playButton);
 	}
 
 	@Override
