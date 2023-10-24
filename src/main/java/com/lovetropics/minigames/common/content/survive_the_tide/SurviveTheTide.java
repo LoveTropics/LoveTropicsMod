@@ -4,13 +4,16 @@ import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.client.render.block.BigRedButtonBlockEntityRenderer;
 import com.lovetropics.minigames.client.render.entity.DriftwoodRenderer;
+import com.lovetropics.minigames.client.render.entity.LightningArrowRenderer;
 import com.lovetropics.minigames.common.content.survive_the_tide.behavior.*;
 import com.lovetropics.minigames.common.content.survive_the_tide.block.BigRedButtonBlock;
 import com.lovetropics.minigames.common.content.survive_the_tide.block.BigRedButtonBlockEntity;
 import com.lovetropics.minigames.common.content.survive_the_tide.block.LootDispenserBlock;
 import com.lovetropics.minigames.common.content.survive_the_tide.block.LootDispenserBlockEntity;
 import com.lovetropics.minigames.common.content.survive_the_tide.entity.DriftwoodEntity;
+import com.lovetropics.minigames.common.content.survive_the_tide.entity.LightningArrowEntity;
 import com.lovetropics.minigames.common.content.survive_the_tide.item.AcidRepellentUmbrellaItem;
+import com.lovetropics.minigames.common.content.survive_the_tide.item.LightningArrowItem;
 import com.lovetropics.minigames.common.content.survive_the_tide.item.PaddleItem;
 import com.lovetropics.minigames.common.content.survive_the_tide.item.SuperSunscreenItem;
 import com.lovetropics.minigames.common.util.registry.GameBehaviorEntry;
@@ -20,8 +23,10 @@ import com.tterrag.registrate.util.entry.BlockEntityEntry;
 import com.tterrag.registrate.util.entry.BlockEntry;
 import com.tterrag.registrate.util.entry.ItemEntry;
 import com.tterrag.registrate.util.entry.RegistryEntry;
+import net.minecraft.SharedConstants;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.level.block.Blocks;
@@ -95,10 +100,20 @@ public final class SurviveTheTide {
 			.model((ctx, prov) -> {})
 			.register();
 
+	public static final ItemEntry<LightningArrowItem> LIGHTNING_ARROW = REGISTRATE.item("lightning_arrow", LightningArrowItem::new)
+			.tag(ItemTags.ARROWS)
+			.register();
+
 	public static final RegistryEntry<EntityType<DriftwoodEntity>> DRIFTWOOD = REGISTRATE.entity("driftwood", DriftwoodEntity::new, MobCategory.MISC)
 			.properties(properties -> properties.sized(2.0F, 1.0F).setShouldReceiveVelocityUpdates(true).setUpdateInterval(3))
 			.defaultLang()
 			.renderer(() -> DriftwoodRenderer::new)
+			.register();
+
+	public static final RegistryEntry<EntityType<LightningArrowEntity>> LIGHTNING_ARROW_ENTITY = REGISTRATE.<LightningArrowEntity>entity("lightning_arrow", LightningArrowEntity::new, MobCategory.MISC)
+			.properties(properties -> properties.sized(0.5f, 0.5f).clientTrackingRange(4).updateInterval(SharedConstants.TICKS_PER_SECOND))
+			.defaultLang()
+			.renderer(() -> LightningArrowRenderer::new)
 			.register();
 
 	public static final GameBehaviorEntry<RisingTidesGameBehavior> RISING_TIDES = REGISTRATE.object("rising_tides")
