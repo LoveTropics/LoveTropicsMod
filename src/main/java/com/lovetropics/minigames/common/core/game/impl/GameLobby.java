@@ -10,13 +10,14 @@ import com.lovetropics.minigames.common.core.game.*;
 import com.lovetropics.minigames.common.core.game.lobby.*;
 import com.lovetropics.minigames.common.core.game.player.PlayerIterable;
 import com.lovetropics.minigames.common.core.game.player.PlayerRoleSelections;
+import com.lovetropics.minigames.common.core.game.rewards.GameRewardsMap;
 import com.lovetropics.minigames.common.core.game.util.GameTexts;
 import com.lovetropics.minigames.common.core.network.LoveTropicsNetwork;
 import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.Unit;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.Unit;
 import net.minecraftforge.network.PacketDistributor;
 
 import javax.annotation.Nullable;
@@ -37,6 +38,7 @@ final class GameLobby implements IGameLobby {
 			new NetworkUpdateListener(),
 			new ChatNotifyListener()
 	);
+	private final GameRewardsMap rewardsMap = new GameRewardsMap();
 
 	private boolean closed;
 
@@ -129,8 +131,8 @@ final class GameLobby implements IGameLobby {
 	}
 
 	private GameResult<Unit> onStateChange(LobbyStateManager.Change change) {
-		GamePhase oldPhase = change.oldPhase;
-		GamePhase newPhase = change.newPhase;
+		GamePhase oldPhase = change.oldPhase();
+		GamePhase newPhase = change.newPhase();
 		if (newPhase != oldPhase) {
 			GameResult<Unit> result = onGamePhaseChange(oldPhase, newPhase);
 			if (result.isError()) {
@@ -158,7 +160,7 @@ final class GameLobby implements IGameLobby {
 
 		if (newPhase != null) {
 			manager.addGamePhaseToDimension(newPhase.getDimension(), newPhase);
-			result = newPhase.start();
+			result = startPhase(newPhase);
 		}
 
 		GameInstance oldGame = oldPhase != null ? oldPhase.game : null;
@@ -170,6 +172,11 @@ final class GameLobby implements IGameLobby {
 		stateListener.onGamePhaseChange(this);
 
 		return result;
+	}
+
+	private GameResult<Unit> startPhase(GamePhase phase) {
+		phase.getState().register(GameRewardsMap.STATE, rewardsMap);
+		return phase.start();
 	}
 
 	private void onGameInstanceChange(GameInstance oldGame, GameInstance newGame) {
@@ -229,11 +236,13 @@ final class GameLobby implements IGameLobby {
 		management.onPlayersChanged();
 
 		manager.removePlayerFromLobby(player, this);
+
+		rewardsMap.grant(player);
 	}
 
 	// TODO: better abstract this logic?
 	void onPlayerExitGame(ServerPlayer player) {
-		PlayerIsolation.INSTANCE.restore(player);
+		rewardsMap.grant(PlayerIsolation.INSTANCE.restore(player));
 	}
 
 	void onPlayerStartTracking(ServerPlayer player) {

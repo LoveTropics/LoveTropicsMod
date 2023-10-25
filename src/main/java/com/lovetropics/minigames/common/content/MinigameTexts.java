@@ -93,6 +93,9 @@ public final class MinigameTexts {
 	public static final Component EVERYONE_RECEIVER = KEYS.add("donation.everyone_receiver", "Everyone").withStyle(ChatFormatting.BLUE);
 	public static final TranslationCollector.Fun1 PACKAGE_RECEIVED = KEYS.add1("donation.package_received", "%s received a package!");
 
+	public static final Component REWARDS = KEYS.add("rewards_granted", "You got rewards for playing minigames!").withStyle(ChatFormatting.GOLD);
+	public static final TranslationCollector.Fun2 REWARD_ITEM = KEYS.add2("reward_item", " - %sx %s").withStyle(ChatFormatting.GRAY);
+
 	static {
 		KEYS.add("starting_in", "Starting in %time%!");
 		KEYS.add("donation.swap", "%sender% is swapping everyone with a nearby player!");

@@ -73,13 +73,6 @@ final class LobbyStateManager {
 		}
 	}
 
-	static final class Change {
-		final GamePhase oldPhase;
-		final GamePhase newPhase;
-
-		Change(GamePhase oldPhase, GamePhase newPhase) {
-			this.oldPhase = oldPhase;
-			this.newPhase = newPhase;
-		}
+	record Change(GamePhase oldPhase, GamePhase newPhase) {
 	}
 }
