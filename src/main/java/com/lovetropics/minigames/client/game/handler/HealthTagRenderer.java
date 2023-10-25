@@ -63,11 +63,11 @@ public final class HealthTagRenderer  {
 
 		RenderSystem.enableDepthTest();
 
-		poseStack.pushPose();
-		poseStack.translate(left - 4.5f, -4.5F, 0.0F);
+		graphics.pose().pushPose();
+		graphics.pose().translate(left - 4.5f, -4.5F, 0.0F);
 		graphics.blit(GUI_ICONS_TEXTURE, 0, 0, 16, 0, 9, 9, 256, 256);
 		graphics.blit(GUI_ICONS_TEXTURE, 0, 0, 52, 0, 9, 9, 256, 256);
-		poseStack.popPose();
+		graphics.pose().popPose();
 
 		poseStack.popPose();
 
