@@ -21,5 +21,11 @@
     "lt.golf.end_hole_part_3": " hits!",
     "lt.golf.in_use": " is already on this hole. Please wait for your turn.",
     "lt.golf.seconds_left": "Seconds Left: ",
-    "lt.golf.hits": "Hits: "
+    "lt.golf.hits": "Hits: ",
+    "lt.milestone.milestone": "Milestone",
+    "lt.milestone.unlocked_level_one": "'Frog Disguise' Unlocked!",
+    "lt.milestone.unlocked_level_two": "'TropiCreeper Disguise' Unlocked!",
+    "lt.milestone.unlocked_level_three": "'Spider Monkey Disguise' Unlocked!",
+    "lt.milestone.unlocked_level_four": "'Fox Disguise' Unlocked!",
+    "lt.milestone.unlocked_level_five": "'Col Cojo Disguise' Unlocked!"
 }
