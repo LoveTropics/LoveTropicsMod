@@ -54,10 +54,13 @@ public class ClientLobbyState {
 
 	public LobbyStatus getStatus() {
 		if (currentGame != null) {
-			switch (currentGame.phase()) {
-				case PLAYING: return LobbyStatus.PLAYING;
-				case WAITING: return LobbyStatus.WAITING;
+			if (currentGame.error() != null) {
+				return LobbyStatus.WAITING;
 			}
+			return switch (currentGame.phase()) {
+				case PLAYING -> LobbyStatus.PLAYING;
+				case WAITING -> LobbyStatus.WAITING;
+			};
 		}
 		return LobbyStatus.PAUSED;
 	}
