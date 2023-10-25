@@ -33,6 +33,7 @@ import com.lovetropics.minigames.common.core.game.behavior.instances.action.Dama
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.EliminatePlayerAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.GiveEffectAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.GiveLootAction;
+import com.lovetropics.minigames.common.core.game.behavior.instances.action.GiveRewardAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.NotificationToastAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.PlaySoundAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.RunCommandsAction;
@@ -75,12 +76,14 @@ import com.lovetropics.minigames.common.core.game.behavior.instances.team.TeamCh
 import com.lovetropics.minigames.common.core.game.behavior.instances.team.TeamWinTrigger;
 import com.lovetropics.minigames.common.core.game.behavior.instances.team.TeamsBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.trigger.BindControlsBehavior;
+import com.lovetropics.minigames.common.core.game.behavior.instances.trigger.GameFinishTrigger;
 import com.lovetropics.minigames.common.core.game.behavior.instances.trigger.GeneralEventsTrigger;
 import com.lovetropics.minigames.common.core.game.behavior.instances.trigger.OnDamageTrigger;
 import com.lovetropics.minigames.common.core.game.behavior.instances.trigger.OnDeathTrigger;
 import com.lovetropics.minigames.common.core.game.behavior.instances.trigger.OnKillTrigger;
 import com.lovetropics.minigames.common.core.game.behavior.instances.trigger.PhaseChangeTrigger;
 import com.lovetropics.minigames.common.core.game.behavior.instances.trigger.ScheduledActionsTrigger;
+import com.lovetropics.minigames.common.core.game.behavior.instances.trigger.TopPlayerTrigger;
 import com.lovetropics.minigames.common.core.game.behavior.instances.trigger.WeatherChangeTrigger;
 import com.lovetropics.minigames.common.core.game.behavior.instances.trigger.WhileInRegionTrigger;
 import com.lovetropics.minigames.common.core.game.behavior.instances.trigger.phase.GameReadyTrigger;
@@ -150,6 +153,7 @@ public class GameBehaviorTypes {
 	public static final GameBehaviorEntry<ScheduledActionsTrigger> SCHEDULED_ACTIONS = register("scheduled_actions", ScheduledActionsTrigger.CODEC);
 	public static final GameBehaviorEntry<PhaseChangeTrigger> PHASE_CHANGE = register("phase_change", PhaseChangeTrigger.CODEC);
 	public static final GameBehaviorEntry<OnKillTrigger> ON_KILL = register("on_kill", OnKillTrigger.CODEC);
+	public static final GameBehaviorEntry<GameFinishTrigger> GAME_FINISH = register("game_finish", GameFinishTrigger.CODEC);
 	public static final GameBehaviorEntry<BindControlsBehavior> BIND_CONTROLS = register("bind_controls", BindControlsBehavior.CODEC);
 	public static final GameBehaviorEntry<CancelPlayerDamageBehavior> CANCEL_PLAYER_DAMAGE = register("cancel_player_damage", CancelPlayerDamageBehavior.CODEC);
 	public static final GameBehaviorEntry<ScalePlayerDamageBehavior> SCALE_PLAYER_DAMAGE = register("scale_player_damage", ScalePlayerDamageBehavior.CODEC);
@@ -226,6 +230,8 @@ public class GameBehaviorTypes {
 	public static final GameBehaviorEntry<ChestDropAction> CHEST_DROP = register("chest_drop", ChestDropAction.CODEC);
 	public static final GameBehaviorEntry<DamagePlayerAction> DAMAGE_PLAYER = register("damage_player", DamagePlayerAction.CODEC);
 	public static final GameBehaviorEntry<SpectatorActivityAction> SPECTATOR_ACTIVITY = register("spectator_activity", SpectatorActivityAction.CODEC);
+	public static final GameBehaviorEntry<GiveRewardAction> GIVE_REWARD = register("give_reward", GiveRewardAction.CODEC);
+	public static final GameBehaviorEntry<TopPlayerTrigger> TOP_PLAYER_TRIGGER = register("top_player_trigger", TopPlayerTrigger.CODEC);
 
 	public static final GameBehaviorEntry<SetupIntegrationsBehavior> SETUP_INTEGRATIONS = register("setup_integrations", SetupIntegrationsBehavior.CODEC);
 	public static final GameBehaviorEntry<AssignPlayerRolesBehavior> ASSIGN_PLAYER_ROLES = register("assign_player_roles", AssignPlayerRolesBehavior.CODEC);

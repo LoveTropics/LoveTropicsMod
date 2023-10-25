@@ -13,12 +13,13 @@ public class GameRewards {
 	private final List<ItemStack> stacks = new ArrayList<>();
 
 	public void give(final ItemStack item) {
-		if (!tryMergeIntoExistingStack(item)) {
-			stacks.add(item.copy());
+		final ItemStack remainder = tryMergeIntoExistingStack(item.copy());
+		if (!remainder.isEmpty()) {
+			stacks.add(remainder);
 		}
 	}
 
-	private boolean tryMergeIntoExistingStack(final ItemStack item) {
+	private ItemStack tryMergeIntoExistingStack(final ItemStack item) {
 		for (final ItemStack stack : stacks) {
 			if (!ItemStack.isSameItemSameTags(item, stack)) {
 				continue;
@@ -29,11 +30,11 @@ public class GameRewards {
 				stack.grow(amount);
 				item.shrink(amount);
 				if (item.isEmpty()) {
-					return true;
+					return ItemStack.EMPTY;
 				}
 			}
 		}
-		return false;
+		return item;
 	}
 
 	public void grant(final ServerPlayer player) {
