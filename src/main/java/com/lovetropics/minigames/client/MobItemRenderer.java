@@ -2,6 +2,7 @@ package com.lovetropics.minigames.client;
 
 import com.lovetropics.minigames.common.core.diguise.DisguiseType;
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.client.Minecraft;
@@ -9,11 +10,17 @@ import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher;
+import net.minecraft.client.renderer.texture.TextureAtlas;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
+import org.joml.Matrix3f;
+import org.joml.Matrix4f;
 
 import javax.annotation.Nullable;
 import java.lang.ref.WeakReference;
@@ -22,18 +29,48 @@ import java.util.Optional;
 import java.util.function.Function;
 
 public class MobItemRenderer extends BlockEntityWithoutLevelRenderer {
+	private final Minecraft minecraft;
 	private final EntityCache entityCache = new EntityCache();
 	private final Function<ItemStack, DisguiseType.EntityConfig> entityGetter;
+	private final ResourceLocation inventorySprite;
 
-	public MobItemRenderer(final BlockEntityRenderDispatcher dispatcher, final EntityModelSet modelSet, final Function<ItemStack, DisguiseType.EntityConfig> entityGetter) {
+	public MobItemRenderer(final BlockEntityRenderDispatcher dispatcher, final EntityModelSet modelSet, Minecraft minecraft, final Function<ItemStack, DisguiseType.EntityConfig> entityGetter, final ResourceLocation inventorySprite) {
 		super(dispatcher, modelSet);
+		this.minecraft = minecraft;
 		this.entityGetter = entityGetter;
+		this.inventorySprite = inventorySprite;
+	}
+
+	private static void addVertex(final VertexConsumer consumer, final PoseStack.Pose pose, final float x, final float y, final float u, final float v, final int packedLight, int packedOverlay) {
+		final Matrix4f matrix = pose.pose();
+		final Matrix3f normal = pose.normal();
+		consumer.vertex(matrix, x, y, 0.0f)
+				.color(1.0f, 1.0f, 1.0f, 1.0f)
+				.uv(u, v)
+				.overlayCoords(packedOverlay)
+				.uv2(packedLight)
+				.normal(normal, 0.0f, 1.0f, 0.0f)
+				.endVertex();
+	}
+
+	private void drawInventorySprite(PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay) {
+		final PoseStack.Pose pose = poseStack.last();
+		final TextureAtlasSprite sprite = minecraft.getTextureAtlas(TextureAtlas.LOCATION_BLOCKS).apply(inventorySprite);
+		final VertexConsumer consumer = bufferSource.getBuffer(Sheets.translucentItemSheet());
+		addVertex(consumer, pose, 0.0f, 0.0f, sprite.getU0(), sprite.getV1(), packedLight, packedOverlay);
+		addVertex(consumer, pose, 1.0f, 0.0f, sprite.getU1(), sprite.getV1(), packedLight, packedOverlay);
+		addVertex(consumer, pose, 1.0f, 1.0f, sprite.getU1(), sprite.getV0(), packedLight, packedOverlay);
+		addVertex(consumer, pose, 0.0f, 1.0f, sprite.getU0(), sprite.getV0(), packedLight, packedOverlay);
 	}
 
 	@Override
 	public void renderByItem(final ItemStack stack, final ItemDisplayContext context, final PoseStack poseStack, final MultiBufferSource bufferSource, final int packedLight, final int packedOverlay) {
 		final Minecraft minecraft = Minecraft.getInstance();
 		final ClientLevel level = minecraft.level;
+
+		if (context == ItemDisplayContext.GUI) {
+			drawInventorySprite(poseStack, bufferSource, packedLight, packedOverlay);
+		}
 
 		final DisguiseType.EntityConfig entityType = entityGetter.apply(stack);
 		if (level == null || entityType == null) {
