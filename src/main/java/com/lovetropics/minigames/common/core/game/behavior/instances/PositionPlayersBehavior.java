@@ -84,7 +84,7 @@ public class PositionPlayersBehavior implements IGameBehavior {
 		int spawnCount = spawns.size();
 		int groupSize = Math.max(participantCount / spawnCount, 1);
 		for (GameTeam team : teams) {
-			PlayerSet teamPlayers = teams.getPlayersForTeam(team.key());
+			PlayerSet teamPlayers = teams.getParticipantsForTeam(team.key());
 			int teamSize = teamPlayers.size();
 			int teamGroupCount = Math.max(teamSize / groupSize, 1);
 			teamSpawners.put(team.key(), spawns.take(teamGroupCount));

@@ -86,7 +86,7 @@ public final class TeamsBehavior implements IGameBehavior {
 
 		events.listen(GamePhaseEvents.START, () -> {
 			for (GameTeam team : teams) {
-				for (ServerPlayer player : teams.getPlayersForTeam(team.key())) {
+				for (ServerPlayer player : teams.getParticipantsForTeam(team.key())) {
 					applyTeamToPlayer(game, team, player);
 				}
 			}
@@ -95,7 +95,6 @@ public final class TeamsBehavior implements IGameBehavior {
 		events.listen(GamePhaseEvents.DESTROY, () -> onDestroy(game));
 		events.listen(GamePlayerEvents.ALLOCATE_ROLES, allocator -> reassignPlayerRoles(game, allocator));
 
-		events.listen(GamePlayerEvents.SET_ROLE, (player, role, lastRole) -> onPlayerSetRole(game, player, role, lastRole));
 		events.listen(GamePlayerEvents.LEAVE, player -> removePlayerFromTeams(game, player));
 		events.listen(GamePlayerEvents.DAMAGE, this::onPlayerHurt);
 		events.listen(GamePlayerEvents.ATTACK, this::onPlayerAttack);
@@ -148,12 +147,6 @@ public final class TeamsBehavior implements IGameBehavior {
 		ServerScoreboard scoreboard = game.getServer().getScoreboard();
 		for (PlayerTeam team : scoreboardTeams.values()) {
 			scoreboard.removePlayerTeam(team);
-		}
-	}
-
-	private void onPlayerSetRole(IGamePhase game, ServerPlayer player, @Nullable PlayerRole role, @Nullable PlayerRole lastRole) {
-		if (lastRole == PlayerRole.PARTICIPANT && role != PlayerRole.PARTICIPANT) {
-			removePlayerFromTeams(game, player);
 		}
 	}
 

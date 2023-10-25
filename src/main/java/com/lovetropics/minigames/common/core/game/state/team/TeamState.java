@@ -23,17 +23,20 @@ import java.util.stream.Collectors;
 public final class TeamState implements IGameState, Iterable<GameTeam> {
 	public static final GameStateKey<TeamState> KEY = GameStateKey.create("Teams");
 
+	private final PlayerSet participants;
 	private final List<GameTeam> teams;
 
 	private final Object2ObjectMap<GameTeamKey, GameTeam> teamsByKey = new Object2ObjectOpenHashMap<>();
 	private final Object2ObjectMap<GameTeamKey, MutablePlayerSet> playersByKey = new Object2ObjectOpenHashMap<>();
+	private final Object2ObjectMap<GameTeamKey, PlayerSet> participantsByKey = new Object2ObjectOpenHashMap<>();
 
 	private final Collection<GameTeam> pollingTeams;
 	private final Set<UUID> assignedPlayers;
 
 	private final Allocations allocations = new Allocations();
 
-	public TeamState(List<GameTeam> teams) {
+	public TeamState(PlayerSet participants, List<GameTeam> teams) {
+		this.participants = participants;
 		this.teams = teams;
 
 		this.pollingTeams = new ObjectOpenHashSet<>();
@@ -73,6 +76,10 @@ public final class TeamState implements IGameState, Iterable<GameTeam> {
 		return null;
 	}
 
+	public PlayerSet getParticipantsForTeam(GameTeamKey team) {
+		return participantsByKey.getOrDefault(team, PlayerSet.EMPTY);
+	}
+
 	public PlayerSet getPlayersForTeam(GameTeamKey team) {
 		PlayerSet players = playersByKey.get(team);
 		return players != null ? players : PlayerSet.EMPTY;
@@ -84,6 +91,7 @@ public final class TeamState implements IGameState, Iterable<GameTeam> {
 			Preconditions.checkState(teams.contains(getTeamByKey(team)), "invalid team " + team);
 			players = new MutablePlayerSet(server);
 			playersByKey.put(team, players);
+			participantsByKey.put(team, PlayerSet.intersection(players, participants));
 		}
 		return players;
 	}

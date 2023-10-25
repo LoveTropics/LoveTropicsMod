@@ -5,7 +5,6 @@ import com.lovetropics.lib.codec.MoreCodecs;
 import com.lovetropics.minigames.common.core.diguise.DisguiseType;
 import com.lovetropics.minigames.common.core.diguise.PlayerDisguise;
 import com.lovetropics.minigames.common.core.diguise.ServerPlayerDisguises;
-import com.lovetropics.minigames.common.core.dimension.DimensionUtils;
 import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.SpawnBuilder;
@@ -97,8 +96,8 @@ public final class HideAndSeekBehavior implements IGameBehavior {
 	private void start() {
 		int hideTicks = initialHideSeconds * 20;
 
-		PlayerSet seekers = teams.getPlayersForTeam(this.seekers.key());
-		PlayerSet hiders = teams.getPlayersForTeam(this.hiders.key());
+		PlayerSet seekers = teams.getParticipantsForTeam(this.seekers.key());
+		PlayerSet hiders = teams.getParticipantsForTeam(this.hiders.key());
 
 		seekers.addPotionEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, hideTicks, 255, true, false));
 		seekers.addPotionEffect(new MobEffectInstance(MobEffects.BLINDNESS, hideTicks, 255, true, false));

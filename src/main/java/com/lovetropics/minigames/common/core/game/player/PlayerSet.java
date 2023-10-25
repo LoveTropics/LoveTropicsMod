@@ -1,5 +1,6 @@
 package com.lovetropics.minigames.common.core.game.player;
 
+import com.google.common.collect.Iterators;
 import com.lovetropics.minigames.common.core.game.state.statistics.PlayerKey;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.server.level.ServerPlayer;
@@ -91,6 +92,42 @@ public interface PlayerSet extends PlayerIterable {
 			@Override
 			public Iterator<ServerPlayer> iterator() {
 				return PlayerIterable.resolvingIterator(server, players.iterator());
+			}
+		};
+	}
+
+	static PlayerSet intersection(PlayerSet left, PlayerSet right) {
+		return new PlayerSet() {
+			@Override
+			public boolean contains(UUID id) {
+				return left.contains(id) && right.contains(id);
+			}
+
+			@Nullable
+			@Override
+			public ServerPlayer getPlayerBy(UUID id) {
+				ServerPlayer leftPlayer = left.getPlayerBy(id);
+				ServerPlayer rightPlayer = right.getPlayerBy(id);
+				if (leftPlayer != null && rightPlayer != null) {
+					return leftPlayer;
+				}
+				return null;
+			}
+
+			@Override
+			public int size() {
+				int size = 0;
+				for (ServerPlayer player : left) {
+					if (right.contains(player)) {
+						size++;
+					}
+				}
+				return size;
+			}
+
+			@Override
+			public Iterator<ServerPlayer> iterator() {
+				return Iterators.filter(left.iterator(), right::contains);
 			}
 		};
 	}

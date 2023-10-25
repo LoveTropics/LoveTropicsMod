@@ -36,7 +36,7 @@ public class TeamWinTrigger implements IGameBehavior {
 				return;
 			}
 
-			if (teamState.getPlayersForTeam(playerTeam).isEmpty()) {
+			if (teamState.getParticipantsForTeam(playerTeam).isEmpty()) {
 				GameTeam finalTeam = getFinalTeam(teamState);
 				if (finalTeam == null) {
 					// How did we get here? If there are no other teams, the team who died last is probably the winner
@@ -59,7 +59,7 @@ public class TeamWinTrigger implements IGameBehavior {
 	private GameTeam getFinalTeam(TeamState teamState) {
 		GameTeam finalTeam = null;
 		for (GameTeam team : teamState) {
-			if (teamState.getPlayersForTeam(team.key()).isEmpty()) {
+			if (teamState.getParticipantsForTeam(team.key()).isEmpty()) {
 				continue;
 			}
 
