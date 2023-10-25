@@ -21,6 +21,8 @@ import com.lovetropics.minigames.common.content.trash_dive.TrashDive;
 import com.lovetropics.minigames.common.content.trash_dive.TrashDiveTexts;
 import com.lovetropics.minigames.common.content.turtle_race.TurtleRace;
 import com.lovetropics.minigames.common.content.turtle_race.TurtleRaceTexts;
+import com.lovetropics.minigames.common.core.chat.ChatChannelStore;
+import com.lovetropics.minigames.common.core.command.ChatCommand;
 import com.lovetropics.minigames.common.core.command.ExtendedBossBarCommand;
 import com.lovetropics.minigames.common.core.command.LoveTropicsEntityOptions;
 import com.lovetropics.minigames.common.core.command.MapCommand;
@@ -99,6 +101,7 @@ public class LoveTropics {
 
     public static final Capability<DriftwoodRider> DRIFTWOOD_RIDER = CapabilityManager.get(new CapabilityToken<>() {});
     public static final Capability<PlayerDisguise> PLAYER_DISGUISE = CapabilityManager.get(new CapabilityToken<>() {});
+    public static final Capability<ChatChannelStore> CHAT_CHANNEL = CapabilityManager.get(new CapabilityToken<>() {});
 
     public LoveTropics() {
     	// Compatible with all versions that match the semver (excluding the qualifier e.g. "-beta+42")
@@ -215,6 +218,7 @@ public class LoveTropics {
         ManageGameLobbyCommand.register(dispatcher);
         ExtendedBossBarCommand.register(dispatcher);
         ParticleLineCommand.register(event.getBuildContext(), dispatcher);
+        ChatCommand.register(dispatcher);
     }
 
     private void onServerAboutToStart(final ServerAboutToStartEvent event) {

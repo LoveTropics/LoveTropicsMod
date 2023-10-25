@@ -94,6 +94,11 @@ public final class GameTexts {
 
 		private static final Component CANNOT_TELEPORT_INTO_GAME = KEYS.add("cannot_teleport_into_game", "You cannot teleport into a game without being apart of it!");
 
+		public static final Component GLOBAL_CHAT_CHANNEL = KEYS.add("chat_channel.global", "Global Chat");
+		public static final Component TEAM_CHAT_CHANNEL = KEYS.add("chat_channel.team", "Team Chat");
+		public static final TranslationCollector.Fun1 SET_CHAT_CHANNEL = KEYS.add1("set_chat_channel", "You are now chatting in %s");
+		public static final Component TEAM_CHAT_INTRO = KEYS.add("team_chat_intro", "You are using team chat. Use /shout or /chat global to chat with everyone.");
+
 		public static MutableComponent joinedLobby(IGameLobby lobby) {
 			return formatPositive(JOINED_LOBBY.apply(lobbyName(lobby)));
 		}

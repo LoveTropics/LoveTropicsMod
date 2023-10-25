@@ -3,6 +3,7 @@ package com.lovetropics.minigames.common.core.game.behavior.event;
 import com.lovetropics.minigames.common.core.game.SpawnBuilder;
 import com.lovetropics.minigames.common.core.game.player.PlayerRole;
 import com.lovetropics.minigames.common.core.game.util.TeamAllocator;
+import net.minecraft.network.chat.PlayerChatMessage;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -175,6 +176,15 @@ public final class GamePlayerEvents {
 		}
 	});
 
+	public static final GameEventType<Chat> CHAT = GameEventType.create(Chat.class, listeners -> (player, message) -> {
+		for (Chat listener : listeners) {
+			if (listener.onChat(player, message)) {
+				return true;
+			}
+		}
+		return false;
+	});
+
 	private GamePlayerEvents() {
 	}
 
@@ -248,5 +258,9 @@ public final class GamePlayerEvents {
 
 	public interface AllocateRoles {
 		void onAllocateRoles(TeamAllocator<PlayerRole, ServerPlayer> allocator);
+	}
+
+	public interface Chat {
+		boolean onChat(ServerPlayer player, PlayerChatMessage message);
 	}
 }

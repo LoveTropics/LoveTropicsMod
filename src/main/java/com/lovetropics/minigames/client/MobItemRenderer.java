@@ -44,7 +44,7 @@ public class MobItemRenderer extends BlockEntityWithoutLevelRenderer {
 	private static void addVertex(final VertexConsumer consumer, final PoseStack.Pose pose, final float x, final float y, final float u, final float v, final int packedLight, int packedOverlay) {
 		final Matrix4f matrix = pose.pose();
 		final Matrix3f normal = pose.normal();
-		consumer.vertex(matrix, x, y, 0.0f)
+		consumer.vertex(matrix, x, y, 100.0f)
 				.color(1.0f, 1.0f, 1.0f, 1.0f)
 				.uv(u, v)
 				.overlayCoords(packedOverlay)

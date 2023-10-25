@@ -13,6 +13,7 @@
     "PlayerMixin",
     "SimpleRegistryMixin",
     "TagManagerAccessor",
+    "chat.ServerGamePacketListenerImplMixin",
     "gametest.GameTestHelperAccess",
     "gametest.GameTestInfoAccess",
     "gametest.GTNetworkFiltersMixin",
@@ -21,10 +22,10 @@
     "gametest.GTReportGameListenerMixin"
   ],
   "client": [
-    "client.IntegratedPlayerListMixin",
     "client.BiomeColorsMixin",
     "client.BossOverlayGuiMixin",
     "client.HotbarOverride",
+    "client.IntegratedPlayerListMixin",
     "client.MinecraftMixin",
     "client.PlayerTabOverlayGuiMixin",
     "client.PoseStackAccessor"

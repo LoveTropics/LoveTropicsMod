@@ -71,6 +71,7 @@ import com.lovetropics.minigames.common.core.game.behavior.instances.statistics.
 import com.lovetropics.minigames.common.core.game.behavior.instances.statistics.TimeSurvivedTrackerBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.team.SetupTeamsBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.team.SyncTeamsBehavior;
+import com.lovetropics.minigames.common.core.game.behavior.instances.team.TeamChatBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.team.TeamWinTrigger;
 import com.lovetropics.minigames.common.core.game.behavior.instances.team.TeamsBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.trigger.BindControlsBehavior;
@@ -157,6 +158,7 @@ public class GameBehaviorTypes {
 	public static final GameBehaviorEntry<SetGameRulesBehavior> SET_GAME_RULES = register("set_game_rules", SetGameRulesBehavior.CODEC);
 	public static final GameBehaviorEntry<SetupTeamsBehavior> SETUP_TEAMS = register("setup_teams", SetupTeamsBehavior.CODEC);
 	public static final GameBehaviorEntry<TeamsBehavior> TEAMS = register("teams", TeamsBehavior.CODEC);
+	public static final GameBehaviorEntry<TeamChatBehavior> TEAM_CHAT = register("team_chat", TeamChatBehavior.CODEC);
 	public static final GameBehaviorEntry<SpectatorChaseBehavior> SPECTATOR_CHASE = register("spectator_chase", SpectatorChaseBehavior.CODEC);
 	public static final GameBehaviorEntry<ForceLoadRegionBehavior> FORCE_LOAD_REGION = register("force_load_region", ForceLoadRegionBehavior.CODEC);
 	public static final GameBehaviorEntry<EliminatePlayerAction> ELIMINATE_PLAYER = register("eliminate_player", EliminatePlayerAction.CODEC);
