@@ -32,6 +32,10 @@ public class TeamWinTrigger implements IGameBehavior {
 			}
 
 			GameTeamKey playerTeam = teamState.getTeamForPlayer(player);
+			if (playerTeam == null) {
+				return;
+			}
+
 			if (teamState.getPlayersForTeam(playerTeam).isEmpty()) {
 				GameTeam finalTeam = getFinalTeam(teamState);
 				if (finalTeam == null) {
