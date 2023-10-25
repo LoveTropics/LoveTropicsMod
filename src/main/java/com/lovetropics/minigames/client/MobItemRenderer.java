@@ -10,7 +10,7 @@ import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.Sheets;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -53,10 +53,11 @@ public class MobItemRenderer extends BlockEntityWithoutLevelRenderer {
 				.endVertex();
 	}
 
-	private void drawInventorySprite(PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay) {
+	private void drawInventorySprite(final PoseStack poseStack, final MultiBufferSource bufferSource, final int packedLight, final int packedOverlay) {
+		final ResourceLocation atlas = TextureAtlas.LOCATION_BLOCKS;
+		final TextureAtlasSprite sprite = minecraft.getTextureAtlas(atlas).apply(inventorySprite);
+		final VertexConsumer consumer = bufferSource.getBuffer(RenderType.textSeeThrough(atlas));
 		final PoseStack.Pose pose = poseStack.last();
-		final TextureAtlasSprite sprite = minecraft.getTextureAtlas(TextureAtlas.LOCATION_BLOCKS).apply(inventorySprite);
-		final VertexConsumer consumer = bufferSource.getBuffer(Sheets.translucentItemSheet());
 		addVertex(consumer, pose, 0.0f, 0.0f, sprite.getU0(), sprite.getV1(), packedLight, packedOverlay);
 		addVertex(consumer, pose, 1.0f, 0.0f, sprite.getU1(), sprite.getV1(), packedLight, packedOverlay);
 		addVertex(consumer, pose, 1.0f, 1.0f, sprite.getU1(), sprite.getV0(), packedLight, packedOverlay);
@@ -65,12 +66,15 @@ public class MobItemRenderer extends BlockEntityWithoutLevelRenderer {
 
 	@Override
 	public void renderByItem(final ItemStack stack, final ItemDisplayContext context, final PoseStack poseStack, final MultiBufferSource bufferSource, final int packedLight, final int packedOverlay) {
-		final Minecraft minecraft = Minecraft.getInstance();
-		final ClientLevel level = minecraft.level;
-
+		drawEntity(stack, context, poseStack, bufferSource, packedLight);
 		if (context == ItemDisplayContext.GUI) {
 			drawInventorySprite(poseStack, bufferSource, packedLight, packedOverlay);
 		}
+	}
+
+	private void drawEntity(ItemStack stack, ItemDisplayContext context, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight) {
+		final Minecraft minecraft = Minecraft.getInstance();
+		final ClientLevel level = minecraft.level;
 
 		final DisguiseType.EntityConfig entityType = entityGetter.apply(stack);
 		if (level == null || entityType == null) {
