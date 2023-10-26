@@ -76,7 +76,7 @@ public final class BbAssignPlotsBehavior implements IGameBehavior {
 
 	private void applyCheckeredPlots(EventRegistrar events) {
 		CheckeredPlotsState checkeredPlots = new CheckeredPlotsState(
-				this.freePlots.stream().map(plot -> plot.bounds).toArray(BlockBox[]::new)
+				this.freePlots.stream().map(plot -> plot.floorBounds).toArray(BlockBox[]::new)
 		);
 
 		GameClientState.applyGlobally(checkeredPlots, events);

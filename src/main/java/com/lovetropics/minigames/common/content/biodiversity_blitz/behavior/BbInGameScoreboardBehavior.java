@@ -10,6 +10,7 @@ import com.lovetropics.minigames.common.core.game.client_state.GameClientState;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.phys.Vec3;
@@ -26,6 +27,8 @@ public record BbInGameScoreboardBehavior(Vec3 start, Vec3 end, boolean side) imp
     @Override
     public void register(IGamePhase game, EventRegistrar events) throws GameException {
         events.listen(BbEvents.ASSIGN_PLOT, (pl, po) ->
-                GameClientState.sendToPlayer(new ClientBbScoreboardState(start, end, side, List.of(Component.literal("Hello!"))), pl));
+                GameClientState.sendToPlayer(new ClientBbScoreboardState(start, end, side, List.of(
+                        Component.literal("Hello!").withStyle(ChatFormatting.BOLD)
+                )), pl));
     }
 }

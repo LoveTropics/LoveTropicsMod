@@ -18,6 +18,7 @@ import javax.annotation.Nullable;
 public final class Plot {
 	public final BlockBox bounds;
 	public final BlockBox plantBounds;
+	public final BlockBox floorBounds;
 	public final BlockBox spawn;
 	public final BlockBox shop;
 	public final BlockBox plantShop;
@@ -33,13 +34,14 @@ public final class Plot {
 	public final PlotWaveState waveState = new PlotWaveState();
 
 	private Plot(
-			BlockBox bounds, BlockBox plantBounds,
+			BlockBox bounds, BlockBox plantBounds, BlockBox floorBounds,
 			BlockBox spawn, BlockBox shop, BlockBox plantShop,
 			BlockBox mobSpawn,
 			Direction forward, Direction spawnForward
 	) {
 		this.bounds = bounds;
 		this.plantBounds = plantBounds;
+		this.floorBounds = floorBounds;
 		this.spawn = spawn;
 		this.shop = shop;
 		this.plantShop = plantShop;
@@ -56,6 +58,10 @@ public final class Plot {
 				new BlockPos(plantBounds.min().getX(), level.getMinBuildHeight(), plantBounds.min().getZ()),
 				new BlockPos(plantBounds.max().getX(), level.getMaxBuildHeight(), plantBounds.max().getZ())
 		);
+		BlockBox floorBounds = BlockBox.of(
+				new BlockPos(plantBounds.min().getX(), plantBounds.min().getY() - 1, plantBounds.min().getZ()),
+				new BlockPos(plantBounds.max().getX(), plantBounds.min().getY() - 1, plantBounds.max().getZ())
+		);
 		BlockBox spawn = regionKeys.spawn.getOrThrow(regions, config.key);
 		BlockBox shop = regionKeys.shop.getOrThrow(regions, config.key);
 		BlockBox plantShop = regionKeys.plantShop.getOrThrow(regions, config.key);
@@ -65,7 +71,7 @@ public final class Plot {
 		Direction spawnForward = Util.getDirectionBetween(spawn, bounds);
 
 		return new Plot(
-				bounds, plantBounds,
+				bounds, plantBounds, floorBounds,
 				spawn, shop, plantShop,
 				mobSpawn,
 				forward, spawnForward

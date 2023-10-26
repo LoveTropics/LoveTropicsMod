@@ -187,7 +187,7 @@ public final class BbBehavior implements IGameBehavior {
 		Plot plot = this.plots.getPlotFor(player);
 		BlockPos pos = blockRayTraceResult.getBlockPos();
 
-		if (plot != null && plot.bounds.contains(pos)) {
+		if (plot != null && plot.floorBounds.contains(pos)) {
 			return this.onUseBlockInPlot(player, world, blockPos, hand, plot, pos);
 		} else {
 			return InteractionResult.FAIL;
@@ -218,7 +218,7 @@ public final class BbBehavior implements IGameBehavior {
 		}
 
 		Plot plot = this.plots.getPlotFor(entity);
-		if (plot != null && plot.bounds.contains(pos)) {
+		if (plot != null && plot.floorBounds.contains(pos)) {
 			if (!plot.plants.hasPlantAt(pos.above())) {
 				return InteractionResult.PASS;
 			}

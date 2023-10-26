@@ -31,6 +31,7 @@ public class GameRenderTypes extends RenderStateShard {
                 .setTransparencyState(TRANSLUCENT_TRANSPARENCY)
                 .setOutputState(TRANSLUCENT_TARGET)
                 .setCullState(NO_CULL)
+                .setLayeringState(POLYGON_OFFSET_LAYERING)
                 .createCompositeState(true);
     }
 }

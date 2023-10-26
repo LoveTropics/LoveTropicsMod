@@ -69,9 +69,9 @@ public class GameRendering {
 
             matrices.pushPose();
 
-            matrices.translate(b.minX - camera.x(), b.maxY - camera.y(), b.minZ - camera.z());
+            matrices.translate(b.minX - camera.x(), b.maxY - camera.y(), b.maxZ - camera.z());
             matrices.mulPose(Axis.XN.rotationDegrees(180));
-            matrices.mulPose(Axis.YP.rotationDegrees(90));
+            matrices.mulPose(Axis.YN.rotationDegrees(90));
             matrices.scale(0.04f, 0.04f, 0.04f);
             int off = 1;
             for (Component comp : state.content()) {
