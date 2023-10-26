@@ -24,6 +24,7 @@ import net.minecraft.world.level.biome.BiomeManager;
 import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.level.storage.LevelData;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.event.ForgeEventFactory;
 
 import java.util.List;
 import java.util.Objects;
@@ -117,6 +118,12 @@ public final class PlayerIsolation {
 		((PlayerListAccess) playerList).ltminigames$add(newPlayer);
 
 		playerList.broadcastAll(new ClientboundPlayerInfoUpdatePacket(ClientboundPlayerInfoUpdatePacket.Action.UPDATE_GAME_MODE, newPlayer));
+
+		final ResourceKey<Level> oldDimension = oldPlayer.level().dimension();
+		final ResourceKey<Level> newDimension = newLevel.dimension();
+		if (oldDimension != newDimension) {
+			ForgeEventFactory.firePlayerChangedDimensionEvent(newPlayer, oldDimension, newDimension);
+		}
 
 		return newPlayer;
 	}
