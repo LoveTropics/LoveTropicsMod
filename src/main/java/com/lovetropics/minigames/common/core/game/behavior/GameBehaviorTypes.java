@@ -36,6 +36,7 @@ import com.lovetropics.minigames.common.core.game.behavior.instances.action.Give
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.GiveRewardAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.NotificationToastAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.PlaySoundAction;
+import com.lovetropics.minigames.common.core.game.behavior.instances.PlayerHeadRewardBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.RunCommandsAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.SendMessageAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.SetBlockAtPlayerAction;
@@ -186,6 +187,7 @@ public class GameBehaviorTypes {
 	public static final GameBehaviorEntry<TipsAndTricksBehavior> TIPS_AND_TRICKS = register("tips_and_tricks", TipsAndTricksBehavior.CODEC);
 	public static final GameBehaviorEntry<ProgressBarBehavior> PHASE_PROGRESS_BAR = register("phase_progress_bar", ProgressBarBehavior.CODEC);
 	public static final GameBehaviorEntry<WeatherChangeTrigger> WEATHER_CHANGE_TRIGGER = register("weather_change_trigger", WeatherChangeTrigger.CODEC);
+	public static final GameBehaviorEntry<PlayerHeadRewardBehavior> PLAYER_HEAD_REWARD = register("player_head_reward", PlayerHeadRewardBehavior.CODEC);
 
 	public static final GameBehaviorEntry<BindObjectiveToStatisticBehavior> BIND_OBJECTIVE_TO_STATISTIC = register("bind_objective_to_statistic", BindObjectiveToStatisticBehavior.CODEC);
 	public static final GameBehaviorEntry<PlaceByStatisticBehavior> PLACE_BY_STATISTIC = register("place_by_statistic", PlaceByStatisticBehavior.CODEC);

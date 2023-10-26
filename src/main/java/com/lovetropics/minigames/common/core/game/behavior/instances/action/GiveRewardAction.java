@@ -23,7 +23,7 @@ public record GiveRewardAction(List<ItemStack> items) implements IGameBehavior {
 		GameRewardsMap rewards = game.getState().getOrThrow(GameRewardsMap.STATE);
 		events.listen(GameActionEvents.APPLY_TO_PLAYER, (context, target) -> {
 			for (final ItemStack item : items) {
-				rewards.give(target, item);
+				rewards.forPlayer(target).give(item);
 			}
 			return true;
 		});

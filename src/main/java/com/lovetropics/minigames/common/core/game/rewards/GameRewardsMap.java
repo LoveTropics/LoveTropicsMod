@@ -4,7 +4,6 @@ import com.lovetropics.minigames.common.core.game.state.GameStateKey;
 import com.lovetropics.minigames.common.core.game.state.IGameState;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.item.ItemStack;
 
 import java.util.Map;
 import java.util.UUID;
@@ -14,8 +13,8 @@ public class GameRewardsMap implements IGameState {
 
 	private final Map<UUID, GameRewards> rewards = new Object2ObjectOpenHashMap<>();
 
-	public void give(final ServerPlayer player, final ItemStack item) {
-		rewards.computeIfAbsent(player.getUUID(), id -> new GameRewards()).give(item);
+	public GameRewards forPlayer(ServerPlayer player) {
+		return rewards.computeIfAbsent(player.getUUID(), id -> new GameRewards());
 	}
 
 	public void grant(final ServerPlayer player) {
