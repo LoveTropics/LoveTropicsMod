@@ -3,22 +3,28 @@ package com.lovetropics.minigames.common.core.diguise;
 import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.common.util.Util;
+import com.mojang.logging.LogUtils;
 import net.minecraft.core.Direction;
+import net.minecraft.nbt.NbtOps;
+import net.minecraft.nbt.Tag;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.ICapabilityProvider;
+import net.minecraftforge.common.capabilities.ICapabilitySerializable;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import org.slf4j.Logger;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 @Mod.EventBusSubscriber(modid = Constants.MODID)
-public final class PlayerDisguise implements ICapabilityProvider {
+public final class PlayerDisguise implements ICapabilitySerializable<Tag> {
+	private static final Logger LOGGER = LogUtils.getLogger();
+
 	private final LazyOptional<PlayerDisguise> instance = LazyOptional.of(() -> this);
 
 	private final LivingEntity entity;
@@ -90,5 +96,15 @@ public final class PlayerDisguise implements ICapabilityProvider {
 		} else {
 			return disguise.scale();
 		}
+	}
+
+	@Override
+	public Tag serializeNBT() {
+		return net.minecraft.Util.getOrThrow(DisguiseType.CODEC.encodeStart(NbtOps.INSTANCE, disguise), IllegalStateException::new);
+	}
+
+	@Override
+	public void deserializeNBT(Tag tag) {
+		DisguiseType.CODEC.parse(NbtOps.INSTANCE, tag).resultOrPartial(LOGGER::error).ifPresent(this::set);
 	}
 }

@@ -71,6 +71,24 @@ public final class ServerPlayerDisguises {
 		}
 
 		Entity tracked = event.getTarget();
+		sendDisguiseTo(player, tracked);
+	}
+
+	@SubscribeEvent
+	public static void onPlayerLoggedIn(final PlayerEvent.PlayerLoggedInEvent event) {
+		if (event.getEntity() instanceof final ServerPlayer player) {
+			sendDisguiseTo(player, player);
+		}
+	}
+
+	@SubscribeEvent
+	public static void onPlayerChangeDimension(final PlayerEvent.PlayerChangedDimensionEvent event) {
+		if (event.getEntity() instanceof final ServerPlayer player) {
+			sendDisguiseTo(player, player);
+		}
+	}
+
+	public static void sendDisguiseTo(ServerPlayer player, Entity tracked) {
 		PlayerDisguise disguise = PlayerDisguise.getOrNull(tracked);
 		if (disguise != null && disguise.isDisguised()) {
 			LoveTropicsNetwork.CHANNEL.send(
@@ -87,12 +105,14 @@ public final class ServerPlayerDisguises {
 		}
 
 		if (event.getEntity() instanceof ServerPlayer newPlayer && event.getOriginal() instanceof ServerPlayer oldPlayer) {
+			oldPlayer.reviveCaps();
 			PlayerDisguise newDisguise = PlayerDisguise.getOrNull(newPlayer);
 			PlayerDisguise oldDisguise = PlayerDisguise.getOrNull(oldPlayer);
 			if (newDisguise != null && oldDisguise != null) {
 				newDisguise.copyFrom(oldDisguise);
 				onSetDisguise(newPlayer);
 			}
+			oldPlayer.invalidateCaps();
 		}
 	}
 

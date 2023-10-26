@@ -15,7 +15,6 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.client.extensions.common.IClientItemExtensions;
 import net.minecraftforge.event.entity.living.LivingEquipmentChangeEvent;
-import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
@@ -64,16 +63,6 @@ public class DisguiseItem extends Item implements Equipable {
 	@Override
 	public void initializeClient(final Consumer<IClientItemExtensions> consumer) {
 		consumer.accept(CustomItemRenderers.disguiseItem());
-	}
-
-	@SubscribeEvent
-	public static void onPlayerJoin(final PlayerEvent.PlayerLoggedInEvent event) {
-		if (event.getEntity() instanceof final ServerPlayer player) {
-			final DisguiseType disguise = getDisguiseType(player.getItemBySlot(EquipmentSlot.HEAD));
-			if (disguise != null) {
-				ServerPlayerDisguises.set(player, disguise);
-			}
-		}
 	}
 
 	@SubscribeEvent
