@@ -23,9 +23,7 @@
     "lt.golf.seconds_left": "Seconds Left: ",
     "lt.golf.hits": "Hits: ",
     "lt.milestone.milestone": "Milestone",
-    "lt.milestone.unlocked_level_one": "'Frog Disguise' Unlocked!",
-    "lt.milestone.unlocked_level_two": "'TropiCreeper Disguise' Unlocked!",
-    "lt.milestone.unlocked_level_three": "'Spider Monkey Disguise' Unlocked!",
-    "lt.milestone.unlocked_level_four": "'Fox Disguise' Unlocked!",
-    "lt.milestone.unlocked_level_five": "'Col Cojo Disguise' Unlocked!"
+    "lt.milestone.unlocked_message": "'%s Disguise' Unlocked!",
+    "lt.milestone.item_lore": "Unlocked for recving %s in total donations",
+    "lt.milestone.colcojo": "Col Cojo"
 }
