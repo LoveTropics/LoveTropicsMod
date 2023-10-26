@@ -22,6 +22,7 @@ public final class Plot {
 	public final BlockBox spawn;
 	public final BlockBox shop;
 	public final BlockBox plantShop;
+	public final BlockBox mobShop;
 	public final BlockBox mobSpawn;
 
 	public final Direction forward;
@@ -35,7 +36,7 @@ public final class Plot {
 
 	private Plot(
 			BlockBox bounds, BlockBox plantBounds, BlockBox floorBounds,
-			BlockBox spawn, BlockBox shop, BlockBox plantShop,
+			BlockBox spawn, BlockBox shop, BlockBox plantShop, BlockBox mobShop,
 			BlockBox mobSpawn,
 			Direction forward, Direction spawnForward
 	) {
@@ -45,6 +46,7 @@ public final class Plot {
 		this.spawn = spawn;
 		this.shop = shop;
 		this.plantShop = plantShop;
+		this.mobShop = mobShop;
 		this.mobSpawn = mobSpawn;
 		this.forward = forward;
 		this.spawnForward = spawnForward;
@@ -65,27 +67,29 @@ public final class Plot {
 		BlockBox spawn = regionKeys.spawn.getOrThrow(regions, config.key);
 		BlockBox shop = regionKeys.shop.getOrThrow(regions, config.key);
 		BlockBox plantShop = regionKeys.plantShop.getOrThrow(regions, config.key);
+		BlockBox mobShop = regionKeys.mobShop.getOrThrow(regions, config.key);
 		BlockBox mobSpawn = regionKeys.mobSpawn.getOrThrow(regions, config.key);
 
+		// TODO: this logic doesn't work for teams
 		Direction forward = Util.getDirectionBetween(bounds, mobSpawn);
 		Direction spawnForward = Util.getDirectionBetween(spawn, bounds);
 
 		return new Plot(
 				bounds, plantBounds, floorBounds,
-				spawn, shop, plantShop,
-				mobSpawn,
-				forward, spawnForward
+				spawn, shop, plantShop, mobShop,
+				mobSpawn, forward, spawnForward
 		);
 	}
 
 	@Nullable
 	public BlockBox regionByName(String name) {
 		// TODO: we need a better generic system for systems of region names that can be referenced
-		switch (name) {
-			case "shop": return this.shop;
-			case "plant_shop": return this.plantShop;
-			default: return null;
-		}
+		return switch (name) {
+			case "shop" -> this.shop;
+			case "plant_shop" -> this.plantShop;
+			case "mob_shop" -> this.mobShop;
+			default -> null;
+		};
 	}
 
 	public static final class RegionKeys {
@@ -95,6 +99,7 @@ public final class Plot {
 					RegionPattern.CODEC.fieldOf("spawn").forGetter(c -> c.spawn),
 					RegionPattern.CODEC.fieldOf("shop").forGetter(c -> c.shop),
 					RegionPattern.CODEC.fieldOf("plant_shop").forGetter(c -> c.plantShop),
+					RegionPattern.CODEC.fieldOf("mob_shop").forGetter(c -> c.mobShop),
 					RegionPattern.CODEC.fieldOf("mob_spawn").forGetter(c -> c.mobSpawn)
 			).apply(instance, RegionKeys::new);
 		});
@@ -103,13 +108,15 @@ public final class Plot {
 		private final RegionPattern spawn;
 		private final RegionPattern shop;
 		private final RegionPattern plantShop;
+		private final RegionPattern mobShop;
 		private final RegionPattern mobSpawn;
 
-		private RegionKeys(RegionPattern plot, RegionPattern spawn, RegionPattern shop, RegionPattern plantShop, RegionPattern mobSpawn) {
+		private RegionKeys(RegionPattern plot, RegionPattern spawn, RegionPattern shop, RegionPattern plantShop, RegionPattern mobShop, RegionPattern mobSpawn) {
 			this.plot = plot;
 			this.spawn = spawn;
 			this.shop = shop;
 			this.plantShop = plantShop;
+			this.mobShop = mobShop;
 			this.mobSpawn = mobSpawn;
 		}
 	}

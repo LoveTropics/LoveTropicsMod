@@ -34,6 +34,7 @@ public final class BiodiversityBlitzTexts {
 
 	public static final Component SHOP = KEYS.add("shop", "Shop");
 	public static final Component PLANT_SHOP = KEYS.add("plant_shop", "Plant Shop");
+	public static final Component MOB_SHOP = KEYS.add("mob_shop", "Mob Shop");
 
 	public static final Component WAVE_SPAWNED = KEYS.add("wave_spawned", "A wave has spawned! Your plant defense may not yet be self-sufficient, use your sword to defend your plot!");
 	public static final Component[] TIPS = {

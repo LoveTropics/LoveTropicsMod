@@ -6,6 +6,8 @@ import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.plant.Pl
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.plant.PlantType;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameEventType;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
+import com.lovetropics.minigames.common.core.game.player.PlayerSet;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
@@ -101,6 +103,12 @@ public final class BbEvents {
 		}
 	});
 
+	public static final GameEventType<UpdateScoreboard> UPDATE_SCOREBOARD = GameEventType.create(UpdateScoreboard.class, listeners -> (players, components) -> {
+		for (UpdateScoreboard listener : listeners) {
+			listener.updateScoreboard(players, components);
+		}
+	});
+
 	private BbEvents() {
 	}
 
@@ -134,5 +142,9 @@ public final class BbEvents {
 
 	public interface ModifyWaveMobs {
 		void modifyWave(Set<Entity> entities, RandomSource random, Level world, Plot plot, int waveIndex);
+	}
+
+	public interface UpdateScoreboard {
+		void updateScoreboard(PlayerSet players, List<Component> components);
 	}
 }
