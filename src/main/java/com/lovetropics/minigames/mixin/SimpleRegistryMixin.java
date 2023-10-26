@@ -45,8 +45,7 @@ public class SimpleRegistryMixin<T> implements RegistryEntryRemover<T> {
             this.unregisteredIntrusiveHolders.remove(entry);
         }
         if (this.holdersInOrder != null) {
-            this.holdersInOrder = new ArrayList<>(this.holdersInOrder);
-            this.holdersInOrder.set(rawId, null);
+            this.holdersInOrder = null;
         }
 
         return true;
