@@ -51,9 +51,12 @@ import static net.minecraft.commands.Commands.argument;
 import static net.minecraft.commands.Commands.literal;
 
 public final class MapCommand {
-	private static final DynamicCommandExceptionType WORKSPACE_ALREADY_EXISTS = new DynamicCommandExceptionType(o -> {
-		return Component.literal("Workspace already exists with id '" + o + "'");
-	});
+	private static final DynamicCommandExceptionType WORKSPACE_ALREADY_EXISTS = new DynamicCommandExceptionType(id ->
+			Component.literal("Workspace already exists with id '" + id + "'")
+	);
+	private static final DynamicCommandExceptionType MAP_DOES_NOT_EXIST = new DynamicCommandExceptionType(id ->
+			Component.literal("Map does not exist with id '" + id + "'")
+	);
 
 	private static final SimpleCommandExceptionType NOT_IN_WORKSPACE = new SimpleCommandExceptionType(Component.literal("You are not in a workspace!"));
 
@@ -287,19 +290,22 @@ public final class MapCommand {
 		String id = location.getPath();
 
 		CommandSourceStack source = context.getSource();
-		MapWorkspaceManager workspaceManager = MapWorkspaceManager.get(source.getServer());
+		MinecraftServer server = source.getServer();
+		MapWorkspaceManager workspaceManager = MapWorkspaceManager.get(server);
 
 		if (workspaceManager.hasWorkspace(id)) {
 			throw WORKSPACE_ALREADY_EXISTS.create(id);
 		}
 
-		long seed = source.getServer().overworld().getSeed();
+		if (!MapExportReader.exists(server, location)) {
+			throw MAP_DOES_NOT_EXIST.create(location);
+		}
+
+		long seed = server.overworld().getSeed();
 		WorkspaceDimensionConfig dimensionConfig = new WorkspaceDimensionConfig(dimension.type(), dimension.generator(), seed);
 
 		workspaceManager.openWorkspace(id, dimensionConfig).thenAcceptAsync(workspace -> {
 			try {
-				MinecraftServer server = source.getServer();
-
 				try (MapExportReader reader = MapExportReader.open(server, location)) {
 					MapMetadata metadata = reader.loadInto(server, workspace.dimensionKey());
 					workspace.importFrom(metadata);
