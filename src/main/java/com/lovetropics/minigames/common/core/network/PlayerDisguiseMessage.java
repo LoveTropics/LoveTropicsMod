@@ -9,19 +9,19 @@ import javax.annotation.Nullable;
 import java.util.UUID;
 import java.util.function.Supplier;
 
-public record PlayerDisguiseMessage(UUID player, @Nullable DisguiseType disguise) {
+public record PlayerDisguiseMessage(int entityId, @Nullable DisguiseType disguise) {
 	public void encode(FriendlyByteBuf buffer) {
-		buffer.writeUUID(player);
+		buffer.writeVarInt(entityId);
 		buffer.writeNullable(disguise, (b, d) -> d.encode(b));
 	}
 
 	public static PlayerDisguiseMessage decode(FriendlyByteBuf buffer) {
-		UUID player = buffer.readUUID();
+		int entityId = buffer.readVarInt();
 		DisguiseType disguise = buffer.readNullable(DisguiseType::decode);
-		return new PlayerDisguiseMessage(player, disguise);
+		return new PlayerDisguiseMessage(entityId, disguise);
 	}
 
 	public void handle(Supplier<NetworkEvent.Context> ctx) {
-		ClientPlayerDisguises.updateClientDisguise(player, disguise);
+		ClientPlayerDisguises.updateClientDisguise(entityId, disguise);
 	}
 }

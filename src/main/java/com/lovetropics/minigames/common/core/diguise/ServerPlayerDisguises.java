@@ -6,6 +6,7 @@ import com.lovetropics.minigames.common.core.network.PlayerDisguiseMessage;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.ResourceArgument;
@@ -13,10 +14,11 @@ import net.minecraft.commands.synchronization.SuggestionProviders;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -34,6 +36,8 @@ import static net.minecraft.commands.arguments.CompoundTagArgument.getCompoundTa
 
 @Mod.EventBusSubscriber(modid = Constants.MODID)
 public final class ServerPlayerDisguises {
+	private static final SimpleCommandExceptionType NOT_LIVING_ENTITY = new SimpleCommandExceptionType(Component.literal("Not a living entity"));
+
 	@SubscribeEvent
 	public static void onRegisterCommands(RegisterCommandsEvent event) {
 		// @formatter:off
@@ -66,14 +70,13 @@ public final class ServerPlayerDisguises {
 			return;
 		}
 
-		if (event.getTarget() instanceof Player tracked) {
-			PlayerDisguise disguise = PlayerDisguise.getOrNull(tracked);
-			if (disguise != null && disguise.isDisguised()) {
-				LoveTropicsNetwork.CHANNEL.send(
-						PacketDistributor.PLAYER.with(() -> player),
-						new PlayerDisguiseMessage(tracked.getUUID(), disguise.type())
-				);
-			}
+		Entity tracked = event.getTarget();
+		PlayerDisguise disguise = PlayerDisguise.getOrNull(tracked);
+		if (disguise != null && disguise.isDisguised()) {
+			LoveTropicsNetwork.CHANNEL.send(
+					PacketDistributor.PLAYER.with(() -> player),
+					new PlayerDisguiseMessage(tracked.getId(), disguise.type())
+			);
 		}
 	}
 
@@ -94,70 +97,77 @@ public final class ServerPlayerDisguises {
 	}
 
 	private static int disguiseAsEntity(CommandContext<CommandSourceStack> context, Holder.Reference<EntityType<?>> entity, @Nullable CompoundTag nbt) throws CommandSyntaxException {
-		updateType(context.getSource().getPlayerOrException(),
+		updateType(getLivingEntity(context),
 				type -> type.withEntity(new DisguiseType.EntityConfig(entity.value(), nbt, false))
 		);
 		return Command.SINGLE_SUCCESS;
 	}
 
 	private static int disguiseScale(CommandContext<CommandSourceStack> context, float scale) throws CommandSyntaxException {
-		updateType(context.getSource().getPlayerOrException(), d -> d.withScale(scale));
+		updateType(getLivingEntity(context), d -> d.withScale(scale));
 		return Command.SINGLE_SUCCESS;
 	}
 
 	private static int clearDisguise(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
-		ServerPlayer player = context.getSource().getPlayerOrException();
-		ServerPlayerDisguises.set(player, DisguiseType.DEFAULT);
+		ServerPlayerDisguises.set(getLivingEntity(context), DisguiseType.DEFAULT);
 
 		return Command.SINGLE_SUCCESS;
 	}
 
-	public static void set(ServerPlayer player, DisguiseType type) {
-		PlayerDisguise disguise = PlayerDisguise.getOrNull(player);
+	public static void set(LivingEntity entity, DisguiseType type) {
+		PlayerDisguise disguise = PlayerDisguise.getOrNull(entity);
 		if (disguise != null) {
 			disguise.set(type);
-			onSetDisguise(player);
+			onSetDisguise(entity);
 		}
 	}
 
-	public static void update(ServerPlayer player, Consumer<PlayerDisguise> consumer) {
-		PlayerDisguise disguise = PlayerDisguise.getOrNull(player);
+	public static void update(LivingEntity entity, Consumer<PlayerDisguise> consumer) {
+		PlayerDisguise disguise = PlayerDisguise.getOrNull(entity);
 		if (disguise != null) {
 			consumer.accept(disguise);
-			onSetDisguise(player);
+			onSetDisguise(entity);
 		}
 	}
 
-	public static void updateType(ServerPlayer player, UnaryOperator<DisguiseType> operator) {
-		update(player, disguise -> disguise.set(operator.apply(disguise.type())));
+	public static void updateType(LivingEntity entity, UnaryOperator<DisguiseType> operator) {
+		update(entity, disguise -> disguise.set(operator.apply(disguise.type())));
 	}
 
-	public static void clear(ServerPlayer player) {
-		update(player, PlayerDisguise::clear);
+	public static void clear(LivingEntity entity) {
+		update(entity, PlayerDisguise::clear);
 	}
 
-	public static void clear(ServerPlayer player, DisguiseType type) {
-		update(player, disguise -> disguise.clear(type));
+	public static void clear(LivingEntity entity, DisguiseType type) {
+		update(entity, disguise -> disguise.clear(type));
 	}
 
-	private static void onSetDisguise(ServerPlayer player) {
-		PlayerDisguise disguise = PlayerDisguise.getOrNull(player);
+	private static void onSetDisguise(LivingEntity entity) {
+		PlayerDisguise disguise = PlayerDisguise.getOrNull(entity);
 		if (disguise == null) {
 			return;
 		}
 
 		LoveTropicsNetwork.CHANNEL.send(
-				PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> player),
-				new PlayerDisguiseMessage(player.getUUID(), disguise.type())
+				PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> entity),
+				new PlayerDisguiseMessage(entity.getId(), disguise.type())
 		);
 
-		PlayerDisguiseBehavior.clearAttributes(player);
+		PlayerDisguiseBehavior.clearAttributes(entity);
 
 		DisguiseType disguiseType = disguise.type();
 		if (disguiseType.entity() != null && disguiseType.entity().applyAttributes()) {
 			if (disguise.entity() instanceof LivingEntity living) {
-				PlayerDisguiseBehavior.applyAttributes(player, living);
+				PlayerDisguiseBehavior.applyAttributes(entity, living);
 			}
 		}
+	}
+
+	private static LivingEntity getLivingEntity(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+		final Entity entity = context.getSource().getEntityOrException();
+		if (entity instanceof final LivingEntity living) {
+			return living;
+		}
+		throw NOT_LIVING_ENTITY.create();
 	}
 }

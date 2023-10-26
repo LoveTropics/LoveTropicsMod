@@ -19,6 +19,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.scores.Team;
 import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.client.event.RenderLivingEvent;
 import net.minecraftforge.client.event.RenderPlayerEvent;
 import net.minecraftforge.client.event.ViewportEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -31,9 +32,9 @@ public final class ClientPlayerDisguises {
     private static final Minecraft CLIENT = Minecraft.getInstance();
 
     @SubscribeEvent
-    public static void onRenderPlayerPre(RenderPlayerEvent.Pre event) {
-        Player player = event.getEntity();
-        PlayerDisguise disguise = PlayerDisguise.getOrNull(player);
+    public static void onRenderPlayerPre(RenderLivingEvent.Pre<?, ?> event) {
+        LivingEntity entity = event.getEntity();
+        PlayerDisguise disguise = PlayerDisguise.getOrNull(entity);
         if (disguise == null || !disguise.isDisguised()) {
             return;
         }
@@ -47,8 +48,10 @@ public final class ClientPlayerDisguises {
             int capturedTransformState = PoseStackCapture.get(poseStack);
 
             try {
-                copyDisguiseState(disguiseEntity, player);
-                disguiseEntity.setCustomNameVisible(shouldShowName(dispatcher, player));
+                copyDisguiseState(disguiseEntity, entity);
+                if (entity instanceof final Player player) {
+                    disguiseEntity.setCustomNameVisible(shouldShowName(dispatcher, player));
+                }
 
                 float partialTicks = event.getPartialTick();
                 MultiBufferSource buffers = event.getMultiBufferSource();
@@ -59,7 +62,7 @@ public final class ClientPlayerDisguises {
                     poseStack.scale(disguiseType.scale(), disguiseType.scale(), disguiseType.scale());
                 }
 
-                float yaw = Mth.lerp(partialTicks, player.yRotO, player.getYRot());
+                float yaw = Mth.lerp(partialTicks, entity.yRotO, entity.getYRot());
                 EntityRenderer<? super Entity> renderer = dispatcher.getRenderer(disguiseEntity);
                 if (renderer != null) {
                     renderer.render(disguiseEntity, yaw, partialTicks, poseStack, buffers, packedLight);
@@ -82,9 +85,9 @@ public final class ClientPlayerDisguises {
     }
 
     @SubscribeEvent
-    public static void onRenderPlayerPost(RenderPlayerEvent.Post event) {
-        Player player = event.getEntity();
-        PlayerDisguise disguise = PlayerDisguise.getOrNull(player);
+    public static void onRenderPlayerPost(RenderLivingEvent.Post<?, ?> event) {
+        LivingEntity entity = event.getEntity();
+        PlayerDisguise disguise = PlayerDisguise.getOrNull(entity);
         if (disguise == null || !disguise.isDisguised()) {
             return;
         }
@@ -94,44 +97,45 @@ public final class ClientPlayerDisguises {
         }
     }
 
-    private static void copyDisguiseState(Entity disguise, Player player) {
-        disguise.setPos(player.getX(), player.getY(), player.getZ());
-        disguise.xo = player.xo;
-        disguise.yo = player.yo;
-        disguise.zo = player.zo;
+    private static void copyDisguiseState(Entity disguise, LivingEntity entity) {
+        disguise.setPos(entity.getX(), entity.getY(), entity.getZ());
+        disguise.xo = entity.xo;
+        disguise.yo = entity.yo;
+        disguise.zo = entity.zo;
 
-        disguise.setYRot(player.getYRot());
-        disguise.yRotO = player.yRotO;
-        disguise.setXRot(player.getXRot());
-        disguise.xRotO = player.xRotO;
+        disguise.setYRot(entity.getYRot());
+        disguise.yRotO = entity.yRotO;
+        disguise.setXRot(entity.getXRot());
+        disguise.xRotO = entity.xRotO;
 
-        disguise.setShiftKeyDown(player.isShiftKeyDown());
-        disguise.setPose(player.getPose());
-        disguise.setInvisible(player.isInvisible());
-        disguise.setSprinting(player.isSprinting());
-        disguise.setSwimming(player.isSwimming());
+        disguise.setShiftKeyDown(entity.isShiftKeyDown());
+        disguise.setPose(entity.getPose());
+        disguise.setInvisible(entity.isInvisible());
+        disguise.setSprinting(entity.isSprinting());
+        disguise.setSwimming(entity.isSwimming());
 
-        disguise.setCustomName(player.getDisplayName());
+        disguise.setCustomName(entity.getDisplayName());
+        disguise.setCustomNameVisible(entity.isCustomNameVisible());
 
         if (disguise instanceof LivingEntity livingDisguise) {
-            livingDisguise.yBodyRot = player.yBodyRot;
-            livingDisguise.yBodyRotO = player.yBodyRotO;
+            livingDisguise.yBodyRot = entity.yBodyRot;
+            livingDisguise.yBodyRotO = entity.yBodyRotO;
 
-            livingDisguise.yHeadRot = player.yHeadRot;
-            livingDisguise.yHeadRotO = player.yHeadRotO;
+            livingDisguise.yHeadRot = entity.yHeadRot;
+            livingDisguise.yHeadRotO = entity.yHeadRotO;
 
-            copyWalkAnimation(player.walkAnimation, livingDisguise.walkAnimation);
+            copyWalkAnimation(entity.walkAnimation, livingDisguise.walkAnimation);
 
-            livingDisguise.swingingArm = player.swingingArm;
-            livingDisguise.attackAnim = player.attackAnim;
-            livingDisguise.swingTime = player.swingTime;
-            livingDisguise.oAttackAnim = player.oAttackAnim;
-            livingDisguise.swinging = player.swinging;
+            livingDisguise.swingingArm = entity.swingingArm;
+            livingDisguise.attackAnim = entity.attackAnim;
+            livingDisguise.swingTime = entity.swingTime;
+            livingDisguise.oAttackAnim = entity.oAttackAnim;
+            livingDisguise.swinging = entity.swinging;
 
-            livingDisguise.setOnGround(player.onGround());
+            livingDisguise.setOnGround(entity.onGround());
         }
 
-        disguise.tickCount = player.tickCount;
+        disguise.tickCount = entity.tickCount;
     }
 
     // TODO: Shameless code duplication
@@ -169,10 +173,10 @@ public final class ClientPlayerDisguises {
         to.update(from.speed(), 1.0f);
     }
 
-    public static void updateClientDisguise(UUID uuid, DisguiseType disguiseType) {
-        Player player = Minecraft.getInstance().level.getPlayerByUUID(uuid);
-        if (player != null) {
-            PlayerDisguise disguise = PlayerDisguise.getOrNull(player);
+    public static void updateClientDisguise(int id, DisguiseType disguiseType) {
+        Entity entity = Minecraft.getInstance().level.getEntity(id);
+        if (entity != null) {
+            PlayerDisguise disguise = PlayerDisguise.getOrNull(entity);
             if (disguise != null) {
                 disguise.set(disguiseType);
             }

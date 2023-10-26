@@ -6,6 +6,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -27,8 +28,8 @@ public record DisguiseType(@Nullable EntityConfig entity, float scale) {
 	}
 
 	@Nullable
-	public Entity createEntityFor(Player player) {
-		return createEntity(player.level());
+	public Entity createEntityFor(LivingEntity entity) {
+		return createEntity(entity.level());
 	}
 
 	@Nullable

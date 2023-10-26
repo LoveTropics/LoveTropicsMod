@@ -26,25 +26,23 @@ public final class PlayerDisguiseBehavior {
 
 	@SubscribeEvent
 	public static void onSetEntitySize(EntityEvent.Size event) {
-		if (event.getEntity() instanceof Player player) {
-			PlayerDisguise disguise = PlayerDisguise.getOrNull(player);
-			if (disguise == null || !disguise.isDisguised()) {
-				return;
-			}
-
-			Entity entity = Objects.requireNonNullElse(disguise.entity(), player);
-			float scale = disguise.type().scale();
-
-			Pose pose = event.getPose();
-			EntityDimensions dimensions = entity.getDimensions(pose);
-			float eyeHeight = entity.getEyeHeightAccess(pose, dimensions);
-			event.setNewSize(dimensions.scale(scale));
-			event.setNewEyeHeight(eyeHeight * scale);
+		PlayerDisguise disguise = PlayerDisguise.getOrNull(event.getEntity());
+		if (disguise == null || !disguise.isDisguised()) {
+			return;
 		}
+
+		Entity entity = Objects.requireNonNullElse(disguise.entity(), event.getEntity());
+		float scale = disguise.type().scale();
+
+		Pose pose = event.getPose();
+		EntityDimensions dimensions = entity.getDimensions(pose);
+		float eyeHeight = entity.getEyeHeightAccess(pose, dimensions);
+		event.setNewSize(dimensions.scale(scale));
+		event.setNewEyeHeight(eyeHeight * scale);
 	}
 
-	public static void applyAttributes(Player player, LivingEntity disguise) {
-		AttributeMap playerAttributes = player.getAttributes();
+	public static void applyAttributes(LivingEntity entity, LivingEntity disguise) {
+		AttributeMap playerAttributes = entity.getAttributes();
 		AttributeMap disguiseAttributes = disguise.getAttributes();
 
 		for (Attribute attribute : BuiltInRegistries.ATTRIBUTE) {
@@ -62,8 +60,8 @@ public final class PlayerDisguiseBehavior {
 		}
 	}
 
-	public static void clearAttributes(Player player) {
-		AttributeMap attributes = player.getAttributes();
+	public static void clearAttributes(LivingEntity entity) {
+		AttributeMap attributes = entity.getAttributes();
 		for (Attribute attribute : BuiltInRegistries.ATTRIBUTE) {
 			AttributeInstance instance = attributes.getInstance(attribute);
 			if (instance != null) {

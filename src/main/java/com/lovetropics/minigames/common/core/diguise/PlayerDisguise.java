@@ -6,7 +6,7 @@ import com.lovetropics.minigames.common.util.Util;
 import net.minecraft.core.Direction;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import net.minecraftforge.common.util.LazyOptional;
@@ -21,26 +21,26 @@ import javax.annotation.Nullable;
 public final class PlayerDisguise implements ICapabilityProvider {
 	private final LazyOptional<PlayerDisguise> instance = LazyOptional.of(() -> this);
 
-	private final Player player;
+	private final LivingEntity entity;
 
 	private DisguiseType disguise = DisguiseType.DEFAULT;
 	@Nullable
-	private Entity entity;
+	private Entity disguisedEntity;
 
-	private PlayerDisguise(Player player) {
-		this.player = player;
+	private PlayerDisguise(LivingEntity entity) {
+		this.entity = entity;
 	}
 
 	@SubscribeEvent
 	public static void onAttachEntityCapabilities(AttachCapabilitiesEvent<Entity> event) {
-		if (event.getObject() instanceof Player player) {
-			event.addCapability(Util.resource("player_disguise"), new PlayerDisguise(player));
+		if (event.getObject() instanceof final LivingEntity living) {
+			event.addCapability(Util.resource("player_disguise"), new PlayerDisguise(living));
 		}
 	}
 
 	@Nullable
-	public static PlayerDisguise getOrNull(Player player) {
-		return player.getCapability(LoveTropics.PLAYER_DISGUISE).orElse(null);
+	public static PlayerDisguise getOrNull(Entity entity) {
+		return entity.getCapability(LoveTropics.PLAYER_DISGUISE).orElse(null);
 	}
 
 	public boolean isDisguised() {
@@ -60,8 +60,8 @@ public final class PlayerDisguise implements ICapabilityProvider {
 			return;
 		}
 		this.disguise = disguise;
-		entity = disguise.createEntityFor(player);
-		player.refreshDimensions();
+		disguisedEntity = disguise.createEntityFor(entity);
+		entity.refreshDimensions();
 	}
 
 	public DisguiseType type() {
@@ -70,7 +70,7 @@ public final class PlayerDisguise implements ICapabilityProvider {
 
 	@Nullable
 	public Entity entity() {
-		return entity;
+		return disguisedEntity;
 	}
 
 	@Nonnull
@@ -84,8 +84,8 @@ public final class PlayerDisguise implements ICapabilityProvider {
 	}
 
 	public float getEffectiveScale() {
-		if (entity != null) {
-			float entityScale = entity.getBbHeight() / EntityType.PLAYER.getHeight();
+		if (disguisedEntity != null) {
+			float entityScale = disguisedEntity.getBbHeight() / EntityType.PLAYER.getHeight();
 			return disguise.scale() * entityScale;
 		} else {
 			return disguise.scale();
