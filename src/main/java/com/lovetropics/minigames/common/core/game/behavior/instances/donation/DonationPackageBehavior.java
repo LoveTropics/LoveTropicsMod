@@ -11,47 +11,34 @@ import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePackageEvents;
 import com.lovetropics.minigames.common.core.game.state.GamePackageState;
 import com.lovetropics.minigames.common.core.integration.game_actions.GamePackage;
-import com.mojang.serialization.Codec;
+import com.mojang.logging.LogUtils;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
 
 import java.util.List;
 import java.util.Optional;
 
 public final class DonationPackageBehavior implements IGameBehavior {
+	private static final Logger LOGGER = LogUtils.getLogger();
+
 	public static final MapCodec<DonationPackageBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			DonationPackageData.CODEC.forGetter(c -> c.data),
 			DonationPackageNotification.CODEC.optionalFieldOf("notification").forGetter(c -> c.notification),
 			MoreCodecs.strictOptionalFieldOf(GameActionList.PLAYER_CODEC, "receive_actions", GameActionList.EMPTY).forGetter(c -> c.receiveActions)
 	).apply(i, DonationPackageBehavior::new));
 
-	private static final Logger LOGGER = LogManager.getLogger(DonationPackageBehavior.class);
+	private final DonationPackageData data;
+	private final Optional<DonationPackageNotification> notification;
+	private final GameActionList<ServerPlayer> receiveActions;
 
 	public DonationPackageBehavior(DonationPackageData data, Optional<DonationPackageNotification> notification, GameActionList<ServerPlayer> receiveActions) {
 		this.data = data;
 		this.notification = notification;
 		this.receiveActions = receiveActions;
 	}
-
-	public enum PlayerSelect {
-		SPECIFIC("specific"), RANDOM("random"), ALL("all");
-
-		public static final Codec<PlayerSelect> CODEC = MoreCodecs.stringVariants(PlayerSelect.values(), s -> s.type);
-
-		public final String type;
-
-		PlayerSelect(final String type) {
-			this.type = type;
-		}
-	}
-
-	private final DonationPackageData data;
-	private final Optional<DonationPackageNotification> notification;
-	private final GameActionList<ServerPlayer> receiveActions;
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
