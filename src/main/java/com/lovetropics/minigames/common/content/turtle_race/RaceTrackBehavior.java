@@ -17,6 +17,7 @@ import com.lovetropics.minigames.common.core.game.state.statistics.StatisticKey;
 import com.lovetropics.minigames.common.core.game.util.GameBossBar;
 import com.lovetropics.minigames.common.core.game.util.GameSidebar;
 import com.lovetropics.minigames.common.core.map.MapRegions;
+import com.lovetropics.minigames.common.role.StreamHosts;
 import com.lovetropics.minigames.common.util.Util;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
@@ -267,10 +268,21 @@ public class RaceTrackBehavior implements IGameBehavior {
 
 		if (game.getParticipants().isEmpty()) {
 			triggerWin(game);
-		} else if (finishedPlayers.size() == winnerCount) {
-			finishTime = game.ticks() + GAME_FINISH_SECONDS * SharedConstants.TICKS_PER_SECOND;
-			game.getAllPlayers().sendMessage(TurtleRaceTexts.closing(GAME_FINISH_SECONDS));
+		} else if (finishTime == NO_FINISH_TIME) {
+			if (finishedPlayers.size() >= winnerCount && !isHostStillPlaying(game)) {
+				finishTime = game.ticks() + GAME_FINISH_SECONDS * SharedConstants.TICKS_PER_SECOND;
+				game.getAllPlayers().sendMessage(TurtleRaceTexts.closing(GAME_FINISH_SECONDS));
+			}
 		}
+	}
+
+	private boolean isHostStillPlaying(IGamePhase game) {
+		for (ServerPlayer player : game.getParticipants()) {
+			if (StreamHosts.isHost(player)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	private Component[] buildSidebar(ServerPlayer player) {
