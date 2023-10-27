@@ -58,7 +58,7 @@ public class BigRedButtonBlockEntity extends BlockEntity {
 	}
 
 	private static int getSmallestTeamSize(IGamePhase game) {
-		TeamState teams = game.getState().getOrNull(TeamState.KEY);
+		TeamState teams = game.getInstanceState().getOrNull(TeamState.KEY);
 		if (teams == null) {
 			return 1;
 		}

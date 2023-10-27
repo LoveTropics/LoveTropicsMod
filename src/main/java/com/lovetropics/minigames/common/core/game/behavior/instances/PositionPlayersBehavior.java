@@ -67,7 +67,7 @@ public class PositionPlayersBehavior implements IGameBehavior {
 		fallbackSpawner = new CycledSpawner(regions, allSpawnKeys);
 		LOGGER.debug("FOUND " + participantSpawner.regions.size() + " PARTICIPANT SPAWN REGIONS");
 
-		TeamState teams = game.getState().getOrNull(TeamState.KEY);
+		TeamState teams = game.getInstanceState().getOrNull(TeamState.KEY);
 		if (splitByTeam && teams != null) {
 			events.listen(GamePhaseEvents.CREATE, () -> {
 				int participantCount = game.getParticipants().size();

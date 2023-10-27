@@ -70,7 +70,7 @@ public final class HideAndSeekBehavior implements IGameBehavior {
 	public void register(IGamePhase game, EventRegistrar events) {
 		this.game = game;
 
-		teams = game.getState().getOrThrow(TeamState.KEY);
+		teams = game.getInstanceState().getOrThrow(TeamState.KEY);
 
 		if (disguises.isEmpty()) {
 			throw new GameException(Component.literal("No possible disguises!"));
