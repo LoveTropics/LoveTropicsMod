@@ -50,7 +50,7 @@ public final class DonationPackageBehavior implements IGameBehavior {
 	}
 
 	private InteractionResult onGamePackageReceived(final IGamePhase game, final GamePackage gamePackage) {
-		if (!gamePackage.packageType().equals(data.packageType())) {
+		if (!gamePackage.packageType().equals(data.id())) {
 			return InteractionResult.PASS;
 		}
 
