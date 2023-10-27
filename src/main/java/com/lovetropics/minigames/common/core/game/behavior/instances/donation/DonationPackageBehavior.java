@@ -84,7 +84,7 @@ public final class DonationPackageBehavior implements IGameBehavior {
 
 		GameActionContext context = actionContext(gamePackage);
 		if (receiveActions.apply(game, context, receivingPlayer)) {
-			data.onReceive(game, receivingPlayer, gamePackage.sendingPlayerName());
+			data.notification().ifPresent(notification -> notification.onReceive(game, receivingPlayer, gamePackage.sendingPlayerName()));
 
 			return InteractionResult.SUCCESS;
 		} else {
@@ -98,7 +98,7 @@ public final class DonationPackageBehavior implements IGameBehavior {
 
 		GameActionContext context = actionContext(gamePackage);
 		if (receiveActions.apply(game, context, randomPlayer)) {
-			data.onReceive(game, randomPlayer, gamePackage.sendingPlayerName());
+			data.notification().ifPresent(notification -> notification.onReceive(game, randomPlayer, gamePackage.sendingPlayerName()));
 
 			return InteractionResult.SUCCESS;
 		} else {
@@ -112,7 +112,7 @@ public final class DonationPackageBehavior implements IGameBehavior {
 			return InteractionResult.FAIL;
 		}
 
-		data.onReceive(game, null, gamePackage.sendingPlayerName());
+		data.notification().ifPresent(notification -> notification.onReceive(game, null, gamePackage.sendingPlayerName()));
 
 		return InteractionResult.SUCCESS;
 	}
