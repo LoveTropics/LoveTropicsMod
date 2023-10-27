@@ -21,7 +21,7 @@ public abstract class MoveToBlockGoal extends Goal {
 
     @Override
     public boolean canUse() {
-        BlockPos target = locateBlock(15, 2);
+        BlockPos target = locateBlock(31, 2);
         if (target != null) {
             this.targetPos = target;
             return true;

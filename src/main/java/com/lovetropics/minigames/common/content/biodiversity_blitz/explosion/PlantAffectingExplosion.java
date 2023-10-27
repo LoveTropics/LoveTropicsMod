@@ -38,6 +38,7 @@ public class PlantAffectingExplosion extends FilteredExplosion {
         for (BlockPos pos : affectedBlocks) {
             Vec3 vec = new Vec3(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5);
             double distance = vec.distanceToSqr(center);
+            // TODO: damage should scale based on radius
             double damage = 80.0 / (distance + 1);
             // Randomize damage a bit to leave certain plants standing
             damage *= (1 + ((random.nextDouble() - random.nextDouble()) * 0.3));

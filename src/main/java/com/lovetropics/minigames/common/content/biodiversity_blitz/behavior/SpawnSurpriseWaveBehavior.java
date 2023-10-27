@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.common.content.biodiversity_blitz.behavior;
 
-import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.BbCreeperEntity;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.impl.BbCreeperEntity;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.BbMobSpawner;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.Plot;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.PlotsState;

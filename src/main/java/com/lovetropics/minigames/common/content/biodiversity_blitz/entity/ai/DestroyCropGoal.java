@@ -9,10 +9,11 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 
 public class DestroyCropGoal extends MoveToBlockGoal {
-    private static final int DAMAGE_INTERVAL = 25;
+    private static final int DAMAGE_INTERVAL = 20;
 
     private final BbMobEntity mob;
     private int ticksAtTarget = DAMAGE_INTERVAL;
@@ -88,7 +89,14 @@ public class DestroyCropGoal extends MoveToBlockGoal {
     protected int getPlantPriority(BlockPos pos) {
         Plant plant = this.mob.getPlot().plants.getPlantAt(pos);
         if (plant != null) {
+            // Always path towards visible pumpkins
+            BlockState state = mob.asMob().level().getBlockState(pos);
+            if (state.is(Blocks.PUMPKIN) || state.is(Blocks.CARVED_PUMPKIN)) {
+                return 10;
+            }
+
             if (plant.state(PlantHealth.KEY) != null) {
+
                 // We want to prioritize plants that are pathfindable.
                 // This ensures that if by chance a player has a plot that's 100% grass + berry bushes,
                 // the mobs will still get to them.

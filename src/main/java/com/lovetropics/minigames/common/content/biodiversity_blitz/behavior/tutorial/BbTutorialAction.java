@@ -1,7 +1,7 @@
 package com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.tutorial;
 
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.event.BbEvents;
-import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.BbTutorialHuskEntity;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.impl.BbTutorialHuskEntity;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.Plot;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.plant.Plant;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.plant.PlantType;

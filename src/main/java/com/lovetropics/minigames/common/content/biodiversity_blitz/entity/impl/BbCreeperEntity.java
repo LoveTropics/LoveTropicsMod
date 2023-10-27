@@ -1,5 +1,6 @@
-package com.lovetropics.minigames.common.content.biodiversity_blitz.entity;
+package com.lovetropics.minigames.common.content.biodiversity_blitz.entity.impl;
 
+import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.BbMobEntity;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.ai.BbGroundNavigator;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.ai.BbMobBrain;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.ai.KaboomCropGoal;
@@ -24,6 +25,7 @@ import net.minecraft.world.phys.Vec3;
 public class BbCreeperEntity extends Creeper implements BbMobEntity {
     private final BbMobBrain mobBrain;
     private final Plot plot;
+    private float explosionSizeOffset = 0;
     
     public BbCreeperEntity(EntityType<? extends Creeper> type, Level world, Plot plot) {
         super(type, world);
@@ -44,6 +46,10 @@ public class BbCreeperEntity extends Creeper implements BbMobEntity {
         this.goalSelector.addGoal(6, new RandomLookAroundGoal(this));
     }
 
+    public void setCreeperExplodeSizeOffset(float off) {
+        this.explosionSizeOffset = off;
+    }
+
     @Override
     public void explodeCreeper() {
         if (!this.level().isClientSide) {
@@ -51,14 +57,15 @@ public class BbCreeperEntity extends Creeper implements BbMobEntity {
             double y = this.getY();
             double z = this.getZ();
 
-            Explosion explosion = new PlantAffectingExplosion(this.level(), null, null, null, x, y, z, 2.5f, false, Explosion.BlockInteraction.DESTROY, e -> true, this.plot);
+            float size = 2.5f + explosionSizeOffset;
+            Explosion explosion = new PlantAffectingExplosion(this.level(), null, null, null, x, y, z, size, false, Explosion.BlockInteraction.DESTROY, e -> true, this.plot);
             explosion.explode();
             explosion.finalizeExplosion(false);
 
             float factor = this.isPowered() ? 2.0F : 1.0F;
             for (ServerPlayer player : ((ServerLevel) this.level()).players()) {
                 if (player.distanceToSqr(x, y, z) < 4096.0) {
-                    player.connection.send(new ClientboundExplodePacket(x, y, z, 2.5f * factor, explosion.getToBlow(), explosion.getHitPlayers().get(player)));
+                    player.connection.send(new ClientboundExplodePacket(x, y, z, size * factor, explosion.getToBlow(), explosion.getHitPlayers().get(player)));
                 }
             }
 

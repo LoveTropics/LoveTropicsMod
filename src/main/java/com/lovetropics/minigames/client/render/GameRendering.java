@@ -15,6 +15,7 @@ import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderBuffers;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextColor;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
@@ -23,6 +24,8 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
+
+import java.util.List;
 
 @Mod.EventBusSubscriber(modid = Constants.MODID, value = Dist.CLIENT)
 public class GameRendering {
@@ -67,34 +70,55 @@ public class GameRendering {
         if (state.side()) {
             buildEastFacing(cons, entry,  (float)(b.minY - camera.y), (float)(b.maxY - camera.y), (float)(b.minZ - camera.z), (float)(b.maxZ - camera.z), (float)(b.minX - camera.x), 0, 0, 0, 30, 60);
 
+            int diff = (int) (b.maxZ - b.minZ) * 25;
+
             matrices.pushPose();
 
             matrices.translate(b.minX - camera.x(), b.maxY - camera.y(), b.maxZ - camera.z());
             matrices.mulPose(Axis.XN.rotationDegrees(180));
+            // TODO: this must be -Y or +Y based on map. Make it configurable!
             matrices.mulPose(Axis.YN.rotationDegrees(90));
             matrices.scale(0.04f, 0.04f, 0.04f);
-            int off = 1;
-            for (Component comp : state.content()) {
-                Minecraft.getInstance().font.drawInBatch(
-                        comp,
-                        1,
-                        off,
-                        0xFFFFFF,
-                        false,
-                        matrices.last().pose(),
-                        buffers,
-                        Font.DisplayMode.NORMAL,
-                        0,
-                        LightTexture.FULL_BRIGHT
-                );
+            int voff = 1;
+            List<Component> content = state.content();
+            Component firstComp = content.get(0);
+            drawComponent(matrices, buffers, (diff - Minecraft.getInstance().font.width(firstComp)) / 2, voff, firstComp.getStyle().getColor().getValue(), firstComp);
 
-                off += 10;
+            for (int i = 1; i < content.size(); i++) {
+                Component comp = content.get(i);
+                int di = (i + 1) >> 1; // di = (i + 1) / 2;
+                int mi = (i - 1)  & 1; // mi = (i - 1) % 2;
+
+                voff = 10 * di + 1;
+
+                int hoff = 1;
+                if (mi == 1) {
+                    hoff = diff - Minecraft.getInstance().font.width(comp) - 1;
+                }
+
+                TextColor col = comp.getStyle().getColor();
+                drawComponent(matrices, buffers, hoff, voff, col == null ? 0xFFFFFF : col.getValue(), comp);
             }
 
             matrices.popPose();
         } else {
             buildNorthFacing(cons, entry, (float)(b.minX - camera.x), (float)(b.maxX - camera.x), (float)(b.minY - camera.y), (float)(b.maxY - camera.y), (float)(b.minZ - camera.z), 0, 0, 0, 30, 60);
         }
+    }
+
+    private static void drawComponent(PoseStack matrices, MultiBufferSource buffers, int hoff, int voff, int color, Component comp) {
+        Minecraft.getInstance().font.drawInBatch(
+                comp,
+                hoff,
+                voff,
+                color,
+                false,
+                matrices.last().pose(),
+                buffers,
+                Font.DisplayMode.NORMAL,
+                0,
+                LightTexture.FULL_BRIGHT
+        );
     }
 
     public static void buildBox(VertexConsumer buffer, PoseStack matrices, float x1, float x2, float y1, float y2, float z1, float z2, int r, int g, int b, int a) {

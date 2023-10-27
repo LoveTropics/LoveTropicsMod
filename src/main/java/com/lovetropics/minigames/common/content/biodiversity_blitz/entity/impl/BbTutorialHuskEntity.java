@@ -1,7 +1,6 @@
-package com.lovetropics.minigames.common.content.biodiversity_blitz.entity;
+package com.lovetropics.minigames.common.content.biodiversity_blitz.entity.impl;
 
 import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.ai.DestroyCropGoal;
-import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.ai.MoveToPumpkinGoal;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.Plot;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.monster.Husk;
@@ -15,7 +14,6 @@ public class BbTutorialHuskEntity extends BbHuskEntity {
 
     @Override
     protected void addBehaviourGoals() {
-        this.goalSelector.addGoal(1, new MoveToPumpkinGoal(this));
         this.goalSelector.addGoal(3, new DestroyCropGoal(this));
     }
 }

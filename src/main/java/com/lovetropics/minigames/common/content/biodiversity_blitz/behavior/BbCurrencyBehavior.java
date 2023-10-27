@@ -150,7 +150,7 @@ public final class BbCurrencyBehavior implements IGameBehavior {
 
 	private int computeNextCurrency(Plot plot) {
 		double value = this.computePlotValue(plot);
-		return Mth.floor(value);
+		return Math.max(Mth.floor(value), 1);
 	}
 
 	private double computePlotValue(Plot plot) {
@@ -192,6 +192,14 @@ public final class BbCurrencyBehavior implements IGameBehavior {
 					Codec.DOUBLE.fieldOf("diversity_factor").forGetter(c -> c.diversityFactor)
 			).apply(instance, DropCalculation::new);
 		});
+
+		// The goal is to create a distribution that feels logarithmic.
+		// When plots are first starting out, we should give more points per value increase of the plot.
+		// This keeps the game feeling like linear progress in the beginning.
+		// However, our shop scaling doesn't work with linear progress overall. To remedy this, the curve falls off
+		// gradually to make it more and more difficult to get increasing amounts of points per turn.
+		// the 'base' variable is how sharp this falloff is. Higher values get to the final value faster, whereas
+		// lower 'base' values makes the curve more gradual. The final value itself is governed by the 'bound' variable.
 
 		private final double base;
 		private final double bound;

@@ -72,7 +72,7 @@ public final class BbSendMobsToEnemyItemBehavior implements IGameBehavior {
                             plots.getPlayersInPlot(targetPlot).forEach(id -> Optional.ofNullable(game.getServer().getPlayerList().getPlayer(id))
                                     .ifPresent(affected -> affected.sendSystemMessage(Component.empty()
                                             .append(player.getName().copy().withStyle(ChatFormatting.AQUA))
-                                            .append(" has sent you a few mobs as a gift! Next wave you will encounter the following mobs in addition: ")
+                                            .append(" has sent you a few mobs! Next wave you will encounter the following mobs: ")
                                             .append(buildMessage(entities)))));
                             sentEnemies.putAll(targetPlot, entities.entrySet().stream()
                                     .flatMap(entry -> repeat(() -> entry.getKey().create(player.level(), targetPlot), entry.getValue()))

@@ -28,7 +28,11 @@ public record BbInGameScoreboardBehavior(Vec3 start, Vec3 end, boolean side) imp
     public void register(IGamePhase game, EventRegistrar events) throws GameException {
         events.listen(BbEvents.ASSIGN_PLOT, (player, plot) ->
                 GameClientState.sendToPlayer(new ClientBbScoreboardState(start, end, side, List.of(
-                        Component.literal("Biodiversity Blitz").withStyle(ChatFormatting.BOLD)
+                        Component.literal("Biodiversity Blitz").withStyle(ChatFormatting.GREEN),
+                        Component.literal("Blue Team").withStyle(ChatFormatting.BLUE),
+                        Component.literal("Red Team").withStyle(ChatFormatting.RED),
+                        Component.literal("[xyz] Points!").withStyle(ChatFormatting.WHITE),
+                        Component.literal("[abc] Points!").withStyle(ChatFormatting.WHITE)
                 )), player));
 
         events.listen(BbEvents.UPDATE_SCOREBOARD, (players, components) -> {

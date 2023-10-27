@@ -1,9 +1,9 @@
-package com.lovetropics.minigames.common.content.biodiversity_blitz.entity;
+package com.lovetropics.minigames.common.content.biodiversity_blitz.entity.impl;
 
+import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.BbMobEntity;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.ai.BbMobBrain;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.ai.BbTargetPlayerGoal;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.ai.DestroyCropGoal;
-import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.ai.MoveToPumpkinGoal;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.Plot;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.DifficultyInstance;
@@ -33,7 +33,6 @@ public class BbSkeletonEntity extends Skeleton implements BbMobEntity {
 
     @Override
     protected void registerGoals() {
-        this.goalSelector.addGoal(1, new MoveToPumpkinGoal(this));
         this.goalSelector.addGoal(3, new DestroyCropGoal(this));
         this.goalSelector.addGoal(4, new LookAtPlayerGoal(this, Player.class, 15.0F, 0.02F));
 

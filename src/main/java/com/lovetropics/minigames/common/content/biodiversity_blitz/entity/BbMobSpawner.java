@@ -1,6 +1,9 @@
 package com.lovetropics.minigames.common.content.biodiversity_blitz.entity;
 
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.event.BbEvents;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.impl.BbCreeperEntity;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.impl.BbHuskEntity;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.impl.BbPillagerEntity;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.Plot;
 import com.mojang.serialization.Codec;
 import net.minecraft.core.BlockPos;
@@ -15,7 +18,6 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.level.Level;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.Collections;
 import java.util.Locale;
@@ -64,7 +66,7 @@ public final class BbMobSpawner {
             return new BbCreeperEntity(EntityType.CREEPER, world, plot);
         }
 
-        if (random.nextInt(7) == 0 && waveIndex > 4 && plot.nextCurrencyIncrement >= 10 && !waveState.didCreeperSpawnLastWave) {
+        if (random.nextInt(7) == 0 && waveIndex > 4 && plot.nextCurrencyIncrement >= 8 && !waveState.didCreeperSpawnLastWave) {
             return new BbCreeperEntity(EntityType.CREEPER, world, plot);
         }
 

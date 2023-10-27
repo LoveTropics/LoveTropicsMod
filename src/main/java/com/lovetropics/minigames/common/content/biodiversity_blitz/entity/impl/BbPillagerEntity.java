@@ -1,10 +1,10 @@
-package com.lovetropics.minigames.common.content.biodiversity_blitz.entity;
+package com.lovetropics.minigames.common.content.biodiversity_blitz.entity.impl;
 
+import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.BbMobEntity;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.ai.BbGroundNavigator;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.ai.BbMobBrain;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.ai.BbTargetPlayerGoal;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.ai.DestroyCropGoal;
-import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.ai.MoveToPumpkinGoal;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.Plot;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.RandomSource;
@@ -51,7 +51,6 @@ public class BbPillagerEntity extends Pillager implements BbMobEntity {
 
     @Override
     protected void registerGoals() {
-        this.goalSelector.addGoal(1, new MoveToPumpkinGoal(this));
         this.goalSelector.addGoal(3, new Raider.HoldGroundAttackGoal(this, 6.0F));
         this.goalSelector.addGoal(3, new RangedCrossbowAttackGoal<>(this, 1.0, 6.0F));
         this.goalSelector.addGoal(2, new DestroyCropGoal(this));

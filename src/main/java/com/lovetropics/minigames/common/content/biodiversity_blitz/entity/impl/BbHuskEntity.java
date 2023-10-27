@@ -1,5 +1,6 @@
-package com.lovetropics.minigames.common.content.biodiversity_blitz.entity;
+package com.lovetropics.minigames.common.content.biodiversity_blitz.entity.impl;
 
+import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.BbMobEntity;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.ai.*;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.Plot;
 import net.minecraft.nbt.CompoundTag;
@@ -37,7 +38,6 @@ public class BbHuskEntity extends Husk implements BbMobEntity {
 
 	@Override
 	protected void addBehaviourGoals() {
-		this.goalSelector.addGoal(1, new MoveToPumpkinGoal(this));
 		this.goalSelector.addGoal(2, new DestroyCropGoal(this));
 		this.goalSelector.addGoal(3, new ZombieAttackGoal(this, 1.0, false));
 
