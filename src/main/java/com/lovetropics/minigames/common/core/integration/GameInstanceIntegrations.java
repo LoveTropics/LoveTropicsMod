@@ -10,6 +10,8 @@ import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePackageEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
+import com.lovetropics.minigames.common.core.game.behavior.instances.donation.DonationPackageData;
+import com.lovetropics.minigames.common.core.game.state.GamePackageState;
 import com.lovetropics.minigames.common.core.game.state.GameStateKey;
 import com.lovetropics.minigames.common.core.game.state.IGameState;
 import com.lovetropics.minigames.common.core.game.state.statistics.GameStatistics;
@@ -17,17 +19,22 @@ import com.lovetropics.minigames.common.core.game.state.statistics.PlayerKey;
 import com.lovetropics.minigames.common.core.integration.game_actions.GameActionHandler;
 import com.lovetropics.minigames.common.core.integration.game_actions.GameActionRequest;
 import com.lovetropics.minigames.common.core.integration.game_actions.GameActionType;
+import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.JsonOps;
+import net.minecraft.Util;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 public final class GameInstanceIntegrations implements IGameState {
 	public static final GameStateKey<GameInstanceIntegrations> KEY = GameStateKey.create("Game Integrations");
+
+	private static final Codec<List<DonationPackageData>> PACKAGES_CODEC = DonationPackageData.CODEC.codec().listOf();
 
 	private final IGamePhase game;
 	private final BackendIntegrations integrations;
@@ -54,6 +61,13 @@ public final class GameInstanceIntegrations implements IGameState {
 		JsonObject payload = new JsonObject();
 		payload.add("initiator", initiator.serializeProfile());
 		payload.add("participants", serializeParticipantsArray());
+
+		GamePackageState packageState = game.getState().getOrNull(GamePackageState.KEY);
+		if (packageState != null) {
+			List<DonationPackageData> packageList = List.copyOf(packageState.packages());
+			payload.add("packages", Util.getOrThrow(PACKAGES_CODEC.encodeStart(JsonOps.INSTANCE, packageList), IllegalStateException::new));
+		}
+
 		postImportant(ConfigLT.INTEGRATIONS.minigameStartEndpoint.get(), payload);
 
 		events.listen(GamePlayerEvents.JOIN, (p) -> sendParticipantsList());

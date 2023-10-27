@@ -5,6 +5,7 @@ import com.lovetropics.minigames.common.core.game.behavior.instances.donation.Do
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.network.chat.Component;
 
+import java.util.Collection;
 import java.util.Map;
 import java.util.stream.Stream;
 
@@ -19,7 +20,11 @@ public final class GamePackageState implements IGameState {
 		}
 	}
 
-	public Stream<String> stream() {
+	public Stream<String> keys() {
 		return knownPackages.keySet().stream();
+	}
+
+	public Collection<DonationPackageData> packages() {
+		return knownPackages.values();
 	}
 }

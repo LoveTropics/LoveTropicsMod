@@ -41,7 +41,7 @@ public class GamePackageCommand {
 		IGamePhase game = IGameManager.get().getGamePhaseFor(ctx.getSource());
 		if (game != null) {
 			GamePackageState packages = game.getState().get(GamePackageState.KEY);
-			return SharedSuggestionProvider.suggest(packages.stream(), builder);
+			return SharedSuggestionProvider.suggest(packages.keys(), builder);
 		}
 		return Suggestions.empty();
 	}
