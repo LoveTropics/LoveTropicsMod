@@ -45,20 +45,35 @@ final class LobbyPlayerManager implements IGameLobbyPlayers {
 	}
 
 	@Override
-	public CompletableFuture<GameResult<Unit>> join(ServerPlayer player) {
-		if (lobby.manager.getLobbyFor(player) != null || registrations.contains(player.getUUID())) {
+	public CompletableFuture<GameResult<Unit>> joinAndPrompt(ServerPlayer player) {
+		if (isAlreadyInLobby(player)) {
 			return CompletableFuture.completedFuture(GameResult.error(GameTexts.Commands.ALREADY_IN_LOBBY));
 		}
-
 		CompletableFuture<PlayerRole> future = roleSelections.prompt(player);
-		return future.thenApplyAsync(role -> {
-			if (registrations.add(player.getUUID())) {
-				lobby.onPlayerRegister(player);
-			} else {
-				return GameResult.error(GameTexts.Commands.ALREADY_IN_LOBBY);
-			}
+		return future.thenApplyAsync(role -> doJoin(player), lobby.getServer());
+	}
+
+	@Override
+	public GameResult<Unit> join(ServerPlayer player, PlayerRole role) {
+		if (isAlreadyInLobby(player)) {
+			return GameResult.error(GameTexts.Commands.ALREADY_IN_LOBBY);
+		}
+		roleSelections.setRole(player, role);
+		registrations.forceRole(player.getUUID(), role);
+		return doJoin(player);
+	}
+
+	private GameResult<Unit> doJoin(ServerPlayer player) {
+		if (registrations.add(player.getUUID())) {
+			lobby.onPlayerRegister(player);
 			return GameResult.ok();
-		}, lobby.getServer());
+		} else {
+			return GameResult.error(GameTexts.Commands.ALREADY_IN_LOBBY);
+		}
+	}
+
+	private boolean isAlreadyInLobby(ServerPlayer player) {
+		return lobby.manager.getLobbyFor(player) != null || registrations.contains(player.getUUID());
 	}
 
 	@Override
@@ -74,17 +89,6 @@ final class LobbyPlayerManager implements IGameLobbyPlayers {
 	@Override
 	public boolean forceRole(ServerPlayer player, @Nullable PlayerRole role) {
 		return registrations.forceRole(player.getUUID(), role);
-	}
-
-	@Override
-	public GameResult<Unit> join(ServerPlayer player, PlayerRole role) {
-		if (registrations.add(player.getUUID())) {
-			this.roleSelections.setRole(player, role);
-			lobby.onPlayerRegister(player);
-			return GameResult.ok();
-		} else {
-			return GameResult.error(GameTexts.Commands.ALREADY_IN_LOBBY);
-		}
 	}
 
 	@Nullable

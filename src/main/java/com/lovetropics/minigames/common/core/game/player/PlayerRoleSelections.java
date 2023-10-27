@@ -37,17 +37,12 @@ public final class PlayerRoleSelections {
 	}
 
 	public CompletableFuture<PlayerRole> prompt(ServerPlayer player) {
-		CompletableFuture<PlayerRole> future = this.pendingResponses.get(player.getUUID());
-		if (future == null) {
-			this.pendingResponses.put(player.getUUID(), future = new CompletableFuture<>());
-
-			future.thenAccept(role -> {
-				this.roles.put(player.getUUID(), role);
-			});
-		}
-
-		this.sendPromptTo(player);
-
+		CompletableFuture<PlayerRole> future = pendingResponses.computeIfAbsent(player.getUUID(), id -> {
+			CompletableFuture<PlayerRole> newFuture = new CompletableFuture<>();
+			newFuture.thenAcceptAsync(role -> roles.put(id, role), player.server);
+			return newFuture;
+		});
+		sendPromptTo(player);
 		return future;
 	}
 

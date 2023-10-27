@@ -14,13 +14,13 @@ import java.util.concurrent.CompletableFuture;
 public interface IGameLobbyPlayers extends PlayerSet {
 	TeamAllocator<PlayerRole, ServerPlayer> createRoleAllocator();
 
-	CompletableFuture<GameResult<Unit>> join(ServerPlayer player);
+	CompletableFuture<GameResult<Unit>> joinAndPrompt(ServerPlayer player);
+
+	GameResult<Unit> join(ServerPlayer player, PlayerRole role);
 
 	boolean remove(ServerPlayer player, boolean loggingOut);
 
 	boolean forceRole(ServerPlayer player, @Nullable PlayerRole role);
-
-	GameResult<Unit> join(ServerPlayer player, PlayerRole role);
 
 	@Nullable
 	PlayerRole getForcedRoleFor(ServerPlayer player);

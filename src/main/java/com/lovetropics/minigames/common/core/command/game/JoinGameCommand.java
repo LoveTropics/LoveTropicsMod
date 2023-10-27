@@ -50,17 +50,10 @@ public class JoinGameCommand {
 		return literal(name)
 				.executes(ctx -> joinAsRole(ctx, null, null))
 				.then(GameLobbyArgument.argument("lobby")
-					.executes(ctx -> {
-						IGameLobby lobby = GameLobbyArgument.get(ctx, "lobby");
-						return joinAsRole(ctx, lobby, null);
-					})
+					.executes(ctx -> joinAsRole(ctx, GameLobbyArgument.get(ctx, "lobby"), null))
 					.then(literal("as").requires(source -> source.hasPermission(Commands.LEVEL_GAMEMASTERS))
 						.then(PlayerRoleArgument.argument("role")
-						.executes(ctx -> {
-							IGameLobby lobby = GameLobbyArgument.get(ctx, "lobby");
-							PlayerRole role = PlayerRoleArgument.get(ctx, "role");
-							return joinAsRole(ctx, lobby, role);
-						})
+						.executes(ctx -> joinAsRole(ctx, GameLobbyArgument.get(ctx, "lobby"), PlayerRoleArgument.get(ctx, "role")))
 					))
 				);
 		// @formatter:on
@@ -79,15 +72,15 @@ public class JoinGameCommand {
 		IGameLobby lobby = lobbyResult.getOk();
 		IGameLobbyPlayers players = lobby.getPlayers();
 
-		CompletableFuture<GameResult<Unit>> joinFuture = CompletableFuture.supplyAsync(() -> players.join(player), source.getServer())
-				.thenCompose(Function.identity());
-		joinFuture = GameResult.handleException("An unexpected error has occurred", joinFuture);
+		CompletableFuture<GameResult<Unit>> joinFuture;
+		if (forcedRole == null) {
+			joinFuture = CompletableFuture.supplyAsync(() -> players.joinAndPrompt(player), source.getServer()).thenCompose(Function.identity());
+		} else {
+			joinFuture = CompletableFuture.completedFuture(players.join(player, forcedRole));
+		}
 
-		joinFuture.thenAcceptAsync(result -> {
+		GameResult.handleException("An unexpected error has occurred", joinFuture).thenAcceptAsync(result -> {
 			if (result.isOk()) {
-				if (forcedRole != null) {
-					players.forceRole(player, forcedRole);
-				}
 				source.sendSuccess(() -> GameTexts.Commands.joinedLobby(lobby), false);
 			} else {
 				source.sendFailure(result.getError());

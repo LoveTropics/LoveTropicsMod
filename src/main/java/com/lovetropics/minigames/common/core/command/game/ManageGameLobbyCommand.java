@@ -64,7 +64,7 @@ public class ManageGameLobbyCommand {
 		}
 
 		IGameLobby lobby = result.getOk();
-		lobby.getPlayers().join(player).thenAcceptAsync($ -> {
+		lobby.getPlayers().joinAndPrompt(player).thenAcceptAsync($ -> {
 			lobby.getManagement().startManaging(player);
 		}, lobby.getServer());
 
