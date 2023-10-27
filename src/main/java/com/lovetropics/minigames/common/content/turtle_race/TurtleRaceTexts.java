@@ -25,13 +25,6 @@ public class TurtleRaceTexts {
 	static {
 		KEYS.add("go", "GO!");
 		KEYS.add("speed_boost", "Speed boost! You passed a checkpoint!");
-
-		KEYS.add("donation.speed_boost_1_package", "%sender% sent you a SPEED BOOST for 1 second! Wow");
-		KEYS.add("donation.speed_boost_5_package", "%sender% sent you a SPEED BOOST for 5 seconds!");
-		KEYS.add("donation.speed_boost_30_package", "%sender% sent you a SPEED BOOST for 30 seconds!");
-		KEYS.add("donation.slowness_1_package", "%sender% sent you a SLOWNESS PACKAGE for 1 second! Wow");
-		KEYS.add("donation.slowness_5_package", "%sender% sent you a SLOWNESS PACKAGE for 5 seconds!");
-		KEYS.add("donation.slowness_30_package", "%sender% sent you a SLOWNESS PACKAGE for 30 seconds!");
 	}
 
 	private static MutableComponent formatTime(long totalSeconds) {

@@ -63,41 +63,5 @@ public final class SurviveTheTideTexts {
 		KEYS.add("stt4.intro2", "The final evacuation shuttle is departing in 15 minutes");
 		KEYS.add("stt4.intro3", "Meteorological sensors indicate incoming hostile rainfall patterns.");
 		KEYS.add("stt4.intro4", "Seek higher ground.");
-
-		KEYS.add("donation.antidote_package", "%sender% sent you an ANTIDOTE PACKAGE!");
-		KEYS.add("donation.knockback_package", "%sender% sent you a KNOCKBACK PACKAGE! Use the Teeter Yeeter™ wisely.");
-		KEYS.add("donation.boom_package", "%sender% sent everyone a BOOM PACKAGE of 4 Coconut Bombs!");
-		KEYS.add("donation.invisibility_package", "%sender% sent you an INVISIBILITY PACKAGE! You are invisible for 2 minutes.");
-		KEYS.add("donation.undying_package", "%sender% sent you an UNDYING PACKAGE with a Totem of Undying!");
-		KEYS.add("donation.slowness_package", "%sender% sent you a SLOWNESS SABOTAGE for 2 minutes!");
-		KEYS.add("donation.hunger_package", "%sender% sent you a HUNGER SABOTAGE for 1 minute!");
-		KEYS.add("donation.random_creeper_package", "%sender% sent a RANDOM CREEPER that found you! Look out!");
-		KEYS.add("donation.chosen_creeper_package", "%sender% sent you a CREEPER SABOTAGE! Look out!");
-		KEYS.add("donation.lightning_strike", "%sender% sent you a LIGHTNING STRIKE! Look out!");
-		KEYS.add("donation.lightning_storm", "%sender% started a LIGHTNING STORM! Look out!");
-		KEYS.add("donation.zombie_invasion_package", "%sender% started a ZOMBIE INVASION! Look out!");
-		KEYS.add("donation.meteor_storm_package", "%sender% started a METEOR STORM! Look out!");
-		KEYS.add("donation.meteor_strike_package", "%sender% sent a METEOR STRIKE to a random player! Look out!");
-		KEYS.add("donation.forced_player_head_package", "You are now wearing %sender%'s head, and you can't do anything about it!");
-		KEYS.add("donation.puffer_package", "Where did that pufferfish come from? %sender% may know.");
-		KEYS.add("donation.tapir_party", "Everyone is a Tapir for 2 minutes!");
-		KEYS.add("donation.driftwood_dazzle", "Everyone is.. Driftwood? For 2 minutes!");
-		KEYS.add("donation.cubera_confusion", "Oops, we're all fish for 2 minutes!");
-		KEYS.add("donation.armor_standardization", "For 2 minutes, you have become an Armor Stand. What?");
-		KEYS.add("donation.basilisk_lizard_party", "Everyone is a Basilisk Lizard for 2 minutes!");
-		KEYS.add("donation.its_been_fun", "It's been fun, but %sender% has ENDED THE GAME!");
-		KEYS.add("donation.player_tornado", "%sender% turned you into A TORNADO!");
-		KEYS.add("donation.player_tornado_baby", "%sender% turned you into a BABY TORNADO!");
-		KEYS.add("donation.sharknado", "%sender% has spawned a SHARKNADO!");
-		KEYS.add("donation.player_tornado.title", "You are A TORNADO!");
-		KEYS.add("donation.player_tornado_baby.title", "You are a BABY TORNADO!");
-		KEYS.add("donation.sharknado.title", "A SHARKNADO has appeared!");
-
-		KEYS.add("event.lightning_storm_event", "Chat started a LIGHTNING STORM!");
-		KEYS.add("event.zombie_invasion_event", "Chat started a ZOMBIE INVASION!");
-		KEYS.add("event.meteor_shower_event", "Chat started a METEOR SHOWER! Keep an eye on the skies!");
-		KEYS.add("event.acid_rain_event", "Chat has started ACID RAIN for 1 minute!");
-		KEYS.add("event.heatwave_event", "Chat has started a HEATWAVE for 1 minute!");
-		KEYS.add("event.hail_event", "Chat has started a HAILSTORM for 1 minute!");
 	}
 }

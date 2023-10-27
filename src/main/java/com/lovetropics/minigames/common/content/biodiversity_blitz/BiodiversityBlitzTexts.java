@@ -69,10 +69,6 @@ public final class BiodiversityBlitzTexts {
 		KEYS.add("teams.intro6", "\nMake sure to have a large variety of different plants in your plot- diversity in an ecosystem only makes you stronger!");
 		KEYS.add("teams.intro7", "\nYou win the game once your team accumulates the target amount of osa points- you can check your progress in the top-left of your screen!");
 		KEYS.add("teams.intro8", "\nGood luck!");
-
-		KEYS.add("donation.surprise_creepers", "Surprise! Creepers are attacking your plot!");
-		KEYS.add("donation.surprise_creepers.warning", "A wave of surprise creepers is spawning in %time% seconds!");
-		KEYS.add("donation.equalize_currency", "All players' currency has been averaged together!");
 	}
 
 	public static void collectTranslations(BiConsumer<String, String> consumer) {
