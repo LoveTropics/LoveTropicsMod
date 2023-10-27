@@ -37,5 +37,8 @@
     "lt.milestone.unlocked_message": "'%s Disguise' Unlocked!",
     "lt.milestone.item_lore": "Unlocked for recving %s in total donations",
     "lt.milestone.colcojo": "Col Cojo",
-    "lt.item.moon_boots": "Moon Boots"
+    "lt.item.moon_boots": "Moon Boots",
+    "ltmenu.connect": "Connect to Love Tropics",
+    "ltmenu.donate": "Donate to Sustainable Harvest"
+
 }
