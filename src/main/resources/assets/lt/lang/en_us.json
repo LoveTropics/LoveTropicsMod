@@ -22,8 +22,20 @@
     "lt.golf.in_use": " is already on this hole. Please wait for your turn.",
     "lt.golf.seconds_left": "Seconds Left: ",
     "lt.golf.hits": "Hits: ",
+    "lt.golf.display.honey.part_1": "Watch Out!!!",
+    "lt.golf.display.honey.part_2": "\n Dont let your carb fall into honey!",
+    "lt.golf.display.honey.part_3": "\n Otherwise your crab will restart the",
+    "lt.golf.display.honey.part_4": " course!",
+    "lt.golf.display.info.part_1": "Welcome to Crab Golf!",
+    "lt.golf.display.info.part_2": "\n Use the putters in your inventory to hit the crab into the hole!",
+    "lt.golf.display.info.part_3": "\n The fewer hits the better your score.",
+    "lt.golf.display.info.part_4": "\n You have as many hits as you need but there is a two minute time limit after which the hole will be reset.",
+    "lt.golf.display.info.part_5": "\n Good luck and Have Fun!!",
+    "lt.golf.display.tele.part_1": "Teleporters!",
+    "lt.golf.display.tele.part_2": "\n If your Crab touches Concrete Powder \n it will teleport to the Concrete of the same color",
     "lt.milestone.milestone": "Milestone",
     "lt.milestone.unlocked_message": "'%s Disguise' Unlocked!",
     "lt.milestone.item_lore": "Unlocked for recving %s in total donations",
-    "lt.milestone.colcojo": "Col Cojo"
+    "lt.milestone.colcojo": "Col Cojo",
+    "lt.item.moon_boots": "Moon Boots"
 }
