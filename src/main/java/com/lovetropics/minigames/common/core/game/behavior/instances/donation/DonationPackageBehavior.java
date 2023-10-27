@@ -46,7 +46,7 @@ public final class DonationPackageBehavior implements IGameBehavior {
 
 		receiveActions.register(game, events);
 
-		game.getState().get(GamePackageState.KEY).addPackageType(data.packageType());
+		game.getState().get(GamePackageState.KEY).addPackageType(data);
 	}
 
 	private InteractionResult onGamePackageReceived(final IGamePhase game, final GamePackage gamePackage) {
