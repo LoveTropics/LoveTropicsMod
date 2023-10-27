@@ -20,17 +20,20 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.List;
+import java.util.Optional;
 
 public final class DonationPackageBehavior implements IGameBehavior {
 	public static final MapCodec<DonationPackageBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			DonationPackageData.CODEC.forGetter(c -> c.data),
+			DonationPackageNotification.CODEC.optionalFieldOf("notification").forGetter(c -> c.notification),
 			MoreCodecs.strictOptionalFieldOf(GameActionList.PLAYER_CODEC, "receive_actions", GameActionList.EMPTY).forGetter(c -> c.receiveActions)
 	).apply(i, DonationPackageBehavior::new));
 
 	private static final Logger LOGGER = LogManager.getLogger(DonationPackageBehavior.class);
 
-	public DonationPackageBehavior(DonationPackageData data, GameActionList<ServerPlayer> receiveActions) {
+	public DonationPackageBehavior(DonationPackageData data, Optional<DonationPackageNotification> notification, GameActionList<ServerPlayer> receiveActions) {
 		this.data = data;
+		this.notification = notification;
 		this.receiveActions = receiveActions;
 	}
 
@@ -47,6 +50,7 @@ public final class DonationPackageBehavior implements IGameBehavior {
 	}
 
 	private final DonationPackageData data;
+	private final Optional<DonationPackageNotification> notification;
 	private final GameActionList<ServerPlayer> receiveActions;
 
 	@Override
@@ -84,7 +88,7 @@ public final class DonationPackageBehavior implements IGameBehavior {
 
 		GameActionContext context = actionContext(gamePackage);
 		if (receiveActions.apply(game, context, receivingPlayer)) {
-			data.notification().ifPresent(notification -> notification.onReceive(game, receivingPlayer, gamePackage.sendingPlayerName()));
+			notification.ifPresent(notification -> notification.onReceive(game, receivingPlayer, gamePackage.sendingPlayerName()));
 
 			return InteractionResult.SUCCESS;
 		} else {
@@ -98,7 +102,7 @@ public final class DonationPackageBehavior implements IGameBehavior {
 
 		GameActionContext context = actionContext(gamePackage);
 		if (receiveActions.apply(game, context, randomPlayer)) {
-			data.notification().ifPresent(notification -> notification.onReceive(game, randomPlayer, gamePackage.sendingPlayerName()));
+			notification.ifPresent(notification -> notification.onReceive(game, randomPlayer, gamePackage.sendingPlayerName()));
 
 			return InteractionResult.SUCCESS;
 		} else {
@@ -112,7 +116,7 @@ public final class DonationPackageBehavior implements IGameBehavior {
 			return InteractionResult.FAIL;
 		}
 
-		data.notification().ifPresent(notification -> notification.onReceive(game, null, gamePackage.sendingPlayerName()));
+		notification.ifPresent(notification -> notification.onReceive(game, null, gamePackage.sendingPlayerName()));
 
 		return InteractionResult.SUCCESS;
 	}
