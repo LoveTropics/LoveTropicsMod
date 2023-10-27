@@ -40,6 +40,7 @@ final class GameLobby implements IGameLobby {
 	);
 	private final GameRewardsMap rewardsMap = new GameRewardsMap();
 
+	private boolean needsRolePrompt = false;
 	private boolean closed;
 
 	GameLobby(MultiGameManager manager, MinecraftServer server, GameLobbyMetadata metadata) {
@@ -180,6 +181,9 @@ final class GameLobby implements IGameLobby {
 	}
 
 	private void onGameInstanceChange(GameInstance oldGame, GameInstance newGame) {
+		if (oldGame != null) {
+			needsRolePrompt = true;
+		}
 		if (newGame != null) {
 			onGameInstanceStart(newGame);
 		}
@@ -187,7 +191,7 @@ final class GameLobby implements IGameLobby {
 
 	private void onGameInstanceStart(GameInstance game) {
 		IGameDefinition definition = game.getDefinition();
-		if (definition.getWaitingPhase().isPresent()) {
+		if (definition.getWaitingPhase().isPresent() && needsRolePrompt) {
 			PlayerRoleSelections roleSelections = players.getRoleSelections();
 			roleSelections.clearAndPromptAll(players);
 		}
