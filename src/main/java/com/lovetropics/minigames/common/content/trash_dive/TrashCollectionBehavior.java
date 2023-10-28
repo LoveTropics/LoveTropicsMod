@@ -1,6 +1,5 @@
 package com.lovetropics.minigames.common.content.trash_dive;
 
-import com.lovetropics.minigames.common.content.MinigameTexts;
 import com.lovetropics.minigames.common.content.block.TrashType;
 import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
@@ -9,7 +8,6 @@ import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameLogicEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
-import com.lovetropics.minigames.common.core.game.client_state.instance.SidebarClientState;
 import com.lovetropics.minigames.common.core.game.player.PlayerRole;
 import com.lovetropics.minigames.common.core.game.player.PlayerSet;
 import com.lovetropics.minigames.common.core.game.state.statistics.GameStatistics;
@@ -21,7 +19,7 @@ import com.lovetropics.minigames.common.core.game.util.GameSidebar;
 import com.lovetropics.minigames.common.core.game.util.GlobalGameWidgets;
 import com.mojang.serialization.MapCodec;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
-import net.minecraft.ChatFormatting;
+import net.minecraft.SharedConstants;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -125,12 +123,9 @@ public final class TrashCollectionBehavior implements IGameBehavior {
 
 		gameOver = true;
 
-		PlayerSet players = game.getAllPlayers();
-		players.sendMessage(MinigameTexts.RESULTS);
-
 		GameStatistics statistics = game.getStatistics();
 
-		int totalTimeSeconds = (int) (game.ticks() / 20);
+		int totalTimeSeconds = (int) (game.ticks() / SharedConstants.TICKS_PER_SECOND);
 		int totalTrashCollected = 0;
 
 		for (PlayerKey player : statistics.getPlayers()) {
@@ -140,10 +135,6 @@ public final class TrashCollectionBehavior implements IGameBehavior {
 		StatisticsMap globalStatistics = statistics.global();
 		globalStatistics.set(StatisticKey.TOTAL_TIME, totalTimeSeconds);
 		globalStatistics.set(StatisticKey.TRASH_COLLECTED, totalTrashCollected);
-
-		PlayerPlacement.Score<Integer> placement = PlayerPlacement.fromMaxScore(game, StatisticKey.TRASH_COLLECTED);
-		placement.placeInto(StatisticKey.PLACEMENT);
-		placement.sendTo(players, 5);
 	}
 
 	private Component[] renderSidebar(IGamePhase game) {
