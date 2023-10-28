@@ -23,6 +23,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.JsonOps;
 import net.minecraft.Util;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 
@@ -61,12 +62,7 @@ public final class GameInstanceIntegrations implements IGameState {
 		JsonObject payload = new JsonObject();
 		payload.add("initiator", initiator.serializeProfile());
 		payload.add("participants", serializeParticipantsArray());
-
-		GamePackageState packageState = game.getState().getOrNull(GamePackageState.KEY);
-		if (packageState != null) {
-			List<DonationPackageData> packageList = List.copyOf(packageState.packages());
-			payload.add("packages", Util.getOrThrow(PACKAGES_CODEC.encodeStart(JsonOps.INSTANCE, packageList), IllegalStateException::new));
-		}
+		addGameDefinitionData(payload);
 
 		postImportant(ConfigLT.INTEGRATIONS.minigameStartEndpoint.get(), payload);
 
@@ -74,6 +70,21 @@ public final class GameInstanceIntegrations implements IGameState {
 		events.listen(GamePlayerEvents.LEAVE, (p) -> sendParticipantsList());
 		
 		events.listen(GamePhaseEvents.START, this::requestQueuedActions);
+	}
+
+	private void addGameDefinitionData(JsonObject payload) {
+		IGameDefinition definition = game.getDefinition();
+		payload.add("name", Component.Serializer.toJsonTree(definition.getName()));
+		Component subtitle = definition.getSubtitle();
+		if (subtitle != null) {
+			payload.add("subtitle", Component.Serializer.toJsonTree(subtitle));
+		}
+
+		GamePackageState packageState = game.getState().getOrNull(GamePackageState.KEY);
+		if (packageState != null) {
+			List<DonationPackageData> packageList = List.copyOf(packageState.packages());
+			payload.add("packages", Util.getOrThrow(PACKAGES_CODEC.encodeStart(JsonOps.INSTANCE, packageList), IllegalStateException::new));
+		}
 	}
 
 	public void finish(GameStatistics statistics) {
