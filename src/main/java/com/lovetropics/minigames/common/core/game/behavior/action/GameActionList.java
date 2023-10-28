@@ -6,15 +6,19 @@ import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameActionEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
 import com.mojang.datafixers.util.Either;
+import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
+import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.MapLike;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.ExtraCodecs;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -50,8 +54,24 @@ public class GameActionList<T> {
                 }
         );
 
-        return Codec.either(simpleCodec, mapCodec(type, target).codec())
-                .xmap(either -> either.map(Function.identity(), Function.identity()), Either::right);
+        Codec<GameActionList<T>> mapCodec = mapCodec(type, target).codec();
+
+        // Use custom codec for better error reporting
+        return new Codec<>() {
+			@Override
+			public <D> DataResult<Pair<GameActionList<T>, D>> decode(DynamicOps<D> ops, D input) {
+                Optional<MapLike<D>> map = ops.getMap(input).result();
+				if (map.isPresent() && map.get().get("actions") != null && map.get().get("type") == null) {
+					return mapCodec.decode(ops, input);
+				}
+				return simpleCodec.decode(ops, input);
+			}
+
+			@Override
+			public <D> DataResult<D> encode(GameActionList<T> input, DynamicOps<D> ops, D prefix) {
+				return mapCodec.encode(input, ops, prefix);
+			}
+		};
     }
 
     private final IGameBehavior behavior;
