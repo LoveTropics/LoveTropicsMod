@@ -20,6 +20,15 @@ import static com.lovetropics.minigames.common.core.game.state.statistics.Statis
 public final class StatisticKey<T> {
 	private static final CodecRegistry<String, StatisticKey<?>> REGISTRY = CodecRegistry.stringKeys();
 	public static final Codec<StatisticKey<?>> CODEC = REGISTRY;
+	public static final Codec<StatisticKey<Integer>> INT_CODEC = typedCodec(Integer.class);
+
+	@SuppressWarnings("unchecked")
+	public static <T> Codec<StatisticKey<T>> typedCodec(final Class<T> type) {
+		return CODEC.comapFlatMap(
+				key -> type.isAssignableFrom(key.type) ? DataResult.success((StatisticKey<T>) key) : DataResult.error(() -> "Statistic not of type: " + type),
+				key -> key
+		);
+	}
 
 	// Generic - Per Player
 	public static final StatisticKey<Integer> PLACEMENT = ofInt("placement").displays(placement());

@@ -123,18 +123,8 @@ public final class TrashCollectionBehavior implements IGameBehavior {
 
 		gameOver = true;
 
-		GameStatistics statistics = game.getStatistics();
-
-		int totalTimeSeconds = (int) (game.ticks() / SharedConstants.TICKS_PER_SECOND);
-		int totalTrashCollected = 0;
-
-		for (PlayerKey player : statistics.getPlayers()) {
-			totalTimeSeconds += statistics.forPlayer(player).getOr(StatisticKey.TRASH_COLLECTED, 0);
-		}
-
-		StatisticsMap globalStatistics = statistics.global();
-		globalStatistics.set(StatisticKey.TOTAL_TIME, totalTimeSeconds);
-		globalStatistics.set(StatisticKey.TRASH_COLLECTED, totalTrashCollected);
+		int totalSeconds = (int) (game.ticks() / SharedConstants.TICKS_PER_SECOND);
+		game.getStatistics().global().set(StatisticKey.TOTAL_TIME, totalSeconds);
 	}
 
 	private Component[] renderSidebar(IGamePhase game) {
