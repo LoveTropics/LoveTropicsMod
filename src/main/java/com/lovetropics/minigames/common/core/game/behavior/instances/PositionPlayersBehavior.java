@@ -71,20 +71,20 @@ public class PositionPlayersBehavior implements IGameBehavior {
 		if (splitByTeam && teams != null && !participantSpawner.regions.isEmpty()) {
 			events.listen(GamePhaseEvents.CREATE, () -> {
 				int participantCount = game.getParticipants().size();
-				teamSpawners = createTeamSpawners(teams, participantSpawner, participantCount);
+				teamSpawners = createTeamSpawners(game, teams, participantSpawner, participantCount);
 			});
 		}
 
 		events.listen(GamePlayerEvents.SPAWN, (playerId, spawn, role) -> spawnPlayerAsRole(game, playerId, spawn, role, teams));
 	}
 
-	private Map<GameTeamKey, CycledSpawner> createTeamSpawners(TeamState teams, CycledSpawner spawns, int participantCount) {
+	private Map<GameTeamKey, CycledSpawner> createTeamSpawners(IGamePhase game, TeamState teams, CycledSpawner spawns, int participantCount) {
 		Map<GameTeamKey, CycledSpawner> teamSpawners = new HashMap<>();
 
 		int spawnCount = spawns.size();
 		int groupSize = Math.max(participantCount / spawnCount, 1);
 		for (GameTeam team : teams) {
-			PlayerSet teamPlayers = teams.getParticipantsForTeam(team.key());
+			PlayerSet teamPlayers = teams.getParticipantsForTeam(game, team.key());
 			int teamSize = teamPlayers.size();
 			int teamGroupCount = Math.max(teamSize / groupSize, 1);
 			teamSpawners.put(team.key(), spawns.take(teamGroupCount));

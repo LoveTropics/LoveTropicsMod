@@ -96,8 +96,8 @@ public final class HideAndSeekBehavior implements IGameBehavior {
 	private void start() {
 		int hideTicks = initialHideSeconds * 20;
 
-		PlayerSet seekers = teams.getParticipantsForTeam(this.seekers.key());
-		PlayerSet hiders = teams.getParticipantsForTeam(this.hiders.key());
+		PlayerSet seekers = teams.getParticipantsForTeam(game, this.seekers.key());
+		PlayerSet hiders = teams.getParticipantsForTeam(game, this.hiders.key());
 
 		seekers.addPotionEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, hideTicks, 255, true, false));
 		seekers.addPotionEffect(new MobEffectInstance(MobEffects.BLINDNESS, hideTicks, 255, true, false));

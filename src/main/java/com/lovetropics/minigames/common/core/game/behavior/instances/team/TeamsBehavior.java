@@ -86,7 +86,7 @@ public final class TeamsBehavior implements IGameBehavior {
 
 		events.listen(GamePhaseEvents.START, () -> {
 			for (GameTeam team : teams) {
-				for (ServerPlayer player : teams.getParticipantsForTeam(team.key())) {
+				for (ServerPlayer player : teams.getParticipantsForTeam(game, team.key())) {
 					applyTeamToPlayer(game, team, player);
 				}
 			}
