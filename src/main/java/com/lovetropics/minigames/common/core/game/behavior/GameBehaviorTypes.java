@@ -7,11 +7,10 @@ import com.lovetropics.minigames.common.core.game.behavior.action.ApplyToBehavio
 import com.lovetropics.minigames.common.core.game.behavior.action.PlayerActionTarget;
 import com.lovetropics.minigames.common.core.game.behavior.action.PlotActionTarget;
 import com.lovetropics.minigames.common.core.game.behavior.instances.AddWeatherBehavior;
-import com.lovetropics.minigames.common.core.game.behavior.instances.ArmorParticipantsBehavior;
+import com.lovetropics.minigames.common.core.game.behavior.instances.action.AddEquipmentAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.AssignPlayerRolesBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.CompositeBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.DebugModeBehavior;
-import com.lovetropics.minigames.common.core.game.behavior.instances.EquipParticipantsBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.GameEndEffectsBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.GameProgressionBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.ImmediateRespawnBehavior;
@@ -90,6 +89,7 @@ import com.lovetropics.minigames.common.core.game.behavior.instances.trigger.OnD
 import com.lovetropics.minigames.common.core.game.behavior.instances.trigger.OnKillTrigger;
 import com.lovetropics.minigames.common.core.game.behavior.instances.trigger.PhaseChangeTrigger;
 import com.lovetropics.minigames.common.core.game.behavior.instances.trigger.ScheduledActionsTrigger;
+import com.lovetropics.minigames.common.core.game.behavior.instances.trigger.SetRoleTrigger;
 import com.lovetropics.minigames.common.core.game.behavior.instances.trigger.TopPlayerTrigger;
 import com.lovetropics.minigames.common.core.game.behavior.instances.trigger.WeatherChangeTrigger;
 import com.lovetropics.minigames.common.core.game.behavior.instances.trigger.WhileInRegionTrigger;
@@ -185,8 +185,7 @@ public class GameBehaviorTypes {
 	public static final GameBehaviorEntry<IndividualWinTrigger> INDIVIDUAL_WIN_TRIGGER = register("individual_win_trigger", IndividualWinTrigger.CODEC);
 	public static final GameBehaviorEntry<TeamWinTrigger> TEAM_WIN_TRIGGER = register("team_win_trigger", TeamWinTrigger.CODEC);
 	public static final GameBehaviorEntry<SyncTeamsBehavior> SYNC_TEAMS = register("sync_teams", SyncTeamsBehavior.CODEC);
-	public static final GameBehaviorEntry<EquipParticipantsBehavior> EQUIP_PARTICIPANTS = register("equip_participants", EquipParticipantsBehavior.CODEC);
-	public static final GameBehaviorEntry<ArmorParticipantsBehavior> ARMOR_PARTICIPANTS = register("armor_participants", ArmorParticipantsBehavior.CODEC);
+	public static final GameBehaviorEntry<AddEquipmentAction> ADD_EQUIPMENT = register("add_equipment", AddEquipmentAction.CODEC);
 	public static final GameBehaviorEntry<SetTimeSpeedBehavior> SET_TIME_SPEED = register("set_time_speed", SetTimeSpeedBehavior.CODEC);
 	public static final GameBehaviorEntry<SetDayTimeBehavior> SET_DAY_TIME = register("set_day_time", SetDayTimeBehavior.CODEC);
 	public static final GameBehaviorEntry<SetDifficultyBehavior> SET_DIFFICULTY = register("set_difficulty", SetDifficultyBehavior.CODEC);
@@ -248,6 +247,7 @@ public class GameBehaviorTypes {
 	public static final GameBehaviorEntry<SpectatorActivityAction> SPECTATOR_ACTIVITY = register("spectator_activity", SpectatorActivityAction.CODEC);
 	public static final GameBehaviorEntry<GiveRewardAction> GIVE_REWARD = register("give_reward", GiveRewardAction.CODEC);
 	public static final GameBehaviorEntry<TopPlayerTrigger> TOP_PLAYER_TRIGGER = register("top_player_trigger", TopPlayerTrigger.CODEC);
+	public static final GameBehaviorEntry<SetRoleTrigger> SET_ROLE = register("set_role", SetRoleTrigger.CODEC);
 
 	public static final GameBehaviorEntry<SetupIntegrationsBehavior> SETUP_INTEGRATIONS = register("setup_integrations", SetupIntegrationsBehavior.CODEC);
 	public static final GameBehaviorEntry<AssignPlayerRolesBehavior> ASSIGN_PLAYER_ROLES = register("assign_player_roles", AssignPlayerRolesBehavior.CODEC);
