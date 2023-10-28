@@ -9,12 +9,14 @@ import com.lovetropics.minigames.common.core.game.behavior.action.GameActionList
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
+import com.lovetropics.minigames.common.core.game.player.PlayerRole;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
@@ -28,7 +30,7 @@ public record KitSelectionBehavior(List<Kit> kits) implements IGameBehavior {
 	private static final Logger LOGGER = LogUtils.getLogger();
 
 	public static final MapCodec<KitSelectionBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
-			Kit.CODEC.listOf().fieldOf("kits").forGetter(KitSelectionBehavior::kits)
+			ExtraCodecs.nonEmptyList(Kit.CODEC.listOf()).fieldOf("kits").forGetter(KitSelectionBehavior::kits)
 	).apply(i, KitSelectionBehavior::new));
 
 	@Override
@@ -38,6 +40,7 @@ public record KitSelectionBehavior(List<Kit> kits) implements IGameBehavior {
 		}
 
 		final Map<UUID, Kit> kitEntities = new Object2ObjectOpenHashMap<>();
+		final Kit defaultKit = kits.get(0);
 
 		events.listen(GamePhaseEvents.START, () -> {
 			for (final Kit kit : kits) {
@@ -58,13 +61,24 @@ public record KitSelectionBehavior(List<Kit> kits) implements IGameBehavior {
 			}
 		});
 
+		final Map<UUID, Kit> selectedKits = new Object2ObjectOpenHashMap<>();
 		events.listen(GamePlayerEvents.INTERACT_ENTITY, (player, target, hand) -> {
 			final Kit kit = kitEntities.get(target.getUUID());
 			if (kit != null) {
 				kit.apply.apply(game, GameActionContext.EMPTY, player);
+				selectedKits.put(player.getUUID(), kit);
 				return InteractionResult.CONSUME;
 			}
 			return InteractionResult.PASS;
+		});
+
+		events.listen(GamePlayerEvents.SPAWN, (playerId, spawn, role) -> {
+			if (role == PlayerRole.PARTICIPANT) {
+				spawn.run(player -> {
+					final Kit kit = selectedKits.getOrDefault(player.getUUID(), defaultKit);
+					kit.apply.apply(game, GameActionContext.EMPTY, player);
+				});
+			}
 		});
 	}
 

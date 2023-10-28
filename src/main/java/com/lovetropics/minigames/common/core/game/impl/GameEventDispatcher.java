@@ -274,7 +274,7 @@ public final class GameEventDispatcher {
 	}
 
 	@SubscribeEvent
-	public void onPlayerInteractEntity(PlayerInteractEvent.EntityInteract event) {
+	public void onPlayerInteractEntity(PlayerInteractEvent.EntityInteractSpecific event) {
 		IGamePhase game = gameLookup.getGamePhaseFor(event.getEntity());
 		if (game != null) {
 			ServerPlayer player = (ServerPlayer) event.getEntity();
