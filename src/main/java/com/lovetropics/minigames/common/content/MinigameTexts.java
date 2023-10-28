@@ -162,6 +162,9 @@ public final class MinigameTexts {
 		KEYS.add("donation.basilisk_lizard_party", "Basilisk Lizard Party");
 		KEYS.add("donation.basilisk_lizard_party.description", "Turn every player into a Basilisk Lizard for 2 minutes");
 		KEYS.add("donation.basilisk_lizard_party.toast", "Everyone is a Basilisk Lizard for 2 minutes!");
+		KEYS.add("donation.manatee_madness", "Manatee Madness");
+		KEYS.add("donation.manatee_madness.description", "Turn every player into a Manatee for 2 minutes");
+		KEYS.add("donation.manatee_madness.toast", "Everyone is a Manatee for 2 minutes!");
 		KEYS.add("donation.its_been_fun", "'It's Been Fun'");
 		KEYS.add("donation.its_been_fun.description", "It's been fun, but with this package you can end the entire game in style");
 		KEYS.add("donation.its_been_fun.toast", "It's been fun, but %sender% has ENDED THE GAME!");
