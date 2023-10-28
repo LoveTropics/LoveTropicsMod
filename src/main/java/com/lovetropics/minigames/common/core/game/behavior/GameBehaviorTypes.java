@@ -98,6 +98,7 @@ import com.lovetropics.minigames.common.core.game.behavior.instances.trigger.pha
 import com.lovetropics.minigames.common.core.game.behavior.instances.trigger.phase.StartGameTrigger;
 import com.lovetropics.minigames.common.core.game.behavior.instances.trigger.phase.StopGameTrigger;
 import com.lovetropics.minigames.common.core.game.behavior.instances.tweak.CancelPlayerDamageBehavior;
+import com.lovetropics.minigames.common.core.game.behavior.instances.tweak.DamageInWaterBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.tweak.DisableHungerBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.tweak.DisableTntDestructionBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.tweak.ScaleDamageFromEntityBehavior;
@@ -195,6 +196,7 @@ public class GameBehaviorTypes {
 	public static final GameBehaviorEntry<WeatherChangeTrigger> WEATHER_CHANGE_TRIGGER = register("weather_change_trigger", WeatherChangeTrigger.CODEC);
 	public static final GameBehaviorEntry<PlayerHeadRewardBehavior> PLAYER_HEAD_REWARD = register("player_head_reward", PlayerHeadRewardBehavior.CODEC);
 	public static final GameBehaviorEntry<PointsSidebarBehavior> POINTS_SIDEBAR = register("points_sidebar", PointsSidebarBehavior.CODEC);
+	public static final GameBehaviorEntry<DamageInWaterBehavior> DAMAGE_IN_WATER = register("damage_in_water", DamageInWaterBehavior.CODEC);
 
 	public static final GameBehaviorEntry<BindObjectiveToStatisticBehavior> BIND_OBJECTIVE_TO_STATISTIC = register("bind_objective_to_statistic", BindObjectiveToStatisticBehavior.CODEC);
 	public static final GameBehaviorEntry<PlaceByStatisticBehavior> PLACE_BY_STATISTIC = register("place_by_statistic", PlaceByStatisticBehavior.CODEC);
