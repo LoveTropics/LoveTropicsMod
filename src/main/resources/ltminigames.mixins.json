@@ -13,6 +13,7 @@
     "PlayerMixin",
     "SimpleRegistryMixin",
     "TagManagerAccessor",
+    "WorldGenSettingsMixin",
     "chat.ServerGamePacketListenerImplMixin",
     "gametest.GameTestHelperAccess",
     "gametest.GameTestInfoAccess",

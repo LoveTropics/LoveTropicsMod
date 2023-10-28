@@ -37,6 +37,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
@@ -91,9 +92,16 @@ public final class RuntimeDimensions {
 	}
 
 	public static RuntimeDimensions get(MinecraftServer server) {
+		return Objects.requireNonNull(getOrNull(server), "Runtime dimensions not yet initialized");
+	}
+
+	@Nullable
+	public static RuntimeDimensions getOrNull(MinecraftServer server) {
 		RuntimeDimensions instance = RuntimeDimensions.instance;
-		Preconditions.checkState(instance != null && instance.server == server, "runtime dimensions not yet initialized");
-		return instance;
+		if (instance != null && instance.server == server) {
+			return instance;
+		}
+		return null;
 	}
 
 	public RuntimeDimensionHandle getOrOpenPersistent(ResourceLocation key, Supplier<RuntimeDimensionConfig> config) {
