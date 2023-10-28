@@ -11,18 +11,11 @@ import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvent
 import com.lovetropics.minigames.common.core.game.player.PlayerRole;
 import com.lovetropics.minigames.common.core.game.player.PlayerSet;
 import com.lovetropics.minigames.common.core.game.state.statistics.GameStatistics;
-import com.lovetropics.minigames.common.core.game.state.statistics.PlayerKey;
-import com.lovetropics.minigames.common.core.game.state.statistics.PlayerPlacement;
 import com.lovetropics.minigames.common.core.game.state.statistics.StatisticKey;
-import com.lovetropics.minigames.common.core.game.state.statistics.StatisticsMap;
-import com.lovetropics.minigames.common.core.game.util.GameSidebar;
-import com.lovetropics.minigames.common.core.game.util.GlobalGameWidgets;
 import com.mojang.serialization.MapCodec;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import net.minecraft.SharedConstants;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.chat.CommonComponents;
-import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
@@ -34,8 +27,6 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Set;
 
 public final class TrashCollectionBehavior implements IGameBehavior {
@@ -43,12 +34,7 @@ public final class TrashCollectionBehavior implements IGameBehavior {
 
 	private final Set<Block> trashBlocks;
 
-	private GlobalGameWidgets widgets;
-
 	private boolean gameOver;
-	private GameSidebar sidebar;
-
-	private int collectedTrash;
 
 	public TrashCollectionBehavior() {
 		TrashType[] trashTypes = TrashType.values();
@@ -61,8 +47,6 @@ public final class TrashCollectionBehavior implements IGameBehavior {
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) throws GameException {
-		widgets = GlobalGameWidgets.registerTo(game, events);
-
 		events.listen(GamePhaseEvents.START, () -> onStart(game));
 		events.listen(GamePhaseEvents.FINISH, () -> triggerGameOver(game));
 		events.listen(GamePlayerEvents.SET_ROLE, (player, role, lastRole) -> {
@@ -77,9 +61,6 @@ public final class TrashCollectionBehavior implements IGameBehavior {
 	}
 
 	private void onStart(IGamePhase game) {
-		sidebar = widgets.openSidebar(TrashDiveTexts.SIDEBAR_TITLE);
-		sidebar.set(renderSidebar(game));
-
 		PlayerSet players = game.getParticipants();
 		players.addPotionEffect(new MobEffectInstance(MobEffects.NIGHT_VISION, Integer.MAX_VALUE, 1, false, false));
 	}
@@ -104,10 +85,6 @@ public final class TrashCollectionBehavior implements IGameBehavior {
 		statistics.forPlayer(player)
 				.withDefault(StatisticKey.TRASH_COLLECTED, () -> 0)
 				.apply(collected -> collected + 1);
-
-		collectedTrash++;
-
-		sidebar.set(renderSidebar(game));
 	}
 
 	private InteractionResult onPlayerBreakBlock(ServerPlayer player, BlockPos pos, BlockState state, InteractionHand hand) {
@@ -125,20 +102,5 @@ public final class TrashCollectionBehavior implements IGameBehavior {
 
 		int totalSeconds = (int) (game.ticks() / SharedConstants.TICKS_PER_SECOND);
 		game.getStatistics().global().set(StatisticKey.TOTAL_TIME, totalSeconds);
-	}
-
-	private Component[] renderSidebar(IGamePhase game) {
-		List<Component> sidebar = new ArrayList<>(10);
-		sidebar.add(TrashDiveTexts.SIDEBAR_INSTRUCTION);
-		sidebar.add(TrashDiveTexts.SIDEBAR_COLLECTED.apply(collectedTrash));
-
-		PlayerPlacement.Score<Integer> placement = PlayerPlacement.fromMaxScore(game, StatisticKey.TRASH_COLLECTED);
-
-		sidebar.add(CommonComponents.EMPTY);
-		sidebar.add(TrashDiveTexts.SIDEBAR_TOP_PLAYERS);
-
-		placement.addToSidebar(sidebar, 5);
-
-		return sidebar.toArray(new Component[0]);
 	}
 }

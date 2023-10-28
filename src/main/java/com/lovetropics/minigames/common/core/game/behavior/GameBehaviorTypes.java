@@ -18,6 +18,7 @@ import com.lovetropics.minigames.common.core.game.behavior.instances.ImmediateRe
 import com.lovetropics.minigames.common.core.game.behavior.instances.IndividualWinTrigger;
 import com.lovetropics.minigames.common.core.game.behavior.instances.JoinLateWithRoleBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.PermanentItemBehavior;
+import com.lovetropics.minigames.common.core.game.behavior.instances.PointsSidebarBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.PositionPlayersBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.ProgressBarBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.SetGameClientStateBehavior;
@@ -193,6 +194,7 @@ public class GameBehaviorTypes {
 	public static final GameBehaviorEntry<ProgressBarBehavior> PHASE_PROGRESS_BAR = register("phase_progress_bar", ProgressBarBehavior.CODEC);
 	public static final GameBehaviorEntry<WeatherChangeTrigger> WEATHER_CHANGE_TRIGGER = register("weather_change_trigger", WeatherChangeTrigger.CODEC);
 	public static final GameBehaviorEntry<PlayerHeadRewardBehavior> PLAYER_HEAD_REWARD = register("player_head_reward", PlayerHeadRewardBehavior.CODEC);
+	public static final GameBehaviorEntry<PointsSidebarBehavior> POINTS_SIDEBAR = register("points_sidebar", PointsSidebarBehavior.CODEC);
 
 	public static final GameBehaviorEntry<BindObjectiveToStatisticBehavior> BIND_OBJECTIVE_TO_STATISTIC = register("bind_objective_to_statistic", BindObjectiveToStatisticBehavior.CODEC);
 	public static final GameBehaviorEntry<PlaceByStatisticBehavior> PLACE_BY_STATISTIC = register("place_by_statistic", PlaceByStatisticBehavior.CODEC);
