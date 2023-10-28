@@ -1,6 +1,7 @@
 package com.lovetropics.minigames.common.content;
 
 import com.lovetropics.minigames.Constants;
+import com.lovetropics.minigames.common.core.game.behavior.instances.donation.DonationPackageData;
 import com.lovetropics.minigames.common.core.game.util.TranslationCollector;
 import com.lovetropics.minigames.common.util.Util;
 import net.minecraft.ChatFormatting;
@@ -240,5 +241,9 @@ public final class MinigameTexts {
 
 		KEYS.add("levitation.intro1", "Race to be the first to reach the top of the tube!");
 		KEYS.add("levitation.intro2", "Use your fishing rod to pull other players down.");
+
+		for (DonationPackageData.PackageType type : DonationPackageData.PackageType.values()) {
+			KEYS.add("donation." + type.getSerializedName(), type.getName());
+		}
 	}
 }

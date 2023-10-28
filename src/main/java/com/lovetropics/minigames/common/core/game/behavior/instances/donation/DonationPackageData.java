@@ -29,22 +29,28 @@ public record DonationPackageData(
 	).apply(i, DonationPackageData::new));
 
 	public enum PackageType implements StringRepresentable {
-		CARE_PACKAGE("care_package"),
-		SABOTAGE_PACKAGE("sabotage_package"),
-		CHAT_EVENT("chat_event"),
+		CARE_PACKAGE("care_package", "Care Package"),
+		SABOTAGE_PACKAGE("sabotage_package", "Sabotage Package"),
+		CHAT_EVENT("chat_event", "Chat Event"),
 		;
 
 		public static final Codec<PackageType> CODEC = StringRepresentable.fromEnum(PackageType::values);
 
 		private final String key;
+		private final String name;
 
-		PackageType(String key) {
+		PackageType(String key, String name) {
 			this.key = key;
+			this.name = name;
 		}
 
 		@Override
 		public String getSerializedName() {
 			return key;
+		}
+
+		public String getName() {
+			return name;
 		}
 	}
 
