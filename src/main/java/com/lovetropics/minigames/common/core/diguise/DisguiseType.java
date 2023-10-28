@@ -1,5 +1,6 @@
 package com.lovetropics.minigames.common.core.diguise;
 
+import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -8,15 +9,17 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.registries.ForgeRegistries;
+import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.util.Objects;
 import java.util.Optional;
 
 public record DisguiseType(@Nullable EntityConfig entity, float scale) {
+	private static final Logger LOGGER = LogUtils.getLogger();
+
 	public static final DisguiseType DEFAULT = new DisguiseType((EntityConfig) null, 1.0f);
 
 	public static final MapCodec<DisguiseType> MAP_CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
@@ -109,17 +112,22 @@ public record DisguiseType(@Nullable EntityConfig entity, float scale) {
 
 		@Nullable
 		public Entity createEntity(Level level) {
-			Entity entity = type.create(level);
-			if (entity == null) {
+			try {
+				Entity entity = type.create(level);
+				if (entity == null) {
+					return null;
+				}
+
+				if (nbt != null) {
+					entity.load(nbt);
+				}
+
+				fixInvalidEntity(entity);
+				return entity;
+			} catch (final Exception e) {
+				LOGGER.error("Failed to create entity for disguise: {}", this, e);
 				return null;
 			}
-
-			if (nbt != null) {
-				entity.load(nbt);
-			}
-
-			fixInvalidEntity(entity);
-			return entity;
 		}
 
 		private void fixInvalidEntity(Entity entity) {
