@@ -16,9 +16,7 @@ import org.apache.commons.lang3.function.ToBooleanBiFunction;
 import java.util.List;
 
 public record PlotActionTarget(Target target) implements ActionTarget<Plot> {
-    public static final Codec<PlotActionTarget> CODEC = RecordCodecBuilder.create(in -> in.group(
-            Target.CODEC.optionalFieldOf("target", PlotActionTarget.Target.SOURCE).forGetter(PlotActionTarget::target)
-    ).apply(in, PlotActionTarget::new));
+    public static final Codec<PlotActionTarget> CODEC = Target.CODEC.xmap(PlotActionTarget::new, PlotActionTarget::target);
 
     @Override
     public List<Plot> resolve(IGamePhase phase, Iterable<Plot> sources) {
