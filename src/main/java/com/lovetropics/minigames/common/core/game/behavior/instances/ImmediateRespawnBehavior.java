@@ -31,7 +31,9 @@ public record ImmediateRespawnBehavior(Optional<PlayerRole> role, Optional<Playe
 	}
 
 	private InteractionResult onPlayerDeath(IGamePhase game, ServerPlayer player) {
-		player.getInventory().dropAll();
+		if (dropInventory) {
+			player.getInventory().dropAll();
+		}
 
 		PlayerRole playerRole = game.getRoleFor(player);
 		if (this.role.isEmpty() || this.role.get() == playerRole) {
