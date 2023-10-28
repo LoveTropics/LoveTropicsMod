@@ -26,6 +26,8 @@ import com.lovetropics.minigames.common.core.game.behavior.instances.SetupIntegr
 import com.lovetropics.minigames.common.core.game.behavior.instances.SpectatorChaseBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.TimedGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.TipsAndTricksBehavior;
+import com.lovetropics.minigames.common.core.game.behavior.instances.action.AddAttributeModifierAction;
+import com.lovetropics.minigames.common.core.game.behavior.instances.action.ClearAttributeModifierAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.ClearDisguiseAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.SetDisguiseAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.ChestDropAction;
@@ -220,6 +222,8 @@ public class GameBehaviorTypes {
 	public static final GameBehaviorEntry<GlobalTimedAction> GLOBAL_TIMED = register("global_timed", GlobalTimedAction.CODEC);
 	public static final GameBehaviorEntry<SetDisguiseAction> SET_DISGUISE = register("set_disguise", SetDisguiseAction.CODEC);
 	public static final GameBehaviorEntry<ClearDisguiseAction> CLEAR_DISGUISE = register("clear_disguise", ClearDisguiseAction.CODEC);
+	public static final GameBehaviorEntry<AddAttributeModifierAction> ADD_ATTRIBUTE_MODIFIER = register("add_attribute_modifier", AddAttributeModifierAction.CODEC);
+	public static final GameBehaviorEntry<ClearAttributeModifierAction> CLEAR_ATTRIBUTE_MODIFIER = register("clear_attribute_modifier", ClearAttributeModifierAction.CODEC);
 	public static final GameBehaviorEntry<BlockPackagesDuringPhaseBehavior> BLOCK_PACKAGES_DURING_PHASE = register("block_packages_during_phase", BlockPackagesDuringPhaseBehavior.CODEC);
 	public static final GameBehaviorEntry<WeatherEventAction> WEATHER_EVENT = register("weather_event", WeatherEventAction.CODEC);
 	public static final GameBehaviorEntry<CountdownAction<?>> COUNTDOWN_ACTION = register("countdown_action", CountdownAction.CODEC);
