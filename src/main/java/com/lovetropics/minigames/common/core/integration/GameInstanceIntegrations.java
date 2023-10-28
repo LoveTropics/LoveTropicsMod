@@ -68,8 +68,8 @@ public final class GameInstanceIntegrations implements IGameState {
 
 		events.listen(GamePlayerEvents.JOIN, (p) -> sendParticipantsList());
 		events.listen(GamePlayerEvents.LEAVE, (p) -> sendParticipantsList());
-		
-		events.listen(GamePhaseEvents.START, this::requestQueuedActions);
+
+		requestQueuedActions();
 	}
 
 	private void addGameDefinitionData(JsonObject payload) {
