@@ -3,18 +3,17 @@ package com.lovetropics.minigames.common.core.game.behavior.event;
 import com.lovetropics.minigames.common.core.game.SpawnBuilder;
 import com.lovetropics.minigames.common.core.game.player.PlayerRole;
 import com.lovetropics.minigames.common.core.game.util.TeamAllocator;
+import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.PlayerChatMessage;
-import net.minecraft.server.commands.SetSpawnCommand;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.core.BlockPos;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.server.level.ServerLevel;
 
 import javax.annotation.Nullable;
 import java.util.UUID;
@@ -157,8 +156,12 @@ public final class GamePlayerEvents {
 
 	public static final GameEventType<PickUpItem> PICK_UP_ITEM = GameEventType.create(PickUpItem.class, listeners -> (player, item) -> {
 		for (PickUpItem listener : listeners) {
-			listener.onPickUpItem(player, item);
+			InteractionResult result = listener.onPickUpItem(player, item);
+			if (result.consumesAction()) {
+				return result;
+			}
 		}
+		return InteractionResult.PASS;
 	});
 
 	public static final GameEventType<Death> DEATH = GameEventType.create(Death.class, listeners -> (player, damageSource) -> {
@@ -256,7 +259,7 @@ public final class GamePlayerEvents {
 	}
 
 	public interface PickUpItem {
-		void onPickUpItem(ServerPlayer player, ItemEntity item);
+		InteractionResult onPickUpItem(ServerPlayer player, ItemEntity item);
 	}
 
 	public interface Death {

@@ -58,7 +58,7 @@ public record ItemDropperBehavior(Either<ItemStack, ResourceLocation> loot, Stri
 	private class Dropper {
 		private final Vec3 position;
 		private final Supplier<List<ItemStack>> lootProvider;
-		private long nextDropTime;
+		private int dropInTicks;
 
 		@Nullable
 		private ItemEntity lastDroppedItem;
@@ -69,20 +69,23 @@ public record ItemDropperBehavior(Either<ItemStack, ResourceLocation> loot, Stri
 		}
 
 		public void tick(final IGamePhase game) {
-			if (game.ticks() < nextDropTime) {
+			if (lastDroppedItem != null && lastDroppedItem.isAlive()) {
 				return;
 			}
 
-			if (lastDroppedItem == null || !lastDroppedItem.isAlive()) {
-				final ServerLevel level = game.getLevel();
-				for (final ItemStack item : lootProvider.get()) {
-					final ItemEntity itemEntity = new ItemEntity(level, position.x, position.y, position.z, item);
-					level.addFreshEntity(itemEntity);
-					lastDroppedItem = itemEntity;
-				}
-
-				nextDropTime = game.ticks() + intervalTicks.sample(game.getRandom());
+			if (dropInTicks > 0) {
+				dropInTicks--;
+				return;
 			}
+
+			final ServerLevel level = game.getLevel();
+			for (final ItemStack item : lootProvider.get()) {
+				final ItemEntity itemEntity = new ItemEntity(level, position.x, position.y, position.z, item, 0.0, 0.0, 0.0);
+				level.addFreshEntity(itemEntity);
+				lastDroppedItem = itemEntity;
+			}
+
+			dropInTicks = intervalTicks.sample(game.getRandom());
 		}
 	}
 }

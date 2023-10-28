@@ -32,12 +32,14 @@ import net.minecraftforge.event.entity.living.LivingDropsEvent;
 import net.minecraftforge.event.entity.living.LivingEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.player.AttackEntityEvent;
+import net.minecraftforge.event.entity.player.EntityItemPickupEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.event.level.ChunkEvent;
 import net.minecraftforge.event.level.ExplosionEvent;
 import net.minecraftforge.event.level.SaplingGrowTreeEvent;
+import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 import javax.annotation.Nullable;
@@ -429,15 +431,22 @@ public final class GameEventDispatcher {
 	}
 
 	@SubscribeEvent
-	public void onItemPickup(PlayerEvent.ItemPickupEvent event) {
-		ItemEntity itemEntity = event.getOriginalEntity();
+	public void onItemPickup(EntityItemPickupEvent event) {
+		ItemEntity itemEntity = event.getItem();
 		IGamePhase game = gameLookup.getGamePhaseFor(itemEntity);
 		if (game == null) {
 			return;
 		}
 		if (event.getEntity() instanceof ServerPlayer serverPlayer && game.getAllPlayers().contains(serverPlayer)) {
 			try {
-				game.invoker(GamePlayerEvents.PICK_UP_ITEM).onPickUpItem(serverPlayer, itemEntity);
+				InteractionResult result = game.invoker(GamePlayerEvents.PICK_UP_ITEM).onPickUpItem(serverPlayer, itemEntity);
+				switch (result) {
+					case CONSUME, CONSUME_PARTIAL -> {
+						event.setResult(Event.Result.ALLOW);
+						event.getItem().getItem().setCount(0);
+					}
+					case FAIL -> event.setCanceled(true);
+				}
 			} catch (Exception e) {
 				LoveTropics.LOGGER.warn("Failed to dispatch item pickup event", e);
 			}

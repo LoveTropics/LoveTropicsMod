@@ -10,6 +10,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.RegistryCodecs;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
@@ -25,8 +26,10 @@ public record ItemPickupPointsBehavior(HolderSet<Item> items) implements IGameBe
 			if (items.contains(stack.getItemHolder())) {
 				final int count = stack.getCount();
 				game.getStatistics().forPlayer(player).incrementInt(StatisticKey.POINTS, count);
-				stack.shrink(count);
+				player.getInventory().removeItem(stack);
+				return InteractionResult.CONSUME;
 			}
+			return InteractionResult.PASS;
 		});
 	}
 }
