@@ -6,6 +6,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Pose;
+import net.minecraft.world.entity.WalkAnimationState;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeMap;
@@ -90,5 +91,11 @@ public final class PlayerDisguiseBehavior {
 				value,
 				AttributeModifier.Operation.ADDITION
 		);
+	}
+
+	public static void copyWalkAnimation(WalkAnimationState from, WalkAnimationState to) {
+		to.update(from.position() - to.position() - from.speed(), 1.0f);
+		to.setSpeed(from.speed(0.0f));
+		to.update(from.speed(), 1.0f);
 	}
 }

@@ -4,6 +4,7 @@ import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.common.core.diguise.DisguiseType;
 import com.lovetropics.minigames.common.core.diguise.PlayerDisguise;
+import com.lovetropics.minigames.common.core.diguise.PlayerDisguiseBehavior;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
@@ -14,18 +15,14 @@ import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.WalkAnimationState;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.scores.Team;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RenderLivingEvent;
-import net.minecraftforge.client.event.RenderPlayerEvent;
 import net.minecraftforge.client.event.ViewportEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-
-import java.util.UUID;
 
 @Mod.EventBusSubscriber(modid = Constants.MODID, value = Dist.CLIENT)
 public final class ClientPlayerDisguises {
@@ -124,7 +121,7 @@ public final class ClientPlayerDisguises {
             livingDisguise.yHeadRot = entity.yHeadRot;
             livingDisguise.yHeadRotO = entity.yHeadRotO;
 
-            copyWalkAnimation(entity.walkAnimation, livingDisguise.walkAnimation);
+            PlayerDisguiseBehavior.copyWalkAnimation(entity.walkAnimation, livingDisguise.walkAnimation);
 
             livingDisguise.swingingArm = entity.swingingArm;
             livingDisguise.attackAnim = entity.attackAnim;
@@ -165,12 +162,6 @@ public final class ClientPlayerDisguises {
         }
 
         return Minecraft.renderNames() && player != minecraft.getCameraEntity() && visible && !player.isVehicle();
-    }
-
-    private static void copyWalkAnimation(WalkAnimationState from, WalkAnimationState to) {
-        to.update(from.position() - to.position() - from.speed(), 1.0f);
-        to.setSpeed(from.speed(0.0f));
-        to.update(from.speed(), 1.0f);
     }
 
     public static void updateClientDisguise(int id, DisguiseType disguiseType) {
