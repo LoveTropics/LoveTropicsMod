@@ -14,7 +14,9 @@ import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.commands.arguments.EntityArgument;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 
 import javax.annotation.Nullable;
@@ -51,7 +53,12 @@ public class GamePackageCommand {
 		if (game != null) {
 			String type = StringArgumentType.getString(ctx, "id");
 			GamePackage gamePackage = new GamePackage(type, "LoveTropics", Optional.ofNullable(target).map(Entity::getUUID));
-			game.invoker(GamePackageEvents.RECEIVE_PACKAGE).onReceivePackage(gamePackage);
+			InteractionResult result = game.invoker(GamePackageEvents.RECEIVE_PACKAGE).onReceivePackage(gamePackage);
+			switch (result) {
+				case SUCCESS, CONSUME, CONSUME_PARTIAL -> ctx.getSource().sendSuccess(() -> Component.translatable("Successfully sent '%s'", type), false);
+				case PASS -> ctx.getSource().sendFailure(Component.translatable("'%s' was not processed", type));
+				case FAIL -> ctx.getSource().sendFailure(Component.translatable("'%s' was rejected", type));
+			}
 		}
 		return Command.SINGLE_SUCCESS;
 	}
