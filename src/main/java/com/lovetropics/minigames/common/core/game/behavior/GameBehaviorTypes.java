@@ -26,7 +26,8 @@ import com.lovetropics.minigames.common.core.game.behavior.instances.SetupIntegr
 import com.lovetropics.minigames.common.core.game.behavior.instances.SpectatorChaseBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.TimedGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.TipsAndTricksBehavior;
-import com.lovetropics.minigames.common.core.game.behavior.instances.action.ApplyGlobalDisguiseAction;
+import com.lovetropics.minigames.common.core.game.behavior.instances.action.ClearDisguiseAction;
+import com.lovetropics.minigames.common.core.game.behavior.instances.action.SetDisguiseAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.ChestDropAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.CountdownAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.DamagePlayerAction;
@@ -34,6 +35,7 @@ import com.lovetropics.minigames.common.core.game.behavior.instances.action.Elim
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.GiveEffectAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.GiveLootAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.GiveRewardAction;
+import com.lovetropics.minigames.common.core.game.behavior.instances.action.GlobalTimedAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.NotificationToastAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.PlaySoundAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.PlayerHeadRewardBehavior;
@@ -215,7 +217,9 @@ public class GameBehaviorTypes {
 	public static final GameBehaviorEntry<SetBlockAtPlayerAction> SET_BLOCK_AT_PLAYER = register("set_block_at_player", SetBlockAtPlayerAction.CODEC);
 	public static final GameBehaviorEntry<GivePlayerHeadPackageBehavior> GIVE_PLAYER_HEAD_PACKAGE = register("give_player_head_package", GivePlayerHeadPackageBehavior.CODEC);
 	public static final GameBehaviorEntry<ShootProjectilesAroundPlayerAction> SHOOT_PROJECTILES_AT_PLAYER = register("shoot_projectiles_at_player", ShootProjectilesAroundPlayerAction.CODEC);
-	public static final GameBehaviorEntry<ApplyGlobalDisguiseAction> APPLY_GLOBAL_DISGUISE = register("apply_global_disguise", ApplyGlobalDisguiseAction.CODEC);
+	public static final GameBehaviorEntry<GlobalTimedAction> GLOBAL_TIMED = register("global_timed", GlobalTimedAction.CODEC);
+	public static final GameBehaviorEntry<SetDisguiseAction> SET_DISGUISE = register("set_disguise", SetDisguiseAction.CODEC);
+	public static final GameBehaviorEntry<ClearDisguiseAction> CLEAR_DISGUISE = register("clear_disguise", ClearDisguiseAction.CODEC);
 	public static final GameBehaviorEntry<BlockPackagesDuringPhaseBehavior> BLOCK_PACKAGES_DURING_PHASE = register("block_packages_during_phase", BlockPackagesDuringPhaseBehavior.CODEC);
 	public static final GameBehaviorEntry<WeatherEventAction> WEATHER_EVENT = register("weather_event", WeatherEventAction.CODEC);
 	public static final GameBehaviorEntry<CountdownAction<?>> COUNTDOWN_ACTION = register("countdown_action", CountdownAction.CODEC);

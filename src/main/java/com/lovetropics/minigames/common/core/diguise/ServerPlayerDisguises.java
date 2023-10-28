@@ -134,12 +134,14 @@ public final class ServerPlayerDisguises {
 		return Command.SINGLE_SUCCESS;
 	}
 
-	public static void set(LivingEntity entity, DisguiseType type) {
+	public static boolean set(LivingEntity entity, DisguiseType type) {
 		PlayerDisguise disguise = PlayerDisguise.getOrNull(entity);
 		if (disguise != null) {
 			disguise.set(type);
 			onSetDisguise(entity);
+			return true;
 		}
+		return false;
 	}
 
 	public static void update(LivingEntity entity, Consumer<PlayerDisguise> consumer) {

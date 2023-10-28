@@ -1,6 +1,7 @@
 package com.lovetropics.minigames.common.core.diguise;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
@@ -18,10 +19,12 @@ import java.util.Optional;
 public record DisguiseType(@Nullable EntityConfig entity, float scale) {
 	public static final DisguiseType DEFAULT = new DisguiseType((EntityConfig) null, 1.0f);
 
-	public static final Codec<DisguiseType> CODEC = RecordCodecBuilder.create(i -> i.group(
+	public static final MapCodec<DisguiseType> MAP_CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			EntityConfig.CODEC.optionalFieldOf("entity").forGetter(c -> Optional.ofNullable(c.entity)),
 			Codec.FLOAT.optionalFieldOf("scale", 1.0f).forGetter(c -> c.scale)
 	).apply(i, DisguiseType::new));
+
+	public static final Codec<DisguiseType> CODEC = MAP_CODEC.codec();
 
 	private DisguiseType(Optional<EntityConfig> entity, float scale) {
 		this(entity.orElse(null), scale);
