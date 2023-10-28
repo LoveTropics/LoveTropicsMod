@@ -92,7 +92,7 @@ public final class ClientPlayerDisguises {
             return;
         }
 
-        if (disguise.type().entity() == null) {
+        if (disguise.entity() == null) {
             event.getPoseStack().popPose();
         }
     }
