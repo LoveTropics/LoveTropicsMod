@@ -153,8 +153,12 @@ public final class RuntimeDimensions {
 			@Override
 			public void save(@Nullable ProgressListener progress, boolean flush, boolean skipSave) {
 				if (temporary) {
-					if (!flush && temporaryDimensions.contains(dimension())) {
-						super.save(progress, false, skipSave);
+					try {
+						if (!flush && temporaryDimensions.contains(dimension())) {
+							super.save(progress, false, skipSave);
+						}
+					} catch (final Exception e) {
+						LOGGER.error("Failed to save temporary dimension", e);
 					}
 				} else {
 					super.save(progress, flush, skipSave);
