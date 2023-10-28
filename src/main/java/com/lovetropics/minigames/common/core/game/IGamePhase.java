@@ -10,6 +10,7 @@ import com.lovetropics.minigames.common.core.map.MapRegions;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.util.RandomSource;
 import net.minecraft.util.Unit;
 import net.minecraft.world.level.Level;
 import net.minecraft.server.level.ServerLevel;
@@ -109,6 +110,10 @@ public interface IGamePhase extends IGame {
 	 */
 	ServerLevel getWorld();
 
+	default ServerLevel getLevel() {
+		return getWorld();
+	}
+
 	/**
 	 * @return the dimension that this game takes places within
 	 */
@@ -122,4 +127,8 @@ public interface IGamePhase extends IGame {
 	 * @return the tick counter since the game started
 	 */
 	long ticks();
+
+	default RandomSource getRandom() {
+		return getWorld().getRandom();
+	}
 }

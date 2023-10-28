@@ -70,24 +70,17 @@ public final class TimedGameBehavior implements IGameBehavior {
 	}
 
 	private void tick(IGamePhase game) {
-		TimedGameState.TickResult result = this.state.tick(game.ticks());
-		switch (result) {
-			case RUNNING:
-				tickRunning(game);
-				break;
-			case GAME_OVER:
-				game.invoker(GameLogicEvents.GAME_OVER).onGameOver();
-				break;
-			case CLOSE:
-				game.requestStop(GameStopReason.finished());
-				break;
+		switch (state.tick(game.ticks())) {
+			case RUNNING -> tickRunning(game);
+			case GAME_OVER -> game.invoker(GameLogicEvents.GAME_OVER).onGameOver();
+			case CLOSE -> game.requestStop(GameStopReason.finished());
 		}
 	}
 
 	private void tickRunning(IGamePhase game) {
 		long ticksRemaining = state.getTicksRemaining();
-		if (ticksRemaining % 20 == 0) {
-			long secondsRemaining = ticksRemaining / 20;
+		if (ticksRemaining % SharedConstants.TICKS_PER_SECOND == 0) {
+			long secondsRemaining = ticksRemaining / SharedConstants.TICKS_PER_SECOND;
 
 			if (secondsRemaining <= countdownSeconds) {
 				playCountdownSound(game, secondsRemaining);
