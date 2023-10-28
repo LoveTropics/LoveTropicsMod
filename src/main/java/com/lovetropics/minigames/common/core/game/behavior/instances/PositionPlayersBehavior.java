@@ -38,24 +38,27 @@ public class PositionPlayersBehavior implements IGameBehavior {
 			MoreCodecs.arrayOrUnit(Codec.STRING, String[]::new).optionalFieldOf("participants", new String[0]).forGetter(c -> c.participantSpawnKeys),
 			MoreCodecs.arrayOrUnit(Codec.STRING, String[]::new).optionalFieldOf("spectators", new String[0]).forGetter(c -> c.spectatorSpawnKeys),
 			MoreCodecs.arrayOrUnit(Codec.STRING, String[]::new).optionalFieldOf("all", new String[0]).forGetter(c -> c.allSpawnKeys),
-			Codec.BOOL.optionalFieldOf("split_by_team", true).forGetter(c -> c.splitByTeam)
+			Codec.BOOL.optionalFieldOf("split_by_team", true).forGetter(c -> c.splitByTeam),
+			Codec.FLOAT.optionalFieldOf("angle", 0.0f).forGetter(c -> c.angle)
 	).apply(i, PositionPlayersBehavior::new));
 
 	private final String[] participantSpawnKeys;
 	private final String[] spectatorSpawnKeys;
 	private final String[] allSpawnKeys;
 	private final boolean splitByTeam;
+	private final float angle;
 
 	private CycledSpawner participantSpawner = CycledSpawner.EMPTY;
 	private CycledSpawner spectatorSpawner = CycledSpawner.EMPTY;
 	private CycledSpawner fallbackSpawner = CycledSpawner.EMPTY;
 	private Map<GameTeamKey, CycledSpawner> teamSpawners = Map.of();
 
-	public PositionPlayersBehavior(String[] participantSpawnKeys, String[] spectatorSpawnKeys, String[] allSpawnKeys, boolean splitByTeam) {
+	public PositionPlayersBehavior(String[] participantSpawnKeys, String[] spectatorSpawnKeys, String[] allSpawnKeys, boolean splitByTeam, float angle) {
 		this.participantSpawnKeys = participantSpawnKeys;
 		this.spectatorSpawnKeys = spectatorSpawnKeys;
 		this.allSpawnKeys = allSpawnKeys;
 		this.splitByTeam = splitByTeam;
+		this.angle = angle;
 	}
 
 	@Override
@@ -97,7 +100,7 @@ public class PositionPlayersBehavior implements IGameBehavior {
 		BlockBox region = getSpawnRegionFor(playerId, role, teams);
 		if (region != null) {
 			BlockPos pos = tryFindEmptyPos(game, game.getWorld().getRandom(), region);
-			spawn.teleportTo(game.getWorld(), pos);
+			spawn.teleportTo(game.getWorld(), pos, angle);
 		}
 	}
 

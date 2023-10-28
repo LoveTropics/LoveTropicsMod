@@ -37,7 +37,11 @@ public class SpawnBuilder {
 	}
 
 	public void teleportTo(final ServerLevel level, final BlockPos pos, final Direction forward) {
-		teleportTo(level, Vec3.atBottomCenterOf(pos), forward.toYRot(), 0.0f);
+		teleportTo(level, pos, forward.toYRot());
+	}
+
+	public void teleportTo(final ServerLevel level, final BlockPos pos, float yRot) {
+		teleportTo(level, Vec3.atBottomCenterOf(pos), yRot, 0.0f);
 	}
 
 	public void teleportTo(final ServerLevel level, final BlockPos pos) {
