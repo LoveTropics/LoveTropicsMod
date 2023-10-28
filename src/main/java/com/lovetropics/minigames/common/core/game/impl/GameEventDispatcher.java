@@ -427,4 +427,20 @@ public final class GameEventDispatcher {
 			}
 		}
 	}
+
+	@SubscribeEvent
+	public void onItemPickup(PlayerEvent.ItemPickupEvent event) {
+		ItemEntity itemEntity = event.getOriginalEntity();
+		IGamePhase game = gameLookup.getGamePhaseFor(itemEntity);
+		if (game == null) {
+			return;
+		}
+		if (event.getEntity() instanceof ServerPlayer serverPlayer && game.getAllPlayers().contains(serverPlayer)) {
+			try {
+				game.invoker(GamePlayerEvents.PICK_UP_ITEM).onPickUpItem(serverPlayer, itemEntity);
+			} catch (Exception e) {
+				LoveTropics.LOGGER.warn("Failed to dispatch item pickup event", e);
+			}
+		}
+	}
 }

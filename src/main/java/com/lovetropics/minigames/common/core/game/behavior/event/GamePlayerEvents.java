@@ -155,6 +155,12 @@ public final class GamePlayerEvents {
 		return InteractionResult.PASS;
 	});
 
+	public static final GameEventType<PickUpItem> PICK_UP_ITEM = GameEventType.create(PickUpItem.class, listeners -> (player, item) -> {
+		for (PickUpItem listener : listeners) {
+			listener.onPickUpItem(player, item);
+		}
+	});
+
 	public static final GameEventType<Death> DEATH = GameEventType.create(Death.class, listeners -> (player, damageSource) -> {
 		for (Death listener : listeners) {
 			InteractionResult result = listener.onDeath(player, damageSource);
@@ -247,6 +253,10 @@ public final class GamePlayerEvents {
 
 	public interface ThrowItem {
 		InteractionResult onThrowItem(ServerPlayer player, ItemEntity item);
+	}
+
+	public interface PickUpItem {
+		void onPickUpItem(ServerPlayer player, ItemEntity item);
 	}
 
 	public interface Death {
