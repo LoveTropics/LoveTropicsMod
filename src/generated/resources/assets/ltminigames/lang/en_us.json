@@ -216,7 +216,7 @@
   "ltminigames.minigame.donation.speed_boost_30_package.description": "Give a chosen player a Speed Boost for 30 seconds",
   "ltminigames.minigame.donation.speed_boost_30_package.toast": "%sender% sent you a SPEED BOOST for 30 seconds!",
   "ltminigames.minigame.donation.speed_boost_5_package": "Speed Boost (5 seconds)",
-  "ltminigames.minigame.donation.speed_boost_5_package.description": "%sender% sent you a SPEED BOOST for 5 seconds!",
+  "ltminigames.minigame.donation.speed_boost_5_package.description": "Give a chosen player a Speed Boost for 5 seconds",
   "ltminigames.minigame.donation.speed_boost_5_package.toast": "%sender% sent you a SPEED BOOST for 5 seconds!",
   "ltminigames.minigame.donation.surprise_creepers": "Surprise Creepers",
   "ltminigames.minigame.donation.surprise_creepers.description": "Spawns 3 Creepers on every plot that explode and absolutely obliterate plants",

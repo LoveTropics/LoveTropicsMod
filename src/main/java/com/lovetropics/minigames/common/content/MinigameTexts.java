@@ -206,7 +206,7 @@ public final class MinigameTexts {
 		KEYS.add("donation.speed_boost_1_package.description", "Give a chosen player a Speed Boost for 1 second");
 		KEYS.add("donation.speed_boost_1_package.toast", "%sender% sent you a SPEED BOOST for 1 second! Wow");
 		KEYS.add("donation.speed_boost_5_package", "Speed Boost (5 seconds)");
-		KEYS.add("donation.speed_boost_5_package.description", "%sender% sent you a SPEED BOOST for 5 seconds!");
+		KEYS.add("donation.speed_boost_5_package.description", "Give a chosen player a Speed Boost for 5 seconds");
 		KEYS.add("donation.speed_boost_5_package.toast", "%sender% sent you a SPEED BOOST for 5 seconds!");
 		KEYS.add("donation.speed_boost_30_package", "Speed Boost (30 seconds)");
 		KEYS.add("donation.speed_boost_30_package.description", "Give a chosen player a Speed Boost for 30 seconds");
