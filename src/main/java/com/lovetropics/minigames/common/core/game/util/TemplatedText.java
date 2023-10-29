@@ -8,6 +8,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.Unit;
 
@@ -23,10 +24,21 @@ public record TemplatedText(Component template) {
 
 	public Component apply(GameActionContext context) {
 		Map<String, Component> values = new Object2ObjectArrayMap<>();
+		addValuesFromContext(context, values);
+		return apply(values);
+	}
+
+	public Component apply(GameActionContext context, ServerPlayer target) {
+		Map<String, Component> values = new Object2ObjectArrayMap<>();
+		addValuesFromContext(context, values);
+		values.put("target", target.getDisplayName());
+		return apply(values);
+	}
+
+	private static void addValuesFromContext(GameActionContext context, Map<String, Component> values) {
 		context.get(GameActionParameter.PACKAGE_SENDER).ifPresent(name -> values.put("sender", Component.literal(name)));
 		context.get(GameActionParameter.KILLER).ifPresent(player -> values.put("killer", player.getDisplayName()));
 		context.get(GameActionParameter.KILLED).ifPresent(player -> values.put("killed", player.getDisplayName()));
-		return apply(values);
 	}
 
 	public Component apply(Map<String, Component> values) {

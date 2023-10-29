@@ -20,7 +20,7 @@ public record SendMessageAction(TemplatedText message) implements IGameBehavior 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
 		events.listen(GameActionEvents.APPLY_TO_PLAYER, (context, target) -> {
-			target.sendSystemMessage(message.apply(context), false);
+			target.sendSystemMessage(message.apply(context, target), false);
 			return true;
 		});
 	}

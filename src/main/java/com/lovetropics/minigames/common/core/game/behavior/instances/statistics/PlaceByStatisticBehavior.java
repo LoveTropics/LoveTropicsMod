@@ -12,7 +12,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 public record PlaceByStatisticBehavior(StatisticKey<Integer> statistic, PlacementOrder order) implements IGameBehavior {
 	public static final MapCodec<PlaceByStatisticBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
-			StatisticKey.codecFor(Integer.class).fieldOf("statistic").forGetter(c -> c.statistic),
+			StatisticKey.INT_CODEC.fieldOf("statistic").forGetter(c -> c.statistic),
 			PlacementOrder.CODEC.optionalFieldOf("order", PlacementOrder.MAX).forGetter(c -> c.order)
 	).apply(i, PlaceByStatisticBehavior::new));
 
