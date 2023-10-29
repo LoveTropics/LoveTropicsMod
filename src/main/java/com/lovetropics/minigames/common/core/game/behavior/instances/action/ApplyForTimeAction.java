@@ -9,21 +9,27 @@ import com.lovetropics.minigames.common.core.game.behavior.action.GameActionList
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameActionEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
+import com.lovetropics.minigames.common.core.game.util.TemplatedText;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.Object2LongMap;
 import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap;
 import net.minecraft.SharedConstants;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.Mth;
 
+import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
 
-public record ApplyForTimeAction(GameActionList<ServerPlayer> apply, GameActionList<ServerPlayer> clear, int seconds) implements IGameBehavior {
+public record ApplyForTimeAction(GameActionList<ServerPlayer> apply, GameActionList<ServerPlayer> clear, Optional<TemplatedText> indicator, int seconds) implements IGameBehavior {
 	public static final MapCodec<ApplyForTimeAction> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			GameActionList.PLAYER_CODEC.fieldOf("apply").forGetter(ApplyForTimeAction::apply),
 			GameActionList.PLAYER_CODEC.fieldOf("clear").forGetter(ApplyForTimeAction::clear),
+			TemplatedText.CODEC.optionalFieldOf("indicator").forGetter(ApplyForTimeAction::indicator),
 			Codec.INT.fieldOf("seconds").forGetter(ApplyForTimeAction::seconds)
 	).apply(i, ApplyForTimeAction::new));
 
@@ -60,15 +66,27 @@ public record ApplyForTimeAction(GameActionList<ServerPlayer> apply, GameActionL
 				finishTime = NOT_ACTIVE;
 			}
 			playerFinishTimes.object2LongEntrySet().removeIf(entry -> {
-				if (time >= entry.getLongValue()) {
-					final ServerPlayer player = game.getAllPlayers().getPlayerBy(entry.getKey());
+				final ServerPlayer player = game.getAllPlayers().getPlayerBy(entry.getKey());
+				final long finishTime = entry.getLongValue();
+				if (time >= finishTime) {
 					if (player != null) {
 						clear.apply(game, GameActionContext.EMPTY, player);
 					}
 					return true;
+				} else {
+					if (player != null && indicator.isPresent()) {
+						tickIndicator(player, finishTime - time, indicator.get());
+					}
+					return false;
 				}
-				return false;
 			});
+		}
+
+		private void tickIndicator(final ServerPlayer player, final long ticksLeft, final TemplatedText text) {
+			if (ticksLeft % 5 == 0) {
+				final int seconds = Mth.positiveCeilDiv((int) ticksLeft, SharedConstants.TICKS_PER_SECOND);
+				player.sendSystemMessage(text.apply(Map.of("seconds", Component.literal(String.valueOf(seconds)))), true);
+			}
 		}
 
 		private boolean tryApply(final IGamePhase game, final GameActionContext context) {
