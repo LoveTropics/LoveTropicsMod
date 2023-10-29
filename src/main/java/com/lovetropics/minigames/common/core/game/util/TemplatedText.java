@@ -40,6 +40,7 @@ public record TemplatedText(Component template) {
 		context.get(GameActionParameter.KILLER).ifPresent(player -> values.put("killer", player.getDisplayName()));
 		context.get(GameActionParameter.KILLED).ifPresent(player -> values.put("killed", player.getDisplayName()));
 		context.get(GameActionParameter.COUNT).ifPresent(count -> values.put("count", Component.literal(String.valueOf(count))));
+		context.get(GameActionParameter.ITEM).ifPresent(item -> values.put("item", item.getHoverName()));
 	}
 
 	public Component apply(Map<String, Component> values) {

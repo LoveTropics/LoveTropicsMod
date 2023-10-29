@@ -4,6 +4,9 @@ import com.lovetropics.lib.BlockBox;
 import com.lovetropics.lib.codec.MoreCodecs;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
+import com.lovetropics.minigames.common.core.game.behavior.action.GameActionContext;
+import com.lovetropics.minigames.common.core.game.behavior.action.GameActionList;
+import com.lovetropics.minigames.common.core.game.behavior.action.GameActionParameter;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.mojang.datafixers.util.Either;
@@ -24,14 +27,16 @@ import net.minecraft.world.phys.Vec3;
 import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Supplier;
 
-public record ItemDropperBehavior(Either<ItemStack, ResourceLocation> loot, String regionKey, boolean combined, IntProvider intervalTicks) implements IGameBehavior {
+public record ItemDropperBehavior(Either<ItemStack, ResourceLocation> loot, String regionKey, boolean combined, IntProvider intervalTicks, Optional<GameActionList<Void>> announcement) implements IGameBehavior {
 	public static final MapCodec<ItemDropperBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			Codec.either(MoreCodecs.ITEM_STACK, ResourceLocation.CODEC).fieldOf("loot").forGetter(ItemDropperBehavior::loot),
 			Codec.STRING.fieldOf("region").forGetter(ItemDropperBehavior::regionKey),
 			Codec.BOOL.optionalFieldOf("combined", false).forGetter(ItemDropperBehavior::combined),
-			IntProvider.POSITIVE_CODEC.fieldOf("interval_ticks").forGetter(ItemDropperBehavior::intervalTicks)
+			IntProvider.POSITIVE_CODEC.fieldOf("interval_ticks").forGetter(ItemDropperBehavior::intervalTicks),
+			GameActionList.VOID_CODEC.optionalFieldOf("announcement").forGetter(ItemDropperBehavior::announcement)
 	).apply(i, ItemDropperBehavior::new));
 
 	@Override
@@ -40,6 +45,8 @@ public record ItemDropperBehavior(Either<ItemStack, ResourceLocation> loot, Stri
 		if (regions.isEmpty()) {
 			return;
 		}
+
+		announcement.ifPresent(action -> action.register(game, events));
 
 		final Supplier<List<ItemStack>> lootProvider = createLootProvider(game);
 		final List<Dropper> droppers;
@@ -90,16 +97,21 @@ public record ItemDropperBehavior(Either<ItemStack, ResourceLocation> loot, Stri
 				return;
 			}
 
+			Util.getRandomSafe(lootProvider.get(), game.getRandom())
+					.ifPresent(item -> spawnItem(game, item));
+
+			dropInTicks = intervalTicks.sample(game.getRandom());
+		}
+
+		private void spawnItem(final IGamePhase game, final ItemStack item) {
 			final Vec3 position = Util.getRandom(positions, game.getRandom());
 
 			final ServerLevel level = game.getLevel();
-			for (final ItemStack item : lootProvider.get()) {
-				final ItemEntity itemEntity = new ItemEntity(level, position.x, position.y, position.z, item, 0.0, 0.0, 0.0);
-				level.addFreshEntity(itemEntity);
-				lastDroppedItem = itemEntity;
-			}
+			final ItemEntity itemEntity = new ItemEntity(level, position.x, position.y, position.z, item, 0.0, 0.1, 0.0);
+			level.addFreshEntity(itemEntity);
+			lastDroppedItem = itemEntity;
 
-			dropInTicks = intervalTicks.sample(game.getRandom());
+			announcement.ifPresent(action -> action.apply(game, GameActionContext.builder().set(GameActionParameter.ITEM, item).build()));
 		}
 	}
 }
