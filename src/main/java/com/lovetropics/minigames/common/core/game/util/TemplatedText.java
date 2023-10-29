@@ -51,6 +51,7 @@ public record TemplatedText(Component template) {
 		// TODO: Precompute this
 		MutableComponent result = Component.literal("");
 		template.visit((FormattedText.StyledContentConsumer<Unit>) (style, text) -> {
+			String leftoverText = text;
 			Matcher matcher = PATTERN.matcher(text);
 			while (matcher.find()) {
 				String group = matcher.group();
@@ -61,11 +62,11 @@ public record TemplatedText(Component template) {
 					}
 					Style mergedStyle = value.getStyle().applyTo(style);
 					result.append(value.copy().setStyle(mergedStyle));
-					text = text.substring(matcher.end());
+					leftoverText = text.substring(matcher.end());
 				}
 			}
-			if (!text.isEmpty()) {
-				result.append(Component.literal(text).withStyle(style));
+			if (!leftoverText.isEmpty()) {
+				result.append(Component.literal(leftoverText).withStyle(style));
 			}
 			return Optional.empty();
 		}, Style.EMPTY);
