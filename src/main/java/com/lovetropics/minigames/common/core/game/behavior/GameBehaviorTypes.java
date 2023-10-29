@@ -74,6 +74,7 @@ import com.lovetropics.minigames.common.core.game.behavior.instances.statistics.
 import com.lovetropics.minigames.common.core.game.behavior.instances.statistics.KillsTrackerBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.statistics.PlaceByDeathOrderBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.statistics.PlaceByStatisticBehavior;
+import com.lovetropics.minigames.common.core.game.behavior.instances.statistics.StatisticTagBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.statistics.SumStatisticBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.statistics.TimeSurvivedTrackerBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.team.SetupTeamsBehavior;
@@ -207,6 +208,7 @@ public class GameBehaviorTypes {
 	public static final GameBehaviorEntry<DamageTrackerBehavior> DAMAGE_TRACKER = register("damage_tracker", DamageTrackerBehavior.CODEC);
 	public static final GameBehaviorEntry<BlocksBrokenTrackerBehavior> BLOCKS_BROKEN_TRACKER = register("blocks_broken_tracker", BlocksBrokenTrackerBehavior.CODEC);
 	public static final GameBehaviorEntry<SumStatisticBehavior> SUM_STATISTIC = register("sum_statistic", SumStatisticBehavior.CODEC);
+	public static final GameBehaviorEntry<StatisticTagBehavior> STATISTIC_TAG = register("statistic_tag", StatisticTagBehavior.CODEC);
 
 	public static final GameBehaviorEntry<DisplayLeaderboardOnFinishBehavior<?>> DISPLAY_LEADERBOARD_ON_FINISH = register("display_leaderboard_on_finish", DisplayLeaderboardOnFinishBehavior.CODEC);
 
