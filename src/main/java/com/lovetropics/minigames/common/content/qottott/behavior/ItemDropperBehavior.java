@@ -9,6 +9,7 @@ import com.lovetropics.minigames.common.core.game.behavior.action.GameActionList
 import com.lovetropics.minigames.common.core.game.behavior.action.GameActionParameter;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
+import com.lovetropics.minigames.common.core.game.behavior.instances.statistics.TriggerAfterConfig;
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
@@ -30,8 +31,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
 
-public record ItemDropperBehavior(Either<ItemStack, ResourceLocation> loot, String regionKey, boolean combined, IntProvider intervalTicks, Optional<GameActionList<Void>> announcement) implements IGameBehavior {
+public record ItemDropperBehavior(TriggerAfterConfig after, Either<ItemStack, ResourceLocation> loot, String regionKey, boolean combined, IntProvider intervalTicks, Optional<GameActionList<Void>> announcement) implements IGameBehavior {
 	public static final MapCodec<ItemDropperBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
+			TriggerAfterConfig.MAP_CODEC.forGetter(ItemDropperBehavior::after),
 			Codec.either(MoreCodecs.ITEM_STACK, ResourceLocation.CODEC).fieldOf("loot").forGetter(ItemDropperBehavior::loot),
 			Codec.STRING.fieldOf("region").forGetter(ItemDropperBehavior::regionKey),
 			Codec.BOOL.optionalFieldOf("combined", false).forGetter(ItemDropperBehavior::combined),
@@ -56,16 +58,16 @@ public record ItemDropperBehavior(Either<ItemStack, ResourceLocation> loot, Stri
 			droppers = regions.stream().map(box -> new Dropper(List.of(box.center()), lootProvider)).toList();
 		}
 
-		events.listen(GamePhaseEvents.START, () -> {
+		after.awaitThen(game, events, () -> {
 			for (final Dropper dropper : droppers) {
 				dropper.resetDelay(game);
 			}
-		});
 
-		events.listen(GamePhaseEvents.TICK, () -> {
-			for (final Dropper dropper : droppers) {
-				dropper.tick(game);
-			}
+			events.listen(GamePhaseEvents.TICK, () -> {
+				for (final Dropper dropper : droppers) {
+					dropper.tick(game);
+				}
+			});
 		});
 	}
 
