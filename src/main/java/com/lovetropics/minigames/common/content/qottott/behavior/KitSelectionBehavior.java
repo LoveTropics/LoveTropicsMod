@@ -22,6 +22,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
 import org.slf4j.Logger;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -44,20 +45,22 @@ public record KitSelectionBehavior(List<Kit> kits) implements IGameBehavior {
 
 		events.listen(GamePhaseEvents.START, () -> {
 			for (final Kit kit : kits) {
-				final BlockBox region = game.getMapRegions().getAny(kit.region());
-				if (region == null) {
+				final Collection<BlockBox> regions = game.getMapRegions().get(kit.region());
+				if (regions.isEmpty()) {
 					LOGGER.error("Missing region for kit: {}", kit);
 					continue;
 				}
-				final Entity entity = kit.entity().createEntity(game.getLevel());
-				if (entity == null) {
-					LOGGER.error("Unable to create entity for kit: {}", kit);
-					continue;
+				for (final BlockBox region : regions) {
+					final Entity entity = kit.entity().createEntity(game.getLevel());
+					if (entity == null) {
+						LOGGER.error("Unable to create entity for kit: {}", kit);
+						continue;
+					}
+					final Vec3 center = region.center();
+					entity.moveTo(center.x, region.min().getY(), center.z, kit.angle, 0.0f);
+					game.getLevel().addFreshEntity(entity);
+					kitEntities.put(entity.getUUID(), kit);
 				}
-				final Vec3 center = region.center();
-				entity.moveTo(center.x, region.min().getY(), center.z, kit.angle, 0.0f);
-				game.getLevel().addFreshEntity(entity);
-				kitEntities.put(entity.getUUID(), kit);
 			}
 		});
 
