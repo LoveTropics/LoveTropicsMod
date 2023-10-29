@@ -86,6 +86,7 @@ import com.lovetropics.minigames.common.core.game.behavior.instances.team.TeamsB
 import com.lovetropics.minigames.common.core.game.behavior.instances.trigger.BindControlsBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.trigger.GameFinishTrigger;
 import com.lovetropics.minigames.common.core.game.behavior.instances.trigger.GeneralEventsTrigger;
+import com.lovetropics.minigames.common.core.game.behavior.instances.trigger.ItemPickedUpTrigger;
 import com.lovetropics.minigames.common.core.game.behavior.instances.trigger.OnDamageTrigger;
 import com.lovetropics.minigames.common.core.game.behavior.instances.trigger.OnDeathTrigger;
 import com.lovetropics.minigames.common.core.game.behavior.instances.trigger.OnKillTrigger;
@@ -252,6 +253,7 @@ public class GameBehaviorTypes {
 	public static final GameBehaviorEntry<GiveRewardAction> GIVE_REWARD = register("give_reward", GiveRewardAction.CODEC);
 	public static final GameBehaviorEntry<TopPlayerTrigger> TOP_PLAYER_TRIGGER = register("top_player_trigger", TopPlayerTrigger.CODEC);
 	public static final GameBehaviorEntry<SetRoleTrigger> SET_ROLE = register("set_role", SetRoleTrigger.CODEC);
+	public static final GameBehaviorEntry<ItemPickedUpTrigger> ITEM_PICKED_UP = register("item_picked_up", ItemPickedUpTrigger.CODEC);
 
 	public static final GameBehaviorEntry<SetupIntegrationsBehavior> SETUP_INTEGRATIONS = register("setup_integrations", SetupIntegrationsBehavior.CODEC);
 	public static final GameBehaviorEntry<AssignPlayerRolesBehavior> ASSIGN_PLAYER_ROLES = register("assign_player_roles", AssignPlayerRolesBehavior.CODEC);
