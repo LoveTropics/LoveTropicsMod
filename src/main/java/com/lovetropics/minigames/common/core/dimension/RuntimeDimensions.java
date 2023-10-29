@@ -187,11 +187,11 @@ public final class RuntimeDimensions {
 	}
 
 	boolean tickDimensionDeletion(ServerLevel world) {
-		if (this.isWorldUnloaded(world)) {
-			this.deleteDimension(world);
+		kickPlayersFrom(world);
+		if (isWorldUnloaded(world) || isTemporaryDimension(world.dimension())) {
+			deleteDimension(world);
 			return true;
 		} else {
-			this.kickPlayersFrom(world);
 			return false;
 		}
 	}
