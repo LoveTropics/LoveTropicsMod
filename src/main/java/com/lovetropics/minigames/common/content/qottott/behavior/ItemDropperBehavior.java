@@ -56,6 +56,12 @@ public record ItemDropperBehavior(Either<ItemStack, ResourceLocation> loot, Stri
 			droppers = regions.stream().map(box -> new Dropper(List.of(box.center()), lootProvider)).toList();
 		}
 
+		events.listen(GamePhaseEvents.START, () -> {
+			for (final Dropper dropper : droppers) {
+				dropper.resetDelay(game);
+			}
+		});
+
 		events.listen(GamePhaseEvents.TICK, () -> {
 			for (final Dropper dropper : droppers) {
 				dropper.tick(game);
@@ -92,14 +98,15 @@ public record ItemDropperBehavior(Either<ItemStack, ResourceLocation> loot, Stri
 				return;
 			}
 
-			if (dropInTicks > 0) {
+			if (dropInTicks == 0) {
+				resetDelay(game);
+				Util.getRandomSafe(lootProvider.get(), game.getRandom()).ifPresent(item -> spawnItem(game, item));
+			} else {
 				dropInTicks--;
-				return;
 			}
+		}
 
-			Util.getRandomSafe(lootProvider.get(), game.getRandom())
-					.ifPresent(item -> spawnItem(game, item));
-
+		private void resetDelay(final IGamePhase game) {
 			dropInTicks = intervalTicks.sample(game.getRandom());
 		}
 
