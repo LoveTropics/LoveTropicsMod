@@ -20,6 +20,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.registries.ForgeRegistries;
 
+import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
 
@@ -55,7 +56,7 @@ public record StatisticTagBehavior(StatisticKey<Integer> statistic, Item icon) i
 	}
 
 	private PointTagClientState createState(final Object2IntMap<UUID> points) {
-		return new PointTagClientState(new ItemStack(icon), points);
+		return new PointTagClientState(new ItemStack(icon), Optional.empty(), points);
 	}
 
 	@Override

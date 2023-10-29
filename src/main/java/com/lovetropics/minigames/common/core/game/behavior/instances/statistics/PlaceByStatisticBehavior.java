@@ -18,15 +18,8 @@ public record PlaceByStatisticBehavior(StatisticKey<Integer> statistic, Placemen
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
-		events.listen(GamePhaseEvents.FINISH, () -> {
-			PlayerPlacement.Score<Integer> placement;
-			if (order == PlacementOrder.MAX) {
-				placement = PlayerPlacement.fromMaxScore(game, statistic);
-			} else {
-				placement = PlayerPlacement.fromMinScore(game, statistic);
-			}
-
-			placement.placeInto(StatisticKey.PLACEMENT);
-		});
+		events.listen(GamePhaseEvents.FINISH, () ->
+				PlayerPlacement.fromScore(order, game, statistic).placeInto(StatisticKey.PLACEMENT)
+		);
 	}
 }

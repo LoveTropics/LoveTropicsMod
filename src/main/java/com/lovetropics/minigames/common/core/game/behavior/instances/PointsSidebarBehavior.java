@@ -61,7 +61,7 @@ public record PointsSidebarBehavior(
 			sidebar.add(line.apply(Map.of("total", Component.literal(String.valueOf(totalCount)))));
 		}
 
-		final PlayerPlacement.Score<Integer> placement = PlayerPlacement.fromMaxScore(game, statistic);
+		final PlayerPlacement.Score<Integer> placement = PlayerPlacement.fromMaxScore(game, statistic, false);
 		placement.addToSidebar(sidebar, count);
 
 		return sidebar.toArray(new Component[0]);

@@ -4,6 +4,7 @@ import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.common.content.qottott.behavior.ItemDropperBehavior;
 import com.lovetropics.minigames.common.content.qottott.behavior.ItemPickupPointsBehavior;
+import com.lovetropics.minigames.common.content.qottott.behavior.KillBonusBehavior;
 import com.lovetropics.minigames.common.content.qottott.behavior.KitSelectionBehavior;
 import com.lovetropics.minigames.common.content.qottott.behavior.LobbyWithPortalBehavior;
 import com.lovetropics.minigames.common.util.registry.GameBehaviorEntry;
@@ -18,6 +19,7 @@ public class Qottott {
 	public static final GameBehaviorEntry<ItemPickupPointsBehavior> ITEM_PICKUP_POINTS = REGISTRATE.object("item_pickup_points").behavior(ItemPickupPointsBehavior.CODEC).register();
 	public static final GameBehaviorEntry<LobbyWithPortalBehavior> LOBBY_WITH_PORTAL = REGISTRATE.object("lobby_with_portal").behavior(LobbyWithPortalBehavior.CODEC).register();
 	public static final GameBehaviorEntry<KitSelectionBehavior> KIT_SELECTION = REGISTRATE.object("kit_selection").behavior(KitSelectionBehavior.CODEC).register();
+	public static final GameBehaviorEntry<KillBonusBehavior> KILL_BONUS = REGISTRATE.object("kill_bonus").behavior(KillBonusBehavior.CODEC).register();
 
 	public static void init() {
 	}

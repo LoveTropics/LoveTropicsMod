@@ -19,6 +19,7 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectMaps;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.server.level.ServerPlayer;
 
+import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Consumer;
 
@@ -83,7 +84,7 @@ public final class BbClientStateBehavior implements IGameBehavior {
 			currency.put(entry.getKey(), entry.getValue().value);
 		}
 
-		return new PointTagClientState(BiodiversityBlitz.OSA_POINT.asStack(), currency);
+		return new PointTagClientState(BiodiversityBlitz.OSA_POINT.asStack(), Optional.empty(), currency);
 	}
 
 	static final class Currency {

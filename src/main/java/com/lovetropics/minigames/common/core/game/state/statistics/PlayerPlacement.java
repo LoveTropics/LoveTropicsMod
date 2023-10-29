@@ -1,5 +1,6 @@
 package com.lovetropics.minigames.common.core.game.state.statistics;
 
+import com.google.common.collect.Iterators;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.player.PlayerSet;
 import net.minecraft.ChatFormatting;
@@ -10,10 +11,11 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 
-public interface PlayerPlacement {
+public interface PlayerPlacement extends Iterable<Placed<PlayerKey>> {
 	static Order fromDeathOrder(IGamePhase game, List<PlayerKey> deathOrder) {
 		PlayerSet participants = game.getParticipants();
 		List<Placed<PlayerKey>> order = new ArrayList<>(participants.size() + deathOrder.size());
@@ -32,18 +34,33 @@ public interface PlayerPlacement {
 		return new Order(game, order);
 	}
 
-	static <T extends Comparable<T>> Score<T> fromMinScore(IGamePhase game, StatisticKey<T> score) {
-		return fromScore(game, score, Comparator.naturalOrder());
+	static <T extends Comparable<T>> Score<T> fromMinScore(IGamePhase game, StatisticKey<T> score, boolean onlyOnline) {
+		return fromScore(game, score, Comparator.naturalOrder(), onlyOnline);
 	}
 
-	static <T extends Comparable<T>> Score<T> fromMaxScore(IGamePhase game, StatisticKey<T> score) {
-		return fromScore(game, score, Comparator.reverseOrder());
+	static <T extends Comparable<T>> Score<T> fromMaxScore(IGamePhase game, StatisticKey<T> score, boolean onlyOnline) {
+		return fromScore(game, score, Comparator.reverseOrder(), onlyOnline);
 	}
 
-	static <T> Score<T> fromScore(IGamePhase game, StatisticKey<T> scoreKey, Comparator<T> comparator) {
+	static <T extends Comparable<T>> Score<T> fromScore(PlacementOrder order, IGamePhase game, StatisticKey<T> statistic) {
+		return fromScore(order, game, statistic, false);
+	}
+
+	static <T extends Comparable<T>> Score<T> fromScore(PlacementOrder order, IGamePhase game, StatisticKey<T> statistic, boolean onlyOnline) {
+		if (order == PlacementOrder.MAX) {
+			return fromMaxScore(game, statistic, onlyOnline);
+		} else {
+			return fromMinScore(game, statistic, onlyOnline);
+		}
+	}
+
+	static <T> Score<T> fromScore(IGamePhase game, StatisticKey<T> scoreKey, Comparator<T> comparator, boolean onlyOnline) {
 		GameStatistics statistics = game.getStatistics();
 
 		List<PlayerKey> players = new ArrayList<>(statistics.getPlayers());
+		if (onlyOnline) {
+			players.removeIf(key -> !game.getAllPlayers().contains(key.id()));
+		}
 		players.sort(Comparator.comparing(
 				player -> statistics.forPlayer(player).get(scoreKey),
 				Comparator.nullsLast(comparator)
@@ -124,6 +141,11 @@ public interface PlayerPlacement {
 				sidebar.add(Component.literal(" - ").append(name));
 			}
 		}
+
+		@Override
+		public Iterator<Placed<PlayerKey>> iterator() {
+			return order.iterator();
+		}
 	}
 
 	final class Score<T> implements PlayerPlacement {
@@ -182,16 +204,12 @@ public interface PlayerPlacement {
 			}
 		}
 
-		public static class Entry<T> {
-			public final PlayerKey player;
-			public final int placement;
-			public final T score;
+		@Override
+		public Iterator<Placed<PlayerKey>> iterator() {
+			return Iterators.transform(entries.iterator(), input -> new Placed<>(input.placement, input.player));
+		}
 
-			public Entry(PlayerKey player, int placement, T score) {
-				this.player = player;
-				this.placement = placement;
-				this.score = score;
-			}
+		record Entry<T>(PlayerKey player, int placement, T score) {
 		}
 	}
 }

@@ -7,6 +7,7 @@ public class GameActionParameter<T> {
 
     public static final GameActionParameter<ServerPlayer> KILLER = GameActionParameter.create();
     public static final GameActionParameter<ServerPlayer> KILLED = GameActionParameter.create();
+    public static final GameActionParameter<Integer> COUNT = GameActionParameter.create();
 
     private GameActionParameter() {
     }

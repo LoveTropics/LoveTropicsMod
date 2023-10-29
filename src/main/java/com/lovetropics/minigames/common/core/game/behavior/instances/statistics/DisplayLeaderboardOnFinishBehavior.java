@@ -29,16 +29,9 @@ public record DisplayLeaderboardOnFinishBehavior<T extends Comparable<T>>(Statis
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
 		events.listen(GamePhaseEvents.FINISH, () -> {
-			PlayerPlacement.Score<T> placement;
-			if (order == PlacementOrder.MAX) {
-				placement = PlayerPlacement.fromMaxScore(game, statistic);
-			} else {
-				placement = PlayerPlacement.fromMinScore(game, statistic);
-			}
-
 			PlayerSet players = game.getAllPlayers();
 			players.sendMessage(MinigameTexts.RESULTS);
-			placement.sendTo(players, length);
+			PlayerPlacement.fromScore(order, game, statistic).sendTo(players, length);
 		});
 	}
 }

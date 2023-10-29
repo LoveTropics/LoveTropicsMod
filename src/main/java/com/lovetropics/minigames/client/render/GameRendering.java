@@ -195,17 +195,16 @@ public class GameRendering {
 
     @SubscribeEvent
     public static void onRenderPlayerName(RenderNameTagEvent event) {
-        Entity entity = event.getEntity();
-        if (entity instanceof Player) {
+        if (event.getEntity() instanceof Player player) {
             PointTagClientState state = ClientGameStateManager.getOrNull(GameClientStateTypes.POINT_TAGS);
-            if (state != null && state.hasPointsFor(entity.getUUID())) {
-                int points = state.getPointsFor(entity.getUUID());
-                renderPlayerPoints(event, entity, state.icon(), points);
+            Component points = state != null ? state.getPointsTextFor(player.getUUID()) : null;
+            if (points != null) {
+                renderPlayerPoints(event, player, state.icon(), points);
             }
         }
     }
 
-    private static void renderPlayerPoints(RenderNameTagEvent event, Entity entity, ItemStack icon, int points) {
+    private static void renderPlayerPoints(RenderNameTagEvent event, Entity entity, ItemStack icon, Component points) {
         final Minecraft client = Minecraft.getInstance();
         final EntityRenderDispatcher renderDispatcher = client.getEntityRenderDispatcher();
         double distance2 = renderDispatcher.distanceToSqr(entity);
@@ -220,8 +219,6 @@ public class GameRendering {
         final float itemSize = 16.0F;
         final float textScale = 1.0F / 2.5F;
 
-        String pointsText = String.valueOf(points);
-
         PoseStack poseStack = event.getPoseStack();
         MultiBufferSource buffer = event.getMultiBufferSource();
         int packedLight = event.getPackedLight();
@@ -229,7 +226,7 @@ public class GameRendering {
         Font font = event.getEntityRenderer().getFont();
         ItemRenderer items = client.getItemRenderer();
 
-        float left = -(font.width(pointsText) * textScale + itemSize) / 2.0F;
+        float left = -(font.width(points) * textScale + itemSize) / 2.0F;
 
         poseStack.pushPose();
         poseStack.translate(0.0, entity.getBbHeight() + 0.75, 0.0);
@@ -241,7 +238,7 @@ public class GameRendering {
 
         float textX = (left + itemSize) * textScale;
         float textY = -font.lineHeight / 2.0F;
-        font.drawInBatch(pointsText, textX, textY, CommonColors.WHITE, false, poseStack.last().pose(), buffer, Font.DisplayMode.NORMAL, 0, packedLight);
+        font.drawInBatch(points, textX, textY, CommonColors.WHITE, false, poseStack.last().pose(), buffer, Font.DisplayMode.NORMAL, 0, packedLight);
         poseStack.popPose();
 
         poseStack.pushPose();
