@@ -2,7 +2,8 @@ package com.lovetropics.minigames.common.content.biodiversity_blitz.behavior;
 
 import com.lovetropics.minigames.common.content.biodiversity_blitz.BiodiversityBlitz;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.event.BbEvents;
-import com.lovetropics.minigames.common.content.biodiversity_blitz.client_state.ClientBbGlobalState;
+import com.lovetropics.minigames.common.core.game.client_state.GameClientStateTypes;
+import com.lovetropics.minigames.common.core.game.client_state.instance.PointTagClientState;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.client_state.ClientBbSelfState;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
@@ -45,7 +46,7 @@ public final class BbClientStateBehavior implements IGameBehavior {
 
 		events.listen(GamePhaseEvents.TICK, () -> {
 			if (game.ticks() % GLOBAL_UPDATE_INTERVAL == 0 && this.globalUpdateQueued) {
-				ClientBbGlobalState state = this.buildGlobalState();
+				PointTagClientState state = this.buildGlobalState();
 				GameClientState.sendToPlayers(state, game.getAllPlayers());
 
 				this.globalUpdateQueued = false;
@@ -61,7 +62,7 @@ public final class BbClientStateBehavior implements IGameBehavior {
 		this.trackedCurrency.remove(player.getUUID());
 
 		GameClientState.removeFromPlayer(BiodiversityBlitz.SELF_STATE.get(), player);
-		GameClientState.removeFromPlayer(BiodiversityBlitz.GLOBAL_STATE.get(), player);
+		GameClientState.removeFromPlayer(GameClientStateTypes.POINT_TAGS.get(), player);
 	}
 
 	private void updateState(ServerPlayer player, Consumer<Currency> update) {
@@ -76,13 +77,13 @@ public final class BbClientStateBehavior implements IGameBehavior {
 		this.globalUpdateQueued = true;
 	}
 
-	private ClientBbGlobalState buildGlobalState() {
+	private PointTagClientState buildGlobalState() {
 		Object2IntMap<UUID> currency = new Object2IntOpenHashMap<>();
 		for (Object2ObjectMap.Entry<UUID, Currency> entry : Object2ObjectMaps.fastIterable(this.trackedCurrency)) {
 			currency.put(entry.getKey(), entry.getValue().value);
 		}
 
-		return new ClientBbGlobalState(currency);
+		return new PointTagClientState(BiodiversityBlitz.OSA_POINT.asStack(), currency);
 	}
 
 	static final class Currency {

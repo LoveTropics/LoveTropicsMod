@@ -5,6 +5,8 @@ import com.lovetropics.minigames.client.game.ClientGameStateManager;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.BiodiversityBlitz;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.client_state.ClientBbMobSpawnState;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.client_state.ClientBbScoreboardState;
+import com.lovetropics.minigames.common.core.game.client_state.GameClientStateTypes;
+import com.lovetropics.minigames.common.core.game.client_state.instance.PointTagClientState;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -14,12 +16,22 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderBuffers;
+import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
+import net.minecraft.client.renderer.entity.ItemRenderer;
+import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TextColor;
+import net.minecraft.util.CommonColors;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemDisplayContext;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.client.ForgeHooksClient;
 import net.minecraftforge.client.event.RenderLevelStageEvent;
+import net.minecraftforge.client.event.RenderNameTagEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.joml.Matrix3f;
@@ -179,5 +191,65 @@ public class GameRendering {
                 .uv(1.0F, 0.0F).uv2(LightTexture.FULL_BRIGHT).normal(normal, 0.0F, 1.0F, 0.0F).endVertex();
         buffer.vertex(model, x, y2, z2).color(r, g, b, a2)
                 .uv(1.0F, 1.0F).uv2(LightTexture.FULL_BRIGHT).normal(normal, 0.0F, 1.0F, 0.0F).endVertex();
+    }
+
+    @SubscribeEvent
+    public static void onRenderPlayerName(RenderNameTagEvent event) {
+        Entity entity = event.getEntity();
+        if (entity instanceof Player) {
+            PointTagClientState state = ClientGameStateManager.getOrNull(GameClientStateTypes.POINT_TAGS);
+            if (state != null && state.hasPointsFor(entity.getUUID())) {
+                int points = state.getPointsFor(entity.getUUID());
+                renderPlayerPoints(event, entity, state.icon(), points);
+            }
+        }
+    }
+
+    private static void renderPlayerPoints(RenderNameTagEvent event, Entity entity, ItemStack icon, int points) {
+        final Minecraft client = Minecraft.getInstance();
+        final EntityRenderDispatcher renderDispatcher = client.getEntityRenderDispatcher();
+        double distance2 = renderDispatcher.distanceToSqr(entity);
+        if (!ForgeHooksClient.isNameplateInRenderDistance(entity, distance2) || entity.isDiscrete()) {
+            return;
+        }
+
+        if (entity == client.cameraEntity || !Minecraft.renderNames()) {
+            return;
+        }
+
+        final float itemSize = 16.0F;
+        final float textScale = 1.0F / 2.5F;
+
+        String pointsText = String.valueOf(points);
+
+        PoseStack poseStack = event.getPoseStack();
+        MultiBufferSource buffer = event.getMultiBufferSource();
+        int packedLight = event.getPackedLight();
+
+        Font font = event.getEntityRenderer().getFont();
+        ItemRenderer items = client.getItemRenderer();
+
+        float left = -(font.width(pointsText) * textScale + itemSize) / 2.0F;
+
+        poseStack.pushPose();
+        poseStack.translate(0.0, entity.getBbHeight() + 0.75, 0.0);
+        poseStack.mulPose(renderDispatcher.cameraOrientation());
+        poseStack.scale(0.0625F * textScale, 0.0625F * textScale, 0.0625F * textScale);
+
+        poseStack.pushPose();
+        poseStack.scale(-1.0F, -1.0F, 1.0F);
+
+        float textX = (left + itemSize) * textScale;
+        float textY = -font.lineHeight / 2.0F;
+        font.drawInBatch(pointsText, textX, textY, CommonColors.WHITE, false, poseStack.last().pose(), buffer, Font.DisplayMode.NORMAL, 0, packedLight);
+        poseStack.popPose();
+
+        poseStack.pushPose();
+        poseStack.translate(-left, 0.0F, 0.0F);
+        poseStack.scale(-itemSize, itemSize, -itemSize);
+        items.renderStatic(icon, ItemDisplayContext.GUI, packedLight, OverlayTexture.NO_OVERLAY, poseStack, buffer, client.level, 0);
+        poseStack.popPose();
+
+        poseStack.popPose();
     }
 }

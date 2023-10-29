@@ -2,7 +2,19 @@ package com.lovetropics.minigames.common.content.biodiversity_blitz;
 
 import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.LoveTropics;
-import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.*;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.BbAssignPlotsBehavior;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.BbBehavior;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.BbClientStateBehavior;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.BbCurrencyBehavior;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.BbCurrencyWinTrigger;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.BbGivePlantsBehavior;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.BbInGameScoreboardBehavior;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.BbMerchantBehavior;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.BbSendMobsToEnemyItemBehavior;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.BbWaveSpawnerBehavior;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.EqualizeCurrencyBehavior;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.RemoveFromBlockBehavior;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.SpawnSurpriseWaveBehavior;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.plant.AgingCropPlantBehavior;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.plant.BarrierPlantBehavior;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.plant.BerriesPlantBehavior;
@@ -27,7 +39,12 @@ import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.plan
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.plant.placement.PlaceFeaturePlantBehavior;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.plant.placement.PlaceSinglePlantBehavior;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.tutorial.BbTutorialAction;
-import com.lovetropics.minigames.common.content.biodiversity_blitz.client_state.*;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.client_state.CheckeredPlotsState;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.client_state.ClientBbMobSpawnState;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.client_state.ClientBbScoreboardState;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.client_state.ClientBbSelfState;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.client_state.CurrencyItemState;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.client_state.CurrencyTargetState;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.item.UniqueBlockNamedItem;
 import com.lovetropics.minigames.common.util.registry.GameBehaviorEntry;
 import com.lovetropics.minigames.common.util.registry.GameClientTweakEntry;
@@ -222,10 +239,6 @@ public final class BiodiversityBlitz {
 
 	public static final GameClientTweakEntry<ClientBbSelfState> SELF_STATE = REGISTRATE.object("biodiversity_blitz_self_state")
 			.clientState(ClientBbSelfState.CODEC)
-			.register();
-
-	public static final GameClientTweakEntry<ClientBbGlobalState> GLOBAL_STATE = REGISTRATE.object("biodiversity_blitz_global_state")
-			.clientState(ClientBbGlobalState.CODEC)
 			.register();
 
 	public static final GameClientTweakEntry<ClientBbMobSpawnState> MOB_SPAWN = REGISTRATE.object("mob_spawn")
