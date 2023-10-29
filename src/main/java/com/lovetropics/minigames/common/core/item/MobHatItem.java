@@ -6,10 +6,14 @@ import net.minecraft.Util;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Equipable;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import net.minecraftforge.client.extensions.common.IClientItemExtensions;
 
 import javax.annotation.Nullable;
@@ -37,6 +41,11 @@ public class MobHatItem extends Item implements Equipable {
 
 	public static void setEntityType(final ItemStack stack, final DisguiseType.EntityConfig entityType) {
 		stack.getOrCreateTag().put(KEY_ENTITY, Util.getOrThrow(DisguiseType.EntityConfig.CODEC.encodeStart(NbtOps.INSTANCE, entityType), IllegalStateException::new));
+	}
+
+	@Override
+	public InteractionResultHolder<ItemStack> use(final Level level, final Player player, final InteractionHand hand) {
+		return swapWithEquipmentSlot(this, level, player, hand);
 	}
 
 	@Override
