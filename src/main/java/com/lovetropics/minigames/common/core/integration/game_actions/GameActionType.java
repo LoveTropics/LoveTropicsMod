@@ -9,9 +9,9 @@ import java.util.Optional;
 import java.util.function.Supplier;
 
 public enum GameActionType {
-	DONATION("donation", "payment_time", DonationGameAction.CODEC, ConfigLT.GENERAL.donationPackageDelay::get),
-	DONATION_PACKAGE("donation_package", "trigger_time", DonationPackageGameAction.CODEC, ConfigLT.GENERAL.donationPackageDelay::get),
-	CHAT_EVENT("chat_event", "trigger_time", ChatEventGameAction.CODEC, ConfigLT.GENERAL.chatEventDelay::get);
+	DONATION("donation", "payment_time", DonationGameAction.CODEC, ConfigLT.GENERAL.donationPackageDelay::get, false),
+	DONATION_PACKAGE("donation_package", "trigger_time", DonationPackageGameAction.CODEC, ConfigLT.GENERAL.donationPackageDelay::get, true),
+	CHAT_EVENT("chat_event", "trigger_time", ChatEventGameAction.CODEC, ConfigLT.GENERAL.chatEventDelay::get, true);
 
 	public static final GameActionType[] VALUES = values();
 
@@ -19,13 +19,15 @@ public enum GameActionType {
 	private final String timeFieldName;
 	private final Codec<GameActionRequest> codec;
 	private final Supplier<Integer> pollingIntervalSeconds;
+	private final boolean sendsAcknowledgement;
 
 	@SuppressWarnings("unchecked")
-	GameActionType(final String id, String timeFieldName, final MapCodec<? extends GameAction> codec, final Supplier<Integer> pollingIntervalTicks) {
+	GameActionType(final String id, String timeFieldName, final MapCodec<? extends GameAction> codec, final Supplier<Integer> pollingIntervalTicks, final boolean sendsAcknowledgement) {
 		this.id = id;
 		this.timeFieldName = timeFieldName;
 		this.codec = GameActionRequest.codec(this, (MapCodec<GameAction>) codec);
 		this.pollingIntervalSeconds = pollingIntervalTicks;
+		this.sendsAcknowledgement = sendsAcknowledgement;
 	}
 
 	public String getId() {
@@ -46,6 +48,10 @@ public enum GameActionType {
 
 	public int getPollingIntervalTicks() {
 		return getPollingIntervalSeconds() * SharedConstants.TICKS_PER_SECOND;
+	}
+
+	public boolean sendsAcknowledgement() {
+		return sendsAcknowledgement;
 	}
 
 	public static Optional<GameActionType> getFromId(final String id) {

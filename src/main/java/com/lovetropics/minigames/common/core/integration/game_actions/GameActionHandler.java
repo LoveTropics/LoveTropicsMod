@@ -31,7 +31,7 @@ public final class GameActionHandler {
 		for (ActionsQueue queue : queues.values()) {
 			try {
 				GameActionRequest request = queue.tryHandle(game, tick);
-				if (request != null) {
+				if (request != null && request.type().sendsAcknowledgement()) {
 					// If we resolved the action, send acknowledgement to the backend
 					integrations.acknowledgeActionDelivery(request);
 				}
