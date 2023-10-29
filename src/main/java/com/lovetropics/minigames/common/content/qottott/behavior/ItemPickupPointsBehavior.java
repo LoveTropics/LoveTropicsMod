@@ -10,6 +10,8 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.RegistryCodecs;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -27,6 +29,7 @@ public record ItemPickupPointsBehavior(HolderSet<Item> items) implements IGameBe
 				final int count = stack.getCount();
 				game.getStatistics().forPlayer(player).incrementInt(StatisticKey.POINTS, count);
 				player.getInventory().removeItem(stack);
+				player.playNotifySound(SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.PLAYERS, 1.0f, 1.0f);
 				return InteractionResult.CONSUME;
 			}
 			return InteractionResult.PASS;
