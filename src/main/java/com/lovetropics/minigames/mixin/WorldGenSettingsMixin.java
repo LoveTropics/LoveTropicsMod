@@ -1,5 +1,6 @@
 package com.lovetropics.minigames.mixin;
 
+import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.common.core.dimension.RuntimeDimensions;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
@@ -42,6 +43,11 @@ public class WorldGenSettingsMixin {
 	}
 
 	private static <T> boolean isTemporaryDimension(DynamicOps<T> ops, T key, RuntimeDimensions runtimeDimensions) {
-		return KEY_CODEC.parse(ops, key).result().filter(runtimeDimensions::isTemporaryDimension).isPresent();
+		return KEY_CODEC.parse(ops, key).result().filter(dimension -> runtimeDimensions.isTemporaryDimension(dimension) || looksLikeTemporaryDimension(dimension)).isPresent();
+	}
+
+	// TODO: Remove this, we're just cleaning up old data
+	private static boolean looksLikeTemporaryDimension(ResourceKey<Level> dimension) {
+		return dimension.location().getNamespace().equals(Constants.MODID) && dimension.location().getPath().startsWith("tmp_");
 	}
 }
