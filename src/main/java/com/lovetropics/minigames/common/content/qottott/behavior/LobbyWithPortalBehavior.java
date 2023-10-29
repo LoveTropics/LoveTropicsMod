@@ -5,29 +5,38 @@ import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
+import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.lovetropics.minigames.common.core.game.player.PlayerRole;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
+import net.minecraft.SharedConstants;
 import net.minecraft.Util;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.NetherPortalBlock;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-public record LobbyWithPortalBehavior(String portalRegion, String targetRegion) implements IGameBehavior {
+public record LobbyWithPortalBehavior(String portalRegion, String targetRegion, int waitSeconds) implements IGameBehavior {
 	public static final MapCodec<LobbyWithPortalBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			Codec.STRING.fieldOf("portal_region").forGetter(LobbyWithPortalBehavior::portalRegion),
-			Codec.STRING.fieldOf("target_region").forGetter(LobbyWithPortalBehavior::targetRegion)
+			Codec.STRING.fieldOf("target_region").forGetter(LobbyWithPortalBehavior::targetRegion),
+			Codec.INT.optionalFieldOf("wait_seconds", 15).forGetter(LobbyWithPortalBehavior::waitSeconds)
 	).apply(i, LobbyWithPortalBehavior::new));
 
 	@Override
@@ -38,6 +47,13 @@ public record LobbyWithPortalBehavior(String portalRegion, String targetRegion) 
 			throw new GameException(Component.literal("No targets for portal"));
 		}
 
+		final int openTime = waitSeconds * SharedConstants.TICKS_PER_SECOND;
+		events.listen(GamePhaseEvents.TICK, () -> {
+			if (game.ticks() == openTime) {
+				setPortal(game.getLevel(), portal);
+			}
+		});
+
 		final Set<UUID> playersInLobby = new ObjectOpenHashSet<>();
 		events.listen(GamePlayerEvents.SPAWN, (playerId, spawn, role) -> {
 			if (role == PlayerRole.PARTICIPANT) {
@@ -46,6 +62,9 @@ public record LobbyWithPortalBehavior(String portalRegion, String targetRegion) 
 		});
 
 		events.listen(GamePlayerEvents.TICK, player -> {
+			if (game.ticks() < openTime) {
+				return;
+			}
 			if (portal.contains(player.position()) && playersInLobby.remove(player.getUUID())) {
 				final BlockBox target = Util.getRandom(targets, game.getRandom());
 				final Vec3 center = target.center();
@@ -56,6 +75,14 @@ public record LobbyWithPortalBehavior(String portalRegion, String targetRegion) 
 
 		events.listen(GamePlayerEvents.ATTACK, (player, target) -> checkInLobby(player, playersInLobby));
 		events.listen(GamePlayerEvents.DAMAGE, (player, damageSource, amount) -> checkInLobby(player, playersInLobby));
+	}
+
+	private static void setPortal(final ServerLevel level, final BlockBox portal) {
+		final Direction.Axis portalAxis = portal.size().getX() > 1 ? Direction.Axis.X : Direction.Axis.Z;
+		final BlockState portalState = Blocks.NETHER_PORTAL.defaultBlockState().setValue(NetherPortalBlock.AXIS, portalAxis);
+		for (final BlockPos pos : portal) {
+			level.setBlock(pos, portalState, Block.UPDATE_CLIENTS);
+		}
 	}
 
 	private static InteractionResult checkInLobby(final ServerPlayer player, final Set<UUID> playersInLobby) {
