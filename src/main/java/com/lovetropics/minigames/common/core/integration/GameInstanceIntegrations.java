@@ -66,8 +66,8 @@ public final class GameInstanceIntegrations implements IGameState {
 
 		postImportant(ConfigLT.INTEGRATIONS.minigameStartEndpoint.get(), payload);
 
-		events.listen(GamePlayerEvents.JOIN, (p) -> sendParticipantsList());
 		events.listen(GamePlayerEvents.LEAVE, (p) -> sendParticipantsList());
+		events.listen(GamePlayerEvents.SET_ROLE, (p, r, lr) -> sendParticipantsList());
 
 		requestQueuedActions();
 	}
