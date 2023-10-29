@@ -1,5 +1,6 @@
 package com.lovetropics.minigames.common.content.qottott.behavior;
 
+import com.lovetropics.lib.BlockBox;
 import com.lovetropics.lib.codec.MoreCodecs;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
@@ -9,6 +10,7 @@ import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.Util;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.valueproviders.IntProvider;
@@ -20,22 +22,32 @@ import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraft.world.phys.Vec3;
 
 import javax.annotation.Nullable;
+import java.util.Collection;
 import java.util.List;
 import java.util.function.Supplier;
 
-public record ItemDropperBehavior(Either<ItemStack, ResourceLocation> loot, String regionKey, IntProvider intervalTicks) implements IGameBehavior {
+public record ItemDropperBehavior(Either<ItemStack, ResourceLocation> loot, String regionKey, boolean combined, IntProvider intervalTicks) implements IGameBehavior {
 	public static final MapCodec<ItemDropperBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			Codec.either(MoreCodecs.ITEM_STACK, ResourceLocation.CODEC).fieldOf("loot").forGetter(ItemDropperBehavior::loot),
 			Codec.STRING.fieldOf("region").forGetter(ItemDropperBehavior::regionKey),
+			Codec.BOOL.optionalFieldOf("combined", false).forGetter(ItemDropperBehavior::combined),
 			IntProvider.POSITIVE_CODEC.fieldOf("interval_ticks").forGetter(ItemDropperBehavior::intervalTicks)
 	).apply(i, ItemDropperBehavior::new));
 
 	@Override
 	public void register(final IGamePhase game, final EventRegistrar events) {
+		final Collection<BlockBox> regions = game.getMapRegions().get(regionKey);
+		if (regions.isEmpty()) {
+			return;
+		}
+
 		final Supplier<List<ItemStack>> lootProvider = createLootProvider(game);
-		final List<Dropper> droppers = game.getMapRegions().get(regionKey).stream()
-				.map(box -> new Dropper(box.center(), lootProvider))
-				.toList();
+		final List<Dropper> droppers;
+		if (combined) {
+			droppers = List.of(new Dropper(regions.stream().map(BlockBox::center).toList(), lootProvider));
+		} else {
+			droppers = regions.stream().map(box -> new Dropper(List.of(box.center()), lootProvider)).toList();
+		}
 
 		events.listen(GamePhaseEvents.TICK, () -> {
 			for (final Dropper dropper : droppers) {
@@ -56,15 +68,15 @@ public record ItemDropperBehavior(Either<ItemStack, ResourceLocation> loot, Stri
 	}
 
 	private class Dropper {
-		private final Vec3 position;
+		private final List<Vec3> positions;
 		private final Supplier<List<ItemStack>> lootProvider;
 		private int dropInTicks;
 
 		@Nullable
 		private ItemEntity lastDroppedItem;
 
-		private Dropper(final Vec3 position, final Supplier<List<ItemStack>> lootProvider) {
-			this.position = position;
+		private Dropper(final List<Vec3> positions, final Supplier<List<ItemStack>> lootProvider) {
+			this.positions = positions;
 			this.lootProvider = lootProvider;
 		}
 
@@ -77,6 +89,8 @@ public record ItemDropperBehavior(Either<ItemStack, ResourceLocation> loot, Stri
 				dropInTicks--;
 				return;
 			}
+
+			final Vec3 position = Util.getRandom(positions, game.getRandom());
 
 			final ServerLevel level = game.getLevel();
 			for (final ItemStack item : lootProvider.get()) {
