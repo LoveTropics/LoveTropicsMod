@@ -33,9 +33,9 @@ public final class BbGroundNavigator extends GroundPathNavigation {
 			}
 
 			// Don't allow climbing above the bounds of the plant bounds
-			if (y > BbGroundNavigator.this.mob.getPlot().plantBounds.max().getY()) {
-				return BlockPathTypes.BLOCKED;
-			}
+//			if (y > BbGroundNavigator.this.mob.getPlot().plantBounds.max().getY()) {
+//				return BlockPathTypes.BLOCKED;
+//			}
 
 			BlockPathTypes nodeType = super.getBlockPathType(world, x, y, z);
 			if (nodeType.getMalus() >= 0.0F && brain.isScaredAt(x, y, z)) {
