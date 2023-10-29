@@ -4,6 +4,7 @@ import com.lovetropics.minigames.common.content.qottott.Qottott;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.GameBehaviorType;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
+import com.lovetropics.minigames.common.core.game.behavior.action.GameActionContext;
 import com.lovetropics.minigames.common.core.game.behavior.action.GameActionParameter;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameActionEvents;
@@ -11,8 +12,11 @@ import com.lovetropics.minigames.common.core.game.state.statistics.StatisticKey;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.Mth;
+import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 
 import java.util.function.Supplier;
 
@@ -25,13 +29,23 @@ public record GivePointsAction(StatisticKey<Integer> statistic, int count) imple
 	@Override
 	public void register(final IGamePhase game, final EventRegistrar events) {
 		events.listen(GameActionEvents.APPLY_TO_PLAYER, (context, player) -> {
-			final int count = this.count * context.get(GameActionParameter.COUNT).orElse(1);
+			final int count = resolveCount(context, player);
 			if (count > 0) {
 				game.getStatistics().forPlayer(player).incrementInt(statistic, count);
 				return true;
 			}
 			return false;
 		});
+	}
+
+	private int resolveCount(GameActionContext context, ServerPlayer player) {
+		final int count = this.count * context.get(GameActionParameter.COUNT).orElse(1);
+		return Mth.floor(count * getMultiplier(player));
+	}
+
+	private static double getMultiplier(ServerPlayer player) {
+		final AttributeInstance attribute = player.getAttribute(Qottott.POINT_MULTIPLIER.get());
+		return attribute != null ? attribute.getValue() : 1.0;
 	}
 
 	@Override

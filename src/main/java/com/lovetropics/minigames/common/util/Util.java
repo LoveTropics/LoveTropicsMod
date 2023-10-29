@@ -5,6 +5,8 @@ import com.lovetropics.minigames.Constants;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleOptions;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -135,4 +137,8 @@ public class Util {
         long secondsPart = totalSeconds % 60;
         return String.format("%02d:%02d", minutesPart, secondsPart);
     }
+
+	public static String unpackTranslationKey(final Component component) {
+		return ((TranslatableContents) component.getContents()).getKey();
+	}
 }
