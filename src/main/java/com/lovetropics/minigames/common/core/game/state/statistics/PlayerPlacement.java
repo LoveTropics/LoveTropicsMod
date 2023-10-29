@@ -74,6 +74,9 @@ public interface PlayerPlacement extends Iterable<Placed<PlayerKey>> {
 		for (PlayerKey player : players) {
 			StatisticsMap playerStatistics = statistics.forPlayer(player);
 			T score = playerStatistics.get(scoreKey);
+			if (score == null) {
+				continue;
+			}
 
 			if (!Objects.equals(score, lastScore) || placement == 0) placement++;
 			lastScore = score;
