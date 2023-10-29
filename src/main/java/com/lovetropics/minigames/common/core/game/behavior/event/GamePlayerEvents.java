@@ -157,7 +157,7 @@ public final class GamePlayerEvents {
 	public static final GameEventType<PickUpItem> PICK_UP_ITEM = GameEventType.create(PickUpItem.class, listeners -> (player, item) -> {
 		for (PickUpItem listener : listeners) {
 			InteractionResult result = listener.onPickUpItem(player, item);
-			if (result.consumesAction()) {
+			if (result != InteractionResult.PASS) {
 				return result;
 			}
 		}

@@ -1,4 +1,5 @@
 {
+  "attribute.ltminigames.pickup_priority": "Item Pickup Priority",
   "attribute.ltminigames.point_multiplier": "Point Multiplier",
   "block.ltminigames.big_red_button": "Big Red Button",
   "block.ltminigames.can": "Can",
