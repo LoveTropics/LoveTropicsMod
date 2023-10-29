@@ -37,7 +37,7 @@ import com.lovetropics.minigames.common.core.game.behavior.instances.action.Elim
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.GiveEffectAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.GiveLootAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.GiveRewardAction;
-import com.lovetropics.minigames.common.core.game.behavior.instances.action.GlobalTimedAction;
+import com.lovetropics.minigames.common.core.game.behavior.instances.action.ApplyForTimeAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.NotificationToastAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.PlaySoundAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.PlayerHeadRewardBehavior;
@@ -228,7 +228,7 @@ public class GameBehaviorTypes {
 	public static final GameBehaviorEntry<SetBlockAtPlayerAction> SET_BLOCK_AT_PLAYER = register("set_block_at_player", SetBlockAtPlayerAction.CODEC);
 	public static final GameBehaviorEntry<GivePlayerHeadPackageBehavior> GIVE_PLAYER_HEAD_PACKAGE = register("give_player_head_package", GivePlayerHeadPackageBehavior.CODEC);
 	public static final GameBehaviorEntry<ShootProjectilesAroundPlayerAction> SHOOT_PROJECTILES_AT_PLAYER = register("shoot_projectiles_at_player", ShootProjectilesAroundPlayerAction.CODEC);
-	public static final GameBehaviorEntry<GlobalTimedAction> GLOBAL_TIMED = register("global_timed", GlobalTimedAction.CODEC);
+	public static final GameBehaviorEntry<ApplyForTimeAction> APPLY_FOR_TIME = register("apply_for_time", ApplyForTimeAction.CODEC);
 	public static final GameBehaviorEntry<SetDisguiseAction> SET_DISGUISE = register("set_disguise", SetDisguiseAction.CODEC);
 	public static final GameBehaviorEntry<ClearDisguiseAction> CLEAR_DISGUISE = register("clear_disguise", ClearDisguiseAction.CODEC);
 	public static final GameBehaviorEntry<AddAttributeModifierAction> ADD_ATTRIBUTE_MODIFIER = register("add_attribute_modifier", AddAttributeModifierAction.CODEC);
