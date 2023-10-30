@@ -3,7 +3,6 @@ package com.lovetropics.minigames.common.core.game.behavior.instances.statistics
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
-import com.lovetropics.minigames.common.core.game.state.GameProgressionState;
 import com.lovetropics.minigames.common.core.game.state.ProgressionPoint;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
@@ -28,7 +27,7 @@ public record TriggerAfterConfig(Optional<ProgressionPoint> after) {
 
 	public void awaitThen(IGamePhase game, EventRegistrar events, Runnable handler) {
 		if (after.isPresent()) {
-			BooleanSupplier predicate = createPredicate(game, after.get());
+			BooleanSupplier predicate = after.get().createPredicate(game);
 
 			MutableObject<GamePhaseEvents.Tick> listener = new MutableObject<>();
 			listener.setValue(() -> {
@@ -40,16 +39,6 @@ public record TriggerAfterConfig(Optional<ProgressionPoint> after) {
 			events.listen(GamePhaseEvents.TICK, listener.getValue());
 		} else {
 			handler.run();
-		}
-	}
-
-	private BooleanSupplier createPredicate(IGamePhase game, ProgressionPoint point) {
-		GameProgressionState progression = game.getState().getOrNull(GameProgressionState.KEY);
-		if (progression != null) {
-			return () -> progression.isAfter(point);
-		} else {
-			int afterTicks = point.resolve(new GameProgressionState());
-			return () -> game.ticks() >= afterTicks;
 		}
 	}
 }
