@@ -53,7 +53,9 @@ public class GameProgressionBehavior implements IGameBehavior {
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
 		events.listen(GamePhaseEvents.START, () -> {
-			playerCountToTime = resolvePlayerConstraints(playerConstraints, game.getParticipants().size(), progressionState);
+			if (!playerConstraints.isEmpty()) {
+				playerCountToTime = resolvePlayerConstraints(playerConstraints, game.getParticipants().size(), progressionState);
+			}
 		});
 
 		events.listen(GamePhaseEvents.TICK, () -> {
