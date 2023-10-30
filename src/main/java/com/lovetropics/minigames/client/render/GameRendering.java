@@ -217,33 +217,36 @@ public class GameRendering {
         }
 
         final float itemSize = 16.0F;
+        final float spacing = 4.0f;
         final float textScale = 1.0F / 2.5F;
 
         PoseStack poseStack = event.getPoseStack();
+
+        poseStack.pushPose();
+        poseStack.translate(0.0, entity.getBbHeight() + 0.75, 0.0);
+        poseStack.mulPose(renderDispatcher.cameraOrientation());
+        poseStack.scale(-0.0625F * textScale, 0.0625F * textScale, 0.0625F * textScale);
+
         MultiBufferSource buffer = event.getMultiBufferSource();
         int packedLight = event.getPackedLight();
 
         Font font = event.getEntityRenderer().getFont();
         ItemRenderer items = client.getItemRenderer();
 
-        float left = -(font.width(points) * textScale + itemSize) / 2.0F;
+        float width = itemSize + spacing + font.width(points);
+        float left = -width / 2.0F;
 
         poseStack.pushPose();
-        poseStack.translate(0.0, entity.getBbHeight() + 0.75, 0.0);
-        poseStack.mulPose(renderDispatcher.cameraOrientation());
-        poseStack.scale(0.0625F * textScale, 0.0625F * textScale, 0.0625F * textScale);
+        poseStack.scale(1.0F, -1.0F, 1.0F);
 
-        poseStack.pushPose();
-        poseStack.scale(-1.0F, -1.0F, 1.0F);
-
-        float textX = (left + itemSize) * textScale;
+        float textX = left + itemSize + spacing;
         float textY = -font.lineHeight / 2.0F;
         font.drawInBatch(points, textX, textY, CommonColors.WHITE, false, poseStack.last().pose(), buffer, Font.DisplayMode.NORMAL, 0, packedLight);
         poseStack.popPose();
 
         poseStack.pushPose();
-        poseStack.translate(-left, 0.0F, 0.0F);
-        poseStack.scale(-itemSize, itemSize, -itemSize);
+        poseStack.translate(left + (itemSize / 2.0f), 0.0F, 0.0F);
+        poseStack.scale(itemSize, itemSize, -itemSize);
         items.renderStatic(icon, ItemDisplayContext.GUI, packedLight, OverlayTexture.NO_OVERLAY, poseStack, buffer, client.level, 0);
         poseStack.popPose();
 
