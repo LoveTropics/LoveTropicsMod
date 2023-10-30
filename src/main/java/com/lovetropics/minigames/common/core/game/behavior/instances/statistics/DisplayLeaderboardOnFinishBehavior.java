@@ -4,6 +4,7 @@ import com.lovetropics.minigames.common.content.MinigameTexts;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameLogicEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.lovetropics.minigames.common.core.game.player.PlayerSet;
 import com.lovetropics.minigames.common.core.game.state.statistics.PlacementOrder;
@@ -28,7 +29,7 @@ public record DisplayLeaderboardOnFinishBehavior<T extends Comparable<T>>(Statis
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
-		events.listen(GamePhaseEvents.FINISH, () -> {
+		events.listen(GameLogicEvents.GAME_OVER, () -> {
 			PlayerSet players = game.getAllPlayers();
 			players.sendMessage(MinigameTexts.RESULTS);
 			PlayerPlacement.fromScore(order, game, statistic).sendTo(players, length);
