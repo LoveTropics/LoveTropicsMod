@@ -11,6 +11,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import org.apache.commons.lang3.mutable.MutableObject;
 
 import java.util.Optional;
+import java.util.function.BooleanSupplier;
 
 public record TriggerAfterConfig(Optional<ProgressionPoint> after) {
 	public static final MapCodec<TriggerAfterConfig> MAP_CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
@@ -27,11 +28,11 @@ public record TriggerAfterConfig(Optional<ProgressionPoint> after) {
 
 	public void awaitThen(IGamePhase game, EventRegistrar events, Runnable handler) {
 		if (after.isPresent()) {
-			GameProgressionState progression = game.getState().getOptional(GameProgressionState.KEY).orElseGet(GameProgressionState::new);
+			BooleanSupplier predicate = createPredicate(game, after.get());
 
 			MutableObject<GamePhaseEvents.Tick> listener = new MutableObject<>();
 			listener.setValue(() -> {
-				if (progression.isAfter(after.get())) {
+				if (predicate.getAsBoolean()) {
 					handler.run();
 					events.unlisten(GamePhaseEvents.TICK, listener.getValue());
 				}
@@ -39,6 +40,16 @@ public record TriggerAfterConfig(Optional<ProgressionPoint> after) {
 			events.listen(GamePhaseEvents.TICK, listener.getValue());
 		} else {
 			handler.run();
+		}
+	}
+
+	private BooleanSupplier createPredicate(IGamePhase game, ProgressionPoint point) {
+		GameProgressionState progression = game.getState().getOrNull(GameProgressionState.KEY);
+		if (progression != null) {
+			return () -> progression.isAfter(point);
+		} else {
+			int afterTicks = point.resolve(new GameProgressionState());
+			return () -> game.ticks() >= afterTicks;
 		}
 	}
 }
