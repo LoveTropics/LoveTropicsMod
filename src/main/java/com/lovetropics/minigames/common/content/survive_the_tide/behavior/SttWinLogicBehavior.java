@@ -1,5 +1,6 @@
 package com.lovetropics.minigames.common.content.survive_the_tide.behavior;
 
+import com.lovetropics.minigames.common.core.entity.MinigameEntities;
 import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
@@ -60,7 +61,7 @@ public class SttWinLogicBehavior implements IGameBehavior {
 
 				int posY = world.getHeight(Heightmap.Types.MOTION_BLOCKING, posX, posZ);
 
-				LightningBolt lightning = EntityType.LIGHTNING_BOLT.create(world);
+				LightningBolt lightning = MinigameEntities.QUIET_LIGHTNING_BOLT.get().create(world);
 				lightning.moveTo(new Vec3(posX + 0.5, posY, posZ + 0.5));
 				lightning.setVisualOnly(true);
 

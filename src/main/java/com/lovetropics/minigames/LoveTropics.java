@@ -40,6 +40,7 @@ import com.lovetropics.minigames.common.core.command.game.ManageGameLobbyCommand
 import com.lovetropics.minigames.common.core.command.game.StartGameCommand;
 import com.lovetropics.minigames.common.core.diguise.PlayerDisguise;
 import com.lovetropics.minigames.common.core.dimension.RuntimeDimensions;
+import com.lovetropics.minigames.common.core.entity.MinigameEntities;
 import com.lovetropics.minigames.common.core.game.IGameManager;
 import com.lovetropics.minigames.common.core.game.behavior.GameBehaviorTypes;
 import com.lovetropics.minigames.common.core.game.behavior.action.ActionTargetTypes;
@@ -147,6 +148,7 @@ public class LoveTropics {
         // Registry objects
         LoveTropicsBlocks.init();
         MinigameItems.init();
+        MinigameEntities.init();
 
         GameBehaviorTypes.init(modBus);
         ActionTargetTypes.init(modBus);
