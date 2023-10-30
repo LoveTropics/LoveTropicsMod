@@ -38,7 +38,7 @@ public final class BiodiversityBlitzTexts {
 
 	public static final Component WAVE_SPAWNED = KEYS.add("wave_spawned", "A wave has spawned! Your plant defense may not yet be self-sufficient, use your sword to defend your plot!");
 	public static final Component[] TIPS = {
-			KEYS.add("tips.diversity", "Make sure to have a plot with many different plant types to gain more osa points!"),
+			KEYS.add("tips.diversity", "Make sure to have a plot with many different plant types to gain more Biodiversity Points!"),
 			KEYS.add("tips.diffuse", "The Commelina Diffusa can put out the Crocosmia's fires. Be careful of where you plant them!"),
 			KEYS.add("tips.pianguas", "Mangrove trees produce pianguas in mud that can be harvested via right click to sell at the store!"),
 			KEYS.add("tips.creeper", "Beware the creeper. The legends say that its explosion can level even the sturdiest of trees..."),
@@ -58,7 +58,7 @@ public final class BiodiversityBlitzTexts {
 		KEYS.add("intro4", "\nThese plants may provide food, defense, or even attack the invasive species. Every plant you place improves the number of biodiversity points received per turn.");
 		KEYS.add("intro5", "\nInvasive species will be spawning soon! But if you construct an ecosystem that is resilient enough, you may be able to survive.");
 		KEYS.add("intro6", "\nMake sure to have a large variety of different plants in your plot- diversity in an ecosystem only makes you stronger!");
-		KEYS.add("intro7", "\nYou win the game once you accumulate the target amount of osa points- you can check your progress in the top-left of your screen!");
+		KEYS.add("intro7", "\nYou win the game once you accumulate the target amount of Biodiversity Points - you can check your progress in the top-left of your screen!");
 		KEYS.add("intro8", "\nGood luck!");
 
 		KEYS.add("teams.intro1", "Welcome to Biodiversity Blitz!");
@@ -67,7 +67,7 @@ public final class BiodiversityBlitzTexts {
 		KEYS.add("teams.intro4", "\nThese plants may provide food, defense, or even attack the invasive species. Every plant you place improves the number of biodiversity points received per turn.");
 		KEYS.add("teams.intro5", "\nInvasive species will be spawning soon! But if you construct an ecosystem that is resilient enough, you may be able to survive.");
 		KEYS.add("teams.intro6", "\nMake sure to have a large variety of different plants in your plot- diversity in an ecosystem only makes you stronger!");
-		KEYS.add("teams.intro7", "\nYou win the game once your team accumulates the target amount of osa points- you can check your progress in the top-left of your screen!");
+		KEYS.add("teams.intro7", "\nYou win the game once your team accumulates the target amount of Biodiversity Points - you can check your progress in the top-left of your screen!");
 		KEYS.add("teams.intro8", "\nGood luck!");
 	}
 

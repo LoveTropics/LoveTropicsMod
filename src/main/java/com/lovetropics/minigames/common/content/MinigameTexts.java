@@ -108,7 +108,7 @@ public final class MinigameTexts {
 		KEYS.add("donation.knockback_package.description", "Give someone a Hoe with EXTREME knockback!");
 		KEYS.add("donation.knockback_package.toast", "%sender% sent you a KNOCKBACK PACKAGE! Use the Teeter Yeeter™ wisely.");
 		KEYS.add("donation.boom_package", "Coconut Bomb Package");
-		KEYS.add("donation.boom_package.description", "Give a bunch of throwable, Exploding Coconuts to everyoen!");
+		KEYS.add("donation.boom_package.description", "Give a bunch of throwable, Exploding Coconuts to everyone!");
 		KEYS.add("donation.boom_package.toast", "%sender% sent everyone a BOOM PACKAGE of 4 Coconut Bombs!");
 		KEYS.add("donation.invisibility_package", "Invisibility Package");
 		KEYS.add("donation.invisibility_package.description", "Gives Invisibility to a selected player for 2 minutes");
@@ -168,7 +168,7 @@ public final class MinigameTexts {
 		KEYS.add("donation.manatee_madness.description", "Turn every player into a Manatee for 2 minutes");
 		KEYS.add("donation.manatee_madness.toast", "Everyone is a Manatee for 2 minutes!");
 		KEYS.add("donation.big_leaps", "Many Big Leaps");
-		KEYS.add("donation.big_leaps.description", "Turn the dial down on pesky gravity - gravity is reduced for 2 minutse!");
+		KEYS.add("donation.big_leaps.description", "Turn the dial down on pesky gravity - gravity is reduced for 2 minutes!");
 		KEYS.add("donation.big_leaps.toast", "Take a big leap! Gravity has been reduced for 2 minutes!");
 		KEYS.add("donation.its_been_fun", "'It's Been Fun'");
 		KEYS.add("donation.its_been_fun.description", "It's been fun, but with this package you can end the entire game in style");
