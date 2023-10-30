@@ -36,9 +36,9 @@ public record ShowTitleAction(Optional<TemplatedText> title, Optional<TemplatedT
 		events.listen(GameActionEvents.APPLY_TO_PLAYER, (context, target) -> {
 			target.connection.send(new ClientboundClearTitlesPacket(true));
 			target.connection.send(new ClientboundSetTitlesAnimationPacket(fadeIn, stay, fadeOut));
-			target.connection.send(new ClientboundSetTitleTextPacket(title.map(title -> title.apply(context, target)).orElse(EMPTY_TITLE)));
-			subtitle.ifPresent(subtitle -> target.connection.send(new ClientboundSetSubtitleTextPacket(subtitle.apply(context, target))));
-			actionBar.ifPresent(actionBar -> target.connection.send(new ClientboundSetActionBarTextPacket(actionBar.apply(context, target))));
+			target.connection.send(new ClientboundSetTitleTextPacket(title.map(title -> title.apply(context)).orElse(EMPTY_TITLE)));
+			subtitle.ifPresent(subtitle -> target.connection.send(new ClientboundSetSubtitleTextPacket(subtitle.apply(context))));
+			actionBar.ifPresent(actionBar -> target.connection.send(new ClientboundSetActionBarTextPacket(actionBar.apply(context))));
 			return true;
 		});
 	}

@@ -28,17 +28,11 @@ public record TemplatedText(Component template) {
 		return apply(values);
 	}
 
-	public Component apply(GameActionContext context, ServerPlayer target) {
-		Map<String, Component> values = new Object2ObjectArrayMap<>();
-		addValuesFromContext(context, values);
-		values.put("target", target.getDisplayName());
-		return apply(values);
-	}
-
 	private static void addValuesFromContext(GameActionContext context, Map<String, Component> values) {
 		context.get(GameActionParameter.PACKAGE_SENDER).ifPresent(name -> values.put("sender", Component.literal(name)));
 		context.get(GameActionParameter.KILLER).ifPresent(player -> values.put("killer", player.getDisplayName()));
 		context.get(GameActionParameter.KILLED).ifPresent(player -> values.put("killed", player.getDisplayName()));
+		context.get(GameActionParameter.TARGET).ifPresent(player -> values.put("target", player.getDisplayName()));
 		context.get(GameActionParameter.COUNT).ifPresent(count -> values.put("count", Component.literal(String.valueOf(count))));
 		context.get(GameActionParameter.ITEM).ifPresent(item -> values.put("item", item.getHoverName()));
 	}
