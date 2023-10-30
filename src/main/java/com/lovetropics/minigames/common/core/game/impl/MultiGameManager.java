@@ -5,6 +5,7 @@ import com.lovetropics.minigames.common.core.game.GameResult;
 import com.lovetropics.minigames.common.core.game.IGameManager;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.IGamePhaseDefinition;
+import com.lovetropics.minigames.common.core.game.PlayerIsolation;
 import com.lovetropics.minigames.common.core.game.lobby.GameLobbyId;
 import com.lovetropics.minigames.common.core.game.lobby.GameLobbyMetadata;
 import com.lovetropics.minigames.common.core.game.lobby.IGameLobby;
@@ -253,9 +254,10 @@ public class MultiGameManager implements IGameManager {
 	@SubscribeEvent
 	public static void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
 		ServerPlayer player = (ServerPlayer) event.getEntity();
-
-		for (GameLobby lobby : INSTANCE.lobbies) {
-			lobby.onPlayerLoggedIn(player);
+		if (!PlayerIsolation.INSTANCE.isReloading(player)) {
+			for (GameLobby lobby : INSTANCE.lobbies) {
+				lobby.onPlayerLoggedIn(player);
+			}
 		}
 	}
 
@@ -269,8 +271,10 @@ public class MultiGameManager implements IGameManager {
 	@SubscribeEvent
 	public static void onPlayerLoggedOut(PlayerEvent.PlayerLoggedOutEvent event) {
 		ServerPlayer player = (ServerPlayer) event.getEntity();
-		for (GameLobby lobby : INSTANCE.lobbies) {
-			lobby.onPlayerLoggedOut(player);
+		if (!PlayerIsolation.INSTANCE.isReloading(player)) {
+			for (GameLobby lobby : INSTANCE.lobbies) {
+				lobby.onPlayerLoggedOut(player);
+			}
 		}
 	}
 

@@ -37,6 +37,8 @@ public final class PlayerIsolation {
 
 	private static final String ISOLATED_TAG = Constants.MODID + ".isolated";
 
+	private final Set<UUID> reloadingPlayers = new ObjectOpenHashSet<>();
+
 	private PlayerIsolation() {
 	}
 
@@ -61,7 +63,7 @@ public final class PlayerIsolation {
 		return player;
 	}
 
-	private static ServerPlayer reloadPlayerFromDisk(final ServerPlayer player) {
+	private ServerPlayer reloadPlayerFromDisk(final ServerPlayer player) {
 		return reloadPlayer(player, newPlayer -> {
 			final MinecraftServer server = player.getServer();
 			final PlayerList playerList = server.getPlayerList();
@@ -75,9 +77,12 @@ public final class PlayerIsolation {
 		});
 	}
 
-	private static ServerPlayer reloadPlayer(final ServerPlayer oldPlayer, final Consumer<ServerPlayer> initializer) {
+	private ServerPlayer reloadPlayer(final ServerPlayer oldPlayer, final Consumer<ServerPlayer> initializer) {
 		final MinecraftServer server = oldPlayer.getServer();
 		final PlayerList playerList = server.getPlayerList();
+
+		reloadingPlayers.add(oldPlayer.getUUID());
+		ForgeEventFactory.firePlayerLoggedOut(oldPlayer);
 
 		oldPlayer.unRide();
 		oldPlayer.serverLevel().removePlayerImmediately(oldPlayer, Entity.RemovalReason.DISCARDED);
@@ -119,11 +124,8 @@ public final class PlayerIsolation {
 
 		playerList.broadcastAll(new ClientboundPlayerInfoUpdatePacket(ClientboundPlayerInfoUpdatePacket.Action.UPDATE_GAME_MODE, newPlayer));
 
-		final ResourceKey<Level> oldDimension = oldPlayer.level().dimension();
-		final ResourceKey<Level> newDimension = newLevel.dimension();
-		if (oldDimension != newDimension) {
-			ForgeEventFactory.firePlayerChangedDimensionEvent(newPlayer, oldDimension, newDimension);
-		}
+		ForgeEventFactory.firePlayerLoggedIn(newPlayer);
+		reloadingPlayers.remove(newPlayer.getUUID());
 
 		return newPlayer;
 	}
@@ -167,6 +169,10 @@ public final class PlayerIsolation {
 
 	public boolean isIsolated(final ServerPlayer player) {
 		return player.getTags().contains(ISOLATED_TAG);
+	}
+
+	public boolean isReloading(final ServerPlayer player) {
+		return reloadingPlayers.contains(player.getUUID());
 	}
 
 	// State that can be transferred into isolation, but not back out
