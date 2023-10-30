@@ -26,6 +26,7 @@ import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraftforge.event.entity.EntityMountEvent;
 import net.minecraftforge.event.entity.EntityTeleportEvent;
 import net.minecraftforge.event.entity.item.ItemTossEvent;
+import net.minecraftforge.event.entity.living.LivingAttackEvent;
 import net.minecraftforge.event.entity.living.LivingDamageEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.living.LivingDropsEvent;
@@ -116,27 +117,16 @@ public final class GameEventDispatcher {
 	}
 
 	@SubscribeEvent
-	public void onDamageEntityIndirect(LivingHurtEvent event) {
+	public void onDamageEntityIndirect(LivingAttackEvent event) {
 		Entity target = event.getEntity();
+		DamageSource source = event.getSource();
 
 		IGamePhase game = gameLookup.getGamePhaseFor(target);
-		if (game != null) {
-			Entity indirectSource = getIndirectSource(event.getSource());
-			if (indirectSource instanceof ServerPlayer) {
-				ServerPlayer sourcePlayer = (ServerPlayer) indirectSource;
-				if (this.dispatchAttackEvent(game, sourcePlayer, target)) {
-					event.setCanceled(true);
-				}
+		if (game != null && source.isIndirect() && source.getEntity() instanceof ServerPlayer indirectSource) {
+			if (this.dispatchAttackEvent(game, indirectSource, target)) {
+				event.setCanceled(true);
 			}
 		}
-	}
-
-	@Nullable
-	private Entity getIndirectSource(DamageSource source) {
-		if (source.getEntity() != source.getDirectEntity()) {
-			return source.getEntity();
-		}
-		return null;
 	}
 
 	private boolean dispatchAttackEvent(IGamePhase game, ServerPlayer player, Entity target) {
