@@ -122,7 +122,7 @@ public final class MinigameTexts {
 		KEYS.add("donation.slowness_package.toast", "%sender% sent you a SLOWNESS SABOTAGE for 2 minutes!");
 		KEYS.add("donation.hunger_package", "Hunger Package");
 		KEYS.add("donation.hunger_package.description", "Affect somebody with Hunger III for 30 seconds");
-		KEYS.add("donation.hunger_package.toast", "%sender% sent you a HUNGER SABOTAGE for 1 minute!");
+		KEYS.add("donation.hunger_package.toast", "%sender% sent you a HUNGER SABOTAGE for 30 seconds!");
 		KEYS.add("donation.random_creeper_package", "Random Creeper Package");
 		KEYS.add("donation.random_creeper_package.description", "Spawns a Creeper primed for explosion next to a random player");
 		KEYS.add("donation.random_creeper_package.toast", "%sender% sent a RANDOM CREEPER that found you! Look out!");
