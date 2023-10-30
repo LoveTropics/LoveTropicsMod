@@ -7,6 +7,7 @@ import com.lovetropics.minigames.common.core.game.behavior.action.ApplyToBehavio
 import com.lovetropics.minigames.common.core.game.behavior.action.PlayerActionTarget;
 import com.lovetropics.minigames.common.core.game.behavior.action.PlotActionTarget;
 import com.lovetropics.minigames.common.core.game.behavior.instances.AddWeatherBehavior;
+import com.lovetropics.minigames.common.core.game.behavior.instances.TimedCloseBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.AddEquipmentAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.AssignPlayerRolesBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.CompositeBehavior;
@@ -148,6 +149,7 @@ public class GameBehaviorTypes {
 	public static final GameBehaviorEntry<CompositeBehavior> COMPOSITE = register("composite", CompositeBehavior.MAP_CODEC);
 	public static final GameBehaviorEntry<PositionPlayersBehavior> POSITION_PLAYERS = register("position_players", PositionPlayersBehavior.CODEC);
 	public static final GameBehaviorEntry<TimedGameBehavior> TIMED = register("timed", TimedGameBehavior.CODEC);
+	public static final GameBehaviorEntry<TimedCloseBehavior> TIMED_CLOSE = register("timed_close", TimedCloseBehavior.CODEC);
 	public static final GameBehaviorEntry<ImmediateRespawnBehavior> IMMEDIATE_RESPAWN = register("immediate_respawn", ImmediateRespawnBehavior.CODEC);
 	public static final GameBehaviorEntry<SetGameTypesBehavior> SET_GAME_TYPES = register("set_game_types", SetGameTypesBehavior.CODEC);
 	public static final GameBehaviorEntry<GameProgressionBehavior> PROGRESSION = register("progression", GameProgressionBehavior.CODEC);
