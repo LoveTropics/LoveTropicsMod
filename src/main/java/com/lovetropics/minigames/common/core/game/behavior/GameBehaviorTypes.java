@@ -103,6 +103,7 @@ import com.lovetropics.minigames.common.core.game.behavior.instances.trigger.pha
 import com.lovetropics.minigames.common.core.game.behavior.instances.tweak.CancelPlayerDamageBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.tweak.DamageInWaterBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.tweak.DisableHungerBehavior;
+import com.lovetropics.minigames.common.core.game.behavior.instances.tweak.DisableThrowingItemsBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.tweak.DisableTntDestructionBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.tweak.ScaleDamageFromEntityBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.tweak.ScaleExplosionKnockbackBehavior;
@@ -183,6 +184,7 @@ public class GameBehaviorTypes {
 	public static final GameBehaviorEntry<WeatherControlsBehavior> WEATHER_CONTROLS = register("weather_controls", WeatherControlsBehavior.CODEC);
 	public static final GameBehaviorEntry<TntAutoFuseBehavior> TNT_AUTO_FUSE = register("tnt_auto_fuse", TntAutoFuseBehavior.CODEC);
 	public static final GameBehaviorEntry<DisableHungerBehavior> DISABLE_HUNGER = register("disable_hunger", DisableHungerBehavior.CODEC);
+	public static final GameBehaviorEntry<DisableThrowingItemsBehavior> DISABLE_THROWING_ITEMS = register("disable_throwing_items", DisableThrowingItemsBehavior.CODEC);
 	public static final GameBehaviorEntry<DisableTntDestructionBehavior> DISABLE_TNT_BLOCK_DESTRUCTION = register("disable_tnt_block_destruction", DisableTntDestructionBehavior.CODEC);
 	public static final GameBehaviorEntry<SetMaxHealthBehavior> SET_MAX_HEALTH = register("set_max_health", SetMaxHealthBehavior.CODEC);
 	public static final GameBehaviorEntry<IndividualWinTrigger> INDIVIDUAL_WIN_TRIGGER = register("individual_win_trigger", IndividualWinTrigger.CODEC);
