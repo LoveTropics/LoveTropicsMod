@@ -23,6 +23,7 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraftforge.event.ForgeEventFactory;
 
 import java.util.Iterator;
+import java.util.UUID;
 
 public class ShootProjectilesAroundPlayerAction implements IGameBehavior {
 	public static final MapCodec<ShootProjectilesAroundPlayerAction> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
@@ -43,8 +44,8 @@ public class ShootProjectilesAroundPlayerAction implements IGameBehavior {
 	private final int spawnRateBase;
 	private final int spawnRateRandom;
 	private final int explosionStrength;
-	private final Object2IntMap<ServerPlayer> playerToAmountToSpawn = new Object2IntOpenHashMap<>();
-	private final Object2IntMap<ServerPlayer> playerToDelayToSpawn = new Object2IntOpenHashMap<>();
+	private final Object2IntMap<UUID> playerToAmountToSpawn = new Object2IntOpenHashMap<>();
+	private final Object2IntMap<UUID> playerToDelayToSpawn = new Object2IntOpenHashMap<>();
 
 	public ShootProjectilesAroundPlayerAction(/*final ResourceLocation entityId, */final int entityCount, final int spawnDistanceMax, final int spawnRangeY, final int spawnsPerTickBase, final int spawnsPerTickRandom, final int targetRandomness, final int explosionStrength) {
 		//this.entityId = entityId;
@@ -60,50 +61,51 @@ public class ShootProjectilesAroundPlayerAction implements IGameBehavior {
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
 		events.listen(GameActionEvents.APPLY_TO_PLAYER, (context, player) -> {
-			playerToAmountToSpawn.put(player, entityCountPerPlayer);
+			playerToAmountToSpawn.put(player.getUUID(), entityCountPerPlayer);
 			return true;
 		});
 		events.listen(GamePhaseEvents.TICK, () -> tick(game));
 	}
 
 	private void tick(IGamePhase game) {
-		Iterator<Object2IntMap.Entry<ServerPlayer>> it = playerToAmountToSpawn.object2IntEntrySet().iterator();
+		Iterator<Object2IntMap.Entry<UUID>> it = playerToAmountToSpawn.object2IntEntrySet().iterator();
 		while (it.hasNext()) {
-			Object2IntMap.Entry<ServerPlayer> entry = it.next();
+			Object2IntMap.Entry<UUID> entry = it.next();
 
-			if (!entry.getKey().isAlive()) {
+			UUID id = entry.getKey();
+			ServerPlayer player = game.getParticipants().getPlayerBy(id);
+			if (player == null || !player.isAlive()) {
 				it.remove();
-				playerToDelayToSpawn.removeInt(entry.getKey());
+				playerToDelayToSpawn.removeInt(id);
+				continue;
+			}
+
+			int cooldown = playerToDelayToSpawn.getOrDefault(id, 0);
+			if (cooldown > 0) {
+				cooldown--;
+				playerToDelayToSpawn.put(id, cooldown);
 			} else {
+				ServerLevel world = game.getWorld();
+				RandomSource random = world.getRandom();
 
-				int cooldown = 0;
-				if (playerToDelayToSpawn.containsKey(entry.getKey())) {
-					cooldown = playerToDelayToSpawn.getInt(entry.getKey());
-				}
-				if (cooldown > 0) {
-					cooldown--;
-					playerToDelayToSpawn.put(entry.getKey(), cooldown);
+				cooldown = spawnRateBase + random.nextInt(spawnRateRandom);
+				playerToDelayToSpawn.put(id, cooldown);
+
+				BlockPos posSpawn = player.blockPosition().offset(random.nextInt(spawnDistanceMax * 2) - spawnDistanceMax, 20,
+						random.nextInt(spawnDistanceMax * 2) - spawnDistanceMax);
+
+				BlockPos posTarget = player.blockPosition().offset(random.nextInt(targetRandomness * 2) - targetRandomness, 0,
+						random.nextInt(targetRandomness * 2) - targetRandomness);
+
+				int newAmount = entry.getIntValue() - 1;
+				if (newAmount <= 0) {
+					playerToDelayToSpawn.removeInt(id);
+					it.remove();
 				} else {
-					ServerLevel world = game.getWorld();
-					RandomSource random = world.getRandom();
-
-					cooldown = spawnRateBase + random.nextInt(spawnRateRandom);
-					playerToDelayToSpawn.put(entry.getKey(), cooldown);
-
-					BlockPos posSpawn = entry.getKey().blockPosition().offset(random.nextInt(spawnDistanceMax * 2) - spawnDistanceMax, 20,
-							random.nextInt(spawnDistanceMax * 2) - spawnDistanceMax);
-
-					BlockPos posTarget = entry.getKey().blockPosition().offset(random.nextInt(targetRandomness * 2) - targetRandomness, 0,
-							random.nextInt(targetRandomness * 2) - targetRandomness);
-
-					entry.setValue(entry.getIntValue() - 1);
-					if (entry.getIntValue() <= 0) {
-						playerToDelayToSpawn.removeInt(entry.getKey());
-						it.remove();
-					}
-					LargeFireball fireball = createFireball(world, posSpawn, posTarget);
-					world.addFreshEntity(fireball);
+					entry.setValue(newAmount);
 				}
+				LargeFireball fireball = createFireball(world, posSpawn, posTarget);
+				world.addFreshEntity(fireball);
 			}
 		}
 	}
