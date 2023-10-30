@@ -29,14 +29,10 @@ public final class GameActionHandler {
 
 	public void pollGameActions(final int tick) {
 		for (ActionsQueue queue : queues.values()) {
-			try {
-				GameActionRequest request = queue.tryHandle(game, tick);
-				if (request != null && request.type().sendsAcknowledgement()) {
-					// If we resolved the action, send acknowledgement to the backend
-					integrations.acknowledgeActionDelivery(request);
-				}
-			} catch (Exception e) {
-				LOGGER.error("Failed to resolve game action", e);
+			GameActionRequest request = queue.tryHandle(game, tick);
+			if (request != null && request.type().sendsAcknowledgement()) {
+				// If we resolved the action, send acknowledgement to the backend
+				integrations.acknowledgeActionDelivery(request);
 			}
 		}
 	}
@@ -81,10 +77,14 @@ public final class GameActionHandler {
 				GameActionRequest request;
 				while ((request = queue.poll()) != null) {
 					LOGGER.debug("Trying to resolve incoming game action request: {}", request);
-					if (request.action().resolve(game, game.getServer())) {
-						return request;
-					} else {
-						unhandledRequests.add(request);
+					try {
+						if (request.action().resolve(game, game.getServer())) {
+							return request;
+						} else {
+							unhandledRequests.add(request);
+						}
+					} catch (Exception e) {
+						LOGGER.error("An unexpected exception occurred while resolving game action: {}", request, e);
 					}
 				}
 				return null;
