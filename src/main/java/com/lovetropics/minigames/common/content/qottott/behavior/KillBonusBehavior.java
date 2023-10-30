@@ -45,7 +45,8 @@ public record KillBonusBehavior(
 		float pointPercent,
 		GameActionList<ServerPlayer> claimAnnouncement,
 		Item tagIcon,
-		String tagTranslationKey
+		String tagTranslationKey,
+		int maxActiveBonuses
 ) implements IGameBehavior {
 	public static final MapCodec<KillBonusBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			StatisticKey.INT_CODEC.fieldOf("statistic").forGetter(KillBonusBehavior::statistic),
@@ -56,7 +57,8 @@ public record KillBonusBehavior(
 			Codec.floatRange(0.0f, 1.0f).fieldOf("point_percent").forGetter(KillBonusBehavior::pointPercent),
 			GameActionList.PLAYER_CODEC.fieldOf("claim_announcement").forGetter(KillBonusBehavior::claimAnnouncement),
 			ForgeRegistries.ITEMS.getCodec().fieldOf("tag_icon").forGetter(KillBonusBehavior::tagIcon),
-			Codec.STRING.fieldOf("tag_translation_key").forGetter(KillBonusBehavior::tagTranslationKey)
+			Codec.STRING.fieldOf("tag_translation_key").forGetter(KillBonusBehavior::tagTranslationKey),
+			Codec.INT.optionalFieldOf("max_active_bonuses", 1).forGetter(KillBonusBehavior::maxActiveBonuses)
 	).apply(i, KillBonusBehavior::new));
 
 	@Override
@@ -82,9 +84,12 @@ public record KillBonusBehavior(
 	}
 
 	private boolean assignKillBonuses(final IGamePhase game, final Object2IntMap<UUID> playersWithKillBonus) {
+		if (playersWithKillBonus.size() >= maxActiveBonuses) {
+			return false;
+		}
 		boolean assigned = false;
 		for (final Placed<PlayerKey> place : PlayerPlacement.fromScore(order, game, statistic, true)) {
-			if (place.placement() > maxPlacement) {
+			if (place.placement() > maxPlacement || playersWithKillBonus.size() >= maxActiveBonuses) {
 				break;
 			}
 			final float chanceForPlacement = chancePerTick / place.placement();
