@@ -69,7 +69,7 @@ public final class BbSendMobsToEnemyItemBehavior implements IGameBehavior {
 
                 ENEMIES_TO_SEND.getIfSuccessful(item).ifPresent(entities -> StreamSupport.stream(plots.spliterator(), false).filter(p -> p != playerPlot)
                         .forEach(targetPlot -> {
-                            plots.getPlayersInPlot(targetPlot).forEach(id -> Optional.ofNullable(game.getServer().getPlayerList().getPlayer(id))
+                            plots.getPlayersInPlot(targetPlot).forEach(id -> Optional.ofNullable(game.getAllPlayers().getPlayerBy(id))
                                     .ifPresent(affected -> affected.sendSystemMessage(Component.empty()
                                             .append(player.getName().copy().withStyle(ChatFormatting.AQUA))
                                             .append(" has sent you a few mobs! Next wave you will encounter the following mobs: ")
