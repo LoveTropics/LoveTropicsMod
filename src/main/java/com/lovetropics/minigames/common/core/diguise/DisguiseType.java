@@ -17,20 +17,21 @@ import javax.annotation.Nullable;
 import java.util.Objects;
 import java.util.Optional;
 
-public record DisguiseType(@Nullable EntityConfig entity, float scale) {
+public record DisguiseType(@Nullable EntityConfig entity, float scale, boolean changesSize) {
 	private static final Logger LOGGER = LogUtils.getLogger();
 
-	public static final DisguiseType DEFAULT = new DisguiseType((EntityConfig) null, 1.0f);
+	public static final DisguiseType DEFAULT = new DisguiseType((EntityConfig) null, 1.0f, false);
 
 	public static final MapCodec<DisguiseType> MAP_CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			EntityConfig.CODEC.optionalFieldOf("entity").forGetter(c -> Optional.ofNullable(c.entity)),
-			Codec.FLOAT.optionalFieldOf("scale", 1.0f).forGetter(c -> c.scale)
+			Codec.FLOAT.optionalFieldOf("scale", 1.0f).forGetter(c -> c.scale),
+			Codec.BOOL.optionalFieldOf("changes_size", true).forGetter(c -> c.changesSize)
 	).apply(i, DisguiseType::new));
 
 	public static final Codec<DisguiseType> CODEC = MAP_CODEC.codec();
 
-	private DisguiseType(Optional<EntityConfig> entity, float scale) {
-		this(entity.orElse(null), scale);
+	private DisguiseType(Optional<EntityConfig> entity, float scale, boolean changesSize) {
+		this(entity.orElse(null), scale, changesSize);
 	}
 
 	@Nullable
@@ -46,12 +47,14 @@ public record DisguiseType(@Nullable EntityConfig entity, float scale) {
 	public void encode(FriendlyByteBuf buffer) {
 		buffer.writeNullable(entity, (b, e) -> e.encode(b));
 		buffer.writeFloat(scale);
+		buffer.writeBoolean(changesSize);
 	}
 
 	public static DisguiseType decode(FriendlyByteBuf buffer) {
 		EntityConfig entity = buffer.readNullable(EntityConfig::decode);
 		float scale = buffer.readFloat();
-		return new DisguiseType(entity, scale);
+		boolean changesSize = buffer.readBoolean();
+		return new DisguiseType(entity, scale, changesSize);
 	}
 
 	public boolean isDefault() {
@@ -75,11 +78,11 @@ public record DisguiseType(@Nullable EntityConfig entity, float scale) {
 	}
 
 	public DisguiseType withEntity(@Nullable EntityConfig entity) {
-		return new DisguiseType(entity, scale);
+		return new DisguiseType(entity, scale, changesSize);
 	}
 
 	public DisguiseType withScale(float scale) {
-		return new DisguiseType(entity, scale);
+		return new DisguiseType(entity, scale, changesSize);
 	}
 
 	public record EntityConfig(EntityType<?> type, @Nullable CompoundTag nbt, boolean applyAttributes) {
