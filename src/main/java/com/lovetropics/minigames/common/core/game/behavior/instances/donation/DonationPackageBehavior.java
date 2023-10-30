@@ -26,7 +26,7 @@ public final class DonationPackageBehavior implements IGameBehavior {
 
 	public static final MapCodec<DonationPackageBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			DonationPackageData.CODEC.forGetter(c -> c.data),
-			DonationPackageNotification.CODEC.optionalFieldOf("notification").forGetter(c -> c.notification),
+			MoreCodecs.strictOptionalFieldOf(DonationPackageNotification.CODEC, "notification").forGetter(c -> c.notification),
 			MoreCodecs.strictOptionalFieldOf(GameActionList.PLAYER_CODEC, "receive_actions", GameActionList.EMPTY).forGetter(c -> c.receiveActions)
 	).apply(i, DonationPackageBehavior::new));
 

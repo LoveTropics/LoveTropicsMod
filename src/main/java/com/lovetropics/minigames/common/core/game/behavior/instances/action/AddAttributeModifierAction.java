@@ -37,7 +37,9 @@ public record AddAttributeModifierAction(Attribute attribute, AttributeModifier 
 		events.listen(GameActionEvents.APPLY_TO_PLAYER, (context, player) -> {
 			final AttributeInstance attribute = player.getAttribute(this.attribute);
 			if (attribute != null) {
-				attribute.addTransientModifier(modifier);
+				if (!attribute.hasModifier(modifier)) {
+					attribute.addTransientModifier(modifier);
+				}
 				return true;
 			}
 			return false;
