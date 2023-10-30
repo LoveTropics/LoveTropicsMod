@@ -21,6 +21,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -32,10 +33,11 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-public record LobbyWithPortalBehavior(String portalRegion, String targetRegion, int waitSeconds) implements IGameBehavior {
+public record LobbyWithPortalBehavior(String portalRegion, String targetRegion, String pointTowardsRegion, int waitSeconds) implements IGameBehavior {
 	public static final MapCodec<LobbyWithPortalBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			Codec.STRING.fieldOf("portal_region").forGetter(LobbyWithPortalBehavior::portalRegion),
 			Codec.STRING.fieldOf("target_region").forGetter(LobbyWithPortalBehavior::targetRegion),
+			Codec.STRING.fieldOf("point_towards_region").forGetter(LobbyWithPortalBehavior::pointTowardsRegion),
 			Codec.INT.optionalFieldOf("wait_seconds", 15).forGetter(LobbyWithPortalBehavior::waitSeconds)
 	).apply(i, LobbyWithPortalBehavior::new));
 
@@ -46,6 +48,8 @@ public record LobbyWithPortalBehavior(String portalRegion, String targetRegion, 
 		if (targets.isEmpty()) {
 			throw new GameException(Component.literal("No targets for portal"));
 		}
+
+		final Vec3 pointTowards = game.getMapRegions().getOrThrow(pointTowardsRegion).center();
 
 		final int openTime = waitSeconds * SharedConstants.TICKS_PER_SECOND;
 		events.listen(GamePhaseEvents.TICK, () -> {
@@ -68,13 +72,19 @@ public record LobbyWithPortalBehavior(String portalRegion, String targetRegion, 
 			if (portal.contains(player.position()) && playersInLobby.remove(player.getUUID())) {
 				final BlockBox target = Util.getRandom(targets, game.getRandom());
 				final Vec3 center = target.center();
-				player.teleportTo(center.x, center.y, center.z);
+				player.teleportTo(player.serverLevel(), center.x, center.y, center.z, computeAngle(center, pointTowards), 0.0f);
 				player.level().playSound(null, center.x, center.y, center.z, SoundEvents.CHORUS_FRUIT_TELEPORT, SoundSource.PLAYERS, 1.0f, 1.0f);
 			}
 		});
 
 		events.listen(GamePlayerEvents.ATTACK, (player, target) -> checkInLobby(player, playersInLobby));
 		events.listen(GamePlayerEvents.DAMAGE, (player, damageSource, amount) -> checkInLobby(player, playersInLobby));
+	}
+
+	private float computeAngle(final Vec3 pos, final Vec3 target) {
+		final double deltaX = target.x - pos.x;
+		final double deltaZ = target.z - pos.z;
+		return (float) Math.atan2(-deltaX, deltaZ) * Mth.RAD_TO_DEG;
 	}
 
 	private static void setPortal(final ServerLevel level, final BlockBox portal) {
