@@ -127,10 +127,7 @@ public final class BlockPartyBehavior implements IGameBehavior {
 
 				eliminated.add(player);
 
-				Component message = Component.literal("\u2620 ")
-						.append(player.getDisplayName()).append(" was eliminated!")
-						.withStyle(ChatFormatting.GRAY);
-				game.getAllPlayers().sendMessage(message);
+				game.getAllPlayers().sendMessage(MinigameTexts.ELIMINATED.apply(player.getDisplayName()));
 			}
 		}
 

@@ -97,6 +97,7 @@ public final class MinigameTexts {
 
 	public static final Component REWARDS = KEYS.add("rewards_granted", "You got rewards for playing minigames!").withStyle(ChatFormatting.GOLD);
 	public static final TranslationCollector.Fun2 REWARD_ITEM = KEYS.add2("reward_item", " - %sx %s").withStyle(ChatFormatting.GRAY);
+	public static final TranslationCollector.Fun1 ELIMINATED = KEYS.add1("eliminated", "\u2620 %s was eliminated!").withStyle(ChatFormatting.GRAY);
 
 	static {
 		KEYS.add("starting_in", "Starting in %time%!");

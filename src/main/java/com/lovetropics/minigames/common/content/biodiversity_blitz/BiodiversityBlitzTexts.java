@@ -31,6 +31,7 @@ public final class BiodiversityBlitzTexts {
 	private static final TranslationCollector.Fun2 SIDEBAR_PLAYER_POINTS = KEYS.add2("sidebar.player.points", "%s (+ %s)");
 	public static final Component SIDEBAR_AND_MORE = KEYS.add("sidebar.and_more", "... and more!");
 	private static final TranslationCollector.Fun2 SEND_MOBS_TOOLTIP = KEYS.add2("send_mobs.tooltip", "%sx %s");
+	public static final TranslationCollector.Fun2 SENT_MOBS_MESSAGE = KEYS.add2("sent_mobs.message", "%s has sent you a few mobs! Next wave you will encounter the following mobs: %s");
 
 	public static final Component SHOP = KEYS.add("shop", "Shop");
 	public static final Component PLANT_SHOP = KEYS.add("plant_shop", "Plant Shop");
