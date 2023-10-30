@@ -8,9 +8,11 @@ public class QottottTexts {
 
 	static {
 		KEYS.add("sidebar.title", "Qottot");
-		KEYS.add("sidebar.instruction", "Pick up coins!");
+		KEYS.add("instruction", "Pick up coins!");
 		KEYS.add("sidebar.top_players", "Top Players:");
-		KEYS.add("time_remaining", "Time Remaining: %time%...");
+		KEYS.add("waiting", "Pick a kit before the game starts!");
+		KEYS.add("intro", "Pick a kit! The game will begin soon!");
+		KEYS.add("started", "The game has begun - walk into the portal to enter the map!");
 		KEYS.add("kit.picked", "You have selected: %s");
 		KEYS.add("kit.acrobat", "Acrobat");
 		KEYS.add("kit.assassin", "Assassin");
