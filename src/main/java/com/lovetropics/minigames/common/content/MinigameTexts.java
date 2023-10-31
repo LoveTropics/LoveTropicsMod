@@ -117,6 +117,9 @@ public final class MinigameTexts {
 		KEYS.add("donation.undying_package", "Undying Package");
 		KEYS.add("donation.undying_package.description", "Give a select player a Totem of Undying");
 		KEYS.add("donation.undying_package.toast", "%sender% sent you an UNDYING PACKAGE with a Totem of Undying!");
+		KEYS.add("donation.lightning_crossbow_package", "Lightning Crossbow Package");
+		KEYS.add("donation.lightning_crossbow_package.description", "Give a select player a single-use charged Multishot Crossbow that spawns Lightning");
+		KEYS.add("donation.lightning_crossbow_package.toast", "%sender% sent you a single-use charged LIGHTNING CROSSBOW!");
 		KEYS.add("donation.slowness_package", "Slowness Package");
 		KEYS.add("donation.slowness_package.description", "Affect somebody with Slowness V for 2 minutes");
 		KEYS.add("donation.slowness_package.toast", "%sender% sent you a SLOWNESS SABOTAGE for 2 minutes!");
