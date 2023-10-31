@@ -22,9 +22,5 @@ public class QottottTexts {
 		KEYS.add("power_up.knockback", "2x coins & increased Knockback for %seconds% seconds");
 		KEYS.add("power_up.knockback_resistance", "2x coins & Knockback Resistance for %seconds% seconds");
 		KEYS.add("spawn.power_up", "%item% has spawned!");
-		KEYS.add("kill_bonus.tag", "KILL BONUS: %s");
-		KEYS.add("kill_bonus.announce", "%target% has a %count% point kill bonus!");
-		KEYS.add("kill_bonus.claim.title", "Kill Bonus!");
-		KEYS.add("kill_bonus.claim.subtitle", "+ %count% coins!");
 	}
 }

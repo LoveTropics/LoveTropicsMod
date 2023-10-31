@@ -13,8 +13,6 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 
@@ -44,7 +42,7 @@ public record GivePointsAction(StatisticKey<Integer> statistic, int count) imple
 	}
 
 	private static double getMultiplier(ServerPlayer player) {
-		final AttributeInstance attribute = player.getAttribute(Qottott.POINT_MULTIPLIER.get());
+		final AttributeInstance attribute = player.getAttribute(Qottott.COIN_MULTIPLIER.get());
 		return attribute != null ? attribute.getValue() : 1.0;
 	}
 
