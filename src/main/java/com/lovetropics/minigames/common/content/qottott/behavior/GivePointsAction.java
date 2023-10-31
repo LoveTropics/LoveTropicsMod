@@ -18,10 +18,11 @@ import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 
 import java.util.function.Supplier;
 
-public record GivePointsAction(StatisticKey<Integer> statistic, int count) implements IGameBehavior {
+public record GivePointsAction(StatisticKey<Integer> statistic, int count, boolean bypassMultiplier) implements IGameBehavior {
 	public static final MapCodec<GivePointsAction> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			StatisticKey.INT_CODEC.fieldOf("statistic").forGetter(GivePointsAction::statistic),
-			Codec.INT.optionalFieldOf("count", 1).forGetter(GivePointsAction::count)
+			Codec.INT.optionalFieldOf("count", 1).forGetter(GivePointsAction::count),
+			Codec.BOOL.optionalFieldOf("bypass_multiplier", false).forGetter(GivePointsAction::bypassMultiplier)
 	).apply(i, GivePointsAction::new));
 
 	@Override
@@ -37,6 +38,9 @@ public record GivePointsAction(StatisticKey<Integer> statistic, int count) imple
 	}
 
 	private int resolveCount(GameActionContext context, ServerPlayer player) {
+		if (bypassMultiplier) {
+			return count;
+		}
 		final int count = this.count * context.get(GameActionParameter.COUNT).orElse(1);
 		return Mth.floor(count * getMultiplier(player));
 	}
