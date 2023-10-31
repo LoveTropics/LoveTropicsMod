@@ -1,5 +1,6 @@
 package com.lovetropics.minigames.common.util;
 
+import com.google.gson.JsonSyntaxException;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
@@ -8,9 +9,11 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.MapLike;
 import com.mojang.serialization.RecordBuilder;
 import com.mojang.serialization.codecs.KeyDispatchCodec;
+import net.minecraft.advancements.critereon.ItemPredicate;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.RegistryCodecs;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.item.Item;
 
 import java.util.function.Function;
@@ -18,6 +21,14 @@ import java.util.stream.Stream;
 
 public class Codecs {
     public static final Codec<HolderSet<Item>> ITEMS = RegistryCodecs.homogeneousList(Registries.ITEM);
+
+	public static final Codec<ItemPredicate> ITEM_PREDICATE = ExtraCodecs.JSON.comapFlatMap(json -> {
+		try {
+			return DataResult.success(ItemPredicate.fromJson(json));
+		} catch (final JsonSyntaxException e) {
+			return DataResult.error(e::getMessage);
+		}
+	}, ItemPredicate::serializeToJson);
 
 	public static <A, E> Codec<E> dispatchWithInlineKey(String typeKey, Codec<A> keyCodec, Function<? super E, ? extends A> type, Function<? super A, ? extends Codec<? extends E>> codec) {
 		Codec<E> delegate = dispatchMapWithTrace(typeKey, keyCodec, type, codec).codec();
