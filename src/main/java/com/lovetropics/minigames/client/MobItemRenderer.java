@@ -27,17 +27,21 @@ import java.lang.ref.WeakReference;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.function.ToDoubleFunction;
 
 public class MobItemRenderer extends BlockEntityWithoutLevelRenderer {
 	private final Minecraft minecraft;
 	private final EntityCache entityCache = new EntityCache();
 	private final Function<ItemStack, DisguiseType.EntityConfig> entityGetter;
+	private final ToDoubleFunction<ItemStack> sizeGetter;
+	@Nullable
 	private final ResourceLocation inventorySprite;
 
-	public MobItemRenderer(final BlockEntityRenderDispatcher dispatcher, final EntityModelSet modelSet, Minecraft minecraft, final Function<ItemStack, DisguiseType.EntityConfig> entityGetter, final ResourceLocation inventorySprite) {
+	public MobItemRenderer(final BlockEntityRenderDispatcher dispatcher, final EntityModelSet modelSet, Minecraft minecraft, final Function<ItemStack, DisguiseType.EntityConfig> entityGetter, final ToDoubleFunction<ItemStack> sizeGetter, @Nullable final ResourceLocation inventorySprite) {
 		super(dispatcher, modelSet);
 		this.minecraft = minecraft;
 		this.entityGetter = entityGetter;
+		this.sizeGetter = sizeGetter;
 		this.inventorySprite = inventorySprite;
 	}
 
@@ -54,6 +58,9 @@ public class MobItemRenderer extends BlockEntityWithoutLevelRenderer {
 	}
 
 	private void drawInventorySprite(final PoseStack poseStack, final MultiBufferSource bufferSource, final int packedLight, final int packedOverlay) {
+		if (inventorySprite == null) {
+			return;
+		}
 		final ResourceLocation atlas = TextureAtlas.LOCATION_BLOCKS;
 		final TextureAtlasSprite sprite = minecraft.getTextureAtlas(atlas).apply(inventorySprite);
 		final VertexConsumer consumer = bufferSource.getBuffer(RenderType.textSeeThrough(atlas));
@@ -88,15 +95,15 @@ public class MobItemRenderer extends BlockEntityWithoutLevelRenderer {
 
 		poseStack.pushPose();
 		poseStack.translate(0.5f, 0.5f, 0.5f);
-		applyTransforms(context, poseStack, entity);
+		applyTransforms(stack, context, poseStack, entity);
 
 		minecraft.getEntityRenderDispatcher().render(entity, 0.0, 0.0, 0.0, 0.0f, 0.0f, poseStack, bufferSource, packedLight);
 
 		poseStack.popPose();
 	}
 
-	private static void applyTransforms(final ItemDisplayContext context, final PoseStack poseStack, final Entity entity) {
-		final float scale = getScale(context, entity);
+	private void applyTransforms(final ItemStack stack, final ItemDisplayContext context, final PoseStack poseStack, final Entity entity) {
+		final float scale = getScale(stack, context, entity);
 		poseStack.scale(scale, scale, scale);
 
 		final boolean left = context == ItemDisplayContext.FIRST_PERSON_LEFT_HAND || context == ItemDisplayContext.THIRD_PERSON_LEFT_HAND;
@@ -126,10 +133,10 @@ public class MobItemRenderer extends BlockEntityWithoutLevelRenderer {
 		}
 	}
 
-	private static float getScale(final ItemDisplayContext context, final Entity entity) {
+	private float getScale(final ItemStack stack, final ItemDisplayContext context, final Entity entity) {
 		// Approximate size of the entity - overestimate width a bit because bounding boxes are usually too small
 		final float entitySize = Math.max(entity.getBbWidth() * 2.0f, entity.getBbHeight());
-		final float targetSize = switch (context) {
+		final float targetSize = (float) sizeGetter.applyAsDouble(stack) * switch (context) {
 			case THIRD_PERSON_LEFT_HAND, THIRD_PERSON_RIGHT_HAND, FIRST_PERSON_LEFT_HAND, FIRST_PERSON_RIGHT_HAND -> 0.8f;
 			case HEAD -> 1.5f;
 			case GUI, FIXED -> 0.9f;

@@ -57,5 +57,14 @@ public class MinigameItems {
             })
             .register();
 
+    public static final ItemEntry<PlushieItem> PLUSHIE = REGISTRATE.item("plushie", PlushieItem::new)
+            .properties(p -> p.stacksTo(1))
+            .model((ctx, prov) -> prov.getBuilder(ctx.getName()).parent(new ModelFile.UncheckedModelFile("builtin/entity")))
+            .addMiscData(ProviderType.LANG, prov -> {
+                String descriptionId = Util.makeDescriptionId("item", new ResourceLocation(Constants.MODID, "plushie"));
+                prov.add(descriptionId + ".entity", "%s Plushie");
+            })
+            .register();
+
     public static void init() {}
 }
