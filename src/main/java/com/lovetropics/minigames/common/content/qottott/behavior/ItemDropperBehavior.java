@@ -22,6 +22,7 @@ import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.RandomSource;
 import net.minecraft.util.valueproviders.IntProvider;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
@@ -36,10 +37,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
 
-public record ItemDropperBehavior(TriggerAfterConfig after, Either<ItemStack, ResourceLocation> loot, String regionKey, boolean combined, boolean beacon, IntProvider intervalTicks, Optional<GameActionList<Void>> announcement) implements IGameBehavior {
+public record ItemDropperBehavior(TriggerAfterConfig after, Either<List<ItemStack>, ResourceLocation> loot, String regionKey, boolean combined, boolean beacon, IntProvider intervalTicks, Optional<GameActionList<Void>> announcement) implements IGameBehavior {
 	public static final MapCodec<ItemDropperBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			TriggerAfterConfig.MAP_CODEC.forGetter(ItemDropperBehavior::after),
-			Codec.either(MoreCodecs.ITEM_STACK, ResourceLocation.CODEC).fieldOf("loot").forGetter(ItemDropperBehavior::loot),
+			Codec.either(MoreCodecs.listOrUnit(MoreCodecs.ITEM_STACK), ResourceLocation.CODEC).fieldOf("loot").forGetter(ItemDropperBehavior::loot),
 			Codec.STRING.fieldOf("region").forGetter(ItemDropperBehavior::regionKey),
 			Codec.BOOL.optionalFieldOf("combined", false).forGetter(ItemDropperBehavior::combined),
 			Codec.BOOL.optionalFieldOf("beacon", false).forGetter(ItemDropperBehavior::beacon),
@@ -56,7 +57,7 @@ public record ItemDropperBehavior(TriggerAfterConfig after, Either<ItemStack, Re
 
 		announcement.ifPresent(action -> action.register(game, events));
 
-		final Supplier<List<ItemStack>> lootProvider = createLootProvider(game);
+		final Supplier<ItemStack> lootProvider = createLootProvider(game);
 		final List<Dropper> droppers;
 		if (combined) {
 			droppers = List.of(new Dropper(regions.stream().map(BlockBox::center).toList(), lootProvider));
@@ -83,20 +84,21 @@ public record ItemDropperBehavior(TriggerAfterConfig after, Either<ItemStack, Re
 		}
 	}
 
-	private Supplier<List<ItemStack>> createLootProvider(final IGamePhase game) {
+	private Supplier<ItemStack> createLootProvider(final IGamePhase game) {
+		final RandomSource random = game.getRandom();
 		return loot.map(
-				stack -> () -> List.of(stack.copy()),
+				stacks -> () -> Util.getRandomSafe(stacks, random).map(ItemStack::copy).orElse(ItemStack.EMPTY),
 				tableId -> {
 					final LootTable lootTable = game.getServer().getLootData().getLootTable(tableId);
 					final LootParams params = new LootParams.Builder(game.getLevel()).create(LootContextParamSets.EMPTY);
-					return () -> lootTable.getRandomItems(params);
+					return () -> Util.getRandomSafe(lootTable.getRandomItems(params), random).orElse(ItemStack.EMPTY);
 				}
 		);
 	}
 
 	private class Dropper {
 		private final List<Vec3> positions;
-		private final Supplier<List<ItemStack>> lootProvider;
+		private final Supplier<ItemStack> lootProvider;
 		private int dropInTicks;
 
 		@Nullable
@@ -104,7 +106,7 @@ public record ItemDropperBehavior(TriggerAfterConfig after, Either<ItemStack, Re
 		@Nullable
 		private BlockPos beaconPos;
 
-		private Dropper(final List<Vec3> positions, final Supplier<List<ItemStack>> lootProvider) {
+		private Dropper(final List<Vec3> positions, final Supplier<ItemStack> lootProvider) {
 			this.positions = positions;
 			this.lootProvider = lootProvider;
 		}
@@ -118,9 +120,12 @@ public record ItemDropperBehavior(TriggerAfterConfig after, Either<ItemStack, Re
 			if (dropInTicks == 0) {
 				final Vec3 position = Util.getRandom(positions, game.getRandom());
 				resetDelay(game);
-				Util.getRandomSafe(lootProvider.get(), game.getRandom()).ifPresent(item -> spawnItem(game, item, position));
-				if (beacons != null) {
-					addBeacon(game, beacons, position);
+				final ItemStack item = lootProvider.get();
+				if (!item.isEmpty()) {
+					spawnItem(game, item, position);
+					if (beacons != null) {
+						addBeacon(game, beacons, position);
+					}
 				}
 			} else {
 				dropInTicks--;
