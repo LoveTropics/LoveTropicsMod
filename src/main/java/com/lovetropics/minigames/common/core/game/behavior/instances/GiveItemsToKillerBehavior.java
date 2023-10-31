@@ -1,5 +1,6 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances;
 
+import com.lovetropics.lib.codec.MoreCodecs;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.GameBehaviorType;
 import com.lovetropics.minigames.common.core.game.behavior.GameBehaviorTypes;
@@ -15,11 +16,12 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 
+import java.util.List;
 import java.util.function.Supplier;
 
-public record GiveItemsToKillerBehavior(ItemPredicate predicate) implements IGameBehavior {
+public record GiveItemsToKillerBehavior(List<ItemPredicate> predicates) implements IGameBehavior {
 	public static final MapCodec<GiveItemsToKillerBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
-			Codecs.ITEM_PREDICATE.fieldOf("item_predicate").forGetter(GiveItemsToKillerBehavior::predicate)
+			MoreCodecs.listOrUnit(Codecs.ITEM_PREDICATE).fieldOf("item_predicate").forGetter(GiveItemsToKillerBehavior::predicates)
 	).apply(i, GiveItemsToKillerBehavior::new));
 
 	@Override
@@ -35,11 +37,19 @@ public record GiveItemsToKillerBehavior(ItemPredicate predicate) implements IGam
 	private void giveItems(final ServerPlayer player, final ServerPlayer killer) {
 		final Inventory inventory = player.getInventory();
 		for (int i = 0; i < inventory.getContainerSize(); i++) {
-			final ItemStack item = inventory.getItem(i);
-			if (predicate.matches(item)) {
+			if (matches(inventory.getItem(i))) {
 				killer.getInventory().placeItemBackInInventory(inventory.removeItemNoUpdate(i));
 			}
 		}
+	}
+
+	private boolean matches(final ItemStack item) {
+		for (final ItemPredicate predicate : predicates) {
+			if (predicate.matches(item)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	@Override
