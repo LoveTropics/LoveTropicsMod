@@ -7,15 +7,21 @@ import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameActionEvents;
 import com.lovetropics.minigames.common.core.game.rewards.GameRewardsMap;
+import com.lovetropics.minigames.common.core.game.state.statistics.StatisticKey;
+import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.List;
+import java.util.Optional;
 
-public record GiveRewardAction(List<ItemStack> items) implements IGameBehavior {
+public record GiveRewardAction(List<ItemStack> items, Optional<StatisticBinding> statisticBinding) implements IGameBehavior {
 	public static final MapCodec<GiveRewardAction> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
-			MoreCodecs.ITEM_STACK.listOf().fieldOf("items").forGetter(GiveRewardAction::items)
+			MoreCodecs.ITEM_STACK.listOf().fieldOf("items").forGetter(GiveRewardAction::items),
+			StatisticBinding.CODEC.optionalFieldOf("statistic_binding").forGetter(GiveRewardAction::statisticBinding)
 	).apply(i, GiveRewardAction::new));
 
 	@Override
@@ -23,9 +29,22 @@ public record GiveRewardAction(List<ItemStack> items) implements IGameBehavior {
 		GameRewardsMap rewards = game.getState().getOrThrow(GameRewardsMap.STATE);
 		events.listen(GameActionEvents.APPLY_TO_PLAYER, (context, target) -> {
 			for (final ItemStack item : items) {
-				rewards.forPlayer(target).give(item);
+				final int count = statisticBinding.map(binding -> binding.resolve(game, target)).orElse(item.getCount());
+				rewards.forPlayer(target).give(item.copyWithCount(count));
 			}
 			return true;
 		});
+	}
+
+	public record StatisticBinding(StatisticKey<Integer> statistic, float multiplier) {
+		public static final Codec<StatisticBinding> CODEC = RecordCodecBuilder.create(i -> i.group(
+				StatisticKey.INT_CODEC.fieldOf("statistic").forGetter(StatisticBinding::statistic),
+				Codec.FLOAT.fieldOf("multiplier").forGetter(StatisticBinding::multiplier)
+		).apply(i, StatisticBinding::new));
+
+		public int resolve(final IGamePhase game, final ServerPlayer player) {
+			final int value = game.getStatistics().forPlayer(player).getOr(statistic, 0);
+			return Mth.floor(multiplier * value);
+		}
 	}
 }
