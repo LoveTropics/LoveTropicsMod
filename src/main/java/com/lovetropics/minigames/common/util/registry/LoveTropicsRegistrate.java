@@ -6,7 +6,10 @@ import com.lovetropics.minigames.common.core.game.predicate.entity.EntityPredica
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.tterrag.registrate.AbstractRegistrate;
+import net.minecraft.world.effect.MobEffect;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+
+import java.util.function.Supplier;
 
 public final class LoveTropicsRegistrate extends AbstractRegistrate<LoveTropicsRegistrate> {
 	private LoveTropicsRegistrate(String modid) {
@@ -51,5 +54,17 @@ public final class LoveTropicsRegistrate extends AbstractRegistrate<LoveTropicsR
 
 	public <T extends GameClientState, P> GameClientTweakBuilder<T, P> clientState(P parent, String name, Codec<T> codec) {
 		return entry(name, callback -> new GameClientTweakBuilder<>(this, parent, name, callback, codec));
+	}
+
+	public <T extends MobEffect> MobEffectBuilder<T, LoveTropicsRegistrate> mobEffect(Supplier<T> effect) {
+		return mobEffect(this, effect);
+	}
+
+	public <T extends MobEffect, P> MobEffectBuilder<T, P> mobEffect(P parent, Supplier<T> effect) {
+		return mobEffect(parent, currentName(), effect);
+	}
+
+	public <T extends MobEffect, P> MobEffectBuilder<T, P> mobEffect(P parent, String name, Supplier<T> effect) {
+		return entry(name, callback -> new MobEffectBuilder<>(this, parent, name, callback, effect));
 	}
 }
