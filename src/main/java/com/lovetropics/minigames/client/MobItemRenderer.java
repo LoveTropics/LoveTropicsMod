@@ -103,11 +103,11 @@ public class MobItemRenderer extends BlockEntityWithoutLevelRenderer {
 		switch (context) {
 			case THIRD_PERSON_LEFT_HAND, THIRD_PERSON_RIGHT_HAND -> {
 				poseStack.mulPose(Axis.YP.rotationDegrees(left ? 25.0f : -25.0f));
-				poseStack.translate(0.0f, -0.5f, 0.0f);
+				poseStack.translate(0.0f, -0.2f / scale, 0.0f);
 			}
 			case FIRST_PERSON_LEFT_HAND, FIRST_PERSON_RIGHT_HAND -> {
 				poseStack.mulPose(Axis.YP.rotationDegrees(left ? 45.0f : -45.0f));
-				poseStack.translate(0.0f, -0.5f, -entity.getBbWidth() / 2.0f);
+				poseStack.translate(0.0f, -0.1f / scale, -entity.getBbWidth() / 2.0f);
 			}
 			case HEAD -> {
 				poseStack.translate(0.0f, 0.375f / scale, 0.0f);
