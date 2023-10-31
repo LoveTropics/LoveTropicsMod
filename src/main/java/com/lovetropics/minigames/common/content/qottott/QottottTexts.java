@@ -17,10 +17,22 @@ public class QottottTexts {
 		KEYS.add("kit.acrobat", "Acrobat");
 		KEYS.add("kit.assassin", "Assassin");
 		KEYS.add("kit.glass_cannon", "Glass Cannon");
+		KEYS.add("kit.opportunist", "Opportunist");
+		KEYS.add("kit.fighter", "Fighter");
+		KEYS.add("kit.brawler", "Brawler");
 		KEYS.add("power_up.generic", "2x coins for %seconds% seconds");
-		KEYS.add("power_up.speed", "2x coins & increased Speed for %seconds% seconds");
-		KEYS.add("power_up.knockback", "2x coins & increased Knockback for %seconds% seconds");
-		KEYS.add("power_up.knockback_resistance", "2x coins & Knockback Resistance for %seconds% seconds");
 		KEYS.add("spawn.power_up", "%item% has spawned!");
+		KEYS.add("power_up.title", "Power-up!");
+		KEYS.add("power_up.subtitle", "%s + 2x Coins");
+		KEYS.add("speed_power_up", "Speed Boost Power-up");
+		KEYS.add("speed_power_up.subtitle", "Speed Boost + 2x Coins");
+		KEYS.add("knockback_resistance_power_up", "Knockback Resistance Power-up");
+		KEYS.add("knockback_resistance_power_up.subtitle", "Knockback Resistance");
+		KEYS.add("resistance_power_up", "Resistance Power-up");
+		KEYS.add("resistance_power_up.subtitle", "Damage Resistance");
+		KEYS.add("health_power_up", "Health Boost Power-up");
+		KEYS.add("health_power_up.subtitle", "Health Boost");
+		KEYS.add("pickup_priority_power_up", "Item Pickup Priority Power-up");
+		KEYS.add("pickup_priority_power_up.subtitle", "Pick up items faster");
 	}
 }
