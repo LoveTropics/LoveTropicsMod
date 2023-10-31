@@ -1,6 +1,7 @@
 package com.lovetropics.minigames.common.util;
 
 import com.google.gson.JsonSyntaxException;
+import com.lovetropics.lib.codec.MoreCodecs;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
@@ -9,11 +10,14 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.MapLike;
 import com.mojang.serialization.RecordBuilder;
 import com.mojang.serialization.codecs.KeyDispatchCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.advancements.critereon.ItemPredicate;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.RegistryCodecs;
+import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.util.ExtraCodecs;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.item.Item;
 
 import java.util.function.Function;
@@ -29,6 +33,18 @@ public class Codecs {
 			return DataResult.error(e::getMessage);
 		}
 	}, ItemPredicate::serializeToJson);
+
+	public static final Codec<AttributeModifier.Operation> ATTRIBUTE_MODIFIER_OPERATION = MoreCodecs.stringVariants(AttributeModifier.Operation.values(), operation -> switch (operation) {
+		case ADDITION -> "addition";
+		case MULTIPLY_BASE -> "multiply_base";
+		case MULTIPLY_TOTAL -> "multiply_total";
+	});
+	public static final Codec<AttributeModifier> ATTRIBUTE_MODIFIER = RecordCodecBuilder.create(i -> i.group(
+			UUIDUtil.STRING_CODEC.fieldOf("id").forGetter(AttributeModifier::getId),
+			Codec.STRING.fieldOf("name").forGetter(AttributeModifier::getName),
+			Codec.DOUBLE.fieldOf("amount").forGetter(AttributeModifier::getAmount),
+			ATTRIBUTE_MODIFIER_OPERATION.fieldOf("operation").forGetter(AttributeModifier::getOperation)
+	).apply(i, AttributeModifier::new));
 
 	public static <A, E> Codec<E> dispatchWithInlineKey(String typeKey, Codec<A> keyCodec, Function<? super E, ? extends A> type, Function<? super A, ? extends Codec<? extends E>> codec) {
 		Codec<E> delegate = dispatchMapWithTrace(typeKey, keyCodec, type, codec).codec();
