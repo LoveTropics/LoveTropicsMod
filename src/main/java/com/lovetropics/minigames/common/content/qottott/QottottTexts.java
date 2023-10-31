@@ -34,5 +34,9 @@ public class QottottTexts {
 		KEYS.add("health_power_up.subtitle", "Health Boost");
 		KEYS.add("pickup_priority_power_up", "Item Pickup Priority Power-up");
 		KEYS.add("pickup_priority_power_up.subtitle", "Pick up items faster");
+		KEYS.add("cash_crab", "Cash Crab");
+		KEYS.add("cash_crab.lore", "When you kill another player, they will drop 20% of their Coins for you to pick up!");
+		KEYS.add("cash_crab.title", "Oh no!");
+		KEYS.add("cash_crab.subtitle", "%killer% stole 20% of your Coins!");
 	}
 }
