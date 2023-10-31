@@ -1,6 +1,7 @@
 package com.lovetropics.minigames.common.core.game;
 
 import com.lovetropics.minigames.Constants;
+import com.lovetropics.minigames.common.util.LTGameTestFakePlayer;
 import com.mojang.serialization.Dynamic;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.minecraft.nbt.CompoundTag;
@@ -78,6 +79,11 @@ public final class PlayerIsolation {
 	}
 
 	private ServerPlayer reloadPlayer(final ServerPlayer oldPlayer, final Consumer<ServerPlayer> initializer) {
+		if (oldPlayer instanceof LTGameTestFakePlayer) {
+			initializer.accept(oldPlayer);
+			return oldPlayer;
+		}
+
 		final MinecraftServer server = oldPlayer.getServer();
 		final PlayerList playerList = server.getPlayerList();
 
