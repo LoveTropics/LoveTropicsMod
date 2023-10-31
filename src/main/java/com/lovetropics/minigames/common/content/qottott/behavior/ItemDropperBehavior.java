@@ -9,12 +9,17 @@ import com.lovetropics.minigames.common.core.game.behavior.action.GameActionList
 import com.lovetropics.minigames.common.core.game.behavior.action.GameActionParameter;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
+import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.lovetropics.minigames.common.core.game.behavior.instances.statistics.TriggerAfterConfig;
+import com.lovetropics.minigames.common.core.game.client_state.GameClientState;
+import com.lovetropics.minigames.common.core.game.client_state.GameClientStateTypes;
+import com.lovetropics.minigames.common.core.game.state.BeaconState;
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.Util;
+import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.valueproviders.IntProvider;
@@ -31,12 +36,13 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
 
-public record ItemDropperBehavior(TriggerAfterConfig after, Either<ItemStack, ResourceLocation> loot, String regionKey, boolean combined, IntProvider intervalTicks, Optional<GameActionList<Void>> announcement) implements IGameBehavior {
+public record ItemDropperBehavior(TriggerAfterConfig after, Either<ItemStack, ResourceLocation> loot, String regionKey, boolean combined, boolean beacon, IntProvider intervalTicks, Optional<GameActionList<Void>> announcement) implements IGameBehavior {
 	public static final MapCodec<ItemDropperBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			TriggerAfterConfig.MAP_CODEC.forGetter(ItemDropperBehavior::after),
 			Codec.either(MoreCodecs.ITEM_STACK, ResourceLocation.CODEC).fieldOf("loot").forGetter(ItemDropperBehavior::loot),
 			Codec.STRING.fieldOf("region").forGetter(ItemDropperBehavior::regionKey),
 			Codec.BOOL.optionalFieldOf("combined", false).forGetter(ItemDropperBehavior::combined),
+			Codec.BOOL.optionalFieldOf("beacon", false).forGetter(ItemDropperBehavior::beacon),
 			IntProvider.POSITIVE_CODEC.fieldOf("interval_ticks").forGetter(ItemDropperBehavior::intervalTicks),
 			GameActionList.VOID_CODEC.optionalFieldOf("announcement").forGetter(ItemDropperBehavior::announcement)
 	).apply(i, ItemDropperBehavior::new));
@@ -58,6 +64,8 @@ public record ItemDropperBehavior(TriggerAfterConfig after, Either<ItemStack, Re
 			droppers = regions.stream().map(box -> new Dropper(List.of(box.center()), lootProvider)).toList();
 		}
 
+		final BeaconState beacons = this.beacon ? game.getState().get(BeaconState.KEY) : null;
+
 		after.awaitThen(game, events, () -> {
 			for (final Dropper dropper : droppers) {
 				dropper.resetDelay(game);
@@ -65,10 +73,14 @@ public record ItemDropperBehavior(TriggerAfterConfig after, Either<ItemStack, Re
 
 			events.listen(GamePhaseEvents.TICK, () -> {
 				for (final Dropper dropper : droppers) {
-					dropper.tick(game);
+					dropper.tick(game, beacons);
 				}
 			});
 		});
+
+		if (beacons != null) {
+			events.listen(GamePlayerEvents.REMOVE, player -> GameClientState.removeFromPlayer(GameClientStateTypes.BEACON.get(), player));
+		}
 	}
 
 	private Supplier<List<ItemStack>> createLootProvider(final IGamePhase game) {
@@ -89,32 +101,58 @@ public record ItemDropperBehavior(TriggerAfterConfig after, Either<ItemStack, Re
 
 		@Nullable
 		private ItemEntity lastDroppedItem;
+		@Nullable
+		private BlockPos beaconPos;
 
 		private Dropper(final List<Vec3> positions, final Supplier<List<ItemStack>> lootProvider) {
 			this.positions = positions;
 			this.lootProvider = lootProvider;
 		}
 
-		public void tick(final IGamePhase game) {
-			if (lastDroppedItem != null && lastDroppedItem.isAlive()) {
+		public void tick(final IGamePhase game, @Nullable final BeaconState beacons) {
+			checkDroppedItem(game, beacons);
+			if (lastDroppedItem != null) {
 				return;
 			}
 
 			if (dropInTicks == 0) {
+				final Vec3 position = Util.getRandom(positions, game.getRandom());
 				resetDelay(game);
-				Util.getRandomSafe(lootProvider.get(), game.getRandom()).ifPresent(item -> spawnItem(game, item));
+				Util.getRandomSafe(lootProvider.get(), game.getRandom()).ifPresent(item -> spawnItem(game, item, position));
+				if (beacons != null) {
+					addBeacon(game, beacons, position);
+				}
 			} else {
 				dropInTicks--;
 			}
+		}
+
+		private void checkDroppedItem(final IGamePhase game, @Nullable final BeaconState beacons) {
+			if (lastDroppedItem == null || lastDroppedItem.isAlive()) {
+				return;
+			}
+			if (beacons != null && beaconPos != null) {
+				removeBeacon(game, beacons);
+			}
+			lastDroppedItem = null;
+		}
+
+		private void addBeacon(final IGamePhase game, final BeaconState beacons, final Vec3 position) {
+			beaconPos = BlockPos.containing(position);
+			beacons.add(beaconPos);
+			beacons.sendTo(game.getAllPlayers());
+		}
+
+		private void removeBeacon(final IGamePhase game, final BeaconState beacons) {
+			beacons.remove(beaconPos);
+			beacons.sendTo(game.getAllPlayers());
 		}
 
 		private void resetDelay(final IGamePhase game) {
 			dropInTicks = intervalTicks.sample(game.getRandom());
 		}
 
-		private void spawnItem(final IGamePhase game, final ItemStack item) {
-			final Vec3 position = Util.getRandom(positions, game.getRandom());
-
+		private void spawnItem(final IGamePhase game, final ItemStack item, final Vec3 position) {
 			final ServerLevel level = game.getLevel();
 			final ItemEntity itemEntity = new ItemEntity(level, position.x, position.y, position.z, item, 0.0, 0.1, 0.0);
 			level.addFreshEntity(itemEntity);
