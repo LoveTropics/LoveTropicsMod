@@ -71,7 +71,7 @@ public class Qottott {
 			AttributeModifier.Operation.ADDITION
 	)).lang("Knockback Resistance Power-Up").register();
 	public static final RegistryEntry<MobEffect> SPEED_POWER_UP = REGISTRATE.object("speed_power_up").mobEffect(() -> new CustomMobEffect(MobEffectCategory.BENEFICIAL).addAttributeModifier(
-			Attributes.KNOCKBACK_RESISTANCE,
+			Attributes.MOVEMENT_SPEED,
 			"c88be5fa-eae9-4c1f-bcf4-79f6c44bfb44",
 			0.05,
 			AttributeModifier.Operation.ADDITION
