@@ -28,6 +28,10 @@ public record DonationPackageData(
 			Codec.DOUBLE.optionalFieldOf("donation_amount").forGetter(DonationPackageData::donationAmount)
 	).apply(i, DonationPackageData::new));
 
+	public DonationPackageData apply(final PackageCostModifierBehavior.State costModifier) {
+		return new DonationPackageData(id, packageType, category, playerSelect, name, description, donationAmount.map(costModifier::apply));
+	}
+
 	public enum PackageType implements StringRepresentable {
 		CARE_PACKAGE("care_package", "Care Package"),
 		SABOTAGE_PACKAGE("sabotage_package", "Sabotage Package"),

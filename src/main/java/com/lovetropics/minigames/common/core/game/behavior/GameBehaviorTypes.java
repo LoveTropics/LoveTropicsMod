@@ -66,6 +66,7 @@ import com.lovetropics.minigames.common.core.game.behavior.instances.donation.Bl
 import com.lovetropics.minigames.common.core.game.behavior.instances.donation.DonationPackageBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.donation.DonationThresholdBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.donation.GivePlayerHeadPackageBehavior;
+import com.lovetropics.minigames.common.core.game.behavior.instances.donation.PackageCostModifierBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.statistics.BindObjectiveToStatisticBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.statistics.BlocksBrokenTrackerBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.statistics.CampingTrackerBehavior;
@@ -239,6 +240,7 @@ public class GameBehaviorTypes {
 	public static final GameBehaviorEntry<AddAttributeModifierAction> ADD_ATTRIBUTE_MODIFIER = register("add_attribute_modifier", AddAttributeModifierAction.CODEC);
 	public static final GameBehaviorEntry<ClearAttributeModifierAction> CLEAR_ATTRIBUTE_MODIFIER = register("clear_attribute_modifier", ClearAttributeModifierAction.CODEC);
 	public static final GameBehaviorEntry<BlockPackagesDuringPhaseBehavior> BLOCK_PACKAGES_DURING_PHASE = register("block_packages_during_phase", BlockPackagesDuringPhaseBehavior.CODEC);
+	public static final GameBehaviorEntry<PackageCostModifierBehavior> PACKAGE_COST_MODIFIER = register("package_cost_modifier", PackageCostModifierBehavior.CODEC);
 	public static final GameBehaviorEntry<WeatherEventAction> WEATHER_EVENT = register("weather_event", WeatherEventAction.CODEC);
 	public static final GameBehaviorEntry<CountdownAction<?>> COUNTDOWN_ACTION = register("countdown_action", CountdownAction.CODEC);
 	public static final GameBehaviorEntry<TargetPlayerAction> TARGET_PLAYER = register("target_player", TargetPlayerAction.CODEC);
