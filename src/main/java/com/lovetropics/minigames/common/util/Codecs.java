@@ -11,6 +11,7 @@ import com.mojang.serialization.MapLike;
 import com.mojang.serialization.RecordBuilder;
 import com.mojang.serialization.codecs.KeyDispatchCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.advancements.critereon.EntityPredicate;
 import net.minecraft.advancements.critereon.ItemPredicate;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.RegistryCodecs;
@@ -33,6 +34,13 @@ public class Codecs {
 			return DataResult.error(e::getMessage);
 		}
 	}, ItemPredicate::serializeToJson);
+	public static final Codec<EntityPredicate> ENTITY_PREDICATE = ExtraCodecs.JSON.comapFlatMap(json -> {
+		try {
+			return DataResult.success(EntityPredicate.fromJson(json));
+		} catch (final JsonSyntaxException e) {
+			return DataResult.error(e::getMessage);
+		}
+	}, EntityPredicate::serializeToJson);
 
 	public static final Codec<AttributeModifier.Operation> ATTRIBUTE_MODIFIER_OPERATION = MoreCodecs.stringVariants(AttributeModifier.Operation.values(), operation -> switch (operation) {
 		case ADDITION -> "addition";
