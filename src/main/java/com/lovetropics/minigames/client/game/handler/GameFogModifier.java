@@ -6,12 +6,13 @@ import com.lovetropics.minigames.common.core.game.client_state.instance.FogClien
 import com.mojang.blaze3d.shaders.FogShape;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.ViewportEvent;
+import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
 @Mod.EventBusSubscriber(Dist.CLIENT)
 public class GameFogModifier {
-    @SubscribeEvent
+    @SubscribeEvent(priority = EventPriority.HIGH)
     static void onModifyFog(final ViewportEvent.ComputeFogColor event) {
         FogClientState state = ClientGameStateManager.getOrNull(GameClientStateTypes.FOG);
         if (state == null) {
@@ -23,7 +24,7 @@ public class GameFogModifier {
         event.setBlue(state.blue());
     }
 
-    @SubscribeEvent
+    @SubscribeEvent(priority = EventPriority.HIGH)
     static void onRenderFog(final ViewportEvent.RenderFog event) {
         FogClientState state = ClientGameStateManager.getOrNull(GameClientStateTypes.FOG);
         if (state == null) {
