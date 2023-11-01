@@ -5,7 +5,6 @@ import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameActionEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
-import com.mojang.datafixers.util.Either;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
@@ -19,7 +18,6 @@ import net.minecraft.util.ExtraCodecs;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class GameActionList<T> {
@@ -87,6 +85,9 @@ public class GameActionList<T> {
     }
 
     public void register(IGamePhase game, EventRegistrar events) {
+		if (isEmpty()) {
+			return;
+		}
         if (registered) {
             throw new IllegalStateException("GameActionList has already been registered");
         }
@@ -110,10 +111,16 @@ public class GameActionList<T> {
     }
 
     public boolean apply(IGamePhase phase, GameActionContext context, Iterable<T> sources) {
-        if (!registered) {
-            throw new IllegalStateException("Cannot dispatch action, GameActionList has not been registered");
-        }
-        return listeners.invoker(GameActionEvents.APPLY).apply(context) | target.apply(phase, listeners, context, sources);
+		if (isEmpty()) {
+			return false;
+		}
+		if (!registered) {
+			throw new IllegalStateException("Cannot dispatch action, GameActionList has not been registered");
+		}
+		return listeners.invoker(GameActionEvents.APPLY).apply(context) | target.apply(phase, listeners, context, sources);
     }
 
+	private boolean isEmpty() {
+		return this == EMPTY;
+	}
 }
