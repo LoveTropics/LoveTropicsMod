@@ -27,7 +27,8 @@ public final class BbGroundNavigator extends GroundPathNavigation {
 		@Override
 		public BlockPathTypes getBlockPathType(BlockGetter level, int x, int y, int z, Mob mob) {
 			// Don't allow climbing above the bounds of the plant bounds
-			if (y > BbGroundNavigator.this.mob.getPlot().plantBounds.max().getY()) {
+			int plotTopY = BbGroundNavigator.this.mob.getPlot().plantBounds.max().getY();
+			if (y > plotTopY && mob.getY() <= plotTopY) {
 				return BlockPathTypes.BLOCKED;
 			}
 
