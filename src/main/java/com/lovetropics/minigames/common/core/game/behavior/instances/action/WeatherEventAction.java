@@ -50,6 +50,7 @@ public final class WeatherEventAction implements IGameBehavior {
 			case HEAVY_RAIN -> WeatherEvent.heavyRain(time);
 			case ACID_RAIN -> WeatherEvent.acidRain(time);
 			case HEATWAVE -> WeatherEvent.heatwave(time);
+			case HAIL -> WeatherEvent.hail(time);
 			default -> null;
 		};
 	}
