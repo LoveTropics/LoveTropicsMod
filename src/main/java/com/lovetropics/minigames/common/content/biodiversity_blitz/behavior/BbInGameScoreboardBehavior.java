@@ -1,11 +1,13 @@
 package com.lovetropics.minigames.common.content.biodiversity_blitz.behavior;
 
+import com.lovetropics.minigames.common.content.biodiversity_blitz.BiodiversityBlitz;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.event.BbEvents;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.client_state.ClientBbScoreboardState;
 import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
+import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.lovetropics.minigames.common.core.game.client_state.GameClientState;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
@@ -40,5 +42,7 @@ public record BbInGameScoreboardBehavior(Vec3 start, Vec3 end, boolean side) imp
                 GameClientState.sendToPlayer(new ClientBbScoreboardState(start, end, side, components), player);
             }
         });
+
+        events.listen(GamePlayerEvents.REMOVE, player -> GameClientState.removeFromPlayer(BiodiversityBlitz.SCOREBOARD.get(), player));
     }
 }
