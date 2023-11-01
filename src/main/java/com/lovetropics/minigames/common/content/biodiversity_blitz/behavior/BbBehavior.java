@@ -40,6 +40,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -48,7 +49,6 @@ import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.item.HoeItem;
 import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Blocks;
@@ -187,7 +187,7 @@ public final class BbBehavior implements IGameBehavior {
 		Plot plot = this.plots.getPlotFor(player);
 		BlockPos pos = blockRayTraceResult.getBlockPos();
 
-		if (plot != null && plot.floorBounds.contains(pos)) {
+		if (plot != null && plot.bounds.contains(pos)) {
 			return this.onUseBlockInPlot(player, world, blockPos, hand, plot, pos);
 		} else {
 			return InteractionResult.FAIL;
@@ -197,8 +197,8 @@ public final class BbBehavior implements IGameBehavior {
 	private InteractionResult onUseBlockInPlot(ServerPlayer player, ServerLevel world, BlockPos blockPos, InteractionHand hand, Plot plot, BlockPos pos) {
 		BlockState state = world.getBlockState(pos);
 
-		// Check if farmland is being used and the user has a hoe TODO: can we make it not hardcoded?
-		if (state.getBlock() == Blocks.FARMLAND && player.getItemInHand(hand).getItem() instanceof HoeItem) {
+		// TODO: can we make it not hardcoded?
+		if (plot.floorBounds.contains(pos) && state.getBlock() == Blocks.FARMLAND && player.getItemInHand(hand).is(ItemTags.HOES)) {
 			// If there is no plant above we can change to grass safely
 			if (!plot.plants.hasPlantAt(pos.above())) {
 				world.setBlockAndUpdate(pos, Blocks.GRASS_BLOCK.defaultBlockState());
