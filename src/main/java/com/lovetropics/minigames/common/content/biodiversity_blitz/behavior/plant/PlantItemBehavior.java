@@ -67,7 +67,7 @@ public final class PlantItemBehavior implements IGameBehavior {
 		}
 
 		Plot plot = plots.getPlotFor(player);
-		if (plot != null && plot.plantBounds.contains(pos)) {
+		if (plot != null && plot.canPlantAt(pos)) {
 			if (plot.plants.getPlantAt(pos) != null) {
 				return InteractionResult.FAIL;
 			}

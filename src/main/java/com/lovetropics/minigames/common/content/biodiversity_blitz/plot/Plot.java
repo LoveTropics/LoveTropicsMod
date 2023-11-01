@@ -97,6 +97,14 @@ public final class Plot {
 		};
 	}
 
+	public boolean canPlantAt(BlockPos pos) {
+		return plantBounds.contains(pos);
+	}
+
+	public boolean isFloorAt(BlockPos pos) {
+		return floorBounds.contains(pos);
+	}
+
 	public record RegionKeys(RegionPattern plot, RegionPattern spawn, RegionPattern shop, RegionPattern plantShop, RegionPattern mobShop, List<RegionPattern> mobSpawns) {
 		public static final Codec<RegionKeys> CODEC = RecordCodecBuilder.create(i -> i.group(
 				RegionPattern.CODEC.fieldOf("plot").forGetter(RegionKeys::plot),

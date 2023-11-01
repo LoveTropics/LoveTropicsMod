@@ -134,7 +134,7 @@ public final class BbBehavior implements IGameBehavior {
 		BlockState state = world.getBlockState(pos);
 
 		// TODO: can we make it not hardcoded?
-		if (plot.floorBounds.contains(pos) && state.getBlock() == Blocks.FARMLAND && player.getItemInHand(hand).is(ItemTags.HOES)) {
+		if (plot.isFloorAt(pos) && state.getBlock() == Blocks.FARMLAND && player.getItemInHand(hand).is(ItemTags.HOES)) {
 			// If there is no plant above we can change to grass safely
 			if (!plot.plants.hasPlantAt(pos.above())) {
 				world.setBlockAndUpdate(pos, Blocks.GRASS_BLOCK.defaultBlockState());
@@ -154,7 +154,7 @@ public final class BbBehavior implements IGameBehavior {
 		}
 
 		Plot plot = this.plots.getPlotFor(entity);
-		if (plot != null && plot.floorBounds.contains(pos)) {
+		if (plot != null && plot.isFloorAt(pos)) {
 			if (!plot.plants.hasPlantAt(pos.above())) {
 				return InteractionResult.PASS;
 			}
@@ -174,7 +174,7 @@ public final class BbBehavior implements IGameBehavior {
 		RandomSource random = level.getRandom();
 		Plot plot = plots.getRandomPlot(random);
 		if (plot != null) {
-			spawn.teleportTo(level, plot.plantBounds.sample(random), plot.forward);
+			spawn.teleportTo(level, plot.plantBounds.sample(random).above(5), plot.forward);
 		}
 
 		spawn.setGameMode(GameType.SPECTATOR);
@@ -243,7 +243,7 @@ public final class BbBehavior implements IGameBehavior {
 			return InteractionResult.PASS;
 		}
 
-		if (plot.plantBounds.contains(pos)) {
+		if (plot.canPlantAt(pos)) {
 			this.sendActionRejection(player, BiodiversityBlitzTexts.CAN_ONLY_PLACE_PLANTS);
 		}
 

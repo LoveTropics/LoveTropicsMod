@@ -143,7 +143,7 @@ public class BbTutorialAction implements IGameBehavior {
         // First wall of grass
         for (int i = -1; i < 13; i++) {
             BlockPos pos = sample.relative(playerPlot.forward, 8).relative(cw, i - 5);
-            if (playerPlot.plantBounds.contains(pos)) {
+            if (playerPlot.canPlantAt(pos)) {
                 actions.put(ticks, new SetPlant(game, target, playerPlot, pos, this.grass, SoundEvents.GRASS_STEP));
                 ticks += 5;
             }
@@ -152,7 +152,7 @@ public class BbTutorialAction implements IGameBehavior {
         // Second wall of grass
         for (int i = -1; i < 13; i++) {
             BlockPos pos = sample.relative(playerPlot.forward, 9).relative(cw, i - 5);
-            if (playerPlot.plantBounds.contains(pos)) {
+            if (playerPlot.canPlantAt(pos)) {
                 actions.put(ticks, new SetPlant(game, target, playerPlot, pos, this.grass, SoundEvents.GRASS_STEP));
                 ticks += 5;
             }
@@ -161,7 +161,7 @@ public class BbTutorialAction implements IGameBehavior {
         // Farmland row
         for (int i = -1; i < 13; i++) {
             BlockPos pos = sample.relative(playerPlot.forward, -5).relative(cw, i - 5);
-            if (playerPlot.plantBounds.contains(pos) && game.getWorld().getBlockState(pos.below()).getBlock() == Blocks.GRASS_BLOCK) {
+            if (playerPlot.canPlantAt(pos) && game.getWorld().getBlockState(pos.below()).getBlock() == Blocks.GRASS_BLOCK) {
                 actions.put(ticks, new SetFarmland(target, pos.below()));
                 ticks += 5;
             }
@@ -170,7 +170,7 @@ public class BbTutorialAction implements IGameBehavior {
         // Farmland row
         for (int i = -1; i < 13; i++) {
             BlockPos pos = sample.relative(playerPlot.forward, -4).relative(cw, i - 5);
-            if (playerPlot.plantBounds.contains(pos) && game.getWorld().getBlockState(pos.below()).getBlock() == Blocks.GRASS_BLOCK) {
+            if (playerPlot.canPlantAt(pos) && game.getWorld().getBlockState(pos.below()).getBlock() == Blocks.GRASS_BLOCK) {
                 actions.put(ticks, new SetFarmland(target, pos.below()));
                 ticks += 5;
             }
@@ -181,7 +181,7 @@ public class BbTutorialAction implements IGameBehavior {
         for (int i = -1; i < 13; i++) {
             BlockPos pos = sample.relative(playerPlot.forward, -5).relative(cw, i - 5);
 
-            if (!playerPlot.plantBounds.contains(pos) || isNotGrass(target, pos)) {
+            if (!playerPlot.canPlantAt(pos) || isNotGrass(target, pos)) {
                 continue;
             }
 
@@ -192,7 +192,7 @@ public class BbTutorialAction implements IGameBehavior {
         for (int i = -1; i < 13; i++) {
             BlockPos pos = sample.relative(playerPlot.forward, -4).relative(cw, i - 5);
 
-            if (!playerPlot.plantBounds.contains(pos) || isNotGrass(target, pos)) {
+            if (!playerPlot.canPlantAt(pos) || isNotGrass(target, pos)) {
                 continue;
             }
 
@@ -209,7 +209,7 @@ public class BbTutorialAction implements IGameBehavior {
         for (int i = -1; i < 13; i++) {
             BlockPos pos = sample.relative(playerPlot.forward, -4).relative(cw, i - 5);
 
-            if (!playerPlot.plantBounds.contains(pos) || isNotGrass(target, pos)) {
+            if (!playerPlot.canPlantAt(pos) || isNotGrass(target, pos)) {
                 continue;
             }
 
@@ -220,7 +220,7 @@ public class BbTutorialAction implements IGameBehavior {
         for (int i = -1; i < 13; i++) {
             BlockPos pos = sample.relative(playerPlot.forward, -5).relative(cw, i - 5);
 
-            if (!playerPlot.plantBounds.contains(pos) || isNotGrass(target, pos)) {
+            if (!playerPlot.canPlantAt(pos) || isNotGrass(target, pos)) {
                 continue;
             }
 
@@ -232,7 +232,7 @@ public class BbTutorialAction implements IGameBehavior {
         for (int i = -1; i < 13; i++) {
             BlockPos pos = sample.relative(playerPlot.forward, -4).relative(cw, i - 5);
             // how does this work??? there's farmland here!! but removing this breaks it?!?!
-            if (playerPlot.plantBounds.contains(pos) && game.getWorld().getBlockState(pos.below()).getBlock() == Blocks.GRASS_BLOCK) {
+            if (playerPlot.canPlantAt(pos) && game.getWorld().getBlockState(pos.below()).getBlock() == Blocks.GRASS_BLOCK) {
                 actions.put(ticks, new SetGrass(target, pos.below()));
                 ticks += 3;
             }
@@ -241,7 +241,7 @@ public class BbTutorialAction implements IGameBehavior {
         // Farmland row
         for (int i = -1; i < 13; i++) {
             BlockPos pos = sample.relative(playerPlot.forward, -5).relative(cw, i - 5);
-            if (playerPlot.plantBounds.contains(pos) && game.getWorld().getBlockState(pos.below()).getBlock() == Blocks.GRASS_BLOCK) {
+            if (playerPlot.canPlantAt(pos) && game.getWorld().getBlockState(pos.below()).getBlock() == Blocks.GRASS_BLOCK) {
                 actions.put(ticks, new SetGrass(target, pos.below()));
                 ticks += 3;
             }
@@ -250,7 +250,7 @@ public class BbTutorialAction implements IGameBehavior {
         // Second wall of grass
         for (int i = -1; i < 13; i++) {
             BlockPos pos = sample.relative(playerPlot.forward, 9).relative(cw, i - 5);
-            if (playerPlot.plantBounds.contains(pos)) {
+            if (playerPlot.canPlantAt(pos)) {
                 actions.put(ticks, new BreakPlant(game, target, playerPlot, pos, this.grass, SoundEvents.GRASS_STEP));
                 ticks += 3;
             }
@@ -259,7 +259,7 @@ public class BbTutorialAction implements IGameBehavior {
         // First wall of grass
         for (int i = -1; i < 13; i++) {
             BlockPos pos = sample.relative(playerPlot.forward, 8).relative(cw, i - 5);
-            if (playerPlot.plantBounds.contains(pos)) {
+            if (playerPlot.canPlantAt(pos)) {
                 actions.put(ticks, new BreakPlant(game, target, playerPlot, pos, this.grass, SoundEvents.GRASS_STEP));
                 ticks += 3;
             }
