@@ -224,6 +224,12 @@ public final class MinigameTexts {
 		KEYS.add("donation.slowness_30_package", "Slowness (30 seconds)");
 		KEYS.add("donation.slowness_30_package.description", "Give a chosen player Slowness for 30 seconds");
 		KEYS.add("donation.slowness_30_package.toast", "%sender% sent you a SLOWNESS PACKAGE for 30 seconds!");
+		KEYS.add("donation.leaky_pockets", "Chosen Leaky Pockets (15 seconds)");
+		KEYS.add("donation.leaky_pockets.description", "Give a chosen player Leaky Pockets for 15 seconds, and enjoy the chaos as their Coins randomly drop for others to grab!");
+		KEYS.add("donation.leaky_pockets.toast", "%sender% has given you LEAKY POCKETS for 15 seconds!");
+		KEYS.add("donation.global_leaky_pockets", "Global Leaky Pockets (30 seconds)");
+		KEYS.add("donation.global_leaky_pockets.description", "Give everyone Leaky Pockets for 30 seconds, and enjoy the chaos of everyone scrambling to pick up the trails of Coins they leave behind themselves.");
+		KEYS.add("donation.global_leaky_pockets.toast", "%sender% has given everyone LEAKY POCKETS for 30 seconds!");
 
 		KEYS.add("event.lightning_storm_event", "Lightning Storm");
 		KEYS.add("event.lightning_storm_event.description", "CRACK. That's the sound of the sky as you smite your enemies. Which ones? All of them.");

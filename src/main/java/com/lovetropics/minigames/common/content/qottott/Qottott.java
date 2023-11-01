@@ -7,6 +7,7 @@ import com.lovetropics.minigames.common.content.qottott.behavior.GivePointsActio
 import com.lovetropics.minigames.common.content.qottott.behavior.ItemDropperBehavior;
 import com.lovetropics.minigames.common.content.qottott.behavior.ItemPickupPriorityBehavior;
 import com.lovetropics.minigames.common.content.qottott.behavior.KitSelectionBehavior;
+import com.lovetropics.minigames.common.content.qottott.behavior.LeakyPocketsAction;
 import com.lovetropics.minigames.common.content.qottott.behavior.LobbyWithPortalBehavior;
 import com.lovetropics.minigames.common.content.qottott.behavior.PowerUpIndicatorBehavior;
 import com.lovetropics.minigames.common.util.Util;
@@ -36,8 +37,9 @@ public class Qottott {
 	public static final GameBehaviorEntry<LobbyWithPortalBehavior> LOBBY_WITH_PORTAL = REGISTRATE.object("lobby_with_portal").behavior(LobbyWithPortalBehavior.CODEC).register();
 	public static final GameBehaviorEntry<KitSelectionBehavior> KIT_SELECTION = REGISTRATE.object("kit_selection").behavior(KitSelectionBehavior.CODEC).register();
 	public static final GameBehaviorEntry<ItemPickupPriorityBehavior> PICKUP_PRIORITY_BEHAVIOR = REGISTRATE.object("pickup_priority").behavior(ItemPickupPriorityBehavior.CODEC).register();
-	public static final GameBehaviorEntry<CoinDropAttributeBehavior> COIN_DROP_BEHAVIOR = REGISTRATE.object("coin_drop_attribute").behavior(CoinDropAttributeBehavior.CODEC).register();
+	public static final GameBehaviorEntry<CoinDropAttributeBehavior> COIN_DROP_ATTRIBUTE_BEHAVIOR = REGISTRATE.object("coin_drop_attribute").behavior(CoinDropAttributeBehavior.CODEC).register();
 	public static final GameBehaviorEntry<PowerUpIndicatorBehavior> POWER_UP_INDICATOR = REGISTRATE.object("power_up_indicator").behavior(PowerUpIndicatorBehavior.CODEC).register();
+	public static final GameBehaviorEntry<LeakyPocketsAction> LEAKY_POCKETS = REGISTRATE.object("leaky_pockets").behavior(LeakyPocketsAction.CODEC).register();
 
 	private static final Component COIN_MULTIPLIER_NAME = REGISTRATE.addLang("attribute", new ResourceLocation(Constants.MODID, "coin_multiplier"), "Coin Multiplier");
 	public static final RegistryEntry<Attribute> COIN_MULTIPLIER = REGISTRATE.simple("coin_multiplier", Registries.ATTRIBUTE, () ->

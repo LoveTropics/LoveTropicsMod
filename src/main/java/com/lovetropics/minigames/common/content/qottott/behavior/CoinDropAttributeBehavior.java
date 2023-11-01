@@ -38,7 +38,7 @@ public record CoinDropAttributeBehavior(ItemStack item, StatisticKey<Integer> st
 					final int amount = Mth.floor(statistics.getOr(statistic, 0) * coinDrops);
 					if (amount > 0) {
 						statistics.incrementInt(statistic, -amount);
-						spawnItems(game, player, amount);
+						spawnItems(game, player, amount, item);
 					}
 				}
 			}
@@ -46,7 +46,7 @@ public record CoinDropAttributeBehavior(ItemStack item, StatisticKey<Integer> st
 		});
 	}
 
-	private void spawnItems(final IGamePhase game, final Player player, final int amount) {
+	public static void spawnItems(final IGamePhase game, final Player player, final int amount, final ItemStack item) {
 		final ServerLevel level = game.getLevel();
 		final RandomSource random = level.random;
 		for (int i = 0; i < amount; i++) {
@@ -58,6 +58,6 @@ public record CoinDropAttributeBehavior(ItemStack item, StatisticKey<Integer> st
 
 	@Override
 	public Supplier<? extends GameBehaviorType<?>> behaviorType() {
-		return Qottott.COIN_DROP_BEHAVIOR;
+		return Qottott.COIN_DROP_ATTRIBUTE_BEHAVIOR;
 	}
 }
