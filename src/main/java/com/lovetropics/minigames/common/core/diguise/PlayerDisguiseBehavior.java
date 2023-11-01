@@ -12,7 +12,6 @@ import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeMap;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.event.entity.EntityEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -36,9 +35,10 @@ public final class PlayerDisguiseBehavior {
 		float scale = disguise.type().scale();
 
 		Pose pose = event.getPose();
-		EntityDimensions dimensions = disguise.type().changesSize() ? entity.getDimensions(pose) : event.getEntity().getDimensions(pose);
-		float eyeHeight = entity.getEyeHeightAccess(pose, dimensions);
-		event.setNewSize(dimensions.scale(scale));
+		EntityDimensions disguiseDimensions = entity.getDimensions(pose);
+		EntityDimensions actualDimensions = disguise.type().changesSize() ? disguiseDimensions : event.getEntity().getDimensions(pose);
+		float eyeHeight = entity.getEyeHeightAccess(pose, disguiseDimensions);
+		event.setNewSize(actualDimensions.scale(scale));
 		event.setNewEyeHeight(eyeHeight * scale);
 	}
 
