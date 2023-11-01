@@ -20,7 +20,7 @@ import java.util.Optional;
 public record DisguiseType(@Nullable EntityConfig entity, float scale, boolean changesSize) {
 	private static final Logger LOGGER = LogUtils.getLogger();
 
-	public static final DisguiseType DEFAULT = new DisguiseType((EntityConfig) null, 1.0f, false);
+	public static final DisguiseType DEFAULT = new DisguiseType((EntityConfig) null, 1.0f, true);
 
 	public static final MapCodec<DisguiseType> MAP_CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			EntityConfig.CODEC.optionalFieldOf("entity").forGetter(c -> Optional.ofNullable(c.entity)),
