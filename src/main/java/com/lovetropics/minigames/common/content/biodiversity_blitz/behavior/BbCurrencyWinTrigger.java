@@ -11,16 +11,16 @@ import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameLogicEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.lovetropics.minigames.common.core.game.client_state.GameClientState;
-import com.lovetropics.minigames.common.core.game.state.statistics.PlayerKey;
 import com.lovetropics.minigames.common.core.game.state.statistics.StatisticKey;
+import com.lovetropics.minigames.common.core.game.state.team.GameTeam;
+import com.lovetropics.minigames.common.core.game.state.team.GameTeamKey;
+import com.lovetropics.minigames.common.core.game.state.team.TeamState;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.server.level.ServerPlayer;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 
@@ -31,7 +31,7 @@ public final class BbCurrencyWinTrigger implements IGameBehavior {
 
 	private final int thresholdCurrency;
 
-	private final List<ServerPlayer> winnerCandidates = new ArrayList<>();
+	private final List<GameTeamKey> winnerCandidates = new ArrayList<>();
 
 	private boolean gameOver;
 
@@ -43,49 +43,50 @@ public final class BbCurrencyWinTrigger implements IGameBehavior {
 	public void register(IGamePhase game, EventRegistrar events) {
 		PlotsState plots = game.getState().getOrThrow(PlotsState.KEY);
 		CurrencyManager currency = game.getState().getOrThrow(CurrencyManager.KEY);
+		TeamState teams = game.getInstanceState().getOrThrow(TeamState.KEY);
 
 		CurrencyTargetState target = new CurrencyTargetState(this.thresholdCurrency);
 		GameClientState.applyGlobally(target, events);
 
-		events.listen(BbEvents.CURRENCY_ACCUMULATE, (player, value, lastValue) -> {
+		events.listen(BbEvents.CURRENCY_ACCUMULATE, (team, value, lastValue) -> {
 			if (value >= this.thresholdCurrency) {
-				this.winnerCandidates.add(player);
+				this.winnerCandidates.add(team);
 			}
 		});
 
 		events.listen(GamePhaseEvents.TICK, () -> {
-			List<ServerPlayer> players = this.winnerCandidates;
-			if (!gameOver && !players.isEmpty()) {
-				ServerPlayer player = this.selectWinningPlayer(plots, currency, players);
-				if (player != null) {
-					// Teleport all players to winning player's plot
-					for (ServerPlayer otherPlayer : game.getAllPlayers()) {
-						if (otherPlayer != player) {
-							otherPlayer.teleportTo(player.getX(), player.getY() + 0.5, player.getZ());
-						}
-					}
-
-					this.triggerWin(game, player);
-				}
+			if (!gameOver && !winnerCandidates.isEmpty()) {
+				GameTeamKey teamKey = selectWinningTeam(teams, plots, currency, winnerCandidates);
+				triggerWin(game, teamKey, teams.getTeamByKey(teamKey));
 			}
 		});
 	}
 
-	@Nullable
-	private ServerPlayer selectWinningPlayer(PlotsState plots, CurrencyManager currency, Collection<ServerPlayer> players) {
-		Comparator<ServerPlayer> comparator = Comparator.comparingInt(currency::get)
-				.thenComparingInt(player -> {
-					Plot plot = plots.getPlotFor(player);
+	private GameTeamKey selectWinningTeam(TeamState teams, PlotsState plots, CurrencyManager currency, List<GameTeamKey> candidates) {
+		if (candidates.size() == 1) {
+			return candidates.get(0);
+		}
+
+		Comparator<GameTeamKey> comparator = Comparator.<GameTeamKey>comparingInt(team -> getTeamCurrencyItems(teams, currency, team))
+				.thenComparingInt(team -> {
+					Plot plot = plots.getPlotFor(team);
 					return plot != null ? plot.nextCurrencyIncrement : 0;
 				});
 
-		return players.stream().max(comparator).orElse(null);
+		return candidates.stream().max(comparator).orElseThrow();
 	}
 
-	private void triggerWin(IGamePhase game, ServerPlayer player) {
-		game.getStatistics().global().set(StatisticKey.WINNING_PLAYER, PlayerKey.from(player));
+	private static int getTeamCurrencyItems(TeamState teams, CurrencyManager currency, GameTeamKey team) {
+		return teams.getPlayersForTeam(team).stream()
+				.mapToInt(currency::get)
+				.sum();
+	}
 
-		game.invoker(GameLogicEvents.WIN_TRIGGERED).onWinTriggered(player.getDisplayName());
+	private void triggerWin(IGamePhase game, GameTeamKey teamKey, @Nullable GameTeam team) {
+		game.getStatistics().global().set(StatisticKey.WINNING_TEAM, teamKey);
+		if (team != null) {
+			game.invoker(GameLogicEvents.WIN_TRIGGERED).onWinTriggered(team.config().name());
+		}
 		game.invoker(GameLogicEvents.GAME_OVER).onGameOver();
 
 		gameOver = true;

@@ -95,7 +95,7 @@ public final class BbCurrencyBehavior implements IGameBehavior {
 		GameClientState.applyGlobally(new CurrencyItemState(this.item.getDefaultInstance()), events);
 
 		events.listen(BbEvents.ASSIGN_PLOT, (player, plot) -> {
-			this.currency.set(player, this.initialCurrency, false);
+			this.currency.set(player, this.initialCurrency);
 		});
 
 		events.listen(GamePlayerEvents.THROW_ITEM, (player, item) -> {
@@ -123,26 +123,23 @@ public final class BbCurrencyBehavior implements IGameBehavior {
 			int nextCurrencyIncrement = this.computeNextCurrency(plot);
 			if (plot.nextCurrencyIncrement != nextCurrencyIncrement) {
 				plot.nextCurrencyIncrement = nextCurrencyIncrement;
-
-				for (ServerPlayer player : players) {
-					game.invoker(BbEvents.CURRENCY_INCREMENT_CHANGED).onCurrencyChanged(player, nextCurrencyIncrement, plot.nextCurrencyIncrement);
-				}
+				game.invoker(BbEvents.CURRENCY_INCREMENT_CHANGED).onCurrencyChanged(plot.team, nextCurrencyIncrement, plot.nextCurrencyIncrement);
 			}
 		}
 
-		for (ServerPlayer player : players) {
-			long intervalTicks = this.dropInterval * SharedConstants.TICKS_PER_SECOND;
-			if (ticks % intervalTicks == 0) {
-				this.giveCurrency(player, plot);
+		long intervalTicks = this.dropInterval * SharedConstants.TICKS_PER_SECOND;
+		if (ticks % intervalTicks == 0) {
+			int amount = plot.nextCurrencyIncrement;
+			currency.accumulate(plot.team, amount);
+			for (ServerPlayer player : players) {
+				giveCurrency(player, amount);
 			}
 		}
 	}
 
-	private void giveCurrency(ServerPlayer player, Plot plot) {
-		int count = currency.add(player, plot.nextCurrencyIncrement, true);
-
+	private void giveCurrency(ServerPlayer player, int amount) {
+		int count = currency.add(player, amount);
 		player.displayClientMessage(BiodiversityBlitzTexts.currencyAddition(count), true);
-
 		if (count > 0) {
 			player.playNotifySound(SoundEvents.ARROW_HIT_PLAYER, SoundSource.PLAYERS, 0.24F, 1.0F);
 		}
@@ -175,7 +172,7 @@ public final class BbCurrencyBehavior implements IGameBehavior {
 		int newCurrency = Mth.floor(oldCurrency * DEATH_DECREASE.getFloat(difficulty));
 
 		if (oldCurrency != newCurrency) {
-			currency.set(player, newCurrency, false);
+			currency.set(player, newCurrency);
 
 //			player.sendStatusMessage(BiodiversityBlitzTexts.deathDecrease(oldCurrency - newCurrency).mergeStyle(TextFormatting.RED), true);
 			player.connection.send(new ClientboundSetSubtitleTextPacket(BiodiversityBlitzTexts.deathDecrease(oldCurrency - newCurrency).withStyle(ChatFormatting.RED, ChatFormatting.ITALIC)));

@@ -7,6 +7,7 @@ import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.plant.Pl
 import com.lovetropics.minigames.common.core.game.behavior.event.GameEventType;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.lovetropics.minigames.common.core.game.player.PlayerSet;
+import com.lovetropics.minigames.common.core.game.state.team.GameTeamKey;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
@@ -80,15 +81,15 @@ public final class BbEvents {
 		}
 	});
 
-	public static final GameEventType<CurrencyChanged> CURRENCY_ACCUMULATE = GameEventType.create(CurrencyChanged.class, listeners -> (player, value, lastValue) -> {
-		for (CurrencyChanged listener : listeners) {
-			listener.onCurrencyChanged(player, value, lastValue);
+	public static final GameEventType<TeamCurrencyChanged> CURRENCY_ACCUMULATE = GameEventType.create(TeamCurrencyChanged.class, listeners -> (team, value, lastValue) -> {
+		for (TeamCurrencyChanged listener : listeners) {
+			listener.onCurrencyChanged(team, value, lastValue);
 		}
 	});
 
-	public static final GameEventType<CurrencyChanged> CURRENCY_INCREMENT_CHANGED = GameEventType.create(CurrencyChanged.class, listeners -> (player, value, lastValue) -> {
-		for (CurrencyChanged listener : listeners) {
-			listener.onCurrencyChanged(player, value, lastValue);
+	public static final GameEventType<TeamCurrencyChanged> CURRENCY_INCREMENT_CHANGED = GameEventType.create(TeamCurrencyChanged.class, listeners -> (team, value, lastValue) -> {
+		for (TeamCurrencyChanged listener : listeners) {
+			listener.onCurrencyChanged(team, value, lastValue);
 		}
 	});
 
@@ -147,6 +148,10 @@ public final class BbEvents {
 
 	public interface CurrencyChanged {
 		void onCurrencyChanged(ServerPlayer player, int value, int lastValue);
+	}
+
+	public interface TeamCurrencyChanged {
+		void onCurrencyChanged(GameTeamKey team, int value, int lastValue);
 	}
 
 	public interface ModifyWaveMobs {

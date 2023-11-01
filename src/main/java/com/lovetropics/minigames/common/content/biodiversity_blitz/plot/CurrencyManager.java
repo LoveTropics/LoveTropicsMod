@@ -5,6 +5,8 @@ import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.state.GameStateKey;
 import com.lovetropics.minigames.common.core.game.state.IGameState;
 import com.lovetropics.minigames.common.core.game.state.statistics.StatisticKey;
+import com.lovetropics.minigames.common.core.game.state.team.GameTeamKey;
+import com.lovetropics.minigames.common.core.game.state.team.TeamState;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.minecraft.server.level.ServerPlayer;
@@ -27,7 +29,7 @@ public final class CurrencyManager implements IGameState {
 	private final Predicate<ItemStack> itemPredicate;
 
 	private final Object2IntMap<UUID> trackedValues = new Object2IntOpenHashMap<>();
-	private final Object2IntOpenHashMap<UUID> accumulator = new Object2IntOpenHashMap<>();
+	private final Object2IntOpenHashMap<GameTeamKey> accumulator = new Object2IntOpenHashMap<>();
 
 	public CurrencyManager(IGamePhase game, Item item) {
 		this.game = game;
@@ -58,11 +60,11 @@ public final class CurrencyManager implements IGameState {
 		this.setTracked(player, value + amount);
 	}
 
-	public int set(ServerPlayer player, int value, boolean accumulate) {
+	public int set(ServerPlayer player, int value) {
 		int oldValue = this.get(player);
 		if (value > oldValue) {
 			int increment = value - oldValue;
-			return oldValue + add(player, increment, accumulate);
+			return oldValue + add(player, increment);
 		} else if (value < oldValue) {
 			int decrement = oldValue - value;
 			return oldValue - remove(player, decrement);
@@ -71,26 +73,23 @@ public final class CurrencyManager implements IGameState {
 		}
 	}
 
-	public int add(ServerPlayer player, int amount, boolean accumulate) {
+	public int add(ServerPlayer player, int amount) {
 		int added = this.addToInventory(player, amount);
 		this.incrementTracked(player, added);
-
-		// accumulate only when added by currency behavior!
-		if (accumulate) {
-			this.accumulateCurrency(player, added);
-		}
-
 		return added;
 	}
 
-	private void accumulateCurrency(ServerPlayer player, int added) {
-		int lastValue = this.accumulator.addTo(player.getUUID(), added);
-		int newValue = lastValue + added;
+	public void accumulate(GameTeamKey team, int amount) {
+		int lastValue = this.accumulator.addTo(team, amount);
+		int newValue = lastValue + amount;
 
-		this.game.getStatistics().forPlayer(player)
-				.set(StatisticKey.POINTS, newValue);
+		TeamState teams = game.getInstanceState().getOrThrow(TeamState.KEY);
+		for (ServerPlayer player : teams.getPlayersForTeam(team)) {
+			this.game.getStatistics().forPlayer(player)
+					.set(StatisticKey.POINTS, newValue);
+		}
 
-		this.game.invoker(BbEvents.CURRENCY_ACCUMULATE).onCurrencyChanged(player, newValue, lastValue);
+		this.game.invoker(BbEvents.CURRENCY_ACCUMULATE).onCurrencyChanged(team, newValue, lastValue);
 	}
 
 	public int remove(ServerPlayer player, int amount) {
@@ -161,8 +160,8 @@ public final class CurrencyManager implements IGameState {
 		int count = this.accumulator.keySet().size();
 		int newSum = sum / count;
 
-		for (UUID uuid : this.accumulator.keySet()) {
-			this.accumulator.put(uuid, newSum);
+		for (GameTeamKey team : this.accumulator.keySet()) {
+			this.accumulator.put(team, newSum);
 		}
 	}
 }
