@@ -8,18 +8,17 @@ import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
+import com.lovetropics.minigames.common.core.game.player.PlayerSet;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 
-import java.util.Collection;
 import java.util.List;
 
 public final class IdleDropItemPlantBehavior implements IGameBehavior {
@@ -43,7 +42,7 @@ public final class IdleDropItemPlantBehavior implements IGameBehavior {
         events.listen(BbPlantEvents.TICK, this::tickPlants);
     }
 
-    private void tickPlants(Collection<ServerPlayer> players, Plot plot, List<Plant> plants) {
+    private void tickPlants(PlayerSet players, Plot plot, List<Plant> plants) {
         long ticks = this.game.ticks();
         RandomSource random = this.game.getWorld().getRandom();
 

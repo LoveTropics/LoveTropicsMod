@@ -8,20 +8,21 @@ import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
+import com.lovetropics.minigames.common.core.game.player.PlayerSet;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.Direction;
-import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.AABB;
 import net.minecraftforge.registries.ForgeRegistries;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.IntStream;
@@ -55,26 +56,28 @@ public class FruitDropEntityBehavior implements IGameBehavior {
 		events.listen(BbPlantEvents.TICK, this::tick);
 	}
 
-	private void tick(Collection<ServerPlayer> players, Plot plot, List<Plant> plants) {
+	private void tick(PlayerSet players, Plot plot, List<Plant> plants) {
 		if (game.ticks() % interval == 0) {
 			for (Plant plant : plants) {
-				updateCoconuts(players, plot, plant);
+				updateCoconuts(plant);
 			}
 		}
 	}
 
-	private void updateCoconuts(Collection<ServerPlayer> players, Plot plot, Plant plant) {
-		ServerPlayer player = players.iterator().next();
-
+	private void updateCoconuts(Plant plant) {
+		ServerLevel level = game.getLevel();
 		plant.functionalCoverage().stream()
 				.flatMap(bp -> IntStream.range(0, 4).mapToObj(Direction::from2DDataValue).map(bp::relative))
-				.filter(bp -> player.level().getBlockState(bp).getBlock() == fruit)
-				.filter(bp -> !player.level().getEntities(player, new AABB(bp).inflate(range - 1, 15, range - 1), (Predicate<? super Entity>) e -> (e instanceof BbMobEntity)).isEmpty())
+				.filter(bp -> level.getBlockState(bp).getBlock() == fruit)
+				.filter(bp -> {
+					AABB bounds = new AABB(bp).inflate(range - 1, 15, range - 1);
+					return !level.getEntities((Entity) null, bounds, (Predicate<? super Entity>) e -> (e instanceof BbMobEntity)).isEmpty();
+				})
 				.forEach(bp -> {
-					player.level().setBlockAndUpdate(bp, Blocks.AIR.defaultBlockState());
-					Entity spawnedEntity = entity.spawn(player.serverLevel(), null, player, bp, MobSpawnType.TRIGGERED, false, false);
+					level.setBlockAndUpdate(bp, Blocks.AIR.defaultBlockState());
+					Entity spawnedEntity = entity.spawn(level, null, (Player) null, bp, MobSpawnType.TRIGGERED, false, false);
 					if (spawnedEntity != null) {
-						player.level().addFreshEntity(spawnedEntity);
+						level.addFreshEntity(spawnedEntity);
 					}
 				});
 	}

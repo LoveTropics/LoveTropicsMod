@@ -1,6 +1,5 @@
 package com.lovetropics.minigames.common.content.biodiversity_blitz.behavior;
 
-import com.google.common.collect.Multimap;
 import com.lovetropics.lib.BlockBox;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.BiodiversityBlitzTexts;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.event.BbEvents;
@@ -11,7 +10,6 @@ import com.lovetropics.minigames.common.content.biodiversity_blitz.explosion.Fil
 import com.lovetropics.minigames.common.content.biodiversity_blitz.explosion.PlantAffectingExplosion;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.Plot;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.PlotsState;
-import com.lovetropics.minigames.common.content.biodiversity_blitz.util.BbUtils;
 import com.lovetropics.minigames.common.core.dimension.DimensionUtils;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.SpawnBuilder;
@@ -24,8 +22,10 @@ import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvent
 import com.lovetropics.minigames.common.core.game.behavior.event.GameWorldEvents;
 import com.lovetropics.minigames.common.core.game.client_state.GameClientState;
 import com.lovetropics.minigames.common.core.game.player.PlayerRole;
+import com.lovetropics.minigames.common.core.game.player.PlayerSet;
 import com.lovetropics.minigames.common.core.game.state.statistics.StatisticKey;
 import com.lovetropics.minigames.common.core.game.state.statistics.StatisticsMap;
+import com.lovetropics.minigames.common.core.game.state.team.TeamState;
 import com.lovetropics.minigames.common.core.game.util.GameSidebar;
 import com.lovetropics.minigames.common.core.game.util.GlobalGameWidgets;
 import com.mojang.serialization.MapCodec;
@@ -68,6 +68,7 @@ public final class BbBehavior implements IGameBehavior {
 	public static final MapCodec<BbBehavior> CODEC = MapCodec.unit(BbBehavior::new);
 
 	private IGamePhase game;
+	private TeamState teams;
 	private PlotsState plots;
 	private TutorialState tutorial;
 	private GameSidebar sidebar;
@@ -76,6 +77,7 @@ public final class BbBehavior implements IGameBehavior {
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
 		this.game = game;
+		this.teams = game.getInstanceState().getOrThrow(TeamState.KEY);
 		this.plots = game.getState().getOrThrow(PlotsState.KEY);
 		this.tutorial = game.getState().getOrThrow(TutorialState.KEY);
 		this.widgets = GlobalGameWidgets.registerTo(game, events);
@@ -342,10 +344,9 @@ public final class BbBehavior implements IGameBehavior {
 	}
 
 	private void tick(IGamePhase game) {
-		Multimap<Plot, ServerPlayer> plots = BbUtils.reassociate(this.plots, game.getParticipants());
-
-		for (Plot plot : plots.keySet()) {
-			game.invoker(BbEvents.TICK_PLOT).onTickPlot(plots.get(plot), plot);
+		for (Plot plot : plots) {
+			PlayerSet players = teams.getParticipantsForTeam(game, plot.team);
+			game.invoker(BbEvents.TICK_PLOT).onTickPlot(plot, players);
 		}
 	}
 

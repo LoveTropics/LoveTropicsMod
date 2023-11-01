@@ -17,6 +17,7 @@ import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameEventType;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
+import com.lovetropics.minigames.common.core.game.player.PlayerSet;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -31,7 +32,6 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.FluidState;
 
-import java.util.Collection;
 import java.util.List;
 
 public final class PlantBehavior implements IGameBehavior {
@@ -160,8 +160,8 @@ public final class PlantBehavior implements IGameBehavior {
 		return InteractionResult.FAIL;
 	}
 
-	private void onTickPlot(Collection<ServerPlayer> players, Plot plot) {
-		Preconditions.checkArgument(players.size() > 0, "We must always get at least one plot");
+	private void onTickPlot(Plot plot, PlayerSet players) {
+		Preconditions.checkArgument(!players.isEmpty(), "We must always get at least one plot");
 
 		List<Plant> plants = plot.plants.getPlantsByType(this.plantType);
 		if (!plants.isEmpty()) {

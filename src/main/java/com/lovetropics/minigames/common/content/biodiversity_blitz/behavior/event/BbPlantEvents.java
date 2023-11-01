@@ -4,11 +4,11 @@ import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.Plot;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.plant.Plant;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.plant.PlantPlacement;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameEventType;
-import net.minecraft.server.level.ServerPlayer;
+import com.lovetropics.minigames.common.core.game.player.PlayerSet;
 import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerPlayer;
 
 import javax.annotation.Nullable;
-import java.util.Collection;
 import java.util.List;
 
 public final class BbPlantEvents {
@@ -48,7 +48,7 @@ public final class BbPlantEvents {
 	}
 
 	public interface Tick {
-		void onTickPlants(Collection<ServerPlayer> players, Plot plot, List<Plant> plants);
+		void onTickPlants(PlayerSet players, Plot plot, List<Plant> plants);
 	}
 
 	public interface Place {

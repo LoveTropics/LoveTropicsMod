@@ -6,13 +6,14 @@ import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.even
 import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.BbMobSpawner;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.Plot;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.PlotsState;
-import com.lovetropics.minigames.common.content.biodiversity_blitz.util.BbUtils;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameEventListeners;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
+import com.lovetropics.minigames.common.core.game.player.PlayerSet;
+import com.lovetropics.minigames.common.core.game.state.team.TeamState;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -31,7 +32,6 @@ import net.minecraft.world.Difficulty;
 import net.minecraft.world.entity.Entity;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -62,6 +62,7 @@ public final class BbWaveSpawnerBehavior implements IGameBehavior {
 
 	private IGamePhase game;
 	private GameEventListeners listeners;
+	private TeamState teams;
 	private PlotsState plots;
 
 	private int sentWaves = 0;
@@ -84,6 +85,7 @@ public final class BbWaveSpawnerBehavior implements IGameBehavior {
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
 		this.game = game;
+		this.teams = game.getInstanceState().getOrThrow(TeamState.KEY);
 		this.plots = game.getState().getOrThrow(PlotsState.KEY);
 
 		events.listen(BbEvents.ASSIGN_PLOT, this::addPlayer);
@@ -139,8 +141,9 @@ public final class BbWaveSpawnerBehavior implements IGameBehavior {
 		if (timeTilNextWave == 0) {
 			this.waveCharging.setVisible(false);
 
-			for (Map.Entry<Plot, Collection<ServerPlayer>> e : BbUtils.reassociate(plots, game.getParticipants()).asMap().entrySet()) {
-				this.spawnWave(world, random, e.getValue(), e.getKey(), sentWaves);
+			for (Plot plot : plots) {
+				PlayerSet players = teams.getPlayersForTeam(plot.team);
+				this.spawnWave(world, random, players, plot, sentWaves);
 			}
 
 			this.sentWaves++;
@@ -169,9 +172,9 @@ public final class BbWaveSpawnerBehavior implements IGameBehavior {
 		bar.removeAllPlayers();
 	}
 
-	private void spawnWave(ServerLevel world, RandomSource random, Collection<ServerPlayer> players, Plot plot, int waveIndex) {
+	private void spawnWave(ServerLevel world, RandomSource random, PlayerSet players, Plot plot, int waveIndex) {
 		if (waveIndex == 0 && firstMessage != CommonComponents.EMPTY) {
-			players.forEach(p -> p.displayClientMessage(firstMessage, false));
+			players.sendMessage(firstMessage);
 		}
 
 		Difficulty difficulty = world.getDifficulty();

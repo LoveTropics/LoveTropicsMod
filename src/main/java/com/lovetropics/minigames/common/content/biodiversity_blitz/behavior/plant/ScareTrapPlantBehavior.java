@@ -12,6 +12,7 @@ import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
+import com.lovetropics.minigames.common.core.game.player.PlayerSet;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -36,7 +37,6 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.function.Predicate;
 
@@ -102,7 +102,7 @@ public final class ScareTrapPlantBehavior implements IGameBehavior {
 		return InteractionResult.FAIL;
 	}
 
-	private void tick(Collection<ServerPlayer> players, Plot plot, List<Plant> plants) {
+	private void tick(PlayerSet players, Plot plot, List<Plant> plants) {
 		long ticks = game.ticks();
 		if (ticks % 10 != 0) return;
 

@@ -7,17 +7,16 @@ import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.plant.Pl
 import com.lovetropics.minigames.common.core.game.behavior.event.GameEventType;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.lovetropics.minigames.common.core.game.player.PlayerSet;
+import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.InteractionResultHolder;
-import net.minecraft.world.InteractionResult;
-import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -34,9 +33,9 @@ public final class BbEvents {
 		}
 	});
 
-	public static final GameEventType<TickPlot> TICK_PLOT = GameEventType.create(TickPlot.class, listeners -> (player, plot) -> {
+	public static final GameEventType<TickPlot> TICK_PLOT = GameEventType.create(TickPlot.class, listeners -> (plot, players) -> {
 		for (TickPlot listener : listeners) {
-			listener.onTickPlot(player, plot);
+			listener.onTickPlot(plot, players);
 		}
 	});
 
@@ -127,7 +126,7 @@ public final class BbEvents {
 	}
 
 	public interface TickPlot {
-		void onTickPlot(Collection<ServerPlayer> player, Plot plot);
+		void onTickPlot(Plot plot, PlayerSet players);
 	}
 
 	public interface PlacePlant {

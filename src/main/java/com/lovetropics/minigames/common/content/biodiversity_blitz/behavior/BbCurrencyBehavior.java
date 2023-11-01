@@ -16,6 +16,7 @@ import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.lovetropics.minigames.common.core.game.client_state.GameClientState;
+import com.lovetropics.minigames.common.core.game.player.PlayerSet;
 import com.lovetropics.minigames.common.core.game.state.GameStateMap;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
@@ -32,6 +33,7 @@ import it.unimi.dsi.fastutil.objects.Reference2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectMaps;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 import net.minecraft.ChatFormatting;
+import net.minecraft.SharedConstants;
 import net.minecraft.network.protocol.game.ClientboundSetSubtitleTextPacket;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
@@ -44,7 +46,6 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.registries.ForgeRegistries;
 
-import java.util.Collection;
 import java.util.stream.IntStream;
 
 public final class BbCurrencyBehavior implements IGameBehavior {
@@ -111,15 +112,14 @@ public final class BbCurrencyBehavior implements IGameBehavior {
 		events.listen(BbEvents.BB_DEATH, this::onPlayerDeath);
 	}
 
-	private void tickPlot(Collection<ServerPlayer> players, Plot plot) {
+	private void tickPlot(Plot plot, PlayerSet players) {
 		if (!this.tutorial.isTutorialFinished()) {
 			return;
 		}
 
 		long ticks = this.game.ticks();
 
-
-		if (ticks % 20 == 0) {
+		if (ticks % SharedConstants.TICKS_PER_SECOND == 0) {
 			int nextCurrencyIncrement = this.computeNextCurrency(plot);
 			if (plot.nextCurrencyIncrement != nextCurrencyIncrement) {
 				plot.nextCurrencyIncrement = nextCurrencyIncrement;
@@ -131,7 +131,7 @@ public final class BbCurrencyBehavior implements IGameBehavior {
 		}
 
 		for (ServerPlayer player : players) {
-			long intervalTicks = this.dropInterval * 20;
+			long intervalTicks = this.dropInterval * SharedConstants.TICKS_PER_SECOND;
 			if (ticks % intervalTicks == 0) {
 				this.giveCurrency(player, plot);
 			}
