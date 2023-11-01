@@ -73,7 +73,7 @@ public final class PlantItemBehavior implements IGameBehavior {
 			}
 
 			// Don't let players place plants inside mob spawns
-			if (plot.mobSpawn.contains(pos)) {
+			if (plot.mobSpawns.contains(pos)) {
 				return InteractionResult.FAIL;
 			}
 

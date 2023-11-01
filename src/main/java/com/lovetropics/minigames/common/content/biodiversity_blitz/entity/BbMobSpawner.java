@@ -1,11 +1,13 @@
 package com.lovetropics.minigames.common.content.biodiversity_blitz.entity;
 
+import com.lovetropics.lib.BlockBox;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.event.BbEvents;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.impl.BbCreeperEntity;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.impl.BbHuskEntity;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.impl.BbPillagerEntity;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.Plot;
 import com.mojang.serialization.Codec;
+import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
@@ -41,12 +43,15 @@ public final class BbMobSpawner {
 
         waveState.didCreeperSpawnLastWave = false;
 
+        // TODO: How should they be selected?
+        BlockBox mobSpawn = Util.getRandom(plot.mobSpawns, random);
+
         for (Entity entity : entities) {
             if (entity instanceof BbCreeperEntity) {
                 waveState.didCreeperSpawnLastWave = true;
             }
 
-            BlockPos pos = plot.mobSpawn.sample(random);
+            BlockPos pos = mobSpawn.sample(random);
             Direction direction = plot.forward.getOpposite();
             entity.moveTo(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5, direction.toYRot(), 0);
 

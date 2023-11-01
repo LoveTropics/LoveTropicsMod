@@ -1,5 +1,6 @@
 package com.lovetropics.minigames.client.render;
 
+import com.lovetropics.lib.BlockBox;
 import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.client.game.ClientGameStateManager;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.BiodiversityBlitz;
@@ -19,6 +20,7 @@ import net.minecraft.client.renderer.RenderBuffers;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TextColor;
 import net.minecraft.util.CommonColors;
@@ -52,27 +54,39 @@ public class GameRendering {
             return;
         }
 
-        AABB b = state.plot().asAabb();
         PoseStack matrices = event.getPoseStack();
-        Vec3 vec3 = event.getCamera().getPosition();
+        Vec3 cameraPos = event.getCamera().getPosition();
         RenderBuffers buffers = Minecraft.getInstance().renderBuffers();
         VertexConsumer cons = buffers.bufferSource().getBuffer(GameRenderTypes.TRANSLUCENT_NO_TEX);
 
         PoseStack mv = RenderSystem.getModelViewStack();
-        mv.pushPose(); mv.setIdentity(); RenderSystem.applyModelViewMatrix();
+        mv.pushPose();
+        mv.setIdentity();
+        RenderSystem.applyModelViewMatrix();
 
-        buildBox(cons, matrices, (float)(b.minX - vec3.x), (float)(b.maxX - vec3.x), (float)(b.minY - vec3.y), (float)(b.maxY - vec3.y), (float)(b.minZ - vec3.z), (float)(b.maxZ - vec3.z), 255, 0, 0, 160);
+        for (BlockBox box : state.spawns()) {
+            BlockPos min = box.min();
+            BlockPos max = box.max();
+            float x0 = (float) (min.getX() - cameraPos.x);
+            float x1 = (float) (max.getX() + 1.0 - cameraPos.x);
+            float y0 = (float) (min.getY() - cameraPos.y);
+            float y1 = (float) (max.getY() + 1.0 - cameraPos.y);
+            float z0 = (float) (min.getZ() - cameraPos.z);
+            float z1 = (float) (max.getZ() + 1.0 - cameraPos.z);
+            buildBox(cons, matrices, x0, x1, y0, y1, z0, z1, 255, 0, 0, 160);
+        }
 
         // TODO: logic bug- scoreboard state only ever renders when mob spawn is also active!
         ClientBbScoreboardState scoreboardState = ClientGameStateManager.getOrNull(BiodiversityBlitz.SCOREBOARD);
         if (scoreboardState != null) {
-            renderScoreboardState(scoreboardState, matrices, vec3, buffers.bufferSource(), cons);
+            renderScoreboardState(scoreboardState, matrices, cameraPos, buffers.bufferSource(), cons);
         }
 
         // Flush vertices
         buffers.bufferSource().endLastBatch();
 
-        mv.popPose(); RenderSystem.applyModelViewMatrix();
+        mv.popPose();
+        RenderSystem.applyModelViewMatrix();
     }
 
     private static void renderScoreboardState(ClientBbScoreboardState state, PoseStack matrices, Vec3 camera, MultiBufferSource buffers, VertexConsumer cons) {

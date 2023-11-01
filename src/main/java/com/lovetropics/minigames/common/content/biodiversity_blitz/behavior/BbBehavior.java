@@ -245,8 +245,8 @@ public final class BbBehavior implements IGameBehavior {
 	}
 
 	private void onAssignPlot(ServerPlayer player, Plot plot) {
-		GameClientState.sendToPlayer(new ClientBbMobSpawnState(plot.mobSpawn), player);
-		teleportToRegion(player, plot.spawn, plot.spawnForward);
+		GameClientState.sendToPlayer(new ClientBbMobSpawnState(plot.mobSpawns), player);
+		teleportToRegion(player, plot.spawn, plot.forward);
 	}
 
 	private void onExplosion(Explosion explosion, List<BlockPos> affectedBlocks, List<Entity> affectedEntities) {
@@ -285,7 +285,7 @@ public final class BbBehavior implements IGameBehavior {
 		Plot plot = plots.getPlotFor(player);
 		if (plot != null && plot.bounds.contains(pos)) {
 			// Don't let players place plants inside mob spawns
-			if (plot.mobSpawn.contains(pos)) {
+			if (plot.mobSpawns.contains(pos)) {
 				this.sendActionRejection(player, BiodiversityBlitzTexts.PLANT_CANNOT_FIT);
 				return InteractionResult.FAIL;
 			}
@@ -321,7 +321,7 @@ public final class BbBehavior implements IGameBehavior {
 			return InteractionResult.PASS;
 		}
 
-		teleportToRegion(player, plot.spawn, plot.spawnForward);
+		teleportToRegion(player, plot.spawn, plot.forward);
 		player.setHealth(20.0F);
 		if (player.getFoodData().getFoodLevel() < 10) {
 			player.getFoodData().eat(2, 0.8f);

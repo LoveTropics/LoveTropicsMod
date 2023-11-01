@@ -7,9 +7,11 @@ import com.lovetropics.minigames.common.core.game.client_state.GameClientStateTy
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
-public record ClientBbMobSpawnState(BlockBox plot) implements GameClientState {
+import java.util.List;
+
+public record ClientBbMobSpawnState(List<BlockBox> spawns) implements GameClientState {
     public static final Codec<ClientBbMobSpawnState> CODEC = RecordCodecBuilder.create(i -> i.group(
-            BlockBox.CODEC.fieldOf("plots").forGetter(c -> c.plot)
+            BlockBox.CODEC.listOf().fieldOf("spawns").forGetter(ClientBbMobSpawnState::spawns)
     ).apply(i, ClientBbMobSpawnState::new));
 
     @Override

@@ -7,14 +7,15 @@ import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.plant.Pl
 import com.lovetropics.minigames.common.core.game.map.RegionPattern;
 import com.lovetropics.minigames.common.core.game.state.team.GameTeamKey;
 import com.lovetropics.minigames.common.core.map.MapRegions;
-import com.lovetropics.minigames.common.util.Util;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.LevelHeightAccessor;
+import net.minecraft.world.phys.AABB;
 
 import javax.annotation.Nullable;
+import java.util.List;
 
 public final class Plot {
 	public final GameTeamKey team;
@@ -25,10 +26,9 @@ public final class Plot {
 	public final BlockBox shop;
 	public final BlockBox plantShop;
 	public final BlockBox mobShop;
-	public final BlockBox mobSpawn;
+	public final List<BlockBox> mobSpawns;
 
 	public final Direction forward;
-	public final Direction spawnForward;
 
 	public final PlantMap plants = new PlantMap();
 	public final PlotWalls walls;
@@ -40,8 +40,8 @@ public final class Plot {
 			GameTeamKey team,
 			BlockBox bounds, BlockBox plantBounds, BlockBox floorBounds,
 			BlockBox spawn, BlockBox shop, BlockBox plantShop, BlockBox mobShop,
-			BlockBox mobSpawn,
-			Direction forward, Direction spawnForward
+			List<BlockBox> mobSpawns,
+			Direction forward
 	) {
 		this.team = team;
 		this.bounds = bounds;
@@ -51,11 +51,14 @@ public final class Plot {
 		this.shop = shop;
 		this.plantShop = plantShop;
 		this.mobShop = mobShop;
-		this.mobSpawn = mobSpawn;
+		this.mobSpawns = mobSpawns;
 		this.forward = forward;
-		this.spawnForward = spawnForward;
 
-		this.walls = new PlotWalls(this.bounds.asAabb().minmax(this.mobSpawn.asAabb()));
+		AABB walls = bounds.asAabb();
+		for (BlockBox mobSpawn : mobSpawns) {
+			walls = walls.minmax(mobSpawn.asAabb());
+		}
+		this.walls = new PlotWalls(walls);
 	}
 
 	public static Plot create(LevelHeightAccessor level, GameTeamKey team, Config config, RegionKeys regionKeys, MapRegions regions) {
@@ -72,17 +75,14 @@ public final class Plot {
 		BlockBox shop = regionKeys.shop.getOrThrow(regions, config.key);
 		BlockBox plantShop = regionKeys.plantShop.getOrThrow(regions, config.key);
 		BlockBox mobShop = regionKeys.mobShop.getOrThrow(regions, config.key);
-		BlockBox mobSpawn = regionKeys.mobSpawn.getOrThrow(regions, config.key);
-
-		// TODO: this logic doesn't work for teams
-		Direction forward = Util.getDirectionBetween(bounds, mobSpawn);
-		Direction spawnForward = Util.getDirectionBetween(spawn, bounds);
+		List<BlockBox> mobSpawn = regionKeys.mobSpawns.stream().map(pattern -> pattern.getOrThrow(regions, config.key)).toList();
 
 		return new Plot(
 				team,
 				bounds, plantBounds, floorBounds,
 				spawn, shop, plantShop, mobShop,
-				mobSpawn, forward, spawnForward
+				mobSpawn,
+				config.forward
 		);
 	}
 
@@ -97,20 +97,21 @@ public final class Plot {
 		};
 	}
 
-	public record RegionKeys(RegionPattern plot, RegionPattern spawn, RegionPattern shop, RegionPattern plantShop, RegionPattern mobShop, RegionPattern mobSpawn) {
+	public record RegionKeys(RegionPattern plot, RegionPattern spawn, RegionPattern shop, RegionPattern plantShop, RegionPattern mobShop, List<RegionPattern> mobSpawns) {
 		public static final Codec<RegionKeys> CODEC = RecordCodecBuilder.create(i -> i.group(
 				RegionPattern.CODEC.fieldOf("plot").forGetter(RegionKeys::plot),
 				RegionPattern.CODEC.fieldOf("spawn").forGetter(RegionKeys::spawn),
 				RegionPattern.CODEC.fieldOf("shop").forGetter(RegionKeys::shop),
 				RegionPattern.CODEC.fieldOf("plant_shop").forGetter(RegionKeys::plantShop),
 				RegionPattern.CODEC.fieldOf("mob_shop").forGetter(RegionKeys::mobShop),
-				RegionPattern.CODEC.fieldOf("mob_spawn").forGetter(RegionKeys::mobSpawn)
+				RegionPattern.CODEC.listOf().fieldOf("mob_spawns").forGetter(RegionKeys::mobSpawns)
 		).apply(i, RegionKeys::new));
 	}
 
-	public record Config(String key) {
+	public record Config(String key, Direction forward) {
 		public static final Codec<Config> CODEC = RecordCodecBuilder.create(i -> i.group(
-				Codec.STRING.fieldOf("key").forGetter(Config::key)
+				Codec.STRING.fieldOf("key").forGetter(Config::key),
+				Direction.CODEC.fieldOf("forward").forGetter(Config::forward)
 		).apply(i, Config::new));
 	}
 }
