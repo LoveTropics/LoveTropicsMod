@@ -295,7 +295,7 @@
   "ltminigames.minigame.qottott.knockback_resistance_power_up.subtitle": "Knockback Resistance",
   "ltminigames.minigame.qottott.pickup_priority_power_up": "Item Pickup Priority Power-up",
   "ltminigames.minigame.qottott.pickup_priority_power_up.subtitle": "Pick up items faster",
-  "ltminigames.minigame.qottott.power_up.generic": "2x coins for %seconds% seconds",
+  "ltminigames.minigame.qottott.power_up.generic": "Power-up for %seconds% seconds",
   "ltminigames.minigame.qottott.power_up.subtitle": "%s + 2x Coins",
   "ltminigames.minigame.qottott.power_up.title": "Power-up!",
   "ltminigames.minigame.qottott.resistance_power_up": "Resistance Power-up",

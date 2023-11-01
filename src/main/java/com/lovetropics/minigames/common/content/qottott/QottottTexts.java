@@ -20,7 +20,7 @@ public class QottottTexts {
 		KEYS.add("kit.opportunist", "Opportunist");
 		KEYS.add("kit.fighter", "Fighter");
 		KEYS.add("kit.brawler", "Brawler");
-		KEYS.add("power_up.generic", "2x coins for %seconds% seconds");
+		KEYS.add("power_up.generic", "Power-up for %seconds% seconds");
 		KEYS.add("spawn.power_up", "%item% has spawned!");
 		KEYS.add("power_up.title", "Power-up!");
 		KEYS.add("power_up.subtitle", "%s + 2x Coins");
