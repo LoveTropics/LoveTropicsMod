@@ -131,6 +131,12 @@ public final class PlayerIsolation {
 		playerList.broadcastAll(new ClientboundPlayerInfoUpdatePacket(ClientboundPlayerInfoUpdatePacket.Action.UPDATE_GAME_MODE, newPlayer));
 
 		ForgeEventFactory.firePlayerLoggedIn(newPlayer);
+		final ResourceKey<Level> oldDimension = oldPlayer.level().dimension();
+		final ResourceKey<Level> newDimension = newLevel.dimension();
+		if (oldDimension != newDimension) {
+			ForgeEventFactory.firePlayerChangedDimensionEvent(newPlayer, oldDimension, newDimension);
+		}
+
 		reloadingPlayers.remove(newPlayer.getUUID());
 
 		return newPlayer;
