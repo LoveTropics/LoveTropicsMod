@@ -23,16 +23,11 @@ import com.lovetropics.minigames.common.core.game.behavior.event.GameWorldEvents
 import com.lovetropics.minigames.common.core.game.client_state.GameClientState;
 import com.lovetropics.minigames.common.core.game.player.PlayerRole;
 import com.lovetropics.minigames.common.core.game.player.PlayerSet;
-import com.lovetropics.minigames.common.core.game.state.statistics.StatisticKey;
-import com.lovetropics.minigames.common.core.game.state.statistics.StatisticsMap;
 import com.lovetropics.minigames.common.core.game.state.team.TeamState;
-import com.lovetropics.minigames.common.core.game.util.GameSidebar;
-import com.lovetropics.minigames.common.core.game.util.GlobalGameWidgets;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundSetTitleTextPacket;
 import net.minecraft.network.protocol.game.ClientboundSetTitlesAnimationPacket;
@@ -57,8 +52,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 
@@ -71,8 +64,6 @@ public final class BbBehavior implements IGameBehavior {
 	private TeamState teams;
 	private PlotsState plots;
 	private TutorialState tutorial;
-	private GameSidebar sidebar;
-	private GlobalGameWidgets widgets;
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
@@ -80,7 +71,6 @@ public final class BbBehavior implements IGameBehavior {
 		this.teams = game.getInstanceState().getOrThrow(TeamState.KEY);
 		this.plots = game.getState().getOrThrow(PlotsState.KEY);
 		this.tutorial = game.getState().getOrThrow(TutorialState.KEY);
-		this.widgets = GlobalGameWidgets.registerTo(game, events);
 
 		events.listen(GamePlayerEvents.SPAWN, this::setupPlayerAsRole);
 		events.listen(BbEvents.ASSIGN_PLOT, this::onAssignPlot);
@@ -123,62 +113,6 @@ public final class BbBehavior implements IGameBehavior {
 		events.listen(GamePlayerEvents.BREAK_BLOCK, (player, pos, state, hand) -> InteractionResult.FAIL);
 
 		events.listen(GamePlayerEvents.USE_BLOCK, this::onUseBlock);
-
-		events.listen(GamePhaseEvents.START, () -> {
-			Component sidebarTitle = BiodiversityBlitzTexts.SIDEBAR_TITLE.copy()
-					.withStyle(ChatFormatting.GREEN, ChatFormatting.BOLD);
-
-			sidebar = widgets.openSidebar(sidebarTitle);
-			sidebar.set(collectScoreboard(game));
-		});
-
-		// TODO: this applies for every player in the game!
-		events.listen(BbEvents.CURRENCY_ACCUMULATE, (player, value, lastValue) -> {
-			// Change scoreboard only when player's currency changes
-			sidebar.set(collectScoreboard(game));
-		});
-
-		events.listen(BbEvents.CURRENCY_INCREMENT_CHANGED, (player, value, lastValue) -> {
-			// Change scoreboard only when player's currency changes
-			sidebar.set(collectScoreboard(game));
-		});
-	}
-
-	private Component[] collectScoreboard(IGamePhase game) {
-		// FIXME: does not work with teams!
-		List<Component> sidebar = new ArrayList<>(10);
-		sidebar.add(BiodiversityBlitzTexts.sidebarPlayerHeader());
-		sidebar.add(CommonComponents.EMPTY);
-
-		List<ServerPlayer> list = new ArrayList<>();
-		game.getParticipants().forEach(list::add);
-
-		list.sort(Comparator.comparingInt(c -> this.game.getStatistics().forPlayer((ServerPlayer) c).getOr(StatisticKey.POINTS, 0)).reversed());
-
-		int added = 0;
-		for (ServerPlayer player : list) {
-			// Limit leaderboard to 8 players- otherwise it gets too chaotic
-			if (added >= 8) {
-				sidebar.add(BiodiversityBlitzTexts.SIDEBAR_AND_MORE.copy().withStyle(ChatFormatting.AQUA));
-				break;
-			}
-
-			added++;
-			int points = 0;
-			int increment = 0;
-			// Get points for player
-			Plot plot = plots.getPlotFor(player);
-			StatisticsMap stats = this.game.getStatistics().forPlayer(player);
-			if (plot != null) {
-				points = stats.getOr(StatisticKey.POINTS, 0);
-				increment = plot.nextCurrencyIncrement;
-			}
-
-			Component name = Component.literal(player.getGameProfile().getName());
-			sidebar.add(BiodiversityBlitzTexts.sidebarPlayer(name, points, increment));
-		}
-
-		return sidebar.toArray(new Component[0]);
 	}
 
 	private InteractionResult onUseBlock(ServerPlayer player, ServerLevel world, BlockPos blockPos, InteractionHand hand, BlockHitResult blockRayTraceResult) {
