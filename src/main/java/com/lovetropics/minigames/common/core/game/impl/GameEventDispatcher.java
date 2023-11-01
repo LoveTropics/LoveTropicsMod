@@ -10,6 +10,7 @@ import com.lovetropics.minigames.common.core.game.behavior.event.GameWorldEvents
 import com.lovetropics.minigames.common.util.Scheduler;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.protocol.game.ClientboundContainerSetSlotPacket;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -56,10 +57,14 @@ public final class GameEventDispatcher {
 	public void onChunkLoad(ChunkEvent.Load event) {
 		if (event.getLevel() instanceof ServerLevelAccessor levelAccessor) {
 			ChunkAccess chunk = event.getChunk();
-			IGamePhase game = gameLookup.getGamePhaseAt(levelAccessor.getLevel(), chunk.getPos().getWorldPosition());
-			if (game != null) {
+			ServerLevel level = levelAccessor.getLevel();
+			BlockPos blockPos = chunk.getPos().getWorldPosition();
+			if (gameLookup.getGamePhaseAt(level, blockPos) != null) {
 				Scheduler.nextTick().run(server -> {
-					game.invoker(GameWorldEvents.CHUNK_LOAD).onChunkLoad(chunk);
+					IGamePhase game = gameLookup.getGamePhaseAt(level, blockPos);
+					if (game != null) {
+						game.invoker(GameWorldEvents.CHUNK_LOAD).onChunkLoad(chunk);
+					}
 				});
 			}
 		}

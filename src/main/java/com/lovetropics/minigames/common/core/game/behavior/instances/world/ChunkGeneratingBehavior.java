@@ -14,9 +14,9 @@ public abstract class ChunkGeneratingBehavior implements IGameBehavior {
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
-		events.listen(GameWorldEvents.CHUNK_LOAD, (chunk) -> {
-			if (chunk instanceof LevelChunk && generatedChunks.add(chunk.getPos().toLong())) {
-				generateChunk(game, game.getWorld(), (LevelChunk) chunk);
+		events.listen(GameWorldEvents.CHUNK_LOAD, chunk -> {
+			if (chunk instanceof LevelChunk levelChunk && generatedChunks.add(chunk.getPos().toLong())) {
+				generateChunk(game, (ServerLevel) levelChunk.getLevel(), levelChunk);
 			}
 		});
 	}
