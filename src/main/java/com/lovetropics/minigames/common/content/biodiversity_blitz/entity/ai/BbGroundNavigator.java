@@ -25,19 +25,23 @@ public final class BbGroundNavigator extends GroundPathNavigation {
 
 	final class NodeProcessor extends WalkNodeEvaluator {
 		@Override
+		public BlockPathTypes getBlockPathType(BlockGetter level, int x, int y, int z, Mob mob) {
+			// Don't allow climbing above the bounds of the plant bounds
+			if (y > BbGroundNavigator.this.mob.getPlot().plantBounds.max().getY()) {
+				return BlockPathTypes.BLOCKED;
+			}
+
+			return super.getBlockPathType(level, x, y, z, mob);
+		}
+
+		@Override
 		public BlockPathTypes getBlockPathType(BlockGetter world, int x, int y, int z) {
 			BbMobBrain brain = BbGroundNavigator.this.mob.getMobBrain();
-
 			if (!brain.getPlotWalls().getBounds().contains(x + 0.5, y + 0.5, z + 0.5)) {
 				return BlockPathTypes.BLOCKED;
 			}
 
-			// Don't allow climbing above the bounds of the plant bounds
-//			if (y > BbGroundNavigator.this.mob.getPlot().plantBounds.max().getY()) {
-//				return BlockPathTypes.BLOCKED;
-//			}
-
-			BlockPathTypes nodeType = super.getBlockPathType(world, x, y, z);
+			BlockPathTypes nodeType = super.getBlockPathType(level, x, y, z);
 			if (nodeType.getMalus() >= 0.0F && brain.isScaredAt(x, y, z)) {
 				return BlockPathTypes.BLOCKED;
 			}
