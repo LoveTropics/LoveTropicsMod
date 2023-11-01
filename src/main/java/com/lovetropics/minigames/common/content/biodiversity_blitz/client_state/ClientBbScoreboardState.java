@@ -11,11 +11,12 @@ import net.minecraft.world.phys.Vec3;
 
 import java.util.List;
 
-public record ClientBbScoreboardState(Vec3 start, Vec3 end, boolean side, List<Component> content) implements GameClientState {
+public record ClientBbScoreboardState(Vec3 start, Vec3 end, boolean side, Component header, List<Component> content) implements GameClientState {
     public static final Codec<ClientBbScoreboardState> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             Vec3.CODEC.fieldOf("start").forGetter(ClientBbScoreboardState::start),
             Vec3.CODEC.fieldOf("end").forGetter(ClientBbScoreboardState::end),
             Codec.BOOL.fieldOf("side").forGetter(ClientBbScoreboardState::side),
+            ExtraCodecs.COMPONENT.fieldOf("header").forGetter(ClientBbScoreboardState::header),
             ExtraCodecs.COMPONENT.listOf().fieldOf("content").forGetter(ClientBbScoreboardState::content)
     ).apply(instance, ClientBbScoreboardState::new));
 

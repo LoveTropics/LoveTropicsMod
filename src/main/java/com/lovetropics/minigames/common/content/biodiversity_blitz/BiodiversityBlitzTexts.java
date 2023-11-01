@@ -24,12 +24,9 @@ public final class BiodiversityBlitzTexts {
 	public static final Component PLANT_CANNOT_BE_PLACED_IN_BIOME = KEYS.add("plant_cannot_be_placed_in_biome", "This plant cannot be placed in this biome!");
 	public static final Component NOT_YOUR_PLOT = KEYS.add("not_your_plot", "This is not your plot, you cannot edit here!");
 	public static final Component SHIFT_FOR_MORE_INFORMATION = KEYS.add("shift_for_more_information", "Hold Shift for more information");
-	public static final Component SIDEBAR_TITLE = KEYS.add("sidebar.title", "Biodiversity Blitz");
-	private static final TranslationCollector.Fun1 SIDEBAR_PLAYER_HEADER = KEYS.add1("sidebar.player_header", "Player: %s");
-	private static final Component SIDEBAR_PLAYER_HEADER_POINTS = KEYS.add("sidebar.player_header.points", "Points (+per drop)");
-	private static final TranslationCollector.Fun2 SIDEBAR_PLAYER = KEYS.add2("sidebar.player", "%s: %s");
-	private static final TranslationCollector.Fun2 SIDEBAR_PLAYER_POINTS = KEYS.add2("sidebar.player.points", "%s (+ %s)");
-	public static final Component SIDEBAR_AND_MORE = KEYS.add("sidebar.and_more", "... and more!");
+	public static final Component SCOREBOARD_TITLE = KEYS.add("scoreboard.title", "Biodiversity Blitz").withStyle(ChatFormatting.GREEN);
+	public static final TranslationCollector.Fun1 SCOREBOARD_POINTS = KEYS.add1("scoreboard.points", "%s Points!");
+	public static final TranslationCollector.Fun1 SCOREBOARD_POINTS_INCREMENT = KEYS.add1("scoreboard.points.increment", "+ %s per drop");
 	private static final TranslationCollector.Fun2 SEND_MOBS_TOOLTIP = KEYS.add2("send_mobs.tooltip", "%sx %s");
 	public static final TranslationCollector.Fun2 SENT_MOBS_MESSAGE = KEYS.add2("sent_mobs.message", "%s has sent you a few mobs! Next wave you will encounter the following mobs: %s");
 
@@ -81,19 +78,6 @@ public final class BiodiversityBlitzTexts {
 		Component amountText = Component.literal(String.valueOf(amount))
 				.withStyle(amount > 0 ? ChatFormatting.AQUA : ChatFormatting.RED);
 		return CURRENCY_ADDITION.apply(amountText);
-	}
-
-	public static MutableComponent sidebarPlayerHeader() {
-		return SIDEBAR_PLAYER_HEADER.apply(
-				SIDEBAR_PLAYER_HEADER_POINTS.copy().withStyle(ChatFormatting.GOLD)
-		).withStyle(ChatFormatting.AQUA);
-	}
-
-	public static MutableComponent sidebarPlayer(Component name, int points, int increment) {
-		return SIDEBAR_PLAYER.apply(
-				name,
-				SIDEBAR_PLAYER_POINTS.apply(points, increment).withStyle(ChatFormatting.GOLD)
-		).withStyle(ChatFormatting.AQUA);
 	}
 
 	public static MutableComponent sendMobsTooltip(BbMobSpawner.BbEntityTypes entity, int count) {

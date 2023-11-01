@@ -6,6 +6,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.item.DyeColor;
 
@@ -25,4 +26,8 @@ public record GameTeamConfig(Component name, DyeColor dye, ChatFormatting format
 	).apply(i, GameTeamConfig::new));
 
 	public static final Codec<GameTeamConfig> CODEC = MAP_CODEC.codec();
+
+	public MutableComponent styledName() {
+		return name.copy().withStyle(formatting);
+	}
 }

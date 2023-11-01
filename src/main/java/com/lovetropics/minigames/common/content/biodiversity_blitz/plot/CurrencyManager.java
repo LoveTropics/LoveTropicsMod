@@ -89,7 +89,7 @@ public final class CurrencyManager implements IGameState {
 					.set(StatisticKey.POINTS, newValue);
 		}
 
-		this.game.invoker(BbEvents.CURRENCY_ACCUMULATE).onCurrencyChanged(team, newValue, lastValue);
+		game.invoker(BbEvents.CURRENCY_ACCUMULATE).onCurrencyChanged(team, newValue, lastValue);
 	}
 
 	public int remove(ServerPlayer player, int amount) {
@@ -151,6 +151,10 @@ public final class CurrencyManager implements IGameState {
 		return count;
 	}
 
+	public int getPoints(GameTeamKey team) {
+		return accumulator.getOrDefault(team, 0);
+	}
+
 	private static void sendInventoryUpdate(ServerPlayer player) {
 		player.containerMenu.broadcastChanges();
 	}
@@ -161,7 +165,8 @@ public final class CurrencyManager implements IGameState {
 		int newSum = sum / count;
 
 		for (GameTeamKey team : this.accumulator.keySet()) {
-			this.accumulator.put(team, newSum);
+			int lastValue = this.accumulator.put(team, newSum);
+			game.invoker(BbEvents.CURRENCY_ACCUMULATE).onCurrencyChanged(team, newSum, lastValue);
 		}
 	}
 }

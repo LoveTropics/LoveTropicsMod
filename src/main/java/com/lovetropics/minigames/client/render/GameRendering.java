@@ -106,14 +106,14 @@ public class GameRendering {
             matrices.mulPose(Axis.YN.rotationDegrees(90));
             matrices.scale(0.04f, 0.04f, 0.04f);
             int voff = 1;
-            List<Component> content = state.content();
-            Component firstComp = content.get(0);
-            drawComponent(matrices, buffers, (diff - Minecraft.getInstance().font.width(firstComp)) / 2, voff, firstComp.getStyle().getColor().getValue(), firstComp);
+            Component header = state.header();
+            drawComponent(matrices, buffers, (diff - Minecraft.getInstance().font.width(header)) / 2, voff, header.getStyle().getColor().getValue(), header);
 
-            for (int i = 1; i < content.size(); i++) {
+            List<Component> content = state.content();
+            for (int i = 0; i < content.size(); i++) {
                 Component comp = content.get(i);
-                int di = (i + 1) >> 1; // di = (i + 1) / 2;
-                int mi = (i - 1)  & 1; // mi = (i - 1) % 2;
+                int di = i + 2 >> 1; // di = (i + 2) / 2;
+                int mi = i & 1; // mi = i % 2;
 
                 voff = 10 * di + 1;
 
