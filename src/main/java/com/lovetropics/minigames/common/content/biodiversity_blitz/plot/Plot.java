@@ -98,7 +98,16 @@ public final class Plot {
 	}
 
 	public boolean canPlantAt(BlockPos pos) {
-		return plantBounds.contains(pos);
+		return plantBounds.contains(pos) && !isMobSpawn(pos);
+	}
+
+	private boolean isMobSpawn(BlockPos pos) {
+		for (BlockBox mobSpawn : mobSpawns) {
+			if (mobSpawn.contains(pos)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	public boolean isFloorAt(BlockPos pos) {
