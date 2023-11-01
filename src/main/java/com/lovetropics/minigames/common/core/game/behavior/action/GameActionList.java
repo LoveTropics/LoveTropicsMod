@@ -112,7 +112,7 @@ public class GameActionList<T> {
 
     public boolean apply(IGamePhase phase, GameActionContext context, Iterable<T> sources) {
 		if (isEmpty()) {
-			return false;
+			return true;
 		}
 		if (!registered) {
 			throw new IllegalStateException("Cannot dispatch action, GameActionList has not been registered");
