@@ -82,16 +82,20 @@ interface SpectatingState {
 
 		@Override
 		public SpectatingState tick(Minecraft client, SpectatingSession session, LocalPlayer player) {
+			if (!spectatedId.equals(client.getCameraEntity().getUUID())) {
+				return SpectatingState.FREE_CAMERA;
+			}
+
 			if (player.level().getGameTime() % (SharedConstants.TICKS_PER_SECOND / 2) == 0) {
 				// we need to send position updates to the server or we won't properly track chunks
 				Player spectatedPlayer = player.level().getPlayerByUUID(spectatedId);
 				if (spectatedPlayer != null) {
 					player.setPos(spectatedPlayer.getX(), spectatedPlayer.getY(), spectatedPlayer.getZ());
+					// If the entity got untracked, and tracked again, reset it
+					if (spectatedPlayer != client.getCameraEntity()) {
+						client.setCameraEntity(spectatedPlayer);
+					}
 				}
-			}
-
-			if (!spectatedId.equals(client.getCameraEntity().getUUID())) {
-				return SpectatingState.FREE_CAMERA;
 			}
 
 			return this;
