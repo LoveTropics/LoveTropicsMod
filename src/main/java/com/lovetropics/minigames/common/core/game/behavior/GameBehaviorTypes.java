@@ -94,6 +94,7 @@ import com.lovetropics.minigames.common.core.game.behavior.instances.trigger.OnD
 import com.lovetropics.minigames.common.core.game.behavior.instances.trigger.OnDeathTrigger;
 import com.lovetropics.minigames.common.core.game.behavior.instances.trigger.OnKillTrigger;
 import com.lovetropics.minigames.common.core.game.behavior.instances.trigger.PhaseChangeTrigger;
+import com.lovetropics.minigames.common.core.game.behavior.instances.trigger.PlayerTickTrigger;
 import com.lovetropics.minigames.common.core.game.behavior.instances.trigger.ScheduledActionsTrigger;
 import com.lovetropics.minigames.common.core.game.behavior.instances.trigger.SetRoleTrigger;
 import com.lovetropics.minigames.common.core.game.behavior.instances.trigger.TopPlayerTrigger;
@@ -162,6 +163,7 @@ public class GameBehaviorTypes {
 	public static final GameBehaviorEntry<StartGameTrigger> START_GAME = register("phase_triggers/start", StartGameTrigger.CODEC);
 	public static final GameBehaviorEntry<GameReadyTrigger> GAME_READY = register("phase_triggers/ready", GameReadyTrigger.CODEC);
 	public static final GameBehaviorEntry<GameTickTrigger> GAME_TICK = register("events/game/tick", GameTickTrigger.CODEC);
+	public static final GameBehaviorEntry<PlayerTickTrigger> PLAYER_TICK = register("events/player/tick", PlayerTickTrigger.CODEC);
 
 	public static final GameBehaviorEntry<OnDeathTrigger> ON_DEATH = register("on_death", OnDeathTrigger.CODEC);
 	public static final GameBehaviorEntry<OnDamageTrigger> ON_DAMAGE = register("on_damage", OnDamageTrigger.CODEC);
