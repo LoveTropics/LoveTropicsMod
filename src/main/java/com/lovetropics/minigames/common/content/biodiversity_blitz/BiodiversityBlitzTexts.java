@@ -53,15 +53,6 @@ public final class BiodiversityBlitzTexts {
 	};
 
 	static {
-		KEYS.add("intro1", "Welcome to Biodiversity Blitz!");
-		KEYS.add("intro2", "As the professional conservationist that you surely are, you must turn this bare plot into a thriving ecosystem.");
-		KEYS.add("intro3", "\nYou can buy plants and items from the shop using your 'Biodiversity points' and place them in your plot!");
-		KEYS.add("intro4", "\nThese plants may provide food, defense, or even attack the invasive species. Every plant you place improves the number of biodiversity points received per turn.");
-		KEYS.add("intro5", "\nInvasive species will be spawning soon! But if you construct an ecosystem that is resilient enough, you may be able to survive.");
-		KEYS.add("intro6", "\nMake sure to have a large variety of different plants in your plot- diversity in an ecosystem only makes you stronger!");
-		KEYS.add("intro7", "\nYou win the game once you accumulate the target amount of Biodiversity Points - you can check your progress in the top-left of your screen!");
-		KEYS.add("intro8", "\nGood luck!");
-
 		KEYS.add("teams.intro1", "Welcome to Biodiversity Blitz!");
 		KEYS.add("teams.intro2", "As the professional conservationist that you surely are, you must turn this bare plot into a thriving ecosystem.");
 		KEYS.add("teams.intro3", "\nYou can buy plants and items from the shop using your 'Biodiversity points' and place them in your plot!");

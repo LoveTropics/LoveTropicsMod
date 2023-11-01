@@ -22,6 +22,12 @@ import java.util.List;
 import java.util.Set;
 
 public final class BbEvents {
+	public static final GameEventType<CreatePlot> CREATE_PLOT = GameEventType.create(CreatePlot.class, listeners -> plot -> {
+		for (CreatePlot listener : listeners) {
+			listener.onCreatePlot(plot);
+		}
+	});
+
 	public static final GameEventType<AssignPlot> ASSIGN_PLOT = GameEventType.create(AssignPlot.class, listeners -> (player, plot) -> {
 		for (AssignPlot listener : listeners) {
 			listener.onAssignPlot(player, plot);
@@ -110,6 +116,10 @@ public final class BbEvents {
 	});
 
 	private BbEvents() {
+	}
+
+	public interface CreatePlot {
+		void onCreatePlot(Plot plot);
 	}
 
 	public interface AssignPlot {

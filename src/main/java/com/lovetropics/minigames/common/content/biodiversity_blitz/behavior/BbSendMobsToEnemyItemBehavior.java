@@ -13,6 +13,7 @@ import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
+import com.lovetropics.minigames.common.core.game.state.team.TeamState;
 import com.lovetropics.minigames.common.util.Codecs;
 import com.lovetropics.minigames.common.util.StackData;
 import com.mojang.datafixers.util.Either;
@@ -33,7 +34,6 @@ import net.minecraftforge.fml.common.Mod;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
-import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -54,6 +54,8 @@ public final class BbSendMobsToEnemyItemBehavior implements IGameBehavior {
 
     @Override
     public void register(IGamePhase game, EventRegistrar events) throws GameException {
+        TeamState teams = game.getInstanceState().getOrThrow(TeamState.KEY);
+
         events.listen(BbEvents.MODIFY_WAVE_MODS, (entities, random, world, plot, waveIndex) -> entities.addAll(sentEnemies.removeAll(plot)));
         events.listen(GamePhaseEvents.START, () -> sentEnemies = Multimaps.synchronizedMultimap(Multimaps.newListMultimap(new HashMap<>(), LinkedList::new)));
         events.listen(GamePhaseEvents.STOP, reason -> {
@@ -69,11 +71,9 @@ public final class BbSendMobsToEnemyItemBehavior implements IGameBehavior {
 
                 ENEMIES_TO_SEND.getIfSuccessful(item).ifPresent(entities -> StreamSupport.stream(plots.spliterator(), false).filter(p -> p != playerPlot)
                         .forEach(targetPlot -> {
-                            plots.getPlayersInPlot(targetPlot).forEach(id -> Optional.ofNullable(game.getAllPlayers().getPlayerBy(id))
-                                    .ifPresent(affected -> {
-                                        final Component playerName = player.getName().copy().withStyle(ChatFormatting.AQUA);
-                                        affected.sendSystemMessage(BiodiversityBlitzTexts.SENT_MOBS_MESSAGE.apply(playerName, buildMessage(entities)));
-                                    }));
+                            final Component playerName = player.getName().copy().withStyle(ChatFormatting.AQUA);
+                            teams.getPlayersForTeam(targetPlot.team).sendMessage(BiodiversityBlitzTexts.SENT_MOBS_MESSAGE.apply(playerName, buildMessage(entities)));
+
                             sentEnemies.putAll(targetPlot, entities.entrySet().stream()
                                     .flatMap(entry -> repeat(() -> entry.getKey().create(player.level(), targetPlot), entry.getValue()))
                                     .toList());

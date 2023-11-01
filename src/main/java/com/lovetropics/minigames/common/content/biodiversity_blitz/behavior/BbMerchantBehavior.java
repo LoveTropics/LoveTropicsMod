@@ -70,11 +70,11 @@ public final class BbMerchantBehavior implements IGameBehavior {
 	public void register(IGamePhase game, EventRegistrar events) {
 		this.game = game;
 
-		events.listen(BbEvents.ASSIGN_PLOT, this::onAssignPlot);
+		events.listen(BbEvents.CREATE_PLOT, this::onCreatePlot);
 		events.listen(GamePlayerEvents.INTERACT_ENTITY, this::interactWithEntity);
 	}
 
-	private void onAssignPlot(ServerPlayer player, Plot plot) {
+	private void onCreatePlot(Plot plot) {
 		ServerLevel world = this.game.getWorld();
 
 		BlockBox region = plot.regionByName(this.plotRegion);
