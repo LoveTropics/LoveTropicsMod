@@ -58,6 +58,7 @@ public final class MinigameTexts {
 	public static final TranslationCollector.Fun1 PLAYER_WON = KEYS.add1("player_won", "\u2B50 %s won the game!");
 	public static final Component NOBODY_WON = KEYS.add("nobody_won", "\u2B50 Nobody won the game!");
 	public static final Component RESULTS = KEYS.add("results", "The game is over! Here are the results:");
+	public static final Component GAME_OVER = KEYS.add("game_over.title", "Game Over!");
 
 	public static final TranslationCollector.Fun1 JOIN_TEAM = KEYS.add1("teams.join", "Join %s");
 	public static final TranslationCollector.Fun1 JOINED_TEAM = KEYS.add1("teams.joined", "You have requested to join: %s").withStyle(ChatFormatting.GRAY);
