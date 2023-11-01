@@ -1,6 +1,5 @@
 package com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.plant;
 
-import com.google.common.base.Preconditions;
 import com.lovetropics.lib.codec.MoreCodecs;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.event.BbEvents;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.event.BbPlantEvents;
@@ -161,8 +160,6 @@ public final class PlantBehavior implements IGameBehavior {
 	}
 
 	private void onTickPlot(Plot plot, PlayerSet players) {
-		Preconditions.checkArgument(!players.isEmpty(), "We must always get at least one plot");
-
 		List<Plant> plants = plot.plants.getPlantsByType(this.plantType);
 		if (!plants.isEmpty()) {
 			this.plantEvents.invoker(BbPlantEvents.TICK).onTickPlants(players, plot, plants);
