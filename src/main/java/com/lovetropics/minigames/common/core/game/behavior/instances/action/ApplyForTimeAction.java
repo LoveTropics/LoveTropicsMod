@@ -1,5 +1,6 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances.action;
 
+import com.lovetropics.lib.codec.MoreCodecs;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.GameBehaviorType;
 import com.lovetropics.minigames.common.core.game.behavior.GameBehaviorTypes;
@@ -25,10 +26,11 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
 
-public record ApplyForTimeAction(GameActionList<ServerPlayer> apply, GameActionList<ServerPlayer> clear, Optional<TemplatedText> indicator, int seconds) implements IGameBehavior {
+public record ApplyForTimeAction(GameActionList<ServerPlayer> apply, GameActionList<ServerPlayer> clear, GameActionList<ServerPlayer> tick, Optional<TemplatedText> indicator, int seconds) implements IGameBehavior {
 	public static final MapCodec<ApplyForTimeAction> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
-			GameActionList.PLAYER_CODEC.fieldOf("apply").forGetter(ApplyForTimeAction::apply),
-			GameActionList.PLAYER_CODEC.fieldOf("clear").forGetter(ApplyForTimeAction::clear),
+			MoreCodecs.strictOptionalFieldOf(GameActionList.PLAYER_CODEC, "apply", GameActionList.EMPTY).forGetter(ApplyForTimeAction::apply),
+			MoreCodecs.strictOptionalFieldOf(GameActionList.PLAYER_CODEC, "clear", GameActionList.EMPTY).forGetter(ApplyForTimeAction::clear),
+			MoreCodecs.strictOptionalFieldOf(GameActionList.PLAYER_CODEC, "tick", GameActionList.EMPTY).forGetter(ApplyForTimeAction::tick),
 			TemplatedText.CODEC.optionalFieldOf("indicator").forGetter(ApplyForTimeAction::indicator),
 			Codec.INT.fieldOf("seconds").forGetter(ApplyForTimeAction::seconds)
 	).apply(i, ApplyForTimeAction::new));
@@ -36,6 +38,7 @@ public record ApplyForTimeAction(GameActionList<ServerPlayer> apply, GameActionL
 	@Override
 	public void register(final IGamePhase game, final EventRegistrar events) {
 		apply.register(game, events);
+		tick.register(game, events);
 		clear.register(game, events);
 
 		final State state = new State();
@@ -61,25 +64,34 @@ public record ApplyForTimeAction(GameActionList<ServerPlayer> apply, GameActionL
 
 		private void tick(final IGamePhase game) {
 			final long time = game.ticks();
-			if (finishTime != NOT_ACTIVE && time >= finishTime) {
-				clear.apply(game, GameActionContext.EMPTY);
-				finishTime = NOT_ACTIVE;
-			}
-			playerFinishTimes.object2LongEntrySet().removeIf(entry -> {
-				final ServerPlayer player = game.getAllPlayers().getPlayerBy(entry.getKey());
-				final long finishTime = entry.getLongValue();
+			if (finishTime != NOT_ACTIVE) {
+				tick.apply(game, GameActionContext.EMPTY);
 				if (time >= finishTime) {
-					if (player != null) {
-						clear.apply(game, GameActionContext.EMPTY, player);
-					}
-					return true;
-				} else {
-					if (player != null && indicator.isPresent()) {
-						tickIndicator(player, finishTime - time, indicator.get());
-					}
-					return false;
+					clear.apply(game, GameActionContext.EMPTY);
+					finishTime = NOT_ACTIVE;
 				}
-			});
+			}
+			playerFinishTimes.object2LongEntrySet().removeIf(entry -> tickPlayer(game, entry, time));
+		}
+
+		private boolean tickPlayer(IGamePhase game, Object2LongMap.Entry<UUID> entry, long time) {
+			final ServerPlayer player = game.getAllPlayers().getPlayerBy(entry.getKey());
+			if (player != null) {
+				tick.apply(game, GameActionContext.EMPTY, player);
+			}
+
+			final long finishTime = entry.getLongValue();
+			if (time >= finishTime) {
+				if (player != null) {
+					clear.apply(game, GameActionContext.EMPTY, player);
+				}
+				return true;
+			} else {
+				if (player != null && indicator.isPresent()) {
+					tickIndicator(player, finishTime - time, indicator.get());
+				}
+				return false;
+			}
 		}
 
 		private void tickIndicator(final ServerPlayer player, final long ticksLeft, final TemplatedText text) {
