@@ -39,6 +39,7 @@ public final class BbClientStateBehavior implements IGameBehavior {
 
 	private void removePlayer(ServerPlayer player) {
 		GameClientState.removeFromPlayer(BiodiversityBlitz.SELF_STATE.get(), player);
+		GameClientState.removeFromPlayer(BiodiversityBlitz.MOB_SPAWN.get(), player);
 	}
 
 	private void updateState(TeamState teams, GameTeamKey team, Consumer<Currency> update) {
