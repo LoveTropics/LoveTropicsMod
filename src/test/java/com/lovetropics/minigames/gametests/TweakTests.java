@@ -22,6 +22,7 @@ import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
 
 import java.util.Map;
+import java.util.Optional;
 
 @RegisterMinigameTest
 public class TweakTests implements MinigameTest {
@@ -38,7 +39,7 @@ public class TweakTests implements MinigameTest {
 
         generator.builder(gameId("cancel_damage"))
                 .withPlayingPhase(new InlineMapProvider(Level.OVERWORLD), phaseBuilder -> phaseBuilder
-                        .withBehavior(new CancelPlayerDamageBehavior(false)));
+                        .withBehavior(new CancelPlayerDamageBehavior(false, Optional.empty())));
 
         generator.builder(gameId("scale_damage"))
                 .withPlayingPhase(new InlineMapProvider(Level.OVERWORLD), phaseBuilder -> phaseBuilder
