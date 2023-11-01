@@ -11,7 +11,6 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.network.protocol.game.ClientboundLevelParticlesPacket;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.valueproviders.ConstantInt;
 import net.minecraft.util.valueproviders.IntProvider;
@@ -40,7 +39,7 @@ public record SpawnParticlesAroundPlayerAction(ParticleOptions[] particles, IntP
 				ParticleOptions particle = particles[random.nextInt(particles.length)];
 				int repeats = this.repeats.sample(random);
 
-				player.connection.send(new ClientboundLevelParticlesPacket(particle, false, x, y, z, 0.1f, 0.1f, 0.1f, 0.0f, repeats));
+				game.getLevel().sendParticles(particle, x, y, z, repeats, 0.1f, 0.1f, 0.1f, 0.0f);
 			}
 
 			return true;
