@@ -15,24 +15,7 @@ import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.BbWa
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.EqualizeCurrencyBehavior;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.RemoveFromBlockBehavior;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.SpawnSurpriseWaveBehavior;
-import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.plant.AgingCropPlantBehavior;
-import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.plant.BarrierPlantBehavior;
-import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.plant.BerriesPlantBehavior;
-import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.plant.EffectAddingPlantBehavior;
-import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.plant.FlamingPlantBehavior;
-import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.plant.FruitDropEntityBehavior;
-import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.plant.GrowCoconutsBehavior;
-import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.plant.GrowPlantBehavior;
-import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.plant.IdleDropItemPlantBehavior;
-import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.plant.LightningPlantBehavior;
-import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.plant.PianguasPlantBehavior;
-import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.plant.PlantBehavior;
-import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.plant.PlantBiomeCheckBehavior;
-import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.plant.PlantHealthBehavior;
-import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.plant.PlantItemBehavior;
-import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.plant.ProximityBombPlantBehavior;
-import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.plant.ScareTrapPlantBehavior;
-import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.plant.WateryPlantBehavior;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.plant.*;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.plant.drops.DropLootTableBehavior;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.plant.drops.DropPlantItemBehavior;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.plant.placement.PlaceDoublePlantBehavior;
@@ -169,6 +152,10 @@ public final class BiodiversityBlitz {
 
 	public static final GameBehaviorEntry<LightningPlantBehavior> LIGHTNING_PLANT = REGISTRATE.object("lightning_plant")
 			.behavior(LightningPlantBehavior.CODEC)
+			.register();
+
+	public static final GameBehaviorEntry<MushroomPlantBehavior> MUSHROOM_PLANT = REGISTRATE.object("mushroom_plant")
+			.behavior(MushroomPlantBehavior.CODEC)
 			.register();
 
 	public static final GameBehaviorEntry<IdleDropItemPlantBehavior> IDLE_DROP_ITEM = REGISTRATE.object("idle_drop_item")

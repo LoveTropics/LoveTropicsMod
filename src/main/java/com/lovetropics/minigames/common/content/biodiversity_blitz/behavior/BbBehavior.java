@@ -1,6 +1,7 @@
 package com.lovetropics.minigames.common.content.biodiversity_blitz.behavior;
 
 import com.lovetropics.lib.BlockBox;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.BiodiversityBlitz;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.BiodiversityBlitzTexts;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.event.BbEvents;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.tutorial.TutorialState;
@@ -44,6 +45,8 @@ import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Blocks;
@@ -80,8 +83,14 @@ public final class BbBehavior implements IGameBehavior {
 		// Don't grow any trees- we handle that ourselves
 		events.listen(GameWorldEvents.SAPLING_GROW, (w, p) -> InteractionResult.FAIL);
 		events.listen(GamePlayerEvents.ATTACK, this::onAttack);
-		// No mob drops
-		events.listen(GameLivingEntityEvents.MOB_DROP, (e, d, r) -> InteractionResult.FAIL);
+		// Custom mob drops
+		events.listen(GameLivingEntityEvents.MOB_DROP, (e, d, r) -> {
+			r.removeIf(i -> !i.getItem().is(BiodiversityBlitz.OSA_POINT.asItem()));
+
+			r.add(new ItemEntity(e.level(), e.getX(), e.getY(), e.getZ(), new ItemStack(BiodiversityBlitz.OSA_POINT, 1)));
+
+			return InteractionResult.PASS;
+		});
 		events.listen(GameLivingEntityEvents.FARMLAND_TRAMPLE, this::onTrampleFarmland);
 		events.listen(GameEntityEvents.MOUNTED, (mounting, beingMounted) -> {
 			if (mounting instanceof ServerPlayer) {
