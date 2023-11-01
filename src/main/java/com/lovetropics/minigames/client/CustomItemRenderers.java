@@ -24,7 +24,7 @@ public class CustomItemRenderers {
 
 	public static IClientItemExtensions mobHatItem() {
 		final Minecraft minecraft = Minecraft.getInstance();
-		return createExtensions(new MobItemRenderer(minecraft.getBlockEntityRenderDispatcher(), minecraft.getEntityModels(), minecraft, MobHatItem::getEntityType, stack -> 1.0f, MOB_HAT_SPRITE));
+		return createExtensions(new MobItemRenderer(minecraft.getBlockEntityRenderDispatcher(), minecraft.getEntityModels(), minecraft, MobHatItem::getEntityType, MobHatItem::getSize, MOB_HAT_SPRITE));
 	}
 
 	public static IClientItemExtensions plushieItem() {

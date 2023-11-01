@@ -5,6 +5,7 @@ import com.lovetropics.minigames.common.core.diguise.DisguiseType;
 import net.minecraft.Util;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
@@ -21,6 +22,7 @@ import java.util.function.Consumer;
 
 public class MobHatItem extends Item implements Equipable {
 	private static final String KEY_ENTITY = "entity";
+	private static final String KEY_SIZE = "size";
 
 	public MobHatItem(final Properties properties) {
 		super(properties);
@@ -37,6 +39,17 @@ public class MobHatItem extends Item implements Equipable {
 			return null;
 		}
 		return DisguiseType.EntityConfig.CODEC.parse(NbtOps.INSTANCE, tag.get(KEY_ENTITY)).result().orElse(null);
+	}
+
+	public static float getSize(final ItemStack stack) {
+		if (!stack.is(MinigameItems.MOB_HAT.get())) {
+			return 1.0f;
+		}
+		final CompoundTag tag = stack.getTag();
+		if (tag != null && tag.contains(KEY_SIZE, Tag.TAG_FLOAT)) {
+			return tag.getFloat(KEY_SIZE);
+		}
+		return 1.0f;
 	}
 
 	public static void setEntityType(final ItemStack stack, final DisguiseType.EntityConfig entityType) {
