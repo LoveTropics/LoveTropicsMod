@@ -10,10 +10,10 @@ import com.lovetropics.minigames.common.core.game.behavior.action.GameActionPara
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
-import com.lovetropics.minigames.common.core.game.behavior.instances.statistics.TriggerAfterConfig;
 import com.lovetropics.minigames.common.core.game.client_state.GameClientState;
 import com.lovetropics.minigames.common.core.game.client_state.GameClientStateTypes;
 import com.lovetropics.minigames.common.core.game.state.BeaconState;
+import com.lovetropics.minigames.common.core.game.state.ProgressionPeriod;
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
@@ -35,11 +35,12 @@ import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 
-public record ItemDropperBehavior(TriggerAfterConfig after, Either<List<ItemStack>, ResourceLocation> loot, String regionKey, boolean combined, boolean beacon, IntProvider intervalTicks, Optional<GameActionList<Void>> announcement) implements IGameBehavior {
+public record ItemDropperBehavior(Optional<ProgressionPeriod> period, Either<List<ItemStack>, ResourceLocation> loot, String regionKey, boolean combined, boolean beacon, IntProvider intervalTicks, Optional<GameActionList<Void>> announcement) implements IGameBehavior {
 	public static final MapCodec<ItemDropperBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
-			TriggerAfterConfig.MAP_CODEC.forGetter(ItemDropperBehavior::after),
+			ProgressionPeriod.CODEC.optionalFieldOf("period").forGetter(ItemDropperBehavior::period),
 			Codec.either(MoreCodecs.listOrUnit(MoreCodecs.ITEM_STACK), ResourceLocation.CODEC).fieldOf("loot").forGetter(ItemDropperBehavior::loot),
 			Codec.STRING.fieldOf("region").forGetter(ItemDropperBehavior::regionKey),
 			Codec.BOOL.optionalFieldOf("combined", false).forGetter(ItemDropperBehavior::combined),
@@ -65,18 +66,19 @@ public record ItemDropperBehavior(TriggerAfterConfig after, Either<List<ItemStac
 			droppers = regions.stream().map(box -> new Dropper(List.of(box.center()), lootProvider)).toList();
 		}
 
+		for (final Dropper dropper : droppers) {
+			dropper.resetDelay(game);
+		}
+
+		final BooleanSupplier active = period.map(p -> p.createPredicate(game)).orElse(() -> true);
+
 		final BeaconState beacons = this.beacon ? game.getState().get(BeaconState.KEY) : null;
-
-		after.awaitThen(game, events, () -> {
-			for (final Dropper dropper : droppers) {
-				dropper.resetDelay(game);
-			}
-
-			events.listen(GamePhaseEvents.TICK, () -> {
+		events.listen(GamePhaseEvents.TICK, () -> {
+			if (active.getAsBoolean()) {
 				for (final Dropper dropper : droppers) {
 					dropper.tick(game, beacons);
 				}
-			});
+			}
 		});
 
 		if (beacons != null) {
