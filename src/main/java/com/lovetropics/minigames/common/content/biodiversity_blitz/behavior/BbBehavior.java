@@ -304,6 +304,10 @@ public final class BbBehavior implements IGameBehavior {
 			player.level().setBlockAndUpdate(pos, Blocks.FARMLAND.defaultBlockState().setValue(FarmBlock.MOISTURE, 7));
 			return InteractionResult.PASS;
 		}
+		// TODO: Data-drive
+		if (placed.is(Blocks.ANVIL)) {
+			return InteractionResult.PASS;
+		}
 
 		if (plot.plantBounds.contains(pos)) {
 			this.sendActionRejection(player, BiodiversityBlitzTexts.CAN_ONLY_PLACE_PLANTS);
