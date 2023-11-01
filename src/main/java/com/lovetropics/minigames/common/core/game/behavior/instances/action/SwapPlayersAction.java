@@ -14,7 +14,6 @@ import net.minecraft.world.phys.Vec3;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public record SwapPlayersAction(double distanceThreshold) implements IGameBehavior {
 	public static final MapCodec<SwapPlayersAction> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
@@ -24,6 +23,9 @@ public record SwapPlayersAction(double distanceThreshold) implements IGameBehavi
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
 		events.listen(GameActionEvents.APPLY, (context) -> {
+			if (game.getParticipants().size() <= 1) {
+				return false;
+			}
 			if (this.distanceThreshold == Double.MAX_VALUE) {
 				this.shufflePlayers(game);
 			} else {
@@ -39,7 +41,7 @@ public record SwapPlayersAction(double distanceThreshold) implements IGameBehavi
 
 		List<Vec3> playerPositions = players.stream()
 				.map(Entity::position)
-				.collect(Collectors.toList());
+				.toList();
 
 		for (int i = 0; i < players.size(); i++) {
 			final ServerPlayer player = players.get(i);
@@ -54,7 +56,7 @@ public record SwapPlayersAction(double distanceThreshold) implements IGameBehavi
 
 		List<Vec3> playerPositions = players.stream()
 				.map(Entity::position)
-				.collect(Collectors.toList());
+				.toList();
 
 		double distanceThreshold2 = distanceThreshold * distanceThreshold;
 
