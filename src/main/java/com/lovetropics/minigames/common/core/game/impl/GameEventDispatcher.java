@@ -25,7 +25,6 @@ import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraftforge.event.entity.EntityMountEvent;
 import net.minecraftforge.event.entity.EntityTeleportEvent;
-import net.minecraftforge.event.entity.item.ItemTossEvent;
 import net.minecraftforge.event.entity.living.LivingAttackEvent;
 import net.minecraftforge.event.entity.living.LivingDamageEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
@@ -43,13 +42,14 @@ import net.minecraftforge.event.level.SaplingGrowTreeEvent;
 import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
-import javax.annotation.Nullable;
-
 public final class GameEventDispatcher {
+	public static GameEventDispatcher instance;
+
 	private final IGameLookup gameLookup;
 
 	public GameEventDispatcher(IGameLookup gameLookup) {
 		this.gameLookup = gameLookup;
+		instance = this;
 	}
 
 	@SubscribeEvent
@@ -244,23 +244,21 @@ public final class GameEventDispatcher {
 		}
 	}
 
-	@SubscribeEvent
-	public void onPlayerThrowItem(ItemTossEvent event) {
-		IGamePhase game = gameLookup.getGamePhaseFor(event.getPlayer());
+	public boolean onPlayerThrowItem(ServerPlayer player, ItemEntity item) {
+		IGamePhase game = gameLookup.getGamePhaseFor(player);
 		if (game != null) {
 			try {
-				ServerPlayer player = (ServerPlayer) event.getPlayer();
-				ItemEntity item = event.getEntity();
 				InteractionResult result = game.invoker(GamePlayerEvents.THROW_ITEM).onThrowItem(player, item);
 				if (result == InteractionResult.FAIL) {
-					event.setCanceled(true);
 					player.getInventory().add(item.getItem());
 					player.containerMenu.broadcastFullState();
+					return true;
 				}
 			} catch (Exception e) {
 				LoveTropics.LOGGER.warn("Failed to dispatch player throw item event", e);
 			}
 		}
+		return false;
 	}
 
 	@SubscribeEvent

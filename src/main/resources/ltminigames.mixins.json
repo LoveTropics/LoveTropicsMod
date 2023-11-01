@@ -8,6 +8,7 @@
     "ChunkStorageMixin",
     "EntityTypeMixin",
     "ExplosionMixin",
+    "ForgeHooksMixin",
     "MinecraftServerMixin",
     "PlayerListMixin",
     "PlayerMixin",
