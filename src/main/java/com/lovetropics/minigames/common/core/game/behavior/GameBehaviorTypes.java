@@ -8,6 +8,7 @@ import com.lovetropics.minigames.common.core.game.behavior.action.PlayerActionTa
 import com.lovetropics.minigames.common.core.game.behavior.action.PlotActionTarget;
 import com.lovetropics.minigames.common.core.game.behavior.instances.AddWeatherBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.GiveItemsToKillerBehavior;
+import com.lovetropics.minigames.common.core.game.behavior.instances.OnlyTickInPeriodBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.TimedCloseBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.AddEquipmentAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.AssignPlayerRolesBehavior;
@@ -223,6 +224,7 @@ public class GameBehaviorTypes {
 	public static final GameBehaviorEntry<SumStatisticBehavior> SUM_STATISTIC = register("sum_statistic", SumStatisticBehavior.CODEC);
 	public static final GameBehaviorEntry<StatisticTagBehavior> STATISTIC_TAG = register("statistic_tag", StatisticTagBehavior.CODEC);
 	public static final GameBehaviorEntry<SetXpToStatisticBehavior> SET_XP_TO_STATISTIC = register("set_xp_to_statistic", SetXpToStatisticBehavior.CODEC);
+	public static final GameBehaviorEntry<OnlyTickInPeriodBehavior> ONLY_TICK_IN_PERIOD = register("only_tick_in_period", OnlyTickInPeriodBehavior.CODEC);
 
 	public static final GameBehaviorEntry<DisplayLeaderboardOnFinishBehavior<?>> DISPLAY_LEADERBOARD_ON_FINISH = register("display_leaderboard_on_finish", DisplayLeaderboardOnFinishBehavior.CODEC);
 
