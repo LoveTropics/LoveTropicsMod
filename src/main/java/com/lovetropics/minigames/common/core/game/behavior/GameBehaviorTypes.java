@@ -48,6 +48,7 @@ import com.lovetropics.minigames.common.core.game.behavior.instances.action.Send
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.SetBlockAtPlayerAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.SetBlocksAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.SetExtendingBlocksAction;
+import com.lovetropics.minigames.common.core.game.behavior.instances.action.SetGlowingAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.ShootProjectilesAroundPlayerAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.ShowTitleAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.SpawnEntitiesAroundPlayersAction;
@@ -86,6 +87,7 @@ import com.lovetropics.minigames.common.core.game.behavior.instances.team.SyncTe
 import com.lovetropics.minigames.common.core.game.behavior.instances.team.TeamChatBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.team.TeamWinTrigger;
 import com.lovetropics.minigames.common.core.game.behavior.instances.team.TeamsBehavior;
+import com.lovetropics.minigames.common.core.game.behavior.instances.trigger.ApplyToPlayerWhileTrigger;
 import com.lovetropics.minigames.common.core.game.behavior.instances.trigger.BindControlsBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.trigger.GameFinishTrigger;
 import com.lovetropics.minigames.common.core.game.behavior.instances.trigger.GeneralEventsTrigger;
@@ -207,6 +209,7 @@ public class GameBehaviorTypes {
 	public static final GameBehaviorEntry<PlayerHeadRewardBehavior> PLAYER_HEAD_REWARD = register("player_head_reward", PlayerHeadRewardBehavior.CODEC);
 	public static final GameBehaviorEntry<PointsSidebarBehavior> POINTS_SIDEBAR = register("points_sidebar", PointsSidebarBehavior.CODEC);
 	public static final GameBehaviorEntry<DamageInWaterBehavior> DAMAGE_IN_WATER = register("damage_in_water", DamageInWaterBehavior.CODEC);
+	public static final GameBehaviorEntry<ApplyToPlayerWhileTrigger> APPLY_TO_PLAYER_WHILE = register("apply_to_player_while", ApplyToPlayerWhileTrigger.CODEC);
 
 	public static final GameBehaviorEntry<BindObjectiveToStatisticBehavior> BIND_OBJECTIVE_TO_STATISTIC = register("bind_objective_to_statistic", BindObjectiveToStatisticBehavior.CODEC);
 	public static final GameBehaviorEntry<PlaceByStatisticBehavior> PLACE_BY_STATISTIC = register("place_by_statistic", PlaceByStatisticBehavior.CODEC);
@@ -227,6 +230,7 @@ public class GameBehaviorTypes {
 	public static final GameBehaviorEntry<DonationThresholdBehavior> DONATION_THRESHOLD = register("donation_threshold", DonationThresholdBehavior.CODEC);
 	public static final GameBehaviorEntry<GiveLootAction> GIVE_LOOT = register("give_loot", GiveLootAction.CODEC);
 	public static final GameBehaviorEntry<GiveEffectAction> GIVE_EFFECT = register("give_effect", GiveEffectAction.CODEC);
+	public static final GameBehaviorEntry<SetGlowingAction> SET_GLOWING = register("set_glowing", SetGlowingAction.CODEC);
 	public static final GameBehaviorEntry<SwapPlayersAction> SWAP_PLAYERS = register("swap_players", SwapPlayersAction.CODEC);
 	public static final GameBehaviorEntry<SpawnEntityAtPlayerAction> SPAWN_ENTITY_AT_PLAYER = register("spawn_entity_at_player", SpawnEntityAtPlayerAction.CODEC);
 	public static final GameBehaviorEntry<SpawnEntityAtRegionsAction> SPAWN_ENTITY_AT_REGIONS = register("spawn_entity_at_regions", SpawnEntityAtRegionsAction.CODEC);
