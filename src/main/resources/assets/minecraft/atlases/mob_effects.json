@@ -1,0 +1,19 @@
+{
+  "sources": [
+    {
+      "type": "unstitch",
+      "resource": "minecraft:mob_effect/speed",
+      "divisor_x": 1,
+      "divisor_y": 1,
+      "regions": [
+        {
+          "sprite": "ltminigames:speed_power_up",
+          "x": 0,
+          "y": 0,
+          "width": 1,
+          "height": 1
+        }
+      ]
+    }
+  ]
+}
