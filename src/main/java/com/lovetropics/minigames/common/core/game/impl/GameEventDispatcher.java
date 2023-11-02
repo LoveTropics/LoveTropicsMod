@@ -305,13 +305,20 @@ public final class GameEventDispatcher {
 			ServerPlayer player = (ServerPlayer) event.getEntity();
 
 			try {
-				InteractionResult result = game.invoker(GamePlayerEvents.USE_BLOCK).onUseBlock(player, player.serverLevel(), event.getPos(), event.getHand(), event.getHitVec());
-				if (result == InteractionResult.FAIL) {
+				InteractionResult blockResult = game.invoker(GamePlayerEvents.USE_BLOCK).onUseBlock(player, player.serverLevel(), event.getPos(), event.getHand(), event.getHitVec());
+				if (blockResult == InteractionResult.CONSUME) {
 					event.setUseBlock(Event.Result.DENY);
-					resendPlayerHeldItem(player);
-				} else if (result == InteractionResult.SUCCESS) {
-					event.setUseBlock(Event.Result.ALLOW);
-					player.swing(event.getHand());
+				} else if (blockResult != InteractionResult.PASS) {
+					event.setCanceled(true);
+					event.setCancellationResult(blockResult);
+					return;
+				}
+				InteractionResult itemResult = game.invoker(GamePlayerEvents.USE_ITEM_ON_BLOCK).onUseBlock(player, player.serverLevel(), event.getPos(), event.getHand(), event.getHitVec());
+				if (itemResult == InteractionResult.CONSUME) {
+					event.setUseItem(Event.Result.DENY);
+				} else if (itemResult != InteractionResult.PASS) {
+					event.setCanceled(true);
+					event.setCancellationResult(itemResult);
 				}
 			} catch (Exception e) {
 				LoveTropics.LOGGER.warn("Failed to dispatch player use block event", e);

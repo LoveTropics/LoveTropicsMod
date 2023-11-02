@@ -118,6 +118,16 @@ public final class GamePlayerEvents {
 		return InteractionResult.PASS;
 	});
 
+	public static final GameEventType<UseBlock> USE_ITEM_ON_BLOCK = GameEventType.create(UseBlock.class, listeners -> (player, world, pos, hand, traceResult) -> {
+		for (UseBlock listener : listeners) {
+			InteractionResult result = listener.onUseBlock(player, world, pos, hand, traceResult);
+			if (result != InteractionResult.PASS) {
+				return result;
+			}
+		}
+		return InteractionResult.PASS;
+	});
+
 	public static final GameEventType<LeftClickBlock> LEFT_CLICK_BLOCK = GameEventType.create(LeftClickBlock.class, listeners -> (player, world, pos) -> {
 		for (LeftClickBlock listener : listeners) {
 			listener.onLeftClickBlock(player, world, pos);

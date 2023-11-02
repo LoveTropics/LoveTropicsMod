@@ -135,7 +135,7 @@ public final class BbBehavior implements IGameBehavior {
 		if (plot != null && plot.bounds.contains(pos)) {
 			return this.onUseBlockInPlot(player, world, blockPos, hand, plot, pos);
 		} else {
-			return InteractionResult.FAIL;
+			return InteractionResult.CONSUME;
 		}
 	}
 
@@ -148,7 +148,6 @@ public final class BbBehavior implements IGameBehavior {
 			if (!plot.plants.hasPlantAt(pos.above())) {
 				world.setBlockAndUpdate(pos, Blocks.GRASS_BLOCK.defaultBlockState());
 				world.playSound(null, blockPos, SoundEvents.HOE_TILL, SoundSource.BLOCKS, 1.0F, 1.0F);
-				player.swing(hand);
 				player.getCooldowns().addCooldown(player.getItemInHand(hand).getItem(), 3);
 				return InteractionResult.SUCCESS;
 			}
