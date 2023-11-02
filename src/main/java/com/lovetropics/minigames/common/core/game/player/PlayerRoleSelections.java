@@ -13,12 +13,14 @@ import javax.annotation.Nonnull;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
 
 public final class PlayerRoleSelections {
 	private final GameLobbyId lobbyId;
 
 	private final Map<UUID, PlayerRole> roles = new Object2ObjectOpenHashMap<>();
 	private final Map<UUID, CompletableFuture<PlayerRole>> pendingResponses = new Object2ObjectOpenHashMap<>();
+	private final Map<UUID, Consumer<PlayerRole>> responseHandlers = new Object2ObjectOpenHashMap<>();
 
 	public PlayerRoleSelections(GameLobbyId lobbyId) {
 		this.lobbyId = lobbyId;
@@ -37,11 +39,16 @@ public final class PlayerRoleSelections {
 	}
 
 	public CompletableFuture<PlayerRole> prompt(ServerPlayer player) {
-		CompletableFuture<PlayerRole> future = pendingResponses.computeIfAbsent(player.getUUID(), id -> {
-			CompletableFuture<PlayerRole> newFuture = new CompletableFuture<>();
-			newFuture.thenAcceptAsync(role -> roles.put(id, role), player.server);
-			return newFuture;
-		});
+		CompletableFuture<PlayerRole> future = pendingResponses.get(player.getUUID());
+		if (future == null) {
+			final CompletableFuture<PlayerRole> rootFuture = new CompletableFuture<>();
+			responseHandlers.put(player.getUUID(), rootFuture::complete);
+			future = rootFuture.thenApplyAsync(role -> {
+				roles.put(player.getUUID(), role);
+				return role;
+			}, player.server);
+			pendingResponses.put(player.getUUID(), future);
+		}
 		sendPromptTo(player);
 		return future;
 	}
@@ -56,9 +63,10 @@ public final class PlayerRoleSelections {
 	}
 
 	public void acceptResponse(ServerPlayer player, PlayerRole role) {
-		CompletableFuture<PlayerRole> future = this.pendingResponses.remove(player.getUUID());
-		if (future != null) {
-			future.complete(role);
+		Consumer<PlayerRole> handler = responseHandlers.remove(player.getUUID());
+		if (handler != null) {
+			handler.accept(role);
+			pendingResponses.remove(player.getUUID());
 		}
 	}
 
