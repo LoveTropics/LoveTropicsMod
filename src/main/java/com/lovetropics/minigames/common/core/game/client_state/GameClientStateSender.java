@@ -1,12 +1,12 @@
 package com.lovetropics.minigames.common.core.game.client_state;
 
 import com.lovetropics.minigames.Constants;
+import com.lovetropics.minigames.common.core.game.PlayerIsolation;
 import com.lovetropics.minigames.common.core.network.LoveTropicsNetwork;
 import com.lovetropics.minigames.common.core.network.SetGameClientStateMessage;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -33,16 +33,16 @@ public final class GameClientStateSender {
 
 	@SubscribeEvent
 	public static void onPlayerTick(TickEvent.PlayerTickEvent event) {
-		if (event.phase == TickEvent.Phase.END && event.player instanceof ServerPlayer) {
-			ServerPlayer player = (ServerPlayer) event.player;
+		if (event.phase == TickEvent.Phase.END && event.player instanceof ServerPlayer player) {
 			INSTANCE.byPlayer(player).tick(player);
 		}
 	}
 
 	@SubscribeEvent
 	public static void onPlayerLoggedOut(PlayerEvent.PlayerLoggedOutEvent event) {
-		Player player = event.getEntity();
-		INSTANCE.players.remove(player.getUUID());
+		if (event.getEntity() instanceof final ServerPlayer player && !PlayerIsolation.INSTANCE.isReloading(player)) {
+			INSTANCE.players.remove(player.getUUID());
+		}
 	}
 
 	public static final class PlayerEntry {
