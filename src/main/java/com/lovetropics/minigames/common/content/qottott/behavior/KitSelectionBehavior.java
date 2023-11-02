@@ -65,15 +65,8 @@ public record KitSelectionBehavior(List<Kit> kits) implements IGameBehavior {
 		});
 
 		final Map<UUID, Kit> selectedKits = new Object2ObjectOpenHashMap<>();
-		events.listen(GamePlayerEvents.INTERACT_ENTITY, (player, target, hand) -> {
-			final Kit kit = kitEntities.get(target.getUUID());
-			if (kit != null) {
-				kit.apply.apply(game, GameActionContext.EMPTY, player);
-				selectedKits.put(player.getUUID(), kit);
-				return InteractionResult.CONSUME;
-			}
-			return InteractionResult.PASS;
-		});
+		events.listen(GamePlayerEvents.INTERACT_ENTITY, (player, target, hand) -> applyKit(game, player, target, kitEntities, selectedKits));
+		events.listen(GamePlayerEvents.ATTACK, (player, target) -> applyKit(game, player, target, kitEntities, selectedKits));
 
 		events.listen(GamePlayerEvents.SPAWN, (playerId, spawn, role) -> {
 			if (role == PlayerRole.PARTICIPANT) {
@@ -83,6 +76,16 @@ public record KitSelectionBehavior(List<Kit> kits) implements IGameBehavior {
 				});
 			}
 		});
+	}
+
+	private static InteractionResult applyKit(final IGamePhase game, final ServerPlayer player, final Entity target, final Map<UUID, Kit> kitEntities, final Map<UUID, Kit> selectedKits) {
+		final Kit kit = kitEntities.get(target.getUUID());
+		if (kit != null) {
+			kit.apply.apply(game, GameActionContext.EMPTY, player);
+			selectedKits.put(player.getUUID(), kit);
+			return InteractionResult.CONSUME;
+		}
+		return InteractionResult.PASS;
 	}
 
 	private record Kit(String region, float angle, DisguiseType.EntityConfig entity, GameActionList<ServerPlayer> apply) {
