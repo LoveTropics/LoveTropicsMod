@@ -88,7 +88,7 @@ public class SpleefBehavior implements IGameBehavior {
     // Handy for checking who won if multiple people were eliminated at the same time.
     private List<ServerPlayer> lastTickPlayers;
 
-    private boolean blockSinglePlayerWin = true;
+    private boolean blockSinglePlayerWin = false;
 
     public SpleefBehavior(int forcedProgressionSeconds, int floors, int breakInterval, int breakCount, Block floorMaterial, Block floorBreakingMaterial, String flavourText) {
         this.forcedProgressionSeconds = forcedProgressionSeconds;
