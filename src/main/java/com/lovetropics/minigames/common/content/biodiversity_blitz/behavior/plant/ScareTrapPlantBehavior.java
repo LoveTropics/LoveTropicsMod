@@ -95,7 +95,8 @@ public final class ScareTrapPlantBehavior implements IGameBehavior {
 		if (plot != null && plot.bounds.contains(pos)) {
 			Plant plant = plot.plants.getPlantAt(pos);
 			if (plant != null && this.resetTrap(plot, plant)) {
-				return InteractionResult.SUCCESS;
+				player.swing(InteractionHand.MAIN_HAND);
+				return InteractionResult.FAIL;
 			}
 		}
 
