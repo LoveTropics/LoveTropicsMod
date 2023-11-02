@@ -75,4 +75,8 @@ public class BbDrownedEntity extends Drowned implements BbMobEntity {
 	public Plot getPlot() {
 		return this.plot;
 	}
+
+	@Override
+	protected void pushEntities() {
+	}
 }

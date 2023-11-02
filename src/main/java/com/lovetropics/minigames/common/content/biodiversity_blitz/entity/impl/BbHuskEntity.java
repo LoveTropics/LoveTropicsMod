@@ -68,4 +68,8 @@ public class BbHuskEntity extends Husk implements BbMobEntity {
 	public Plot getPlot() {
 		return this.plot;
 	}
+
+	@Override
+	protected void pushEntities() {
+	}
 }

@@ -93,4 +93,8 @@ public class BbPillagerEntity extends Pillager implements BbMobEntity {
     public int meleeDamage(RandomSource random) {
         return 2 + BbMobEntity.super.meleeDamage(random);
     }
+
+    @Override
+    protected void pushEntities() {
+    }
 }

@@ -95,4 +95,8 @@ public class BbCreeperEntity extends Creeper implements BbMobEntity {
     public Plot getPlot() {
         return this.plot;
     }
+
+    @Override
+    protected void pushEntities() {
+    }
 }
