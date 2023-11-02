@@ -130,6 +130,10 @@ public final class ClientPlayerDisguises {
             livingDisguise.swinging = entity.swinging;
 
             livingDisguise.setOnGround(entity.onGround());
+
+            livingDisguise.hurtTime = entity.hurtTime;
+            livingDisguise.hurtDuration = entity.hurtDuration;
+            livingDisguise.hurtMarked = entity.hurtMarked;
         }
 
         disguise.tickCount = entity.tickCount;
