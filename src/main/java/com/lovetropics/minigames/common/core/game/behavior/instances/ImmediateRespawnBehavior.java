@@ -3,6 +3,8 @@ package com.lovetropics.minigames.common.core.game.behavior.instances;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.SpawnBuilder;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
+import com.lovetropics.minigames.common.core.game.behavior.action.GameActionContext;
+import com.lovetropics.minigames.common.core.game.behavior.action.GameActionList;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.lovetropics.minigames.common.core.game.player.PlayerRole;
@@ -17,16 +19,18 @@ import net.minecraft.world.InteractionResult;
 import java.util.Map;
 import java.util.Optional;
 
-public record ImmediateRespawnBehavior(Optional<PlayerRole> role, Optional<PlayerRole> respawnAsRole, Optional<TemplatedText> deathMessage, boolean dropInventory) implements IGameBehavior {
+public record ImmediateRespawnBehavior(Optional<PlayerRole> role, Optional<PlayerRole> respawnAsRole, Optional<TemplatedText> deathMessage, boolean dropInventory, GameActionList<ServerPlayer> respawnAction) implements IGameBehavior {
 	public static final MapCodec<ImmediateRespawnBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			PlayerRole.CODEC.optionalFieldOf("role").forGetter(c -> c.role),
 			PlayerRole.CODEC.optionalFieldOf("respawn_as").forGetter(c -> c.respawnAsRole),
 			TemplatedText.CODEC.optionalFieldOf("death_message").forGetter(c -> c.deathMessage),
-			Codec.BOOL.optionalFieldOf("drop_inventory", false).forGetter(c -> c.dropInventory)
+			Codec.BOOL.optionalFieldOf("drop_inventory", false).forGetter(c -> c.dropInventory),
+			GameActionList.PLAYER_CODEC.optionalFieldOf("respawn_action", GameActionList.EMPTY).forGetter(c -> c.respawnAction)
 	).apply(i, ImmediateRespawnBehavior::new));
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
+		respawnAction.register(game, events);
 		events.listen(GamePlayerEvents.DEATH, (player, source) -> onPlayerDeath(game, player));
 	}
 
@@ -56,6 +60,8 @@ public record ImmediateRespawnBehavior(Optional<PlayerRole> role, Optional<Playe
 		}
 
 		player.setHealth(20.0F);
+
+		respawnAction.apply(game, GameActionContext.EMPTY, player);
 	}
 
 	private void sendDeathMessage(IGamePhase game, ServerPlayer player) {
