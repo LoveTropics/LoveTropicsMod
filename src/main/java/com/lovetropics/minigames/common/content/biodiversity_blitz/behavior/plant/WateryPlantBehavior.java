@@ -73,7 +73,7 @@ public final class WateryPlantBehavior implements IGameBehavior {
 
                 AABB aabb = entity.getBoundingBox();
 
-                if (ticks % 15 == 0) {
+                if (ticks % 20 == 0) {
                     // Extinguish fire
                     entity.setRemainingFireTicks(0);
                     entity.hurt(entity.damageSources().magic(), 1 + random.nextInt(3));

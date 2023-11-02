@@ -47,7 +47,7 @@ public final class FlamingPlantBehavior implements IGameBehavior {
         long ticks = this.game.ticks();
         RandomSource random = this.game.getWorld().getRandom();
 
-        if (ticks % 10 != 0) {
+        if (ticks % 15 != 0) {
             return;
         }
 
@@ -63,8 +63,11 @@ public final class FlamingPlantBehavior implements IGameBehavior {
             if (!entities.isEmpty()) {
                 for (Mob entity : entities) {
                     if (!seen.contains(entity)) {
-
                         seen.add(entity);
+
+                        if (ignoreMob(entity)) {
+                            continue;
+                        }
 
                         // In plant
                         if (entity.blockPosition() == plant.coverage().getOrigin()) {
@@ -107,5 +110,13 @@ public final class FlamingPlantBehavior implements IGameBehavior {
                 }
             }
         }
+    }
+
+    private static boolean ignoreMob(Mob mob) {
+        if (mob instanceof BbMobEntity bb) {
+            return bb.immuneToFire();
+        }
+
+        return true;
     }
 }

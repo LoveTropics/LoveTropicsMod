@@ -78,4 +78,9 @@ public class BbZombiePiglinEntity extends ZombifiedPiglin implements BbMobEntity
     public double aiSpeed() {
         return 1.1;
     }
+
+    @Override
+    public boolean immuneToFire() {
+        return true;
+    }
 }

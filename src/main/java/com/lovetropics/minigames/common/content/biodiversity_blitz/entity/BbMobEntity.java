@@ -34,4 +34,8 @@ public interface BbMobEntity {
 	default int meleeDamage(RandomSource random) {
 		return 4 + random.nextInt(5);
 	}
+
+	default boolean immuneToFire() {
+		return false;
+	}
 }

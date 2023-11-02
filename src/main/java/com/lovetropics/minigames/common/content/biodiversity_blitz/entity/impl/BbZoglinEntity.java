@@ -115,4 +115,9 @@ public class BbZoglinEntity extends Zoglin implements BbMobEntity {
     public double aiSpeed() {
         return 1.0;
     }
+
+    @Override
+    public boolean immuneToFire() {
+        return true;
+    }
 }
