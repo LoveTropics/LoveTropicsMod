@@ -66,8 +66,7 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 	private static final RegistryObject<Block> WATER_BARRIER = RegistryObject.create(new ResourceLocation("ltextras", "water_barrier"), ForgeRegistries.BLOCKS);
 	private static final RegistryObject<Block> SAND_LAYER = RegistryObject.create(new ResourceLocation("weather2", "sand_layer"), ForgeRegistries.BLOCKS);
 
-	// the maximum time in milliseconds that we should spend updating the tide per tick
-	private static final int HIGH_PRIORITY_BUDGET_PER_TICK = 150;
+	private static final int HIGH_PRIORITY_BUDGET_PER_TICK = 100;
 	private static final int LOW_PRIORITY_BUDGET_PER_TICK = 10;
 
 	private static final int HIGH_PRIORITY_DISTANCE_2 = 64 * 64;
