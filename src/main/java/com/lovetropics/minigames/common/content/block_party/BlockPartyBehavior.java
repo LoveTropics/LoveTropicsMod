@@ -25,8 +25,12 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -45,7 +49,8 @@ public final class BlockPartyBehavior implements IGameBehavior {
 			Codec.LONG.optionalFieldOf("max_time", 20L * 5).forGetter(c -> c.maxTime),
 			Codec.LONG.optionalFieldOf("min_time", 20L * 2).forGetter(c -> c.minTime),
 			Codec.INT.optionalFieldOf("time_decay_rounds", 5).forGetter(c -> c.timeDecayRounds),
-			Codec.LONG.optionalFieldOf("interval", 20L * 3).forGetter(c -> c.interval)
+			Codec.LONG.optionalFieldOf("interval", 20L * 3).forGetter(c -> c.interval),
+			Codec.INT.optionalFieldOf("knockback_after_round", Integer.MAX_VALUE).forGetter(c -> c.knockbackAfterAround)
 	).apply(i, BlockPartyBehavior::new));
 
 	private final String floorRegionKey;
@@ -56,6 +61,7 @@ public final class BlockPartyBehavior implements IGameBehavior {
 	private final long minTime;
 	private final int timeDecayRounds;
 	private final long interval;
+	private final int knockbackAfterAround;
 
 	private IGamePhase game;
 	private BlockBox floorRegion;
@@ -65,7 +71,7 @@ public final class BlockPartyBehavior implements IGameBehavior {
 
 	private State state;
 
-	public BlockPartyBehavior(String floorRegionKey, Block[] blocks, int quadSize, long maxTime, long minTime, int timeDecayRounds, long interval) {
+	public BlockPartyBehavior(String floorRegionKey, Block[] blocks, int quadSize, long maxTime, long minTime, int timeDecayRounds, long interval, int knockbackAfterAround) {
 		this.floorRegionKey = floorRegionKey;
 		this.blocks = blocks;
 		this.quadSize = quadSize;
@@ -73,6 +79,7 @@ public final class BlockPartyBehavior implements IGameBehavior {
 		this.minTime = minTime;
 		this.timeDecayRounds = timeDecayRounds;
 		this.interval = interval;
+		this.knockbackAfterAround = knockbackAfterAround;
 	}
 
 	@Override
@@ -95,11 +102,27 @@ public final class BlockPartyBehavior implements IGameBehavior {
 		events.listen(GamePlayerEvents.SPAWN, (playerId, spawn, role) -> this.spawnPlayer(spawn));
 
 		events.listen(GamePhaseEvents.TICK, this::tick);
+
+		events.listen(GamePlayerEvents.DAMAGE_AMOUNT, (player, damageSource, amount, originalAmount) -> hasKnockback(state) ? 0.0f : amount);
+		events.listen(GamePlayerEvents.ATTACK, (player, target) -> target instanceof Player && !hasKnockback(state) ? InteractionResult.FAIL : InteractionResult.PASS);
+		events.listen(GamePlayerEvents.DAMAGE, (player, damageSource, amount) -> hasKnockback(state) ? InteractionResult.PASS : InteractionResult.FAIL);
+	}
+
+	private boolean hasKnockback(@Nullable State state) {
+		return state != null && state.hasKnockback();
 	}
 
 	private void spawnPlayer(SpawnBuilder spawn) {
 		BlockPos floorPos = floorRegion.sample(game.getWorld().getRandom());
 		spawn.teleportTo(game.getWorld(), floorPos.above());
+	}
+
+	private void onStateChange(State oldState, @Nullable State newState) {
+		if (hasKnockback(newState) && !hasKnockback(oldState)) {
+			PlayerSet allPlayers = game.getAllPlayers();
+			allPlayers.sendMessage(BlockPartyTexts.KNOCKBACK_ENABLED);
+			allPlayers.playSound(SoundEvents.GRASS_BREAK, SoundSource.PLAYERS, 1.0f, 1.0f);
+		}
 	}
 
 	private void tick() {
@@ -108,6 +131,9 @@ public final class BlockPartyBehavior implements IGameBehavior {
 		}
 
 		State newState = state.tick(game);
+		if (state != newState) {
+			onStateChange(state, newState);
+		}
 		state = newState;
 
 		if (newState == null) {
@@ -198,6 +224,8 @@ public final class BlockPartyBehavior implements IGameBehavior {
 	interface State {
 		@Nullable
 		State tick(IGamePhase game);
+
+		boolean hasKnockback();
 	}
 
 	final class CountingDown implements State {
@@ -230,6 +258,11 @@ public final class BlockPartyBehavior implements IGameBehavior {
 
 			return this;
 		}
+
+		@Override
+		public boolean hasKnockback() {
+			return round >= knockbackAfterAround;
+		}
 	}
 
 	final class Interval implements State {
@@ -249,21 +282,25 @@ public final class BlockPartyBehavior implements IGameBehavior {
 			}
 			return this;
 		}
+
+		@Override
+		public boolean hasKnockback() {
+			return round >= knockbackAfterAround;
+		}
 	}
 
-	final class Ending implements State {
-		private final long endAt;
-
-		Ending(long endAt) {
-			this.endAt = endAt;
-		}
-
+	record Ending(long endAt) implements State {
 		@Override
 		public State tick(IGamePhase game) {
 			if (game.ticks() > endAt) {
 				return null;
 			}
 			return this;
+		}
+
+		@Override
+		public boolean hasKnockback() {
+			return false;
 		}
 	}
 
