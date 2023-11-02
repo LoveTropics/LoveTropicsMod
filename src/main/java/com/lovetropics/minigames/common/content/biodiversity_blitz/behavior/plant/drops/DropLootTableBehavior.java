@@ -63,7 +63,7 @@ public final class DropLootTableBehavior implements IGameBehavior {
 				Plant plant = plot.plants.getPlantAt(pos);
 
 				if (plant != null && plant.type().equals(this.plantType)) {
-
+					player.swing(hand);
 					dropLoot(player, plot, plant, pos);
 					world.setBlock(pos, state.setValue(BlockStateProperties.AGE_7, 0), 3);
 					return InteractionResult.SUCCESS;
