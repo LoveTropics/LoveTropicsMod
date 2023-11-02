@@ -113,6 +113,7 @@ public final class ClientPlayerDisguises {
 
         disguise.setCustomName(entity.getDisplayName());
         disguise.setCustomNameVisible(entity.isCustomNameVisible());
+        disguise.setGlowingTag(entity.isCurrentlyGlowing());
 
         if (disguise instanceof LivingEntity livingDisguise) {
             livingDisguise.yBodyRot = entity.yBodyRot;
