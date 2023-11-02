@@ -3,6 +3,11 @@ package com.lovetropics.minigames.common.core.game.player;
 import com.google.common.base.Predicate;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.Iterators;
+import net.minecraft.network.chat.CommonComponents;
+import net.minecraft.network.protocol.game.ClientboundClearTitlesPacket;
+import net.minecraft.network.protocol.game.ClientboundSetSubtitleTextPacket;
+import net.minecraft.network.protocol.game.ClientboundSetTitleTextPacket;
+import net.minecraft.network.protocol.game.ClientboundSetTitlesAnimationPacket;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.Connection;
@@ -15,6 +20,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraftforge.network.PacketDistributor;
 import net.minecraftforge.network.simple.SimpleChannel;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -77,6 +83,19 @@ public interface PlayerIterable extends PlayerOps, Iterable<ServerPlayer> {
 		});
 
 		channel.send(target, message);
+	}
+
+	default void showTitle(@Nullable final Component title, @Nullable final Component subtitle, final int fadeIn, final int stay, final int fadeOut) {
+		sendPacket(new ClientboundClearTitlesPacket(true));
+		sendPacket(new ClientboundSetTitlesAnimationPacket(fadeIn, stay, fadeOut));
+		sendPacket(new ClientboundSetTitleTextPacket(title != null ? title : CommonComponents.space()));
+		if (subtitle != null) {
+			sendPacket(new ClientboundSetSubtitleTextPacket(subtitle));
+		}
+	}
+
+	default void showTitle(final Component title, final int fadeIn, final int stay, final int fadeOut) {
+		showTitle(title, null, fadeIn, stay, fadeOut);
 	}
 
 	static Iterator<ServerPlayer> resolvingIterator(MinecraftServer server, Iterator<UUID> ids) {
