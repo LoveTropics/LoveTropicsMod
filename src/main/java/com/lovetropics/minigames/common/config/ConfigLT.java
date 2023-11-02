@@ -43,7 +43,7 @@ public class ConfigLT {
 
             donationPackageDelay = COMMON_BUILDER
                 .comment("Delay (in seconds) between care packages")
-                .defineInRange("donationPackageDelay", 10, 0, 99999);
+                .defineInRange("donationPackageDelay", 3, 0, 99999);
 
             chatEventDelay = COMMON_BUILDER
                 .comment("Delay (in seconds) between chat events")
