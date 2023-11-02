@@ -29,9 +29,13 @@ public abstract class MoveToBlockGoal extends Goal {
         }
     }
 
+    protected double speed() {
+        return 0.5;
+    }
+
     @Override
     public void start() {
-        this.mob.getNavigation().moveTo(this.targetPos.getX(), this.targetPos.getY(), this.targetPos.getZ(), 0.5);
+        this.mob.getNavigation().moveTo(this.targetPos.getX(), this.targetPos.getY(), this.targetPos.getZ(), speed());
     }
 
     @Override
@@ -61,7 +65,7 @@ public abstract class MoveToBlockGoal extends Goal {
             }
         }
 
-        return maxPrioLoc;
+        return origin.equals(maxPrioLoc) ? null : maxPrioLoc;
     }
 
     // 0: Do not target this block

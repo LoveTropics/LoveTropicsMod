@@ -5,6 +5,7 @@ import com.lovetropics.minigames.Constants;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleOptions;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.resources.ResourceLocation;
@@ -17,6 +18,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LightningBolt;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -113,6 +115,25 @@ public class Util {
             double d1 = random.nextGaussian() * yScale;
             double d2 = random.nextGaussian() * xzScale;
             world.sendParticles(data, sample.x, sample.y, sample.z, 1 + random.nextInt(2), d3, d1, d2, speedBase + random.nextDouble() * speedScale);
+        }
+    }
+
+    public static void spawnDamageParticles(Mob mob, BlockPos pos, int damage) {
+        RandomSource random = mob.level().random;
+        for (int i = 0; i < 2 + (damage / 2); ++i) {
+            double dx = random.nextGaussian() * 0.02;
+            double dy = random.nextGaussian() * 0.02;
+            double dz = random.nextGaussian() * 0.02;
+
+            ((ServerLevel) mob.level()).sendParticles(
+                    ParticleTypes.ANGRY_VILLAGER,
+                    pos.getX() + 0.5,
+                    pos.getY() + 0.5,
+                    pos.getZ() + 0.5,
+                    1 + random.nextInt(2),
+                    dx, dy, dz,
+                    0.01 + random.nextDouble() * 0.02
+            );
         }
     }
 

@@ -26,6 +26,7 @@ public class BbCreeperEntity extends Creeper implements BbMobEntity {
     private final BbMobBrain mobBrain;
     private final Plot plot;
     private float explosionSizeOffset = 0;
+
     
     public BbCreeperEntity(EntityType<? extends Creeper> type, Level world, Plot plot) {
         super(type, world);

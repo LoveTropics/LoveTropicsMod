@@ -4,6 +4,7 @@ import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.BbMobE
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.plant.Plant;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.plant.state.PlantHealth;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.plant.state.PlantNotPathfindable;
+import com.lovetropics.minigames.common.util.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
@@ -24,6 +25,11 @@ public class DestroyCropGoal extends MoveToBlockGoal {
     }
 
     @Override
+    protected double speed() {
+        return mob.aiSpeed();
+    }
+
+    @Override
     public void tick() {
         super.tick();
 
@@ -32,7 +38,7 @@ public class DestroyCropGoal extends MoveToBlockGoal {
         if (distance2 <= getDistanceSq(mob.level().getBlockState(targetPos))) {
             this.ticksAtTarget--;
             if (mob.level().random.nextInt(4) == 0) {
-                spawnDamageParticles(mob, 0);
+                Util.spawnDamageParticles(mob, this.targetPos, 0);
             }
             
             if (this.ticksAtTarget <= 0) {
@@ -57,27 +63,8 @@ public class DestroyCropGoal extends MoveToBlockGoal {
                 int damage = this.mob.meleeDamage(mob.level().getRandom());
                 health.decrement(damage);
 
-                this.spawnDamageParticles(mob, damage);
+                Util.spawnDamageParticles(mob, this.targetPos, damage);
             }
-        }
-    }
-
-    private void spawnDamageParticles(Mob mob, int damage) {
-        RandomSource random = mob.level().random;
-        for (int i = 0; i < 2 + (damage / 2); ++i) {
-            double dx = random.nextGaussian() * 0.02;
-            double dy = random.nextGaussian() * 0.02;
-            double dz = random.nextGaussian() * 0.02;
-
-            ((ServerLevel) mob.level()).sendParticles(
-                    ParticleTypes.ANGRY_VILLAGER,
-                    this.targetPos.getX() + 0.5,
-                    this.targetPos.getY() + 0.5,
-                    this.targetPos.getZ() + 0.5,
-                    1 + random.nextInt(2),
-                    dx, dy, dz,
-                    0.01 + random.nextDouble() * 0.02
-            );
         }
     }
 

@@ -66,7 +66,24 @@ public final class BbMobSpawner {
     public static Mob selectEntityForWave(RandomSource random, Level world, Plot plot, int plotIndex, int waveIndex) {
         PlotWaveState waveState = plot.waveState;
 
-        if (random.nextInt(7) == 0 && waveIndex > 4 && plot.nextCurrencyIncrement >= 3) {
+        // Devious, awful, no good hardcoded mob spawning
+
+        boolean isJungle = plotIndex <= 1;
+        boolean isWater = plotIndex == 2 || plotIndex == 3;
+
+        if (!isWater && random.nextInt(6) == 0 && waveIndex > 4 && plot.nextCurrencyIncrement >= 4) {
+            return new BbZoglinEntity(EntityType.ZOGLIN, world, plot);
+        }
+
+        if (!isWater && random.nextInt(5) == 0 && waveIndex > 4 && plot.nextCurrencyIncrement >= 3) {
+            return new BbVindicatorEntity(EntityType.VINDICATOR, world, plot);
+        }
+
+        if (!isWater && random.nextInt(5) == 0 && waveIndex > 4 && plot.nextCurrencyIncrement >= 2) {
+            return new BbZombiePiglinEntity(EntityType.ZOMBIFIED_PIGLIN, world, plot);
+        }
+
+        if (random.nextInt(6) == 0 && waveIndex > 4 && plot.nextCurrencyIncrement >= 3) {
             return new BbCreeperEntity(EntityType.CREEPER, world, plot);
         }
 
@@ -74,10 +91,8 @@ public final class BbMobSpawner {
             return new BbPillagerEntity(EntityType.PILLAGER, world, plot);
         }
 
-        // Devious, awful, no good hardcoded mob spawning
-
         // Zombies in jungle
-        if (plotIndex <= 1) {
+        if (isJungle) {
             return new BbZombieEntity(EntityType.ZOMBIE, world, plot);
         }
 

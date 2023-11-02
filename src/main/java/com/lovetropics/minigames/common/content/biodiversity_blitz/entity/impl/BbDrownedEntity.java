@@ -33,7 +33,6 @@ public class BbDrownedEntity extends Drowned implements BbMobEntity {
 		this.plot = plot;
 
 		setPathfindingMalus(BlockPathTypes.DANGER_OTHER, BERRY_BUSH_MALUS);
-		setPathfindingMalus(BlockPathTypes.WATER, -1.0F);
 	}
 
 	@Override

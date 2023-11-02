@@ -17,6 +17,14 @@ public interface BbMobEntity {
 		return entity instanceof BbMobEntity;
 	}
 
+	default boolean navigateBlockGrid() {
+		return true;
+	}
+
+	default double aiSpeed() {
+		return 0.5;
+	}
+
 	BbMobBrain getMobBrain();
 
 	Mob asMob();

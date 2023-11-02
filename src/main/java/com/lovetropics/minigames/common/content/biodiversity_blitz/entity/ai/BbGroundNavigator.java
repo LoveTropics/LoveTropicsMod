@@ -35,6 +35,12 @@ public final class BbGroundNavigator extends GroundPathNavigation {
 
 	@Override
 	protected void followThePath() {
+		if (!this.mob.navigateBlockGrid()) {
+			super.followThePath();
+
+			return;
+		}
+
 		Vec3 pos = getTempMobPos();
 		Mob mob = this.mob.asMob();
 		maxDistanceToWaypoint = MAX_DISTANCE_TO_WAYPOINT;
