@@ -20,6 +20,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.AABB;
 
 import java.util.Collections;
 import java.util.Locale;
@@ -51,9 +52,13 @@ public final class BbMobSpawner {
                 waveState.didCreeperSpawnLastWave = true;
             }
 
-            BlockPos pos = mobSpawn.sample(random);
+            AABB spawnBounds = mobSpawn.asAabb().inflate(-entity.getBbWidth(), 0.0f, -entity.getBbWidth());
+            double x = spawnBounds.minX + spawnBounds.getXsize() * random.nextFloat();
+            double y = spawnBounds.minY;
+            double z = spawnBounds.minZ + spawnBounds.getZsize() * random.nextFloat();
+            BlockPos pos = BlockPos.containing(x, y, z);
             Direction direction = plot.forward.getOpposite();
-            entity.moveTo(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5, direction.toYRot(), 0);
+            entity.moveTo(x, y, z, direction.toYRot(), 0);
 
             world.addFreshEntity(entity);
 
