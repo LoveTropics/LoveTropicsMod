@@ -1,6 +1,7 @@
 {
   "attribute.ltminigames.coin_drops": "Coin Drops",
   "attribute.ltminigames.coin_multiplier": "Coin Multiplier",
+  "attribute.ltminigames.leaky_pockets": "Leaky Pockets",
   "attribute.ltminigames.pickup_priority": "Item Pickup Priority",
   "block.ltminigames.big_red_button": "Big Red Button",
   "block.ltminigames.can": "Can",
@@ -14,6 +15,7 @@
   "block.ltminigames.straw": "Straw",
   "effect.ltminigames.coin_multiplier_power_up": "Coin Multiplier Power-up",
   "effect.ltminigames.knockback_resistance_power_up": "Knockback Resistance Power-Up",
+  "effect.ltminigames.leaky_pockets": "Leaky Pockets",
   "effect.ltminigames.pickup_priority_power_up": "Pickup Priority Power-up",
   "effect.ltminigames.speed_power_up": "Speed Power-up",
   "entity.ltminigames.driftwood": "Driftwood",

@@ -1,6 +1,7 @@
 {
   "attribute.ltminigames.coin_drops": "sdoɹᗡ uıoƆ",
   "attribute.ltminigames.coin_multiplier": "ɹǝıןdıʇןnW uıoƆ",
+  "attribute.ltminigames.leaky_pockets": "sʇǝʞɔoԀ ʎʞɐǝꞀ",
   "attribute.ltminigames.pickup_priority": "ʎʇıɹoıɹԀ dnʞɔıԀ ɯǝʇI",
   "block.ltminigames.big_red_button": "uoʇʇnᗺ pǝᴚ bıᗺ",
   "block.ltminigames.can": "uɐƆ",
@@ -14,6 +15,7 @@
   "block.ltminigames.straw": "ʍɐɹʇS",
   "effect.ltminigames.coin_multiplier_power_up": "dn-ɹǝʍoԀ ɹǝıןdıʇןnW uıoƆ",
   "effect.ltminigames.knockback_resistance_power_up": "d∩-ɹǝʍoԀ ǝɔuɐʇsısǝᴚ ʞɔɐqʞɔouʞ",
+  "effect.ltminigames.leaky_pockets": "sʇǝʞɔoԀ ʎʞɐǝꞀ",
   "effect.ltminigames.pickup_priority_power_up": "dn-ɹǝʍoԀ ʎʇıɹoıɹԀ dnʞɔıԀ",
   "effect.ltminigames.speed_power_up": "dn-ɹǝʍoԀ pǝǝdS",
   "entity.ltminigames.driftwood": "pooʍʇɟıɹᗡ",

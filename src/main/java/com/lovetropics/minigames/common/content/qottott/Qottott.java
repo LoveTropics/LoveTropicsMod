@@ -7,7 +7,7 @@ import com.lovetropics.minigames.common.content.qottott.behavior.GivePointsActio
 import com.lovetropics.minigames.common.content.qottott.behavior.ItemDropperBehavior;
 import com.lovetropics.minigames.common.content.qottott.behavior.ItemPickupPriorityBehavior;
 import com.lovetropics.minigames.common.content.qottott.behavior.KitSelectionBehavior;
-import com.lovetropics.minigames.common.content.qottott.behavior.LeakyPocketsAction;
+import com.lovetropics.minigames.common.content.qottott.behavior.LeakyPocketsBehavior;
 import com.lovetropics.minigames.common.content.qottott.behavior.LobbyWithPortalBehavior;
 import com.lovetropics.minigames.common.content.qottott.behavior.PowerUpIndicatorBehavior;
 import com.lovetropics.minigames.common.util.registry.GameBehaviorEntry;
@@ -35,7 +35,7 @@ public class Qottott {
 	public static final GameBehaviorEntry<ItemPickupPriorityBehavior> PICKUP_PRIORITY_BEHAVIOR = REGISTRATE.object("pickup_priority").behavior(ItemPickupPriorityBehavior.CODEC).register();
 	public static final GameBehaviorEntry<CoinDropAttributeBehavior> COIN_DROP_ATTRIBUTE_BEHAVIOR = REGISTRATE.object("coin_drop_attribute").behavior(CoinDropAttributeBehavior.CODEC).register();
 	public static final GameBehaviorEntry<PowerUpIndicatorBehavior> POWER_UP_INDICATOR = REGISTRATE.object("power_up_indicator").behavior(PowerUpIndicatorBehavior.CODEC).register();
-	public static final GameBehaviorEntry<LeakyPocketsAction> LEAKY_POCKETS = REGISTRATE.object("leaky_pockets").behavior(LeakyPocketsAction.CODEC).register();
+	public static final GameBehaviorEntry<LeakyPocketsBehavior> LEAKY_POCKETS_BEHAVIOR = REGISTRATE.object("leaky_pockets").behavior(LeakyPocketsBehavior.CODEC).register();
 
 	public static final RegistryEntry<Attribute> COIN_MULTIPLIER = REGISTRATE.object("coin_multiplier").attribute(translationKey ->
 			new RangedAttribute(translationKey, 1.0, 0.0, 100.0).setSyncable(false)
@@ -46,6 +46,9 @@ public class Qottott {
 	public static final RegistryEntry<Attribute> COIN_DROPS = REGISTRATE.object("coin_drops").attribute(translationKey ->
 			new RangedAttribute(translationKey, 0.0, 0.0, 1.0).setSyncable(false)
 	).lang("Coin Drops").register();
+	public static final RegistryEntry<Attribute> LEAKY_POCKETS = REGISTRATE.object("leaky_pockets").attribute(translationKey ->
+			new RangedAttribute(translationKey, 0.0, 0.0, 1.0).setSyncable(false)
+	).lang("Leaky Pockets").register();
 
 	public static final RegistryEntry<MobEffect> COIN_MULTIPLIER_POWER_UP = REGISTRATE.object("coin_multiplier_power_up").mobEffect(() -> new CustomMobEffect(MobEffectCategory.BENEFICIAL).addAttributeModifier(
 			COIN_MULTIPLIER.get(),
@@ -72,6 +75,13 @@ public class Qottott {
 			AttributeModifier.Operation.ADDITION
 	)).lang("Speed Power-up").register();
 
+	public static final RegistryEntry<MobEffect> LEAKY_POCKETS_EFFECT = REGISTRATE.object("leaky_pockets").mobEffect(() -> new CustomMobEffect(MobEffectCategory.HARMFUL).addAttributeModifier(
+			LEAKY_POCKETS.get(),
+			"c719125e-23c3-4bbb-8e85-2db030249fb0",
+			0.005,
+			AttributeModifier.Operation.ADDITION
+	)).lang("Leaky Pockets").register();
+
 	public static void init() {
 	}
 
@@ -80,6 +90,7 @@ public class Qottott {
 		event.add(EntityType.PLAYER, COIN_MULTIPLIER.get());
 		event.add(EntityType.PLAYER, PICKUP_PRIORITY.get());
 		event.add(EntityType.PLAYER, COIN_DROPS.get());
+		event.add(EntityType.PLAYER, LEAKY_POCKETS.get());
 	}
 
 	private static class CustomMobEffect extends MobEffect {
