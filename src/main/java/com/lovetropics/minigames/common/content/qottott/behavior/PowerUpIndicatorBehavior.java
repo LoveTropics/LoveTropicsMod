@@ -6,13 +6,12 @@ import com.lovetropics.minigames.common.core.game.behavior.GameBehaviorType;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
+import com.lovetropics.minigames.common.core.game.behavior.instances.ConfiguredSound;
 import com.lovetropics.minigames.common.core.game.util.TemplatedText;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.SharedConstants;
 import net.minecraft.network.chat.Component;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -21,10 +20,11 @@ import net.minecraftforge.registries.ForgeRegistries;
 import java.util.Map;
 import java.util.function.Supplier;
 
-public record PowerUpIndicatorBehavior(MobEffect effect, TemplatedText text) implements IGameBehavior {
+public record PowerUpIndicatorBehavior(MobEffect effect, TemplatedText text, ConfiguredSound sound) implements IGameBehavior {
 	public static final MapCodec<PowerUpIndicatorBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			ForgeRegistries.MOB_EFFECTS.getCodec().fieldOf("effect").forGetter(PowerUpIndicatorBehavior::effect),
-			TemplatedText.CODEC.fieldOf("text").forGetter(PowerUpIndicatorBehavior::text)
+			TemplatedText.CODEC.fieldOf("text").forGetter(PowerUpIndicatorBehavior::text),
+			ConfiguredSound.CODEC.fieldOf("sound").forGetter(PowerUpIndicatorBehavior::sound)
 	).apply(i, PowerUpIndicatorBehavior::new));
 
 	@Override
@@ -36,7 +36,7 @@ public record PowerUpIndicatorBehavior(MobEffect effect, TemplatedText text) imp
 					final int seconds = Mth.floorDiv(instance.getDuration(), SharedConstants.TICKS_PER_SECOND);
 					player.sendSystemMessage(text.apply(Map.of("seconds", Component.literal(String.valueOf(seconds)))), true);
 				} else if (instance.getDuration() == 1) {
-					player.playNotifySound(SoundEvents.RESPAWN_ANCHOR_DEPLETE.value(), SoundSource.PLAYERS, 1.0f, 1.0f);
+					player.playNotifySound(sound.sound(), sound.source(), sound.volume(), sound.pitch());
 				}
 			}
 		});

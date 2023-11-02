@@ -24,7 +24,8 @@ public class QottottTexts {
 		KEYS.add("spawn.power_up", "%item% has spawned!");
 		KEYS.add("power_up.title", "Power-up!");
 		KEYS.add("power_up.subtitle", "%s + 2x \uE040");
-		KEYS.add("kill.subtitle", "+2 \uE040");
+		KEYS.add("kill.title", "+2 \uE040");
+		KEYS.add("kill.subtitle", "\u2620 %killed%");
 		KEYS.add("speed_power_up", "Speed Boost Power-up");
 		KEYS.add("speed_power_up.subtitle", "Speed Boost");
 		KEYS.add("knockback_resistance_power_up", "Knockback Resistance Power-up");
@@ -39,7 +40,7 @@ public class QottottTexts {
 		KEYS.add("cash_crab.description", "Hits drop 20% of the target's \uE040");
 		KEYS.add("cash_crab.killed.title", "Oh no!");
 		KEYS.add("cash_crab.killed.subtitle", "%killer% stole 20% of your \uE040!");
-		KEYS.add("cash_crab.leaky_pockets.title", "Oh no!");
-		KEYS.add("cash_crab.leaky_pockets.subtitle", "The Cash Crab has made your pockets leak!");
+		KEYS.add("cash_crab.leaky_pockets.title", "Cash Crab!");
+		KEYS.add("cash_crab.leaky_pockets.subtitle", "Your pockets are leaking!");
 	}
 }
