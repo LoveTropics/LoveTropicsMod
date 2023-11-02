@@ -7,10 +7,10 @@ import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.lovetropics.minigames.common.core.game.state.team.GameTeam;
-import com.lovetropics.minigames.common.core.game.state.team.GameTeamConfig;
 import com.lovetropics.minigames.common.core.game.state.team.GameTeamKey;
 import com.lovetropics.minigames.common.core.game.state.team.TeamState;
 import com.lovetropics.minigames.common.core.game.util.GameTexts;
+import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.registries.Registries;
@@ -20,9 +20,10 @@ import net.minecraft.network.chat.PlayerChatMessage;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerPlayer;
 
-public record TeamChatBehavior(ResourceKey<ChatType> chatType) implements IGameBehavior {
+public record TeamChatBehavior(ResourceKey<ChatType> chatType, boolean includeSpectators) implements IGameBehavior {
 	public static final MapCodec<TeamChatBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
-			ResourceKey.codec(Registries.CHAT_TYPE).fieldOf("chat_type").forGetter(TeamChatBehavior::chatType)
+			ResourceKey.codec(Registries.CHAT_TYPE).fieldOf("chat_type").forGetter(TeamChatBehavior::chatType),
+			Codec.BOOL.optionalFieldOf("include_spectators", true).forGetter(TeamChatBehavior::includeSpectators)
 	).apply(i, TeamChatBehavior::new));
 
 	@Override
@@ -41,7 +42,7 @@ public record TeamChatBehavior(ResourceKey<ChatType> chatType) implements IGameB
 			if (teamKey != null) {
 				GameTeam team = teams.getTeamByKey(teamKey);
 				if (team != null) {
-					broadcastToTeam(player, signedMessage, game.getInstanceState().getOrThrow(TeamState.KEY), team);
+					broadcastToTeam(player, signedMessage, game, team);
 					return true;
 				}
 			}
@@ -49,14 +50,22 @@ public record TeamChatBehavior(ResourceKey<ChatType> chatType) implements IGameB
 		});
 	}
 
-	private void broadcastToTeam(ServerPlayer player, PlayerChatMessage signedMessage, TeamState teams, GameTeam team) {
+	private void broadcastToTeam(ServerPlayer player, PlayerChatMessage signedMessage, IGamePhase game, GameTeam team) {
 		ChatType.Bound chatType = ChatType.bind(this.chatType, player)
 				.withTargetName(team.config().name().copy().withStyle(team.config().formatting()));
 
 		player.server.logChatMessage(signedMessage.decoratedContent(), chatType, null);
 		OutgoingChatMessage message = OutgoingChatMessage.create(signedMessage);
-		for (ServerPlayer otherPlayer : teams.getPlayersForTeam(team.key())) {
+
+		TeamState teams = game.getInstanceState().getOrThrow(TeamState.KEY);
+		for (ServerPlayer otherPlayer : teams.getParticipantsForTeam(game, team.key())) {
 			otherPlayer.sendChatMessage(message, false, chatType);
+		}
+
+		if (includeSpectators) {
+			for (ServerPlayer spectator : game.getSpectators()) {
+				spectator.sendChatMessage(message, false, chatType);
+			}
 		}
 	}
 }
