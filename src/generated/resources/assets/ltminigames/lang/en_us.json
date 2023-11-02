@@ -279,6 +279,8 @@
   "ltminigames.minigame.qottott.cash_crab.description": "Hits drop 20% of the target's Coins",
   "ltminigames.minigame.qottott.cash_crab.killed.subtitle": "%killer% stole 20% of your Coins!",
   "ltminigames.minigame.qottott.cash_crab.killed.title": "Oh no!",
+  "ltminigames.minigame.qottott.cash_crab.leaky_pockets.subtitle": "The Cash Crab has made your pockets leak!",
+  "ltminigames.minigame.qottott.cash_crab.leaky_pockets.title": "Oh no!",
   "ltminigames.minigame.qottott.health_power_up": "Health Boost Power-up",
   "ltminigames.minigame.qottott.health_power_up.subtitle": "Health Boost",
   "ltminigames.minigame.qottott.instruction": "Pick up coins!",

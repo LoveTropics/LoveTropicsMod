@@ -38,5 +38,7 @@ public class QottottTexts {
 		KEYS.add("cash_crab.description", "Hits drop 20% of the target's Coins");
 		KEYS.add("cash_crab.killed.title", "Oh no!");
 		KEYS.add("cash_crab.killed.subtitle", "%killer% stole 20% of your Coins!");
+		KEYS.add("cash_crab.leaky_pockets.title", "Oh no!");
+		KEYS.add("cash_crab.leaky_pockets.subtitle", "The Cash Crab has made your pockets leak!");
 	}
 }
