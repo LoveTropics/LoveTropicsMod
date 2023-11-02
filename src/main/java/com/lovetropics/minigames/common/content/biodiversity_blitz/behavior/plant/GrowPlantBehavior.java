@@ -9,14 +9,15 @@ import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.plant.st
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
-import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
+import net.minecraft.SharedConstants;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.valueproviders.IntProvider;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.level.block.Block;
@@ -26,21 +27,25 @@ import net.minecraft.world.level.block.state.BlockState;
 import java.util.ArrayList;
 import java.util.List;
 
-public record GrowPlantBehavior(int time, PlantType growInto) implements IGameBehavior {
+public record GrowPlantBehavior(IntProvider time, PlantType growInto) implements IGameBehavior {
 	public static final MapCodec<GrowPlantBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
-			Codec.INT.fieldOf("time").forGetter(c -> c.time),
+			IntProvider.NON_NEGATIVE_CODEC.fieldOf("time").forGetter(c -> c.time),
 			PlantType.CODEC.fieldOf("grow_into").forGetter(c -> c.growInto)
 	).apply(i, GrowPlantBehavior::new));
 
+	private static final int GROW_ATTEMPT_INTERVAL_TICKS = SharedConstants.TICKS_PER_SECOND;
+
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
-		events.listen(BbPlantEvents.ADD, (player, plot, plant) -> {
-			plant.state().put(GrowTime.KEY, new GrowTime(game.ticks() + this.time));
-		});
+		events.listen(BbPlantEvents.ADD, (player, plot, plant) ->
+				plant.state().put(GrowTime.KEY, new GrowTime(game.ticks() + this.time.sample(game.getRandom())))
+		);
 
 		events.listen(BbPlantEvents.TICK, (players, plot, plants) -> {
 			long ticks = game.ticks();
-			if (ticks % 20 != 0) return;
+			if (ticks % GROW_ATTEMPT_INTERVAL_TICKS != 0) {
+				return;
+			}
 
 			List<Plant> growPlants = this.collectPlantsToGrow(plants, ticks);
 			for (Plant plant : growPlants) {
@@ -51,18 +56,12 @@ public record GrowPlantBehavior(int time, PlantType growInto) implements IGameBe
 
 	private void tryGrowPlant(IGamePhase game, ServerPlayer player, Plot plot, Plant plant) {
 		ServerLevel world = game.getWorld();
-
-		PlantSnapshot snapshot = this.removeAndSnapshot(world, plot, plant);
+		PlantSnapshot snapshot = removeAndSnapshot(world, plot, plant);
 
 		BlockPos origin = plant.coverage().getOrigin();
 		InteractionResultHolder<Plant> result = game.invoker(BbEvents.PLACE_PLANT).placePlant(player, plot, origin, this.growInto);
 		if (result.getResult() != InteractionResult.SUCCESS) {
-			this.restoreSnapshot(world, plot, snapshot);
-
-			GrowTime growTime = plant.state(GrowTime.KEY);
-			if (growTime != null) {
-				growTime.next = game.ticks() + this.time;
-			}
+			restoreSnapshot(world, plot, snapshot);
 		}
 	}
 
