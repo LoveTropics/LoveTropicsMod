@@ -60,6 +60,7 @@ public final class GameEndEffectsBehavior implements IGameBehavior {
 	private boolean ended;
 	private long stopTime;
 
+	@Nullable
 	private Component winner;
 
 	public GameEndEffectsBehavior(long stopDelay, Long2ObjectMap<TemplatedText> scheduledMessages, Optional<TemplatedText> title, Optional<Podium> podium) {
@@ -72,8 +73,16 @@ public final class GameEndEffectsBehavior implements IGameBehavior {
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) throws GameException {
 		events.listen(GameLogicEvents.WIN_TRIGGERED, winner -> {
+			if (winner.getStyle().getColor() != null) {
+				this.winner = winner;
+			} else {
+				this.winner = winner.copy().withStyle(ChatFormatting.AQUA);
+			}
+		});
+
+		events.listen(GameLogicEvents.GAME_OVER, () -> {
 			if (!ended) {
-				this.triggerEnd(game, winner);
+				this.triggerEnd(game);
 			}
 		});
 
@@ -84,16 +93,10 @@ public final class GameEndEffectsBehavior implements IGameBehavior {
 		});
 	}
 
-	private void triggerEnd(IGamePhase game, Component winner) {
-		if (winner.getStyle().getColor() != null) {
-			this.winner = winner;
-		} else {
-			this.winner = winner.copy().withStyle(ChatFormatting.AQUA);
-		}
-
+	private void triggerEnd(IGamePhase game) {
 		this.ended = true;
 
-		if (this.title != null) {
+		if (this.title != null && winner != null) {
 			Component title = this.title.apply(Map.of("winner", winner));
 			PlayerSet players = game.getAllPlayers();
 			players.sendPacket(new ClientboundClearTitlesPacket(true));
