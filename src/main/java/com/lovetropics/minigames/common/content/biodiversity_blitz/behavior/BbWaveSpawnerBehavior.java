@@ -194,11 +194,8 @@ public final class BbWaveSpawnerBehavior implements IGameBehavior {
 		}
 
 		// Early on, only spawn at the "base"
-		Set<Entity> entities = new HashSet<>();
-		if (waveIndex < 6) {
-			BbMobSpawner.spawnWaveEntities(world, random,
-					plot, count, waveIndex, BbMobSpawner::selectEntityForWave, listeners.invoker(BbEvents.MODIFY_WAVE_MODS));
-		}
+		Set<Entity> entities = BbMobSpawner.spawnWaveEntities(world, random,
+				plot, count, waveIndex, BbMobSpawner::selectEntityForWave, listeners.invoker(BbEvents.MODIFY_WAVE_MODS));
 
 		for (ServerPlayer player : players) {
 			ServerBossEvent bossBar = this.createWaveBar(player, waveIndex, count, entities);
