@@ -11,6 +11,8 @@ import java.util.function.Predicate;
 public interface BbMobEntity {
 	Predicate<Mob> PREDICATE = entity -> entity.isAlive() && matches(entity);
 
+	float BERRY_BUSH_MALUS = 100.0f;
+
 	static boolean matches(Entity entity) {
 		return entity instanceof BbMobEntity;
 	}

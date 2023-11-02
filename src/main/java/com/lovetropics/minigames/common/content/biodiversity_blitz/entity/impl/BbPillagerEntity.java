@@ -38,10 +38,8 @@ public class BbPillagerEntity extends Pillager implements BbMobEntity {
         this.mobBrain = new BbMobBrain(plot.walls);
         this.plot = plot;
 
-        // Ignore sweet berry bushes and water
-        this.setPathfindingMalus(BlockPathTypes.DANGER_OTHER, 0.0F);
-        this.setPathfindingMalus(BlockPathTypes.DAMAGE_OTHER, 0.0F);
-        this.setPathfindingMalus(BlockPathTypes.WATER, -1.0F);
+        setPathfindingMalus(BlockPathTypes.DANGER_OTHER, BERRY_BUSH_MALUS);
+        setPathfindingMalus(BlockPathTypes.WATER, -1.0F);
     }
 
     @Override
