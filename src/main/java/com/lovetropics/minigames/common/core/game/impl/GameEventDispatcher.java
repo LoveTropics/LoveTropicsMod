@@ -311,6 +311,7 @@ public final class GameEventDispatcher {
 					resendPlayerHeldItem(player);
 				} else if (result == InteractionResult.SUCCESS) {
 					event.setUseBlock(Event.Result.ALLOW);
+					player.swing(event.getHand());
 				}
 			} catch (Exception e) {
 				LoveTropics.LOGGER.warn("Failed to dispatch player use block event", e);
