@@ -8,7 +8,7 @@ import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.lovetropics.minigames.common.core.game.player.PlayerRole;
-import com.lovetropics.minigames.common.core.game.state.ProgressionPoint;
+import com.lovetropics.minigames.common.core.game.state.ProgressionPeriod;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -35,12 +35,12 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.BooleanSupplier;
 
-public record LobbyWithPortalBehavior(String portalRegion, String targetRegion, String pointTowardsRegion, ProgressionPoint openAt) implements IGameBehavior {
+public record LobbyWithPortalBehavior(String portalRegion, String targetRegion, String pointTowardsRegion, ProgressionPeriod openAt) implements IGameBehavior {
 	public static final MapCodec<LobbyWithPortalBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			Codec.STRING.fieldOf("portal_region").forGetter(LobbyWithPortalBehavior::portalRegion),
 			Codec.STRING.fieldOf("target_region").forGetter(LobbyWithPortalBehavior::targetRegion),
 			Codec.STRING.fieldOf("point_towards_region").forGetter(LobbyWithPortalBehavior::pointTowardsRegion),
-			ProgressionPoint.CODEC.fieldOf("open_at").forGetter(LobbyWithPortalBehavior::openAt)
+			ProgressionPeriod.CODEC.fieldOf("open_at").forGetter(LobbyWithPortalBehavior::openAt)
 	).apply(i, LobbyWithPortalBehavior::new));
 
 	@Override
@@ -54,11 +54,12 @@ public record LobbyWithPortalBehavior(String portalRegion, String targetRegion, 
 		final Vec3 pointTowards = game.getMapRegions().getOrThrow(pointTowardsRegion).center();
 
 		final BooleanSupplier predicate = openAt.createPredicate(game);
-		final MutableBoolean openedPortal = new MutableBoolean();
+		final MutableBoolean portalOpen = new MutableBoolean();
 		events.listen(GamePhaseEvents.TICK, () -> {
-			if (!openedPortal.getValue() && predicate.getAsBoolean()) {
-				setPortal(game.getLevel(), portal);
-				openedPortal.setTrue();
+			final boolean shouldOpen = predicate.getAsBoolean();
+			if (portalOpen.getValue() != shouldOpen) {
+				setPortal(game.getLevel(), portal, shouldOpen);
+				portalOpen.setValue(shouldOpen);
 			}
 		});
 
@@ -70,7 +71,7 @@ public record LobbyWithPortalBehavior(String portalRegion, String targetRegion, 
 		});
 
 		events.listen(GamePlayerEvents.TICK, player -> {
-			if (!predicate.getAsBoolean()) {
+			if (!portalOpen.getValue()) {
 				return;
 			}
 			if (portal.contains(player.position()) && playersInLobby.remove(player.getUUID())) {
@@ -91,11 +92,11 @@ public record LobbyWithPortalBehavior(String portalRegion, String targetRegion, 
 		return (float) Math.atan2(-deltaX, deltaZ) * Mth.RAD_TO_DEG;
 	}
 
-	private static void setPortal(final ServerLevel level, final BlockBox portal) {
+	private static void setPortal(final ServerLevel level, final BlockBox portal, final boolean open) {
 		final Direction.Axis portalAxis = portal.size().getX() > 1 ? Direction.Axis.X : Direction.Axis.Z;
-		final BlockState portalState = Blocks.NETHER_PORTAL.defaultBlockState().setValue(NetherPortalBlock.AXIS, portalAxis);
+		final BlockState state = open ? Blocks.NETHER_PORTAL.defaultBlockState().setValue(NetherPortalBlock.AXIS, portalAxis) : Blocks.AIR.defaultBlockState();
 		for (final BlockPos pos : portal) {
-			level.setBlock(pos, portalState, Block.UPDATE_CLIENTS);
+			level.setBlock(pos, state, Block.UPDATE_CLIENTS);
 		}
 	}
 
