@@ -1,6 +1,7 @@
 package com.lovetropics.minigames.common.content.biodiversity_blitz.entity.ai;
 
 import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.BbMobEntity;
+import net.minecraft.core.Vec3i;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.navigation.GroundPathNavigation;
 import net.minecraft.world.level.BlockGetter;
@@ -8,9 +9,11 @@ import net.minecraft.world.level.pathfinder.BlockPathTypes;
 import net.minecraft.world.level.pathfinder.Node;
 import net.minecraft.world.level.pathfinder.PathFinder;
 import net.minecraft.world.level.pathfinder.WalkNodeEvaluator;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
 public final class BbGroundNavigator extends GroundPathNavigation {
+	private static final float MAX_DISTANCE_TO_WAYPOINT = 0.2f;
 	private final BbMobEntity mob;
 
 	public BbGroundNavigator(Mob mob) {
@@ -28,6 +31,21 @@ public final class BbGroundNavigator extends GroundPathNavigation {
 	@Override
 	public boolean canCutCorner(BlockPathTypes type) {
 		return false;
+	}
+
+	@Override
+	protected void followThePath() {
+		Vec3 pos = getTempMobPos();
+		Mob mob = this.mob.asMob();
+		maxDistanceToWaypoint = MAX_DISTANCE_TO_WAYPOINT;
+		Vec3i nextNodePos = path.getNextNodePos();
+		double deltaX = Math.abs(mob.getX() - (nextNodePos.getX() + 0.5));
+		double deltaY = Math.abs(mob.getY() - nextNodePos.getY());
+		double deltaZ = Math.abs(mob.getZ() - (nextNodePos.getZ() + 0.5));
+		if (deltaX <= maxDistanceToWaypoint && deltaZ <= maxDistanceToWaypoint && deltaY < 1.0) {
+			path.advance();
+		}
+		doStuckDetection(pos);
 	}
 
 	final class NodeProcessor extends WalkNodeEvaluator {
