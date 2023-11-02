@@ -1,7 +1,6 @@
 package com.lovetropics.minigames.common.content.biodiversity_blitz.client_state;
 
 import com.lovetropics.lib.BlockBox;
-import com.lovetropics.lib.codec.MoreCodecs;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.BiodiversityBlitz;
 import com.lovetropics.minigames.common.core.game.client_state.GameClientState;
 import com.lovetropics.minigames.common.core.game.client_state.GameClientStateType;
@@ -9,27 +8,25 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 
-public final class CheckeredPlotsState implements GameClientState {
+import java.util.List;
+
+public record CheckeredPlotsState(List<BlockBox> plots, BlockBox global) implements GameClientState {
 	public static final Codec<CheckeredPlotsState> CODEC = RecordCodecBuilder.create(i -> i.group(
-			MoreCodecs.arrayOrUnit(BlockBox.CODEC, BlockBox[]::new).fieldOf("plots").forGetter(c -> c.plots)
+			BlockBox.CODEC.listOf().fieldOf("plots").forGetter(CheckeredPlotsState::plots)
 	).apply(i, CheckeredPlotsState::new));
 
-	private final BlockBox[] plots;
-	private final BlockBox global;
-
-	public CheckeredPlotsState(BlockBox[] plots) {
-		this.plots = plots;
-		this.global = this.computeGlobalBounds(plots);
+	public CheckeredPlotsState(final List<BlockBox> plots) {
+		this(plots, computeGlobalBounds(plots));
 	}
 
-	private BlockBox computeGlobalBounds(BlockBox[] plots) {
-		if (plots.length == 0) {
+	private static BlockBox computeGlobalBounds(final List<BlockBox> plots) {
+		if (plots.isEmpty()) {
 			return BlockBox.of(BlockPos.ZERO);
 		}
 
-		BlockBox global = plots[0];
-		for (int i = 1; i < plots.length; i++) {
-			BlockBox plot = plots[i];
+		BlockBox global = plots.get(0);
+		for (int i = 1; i < plots.size(); i++) {
+			final BlockBox plot = plots.get(i);
 			global = BlockBox.of(
 					BlockBox.min(global.min(), plot.min()),
 					BlockBox.max(global.max(), plot.max())

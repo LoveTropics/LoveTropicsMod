@@ -1,6 +1,5 @@
 package com.lovetropics.minigames.common.content.biodiversity_blitz.behavior;
 
-import com.lovetropics.lib.BlockBox;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.event.BbEvents;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.tutorial.TutorialState;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.client_state.CheckeredPlotsState;
@@ -81,7 +80,7 @@ public final class BbAssignPlotsBehavior implements IGameBehavior {
 
 	private void applyCheckeredPlots(EventRegistrar events) {
 		CheckeredPlotsState checkeredPlots = new CheckeredPlotsState(
-				plots.stream().map(plot -> plot.floorBounds).toArray(BlockBox[]::new)
+				plots.stream().map(plot -> plot.floorBounds).toList()
 		);
 
 		GameClientState.applyGlobally(checkeredPlots, events);
