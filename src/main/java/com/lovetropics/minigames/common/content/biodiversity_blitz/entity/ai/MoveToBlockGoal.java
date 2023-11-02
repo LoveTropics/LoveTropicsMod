@@ -1,9 +1,8 @@
 package com.lovetropics.minigames.common.content.biodiversity_blitz.entity.ai;
 
-import net.minecraft.core.Registry;
+import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.goal.Goal;
-import net.minecraft.core.BlockPos;
 
 import javax.annotation.Nullable;
 import java.util.EnumSet;
@@ -32,7 +31,7 @@ public abstract class MoveToBlockGoal extends Goal {
 
     @Override
     public void start() {
-        this.mob.getNavigation().moveTo(this.targetPos.getX(), this.targetPos.getY(), this.targetPos.getZ(), 1.0);
+        this.mob.getNavigation().moveTo(this.targetPos.getX(), this.targetPos.getY(), this.targetPos.getZ(), 0.5);
     }
 
     @Override
