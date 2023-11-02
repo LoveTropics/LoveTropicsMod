@@ -143,13 +143,15 @@ public final class BbBehavior implements IGameBehavior {
 		BlockState state = world.getBlockState(pos);
 
 		// TODO: can we make it not hardcoded?
-		if (plot.isFloorAt(pos) && state.getBlock() == Blocks.FARMLAND && player.getItemInHand(hand).is(ItemTags.HOES)) {
+		if (plot.isFloorAt(pos) && player.getItemInHand(hand).is(ItemTags.HOES)) {
 			// If there is no plant above we can change to grass safely
-			if (!plot.plants.hasPlantAt(pos.above())) {
+			if (state.is(Blocks.FARMLAND) && !plot.plants.hasPlantAt(pos.above())) {
 				world.setBlockAndUpdate(pos, Blocks.GRASS_BLOCK.defaultBlockState());
 				world.playSound(null, blockPos, SoundEvents.HOE_TILL, SoundSource.BLOCKS, 1.0F, 1.0F);
 				player.getCooldowns().addCooldown(player.getItemInHand(hand).getItem(), 3);
 				return InteractionResult.SUCCESS;
+			} else if (state.is(Blocks.DIRT_PATH)) {
+				return InteractionResult.FAIL;
 			}
 		}
 
