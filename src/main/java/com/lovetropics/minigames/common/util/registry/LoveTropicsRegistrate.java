@@ -7,8 +7,10 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.tterrag.registrate.AbstractRegistrate;
 import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 public final class LoveTropicsRegistrate extends AbstractRegistrate<LoveTropicsRegistrate> {
@@ -66,5 +68,17 @@ public final class LoveTropicsRegistrate extends AbstractRegistrate<LoveTropicsR
 
 	public <T extends MobEffect, P> MobEffectBuilder<T, P> mobEffect(P parent, String name, Supplier<T> effect) {
 		return entry(name, callback -> new MobEffectBuilder<>(this, parent, name, callback, effect));
+	}
+
+	public <T extends Attribute> AttributeBuilder<T, LoveTropicsRegistrate> attribute(Function<String, T> attribute) {
+		return attribute(this, attribute);
+	}
+
+	public <T extends Attribute, P> AttributeBuilder<T, P> attribute(P parent, Function<String, T> attribute) {
+		return attribute(parent, currentName(), attribute);
+	}
+
+	public <T extends Attribute, P> AttributeBuilder<T, P> attribute(P parent, String name, Function<String, T> attribute) {
+		return entry(name, callback -> new AttributeBuilder<>(this, parent, name, callback, attribute));
 	}
 }

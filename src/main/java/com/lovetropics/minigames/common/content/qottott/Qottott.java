@@ -10,13 +10,9 @@ import com.lovetropics.minigames.common.content.qottott.behavior.KitSelectionBeh
 import com.lovetropics.minigames.common.content.qottott.behavior.LeakyPocketsAction;
 import com.lovetropics.minigames.common.content.qottott.behavior.LobbyWithPortalBehavior;
 import com.lovetropics.minigames.common.content.qottott.behavior.PowerUpIndicatorBehavior;
-import com.lovetropics.minigames.common.util.Util;
 import com.lovetropics.minigames.common.util.registry.GameBehaviorEntry;
 import com.lovetropics.minigames.common.util.registry.LoveTropicsRegistrate;
 import com.tterrag.registrate.util.entry.RegistryEntry;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.entity.EntityType;
@@ -41,20 +37,15 @@ public class Qottott {
 	public static final GameBehaviorEntry<PowerUpIndicatorBehavior> POWER_UP_INDICATOR = REGISTRATE.object("power_up_indicator").behavior(PowerUpIndicatorBehavior.CODEC).register();
 	public static final GameBehaviorEntry<LeakyPocketsAction> LEAKY_POCKETS = REGISTRATE.object("leaky_pockets").behavior(LeakyPocketsAction.CODEC).register();
 
-	private static final Component COIN_MULTIPLIER_NAME = REGISTRATE.addLang("attribute", new ResourceLocation(Constants.MODID, "coin_multiplier"), "Coin Multiplier");
-	public static final RegistryEntry<Attribute> COIN_MULTIPLIER = REGISTRATE.simple("coin_multiplier", Registries.ATTRIBUTE, () ->
-			new RangedAttribute(Util.unpackTranslationKey(COIN_MULTIPLIER_NAME), 1.0, 0.0, 100.0).setSyncable(false)
-	);
-
-	private static final Component PICKUP_PRIORITY_NAME = REGISTRATE.addLang("attribute", new ResourceLocation(Constants.MODID, "pickup_priority"), "Item Pickup Priority");
-	public static final RegistryEntry<Attribute> PICKUP_PRIORITY = REGISTRATE.simple("pickup_priority", Registries.ATTRIBUTE, () ->
-			new RangedAttribute(Util.unpackTranslationKey(PICKUP_PRIORITY_NAME), 0.0, -100.0, 100.0).setSyncable(false)
-	);
-
-	private static final Component COIN_DROPS_NAME = REGISTRATE.addLang("attribute", new ResourceLocation(Constants.MODID, "coin_drops"), "Coin Drops");
-	public static final RegistryEntry<Attribute> COIN_DROPS = REGISTRATE.simple("coin_drops", Registries.ATTRIBUTE, () ->
-			new RangedAttribute(Util.unpackTranslationKey(COIN_DROPS_NAME), 0.0, 0.0, 1.0).setSyncable(false)
-	);
+	public static final RegistryEntry<Attribute> COIN_MULTIPLIER = REGISTRATE.object("coin_multiplier").attribute(translationKey ->
+			new RangedAttribute(translationKey, 1.0, 0.0, 100.0).setSyncable(false)
+	).lang("Coin Multiplier").register();
+	public static final RegistryEntry<Attribute> PICKUP_PRIORITY = REGISTRATE.object("pickup_priority").attribute(translationKey ->
+			new RangedAttribute(translationKey, 0.0, -100.0, 100.0).setSyncable(false)
+	).lang("Item Pickup Priority").register();
+	public static final RegistryEntry<Attribute> COIN_DROPS = REGISTRATE.object("coin_drops").attribute(translationKey ->
+			new RangedAttribute(translationKey, 0.0, 0.0, 1.0).setSyncable(false)
+	).lang("Coin Drops").register();
 
 	public static final RegistryEntry<MobEffect> COIN_MULTIPLIER_POWER_UP = REGISTRATE.object("coin_multiplier_power_up").mobEffect(() -> new CustomMobEffect(MobEffectCategory.BENEFICIAL).addAttributeModifier(
 			COIN_MULTIPLIER.get(),
