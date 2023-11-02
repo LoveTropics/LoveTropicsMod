@@ -57,14 +57,17 @@ import com.lovetropics.minigames.common.util.registry.LoveTropicsRegistrate;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.logging.LogUtils;
 import com.tterrag.registrate.providers.ProviderType;
+import net.minecraft.client.renderer.DimensionSpecialEffects;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.client.event.RegisterDimensionSpecialEffectsEvent;
 import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
 import net.minecraftforge.common.ForgeConfig;
 import net.minecraftforge.common.ForgeConfigSpec;
@@ -118,6 +121,7 @@ public class LoveTropics {
         DistExecutor.runWhenOn(Dist.CLIENT, () -> () -> {
             // Client setup
             modBus.addListener(this::setupClient);
+            modBus.addListener(this::registerDimensionSpecialEffects);
         });
 
         MinecraftForge.EVENT_BUS.addListener(this::onServerAboutToStart);
@@ -202,6 +206,21 @@ public class LoveTropics {
         LobbyKeybinds.init();
         ForgeConfig.CLIENT.alwaysSetupTerrainOffThread.set(true);
         ((ForgeConfigSpec) ObfuscationReflectionHelper.getPrivateValue(ForgeConfig.class, null, "clientSpec")).save();
+    }
+
+    @OnlyIn(Dist.CLIENT)
+    private void registerDimensionSpecialEffects(final RegisterDimensionSpecialEffectsEvent event) {
+        event.register(new ResourceLocation(Constants.MODID, "raised_clouds"), new DimensionSpecialEffects(250.0f, true, DimensionSpecialEffects.SkyType.NORMAL, false, false) {
+            @Override
+            public Vec3 getBrightnessDependentFogColor(final Vec3 color, final float brightness) {
+                return color.multiply(brightness * 0.94f + 0.06f, brightness * 0.94f + 0.06f, brightness * 0.91f + 0.09f);
+            }
+
+            @Override
+            public boolean isFoggyAt(final int x, final int z) {
+                return false;
+            }
+        });
     }
 
     private void setup(final FMLCommonSetupEvent event) {
