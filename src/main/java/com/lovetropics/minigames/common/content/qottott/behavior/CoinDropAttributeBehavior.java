@@ -1,6 +1,7 @@
 package com.lovetropics.minigames.common.content.qottott.behavior;
 
 import com.lovetropics.lib.codec.MoreCodecs;
+import com.lovetropics.minigames.SoundRegistry;
 import com.lovetropics.minigames.common.content.qottott.Qottott;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.GameBehaviorType;
@@ -12,6 +13,7 @@ import com.lovetropics.minigames.common.core.game.state.statistics.StatisticsMap
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionResult;
@@ -54,6 +56,7 @@ public record CoinDropAttributeBehavior(ItemStack item, StatisticKey<Integer> st
 			entity.setDeltaMovement(random.triangle(0.0, 0.155), random.triangle(0.2, 0.155), random.triangle(0.0, 0.155));
 			level.addFreshEntity(entity);
 		}
+		player.level().playSound(null, player.getX(), player.getY(), player.getZ(), SoundRegistry.COINS.get(), SoundSource.PLAYERS, 1.0f, random.nextFloat() * 0.4f + 1.3f);
 	}
 
 	@Override

@@ -15,6 +15,7 @@ public class SoundRegistry {
 	public static final RegistryObject<SoundEvent> ACID_FLASH_FLOODING_IMMINENT = register("stt4.acid_flash_flooding_imminent");
 	public static final RegistryObject<SoundEvent> FLASH_FLOODING_IMMINENT = register("stt4.flash_flooding_imminent");
 	public static final RegistryObject<SoundEvent> LAST_SHUTTLE_DEPARTING = register("stt4.last_shuttle_departing");
+	public static final RegistryObject<SoundEvent> COINS = register("coins");
 
 	private static RegistryObject<SoundEvent> register(String name) {
 		return REGISTER.register(name, () -> SoundEvent.createVariableRangeEvent(new ResourceLocation(Constants.MODID, name)));

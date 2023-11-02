@@ -39,7 +39,7 @@ public record LeakyPocketsBehavior(ItemStack item, StatisticKey<Integer> statist
 			final StatisticsMap statistics = game.getStatistics().forPlayer(player);
 			final int count = statistics.getOr(statistic, 0);
 			int dropAmount = sampleDropCount(count, random, chancePerCoin);
-			if (dropAmount >= 0) {
+			if (dropAmount > 0) {
 				statistics.incrementInt(statistic, -dropAmount);
 				CoinDropAttributeBehavior.spawnItems(game, player, dropAmount, item);
 			}
