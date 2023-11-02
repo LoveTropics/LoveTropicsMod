@@ -40,8 +40,10 @@ import java.util.Map;
 import java.util.Optional;
 
 public final class GameEndEffectsBehavior implements IGameBehavior {
+	private static final long NO_STOP_DELAY = -1L;
+
 	public static final MapCodec<GameEndEffectsBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
-			Codec.LONG.fieldOf("stop_delay").forGetter(c -> c.stopDelay),
+			Codec.LONG.optionalFieldOf("stop_delay", NO_STOP_DELAY).forGetter(c -> c.stopDelay),
 			MoreCodecs.long2Object(TemplatedText.CODEC).optionalFieldOf("scheduled_messages", new Long2ObjectOpenHashMap<>()).forGetter(c -> c.scheduledMessages),
 			TemplatedText.CODEC.optionalFieldOf("title").forGetter(c -> Optional.ofNullable(c.title)),
 			Podium.CODEC.optionalFieldOf("podium").forGetter(c -> c.podium)
@@ -152,7 +154,7 @@ public final class GameEndEffectsBehavior implements IGameBehavior {
 	private void tickEnded(IGamePhase game) {
 		this.sendScheduledMessages(game, stopTime);
 
-		if (stopTime == stopDelay) {
+		if (stopDelay != NO_STOP_DELAY && stopTime == stopDelay) {
 			game.requestStop(GameStopReason.finished());
 		}
 
