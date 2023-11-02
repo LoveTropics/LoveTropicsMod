@@ -12,7 +12,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.ForgeHooksClient;
-import net.minecraftforge.client.event.RenderNameTagEvent;
+import net.minecraftforge.client.event.RenderPlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
@@ -22,12 +22,12 @@ public final class HealthTagRenderer  {
 	private static final ResourceLocation GUI_ICONS_TEXTURE = new ResourceLocation("textures/gui/icons.png");
 
 	@SubscribeEvent
-	public static void onRenderPlayerName(RenderNameTagEvent event) {
-		if (event.getEntity() instanceof Player player && !player.isCreative() && !player.isSpectator()) {
+	public static void onRenderPlayerName(RenderPlayerEvent event) {
+		Player player = event.getEntity();
+		if (!player.isCreative() && !player.isSpectator()) {
 			if (player == CLIENT.cameraEntity || !Minecraft.renderNames()) {
 				return;
 			}
-
 
 			double distanceSq = CLIENT.getEntityRenderDispatcher().distanceToSqr(player);
 			if (!ForgeHooksClient.isNameplateInRenderDistance(player, distanceSq) || player.isDiscrete()) {
