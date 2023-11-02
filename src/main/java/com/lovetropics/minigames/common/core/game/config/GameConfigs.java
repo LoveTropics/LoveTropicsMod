@@ -33,6 +33,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -60,9 +61,9 @@ public final class GameConfigs {
 						.thenCompose(stage::wait)
 						.thenAcceptAsync(configs -> {
 							REGISTRY.clear();
-							for (GameConfig config : configs) {
-								REGISTRY.register(config.id, config);
-							}
+							configs.stream()
+									.sorted(Comparator.comparing(config -> config.getName().getString()))
+									.forEach(config -> REGISTRY.register(config.id, config));
 						}, gameExecutor)
 		);
 	}
