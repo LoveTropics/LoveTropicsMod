@@ -58,6 +58,54 @@ public final class BiodiversityBlitzTexts {
 		KEYS.add("teams.intro6", "\nMake sure to have a large variety of different plants in your plot- diversity in an ecosystem only makes you stronger!");
 		KEYS.add("teams.intro7", "\nYou win the game once your team accumulates the target amount of Biodiversity Points - you can check your progress in the top-left of your screen!");
 		KEYS.add("teams.intro8", "\nGood luck!");
+
+		KEYS.add("plant.provides_currency", "Provides currency.");
+		KEYS.add("plant.tradeable_points", "Can be traded at the Shop for Biodiversity Points.");
+		KEYS.add("plant.nutrition", "Good source of nutrition!");
+		KEYS.add("plant.staple", "A staple crop for many.");
+		KEYS.add("plant.beetroot.tooltip", "Makes great soup!");
+		KEYS.add("plant.carrot.tooltip.extra", "Grows into a Carrot Crop after a few growth cycles.");
+		KEYS.add("plant.potato.tooltip.extra1", "Grows into a Potato Crop after a few growth cycles.");
+		KEYS.add("plant.potato.tooltip.extra2", "Can be traded at the Shop for Baked Potatoes or Biodiversity Points.");
+		KEYS.add("plant.wheat.tooltip.extra1", "Grows into a Wheat Crop after a few growth cycles.");
+		KEYS.add("plant.wheat.tooltip.extra2", "Can be traded at the Shop for Bread or Biodiversity Points.");
+		KEYS.add("plant.canna.tooltip1", "Shoots lightning at mobs and sets them on fire.");
+		KEYS.add("plant.canna.tooltip2", "Charges creepers.");
+		KEYS.add("plant.commelina_diffusa.tooltip", "Damages nearby mobs with water. Puts out fires.");
+		KEYS.add("plant.commelina_diffusa.tooltip.extra1", "When placed, any mobs in a small radius nearby will get hit by a stream of water, damaging them.");
+		KEYS.add("plant.commelina_diffusa.tooltip.extra2", "Useful as a front-line defense as it actively tries to attack mobs. Be careful where you put it, as it can put out the Crocosmia's fires.");
+		KEYS.add("plant.crocosmia.tooltip", "Lights nearby mobs on fire.");
+		KEYS.add("plant.crocosmia.tooltip.extra1", "When placed, any mobs in a small radius nearby will get hit by a jet of flames, setting them on fire.");
+		KEYS.add("plant.crocosmia.tooltip.extra2", "Useful as a front-line defense as it actively tries to attack mobs. Be careful where you put it, as the Commelina Diffusa's water can put it out.");
+		KEYS.add("plant.crocosmia.tooltip.extra3", "Be careful! Enemies set on fire will set you on fire if they attack you.");
+		KEYS.add("plant.fern.tooltip", "Greatly slows down mobs walking through it.");
+		KEYS.add("plant.fern.tooltip.extra1", "When mobs walk through Ferns, they will get the Slowness effect.");
+		KEYS.add("plant.fern.tooltip.extra2", "Mobs will not target this block: They will walk right through.");
+		KEYS.add("plant.grass.tooltip", "Greatly slows down mobs walking through it.");
+		KEYS.add("plant.grass.tooltip.extra1", "When mobs walk through Grass, they will get the Slowness effect.");
+		KEYS.add("plant.grass.tooltip.extra2", "Mobs will not target this block: They will walk right through.");
+		KEYS.add("plant.iris.tooltip", "Applies a Glowing effect mobs to all nearby mobs.");
+		KEYS.add("plant.iris.tooltip.extra1", "Gives all nearby mobs on the field the Glowing effect.");
+		KEYS.add("plant.iris.tooltip.extra2", "Useful for detecting where the mobs are when hidden behind trees.");
+		KEYS.add("plant.jack_o_lantern.tooltip", "Scares nearby mobs away! Must be reset after triggering.");
+		KEYS.add("plant.jack_o_lantern.tooltip.extra1", "When mobs walk towards the Jack o' Lantern, they get scared and avoid the area.");
+		KEYS.add("plant.jack_o_lantern.tooltip.extra2", "Jack o' Lanterns need to be reset after use and do not contribute towards your biodiversity score.");
+		KEYS.add("plant.magic_mushroom.tooltip", "Creates extra points when mobs die near it.");
+		KEYS.add("plant.melon.tooltip", "Explodes when monsters come too close.");
+		KEYS.add("plant.melon.tooltip.extra1", "When mobs walk close to the melon, the melon explodes.");
+		KEYS.add("plant.melon.tooltip.extra2", "This explosion does not affect plants or the player: only mobs.");
+		KEYS.add("plant.melon.tooltip.extra3", "Melons do not contribute towards your biodiversity score.");
+		KEYS.add("plant.pumpkin.tooltip", "Attracts mobs, but eventually breaks.");
+		KEYS.add("plant.pumpkin.tooltip.extra1", "When placed, all mobs will path directly towards the Pumpkin and gather around it.");
+		KEYS.add("plant.pumpkin.tooltip.extra2", "This causes the Pumpkin to take damage and eventually break, but it allows you to make interesting traps by forcing monsters towards a certain area.");
+		KEYS.add("plant.pumpkin.tooltip.extra3", "Pumpkins do not contribute towards your biodiversity score.");
+		KEYS.add("plant.sweet_berry_bush.tooltip", "Grows into a plant that harms monsters when walked over.");
+		KEYS.add("plant.sweet_berry_bush.tooltip.extra1", "When placed, grows into a Berry Bush that damages mobs that walk through it.");
+		KEYS.add("plant.sweet_berry_bush.tooltip.extra2", "Mobs will not target this block: they will walk right through.");
+		KEYS.add("plant.sweet_berry_bush.tooltip.extra3", "Rarely, Berries will grow, which can then be sold at the shop for Biodiversity Points.");
+		KEYS.add("plant.wither_rose.tooltip", "Applies the Wither effect to mobs touching it.");
+		KEYS.add("plant.wither_rose.tooltip.extra1", "When walked through, mobs will get the Wither effect. That includes you!");
+		KEYS.add("plant.wither_rose.tooltip.extra2", "Mobs will not target this block: they will walk right through.");
 	}
 
 	public static void collectTranslations(BiConsumer<String, String> consumer) {
