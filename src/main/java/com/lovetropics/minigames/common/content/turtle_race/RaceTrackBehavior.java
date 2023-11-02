@@ -76,6 +76,7 @@ public class RaceTrackBehavior implements IGameBehavior {
 	private long finishTime = NO_FINISH_TIME;
 
 	private final Map<UUID, PlayerState> states = new Object2ObjectOpenHashMap<>();
+	private final Map<UUID, GameSidebar> sidebars = new Object2ObjectOpenHashMap<>();
 	private final List<FinishEntry> finishedPlayers = new ArrayList<>();
 
 	private IGamePhase game;
@@ -84,7 +85,7 @@ public class RaceTrackBehavior implements IGameBehavior {
 
 	private final List<Checkpoint> checkpoints = new ArrayList<>();
 
-	public RaceTrackBehavior(PathData pathData, String finishRegion, Map<String, GameActionList<ServerPlayer>> checkpointRegions, int lapCount, int winnerCount, long startTime) {
+	private RaceTrackBehavior(PathData pathData, String finishRegion, Map<String, GameActionList<ServerPlayer>> checkpointRegions, int lapCount, int winnerCount, long startTime) {
 		this.pathData = pathData;
 		this.finishRegion = finishRegion;
 		this.checkpointRegions = checkpointRegions;
@@ -110,16 +111,12 @@ public class RaceTrackBehavior implements IGameBehavior {
 
 		events.listen(GamePlayerEvents.TICK, player -> {
 			long gameTime = game.ticks();
-			if (gameTime < startTime) {
-				return;
+			if (gameTime % SIDEBAR_UPDATE_INTERVAL == 0) {
+				tickSidebar(player, sidebarTitle);
 			}
 
 			PlayerState state = states.get(player.getUUID());
-			if (game.ticks() % SIDEBAR_UPDATE_INTERVAL == 0) {
-				state.updateSidebar(player, sidebarTitle, buildSidebar(player));
-			}
-
-			if (state == null) {
+			if (gameTime < startTime || state == null) {
 				return;
 			}
 
@@ -144,6 +141,16 @@ public class RaceTrackBehavior implements IGameBehavior {
 				triggerWin(game);
 			}
 		});
+	}
+
+	private void tickSidebar(ServerPlayer player, Component sidebarTitle) {
+		GameSidebar sidebar = sidebars.get(player.getUUID());
+		if (sidebar == null) {
+			sidebar = new GameSidebar(player.server, sidebarTitle);
+			sidebar.addPlayer(player);
+			sidebars.put(player.getUUID(), sidebar);
+		}
+		sidebar.set(buildSidebar(player));
 	}
 
 	private void registerCheckpoints(IGamePhase game, EventRegistrar events) {
@@ -193,6 +200,11 @@ public class RaceTrackBehavior implements IGameBehavior {
 		PlayerState state = states.remove(player.getUUID());
 		if (state != null) {
 			state.close();
+		}
+
+		GameSidebar sidebar = sidebars.remove(player.getUUID());
+		if (sidebar != null) {
+			sidebar.close();
 		}
 	}
 
@@ -350,8 +362,6 @@ public class RaceTrackBehavior implements IGameBehavior {
 	private static class PlayerState implements AutoCloseable {
 		@Nullable
 		private GameBossBar bar;
-		@Nullable
-		private GameSidebar sidebar;
 
 		private int lap;
 		private float trackedPosition;
@@ -390,21 +400,10 @@ public class RaceTrackBehavior implements IGameBehavior {
 			bar.setProgress(trackedPosition / pathLength);
 		}
 
-		public void updateSidebar(ServerPlayer player, Component title, Component[] lines) {
-			if (sidebar == null) {
-				sidebar = new GameSidebar(player.server, title);
-				sidebar.addPlayer(player);
-			}
-			sidebar.set(lines);
-		}
-
 		@Override
 		public void close() {
 			if (bar != null) {
 				bar.close();
-			}
-			if (sidebar != null) {
-				sidebar.close();
 			}
 		}
 	}
