@@ -2,9 +2,7 @@ package com.lovetropics.minigames.common.content.biodiversity_blitz.entity;
 
 import com.lovetropics.lib.BlockBox;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.event.BbEvents;
-import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.impl.BbCreeperEntity;
-import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.impl.BbHuskEntity;
-import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.impl.BbPillagerEntity;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.impl.*;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.Plot;
 import com.mojang.serialization.Codec;
 import net.minecraft.Util;
@@ -30,66 +28,71 @@ import java.util.WeakHashMap;
 public final class BbMobSpawner {
     public static Set<Entity> spawnWaveEntities(ServerLevel world, RandomSource random, Plot plot, int count, int waveIndex, WaveSelector waveSelector, BbEvents.ModifyWaveMobs modifier) {
         Set<Entity> entities = Collections.newSetFromMap(new WeakHashMap<>());
-        PlotWaveState waveState = plot.waveState;
-
-        waveState.didForcedCreeperSpawn = false;
-        for (int i = 0; i < count; i++) {
-
-            Mob entity = waveSelector.selectEntityForWave(random, world, plot, waveIndex);
-
-            entities.add(entity);
-        }
 
         modifier.modifyWave(entities, random, world, plot, waveIndex);
 
-        waveState.didCreeperSpawnLastWave = false;
-
-        // TODO: How should they be selected?
-        BlockBox mobSpawn = Util.getRandom(plot.mobSpawns, random);
-
         for (Entity entity : entities) {
-            if (entity instanceof BbCreeperEntity) {
-                waveState.didCreeperSpawnLastWave = true;
-            }
+            BlockBox mobSpawn = Util.getRandom(plot.mobSpawns, random);
 
-            AABB spawnBounds = mobSpawn.asAabb().inflate(-entity.getBbWidth(), 0.0f, -entity.getBbWidth());
-            double x = spawnBounds.minX + spawnBounds.getXsize() * random.nextFloat();
-            double y = spawnBounds.minY;
-            double z = spawnBounds.minZ + spawnBounds.getZsize() * random.nextFloat();
-            BlockPos pos = BlockPos.containing(x, y, z);
-            Direction direction = plot.forward.getOpposite();
-            entity.moveTo(x, y, z, direction.toYRot(), 0);
+            spawnEntity(world, random, mobSpawn, plot, entity);
+        }
 
-            world.addFreshEntity(entity);
+        for (int i = 0; i < count; i++) {
+            int plotIdx = random.nextInt(plot.mobSpawns.size());
+            Mob entity = waveSelector.selectEntityForWave(random, world, plot, plotIdx, waveIndex);
 
-            ((Mob)entity).finalizeSpawn(world, world.getCurrentDifficultyAt(pos), MobSpawnType.MOB_SUMMONED, null, null);
+            entities.add(entity);
+            spawnEntity(world, random, plot.mobSpawns.get(plotIdx), plot, entity);
         }
 
         return entities;
     }
 
+    public static void spawnEntity(ServerLevel world, RandomSource random, BlockBox mobSpawn, Plot plot, Entity entity) {
+        AABB spawnBounds = mobSpawn.asAabb().inflate(-entity.getBbWidth(), 0.0f, -entity.getBbWidth());
+        double x = spawnBounds.minX + spawnBounds.getXsize() * random.nextFloat();
+        double y = spawnBounds.minY;
+        double z = spawnBounds.minZ + spawnBounds.getZsize() * random.nextFloat();
+        BlockPos pos = BlockPos.containing(x, y, z);
+        Direction direction = plot.forward.getOpposite();
+        entity.moveTo(x, y, z, direction.toYRot(), 0);
+
+        world.addFreshEntity(entity);
+
+        ((Mob) entity).finalizeSpawn(world, world.getCurrentDifficultyAt(pos), MobSpawnType.MOB_SUMMONED, null, null);
+    }
+
     // TODO: data-drive, more entity types & getting harder as time goes on
-    public static Mob selectEntityForWave(RandomSource random, Level world, Plot plot, int waveIndex) {
+    public static Mob selectEntityForWave(RandomSource random, Level world, Plot plot, int plotIndex, int waveIndex) {
         PlotWaveState waveState = plot.waveState;
-        if (!waveState.didForcedCreeperSpawn && plot.nextCurrencyIncrement >= 14) {
-            waveState.didForcedCreeperSpawn = true;
+
+        if (random.nextInt(7) == 0 && waveIndex > 4 && plot.nextCurrencyIncrement >= 3) {
             return new BbCreeperEntity(EntityType.CREEPER, world, plot);
         }
 
-        if (random.nextInt(7) == 0 && waveIndex > 4 && plot.nextCurrencyIncrement >= 8 && !waveState.didCreeperSpawnLastWave) {
-            return new BbCreeperEntity(EntityType.CREEPER, world, plot);
-        }
-
-        if (random.nextInt(3) == 0 && waveIndex > 2 && plot.nextCurrencyIncrement >= 5) {
+        if (random.nextInt(3) == 0 && waveIndex > 2 && plot.nextCurrencyIncrement >= 2) {
             return new BbPillagerEntity(EntityType.PILLAGER, world, plot);
         }
 
+        // Devious, awful, no good hardcoded mob spawning
+
+        // Zombies in jungle
+        if (plotIndex <= 1) {
+            return new BbZombieEntity(EntityType.ZOMBIE, world, plot);
+        }
+
+        // Drowned in water
+        if (plotIndex == 2 || plotIndex == 3) {
+            return new BbDrownedEntity(EntityType.DROWNED, world, plot);
+        }
+
+        // Husks in desert
         return new BbHuskEntity(EntityType.HUSK, world, plot);
     }
 
     @FunctionalInterface
     public interface WaveSelector {
-        Mob selectEntityForWave(RandomSource random, Level world, Plot plot, int waveIndex);
+        Mob selectEntityForWave(RandomSource random, Level world, Plot plot, int plotIndex, int waveIndex);
     }
 
     public enum BbEntityTypes implements StringRepresentable {

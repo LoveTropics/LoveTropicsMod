@@ -18,6 +18,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.Object2FloatMap;
+import net.minecraft.Util;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerBossEvent;
@@ -31,13 +32,8 @@ import net.minecraft.world.BossEvent.BossBarColor;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.entity.Entity;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
 
 public final class BbWaveSpawnerBehavior implements IGameBehavior {
 	public static final MapCodec<BbWaveSpawnerBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
@@ -69,6 +65,7 @@ public final class BbWaveSpawnerBehavior implements IGameBehavior {
 	private final Map<UUID, List<WaveTracker>> waveTrackers = new HashMap<>();
 	private ServerBossEvent waveCharging;
 
+
 	public BbWaveSpawnerBehavior(long intervalSeconds, long warnSeconds, SizeCurve sizeCurve, boolean sizeCurveAlways, Object2FloatMap<Difficulty> difficultyFactors, Component firstMessage, List<IGameBehavior> children) {
 		this.intervalTicks = intervalSeconds * 20;
 		this.warnTicks = warnSeconds * 20;
@@ -85,6 +82,7 @@ public final class BbWaveSpawnerBehavior implements IGameBehavior {
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
 		this.game = game;
+
 		this.teams = game.getInstanceState().getOrThrow(TeamState.KEY);
 		this.plots = game.getState().getOrThrow(PlotsState.KEY);
 
@@ -195,7 +193,13 @@ public final class BbWaveSpawnerBehavior implements IGameBehavior {
 			}
 		}
 
-		Set<Entity> entities = BbMobSpawner.spawnWaveEntities(world, random, plot, count, waveIndex, BbMobSpawner::selectEntityForWave, listeners.invoker(BbEvents.MODIFY_WAVE_MODS));
+		// Early on, only spawn at the "base"
+		Set<Entity> entities = new HashSet<>();
+		if (waveIndex < 6) {
+			BbMobSpawner.spawnWaveEntities(world, random,
+					plot, count, waveIndex, BbMobSpawner::selectEntityForWave, listeners.invoker(BbEvents.MODIFY_WAVE_MODS));
+		}
+
 		for (ServerPlayer player : players) {
 			ServerBossEvent bossBar = this.createWaveBar(player, waveIndex, count, entities);
 

@@ -27,13 +27,11 @@ public class KaboomCropGoal extends DestroyCropGoal {
         float offset = 0;
 
         // Scale the creeper explode size based on how well the players are doing
-        if (inc <= 5) {
-            offset = -1;
-        } else if (inc < 10) {
+        if (inc < 3) {
             offset = -0.25f;
-        } else if (inc >= 15) {
+        } else if (inc >= 8) {
             offset = 1.0f;
-        } else if (inc >= 13) {
+        } else if (inc >= 5) {
             offset = 0.5f;
         }
 
