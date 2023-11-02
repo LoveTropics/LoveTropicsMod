@@ -10,7 +10,6 @@ import com.lovetropics.minigames.common.core.game.behavior.instances.action.Play
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.RunCommandsAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.SendMessageAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.trigger.GeneralEventsTrigger;
-import com.lovetropics.minigames.common.core.game.behavior.instances.trigger.ScheduledActionsTrigger;
 import com.lovetropics.minigames.common.core.game.behavior.instances.trigger.phase.StartGameTrigger;
 import com.lovetropics.minigames.common.core.game.behavior.instances.trigger.phase.StopGameTrigger;
 import com.lovetropics.minigames.common.core.game.datagen.BehaviorFactory;
@@ -21,7 +20,6 @@ import com.lovetropics.minigames.common.core.game.util.TemplatedText;
 import com.lovetropics.minigames.gametests.api.LTGameTestHelper;
 import com.lovetropics.minigames.gametests.api.MinigameTest;
 import com.lovetropics.minigames.gametests.api.RegisterMinigameTest;
-import it.unimi.dsi.fastutil.longs.Long2ObjectMaps;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.network.chat.Component;
@@ -50,7 +48,7 @@ public class ActionTriggerTests implements MinigameTest {
                         .withBehavior(new StartGameTrigger(behaviors.applyToAllPlayers(
                                 NoneActionTarget.INSTANCE,
                                 new SendMessageAction(new TemplatedText(Component.literal("hello world!")))
-                        )), new PlaySoundAction(SoundEvents.ALLAY_HURT, 0.5f, 0.5f, SoundSource.AMBIENT)));
+                        )), new PlaySoundAction(SoundEvents.ALLAY_HURT, 0.5f, 0.5f, SoundSource.AMBIENT, false)));
 
         generator.builder(gameId("stop"))
                 .withPlayingPhase(new InlineMapProvider(Level.OVERWORLD), phaseBuilder -> phaseBuilder

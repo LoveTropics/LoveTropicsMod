@@ -17,18 +17,23 @@ import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.function.Supplier;
 
-public record PlaySoundAction(SoundEvent sound, float volume, float pitch, SoundSource source) implements IGameBehavior {
+public record PlaySoundAction(SoundEvent sound, float volume, float pitch, SoundSource source, boolean broadcast) implements IGameBehavior {
 	public static final MapCodec<PlaySoundAction> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			ForgeRegistries.SOUND_EVENTS.getCodec().optionalFieldOf("sound", SoundEvents.ARROW_HIT_PLAYER).forGetter(PlaySoundAction::sound),
 			Codec.FLOAT.optionalFieldOf("volume", 1.0f).forGetter(PlaySoundAction::volume),
 			Codec.FLOAT.optionalFieldOf("pitch", 1.0f).forGetter(PlaySoundAction::pitch),
-			MoreCodecs.stringVariants(SoundSource.values(), SoundSource::getName).optionalFieldOf("source", SoundSource.AMBIENT).forGetter(PlaySoundAction::source)
+			MoreCodecs.stringVariants(SoundSource.values(), SoundSource::getName).optionalFieldOf("source", SoundSource.AMBIENT).forGetter(PlaySoundAction::source),
+			Codec.BOOL.optionalFieldOf("broadcast", false).forGetter(PlaySoundAction::broadcast)
 	).apply(i, PlaySoundAction::new));
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
 		events.listen(GameActionEvents.APPLY_TO_PLAYER, (context, target) -> {
-			target.playNotifySound(sound, source, volume, pitch);
+			if (broadcast) {
+				target.level().playSound(null, target.getX(), target.getY(), target.getZ(), sound, source, volume, pitch);
+			} else {
+				target.playNotifySound(sound, source, volume, pitch);
+			}
 			return true;
 		});
 	}
