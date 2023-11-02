@@ -5,8 +5,10 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.navigation.GroundPathNavigation;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.pathfinder.BlockPathTypes;
+import net.minecraft.world.level.pathfinder.Node;
 import net.minecraft.world.level.pathfinder.PathFinder;
 import net.minecraft.world.level.pathfinder.WalkNodeEvaluator;
+import org.jetbrains.annotations.Nullable;
 
 public final class BbGroundNavigator extends GroundPathNavigation {
 	private final BbMobEntity mob;
@@ -21,6 +23,11 @@ public final class BbGroundNavigator extends GroundPathNavigation {
 		this.nodeEvaluator = new NodeProcessor();
 		this.nodeEvaluator.setCanPassDoors(true);
 		return new PathFinder(this.nodeEvaluator, maxDepth);
+	}
+
+	@Override
+	public boolean canCutCorner(BlockPathTypes type) {
+		return false;
 	}
 
 	final class NodeProcessor extends WalkNodeEvaluator {
@@ -48,6 +55,11 @@ public final class BbGroundNavigator extends GroundPathNavigation {
 			}
 
 			return nodeType;
+		}
+
+		@Override
+		protected boolean isDiagonalValid(Node node, @Nullable Node a, @Nullable Node b, @Nullable Node c) {
+			return false;
 		}
 	}
 }
