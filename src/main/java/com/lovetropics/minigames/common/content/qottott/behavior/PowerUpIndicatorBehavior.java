@@ -11,6 +11,8 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.SharedConstants;
 import net.minecraft.network.chat.Component;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -29,9 +31,13 @@ public record PowerUpIndicatorBehavior(MobEffect effect, TemplatedText text) imp
 	public void register(final IGamePhase game, final EventRegistrar events) {
 		events.listen(GamePlayerEvents.TICK, player -> {
 			final MobEffectInstance instance = player.getEffect(effect);
-			if (instance != null && instance.getDuration() % 5 == 0) {
-				final int seconds = Mth.floorDiv(instance.getDuration(), SharedConstants.TICKS_PER_SECOND);
-				player.sendSystemMessage(text.apply(Map.of("seconds", Component.literal(String.valueOf(seconds)))), true);
+			if (instance != null) {
+				if (instance.getDuration() % 5 == 0) {
+					final int seconds = Mth.floorDiv(instance.getDuration(), SharedConstants.TICKS_PER_SECOND);
+					player.sendSystemMessage(text.apply(Map.of("seconds", Component.literal(String.valueOf(seconds)))), true);
+				} else if (instance.getDuration() == 1) {
+					player.playNotifySound(SoundEvents.RESPAWN_ANCHOR_DEPLETE.value(), SoundSource.PLAYERS, 1.0f, 1.0f);
+				}
 			}
 		});
 	}
