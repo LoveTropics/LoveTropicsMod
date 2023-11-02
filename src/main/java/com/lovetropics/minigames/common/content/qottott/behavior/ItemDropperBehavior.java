@@ -21,6 +21,8 @@ import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.valueproviders.IntProvider;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -29,6 +31,7 @@ import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.registries.ForgeRegistries;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
@@ -36,14 +39,15 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
 
-public record ItemDropperBehavior(Either<List<ItemStack>, ResourceLocation> loot, String regionKey, boolean combined, boolean beacon, IntProvider intervalTicks, Optional<GameActionList<Void>> announcement) implements IGameBehavior {
+public record ItemDropperBehavior(Either<List<ItemStack>, ResourceLocation> loot, String regionKey, boolean combined, boolean beacon, IntProvider intervalTicks, Optional<GameActionList<Void>> announcement, Optional<Sound> sound) implements IGameBehavior {
 	public static final MapCodec<ItemDropperBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			Codec.either(MoreCodecs.listOrUnit(MoreCodecs.ITEM_STACK), ResourceLocation.CODEC).fieldOf("loot").forGetter(ItemDropperBehavior::loot),
 			Codec.STRING.fieldOf("region").forGetter(ItemDropperBehavior::regionKey),
 			Codec.BOOL.optionalFieldOf("combined", false).forGetter(ItemDropperBehavior::combined),
 			Codec.BOOL.optionalFieldOf("beacon", false).forGetter(ItemDropperBehavior::beacon),
 			IntProvider.POSITIVE_CODEC.fieldOf("interval_ticks").forGetter(ItemDropperBehavior::intervalTicks),
-			GameActionList.VOID_CODEC.optionalFieldOf("announcement").forGetter(ItemDropperBehavior::announcement)
+			GameActionList.VOID_CODEC.optionalFieldOf("announcement").forGetter(ItemDropperBehavior::announcement),
+			Sound.CODEC.optionalFieldOf("sound").forGetter(ItemDropperBehavior::sound)
 	).apply(i, ItemDropperBehavior::new));
 
 	@Override
@@ -159,6 +163,16 @@ public record ItemDropperBehavior(Either<List<ItemStack>, ResourceLocation> loot
 			lastDroppedItem = itemEntity;
 
 			announcement.ifPresent(action -> action.apply(game, GameActionContext.builder().set(GameActionParameter.ITEM, item).build()));
+			sound.ifPresent(sound -> level.playSound(null, position.x, position.y, position.z, sound.sound(), sound.source(), sound.volume(), sound.pitch()));
 		}
+	}
+
+	public record Sound(SoundEvent sound, SoundSource source, float volume, float pitch) {
+		public static final Codec<Sound> CODEC = RecordCodecBuilder.create(i -> i.group(
+				ForgeRegistries.SOUND_EVENTS.getCodec().fieldOf("sound").forGetter(Sound::sound),
+				MoreCodecs.stringVariants(SoundSource.values(), SoundSource::getName).optionalFieldOf("source", SoundSource.AMBIENT).forGetter(Sound::source),
+				Codec.FLOAT.optionalFieldOf("volume", 1.0f).forGetter(Sound::volume),
+				Codec.FLOAT.optionalFieldOf("pitch", 1.0f).forGetter(Sound::pitch)
+		).apply(i, Sound::new));
 	}
 }
