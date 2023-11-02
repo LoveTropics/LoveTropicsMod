@@ -5,6 +5,7 @@ import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.lovetropics.minigames.common.core.game.player.PlayerRole;
+import com.lovetropics.minigames.common.core.game.player.PlayerRoleSelections;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
@@ -14,7 +15,14 @@ public record JoinLateWithRoleBehavior(PlayerRole role) implements IGameBehavior
 	).apply(i, JoinLateWithRoleBehavior::new));
 
 	@Override
-	public void register(IGamePhase game, EventRegistrar events) {
-		events.listen(GamePlayerEvents.JOIN, player -> game.setPlayerRole(player, role));
+	public void register(final IGamePhase game, final EventRegistrar events) {
+		events.listen(GamePlayerEvents.JOIN, player -> {
+			final PlayerRoleSelections roleSelections = game.getLobby().getPlayers().getRoleSelections();
+			if (roleSelections.getSelectedRoleFor(player) == PlayerRole.SPECTATOR) {
+				game.setPlayerRole(player, PlayerRole.SPECTATOR);
+			} else {
+				game.setPlayerRole(player, role);
+			}
+		});
 	}
 }
