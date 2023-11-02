@@ -88,7 +88,11 @@ public final class SelectPlayerRoleScreen extends Screen {
 	}
 
 	@Override
-	public boolean shouldCloseOnEsc() {
-		return false;
+	public void onClose() {
+		super.onClose();
+		if (!responded) {
+			minecraft.player.connection.sendUnsignedCommand("game leave");
+			responded = true;
+		}
 	}
 }
