@@ -8,7 +8,6 @@ import com.lovetropics.minigames.common.core.game.IGameDefinition;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePackageEvents;
-import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.lovetropics.minigames.common.core.game.behavior.instances.donation.DonationPackageData;
 import com.lovetropics.minigames.common.core.game.state.GamePackageState;
@@ -35,7 +34,9 @@ import java.util.UUID;
 public final class GameInstanceIntegrations implements IGameState {
 	public static final GameStateKey<GameInstanceIntegrations> KEY = GameStateKey.create("Game Integrations");
 
-	private static final Codec<List<DonationPackageData>> PACKAGES_CODEC = DonationPackageData.CODEC.codec().listOf();
+	private static final Codec<List<DonationPackageData>> PACKAGES_CODEC = DonationPackageData.Payload.CODEC.codec()
+			.xmap(DonationPackageData.Payload::data, DonationPackageData::asPayload)
+			.listOf();
 
 	private final IGamePhase game;
 	private final BackendIntegrations integrations;

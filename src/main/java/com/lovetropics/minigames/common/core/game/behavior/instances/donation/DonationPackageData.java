@@ -32,6 +32,22 @@ public record DonationPackageData(
 		return new DonationPackageData(id, packageType, category, playerSelect, name, description, donationAmount.map(costModifier::apply));
 	}
 
+	public Payload asPayload() {
+		return new Payload(this, name.getString(), description.getString());
+	}
+
+	public record Payload(
+			DonationPackageData data,
+			String englishName,
+			String englishDesc
+	) {
+		public static final MapCodec<Payload> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
+				DonationPackageData.CODEC.forGetter(Payload::data),
+				Codec.STRING.fieldOf("english_name").forGetter(Payload::englishName),
+				Codec.STRING.fieldOf("english_desc").forGetter(Payload::englishDesc)
+		).apply(i, Payload::new));
+	}
+
 	public enum PackageType implements StringRepresentable {
 		CARE_PACKAGE("care_package", "Care Package"),
 		SABOTAGE_PACKAGE("sabotage_package", "Sabotage Package"),
