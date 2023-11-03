@@ -45,10 +45,6 @@ public final class PlayerIsolation {
 	}
 
 	public ServerPlayer teleportTo(final ServerPlayer player, final ServerLevel newLevel, final Vec3 position, final float yRot, final float xRot) {
-		final PlayerListAccess playerList = (PlayerListAccess) player.getServer().getPlayerList();
-		if (!isIsolated(player)) {
-			playerList.ltminigames$save(player);
-		}
 		final TransferableState transferableState = TransferableState.copyOf(player);
 		return reloadPlayer(player, newPlayer -> {
 			newPlayer.setServerLevel(newLevel);
@@ -90,6 +86,10 @@ public final class PlayerIsolation {
 
 		reloadingPlayers.add(oldPlayer.getUUID());
 		ForgeEventFactory.firePlayerLoggedOut(oldPlayer);
+
+		if (!isIsolated(oldPlayer)) {
+			((PlayerListAccess) playerList).ltminigames$save(oldPlayer);
+		}
 
 		oldPlayer.unRide();
 		oldPlayer.serverLevel().removePlayerImmediately(oldPlayer, Entity.RemovalReason.DISCARDED);
