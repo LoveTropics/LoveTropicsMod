@@ -111,6 +111,7 @@ public final class DonationPackageBehavior implements IGameBehavior {
 
 	private static GameActionContext actionContext(GamePackage gamePackage) {
 		GameActionContext.Builder context = GameActionContext.builder();
+		context.set(GameActionParameter.PACKAGE, gamePackage);
 		if (gamePackage.sendingPlayerName() != null) {
 			context.set(GameActionParameter.PACKAGE_SENDER, gamePackage.sendingPlayerName());
 		}

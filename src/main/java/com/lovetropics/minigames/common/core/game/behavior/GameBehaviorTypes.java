@@ -71,6 +71,7 @@ import com.lovetropics.minigames.common.core.game.behavior.instances.donation.Do
 import com.lovetropics.minigames.common.core.game.behavior.instances.donation.DonationThresholdBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.donation.GivePlayerHeadPackageBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.donation.PackageCostModifierBehavior;
+import com.lovetropics.minigames.common.core.game.behavior.instances.donation.TriggerEveryPackageBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.statistics.BindObjectiveToStatisticBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.statistics.BlocksBrokenTrackerBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.statistics.CampingTrackerBehavior;
@@ -272,6 +273,7 @@ public class GameBehaviorTypes {
 	public static final GameBehaviorEntry<ItemPickedUpTrigger> ITEM_PICKED_UP = register("item_picked_up", ItemPickedUpTrigger.CODEC);
 	public static final GameBehaviorEntry<GiveItemsToKillerBehavior> GIVE_ITEMS_TO_KILLER = register("give_items_to_killer", GiveItemsToKillerBehavior.CODEC);
 	public static final GameBehaviorEntry<CountdownEffectsBehavior> COUNTDOWN_EFFECTS = register("countdown_effects", CountdownEffectsBehavior.CODEC);
+	public static final GameBehaviorEntry<TriggerEveryPackageBehavior> TRIGGER_EVERY_PACKAGE = register("trigger_every_package", TriggerEveryPackageBehavior.CODEC);
 
 	public static final GameBehaviorEntry<SetupIntegrationsBehavior> SETUP_INTEGRATIONS = register("setup_integrations", SetupIntegrationsBehavior.CODEC);
 	public static final GameBehaviorEntry<AssignPlayerRolesBehavior> ASSIGN_PLAYER_ROLES = register("assign_player_roles", AssignPlayerRolesBehavior.CODEC);

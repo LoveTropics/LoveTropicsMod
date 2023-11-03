@@ -1,9 +1,11 @@
 package com.lovetropics.minigames.common.core.game.behavior.action;
 
+import com.lovetropics.minigames.common.core.integration.game_actions.GamePackage;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 
 public class GameActionParameter<T> {
+    public static final GameActionParameter<GamePackage> PACKAGE = GameActionParameter.create();
     public static final GameActionParameter<String> PACKAGE_SENDER = GameActionParameter.create();
 
     public static final GameActionParameter<ServerPlayer> KILLER = GameActionParameter.create();
