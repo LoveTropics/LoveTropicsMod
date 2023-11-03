@@ -243,6 +243,9 @@ public final class MinigameTexts {
 		KEYS.add("donation.global_leaky_pockets", "Global Leaky Pockets (30 seconds)");
 		KEYS.add("donation.global_leaky_pockets.description", "Give everyone Leaky Pockets for 30 seconds, and enjoy the chaos of everyone scrambling to pick up the trails of Coins they leave behind themselves.");
 		KEYS.add("donation.global_leaky_pockets.toast", "%sender% has given everyone LEAKY POCKETS for 30 seconds!");
+		KEYS.add("donation.whos_the_turtle_now", "Who's the Turtle Now? (1 minute)");
+		KEYS.add("donation.whos_the_turtle_now.description", "Turn all players into Turtles. That's right - a Turtle Race, with Turtles that are riding Turtles. What could go wrong?");
+		KEYS.add("donation.whos_the_turtle_now.toast", "%sender% has TURNED EVERYONE INTO TURTLES for 1 minute!");
 
 		KEYS.add("event.lightning_storm_event", "Lightning Storm");
 		KEYS.add("event.lightning_storm_event.description", "CRACK. That's the sound of the sky as you smite your enemies. Which ones? All of them.");
