@@ -111,20 +111,23 @@ public final class BbMobSpawner {
     }
 
     public enum BbEntityTypes implements StringRepresentable {
-        CREEPER(EntityType.CREEPER, BbCreeperEntity::new),
-        PILLAGER(EntityType.PILLAGER, BbPillagerEntity::new),
-        VINDICATOR(EntityType.VINDICATOR, BbVindicatorEntity::new),
-        PIGMAN(EntityType.ZOMBIFIED_PIGLIN, BbZombiePiglinEntity::new),
-        ZOGLIN(EntityType.ZOGLIN, BbZoglinEntity::new),
-        HUSK(EntityType.HUSK, BbHuskEntity::new);
+        CREEPER(EntityType.CREEPER, BbCreeperEntity::new, "Creeper"),
+        PILLAGER(EntityType.PILLAGER, BbPillagerEntity::new, "Pillager"),
+        VINDICATOR(EntityType.VINDICATOR, BbVindicatorEntity::new, "Vindicator"),
+        PIGMAN(EntityType.ZOMBIFIED_PIGLIN, BbZombiePiglinEntity::new, "Piglin"),
+        ZOGLIN(EntityType.ZOGLIN, BbZoglinEntity::new, "Zoglin"),
+        HUSK(EntityType.HUSK, BbHuskEntity::new, "Husk");
 
         public static final Codec<BbEntityTypes> CODEC = StringRepresentable.fromEnum(BbEntityTypes::values);
 
         private final EntityType<?> entityType;
         private final Creator<?> creator;
-        <T extends Mob> BbEntityTypes(EntityType<T> entityType, Creator<T> creator) {
+        private final String englishName;
+
+        <T extends Mob> BbEntityTypes(EntityType<T> entityType, Creator<T> creator, String englishName) {
             this.creator = creator;
             this.entityType = entityType;
+            this.englishName = englishName;
         }
 
         public Mob create(Level level, Plot plot) {
@@ -142,6 +145,10 @@ public final class BbMobSpawner {
 
         public String getTranslationKey() {
             return "ltminigames.bb_entities." + getSerializedName();
+        }
+
+        public String getEnglishName() {
+            return englishName;
         }
 
         interface Creator<T extends Mob> {

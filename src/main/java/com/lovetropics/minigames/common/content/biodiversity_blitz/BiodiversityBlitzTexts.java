@@ -114,9 +114,9 @@ public final class BiodiversityBlitzTexts {
 
 		consumer.accept(Constants.MODID + ".minigame.biodiversity_blitz", "Biodiversity Blitz");
 		consumer.accept(Constants.MODID + ".minigame.biodiversity_blitz_teams", "Biodiversity Blitz (Teams)");
-		consumer.accept(BbMobSpawner.BbEntityTypes.CREEPER.getTranslationKey(), "Creeper");
-		consumer.accept(BbMobSpawner.BbEntityTypes.HUSK.getTranslationKey(), "Husk");
-		consumer.accept(BbMobSpawner.BbEntityTypes.PILLAGER.getTranslationKey(), "Pillager");
+		for (BbMobSpawner.BbEntityTypes type : BbMobSpawner.BbEntityTypes.values()) {
+			consumer.accept(type.getTranslationKey(), type.getEnglishName());
+		}
 	}
 
 	public static MutableComponent deathDecrease(int count) {
