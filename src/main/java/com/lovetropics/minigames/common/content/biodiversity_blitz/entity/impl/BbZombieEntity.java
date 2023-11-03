@@ -7,6 +7,8 @@ import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.ai.BbT
 import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.ai.DestroyCropGoal;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.Plot;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.tags.FluidTags;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
@@ -18,6 +20,7 @@ import net.minecraft.world.entity.ai.navigation.PathNavigation;
 import net.minecraft.world.entity.monster.Zombie;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
+import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.pathfinder.BlockPathTypes;
 import net.minecraft.world.phys.Vec3;
 
@@ -34,7 +37,6 @@ public class BbZombieEntity extends Zombie implements BbMobEntity {
 
 		// Ignore sweet berry bushes and water
 		setPathfindingMalus(BlockPathTypes.DANGER_OTHER, BERRY_BUSH_MALUS);
-		setPathfindingMalus(BlockPathTypes.WATER, -1.0F);
 	}
 
 	@Override
@@ -80,5 +82,26 @@ public class BbZombieEntity extends Zombie implements BbMobEntity {
 	@Override
 	public Plot getPlot() {
 		return this.plot;
+	}
+
+	@Override
+	public void updateSwimming() {
+		// Just use the default navigator, we never need to swim
+	}
+
+	@Override
+	public boolean updateFluidHeightAndDoFluidPushing(TagKey<Fluid> fluid, double scale) {
+		if (fluid == FluidTags.WATER) {
+			return false;
+		}
+		return super.updateFluidHeightAndDoFluidPushing(fluid, scale);
+	}
+
+	@Override
+	public boolean isEyeInFluid(TagKey<Fluid> fluid) {
+		if (fluid == FluidTags.WATER) {
+			return false;
+		}
+		return super.isEyeInFluid(fluid);
 	}
 }

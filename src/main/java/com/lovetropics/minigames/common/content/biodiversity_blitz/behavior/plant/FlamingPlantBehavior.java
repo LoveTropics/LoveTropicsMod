@@ -59,11 +59,19 @@ public final class FlamingPlantBehavior implements IGameBehavior {
             AABB flameBounds = plant.coverage().asBounds().inflate(this.radius);
             List<Mob> entities = world.getEntitiesOfClass(Mob.class, flameBounds, BbMobEntity.PREDICATE);
 
+            int max = 1 + random.nextInt(3);
+
             int count = random.nextInt(3);
             if (!entities.isEmpty()) {
                 for (Mob entity : entities) {
+                    if (seen.size() > max) {
+                        break;
+                    }
+
                     if (!seen.contains(entity)) {
+
                         seen.add(entity);
+
 
                         if (ignoreMob(entity)) {
                             continue;

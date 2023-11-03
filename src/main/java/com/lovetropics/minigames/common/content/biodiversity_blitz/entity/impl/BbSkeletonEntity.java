@@ -5,6 +5,8 @@ import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.ai.BbM
 import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.ai.BbTargetPlayerGoal;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.ai.DestroyCropGoal;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.Plot;
+import net.minecraft.tags.FluidTags;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.entity.EntityType;
@@ -13,6 +15,7 @@ import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
 import net.minecraft.world.entity.monster.Skeleton;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.pathfinder.BlockPathTypes;
 
 public class BbSkeletonEntity extends Skeleton implements BbMobEntity {
@@ -26,7 +29,6 @@ public class BbSkeletonEntity extends Skeleton implements BbMobEntity {
         this.plot = plot;
 
         setPathfindingMalus(BlockPathTypes.DANGER_OTHER, BERRY_BUSH_MALUS);
-        setPathfindingMalus(BlockPathTypes.WATER, -1.0F);
     }
 
     @Override
@@ -60,5 +62,26 @@ public class BbSkeletonEntity extends Skeleton implements BbMobEntity {
 
     @Override
     protected void pushEntities() {
+    }
+
+    @Override
+    public void updateSwimming() {
+        // Just use the default navigator, we never need to swim
+    }
+
+    @Override
+    public boolean updateFluidHeightAndDoFluidPushing(TagKey<Fluid> fluid, double scale) {
+        if (fluid == FluidTags.WATER) {
+            return false;
+        }
+        return super.updateFluidHeightAndDoFluidPushing(fluid, scale);
+    }
+
+    @Override
+    public boolean isEyeInFluid(TagKey<Fluid> fluid) {
+        if (fluid == FluidTags.WATER) {
+            return false;
+        }
+        return super.isEyeInFluid(fluid);
     }
 }

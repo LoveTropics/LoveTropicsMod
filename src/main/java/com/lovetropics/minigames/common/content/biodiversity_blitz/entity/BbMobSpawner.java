@@ -113,6 +113,9 @@ public final class BbMobSpawner {
     public enum BbEntityTypes implements StringRepresentable {
         CREEPER(EntityType.CREEPER, BbCreeperEntity::new),
         PILLAGER(EntityType.PILLAGER, BbPillagerEntity::new),
+        VINDICATOR(EntityType.VINDICATOR, BbVindicatorEntity::new),
+        PIGMAN(EntityType.ZOMBIFIED_PIGLIN, BbZombiePiglinEntity::new),
+        ZOGLIN(EntityType.ZOGLIN, BbZoglinEntity::new),
         HUSK(EntityType.HUSK, BbHuskEntity::new);
 
         public static final Codec<BbEntityTypes> CODEC = StringRepresentable.fromEnum(BbEntityTypes::values);

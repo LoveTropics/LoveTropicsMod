@@ -61,7 +61,13 @@ public final class WateryPlantBehavior implements IGameBehavior {
                 continue;
             }
 
+            int max = 1 + random.nextInt(2);
+
             for (Mob entity : entities) {
+                if (seen.size() > max) {
+                    break;
+                }
+
                 // Don't attack the same entity multiple times
                 if (seen.contains(entity)) {
                     continue;

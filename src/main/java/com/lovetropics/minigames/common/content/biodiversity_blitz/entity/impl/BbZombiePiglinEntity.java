@@ -6,6 +6,8 @@ import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.ai.BbM
 import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.ai.BbTargetPlayerGoal;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.ai.DestroyCropGoal;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.Plot;
+import net.minecraft.tags.FluidTags;
+import net.minecraft.tags.TagKey;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
@@ -14,6 +16,7 @@ import net.minecraft.world.entity.ai.goal.ZombieAttackGoal;
 import net.minecraft.world.entity.ai.navigation.PathNavigation;
 import net.minecraft.world.entity.monster.ZombifiedPiglin;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.pathfinder.BlockPathTypes;
 import net.minecraft.world.phys.Vec3;
 
@@ -29,7 +32,6 @@ public class BbZombiePiglinEntity extends ZombifiedPiglin implements BbMobEntity
 
         // Ignore sweet berry bushes and water
         setPathfindingMalus(BlockPathTypes.DANGER_OTHER, BERRY_BUSH_MALUS);
-        setPathfindingMalus(BlockPathTypes.WATER, -1.0F);
     }
 
     @Override
@@ -82,5 +84,26 @@ public class BbZombiePiglinEntity extends ZombifiedPiglin implements BbMobEntity
     @Override
     public boolean immuneToFire() {
         return true;
+    }
+
+    @Override
+    public void updateSwimming() {
+        // Just use the default navigator, we never need to swim
+    }
+
+    @Override
+    public boolean updateFluidHeightAndDoFluidPushing(TagKey<Fluid> fluid, double scale) {
+        if (fluid == FluidTags.WATER) {
+            return false;
+        }
+        return super.updateFluidHeightAndDoFluidPushing(fluid, scale);
+    }
+
+    @Override
+    public boolean isEyeInFluid(TagKey<Fluid> fluid) {
+        if (fluid == FluidTags.WATER) {
+            return false;
+        }
+        return super.isEyeInFluid(fluid);
     }
 }
