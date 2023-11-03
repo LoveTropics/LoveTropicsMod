@@ -29,7 +29,6 @@ import net.minecraft.world.level.storage.LevelData;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.event.ForgeEventFactory;
 
-import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
@@ -198,15 +197,12 @@ public final class PlayerIsolation {
 
 	// State that can be transferred into isolation, but not back out
 	private record TransferableState(
-			// We use tags in the datapack to track whether a player is joining for the first time
-			List<String> tags
 	) {
 		public static TransferableState copyOf(final ServerPlayer player) {
-			return new TransferableState(List.copyOf(player.getTags()));
+			return new TransferableState();
 		}
 
 		public void restore(final ServerPlayer player) {
-			tags.forEach(player::addTag);
 		}
 	}
 }
