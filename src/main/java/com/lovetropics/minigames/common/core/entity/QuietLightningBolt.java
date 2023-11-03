@@ -60,7 +60,7 @@ public class QuietLightningBolt extends LightningBolt {
 
 				hitEntities.addAll(entities);
 			} else {
-				level().setSkyFlashTime(2);
+				level().setSkyFlashTime(0);
 			}
 		}
 	}
