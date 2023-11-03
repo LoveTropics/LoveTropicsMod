@@ -15,9 +15,12 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
+
+import java.util.Random;
 
 public class MushroomPlantBehavior implements IGameBehavior {
     public static final MapCodec<MushroomPlantBehavior> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
@@ -32,10 +35,16 @@ public class MushroomPlantBehavior implements IGameBehavior {
     @Override
     public void register(IGamePhase game, EventRegistrar events) throws GameException {
         events.listen(GameLivingEntityEvents.MOB_DROP, (e, d, r) -> {
+            RandomSource random = e.getRandom();
             Plot plot = game.getState().getOrThrow(PlotsState.KEY).getPlotAt(e.blockPosition());
             BlockPos p = e.blockPosition();
              BlockBox b = new BlockBox(p.offset(-2, -2, -2), p.offset(2, 2, 2));
+
             for (BlockPos pos : b) {
+                if (random.nextBoolean()) {
+                    continue;
+                }
+
                 Plant plant = plot.plants.getPlantAt(pos);
 
                 // Mushrooms will cause nearby dying entities to drop extra loot

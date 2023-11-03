@@ -9,6 +9,8 @@ import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.Plot;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MoverType;
@@ -70,6 +72,15 @@ public class BbZombiePiglinEntity extends ZombifiedPiglin implements BbMobEntity
     @Override
     public int meleeDamage(RandomSource random) {
         return 4 + BbMobEntity.super.meleeDamage(random);
+    }
+
+    @Override
+    public boolean hurt(DamageSource pSource, float pAmount) {
+        if (pSource.is(DamageTypes.PLAYER_ATTACK)) {
+            pAmount /= 1.5;
+        }
+
+        return super.hurt(pSource, pAmount);
     }
 
     @Override

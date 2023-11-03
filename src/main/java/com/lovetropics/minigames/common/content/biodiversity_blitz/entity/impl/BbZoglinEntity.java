@@ -12,6 +12,8 @@ import com.lovetropics.minigames.common.util.Util;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MoverType;
@@ -69,6 +71,15 @@ public class BbZoglinEntity extends Zoglin implements BbMobEntity {
     }
 
     @Override
+    public boolean hurt(DamageSource pSource, float pAmount) {
+        if (pSource.is(DamageTypes.PLAYER_ATTACK)) {
+            pAmount /= 2.5;
+        }
+
+        return super.hurt(pSource, pAmount);
+    }
+
+    @Override
     public void aiStep() {
         ticks++;
         if (ticks % 7 == 0) {
@@ -119,7 +130,7 @@ public class BbZoglinEntity extends Zoglin implements BbMobEntity {
 
     @Override
     public float aiSpeed() {
-        return 1.0f;
+        return 1.2f;
     }
 
     @Override

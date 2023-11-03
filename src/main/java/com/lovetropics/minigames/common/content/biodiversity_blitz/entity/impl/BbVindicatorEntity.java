@@ -6,10 +6,13 @@ import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.ai.BbM
 import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.ai.BbTargetPlayerGoal;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.ai.DestroyCropGoal;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.Plot;
+import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.damagesource.DamageSources;
+import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MoverType;
@@ -55,7 +58,11 @@ public class BbVindicatorEntity extends Vindicator implements BbMobEntity {
 
     @Override
     public boolean hurt(DamageSource pSource, float pAmount) {
-        return super.hurt(pSource, pAmount / 2);
+        if (pSource.is(DamageTypes.PLAYER_ATTACK)) {
+            pAmount /= 2;
+        }
+
+        return super.hurt(pSource, pAmount);
     }
 
     @Override
@@ -71,6 +78,11 @@ public class BbVindicatorEntity extends Vindicator implements BbMobEntity {
     @Override
     public Plot getPlot() {
         return this.plot;
+    }
+
+    @Override
+    public float aiSpeed() {
+        return 1.0f;
     }
 
     @Override

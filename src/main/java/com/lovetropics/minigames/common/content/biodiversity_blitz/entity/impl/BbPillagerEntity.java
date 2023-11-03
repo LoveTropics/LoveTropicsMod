@@ -11,6 +11,8 @@ import net.minecraft.tags.FluidTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.DifficultyInstance;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.Mob;
@@ -98,7 +100,16 @@ public class BbPillagerEntity extends Pillager implements BbMobEntity {
 
     @Override
     public float aiSpeed() {
-        return 0.65f;
+        return 0.8f;
+    }
+
+    @Override
+    public boolean hurt(DamageSource pSource, float pAmount) {
+        if (pSource.is(DamageTypes.PLAYER_ATTACK)) {
+            pAmount /= 1.5;
+        }
+
+        return super.hurt(pSource, pAmount);
     }
 
     @Override
