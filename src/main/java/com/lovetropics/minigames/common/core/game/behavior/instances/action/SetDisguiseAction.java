@@ -8,6 +8,7 @@ import com.lovetropics.minigames.common.core.game.behavior.action.GameActionCont
 import com.lovetropics.minigames.common.core.game.behavior.action.GameActionParameter;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameActionEvents;
+import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -16,6 +17,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.players.GameProfileCache;
 import net.minecraft.world.entity.EntityType;
+import org.slf4j.Logger;
 
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -25,6 +27,8 @@ public record SetDisguiseAction(DisguiseType disguise, boolean applyDonorName) i
 			DisguiseType.MAP_CODEC.forGetter(SetDisguiseAction::disguise),
 			Codec.BOOL.optionalFieldOf("apply_donor_name", false).forGetter(SetDisguiseAction::applyDonorName)
 	).apply(i, SetDisguiseAction::new));
+
+	private static final Logger LOGGER = LogUtils.getLogger();
 
 	private static final ResourceLocation DUMMY_PLAYER = new ResourceLocation("dummyplayers", "dummy_player");
 
@@ -65,6 +69,7 @@ public record SetDisguiseAction(DisguiseType disguise, boolean applyDonorName) i
 		final CompoundTag nbt = entity.nbt() != null ? entity.nbt().copy() : new CompoundTag();
 		nbt.putString("ProfileName", packageSender);
 		profileCache.getAsync(packageSender, result -> result.ifPresent(profile -> {
+			LOGGER.debug("Got profile ID for package sender {}: {}", packageSender, profile.getId());
 			nbt.putUUID("ProfileID", profile.getId());
 			future.complete(entity.withNbt(nbt));
 		}));
@@ -72,12 +77,16 @@ public record SetDisguiseAction(DisguiseType disguise, boolean applyDonorName) i
 	}
 
 	private void applyResolvedDisguise(final ServerPlayer player, final DisguiseType resolvedDisguise) {
-		if (resolvedDisguise != disguise) {
-			ServerPlayerDisguises.update(player, playerDisguise -> {
-				if (playerDisguise.type() == disguise) {
-					playerDisguise.set(resolvedDisguise);
-				}
-			});
+		if (disguise == resolvedDisguise) {
+			return;
 		}
+		ServerPlayerDisguises.updateType(player, disguiseType -> {
+			if (disguiseType.equals(disguise)) {
+				return resolvedDisguise;
+			} else {
+				LOGGER.debug("Skipping setting resolved disguise on {}, as their disguise has changed", player.getGameProfile().getName());
+			}
+			return disguiseType;
+		});
 	}
 }
