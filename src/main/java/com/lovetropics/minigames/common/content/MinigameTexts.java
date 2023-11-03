@@ -249,6 +249,9 @@ public final class MinigameTexts {
 		KEYS.add("donation.whos_the_turtle_now", "Who's the Turtle Now? (1 minute)");
 		KEYS.add("donation.whos_the_turtle_now.description", "Turn all players into Turtles. That's right - a Turtle Race, with Turtles that are riding Turtles. What could go wrong?");
 		KEYS.add("donation.whos_the_turtle_now.toast", "%sender% has TURNED EVERYONE INTO TURTLES for 1 minute!");
+		KEYS.add("donation.everything", "I want it all!");
+		KEYS.add("donation.everything.description", "Trigger every package. Yes, all of them.");
+		KEYS.add("donation.everything.toast", "%sender% has triggered EVERY PACKAGE!");
 
 		KEYS.add("event.lightning_storm_event", "Lightning Storm");
 		KEYS.add("event.lightning_storm_event.description", "CRACK. That's the sound of the sky as you smite your enemies. Which ones? All of them.");
