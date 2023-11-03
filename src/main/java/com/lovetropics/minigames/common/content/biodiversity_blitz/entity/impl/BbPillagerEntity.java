@@ -50,7 +50,7 @@ public class BbPillagerEntity extends Pillager implements BbMobEntity {
     @Override
     protected void registerGoals() {
         this.goalSelector.addGoal(3, new Raider.HoldGroundAttackGoal(this, 6.0F));
-        this.goalSelector.addGoal(3, new RangedCrossbowAttackGoal<>(this, 1.0, 6.0F));
+        this.goalSelector.addGoal(3, new RangedCrossbowAttackGoal<>(this, 0.8, 6.0F));
         this.goalSelector.addGoal(2, new DestroyCropGoal(this));
         this.goalSelector.addGoal(4, new LookAtPlayerGoal(this, Player.class, 15.0F, 0.02F));
 

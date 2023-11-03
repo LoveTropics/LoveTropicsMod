@@ -98,6 +98,11 @@ public class BbCreeperEntity extends Creeper implements BbMobEntity {
     }
 
     @Override
+    public float aiSpeed() {
+        return 0.8f;
+    }
+
+    @Override
     protected void pushEntities() {
     }
 }
