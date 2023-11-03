@@ -1,6 +1,5 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances.team;
 
-import com.google.common.collect.ImmutableList;
 import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.common.content.MinigameTexts;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
@@ -32,13 +31,12 @@ import net.minecraft.world.level.block.Blocks;
 
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 public final class SetupTeamsBehavior implements IGameBehavior {
 	private static final ResourceLocation CONFIG_ID = new ResourceLocation(Constants.MODID, "team_list");
 	private static final GameTeam DEFAULT_TEAM = new GameTeam(
 			new GameTeamKey(""),
-			new GameTeamConfig(CommonComponents.EMPTY, DyeColor.BLACK, ChatFormatting.BLACK, ImmutableList.of(UUID.randomUUID()), 1)
+			new GameTeamConfig(CommonComponents.EMPTY, DyeColor.BLACK, ChatFormatting.BLACK, List.of(), 1)
 	);
 	private static final BehaviorConfig<List<GameTeam>> CFG_TEAMS = BehaviorConfig.fieldOf("teams", GameTeam.CODEC.listOf())
 			.defaultInstanceHint("", DEFAULT_TEAM, GameTeam.CODEC)

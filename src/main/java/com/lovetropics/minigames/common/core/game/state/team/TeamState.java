@@ -1,6 +1,9 @@
 package com.lovetropics.minigames.common.core.game.state.team;
 
 import com.google.common.base.Preconditions;
+import com.lovetropics.lib.permission.PermissionsApi;
+import com.lovetropics.lib.permission.role.Role;
+import com.lovetropics.lib.permission.role.RoleReader;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.player.MutablePlayerSet;
 import com.lovetropics.minigames.common.core.game.player.PlayerSet;
@@ -20,6 +23,7 @@ import javax.annotation.Nullable;
 import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public final class TeamState implements IGameState, Iterable<GameTeam> {
 	public static final GameStateKey<TeamState> KEY = GameStateKey.create("Teams");
@@ -30,7 +34,6 @@ public final class TeamState implements IGameState, Iterable<GameTeam> {
 	private final Object2ObjectMap<GameTeamKey, MutablePlayerSet> playersByKey = new Object2ObjectOpenHashMap<>();
 
 	private final Collection<GameTeam> pollingTeams;
-	private final Set<UUID> assignedPlayers;
 
 	private final Allocations allocations = new Allocations();
 
@@ -38,15 +41,10 @@ public final class TeamState implements IGameState, Iterable<GameTeam> {
 		this.teams = teams;
 
 		this.pollingTeams = new ObjectOpenHashSet<>();
-		this.assignedPlayers = new ObjectOpenHashSet<>();
 
 		for (GameTeam team : teams) {
 			this.teamsByKey.put(team.key(), team);
-
-			List<UUID> assigned = team.config().assignedPlayers();
-			if (!assigned.isEmpty()) {
-				this.assignedPlayers.addAll(assigned);
-			} else {
+			if (team.config().assignedRoles().isEmpty()) {
 				this.pollingTeams.add(team);
 			}
 		}
@@ -125,8 +123,8 @@ public final class TeamState implements IGameState, Iterable<GameTeam> {
 		return pollingTeams;
 	}
 
-	public Set<UUID> getAssignedPlayers() {
-		return assignedPlayers;
+	public Stream<ServerPlayer> getPlayersWithAssignments(PlayerSet players) {
+		return teams.stream().flatMap(team -> getPlayersAssignedTo(players, team));
 	}
 
 	@Nullable
@@ -167,14 +165,12 @@ public final class TeamState implements IGameState, Iterable<GameTeam> {
 
 		public void allocate(PlayerSet participants, BiConsumer<ServerPlayer, GameTeamKey> apply) {
 			// apply all direct team assignments first
+			Set<UUID> assignedPlayers = new ObjectOpenHashSet<>();
 			for (GameTeam team : teams) {
-				List<UUID> assigned = team.config().assignedPlayers();
-				for (UUID playerId : assigned) {
-					ServerPlayer player = participants.getPlayerBy(playerId);
-					if (player != null) {
-						apply.accept(player, team.key());
-					}
-				}
+				getPlayersAssignedTo(participants, team).forEach(player -> {
+					apply.accept(player, team.key());
+					assignedPlayers.add(player.getUUID());
+				});
 			}
 
 			if (!pollingTeams.isEmpty()) {
@@ -205,5 +201,19 @@ public final class TeamState implements IGameState, Iterable<GameTeam> {
 		public void setPlayerPreference(UUID player, GameTeamKey team) {
 			this.preferences.put(player, team);
 		}
+	}
+
+	private static Stream<ServerPlayer> getPlayersAssignedTo(PlayerSet players, GameTeam team) {
+		List<Role> assignedRoles = team.config().assignedRoles().stream()
+				.map(PermissionsApi.provider()::get)
+				.filter(Objects::nonNull)
+				.toList();
+		if (assignedRoles.isEmpty()) {
+			return Stream.empty();
+		}
+		return players.stream().filter(player -> {
+			RoleReader roles = PermissionsApi.lookup().byPlayer(player);
+			return assignedRoles.stream().anyMatch(roles::has);
+		});
 	}
 }

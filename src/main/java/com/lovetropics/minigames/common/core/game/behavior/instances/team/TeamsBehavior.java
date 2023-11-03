@@ -33,7 +33,6 @@ import net.minecraft.world.scores.PlayerTeam;
 import org.apache.commons.lang3.RandomStringUtils;
 
 import java.util.Map;
-import java.util.UUID;
 
 public final class TeamsBehavior implements IGameBehavior {
 	private static final ResourceLocation CONFIG_ID = new ResourceLocation(Constants.MODID, "teams");
@@ -136,12 +135,9 @@ public final class TeamsBehavior implements IGameBehavior {
 
 	private void reassignPlayerRoles(IGamePhase game, TeamAllocator<PlayerRole, ServerPlayer> allocator) {
 		// force all assigned players to be a participant
-		for (UUID uuid : teams.getAssignedPlayers()) {
-			ServerPlayer player = game.getAllPlayers().getPlayerBy(uuid);
-			if (player != null) {
-				allocator.addPlayer(player, PlayerRole.PARTICIPANT);
-			}
-		}
+		teams.getPlayersWithAssignments(game.getAllPlayers()).forEach(player ->
+				allocator.addPlayer(player, PlayerRole.PARTICIPANT)
+		);
 	}
 
 	private void onDestroy(IGamePhase game) {
