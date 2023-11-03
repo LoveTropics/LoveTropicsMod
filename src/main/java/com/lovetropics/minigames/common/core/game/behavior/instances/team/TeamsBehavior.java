@@ -32,7 +32,6 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.scores.PlayerTeam;
 import org.apache.commons.lang3.RandomStringUtils;
 
-import javax.annotation.Nullable;
 import java.util.Map;
 import java.util.UUID;
 
@@ -84,9 +83,11 @@ public final class TeamsBehavior implements IGameBehavior {
 				})
 		);
 
-		events.listen(GamePhaseEvents.START, () -> {
-			for (GameTeam team : teams) {
-				for (ServerPlayer player : teams.getParticipantsForTeam(game, team.key())) {
+		events.listen(GamePlayerEvents.ADD, player -> {
+			GameTeamKey teamKey = teams.getTeamForPlayer(player);
+			if (teamKey != null) {
+				GameTeam team = teams.getTeamByKey(teamKey);
+				if (team != null) {
 					applyTeamToPlayer(game, team, player);
 				}
 			}
