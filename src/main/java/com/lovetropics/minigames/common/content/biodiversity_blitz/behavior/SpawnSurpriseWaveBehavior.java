@@ -13,6 +13,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.Util;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
@@ -35,13 +36,12 @@ public class SpawnSurpriseWaveBehavior implements IGameBehavior {
     public void register(IGamePhase game, EventRegistrar events) throws GameException {
         this.plots = game.getState().getOrThrow(PlotsState.KEY);
 
-        events.listen(GameActionEvents.APPLY_TO_PLAYER, (context, player) -> {
-            // FIXME: this will spawn a wave for every player associated to the plot. probably not ideal.
-            Plot plot = this.plots.getPlotFor(player);
+        events.listen(GameActionEvents.APPLY_TO_PLOT, (context, plot) -> {
+            ServerLevel world = game.getWorld();
 
-            BbMobSpawner.spawnWaveEntities(player.serverLevel(), player.getRandom(),
+            BbMobSpawner.spawnWaveEntities(world, world.getRandom(),
                     plot, this.waveSize, 0, SpawnSurpriseWaveBehavior::selectEntityForWave,
-                    (entities, random, world, plot1, waveIndex) -> {});
+                    (entities, random, w, plot1, waveIndex) -> {});
 
             return true;
         });
