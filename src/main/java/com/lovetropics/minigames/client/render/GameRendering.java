@@ -45,7 +45,7 @@ import java.util.List;
 public class GameRendering {
     @SubscribeEvent
     public static void render(RenderLevelStageEvent event) {
-        if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_WEATHER) {
+        if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_TRIPWIRE_BLOCKS) {
             return;
         }
 
@@ -80,13 +80,13 @@ public class GameRendering {
         }
 
         // Flush vertices
-        buffers.bufferSource().endLastBatch();
+        buffers.bufferSource().endBatch();
 
         mv.popPose();
         RenderSystem.applyModelViewMatrix();
     }
 
-    private static void renderScoreboardState(ClientBbScoreboardState state, PoseStack matrices, Vec3 camera, MultiBufferSource buffers, VertexConsumer cons) {
+    private static void renderScoreboardState(ClientBbScoreboardState state, PoseStack matrices, Vec3 camera, MultiBufferSource.BufferSource buffers, VertexConsumer cons) {
         AABB b = new AABB(state.start(), state.end());
         PoseStack.Pose entry = matrices.last();
 
@@ -138,7 +138,7 @@ public class GameRendering {
                 false,
                 matrices.last().pose(),
                 buffers,
-                Font.DisplayMode.NORMAL,
+                Font.DisplayMode.POLYGON_OFFSET,
                 0,
                 LightTexture.FULL_BRIGHT
         );

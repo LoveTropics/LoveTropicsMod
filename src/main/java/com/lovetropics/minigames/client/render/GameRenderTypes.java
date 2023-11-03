@@ -4,10 +4,9 @@ import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import net.minecraft.client.renderer.RenderStateShard;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.entity.layers.RenderLayer;
 import net.minecraft.resources.ResourceLocation;
 
-import static net.minecraft.client.renderer.RenderType.*;
+import static net.minecraft.client.renderer.RenderType.create;
 
 // LTMinigames Render Types
 // Extends RenderStateShard to access protected fields
@@ -32,6 +31,7 @@ public class GameRenderTypes extends RenderStateShard {
                 .setOutputState(TRANSLUCENT_TARGET)
                 .setCullState(NO_CULL)
                 .setLayeringState(POLYGON_OFFSET_LAYERING)
+                .setWriteMaskState(COLOR_WRITE)
                 .createCompositeState(true);
     }
 }

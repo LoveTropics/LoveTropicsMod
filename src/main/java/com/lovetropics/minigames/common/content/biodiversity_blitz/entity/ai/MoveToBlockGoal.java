@@ -14,6 +14,7 @@ public abstract class MoveToBlockGoal extends Goal {
     protected final BbMobEntity bbMob;
     protected final Mob mob;
     // State
+    @Nullable
     protected BlockPos targetPos;
 
     protected MoveToBlockGoal(BbMobEntity mob) {
@@ -40,11 +41,17 @@ public abstract class MoveToBlockGoal extends Goal {
 
     @Override
     public void start() {
+        if (targetPos == null) {
+            return;
+        }
         this.mob.getNavigation().moveTo(this.targetPos.getX(), this.targetPos.getY(), this.targetPos.getZ(), speed());
     }
 
     @Override
     public boolean canContinueToUse() {
+        if (targetPos == null) {
+            return false;
+        }
         Plant plant = bbMob.getPlot().plants.getPlantAt(targetPos);
         if (plant == null || getBlockPriority(this.targetPos, plant) > 0) {
             return false;
