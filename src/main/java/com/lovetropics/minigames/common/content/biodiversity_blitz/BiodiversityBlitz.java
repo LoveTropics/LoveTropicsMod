@@ -40,6 +40,7 @@ import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.plan
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.plant.placement.PlaceFeaturePlantBehavior;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.plant.placement.PlaceSinglePlantBehavior;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.tutorial.BbTutorialAction;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.block.BrambleBlock;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.block.DirtySandBlock;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.client_state.CheckeredPlotsState;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.client_state.ClientBbMobSpawnState;
@@ -55,6 +56,7 @@ import com.tterrag.registrate.util.entry.BlockEntry;
 import com.tterrag.registrate.util.entry.ItemEntry;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.network.chat.Component;
@@ -279,6 +281,18 @@ public final class BiodiversityBlitz {
 			.tag(BlockTags.DIRT, BlockTags.SAND, BlockTags.BAMBOO_PLANTABLE_ON, BlockTags.DEAD_BUSH_MAY_PLACE_ON)
 			.blockstate((ctx, prov) -> prov.simpleBlock(ctx.get(), prov.models().getExistingFile(prov.mcLoc("block/sand"))))
 			.simpleItem()
+			.register();
+
+	public static final BlockEntry<BrambleBlock> BRAMBLE = REGISTRATE.block("bramble", BrambleBlock::new)
+			.initialProperties(() -> Blocks.SWEET_BERRY_BUSH)
+			.addLayer(() -> RenderType::cutout)
+			.blockstate((ctx, prov) -> {
+				prov.simpleBlock(ctx.get(), prov.models().withExistingParent(ctx.getName(), "block/cross")
+						.texture("cross", prov.modLoc("block/bramble")));
+			})
+			.item()
+			.model((ctx, prov) -> prov.blockSprite(ctx, prov.modLoc("block/bramble")))
+			.build()
 			.register();
 
 	@SubscribeEvent

@@ -95,6 +95,11 @@ public class BbPillagerEntity extends Pillager implements BbMobEntity {
     }
 
     @Override
+    public double aiSpeed() {
+        return 0.65;
+    }
+
+    @Override
     protected void pushEntities() {
     }
 }
