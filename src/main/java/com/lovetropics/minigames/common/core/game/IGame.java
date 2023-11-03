@@ -12,8 +12,9 @@ import com.lovetropics.minigames.common.core.integration.GameInstanceIntegration
 import net.minecraft.server.MinecraftServer;
 
 import java.util.UUID;
+import java.util.concurrent.Executor;
 
-public interface IGame {
+public interface IGame extends Executor {
 	IGameLobby getLobby();
 
 	UUID getUuid();
@@ -50,5 +51,18 @@ public interface IGame {
 		ControlCommands commands = getControlCommands();
 		GameLobbyMetadata lobby = getLobby().getMetadata();
 		return ControlCommandInvoker.create(commands, lobby);
+	}
+
+	boolean isActive();
+
+	@Override
+	default void execute(final Runnable command) {
+		if (isActive()) {
+			getServer().execute(() -> {
+				if (isActive()) {
+					command.run();
+				}
+			});
+		}
 	}
 }

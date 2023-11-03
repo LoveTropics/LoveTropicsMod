@@ -4,6 +4,7 @@ import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.Optionull;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.Entity;
@@ -78,6 +79,9 @@ public record DisguiseType(@Nullable EntityConfig entity, float scale, boolean c
 	}
 
 	public DisguiseType withEntity(@Nullable EntityConfig entity) {
+		if (Objects.equals(entity, this.entity)) {
+			return this;
+		}
 		return new DisguiseType(entity, scale, changesSize);
 	}
 
@@ -97,7 +101,7 @@ public record DisguiseType(@Nullable EntityConfig entity, float scale, boolean c
 		}
 
 		public EntityConfig withNbt(@Nullable CompoundTag nbt) {
-			return new EntityConfig(type, nbt, applyAttributes);
+			return new EntityConfig(type, Optionull.map(nbt, CompoundTag::copy), applyAttributes);
 		}
 
 		public void encode(FriendlyByteBuf buffer) {

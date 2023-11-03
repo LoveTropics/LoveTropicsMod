@@ -2,6 +2,7 @@ package com.lovetropics.minigames.common.core.game.impl;
 
 import com.lovetropics.minigames.common.core.game.IGameDefinition;
 import com.lovetropics.minigames.common.core.game.IGame;
+import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.lobby.IGameLobby;
 import com.lovetropics.minigames.common.core.game.state.GameStateMap;
 import net.minecraft.server.MinecraftServer;
@@ -41,5 +42,11 @@ final class GameInstance implements IGame {
 	@Override
 	public GameStateMap getInstanceState() {
 		return stateMap;
+	}
+
+	@Override
+	public boolean isActive() {
+		final IGamePhase phase = lobby.getCurrentPhase();
+		return phase != null && phase.getGame() == this;
 	}
 }

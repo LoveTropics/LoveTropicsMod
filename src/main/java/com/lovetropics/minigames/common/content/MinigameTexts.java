@@ -163,6 +163,9 @@ public final class MinigameTexts {
 		KEYS.add("donation.forced_player_head_package", "Forced Player Head Package");
 		KEYS.add("donation.forced_player_head_package.description", "Force every player in the game to wear the player head of your Minecraft avatar (and Curse of Binding)");
 		KEYS.add("donation.forced_player_head_package.toast", "You are now wearing %sender%'s head, and you can't do anything about it!");
+		KEYS.add("donation.player_dummy_package", "Player Dummy Package");
+		KEYS.add("donation.player_dummy_package.description", "Turn every player in the game into a dummy-version of your Minecraft avatar!");
+		KEYS.add("donation.player_dummy_package.toast", "Everyone is %sender%'!");
 		KEYS.add("donation.puffer_package", "Puffer Package");
 		KEYS.add("donation.puffer_package.description", "Spawns a Pufferfish in a block of Water where someone is standing");
 		KEYS.add("donation.puffer_package.toast", "Where did that Pufferfish come from? %sender% may know.");

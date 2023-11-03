@@ -306,4 +306,9 @@ public class GamePhase implements IGamePhase {
 	public long ticks() {
 		return getWorld().getGameTime() - startTime;
 	}
+
+	@Override
+	public boolean isActive() {
+		return !destroyed;
+	}
 }
