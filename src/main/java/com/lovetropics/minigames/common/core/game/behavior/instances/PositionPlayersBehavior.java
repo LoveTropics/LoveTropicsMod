@@ -30,6 +30,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 public class PositionPlayersBehavior implements IGameBehavior {
 	private static final Logger LOGGER = LogUtils.getLogger();
@@ -38,6 +39,7 @@ public class PositionPlayersBehavior implements IGameBehavior {
 			MoreCodecs.arrayOrUnit(Codec.STRING, String[]::new).optionalFieldOf("participants", new String[0]).forGetter(c -> c.participantSpawnKeys),
 			MoreCodecs.arrayOrUnit(Codec.STRING, String[]::new).optionalFieldOf("spectators", new String[0]).forGetter(c -> c.spectatorSpawnKeys),
 			MoreCodecs.arrayOrUnit(Codec.STRING, String[]::new).optionalFieldOf("all", new String[0]).forGetter(c -> c.allSpawnKeys),
+			Codec.unboundedMap(GameTeamKey.CODEC, MoreCodecs.arrayOrUnit(Codec.STRING, String[]::new)).optionalFieldOf("teams", Map.of()).forGetter(c -> c.teamSpawnKeys),
 			Codec.BOOL.optionalFieldOf("split_by_team", true).forGetter(c -> c.splitByTeam),
 			Codec.FLOAT.optionalFieldOf("angle", 0.0f).forGetter(c -> c.angle)
 	).apply(i, PositionPlayersBehavior::new));
@@ -45,6 +47,7 @@ public class PositionPlayersBehavior implements IGameBehavior {
 	private final String[] participantSpawnKeys;
 	private final String[] spectatorSpawnKeys;
 	private final String[] allSpawnKeys;
+	private final Map<GameTeamKey, String[]> teamSpawnKeys;
 	private final boolean splitByTeam;
 	private final float angle;
 
@@ -53,10 +56,11 @@ public class PositionPlayersBehavior implements IGameBehavior {
 	private CycledSpawner fallbackSpawner = CycledSpawner.EMPTY;
 	private Map<GameTeamKey, CycledSpawner> teamSpawners = Map.of();
 
-	public PositionPlayersBehavior(String[] participantSpawnKeys, String[] spectatorSpawnKeys, String[] allSpawnKeys, boolean splitByTeam, float angle) {
+	public PositionPlayersBehavior(String[] participantSpawnKeys, String[] spectatorSpawnKeys, String[] allSpawnKeys, Map<GameTeamKey, String[]> teamSpawnKeys, boolean splitByTeam, float angle) {
 		this.participantSpawnKeys = participantSpawnKeys;
 		this.spectatorSpawnKeys = spectatorSpawnKeys;
 		this.allSpawnKeys = allSpawnKeys;
+		this.teamSpawnKeys = teamSpawnKeys;
 		this.splitByTeam = splitByTeam;
 		this.angle = angle;
 	}
@@ -71,11 +75,19 @@ public class PositionPlayersBehavior implements IGameBehavior {
 		LOGGER.debug("FOUND " + participantSpawner.regions.size() + " PARTICIPANT SPAWN REGIONS");
 
 		TeamState teams = game.getInstanceState().getOrNull(TeamState.KEY);
-		if (splitByTeam && teams != null && !participantSpawner.regions.isEmpty()) {
-			events.listen(GamePhaseEvents.CREATE, () -> {
-				int participantCount = game.getParticipants().size();
-				teamSpawners = createTeamSpawners(game, teams, participantSpawner, participantCount);
-			});
+		if (splitByTeam && teams != null) {
+			if (!teamSpawnKeys.isEmpty()) {
+				events.listen(GamePhaseEvents.CREATE, () -> teamSpawners = teamSpawnKeys.entrySet().stream()
+						.collect(Collectors.toMap(
+								Map.Entry::getKey,
+								entry -> new CycledSpawner(regions, entry.getValue())
+						)));
+			} else if (!participantSpawner.regions.isEmpty()) {
+				events.listen(GamePhaseEvents.CREATE, () -> {
+					int participantCount = game.getParticipants().size();
+					teamSpawners = createTeamSpawners(game, teams, participantSpawner, participantCount);
+				});
+			}
 		}
 
 		events.listen(GamePlayerEvents.SPAWN, (playerId, spawn, role) -> spawnPlayerAsRole(game, playerId, spawn, role, teams));
