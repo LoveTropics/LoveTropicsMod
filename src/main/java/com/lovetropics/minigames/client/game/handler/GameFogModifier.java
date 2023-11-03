@@ -39,7 +39,7 @@ public class GameFogModifier {
                 event.setFarPlaneDistance(event.getRenderer().getRenderDistance());
                 event.setFogShape(FogShape.CYLINDER);
             } else {
-                event.setNearPlaneDistance(state.nearDistance());
+                event.setNearPlaneDistance(Math.min(state.nearDistance(), event.getNearPlaneDistance()));
                 event.setFarPlaneDistance(Math.min(state.farDistance(), event.getFarPlaneDistance()));
                 event.setFogShape(FogShape.SPHERE);
             }
