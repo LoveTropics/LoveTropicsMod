@@ -39,8 +39,12 @@ public class TeamWinTrigger implements IGameBehavior {
 			if (teamState.getParticipantsForTeam(game, playerTeam).isEmpty()) {
 				GameTeam finalTeam = getFinalTeam(teamState, game);
 				if (finalTeam == null) {
-					// How did we get here? If there are no other teams, the team who died last is probably the winner
-					finalTeam = Objects.requireNonNull(teamState.getTeamByKey(playerTeam));
+					if (game.getParticipants().isEmpty()) {
+						// How did we get here? If there are no other teams, the team who died last is probably the winner
+						finalTeam = Objects.requireNonNull(teamState.getTeamByKey(playerTeam));
+					} else {
+						return;
+					}
 				}
 
 				winTriggered = true;
