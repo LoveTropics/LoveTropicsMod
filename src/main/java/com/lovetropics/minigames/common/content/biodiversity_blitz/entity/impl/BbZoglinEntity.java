@@ -13,7 +13,6 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MoverType;
-import net.minecraft.world.entity.ai.goal.ZombieAttackGoal;
 import net.minecraft.world.entity.ai.navigation.PathNavigation;
 import net.minecraft.world.entity.monster.Zoglin;
 import net.minecraft.world.level.Level;
@@ -56,6 +55,11 @@ public class BbZoglinEntity extends Zoglin implements BbMobEntity {
             @Override
             protected double getDistanceSq(BlockState state) {
                 return 2.5 * 2.5;
+            }
+
+            @Override
+            protected double speed() {
+                return 0.5;
             }
         });
 
@@ -112,8 +116,8 @@ public class BbZoglinEntity extends Zoglin implements BbMobEntity {
     }
 
     @Override
-    public double aiSpeed() {
-        return 1.0;
+    public float aiSpeed() {
+        return 1.0f;
     }
 
     @Override

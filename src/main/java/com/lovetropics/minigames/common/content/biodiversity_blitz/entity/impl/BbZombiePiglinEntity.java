@@ -75,8 +75,8 @@ public class BbZombiePiglinEntity extends ZombifiedPiglin implements BbMobEntity
     }
 
     @Override
-    public double aiSpeed() {
-        return 1.1;
+    public float aiSpeed() {
+        return 1.1f;
     }
 
     @Override

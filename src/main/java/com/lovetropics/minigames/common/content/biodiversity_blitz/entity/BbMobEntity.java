@@ -12,6 +12,7 @@ public interface BbMobEntity {
 	Predicate<Mob> PREDICATE = entity -> entity.isAlive() && matches(entity);
 
 	float BERRY_BUSH_MALUS = 100.0f;
+	float ATTACK_MOVE_SPEED = 0.7f;
 
 	static boolean matches(Entity entity) {
 		return entity instanceof BbMobEntity;
@@ -21,8 +22,8 @@ public interface BbMobEntity {
 		return true;
 	}
 
-	default double aiSpeed() {
-		return 0.5;
+	default float aiSpeed() {
+		return 0.5f;
 	}
 
 	BbMobBrain getMobBrain();

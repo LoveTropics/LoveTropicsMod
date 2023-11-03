@@ -56,17 +56,12 @@ public class KaboomCropGoal extends DestroyCropGoal {
     }
 
     @Override
-    protected int getPlantPriority(BlockPos pos) {
-        Plant plant = this.mob.getPlot().plants.getPlantAt(pos);
-        if (plant != null) {
-            PlantHealth state = plant.state(PlantHealth.KEY);
-
-            // TODO:
-            if (state != null) {
-                return state.health();
-            }
+    protected int getBlockPriority(BlockPos pos, Plant plant) {
+        PlantHealth state = plant.state(PlantHealth.KEY);
+        // TODO:
+        if (state != null) {
+            return state.health();
         }
-
         return 0;
     }
 }

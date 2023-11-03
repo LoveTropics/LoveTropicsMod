@@ -1,5 +1,8 @@
 package com.lovetropics.minigames.common.content.biodiversity_blitz.entity.ai;
 
+import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.BbMobEntity;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.plant.Plant;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.plant.PlantMap;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.goal.Goal;
@@ -8,21 +11,23 @@ import javax.annotation.Nullable;
 import java.util.EnumSet;
 
 public abstract class MoveToBlockGoal extends Goal {
+    protected final BbMobEntity bbMob;
     protected final Mob mob;
     // State
     protected BlockPos targetPos;
 
-    protected MoveToBlockGoal(Mob mob) {
-        this.mob = mob;
+    protected MoveToBlockGoal(BbMobEntity mob) {
+        this.mob = mob.asMob();
+        bbMob = mob;
 
         this.setFlags(EnumSet.of(Goal.Flag.MOVE, Goal.Flag.JUMP));
     }
 
     @Override
     public boolean canUse() {
-        BlockPos target = locateBlock(31, 2);
+        Plant target = locatePlant();
         if (target != null) {
-            this.targetPos = target;
+            this.targetPos = target.coverage().getOrigin();
             return true;
         } else {
             return false;
@@ -30,7 +35,7 @@ public abstract class MoveToBlockGoal extends Goal {
     }
 
     protected double speed() {
-        return 0.5;
+        return bbMob.aiSpeed();
     }
 
     @Override
@@ -40,7 +45,8 @@ public abstract class MoveToBlockGoal extends Goal {
 
     @Override
     public boolean canContinueToUse() {
-        if (getBlockPriority(this.targetPos) > 0) {
+        Plant plant = bbMob.getPlot().plants.getPlantAt(targetPos);
+        if (plant == null || getBlockPriority(this.targetPos, plant) > 0) {
             return false;
         }
 
@@ -48,27 +54,32 @@ public abstract class MoveToBlockGoal extends Goal {
     }
 
     @Nullable
-    protected BlockPos locateBlock(int rangeX, int rangeY) {
-        BlockPos maxPrioLoc = null;
+    protected Plant locatePlant() {
+        PlantMap plants = bbMob.getPlot().plants;
+        Plant maxPrioPlant = null;
         int maxPrio = 0;
-        BlockPos origin = this.mob.blockPosition();
-        for (BlockPos pos : BlockPos.withinManhattan(origin, rangeX, rangeY, rangeX)) {
-            pos = pos.immutable();
-            int prio = getBlockPriority(pos);
+        double maxPrioDistSq = Double.MAX_VALUE;
+
+        for (Plant plant : plants) {
+            BlockPos plantPos = plant.coverage().getOrigin();
+            int prio = getBlockPriority(plantPos, plant);
+            double distSq = plantPos.distToCenterSqr(mob.position());
             if (prio > maxPrio) {
                 // If the found block has a higher priority, let's unconditionally go to it.
                 maxPrio = prio;
-                maxPrioLoc = pos;
-            } else if (prio == maxPrio && maxPrioLoc != null && maxPrioLoc.distSqr(origin) > pos.distSqr(origin)) {
+                maxPrioPlant = plant;
+                maxPrioDistSq = distSq;
+            } else if (prio == maxPrio && maxPrioPlant != null && distSq < maxPrioDistSq) {
                 // Same priority, but closer? Let's play fair and go to the closer one first.
-                maxPrioLoc = pos;
+                maxPrioPlant = plant;
+                maxPrioDistSq = distSq;
             }
         }
 
-        return origin.equals(maxPrioLoc) ? null : maxPrioLoc;
+        return maxPrioPlant;
     }
 
     // 0: Do not target this block
     // Anything higher will set the target to the current block, based on the current priority
-    protected abstract int getBlockPriority(BlockPos pos);
+    protected abstract int getBlockPriority(BlockPos pos, Plant plant);
 }

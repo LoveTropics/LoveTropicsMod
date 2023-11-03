@@ -8,10 +8,13 @@ import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.ai.Des
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.Plot;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.DifficultyInstance;
-import net.minecraft.world.entity.*;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.MoverType;
+import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.goal.ZombieAttackGoal;
 import net.minecraft.world.entity.ai.navigation.PathNavigation;
-import net.minecraft.world.entity.monster.Drowned;
 import net.minecraft.world.entity.monster.Zombie;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
@@ -41,7 +44,7 @@ public class BbZombieEntity extends Zombie implements BbMobEntity {
 
 	@Override
 	protected void addBehaviourGoals() {
-		this.goalSelector.addGoal(2, new ZombieAttackGoal(this, 1.0, false));
+		this.goalSelector.addGoal(2, new ZombieAttackGoal(this, BbMobEntity.ATTACK_MOVE_SPEED, false));
 		this.goalSelector.addGoal(3, new DestroyCropGoal(this));
 
 		this.targetSelector.addGoal(1, new BbTargetPlayerGoal(this));
