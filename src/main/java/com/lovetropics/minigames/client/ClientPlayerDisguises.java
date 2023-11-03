@@ -5,6 +5,7 @@ import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.common.core.diguise.DisguiseType;
 import com.lovetropics.minigames.common.core.diguise.PlayerDisguise;
 import com.lovetropics.minigames.common.core.diguise.PlayerDisguiseBehavior;
+import com.lovetropics.minigames.common.core.item.MinigameItems;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
@@ -14,8 +15,10 @@ import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.scores.Team;
 import net.minecraftforge.api.distmarker.Dist;
@@ -27,6 +30,7 @@ import net.minecraftforge.fml.common.Mod;
 @Mod.EventBusSubscriber(modid = Constants.MODID, value = Dist.CLIENT)
 public final class ClientPlayerDisguises {
     private static final Minecraft CLIENT = Minecraft.getInstance();
+    private static final EquipmentSlot[] EQUIPMENT_SLOTS = EquipmentSlot.values();
 
     @SubscribeEvent
     public static void onRenderPlayerPre(RenderLivingEvent.Pre<?, ?> event) {
@@ -135,6 +139,13 @@ public final class ClientPlayerDisguises {
             livingDisguise.hurtTime = entity.hurtTime;
             livingDisguise.hurtDuration = entity.hurtDuration;
             livingDisguise.hurtMarked = entity.hurtMarked;
+        }
+
+        for (final EquipmentSlot slot : EQUIPMENT_SLOTS) {
+            final ItemStack stack = entity.getItemBySlot(slot);
+            if (!stack.is(MinigameItems.DISGUISE.get())) {
+                disguise.setItemSlot(slot, stack);
+            }
         }
 
         disguise.tickCount = entity.tickCount;
