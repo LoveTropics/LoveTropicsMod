@@ -49,11 +49,6 @@ public class GameRendering {
             return;
         }
 
-        ClientBbMobSpawnState state = ClientGameStateManager.getOrNull(BiodiversityBlitz.MOB_SPAWN);
-        if (state == null) {
-            return;
-        }
-
         PoseStack matrices = event.getPoseStack();
         Vec3 cameraPos = event.getCamera().getPosition();
         RenderBuffers buffers = Minecraft.getInstance().renderBuffers();
@@ -64,19 +59,21 @@ public class GameRendering {
         mv.setIdentity();
         RenderSystem.applyModelViewMatrix();
 
-        for (BlockBox box : state.spawns()) {
-            BlockPos min = box.min();
-            BlockPos max = box.max();
-            float x0 = (float) (min.getX() - cameraPos.x);
-            float x1 = (float) (max.getX() + 1.0 - cameraPos.x);
-            float y0 = (float) (min.getY() - cameraPos.y);
-            float y1 = (float) (max.getY() + 1.0 - cameraPos.y);
-            float z0 = (float) (min.getZ() - cameraPos.z);
-            float z1 = (float) (max.getZ() + 1.0 - cameraPos.z);
-            buildBox(cons, matrices, x0, x1, y0, y1, z0, z1, 255, 0, 0, 160);
+        ClientBbMobSpawnState state = ClientGameStateManager.getOrNull(BiodiversityBlitz.MOB_SPAWN);
+        if (state != null) {
+            for (BlockBox box : state.spawns()) {
+                BlockPos min = box.min();
+                BlockPos max = box.max();
+                float x0 = (float) (min.getX() - cameraPos.x);
+                float x1 = (float) (max.getX() + 1.0 - cameraPos.x);
+                float y0 = (float) (min.getY() - cameraPos.y);
+                float y1 = (float) (max.getY() + 1.0 - cameraPos.y);
+                float z0 = (float) (min.getZ() - cameraPos.z);
+                float z1 = (float) (max.getZ() + 1.0 - cameraPos.z);
+                buildBox(cons, matrices, x0, x1, y0, y1, z0, z1, 255, 0, 0, 160);
+            }
         }
 
-        // TODO: logic bug- scoreboard state only ever renders when mob spawn is also active!
         ClientBbScoreboardState scoreboardState = ClientGameStateManager.getOrNull(BiodiversityBlitz.SCOREBOARD);
         if (scoreboardState != null) {
             renderScoreboardState(scoreboardState, matrices, cameraPos, buffers.bufferSource(), cons);
