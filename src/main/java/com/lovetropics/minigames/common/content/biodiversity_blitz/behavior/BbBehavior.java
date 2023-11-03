@@ -46,6 +46,7 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.GameType;
@@ -196,6 +197,8 @@ public final class BbBehavior implements IGameBehavior {
 	}
 
 	private void onExplosion(Explosion explosion, List<BlockPos> affectedBlocks, List<Entity> affectedEntities) {
+		affectedEntities.removeIf(e -> e instanceof Player);
+		
 		// Remove from filtered explosions
 		if (explosion instanceof FilteredExplosion) {
 			affectedEntities.removeIf(((FilteredExplosion)explosion).remove);

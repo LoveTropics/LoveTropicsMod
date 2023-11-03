@@ -52,6 +52,15 @@ public class BbCreeperEntity extends Creeper implements BbMobEntity {
     }
 
     @Override
+    public void aiStep() {
+        if (this.getHealth() < 8) {
+            this.setSwellDir(1);
+        }
+
+        super.aiStep();
+    }
+
+    @Override
     public void explodeCreeper() {
         if (!this.level().isClientSide) {
             double x = this.getX();
