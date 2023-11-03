@@ -13,6 +13,9 @@ import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
 public final class BbGroundNavigator extends GroundPathNavigation {
+	// Increase how far we can search for a path - should be ok for performance, as we're limited to 2D anyway
+	private static final int MAX_DEPTH = 1024;
+
 	private static final float MAX_DISTANCE_TO_WAYPOINT = 0.2f;
 	private final BbMobEntity mob;
 
@@ -25,7 +28,7 @@ public final class BbGroundNavigator extends GroundPathNavigation {
 	protected PathFinder createPathFinder(int maxDepth) {
 		this.nodeEvaluator = new NodeProcessor();
 		this.nodeEvaluator.setCanPassDoors(true);
-		return new PathFinder(this.nodeEvaluator, maxDepth);
+		return new PathFinder(this.nodeEvaluator, MAX_DEPTH);
 	}
 
 	@Override
