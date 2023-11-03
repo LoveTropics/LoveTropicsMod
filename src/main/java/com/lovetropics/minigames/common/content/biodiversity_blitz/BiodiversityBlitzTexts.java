@@ -87,6 +87,7 @@ public final class BiodiversityBlitzTexts {
 		KEYS.add("plant.iris.tooltip", "Applies a Glowing effect mobs to all nearby mobs.");
 		KEYS.add("plant.iris.tooltip.extra1", "Gives all nearby mobs on the field the Glowing effect.");
 		KEYS.add("plant.iris.tooltip.extra2", "Useful for detecting where the mobs are when hidden behind trees.");
+		KEYS.add("plant.bromeliad.tooltip", "Slowly kills mobs that walk nearby.");
 		KEYS.add("plant.jack_o_lantern.tooltip", "Scares nearby mobs away! Must be reset after triggering.");
 		KEYS.add("plant.jack_o_lantern.tooltip.extra1", "When mobs walk towards the Jack o' Lantern, they get scared and avoid the area.");
 		KEYS.add("plant.jack_o_lantern.tooltip.extra2", "Jack o' Lanterns need to be reset after use and do not contribute towards your biodiversity score.");
