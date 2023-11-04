@@ -4,6 +4,7 @@ import com.google.common.base.Preconditions;
 import com.lovetropics.lib.permission.PermissionsApi;
 import com.lovetropics.lib.permission.role.Role;
 import com.lovetropics.lib.permission.role.RoleReader;
+import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.player.MutablePlayerSet;
 import com.lovetropics.minigames.common.core.game.player.PlayerSet;
@@ -168,6 +169,7 @@ public final class TeamState implements IGameState, Iterable<GameTeam> {
 			Set<UUID> assignedPlayers = new ObjectOpenHashSet<>();
 			for (GameTeam team : teams) {
 				getPlayersAssignedTo(participants, team).forEach(player -> {
+					LoveTropics.LOGGER.debug("Assigning {} to {} based on role assignments", player.getScoreboardName(), team);
 					apply.accept(player, team.key());
 					assignedPlayers.add(player.getUUID());
 				});
@@ -208,6 +210,7 @@ public final class TeamState implements IGameState, Iterable<GameTeam> {
 				.map(PermissionsApi.provider()::get)
 				.filter(Objects::nonNull)
 				.toList();
+		LoveTropics.LOGGER.debug("Assigning {} roles ({}) to team: {}", assignedRoles.size(), team.config().assignedRoles(), team);
 		if (assignedRoles.isEmpty()) {
 			return Stream.empty();
 		}
