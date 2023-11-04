@@ -47,6 +47,7 @@ public final class PlayerIsolation {
 	public ServerPlayer teleportTo(final ServerPlayer player, final ServerLevel newLevel, final Vec3 position, final float yRot, final float xRot) {
 		final TransferableState transferableState = TransferableState.copyOf(player);
 		return reloadPlayer(player, newPlayer -> {
+			((PlayerListAccess) newPlayer.server.getPlayerList()).ltminigames$firePlayerLoading(newPlayer);
 			newPlayer.setServerLevel(newLevel);
 			newPlayer.moveTo(position.x, position.y, position.z, yRot, xRot);
 			newPlayer.addTag(ISOLATED_TAG);

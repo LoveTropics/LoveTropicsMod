@@ -8,4 +8,6 @@ public interface PlayerListAccess {
 	void ltminigames$remove(ServerPlayer player);
 
 	void ltminigames$add(ServerPlayer player);
+
+	void ltminigames$firePlayerLoading(ServerPlayer player);
 }
