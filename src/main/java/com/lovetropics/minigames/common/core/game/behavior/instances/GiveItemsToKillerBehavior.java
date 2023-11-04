@@ -8,6 +8,7 @@ import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.lovetropics.minigames.common.util.Codecs;
+import com.lovetropics.minigames.common.util.Util;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.advancements.critereon.ItemPredicate;
@@ -27,7 +28,8 @@ public record GiveItemsToKillerBehavior(List<ItemPredicate> predicates) implemen
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
 		events.listen(GamePlayerEvents.DEATH, (player, source) -> {
-			if (source.getEntity() instanceof final ServerPlayer killer && game.getParticipants().contains(killer)) {
+			final ServerPlayer killer = Util.getKillerPlayer(player, source);
+			if (killer != null && game.getParticipants().contains(killer)) {
 				giveItems(player, killer);
 			}
 			return InteractionResult.PASS;

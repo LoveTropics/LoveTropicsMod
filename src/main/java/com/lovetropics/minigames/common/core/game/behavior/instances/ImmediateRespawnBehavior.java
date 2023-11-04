@@ -9,6 +9,7 @@ import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.lovetropics.minigames.common.core.game.player.PlayerRole;
 import com.lovetropics.minigames.common.core.game.util.TemplatedText;
+import com.lovetropics.minigames.common.util.Util;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -55,7 +56,8 @@ public record ImmediateRespawnBehavior(Optional<PlayerRole> role, Optional<Playe
 	private void respawnPlayer(IGamePhase game, ServerPlayer player, PlayerRole playerRole, DamageSource source) {
 		if (respawnAsRole.isPresent()) {
 			game.setPlayerRole(player, respawnAsRole.get());
-			if (spectateKiller && respawnAsRole.get() == PlayerRole.SPECTATOR && source.getEntity() instanceof final ServerPlayer killer) {
+			final ServerPlayer killer = Util.getKillerPlayer(player, source);
+			if (spectateKiller && respawnAsRole.get() == PlayerRole.SPECTATOR && killer != null) {
 				player.setCamera(killer);
 			}
 		} else {

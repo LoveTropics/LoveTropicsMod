@@ -10,6 +10,7 @@ import com.lovetropics.minigames.common.core.game.behavior.action.GameActionPara
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.lovetropics.minigames.common.util.Codecs;
+import com.lovetropics.minigames.common.util.Util;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.advancements.critereon.EntityPredicate;
@@ -33,14 +34,15 @@ public record OnDeathTrigger(GameActionList<ServerPlayer> killedAction, GameActi
 		killerAction.register(game, events);
 
 		events.listen(GamePlayerEvents.DEATH, (player, damageSource) -> {
-			if (killerPredicate.isPresent() && !killerPredicate.get().matches(player, damageSource.getEntity())) {
+			final ServerPlayer killer = Util.getKillerPlayer(player, damageSource);
+			if (killerPredicate.isPresent() && !killerPredicate.get().matches(player, killer)) {
 				return InteractionResult.PASS;
 			}
 			if (killedPredicate.isPresent() && !killedPredicate.get().matches(player, player)) {
 				return InteractionResult.PASS;
 			}
 			final GameActionContext.Builder context = GameActionContext.builder().set(GameActionParameter.KILLED, player);
-			if (damageSource.getEntity() instanceof final ServerPlayer killer) {
+			if (killer != null) {
 				killedAction.apply(game, context.set(GameActionParameter.KILLER, killer).build(), player);
 				killerAction.apply(game, context.set(GameActionParameter.KILLER, killer).build(), killer);
 			} else {

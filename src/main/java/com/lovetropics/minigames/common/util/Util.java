@@ -15,6 +15,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LightningBolt;
@@ -162,4 +163,14 @@ public class Util {
 	public static String unpackTranslationKey(final Component component) {
 		return ((TranslatableContents) component.getContents()).getKey();
 	}
+
+    @Nullable
+    public static ServerPlayer getKillerPlayer(final ServerPlayer player, final DamageSource killingBlow) {
+        if (killingBlow.getEntity() instanceof final ServerPlayer killerPlayer) {
+            return killerPlayer;
+        } else if (player.getKillCredit() instanceof final ServerPlayer killerPlayer) {
+            return killerPlayer;
+        }
+        return null;
+    }
 }

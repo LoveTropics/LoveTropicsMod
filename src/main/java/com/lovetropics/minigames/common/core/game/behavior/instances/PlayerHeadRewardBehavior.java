@@ -7,6 +7,7 @@ import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.lovetropics.minigames.common.core.game.rewards.GameRewardsMap;
+import com.lovetropics.minigames.common.util.Util;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
@@ -31,7 +32,8 @@ public record PlayerHeadRewardBehavior() implements IGameBehavior {
 		final MutableObject<CompletableFuture<?>> resolvedFuture = new MutableObject<>(CompletableFuture.completedFuture(null));
 
 		events.listen(GamePlayerEvents.DEATH, (target, source) -> {
-			if (source.getEntity() instanceof final ServerPlayer killer) {
+			final ServerPlayer killer = Util.getKillerPlayer(target, source);
+			if (killer != null) {
 				final CompletableFuture<?> future = createPlayerHead(target)
 						.thenAcceptAsync(stack -> rewards.forPlayer(killer).giveCollectible(stack), game.getServer());
 				resolvedFuture.setValue(resolvedFuture.getValue().thenCombine(future, (a, b) -> b));
