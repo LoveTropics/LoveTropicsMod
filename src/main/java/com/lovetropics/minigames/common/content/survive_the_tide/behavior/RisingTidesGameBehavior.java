@@ -53,7 +53,7 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 	).apply(i, RisingTidesGameBehavior::new));
 
 	private static final int HIGH_PRIORITY_BUDGET_PER_TICK = 50;
-	private static final int LOW_PRIORITY_BUDGET_PER_TICK = 10;
+	private static final int LOW_PRIORITY_BUDGET_PER_TICK = 5;
 
 	private static final int HIGH_PRIORITY_DISTANCE_2 = 64 * 64;
 
