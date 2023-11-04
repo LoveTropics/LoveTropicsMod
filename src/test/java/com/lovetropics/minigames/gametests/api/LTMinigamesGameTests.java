@@ -2,6 +2,7 @@ package com.lovetropics.minigames.gametests.api;
 
 import com.google.common.base.Suppliers;
 import com.lovetropics.lib.permission.PermissionsApi;
+import com.lovetropics.lib.permission.role.RoleLookup;
 import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.common.core.game.datagen.BehaviorFactory;
 import com.lovetropics.minigames.common.core.game.datagen.BehaviorProvider;
@@ -41,9 +42,6 @@ import java.util.function.Supplier;
 @Mod.EventBusSubscriber(modid = "ltminigames", bus = Mod.EventBusSubscriber.Bus.MOD)
 public class LTMinigamesGameTests {
     public static final TestPermissionAPI PERMISSIONS = new TestPermissionAPI();
-    static {
-        PermissionsApi.setRoleLookup(PERMISSIONS);
-    }
 
     private static final Supplier<Map<ResourceLocation, MinigameTest>> TESTS = Suppliers.memoize(() -> {
         final var classes = ModList.get().getAllScanData().stream()
@@ -124,7 +122,15 @@ public class LTMinigamesGameTests {
                 String batch = gametest.batch().equals("defaultBatch") ? id.getPath() : gametest.batch();
                 Rotation rotation = StructureUtils.getRotationForRotationSteps(gametest.rotationSteps());
                 final var consumer = (Consumer<LTGameTestHelper>)turnMethodIntoConsumer(testMethod, test);
-                tests.add(new TestFunction(batch, testName, template, rotation, gametest.timeoutTicks(), gametest.setupTicks(), gametest.required(), gametest.requiredSuccesses(), gametest.attempts(), helper -> consumer.accept(new LTGameTestHelper(helper))));
+                tests.add(new TestFunction(batch, testName, template, rotation, gametest.timeoutTicks(), gametest.setupTicks(), gametest.required(), gametest.requiredSuccesses(), gametest.attempts(), helper -> {
+                    RoleLookup lookup = PermissionsApi.lookup();
+                    try {
+                        PermissionsApi.setRoleLookup(PERMISSIONS);
+                        consumer.accept(new LTGameTestHelper(helper));
+                    } finally {
+                        PermissionsApi.setRoleLookup(lookup);
+                    }
+                }));
             }
         }
 
