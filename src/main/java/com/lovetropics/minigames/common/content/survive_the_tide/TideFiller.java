@@ -15,18 +15,20 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.chunk.LevelChunkSection;
 import net.minecraft.world.level.levelgen.Heightmap;
+import net.minecraft.world.level.lighting.LevelLightEngine;
+import net.minecraft.world.level.lighting.LightEngine;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 
-import javax.annotation.Nullable;
-
 public class TideFiller {
+	private static final BlockState WATER = Blocks.WATER.defaultBlockState();
 	private static final RegistryObject<Block> WATER_BARRIER = RegistryObject.create(new ResourceLocation("ltextras", "water_barrier"), ForgeRegistries.BLOCKS);
 	private static final RegistryObject<Block> SAND_LAYER = RegistryObject.create(new ResourceLocation("weather2", "sand_layer"), ForgeRegistries.BLOCKS);
 
 	public static long fillChunk(int minX, int minZ, int maxX, int maxZ, LevelChunk chunk, int fromY, int toY) {
-		Level world = chunk.getLevel();
-		ServerChunkCache chunkProvider = (ServerChunkCache) world.getChunkSource();
+		Level level = chunk.getLevel();
+		ServerChunkCache chunkProvider = (ServerChunkCache) level.getChunkSource();
+		LevelLightEngine lightEngine = chunkProvider.getLightEngine();
 
 		ChunkPos chunkPos = chunk.getPos();
 
@@ -52,7 +54,7 @@ public class TideFiller {
 
 		// iterate through all the sections that need to be changed
 		for (int sectionY = fromSection; sectionY <= toSection; sectionY++) {
-			LevelChunkSection section = chunk.getSection(world.getSectionIndexFromSectionY(sectionY));
+			LevelChunkSection section = chunk.getSection(level.getSectionIndexFromSectionY(sectionY));
 			int minSectionY = SectionPos.sectionToBlockCoord(sectionY);
 			int maxSectionY = minSectionY + SectionPos.SECTION_SIZE - 1;
 
@@ -60,29 +62,38 @@ public class TideFiller {
 			BlockPos sectionMin = new BlockPos(chunkMin.getX(), Math.max(chunkMin.getY(), minSectionY), chunkMin.getZ());
 			BlockPos sectionMax = new BlockPos(chunkMax.getX(), Math.min(chunkMax.getY(), maxSectionY), chunkMax.getZ());
 
+			if (section.hasOnlyAir()) {
+				lightEngine.updateSectionStatus(SectionPos.of(chunkPos.x, sectionY, chunkPos.z), false);
+			}
+
 			for (BlockPos worldPos : BlockPos.betweenClosed(sectionMin, sectionMax)) {
+				int worldY = worldPos.getY();
 				int localX = SectionPos.sectionRelative(worldPos.getX());
-				int localY = SectionPos.sectionRelative(worldPos.getY());
+				int localY = SectionPos.sectionRelative(worldY);
 				int localZ = SectionPos.sectionRelative(worldPos.getZ());
 
 				BlockState existingBlock = section.getBlockState(localX, localY, localZ);
 
-				BlockState newBlock = mapBlock(existingBlock, worldPos.getY(), fromY);
-				if (newBlock == null) continue;
+				BlockState newBlock = mapBlock(existingBlock, worldY, fromY);
+				if (newBlock == existingBlock) {
+					continue;
+				}
 
 				if (existingBlock.getBlock() != Blocks.BAMBOO) {
 					section.setBlockState(localX, localY, localZ, newBlock);
 				} else {
-					world.setBlock(worldPos, newBlock, Block.UPDATE_INVISIBLE | Block.UPDATE_CLIENTS);
+					level.setBlock(worldPos, newBlock, Block.UPDATE_INVISIBLE | Block.UPDATE_CLIENTS);
 				}
 
-				// Update heightmap
-				heightmapSurface.update(localX, localY, localZ, newBlock);
-				heightmapMotionBlocking.update(localX, localY, localZ, newBlock);
+				heightmapSurface.update(localX, worldY, localZ, newBlock);
+				heightmapMotionBlocking.update(localX, worldY, localZ, newBlock);
 
-				// Tell the client about the change
 				chunkProvider.blockChanged(worldPos);
-				chunkProvider.getLightEngine().checkBlock(worldPos);
+
+				if (newBlock == WATER || LightEngine.hasDifferentLightProperties(chunk, worldPos, existingBlock, newBlock)) {
+					chunk.getSkyLightSources().update(chunk, localX, worldY, localZ);
+					lightEngine.checkBlock(worldPos);
+				}
 
 				updatedBlocks++;
 			}
@@ -96,7 +107,6 @@ public class TideFiller {
 		return updatedBlocks;
 	}
 
-	@Nullable
 	private static BlockState mapBlock(BlockState state, int y, int fromWaterLevel) {
 		if (y <= fromWaterLevel) {
 			return mapBlockBelowWater(state);
@@ -105,13 +115,11 @@ public class TideFiller {
 		}
 	}
 
-	@Nullable
 	private static BlockState mapBlockRisingWater(BlockState state) {
 		Block block = state.getBlock();
 
 		if (state.isAir() || !state.blocksMotion() || block == Blocks.BAMBOO || is(state, SAND_LAYER)) {
-			// If air or a replaceable block, just set to water
-			return Blocks.WATER.defaultBlockState();
+			return WATER;
 		}
 
 		if (block instanceof SimpleWaterloggedBlock) {
@@ -132,19 +140,17 @@ public class TideFiller {
 			return Blocks.BLACK_CONCRETE.defaultBlockState();
 		}
 
-		return null;
+		return state;
 	}
 
 	private static boolean is(BlockState state, RegistryObject<Block> block) {
 		return block.isPresent() && block.get() == state.getBlock();
 	}
 
-	@Nullable
 	private static BlockState mapBlockBelowWater(BlockState state) {
 		if (state.getBlock() == Blocks.GRASS_BLOCK || state.getBlock() == Blocks.DIRT_PATH) {
 			return Blocks.DIRT.defaultBlockState();
 		}
-
-		return null;
+		return state;
 	}
 }
