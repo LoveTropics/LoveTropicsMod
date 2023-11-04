@@ -5,6 +5,7 @@ import com.lovetropics.minigames.common.core.chat.ChatChannelStore;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
+import com.lovetropics.minigames.common.core.game.behavior.event.GameLogicEvents;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.lovetropics.minigames.common.core.game.state.team.GameTeam;
 import com.lovetropics.minigames.common.core.game.state.team.GameTeamKey;
@@ -19,6 +20,7 @@ import net.minecraft.network.chat.OutgoingChatMessage;
 import net.minecraft.network.chat.PlayerChatMessage;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerPlayer;
+import org.apache.commons.lang3.mutable.MutableBoolean;
 
 public record TeamChatBehavior(ResourceKey<ChatType> chatType, boolean includeSpectators) implements IGameBehavior {
 	public static final MapCodec<TeamChatBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
@@ -29,13 +31,14 @@ public record TeamChatBehavior(ResourceKey<ChatType> chatType, boolean includeSp
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
 		TeamState teams = game.getInstanceState().getOrThrow(TeamState.KEY);
+		MutableBoolean gameOver = new MutableBoolean();
 		events.listen(GamePlayerEvents.ADD, player -> {
 			ChatChannelStore.set(player, ChatChannel.TEAM);
 			player.sendSystemMessage(GameTexts.Commands.TEAM_CHAT_INTRO);
 		});
 		events.listen(GamePlayerEvents.CHAT, (player, signedMessage) -> {
 			ChatChannel channel = ChatChannelStore.get(player);
-			if (channel != ChatChannel.TEAM) {
+			if (channel != ChatChannel.TEAM || gameOver.getValue()) {
 				return false;
 			}
 			GameTeamKey teamKey = teams.getTeamForPlayer(player);
@@ -48,6 +51,7 @@ public record TeamChatBehavior(ResourceKey<ChatType> chatType, boolean includeSp
 			}
 			return false;
 		});
+		events.listen(GameLogicEvents.GAME_OVER, gameOver::setTrue);
 	}
 
 	private void broadcastToTeam(ServerPlayer player, PlayerChatMessage signedMessage, IGamePhase game, GameTeam team) {
