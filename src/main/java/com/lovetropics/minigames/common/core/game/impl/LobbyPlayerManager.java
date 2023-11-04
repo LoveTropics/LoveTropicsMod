@@ -1,5 +1,6 @@
 package com.lovetropics.minigames.common.core.game.impl;
 
+import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.common.core.game.GameResult;
 import com.lovetropics.minigames.common.core.game.LobbyRegistrations;
 import com.lovetropics.minigames.common.core.game.lobby.IGameLobbyPlayers;
@@ -65,6 +66,7 @@ final class LobbyPlayerManager implements IGameLobbyPlayers {
 
 	private GameResult<Unit> doJoin(ServerPlayer player) {
 		if (registrations.add(player.getUUID())) {
+			LoveTropics.LOGGER.debug("Player '{}' joining minigame lobby (host={})", player.getScoreboardName(), StreamHosts.isHost(player));
 			lobby.onPlayerRegister(player);
 			return GameResult.ok();
 		} else {
