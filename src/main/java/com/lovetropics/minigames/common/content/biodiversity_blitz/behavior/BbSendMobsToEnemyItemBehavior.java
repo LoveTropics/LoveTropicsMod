@@ -23,9 +23,11 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.core.HolderSet;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RenderTooltipEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -36,7 +38,6 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 public final class BbSendMobsToEnemyItemBehavior implements IGameBehavior {
     public static final MapCodec<BbSendMobsToEnemyItemBehavior> CODEC = Codecs.ITEMS.fieldOf("item")
@@ -66,26 +67,32 @@ public final class BbSendMobsToEnemyItemBehavior implements IGameBehavior {
         final var plots = game.getState().getOrThrow(PlotsState.KEY);
         events.listen(GamePlayerEvents.USE_ITEM, (player, hand) -> {
             final var item = player.getItemInHand(hand);
-            if (items.contains(item.getItemHolder())) {
-                final var playerPlot = plots.getPlotFor(player);
-
-                ENEMIES_TO_SEND.getIfSuccessful(item).ifPresent(entities -> StreamSupport.stream(plots.spliterator(), false).filter(p -> p != playerPlot)
-                        .forEach(targetPlot -> {
-                            final Component playerName = player.getName().copy().withStyle(ChatFormatting.AQUA);
-                            teams.getPlayersForTeam(targetPlot.team).sendMessage(BiodiversityBlitzTexts.SENT_MOBS_MESSAGE.apply(playerName, buildMessage(entities)));
-
-                            sentEnemies.putAll(targetPlot, entities.entrySet().stream()
-                                    .flatMap(entry -> repeat(() -> entry.getKey().create(player.level(), targetPlot), entry.getValue()))
-                                    .toList());
-                        }));
-
-                item.shrink(1);
-                return InteractionResult.CONSUME;
-            }
-
-            return InteractionResult.PASS;
+            return tryUseMobItem(player, item, plots, teams);
         });
+
+        events.listen(GamePlayerEvents.ATTACK, (player, target) -> tryUseMobItem(player, player.getMainHandItem(), plots, teams));
     }
+
+    private InteractionResult tryUseMobItem(ServerPlayer player, ItemStack item, PlotsState plots, TeamState teams) {
+		if (!items.contains(item.getItemHolder())) {
+			return InteractionResult.PASS;
+		}
+
+		final var playerPlot = plots.getPlotFor(player);
+
+		ENEMIES_TO_SEND.getIfSuccessful(item).ifPresent(entities -> plots.stream().filter(p -> p != playerPlot)
+				.forEach(targetPlot -> {
+					final Component playerName = player.getName().copy().withStyle(ChatFormatting.AQUA);
+					teams.getPlayersForTeam(targetPlot.team).sendMessage(BiodiversityBlitzTexts.SENT_MOBS_MESSAGE.apply(playerName, buildMessage(entities)));
+
+					sentEnemies.putAll(targetPlot, entities.entrySet().stream()
+							.flatMap(entry -> repeat(() -> entry.getKey().create(player.level(), targetPlot), entry.getValue()))
+							.toList());
+				}));
+
+		item.shrink(1);
+		return InteractionResult.CONSUME;
+	}
 
     public Component buildMessage(Map<BbEntityTypes, Integer> entities) {
         MutableComponent component = Component.empty();
