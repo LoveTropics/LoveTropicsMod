@@ -52,6 +52,7 @@ public record SetMaxHealthBehavior(double maxHealth, Object2DoubleMap<GameTeamKe
 	}
 
 	private void applyToPlayer(IGamePhase game, ServerPlayer player) {
+		player.getAttribute(Attributes.MAX_HEALTH).removeModifier(ATTRIBUTE_ID);
 		double maxHealth = getMaxHealthForPlayer(game, player);
 		if (maxHealth != 20.0) {
 			player.getAttribute(Attributes.MAX_HEALTH).addTransientModifier(
