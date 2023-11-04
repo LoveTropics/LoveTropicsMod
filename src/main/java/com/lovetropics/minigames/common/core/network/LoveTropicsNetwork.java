@@ -114,5 +114,10 @@ public final class LoveTropicsNetwork {
 				.encoder(SpectatorPlayerActivityMessage::encode).decoder(SpectatorPlayerActivityMessage::decode)
 				.consumerMainThread(SpectatorPlayerActivityMessage::handle)
 				.add();
+
+		CHANNEL.messageBuilder(RiseTideMessage.class, 17, NetworkDirection.PLAY_TO_CLIENT)
+				.encoder(RiseTideMessage::encode).decoder(RiseTideMessage::new)
+				.consumerMainThread(RiseTideMessage::handle)
+				.add();
 	}
 }
