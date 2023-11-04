@@ -12,6 +12,8 @@ import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents
 import com.lovetropics.minigames.common.core.game.state.GameProgressionState;
 import com.lovetropics.minigames.common.core.game.state.ProgressionPeriod;
 import com.lovetropics.minigames.common.core.game.state.ProgressionSpline;
+import com.lovetropics.minigames.common.core.network.LoveTropicsNetwork;
+import com.lovetropics.minigames.common.core.network.RiseTideMessage;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -38,6 +40,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.chunk.LevelChunk;
+import net.minecraftforge.network.PacketDistributor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -302,7 +305,14 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 		if (targetLevel > lastLevel) {
 			BlockPos tideMin = tideArea.min();
 			BlockPos tideMax = tideArea.max();
-			return TideFiller.fillChunk(tideMin.getX(), tideMin.getZ(), tideMax.getX(), tideMax.getZ(), chunk, lastLevel, targetLevel);
+			long count = TideFiller.fillChunk(tideMin.getX(), tideMin.getZ(), tideMax.getX(), tideMax.getZ(), chunk, lastLevel, targetLevel);
+			if (count > 0) {
+				LoveTropicsNetwork.CHANNEL.send(PacketDistributor.TRACKING_CHUNK.with(() -> chunk), new RiseTideMessage(
+						new BlockPos(Math.max(tideMin.getX(), chunkPos.getMinBlockX()), lastLevel, Math.max(tideMin.getZ(), chunkPos.getMinBlockZ())),
+						new BlockPos(Math.min(tideMax.getX(), chunkPos.getMaxBlockX()), targetLevel, Math.min(tideMax.getZ(), chunkPos.getMaxBlockZ()))
+				));
+			}
+			return count;
 		} else {
 			return 0;
 		}

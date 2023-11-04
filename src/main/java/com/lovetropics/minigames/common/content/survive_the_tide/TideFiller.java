@@ -1,9 +1,10 @@
 package com.lovetropics.minigames.common.content.survive_the_tide;
 
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.level.ServerChunkCache;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -27,8 +28,7 @@ public class TideFiller {
 
 	public static long fillChunk(int minX, int minZ, int maxX, int maxZ, LevelChunk chunk, int fromY, int toY) {
 		Level level = chunk.getLevel();
-		ServerChunkCache chunkProvider = (ServerChunkCache) level.getChunkSource();
-		LevelLightEngine lightEngine = chunkProvider.getLightEngine();
+		LevelLightEngine lightEngine = level.getLightEngine();
 
 		ChunkPos chunkPos = chunk.getPos();
 
@@ -66,6 +66,8 @@ public class TideFiller {
 				lightEngine.updateSectionStatus(SectionPos.of(chunkPos.x, sectionY, chunkPos.z), false);
 			}
 
+			boolean changed = false;
+
 			for (BlockPos worldPos : BlockPos.betweenClosed(sectionMin, sectionMax)) {
 				int worldY = worldPos.getY();
 				int localX = SectionPos.sectionRelative(worldPos.getX());
@@ -88,18 +90,21 @@ public class TideFiller {
 				heightmapSurface.update(localX, worldY, localZ, newBlock);
 				heightmapMotionBlocking.update(localX, worldY, localZ, newBlock);
 
-				chunkProvider.blockChanged(worldPos);
-
-				if (newBlock == WATER || LightEngine.hasDifferentLightProperties(chunk, worldPos, existingBlock, newBlock)) {
+				if (LightEngine.hasDifferentLightProperties(chunk, worldPos, existingBlock, newBlock)) {
 					chunk.getSkyLightSources().update(chunk, localX, worldY, localZ);
 					lightEngine.checkBlock(worldPos);
 				}
 
 				updatedBlocks++;
+				changed = true;
+			}
+
+			if (changed && level.isClientSide) {
+				markSectionForRerender(chunkPos.x, sectionY, chunkPos.z);
 			}
 		}
 
-		if (updatedBlocks > 0) {
+		if (updatedBlocks > 0 && !level.isClientSide) {
 			// Make sure this chunk gets saved
 			chunk.setUnsaved(true);
 		}
@@ -152,5 +157,10 @@ public class TideFiller {
 			return Blocks.DIRT.defaultBlockState();
 		}
 		return state;
+	}
+
+	private static void markSectionForRerender(int sectionX, int sectionY, int sectionZ) {
+		final LevelRenderer levelRenderer = Minecraft.getInstance().levelRenderer;
+		levelRenderer.setSectionDirtyWithNeighbors(sectionX, sectionY, sectionZ);
 	}
 }
