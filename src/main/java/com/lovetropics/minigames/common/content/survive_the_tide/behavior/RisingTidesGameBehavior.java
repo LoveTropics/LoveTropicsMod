@@ -55,8 +55,8 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 			Codec.INT.optionalFieldOf("iceberg_growth_steps", 0).forGetter(c -> c.maxIcebergGrowthSteps)
 	).apply(i, RisingTidesGameBehavior::new));
 
-	private static final int HIGH_PRIORITY_BUDGET_PER_TICK = 50;
-	private static final int LOW_PRIORITY_BUDGET_PER_TICK = 5;
+	private static final int HIGH_PRIORITY_BUDGET_PER_TICK = 40;
+	private static final int LOW_PRIORITY_BUDGET_PER_TICK = 8;
 
 	private static final int HIGH_PRIORITY_DISTANCE_2 = 64 * 64;
 
