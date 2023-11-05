@@ -17,7 +17,6 @@ import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.chunk.LevelChunkSection;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.lighting.LevelLightEngine;
-import net.minecraft.world.level.lighting.LightEngine;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 
@@ -62,6 +61,7 @@ public class TideFiller {
 			BlockPos sectionMin = new BlockPos(chunkMin.getX(), Math.max(chunkMin.getY(), minSectionY), chunkMin.getZ());
 			BlockPos sectionMax = new BlockPos(chunkMax.getX(), Math.min(chunkMax.getY(), maxSectionY), chunkMax.getZ());
 
+			// Don't actually trigger light updates, but make sure the light engine has the information it needs if a block update does happen
 			if (section.hasOnlyAir()) {
 				lightEngine.updateSectionStatus(SectionPos.of(chunkPos.x, sectionY, chunkPos.z), false);
 			}
@@ -89,11 +89,6 @@ public class TideFiller {
 
 				heightmapSurface.update(localX, worldY, localZ, newBlock);
 				heightmapMotionBlocking.update(localX, worldY, localZ, newBlock);
-
-				if (LightEngine.hasDifferentLightProperties(chunk, worldPos, existingBlock, newBlock)) {
-					chunk.getSkyLightSources().update(chunk, localX, worldY, localZ);
-					lightEngine.checkBlock(worldPos);
-				}
 
 				updatedBlocks++;
 				changed = true;
