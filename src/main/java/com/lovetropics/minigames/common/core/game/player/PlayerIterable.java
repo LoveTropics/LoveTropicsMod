@@ -4,26 +4,23 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.Iterators;
 import net.minecraft.network.chat.CommonComponents;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.network.protocol.game.ClientboundClearTitlesPacket;
 import net.minecraft.network.protocol.game.ClientboundSetSubtitleTextPacket;
 import net.minecraft.network.protocol.game.ClientboundSetTitleTextPacket;
 import net.minecraft.network.protocol.game.ClientboundSetTitlesAnimationPacket;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.network.protocol.Packet;
-import net.minecraft.network.Connection;
-import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.players.PlayerList;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.sounds.SoundEvent;
-import net.minecraft.network.chat.Component;
-import net.minecraftforge.network.PacketDistributor;
-import net.minecraftforge.network.simple.SimpleChannel;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -73,16 +70,10 @@ public interface PlayerIterable extends PlayerOps, Iterable<ServerPlayer> {
 	}
 
 	@Override
-	default void sendPacket(SimpleChannel channel, Object message) {
-		PacketDistributor.PacketTarget target = PacketDistributor.NMLIST.with(() -> {
-			List<Connection> networkManagers = new ArrayList<>();
-			for (ServerPlayer player : this) {
-				networkManagers.add(player.connection.connection);
-			}
-			return networkManagers;
-		});
-
-		channel.send(target, message);
+	default void sendPacket(CustomPacketPayload message) {
+		for (ServerPlayer player : this) {
+			PacketDistributor.sendToPlayer(player, message);
+		}
 	}
 
 	default void showTitle(@Nullable final Component title, @Nullable final Component subtitle, final int fadeIn, final int stay, final int fadeOut) {

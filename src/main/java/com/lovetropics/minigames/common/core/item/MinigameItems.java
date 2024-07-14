@@ -12,7 +12,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.client.model.generators.ModelFile;
+import net.neoforged.neoforge.client.model.generators.ModelFile;
 
 public class MinigameItems {
     
@@ -25,14 +25,14 @@ public class MinigameItems {
             .properties(p -> p.stacksTo(1))
             .model((ctx, prov) -> prov.getBuilder(ctx.getName()).parent(new ModelFile.UncheckedModelFile("builtin/entity")))
             .addMiscData(ProviderType.LANG, prov -> {
-                String descriptionId = Util.makeDescriptionId("item", new ResourceLocation(Constants.MODID, "disguise"));
+                String descriptionId = Util.makeDescriptionId("item", ResourceLocation.fromNamespaceAndPath(Constants.MODID, "disguise"));
                 prov.add(descriptionId + ".entity", "%s Disguise");
             })
             .tab(LoveTropics.TAB_KEY, modifier -> {
                 for (EntityType<?> entity : BuiltInRegistries.ENTITY_TYPE) {
                     if (entity.getCategory() != MobCategory.MISC) {
-                        final ItemStack stack = new ItemStack(MinigameItems.DISGUISE);
-                        DisguiseItem.setDisguiseType(stack, DisguiseType.DEFAULT.withEntity(new DisguiseType.EntityConfig(entity, null, false)));
+                        final ItemStack stack = new ItemStack(MinigameItems.DISGUISE.get());
+                        stack.set(MinigameDataComponents.DISGUISE, DisguiseType.DEFAULT.withEntity(new DisguiseType.EntityConfig(entity, null, false)));
                         modifier.accept(stack);
                     }
                 }
@@ -43,14 +43,14 @@ public class MinigameItems {
             .properties(p -> p.stacksTo(1))
             .model((ctx, prov) -> prov.getBuilder(ctx.getName()).parent(new ModelFile.UncheckedModelFile("builtin/entity")))
             .addMiscData(ProviderType.LANG, prov -> {
-                String descriptionId = Util.makeDescriptionId("item", new ResourceLocation(Constants.MODID, "mob_hat"));
+                String descriptionId = Util.makeDescriptionId("item", ResourceLocation.fromNamespaceAndPath(Constants.MODID, "mob_hat"));
                 prov.add(descriptionId + ".entity", "%s Hat");
             })
             .tab(LoveTropics.TAB_KEY, modifier -> {
                 for (EntityType<?> entity : BuiltInRegistries.ENTITY_TYPE) {
                     if (entity.getCategory() != MobCategory.MISC) {
-                        final ItemStack stack = new ItemStack(MinigameItems.MOB_HAT);
-                        MobHatItem.setEntityType(stack, new DisguiseType.EntityConfig(entity, null, false));
+                        final ItemStack stack = new ItemStack(MinigameItems.MOB_HAT.get());
+                        stack.set(MinigameDataComponents.ENTITY, new DisguiseType.EntityConfig(entity, null, false));
                         modifier.accept(stack);
                     }
                 }
@@ -61,7 +61,7 @@ public class MinigameItems {
             .properties(p -> p.stacksTo(1))
             .model((ctx, prov) -> prov.getBuilder(ctx.getName()).parent(new ModelFile.UncheckedModelFile("builtin/entity")))
             .addMiscData(ProviderType.LANG, prov -> {
-                String descriptionId = Util.makeDescriptionId("item", new ResourceLocation(Constants.MODID, "plushie"));
+                String descriptionId = Util.makeDescriptionId("item", ResourceLocation.fromNamespaceAndPath(Constants.MODID, "plushie"));
                 prov.add(descriptionId + ".entity", "%s Plushie");
             })
             .register();

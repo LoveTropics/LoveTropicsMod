@@ -3,7 +3,9 @@ package com.lovetropics.minigames.common.content.survive_the_tide;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
 import net.minecraft.core.SectionPos;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
@@ -17,13 +19,12 @@ import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.chunk.LevelChunkSection;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.lighting.LevelLightEngine;
-import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.RegistryObject;
+import net.neoforged.neoforge.registries.DeferredHolder;
 
 public class TideFiller {
 	private static final BlockState WATER = Blocks.WATER.defaultBlockState();
-	private static final RegistryObject<Block> WATER_BARRIER = RegistryObject.create(new ResourceLocation("ltextras", "water_barrier"), ForgeRegistries.BLOCKS);
-	private static final RegistryObject<Block> SAND_LAYER = RegistryObject.create(new ResourceLocation("weather2", "sand_layer"), ForgeRegistries.BLOCKS);
+	private static final DeferredHolder<Block, Block> WATER_BARRIER = DeferredHolder.create(Registries.BLOCK, ResourceLocation.fromNamespaceAndPath("ltextras", "water_barrier"));
+	private static final DeferredHolder<Block, Block> SAND_LAYER = DeferredHolder.create(Registries.BLOCK, ResourceLocation.fromNamespaceAndPath("weather2", "sand_layer"));
 
 	public static long fillChunk(int minX, int minZ, int maxX, int maxZ, LevelChunk chunk, int fromY, int toY) {
 		Level level = chunk.getLevel();
@@ -132,7 +133,7 @@ public class TideFiller {
 		}
 
 		if (block == Blocks.BARRIER) {
-			return WATER_BARRIER.orElse(Blocks.BARRIER).defaultBlockState();
+			return (WATER_BARRIER.isBound() ? WATER_BARRIER.value() : Blocks.BARRIER).defaultBlockState();
 		}
 
 		if (block == Blocks.BLACK_CONCRETE_POWDER) {
@@ -143,8 +144,8 @@ public class TideFiller {
 		return state;
 	}
 
-	private static boolean is(BlockState state, RegistryObject<Block> block) {
-		return block.isPresent() && block.get() == state.getBlock();
+	private static boolean is(BlockState state, Holder<Block> block) {
+		return state.is(block);
 	}
 
 	private static BlockState mapBlockBelowWater(BlockState state) {

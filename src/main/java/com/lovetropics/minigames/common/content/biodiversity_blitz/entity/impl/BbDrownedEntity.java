@@ -6,7 +6,6 @@ import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.ai.BbM
 import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.ai.BbTargetPlayerGoal;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.ai.DestroyCropGoal;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.Plot;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.DifficultyInstance;
@@ -21,7 +20,7 @@ import net.minecraft.world.entity.monster.Drowned;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.material.Fluid;
-import net.minecraft.world.level.pathfinder.BlockPathTypes;
+import net.minecraft.world.level.pathfinder.PathType;
 import net.minecraft.world.phys.Vec3;
 
 import javax.annotation.Nullable;
@@ -35,7 +34,7 @@ public class BbDrownedEntity extends Drowned implements BbMobEntity {
 		this.mobBrain = new BbMobBrain(plot.walls);
 		this.plot = plot;
 
-		setPathfindingMalus(BlockPathTypes.DANGER_OTHER, BERRY_BUSH_MALUS);
+		setPathfindingMalus(PathType.DANGER_OTHER, BERRY_BUSH_MALUS);
 	}
 
 	@Override
@@ -58,7 +57,7 @@ public class BbDrownedEntity extends Drowned implements BbMobEntity {
 
 	@Nullable
 	@Override
-	public SpawnGroupData finalizeSpawn(ServerLevelAccessor world, DifficultyInstance difficulty, MobSpawnType reason, @Nullable SpawnGroupData spawnData, @Nullable CompoundTag dataTag) {
+	public SpawnGroupData finalizeSpawn(ServerLevelAccessor world, DifficultyInstance difficulty, MobSpawnType reason, @Nullable SpawnGroupData spawnData) {
 		this.setLeftHanded(this.random.nextFloat() < 0.05F);
 		return spawnData;
 	}

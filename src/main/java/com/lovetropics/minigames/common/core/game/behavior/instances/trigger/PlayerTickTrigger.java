@@ -8,7 +8,6 @@ import com.lovetropics.minigames.common.core.game.behavior.action.GameActionCont
 import com.lovetropics.minigames.common.core.game.behavior.action.GameActionList;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
-import com.lovetropics.minigames.common.util.Codecs;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.advancements.critereon.EntityPredicate;
@@ -19,7 +18,7 @@ import java.util.function.Supplier;
 
 public record PlayerTickTrigger(Optional<EntityPredicate> predicate, GameActionList<ServerPlayer> action) implements IGameBehavior {
 	public static final MapCodec<PlayerTickTrigger> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
-			Codecs.ENTITY_PREDICATE.optionalFieldOf("predicate").forGetter(PlayerTickTrigger::predicate),
+			EntityPredicate.CODEC.optionalFieldOf("predicate").forGetter(PlayerTickTrigger::predicate),
 			GameActionList.PLAYER_CODEC.fieldOf("action").forGetter(PlayerTickTrigger::action)
 	).apply(i, PlayerTickTrigger::new));
 

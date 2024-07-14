@@ -15,14 +15,14 @@ import com.lovetropics.minigames.common.core.game.weather.WeatherEventType;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.levelgen.Heightmap;
-import net.minecraftforge.registries.ForgeRegistries;
 
 import javax.annotation.Nullable;
 import java.util.Map;
@@ -131,7 +131,7 @@ public final class AddWeatherBehavior implements IGameBehavior {
 
 	public static final class Repellent {
 		public static final Codec<Repellent> CODEC = RecordCodecBuilder.create(i -> i.group(
-				ForgeRegistries.ITEMS.getCodec().fieldOf("item").forGetter(c -> c.item),
+				BuiltInRegistries.ITEM.byNameCodec().fieldOf("item").forGetter(c -> c.item),
 				Codec.INT.fieldOf("rate").forGetter(c -> c.damageRate),
 				Codec.INT.fieldOf("amount").forGetter(c -> c.damageAmount)
 		).apply(i, Repellent::new));
@@ -151,12 +151,12 @@ public final class AddWeatherBehavior implements IGameBehavior {
 			ItemStack offhand = player.getOffhandItem();
 			if (mainHand.getItem() == item) {
 				if (player.tickCount % damageRate == 0) {
-					mainHand.hurtAndBreak(damageAmount, player, p -> p.broadcastBreakEvent(InteractionHand.MAIN_HAND));
+					mainHand.hurtAndBreak(damageAmount, player, EquipmentSlot.MAINHAND);
 				}
 				return true;
 			} else if (offhand.getItem() == item) {
 				if (player.tickCount % damageRate == 0) {
-					offhand.hurtAndBreak(damageAmount, player, p -> p.broadcastBreakEvent(InteractionHand.OFF_HAND));
+					offhand.hurtAndBreak(damageAmount, player, EquipmentSlot.OFFHAND);
 				}
 				return true;
 			}

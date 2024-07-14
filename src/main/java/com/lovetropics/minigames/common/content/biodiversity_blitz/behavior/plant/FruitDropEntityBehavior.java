@@ -13,6 +13,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.Direction;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -21,7 +22,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.AABB;
-import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.List;
 import java.util.function.Predicate;
@@ -32,8 +32,8 @@ public class FruitDropEntityBehavior implements IGameBehavior {
 	public static final MapCodec<FruitDropEntityBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			Codec.INT.fieldOf("range").forGetter(o -> o.range),
 			Codec.INT.fieldOf("interval").forGetter(o -> o.interval),
-			ForgeRegistries.BLOCKS.getCodec().fieldOf("fruit").forGetter(o -> o.fruit),
-			ForgeRegistries.ENTITY_TYPES.getCodec().fieldOf("entity").forGetter(o -> o.entity)
+			BuiltInRegistries.BLOCK.byNameCodec().fieldOf("fruit").forGetter(o -> o.fruit),
+			BuiltInRegistries.ENTITY_TYPE.byNameCodec().fieldOf("entity").forGetter(o -> o.entity)
 	).apply(i, FruitDropEntityBehavior::new));
 
 	private final int range;

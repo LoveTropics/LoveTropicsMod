@@ -1,13 +1,5 @@
 package com.lovetropics.minigames.common.core.game.behavior.config;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.function.UnaryOperator;
-import java.util.stream.Stream;
-
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.lovetropics.minigames.common.core.game.behavior.config.ConfigData.CompositeConfigData;
@@ -18,6 +10,14 @@ import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.MapLike;
 import com.mojang.serialization.RecordBuilder;
+
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.function.UnaryOperator;
+import java.util.stream.Stream;
 
 public final class BehaviorConfig<A> extends MapCodec<A> {
 
@@ -50,7 +50,7 @@ public final class BehaviorConfig<A> extends MapCodec<A> {
 	}
 
 	public <B> BehaviorConfig<A> defaultInstanceHint(String key, B instance, Codec<B> codec) {
-		return hint(key, data -> ((ConfigData.ListConfigData)data).setDefaultValue(codec.encodeStart(ConfigDataOps.INSTANCE, instance).get().left().get()));
+		return hint(key, data -> ((ConfigData.ListConfigData)data).setDefaultValue(codec.encodeStart(ConfigDataOps.INSTANCE, instance).getOrThrow()));
 	}
 
 	private BehaviorConfig<A> hint(String key, UnaryOperator<ConfigData> hint) {
@@ -86,7 +86,7 @@ public final class BehaviorConfig<A> extends MapCodec<A> {
 	}
 
 	public A getValue(ConfigList configs) {
-		return configs.decode(this).getOrThrow(false, IllegalArgumentException::new).getFirst();
+		return configs.decode(this).getOrThrow().getFirst();
 	}
 
 	public String getName() {

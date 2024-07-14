@@ -27,13 +27,13 @@ public final class MapExportReader implements Closeable {
 	}
 
 	public static boolean exists(MinecraftServer server, ResourceLocation location) {
-		ResourceLocation path = new ResourceLocation(location.getNamespace(), "maps/" + location.getPath() + ".zip");
+		ResourceLocation path = location.withPath(p -> "maps/" + p + ".zip");
 		Optional<Resource> resource = server.getResourceManager().getResource(path);
 		return resource.isPresent();
 	}
 
 	public static MapExportReader open(MinecraftServer server, ResourceLocation location) throws IOException {
-		ResourceLocation path = new ResourceLocation(location.getNamespace(), "maps/" + location.getPath() + ".zip");
+		ResourceLocation path = location.withPath(p -> "maps/" + p + ".zip");
 		Optional<Resource> resource = server.getResourceManager().getResource(path);
 		if (resource.isEmpty()) {
 			throw new IOException("Map at " + location + " did not exist");

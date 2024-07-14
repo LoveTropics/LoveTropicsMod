@@ -30,7 +30,7 @@ public record SetDisguiseAction(DisguiseType disguise, boolean applyDonorName) i
 
 	private static final Logger LOGGER = LogUtils.getLogger();
 
-	private static final ResourceLocation DUMMY_PLAYER = new ResourceLocation("dummyplayers", "dummy_player");
+	private static final ResourceLocation DUMMY_PLAYER = ResourceLocation.fromNamespaceAndPath("dummyplayers", "dummy_player");
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
@@ -68,11 +68,11 @@ public record SetDisguiseAction(DisguiseType disguise, boolean applyDonorName) i
 		final CompletableFuture<DisguiseType.EntityConfig> future = new CompletableFuture<>();
 		final CompoundTag nbt = entity.nbt() != null ? entity.nbt().copy() : new CompoundTag();
 		nbt.putString("ProfileName", packageSender);
-		profileCache.getAsync(packageSender, result -> result.ifPresent(profile -> {
+		profileCache.getAsync(packageSender).thenAcceptAsync(result -> result.ifPresent(profile -> {
 			LOGGER.debug("Got profile ID for package sender {}: {}", packageSender, profile.getId());
 			nbt.putUUID("ProfileID", profile.getId());
 			future.complete(entity.withNbt(nbt));
-		}));
+		}), game.getServer());
 		return future;
 	}
 

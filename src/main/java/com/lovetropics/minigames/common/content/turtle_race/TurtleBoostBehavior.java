@@ -2,6 +2,7 @@ package com.lovetropics.minigames.common.content.turtle_race;
 
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
+import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.common.core.game.GameException;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
@@ -14,6 +15,8 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.Object2LongArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2LongMap;
+import net.minecraft.core.Holder;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
@@ -32,8 +35,8 @@ public record TurtleBoostBehavior(float amount, int duration) implements IGameBe
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) throws GameException {
-		Multimap<Attribute, AttributeModifier> modifiers = ImmutableMultimap.<Attribute, AttributeModifier>builder()
-				.put(Attributes.MOVEMENT_SPEED, new AttributeModifier("Turtle boost", amount, AttributeModifier.Operation.ADDITION))
+		Multimap<Holder<Attribute>, AttributeModifier> modifiers = ImmutableMultimap.<Holder<Attribute>, AttributeModifier>builder()
+				.put(Attributes.MOVEMENT_SPEED, new AttributeModifier(ResourceLocation.fromNamespaceAndPath(Constants.MODID, "turtle_boost"), amount, AttributeModifier.Operation.ADD_VALUE))
 				.build();
 
 		Object2LongMap<UUID> boostEndTimes = new Object2LongArrayMap<>();
@@ -71,13 +74,13 @@ public record TurtleBoostBehavior(float amount, int duration) implements IGameBe
 		});
 	}
 
-	private static void startBoosting(ServerPlayer player, Multimap<Attribute, AttributeModifier> modifiers) {
+	private static void startBoosting(ServerPlayer player, Multimap<Holder<Attribute>, AttributeModifier> modifiers) {
 		if (player.getRootVehicle() instanceof LivingEntity vehicle) {
 			vehicle.getAttributes().addTransientAttributeModifiers(modifiers);
 		}
 	}
 
-	private static void stopBoosting(ServerPlayer player, Multimap<Attribute, AttributeModifier> modifiers) {
+	private static void stopBoosting(ServerPlayer player, Multimap<Holder<Attribute>, AttributeModifier> modifiers) {
 		if (player.getRootVehicle() instanceof LivingEntity vehicle) {
 			vehicle.getAttributes().removeAttributeModifiers(modifiers);
 		}

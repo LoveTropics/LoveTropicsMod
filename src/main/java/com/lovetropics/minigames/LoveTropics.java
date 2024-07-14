@@ -1,11 +1,13 @@
 package com.lovetropics.minigames;
 
+import com.google.common.base.Suppliers;
 import com.lovetropics.minigames.client.game.handler.GameSidebarRenderer;
 import com.lovetropics.minigames.client.game.handler.spectate.SpectatingUi;
 import com.lovetropics.minigames.client.lobby.LobbyKeybinds;
 import com.lovetropics.minigames.client.lobby.LobbyStateGui;
 import com.lovetropics.minigames.common.config.ConfigLT;
 import com.lovetropics.minigames.common.content.MinigameTexts;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.BiodiversityBlitz;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.BiodiversityBlitzTexts;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.client_state.render.BbClientRenderEffects;
 import com.lovetropics.minigames.common.content.block.LoveTropicsBlocks;
@@ -14,9 +16,9 @@ import com.lovetropics.minigames.common.content.block_party.BlockParty;
 import com.lovetropics.minigames.common.content.block_party.BlockPartyTexts;
 import com.lovetropics.minigames.common.content.build_competition.BuildCompetition;
 import com.lovetropics.minigames.common.content.hide_and_seek.HideAndSeek;
-import com.lovetropics.minigames.common.content.spleef.Spleef;
 import com.lovetropics.minigames.common.content.qottott.Qottott;
 import com.lovetropics.minigames.common.content.qottott.QottottTexts;
+import com.lovetropics.minigames.common.content.spleef.Spleef;
 import com.lovetropics.minigames.common.content.survive_the_tide.SurviveTheTide;
 import com.lovetropics.minigames.common.content.survive_the_tide.SurviveTheTideTexts;
 import com.lovetropics.minigames.common.content.survive_the_tide.entity.DriftwoodRider;
@@ -50,9 +52,9 @@ import com.lovetropics.minigames.common.core.game.impl.GameEventDispatcher;
 import com.lovetropics.minigames.common.core.game.predicate.entity.EntityPredicates;
 import com.lovetropics.minigames.common.core.game.util.GameTexts;
 import com.lovetropics.minigames.common.core.integration.BackendIntegrations;
-import com.lovetropics.minigames.common.core.map.VoidChunkGenerator;
+import com.lovetropics.minigames.common.core.item.MinigameDataComponents;
 import com.lovetropics.minigames.common.core.item.MinigameItems;
-import com.lovetropics.minigames.common.core.network.LoveTropicsNetwork;
+import com.lovetropics.minigames.common.core.map.VoidChunkGenerator;
 import com.lovetropics.minigames.common.role.StreamHosts;
 import com.lovetropics.minigames.common.util.registry.LoveTropicsRegistrate;
 import com.mojang.brigadier.CommandDispatcher;
@@ -66,68 +68,40 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.client.event.RegisterDimensionSpecialEffectsEvent;
-import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
-import net.minecraftforge.common.ForgeConfig;
-import net.minecraftforge.common.ForgeConfigSpec;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.CapabilityManager;
-import net.minecraftforge.common.capabilities.CapabilityToken;
-import net.minecraftforge.common.util.NonNullLazy;
-import net.minecraftforge.event.RegisterCommandsEvent;
-import net.minecraftforge.event.server.ServerAboutToStartEvent;
-import net.minecraftforge.event.server.ServerStoppingEvent;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.fml.DistExecutor;
-import net.minecraftforge.fml.IExtensionPoint;
-import net.minecraftforge.fml.ModList;
-import net.minecraftforge.fml.ModLoadingContext;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.config.ModConfig;
-import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
-import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.ModContainer;
+import net.neoforged.fml.ModList;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.config.ModConfig;
+import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
+import net.neoforged.neoforge.client.event.RegisterDimensionSpecialEffectsEvent;
+import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.RegisterCommandsEvent;
+import net.neoforged.neoforge.event.server.ServerAboutToStartEvent;
+import net.neoforged.neoforge.event.server.ServerStoppingEvent;
 import org.slf4j.Logger;
 
 import java.util.function.BiConsumer;
+import java.util.function.Supplier;
 import java.util.regex.Pattern;
 
 @Mod(Constants.MODID)
 public class LoveTropics {
-
     public static final Logger LOGGER = LogUtils.getLogger();
 
-    private static final ResourceLocation TAB_ID = new ResourceLocation(Constants.MODID, "ltminigames");
+    private static final ResourceLocation TAB_ID = ResourceLocation.fromNamespaceAndPath(Constants.MODID, "ltminigames");
     public static final ResourceKey<CreativeModeTab> TAB_KEY = ResourceKey.create(Registries.CREATIVE_MODE_TAB, TAB_ID);
 
-    private static final NonNullLazy<LoveTropicsRegistrate> REGISTRATE = NonNullLazy.of(() -> LoveTropicsRegistrate.create(Constants.MODID).defaultCreativeTab(ResourceKey.create(Registries.CREATIVE_MODE_TAB, TAB_ID)));
+    private static final Supplier<LoveTropicsRegistrate> REGISTRATE = Suppliers.memoize(() -> LoveTropicsRegistrate.create(Constants.MODID).defaultCreativeTab(ResourceKey.create(Registries.CREATIVE_MODE_TAB, TAB_ID)));
 
-    public static final Capability<DriftwoodRider> DRIFTWOOD_RIDER = CapabilityManager.get(new CapabilityToken<>() {});
-    public static final Capability<PlayerDisguise> PLAYER_DISGUISE = CapabilityManager.get(new CapabilityToken<>() {});
-    public static final Capability<ChatChannelStore> CHAT_CHANNEL = CapabilityManager.get(new CapabilityToken<>() {});
-
-    public LoveTropics() {
-    	// Compatible with all versions that match the semver (excluding the qualifier e.g. "-beta+42")
-    	ModLoadingContext.get().registerExtensionPoint(IExtensionPoint.DisplayTest.class, () -> new IExtensionPoint.DisplayTest(LoveTropics::getCompatVersion, (s, v) -> LoveTropics.isCompatibleVersion(s)));
-
-        IEventBus modBus = FMLJavaModLoadingContext.get().getModEventBus();
-
-        // General mod setup
-        modBus.addListener(this::setup);
-
-        DistExecutor.runWhenOn(Dist.CLIENT, () -> () -> {
-            // Client setup
-            modBus.addListener(this::setupClient);
-            modBus.addListener(this::registerDimensionSpecialEffects);
-        });
-
-        MinecraftForge.EVENT_BUS.addListener(this::onServerAboutToStart);
-        MinecraftForge.EVENT_BUS.addListener(this::onServerStopping);
-        MinecraftForge.EVENT_BUS.addListener(this::registerCommands);
+    public LoveTropics(IEventBus modBus, ModContainer modContainer) {
+        NeoForge.EVENT_BUS.addListener(this::onServerAboutToStart);
+        NeoForge.EVENT_BUS.addListener(this::onServerStopping);
+        NeoForge.EVENT_BUS.addListener(this::registerCommands);
 
         modBus.addListener(ConfigLT::onLoad);
         modBus.addListener(ConfigLT::onFileChange);
@@ -170,17 +144,23 @@ public class LoveTropics {
         Qottott.init();
         Spleef.init();
 
+        DriftwoodRider.ATTACHMENT_TYPES.register(modBus);
+        PlayerDisguise.ATTACHMENT_TYPES.register(modBus);
+        ChatChannelStore.ATTACHMENT_TYPES.register(modBus);
         SoundRegistry.REGISTER.register(modBus);
+        MinigameDataComponents.REGISTER.register(modBus);
+        BiodiversityBlitz.DATA_COMPONENTS.register(modBus);
+        VoidChunkGenerator.REGISTER.register(modBus);
 
         LoveTropicsEntityOptions.register();
 
-        ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, ConfigLT.CLIENT_CONFIG);
-        ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, ConfigLT.SERVER_CONFIG);
+        modContainer.registerConfig(ModConfig.Type.CLIENT, ConfigLT.CLIENT_CONFIG);
+        modContainer.registerConfig(ModConfig.Type.COMMON, ConfigLT.SERVER_CONFIG);
 
         GameEventDispatcher eventDispatcher = new GameEventDispatcher(IGameManager.get());
-        MinecraftForge.EVENT_BUS.register(eventDispatcher);
+        NeoForge.EVENT_BUS.register(eventDispatcher);
 
-        modBus.addListener((RegisterGuiOverlaysEvent event) -> {
+        modBus.addListener((RegisterGuiLayersEvent event) -> {
             LobbyStateGui.registerOverlays(event);
             GameSidebarRenderer.registerOverlays(event);
             SpectatingUi.registerOverlays(event);
@@ -195,40 +175,9 @@ public class LoveTropics {
     private static String getCompatVersion(String fullVersion) {
     	return QUALIFIER.matcher(fullVersion).replaceAll("");
     }
-    public static boolean isCompatibleVersion(String version) {
-    	return getCompatVersion().equals(getCompatVersion(version));
-    }
 
     public static LoveTropicsRegistrate registrate() {
         return REGISTRATE.get();
-    }
-
-    @OnlyIn(Dist.CLIENT)
-    private void setupClient(final FMLClientSetupEvent event) {
-        LobbyKeybinds.init();
-        ForgeConfig.CLIENT.alwaysSetupTerrainOffThread.set(true);
-        ((ForgeConfigSpec) ObfuscationReflectionHelper.getPrivateValue(ForgeConfig.class, null, "clientSpec")).save();
-    }
-
-    @OnlyIn(Dist.CLIENT)
-    private void registerDimensionSpecialEffects(final RegisterDimensionSpecialEffectsEvent event) {
-        event.register(new ResourceLocation(Constants.MODID, "raised_clouds"), new DimensionSpecialEffects(250.0f, true, DimensionSpecialEffects.SkyType.NORMAL, false, false) {
-            @Override
-            public Vec3 getBrightnessDependentFogColor(final Vec3 color, final float brightness) {
-                return color.multiply(brightness * 0.94f + 0.06f, brightness * 0.94f + 0.06f, brightness * 0.91f + 0.09f);
-            }
-
-            @Override
-            public boolean isFoggyAt(final int x, final int z) {
-                return false;
-            }
-        });
-    }
-
-    private void setup(final FMLCommonSetupEvent event) {
-        LoveTropicsNetwork.register();
-
-        VoidChunkGenerator.register();
     }
 
     private void registerCommands(RegisterCommandsEvent event) {
@@ -258,5 +207,28 @@ public class LoveTropics {
 
     public static void onServerStoppingUnsafely(MinecraftServer server) {
         RuntimeDimensions.onServerStoppingUnsafely(server);
+    }
+
+    @EventBusSubscriber(modid = Constants.MODID, bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
+    public static class ClientSetup {
+        @SubscribeEvent
+        public static void setupClient(final FMLClientSetupEvent event) {
+            LobbyKeybinds.init();
+        }
+
+        @SubscribeEvent
+        public static void registerDimensionSpecialEffects(final RegisterDimensionSpecialEffectsEvent event) {
+            event.register(ResourceLocation.fromNamespaceAndPath(Constants.MODID, "raised_clouds"), new DimensionSpecialEffects(250.0f, true, DimensionSpecialEffects.SkyType.NORMAL, false, false) {
+                @Override
+                public Vec3 getBrightnessDependentFogColor(final Vec3 color, final float brightness) {
+                    return color.multiply(brightness * 0.94f + 0.06f, brightness * 0.94f + 0.06f, brightness * 0.91f + 0.09f);
+                }
+
+                @Override
+                public boolean isFoggyAt(final int x, final int z) {
+                    return false;
+                }
+            });
+        }
     }
 }

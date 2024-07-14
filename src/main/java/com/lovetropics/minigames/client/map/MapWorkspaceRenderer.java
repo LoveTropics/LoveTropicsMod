@@ -3,7 +3,6 @@ package com.lovetropics.minigames.client.map;
 import com.lovetropics.lib.BlockBox;
 import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.common.core.map.workspace.ClientWorkspaceRegions;
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import it.unimi.dsi.fastutil.HashCommon;
 import net.minecraft.client.Camera;
@@ -15,14 +14,14 @@ import net.minecraft.client.renderer.debug.DebugRenderer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.RenderLevelStageEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 
 import java.util.Set;
 
-@Mod.EventBusSubscriber(modid = Constants.MODID, value = Dist.CLIENT)
+@EventBusSubscriber(modid = Constants.MODID, value = Dist.CLIENT)
 public final class MapWorkspaceRenderer {
 	@SubscribeEvent
 	public static void onRenderLevel(RenderLevelStageEvent event) {
@@ -43,11 +42,6 @@ public final class MapWorkspaceRenderer {
 
 		Vec3 view = camera.getPosition();
 
-		PoseStack modelViewStack = RenderSystem.getModelViewStack();
-		modelViewStack.pushPose();
-		modelViewStack.setIdentity();
-		RenderSystem.applyModelViewMatrix();
-
 		PoseStack poseStack = event.getPoseStack();
 		MultiBufferSource.BufferSource bufferSource = client.renderBuffers().bufferSource();
 
@@ -65,7 +59,7 @@ public final class MapWorkspaceRenderer {
 			float alpha = 0.3F;
 
 			if (selectedRegions.contains(entry)) {
-				double time = client.level.getGameTime() + event.getPartialTick();
+				double time = client.level.getGameTime() + event.getPartialTick().getGameTimeDeltaTicks();
 				float animation = (float) ((Math.sin(time * 0.1) + 1.0) / 2.0);
 
 				alpha = 0.4F + animation * 0.15F;
@@ -99,9 +93,6 @@ public final class MapWorkspaceRenderer {
 		}
 
 		bufferSource.endLastBatch();
-
-		modelViewStack.popPose();
-		RenderSystem.applyModelViewMatrix();
 	}
 
 	private static int colorForKey(String key) {

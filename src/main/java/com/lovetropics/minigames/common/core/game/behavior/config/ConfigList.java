@@ -4,7 +4,10 @@ import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.DataResult;
 import net.minecraft.resources.ResourceLocation;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Set;
 
 public class ConfigList {
 	private final ResourceLocation id;
@@ -49,7 +52,7 @@ public class ConfigList {
 		}
 
 		public <T> Builder with(BehaviorConfig<T> key, T defVal) {
-			ConfigData data = key.getCodec().encodeStart(ConfigDataOps.INSTANCE, defVal).getOrThrow(false, s -> { throw new IllegalArgumentException(s); });
+			ConfigData data = key.getCodec().encodeStart(ConfigDataOps.INSTANCE, defVal).getOrThrow();
 			this.configs.put(key, data);
 			return this;
 		}

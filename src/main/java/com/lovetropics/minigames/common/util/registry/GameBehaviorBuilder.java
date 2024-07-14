@@ -6,7 +6,7 @@ import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.mojang.serialization.MapCodec;
 import com.tterrag.registrate.builders.AbstractBuilder;
 import com.tterrag.registrate.builders.BuilderCallback;
-import net.minecraftforge.registries.RegistryObject;
+import net.neoforged.neoforge.registries.DeferredHolder;
 
 public final class GameBehaviorBuilder<T extends IGameBehavior, P> extends AbstractBuilder<GameBehaviorType<?>, GameBehaviorType<T>, P, GameBehaviorBuilder<T, P>> {
 	private final MapCodec<T> codec;
@@ -22,7 +22,7 @@ public final class GameBehaviorBuilder<T extends IGameBehavior, P> extends Abstr
 	}
 
 	@Override
-	protected GameBehaviorEntry<T> createEntryWrapper(RegistryObject<GameBehaviorType<T>> delegate) {
+	protected GameBehaviorEntry<T> createEntryWrapper(DeferredHolder<GameBehaviorType<?>, GameBehaviorType<T>> delegate) {
 		return new GameBehaviorEntry<>(getOwner(), delegate);
 	}
 

@@ -1,11 +1,8 @@
 package com.lovetropics.minigames.common.content.survive_the_tide.entity;
 
-import com.lovetropics.minigames.LoveTropics;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
-import net.minecraft.network.protocol.Packet;
-import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -20,9 +17,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.network.NetworkHooks;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -54,8 +48,8 @@ public final class DriftwoodEntity extends Entity {
 	}
 
 	@Override
-	protected void defineSynchedData() {
-		this.entityData.define(FLOATING, true);
+	protected void defineSynchedData(SynchedEntityData.Builder builder) {
+		builder.define(FLOATING, true);
 	}
 
 	@Override
@@ -115,9 +109,7 @@ public final class DriftwoodEntity extends Entity {
 		}
 
 		for (Player player : riders) {
-			player.getCapability(LoveTropics.DRIFTWOOD_RIDER).ifPresent(rider -> {
-				rider.setRiding(this);
-			});
+			player.getData(DriftwoodRider.ATTACHMENT).setRiding(this);
 		}
 
 		if (!level().isClientSide) {
@@ -244,8 +236,7 @@ public final class DriftwoodEntity extends Entity {
 	}
 
 	@Override
-	@OnlyIn(Dist.CLIENT)
-	public void lerpTo(double x, double y, double z, float yaw, float pitch, int lerpLength, boolean teleport) {
+	public void lerpTo(double x, double y, double z, float yaw, float pitch, int lerpLength) {
 		lerpX = x;
 		lerpY = y;
 		lerpZ = z;
@@ -268,10 +259,5 @@ public final class DriftwoodEntity extends Entity {
 	@Override
 	protected void addAdditionalSaveData(CompoundTag compound) {
 		compound.putFloat("float_depth", floatDepth);
-	}
-
-	@Override
-	public Packet<ClientGamePacketListener> getAddEntityPacket() {
-		return NetworkHooks.getEntitySpawningPacket(this);
 	}
 }

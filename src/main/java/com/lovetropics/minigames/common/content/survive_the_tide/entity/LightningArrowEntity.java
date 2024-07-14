@@ -11,14 +11,15 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.Nullable;
 
 public class LightningArrowEntity extends AbstractArrow {
 	public LightningArrowEntity(final EntityType<? extends LightningArrowEntity> type, final Level level) {
 		super(type, level);
 	}
 
-	public LightningArrowEntity(final Level level, final LivingEntity shooter) {
-		super(SurviveTheTide.LIGHTNING_ARROW_ENTITY.get(), shooter, level);
+	public LightningArrowEntity(final Level level, final LivingEntity shooter, ItemStack stack, @Nullable ItemStack firedFromWeapon) {
+		super(SurviveTheTide.LIGHTNING_ARROW_ENTITY.get(), shooter, level, stack, firedFromWeapon);
 	}
 
 	@Override
@@ -31,7 +32,7 @@ public class LightningArrowEntity extends AbstractArrow {
 	}
 
 	@Override
-	protected ItemStack getPickupItem() {
+	protected ItemStack getDefaultPickupItem() {
 		return new ItemStack(SurviveTheTide.LIGHTNING_ARROW.get());
 	}
 }

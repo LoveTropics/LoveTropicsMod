@@ -26,12 +26,12 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.entity.EntityTravelToDimensionEvent;
-import net.minecraftforge.event.entity.player.PlayerEvent;
-import net.minecraftforge.event.server.ServerStoppingEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.event.entity.EntityTravelToDimensionEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+import net.neoforged.neoforge.event.server.ServerStoppingEvent;
+import net.neoforged.neoforge.event.tick.ServerTickEvent;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -47,7 +47,7 @@ import java.util.function.Predicate;
  * than singleton-style implementation to allow for multiple managers to run multiple
  * games at once.
  */
-@Mod.EventBusSubscriber(modid = Constants.MODID)
+@EventBusSubscriber(modid = Constants.MODID)
 public class MultiGameManager implements IGameManager {
 	public static final MultiGameManager INSTANCE = new MultiGameManager();
 
@@ -243,9 +243,7 @@ public class MultiGameManager implements IGameManager {
 	}
 
 	@SubscribeEvent
-	public static void onServerTick(TickEvent.ServerTickEvent event) {
-		if (event.phase == TickEvent.Phase.START) return;
-
+	public static void onServerTick(ServerTickEvent.Post event) {
 		for (GameLobby lobby : INSTANCE.lobbies) {
 			lobby.tick();
 		}

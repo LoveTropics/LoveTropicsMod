@@ -7,7 +7,6 @@ import com.lovetropics.minigames.common.content.MinigameTexts;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.player.PlayerSet;
 import com.lovetropics.minigames.common.core.game.util.TemplatedText;
-import com.lovetropics.minigames.common.core.network.LoveTropicsNetwork;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.ChatFormatting;
@@ -20,7 +19,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraftforge.network.PacketDistributor;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 import javax.annotation.Nullable;
 import java.util.Map;
@@ -51,8 +50,8 @@ public record DonationPackageNotification(
 			long visibleTime = targeted ? 8000 : 6000;
 
 			NotificationStyle style = createStyle(color, visibleTime);
-			LoveTropicsNetwork.CHANNEL.send(
-					PacketDistributor.PLAYER.with(() -> player),
+			PacketDistributor.sendToPlayer(
+					player,
 					new ShowNotificationToastMessage(message, style)
 			);
 

@@ -4,18 +4,22 @@ import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.SharedConstants;
-import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.protocol.game.ClientboundExplodePacket;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.valueproviders.IntProvider;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -91,8 +95,8 @@ public class LootDispenserBlockEntity extends BlockEntity {
 	}
 
 	private void dispenseDrops(ServerLevel level, BlockPos pos, BlockState state, LootConfig loot, int count) {
-		ResourceLocation tableId = dropsLeft > 1 ? loot.lootTable() : loot.junkTable().orElse(loot.lootTable());
-		LootTable lootTable = level.getServer().getLootData().getLootTable(tableId);
+		ResourceKey<LootTable> tableId = dropsLeft > 1 ? loot.lootTable() : loot.junkTable().orElse(loot.lootTable());
+		LootTable lootTable = level.getServer().reloadableRegistries().getLootTable(tableId);
 		LootParams params = new LootParams.Builder(level).create(LootContextParamSets.EMPTY);
 
 		Vec3 dispensePos = getDispensePos(pos, state);
@@ -113,7 +117,16 @@ public class LootDispenserBlockEntity extends BlockEntity {
 	private static void addFailureEffects(ServerLevel level, Vec3 dispensePos) {
 		for (ServerPlayer player : level.players()) {
 			if (player.position().closerThan(dispensePos, 64.0)) {
-				player.connection.send(new ClientboundExplodePacket(dispensePos.x, dispensePos.y, dispensePos.z, 1.0f, List.of(), Vec3.ZERO));
+				player.connection.send(new ClientboundExplodePacket(
+						dispensePos.x, dispensePos.y, dispensePos.z,
+						1.0f,
+						List.of(),
+						Vec3.ZERO,
+						Explosion.BlockInteraction.KEEP,
+						ParticleTypes.EXPLOSION,
+						ParticleTypes.EXPLOSION_EMITTER,
+						SoundEvents.GENERIC_EXPLODE
+				));
 			}
 		}
 	}
@@ -128,17 +141,17 @@ public class LootDispenserBlockEntity extends BlockEntity {
 	}
 
 	@Override
-	protected void saveAdditional(CompoundTag tag) {
+	protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
 		if (loot != null) {
-			tag.put(TAG_LOOT, Util.getOrThrow(LootConfig.CODEC.encodeStart(NbtOps.INSTANCE, loot), IllegalStateException::new));
+			tag.put(TAG_LOOT, LootConfig.CODEC.encodeStart(NbtOps.INSTANCE, loot).getOrThrow());
 		}
 		tag.putInt(TAG_DROPS_LEFT, dropsLeft);
 		tag.putInt(TAG_TICKS_TO_NEXT_DROP, ticksToNextDrop);
 	}
 
 	@Override
-	public void load(CompoundTag tag) {
-		super.load(tag);
+	public void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+		super.loadAdditional(tag, registries);
 		if (tag.contains(TAG_LOOT)) {
 			loot = LootConfig.CODEC.parse(NbtOps.INSTANCE, tag.get(TAG_LOOT)).resultOrPartial(LOGGER::error).orElse(null);
 		} else {
@@ -148,10 +161,10 @@ public class LootDispenserBlockEntity extends BlockEntity {
 		ticksToNextDrop = tag.getInt(TAG_TICKS_TO_NEXT_DROP);
 	}
 
-	private record LootConfig(ResourceLocation lootTable, Optional<ResourceLocation> junkTable, IntProvider dropInterval, int playerRange, int maxPlayerCount) {
+	private record LootConfig(ResourceKey<LootTable> lootTable, Optional<ResourceKey<LootTable>> junkTable, IntProvider dropInterval, int playerRange, int maxPlayerCount) {
 		public static final Codec<LootConfig> CODEC = RecordCodecBuilder.create(i -> i.group(
-				ResourceLocation.CODEC.fieldOf("table").forGetter(LootConfig::lootTable),
-				ResourceLocation.CODEC.optionalFieldOf("junk_table").forGetter(LootConfig::junkTable),
+				ResourceKey.codec(Registries.LOOT_TABLE).fieldOf("table").forGetter(LootConfig::lootTable),
+				ResourceKey.codec(Registries.LOOT_TABLE).optionalFieldOf("junk_table").forGetter(LootConfig::junkTable),
 				IntProvider.CODEC.fieldOf("drop_interval").forGetter(LootConfig::dropInterval),
 				Codec.INT.fieldOf("player_range").orElse(5).forGetter(LootConfig::playerRange),
 				Codec.INT.fieldOf("max_player_count").orElse(1).forGetter(LootConfig::maxPlayerCount)

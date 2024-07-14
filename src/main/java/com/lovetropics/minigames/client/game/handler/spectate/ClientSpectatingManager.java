@@ -5,15 +5,16 @@ import com.lovetropics.minigames.client.game.handler.ClientGameStateHandler;
 import com.lovetropics.minigames.common.core.game.client_state.instance.SpectatingClientState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.spectator.SpectatorGui;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.ViewportEvent;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.neoforge.client.event.RenderFrameEvent;
+import net.neoforged.neoforge.client.event.ViewportEvent;
 
 import java.util.UUID;
 
-@Mod.EventBusSubscriber(modid = Constants.MODID, value = Dist.CLIENT)
+@EventBusSubscriber(modid = Constants.MODID, value = Dist.CLIENT)
 public final class ClientSpectatingManager implements ClientGameStateHandler<SpectatingClientState> {
 	public static final ClientSpectatingManager INSTANCE = new ClientSpectatingManager();
 
@@ -48,8 +49,8 @@ public final class ClientSpectatingManager implements ClientGameStateHandler<Spe
 	}
 
 	@SubscribeEvent
-	public static void onClientTick(TickEvent.ClientTickEvent event) {
-		if (event.phase != TickEvent.Phase.START && CLIENT.player != null) {
+	public static void onClientTick(ClientTickEvent.Post event) {
+		if (CLIENT.player != null) {
 			SpectatingSession session = INSTANCE.session;
 			if (session != null) {
 				session.tick();
@@ -62,8 +63,8 @@ public final class ClientSpectatingManager implements ClientGameStateHandler<Spe
 	}
 
 	@SubscribeEvent
-	public static void onRenderTick(TickEvent.RenderTickEvent event) {
-		if (event.phase != TickEvent.Phase.END && CLIENT.player != null) {
+	public static void onRenderTick(RenderFrameEvent.Pre event) {
+		if (CLIENT.player != null) {
 			SpectatingSession session = INSTANCE.session;
 			if (session != null) {
 				session.renderTick();

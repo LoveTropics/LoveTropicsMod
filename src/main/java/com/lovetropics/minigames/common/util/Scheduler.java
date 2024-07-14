@@ -2,10 +2,9 @@ package com.lovetropics.minigames.common.util;
 
 import com.lovetropics.minigames.Constants;
 import net.minecraft.server.MinecraftServer;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.server.ServerLifecycleHooks;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.event.tick.ServerTickEvent;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,17 +15,14 @@ import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-@Mod.EventBusSubscriber(modid = Constants.MODID)
+@EventBusSubscriber(modid = Constants.MODID)
 public final class Scheduler {
 	private static final ConcurrentMap<Integer, Tick> TICKS = new ConcurrentHashMap<>();
 	private static int time = 0;
 
 	@SubscribeEvent
-	public static void onTick(TickEvent.ServerTickEvent event) {
-		if (event.phase == TickEvent.Phase.END) {
-			final MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
-			Scheduler.runTasks(server);
-		}
+	public static void onTick(ServerTickEvent.Post event) {
+        Scheduler.runTasks(event.getServer());
 	}
 
 	public static Tick atTime(int time) {

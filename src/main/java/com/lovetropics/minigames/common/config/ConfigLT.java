@@ -1,12 +1,14 @@
 package com.lovetropics.minigames.common.config;
 
 import com.google.common.base.Strings;
-import net.minecraftforge.common.ForgeConfigSpec;
-import net.minecraftforge.common.ForgeConfigSpec.*;
-import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
-import net.minecraftforge.fml.event.config.ModConfigEvent;
+import net.neoforged.fml.event.config.ModConfigEvent;
+import net.neoforged.neoforge.common.ModConfigSpec;
+import net.neoforged.neoforge.common.ModConfigSpec.BooleanValue;
+import net.neoforged.neoforge.common.ModConfigSpec.Builder;
+import net.neoforged.neoforge.common.ModConfigSpec.ConfigValue;
+import net.neoforged.neoforge.common.ModConfigSpec.DoubleValue;
+import net.neoforged.neoforge.common.ModConfigSpec.IntValue;
 
-@EventBusSubscriber
 public class ConfigLT {
 
     private static final Builder CLIENT_BUILDER = new Builder();
@@ -114,8 +116,8 @@ public class ConfigLT {
         }
     }
 
-    public static final ForgeConfigSpec CLIENT_CONFIG = CLIENT_BUILDER.build();
-    public static final ForgeConfigSpec SERVER_CONFIG = COMMON_BUILDER.build();
+    public static final ModConfigSpec CLIENT_CONFIG = CLIENT_BUILDER.build();
+    public static final ModConfigSpec SERVER_CONFIG = COMMON_BUILDER.build();
 
     public static void onLoad(final ModConfigEvent.Loading configEvent) {
     }

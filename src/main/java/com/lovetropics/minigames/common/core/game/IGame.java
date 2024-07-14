@@ -9,6 +9,7 @@ import com.lovetropics.minigames.common.core.game.state.control.ControlCommands;
 import com.lovetropics.minigames.common.core.game.state.statistics.GameStatistics;
 import com.lovetropics.minigames.common.core.game.state.statistics.PlayerKey;
 import com.lovetropics.minigames.common.core.integration.GameInstanceIntegrations;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.server.MinecraftServer;
 
 import java.util.UUID;
@@ -64,5 +65,9 @@ public interface IGame extends Executor {
 				}
 			});
 		}
+	}
+
+    default RegistryAccess registryAccess() {
+		return getServer().registryAccess();
 	}
 }

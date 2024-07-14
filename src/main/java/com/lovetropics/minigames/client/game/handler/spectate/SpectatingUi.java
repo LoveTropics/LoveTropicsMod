@@ -19,12 +19,12 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.scores.PlayerTeam;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.InputEvent;
-import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
-import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.client.event.InputEvent;
+import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
+import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
 import org.lwjgl.glfw.GLFW;
 
 import javax.annotation.Nullable;
@@ -33,7 +33,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.function.Supplier;
 
-@Mod.EventBusSubscriber(modid = Constants.MODID, value = Dist.CLIENT)
+@EventBusSubscriber(modid = Constants.MODID, value = Dist.CLIENT)
 public final class SpectatingUi {
 	private static final Minecraft CLIENT = Minecraft.getInstance();
 
@@ -72,7 +72,7 @@ public final class SpectatingUi {
 			return;
 		}
 
-		double delta = event.getScrollDelta();
+		double delta = event.getScrollDeltaY();
 
 		// Prevent adjusting the spectator fly speed
 		event.setCanceled(true);
@@ -125,7 +125,7 @@ public final class SpectatingUi {
 	}
 
 	@SubscribeEvent
-	public static void onMouseInput(InputEvent.MouseButton event) {
+	public static void onMouseInput(InputEvent.MouseButton.Post event) {
 		SpectatingSession session = ClientSpectatingManager.INSTANCE.session;
 		if (session == null || CLIENT.screen != null || event.getAction() == GLFW.GLFW_RELEASE) {
 			return;
@@ -179,8 +179,8 @@ public final class SpectatingUi {
 		return Mth.clamp(availableWidth / ENTRY_WIDTH, 1, MAX_ENTRIES_ON_SCREEN);
 	}
 
-	public static void registerOverlays(RegisterGuiOverlaysEvent event) {
-		event.registerBelow(VanillaGuiOverlay.DEBUG_TEXT.id(), "minigame_spectator", (gui, graphics, partialTick, screenWidth, screenHeight) -> {
+	public static void registerOverlays(RegisterGuiLayersEvent event) {
+		event.registerBelow(VanillaGuiLayers.DEBUG_OVERLAY, ResourceLocation.fromNamespaceAndPath(Constants.MODID, "minigame_spectator"), (graphics, deltaTracker) -> {
 			SpectatingSession session = ClientSpectatingManager.INSTANCE.session;
 			if (session != null) {
 				session.ui.renderChasePlayerList(graphics);
@@ -313,7 +313,7 @@ public final class SpectatingUi {
 			graphics.fill(left, bottom - ENTRY_TAG_HEIGHT, right, bottom, color);
 			graphics.fill(left, bottom, right, screenBottom, TAB_COLOR);
 
-			ResourceLocation skin = ClientPlayerInfo.getSkin(playerIcon);
+			ResourceLocation skin = ClientPlayerInfo.getSkin(playerIcon).texture();
 			PlayerFaceRenderer.draw(graphics, skin, left + ENTRY_PADDING, top + ENTRY_PADDING, FACE_SIZE);
 
 			long now = System.currentTimeMillis();

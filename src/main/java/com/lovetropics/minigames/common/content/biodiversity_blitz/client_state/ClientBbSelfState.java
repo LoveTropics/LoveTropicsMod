@@ -4,10 +4,11 @@ import com.lovetropics.minigames.common.content.biodiversity_blitz.BiodiversityB
 import com.lovetropics.minigames.common.core.game.client_state.GameClientState;
 import com.lovetropics.minigames.common.core.game.client_state.GameClientStateType;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 public record ClientBbSelfState(int currency, int nextIncrement) implements GameClientState {
-	public static final Codec<ClientBbSelfState> CODEC = RecordCodecBuilder.create(i -> i.group(
+	public static final MapCodec<ClientBbSelfState> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			Codec.INT.fieldOf("currency").forGetter(c -> c.currency),
 			Codec.INT.fieldOf("next_increment").forGetter(c -> c.nextIncrement)
 	).apply(i, ClientBbSelfState::new));

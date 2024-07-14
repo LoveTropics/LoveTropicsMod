@@ -2,12 +2,11 @@ package com.lovetropics.minigames.common.core.game.player;
 
 import com.lovetropics.minigames.client.lobby.select_role.SelectRolePromptMessage;
 import com.lovetropics.minigames.common.core.game.lobby.GameLobbyId;
-import com.lovetropics.minigames.common.core.network.LoveTropicsNetwork;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraftforge.network.PacketDistributor;
+import net.minecraft.sounds.SoundSource;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 import javax.annotation.Nonnull;
 import java.util.Map;
@@ -54,7 +53,7 @@ public final class PlayerRoleSelections {
 	}
 
 	private void sendPromptTo(ServerPlayer player) {
-		LoveTropicsNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new SelectRolePromptMessage(lobbyId.networkId()));
+		PacketDistributor.sendToPlayer(player, new SelectRolePromptMessage(lobbyId.networkId()));
 		player.playNotifySound(SoundEvents.ARROW_HIT_PLAYER, SoundSource.MASTER, 1.0F, 1.0F);
 	}
 

@@ -55,7 +55,7 @@ public record PlaceTrashBehavior(ResourceLocation positionData, int centerY, int
 				return;
 			}
 
-			RandomSource random = chunk.getWorldForge().getRandom();
+			RandomSource random = game.getRandom();
 			BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
 
 			LongListIterator iterator = positions.iterator();

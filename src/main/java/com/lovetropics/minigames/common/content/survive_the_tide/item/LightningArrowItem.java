@@ -6,6 +6,7 @@ import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.item.ArrowItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.Nullable;
 
 public class LightningArrowItem extends ArrowItem {
 	public LightningArrowItem(final Properties properties) {
@@ -13,7 +14,7 @@ public class LightningArrowItem extends ArrowItem {
 	}
 
 	@Override
-	public AbstractArrow createArrow(final Level level, final ItemStack stack, final LivingEntity shooter) {
-		return new LightningArrowEntity(level, shooter);
+	public AbstractArrow createArrow(final Level level, final ItemStack stack, final LivingEntity shooter, @Nullable ItemStack weapon) {
+		return new LightningArrowEntity(level, shooter, stack, weapon);
 	}
 }

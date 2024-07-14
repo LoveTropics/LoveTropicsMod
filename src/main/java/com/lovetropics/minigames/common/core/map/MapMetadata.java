@@ -12,7 +12,7 @@ public record MapMetadata(ResourceLocation id, MapWorldSettings settings, MapReg
 	}
 
 	public static MapMetadata read(CompoundTag root) {
-		ResourceLocation id = new ResourceLocation(root.getString("id"));
+		ResourceLocation id = ResourceLocation.parse(root.getString("id"));
 		MapWorldSettings settings = new MapWorldSettings();
 		MapRegions regions = new MapRegions();
 

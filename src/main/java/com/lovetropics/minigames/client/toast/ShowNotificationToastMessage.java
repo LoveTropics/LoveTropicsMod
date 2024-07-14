@@ -1,24 +1,29 @@
 package com.lovetropics.minigames.client.toast;
 
-import net.minecraft.network.FriendlyByteBuf;
+import com.lovetropics.minigames.Constants;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
-import net.minecraftforge.network.NetworkEvent;
+import net.minecraft.network.chat.ComponentSerialization;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
 
-import java.util.function.Supplier;
+public record ShowNotificationToastMessage(Component message, NotificationStyle style) implements CustomPacketPayload {
+    public static final Type<ShowNotificationToastMessage> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(Constants.MODID, "show_notification_toast"));
 
-public record ShowNotificationToastMessage(Component message, NotificationStyle style) {
-	public void encode(FriendlyByteBuf buffer) {
-		buffer.writeComponent(this.message);
-		this.style.encode(buffer);
-	}
+    public static final StreamCodec<RegistryFriendlyByteBuf, ShowNotificationToastMessage> STREAM_CODEC = StreamCodec.composite(
+            ComponentSerialization.STREAM_CODEC, ShowNotificationToastMessage::message,
+            NotificationStyle.STREAM_CODEC, ShowNotificationToastMessage::style,
+            ShowNotificationToastMessage::new
+    );
 
-	public static ShowNotificationToastMessage decode(FriendlyByteBuf buffer) {
-		Component message = buffer.readComponent();
-		NotificationStyle style = NotificationStyle.decode(buffer);
-		return new ShowNotificationToastMessage(message, style);
-	}
+    public static void handle(ShowNotificationToastMessage message, IPayloadContext context) {
+        NotificationToasts.display(message.message, message.style);
+    }
 
-	public void handle(Supplier<NetworkEvent.Context> ctx) {
-		NotificationToasts.display(this.message, this.style);
-	}
+    @Override
+    public Type<ShowNotificationToastMessage> type() {
+        return TYPE;
+    }
 }

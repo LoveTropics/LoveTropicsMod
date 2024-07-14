@@ -7,13 +7,13 @@ import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvent
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.registries.ForgeRegistries;
 
 public record PermanentItemBehavior(Item item, int count, int interval) implements IGameBehavior {
 	public static final MapCodec<PermanentItemBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
-			ForgeRegistries.ITEMS.getCodec().fieldOf("item").forGetter(c -> c.item),
+			BuiltInRegistries.ITEM.byNameCodec().fieldOf("item").forGetter(c -> c.item),
 			Codec.INT.fieldOf("count").forGetter(c -> c.count),
 			Codec.INT.optionalFieldOf("interval", 5).forGetter(c -> c.interval)
 	).apply(i, PermanentItemBehavior::new));

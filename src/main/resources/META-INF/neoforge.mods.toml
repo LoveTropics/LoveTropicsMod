@@ -1,0 +1,17 @@
+modLoader = "javafml"
+loaderVersion = "[2,)"
+issueTrackerURL = "https://github.com/LoveTropics/LTMinigames/issues"
+license = "Mozilla Public License Version 2.0"
+
+[[mods]]
+modId = "ltminigames"
+version = "${mod_version}"
+displayName = "LTMinigames"
+displayURL = "https://lovetropics.com"
+authors = "The Love Tropics team"
+description = '''
+Minigame engine for the LoveTropics livestream event.
+'''
+
+[[mixins]]
+config = "ltminigames.mixins.json"

@@ -1,24 +1,29 @@
 package com.lovetropics.minigames.client.lobby.manage;
 
+import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.client.lobby.manage.state.update.ClientLobbyUpdate;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraftforge.network.NetworkEvent;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
 
-import java.util.function.Supplier;
+public record ClientManageLobbyMessage(int id, ClientLobbyUpdate.Set updates) implements CustomPacketPayload {
+    public static final Type<ClientManageLobbyMessage> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(Constants.MODID, "client_manage_lobby"));
 
-public record ClientManageLobbyMessage(int id, ClientLobbyUpdate.Set updates) {
-	public void encode(FriendlyByteBuf buffer) {
-		buffer.writeVarInt(id);
-		updates.encode(buffer);
-	}
+    public static final StreamCodec<RegistryFriendlyByteBuf, ClientManageLobbyMessage> STREAM_CODEC = StreamCodec.composite(
+            ByteBufCodecs.VAR_INT, ClientManageLobbyMessage::id,
+            ClientLobbyUpdate.Set.STREAM_CODEC, ClientManageLobbyMessage::updates,
+            ClientManageLobbyMessage::new
+    );
 
-	public static ClientManageLobbyMessage decode(FriendlyByteBuf buffer) {
-		int id = buffer.readVarInt();
-		ClientLobbyUpdate.Set updates = ClientLobbyUpdate.Set.decode(buffer);
-		return new ClientManageLobbyMessage(id, updates);
-	}
+    public static void handle(ClientManageLobbyMessage message, IPayloadContext context) {
+        ClientLobbyManagement.update(message.id, message.updates);
+    }
 
-	public void handle(Supplier<NetworkEvent.Context> ctx) {
-		ClientLobbyManagement.update(id, updates);
-	}
+    @Override
+    public Type<ClientManageLobbyMessage> type() {
+        return TYPE;
+    }
 }

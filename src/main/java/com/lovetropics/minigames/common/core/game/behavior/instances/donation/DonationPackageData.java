@@ -4,7 +4,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.network.chat.Component;
-import net.minecraft.util.ExtraCodecs;
+import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.util.StringRepresentable;
 
 import java.util.Optional;
@@ -23,8 +23,8 @@ public record DonationPackageData(
 			PackageType.CODEC.fieldOf("package_type").forGetter(DonationPackageData::packageType),
 			Category.CODEC.fieldOf("category").orElse(Category.OTHER).forGetter(DonationPackageData::category),
 			PackagePlayerSelect.CODEC.fieldOf("player_select").orElse(PackagePlayerSelect.RANDOM).forGetter(DonationPackageData::playerSelect),
-			ExtraCodecs.COMPONENT.fieldOf("name").forGetter(DonationPackageData::name),
-			ExtraCodecs.COMPONENT.fieldOf("description").forGetter(DonationPackageData::description),
+			ComponentSerialization.CODEC.fieldOf("name").forGetter(DonationPackageData::name),
+			ComponentSerialization.CODEC.fieldOf("description").forGetter(DonationPackageData::description),
 			Codec.DOUBLE.optionalFieldOf("donation_amount").forGetter(DonationPackageData::donationAmount)
 	).apply(i, DonationPackageData::new));
 

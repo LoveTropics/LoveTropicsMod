@@ -2,25 +2,33 @@ package com.lovetropics.minigames.client.lobby.state;
 
 import com.lovetropics.minigames.common.core.game.GamePhaseType;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentSerialization;
+import net.minecraft.network.codec.StreamCodec;
 
-import javax.annotation.Nullable;
+import java.util.Optional;
 
 public final class ClientCurrentGame {
+    public static final StreamCodec<RegistryFriendlyByteBuf, ClientCurrentGame> STREAM_CODEC = StreamCodec.composite(
+            ClientGameDefinition.STREAM_CODEC, ClientCurrentGame::definition,
+            GamePhaseType.STREAM_CODEC, ClientCurrentGame::phase,
+            ComponentSerialization.OPTIONAL_STREAM_CODEC, ClientCurrentGame::error,
+            ClientCurrentGame::new
+    );
+
 	private final ClientGameDefinition definition;
 	private final GamePhaseType phase;
-	@Nullable
-	private final Component error;
+	private final Optional<Component> error;
 
-	private ClientCurrentGame(ClientGameDefinition definition, GamePhaseType phase, @Nullable Component error) {
+	private ClientCurrentGame(ClientGameDefinition definition, GamePhaseType phase, Optional<Component> error) {
 		this.definition = definition;
 		this.phase = phase;
 		this.error = error;
 	}
 
 	public static ClientCurrentGame create(ClientGameDefinition definition, GamePhaseType phaseType) {
-		return new ClientCurrentGame(definition, phaseType, null);
+		return new ClientCurrentGame(definition, phaseType, Optional.empty());
 	}
 
 	public static ClientCurrentGame create(IGamePhase phase) {
@@ -30,7 +38,7 @@ public final class ClientCurrentGame {
 	}
 
 	public ClientCurrentGame withError(Component error) {
-		return new ClientCurrentGame(definition, phase, error);
+		return new ClientCurrentGame(definition, phase, Optional.of(error));
 	}
 
 	public ClientGameDefinition definition() {
@@ -41,25 +49,7 @@ public final class ClientCurrentGame {
 		return phase;
 	}
 
-	@Nullable
-	public Component error() {
+	public Optional<Component> error() {
 		return error;
-	}
-
-	public void encode(FriendlyByteBuf buffer) {
-		definition.encode(buffer);
-		buffer.writeEnum(phase);
-
-		buffer.writeBoolean(error != null);
-		if (error != null) {
-			buffer.writeComponent(error);
-		}
-	}
-
-	public static ClientCurrentGame decode(FriendlyByteBuf buffer) {
-		ClientGameDefinition definition = ClientGameDefinition.decode(buffer);
-		GamePhaseType phase = buffer.readEnum(GamePhaseType.class);
-		Component error = buffer.readBoolean() ? buffer.readComponent() : null;
-		return new ClientCurrentGame(definition, phase, error);
 	}
 }

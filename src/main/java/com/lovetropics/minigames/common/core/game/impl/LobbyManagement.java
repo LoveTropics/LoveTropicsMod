@@ -5,13 +5,16 @@ import com.lovetropics.minigames.client.lobby.manage.state.update.ClientLobbyUpd
 import com.lovetropics.minigames.client.lobby.state.ClientCurrentGame;
 import com.lovetropics.minigames.client.lobby.state.ClientGameDefinition;
 import com.lovetropics.minigames.common.core.game.IGameDefinition;
-import com.lovetropics.minigames.common.core.game.lobby.*;
+import com.lovetropics.minigames.common.core.game.lobby.ILobbyGameQueue;
+import com.lovetropics.minigames.common.core.game.lobby.ILobbyManagement;
+import com.lovetropics.minigames.common.core.game.lobby.LobbyControls;
+import com.lovetropics.minigames.common.core.game.lobby.LobbyVisibility;
+import com.lovetropics.minigames.common.core.game.lobby.QueuedGame;
 import com.lovetropics.minigames.common.core.game.player.MutablePlayerSet;
-import com.lovetropics.minigames.common.core.network.LoveTropicsNetwork;
 import com.lovetropics.minigames.common.util.Scheduler;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraftforge.network.PacketDistributor;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 import java.util.function.UnaryOperator;
 
@@ -52,7 +55,7 @@ final class LobbyManagement implements ILobbyManagement {
 					.setVisibility(lobby.getMetadata().visibility(), !lobby.manager.hasFocusedLiveLobby());
 
 			ClientManageLobbyMessage message = initialize.intoMessage(lobby.metadata.id().networkId());
-			LoveTropicsNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), message);
+			PacketDistributor.sendToPlayer(player, message);
 
 			managingPlayers.add(player);
 			return true;
@@ -146,6 +149,6 @@ final class LobbyManagement implements ILobbyManagement {
 		set = updates.apply(set);
 
 		ClientManageLobbyMessage message = set.intoMessage(lobby.getMetadata().id().networkId());
-		managingPlayers.sendPacket(LoveTropicsNetwork.CHANNEL, message);
+		managingPlayers.sendPacket(message);
 	}
 }

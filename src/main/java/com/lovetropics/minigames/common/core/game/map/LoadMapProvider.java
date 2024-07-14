@@ -11,6 +11,7 @@ import com.lovetropics.minigames.common.core.map.MapWorldSettings;
 import com.lovetropics.minigames.common.core.map.VoidChunkGenerator;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.Util;
 import net.minecraft.core.Holder;
@@ -37,7 +38,7 @@ public record LoadMapProvider(
 		Optional<Holder<DimensionType>> dimensionType,
 		Optional<ResourceLocation> dimension
 ) implements IGameMapProvider {
-	public static final Codec<LoadMapProvider> CODEC = RecordCodecBuilder.create(i -> i.group(
+	public static final MapCodec<LoadMapProvider> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			Codec.STRING.optionalFieldOf("name").forGetter(c -> c.name),
 			ResourceLocation.CODEC.fieldOf("load_from").forGetter(c -> c.loadFrom),
 			DimensionType.CODEC.optionalFieldOf("dimension_type").forGetter(c -> c.dimensionType),
@@ -47,7 +48,7 @@ public record LoadMapProvider(
 	private static final Logger LOGGER = LogManager.getLogger(LoadMapProvider.class);
 
 	@Override
-	public Codec<? extends IGameMapProvider> getCodec() {
+	public MapCodec<LoadMapProvider> getCodec() {
 		return CODEC;
 	}
 
@@ -92,7 +93,7 @@ public record LoadMapProvider(
 	}
 
 	private GameResult<Pair<RuntimeDimensionHandle, MapMetadata>> loadMapInto(MinecraftServer server, MapWorldSettings mapWorldSettings, RuntimeDimensionHandle handle) {
-		ResourceLocation path = new ResourceLocation(loadFrom.getNamespace(), "maps/" + loadFrom.getPath() + ".zip");
+		ResourceLocation path = loadFrom.withPath(p -> "maps/" + p + ".zip");
 
 		Optional<Resource> resource = server.getResourceManager().getResource(path);
 		if (resource.isEmpty()) {

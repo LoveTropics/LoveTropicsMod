@@ -16,7 +16,7 @@ import net.minecraft.world.entity.monster.Skeleton;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.material.Fluid;
-import net.minecraft.world.level.pathfinder.BlockPathTypes;
+import net.minecraft.world.level.pathfinder.PathType;
 
 public class BbSkeletonEntity extends Skeleton implements BbMobEntity {
     private final BbMobBrain mobBrain;
@@ -28,7 +28,7 @@ public class BbSkeletonEntity extends Skeleton implements BbMobEntity {
         this.mobBrain = new BbMobBrain(plot.walls);
         this.plot = plot;
 
-        setPathfindingMalus(BlockPathTypes.DANGER_OTHER, BERRY_BUSH_MALUS);
+        setPathfindingMalus(PathType.DANGER_OTHER, BERRY_BUSH_MALUS);
     }
 
     @Override

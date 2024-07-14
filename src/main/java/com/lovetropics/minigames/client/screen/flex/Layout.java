@@ -1,7 +1,7 @@
 package com.lovetropics.minigames.client.screen.flex;
 
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraftforge.fml.loading.FMLEnvironment;
+import net.neoforged.fml.loading.FMLEnvironment;
 
 import java.util.Objects;
 
@@ -58,7 +58,7 @@ public record Layout(Box content, Box padding, Box margin) {
 				&& Objects.equals(padding, other.padding);
 	}
 
-	private static final boolean inDev = !FMLEnvironment.naming.equals("srg");
+	private static final boolean inDev = !FMLEnvironment.production;
 
 	public void debugRender(GuiGraphics graphics) {
 		if (!inDev) return;

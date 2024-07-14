@@ -5,13 +5,16 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.Optionull;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.registries.ForgeRegistries;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -31,6 +34,13 @@ public record DisguiseType(@Nullable EntityConfig entity, float scale, boolean c
 
 	public static final Codec<DisguiseType> CODEC = MAP_CODEC.codec();
 
+	public static final StreamCodec<RegistryFriendlyByteBuf, DisguiseType> STREAM_CODEC = StreamCodec.composite(
+			EntityConfig.STREAM_CODEC.apply(ByteBufCodecs::optional), c -> Optional.ofNullable(c.entity),
+			ByteBufCodecs.FLOAT, DisguiseType::scale,
+			ByteBufCodecs.BOOL, DisguiseType::changesSize,
+			DisguiseType::new
+	);
+
 	private DisguiseType(Optional<EntityConfig> entity, float scale, boolean changesSize) {
 		this(entity.orElse(null), scale, changesSize);
 	}
@@ -43,19 +53,6 @@ public record DisguiseType(@Nullable EntityConfig entity, float scale, boolean c
 	@Nullable
 	public Entity createEntity(Level level) {
 		return entity != null ? entity.createEntity(level) : null;
-	}
-
-	public void encode(FriendlyByteBuf buffer) {
-		buffer.writeNullable(entity, (b, e) -> e.encode(b));
-		buffer.writeFloat(scale);
-		buffer.writeBoolean(changesSize);
-	}
-
-	public static DisguiseType decode(FriendlyByteBuf buffer) {
-		EntityConfig entity = buffer.readNullable(EntityConfig::decode);
-		float scale = buffer.readFloat();
-		boolean changesSize = buffer.readBoolean();
-		return new DisguiseType(entity, scale, changesSize);
 	}
 
 	public boolean isDefault() {
@@ -91,10 +88,17 @@ public record DisguiseType(@Nullable EntityConfig entity, float scale, boolean c
 
 	public record EntityConfig(EntityType<?> type, @Nullable CompoundTag nbt, boolean applyAttributes) {
 		public static final Codec<EntityConfig> CODEC = RecordCodecBuilder.create(i -> i.group(
-				ForgeRegistries.ENTITY_TYPES.getCodec().fieldOf("type").forGetter(c -> c.type),
+				BuiltInRegistries.ENTITY_TYPE.byNameCodec().fieldOf("type").forGetter(c -> c.type),
 				CompoundTag.CODEC.optionalFieldOf("tag").forGetter(c -> Optional.ofNullable(c.nbt)),
 				Codec.BOOL.optionalFieldOf("apply_attributes", false).forGetter(c -> c.applyAttributes)
 		).apply(i, EntityConfig::new));
+
+		public static final StreamCodec<RegistryFriendlyByteBuf, EntityConfig> STREAM_CODEC = StreamCodec.composite(
+				ByteBufCodecs.registry(Registries.ENTITY_TYPE), EntityConfig::type,
+				ByteBufCodecs.OPTIONAL_COMPOUND_TAG, c -> Optional.ofNullable(c.nbt),
+				ByteBufCodecs.BOOL, EntityConfig::applyAttributes,
+				EntityConfig::new
+		);
 
 		private EntityConfig(EntityType<?> type, Optional<CompoundTag> nbt, boolean applyAttributes) {
 			this(type, nbt.orElse(null), applyAttributes);
@@ -102,19 +106,6 @@ public record DisguiseType(@Nullable EntityConfig entity, float scale, boolean c
 
 		public EntityConfig withNbt(@Nullable CompoundTag nbt) {
 			return new EntityConfig(type, Optionull.map(nbt, CompoundTag::copy), applyAttributes);
-		}
-
-		public void encode(FriendlyByteBuf buffer) {
-			buffer.writeRegistryIdUnsafe(ForgeRegistries.ENTITY_TYPES, type);
-			buffer.writeNbt(nbt);
-			buffer.writeBoolean(applyAttributes);
-		}
-
-		public static EntityConfig decode(FriendlyByteBuf buffer) {
-			EntityType<?> type = buffer.readRegistryIdUnsafe(ForgeRegistries.ENTITY_TYPES);
-			CompoundTag nbt = buffer.readNbt();
-			boolean applyAttributes = buffer.readBoolean();
-			return new EntityConfig(type, nbt, applyAttributes);
 		}
 
 		@Nullable

@@ -15,6 +15,7 @@ import net.minecraft.gametest.framework.GameTestAssertException;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.gametest.framework.GameTestInfo;
 import net.minecraft.gametest.framework.GameTestListener;
+import net.minecraft.gametest.framework.GameTestRunner;
 import net.minecraft.gametest.framework.GameTestSequence;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -27,6 +28,7 @@ import net.minecraft.world.entity.npc.InventoryCarrier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -171,23 +173,13 @@ public class LTGameTestHelper extends GameTestHelper {
     }
 
     @Override
-    public Player makeMockSurvivalPlayer() {
-        return delegate.makeMockSurvivalPlayer();
+    public Player makeMockPlayer(GameType gameType) {
+        return delegate.makeMockPlayer(gameType);
     }
 
     @Override
     public LivingEntity withLowHealth(LivingEntity pEntity) {
         return delegate.withLowHealth(pEntity);
-    }
-
-    @Override
-    public Player makeMockPlayer() {
-        return delegate.makeMockPlayer();
-    }
-
-    @Override
-    public ServerPlayer makeMockServerPlayerInLevel() {
-        return delegate.makeMockServerPlayerInLevel();
     }
 
     @Override
@@ -607,17 +599,22 @@ public class LTGameTestHelper extends GameTestHelper {
             }
 
             @Override
-            public void testPassed(GameTestInfo pTestInfo) {
+            public void testPassed(GameTestInfo pTest, GameTestRunner pRunner) {
                 if (lobby.getCurrentPhase() != null)
                     lobby.getCurrentPhase().requestStop(GameStopReason.finished());
                 lobby.getManagement().close();
             }
 
             @Override
-            public void testFailed(GameTestInfo pTestInfo) {
+            public void testFailed(GameTestInfo pTest, GameTestRunner pRunner) {
                 if (lobby.getCurrentPhase() != null)
                     lobby.getCurrentPhase().requestStop(GameStopReason.canceled());
                 lobby.getManagement().close();
+            }
+
+            @Override
+            public void testAddedForRerun(GameTestInfo pOldTest, GameTestInfo pNewTest, GameTestRunner pRunner) {
+
             }
         });
 
@@ -652,7 +649,7 @@ public class LTGameTestHelper extends GameTestHelper {
 
     public void assertPlayerInventoryContainsAt(Player player, int index, ItemStack stack) {
         final ItemStack toCompare = player.getInventory().getItem(index);
-        assertTrue(ItemStack.isSameItemSameTags(stack, toCompare), () -> "Items did not match: expected " + stack + ", but was " + toCompare);
+        assertTrue(ItemStack.isSameItemSameComponents(stack, toCompare), () -> "Items did not match: expected " + stack + ", but was " + toCompare);
         assertTrue(stack.getCount() == toCompare.getCount(), () -> "Stack count did not match: expected " + stack.getCount() + ", but was " + toCompare.getCount());
     }
 

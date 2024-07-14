@@ -19,8 +19,8 @@ public record ScaleExplosionKnockbackBehavior(float factor, EntityPredicate expl
     @Override
     public void register(IGamePhase game, EventRegistrar events) throws GameException {
         events.listen(GameLivingEntityEvents.MODIFY_EXPLOSION_KNOCKBACK, (entity, explosion, knockback, originalKnockback) -> {
-            if (explosion.getExploder() != null && exploderPredicate.test(explosion.getExploder())) {
-                return factor * knockback;
+            if (explosion.getDirectSourceEntity() != null && exploderPredicate.test(explosion.getDirectSourceEntity())) {
+                return knockback.scale(factor);
             }
             return knockback;
         });

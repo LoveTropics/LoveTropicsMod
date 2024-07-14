@@ -19,7 +19,7 @@ import net.minecraft.world.entity.ai.navigation.PathNavigation;
 import net.minecraft.world.entity.monster.ZombifiedPiglin;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.material.Fluid;
-import net.minecraft.world.level.pathfinder.BlockPathTypes;
+import net.minecraft.world.level.pathfinder.PathType;
 import net.minecraft.world.phys.Vec3;
 
 public class BbZombiePiglinEntity extends ZombifiedPiglin implements BbMobEntity {
@@ -33,7 +33,7 @@ public class BbZombiePiglinEntity extends ZombifiedPiglin implements BbMobEntity
         this.plot = plot;
 
         // Ignore sweet berry bushes and water
-        setPathfindingMalus(BlockPathTypes.DANGER_OTHER, BERRY_BUSH_MALUS);
+        setPathfindingMalus(PathType.DANGER_OTHER, BERRY_BUSH_MALUS);
     }
 
     @Override

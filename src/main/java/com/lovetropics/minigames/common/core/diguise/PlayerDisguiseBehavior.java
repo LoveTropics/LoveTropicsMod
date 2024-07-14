@@ -2,27 +2,26 @@ package com.lovetropics.minigames.common.core.diguise;
 
 import com.lovetropics.minigames.Constants;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.WalkAnimationState;
-import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeMap;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraftforge.event.entity.EntityEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.event.entity.EntityEvent;
 
 import javax.annotation.Nullable;
 import java.util.Objects;
-import java.util.UUID;
 
-@Mod.EventBusSubscriber(modid = Constants.MODID)
+@EventBusSubscriber(modid = Constants.MODID)
 public final class PlayerDisguiseBehavior {
-	private static final UUID ATTRIBUTE_MODIFIER_UUID = UUID.randomUUID();
+	private static final ResourceLocation ATTRIBUTE_MODIFIER_ID = ResourceLocation.fromNamespaceAndPath(Constants.MODID, "disguise_modifier");
 
 	@SubscribeEvent
 	public static void onSetEntitySize(EntityEvent.Size event) {
@@ -37,18 +36,16 @@ public final class PlayerDisguiseBehavior {
 		Pose pose = event.getPose();
 		EntityDimensions disguiseDimensions = entity.getDimensions(pose);
 		EntityDimensions actualDimensions = disguise.type().changesSize() ? disguiseDimensions : event.getEntity().getDimensions(pose);
-		float eyeHeight = entity.getEyeHeightAccess(pose, disguiseDimensions);
 		event.setNewSize(actualDimensions.scale(scale));
-		event.setNewEyeHeight(eyeHeight * scale);
 	}
 
 	public static void applyAttributes(LivingEntity entity, LivingEntity disguise) {
 		AttributeMap playerAttributes = entity.getAttributes();
 		AttributeMap disguiseAttributes = disguise.getAttributes();
 
-		for (Attribute attribute : BuiltInRegistries.ATTRIBUTE) {
+		BuiltInRegistries.ATTRIBUTE.holders().forEach(attribute -> {
 			if (!disguiseAttributes.hasAttribute(attribute) || !playerAttributes.hasAttribute(attribute)) {
-				continue;
+				return;
 			}
 
 			AttributeInstance playerInstance = playerAttributes.getInstance(attribute);
@@ -58,17 +55,17 @@ public final class PlayerDisguiseBehavior {
 			if (modifier != null) {
 				playerInstance.addTransientModifier(modifier);
 			}
-		}
+		});
 	}
 
 	public static void clearAttributes(LivingEntity entity) {
 		AttributeMap attributes = entity.getAttributes();
-		for (Attribute attribute : BuiltInRegistries.ATTRIBUTE) {
+		BuiltInRegistries.ATTRIBUTE.holders().forEach(attribute -> {
 			AttributeInstance instance = attributes.getInstance(attribute);
 			if (instance != null) {
-				instance.removeModifier(ATTRIBUTE_MODIFIER_UUID);
+				instance.removeModifier(ATTRIBUTE_MODIFIER_ID);
 			}
-		}
+		});
 	}
 
 	@Nullable
@@ -87,9 +84,9 @@ public final class PlayerDisguiseBehavior {
 		}
 
 		return new AttributeModifier(
-				ATTRIBUTE_MODIFIER_UUID, "disguise",
+				ATTRIBUTE_MODIFIER_ID,
 				value,
-				AttributeModifier.Operation.ADDITION
+				AttributeModifier.Operation.ADD_VALUE
 		);
 	}
 

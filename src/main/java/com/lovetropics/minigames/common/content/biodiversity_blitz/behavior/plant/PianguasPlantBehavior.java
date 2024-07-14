@@ -29,7 +29,7 @@ public final class PianguasPlantBehavior implements IGameBehavior {
             Codec.INT.fieldOf("radius").forGetter(b -> b.radius),
             MoreCodecs.BLOCK_STATE.fieldOf("block").forGetter(c -> c.state)
     ).apply(i, PianguasPlantBehavior::new));
-    private static final TagKey<Block> MUD = TagKey.create(Registries.BLOCK, new ResourceLocation("tropicraft", "mud"));
+    private static final TagKey<Block> MUD = TagKey.create(Registries.BLOCK, ResourceLocation.fromNamespaceAndPath("tropicraft", "mud"));
     private static final int INTERVAL_TICKS = SharedConstants.TICKS_PER_SECOND * 15;
 
     private final int radius;

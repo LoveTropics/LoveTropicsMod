@@ -2,22 +2,21 @@ package com.lovetropics.minigames.common.core.game.client_state;
 
 import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.common.core.game.PlayerIsolation;
-import com.lovetropics.minigames.common.core.network.LoveTropicsNetwork;
 import com.lovetropics.minigames.common.core.network.SetGameClientStateMessage;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.entity.player.PlayerEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.network.PacketDistributor;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+import net.neoforged.neoforge.event.tick.PlayerTickEvent;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-@Mod.EventBusSubscriber(modid = Constants.MODID)
+@EventBusSubscriber(modid = Constants.MODID)
 public final class GameClientStateSender {
 	private static final GameClientStateSender INSTANCE = new GameClientStateSender();
 
@@ -32,8 +31,8 @@ public final class GameClientStateSender {
 	}
 
 	@SubscribeEvent
-	public static void onPlayerTick(TickEvent.PlayerTickEvent event) {
-		if (event.phase == TickEvent.Phase.END && event.player instanceof ServerPlayer player) {
+	public static void onPlayerTick(PlayerTickEvent.Post event) {
+		if (event.getEntity() instanceof ServerPlayer player) {
 			INSTANCE.byPlayer(player).tick(player);
 		}
 	}
@@ -75,11 +74,11 @@ public final class GameClientStateSender {
 		}
 
 		void sendSet(GameClientState state, ServerPlayer player) {
-			LoveTropicsNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), SetGameClientStateMessage.set(state));
+			PacketDistributor.sendToPlayer(player, SetGameClientStateMessage.set(state));
 		}
 
 		void sendRemove(GameClientStateType<?> type, ServerPlayer player) {
-			LoveTropicsNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), SetGameClientStateMessage.remove(type));
+			PacketDistributor.sendToPlayer(player, SetGameClientStateMessage.remove(type));
 		}
 	}
 }

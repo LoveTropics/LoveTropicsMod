@@ -1,47 +1,56 @@
 package com.lovetropics.minigames.client.lobby.manage;
 
+import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.client.lobby.manage.state.update.ServerLobbyUpdate;
 import com.lovetropics.minigames.common.core.game.IGameManager;
 import com.lovetropics.minigames.common.core.game.lobby.IGameLobby;
 import com.lovetropics.minigames.common.core.game.lobby.ILobbyManagement;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraftforge.network.NetworkEvent;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
 
-import java.util.function.Supplier;
+import java.util.Optional;
 
-public record ServerManageLobbyMessage(int id, ServerLobbyUpdate.Set updates) {
+public record ServerManageLobbyMessage(int id, Optional<ServerLobbyUpdate.Set> updates) implements CustomPacketPayload {
+	public static final Type<ServerManageLobbyMessage> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(Constants.MODID, "server_manage_lobby"));
+
+	public static final StreamCodec<RegistryFriendlyByteBuf, ServerManageLobbyMessage> STREAM_CODEC = StreamCodec.composite(
+			ByteBufCodecs.VAR_INT, ServerManageLobbyMessage::id,
+			ServerLobbyUpdate.Set.STREAM_CODEC.apply(ByteBufCodecs::optional), ServerManageLobbyMessage::updates,
+			ServerManageLobbyMessage::new
+	);
+
 	public static ServerManageLobbyMessage update(int id, ServerLobbyUpdate.Set updates) {
-		return new ServerManageLobbyMessage(id, updates);
+		return new ServerManageLobbyMessage(id, Optional.of(updates));
 	}
 
 	public static ServerManageLobbyMessage stop(int id) {
-		return new ServerManageLobbyMessage(id, null);
+		return new ServerManageLobbyMessage(id, Optional.empty());
 	}
 
-	public void encode(FriendlyByteBuf buffer) {
-		buffer.writeVarInt(id);
-		buffer.writeNullable(updates, (b, u) -> u.encode(b));
-	}
-
-	public static ServerManageLobbyMessage decode(FriendlyByteBuf buffer) {
-		int id = buffer.readVarInt();
-		ServerLobbyUpdate.Set updates = buffer.readNullable(ServerLobbyUpdate.Set::decode);
-		return new ServerManageLobbyMessage(id, updates);
-	}
-
-	public void handle(Supplier<NetworkEvent.Context> ctx) {
-		IGameLobby lobby = IGameManager.get().getLobbyByNetworkId(id);
-		ServerPlayer player = ctx.get().getSender();
-		if (lobby == null || player == null) return;
+	public static void handle(ServerManageLobbyMessage message, IPayloadContext context) {
+		IGameLobby lobby = IGameManager.get().getLobbyByNetworkId(message.id);
+		ServerPlayer player = (ServerPlayer) context.player();
+		if (lobby == null) {
+            return;
+        }
 
 		ILobbyManagement management = lobby.getManagement();
-		if (updates != null) {
+		if (message.updates.isPresent()) {
 			if (management.canManage(player.createCommandSourceStack())) {
-				updates.applyTo(management);
+				message.updates.get().applyTo(management);
 			}
 		} else {
 			management.stopManaging(player);
 		}
+	}
+
+	@Override
+	public Type<ServerManageLobbyMessage> type() {
+		return TYPE;
 	}
 }

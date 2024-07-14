@@ -4,24 +4,24 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.lovetropics.lib.BlockBox;
 import com.lovetropics.minigames.common.core.map.MapRegions;
-import com.lovetropics.minigames.common.core.network.LoveTropicsNetwork;
 import com.lovetropics.minigames.common.core.network.workspace.AddWorkspaceRegionMessage;
 import com.lovetropics.minigames.common.core.network.workspace.SetWorkspaceMessage;
 import com.lovetropics.minigames.common.core.network.workspace.UpdateWorkspaceRegionMessage;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.network.PacketDistributor;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.Optional;
 import java.util.Set;
 
 public final class WorkspaceRegions implements Iterable<WorkspaceRegions.Entry> {
@@ -50,71 +50,47 @@ public final class WorkspaceRegions implements Iterable<WorkspaceRegions.Entry> 
 		return new SetWorkspaceMessage(this);
 	}
 
-	private <T> void sendPlayerMessage(T message, ServerPlayer player) {
-		LoveTropicsNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), message);
+	private <T extends CustomPacketPayload> void sendPlayerMessage(T message, ServerPlayer player) {
+		PacketDistributor.sendToPlayer(player, message);
 	}
 
-	private <T> void sendMessage(T message) {
-		LoveTropicsNetwork.CHANNEL.send(PacketDistributor.DIMENSION.with(() -> dimension), message);
+	private <T extends CustomPacketPayload> void sendMessage(MinecraftServer server, T message) {
+		ServerLevel level = server.getLevel(dimension);
+		if (level != null) {
+			PacketDistributor.sendToPlayersInDimension(level, message);
+		}
 	}
 
-	public void add(String key, BlockBox region) {
-		add(nextId(), key, region);
+	public void add(@Nullable MinecraftServer server, String key, BlockBox region) {
+		add(server, nextId(), key, region);
 	}
 
-	public void add(int id, String key, BlockBox region) {
-		add(new Entry(id, key, region));
+	public void add(@Nullable MinecraftServer server, int id, String key, BlockBox region) {
+		add(server, new Entry(id, key, region));
 	}
 
-	void add(Entry entry) {
+	void add(@Nullable MinecraftServer server, Entry entry) {
 		entries.put(entry.id, entry);
-		sendMessage(new AddWorkspaceRegionMessage(entry.id, entry.key, entry.region));
+		if (server != null) {
+			sendMessage(server, new AddWorkspaceRegionMessage(entry.id, entry.key, entry.region));
+		}
 	}
 
-	public void set(int id, @Nullable BlockBox region) {
+	public void set(MinecraftServer server, int id, @Nullable BlockBox region) {
 		if (region != null) {
 			WorkspaceRegions.Entry entry = entries.get(id);
 			if (entry != null) {
 				entry.region = region;
-				sendMessage(new UpdateWorkspaceRegionMessage(id, region));
+				sendMessage(server, new UpdateWorkspaceRegionMessage(id, Optional.of(region)));
 			}
 		} else {
 			entries.remove(id);
-			sendMessage(new UpdateWorkspaceRegionMessage(id, null));
+			sendMessage(server, new UpdateWorkspaceRegionMessage(id, Optional.empty()));
 		}
 	}
 
 	public boolean isEmpty() {
 		return entries.isEmpty();
-	}
-
-	public CompoundTag write(CompoundTag root) {
-		Multimap<String, Entry> byKey = groupedByKey();
-
-		for (String key : byKey.keySet()) {
-			Collection<Entry> entries = byKey.get(key);
-
-			ListTag regionsList = new ListTag();
-			for (Entry entry : entries) {
-				regionsList.add(entry.region.write(new CompoundTag()));
-			}
-
-			root.put(key, regionsList);
-		}
-
-		return root;
-	}
-
-	public void read(CompoundTag root) {
-		this.entries.clear();
-
-		for (String key : root.getAllKeys()) {
-			ListTag regionsList = root.getList(key, Tag.TAG_COMPOUND);
-			for (int i = 0; i < regionsList.size(); i++) {
-				BlockBox region = BlockBox.read(regionsList.getCompound(i));
-				this.add(key, region);
-			}
-		}
 	}
 
 	public void write(FriendlyByteBuf buffer) {
@@ -131,7 +107,7 @@ public final class WorkspaceRegions implements Iterable<WorkspaceRegions.Entry> 
 
 			for (Entry entry : entries) {
 				buffer.writeVarInt(entry.id);
-				entry.region.write(buffer);
+				BlockBox.STREAM_CODEC.encode(buffer, entry.region);
 			}
 		}
 	}
@@ -162,7 +138,7 @@ public final class WorkspaceRegions implements Iterable<WorkspaceRegions.Entry> 
 		entries.clear();
 		for (String key : regions.keySet()) {
 			for (BlockBox region : regions.get(key)) {
-				add(key, region);
+				add(null, key, region);
 			}
 		}
 	}

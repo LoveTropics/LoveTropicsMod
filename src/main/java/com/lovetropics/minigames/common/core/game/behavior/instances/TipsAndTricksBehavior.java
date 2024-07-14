@@ -9,7 +9,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.network.chat.Component;
-import net.minecraft.util.ExtraCodecs;
+import net.minecraft.network.chat.ComponentSerialization;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -17,7 +17,7 @@ import java.util.List;
 
 public final class TipsAndTricksBehavior implements IGameBehavior {
     public static final MapCodec<TipsAndTricksBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
-            ExtraCodecs.COMPONENT.listOf().fieldOf("texts").forGetter(b -> b.texts),
+            ComponentSerialization.CODEC.listOf().fieldOf("texts").forGetter(b -> b.texts),
             Codec.INT.fieldOf("time_between_tips").forGetter(b -> b.timeBetweenTips)
     ).apply(i, TipsAndTricksBehavior::new));
 

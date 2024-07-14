@@ -8,16 +8,18 @@ import com.lovetropics.minigames.common.core.game.behavior.event.GameActionEvent
 import com.lovetropics.minigames.common.util.Util;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.loot.LootParams;
+import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 
-public record GiveLootAction(ResourceLocation lootTable) implements IGameBehavior {
+public record GiveLootAction(ResourceKey<LootTable> lootTable) implements IGameBehavior {
 	public static final MapCodec<GiveLootAction> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
-			ResourceLocation.CODEC.fieldOf("loot_table").forGetter(c -> c.lootTable)
+			ResourceKey.codec(Registries.LOOT_TABLE).fieldOf("loot_table").forGetter(c -> c.lootTable)
 	).apply(i, GiveLootAction::new));
 
 	@Override
@@ -33,7 +35,7 @@ public record GiveLootAction(ResourceLocation lootTable) implements IGameBehavio
 				.create(LootContextParamSets.GIFT);
 
 		boolean changed = false;
-		for (ItemStack stack : player.server.getLootData().getLootTable(lootTable).getRandomItems(params)) {
+		for (ItemStack stack : player.server.reloadableRegistries().getLootTable(lootTable).getRandomItems(params)) {
 			if (Util.addItemStackToInventory(player, stack)) {
 				changed = true;
 			}

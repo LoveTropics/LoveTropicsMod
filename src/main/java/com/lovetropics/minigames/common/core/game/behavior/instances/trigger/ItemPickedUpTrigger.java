@@ -9,7 +9,6 @@ import com.lovetropics.minigames.common.core.game.behavior.action.GameActionList
 import com.lovetropics.minigames.common.core.game.behavior.action.GameActionParameter;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
-import com.lovetropics.minigames.common.util.Codecs;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -18,11 +17,12 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.item.ItemStack;
 
+import java.util.Optional;
 import java.util.function.Supplier;
 
-public record ItemPickedUpTrigger(ItemPredicate itemPredicate, GameActionList<ServerPlayer> action, boolean consume) implements IGameBehavior {
+public record ItemPickedUpTrigger(Optional<ItemPredicate> itemPredicate, GameActionList<ServerPlayer> action, boolean consume) implements IGameBehavior {
 	public static final MapCodec<ItemPickedUpTrigger> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
-			Codecs.ITEM_PREDICATE.optionalFieldOf("item", ItemPredicate.ANY).forGetter(ItemPickedUpTrigger::itemPredicate),
+			ItemPredicate.CODEC.optionalFieldOf("item").forGetter(ItemPickedUpTrigger::itemPredicate),
 			GameActionList.PLAYER_CODEC.fieldOf("action").forGetter(ItemPickedUpTrigger::action),
 			Codec.BOOL.optionalFieldOf("consume", false).forGetter(ItemPickedUpTrigger::consume)
 	).apply(i, ItemPickedUpTrigger::new));
@@ -33,7 +33,7 @@ public record ItemPickedUpTrigger(ItemPredicate itemPredicate, GameActionList<Se
 
 		events.listen(GamePlayerEvents.PICK_UP_ITEM, (player, item) -> {
 			final ItemStack stack = item.getItem();
-			if (itemPredicate.matches(stack)) {
+			if (itemPredicate.isPresent() && itemPredicate.get().test(stack)) {
 				final GameActionContext context = GameActionContext.builder()
 						.set(GameActionParameter.ITEM, stack)
 						.set(GameActionParameter.COUNT, stack.getCount())

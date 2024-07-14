@@ -23,9 +23,9 @@ import net.minecraft.resources.FileToIdConverter;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
-import net.minecraftforge.event.AddReloadListenerEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.event.AddReloadListenerEvent;
 import org.apache.commons.lang3.mutable.MutableObject;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -43,7 +43,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 // TODO: Replace with a dynamic registry - currently blocked by not being able to /reload those
-@Mod.EventBusSubscriber(modid = Constants.MODID)
+@EventBusSubscriber(modid = Constants.MODID)
 public final class GameConfigs {
 	private static final Logger LOGGER = LogManager.getLogger(GameConfigs.class);
 
@@ -89,11 +89,10 @@ public final class GameConfigs {
 	@Nullable
 	private static GameConfig tryLoadConfig(DynamicOps<JsonElement> ops, ResourceLocation path, Resource resource) {
 		try {
-			DataResult<GameConfig> config = loadConfig(ops, path, resource);
-			if (config.error().isPresent()) {
-				LOGGER.error("Failed to load game config at {}: {}", path, config.error().get());
-			}
-			return config.result().orElse(null);
+			// TODO: Mark games that had only a partial result with a warning in the UI?
+            return loadConfig(ops, path, resource)
+					.resultOrPartial(error -> LOGGER.error("Failed to load game config at {}: {}", path, error))
+					.orElse(null);
 		} catch (Exception e) {
 			LOGGER.error("Failed to load game config at {}", path, e);
 			return null;

@@ -19,8 +19,6 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
-import org.joml.Matrix3f;
-import org.joml.Matrix4f;
 
 import javax.annotation.Nullable;
 import java.lang.ref.WeakReference;
@@ -46,15 +44,12 @@ public class MobItemRenderer extends BlockEntityWithoutLevelRenderer {
 	}
 
 	private static void addVertex(final VertexConsumer consumer, final PoseStack.Pose pose, final float x, final float y, final float u, final float v, final int packedLight, int packedOverlay) {
-		final Matrix4f matrix = pose.pose();
-		final Matrix3f normal = pose.normal();
-		consumer.vertex(matrix, x, y, 100.0f)
-				.color(1.0f, 1.0f, 1.0f, 1.0f)
-				.uv(u, v)
-				.overlayCoords(packedOverlay)
-				.uv2(packedLight)
-				.normal(normal, 0.0f, 1.0f, 0.0f)
-				.endVertex();
+		consumer.addVertex(pose, x, y, 100.0f)
+				.setColor(1.0f, 1.0f, 1.0f, 1.0f)
+				.setUv(u, v)
+				.setOverlay(packedOverlay)
+				.setLight(packedLight)
+				.setNormal(pose, 0.0f, 1.0f, 0.0f);
 	}
 
 	private void drawInventorySprite(final PoseStack poseStack, final MultiBufferSource bufferSource, final int packedLight, final int packedOverlay) {

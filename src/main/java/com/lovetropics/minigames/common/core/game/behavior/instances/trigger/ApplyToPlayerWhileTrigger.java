@@ -8,7 +8,6 @@ import com.lovetropics.minigames.common.core.game.behavior.action.GameActionCont
 import com.lovetropics.minigames.common.core.game.behavior.action.GameActionList;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
-import com.lovetropics.minigames.common.util.Codecs;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
@@ -21,7 +20,7 @@ import java.util.function.Supplier;
 
 public record ApplyToPlayerWhileTrigger(EntityPredicate predicate, GameActionList<ServerPlayer> apply, GameActionList<ServerPlayer> clear) implements IGameBehavior {
 	public static final MapCodec<ApplyToPlayerWhileTrigger> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
-			Codecs.ENTITY_PREDICATE.fieldOf("predicate").forGetter(ApplyToPlayerWhileTrigger::predicate),
+			EntityPredicate.CODEC.fieldOf("predicate").forGetter(ApplyToPlayerWhileTrigger::predicate),
 			GameActionList.PLAYER_CODEC.fieldOf("apply").forGetter(ApplyToPlayerWhileTrigger::apply),
 			GameActionList.PLAYER_CODEC.fieldOf("clear").forGetter(ApplyToPlayerWhileTrigger::clear)
 	).apply(i, ApplyToPlayerWhileTrigger::new));

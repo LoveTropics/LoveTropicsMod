@@ -5,8 +5,8 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.client.resources.DefaultPlayerSkin;
+import net.minecraft.client.resources.PlayerSkin;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 
 import javax.annotation.Nullable;
 import java.util.UUID;
@@ -31,9 +31,9 @@ public final class ClientPlayerInfo {
 		}
 	}
 
-	public static ResourceLocation getSkin(UUID uuid) {
+	public static PlayerSkin getSkin(UUID uuid) {
 		PlayerInfo info = get(uuid);
-		return info != null ? info.getSkinLocation() : DefaultPlayerSkin.getDefaultSkin(uuid);
+		return info != null ? info.getSkin() : DefaultPlayerSkin.get(uuid);
 	}
 
 	@Nullable

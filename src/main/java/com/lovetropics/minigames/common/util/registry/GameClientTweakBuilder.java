@@ -3,15 +3,15 @@ package com.lovetropics.minigames.common.util.registry;
 import com.lovetropics.minigames.common.core.game.client_state.GameClientState;
 import com.lovetropics.minigames.common.core.game.client_state.GameClientStateType;
 import com.lovetropics.minigames.common.core.game.client_state.GameClientStateTypes;
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.tterrag.registrate.builders.AbstractBuilder;
 import com.tterrag.registrate.builders.BuilderCallback;
-import net.minecraftforge.registries.RegistryObject;
+import net.neoforged.neoforge.registries.DeferredHolder;
 
 public final class GameClientTweakBuilder<T extends GameClientState, P> extends AbstractBuilder<GameClientStateType<?>, GameClientStateType<T>, P, GameClientTweakBuilder<T, P>> {
-	private final Codec<T> codec;
+	private final MapCodec<T> codec;
 
-	public GameClientTweakBuilder(LoveTropicsRegistrate owner, P parent, String name, BuilderCallback callback, Codec<T> codec) {
+	public GameClientTweakBuilder(LoveTropicsRegistrate owner, P parent, String name, BuilderCallback callback, MapCodec<T> codec) {
 		super(owner, parent, name, callback, GameClientStateTypes.REGISTRY_KEY);
 		this.codec = codec;
 	}
@@ -22,7 +22,7 @@ public final class GameClientTweakBuilder<T extends GameClientState, P> extends 
 	}
 
 	@Override
-	protected GameClientTweakEntry<T> createEntryWrapper(RegistryObject<GameClientStateType<T>> delegate) {
+	protected GameClientTweakEntry<T> createEntryWrapper(DeferredHolder<GameClientStateType<?>, GameClientStateType<T>> delegate) {
 		return new GameClientTweakEntry<>(getOwner(), delegate);
 	}
 

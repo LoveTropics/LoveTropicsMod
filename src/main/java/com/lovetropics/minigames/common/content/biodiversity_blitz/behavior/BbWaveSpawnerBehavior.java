@@ -18,13 +18,12 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.Object2FloatMap;
-import net.minecraft.Util;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.server.level.ServerBossEvent;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.BossEvent;
@@ -32,8 +31,13 @@ import net.minecraft.world.BossEvent.BossBarColor;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.entity.Entity;
 
-import java.util.*;
-import java.util.concurrent.ThreadLocalRandom;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 
 public final class BbWaveSpawnerBehavior implements IGameBehavior {
 	public static final MapCodec<BbWaveSpawnerBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
@@ -42,7 +46,7 @@ public final class BbWaveSpawnerBehavior implements IGameBehavior {
 			SizeCurve.CODEC.fieldOf("size_curve").forGetter(c -> c.sizeCurve),
 			Codec.BOOL.fieldOf("size_curve_always").orElse(false).forGetter(c -> c.sizeCurveAlways),
 			MoreCodecs.object2Float(Difficulty.CODEC).fieldOf("difficulty_factors").forGetter(c -> c.difficultyFactors),
-			ExtraCodecs.COMPONENT.optionalFieldOf("first_message", CommonComponents.EMPTY).forGetter(c -> c.firstMessage),
+			ComponentSerialization.CODEC.optionalFieldOf("first_message", CommonComponents.EMPTY).forGetter(c -> c.firstMessage),
 			IGameBehavior.CODEC.listOf().optionalFieldOf("children", List.of()).forGetter(c -> c.children)
 	).apply(i, BbWaveSpawnerBehavior::new));
 

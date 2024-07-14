@@ -35,7 +35,7 @@ public abstract class AgingPlantBehavior implements IGameBehavior {
 
                     if (state != agedState) {
                         for (BlockPos plantPos : plant.coverage()) {
-                            world.levelEvent(LevelEvent.PARTICLES_PLANT_GROWTH, plantPos, 0);
+                            world.levelEvent(LevelEvent.PARTICLES_AND_SOUND_PLANT_GROWTH, plantPos, 0);
                         }
 
                         world.setBlockAndUpdate(pos, agedState);

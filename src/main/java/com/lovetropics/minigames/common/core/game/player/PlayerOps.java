@@ -1,11 +1,11 @@
 package com.lovetropics.minigames.common.core.game.player;
 
-import net.minecraft.network.protocol.Packet;
-import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.sounds.SoundSource;
-import net.minecraft.sounds.SoundEvent;
 import net.minecraft.network.chat.Component;
-import net.minecraftforge.network.simple.SimpleChannel;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.effect.MobEffectInstance;
 
 public interface PlayerOps {
 	PlayerOps EMPTY = new PlayerOps() {
@@ -26,7 +26,7 @@ public interface PlayerOps {
 		}
 
 		@Override
-		public void sendPacket(SimpleChannel channel, Object message) {
+		public void sendPacket(CustomPacketPayload message) {
 		}
 	};
 
@@ -42,5 +42,5 @@ public interface PlayerOps {
 
 	void sendPacket(Packet<?> packet);
 
-	void sendPacket(SimpleChannel channel, Object message);
+	void sendPacket(CustomPacketPayload message);
 }

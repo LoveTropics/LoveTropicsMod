@@ -54,7 +54,7 @@ public class ClientLobbyState {
 
 	public LobbyStatus getStatus() {
 		if (currentGame != null) {
-			if (currentGame.error() != null) {
+			if (currentGame.error().isPresent()) {
 				return LobbyStatus.PAUSED;
 			}
 			return switch (currentGame.phase()) {

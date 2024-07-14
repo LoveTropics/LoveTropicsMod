@@ -1,27 +1,31 @@
 package com.lovetropics.minigames.common.core.network.workspace;
 
 import com.lovetropics.lib.BlockBox;
+import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.client.map.ClientMapWorkspace;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraftforge.network.NetworkEvent;
+import io.netty.buffer.ByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
 
-import java.util.function.Supplier;
+public record AddWorkspaceRegionMessage(int id, String key, BlockBox region) implements CustomPacketPayload {
+	public static final CustomPacketPayload.Type<AddWorkspaceRegionMessage> TYPE = new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath(Constants.MODID, "add_workspace_region"));
 
-public record AddWorkspaceRegionMessage(int id, String key, BlockBox region) {
-	public void encode(FriendlyByteBuf buffer) {
-		buffer.writeVarInt(id);
-		buffer.writeUtf(key, 64);
-		region.write(buffer);
+	public static StreamCodec<ByteBuf, AddWorkspaceRegionMessage> STREAM_CODEC = StreamCodec.composite(
+			ByteBufCodecs.VAR_INT, AddWorkspaceRegionMessage::id,
+			ByteBufCodecs.stringUtf8(64), AddWorkspaceRegionMessage::key,
+			BlockBox.STREAM_CODEC, AddWorkspaceRegionMessage::region,
+			AddWorkspaceRegionMessage::new
+	);
+
+	public static void handle(AddWorkspaceRegionMessage message, IPayloadContext context) {
+		ClientMapWorkspace.INSTANCE.addRegion(message.id, message.key, message.region);
 	}
 
-	public static AddWorkspaceRegionMessage decode(FriendlyByteBuf buffer) {
-		int id = buffer.readVarInt();
-		String key = buffer.readUtf(64);
-		BlockBox region = BlockBox.read(buffer);
-		return new AddWorkspaceRegionMessage(id, key, region);
-	}
-
-	public void handle(Supplier<NetworkEvent.Context> ctx) {
-		ClientMapWorkspace.INSTANCE.addRegion(id, key, region);
+	@Override
+	public Type<AddWorkspaceRegionMessage> type() {
+		return TYPE;
 	}
 }

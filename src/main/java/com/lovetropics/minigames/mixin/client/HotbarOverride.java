@@ -11,17 +11,17 @@ import org.spongepowered.asm.mixin.injection.ModifyArg;
 
 @Mixin(Gui.class)
 public class HotbarOverride {
-	private static final ResourceLocation WIDGETS_LOCATION = new ResourceLocation("textures/gui/widgets.png");
+	private static final ResourceLocation HOTBAR_SPRITE = ResourceLocation.withDefaultNamespace("hud/hotbar");
 
 	@ModifyArg(
-			method = "renderHotbar",
+			method = "renderItemHotbar",
 			at = @At(
 					value = "INVOKE",
-					target = "Lnet/minecraft/client/gui/GuiGraphics;blit(Lnet/minecraft/resources/ResourceLocation;IIIIII)V"),
+					target = "Lnet/minecraft/client/gui/GuiGraphics;blitSprite(Lnet/minecraft/resources/ResourceLocation;IIII)V"),
 			index = 0)
-	public ResourceLocation getHotbarTexture(ResourceLocation loc) {
-		if (!loc.equals(WIDGETS_LOCATION)) {
-			return loc;
+	public ResourceLocation getHotbarTexture(ResourceLocation sprite) {
+		if (!sprite.equals(HOTBAR_SPRITE)) {
+			return sprite;
 		}
 		ReplaceTexturesClientState textures = ClientGameStateManager.getOrNull(GameClientStateTypes.REPLACE_TEXTURES);
 		if (textures != null) {
@@ -30,6 +30,6 @@ public class HotbarOverride {
 				return hotbar;
 			}
 		}
-		return loc;
+		return sprite;
 	}
 }

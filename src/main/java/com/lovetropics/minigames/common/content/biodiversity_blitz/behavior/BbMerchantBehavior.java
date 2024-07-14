@@ -19,11 +19,12 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
@@ -31,10 +32,10 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.trading.ItemCost;
 import net.minecraft.world.item.trading.MerchantOffer;
 import net.minecraft.world.item.trading.MerchantOffers;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.registries.ForgeRegistries;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -45,8 +46,8 @@ import java.util.function.Function;
 public final class BbMerchantBehavior implements IGameBehavior {
 	public static final MapCodec<BbMerchantBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			Codec.STRING.fieldOf("plot_region").forGetter(c -> c.plotRegion),
-			ForgeRegistries.ENTITY_TYPES.getCodec().fieldOf("entity").forGetter(c -> c.entity),
-			ExtraCodecs.COMPONENT.optionalFieldOf("name", CommonComponents.EMPTY).forGetter(c -> c.name),
+			BuiltInRegistries.ENTITY_TYPE.byNameCodec().fieldOf("entity").forGetter(c -> c.entity),
+			ComponentSerialization.CODEC.optionalFieldOf("name", CommonComponents.EMPTY).forGetter(c -> c.name),
 			Offer.CODEC.listOf().fieldOf("offers").forGetter(c -> c.offers)
 	).apply(i, BbMerchantBehavior::new));
 
@@ -95,7 +96,7 @@ public final class BbMerchantBehavior implements IGameBehavior {
 		world.addFreshEntity(merchant);
 
 		if (merchant instanceof Mob mob) {
-			mob.finalizeSpawn(world, world.getCurrentDifficultyAt(BlockPos.containing(center)), MobSpawnType.MOB_SUMMONED, null, null);
+			mob.finalizeSpawn(world, world.getCurrentDifficultyAt(BlockPos.containing(center)), MobSpawnType.MOB_SUMMONED, null);
 			mob.setNoAi(true);
 			mob.setBaby(false);
 			mob.setInvulnerable(true);
@@ -139,14 +140,14 @@ public final class BbMerchantBehavior implements IGameBehavior {
 
 	public static final class Offer {
 		public static final Codec<Offer> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-				MoreCodecs.ITEM_STACK.fieldOf("input").forGetter(c -> c.input),
+				ItemCost.CODEC.fieldOf("input").forGetter(c -> c.input),
 				Output.CODEC.fieldOf("output").forGetter(c -> c.output)
 		).apply(instance, Offer::new));
 
-		private final ItemStack input;
+		private final ItemCost input;
 		private final Output output;
 
-		public Offer(ItemStack input, Output output) {
+		public Offer(ItemCost input, Output output) {
 			this.input = input;
 			this.output = output;
 		}

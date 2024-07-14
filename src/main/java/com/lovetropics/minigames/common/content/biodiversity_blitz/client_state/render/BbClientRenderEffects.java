@@ -9,21 +9,19 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.CommonColors;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
-import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
+import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
 
-@Mod.EventBusSubscriber(modid = Constants.MODID, value = Dist.CLIENT)
 public final class BbClientRenderEffects {
 	private static final Minecraft CLIENT = Minecraft.getInstance();
 	private static final int PADDING = 2;
 
 	private static final int ITEM_SIZE = 16;
 
-	public static void registerOverlays(RegisterGuiOverlaysEvent event) {
-		event.registerBelow(VanillaGuiOverlay.DEBUG_TEXT.id(), "biodiversity_blitz", (gui, graphics, partialTick, screenWidth, screenHeight) -> {
+	public static void registerOverlays(RegisterGuiLayersEvent event) {
+		event.registerBelow(VanillaGuiLayers.DEBUG_OVERLAY, ResourceLocation.fromNamespaceAndPath(Constants.MODID, "biodiversity_blitz"), (graphics, deltaTracker) -> {
 			ClientBbSelfState selfState = ClientGameStateManager.getOrNull(BiodiversityBlitz.SELF_STATE);
 			if (selfState != null) {
 				CurrencyTargetState currencyTarget = ClientGameStateManager.getOrNull(BiodiversityBlitz.CURRENCY_TARGET);

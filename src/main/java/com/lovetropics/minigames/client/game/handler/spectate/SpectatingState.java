@@ -1,6 +1,5 @@
 package com.lovetropics.minigames.client.game.handler.spectate;
 
-import com.lovetropics.minigames.common.core.network.LoveTropicsNetwork;
 import com.lovetropics.minigames.common.core.network.SpectatePlayerAndTeleportMessage;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.Camera;
@@ -10,7 +9,8 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraftforge.client.event.ViewportEvent;
+import net.neoforged.neoforge.client.event.ViewportEvent;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 import java.util.UUID;
 import java.util.function.BooleanSupplier;
@@ -42,7 +42,7 @@ interface SpectatingState {
 			client.options.setCameraType(CameraType.FIRST_PERSON);
 
 			return new StateApplicator(
-					() -> LoveTropicsNetwork.CHANNEL.sendToServer(new SpectatePlayerAndTeleportMessage(client.player.getUUID())),
+					() -> PacketDistributor.sendToServer(new SpectatePlayerAndTeleportMessage(client.player.getUUID())),
 					() -> client.getCameraEntity() == client.player
 			);
 		}
@@ -75,7 +75,7 @@ interface SpectatingState {
 		@Override
 		public StateApplicator apply(Minecraft client, SpectatingSession session) {
 			return new StateApplicator(
-					() -> LoveTropicsNetwork.CHANNEL.sendToServer(new SpectatePlayerAndTeleportMessage(spectatedId)),
+					() -> PacketDistributor.sendToServer(new SpectatePlayerAndTeleportMessage(spectatedId)),
 					() -> spectatedId.equals(client.getCameraEntity().getUUID())
 			);
 		}
@@ -142,8 +142,8 @@ interface SpectatingState {
 						Mth.lerp(partialTicks, focusEntity.zo, focusEntity.getZ())
 				);
 
-				double distance = zoom * ClientSpectatingManager.MAX_CHASE_DISTANCE;
-				camera.move(-camera.getMaxZoom(distance), 0.0, 0.0);
+				float distance = (float) (zoom * ClientSpectatingManager.MAX_CHASE_DISTANCE);
+				camera.move(-camera.getMaxZoom(distance), 0.0f, 0.0f);
 			}
 		}
 

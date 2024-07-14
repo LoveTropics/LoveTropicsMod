@@ -10,23 +10,22 @@ import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.common.config.ConfigLT;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import net.minecraft.server.MinecraftServer;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.server.ServerLifecycleHooks;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.event.tick.ServerTickEvent;
+import net.neoforged.neoforge.server.ServerLifecycleHooks;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import javax.annotation.Nullable;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
-@Mod.EventBusSubscriber(modid = Constants.MODID)
+@EventBusSubscriber(modid = Constants.MODID)
 public final class BackendIntegrations {
 	private static final Supplier<BackendIntegrations> INSTANCE = Suppliers.memoize(BackendIntegrations::new);
 
@@ -90,16 +89,12 @@ public final class BackendIntegrations {
 	}
 
 	@SubscribeEvent
-	public static void tick(TickEvent.ServerTickEvent event) {
+	public static void tick(ServerTickEvent.Post event) {
 		final MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
-		if (server == null) {
-			return;
-		}
-
-		if (event.phase == TickEvent.Phase.END) {
-			get().tick(server);
-		}
-	}
+        if (server != null) {
+            get().tick(server);
+        }
+    }
 
 	private void tick(MinecraftServer server) {
 		proxy.tick();

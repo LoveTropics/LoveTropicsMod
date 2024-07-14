@@ -80,8 +80,8 @@ public final class GameQueueList extends AbstractGameList {
 		MutableComponent gameName = game.definition().name.copy().withStyle(ChatFormatting.UNDERLINE);
 		entry.setTitle(Component.literal("\u25B6 ").append(gameName));
 
-		if (game.error() != null) {
-			entry.setSubtitle(Component.literal("\u26A0 ").append(game.error().copy().withStyle(ChatFormatting.RED)));
+		if (game.error().isPresent()) {
+			entry.setSubtitle(Component.literal("\u26A0 ").append(game.error().get().copy().withStyle(ChatFormatting.RED)));
 
 			entry.setBackgroundColor(0xFF201010)
 					.setHoveredColor(0xFF402020)

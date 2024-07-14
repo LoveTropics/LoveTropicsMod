@@ -6,22 +6,22 @@ import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.common.core.map.workspace.ClientWorkspaceRegions;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.core.Direction;
-import net.minecraft.world.phys.AABB;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
 
 import javax.annotation.Nullable;
 import java.util.Set;
 import java.util.function.Function;
 
-@Mod.EventBusSubscriber(modid = Constants.MODID, value = Dist.CLIENT)
+@EventBusSubscriber(modid = Constants.MODID, value = Dist.CLIENT)
 public final class MapWorkspaceTracer {
 	private static final Minecraft CLIENT = Minecraft.getInstance();
 	private static final double TRACE_RANGE = 64.0;
@@ -29,16 +29,12 @@ public final class MapWorkspaceTracer {
 	private static RegionEditOperator edit;
 
 	@SubscribeEvent
-	public static void onClientTick(TickEvent.ClientTickEvent event) {
+	public static void onClientTick(ClientTickEvent.Post event) {
 		LocalPlayer player = CLIENT.player;
-		if (event.phase == TickEvent.Phase.START || player == null) {
-			return;
-		}
-
-		if (edit != null) {
-			edit.update(player);
-		}
-	}
+        if (player != null && edit != null) {
+            edit.update(player);
+        }
+    }
 
 	@Nullable
 	public static RegionTraceTarget trace(Player player) {

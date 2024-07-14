@@ -10,14 +10,12 @@ import com.lovetropics.minigames.common.core.game.state.GameProgressionState;
 import com.lovetropics.minigames.common.core.game.state.ProgressionPeriod;
 import com.lovetropics.minigames.common.core.game.util.GameBossBar;
 import com.lovetropics.minigames.common.core.game.util.GlobalGameWidgets;
-import com.lovetropics.minigames.common.util.Util;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.ChatFormatting;
 import net.minecraft.SharedConstants;
 import net.minecraft.network.chat.Component;
-import net.minecraft.util.ExtraCodecs;
+import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.util.Mth;
 import net.minecraft.world.BossEvent;
 
@@ -101,7 +99,7 @@ public class ProgressBarBehavior implements IGameBehavior {
 
 		public static final Codec<Entry> CODEC = RecordCodecBuilder.create(i -> i.group(
 				ProgressionPeriod.CODEC.fieldOf("period").forGetter(Entry::period),
-				ExtraCodecs.COMPONENT.fieldOf("text").forGetter(Entry::text),
+				ComponentSerialization.CODEC.fieldOf("text").forGetter(Entry::text),
 				BOSS_BAR_COLOR_CODEC.optionalFieldOf("color", BossEvent.BossBarColor.WHITE).forGetter(Entry::color),
 				Codec.BOOL.optionalFieldOf("reversed", false).forGetter(Entry::reversed),
 				Codec.BOOL.optionalFieldOf("include_time", false).forGetter(Entry::includeTime)

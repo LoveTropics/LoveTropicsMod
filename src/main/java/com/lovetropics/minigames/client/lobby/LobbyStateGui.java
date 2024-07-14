@@ -13,20 +13,18 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.CommonColors;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.CustomizeGuiOverlayEvent;
-import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
-import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
-import net.minecraftforge.event.TickEvent.ClientTickEvent;
-import net.minecraftforge.event.TickEvent.Phase;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
-import net.minecraftforge.fml.common.Mod.EventBusSubscriber.Bus;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.neoforge.client.event.CustomizeGuiOverlayEvent;
+import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
+import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
 
-@EventBusSubscriber(modid = Constants.MODID, bus = Bus.FORGE, value = Dist.CLIENT)
+@EventBusSubscriber(modid = Constants.MODID, bus = EventBusSubscriber.Bus.GAME, value = Dist.CLIENT)
 public class LobbyStateGui {
 
 	private static final int PADDING = 2;
@@ -36,15 +34,13 @@ public class LobbyStateGui {
 	private static boolean hasBossBar;
 
 	@SubscribeEvent
-	public static void onKeyInput(ClientTickEvent event) {
-		if (event.phase == Phase.END) {
-			LocalPlayer player = Minecraft.getInstance().player;
-			if (LobbyKeybinds.JOIN.consumeClick()) {
-				player.connection.sendUnsignedCommand("game join");
-			}
-			if (LobbyKeybinds.LEAVE.consumeClick()) {
-				player.connection.sendUnsignedCommand("game leave");
-			}
+	public static void onKeyInput(ClientTickEvent.Post event) {
+		LocalPlayer player = Minecraft.getInstance().player;
+		if (LobbyKeybinds.JOIN.consumeClick()) {
+			player.connection.sendUnsignedCommand("game join");
+		}
+		if (LobbyKeybinds.LEAVE.consumeClick()) {
+			player.connection.sendUnsignedCommand("game leave");
 		}
 	}
 
@@ -53,8 +49,8 @@ public class LobbyStateGui {
 		hasBossBar = true;
 	}
 
-	public static void registerOverlays(RegisterGuiOverlaysEvent event) {
-		event.registerBelow(VanillaGuiOverlay.DEBUG_TEXT.id(), "minigame_lobby", (gui, graphics, partialTick, screenWidth, screenHeight) -> {
+	public static void registerOverlays(RegisterGuiLayersEvent event) {
+		event.registerBelow(VanillaGuiLayers.DEBUG_OVERLAY, ResourceLocation.fromNamespaceAndPath(Constants.MODID, "minigame_lobby"), (graphics, deltaTracker) -> {
 			ClientLobbyState joinedLobby = ClientLobbyManager.getJoined();
 			Collection<ClientLobbyState> lobbies = ClientLobbyManager.getLobbies();
 			if (!lobbies.isEmpty())  {

@@ -34,7 +34,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.FarmBlock;
 import net.minecraft.world.level.block.LevelEvent;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.common.util.FakePlayerFactory;
+import net.neoforged.neoforge.common.util.FakePlayerFactory;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -107,7 +107,7 @@ public class BbTutorialAction implements IGameBehavior {
 
                 game.getWorld().addFreshEntity(entity);
 
-                entity.finalizeSpawn(game.getWorld(), game.getWorld().getCurrentDifficultyAt(pos), MobSpawnType.MOB_SUMMONED, null, null);
+                entity.finalizeSpawn(game.getWorld(), game.getWorld().getCurrentDifficultyAt(pos), MobSpawnType.MOB_SUMMONED, null);
             });
 
             ticks += 240;

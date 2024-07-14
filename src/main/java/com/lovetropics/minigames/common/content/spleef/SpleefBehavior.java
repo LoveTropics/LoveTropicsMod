@@ -20,6 +20,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
@@ -35,7 +36,6 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.List;
 
@@ -48,8 +48,8 @@ public class SpleefBehavior implements IGameBehavior {
             Codec.INT.optionalFieldOf("floors", 0).forGetter(c -> c.floors),
             Codec.INT.optionalFieldOf("break_interval", 40).forGetter(c -> c.breakInterval),
             Codec.INT.optionalFieldOf("break_count", 6).forGetter(c -> c.breakCount),
-            ForgeRegistries.BLOCKS.getCodec().optionalFieldOf("floor_material", Blocks.OBSIDIAN).forGetter(c -> c.floorMaterial),
-            ForgeRegistries.BLOCKS.getCodec().optionalFieldOf("floor_breaking_material", Blocks.PURPLE_CONCRETE).forGetter(c -> c.floorBreakingMaterial),
+            BuiltInRegistries.BLOCK.byNameCodec().optionalFieldOf("floor_material", Blocks.OBSIDIAN).forGetter(c -> c.floorMaterial),
+            BuiltInRegistries.BLOCK.byNameCodec().optionalFieldOf("floor_breaking_material", Blocks.PURPLE_CONCRETE).forGetter(c -> c.floorBreakingMaterial),
             Codec.STRING.optionalFieldOf("flavor_text", "volcano").forGetter(c -> c.flavourText)
     ).apply(i, SpleefBehavior::new));
 
@@ -80,7 +80,7 @@ public class SpleefBehavior implements IGameBehavior {
 
     private GameScheduler scheduler = new GameScheduler();
 
-    private final Style DARK_YELLOW = Style.EMPTY.withColor(TextColor.parseColor("#77A12F"));
+    private final Style DARK_YELLOW = Style.EMPTY.withColor(TextColor.fromRgb(0x77A12F));
 
     // If people jump into the lava now, don't show the eliminated screen
     private boolean gameOver = false;
@@ -113,7 +113,7 @@ public class SpleefBehavior implements IGameBehavior {
 
         this.deathRegion = game.getMapRegions().getOrThrow("death");
 
-        Style style = Style.EMPTY.withColor(TextColor.parseColor("#ACC12F")).withBold(true);
+        Style style = Style.EMPTY.withColor(TextColor.fromRgb(0xACC12F)).withBold(true);
         this.bossBar = this.widgets.openBossBar(MinigameTexts.SPLEEF_TITLE_PREPARE.copy().withStyle(style), BossEvent.BossBarColor.PURPLE, BossEvent.BossBarOverlay.PROGRESS);
 
         for (var floor : this.floorRegions) {
@@ -130,22 +130,22 @@ public class SpleefBehavior implements IGameBehavior {
             }
 
             int tickDelay = 5 * 20;
-            countdownMessage(10, "#176D85", 0.25f, tickDelay);
+            countdownMessage(10, 0x176D85, 0.25f, tickDelay);
 
             tickDelay += 5 * 20;
-            countdownMessage(5, "#176D85", 0.5f, tickDelay);
+            countdownMessage(5, 0x176D85, 0.5f, tickDelay);
 
             tickDelay += 20;
-            countdownMessage(4, "#307B6F", 0.75f, tickDelay);
+            countdownMessage(4, 0x307B6F, 0.75f, tickDelay);
 
             tickDelay += 20;
-            countdownMessage(3, "#48885B", 1f, tickDelay);
+            countdownMessage(3, 0x48885B, 1f, tickDelay);
 
             tickDelay += 20;
-            countdownMessage(2, "#5F9446", 1.25f, tickDelay);
+            countdownMessage(2, 0x5F9446, 1.25f, tickDelay);
 
             tickDelay += 20;
-            countdownMessage(1, "#77A12F", 1.5f, tickDelay);
+            countdownMessage(1, 0x77A12F, 1.5f, tickDelay);
 
             tickDelay += 20;
             this.scheduler.delayedTickEvent("start_game", this::startGame, tickDelay);
@@ -213,7 +213,7 @@ public class SpleefBehavior implements IGameBehavior {
                     }
                 }
 
-                this.game.getAllPlayers().playSound(SoundEvents.RAID_HORN.get(), SoundSource.MASTER, Integer.MAX_VALUE, 0.75f);
+                this.game.getAllPlayers().playSound(SoundEvents.RAID_HORN.value(), SoundSource.MASTER, Integer.MAX_VALUE, 0.75f);
                 this.announceWinner(Component.translatable(getFlavourTextKey("winners"), winnerText));
             }
         } else {
@@ -246,7 +246,7 @@ public class SpleefBehavior implements IGameBehavior {
         this.scheduler.clearAllEvents();
 
         specialMessage(Component.literal("★").withStyle(ChatFormatting.GOLD),
-                winner.withStyle(Style.EMPTY.withColor(TextColor.parseColor("#ACC12F"))));
+                winner.withStyle(Style.EMPTY.withColor(TextColor.fromRgb(0xACC12F))));
 
         this.bossBar.close();
 
@@ -304,7 +304,7 @@ public class SpleefBehavior implements IGameBehavior {
             }
             case 5, 4, 3, 2, 1 -> {
                 this.spleefMessage(Component.literal(Integer.toString(this.progressionTimer)).withStyle(DARK_YELLOW), false);
-                this.game.getAllPlayers().playSound(SoundEvents.NOTE_BLOCK_PLING.get(), SoundSource.MASTER, Integer.MAX_VALUE, 1.75f - (this.progressionTimer * 0.25f));
+                this.game.getAllPlayers().playSound(SoundEvents.NOTE_BLOCK_PLING.value(), SoundSource.MASTER, Integer.MAX_VALUE, 1.75f - (this.progressionTimer * 0.25f));
             }
         }
 
@@ -313,19 +313,19 @@ public class SpleefBehavior implements IGameBehavior {
     }
 
     private void updateForcedProgressionBossbar() {
-        Style style = Style.EMPTY.withColor(TextColor.parseColor("#ACC12F")).withBold(true);
+        Style style = Style.EMPTY.withColor(TextColor.fromRgb(0xACC12F)).withBold(true);
         this.bossBar.setTitle(MinigameTexts.SPLEEF_TITLE_FORCED_PROGRESSION.copy().withStyle(style)
                 .append(Component.literal(Integer.toString(this.progressionTimer)).withStyle(Style.EMPTY.withColor(ChatFormatting.WHITE).withBold(false))));
     }
 
-    private void countdownMessage(int seconds, String hexColor, float soundPitch, int delayTicks) {
+    private void countdownMessage(int seconds, int color, float soundPitch, int delayTicks) {
         this.scheduler.delayedTickEvent("countdown", () -> {
             title(MinigameTexts.SPLEEF_COUNTDOWN_TITLE.apply(
-                                    Component.literal(Integer.toString(seconds)).withStyle(Style.EMPTY.withColor(TextColor.parseColor(hexColor))))
+                                    Component.literal(Integer.toString(seconds)).withStyle(Style.EMPTY.withColor(TextColor.fromRgb(color))))
                             .withStyle(ChatFormatting.GRAY),
                     MinigameTexts.SPLEEF_COUNTDOWN_SUBTITLE.copy().withStyle(ChatFormatting.YELLOW),
                     5, 20, seconds == 1 ? 0 : 5);
-            this.game.getAllPlayers().playSound(SoundEvents.NOTE_BLOCK_BIT.get(), SoundSource.MASTER, Integer.MAX_VALUE, soundPitch);
+            this.game.getAllPlayers().playSound(SoundEvents.NOTE_BLOCK_BIT.value(), SoundSource.MASTER, Integer.MAX_VALUE, soundPitch);
         }, delayTicks);
     }
 

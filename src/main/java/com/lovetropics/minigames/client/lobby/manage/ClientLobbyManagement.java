@@ -14,21 +14,21 @@ import com.lovetropics.minigames.client.lobby.state.ClientGameDefinition;
 import com.lovetropics.minigames.client.lobby.state.ClientLobbyManager;
 import com.lovetropics.minigames.common.core.game.lobby.LobbyControls;
 import com.lovetropics.minigames.common.core.game.lobby.LobbyVisibility;
-import com.lovetropics.minigames.common.core.network.LoveTropicsNetwork;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.IntList;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.function.UnaryOperator;
 
-@Mod.EventBusSubscriber(modid = Constants.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)
+@EventBusSubscriber(modid = Constants.MODID, bus = EventBusSubscriber.Bus.GAME, value = Dist.CLIENT)
 public final class ClientLobbyManagement {
 	private static Session session;
 
@@ -42,17 +42,15 @@ public final class ClientLobbyManagement {
 	}
 
 	@SubscribeEvent
-	public static void onKeyInput(TickEvent.ClientTickEvent event) {
-		if (event.phase == TickEvent.Phase.END) {
-			if (LobbyKeybinds.MANAGE.consumeClick()) {
-				LocalPlayer player = Minecraft.getInstance().player;
-				if (ClientLobbyManager.getJoined() != null) {
-					player.connection.sendUnsignedCommand("game manage");
-				} else {
-					player.connection.sendUnsignedCommand("game create");
-				}
-			}
-		}
+	public static void onKeyInput(ClientTickEvent.Post event) {
+        if (LobbyKeybinds.MANAGE.consumeClick()) {
+            LocalPlayer player = Minecraft.getInstance().player;
+            if (ClientLobbyManager.getJoined() != null) {
+                player.connection.sendUnsignedCommand("game manage");
+            } else {
+                player.connection.sendUnsignedCommand("game create");
+            }
+        }
 	}
 
 	public static final class Session {
@@ -127,11 +125,11 @@ public final class ClientLobbyManagement {
 			set = updates.apply(set);
 
 			ServerManageLobbyMessage message = set.intoMessage(id);
-			LoveTropicsNetwork.CHANNEL.sendToServer(message);
+			PacketDistributor.sendToServer(message);
 		}
 
 		public void close() {
-			LoveTropicsNetwork.CHANNEL.sendToServer(ServerManageLobbyMessage.stop(id));
+			PacketDistributor.sendToServer(ServerManageLobbyMessage.stop(id));
 
 			if (ClientLobbyManagement.session == this) {
 				ClientLobbyManagement.session = null;

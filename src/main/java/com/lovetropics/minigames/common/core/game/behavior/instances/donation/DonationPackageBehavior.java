@@ -1,7 +1,6 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances.donation;
 
 import com.google.common.collect.Lists;
-import com.lovetropics.lib.codec.MoreCodecs;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.action.GameActionContext;
@@ -26,8 +25,8 @@ public final class DonationPackageBehavior implements IGameBehavior {
 
 	public static final MapCodec<DonationPackageBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			DonationPackageData.CODEC.forGetter(c -> c.data),
-			MoreCodecs.strictOptionalFieldOf(DonationPackageNotification.CODEC, "notification").forGetter(c -> c.notification),
-			MoreCodecs.strictOptionalFieldOf(GameActionList.PLAYER_CODEC, "receive_actions", GameActionList.EMPTY).forGetter(c -> c.receiveActions)
+			DonationPackageNotification.CODEC.optionalFieldOf("notification").forGetter(c -> c.notification),
+			GameActionList.PLAYER_CODEC.optionalFieldOf("receive_actions", GameActionList.EMPTY).forGetter(c -> c.receiveActions)
 	).apply(i, DonationPackageBehavior::new));
 
 	private final DonationPackageData data;

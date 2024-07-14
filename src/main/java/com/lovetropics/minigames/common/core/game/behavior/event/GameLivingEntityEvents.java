@@ -10,6 +10,7 @@ import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
@@ -102,6 +103,6 @@ public final class GameLivingEntityEvents {
 	}
 
 	public interface ModifyExplosionKnockback {
-		double getKnockback(LivingEntity entity, Explosion explosion, double knockback, double initialKnockback);
+		Vec3 getKnockback(Entity entity, Explosion explosion, Vec3 velocity, Vec3 initialVelocity);
 	}
 }

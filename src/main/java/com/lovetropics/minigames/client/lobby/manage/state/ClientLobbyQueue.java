@@ -2,8 +2,12 @@ package com.lovetropics.minigames.client.lobby.manage.state;
 
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.Iterators;
-import it.unimi.dsi.fastutil.ints.*;
-import net.minecraft.network.FriendlyByteBuf;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.ints.IntArrayList;
+import it.unimi.dsi.fastutil.ints.IntList;
+import it.unimi.dsi.fastutil.ints.IntListIterator;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -78,7 +82,7 @@ public final class ClientLobbyQueue implements Iterable<ClientLobbyQueuedGame> {
 		};
 	}
 
-	public void encode(FriendlyByteBuf buffer) {
+	public void encode(RegistryFriendlyByteBuf buffer) {
 		buffer.writeVarInt(queue.size());
 
 		queue.forEach((IntConsumer) id -> {
@@ -88,7 +92,7 @@ public final class ClientLobbyQueue implements Iterable<ClientLobbyQueuedGame> {
 		});
 	}
 
-	public static ClientLobbyQueue decode(FriendlyByteBuf buffer) {
+	public static ClientLobbyQueue decode(RegistryFriendlyByteBuf buffer) {
 		ClientLobbyQueue queue = new ClientLobbyQueue();
 
 		int queueSize = buffer.readVarInt();

@@ -88,7 +88,7 @@ public class ActionTriggerTests implements MinigameTest {
     @GameTest
     public void testStartTrigger(final LTGameTestHelper helper) {
         final var player = helper.playerBuilder()
-                .packetFilter(packet -> packet instanceof ClientboundSystemChatPacket sc && sc.content().equals(Component.literal("hello world!")) || packet instanceof ClientboundSoundPacket it && it.getSound().get() == SoundEvents.ALLAY_HURT)
+                .packetFilter(packet -> packet instanceof ClientboundSystemChatPacket sc && sc.content().equals(Component.literal("hello world!")) || packet instanceof ClientboundSoundPacket it && it.getSound().value() == SoundEvents.ALLAY_HURT)
                 .build();
         final var lobby = helper.createGame(player, PlayerRole.PARTICIPANT);
         lobby.enqueue(gameId("start"));
@@ -98,7 +98,7 @@ public class ActionTriggerTests implements MinigameTest {
             .thenIdle(20)
             .thenExecute(() -> helper.assertReceivedPacket(player, 0, ClientboundSystemChatPacket.class, it -> it.content().equals(Component.literal("hello world!"))))
             .thenExecute(() -> lobby.getCurrentPhase().invoker(GameActionEvents.APPLY_TO_PLAYER).apply(GameActionContext.EMPTY, player))
-            .thenExecute(() -> helper.assertReceivedPacket(player, 1, ClientboundSoundPacket.class, it -> it.getSound().get() == SoundEvents.ALLAY_HURT && it.getVolume() == 0.5f && it.getPitch() == 0.5f))
+            .thenExecute(() -> helper.assertReceivedPacket(player, 1, ClientboundSoundPacket.class, it -> it.getSound().value() == SoundEvents.ALLAY_HURT && it.getVolume() == 0.5f && it.getPitch() == 0.5f))
             .thenSucceed();
     }
 
@@ -118,6 +118,6 @@ public class ActionTriggerTests implements MinigameTest {
 
     @Override
     public ResourceLocation id() {
-        return new ResourceLocation("lttest:action_trigger_test");
+        return ResourceLocation.fromNamespaceAndPath("lttest", "action_trigger_test");
     }
 }

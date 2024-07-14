@@ -29,7 +29,7 @@ import java.util.Optional;
 
 public final class SetBlocksAction implements IGameBehavior {
 	public static final MapCodec<SetBlocksAction> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
-			MoreCodecs.BLOCK_PREDICATE.optionalFieldOf("replace").forGetter(c -> Optional.ofNullable(c.replace)),
+			BlockPredicate.CODEC.optionalFieldOf("replace").forGetter(c -> Optional.ofNullable(c.replace)),
 			MoreCodecs.BLOCK_STATE_PROVIDER.fieldOf("set").forGetter(c -> c.set),
 			MoreCodecs.arrayOrUnit(Codec.STRING, String[]::new).optionalFieldOf("region", new String[0]).forGetter(c -> c.regionKeys),
 			Codec.BOOL.optionalFieldOf("notify_neighbors", true).forGetter(c -> c.notifyNeighbors)

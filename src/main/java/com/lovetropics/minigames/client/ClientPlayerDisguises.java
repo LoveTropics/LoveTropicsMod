@@ -21,13 +21,13 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.scores.Team;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.RenderLivingEvent;
-import net.minecraftforge.client.event.ViewportEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.client.event.RenderLivingEvent;
+import net.neoforged.neoforge.client.event.ViewportEvent;
 
-@Mod.EventBusSubscriber(modid = Constants.MODID, value = Dist.CLIENT)
+@EventBusSubscriber(modid = Constants.MODID, value = Dist.CLIENT)
 public final class ClientPlayerDisguises {
     private static final Minecraft CLIENT = Minecraft.getInstance();
     private static final EquipmentSlot[] EQUIPMENT_SLOTS = EquipmentSlot.values();
@@ -139,12 +139,12 @@ public final class ClientPlayerDisguises {
             livingDisguise.hurtTime = entity.hurtTime;
             livingDisguise.hurtDuration = entity.hurtDuration;
             livingDisguise.hurtMarked = entity.hurtMarked;
-        }
 
-        for (final EquipmentSlot slot : EQUIPMENT_SLOTS) {
-            final ItemStack stack = entity.getItemBySlot(slot);
-            if (!stack.is(MinigameItems.DISGUISE.get())) {
-                disguise.setItemSlot(slot, stack);
+            for (final EquipmentSlot slot : EQUIPMENT_SLOTS) {
+                final ItemStack stack = entity.getItemBySlot(slot);
+                if (!stack.is(MinigameItems.DISGUISE.get())) {
+                    livingDisguise.setItemSlot(slot, stack);
+                }
             }
         }
 
@@ -210,7 +210,7 @@ public final class ClientPlayerDisguises {
 
             Vec3 eyePosition = player.getEyePosition((float) event.getPartialTick());
             camera.setPosition(eyePosition.x, eyePosition.y, eyePosition.z);
-            camera.move(-camera.getMaxZoom(4.0 * scale), 0.0, 0.0);
+            camera.move(-camera.getMaxZoom(4.0f * scale), 0.0f, 0.0f);
         }
     }
 }

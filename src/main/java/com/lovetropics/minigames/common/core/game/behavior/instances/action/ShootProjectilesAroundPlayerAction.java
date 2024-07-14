@@ -20,7 +20,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
-import net.minecraftforge.event.ForgeEventFactory;
+import net.neoforged.neoforge.event.EventHooks;
 
 import java.util.Iterator;
 import java.util.UUID;
@@ -114,7 +114,6 @@ public class ShootProjectilesAroundPlayerAction implements IGameBehavior {
 		double deltaX = target.getX() - spawn.getX();
 		double deltaY = target.getY() - spawn.getY();
 		double deltaZ = target.getZ() - spawn.getZ();
-		double distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ);
 
 		LargeFireball fireball = new LargeFireball(EntityType.FIREBALL, world) {
 			@Override
@@ -126,7 +125,7 @@ public class ShootProjectilesAroundPlayerAction implements IGameBehavior {
 				}
 
 				if (!level().isClientSide) {
-					final boolean mobGriefing = ForgeEventFactory.getMobGriefingEvent(level(), getOwner());
+					boolean mobGriefing = EventHooks.canEntityGrief(level(), getOwner());
 					level().explode(null, getX(), getY(), getZ(), explosionStrength, mobGriefing, Level.ExplosionInteraction.MOB);
 					discard();
 				}
@@ -135,9 +134,7 @@ public class ShootProjectilesAroundPlayerAction implements IGameBehavior {
 
 		fireball.moveTo(spawn.getX(), spawn.getY(), spawn.getZ(), fireball.getYRot(), fireball.getXRot());
 		fireball.setPos(spawn.getX(), spawn.getY(), spawn.getZ());
-		fireball.xPower = deltaX / distance * 0.1;
-		fireball.yPower = deltaY / distance * 0.1;
-		fireball.zPower = deltaZ / distance * 0.1;
+		fireball.accelerationPower = 0.1;
 
 		return fireball;
 	}

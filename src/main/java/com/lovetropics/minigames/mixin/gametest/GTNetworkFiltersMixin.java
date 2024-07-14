@@ -1,7 +1,7 @@
 package com.lovetropics.minigames.mixin.gametest;
 
 import net.minecraft.network.Connection;
-import net.minecraftforge.network.filters.NetworkFilters;
+import net.neoforged.neoforge.network.filters.NetworkFilters;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;

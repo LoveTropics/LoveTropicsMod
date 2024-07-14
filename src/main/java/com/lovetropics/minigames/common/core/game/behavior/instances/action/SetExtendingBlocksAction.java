@@ -29,7 +29,7 @@ import java.util.Optional;
 
 public final class SetExtendingBlocksAction implements IGameBehavior {
 	public static final MapCodec<SetExtendingBlocksAction> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
-			MoreCodecs.BLOCK_PREDICATE.optionalFieldOf("replace").forGetter(c -> Optional.ofNullable(c.replace)),
+			BlockPredicate.CODEC.optionalFieldOf("replace").forGetter(c -> Optional.ofNullable(c.replace)),
 			MoreCodecs.BLOCK_STATE_PROVIDER.fieldOf("set").forGetter(c -> c.set),
 			MoreCodecs.stringVariants(Direction.values(), Direction::getName).fieldOf("direction").forGetter(c -> c.direction),
 			MoreCodecs.arrayOrUnit(Codec.STRING, String[]::new).optionalFieldOf("region", new String[0]).forGetter(c -> c.regionKeys),

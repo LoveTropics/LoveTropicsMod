@@ -88,7 +88,7 @@ public final class BbBehavior implements IGameBehavior {
 		events.listen(GameLivingEntityEvents.MOB_DROP, (e, d, r) -> {
 			r.removeIf(i -> !i.getItem().is(BiodiversityBlitz.OSA_POINT.asItem()));
 
-			r.add(new ItemEntity(e.level(), e.getX(), e.getY(), e.getZ(), new ItemStack(BiodiversityBlitz.OSA_POINT, 1)));
+			r.add(new ItemEntity(e.level(), e.getX(), e.getY(), e.getZ(), new ItemStack(BiodiversityBlitz.OSA_POINT.get(), 1)));
 
 			return InteractionResult.PASS;
 		});

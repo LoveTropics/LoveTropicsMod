@@ -4,14 +4,14 @@ import com.lovetropics.lib.BlockBox;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.BiodiversityBlitz;
 import com.lovetropics.minigames.common.core.game.client_state.GameClientState;
 import com.lovetropics.minigames.common.core.game.client_state.GameClientStateType;
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 
 import java.util.List;
 
 public record CheckeredPlotsState(List<BlockBox> plots, BlockBox global) implements GameClientState {
-	public static final Codec<CheckeredPlotsState> CODEC = RecordCodecBuilder.create(i -> i.group(
+	public static final MapCodec<CheckeredPlotsState> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			BlockBox.CODEC.listOf().fieldOf("plots").forGetter(CheckeredPlotsState::plots)
 	).apply(i, CheckeredPlotsState::new));
 
@@ -28,8 +28,8 @@ public record CheckeredPlotsState(List<BlockBox> plots, BlockBox global) impleme
 		for (int i = 1; i < plots.size(); i++) {
 			final BlockBox plot = plots.get(i);
 			global = BlockBox.of(
-					BlockBox.min(global.min(), plot.min()),
-					BlockBox.max(global.max(), plot.max())
+					BlockPos.min(global.min(), plot.min()),
+					BlockPos.max(global.max(), plot.max())
 			);
 		}
 

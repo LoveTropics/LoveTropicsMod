@@ -1,27 +1,33 @@
 package com.lovetropics.minigames.client.lobby.state.message;
 
+import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.client.lobby.state.ClientLobbyManager;
 import com.lovetropics.minigames.common.core.game.lobby.IGameLobby;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraftforge.network.NetworkEvent;
+import io.netty.buffer.ByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
 
-import java.util.function.Supplier;
+public record JoinedLobbyMessage(int id) implements CustomPacketPayload {
+    public static final Type<JoinedLobbyMessage> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(Constants.MODID, "joined_lobby"));
 
-public record JoinedLobbyMessage(int id) {
-	public static JoinedLobbyMessage create(IGameLobby lobby) {
-		return new JoinedLobbyMessage(lobby.getMetadata().id().networkId());
-	}
+    public static final StreamCodec<ByteBuf, JoinedLobbyMessage> STREAM_CODEC = StreamCodec.composite(
+            ByteBufCodecs.VAR_INT, JoinedLobbyMessage::id,
+            JoinedLobbyMessage::new
+    );
 
-	public void encode(FriendlyByteBuf buffer) {
-		buffer.writeVarInt(id);
-	}
+    public static JoinedLobbyMessage create(IGameLobby lobby) {
+        return new JoinedLobbyMessage(lobby.getMetadata().id().networkId());
+    }
 
-	public static JoinedLobbyMessage decode(FriendlyByteBuf buffer) {
-		int instanceId = buffer.readVarInt();
-		return new JoinedLobbyMessage(instanceId);
-	}
+    public static void handle(JoinedLobbyMessage message, IPayloadContext context) {
+        ClientLobbyManager.setJoined(message.id);
+    }
 
-	public void handle(Supplier<NetworkEvent.Context> ctx) {
-		ClientLobbyManager.setJoined(id);
-	}
+    @Override
+    public Type<JoinedLobbyMessage> type() {
+        return TYPE;
+    }
 }

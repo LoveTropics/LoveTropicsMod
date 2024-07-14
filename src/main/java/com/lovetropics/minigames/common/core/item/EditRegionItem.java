@@ -3,7 +3,6 @@ package com.lovetropics.minigames.common.core.item;
 import com.lovetropics.minigames.client.map.MapWorkspaceTracer;
 import com.lovetropics.minigames.client.map.RegionEditOperator;
 import com.lovetropics.minigames.client.map.RegionTraceTarget;
-import com.lovetropics.minigames.common.core.network.LoveTropicsNetwork;
 import com.lovetropics.minigames.common.core.network.workspace.UpdateWorkspaceRegionMessage;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
@@ -15,6 +14,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 import javax.annotation.Nullable;
 
@@ -36,7 +36,7 @@ public final class EditRegionItem extends Item {
 			useTick = player.tickCount;
 
 			if (traceResult != null && mode == Mode.REMOVE) {
-				LoveTropicsNetwork.CHANNEL.sendToServer(new UpdateWorkspaceRegionMessage(traceResult.entry().id, null));
+				PacketDistributor.sendToServer(new UpdateWorkspaceRegionMessage(traceResult.entry().id, null));
 				return InteractionResultHolder.success(stack);
 			}
 
@@ -91,12 +91,12 @@ public final class EditRegionItem extends Item {
 
 		@Nullable
 		RegionEditOperator createEdit(RegionTraceTarget target) {
-			switch (this) {
-				case RESIZE: return new RegionEditOperator.Resize(target);
-				case MOVE: return new RegionEditOperator.Move(target);
-				case SELECT: return new RegionEditOperator.Select(target);
-				default: return null;
-			}
+            return switch (this) {
+                case RESIZE -> new RegionEditOperator.Resize(target);
+                case MOVE -> new RegionEditOperator.Move(target);
+                case SELECT -> new RegionEditOperator.Select(target);
+				case REMOVE -> null;
+            };
 		}
 
 		static Mode byIndex(int index) {

@@ -24,11 +24,12 @@ public abstract class AbstractLTList<T extends LTListEntry<T>> extends ObjectSel
 	public AbstractLTList(Screen screen, Layout layout, int slotHeightIn) {
 		super(
 				screen.getMinecraft(),
-				layout.background().width(), screen.height,
-				layout.background().top(), layout.background().bottom(),
+				layout.background().width(), layout.background().height(),
+				layout.background().top(),
 				slotHeightIn
 		);
 		this.screen = screen;
+		this.setPosition(layout.background().left(), layout.background().top());
 	}
 
 	public void renderOverlays(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
@@ -56,7 +57,7 @@ public abstract class AbstractLTList<T extends LTListEntry<T>> extends ObjectSel
 		for (int index = 0; index < count; index++) {
 			int rowTop = this.getRowTop(index);
 			int rowBottom = rowTop + this.itemHeight;
-			if (rowBottom < this.y0 || rowTop > this.y1) {
+			if (rowBottom < this.getY() || rowTop > this.getY() + this.getHeight()) {
 				continue;
 			}
 
@@ -73,7 +74,7 @@ public abstract class AbstractLTList<T extends LTListEntry<T>> extends ObjectSel
 	}
 
 	private int getEntryIndexAt(int y) {
-		int contentY = y - this.y0 - this.headerHeight + (int) this.getScrollAmount();
+		int contentY = y - this.getY() - this.headerHeight + (int) this.getScrollAmount();
 		return contentY / this.itemHeight;
 	}
 
@@ -81,7 +82,7 @@ public abstract class AbstractLTList<T extends LTListEntry<T>> extends ObjectSel
 
 	@Override
 	public int getRowLeft() {
-		return this.x0;
+		return this.getX();
 	}
 
 	@Override
@@ -91,12 +92,12 @@ public abstract class AbstractLTList<T extends LTListEntry<T>> extends ObjectSel
 
 	@Override
 	protected int getScrollbarPosition() {
-		return this.getMaxScroll() > 0 ? this.x1 - SCROLL_WIDTH : this.x1;
+		return this.getMaxScroll() > 0 ? this.getX() + this.getWidth() - SCROLL_WIDTH : this.getX() + this.getWidth();
 	}
 
 	@Override
 	protected int getRowTop(int index) {
-		return this.y0 + this.headerHeight - (int) this.getScrollAmount()
+		return this.getY() + this.headerHeight - (int) this.getScrollAmount()
 				+ index * this.itemHeight;
 	}
 
@@ -147,8 +148,8 @@ public abstract class AbstractLTList<T extends LTListEntry<T>> extends ObjectSel
 
 	protected int getDraggingY(int mouseY) {
 		int draggingY = mouseY + dragOffset;
-		int minY = this.y0 + this.headerHeight;
-		int maxY = this.y1 - this.itemHeight;
+		int minY = this.getY() + this.headerHeight;
+		int maxY = this.getY() + this.getHeight() - this.itemHeight;
 		return Mth.clamp(draggingY, minY, maxY);
 	}
 
@@ -191,7 +192,7 @@ public abstract class AbstractLTList<T extends LTListEntry<T>> extends ObjectSel
 	}
 
 	@Override
-	protected void renderList(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
+	protected void renderListItems(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
 		boolean listHovered = this.isMouseOver(mouseX, mouseY);
 	
 		int count = this.getItemCount();
@@ -204,7 +205,7 @@ public abstract class AbstractLTList<T extends LTListEntry<T>> extends ObjectSel
 		for (int index = 0; index < count; index++) {
 			int top = this.getRowTop(index);
 			int bottom = top + height;
-			if (bottom < this.y0 || top > this.y1) continue;
+			if (bottom < this.getY() || top > this.getY() + this.getHeight()) continue;
 	
 			T entry = this.getEntry(index);
 			if (draggingEntry == entry) continue;

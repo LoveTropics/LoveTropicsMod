@@ -5,7 +5,7 @@ import com.lovetropics.minigames.common.content.survive_the_tide.entity.Driftwoo
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
-import net.minecraft.client.model.EntityModel;
+import net.minecraft.client.model.HierarchicalModel;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
@@ -19,13 +19,13 @@ import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.EntityRenderersEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 
 public final class DriftwoodRenderer extends EntityRenderer<DriftwoodEntity> {
-	private static final ResourceLocation TEXTURE = new ResourceLocation(Constants.MODID, "textures/entity/driftwood.png");
+	private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(Constants.MODID, "textures/entity/driftwood.png");
 
 	private final DriftwoodModel model;
 
@@ -43,7 +43,7 @@ public final class DriftwoodRenderer extends EntityRenderer<DriftwoodEntity> {
 		poseStack.mulPose(Axis.YP.rotationDegrees(90.0F - entityYaw));
 
 		VertexConsumer builder = buffer.getBuffer(model.renderType(TEXTURE));
-		model.renderToBuffer(poseStack, builder, light, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 1.0F);
+		model.renderToBuffer(poseStack, builder, light, OverlayTexture.NO_OVERLAY);
 
 		poseStack.popPose();
 	}
@@ -53,9 +53,9 @@ public final class DriftwoodRenderer extends EntityRenderer<DriftwoodEntity> {
 		return TEXTURE;
 	}
 
-	@Mod.EventBusSubscriber(modid = Constants.MODID, value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.MOD)
-	public static final class DriftwoodModel extends EntityModel<Entity> {
-		public static final ModelLayerLocation LAYER = new ModelLayerLocation(new ResourceLocation(Constants.MODID, "driftwood"), "main");
+	@EventBusSubscriber(modid = Constants.MODID, value = Dist.CLIENT, bus = EventBusSubscriber.Bus.MOD)
+	public static final class DriftwoodModel extends HierarchicalModel<Entity> {
+		public static final ModelLayerLocation LAYER = new ModelLayerLocation(ResourceLocation.fromNamespaceAndPath(Constants.MODID, "driftwood"), "main");
 
 		private final ModelPart log;
 
@@ -81,12 +81,12 @@ public final class DriftwoodRenderer extends EntityRenderer<DriftwoodEntity> {
 		}
 
 		@Override
-		public void renderToBuffer(PoseStack transform, VertexConsumer buffer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha) {
-			log.render(transform, buffer, packedLight, packedOverlay);
+		public void setupAnim(Entity entity, float limbSwing, float limbSwingAmount, float age, float yaw, float pitch) {
 		}
 
 		@Override
-		public void setupAnim(Entity entity, float limbSwing, float limbSwingAmount, float age, float yaw, float pitch) {
+		public ModelPart root() {
+			return log;
 		}
 	}
 }

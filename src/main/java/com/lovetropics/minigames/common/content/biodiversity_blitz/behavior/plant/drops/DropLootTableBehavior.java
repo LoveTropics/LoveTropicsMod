@@ -12,7 +12,8 @@ import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvent
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -32,12 +33,12 @@ import javax.annotation.Nullable;
 public final class DropLootTableBehavior implements IGameBehavior {
 	public static final MapCodec<DropLootTableBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			PlantType.CODEC.fieldOf("id").forGetter(c -> c.plantType),
-			ResourceLocation.CODEC.fieldOf("loot_table").forGetter(c -> c.lootTable)
+			ResourceKey.codec(Registries.LOOT_TABLE).fieldOf("loot_table").forGetter(c -> c.lootTable)
 	).apply(i, DropLootTableBehavior::new));
 	private final PlantType plantType;
-	private final ResourceLocation lootTable;
+	private final ResourceKey<LootTable> lootTable;
 
-	public DropLootTableBehavior(PlantType plantType, ResourceLocation lootTable) {
+	public DropLootTableBehavior(PlantType plantType, ResourceKey<LootTable> lootTable) {
 		this.plantType = plantType;
 		this.lootTable = lootTable;
 	}
@@ -106,7 +107,7 @@ public final class DropLootTableBehavior implements IGameBehavior {
 	@Nullable
 	private LootTable getLootTable(MinecraftServer server) {
 		if (this.lootTable != null) {
-			return server.getLootData().getLootTable(this.lootTable);
+			return server.reloadableRegistries().getLootTable(this.lootTable);
 		} else {
 			return null;
 		}

@@ -5,7 +5,7 @@ import com.tterrag.registrate.builders.BuilderCallback;
 import com.tterrag.registrate.util.entry.RegistryEntry;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.effect.MobEffect;
-import net.minecraftforge.registries.RegistryObject;
+import net.neoforged.neoforge.registries.DeferredHolder;
 
 import java.util.function.Supplier;
 
@@ -27,7 +27,7 @@ public final class MobEffectBuilder<T extends MobEffect, P> extends AbstractBuil
 	}
 
 	@Override
-	protected RegistryEntry<T> createEntryWrapper(final RegistryObject<T> delegate) {
+	protected RegistryEntry<MobEffect, T> createEntryWrapper(final DeferredHolder<MobEffect, T> delegate) {
 		return new RegistryEntry<>(getOwner(), delegate);
 	}
 }

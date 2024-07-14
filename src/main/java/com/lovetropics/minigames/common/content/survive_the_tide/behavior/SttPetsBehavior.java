@@ -12,6 +12,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ReferenceArrayList;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
@@ -22,7 +23,6 @@ import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.ai.navigation.PathNavigation;
 import net.minecraft.world.level.pathfinder.Path;
-import net.minecraftforge.registries.ForgeRegistries;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -31,7 +31,7 @@ import java.util.UUID;
 
 public final class SttPetsBehavior implements IGameBehavior {
 	public static final MapCodec<SttPetsBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
-			Codec.unboundedMap(ForgeRegistries.ENTITY_TYPES.getCodec(), PetConfig.CODEC).fieldOf("entities").forGetter(c -> c.petTypes)
+			Codec.unboundedMap(BuiltInRegistries.ENTITY_TYPE.byNameCodec(), PetConfig.CODEC).fieldOf("entities").forGetter(c -> c.petTypes)
 	).apply(i, SttPetsBehavior::new));
 
 	private static final double FOLLOW_DISTANCE = 5.0;

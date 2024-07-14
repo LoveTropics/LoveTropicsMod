@@ -1,20 +1,26 @@
 package com.lovetropics.minigames.common.content.biodiversity_blitz.entity.impl;
 
 import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.BbMobEntity;
-import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.ai.*;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.ai.BbGroundNavigator;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.ai.BbMobBrain;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.ai.BbTargetPlayerGoal;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.ai.DestroyCropGoal;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.Plot;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.DifficultyInstance;
-import net.minecraft.world.entity.*;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.MoverType;
+import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.goal.ZombieAttackGoal;
 import net.minecraft.world.entity.ai.navigation.PathNavigation;
 import net.minecraft.world.entity.monster.Husk;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.material.Fluid;
-import net.minecraft.world.level.pathfinder.BlockPathTypes;
+import net.minecraft.world.level.pathfinder.PathType;
 import net.minecraft.world.phys.Vec3;
 
 import javax.annotation.Nullable;
@@ -28,7 +34,7 @@ public class BbHuskEntity extends Husk implements BbMobEntity {
 		this.mobBrain = new BbMobBrain(plot.walls);
 		this.plot = plot;
 
-		setPathfindingMalus(BlockPathTypes.DANGER_OTHER, BERRY_BUSH_MALUS);
+		setPathfindingMalus(PathType.DANGER_OTHER, BERRY_BUSH_MALUS);
 	}
 
 	@Override
@@ -51,7 +57,7 @@ public class BbHuskEntity extends Husk implements BbMobEntity {
 
 	@Nullable
 	@Override
-	public SpawnGroupData finalizeSpawn(ServerLevelAccessor world, DifficultyInstance difficulty, MobSpawnType reason, @Nullable SpawnGroupData spawnData, @Nullable CompoundTag dataTag) {
+	public SpawnGroupData finalizeSpawn(ServerLevelAccessor world, DifficultyInstance difficulty, MobSpawnType reason, @Nullable SpawnGroupData spawnData) {
 		this.setLeftHanded(this.random.nextFloat() < 0.05F);
 		return spawnData;
 	}

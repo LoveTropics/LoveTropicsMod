@@ -11,28 +11,21 @@ import com.lovetropics.minigames.common.core.game.lobby.LobbyVisibility;
 import com.lovetropics.minigames.common.core.game.lobby.QueuedGame;
 import com.lovetropics.minigames.common.util.PartialUpdate;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.codec.StreamDecoder;
 import net.minecraft.resources.ResourceLocation;
-
-import java.util.function.Function;
-
-import com.lovetropics.minigames.common.util.PartialUpdate.AbstractSet;
-import com.lovetropics.minigames.common.util.PartialUpdate.AbstractType;
-import com.lovetropics.minigames.common.util.PartialUpdate.Family;
 
 public abstract class ServerLobbyUpdate extends PartialUpdate<ILobbyManagement> {
 	public static final class Set extends AbstractSet<ILobbyManagement> {
+		public static final StreamCodec<RegistryFriendlyByteBuf, Set> STREAM_CODEC = createStreamCodec(Set::new);
+
 		private Set() {
 			super(Family.of(Type.values()));
 		}
 
 		public static Set create() {
 			return new Set();
-		}
-
-		public static Set decode(FriendlyByteBuf buffer) {
-			Set set = new Set();
-			set.decodeSelf(buffer);
-			return set;
 		}
 
 		public Set setName(String name) {
@@ -90,15 +83,15 @@ public abstract class ServerLobbyUpdate extends PartialUpdate<ILobbyManagement> 
 		CLOSE(Close::decode),
 		CONFIGURE(Configure::decode);
 
-		private final Function<FriendlyByteBuf, ServerLobbyUpdate> decode;
+		private final StreamDecoder<RegistryFriendlyByteBuf, ServerLobbyUpdate> decode;
 
-		Type(Function<FriendlyByteBuf, ServerLobbyUpdate> decode) {
+		Type(StreamDecoder<RegistryFriendlyByteBuf, ServerLobbyUpdate> decode) {
 			this.decode = decode;
 		}
 
 		@Override
-		public ServerLobbyUpdate decode(FriendlyByteBuf buffer) {
-			return decode.apply(buffer);
+		public ServerLobbyUpdate decode(RegistryFriendlyByteBuf buffer) {
+			return decode.decode(buffer);
 		}
 	}
 
@@ -120,7 +113,7 @@ public abstract class ServerLobbyUpdate extends PartialUpdate<ILobbyManagement> 
 		}
 
 		@Override
-		protected void encode(FriendlyByteBuf buffer) {
+		protected void encode(RegistryFriendlyByteBuf buffer) {
 			buffer.writeUtf(name, 200);
 		}
 
@@ -146,7 +139,7 @@ public abstract class ServerLobbyUpdate extends PartialUpdate<ILobbyManagement> 
 		}
 
 		@Override
-		protected void encode(FriendlyByteBuf buffer) {
+		protected void encode(RegistryFriendlyByteBuf buffer) {
 			buffer.writeResourceLocation(definition);
 		}
 
@@ -169,7 +162,7 @@ public abstract class ServerLobbyUpdate extends PartialUpdate<ILobbyManagement> 
 		}
 
 		@Override
-		protected void encode(FriendlyByteBuf buffer) {
+		protected void encode(RegistryFriendlyByteBuf buffer) {
 			buffer.writeVarInt(id);
 		}
 
@@ -194,7 +187,7 @@ public abstract class ServerLobbyUpdate extends PartialUpdate<ILobbyManagement> 
 		}
 
 		@Override
-		protected void encode(FriendlyByteBuf buffer) {
+		protected void encode(RegistryFriendlyByteBuf buffer) {
 			buffer.writeVarInt(id);
 			buffer.writeVarInt(newIndex);
 		}
@@ -218,7 +211,7 @@ public abstract class ServerLobbyUpdate extends PartialUpdate<ILobbyManagement> 
 		}
 
 		@Override
-		protected void encode(FriendlyByteBuf buffer) {
+		protected void encode(RegistryFriendlyByteBuf buffer) {
 			buffer.writeByte(control.ordinal() & 0xFF);
 		}
 
@@ -243,7 +236,7 @@ public abstract class ServerLobbyUpdate extends PartialUpdate<ILobbyManagement> 
 		}
 
 		@Override
-		protected void encode(FriendlyByteBuf buffer) {
+		protected void encode(RegistryFriendlyByteBuf buffer) {
 			buffer.writeEnum(visibility);
 		}
 
@@ -263,7 +256,7 @@ public abstract class ServerLobbyUpdate extends PartialUpdate<ILobbyManagement> 
 		}
 
 		@Override
-		protected void encode(FriendlyByteBuf buffer) {
+		protected void encode(RegistryFriendlyByteBuf buffer) {
 		}
 
 		static Close decode(FriendlyByteBuf buffer) {
@@ -289,12 +282,12 @@ public abstract class ServerLobbyUpdate extends PartialUpdate<ILobbyManagement> 
 		}
 
 		@Override
-		protected void encode(FriendlyByteBuf buffer) {
+		protected void encode(RegistryFriendlyByteBuf buffer) {
 			buffer.writeVarInt(id);
 			game.encode(buffer);
 		}
 
-		static Configure decode(FriendlyByteBuf buffer) {
+		static Configure decode(RegistryFriendlyByteBuf buffer) {
 			return new Configure(buffer.readVarInt(), ClientLobbyQueuedGame.decode(buffer));
 		}
 	}

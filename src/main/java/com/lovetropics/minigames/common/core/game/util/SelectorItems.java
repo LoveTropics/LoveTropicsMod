@@ -2,20 +2,19 @@ package com.lovetropics.minigames.common.core.game.util;
 
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
-import net.minecraft.world.entity.item.ItemEntity;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.world.InteractionResult;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.level.ItemLike;
+import com.lovetropics.minigames.common.core.item.MinigameDataComponents;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.ItemLike;
 
 import javax.annotation.Nullable;
 
 public record SelectorItems<V>(Handlers<V> handlers, V[] values) {
-	private static final String KEY = "selector_key";
-
 	public void applyTo(EventRegistrar events) {
 		events.listen(GamePlayerEvents.USE_ITEM, this::onUseItem);
 		events.listen(GamePlayerEvents.THROW_ITEM, this::onThrowItem);
@@ -54,25 +53,22 @@ public record SelectorItems<V>(Handlers<V> handlers, V[] values) {
 
 	@Nullable
 	private V getValueForSelector(ItemStack stack) {
-		CompoundTag tag = stack.getTag();
-		if (tag == null) return null;
-
-		String id = tag.getString(KEY);
+		String id = stack.get(MinigameDataComponents.SELECTOR);
+		if (id == null) {
+			return null;
+		}
 		for (V value : this.values) {
 			if (this.handlers.getIdFor(value).equals(id)) {
 				return value;
 			}
 		}
-
 		return null;
 	}
 
 	private ItemStack createSelectorItem(ItemLike item, V value) {
 		ItemStack stack = new ItemStack(item);
-		stack.setHoverName(this.handlers.getNameFor(value));
-
-		CompoundTag tag = stack.getOrCreateTag();
-		tag.putString(KEY, this.handlers.getIdFor(value));
+		stack.set(DataComponents.CUSTOM_NAME, this.handlers.getNameFor(value));
+		stack.set(MinigameDataComponents.SELECTOR, this.handlers.getIdFor(value));
 
 		return stack;
 	}

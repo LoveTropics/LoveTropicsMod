@@ -1,44 +1,41 @@
 package com.lovetropics.minigames.client.particle_line;
 
+import com.lovetropics.minigames.Constants;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.core.particles.ParticleOptions;
-import net.minecraft.core.particles.ParticleType;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.network.NetworkEvent;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
 
-import java.util.function.Supplier;
+public record DrawParticleLineMessage(ParticleOptions particle, Vec3 from, Vec3 to, float spacing) implements CustomPacketPayload {
+    public static final Type<DrawParticleLineMessage> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(Constants.MODID, "draw_particle_line"));
 
-public record DrawParticleLineMessage(ParticleOptions particle, Vec3 from, Vec3 to, float spacing) {
-	public void encode(FriendlyByteBuf buffer) {
-		buffer.writeRegistryIdUnsafe(ForgeRegistries.PARTICLE_TYPES, particle.getType());
-		particle.writeToNetwork(buffer);
+    private static final StreamCodec<ByteBuf, Vec3> VEC3_STREAM_CODEC = StreamCodec.composite(
+            ByteBufCodecs.DOUBLE, Vec3::x,
+            ByteBufCodecs.DOUBLE, Vec3::y,
+            ByteBufCodecs.DOUBLE, Vec3::z,
+            Vec3::new
+    );
 
-		buffer.writeDouble(from.x);
-		buffer.writeDouble(from.y);
-		buffer.writeDouble(from.z);
-		buffer.writeDouble(to.x);
-		buffer.writeDouble(to.y);
-		buffer.writeDouble(to.z);
-		buffer.writeFloat(spacing);
-	}
+    public static final StreamCodec<RegistryFriendlyByteBuf, DrawParticleLineMessage> STREAM_CODEC = StreamCodec.composite(
+            ParticleTypes.STREAM_CODEC, DrawParticleLineMessage::particle,
+            VEC3_STREAM_CODEC, DrawParticleLineMessage::from,
+            VEC3_STREAM_CODEC, DrawParticleLineMessage::to,
+            ByteBufCodecs.FLOAT, DrawParticleLineMessage::spacing,
+            DrawParticleLineMessage::new
+    );
 
-	public static DrawParticleLineMessage decode(FriendlyByteBuf buffer) {
-		ParticleType<?> particleType = buffer.readRegistryIdUnsafe(ForgeRegistries.PARTICLE_TYPES);
-		ParticleOptions particle = readParticle(buffer, particleType);
+    public static void handle(DrawParticleLineMessage message, IPayloadContext context) {
+        ParticleLineSpawner.spawnParticleLine(message.particle, message.from, message.to, message.spacing);
+    }
 
-		Vec3 from = new Vec3(buffer.readDouble(), buffer.readDouble(), buffer.readDouble());
-		Vec3 to = new Vec3(buffer.readDouble(), buffer.readDouble(), buffer.readDouble());
-		float spacing = buffer.readFloat();
-
-		return new DrawParticleLineMessage(particle, from, to, spacing);
-	}
-
-	private static <T extends ParticleOptions> T readParticle(FriendlyByteBuf buffer, ParticleType<T> particleType) {
-		return particleType.getDeserializer().fromNetwork(particleType, buffer);
-	}
-
-	public void handle(Supplier<NetworkEvent.Context> ctx) {
-		ParticleLineSpawner.spawnParticleLine(particle, from, to, spacing);
-	}
+    @Override
+    public Type<DrawParticleLineMessage> type() {
+        return TYPE;
+    }
 }

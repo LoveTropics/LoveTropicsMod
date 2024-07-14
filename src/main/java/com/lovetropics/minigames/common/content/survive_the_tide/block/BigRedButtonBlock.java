@@ -6,7 +6,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.BlockGetter;
@@ -52,7 +51,7 @@ public class BigRedButtonBlock extends ButtonBlock implements EntityBlock {
 	private static final VoxelShape PRESSED_EAST_AABB = Block.box(0.0, 8.0 - HALF_SIZE, 8.0 - HALF_SIZE, PRESSED_DEPTH, 8.0 + HALF_SIZE, 8.0 + HALF_SIZE);
 
 	public BigRedButtonBlock(Properties properties) {
-		super(properties, BlockSetType.STONE, SharedConstants.TICKS_PER_SECOND * 3, false);
+		super(BlockSetType.STONE, SharedConstants.TICKS_PER_SECOND * 3, properties);
 		registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(POWERED, Boolean.FALSE).setValue(FACE, AttachFace.WALL).setValue(TRIGGERED, false));
 	}
 
@@ -79,14 +78,14 @@ public class BigRedButtonBlock extends ButtonBlock implements EntityBlock {
 	}
 
 	@Override
-	public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+	public InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
 		if (!level.isClientSide() && level.getBlockEntity(pos) instanceof BigRedButtonBlockEntity entity) {
 			if (!state.getValue(TRIGGERED) && entity.press(player)) {
 				trigger(state, level, pos, player);
 				return InteractionResult.SUCCESS;
 			}
 		}
-		return super.use(state, level, pos, player, hand, hit);
+		return super.useWithoutItem(state, level, pos, player, hit);
 	}
 
 	private void trigger(BlockState state, Level level, BlockPos pos, Player player) {

@@ -40,8 +40,8 @@ public record RunCommandsAction(List<String> globalCommands, List<String> player
     );
 
     public static final MapCodec<RunCommandsAction> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
-            MoreCodecs.strictOptionalFieldOf(MoreCodecs.listOrUnit(COMMAND_CODEC), "global", List.of()).forGetter(RunCommandsAction::globalCommands),
-            MoreCodecs.strictOptionalFieldOf(MoreCodecs.listOrUnit(COMMAND_CODEC), "player", List.of()).forGetter(RunCommandsAction::playerCommands)
+            MoreCodecs.listOrUnit(COMMAND_CODEC).optionalFieldOf("global", List.of()).forGetter(RunCommandsAction::globalCommands),
+            MoreCodecs.listOrUnit(COMMAND_CODEC).optionalFieldOf("player", List.of()).forGetter(RunCommandsAction::playerCommands)
     ).apply(i, RunCommandsAction::new));
 
     @Override

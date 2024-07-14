@@ -3,16 +3,17 @@ package com.lovetropics.minigames.client.map;
 import com.google.common.collect.ImmutableSet;
 import com.lovetropics.lib.BlockBox;
 import com.lovetropics.minigames.common.core.map.workspace.ClientWorkspaceRegions;
-import com.lovetropics.minigames.common.core.network.LoveTropicsNetwork;
 import com.lovetropics.minigames.common.core.network.workspace.UpdateWorkspaceRegionMessage;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 import javax.annotation.Nullable;
 import java.util.Collections;
+import java.util.Optional;
 import java.util.Set;
 
 public interface RegionEditOperator {
@@ -40,7 +41,7 @@ public interface RegionEditOperator {
 
 		@Override
 		public boolean select(Player player, @Nullable RegionTraceTarget target) {
-			LoveTropicsNetwork.CHANNEL.sendToServer(new UpdateWorkspaceRegionMessage(this.target.entry().id, this.target.entry().region));
+			PacketDistributor.sendToServer(new UpdateWorkspaceRegionMessage(this.target.entry().id, Optional.of(this.target.entry().region)));
 			return true;
 		}
 

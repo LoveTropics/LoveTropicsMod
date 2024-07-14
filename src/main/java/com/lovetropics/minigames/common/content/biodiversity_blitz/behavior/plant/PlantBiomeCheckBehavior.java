@@ -1,6 +1,5 @@
 package com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.plant;
 
-import com.lovetropics.lib.codec.MoreCodecs;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.BiodiversityBlitzTexts;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.event.BbPlantEvents;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.plant.Plant;
@@ -29,7 +28,7 @@ public record PlantBiomeCheckBehavior(HolderSet<Biome> biomes, boolean whitelist
     public static final MapCodec<PlantBiomeCheckBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
             Biome.LIST_CODEC.fieldOf("biomes").forGetter(PlantBiomeCheckBehavior::biomes),
             Codec.BOOL.optionalFieldOf("whitelist", true).forGetter(PlantBiomeCheckBehavior::whitelist),
-            MoreCodecs.strictOptionalFieldOf(IGameBehavior.CODEC, "behaviors", IGameBehavior.EMPTY).forGetter(PlantBiomeCheckBehavior::behaviors)
+            IGameBehavior.CODEC.optionalFieldOf("behaviors", IGameBehavior.EMPTY).forGetter(PlantBiomeCheckBehavior::behaviors)
     ).apply(i, PlantBiomeCheckBehavior::new));
 
     private static final Set<GameEventType<?>> WRAPPED_EVENTS = Set.of(BbPlantEvents.TICK, BbPlantEvents.PLACE, BbPlantEvents.BREAK);

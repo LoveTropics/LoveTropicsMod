@@ -2,6 +2,7 @@ package com.lovetropics.minigames.common.content.biodiversity_blitz.behavior;
 
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.BiodiversityBlitz;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.BiodiversityBlitzTexts;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.event.BbEvents;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.BbMobSpawner.BbEntityTypes;
@@ -15,9 +16,7 @@ import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
 import com.lovetropics.minigames.common.core.game.state.team.TeamState;
 import com.lovetropics.minigames.common.util.Codecs;
-import com.lovetropics.minigames.common.util.StackData;
 import com.mojang.datafixers.util.Either;
-import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.HolderSet;
@@ -28,10 +27,10 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.RenderTooltipEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.client.event.RenderTooltipEvent;
 
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -42,8 +41,6 @@ import java.util.stream.Stream;
 public final class BbSendMobsToEnemyItemBehavior implements IGameBehavior {
     public static final MapCodec<BbSendMobsToEnemyItemBehavior> CODEC = Codecs.ITEMS.fieldOf("item")
             .xmap(BbSendMobsToEnemyItemBehavior::new, b -> b.items);
-
-    public static final StackData<Map<BbEntityTypes, Integer>> ENEMIES_TO_SEND = StackData.unboundedMap("bb_mobs_to_send_to_enemies", BbEntityTypes.CODEC, Codec.intRange(0, Integer.MAX_VALUE));
 
     private final HolderSet<Item> items;
 
@@ -80,15 +77,18 @@ public final class BbSendMobsToEnemyItemBehavior implements IGameBehavior {
 
 		final var playerPlot = plots.getPlotFor(player);
 
-		ENEMIES_TO_SEND.getIfSuccessful(item).ifPresent(entities -> plots.stream().filter(p -> p != playerPlot)
-				.forEach(targetPlot -> {
-					final Component playerName = player.getName().copy().withStyle(ChatFormatting.AQUA);
-					teams.getPlayersForTeam(targetPlot.team).sendMessage(BiodiversityBlitzTexts.SENT_MOBS_MESSAGE.apply(playerName, buildMessage(entities)));
+        Map<BbEntityTypes, Integer> entities = item.get(BiodiversityBlitz.ENEMIES_TO_SEND);
+        if (entities != null) {
+            plots.stream().filter(p -> p != playerPlot)
+                    .forEach(targetPlot -> {
+                        final Component playerName = player.getName().copy().withStyle(ChatFormatting.AQUA);
+                        teams.getPlayersForTeam(targetPlot.team).sendMessage(BiodiversityBlitzTexts.SENT_MOBS_MESSAGE.apply(playerName, buildMessage(entities)));
 
-					sentEnemies.putAll(targetPlot, entities.entrySet().stream()
-							.flatMap(entry -> repeat(() -> entry.getKey().create(player.level(), targetPlot), entry.getValue()))
-							.toList());
-				}));
+                        sentEnemies.putAll(targetPlot, entities.entrySet().stream()
+                                .flatMap(entry -> repeat(() -> entry.getKey().create(player.level(), targetPlot), entry.getValue()))
+                                .toList());
+                    });
+        }
 
 		item.shrink(1);
 		return InteractionResult.CONSUME;
@@ -117,12 +117,15 @@ public final class BbSendMobsToEnemyItemBehavior implements IGameBehavior {
         return builder.build();
     }
 
-    @Mod.EventBusSubscriber(Dist.CLIENT)
+    @EventBusSubscriber(Dist.CLIENT)
     public static final class Client {
         @SubscribeEvent
         static void appendTooltips(final RenderTooltipEvent.GatherComponents event) {
-            ENEMIES_TO_SEND.getIfSuccessful(event.getItemStack()).ifPresent(entities -> entities.forEach((entity, count) ->
-                    event.getTooltipElements().add(Either.left(BiodiversityBlitzTexts.sendMobsTooltip(entity, count)))));
+            Map<BbEntityTypes, Integer> entities = event.getItemStack().get(BiodiversityBlitz.ENEMIES_TO_SEND);
+            if (entities != null) {
+                entities.forEach((entity, count) ->
+                        event.getTooltipElements().add(Either.left(BiodiversityBlitzTexts.sendMobsTooltip(entity, count))));
+            }
         }
     }
 }

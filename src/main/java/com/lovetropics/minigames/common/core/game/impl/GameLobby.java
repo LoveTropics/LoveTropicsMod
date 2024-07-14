@@ -6,19 +6,27 @@ import com.lovetropics.minigames.client.lobby.state.message.JoinedLobbyMessage;
 import com.lovetropics.minigames.client.lobby.state.message.LeftLobbyMessage;
 import com.lovetropics.minigames.client.lobby.state.message.LobbyPlayersMessage;
 import com.lovetropics.minigames.client.lobby.state.message.LobbyUpdateMessage;
-import com.lovetropics.minigames.common.core.game.*;
-import com.lovetropics.minigames.common.core.game.lobby.*;
+import com.lovetropics.minigames.common.core.game.GameResult;
+import com.lovetropics.minigames.common.core.game.IGame;
+import com.lovetropics.minigames.common.core.game.IGameDefinition;
+import com.lovetropics.minigames.common.core.game.IGamePhase;
+import com.lovetropics.minigames.common.core.game.PlayerIsolation;
+import com.lovetropics.minigames.common.core.game.lobby.GameLobbyMetadata;
+import com.lovetropics.minigames.common.core.game.lobby.IGameLobby;
+import com.lovetropics.minigames.common.core.game.lobby.ILobbyManagement;
+import com.lovetropics.minigames.common.core.game.lobby.LobbyControls;
+import com.lovetropics.minigames.common.core.game.lobby.LobbyStateListener;
+import com.lovetropics.minigames.common.core.game.lobby.LobbyVisibility;
 import com.lovetropics.minigames.common.core.game.player.PlayerIterable;
 import com.lovetropics.minigames.common.core.game.player.PlayerRoleSelections;
 import com.lovetropics.minigames.common.core.game.rewards.GameRewardsMap;
 import com.lovetropics.minigames.common.core.game.util.GameTexts;
-import com.lovetropics.minigames.common.core.network.LoveTropicsNetwork;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Unit;
-import net.minecraftforge.network.PacketDistributor;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 import javax.annotation.Nullable;
 
@@ -329,45 +337,45 @@ final class GameLobby implements IGameLobby {
 	static final class NetworkUpdateListener implements LobbyStateListener {
 		@Override
 		public void onPlayerJoin(IGameLobby lobby, ServerPlayer player) {
-			LoveTropicsNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), JoinedLobbyMessage.create(lobby));
-			lobby.getTrackingPlayers().sendPacket(LoveTropicsNetwork.CHANNEL, LobbyPlayersMessage.update(lobby));
+			PacketDistributor.sendToPlayer(player, JoinedLobbyMessage.create(lobby));
+			lobby.getTrackingPlayers().sendPacket(LobbyPlayersMessage.update(lobby));
 		}
 
 		@Override
 		public void onPlayerLeave(IGameLobby lobby, ServerPlayer player) {
-			LoveTropicsNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new LeftLobbyMessage());
-			lobby.getTrackingPlayers().sendPacket(LoveTropicsNetwork.CHANNEL, LobbyPlayersMessage.update(lobby));
+			PacketDistributor.sendToPlayer(player, new LeftLobbyMessage());
+			lobby.getTrackingPlayers().sendPacket(LobbyPlayersMessage.update(lobby));
 		}
 
 		@Override
 		public void onPlayerStartTracking(IGameLobby lobby, ServerPlayer player) {
-			LoveTropicsNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), LobbyUpdateMessage.update(lobby));
-			LoveTropicsNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), LobbyPlayersMessage.update(lobby));
+			PacketDistributor.sendToPlayer(player, LobbyUpdateMessage.update(lobby));
+			PacketDistributor.sendToPlayer(player, LobbyPlayersMessage.update(lobby));
 		}
 
 		@Override
 		public void onPlayerStopTracking(IGameLobby lobby, ServerPlayer player) {
-			LoveTropicsNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), LobbyUpdateMessage.remove(lobby));
+			PacketDistributor.sendToPlayer(player, LobbyUpdateMessage.remove(lobby));
 		}
 
 		@Override
 		public void onLobbyStateChange(IGameLobby lobby) {
-			lobby.getTrackingPlayers().sendPacket(LoveTropicsNetwork.CHANNEL, LobbyUpdateMessage.update(lobby));
+			lobby.getTrackingPlayers().sendPacket(LobbyUpdateMessage.update(lobby));
 		}
 
 		@Override
 		public void onLobbyNameChange(IGameLobby lobby) {
-			lobby.getTrackingPlayers().sendPacket(LoveTropicsNetwork.CHANNEL, LobbyUpdateMessage.update(lobby));
+			lobby.getTrackingPlayers().sendPacket(LobbyUpdateMessage.update(lobby));
 		}
 
 		@Override
 		public void onLobbyStop(IGameLobby lobby) {
-			lobby.getTrackingPlayers().sendPacket(LoveTropicsNetwork.CHANNEL, LobbyUpdateMessage.remove(lobby));
+			lobby.getTrackingPlayers().sendPacket(LobbyUpdateMessage.remove(lobby));
 		}
 
 		@Override
 		public void onGamePhaseChange(IGameLobby lobby) {
-			lobby.getTrackingPlayers().sendPacket(LoveTropicsNetwork.CHANNEL, LobbyUpdateMessage.update(lobby));
+			lobby.getTrackingPlayers().sendPacket(LobbyUpdateMessage.update(lobby));
 		}
 	}
 }

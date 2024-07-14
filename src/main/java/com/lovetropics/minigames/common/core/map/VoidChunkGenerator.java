@@ -1,13 +1,12 @@
 package com.lovetropics.minigames.common.core.map;
 
-import com.lovetropics.minigames.common.util.Util;
-import com.mojang.serialization.Codec;
+import com.lovetropics.minigames.Constants;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
@@ -31,16 +30,22 @@ import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.RandomState;
 import net.minecraft.world.level.levelgen.blending.Blender;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
+import net.neoforged.neoforge.registries.DeferredRegister;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executor;
 
 public final class VoidChunkGenerator extends ChunkGenerator {
-	public static final Codec<VoidChunkGenerator> CODEC = RecordCodecBuilder.create(i -> i.group(
+	public static final DeferredRegister<MapCodec<? extends ChunkGenerator>> REGISTER = DeferredRegister.create(Registries.CHUNK_GENERATOR, Constants.MODID);
+
+	public static final MapCodec<VoidChunkGenerator> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			Biome.CODEC.stable().fieldOf("biome").forGetter(g -> g.biome)
 	).apply(i, i.stable(VoidChunkGenerator::new)));
+
+	static {
+		REGISTER.register("void", () -> CODEC);
+	}
 
 	private final Holder<Biome> biome;
 
@@ -61,12 +66,8 @@ public final class VoidChunkGenerator extends ChunkGenerator {
 		this(biomeRegistry.getHolderOrThrow(biome));
 	}
 
-	public static void register() {
-		Registry.register(BuiltInRegistries.CHUNK_GENERATOR, Util.resource("void"), CODEC);
-	}
-
 	@Override
-	protected Codec<? extends ChunkGenerator> codec() {
+	protected MapCodec<? extends ChunkGenerator> codec() {
 		return CODEC;
 	}
 
@@ -79,7 +80,7 @@ public final class VoidChunkGenerator extends ChunkGenerator {
 	}
 
 	@Override
-	public CompletableFuture<ChunkAccess> fillFromNoise(final Executor executor, final Blender blender, final RandomState randomState, final StructureManager structures, final ChunkAccess chunk) {
+	public CompletableFuture<ChunkAccess> fillFromNoise(final Blender blender, final RandomState randomState, final StructureManager structures, final ChunkAccess chunk) {
 		return CompletableFuture.completedFuture(chunk);
 	}
 

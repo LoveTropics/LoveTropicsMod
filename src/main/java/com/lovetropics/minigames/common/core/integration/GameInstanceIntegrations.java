@@ -21,8 +21,8 @@ import com.lovetropics.minigames.common.core.integration.game_actions.GameAction
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.JsonOps;
-import net.minecraft.Util;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 
@@ -75,16 +75,16 @@ public final class GameInstanceIntegrations implements IGameState {
 
 	private void addGameDefinitionData(JsonObject payload) {
 		IGameDefinition definition = game.getDefinition();
-		payload.add("name", Component.Serializer.toJsonTree(definition.getName()));
+		payload.add("name", ComponentSerialization.CODEC.encodeStart(JsonOps.INSTANCE, definition.getName()).getOrThrow());
 		Component subtitle = definition.getSubtitle();
 		if (subtitle != null) {
-			payload.add("subtitle", Component.Serializer.toJsonTree(subtitle));
+			payload.add("subtitle", ComponentSerialization.CODEC.encodeStart(JsonOps.INSTANCE, subtitle).getOrThrow());
 		}
 
 		GamePackageState packageState = game.getState().getOrNull(GamePackageState.KEY);
 		if (packageState != null) {
 			List<DonationPackageData> packageList = List.copyOf(packageState.packages());
-			payload.add("packages", Util.getOrThrow(PACKAGES_CODEC.encodeStart(JsonOps.INSTANCE, packageList), IllegalStateException::new));
+			payload.add("packages", PACKAGES_CODEC.encodeStart(JsonOps.INSTANCE, packageList).getOrThrow());
 		}
 	}
 

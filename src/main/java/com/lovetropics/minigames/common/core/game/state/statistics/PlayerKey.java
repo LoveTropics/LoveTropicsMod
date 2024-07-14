@@ -8,9 +8,10 @@ import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.minecraft.MinecraftProfileTexture;
 import com.mojang.authlib.minecraft.MinecraftSessionService;
 import com.mojang.authlib.yggdrasil.YggdrasilAuthenticationService;
+import com.mojang.authlib.yggdrasil.YggdrasilEnvironment;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.server.level.ServerPlayer;
 
 import java.net.Proxy;
 import java.util.UUID;
@@ -18,7 +19,7 @@ import java.util.UUID;
 public final class PlayerKey {
 	public static final JsonSerializer<PlayerKey> PROFILE_SERIALIZER = (statistics, type, ctx) -> statistics.serializeProfile();
 
-	private static final YggdrasilAuthenticationService AUTH_SERVICE = new YggdrasilAuthenticationService(Proxy.NO_PROXY, UUID.randomUUID().toString());
+	private static final YggdrasilAuthenticationService AUTH_SERVICE = new YggdrasilAuthenticationService(Proxy.NO_PROXY, YggdrasilEnvironment.PROD.getEnvironment());
 	private static final MinecraftSessionService SESSION_SERVICE = AUTH_SERVICE.createMinecraftSessionService();
 
 	private final GameProfile profile;
@@ -53,7 +54,7 @@ public final class PlayerKey {
 		root.addProperty("id", profile.getId().toString());
 		root.addProperty("name", profile.getName());
 
-		MinecraftProfileTexture skinTexture = SESSION_SERVICE.getTextures(profile, true).get(MinecraftProfileTexture.Type.SKIN);
+        MinecraftProfileTexture skinTexture = SESSION_SERVICE.getTextures(profile).skin();
 		if (skinTexture != null) {
 			JsonObject skinRoot = new JsonObject();
 			skinRoot.addProperty("url", skinTexture.getUrl());
@@ -79,9 +80,8 @@ public final class PlayerKey {
 	public boolean equals(Object obj) {
 		if (this == obj) return true;
 
-		if (obj instanceof PlayerKey) {
-			PlayerKey key = (PlayerKey) obj;
-			return profile.getId().equals(key.profile.getId());
+		if (obj instanceof PlayerKey key) {
+            return profile.getId().equals(key.profile.getId());
 		}
 
 		return false;

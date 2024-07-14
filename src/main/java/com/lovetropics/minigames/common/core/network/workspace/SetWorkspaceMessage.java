@@ -1,15 +1,21 @@
 package com.lovetropics.minigames.common.core.network.workspace;
 
+import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.client.map.ClientMapWorkspace;
 import com.lovetropics.minigames.common.core.map.workspace.ClientWorkspaceRegions;
 import com.lovetropics.minigames.common.core.map.workspace.WorkspaceRegions;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraftforge.network.NetworkEvent;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 import javax.annotation.Nullable;
-import java.util.function.Supplier;
 
-public class SetWorkspaceMessage {
+public class SetWorkspaceMessage implements CustomPacketPayload {
+	public static final Type<SetWorkspaceMessage> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(Constants.MODID, "set_workspace"));
+
+	public static final StreamCodec<FriendlyByteBuf, SetWorkspaceMessage> STREAM_CODEC = StreamCodec.ofMember(SetWorkspaceMessage::encode, SetWorkspaceMessage::decode);
 
 	private static final SetWorkspaceMessage HIDDEN = new SetWorkspaceMessage((WorkspaceRegions) null);
 
@@ -17,7 +23,9 @@ public class SetWorkspaceMessage {
 		return HIDDEN;
 	}
 
-	private @Nullable WorkspaceRegions server;
+	@Nullable
+	private WorkspaceRegions server;
+	@Nullable
 	private ClientWorkspaceRegions client;
 
 	public SetWorkspaceMessage(@Nullable WorkspaceRegions server) {
@@ -45,7 +53,12 @@ public class SetWorkspaceMessage {
 		return new SetWorkspaceMessage(regions);
 	}
 
-	public void handle(Supplier<NetworkEvent.Context> ctx) {
-		ClientMapWorkspace.INSTANCE.setRegions(client);
+	public static void handle(SetWorkspaceMessage message, IPayloadContext context) {
+		ClientMapWorkspace.INSTANCE.setRegions(message.client);
+	}
+
+	@Override
+	public Type<SetWorkspaceMessage> type() {
+		return TYPE;
 	}
 }

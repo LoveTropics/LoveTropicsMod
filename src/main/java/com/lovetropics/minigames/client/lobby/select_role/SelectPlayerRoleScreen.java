@@ -1,9 +1,7 @@
 package com.lovetropics.minigames.client.lobby.select_role;
 
 import com.lovetropics.minigames.common.core.game.util.GameTexts;
-import com.lovetropics.minigames.common.core.network.LoveTropicsNetwork;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.MultiLineTextWidget;
 import net.minecraft.client.gui.layouts.FrameLayout;
@@ -11,6 +9,7 @@ import net.minecraft.client.gui.layouts.GridLayout;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 public final class SelectPlayerRoleScreen extends Screen {
 	private static final Component TITLE = GameTexts.Ui.SELECT_PLAYER_ROLE.copy()
@@ -70,15 +69,9 @@ public final class SelectPlayerRoleScreen extends Screen {
 
 	private void sendResponse(boolean play) {
 		if (!responded) {
-			LoveTropicsNetwork.CHANNEL.sendToServer(new SelectRoleMessage(lobbyId, play));
+			PacketDistributor.sendToServer(new SelectRoleMessage(lobbyId, play));
 			responded = true;
 		}
-	}
-
-	@Override
-	public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
-		renderBackground(graphics);
-		super.render(graphics, mouseX, mouseY, partialTicks);
 	}
 
 	@Override

@@ -79,13 +79,13 @@ public final class FlamingPlantBehavior implements IGameBehavior {
 
                         // In plant
                         if (entity.blockPosition() == plant.coverage().getOrigin()) {
-                            entity.setSecondsOnFire(6);
+                            entity.igniteForSeconds(6);
 
                             if (random.nextInt(3) == 0) {
                                 entity.hurt(entity.damageSources().inFire(), 1 + random.nextInt(3));
                             }
                         } else {
-                            entity.setSecondsOnFire(3);
+                            entity.igniteForSeconds(3);
 
                             if (random.nextInt(3) == 0) {
                                 entity.hurt(entity.damageSources().inFire(), 1 + random.nextInt(2));

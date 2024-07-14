@@ -9,6 +9,7 @@ import com.lovetropics.minigames.common.core.map.MapWorldInfo;
 import com.lovetropics.minigames.common.core.map.MapWorldSettings;
 import com.lovetropics.minigames.common.core.map.VoidChunkGenerator;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.Holder;
 import net.minecraft.server.MinecraftServer;
@@ -19,13 +20,13 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 public record VoidMapProvider(Optional<String> name, Optional<Holder<DimensionType>> dimensionType) implements IGameMapProvider {
-	public static final Codec<VoidMapProvider> CODEC = RecordCodecBuilder.create(i -> i.group(
+	public static final MapCodec<VoidMapProvider> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			Codec.STRING.optionalFieldOf("name").forGetter(c -> c.name),
 			DimensionType.CODEC.optionalFieldOf("dimension").forGetter(c -> c.dimensionType)
 	).apply(i, VoidMapProvider::new));
 
 	@Override
-	public Codec<? extends IGameMapProvider> getCodec() {
+	public MapCodec<VoidMapProvider> getCodec() {
 		return CODEC;
 	}
 

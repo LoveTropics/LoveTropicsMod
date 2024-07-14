@@ -4,10 +4,10 @@ import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.BbMobE
 import net.minecraft.core.Vec3i;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.navigation.GroundPathNavigation;
-import net.minecraft.world.level.BlockGetter;
-import net.minecraft.world.level.pathfinder.BlockPathTypes;
 import net.minecraft.world.level.pathfinder.Node;
 import net.minecraft.world.level.pathfinder.PathFinder;
+import net.minecraft.world.level.pathfinder.PathType;
+import net.minecraft.world.level.pathfinder.PathfindingContext;
 import net.minecraft.world.level.pathfinder.WalkNodeEvaluator;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
@@ -32,7 +32,7 @@ public final class BbGroundNavigator extends GroundPathNavigation {
 	}
 
 	@Override
-	public boolean canCutCorner(BlockPathTypes type) {
+	public boolean canCutCorner(PathType type) {
 		return false;
 	}
 
@@ -59,33 +59,33 @@ public final class BbGroundNavigator extends GroundPathNavigation {
 
 	final class NodeProcessor extends WalkNodeEvaluator {
 		@Override
-		public BlockPathTypes getBlockPathType(BlockGetter level, int x, int y, int z, Mob mob) {
+		public PathType getPathTypeOfMob(PathfindingContext context, int x, int y, int z, Mob mob) {
 			// Don't allow climbing above the bounds of the plant bounds
 			int plotTopY = BbGroundNavigator.this.mob.getPlot().plantBounds.max().getY();
-			if (y > plotTopY && mob.getY() <= plotTopY) {
-				return BlockPathTypes.BLOCKED;
+			if (y > plotTopY && this.mob.getY() <= plotTopY) {
+				return PathType.BLOCKED;
 			}
 
-			return super.getBlockPathType(level, x, y, z, mob);
+			return super.getPathTypeOfMob(context, x, y, z, mob);
 		}
 
 		@Override
-		public BlockPathTypes getBlockPathType(BlockGetter world, int x, int y, int z) {
+		public PathType getPathType(PathfindingContext context, int x, int y, int z) {
 			BbMobBrain brain = BbGroundNavigator.this.mob.getMobBrain();
 			if (!brain.getPlotWalls().getBounds().contains(x + 0.5, y + 0.5, z + 0.5)) {
-				return BlockPathTypes.BLOCKED;
+				return PathType.BLOCKED;
 			}
 
-			BlockPathTypes nodeType = super.getBlockPathType(level, x, y, z);
+			PathType nodeType = super.getPathType(context, x, y, z);
 			if (nodeType.getMalus() >= 0.0F && brain.isScaredAt(x, y, z)) {
-				return BlockPathTypes.BLOCKED;
+				return PathType.BLOCKED;
 			}
 
 			return nodeType;
 		}
 
 		@Override
-		protected boolean isDiagonalValid(Node node, @Nullable Node a, @Nullable Node b, @Nullable Node c) {
+		protected boolean isDiagonalValid(Node root, @Nullable Node xNode, @Nullable Node zNode) {
 			return false;
 		}
 	}

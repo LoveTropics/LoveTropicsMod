@@ -7,39 +7,37 @@ import com.lovetropics.minigames.client.lobby.manage.state.ClientLobbyQueue;
 import com.lovetropics.minigames.client.lobby.manage.state.ClientLobbyQueuedGame;
 import com.lovetropics.minigames.client.lobby.state.ClientCurrentGame;
 import com.lovetropics.minigames.client.lobby.state.ClientGameDefinition;
-import com.lovetropics.minigames.common.core.game.lobby.*;
+import com.lovetropics.minigames.common.core.game.lobby.IGameLobby;
+import com.lovetropics.minigames.common.core.game.lobby.ILobbyGameQueue;
+import com.lovetropics.minigames.common.core.game.lobby.LobbyControls;
+import com.lovetropics.minigames.common.core.game.lobby.LobbyVisibility;
+import com.lovetropics.minigames.common.core.game.lobby.QueuedGame;
 import com.lovetropics.minigames.common.util.PartialUpdate;
 import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.codec.StreamDecoder;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Function;
 import java.util.function.IntConsumer;
 import java.util.stream.Collectors;
 
-import com.lovetropics.minigames.common.util.PartialUpdate.AbstractSet;
-import com.lovetropics.minigames.common.util.PartialUpdate.AbstractType;
-import com.lovetropics.minigames.common.util.PartialUpdate.Family;
-
 public abstract class ClientLobbyUpdate extends PartialUpdate<ClientLobbyManagement.Session> {
 	public static final class Set extends AbstractSet<ClientLobbyManagement.Session> {
+		public static final StreamCodec<RegistryFriendlyByteBuf, Set> STREAM_CODEC = createStreamCodec(Set::new);
+
 		private Set() {
 			super(Family.of(Type.values()));
 		}
 
 		public static Set create() {
 			return new Set();
-		}
-
-		public static Set decode(FriendlyByteBuf buffer) {
-			Set set = new Set();
-			set.decodeSelf(buffer);
-			return set;
 		}
 
 		public Set setName(String name) {
@@ -117,15 +115,15 @@ public abstract class ClientLobbyUpdate extends PartialUpdate<ClientLobbyManagem
 		SET_CONTROLS_STATE(SetControlsState::decode),
 		SET_VISIBILITY(SetVisibility::decode);
 
-		private final Function<FriendlyByteBuf, ClientLobbyUpdate> decode;
+		private final StreamDecoder<RegistryFriendlyByteBuf, ClientLobbyUpdate> decode;
 
-		Type(Function<FriendlyByteBuf, ClientLobbyUpdate> decode) {
+		Type(StreamDecoder<RegistryFriendlyByteBuf, ClientLobbyUpdate> decode) {
 			this.decode = decode;
 		}
 
 		@Override
-		public ClientLobbyUpdate decode(FriendlyByteBuf buffer) {
-			return decode.apply(buffer);
+		public ClientLobbyUpdate decode(RegistryFriendlyByteBuf buffer) {
+			return decode.decode(buffer);
 		}
 	}
 
@@ -149,7 +147,7 @@ public abstract class ClientLobbyUpdate extends PartialUpdate<ClientLobbyManagem
 		}
 
 		@Override
-		protected void encode(FriendlyByteBuf buffer) {
+		protected void encode(RegistryFriendlyByteBuf buffer) {
 			buffer.writeVarInt(installedGames.size());
 			for (ClientGameDefinition game : installedGames) {
 				game.encode(buffer);
@@ -158,7 +156,7 @@ public abstract class ClientLobbyUpdate extends PartialUpdate<ClientLobbyManagem
 			queue.encode(buffer);
 		}
 
-		static Initialize decode(FriendlyByteBuf buffer) {
+		static Initialize decode(RegistryFriendlyByteBuf buffer) {
 			int installedSize = buffer.readVarInt();
 			List<ClientGameDefinition> installedGames = new ArrayList<>(installedSize);
 			for (int i = 0; i < installedSize; i++) {
@@ -185,7 +183,7 @@ public abstract class ClientLobbyUpdate extends PartialUpdate<ClientLobbyManagem
 		}
 
 		@Override
-		protected void encode(FriendlyByteBuf buffer) {
+		protected void encode(RegistryFriendlyByteBuf buffer) {
 			buffer.writeUtf(name, 200);
 		}
 
@@ -209,15 +207,15 @@ public abstract class ClientLobbyUpdate extends PartialUpdate<ClientLobbyManagem
 		}
 
 		@Override
-		protected void encode(FriendlyByteBuf buffer) {
+		protected void encode(RegistryFriendlyByteBuf buffer) {
 			buffer.writeBoolean(game != null);
 			if (game != null) {
-				game.encode(buffer);
+				ClientCurrentGame.STREAM_CODEC.encode(buffer, game);
 			}
 		}
 
-		static SetCurrentGame decode(FriendlyByteBuf buffer) {
-			ClientCurrentGame game = buffer.readBoolean() ? ClientCurrentGame.decode(buffer) : null;
+		static SetCurrentGame decode(RegistryFriendlyByteBuf buffer) {
+			ClientCurrentGame game = buffer.readBoolean() ? ClientCurrentGame.STREAM_CODEC.decode(buffer) : null;
 			return new SetCurrentGame(game);
 		}
 	}
@@ -238,7 +236,7 @@ public abstract class ClientLobbyUpdate extends PartialUpdate<ClientLobbyManagem
 		}
 
 		@Override
-		protected void encode(FriendlyByteBuf buffer) {
+		protected void encode(RegistryFriendlyByteBuf buffer) {
 			buffer.writeVarInt(queue.size());
 			queue.forEach((IntConsumer) buffer::writeVarInt);
 
@@ -249,7 +247,7 @@ public abstract class ClientLobbyUpdate extends PartialUpdate<ClientLobbyManagem
 			});
 		}
 
-		static UpdateQueue decode(FriendlyByteBuf buffer) {
+		static UpdateQueue decode(RegistryFriendlyByteBuf buffer) {
 			int queueSize = buffer.readVarInt();
 			IntList queue = new IntArrayList(queueSize);
 			for (int i = 0; i < queueSize; i++) {
@@ -282,7 +280,7 @@ public abstract class ClientLobbyUpdate extends PartialUpdate<ClientLobbyManagem
 		}
 
 		@Override
-		protected void encode(FriendlyByteBuf buffer) {
+		protected void encode(RegistryFriendlyByteBuf buffer) {
 			buffer.writeVarInt(players.size());
 			for (ClientLobbyPlayer player : players) {
 				player.encode(buffer);
@@ -313,7 +311,7 @@ public abstract class ClientLobbyUpdate extends PartialUpdate<ClientLobbyManagem
 		}
 
 		@Override
-		protected void encode(FriendlyByteBuf buffer) {
+		protected void encode(RegistryFriendlyByteBuf buffer) {
 			state.encode(buffer);
 		}
 
@@ -338,7 +336,7 @@ public abstract class ClientLobbyUpdate extends PartialUpdate<ClientLobbyManagem
 		}
 
 		@Override
-		protected void encode(FriendlyByteBuf buffer) {
+		protected void encode(RegistryFriendlyByteBuf buffer) {
 			buffer.writeEnum(visibility);
 			buffer.writeBoolean(canFocusLive);
 		}

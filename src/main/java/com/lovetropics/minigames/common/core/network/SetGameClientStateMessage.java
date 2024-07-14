@@ -1,71 +1,67 @@
 package com.lovetropics.minigames.common.core.network;
 
-import com.lovetropics.minigames.LoveTropics;
+import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.client.game.ClientGameStateManager;
 import com.lovetropics.minigames.common.core.game.client_state.GameClientState;
 import com.lovetropics.minigames.common.core.game.client_state.GameClientStateType;
 import com.lovetropics.minigames.common.core.game.client_state.GameClientStateTypes;
-import com.mojang.serialization.DataResult;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.Tag;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraftforge.network.NetworkEvent;
+import io.netty.buffer.ByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
 
-import javax.annotation.Nullable;
-import java.util.function.Supplier;
+import java.util.Optional;
+import java.util.function.Function;
 
-public record SetGameClientStateMessage(GameClientStateType<?> type, @Nullable GameClientState state) {
+public record SetGameClientStateMessage(GameClientStateType<?> stateType, Optional<GameClientState> state) implements CustomPacketPayload {
+	public static final Type<SetGameClientStateMessage> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(Constants.MODID, "set_game_client_state"));
+
+	public static final StreamCodec<RegistryFriendlyByteBuf, SetGameClientStateMessage> STREAM_CODEC = new StreamCodec<>() {
+        private final StreamCodec<RegistryFriendlyByteBuf, GameClientStateType<?>> typeCodec = ByteBufCodecs.registry(GameClientStateTypes.REGISTRY_KEY);
+
+        @Override
+        public SetGameClientStateMessage decode(RegistryFriendlyByteBuf input) {
+			GameClientStateType<?> type = typeCodec.decode(input);
+            return new SetGameClientStateMessage(type, valueCodec(type).decode(input).map(Function.identity()));
+		}
+
+		@Override
+        public void encode(RegistryFriendlyByteBuf output, SetGameClientStateMessage message) {
+			typeCodec.encode(output, message.stateType);
+			encodeUnchecked(output, message.stateType, message.state);
+        }
+
+		@SuppressWarnings("unchecked")
+		private static <T extends GameClientState> void encodeUnchecked(RegistryFriendlyByteBuf output, GameClientStateType<T> type, Optional<GameClientState> state) {
+			valueCodec(type).encode(output, state.map(s -> (T) s));
+		}
+
+		private static <T extends GameClientState> StreamCodec<ByteBuf, Optional<T>> valueCodec(GameClientStateType<T> type) {
+			return ByteBufCodecs.fromCodec(type.codec().codec()).apply(ByteBufCodecs::optional);
+		}
+	};
+
 	public static <T extends GameClientState> SetGameClientStateMessage set(T state) {
-		return new SetGameClientStateMessage(state.getType(), state);
+		return new SetGameClientStateMessage(state.getType(), Optional.of(state));
 	}
 
 	public static <T extends GameClientState> SetGameClientStateMessage remove(GameClientStateType<T> type) {
-		return new SetGameClientStateMessage(type, null);
+		return new SetGameClientStateMessage(type, Optional.empty());
 	}
 
-	public void encode(FriendlyByteBuf buffer) {
-		buffer.writeRegistryIdUnsafe(GameClientStateTypes.REGISTRY.get(), this.type);
-
-		CompoundTag stateNbt = state != null ? tryEncodeUnchecked(type, state) : null;
-		buffer.writeNbt(stateNbt);
-	}
-
-	public static SetGameClientStateMessage decode(FriendlyByteBuf buffer) {
-		GameClientStateType<?> type = buffer.readRegistryIdUnsafe(GameClientStateTypes.REGISTRY.get());
-		CompoundTag stateNbt = buffer.readNbt();
-		GameClientState state = stateNbt != null ? tryDecode(type, stateNbt) : null;
-		return new SetGameClientStateMessage(type, state);
-	}
-
-	@SuppressWarnings("unchecked")
-	@Nullable
-	private static <T extends GameClientState> CompoundTag tryEncodeUnchecked(GameClientStateType<T> type, GameClientState state) {
-		DataResult<Tag> result = type.codec().encodeStart(NbtOps.INSTANCE, (T) state)
-				.flatMap(nbt -> nbt instanceof CompoundTag ? DataResult.success(nbt) : DataResult.error(() -> "Encoded state was not a compound!"));
-
-		result.error().ifPresent(error -> {
-			LoveTropics.LOGGER.warn("Failed to encode client state of type '{}': {}", GameClientStateTypes.REGISTRY.get().getKey(type), error);
-		});
-
-		return (CompoundTag) result.result().orElse(null);
-	}
-
-	@Nullable
-	private static <T extends GameClientState> T tryDecode(GameClientStateType<T> type, CompoundTag nbt) {
-		DataResult<T> result = type.codec().parse(NbtOps.INSTANCE, nbt);
-		result.error().ifPresent(error -> {
-			LoveTropics.LOGGER.warn("Failed to decode client state of type '{}': {}", GameClientStateTypes.REGISTRY.get().getKey(type), error);
-		});
-
-		return result.result().orElse(null);
-	}
-
-	public void handle(Supplier<NetworkEvent.Context> ctx) {
-		if (state != null) {
-			ClientGameStateManager.set(state);
+	public static void handle(SetGameClientStateMessage message, IPayloadContext context) {
+		if (message.state.isPresent()) {
+			ClientGameStateManager.set(message.state.get());
 		} else {
-			ClientGameStateManager.remove(type);
+			ClientGameStateManager.remove(message.stateType);
 		}
+	}
+
+	@Override
+	public Type<SetGameClientStateMessage> type() {
+		return TYPE;
 	}
 }

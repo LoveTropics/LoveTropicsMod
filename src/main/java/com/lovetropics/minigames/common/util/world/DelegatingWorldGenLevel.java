@@ -23,7 +23,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.border.WorldBorder;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.ChunkSource;
-import net.minecraft.world.level.chunk.ChunkStatus;
+import net.minecraft.world.level.chunk.status.ChunkStatus;
 import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.level.entity.EntityTypeTest;
 import net.minecraft.world.level.gameevent.GameEvent;
@@ -114,12 +114,12 @@ public class DelegatingWorldGenLevel implements WorldGenLevel {
 	}
 
 	@Override
-	public void gameEvent(GameEvent event, Vec3 position, GameEvent.Context context) {
+	public void gameEvent(Holder<GameEvent> event, Vec3 position, GameEvent.Context context) {
 		this.parent.gameEvent(event, position, context);
 	}
 
 	@Override
-	public void gameEvent(@Nullable final Entity entity, final GameEvent event, final BlockPos pos) {
+	public void gameEvent(@Nullable final Entity entity, final Holder<GameEvent> event, final BlockPos pos) {
 		this.parent.gameEvent(entity, event, pos);
 	}
 

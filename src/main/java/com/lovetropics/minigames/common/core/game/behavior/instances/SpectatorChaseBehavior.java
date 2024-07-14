@@ -15,16 +15,13 @@ import com.lovetropics.minigames.common.core.game.client_state.GameClientStateTy
 import com.lovetropics.minigames.common.core.game.client_state.instance.SpectatingClientState;
 import com.lovetropics.minigames.common.core.game.player.PlayerRole;
 import com.lovetropics.minigames.common.core.game.player.PlayerSet;
-import com.lovetropics.minigames.common.core.network.LoveTropicsNetwork;
 import com.lovetropics.minigames.common.role.StreamHosts;
 import com.mojang.serialization.MapCodec;
-import net.minecraft.ChatFormatting;
-import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.scores.Team;
-import net.minecraftforge.network.PacketDistributor;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 import java.util.Comparator;
 import java.util.List;
@@ -44,8 +41,8 @@ public final class SpectatorChaseBehavior implements IGameBehavior {
 	public void register(IGamePhase game, EventRegistrar events) {
 		events.listen(GamePlayerEvents.SET_ROLE, (player, role, lastRole) -> {
 			if (role == PlayerRole.SPECTATOR) {
-				LoveTropicsNetwork.CHANNEL.send(
-						PacketDistributor.PLAYER.with(() -> player),
+				PacketDistributor.sendToPlayer(
+						player,
 						new ShowNotificationToastMessage(MinigameTexts.SPECTATING_NOTIFICATION, SPECTATING_NOTIFICATION_STYLE)
 				);
 			} else if (lastRole == PlayerRole.SPECTATOR) {

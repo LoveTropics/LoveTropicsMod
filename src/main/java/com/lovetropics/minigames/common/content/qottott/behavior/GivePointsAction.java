@@ -46,7 +46,7 @@ public record GivePointsAction(StatisticKey<Integer> statistic, int count, boole
 	}
 
 	private static double getMultiplier(ServerPlayer player) {
-		final AttributeInstance attribute = player.getAttribute(Qottott.COIN_MULTIPLIER.get());
+		final AttributeInstance attribute = player.getAttribute(Qottott.COIN_MULTIPLIER);
 		return attribute != null ? attribute.getValue() : 1.0;
 	}
 

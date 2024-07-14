@@ -209,7 +209,7 @@ public final class MapCommand {
 		BlockPos min = BlockPosArgument.getSpawnablePos(context, "min");
 		BlockPos max = BlockPosArgument.getSpawnablePos(context, "max");
 
-		workspace.regions().add(key, BlockBox.of(min, max));
+		workspace.regions().add(context.getSource().getServer(), key, BlockBox.of(min, max));
 
 		return Command.SINGLE_SUCCESS;
 	}
@@ -220,7 +220,7 @@ public final class MapCommand {
 
 		String key = StringArgumentType.getString(context, "key");
 
-		workspace.regions().add(key, BlockBox.of(BlockPos.containing(pos)));
+		workspace.regions().add(context.getSource().getServer(), key, BlockBox.of(BlockPos.containing(pos)));
 
 		return Command.SINGLE_SUCCESS;
 	}
@@ -244,7 +244,7 @@ public final class MapCommand {
 			LevelStorageSource.LevelStorageAccess save = server.storageSource;
 			Path dimensionDirectory = save.getDimensionPath(workspace.dimensionKey());
 
-			ResourceLocation id = new ResourceLocation(Constants.MODID, workspace.id());
+			ResourceLocation id = ResourceLocation.fromNamespaceAndPath(Constants.MODID, workspace.id());
 			Path exportPath = MapExportWriter.pathFor(id);
 
 			try {

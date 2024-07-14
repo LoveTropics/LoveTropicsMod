@@ -9,12 +9,12 @@ import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvent
 import com.lovetropics.minigames.common.core.game.rewards.GameRewardsMap;
 import com.lovetropics.minigames.common.util.Util;
 import com.mojang.serialization.MapCodec;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtUtils;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.ResolvableProfile;
 import net.minecraft.world.level.block.entity.SkullBlockEntity;
 import org.apache.commons.lang3.mutable.MutableObject;
 
@@ -52,10 +52,9 @@ public record PlayerHeadRewardBehavior() implements IGameBehavior {
 
 	private static CompletableFuture<ItemStack> createPlayerHead(final ServerPlayer player) {
 		final CompletableFuture<ItemStack> future = new CompletableFuture<>();
-		SkullBlockEntity.updateGameprofile(player.getGameProfile(), profile -> {
+		SkullBlockEntity.fetchGameProfile(player.getGameProfile().getId()).thenAccept(result -> {
 			final ItemStack head = new ItemStack(Items.PLAYER_HEAD);
-			final CompoundTag profileTag = NbtUtils.writeGameProfile(new CompoundTag(), profile);
-			head.getOrCreateTag().put("SkullOwner", profileTag);
+			result.ifPresent(profile -> head.set(DataComponents.PROFILE, new ResolvableProfile(profile)));
 			future.complete(head);
 		});
 		return future;

@@ -13,12 +13,12 @@ import com.lovetropics.minigames.common.core.game.state.team.TeamState;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.util.FastColor;
-import net.minecraft.util.Mth;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.item.DyeableLeatherItem;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.DyedItemColor;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -58,22 +58,19 @@ public record AddEquipmentAction(List<ItemStack> items, ItemStack head, ItemStac
 		if (!colorByTeam) {
 			return result;
 		}
-		if (result.getItem() instanceof final DyeableLeatherItem dyeableItem && teams != null) {
+		if (result.is(ItemTags.DYEABLE) && teams != null) {
 			final GameTeamKey teamKey = teams.getTeamForPlayer(player);
 			final GameTeam team = teamKey != null ? teams.getTeamByKey(teamKey) : null;
 			if (team != null) {
-				setColor(dyeableItem, team, result);
+				setColor(team, result);
 			}
 		}
 		return result;
 	}
 
-	private static void setColor(final DyeableLeatherItem dyeableItem, final GameTeam team, final ItemStack stack) {
-		final float[] color = team.config().dye().getTextureDiffuseColors();
-		final int red = Mth.floor(color[0] * 255.0f);
-		final int green = Mth.floor(color[1] * 255.0f);
-		final int blue = Mth.floor(color[2] * 255.0f);
-		dyeableItem.setColor(stack, FastColor.ARGB32.color(0, red, green, blue));
+	private static void setColor(final GameTeam team, final ItemStack stack) {
+		int color = team.config().dye().getTextureDiffuseColor();
+		stack.set(DataComponents.DYED_COLOR, new DyedItemColor(color, true));
 	}
 
 	@Override

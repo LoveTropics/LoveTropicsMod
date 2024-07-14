@@ -24,24 +24,24 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.chunk.ChunkAccess;
-import net.minecraftforge.event.entity.EntityMountEvent;
-import net.minecraftforge.event.entity.EntityTeleportEvent;
-import net.minecraftforge.event.entity.living.LivingAttackEvent;
-import net.minecraftforge.event.entity.living.LivingDamageEvent;
-import net.minecraftforge.event.entity.living.LivingDeathEvent;
-import net.minecraftforge.event.entity.living.LivingDropsEvent;
-import net.minecraftforge.event.entity.living.LivingEvent;
-import net.minecraftforge.event.entity.living.LivingHurtEvent;
-import net.minecraftforge.event.entity.player.AttackEntityEvent;
-import net.minecraftforge.event.entity.player.EntityItemPickupEvent;
-import net.minecraftforge.event.entity.player.PlayerEvent;
-import net.minecraftforge.event.entity.player.PlayerInteractEvent;
-import net.minecraftforge.event.level.BlockEvent;
-import net.minecraftforge.event.level.ChunkEvent;
-import net.minecraftforge.event.level.ExplosionEvent;
-import net.minecraftforge.event.level.SaplingGrowTreeEvent;
-import net.minecraftforge.eventbus.api.Event;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.neoforge.common.util.TriState;
+import net.neoforged.neoforge.event.entity.EntityMountEvent;
+import net.neoforged.neoforge.event.entity.EntityTeleportEvent;
+import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
+import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
+import net.neoforged.neoforge.event.entity.living.LivingDropsEvent;
+import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
+import net.neoforged.neoforge.event.entity.player.AttackEntityEvent;
+import net.neoforged.neoforge.event.entity.player.ItemEntityPickupEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
+import net.neoforged.neoforge.event.level.BlockEvent;
+import net.neoforged.neoforge.event.level.BlockGrowFeatureEvent;
+import net.neoforged.neoforge.event.level.ChunkEvent;
+import net.neoforged.neoforge.event.level.ExplosionEvent;
+import net.neoforged.neoforge.event.level.ExplosionKnockbackEvent;
+import net.neoforged.neoforge.event.tick.EntityTickEvent;
 
 public final class GameEventDispatcher {
 	public static GameEventDispatcher instance;
@@ -71,38 +71,24 @@ public final class GameEventDispatcher {
 	}
 
 	@SubscribeEvent
-	public void onPlayerHurt(LivingHurtEvent event) {
+	public void onPlayerDamaged(LivingDamageEvent.Pre event) {
 		if (event.getEntity() instanceof ServerPlayer player) {
 			IGamePhase game = gameLookup.getGamePhaseFor(player);
 			if (game != null) {
 				try {
 					DamageSource source = event.getSource();
-					float amount = event.getAmount();
+					float amount = event.getNewDamage();
 					InteractionResult result = game.invoker(GamePlayerEvents.DAMAGE).onDamage(player, source, amount);
 					if (result == InteractionResult.FAIL) {
-						event.setCanceled(true);
+						event.setNewDamage(0.0f);
+						return;
+					}
+					float newAmount = game.invoker(GamePlayerEvents.DAMAGE_AMOUNT).getDamageAmount(player, source, amount, amount);
+					if (newAmount != amount) {
+						event.setNewDamage(newAmount);
 					}
 				} catch (Exception e) {
 					LoveTropics.LOGGER.warn("Failed to dispatch player hurt event", e);
-				}
-			}
-		}
-	}
-
-	@SubscribeEvent
-	public void onPlayerDamage(LivingDamageEvent event) {
-		if (event.getEntity() instanceof ServerPlayer player) {
-			IGamePhase game = gameLookup.getGamePhaseFor(player);
-			if (game != null) {
-				try {
-					DamageSource source = event.getSource();
-					float amount = event.getAmount();
-					float newAmount = game.invoker(GamePlayerEvents.DAMAGE_AMOUNT).getDamageAmount(player, source, amount, amount);
-					if (newAmount != amount) {
-						event.setAmount(newAmount);
-					}
-				} catch (Exception e) {
-					LoveTropics.LOGGER.warn("Failed to dispatch player damage amount event", e);
 				}
 			}
 		}
@@ -122,12 +108,12 @@ public final class GameEventDispatcher {
 	}
 
 	@SubscribeEvent
-	public void onDamageEntityIndirect(LivingAttackEvent event) {
+	public void onDamageEntityIndirect(LivingIncomingDamageEvent event) {
 		Entity target = event.getEntity();
 		DamageSource source = event.getSource();
 
 		IGamePhase game = gameLookup.getGamePhaseFor(target);
-		if (game != null && source.isIndirect() && source.getEntity() instanceof ServerPlayer indirectSource) {
+		if (game != null && !source.isDirect() && source.getEntity() instanceof ServerPlayer indirectSource) {
 			if (this.dispatchAttackEvent(game, indirectSource, target)) {
 				event.setCanceled(true);
 			}
@@ -145,22 +131,23 @@ public final class GameEventDispatcher {
 	}
 
 	@SubscribeEvent
-	public void onLivingUpdate(LivingEvent.LivingTickEvent event) {
-		LivingEntity entity = event.getEntity();
-		IGamePhase game = gameLookup.getGamePhaseFor(entity);
-		if (game != null) {
-			if (entity instanceof ServerPlayer && game.getParticipants().contains(entity)) {
-				try {
-					game.invoker(GamePlayerEvents.TICK).tick((ServerPlayer) entity);
-				} catch (Exception e) {
-					LoveTropics.LOGGER.warn("Failed to dispatch player tick event", e);
+	public void onLivingUpdate(EntityTickEvent.Post event) {
+		if (event.getEntity() instanceof LivingEntity entity) {
+			IGamePhase game = gameLookup.getGamePhaseFor(entity);
+			if (game != null) {
+				if (entity instanceof ServerPlayer && game.getParticipants().contains(entity)) {
+					try {
+						game.invoker(GamePlayerEvents.TICK).tick((ServerPlayer) entity);
+					} catch (Exception e) {
+						LoveTropics.LOGGER.warn("Failed to dispatch player tick event", e);
+					}
 				}
-			}
 
-			try {
-				game.invoker(GameLivingEntityEvents.TICK).tick(entity);
-			} catch (Exception e) {
-				LoveTropics.LOGGER.warn("Failed to dispatch living tick event", e);
+				try {
+					game.invoker(GameLivingEntityEvents.TICK).tick(entity);
+				} catch (Exception e) {
+					LoveTropics.LOGGER.warn("Failed to dispatch living tick event", e);
+				}
 			}
 		}
 	}
@@ -307,7 +294,7 @@ public final class GameEventDispatcher {
 			try {
 				InteractionResult blockResult = game.invoker(GamePlayerEvents.USE_BLOCK).onUseBlock(player, player.serverLevel(), event.getPos(), event.getHand(), event.getHitVec());
 				if (blockResult == InteractionResult.CONSUME) {
-					event.setUseBlock(Event.Result.DENY);
+					event.setUseBlock(TriState.FALSE);
 				} else if (blockResult != InteractionResult.PASS) {
 					event.setCanceled(true);
 					event.setCancellationResult(blockResult);
@@ -315,7 +302,7 @@ public final class GameEventDispatcher {
 				}
 				InteractionResult itemResult = game.invoker(GamePlayerEvents.USE_ITEM_ON_BLOCK).onUseBlock(player, player.serverLevel(), event.getPos(), event.getHand(), event.getHitVec());
 				if (itemResult == InteractionResult.CONSUME) {
-					event.setUseItem(Event.Result.DENY);
+					event.setUseItem(TriState.FALSE);
 				} else if (itemResult != InteractionResult.PASS) {
 					event.setCanceled(true);
 					event.setCancellationResult(itemResult);
@@ -388,7 +375,7 @@ public final class GameEventDispatcher {
 
 	@SubscribeEvent
 	public void onExplosion(ExplosionEvent.Detonate event) {
-		IGamePhase game = gameLookup.getGamePhaseAt(event.getLevel(), BlockPos.containing(event.getExplosion().getPosition()));
+		IGamePhase game = gameLookup.getGamePhaseAt(event.getLevel(), BlockPos.containing(event.getExplosion().center()));
 		if (game != null) {
 			try {
 				game.invoker(GameWorldEvents.EXPLOSION_DETONATE).onExplosionDetonate(event.getExplosion(), event.getAffectedBlocks(), event.getAffectedEntities());
@@ -399,7 +386,20 @@ public final class GameEventDispatcher {
 	}
 
 	@SubscribeEvent
-	public void onTreeGrow(SaplingGrowTreeEvent event) {
+	public void onExplosionKnockback(ExplosionKnockbackEvent event) {
+		Entity entity = event.getAffectedEntity();
+		IGamePhase game = gameLookup.getGamePhaseFor(entity);
+		if (game != null) {
+			try {
+                event.setKnockbackVelocity(game.invoker(GameLivingEntityEvents.MODIFY_EXPLOSION_KNOCKBACK).getKnockback(entity, event.getExplosion(), event.getKnockbackVelocity(), event.getKnockbackVelocity()));
+			} catch (Exception e) {
+				LoveTropics.LOGGER.warn("Failed to dispatch explosion event", e);
+			}
+		}
+	}
+
+	@SubscribeEvent
+	public void onTreeGrow(BlockGrowFeatureEvent event) {
 		IGamePhase game = gameLookup.getGamePhaseAt((Level) event.getLevel(), event.getPos());
 		if (game != null) {
 			try {
@@ -433,21 +433,21 @@ public final class GameEventDispatcher {
 	}
 
 	@SubscribeEvent
-	public void onItemPickup(EntityItemPickupEvent event) {
-		ItemEntity itemEntity = event.getItem();
+	public void onItemPickup(ItemEntityPickupEvent.Pre event) {
+		ItemEntity itemEntity = event.getItemEntity();
 		IGamePhase game = gameLookup.getGamePhaseFor(itemEntity);
 		if (game == null) {
 			return;
 		}
-		if (event.getEntity() instanceof ServerPlayer serverPlayer && game.getAllPlayers().contains(serverPlayer)) {
+		if (event.getPlayer() instanceof ServerPlayer serverPlayer && game.getAllPlayers().contains(serverPlayer)) {
 			try {
 				InteractionResult result = game.invoker(GamePlayerEvents.PICK_UP_ITEM).onPickUpItem(serverPlayer, itemEntity);
 				switch (result) {
 					case CONSUME, CONSUME_PARTIAL -> {
-						event.setResult(Event.Result.ALLOW);
-						event.getItem().getItem().setCount(0);
+						event.setCanPickup(TriState.TRUE);
+						event.getItemEntity().getItem().setCount(0);
 					}
-					case FAIL -> event.setCanceled(true);
+					case FAIL -> event.setCanPickup(TriState.FALSE);
 				}
 			} catch (Exception e) {
 				LoveTropics.LOGGER.warn("Failed to dispatch item pickup event", e);

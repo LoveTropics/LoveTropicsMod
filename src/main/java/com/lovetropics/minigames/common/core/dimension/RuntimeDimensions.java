@@ -1,12 +1,11 @@
 package com.lovetropics.minigames.common.core.dimension;
 
-import com.google.common.base.Preconditions;
 import com.lovetropics.minigames.Constants;
-import com.mojang.serialization.Lifecycle;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.MappedRegistry;
+import net.minecraft.core.RegistrationInfo;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
@@ -18,13 +17,13 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.BiomeManager;
 import net.minecraft.world.level.dimension.LevelStem;
 import net.minecraft.world.level.storage.LevelStorageSource;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.level.LevelEvent;
-import net.minecraftforge.event.server.ServerAboutToStartEvent;
-import net.minecraftforge.event.server.ServerStoppingEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.level.LevelEvent;
+import net.neoforged.neoforge.event.server.ServerAboutToStartEvent;
+import net.neoforged.neoforge.event.server.ServerStoppingEvent;
+import net.neoforged.neoforge.event.tick.ServerTickEvent;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -42,7 +41,7 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
 
-@Mod.EventBusSubscriber(modid = Constants.MODID)
+@EventBusSubscriber(modid = Constants.MODID)
 public final class RuntimeDimensions {
 	private static final Logger LOGGER = LogManager.getLogger(RuntimeDimensions.class);
 
@@ -63,11 +62,7 @@ public final class RuntimeDimensions {
 	}
 
 	@SubscribeEvent
-	public static void onServerTick(TickEvent.ServerTickEvent event) {
-		if (event.phase == TickEvent.Phase.END) {
-			return;
-		}
-
+	public static void onServerTick(ServerTickEvent.Pre event) {
 		RuntimeDimensions instance = RuntimeDimensions.instance;
 		if (instance != null) {
 			instance.tick();
@@ -135,7 +130,7 @@ public final class RuntimeDimensions {
 
 		MappedRegistry<LevelStem> dimensionsRegistry = getLevelStemRegistry(this.server);
 		dimensionsRegistry.unfreeze();
-		dimensionsRegistry.register(ResourceKey.create(Registries.LEVEL_STEM, key), config.dimension(), Lifecycle.stable());
+		dimensionsRegistry.register(ResourceKey.create(Registries.LEVEL_STEM, key), config.dimension(), RegistrationInfo.BUILT_IN);
 		dimensionsRegistry.freeze();
 
 		ServerLevel level = new ServerLevel(
@@ -173,7 +168,7 @@ public final class RuntimeDimensions {
 			this.temporaryDimensions.add(levelKey);
 		}
 
-		MinecraftForge.EVENT_BUS.post(new LevelEvent.Load(level));
+		NeoForge.EVENT_BUS.post(new LevelEvent.Load(level));
 
 		level.tick(() -> true);
 
@@ -240,7 +235,7 @@ public final class RuntimeDimensions {
 
 			this.temporaryDimensions.remove(dimensionKey);
 
-			MinecraftForge.EVENT_BUS.post(new LevelEvent.Unload(level));
+			NeoForge.EVENT_BUS.post(new LevelEvent.Unload(level));
 
 			MappedRegistry<LevelStem> dimensionsRegistry = getLevelStemRegistry(this.server);
 
@@ -281,7 +276,7 @@ public final class RuntimeDimensions {
 
 	private static ResourceLocation generateTemporaryDimensionKey() {
 		String random = RandomStringUtils.random(16, "abcdefghijklmnopqrstuvwxyz0123456789");
-		return new ResourceLocation(Constants.MODID, "tmp_" + random);
+		return ResourceLocation.fromNamespaceAndPath(Constants.MODID, "tmp_" + random);
 	}
 
 	public boolean isTemporaryDimension(ResourceKey<Level> dimension) {

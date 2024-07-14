@@ -4,7 +4,11 @@ import com.lovetropics.lib.codec.MoreCodecs;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.network.FriendlyByteBuf;
+import io.netty.buffer.ByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.util.ByIdMap;
 
 public record NotificationStyle(NotificationIcon icon, Sentiment sentiment, Color color, long visibleTimeMs) {
 	public static final MapCodec<NotificationStyle> MAP_CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
@@ -14,55 +18,56 @@ public record NotificationStyle(NotificationIcon icon, Sentiment sentiment, Colo
 			Codec.LONG.optionalFieldOf("visible_time_ms", 5 * 1000L).forGetter(NotificationStyle::visibleTimeMs)
 	).apply(i, NotificationStyle::new));
 
-	public void encode(FriendlyByteBuf buffer) {
-		this.icon.encode(buffer);
-		buffer.writeByte(this.sentiment.ordinal() & 0xFF);
-		buffer.writeByte(this.color.ordinal() & 0xFF);
-		buffer.writeVarLong(this.visibleTimeMs);
-	}
-
-	public static NotificationStyle decode(FriendlyByteBuf buffer) {
-		NotificationIcon icon = NotificationIcon.decode(buffer);
-		Sentiment sentiment = Sentiment.VALUES[buffer.readUnsignedByte() % Sentiment.VALUES.length];
-		Color color = Color.VALUES[buffer.readUnsignedByte() % Color.VALUES.length];
-		long timeMs = buffer.readVarLong();
-		return new NotificationStyle(icon, sentiment, color, timeMs);
-	}
-
-	public int textureOffset() {
-		return this.sentiment.offset + this.color.offset;
-	}
+	public static final StreamCodec<RegistryFriendlyByteBuf, NotificationStyle> STREAM_CODEC = StreamCodec.composite(
+			NotificationIcon.STREAM_CODEC, NotificationStyle::icon,
+			Sentiment.STREAM_CODEC, NotificationStyle::sentiment,
+			Color.STREAM_CODEC, NotificationStyle::color,
+			ByteBufCodecs.VAR_LONG, NotificationStyle::visibleTimeMs,
+			NotificationStyle::new
+	);
 
 	public enum Color {
-		DARK("dark", 0),
-		LIGHT("light", 32);
+		DARK("dark"),
+		LIGHT("light");
 
 		public static final Color[] VALUES = values();
 		public static final Codec<Color> CODEC = MoreCodecs.stringVariants(VALUES, c -> c.name);
+		public static final StreamCodec<ByteBuf, Color> STREAM_CODEC = ByteBufCodecs.idMapper(
+				ByIdMap.continuous(Enum::ordinal, values(), ByIdMap.OutOfBoundsStrategy.ZERO),
+				Enum::ordinal
+		);
 
 		private final String name;
-		public final int offset;
 
-		Color(String name, int offset) {
+		Color(String name) {
 			this.name = name;
-			this.offset = offset;
+		}
+
+		public String getName() {
+			return name;
 		}
 	}
 
 	public enum Sentiment {
-		NEUTRAL("neutral", 0),
-		POSITIVE("positive", 64),
-		NEGATIVE("negative", 128);
+		NEUTRAL("neutral"),
+		POSITIVE("positive"),
+		NEGATIVE("negative");
 
 		public static final Sentiment[] VALUES = values();
 		public static final Codec<Sentiment> CODEC = MoreCodecs.stringVariants(VALUES, s -> s.name);
+		public static final StreamCodec<ByteBuf, Sentiment> STREAM_CODEC = ByteBufCodecs.idMapper(
+				ByIdMap.continuous(Enum::ordinal, values(), ByIdMap.OutOfBoundsStrategy.ZERO),
+				Enum::ordinal
+		);
 
 		public final String name;
-		public final int offset;
 
-		Sentiment(String name, int offset) {
+		Sentiment(String name) {
 			this.name = name;
-			this.offset = offset;
+		}
+
+		public String getName() {
+			return name;
 		}
 	}
 }

@@ -1,15 +1,11 @@
 package com.lovetropics.minigames.common.core.game.datagen;
 
-import com.google.gson.JsonElement;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
-import com.mojang.serialization.JsonOps;
 import net.minecraft.MethodsReturnNonnullByDefault;
-import net.minecraft.Util;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataProvider;
 import net.minecraft.data.PackOutput;
-import net.minecraft.resources.RegistryOps;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.concurrent.CompletableFuture;
@@ -32,14 +28,11 @@ public class BehaviorProvider implements DataProvider {
     public CompletableFuture<?> run(CachedOutput pOutput) {
         return registries.thenCompose(regs -> {
             final var behProv = this.output.createPathProvider(PackOutput.Target.DATA_PACK, "behaviors");
-            final var regOps = RegistryOps.create(JsonOps.INSTANCE, regs);
             return CompletableFuture.allOf(behaviors.stream()
                     .map(entry -> {
                         final var built = entry.getValue();
                         final var path = behProv.json(entry.getKey());
-
-                        final JsonElement element = Util.getOrThrow(IGameBehavior.CODEC.encodeStart(regOps, built), ex -> new RuntimeException("Couldn't serialize behavior " + path + ": " + ex));
-                        return DataProvider.saveStable(pOutput, element, path);
+                        return DataProvider.saveStable(pOutput, regs, IGameBehavior.CODEC, built, path);
                     })
                     .toArray(CompletableFuture[]::new));
         });

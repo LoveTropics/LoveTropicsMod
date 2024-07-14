@@ -15,12 +15,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public final class NotificationToast implements Toast {
-	private static final ResourceLocation TEXTURE = new ResourceLocation(Constants.MODID, "textures/gui/toasts.png");
-
-	private static final int TEXTURE_WIDTH = 160;
-	private static final int TEXTURE_HEIGHT = 32;
-	private static final int TEXTURE_BORDER = 4;
-
 	private static final int ICON_SIZE = 18;
 	private static final int TEXT_LEFT = ICON_SIZE + 8;
 	private static final int MAX_WIDTH = 160 - TEXT_LEFT;
@@ -31,6 +25,7 @@ public final class NotificationToast implements Toast {
 
 	private final List<FormattedCharSequence> lines;
 	private final NotificationStyle style;
+	private final ResourceLocation backgroundSprite;
 
 	private final int width;
 	private final int height;
@@ -47,11 +42,12 @@ public final class NotificationToast implements Toast {
 
 		this.lines = lines;
 		this.style = style;
+		backgroundSprite = ResourceLocation.fromNamespaceAndPath(Constants.MODID, "toast/" + style.color().getName() + "_" + style.sentiment().getName());
 	}
 
 	@Override
 	public Visibility render(GuiGraphics graphics, ToastComponent gui, long time) {
-		graphics.blitNineSliced(TEXTURE, 0, 0, width, height, TEXTURE_BORDER, TEXTURE_WIDTH, TEXTURE_HEIGHT, 0, style.textureOffset());
+		graphics.blitSprite(backgroundSprite, 0, 0, width, height);
 
 		this.drawText(graphics);
 		this.drawIcon(graphics);

@@ -3,6 +3,7 @@ package com.lovetropics.minigames.common.core.game.rewards;
 import com.lovetropics.minigames.common.content.MinigameTexts;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.arguments.item.ItemInput;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
@@ -14,7 +15,7 @@ import java.util.Set;
 
 public class GameRewards {
 	private final List<ItemStack> stacks = new ArrayList<>();
-	private final Set<ItemStack> collectibles = ItemStackLinkedSet.createTypeAndTagSet();
+	private final Set<ItemStack> collectibles = ItemStackLinkedSet.createTypeAndComponentsSet();
 
 	public void give(final ItemStack item) {
 		final ItemStack remainder = tryMergeIntoExistingStack(item.copy());
@@ -31,7 +32,7 @@ public class GameRewards {
 
 	private ItemStack tryMergeIntoExistingStack(final ItemStack item) {
 		for (final ItemStack stack : stacks) {
-			if (!ItemStack.isSameItemSameTags(item, stack)) {
+			if (!ItemStack.isSameItemSameComponents(item, stack)) {
 				continue;
 			}
 			final int maxAmount = stack.getMaxStackSize() - stack.getCount();
@@ -67,13 +68,10 @@ public class GameRewards {
 
 	private static void grantCollectible(final ServerPlayer player, final ItemStack item) {
 		final CommandSourceStack source = player.server.createCommandSourceStack();
-		final StringBuilder commandBuilder = new StringBuilder("collectible give ")
-				.append(player.getGameProfile().getName())
-				.append(" ")
-				.append(item.getItem().builtInRegistryHolder().key().location());
-		if (item.getTag() != null) {
-			commandBuilder.append("{").append(item.getTag().toString()).append("}");
-		}
-		player.server.getCommands().performPrefixedCommand(source, commandBuilder.toString());
+        String commandBuilder = "collectible give " +
+                player.getGameProfile().getName() +
+                " " +
+                new ItemInput(item.getItemHolder(), item.getComponentsPatch()).serialize(player.registryAccess());
+		player.server.getCommands().performPrefixedCommand(source, commandBuilder);
 	}
 }

@@ -13,7 +13,6 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.MapLike;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.util.ExtraCodecs;
 
 import java.util.Arrays;
 import java.util.List;
@@ -37,7 +36,7 @@ public class GameActionList<T> {
 	public static <T, A extends ActionTarget<T>> MapCodec<GameActionList<T>> mapCodec(Supplier<Codec<A>> type, A target) {
         return RecordCodecBuilder.mapCodec(i -> i.group(
                 IGameBehavior.CODEC.fieldOf("actions").forGetter(list -> list.behavior),
-                ExtraCodecs.lazyInitializedCodec(type).optionalFieldOf("target", target).forGetter(list -> (A) list.target)
+                Codec.lazyInitialized(type).optionalFieldOf("target", target).forGetter(list -> (A) list.target)
         ).apply(i, GameActionList::new));
     }
 

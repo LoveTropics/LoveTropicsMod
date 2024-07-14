@@ -1,57 +1,56 @@
 package com.lovetropics.minigames.client.lobby.state.message;
 
+import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.client.lobby.state.ClientCurrentGame;
 import com.lovetropics.minigames.client.lobby.state.ClientLobbyManager;
 import com.lovetropics.minigames.common.core.game.lobby.IGameLobby;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraftforge.network.NetworkEvent;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
 
-import javax.annotation.Nullable;
-import java.util.function.Supplier;
+import java.util.Optional;
 
-public record LobbyUpdateMessage(int id, @Nullable Update update) {
-	public static LobbyUpdateMessage update(IGameLobby lobby) {
-		int id = lobby.getMetadata().id().networkId();
-		String name = lobby.getMetadata().name();
-		ClientCurrentGame currentGame = lobby.getClientCurrentGame();
-		return new LobbyUpdateMessage(id, new Update(name, currentGame));
-	}
+public record LobbyUpdateMessage(int id, Optional<Update> update) implements CustomPacketPayload {
+    public static final Type<LobbyUpdateMessage> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(Constants.MODID, "lobby_update"));
 
-	public static LobbyUpdateMessage remove(IGameLobby lobby) {
-		return new LobbyUpdateMessage(lobby.getMetadata().id().networkId(), null);
-	}
+    public static final StreamCodec<RegistryFriendlyByteBuf, LobbyUpdateMessage> STREAM_CODEC = StreamCodec.composite(
+            ByteBufCodecs.VAR_INT, LobbyUpdateMessage::id,
+            Update.STREAM_CODEC.apply(ByteBufCodecs::optional), LobbyUpdateMessage::update,
+            LobbyUpdateMessage::new
+    );
 
-	public void encode(FriendlyByteBuf buffer) {
-		buffer.writeVarInt(id);
-		buffer.writeNullable(update, (b, u) -> u.encode(b));
-	}
+    public static LobbyUpdateMessage update(IGameLobby lobby) {
+        int id = lobby.getMetadata().id().networkId();
+        String name = lobby.getMetadata().name();
+        ClientCurrentGame currentGame = lobby.getClientCurrentGame();
+        return new LobbyUpdateMessage(id, Optional.of(new Update(name, Optional.ofNullable(currentGame))));
+    }
 
-	public static LobbyUpdateMessage decode(FriendlyByteBuf buffer) {
-		int id = buffer.readVarInt();
-		Update update = buffer.readNullable(Update::decode);
-		return new LobbyUpdateMessage(id, update);
-	}
+    public static LobbyUpdateMessage remove(IGameLobby lobby) {
+        return new LobbyUpdateMessage(lobby.getMetadata().id().networkId(), null);
+    }
 
-	public void handle(Supplier<NetworkEvent.Context> ctx) {
-		if (update != null) {
-			ClientLobbyManager.addOrUpdate(id, update.name, update.currentGame);
-		} else {
-			ClientLobbyManager.remove(id);
-		}
-	}
+    public static void handle(LobbyUpdateMessage message, IPayloadContext context) {
+        if (message.update.isPresent()) {
+            ClientLobbyManager.addOrUpdate(message.id, message.update.get().name, message.update.get().currentGame.orElse(null));
+        } else {
+            ClientLobbyManager.remove(message.id);
+        }
+    }
 
-	private record Update(String name, @Nullable ClientCurrentGame currentGame) {
-		private static final int MAX_NAME_LENGTH = 200;
+    @Override
+    public Type<LobbyUpdateMessage> type() {
+        return TYPE;
+    }
 
-		private static Update decode(FriendlyByteBuf buffer) {
-			String name = buffer.readUtf(MAX_NAME_LENGTH);
-			ClientCurrentGame currentGame = buffer.readNullable(ClientCurrentGame::decode);
-			return new Update(name, currentGame);
-		}
-
-		private void encode(FriendlyByteBuf buffer) {
-			buffer.writeUtf(name, MAX_NAME_LENGTH);
-			buffer.writeNullable(currentGame, (b, g) -> g.encode(b));
-		}
-	}
+    private record Update(String name, Optional<ClientCurrentGame> currentGame) {
+        public static final StreamCodec<RegistryFriendlyByteBuf, Update> STREAM_CODEC = StreamCodec.composite(
+                ByteBufCodecs.stringUtf8(200), Update::name,
+                ClientCurrentGame.STREAM_CODEC.apply(ByteBufCodecs::optional), Update::currentGame,
+                Update::new
+        );
+    }
 }

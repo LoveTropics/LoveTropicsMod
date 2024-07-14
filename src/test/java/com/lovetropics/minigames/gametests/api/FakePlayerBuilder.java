@@ -3,6 +3,7 @@ package com.lovetropics.minigames.gametests.api;
 import net.minecraft.core.Vec3i;
 import net.minecraft.gametest.framework.GameTestInfo;
 import net.minecraft.gametest.framework.GameTestListener;
+import net.minecraft.gametest.framework.GameTestRunner;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.player.Player;
@@ -72,16 +73,21 @@ public class FakePlayerBuilder {
             }
 
             @Override
-            public void testPassed(GameTestInfo pTestInfo) {
+            public void testPassed(GameTestInfo pTest, GameTestRunner pRunner) {
                 player.exitWorld();
             }
 
             @Override
-            public void testFailed(GameTestInfo pTestInfo) {
+            public void testFailed(GameTestInfo pTest, GameTestRunner pRunner) {
                 player.exitWorld();
             }
+
+            @Override
+            public void testAddedForRerun(GameTestInfo pOldTest, GameTestInfo pNewTest, GameTestRunner pRunner) {
+
+            }
         });
-        player.server.getConnection().getConnections().add(player.connection.connection);
+        player.server.getConnection().getConnections().add(player.connection.getConnection());
         player.getAbilities().invulnerable = invulnerable;
         return player;
     }

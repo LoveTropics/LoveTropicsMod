@@ -34,6 +34,7 @@ import it.unimi.dsi.fastutil.objects.Reference2ObjectMaps;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 import net.minecraft.ChatFormatting;
 import net.minecraft.SharedConstants;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.protocol.game.ClientboundSetSubtitleTextPacket;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
@@ -44,7 +45,6 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.stream.IntStream;
 
@@ -59,7 +59,7 @@ public final class BbCurrencyBehavior implements IGameBehavior {
 	}
 
 	public static final MapCodec<BbCurrencyBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
-			ForgeRegistries.ITEMS.getCodec().fieldOf("item").forGetter(c -> c.item),
+			BuiltInRegistries.ITEM.byNameCodec().fieldOf("item").forGetter(c -> c.item),
 			Codec.INT.fieldOf("initial_currency").forGetter(c -> c.initialCurrency),
 			DropCalculation.CODEC.fieldOf("drop_calculation").forGetter(c -> c.dropCalculation),
 			Codec.LONG.fieldOf("drop_interval").forGetter(c -> c.dropInterval)

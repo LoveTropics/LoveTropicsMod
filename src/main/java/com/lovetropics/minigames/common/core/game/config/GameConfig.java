@@ -3,11 +3,10 @@ package com.lovetropics.minigames.common.core.game.config;
 import com.lovetropics.minigames.common.core.game.IGameDefinition;
 import com.lovetropics.minigames.common.core.game.IGamePhaseDefinition;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.ExtraCodecs;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
@@ -55,8 +54,8 @@ public final class GameConfig implements IGameDefinition {
 		return RecordCodecBuilder.create(i -> i.group(
 				ResourceLocation.CODEC.optionalFieldOf("backend_id").forGetter(c -> Optional.of(c.backendId)),
 				Codec.STRING.optionalFieldOf("statistics_key").forGetter(c -> Optional.of(c.statisticsKey)),
-				ExtraCodecs.COMPONENT.fieldOf("name").forGetter(c -> c.name),
-				ExtraCodecs.COMPONENT.optionalFieldOf("subtitle").forGetter(c -> Optional.ofNullable(c.subtitle)),
+				ComponentSerialization.CODEC.fieldOf("name").forGetter(c -> c.name),
+				ComponentSerialization.CODEC.optionalFieldOf("subtitle").forGetter(c -> Optional.ofNullable(c.subtitle)),
 				ResourceLocation.CODEC.optionalFieldOf("icon").forGetter(c -> Optional.ofNullable(c.icon)),
 				Codec.INT.optionalFieldOf("minimum_participants", 1).forGetter(c -> c.minimumParticipants),
 				Codec.INT.optionalFieldOf("maximum_participants", 100).forGetter(c -> c.maximumParticipants),

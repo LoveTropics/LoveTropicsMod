@@ -6,9 +6,11 @@ import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.ai.BbM
 import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.ai.KaboomCropGoal;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.explosion.PlantAffectingExplosion;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.Plot;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.protocol.game.ClientboundExplodePacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.EntityType;
@@ -22,7 +24,7 @@ import net.minecraft.world.entity.monster.Creeper;
 import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.material.Fluid;
-import net.minecraft.world.level.pathfinder.BlockPathTypes;
+import net.minecraft.world.level.pathfinder.PathType;
 import net.minecraft.world.phys.Vec3;
 
 public class BbCreeperEntity extends Creeper implements BbMobEntity {
@@ -36,7 +38,7 @@ public class BbCreeperEntity extends Creeper implements BbMobEntity {
         this.mobBrain = new BbMobBrain(plot.walls);
         this.plot = plot;
 
-        setPathfindingMalus(BlockPathTypes.DANGER_OTHER, BERRY_BUSH_MALUS);
+        setPathfindingMalus(PathType.DANGER_OTHER, BERRY_BUSH_MALUS);
     }
 
     @Override
@@ -68,14 +70,14 @@ public class BbCreeperEntity extends Creeper implements BbMobEntity {
             double z = this.getZ();
 
             float size = 2.5f + explosionSizeOffset;
-            Explosion explosion = new PlantAffectingExplosion(this.level(), null, null, null, x, y, z, size, false, Explosion.BlockInteraction.DESTROY, e -> true, this.plot);
+            Explosion explosion = new PlantAffectingExplosion(this.level(), null, null, null, x, y, z, size, false, Explosion.BlockInteraction.DESTROY, ParticleTypes.EXPLOSION, ParticleTypes.EXPLOSION_EMITTER, SoundEvents.GENERIC_EXPLODE, e -> true, this.plot);
             explosion.explode();
             explosion.finalizeExplosion(false);
 
             float factor = this.isPowered() ? 2.0F : 1.0F;
             for (ServerPlayer player : ((ServerLevel) this.level()).players()) {
                 if (player.distanceToSqr(x, y, z) < 4096.0) {
-                    player.connection.send(new ClientboundExplodePacket(x, y, z, size * factor, explosion.getToBlow(), explosion.getHitPlayers().get(player)));
+                    player.connection.send(new ClientboundExplodePacket(x, y, z, size * factor, explosion.getToBlow(), explosion.getHitPlayers().get(player), explosion.getBlockInteraction(), explosion.getSmallExplosionParticles(), explosion.getLargeExplosionParticles(), explosion.getExplosionSound()));
                 }
             }
 

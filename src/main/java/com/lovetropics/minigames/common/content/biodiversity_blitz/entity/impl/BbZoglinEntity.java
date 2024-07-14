@@ -22,7 +22,7 @@ import net.minecraft.world.entity.monster.Zoglin;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Fluid;
-import net.minecraft.world.level.pathfinder.BlockPathTypes;
+import net.minecraft.world.level.pathfinder.PathType;
 import net.minecraft.world.phys.Vec3;
 
 public class BbZoglinEntity extends Zoglin implements BbMobEntity {
@@ -37,7 +37,7 @@ public class BbZoglinEntity extends Zoglin implements BbMobEntity {
         this.mobBrain = new BbMobBrain(plot.walls);
         this.plot = plot;
 
-        setPathfindingMalus(BlockPathTypes.DANGER_OTHER, 0.0F);
+        setPathfindingMalus(PathType.DANGER_OTHER, 0.0F);
     }
 
     @Override

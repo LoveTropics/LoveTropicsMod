@@ -32,7 +32,7 @@ public record LeakyPocketsBehavior(ItemStack item, StatisticKey<Integer> statist
 			if (player.tickCount % interval != 0) {
 				return;
 			}
-			final double chancePerCoin = player.getAttributeValue(Qottott.LEAKY_POCKETS.get());
+			final double chancePerCoin = player.getAttributeValue(Qottott.LEAKY_POCKETS);
 			if (chancePerCoin <= 0.0) {
 				return;
 			}

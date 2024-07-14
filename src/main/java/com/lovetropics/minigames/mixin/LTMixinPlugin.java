@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.mixin;
 
-import net.minecraftforge.gametest.ForgeGameTestHooks;
+import net.neoforged.neoforge.gametest.GameTestHooks;
 import org.objectweb.asm.tree.ClassNode;
 import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin;
 import org.spongepowered.asm.mixin.extensibility.IMixinInfo;
@@ -22,7 +22,7 @@ public class LTMixinPlugin implements IMixinConfigPlugin {
     @Override
     public boolean shouldApplyMixin(String targetClassName, String mixinClassName) {
         if (targetClassName.startsWith("com.lovetropics.minigames.mixin.gametest.")) {
-            return ForgeGameTestHooks.isGametestEnabled();
+            return GameTestHooks.isGametestEnabled();
         }
 
         return true;

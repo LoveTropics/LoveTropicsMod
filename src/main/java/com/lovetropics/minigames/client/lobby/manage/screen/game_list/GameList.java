@@ -108,8 +108,8 @@ public final class GameList implements GuiEventListener, NarratableEntry {
 	}
 
 	@Override
-	public boolean mouseScrolled(double mouseX, double mouseY, double delta) {
-		return this.active.mouseScrolled(mouseX, mouseY, delta);
+	public boolean mouseScrolled(double mouseX, double mouseY, double deltaX, double deltaY) {
+		return this.active.mouseScrolled(mouseX, mouseY, deltaX, deltaY);
 	}
 
 	@Override

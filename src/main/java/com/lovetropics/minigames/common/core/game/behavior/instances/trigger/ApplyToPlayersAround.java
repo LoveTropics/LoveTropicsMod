@@ -7,7 +7,6 @@ import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.action.GameActionList;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameActionEvents;
-import com.lovetropics.minigames.common.util.Codecs;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -20,8 +19,8 @@ import java.util.function.Supplier;
 // TODO: Implement as a decorated PlayerActionTarget with parameters
 public record ApplyToPlayersAround(Optional<EntityPredicate> predicate, Optional<EntityPredicate> notPredicate, GameActionList<ServerPlayer> action, float distance, boolean includeSource) implements IGameBehavior {
 	public static final MapCodec<ApplyToPlayersAround> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
-			Codecs.ENTITY_PREDICATE.optionalFieldOf("predicate").forGetter(ApplyToPlayersAround::predicate),
-			Codecs.ENTITY_PREDICATE.optionalFieldOf("not_predicate").forGetter(ApplyToPlayersAround::notPredicate),
+			EntityPredicate.CODEC.optionalFieldOf("predicate").forGetter(ApplyToPlayersAround::predicate),
+			EntityPredicate.CODEC.optionalFieldOf("not_predicate").forGetter(ApplyToPlayersAround::notPredicate),
 			GameActionList.PLAYER_CODEC.fieldOf("action").forGetter(ApplyToPlayersAround::action),
 			Codec.FLOAT.fieldOf("distance").forGetter(ApplyToPlayersAround::distance),
 			Codec.BOOL.optionalFieldOf("include_source", false).forGetter(ApplyToPlayersAround::includeSource)

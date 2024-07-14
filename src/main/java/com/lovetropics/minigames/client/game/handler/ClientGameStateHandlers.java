@@ -4,10 +4,9 @@ import com.lovetropics.minigames.client.game.handler.spectate.ClientSpectatingMa
 import com.lovetropics.minigames.common.core.game.client_state.GameClientState;
 import com.lovetropics.minigames.common.core.game.client_state.GameClientStateType;
 import com.lovetropics.minigames.common.core.game.client_state.GameClientStateTypes;
-import com.tterrag.registrate.util.entry.RegistryEntry;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.registries.RegistryObject;
+import net.neoforged.neoforge.registries.DeferredHolder;
 
 import javax.annotation.Nullable;
 import java.util.Map;
@@ -20,11 +19,7 @@ public final class ClientGameStateHandlers {
 		register(GameClientStateTypes.RESOURCE_PACK, GameResourcePackHandler.INSTANCE);
 	}
 
-	public static <T extends GameClientState> void register(RegistryEntry<GameClientStateType<T>> type, ClientGameStateHandler<T> handler) {
-		REGISTRY.put(type.getId(), handler);
-	}
-
-	public static <T extends GameClientState> void register(RegistryObject<GameClientStateType<T>> type, ClientGameStateHandler<T> handler) {
+	public static <T extends GameClientState> void register(DeferredHolder<GameClientStateType<?>, GameClientStateType<T>> type, ClientGameStateHandler<T> handler) {
 		REGISTRY.put(type.getId(), handler);
 	}
 
@@ -45,7 +40,7 @@ public final class ClientGameStateHandlers {
 	@SuppressWarnings("unchecked")
 	@Nullable
 	public static <T extends GameClientState> ClientGameStateHandler<T> get(T state) {
-		ResourceLocation id = GameClientStateTypes.REGISTRY.get().getKey(state.getType());
+		ResourceLocation id = GameClientStateTypes.REGISTRY.getKey(state.getType());
 		if (id != null) {
 			return (ClientGameStateHandler<T>) REGISTRY.get(id);
 		} else {

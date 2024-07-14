@@ -1,27 +1,28 @@
 package com.lovetropics.minigames.common.core.network;
 
+import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.common.content.survive_the_tide.TideFiller;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.chunk.LevelChunk;
-import net.minecraftforge.network.NetworkEvent;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
 
-import java.util.function.Supplier;
+public record RiseTideMessage(BlockPos min, BlockPos max) implements CustomPacketPayload {
+    public static final Type<RiseTideMessage> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(Constants.MODID, "rise_tide"));
 
-public record RiseTideMessage(BlockPos min, BlockPos max) {
-	public void encode(final FriendlyByteBuf output) {
-		output.writeBlockPos(min);
-		output.writeBlockPos(max);
-	}
+	public static final StreamCodec<ByteBuf, RiseTideMessage> STREAM_CODEC = StreamCodec.composite(
+			BlockPos.STREAM_CODEC, RiseTideMessage::min,
+			BlockPos.STREAM_CODEC, RiseTideMessage::max,
+			RiseTideMessage::new
+	);
 
-	public RiseTideMessage(final FriendlyByteBuf input) {
-		this(input.readBlockPos(), input.readBlockPos());
-	}
-
-	public static void handle(final RiseTideMessage message, final Supplier<NetworkEvent.Context> ctx) {
+	public static void handle(final RiseTideMessage message, final IPayloadContext context) {
 		final ClientLevel level = Minecraft.getInstance().level;
 		if (level == null) {
 			return;
@@ -39,4 +40,9 @@ public record RiseTideMessage(BlockPos min, BlockPos max) {
 			}
 		}
 	}
+
+    @Override
+    public Type<RiseTideMessage> type() {
+        return TYPE;
+    }
 }

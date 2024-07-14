@@ -3,11 +3,13 @@ package com.lovetropics.minigames.common.util;
 import com.google.common.collect.Iterators;
 import it.unimi.dsi.fastutil.objects.Reference2IntMap;
 import it.unimi.dsi.fastutil.objects.Reference2IntOpenHashMap;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 
 import javax.annotation.Nullable;
 import java.util.Iterator;
 import java.util.Objects;
+import java.util.function.Supplier;
 
 public abstract class PartialUpdate<A> {
 	protected final AbstractType<A> type;
@@ -18,7 +20,7 @@ public abstract class PartialUpdate<A> {
 
 	public abstract void applyTo(A apply);
 
-	protected abstract void encode(FriendlyByteBuf buffer);
+	protected abstract void encode(RegistryFriendlyByteBuf buffer);
 
 	public static final class Family<A> implements Iterable<AbstractType<A>> {
 		private final AbstractType<A>[] idToType;
@@ -56,7 +58,7 @@ public abstract class PartialUpdate<A> {
 	}
 
 	public interface AbstractType<A> {
-		PartialUpdate<A> decode(FriendlyByteBuf buffer);
+		PartialUpdate<A> decode(RegistryFriendlyByteBuf buffer);
 	}
 
 	public static abstract class AbstractSet<A> implements Iterable<PartialUpdate<A>> {
@@ -66,6 +68,22 @@ public abstract class PartialUpdate<A> {
 		protected AbstractSet(Family<A> family) {
 			this.family = family;
 			this.updates = new PartialUpdate[family.size()];
+		}
+
+		public static <B extends RegistryFriendlyByteBuf, S extends AbstractSet<?>> StreamCodec<B, S> createStreamCodec(Supplier<S> factory) {
+			return new StreamCodec<>() {
+                @Override
+                public S decode(B input) {
+					S set = factory.get();
+					set.decodeSelf(input);
+					return set;
+                }
+
+                @Override
+                public void encode(B output, S set) {
+					set.encode(output);
+                }
+            };
 		}
 
 		protected void add(PartialUpdate<A> update) {
@@ -78,7 +96,7 @@ public abstract class PartialUpdate<A> {
 			}
 		}
 
-		public void encode(FriendlyByteBuf buffer) {
+		public void encode(RegistryFriendlyByteBuf buffer) {
 			buffer.writeVarInt(encodeMask());
 
 			for (PartialUpdate<A> update : updates) {
@@ -98,7 +116,7 @@ public abstract class PartialUpdate<A> {
 			return mask;
 		}
 
-		protected void decodeSelf(FriendlyByteBuf buffer) {
+		protected void decodeSelf(RegistryFriendlyByteBuf buffer) {
 			int mask = buffer.readVarInt();
 			for (int id = 0; id < family.size(); id++) {
 				if ((mask & 1 << id) == 0) continue;

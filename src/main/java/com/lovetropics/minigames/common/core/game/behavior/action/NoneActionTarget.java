@@ -29,7 +29,7 @@ public record NoneActionTarget() implements ActionTarget<Void> {
     }
 
     @Override
-    public Codec<? extends ActionTarget<Void>> type() {
+    public Codec<NoneActionTarget> type() {
         return ActionTargetTypes.NONE.get();
     }
 }

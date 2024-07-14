@@ -1,20 +1,24 @@
 package com.lovetropics.minigames.client.lobby.select_role;
 
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraftforge.network.NetworkEvent;
+import com.lovetropics.minigames.Constants;
+import io.netty.buffer.ByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
 
-import java.util.function.Supplier;
+public record SelectRolePromptMessage(int lobbyId) implements CustomPacketPayload {
+	public static final Type<SelectRolePromptMessage> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(Constants.MODID, "select_role_prompt"));
 
-public record SelectRolePromptMessage(int lobbyId) {
-	public void encode(FriendlyByteBuf buffer) {
-		buffer.writeVarInt(this.lobbyId);
+	public static final StreamCodec<ByteBuf, SelectRolePromptMessage> STREAM_CODEC = ByteBufCodecs.VAR_INT.map(SelectRolePromptMessage::new, SelectRolePromptMessage::lobbyId);
+
+	public static void handle(SelectRolePromptMessage message, IPayloadContext context) {
+		ClientRoleSelection.openScreen(message.lobbyId);
 	}
 
-	public static SelectRolePromptMessage decode(FriendlyByteBuf buffer) {
-		return new SelectRolePromptMessage(buffer.readVarInt());
-	}
-
-	public void handle(Supplier<NetworkEvent.Context> ctx) {
-		ClientRoleSelection.openScreen(lobbyId);
+	@Override
+	public Type<SelectRolePromptMessage> type() {
+		return TYPE;
 	}
 }

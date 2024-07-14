@@ -1,6 +1,7 @@
 package com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.plant;
 
 import com.lovetropics.lib.codec.MoreCodecs;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.BiodiversityBlitz;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.BiodiversityBlitzTexts;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.event.BbEvents;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.tutorial.TutorialState;
@@ -98,7 +99,7 @@ public final class PlantItemBehavior implements IGameBehavior {
 	private ItemStack createPlantDrop(PlantItemType itemType) {
 		if (this.itemType.equals(itemType)) {
 			ItemStack dropItem = this.item.copy();
-			this.itemType.applyTo(dropItem);
+			dropItem.set(BiodiversityBlitz.PLANT_COMPONENT, this.itemType);
 
 			return dropItem;
 		}

@@ -20,7 +20,8 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.valueproviders.IntProvider;
@@ -37,9 +38,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
 
-public record ItemDropperBehavior(Either<List<ItemStack>, ResourceLocation> loot, String regionKey, boolean combined, boolean beacon, IntProvider intervalTicks, Optional<GameActionList<Void>> announcement, Optional<ConfiguredSound> sound) implements IGameBehavior {
+public record ItemDropperBehavior(Either<List<ItemStack>, ResourceKey<LootTable>> loot, String regionKey, boolean combined, boolean beacon, IntProvider intervalTicks, Optional<GameActionList<Void>> announcement, Optional<ConfiguredSound> sound) implements IGameBehavior {
 	public static final MapCodec<ItemDropperBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
-			Codec.either(MoreCodecs.listOrUnit(MoreCodecs.ITEM_STACK), ResourceLocation.CODEC).fieldOf("loot").forGetter(ItemDropperBehavior::loot),
+			Codec.either(MoreCodecs.listOrUnit(MoreCodecs.ITEM_STACK), ResourceKey.codec(Registries.LOOT_TABLE)).fieldOf("loot").forGetter(ItemDropperBehavior::loot),
 			Codec.STRING.fieldOf("region").forGetter(ItemDropperBehavior::regionKey),
 			Codec.BOOL.optionalFieldOf("combined", false).forGetter(ItemDropperBehavior::combined),
 			Codec.BOOL.optionalFieldOf("beacon", false).forGetter(ItemDropperBehavior::beacon),
@@ -86,7 +87,7 @@ public record ItemDropperBehavior(Either<List<ItemStack>, ResourceLocation> loot
 		return loot.map(
 				stacks -> () -> Util.getRandomSafe(stacks, random).map(ItemStack::copy).orElse(ItemStack.EMPTY),
 				tableId -> {
-					final LootTable lootTable = game.getServer().getLootData().getLootTable(tableId);
+					final LootTable lootTable = game.getServer().reloadableRegistries().getLootTable(tableId);
 					final LootParams params = new LootParams.Builder(game.getLevel()).create(LootContextParamSets.EMPTY);
 					return () -> Util.getRandomSafe(lootTable.getRandomItems(params), random).orElse(ItemStack.EMPTY);
 				}

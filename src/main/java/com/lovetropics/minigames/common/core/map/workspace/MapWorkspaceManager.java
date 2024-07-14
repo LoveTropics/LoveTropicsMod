@@ -10,6 +10,7 @@ import com.lovetropics.minigames.common.util.Util;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtOps;
@@ -39,7 +40,10 @@ public final class MapWorkspaceManager extends SavedData {
 
 	public static MapWorkspaceManager get(MinecraftServer server) {
 		ServerLevel overworld = server.overworld();
-		return overworld.getDataStorage().computeIfAbsent(tag -> MapWorkspaceManager.load(server, tag), () -> new MapWorkspaceManager(server), ID);
+		return overworld.getDataStorage().computeIfAbsent(new Factory<>(
+				() -> new MapWorkspaceManager(server),
+				(tag, registries) -> MapWorkspaceManager.load(server, tag)
+		), ID);
 	}
 
 	public CompletableFuture<MapWorkspace> openWorkspace(String id, WorkspaceDimensionConfig dimensionConfig) {
@@ -97,10 +101,10 @@ public final class MapWorkspaceManager extends SavedData {
 	}
 
 	@Override
-	public CompoundTag save(CompoundTag root) {
+	public CompoundTag save(CompoundTag root, HolderLookup.Provider registries) {
 		ListTag workspaceList = new ListTag();
 
-		RegistryOps<Tag> ops = RegistryOps.create(NbtOps.INSTANCE, this.server.registryAccess());
+		RegistryOps<Tag> ops = registries.createSerializationContext(NbtOps.INSTANCE);
 
 		for (Map.Entry<String, MapWorkspace> entry : this.workspaces.entrySet()) {
 			MapWorkspaceData data = entry.getValue().intoData();
@@ -120,7 +124,7 @@ public final class MapWorkspaceManager extends SavedData {
 
 		ListTag workspaceList = root.getList("workspaces", Tag.TAG_COMPOUND);
 
-		DynamicOps<Tag> ops = RegistryOps.create(NbtOps.INSTANCE, server.registryAccess());
+		DynamicOps<Tag> ops = server.registryAccess().createSerializationContext(NbtOps.INSTANCE);
 
 		for (int i = 0; i < workspaceList.size(); i++) {
 			CompoundTag workspaceRoot = workspaceList.getCompound(i);

@@ -12,7 +12,6 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.server.ServerScoreboard;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.scores.Objective;
-import net.minecraft.world.scores.Score;
 
 import java.util.Map;
 
@@ -30,7 +29,7 @@ public record BindObjectiveToStatisticBehavior(Map<StatisticKey<Integer>, String
 				StatisticKey<Integer> key = entry.getKey();
 				String objectiveKey = entry.getValue();
 
-				Objective objective = scoreboard.getOrCreateObjective(objectiveKey);
+				Objective objective = scoreboard.getObjective(objectiveKey);
 				if (objective != null) {
 					applyFromObjective(game, key, objective);
 				}
@@ -43,11 +42,8 @@ public record BindObjectiveToStatisticBehavior(Map<StatisticKey<Integer>, String
 		ServerScoreboard scoreboard = game.getServer().getScoreboard();
 
 		for (ServerPlayer player : game.getAllPlayers()) {
-			Map<Objective, Score> objectives = scoreboard.getPlayerScores(player.getScoreboardName());
-			Score score = objectives.get(objective);
-			if (score != null) {
-				statistics.forPlayer(player).set(key, score.getScore());
-			}
+			int score = scoreboard.getOrCreatePlayerScore(player, objective).get();
+            statistics.forPlayer(player).set(key, score);
 		}
 	}
 }

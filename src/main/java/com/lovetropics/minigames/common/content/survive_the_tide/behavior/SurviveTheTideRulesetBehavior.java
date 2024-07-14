@@ -18,6 +18,7 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.enchantment.EnchantmentEffectComponents;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.GameRules;
 
@@ -75,7 +76,7 @@ public class SurviveTheTideRulesetBehavior implements IGameBehavior {
 	private void destroyVanishingCursedItems(Container inventory) {
 		for (int i = 0; i < inventory.getContainerSize(); ++i) {
 			ItemStack itemstack = inventory.getItem(i);
-			if (!itemstack.isEmpty() && EnchantmentHelper.hasVanishingCurse(itemstack)) {
+			if (!itemstack.isEmpty() && EnchantmentHelper.has(itemstack, EnchantmentEffectComponents.PREVENT_EQUIPMENT_DROP)) {
 				inventory.removeItemNoUpdate(i);
 			}
 		}

@@ -33,8 +33,8 @@ public record CoinDropAttributeBehavior(ItemStack item, StatisticKey<Integer> st
 	@Override
 	public void register(final IGamePhase game, final EventRegistrar events) {
 		events.listen(GamePlayerEvents.DEATH, (player, damageSource) -> {
-			if (damageSource.getEntity() instanceof final LivingEntity killer && killer.getAttributes().hasAttribute(Qottott.COIN_DROPS.get())) {
-				final double coinDrops = killer.getAttributeValue(Qottott.COIN_DROPS.get());
+			if (damageSource.getEntity() instanceof final LivingEntity killer && killer.getAttributes().hasAttribute(Qottott.COIN_DROPS)) {
+				final double coinDrops = killer.getAttributeValue(Qottott.COIN_DROPS);
 				if (coinDrops > 0.0) {
 					final StatisticsMap statistics = game.getStatistics().forPlayer(player);
 					final int amount = Mth.floor(statistics.getOr(statistic, 0) * coinDrops);
@@ -56,7 +56,7 @@ public record CoinDropAttributeBehavior(ItemStack item, StatisticKey<Integer> st
 			entity.setDeltaMovement(random.triangle(0.0, 0.155), random.triangle(0.2, 0.155), random.triangle(0.0, 0.155));
 			level.addFreshEntity(entity);
 		}
-		player.level().playSound(null, player.getX(), player.getY(), player.getZ(), SoundRegistry.COINS.get(), SoundSource.PLAYERS, 1.0f, random.nextFloat() * 0.4f + 1.3f);
+		player.level().playSound(null, player.getX(), player.getY(), player.getZ(), SoundRegistry.COINS, SoundSource.PLAYERS, 1.0f, random.nextFloat() * 0.4f + 1.3f);
 	}
 
 	@Override

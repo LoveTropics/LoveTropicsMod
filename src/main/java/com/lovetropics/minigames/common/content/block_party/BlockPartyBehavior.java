@@ -22,6 +22,8 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.SharedConstants;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -35,7 +37,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.registries.ForgeRegistries;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -44,7 +45,7 @@ import java.util.List;
 public final class BlockPartyBehavior implements IGameBehavior {
 	public static final MapCodec<BlockPartyBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			Codec.STRING.fieldOf("floor").forGetter(c -> c.floorRegionKey),
-			MoreCodecs.arrayOrUnit(ForgeRegistries.BLOCKS.getCodec(), Block[]::new).fieldOf("blocks").forGetter(c -> c.blocks),
+			MoreCodecs.arrayOrUnit(BuiltInRegistries.BLOCK.byNameCodec(), Block[]::new).fieldOf("blocks").forGetter(c -> c.blocks),
 			Codec.INT.optionalFieldOf("quad_size", 3).forGetter(c -> c.quadSize),
 			Codec.LONG.optionalFieldOf("max_time", 20L * 5).forGetter(c -> c.maxTime),
 			Codec.LONG.optionalFieldOf("min_time", 20L * 2).forGetter(c -> c.minTime),
@@ -202,7 +203,7 @@ public final class BlockPartyBehavior implements IGameBehavior {
 
 		Component name = BlockPartyTexts.STAND_ON_BLOCK.apply(targetStack.getDisplayName())
 				.withStyle(style -> style.withBold(true).withItalic(false));
-		targetStack.setHoverName(name);
+		targetStack.set(DataComponents.CUSTOM_NAME, name);
 
 		for (ServerPlayer player : game.getParticipants()) {
 			player.getInventory().clearContent();

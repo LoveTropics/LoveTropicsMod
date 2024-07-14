@@ -9,16 +9,16 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.entity.player.PlayerEvent;
-import net.minecraftforge.event.level.LevelEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+import net.neoforged.neoforge.event.level.LevelEvent;
+import net.neoforged.neoforge.event.tick.LevelTickEvent;
 
 import java.util.Map;
 import java.util.function.Function;
 
-@Mod.EventBusSubscriber(modid = Constants.MODID)
+@EventBusSubscriber(modid = Constants.MODID)
 public final class WeatherControllerManager {
 	private static final Map<ResourceKey<Level>, WeatherController> WEATHER_CONTROLLERS = new Reference2ObjectOpenHashMap<>();
 
@@ -61,9 +61,9 @@ public final class WeatherControllerManager {
 	}
 
 	@SubscribeEvent
-	public static void onLevelTick(TickEvent.LevelTickEvent event) {
-		Level level = event.level;
-		if (level.isClientSide || event.phase == TickEvent.Phase.END) {
+	public static void onLevelTick(LevelTickEvent.Pre event) {
+		Level level = event.getLevel();
+		if (level.isClientSide()) {
 			return;
 		}
 

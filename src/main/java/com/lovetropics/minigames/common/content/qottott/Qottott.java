@@ -12,7 +12,8 @@ import com.lovetropics.minigames.common.content.qottott.behavior.LobbyWithPortal
 import com.lovetropics.minigames.common.content.qottott.behavior.PowerUpIndicatorBehavior;
 import com.lovetropics.minigames.common.util.registry.GameBehaviorEntry;
 import com.lovetropics.minigames.common.util.registry.LoveTropicsRegistrate;
-import com.tterrag.registrate.util.entry.RegistryEntry;
+import net.minecraft.core.Holder;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.entity.EntityType;
@@ -20,11 +21,11 @@ import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.attributes.RangedAttribute;
-import net.minecraftforge.event.entity.EntityAttributeModificationEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.event.entity.EntityAttributeModificationEvent;
 
-@Mod.EventBusSubscriber(modid = Constants.MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
+@EventBusSubscriber(modid = Constants.MODID, bus = EventBusSubscriber.Bus.MOD)
 public class Qottott {
 	private static final LoveTropicsRegistrate REGISTRATE = LoveTropics.registrate();
 
@@ -37,49 +38,49 @@ public class Qottott {
 	public static final GameBehaviorEntry<PowerUpIndicatorBehavior> POWER_UP_INDICATOR = REGISTRATE.object("power_up_indicator").behavior(PowerUpIndicatorBehavior.CODEC).register();
 	public static final GameBehaviorEntry<LeakyPocketsBehavior> LEAKY_POCKETS_BEHAVIOR = REGISTRATE.object("leaky_pockets").behavior(LeakyPocketsBehavior.CODEC).register();
 
-	public static final RegistryEntry<Attribute> COIN_MULTIPLIER = REGISTRATE.object("coin_multiplier").attribute(translationKey ->
+	public static final Holder<Attribute> COIN_MULTIPLIER = REGISTRATE.object("coin_multiplier").attribute(translationKey ->
 			new RangedAttribute(translationKey, 1.0, 0.0, 100.0).setSyncable(false)
 	).lang("Coin Multiplier").register();
-	public static final RegistryEntry<Attribute> PICKUP_PRIORITY = REGISTRATE.object("pickup_priority").attribute(translationKey ->
+	public static final Holder<Attribute> PICKUP_PRIORITY = REGISTRATE.object("pickup_priority").attribute(translationKey ->
 			new RangedAttribute(translationKey, 0.0, -100.0, 100.0).setSyncable(false)
 	).lang("Item Pickup Priority").register();
-	public static final RegistryEntry<Attribute> COIN_DROPS = REGISTRATE.object("coin_drops").attribute(translationKey ->
+	public static final Holder<Attribute> COIN_DROPS = REGISTRATE.object("coin_drops").attribute(translationKey ->
 			new RangedAttribute(translationKey, 0.0, 0.0, 1.0).setSyncable(false)
 	).lang("Coin Drops").register();
-	public static final RegistryEntry<Attribute> LEAKY_POCKETS = REGISTRATE.object("leaky_pockets").attribute(translationKey ->
+	public static final Holder<Attribute> LEAKY_POCKETS = REGISTRATE.object("leaky_pockets").attribute(translationKey ->
 			new RangedAttribute(translationKey, 0.0, 0.0, 1.0).setSyncable(false)
 	).lang("Leaky Pockets").register();
 
-	public static final RegistryEntry<MobEffect> COIN_MULTIPLIER_POWER_UP = REGISTRATE.object("coin_multiplier_power_up").mobEffect(() -> new CustomMobEffect(MobEffectCategory.BENEFICIAL).addAttributeModifier(
-			COIN_MULTIPLIER.get(),
-			"515fbc2f-9a69-4f4b-bf94-c152a2c16bce",
+	public static final Holder<MobEffect> COIN_MULTIPLIER_POWER_UP = REGISTRATE.object("coin_multiplier_power_up").mobEffect(() -> new CustomMobEffect(MobEffectCategory.BENEFICIAL).addAttributeModifier(
+			COIN_MULTIPLIER,
+			ResourceLocation.fromNamespaceAndPath(Constants.MODID, "coin_multiplier_power_up_effect"),
 			1.0,
-			AttributeModifier.Operation.MULTIPLY_BASE
+			AttributeModifier.Operation.ADD_MULTIPLIED_BASE
 	)).lang("Coin Multiplier Power-up").register();
-	public static final RegistryEntry<MobEffect> PICKUP_PRIORITY_POWER_UP = REGISTRATE.object("pickup_priority_power_up").mobEffect(() -> new CustomMobEffect(MobEffectCategory.BENEFICIAL).addAttributeModifier(
-			PICKUP_PRIORITY.get(),
-			"5f0e6e3d-c0f5-4f48-9152-0bf5ee26e93e",
+	public static final Holder<MobEffect> PICKUP_PRIORITY_POWER_UP = REGISTRATE.object("pickup_priority_power_up").mobEffect(() -> new CustomMobEffect(MobEffectCategory.BENEFICIAL).addAttributeModifier(
+			PICKUP_PRIORITY,
+			ResourceLocation.fromNamespaceAndPath(Constants.MODID, "pickup_priority_power_up_effect"),
 			1.0,
-			AttributeModifier.Operation.ADDITION
+			AttributeModifier.Operation.ADD_VALUE
 	)).lang("Pickup Priority Power-up").register();
-	public static final RegistryEntry<MobEffect> KNOCKBACK_RESISTANCE_POWER_UP = REGISTRATE.object("knockback_resistance_power_up").mobEffect(() -> new CustomMobEffect(MobEffectCategory.BENEFICIAL).addAttributeModifier(
+	public static final Holder<MobEffect> KNOCKBACK_RESISTANCE_POWER_UP = REGISTRATE.object("knockback_resistance_power_up").mobEffect(() -> new CustomMobEffect(MobEffectCategory.BENEFICIAL).addAttributeModifier(
 			Attributes.KNOCKBACK_RESISTANCE,
-			"12babcd7-d94e-41d2-b791-c20ae6ef4eaa",
+			ResourceLocation.fromNamespaceAndPath(Constants.MODID, "knockback_resistance_power_up_effect"),
 			1.0,
-			AttributeModifier.Operation.ADDITION
+			AttributeModifier.Operation.ADD_VALUE
 	)).lang("Knockback Resistance Power-Up").register();
-	public static final RegistryEntry<MobEffect> SPEED_POWER_UP = REGISTRATE.object("speed_power_up").mobEffect(() -> new CustomMobEffect(MobEffectCategory.BENEFICIAL).addAttributeModifier(
+	public static final Holder<MobEffect> SPEED_POWER_UP = REGISTRATE.object("speed_power_up").mobEffect(() -> new CustomMobEffect(MobEffectCategory.BENEFICIAL).addAttributeModifier(
 			Attributes.MOVEMENT_SPEED,
-			"c88be5fa-eae9-4c1f-bcf4-79f6c44bfb44",
+			ResourceLocation.fromNamespaceAndPath(Constants.MODID, "speed_power_up_effect"),
 			0.05,
-			AttributeModifier.Operation.ADDITION
+			AttributeModifier.Operation.ADD_VALUE
 	)).lang("Speed Power-up").register();
 
-	public static final RegistryEntry<MobEffect> LEAKY_POCKETS_EFFECT = REGISTRATE.object("leaky_pockets").mobEffect(() -> new CustomMobEffect(MobEffectCategory.HARMFUL).addAttributeModifier(
-			LEAKY_POCKETS.get(),
-			"c719125e-23c3-4bbb-8e85-2db030249fb0",
+	public static final Holder<MobEffect> LEAKY_POCKETS_EFFECT = REGISTRATE.object("leaky_pockets").mobEffect(() -> new CustomMobEffect(MobEffectCategory.HARMFUL).addAttributeModifier(
+			LEAKY_POCKETS,
+			ResourceLocation.fromNamespaceAndPath(Constants.MODID, "leaky_pockets_effect"),
 			0.005,
-			AttributeModifier.Operation.ADDITION
+			AttributeModifier.Operation.ADD_VALUE
 	)).lang("Leaky Pockets").register();
 
 	public static void init() {
@@ -87,10 +88,10 @@ public class Qottott {
 
 	@SubscribeEvent
 	public static void onModifyDefaultAttributes(final EntityAttributeModificationEvent event) {
-		event.add(EntityType.PLAYER, COIN_MULTIPLIER.get());
-		event.add(EntityType.PLAYER, PICKUP_PRIORITY.get());
-		event.add(EntityType.PLAYER, COIN_DROPS.get());
-		event.add(EntityType.PLAYER, LEAKY_POCKETS.get());
+		event.add(EntityType.PLAYER, COIN_MULTIPLIER);
+		event.add(EntityType.PLAYER, PICKUP_PRIORITY);
+		event.add(EntityType.PLAYER, COIN_DROPS);
+		event.add(EntityType.PLAYER, LEAKY_POCKETS);
 	}
 
 	private static class CustomMobEffect extends MobEffect {

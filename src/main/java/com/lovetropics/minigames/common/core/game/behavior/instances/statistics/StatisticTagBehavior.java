@@ -16,9 +16,9 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -27,7 +27,7 @@ import java.util.function.Supplier;
 public record StatisticTagBehavior(StatisticKey<Integer> statistic, Item icon) implements IGameBehavior {
 	public static final MapCodec<StatisticTagBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			StatisticKey.INT_CODEC.fieldOf("statistic").forGetter(StatisticTagBehavior::statistic),
-			ForgeRegistries.ITEMS.getCodec().fieldOf("icon").forGetter(StatisticTagBehavior::icon)
+			BuiltInRegistries.ITEM.byNameCodec().fieldOf("icon").forGetter(StatisticTagBehavior::icon)
 	).apply(i, StatisticTagBehavior::new));
 
 	@Override

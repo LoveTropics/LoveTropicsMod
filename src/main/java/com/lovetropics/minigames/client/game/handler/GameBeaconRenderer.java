@@ -4,9 +4,7 @@ import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.client.game.ClientGameStateManager;
 import com.lovetropics.minigames.common.core.game.client_state.GameClientStateTypes;
 import com.lovetropics.minigames.common.core.game.client_state.instance.BeaconClientState;
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.Tesselator;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -15,17 +13,17 @@ import net.minecraft.client.renderer.blockentity.BeaconRenderer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.RenderLevelStageEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 
 import java.util.List;
 
-@Mod.EventBusSubscriber(modid = Constants.MODID, value = Dist.CLIENT)
+@EventBusSubscriber(modid = Constants.MODID, value = Dist.CLIENT)
 public final class GameBeaconRenderer {
 	private static final Minecraft CLIENT = Minecraft.getInstance();
-	private static final float[] COLOR = DyeColor.WHITE.getTextureDiffuseColors();
+	private static final int COLOR = DyeColor.WHITE.getTextureDiffuseColor();
 
 	@SubscribeEvent
 	public static void onRenderLevel(RenderLevelStageEvent event) {
@@ -46,18 +44,13 @@ public final class GameBeaconRenderer {
 			return;
 		}
 
-		MultiBufferSource.BufferSource bufferSource = MultiBufferSource.immediate(Tesselator.getInstance().getBuilder());
-
-		PoseStack modelViewStack = RenderSystem.getModelViewStack();
-		modelViewStack.pushPose();
-		modelViewStack.setIdentity();
-		RenderSystem.applyModelViewMatrix();
+		MultiBufferSource.BufferSource bufferSource = CLIENT.renderBuffers().bufferSource();
 
 		Vec3 cameraPosition = camera.getPosition();
 		PoseStack poseStack = event.getPoseStack();
 
 		long gameTime = level.getGameTime();
-		float partialTick = event.getPartialTick();
+		float partialTick = event.getPartialTick().getGameTimeDeltaTicks();
 
 		for (BlockPos position : positions) {
 			poseStack.pushPose();
@@ -67,8 +60,5 @@ public final class GameBeaconRenderer {
 		}
 
 		bufferSource.endBatch();
-
-		modelViewStack.popPose();
-		RenderSystem.applyModelViewMatrix();
 	}
 }

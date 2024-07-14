@@ -9,7 +9,6 @@ import com.lovetropics.minigames.common.core.game.behavior.action.GameActionList
 import com.lovetropics.minigames.common.core.game.behavior.action.GameActionParameter;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
-import com.lovetropics.minigames.common.util.Codecs;
 import com.lovetropics.minigames.common.util.Util;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -24,8 +23,8 @@ public record OnDeathTrigger(GameActionList<ServerPlayer> killedAction, GameActi
 	public static final MapCodec<OnDeathTrigger> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			GameActionList.PLAYER_CODEC.optionalFieldOf("killed_action", GameActionList.EMPTY).forGetter(OnDeathTrigger::killedAction),
 			GameActionList.PLAYER_CODEC.optionalFieldOf("killer_action", GameActionList.EMPTY).forGetter(OnDeathTrigger::killerAction),
-			Codecs.ENTITY_PREDICATE.optionalFieldOf("killed_predicate").forGetter(OnDeathTrigger::killedPredicate),
-			Codecs.ENTITY_PREDICATE.optionalFieldOf("killer_predicate").forGetter(OnDeathTrigger::killerPredicate)
+			EntityPredicate.CODEC.optionalFieldOf("killed_predicate").forGetter(OnDeathTrigger::killedPredicate),
+			EntityPredicate.CODEC.optionalFieldOf("killer_predicate").forGetter(OnDeathTrigger::killerPredicate)
 	).apply(i, OnDeathTrigger::new));
 
 	@Override

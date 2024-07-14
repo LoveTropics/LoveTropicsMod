@@ -11,18 +11,19 @@ import com.lovetropics.minigames.common.core.game.util.TemplatedText;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.SharedConstants;
+import net.minecraft.core.Holder;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.Map;
 import java.util.function.Supplier;
 
-public record PowerUpIndicatorBehavior(MobEffect effect, TemplatedText text, ConfiguredSound sound) implements IGameBehavior {
+public record PowerUpIndicatorBehavior(Holder<MobEffect> effect, TemplatedText text, ConfiguredSound sound) implements IGameBehavior {
 	public static final MapCodec<PowerUpIndicatorBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
-			ForgeRegistries.MOB_EFFECTS.getCodec().fieldOf("effect").forGetter(PowerUpIndicatorBehavior::effect),
+			BuiltInRegistries.MOB_EFFECT.holderByNameCodec().fieldOf("effect").forGetter(PowerUpIndicatorBehavior::effect),
 			TemplatedText.CODEC.fieldOf("text").forGetter(PowerUpIndicatorBehavior::text),
 			ConfiguredSound.CODEC.fieldOf("sound").forGetter(PowerUpIndicatorBehavior::sound)
 	).apply(i, PowerUpIndicatorBehavior::new));

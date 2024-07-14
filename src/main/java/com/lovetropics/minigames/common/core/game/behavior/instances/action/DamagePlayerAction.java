@@ -9,8 +9,6 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.Holder;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.RegistryFileCodec;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageType;
 
@@ -18,7 +16,7 @@ import java.util.Optional;
 
 public record DamagePlayerAction(Optional<Holder<DamageType>> source, float amount) implements IGameBehavior {
 	public static final MapCodec<DamagePlayerAction> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
-			RegistryFileCodec.create(Registries.DAMAGE_TYPE, DamageType.CODEC, false).optionalFieldOf("source").forGetter(DamagePlayerAction::source),
+			DamageType.CODEC.optionalFieldOf("source").forGetter(DamagePlayerAction::source),
 			Codec.FLOAT.fieldOf("amount").forGetter(DamagePlayerAction::amount)
 	).apply(i, DamagePlayerAction::new));
 

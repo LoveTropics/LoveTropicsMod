@@ -8,7 +8,6 @@ import com.lovetropics.minigames.common.content.biodiversity_blitz.client_state.
 import com.lovetropics.minigames.common.content.biodiversity_blitz.client_state.ClientBbScoreboardState;
 import com.lovetropics.minigames.common.core.game.client_state.GameClientStateTypes;
 import com.lovetropics.minigames.common.core.game.client_state.instance.PointTagClientState;
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
@@ -30,22 +29,20 @@ import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.ForgeHooksClient;
-import net.minecraftforge.client.event.RenderLevelStageEvent;
-import net.minecraftforge.client.event.RenderNameTagEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-import org.joml.Matrix3f;
-import org.joml.Matrix4f;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.client.ClientHooks;
+import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
+import net.neoforged.neoforge.client.event.RenderNameTagEvent;
 
 import java.util.List;
 
-@Mod.EventBusSubscriber(modid = Constants.MODID, value = Dist.CLIENT)
+@EventBusSubscriber(modid = Constants.MODID, value = Dist.CLIENT)
 public class GameRendering {
     @SubscribeEvent
     public static void render(RenderLevelStageEvent event) {
-        if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_TRIPWIRE_BLOCKS) {
+        if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_WEATHER) {
             return;
         }
 
@@ -53,11 +50,6 @@ public class GameRendering {
         Vec3 cameraPos = event.getCamera().getPosition();
         RenderBuffers buffers = Minecraft.getInstance().renderBuffers();
         VertexConsumer cons = buffers.bufferSource().getBuffer(GameRenderTypes.TRANSLUCENT_NO_TEX);
-
-        PoseStack mv = RenderSystem.getModelViewStack();
-        mv.pushPose();
-        mv.setIdentity();
-        RenderSystem.applyModelViewMatrix();
 
         ClientBbMobSpawnState state = ClientGameStateManager.getOrNull(BiodiversityBlitz.MOB_SPAWN);
         if (state != null) {
@@ -81,9 +73,6 @@ public class GameRendering {
 
         // Flush vertices
         buffers.bufferSource().endBatch();
-
-        mv.popPose();
-        RenderSystem.applyModelViewMatrix();
     }
 
     private static void renderScoreboardState(ClientBbScoreboardState state, PoseStack matrices, Vec3 camera, MultiBufferSource.BufferSource buffers, VertexConsumer cons) {
@@ -154,54 +143,48 @@ public class GameRendering {
         buildEastFacing(buffer, entry, y1, y2, z1, z2, x2, r, g, b, a, 0);
     }
 
-    public static void buildNorthFacing(VertexConsumer buffer, PoseStack.Pose entry, float x1, float x2, float y1, float y2, float z, int r, int g, int b, int a, int a2) {
-        Matrix4f model = entry.pose();
-        Matrix3f normal = entry.normal();
-
-        buffer.vertex(model, x1, y2, z).color(r, g, b, a2)
-                .uv(0.0F, 1.0F).uv2(LightTexture.FULL_BRIGHT).normal(normal, 0.0F, 1.0F, 0.0F).endVertex();
-        buffer.vertex(model, x2, y2, z).color(r, g, b, a2)
-                .uv(1.0F, 1.0F).uv2(LightTexture.FULL_BRIGHT).normal(normal, 0.0F, 1.0F, 0.0F).endVertex();
-        buffer.vertex(model, x2, y1, z).color(r, g, b, a)
-                .uv(1.0F, 0.0F).uv2(LightTexture.FULL_BRIGHT).normal(normal, 0.0F, 1.0F, 0.0F).endVertex();
-        buffer.vertex(model, x1, y1, z).color(r, g, b, a)
-                .uv(0.0F, 0.0F).uv2(LightTexture.FULL_BRIGHT).normal(normal, 0.0F, 1.0F, 0.0F).endVertex();
+    public static void buildNorthFacing(VertexConsumer buffer, PoseStack.Pose pose, float x1, float x2, float y1, float y2, float z, int r, int g, int b, int a, int a2) {
+        buffer.addVertex(pose, x1, y2, z).setColor(r, g, b, a2)
+                .setUv(0.0F, 1.0F).setLight(LightTexture.FULL_BRIGHT).setNormal(pose, 0.0F, 1.0F, 0.0F);
+        buffer.addVertex(pose, x2, y2, z).setColor(r, g, b, a2)
+                .setUv(1.0F, 1.0F).setLight(LightTexture.FULL_BRIGHT).setNormal(pose, 0.0F, 1.0F, 0.0F);
+        buffer.addVertex(pose, x2, y1, z).setColor(r, g, b, a)
+                .setUv(1.0F, 0.0F).setLight(LightTexture.FULL_BRIGHT).setNormal(pose, 0.0F, 1.0F, 0.0F);
+        buffer.addVertex(pose, x1, y1, z).setColor(r, g, b, a)
+                .setUv(0.0F, 0.0F).setLight(LightTexture.FULL_BRIGHT).setNormal(pose, 0.0F, 1.0F, 0.0F);
 
         // Reverse
 
-        buffer.vertex(model, x1, y2, z).color(r, g, b, a2)
-                .uv(0.0F, 1.0F).uv2(LightTexture.FULL_BRIGHT).normal(normal, 0.0F, 1.0F, 0.0F).endVertex();
-        buffer.vertex(model, x1, y1, z).color(r, g, b, a)
-                .uv(0.0F, 0.0F).uv2(LightTexture.FULL_BRIGHT).normal(normal, 0.0F, 1.0F, 0.0F).endVertex();
-        buffer.vertex(model, x2, y1, z).color(r, g, b, a)
-                .uv(1.0F, 0.0F).uv2(LightTexture.FULL_BRIGHT).normal(normal, 0.0F, 1.0F, 0.0F).endVertex();
-        buffer.vertex(model, x2, y2, z).color(r, g, b, a2)
-                .uv(1.0F, 1.0F).uv2(LightTexture.FULL_BRIGHT).normal(normal, 0.0F, 1.0F, 0.0F).endVertex();
+        buffer.addVertex(pose, x1, y2, z).setColor(r, g, b, a2)
+                .setUv(0.0F, 1.0F).setLight(LightTexture.FULL_BRIGHT).setNormal(pose, 0.0F, 1.0F, 0.0F);
+        buffer.addVertex(pose, x1, y1, z).setColor(r, g, b, a)
+                .setUv(0.0F, 0.0F).setLight(LightTexture.FULL_BRIGHT).setNormal(pose, 0.0F, 1.0F, 0.0F);
+        buffer.addVertex(pose, x2, y1, z).setColor(r, g, b, a)
+                .setUv(1.0F, 0.0F).setLight(LightTexture.FULL_BRIGHT).setNormal(pose, 0.0F, 1.0F, 0.0F);
+        buffer.addVertex(pose, x2, y2, z).setColor(r, g, b, a2)
+                .setUv(1.0F, 1.0F).setLight(LightTexture.FULL_BRIGHT).setNormal(pose, 0.0F, 1.0F, 0.0F);
     }
 
-    public static void buildEastFacing(VertexConsumer buffer, PoseStack.Pose entry, float y1, float y2, float z1, float z2, float x, int r, int g, int b, int a, int a2) {
-        Matrix4f model = entry.pose();
-        Matrix3f normal = entry.normal();
-
-        buffer.vertex(model, x, y1, z2).color(r, g, b, a)
-                .uv(0.0F, 1.0F).uv2(LightTexture.FULL_BRIGHT).normal(normal, 0.0F, 1.0F, 0.0F).endVertex();
-        buffer.vertex(model, x, y2, z2).color(r, g, b, a2)
-                .uv(1.0F, 1.0F).uv2(LightTexture.FULL_BRIGHT).normal(normal, 0.0F, 1.0F, 0.0F).endVertex();
-        buffer.vertex(model, x, y2, z1).color(r, g, b, a2)
-                .uv(1.0F, 0.0F).uv2(LightTexture.FULL_BRIGHT).normal(normal, 0.0F, 1.0F, 0.0F).endVertex();
-        buffer.vertex(model, x, y1, z1).color(r, g, b, a)
-                .uv(0.0F, 0.0F).uv2(LightTexture.FULL_BRIGHT).normal(normal, 0.0F, 1.0F, 0.0F).endVertex();
+    public static void buildEastFacing(VertexConsumer buffer, PoseStack.Pose pose, float y1, float y2, float z1, float z2, float x, int r, int g, int b, int a, int a2) {
+        buffer.addVertex(pose, x, y1, z2).setColor(r, g, b, a)
+                .setUv(0.0F, 1.0F).setLight(LightTexture.FULL_BRIGHT).setNormal(pose, 0.0F, 1.0F, 0.0F);
+        buffer.addVertex(pose, x, y2, z2).setColor(r, g, b, a2)
+                .setUv(1.0F, 1.0F).setLight(LightTexture.FULL_BRIGHT).setNormal(pose, 0.0F, 1.0F, 0.0F);
+        buffer.addVertex(pose, x, y2, z1).setColor(r, g, b, a2)
+                .setUv(1.0F, 0.0F).setLight(LightTexture.FULL_BRIGHT).setNormal(pose, 0.0F, 1.0F, 0.0F);
+        buffer.addVertex(pose, x, y1, z1).setColor(r, g, b, a)
+                .setUv(0.0F, 0.0F).setLight(LightTexture.FULL_BRIGHT).setNormal(pose, 0.0F, 1.0F, 0.0F);
 
         // Reverse
 
-        buffer.vertex(model, x, y1, z2).color(r, g, b, a)
-                .uv(0.0F, 1.0F).uv2(LightTexture.FULL_BRIGHT).normal(normal, 0.0F, 1.0F, 0.0F).endVertex();
-        buffer.vertex(model, x, y1, z1).color(r, g, b, a)
-                .uv(0.0F, 0.0F).uv2(LightTexture.FULL_BRIGHT).normal(normal, 0.0F, 1.0F, 0.0F).endVertex();
-        buffer.vertex(model, x, y2, z1).color(r, g, b, a2)
-                .uv(1.0F, 0.0F).uv2(LightTexture.FULL_BRIGHT).normal(normal, 0.0F, 1.0F, 0.0F).endVertex();
-        buffer.vertex(model, x, y2, z2).color(r, g, b, a2)
-                .uv(1.0F, 1.0F).uv2(LightTexture.FULL_BRIGHT).normal(normal, 0.0F, 1.0F, 0.0F).endVertex();
+        buffer.addVertex(pose, x, y1, z2).setColor(r, g, b, a)
+                .setUv(0.0F, 1.0F).setLight(LightTexture.FULL_BRIGHT).setNormal(pose, 0.0F, 1.0F, 0.0F);
+        buffer.addVertex(pose, x, y1, z1).setColor(r, g, b, a)
+                .setUv(0.0F, 0.0F).setLight(LightTexture.FULL_BRIGHT).setNormal(pose, 0.0F, 1.0F, 0.0F);
+        buffer.addVertex(pose, x, y2, z1).setColor(r, g, b, a2)
+                .setUv(1.0F, 0.0F).setLight(LightTexture.FULL_BRIGHT).setNormal(pose, 0.0F, 1.0F, 0.0F);
+        buffer.addVertex(pose, x, y2, z2).setColor(r, g, b, a2)
+                .setUv(1.0F, 1.0F).setLight(LightTexture.FULL_BRIGHT).setNormal(pose, 0.0F, 1.0F, 0.0F);
     }
 
     @SubscribeEvent
@@ -219,7 +202,7 @@ public class GameRendering {
         final Minecraft client = Minecraft.getInstance();
         final EntityRenderDispatcher renderDispatcher = client.getEntityRenderDispatcher();
         double distance2 = renderDispatcher.distanceToSqr(entity);
-        if (!ForgeHooksClient.isNameplateInRenderDistance(entity, distance2) || entity.isDiscrete()) {
+        if (!ClientHooks.isNameplateInRenderDistance(entity, distance2) || entity.isDiscrete()) {
             return;
         }
 

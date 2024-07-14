@@ -2,15 +2,19 @@ package com.lovetropics.minigames.client.lobby.state;
 
 import com.lovetropics.minigames.common.core.game.IGameDefinition;
 import com.lovetropics.minigames.common.core.game.config.GameConfigs;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentSerialization;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.resources.ResourceLocation;
 
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public final class ClientGameDefinition {
+	public static final StreamCodec<RegistryFriendlyByteBuf, ClientGameDefinition> STREAM_CODEC = StreamCodec.of((output, definition) -> definition.encode(output), ClientGameDefinition::decode);
+
 	public final ResourceLocation id;
 	public final Component name;
 	@Nullable
@@ -51,22 +55,22 @@ public final class ClientGameDefinition {
 		);
 	}
 
-	public static ClientGameDefinition decode(FriendlyByteBuf buffer) {
+	public static ClientGameDefinition decode(RegistryFriendlyByteBuf buffer) {
 		ResourceLocation id = buffer.readResourceLocation();
-		Component name = buffer.readComponent();
-		Component subtitle = buffer.readBoolean() ? buffer.readComponent() : null;
+		Component name = ComponentSerialization.STREAM_CODEC.decode(buffer);
+		Component subtitle = buffer.readBoolean() ? ComponentSerialization.STREAM_CODEC.decode(buffer) : null;
 		ResourceLocation icon = buffer.readBoolean() ? buffer.readResourceLocation() : null;
 		int minimumParticipants = buffer.readVarInt();
 		int maximumParticipants = buffer.readVarInt();
 		return new ClientGameDefinition(id, name, subtitle, icon, minimumParticipants, maximumParticipants);
 	}
 
-	public void encode(FriendlyByteBuf buffer) {
+	public void encode(RegistryFriendlyByteBuf buffer) {
 		buffer.writeResourceLocation(this.id);
-		buffer.writeComponent(this.name);
+		ComponentSerialization.STREAM_CODEC.encode(buffer, this.name);
 		buffer.writeBoolean(this.subtitle != null);
 		if (this.subtitle != null) {
-			buffer.writeComponent(this.subtitle);
+			ComponentSerialization.STREAM_CODEC.encode(buffer, this.subtitle);
 		}
 		buffer.writeBoolean(this.icon != null);
 		if (this.icon != null) {

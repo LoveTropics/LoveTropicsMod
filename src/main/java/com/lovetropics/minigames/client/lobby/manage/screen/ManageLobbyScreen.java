@@ -115,13 +115,13 @@ public final class ManageLobbyScreen extends Screen {
 
 		playerList = addWidget(new LobbyPlayerList(this, lobby, layout.playerList));
 
-		playButton = addRenderableWidget(FlexUi.createButton(layout.play, Component.literal("\u25B6"), b -> {
+		playButton = addRenderableWidget(FlexUi.createButton(layout.play, Component.literal("▶"), b -> {
 			session.selectControl(LobbyControls.Type.PLAY);
 		}));
-		skipButton = addRenderableWidget(FlexUi.createButton(layout.skip, Component.literal("\u23ED"), b -> {
+		skipButton = addRenderableWidget(FlexUi.createButton(layout.skip, Component.literal("⏭"), b -> {
 			session.selectControl(LobbyControls.Type.SKIP);
 		}));
-		restartButton = addRenderableWidget(FlexUi.createButton(layout.restart, Component.literal("\u27F3"), b -> {
+		restartButton = addRenderableWidget(FlexUi.createButton(layout.restart, Component.literal("⟳"), b -> {
 			session.selectControl(LobbyControls.Type.RESTART);
 		}));
 
@@ -210,25 +210,28 @@ public final class ManageLobbyScreen extends Screen {
 	}
 
 	@Override
-	public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
-		int fontHeight = font.lineHeight;
-
-		renderBackground(graphics);
+	public void renderBackground(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
+		super.renderBackground(graphics, mouseX, mouseY, partialTicks);
 
 		FlexUi.fill(layout.leftColumn, graphics, 0x80101010);
 		FlexUi.fill(layout.rightColumn, graphics, 0x80101010);
 
-		gameList.render(graphics, mouseX, mouseY, partialTicks);
-		gameConfig.render(graphics, mouseX, mouseY, partialTicks);
-
 		for (Layout marginal : layout.marginals) {
 			FlexUi.fill(marginal, graphics, 0xFF101010);
 		}
+	}
+
+	@Override
+	public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
+		super.render(graphics, mouseX, mouseY, partialTicks);
+
+		gameList.render(graphics, mouseX, mouseY, partialTicks);
+		gameConfig.render(graphics, mouseX, mouseY, partialTicks);
 
 		gameList.renderOverlays(graphics, mouseX, mouseY, partialTicks);
 
 		// TODO: make this name rendering better
-		graphics.drawString(font, nameField.getMessage(), nameField.getX(), nameField.getY() - fontHeight - 2, CommonColors.WHITE);
+		graphics.drawString(font, nameField.getMessage(), nameField.getX(), nameField.getY() - font.lineHeight - 2, CommonColors.WHITE);
 		nameField.render(graphics, mouseX, mouseY, partialTicks);
 
 		playerList.render(graphics, mouseX, mouseY);
@@ -243,8 +246,6 @@ public final class ManageLobbyScreen extends Screen {
 		}
 
 		playerList.renderTooltip(graphics, mouseX, mouseY);
-
-		super.render(graphics, mouseX, mouseY, partialTicks);
 	}
 
 	private void renderSelectedGame(ClientLobbyQueuedGame game, GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {

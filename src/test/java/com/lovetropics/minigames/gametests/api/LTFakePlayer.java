@@ -6,9 +6,10 @@ import net.minecraft.network.Connection;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketFlow;
-import net.minecraft.network.protocol.game.ServerboundClientInformationPacket;
+import net.minecraft.server.level.ClientInformation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.network.CommonListenerCookie;
 import net.minecraft.stats.Stat;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.player.Player;
@@ -26,11 +27,11 @@ public class LTFakePlayer extends ServerPlayer implements LTGameTestFakePlayer {
     private final FakePlayerBuilder builder;
 
     public LTFakePlayer(ServerLevel level, FakePlayerBuilder builder, Consumer<LTFakePlayer> before, String name) {
-        super(level.getServer(), level, new GameProfile(UUID.randomUUID(), name));
+        super(level.getServer(), level, new GameProfile(UUID.randomUUID(), name), ClientInformation.createDefault());
         this.builder = builder;
 
         before.accept(this);
-        level().getServer().getPlayerList().placeNewPlayer(new Connection(PacketFlow.CLIENTBOUND), this);
+        level().getServer().getPlayerList().placeNewPlayer(new Connection(PacketFlow.CLIENTBOUND), this, CommonListenerCookie.createInitial(getGameProfile(), false));
     }
 
     @Override
@@ -44,7 +45,7 @@ public class LTFakePlayer extends ServerPlayer implements LTGameTestFakePlayer {
     }
 
     void exitWorld() {
-        connection.connection.disconnect(Component.literal("Test finished"));
+        connection.disconnect(Component.literal("Test finished"));
     }
 
     @Override
@@ -72,8 +73,7 @@ public class LTFakePlayer extends ServerPlayer implements LTGameTestFakePlayer {
     }
 
     @Override
-    public void updateOptions(ServerboundClientInformationPacket packet) {
-
+    public void updateOptions(ClientInformation information) {
     }
 
     @Override

@@ -7,7 +7,7 @@ import net.minecraft.Util;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.ai.attributes.Attribute;
-import net.minecraftforge.registries.RegistryObject;
+import net.neoforged.neoforge.registries.DeferredHolder;
 
 import java.util.function.Function;
 
@@ -25,13 +25,13 @@ public final class AttributeBuilder<T extends Attribute, P> extends AbstractBuil
 
 	@Override
 	protected T createEntry() {
-		final ResourceLocation id = new ResourceLocation(getOwner().getModid(), getName());
+		final ResourceLocation id = ResourceLocation.fromNamespaceAndPath(getOwner().getModid(), getName());
 		final String translationKey = Util.makeDescriptionId("attribute", id);
 		return factory.apply(translationKey);
 	}
 
 	@Override
-	protected RegistryEntry<T> createEntryWrapper(final RegistryObject<T> delegate) {
+	protected RegistryEntry<Attribute, T> createEntryWrapper(final DeferredHolder<Attribute, T> delegate) {
 		return new RegistryEntry<>(getOwner(), delegate);
 	}
 }

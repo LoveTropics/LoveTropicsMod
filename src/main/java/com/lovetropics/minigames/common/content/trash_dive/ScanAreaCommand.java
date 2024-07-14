@@ -13,6 +13,7 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -20,8 +21,7 @@ import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.chunk.LevelChunk;
-import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.RegistryObject;
+import net.neoforged.neoforge.registries.DeferredHolder;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -40,7 +40,7 @@ import static net.minecraft.commands.Commands.argument;
 import static net.minecraft.commands.Commands.literal;
 
 public class ScanAreaCommand {
-	private static final RegistryObject<Block> PURIFIED_SAND = RegistryObject.create(new ResourceLocation("tropicraft", "purified_sand"), ForgeRegistries.BLOCKS);
+	private static final DeferredHolder<Block, Block> PURIFIED_SAND = DeferredHolder.create(Registries.BLOCK, ResourceLocation.fromNamespaceAndPath("tropicraft", "purified_sand"));
 
 	private static final SimpleCommandExceptionType NO_WATER = new SimpleCommandExceptionType(
 			Component.translatable("commands.ltminigames.scan.nowater.fail"));
@@ -76,7 +76,9 @@ public class ScanAreaCommand {
 		seen.add(pos.asLong());
 
 		final Set<Block> edges = Sets.newHashSet(Blocks.DIRT, Blocks.GRASS_BLOCK, Blocks.STONE, Blocks.SAND, Blocks.BROWN_STAINED_GLASS);
-		PURIFIED_SAND.ifPresent(edges::add);
+		if (PURIFIED_SAND.isBound()) {
+			edges.add(PURIFIED_SAND.value());
+		}
 		final Direction[] dirs = new Direction[] { Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST };
 
 		Map<ChunkPos, LevelChunk> chunkCache = new HashMap<>();

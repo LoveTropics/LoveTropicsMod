@@ -19,8 +19,9 @@ import net.minecraft.SharedConstants;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
@@ -33,14 +34,15 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.ChestBlock;
 import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import net.minecraft.world.level.levelgen.Heightmap;
+import net.minecraft.world.level.storage.loot.LootTable;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public record ChestDropAction(String region, SimpleWeightedRandomList<ResourceLocation> lootTables, int delay, IntProvider count, float glowRadius) implements IGameBehavior {
+public record ChestDropAction(String region, SimpleWeightedRandomList<ResourceKey<LootTable>> lootTables, int delay, IntProvider count, float glowRadius) implements IGameBehavior {
 	public static final MapCodec<ChestDropAction> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			Codec.STRING.fieldOf("region").forGetter(ChestDropAction::region),
-			SimpleWeightedRandomList.wrappedCodec(ResourceLocation.CODEC).fieldOf("loot_tables").forGetter(c -> c.lootTables),
+			SimpleWeightedRandomList.wrappedCodec(ResourceKey.codec(Registries.LOOT_TABLE)).fieldOf("loot_tables").forGetter(c -> c.lootTables),
 			Codec.INT.fieldOf("delay").forGetter(ChestDropAction::delay),
 			IntProvider.POSITIVE_CODEC.fieldOf("count").forGetter(ChestDropAction::count),
 			Codec.FLOAT.optionalFieldOf("glow_radius", 8.0f).forGetter(ChestDropAction::glowRadius)

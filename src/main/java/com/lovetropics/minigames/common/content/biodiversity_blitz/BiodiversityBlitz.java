@@ -48,36 +48,41 @@ import com.lovetropics.minigames.common.content.biodiversity_blitz.client_state.
 import com.lovetropics.minigames.common.content.biodiversity_blitz.client_state.ClientBbSelfState;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.client_state.CurrencyItemState;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.client_state.CurrencyTargetState;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.BbMobSpawner;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.item.UniqueBlockNamedItem;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.plant.PlantItemType;
 import com.lovetropics.minigames.common.util.registry.GameBehaviorEntry;
 import com.lovetropics.minigames.common.util.registry.GameClientTweakEntry;
 import com.lovetropics.minigames.common.util.registry.LoveTropicsRegistrate;
+import com.mojang.serialization.Codec;
 import com.tterrag.registrate.util.entry.BlockEntry;
 import com.tterrag.registrate.util.entry.ItemEntry;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
+import net.minecraft.core.component.DataComponentType;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.ComponentUtils;
-import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.Style;
 import net.minecraft.tags.BlockTags;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.ItemLore;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraftforge.event.RegisterCommandsEvent;
-import net.minecraftforge.event.entity.player.ItemTooltipEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.event.entity.player.ItemTooltipEvent;
+import net.neoforged.neoforge.registries.DeferredHolder;
+import net.neoforged.neoforge.registries.DeferredRegister;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
-@Mod.EventBusSubscriber(modid = Constants.MODID)
+@EventBusSubscriber(modid = Constants.MODID)
 public final class BiodiversityBlitz {
 	private static final LoveTropicsRegistrate REGISTRATE = LoveTropics.registrate();
+
+	public static final DeferredRegister.DataComponents DATA_COMPONENTS = DeferredRegister.createDataComponents(Constants.MODID);
 
 	// Behaviors
 
@@ -295,13 +300,21 @@ public final class BiodiversityBlitz {
 			.build()
 			.register();
 
-	@SubscribeEvent
-	public static void onRegisterCommands(RegisterCommandsEvent event) {
+	// TODO: Move this out of BioBlitz?
+	public static final DeferredHolder<DataComponentType<?>, DataComponentType<ItemLore>> SHIFT_LORE = DATA_COMPONENTS.registerComponentType(
+			"shift_lore",
+			builder -> builder.persistent(ItemLore.CODEC).networkSynchronized(ItemLore.STREAM_CODEC)
+	);
 
-	}
+	public static final DeferredHolder<DataComponentType<?>, DataComponentType<PlantItemType>> PLANT_COMPONENT = DATA_COMPONENTS.registerComponentType(
+			"bb_plant",
+			builder -> builder.persistent(PlantItemType.CODEC)
+	);
 
-
-	private static final Style LORE_STYLE = Style.EMPTY.withColor(ChatFormatting.GOLD).withItalic(true);
+	public static final DeferredHolder<DataComponentType<?>, DataComponentType<Map<BbMobSpawner.BbEntityTypes, Integer>>> ENEMIES_TO_SEND = DATA_COMPONENTS.registerComponentType(
+			"bb_mobs_to_send_to_enemies",
+			builder -> builder.persistent(Codec.unboundedMap(BbMobSpawner.BbEntityTypes.CODEC, ExtraCodecs.NON_NEGATIVE_INT))
+	);
 
 	@SubscribeEvent
 	public static void onItemTooltip(ItemTooltipEvent event) {
@@ -311,38 +324,18 @@ public final class BiodiversityBlitz {
 		// Used to pop the advanced tooltip off the stack and add it back at the end
 		List<Component> removedComponents = null;
 
-		CompoundTag rootTag = stack.getTag();
-		if (rootTag != null && rootTag.contains("display", 10)) {
-			CompoundTag display = rootTag.getCompound("display");
+		ItemLore shiftLore = stack.get(SHIFT_LORE);
+		if (shiftLore != null) {
+			if (event.getFlags().isAdvanced()) {
+				removedComponents = new ArrayList<>();
+				removedComponents.add(list.removeLast());
+				removedComponents.add(list.removeLast());
+			}
 
-			if (display.getTagType("ShiftLore") == 9) {
-				if (event.getFlags().isAdvanced()) {
-					removedComponents = new ArrayList<>();
-					removedComponents.add(list.remove(list.size() - 1));
-					removedComponents.add(list.remove(list.size() - 1));
-				}
-
-				// Supposed to be used to create a buffer space, but it doesn't seem to work?
-//				list.add(Component.literal(""));
-
-				if (Screen.hasShiftDown()) {
-					ListTag listtag = display.getList("ShiftLore", 8);
-
-					for (int i = 0; i < listtag.size(); ++i) {
-						String s = listtag.getString(i);
-
-						try {
-							MutableComponent mutablecomponent1 = Component.Serializer.fromJson(s);
-							if (mutablecomponent1 != null) {
-								list.add(ComponentUtils.mergeStyles(mutablecomponent1, LORE_STYLE));
-							}
-						} catch (Exception exception) {
-							display.remove("ShiftLore");
-						}
-					}
-				} else {
-					list.add(BiodiversityBlitzTexts.SHIFT_FOR_MORE_INFORMATION.copy().withStyle(ChatFormatting.GOLD));
-				}
+			if (Screen.hasShiftDown()) {
+				shiftLore.addToTooltip(event.getContext(), list::add, event.getFlags());
+			} else {
+				list.add(BiodiversityBlitzTexts.SHIFT_FOR_MORE_INFORMATION.copy().withStyle(ChatFormatting.GOLD));
 			}
 		}
 

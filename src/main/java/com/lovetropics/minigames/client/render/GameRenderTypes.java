@@ -26,7 +26,7 @@ public class GameRenderTypes extends RenderStateShard {
         return RenderType.CompositeState.builder()
                 .setLightmapState(LIGHTMAP)
                 .setShaderState(program)
-                .setTextureState(new TextureStateShard(new ResourceLocation("textures/misc/white.png"), false, false))
+                .setTextureState(new TextureStateShard(ResourceLocation.withDefaultNamespace("textures/misc/white.png"), false, false))
                 .setTransparencyState(TRANSLUCENT_TRANSPARENCY)
                 .setOutputState(TRANSLUCENT_TARGET)
                 .setCullState(NO_CULL)

@@ -33,7 +33,7 @@ import java.util.List;
 import java.util.Map;
 
 public final class SetupTeamsBehavior implements IGameBehavior {
-	private static final ResourceLocation CONFIG_ID = new ResourceLocation(Constants.MODID, "team_list");
+	private static final ResourceLocation CONFIG_ID = ResourceLocation.fromNamespaceAndPath(Constants.MODID, "team_list");
 	private static final GameTeam DEFAULT_TEAM = new GameTeam(
 			new GameTeamKey(""),
 			new GameTeamConfig(CommonComponents.EMPTY, DyeColor.BLACK, ChatFormatting.BLACK, List.of(), 1)

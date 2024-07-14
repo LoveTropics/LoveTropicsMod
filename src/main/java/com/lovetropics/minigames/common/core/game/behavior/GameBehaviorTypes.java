@@ -7,20 +7,19 @@ import com.lovetropics.minigames.common.core.game.behavior.action.ApplyToBehavio
 import com.lovetropics.minigames.common.core.game.behavior.action.PlayerActionTarget;
 import com.lovetropics.minigames.common.core.game.behavior.action.PlotActionTarget;
 import com.lovetropics.minigames.common.core.game.behavior.instances.AddWeatherBehavior;
-import com.lovetropics.minigames.common.core.game.behavior.instances.CountdownEffectsBehavior;
-import com.lovetropics.minigames.common.core.game.behavior.instances.GiveItemsToKillerBehavior;
-import com.lovetropics.minigames.common.core.game.behavior.instances.OnlyTickInPeriodBehavior;
-import com.lovetropics.minigames.common.core.game.behavior.instances.TimedCloseBehavior;
-import com.lovetropics.minigames.common.core.game.behavior.instances.action.AddEquipmentAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.AssignPlayerRolesBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.CompositeBehavior;
+import com.lovetropics.minigames.common.core.game.behavior.instances.CountdownEffectsBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.DebugModeBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.GameEndEffectsBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.GameProgressionBehavior;
+import com.lovetropics.minigames.common.core.game.behavior.instances.GiveItemsToKillerBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.ImmediateRespawnBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.IndividualWinTrigger;
 import com.lovetropics.minigames.common.core.game.behavior.instances.JoinLateWithRoleBehavior;
+import com.lovetropics.minigames.common.core.game.behavior.instances.OnlyTickInPeriodBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.PermanentItemBehavior;
+import com.lovetropics.minigames.common.core.game.behavior.instances.PlayerHeadRewardBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.PointsSidebarBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.PositionPlayersBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.ProgressBarBehavior;
@@ -28,27 +27,28 @@ import com.lovetropics.minigames.common.core.game.behavior.instances.SetGameClie
 import com.lovetropics.minigames.common.core.game.behavior.instances.SetGameTypesBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.SetupIntegrationsBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.SpectatorChaseBehavior;
+import com.lovetropics.minigames.common.core.game.behavior.instances.TimedCloseBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.TimedGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.TipsAndTricksBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.AddAttributeModifierAction;
+import com.lovetropics.minigames.common.core.game.behavior.instances.action.AddEquipmentAction;
+import com.lovetropics.minigames.common.core.game.behavior.instances.action.ApplyForTimeAction;
+import com.lovetropics.minigames.common.core.game.behavior.instances.action.ChestDropAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.ClearAttributeModifierAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.ClearDisguiseAction;
-import com.lovetropics.minigames.common.core.game.behavior.instances.action.SetDisguiseAction;
-import com.lovetropics.minigames.common.core.game.behavior.instances.action.ChestDropAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.CountdownAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.DamagePlayerAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.EliminatePlayerAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.GiveEffectAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.GiveLootAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.GiveRewardAction;
-import com.lovetropics.minigames.common.core.game.behavior.instances.action.ApplyForTimeAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.NotificationToastAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.PlaySoundAction;
-import com.lovetropics.minigames.common.core.game.behavior.instances.PlayerHeadRewardBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.RunCommandsAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.SendMessageAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.SetBlockAtPlayerAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.SetBlocksAction;
+import com.lovetropics.minigames.common.core.game.behavior.instances.action.SetDisguiseAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.SetExtendingBlocksAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.SetGlowingAction;
 import com.lovetropics.minigames.common.core.game.behavior.instances.action.ShootProjectilesAroundPlayerAction;
@@ -134,25 +134,18 @@ import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.util.ExtraCodecs;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.registries.DeferredRegister;
-import net.minecraftforge.registries.IForgeRegistry;
-import net.minecraftforge.registries.RegistryBuilder;
-
-import java.util.function.Supplier;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.registries.DeferredRegister;
 
 public class GameBehaviorTypes {
-	public static final ResourceKey<Registry<GameBehaviorType<?>>> REGISTRY_KEY = ResourceKey.createRegistryKey(new ResourceLocation(Constants.MODID, "minigame_behaviours"));
+	public static final ResourceKey<Registry<GameBehaviorType<?>>> REGISTRY_KEY = ResourceKey.createRegistryKey(ResourceLocation.fromNamespaceAndPath(Constants.MODID, "minigame_behaviours"));
 	public static final DeferredRegister<GameBehaviorType<?>> REGISTER = DeferredRegister.create(REGISTRY_KEY, Constants.MODID);
 
-	public static final Supplier<IForgeRegistry<GameBehaviorType<?>>> REGISTRY = REGISTER.makeRegistry(() -> new RegistryBuilder<GameBehaviorType<?>>()
-			.disableSync()
-			.disableSaving());
+	public static final Registry<GameBehaviorType<?>> REGISTRY = REGISTER.makeRegistry(builder -> builder.sync(false));
 
 	private static final LoveTropicsRegistrate REGISTRATE = LoveTropics.registrate();
 
-	public static final Codec<GameBehaviorType<?>> TYPE_CODEC = ExtraCodecs.lazyInitializedCodec(() -> REGISTRY.get().getCodec());
+	public static final Codec<GameBehaviorType<?>> TYPE_CODEC = Codec.lazyInitialized(() -> REGISTRY.byNameCodec());
 
 	public static final GameBehaviorEntry<CompositeBehavior> COMPOSITE = register("composite", CompositeBehavior.MAP_CODEC);
 	public static final GameBehaviorEntry<PositionPlayersBehavior> POSITION_PLAYERS = register("position_players", PositionPlayersBehavior.CODEC);

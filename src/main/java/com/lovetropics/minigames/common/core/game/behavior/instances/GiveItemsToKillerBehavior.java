@@ -7,7 +7,6 @@ import com.lovetropics.minigames.common.core.game.behavior.GameBehaviorTypes;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GamePlayerEvents;
-import com.lovetropics.minigames.common.util.Codecs;
 import com.lovetropics.minigames.common.util.Util;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -22,7 +21,7 @@ import java.util.function.Supplier;
 
 public record GiveItemsToKillerBehavior(List<ItemPredicate> predicates) implements IGameBehavior {
 	public static final MapCodec<GiveItemsToKillerBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
-			MoreCodecs.listOrUnit(Codecs.ITEM_PREDICATE).fieldOf("item_predicate").forGetter(GiveItemsToKillerBehavior::predicates)
+			MoreCodecs.listOrUnit(ItemPredicate.CODEC).fieldOf("item_predicate").forGetter(GiveItemsToKillerBehavior::predicates)
 	).apply(i, GiveItemsToKillerBehavior::new));
 
 	@Override
@@ -47,7 +46,7 @@ public record GiveItemsToKillerBehavior(List<ItemPredicate> predicates) implemen
 
 	private boolean matches(final ItemStack item) {
 		for (final ItemPredicate predicate : predicates) {
-			if (predicate.matches(item)) {
+			if (predicate.test(item)) {
 				return true;
 			}
 		}

@@ -12,7 +12,6 @@ import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents
 import com.lovetropics.minigames.common.core.game.state.GameProgressionState;
 import com.lovetropics.minigames.common.core.game.state.ProgressionPeriod;
 import com.lovetropics.minigames.common.core.game.state.ProgressionSpline;
-import com.lovetropics.minigames.common.core.network.LoveTropicsNetwork;
 import com.lovetropics.minigames.common.core.network.RiseTideMessage;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
@@ -40,7 +39,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.chunk.LevelChunk;
-import net.minecraftforge.network.PacketDistributor;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -220,7 +219,7 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 			}
 
 			iterator.remove();
-			increaseTideForChunk(chunk);
+			increaseTideForChunk(world, chunk);
 			count++;
 		}
 
@@ -296,7 +295,7 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 		return minDistance2;
 	}
 
-	private long increaseTideForChunk(LevelChunk chunk) {
+	private long increaseTideForChunk(ServerLevel level, LevelChunk chunk) {
 		ChunkPos chunkPos = chunk.getPos();
 
 		int targetLevel = this.waterLevel;
@@ -307,7 +306,7 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 			BlockPos tideMax = tideArea.max();
 			long count = TideFiller.fillChunk(tideMin.getX(), tideMin.getZ(), tideMax.getX(), tideMax.getZ(), chunk, lastLevel, targetLevel);
 			if (count > 0) {
-				LoveTropicsNetwork.CHANNEL.send(PacketDistributor.TRACKING_CHUNK.with(() -> chunk), new RiseTideMessage(
+				PacketDistributor.sendToPlayersTrackingChunk(level, chunk.getPos(), new RiseTideMessage(
 						new BlockPos(Math.max(tideMin.getX(), chunkPos.getMinBlockX()), lastLevel, Math.max(tideMin.getZ(), chunkPos.getMinBlockZ())),
 						new BlockPos(Math.min(tideMax.getX(), chunkPos.getMaxBlockX()), targetLevel, Math.min(tideMax.getZ(), chunkPos.getMaxBlockZ()))
 				));

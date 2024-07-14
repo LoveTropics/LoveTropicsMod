@@ -21,13 +21,6 @@ public abstract class AbstractGameList extends AbstractLTList<AbstractGameList.E
 	public AbstractGameList(Screen screen, Layout layout, Component title) {
 		super(screen, layout, Entry.HEIGHT);
 		this.setRenderHeader(true, this.minecraft.font.lineHeight + 4);
-		this.setLeftPos(layout.background().left());
-
-		// disable background
-		this.setRenderBackground(false);
-		this.setRenderTopAndBottom(false);
-
-		this.setRenderSelection(false);
 
 		this.title = title;
 	}
@@ -38,7 +31,7 @@ public abstract class AbstractGameList extends AbstractLTList<AbstractGameList.E
 		graphics.drawString(font,
 				this.title,
 				x + (this.width - font.width(this.title)) / 2,
-				Math.min(this.y0 + 3, y),
+				Math.min(this.getY() + 3, y),
 				CommonColors.WHITE
 		);
 	}

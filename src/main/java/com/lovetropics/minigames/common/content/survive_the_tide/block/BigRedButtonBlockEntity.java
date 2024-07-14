@@ -8,8 +8,8 @@ import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
-import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtOps;
@@ -88,19 +88,19 @@ public class BigRedButtonBlockEntity extends BlockEntity {
 	}
 
 	@Override
-	protected void saveAdditional(CompoundTag tag) {
-		super.saveAdditional(tag);
+	protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+		super.saveAdditional(tag, registries);
 		ListTag playersList = new ListTag();
 		for (UUID id : playersPressed) {
 			playersList.add(NbtUtils.createUUID(id));
 		}
 		tag.put(TAG_PLAYERS, playersList);
-		tag.put(TAG_REQUIREMENTS, Util.getOrThrow(Requirements.CODEC.encodeStart(NbtOps.INSTANCE, requirements), IllegalStateException::new));
+		tag.put(TAG_REQUIREMENTS, Requirements.CODEC.encodeStart(NbtOps.INSTANCE, requirements).getOrThrow());
 	}
 
 	@Override
-	public void load(CompoundTag tag) {
-		super.load(tag);
+	public void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+		super.loadAdditional(tag, registries);
 		playersPressed.clear();
 		for (Tag id : tag.getList(TAG_PLAYERS, Tag.TAG_LIST)) {
 			playersPressed.add(NbtUtils.loadUUID(id));
@@ -112,7 +112,7 @@ public class BigRedButtonBlockEntity extends BlockEntity {
 	}
 
 	@Override
-	public CompoundTag getUpdateTag() {
+	public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
 		CompoundTag tag = new CompoundTag();
 		tag.putInt(TAG_PLAYERS, playersPressed.size());
 		tag.putInt(TAG_REQUIREMENTS, playersRequiredCount);
@@ -120,14 +120,14 @@ public class BigRedButtonBlockEntity extends BlockEntity {
 	}
 
 	@Override
-	public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt) {
+	public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt, HolderLookup.Provider registries) {
 		if (pkt.getTag() != null) {
-			handleUpdateTag(pkt.getTag());
+			handleUpdateTag(pkt.getTag(), registries);
 		}
 	}
 
 	@Override
-	public void handleUpdateTag(CompoundTag tag) {
+	public void handleUpdateTag(CompoundTag tag, HolderLookup.Provider registries) {
 		playersPressedCount = tag.getInt(TAG_PLAYERS);
 		playersRequiredCount = tag.getInt(TAG_REQUIREMENTS);
 	}

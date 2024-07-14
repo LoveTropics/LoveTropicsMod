@@ -4,7 +4,6 @@ import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.common.core.dimension.RuntimeDimensions;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.Util;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
@@ -15,14 +14,15 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.event.entity.EntityTravelToDimensionEvent;
-import net.minecraftforge.event.entity.player.PlayerEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.event.entity.EntityTravelToDimensionEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 
 import javax.annotation.Nullable;
 
-@Mod.EventBusSubscriber(modid = Constants.MODID)
+// TODO: Replace this with DataAttachment
+@EventBusSubscriber(modid = Constants.MODID)
 public final class WorkspacePositionTracker {
 	private static final String NBT_KEY = Constants.MODID + ":map_workspace";
 	private static final String NBT_RETURN_KEY = "return";
@@ -115,7 +115,7 @@ public final class WorkspacePositionTracker {
 		}
 
 		public Tag write() {
-			return Util.getOrThrow(CODEC.encodeStart(NbtOps.INSTANCE, this), IllegalStateException::new);
+			return CODEC.encodeStart(NbtOps.INSTANCE, this).getOrThrow();
 		}
 
 		@Nullable

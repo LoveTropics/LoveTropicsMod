@@ -1,7 +1,6 @@
 package com.lovetropics.minigames.common.core.command;
 
 import com.lovetropics.minigames.client.particle_line.DrawParticleLineMessage;
-import com.lovetropics.minigames.common.core.network.LoveTropicsNetwork;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.FloatArgumentType;
@@ -14,7 +13,7 @@ import net.minecraft.commands.arguments.coordinates.Vec3Argument;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.network.PacketDistributor;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 import static net.minecraft.commands.Commands.argument;
 import static net.minecraft.commands.Commands.literal;
@@ -43,7 +42,7 @@ public final class ParticleLineCommand {
 		Vec3 to = Vec3Argument.getVec3(context, "to");
 		float spacing = FloatArgumentType.getFloat(context, "spacing");
 
-		LoveTropicsNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new DrawParticleLineMessage(particle, from, to, spacing));
+		PacketDistributor.sendToPlayer(player, new DrawParticleLineMessage(particle, from, to, spacing));
 
 		return Command.SINGLE_SUCCESS;
 	}

@@ -1,6 +1,7 @@
 package com.lovetropics.minigames.common.content.survive_the_tide.block;
 
 import com.lovetropics.minigames.common.content.survive_the_tide.SurviveTheTide;
+import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.StringRepresentable;
@@ -22,12 +23,19 @@ import net.minecraft.world.level.block.state.properties.EnumProperty;
 import org.jetbrains.annotations.Nullable;
 
 public class LootDispenserBlock extends BaseEntityBlock {
+	public static final MapCodec<LootDispenserBlock> CODEC = simpleCodec(LootDispenserBlock::new);
+
 	public static final DirectionProperty FACING = DirectionalBlock.FACING;
 	public static final EnumProperty<State> STATE = EnumProperty.create("state", State.class);
 
 	public LootDispenserBlock(Properties properties) {
 		super(properties);
 		registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(STATE, State.INACTIVE));
+	}
+
+	@Override
+	protected MapCodec<LootDispenserBlock> codec() {
+		return CODEC;
 	}
 
 	@Override

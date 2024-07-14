@@ -11,7 +11,6 @@ import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameLivingEntityEvents;
-import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
@@ -19,8 +18,6 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
-
-import java.util.Random;
 
 public class MushroomPlantBehavior implements IGameBehavior {
     public static final MapCodec<MushroomPlantBehavior> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
@@ -50,7 +47,7 @@ public class MushroomPlantBehavior implements IGameBehavior {
                 // Mushrooms will cause nearby dying entities to drop extra loot
                 if (plant != null && this.plantType.equals(plant.type())) {
                     // TODO: extra bonus in shade
-                   r.add(new ItemEntity(e.level(), e.getX(), e.getY(), e.getZ(), new ItemStack(BiodiversityBlitz.OSA_POINT, 1)));
+                   r.add(new ItemEntity(e.level(), e.getX(), e.getY(), e.getZ(), new ItemStack(BiodiversityBlitz.OSA_POINT.get(), 1)));
                     break;
                 }
             }

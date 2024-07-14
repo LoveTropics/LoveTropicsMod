@@ -1,10 +1,8 @@
 plugins {
     id 'eclipse'
     id 'idea'
-    id 'maven-publish'
-    id 'net.minecraftforge.gradle' version '[6.0,6.2)'
-    id 'org.parchmentmc.librarian.forgegradle' version '1.+'
-    id 'org.spongepowered.mixin' version '0.7+'
+    id 'java-library'
+    id 'net.neoforged.gradle.userdev' version '7.0.145'
 }
 
 jarJar.enable()
@@ -27,7 +25,7 @@ if (System.getenv('GHA_RELEASE_WORKFLOW')) {
     version = "${mod_version}-${release_type}+${buildnumber}"
 }
 
-java.toolchain.languageVersion = JavaLanguageVersion.of(17)
+java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 
 sourceSets.main.resources {
     srcDir 'src/generated/resources'
@@ -39,69 +37,43 @@ sourceSets.test.resources {
     include 'data/ltminigames/structures/**'
 }
 
+runs {
+    configureEach {
+        workingDirectory project.file('run')
+
+        systemProperty 'forge.logging.markers', 'REGISTRIES'
+        systemProperty 'forge.logging.console.level', 'warn'
+
+        modSource project.sourceSets.main
+    }
+
+    client {
+        programArguments.addAll '--username', 'Dev###'
+    }
+
+    server {
+        programArgument '--nogui'
+    }
+
+    data {
+        programArguments.addAll '--mod', project.mod_id, '--all', '--output', file('src/generated/resources/').getAbsolutePath(), '--existing', file('src/main/resources/').getAbsolutePath()
+    }
+
+    gameTestServer {
+        systemProperty 'forge.enabledGameTestNamespaces', project.mod_id
+    }
+}
+
 minecraft {
-    mappings channel: 'parchment', version: parchment_version
-    
-    accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg')
+    accessTransformers {
+        file('src/main/resources/META-INF/accesstransformer.cfg')
+    }
+}
 
-    runs {
-        configureEach {
-            copyIdeResources = true
-
-            workingDirectory project.file('run')
-            arg "-mixin.config=ltminigames.mixins.json"
-            jvmArg '-Dmixin.env.disableRefMap=true'
-
-            property 'forge.logging.console.level', 'info'
-            property 'forge.enabledGameTestNamespaces', 'ltminigames'
-
-            mods {
-                ltminigames {
-                    source sourceSets.main
-                }
-            }
-        }
-
-        client {
-            taskName 'ltminigames_client'
-
-            mods {
-                ltminigames {
-                    source sourceSets.test
-                }
-            }
-        }
-
-        server {
-            taskName 'ltminigames_server'
-        }
-        
-        data {
-            taskName 'ltminigames_data'
-
-            environment 'target', 'fmluserdevdata'
-
-            args '--mod', 'ltminigames', '--all', '--output', '"' + rootProject.file('src/generated/resources/') + '"',
-                 '--existing', '"' + sourceSets.main.resources.srcDirs[0] + '"'
-
-            mods {
-                ltminigames {
-                    source sourceSets.test
-                }
-            }
-        }
-
-        gameTestServer {
-            taskName 'ltminigames_gametestServer'
-
-            property 'forge.enableGameTest', 'true'
-
-            mods {
-                ltminigames {
-                    source sourceSets.test
-                }
-            }
-        }
+subsystems {
+    parchment {
+        minecraftVersion = minecraft_version
+        mappingsVersion = parchment_version
     }
 }
 
@@ -120,27 +92,23 @@ configurations {
 }
 
 repositories {
+    maven { url = "https://maven.ithundxr.dev/snapshots/" }
     maven { url = "https://maven.tterrag.com/" }
     maven { url = "https://api.modrinth.com/maven" }
     mavenLocal()
 }
 
 dependencies {
-    minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
+    implementation "net.neoforged:neoforge:${neo_version}"
 
-    modRuntime fg.deobf('maven.modrinth:tropicraft:9.6.1-1.20.1')
+    modRuntime 'maven.modrinth:tropicraft:9.7.0-1.21'
 
     // TODO: HACK - We get Registrate at runtime through JarJar from Tropicraft. We should rather prefer to depend on the slim jar.
-    jarJar(modCompile(fg.deobf("com.tterrag.registrate:Registrate:$registrate_version"))) {
-        jarJar.ranged(it, "[$registrate_version,MC1.21)")
+    jarJar(modCompile("com.tterrag.registrate:Registrate:MC1.21-${registrate_version}")) {
+        jarJar.ranged(it, "[MC1.21-${registrate_version},MC1.22)")
     }
 
-    jarJar(modImpl(fg.deobf("com.lovetropics.lib:LTLib:$ltlib_version")))
-
-    // Annotation Processors
-    if (System.getProperty("idea.sync.active") != "true") {
-        annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
-    }
+    jarJar(modImpl("com.lovetropics.lib:LTLib:$ltlib_version"))
 
     testImplementation platform("org.junit:junit-bom:5.7.0")
     testImplementation "org.junit.jupiter:junit-jupiter"
@@ -155,29 +123,10 @@ test {
 
 tasks.named('jar', Jar).configure {
     archiveClassifier = 'slim'
-    finalizedBy 'reobfJar'
-
-    manifest {
-        attributes([
-            "Specification-Title": "ltminigames",
-            "Specification-Vendor": "lovetropics",
-            "Specification-Version": "1",
-            "Implementation-Title": project.name,
-            "Implementation-Version": archiveVersion,
-            "Implementation-Vendor" :"lovetropics",
-            "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ"),
-            "MixinConfigs": "ltminigames.mixins.json"
-        ])
-    }
 }
 
 tasks.named('jarJar').configure {
     archiveClassifier = ''
-    finalizedBy 'reobfJarJar'
-}
-
-reobf {
-    jarJar { }
 }
 
 task sourceJar(type: Jar, dependsOn: classes) {
@@ -191,7 +140,7 @@ tasks.named('processResources', ProcessResources).configure {
     ]
     inputs.properties replaceProperties
 
-    filesMatching(['META-INF/mods.toml', 'pack.mcmeta']) {
+    filesMatching(['META-INF/neoforge.mods.toml']) {
         expand replaceProperties + [project: project]
     }
 }
@@ -200,25 +149,9 @@ tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
 }
 
-tasks.named('downloadAssets').configure {
-    enabled = !System.getenv('CI')
-}
-
-mixin {
-    add sourceSets.main, "ltminigames.refmap.json"
-}
-
-publishing {
-    tasks.publish.dependsOn 'build'
-    publications {
-        mavenJava(MavenPublication) {
-            artifact sourceJar
-        }
-    }
-
-    repositories {
-        if (project.hasProperty('mavendir')) {
-            maven { url mavendir }
-        }
+idea {
+    module {
+        downloadSources = true
+        downloadJavadoc = true
     }
 }

@@ -2,6 +2,7 @@ package com.lovetropics.minigames.common.util;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
@@ -10,12 +11,11 @@ import net.minecraft.world.entity.LightningBolt;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.registries.ForgeRegistries;
 import org.jetbrains.annotations.Nullable;
 
 public record EntityTemplate(EntityType<?> type, CompoundTag tag) {
 	public static final Codec<EntityTemplate> CODEC = RecordCodecBuilder.create(i -> i.group(
-			ForgeRegistries.ENTITY_TYPES.getCodec().fieldOf("type").forGetter(EntityTemplate::type),
+			BuiltInRegistries.ENTITY_TYPE.byNameCodec().fieldOf("type").forGetter(EntityTemplate::type),
 			CompoundTag.CODEC.optionalFieldOf("tag", new CompoundTag()).forGetter(EntityTemplate::tag)
 	).apply(i, EntityTemplate::new));
 
@@ -35,7 +35,7 @@ public record EntityTemplate(EntityType<?> type, CompoundTag tag) {
 
 		if (entity != null) {
 			if (entity instanceof Mob mob) {
-				mob.finalizeSpawn(level, level.getCurrentDifficultyAt(entity.blockPosition()), MobSpawnType.COMMAND, null, null);
+				mob.finalizeSpawn(level, level.getCurrentDifficultyAt(entity.blockPosition()), MobSpawnType.COMMAND, null);
 			}
 			return level.tryAddFreshEntityWithPassengers(entity) ? entity : null;
 		}

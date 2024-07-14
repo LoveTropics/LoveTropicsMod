@@ -59,7 +59,7 @@ public class ClientWorkspaceRegions implements Iterable<ClientWorkspaceRegions.E
 			int regionCount = buffer.readVarInt();
 			for (int j = 0; j < regionCount; j++) {
 				int id = buffer.readVarInt();
-				BlockBox region = BlockBox.read(buffer);
+				BlockBox region = BlockBox.STREAM_CODEC.decode(buffer);
 				regions.add(new Entry(id, key, region));
 			}
 		}

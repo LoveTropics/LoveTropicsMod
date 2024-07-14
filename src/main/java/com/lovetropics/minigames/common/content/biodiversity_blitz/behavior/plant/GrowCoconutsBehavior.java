@@ -13,6 +13,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -22,8 +23,7 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.DirectionalBlock;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.RegistryObject;
+import net.neoforged.neoforge.registries.DeferredHolder;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.ArrayList;
@@ -38,7 +38,7 @@ public class GrowCoconutsBehavior implements IGameBehavior {
 	public static final MapCodec<GrowCoconutsBehavior> CODEC = Codec.INT.fieldOf("interval")
 			.xmap(GrowCoconutsBehavior::new, b -> b.interval);
 
-	private static final RegistryObject<Block> COCONUT = RegistryObject.create(new ResourceLocation("tropicraft", "coconut"), ForgeRegistries.BLOCKS);
+	private static final DeferredHolder<Block, Block> COCONUT = DeferredHolder.create(Registries.BLOCK, ResourceLocation.fromNamespaceAndPath("tropicraft", "coconut"));
 	private final int interval;
 	private final WeakHashMap<Plant, List<Pair<BlockPos, Direction>>> candidatePositions = new WeakHashMap<>();
 	

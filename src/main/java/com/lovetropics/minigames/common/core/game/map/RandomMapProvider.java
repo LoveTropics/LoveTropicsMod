@@ -2,7 +2,7 @@ package com.lovetropics.minigames.common.core.game.map;
 
 import com.lovetropics.lib.codec.MoreCodecs;
 import com.lovetropics.minigames.common.core.game.GameResult;
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
@@ -15,14 +15,14 @@ import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 public record RandomMapProvider(IGameMapProvider[] mapProviders) implements IGameMapProvider {
-	public static final Codec<RandomMapProvider> CODEC = RecordCodecBuilder.create(i -> i.group(
+	public static final MapCodec<RandomMapProvider> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			MoreCodecs.arrayOrUnit(GameMapProviders.CODEC, IGameMapProvider[]::new).fieldOf("pool").forGetter(c -> c.mapProviders)
 	).apply(i, RandomMapProvider::new));
 
 	private static final RandomSource RANDOM = RandomSource.create();
 
 	@Override
-	public Codec<? extends IGameMapProvider> getCodec() {
+	public MapCodec<RandomMapProvider> getCodec() {
 		return CODEC;
 	}
 

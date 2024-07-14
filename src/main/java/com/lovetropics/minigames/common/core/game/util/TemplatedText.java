@@ -5,11 +5,10 @@ import com.lovetropics.minigames.common.core.game.behavior.action.GameActionPara
 import com.mojang.serialization.Codec;
 import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.Unit;
 
 import java.util.Map;
@@ -18,7 +17,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public record TemplatedText(Component template) {
-	public static final Codec<TemplatedText> CODEC = ExtraCodecs.COMPONENT.xmap(TemplatedText::new, TemplatedText::template);
+	public static final Codec<TemplatedText> CODEC = ComponentSerialization.CODEC.xmap(TemplatedText::new, TemplatedText::template);
 
 	private static final Pattern PATTERN = Pattern.compile("%([a-zA-Z0-9_]+)%");
 

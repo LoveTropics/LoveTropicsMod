@@ -13,17 +13,17 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.levelgen.Heightmap;
-import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.List;
 
 public class SpawnEntityAtRegionsAction implements IGameBehavior {
 	public static final MapCodec<SpawnEntityAtRegionsAction> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			Codec.STRING.listOf().fieldOf("regions_to_spawn_at").forGetter(c -> c.regionsToSpawnAtKeys),
-			ForgeRegistries.ENTITY_TYPES.getCodec().fieldOf("entity_id").forGetter(c -> c.entityId),
+			BuiltInRegistries.ENTITY_TYPE.byNameCodec().fieldOf("entity_id").forGetter(c -> c.entityId),
 			Codec.INT.optionalFieldOf("entity_count_per_region", 1).forGetter(c -> c.entityCountPerRegion)
 	).apply(i, SpawnEntityAtRegionsAction::new));
 

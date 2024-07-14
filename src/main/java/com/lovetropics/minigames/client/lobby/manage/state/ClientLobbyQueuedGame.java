@@ -3,7 +3,7 @@ package com.lovetropics.minigames.client.lobby.manage.state;
 import com.lovetropics.minigames.client.lobby.state.ClientBehaviorList;
 import com.lovetropics.minigames.client.lobby.state.ClientGameDefinition;
 import com.lovetropics.minigames.common.core.game.lobby.QueuedGame;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 
 import javax.annotation.Nullable;
 
@@ -26,7 +26,7 @@ public final class ClientLobbyQueuedGame {
 		return new ClientLobbyQueuedGame(definition, playingConfigs, waitingConfigs);
 	}
 
-	public void encode(FriendlyByteBuf buffer) {
+	public void encode(RegistryFriendlyByteBuf buffer) {
 		this.definition.encode(buffer);
 		this.playingConfigs.encode(buffer);
 
@@ -36,7 +36,7 @@ public final class ClientLobbyQueuedGame {
 		}
 	}
 
-	public static ClientLobbyQueuedGame decode(FriendlyByteBuf buffer) {
+	public static ClientLobbyQueuedGame decode(RegistryFriendlyByteBuf buffer) {
 		ClientGameDefinition definition = ClientGameDefinition.decode(buffer);
 		ClientBehaviorList playingConfigs = ClientBehaviorList.decode(buffer);
 		ClientBehaviorList waitingConfigs = buffer.readBoolean() ? ClientBehaviorList.decode(buffer) : null;

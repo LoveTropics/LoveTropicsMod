@@ -1,7 +1,6 @@
 package com.lovetropics.minigames.common.core.diguise;
 
 import com.lovetropics.minigames.Constants;
-import com.lovetropics.minigames.common.core.network.LoveTropicsNetwork;
 import com.lovetropics.minigames.common.core.network.PlayerDisguiseMessage;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.context.CommandContext;
@@ -19,13 +18,14 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraftforge.event.RegisterCommandsEvent;
-import net.minecraftforge.event.entity.player.PlayerEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.network.PacketDistributor;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.event.RegisterCommandsEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 import javax.annotation.Nullable;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.UnaryOperator;
 
@@ -34,7 +34,7 @@ import static com.mojang.brigadier.arguments.FloatArgumentType.getFloat;
 import static net.minecraft.commands.arguments.CompoundTagArgument.compoundTag;
 import static net.minecraft.commands.arguments.CompoundTagArgument.getCompoundTag;
 
-@Mod.EventBusSubscriber(modid = Constants.MODID)
+@EventBusSubscriber(modid = Constants.MODID)
 public final class ServerPlayerDisguises {
 	private static final SimpleCommandExceptionType NOT_LIVING_ENTITY = new SimpleCommandExceptionType(Component.literal("Not a living entity"));
 
@@ -91,28 +91,17 @@ public final class ServerPlayerDisguises {
 	public static void sendDisguiseTo(ServerPlayer player, Entity tracked) {
 		PlayerDisguise disguise = PlayerDisguise.getOrNull(tracked);
 		if (disguise != null && disguise.isDisguised()) {
-			LoveTropicsNetwork.CHANNEL.send(
-					PacketDistributor.PLAYER.with(() -> player),
-					new PlayerDisguiseMessage(tracked.getId(), disguise.type())
+			PacketDistributor.sendToPlayer(
+					player,
+					new PlayerDisguiseMessage(tracked.getId(), Optional.of(disguise.type()))
 			);
 		}
 	}
 
 	@SubscribeEvent
 	public static void onPlayerClone(PlayerEvent.Clone event) {
-		if (event.isWasDeath()) {
-			return;
-		}
-
-		if (event.getEntity() instanceof ServerPlayer newPlayer && event.getOriginal() instanceof ServerPlayer oldPlayer) {
-			oldPlayer.reviveCaps();
-			PlayerDisguise newDisguise = PlayerDisguise.getOrNull(newPlayer);
-			PlayerDisguise oldDisguise = PlayerDisguise.getOrNull(oldPlayer);
-			if (newDisguise != null && oldDisguise != null) {
-				newDisguise.copyFrom(oldDisguise);
-				onSetDisguise(newPlayer);
-			}
-			oldPlayer.invalidateCaps();
+		if (event.getEntity() instanceof ServerPlayer newPlayer) {
+			onSetDisguise(newPlayer);
 		}
 	}
 
@@ -170,10 +159,7 @@ public final class ServerPlayerDisguises {
 			return;
 		}
 
-		LoveTropicsNetwork.CHANNEL.send(
-				PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> entity),
-				new PlayerDisguiseMessage(entity.getId(), disguise.type())
-		);
+		PacketDistributor.sendToPlayersTrackingEntityAndSelf(entity, new PlayerDisguiseMessage(entity.getId(), Optional.of(disguise.type())));
 
 		PlayerDisguiseBehavior.clearAttributes(entity);
 

@@ -2,7 +2,14 @@ package com.lovetropics.minigames.common.content.biodiversity_blitz.entity;
 
 import com.lovetropics.lib.BlockBox;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.event.BbEvents;
-import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.impl.*;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.impl.BbCreeperEntity;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.impl.BbDrownedEntity;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.impl.BbHuskEntity;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.impl.BbPillagerEntity;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.impl.BbVindicatorEntity;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.impl.BbZoglinEntity;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.impl.BbZombieEntity;
+import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.impl.BbZombiePiglinEntity;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.Plot;
 import com.mojang.serialization.Codec;
 import net.minecraft.Util;
@@ -59,7 +66,7 @@ public final class BbMobSpawner {
 
         world.addFreshEntity(entity);
 
-        ((Mob) entity).finalizeSpawn(world, world.getCurrentDifficultyAt(pos), MobSpawnType.MOB_SUMMONED, null, null);
+        ((Mob) entity).finalizeSpawn(world, world.getCurrentDifficultyAt(pos), MobSpawnType.MOB_SUMMONED, null);
     }
 
     // TODO: data-drive, more entity types & getting harder as time goes on

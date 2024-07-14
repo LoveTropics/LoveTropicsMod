@@ -21,11 +21,12 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.minecraft.Util;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.ServerScoreboard;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.players.PlayerList;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.scores.Objective;
-import net.minecraft.world.scores.Score;
+import net.minecraft.world.scores.PlayerScoreEntry;
 import net.minecraft.world.scores.Scoreboard;
 import net.minecraft.world.scores.criteria.ObjectiveCriteria;
 import net.minecraft.world.scores.criteria.ObjectiveCriteria.RenderType;
@@ -75,11 +76,11 @@ public record PollFinalistsBehavior(String finalistsTag, String winnerTag, Strin
 			case CREATE -> {
 				LOGGER.info("New poll, resetting objective");
 				Scoreboard scoreboard = server.getScoreboard();
-				Objective objective = scoreboard.getOrCreateObjective(votesObjective);
+				Objective objective = scoreboard.getObjective(votesObjective);
 				if (objective != null) {
 					scoreboard.removeObjective(objective);
 				}
-				scoreboard.addObjective(votesObjective, ObjectiveCriteria.DUMMY, Component.literal("Votes"), RenderType.INTEGER);
+				scoreboard.addObjective(votesObjective, ObjectiveCriteria.DUMMY, Component.literal("Votes"), RenderType.INTEGER, true, null);
 			}
 			case UPDATE -> {
 				poll.ifPresent(event -> updateScores(server, event, false));
@@ -87,11 +88,11 @@ public record PollFinalistsBehavior(String finalistsTag, String winnerTag, Strin
 			case DELETE -> {
 				LOGGER.info("Poll ended, finding winner");
 				poll.ifPresent(event -> updateScores(server, event, true));
-				Scoreboard scoreboard = server.getScoreboard();
-				Objective objective = scoreboard.getOrCreateObjective(votesObjective);
-				Collection<Score> scores = scoreboard.getPlayerScores(objective);
+				ServerScoreboard scoreboard = server.getScoreboard();
+				Objective objective = scoreboard.getObjective(votesObjective);
+				Collection<PlayerScoreEntry> scores = scoreboard.listPlayerScores(objective);
 				if (!scores.isEmpty()) {
-					String winner = Iterables.getLast(scores).getOwner();
+					String winner = Iterables.getLast(scores).owner();
 					for (ServerPlayer player : server.getPlayerList().getPlayers()) {
 						player.removeTag(finalistsTag);
 						if (player.getGameProfile().getName().equals(winner)) {
@@ -127,17 +128,17 @@ public record PollFinalistsBehavior(String finalistsTag, String winnerTag, Strin
 						leaders.add(player);
 					}
 				}
-				Scoreboard scoreboard = server.getScoreboard();
-				Objective objective = scoreboard.getOrCreateObjective(votesObjective);
-				scoreboard.getOrCreatePlayerScore(username, objective).setScore(votes);
+				ServerScoreboard scoreboard = server.getScoreboard();
+				Objective objective = scoreboard.getObjective(votesObjective);
+				scoreboard.getOrCreatePlayerScore(player, objective).set(votes);
 			}
 		}
 		if (leaders.size() > 1) {
 			// Shhhhh
 			ServerPlayer winner = Util.getRandom(leaders, RANDOM);
-			Scoreboard scoreboard = server.getScoreboard();
-			Objective objective = scoreboard.getOrCreateObjective(votesObjective);
-			scoreboard.getOrCreatePlayerScore(winner.getGameProfile().getName(), objective).increment();
+			ServerScoreboard scoreboard = server.getScoreboard();
+			Objective objective = scoreboard.getObjective(votesObjective);
+			scoreboard.getOrCreatePlayerScore(winner, objective).increment();
 		}
 	}
 

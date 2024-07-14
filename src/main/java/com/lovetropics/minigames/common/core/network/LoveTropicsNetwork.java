@@ -15,109 +15,42 @@ import com.lovetropics.minigames.client.toast.ShowNotificationToastMessage;
 import com.lovetropics.minigames.common.core.network.workspace.AddWorkspaceRegionMessage;
 import com.lovetropics.minigames.common.core.network.workspace.SetWorkspaceMessage;
 import com.lovetropics.minigames.common.core.network.workspace.UpdateWorkspaceRegionMessage;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.network.NetworkDirection;
-import net.minecraftforge.network.NetworkRegistry;
-import net.minecraftforge.network.simple.SimpleChannel;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
+import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 
+@EventBusSubscriber(modid = Constants.MODID, bus = EventBusSubscriber.Bus.MOD)
 public final class LoveTropicsNetwork {
+    @SubscribeEvent
+    public static void register(RegisterPayloadHandlersEvent event) {
+        PayloadRegistrar registrar = event.registrar(LoveTropics.getCompatVersion());
+        registrar.playToClient(SetWorkspaceMessage.TYPE, SetWorkspaceMessage.STREAM_CODEC, SetWorkspaceMessage::handle);
+        registrar.playToClient(AddWorkspaceRegionMessage.TYPE, AddWorkspaceRegionMessage.STREAM_CODEC, AddWorkspaceRegionMessage::handle);
+        registrar.playBidirectional(UpdateWorkspaceRegionMessage.TYPE, UpdateWorkspaceRegionMessage.STREAM_CODEC, UpdateWorkspaceRegionMessage::handle);
 
-	public static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(
-			new ResourceLocation(Constants.MODID, "main"),
-			() -> LoveTropics.getCompatVersion(),
-			LoveTropics::isCompatibleVersion,
-			LoveTropics::isCompatibleVersion
-	);
+        registrar.playToServer(SpectatePlayerAndTeleportMessage.TYPE, SpectatePlayerAndTeleportMessage.STREAM_CODEC, SpectatePlayerAndTeleportMessage::handle);
 
-	public static void register() {
-		CHANNEL.messageBuilder(SetWorkspaceMessage.class, 0, NetworkDirection.PLAY_TO_CLIENT)
-				.encoder(SetWorkspaceMessage::encode).decoder(SetWorkspaceMessage::decode)
-				.consumerMainThread(SetWorkspaceMessage::handle)
-				.add();
+        registrar.playToClient(LobbyUpdateMessage.TYPE, LobbyUpdateMessage.STREAM_CODEC, LobbyUpdateMessage::handle);
+        registrar.playToClient(JoinedLobbyMessage.TYPE, JoinedLobbyMessage.STREAM_CODEC, JoinedLobbyMessage::handle);
+        registrar.playToClient(LeftLobbyMessage.TYPE, LeftLobbyMessage.STREAM_CODEC, LeftLobbyMessage::handle);
+        registrar.playToClient(LobbyPlayersMessage.TYPE, LobbyPlayersMessage.STREAM_CODEC, LobbyPlayersMessage::handle);
 
-		CHANNEL.messageBuilder(AddWorkspaceRegionMessage.class, 1, NetworkDirection.PLAY_TO_CLIENT)
-				.encoder(AddWorkspaceRegionMessage::encode).decoder(AddWorkspaceRegionMessage::decode)
-				.consumerMainThread(AddWorkspaceRegionMessage::handle)
-				.add();
+        registrar.playToClient(PlayerDisguiseMessage.TYPE, PlayerDisguiseMessage.STREAM_CODEC, PlayerDisguiseMessage::handle);
+        registrar.playToClient(ShowNotificationToastMessage.TYPE, ShowNotificationToastMessage.STREAM_CODEC, ShowNotificationToastMessage::handle);
 
-		CHANNEL.messageBuilder(UpdateWorkspaceRegionMessage.class, 2)
-				.encoder(UpdateWorkspaceRegionMessage::encode).decoder(UpdateWorkspaceRegionMessage::decode)
-				.consumerMainThread(UpdateWorkspaceRegionMessage::handle)
-				.add();
+        registrar.playToClient(ClientManageLobbyMessage.TYPE, ClientManageLobbyMessage.STREAM_CODEC, ClientManageLobbyMessage::handle);
+        registrar.playToServer(ServerManageLobbyMessage.TYPE, ServerManageLobbyMessage.STREAM_CODEC, ServerManageLobbyMessage::handle);
 
-		CHANNEL.messageBuilder(SpectatePlayerAndTeleportMessage.class, 3, NetworkDirection.PLAY_TO_SERVER)
-				.encoder(SpectatePlayerAndTeleportMessage::encode).decoder(SpectatePlayerAndTeleportMessage::decode)
-				.consumerMainThread(SpectatePlayerAndTeleportMessage::handle)
-				.add();
+        registrar.playToClient(SetGameClientStateMessage.TYPE, SetGameClientStateMessage.STREAM_CODEC, SetGameClientStateMessage::handle);
 
-		CHANNEL.messageBuilder(LobbyUpdateMessage.class, 4, NetworkDirection.PLAY_TO_CLIENT)
-				.encoder(LobbyUpdateMessage::encode).decoder(LobbyUpdateMessage::decode)
-				.consumerMainThread(LobbyUpdateMessage::handle)
-				.add();
+        registrar.playToClient(SelectRolePromptMessage.TYPE, SelectRolePromptMessage.STREAM_CODEC, SelectRolePromptMessage::handle);
+        registrar.playToServer(SelectRoleMessage.TYPE, SelectRoleMessage.STREAM_CODEC, SelectRoleMessage::handle);
 
-		CHANNEL.messageBuilder(JoinedLobbyMessage.class, 5, NetworkDirection.PLAY_TO_CLIENT)
-				.encoder(JoinedLobbyMessage::encode).decoder(JoinedLobbyMessage::decode)
-				.consumerMainThread(JoinedLobbyMessage::handle)
-				.add();
+        registrar.playToClient(DrawParticleLineMessage.TYPE, DrawParticleLineMessage.STREAM_CODEC, DrawParticleLineMessage::handle);
 
-		CHANNEL.messageBuilder(LeftLobbyMessage.class, 6, NetworkDirection.PLAY_TO_CLIENT)
-				.encoder(LeftLobbyMessage::encode).decoder(LeftLobbyMessage::decode)
-				.consumerMainThread(LeftLobbyMessage::handle)
-				.add();
+        registrar.playToClient(SpectatorPlayerActivityMessage.TYPE, SpectatorPlayerActivityMessage.STREAM_CODEC, SpectatorPlayerActivityMessage::handle);
 
-		CHANNEL.messageBuilder(LobbyPlayersMessage.class, 7, NetworkDirection.PLAY_TO_CLIENT)
-				.encoder(LobbyPlayersMessage::encode).decoder(LobbyPlayersMessage::decode)
-				.consumerMainThread(LobbyPlayersMessage::handle)
-				.add();
-
-		CHANNEL.messageBuilder(PlayerDisguiseMessage.class, 8, NetworkDirection.PLAY_TO_CLIENT)
-				.encoder(PlayerDisguiseMessage::encode).decoder(PlayerDisguiseMessage::decode)
-				.consumerMainThread(PlayerDisguiseMessage::handle)
-				.add();
-
-		CHANNEL.messageBuilder(ShowNotificationToastMessage.class, 9, NetworkDirection.PLAY_TO_CLIENT)
-				.encoder(ShowNotificationToastMessage::encode).decoder(ShowNotificationToastMessage::decode)
-				.consumerMainThread(ShowNotificationToastMessage::handle)
-				.add();
-
-		CHANNEL.messageBuilder(ClientManageLobbyMessage.class, 10, NetworkDirection.PLAY_TO_CLIENT)
-				.encoder(ClientManageLobbyMessage::encode).decoder(ClientManageLobbyMessage::decode)
-				.consumerMainThread(ClientManageLobbyMessage::handle)
-				.add();
-
-		CHANNEL.messageBuilder(ServerManageLobbyMessage.class, 11, NetworkDirection.PLAY_TO_SERVER)
-				.encoder(ServerManageLobbyMessage::encode).decoder(ServerManageLobbyMessage::decode)
-				.consumerMainThread(ServerManageLobbyMessage::handle)
-				.add();
-
-		CHANNEL.messageBuilder(SetGameClientStateMessage.class, 12, NetworkDirection.PLAY_TO_CLIENT)
-				.encoder(SetGameClientStateMessage::encode).decoder(SetGameClientStateMessage::decode)
-				.consumerMainThread(SetGameClientStateMessage::handle)
-				.add();
-
-		CHANNEL.messageBuilder(SelectRolePromptMessage.class, 13, NetworkDirection.PLAY_TO_CLIENT)
-				.encoder(SelectRolePromptMessage::encode).decoder(SelectRolePromptMessage::decode)
-				.consumerMainThread(SelectRolePromptMessage::handle)
-				.add();
-
-		CHANNEL.messageBuilder(SelectRoleMessage.class, 14, NetworkDirection.PLAY_TO_SERVER)
-				.encoder(SelectRoleMessage::encode).decoder(SelectRoleMessage::decode)
-				.consumerMainThread(SelectRoleMessage::handle)
-				.add();
-
-		CHANNEL.messageBuilder(DrawParticleLineMessage.class, 15, NetworkDirection.PLAY_TO_CLIENT)
-				.encoder(DrawParticleLineMessage::encode).decoder(DrawParticleLineMessage::decode)
-				.consumerMainThread(DrawParticleLineMessage::handle)
-				.add();
-
-		CHANNEL.messageBuilder(SpectatorPlayerActivityMessage.class, 16, NetworkDirection.PLAY_TO_CLIENT)
-				.encoder(SpectatorPlayerActivityMessage::encode).decoder(SpectatorPlayerActivityMessage::decode)
-				.consumerMainThread(SpectatorPlayerActivityMessage::handle)
-				.add();
-
-		CHANNEL.messageBuilder(RiseTideMessage.class, 17, NetworkDirection.PLAY_TO_CLIENT)
-				.encoder(RiseTideMessage::encode).decoder(RiseTideMessage::new)
-				.consumerMainThread(RiseTideMessage::handle)
-				.add();
-	}
+        registrar.playToClient(RiseTideMessage.TYPE, RiseTideMessage.STREAM_CODEC, RiseTideMessage::handle);
+    }
 }

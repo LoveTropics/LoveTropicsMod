@@ -1,11 +1,20 @@
 package com.lovetropics.minigames.common.content.survive_the_tide;
 
-import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.client.render.block.BigRedButtonBlockEntityRenderer;
 import com.lovetropics.minigames.client.render.entity.DriftwoodRenderer;
 import com.lovetropics.minigames.client.render.entity.LightningArrowRenderer;
-import com.lovetropics.minigames.common.content.survive_the_tide.behavior.*;
+import com.lovetropics.minigames.common.content.survive_the_tide.behavior.PhasedWeatherControlBehavior;
+import com.lovetropics.minigames.common.content.survive_the_tide.behavior.RevealPlayersBehavior;
+import com.lovetropics.minigames.common.content.survive_the_tide.behavior.RisingTidesGameBehavior;
+import com.lovetropics.minigames.common.content.survive_the_tide.behavior.SttChatBroadcastBehavior;
+import com.lovetropics.minigames.common.content.survive_the_tide.behavior.SttPetsBehavior;
+import com.lovetropics.minigames.common.content.survive_the_tide.behavior.SttSidebarBehavior;
+import com.lovetropics.minigames.common.content.survive_the_tide.behavior.SttWinLogicBehavior;
+import com.lovetropics.minigames.common.content.survive_the_tide.behavior.SurviveTheTideRulesetBehavior;
+import com.lovetropics.minigames.common.content.survive_the_tide.behavior.SurviveTheTideWeatherControlBehavior;
+import com.lovetropics.minigames.common.content.survive_the_tide.behavior.SurviveTheTideWindController;
+import com.lovetropics.minigames.common.content.survive_the_tide.behavior.WorldBorderGameBehavior;
 import com.lovetropics.minigames.common.content.survive_the_tide.block.BigRedButtonBlock;
 import com.lovetropics.minigames.common.content.survive_the_tide.block.BigRedButtonBlockEntity;
 import com.lovetropics.minigames.common.content.survive_the_tide.block.LootDispenserBlock;
@@ -31,10 +40,8 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockBehaviour;
-import net.minecraftforge.client.model.generators.BlockModelBuilder;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.neoforge.client.model.generators.BlockModelBuilder;
 
-@Mod.EventBusSubscriber(modid = Constants.MODID)
 public final class SurviveTheTide {
 	private static final LoveTropicsRegistrate REGISTRATE = LoveTropics.registrate();
 
@@ -104,13 +111,13 @@ public final class SurviveTheTide {
 			.tag(ItemTags.ARROWS)
 			.register();
 
-	public static final RegistryEntry<EntityType<DriftwoodEntity>> DRIFTWOOD = REGISTRATE.entity("driftwood", DriftwoodEntity::new, MobCategory.MISC)
+	public static final RegistryEntry<EntityType<?>, EntityType<DriftwoodEntity>> DRIFTWOOD = REGISTRATE.entity("driftwood", DriftwoodEntity::new, MobCategory.MISC)
 			.properties(properties -> properties.sized(2.0F, 1.0F).setShouldReceiveVelocityUpdates(true).setUpdateInterval(3))
 			.defaultLang()
 			.renderer(() -> DriftwoodRenderer::new)
 			.register();
 
-	public static final RegistryEntry<EntityType<LightningArrowEntity>> LIGHTNING_ARROW_ENTITY = REGISTRATE.<LightningArrowEntity>entity("lightning_arrow", LightningArrowEntity::new, MobCategory.MISC)
+	public static final RegistryEntry<EntityType<?>, EntityType<LightningArrowEntity>> LIGHTNING_ARROW_ENTITY = REGISTRATE.<LightningArrowEntity>entity("lightning_arrow", LightningArrowEntity::new, MobCategory.MISC)
 			.properties(properties -> properties.sized(0.5f, 0.5f).clientTrackingRange(4).updateInterval(SharedConstants.TICKS_PER_SECOND))
 			.defaultLang()
 			.renderer(() -> LightningArrowRenderer::new)

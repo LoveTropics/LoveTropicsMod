@@ -23,11 +23,14 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 import javax.annotation.Nullable;
 
 public class Util {
+    public static final AABB INFINITE_AABB = new AABB(Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY);
+
     public static boolean spawnEntity(EntityType<?> entityType, Level world, double x, double y, double z) {
         if (entityType == EntityType.LIGHTNING_BOLT) {
             LightningBolt entity = EntityType.LIGHTNING_BOLT.create(world);
@@ -53,7 +56,7 @@ public class Util {
             ItemEntity item = player.drop(itemstack, false);
             if (item != null) {
                 item.setNoPickUpDelay();
-                item.setThrower(player.getUUID());
+                item.setThrower(player);
             }
         }
 
@@ -61,7 +64,7 @@ public class Util {
     }
 
     public static ResourceLocation resource(String location) {
-        return new ResourceLocation(Constants.MODID, location);
+        return ResourceLocation.fromNamespaceAndPath(Constants.MODID, location);
     }
 
     @Nullable

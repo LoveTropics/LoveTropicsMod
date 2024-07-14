@@ -8,7 +8,7 @@ import java.util.Objects;
 public record GameBehaviorType<T extends IGameBehavior>(MapCodec<T> codec) {
 	@Override
 	public String toString() {
-		ResourceLocation key = GameBehaviorTypes.REGISTRY.get().getKey(this);
+		ResourceLocation key = GameBehaviorTypes.REGISTRY.getKey(this);
 		return key != null ? key.toString() : "[unregistered]";
 	}
 

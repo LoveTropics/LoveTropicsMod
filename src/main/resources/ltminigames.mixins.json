@@ -1,14 +1,12 @@
 {
   "required": true,
   "package": "com.lovetropics.minigames.mixin",
-  "compatibilityLevel": "JAVA_17",
-  "refmap": "ltminigames.refmap.json",
+  "compatibilityLevel": "JAVA_21",
   "plugin": "com.lovetropics.minigames.mixin.LTMixinPlugin",
   "mixins": [
     "ChunkStorageMixin",
     "EntityTypeMixin",
-    "ExplosionMixin",
-    "ForgeHooksMixin",
+    "CommonHooksMixin",
     "MinecraftServerMixin",
     "PlayerListMixin",
     "PlayerMixin",
@@ -26,7 +24,6 @@
   ],
   "client": [
     "client.BiomeColorsMixin",
-    "client.BossOverlayGuiMixin",
     "client.HotbarOverride",
     "client.IntegratedPlayerListMixin",
     "client.MinecraftMixin",

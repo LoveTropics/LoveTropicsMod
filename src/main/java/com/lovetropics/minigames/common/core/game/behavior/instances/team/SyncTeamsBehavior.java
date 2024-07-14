@@ -12,11 +12,10 @@ import com.lovetropics.minigames.common.core.game.client_state.GameClientStateTy
 import com.lovetropics.minigames.common.core.game.client_state.instance.TeamMembersClientState;
 import com.lovetropics.minigames.common.core.game.state.team.GameTeamKey;
 import com.lovetropics.minigames.common.core.game.state.team.TeamState;
-import com.lovetropics.minigames.common.core.network.LoveTropicsNetwork;
 import com.lovetropics.minigames.common.core.network.SetGameClientStateMessage;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraftforge.network.PacketDistributor;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 public class SyncTeamsBehavior implements IGameBehavior {
     public static final MapCodec<SyncTeamsBehavior> CODEC = MapCodec.unit(SyncTeamsBehavior::new);
@@ -37,7 +36,7 @@ public class SyncTeamsBehavior implements IGameBehavior {
             GameClientStateSender.get().byPlayer(player).enqueueRemove(GameClientStateTypes.TEAM_MEMBERS.get());
         });
 
-        events.listen(GamePhaseEvents.STOP, reason -> LoveTropicsNetwork.CHANNEL.send(PacketDistributor.ALL.with(() -> null), SetGameClientStateMessage.remove(GameClientStateTypes.TEAM_MEMBERS.get())));
+        events.listen(GamePhaseEvents.STOP, reason -> PacketDistributor.sendToAllPlayers(SetGameClientStateMessage.remove(GameClientStateTypes.TEAM_MEMBERS.get())));
     }
 
     private void sendSync(TeamState teams, GameTeamKey key, IGamePhase game) {

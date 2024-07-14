@@ -9,7 +9,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LightningBolt;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
-import net.minecraftforge.event.ForgeEventFactory;
+import net.neoforged.neoforge.event.EventHooks;
 
 import java.util.List;
 import java.util.Set;
@@ -53,7 +53,7 @@ public class QuietLightningBolt extends LightningBolt {
 			if (level() instanceof final ServerLevel serverLevel) {
 				final List<Entity> entities = level().getEntities(this, new AABB(getX() - 3.0D, getY() - 3.0D, getZ() - 3.0D, getX() + 3.0D, getY() + 6.0D + 3.0D, getZ() + 3.0D), Entity::isAlive);
 				for (final Entity entity : entities) {
-					if (!ForgeEventFactory.onEntityStruckByLightning(entity, this)) {
+					if (!EventHooks.onEntityStruckByLightning(entity, this)) {
 						entity.thunderHit(serverLevel, this);
 					}
 				}

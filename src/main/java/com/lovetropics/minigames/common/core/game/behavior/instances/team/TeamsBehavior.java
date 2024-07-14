@@ -35,7 +35,7 @@ import org.apache.commons.lang3.RandomStringUtils;
 import java.util.Map;
 
 public final class TeamsBehavior implements IGameBehavior {
-	private static final ResourceLocation CONFIG_ID = new ResourceLocation(Constants.MODID, "teams");
+	private static final ResourceLocation CONFIG_ID = ResourceLocation.fromNamespaceAndPath(Constants.MODID, "teams");
 	private static final BehaviorConfig<Boolean> CFG_FRIENDLY_FIRE = BehaviorConfig.fieldOf("friendly_fire", Codec.BOOL);
 
 	public static final MapCodec<TeamsBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(

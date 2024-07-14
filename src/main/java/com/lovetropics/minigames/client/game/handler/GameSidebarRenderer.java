@@ -10,24 +10,21 @@ import net.minecraft.client.Options;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.CommonColors;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
-import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
+import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
 
 import java.util.List;
 
-@Mod.EventBusSubscriber(modid = Constants.MODID, value = Dist.CLIENT)
 public final class GameSidebarRenderer {
 	private static final Minecraft CLIENT = Minecraft.getInstance();
 
 	private static final int PADDING = 2;
 	private static final int MARGIN = 1;
 
-	public static void registerOverlays(RegisterGuiOverlaysEvent event) {
-		event.registerBelow(VanillaGuiOverlay.DEBUG_TEXT.id(), "minigame_sidebar", (gui, graphics, partialTick, screenWidth, screenHeight) -> {
+	public static void registerOverlays(RegisterGuiLayersEvent event) {
+		event.registerBelow(VanillaGuiLayers.DEBUG_OVERLAY, ResourceLocation.fromNamespaceAndPath(Constants.MODID, "minigame_sidebar"), (graphics, deltaTracker) -> {
 			SidebarClientState sidebar = ClientGameStateManager.getOrNull(GameClientStateTypes.SIDEBAR);
 			if (sidebar != null) {
 				renderSidebar(graphics, sidebar);

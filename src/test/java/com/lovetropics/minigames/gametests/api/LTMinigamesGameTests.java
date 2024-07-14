@@ -3,6 +3,7 @@ package com.lovetropics.minigames.gametests.api;
 import com.google.common.base.Suppliers;
 import com.lovetropics.lib.permission.PermissionsApi;
 import com.lovetropics.lib.permission.role.RoleLookup;
+import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.common.core.game.datagen.BehaviorFactory;
 import com.lovetropics.minigames.common.core.game.datagen.BehaviorProvider;
@@ -17,18 +18,22 @@ import net.minecraft.gametest.framework.StructureUtils;
 import net.minecraft.gametest.framework.TestFunction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.PackLocationInfo;
+import net.minecraft.server.packs.PackResources;
+import net.minecraft.server.packs.PackSelectionConfig;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.PathPackResources;
 import net.minecraft.server.packs.metadata.pack.PackMetadataSection;
 import net.minecraft.server.packs.repository.Pack;
 import net.minecraft.server.packs.repository.PackSource;
 import net.minecraft.world.level.block.Rotation;
-import net.minecraftforge.data.event.GatherDataEvent;
-import net.minecraftforge.event.AddPackFindersEvent;
-import net.minecraftforge.event.RegisterGameTestsEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.ModList;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.ModList;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.data.event.GatherDataEvent;
+import net.neoforged.neoforge.event.AddPackFindersEvent;
+import net.neoforged.neoforge.event.RegisterGameTestsEvent;
+import net.neoforged.neoforge.gametest.GameTestHooks;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -36,10 +41,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-@Mod.EventBusSubscriber(modid = "ltminigames", bus = Mod.EventBusSubscriber.Bus.MOD)
+@EventBusSubscriber(modid = "ltminigames", bus = EventBusSubscriber.Bus.MOD)
 public class LTMinigamesGameTests {
     public static final TestPermissionAPI PERMISSIONS = new TestPermissionAPI();
 
@@ -86,22 +92,29 @@ public class LTMinigamesGameTests {
                 .addProvider(event.includeServer(), new BehaviorProvider(out, behaviors, event.getLookupProvider()));
 
         event.getGenerator().addProvider(true, new PackMetadataGenerator(out)
-                .add(PackMetadataSection.TYPE, new PackMetadataSection(Component.literal("LTMinigames testing"), SharedConstants.getCurrentVersion().getPackVersion(PackType.SERVER_DATA), Map.of(
-                        PackType.SERVER_DATA, SharedConstants.getCurrentVersion().getPackVersion(PackType.SERVER_DATA),
-                        PackType.CLIENT_RESOURCES, SharedConstants.getCurrentVersion().getPackVersion(PackType.CLIENT_RESOURCES)
-                ))));
+                .add(PackMetadataSection.TYPE, new PackMetadataSection(Component.literal("LTMinigames testing"), SharedConstants.getCurrentVersion().getPackVersion(PackType.SERVER_DATA))));
     }
 
     @SubscribeEvent
     static void addFinders(final AddPackFindersEvent event) {
         if (event.getPackType() == PackType.SERVER_DATA) {
-            final var resources = new PathPackResources("testing", ModList.get()
-                    .getModContainerById("ltminigames").orElseThrow()
+            PackLocationInfo info = new PackLocationInfo("testing", Component.literal("testing"), PackSource.BUILT_IN, Optional.empty());
+            final var resources = new PathPackResources(info, ModList.get()
+                    .getModContainerById(Constants.MODID).orElseThrow()
                     .getModInfo().getOwningFile()
-                    .getFile().findResource("testing"), true);
+                    .getFile().findResource("testing"));
             event.addRepositorySource(onLoad -> onLoad.accept(Pack.readMetaAndCreate(
-                    "testing", Component.literal("testing"), true,
-                    pId -> resources, PackType.SERVER_DATA, Pack.Position.TOP, PackSource.BUILT_IN
+                    info, new Pack.ResourcesSupplier() {
+                        @Override
+                        public PackResources openPrimary(PackLocationInfo pLocation) {
+                            return resources;
+                        }
+
+                        @Override
+                        public PackResources openFull(PackLocationInfo pLocation, Pack.Metadata pMetadata) {
+                            return resources;
+                        }
+                    }, PackType.SERVER_DATA, new PackSelectionConfig(true, Pack.Position.TOP, false)
             )));
         }
     }
@@ -118,11 +131,11 @@ public class LTMinigamesGameTests {
                 if (gametest == null) continue;
 
                 String testName =  id.getPath() + "." + testMethod.getName();
-                String template = gametest.template().isBlank() ? "ltminigames:empty_3x3" : net.minecraftforge.gametest.ForgeGameTestHooks.getTemplateNamespace(testMethod) + ":" + (gametest.template().isEmpty() ? testName : gametest.template());
+                String template = gametest.template().isBlank() ? "ltminigames:empty_3x3" : GameTestHooks.getTemplateNamespace(testMethod) + ":" + (gametest.template().isEmpty() ? testName : gametest.template());
                 String batch = gametest.batch().equals("defaultBatch") ? id.getPath() : gametest.batch();
                 Rotation rotation = StructureUtils.getRotationForRotationSteps(gametest.rotationSteps());
                 final var consumer = (Consumer<LTGameTestHelper>)turnMethodIntoConsumer(testMethod, test);
-                tests.add(new TestFunction(batch, testName, template, rotation, gametest.timeoutTicks(), gametest.setupTicks(), gametest.required(), gametest.requiredSuccesses(), gametest.attempts(), helper -> {
+                tests.add(new TestFunction(batch, testName, template, rotation, gametest.timeoutTicks(), gametest.setupTicks(), gametest.required(), gametest.manualOnly(), gametest.attempts(), gametest.requiredSuccesses(), gametest.skyAccess(), helper -> {
                     RoleLookup lookup = PermissionsApi.lookup();
                     try {
                         PermissionsApi.setRoleLookup(PERMISSIONS);

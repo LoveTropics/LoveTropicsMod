@@ -71,7 +71,7 @@ public class TweakTests implements MinigameTest {
         final var lobby = helper.createGame(player, PlayerRole.PARTICIPANT);
         lobby.enqueue(gameId("cancel_damage"));
 
-        final var target = helper.makeMockSurvivalPlayer();
+        final var target = helper.makeMockPlayer(GameType.SURVIVAL);
         helper.startSequence()
                 .thenExecute(helper.startGame(lobby))
                 .thenIdle(60) // Wait for invulnerability to end
@@ -133,6 +133,6 @@ public class TweakTests implements MinigameTest {
 
     @Override
     public ResourceLocation id() {
-        return new ResourceLocation("lttest:tweak_tests");
+        return ResourceLocation.fromNamespaceAndPath("lttest", "tweak_tests");
     }
 }

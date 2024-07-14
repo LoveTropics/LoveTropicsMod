@@ -17,7 +17,7 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.SharedConstants;
 import net.minecraft.network.chat.Component;
-import net.minecraft.util.ExtraCodecs;
+import net.minecraft.network.chat.ComponentSerialization;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,7 +34,7 @@ public record PointsSidebarBehavior(
 			StatisticKey.INT_CODEC.fieldOf("statistic").forGetter(PointsSidebarBehavior::statistic),
 			PlacementOrder.CODEC.optionalFieldOf("order", PlacementOrder.MAX).forGetter(PointsSidebarBehavior::order),
 			Codec.INT.optionalFieldOf("count", 5).forGetter(PointsSidebarBehavior::count),
-			ExtraCodecs.COMPONENT.fieldOf("title").forGetter(PointsSidebarBehavior::title),
+			ComponentSerialization.CODEC.fieldOf("title").forGetter(PointsSidebarBehavior::title),
 			TemplatedText.CODEC.listOf().fieldOf("header").forGetter(PointsSidebarBehavior::header)
 	).apply(i, PointsSidebarBehavior::new));
 
