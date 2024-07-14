@@ -21,7 +21,7 @@ public record TimedCloseBehavior(ProgressionPoint end, ProgressionPoint close) i
 
 	@Override
 	public void register(final IGamePhase game, final EventRegistrar events) {
-		final GameProgressionState progression = game.getState().getOrThrow(GameProgressionState.KEY);
+		final GameProgressionState progression = game.state().getOrThrow(GameProgressionState.KEY);
 		final MutableBoolean gameOver = new MutableBoolean();
 		events.listen(GamePhaseEvents.TICK, () -> {
 			if (!gameOver.getValue() && progression.isAfter(end)) {

@@ -32,7 +32,7 @@ public record ApplyToPlayersAround(Optional<EntityPredicate> predicate, Optional
 
 		events.listen(GameActionEvents.APPLY_TO_PLAYER, (context, player) -> {
 			boolean applied = false;
-			for (final ServerPlayer otherPlayer : game.getParticipants()) {
+			for (final ServerPlayer otherPlayer : game.participants()) {
 				if (player == otherPlayer && !includeSource) {
 					continue;
 				}

@@ -71,7 +71,7 @@ public final class HideAndSeekBehavior implements IGameBehavior {
 	public void register(IGamePhase game, EventRegistrar events) {
 		this.game = game;
 
-		teams = game.getInstanceState().getOrThrow(TeamState.KEY);
+		teams = game.instanceState().getOrThrow(TeamState.KEY);
 
 		if (disguises.isEmpty()) {
 			throw new GameException(Component.literal("No possible disguises!"));
@@ -84,7 +84,7 @@ public final class HideAndSeekBehavior implements IGameBehavior {
 			throw new GameException(Component.literal("Missing hiders or seekers team!"));
 		}
 
-		spawnRegion = game.getMapRegions().getOrThrow(spawnRegionKey);
+		spawnRegion = game.mapRegions().getOrThrow(spawnRegionKey);
 
 		events.listen(GamePhaseEvents.START, this::start);
 
@@ -106,7 +106,7 @@ public final class HideAndSeekBehavior implements IGameBehavior {
 		seekers.sendMessage(Component.literal("You will be let out to catch the hiders in " + initialHideSeconds + " seconds!"));
 		hiders.sendMessage(Component.literal("You have " + initialHideSeconds + " seconds to hide from the seekers!"));
 
-		for (ServerPlayer player : game.getParticipants()) {
+		for (ServerPlayer player : game.participants()) {
 			if (teams.isOnTeam(player, this.hiders.key())) {
 				setHider(player);
 			} else {
@@ -127,9 +127,9 @@ public final class HideAndSeekBehavior implements IGameBehavior {
 	}
 
 	private void spawnPlayer(SpawnBuilder spawn) {
-		RandomSource random = game.getWorld().getRandom();
+		RandomSource random = game.level().getRandom();
 		BlockPos spawnPos = spawnRegion.sample(random);
-		spawn.teleportTo(game.getWorld(), spawnPos, Direction.getRandom(random));
+		spawn.teleportTo(game.level(), spawnPos, Direction.getRandom(random));
 	}
 
 	private InteractionResult onPlayerAttack(ServerPlayer player, Entity target) {

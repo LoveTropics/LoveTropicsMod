@@ -13,7 +13,7 @@ public final class EliminatePlayerAction implements IGameBehavior {
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
 		events.listen(GameActionEvents.APPLY_TO_PLAYER, (context, target) -> {
-			if (!game.getSpectators().contains(target)) {
+			if (!game.spectators().contains(target)) {
 				game.setPlayerRole(target, PlayerRole.SPECTATOR);
 				target.setHealth(20.0F);
 			}

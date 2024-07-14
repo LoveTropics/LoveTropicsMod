@@ -75,7 +75,7 @@ public record ImmediateRespawnBehavior(Optional<PlayerRole> role, Optional<Playe
 	private void sendDeathMessage(IGamePhase game, ServerPlayer player) {
 		if (deathMessage.isPresent()) {
 			Component message = deathMessage.get().apply(Map.of("message", player.getCombatTracker().getDeathMessage()));
-			game.getAllPlayers().sendMessage(message);
+			game.allPlayers().sendMessage(message);
 		}
 	}
 }

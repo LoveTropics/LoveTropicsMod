@@ -45,20 +45,20 @@ public record KitSelectionBehavior(List<Kit> kits) implements IGameBehavior {
 
 		events.listen(GamePhaseEvents.START, () -> {
 			for (final Kit kit : kits) {
-				final Collection<BlockBox> regions = game.getMapRegions().get(kit.region());
+				final Collection<BlockBox> regions = game.mapRegions().get(kit.region());
 				if (regions.isEmpty()) {
 					LOGGER.error("Missing region for kit: {}", kit);
 					continue;
 				}
 				for (final BlockBox region : regions) {
-					final Entity entity = kit.entity().createEntity(game.getLevel());
+                    final Entity entity = kit.entity().createEntity(game.level());
 					if (entity == null) {
 						LOGGER.error("Unable to create entity for kit: {}", kit);
 						continue;
 					}
 					final Vec3 center = region.center();
 					entity.moveTo(center.x, region.min().getY(), center.z, kit.angle, 0.0f);
-					game.getLevel().addFreshEntity(entity);
+                    game.level().addFreshEntity(entity);
 					kitEntities.put(entity.getUUID(), kit);
 				}
 			}

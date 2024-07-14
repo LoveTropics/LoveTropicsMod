@@ -31,7 +31,7 @@ public final class WeatherEventAction implements IGameBehavior {
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
-		weather = game.getState().getOrThrow(GameWeatherState.KEY);
+		weather = game.state().getOrThrow(GameWeatherState.KEY);
 
 		events.listen(GameActionEvents.APPLY, (context) -> {
 			WeatherEvent event = tryCreateEvent(ticks);

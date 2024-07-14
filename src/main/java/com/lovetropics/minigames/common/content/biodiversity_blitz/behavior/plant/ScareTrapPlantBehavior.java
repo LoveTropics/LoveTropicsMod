@@ -62,7 +62,7 @@ public final class ScareTrapPlantBehavior implements IGameBehavior {
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
 		this.game = game;
-		plots = game.getState().getOrThrow(PlotsState.KEY);
+		plots = game.state().getOrThrow(PlotsState.KEY);
 
 		events.listen(BbPlantEvents.ADD, (player, plot, plant) -> {
 			plant.state().put(Trap.KEY, new Trap());
@@ -124,7 +124,7 @@ public final class ScareTrapPlantBehavior implements IGameBehavior {
 		AABB bounds = plant.coverage().asBounds();
 		AABB triggerBounds = bounds.inflate(triggerRadius);
 
-		ServerLevel world = game.getWorld();
+		ServerLevel world = game.level();
 
 		List<Mob> triggerEntities = world.getEntitiesOfClass(Mob.class, triggerBounds, SCARE_PREDICATE);
 		if (triggerEntities.isEmpty()) {
@@ -170,7 +170,7 @@ public final class ScareTrapPlantBehavior implements IGameBehavior {
 		}
 
 		// Spawn critical hit particles around the entity
-		game.getAllPlayers().sendPacket(new ClientboundAnimatePacket(entity, 4));
+		game.allPlayers().sendPacket(new ClientboundAnimatePacket(entity, 4));
 	}
 
 	private void extendTrap(Plot plot, Plant plant) {
@@ -181,7 +181,7 @@ public final class ScareTrapPlantBehavior implements IGameBehavior {
 
 		BlockPos origin = plant.coverage().getOrigin();
 
-		game.getWorld().playSound(null, origin, SoundEvents.PISTON_EXTEND, SoundSource.BLOCKS, 1.0F, 1.0F);
+		game.level().playSound(null, origin, SoundEvents.PISTON_EXTEND, SoundSource.BLOCKS, 1.0F, 1.0F);
 
 		clearTrap(plant);
 		placeExtendedTrap(plot, origin);
@@ -195,7 +195,7 @@ public final class ScareTrapPlantBehavior implements IGameBehavior {
 
 		BlockPos origin = plant.coverage().getOrigin();
 
-		game.getWorld().playSound(null, origin, SoundEvents.PISTON_CONTRACT, SoundSource.BLOCKS, 1.0F, 1.0F);
+		game.level().playSound(null, origin, SoundEvents.PISTON_CONTRACT, SoundSource.BLOCKS, 1.0F, 1.0F);
 
 		clearTrap(plant);
 		placeReadyTrap(plot, origin);
@@ -204,14 +204,14 @@ public final class ScareTrapPlantBehavior implements IGameBehavior {
 	}
 
 	private void clearTrap(Plant plant) {
-		ServerLevel world = game.getWorld();
+		ServerLevel world = game.level();
 		for (BlockPos pos : plant.coverage()) {
 			world.setBlock(pos, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL | Block.UPDATE_KNOWN_SHAPE);
 		}
 	}
 
 	private void placeExtendedTrap(Plot plot, BlockPos pos) {
-		ServerLevel world = game.getWorld();
+		ServerLevel world = game.level();
 
 		world.setBlockAndUpdate(pos, Blocks.PISTON_HEAD.defaultBlockState().setValue(PistonHeadBlock.FACING, Direction.UP));
 		world.setBlockAndUpdate(pos.above(), Blocks.JACK_O_LANTERN.defaultBlockState().setValue(BlockStateProperties.HORIZONTAL_FACING, plot.forward));
@@ -223,7 +223,7 @@ public final class ScareTrapPlantBehavior implements IGameBehavior {
 	}
 
 	private void placeReadyTrap(Plot plot, BlockPos pos) {
-		ServerLevel world = game.getWorld();
+		ServerLevel world = game.level();
 		world.setBlockAndUpdate(pos, Blocks.JACK_O_LANTERN.defaultBlockState().setValue(BlockStateProperties.HORIZONTAL_FACING, plot.forward));
 	}
 

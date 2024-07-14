@@ -21,8 +21,6 @@ import net.minecraft.SharedConstants;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 
-import javax.annotation.Nullable;
-
 // TODO: make it generic and data-driven
 public class SttSidebarBehavior implements IGameBehavior {
 	public static final MapCodec<SttSidebarBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
@@ -61,12 +59,12 @@ public class SttSidebarBehavior implements IGameBehavior {
 		this.game = game;
 		widgets = GlobalGameWidgets.registerTo(game, events);
 
-		progression = game.getState().getOrThrow(GameProgressionState.KEY);
-		weather = game.getState().getOrThrow(GameWeatherState.KEY);
+		progression = game.state().getOrThrow(GameProgressionState.KEY);
+		weather = game.state().getOrThrow(GameWeatherState.KEY);
 
 		events.listen(GamePhaseEvents.START, () -> {
-			sidebar = widgets.openSidebar(game.getDefinition().getName().copy().withStyle(ChatFormatting.YELLOW, ChatFormatting.BOLD));
-			initialPlayerCount = game.getParticipants().size();
+			sidebar = widgets.openSidebar(game.definition().getName().copy().withStyle(ChatFormatting.YELLOW, ChatFormatting.BOLD));
+			initialPlayerCount = game.participants().size();
 		});
 
 		events.listen(GamePlayerEvents.SET_ROLE, (player, role, lastRole) -> dirty = true);
@@ -108,7 +106,7 @@ public class SttSidebarBehavior implements IGameBehavior {
 	}
 
 	private Component playersState() {
-		int playerCount = game.getParticipants().size();
+		int playerCount = game.participants().size();
 		return SurviveTheTideTexts.SIDEBAR_PLAYER_COUNT.apply(playerCount, initialPlayerCount);
 	}
 }

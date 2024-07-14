@@ -39,15 +39,15 @@ public record StatisticTagBehavior(StatisticKey<Integer> statistic, Item icon) i
 
 		events.listen(GamePhaseEvents.TICK, () -> {
 			if (updateState(game, points)) {
-				GameClientState.sendToPlayers(createState(points), game.getAllPlayers());
+				GameClientState.sendToPlayers(createState(points), game.allPlayers());
 			}
 		});
 	}
 
 	private boolean updateState(final IGamePhase game, final Object2IntMap<UUID> points) {
 		boolean changed = false;
-		for (final PlayerKey player : game.getStatistics().getPlayers()) {
-			final int value = game.getStatistics().forPlayer(player).getOr(statistic, 0);
+		for (final PlayerKey player : game.statistics().getPlayers()) {
+			final int value = game.statistics().forPlayer(player).getOr(statistic, 0);
 			if (points.put(player.id(), value) != value) {
 				changed = true;
 			}

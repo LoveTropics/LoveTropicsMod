@@ -38,7 +38,7 @@ public record GrowPlantBehavior(IntProvider time, PlantType growInto) implements
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
 		events.listen(BbPlantEvents.ADD, (player, plot, plant) ->
-				plant.state().put(GrowTime.KEY, new GrowTime(game.ticks() + time.sample(game.getRandom())))
+				plant.state().put(GrowTime.KEY, new GrowTime(game.ticks() + time.sample(game.random())))
 		);
 
 		events.listen(BbPlantEvents.TICK, (players, plot, plants) -> {
@@ -55,7 +55,7 @@ public record GrowPlantBehavior(IntProvider time, PlantType growInto) implements
 	}
 
 	private void tryGrowPlant(IGamePhase game, ServerPlayer player, Plot plot, Plant plant) {
-		ServerLevel world = game.getWorld();
+		ServerLevel world = game.level();
 		PlantSnapshot snapshot = removeAndSnapshot(world, plot, plant);
 
 		BlockPos origin = plant.coverage().getOrigin();

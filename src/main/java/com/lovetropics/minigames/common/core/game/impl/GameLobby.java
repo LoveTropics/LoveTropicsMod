@@ -164,11 +164,11 @@ final class GameLobby implements IGameLobby {
 
 		if (oldPhase != null) {
 			oldPhase.destroy();
-			manager.removeGamePhaseFromDimension(oldPhase.getDimension(), oldPhase);
+			manager.removeGamePhaseFromDimension(oldPhase.dimension(), oldPhase);
 		}
 
 		if (newPhase != null) {
-			manager.addGamePhaseToDimension(newPhase.getDimension(), newPhase);
+			manager.addGamePhaseToDimension(newPhase.dimension(), newPhase);
 			result = startPhase(newPhase);
 		}
 
@@ -184,7 +184,7 @@ final class GameLobby implements IGameLobby {
 	}
 
 	private GameResult<Unit> startPhase(GamePhase phase) {
-		phase.getState().register(GameRewardsMap.STATE, rewardsMap);
+		phase.state().register(GameRewardsMap.STATE, rewardsMap);
 		return phase.start();
 	}
 
@@ -198,7 +198,7 @@ final class GameLobby implements IGameLobby {
 	}
 
 	private void onGameInstanceStart(GameInstance game) {
-		IGameDefinition definition = game.getDefinition();
+		IGameDefinition definition = game.definition();
 		if (definition.getWaitingPhase().isPresent() && needsRolePrompt) {
 			PlayerRoleSelections roleSelections = players.getRoleSelections();
 			roleSelections.clearAndPromptAll(players);
@@ -311,7 +311,7 @@ final class GameLobby implements IGameLobby {
 		}
 
 		private void onPlayerJoinGame(IGameLobby lobby, IGame currentGame) {
-			int minimumParticipants = currentGame.getDefinition().getMinimumParticipantCount();
+			int minimumParticipants = currentGame.definition().getMinimumParticipantCount();
 			if (lobby.getPlayers().size() == minimumParticipants) {
 				Component enoughPlayers = GameTexts.Status.enoughPlayers();
 				lobby.getTrackingPlayers().sendMessage(enoughPlayers);
@@ -319,7 +319,7 @@ final class GameLobby implements IGameLobby {
 		}
 
 		private void onPlayerLeaveGame(IGameLobby lobby, IGame currentGame) {
-			int minimumParticipants = currentGame.getDefinition().getMinimumParticipantCount();
+			int minimumParticipants = currentGame.definition().getMinimumParticipantCount();
 			if (lobby.getPlayers().size() == minimumParticipants - 1) {
 				Component noLongerEnoughPlayers = GameTexts.Status.noLongerEnoughPlayers();
 				lobby.getTrackingPlayers().sendMessage(noLongerEnoughPlayers);

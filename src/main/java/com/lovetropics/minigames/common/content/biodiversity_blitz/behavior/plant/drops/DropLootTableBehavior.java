@@ -28,8 +28,6 @@ import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.Vec3;
 
-import javax.annotation.Nullable;
-
 public final class DropLootTableBehavior implements IGameBehavior {
 	public static final MapCodec<DropLootTableBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			PlantType.CODEC.fieldOf("id").forGetter(c -> c.plantType),
@@ -53,7 +51,7 @@ public final class DropLootTableBehavior implements IGameBehavior {
 		events.listen(GamePlayerEvents.USE_BLOCK, (player, world, blockPos, hand, blockRayTraceResult) -> {
 			BlockPos pos = blockRayTraceResult.getBlockPos();
 
-			Plot plot = game.getState().getOrThrow(PlotsState.KEY).getPlotFor(player);
+			Plot plot = game.state().getOrThrow(PlotsState.KEY).getPlotFor(player);
 			if (plot == null || !plot.bounds.contains(pos)) {
 				return InteractionResult.PASS;
 			}
@@ -83,8 +81,8 @@ public final class DropLootTableBehavior implements IGameBehavior {
 	}
 
 	private void dropLoot(ServerPlayer player, Plot plot, Plant plant, BlockPos pos) {
-		LootTable lootTable = getLootTable(game.getServer());
-        ServerLevel world = game.getWorld();
+		LootTable lootTable = getLootTable(game.server());
+        ServerLevel world = game.level();
 
         LootParams params = buildLootParams(player, pos);
         for (ItemStack stack : lootTable.getRandomItems(params)) {

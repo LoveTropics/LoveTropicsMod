@@ -23,7 +23,7 @@ public record BindObjectiveToStatisticBehavior(Map<StatisticKey<Integer>, String
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
 		events.listen(GamePhaseEvents.STOP, reason -> {
-			ServerScoreboard scoreboard = game.getServer().getScoreboard();
+			ServerScoreboard scoreboard = game.server().getScoreboard();
 
 			for (Map.Entry<StatisticKey<Integer>, String> entry : statisticToObjective.entrySet()) {
 				StatisticKey<Integer> key = entry.getKey();
@@ -38,10 +38,10 @@ public record BindObjectiveToStatisticBehavior(Map<StatisticKey<Integer>, String
 	}
 
 	private void applyFromObjective(IGamePhase game, StatisticKey<Integer> key, Objective objective) {
-		GameStatistics statistics = game.getStatistics();
-		ServerScoreboard scoreboard = game.getServer().getScoreboard();
+		GameStatistics statistics = game.statistics();
+		ServerScoreboard scoreboard = game.server().getScoreboard();
 
-		for (ServerPlayer player : game.getAllPlayers()) {
+		for (ServerPlayer player : game.allPlayers()) {
 			int score = scoreboard.getOrCreatePlayerScore(player, objective).get();
             statistics.forPlayer(player).set(key, score);
 		}

@@ -76,14 +76,14 @@ public class BbTutorialAction implements IGameBehavior {
             }
 
             final GameProfile playerProfile = new GameProfile(UUID.randomUUID(), "PlotFakePlayer");
-            final ServerPlayer target = FakePlayerFactory.get(game.getWorld(), playerProfile);
+            final ServerPlayer target = FakePlayerFactory.get(game.level(), playerProfile);
             Long2ObjectMap<Runnable> actions = new Long2ObjectOpenHashMap<>();
             tutorialActions.put(target, actions);
             long ticks = game.ticks() + 4;
 
             if (!runTutorial) {
                 actions.put(ticks + 4, () -> {
-                    game.getState().getOrThrow(TutorialState.KEY).finishTutorial();
+                    game.state().getOrThrow(TutorialState.KEY).finishTutorial();
                 });
                 return true;
             }
@@ -100,14 +100,14 @@ public class BbTutorialAction implements IGameBehavior {
             actions.put(ticks, () -> {
                 BlockPos pos = sample.relative(playerPlot.forward, 12);
 
-                Mob entity = new BbTutorialHuskEntity(EntityType.HUSK, game.getWorld(), playerPlot);
+                Mob entity = new BbTutorialHuskEntity(EntityType.HUSK, game.level(), playerPlot);
 
                 Direction direction = playerPlot.forward.getOpposite();
                 entity.moveTo(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5, direction.toYRot(), 0);
 
-                game.getWorld().addFreshEntity(entity);
+                game.level().addFreshEntity(entity);
 
-                entity.finalizeSpawn(game.getWorld(), game.getWorld().getCurrentDifficultyAt(pos), MobSpawnType.MOB_SUMMONED, null);
+                entity.finalizeSpawn(game.level(), game.level().getCurrentDifficultyAt(pos), MobSpawnType.MOB_SUMMONED, null);
             });
 
             ticks += 240;
@@ -116,7 +116,7 @@ public class BbTutorialAction implements IGameBehavior {
 
             actions.put(ticks, () -> {
 //                target.sendMessage(Component.literal("Tutorial done!"), ChatType.SYSTEM, Util.NIL_UUID);
-                game.getState().getOrThrow(TutorialState.KEY).finishTutorial();
+                game.state().getOrThrow(TutorialState.KEY).finishTutorial();
             });
 
             return true;
@@ -161,7 +161,7 @@ public class BbTutorialAction implements IGameBehavior {
         // Farmland row
         for (int i = -1; i < 13; i++) {
             BlockPos pos = sample.relative(playerPlot.forward, -5).relative(cw, i - 5);
-            if (playerPlot.canPlantAt(pos) && game.getWorld().getBlockState(pos.below()).getBlock() == Blocks.GRASS_BLOCK) {
+            if (playerPlot.canPlantAt(pos) && game.level().getBlockState(pos.below()).getBlock() == Blocks.GRASS_BLOCK) {
                 actions.put(ticks, new SetFarmland(target, pos.below()));
                 ticks += 5;
             }
@@ -170,7 +170,7 @@ public class BbTutorialAction implements IGameBehavior {
         // Farmland row
         for (int i = -1; i < 13; i++) {
             BlockPos pos = sample.relative(playerPlot.forward, -4).relative(cw, i - 5);
-            if (playerPlot.canPlantAt(pos) && game.getWorld().getBlockState(pos.below()).getBlock() == Blocks.GRASS_BLOCK) {
+            if (playerPlot.canPlantAt(pos) && game.level().getBlockState(pos.below()).getBlock() == Blocks.GRASS_BLOCK) {
                 actions.put(ticks, new SetFarmland(target, pos.below()));
                 ticks += 5;
             }
@@ -232,7 +232,7 @@ public class BbTutorialAction implements IGameBehavior {
         for (int i = -1; i < 13; i++) {
             BlockPos pos = sample.relative(playerPlot.forward, -4).relative(cw, i - 5);
             // how does this work??? there's farmland here!! but removing this breaks it?!?!
-            if (playerPlot.canPlantAt(pos) && game.getWorld().getBlockState(pos.below()).getBlock() == Blocks.GRASS_BLOCK) {
+            if (playerPlot.canPlantAt(pos) && game.level().getBlockState(pos.below()).getBlock() == Blocks.GRASS_BLOCK) {
                 actions.put(ticks, new SetGrass(target, pos.below()));
                 ticks += 3;
             }
@@ -241,7 +241,7 @@ public class BbTutorialAction implements IGameBehavior {
         // Farmland row
         for (int i = -1; i < 13; i++) {
             BlockPos pos = sample.relative(playerPlot.forward, -5).relative(cw, i - 5);
-            if (playerPlot.canPlantAt(pos) && game.getWorld().getBlockState(pos.below()).getBlock() == Blocks.GRASS_BLOCK) {
+            if (playerPlot.canPlantAt(pos) && game.level().getBlockState(pos.below()).getBlock() == Blocks.GRASS_BLOCK) {
                 actions.put(ticks, new SetGrass(target, pos.below()));
                 ticks += 3;
             }
@@ -285,8 +285,8 @@ public class BbTutorialAction implements IGameBehavior {
         public void run() {
             Plant plant = game.invoker(BbEvents.PLACE_PLANT).placePlant(target, playerPlot, sample, type).getObject();
             if (plant != null) {
-                game.getWorld().levelEvent(null, LevelEvent.PARTICLES_DESTROY_BLOCK, sample, Block.getId(game.getWorld().getBlockState(plant.coverage().getOrigin())));
-                game.getWorld().playSound(null, sample, sound, SoundSource.BLOCKS, 0.4F, 1.0F);
+                game.level().levelEvent(null, LevelEvent.PARTICLES_DESTROY_BLOCK, sample, Block.getId(game.level().getBlockState(plant.coverage().getOrigin())));
+                game.level().playSound(null, sample, sound, SoundSource.BLOCKS, 0.4F, 1.0F);
             }
         }
     }
@@ -301,8 +301,8 @@ public class BbTutorialAction implements IGameBehavior {
 
             boolean placed = game.invoker(BbEvents.BREAK_PLANT).breakPlant(target, playerPlot, plant);
             if (placed) {
-                game.getWorld().levelEvent(null, LevelEvent.PARTICLES_DESTROY_BLOCK, sample, Block.getId(game.getWorld().getBlockState(plant.coverage().getOrigin())));
-                game.getWorld().playSound(null, sample, sound, SoundSource.BLOCKS, 0.4F, 1.0F);
+                game.level().levelEvent(null, LevelEvent.PARTICLES_DESTROY_BLOCK, sample, Block.getId(game.level().getBlockState(plant.coverage().getOrigin())));
+                game.level().playSound(null, sample, sound, SoundSource.BLOCKS, 0.4F, 1.0F);
             }
         }
     }

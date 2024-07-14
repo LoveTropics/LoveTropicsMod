@@ -68,6 +68,6 @@ public record PlantBiomeCheckBehavior(HolderSet<Biome> biomes, boolean whitelist
 
     private boolean canContinue(IGamePhase game, BlockPos pos) {
         // If blacklist and doesn't contain -> allow. If whitelist and contains -> allow
-        return biomes.contains(game.getWorld().getBiome(pos)) == whitelist;
+        return biomes.contains(game.level().getBiome(pos)) == whitelist;
     }
 }

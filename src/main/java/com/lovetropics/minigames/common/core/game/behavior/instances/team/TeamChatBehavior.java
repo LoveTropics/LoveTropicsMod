@@ -30,7 +30,7 @@ public record TeamChatBehavior(ResourceKey<ChatType> chatType, boolean includeSp
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
-		TeamState teams = game.getInstanceState().getOrThrow(TeamState.KEY);
+		TeamState teams = game.instanceState().getOrThrow(TeamState.KEY);
 		MutableBoolean gameOver = new MutableBoolean();
 		events.listen(GamePlayerEvents.ADD, player -> {
 			ChatChannelStore.set(player, ChatChannel.TEAM);
@@ -61,13 +61,13 @@ public record TeamChatBehavior(ResourceKey<ChatType> chatType, boolean includeSp
 		player.server.logChatMessage(signedMessage.decoratedContent(), chatType, null);
 		OutgoingChatMessage message = OutgoingChatMessage.create(signedMessage);
 
-		TeamState teams = game.getInstanceState().getOrThrow(TeamState.KEY);
+		TeamState teams = game.instanceState().getOrThrow(TeamState.KEY);
 		for (ServerPlayer otherPlayer : teams.getParticipantsForTeam(game, team.key())) {
 			otherPlayer.sendChatMessage(message, false, chatType);
 		}
 
 		if (includeSpectators) {
-			for (ServerPlayer spectator : game.getSpectators()) {
+			for (ServerPlayer spectator : game.spectators()) {
 				spectator.sendChatMessage(message, false, chatType);
 			}
 		}

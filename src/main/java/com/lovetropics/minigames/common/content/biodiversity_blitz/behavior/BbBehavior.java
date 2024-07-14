@@ -72,9 +72,9 @@ public final class BbBehavior implements IGameBehavior {
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
 		this.game = game;
-		teams = game.getInstanceState().getOrThrow(TeamState.KEY);
-		plots = game.getState().getOrThrow(PlotsState.KEY);
-		tutorial = game.getState().getOrThrow(TutorialState.KEY);
+		teams = game.instanceState().getOrThrow(TeamState.KEY);
+		plots = game.state().getOrThrow(PlotsState.KEY);
+		tutorial = game.state().getOrThrow(TutorialState.KEY);
 
 		events.listen(GamePlayerEvents.SPAWN, this::setupPlayerAsRole);
 		events.listen(BbEvents.ASSIGN_PLOT, this::onAssignPlot);
@@ -181,7 +181,7 @@ public final class BbBehavior implements IGameBehavior {
 	}
 
 	private void spawnSpectator(SpawnBuilder spawn) {
-		ServerLevel level = game.getWorld();
+		ServerLevel level = game.level();
 		RandomSource random = level.getRandom();
 		Plot plot = plots.getRandomPlot(random);
 		if (plot != null) {
@@ -305,6 +305,6 @@ public final class BbBehavior implements IGameBehavior {
 		BlockPos pos = region.sample(player.getRandom());
 
 		player.setYRot(direction.toYRot());
-		DimensionUtils.teleportPlayerNoPortal(player, game.getDimension(), pos);
+		DimensionUtils.teleportPlayerNoPortal(player, game.dimension(), pos);
 	}
 }

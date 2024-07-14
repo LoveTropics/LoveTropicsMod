@@ -83,7 +83,7 @@ public class MultiGameManager implements IGameManager {
 		for (ResourceKey<Level> dimension : possibleDimensions) {
 			List<GamePhase> games = gamesByDimension.getOrDefault(dimension, Collections.emptyList());
 			for (GamePhase game : games) {
-				if (game.getPhaseDefinition().getGameArea().intersects(area)) {
+				if (game.phaseDefinition().getGameArea().intersects(area)) {
 					return GameResult.error(GameTexts.Commands.GAMES_INTERSECT);
 				}
 			}
@@ -110,7 +110,7 @@ public class MultiGameManager implements IGameManager {
 	@Nullable
 	@Override
 	public IGamePhase getGamePhaseAt(Level level, Vec3 pos) {
-		return getGamePhaseForWorld(level, phase -> phase.getPhaseDefinition().getGameArea().contains(pos));
+		return getGamePhaseForWorld(level, phase -> phase.phaseDefinition().getGameArea().contains(pos));
 	}
 
 	@Nullable
@@ -306,9 +306,9 @@ public class MultiGameManager implements IGameManager {
 			IGamePhase phase = INSTANCE.getGamePhaseFor(player);
 			if (phase == null) return;
 
-			ResourceKey<Level> dimension = phase.getDimension();
+			ResourceKey<Level> dimension = phase.dimension();
 			if (event.getFrom() == dimension && event.getTo() != dimension) {
-				if (phase.getLobby().getPlayers().remove(player, false)) {
+				if (phase.lobby().getPlayers().remove(player, false)) {
 					player.displayClientMessage(GameTexts.Status.leftGameDimension(), false);
 				}
 			}

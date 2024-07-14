@@ -14,7 +14,7 @@ public final class BlocksBrokenTrackerBehavior implements IGameBehavior {
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
 		events.listen(GamePlayerEvents.BREAK_BLOCK, (player, pos, state, hand) -> {
-			game.getStatistics().forPlayer(player)
+			game.statistics().forPlayer(player)
 					.incrementInt(StatisticKey.BLOCKS_BROKEN, 1);
 			return InteractionResult.PASS;
 		});

@@ -21,7 +21,7 @@ public class FinishGameCommand {
 										return GameResult.error(GameTexts.Commands.NOT_IN_GAME);
 									}
 									return game.requestStop(GameStopReason.finished()).map($ -> {
-										return GameTexts.Commands.stoppedGame(game.getDefinition());
+										return GameTexts.Commands.stoppedGame(game.definition());
 									});
 								}, c.getSource())))
 		);

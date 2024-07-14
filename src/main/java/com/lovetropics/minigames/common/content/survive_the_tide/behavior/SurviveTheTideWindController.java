@@ -33,8 +33,8 @@ public class SurviveTheTideWindController implements IGameBehavior {
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
-		weather = game.getState().getOrThrow(GameWeatherState.KEY);
-		progression = game.getState().getOrNull(GameProgressionState.KEY);
+		weather = game.state().getOrThrow(GameWeatherState.KEY);
+		progression = game.state().getOrNull(GameProgressionState.KEY);
 		events.listen(GamePhaseEvents.TICK, () -> tick(game));
 	}
 
@@ -43,7 +43,7 @@ public class SurviveTheTideWindController implements IGameBehavior {
 			return;
 		}
 
-		ServerLevel level = game.getWorld();
+		ServerLevel level = game.level();
 		if (level.getGameTime() % SharedConstants.TICKS_PER_SECOND == 0) {
 			if (weather.getEventType() == WeatherEventType.SNOWSTORM || weather.getEventType() == WeatherEventType.SANDSTORM) {
 				weather.setWind(0.7F);

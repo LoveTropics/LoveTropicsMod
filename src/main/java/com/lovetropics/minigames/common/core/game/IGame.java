@@ -16,41 +16,41 @@ import java.util.UUID;
 import java.util.concurrent.Executor;
 
 public interface IGame extends Executor {
-	IGameLobby getLobby();
+	IGameLobby lobby();
 
-	UUID getUuid();
+	UUID gameUuid();
 
-	default MinecraftServer getServer() {
-		return getLobby().getServer();
+	default MinecraftServer server() {
+		return lobby().getServer();
 	}
 
-	default PlayerKey getInitiator() {
-		return getLobby().getMetadata().initiator();
+	default PlayerKey initiator() {
+		return lobby().getMetadata().initiator();
 	}
 
-	default PlayerSet getAllPlayers() {
-		return getLobby().getPlayers();
+	default PlayerSet allPlayers() {
+		return lobby().getPlayers();
 	}
 
-	IGameDefinition getDefinition();
+	IGameDefinition definition();
 
-	GameStateMap getInstanceState();
+	GameStateMap instanceState();
 
-	default GameStatistics getStatistics() {
-		return getInstanceState().get(GameStatistics.KEY);
+	default GameStatistics statistics() {
+		return instanceState().get(GameStatistics.KEY);
 	}
 
-	default ControlCommands getControlCommands() {
-		return getInstanceState().get(ControlCommands.KEY);
+	default ControlCommands controlCommands() {
+		return instanceState().get(ControlCommands.KEY);
 	}
 
 	default GameInstanceIntegrations getIntegrationsOrThrow() {
-		return getInstanceState().getOrThrow(GameInstanceIntegrations.KEY);
+		return instanceState().getOrThrow(GameInstanceIntegrations.KEY);
 	}
 
 	default ControlCommandInvoker getControlInvoker() {
-		ControlCommands commands = getControlCommands();
-		GameLobbyMetadata lobby = getLobby().getMetadata();
+		ControlCommands commands = controlCommands();
+		GameLobbyMetadata lobby = lobby().getMetadata();
 		return ControlCommandInvoker.create(commands, lobby);
 	}
 
@@ -59,7 +59,7 @@ public interface IGame extends Executor {
 	@Override
 	default void execute(final Runnable command) {
 		if (isActive()) {
-			getServer().execute(() -> {
+			server().execute(() -> {
 				if (isActive()) {
 					command.run();
 				}
@@ -68,6 +68,6 @@ public interface IGame extends Executor {
 	}
 
     default RegistryAccess registryAccess() {
-		return getServer().registryAccess();
+		return server().registryAccess();
 	}
 }

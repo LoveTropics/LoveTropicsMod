@@ -52,8 +52,8 @@ public record PointsSidebarBehavior(
 
 	private Component[] renderSidebar(final IGamePhase game) {
 		int totalCount = 0;
-		for (final PlayerKey player : game.getStatistics().getPlayers()) {
-			totalCount += game.getStatistics().forPlayer(player).getOr(statistic, 0);
+		for (final PlayerKey player : game.statistics().getPlayers()) {
+			totalCount += game.statistics().forPlayer(player).getOr(statistic, 0);
 		}
 
 		final List<Component> sidebar = new ArrayList<>(10);

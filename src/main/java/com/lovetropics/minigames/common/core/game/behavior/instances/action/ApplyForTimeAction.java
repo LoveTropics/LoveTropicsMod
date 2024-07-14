@@ -74,7 +74,7 @@ public record ApplyForTimeAction(GameActionList<ServerPlayer> apply, GameActionL
 		}
 
 		private boolean tickPlayer(IGamePhase game, Object2LongMap.Entry<UUID> entry, long time) {
-			final ServerPlayer player = game.getAllPlayers().getPlayerBy(entry.getKey());
+			final ServerPlayer player = game.allPlayers().getPlayerBy(entry.getKey());
 			if (player != null) {
 				tick.apply(game, GameActionContext.EMPTY, player);
 			}

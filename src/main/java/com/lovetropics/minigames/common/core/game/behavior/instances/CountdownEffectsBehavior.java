@@ -41,7 +41,7 @@ public record CountdownEffectsBehavior(ProgressionPoint target, int seconds, Sou
 
 	@Override
 	public void register(final IGamePhase game, final EventRegistrar events) {
-		final GameProgressionState progression = game.getState().getOrThrow(GameProgressionState.KEY);
+		final GameProgressionState progression = game.state().getOrThrow(GameProgressionState.KEY);
 
 		final AtomicInteger countdownTo = new AtomicInteger(WAITING_FOR_COUNTDOWN);
 		events.listen(GamePhaseEvents.TICK, () -> {
@@ -84,7 +84,7 @@ public record CountdownEffectsBehavior(ProgressionPoint target, int seconds, Sou
 		final float pitch = Mth.lerp(delta, startPitch, endPitch);
 		final int color = FastColor.ARGB32.lerp(delta, startColor, endColor);
 
-		final PlayerSet players = game.getAllPlayers();
+		final PlayerSet players = game.allPlayers();
 		players.playSound(sound, SoundSource.MASTER, 1.0f, pitch);
 		final Component title = Component.literal(".." + secondsLeft).withStyle(Style.EMPTY.withColor(color));
 		players.showTitle(title, 4, SharedConstants.TICKS_PER_SECOND, 4);

@@ -24,7 +24,7 @@ public class TeamWinTrigger implements IGameBehavior {
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) throws GameException {
-		TeamState teamState = game.getInstanceState().getOrThrow(TeamState.KEY);
+		TeamState teamState = game.instanceState().getOrThrow(TeamState.KEY);
 
 		events.listen(GamePlayerEvents.SET_ROLE, (player, role, lastRole) -> {
 			if (lastRole != PlayerRole.PARTICIPANT || winTriggered) {
@@ -39,7 +39,7 @@ public class TeamWinTrigger implements IGameBehavior {
 			if (teamState.getParticipantsForTeam(game, playerTeam).isEmpty()) {
 				GameTeam finalTeam = getFinalTeam(teamState, game);
 				if (finalTeam == null) {
-					if (game.getParticipants().isEmpty()) {
+					if (game.participants().isEmpty()) {
 						// How did we get here? If there are no other teams, the team who died last is probably the winner
 						finalTeam = Objects.requireNonNull(teamState.getTeamByKey(playerTeam));
 					} else {
@@ -54,7 +54,7 @@ public class TeamWinTrigger implements IGameBehavior {
 				game.invoker(GameLogicEvents.WIN_TRIGGERED).onWinTriggered(winnerName);
 				game.invoker(GameLogicEvents.GAME_OVER).onGameOver();
 
-				game.getStatistics().global().set(StatisticKey.WINNING_TEAM, finalTeam.key());
+				game.statistics().global().set(StatisticKey.WINNING_TEAM, finalTeam.key());
 			}
 		});
 	}

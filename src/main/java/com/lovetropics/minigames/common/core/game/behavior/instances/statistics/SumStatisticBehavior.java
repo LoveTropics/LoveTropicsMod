@@ -19,7 +19,7 @@ public record SumStatisticBehavior(StatisticKey<Integer> statistic) implements I
 	@Override
 	public void register(final IGamePhase game, final EventRegistrar events) throws GameException {
 		events.listen(GamePhaseEvents.FINISH, () -> {
-			final GameStatistics statistics = game.getStatistics();
+			final GameStatistics statistics = game.statistics();
 			int total = 0;
 			for (final PlayerKey player : statistics.getPlayers()) {
 				total += statistics.forPlayer(player).getOr(statistic, 0);

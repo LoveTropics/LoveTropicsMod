@@ -45,13 +45,13 @@ public final class FlamingPlantBehavior implements IGameBehavior {
 
     private void tickPlants(PlayerSet players, Plot plot, List<Plant> plants) {
         long ticks = game.ticks();
-        RandomSource random = game.getWorld().getRandom();
+        RandomSource random = game.level().getRandom();
 
         if (ticks % 15 != 0) {
             return;
         }
 
-        ServerLevel world = game.getWorld();
+        ServerLevel world = game.level();
 
         Set<Mob> seen = new HashSet<>();
 

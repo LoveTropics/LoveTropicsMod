@@ -38,7 +38,7 @@ public class SttWinLogicBehavior implements IGameBehavior {
 			minigameEnded = true;
 		});
 
-		events.listen(GamePhaseEvents.TICK, () -> checkForGameEndCondition(game, game.getWorld()));
+		events.listen(GamePhaseEvents.TICK, () -> checkForGameEndCondition(game, game.level()));
 	}
 
 	private void checkForGameEndCondition(final IGamePhase game, final Level world) {
@@ -51,7 +51,7 @@ public class SttWinLogicBehavior implements IGameBehavior {
 
 	private void spawnLightningBoltsEverywhere(IGamePhase game, final Level world) {
 		if (game.ticks() % lightningBoltSpawnTickRate == 0) {
-			for (ServerPlayer player : game.getParticipants()) {
+			for (ServerPlayer player : game.participants()) {
 				int xOffset = (7 + world.random.nextInt(5)) * (world.random.nextBoolean() ? 1 : -1);
 				int zOffset = (7 + world.random.nextInt(5)) * (world.random.nextBoolean() ? 1 : -1);
 

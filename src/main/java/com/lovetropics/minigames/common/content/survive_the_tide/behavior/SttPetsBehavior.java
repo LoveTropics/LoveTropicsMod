@@ -160,7 +160,7 @@ public final class SttPetsBehavior implements IGameBehavior {
 		}
 
 		boolean tick(IGamePhase game) {
-			if (!player.isAlive() || !entity.isAlive() || !game.getParticipants().contains(player)) {
+			if (!player.isAlive() || !entity.isAlive() || !game.participants().contains(player)) {
 				return true;
 			}
 

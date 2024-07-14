@@ -54,7 +54,7 @@ public class GameProgressionBehavior implements IGameBehavior {
 	public void register(IGamePhase game, EventRegistrar events) {
 		events.listen(GamePhaseEvents.START, () -> {
 			if (!playerConstraints.isEmpty()) {
-				playerCountToTime = resolvePlayerConstraints(playerConstraints, game.getParticipants().size(), progressionState);
+				playerCountToTime = resolvePlayerConstraints(playerConstraints, game.participants().size(), progressionState);
 			}
 		});
 
@@ -69,7 +69,7 @@ public class GameProgressionBehavior implements IGameBehavior {
 			return ++time;
 		}
 
-		int playerCount = game.getParticipants().size();
+		int playerCount = game.participants().size();
 
 		int targetTimeByPlayerCount = Mth.ceil(playerCountToTime.get(playerCount));
 		if (targetTimeByPlayerCount > time) {

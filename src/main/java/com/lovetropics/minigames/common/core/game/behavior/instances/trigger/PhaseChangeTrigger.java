@@ -21,7 +21,7 @@ public record PhaseChangeTrigger(Map<ProgressionPoint, GameActionList<Void>> pha
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
-		GameProgressionState progression = game.getState().getOrThrow(GameProgressionState.KEY);
+		GameProgressionState progression = game.state().getOrThrow(GameProgressionState.KEY);
 
 		for (var actions : phases.values()) {
 			actions.register(game, events);

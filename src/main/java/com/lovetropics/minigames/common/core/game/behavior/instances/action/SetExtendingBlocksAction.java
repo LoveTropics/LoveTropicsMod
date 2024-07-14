@@ -65,7 +65,7 @@ public final class SetExtendingBlocksAction implements IGameBehavior {
 	public void register(IGamePhase game, EventRegistrar events) {
 		List<BlockBox> regions = new ArrayList<>();
 		for (String regionKey : regionKeys) {
-			regions.addAll(game.getMapRegions().get(regionKey));
+			regions.addAll(game.mapRegions().get(regionKey));
 		}
 
 		if (regions.isEmpty()) {
@@ -101,7 +101,7 @@ public final class SetExtendingBlocksAction implements IGameBehavior {
 		// TODO: we should be not rewriting blocks that we already placed
 		BlockBox extendingBox = getExtendingBox(box, progress);
 
-		ServerLevel world = game.getWorld();
+		ServerLevel world = game.level();
 		BlockPredicate replace = this.replace;
 		BlockStateProvider set = this.set;
 		RandomSource random = world.random;

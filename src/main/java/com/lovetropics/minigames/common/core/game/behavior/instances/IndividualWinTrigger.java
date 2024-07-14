@@ -23,11 +23,11 @@ public class IndividualWinTrigger implements IGameBehavior {
 				return;
 			}
 
-			PlayerSet participants = game.getParticipants();
+			PlayerSet participants = game.participants();
 			if (participants.size() == 1) {
 				ServerPlayer winningPlayer = participants.iterator().next();
 
-				game.getStatistics().global().set(StatisticKey.WINNING_PLAYER, PlayerKey.from(winningPlayer));
+				game.statistics().global().set(StatisticKey.WINNING_PLAYER, PlayerKey.from(winningPlayer));
 
 				game.invoker(GameLogicEvents.WIN_TRIGGERED).onWinTriggered(winningPlayer.getDisplayName());
 				game.invoker(GameLogicEvents.GAME_OVER).onGameOver();

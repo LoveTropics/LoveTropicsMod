@@ -62,7 +62,7 @@ public final class SpectatorChaseBehavior implements IGameBehavior {
 
 	private void sendSpectatingUpdate(IGamePhase game) {
 		SpectatingClientState spectating = buildSpectatingState(game);
-		GameClientState.sendToPlayers(spectating, game.getSpectators());
+		GameClientState.sendToPlayers(spectating, game.spectators());
 	}
 
 	private void removeSpectator(ServerPlayer player) {
@@ -70,11 +70,11 @@ public final class SpectatorChaseBehavior implements IGameBehavior {
 	}
 
 	private void stop(IGamePhase game) {
-		GameClientState.removeFromPlayers(GameClientStateTypes.SPECTATING.get(), game.getSpectators());
+		GameClientState.removeFromPlayers(GameClientStateTypes.SPECTATING.get(), game.spectators());
 	}
 
 	private SpectatingClientState buildSpectatingState(IGamePhase game) {
-		PlayerSet participants = game.getParticipants();
+		PlayerSet participants = game.participants();
 
         Comparator<ServerPlayer> comparator = Comparator
 				.<ServerPlayer, Boolean>comparing(StreamHosts::isHost, Booleans.trueFirst())

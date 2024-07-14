@@ -34,7 +34,7 @@ public record EffectAddingPlantBehavior(MobEffectInstance effect, double radius)
 				return;
 			}
 
-			ServerLevel world = game.getWorld();
+			ServerLevel world = game.level();
 
 			for (Plant plant : plants) {
 				AABB applyBounds = plant.coverage().asBounds().inflate(radius);

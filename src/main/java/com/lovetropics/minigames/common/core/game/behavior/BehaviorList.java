@@ -32,7 +32,7 @@ public final class BehaviorList implements Iterable<IGameBehavior> {
 
 	public void registerTo(GamePhase phase, GameEventListeners events) {
 		for (IGameBehavior behavior : this) {
-			behavior.registerState(phase, phase.getState(), phase.getInstanceState());
+			behavior.registerState(phase, phase.state(), phase.instanceState());
 		}
 
 		for (IGameBehavior behavior : this) {

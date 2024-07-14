@@ -78,7 +78,7 @@ public final class GameActionHandler {
 				while ((request = queue.poll()) != null) {
 					LOGGER.debug("Trying to resolve incoming game action request: {}", request);
 					try {
-						if (request.action().resolve(game, game.getServer())) {
+						if (request.action().resolve(game, game.server())) {
 							return request;
 						} else {
 							unhandledRequests.add(request);

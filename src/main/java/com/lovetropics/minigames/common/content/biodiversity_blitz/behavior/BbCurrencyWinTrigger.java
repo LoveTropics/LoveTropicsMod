@@ -41,9 +41,9 @@ public final class BbCurrencyWinTrigger implements IGameBehavior {
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
-		PlotsState plots = game.getState().getOrThrow(PlotsState.KEY);
-		CurrencyManager currency = game.getState().getOrThrow(CurrencyManager.KEY);
-		TeamState teams = game.getInstanceState().getOrThrow(TeamState.KEY);
+		PlotsState plots = game.state().getOrThrow(PlotsState.KEY);
+		CurrencyManager currency = game.state().getOrThrow(CurrencyManager.KEY);
+		TeamState teams = game.instanceState().getOrThrow(TeamState.KEY);
 
 		CurrencyTargetState target = new CurrencyTargetState(thresholdCurrency);
 		GameClientState.applyGlobally(target, events);
@@ -83,7 +83,7 @@ public final class BbCurrencyWinTrigger implements IGameBehavior {
 	}
 
 	private void triggerWin(IGamePhase game, GameTeamKey teamKey, @Nullable GameTeam team) {
-		game.getStatistics().global().set(StatisticKey.WINNING_TEAM, teamKey);
+		game.statistics().global().set(StatisticKey.WINNING_TEAM, teamKey);
 		if (team != null) {
 			game.invoker(GameLogicEvents.WIN_TRIGGERED).onWinTriggered(team.config().name());
 		}

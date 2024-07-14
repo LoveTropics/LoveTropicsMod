@@ -39,9 +39,9 @@ public record BbInGameScoreboardBehavior(Vec3 start, Vec3 end, boolean side, Gam
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) throws GameException {
-		PlotsState plots = game.getState().getOrThrow(PlotsState.KEY);
-		CurrencyManager currency = game.getState().getOrThrow(CurrencyManager.KEY);
-		TeamState teams = game.getInstanceState().getOrThrow(TeamState.KEY);
+		PlotsState plots = game.state().getOrThrow(PlotsState.KEY);
+		CurrencyManager currency = game.state().getOrThrow(CurrencyManager.KEY);
+		TeamState teams = game.instanceState().getOrThrow(TeamState.KEY);
 
 		GameTeam leftTeam = teams.getTeamByKey(this.leftTeam);
 		GameTeam rightTeam = teams.getTeamByKey(this.rightTeam);
@@ -89,7 +89,7 @@ public record BbInGameScoreboardBehavior(Vec3 start, Vec3 end, boolean side, Gam
 		public void notifyChanged(IGamePhase game) {
 			ClientBbScoreboardState newState = supplier.get();
 			if (!newState.equals(lastState)) {
-				GameClientState.sendToPlayers(newState, game.getAllPlayers());
+				GameClientState.sendToPlayers(newState, game.allPlayers());
 				lastState = newState;
 			}
 		}

@@ -112,7 +112,7 @@ final class LobbyManagement implements ILobbyManagement {
 	public void selectControl(LobbyControls.Type type) {
 		LobbyControls.Action action = lobby.getControls().get(type);
 		if(type == LobbyControls.Type.RESTART) {
-			var queuedGame = lobby.gameQueue.enqueue(lobby.state.getGame().getDefinition());
+			var queuedGame = lobby.gameQueue.enqueue(lobby.state.getGame().definition());
 			reorderQueuedGame(queuedGame.networkId(), 0);
 		}
 		if (action != null) {

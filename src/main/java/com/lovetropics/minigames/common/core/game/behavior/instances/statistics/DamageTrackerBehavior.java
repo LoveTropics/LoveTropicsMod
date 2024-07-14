@@ -18,7 +18,7 @@ public final class DamageTrackerBehavior implements IGameBehavior {
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
 		events.listen(GamePlayerEvents.DAMAGE, (player, source, damageAmount) -> {
-			GameStatistics statistics = game.getStatistics();
+			GameStatistics statistics = game.statistics();
 
 			statistics.forPlayer(player)
 					.withDefault(StatisticKey.DAMAGE_TAKEN, () -> 0.0F)

@@ -25,7 +25,7 @@ public final class SetupIntegrationsBehavior implements IGameBehavior {
 	// TODO: we could potentially have state entries & the IGamePhase come through the constructor with codec hacks
 	@Override
 	public void registerState(IGamePhase game, GameStateMap phaseState, GameStateMap instanceState) {
-		if (game.getLobby().getMetadata().visibility().isFocusedLive()) {
+		if (game.lobby().getMetadata().visibility().isFocusedLive()) {
 			if (!BackendIntegrations.get().isConnected()) {
 				throw new GameException(GameTexts.Status.integrationsNotConnected());
 			}
@@ -45,7 +45,7 @@ public final class SetupIntegrationsBehavior implements IGameBehavior {
 		AtomicBoolean finished = new AtomicBoolean();
 		events.listen(GameLogicEvents.GAME_OVER, () -> {
 			if (finished.compareAndSet(false, true)) {
-				integrations.finish(game.getStatistics());
+				integrations.finish(game.statistics());
 			}
 		});
 
@@ -54,7 +54,7 @@ public final class SetupIntegrationsBehavior implements IGameBehavior {
 				return;
 			}
 			if (reason == GameStopReason.finished()) {
-				integrations.finish(game.getStatistics());
+				integrations.finish(game.statistics());
 			} else {
 				integrations.cancel();
 			}

@@ -67,14 +67,14 @@ public class PositionPlayersBehavior implements IGameBehavior {
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
-		MapRegions regions = game.getMapRegions();
+		MapRegions regions = game.mapRegions();
 
 		participantSpawner = new CycledSpawner(regions, participantSpawnKeys);
 		spectatorSpawner = new CycledSpawner(regions, spectatorSpawnKeys);
 		fallbackSpawner = new CycledSpawner(regions, allSpawnKeys);
         LOGGER.debug("FOUND {} PARTICIPANT SPAWN REGIONS", participantSpawner.regions.size());
 
-		TeamState teams = game.getInstanceState().getOrNull(TeamState.KEY);
+		TeamState teams = game.instanceState().getOrNull(TeamState.KEY);
 		if (splitByTeam && teams != null) {
 			if (!teamSpawnKeys.isEmpty()) {
 				events.listen(GamePhaseEvents.CREATE, () -> teamSpawners = teamSpawnKeys.entrySet().stream()
@@ -84,7 +84,7 @@ public class PositionPlayersBehavior implements IGameBehavior {
 						)));
 			} else if (!participantSpawner.regions.isEmpty()) {
 				events.listen(GamePhaseEvents.CREATE, () -> {
-					int participantCount = game.getParticipants().size();
+					int participantCount = game.participants().size();
 					teamSpawners = createTeamSpawners(game, teams, participantSpawner, participantCount);
 				});
 			}
@@ -111,8 +111,8 @@ public class PositionPlayersBehavior implements IGameBehavior {
 	private void spawnPlayerAsRole(IGamePhase game, UUID playerId, SpawnBuilder spawn, @Nullable PlayerRole role, @Nullable TeamState teams) {
 		BlockBox region = getSpawnRegionFor(playerId, role, teams);
 		if (region != null) {
-			BlockPos pos = tryFindEmptyPos(game, game.getWorld().getRandom(), region);
-			spawn.teleportTo(game.getWorld(), pos, angle);
+			BlockPos pos = tryFindEmptyPos(game, game.level().getRandom(), region);
+			spawn.teleportTo(game.level(), pos, angle);
 		}
 	}
 
@@ -145,7 +145,7 @@ public class PositionPlayersBehavior implements IGameBehavior {
 	}
 
 	private BlockPos tryFindEmptyPos(IGamePhase game, RandomSource random, BlockBox box) {
-		ServerLevel world = game.getWorld();
+		ServerLevel world = game.level();
 		for (int i = 0; i < 20; i++) {
 			BlockPos pos = box.sample(random);
 			if (world.isEmptyBlock(pos)) {

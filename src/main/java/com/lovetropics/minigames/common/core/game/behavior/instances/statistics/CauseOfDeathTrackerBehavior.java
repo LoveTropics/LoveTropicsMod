@@ -26,14 +26,14 @@ public final class CauseOfDeathTrackerBehavior implements IGameBehavior {
 
 	private void onPlayerSetRole(IGamePhase game, ServerPlayer player, @Nullable PlayerRole role, @Nullable PlayerRole lastRole) {
 		if (role == PlayerRole.PARTICIPANT) {
-			game.getStatistics().forPlayer(player).set(StatisticKey.DEAD, false);
+			game.statistics().forPlayer(player).set(StatisticKey.DEAD, false);
 		} else if (role == PlayerRole.SPECTATOR && lastRole == PlayerRole.PARTICIPANT) {
-			game.getStatistics().forPlayer(player).set(StatisticKey.DEAD, true);
+			game.statistics().forPlayer(player).set(StatisticKey.DEAD, true);
 		}
 	}
 
 	private InteractionResult onPlayerDeath(IGamePhase game, ServerPlayer player, DamageSource source) {
-		StatisticsMap playerStatistics = game.getStatistics().forPlayer(player);
+		StatisticsMap playerStatistics = game.statistics().forPlayer(player);
 
 		playerStatistics.set(StatisticKey.CAUSE_OF_DEATH, CauseOfDeath.from(source));
 		playerStatistics.set(StatisticKey.DEAD, true);

@@ -19,7 +19,7 @@ public final class KillsTrackerBehavior implements IGameBehavior {
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
 		events.listen(GamePlayerEvents.DEATH, (player, damageSource) -> {
-			GameStatistics statistics = game.getStatistics();
+			GameStatistics statistics = game.statistics();
 			StatisticsMap playerStatistics = statistics.forPlayer(player);
 
 			final ServerPlayer killerPlayer = Util.getKillerPlayer(player, damageSource);

@@ -40,7 +40,7 @@ public class ProgressBarBehavior implements IGameBehavior {
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
-		progression = game.getState().getOrThrow(GameProgressionState.KEY);
+		progression = game.state().getOrThrow(GameProgressionState.KEY);
 
 		GlobalGameWidgets widgets = GlobalGameWidgets.registerTo(game, events);
 

@@ -38,7 +38,7 @@ public record ProximityBombPlantBehavior(double radius) implements IGameBehavior
 				return;
 			}
 
-			ServerLevel world = game.getWorld();
+			ServerLevel world = game.level();
 			List<Plant> removedPlants = new ArrayList<>();
 
 			for (Plant plant : plants) {

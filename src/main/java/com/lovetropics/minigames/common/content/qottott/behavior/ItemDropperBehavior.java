@@ -51,7 +51,7 @@ public record ItemDropperBehavior(Either<List<ItemStack>, ResourceKey<LootTable>
 
 	@Override
 	public void register(final IGamePhase game, final EventRegistrar events) {
-		final Collection<BlockBox> regions = game.getMapRegions().get(regionKey);
+		final Collection<BlockBox> regions = game.mapRegions().get(regionKey);
 		if (regions.isEmpty()) {
 			return;
 		}
@@ -70,7 +70,7 @@ public record ItemDropperBehavior(Either<List<ItemStack>, ResourceKey<LootTable>
 			dropper.resetDelay(game);
 		}
 
-		final BeaconState beacons = beacon ? game.getState().get(BeaconState.KEY) : null;
+		final BeaconState beacons = beacon ? game.state().get(BeaconState.KEY) : null;
 		events.listen(GamePhaseEvents.TICK, () -> {
 			for (final Dropper dropper : droppers) {
 				dropper.tick(game, beacons);
@@ -83,12 +83,12 @@ public record ItemDropperBehavior(Either<List<ItemStack>, ResourceKey<LootTable>
 	}
 
 	private Supplier<ItemStack> createLootProvider(final IGamePhase game) {
-		final RandomSource random = game.getRandom();
+		final RandomSource random = game.random();
 		return loot.map(
 				stacks -> () -> Util.getRandomSafe(stacks, random).map(ItemStack::copy).orElse(ItemStack.EMPTY),
 				tableId -> {
-					final LootTable lootTable = game.getServer().reloadableRegistries().getLootTable(tableId);
-					final LootParams params = new LootParams.Builder(game.getLevel()).create(LootContextParamSets.EMPTY);
+					final LootTable lootTable = game.server().reloadableRegistries().getLootTable(tableId);
+					final LootParams params = new LootParams.Builder(game.level()).create(LootContextParamSets.EMPTY);
 					return () -> Util.getRandomSafe(lootTable.getRandomItems(params), random).orElse(ItemStack.EMPTY);
 				}
 		);
@@ -116,7 +116,7 @@ public record ItemDropperBehavior(Either<List<ItemStack>, ResourceKey<LootTable>
 			}
 
 			if (dropInTicks == 0) {
-				final Vec3 position = Util.getRandom(positions, game.getRandom());
+				final Vec3 position = Util.getRandom(positions, game.random());
 				resetDelay(game);
 				final ItemStack item = lootProvider.get();
 				if (!item.isEmpty()) {
@@ -143,20 +143,20 @@ public record ItemDropperBehavior(Either<List<ItemStack>, ResourceKey<LootTable>
 		private void addBeacon(final IGamePhase game, final BeaconState beacons, final Vec3 position) {
 			beaconPos = BlockPos.containing(position);
 			beacons.add(beaconPos);
-			beacons.sendTo(game.getAllPlayers());
+			beacons.sendTo(game.allPlayers());
 		}
 
 		private void removeBeacon(final IGamePhase game, final BeaconState beacons) {
 			beacons.remove(beaconPos);
-			beacons.sendTo(game.getAllPlayers());
+			beacons.sendTo(game.allPlayers());
 		}
 
 		private void resetDelay(final IGamePhase game) {
-			dropInTicks = intervalTicks.sample(game.getRandom());
+			dropInTicks = intervalTicks.sample(game.random());
 		}
 
 		private void spawnItem(final IGamePhase game, final ItemStack item, final Vec3 position) {
-			final ServerLevel level = game.getLevel();
+			final ServerLevel level = game.level();
 			final ItemEntity itemEntity = new ItemEntity(level, position.x, position.y, position.z, item, 0.0, 0.1, 0.0);
 			level.addFreshEntity(itemEntity);
 			lastDroppedItem = itemEntity;

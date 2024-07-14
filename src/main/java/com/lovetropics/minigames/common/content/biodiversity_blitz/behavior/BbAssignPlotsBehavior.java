@@ -56,14 +56,14 @@ public final class BbAssignPlotsBehavior implements IGameBehavior {
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
-		MapRegions regions = game.getMapRegions();
+		MapRegions regions = game.mapRegions();
 
 		events.listen(GamePhaseEvents.CREATE, () -> {
 			teamPlots.forEach((teamKey, config) -> {
 				if (teams.getTeamByKey(teamKey) == null) {
 					throw new GameException(Component.literal("Game team does not exist: " + teamKey));
 				}
-				Plot plot = Plot.create(game.getLevel(), teamKey, config, regionKeys, regions);
+				Plot plot = Plot.create(game.level(), teamKey, config, regionKeys, regions);
 				plots.addTeamPlot(teamKey, plot);
 				game.invoker(BbEvents.CREATE_PLOT).onCreatePlot(plot);
 			});

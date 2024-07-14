@@ -43,11 +43,11 @@ public class CancelGameCommand {
 				return GameResult.error(message);
 			}
 
-			return game.requestStop(GameStopReason.canceled()).map(u -> GameTexts.Commands.stoppedGame(game.getDefinition()));
+			return game.requestStop(GameStopReason.canceled()).map(u -> GameTexts.Commands.stoppedGame(game.definition()));
 		}, ctx.getSource());
 	}
 
 	private static boolean shouldRequireConfirmation(CommandSourceStack source, IGamePhase game) {
-		return source.getEntity() instanceof Player && game.getAllPlayers().size() > 1;
+		return source.getEntity() instanceof Player && game.allPlayers().size() > 1;
 	}
 }

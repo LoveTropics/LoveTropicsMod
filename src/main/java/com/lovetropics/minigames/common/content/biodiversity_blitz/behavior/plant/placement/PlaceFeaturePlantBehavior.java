@@ -37,7 +37,7 @@ public record PlaceFeaturePlantBehavior(Holder<ConfiguredFeature<?, ?>> feature,
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
 		events.listen(BbPlantEvents.PLACE, (player, plot, pos) -> {
-			ServerLevel world = game.getWorld();
+			ServerLevel world = game.level();
 			ConfiguredFeature<?, ?> tree = feature.value();
 			Long2ObjectMap<BlockState> changedBlocks = generateFeature(world, pos, tree);
 			if (changedBlocks != null) {

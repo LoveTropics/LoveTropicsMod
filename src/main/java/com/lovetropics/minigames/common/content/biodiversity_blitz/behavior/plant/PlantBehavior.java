@@ -66,8 +66,8 @@ public final class PlantBehavior implements IGameBehavior {
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
 		this.game = game;
-		plots = game.getState().getOrThrow(PlotsState.KEY);
-		tutorial = game.getState().getOrThrow(TutorialState.KEY);
+		plots = game.state().getOrThrow(PlotsState.KEY);
+		tutorial = game.state().getOrThrow(TutorialState.KEY);
 
 		events.listen(BbEvents.PLACE_PLANT, this::placePlant);
 		events.listen(BbEvents.BREAK_PLANT, this::breakPlant);
@@ -97,7 +97,7 @@ public final class PlantBehavior implements IGameBehavior {
 			return InteractionResultHolder.fail(null);
 		}
 
-		if (placement.place(game.getWorld(), plant.coverage())) {
+		if (placement.place(game.level(), plant.coverage())) {
 			plantEvents.invoker(BbPlantEvents.ADD).onAddPlant(player, plot, plant);
 			game.invoker(BbEvents.PLANTS_CHANGED).onPlantsChanged(player, plot);
 
@@ -113,7 +113,7 @@ public final class PlantBehavior implements IGameBehavior {
 			return false;
 		}
 
-		ServerLevel world = game.getWorld();
+		ServerLevel world = game.level();
 		for (BlockPos plantPos : plant.coverage()) {
 			FluidState fluidState = world.getFluidState(plantPos);
 			world.setBlock(plantPos, fluidState.createLegacyBlock(), Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE);

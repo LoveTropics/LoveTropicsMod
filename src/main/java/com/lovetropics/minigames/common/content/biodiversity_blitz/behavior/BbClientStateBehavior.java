@@ -24,7 +24,7 @@ public final class BbClientStateBehavior implements IGameBehavior {
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
-		TeamState teams = game.getInstanceState().getOrThrow(TeamState.KEY);
+		TeamState teams = game.instanceState().getOrThrow(TeamState.KEY);
 
 		events.listen(GamePlayerEvents.REMOVE, this::removePlayer);
 

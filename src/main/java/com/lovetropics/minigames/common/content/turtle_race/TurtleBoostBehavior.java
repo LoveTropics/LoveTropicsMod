@@ -58,7 +58,7 @@ public record TurtleBoostBehavior(float amount, int duration) implements IGameBe
 				if (game.ticks() < entry.getLongValue()) {
 					return false;
 				}
-				ServerPlayer player = game.getAllPlayers().getPlayerBy(entry.getKey());
+				ServerPlayer player = game.allPlayers().getPlayerBy(entry.getKey());
 				if (player != null) {
 					stopBoosting(player, modifiers);
 				}

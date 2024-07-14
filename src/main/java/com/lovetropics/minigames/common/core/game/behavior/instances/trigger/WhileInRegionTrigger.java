@@ -42,7 +42,7 @@ public record WhileInRegionTrigger(Map<String, GameActionList<ServerPlayer>> reg
 	}
 
 	private boolean isPlayerInRegion(IGamePhase game, ServerPlayer player, String key) {
-		for (BlockBox region : game.getMapRegions().get(key)) {
+		for (BlockBox region : game.mapRegions().get(key)) {
 			if (region.contains(player.getX(), player.getY(), player.getZ())) {
 				return true;
 			}

@@ -21,7 +21,7 @@ public record SetXpToStatisticBehavior(StatisticKey<Integer> statistic) implemen
 	@Override
 	public void register(final IGamePhase game, final EventRegistrar events) {
 		events.listen(GamePlayerEvents.TICK, player -> {
-			final StatisticsMap statistics = game.getStatistics().forPlayer(player);
+			final StatisticsMap statistics = game.statistics().forPlayer(player);
 			final int level = statistics.getOr(statistic, 0);
 			if (level != player.experienceLevel) {
 				player.setExperienceLevels(level);

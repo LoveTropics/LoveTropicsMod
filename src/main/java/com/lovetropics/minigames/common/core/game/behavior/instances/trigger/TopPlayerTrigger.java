@@ -30,8 +30,8 @@ public record TopPlayerTrigger(List<GameActionList<ServerPlayer>> actionsByPlace
 		fallbackActions.register(game, events);
 
 		events.listen(GamePhaseEvents.FINISH, () -> {
-			final GameStatistics statistics = game.getStatistics();
-			for (final ServerPlayer player : game.getAllPlayers()) {
+			final GameStatistics statistics = game.statistics();
+			for (final ServerPlayer player : game.allPlayers()) {
 				final int placement = Objects.requireNonNullElse(statistics.forPlayer(player).get(StatisticKey.PLACEMENT), 0);
 				final GameActionList<ServerPlayer> actions;
 				if (placement > 0 && placement <= actionsByPlace.size()) {

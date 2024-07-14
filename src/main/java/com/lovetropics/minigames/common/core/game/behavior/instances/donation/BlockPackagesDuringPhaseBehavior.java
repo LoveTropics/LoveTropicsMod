@@ -22,7 +22,7 @@ public record BlockPackagesDuringPhaseBehavior(List<ProgressionPeriod> blockedPe
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
-		GameProgressionState progression = game.getState().getOrNull(GameProgressionState.KEY);
+		GameProgressionState progression = game.state().getOrNull(GameProgressionState.KEY);
 		if (progression == null) {
 			return;
 		}

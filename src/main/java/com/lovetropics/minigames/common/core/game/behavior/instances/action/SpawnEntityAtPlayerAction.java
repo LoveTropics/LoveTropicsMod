@@ -49,7 +49,7 @@ public record SpawnEntityAtPlayerAction(EntityTemplate entity, int damagePlayerA
 			double z = player.getZ() + Math.cos(angle) * distance;
 			int maxDistanceY = Mth.floor(distance);
 
-			BlockPos groundPos = Util.findGround(game.getWorld(), BlockPos.containing(x, player.getY(), z), maxDistanceY);
+			BlockPos groundPos = Util.findGround(game.level(), BlockPos.containing(x, player.getY(), z), maxDistanceY);
 			if (groundPos != null) {
 				return new Vec3(x, groundPos.getY(), z);
 			}

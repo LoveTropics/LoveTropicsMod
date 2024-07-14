@@ -79,7 +79,7 @@ public class SpawnEntitiesAroundPlayersAction implements IGameBehavior {
 						it.remove();
 					}
 
-					entity.spawn(game.getWorld(), pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5, 0.0f, 0.0f);
+					entity.spawn(game.level(), pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5, 0.0f, 0.0f);
 
 					if (--remainingEntityCount == 0) {
 						playerToAmountToSpawn.clear();
@@ -99,9 +99,9 @@ public class SpawnEntitiesAroundPlayersAction implements IGameBehavior {
 	@Nullable
 	public BlockPos getSpawnableRandomPositionNear(final IGamePhase game, BlockPos pos, int minDist, int maxDist, int loopAttempts, int yRange) {
 		for (int i = 0; i < loopAttempts; i++) {
-			BlockPos posTry = pos.offset(game.getWorld().getRandom().nextInt(maxDist * 2) - maxDist,
-					game.getWorld().getRandom().nextInt(yRange * 2) - yRange,
-					game.getWorld().getRandom().nextInt(maxDist * 2) - maxDist);
+			BlockPos posTry = pos.offset(game.level().getRandom().nextInt(maxDist * 2) - maxDist,
+					game.level().getRandom().nextInt(yRange * 2) - yRange,
+					game.level().getRandom().nextInt(maxDist * 2) - maxDist);
 
 			if (pos.distSqr(posTry) >= minDist * minDist && isSpawnablePosition(game, posTry)) {
 				return posTry;
@@ -115,7 +115,7 @@ public class SpawnEntitiesAroundPlayersAction implements IGameBehavior {
 	 * - also checks that it isnt water under it
 	 */
 	public boolean isSpawnablePosition(final IGamePhase game, BlockPos pos) {
-		ServerLevel world = game.getWorld();
+		ServerLevel world = game.level();
 		return !world.isEmptyBlock(pos.offset(0, -1, 0))
 				&& world.isEmptyBlock(pos.offset(0, 0, 0))
 				&& world.isEmptyBlock(pos.offset(0, 1, 0))

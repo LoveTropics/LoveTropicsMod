@@ -34,7 +34,7 @@ public record SpawnParticlesAroundPlayerAction(ParticleOptions[] particles, IntP
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) throws GameException {
-		final RandomSource random = game.getRandom();
+		final RandomSource random = game.random();
 		final Function<ServerPlayer, Vec3> positionGenerator = createPositionGenerator(random);
 		events.listen(GameActionEvents.APPLY_TO_PLAYER, (context, player) -> {
 			int count = this.count.sample(random);
@@ -42,7 +42,7 @@ public record SpawnParticlesAroundPlayerAction(ParticleOptions[] particles, IntP
 				ParticleOptions particle = particles[random.nextInt(particles.length)];
 				int repeats = this.repeats.sample(random);
 				Vec3 pos = positionGenerator.apply(player);
-				game.getLevel().sendParticles(particle, pos.x, pos.y, pos.z, repeats, offset.x, offset.y, offset.z, speed);
+                game.level().sendParticles(particle, pos.x, pos.y, pos.z, repeats, offset.x, offset.y, offset.z, speed);
 			}
 			return true;
 		});

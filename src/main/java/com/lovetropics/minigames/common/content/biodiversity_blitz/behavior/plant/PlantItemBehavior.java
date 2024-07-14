@@ -50,8 +50,8 @@ public final class PlantItemBehavior implements IGameBehavior {
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
 		this.game = game;
-		plots = game.getState().getOrThrow(PlotsState.KEY);
-		tutorial = game.getState().getOrThrow(TutorialState.KEY);
+		plots = game.state().getOrThrow(PlotsState.KEY);
+		tutorial = game.state().getOrThrow(TutorialState.KEY);
 
 		events.listen(GamePlayerEvents.PLACE_BLOCK, this::onPlaceBlock);
 		events.listen(BbEvents.CREATE_PLANT_ITEM, this::createPlantDrop);

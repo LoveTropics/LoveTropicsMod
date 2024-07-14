@@ -61,7 +61,7 @@ public record SetDisguiseAction(DisguiseType disguise, boolean applyDonorName) i
 	}
 
 	private CompletableFuture<DisguiseType.EntityConfig> resolveDummyDisguise(final IGamePhase game, final DisguiseType.EntityConfig entity, final String packageSender) {
-		final GameProfileCache profileCache = game.getServer().getProfileCache();
+		final GameProfileCache profileCache = game.server().getProfileCache();
 		if (profileCache == null) {
 			return CompletableFuture.completedFuture(entity);
 		}
@@ -72,7 +72,7 @@ public record SetDisguiseAction(DisguiseType disguise, boolean applyDonorName) i
 			LOGGER.debug("Got profile ID for package sender {}: {}", packageSender, profile.getId());
 			nbt.putUUID("ProfileID", profile.getId());
 			future.complete(entity.withNbt(nbt));
-		}), game.getServer());
+		}), game.server());
 		return future;
 	}
 

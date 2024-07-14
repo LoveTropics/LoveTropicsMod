@@ -47,13 +47,13 @@ public final class LightningPlantBehavior implements IGameBehavior {
 
     private void tickPlants(PlayerSet players, Plot plot, List<Plant> plants) {
         long ticks = game.ticks();
-        RandomSource random = game.getWorld().getRandom();
+        RandomSource random = game.level().getRandom();
 
         if (ticks % INTERVAL_TICKS != 0) {
             return;
         }
 
-        ServerLevel world = game.getWorld();
+        ServerLevel world = game.level();
 
         for (Plant plant : plants) {
             AABB flameBounds = plant.coverage().asBounds().inflate(radius);

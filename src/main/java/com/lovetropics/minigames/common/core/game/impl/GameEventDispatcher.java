@@ -135,7 +135,7 @@ public final class GameEventDispatcher {
 		if (event.getEntity() instanceof LivingEntity entity) {
 			IGamePhase game = gameLookup.getGamePhaseFor(entity);
 			if (game != null) {
-				if (entity instanceof ServerPlayer && game.getParticipants().contains(entity)) {
+				if (entity instanceof ServerPlayer && game.participants().contains(entity)) {
 					try {
 						game.invoker(GamePlayerEvents.TICK).tick((ServerPlayer) entity);
 					} catch (Exception e) {
@@ -351,10 +351,12 @@ public final class GameEventDispatcher {
 
 	@SubscribeEvent
 	public void onEntityPlaceBlock(BlockEvent.EntityPlaceEvent event) {
-		IGamePhase game = gameLookup.getGamePhaseFor(event.getEntity());
-		if (game != null && event.getEntity() instanceof ServerPlayer) {
+		if (event.getEntity() instanceof ServerPlayer player) {
+			IGamePhase game = gameLookup.getGamePhaseFor(player);
+			if (game == null) {
+				return;
+			}
 			try {
-				ServerPlayer player = (ServerPlayer) event.getEntity();
 				InteractionResult result = game.invoker(GamePlayerEvents.PLACE_BLOCK).onPlaceBlock(player, event.getPos(), event.getPlacedBlock(), event.getPlacedAgainst());
 				if (result == InteractionResult.FAIL) {
 					event.setCanceled(true);
@@ -439,7 +441,7 @@ public final class GameEventDispatcher {
 		if (game == null) {
 			return;
 		}
-		if (event.getPlayer() instanceof ServerPlayer serverPlayer && game.getAllPlayers().contains(serverPlayer)) {
+		if (event.getPlayer() instanceof ServerPlayer serverPlayer && game.allPlayers().contains(serverPlayer)) {
 			try {
 				InteractionResult result = game.invoker(GamePlayerEvents.PICK_UP_ITEM).onPickUpItem(serverPlayer, itemEntity);
 				switch (result) {

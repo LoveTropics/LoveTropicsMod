@@ -19,48 +19,48 @@ import javax.annotation.Nullable;
 import java.util.UUID;
 
 public interface IGamePhase extends IGame {
-	IGame getGame();
+	IGame game();
 
 	@Override
-	default IGameLobby getLobby() {
-		return getGame().getLobby();
+	default IGameLobby lobby() {
+		return game().lobby();
 	}
 
 	@Override
-	default UUID getUuid() {
-		return getGame().getUuid();
+	default UUID gameUuid() {
+		return game().gameUuid();
 	}
 
 	@Override
-	default MinecraftServer getServer() {
-		return getGame().getServer();
+	default MinecraftServer server() {
+		return game().server();
 	}
 
 	@Override
-	default PlayerKey getInitiator() {
-		return getGame().getInitiator();
+	default PlayerKey initiator() {
+		return game().initiator();
 	}
 
 	@Override
-	default PlayerSet getAllPlayers() {
-		return getGame().getAllPlayers();
+	default PlayerSet allPlayers() {
+		return game().allPlayers();
 	}
 
 	@Override
-	default IGameDefinition getDefinition() {
-		return getGame().getDefinition();
+	default IGameDefinition definition() {
+		return game().definition();
 	}
 
 	@Override
-	default GameStateMap getInstanceState() {
-		return getGame().getInstanceState();
+	default GameStateMap instanceState() {
+		return game().instanceState();
 	}
 
-	GameStateMap getState();
+	GameStateMap state();
 
-	GamePhaseType getPhaseType();
+	GamePhaseType phaseType();
 
-	IGamePhaseDefinition getPhaseDefinition();
+	IGamePhaseDefinition phaseDefinition();
 
 	<T> T invoker(GameEventType<T> type);
 
@@ -84,14 +84,14 @@ public interface IGamePhase extends IGame {
 	/**
 	 * @return The list of active participants that are playing within the game instance.
 	 */
-	default PlayerSet getParticipants() {
+	default PlayerSet participants() {
 		return getPlayersWithRole(PlayerRole.PARTICIPANT);
 	}
 
 	/**
 	 * @return The list of spectators that are observing the game instance.
 	 */
-	default PlayerSet getSpectators() {
+	default PlayerSet spectators() {
 		return getPlayersWithRole(PlayerRole.SPECTATOR);
 	}
 
@@ -108,27 +108,23 @@ public interface IGamePhase extends IGame {
 	/**
 	 * @return the world that this game takes place within
 	 */
-	ServerLevel getWorld();
-
-	default ServerLevel getLevel() {
-		return getWorld();
-	}
+	ServerLevel level();
 
 	/**
 	 * @return the dimension that this game takes places within
 	 */
-	default ResourceKey<Level> getDimension() {
-		return getWorld().dimension();
+	default ResourceKey<Level> dimension() {
+		return level().dimension();
 	}
 
-	MapRegions getMapRegions();
+	MapRegions mapRegions();
 
 	/**
 	 * @return the tick counter since the game started
 	 */
 	long ticks();
 
-	default RandomSource getRandom() {
-		return getWorld().getRandom();
+	default RandomSource random() {
+		return level().getRandom();
 	}
 }

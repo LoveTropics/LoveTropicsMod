@@ -16,7 +16,7 @@ public record ProgressionPeriod(ProgressionPoint start, ProgressionPoint end) {
 	public static final Codec<ProgressionPeriod> CODEC = MAP_CODEC.codec();
 
 	public BooleanSupplier createPredicate(final IGamePhase game) {
-		final GameProgressionState progression = game.getState().getOrNull(GameProgressionState.KEY);
+		final GameProgressionState progression = game.state().getOrNull(GameProgressionState.KEY);
 		if (progression == null) {
 			final int start = this.start.resolve(null);
 			final int end = this.end.resolve(null);

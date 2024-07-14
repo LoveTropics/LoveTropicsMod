@@ -25,28 +25,28 @@ final class GameInstance implements IGame {
 	}
 
 	@Override
-	public IGameLobby getLobby() {
+	public IGameLobby lobby() {
 		return lobby;
 	}
 
 	@Override
-	public UUID getUuid() {
+	public UUID gameUuid() {
 		return uuid;
 	}
 
 	@Override
-	public IGameDefinition getDefinition() {
+	public IGameDefinition definition() {
 		return definition;
 	}
 
 	@Override
-	public GameStateMap getInstanceState() {
+	public GameStateMap instanceState() {
 		return stateMap;
 	}
 
 	@Override
 	public boolean isActive() {
 		final IGamePhase phase = lobby.getCurrentPhase();
-		return phase != null && phase.getGame() == this;
+		return phase != null && phase.game() == this;
 	}
 }

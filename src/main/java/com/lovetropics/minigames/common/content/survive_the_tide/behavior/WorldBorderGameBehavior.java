@@ -63,12 +63,12 @@ public class WorldBorderGameBehavior implements IGameBehavior {
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) throws GameException {
-		phases = game.getState().getOrThrow(GameProgressionState.KEY);
+		phases = game.state().getOrThrow(GameProgressionState.KEY);
 
-		List<BlockBox> regions = new ArrayList<>(game.getMapRegions().get(worldBorderCenterKey));
+		List<BlockBox> regions = new ArrayList<>(game.mapRegions().get(worldBorderCenterKey));
 
 		if (!regions.isEmpty()) {
-			BlockBox centerRegion = regions.get(game.getWorld().getRandom().nextInt(regions.size()));
+			BlockBox centerRegion = regions.get(game.level().getRandom().nextInt(regions.size()));
 			worldBorderCenter = centerRegion.centerBlock();
 		} else {
 			worldBorderCenter = BlockPos.ZERO;
@@ -87,9 +87,9 @@ public class WorldBorderGameBehavior implements IGameBehavior {
 		}
 
 		if (!addedBeacon) {
-			BeaconState beacons = game.getState().get(BeaconState.KEY);
-			beacons.add(game.getWorld().getHeightmapPos(Heightmap.Types.WORLD_SURFACE, worldBorderCenter));
-			beacons.sendTo(game.getAllPlayers());
+			BeaconState beacons = game.state().get(BeaconState.KEY);
+			beacons.add(game.level().getHeightmapPos(Heightmap.Types.WORLD_SURFACE, worldBorderCenter));
+			beacons.sendTo(game.allPlayers());
 			addedBeacon = true;
 		}
 
@@ -101,7 +101,7 @@ public class WorldBorderGameBehavior implements IGameBehavior {
 
 		for (ParticleType particle : borderParticles) {
 			if (game.ticks() % particle.rate == 0) {
-				tickParticles(particle, currentRadius, game.getWorld());
+				tickParticles(particle, currentRadius, game.level());
 			}
 		}
 
@@ -139,7 +139,7 @@ public class WorldBorderGameBehavior implements IGameBehavior {
 	}
 
 	private void tickPlayerDamage(IGamePhase game, boolean isCollapsing, float currentRadius) {
-		for (ServerPlayer player : game.getParticipants()) {
+		for (ServerPlayer player : game.participants()) {
 			//ignore Y val, only do X Z dist compare
 			double distanceSq = player.distanceToSqr(worldBorderCenter.getX(), player.getY(), worldBorderCenter.getZ());
 			if (isCollapsing || !(currentRadius < 0.0 || distanceSq < currentRadius * currentRadius)) {

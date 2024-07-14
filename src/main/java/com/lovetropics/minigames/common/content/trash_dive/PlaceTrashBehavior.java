@@ -55,7 +55,7 @@ public record PlaceTrashBehavior(ResourceLocation positionData, int centerY, int
 				return;
 			}
 
-			RandomSource random = game.getRandom();
+			RandomSource random = game.random();
 			BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
 
 			LongListIterator iterator = positions.iterator();
@@ -73,7 +73,7 @@ public record PlaceTrashBehavior(ResourceLocation positionData, int centerY, int
 	}
 
 	private Long2ObjectMap<LongList> loadTrashByChunk(IGamePhase game) {
-		Optional<Resource> resource = game.getServer().getResourceManager().getResource(positionData);
+		Optional<Resource> resource = game.server().getResourceManager().getResource(positionData);
 		if (resource.isEmpty()) {
 			throw new GameException(Component.literal("Missing trash position data"));
 		}

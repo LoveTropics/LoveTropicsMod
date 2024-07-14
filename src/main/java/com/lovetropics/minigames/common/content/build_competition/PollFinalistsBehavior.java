@@ -51,7 +51,7 @@ public record PollFinalistsBehavior(String finalistsTag, String winnerTag, Strin
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) throws GameException {
 		GameInstanceIntegrations integrations = game.getIntegrationsOrThrow();
-		game.getControlCommands().add("start_runoff", ControlCommand.forAdmins(source -> {
+		game.controlCommands().add("start_runoff", ControlCommand.forAdmins(source -> {
 			try {
 				PlayerList players = source.getServer().getPlayerList();
 				players.getPlayers().forEach(p -> p.removeTag(winnerTag));
@@ -70,7 +70,7 @@ public record PollFinalistsBehavior(String finalistsTag, String winnerTag, Strin
 	}
 
 	private void handlePollEvent(IGamePhase game, JsonObject object, Crud crud) {
-		MinecraftServer server = game.getServer();
+		MinecraftServer server = game.server();
 		Optional<PollEvent> poll = PollEvent.CODEC.parse(JsonOps.INSTANCE, object).resultOrPartial(LOGGER::error);
 		switch (crud) {
 			case CREATE -> {

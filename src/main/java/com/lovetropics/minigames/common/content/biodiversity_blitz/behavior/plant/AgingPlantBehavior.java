@@ -26,7 +26,7 @@ public abstract class AgingPlantBehavior implements IGameBehavior {
                 return;
             }
 
-            ServerLevel world = game.getWorld();
+            ServerLevel world = game.level();
 
             for (Plant plant : plants) {
                 for (BlockPos pos : plant.coverage()) {

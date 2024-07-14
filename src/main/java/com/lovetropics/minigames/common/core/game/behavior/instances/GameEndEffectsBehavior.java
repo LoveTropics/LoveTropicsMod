@@ -98,7 +98,7 @@ public final class GameEndEffectsBehavior implements IGameBehavior {
 
 		if (title != null && winner != null) {
 			Component title = this.title.apply(Map.of("winner", winner));
-			PlayerSet players = game.getAllPlayers();
+			PlayerSet players = game.allPlayers();
 			players.sendPacket(new ClientboundClearTitlesPacket(true));
 			players.sendPacket(new ClientboundSetTitlesAnimationPacket(SharedConstants.TICKS_PER_SECOND / 2, 3 * SharedConstants.TICKS_PER_SECOND, SharedConstants.TICKS_PER_SECOND / 2));
 			players.sendPacket(new ClientboundSetTitleTextPacket(CommonComponents.space()));
@@ -109,11 +109,11 @@ public final class GameEndEffectsBehavior implements IGameBehavior {
 	}
 
 	private void setupPodium(IGamePhase game, Podium podium) {
-		MapRegions regions = game.getMapRegions();
-		GameStatistics statistics = game.getStatistics();
+		MapRegions regions = game.mapRegions();
+		GameStatistics statistics = game.statistics();
 
-		MutablePlayerSet players = new MutablePlayerSet(game.getServer());
-		game.getAllPlayers().forEach(players::add);
+		MutablePlayerSet players = new MutablePlayerSet(game.server());
+		game.allPlayers().forEach(players::add);
 
 		for (ServerPlayer player : players) {
 			game.setPlayerRole(player, null);
@@ -167,7 +167,7 @@ public final class GameEndEffectsBehavior implements IGameBehavior {
 	private void sendScheduledMessages(IGamePhase game, long stopTime) {
 		TemplatedText message = scheduledMessages.remove(stopTime);
 		if (message != null) {
-			game.getAllPlayers().sendMessage(message.apply(Map.of("winner", winner)));
+			game.allPlayers().sendMessage(message.apply(Map.of("winner", winner)));
 		}
 	}
 

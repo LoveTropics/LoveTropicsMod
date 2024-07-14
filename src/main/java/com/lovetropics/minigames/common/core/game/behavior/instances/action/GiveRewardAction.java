@@ -26,7 +26,7 @@ public record GiveRewardAction(List<ItemStack> items, Optional<StatisticBinding>
 
 	@Override
 	public void register(final IGamePhase game, final EventRegistrar events) throws GameException {
-		GameRewardsMap rewards = game.getState().getOrThrow(GameRewardsMap.STATE);
+		GameRewardsMap rewards = game.state().getOrThrow(GameRewardsMap.STATE);
 		events.listen(GameActionEvents.APPLY_TO_PLAYER, (context, target) -> {
 			for (final ItemStack item : items) {
 				final int count = statisticBinding.map(binding -> binding.resolve(game, target)).orElse(item.getCount());
@@ -43,7 +43,7 @@ public record GiveRewardAction(List<ItemStack> items, Optional<StatisticBinding>
 		).apply(i, StatisticBinding::new));
 
 		public int resolve(final IGamePhase game, final ServerPlayer player) {
-			final int value = game.getStatistics().forPlayer(player).getOr(statistic, 0);
+			final int value = game.statistics().forPlayer(player).getOr(statistic, 0);
 			return Mth.floor(multiplier * value);
 		}
 	}

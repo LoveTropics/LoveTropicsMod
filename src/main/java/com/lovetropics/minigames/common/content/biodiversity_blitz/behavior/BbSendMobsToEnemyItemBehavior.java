@@ -54,7 +54,7 @@ public final class BbSendMobsToEnemyItemBehavior implements IGameBehavior {
 
     @Override
     public void register(IGamePhase game, EventRegistrar events) throws GameException {
-        TeamState teams = game.getInstanceState().getOrThrow(TeamState.KEY);
+        TeamState teams = game.instanceState().getOrThrow(TeamState.KEY);
 
         events.listen(BbEvents.MODIFY_WAVE_MODS, (entities, random, world, plot, waveIndex) -> entities.addAll(sentEnemies.removeAll(plot)));
         events.listen(GamePhaseEvents.START, () -> sentEnemies = Multimaps.synchronizedMultimap(Multimaps.newListMultimap(new HashMap<>(), LinkedList::new)));
@@ -63,7 +63,7 @@ public final class BbSendMobsToEnemyItemBehavior implements IGameBehavior {
             sentEnemies = null;
         });
 
-        final var plots = game.getState().getOrThrow(PlotsState.KEY);
+        final var plots = game.state().getOrThrow(PlotsState.KEY);
         events.listen(GamePlayerEvents.USE_ITEM, (player, hand) -> {
             final var item = player.getItemInHand(hand);
             return tryUseMobItem(player, item, plots, teams);

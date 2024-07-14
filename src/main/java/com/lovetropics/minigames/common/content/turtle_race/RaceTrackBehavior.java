@@ -97,11 +97,11 @@ public class RaceTrackBehavior implements IGameBehavior {
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) throws GameException {
 		this.game = game;
-		path = pathData.compile(game.getMapRegions(), lapCount > 1);
+		path = pathData.compile(game.mapRegions(), lapCount > 1);
 
 		registerCheckpoints(game, events);
 
-		Component sidebarTitle = game.getDefinition().getName().copy().withStyle(ChatFormatting.AQUA);
+		Component sidebarTitle = game.definition().getName().copy().withStyle(ChatFormatting.AQUA);
 
 		events.listen(GamePlayerEvents.SPAWN, (playerId, spawn, role) -> {
 			if (role == PlayerRole.PARTICIPANT) {
@@ -154,12 +154,12 @@ public class RaceTrackBehavior implements IGameBehavior {
 	}
 
 	private void registerCheckpoints(IGamePhase game, EventRegistrar events) {
-		BlockBox finishBox = game.getMapRegions().getOrThrow(finishRegion);
+		BlockBox finishBox = game.mapRegions().getOrThrow(finishRegion);
 		// TODO: Hacky
 		registerCheckpoint(finishBox, 0.9f * path.length(), path.length(), this::onPlayerFinishLap);
 
 		for (Map.Entry<String, GameActionList<ServerPlayer>> entry : checkpointRegions.entrySet()) {
-			Collection<BlockBox> regions = game.getMapRegions().get(entry.getKey());
+			Collection<BlockBox> regions = game.mapRegions().get(entry.getKey());
 			if (regions.isEmpty()) {
 				continue;
 			}
@@ -212,14 +212,14 @@ public class RaceTrackBehavior implements IGameBehavior {
 		Component winnerName = TurtleRaceTexts.UNKNOWN_PLAYER;
 		if (!finishedPlayers.isEmpty()) {
 			FinishEntry winner = finishedPlayers.getFirst();
-			game.getStatistics().global().set(StatisticKey.WINNING_PLAYER, winner.player());
+			game.statistics().global().set(StatisticKey.WINNING_PLAYER, winner.player());
 			winnerName = Component.literal(winner.name());
 		}
 
 		game.invoker(GameLogicEvents.WIN_TRIGGERED).onWinTriggered(winnerName);
 		game.invoker(GameLogicEvents.GAME_OVER).onGameOver();
 
-		for (ServerPlayer player : game.getParticipants()) {
+		for (ServerPlayer player : game.participants()) {
 			clearPlayerState(player);
 		}
 
@@ -245,7 +245,7 @@ public class RaceTrackBehavior implements IGameBehavior {
 		if (lapCount > 1) {
 			title = TurtleRaceTexts.LAP_COUNT.apply(state.lap + 1, lapCount);
 		} else {
-			title = game.getDefinition().getName().copy().withStyle(ChatFormatting.AQUA);
+			title = game.definition().getName().copy().withStyle(ChatFormatting.AQUA);
 		}
 		state.updateBar(player, title, path.length());
 
@@ -258,11 +258,11 @@ public class RaceTrackBehavior implements IGameBehavior {
 		long lapTime = game.ticks() - state.lapStartTime;
 		long lapSeconds = lapTime / SharedConstants.TICKS_PER_SECOND;
 		if (lapCount > 1) {
-			game.getAllPlayers().sendMessage(TurtleRaceTexts.finishedLap(player.getDisplayName(), state.lap, lapSeconds));
+			game.allPlayers().sendMessage(TurtleRaceTexts.finishedLap(player.getDisplayName(), state.lap, lapSeconds));
 		} else {
-			game.getAllPlayers().sendMessage(TurtleRaceTexts.finished(player.getDisplayName(), lapSeconds));
+			game.allPlayers().sendMessage(TurtleRaceTexts.finished(player.getDisplayName(), lapSeconds));
 		}
-		game.getAllPlayers().playSound(SoundEvents.ARROW_HIT_PLAYER, SoundSource.PLAYERS, 1.0f, 1.0f);
+		game.allPlayers().playSound(SoundEvents.ARROW_HIT_PLAYER, SoundSource.PLAYERS, 1.0f, 1.0f);
 
 		return state.nextLap(game.ticks()) >= lapCount;
 	}
@@ -271,25 +271,25 @@ public class RaceTrackBehavior implements IGameBehavior {
 		long time = game.ticks() - startTime;
 		finishedPlayers.add(new FinishEntry(player.getGameProfile().getName(), PlayerKey.from(player), time));
 
-		game.getStatistics().forPlayer(player)
+		game.statistics().forPlayer(player)
 				.set(StatisticKey.PLACEMENT, finishedPlayers.size())
 				.set(StatisticKey.TOTAL_TIME, (int) time);
 
 		game.setPlayerRole(player, PlayerRole.SPECTATOR);
 		clearPlayerState(player);
 
-		if (game.getParticipants().isEmpty()) {
+		if (game.participants().isEmpty()) {
 			triggerWin(game);
 		} else if (finishTime == NO_FINISH_TIME) {
 			if (finishedPlayers.size() >= winnerCount && !isHostStillPlaying(game)) {
 				finishTime = game.ticks() + GAME_FINISH_SECONDS * SharedConstants.TICKS_PER_SECOND;
-				game.getAllPlayers().sendMessage(TurtleRaceTexts.closing(GAME_FINISH_SECONDS));
+				game.allPlayers().sendMessage(TurtleRaceTexts.closing(GAME_FINISH_SECONDS));
 			}
 		}
 	}
 
 	private boolean isHostStillPlaying(IGamePhase game) {
-		for (ServerPlayer player : game.getParticipants()) {
+		for (ServerPlayer player : game.participants()) {
 			if (StreamHosts.isHost(player)) {
 				return true;
 			}
@@ -328,7 +328,7 @@ public class RaceTrackBehavior implements IGameBehavior {
 		states.entrySet().stream()
 				.sorted(Map.Entry.comparingByValue(Comparator.<PlayerState>comparingInt(e -> e.lap).thenComparingDouble(s -> s.trackedPosition).reversed()))
 				.forEach(entry -> {
-					ServerPlayer otherPlayer = game.getParticipants().getPlayerBy(entry.getKey());
+					ServerPlayer otherPlayer = game.participants().getPlayerBy(entry.getKey());
 					PlayerState state = entry.getValue();
 					if (otherPlayer != null) {
 						float progress = state.trackedPosition / path.length();

@@ -17,7 +17,7 @@ import java.util.Objects;
 
 public interface PlayerPlacement extends Iterable<Placed<PlayerKey>> {
 	static Order fromDeathOrder(IGamePhase game, List<PlayerKey> deathOrder) {
-		PlayerSet participants = game.getParticipants();
+		PlayerSet participants = game.participants();
 		List<Placed<PlayerKey>> order = new ArrayList<>(participants.size() + deathOrder.size());
 
 		boolean anyFirst = false;
@@ -55,11 +55,11 @@ public interface PlayerPlacement extends Iterable<Placed<PlayerKey>> {
 	}
 
 	static <T> Score<T> fromScore(IGamePhase game, StatisticKey<T> scoreKey, Comparator<T> comparator, boolean onlyOnline) {
-		GameStatistics statistics = game.getStatistics();
+		GameStatistics statistics = game.statistics();
 
 		List<PlayerKey> players = new ArrayList<>(statistics.getPlayers());
 		if (onlyOnline) {
-			players.removeIf(key -> !game.getAllPlayers().contains(key.id()));
+			players.removeIf(key -> !game.allPlayers().contains(key.id()));
 		}
 		players.sort(Comparator.comparing(
 				player -> statistics.forPlayer(player).get(scoreKey),
@@ -104,7 +104,7 @@ public interface PlayerPlacement extends Iterable<Placed<PlayerKey>> {
 
 		@Override
 		public void placeInto(StatisticKey<Integer> placementKey) {
-			GameStatistics statistics = game.getStatistics();
+			GameStatistics statistics = game.statistics();
 			statistics.clear(placementKey);
 
 			for (Placed<PlayerKey> placed : order) {
@@ -164,7 +164,7 @@ public interface PlayerPlacement extends Iterable<Placed<PlayerKey>> {
 
 		@Override
 		public void placeInto(StatisticKey<Integer> placementKey) {
-			GameStatistics statistics = game.getStatistics();
+			GameStatistics statistics = game.statistics();
 			statistics.clear(placementKey);
 
 			for (Entry<T> entry : entries) {

@@ -62,9 +62,9 @@ public record PlayerActionTarget(Target target) implements ActionTarget<ServerPl
             return switch (this) {
                 case NONE -> List.of();
                 case SOURCE -> Lists.newArrayList(sources);
-                case PARTICIPANTS -> Lists.newArrayList(game.getParticipants());
-                case SPECTATORS -> Lists.newArrayList(game.getSpectators());
-                case ALL -> Lists.newArrayList(game.getAllPlayers());
+                case PARTICIPANTS -> Lists.newArrayList(game.participants());
+                case SPECTATORS -> Lists.newArrayList(game.spectators());
+                case ALL -> Lists.newArrayList(game.allPlayers());
             };
         }
 

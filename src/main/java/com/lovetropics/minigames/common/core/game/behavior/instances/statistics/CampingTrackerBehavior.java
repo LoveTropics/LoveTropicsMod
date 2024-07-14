@@ -58,9 +58,9 @@ public final class CampingTrackerBehavior implements IGameBehavior {
 	}
 
 	private void testForCamping(IGamePhase game, long time) {
-		GameStatistics statistics = game.getStatistics();
+		GameStatistics statistics = game.statistics();
 
-		for (ServerPlayer player : game.getParticipants()) {
+		for (ServerPlayer player : game.participants()) {
 			CampingTracker tracker = getCampingTracker(player);
 
 			Vec3 currentPosition = player.position();

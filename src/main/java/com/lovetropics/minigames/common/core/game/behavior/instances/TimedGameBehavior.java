@@ -68,8 +68,8 @@ public final class TimedGameBehavior implements IGameBehavior {
 			timerBar = widgets.openBossBar(CommonComponents.EMPTY, BossEvent.BossBarColor.GREEN, BossEvent.BossBarOverlay.NOTCHED_10);
 		}
 
-		game.getControlCommands().add("pause", ControlCommand.forInitiator(source -> state.setPaused(true)));
-		game.getControlCommands().add("unpause", ControlCommand.forInitiator(source -> state.setPaused(false)));
+		game.controlCommands().add("pause", ControlCommand.forInitiator(source -> state.setPaused(true)));
+		game.controlCommands().add("unpause", ControlCommand.forInitiator(source -> state.setPaused(false)));
 	}
 
 	private void tick(IGamePhase game) {
@@ -98,14 +98,14 @@ public final class TimedGameBehavior implements IGameBehavior {
 
 	private void playCountdownSound(IGamePhase game, long seconds) {
 		float pitch = seconds == 0 ? 1.5F : 1.0F;
-		game.getAllPlayers().playSound(SoundEvents.ARROW_HIT_PLAYER, SoundSource.MASTER, 0.8F, pitch);
+		game.allPlayers().playSound(SoundEvents.ARROW_HIT_PLAYER, SoundSource.MASTER, 0.8F, pitch);
 	}
 
 	private Component getTimeRemainingText(IGamePhase game, long ticksRemaining) {
 		long secondsRemaining = ticksRemaining / SharedConstants.TICKS_PER_SECOND;
 
 		Component timeText = Component.literal(Util.formatMinutesSeconds(secondsRemaining)).withStyle(ChatFormatting.AQUA);
-		Component gameNameText = game.getDefinition().getName().copy().withStyle(ChatFormatting.AQUA);
+		Component gameNameText = game.definition().getName().copy().withStyle(ChatFormatting.AQUA);
 
 		return timerBarText.apply(Map.of("time", timeText, "game", gameNameText));
 	}

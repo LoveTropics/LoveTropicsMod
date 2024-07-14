@@ -61,17 +61,17 @@ public final class TrashCollectionBehavior implements IGameBehavior {
 	}
 
 	private void onStart(IGamePhase game) {
-		PlayerSet players = game.getParticipants();
+		PlayerSet players = game.participants();
 		players.addPotionEffect(new MobEffectInstance(MobEffects.NIGHT_VISION, Integer.MAX_VALUE, 1, false, false));
 	}
 
 	private void onAddPlayer(IGamePhase game, ServerPlayer player) {
-		GameStatistics statistics = game.getStatistics();
+		GameStatistics statistics = game.statistics();
 		statistics.forPlayer(player).set(StatisticKey.TRASH_COLLECTED, 0);
 	}
 
 	private void onPlayerLeftClickBlock(IGamePhase game, ServerPlayer player, BlockPos pos) {
-		ServerLevel world = game.getWorld();
+		ServerLevel world = game.level();
 
 		BlockState state = world.getBlockState(pos);
 		if (!isTrash(state)) {
@@ -81,7 +81,7 @@ public final class TrashCollectionBehavior implements IGameBehavior {
 		world.removeBlock(pos, false);
 		player.playNotifySound(SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.PLAYERS, 1.0F, 1.0F);
 
-		GameStatistics statistics = game.getStatistics();
+		GameStatistics statistics = game.statistics();
 		statistics.forPlayer(player)
 				.withDefault(StatisticKey.TRASH_COLLECTED, () -> 0)
 				.apply(collected -> collected + 1);
@@ -101,6 +101,6 @@ public final class TrashCollectionBehavior implements IGameBehavior {
 		gameOver = true;
 
 		int totalSeconds = (int) (game.ticks() / SharedConstants.TICKS_PER_SECOND);
-		game.getStatistics().global().set(StatisticKey.TOTAL_TIME, totalSeconds);
+		game.statistics().global().set(StatisticKey.TOTAL_TIME, totalSeconds);
 	}
 }

@@ -22,9 +22,9 @@ public class WeatherControlsBehavior implements IGameBehavior {
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
-		controller = WeatherControllerManager.forWorld(game.getWorld());
+		controller = WeatherControllerManager.forWorld(game.level());
 
-		ControlCommands commands = game.getControlCommands();
+		ControlCommands commands = game.controlCommands();
 		commands.add("start_heatwave", ControlCommand.forAdmins(source -> controller.setHeatwave(true)));
 		commands.add("stop_heatwave", ControlCommand.forAdmins(source -> controller.setHeatwave(false)));
 

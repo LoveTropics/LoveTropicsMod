@@ -90,7 +90,7 @@ public final class BbCurrencyBehavior implements IGameBehavior {
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) throws GameException {
 		this.game = game;
-		tutorial = game.getState().getOrThrow(TutorialState.KEY);
+		tutorial = game.state().getOrThrow(TutorialState.KEY);
 
 		GameClientState.applyGlobally(new CurrencyItemState(item.getDefaultInstance()), events);
 
@@ -166,7 +166,7 @@ public final class BbCurrencyBehavior implements IGameBehavior {
 	private InteractionResult onPlayerDeath(ServerPlayer player, DamageSource damageSource) {
 		// Resets all currency from the player's inventory and adds a new stack with 80% of the amount.
 		// A better way of just removing 20% of the existing stacks could be done but this was chosen for the time being to save time
-		Difficulty difficulty = game.getWorld().getDifficulty();
+		Difficulty difficulty = game.level().getDifficulty();
 
 		int oldCurrency = currency.get(player);
 		int newCurrency = Mth.floor(oldCurrency * DEATH_DECREASE.getFloat(difficulty));

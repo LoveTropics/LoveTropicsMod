@@ -73,7 +73,7 @@ public class ShootProjectilesAroundPlayerAction implements IGameBehavior {
 			Object2IntMap.Entry<UUID> entry = it.next();
 
 			UUID id = entry.getKey();
-			ServerPlayer player = game.getParticipants().getPlayerBy(id);
+			ServerPlayer player = game.participants().getPlayerBy(id);
 			if (player == null || !player.isAlive()) {
 				it.remove();
 				playerToDelayToSpawn.removeInt(id);
@@ -85,7 +85,7 @@ public class ShootProjectilesAroundPlayerAction implements IGameBehavior {
 				cooldown--;
 				playerToDelayToSpawn.put(id, cooldown);
 			} else {
-				ServerLevel world = game.getWorld();
+				ServerLevel world = game.level();
 				RandomSource random = world.getRandom();
 
 				cooldown = spawnRateBase + random.nextInt(spawnRateRandom);

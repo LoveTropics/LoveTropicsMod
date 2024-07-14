@@ -42,7 +42,7 @@ public class GamePackageCommand {
 	private static CompletableFuture<Suggestions> suggestPackages(final CommandContext<CommandSourceStack> ctx, final SuggestionsBuilder builder) {
 		IGamePhase game = IGameManager.get().getGamePhaseFor(ctx.getSource());
 		if (game != null) {
-			GamePackageState packages = game.getState().get(GamePackageState.KEY);
+			GamePackageState packages = game.state().get(GamePackageState.KEY);
 			return SharedSuggestionProvider.suggest(packages.keys(), builder);
 		}
 		return Suggestions.empty();

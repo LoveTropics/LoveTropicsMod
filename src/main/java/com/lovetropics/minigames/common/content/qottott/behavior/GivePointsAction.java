@@ -30,7 +30,7 @@ public record GivePointsAction(StatisticKey<Integer> statistic, int count, boole
 		events.listen(GameActionEvents.APPLY_TO_PLAYER, (context, player) -> {
 			final int count = resolveCount(context, player);
 			if (count > 0) {
-				game.getStatistics().forPlayer(player).incrementInt(statistic, count);
+				game.statistics().forPlayer(player).incrementInt(statistic, count);
 				return true;
 			}
 			return false;

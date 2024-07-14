@@ -28,7 +28,7 @@ public record SttChatBroadcastBehavior(String downToTwoTranslationKey) implement
 				return;
 			}
 
-			PlayerSet participants = game.getParticipants();
+			PlayerSet participants = game.participants();
 
 			if (participants.size() == 2) {
 				Iterator<ServerPlayer> it = participants.iterator();
@@ -39,7 +39,7 @@ public record SttChatBroadcastBehavior(String downToTwoTranslationKey) implement
 					Component p1text = p1.getDisplayName().copy().withStyle(ChatFormatting.AQUA);
 					Component p2text = p2.getDisplayName().copy().withStyle(ChatFormatting.AQUA);
 
-					game.getAllPlayers().sendMessage(Component.translatable(downToTwoTranslationKey, p1text, p2text).withStyle(ChatFormatting.GOLD));
+					game.allPlayers().sendMessage(Component.translatable(downToTwoTranslationKey, p1text, p2text).withStyle(ChatFormatting.GOLD));
 				}
 			}
 		});

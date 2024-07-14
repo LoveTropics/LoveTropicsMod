@@ -108,24 +108,24 @@ public class SpleefBehavior implements IGameBehavior {
         widgets = GlobalGameWidgets.registerTo(game, events);
 
         for (int floor = 0; floor < floors; floor++) {
-            floorRegions[floor] = game.getMapRegions().getOrThrow("floor" + (floor + 1));
+            floorRegions[floor] = game.mapRegions().getOrThrow("floor" + (floor + 1));
         }
 
-        deathRegion = game.getMapRegions().getOrThrow("death");
+        deathRegion = game.mapRegions().getOrThrow("death");
 
         Style style = Style.EMPTY.withColor(TextColor.fromRgb(0xACC12F)).withBold(true);
         bossBar = widgets.openBossBar(MinigameTexts.SPLEEF_TITLE_PREPARE.copy().withStyle(style), BossEvent.BossBarColor.PURPLE, BossEvent.BossBarOverlay.PROGRESS);
 
         for (var floor : floorRegions) {
-            BlockPlacer.replace(game.getWorld(), floor, floorMaterial, BlockPlacer.Mode.REPLACE, Blocks.WHITE_STAINED_GLASS);
+            BlockPlacer.replace(game.level(), floor, floorMaterial, BlockPlacer.Mode.REPLACE, Blocks.WHITE_STAINED_GLASS);
         }
 
         events.listen(GamePhaseEvents.START, () -> {
 
             // Shouldn't affect a typical game but has a bug in dev with 1 player.
-            lastTickPlayers = this.game.getParticipants().stream().toList();
+            lastTickPlayers = this.game.participants().stream().toList();
 
-            if(this.game.getParticipants().size() == 1) {
+            if(this.game.participants().size() == 1) {
                 blockSinglePlayerWin = true;
             }
 
@@ -172,28 +172,28 @@ public class SpleefBehavior implements IGameBehavior {
         progressionTimer = forcedProgressionSeconds;
         scheduler.intervalTickEvent("forced_progression", this::updateForcedProgression, 0, 20);
 
-        game.getAllPlayers().playSound(SoundEvents.ANVIL_PLACE, SoundSource.MASTER, Integer.MAX_VALUE, 1);
-        game.getAllPlayers().playSound(SoundEvents.BASALT_BREAK, SoundSource.MASTER, Integer.MAX_VALUE, 1);
+        game.allPlayers().playSound(SoundEvents.ANVIL_PLACE, SoundSource.MASTER, Integer.MAX_VALUE, 1);
+        game.allPlayers().playSound(SoundEvents.BASALT_BREAK, SoundSource.MASTER, Integer.MAX_VALUE, 1);
     }
 
     private void checkForWinner() {
         if(gameOver) {
             return;
         }
-        var participants = game.getParticipants();
+        var participants = game.participants();
 
         if(participants.size() <= 1) {
 
-            if (game.getParticipants().size() == 1 && !blockSinglePlayerWin) {
+            if (game.participants().size() == 1 && !blockSinglePlayerWin) {
                 winTitle(participants.stream().toList());
                 var displayName = participants.iterator().next().getDisplayName();
                 var style = displayName.getStyle();
                 if(style.getColor() == null) {
                     style = style.withColor(ChatFormatting.WHITE);
                 }
-                game.getAllPlayers().playSound(SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, SoundSource.MASTER, Integer.MAX_VALUE, 0.8f);
+                game.allPlayers().playSound(SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, SoundSource.MASTER, Integer.MAX_VALUE, 0.8f);
                 announceWinner(Component.translatable(getFlavourTextKey("win"), displayName.copy().withStyle(style)));
-            } else if(game.getParticipants().isEmpty()) {
+            } else if(game.participants().isEmpty()) {
                 // Join the winners with a comma from the last tick though add an & for the last join.
                 var winners = lastTickPlayers.stream().toList();
                 MutableComponent winnerText = Component.literal("");
@@ -213,7 +213,7 @@ public class SpleefBehavior implements IGameBehavior {
                     }
                 }
 
-                game.getAllPlayers().playSound(SoundEvents.RAID_HORN.value(), SoundSource.MASTER, Integer.MAX_VALUE, 0.75f);
+                game.allPlayers().playSound(SoundEvents.RAID_HORN.value(), SoundSource.MASTER, Integer.MAX_VALUE, 0.75f);
                 announceWinner(Component.translatable(getFlavourTextKey("winners"), winnerText));
             }
         } else {
@@ -230,7 +230,7 @@ public class SpleefBehavior implements IGameBehavior {
     }
 
     private void checkPlayerDeath() {
-        for (ServerPlayer player : game.getParticipants()) {
+        for (ServerPlayer player : game.participants()) {
             if (deathRegion.intersects(player.getBoundingBox())) {
                 killPlayer(player);
             }
@@ -267,7 +267,7 @@ public class SpleefBehavior implements IGameBehavior {
     }
 
     private void specialMessage(Component sender, Component message) {
-        game.getAllPlayers().sendMessage(Component.literal("[").withStyle(ChatFormatting.GRAY)
+        game.allPlayers().sendMessage(Component.literal("[").withStyle(ChatFormatting.GRAY)
                 .append(sender).append("]: ")
                 .append(message), false);
     }
@@ -287,13 +287,13 @@ public class SpleefBehavior implements IGameBehavior {
         if(progressionTimer <= 0) {
             progressionTimer = forcedProgressionSeconds;
             spleefMessage(Component.translatable(getFlavourTextKey("forced_progression"), Component.translatable("ltminigames.minigame.position." + (currentFloor + 1))).withStyle(ChatFormatting.YELLOW));
-            BlockPlacer.replace(game.getWorld(), floorRegions[currentFloor], floorBreakingMaterial, BlockPlacer.Mode.REPLACE, floorMaterial, scheduler,
-                    (pos) -> (game.getWorld().random.nextInt(breakCount) * breakInterval),
+            BlockPlacer.replace(game.level(), floorRegions[currentFloor], floorBreakingMaterial, BlockPlacer.Mode.REPLACE, floorMaterial, scheduler,
+                    (pos) -> (game.level().random.nextInt(breakCount) * breakInterval),
                     (pos) -> {
                         scheduler.delayedTickEvent("delayed_break", () -> {
-                            game.getWorld().destroyBlock(pos, false);
-                            scheduler.notifyBlockChange(pos, game.getWorld(), Blocks.AIR);
-                        }, 15 + game.getWorld().random.nextInt(10));
+                            game.level().destroyBlock(pos, false);
+                            scheduler.notifyBlockChange(pos, game.level(), Blocks.AIR);
+                        }, 15 + game.level().random.nextInt(10));
                     });
             currentFloor++;
         }
@@ -302,7 +302,7 @@ public class SpleefBehavior implements IGameBehavior {
             case 10 -> spleefMessage(Component.translatable(getFlavourTextKey("layer_countdown"), Component.literal(Integer.toString(progressionTimer)).withStyle(DARK_YELLOW)).withStyle(ChatFormatting.YELLOW));
             case 5, 4, 3, 2, 1 -> {
                 spleefMessage(Component.literal(Integer.toString(progressionTimer)).withStyle(DARK_YELLOW), false);
-                game.getAllPlayers().playSound(SoundEvents.NOTE_BLOCK_PLING.value(), SoundSource.MASTER, Integer.MAX_VALUE, 1.75f - (progressionTimer * 0.25f));
+                game.allPlayers().playSound(SoundEvents.NOTE_BLOCK_PLING.value(), SoundSource.MASTER, Integer.MAX_VALUE, 1.75f - (progressionTimer * 0.25f));
             }
         }
 
@@ -323,7 +323,7 @@ public class SpleefBehavior implements IGameBehavior {
                             .withStyle(ChatFormatting.GRAY),
                     MinigameTexts.SPLEEF_COUNTDOWN_SUBTITLE.copy().withStyle(ChatFormatting.YELLOW),
                     5, 20, seconds == 1 ? 0 : 5);
-            game.getAllPlayers().playSound(SoundEvents.NOTE_BLOCK_BIT.value(), SoundSource.MASTER, Integer.MAX_VALUE, soundPitch);
+            game.allPlayers().playSound(SoundEvents.NOTE_BLOCK_BIT.value(), SoundSource.MASTER, Integer.MAX_VALUE, soundPitch);
         }, delayTicks);
     }
 
@@ -337,12 +337,12 @@ public class SpleefBehavior implements IGameBehavior {
             fullMessage = fullMessage.append(MinigameTexts.SPLEEF).append(Component.literal(" ❯ "));
         }
         fullMessage = fullMessage.append(message);
-        game.getAllPlayers().sendMessage(fullMessage.withStyle(ChatFormatting.YELLOW), false);
+        game.allPlayers().sendMessage(fullMessage.withStyle(ChatFormatting.YELLOW), false);
     }
 
 
     private void title(Component title, Component subtitle, int pFadeIn, int pStay, int pFadeOut) {
-        PlayerSet players = game.getAllPlayers();
+        PlayerSet players = game.allPlayers();
         title(players, title, subtitle, pFadeIn, pStay, pFadeOut);
     }
 
@@ -353,7 +353,7 @@ public class SpleefBehavior implements IGameBehavior {
     }
 
     private void title(ServerPlayer player, Component title, Component subtitle, int pFadeIn, int pStay, int pFadeOut) {
-        PlayerSet players = game.getAllPlayers();
+        PlayerSet players = game.allPlayers();
         player.connection.send(new ClientboundSetTitlesAnimationPacket(pFadeIn, pStay, pFadeOut));
         player.connection.send(new ClientboundSetTitleTextPacket(title));
         player.connection.send(new ClientboundSetSubtitleTextPacket(subtitle));

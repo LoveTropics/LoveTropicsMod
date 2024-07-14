@@ -105,7 +105,7 @@ public final class SetupTeamsBehavior implements IGameBehavior {
 	}
 
 	private void onPlayerWaiting(IGamePhase game, ServerPlayer player) {
-		PlayerRole forcedRole = game.getLobby().getPlayers().getForcedRoleFor(player);
+		PlayerRole forcedRole = game.lobby().getPlayers().getForcedRoleFor(player);
 		if (forcedRole != PlayerRole.SPECTATOR && teamState.getPollingTeams().size() > 1) {
 			for (Component message : MinigameTexts.TEAMS_INTRO) {
 				player.displayClientMessage(message, false);

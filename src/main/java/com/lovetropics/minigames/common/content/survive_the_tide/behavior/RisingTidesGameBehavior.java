@@ -90,15 +90,15 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) throws GameException {
-		tideArea = game.getMapRegions().getOrThrow(tideAreaKey);
+		tideArea = game.mapRegions().getOrThrow(tideAreaKey);
 
 		minTideChunk = new ChunkPos(SectionPos.blockToSectionCoord(tideArea.min().getX()), SectionPos.blockToSectionCoord(tideArea.min().getZ()));
 		maxTideChunk = new ChunkPos(SectionPos.blockToSectionCoord(tideArea.max().getX()), SectionPos.blockToSectionCoord(tideArea.max().getZ()));
 
 		icebergLines.clear();
 
-		ServerLevel level = game.getWorld();
-		for (BlockBox icebergLine : game.getMapRegions().get(icebergLinesKey)) {
+		ServerLevel level = game.level();
+		for (BlockBox icebergLine : game.mapRegions().get(icebergLinesKey)) {
 			int startX = icebergLine.min().getX();
 			int startZ = icebergLine.min().getZ();
 			int endX = icebergLine.max().getX();
@@ -116,7 +116,7 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 			));
 		}
 
-		progression = game.getState().getOrThrow(GameProgressionState.KEY);
+		progression = game.state().getOrThrow(GameProgressionState.KEY);
 
 		waterLevelByTime = waterLevels.resolve(progression);
 
@@ -147,7 +147,7 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 			if (icebergsProgress > 0.0f) {
 				int targetSteps = Math.round(icebergsProgress * maxIcebergGrowthSteps);
 				if (icebergGrowthSteps < targetSteps) {
-					growIcebergs(game.getWorld());
+					growIcebergs(game.level());
 					icebergGrowthSteps++;
 				}
 			}
@@ -159,7 +159,7 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 	}
 
 	private void spawnRisingTideParticles(IGamePhase game) {
-		ServerLevel world = game.getWorld();
+		ServerLevel world = game.level();
 		RandomSource random = world.random;
 		if (random.nextInt(3) != 0) {
 			return;
@@ -167,7 +167,7 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 
 		BlockPos.MutableBlockPos mutablePos = new BlockPos.MutableBlockPos();
 
-		for (ServerPlayer player : game.getParticipants()) {
+		for (ServerPlayer player : game.participants()) {
 			// only attempt to spawn particles if the player is near the water surface
 			if (Math.abs(player.getY() - waterLevel) > 5) {
 				continue;
@@ -202,7 +202,7 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 	}
 
 	private int processUpdates(IGamePhase game, LongIterator iterator, int maxToProcess) {
-		ServerLevel world = game.getWorld();
+		ServerLevel world = game.level();
 		ServerChunkCache chunkProvider = world.getChunkSource();
 
 		int count = 0;
@@ -284,7 +284,7 @@ public class RisingTidesGameBehavior implements IGameBehavior {
 		int minDistance2 = Integer.MAX_VALUE;
 		int centerX = SectionPos.sectionToBlockCoord(x) + SectionPos.SECTION_HALF_SIZE;
 		int centerZ = SectionPos.sectionToBlockCoord(z) + SectionPos.SECTION_HALF_SIZE;
-		for (ServerPlayer player : game.getAllPlayers()) {
+		for (ServerPlayer player : game.allPlayers()) {
 			int dx = Mth.floor(player.getX()) - centerX;
 			int dz = Mth.floor(player.getZ()) - centerZ;
 			int distance2 = dx * dx + dz * dz;

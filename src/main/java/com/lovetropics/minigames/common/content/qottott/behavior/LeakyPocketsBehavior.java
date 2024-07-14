@@ -27,7 +27,7 @@ public record LeakyPocketsBehavior(ItemStack item, StatisticKey<Integer> statist
 
 	@Override
 	public void register(final IGamePhase game, final EventRegistrar events) {
-		final RandomSource random = game.getRandom();
+		final RandomSource random = game.random();
 		events.listen(GamePlayerEvents.TICK, player -> {
 			if (player.tickCount % interval != 0) {
 				return;
@@ -36,7 +36,7 @@ public record LeakyPocketsBehavior(ItemStack item, StatisticKey<Integer> statist
 			if (chancePerCoin <= 0.0) {
 				return;
 			}
-			final StatisticsMap statistics = game.getStatistics().forPlayer(player);
+			final StatisticsMap statistics = game.statistics().forPlayer(player);
 			final int count = statistics.getOr(statistic, 0);
 			int dropAmount = sampleDropCount(count, random, chancePerCoin);
 			if (dropAmount > 0) {

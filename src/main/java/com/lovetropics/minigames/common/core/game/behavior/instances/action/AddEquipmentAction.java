@@ -37,7 +37,7 @@ public record AddEquipmentAction(List<ItemStack> items, ItemStack head, ItemStac
 
 	@Override
 	public void register(final IGamePhase game, final EventRegistrar events) {
-		final TeamState teams = game.getInstanceState().getOrNull(TeamState.KEY);
+		final TeamState teams = game.instanceState().getOrNull(TeamState.KEY);
 		events.listen(GameActionEvents.APPLY_TO_PLAYER, (context, player) -> {
 			if (clear) {
 				player.getInventory().clearContent();

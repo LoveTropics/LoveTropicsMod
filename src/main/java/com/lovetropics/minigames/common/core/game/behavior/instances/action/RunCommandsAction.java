@@ -46,7 +46,7 @@ public record RunCommandsAction(List<String> globalCommands, List<String> player
 
     @Override
     public void register(IGamePhase game, EventRegistrar events) {
-        CommandDispatcher<CommandSourceStack> dispatcher = game.getServer().getCommands().getDispatcher();
+        CommandDispatcher<CommandSourceStack> dispatcher = game.server().getCommands().getDispatcher();
         CommandSourceStack source = createCommandSource(game);
 
         events.listen(GameActionEvents.APPLY, (context) -> executeCommands(dispatcher, source, globalCommands));
@@ -73,11 +73,11 @@ public record RunCommandsAction(List<String> globalCommands, List<String> player
     }
 
     private static CommandSourceStack createCommandSource(IGamePhase game) {
-        boolean debugMode = game.getState().getOrNull(DebugModeState.KEY) != null;
-        CommandSource source = debugMode ? game.getServer() : CommandSource.NULL;
+        boolean debugMode = game.state().getOrNull(DebugModeState.KEY) != null;
+        CommandSource source = debugMode ? game.server() : CommandSource.NULL;
 
-        String name = game.getLobby().getMetadata().name();
-        return new CommandSourceStack(source, Vec3.ZERO, Vec2.ZERO, game.getWorld(), Commands.LEVEL_OWNERS, name, Component.literal(name), game.getServer(), null);
+        String name = game.lobby().getMetadata().name();
+        return new CommandSourceStack(source, Vec3.ZERO, Vec2.ZERO, game.level(), Commands.LEVEL_OWNERS, name, Component.literal(name), game.server(), null);
     }
 
     @Override

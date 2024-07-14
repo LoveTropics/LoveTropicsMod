@@ -42,7 +42,7 @@ public class RevealPlayersBehavior implements IGameBehavior {
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) throws GameException {
 		events.listen(GamePhaseEvents.TICK, () -> {
-			PlayerSet players = game.getParticipants();
+			PlayerSet players = game.participants();
 			if (players.size() > playersLeftRequired) {
 				return;
 			}

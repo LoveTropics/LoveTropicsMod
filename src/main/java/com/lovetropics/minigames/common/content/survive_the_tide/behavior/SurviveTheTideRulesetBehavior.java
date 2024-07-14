@@ -40,7 +40,7 @@ public class SurviveTheTideRulesetBehavior implements IGameBehavior {
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) throws GameException {
-		progression = game.getState().getOrThrow(GameProgressionState.KEY);
+		progression = game.state().getOrThrow(GameProgressionState.KEY);
 
 		events.listen(GamePlayerEvents.DEATH, this::onPlayerDeath);
 		events.listen(GamePlayerEvents.DAMAGE, this::onPlayerHurt);

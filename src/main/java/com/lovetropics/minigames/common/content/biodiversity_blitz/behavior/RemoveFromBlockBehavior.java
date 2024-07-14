@@ -42,7 +42,7 @@ public final class RemoveFromBlockBehavior implements IGameBehavior {
 
     @Override
     public void register(IGamePhase game, EventRegistrar events) throws GameException {
-        plots = game.getState().getOrThrow(PlotsState.KEY);
+        plots = game.state().getOrThrow(PlotsState.KEY);
 
         events.listen(GamePlayerEvents.USE_BLOCK, this::onUseBlock);
     }

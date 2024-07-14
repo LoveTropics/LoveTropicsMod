@@ -45,8 +45,8 @@ public final class DonationPackageBehavior implements IGameBehavior {
 
 		receiveActions.register(game, events);
 
-		PackageCostModifierBehavior.State costModifier = game.getState().get(PackageCostModifierBehavior.State.KEY);
-		game.getState().get(GamePackageState.KEY).addPackageType(data.apply(costModifier));
+		PackageCostModifierBehavior.State costModifier = game.state().get(PackageCostModifierBehavior.State.KEY);
+		game.state().get(GamePackageState.KEY).addPackageType(data.apply(costModifier));
 	}
 
 	private InteractionResult onGamePackageReceived(final IGamePhase game, final GamePackage gamePackage) {
@@ -67,7 +67,7 @@ public final class DonationPackageBehavior implements IGameBehavior {
 			return InteractionResult.FAIL;
 		}
 
-		ServerPlayer receivingPlayer = game.getParticipants().getPlayerBy(gamePackage.receivingPlayer().get());
+		ServerPlayer receivingPlayer = game.participants().getPlayerBy(gamePackage.receivingPlayer().get());
 		if (receivingPlayer == null) {
 			// Player not on the server or in the game for some reason
 			return InteractionResult.FAIL;
@@ -84,8 +84,8 @@ public final class DonationPackageBehavior implements IGameBehavior {
 	}
 
 	private InteractionResult receiveRandom(IGamePhase game, GamePackage gamePackage) {
-		final List<ServerPlayer> players = Lists.newArrayList(game.getParticipants());
-		final ServerPlayer randomPlayer = players.get(game.getWorld().getRandom().nextInt(players.size()));
+		final List<ServerPlayer> players = Lists.newArrayList(game.participants());
+		final ServerPlayer randomPlayer = players.get(game.level().getRandom().nextInt(players.size()));
 
 		GameActionContext context = actionContext(gamePackage);
 		if (receiveActions.apply(game, context, randomPlayer)) {
@@ -99,7 +99,7 @@ public final class DonationPackageBehavior implements IGameBehavior {
 
 	private InteractionResult receiveAll(IGamePhase game, GamePackage gamePackage) {
 		GameActionContext context = actionContext(gamePackage);
-		if (!receiveActions.apply(game, context, game.getParticipants())) {
+		if (!receiveActions.apply(game, context, game.participants())) {
 			return InteractionResult.FAIL;
 		}
 

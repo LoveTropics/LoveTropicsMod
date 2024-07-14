@@ -37,10 +37,10 @@ public final class TimeSurvivedTrackerBehavior implements IGameBehavior {
 	}
 
 	private void onFinish(IGamePhase game) {
-		GameStatistics statistics = game.getStatistics();
+		GameStatistics statistics = game.statistics();
 
 		int secondsSurvived = getSecondsSurvived(game);
-		for (ServerPlayer player : game.getParticipants()) {
+		for (ServerPlayer player : game.participants()) {
 			statistics.forPlayer(player).set(StatisticKey.TIME_SURVIVED, secondsSurvived);
 		}
 
@@ -48,7 +48,7 @@ public final class TimeSurvivedTrackerBehavior implements IGameBehavior {
 	}
 
 	private InteractionResult onPlayerDeath(IGamePhase game, ServerPlayer player, DamageSource source) {
-		GameStatistics statistics = game.getStatistics();
+		GameStatistics statistics = game.statistics();
 		statistics.forPlayer(player).set(StatisticKey.TIME_SURVIVED, getSecondsSurvived(game));
 
 		return InteractionResult.PASS;

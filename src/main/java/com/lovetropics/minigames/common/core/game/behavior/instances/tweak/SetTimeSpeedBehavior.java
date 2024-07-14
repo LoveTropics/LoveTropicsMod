@@ -23,7 +23,7 @@ public record SetTimeSpeedBehavior(int factor) implements IGameBehavior {
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
 		events.listen(GamePhaseEvents.TICK, () -> {
-			ServerLevel world = game.getWorld();
+			ServerLevel world = game.level();
 			world.setDayTime(world.getDayTime() + factor - 1);
 		});
 

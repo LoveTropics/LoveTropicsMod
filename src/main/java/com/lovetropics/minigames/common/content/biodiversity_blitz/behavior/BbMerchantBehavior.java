@@ -76,7 +76,7 @@ public final class BbMerchantBehavior implements IGameBehavior {
 	}
 
 	private void onCreatePlot(Plot plot) {
-		ServerLevel world = game.getWorld();
+		ServerLevel world = game.level();
 
 		BlockBox region = plot.regionByName(plotRegion);
 		if (region == null) return;

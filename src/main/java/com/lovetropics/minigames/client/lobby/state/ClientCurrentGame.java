@@ -32,8 +32,8 @@ public final class ClientCurrentGame {
 	}
 
 	public static ClientCurrentGame create(IGamePhase phase) {
-		ClientGameDefinition definition = ClientGameDefinition.from(phase.getDefinition());
-		GamePhaseType phaseType = phase.getPhaseType();
+		ClientGameDefinition definition = ClientGameDefinition.from(phase.definition());
+		GamePhaseType phaseType = phase.phaseType();
 		return ClientCurrentGame.create(definition, phaseType);
 	}
 

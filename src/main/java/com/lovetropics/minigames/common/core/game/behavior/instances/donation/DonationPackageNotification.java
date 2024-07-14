@@ -38,7 +38,7 @@ public record DonationPackageNotification(
 	).apply(i, DonationPackageNotification::new));
 
 	public void onReceive(final IGamePhase game, @Nullable final ServerPlayer receiver, @Nullable final String sender) {
-		PlayerSet players = game.getAllPlayers();
+		PlayerSet players = game.allPlayers();
 
 		Component targetedMessage = createTargetedMessage(receiver, sender);
 		Component globalMessage = createGlobalMessage(receiver);

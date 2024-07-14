@@ -23,7 +23,7 @@ public record SpectatorEffectsBehavior(float radius, float power, float threshol
 	public void register(IGamePhase game, EventRegistrar events) throws GameException {
 		events.listen(GamePhaseEvents.TICK, () -> {
 			EffectGrid grid = new EffectGrid(radius, Mth.floor(power * threshold));
-			game.getSpectators().forEach(grid::addPlayer);
+			game.spectators().forEach(grid::addPlayer);
 
 			grid.candidateCells().forEach(cell -> {
 				List<ServerPlayer> players = cell.players;

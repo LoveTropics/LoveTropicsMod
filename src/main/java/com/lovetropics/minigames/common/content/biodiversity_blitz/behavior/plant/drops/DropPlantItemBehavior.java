@@ -20,7 +20,7 @@ public record DropPlantItemBehavior(PlantItemType plant) implements IGameBehavio
 	public void register(IGamePhase game, EventRegistrar events) {
 		events.listen(BbPlantEvents.BREAK, (player, plot, plant, pos) -> {
 			ItemStack plantItem = game.invoker(BbEvents.CREATE_PLANT_ITEM).createPlantItem(this.plant);
-			Block.popResource(game.getWorld(), pos, plantItem);
+			Block.popResource(game.level(), pos, plantItem);
 		});
 	}
 }

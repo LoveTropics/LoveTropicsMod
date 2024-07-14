@@ -52,14 +52,14 @@ public record ChestDropAction(String region, SimpleWeightedRandomList<ResourceKe
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
-		List<BlockBox> regions = List.copyOf(game.getMapRegions().get(region));
+		List<BlockBox> regions = List.copyOf(game.mapRegions().get(region));
 		if (regions.isEmpty()) {
 			throw new GameException(Component.literal("No regions with key '" + region + "' to spawn chest drops"));
 		}
 
-		ServerLevel level = game.getWorld();
+		ServerLevel level = game.level();
 		RandomSource random = level.random;
-		BeaconState beacons = game.getState().get(BeaconState.KEY);
+		BeaconState beacons = game.state().get(BeaconState.KEY);
 
 		List<DelayedDrop> delayedDrops = new ArrayList<>();
 
@@ -70,7 +70,7 @@ public record ChestDropAction(String region, SimpleWeightedRandomList<ResourceKe
 				BlockPos pos = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, region.sample(random));
 
 				beacons.add(pos);
-				beacons.sendTo(game.getAllPlayers());
+				beacons.sendTo(game.allPlayers());
 				delayedDrops.add(new DelayedDrop(pos, game.ticks() + delay));
 			}
 
@@ -94,7 +94,7 @@ public record ChestDropAction(String region, SimpleWeightedRandomList<ResourceKe
 			});
 
 			if (removed) {
-				beacons.sendTo(game.getAllPlayers());
+				beacons.sendTo(game.allPlayers());
 			}
 		});
 
@@ -102,7 +102,7 @@ public record ChestDropAction(String region, SimpleWeightedRandomList<ResourceKe
 	}
 
 	private void applyGlowingEffectAround(IGamePhase game, DelayedDrop drop) {
-		for (ServerPlayer player : game.getAllPlayers()) {
+		for (ServerPlayer player : game.allPlayers()) {
 			if (drop.pos().closerToCenterThan(player.position(), glowRadius)) {
 				player.addEffect(new MobEffectInstance(MobEffects.GLOWING, GLOWING_EFFECT_DURATION, 1, true, true));
 			}

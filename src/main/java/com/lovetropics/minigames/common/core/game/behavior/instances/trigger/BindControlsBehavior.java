@@ -24,7 +24,7 @@ public record BindControlsBehavior(Map<ControlCommand.Scope, Map<String, GameAct
 		scopedActions.forEach((scope, scopedActions) -> scopedActions.forEach((control, actions) -> {
 			actions.register(game, events);
 
-			game.getControlCommands().add(control, new ControlCommand(scope, source -> {
+			game.controlCommands().add(control, new ControlCommand(scope, source -> {
 				Entity entity = source.getEntity();
 				if (entity instanceof ServerPlayer player) {
 					actions.apply(game, GameActionContext.EMPTY, player);

@@ -21,7 +21,7 @@ public record PermanentItemBehavior(Item item, int count, int interval) implemen
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
 		events.listen(GamePlayerEvents.TICK, player -> {
-			if (game.getParticipants().contains(player) && game.ticks() % interval == 0) {
+			if (game.participants().contains(player) && game.ticks() % interval == 0) {
 				int currentCount = player.getInventory().countItem(item);
 				if (currentCount < count) {
 					player.getInventory().add(new ItemStack(item, count - currentCount));

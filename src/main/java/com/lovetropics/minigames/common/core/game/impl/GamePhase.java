@@ -63,7 +63,7 @@ public class GamePhase implements IGamePhase {
 
 	private GamePhase(GameInstance game, IGamePhaseDefinition definition, GamePhaseType phaseType, GameMap map, BehaviorList behaviors) {
 		this.game = game;
-		server = game.getServer();
+		server = game.server();
 		this.definition = definition;
 		this.phaseType = phaseType;
 
@@ -77,7 +77,7 @@ public class GamePhase implements IGamePhase {
 	}
 
 	static CompletableFuture<GameResult<GamePhase>> create(GameInstance game, IGamePhaseDefinition definition, GamePhaseType phaseType) {
-		MinecraftServer server = game.getServer();
+		MinecraftServer server = game.server();
 
 		GameResult<Unit> result = game.lobby.manager.canStartGamePhase(definition);
 		if (result.isError()) {
@@ -102,15 +102,15 @@ public class GamePhase implements IGamePhase {
 
 		final String mapName = map.name();
 		if (mapName != null) {
-			getStatistics().global().set(StatisticKey.MAP, mapName);
+			statistics().global().set(StatisticKey.MAP, mapName);
 		}
 
-		startTime = getWorld().getGameTime();
+		startTime = level().getGameTime();
 
 		try {
 			invoker(GamePhaseEvents.CREATE).start();
 
-			List<ServerPlayer> shuffledPlayers = Lists.newArrayList(getAllPlayers());
+			List<ServerPlayer> shuffledPlayers = Lists.newArrayList(allPlayers());
 			Collections.shuffle(shuffledPlayers);
 
 			for (ServerPlayer player : shuffledPlayers) {
@@ -151,22 +151,22 @@ public class GamePhase implements IGamePhase {
 	}
 
 	@Override
-	public IGame getGame() {
+	public IGame game() {
 		return game;
 	}
 
 	@Override
-	public GameStateMap getState() {
+	public GameStateMap state() {
 		return phaseState;
 	}
 
 	@Override
-	public GamePhaseType getPhaseType() {
+	public GamePhaseType phaseType() {
 		return phaseType;
 	}
 
 	@Override
-	public IGamePhaseDefinition getPhaseDefinition() {
+	public IGamePhaseDefinition phaseDefinition() {
 		return definition;
 	}
 
@@ -270,7 +270,7 @@ public class GamePhase implements IGamePhase {
 		requestStop(GameStopReason.canceled());
 
 		try {
-			for (ServerPlayer player : getAllPlayers()) {
+			for (ServerPlayer player : allPlayers()) {
 				addedPlayers.remove(player.getUUID());
 				invoker(GamePlayerEvents.REMOVE).onRemove(player);
 			}
@@ -289,23 +289,23 @@ public class GamePhase implements IGamePhase {
 	}
 
 	@Override
-	public MapRegions getMapRegions() {
+	public MapRegions mapRegions() {
 		return map.mapRegions();
 	}
 
 	@Override
-	public ResourceKey<Level> getDimension() {
+	public ResourceKey<Level> dimension() {
 		return map.dimension();
 	}
 
 	@Override
-	public ServerLevel getWorld() {
+	public ServerLevel level() {
 		return server.getLevel(map.dimension());
 	}
 
 	@Override
 	public long ticks() {
-		return getWorld().getGameTime() - startTime;
+		return level().getGameTime() - startTime;
 	}
 
 	@Override

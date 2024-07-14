@@ -42,7 +42,7 @@ public interface ProgressionPoint {
 	int resolve(@Nullable GameProgressionState progression);
 
 	default BooleanSupplier createPredicate(final IGamePhase game) {
-		GameProgressionState progression = game.getState().getOrNull(GameProgressionState.KEY);
+		GameProgressionState progression = game.state().getOrNull(GameProgressionState.KEY);
 		if (progression != null) {
 			return () -> progression.isAfter(this);
 		} else {

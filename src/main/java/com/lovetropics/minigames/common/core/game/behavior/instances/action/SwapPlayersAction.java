@@ -23,7 +23,7 @@ public record SwapPlayersAction(double distanceThreshold) implements IGameBehavi
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
 		events.listen(GameActionEvents.APPLY, (context) -> {
-			if (game.getParticipants().size() <= 1) {
+			if (game.participants().size() <= 1) {
 				return false;
 			}
 			if (distanceThreshold == Double.MAX_VALUE) {
@@ -36,7 +36,7 @@ public record SwapPlayersAction(double distanceThreshold) implements IGameBehavi
 	}
 
 	private void shufflePlayers(IGamePhase game) {
-		List<ServerPlayer> players = Lists.newArrayList(game.getParticipants());
+		List<ServerPlayer> players = Lists.newArrayList(game.participants());
 		Collections.shuffle(players);
 
 		List<Vec3> playerPositions = players.stream()
@@ -51,7 +51,7 @@ public record SwapPlayersAction(double distanceThreshold) implements IGameBehavi
 	}
 
 	private void swapNearbyPlayers(IGamePhase game) {
-		List<ServerPlayer> players = Lists.newArrayList(game.getParticipants());
+		List<ServerPlayer> players = Lists.newArrayList(game.participants());
 		Collections.shuffle(players);
 
 		List<Vec3> playerPositions = players.stream()

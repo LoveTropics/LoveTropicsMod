@@ -40,7 +40,7 @@ public final class CurrencyManager implements IGameState {
 	}
 
 	public void tickTracked() {
-		for (ServerPlayer player : game.getParticipants()) {
+		for (ServerPlayer player : game.participants()) {
 			if (player.tickCount % 5 == 0) {
 				int value = get(player);
 				setTracked(player, value);
@@ -83,9 +83,9 @@ public final class CurrencyManager implements IGameState {
 		int lastValue = accumulator.addTo(team, amount);
 		int newValue = lastValue + amount;
 
-		TeamState teams = game.getInstanceState().getOrThrow(TeamState.KEY);
+		TeamState teams = game.instanceState().getOrThrow(TeamState.KEY);
 		for (ServerPlayer player : teams.getPlayersForTeam(team)) {
-			game.getStatistics().forPlayer(player)
+			game.statistics().forPlayer(player)
 					.set(StatisticKey.POINTS, newValue);
 		}
 

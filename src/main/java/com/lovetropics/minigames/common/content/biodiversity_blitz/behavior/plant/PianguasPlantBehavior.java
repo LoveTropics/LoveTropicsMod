@@ -50,14 +50,14 @@ public final class PianguasPlantBehavior implements IGameBehavior {
 
     private void tickPlants(PlayerSet players, Plot plot, List<Plant> plants) {
         long ticks = game.ticks();
-        RandomSource random = game.getWorld().getRandom();
+        RandomSource random = game.level().getRandom();
 
         // TODO: rebalance
         if (ticks % INTERVAL_TICKS != 0 || random.nextInt(4) != 0) {
             return;
         }
 
-        ServerLevel world = game.getWorld();
+        ServerLevel world = game.level();
 
         for (Plant plant : plants) {
             int dx = random.nextInt(radius) - random.nextInt(radius);

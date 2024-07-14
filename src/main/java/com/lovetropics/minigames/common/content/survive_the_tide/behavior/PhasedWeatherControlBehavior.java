@@ -32,11 +32,11 @@ public class PhasedWeatherControlBehavior implements IGameBehavior {
 
 	@Override
 	public void register(final IGamePhase game, final EventRegistrar events) {
-		final GameWeatherState weather = game.getState().getOrThrow(GameWeatherState.KEY);
-		final GameProgressionState progression = game.getState().getOrThrow(GameProgressionState.KEY);
+		final GameWeatherState weather = game.state().getOrThrow(GameWeatherState.KEY);
+		final GameProgressionState progression = game.state().getOrThrow(GameProgressionState.KEY);
 
 		events.listen(GamePhaseEvents.TICK, () -> {
-			final ServerLevel level = game.getWorld();
+			final ServerLevel level = game.level();
 			if (level.getGameTime() % SharedConstants.TICKS_PER_SECOND == 0) {
 				tick(weather, progression);
 			}

@@ -87,8 +87,8 @@ public final class BbWaveSpawnerBehavior implements IGameBehavior {
 	public void register(IGamePhase game, EventRegistrar events) {
 		this.game = game;
 
-		teams = game.getInstanceState().getOrThrow(TeamState.KEY);
-		plots = game.getState().getOrThrow(PlotsState.KEY);
+		teams = game.instanceState().getOrThrow(TeamState.KEY);
+		plots = game.state().getOrThrow(PlotsState.KEY);
 
 		events.listen(BbEvents.ASSIGN_PLOT, this::addPlayer);
 		events.listen(GamePlayerEvents.REMOVE, this::removePlayer);
@@ -125,14 +125,14 @@ public final class BbWaveSpawnerBehavior implements IGameBehavior {
 	}
 
 	private void tick() {
-		ServerLevel world = game.getWorld();
+		ServerLevel world = game.level();
 		RandomSource random = world.getRandom();
 		long ticks = game.ticks();
 
 		long timeTilNextWave = ticks % intervalTicks;
 
 		if (timeTilNextWave == intervalTicks - warnTicks) {
-			game.getParticipants().sendMessage(BiodiversityBlitzTexts.WAVE_WARNING, true);
+			game.participants().sendMessage(BiodiversityBlitzTexts.WAVE_WARNING, true);
 		}
 
 		if (timeTilNextWave > intervalTicks - 40) {

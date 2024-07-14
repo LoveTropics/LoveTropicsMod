@@ -27,7 +27,7 @@ public record PlaceByStatisticBehavior(StatisticKey<Integer> statistic, Placemen
 		events.listen(GamePhaseEvents.FINISH, () -> {
 			PlayerPlacement.fromScore(order, game, statistic).placeInto(StatisticKey.PLACEMENT);
 
-			final GameStatistics statistics = game.getStatistics();
+			final GameStatistics statistics = game.statistics();
 			statistics.getPlayers().stream()
 					.min(Comparator.comparing(player -> statistics.forPlayer(player).getOr(StatisticKey.PLACEMENT, Integer.MAX_VALUE)))
 					.ifPresent(winningPlayer -> statistics.global().set(StatisticKey.WINNING_PLAYER, winningPlayer));

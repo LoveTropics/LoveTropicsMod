@@ -78,7 +78,7 @@ public final class TeamState implements IGameState, Iterable<GameTeam> {
 		if (players == null) {
 			return PlayerSet.EMPTY;
 		}
-		return PlayerSet.intersection(players, game.getParticipants());
+		return PlayerSet.intersection(players, game.participants());
 	}
 
 	public PlayerSet getPlayersForTeam(GameTeamKey team) {

@@ -64,7 +64,7 @@ public class FruitDropEntityBehavior implements IGameBehavior {
 	}
 
 	private void updateCoconuts(Plant plant) {
-		ServerLevel level = game.getLevel();
+		ServerLevel level = game.level();
 		plant.functionalCoverage().stream()
 				.flatMap(bp -> IntStream.range(0, 4).mapToObj(Direction::from2DDataValue).map(bp::relative))
 				.filter(bp -> level.getBlockState(bp).getBlock() == fruit)

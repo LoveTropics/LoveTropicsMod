@@ -50,13 +50,13 @@ public final class GameInstanceIntegrations implements IGameState {
 	public GameInstanceIntegrations(IGamePhase game, BackendIntegrations integrations) {
 		this.game = game;
 		this.integrations = integrations;
-		initiator = game.getInitiator();
+		initiator = game.initiator();
 
 		actions = new GameActionHandler(this.game, this);
 	}
 
 	public UUID getUuid() {
-		return game.getUuid();
+		return game.gameUuid();
 	}
 
 	public void start(EventRegistrar events) {
@@ -74,14 +74,14 @@ public final class GameInstanceIntegrations implements IGameState {
 	}
 
 	private void addGameDefinitionData(JsonObject payload) {
-		IGameDefinition definition = game.getDefinition();
+		IGameDefinition definition = game.definition();
 		payload.add("name", ComponentSerialization.CODEC.encodeStart(JsonOps.INSTANCE, definition.getName()).getOrThrow());
 		Component subtitle = definition.getSubtitle();
 		if (subtitle != null) {
 			payload.add("subtitle", ComponentSerialization.CODEC.encodeStart(JsonOps.INSTANCE, subtitle).getOrThrow());
 		}
 
-		GamePackageState packageState = game.getState().getOrNull(GamePackageState.KEY);
+		GamePackageState packageState = game.state().getOrNull(GamePackageState.KEY);
 		if (packageState != null) {
 			List<DonationPackageData> packageList = List.copyOf(packageState.packages());
 			payload.add("packages", PACKAGES_CODEC.encodeStart(JsonOps.INSTANCE, packageList).getOrThrow());
@@ -137,7 +137,7 @@ public final class GameInstanceIntegrations implements IGameState {
 
 	private JsonArray serializeParticipantsArray() {
 		JsonArray participantsArray = new JsonArray();
-		for (ServerPlayer participant : game.getParticipants()) {
+		for (ServerPlayer participant : game.participants()) {
 			participantsArray.add(PlayerKey.from(participant).serializeProfile());
 		}
 		return participantsArray;
@@ -160,9 +160,9 @@ public final class GameInstanceIntegrations implements IGameState {
 			return;
 		}
 
-		payload.addProperty("id", game.getUuid().toString());
+		payload.addProperty("id", game.gameUuid().toString());
 
-		IGameDefinition definition = game.getDefinition();
+		IGameDefinition definition = game.definition();
 		JsonObject game = new JsonObject();
 		game.addProperty("id", definition.getBackendId().toString());
 		game.addProperty("telemetry_key", definition.getStatisticsKey());

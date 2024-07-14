@@ -28,14 +28,14 @@ public record PlayerHeadRewardBehavior() implements IGameBehavior {
 
 	@Override
 	public void register(final IGamePhase game, final EventRegistrar events) throws GameException {
-		final GameRewardsMap rewards = game.getState().getOrThrow(GameRewardsMap.STATE);
+		final GameRewardsMap rewards = game.state().getOrThrow(GameRewardsMap.STATE);
 		final MutableObject<CompletableFuture<?>> resolvedFuture = new MutableObject<>(CompletableFuture.completedFuture(null));
 
 		events.listen(GamePlayerEvents.DEATH, (target, source) -> {
 			final ServerPlayer killer = Util.getKillerPlayer(target, source);
 			if (killer != null) {
 				final CompletableFuture<?> future = createPlayerHead(target)
-						.thenAcceptAsync(stack -> rewards.forPlayer(killer).giveCollectible(stack), game.getServer());
+						.thenAcceptAsync(stack -> rewards.forPlayer(killer).giveCollectible(stack), game.server());
 				resolvedFuture.setValue(resolvedFuture.getValue().thenCombine(future, (a, b) -> b));
 			}
 			return InteractionResult.PASS;

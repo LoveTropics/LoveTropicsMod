@@ -67,8 +67,8 @@ final class LobbyStateManager {
 		LogManager.getLogger().info(error.getContents());
 		GamePhase phase = state.phase;
 		if (phase != null) {
-			IGameDefinition definition = phase.getDefinition();
-			GamePhaseType phaseType = phase.getPhaseType();
+			IGameDefinition definition = phase.definition();
+			GamePhaseType phaseType = phase.phaseType();
 			return new LobbyState.Errored(definition, phaseType, error);
 		} else {
 			return new LobbyState.Paused();

@@ -36,7 +36,7 @@ public record CoinDropAttributeBehavior(ItemStack item, StatisticKey<Integer> st
 			if (damageSource.getEntity() instanceof final LivingEntity killer && killer.getAttributes().hasAttribute(Qottott.COIN_DROPS)) {
 				final double coinDrops = killer.getAttributeValue(Qottott.COIN_DROPS);
 				if (coinDrops > 0.0) {
-					final StatisticsMap statistics = game.getStatistics().forPlayer(player);
+					final StatisticsMap statistics = game.statistics().forPlayer(player);
 					final int amount = Mth.floor(statistics.getOr(statistic, 0) * coinDrops);
 					if (amount > 0) {
 						statistics.incrementInt(statistic, -amount);
@@ -49,7 +49,7 @@ public record CoinDropAttributeBehavior(ItemStack item, StatisticKey<Integer> st
 	}
 
 	public static void spawnItems(final IGamePhase game, final Player player, final int amount, final ItemStack item) {
-		final ServerLevel level = game.getLevel();
+        final ServerLevel level = game.level();
 		final RandomSource random = level.random;
 		for (int i = 0; i < amount; i++) {
 			final ItemEntity entity = new ItemEntity(level, player.getRandomX(1.0), player.getRandomY(), player.getRandomZ(1.0), item.copyWithCount(1));

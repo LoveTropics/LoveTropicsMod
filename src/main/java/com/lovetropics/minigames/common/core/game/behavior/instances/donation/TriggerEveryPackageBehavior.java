@@ -32,7 +32,7 @@ public record TriggerEveryPackageBehavior(Set<String> exclude) implements IGameB
 
 	@Override
 	public void register(final IGamePhase game, final EventRegistrar events) {
-		final GamePackageState packages = game.getState().get(GamePackageState.KEY);
+		final GamePackageState packages = game.state().get(GamePackageState.KEY);
 		events.listen(GameActionEvents.APPLY, context -> {
 			final GamePackage sourcePackage = context.get(GameActionParameter.PACKAGE).orElse(null);
 			if (sourcePackage == null) {
@@ -54,8 +54,8 @@ public record TriggerEveryPackageBehavior(Set<String> exclude) implements IGameB
 	private static InteractionResult triggerPackage(final IGamePhase game, final DonationPackageData packageData, final GamePackage sourcePackage) {
 		final Optional<UUID> targetPlayer = switch (packageData.playerSelect()) {
 			case SPECIFIC -> {
-				final List<ServerPlayer> participants = Lists.newArrayList(game.getParticipants());
-				yield Util.getRandomSafe(participants, game.getRandom()).map(Entity::getUUID);
+				final List<ServerPlayer> participants = Lists.newArrayList(game.participants());
+				yield Util.getRandomSafe(participants, game.random()).map(Entity::getUUID);
 			}
 			default -> Optional.empty();
 		};

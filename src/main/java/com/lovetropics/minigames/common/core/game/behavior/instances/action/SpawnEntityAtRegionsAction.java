@@ -41,7 +41,7 @@ public class SpawnEntityAtRegionsAction implements IGameBehavior {
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) throws GameException {
-		MapRegions regions = game.getMapRegions();
+		MapRegions regions = game.mapRegions();
 
 		regionsToSpawnAt.clear();
 		for (String key : regionsToSpawnAtKeys) {
@@ -53,7 +53,7 @@ public class SpawnEntityAtRegionsAction implements IGameBehavior {
 				return false;
 			}
 
-			ServerLevel world = game.getWorld();
+			ServerLevel world = game.level();
 			for (final BlockBox region : regionsToSpawnAt) {
 				for (int i = 0; i < entityCountPerRegion; i++) {
 					final BlockPos pos = world.getHeightmapPos(Heightmap.Types.WORLD_SURFACE, region.sample(world.getRandom()));

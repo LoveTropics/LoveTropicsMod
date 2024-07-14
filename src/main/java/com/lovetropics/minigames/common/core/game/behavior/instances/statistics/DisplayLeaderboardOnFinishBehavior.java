@@ -28,7 +28,7 @@ public record DisplayLeaderboardOnFinishBehavior<T extends Comparable<T>>(Statis
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
 		events.listen(GameLogicEvents.GAME_OVER, () -> {
-			PlayerSet players = game.getAllPlayers();
+			PlayerSet players = game.allPlayers();
 			players.sendMessage(MinigameTexts.RESULTS);
 			PlayerPlacement.fromScore(order, game, statistic).sendTo(players, length);
 		});

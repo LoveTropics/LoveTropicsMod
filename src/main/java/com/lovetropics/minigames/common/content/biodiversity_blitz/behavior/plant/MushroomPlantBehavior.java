@@ -33,7 +33,7 @@ public class MushroomPlantBehavior implements IGameBehavior {
     public void register(IGamePhase game, EventRegistrar events) throws GameException {
         events.listen(GameLivingEntityEvents.MOB_DROP, (e, d, r) -> {
             RandomSource random = e.getRandom();
-            Plot plot = game.getState().getOrThrow(PlotsState.KEY).getPlotAt(e.blockPosition());
+            Plot plot = game.state().getOrThrow(PlotsState.KEY).getPlotAt(e.blockPosition());
             BlockPos p = e.blockPosition();
              BlockBox b = new BlockBox(p.offset(-2, -2, -2), p.offset(2, 2, 2));
 

@@ -74,11 +74,11 @@ public class SurviveTheTideWeatherControlBehavior implements IGameBehavior {
 
     @Override
     public void register(IGamePhase game, EventRegistrar events) {
-        weather = game.getState().getOrThrow(GameWeatherState.KEY);
+        weather = game.state().getOrThrow(GameWeatherState.KEY);
 
         events.listen(GamePhaseEvents.TICK, () -> tick(game));
 
-        progression = game.getState().getOrNull(GameProgressionState.KEY);
+        progression = game.state().getOrNull(GameProgressionState.KEY);
     }
 
     private void tick(final IGamePhase game) {
@@ -86,7 +86,7 @@ public class SurviveTheTideWeatherControlBehavior implements IGameBehavior {
             return;
         }
 
-        ServerLevel world = game.getWorld();
+        ServerLevel world = game.level();
         if (world.getGameTime() % SharedConstants.TICKS_PER_SECOND == 0) {
             if (weather.getEvent() == null && weather.canStartWeatherEvent()) {
                 if (random.nextFloat() <= config.getRainHeavyChance(progression)) {

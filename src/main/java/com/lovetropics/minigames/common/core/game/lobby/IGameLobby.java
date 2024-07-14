@@ -23,7 +23,7 @@ public interface IGameLobby {
 	@Nullable
 	default IGame getCurrentGame() {
 		IGamePhase phase = getCurrentPhase();
-		return phase != null ? phase.getGame() : null;
+		return phase != null ? phase.game() : null;
 	}
 
 	@Nullable

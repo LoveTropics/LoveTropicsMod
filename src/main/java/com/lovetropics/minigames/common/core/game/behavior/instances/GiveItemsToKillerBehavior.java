@@ -28,7 +28,7 @@ public record GiveItemsToKillerBehavior(List<ItemPredicate> predicates) implemen
 	public void register(IGamePhase game, EventRegistrar events) {
 		events.listen(GamePlayerEvents.DEATH, (player, source) -> {
 			final ServerPlayer killer = Util.getKillerPlayer(player, source);
-			if (killer != null && game.getParticipants().contains(killer)) {
+			if (killer != null && game.participants().contains(killer)) {
 				giveItems(player, killer);
 			}
 			return InteractionResult.PASS;

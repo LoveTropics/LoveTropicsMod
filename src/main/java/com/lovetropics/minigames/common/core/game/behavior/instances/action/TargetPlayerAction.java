@@ -26,7 +26,7 @@ public record TargetPlayerAction(UUID id, GameActionList<ServerPlayer> actions) 
 		actions.register(game, events);
 
 		events.listen(GameActionEvents.APPLY, (context) -> {
-			ServerPlayer player = game.getAllPlayers().getPlayerBy(id);
+			ServerPlayer player = game.allPlayers().getPlayerBy(id);
 			if (player == null) {
 				return false;
 			}

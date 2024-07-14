@@ -31,10 +31,10 @@ public class SpawnSurpriseWaveBehavior implements IGameBehavior {
 
     @Override
     public void register(IGamePhase game, EventRegistrar events) throws GameException {
-        plots = game.getState().getOrThrow(PlotsState.KEY);
+        plots = game.state().getOrThrow(PlotsState.KEY);
 
         events.listen(GameActionEvents.APPLY_TO_PLOT, (context, plot) -> {
-            ServerLevel world = game.getWorld();
+            ServerLevel world = game.level();
 
             BbMobSpawner.spawnWaveEntities(world, world.getRandom(),
                     plot, waveSize, 0, SpawnSurpriseWaveBehavior::selectEntityForWave,

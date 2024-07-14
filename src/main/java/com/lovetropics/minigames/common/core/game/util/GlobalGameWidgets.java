@@ -30,7 +30,7 @@ public final class GlobalGameWidgets {
 	}
 
 	public GameSidebar openSidebar(Component title) {
-		return registerWidget(new GameSidebar(game.getServer(), title));
+		return registerWidget(new GameSidebar(game.server(), title));
 	}
 
 	public GameBossBar openBossBar(Component title, BossEvent.BossBarColor color, BossEvent.BossBarOverlay overlay) {
@@ -38,7 +38,7 @@ public final class GlobalGameWidgets {
 	}
 
 	private <T extends GameWidget> T registerWidget(T widget) {
-		game.getLobby().getPlayers().forEach(widget::addPlayer);
+		game.lobby().getPlayers().forEach(widget::addPlayer);
 		widgets.add(widget);
 		return widget;
 	}

@@ -60,7 +60,7 @@ public record PlotActionTarget(Target target) implements ActionTarget<Plot> {
             return switch (this) {
                 case NONE -> List.of();
                 case SOURCE -> Lists.newArrayList(sources);
-                case ALL -> Lists.newArrayList(game.getState().getOrThrow(PlotsState.KEY));
+                case ALL -> Lists.newArrayList(game.state().getOrThrow(PlotsState.KEY));
             };
         }
 

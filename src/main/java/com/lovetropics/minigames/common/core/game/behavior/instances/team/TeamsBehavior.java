@@ -69,12 +69,12 @@ public final class TeamsBehavior implements IGameBehavior {
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
-		teams = game.getInstanceState().getOrThrow(TeamState.KEY);
+		teams = game.instanceState().getOrThrow(TeamState.KEY);
 
 		addTeamsToScoreboard(game);
 
 		events.listen(GamePhaseEvents.CREATE, () ->
-				teams.getAllocations().allocate(game.getParticipants(), (player, teamKey) -> {
+				teams.getAllocations().allocate(game.participants(), (player, teamKey) -> {
 					GameTeam team = teams.getTeamByKey(teamKey);
 					if (team != null) {
 						teams.addPlayerTo(player, teamKey);
@@ -99,11 +99,11 @@ public final class TeamsBehavior implements IGameBehavior {
 		events.listen(GamePlayerEvents.DAMAGE, this::onPlayerHurt);
 		events.listen(GamePlayerEvents.ATTACK, this::onPlayerAttack);
 
-		game.getStatistics().global().set(StatisticKey.TEAMS, true);
+		game.statistics().global().set(StatisticKey.TEAMS, true);
 	}
 
 	private void addTeamsToScoreboard(IGamePhase game) {
-		MinecraftServer server = game.getServer();
+		MinecraftServer server = game.server();
 		ServerScoreboard scoreboard = server.getScoreboard();
 
 		for (GameTeam team : teams) {
@@ -135,13 +135,13 @@ public final class TeamsBehavior implements IGameBehavior {
 
 	private void reassignPlayerRoles(IGamePhase game, TeamAllocator<PlayerRole, ServerPlayer> allocator) {
 		// force all assigned players to be a participant
-		teams.getPlayersWithAssignments(game.getAllPlayers()).forEach(player ->
+		teams.getPlayersWithAssignments(game.allPlayers()).forEach(player ->
 				allocator.addPlayer(player, PlayerRole.PARTICIPANT)
 		);
 	}
 
 	private void onDestroy(IGamePhase game) {
-		ServerScoreboard scoreboard = game.getServer().getScoreboard();
+		ServerScoreboard scoreboard = game.server().getScoreboard();
 		for (PlayerTeam team : scoreboardTeams.values()) {
 			scoreboard.removePlayerTeam(team);
 		}
@@ -150,7 +150,7 @@ public final class TeamsBehavior implements IGameBehavior {
 	private void applyTeamToPlayer(IGamePhase game, GameTeam team, ServerPlayer player) {
 		game.invoker(GameTeamEvents.SET_GAME_TEAM).onSetGameTeam(player, teams, team.key());
 
-		game.getStatistics().forPlayer(player).set(StatisticKey.TEAM, team.key());
+		game.statistics().forPlayer(player).set(StatisticKey.TEAM, team.key());
 
 		ServerScoreboard scoreboard = player.server.getScoreboard();
 		PlayerTeam scoreboardTeam = scoreboardTeams.get(team.key());

@@ -50,7 +50,7 @@ public class SpawnEntitiesAtRegionsOverTimeAction implements IGameBehavior {
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
-		MapRegions regions = game.getMapRegions();
+		MapRegions regions = game.mapRegions();
 
 		regionsToSpawnAt.clear();
 		for (String key : regionsToSpawnAtKeys) {
@@ -77,10 +77,10 @@ public class SpawnEntitiesAtRegionsOverTimeAction implements IGameBehavior {
 			//System.out.println("spawnsPerTick: " + spawnsPerTick + ", ticksRemaining: " + ticksRemaining);
 
 			for (int i = 0; i < spawnsPerTick; i++) {
-				BlockBox region = regionsToSpawnAt.get(game.getWorld().getRandom().nextInt(regionsToSpawnAt.size()));
-				final BlockPos pos = game.getWorld().getHeightmapPos(Heightmap.Types.WORLD_SURFACE, region.sample(game.getWorld().getRandom()));
+				BlockBox region = regionsToSpawnAt.get(game.level().getRandom().nextInt(regionsToSpawnAt.size()));
+				final BlockPos pos = game.level().getHeightmapPos(Heightmap.Types.WORLD_SURFACE, region.sample(game.level().getRandom()));
 
-				entity.spawn(game.getWorld(), pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5, 0.0f, 0.0f);
+				entity.spawn(game.level(), pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5, 0.0f, 0.0f);
 				entityCountRemaining--;
 			}
 

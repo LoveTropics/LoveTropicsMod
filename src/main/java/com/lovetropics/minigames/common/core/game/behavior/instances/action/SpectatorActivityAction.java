@@ -18,7 +18,7 @@ public record SpectatorActivityAction(TextColor style) implements IGameBehavior 
     @Override
     public void register(IGamePhase game, EventRegistrar events) throws GameException {
         events.listen(GameActionEvents.APPLY_TO_PLAYER, (context, target) -> {
-            game.getSpectators().sendPacket(new SpectatorPlayerActivityMessage(target.getUUID(), style.getValue()));
+            game.spectators().sendPacket(new SpectatorPlayerActivityMessage(target.getUUID(), style.getValue()));
             return true;
         });
     }

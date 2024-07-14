@@ -45,20 +45,20 @@ public record LobbyWithPortalBehavior(String portalRegion, String targetRegion, 
 
 	@Override
 	public void register(final IGamePhase game, final EventRegistrar events) {
-		final BlockBox portal = game.getMapRegions().getOrThrow(portalRegion);
-		final List<BlockBox> targets = game.getMapRegions().getAll(targetRegion);
+		final BlockBox portal = game.mapRegions().getOrThrow(portalRegion);
+		final List<BlockBox> targets = game.mapRegions().getAll(targetRegion);
 		if (targets.isEmpty()) {
 			throw new GameException(Component.literal("No targets for portal"));
 		}
 
-		final Vec3 pointTowards = game.getMapRegions().getOrThrow(pointTowardsRegion).center();
+		final Vec3 pointTowards = game.mapRegions().getOrThrow(pointTowardsRegion).center();
 
 		final BooleanSupplier predicate = openAt.createPredicate(game);
 		final MutableBoolean portalOpen = new MutableBoolean();
 		events.listen(GamePhaseEvents.TICK, () -> {
 			final boolean shouldOpen = predicate.getAsBoolean();
 			if (portalOpen.getValue() != shouldOpen) {
-				setPortal(game.getLevel(), portal, shouldOpen);
+                setPortal(game.level(), portal, shouldOpen);
 				portalOpen.setValue(shouldOpen);
 			}
 		});
@@ -75,7 +75,7 @@ public record LobbyWithPortalBehavior(String portalRegion, String targetRegion, 
 				return;
 			}
 			if (portal.contains(player.position()) && playersInLobby.remove(player.getUUID())) {
-				final BlockBox target = Util.getRandom(targets, game.getRandom());
+				final BlockBox target = Util.getRandom(targets, game.random());
 				final Vec3 center = target.center();
 				player.teleportTo(player.serverLevel(), center.x, center.y, center.z, computeAngle(center, pointTowards), 0.0f);
 				player.level().playSound(null, center.x, center.y, center.z, SoundEvents.CHORUS_FRUIT_TELEPORT, SoundSource.PLAYERS, 1.0f, 1.0f);
