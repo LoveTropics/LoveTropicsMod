@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.client.lobby;
 
-import com.lovetropics.minigames.Constants;
+import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.client.lobby.state.ClientCurrentGame;
 import com.lovetropics.minigames.client.lobby.state.ClientGameDefinition;
 import com.lovetropics.minigames.client.lobby.state.ClientLobbyManager;
@@ -24,7 +24,7 @@ import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
 import javax.annotation.Nullable;
 import java.util.Collection;
 
-@EventBusSubscriber(modid = Constants.MODID, bus = EventBusSubscriber.Bus.GAME, value = Dist.CLIENT)
+@EventBusSubscriber(modid = LoveTropics.ID, bus = EventBusSubscriber.Bus.GAME, value = Dist.CLIENT)
 public class LobbyStateGui {
 
 	private static final int PADDING = 2;
@@ -50,10 +50,10 @@ public class LobbyStateGui {
 	}
 
 	public static void registerOverlays(RegisterGuiLayersEvent event) {
-		event.registerBelow(VanillaGuiLayers.DEBUG_OVERLAY, ResourceLocation.fromNamespaceAndPath(Constants.MODID, "minigame_lobby"), (graphics, deltaTracker) -> {
+		event.registerBelow(VanillaGuiLayers.DEBUG_OVERLAY, LoveTropics.location("minigame_lobby"), (graphics, deltaTracker) -> {
 			ClientLobbyState joinedLobby = ClientLobbyManager.getJoined();
 			Collection<ClientLobbyState> lobbies = ClientLobbyManager.getLobbies();
-			if (!lobbies.isEmpty())  {
+			if (!lobbies.isEmpty()) {
 				renderLobbies(graphics, joinedLobby, lobbies, hasBossBar);
 			}
 			hasBossBar = false;

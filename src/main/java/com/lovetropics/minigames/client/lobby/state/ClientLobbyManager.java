@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.client.lobby.state;
 
-import com.lovetropics.minigames.Constants;
+import com.lovetropics.minigames.LoveTropics;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.neoforged.api.distmarker.Dist;
@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.Optional;
 
-@EventBusSubscriber(modid = Constants.MODID, value = Dist.CLIENT)
+@EventBusSubscriber(modid = LoveTropics.ID, value = Dist.CLIENT)
 public final class ClientLobbyManager {
 	private static final Int2ObjectMap<ClientLobbyState> LOBBIES = new Int2ObjectOpenHashMap<>();
 

@@ -1,6 +1,5 @@
 package com.lovetropics.minigames.common.content.qottott;
 
-import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.common.content.qottott.behavior.CoinDropAttributeBehavior;
 import com.lovetropics.minigames.common.content.qottott.behavior.GivePointsAction;
@@ -25,7 +24,7 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.EntityAttributeModificationEvent;
 
-@EventBusSubscriber(modid = Constants.MODID, bus = EventBusSubscriber.Bus.MOD)
+@EventBusSubscriber(modid = LoveTropics.ID, bus = EventBusSubscriber.Bus.MOD)
 public class Qottott {
 	private static final LoveTropicsRegistrate REGISTRATE = LoveTropics.registrate();
 
@@ -53,32 +52,32 @@ public class Qottott {
 
 	public static final Holder<MobEffect> COIN_MULTIPLIER_POWER_UP = REGISTRATE.object("coin_multiplier_power_up").mobEffect(() -> new CustomMobEffect(MobEffectCategory.BENEFICIAL).addAttributeModifier(
 			COIN_MULTIPLIER,
-			ResourceLocation.fromNamespaceAndPath(Constants.MODID, "coin_multiplier_power_up_effect"),
+			LoveTropics.location("coin_multiplier_power_up_effect"),
 			1.0,
 			AttributeModifier.Operation.ADD_MULTIPLIED_BASE
 	)).lang("Coin Multiplier Power-up").register();
 	public static final Holder<MobEffect> PICKUP_PRIORITY_POWER_UP = REGISTRATE.object("pickup_priority_power_up").mobEffect(() -> new CustomMobEffect(MobEffectCategory.BENEFICIAL).addAttributeModifier(
 			PICKUP_PRIORITY,
-			ResourceLocation.fromNamespaceAndPath(Constants.MODID, "pickup_priority_power_up_effect"),
+			LoveTropics.location("pickup_priority_power_up_effect"),
 			1.0,
 			AttributeModifier.Operation.ADD_VALUE
 	)).lang("Pickup Priority Power-up").register();
 	public static final Holder<MobEffect> KNOCKBACK_RESISTANCE_POWER_UP = REGISTRATE.object("knockback_resistance_power_up").mobEffect(() -> new CustomMobEffect(MobEffectCategory.BENEFICIAL).addAttributeModifier(
 			Attributes.KNOCKBACK_RESISTANCE,
-			ResourceLocation.fromNamespaceAndPath(Constants.MODID, "knockback_resistance_power_up_effect"),
+			LoveTropics.location("knockback_resistance_power_up_effect"),
 			1.0,
 			AttributeModifier.Operation.ADD_VALUE
 	)).lang("Knockback Resistance Power-Up").register();
 	public static final Holder<MobEffect> SPEED_POWER_UP = REGISTRATE.object("speed_power_up").mobEffect(() -> new CustomMobEffect(MobEffectCategory.BENEFICIAL).addAttributeModifier(
 			Attributes.MOVEMENT_SPEED,
-			ResourceLocation.fromNamespaceAndPath(Constants.MODID, "speed_power_up_effect"),
+			LoveTropics.location("speed_power_up_effect"),
 			0.05,
 			AttributeModifier.Operation.ADD_VALUE
 	)).lang("Speed Power-up").register();
 
 	public static final Holder<MobEffect> LEAKY_POCKETS_EFFECT = REGISTRATE.object("leaky_pockets").mobEffect(() -> new CustomMobEffect(MobEffectCategory.HARMFUL).addAttributeModifier(
 			LEAKY_POCKETS,
-			ResourceLocation.fromNamespaceAndPath(Constants.MODID, "leaky_pockets_effect"),
+			LoveTropics.location("leaky_pockets_effect"),
 			0.005,
 			AttributeModifier.Operation.ADD_VALUE
 	)).lang("Leaky Pockets").register();

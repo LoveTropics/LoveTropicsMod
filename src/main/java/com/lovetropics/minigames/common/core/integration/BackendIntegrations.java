@@ -6,7 +6,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.lovetropics.lib.backend.BackendConnection;
 import com.lovetropics.lib.backend.BackendProxy;
-import com.lovetropics.minigames.Constants;
+import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.common.config.ConfigLT;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import net.minecraft.server.MinecraftServer;
@@ -25,7 +25,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
-@EventBusSubscriber(modid = Constants.MODID)
+@EventBusSubscriber(modid = LoveTropics.ID)
 public final class BackendIntegrations {
 	private static final Supplier<BackendIntegrations> INSTANCE = Suppliers.memoize(BackendIntegrations::new);
 

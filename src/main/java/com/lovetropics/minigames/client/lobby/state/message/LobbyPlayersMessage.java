@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.client.lobby.state.message;
 
-import com.lovetropics.minigames.Constants;
+import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.client.lobby.state.ClientLobbyManager;
 import com.lovetropics.minigames.common.core.game.lobby.IGameLobby;
 import com.lovetropics.minigames.common.core.game.lobby.IGameLobbyPlayers;
@@ -18,7 +18,7 @@ import java.util.Set;
 import java.util.UUID;
 
 public record LobbyPlayersMessage(int id, Set<UUID> players) implements CustomPacketPayload {
-    public static final Type<LobbyPlayersMessage> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(Constants.MODID, "lobby_players"));
+    public static final Type<LobbyPlayersMessage> TYPE = new Type<>(LoveTropics.location("lobby_players"));
 
     public static final StreamCodec<ByteBuf, LobbyPlayersMessage> STREAM_CODEC = StreamCodec.composite(
 			ByteBufCodecs.VAR_INT, LobbyPlayersMessage::id,

@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.common.core.game;
 
-import com.lovetropics.minigames.Constants;
+import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.common.util.LTGameTestFakePlayer;
 import com.mojang.serialization.Dynamic;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
@@ -35,7 +35,7 @@ import java.util.function.Consumer;
 public final class PlayerIsolation {
 	public static final PlayerIsolation INSTANCE = new PlayerIsolation();
 
-	private static final String ISOLATED_TAG = Constants.MODID + ".isolated";
+	private static final String ISOLATED_TAG = LoveTropics.ID + ".isolated";
 
 	private final Set<UUID> reloadingPlayers = new ObjectOpenHashSet<>();
 

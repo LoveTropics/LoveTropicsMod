@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.common.core.diguise;
 
-import com.lovetropics.minigames.Constants;
+import com.lovetropics.minigames.LoveTropics;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
@@ -19,9 +19,9 @@ import net.neoforged.neoforge.event.entity.EntityEvent;
 import javax.annotation.Nullable;
 import java.util.Objects;
 
-@EventBusSubscriber(modid = Constants.MODID)
+@EventBusSubscriber(modid = LoveTropics.ID)
 public final class PlayerDisguiseBehavior {
-	private static final ResourceLocation ATTRIBUTE_MODIFIER_ID = ResourceLocation.fromNamespaceAndPath(Constants.MODID, "disguise_modifier");
+	private static final ResourceLocation ATTRIBUTE_MODIFIER_ID = LoveTropics.location("disguise_modifier");
 
 	@SubscribeEvent
 	public static void onSetEntitySize(EntityEvent.Size event) {

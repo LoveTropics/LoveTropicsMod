@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.common.core.network.workspace;
 
-import com.lovetropics.minigames.Constants;
+import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.client.map.ClientMapWorkspace;
 import com.lovetropics.minigames.common.core.map.workspace.ClientWorkspaceRegions;
 import com.lovetropics.minigames.common.core.map.workspace.WorkspaceRegions;
@@ -13,7 +13,7 @@ import net.neoforged.neoforge.network.handling.IPayloadContext;
 import javax.annotation.Nullable;
 
 public class SetWorkspaceMessage implements CustomPacketPayload {
-	public static final Type<SetWorkspaceMessage> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(Constants.MODID, "set_workspace"));
+	public static final Type<SetWorkspaceMessage> TYPE = new Type<>(LoveTropics.location("set_workspace"));
 
 	public static final StreamCodec<FriendlyByteBuf, SetWorkspaceMessage> STREAM_CODEC = StreamCodec.ofMember(SetWorkspaceMessage::encode, SetWorkspaceMessage::decode);
 

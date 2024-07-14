@@ -1,7 +1,6 @@
 package com.lovetropics.minigames.common.core.command;
 
 import com.lovetropics.lib.BlockBox;
-import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.common.core.command.argument.DimensionArgument;
 import com.lovetropics.minigames.common.core.command.argument.MapWorkspaceArgument;
@@ -244,7 +243,7 @@ public final class MapCommand {
 			LevelStorageSource.LevelStorageAccess save = server.storageSource;
 			Path dimensionDirectory = save.getDimensionPath(workspace.dimensionKey());
 
-			ResourceLocation id = ResourceLocation.fromNamespaceAndPath(Constants.MODID, workspace.id());
+			ResourceLocation id = LoveTropics.location(workspace.id());
 			Path exportPath = MapExportWriter.pathFor(id);
 
 			try {

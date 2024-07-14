@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.common.core.network;
 
-import com.lovetropics.minigames.Constants;
+import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.common.content.survive_the_tide.TideFiller;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.Minecraft;
@@ -14,7 +14,7 @@ import net.minecraft.world.level.chunk.LevelChunk;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 public record RiseTideMessage(BlockPos min, BlockPos max) implements CustomPacketPayload {
-    public static final Type<RiseTideMessage> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(Constants.MODID, "rise_tide"));
+    public static final Type<RiseTideMessage> TYPE = new Type<>(LoveTropics.location("rise_tide"));
 
 	public static final StreamCodec<ByteBuf, RiseTideMessage> STREAM_CODEC = StreamCodec.composite(
 			BlockPos.STREAM_CODEC, RiseTideMessage::min,

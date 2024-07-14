@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.common.core.diguise;
 
-import com.lovetropics.minigames.Constants;
+import com.lovetropics.minigames.LoveTropics;
 import com.mojang.logging.LogUtils;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.NbtOps;
@@ -22,7 +22,7 @@ import java.util.function.Supplier;
 public final class PlayerDisguise {
     private static final Logger LOGGER = LogUtils.getLogger();
 
-    public static final DeferredRegister<AttachmentType<?>> ATTACHMENT_TYPES = DeferredRegister.create(NeoForgeRegistries.ATTACHMENT_TYPES, Constants.MODID);
+    public static final DeferredRegister<AttachmentType<?>> ATTACHMENT_TYPES = DeferredRegister.create(NeoForgeRegistries.ATTACHMENT_TYPES, LoveTropics.ID);
 
     public static final Supplier<AttachmentType<PlayerDisguise>> ATTACHMENT = ATTACHMENT_TYPES.register(
             "player_disguise", () -> AttachmentType.builder(holder -> new PlayerDisguise((LivingEntity) holder))

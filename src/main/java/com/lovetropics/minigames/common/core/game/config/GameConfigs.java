@@ -3,7 +3,7 @@ package com.lovetropics.minigames.common.core.game.config;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import com.lovetropics.lib.codec.CodecRegistry;
-import com.lovetropics.minigames.Constants;
+import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.common.core.game.behavior.GameBehaviorType;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.util.DynamicTemplate;
@@ -43,7 +43,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 // TODO: Replace with a dynamic registry - currently blocked by not being able to /reload those
-@EventBusSubscriber(modid = Constants.MODID)
+@EventBusSubscriber(modid = LoveTropics.ID)
 public final class GameConfigs {
 	private static final Logger LOGGER = LogManager.getLogger(GameConfigs.class);
 

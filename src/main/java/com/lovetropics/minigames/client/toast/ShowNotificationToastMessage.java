@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.client.toast;
 
-import com.lovetropics.minigames.Constants;
+import com.lovetropics.minigames.LoveTropics;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
@@ -10,7 +10,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 public record ShowNotificationToastMessage(Component message, NotificationStyle style) implements CustomPacketPayload {
-    public static final Type<ShowNotificationToastMessage> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(Constants.MODID, "show_notification_toast"));
+    public static final Type<ShowNotificationToastMessage> TYPE = new Type<>(LoveTropics.location("show_notification_toast"));
 
     public static final StreamCodec<RegistryFriendlyByteBuf, ShowNotificationToastMessage> STREAM_CODEC = StreamCodec.composite(
             ComponentSerialization.STREAM_CODEC, ShowNotificationToastMessage::message,

@@ -1,10 +1,8 @@
 package com.lovetropics.minigames.common.core.game.behavior.action;
 
-import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.common.util.registry.LoveTropicsRegistrate;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
@@ -13,8 +11,8 @@ import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
 public class ActionTargetTypes {
-    public static final ResourceKey<Registry<Codec<? extends ActionTarget<?>>>> REGISTRY_KEY = ResourceKey.createRegistryKey(ResourceLocation.fromNamespaceAndPath(Constants.MODID, "action_target_types"));
-    public static final DeferredRegister<Codec<? extends ActionTarget<?>>> REGISTER = DeferredRegister.create(REGISTRY_KEY, Constants.MODID);
+    public static final ResourceKey<Registry<Codec<? extends ActionTarget<?>>>> REGISTRY_KEY = ResourceKey.createRegistryKey(LoveTropics.location("action_target_types"));
+    public static final DeferredRegister<Codec<? extends ActionTarget<?>>> REGISTER = DeferredRegister.create(REGISTRY_KEY, LoveTropics.ID);
 
     public static final Registry<Codec<? extends ActionTarget<?>>> REGISTRY = REGISTER.makeRegistry(builder -> builder.sync(false));
 

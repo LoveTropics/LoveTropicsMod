@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.client.game.handler.spectate;
 
-import com.lovetropics.minigames.Constants;
+import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.client.game.handler.ClientGameStateHandler;
 import com.lovetropics.minigames.common.core.game.client_state.instance.SpectatingClientState;
 import net.minecraft.client.Minecraft;
@@ -14,7 +14,7 @@ import net.neoforged.neoforge.client.event.ViewportEvent;
 
 import java.util.UUID;
 
-@EventBusSubscriber(modid = Constants.MODID, value = Dist.CLIENT)
+@EventBusSubscriber(modid = LoveTropics.ID, value = Dist.CLIENT)
 public final class ClientSpectatingManager implements ClientGameStateHandler<SpectatingClientState> {
 	public static final ClientSpectatingManager INSTANCE = new ClientSpectatingManager();
 

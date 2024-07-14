@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.common.core.dimension;
 
-import com.lovetropics.minigames.Constants;
+import com.lovetropics.minigames.LoveTropics;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
@@ -41,7 +41,7 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
 
-@EventBusSubscriber(modid = Constants.MODID)
+@EventBusSubscriber(modid = LoveTropics.ID)
 public final class RuntimeDimensions {
 	private static final Logger LOGGER = LogManager.getLogger(RuntimeDimensions.class);
 
@@ -276,7 +276,7 @@ public final class RuntimeDimensions {
 
 	private static ResourceLocation generateTemporaryDimensionKey() {
 		String random = RandomStringUtils.random(16, "abcdefghijklmnopqrstuvwxyz0123456789");
-		return ResourceLocation.fromNamespaceAndPath(Constants.MODID, "tmp_" + random);
+		return LoveTropics.location("tmp_" + random);
 	}
 
 	public boolean isTemporaryDimension(ResourceKey<Level> dimension) {

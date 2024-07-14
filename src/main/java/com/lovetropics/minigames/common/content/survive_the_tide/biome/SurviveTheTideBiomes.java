@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.common.content.survive_the_tide.biome;
 
-import com.lovetropics.minigames.Constants;
+import com.lovetropics.minigames.LoveTropics;
 import net.minecraft.core.RegistrySetBuilder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.PackOutput;
@@ -18,7 +18,7 @@ import net.neoforged.neoforge.data.event.GatherDataEvent;
 
 import java.util.Set;
 
-@EventBusSubscriber(modid = Constants.MODID, bus = EventBusSubscriber.Bus.MOD)
+@EventBusSubscriber(modid = LoveTropics.ID, bus = EventBusSubscriber.Bus.MOD)
 public final class SurviveTheTideBiomes {
     public static final ResourceKey<Biome> SURVIVE_THE_TIDE_1 = createKey("survive_the_tide_1");
     public static final ResourceKey<Biome> SURVIVE_THE_TIDE_2 = createKey("survive_the_tide_2");
@@ -31,7 +31,7 @@ public final class SurviveTheTideBiomes {
     @SubscribeEvent
     public static void gatherData(final GatherDataEvent event) {
         PackOutput output = event.getGenerator().getPackOutput();
-        event.getGenerator().addProvider(event.includeServer(), new DatapackBuiltinEntriesProvider(output, event.getLookupProvider(), REGISTRY_SET, Set.of(Constants.MODID)));
+        event.getGenerator().addProvider(event.includeServer(), new DatapackBuiltinEntriesProvider(output, event.getLookupProvider(), REGISTRY_SET, Set.of(LoveTropics.ID)));
     }
 
     private static void bootstrap(final BootstrapContext<Biome> context) {
@@ -57,6 +57,6 @@ public final class SurviveTheTideBiomes {
     }
 
     private static ResourceKey<Biome> createKey(String key) {
-        return ResourceKey.create(Registries.BIOME, ResourceLocation.fromNamespaceAndPath(Constants.MODID, key));
+        return ResourceKey.create(Registries.BIOME, LoveTropics.location(key));
     }
 }

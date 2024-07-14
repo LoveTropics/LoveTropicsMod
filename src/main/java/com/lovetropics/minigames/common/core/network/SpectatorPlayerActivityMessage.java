@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.common.core.network;
 
-import com.lovetropics.minigames.Constants;
+import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.client.game.handler.spectate.ClientSpectatingManager;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.core.UUIDUtil;
@@ -13,7 +13,7 @@ import net.neoforged.neoforge.network.handling.IPayloadContext;
 import java.util.UUID;
 
 public record SpectatorPlayerActivityMessage(UUID player, int color) implements CustomPacketPayload {
-    public static final Type<SpectatorPlayerActivityMessage> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(Constants.MODID, "spectator_player_activity"));
+    public static final Type<SpectatorPlayerActivityMessage> TYPE = new Type<>(LoveTropics.location("spectator_player_activity"));
 
     public static final StreamCodec<ByteBuf, SpectatorPlayerActivityMessage> STREAM_CODEC = StreamCodec.composite(
             UUIDUtil.STREAM_CODEC, SpectatorPlayerActivityMessage::player,

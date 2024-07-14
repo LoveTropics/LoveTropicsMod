@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.common.core.game.util;
 
-import com.lovetropics.minigames.Constants;
+import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.client.lobby.state.ClientGameDefinition;
 import com.lovetropics.minigames.common.core.game.IGameDefinition;
 import com.lovetropics.minigames.common.core.game.lobby.IGameLobby;
@@ -18,7 +18,7 @@ import java.util.Collection;
 import java.util.function.BiConsumer;
 
 public final class GameTexts {
-	private static final TranslationCollector KEYS = new TranslationCollector(Constants.MODID + ".");
+	private static final TranslationCollector KEYS = new TranslationCollector(LoveTropics.ID + ".");
 
 	public static final Component CLICK_HERE = KEYS.add("click_here", "Click here");
 
@@ -71,7 +71,7 @@ public final class GameTexts {
 	}
 
 	public static final class Commands {
-		private static final TranslationCollector KEYS = new TranslationCollector(Constants.MODID + ".command.");
+		private static final TranslationCollector KEYS = new TranslationCollector(LoveTropics.ID + ".command.");
 
 		private static final TranslationCollector.Fun1 JOINED_LOBBY = KEYS.add1("joined_lobby", "You have joined %s!");
 		private static final TranslationCollector.Fun1 LEFT_LOBBY = KEYS.add1("left_lobby", "You have left %s!");
@@ -137,7 +137,7 @@ public final class GameTexts {
 	}
 
 	public static final class Status {
-		private static final TranslationCollector KEYS = new TranslationCollector(Constants.MODID + ".status.");
+		private static final TranslationCollector KEYS = new TranslationCollector(LoveTropics.ID + ".status.");
 
 		private static final TranslationCollector.Fun2 LOBBY_OPENED = KEYS.add2("lobby_opened", "%s has opened for registration! %s to get a chance to play!");
 
@@ -190,7 +190,7 @@ public final class GameTexts {
 	}
 
 	public static final class Ui {
-		private static final TranslationCollector KEYS = new TranslationCollector(Constants.MODID + ".ui.");
+		private static final TranslationCollector KEYS = new TranslationCollector(LoveTropics.ID + ".ui.");
 
 		public static final Component MANAGE_GAME_LOBBY = KEYS.add("manage_game_lobby", "Manage Game Lobby");
 		private static final TranslationCollector.Fun1 MANAGING_GAME = KEYS.add1("managing_game", "Managing Game: %s");

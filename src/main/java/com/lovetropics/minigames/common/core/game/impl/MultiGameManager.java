@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.common.core.game.impl;
 
-import com.lovetropics.minigames.Constants;
+import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.common.core.game.GameResult;
 import com.lovetropics.minigames.common.core.game.IGameManager;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
@@ -47,7 +47,7 @@ import java.util.function.Predicate;
  * than singleton-style implementation to allow for multiple managers to run multiple
  * games at once.
  */
-@EventBusSubscriber(modid = Constants.MODID)
+@EventBusSubscriber(modid = LoveTropics.ID)
 public class MultiGameManager implements IGameManager {
 	public static final MultiGameManager INSTANCE = new MultiGameManager();
 

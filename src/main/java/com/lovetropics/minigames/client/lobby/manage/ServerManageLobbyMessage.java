@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.client.lobby.manage;
 
-import com.lovetropics.minigames.Constants;
+import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.client.lobby.manage.state.update.ServerLobbyUpdate;
 import com.lovetropics.minigames.common.core.game.IGameManager;
 import com.lovetropics.minigames.common.core.game.lobby.IGameLobby;
@@ -16,7 +16,7 @@ import net.neoforged.neoforge.network.handling.IPayloadContext;
 import java.util.Optional;
 
 public record ServerManageLobbyMessage(int id, Optional<ServerLobbyUpdate.Set> updates) implements CustomPacketPayload {
-	public static final Type<ServerManageLobbyMessage> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(Constants.MODID, "server_manage_lobby"));
+	public static final Type<ServerManageLobbyMessage> TYPE = new Type<>(LoveTropics.location("server_manage_lobby"));
 
 	public static final StreamCodec<RegistryFriendlyByteBuf, ServerManageLobbyMessage> STREAM_CODEC = StreamCodec.composite(
 			ByteBufCodecs.VAR_INT, ServerManageLobbyMessage::id,

@@ -1,6 +1,5 @@
 package com.lovetropics.minigames.common.core.game.behavior;
 
-import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.Plot;
 import com.lovetropics.minigames.common.core.game.behavior.action.ApplyToBehavior;
@@ -138,8 +137,8 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
 public class GameBehaviorTypes {
-	public static final ResourceKey<Registry<GameBehaviorType<?>>> REGISTRY_KEY = ResourceKey.createRegistryKey(ResourceLocation.fromNamespaceAndPath(Constants.MODID, "minigame_behaviours"));
-	public static final DeferredRegister<GameBehaviorType<?>> REGISTER = DeferredRegister.create(REGISTRY_KEY, Constants.MODID);
+	public static final ResourceKey<Registry<GameBehaviorType<?>>> REGISTRY_KEY = ResourceKey.createRegistryKey(LoveTropics.location("minigame_behaviours"));
+	public static final DeferredRegister<GameBehaviorType<?>> REGISTER = DeferredRegister.create(REGISTRY_KEY, LoveTropics.ID);
 
 	public static final Registry<GameBehaviorType<?>> REGISTRY = REGISTER.makeRegistry(builder -> builder.sync(false));
 

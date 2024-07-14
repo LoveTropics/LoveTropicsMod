@@ -1,6 +1,5 @@
 package com.lovetropics.minigames.client;
 
-import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.common.core.diguise.DisguiseType;
 import com.lovetropics.minigames.common.core.diguise.PlayerDisguise;
@@ -27,7 +26,7 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.RenderLivingEvent;
 import net.neoforged.neoforge.client.event.ViewportEvent;
 
-@EventBusSubscriber(modid = Constants.MODID, value = Dist.CLIENT)
+@EventBusSubscriber(modid = LoveTropics.ID, value = Dist.CLIENT)
 public final class ClientPlayerDisguises {
     private static final Minecraft CLIENT = Minecraft.getInstance();
     private static final EquipmentSlot[] EQUIPMENT_SLOTS = EquipmentSlot.values();

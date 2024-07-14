@@ -1,6 +1,5 @@
 package com.lovetropics.minigames.common.core.game.client_state;
 
-import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.common.core.game.client_state.instance.BeaconClientState;
 import com.lovetropics.minigames.common.core.game.client_state.instance.FogClientState;
@@ -24,9 +23,9 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
 public final class GameClientStateTypes {
-	public static final ResourceKey<Registry<GameClientStateType<?>>> REGISTRY_KEY = ResourceKey.createRegistryKey(ResourceLocation.fromNamespaceAndPath(Constants.MODID, "game_client_state"));
+	public static final ResourceKey<Registry<GameClientStateType<?>>> REGISTRY_KEY = ResourceKey.createRegistryKey(LoveTropics.location("game_client_state"));
 
-	public static final DeferredRegister<GameClientStateType<?>> REGISTER = DeferredRegister.create(REGISTRY_KEY, Constants.MODID);
+	public static final DeferredRegister<GameClientStateType<?>> REGISTER = DeferredRegister.create(REGISTRY_KEY, LoveTropics.ID);
 
 	public static final Registry<GameClientStateType<?>> REGISTRY = REGISTER.makeRegistry(builder -> builder.sync(true));
 

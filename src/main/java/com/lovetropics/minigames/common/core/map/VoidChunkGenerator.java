@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.common.core.map;
 
-import com.lovetropics.minigames.Constants;
+import com.lovetropics.minigames.LoveTropics;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
@@ -37,7 +37,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 public final class VoidChunkGenerator extends ChunkGenerator {
-	public static final DeferredRegister<MapCodec<? extends ChunkGenerator>> REGISTER = DeferredRegister.create(Registries.CHUNK_GENERATOR, Constants.MODID);
+	public static final DeferredRegister<MapCodec<? extends ChunkGenerator>> REGISTER = DeferredRegister.create(Registries.CHUNK_GENERATOR, LoveTropics.ID);
 
 	public static final MapCodec<VoidChunkGenerator> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			Biome.CODEC.stable().fieldOf("biome").forGetter(g -> g.biome)

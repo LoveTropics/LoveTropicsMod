@@ -1,6 +1,5 @@
 package com.lovetropics.minigames.common.content.biodiversity_blitz;
 
-import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.BbAssignPlotsBehavior;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.behavior.BbBehavior;
@@ -78,11 +77,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-@EventBusSubscriber(modid = Constants.MODID)
+@EventBusSubscriber(modid = LoveTropics.ID)
 public final class BiodiversityBlitz {
 	private static final LoveTropicsRegistrate REGISTRATE = LoveTropics.registrate();
 
-	public static final DeferredRegister.DataComponents DATA_COMPONENTS = DeferredRegister.createDataComponents(Constants.MODID);
+	public static final DeferredRegister.DataComponents DATA_COMPONENTS = DeferredRegister.createDataComponents(LoveTropics.ID);
 
 	// Behaviors
 

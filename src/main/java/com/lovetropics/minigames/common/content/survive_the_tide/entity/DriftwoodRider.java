@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.common.content.survive_the_tide.entity;
 
-import com.lovetropics.minigames.Constants;
+import com.lovetropics.minigames.LoveTropics;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
@@ -14,9 +14,9 @@ import net.neoforged.neoforge.registries.NeoForgeRegistries;
 import javax.annotation.Nullable;
 import java.util.function.Supplier;
 
-@EventBusSubscriber(modid = Constants.MODID)
+@EventBusSubscriber(modid = LoveTropics.ID)
 public final class DriftwoodRider {
-	public static final DeferredRegister<AttachmentType<?>> ATTACHMENT_TYPES = DeferredRegister.create(NeoForgeRegistries.ATTACHMENT_TYPES, Constants.MODID);
+	public static final DeferredRegister<AttachmentType<?>> ATTACHMENT_TYPES = DeferredRegister.create(NeoForgeRegistries.ATTACHMENT_TYPES, LoveTropics.ID);
 
 	public static final Supplier<AttachmentType<DriftwoodRider>> ATTACHMENT = ATTACHMENT_TYPES.register(
 			"driftwood_rider", () -> AttachmentType.builder(holder -> new DriftwoodRider((Player) holder)).build()

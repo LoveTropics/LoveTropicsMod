@@ -1,7 +1,7 @@
 package com.lovetropics.minigames.common.core.network.workspace;
 
 import com.lovetropics.lib.BlockBox;
-import com.lovetropics.minigames.Constants;
+import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.client.map.ClientMapWorkspace;
 import com.lovetropics.minigames.common.core.map.workspace.MapWorkspace;
 import com.lovetropics.minigames.common.core.map.workspace.MapWorkspaceManager;
@@ -17,7 +17,7 @@ import net.neoforged.neoforge.network.handling.IPayloadContext;
 import java.util.Optional;
 
 public record UpdateWorkspaceRegionMessage(int id, Optional<BlockBox> region) implements CustomPacketPayload {
-	public static final CustomPacketPayload.Type<UpdateWorkspaceRegionMessage> TYPE = new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath(Constants.MODID, "update_workspace_region"));
+	public static final CustomPacketPayload.Type<UpdateWorkspaceRegionMessage> TYPE = new CustomPacketPayload.Type<>(LoveTropics.location("update_workspace_region"));
 
 	public static StreamCodec<ByteBuf, UpdateWorkspaceRegionMessage> STREAM_CODEC = StreamCodec.composite(
 			ByteBufCodecs.VAR_INT, UpdateWorkspaceRegionMessage::id,

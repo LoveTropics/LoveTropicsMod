@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.common.content.survive_the_tide.item;
 
-import com.lovetropics.minigames.Constants;
+import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.common.content.survive_the_tide.SurviveTheTide;
 import com.lovetropics.minigames.common.content.survive_the_tide.SurviveTheTideTexts;
 import net.minecraft.network.chat.Component;
@@ -14,7 +14,7 @@ import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 
 import java.util.List;
 
-@EventBusSubscriber(modid = Constants.MODID)
+@EventBusSubscriber(modid = LoveTropics.ID)
 public class AcidRepellentUmbrellaItem extends Item {
     public AcidRepellentUmbrellaItem(Properties properties) {
         super(properties.durability(180));

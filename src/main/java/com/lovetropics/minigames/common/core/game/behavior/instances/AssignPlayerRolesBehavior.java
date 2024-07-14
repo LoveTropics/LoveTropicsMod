@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances;
 
-import com.lovetropics.minigames.Constants;
+import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.config.BehaviorConfig;
@@ -26,7 +26,7 @@ import java.util.function.BiConsumer;
 
 public record AssignPlayerRolesBehavior(List<UUID> forcedParticipants) implements IGameBehavior {
 	private static final Logger LOGGER = LogManager.getLogger(AssignPlayerRolesBehavior.class);
-	private static final ResourceLocation CONFIG_ID = ResourceLocation.fromNamespaceAndPath(Constants.MODID, "assign_roles");
+	private static final ResourceLocation CONFIG_ID = LoveTropics.location("assign_roles");
 	private static final BehaviorConfig<List<UUID>> CFG_FORCED_PARTICIPANTS = BehaviorConfig.fieldOf("forced_participants", UUIDUtil.STRING_CODEC.listOf())
 			.listTypeHint("", ConfigType.STRING);
 

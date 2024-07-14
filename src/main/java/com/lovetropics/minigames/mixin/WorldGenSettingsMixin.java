@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.mixin;
 
-import com.lovetropics.minigames.Constants;
+import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.common.core.dimension.RuntimeDimensions;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
@@ -48,6 +48,6 @@ public class WorldGenSettingsMixin {
 
 	// TODO: Remove this, we're just cleaning up old data
 	private static boolean looksLikeTemporaryDimension(ResourceKey<Level> dimension) {
-		return dimension.location().getNamespace().equals(Constants.MODID) && dimension.location().getPath().startsWith("tmp_");
+		return dimension.location().getNamespace().equals(LoveTropics.ID) && dimension.location().getPath().startsWith("tmp_");
 	}
 }

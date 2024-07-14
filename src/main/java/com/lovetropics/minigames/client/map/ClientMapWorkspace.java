@@ -1,7 +1,7 @@
 package com.lovetropics.minigames.client.map;
 
 import com.lovetropics.lib.BlockBox;
-import com.lovetropics.minigames.Constants;
+import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.common.core.map.workspace.ClientWorkspaceRegions;
 import net.minecraft.world.level.LevelAccessor;
 import net.neoforged.api.distmarker.Dist;
@@ -11,7 +11,7 @@ import net.neoforged.neoforge.event.level.LevelEvent;
 
 import javax.annotation.Nullable;
 
-@EventBusSubscriber(modid = Constants.MODID, value = Dist.CLIENT)
+@EventBusSubscriber(modid = LoveTropics.ID, value = Dist.CLIENT)
 public final class ClientMapWorkspace {
 	public static final ClientMapWorkspace INSTANCE = new ClientMapWorkspace();
 

@@ -1,7 +1,7 @@
 package com.lovetropics.minigames.client.render;
 
 import com.lovetropics.lib.BlockBox;
-import com.lovetropics.minigames.Constants;
+import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.client.game.ClientGameStateManager;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.BiodiversityBlitz;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.client_state.ClientBbMobSpawnState;
@@ -38,7 +38,7 @@ import net.neoforged.neoforge.client.event.RenderNameTagEvent;
 
 import java.util.List;
 
-@EventBusSubscriber(modid = Constants.MODID, value = Dist.CLIENT)
+@EventBusSubscriber(modid = LoveTropics.ID, value = Dist.CLIENT)
 public class GameRendering {
     @SubscribeEvent
     public static void render(RenderLevelStageEvent event) {

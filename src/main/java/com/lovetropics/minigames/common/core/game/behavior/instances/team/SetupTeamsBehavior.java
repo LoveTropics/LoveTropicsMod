@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances.team;
 
-import com.lovetropics.minigames.Constants;
+import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.common.content.MinigameTexts;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
@@ -33,7 +33,7 @@ import java.util.List;
 import java.util.Map;
 
 public final class SetupTeamsBehavior implements IGameBehavior {
-	private static final ResourceLocation CONFIG_ID = ResourceLocation.fromNamespaceAndPath(Constants.MODID, "team_list");
+	private static final ResourceLocation CONFIG_ID = LoveTropics.location("team_list");
 	private static final GameTeam DEFAULT_TEAM = new GameTeam(
 			new GameTeamKey(""),
 			new GameTeamConfig(CommonComponents.EMPTY, DyeColor.BLACK, ChatFormatting.BLACK, List.of(), 1)

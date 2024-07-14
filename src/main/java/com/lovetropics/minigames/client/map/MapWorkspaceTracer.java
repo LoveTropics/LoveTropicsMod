@@ -2,7 +2,7 @@ package com.lovetropics.minigames.client.map;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import com.lovetropics.minigames.Constants;
+import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.common.core.map.workspace.ClientWorkspaceRegions;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
@@ -21,7 +21,7 @@ import javax.annotation.Nullable;
 import java.util.Set;
 import java.util.function.Function;
 
-@EventBusSubscriber(modid = Constants.MODID, value = Dist.CLIENT)
+@EventBusSubscriber(modid = LoveTropics.ID, value = Dist.CLIENT)
 public final class MapWorkspaceTracer {
 	private static final Minecraft CLIENT = Minecraft.getInstance();
 	private static final double TRACE_RANGE = 64.0;

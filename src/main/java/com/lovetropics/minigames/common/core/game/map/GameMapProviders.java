@@ -1,7 +1,7 @@
 package com.lovetropics.minigames.common.core.game.map;
 
 import com.lovetropics.lib.codec.CodecRegistry;
-import com.lovetropics.minigames.common.util.Util;
+import com.lovetropics.minigames.LoveTropics;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.resources.ResourceLocation;
@@ -14,7 +14,7 @@ public final class GameMapProviders {
 	public static final Codec<IGameMapProvider> CODEC = REGISTRY.dispatchStable(IGameMapProvider::getCodec, Function.identity());
 
 	private static void register(final String name, final MapCodec<? extends IGameMapProvider> codec) {
-		REGISTRY.register(Util.resource(name), codec);
+		REGISTRY.register(LoveTropics.location(name), codec);
 	}
 
 	static {

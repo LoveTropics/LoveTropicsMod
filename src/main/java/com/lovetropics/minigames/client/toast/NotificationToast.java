@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.client.toast;
 
-import com.lovetropics.minigames.Constants;
+import com.lovetropics.minigames.LoveTropics;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -42,7 +42,7 @@ public final class NotificationToast implements Toast {
 
 		this.lines = lines;
 		this.style = style;
-		backgroundSprite = ResourceLocation.fromNamespaceAndPath(Constants.MODID, "toast/" + style.color().getName() + "_" + style.sentiment().getName());
+		backgroundSprite = LoveTropics.location("toast/" + style.color().getName() + "_" + style.sentiment().getName());
 	}
 
 	@Override

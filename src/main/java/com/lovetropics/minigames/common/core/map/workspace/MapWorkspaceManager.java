@@ -1,12 +1,10 @@
 package com.lovetropics.minigames.common.core.map.workspace;
 
-import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.common.core.dimension.RuntimeDimensionHandle;
 import com.lovetropics.minigames.common.core.dimension.RuntimeDimensions;
 import com.lovetropics.minigames.common.core.map.MapWorldInfo;
 import com.lovetropics.minigames.common.core.map.MapWorldSettings;
-import com.lovetropics.minigames.common.util.Util;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
@@ -29,7 +27,7 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
 public final class MapWorkspaceManager extends SavedData {
-	private static final String ID = Constants.MODID + "_map_workspace_manager";
+	private static final String ID = LoveTropics.ID + "_map_workspace_manager";
 
 	private final MinecraftServer server;
 	private final Map<String, MapWorkspace> workspaces = new Object2ObjectOpenHashMap<>();
@@ -59,7 +57,7 @@ public final class MapWorkspaceManager extends SavedData {
 	}
 
 	private RuntimeDimensionHandle getOrCreateDimension(String id, WorkspaceDimensionConfig dimensionConfig, MapWorldSettings mapSettings) {
-		return RuntimeDimensions.get(server).getOrOpenPersistent(Util.resource(id), () -> {
+		return RuntimeDimensions.get(server).getOrOpenPersistent(LoveTropics.location(id), () -> {
 			MapWorldInfo worldInfo = MapWorldInfo.create(server, mapSettings);
 			return dimensionConfig.toRuntimeConfig(server, worldInfo);
 		});
@@ -82,7 +80,7 @@ public final class MapWorkspaceManager extends SavedData {
 	@Nullable
 	public MapWorkspace getWorkspace(ResourceKey<Level> dimension) {
 		ResourceLocation name = dimension.location();
-		if (!name.getNamespace().equals(Constants.MODID)) {
+		if (!name.getNamespace().equals(LoveTropics.ID)) {
 			return null;
 		}
 		return this.workspaces.get(name.getPath());

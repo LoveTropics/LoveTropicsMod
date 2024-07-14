@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.common.core.map.workspace;
 
-import com.lovetropics.minigames.Constants;
+import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.common.core.dimension.RuntimeDimensions;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -22,9 +22,9 @@ import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import javax.annotation.Nullable;
 
 // TODO: Replace this with DataAttachment
-@EventBusSubscriber(modid = Constants.MODID)
+@EventBusSubscriber(modid = LoveTropics.ID)
 public final class WorkspacePositionTracker {
-	private static final String NBT_KEY = Constants.MODID + ":map_workspace";
+	private static final String NBT_KEY = LoveTropics.ID + ":map_workspace";
 	private static final String NBT_RETURN_KEY = "return";
 
 	public static void setPositionFor(ServerPlayer player, MapWorkspace workspace, Position position) {

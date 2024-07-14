@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.client.particle_line;
 
-import com.lovetropics.minigames.Constants;
+import com.lovetropics.minigames.LoveTropics;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
@@ -13,7 +13,7 @@ import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 public record DrawParticleLineMessage(ParticleOptions particle, Vec3 from, Vec3 to, float spacing) implements CustomPacketPayload {
-    public static final Type<DrawParticleLineMessage> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(Constants.MODID, "draw_particle_line"));
+    public static final Type<DrawParticleLineMessage> TYPE = new Type<>(LoveTropics.location("draw_particle_line"));
 
     private static final StreamCodec<ByteBuf, Vec3> VEC3_STREAM_CODEC = StreamCodec.composite(
             ByteBufCodecs.DOUBLE, Vec3::x,

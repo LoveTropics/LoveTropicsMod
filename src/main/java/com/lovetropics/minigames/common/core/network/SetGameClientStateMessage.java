@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.common.core.network;
 
-import com.lovetropics.minigames.Constants;
+import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.client.game.ClientGameStateManager;
 import com.lovetropics.minigames.common.core.game.client_state.GameClientState;
 import com.lovetropics.minigames.common.core.game.client_state.GameClientStateType;
@@ -17,7 +17,7 @@ import java.util.Optional;
 import java.util.function.Function;
 
 public record SetGameClientStateMessage(GameClientStateType<?> stateType, Optional<GameClientState> state) implements CustomPacketPayload {
-	public static final Type<SetGameClientStateMessage> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(Constants.MODID, "set_game_client_state"));
+	public static final Type<SetGameClientStateMessage> TYPE = new Type<>(LoveTropics.location("set_game_client_state"));
 
 	public static final StreamCodec<RegistryFriendlyByteBuf, SetGameClientStateMessage> STREAM_CODEC = new StreamCodec<>() {
         private final StreamCodec<RegistryFriendlyByteBuf, GameClientStateType<?>> typeCodec = ByteBufCodecs.registry(GameClientStateTypes.REGISTRY_KEY);

@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.common.content.biodiversity_blitz;
 
-import com.lovetropics.minigames.Constants;
+import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.BbMobSpawner;
 import com.lovetropics.minigames.common.core.game.util.TranslationCollector;
 import net.minecraft.ChatFormatting;
@@ -10,7 +10,7 @@ import net.minecraft.network.chat.MutableComponent;
 import java.util.function.BiConsumer;
 
 public final class BiodiversityBlitzTexts {
-	private static final TranslationCollector KEYS = new TranslationCollector(Constants.MODID + ".minigame.biodiversity_blitz.");
+	private static final TranslationCollector KEYS = new TranslationCollector(LoveTropics.ID + ".minigame.biodiversity_blitz.");
 
 	public static final Component WAVE_WARNING = KEYS.add("wave_warning", "A wave is coming soon! Make sure your plant defenses are ready!");
 	public static final Component WAVE_INCOMING = KEYS.add("wave_incoming", "Wave Incoming!");
@@ -112,8 +112,8 @@ public final class BiodiversityBlitzTexts {
 	public static void collectTranslations(BiConsumer<String, String> consumer) {
 		KEYS.forEach(consumer);
 
-		consumer.accept(Constants.MODID + ".minigame.biodiversity_blitz", "Biodiversity Blitz");
-		consumer.accept(Constants.MODID + ".minigame.biodiversity_blitz_teams", "Biodiversity Blitz (Teams)");
+		consumer.accept(LoveTropics.ID + ".minigame.biodiversity_blitz", "Biodiversity Blitz");
+		consumer.accept(LoveTropics.ID + ".minigame.biodiversity_blitz_teams", "Biodiversity Blitz (Teams)");
 		for (BbMobSpawner.BbEntityTypes type : BbMobSpawner.BbEntityTypes.values()) {
 			consumer.accept(type.getTranslationKey(), type.getEnglishName());
 		}

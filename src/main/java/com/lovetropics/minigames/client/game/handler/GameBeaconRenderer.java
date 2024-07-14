@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.client.game.handler;
 
-import com.lovetropics.minigames.Constants;
+import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.client.game.ClientGameStateManager;
 import com.lovetropics.minigames.common.core.game.client_state.GameClientStateTypes;
 import com.lovetropics.minigames.common.core.game.client_state.instance.BeaconClientState;
@@ -20,7 +20,7 @@ import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 
 import java.util.List;
 
-@EventBusSubscriber(modid = Constants.MODID, value = Dist.CLIENT)
+@EventBusSubscriber(modid = LoveTropics.ID, value = Dist.CLIENT)
 public final class GameBeaconRenderer {
 	private static final Minecraft CLIENT = Minecraft.getInstance();
 	private static final int COLOR = DyeColor.WHITE.getTextureDiffuseColor();

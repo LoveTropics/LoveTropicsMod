@@ -7,7 +7,7 @@ import net.minecraft.sounds.SoundEvent;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
 public class SoundRegistry {
-	public static final DeferredRegister<SoundEvent> REGISTER = DeferredRegister.create(Registries.SOUND_EVENT, Constants.MODID);
+	public static final DeferredRegister<SoundEvent> REGISTER = DeferredRegister.create(Registries.SOUND_EVENT, LoveTropics.ID);
 
 	public static final Holder<SoundEvent> SWAP_PLAYERS = register("swap_players");
 	public static final Holder<SoundEvent> PACKAGE_RECEIVE = register("package_receive");
@@ -18,6 +18,6 @@ public class SoundRegistry {
 	public static final Holder<SoundEvent> COINS = register("coins");
 
 	private static Holder<SoundEvent> register(String name) {
-		return REGISTER.register(name, () -> SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath(Constants.MODID, name)));
+		return REGISTER.register(name, () -> SoundEvent.createVariableRangeEvent(LoveTropics.location(name)));
 	}
 }

@@ -1,12 +1,12 @@
 package com.lovetropics.minigames.common.content.survive_the_tide;
 
-import com.lovetropics.minigames.Constants;
+import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.common.core.game.util.TranslationCollector;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 
 public final class SurviveTheTideTexts {
-	public static final TranslationCollector KEYS = new TranslationCollector(Constants.MODID + ".minigame.survive_the_tide.");
+	public static final TranslationCollector KEYS = new TranslationCollector(LoveTropics.ID + ".minigame.survive_the_tide.");
 
 	public static final TranslationCollector.Fun1 SIDEBAR_WEATHER = KEYS.add1("sidebar.weather", "Weather: %s");
 	public static final Component SIDEBAR_PVP_DISABLED = KEYS.add("sidebar.pvp_disabled", "PVP disabled").withStyle(ChatFormatting.YELLOW);

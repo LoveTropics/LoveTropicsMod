@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.client.lobby;
 
-import com.lovetropics.minigames.Constants;
+import com.lovetropics.minigames.LoveTropics;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.KeyMapping;
 import net.neoforged.neoforge.client.settings.KeyConflictContext;
@@ -15,6 +15,6 @@ public class LobbyKeybinds {
 	}
 
 	private static KeyMapping create(String id, int key, KeyModifier modifier) {
-		return new KeyMapping("key." + Constants.MODID + "." + id, KeyConflictContext.IN_GAME, modifier, InputConstants.Type.KEYSYM.getOrCreate(key), "key.categories." + Constants.MODID + ".lobby");
+		return new KeyMapping("key." + LoveTropics.ID + "." + id, KeyConflictContext.IN_GAME, modifier, InputConstants.Type.KEYSYM.getOrCreate(key), "key.categories." + LoveTropics.ID + ".lobby");
 	}
 }

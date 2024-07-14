@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.common.content;
 
-import com.lovetropics.minigames.Constants;
+import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.common.core.game.behavior.instances.donation.DonationPackageData;
 import com.lovetropics.minigames.common.core.game.util.TranslationCollector;
 import com.lovetropics.minigames.common.util.Util;
@@ -8,7 +8,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 
 public final class MinigameTexts {
-	public static final TranslationCollector KEYS = new TranslationCollector(Constants.MODID + ".minigame.");
+	public static final TranslationCollector KEYS = new TranslationCollector(LoveTropics.ID + ".minigame.");
 
 	public static final Component SURVIVE_THE_TIDE_1 = KEYS.add("survive_the_tide_1", "Survive The Tide I");
 	public static final Component SURVIVE_THE_TIDE_1_TEAMS = KEYS.add("survive_the_tide_1_teams", "Survive The Tide I (Teams)");

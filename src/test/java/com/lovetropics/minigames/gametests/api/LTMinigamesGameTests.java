@@ -3,7 +3,6 @@ package com.lovetropics.minigames.gametests.api;
 import com.google.common.base.Suppliers;
 import com.lovetropics.lib.permission.PermissionsApi;
 import com.lovetropics.lib.permission.role.RoleLookup;
-import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.common.core.game.datagen.BehaviorFactory;
 import com.lovetropics.minigames.common.core.game.datagen.BehaviorProvider;
@@ -100,7 +99,7 @@ public class LTMinigamesGameTests {
         if (event.getPackType() == PackType.SERVER_DATA) {
             PackLocationInfo info = new PackLocationInfo("testing", Component.literal("testing"), PackSource.BUILT_IN, Optional.empty());
             final var resources = new PathPackResources(info, ModList.get()
-                    .getModContainerById(Constants.MODID).orElseThrow()
+                    .getModContainerById(LoveTropics.ID).orElseThrow()
                     .getModInfo().getOwningFile()
                     .getFile().findResource("testing"));
             event.addRepositorySource(onLoad -> onLoad.accept(Pack.readMetaAndCreate(

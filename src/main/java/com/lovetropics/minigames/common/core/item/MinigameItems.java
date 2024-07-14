@@ -1,6 +1,5 @@
 package com.lovetropics.minigames.common.core.item;
 
-import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.common.core.diguise.DisguiseType;
 import com.lovetropics.minigames.common.util.registry.LoveTropicsRegistrate;
@@ -25,7 +24,7 @@ public class MinigameItems {
             .properties(p -> p.stacksTo(1))
             .model((ctx, prov) -> prov.getBuilder(ctx.getName()).parent(new ModelFile.UncheckedModelFile("builtin/entity")))
             .addMiscData(ProviderType.LANG, prov -> {
-                String descriptionId = Util.makeDescriptionId("item", ResourceLocation.fromNamespaceAndPath(Constants.MODID, "disguise"));
+                String descriptionId = Util.makeDescriptionId("item", LoveTropics.location("disguise"));
                 prov.add(descriptionId + ".entity", "%s Disguise");
             })
             .tab(LoveTropics.TAB_KEY, modifier -> {
@@ -43,7 +42,7 @@ public class MinigameItems {
             .properties(p -> p.stacksTo(1))
             .model((ctx, prov) -> prov.getBuilder(ctx.getName()).parent(new ModelFile.UncheckedModelFile("builtin/entity")))
             .addMiscData(ProviderType.LANG, prov -> {
-                String descriptionId = Util.makeDescriptionId("item", ResourceLocation.fromNamespaceAndPath(Constants.MODID, "mob_hat"));
+                String descriptionId = Util.makeDescriptionId("item", LoveTropics.location("mob_hat"));
                 prov.add(descriptionId + ".entity", "%s Hat");
             })
             .tab(LoveTropics.TAB_KEY, modifier -> {
@@ -61,7 +60,7 @@ public class MinigameItems {
             .properties(p -> p.stacksTo(1))
             .model((ctx, prov) -> prov.getBuilder(ctx.getName()).parent(new ModelFile.UncheckedModelFile("builtin/entity")))
             .addMiscData(ProviderType.LANG, prov -> {
-                String descriptionId = Util.makeDescriptionId("item", ResourceLocation.fromNamespaceAndPath(Constants.MODID, "plushie"));
+                String descriptionId = Util.makeDescriptionId("item", LoveTropics.location("plushie"));
                 prov.add(descriptionId + ".entity", "%s Plushie");
             })
             .register();

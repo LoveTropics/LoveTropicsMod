@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.common.content.biodiversity_blitz.client_state.render;
 
-import com.lovetropics.minigames.Constants;
+import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.client.game.ClientGameStateManager;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.BiodiversityBlitz;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.client_state.ClientBbSelfState;
@@ -21,7 +21,7 @@ public final class BbClientRenderEffects {
 	private static final int ITEM_SIZE = 16;
 
 	public static void registerOverlays(RegisterGuiLayersEvent event) {
-		event.registerBelow(VanillaGuiLayers.DEBUG_OVERLAY, ResourceLocation.fromNamespaceAndPath(Constants.MODID, "biodiversity_blitz"), (graphics, deltaTracker) -> {
+		event.registerBelow(VanillaGuiLayers.DEBUG_OVERLAY, LoveTropics.location("biodiversity_blitz"), (graphics, deltaTracker) -> {
 			ClientBbSelfState selfState = ClientGameStateManager.getOrNull(BiodiversityBlitz.SELF_STATE);
 			if (selfState != null) {
 				CurrencyTargetState currencyTarget = ClientGameStateManager.getOrNull(BiodiversityBlitz.CURRENCY_TARGET);

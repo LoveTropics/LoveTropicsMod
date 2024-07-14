@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.client.lobby.state.message;
 
-import com.lovetropics.minigames.Constants;
+import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.client.lobby.state.ClientLobbyManager;
 import com.lovetropics.minigames.common.core.game.lobby.IGameLobby;
 import io.netty.buffer.ByteBuf;
@@ -11,7 +11,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 public record JoinedLobbyMessage(int id) implements CustomPacketPayload {
-    public static final Type<JoinedLobbyMessage> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(Constants.MODID, "joined_lobby"));
+    public static final Type<JoinedLobbyMessage> TYPE = new Type<>(LoveTropics.location("joined_lobby"));
 
     public static final StreamCodec<ByteBuf, JoinedLobbyMessage> STREAM_CODEC = StreamCodec.composite(
             ByteBufCodecs.VAR_INT, JoinedLobbyMessage::id,

@@ -1,6 +1,5 @@
 package com.lovetropics.minigames.common.core.game.predicate.entity;
 
-import com.lovetropics.minigames.Constants;
 import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.common.util.registry.LoveTropicsRegistrate;
 import com.mojang.serialization.MapCodec;
@@ -12,8 +11,8 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
 public class EntityPredicates {
-    public static final ResourceKey<Registry<MapCodec<? extends EntityPredicate>>> REGISTRY_KEY = ResourceKey.createRegistryKey(ResourceLocation.fromNamespaceAndPath(Constants.MODID, "entity_predicates"));
-    public static final DeferredRegister<MapCodec<? extends EntityPredicate>> REGISTER = DeferredRegister.create(REGISTRY_KEY, Constants.MODID);
+    public static final ResourceKey<Registry<MapCodec<? extends EntityPredicate>>> REGISTRY_KEY = ResourceKey.createRegistryKey(LoveTropics.location("entity_predicates"));
+    public static final DeferredRegister<MapCodec<? extends EntityPredicate>> REGISTER = DeferredRegister.create(REGISTRY_KEY, LoveTropics.ID);
 
     public static final Registry<MapCodec<? extends EntityPredicate>> REGISTRY = REGISTER.makeRegistry(builder -> builder.sync(false));
 

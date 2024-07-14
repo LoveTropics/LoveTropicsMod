@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.common.core.network;
 
-import com.lovetropics.minigames.Constants;
+import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.client.ClientPlayerDisguises;
 import com.lovetropics.minigames.common.core.diguise.DisguiseType;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -13,7 +13,7 @@ import net.neoforged.neoforge.network.handling.IPayloadContext;
 import java.util.Optional;
 
 public record PlayerDisguiseMessage(int entityId, Optional<DisguiseType> disguise) implements CustomPacketPayload {
-    public static final Type<PlayerDisguiseMessage> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(Constants.MODID, "player_disguise"));
+    public static final Type<PlayerDisguiseMessage> TYPE = new Type<>(LoveTropics.location("player_disguise"));
 
     public static final StreamCodec<RegistryFriendlyByteBuf, PlayerDisguiseMessage> STREAM_CODEC = StreamCodec.composite(
             ByteBufCodecs.VAR_INT, PlayerDisguiseMessage::entityId,

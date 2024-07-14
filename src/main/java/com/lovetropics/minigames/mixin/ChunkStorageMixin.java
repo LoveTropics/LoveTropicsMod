@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.mixin;
 
-import com.lovetropics.minigames.Constants;
+import com.lovetropics.minigames.LoveTropics;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.chunk.storage.ChunkStorage;
 import org.spongepowered.asm.mixin.Mixin;
@@ -14,7 +14,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 public class ChunkStorageMixin {
     @Redirect(method = "injectDatafixingContext", at = @At(value = "INVOKE", target = "Lnet/minecraft/nbt/CompoundTag;putString(Ljava/lang/String;Ljava/lang/String;)V"))
     private static void injectDimensionContext(CompoundTag instance, String key, String value) {
-        if (value.startsWith(Constants.MODID + ":")) {
+        if (value.startsWith(LoveTropics.ID + ":")) {
             instance.putString(key, "minecraft:overworld");
         } else {
             instance.putString(key, value);

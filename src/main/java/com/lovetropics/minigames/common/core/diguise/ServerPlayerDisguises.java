@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.common.core.diguise;
 
-import com.lovetropics.minigames.Constants;
+import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.common.core.network.PlayerDisguiseMessage;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.context.CommandContext;
@@ -34,7 +34,7 @@ import static com.mojang.brigadier.arguments.FloatArgumentType.getFloat;
 import static net.minecraft.commands.arguments.CompoundTagArgument.compoundTag;
 import static net.minecraft.commands.arguments.CompoundTagArgument.getCompoundTag;
 
-@EventBusSubscriber(modid = Constants.MODID)
+@EventBusSubscriber(modid = LoveTropics.ID)
 public final class ServerPlayerDisguises {
 	private static final SimpleCommandExceptionType NOT_LIVING_ENTITY = new SimpleCommandExceptionType(Component.literal("Not a living entity"));
 

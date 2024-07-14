@@ -89,14 +89,16 @@ import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
 
-@Mod(Constants.MODID)
+@Mod(LoveTropics.ID)
 public class LoveTropics {
     public static final Logger LOGGER = LogUtils.getLogger();
 
-    private static final ResourceLocation TAB_ID = ResourceLocation.fromNamespaceAndPath(Constants.MODID, "ltminigames");
+    public static final String ID = "ltminigames";
+
+    private static final ResourceLocation TAB_ID = LoveTropics.location("ltminigames");
     public static final ResourceKey<CreativeModeTab> TAB_KEY = ResourceKey.create(Registries.CREATIVE_MODE_TAB, TAB_ID);
 
-    private static final Supplier<LoveTropicsRegistrate> REGISTRATE = Suppliers.memoize(() -> LoveTropicsRegistrate.create(Constants.MODID).defaultCreativeTab(ResourceKey.create(Registries.CREATIVE_MODE_TAB, TAB_ID)));
+    private static final Supplier<LoveTropicsRegistrate> REGISTRATE = Suppliers.memoize(() -> LoveTropicsRegistrate.create(ID).defaultCreativeTab(ResourceKey.create(Registries.CREATIVE_MODE_TAB, TAB_ID)));
 
     public LoveTropics(IEventBus modBus, ModContainer modContainer) {
         NeoForge.EVENT_BUS.addListener(this::onServerAboutToStart);
@@ -170,7 +172,7 @@ public class LoveTropics {
 
     private static final Pattern QUALIFIER = Pattern.compile("-\\w+\\+\\d+");
     public static String getCompatVersion() {
-    	return getCompatVersion(ModList.get().getModContainerById(Constants.MODID).orElseThrow(IllegalStateException::new).getModInfo().getVersion().toString());
+    	return getCompatVersion(ModList.get().getModContainerById(ID).orElseThrow(IllegalStateException::new).getModInfo().getVersion().toString());
     }
     private static String getCompatVersion(String fullVersion) {
     	return QUALIFIER.matcher(fullVersion).replaceAll("");
@@ -178,6 +180,10 @@ public class LoveTropics {
 
     public static LoveTropicsRegistrate registrate() {
         return REGISTRATE.get();
+    }
+
+    public static ResourceLocation location(String location) {
+        return ResourceLocation.fromNamespaceAndPath(ID, location);
     }
 
     private void registerCommands(RegisterCommandsEvent event) {
@@ -209,7 +215,7 @@ public class LoveTropics {
         RuntimeDimensions.onServerStoppingUnsafely(server);
     }
 
-    @EventBusSubscriber(modid = Constants.MODID, bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
+    @EventBusSubscriber(modid = ID, bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
     public static class ClientSetup {
         @SubscribeEvent
         public static void setupClient(final FMLClientSetupEvent event) {
@@ -218,7 +224,7 @@ public class LoveTropics {
 
         @SubscribeEvent
         public static void registerDimensionSpecialEffects(final RegisterDimensionSpecialEffectsEvent event) {
-            event.register(ResourceLocation.fromNamespaceAndPath(Constants.MODID, "raised_clouds"), new DimensionSpecialEffects(250.0f, true, DimensionSpecialEffects.SkyType.NORMAL, false, false) {
+            event.register(LoveTropics.location("raised_clouds"), new DimensionSpecialEffects(250.0f, true, DimensionSpecialEffects.SkyType.NORMAL, false, false) {
                 @Override
                 public Vec3 getBrightnessDependentFogColor(final Vec3 color, final float brightness) {
                     return color.multiply(brightness * 0.94f + 0.06f, brightness * 0.94f + 0.06f, brightness * 0.91f + 0.09f);

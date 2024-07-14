@@ -1,7 +1,7 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances.tweak;
 
 import com.lovetropics.lib.codec.MoreCodecs;
-import com.lovetropics.minigames.Constants;
+import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.GameBehaviorType;
 import com.lovetropics.minigames.common.core.game.behavior.GameBehaviorTypes;
@@ -31,7 +31,7 @@ public record SetMaxHealthBehavior(double maxHealth, Object2DoubleMap<GameTeamKe
 			MoreCodecs.object2Double(GameTeamKey.CODEC).fieldOf("max_health_by_team").orElseGet(Object2DoubleOpenHashMap::new).forGetter(c -> c.maxHealthByTeam)
 	).apply(i, SetMaxHealthBehavior::new));
 
-	private static final ResourceLocation ATTRIBUTE_ID = ResourceLocation.fromNamespaceAndPath(Constants.MODID, "minigame_max_health");
+	private static final ResourceLocation ATTRIBUTE_ID = LoveTropics.location("minigame_max_health");
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {

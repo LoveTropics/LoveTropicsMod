@@ -1,7 +1,7 @@
 package com.lovetropics.minigames.client.map;
 
 import com.lovetropics.lib.BlockBox;
-import com.lovetropics.minigames.Constants;
+import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.common.core.map.workspace.ClientWorkspaceRegions;
 import com.mojang.blaze3d.vertex.PoseStack;
 import it.unimi.dsi.fastutil.HashCommon;
@@ -21,7 +21,7 @@ import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 
 import java.util.Set;
 
-@EventBusSubscriber(modid = Constants.MODID, value = Dist.CLIENT)
+@EventBusSubscriber(modid = LoveTropics.ID, value = Dist.CLIENT)
 public final class MapWorkspaceRenderer {
 	@SubscribeEvent
 	public static void onRenderLevel(RenderLevelStageEvent event) {

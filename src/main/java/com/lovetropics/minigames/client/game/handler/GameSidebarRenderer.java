@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.client.game.handler;
 
-import com.lovetropics.minigames.Constants;
+import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.client.game.ClientGameStateManager;
 import com.lovetropics.minigames.common.core.game.client_state.GameClientStateTypes;
 import com.lovetropics.minigames.common.core.game.client_state.instance.SidebarClientState;
@@ -24,7 +24,7 @@ public final class GameSidebarRenderer {
 	private static final int MARGIN = 1;
 
 	public static void registerOverlays(RegisterGuiLayersEvent event) {
-		event.registerBelow(VanillaGuiLayers.DEBUG_OVERLAY, ResourceLocation.fromNamespaceAndPath(Constants.MODID, "minigame_sidebar"), (graphics, deltaTracker) -> {
+		event.registerBelow(VanillaGuiLayers.DEBUG_OVERLAY, LoveTropics.location("minigame_sidebar"), (graphics, deltaTracker) -> {
 			SidebarClientState sidebar = ClientGameStateManager.getOrNull(GameClientStateTypes.SIDEBAR);
 			if (sidebar != null) {
 				renderSidebar(graphics, sidebar);

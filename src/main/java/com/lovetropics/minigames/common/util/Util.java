@@ -1,14 +1,12 @@
 package com.lovetropics.minigames.common.util;
 
 import com.lovetropics.lib.BlockBox;
-import com.lovetropics.minigames.Constants;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.contents.TranslatableContents;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
@@ -61,10 +59,6 @@ public class Util {
         }
 
         return false;
-    }
-
-    public static ResourceLocation resource(String location) {
-        return ResourceLocation.fromNamespaceAndPath(Constants.MODID, location);
     }
 
     @Nullable

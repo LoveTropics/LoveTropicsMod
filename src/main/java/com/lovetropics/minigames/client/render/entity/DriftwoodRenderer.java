@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.client.render.entity;
 
-import com.lovetropics.minigames.Constants;
+import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.common.content.survive_the_tide.entity.DriftwoodEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -25,7 +25,7 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 
 public final class DriftwoodRenderer extends EntityRenderer<DriftwoodEntity> {
-	private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(Constants.MODID, "textures/entity/driftwood.png");
+	private static final ResourceLocation TEXTURE = LoveTropics.location("textures/entity/driftwood.png");
 
 	private final DriftwoodModel model;
 
@@ -53,9 +53,9 @@ public final class DriftwoodRenderer extends EntityRenderer<DriftwoodEntity> {
 		return TEXTURE;
 	}
 
-	@EventBusSubscriber(modid = Constants.MODID, value = Dist.CLIENT, bus = EventBusSubscriber.Bus.MOD)
+	@EventBusSubscriber(modid = LoveTropics.ID, value = Dist.CLIENT, bus = EventBusSubscriber.Bus.MOD)
 	public static final class DriftwoodModel extends HierarchicalModel<Entity> {
-		public static final ModelLayerLocation LAYER = new ModelLayerLocation(ResourceLocation.fromNamespaceAndPath(Constants.MODID, "driftwood"), "main");
+		public static final ModelLayerLocation LAYER = new ModelLayerLocation(LoveTropics.location("driftwood"), "main");
 
 		private final ModelPart log;
 

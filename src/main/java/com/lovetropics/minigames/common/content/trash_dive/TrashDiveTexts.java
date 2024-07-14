@@ -1,10 +1,10 @@
 package com.lovetropics.minigames.common.content.trash_dive;
 
-import com.lovetropics.minigames.Constants;
+import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.common.core.game.util.TranslationCollector;
 
 public class TrashDiveTexts {
-	public static final TranslationCollector KEYS = new TranslationCollector(Constants.MODID + ".minigame.trash_dive.");
+	public static final TranslationCollector KEYS = new TranslationCollector(LoveTropics.ID + ".minigame.trash_dive.");
 
 	static {
 		KEYS.add("sidebar.title", "Trash Dive");

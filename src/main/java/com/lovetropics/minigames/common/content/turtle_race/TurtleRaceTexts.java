@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.common.content.turtle_race;
 
-import com.lovetropics.minigames.Constants;
+import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.common.core.game.util.TranslationCollector;
 import com.lovetropics.minigames.common.util.Util;
 import net.minecraft.ChatFormatting;
@@ -8,7 +8,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 
 public class TurtleRaceTexts {
-	public static final TranslationCollector KEYS = new TranslationCollector(Constants.MODID + ".minigame.turtle_race.");
+	public static final TranslationCollector KEYS = new TranslationCollector(LoveTropics.ID + ".minigame.turtle_race.");
 
 	public static final Component CHECKMARK = Component.literal("\u2714").withStyle(ChatFormatting.GREEN);
 

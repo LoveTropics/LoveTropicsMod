@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.client.game.handler.spectate;
 
-import com.lovetropics.minigames.Constants;
+import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.client.screen.ClientPlayerInfo;
 import com.lovetropics.minigames.common.core.game.util.GameTexts;
 import com.mojang.authlib.GameProfile;
@@ -33,7 +33,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.function.Supplier;
 
-@EventBusSubscriber(modid = Constants.MODID, value = Dist.CLIENT)
+@EventBusSubscriber(modid = LoveTropics.ID, value = Dist.CLIENT)
 public final class SpectatingUi {
 	private static final Minecraft CLIENT = Minecraft.getInstance();
 
@@ -180,7 +180,7 @@ public final class SpectatingUi {
 	}
 
 	public static void registerOverlays(RegisterGuiLayersEvent event) {
-		event.registerBelow(VanillaGuiLayers.DEBUG_OVERLAY, ResourceLocation.fromNamespaceAndPath(Constants.MODID, "minigame_spectator"), (graphics, deltaTracker) -> {
+		event.registerBelow(VanillaGuiLayers.DEBUG_OVERLAY, LoveTropics.location("minigame_spectator"), (graphics, deltaTracker) -> {
 			SpectatingSession session = ClientSpectatingManager.INSTANCE.session;
 			if (session != null) {
 				session.ui.renderChasePlayerList(graphics);

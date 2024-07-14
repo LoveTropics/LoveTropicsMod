@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.common.core.item;
 
-import com.lovetropics.minigames.Constants;
+import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.client.CustomItemRenderers;
 import com.lovetropics.minigames.common.core.diguise.DisguiseType;
 import com.lovetropics.minigames.common.core.diguise.ServerPlayerDisguises;
@@ -21,7 +21,7 @@ import net.neoforged.neoforge.event.entity.living.LivingEquipmentChangeEvent;
 
 import java.util.function.Consumer;
 
-@EventBusSubscriber(modid = Constants.MODID)
+@EventBusSubscriber(modid = LoveTropics.ID)
 public class DisguiseItem extends Item implements Equipable {
 	public DisguiseItem(final Properties properties) {
 		super(properties);

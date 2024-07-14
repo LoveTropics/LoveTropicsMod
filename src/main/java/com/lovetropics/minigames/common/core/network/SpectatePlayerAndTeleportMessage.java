@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.common.core.network;
 
-import com.lovetropics.minigames.Constants;
+import com.lovetropics.minigames.LoveTropics;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.network.codec.StreamCodec;
@@ -13,7 +13,7 @@ import net.neoforged.neoforge.network.handling.IPayloadContext;
 import java.util.UUID;
 
 public record SpectatePlayerAndTeleportMessage(UUID player) implements CustomPacketPayload {
-    public static final Type<SpectatePlayerAndTeleportMessage> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(Constants.MODID, "spectate_player_and_teleport"));
+    public static final Type<SpectatePlayerAndTeleportMessage> TYPE = new Type<>(LoveTropics.location("spectate_player_and_teleport"));
 
     public static final StreamCodec<ByteBuf, SpectatePlayerAndTeleportMessage> STREAM_CODEC = StreamCodec.composite(
             UUIDUtil.STREAM_CODEC, SpectatePlayerAndTeleportMessage::player,

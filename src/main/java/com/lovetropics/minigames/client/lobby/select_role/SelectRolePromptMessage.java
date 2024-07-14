@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.client.lobby.select_role;
 
-import com.lovetropics.minigames.Constants;
+import com.lovetropics.minigames.LoveTropics;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
@@ -9,7 +9,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 public record SelectRolePromptMessage(int lobbyId) implements CustomPacketPayload {
-	public static final Type<SelectRolePromptMessage> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(Constants.MODID, "select_role_prompt"));
+	public static final Type<SelectRolePromptMessage> TYPE = new Type<>(LoveTropics.location("select_role_prompt"));
 
 	public static final StreamCodec<ByteBuf, SelectRolePromptMessage> STREAM_CODEC = ByteBufCodecs.VAR_INT.map(SelectRolePromptMessage::new, SelectRolePromptMessage::lobbyId);
 

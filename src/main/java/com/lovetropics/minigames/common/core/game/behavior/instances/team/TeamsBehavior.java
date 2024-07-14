@@ -1,6 +1,6 @@
 package com.lovetropics.minigames.common.core.game.behavior.instances.team;
 
-import com.lovetropics.minigames.Constants;
+import com.lovetropics.minigames.LoveTropics;
 import com.lovetropics.minigames.common.content.MinigameTexts;
 import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
@@ -35,7 +35,7 @@ import org.apache.commons.lang3.RandomStringUtils;
 import java.util.Map;
 
 public final class TeamsBehavior implements IGameBehavior {
-	private static final ResourceLocation CONFIG_ID = ResourceLocation.fromNamespaceAndPath(Constants.MODID, "teams");
+	private static final ResourceLocation CONFIG_ID = LoveTropics.location("teams");
 	private static final BehaviorConfig<Boolean> CFG_FRIENDLY_FIRE = BehaviorConfig.fieldOf("friendly_fire", Codec.BOOL);
 
 	public static final MapCodec<TeamsBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
