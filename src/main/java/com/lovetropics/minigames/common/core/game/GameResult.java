@@ -3,16 +3,19 @@ package com.lovetropics.minigames.common.core.game;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Unit;
 
+import javax.annotation.Nullable;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 
 public final class GameResult<T> {
 	private static final GameResult<Unit> OK_UNIT = GameResult.ok(Unit.INSTANCE);
 
+	@Nullable
 	private final T ok;
+	@Nullable
 	private final Component error;
 
-	private GameResult(T ok, Component error) {
+	private GameResult(@Nullable T ok, @Nullable Component error) {
 		this.ok = ok;
 		this.error = error;
 	}
@@ -47,10 +50,12 @@ public final class GameResult<T> {
 		});
 	}
 
+	@Nullable
 	public T getOk() {
 		return ok;
 	}
 
+	@Nullable
 	public Component getError() {
 		return error;
 	}
@@ -88,7 +93,7 @@ public final class GameResult<T> {
 	}
 
 	public <U> CompletableFuture<GameResult<U>> andThenFuture(Function<T, CompletableFuture<GameResult<U>>> function) {
-		if (isOk()) {
+		if (ok != null) {
 			return function.apply(ok);
 		} else {
 			return CompletableFuture.completedFuture(castError());
@@ -96,7 +101,7 @@ public final class GameResult<T> {
 	}
 
 	public T orElseGet(Function<Component, T> orElse) {
-		if (isOk()) {
+		if (ok != null) {
 			return ok;
 		} else {
 			return orElse.apply(error);

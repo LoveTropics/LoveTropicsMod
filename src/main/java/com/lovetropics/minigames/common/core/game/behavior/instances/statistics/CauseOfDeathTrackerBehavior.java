@@ -13,6 +13,8 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 
+import javax.annotation.Nullable;
+
 public final class CauseOfDeathTrackerBehavior implements IGameBehavior {
 	public static final MapCodec<CauseOfDeathTrackerBehavior> CODEC = MapCodec.unit(CauseOfDeathTrackerBehavior::new);
 
@@ -22,7 +24,7 @@ public final class CauseOfDeathTrackerBehavior implements IGameBehavior {
 		events.listen(GamePlayerEvents.DEATH, (player, source) -> onPlayerDeath(game, player, source));
 	}
 
-	private void onPlayerSetRole(IGamePhase game, ServerPlayer player, PlayerRole role, PlayerRole lastRole) {
+	private void onPlayerSetRole(IGamePhase game, ServerPlayer player, @Nullable PlayerRole role, @Nullable PlayerRole lastRole) {
 		if (role == PlayerRole.PARTICIPANT) {
 			game.getStatistics().forPlayer(player).set(StatisticKey.DEAD, false);
 		} else if (role == PlayerRole.SPECTATOR && lastRole == PlayerRole.PARTICIPANT) {

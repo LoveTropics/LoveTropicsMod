@@ -5,10 +5,13 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.ObjectSelectionList.Entry;
 import net.minecraft.client.gui.screens.Screen;
 
+import javax.annotation.Nullable;
+
 public abstract class LTListEntry<T extends LTListEntry<T>> extends Entry<T> {
 
 	protected final Screen screen;
 	protected final AbstractLTList<T> list;
+	@Nullable
 	protected Reorder reorder;
 	protected int dragStartIndex;
 

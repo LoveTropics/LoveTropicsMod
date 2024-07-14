@@ -8,10 +8,12 @@ import com.lovetropics.minigames.common.core.game.lobby.QueuedGame;
 import net.minecraft.network.chat.Component;
 
 import javax.annotation.Nullable;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
 
 abstract class LobbyState {
+	@Nullable
 	protected final GamePhase phase;
 	protected final LobbyControls controls = new LobbyControls();
 
@@ -135,10 +137,9 @@ abstract class LobbyState {
 			this.controls.add(LobbyControls.Type.RESTART, () -> phase.requestStop(GameStopReason.canceled()));
 		}
 
-		@Nullable
 		@Override
 		protected GameResult<LobbyState> tick(GameLobby lobby) {
-			GameStopReason stopping = phase.tick();
+			GameStopReason stopping = Objects.requireNonNull(phase).tick();
 			if (stopping == null) {
 				return GameResult.ok(this);
 			} else {
@@ -173,7 +174,7 @@ abstract class LobbyState {
 
 		@Override
 		protected GameResult<LobbyState> tick(GameLobby lobby) {
-			GameStopReason stopping = phase.tick();
+			GameStopReason stopping = Objects.requireNonNull(phase).tick();
 			if (stopping == null) {
 				return GameResult.ok(this);
 			} else {
@@ -192,6 +193,7 @@ abstract class LobbyState {
 
 	static final class Pending extends LobbyState {
 		final CompletableFuture<GameResult<LobbyState>> next;
+		@Nullable
 		ClientCurrentGame pendingGame;
 
 		Pending(@Nullable GamePhase phase, CompletableFuture<GameResult<LobbyState>> next) {

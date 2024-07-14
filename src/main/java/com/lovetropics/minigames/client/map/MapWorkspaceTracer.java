@@ -26,6 +26,7 @@ public final class MapWorkspaceTracer {
 	private static final Minecraft CLIENT = Minecraft.getInstance();
 	private static final double TRACE_RANGE = 64.0;
 
+	@Nullable
 	private static RegionEditOperator edit;
 
 	@SubscribeEvent

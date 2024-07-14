@@ -18,6 +18,7 @@ import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,6 +38,7 @@ public final class DriftwoodEntity extends Entity {
 
 	private float floatDepth = START_FLOAT_DEPTH;
 
+	@Nullable
 	private Vec3 steerDirection;
 	private float steerYaw;
 	private int steerTimer;

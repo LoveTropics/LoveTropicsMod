@@ -13,6 +13,8 @@ import net.minecraft.SharedConstants;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 
+import javax.annotation.Nullable;
+
 public class SurviveTheTideWeatherControlBehavior implements IGameBehavior {
     public static final MapCodec<SurviveTheTideWeatherControlBehavior> CODEC = SurviveTheTideWeatherConfig.CODEC.xmap(SurviveTheTideWeatherControlBehavior::new, b -> b.config);
 
@@ -62,6 +64,7 @@ public class SurviveTheTideWeatherControlBehavior implements IGameBehavior {
      * - consider design to factor in worn items to negate player effects
      */
 
+    @Nullable
     protected GameProgressionState progression;
     protected GameWeatherState weather;
 

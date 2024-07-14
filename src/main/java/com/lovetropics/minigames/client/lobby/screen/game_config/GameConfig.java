@@ -33,7 +33,8 @@ public final class GameConfig extends ScrollPanel {
 	private final Screen screen;
 
 	private final Handlers handlers;
-	
+
+	@Nullable
 	private ClientLobbyQueuedGame configuring;
 	private final List<ClientBehaviorList> configData = new ArrayList<>();
 	private final Multimap<ResourceLocation, BehaviorConfigUI> configMenus = LinkedHashMultimap.create();

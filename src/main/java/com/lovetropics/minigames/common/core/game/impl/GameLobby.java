@@ -155,7 +155,7 @@ final class GameLobby implements IGameLobby {
 		return GameResult.ok();
 	}
 
-	private GameResult<Unit> onGamePhaseChange(GamePhase oldPhase, GamePhase newPhase) {
+	private GameResult<Unit> onGamePhaseChange(@Nullable GamePhase oldPhase, @Nullable GamePhase newPhase) {
 		GameResult<Unit> result = GameResult.ok();
 
 		if (newPhase == null && oldPhase != null) {
@@ -188,7 +188,7 @@ final class GameLobby implements IGameLobby {
 		return phase.start();
 	}
 
-	private void onGameInstanceChange(GameInstance oldGame, GameInstance newGame) {
+	private void onGameInstanceChange(@Nullable GameInstance oldGame, @Nullable GameInstance newGame) {
 		if (oldGame != null) {
 			needsRolePrompt = true;
 		}
@@ -271,7 +271,10 @@ final class GameLobby implements IGameLobby {
 
 		try {
 			management.disable();
-			onStateChange(state.close());
+			LobbyStateManager.Change close = state.close();
+			if (close != null) {
+				onStateChange(close);
+			}
 
 			LobbyPlayerManager players = getPlayers();
 			for (ServerPlayer player : Lists.newArrayList(players)) {

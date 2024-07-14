@@ -14,12 +14,16 @@ import net.minecraft.world.phys.AABB;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.UnaryOperator;
 
 public class GameBuilder {
     private final ResourceLocation id;
+    @Nullable
     private ResourceLocation backendId;
+    @Nullable
     private String statisticsKey;
+    @Nullable
     private Component name;
     @Nullable
     private Component subtitle;
@@ -27,7 +31,9 @@ public class GameBuilder {
     private ResourceLocation icon;
     private int minimumParticipants = 1;
     private int maximumParticipants = 50;
+    @Nullable
     private GamePhaseConfig waiting;
+    @Nullable
     private GamePhaseConfig playing;
 
     public GameBuilder(ResourceLocation id) {
@@ -83,6 +89,7 @@ public class GameBuilder {
     }
 
     public GameConfig build() {
+        Objects.requireNonNull(playing, "Playing phase must be initialized");
         return new GameConfig(id, backendId, statisticsKey, name, subtitle, icon, minimumParticipants, maximumParticipants, waiting, playing);
     }
 

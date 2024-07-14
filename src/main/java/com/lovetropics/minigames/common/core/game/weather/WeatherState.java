@@ -2,12 +2,16 @@ package com.lovetropics.minigames.common.core.game.weather;
 
 import net.minecraft.network.FriendlyByteBuf;
 
+import javax.annotation.Nullable;
+
 public final class WeatherState {
 	public float rainAmount;
 	public PrecipitationType precipitationType = PrecipitationType.NORMAL;
 	public float windSpeed;
 	public boolean heatwave;
+	@Nullable
 	public StormState sandstorm;
+	@Nullable
 	public StormState snowstorm;
 
 	public void serialize(FriendlyByteBuf buffer) {

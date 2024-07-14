@@ -226,6 +226,7 @@ public interface PlantCoverage extends Iterable<BlockPos> {
 
 	final class Builder {
 		private final LongSet blocks = new LongOpenHashSet();
+		@Nullable
 		private BlockPos origin;
 
 		public Builder add(BlockPos pos) {

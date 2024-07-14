@@ -30,6 +30,7 @@ import java.util.function.UnaryOperator;
 
 @EventBusSubscriber(modid = LoveTropics.ID, bus = EventBusSubscriber.Bus.GAME, value = Dist.CLIENT)
 public final class ClientLobbyManagement {
+	@Nullable
 	private static Session session;
 
 	public static void update(int id, ClientLobbyUpdate.Set updates) {
@@ -43,8 +44,8 @@ public final class ClientLobbyManagement {
 
 	@SubscribeEvent
 	public static void onKeyInput(ClientTickEvent.Post event) {
-        if (LobbyKeybinds.MANAGE.consumeClick()) {
-            LocalPlayer player = Minecraft.getInstance().player;
+		LocalPlayer player = Minecraft.getInstance().player;
+		if (player != null && LobbyKeybinds.MANAGE.consumeClick()) {
             if (ClientLobbyManager.getJoined() != null) {
                 player.connection.sendUnsignedCommand("game manage");
             } else {

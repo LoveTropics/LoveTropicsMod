@@ -15,6 +15,7 @@ import java.util.function.Supplier;
 
 @EventBusSubscriber(modid = LoveTropics.ID, value = Dist.CLIENT)
 public final class ClientGameStateManager {
+	@Nullable
 	private static GameClientStateMap map;
 
 	public static <T extends GameClientState> void set(T state) {

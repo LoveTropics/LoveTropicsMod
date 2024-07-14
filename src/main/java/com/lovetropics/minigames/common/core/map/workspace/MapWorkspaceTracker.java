@@ -29,8 +29,6 @@ public final class MapWorkspaceTracker {
 	}
 
 	private static void trySendWorkspace(ServerPlayer player, ResourceKey<Level> dimension) {
-		if (dimension == null) return;
-
 		MinecraftServer server = player.level().getServer();
 		MapWorkspaceManager workspaceManager = MapWorkspaceManager.get(server);
 

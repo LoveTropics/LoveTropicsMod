@@ -43,11 +43,13 @@ final class LobbyStateManager {
 		return this.trySetState(newState);
 	}
 
+	@Nullable
 	Change handleError(Component error) {
 		LobbyState state = errored(this.state, error);
 		return this.trySetState(state);
 	}
 
+	@Nullable
 	Change close() {
 		return trySetState(new LobbyState.Closed());
 	}
@@ -73,6 +75,6 @@ final class LobbyStateManager {
 		}
 	}
 
-	record Change(GamePhase oldPhase, GamePhase newPhase) {
+	record Change(@Nullable GamePhase oldPhase, @Nullable GamePhase newPhase) {
 	}
 }

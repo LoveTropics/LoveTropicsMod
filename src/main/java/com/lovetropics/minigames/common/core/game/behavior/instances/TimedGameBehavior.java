@@ -24,6 +24,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.BossEvent;
 
+import javax.annotation.Nullable;
 import java.util.Map;
 import java.util.Optional;
 
@@ -37,9 +38,11 @@ public final class TimedGameBehavior implements IGameBehavior {
 
 	private final long length;
 	private final long closeTime;
+	@Nullable
 	private final TemplatedText timerBarText;
 	private final long countdownSeconds;
 
+	@Nullable
 	private GameBossBar timerBar;
 
 	private TimedGameState state;

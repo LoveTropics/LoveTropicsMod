@@ -36,6 +36,9 @@ public class LobbyStateGui {
 	@SubscribeEvent
 	public static void onKeyInput(ClientTickEvent.Post event) {
 		LocalPlayer player = Minecraft.getInstance().player;
+		if (player == null) {
+			return;
+		}
 		if (LobbyKeybinds.JOIN.consumeClick()) {
 			player.connection.sendUnsignedCommand("game join");
 		}
@@ -60,7 +63,7 @@ public class LobbyStateGui {
 		});
 	}
 
-	private static void renderLobbies(GuiGraphics graphics, ClientLobbyState joinedLobby, Collection<ClientLobbyState> lobbies, boolean hasBossBar) {
+	private static void renderLobbies(GuiGraphics graphics, @Nullable ClientLobbyState joinedLobby, Collection<ClientLobbyState> lobbies, boolean hasBossBar) {
 		if (joinedLobby != null) {
 			if (joinedLobby.getStatus() != LobbyStatus.PLAYING) {
 				render(graphics, PADDING, PADDING, joinedLobby, hasBossBar);
@@ -203,7 +206,7 @@ public class LobbyStateGui {
 		}
 	}
 
-	private static String formatPlayerCount(ClientLobbyState lobby, ClientCurrentGame currentGame) {
+	private static String formatPlayerCount(ClientLobbyState lobby, @Nullable ClientCurrentGame currentGame) {
 		if (currentGame != null) {
 			return lobby.getPlayerCount() + "/" + currentGame.definition().maximumParticipants;
 		} else {

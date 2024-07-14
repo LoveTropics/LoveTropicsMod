@@ -16,6 +16,7 @@ import java.util.Optional;
 public final class ClientLobbyManager {
 	private static final Int2ObjectMap<ClientLobbyState> LOBBIES = new Int2ObjectOpenHashMap<>();
 
+	@Nullable
 	private static ClientLobbyState joinedLobby;
 
 	@SubscribeEvent

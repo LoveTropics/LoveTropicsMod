@@ -16,6 +16,7 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.phys.Vec3;
 
+import javax.annotation.Nullable;
 import java.util.Map;
 import java.util.UUID;
 
@@ -91,6 +92,7 @@ public final class CampingTrackerBehavior implements IGameBehavior {
 	class CampingTracker {
 		boolean camping;
 
+		@Nullable
 		Vec3 lastPosition;
 		long lastTrackTime;
 
@@ -113,7 +115,7 @@ public final class CampingTrackerBehavior implements IGameBehavior {
 		}
 
 		int trackCamping(Vec3 currentPosition, long time) {
-			double movement = currentPosition.distanceTo(lastPosition);
+			double movement = lastPosition != null ? currentPosition.distanceTo(lastPosition) : Double.MAX_VALUE;
 			if (movement > campMovementThreshold) {
 				camping = false;
 				lastPosition = currentPosition;

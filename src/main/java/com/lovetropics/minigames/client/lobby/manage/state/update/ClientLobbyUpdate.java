@@ -71,7 +71,7 @@ public abstract class ClientLobbyUpdate extends PartialUpdate<ClientLobbyManagem
 			return this;
 		}
 
-		public Set setCurrentGame(ClientCurrentGame currentGame) {
+		public Set setCurrentGame(@Nullable ClientCurrentGame currentGame) {
 			this.add(new SetCurrentGame(currentGame));
 			return this;
 		}

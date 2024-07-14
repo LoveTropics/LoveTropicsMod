@@ -13,6 +13,8 @@ import net.minecraft.util.CommonColors;
 import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
 import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
 
+import javax.annotation.Nullable;
+
 public final class BbClientRenderEffects {
 	private static final Minecraft CLIENT = Minecraft.getInstance();
 	private static final int PADDING = 2;
@@ -29,7 +31,7 @@ public final class BbClientRenderEffects {
 		});
 	}
 
-	private static void renderOverlay(GuiGraphics graphics, ClientBbSelfState selfState, CurrencyTargetState currencyTarget) {
+	private static void renderOverlay(GuiGraphics graphics, ClientBbSelfState selfState, @Nullable CurrencyTargetState currencyTarget) {
 		Font font = CLIENT.font;
 
 		final int left = PADDING;

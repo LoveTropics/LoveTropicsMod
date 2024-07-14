@@ -43,7 +43,7 @@ public final class DropLootTableBehavior implements IGameBehavior {
 		this.lootTable = lootTable;
 	}
 
-	private IGamePhase game = null;
+	private IGamePhase game;
 
 	@Override
 	public void register(IGamePhase game, EventRegistrar events) {
@@ -84,15 +84,13 @@ public final class DropLootTableBehavior implements IGameBehavior {
 
 	private void dropLoot(ServerPlayer player, Plot plot, Plant plant, BlockPos pos) {
 		LootTable lootTable = this.getLootTable(game.getServer());
-		if (lootTable != null) {
-			ServerLevel world = game.getWorld();
+        ServerLevel world = game.getWorld();
 
-			LootParams params = this.buildLootParams(player, pos);
-			for (ItemStack stack : lootTable.getRandomItems(params)) {
-				Block.popResource(world, pos, stack);
-			}
-		}
-	}
+        LootParams params = this.buildLootParams(player, pos);
+        for (ItemStack stack : lootTable.getRandomItems(params)) {
+            Block.popResource(world, pos, stack);
+        }
+    }
 
 	private LootParams buildLootParams(ServerPlayer player, BlockPos pos) {
 		return new LootParams.Builder(player.serverLevel())
@@ -104,12 +102,7 @@ public final class DropLootTableBehavior implements IGameBehavior {
 				.create(LootContextParamSets.BLOCK);
 	}
 
-	@Nullable
 	private LootTable getLootTable(MinecraftServer server) {
-		if (this.lootTable != null) {
-			return server.reloadableRegistries().getLootTable(this.lootTable);
-		} else {
-			return null;
-		}
-	}
+        return server.reloadableRegistries().getLootTable(this.lootTable);
+    }
 }

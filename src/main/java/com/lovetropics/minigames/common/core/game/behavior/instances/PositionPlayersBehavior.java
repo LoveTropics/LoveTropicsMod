@@ -133,7 +133,7 @@ public class PositionPlayersBehavior implements IGameBehavior {
 	}
 
 	@Nullable
-	private BlockBox getParticipantSpawnRegion(UUID playerId, TeamState teams) {
+	private BlockBox getParticipantSpawnRegion(UUID playerId, @Nullable TeamState teams) {
 		GameTeamKey team = teams != null ? teams.getTeamForPlayer(playerId) : null;
 		if (team != null) {
 			CycledSpawner teamSpawner = teamSpawners.get(team);

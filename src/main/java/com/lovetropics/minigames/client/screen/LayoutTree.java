@@ -8,6 +8,8 @@ import com.lovetropics.minigames.client.screen.flex.Axis;
 import com.lovetropics.minigames.client.screen.flex.Box;
 import com.lovetropics.minigames.client.screen.flex.Layout;
 
+import javax.annotation.Nullable;
+
 /**
  * A simple tree based system, you push children onto the tree with various
  * attributes, and when that node is popped it is contracted to min-content.
@@ -47,13 +49,14 @@ import com.lovetropics.minigames.client.screen.flex.Layout;
 public class LayoutTree {
 
 	private static class LayoutNode {
+		@Nullable
 		final LayoutNode parent;
 		Layout bounds;
 		final LinkedList<LayoutNode> children = new LinkedList<>();
 		boolean contracted = false;
 		final BitSet definite = new BitSet();
 
-		LayoutNode(LayoutNode parent, Layout self, Axis... definite) {
+		LayoutNode(@Nullable LayoutNode parent, Layout self, Axis... definite) {
 			this.parent = parent;
 			this.bounds = self;
 			for (Axis axis : definite) {

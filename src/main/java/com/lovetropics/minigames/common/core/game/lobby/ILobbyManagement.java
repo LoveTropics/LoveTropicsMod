@@ -4,6 +4,8 @@ import com.lovetropics.minigames.common.core.game.IGameDefinition;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.server.level.ServerPlayer;
 
+import javax.annotation.Nullable;
+
 public interface ILobbyManagement {
 	boolean startManaging(ServerPlayer player);
 
@@ -19,6 +21,7 @@ public interface ILobbyManagement {
 
 	void reorderQueuedGame(int id, int newIndex);
 
+	@Nullable
 	QueuedGame getQueuedGame(int id);
 
 	void selectControl(LobbyControls.Type type);

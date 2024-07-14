@@ -13,6 +13,7 @@ import java.util.List;
 
 public final class ClientLobbyManageState {
 	private String name = "";
+	@Nullable
 	private ClientCurrentGame currentGame;
 	private ClientLobbyQueue queue = new ClientLobbyQueue();
 	private List<ClientLobbyPlayer> players = ImmutableList.of();

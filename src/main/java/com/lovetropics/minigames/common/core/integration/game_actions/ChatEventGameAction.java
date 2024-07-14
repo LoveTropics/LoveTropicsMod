@@ -10,6 +10,8 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.InteractionResult;
 import org.slf4j.Logger;
 
+import java.util.Optional;
+
 public record ChatEventGameAction(String trigger) implements GameAction {
     private static final Logger LOGGER = LogUtils.getLogger();
 
@@ -20,7 +22,7 @@ public record ChatEventGameAction(String trigger) implements GameAction {
     // TODO: Make GamePackage system less specific to packages
     @Override
     public boolean resolve(IGamePhase game, MinecraftServer server) {
-        GamePackage triggeredPackage = new GamePackage(trigger, null, null);
+        GamePackage triggeredPackage = new GamePackage(trigger, "", Optional.empty());
 
         InteractionResult result = game.invoker(GamePackageEvents.RECEIVE_PACKAGE).onReceivePackage(triggeredPackage);
         switch (result) {

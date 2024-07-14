@@ -59,7 +59,7 @@ public final class MapWorkspaceManager extends SavedData {
 	private RuntimeDimensionHandle getOrCreateDimension(String id, WorkspaceDimensionConfig dimensionConfig, MapWorldSettings mapSettings) {
 		return RuntimeDimensions.get(server).getOrOpenPersistent(LoveTropics.location(id), () -> {
 			MapWorldInfo worldInfo = MapWorldInfo.create(server, mapSettings);
-			return dimensionConfig.toRuntimeConfig(server, worldInfo);
+			return dimensionConfig.toRuntimeConfig(worldInfo);
 		});
 	}
 

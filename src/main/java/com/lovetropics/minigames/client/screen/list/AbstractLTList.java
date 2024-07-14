@@ -14,6 +14,7 @@ public abstract class AbstractLTList<T extends LTListEntry<T>> extends ObjectSel
 
 	private static final int SCROLL_WIDTH = 6;
 	public final Screen screen;
+	@Nullable
 	protected T draggingEntry;
 	private int dragOffset;
 

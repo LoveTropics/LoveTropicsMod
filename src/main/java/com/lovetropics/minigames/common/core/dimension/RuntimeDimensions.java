@@ -45,6 +45,7 @@ import java.util.function.Supplier;
 public final class RuntimeDimensions {
 	private static final Logger LOGGER = LogManager.getLogger(RuntimeDimensions.class);
 
+	@Nullable
 	private static RuntimeDimensions instance;
 
 	private final MinecraftServer server;

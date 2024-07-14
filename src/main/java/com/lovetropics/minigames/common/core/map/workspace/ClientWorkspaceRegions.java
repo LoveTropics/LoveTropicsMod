@@ -19,7 +19,7 @@ public class ClientWorkspaceRegions implements Iterable<ClientWorkspaceRegions.E
 			protected void add(Entry entry) {}
 			
 			@Override
-			public void set(int id, BlockBox region) {}
+			public void set(int id, @Nullable BlockBox region) {}
 		};
 	}
 

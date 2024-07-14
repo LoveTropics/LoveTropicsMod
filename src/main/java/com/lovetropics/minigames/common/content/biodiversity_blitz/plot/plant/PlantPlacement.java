@@ -6,8 +6,11 @@ import net.minecraft.server.level.ServerLevel;
 import javax.annotation.Nullable;
 
 public final class PlantPlacement {
+	@Nullable
 	private PlantCoverage functionalCoverage;
+	@Nullable
 	private PlantCoverage decorationCoverage;
+	@Nullable
 	private Place place;
 
 	public PlantPlacement covers(BlockPos pos) {

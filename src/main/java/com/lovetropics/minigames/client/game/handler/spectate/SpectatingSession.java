@@ -5,6 +5,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.util.Mth;
 import net.neoforged.neoforge.client.event.ViewportEvent;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.UUID;
 
@@ -16,6 +17,7 @@ class SpectatingSession {
 	final SpectatingUi ui;
 
 	SpectatingState state;
+	@Nullable
 	SpectatingState.StateApplicator stateApplicator;
 
 	double targetZoom = 1.0;

@@ -165,7 +165,7 @@ public class DelegatingWorldGenLevel implements WorldGenLevel {
 	}
 
 	@Override
-	public List<Entity> getEntities(@Nullable Entity entity, AABB box, @Nullable Predicate<? super Entity> predicate) {
+	public List<Entity> getEntities(@Nullable Entity entity, AABB box, Predicate<? super Entity> predicate) {
 		return this.parent.getEntities(entity, box, predicate);
 	}
 

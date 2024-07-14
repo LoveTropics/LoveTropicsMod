@@ -21,6 +21,8 @@ import net.minecraft.SharedConstants;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 
+import javax.annotation.Nullable;
+
 // TODO: make it generic and data-driven
 public class SttSidebarBehavior implements IGameBehavior {
 	public static final MapCodec<SttSidebarBehavior> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
@@ -59,8 +61,8 @@ public class SttSidebarBehavior implements IGameBehavior {
 		this.game = game;
 		widgets = GlobalGameWidgets.registerTo(game, events);
 
-		progression = game.getState().getOrNull(GameProgressionState.KEY);
-		weather = game.getState().getOrNull(GameWeatherState.KEY);
+		progression = game.getState().getOrThrow(GameProgressionState.KEY);
+		weather = game.getState().getOrThrow(GameWeatherState.KEY);
 
 		events.listen(GamePhaseEvents.START, () -> {
 			sidebar = widgets.openSidebar(game.getDefinition().getName().copy().withStyle(ChatFormatting.YELLOW, ChatFormatting.BOLD));

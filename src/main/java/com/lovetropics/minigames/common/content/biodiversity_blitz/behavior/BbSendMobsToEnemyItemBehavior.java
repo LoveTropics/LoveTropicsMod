@@ -32,6 +32,7 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.RenderTooltipEvent;
 
+import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
@@ -48,6 +49,7 @@ public final class BbSendMobsToEnemyItemBehavior implements IGameBehavior {
         this.items = items;
     }
 
+    @Nullable
     private Multimap<Plot, Entity> sentEnemies;
 
     @Override

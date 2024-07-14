@@ -23,6 +23,7 @@ public final class DriftwoodRider {
 	);
 
 	private final Player player;
+	@Nullable
 	private DriftwoodEntity ridingDriftwood;
 	private int ridingTime;
 

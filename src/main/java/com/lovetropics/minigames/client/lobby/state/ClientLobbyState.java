@@ -21,7 +21,7 @@ public class ClientLobbyState {
 		this.id = id;
 	}
 
-	public void update(String name, ClientCurrentGame currentGame) {
+	public void update(String name, @Nullable ClientCurrentGame currentGame) {
 		this.name = name;
 		this.currentGame = currentGame;
 	}

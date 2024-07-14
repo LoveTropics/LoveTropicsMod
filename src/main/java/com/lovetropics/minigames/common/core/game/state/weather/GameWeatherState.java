@@ -16,6 +16,7 @@ public final class GameWeatherState implements IGameState {
 	private final WeatherController controller;
 	private final GameWorldEvents.SetWeather weatherListener;
 
+	@Nullable
 	private WeatherEvent event;
 
 	private int weatherCooldown = 0;

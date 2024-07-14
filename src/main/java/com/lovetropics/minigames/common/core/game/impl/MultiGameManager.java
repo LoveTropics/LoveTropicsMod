@@ -56,6 +56,7 @@ public class MultiGameManager implements IGameManager {
 	private final Map<UUID, GameLobby> lobbiesByPlayer = new Object2ObjectOpenHashMap<>();
 	private final Map<ResourceKey<Level>, List<GamePhase>> gamesByDimension = new Reference2ObjectOpenHashMap<>();
 
+	@Nullable
 	private GameLobby focusedLiveLobby;
 
 	@Override

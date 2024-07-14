@@ -13,6 +13,8 @@ import java.util.Set;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
+import javax.annotation.Nullable;
+
 public abstract class ConfigData {
 	
 	private final DisplayHint display = DisplayHint.NONE;
@@ -83,6 +85,7 @@ public abstract class ConfigData {
 		public static final ListConfigData EMPTY = new ListConfigData(ConfigType.NONE);
 		
 		private ConfigType type;
+		@Nullable
 		private Object defaultValue;
 		private final List<Object> values = new ArrayList<>();
 
@@ -209,6 +212,7 @@ public abstract class ConfigData {
 			return values.keySet();
 		}
 
+		@Nullable
 		public ConfigData put(String name, ConfigData value) {
 			return values.put(name, value);
 		}

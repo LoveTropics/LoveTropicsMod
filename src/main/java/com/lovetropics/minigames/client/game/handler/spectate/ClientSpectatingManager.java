@@ -12,6 +12,7 @@ import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.RenderFrameEvent;
 import net.neoforged.neoforge.client.event.ViewportEvent;
 
+import javax.annotation.Nullable;
 import java.util.UUID;
 
 @EventBusSubscriber(modid = LoveTropics.ID, value = Dist.CLIENT)
@@ -22,6 +23,7 @@ public final class ClientSpectatingManager implements ClientGameStateHandler<Spe
 
 	static final double MAX_CHASE_DISTANCE = 16.0;
 
+	@Nullable
 	SpectatingSession session;
 
 	@Override
@@ -45,7 +47,9 @@ public final class ClientSpectatingManager implements ClientGameStateHandler<Spe
 	}
 
 	public void onPlayerActivity(UUID player, int color) {
-		session.ui.onPlayerActivity(player, color);
+		if (session != null) {
+			session.ui.onPlayerActivity(player, color);
+		}
 	}
 
 	@SubscribeEvent

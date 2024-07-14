@@ -29,7 +29,6 @@ public final class BbMerchant implements Merchant {
 
     }
 
-    @Nullable
     @Override
     public Player getTradingPlayer() {
         return this.customer;

@@ -5,7 +5,6 @@ import com.lovetropics.lib.BlockBox;
 import com.lovetropics.minigames.common.core.game.util.GameScheduler;
 import net.minecraft.commands.arguments.blocks.BlockInput;
 import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.commands.SetBlockCommand;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.Clearable;
@@ -78,7 +77,7 @@ public class BlockPlacer {
     /**
      * Logic mostly copied from the fill command.
      */
-    public static void placeBlocks(ServerLevel level, BlockBox box, BlockInput newBlock, Mode mode, Predicate<BlockInWorld> replacingPredicate, @Nullable GameScheduler scheduler, @Nullable Function<BlockPos, Integer> tickDelay, @Nullable Consumer<BlockPos> doneCallback) {
+    public static void placeBlocks(ServerLevel level, BlockBox box, BlockInput newBlock, Mode mode, @Nullable Predicate<BlockInWorld> replacingPredicate, @Nullable GameScheduler scheduler, @Nullable Function<BlockPos, Integer> tickDelay, @Nullable Consumer<BlockPos> doneCallback) {
 
         List<BlockPos> list = Lists.newArrayList();
 

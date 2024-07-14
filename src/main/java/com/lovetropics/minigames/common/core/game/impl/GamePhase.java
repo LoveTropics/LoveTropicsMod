@@ -57,6 +57,7 @@ public class GamePhase implements IGamePhase {
 	final GameEventListeners events = new GameEventListeners();
 
 	long startTime;
+	@Nullable
 	GameStopReason stopped;
 	boolean destroyed;
 
@@ -124,7 +125,7 @@ public class GamePhase implements IGamePhase {
 		return GameResult.ok();
 	}
 
-	private ServerPlayer addAndSpawnPlayer(ServerPlayer player, PlayerRole role) {
+	private ServerPlayer addAndSpawnPlayer(ServerPlayer player, @Nullable PlayerRole role) {
 		SpawnBuilder spawn = new SpawnBuilder(player);
 		invoker(GamePlayerEvents.SPAWN).onSpawn(player.getUUID(), spawn, role);
 

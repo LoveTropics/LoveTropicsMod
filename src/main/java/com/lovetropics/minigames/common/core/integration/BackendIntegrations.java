@@ -46,6 +46,7 @@ public final class BackendIntegrations {
 
 	private final BackendProxy proxy;
 
+	@Nullable
 	private GameInstanceIntegrations liveInstance;
 
 	private BackendIntegrations() {

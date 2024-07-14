@@ -36,6 +36,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.ItemStack;
 
+import javax.annotation.Nullable;
 import java.util.List;
 
 // TODO: clean up and split up
@@ -114,7 +115,7 @@ public final class HideAndSeekBehavior implements IGameBehavior {
 		}
 	}
 
-	private void onPlayerSetRole(ServerPlayer player, PlayerRole role, PlayerRole lastRole) {
+	private void onPlayerSetRole(ServerPlayer player, @Nullable PlayerRole role, @Nullable PlayerRole lastRole) {
 		if (lastRole == PlayerRole.PARTICIPANT) {
 			this.removeParticipant(player);
 		}

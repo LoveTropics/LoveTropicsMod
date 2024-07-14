@@ -13,6 +13,7 @@ import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.CommonColors;
 
+import javax.annotation.Nullable;
 import java.util.List;
 
 public abstract class AbstractGameList extends AbstractLTList<AbstractGameList.Entry> {
@@ -47,6 +48,7 @@ public abstract class AbstractGameList extends AbstractLTList<AbstractGameList.E
 
 		private final int id;
 		TrimmedText title = TrimmedText.EMPTY;
+		@Nullable
 		TrimmedText subtitle = null;
 
 		private int backgroundColor = -1;

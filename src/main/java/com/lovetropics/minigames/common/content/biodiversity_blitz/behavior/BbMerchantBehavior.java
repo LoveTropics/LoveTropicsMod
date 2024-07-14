@@ -174,10 +174,12 @@ public final class BbMerchantBehavior implements IGameBehavior {
 						output -> output.item != null ? Either.left(output) : Either.right(output)
 				);
 
+		@Nullable
 		private final ItemStack item;
+		@Nullable
 		private final PlantItemType plant;
 
-		private Output(ItemStack item, PlantItemType plant) {
+		private Output(@Nullable ItemStack item, @Nullable PlantItemType plant) {
 			this.item = item;
 			this.plant = plant;
 		}
@@ -193,9 +195,10 @@ public final class BbMerchantBehavior implements IGameBehavior {
 		private ItemStack build(IGamePhase game) {
 			if (this.item != null) {
 				return this.item;
-			} else {
+			} else if (this.plant != null) {
 				return game.invoker(BbEvents.CREATE_PLANT_ITEM).createPlantItem(this.plant);
 			}
+			throw new IllegalStateException();
 		}
 	}
 }

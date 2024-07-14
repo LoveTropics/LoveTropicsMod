@@ -17,6 +17,7 @@ public final class TeamAllocator<T, V> {
 	private final Map<V, T> teamPreferences = new Object2ObjectOpenHashMap<>();
 
 	private final Object2IntMap<T> teamSizes = new Object2IntOpenHashMap<>();
+	@Nullable
 	private T overflowTeam;
 
 	public TeamAllocator(Collection<T> teams) {

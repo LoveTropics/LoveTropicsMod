@@ -18,6 +18,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 
+import javax.annotation.Nullable;
 import java.util.Map;
 import java.util.Optional;
 
@@ -53,7 +54,7 @@ public record ImmediateRespawnBehavior(Optional<PlayerRole> role, Optional<Playe
 		return InteractionResult.PASS;
 	}
 
-	private void respawnPlayer(IGamePhase game, ServerPlayer player, PlayerRole playerRole, DamageSource source) {
+	private void respawnPlayer(IGamePhase game, ServerPlayer player, @Nullable PlayerRole playerRole, DamageSource source) {
 		if (respawnAsRole.isPresent()) {
 			game.setPlayerRole(player, respawnAsRole.get());
 			final ServerPlayer killer = Util.getKillerPlayer(player, source);

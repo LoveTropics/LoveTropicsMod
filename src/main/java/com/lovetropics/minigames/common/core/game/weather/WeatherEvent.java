@@ -7,7 +7,9 @@ public final class WeatherEvent {
 	private final WeatherEventType type;
 	private long time;
 
+	@Nullable
 	private Consumer<WeatherController> apply;
+	@Nullable
 	private Consumer<WeatherController> remove;
 
 	private WeatherEvent(WeatherEventType type, long time) {

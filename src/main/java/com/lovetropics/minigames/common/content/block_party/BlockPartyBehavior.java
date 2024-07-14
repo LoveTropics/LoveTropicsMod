@@ -70,6 +70,7 @@ public final class BlockPartyBehavior implements IGameBehavior {
 	private int quadCountX;
 	private int quadCountZ;
 
+	@Nullable
 	private State state;
 
 	public BlockPartyBehavior(String floorRegionKey, Block[] blocks, int quadSize, long maxTime, long minTime, int timeDecayRounds, long interval, int knockbackAfterAround) {

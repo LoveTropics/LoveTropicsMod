@@ -16,6 +16,7 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.neoforge.network.PacketDistributor;
 
+import javax.annotation.Nullable;
 import java.util.function.UnaryOperator;
 
 final class LobbyManagement implements ILobbyManagement {
@@ -102,6 +103,7 @@ final class LobbyManagement implements ILobbyManagement {
 	}
 
 	@Override
+	@Nullable
 	public QueuedGame getQueuedGame(int id) {
 		return lobby.gameQueue.getByNetworkId(id);
 	}
