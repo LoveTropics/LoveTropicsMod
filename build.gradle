@@ -2,10 +2,8 @@ plugins {
     id 'eclipse'
     id 'idea'
     id 'java-library'
-    id 'net.neoforged.gradle.userdev' version '7.0.145'
+    id 'net.neoforged.moddev' version '1.0.0'
 }
-
-jarJar.enable()
 
 group = 'com.lovetropics.minigames'
 base {
@@ -37,43 +35,52 @@ sourceSets.test.resources {
     include 'data/ltminigames/structures/**'
 }
 
-runs {
-    configureEach {
-        workingDirectory project.file('run')
+neoForge {
+    version = project.neo_version
 
-        systemProperty 'forge.logging.markers', 'REGISTRIES'
-        systemProperty 'forge.logging.console.level', 'warn'
-
-        modSource project.sourceSets.main
-    }
-
-    client {
-        programArguments.addAll '--username', 'Dev###'
-    }
-
-    server {
-        programArgument '--nogui'
-    }
-
-    data {
-        programArguments.addAll '--mod', project.mod_id, '--all', '--output', file('src/generated/resources/').getAbsolutePath(), '--existing', file('src/main/resources/').getAbsolutePath()
-    }
-
-    gameTestServer {
-        systemProperty 'forge.enabledGameTestNamespaces', project.mod_id
-    }
-}
-
-minecraft {
-    accessTransformers {
-        file('src/main/resources/META-INF/accesstransformer.cfg')
-    }
-}
-
-subsystems {
     parchment {
         minecraftVersion = minecraft_version
         mappingsVersion = parchment_version
+    }
+
+    addModdingDependenciesTo sourceSets.test
+
+    runs {
+        client {
+            client()
+
+            programArguments.addAll '--username', 'Dev###'
+            systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+        }
+
+        server {
+            server()
+
+            programArgument '--nogui'
+            systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+        }
+
+        gameTestServer {
+            type = "gameTestServer"
+            systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+        }
+
+        data {
+            data()
+
+            programArguments.addAll '--mod', project.mod_id, '--all', '--output', file('src/generated/resources/').getAbsolutePath(), '--existing', file('src/main/resources/').getAbsolutePath()
+        }
+
+        configureEach {
+            logLevel = org.slf4j.event.Level.WARN
+        }
+    }
+
+    mods {
+        "${project.mod_id}" {
+            sourceSet sourceSets.main
+            sourceSet sourceSets.test
+        }
     }
 }
 
@@ -99,13 +106,14 @@ repositories {
 }
 
 dependencies {
-    implementation "net.neoforged:neoforge:${neo_version}"
-
     modRuntime 'maven.modrinth:tropicraft:9.7.0-1.21'
 
     // TODO: HACK - We get Registrate at runtime through JarJar from Tropicraft. We should rather prefer to depend on the slim jar.
     jarJar(modCompile("com.tterrag.registrate:Registrate:MC1.21-${registrate_version}")) {
-        jarJar.ranged(it, "[MC1.21-${registrate_version},MC1.22)")
+        version {
+            strictly "[MC1.21-${registrate_version},MC1.22)"
+            prefer "MC1.21-${registrate_version}"
+        }
     }
 
     jarJar(modImpl("com.lovetropics.lib:LTLib:$ltlib_version"))
@@ -121,27 +129,19 @@ test {
     }
 }
 
-tasks.named('jar', Jar).configure {
-    archiveClassifier = 'slim'
-}
-
-tasks.named('jarJar').configure {
-    archiveClassifier = ''
-}
-
 task sourceJar(type: Jar, dependsOn: classes) {
     archiveClassifier = 'sources'
     from sourceSets.main.java
 }
 
-tasks.named('processResources', ProcessResources).configure {
+tasks.withType(ProcessResources).configureEach {
     var replaceProperties = [
             mod_version: mod_version,
     ]
     inputs.properties replaceProperties
 
     filesMatching(['META-INF/neoforge.mods.toml']) {
-        expand replaceProperties + [project: project]
+        expand replaceProperties
     }
 }
 
