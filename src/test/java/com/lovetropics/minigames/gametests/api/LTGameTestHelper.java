@@ -592,7 +592,7 @@ public class LTGameTestHelper extends GameTestHelper {
         IGameLobby lobby = result.getOk();
         lobby.getPlayers().join(player, initiatorRole);
 
-        ((List<GameTestListener>) ((GameTestInfoAccess) info).getListeners()).add(0, new GameTestListener() {
+        ((List<GameTestListener>) ((GameTestInfoAccess) info).getListeners()).addFirst(new GameTestListener() {
             @Override
             public void testStructureLoaded(GameTestInfo pTestInfo) {
 

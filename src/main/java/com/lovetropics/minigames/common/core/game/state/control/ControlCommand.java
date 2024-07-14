@@ -80,6 +80,6 @@ public record ControlCommand(Scope scope, Handler handler) {
 	}
 
 	public interface Handler {
-		void run(CommandSourceStack source) throws CommandSyntaxException;
+		void run(CommandSourceStack source);
 	}
 }

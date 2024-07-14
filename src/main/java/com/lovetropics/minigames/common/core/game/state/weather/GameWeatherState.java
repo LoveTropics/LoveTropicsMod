@@ -19,7 +19,7 @@ public final class GameWeatherState implements IGameState {
 	private WeatherEvent event;
 
 	private int weatherCooldown = 0;
-	private int weatherCooldownBetweenStates = 11 * SharedConstants.TICKS_PER_SECOND;
+	private final int weatherCooldownBetweenStates = 11 * SharedConstants.TICKS_PER_SECOND;
 
 	public GameWeatherState(WeatherController controller, GameWorldEvents.SetWeather weatherListener) {
 		this.controller = controller;

@@ -4,10 +4,8 @@ import com.google.common.collect.Lists;
 import com.lovetropics.lib.BlockBox;
 import com.lovetropics.minigames.common.core.game.util.GameScheduler;
 import net.minecraft.commands.arguments.blocks.BlockInput;
-import net.minecraft.commands.arguments.blocks.BlockPredicateArgument;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.server.commands.FillCommand;
 import net.minecraft.server.commands.SetBlockCommand;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.Clearable;
@@ -25,7 +23,7 @@ import java.util.function.Predicate;
 
 public class BlockPlacer {
 
-    static final BlockInput HOLLOW_CORE = new BlockInput(Blocks.AIR.defaultBlockState(), Collections.emptySet(), (CompoundTag)null);
+    static final BlockInput HOLLOW_CORE = new BlockInput(Blocks.AIR.defaultBlockState(), Collections.emptySet(), null);
 
     public enum Mode {
         REPLACE((p_137433_, p_137434_, p_137435_, p_137436_) -> {

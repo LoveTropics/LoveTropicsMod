@@ -96,7 +96,7 @@ public class JoinGameCommand {
 		} else {
 			List<? extends IGameLobby> lobbies = IGameManager.get().getVisibleLobbies(source).collect(Collectors.toList());
 			if (lobbies.size() == 1) {
-				return GameResult.ok(lobbies.get(0));
+				return GameResult.ok(lobbies.getFirst());
 			} else if (lobbies.isEmpty()) {
 				return GameResult.error(GameTexts.Commands.NO_JOINABLE_LOBBIES);
 			}

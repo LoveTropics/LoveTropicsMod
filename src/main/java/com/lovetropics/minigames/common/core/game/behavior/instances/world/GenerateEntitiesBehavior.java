@@ -46,7 +46,7 @@ public final class GenerateEntitiesBehavior extends ChunkGeneratingBehavior {
 			int z = minZ + random.nextInt(16);
 
 			BlockPos pos = world.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, new BlockPos(x, 0, z));
-			type.spawn(world, null, (Player) null, pos, MobSpawnType.CHUNK_GENERATION, false, false);
+			type.spawn(world, null, null, pos, MobSpawnType.CHUNK_GENERATION, false, false);
 		}
 	}
 }

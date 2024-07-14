@@ -34,7 +34,7 @@ public enum ConfigType {
 	protected final Class<?> requiredType;
 	protected final boolean isComplex;
 
-	private ConfigType(Class<?> requiredType, boolean isComplex) {
+	ConfigType(Class<?> requiredType, boolean isComplex) {
 		this.requiredType = requiredType;
 		this.isComplex = isComplex;
 	}

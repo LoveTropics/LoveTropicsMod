@@ -68,17 +68,17 @@ public final class ClientLobbyQueue implements Iterable<ClientLobbyQueuedGame> {
 	public Iterable<Entry> entries() {
 		return () -> {
 			IntListIterator iterator = queue.iterator();
-			return new AbstractIterator<Entry>() {
-				@Override
-				protected Entry computeNext() {
-					if (!iterator.hasNext()) {
-						return endOfData();
-					}
-					int id = iterator.nextInt();
-					ClientLobbyQueuedGame game = byIdOrThrow(id);
-					return new Entry(id, game);
-				}
-			};
+			return new AbstractIterator<>() {
+                @Override
+                protected Entry computeNext() {
+                    if (!iterator.hasNext()) {
+                        return endOfData();
+                    }
+                    int id = iterator.nextInt();
+                    ClientLobbyQueuedGame game = byIdOrThrow(id);
+                    return new Entry(id, game);
+                }
+            };
 		};
 	}
 

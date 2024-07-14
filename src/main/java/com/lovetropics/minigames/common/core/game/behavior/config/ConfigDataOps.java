@@ -216,7 +216,7 @@ public class ConfigDataOps implements DynamicOps<ConfigData> {
             return DataResult.error(() -> "Not a composite config: " + input);
         }
         final CompositeConfigData composite = (CompositeConfigData) input;
-        return DataResult.success(new MapLike<ConfigData>() {
+        return DataResult.success(new MapLike<>() {
             @Nullable
             @Override
             public ConfigData get(final ConfigData key) {
@@ -289,7 +289,7 @@ public class ConfigDataOps implements DynamicOps<ConfigData> {
     	if (list.isEmpty()) {
     		return ListConfigData.EMPTY;
     	}
-        final ListConfigData result = new ListConfigData(list.get(0).type());
+        final ListConfigData result = new ListConfigData(list.getFirst().type());
         list.stream().map(d -> d.type().isComplex() ? d : d.value()).forEach(result::add);
         return result;
     }

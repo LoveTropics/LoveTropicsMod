@@ -57,9 +57,8 @@ public final class EditRegionItem extends Item {
 
 			MapWorkspaceTracer.stopEditing();
 
-			if (entity instanceof Player) {
-				Player player = (Player) entity;
-				Component message = Component.literal("Changed mode to: ")
+			if (entity instanceof Player player) {
+                Component message = Component.literal("Changed mode to: ")
 						.append(Component.literal(mode.key).withStyle(mode.color));
 				player.displayClientMessage(message, true);
 			}

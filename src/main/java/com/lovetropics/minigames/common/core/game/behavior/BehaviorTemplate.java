@@ -3,7 +3,6 @@ package com.lovetropics.minigames.common.core.game.behavior;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.JsonOps;
-import net.minecraft.Util;
 
 import java.util.function.Supplier;
 
@@ -27,7 +26,8 @@ public sealed interface BehaviorTemplate {
 			this.data = data;
 		}
 
-		public IGameBehavior instantiate() {
+		@Override
+        public IGameBehavior instantiate() {
 			// Data has already been validated, something has gone wrong if we fail to parse again
 			return IGameBehavior.CODEC.parse(data).resultOrPartial(s -> {}).orElseThrow();
 		}

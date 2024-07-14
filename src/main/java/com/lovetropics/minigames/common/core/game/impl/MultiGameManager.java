@@ -117,7 +117,7 @@ public class MultiGameManager implements IGameManager {
 	public IGamePhase getGamePhaseInDimension(Level level) {
 		List<GamePhase> games = gamesByDimension.get(level.dimension());
 		if (games != null && games.size() == 1) {
-			return games.get(0);
+			return games.getFirst();
 		}
 		return null;
 	}
@@ -279,9 +279,8 @@ public class MultiGameManager implements IGameManager {
 	@SubscribeEvent
 	public static void onPlayerTryChangeDimension(EntityTravelToDimensionEvent event) {
 		Entity entity = event.getEntity();
-		if (entity instanceof ServerPlayer) {
-			ServerPlayer player = (ServerPlayer) entity;
-			ServerLevel targetWorld = player.server.getLevel(event.getDimension());
+		if (entity instanceof ServerPlayer player) {
+            ServerLevel targetWorld = player.server.getLevel(event.getDimension());
 			if (targetWorld == null) {
 				return;
 			}

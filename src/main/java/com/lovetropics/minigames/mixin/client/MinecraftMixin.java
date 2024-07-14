@@ -18,7 +18,7 @@ import javax.annotation.Nullable;
 public class MinecraftMixin {
     @Nullable
     @Shadow
-    private LocalPlayer player;
+    public LocalPlayer player;
 
     @Inject(at = @At("HEAD"), method = "shouldEntityAppearGlowing", cancellable = true)
     private void ltminigames$glowingTeamMembers(Entity entity, CallbackInfoReturnable<Boolean> cir) {

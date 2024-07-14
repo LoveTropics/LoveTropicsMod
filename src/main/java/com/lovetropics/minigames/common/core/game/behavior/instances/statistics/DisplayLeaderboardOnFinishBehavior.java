@@ -5,7 +5,6 @@ import com.lovetropics.minigames.common.core.game.IGamePhase;
 import com.lovetropics.minigames.common.core.game.behavior.IGameBehavior;
 import com.lovetropics.minigames.common.core.game.behavior.event.EventRegistrar;
 import com.lovetropics.minigames.common.core.game.behavior.event.GameLogicEvents;
-import com.lovetropics.minigames.common.core.game.behavior.event.GamePhaseEvents;
 import com.lovetropics.minigames.common.core.game.player.PlayerSet;
 import com.lovetropics.minigames.common.core.game.state.statistics.PlacementOrder;
 import com.lovetropics.minigames.common.core.game.state.statistics.PlayerPlacement;
@@ -13,7 +12,6 @@ import com.lovetropics.minigames.common.core.game.state.statistics.StatisticKey;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.network.chat.Component;
 
 public record DisplayLeaderboardOnFinishBehavior<T extends Comparable<T>>(StatisticKey<T> statistic, PlacementOrder order, int length) implements IGameBehavior {
 	public static final MapCodec<DisplayLeaderboardOnFinishBehavior<?>> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
@@ -24,7 +22,7 @@ public record DisplayLeaderboardOnFinishBehavior<T extends Comparable<T>>(Statis
 
 	@SuppressWarnings("unchecked")
 	private static <T extends Comparable<T>> DisplayLeaderboardOnFinishBehavior<T> createUnchecked(StatisticKey<?> statistic, PlacementOrder order, int length) {
-		return new DisplayLeaderboardOnFinishBehavior<T>((StatisticKey<T>) statistic, order, length);
+		return new DisplayLeaderboardOnFinishBehavior<>((StatisticKey<T>) statistic, order, length);
 	}
 
 	@Override

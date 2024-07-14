@@ -10,7 +10,7 @@ import net.minecraft.network.chat.MutableComponent;
 public class TurtleRaceTexts {
 	public static final TranslationCollector KEYS = new TranslationCollector(LoveTropics.ID + ".minigame.turtle_race.");
 
-	public static final Component CHECKMARK = Component.literal("\u2714").withStyle(ChatFormatting.GREEN);
+	public static final Component CHECKMARK = Component.literal("✔").withStyle(ChatFormatting.GREEN);
 
 	public static final Component WARNING = KEYS.add("warning", "Warning!").withStyle(ChatFormatting.RED);
 	public static final Component WRONG_WAY = KEYS.add("wrong_way", "You are going the wrong way!").withStyle(ChatFormatting.GOLD);

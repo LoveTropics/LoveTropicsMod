@@ -64,7 +64,7 @@ public final class BbCurrencyWinTrigger implements IGameBehavior {
 
 	private GameTeamKey selectWinningTeam(TeamState teams, PlotsState plots, CurrencyManager currency, List<GameTeamKey> candidates) {
 		if (candidates.size() == 1) {
-			return candidates.get(0);
+			return candidates.getFirst();
 		}
 
 		Comparator<GameTeamKey> comparator = Comparator.<GameTeamKey>comparingInt(team -> getTeamCurrencyItems(teams, currency, team))

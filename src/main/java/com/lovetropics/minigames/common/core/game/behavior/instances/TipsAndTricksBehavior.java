@@ -46,7 +46,7 @@ public final class TipsAndTricksBehavior implements IGameBehavior {
         events.listen(GamePhaseEvents.TICK, () -> {
             if ((game.ticks() - this.startTime) % this.timeBetweenTips == 0) {
                 if (!this.remainingTexts.isEmpty()) {
-                    Component text = this.remainingTexts.remove(0);
+                    Component text = this.remainingTexts.removeFirst();
                     game.getAllPlayers().sendMessage(text);
                 }
             }

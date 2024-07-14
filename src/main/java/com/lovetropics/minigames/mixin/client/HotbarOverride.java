@@ -6,11 +6,13 @@ import com.lovetropics.minigames.common.core.game.client_state.instance.ReplaceT
 import net.minecraft.client.gui.Gui;
 import net.minecraft.resources.ResourceLocation;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
 
 @Mixin(Gui.class)
 public class HotbarOverride {
+	@Unique
 	private static final ResourceLocation HOTBAR_SPRITE = ResourceLocation.withDefaultNamespace("hud/hotbar");
 
 	@ModifyArg(

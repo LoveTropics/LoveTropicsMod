@@ -37,8 +37,8 @@ public final class InstalledGameList extends AbstractGameList {
 		Flex cancel = root.child().size(20, 20).marginLeft(2);
 
 		FlexSolver.Results solve = new FlexSolver(footer.content()).apply(root);
-		this.enqueueButton = FlexUi.createButton(solve.layout(enqueue), Component.literal("\u2714"), this::enqueue);
-		this.cancelButton = FlexUi.createButton(solve.layout(cancel), Component.literal("\u274C"), this::cancel);
+		this.enqueueButton = FlexUi.createButton(solve.layout(enqueue), Component.literal("✔"), this::enqueue);
+		this.cancelButton = FlexUi.createButton(solve.layout(cancel), Component.literal("❌"), this::cancel);
 	}
 
 	@Override

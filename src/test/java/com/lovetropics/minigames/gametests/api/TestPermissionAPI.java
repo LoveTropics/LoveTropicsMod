@@ -49,7 +49,7 @@ public class TestPermissionAPI implements RoleLookup {
         }
 
         public void addRole(String id, Map<RoleOverrideType<?>, Object> overrides) {
-            this.roles.add(new SimpleRole(id, new RoleOverrideMap(overrides), this.roles.isEmpty() ? 0 : this.roles.get(this.roles.size() - 1).index() + 1));
+            this.roles.add(new SimpleRole(id, new RoleOverrideMap(overrides), this.roles.isEmpty() ? 0 : this.roles.getLast().index() + 1));
             rebuild();
         }
 

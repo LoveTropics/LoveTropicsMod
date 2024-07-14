@@ -170,20 +170,20 @@ public interface PlantCoverage extends Iterable<BlockPos> {
 		public Iterator<BlockPos> iterator() {
 			LongIterator blockIterator = this.blocks.iterator();
 
-			return new Iterator<BlockPos>() {
-				private final BlockPos.MutableBlockPos mutablePos = new BlockPos.MutableBlockPos();
+			return new Iterator<>() {
+                private final BlockPos.MutableBlockPos mutablePos = new BlockPos.MutableBlockPos();
 
-				@Override
-				public BlockPos next() {
-					long pos = blockIterator.nextLong();
-					return this.mutablePos.set(pos);
-				}
+                @Override
+                public BlockPos next() {
+                    long pos = blockIterator.nextLong();
+                    return this.mutablePos.set(pos);
+                }
 
-				@Override
-				public boolean hasNext() {
-					return blockIterator.hasNext();
-				}
-			};
+                @Override
+                public boolean hasNext() {
+                    return blockIterator.hasNext();
+                }
+            };
 		}
 	}
 

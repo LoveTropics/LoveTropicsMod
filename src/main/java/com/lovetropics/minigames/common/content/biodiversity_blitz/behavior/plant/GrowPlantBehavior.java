@@ -103,7 +103,7 @@ public record GrowPlantBehavior(IntProvider time, PlantType growInto) implements
 	static final class GrowTime {
 		static final PlantState.Key<GrowTime> KEY = PlantState.Key.create();
 
-		long next;
+		final long next;
 
 		GrowTime(long next) {
 			this.next = next;

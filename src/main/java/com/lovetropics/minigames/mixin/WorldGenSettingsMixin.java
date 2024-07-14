@@ -36,17 +36,20 @@ public class WorldGenSettingsMixin {
 		)));
 	}
 
+	@Unique
 	private static <T> T removeTemporaryDimensions(DynamicOps<T> ops, T tag, RuntimeDimensions runtimeDimensions) {
 		return ops.getMap(tag).result().map(map ->
 				ops.createMap(map.entries().filter(entry -> !isTemporaryDimension(ops, entry.getFirst(), runtimeDimensions)))
 		).orElse(tag);
 	}
 
+	@Unique
 	private static <T> boolean isTemporaryDimension(DynamicOps<T> ops, T key, RuntimeDimensions runtimeDimensions) {
 		return KEY_CODEC.parse(ops, key).result().filter(dimension -> runtimeDimensions.isTemporaryDimension(dimension) || looksLikeTemporaryDimension(dimension)).isPresent();
 	}
 
 	// TODO: Remove this, we're just cleaning up old data
+	@Unique
 	private static boolean looksLikeTemporaryDimension(ResourceKey<Level> dimension) {
 		return dimension.location().getNamespace().equals(LoveTropics.ID) && dimension.location().getPath().startsWith("tmp_");
 	}

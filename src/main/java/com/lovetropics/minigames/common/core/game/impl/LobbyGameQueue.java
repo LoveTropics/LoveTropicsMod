@@ -21,7 +21,7 @@ final class LobbyGameQueue implements ILobbyGameQueue {
 
 	@Nullable
 	QueuedGame next() {
-		return !entries.isEmpty() ? entries.remove(0) : null;
+		return !entries.isEmpty() ? entries.removeFirst() : null;
 	}
 
 	@Override

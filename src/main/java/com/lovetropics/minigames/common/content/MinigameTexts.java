@@ -67,8 +67,8 @@ public final class MinigameTexts {
     public static final Component WINNER_TITLE = KEYS.add("winner.title", "WINNER");
     public static final Component WINNER_SUBTITLE = KEYS.add("winner.subtitle", "You've emerged victorious!");
 
-    public static final TranslationCollector.Fun1 PLAYER_WON = KEYS.add1("player_won", "\u2B50 %s won the game!");
-	public static final Component NOBODY_WON = KEYS.add("nobody_won", "\u2B50 Nobody won the game!");
+    public static final TranslationCollector.Fun1 PLAYER_WON = KEYS.add1("player_won", "⭐ %s won the game!");
+	public static final Component NOBODY_WON = KEYS.add("nobody_won", "⭐ Nobody won the game!");
 	public static final Component RESULTS = KEYS.add("results", "The game is over! Here are the results:");
 	public static final Component GAME_OVER = KEYS.add("game_over.title", "Game Over!");
 
@@ -110,7 +110,7 @@ public final class MinigameTexts {
 
 	public static final Component REWARDS = KEYS.add("rewards_granted", "You got rewards for playing minigames!").withStyle(ChatFormatting.GOLD);
 	public static final TranslationCollector.Fun2 REWARD_ITEM = KEYS.add2("reward_item", " - %sx %s").withStyle(ChatFormatting.GRAY);
-	public static final TranslationCollector.Fun1 ELIMINATED = KEYS.add1("eliminated", "\u2620 %s was eliminated!").withStyle(ChatFormatting.GRAY);
+	public static final TranslationCollector.Fun1 ELIMINATED = KEYS.add1("eliminated", "☠ %s was eliminated!").withStyle(ChatFormatting.GRAY);
 
 	static {
 		KEYS.add("starting_in", "Starting in %time%!");

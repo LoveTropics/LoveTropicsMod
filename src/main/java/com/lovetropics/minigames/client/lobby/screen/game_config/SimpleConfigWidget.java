@@ -20,7 +20,7 @@ import java.util.List;
 public abstract class SimpleConfigWidget extends LayoutGui implements IConfigWidget {
 	
 	protected final SimpleConfigData config;
-	private AbstractWidget control;
+	private final AbstractWidget control;
 	
 	public static SimpleConfigWidget from(LayoutTree ltree, SimpleConfigData data) {
 		return switch (data.type()) {
@@ -115,7 +115,7 @@ public abstract class SimpleConfigWidget extends LayoutGui implements IConfigWid
 		}
 
 		private <E extends Enum<E>> EnumButton<E> createButton(Layout layout, E def) {
-			return new EnumButton<E>(layout, def);
+			return new EnumButton<>(layout, def);
 		}
 	}
 }

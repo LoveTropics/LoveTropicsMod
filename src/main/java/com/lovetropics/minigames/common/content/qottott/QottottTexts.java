@@ -25,7 +25,7 @@ public class QottottTexts {
 		KEYS.add("power_up.title", "Power-up!");
 		KEYS.add("power_up.subtitle", "%s + 2x \uE040");
 		KEYS.add("kill.title", "+2 \uE040");
-		KEYS.add("kill.subtitle", "\u2620 %killed%");
+		KEYS.add("kill.subtitle", "☠ %killed%");
 		KEYS.add("speed_power_up", "Speed Boost Power-up");
 		KEYS.add("speed_power_up.subtitle", "Speed Boost");
 		KEYS.add("knockback_resistance_power_up", "Knockback Resistance Power-up");

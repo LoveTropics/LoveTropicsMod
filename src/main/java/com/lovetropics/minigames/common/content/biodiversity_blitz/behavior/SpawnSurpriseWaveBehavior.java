@@ -12,14 +12,11 @@ import com.lovetropics.minigames.common.core.game.behavior.event.GameActionEvent
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.Util;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.level.Level;
-
-import java.util.Random;
 
 public class SpawnSurpriseWaveBehavior implements IGameBehavior {
     public static final MapCodec<SpawnSurpriseWaveBehavior> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(

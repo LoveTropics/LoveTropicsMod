@@ -50,20 +50,20 @@ public record AssignPlayerRolesBehavior(List<UUID> forcedParticipants) implement
 	}
 
 	private void allocateRoles(IGamePhase game, BiConsumer<ServerPlayer, PlayerRole> apply) {
-		LOGGER.info("SELECTED ROLES: " + game.getLobby().getPlayers().getRoleSelections());
+        LOGGER.info("SELECTED ROLES: {}", game.getLobby().getPlayers().getRoleSelections());
 		TeamAllocator<PlayerRole, ServerPlayer> allocator = game.getLobby().getPlayers().createRoleAllocator();
 		allocator.setSizeForTeam(PlayerRole.PARTICIPANT, game.getDefinition().getMaximumParticipantCount());
-		LOGGER.info("TEAM SIZE: " + game.getDefinition().getMaximumParticipantCount());
+        LOGGER.info("TEAM SIZE: {}", game.getDefinition().getMaximumParticipantCount());
 		this.applyForcedParticipants(game, allocator);
 
 		game.invoker(GamePlayerEvents.ALLOCATE_ROLES).onAllocateRoles(allocator);
-		LOGGER.info("SELECTED ROLES: " + game.getLobby().getPlayers().getRoleSelections());
+        LOGGER.info("SELECTED ROLES: {}", game.getLobby().getPlayers().getRoleSelections());
 
 		allocator.allocate(apply);
 	}
 
 	private void applyForcedParticipants(IGamePhase game, TeamAllocator<PlayerRole, ServerPlayer> allocator) {
-		LOGGER.info("FORCING PARTICIPANTS: " + this.forcedParticipants);
+        LOGGER.info("FORCING PARTICIPANTS: {}", this.forcedParticipants);
 		for (UUID uuid : this.forcedParticipants) {
 			ServerPlayer player = game.getAllPlayers().getPlayerBy(uuid);
 			if (player != null) {

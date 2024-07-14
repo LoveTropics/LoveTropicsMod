@@ -78,27 +78,27 @@ public final class SetupTeamsBehavior implements IGameBehavior {
 	public void register(IGamePhase game, EventRegistrar events) {
 		events.listen(GamePlayerEvents.ADD, player -> this.onPlayerWaiting(game, player));
 
-		SelectorItems.Handlers<GameTeam> handlers = new SelectorItems.Handlers<GameTeam>() {
-			@Override
-			public void onPlayerSelected(ServerPlayer player, GameTeam team) {
-				onRequestJoinTeam(player, team);
-			}
+		SelectorItems.Handlers<GameTeam> handlers = new SelectorItems.Handlers<>() {
+            @Override
+            public void onPlayerSelected(ServerPlayer player, GameTeam team) {
+                onRequestJoinTeam(player, team);
+            }
 
-			@Override
-			public String getIdFor(GameTeam team) {
-				return team.key().id();
-			}
+            @Override
+            public String getIdFor(GameTeam team) {
+                return team.key().id();
+            }
 
-			@Override
-			public Component getNameFor(GameTeam team) {
-				return MinigameTexts.JOIN_TEAM.apply(team.config().name()).withStyle(team.config().formatting());
-			}
+            @Override
+            public Component getNameFor(GameTeam team) {
+                return MinigameTexts.JOIN_TEAM.apply(team.config().name()).withStyle(team.config().formatting());
+            }
 
-			@Override
-			public ItemLike getItemFor(GameTeam team) {
-				return Sheep.ITEM_BY_DYE.getOrDefault(team.config().dye(), Blocks.WHITE_WOOL);
-			}
-		};
+            @Override
+            public ItemLike getItemFor(GameTeam team) {
+                return Sheep.ITEM_BY_DYE.getOrDefault(team.config().dye(), Blocks.WHITE_WOOL);
+            }
+        };
 
 		selectors = new SelectorItems<>(handlers, this.teams.toArray(new GameTeam[0]));
 		selectors.applyTo(events);

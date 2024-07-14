@@ -129,7 +129,8 @@ test {
     }
 }
 
-task sourceJar(type: Jar, dependsOn: classes) {
+tasks.register('sourceJar', Jar) {
+    dependsOn classes
     archiveClassifier = 'sources'
     from sourceSets.main.java
 }

@@ -25,15 +25,15 @@ public enum TrashType implements NonNullSupplier<Block> {
     private final int w, h;
     private final VoxelShape[] shape = new VoxelShape[6];
 
-    private TrashType() {
+    TrashType() {
         this(7);
     }
 
-    private TrashType(int w) {
+    TrashType(int w) {
         this(w, 15);
     }
 
-    private TrashType(int w, int h) {
+    TrashType(int w, int h) {
         this.w = w;
         this.h = h;
         float halfW = w / 2f;

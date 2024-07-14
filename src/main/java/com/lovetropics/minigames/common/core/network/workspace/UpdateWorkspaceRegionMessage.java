@@ -10,7 +10,6 @@ import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.PacketFlow;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
@@ -19,7 +18,7 @@ import java.util.Optional;
 public record UpdateWorkspaceRegionMessage(int id, Optional<BlockBox> region) implements CustomPacketPayload {
 	public static final CustomPacketPayload.Type<UpdateWorkspaceRegionMessage> TYPE = new CustomPacketPayload.Type<>(LoveTropics.location("update_workspace_region"));
 
-	public static StreamCodec<ByteBuf, UpdateWorkspaceRegionMessage> STREAM_CODEC = StreamCodec.composite(
+	public static final StreamCodec<ByteBuf, UpdateWorkspaceRegionMessage> STREAM_CODEC = StreamCodec.composite(
 			ByteBufCodecs.VAR_INT, UpdateWorkspaceRegionMessage::id,
 			BlockBox.STREAM_CODEC.apply(ByteBufCodecs::optional), UpdateWorkspaceRegionMessage::region,
 			UpdateWorkspaceRegionMessage::new

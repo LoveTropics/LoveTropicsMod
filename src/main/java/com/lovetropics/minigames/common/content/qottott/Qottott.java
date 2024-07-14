@@ -12,7 +12,6 @@ import com.lovetropics.minigames.common.content.qottott.behavior.PowerUpIndicato
 import com.lovetropics.minigames.common.util.registry.GameBehaviorEntry;
 import com.lovetropics.minigames.common.util.registry.LoveTropicsRegistrate;
 import net.minecraft.core.Holder;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.entity.EntityType;

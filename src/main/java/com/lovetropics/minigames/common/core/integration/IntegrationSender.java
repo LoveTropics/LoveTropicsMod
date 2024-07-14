@@ -8,7 +8,6 @@ import com.lovetropics.minigames.common.config.ConfigLT;
 import com.mojang.logging.LogUtils;
 import net.minecraft.Util;
 import org.apache.http.HttpHeaders;
-import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
 
 import java.net.URI;

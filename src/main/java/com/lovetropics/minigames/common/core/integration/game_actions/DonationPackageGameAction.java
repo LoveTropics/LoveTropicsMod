@@ -24,7 +24,7 @@ public record DonationPackageGameAction(GamePackage gamePackage) implements Game
             case SUCCESS -> LOGGER.debug("Incoming donation package was successfully processed by behavior: {}", gamePackage);
             case PASS -> LOGGER.debug("Incoming donation package was not handled by behavior: {}", gamePackage);
             case FAIL -> LOGGER.debug("Incoming donation package was rejected by behavior: {}", gamePackage);
-        };
+        }
         return result == InteractionResult.SUCCESS;
     }
 }

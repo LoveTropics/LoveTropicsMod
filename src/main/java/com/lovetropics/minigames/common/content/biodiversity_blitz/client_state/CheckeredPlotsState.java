@@ -24,7 +24,7 @@ public record CheckeredPlotsState(List<BlockBox> plots, BlockBox global) impleme
 			return BlockBox.of(BlockPos.ZERO);
 		}
 
-		BlockBox global = plots.get(0);
+		BlockBox global = plots.getFirst();
 		for (int i = 1; i < plots.size(); i++) {
 			final BlockBox plot = plots.get(i);
 			global = BlockBox.of(

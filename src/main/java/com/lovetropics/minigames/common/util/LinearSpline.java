@@ -54,7 +54,7 @@ public class LinearSpline implements Float2FloatFunction {
 		}
 
 		public LinearSpline build() {
-			if (points.size() < 1) {
+			if (points.isEmpty()) {
 				throw new IllegalStateException("Cannot have less than 1 point");
 			}
 

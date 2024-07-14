@@ -227,7 +227,7 @@ public final class Flex {
 	}
 
 	static final class LengthRange {
-		static LengthRange ANY = new LengthRange(Length.value(0), Length.FILL);
+		static final LengthRange ANY = new LengthRange(Length.value(0), Length.FILL);
 
 		final Length min;
 		final Length max;

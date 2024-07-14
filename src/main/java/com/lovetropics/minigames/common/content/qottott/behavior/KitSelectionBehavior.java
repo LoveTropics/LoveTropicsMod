@@ -41,7 +41,7 @@ public record KitSelectionBehavior(List<Kit> kits) implements IGameBehavior {
 		}
 
 		final Map<UUID, Kit> kitEntities = new Object2ObjectOpenHashMap<>();
-		final Kit defaultKit = kits.get(0);
+		final Kit defaultKit = kits.getFirst();
 
 		events.listen(GamePhaseEvents.START, () -> {
 			for (final Kit kit : kits) {

@@ -27,7 +27,7 @@ public record ChatEventGameAction(String trigger) implements GameAction {
             case SUCCESS -> LOGGER.debug("Incoming chat event was successfully processed by behavior: {}", triggeredPackage);
             case PASS -> LOGGER.debug("Incoming chat event was not handled by behavior: {}", triggeredPackage);
             case FAIL -> LOGGER.debug("Incoming chat event was rejected by behavior: {}", triggeredPackage);
-        };
+        }
 
         return result == InteractionResult.SUCCESS;
     }

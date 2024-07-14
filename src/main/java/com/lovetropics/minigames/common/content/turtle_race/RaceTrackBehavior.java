@@ -211,7 +211,7 @@ public class RaceTrackBehavior implements IGameBehavior {
 	private void triggerWin(IGamePhase game) {
 		Component winnerName = TurtleRaceTexts.UNKNOWN_PLAYER;
 		if (!finishedPlayers.isEmpty()) {
-			FinishEntry winner = finishedPlayers.get(0);
+			FinishEntry winner = finishedPlayers.getFirst();
 			game.getStatistics().global().set(StatisticKey.WINNING_PLAYER, winner.player());
 			winnerName = Component.literal(winner.name());
 		}

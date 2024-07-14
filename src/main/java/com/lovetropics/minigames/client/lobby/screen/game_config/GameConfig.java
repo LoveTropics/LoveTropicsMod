@@ -106,15 +106,13 @@ public final class GameConfig extends ScrollPanel {
 	}
 
 	public IConfigWidget createWidget(LayoutTree ltree, ConfigData value) {
-		if (value instanceof SimpleConfigData) {
-			return SimpleConfigWidget.from(ltree, (SimpleConfigData) value);
-		} else if (value instanceof ListConfigData) {
-			return ListConfigWidget.from(this, ltree, (ListConfigData) value);
-		} else if (value instanceof CompositeConfigData) {
-			return CompositeConfigWidget.from(this, ltree, (CompositeConfigData) value);
-		}
-		throw new IllegalArgumentException("Unknown config type: " + value);
-	}
+        return switch (value) {
+            case SimpleConfigData simpleConfigData -> SimpleConfigWidget.from(ltree, simpleConfigData);
+            case ListConfigData objects -> ListConfigWidget.from(this, ltree, objects);
+            case CompositeConfigData compositeConfigData -> CompositeConfigWidget.from(this, ltree, compositeConfigData);
+            default -> throw new IllegalArgumentException("Unknown config type: " + value);
+        };
+    }
 	
 	@Override
 	public boolean isMouseOver(double mouseX, double mouseY) {

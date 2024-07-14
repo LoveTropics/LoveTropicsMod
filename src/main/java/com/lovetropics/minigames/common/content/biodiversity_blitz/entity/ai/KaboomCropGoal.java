@@ -2,7 +2,6 @@ package com.lovetropics.minigames.common.content.biodiversity_blitz.entity.ai;
 
 import com.lovetropics.minigames.common.content.biodiversity_blitz.entity.impl.BbCreeperEntity;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.plant.Plant;
-import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.plant.state.PlantHealth;
 import com.lovetropics.minigames.common.content.biodiversity_blitz.plot.plant.state.PlantNotPathfindable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Mob;

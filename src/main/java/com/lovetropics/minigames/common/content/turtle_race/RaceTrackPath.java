@@ -1,7 +1,6 @@
 package com.lovetropics.minigames.common.content.turtle_race;
 
 import net.minecraft.util.Mth;
-import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -147,7 +146,7 @@ public class RaceTrackPath {
 			if (segments.isEmpty()) {
 				throw new IllegalStateException("Must have at least one track segment");
 			}
-			Point startPoint = segments.get(0).start();
+			Point startPoint = segments.getFirst().start();
 			return addPoint(startPoint.x(), startPoint.z());
 		}
 

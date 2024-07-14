@@ -104,7 +104,7 @@ public final class FlamingPlantBehavior implements IGameBehavior {
             }
 
             // Add more particles if attacked entities
-            count += (entities.size() > 0 ? 3 + random.nextInt(3) : 0);
+            count += (!entities.isEmpty() ? 3 + random.nextInt(3) : 0);
 
             BlockPos pos = plant.coverage().getOrigin();
             if (random.nextInt(3) == 0) {

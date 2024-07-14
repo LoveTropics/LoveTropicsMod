@@ -62,7 +62,7 @@ public class SpleefBehavior implements IGameBehavior {
 
     private GameBossBar bossBar;
 
-    private BlockBox[] floorRegions;
+    private final BlockBox[] floorRegions;
 
     // Eliminate players if they enter this area.
     private BlockBox deathRegion;
@@ -78,7 +78,7 @@ public class SpleefBehavior implements IGameBehavior {
 
     private int progressionTimer = 0;
 
-    private GameScheduler scheduler = new GameScheduler();
+    private final GameScheduler scheduler = new GameScheduler();
 
     private final Style DARK_YELLOW = Style.EMPTY.withColor(TextColor.fromRgb(0x77A12F));
 
@@ -299,9 +299,7 @@ public class SpleefBehavior implements IGameBehavior {
         }
 
         switch (this.progressionTimer) {
-            case 10 -> {
-                this.spleefMessage(Component.translatable(getFlavourTextKey("layer_countdown"), Component.literal(Integer.toString(this.progressionTimer)).withStyle(DARK_YELLOW)).withStyle(ChatFormatting.YELLOW));
-            }
+            case 10 -> this.spleefMessage(Component.translatable(getFlavourTextKey("layer_countdown"), Component.literal(Integer.toString(this.progressionTimer)).withStyle(DARK_YELLOW)).withStyle(ChatFormatting.YELLOW));
             case 5, 4, 3, 2, 1 -> {
                 this.spleefMessage(Component.literal(Integer.toString(this.progressionTimer)).withStyle(DARK_YELLOW), false);
                 this.game.getAllPlayers().playSound(SoundEvents.NOTE_BLOCK_PLING.value(), SoundSource.MASTER, Integer.MAX_VALUE, 1.75f - (this.progressionTimer * 0.25f));

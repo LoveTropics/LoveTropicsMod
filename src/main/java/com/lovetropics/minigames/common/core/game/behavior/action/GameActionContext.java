@@ -1,9 +1,7 @@
 package com.lovetropics.minigames.common.core.game.behavior.action;
 
 import it.unimi.dsi.fastutil.objects.Reference2ObjectArrayMap;
-import net.minecraft.server.level.ServerPlayer;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 

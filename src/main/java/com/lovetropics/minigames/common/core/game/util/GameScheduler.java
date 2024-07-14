@@ -1,13 +1,11 @@
 package com.lovetropics.minigames.common.core.game.util;
 
-import com.lovetropics.minigames.common.core.game.IGamePhase;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.function.Consumer;
 
 /**
  * Schedule events for within a game
@@ -97,14 +95,15 @@ public final class GameScheduler {
 
 	public static class DelayedGameIntervalEvent extends DelayedGameTickEvent {
 
-		public int interval;
+		public final int interval;
 
 		public DelayedGameIntervalEvent(String name, Runnable consumer, int ticks, int interval) {
 			super(name, consumer, ticks);
 			this.interval = interval;
 		}
 
-		public void run() {
+		@Override
+        public void run() {
 			this.ticks = interval;
 			super.run();
 		}

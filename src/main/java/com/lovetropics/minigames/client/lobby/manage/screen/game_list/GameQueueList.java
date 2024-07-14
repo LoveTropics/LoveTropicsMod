@@ -78,10 +78,10 @@ public final class GameQueueList extends AbstractGameList {
 
 	private void applyRunningGame(ClientCurrentGame game, Entry entry) {
 		MutableComponent gameName = game.definition().name.copy().withStyle(ChatFormatting.UNDERLINE);
-		entry.setTitle(Component.literal("\u25B6 ").append(gameName));
+		entry.setTitle(Component.literal("▶ ").append(gameName));
 
 		if (game.error().isPresent()) {
-			entry.setSubtitle(Component.literal("\u26A0 ").append(game.error().get().copy().withStyle(ChatFormatting.RED)));
+			entry.setSubtitle(Component.literal("⚠ ").append(game.error().get().copy().withStyle(ChatFormatting.RED)));
 
 			entry.setBackgroundColor(0xFF201010)
 					.setHoveredColor(0xFF402020)
@@ -97,7 +97,7 @@ public final class GameQueueList extends AbstractGameList {
 
 	private void applyInactiveGame(Entry entry) {
 		MutableComponent inactive = GameTexts.Ui.GAME_INACTIVE.copy().withStyle(ChatFormatting.UNDERLINE);
-		entry.setTitle(Component.literal("\u23F8 ").append(inactive));
+		entry.setTitle(Component.literal("⏸ ").append(inactive));
 
 		entry.setBackgroundColor(0xFF202010)
 				.setHoveredColor(0xFF404020)

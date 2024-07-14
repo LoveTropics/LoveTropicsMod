@@ -211,11 +211,10 @@ public final class Box {
 		}
 
 		public int along(Axis axis) {
-			switch (axis) {
-				case X: return this.width;
-				case Y: return this.height;
-				default: throw new UnsupportedOperationException();
-			}
+            return switch (axis) {
+                case X -> this.width;
+                case Y -> this.height;
+            };
 		}
 	}
 
@@ -229,11 +228,10 @@ public final class Box {
 		}
 
 		Interval subtract(Align.Main align, int size) {
-			switch (align) {
-				case START: return new Interval(this.start + size, this.end);
-				case END: return new Interval(this.start, this.end - size);
-				default: throw new UnsupportedOperationException();
-			}
+            return switch (align) {
+                case START -> new Interval(this.start + size, this.end);
+                case END -> new Interval(this.start, this.end - size);
+            };
 		}
 
 		int size() {
@@ -241,23 +239,21 @@ public final class Box {
 		}
 
 		Interval applyMainAlign(Align.Main align, int size) {
-			switch (align) {
-				case START: return new Interval(this.start, this.start + size);
-				case END: return new Interval(this.end - size, this.end);
-				default: throw new UnsupportedOperationException();
-			}
+            return switch (align) {
+                case START -> new Interval(this.start, this.start + size);
+                case END -> new Interval(this.end - size, this.end);
+            };
 		}
 
 		Interval applyCrossAlign(Align.Cross align, int size) {
-			switch (align) {
-				case START: return new Interval(this.start, this.start + size);
-				case CENTER: {
-					int start = (this.start + this.end - size) / 2;
-					return new Interval(start, start + size);
-				}
-				case END: return new Interval(this.end - size, this.end);
-				default: throw new UnsupportedOperationException();
-			}
+            return switch (align) {
+                case START -> new Interval(this.start, this.start + size);
+                case CENTER -> {
+                    int start = (this.start + this.end - size) / 2;
+                    yield new Interval(start, start + size);
+                }
+                case END -> new Interval(this.end - size, this.end);
+            };
 		}
 	}
 }

@@ -5,9 +5,7 @@ import com.lovetropics.minigames.client.lobby.state.ClientGameDefinition;
 import com.lovetropics.minigames.common.core.game.*;
 import com.lovetropics.minigames.common.core.game.lobby.LobbyControls;
 import com.lovetropics.minigames.common.core.game.lobby.QueuedGame;
-import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
-import net.minecraft.server.MinecraftServer;
 
 import javax.annotation.Nullable;
 import java.util.concurrent.CompletableFuture;

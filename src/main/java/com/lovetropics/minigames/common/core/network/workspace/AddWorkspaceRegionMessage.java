@@ -7,13 +7,12 @@ import io.netty.buffer.ByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 public record AddWorkspaceRegionMessage(int id, String key, BlockBox region) implements CustomPacketPayload {
 	public static final CustomPacketPayload.Type<AddWorkspaceRegionMessage> TYPE = new CustomPacketPayload.Type<>(LoveTropics.location("add_workspace_region"));
 
-	public static StreamCodec<ByteBuf, AddWorkspaceRegionMessage> STREAM_CODEC = StreamCodec.composite(
+	public static final StreamCodec<ByteBuf, AddWorkspaceRegionMessage> STREAM_CODEC = StreamCodec.composite(
 			ByteBufCodecs.VAR_INT, AddWorkspaceRegionMessage::id,
 			ByteBufCodecs.stringUtf8(64), AddWorkspaceRegionMessage::key,
 			BlockBox.STREAM_CODEC, AddWorkspaceRegionMessage::region,

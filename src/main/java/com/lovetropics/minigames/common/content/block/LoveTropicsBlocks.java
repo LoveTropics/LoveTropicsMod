@@ -23,7 +23,7 @@ public class LoveTropicsBlocks {
     
     public static final LoveTropicsRegistrate REGISTRATE = LoveTropics.registrate();
 
-    public static final Map<TrashType, BlockEntry<TrashBlock>> TRASH = Arrays.<TrashType>stream(TrashType.values())
+    public static final Map<TrashType, BlockEntry<TrashBlock>> TRASH = Arrays.stream(TrashType.values())
             .collect(Collectors.toMap(Function.identity(), t -> REGISTRATE.block(t.getId(), p -> new TrashBlock(t, p))
                     .properties(p -> p.mapColor(MapColor.PLANT).pushReaction(PushReaction.DESTROY).noCollission().offsetType(BlockBehaviour.OffsetType.XZ))
                     .addLayer(() -> RenderType::cutout)

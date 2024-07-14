@@ -156,9 +156,8 @@ interface SpectatingState {
 		public boolean equals(Object obj) {
 			if (this == obj) return true;
 
-			if (obj instanceof SelectedPlayer) {
-				SelectedPlayer state = (SelectedPlayer) obj;
-				return spectatedId.equals(state.spectatedId);
+			if (obj instanceof SelectedPlayer state) {
+                return spectatedId.equals(state.spectatedId);
 			}
 
 			return false;

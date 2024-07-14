@@ -35,7 +35,7 @@ public final class GameResult<T> {
 
 	public static <T> GameResult<T> fromException(String message, Exception exception) {
 		exception.printStackTrace();
-		return GameResult.error(Component.literal(message + ": " + exception.toString()));
+		return GameResult.error(Component.literal(message + ": " + exception));
 	}
 
 	public static <T> CompletableFuture<GameResult<T>> handleException(String message, CompletableFuture<GameResult<T>> future) {

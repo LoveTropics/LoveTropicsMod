@@ -13,11 +13,9 @@ import java.util.Set;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
-import com.mojang.serialization.DataResult;
-
 public abstract class ConfigData {
 	
-	private DisplayHint display = DisplayHint.NONE;
+	private final DisplayHint display = DisplayHint.NONE;
 	
 	ConfigData() {}
 	
@@ -141,9 +139,8 @@ public abstract class ConfigData {
 		
 		@Override
 		protected void setValueInternal(Object value) {
-			if (value instanceof Collection<?>) {
-				Collection<?> coll = (Collection<?>) value;
-				if (!coll.isEmpty()) {
+			if (value instanceof Collection<?> coll) {
+                if (!coll.isEmpty()) {
 					if (coll.stream().allMatch(this.componentType()::isValidValue)) {
 						this.values.clear();
 						this.values.addAll(coll);
@@ -153,9 +150,8 @@ public abstract class ConfigData {
 				} else {
 					this.values.clear();
 				}
-			} else if (value instanceof Object[]) {
-				Object[] arr = (Object[]) value;
-				if (arr.length > 0) {
+			} else if (value instanceof Object[] arr) {
+                if (arr.length > 0) {
 					if (Arrays.stream(arr).allMatch(this.componentType()::isValidValue)) {
 						this.values.clear();
 						this.values.addAll(Arrays.asList(arr));

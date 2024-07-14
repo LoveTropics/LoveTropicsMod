@@ -82,9 +82,7 @@ public record PollFinalistsBehavior(String finalistsTag, String winnerTag, Strin
 				}
 				scoreboard.addObjective(votesObjective, ObjectiveCriteria.DUMMY, Component.literal("Votes"), RenderType.INTEGER, true, null);
 			}
-			case UPDATE -> {
-				poll.ifPresent(event -> updateScores(server, event, false));
-			}
+			case UPDATE -> poll.ifPresent(event -> updateScores(server, event, false));
 			case DELETE -> {
 				LOGGER.info("Poll ended, finding winner");
 				poll.ifPresent(event -> updateScores(server, event, true));

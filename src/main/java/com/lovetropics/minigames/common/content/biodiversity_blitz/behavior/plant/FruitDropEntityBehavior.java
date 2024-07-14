@@ -75,7 +75,7 @@ public class FruitDropEntityBehavior implements IGameBehavior {
 				})
 				.forEach(bp -> {
 					level.setBlockAndUpdate(bp, Blocks.AIR.defaultBlockState());
-					Entity spawnedEntity = entity.spawn(level, null, (Player) null, bp, MobSpawnType.TRIGGERED, false, false);
+					Entity spawnedEntity = entity.spawn(level, null, null, bp, MobSpawnType.TRIGGERED, false, false);
 					if (spawnedEntity != null) {
 						level.addFreshEntity(spawnedEntity);
 					}
